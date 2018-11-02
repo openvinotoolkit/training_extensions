@@ -1,0 +1,187 @@
+{
+    "annotations": [
+        {
+            "area": 118206.72,
+            "attributes": {},
+            "bbox": [
+                269.3,
+                10.3,
+                297.6,
+                397.2
+            ],
+            "category_id": 1,
+            "id": 39,
+            "image_id": 10,
+            "is_occluded": true,
+            "iscrowd": 0,
+            "segmentation": null
+        },
+        {
+            "area": 970.83,
+            "attributes": {},
+            "bbox": [
+                352.8,
+                377.0,
+                48.3,
+                20.1
+            ],
+            "category_id": 2,
+            "id": 40,
+            "image_id": 10,
+            "is_occluded": false,
+            "iscrowd": 0,
+            "segmentation": null
+        },
+        {
+            "area": 803.16,
+            "attributes": {},
+            "bbox": [
+                404.8,
+                289.3,
+                41.4,
+                19.4
+            ],
+            "category_id": 2,
+            "id": 41,
+            "image_id": 11,
+            "is_occluded": false,
+            "iscrowd": 0,
+            "segmentation": null
+        },
+        {
+            "area": 81958.04000000001,
+            "attributes": {},
+            "bbox": [
+                327.1,
+                0.7,
+                256.6,
+                319.4
+            ],
+            "category_id": 1,
+            "id": 42,
+            "image_id": 11,
+            "is_occluded": true,
+            "iscrowd": 0,
+            "segmentation": null
+        },
+        {
+            "area": 607.5600000000001,
+            "attributes": {},
+            "bbox": [
+                127.4,
+                179.5,
+                33.2,
+                18.3
+            ],
+            "category_id": 2,
+            "id": 43,
+            "image_id": 12,
+            "is_occluded": false,
+            "iscrowd": 0,
+            "segmentation": null
+        },
+        {
+            "area": 55998.18000000001,
+            "attributes": {},
+            "bbox": [
+                74.0,
+                11.2,
+                272.1,
+                205.8
+            ],
+            "category_id": 1,
+            "id": 44,
+            "image_id": 12,
+            "is_occluded": false,
+            "iscrowd": 0,
+            "segmentation": null
+        },
+        {
+            "area": 845.8800000000001,
+            "attributes": {},
+            "bbox": [
+                480.9,
+                233.7,
+                37.1,
+                22.8
+            ],
+            "category_id": 2,
+            "id": 45,
+            "image_id": 12,
+            "is_occluded": false,
+            "iscrowd": 0,
+            "segmentation": null
+        },
+        {
+            "area": 67745.16,
+            "attributes": {},
+            "bbox": [
+                413.3,
+                0.0,
+                243.6,
+                278.1
+            ],
+            "category_id": 1,
+            "id": 46,
+            "image_id": 12,
+            "is_occluded": false,
+            "iscrowd": 0,
+            "segmentation": null
+        }
+    ],
+    "categories": [
+        {
+            "id": 0,
+            "name": "bg",
+            "supercategory": ""
+        },
+        {
+            "id": 1,
+            "name": "vehicle",
+            "supercategory": ""
+        },
+        {
+            "id": 2,
+            "name": "plate",
+            "supercategory": ""
+        }
+    ],
+    "images": [
+        {
+            "coco_url": null,
+            "dataset": "globalme",
+            "date_captured": null,
+            "file_name": "image_000010.jpg",
+            "flickr_url": null,
+            "height": 450,
+            "id": 10,
+            "image": "./test/image_000010.jpg",
+            "license": null,
+            "width": 794
+        },
+        {
+            "coco_url": null,
+            "dataset": "globalme",
+            "date_captured": null,
+            "file_name": "image_000011.jpg",
+            "flickr_url": null,
+            "height": 450,
+            "id": 11,
+            "image": "./test/image_000011.jpg",
+            "license": null,
+            "width": 794
+        },
+        {
+            "coco_url": null,
+            "dataset": "globalme",
+            "date_captured": null,
+            "file_name": "image_000012.jpg",
+            "flickr_url": null,
+            "height": 450,
+            "id": 12,
+            "image": "./test/image_000012.jpg",
+            "license": null,
+            "width": 794
+        }
+    ]
+}
