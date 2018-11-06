@@ -27,4 +27,15 @@
     Providing context helps us come up with a solution that is most useful in the real world.
 
 ## Your Environment
+
+- OS Platform and Distribution (e.g., Linux Ubuntu 16.04):
+- TensorFlow installed from (source or binary):
+- TensorFlow version (use command below):
+```
+python -c "import tensorflow as tf; print(tf.GIT_VERSION, tf.VERSION)"
+```
+- Python version:
+- CUDA/cuDNN version:
+- GPU model and memory:
+
     Include as many relevant details about the environment with which you experienced the bug.
