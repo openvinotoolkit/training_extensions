@@ -62,8 +62,8 @@ models/ssd_detector directory. You'll see the `ssd_detector` folder with sample 
 demonstrating how to train a MobileNetV2-based SSD object detector.
 
 We provide 2 predifined configuration:
-* Vehicles and license plates detector [models/ssd_detector/vlp/config.py](models/ssd_detector/vlp/config.py).
-* COCO object detector detector [models/ssd_detector/coco/config.py](models/ssd_detector/coco/config.py) on COCO dataset [data/coco/README.md](data/coco/README.md).
+* Vehicles and license plates detector [models/ssd_detector/vlp/config.py](vlp/config.py).
+* COCO object detector detector [models/ssd_detector/coco/config.py](coco/config.py) on COCO dataset [data/coco/README.md](../../data/coco/README.md).
 
 ### Quck start with vehicles and license plates detector
 The sample model will learn how to detect vehicles and license plates on
@@ -75,15 +75,15 @@ from OpenVINO™.
 To train a model, go through the following steps:
 
 1. Download training data and put it in the `data/bitvehicle` directory
-    according to [data/bitvehicle/README.md](data/bitvehicle/README.md)
+    according to [data/bitvehicle/README.md](../../data/bitvehicle/README.md)
     file. Annotation files in **COCO** format (refer to
     [cocodataset](http://cocodataset.org/#format-data) for details) are already
     located in `data/bitvehicle`.
 
 2. If necessary, you can modify training settings by editing
-    [models/ssd_detector/vlp/config.py](models/ssd_detector/vlp/config.py) or leave them by
+    [models/ssd_detector/vlp/config.py](vlp/config.py) or leave them by
     default. For more details please read comments in
-    [config.py](models/ssd_detector/vlp/config.py). Notable parameters in `train`
+    [config.py](vlp/config.py). Notable parameters in `train`
     class are:
      * `batch_size` - number of images in training batch, by default it's set to
        `32`, but could be increased or decreased depending on the amount of
@@ -126,7 +126,7 @@ To train a model, go through the following steps:
 
     And view results in a browser: [http://localhost:6006](http://localhost:6006).
 
-    ![BitVehicle TensorBoard](./vlp/docs/tensorboard.png)
+    ![BitVehicle TensorBoard](vlp/docs/tensorboard.png)
 
 6. When training is complete, model from the checkpoint could be infered on
     input data by running `models/ssd_detector/infer.py`:
