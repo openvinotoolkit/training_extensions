@@ -62,10 +62,18 @@ models/ssd_detector directory. You'll see the `ssd_detector` folder with sample 
 demonstrating how to train a MobileNetV2-based SSD object detector.
 
 We provide 2 predifined configuration:
-* Vehicles and license plates detector [models/ssd_detector/vlp/config.py](vlp/config.py).
-* COCO object detector detector [models/ssd_detector/coco/config.py](coco/config.py) on COCO dataset [data/coco/README.md](../../data/coco/README.md).
+* Vehicles and license plates detector.
+  ![VLP detection](vlp/docs/sample.jpg "Example of VLP detector inference")
+
+  - Configuration file: [models/ssd_detector/vlp/config.py](vlp/config.py).
+  - Trained model: [MobileNet v2 0.35 256x256](https://download.01.org/openvinotoolkit/training_toolbox_tensorflow/models/ssd_detector/vlp/0123_ssd_mobilenet_v2_0.35_barrier_256x256.zip).
+
+* Object detector trained on the [COCO dataset](../../data/coco/README.md).
+  - Configuration file: [models/ssd_detector/coco/config.py](coco/config.py).
+  - Trained model: [MobileNet v2 1.0 256x256](https://download.01.org/openvinotoolkit/training_toolbox_tensorflow/models/ssd_detector/coco/0122_ssd_mobilenet_v2_1.0_coco_256x256.zip).
 
 ### Quck start with vehicles and license plates detector
+
 The sample model will learn how to detect vehicles and license plates on
 [BitVehicle](http://iitlab.bit.edu.cn/mcislab/vehicledb/) dataset. The resulting
 model can further be used to build a sample application, similar to ["security
@@ -76,7 +84,7 @@ To train a model, go through the following steps:
 
 1. Download training data and put it in the `data/bitvehicle` directory
     according to [data/bitvehicle/README.md](../../data/bitvehicle/README.md)
-    file. Annotation files in **COCO** format (refer to
+    file. Annotation files in the **COCO** format (refer to
     [cocodataset](http://cocodataset.org/#format-data) for details) are already
     located in `data/bitvehicle`.
 
@@ -88,7 +96,7 @@ To train a model, go through the following steps:
      * `batch_size` - number of images in training batch, by default it's set to
        `32`, but could be increased or decreased depending on the amount of
        available memory.
-     * `annotation_path` - path to json file with annotation in **COCO** format,
+     * `annotation_path` - path to json file with annotation in the **COCO** format,
        by default it's set to relative path to bitvehicle annotation, but you
        could use your own annotation.
      * `steps` - number of training iterations
@@ -126,7 +134,7 @@ To train a model, go through the following steps:
 
     And view results in a browser: [http://localhost:6006](http://localhost:6006).
 
-    ![BitVehicle TensorBoard](vlp/docs/tensorboard.png)
+    ![BitVehicle TensorBoard](vlp/docs/tensorboard.png "TensorBoard for BitVehicle training")
 
 6. When training is complete, model from the checkpoint could be infered on
     input data by running `models/ssd_detector/infer.py`:
