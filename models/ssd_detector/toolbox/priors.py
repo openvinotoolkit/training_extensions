@@ -39,8 +39,8 @@ def prior_box_specs(blob, image_size, box_specs, step, clip=False, offset=0.5, v
       center_x = (width + offset) * step_x
 
       for size, aspect_ratio in box_specs:
-        box_w = size * aspect_ratio
-        box_h = size / aspect_ratio
+        box_w = size * math.sqrt(aspect_ratio)
+        box_h = size / math.sqrt(aspect_ratio)
         xmin = (center_x - box_w / 2.) / image_size[1]
         ymin = (center_y - box_h / 2.) / image_size[0]
         xmax = (center_x + box_w / 2.) / image_size[1]
