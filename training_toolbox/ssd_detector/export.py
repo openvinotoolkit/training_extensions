@@ -102,7 +102,7 @@ def export(cfg, tfmo):
     saver.restore(sess, checkpoint_path)
 
     mean_values = [train_param.mean_value for _ in range(3)]
-    convert_to_ie(ssd, sess, os.path.join(cfg.model_dir, './ie_model/'), tfmo, batch_size=1,
+    convert_to_ie(ssd, sess, os.path.join(cfg.model_dir, 'ie_model/'), tfmo, batch_size=1,
                   scale=1./train_param.scale, mean_values=mean_values)
 
 
