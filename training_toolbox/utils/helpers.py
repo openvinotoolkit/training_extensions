@@ -1,9 +1,17 @@
 import importlib.util
 import os
+import sys
+from os import path
 
 import cv2
 import numpy as np
 import tensorflow as tf
+
+
+def import_research_models():
+  research_dir = path.realpath(path.dirname(__file__) + '../../../external/models/research/')
+  sys.path.append(research_dir)
+  sys.path.append(path.join(research_dir, 'slim'))
 
 
 def load_module(module_name):

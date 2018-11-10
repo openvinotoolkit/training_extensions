@@ -6,9 +6,9 @@ import multiprocessing as mp
 import cv2
 import tensorflow as tf
 
-from .base_test import BaseTest
 from ssd_detector.export import export
-from . import OPEN_VINO_DIR, CONFIG
+from tests.ssd_detector import OPEN_VINO_DIR, CONFIG
+from tests.ssd_detector.base_test import BaseTest
 
 if OPEN_VINO_DIR != '':
   from openvino.inference_engine import IENetwork, IEPlugin

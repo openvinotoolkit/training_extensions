@@ -2,7 +2,7 @@ import os
 
 import tensorflow as tf
 
-from utils import download_archive_and_extract
+from utils.helpers import download_archive_and_extract
 
 
 def download_test_data(root_dir):

@@ -5,7 +5,7 @@ import pickle
 
 import cv2
 import tensorflow as tf
-from utils import load_module
+from utils.helpers import load_module
 from ssd_detector.readers.object_detector_json import ObjectDetectorJson
 from ssd_detector.trainer import create_session, detection_model, InputInferData, InputValData
 

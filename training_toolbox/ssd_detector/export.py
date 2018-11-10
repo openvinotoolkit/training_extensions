@@ -3,7 +3,7 @@ import os
 import subprocess
 
 import tensorflow as tf
-from utils import dump_frozen_graph, load_module
+from utils.helpers import dump_frozen_graph, load_module
 from ssd_detector.networks.mobilenet_ssd import MobileNetSSD
 
 

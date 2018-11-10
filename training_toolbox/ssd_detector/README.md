@@ -1,76 +1,21 @@
 # SSD Object Detection
 
-## Setup SSD Object Detection
-
-Update PYTHONPATH environment variable
-
-```
-cd /<path_to_working_dir>/training_toolbox_tensorflow/models/ssd_detector
-export PYTHONPATH=`pwd`:$PYTHONPATH
-```
-
-## Test Training
-
-In order to check that everything works properly run regression test:
-
-```
-cd /<path_to_working_dir>/training_toolbox_tensorflow/models/ssd_detector/regression_test
-python train_net.py
-```
-
-The test output must end with:
-
-```
-Ran 2 tests in 194.815s
-
-OK (skipped=1)
-```
-
-## Test model export to **Inference Engine**
-
-Download and install [OpenVINO™ Toolkit](https://software.intel.com/en-us/openvino-toolkit).
-
-Do not forget to install required packages for Model Optimzer:
-
-```
-pip install networkx
-```
-
-Do not forget to update several environment variables are required to compile and run OpenVINO™ toolkit applications,
-for details see: [https://software.intel.com/en-us/articles/OpenVINO-Install-Linux](https://software.intel.com/en-us/articles/OpenVINO-Install-Linux).
-
-```
-cd /<path_to_working_dir>/training_toolbox_tensorflow/training_toolbox
-. ../venv/bin/activate
-export OPEN_VINO_DIR=<PATH_TO_OPENVINO>
-nosetests
-```
-
-If OpenVINO™ was installed in a home directory, then `<PATH_TO_OPENVINO>` is `~/intel/computer_vision_sdk_2018.3.343/`.
-
-The test output must end with:
-
-```
-Ran 2 tests in 203.989s
-
-OK
-```
 
 ## Train SSD detection model
 
 To train a [Single Shot Detector](https://arxiv.org/abs/1512.02325), jump to
-models/ssd_detector directory. You'll see the `ssd_detector` folder with sample code
+training_toolbox/ssd_detector directory. You'll see the `ssd_detector` folder with sample code
 demonstrating how to train a MobileNetV2-based SSD object detector.
 
-We provide 2 predifined configuration:
+We provide 2 predefined configuration:
 * Vehicles and license plates detector.
   ![VLP detection](vlp/docs/sample.jpg "Example of VLP detector inference")
 
-  - Configuration file: [models/ssd_detector/vlp/config.py](vlp/config.py).
+  - Configuration file: [training_toolbox/ssd_detector/vlp/config.py](vlp/config.py).
   - Trained model: [MobileNet v2 0.35 256x256](https://download.01.org/openvinotoolkit/training_toolbox_tensorflow/models/ssd_detector/vlp/0123_ssd_mobilenet_v2_0.35_barrier_256x256.zip).
 
 * Object detector trained on the [COCO dataset](../../data/coco/README.md).
-  - Configuration file: [models/ssd_detector/coco/config.py](coco/config.py).
+  - Configuration file: [training_toolbox/ssd_detector/coco/config.py](coco/config.py).
   - Trained model: [MobileNet v2 1.0 256x256](https://download.01.org/openvinotoolkit/training_toolbox_tensorflow/models/ssd_detector/coco/0122_ssd_mobilenet_v2_1.0_coco_256x256.zip).
 
 ### Quck start with vehicles and license plates detector
@@ -90,7 +35,7 @@ To train a model, go through the following steps:
     located in `data/bitvehicle`.
 
 2. If necessary, you can modify training settings by editing
-    [models/ssd_detector/vlp/config.py](vlp/config.py) or leave them by
+    [training_toolbox/ssd_detector/vlp/config.py](vlp/config.py) or leave them by
     default. For more details please read comments in
     [config.py](vlp/config.py). Notable parameters in `train`
     class are:
@@ -110,13 +55,13 @@ To train a model, go through the following steps:
        Remember that caching might cause system slowdown, so if you don't have
        enough RAM memory better to disable it, pass `NONE` to this parameter.
 
-3. To start training go to `models/ssd_detector` directory and type in command line:
+3. To start training go to `training_toolbox/ssd_detector` directory and type in command line:
 
     ```
     python3 train.py vlp/config.py
     ```
 
-4. To start evaluation process go to `models/ssd_detector` directory and type
+4. To start evaluation process go to `training_toolbox/ssd_detector` directory and type
     in command line:
 
     ```
@@ -126,8 +71,8 @@ To train a model, go through the following steps:
     Do step 4 in another terminal, so training and evaluation are performed simultaneously.
 
 5. Training and evaluation artifacts will be stored by default in
-    `models/ssd_detector/vlp/model`.  To visualize training and evaluation, go to
-    `models/ssd_detector/vlp` and run tensorboard with:
+    `training_toolbox/ssd_detector/vlp/model`.  To visualize training and evaluation, go to
+    `training_toolbox/ssd_detector/vlp` and run tensorboard with:
 
     ```
     tensorboard --logdir=./model
@@ -138,14 +83,14 @@ To train a model, go through the following steps:
     ![BitVehicle TensorBoard](vlp/docs/tensorboard.png "TensorBoard for BitVehicle training")
 
 6. When training is complete, model from the checkpoint could be infered on
-    input data by running `models/ssd_detector/infer.py`:
+    input data by running `training_toolbox/ssd_detector/infer.py`:
 
     ```
     python3 infer.py vlp/config.py --video --input=<path_to_input_video> --show
     ```
 
 7. Finally, trained model could be converted to Inference Engine format for
-    optimized inference. To export, go to `models/ssd_detector` and run
+    optimized inference. To export, go to `training_toolbox/ssd_detector` and run
     `export.py`:
 
     ```
@@ -155,7 +100,7 @@ To train a model, go through the following steps:
     If OpenVINO™ was installed in a home directory, then `<path_to_mo.py>` is `~/intel/computer_vision_sdk_2018.3.343/deployment_tools/model_optimizer/mo.py`.
 
     As a result, you'll find three new artifacts in
-    `models/ssd_detector/vlp/model/ie_model`:
+    `training_toolbox/ssd_detector/vlp/model/ie_model`:
      - `graph.pb` - TensorFlow frozen graph,
      - `graph.xml` and `grapn.bin` - Inference Engine representation of the
     model.

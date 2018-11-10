@@ -1,7 +1,7 @@
 import importlib
 import os
 
-from .utils import download_test_data
+from tests.ssd_detector.misc import download_test_data
 
 os.environ['MKL_NUM_THREADS'] = '1'
 OPEN_VINO_DIR = os.environ.get('OPEN_VINO_DIR', '')

@@ -12,7 +12,7 @@ import numpy as np
 import tensorflow as tf
 
 from ssd_detector.toolbox.coco_metrics_eval import calc_coco_metrics
-from utils import draw_bboxes, load_module
+from utils.helpers import draw_bboxes, load_module
 from ssd_detector.trainer import create_session, detection_model, InputValData
 from ssd_detector.toolbox.summary import group_ssd_heads, write_histogram_2d
 

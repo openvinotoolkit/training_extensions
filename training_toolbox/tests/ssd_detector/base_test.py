@@ -3,7 +3,7 @@ import tempfile
 import unittest
 from datetime import datetime
 
-from . import CONFIG
+from tests.ssd_detector import CONFIG
 
 
 class BaseTest(unittest.TestCase):
