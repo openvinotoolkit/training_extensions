@@ -13,7 +13,7 @@ import numpy as np
 import tensorflow as tf
 from tqdm import tqdm
 
-from toolbox.bounding_box import BoundingBox
+from ssd_detector.toolbox.bounding_box import BoundingBox
 from pycocotools.coco import COCO
 
 

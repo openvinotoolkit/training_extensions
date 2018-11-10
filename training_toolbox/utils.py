@@ -6,8 +6,11 @@ import numpy as np
 import tensorflow as tf
 
 
-def load_module(path_to_cfg):
-  spec = importlib.util.spec_from_file_location("module.name", path_to_cfg)
+def load_module(module_name):
+  # TODO: replace on
+  # __import__(module_name)
+  # return sys.modules[module_name]
+  spec = importlib.util.spec_from_file_location("module.name", module_name)
   module = importlib.util.module_from_spec(spec)
   spec.loader.exec_module(module)
   return module

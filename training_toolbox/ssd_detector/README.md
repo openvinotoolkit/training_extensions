@@ -40,9 +40,10 @@ Do not forget to update several environment variables are required to compile an
 for details see: [https://software.intel.com/en-us/articles/OpenVINO-Install-Linux](https://software.intel.com/en-us/articles/OpenVINO-Install-Linux).
 
 ```
-cd /<path_to_working_dir>/training_toolbox_tensorflow/ssd_detector
+cd /<path_to_working_dir>/training_toolbox_tensorflow/training_toolbox
+. ../venv/bin/activate
 export OPEN_VINO_DIR=<PATH_TO_OPENVINO>
-python train_net.py
+nosetests
 ```
 
 If OpenVINO™ was installed in a home directory, then `<PATH_TO_OPENVINO>` is `~/intel/computer_vision_sdk_2018.3.343/`.

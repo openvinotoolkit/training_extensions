@@ -30,25 +30,19 @@ inference.
     ```
     sudo apt-get install libturbojpeg
     sudo apt-get install python3-tk
-    virtualenv ./toolbox_env -p python3
-    source ./toolbox_env/bin/activate
-    pip install -r requirements.txt
     ```
 
-3. Build COCO API
+3. Create virtual environment
 
     ```
-    cd external/cocoapi
-    2to3 . -w
-    cd PythonAPI
-    python setup.py build_ext --inplace
+    sh tools/init_venv.sh
     ```
 
-4. Update PYTHONPATH environment variable
+4. Start to work
 
     ```
     cd /<path_to_working_dir>/training_toolbox_tensorflow
-    export PYTHONPATH=`pwd`:`pwd`/external/models/research/slim:`pwd`/external/models/research:`pwd`/external/cocoapi/PythonAPI:$PYTHONPATH
+    . venv/bin/activate
     ```
 
 ## Models

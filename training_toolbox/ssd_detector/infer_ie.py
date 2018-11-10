@@ -6,7 +6,7 @@ import cv2
 import logging as log
 from openvino.inference_engine import IENetwork, IEPlugin
 from pycocotools.coco import COCO
-from readers.object_detector_json import ObjectDetectorJson
+from ssd_detector.readers.object_detector_json import ObjectDetectorJson
 import json
 
 

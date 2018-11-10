@@ -4,8 +4,8 @@ import os
 import cv2
 import tensorflow as tf
 
-from general.utils import load_module
-from trainer import create_session, detection_model, InputTrainData
+from utils import load_module
+from ssd_detector.trainer import create_session, detection_model, InputTrainData
 
 
 os.environ['MKL_NUM_THREADS'] = '1'

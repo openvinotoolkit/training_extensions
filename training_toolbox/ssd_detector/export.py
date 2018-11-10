@@ -3,8 +3,8 @@ import os
 import subprocess
 
 import tensorflow as tf
-from general.utils import dump_frozen_graph, load_module
-from networks.mobilenet_ssd import MobileNetSSD
+from utils import dump_frozen_graph, load_module
+from ssd_detector.networks.mobilenet_ssd import MobileNetSSD
 
 
 def parse_args():
