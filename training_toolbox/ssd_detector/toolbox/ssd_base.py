@@ -4,8 +4,8 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.contrib import slim
 
-from toolbox.layers import channel_to_last, get_spatial_dims
-from toolbox.priors import prior_box, prior_box_clusterd, prior_box_specs
+from ssd_detector.toolbox.layers import channel_to_last, get_spatial_dims
+from ssd_detector.toolbox.priors import prior_box, prior_box_clusterd, prior_box_specs
 
 
 class SSDBase:

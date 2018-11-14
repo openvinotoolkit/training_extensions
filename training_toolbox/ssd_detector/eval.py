@@ -11,10 +11,10 @@ import cv2
 import numpy as np
 import tensorflow as tf
 
-from toolbox.coco_metrics_eval import calc_coco_metrics
-from general.utils import draw_bboxes, load_module
-from trainer import create_session, detection_model, InputValData
-from toolbox.summary import group_ssd_heads, write_histogram_2d
+from ssd_detector.toolbox.coco_metrics_eval import calc_coco_metrics
+from utils.helpers import draw_bboxes, load_module
+from ssd_detector.trainer import create_session, detection_model, InputValData
+from ssd_detector.toolbox.summary import group_ssd_heads, write_histogram_2d
 
 from pycocotools.coco import COCO
 

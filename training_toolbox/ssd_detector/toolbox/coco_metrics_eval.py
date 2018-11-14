@@ -1,4 +1,4 @@
-from readers.object_detector_json import ObjectDetectorJson
+from ssd_detector.readers.object_detector_json import ObjectDetectorJson
 from pycocotools.cocoeval import COCOeval
 
 METRICS_NAMES = ["Average Precision(AP) @ [IoU = 0.50:0.95 | area = all | maxDets = 100]",

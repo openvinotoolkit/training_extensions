@@ -1,13 +1,24 @@
 import importlib.util
 import os
+import sys
+from os import path
 
 import cv2
 import numpy as np
 import tensorflow as tf
 
 
-def load_module(path_to_cfg):
-  spec = importlib.util.spec_from_file_location("module.name", path_to_cfg)
+def import_research_models():
+  research_dir = path.realpath(path.dirname(__file__) + '../../../external/models/research/')
+  sys.path.append(research_dir)
+  sys.path.append(path.join(research_dir, 'slim'))
+
+
+def load_module(module_name):
+  # TODO: replace on
+  # __import__(module_name)
+  # return sys.modules[module_name]
+  spec = importlib.util.spec_from_file_location("module.name", module_name)
   module = importlib.util.module_from_spec(spec)
   spec.loader.exec_module(module)
   return module

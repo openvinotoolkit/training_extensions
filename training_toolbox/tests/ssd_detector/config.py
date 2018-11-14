@@ -1,12 +1,13 @@
-import os
+from os import path
 import matplotlib; matplotlib.use('Agg')  # pylint: disable=multiple-statements
-from models.ssd_detector.readers.object_detector_json import ObjectDetectorJson
+from ssd_detector.readers.object_detector_json import ObjectDetectorJson
 
-current_dir = os.path.dirname(os.path.realpath(__file__))
-root_dir = os.path.normpath(os.path.join(current_dir, "../../.."))
+current_dir = path.dirname(path.realpath(__file__))
+root_dir = path.normpath(path.join(current_dir, "../../../"))
+model_dir = path.normpath(path.join(current_dir, '../models'))
 
 class train:
-  annotation_path = os.path.join(root_dir, "./data/test/annotations_train.json")
+  annotation_path = path.join(root_dir, "data/test/annotations_train.json")
   batch_size = 4
   cache_type = "ENCODED"
   fill_with_current_image_mean = True
@@ -29,8 +30,8 @@ class train:
 
 class eval:
   annotation_path = {
-    "train": os.path.join(root_dir, "./data/test/annotations_train.json"),
-    "test": os.path.join(root_dir, "./data/test/annotations_test.json")
+    "train": path.join(root_dir, "data/test/annotations_train.json"),
+    "test": path.join(root_dir, "data/test/annotations_test.json")
   }
   batch_size = 1
   datasets = ["train", "test"]
@@ -60,7 +61,6 @@ class infer:
 
 classes = ObjectDetectorJson.get_classes_from_coco_annotation(train.annotation_path)
 input_shape = [128, 128, 3]
-model_dir = os.path.join(os.path.abspath(__file__), 'model')
 
 
 def optimizer(learning_rate):
@@ -72,7 +72,7 @@ def optimizer(learning_rate):
 detector_params = {
   "data_format": "NHWC",
   "depth_multiplier": 0.35,
-  "initial_weights_path": os.path.join(root_dir, "./data/test/model_ckpt/model.ckpt"),
+  "initial_weights_path": path.join(root_dir, "data/test/model_ckpt/model.ckpt"),
   "learning_rate": 0.001,
   "mobilenet_version": "v2",
   "num_classes": len(classes),

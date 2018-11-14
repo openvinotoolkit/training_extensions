@@ -3,7 +3,7 @@ import bisect
 import cv2
 import numpy as np
 
-from toolbox.bounding_box import *
+from ssd_detector.toolbox.bounding_box import *
 
 
 # #############################################################################

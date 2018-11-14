@@ -1,5 +1,8 @@
 *.pyc
 __pycache__
 .idea/
-
-
+*.iml
+training_toolbox/tests/models
+data/test
+venv
+external/cocoapi

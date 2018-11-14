@@ -12,8 +12,8 @@ from slim.nets.mobilenet_v1 import mobilenet_v1_base
 from slim.nets.mobilenet.mobilenet_v2 import mobilenet_base as mobilenet_v2_base
 from slim.nets.mobilenet import mobilenet, mobilenet_v2
 
-from toolbox.ssd_base import SSDBase
-from toolbox.transformer import ResizeParameter, ExpansionParameter, TransformationParameter, DistortionParameter
+from ssd_detector.toolbox.ssd_base import SSDBase
+from ssd_detector.toolbox.transformer import ResizeParameter, ExpansionParameter, TransformationParameter, DistortionParameter
 
 
 class MobileNetSSD(SSDBase):

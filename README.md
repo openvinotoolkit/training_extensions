@@ -18,41 +18,57 @@ inference.
 
 1. Clone repository in the working directory
 
-    ```
-    cd /<path_to_working_dir>
-    git clone https://github.com/opencv/training_toolbox_tensorflow.git
-    cd training_toolbox_tensorflow
-    git submodule update --init --recursive
-    ```
+  ```
+  cd /<path_to_working_dir>
+  git clone https://github.com/opencv/training_toolbox_tensorflow.git
+  cd training_toolbox_tensorflow
+  git submodule update --init --recursive
+  ```
 
 2. Install prerequisites
 
-    ```
-    sudo apt-get install libturbojpeg
-    sudo apt-get install python3-tk
-    virtualenv ./toolbox_env -p python3
-    source ./toolbox_env/bin/activate
-    pip install -r requirements.txt
-    ```
+  ```
+  sudo apt-get install libturbojpeg python3-tk python3-pip virtualenv 2to3
+  ```
 
-3. Build COCO API
+<a name="create_venv"></a>
+3. Create virtual environment
 
-    ```
-    cd external/cocoapi
-    2to3 . -w
-    cd PythonAPI
-    python setup.py build_ext --inplace
-    ```
+  ```
+  bash tools/init_venv.sh
+  ```
 
-4. Update PYTHONPATH environment variable
+4. Start to work
 
-    ```
-    cd /<path_to_working_dir>/training_toolbox_tensorflow
-    export PYTHONPATH=`pwd`:`pwd`/external/models/research/slim:`pwd`/external/models/research:`pwd`/external/cocoapi/PythonAPI:$PYTHONPATH
-    ```
+  ```
+  cd /<path_to_working_dir>/training_toolbox_tensorflow
+  . venv/bin/activate
+  ```
+
+## Tests
+In virtual environment run the Nose:
+
+```
+cd training_toolbox
+nosetests
+```
+
+or if you are going to use the OpenVino toolkit:
+
+```
+cd training_toolbox
+export OPEN_VINO_DIR=<PATH_TO_OPENVINO>
+nosetests
+```
+    
+Note: if you have install the OpenVino toolkit after creating a virtual environment then you have to [recreate one](#create_venv) to install required packages for the Model Optimizer into one.
+
+Do not forget to update several environment variables are required to compile and run OpenVINO™ toolkit applications,
+for details see: [https://software.intel.com/en-us/articles/OpenVINO-Install-Linux](https://software.intel.com/en-us/articles/OpenVINO-Install-Linux).
+
 
 ## Models
 After installation, you are ready to train your own models, evaluate them, use
 them for predictions.
 
-[SSD Object Detection](models/ssd_detector/README.md)
+[SSD Object Detection](training_toolbox/ssd_detector/README.md)

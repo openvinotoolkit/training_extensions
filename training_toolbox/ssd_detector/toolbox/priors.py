@@ -1,6 +1,6 @@
 import math
 import numpy as np
-from toolbox.layers import get_spatial_dims
+from ssd_detector.toolbox.layers import get_spatial_dims
 
 
 def prior_box_specs(blob, image_size, box_specs, step, clip=False, offset=0.5, variance=None, data_format='NHWC'):

@@ -3,8 +3,8 @@ import os
 import subprocess
 
 import tensorflow as tf
-from general.utils import dump_frozen_graph, load_module
-from networks.mobilenet_ssd import MobileNetSSD
+from utils.helpers import dump_frozen_graph, load_module
+from ssd_detector.networks.mobilenet_ssd import MobileNetSSD
 
 
 def parse_args():
@@ -102,7 +102,7 @@ def export(cfg, tfmo):
     saver.restore(sess, checkpoint_path)
 
     mean_values = [train_param.mean_value for _ in range(3)]
-    convert_to_ie(ssd, sess, os.path.join(cfg.model_dir, './ie_model/'), tfmo, batch_size=1,
+    convert_to_ie(ssd, sess, os.path.join(cfg.model_dir, 'ie_model/'), tfmo, batch_size=1,
                   scale=1./train_param.scale, mean_values=mean_values)
 
 

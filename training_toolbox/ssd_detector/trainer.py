@@ -8,11 +8,11 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.python.ops.control_flow_ops import with_dependencies
 
-from readers.object_detector_json import ObjectDetectorJson
-from networks.mobilenet_ssd import MobileNetSSD
-from toolbox.loss import MultiboxLoss
-from toolbox.transformer import AnnotatedDataTransformer
-from toolbox.summary import create_tensors_and_streaming_ops_for_assigned_priors, \
+from ssd_detector.readers.object_detector_json import ObjectDetectorJson
+from ssd_detector.networks.mobilenet_ssd import MobileNetSSD
+from ssd_detector.toolbox.loss import MultiboxLoss
+from ssd_detector.toolbox.transformer import AnnotatedDataTransformer
+from ssd_detector.toolbox.summary import create_tensors_and_streaming_ops_for_assigned_priors, \
   get_detailed_assigned_priors_summary_tf, write_histogram_2d_tf
 
 
