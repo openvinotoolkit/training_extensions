@@ -10,7 +10,7 @@ fi
 
 virtualenv venv -p python3 --prompt="(tf-toolbox) "
 . venv/bin/activate
-pip install -qr requirements.txt
+pip install ./training_toolbox
 cd external/cocoapi
 2to3 . -w
 cd PythonAPI
