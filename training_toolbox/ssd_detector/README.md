@@ -12,11 +12,11 @@ We provide 2 predefined configuration:
   ![VLP detection](vlp/docs/sample.jpg "Example of VLP detector inference")
 
   - Configuration file: [training_toolbox/ssd_detector/vlp/config.py](vlp/config.py).
-  - Trained model: [MobileNet v2 0.35 256x256](https://download.01.org/openvinotoolkit/training_toolbox_tensorflow/models/ssd_detector/vlp/0123_ssd_mobilenet_v2_0.35_barrier_256x256.zip).
+  - Trained model: [MobileNet v2 0.35 256x256](https://download.01.org/openvinotoolkit/training_toolbox_tensorflow/models/ssd_detector/vlp/0123_ssd_mobilenet_v2_0.35.1_barrier_256x256.zip).
 
 * Object detector trained on the [COCO dataset](../../data/coco/README.md).
   - Configuration file: [training_toolbox/ssd_detector/coco/config.py](coco/config.py).
-  - Trained model: [MobileNet v2 1.0 256x256](https://download.01.org/openvinotoolkit/training_toolbox_tensorflow/models/ssd_detector/coco/0122_ssd_mobilenet_v2_1.0_coco_256x256.zip).
+  - Trained model: [MobileNet v2 1.0 256x256](https://www.myqnapcloud.com/smartshare/6d62i0464l6p7019t3wz2891_62ahvLt).
 
 ### Quck start with vehicles and license plates detector
 
