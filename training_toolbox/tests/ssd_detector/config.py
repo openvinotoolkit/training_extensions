@@ -22,7 +22,7 @@ class train:
     CUDA_VISIBLE_DEVICES = ""  # Do not use GPU
 
     intra_op_parallelism_threads = 1
-    inter_op_parallelism_threads = 4
+    inter_op_parallelism_threads = 1
     transformer_parallel_calls = 1
     transformer_prefetch_size = 1
 
@@ -42,7 +42,7 @@ class eval:
     CUDA_VISIBLE_DEVICES = ""
 
     intra_op_parallelism_threads = 1
-    inter_op_parallelism_threads = 4
+    inter_op_parallelism_threads = 1
     transformer_parallel_calls = 1
     transformer_prefetch_size = 1
 
@@ -55,7 +55,7 @@ class infer:
     CUDA_VISIBLE_DEVICES = ""
 
     intra_op_parallelism_threads = 1
-    inter_op_parallelism_threads = 4
+    inter_op_parallelism_threads = 1
     transformer_parallel_calls = 1
     transformer_prefetch_size = 1
 
