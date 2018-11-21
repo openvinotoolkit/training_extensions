@@ -16,4 +16,4 @@ script:
   - bash tools/init_venv.sh
   - . venv/bin/activate
   - cd training_toolbox
-  - nosetests
+  - nosetests -s
