@@ -1,4 +1,4 @@
-# Quick Start Guide
+# Training Toolbox for TensorFlow
 
 Training Toolbox for TensorFlow provides a convenient environment to train
 Deep Learning models and convert them using [OpenVINO™
@@ -7,12 +7,15 @@ inference.
 
 ## Pre-requisites
 
-- Ubuntu 16.04
+- Ubuntu 16.04 / 18.04
 - Python 3.4-3.6
 - [libturbojpeg](https://github.com/ajkxyz/jpeg4py)
 - For Python pre-requisites refer to `requirements.txt`
+- (Optional) [TensorFlow GPU pre-requisites](https://www.tensorflow.org/install/gpu).
 - (Optional) [OpenVINO™ R3](https://software.intel.com/en-us/openvino-toolkit)
   for exporting of the trained models
+
+# Quick Start Guide
 
 ## Setup Training Toolbox for TensorFlow
 
@@ -31,8 +34,8 @@ inference.
   sudo apt-get install libturbojpeg python3-tk python3-pip virtualenv 2to3
   ```
 
-<a name="create_venv"></a>
 3. Create virtual environment
+<a name="create_venv"></a>
 
   ```
   bash tools/init_venv.sh
@@ -46,7 +49,7 @@ inference.
   ```
 
 ## Tests
-In virtual environment run the Nose:
+In virtual environment run tests:
 
 ```
 cd training_toolbox
@@ -61,10 +64,12 @@ export OPEN_VINO_DIR=<PATH_TO_OPENVINO>
 nosetests
 ```
     
-Note: if you have install the OpenVino toolkit after creating a virtual environment then you have to [recreate one](#create_venv) to install required packages for the Model Optimizer into one.
+Note: if you have install the OpenVino toolkit after creating 
+a virtual environment then you have to [recreate one](#create_venv) 
+to install required packages for the Model Optimizer into one.
 
-Do not forget to update several environment variables are required to compile and run OpenVINO™ toolkit applications,
-for details see: [https://software.intel.com/en-us/articles/OpenVINO-Install-Linux](https://software.intel.com/en-us/articles/OpenVINO-Install-Linux).
+Do not forget to update several environment variables are required to compile and run OpenVINO™ toolkit applications, for details see:
+[https://software.intel.com/en-us/articles/OpenVINO-Install-Linux](https://software.intel.com/en-us/articles/OpenVINO-Install-Linux).
 
 
 ## Models
