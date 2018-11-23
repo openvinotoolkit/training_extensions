@@ -1,0 +1,19 @@
+language: python
+sudo: required
+dist: xenial
+
+python:
+  - 3.6
+
+cache:
+  directories:
+    - $HOME/.cache/pip
+
+install:
+  - sudo apt-get install libturbojpeg python3-tk
+
+script:
+  - bash tools/init_venv.sh
+  - . venv/bin/activate
+  - cd training_toolbox
+  - nosetests
