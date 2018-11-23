@@ -1,13 +1,12 @@
 # SSD Object Detection
 
-
 ## Train SSD detection model
 
 To train a [Single Shot Detector](https://arxiv.org/abs/1512.02325), jump to
 training_toolbox/ssd_detector directory. You'll see the `ssd_detector` folder with sample code
 demonstrating how to train a MobileNetV2-based SSD object detector.
 
-We provide 2 predefined configuration:
+We provide 2 predefined configurations:
 * Vehicles and license plates detector.
   ![VLP detection](vlp/docs/sample.jpg "Example of VLP detector inference")
 
@@ -97,7 +96,8 @@ To train a model, go through the following steps:
     python3 export.py vlp/config.py <path_to_mo.py>
     ```
 
-    If OpenVINO™ was installed in a home directory, then `<path_to_mo.py>` is `~/intel/computer_vision_sdk_2018.3.343/deployment_tools/model_optimizer/mo.py`.
+    If OpenVINO™ was installed in a home directory, then `<path_to_mo.py>` is
+    `~/intel/computer_vision_sdk/deployment_tools/model_optimizer/mo.py`.
 
     As a result, you'll find three new artifacts in
     `training_toolbox/ssd_detector/vlp/model/ie_model`:
@@ -106,8 +106,8 @@ To train a model, go through the following steps:
     model.
 
 8. Model in IR format could be infered using python sample from OpenVINO™ which
-   could be found here: `<path_to_computer_vision_sdk_2018.3.338>/inference_engine/samples/python_samples/object_detection_demo_ssd_async.py`
+   could be found here: `<path_to_computer_vision_sdk>/inference_engine/samples/python_samples/object_detection_demo_ssd_async.py`
 
     ```
-    python3 object_detection_demo_ssd_async.py -m <path_to_converted_model>/graph.xml -l <path_to_computer_vision_sdk_2018.3.338>/deployment_tools/inference_engine/lib/ubuntu_16.04/intel64/libcpu_extension_avx2.so -i <path_to_input_video>
+    python3 object_detection_demo_ssd_async.py -m <path_to_converted_model>/graph.xml -l <path_to_computer_vision_sdk>/deployment_tools/inference_engine/lib/ubuntu_16.04/intel64/libcpu_extension_avx2.so -i <path_to_input_video>
     ```
