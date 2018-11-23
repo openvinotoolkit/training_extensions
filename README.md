@@ -64,8 +64,8 @@ export OPEN_VINO_DIR=<PATH_TO_OPENVINO>
 nosetests
 ```
     
-Note: if you have install the OpenVino toolkit after creating 
-a virtual environment then you have to [recreate one](#create_venv) 
+Note: if you have installed the OpenVino toolkit after creating
+a virtual environment then you have to [recreate one](#create_venv)
 to install required packages for the Model Optimizer into one.
 
 Do not forget to update several environment variables are required to compile and run OpenVINO™ toolkit applications, for details see:
