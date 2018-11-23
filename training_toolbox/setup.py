@@ -10,6 +10,6 @@ if os.environ.get('TRAVIS', None) == 'true':
 
 setup(
     name='Training toolbox',
-    version='0.1.1',
+    version='0.1.2.dev0',
     install_requires=required
 )
