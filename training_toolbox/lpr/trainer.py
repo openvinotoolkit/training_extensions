@@ -185,6 +185,15 @@ def decode_beams(vals, r_vocab):
     r.append(beams)
   return r
 
+def decode_ie_output(vals, r_vocab):
+  vals = vals.flatten()
+  s = ''
+  for v in vals:
+    if v < 0:
+      break
+    s += r_vocab[v]
+  return s
+
 
 class LPRVocab(object):
   @staticmethod
