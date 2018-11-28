@@ -26,6 +26,17 @@ def build_argparser():
   parser.add_argument('input_image', help='Image with license plate')
   return parser
 
+def display_license_plate(number, license_plate_img):
+  size = cv2.getTextSize(number, cv2.FONT_HERSHEY_SIMPLEX, 0.55, 2)
+  text_width = size[0][0]
+  text_height = size[0][1]
+
+  h_, w_, _ = license_plate_img.shape
+  license_plate_img = cv2.copyMakeBorder(license_plate_img, 0, text_height + 10, 0, 0 if text_width < w_ else text_width - w_,
+                                      cv2.BORDER_CONSTANT, value=(255, 255, 255))
+  cv2.putText(license_plate_img, number, (0, h_ + text_height + 5), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (0, 0, 0), 2)
+
+  return license_plate_img
 
 def main():
   log.basicConfig(format="[ %(levelname)s ] %(message)s", level=log.INFO, stream=sys.stdout)
@@ -65,26 +76,21 @@ def main():
   cur_request_id = 0
   while 1:
     frame = cv2.imread(args.input_image)
+    img_to_display = frame.copy()
+
+    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     in_frame = cv2.resize(frame, (w, h))
     in_frame = in_frame.transpose((2, 0, 1))  # Change data layout from HWC to CHW
+    in_frame = in_frame.reshape((n, c, h, w))
 
     exec_net.start_async(request_id=cur_request_id, inputs={input_blob: in_frame})
     if exec_net.requests[cur_request_id].wait(-1) == 0:
 
       # Parse detection results of the current request
-      res = exec_net.requests[cur_request_id].outputs[out_blob]
-      pred = decode_ie_output(res, r_vocab)
-      img = cv2.imread(args.input_image)
-      size = cv2.getTextSize(pred, cv2.FONT_HERSHEY_SIMPLEX, 0.55, 2)
-      text_width = size[0][0]
-      text_height = size[0][1]
-
-      h, w, _ = img.shape
-      img = cv2.copyMakeBorder(img, 0, text_height + 10, 0, 0 if text_width < w else text_width - w,
-                               cv2.BORDER_CONSTANT, value=(255, 255, 255))
-      cv2.putText(img, pred, (0, h + text_height + 5), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (0, 0, 0), 2)
-
-      cv2.imshow('License Plate', img)
+      lp = exec_net.requests[cur_request_id].outputs[out_blob]
+      lp_number = decode_ie_output(lp, r_vocab)
+      img_to_display = display_license_plate(lp_number, img_to_display)
+      cv2.imshow('License Plate', img_to_display)
       key = cv2.waitKey(0)
       if key == 27:
         break
