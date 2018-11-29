@@ -1,15 +1,15 @@
+import argparse
+import os
 import random
+import cv2
 import numpy as np
 import tensorflow as tf
 import tensorflow.contrib.slim as slim
-import argparse
-from trainer import inference, LPRVocab, encode, decode_beams
-from utils.helpers import load_module
 from lpr.toolbox.utils import dataset_size
+from lpr.trainer import inference, LPRVocab, decode_beams
+from utils.helpers import load_module
 
 
-import os
-import cv2
 
 def parse_args():
   parser = argparse.ArgumentParser(description='Infer of a trained model')
@@ -17,9 +17,9 @@ def parse_args():
   return parser.parse_args()
 
 
-def read_data(height, width, channels_num, list_file_name, batch_size = 1):
+def read_data(height, width, channels_num, list_file_name, batch_size=1):
   reader = tf.TextLineReader()
-  key, value = reader.read(list_file_name)
+  _, value = reader.read(list_file_name)
   filename = value
   image_filename = tf.read_file(filename)
   rgb_image = tf.image.decode_png(image_filename, channels=channels_num)
@@ -51,8 +51,7 @@ def infer(config):
   max_lp_length = config.eval.max_lp_length
   rnn_cells_num = config.eval.rnn_cells_num
 
-
-  vocab, r_vocab, num_classes = LPRVocab.create_vocab(config.train.train_list_file_path, config.train.val_list_file_path)
+  _, r_vocab, num_classes = LPRVocab.create_vocab(config.train.train_list_file_path, config.train.val_list_file_path)
 
   graph = tf.Graph()
 
@@ -87,7 +86,6 @@ def infer(config):
 
   sess.run(init)
 
-
   latest_checkpoint = config.infer.checkpoint
   if config.infer.checkpoint == '':
     latest_checkpoint = tf.train.latest_checkpoint(config.model_dir)
@@ -96,10 +94,10 @@ def infer(config):
 
   steps = dataset_size(config.infer.file_list_path)
 
-  for i in range(steps):
+  for _ in range(steps):
 
     val, filename = sess.run([d_predictions, filenames])
-    filename =  filename[0].decode('utf-8')
+    filename = filename[0].decode('utf-8')
     pred = decode_beams(val, r_vocab)[0]
 
     img = cv2.imread(filename)
@@ -107,9 +105,11 @@ def infer(config):
     text_width = size[0][0]
     text_height = size[0][1]
 
-    h, w, _ = img.shape
-    img = cv2.copyMakeBorder(img, 0, text_height + 10, 0, 0 if text_width < w else text_width - w, cv2.BORDER_CONSTANT, value=(255, 255, 255))
-    cv2.putText(img, pred[0], (0, h + text_height + 5), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (0,0,0), 2)
+    img_he, img_wi, _ = img.shape
+    img = cv2.copyMakeBorder(img, 0, text_height + 10, 0,
+                             0 if text_width < img_wi else text_width - img_wi, cv2.BORDER_CONSTANT,
+                             value=(255, 255, 255))
+    cv2.putText(img, pred[0], (0, img_he + text_height + 5), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (0, 0, 0), 2)
 
     cv2.imshow('License Plate', img)
     key = cv2.waitKey(0)
@@ -120,10 +120,12 @@ def infer(config):
   coord.join(threads)
   sess.close()
 
+
 def main(_):
   args = parse_args()
   cfg = load_module(args.path_to_config)
   infer(cfg)
+
 
 if __name__ == '__main__':
   tf.logging.set_verbosity(tf.logging.INFO)

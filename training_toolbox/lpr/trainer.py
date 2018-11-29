@@ -1,10 +1,10 @@
 import re
-import numpy as np
 import cv2
+import numpy as np
 import tensorflow as tf
 import tensorflow.contrib.slim as slim
-from networks.lprnet import LPRNet
-from toolbox.spatial_transformer_layer import transformer
+from lpr.networks.lprnet import LPRNet
+from spatial_transformer import transformer
 
 
 class InputData(object):
@@ -36,9 +36,10 @@ class InputData(object):
 
     return data, label
 
+
 def read_data(batch_size, input_shape, file_src):
   reader = tf.TextLineReader()
-  key, value = reader.read(file_src)
+  _, value = reader.read(file_src)
   filename, label = tf.decode_csv(value, [[''], ['']], ' ')
   image_file = tf.read_file(filename)
 
@@ -62,6 +63,7 @@ def augment(images):
   augmented = tf.add(augmented, tf.truncated_normal(tf.shape(augmented), stddev=0.02))
   return augmented
 
+
 # Function for STN image augmentation - geometric transformations with STN
 def augment_with_stn(images):
   identity = identity_transform(images)
@@ -70,11 +72,13 @@ def augment_with_stn(images):
   # noise = tf.scalar_mul(curriculum_rate, noise)
   return apply_stn(images, tf.add(identity, noise))
 
+
 # Function for identity transformation
 def identity_transform(images):
   shape = images.get_shape()
   ident = tf.constant(np.array([[[1., 0, 0], [0, 1., 0]]]).astype('float32'))
   return tf.tile(ident, [shape[0].value, 1, 1])
+
 
 # Function wrapper for STN application
 def apply_stn(images, transform_params):
@@ -86,41 +90,43 @@ def apply_stn(images, transform_params):
 
 
 def random_blur(images):
-    result = []
-    for k in range(images.shape[0]):
-        a = np.random.normal(scale=1.)
-        kernel = np.array([[0., a, 0.], [a, 1. - 4. * a, a], [0., a, 0.]])
-        result.append(cv2.filter2D(images[k], -1, kernel).astype(np.float32))
-    return np.array(result)
+  result = []
+  for k in range(images.shape[0]):
+    a = np.random.normal(scale=1.)
+    kernel = np.array([[0., a, 0.], [a, 1. - 4. * a, a], [0., a, 0.]])
+    result.append(cv2.filter2D(images[k], -1, kernel).astype(np.float32))
+  return np.array(result)
 
 
 # Function for construction whole network
 def inference(rnn_cells_num, input, num_classes):
-    cnn = LPRNet.lprnet(input)
+  cnn = LPRNet.lprnet(input)
 
-    with slim.arg_scope([slim.conv2d, slim.fully_connected],
-                        normalizer_fn=slim.batch_norm,
-                        weights_initializer=tf.truncated_normal_initializer(stddev=0.01),
-                        weights_regularizer=slim.l2_regularizer(0.0005)):
-        classes = slim.conv2d(cnn, num_classes, [1, 13])
-        pattern = slim.fully_connected(slim.flatten(classes), rnn_cells_num)  # patterns number
-        w = int(cnn.get_shape()[2])
-        pattern = tf.reshape(pattern, (-1, 1, 1, rnn_cells_num))
-        pattern = tf.tile(pattern, [1, 1, w, 1])
-        # pattern = slim.fully_connected(pattern, num_classes * w, normalizer_fn=None, activation_fn=tf.nn.sigmoid)
-        # pattern = tf.reshape(pattern, (-1, 1, w, num_classes))
+  with slim.arg_scope([slim.conv2d, slim.fully_connected],
+                      normalizer_fn=slim.batch_norm,
+                      weights_initializer=tf.truncated_normal_initializer(stddev=0.01),
+                      weights_regularizer=slim.l2_regularizer(0.0005)):
+    classes = slim.conv2d(cnn, num_classes, [1, 13])
+    pattern = slim.fully_connected(slim.flatten(classes), rnn_cells_num)  # patterns number
+    w = int(cnn.get_shape()[2])
+    pattern = tf.reshape(pattern, (-1, 1, 1, rnn_cells_num))
+    pattern = tf.tile(pattern, [1, 1, w, 1])
+    # pattern = slim.fully_connected(pattern, num_classes * w, normalizer_fn=None, activation_fn=tf.nn.sigmoid)
+    # pattern = tf.reshape(pattern, (-1, 1, w, num_classes))
 
-    inf = tf.concat(axis=3, values=[classes, pattern])  # skip connection over RNN
-    inf = slim.conv2d(inf, num_classes, [1, 1], normalizer_fn=None, activation_fn=None)  # fully convolutional linear activation
+  inf = tf.concat(axis=3, values=[classes, pattern])  # skip connection over RNN
+  inf = slim.conv2d(inf, num_classes, [1, 1], normalizer_fn=None,
+                    activation_fn=None)  # fully convolutional linear activation
 
-    inf = tf.squeeze(inf, [1])
+  inf = tf.squeeze(inf, [1])
 
-    return inf
+  return inf
 
 
 class CTCUtils():
   vocab = {}
   r_vocab = {}
+
   # Generate CTC from labels
   @staticmethod
   def compute_ctc_from_labels(labels):
@@ -143,7 +149,6 @@ class CTCUtils():
 
     encoded_gt_labels = list()
     for gt_label in gt_labels:
-
       encoded_label = encode(gt_label.decode('utf-8'), CTCUtils.vocab)
       encoded_gt_labels.append(encoded_label)
 
@@ -185,6 +190,7 @@ def decode_beams(vals, r_vocab):
     r.append(beams)
   return r
 
+
 def decode_ie_output(vals, r_vocab):
   vals = vals.flatten()
   s = ''
@@ -206,24 +212,21 @@ class LPRVocab(object):
 
     return vocab, r_vocab, num_classes
 
-
   @staticmethod
   def _char_range(c1, c2):
     """Generates the characters from `c1` to `c2`, inclusive."""
-    for c in range(ord(c1), ord(c2)+1):
-        yield chr(c)
-
+    for c in range(ord(c1), ord(c2) + 1):
+      yield chr(c)
 
   # Function for reading special symbols
   @staticmethod
   def _read_specials(filepath):
     characters = set()
     with open(filepath, 'r') as f:
-        for line in f:
-            current_label = line.split(' ')[-1].strip()
-            characters = characters.union(re.findall('(<[^>]*>|.)', current_label))
+      for line in f:
+        current_label = line.split(' ')[-1].strip()
+        characters = characters.union(re.findall('(<[^>]*>|.)', current_label))
     return characters
-
 
   @staticmethod
   def _create_standard_vocabs(train_list_path, val_list_path):
@@ -237,7 +240,6 @@ class LPRVocab(object):
     r_vocab = dict(zip(range(num_classes), chars))
     r_vocab[-1] = ''
     return [vocab, r_vocab, num_classes]
-
 
   # Function for treating all hieroglyphs as 1 class
   @staticmethod

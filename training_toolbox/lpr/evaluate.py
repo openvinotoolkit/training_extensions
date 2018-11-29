@@ -119,7 +119,7 @@ def validate(config):
       num = 0
       for i in range(steps):
         val, slabel, fname = sess.run([d_predictions, label_val, file_names])
-        a, a1, n = accuracy(slabel, val, fname, vocab, r_vocab)
+        a, a1, n = accuracy(slabel, val, vocab, r_vocab)
         mean_accuracy += a
         mean_accuracy_minus_1 += a1
         num += n

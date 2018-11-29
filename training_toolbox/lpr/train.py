@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 import random
 import os
 import time
@@ -7,9 +6,10 @@ import numpy as np
 
 import tensorflow as tf
 import tensorflow.contrib.slim as slim
-from trainer import CTCUtils, inference, InputData, decode, LPRVocab
-from utils.helpers import load_module
 from lpr.toolbox.utils import dataset_size
+from lpr.trainer import CTCUtils, inference, InputData, decode, LPRVocab
+from utils.helpers import load_module
+
 
 def parse_args():
   parser = argparse.ArgumentParser(description='Perform training of a model')
@@ -28,9 +28,9 @@ def train(config):
     os.environ["CUDA_VISIBLE_DEVICES"] = config.train.execution.CUDA_VISIBLE_DEVICES
 
   vocab, r_vocab, num_classes = LPRVocab.create_vocab(config.train.train_list_file_path,
-                                                     config.train.val_list_file_path,
-                                                     config.use_h_concat,
-                                                     config.use_oi_concat)
+                                                      config.train.val_list_file_path,
+                                                      config.use_h_concat,
+                                                      config.use_oi_concat)
 
   CTCUtils.vocab = vocab
   CTCUtils.r_vocab = r_vocab
@@ -51,7 +51,6 @@ def train(config):
 
   graph = tf.Graph()
   with graph.as_default():
-    global global_step
     global_step = tf.Variable(0, name='global_step', trainable=False)
 
     train_inp, train_labels = input_train_data.input_fn()
@@ -101,7 +100,6 @@ def train(config):
 
   session.run('init')
 
- 
   work_path = config.model_dir
   if os.path.exists(os.path.join(work_path, 'snapshot{:06d}.ckpt'.format(config.train.start_iter))):
     tf.logging.info('Restore from: ' + work_path)
@@ -116,9 +114,7 @@ def train(config):
   val_size = dataset_size(config.train.val_list_file_path)
   val_steps = config.train.val_steps
   if config.train.val_steps < 1:
-       val_steps = int(val_size / config.train.val_batch_size)  # HACK: batch norm pseudo-test
-
-
+    val_steps = int(val_size / config.train.val_batch_size)  # HACK: batch norm pseudo-test
 
   for i in range(config.train.steps):
     curr_step, train_loss, _ = session.run([global_step, loss, train_step], feed_dict={train_mode: True})
@@ -149,14 +145,13 @@ def train(config):
       if config.train.need_to_save_log:
         writer.add_summary(
           tf.Summary(value=[tf.Summary.Value(tag='validation/err', simple_value=float(mean_error)),
-                            tf.Summary.Value(tag='validation/acc', simple_value=float(mean_accuracy))
-                            ]), current_step)
+                            tf.Summary.Value(tag='validation/acc', simple_value=float(mean_accuracy))]), current_step)
         writer.flush()
 
       tf.logging.info('Iteration: ' + str(current_step) + ', GT: ' + val_true_labels[0].decode("utf-8") + ' -- ' +
                       decode(val_predicted_values, r_vocab)[0] + ', Error: ' +
-               str(mean_error) + ', Accuracy: ' + str(mean_accuracy) + ', Time per step: ' +
-               str((time.time() - t) / val_steps) + ' secs.')
+                      str(mean_error) + ', Accuracy: ' + str(mean_accuracy) + ', Time per step: ' +
+                      str((time.time() - t) / val_steps) + ' secs.')
 
     if ((curr_step % config.train.snap_iter == 0 or curr_step == config.train.steps)
         and config.train.need_to_save_weights):
@@ -176,4 +171,3 @@ def main(_):
 if __name__ == '__main__':
   tf.logging.set_verbosity(tf.logging.INFO)
   tf.app.run(main)
-

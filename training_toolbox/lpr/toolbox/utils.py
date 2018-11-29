@@ -43,7 +43,7 @@ def edit_distance(s1, s2):
   return tbl[i, j]
 
 
-def accuracy(label, val, fname, vocab, r_vocab):
+def accuracy(label, val, vocab, r_vocab):
   pred = decode_beams(val, r_vocab)
   bs = len(label)
   acc, acc1 = 0, 0

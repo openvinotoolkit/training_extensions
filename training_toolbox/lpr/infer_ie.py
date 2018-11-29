@@ -1,13 +1,11 @@
-#!/usr/bin/env python
-
 from __future__ import print_function
+import logging as log
 import sys
 import os
 from argparse import ArgumentParser
 import cv2
-import logging as log
 from openvino.inference_engine import IENetwork, IEPlugin
-from trainer import inference, LPRVocab, encode, decode_ie_output
+from lpr.trainer import LPRVocab, decode_ie_output
 from utils.helpers import load_module
 
 
@@ -15,8 +13,8 @@ def build_argparser():
   parser = ArgumentParser()
   parser.add_argument("-m", "--model", help="Path to an .xml file with a trained model.", required=True, type=str)
   parser.add_argument("-l", "--cpu_extension",
-                      help="MKLDNN (CPU)-targeted custom layers. Absolute path to a shared library with the kernels implementation",
-                      type=str, default=None)
+                      help="MKLDNN (CPU)-targeted custom layers. "
+                           "Absolute path to a shared library with the kernels implementation", type=str, default=None)
   parser.add_argument("-pp", "--plugin_dir", help="Path to a plugin folder", type=str, default=None)
   parser.add_argument("-d", "--device",
                       help="Specify the target device to infer on; CPU, GPU, FPGA or MYRIAD is acceptable. Sample "
@@ -26,23 +24,26 @@ def build_argparser():
   parser.add_argument('input_image', help='Image with license plate')
   return parser
 
+
 def display_license_plate(number, license_plate_img):
   size = cv2.getTextSize(number, cv2.FONT_HERSHEY_SIMPLEX, 0.55, 2)
   text_width = size[0][0]
   text_height = size[0][1]
 
   h_, w_, _ = license_plate_img.shape
-  license_plate_img = cv2.copyMakeBorder(license_plate_img, 0, text_height + 10, 0, 0 if text_width < w_ else text_width - w_,
-                                      cv2.BORDER_CONSTANT, value=(255, 255, 255))
+  license_plate_img = cv2.copyMakeBorder(license_plate_img, 0, text_height + 10, 0,
+                                         0 if text_width < w_ else text_width - w_,
+                                         cv2.BORDER_CONSTANT, value=(255, 255, 255))
   cv2.putText(license_plate_img, number, (0, h_ + text_height + 5), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (0, 0, 0), 2)
 
   return license_plate_img
+
 
 def main():
   log.basicConfig(format="[ %(levelname)s ] %(message)s", level=log.INFO, stream=sys.stdout)
   args = build_argparser().parse_args()
   cfg = load_module(args.path_to_config)
-  vocab, r_vocab, num_classes = LPRVocab.create_vocab(cfg.train.train_list_file_path, cfg.eval.file_list_path)
+  _, r_vocab, _ = LPRVocab.create_vocab(cfg.train.train_list_file_path, cfg.eval.file_list_path)
   model_xml = args.model
   model_bin = os.path.splitext(model_xml)[0] + ".bin"
   log.info("Initializing plugin for {} device...".format(args.device))
