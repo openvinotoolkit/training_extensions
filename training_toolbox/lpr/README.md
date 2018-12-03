@@ -16,19 +16,19 @@ As training dataset for this model [Synthetic Chinese License Plates](https://do
   
 To train a model, go through the following steps:
 
-1. Download training data and extract it in some `<dataset_folder>`. It will consist from
-    folder with training images named `crops` and text file with annotations named 
-    `annotation`. 
+1. Download training data and extract it in `data/synthetic_chinese_license_plates` folder. After extracting it will 
+    consist from folder with training images named `crops` and text file with annotations named `annotation`. 
     
     After extracting training data archive run python script from 
     `data/synthetic_chinese_license_plates/make_train_val_split.py` to make split of 
-    the whole annotations into `train` and `val` feeding him path to `<dataset_folder>/annotation` 
-    file from archive as an input. As a result you'll find `<dataset_folder>/train`, `<dataset_folder>/val`
-    annotation files with full path to images and labels in the folder with extracted data.
+    the whole annotations into `train` and `val` feeding him path to `data/synthetic_chinese_license_plates/annotation` 
+    file from archive as an input. As a result you'll find `data/synthetic_chinese_license_plates/train`, 
+    `data/synthetic_chinese_license_plates/val` annotation files with full path to images and labels in the folder 
+    with extracted data.
 
     Then edit `training_toolbox/lpr/chinese_lp/config.py` by pointing out 
     `train.train_list_file_path` and `train.val_list_file_path` 
-    parameters in train section to paths to obtained `train` and `val` 
+    parameters in train section to paths of obtained `train` and `val` 
     annotation files accordingly.
 
 2. To start training go to `training_toolbox/lpr` directory and type in command line:
