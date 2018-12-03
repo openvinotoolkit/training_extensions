@@ -95,6 +95,9 @@ def export(cfg, tfmo):
 
     ssd = MobileNetSSD(input_tensor=input_tensor, is_training=False, **detector_params)
     ssd.detection_output()
+    # For eval.py
+    tf.get_variable('eval_iteration', initializer=0, dtype=tf.int32, trainable=False)
+    tf.get_variable('global_step', initializer=tf.constant_initializer(0, dtype=tf.int64), shape=(), dtype=tf.int64, trainable=False)
 
     train_param, _ = ssd.create_transform_parameters(width=cfg.input_shape[0], height=cfg.input_shape[1])
 
