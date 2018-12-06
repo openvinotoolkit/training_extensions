@@ -1,3 +1,4 @@
+from __future__ import print_function
 import math
 import os
 import pickle
@@ -8,8 +9,8 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.python.ops.control_flow_ops import with_dependencies
 
-from ssd_detector.readers.object_detector_json import ObjectDetectorJson
 from ssd_detector.networks.mobilenet_ssd import MobileNetSSD
+from ssd_detector.readers.object_detector_json import ObjectDetectorJson
 from ssd_detector.toolbox.loss import MultiboxLoss
 from ssd_detector.toolbox.transformer import AnnotatedDataTransformer
 from ssd_detector.toolbox.summary import create_tensors_and_streaming_ops_for_assigned_priors, \
@@ -33,7 +34,7 @@ def create_session(config, type):
     os.environ["CUDA_VISIBLE_DEVICES"] = config_type.CUDA_VISIBLE_DEVICES
 
   intra_op_parallelism_threads = config_type.intra_op_parallelism_threads if \
-    hasattr(config_type,'intra_op_parallelism_threads') else 0
+    hasattr(config_type, 'intra_op_parallelism_threads') else 0
   inter_op_parallelism_threads = config_type.inter_op_parallelism_threads if \
     hasattr(config_type, 'inter_op_parallelism_threads') else 0
   session_config = tf.ConfigProto(allow_soft_placement=True,
@@ -47,7 +48,9 @@ def create_session(config, type):
   return session_config
 
 
-class InputValData(object):
+# pylint: disable=too-many-instance-attributes
+class InputValData:
+  # pylint: disable=too-many-arguments
   def __init__(self, batch_size, input_shape, json_path, classes, num_parallel_calls=2, prefetch_size=2):
     self.batch_size = batch_size
     self.input_shape = input_shape
@@ -94,7 +97,8 @@ class InputValData(object):
     return [transform_fn(data[i]) for i in selected_items]
 
 
-class InputTrainData(object):
+class InputTrainData:
+  # pylint: disable=dangerous-default-value,too-many-arguments
   def __init__(self, batch_size, input_shape, json_path, cache_type='NONE', classes=['bg'],
                fill_with_current_image_mean=True, num_parallel_calls=4, prefetch_size=16):
     self.batch_size = batch_size
@@ -108,7 +112,7 @@ class InputTrainData(object):
     ObjectDetectorJson.init_cache(self.json_path, cache_type, classes=classes)
 
     self.train_dataset, self.dataset_size = ObjectDetectorJson.create_dataset(self.json_path, classes)
-    self.train_transform_param, _ = MobileNetSSD.create_transform_parameters(*input_shape[:2],
+    self.train_transform_param, _ = MobileNetSSD.create_transform_parameters(input_shape[0], input_shape[1],
                                                                              fill_with_current_image_mean)
     self.train_transformer = AnnotatedDataTransformer(self.train_transform_param, is_training=True)
 
@@ -120,12 +124,11 @@ class InputTrainData(object):
       images = []
       annotations = []
       for val in value:
-        im, an = transform_fn(val)
-        images.append(im)
-        annotations.append(an)
+        img, annot = transform_fn(val)
+        images.append(img)
+        annotations.append(annot)
       return images, annotations
 
-    map_fn = lambda value: tf.py_func(transform_fn, [value], (tf.float32, tf.string))
     map_fn_batch = lambda value: tf.py_func(transform_batch_fn, [value], (tf.float32, tf.string))
 
     dataset = self.train_dataset.apply(tf.contrib.data.shuffle_and_repeat(buffer_size=self.dataset_size))
@@ -139,6 +142,7 @@ class InputTrainData(object):
 
 
 class InputInferData:
+  # pylint: disable=too-many-arguments
   def __init__(self, path_to_video, input_shape, batch_size, num_parallel_calls=4, prefetch_size=32):
     self.path_to_video = path_to_video
     self.input_shape = input_shape
@@ -180,6 +184,7 @@ class InputInferData:
     return image
 
 
+# pylint: disable=too-many-locals,too-many-statements
 def detection_model(features, labels, mode, params):
   num_classes = params['num_classes']
   initial_weights_path = params.get('initial_weights_path', '')
@@ -197,12 +202,13 @@ def detection_model(features, labels, mode, params):
   optimizer_func = params.get('optimizer', lambda learning_rate: tf.train.AdagradOptimizer(learning_rate=learning_rate))
 
   # Override default FileWriter. Don't store the graph definition.
+  # pylint: disable=protected-access
   tf.summary.FileWriterCache._cache[log_dir] = tf.summary.FileWriter(log_dir, graph=None)
 
   if callable(learning_rate):
     learning_rate = learning_rate()
 
-  is_training = True if mode == tf.estimator.ModeKeys.TRAIN else False
+  is_training = mode == tf.estimator.ModeKeys.TRAIN
 
   ssd = MobileNetSSD(input_tensor=features, num_classes=num_classes, depth_multiplier=depth_multiplier,
                      is_training=is_training, data_format=data_format, priors_rule=priors_rule,
@@ -266,7 +272,7 @@ def detection_model(features, labels, mode, params):
 
   if collect_priors_summary:
     with tf.name_scope('summary/'):
-      loss = with_dependencies([op for key, (tensor, op) in assigned_priors.items()], loss)
+      loss = with_dependencies([operation for key, (_, operation) in assigned_priors.items()], loss)
 
     for name, assigned_priors_tensor in detailed_assigned_priors.items():
       tf.summary.scalar(name, tf.reduce_sum(assigned_priors_tensor))
@@ -276,8 +282,9 @@ def detection_model(features, labels, mode, params):
 
     with tf.name_scope('write_histogram'):
       every_epoch = tf.equal(tf.mod(tf.train.get_global_step() + 1, steps_per_epoch), 0)
-      for name, (group, op) in assigned_priors.items():
+      for name, (group, _) in assigned_priors.items():
         def write_hist2d():
+          # pylint: disable=cell-var-from-loop
           return tf.py_func(write_histogram_2d_tf,
                             [group, pickle.dumps(ssd.priors_info), name, tf.train.get_global_step(), priors_dir],
                             tf.bool)

@@ -26,7 +26,8 @@ def train(config):
                               json_path=config.train.annotation_path,
                               fill_with_current_image_mean=config.train.fill_with_current_image_mean,
                               cache_type=config.train.cache_type,
-                              classes=config.classes, num_parallel_calls=config.train.execution.transformer_parallel_calls,
+                              classes=config.classes,
+                              num_parallel_calls=config.train.execution.transformer_parallel_calls,
                               prefetch_size=config.train.execution.transformer_prefetch_size)
 
   steps_per_epoch = config.train.save_checkpoints_steps if config.train.save_checkpoints_steps \
@@ -39,12 +40,12 @@ def train(config):
                                       tf_random_seed=config.train.random_seed)
 
   config.detector_params['steps_per_epoch'] = steps_per_epoch
-  config.detector_params['log_dir'] = config.model_dir
+  config.detector_params['log_dir'] = config.MODEL_DIR
 
   predictor = tf.estimator.Estimator(
     model_fn=detection_model,
     params=config.detector_params,
-    model_dir=config.model_dir,
+    model_dir=config.MODEL_DIR,
     config=run_config
   )
 

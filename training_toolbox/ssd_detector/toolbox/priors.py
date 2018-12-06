@@ -3,6 +3,7 @@ import numpy as np
 from ssd_detector.toolbox.layers import get_spatial_dims
 
 
+# pylint: disable=too-many-arguments,too-many-locals
 def prior_box_specs(blob, image_size, box_specs, step, clip=False, offset=0.5, variance=None, data_format='NHWC'):
   """
   Generates numpy array of priors in caffe format
@@ -64,6 +65,7 @@ def prior_box_specs(blob, image_size, box_specs, step, clip=False, offset=0.5, v
   return priors_array, num_priors_per_pixel
 
 
+# pylint: disable=too-many-arguments,too-many-locals
 def prior_box(blob, image_size, min_sizes, aspect_ratios, step, max_sizes=None, flip=True, clip=False, offset=0.5,
               variance=None, data_format='NHWC'):
   """
@@ -113,6 +115,7 @@ def prior_box(blob, image_size, min_sizes, aspect_ratios, step, max_sizes=None, 
   return prior_box_specs(blob, image_size, box_specs, step, clip, offset, variance, data_format)
 
 
+# pylint: disable=too-many-arguments,too-many-locals
 def prior_box_clusterd(blob, image_size, clustered_sizes, step, clip=False, offset=0.5, variance=None,
                        data_format='NHWC'):
   """

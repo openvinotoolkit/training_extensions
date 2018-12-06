@@ -1,3 +1,4 @@
+from __future__ import print_function
 import argparse
 import math
 import multiprocessing as mp
@@ -11,12 +12,10 @@ import cv2
 import numpy as np
 import tensorflow as tf
 
-from ssd_detector.toolbox.coco_metrics_eval import calc_coco_metrics
-from utils.helpers import draw_bboxes, load_module
 from ssd_detector.trainer import create_session, detection_model, InputValData
+from ssd_detector.toolbox.coco_metrics_eval import calc_coco_metrics
 from ssd_detector.toolbox.summary import group_ssd_heads, write_histogram_2d
-
-from pycocotools.coco import COCO
+from utils.helpers import draw_bboxes, load_module
 
 
 def parse_args():
@@ -27,15 +26,18 @@ def parse_args():
 
 @cached(Cache(100))
 def load_coco(path):
+  from pycocotools.coco import COCO
   return COCO(path)
 
 
+# pylint: disable=too-many-locals,too-many-arguments
 def eval_dataset(annotations, config, eval_name, checkpoint_path, session_config, sample_images=None,
                  dump_priors_info=True):
-  log_dir = os.path.join(config.model_dir, 'eval_' + eval_name)
+  log_dir = os.path.join(config.MODEL_DIR, 'eval_' + eval_name)
   run_config = tf.estimator.RunConfig(session_config=session_config)
 
   # Override default FileWriter. Don't store the graph definition.
+  # pylint: disable=protected-access
   tf.summary.FileWriterCache._cache[log_dir] = tf.summary.FileWriter(log_dir, graph=None)
 
   input_data = InputValData(config.eval.batch_size, config.input_shape, config.eval.annotation_path[eval_name],
@@ -52,7 +54,7 @@ def eval_dataset(annotations, config, eval_name, checkpoint_path, session_config
   predictor = tf.estimator.Estimator(
     model_fn=detection_model,
     params=detector_params,
-    model_dir=config.model_dir,
+    model_dir=config.MODEL_DIR,
     config=run_config
   )
 
@@ -63,7 +65,7 @@ def eval_dataset(annotations, config, eval_name, checkpoint_path, session_config
   if checkpoint_path is not None:
     step = tf.train.load_variable(checkpoint_path, 'global_step')
   else:
-    step = tf.train.load_variable(config.model_dir, 'global_step')
+    step = tf.train.load_variable(config.MODEL_DIR, 'global_step')
 
   if dump_priors_info:
     summaries = []
@@ -138,7 +140,8 @@ def eval_once(config, checkpoint, save_sample_prediction, dump_priors_info=True)
     annotation = load_coco(config.eval.annotation_path[dataset_name])
 
     proc = mp.Process(target=eval_dataset,
-                      args=(annotation, config, dataset_name, checkpoint, session_config, sample_images, dump_priors_info))
+                      args=(annotation, config, dataset_name, checkpoint, session_config, sample_images,
+                            dump_priors_info))
     proc.start()
     proc.join()
 
@@ -154,7 +157,7 @@ def eval_loop(config):
   save_images_step = 0
   dump_priors_info = True
   while True:
-    new_checkpoint = tf.train.latest_checkpoint(config.model_dir)
+    new_checkpoint = tf.train.latest_checkpoint(config.MODEL_DIR)
     if latest_checkpoint != new_checkpoint:
       latest_checkpoint = new_checkpoint
 

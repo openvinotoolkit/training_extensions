@@ -11,9 +11,16 @@ cache:
 
 install:
   - sudo apt-get install libturbojpeg python3-tk
-
-script:
   - bash tools/init_venv.sh
-  - . venv/bin/activate
-  - cd training_toolbox
-  - nosetests
+
+jobs:
+  include:
+    - stage: Code linting
+      script:
+        - . venv/bin/activate
+        - find ./training_toolbox -type f -name "*.py" ! -name "config*.py" -exec pylint --rcfile devtools/pylint.rc {} +
+    - stage: Integration tests
+      script:
+        - . venv/bin/activate
+        - cd training_toolbox
+        - nosetests

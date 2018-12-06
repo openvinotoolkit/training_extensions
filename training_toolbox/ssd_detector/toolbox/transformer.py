@@ -1,20 +1,25 @@
+from __future__ import print_function
 import bisect
+import math
+import random
 
 import cv2
 import numpy as np
 
-from ssd_detector.toolbox.bounding_box import *
+from ssd_detector.toolbox.bounding_box import BoundingBox, box_coverage, extrapolate_box, generate_batch_samples
 
 
 # #############################################################################
 # ################# Parameters and Transformer ################################
 # #############################################################################
 
+# pylint: disable=too-many-instance-attributes
 class ResizeParameter:
   WARP = 'WARP'
   FIT_SMALL_SIZE = 'FIT_SMALL_SIZE'
   FIT_LARGE_SIZE_AND_PAD = 'FIT_LARGE_SIZE_AND_PAD'
 
+  # pylint: disable=too-many-arguments
   def __init__(self, prob=1.0, resize_mode=WARP, height=0, width=0, height_scale=0., width_scale=0.,
                pad_mode=cv2.BORDER_CONSTANT, pad_value=(0, 0, 0),
                interp_mode=(cv2.INTER_LINEAR,
@@ -31,6 +36,7 @@ class ResizeParameter:
 
 
 class NoiseParameter:
+  # pylint: disable=too-many-arguments
   def __init__(self, prob=0., hist_eq=False, inverse=False, decolorize=False, gauss_blur=False, jpeg=-1,
                posterize=False,
                erode=False, clahe=False, saltpepper_fraction=0, saltpepper_values=None, convert_to_hsv=False,
@@ -51,6 +57,7 @@ class NoiseParameter:
 
 
 class DistortionParameter:
+  # pylint: disable=too-many-arguments
   def __init__(self, brightness_prob=0., brightness_delta=0., contrast_prob=0., contrast_lower=0., contrast_upper=0.,
                hue_prob=0., hue_delta=0., saturation_prob=0., saturation_lower=0., saturation_upper=0.,
                random_order_prob=0.):
@@ -84,6 +91,7 @@ class EmitConstraint:
 
 
 class BatchSampler:
+  # pylint: disable=too-many-arguments
   def __init__(self, use_original_image=True, max_sample=0, max_trials=100,
                # from sampler
                min_scale=1., max_scale=1., min_aspect_ratio=1., max_aspect_ratio=1.,
@@ -107,6 +115,7 @@ class BatchSampler:
 
 
 class TransformationParameter:
+  # pylint: disable=too-many-arguments
   def __init__(self, scale=1., mirror=False, crop_size=(0, 0), mean_value=None,
                resize_param=None, noise_param=None, distort_param=None, expand_param=None, emit_constraint=None):
     self.scale = scale
@@ -158,6 +167,7 @@ class DataTransformer:
     crop_w, crop_h = self.transform_param.crop_size
     return (crop_h, crop_w) if crop_h * crop_w > 0 else (image_h, image_w)
 
+  # pylint: disable=too-many-locals
   def _transform_image(self, image):
     """
     Geometrically transforms image according to parameters
@@ -221,6 +231,8 @@ class DataTransformer:
     if not emit_constraint:
       return True  # satisfy if no constraint
 
+    assert emit_constraint.emit_type in (EmitConstraint.CENTER, EmitConstraint.MIN_OVERLAP)
+
     if emit_constraint.emit_type == EmitConstraint.CENTER:
       x_center = (bbox.xmin + bbox.xmax) / 2
       y_center = (bbox.ymin + bbox.ymax) / 2
@@ -229,6 +241,10 @@ class DataTransformer:
       bbox_coverage = box_coverage(bbox, src_bbox)
       return bbox_coverage > emit_constraint.emit_overlap
 
+    print('Unsupported emit_constraint.emit_type = {}'.format(emit_constraint.emit_type))
+    return False
+
+  # pylint: disable=too-many-arguments
   def _transform_annotation(self, original_shape, annotation, crop_bbox, do_mirror=False, do_resize=False):
     """
     Geometrically transforms annotation using parameters and crop_box used for similar image transformation
@@ -347,6 +363,7 @@ class DataTransformer:
 # ################# Transformer and Sampler ###################################
 # #############################################################################
 
+# pylint: disable=invalid-name
 def create_default_transform_parameters(height=300, width=300):
   resize_param = ResizeParameter(height=height, width=width)
   emit_constraint = EmitConstraint(emit_type='CENTER')
@@ -380,6 +397,7 @@ def create_default_samplers():
 
 
 class AnnotatedDataTransformer:
+  # pylint: disable=dangerous-default-value
   def __init__(self, transform_param=None, is_training=True, train_samplers=create_default_samplers()):
     assert not train_samplers or transform_param
 
@@ -488,6 +506,7 @@ def apply_distort(image, distort_param):
   return image
 
 
+# pylint: disable=too-many-branches,too-many-statements
 def apply_noise(image, noise_param):
   if noise_param.decolorize:
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -542,8 +561,8 @@ def apply_noise(image, noise_param):
       iheight, iwidth, channels = img.shape
 
       for _ in range(noise_pixels_num):
-        i = random.randint(iwidth - 1)
-        j = random.randint(iheight - 1)
+        i = random.randint(0, iwidth - 1)
+        j = random.randint(0, iheight - 1)
 
         if channels == 1:
           img[i, j] = val[0]
@@ -566,6 +585,7 @@ def apply_noise(image, noise_param):
 #  ############ Geometric image transforms #####################################
 #  #############################################################################
 
+# pylint: disable=too-many-locals
 def expand_image(image, expand_ratio, mean_value=None):
   height, width, chs = image.shape
 
@@ -603,6 +623,7 @@ def crop_image(img, bbox):
   return img[h_off:h_off + height, w_off:w_off + width]
 
 
+# pylint: disable=too-many-arguments
 def aspect_keeping_resize_and_pad(image, new_width, new_height, pad_type, pad_val, interp_mode):
   orig_aspect = float(image.cols) / image.rows
   new_aspect = float(new_width) / new_height
@@ -657,8 +678,7 @@ def apply_resize(image, resize_param):
                                          resize_param.pad_val, interp_mode)
   elif resize_param.resize_mode == ResizeParameter.FIT_SMALL_SIZE:
     return aspect_keeping_resize_by_small(image, resize_param.width, resize_param.height, interp_mode)
-  else:
-    raise Exception()
+  raise Exception()
 
 
 def update_bbox_by_resize_policy(old_width, old_height, bbox, resize_param):

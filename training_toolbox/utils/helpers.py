@@ -1,7 +1,7 @@
-import importlib.util
-import os
+from __future__ import print_function
+from importlib import util
+from os import path, system
 import sys
-from os import path
 
 import cv2
 import numpy as np
@@ -18,12 +18,13 @@ def load_module(module_name):
   # TODO: replace on
   # __import__(module_name)
   # return sys.modules[module_name]
-  spec = importlib.util.spec_from_file_location("module.name", module_name)
-  module = importlib.util.module_from_spec(spec)
+  spec = util.spec_from_file_location("module.name", module_name)
+  module = util.module_from_spec(spec)
   spec.loader.exec_module(module)
   return module
 
 
+# pylint: disable=too-many-locals
 def draw_bboxes(val_images, annotations, predictions, classes, conf_threshold=0.5):
   font = cv2.FONT_HERSHEY_TRIPLEX
   font_scale = 0.6
@@ -33,7 +34,7 @@ def draw_bboxes(val_images, annotations, predictions, classes, conf_threshold=0.
 
   images = []
 
-  for im_idx in range(len(val_images)):
+  for im_idx, _ in enumerate(val_images):
     img = val_images[im_idx].copy()
     height, width = img.shape[:2]
 
@@ -123,18 +124,18 @@ def dump_frozen_graph(sess, graph_file, output_node_names=None):
   assert output_node_names is None or isinstance(output_node_names, list)
   output_node_names = output_node_names or estimate_inputs_outputs(sess.graph)[1]
 
-  dir_ = os.path.dirname(graph_file)
-  base = os.path.basename(graph_file)
+  dir_ = path.dirname(graph_file)
+  base = path.basename(graph_file)
   ckpt = graph_file.replace('.pb', '.ckpt')
   frozen = graph_file.replace('.pb', '.pb.frozen')
 
-  os.system('mkdir -p {}'.format(dir_))
-  print('>> Saving `{}`... '.format(graph_file), end='')
+  system('mkdir -p {}'.format(dir_))
+  print('>> Saving `{}`... '.format(graph_file))
   tf.train.write_graph(sess.graph, dir_, base, as_text=False)
   tf.train.write_graph(sess.graph, dir_, base + "txt", as_text=True)
   print('Done')
 
-  print('>> Saving `{}`... '.format(ckpt), end='')
+  print('>> Saving `{}`... '.format(ckpt))
   tf.train.Saver().save(sess, ckpt, write_meta_graph=False)
   print('Done')
 
@@ -165,9 +166,9 @@ def download_archive_and_extract(url, target_dir):
 
   try:
     resp = urlopen(url)
-  except urllib.error.HTTPError as e:
+  except urllib.error.HTTPError as exception:
     tf.logging.error('Not found: {}'.format(url))
-    raise e
+    raise exception
 
   zipfile = ZipFile(BytesIO(resp.read()))
   zipfile.extractall(target_dir)

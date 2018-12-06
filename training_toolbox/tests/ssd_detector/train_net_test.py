@@ -1,6 +1,6 @@
 import json
 import multiprocessing as mp
-import os
+from os import path, listdir
 
 import tensorflow as tf
 
@@ -26,7 +26,7 @@ class TrainNetCheckRegression(BaseTest):
   @staticmethod
   def run_infer():
     proc = mp.Process(target=infer,
-                      args=(CONFIG, 'json', os.path.join(CONFIG.root_dir, 'data/test/annotations_test.json'), 0.005, True))
+                      args=(CONFIG, 'json', path.join(CONFIG.ROOT_DIR, 'data/test/annotations_test.json'), 0.005, True))
     proc.start()
     proc.join()
 
@@ -39,18 +39,18 @@ class TrainNetCheckRegression(BaseTest):
     TrainNetCheckRegression.run_infer()
     TrainNetCheckRegression.run_eval()
     if OPEN_VINO_DIR != '':
-      self.check_detections(os.path.join(CONFIG.root_dir, 'data/test/openvino_setup/gold_predictions.json'))
-      self.check_tf_events(CONFIG.model_dir, os.path.join(CONFIG.root_dir, 'data/test/openvino_setup/gold_train_tfevents'))
-      self.check_tf_events(os.path.join(CONFIG.model_dir, 'eval_test'),
-                           os.path.join(CONFIG.root_dir, 'data/test/openvino_setup/gold_eval_tfevents'))
+      self.check_detections(path.join(CONFIG.ROOT_DIR, 'data/test/openvino_setup/gold_predictions.json'))
+      self.check_tf_events(CONFIG.MODEL_DIR, path.join(CONFIG.ROOT_DIR, 'data/test/openvino_setup/gold_train_tfevents'))
+      self.check_tf_events(path.join(CONFIG.MODEL_DIR, 'eval_test'),
+                           path.join(CONFIG.ROOT_DIR, 'data/test/openvino_setup/gold_eval_tfevents'))
     else:
-      self.check_detections(os.path.join(CONFIG.root_dir, 'data/test/default_setup/gold_predictions.json'))
-      self.check_tf_events(CONFIG.model_dir, os.path.join(CONFIG.root_dir, 'data/test/default_setup/gold_train_tfevents'))
-      self.check_tf_events(os.path.join(CONFIG.model_dir, 'eval_test'),
-                           os.path.join(CONFIG.root_dir, 'data/test/default_setup/gold_eval_tfevents'))
+      self.check_detections(path.join(CONFIG.ROOT_DIR, 'data/test/default_setup/gold_predictions.json'))
+      self.check_tf_events(CONFIG.MODEL_DIR, path.join(CONFIG.ROOT_DIR, 'data/test/default_setup/gold_train_tfevents'))
+      self.check_tf_events(path.join(CONFIG.MODEL_DIR, 'eval_test'),
+                           path.join(CONFIG.ROOT_DIR, 'data/test/default_setup/gold_eval_tfevents'))
 
   def check_detections(self, path_to_gold_detections):
-    with open(os.path.join(CONFIG.model_dir, 'predictions/annotations_test.json')) as file:
+    with open(path.join(CONFIG.MODEL_DIR, 'predictions/annotations_test.json')) as file:
       detections = json.load(file)
     with open(path_to_gold_detections) as file:
       gold_detections = json.load(file)
@@ -74,9 +74,9 @@ class TrainNetCheckRegression(BaseTest):
     return summary
 
   def check_tf_events(self, tf_event_dir, path_to_gold_tfevent):
-    for file in os.listdir(tf_event_dir):
+    for file in listdir(tf_event_dir):
       if 'tfevents' in file:
-        event_file = os.path.join(tf_event_dir, file)
+        event_file = path.join(tf_event_dir, file)
         break
 
     summary = TrainNetCheckRegression.parse_tf_event_file(event_file)
@@ -89,4 +89,3 @@ class TrainNetCheckRegression(BaseTest):
       self.assertEqual(len(summary[tag_gold]), len(summary_gold[tag_gold]), msg='Tag: {0}'.format(tag_gold))
       for val, val_gold in zip(summary[tag_gold], summary_gold[tag_gold]):
         self.assertAlmostEqual(val, val_gold, msg='Tag: {0}'.format(tag_gold))
-

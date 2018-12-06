@@ -2,8 +2,8 @@ import os
 import matplotlib; matplotlib.use('Agg')  # pylint: disable=multiple-statements
 from ssd_detector.readers.object_detector_json import ObjectDetectorJson
 
-current_dir = os.path.dirname(os.path.realpath(__file__))
-root_dir = os.path.normpath(os.path.join(current_dir, "../../.."))
+CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
+ROOT_DIR = os.path.normpath(os.path.join(CURRENT_DIR, "../../.."))
 
 # See more details about parameters in TensorFlow documentation tf.estimator
 class train:
@@ -33,7 +33,7 @@ class train:
 
 class eval:
   annotation_path = {
-    "test": os.path.join(current_dir, "instances_val2017.json")
+    "test": os.path.join(CURRENT_DIR, "instances_val2017.json")
   }  # Dictionary with paths to annotations and its short names which will be displayed in the TensorBoard
   datasets = ["test"]  # List of names from annotation_path dictionary on which evaluation will be launched
   vis_num = 12                  # Select random images for visualization in the TensorBoard
@@ -67,11 +67,11 @@ class infer:
 
 
 input_shape = (256, 256, 3)  # Input shape of the model (width, height, channels)
-classes = ObjectDetectorJson.get_classes_from_coco_annotation(os.path.join(current_dir, train.annotation_path))
-model_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+classes = ObjectDetectorJson.get_classes_from_coco_annotation(os.path.join(CURRENT_DIR, train.annotation_path))
+MODEL_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                          'model')  # Path to the folder where all training and evaluation artifacts will be located
-if not os.path.exists(model_dir):
-  os.makedirs(model_dir)
+if not os.path.exists(MODEL_DIR):
+  os.makedirs(MODEL_DIR)
 
 
 def learning_rate_schedule():  # Function which controls learning rate during training

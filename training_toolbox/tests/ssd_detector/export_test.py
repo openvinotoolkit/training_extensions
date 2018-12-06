@@ -1,3 +1,4 @@
+from __future__ import print_function
 import os
 import shutil
 import unittest
@@ -21,10 +22,11 @@ class ExportModelCheckRegression(BaseTest):
   def setUp(self):
     tf.logging.set_verbosity(tf.logging.INFO)
     self.create_model_dir('export')
-    model_ckpt = os.path.join(CONFIG.root_dir, 'data/test/model_ckpt')
+    model_ckpt = os.path.join(CONFIG.ROOT_DIR, 'data/test/model_ckpt')
     for file in os.listdir(model_ckpt):
-      shutil.copy(os.path.join(model_ckpt, file), CONFIG.model_dir)
+      shutil.copy(os.path.join(model_ckpt, file), CONFIG.MODEL_DIR)
 
+  # pylint: disable=too-many-locals
   @staticmethod
   def run_ie_on_dataset(model_xml, model_bin, cpu_extension_path, images_dir, prob_threshold=0.01):
     plugin = IEPlugin(device='CPU')
@@ -82,18 +84,18 @@ class ExportModelCheckRegression(BaseTest):
   def compare_ie_models(self):
 
     ie_detection = ExportModelCheckRegression.run_ie_on_dataset(
-        os.path.join(CONFIG.model_dir, 'ie_model/graph.xml'),
-        os.path.join(CONFIG.model_dir, 'ie_model/graph.bin'),
-        os.path.join(OPEN_VINO_DIR,
-                     'deployment_tools/inference_engine/lib/ubuntu_16.04/intel64/libcpu_extension_avx2.so'),
-        os.path.join(CONFIG.root_dir, 'data/test/test'))
+      os.path.join(CONFIG.MODEL_DIR, 'ie_model/graph.xml'),
+      os.path.join(CONFIG.MODEL_DIR, 'ie_model/graph.bin'),
+      os.path.join(OPEN_VINO_DIR,
+                   'deployment_tools/inference_engine/lib/ubuntu_16.04/intel64/libcpu_extension_avx2.so'),
+      os.path.join(CONFIG.ROOT_DIR, 'data/test/test'))
 
     ie_gold_detection = self.run_ie_on_dataset(
-        os.path.join(CONFIG.root_dir, 'data/test/graph_gold.xml'),
-        os.path.join(CONFIG.root_dir, 'data/test/graph_gold.bin'),
-        os.path.join(OPEN_VINO_DIR,
-                     'deployment_tools/inference_engine/lib/ubuntu_16.04/intel64/libcpu_extension_avx2.so'),
-        os.path.join(CONFIG.root_dir, 'data/test/test'))
+      os.path.join(CONFIG.ROOT_DIR, 'data/test/graph_gold.xml'),
+      os.path.join(CONFIG.ROOT_DIR, 'data/test/graph_gold.bin'),
+      os.path.join(OPEN_VINO_DIR,
+                   'deployment_tools/inference_engine/lib/ubuntu_16.04/intel64/libcpu_extension_avx2.so'),
+      os.path.join(CONFIG.ROOT_DIR, 'data/test/test'))
 
     self.assertEqual(len(ie_detection), len(ie_gold_detection))
     for gold_d, det in zip(ie_gold_detection, ie_detection):
