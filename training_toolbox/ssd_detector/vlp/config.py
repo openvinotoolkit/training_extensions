@@ -110,3 +110,4 @@ detector_params = {
   "optimizer": optimizer,                   # Optimizer
   "collect_priors_summary": False,          # Option to collect priors summary for further analysis
 }
+

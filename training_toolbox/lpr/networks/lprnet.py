@@ -2,7 +2,7 @@ import tensorflow as tf
 import tensorflow.contrib.slim as slim
 
 
-class LPRNet():
+class LPRNet:
   # Function for generation characters range
 
   # Fire block
@@ -48,9 +48,9 @@ class LPRNet():
   def convolution_block(block_input, outputs, stride, **kwargs):
     scope = kwargs.pop('scope', None)
     # cr = slim.conv2d(input, outputs, [3, 3], scope=scope)
-    cr = LPRNet.basic_block(block_input, outputs)
-    mp = slim.max_pool2d(cr, [3, 3], stride=(stride, 1), padding='VALID', scope=scope)
-    return mp
+    b_block = LPRNet.basic_block(block_input, outputs)
+    max_pool = slim.max_pool2d(b_block, [3, 3], stride=(stride, 1), padding='VALID', scope=scope)
+    return max_pool
 
   @staticmethod
   def enet_input_block(block_input, **kwargs):

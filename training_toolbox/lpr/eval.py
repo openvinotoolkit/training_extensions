@@ -1,35 +1,35 @@
+from __future__ import print_function
+import argparse
+import os
 import random
+import sys
+import time
 import numpy as np
 import tensorflow as tf
 import tensorflow.contrib.slim as slim
-import time
-from trainer import inference, LPRVocab, encode, decode_beams
+from lpr.trainer import inference
 from lpr.toolbox.utils import accuracy, dataset_size
 from utils.helpers import load_module
 
-import os
-import sys
-
-import argparse
 
 def parse_args():
   parser = argparse.ArgumentParser(description='Perform evaluation of a trained model')
   parser.add_argument('path_to_config', help='Path to a config.py')
   return parser.parse_args()
 
-
+# pylint: disable=too-many-locals
 def read_data(height, width, channels_num, list_file_name, batch_size=10):
   reader = tf.TextLineReader()
-  key, value = reader.read(list_file_name)
+  _, value = reader.read(list_file_name)
   filename, label = tf.decode_csv(value, [[''], ['']], ' ')
 
-  image_filename = tf.read_file(filename)
-  rgb_image = tf.image.decode_png(image_filename, channels=channels_num)
+  image_file = tf.read_file(filename)
+  rgb_image = tf.image.decode_png(image_file, channels=channels_num)
   rgb_image_float = tf.image.convert_image_dtype(rgb_image, tf.float32)
   resized_image = tf.image.resize_images(rgb_image_float, [height, width])
   resized_image.set_shape([height, width, channels_num])
 
-  image_batch, label_batch, file_batch = tf.train.batch([resized_image, label, image_filename], batch_size=batch_size)
+  image_batch, label_batch, file_batch = tf.train.batch([resized_image, label, image_file], batch_size=batch_size)
   return image_batch, label_batch, file_batch
 
 
@@ -38,7 +38,7 @@ def data_input(height, width, channels_num, filename, batch_size=10):
   image, label, filename = read_data(height, width, channels_num, files_string_producer, batch_size)
   return image, label, filename
 
-
+# pylint: disable=too-many-branches, too-many-statements
 def validate(config):
   if hasattr(config.eval, 'random_seed'):
     np.random.seed(config.eval.random_seed)
@@ -50,20 +50,16 @@ def validate(config):
     os.environ["CUDA_VISIBLE_DEVICES"] = config.train.execution.CUDA_VISIBLE_DEVICES
 
   height, width, channels_num = config.input_shape
-  max_lp_length = config.eval.max_lp_length
-  rnn_cells_num = config.eval.rnn_cells_num
-
-
-  vocab, r_vocab, num_classes = LPRVocab.create_vocab(config.train.train_list_file_path, config.eval.file_list_path)
+  max_lp_length = config.max_lp_length
+  rnn_cells_num = config.rnn_cells_num
 
   graph = tf.Graph()
-
   with graph.as_default():
     with slim.arg_scope([slim.batch_norm, slim.dropout], is_training=False):
       inp_data, label_val, file_names = data_input(height, width, channels_num,
                                                    config.eval.file_list_path, batch_size=1)
 
-      prob = inference(rnn_cells_num, inp_data, num_classes)
+      prob = inference(rnn_cells_num, inp_data, config.num_classes)
       prob = tf.transpose(prob, (1, 0, 2))  # prepare for CTC
 
       data_length = tf.fill([tf.shape(prob)[1]], tf.shape(prob)[0])  # input seq length, batch size
@@ -111,26 +107,26 @@ def validate(config):
       current_step = tf.train.load_variable(latest_checkpoint, 'global_step')
 
       test_size = dataset_size(config.eval.file_list_path)
-      t = time.time()
+      time_start = time.time()
 
       mean_accuracy, mean_accuracy_minus_1 = 0.0, 0.0
 
       steps = test_size
       num = 0
-      for i in range(steps):
-        val, slabel, fname = sess.run([d_predictions, label_val, file_names])
-        a, a1, n = accuracy(slabel, val, vocab, r_vocab)
-        mean_accuracy += a
-        mean_accuracy_minus_1 += a1
-        num += n
+      for _ in range(steps):
+        val, slabel, _ = sess.run([d_predictions, label_val, file_names])
+        acc, acc1, num_ = accuracy(slabel, val, config.vocab, config.r_vocab)
+        mean_accuracy += acc
+        mean_accuracy_minus_1 += acc1
+        num += num_
 
       writer.add_summary(
         tf.Summary(value=[tf.Summary.Value(tag='evaluation/acc', simple_value=float(mean_accuracy / num)),
-                          tf.Summary.Value(tag='evaluation/acc-1', simple_value=float(mean_accuracy_minus_1 / num))
-                          ]), current_step)
+                          tf.Summary.Value(tag='evaluation/acc-1', simple_value=float(mean_accuracy_minus_1 / num))]),
+        current_step)
       print('Test acc: {}'.format(mean_accuracy / num))
       print('Test acc-1: {}'.format(mean_accuracy_minus_1 / num))
-      print('Time per step: {} for test size {}'.format(time.time() - t / steps, test_size))
+      print('Time per step: {} for test size {}'.format(time.time() - time_start / steps, test_size))
     else:
       if wait_iters % 12 == 0:
         sys.stdout.write('\r')

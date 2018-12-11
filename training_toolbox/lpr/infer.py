@@ -6,7 +6,7 @@ import numpy as np
 import tensorflow as tf
 import tensorflow.contrib.slim as slim
 from lpr.toolbox.utils import dataset_size
-from lpr.trainer import inference, LPRVocab, decode_beams
+from lpr.trainer import inference, decode_beams
 from utils.helpers import load_module
 
 
@@ -36,7 +36,7 @@ def data_input(height, width, channels_num, filename, batch_size=1):
   image, filename = read_data(height, width, channels_num, files_string_producer, batch_size)
   return image, filename
 
-
+# pylint: disable=too-many-locals, too-many-statements
 def infer(config):
   if hasattr(config.infer, 'random_seed'):
     np.random.seed(config.infer.random_seed)
@@ -48,10 +48,8 @@ def infer(config):
     os.environ["CUDA_VISIBLE_DEVICES"] = config.train.execution.CUDA_VISIBLE_DEVICES
 
   height, width, channels_num = config.input_shape
-  max_lp_length = config.eval.max_lp_length
-  rnn_cells_num = config.eval.rnn_cells_num
-
-  _, r_vocab, num_classes = LPRVocab.create_vocab(config.train.train_list_file_path, config.train.val_list_file_path)
+  max_lp_length = config.max_lp_length
+  rnn_cells_num = config.rnn_cells_num
 
   graph = tf.Graph()
 
@@ -59,7 +57,7 @@ def infer(config):
     with slim.arg_scope([slim.batch_norm, slim.dropout], is_training=False):
       inp_data, filenames = data_input(height, width, channels_num, config.infer.file_list_path, batch_size=1)
 
-      prob = inference(rnn_cells_num, inp_data, num_classes)
+      prob = inference(rnn_cells_num, inp_data, config.num_classes)
       prob = tf.transpose(prob, (1, 0, 2))  # prepare for CTC
 
       data_length = tf.fill([tf.shape(prob)[1]], tf.shape(prob)[0])  # input seq length, batch size
@@ -98,7 +96,7 @@ def infer(config):
 
     val, filename = sess.run([d_predictions, filenames])
     filename = filename[0].decode('utf-8')
-    pred = decode_beams(val, r_vocab)[0]
+    pred = decode_beams(val, config.r_vocab)[0]
 
     img = cv2.imread(filename)
     size = cv2.getTextSize(pred[0], cv2.FONT_HERSHEY_SIMPLEX, 0.55, 2)

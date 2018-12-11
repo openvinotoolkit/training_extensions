@@ -7,7 +7,8 @@ from lpr.networks.lprnet import LPRNet
 from spatial_transformer import transformer
 
 
-class InputData(object):
+class InputData:
+  # pylint: disable=too-many-arguments
   def __init__(self, batch_size, input_shape, file_list_path,
                apply_basic_aug=False, apply_stn_aug=True, apply_blur_aug=False):
     self.batch_size = batch_size
@@ -36,7 +37,7 @@ class InputData(object):
 
     return data, label
 
-
+# pylint: disable=too-many-locals
 def read_data(batch_size, input_shape, file_src):
   reader = tf.TextLineReader()
   _, value = reader.read(file_src)
@@ -92,8 +93,8 @@ def apply_stn(images, transform_params):
 def random_blur(images):
   result = []
   for k in range(images.shape[0]):
-    a = np.random.normal(scale=1.)
-    kernel = np.array([[0., a, 0.], [a, 1. - 4. * a, a], [0., a, 0.]])
+    samples = np.random.normal(scale=1.)
+    kernel = np.array([[0., samples, 0.], [samples, 1. - 4. * samples, samples], [0., samples, 0.]])
     result.append(cv2.filter2D(images[k], -1, kernel).astype(np.float32))
   return np.array(result)
 
@@ -108,11 +109,11 @@ def inference(rnn_cells_num, input, num_classes):
                       weights_regularizer=slim.l2_regularizer(0.0005)):
     classes = slim.conv2d(cnn, num_classes, [1, 13])
     pattern = slim.fully_connected(slim.flatten(classes), rnn_cells_num)  # patterns number
-    w = int(cnn.get_shape()[2])
+    width = int(cnn.get_shape()[2])
     pattern = tf.reshape(pattern, (-1, 1, 1, rnn_cells_num))
-    pattern = tf.tile(pattern, [1, 1, w, 1])
-    # pattern = slim.fully_connected(pattern, num_classes * w, normalizer_fn=None, activation_fn=tf.nn.sigmoid)
-    # pattern = tf.reshape(pattern, (-1, 1, w, num_classes))
+    pattern = tf.tile(pattern, [1, 1, width, 1])
+    # pattern = slim.fully_connected(pattern, num_classes * width, normalizer_fn=None, activation_fn=tf.nn.sigmoid)
+    # pattern = tf.reshape(pattern, (-1, 1, width, num_classes))
 
   inf = tf.concat(axis=3, values=[classes, pattern])  # skip connection over RNN
   inf = slim.conv2d(inf, num_classes, [1, 1], normalizer_fn=None,
@@ -123,7 +124,7 @@ def inference(rnn_cells_num, input, num_classes):
   return inf
 
 
-class CTCUtils():
+class CTCUtils:
   vocab = {}
   r_vocab = {}
 
@@ -180,50 +181,51 @@ def decode(values, reverse_vocab):
 
 
 def decode_beams(vals, r_vocab):
-  r = []
-  for b in range(vals.shape[1]):
+  beams_list = []
+  for time in range(vals.shape[1]):
     beams = []
     for beam in range(vals.shape[0]):
-      s = ''
-      for v in vals[beam][b]: s += r_vocab[v]
-      beams.append(s)
-    r.append(beams)
-  return r
+      decoded_number = ''
+      for code in vals[beam][time]:
+        decoded_number += r_vocab[code]
+      beams.append(decoded_number)
+    beams_list.append(beams)
+  return beams_list
 
 
 def decode_ie_output(vals, r_vocab):
   vals = vals.flatten()
-  s = ''
-  for v in vals:
-    if v < 0:
+  decoded_number = ''
+  for val in vals:
+    if val < 0:
       break
-    s += r_vocab[v]
-  return s
+    decoded_number += r_vocab[val]
+  return decoded_number
 
 
-class LPRVocab(object):
+class LPRVocab:
   @staticmethod
   def create_vocab(train_list_path, val_list_path, use_h_concat=False, use_oi_concat=False):
     [vocab, r_vocab, num_classes] = LPRVocab._create_standard_vocabs(train_list_path, val_list_path)
     if use_h_concat:
       [vocab, r_vocab, num_classes] = LPRVocab._concat_all_hieroglyphs(vocab, r_vocab)
     if use_oi_concat:
-      [vocab, r_vocab, num_classes] = LPRVocab._concat_OI(vocab, r_vocab)
+      [vocab, r_vocab, num_classes] = LPRVocab._concat_oi(vocab, r_vocab)
 
     return vocab, r_vocab, num_classes
 
   @staticmethod
-  def _char_range(c1, c2):
-    """Generates the characters from `c1` to `c2`, inclusive."""
-    for c in range(ord(c1), ord(c2) + 1):
-      yield chr(c)
+  def _char_range(char1, char2):
+    """Generates the characters from `char1` to `char2`, inclusive."""
+    for char_code in range(ord(char1), ord(char2) + 1):
+      yield chr(char_code)
 
   # Function for reading special symbols
   @staticmethod
   def _read_specials(filepath):
     characters = set()
-    with open(filepath, 'r') as f:
-      for line in f:
+    with open(filepath, 'r') as file_:
+      for line in file_:
         current_label = line.split(' ')[-1].strip()
         characters = characters.union(re.findall('(<[^>]*>|.)', current_label))
     return characters
@@ -282,7 +284,7 @@ class LPRVocab(object):
 
   # Function for treating O/0, I/1 as 1 class
   @staticmethod
-  def _concat_OI(vocab_before, r_vocab_before):
+  def _concat_oi(vocab_before, r_vocab_before):
     chars = vocab_before.keys()
     tf.logging.info('Old number of classes: {}'.format(len(chars)))
 

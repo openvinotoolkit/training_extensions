@@ -27,7 +27,7 @@ To train a model, go through the following steps:
     with extracted data.
 
     Then edit `training_toolbox/lpr/chinese_lp/config.py` by pointing out 
-    `train.train_list_file_path` and `train.val_list_file_path` 
+    `train.file_list_path` and `eval.file_list_path` 
     parameters in train section to paths of obtained `train` and `val` 
     annotation files accordingly.
 
@@ -41,7 +41,7 @@ To train a model, go through the following steps:
     in command line:
 
     ```
-    python3 evaluate.py vlp/config.py
+    python3 eval.py vlp/config.py
     ```
 
     Before doing step 4, make sure that parameter `eval.file_list_path` in 
