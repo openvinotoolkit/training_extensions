@@ -1,5 +1,5 @@
-from ssd_detector.readers.object_detector_json import ObjectDetectorJson
 from pycocotools.cocoeval import COCOeval
+from ssd_detector.readers.object_detector_json import ObjectDetectorJson
 
 METRICS_NAMES = ["Average Precision(AP) @ [IoU = 0.50:0.95 | area = all | maxDets = 100]",
                  "Average Precision(AP) @ [IoU = 0.50 | area = all | maxDets = 100]",
@@ -15,6 +15,7 @@ METRICS_NAMES = ["Average Precision(AP) @ [IoU = 0.50:0.95 | area = all | maxDet
                  "Average Recall(AR) @ [IoU = 0.50:0.95 | area = large | maxDets = 100]"]
 
 
+# pylint: disable=too-many-locals
 def calc_coco_metrics(coco_annotations, predictions, classes):
   annotations = ObjectDetectorJson.convert_coco_to_toolbox_format(coco_annotations, classes)
   detections = []

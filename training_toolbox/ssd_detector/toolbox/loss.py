@@ -92,6 +92,7 @@ class MultiboxLoss:
     total_loss = tf.reduce_mean(classification_loss + self.loc_weight * loc_loss) / tf.maximum(1.0, num_positives)
     return total_loss
 
+  # pylint: disable=too-many-locals
   def loss(self, ground_truth, prediction, bboxes):
     """
       Compute multibox loss.

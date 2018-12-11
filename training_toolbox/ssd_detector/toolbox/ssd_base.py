@@ -8,6 +8,7 @@ from ssd_detector.toolbox.layers import channel_to_last, get_spatial_dims
 from ssd_detector.toolbox.priors import prior_box, prior_box_clusterd, prior_box_specs
 
 
+# pylint: disable=too-many-instance-attributes
 class SSDBase:
   def __init__(self, input_shape, num_classes=2, overlap_threshold=0.5, data_format='NHWC'):
     assert len(input_shape) == 4
@@ -20,6 +21,7 @@ class SSDBase:
     self.mbox_loc = None
     self.mbox_conf = None
     self.mbox_priorbox = None
+    self.logits = None
     self.predictions = None
     self.detections = None
     self.priors_array = None
@@ -28,6 +30,7 @@ class SSDBase:
     self.flattens_for_tfmo = []
     self.data_format = data_format
 
+  # pylint: disable=too-many-arguments
   def _add_single_ssd_head(self, blob, num_classes, num_anchors, prefix, suffix=''):
     with slim.arg_scope([slim.conv2d], activation_fn=None, normalizer_fn=None, padding='SAME', normalizer_params=None):
       if len(blob.shape) == 4:
@@ -49,6 +52,7 @@ class SSDBase:
         raise Exception('Unsupported input blob shape for SSD.')
       return conf, locs
 
+  # pylint: disable=too-many-locals
   def create_heads(self, connections, params_dicts):
     image_size = get_spatial_dims(self.input_shape, self.data_format)
 
@@ -164,6 +168,7 @@ class SSDBase:
     target_shape = self.priors_array.shape[1], 4 + self.num_classes
     assignment = np.zeros(target_shape, dtype=np.float32)
     assignment[:, 4] = 1.0  # mark all as background
+    # pylint: disable=len-as-condition
     if len(boxes) == 0:
       return assignment
     encoded_boxes = np.apply_along_axis(self._encode_box, 1, boxes[:, :4])
@@ -189,8 +194,8 @@ class SSDBase:
         one_hot[:, label] = 1
         one_hots.extend(one_hot[:, 1:])
         rects.extend([[bb.xmin, bb.ymin, bb.xmax, bb.ymax] for bb in boxes])
-      y = np.hstack((np.asarray(rects), np.asarray(one_hots)))
-      assigns.append(self._assign_boxes(y))
+      boxes_with_labels = np.hstack((np.asarray(rects), np.asarray(one_hots)))
+      assigns.append(self._assign_boxes(boxes_with_labels))
     return np.array(assigns)
 
   def create_targets(self, annoation_tensor):
@@ -243,14 +248,14 @@ class SSDBase:
       batch_size = tf.shape(bboxes)[0]
       num_classes = self.num_classes
 
-      def b_body(b, ra):
-        b_scores = scores[b]
-        b_bboxes = bboxes[b]
+      def b_body(img_id, detection_batch):
+        b_scores = scores[img_id]
+        b_bboxes = bboxes[img_id]
 
-        def c_body(c, pa):
+        def c_body(class_id, detection_array):
           # Zeroing predictions below threshold
           with tf.variable_scope('bboxes_c_select', reuse=True):
-            c_scores = b_scores[:, c]
+            c_scores = b_scores[:, class_id]
             c_fmask = tf.cast(tf.greater(c_scores, confidence_threshold), scores.dtype)
             c_scores = c_scores * c_fmask
             c_bboxes = b_bboxes * tf.expand_dims(c_fmask, axis=-1)
@@ -259,8 +264,8 @@ class SSDBase:
           with tf.variable_scope('bboxes_c_nms', reuse=True):
             c_indices = tf.image.non_max_suppression(c_bboxes, c_scores, top_k, nms_threshold)
             size = tf.size(c_indices)
-            c_batch_ = tf.to_float(b) * tf.ones(shape=[top_k, 1], dtype=tf.float32)  # len(indices) x 1
-            c_labels = tf.to_float(c) * tf.ones(shape=[top_k, 1], dtype=tf.float32)  # len(indices) x 1
+            c_batch_ = tf.to_float(img_id) * tf.ones(shape=[top_k, 1], dtype=tf.float32)  # len(indices) x 1
+            c_labels = tf.to_float(class_id) * tf.ones(shape=[top_k, 1], dtype=tf.float32)  # len(indices) x 1
 
             extra_size = top_k - size
             c_scores = tf.expand_dims(tf.gather(c_scores, c_indices), axis=-1)  # len(indices) x 1
@@ -270,29 +275,30 @@ class SSDBase:
             c_bboxes = tf.gather(c_bboxes, c_indices)  # len(indices) x 4
             empty_c_bboxes = tf.zeros([extra_size, 4], dtype=tf.float32)
             c_bboxes = tf.concat([c_bboxes, empty_c_bboxes], axis=0)
-            c_predictions = tf.concat([c_batch_, c_labels, c_scores, c_bboxes], axis=1)  # len(indices) x 7
-          return c + 1, pa.write(index=c - 1, value=c_predictions)
+            c_predictions = tf.concat([c_batch_, c_labels, c_scores, c_bboxes], axis=1)  # top_k x 7
+          return class_id + 1, detection_array.write(index=class_id - 1, value=c_predictions)
 
         # loop over num_classes
-        c = 1  # c = 0 is a background, classes starts with index 1
-        pa = tf.TensorArray(tf.float32, size=num_classes - 1)
-        _, pa = tf.while_loop(lambda c, pa: tf.less(c, num_classes), c_body, [c, pa],
-                              back_prop=False, parallel_iterations=1)
-        predictions = pa.concat()
+        class_id = 1  # c = 0 is a background, classes starts with index 1
+        detection_img = tf.TensorArray(tf.float32, size=num_classes - 1)
+        _, detection_img = tf.while_loop(lambda c, pa: tf.less(c, num_classes), c_body, [class_id, detection_img],
+                                         back_prop=False, parallel_iterations=1)
+        detection_img_flat = detection_img.concat()
 
         # Select topmost 'keep_top_k' predictions
         with tf.variable_scope('bboxes_keep_top_k', reuse=True):
-          k = tf.minimum(keep_top_k, tf.shape(predictions)[0])
-          _, indices = tf.nn.top_k(predictions[:, 2], k, sorted=True)
-          predictions = tf.gather(predictions, indices)
+          k = tf.minimum(keep_top_k, tf.shape(detection_img_flat)[0])
+          _, indices = tf.nn.top_k(detection_img_flat[:, 2], k, sorted=True)
+          detection_img_flat = tf.gather(detection_img_flat, indices)
 
-        return b + 1, ra.write(index=b, value=predictions)
+        return img_id + 1, detection_batch.write(index=img_id, value=detection_img_flat)
 
       # loop over batch
-      ra = tf.TensorArray(tf.float32, size=batch_size)
-      _, ra = tf.while_loop(lambda b, ra: tf.less(b, batch_size), b_body, [0, ra], back_prop=False)
+      detection_batch = tf.TensorArray(tf.float32, size=batch_size)
+      _, detection_batch = tf.while_loop(lambda img_id, ra: tf.less(img_id, batch_size),
+                                         b_body, [0, detection_batch], back_prop=False)
 
-      self.detections = ra.concat() if use_plain_caffe_format else ra.stack()
+      self.detections = detection_batch.concat() if use_plain_caffe_format else detection_batch.stack()
       self.detections = tf.reshape(self.detections, [-1, keep_top_k, self.detections.shape[-1]])
       return self.detections
 

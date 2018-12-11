@@ -1,13 +1,15 @@
 from __future__ import print_function
-import sys
-import os
 from argparse import ArgumentParser
-import cv2
-import logging as log
-from openvino.inference_engine import IENetwork, IEPlugin
-from pycocotools.coco import COCO
-from ssd_detector.readers.object_detector_json import ObjectDetectorJson
 import json
+import logging as log
+import os
+import sys
+
+import cv2
+from pycocotools.coco import COCO
+
+from openvino.inference_engine import IENetwork, IEPlugin
+from ssd_detector.readers.object_detector_json import ObjectDetectorJson
 
 
 def build_argparser():
@@ -44,20 +46,24 @@ class Input:
     self.input_type = input_type
     self.item_counter = 0
 
+    assert input_type in ('json', 'video', 'cam')
+
     if input_type == 'json':
       coco_annotation = COCO(input)
       annotation_directory = os.path.join(os.getcwd(), os.path.dirname(input))
       classes = ObjectDetectorJson.get_classes_from_coco_annotation(input)
       self.json_data = ObjectDetectorJson.convert_coco_to_toolbox_format(coco_annotation, classes,
                                                                          annotation_directory)
-    if input_type == "video":
+    if input_type == 'video':
       self.cap = cv2.VideoCapture(input)
 
-    if input_type == "cam":
+    if input_type == 'cam':
       self.cap = cv2.VideoCapture(0)
 
   def get_next_item(self):
-    if self.input_type == "json":
+    assert self.input_type in ('json', 'video', 'cam')
+
+    if self.input_type == 'json':
       image_size = self.json_data[self.item_counter]['image_size']
       img = cv2.imread(self.json_data[self.item_counter]['image'])
       img = cv2.resize(img, tuple(image_size))
@@ -70,21 +76,28 @@ class Input:
       self.item_counter += 1
       return img, self.item_counter
 
+    return None, None
+
   def is_finished(self):
-    if self.input_type == "json":
+    assert self.input_type in ('json', 'video', 'cam')
+
+    if self.input_type == 'json':
       return self.item_counter >= len(self.json_data)
 
     if self.input_type == 'cam' or 'video':
       return not self.cap.isOpened()
 
+    return None, None
 
+
+# pylint: disable=too-many-locals,too-many-statements
 def main():
   log.basicConfig(format="[ %(levelname)s ] %(message)s", level=log.INFO, stream=sys.stdout)
   args = build_argparser().parse_args()
   model_xml = args.model
   model_bin = os.path.splitext(model_xml)[0] + ".bin"
   # Plugin initialization for specified device and load extensions library if specified
-  log.info("Initializing plugin for {} device...".format(args.device))
+  log.info("Initializing plugin for %s device...", args.device)
   plugin = IEPlugin(device=args.device, plugin_dirs=args.plugin_dir)
   if args.cpu_extension and 'CPU' in args.device:
     plugin.add_cpu_extension(args.cpu_extension)
@@ -96,9 +109,9 @@ def main():
   if "CPU" in plugin.device:
     supported_layers = plugin.get_supported_layers(net)
     not_supported_layers = [l for l in net.layers.keys() if l not in supported_layers]
-    if len(not_supported_layers) != 0:
-      log.error("Following layers are not supported by the plugin for specified device {}:\n {}".
-                format(plugin.device, ', '.join(not_supported_layers)))
+    if not_supported_layers:
+      log.error("Following layers are not supported by the plugin for specified device %s:\n %s",
+                plugin.device, ', '.join(not_supported_layers))
       log.error("Please try to specify cpu extensions library path in sample's command line parameters using -l "
                 "or --cpu_extension command line argument")
       sys.exit(1)
@@ -109,7 +122,7 @@ def main():
   log.info("Loading IR to the plugin...")
   exec_net = plugin.load(network=net, num_requests=2)
   # Read and pre-process input image
-  n, c, h, w = net.inputs[input_blob]
+  batch, channels, height, width = net.inputs[input_blob]
   del net
 
   predictions = []
@@ -125,10 +138,10 @@ def main():
 
   while not data.is_finished():
     frame, img_id = data.get_next_item()
-    initial_h, initial_w, channels = frame.shape
-    in_frame = cv2.resize(frame, (w, h))
+    initial_h, initial_w, _ = frame.shape
+    in_frame = cv2.resize(frame, (width, height))
     in_frame = in_frame.transpose((2, 0, 1))  # Change data layout from HWC to CHW
-    in_frame = in_frame.reshape((n, c, h, w))
+    in_frame = in_frame.reshape((batch, channels, height, width))
 
     exec_net.start_async(request_id=cur_request_id, inputs={input_blob: in_frame})
     if exec_net.requests[cur_request_id].wait(-1) == 0:
@@ -139,27 +152,27 @@ def main():
       for obj in res[0][0]:
         # Draw only objects when probability more than specified threshold
         if obj[2] > args.prob_threshold:
-          x1 = float(obj[3] * initial_w)
-          y1 = float(obj[4] * initial_h)
-          x2 = float(obj[5] * initial_w)
-          y2 = float(obj[6] * initial_h)
+          top_left_x = float(obj[3] * initial_w)
+          top_left_y = float(obj[4] * initial_h)
+          bottom_right_x = float(obj[5] * initial_w)
+          bottom_right_y = float(obj[6] * initial_h)
 
-          x_, y_ = round(x1, 1), round(y1, 1)
-          w_ = round(x2 - x1, 1)
-          h_ = round(y2 - y1, 1)
+          obj_width = round(bottom_right_x - top_left_x, 1)
+          obj_height = round(bottom_right_y - top_left_y, 1)
           class_id = int(obj[1])
 
           coco_det = {}
           coco_det['image_id'] = img_id
           coco_det['category_id'] = class_id
-          coco_det['bbox'] = [x_, y_, w_, h_]
+          coco_det['bbox'] = [round(top_left_x, 1), round(top_left_y, 1), obj_width, obj_height]
           coco_det['score'] = round(float(obj[2]), 1)
           coco_detections.append(coco_det)
 
           # Draw box and label\class_id
-          cv2.rectangle(frame, (int(x1), int(y1)), (int(x2), int(y2)), (255, 0, 0), 2)
-          cv2.putText(frame, str(class_id) + ' ' + str(round(obj[2] * 100, 1)) + ' %', (int(x1), int(y1) - 7),
-                      cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+          cv2.rectangle(frame, (int(top_left_x), int(top_left_y)), (int(bottom_right_x), int(bottom_right_y)),
+                        (255, 0, 0), 2)
+          cv2.putText(frame, str(class_id) + ' ' + str(round(obj[2] * 100, 1)) + ' %',
+                      (int(top_left_x), int(top_left_y) - 7), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
       predictions.extend(coco_detections)
 
     if args.dump_output_video:

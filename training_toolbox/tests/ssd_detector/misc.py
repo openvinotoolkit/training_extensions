@@ -11,4 +11,3 @@ def download_test_data(root_dir):
 
   tf.logging.info('Downloading "{0}" to "{1}"'.format(src_path, target_dir))
   download_archive_and_extract(src_path, target_dir)
-

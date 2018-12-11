@@ -2,6 +2,7 @@
   Dataset reader.
 """
 
+from __future__ import print_function
 import os
 import pickle
 import sys
@@ -10,17 +11,18 @@ import cv2
 import jpeg4py as jpeg
 import matplotlib; matplotlib.use('Agg')  # pylint: disable=multiple-statements
 import numpy as np
+from pycocotools.coco import COCO
 import tensorflow as tf
 from tqdm import tqdm
 
 from ssd_detector.toolbox.bounding_box import BoundingBox
-from pycocotools.coco import COCO
 
 
 def imread(im_path):
   if os.path.splitext(im_path)[1].lower() in ('.jpg', '.jpeg'):
     try:
       img = jpeg.JPEG(im_path).decode()[..., ::-1]  # RGB -> BGR
+    # pylint: disable=broad-except
     except Exception as ex:
       tf.logging.warning("Can't load {0} with jpeg4py (libjpeg-turbo): {1}. Will use OpenCV. "
                          "Can be slower.".format(im_path, ex))
@@ -34,6 +36,7 @@ def imread(im_path):
 def imdecode(data):
   try:
     img = jpeg.JPEG(data).decode()[..., ::-1]  # RGB -> BGR
+  # pylint: disable=broad-except
   except Exception as ex:
     tf.logging.warning("Can't decode with jpeg4py (libjpeg-turbo): {0}. Will use OpenCV.".format(ex))
     img = cv2.imdecode(data, cv2.IMREAD_COLOR)
@@ -44,6 +47,7 @@ def imdecode(data):
 class ObjectDetectorJson:
   _cache = dict()
 
+  # pylint: disable=invalid-name
   @staticmethod
   def get_classes_from_coco_annotation(ann_path):
     annotation = COCO(ann_path)
@@ -53,6 +57,7 @@ class ObjectDetectorJson:
       classes[class_id] = class_item['name']
     return classes
 
+  # pylint: disable=too-many-locals
   @staticmethod
   def convert_coco_to_toolbox_format(coco_annotation, classes, annotation_directory=''):
     annotations = list(coco_annotation.anns.values())
@@ -75,7 +80,7 @@ class ObjectDetectorJson:
                                          'image_size': image_size,
                                          'dataset': image['dataset'] if 'dataset' in image else 'DATASET',
                                          'objects': []
-                                         }
+                                        }
 
     for annotation in annotations:
       xmin, ymin, width, height = annotation['bbox']
@@ -97,11 +102,6 @@ class ObjectDetectorJson:
     images_without_annotation = [key for key, val in converted_annotations.items() if len(val['objects']) == 0]
     tf.logging.info('Images without annotation: {}'.format(len(images_without_annotation)))
     tf.logging.info(images_without_annotation)
-
-    '''
-    for key in images_without_annotation:
-      del converted_annotations[key]
-    '''
 
     return list(converted_annotations.values())
 
@@ -125,6 +125,7 @@ class ObjectDetectorJson:
     items = [pickle.loads(item) for item in generator()]
 
     def _read_image_from_disk(im_path, cache_type):
+      assert cache_type in ('ENCODED', 'FULL')
       if cache_type == 'ENCODED':
         with open(im_path, 'rb') as file:
           encoded_image = file.read()
@@ -133,6 +134,8 @@ class ObjectDetectorJson:
       if cache_type == 'FULL':
         image = imread(im_path)
         return image
+
+      return None
 
     items = tqdm(items, total=size, unit='images')
     total_cache_usage = 0

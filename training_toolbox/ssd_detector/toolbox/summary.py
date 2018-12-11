@@ -1,11 +1,13 @@
+import pickle
+
 import cv2
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm, Normalize
 import numpy as np
-import pickle
 import tensorflow as tf
 
 
+# pylint: disable=invalid-name
 def create_tensors_and_streaming_ops_for_assigned_priors(assigned_priors, priors_info, num_classes, weights=1.):
   total_priors_number = np.sum(
     [np.prod(priors_count) * num_priors_per_pixel for priors_count, num_priors_per_pixel in priors_info])
@@ -32,6 +34,7 @@ def create_tensors_and_streaming_ops_for_assigned_priors(assigned_priors, priors
   return metric_ops
 
 
+# pylint: disable=too-many-locals,invalid-name
 def get_detailed_assigned_priors_summary(assigned_priors, priors_info, name):
   """
   Get assigned priors 1D tensors by SSD heads and priors type.
@@ -122,7 +125,7 @@ def group_ssd_heads(assigned_priors, prefix='prior_histogram/'):
   max_prior_id = np.max([prior_id for (_, head_id, prior_id), val in priors_by_head_and_type]) + 1
 
   for (class_name, _, _), _ in priors_by_head_and_type:
-    mat = [[None for x in range(max_prior_id)] for y in range(max_head_id)]
+    mat = [[None for _ in range(max_prior_id)] for __ in range(max_head_id)]
     groups.setdefault(class_name, mat)
 
   for (class_name, head_id, prior_id), val in priors_by_head_and_type:
@@ -156,6 +159,7 @@ def write_histogram_2d_tf(assigned_priors, priors_info, name, step, log_dir):
   return True
 
 
+# pylint: disable=too-many-locals,invalid-name
 def write_histogram_2d(assigned_priors_group, step, log_dir, use_lognorm=False):
   summaries = []
   for type_str, group in assigned_priors_group.items():
@@ -211,7 +215,9 @@ def write_histogram_2d(assigned_priors_group, step, log_dir, use_lognorm=False):
     summaries.append(tf.Summary.Value(tag=name, image=img_sum))
 
   if summaries:
+    # pylint: disable=protected-access
     with tf.summary.FileWriterCache._lock:
+      # pylint: disable=protected-access
       if log_dir not in tf.summary.FileWriterCache._cache:
         tf.summary.FileWriterCache._cache[log_dir] = tf.summary.FileWriter(log_dir,
                                                                            graph=None)  # Don't store the graph

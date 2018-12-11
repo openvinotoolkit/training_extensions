@@ -1,6 +1,7 @@
 [submodule "cocoapi"]
 	path = external/cocoapi
 	url = https://github.com/cocodataset/cocoapi.git
+	ignore = dirty
 [submodule "models"]
 	path = external/models
 	url = https://github.com/tensorflow/models.git

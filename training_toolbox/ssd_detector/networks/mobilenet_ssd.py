@@ -13,10 +13,12 @@ from slim.nets.mobilenet.mobilenet_v2 import mobilenet_base as mobilenet_v2_base
 from slim.nets.mobilenet import mobilenet, mobilenet_v2
 
 from ssd_detector.toolbox.ssd_base import SSDBase
-from ssd_detector.toolbox.transformer import ResizeParameter, ExpansionParameter, TransformationParameter, DistortionParameter
+from ssd_detector.toolbox.transformer import ResizeParameter, ExpansionParameter,\
+  TransformationParameter, DistortionParameter
 
 
 class MobileNetSSD(SSDBase):
+  # pylint: disable=dangerous-default-value,too-many-arguments,too-many-locals,too-many-statements
   def __init__(self, num_classes, input_tensor, is_training=False, data_format='NHWC',
                priors_rule='object_detection_api', priors=[],
                mobilenet_version='v2', depth_multiplier=1.0, min_depth=16,
@@ -78,14 +80,13 @@ class MobileNetSSD(SSDBase):
         'data_format': data_format
       }
       affected_ops = [slim.conv2d, slim.separable_conv2d, slim.conv2d_transpose]
-      with (slim.arg_scope([slim.batch_norm], **batch_norm_params)):
-        with slim.arg_scope(
-            affected_ops,
-            weights_regularizer=slim.l2_regularizer(scale=float(weight_regularization)),
-            weights_initializer=tf.truncated_normal_initializer(mean=0, stddev=0.03),
-            activation_fn=tf.nn.relu6,
-            normalizer_fn=slim.batch_norm) as sc:
-          return sc
+      with slim.arg_scope([slim.batch_norm], **batch_norm_params):
+        with slim.arg_scope(affected_ops,
+                            weights_regularizer=slim.l2_regularizer(scale=float(weight_regularization)),
+                            weights_initializer=tf.truncated_normal_initializer(mean=0, stddev=0.03),
+                            activation_fn=tf.nn.relu6,
+                            normalizer_fn=slim.batch_norm) as scope:
+          return scope
 
     with slim.arg_scope(base_scope(is_training=None)):
       with slim.arg_scope(scope_fn()):
@@ -105,29 +106,28 @@ class MobileNetSSD(SSDBase):
     depths = [512, 256, 256, 128]
     depths = [int(d * depth_multiplier) for d in depths]
     with tf.variable_scope('extra_features'):
-        with slim.arg_scope(scope_fn()):
-          for i, depth in enumerate(depths):
-            intermediate_layer = slim.conv2d(feature_map, int(depth / 2), [1, 1], stride=1,
-                                             scope='intermediate_{0}'.format(i + 1))
-            # feature_map = slim.conv2d(intermediate_layer, depth, [3, 3], stride=2, scope='feature_map_{0}'.format(i + 1))
-            feature_map = slim.separable_conv2d(
-              intermediate_layer,
-              None, [3, 3],
-              depth_multiplier=1,
-              padding='SAME',
-              stride=2,
-              scope='feature_map_dw_{0}'.format(i + 1))
+      with slim.arg_scope(scope_fn()):
+        for i, depth in enumerate(depths):
+          intermediate_layer = slim.conv2d(feature_map, int(depth / 2), [1, 1], stride=1,
+                                           scope='intermediate_{0}'.format(i + 1))
+          feature_map = slim.separable_conv2d(
+            intermediate_layer,
+            None, [3, 3],
+            depth_multiplier=1,
+            padding='SAME',
+            stride=2,
+            scope='feature_map_dw_{0}'.format(i + 1))
 
-            output_feature_name = 'feature_map_{0}'.format(i + 1)
-            feature_map = slim.conv2d(
-              feature_map,
-              int(depth), [1, 1],
-              padding='SAME',
-              stride=1,
-              scope=output_feature_name)
+          output_feature_name = 'feature_map_{0}'.format(i + 1)
+          feature_map = slim.conv2d(
+            feature_map,
+            int(depth), [1, 1],
+            padding='SAME',
+            stride=1,
+            scope=output_feature_name)
 
-            head_feature_map_names.append(output_feature_name)
-            head_feature_map_tensors.append(feature_map)
+          head_feature_map_names.append(output_feature_name)
+          head_feature_map_tensors.append(feature_map)
 
     variances = [0.1, 0.1, 0.2, 0.2]
 
@@ -226,7 +226,8 @@ class MobileNetSSD(SSDBase):
     val_param = TransformationParameter(resize_param=val_resize_param, scale=scale, mean_value=mean_value)
     return train_param, val_param
 
-  def load_weights(self, weights_path):
+  @staticmethod
+  def load_weights(weights_path):
     variables = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)
 
     reader = pywrap_tensorflow.NewCheckpointReader(weights_path)
@@ -274,7 +275,7 @@ class MobileNetSSD(SSDBase):
       tf.logging.info("Values were not loaded for {} tensors:".format(len(skip_vars)))
       for var in skip_vars:
         tf.logging.info("  {}".format(var))
-    except ValueError as e:
+    except ValueError as exception:
       tf.logging.error("Weights was not loaded at all!")
-      tf.logging.error(e)
+      tf.logging.error(exception)
       exit(1)

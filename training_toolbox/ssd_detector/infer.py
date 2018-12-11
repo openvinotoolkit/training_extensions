@@ -1,3 +1,4 @@
+from __future__ import print_function
 import argparse
 import json
 import os
@@ -45,8 +46,9 @@ def parse_args():
   return parser.parse_args()
 
 
+# pylint: disable=too-many-locals
 def process_image(predictions, img_size, img_id, conf_threshold, classes):
-  width, height = img_size
+  img_width, img_height = img_size
 
   coco_detections = []
   for prediction in predictions:
@@ -56,22 +58,21 @@ def process_image(predictions, img_size, img_id, conf_threshold, classes):
     if conf_threshold and det_conf < conf_threshold:
       continue
 
-    x1 = float(prediction[2] * width)
-    y1 = float(prediction[3] * height)
-    x2 = float(prediction[4] * width)
-    y2 = float(prediction[5] * height)
+    top_left_x = float(prediction[2] * img_width)
+    top_left_y = float(prediction[3] * img_height)
+    bottom_right_x = float(prediction[4] * img_width)
+    bottom_right_y = float(prediction[5] * img_height)
     if det_label >= len(classes):
       print('Wrong label: {0}'.format(det_label))
       exit(1)
 
-    x, y = round(x1, 1), round(y1, 1)
-    w = round(x2 - x1, 1)
-    h = round(y2 - y1, 1)
+    obj_width = round(bottom_right_x - top_left_x, 1)
+    obj_height = round(bottom_right_y - top_left_y, 1)
 
-    coco_det = {}
+    coco_det = dict()
     coco_det['image_id'] = img_id
     coco_det['category_id'] = det_label
-    coco_det['bbox'] = [x, y, w, h]
+    coco_det['bbox'] = [round(top_left_x, 1), round(top_left_y, 1), obj_width, obj_height]
     coco_det['score'] = det_conf
     coco_detections.append(coco_det)
 
@@ -80,15 +81,16 @@ def process_image(predictions, img_size, img_id, conf_threshold, classes):
 
 def draw_detections(img, coco_detections):
   for det in coco_detections:
-    x, y, w, h = det['bbox']
-    tl = (int(x), int(y))
-    br = (int(x + w), int(y + h))
-    cv2.rectangle(img, tl, br, (255, 0, 0), 2)
-    cv2.putText(img, '{0}: {1}'.format(det['category_id'], det['score']), tl, cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0,
-                                                                                                              255), 2)
+    x, y, width, height = det['bbox'] # pylint: disable=invalid-name
+    top_left = (int(x), int(y))
+    bottom_right = (int(x + width), int(y + height))
+    cv2.rectangle(img, top_left, bottom_right, (255, 0, 0), 2)
+    cv2.putText(img, '{0}: {1}'.format(det['category_id'], det['score']), top_left,
+                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
   return img
 
 
+# pylint: disable=too-many-arguments
 def predict_on_video(predictions, path_to_video, classes, show=False, conf_threshold=None, dump_output_video=False,
                      path_to_output_video='output.avi'):
   output = []
@@ -101,8 +103,8 @@ def predict_on_video(predictions, path_to_video, classes, show=False, conf_thres
   if dump_output_video:
     out = cv2.VideoWriter(path_to_output_video, fourcc, fps, (int(width), int(height)))
   for i, pred in enumerate(predictions):
-    if (cap.isOpened()):
-      ret, frame = cap.read()
+    if cap.isOpened():
+      _, frame = cap.read()
       det = process_image(pred[:, 1:], (width, height), i, conf_threshold, classes)
       output.extend(det)
       img = draw_detections(frame, det)
@@ -160,22 +162,18 @@ def infer(config, source, path, conf_threshold=None, dump_to_json=False,
           show=False, dump_output_video=False, path_to_output_video='output.avi'):
   session_config = create_session(config, 'infer')
 
-  out_dir = os.path.join(config.model_dir, config.infer.out_subdir)
+  out_dir = os.path.join(config.MODEL_DIR, config.infer.out_subdir)
   if not os.path.exists(out_dir):
     os.mkdir(out_dir)
 
   run_config = tf.estimator.RunConfig(session_config=session_config)
 
-  config.detector_params['log_dir'] = config.model_dir
+  config.detector_params['log_dir'] = config.MODEL_DIR
 
-  predictor = tf.estimator.Estimator(
-    model_fn=detection_model,
-    params=config.detector_params,
-    model_dir=config.model_dir,
-    config=run_config
-  )
+  predictor = tf.estimator.Estimator(model_fn=detection_model,
+                                     params=config.detector_params, model_dir=config.MODEL_DIR, config=run_config)
 
-  checkpoint_path = tf.train.latest_checkpoint(config.model_dir)
+  checkpoint_path = tf.train.latest_checkpoint(config.MODEL_DIR)
 
   basename = os.path.basename(path)
   filename = os.path.splitext(basename)[0]

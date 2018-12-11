@@ -1,16 +1,16 @@
-import math, random
+import math
+import random
 
 
 class BoundingBox:
-  def __init__(self, xmin=0., ymin=0., xmax=0., ymax=0., difficult=False):  # , score=0, label=0):
+  # pylint: disable=too-many-arguments
+  def __init__(self, xmin=0., ymin=0., xmax=0., ymax=0., difficult=False):
     self.xmin = xmin
     self.ymin = ymin
     self.xmax = xmax
     self.ymax = ymax
 
     self.difficult = difficult
-    # self.score = score
-    # self.label = label
 
   def width(self):
     return self.xmax - self.xmin

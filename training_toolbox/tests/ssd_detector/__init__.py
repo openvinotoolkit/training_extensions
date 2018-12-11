@@ -9,5 +9,5 @@ OPEN_VINO_DIR = os.environ.get('OPEN_VINO_DIR', '')
 CONFIG = importlib.import_module('.config', __package__)
 
 
-def setUpModule():
-  download_test_data(CONFIG.root_dir)
+def setup_module():
+  download_test_data(CONFIG.ROOT_DIR)

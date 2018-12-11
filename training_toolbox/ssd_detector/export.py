@@ -1,3 +1,4 @@
+from __future__ import print_function
 import argparse
 import os
 import subprocess
@@ -41,9 +42,9 @@ def execute_tfmo(mo_py_path, frozen, config, input_shape=None, **kvwags):
     '--input_model={}'.format(frozen),
     '--output_dir={}'.format(folder),
     '--output={}'.format(','.join(config['cut_points'])),
-    '--input_shape=[{}]'.format(','.join(map(str, input_shape))) if input_shape else '',
+    '--input_shape=[{}]'.format(','.join([str(shape) for shape in input_shape])) if input_shape else '',
     '--scale={}'.format(scale) if scale else '',
-    '--mean_values=[{}]'.format(','.join(map(str, mean_values))) if mean_values else '',
+    '--mean_values=[{}]'.format(','.join([str(value) for value in mean_values])) if mean_values else '',
     '--model_name={}'.format(name),
     '--tensorflow_use_custom_operations_config={}'.format(json),
   )
@@ -79,7 +80,7 @@ def convert_to_ie(ssd, session, output_folder, mo_py_path, batch_size=None, **kv
 
 def export(cfg, tfmo):
 
-  checkpoint_path = tf.train.latest_checkpoint(cfg.model_dir)
+  checkpoint_path = tf.train.latest_checkpoint(cfg.MODEL_DIR)
 
   detector_params = cfg.detector_params.copy()
   with tf.Session() as sess:
@@ -97,7 +98,8 @@ def export(cfg, tfmo):
     ssd.detection_output()
     # For eval.py
     tf.get_variable('eval_iteration', initializer=0, dtype=tf.int32, trainable=False)
-    tf.get_variable('global_step', initializer=tf.constant_initializer(0, dtype=tf.int64), shape=(), dtype=tf.int64, trainable=False)
+    tf.get_variable('global_step', initializer=tf.constant_initializer(0, dtype=tf.int64), shape=(), dtype=tf.int64,
+                    trainable=False)
 
     train_param, _ = ssd.create_transform_parameters(width=cfg.input_shape[0], height=cfg.input_shape[1])
 
@@ -105,7 +107,7 @@ def export(cfg, tfmo):
     saver.restore(sess, checkpoint_path)
 
     mean_values = [train_param.mean_value for _ in range(3)]
-    convert_to_ie(ssd, sess, os.path.join(cfg.model_dir, 'ie_model/'), tfmo, batch_size=1,
+    convert_to_ie(ssd, sess, os.path.join(cfg.MODEL_DIR, 'ie_model/'), tfmo, batch_size=1,
                   scale=1./train_param.scale, mean_values=mean_values)
 
 
