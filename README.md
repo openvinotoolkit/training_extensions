@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/opencv/training_toolbox_tensorflow.svg?branch=develop)](https://travis-ci.org/opencv/training_toolbox_tensorflow)
+
 # Training Toolbox for TensorFlow
 
 Training Toolbox for TensorFlow provides a convenient environment to train
@@ -63,7 +65,7 @@ cd training_toolbox
 export OPEN_VINO_DIR=<PATH_TO_OPENVINO>
 nosetests
 ```
-    
+
 Note: if you have installed the OpenVino toolkit after creating
 a virtual environment then you have to [recreate one](#create_venv)
 to install required packages for the Model Optimizer into one.
