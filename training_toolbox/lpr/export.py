@@ -9,7 +9,7 @@ import tensorflow.contrib.slim as slim
 from tensorflow.python.framework import graph_io
 
 from lpr.trainer import inference
-from utils.helpers import dump_frozen_graph, load_module
+from utils.helpers import load_module
 
 
 def parse_args():
