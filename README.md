@@ -78,4 +78,5 @@ Do not forget to update several environment variables are required to compile an
 After installation, you are ready to train your own models, evaluate them, use
 them for predictions.
 
-[SSD Object Detection](training_toolbox/ssd_detector/README.md)
+* [SSD Object Detection](training_toolbox/ssd_detector/README.md)
+* [LPRNet](training_toolbox/lpr/README.md)

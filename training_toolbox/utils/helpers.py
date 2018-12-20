@@ -14,6 +14,11 @@ def import_research_models():
   sys.path.append(path.join(research_dir, 'slim'))
 
 
+def import_transformer():
+  transformer_dir = path.realpath(path.dirname(__file__) + '../../../external/models/research/transformer')
+  sys.path.append(transformer_dir)
+
+
 def load_module(module_name):
   # TODO: replace on
   # __import__(module_name)
@@ -136,7 +141,9 @@ def dump_frozen_graph(sess, graph_file, output_node_names=None):
   print('Done')
 
   print('>> Saving `{}`... '.format(ckpt))
-  tf.train.Saver().save(sess, ckpt, write_meta_graph=False)
+  with sess.graph.as_default():
+    saver = tf.train.Saver()
+    saver.save(sess, ckpt, write_meta_graph=False)
   print('Done')
 
   print('>> Freezing graph to `{}`... '.format(frozen))
