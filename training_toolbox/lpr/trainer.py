@@ -31,7 +31,7 @@ class InputData:
     # blur/sharpen augmentation
     if self.apply_blur_aug:
       data, = tf.py_func(random_blur, [image], [tf.float32])
-      data.set_shape(self.input_shape)  # [batch_size, height, width, channels_num]
+      data.set_shape([self.batch_size] + list(self.input_shape))  # [batch_size, height, width, channels_num]
     else:
       data = image
 
