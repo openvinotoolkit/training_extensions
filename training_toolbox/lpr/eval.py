@@ -33,7 +33,7 @@ def read_data(height, width, channels_num, list_file_name, batch_size=10):
   return image_batch, label_batch, file_batch
 
 
-def data_input(height, width, channels_num, filename, batch_size=10):
+def data_input(height, width, channels_num, filename, batch_size=1):
   files_string_producer = tf.train.string_input_producer([filename])
   image, label, filename = read_data(height, width, channels_num, files_string_producer, batch_size)
   return image, label, filename
@@ -50,14 +50,13 @@ def validate(config):
     os.environ["CUDA_VISIBLE_DEVICES"] = config.train.execution.CUDA_VISIBLE_DEVICES
 
   height, width, channels_num = config.input_shape
-  max_lp_length = config.max_lp_length
   rnn_cells_num = config.rnn_cells_num
 
   graph = tf.Graph()
   with graph.as_default():
     with slim.arg_scope([slim.batch_norm, slim.dropout], is_training=False):
       inp_data, label_val, file_names = data_input(height, width, channels_num,
-                                                   config.eval.file_list_path, batch_size=1)
+                                                   config.eval.file_list_path, batch_size=config.eval.batch_size)
 
       prob = inference(rnn_cells_num, inp_data, config.num_classes)
       prob = tf.transpose(prob, (1, 0, 2))  # prepare for CTC
@@ -66,9 +65,10 @@ def validate(config):
 
       result = tf.nn.ctc_greedy_decoder(prob, data_length, merge_repeated=True)
 
-      predictions = [tf.to_int32(p) for p in result[0]]
-      d_predictions = tf.stack([tf.sparse_to_dense(p.indices, [1, max_lp_length], p.values, default_value=-1)
-                                for p in predictions])
+      predictions = tf.to_int32(result[0][0])
+      d_predictions = tf.sparse_to_dense(predictions.indices,
+                                         [tf.shape(inp_data, out_type=tf.int64)[0], config.max_lp_length],
+                                         predictions.values, default_value=-1, name='d_predictions')
 
       init = tf.initialize_all_variables()
       saver = tf.train.Saver(write_version=tf.train.SaverDef.V2)
@@ -111,7 +111,7 @@ def validate(config):
 
       mean_accuracy, mean_accuracy_minus_1 = 0.0, 0.0
 
-      steps = test_size
+      steps = int(test_size / config.eval.batch_size) if int(test_size / config.eval.batch_size) else 1
       num = 0
       for _ in range(steps):
         val, slabel, _ = sess.run([d_predictions, label_val, file_names])

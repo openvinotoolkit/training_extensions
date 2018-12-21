@@ -27,7 +27,8 @@ def read_data(height, width, channels_num, list_file_name, batch_size=1):
   resized_image = tf.image.resize_images(rgb_image_float, [height, width])
   resized_image.set_shape([height, width, channels_num])
 
-  image_batch, file_batch = tf.train.batch([resized_image, filename], batch_size=batch_size)
+  image_batch, file_batch = tf.train.batch([resized_image, filename], batch_size=batch_size,
+                                           allow_smaller_final_batch=True)
   return image_batch, file_batch
 
 
@@ -48,14 +49,14 @@ def infer(config):
     os.environ["CUDA_VISIBLE_DEVICES"] = config.train.execution.CUDA_VISIBLE_DEVICES
 
   height, width, channels_num = config.input_shape
-  max_lp_length = config.max_lp_length
   rnn_cells_num = config.rnn_cells_num
 
   graph = tf.Graph()
 
   with graph.as_default():
     with slim.arg_scope([slim.batch_norm, slim.dropout], is_training=False):
-      inp_data, filenames = data_input(height, width, channels_num, config.infer.file_list_path, batch_size=1)
+      inp_data, filenames = data_input(height, width, channels_num, config.infer.file_list_path,
+                                       batch_size=config.infer.batch_size)
 
       prob = inference(rnn_cells_num, inp_data, config.num_classes)
       prob = tf.transpose(prob, (1, 0, 2))  # prepare for CTC
@@ -64,9 +65,10 @@ def infer(config):
 
       result = tf.nn.ctc_greedy_decoder(prob, data_length, merge_repeated=True)
 
-      predictions = [tf.to_int32(p) for p in result[0]]
-      d_predictions = tf.stack([tf.sparse_to_dense(p.indices, [1, max_lp_length], p.values, default_value=-1)
-                                for p in predictions])
+      predictions = tf.to_int32(result[0][0])
+      d_predictions = tf.sparse_to_dense(predictions.indices,
+                                         [tf.shape(inp_data, out_type=tf.int64)[0], config.max_lp_length],
+                                         predictions.values, default_value=-1, name='d_predictions')
 
       init = tf.initialize_all_variables()
       saver = tf.train.Saver(write_version=tf.train.SaverDef.V2)
@@ -90,29 +92,32 @@ def infer(config):
 
   saver.restore(sess, latest_checkpoint)
 
-  steps = dataset_size(config.infer.file_list_path)
-
+  infer_size = dataset_size(config.infer.file_list_path)
+  steps = int(infer_size / config.infer.batch_size) if int(infer_size / config.infer.batch_size) else 1
   for _ in range(steps):
 
-    val, filename = sess.run([d_predictions, filenames])
-    filename = filename[0].decode('utf-8')
-    pred = decode_beams(val, config.r_vocab)[0]
+    vals, filenames = sess.run([d_predictions, filenames])
+    pred = decode_beams(vals, config.r_vocab)
 
-    img = cv2.imread(filename)
-    size = cv2.getTextSize(pred[0], cv2.FONT_HERSHEY_SIMPLEX, 0.55, 2)
-    text_width = size[0][0]
-    text_height = size[0][1]
+    for i, filename in enumerate(filenames):
+      filename = filename.decode('utf-8')
 
-    img_he, img_wi, _ = img.shape
-    img = cv2.copyMakeBorder(img, 0, text_height + 10, 0,
-                             0 if text_width < img_wi else text_width - img_wi, cv2.BORDER_CONSTANT,
-                             value=(255, 255, 255))
-    cv2.putText(img, pred[0], (0, img_he + text_height + 5), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (0, 0, 0), 2)
 
-    cv2.imshow('License Plate', img)
-    key = cv2.waitKey(0)
-    if key == 27:
-      break
+      img = cv2.imread(filename)
+      size = cv2.getTextSize(pred[i], cv2.FONT_HERSHEY_SIMPLEX, 0.55, 2)
+      text_width = size[0][0]
+      text_height = size[0][1]
+
+      img_he, img_wi, _ = img.shape
+      img = cv2.copyMakeBorder(img, 0, text_height + 10, 0,
+                               0 if text_width < img_wi else text_width - img_wi, cv2.BORDER_CONSTANT,
+                               value=(255, 255, 255))
+      cv2.putText(img, pred[i], (0, img_he + text_height + 5), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (0, 0, 0), 2)
+
+      cv2.imshow('License Plate', img)
+      key = cv2.waitKey(0)
+      if key == 27:
+        break
 
   coord.request_stop()
   coord.join(threads)
