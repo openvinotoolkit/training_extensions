@@ -80,3 +80,4 @@ them for predictions.
 
 * [SSD Object Detection](training_toolbox/ssd_detector/README.md)
 * [LPRNet](training_toolbox/lpr/README.md)
+* [Vehicle Attributes](training_toolbox/vehicle_attributes/README.md)
