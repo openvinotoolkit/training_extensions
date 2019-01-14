@@ -38,8 +38,8 @@ def execute_tfmo(mo_py_path, frozen, input_shape, batch_size, precision):
     '--reverse_input_channels',
     '--scale={}'.format(255),
     '--input_shape=[{}]'.format(','.join([str(shape) for shape in input_shape])),
-    '--input={}'.format('0:Conv/Conv2D'),
-    '--output={}'.format('stack'),
+    '--input={}'.format('input'),
+    '--output={}'.format('d_predictions'),
     '--input_model={}'.format(frozen),
     '--output_dir={}'.format(folder),
     '--model_name={}'.format(name),
@@ -57,14 +57,14 @@ def export(config, tfmo, batch_size=1, precision='FP32'):
   graph = tf.Graph()
   with graph.as_default():
     with slim.arg_scope([slim.batch_norm, slim.dropout], is_training=False):
-      input_tensor = tf.placeholder(dtype=tf.float32, shape=shape)
+      input_tensor = tf.placeholder(dtype=tf.float32, shape=shape, name='input')
       prob = inference(config.rnn_cells_num, input_tensor, config.num_classes)
       prob = tf.transpose(prob, (1, 0, 2))
       data_length = tf.fill([tf.shape(prob)[1]], tf.shape(prob)[0])
       result = tf.nn.ctc_greedy_decoder(prob, data_length, merge_repeated=True)
-      predictions = [tf.to_int32(p) for p in result[0]]
-      _ = tf.stack([tf.sparse_to_dense(p.indices, [1, config.max_lp_length], p.values, default_value=-1)
-                    for p in predictions])
+      predictions = tf.to_int32(result[0][0])
+      tf.sparse_to_dense(predictions.indices, [tf.shape(input_tensor, out_type=tf.int64)[0], config.max_lp_length],
+                         predictions.values, default_value=-1, name='d_predictions')
       init = tf.initialize_all_variables()
       saver = tf.train.Saver(write_version=tf.train.SaverDef.V2)
 
@@ -73,7 +73,7 @@ def export(config, tfmo, batch_size=1, precision='FP32'):
   checkpoints_dir = config.model_dir
   latest_checkpoint = tf.train.latest_checkpoint(checkpoints_dir)
   saver.restore(sess, latest_checkpoint)
-  frozen = tf.graph_util.convert_variables_to_constants(sess, sess.graph_def, ["stack"])
+  frozen = tf.graph_util.convert_variables_to_constants(sess, sess.graph_def, ["d_predictions"])
   tf.train.write_graph(sess.graph, os.path.join(config.model_dir, 'ie_model/'), 'graph.pbtxt', as_text=True)
   path_to_frozen_model = graph_io.write_graph(frozen, os.path.join(config.model_dir, 'ie_model/'),
                                               'graph.pb.frozen', as_text=False)

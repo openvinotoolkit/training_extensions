@@ -182,14 +182,11 @@ def decode(values, reverse_vocab):
 
 def decode_beams(vals, r_vocab):
   beams_list = []
-  for time in range(vals.shape[1]):
-    beams = []
-    for beam in range(vals.shape[0]):
-      decoded_number = ''
-      for code in vals[beam][time]:
-        decoded_number += r_vocab[code]
-      beams.append(decoded_number)
-    beams_list.append(beams)
+  for val in vals:
+    decoded_number = ''
+    for code in val:
+      decoded_number += r_vocab[code]
+    beams_list.append(decoded_number)
   return beams_list
 
 

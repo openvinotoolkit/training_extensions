@@ -8,7 +8,7 @@ max_lp_length = 20
 rnn_cells_num = 128
 
 model_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                         'model_test')  # Path to the folder where all training and evaluation artifacts will be located
+                         'model')  # Path to the folder where all training and evaluation artifacts will be located
 if not os.path.exists(model_dir):
   os.makedirs(model_dir)
 
@@ -41,6 +41,7 @@ class train:
 class eval:
   file_list_path = 'val' #path to annotation file with validation data in per line format: <path_to_image_with_license_plate label>
   checkpoint = ''
+  batch_size = 1
 
   class execution:
     CUDA_VISIBLE_DEVICES = "0"  # Environment variable to control CUDA device used for training
@@ -51,6 +52,7 @@ class eval:
 class infer:
   file_list_path = 'test_infer' #path to text file with list of images in per line format: <path_to_image_with_license_plate>
   checkpoint = ''
+  batch_size = 1
 
   class execution:
     CUDA_VISIBLE_DEVICES = "0"  # Environment variable to control CUDA device used for training

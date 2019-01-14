@@ -55,15 +55,14 @@ def accuracy(label, val, vocab, r_vocab):
     if not lpr_pattern_check(label[i].decode('utf-8')):  # GT label fails
       print('GT label fails: ' + label[i].decode('utf-8'))
       continue
-    best = find_best(pred[i])
-    # use classes lists instead of strings to get edd('<aaa>', '<bbb>') = 1
+    best = pred[i]
     edd = edit_distance(encode(label[i].decode('utf-8'), vocab), encode(best, vocab))
     if edd <= 1:
       acc1 += 1
     if label[i].decode('utf-8') == best:
       acc += 1
     else:
-      if label[i] not in pred[i]:
+      if label[i].decode('utf-8') not in pred[i]:
         print('Check GT label: ' + label[i].decode('utf-8'))
       print(label[i].decode('utf-8') + ' -- ' + best + ' Edit Distance: ' + str(edd))
     num += 1
