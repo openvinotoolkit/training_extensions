@@ -75,3 +75,16 @@ To train a model, go through the following steps:
     path_to_lp_image2
     ...
     ```
+
+## Citation
+
+If you find *LPRNet* useful in your research, please, consider to cite the following paper:
+
+```
+@article{icv2018lprnet,
+title={LPRNet: License Plate Recognition via Deep Neural Networks},
+author={Sergey Zherzdev and Alexey Gruzdev},
+journal={arXiv:1806.10447},
+year={2018}
+}
+```
