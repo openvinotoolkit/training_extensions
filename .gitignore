@@ -2,7 +2,8 @@
 __pycache__
 .idea/
 *.iml
-training_toolbox/tests/models
+**/venv
 data/test
-venv
 external/cocoapi
+tensorflow_toolkit/tests/models
+tensorflow_toolkit/**/model
