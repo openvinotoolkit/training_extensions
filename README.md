@@ -1,6 +1,6 @@
-# Training Toolbox
+# OpenVINO Training Extensions
 
-Training Toolbox for TensorFlow and PyTorch provides a convenient environment to train
+OpenVINO Training Extensions provide a convenient environment to train
 Deep Learning models and convert them using [OpenVINO™
 Toolkit](https://software.intel.com/en-us/openvino-toolkit) for optimized
 inference.
@@ -8,14 +8,14 @@ inference.
 
 # Quick Start Guide
 
-## Setup Training Toolbox for TensorFlow
+## Setup OpenVINO Training Extensions
 
 1. Clone repository in the working directory
 
   ```
   cd /<path_to_working_dir>
-  git clone https://github.com/opencv/training_toolbox.git
-  cd training_toolbox
+  git clone https://github.com/opencv/openvino_training_extensions.git
+  cd openvino_training_extensions
   git submodule update --init --recursive
   ```
 
