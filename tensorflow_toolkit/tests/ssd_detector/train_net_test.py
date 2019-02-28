@@ -58,7 +58,7 @@ class TrainNetCheckRegression(BaseTest):
     self.assertEqual(len(gold_detections), len(detections))
     for gold_d, det in zip(gold_detections, detections):
       self.assertEqual(gold_d['image_id'], det['image_id'])
-        self.assertEqual(gold_d['category_id'], det['category_id'])
+      self.assertEqual(gold_d['category_id'], det['category_id'])
       for val, val_gold in zip(gold_d['bbox'], det['bbox']):
         self.assertAlmostEqual(val, val_gold, msg='Detections mismatch')
 
