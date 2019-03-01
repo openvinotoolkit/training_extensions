@@ -10,11 +10,11 @@ The crossroad detection network model provides detection of 3 class objects: veh
  
 1. Tensorflow object-detection framework 
    ```
-   training_toolbox/external/models/research/object_detection/
+   openvino_training_extensions/external/models/research/object_detection/
    ```
 2. cocoapi 
    ```
-   training_toolbox/external/cocoapi
+   openvino_training_extensions/external/cocoapi
    ```
 3. Tensorboard
    ```
@@ -22,8 +22,8 @@ The crossroad detection network model provides detection of 3 class objects: veh
    ```
 ## Training and evaluation example
 
-0. Go to `training_toolbox/veh_ped_nonveh_ssd_mobilenetv2_detector/` directory
-1. The example dataset has annotation in coco format. You can find it here: `training_toolbox/veh_ped_nonveh_ssd_mobilenetv2_detector/dataset`
+0. Go to `openvino_training_extensions/tensorflow_toolkit/veh_ped_nonveh_ssd_mobilenetv2_detector/` directory
+1. The example dataset has annotation in coco format. You can find it here: `openvino_training_extensions/tensorflow_toolkit/veh_ped_nonveh_ssd_mobilenetv2_detector/dataset`
 2. To convert the dataset to tfrecords you have to run:
    ```
    ./prepare_data.sh 
@@ -32,12 +32,12 @@ The crossroad detection network model provides detection of 3 class objects: veh
    ```
    ./train.sh
    ```
-4. Training artifacts will be stored by default in `training_toolbox/veh_ped_nonveh_ssd_mobilenetv2_detector/model`
+4. Training artifacts will be stored by default in `openvino_training_extensions/tensorflow_toolkit/veh_ped_nonveh_ssd_mobilenetv2_detector/model`
 5. To start evaluation process you have to run:
    ```
    ./evaluate.sh
    ```
-6. Evalution artifacts will be stored by default in `training_toolbox/veh_ped_nonveh_ssd_mobilenetv2_detector/eval`. To show results of network model working run 
+6. Evalution artifacts will be stored by default in `openvino_training_extensions/tensorflow_toolkit/veh_ped_nonveh_ssd_mobilenetv2_detector/eval`. To show results of network model working run 
   ```
   tensorboard --logdir=./eval
   ```
