@@ -2,13 +2,25 @@
 
 This repository contains training code for the paper [Real-time 2D Multi-Person Pose Estimation on CPU: Lightweight OpenPose](https://arxiv.org/pdf/1811.12004.pdf). This work heavily optimizes the [OpenPose](https://github.com/CMU-Perceptual-Computing-Lab/openpose) approach to reach real-time inference on CPU with negliable accuracy drop. It detects a skeleton (which consists of keypoints and connections between them) to identify human poses for every person inside the image. The pose may contain up to 18 keypoints: ears, eyes, nose, neck, shoulders, elbows, wrists, hips, knees, and ankles. On COCO 2017 Keypoint Detection validation set this code achives 40% AP for the single scale inference (no flip or any post-processing done). The result can be reproduced using this repository.
 
+## Table of Contents
+
+* [Requirements](#requirements)
+* [Prerequisites](#prerequisites)
+* [Training](#training)
+* [Validation](#validation)
+* [Pre-trained model](#pre-trained-model)
+* [C++ demo](#cpp-demo)
+* [Python demo](#python-demo)
+* [Fine-tuning](#fine-tuning)
+* [Citation](#citation)
+
 ## Requirements
 
 + Ubuntu 16.04
 + Python 3.6
 + PyTorch 0.4.1 (should also work with 1.0, but not tested)
 
-## Prerequisities
+## Prerequisites
 
 1. Download COCO 2017 dataset: [http://cocodataset.org/#download](http://cocodataset.org/#download) (train, val, annotations) and unpack it to `<COCO_HOME>` folder.
 2. Create virtual environment `bash init_venv.sh`
@@ -74,7 +86,7 @@ To get rid of it, increase the limit to bigger number, e.g. 65536, run in the te
 
 1. Run `python val.py --labels <COCO_HOME>/annotations/person_keypoints_val2017.json --images-folder <COCO_HOME>/val2017 --checkpoint-path <CHECKPOINT>`
 
-## Pre-trained model
+## Pre-trained model <a name="pre-trained-model"/>
 
 The model expects normalized image (mean=[128, 128, 128], scale=[1/256, 1/256, 1/256]) in planar BGR format.
 Pre-trained on COCO model is available at: https://download.01.org/openvinotoolkit/open_model_zoo/training_toolbox_pytorch/checkpoint_iter_370000.pth.tar, it has 40% of AP on COCO validation set (38.6% of AP on the val *subset*).
@@ -84,11 +96,16 @@ Pre-trained on COCO model is available at: https://download.01.org/openvinotoolk
 1. Convert PyTorch model to ONNX format: run script in terminal `python scripts/convert_to_onnx.py --checkpoint-path <CHECKPOINT>`. It produces `human-pose-estimation.onnx`.
 2. Convert ONNX model to OpenVINO format with Model Optimizer: run in terminal `python <OpenVINO_INSTALL_DIR>/deployment_tools/model_optimizer/mo.py --input_model human-pose-estimation.onnx --input data --mean_values data[128.0,128.0,128.0] --scale_values data[256] --output stage_1_output_0_pafs,stage_1_output_1_heatmaps`. This produces model `human-pose-estimation.xml` and weights `human-pose-estimation.bin` in single-precision floating-point format (FP32).
 
-## Demo
+## C++ Demo <a name="cpp-demo"/>
 
 To run the demo download Intel&reg; OpenVINO&trade; Toolkit [https://software.intel.com/en-us/openvino-toolkit/choose-download](https://software.intel.com/en-us/openvino-toolkit/choose-download), install it and [build the samples](https://software.intel.com/en-us/articles/OpenVINO-InferEngine) (*Inferring Your Model with the Inference Engine Samples* part). Then run `<SAMPLES_BIN_FOLDER>/human_pose_estimation_demo -m <path_to>/human-pose-estimation.xml -i <path_to_video_file>` for the inference on `CPU`.
 
-## Fine-tuning
+## Python Demo <a name="python-demo"/>
+
+We provide python demo just for the quick results preview. Please, consider c++ demo for the best performance. To run the python demo from a webcam:
+* `python demo.py --checkpoint-path checkpoint_iter_370000.pth.tar --video 0`
+
+## Fine-tuning <a name="fine-tuning"/>
 
 * The annotations have to be in [COCO format](http://cocodataset.org/#format-data).
 * If number of keypoints differs from this model (18), then network structure and result parsing code (e.g. `modules/keypoints.py`) adjustments are required.
