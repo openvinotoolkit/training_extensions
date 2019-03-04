@@ -1,5 +1,3 @@
-[![Build Status](https://travis-ci.org/opencv/training_toolbox_tensorflow.svg?branch=develop)](https://travis-ci.org/opencv/training_toolbox_tensorflow)
-
 # Training Toolbox for TensorFlow
 
 Training Toolbox for TensorFlow provides a convenient environment to train
@@ -21,32 +19,17 @@ inference.
 
 ## Setup Training Toolbox for TensorFlow
 
-1. Clone repository in the working directory
-
-  ```
-  cd /<path_to_working_dir>
-  git clone https://github.com/opencv/training_toolbox_tensorflow.git
-  cd training_toolbox_tensorflow
-  git submodule update --init --recursive
-  ```
-
-2. Install prerequisites
-
-  ```
-  sudo apt-get install libturbojpeg python3-tk python3-pip virtualenv 2to3
-  ```
-
-3. Create virtual environment
+1. Create virtual environment
 <a name="create_venv"></a>
 
-  ```
-  bash tools/init_venv.sh
-  ```
+```
+cd /<path_to_working_dir>/training_toolbox/tensorflow_toolkit
+bash init_venv.sh
+```
 
 4. Start to work
 
   ```
-  cd /<path_to_working_dir>/training_toolbox_tensorflow
   . venv/bin/activate
   ```
 
@@ -54,14 +37,14 @@ inference.
 In virtual environment run tests:
 
 ```
-cd training_toolbox
+cd /<path_to_working_dir>/training_toolbox/tensorflow_toolkit
 nosetests
 ```
 
 or if you are going to use the OpenVino toolkit:
 
 ```
-cd training_toolbox
+cd /<path_to_working_dir>/training_toolbox/tensorflow_toolkit
 export OPEN_VINO_DIR=<PATH_TO_OPENVINO>
 nosetests
 ```
@@ -78,6 +61,6 @@ Do not forget to update several environment variables are required to compile an
 After installation, you are ready to train your own models, evaluate them, use
 them for predictions.
 
-* [SSD Object Detection](training_toolbox/ssd_detector/README.md)
-* [LPRNet](training_toolbox/lpr/README.md)
-* [Vehicle Attributes](training_toolbox/vehicle_attributes/README.md)
+* [SSD Object Detection](training_toolbox/ssd_detector)
+* [LPRNet](training_toolbox/lpr)
+* [Vehicle Attributes](training_toolbox/vehicle_attributes)
