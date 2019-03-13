@@ -151,38 +151,38 @@ def create_tf_example(image,
       pil_image.save(output_io, format='PNG')
       encoded_mask_png.append(output_io.getvalue())
   feature_dict = {
-      'image/height':
-          dataset_util.int64_feature(image_height),
-      'image/width':
-          dataset_util.int64_feature(image_width),
-      'image/filename':
-          dataset_util.bytes_feature(filename.encode('utf8')),
-      'image/source_id':
-          dataset_util.bytes_feature(str(image_id).encode('utf8')),
-      'image/key/sha256':
-          dataset_util.bytes_feature(key.encode('utf8')),
-      'image/encoded':
-          dataset_util.bytes_feature(encoded_jpg),
-      'image/format':
-          dataset_util.bytes_feature('jpeg'.encode('utf8')),
-      'image/object/bbox/xmin':
-          dataset_util.float_list_feature(xmin),
-      'image/object/bbox/xmax':
-          dataset_util.float_list_feature(xmax),
-      'image/object/bbox/ymin':
-          dataset_util.float_list_feature(ymin),
-      'image/object/bbox/ymax':
-          dataset_util.float_list_feature(ymax),
-      'image/object/class/text':
-          dataset_util.bytes_list_feature(category_names),
-      'image/object/is_crowd':
-          dataset_util.int64_list_feature(is_crowd),
-      'image/object/area':
-          dataset_util.float_list_feature(area),
+    'image/height':
+        dataset_util.int64_feature(image_height),
+    'image/width':
+        dataset_util.int64_feature(image_width),
+    'image/filename':
+        dataset_util.bytes_feature(filename.encode('utf8')),
+    'image/source_id':
+        dataset_util.bytes_feature(str(image_id).encode('utf8')),
+    'image/key/sha256':
+        dataset_util.bytes_feature(key.encode('utf8')),
+    'image/encoded':
+        dataset_util.bytes_feature(encoded_jpg),
+    'image/format':
+        dataset_util.bytes_feature('jpeg'.encode('utf8')),
+    'image/object/bbox/xmin':
+        dataset_util.float_list_feature(xmin),
+    'image/object/bbox/xmax':
+        dataset_util.float_list_feature(xmax),
+    'image/object/bbox/ymin':
+        dataset_util.float_list_feature(ymin),
+    'image/object/bbox/ymax':
+        dataset_util.float_list_feature(ymax),
+    'image/object/class/text':
+        dataset_util.bytes_list_feature(category_names),
+    'image/object/is_crowd':
+        dataset_util.int64_list_feature(is_crowd),
+    'image/object/area':
+        dataset_util.float_list_feature(area),
   }
   if include_masks:
     feature_dict['image/object/mask'] = (
-        dataset_util.bytes_list_feature(encoded_mask_png))
+      dataset_util.bytes_list_feature(encoded_mask_png))
   example = tf.train.Example(features=tf.train.Features(feature=feature_dict))
   return key, example, num_annotations_skipped
 
@@ -202,16 +202,16 @@ def _create_tf_record_from_coco_annotations(
   with contextlib2.ExitStack() as tf_record_close_stack, \
       tf.gfile.GFile(annotations_file, 'r') as fid:
     output_tfrecords = tf_record_creation_util.open_sharded_output_tfrecords(
-        tf_record_close_stack, output_path, num_shards)
+      tf_record_close_stack, output_path, num_shards)
     groundtruth_data = json.load(fid)
     images = groundtruth_data['images']
     category_index = label_map_util.create_category_index(
-        groundtruth_data['categories'])
+      groundtruth_data['categories'])
 
     annotations_index = {}
     if 'annotations' in groundtruth_data:
       tf.logging.info(
-          'Found groundtruth annotations. Building annotations index.')
+        'Found groundtruth annotations. Building annotations index.')
       for annotation in groundtruth_data['annotations']:
         image_id = annotation['image_id']
         if image_id not in annotations_index:
@@ -232,7 +232,7 @@ def _create_tf_record_from_coco_annotations(
         tf.logging.info('On image %d of %d', idx, len(images))
       annotations_list = annotations_index[image['id']]
       _, tf_example, num_annotations_skipped = create_tf_example(
-          image, annotations_list, image_dir, category_index, include_masks)
+        image, annotations_list, image_dir, category_index, include_masks)
       total_num_annotations_skipped += num_annotations_skipped
       shard_idx = idx % num_shards
       output_tfrecords[shard_idx].write(tf_example.SerializeToString())
@@ -252,17 +252,17 @@ def main(_):
   val_output_path = os.path.join(FLAGS.output_dir, 'crossroad_val.record')
 
   _create_tf_record_from_coco_annotations(
-     FLAGS.train_annotations_file,
-     FLAGS.train_image_dir,
-     train_output_path,
-     FLAGS.include_masks,
-     num_shards=10)
+    FLAGS.train_annotations_file,
+    FLAGS.train_image_dir,
+    train_output_path,
+    FLAGS.include_masks,
+    num_shards=10)
   _create_tf_record_from_coco_annotations(
-      FLAGS.val_annotations_file,
-      FLAGS.val_image_dir,
-      val_output_path,
-      FLAGS.include_masks,
-      num_shards=10)
+    FLAGS.val_annotations_file,
+    FLAGS.val_image_dir,
+    val_output_path,
+    FLAGS.include_masks,
+    num_shards=10)
 
 
 if __name__ == '__main__':
