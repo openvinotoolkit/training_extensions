@@ -64,11 +64,11 @@ FLAGS = flags.FLAGS
 tf.logging.set_verbosity(tf.logging.INFO)
 
 
-def create_tf_example(image,
+def create_tf_example(image,# pylint: disable=invalid-name, too-many-locals
                       annotations_list,
                       image_dir,
                       category_index,
-                      include_masks=False): # pylint: disable=invalid-name
+                      include_masks=False): 
   """Converts image and annotations to a tf.Example proto.
 
   Args:
@@ -185,8 +185,8 @@ def create_tf_example(image,
   return key, example, num_annotations_skipped
 
 
-def _create_tf_record_from_coco_annotations(
-    annotations_file, image_dir, output_path, include_masks, num_shards): # pylint: disable=invalid-name
+def _create_tf_record_from_coco_annotations(# pylint: disable=invalid-name, too-many-locals
+    annotations_file, image_dir, output_path, include_masks, num_shards):
   """Loads COCO annotation json files and converts to tf.Record format.
 
   Args:
