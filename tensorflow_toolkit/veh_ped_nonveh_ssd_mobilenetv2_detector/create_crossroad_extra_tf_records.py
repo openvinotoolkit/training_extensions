@@ -21,7 +21,6 @@ Example usage:
     python create_coco_tf_record.py --logtostderr \
       --train_image_dir="${TRAIN_IMAGE_DIR}" \
       --val_image_dir="${VAL_IMAGE_DIR}" \
-      --test_image_dir="${TEST_IMAGE_DIR}" \
       --train_annotations_file="${TRAIN_ANNOTATIONS_FILE}" \
       --val_annotations_file="${VAL_ANNOTATIONS_FILE}" \
       --testdev_annotations_file="${TESTDEV_ANNOTATIONS_FILE}" \
@@ -46,7 +45,7 @@ from object_detection.utils import dataset_util
 from object_detection.utils import label_map_util
 
 
-flags = tf.app.flags
+flags = tf.app.flags # pylint: disable=invalid-name
 tf.flags.DEFINE_boolean('include_masks', False,
                         'Whether to include instance segmentations masks '
                         '(PNG encoded) in the result. default: False.')
@@ -69,7 +68,7 @@ def create_tf_example(image,
                       annotations_list,
                       image_dir,
                       category_index,
-                      include_masks=False):
+                      include_masks=False): # pylint: disable=invalid-name
   """Converts image and annotations to a tf.Example proto.
 
   Args:
@@ -122,7 +121,7 @@ def create_tf_example(image,
   encoded_mask_png = []
   num_annotations_skipped = 0
   for object_annotations in annotations_list:
-    (x, y, width, height) = tuple(object_annotations['bbox'])
+    (x, y, width, height) = tuple(object_annotations['bbox']) # pylint: disable=invalid-name
     if width <= 0 or height <= 0:
       num_annotations_skipped += 1
       continue
@@ -187,7 +186,7 @@ def create_tf_example(image,
 
 
 def _create_tf_record_from_coco_annotations(
-    annotations_file, image_dir, output_path, include_masks, num_shards):
+    annotations_file, image_dir, output_path, include_masks, num_shards): # pylint: disable=invalid-name
   """Loads COCO annotation json files and converts to tf.Record format.
 
   Args:
