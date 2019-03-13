@@ -35,12 +35,11 @@ import hashlib
 import io
 import json
 import os
-import contextlib2
 import numpy as np
-import PIL.Image
-
 from pycocotools import mask
 import tensorflow as tf
+import contextlib2
+import PIL.Image
 
 from object_detection.dataset_tools import tf_record_creation_util
 from object_detection.utils import dataset_util
