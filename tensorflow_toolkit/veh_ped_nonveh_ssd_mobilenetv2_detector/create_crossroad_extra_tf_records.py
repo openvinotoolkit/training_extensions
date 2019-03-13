@@ -68,7 +68,7 @@ def create_tf_example(image,# pylint: disable=invalid-name, too-many-locals
                       annotations_list,
                       image_dir,
                       category_index,
-                      include_masks=False): 
+                      include_masks=False):
   """Converts image and annotations to a tf.Example proto.
 
   Args:
