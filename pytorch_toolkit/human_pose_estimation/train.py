@@ -13,7 +13,7 @@ from datasets.transformations import ConvertKeypoints, Scale, Rotate, CropPad, F
 from modules.get_parameters import get_parameters_conv, get_parameters_bn, get_parameters_conv_depthwise
 from models.with_mobilenet import PoseEstimationWithMobileNet
 from modules.loss import l2_loss
-from modules.load_state import load_state
+from modules.load_state import load_state, load_from_mobilenet
 from val import evaluate
 
 cv2.setNumThreads(0)
@@ -21,7 +21,7 @@ cv2.ocl.setUseOpenCL(False)  # To prevent freeze of DataLoader
 
 
 def train(prepared_train_labels, train_images_folder, num_refinement_stages, base_lr, batch_size, batches_per_iter,
-          num_workers, checkpoint_path, weights_only, checkpoints_folder, log_after,
+          num_workers, checkpoint_path, weights_only, from_mobilenet, checkpoints_folder, log_after,
           val_labels, val_images_folder, val_output_name, checkpoint_after, val_after):
     net = PoseEstimationWithMobileNet(num_refinement_stages)
 
@@ -61,12 +61,15 @@ def train(prepared_train_labels, train_images_folder, num_refinement_stages, bas
     if checkpoint_path:
         checkpoint = torch.load(checkpoint_path)
 
-        load_state(net, checkpoint)
-        if not weights_only:
-            optimizer.load_state_dict(checkpoint['optimizer'])
-            scheduler.load_state_dict(checkpoint['scheduler'])
-            num_iter = checkpoint['iter']
-            current_epoch = checkpoint['current_epoch']
+        if from_mobilenet:
+            load_from_mobilenet(net, checkpoint)
+        else:
+            load_state(net, checkpoint)
+            if not weights_only:
+                optimizer.load_state_dict(checkpoint['optimizer'])
+                scheduler.load_state_dict(checkpoint['scheduler'])
+                num_iter = checkpoint['iter']
+                current_epoch = checkpoint['current_epoch']
 
     net = DataParallel(net).cuda()
     net.train()
@@ -139,6 +142,8 @@ if __name__ == '__main__':
     parser.add_argument('--batches-per-iter', type=int, default=1, help='number of batches to accumulate gradient from')
     parser.add_argument('--num-workers', type=int, default=8, help='number of workers')
     parser.add_argument('--checkpoint-path', type=str, required=True, help='path to the checkpoint to continue training from')
+    parser.add_argument('--from-mobilenet', action='store_true',
+                        help='load weights from mobilenet feature extractor')
     parser.add_argument('--weights-only', action='store_true',
                         help='just initialize layers with pre-trained weights and start training from the beginning')
     parser.add_argument('--experiment-name', type=str, default='default',
@@ -159,6 +164,7 @@ if __name__ == '__main__':
     if not os.path.exists(checkpoints_folder):
         os.makedirs(checkpoints_folder)
 
-    train(args.prepared_train_labels, args.train_images_folder, args.num_refinement_stages, args.base_lr,
-          args.batch_size, args.batches_per_iter, args.num_workers, args.checkpoint_path, args.weights_only, checkpoints_folder,
-          args.log_after, args.val_labels, args.val_images_folder, args.val_output_name, args.checkpoint_after, args.val_after)
+    train(args.prepared_train_labels, args.train_images_folder, args.num_refinement_stages, args.base_lr, args.batch_size,
+          args.batches_per_iter, args.num_workers, args.checkpoint_path, args.weights_only, args.from_mobilenet,
+          checkpoints_folder, args.log_after, args.val_labels, args.val_images_folder, args.val_output_name,
+          args.checkpoint_after, args.val_after)
