@@ -48,7 +48,7 @@ def extract_keypoints(heatmap, all_keypoints, total_keypoint_num):
     return keypoint_num
 
 
-def group_keypoints(all_keypoints_by_type, pafs, pose_entry_size=20, min_paf_score=0.05):
+def group_keypoints(all_keypoints_by_type, pafs, pose_entry_size=20, min_paf_score=0.05, demo=False):
     pose_entries = []
     all_keypoints = np.array([item for sublist in all_keypoints_by_type for item in sublist])
     for part_id in range(len(BODY_PARTS_PAF_IDS)):
@@ -118,8 +118,12 @@ def group_keypoints(all_keypoints_by_type, pafs, pose_entry_size=20, min_paf_sco
                     passed_point_num = 0
                     x, y = linspace2d(kpt_a, kpt_b)
                     for point_idx in range(point_num):
-                        px = int(round(x[point_idx]))
-                        py = int(round(y[point_idx]))
+                        if not demo:
+                            px = int(round(x[point_idx]))
+                            py = int(round(y[point_idx]))
+                        else:
+                            px = int(x[point_idx])
+                            py = int(y[point_idx])
                         paf = part_pafs[py, px, 0:2]
                         cur_point_score = vec[0] * paf[0] + vec[1] * paf[1]
                         if cur_point_score > min_paf_score:
