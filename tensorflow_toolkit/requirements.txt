@@ -10,3 +10,5 @@ jpeg4py==0.1.4
 nose==1.3.7
 pylint==2.2.2
 colormath==3.0.0
+contextlib2==0.5.5
+Pillow==5.3
