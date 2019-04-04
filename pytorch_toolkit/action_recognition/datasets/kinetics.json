@@ -1,0 +1,6 @@
+{
+  "n_classes": 400,
+  "video_path": "kinetics/kinetics_train",
+  "annotation_path": "kinetics/annotation_all_splits.json",
+  "flow_path": "kinetics/kinetics_tvl1_all"
+}

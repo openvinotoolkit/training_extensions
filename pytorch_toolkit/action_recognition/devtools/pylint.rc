@@ -1,0 +1,5 @@
+[MASTER]
+disable = all
+max-line-length = 160
+ignore-docstrings = yes
+extension-pkg-whitelist=torch,cv2,numpy
