@@ -85,7 +85,7 @@ To get rid of it, increase the limit to bigger number, e.g. 65536, run in the te
 ## Pre-trained model <a name="pre-trained-model"/>
 
 The model expects normalized image (mean=[128, 128, 128], scale=[1/256, 1/256, 1/256]) in planar BGR format.
-Pre-trained on COCO model is available at: https://download.01.org/openvinotoolkit/open_model_zoo/training_toolbox_pytorch/models/hpe/checkpoint_iter_370000.pth, it has 40% of AP on COCO validation set (38.6% of AP on the val *subset*).
+Pre-trained on COCO model is available at: https://download.01.org/opencv/openvino_training_extensions/models/human_pose_estimation/checkpoint_iter_370000.pth.tar, it has 40% of AP on COCO validation set (38.6% of AP on the val *subset*).
 
 #### Conversion to OpenVINO format
 
@@ -131,4 +131,3 @@ If this helps your research, please cite the paper:
     year = {2018}
 }
 ```
-
