@@ -81,7 +81,7 @@ python train.py -m 0.35 @./my_config.yml #here m can be overwritten with the val
 
 ## Models
 
-1. You can download pretrained model from fileshare as well - https://download.01.org/openvinotoolkit/open_model_zoo/training_toolbox_pytorch/models/fr/Mobilenet_se_focal_121000.pt
+1. You can download pretrained model from fileshare as well - https://download.01.org/opencv/openvino_training_extensions/models/face_recognition/Mobilenet_se_focal_121000.pt
 ```bash
 cd $FR_ROOT
 python evaluate_lfw.py --val_data_root $LFW_ROOT/lfw/ --val_list $LFW_ROOT/pairs.txt --val_landmarks $LFW_ROOT/lfw_landmark.txt

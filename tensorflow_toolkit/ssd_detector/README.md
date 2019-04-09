@@ -11,7 +11,7 @@ We provide 2 predefined configurations:
   ![VLP detection](vlp/docs/sample.jpg "Example of VLP detector inference")
 
   - Configuration file: [training_toolbox/ssd_detector/vlp/config.py](vlp/config.py).
-  - Trained model: [MobileNet v2 0.35 256x256](https://download.01.org/openvinotoolkit/training_toolbox_tensorflow/models/ssd_detector/vlp/0123_ssd_mobilenet_v2_0.35.1_barrier_256x256.zip).
+  - Trained model: [MobileNet v2 0.35 256x256](https://download.01.org/opencv/openvino_training_extensions/models/ssd_detector/0123_ssd_mobilenet_v2_0.35.1_barrier_256x256.zip).
 
 * Object detector trained on the [COCO dataset](../../data/coco/README.md).
   - Configuration file: [training_toolbox/ssd_detector/coco/config.py](coco/config.py).

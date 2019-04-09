@@ -7,15 +7,15 @@ To train a Vehicle Attributes model, jump to
 training_toolbox/vehicle_attributes directory. You'll see the folder with a sample code
 demonstrating how to train a VA model.
 
-We provide predefined configuration for: 
+We provide predefined configuration for:
 * Vehicle type and color recognition.
   - Configuration file: [training_toolbox/vehicle_attributes/cars_100/config.py](cars_100/config.py).
-  - Trained model: [Vehicle Attributes](https://download.01.org/openvinotoolkit/training_toolbox_tensorflow/models/vehicle_attributes/type_color/vehicle-attributes-barrier-0120.tar.gz).
+  - Trained model: [Vehicle Attributes](https://download.01.org/opencv/openvino_training_extensions/models/vehicle_attributes/vehicle-attributes-barrier-0103.tar.gz).
     A model has two output nodes:
     . type is 4 components: one for each of 4 types - car, van, truck, bus. The resulting type is argmax of these values.
     . color is 3 components: LAB format normalized from 0 to 1
 
-For demonstration purpose only a small dataset is uploaded [cars_100](https://download.01.org/openvinotoolkit/training_toolbox_tensorflow/datasets/cars_100.tar.gz).
+For demonstration purpose only a small dataset is uploaded [cars_100](https://download.01.org/opencv/openvino_training_extensions/datasets/vehicle_attributes/cars_100.tar.gz).
 It is divided by two subsets of images for training and evaluation and serves just as an example of flow.
 The resulting model is trained on the internal dataset of more than 50000 images of front-facing vehicles in different
 lighting and weather conditions where number of white/black/gray vehicle colors more than twice exceeds others.
@@ -51,9 +51,9 @@ To train a model, go through the following steps:
     ```
     python3 train.py cars_100/config.py
     ```
-    Do step 3 in another terminal, so training and 
+    Do step 3 in another terminal, so training and
     evaluation are performed simultaneously.
-    
+
 3. To start evaluation process go to `training_toolbox/vehicle_attributes` directory and type
     in command line:
 
@@ -78,16 +78,16 @@ To train a model, go through the following steps:
     ```
 7. Finally the trained model can be converted to Inference Engine format for
     optimized inference. To export, go to `training_toolbox/vehicle_attributes` folder and run:
-    
+
     ```
     python3 export.py <path_to_model_optimizer>/mo.py cars_100/config.py
     ```
     As a result, you'll find three new artifacts in `training_toolbox/vehicle_attributes/model/ie_model` folder:
     - `graph.pb` - TensorFlow frozen graph,
     - `graph.xml` and `graph.bin` - Inference Engine representation of the model.
-    
+
 8. Model in IR format can be inferred using the following python script:
-  
+
     ```
     python3 infer_ie.py -m model/ie_model/graph.xml -l <path_to_computer_vision_sdk>/deployment_tools/inference_engine/lib/ubuntu_16.04/intel64/libcpu_extension_avx2.so <image_path>
     ```
