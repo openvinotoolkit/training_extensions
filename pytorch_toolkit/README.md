@@ -44,6 +44,6 @@ Do not forget to update several environment variables are required to compile an
 After installation, you are ready to train your own models, evaluate them, use
 them for predictions.
 
-[Face recognition](face_recognition)  
-[Human pose estimation](human_pose_estimation)  
-[Instance segmentation](instance_segmentation)  
+* [Face recognition](face_recognition)
+* [Human pose estimation](human_pose_estimation)
+* [Instance segmentation](instance_segmentation)
