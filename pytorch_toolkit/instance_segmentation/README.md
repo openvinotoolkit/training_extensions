@@ -14,19 +14,20 @@ models are wrapped to export their weights to ONNX and OpenVINO.
 * Ubuntu 16.04
 * Python 3.5.2
 * PyTorch 0.4.1
+* OpenVINO 2019 R1 with Python API
 
 ### Installation
 
 To install required dependencies run
 
 ```bash
-$ pip3 install -r requirements.txt
+$ cat requirements.txt | xargs -n 1 -L 1 pip3 install
 ```
 
 To install the package itself run
 
 ```bash
-$ pip3 install .
+$ pip3 install -e .
 ```
 
 ### Get pretrained models
