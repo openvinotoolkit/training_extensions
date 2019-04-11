@@ -43,7 +43,6 @@ if torch.cuda.is_available() and CUDA_HOME is not None:
     sources += sources_gpu
     macroses += [("WITH_CUDA", None)]
 
-
 setup(name='segmentoly',
       ext_modules=[extension(name='segmentoly.extensions._EXTRA',
                              sources=sources,
@@ -51,5 +50,5 @@ setup(name='segmentoly',
                              define_macros=macroses)
                    ],
       cmdclass={'build_ext': BuildExtension},
-      packages=find_packages(include=('segmentoly',))
+      packages=find_packages()
       )
