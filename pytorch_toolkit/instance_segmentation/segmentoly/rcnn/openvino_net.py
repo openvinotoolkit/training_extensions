@@ -76,8 +76,8 @@ class OpenVINONet(object):
         del self.net
         del self.exec_net
         del self.plugin
-            
-            
+
+
 class MaskRCNNOpenVINO(OpenVINONet):
     def __init__(self, *args, **kwargs):
         super(MaskRCNNOpenVINO, self).__init__(*args, **kwargs)
@@ -89,7 +89,7 @@ class MaskRCNNOpenVINO(OpenVINONet):
         self.n, self.c, self.h, self.w = self.net.inputs['im_data'].shape
         assert self.n == 1, 'Only batch 1 is supported.'
 
-    def __call__(self, im_data, im_info):
+    def __call__(self, im_data, im_info, **kwargs):
         im_data = to_numpy(im_data[0])
         im_info = to_numpy(im_info[0])
         if (self.h - im_data.shape[1] < 0) or (self.w - im_data.shape[2] < 0):
