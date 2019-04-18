@@ -22,7 +22,6 @@ import torch.nn as nn
 from torch.nn.parallel._functions import Scatter
 
 
-# FIXME. Should it be an autograd.Function? If not, is it necessary to make it a class?
 class ScatterShallow(object):
 
     @staticmethod
@@ -68,7 +67,6 @@ def scatter(inputs, target_gpus, dim=0):
     Other cases are the same as in the base class
     """
     def scatter_map(obj):
-        # FIXME. Isn't it better to explicitly handle the first and the second level of recursion?
         if isinstance(obj, torch.Tensor):
             result = Scatter.apply(target_gpus, None, dim, obj)
             return result

@@ -97,7 +97,6 @@ class COCODataset(InstanceDataset):
         if self.transforms is not None:
             sample = self.transforms(sample)
 
-        # TODO. Remove redundant fields.
         IM_HEIGHT = 1
         IM_WIDTH = 2
         out_sample = dict(index=index,

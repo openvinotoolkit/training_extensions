@@ -44,7 +44,18 @@ are supposed to be converted to ONNX/IR.
 To be able to train networks and/or get quality metrics for pre-trained ones,
 one have to download MS COCO dataset. Download [the
 dataset](http://cocodataset.org/#download) (train, val and annotations) and
-unpack it to `./data/coco` folder.
+unpack it to `./data/coco` folder. The result structure of the folder should be:
+```
+data
+└── coco
+    ├── annotations
+    │   ├── instances_train2017.json
+    │   └── instances_val2017.json
+    |
+    └── images
+        ├── train2017
+        └── val2017
+```
 
 
 ## Training
@@ -136,7 +147,7 @@ $ python3 tools/demo.py \
     --video 0 \
     --delay 1 \
     --show_fps \
-    pytorch \
+    openvino \
     --model data/pretrained_models/ir/coco/detectron/mask_rcnn_resnet50_fpn_2x.xml
 ```
 

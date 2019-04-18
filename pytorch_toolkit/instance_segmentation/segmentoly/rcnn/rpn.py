@@ -84,8 +84,6 @@ def rpn_loss(rpn_gt_matcher, im_info, gt_boxes, priors, rpn_bbox_deltas, rpn_cls
 
         # Regression loss.
         batch_rpn_bbox_deltas = rpn_bbox_deltas[idx, ...].permute(1, 2, 0).reshape(-1, 4)
-        # TODO. Custom smooth L1 loss is used here. The main difference between this and out-of-the-box losses
-        # is `beta` parameter, which may be not essential here. So, try to move to the standard implementation later.
         loss_rpn_bbox = smooth_l1_loss(batch_rpn_bbox_deltas, bbox_targets, bbox_inw, bbox_outw,
                                        beta=1 / 9, normalize=False)
 

@@ -79,7 +79,7 @@ at::Tensor nms_gpu(const at::Tensor& boxes, float nms_overlap_thresh) {
 
   scalar_t* boxes_dev = boxes_sorted.data<scalar_t>();
 
-  THCState *state = at::globalContext().lazyInitCUDA(); // TODO replace with getTHCState
+  THCState *state = at::globalContext().lazyInitCUDA();
 
   unsigned long long* mask_dev = reinterpret_cast<unsigned long long*>(THCudaMalloc(state, boxes_num * col_blocks * sizeof(unsigned long long)));
 //  unsigned long long* mask_dev = NULL;
@@ -122,6 +122,5 @@ at::Tensor nms_gpu(const at::Tensor& boxes, float nms_overlap_thresh) {
   }
 
   THCudaFree(state, mask_dev);
-  // TODO improve this part
   return std::get<0>(order_t.index({keep.narrow(/*dim=*/0, /*start=*/0, /*length=*/num_to_keep)}).sort(0, false));
 }

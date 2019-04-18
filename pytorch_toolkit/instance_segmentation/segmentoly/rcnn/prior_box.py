@@ -21,7 +21,6 @@ import torch
 from torch import nn
 
 
-# FIXME. Use standard PyTorch meshgrid.
 def meshgrid(a, b):
     x = a.repeat(len(b))
     y = b.repeat(len(a), 1).t().contiguous().view(-1)

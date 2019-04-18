@@ -85,9 +85,6 @@ def rpn_loss_reg(cls_targets, reg_targets, box_deltas, reduction='valid_mean'):
             batch_cls_targets = cls_targets[idx]
             positive_samples_mask = batch_cls_targets > 0
             non_negatives_num += (batch_cls_targets >= 0).sum().item()
-        # TODO. Custom smooth L1 loss is used here. The main difference between this and out-of-the-box losses
-        # is `beta` parameter, which may be not essential here.
-        # So, try to move to the standard implementation later.
         loss = smooth_l1_loss(batch_rpn_bbox_deltas[positive_samples_mask],
                               reg_targets[idx][positive_samples_mask], None, None,
                               beta=1 / 9, normalize=False)

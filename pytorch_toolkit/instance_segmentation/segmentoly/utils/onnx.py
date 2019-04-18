@@ -20,7 +20,6 @@ import torch
 import logging
 
 
-# FIXME. Remove this?
 def get_input_size(image_size, scale, max_size, divisor=1):
     image_size = np.asarray(image_size)
 

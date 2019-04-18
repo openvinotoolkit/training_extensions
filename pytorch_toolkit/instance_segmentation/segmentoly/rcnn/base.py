@@ -29,7 +29,6 @@ class FeatureExtractor(nn.Module):
         raise NotImplementedError
 
 
-# FIXME. Move it to a proper place.
 def duplicate(x, n, copy=False):
     if copy:
         return list([x for _ in range(n)])

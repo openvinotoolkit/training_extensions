@@ -59,8 +59,6 @@ class RPNGTMatcher(nn.Module):
         return rpn_cls_targets, rpn_reg_targets
 
     def forward_single_image(self, boxes, gt_boxes, gt_labels, gt_ignore_labels, im_info):
-        # TODO. Make use of gt_labels. For now all gt_boxes are considered to be positive,
-        # though there possibly might be some ignored boxes as well.
         device = boxes.device
         im_height, im_width = im_info[:2]
         total_boxes_num = boxes.shape[0]
