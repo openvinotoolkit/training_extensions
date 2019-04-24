@@ -44,11 +44,18 @@ def load_model(model_name, weights, model_path=None):
         sys.exit('Only ' + ', '.join(SUPPORTED_MODELS) + ' are available for conversion')
 
     if model_name in TORCHVISION_MODELS:
-        import torchvision
-        if model_name == 'resnet-v1-50':
-            model = torchvision.models.resnet50()
-        elif model_name == 'inception-v3':
-            model = torchvision.models.inception_v3()
+        try:
+            import torchvision
+            if model_name == 'resnet-v1-50':
+                model = torchvision.models.resnet50()
+            elif model_name == 'inception-v3':
+                model = torchvision.models.inception_v3()
+        except ImportError as exc:
+            print(exc)
+            sys.exit('The torchvision package was not found.'
+                     'Please install it to default location or '
+                     'update PYTHONPATH environment variable '
+                     'with the path to the installed torchvision package.')
     else:
         sys.path.append(model_path)
         try:
