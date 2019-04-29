@@ -1,5 +1,7 @@
 import argparse
 import sys
+from _ast import arg
+
 import torch.onnx
 
 
@@ -14,6 +16,18 @@ PUBLIC_PYTORCH_MODELS = [
 
 SUPPORTED_MODELS = TORCHVISION_MODELS + PUBLIC_PYTORCH_MODELS
 
+def positive_int_arg(value):
+    """Check positive integer type for input argument"""
+    try:
+        ivalue = int(value)
+        if ivalue > 0:
+            return ivalue
+        else:
+            raise argparse.ArgumentTypeError('Argument must be a positive integer')
+    except Exception as exc:
+        print(exc)
+        sys.exit('Invalid value for input argument: {!r}, a positive integer is expected'.format(value))
+
 def parse_args():
     """Parse input arguments"""
 
@@ -23,7 +37,7 @@ def parse_args():
                              ' One of the ' + ', '.join(SUPPORTED_MODELS) + ' is supported')
     parser.add_argument('--weights', type=str, required=True,
                         help='Path to the PyTorch pretrained weights')
-    parser.add_argument('--input-shape', type=int, nargs=4,
+    parser.add_argument('--input-shape', type=positive_int_arg, nargs=4,
                         metavar='INPUT_DIM', required=True,
                         help='Shape of the input blob')
     parser.add_argument('--output-file', type=str, required=True,
@@ -84,7 +98,7 @@ def convert_to_onnx(pytorch_model, input_shape, output_file, input_names, output
         onnx.checker.check_model(model_from_onnx)
         print('ONNX check passed successfully.')
     except onnx.onnx_cpp2py_export.checker.ValidationError as exc:
-        sys.exit('ONNX check failed with error: ' + exc)
+        sys.exit('ONNX check failed with error: ' + str(exc))
 
 
 if __name__ == '__main__':
