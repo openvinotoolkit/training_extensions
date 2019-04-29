@@ -1,3 +1,4 @@
+# Copyright 2019 Intel Corporation
 # Copyright 2017 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -35,17 +36,17 @@ import io
 import json
 import os
 import numpy as np
-from pycocotools import mask
 import tensorflow as tf
-import contextlib2
 import PIL.Image
+import contextlib2
+from pycocotools import mask
 
 from object_detection.dataset_tools import tf_record_creation_util
 from object_detection.utils import dataset_util
 from object_detection.utils import label_map_util
 
 
-flags = tf.app.flags # pylint: disable=invalid-name
+flags = tf.app.flags  # pylint: disable=invalid-name
 tf.flags.DEFINE_boolean('include_masks', False,
                         'Whether to include instance segmentations masks '
                         '(PNG encoded) in the result. default: False.')
@@ -64,7 +65,7 @@ FLAGS = flags.FLAGS
 tf.logging.set_verbosity(tf.logging.INFO)
 
 
-def create_tf_example(image,# pylint: disable=invalid-name, too-many-locals
+def create_tf_example(image,  # pylint: disable=invalid-name, too-many-locals
                       annotations_list,
                       image_dir,
                       category_index,
@@ -121,7 +122,7 @@ def create_tf_example(image,# pylint: disable=invalid-name, too-many-locals
   encoded_mask_png = []
   num_annotations_skipped = 0
   for object_annotations in annotations_list:
-    (x, y, width, height) = tuple(object_annotations['bbox']) # pylint: disable=invalid-name
+    (x, y, width, height) = tuple(object_annotations['bbox'])  # pylint: disable=invalid-name
     if width <= 0 or height <= 0:
       num_annotations_skipped += 1
       continue
@@ -185,7 +186,7 @@ def create_tf_example(image,# pylint: disable=invalid-name, too-many-locals
   return key, example, num_annotations_skipped
 
 
-def _create_tf_record_from_coco_annotations(# pylint: disable=invalid-name, too-many-locals
+def _create_tf_record_from_coco_annotations(  # pylint: disable=invalid-name, too-many-locals
     annotations_file, image_dir, output_path, include_masks, num_shards):
   """Loads COCO annotation json files and converts to tf.Record format.
 
@@ -198,7 +199,7 @@ def _create_tf_record_from_coco_annotations(# pylint: disable=invalid-name, too-
     num_shards: number of output file shards.
   """
   with contextlib2.ExitStack() as tf_record_close_stack, \
-      tf.gfile.GFile(annotations_file, 'r') as fid:
+        tf.gfile.GFile(annotations_file, 'r') as fid:
     output_tfrecords = tf_record_creation_util.open_sharded_output_tfrecords(
       tf_record_close_stack, output_path, num_shards)
     groundtruth_data = json.load(fid)
