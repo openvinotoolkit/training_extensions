@@ -20,7 +20,7 @@ The models, supported in the current version of the script, are:
 The script was developed and tested with
 
 * Ubuntu 16.04
-* Python 3.5.2 (higher version should work, but was not tested)
+* Python 3.5.2
 * Torch 1.0.1
 * Torchvision 0.2.2 (for torchvision models support)
 * ONNX 1.4.1
@@ -42,7 +42,7 @@ pip3 install -r requirements.txt
 ```
 Now you can work with the script.
 
-To deactivate virtual environment after finishing work, use the following commnd:
+To deactivate virtual environment after finishing work, use the following command:
 
 ```bash
 deactivate
