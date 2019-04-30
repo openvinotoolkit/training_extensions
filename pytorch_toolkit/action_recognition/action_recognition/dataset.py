@@ -1,35 +1,21 @@
 import copy
 from collections import Counter
 
-import torch
 import numpy as np
+import torch
 from torch.utils import data
 
 from action_recognition.utils import cached
 from action_recognition.video_reader import make_video_reader, read_flow
 from .annotation import load_json_annotation
 
-ANNOTATION_FORMATS = {
-    'kinetics': load_json_annotation,
-    'ucf101': load_json_annotation,
-    'hmdb51': load_json_annotation,
-    'activitynet': load_json_annotation,
-}
-
 
 @cached()
-def load_annotation(annotation_format, annotation_path, flow_path, root_path, subset, video_format):
-    if annotation_format not in ANNOTATION_FORMATS:
-        print("Annotation format \"{}\" is unknown."
-              "Falling back to ActivityNet-like json format.".format(
-            annotation_format))
-        annotation_loader = load_json_annotation
-    else:
-        annotation_loader = ANNOTATION_FORMATS[annotation_format]
-    return annotation_loader(root_path, annotation_path, subset, flow_path, video_format)
+def load_annotation(annotation_path, flow_path, root_path, subset, video_format):
+    return load_json_annotation(root_path, annotation_path, subset, flow_path, video_format)
 
 
-def make_dataset(args, annotation_format, subset, spatial_transform, temporal_transform, target_transform):
+def make_dataset(args, subset, spatial_transform, temporal_transform, target_transform):
     """Constructs VideoDataset instance for specified subset"""
     assert subset in ['training', 'validation', 'testing']
 
@@ -57,7 +43,6 @@ def make_dataset(args, annotation_format, subset, spatial_transform, temporal_tr
         args.video_path,
         args.annotation_path,
         subset,
-        annotation_format,
         num_samples_per_video,
         spatial_transform,
         temporal_transform,
@@ -143,7 +128,6 @@ class VideoDataset(data.Dataset):
             video_path,
             annotation_path,
             subset,
-            annotation_format='kinetics',
             n_samples_for_each_video=1,
             spatial_transform=None,
             temporal_transform=None,
@@ -161,9 +145,7 @@ class VideoDataset(data.Dataset):
         else:
             self.video_loader = video_reader
 
-        self.data, self.class_names = load_annotation(
-            annotation_format, annotation_path, flow_path, video_path, subset, video_format
-        )
+        self.data, self.class_names = load_annotation(annotation_path, flow_path, video_path, subset, video_format)
 
         if not self.data:
             raise ValueError("No videos found in {!s} directory. Please check correctness of provided paths"

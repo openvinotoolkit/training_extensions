@@ -47,8 +47,11 @@ def callback(data, orig_path, destination_path, scale=None, quality=1, video_for
     class_path = os.path.join(destination_path, label)
     Path(class_path).mkdir(exist_ok=True)
 
-    orig_video_path = os.path.join(orig_path, label, video_name) + ".mp4"
-    if not os.path.exists(orig_video_path):
+    for ext in ('.mp4', '.avi'):
+        orig_video_path = os.path.join(orig_path, label, video_name) + ext
+        if os.path.exists(orig_video_path):
+            break
+    else:
         return None
 
     base_video_name = os.path.join(destination_path, label, video_name)

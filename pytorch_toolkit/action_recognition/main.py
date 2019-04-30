@@ -74,7 +74,7 @@ def setup_dataset(args, train=True, val=True, test=True):
     train_temporal_transform = Compose(
         [temporal_stride, TemporalRandomCrop(sample_duration / temporal_stride_size)])
     train_target_transform = ClassLabel()
-    train_data = make_dataset(args, args.dataset, 'training', train_spatial_transform, train_temporal_transform,
+    train_data = make_dataset(args, 'training', train_spatial_transform, train_temporal_transform,
                               train_target_transform) if train else None
 
     # validation data
@@ -86,7 +86,7 @@ def setup_dataset(args, train=True, val=True, test=True):
     ])]
     val_temporal_transform = Compose([temporal_stride, LoopPadding(sample_duration / temporal_stride_size)])
     val_target_transform = ClassLabel()
-    val_data = make_dataset(args, args.dataset, 'validation', val_spatial_transform, val_temporal_transform,
+    val_data = make_dataset(args, 'validation', val_spatial_transform, val_temporal_transform,
                             val_target_transform) if val else None
 
     # test data
@@ -115,7 +115,7 @@ def setup_dataset(args, train=True, val=True, test=True):
     test_temporal_transform = Compose([temporal_stride, LoopPadding(sample_duration / temporal_stride_size)])
     test_target_transform = ClassLabel()
 
-    test_data = make_dataset(args, args.dataset, 'testing', test_spatial_transform, test_temporal_transform,
+    test_data = make_dataset(args, 'testing', test_spatial_transform, test_temporal_transform,
                              test_target_transform) if test else None
 
     return train_data, val_data, test_data
