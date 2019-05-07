@@ -1,6 +1,5 @@
 import argparse
 import sys
-from _ast import arg
 
 import torch.onnx
 
@@ -22,8 +21,7 @@ def positive_int_arg(value):
         ivalue = int(value)
         if ivalue > 0:
             return ivalue
-        else:
-            raise argparse.ArgumentTypeError('Argument must be a positive integer')
+        raise argparse.ArgumentTypeError('Argument must be a positive integer')
     except Exception as exc:
         print(exc)
         sys.exit('Invalid value for input argument: {!r}, a positive integer is expected'.format(value))
@@ -100,9 +98,10 @@ def convert_to_onnx(pytorch_model, input_shape, output_file, input_names, output
     except onnx.onnx_cpp2py_export.checker.ValidationError as exc:
         sys.exit('ONNX check failed with error: ' + str(exc))
 
-
-if __name__ == '__main__':
+def main():
     args = parse_args()
     model = load_model(args.model_name, args.weights, args.model_path)
     convert_to_onnx(model, args.input_shape, args.output_file, args.input_names, args.output_names)
 
+if __name__ == '__main__':
+    main()
