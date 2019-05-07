@@ -48,20 +48,10 @@ class ResNet50FPNMaskRCNNDemo(ResNet50FPNMaskRCNN):
 
     @property
     def post_nms_rois_count(self):
-        return 2000 if self.training else 25
-
-    @staticmethod
-    def add_detection_head(features_dim_in, cls_num, group_norm=False):
-        # ROI-wise detection part.
-        assert features_dim_in[1:] == features_dim_in[:-1]
-        dim_out = 1024
-        detection_head = BboxHead(features_dim_in[0], dim_out, 7, cls_num,
-                                  cls_agnostic_bbox_regression=False)
-        detection_output = DetectionOutput(cls_num, nms_threshold=0.5, score_threshold=0.7)
-        return detection_head, detection_output
+        return 2000 if self.training else 100
 
     def preprocess_data(self, im_data, im_info, size_divisor=32):
-        super().preprocess_data(im_data, im_info, size_divisor)
+        im_data, im_info = super().preprocess_data(im_data, im_info, size_divisor)
         im_data = self.data_normalizer(im_data)
         return im_data, im_info
 
