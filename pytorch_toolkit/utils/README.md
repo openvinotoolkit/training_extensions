@@ -13,7 +13,6 @@ The models, supported in the current version of the script, are:
     * ResNet-50-v1
     * Inception-v3
 
-
 * Public pre-trained models
     * MobileNetV2 (<https://github.com/tonylins/pytorch-mobilenet-v2>)
 
