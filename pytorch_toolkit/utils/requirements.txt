@@ -1,0 +1,4 @@
+torch==1.0.1
+torchvision==0.2.2
+onnx==1.4.1
+numpy<1.15
