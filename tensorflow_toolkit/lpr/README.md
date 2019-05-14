@@ -60,7 +60,7 @@ To train a model, go through the following steps:
 
     And view results in a browser: [http://localhost:6006](http://localhost:6006).
 
-6. When training is complete, model from the checkpoint could be infered on
+5. When training is complete, model from the checkpoint could be infered on
     input data by running `training_toolbox/lpr/chinese_lp/infer.py`:
 
     ```
@@ -75,7 +75,7 @@ To train a model, go through the following steps:
     path_to_lp_image2
     ...
     ```
-   7.  Finally, trained model could be converted to Inference Engine format for
+6.  Finally, trained model could be converted to Inference Engine format for
     optimized inference. To export, go to `tensorflow_toolkit/lpr` and run
     `export.py`:
     
