@@ -1,21 +1,36 @@
+# Copyright (C) 2019 Intel Corporation
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+
 from __future__ import print_function
 from importlib import util
 from os import path, system
 import sys
 
-import cv2
 import numpy as np
 import tensorflow as tf
+import cv2
 
 
 def import_research_models():
-  research_dir = path.realpath(path.dirname(__file__) + '../../../external/models/research/')
+  research_dir = path.realpath(path.join(path.dirname(__file__), '../../../external/models/research/'))
+  print(research_dir)
   sys.path.append(research_dir)
   sys.path.append(path.join(research_dir, 'slim'))
 
 
 def import_transformer():
-  transformer_dir = path.realpath(path.dirname(__file__) + '../../../external/models/research/transformer')
+  transformer_dir = path.realpath(path.join(path.dirname(__file__), '../../../external/models/research/transformer'))
   sys.path.append(transformer_dir)
 
 
@@ -179,3 +194,34 @@ def download_archive_and_extract(url, target_dir):
 
   zipfile = ZipFile(BytesIO(resp.read()))
   zipfile.extractall(target_dir)
+
+
+def execute_mo(config_path, frozen, output_dir, shape, data_type, mo_path='mo.py'):
+  import subprocess
+  import yaml
+
+  with open(config_path, 'r') as stream:
+    config = yaml.safe_load(stream)
+
+  params = [
+    mo_path,
+    '--input_model={}'.format(frozen),
+    '--output_dir={}'.format(output_dir),
+    '--input_shape=[{}]'.format(','.join([str(x) for x in shape])),
+    '--data_type={}'.format(data_type),
+  ]
+
+  for arg, value in config.items():
+    if isinstance(value, bool):
+      if value:
+        params.append('--{}'.format(arg))
+    elif isinstance(value, (str, int, float)):
+      params.append('--{}={}'.format(arg, value))
+    elif isinstance(value, list):
+      params.append('--{}={}'.format(arg, ','.join([str(x) for x in value])))
+    else:
+      raise Exception('Unexpected format of value in mo_config: {}'.format(value))
+
+  print(' '.join(params))
+
+  subprocess.call(params)
