@@ -1,20 +1,36 @@
+#!/usr/bin/env python3
+#
+# Copyright (C) 2019 Intel Corporation
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+
 import random
 import os
 import argparse
 import numpy as np
-
 import tensorflow as tf
 from lpr.trainer import CTCUtils, inference, InputData
-from utils.helpers import load_module
+from tfutils.helpers import load_module
 
 
 def parse_args():
   parser = argparse.ArgumentParser(description='Perform training of a model')
   parser.add_argument('path_to_config', help='Path to a config.py')
+  parser.add_argument('--init_checkpoint', default=None, help='Path to checkpoint')
   return parser.parse_args()
 
-# pylint: disable=too-many-locals, too-many-branches, too-many-statements
-def train(config):
+# pylint: disable=too-many-locals, too-many-statements
+def train(config, init_checkpoint):
   if hasattr(config.train, 'random_seed'):
     np.random.seed(config.train.random_seed)
     tf.set_random_seed(config.train.random_seed)
@@ -76,10 +92,14 @@ def train(config):
 
   session.run('init')
 
-  lastest_checkpoint = tf.train.latest_checkpoint(config.model_dir)
-  if lastest_checkpoint:
-    tf.logging.info('Restore from: ' + lastest_checkpoint)
-    saver.restore(session, lastest_checkpoint)
+  if init_checkpoint:
+    tf.logging.info('Initialize from: ' + init_checkpoint)
+    saver.restore(session, init_checkpoint)
+  else:
+    lastest_checkpoint = tf.train.latest_checkpoint(config.model_dir)
+    if lastest_checkpoint:
+      tf.logging.info('Restore from: ' + lastest_checkpoint)
+      saver.restore(session, lastest_checkpoint)
 
   writer = None
   if config.train.need_to_save_log:
@@ -118,7 +138,7 @@ def train(config):
 def main(_):
   args = parse_args()
   cfg = load_module(args.path_to_config)
-  train(cfg)
+  train(cfg, args.init_checkpoint)
 
 
 if __name__ == '__main__':

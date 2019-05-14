@@ -1,0 +1,6 @@
+framework: 'tf'
+model_name: 'lpr'
+input: 'input'
+output: 'd_predictions'
+reverse_input_channels: true
+scale: 255

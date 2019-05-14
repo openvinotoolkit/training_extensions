@@ -1,3 +1,19 @@
+#!/usr/bin/env python3
+#
+# Copyright (C) 2019 Intel Corporation
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+
 from __future__ import print_function
 import argparse
 import os
@@ -8,8 +24,8 @@ import numpy as np
 import tensorflow as tf
 import tensorflow.contrib.slim as slim
 from lpr.trainer import inference
-from lpr.toolbox.utils import accuracy, dataset_size
-from utils.helpers import load_module
+from lpr.utils import accuracy, dataset_size
+from tfutils.helpers import load_module
 
 
 def parse_args():
@@ -17,7 +33,7 @@ def parse_args():
   parser.add_argument('path_to_config', help='Path to a config.py')
   return parser.parse_args()
 
-# pylint: disable=too-many-locals
+
 def read_data(height, width, channels_num, list_file_name, batch_size=10):
   reader = tf.TextLineReader()
   _, value = reader.read(list_file_name)
@@ -38,7 +54,7 @@ def data_input(height, width, channels_num, filename, batch_size=1):
   image, label, filename = read_data(height, width, channels_num, files_string_producer, batch_size)
   return image, label, filename
 
-# pylint: disable=too-many-branches, too-many-statements
+# pylint: disable=too-many-branches, too-many-statements, too-many-locals
 def validate(config):
   if hasattr(config.eval, 'random_seed'):
     np.random.seed(config.eval.random_seed)

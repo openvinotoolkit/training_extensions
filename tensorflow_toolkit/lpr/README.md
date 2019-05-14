@@ -1,5 +1,40 @@
 # LPRNet: License Plate Recognition
 
+![](./lpr.png)
+
+## Setup
+
+### Prerequisites
+
+* Ubuntu 16.04
+* Python 3.6
+* TensorFlow 1.13.1
+* OpenVINO 2019 R1 with Python API
+
+
+### Installation
+
+1. Create virtual environment
+```bash
+virtualenv venv -p python3 --prompt="(lpr)"
+```
+
+2. Activate virtual environment and setup OpenVINO variables
+```bash
+. venv/bin/activate
+. /opt/intel/openvino/bin/setupvars.sh
+```
+**NOTE** Good practice is adding `. /opt/intel/openvino/bin/setupvars.sh` to the end of the `venv/bin/activate`.
+```
+echo ". /opt/intel/openvino/bin/setupvars.sh" >> venv/bin/activate
+```
+
+3. Install the packages run
+```bash
+pip3 install -e .
+pip3 install -e ../utils
+```
+
 
 ## Train LPRNet model
 
@@ -16,82 +51,127 @@ As training dataset for this model [Synthetic Chinese License Plates](https://do
 
 To train a model, go through the following steps:
 
+
+### Prepare dataset
+
 1. Download training data and extract it in `data/synthetic_chinese_license_plates` folder. After extracting it will
-    consist from folder with training images named `crops` and text file with annotations named `annotation`.
+consist from folder with training images named `crops` and text file with annotations named `annotation`.
 
-    After extracting training data archive run python script from
-    `data/synthetic_chinese_license_plates/make_train_val_split.py` to make split of
-    the whole annotations into `train` and `val` feeding him path to `data/synthetic_chinese_license_plates/annotation`
-    file from archive as an input. As a result you'll find `data/synthetic_chinese_license_plates/train`,
-    `data/synthetic_chinese_license_plates/val` annotation files with full path to images and labels in the folder
-    with extracted data.
+2. After extracting training data archive run python script from
+`data/synthetic_chinese_license_plates/make_train_val_split.py` to make split of
+the whole annotations into `train` and `val` feeding him path to `data/synthetic_chinese_license_plates/annotation`
+file from archive as an input. As a result you'll find `data/synthetic_chinese_license_plates/train`,
+`data/synthetic_chinese_license_plates/val` annotation files with full path to images and labels in the folder
+with extracted data.
+The result structure of the folder should be:
+```
+./data/synthetic_chinese_license_plates/
+├── make_train_val_split.py
+└── Synthetic_Chinese_License_Plates/
+    ├── annotation
+    ├── crops/
+    │   ├── 000000.png
+    |   ...
+    ├── LICENSE
+    ├── README
+    ├── train
+    └── val
+```
 
-    Then edit `training_toolbox/lpr/chinese_lp/config.py` by pointing out
-    `train.file_list_path` and `eval.file_list_path`
-    parameters in train section to paths of obtained `train` and `val`
-    annotation files accordingly.
+3. Then edit `training_toolbox/lpr/chinese_lp/config.py` by pointing out
+`train.file_list_path` and `eval.file_list_path`
+parameters in train section to paths of obtained `train` and `val`
+annotation files accordingly.
 
 2. To start training go to `training_toolbox/lpr` directory and type in command line:
 
-    ```
-    python3 train.py chinese_lp/config.py
+### Train and evaluation
+
+1. To start training process type in command line:
+    ```bash
+    python3 tools/train.py chinese_lp/config.py
     ```
 
-3. To start evaluation process go to `training_toolbox/lpr` directory and type
-    in command line:
-
+    To start from pretrained checkpoint type in command line:
+    ```bash
+    python3 tools/train.py chinese_lp/config.py \
+      --init_checkpoint <data_path>/license-plate-recognition-barrier-0007/model.ckpt
     ```
-    python3 eval.py vlp/config.py
+
+2. To start evaluation process type in command line:
+    ```bash
+    python3 tools/eval.py chinese_lp/config.py
     ```
 
-    Before doing step 4, make sure that parameter `eval.file_list_path` in
-    `training_toolbox/lpr/chinese_lp/config.py` pointing out to file with
+    **NOTE** Before doing step 4, make sure that parameter `eval.file_list_path` in
+    `lpr/chinese_lp/config.py` pointing out to file with
     annotations to test on. Do step 4 in another terminal, so training and
     evaluation are performed simultaneously.
 
 
-4. Training and evaluation artifacts will be stored by default in
-    `training_toolbox/lpr/chinese_lp/model`.  To visualize training and evaluation, go to
-    `training_toolbox/lpr/chinese_lp` and run tensorboard with:
+3. Training and evaluation artifacts will be stored by default in `lpr/chinese_lp/model`.
+   To visualize training and evaluation, run vino`tensorboard` with:
 
-    ```
+    ```bash
     tensorboard --logdir=./model
     ```
 
     And view results in a browser: [http://localhost:6006](http://localhost:6006).
 
-5. When training is complete, model from the checkpoint could be infered on
+4. When training is complete, model from the checkpoint could be infered on
     input data by running `training_toolbox/lpr/chinese_lp/infer.py`:
 
-    ```
-    python3 infer.py chinese_lp/config.py
-    ```
-    Input data for infer should be set via parameter `infer.file_list_path` in
-    training_toolbox/lpr/chinese_lp/config.py` and must be look like text file
-    with list of path to license plates images in format:
+### Export to OpenVINO
 
-    ```
-    path_to_lp_image1
-    path_to_lp_image2
-    ...
-    ```
-6.  Finally, trained model could be converted to Inference Engine format for
-    optimized inference. To export, go to `tensorflow_toolkit/lpr` and run
-    `export.py`:
-    
-    ```
-    python3 export.py chinese_lp/config.py <path_to_mo.py>
-    ```
-    
-    If OpenVINO™ was installed in a home directory, then `<path_to_mo.py>` is
-    `~/intel/computer_vision_sdk/deployment_tools/model_optimizer/mo.py`.
-    
-    As a result, you'll find three new artifacts in
-    `chinese_lp/model/ie_model`:
-    - `graph.pb` - TensorFlow frozen graph,
-    - `graph.xml` and `grapn.bin` - Inference Engine representation of the
-    model.
-    
+To run the model via OpenVINO one has to freeze TensorFlow graph and
+then convert it to OpenVINO Internal Representation (IR) using Model Optimizer:
+
+```Bash
+python3 tools/export.py --data_type FP32 \
+  --mo_config chinese_lp/mo.yaml \
+  chinese_lp/config.py
+```
+
+`lpr/model/export_<step>/frozen_graph` - path to frozen graph
+`lpr/model/export_<step>/IR/<data_type>` - path to converted model in IR format
+
+## Demo
+
+### For the latest checkpoint
+
+**NOTE** Input data for infer should be set via parameter `infer.file_list_path` in
+`training_toolbox/lpr/chinese_lp/config.py` and must be look like text file
+with list of path to license plates images in format:
+```
+path_to_lp_image1
+path_to_lp_image2
+...
+```
+
+When training is complete, model from the checkpoint could be infered on
+input data by running `training_toolbox/lpr/chinese_lp/infer.py`:
+
+```Bash
+python3 tools/infer_checkpoint.py chinese_lp/config.py
+```
+
+### For frozen graph
+```Bash
+python3 tools/infer.py --model model/export_<step>/frozen_graph/graph.pb.frozen \
+    --config chinese_lp/config.py \
+    <image_path>
+```
+
+### For Intermediate Representation (IR)
+```Bash
+python3 tools/infer_ie.py --model model/export_<step>/IR/FP32/lpr.xml \
+  --device=CPU \
+  --cpu_extension="${INTEL_OPENVINO_DIR}/deployment_tools/inference_engine/lib/intel64/libcpu_extension_avx2.so" \
+  --config chinese_lp/config.py \
+  <image_path>
+```
+
+
 ## Citation
 
 If you find *LPRNet* useful in your research, please, consider to cite the following paper:

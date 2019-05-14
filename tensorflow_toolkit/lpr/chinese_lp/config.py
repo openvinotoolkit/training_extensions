@@ -1,3 +1,17 @@
+# Copyright (C) 2019 Intel Corporation
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+
 import os
 from lpr.trainer import LPRVocab
 
@@ -7,14 +21,15 @@ use_oi_concat = False
 max_lp_length = 20
 rnn_cells_num = 128
 
-model_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                         'model')  # Path to the folder where all training and evaluation artifacts will be located
+# Path to the folder where all training and evaluation artifacts will be located
+model_dir = os.path.realpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'model'))
 if not os.path.exists(model_dir):
   os.makedirs(model_dir)
 
 
 class train:
-  file_list_path = 'train'  # Path to annotation file with training data in per line format: <path_to_image_with_license_plate label>
+  # Path to annotation file with training data in per line format: <path_to_image_with_license_plate label>
+  file_list_path = 'train'
 
   batch_size = 32
   steps = 250000
@@ -39,7 +54,8 @@ class train:
 
 
 class eval:
-  file_list_path = 'val'  # Path to annotation file with validation data in per line format: <path_to_image_with_license_plate label>
+  # Path to annotation file with validation data in per line format: <path_to_image_with_license_plate label>
+  file_list_path = 'val'
   checkpoint = ''
   batch_size = 1
 
@@ -50,7 +66,8 @@ class eval:
 
 
 class infer:
-  file_list_path = 'test_infer'  # Path to text file with list of images in per line format: <path_to_image_with_license_plate>
+  # Path to text file with list of images in per line format: <path_to_image_with_license_plate>
+  file_list_path = 'test_infer'
   checkpoint = ''
   batch_size = 1
 
@@ -64,4 +81,3 @@ vocab, r_vocab, num_classes = LPRVocab.create_vocab(train.file_list_path,
                                                     eval.file_list_path,
                                                     use_h_concat,
                                                     use_oi_concat)
-

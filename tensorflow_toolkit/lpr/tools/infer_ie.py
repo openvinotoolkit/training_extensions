@@ -1,13 +1,28 @@
+#!/usr/bin/env python3
+#
+# Copyright (C) 2019 Intel Corporation
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+
 from __future__ import print_function
+from argparse import ArgumentParser
 import logging as log
 import sys
 import os
-from argparse import ArgumentParser
 import cv2
 from openvino.inference_engine import IENetwork, IEPlugin
 from lpr.trainer import decode_ie_output
-from utils.helpers import load_module
-
+from tfutils.helpers import load_module
 
 
 def build_argparser():
@@ -21,7 +36,7 @@ def build_argparser():
                       help="Specify the target device to infer on; CPU, GPU, FPGA or MYRIAD is acceptable. Sample "
                            "will look for a suitable plugin for device specified (CPU by default)", default="CPU",
                       type=str)
-  parser.add_argument('path_to_config', help='Path to a config.py')
+  parser.add_argument('--config', help='Path to a config.py', required=True)
   parser.add_argument('input_image', help='Image with license plate')
   return parser
 
@@ -50,7 +65,7 @@ def load_ir_model(model_xml, device, plugin_dir, cpu_extension):
 
   # read IR
   log.info("Reading IR...")
-  net = IENetwork.from_ir(model=model_xml, weights=model_bin)
+  net = IENetwork(model=model_xml, weights=model_bin)
 
   if "CPU" in plugin.device:
     supported_layers = plugin.get_supported_layers(net)
@@ -68,42 +83,35 @@ def load_ir_model(model_xml, device, plugin_dir, cpu_extension):
   input_blob = next(iter(net.inputs))
   out_blob = next(iter(net.outputs))
   log.info("Loading IR to the plugin...")
-  exec_net = plugin.load(network=net, num_requests=2)
+  exec_net = plugin.load(network=net)
   shape = net.inputs[input_blob].shape
   del net
 
   return exec_net, plugin, input_blob, out_blob, shape
 
 
-# pylint: disable=too-many-locals
 def main():
   log.basicConfig(format="[ %(levelname)s ] %(message)s", level=log.INFO, stream=sys.stdout)
   args = build_argparser().parse_args()
-  cfg = load_module(args.path_to_config)
+  cfg = load_module(args.config)
   exec_net, plugin, input_blob, out_blob, shape = load_ir_model(args.model, args.device,
                                                                 args.plugin_dir, args.cpu_extension)
   n_batch, channels, height, width = shape
 
 
-  cur_request_id = 0
-  while 1:
-    frame = cv2.imread(args.input_image)
-    img_to_display = frame.copy()
-    in_frame = cv2.resize(frame, (width, height))
-    in_frame = in_frame.transpose((2, 0, 1))  # Change data layout from HWC to CHW
-    in_frame = in_frame.reshape((n_batch, channels, height, width))
+  image = cv2.imread(args.input_image)
+  img_to_display = image.copy()
+  in_frame = cv2.resize(image, (width, height))
+  in_frame = in_frame.transpose((2, 0, 1))  # Change data layout from HWC to CHW
+  in_frame = in_frame.reshape((n_batch, channels, height, width))
 
-    exec_net.start_async(request_id=cur_request_id, inputs={input_blob: in_frame})
-    if exec_net.requests[cur_request_id].wait(-1) == 0:
-
-      # Parse detection results of the current request
-      lp_code = exec_net.requests[cur_request_id].outputs[out_blob]
-      lp_number = decode_ie_output(lp_code, cfg.r_vocab)
-      img_to_display = display_license_plate(lp_number, img_to_display)
-      cv2.imshow('License Plate', img_to_display)
-      key = cv2.waitKey(0)
-      if key == 27:
-        break
+  result = exec_net.infer(inputs={input_blob: in_frame})
+  lp_code = result[out_blob][0]
+  lp_number = decode_ie_output(lp_code, cfg.r_vocab)
+  print('Output: {}'.format(lp_number))
+  img_to_display = display_license_plate(lp_number, img_to_display)
+  cv2.imshow('License Plate', img_to_display)
+  cv2.waitKey(0)
 
   del exec_net
   del plugin
