@@ -1,0 +1,3 @@
+framework: 'tf'
+model_name: 'vehicle_attributes'
+scale: 255

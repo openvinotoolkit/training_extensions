@@ -1,5 +1,40 @@
 # Vehicle attributes recognition: type and color
 
+![](./veh_attr.jpg)
+
+## Setup
+
+### Prerequisites
+
+* Ubuntu 16.04
+* Python 3.6
+* TensorFlow 1.13.1
+* OpenVINO 2019 R1 with Python API
+
+
+### Installation
+
+1. Create virtual environment
+```bash
+virtualenv venv -p python3 --prompt="(veh_attr)"
+```
+
+2. Activate virtual environment and setup OpenVINO variables
+```bash
+. venv/bin/activate
+. /opt/intel/openvino/bin/setupvars.sh
+```
+**NOTE** Good practice is adding `. /opt/intel/openvino/bin/setupvars.sh` to the end of the `venv/bin/activate`.
+```
+echo ". /opt/intel/openvino/bin/setupvars.sh" >> venv/bin/activate
+```
+
+3. Install the modules
+```bash
+pip3 install -e .
+pip3 install -e ../utils
+```
+
 
 ## Train Vehicle Attributes model
 
@@ -36,58 +71,88 @@ It was evaluated on [BitVehicle](http://iitlab.bit.edu.cn/mcislab/vehicledb/) da
 
 To train a model, go through the following steps:
 
+### Prepare dataset
+
 1. Download training data and extract it in `data/cars_100/images` folder. There are two files with annotations
     named `cars_100_test.json` and `cars_100_train.json` in the 'data/cars_100' directory.
+    The result structure of the folder should be:
+    ```
+    ./data/cars_100/
+    ├── cars_100_test.json
+    ├── cars_100_train.json
+    └── images
+    ```
 
-    Please make sure that configuration fila `training_toolbox/vehicle_attributes/cars_100/config.py`
+2. Please make sure that configuration fila `training_toolbox/vehicle_attributes/cars_100/config.py`
     contains correct paths to the annotation files.
 
-    To use the trained model weights, download it to `training_toolbox/vehicle_attributes` folder, unpack it and set
+3. To use the trained model weights, download it to `training_toolbox/vehicle_attributes` folder, unpack it and set
     the corresponding configuration flag 'use_pretrained_weights' to True. Please make sure that the correct path
     to pretrained model is set in the configuration file.
 
-2. To start training go to `training_toolbox/vehicle_attributes` directory and type in command line:
 
-    ```
-    python3 train.py cars_100/config.py
-    ```
-    Do step 3 in another terminal, so training and
-    evaluation are performed simultaneously.
+### Train and evaluation
 
-3. To start evaluation process go to `training_toolbox/vehicle_attributes` directory and type
+1. To start training go to `training_toolbox/vehicle_attributes` directory and type in command line:
+
+    ```bash
+    python3 tools/train.py cars_100/config.py
+    ```
+
+2. To start evaluation process go to `training_toolbox/vehicle_attributes` directory and type
     in command line:
-
-    ```
+    **NOTE** Run in in parallel in another terminal, so training and evaluation are performed simultaneously.
+    ```bash
     python3 eval.py cars_100/config.py
     ```
-4. Training and evaluation artifacts will be stored by default in
+
+3. Training and evaluation artifacts will be stored by default in
     `training_toolbox/vehicle_attributes/model`.  To visualize training and evaluation, go to
     `training_toolbox/vehicle_attributes` and run tensorboard with:
 
-    ```
+    ```bash
     tensorboard --logdir=./model
     ```
 
     And view results in a browser: [http://localhost:6006](http://localhost:6006).
 
-6. When training is complete, model from the checkpoint could be infered on
-    input data by running `training_toolbox/vehicle_attributes/infer.py`:
 
-    ```
-    python3 infer.py cars_100/config.py
-    ```
-7. Finally the trained model can be converted to Inference Engine format for
-    optimized inference. To export, go to `training_toolbox/vehicle_attributes` folder and run:
+### Export to OpenVINO
+To run the model via OpenVINO one has to freeze TensorFlow graph and
+then convert it to OpenVINO Internal Representation (IR) using Model Optimizer:
 
-    ```
-    python3 export.py <path_to_model_optimizer>/mo.py cars_100/config.py
-    ```
-    As a result, you'll find three new artifacts in `training_toolbox/vehicle_attributes/model/ie_model` folder:
-    - `graph.pb` - TensorFlow frozen graph,
-    - `graph.xml` and `graph.bin` - Inference Engine representation of the model.
+```Bash
+python3 tools/export.py --data_type FP32 \
+  --mo_config chinese_lp/mo.yaml \
+  chinese_lp/config.py
+```
 
-8. Model in IR format can be inferred using the following python script:
+As a result, you'll find three new artifacts:
+`lpr/model/export_<step>/frozen_graph` - path to frozen graph
+`lpr/model/export_<step>/IR/<data_type>` - path to converted model in IR format
 
-    ```
-    python3 infer_ie.py -m model/ie_model/graph.xml -l <path_to_computer_vision_sdk>/deployment_tools/inference_engine/lib/ubuntu_16.04/intel64/libcpu_extension_avx2.so <image_path>
-    ```
+## Demo
+
+### For the latest checkpoint
+
+When training is complete, model from the checkpoint could be infered on
+input data by running `tools/infer.py`:
+
+```
+python3 tools/infer.py cars_100/config.py
+```
+
+### For frozen graph
+```Bash
+python3 tools/infer.py --model model/export_<step>/frozen_graph/graph.pb.frozen \
+    --config cars_100/config.py \
+    <image_path>
+```
+
+### For Intermediate Representation (IR)
+```Bash
+python3 tools/infer_ie.py --model model/export_<step>/IR/FP32/vehicle_attributes.xml \
+  --device=CPU \
+  --cpu_extension="${INTEL_OPENVINO_DIR}/deployment_tools/inference_engine/lib/intel64/libcpu_extension_avx2.so" \
+  <image_path>
+```

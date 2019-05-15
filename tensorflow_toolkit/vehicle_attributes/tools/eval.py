@@ -1,3 +1,19 @@
+#!/usr/bin/env python3
+#
+# Copyright (C) 2019 Intel Corporation
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+
 import time
 import sys
 import argparse
@@ -5,7 +21,7 @@ import pprint
 
 import tensorflow as tf
 
-from utils.helpers import load_module
+from tfutils.helpers import load_module
 from vehicle_attributes.trainer import create_session, resnet_v1_10_1, InputEvalData
 
 def parse_args():
@@ -13,7 +29,6 @@ def parse_args():
   parser.add_argument('path_to_config', help='Path to a config.py')
   return parser.parse_args()
 
-# pylint: disable=too-many-locals
 def eval_loop(estimator, eval_data, config):
   latest_checkpoint = None
   wait_iters = 0
