@@ -29,7 +29,7 @@ if not os.path.exists(model_dir):
 
 class train:
   # Path to annotation file with training data in per line format: <path_to_image_with_license_plate label>
-  file_list_path = 'train'
+  file_list_path = '../../data/synthetic_chinese_license_plates/Synthetic_Chinese_License_Plates/train'
 
   batch_size = 32
   steps = 250000
@@ -55,7 +55,7 @@ class train:
 
 class eval:
   # Path to annotation file with validation data in per line format: <path_to_image_with_license_plate label>
-  file_list_path = 'val'
+  file_list_path = '../../data/synthetic_chinese_license_plates/Synthetic_Chinese_License_Plates/val'
   checkpoint = ''
   batch_size = 1
 
@@ -67,7 +67,7 @@ class eval:
 
 class infer:
   # Path to text file with list of images in per line format: <path_to_image_with_license_plate>
-  file_list_path = 'test_infer'
+  file_list_path = '../../data/synthetic_chinese_license_plates/Synthetic_Chinese_License_Plates/test_infer'
   checkpoint = ''
   batch_size = 1
 

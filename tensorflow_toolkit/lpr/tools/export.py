@@ -68,10 +68,10 @@ def main(_):
   config = load_module(args.path_to_config)
 
   checkpoint = args.checkpoint if args.checkpoint else tf.train.latest_checkpoint(config.model_dir)
-  if not os.path.isfile(checkpoint+'.index'):
-    raise Exception('Checkpoint is not exists: {}'.format(checkpoint))
-
   print(checkpoint)
+  if not checkpoint or not os.path.isfile(checkpoint+'.index'):
+    raise FileNotFoundError(str(checkpoint))
+
   step = checkpoint.split('.')[-2].split('-')[-1]
   output_dir = os.path.join(config.model_dir, 'export_{}'.format(step))
 

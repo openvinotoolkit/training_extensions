@@ -67,12 +67,12 @@ def load_ir_model(model_xml, device, plugin_dir, cpu_extension):
   log.info("Reading IR...")
   net = IENetwork(model=model_xml, weights=model_bin)
 
-  if "CPU" in plugin.device:
+  if "CPU" in device:
     supported_layers = plugin.get_supported_layers(net)
     not_supported_layers = [l for l in net.layers.keys() if l not in supported_layers]
     if not_supported_layers:
       log.error("Following layers are not supported by the plugin for specified device %s:\n %s",
-                plugin.device, ', '.join(not_supported_layers))
+                device, ', '.join(not_supported_layers))
       log.error("Please try to specify cpu extensions library path in sample's command line parameters using "
                 "--cpu_extension command line argument")
       sys.exit(1)
@@ -80,11 +80,12 @@ def load_ir_model(model_xml, device, plugin_dir, cpu_extension):
   # input / output check
   assert len(net.inputs.keys()) == 1, "LPRNet must have only single input"
   assert len(net.outputs) == 1, "LPRNet must have only single output topologies"
+
   input_blob = next(iter(net.inputs))
   out_blob = next(iter(net.outputs))
   log.info("Loading IR to the plugin...")
   exec_net = plugin.load(network=net)
-  shape = net.inputs[input_blob].shape
+  shape = net.inputs[input_blob].shape # pylint: disable=E1136
   del net
 
   return exec_net, plugin, input_blob, out_blob, shape

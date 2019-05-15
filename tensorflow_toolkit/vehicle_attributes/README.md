@@ -128,8 +128,8 @@ python3 tools/export.py --data_type FP32 \
 ```
 
 As a result, you'll find three new artifacts:
-`lpr/model/export_<step>/frozen_graph` - path to frozen graph
-`lpr/model/export_<step>/IR/<data_type>` - path to converted model in IR format
+- `lpr/model/export_<step>/frozen_graph/` - path to frozen graph
+- `lpr/model/export_<step>/IR/<data_type>/` - path to converted model in IR format
 
 ## Demo
 

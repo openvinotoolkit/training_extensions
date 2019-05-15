@@ -24,7 +24,6 @@ import cv2
 
 def import_research_models():
   research_dir = path.realpath(path.join(path.dirname(__file__), '../../../external/models/research/'))
-  print(research_dir)
   sys.path.append(research_dir)
   sys.path.append(path.join(research_dir, 'slim'))
 
@@ -222,6 +221,7 @@ def execute_mo(config_path, frozen, output_dir, shape, data_type, mo_path='mo.py
     else:
       raise Exception('Unexpected format of value in mo_config: {}'.format(value))
 
+  print('')
   print(' '.join(params))
 
   subprocess.call(params)

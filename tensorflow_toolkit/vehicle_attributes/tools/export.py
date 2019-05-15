@@ -61,7 +61,7 @@ def main(_):
   step = checkpoint.split('.')[-1].split('-')[-1]
   output_dir = os.path.join(config.model_dir, 'export_{}'.format(step))
 
-# Freezing graph
+  # Freezing graph
   frozen_dir = os.path.join(output_dir, 'frozen_graph')
   frozen_graph = freezing_graph(config, checkpoint, frozen_dir)
 

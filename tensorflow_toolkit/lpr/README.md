@@ -29,7 +29,7 @@ virtualenv venv -p python3 --prompt="(lpr)"
 echo ". /opt/intel/openvino/bin/setupvars.sh" >> venv/bin/activate
 ```
 
-3. Install the packages run
+3. Install the modules
 ```bash
 pip3 install -e .
 pip3 install -e ../utils
@@ -55,33 +55,38 @@ To train a model, go through the following steps:
 ### Prepare dataset
 
 1. Download training data and extract it in `data/synthetic_chinese_license_plates` folder. After extracting it will
-consist from folder with training images named `crops` and text file with annotations named `annotation`.
+    consist from folder with training images named `crops` and text file with annotations named `annotation`.
 
 2. After extracting training data archive run python script from
-`data/synthetic_chinese_license_plates/make_train_val_split.py` to make split of
-the whole annotations into `train` and `val` feeding him path to `data/synthetic_chinese_license_plates/annotation`
-file from archive as an input. As a result you'll find `data/synthetic_chinese_license_plates/train`,
-`data/synthetic_chinese_license_plates/val` annotation files with full path to images and labels in the folder
-with extracted data.
-The result structure of the folder should be:
-```
-./data/synthetic_chinese_license_plates/
-├── make_train_val_split.py
-└── Synthetic_Chinese_License_Plates/
-    ├── annotation
-    ├── crops/
-    │   ├── 000000.png
-    |   ...
-    ├── LICENSE
-    ├── README
-    ├── train
-    └── val
-```
+    `data/synthetic_chinese_license_plates/make_train_val_split.py` to make split of
+    the whole annotations into `train` and `val` feeding him path to `data/synthetic_chinese_license_plates/annotation`
+    file from archive as an input. As a result you'll find `data/synthetic_chinese_license_plates/train`,
+    `data/synthetic_chinese_license_plates/val` annotation files with full path to images and labels in the folder
+    with extracted data.
+
+    ```bash
+    python3 make_train_val_split.py data/synthetic_chinese_license_plates/annotation
+    ```
+
+    The result structure of the folder should be:
+    ```
+    ./data/synthetic_chinese_license_plates/
+    ├── make_train_val_split.py
+    └── Synthetic_Chinese_License_Plates/
+        ├── annotation
+        ├── crops/
+        │   ├── 000000.png
+        |   ...
+        ├── LICENSE
+        ├── README
+        ├── train
+        └── val
+    ```
 
 3. Then edit `training_toolbox/lpr/chinese_lp/config.py` by pointing out
-`train.file_list_path` and `eval.file_list_path`
-parameters in train section to paths of obtained `train` and `val`
-annotation files accordingly.
+    `train.file_list_path` and `eval.file_list_path`
+    parameters in train section to paths of obtained `train` and `val`
+    annotation files accordingly.
 
 2. To start training go to `training_toolbox/lpr` directory and type in command line:
 
@@ -132,8 +137,9 @@ python3 tools/export.py --data_type FP32 \
   chinese_lp/config.py
 ```
 
-`lpr/model/export_<step>/frozen_graph` - path to frozen graph
-`lpr/model/export_<step>/IR/<data_type>` - path to converted model in IR format
+As a result, you'll find three new artifacts:
+- `lpr/model/export_<step>/frozen_graph/` - path to frozen graph
+ - `lpr/model/export_<step>/IR/<data_type>/` - path to converted model in IR format
 
 ## Demo
 
