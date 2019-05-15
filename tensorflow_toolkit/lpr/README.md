@@ -60,7 +60,7 @@ To train a model, go through the following steps:
 
     And view results in a browser: [http://localhost:6006](http://localhost:6006).
 
-6. When training is complete, model from the checkpoint could be infered on
+5. When training is complete, model from the checkpoint could be infered on
     input data by running `training_toolbox/lpr/chinese_lp/infer.py`:
 
     ```
@@ -75,7 +75,23 @@ To train a model, go through the following steps:
     path_to_lp_image2
     ...
     ```
-
+6.  Finally, trained model could be converted to Inference Engine format for
+    optimized inference. To export, go to `tensorflow_toolkit/lpr` and run
+    `export.py`:
+    
+    ```
+    python3 export.py chinese_lp/config.py <path_to_mo.py>
+    ```
+    
+    If OpenVINO™ was installed in a home directory, then `<path_to_mo.py>` is
+    `~/intel/computer_vision_sdk/deployment_tools/model_optimizer/mo.py`.
+    
+    As a result, you'll find three new artifacts in
+    `chinese_lp/model/ie_model`:
+    - `graph.pb` - TensorFlow frozen graph,
+    - `graph.xml` and `grapn.bin` - Inference Engine representation of the
+    model.
+    
 ## Citation
 
 If you find *LPRNet* useful in your research, please, consider to cite the following paper:
