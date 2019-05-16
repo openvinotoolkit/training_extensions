@@ -24,6 +24,18 @@ inference.
   ```
 
 
-## Frameworks
-* [Tensorflow](tensorflow_toolkit)
+# Models
+
 * [PyTorch](pytorch_toolkit)
+
+  * [Action recognition](pytorch_toolkit/action_recognition)
+  * [Face recognition](pytorch_toolkit/face_recognition)
+  * [Human pose estimation](pytorch_toolkit/human_pose_estimation)
+  * [Instance segmentation](pytorch_toolkit/instance_segmentation)
+
+* [TensorFlow](tensorflow_toolkit)
+
+  * [LPRNet](tensorflow_toolkit/lpr)
+  * [Person Bike Vehicle Detector](tensorflow_toolkit/person_bike_vehicle_detector)
+  * [SSD Object Detection](tensorflow_toolkit/ssd_detector)
+  * [Vehicle Attributes](tensorflow_toolkit/vehicle_attributes)
