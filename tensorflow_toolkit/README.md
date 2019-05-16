@@ -17,45 +17,25 @@ inference.
 
 # Quick Start Guide
 
-## Setup Training Toolbox for TensorFlow
+## Setup for TensorFlow
 
-1. Create virtual environment
-<a name="create_venv"></a>
+1. Install requirements
+  ```Bash
+  pip3 install cython
+  sudo apt install 2to3
+  ```
 
-```
-cd /<path_to_working_dir>/training_toolbox/tensorflow_toolkit
-bash init_venv.sh
-```
+1. Download submodules
+  ```Bash
+  cd openvino_training_extensions
+  git submodule update --init --recommend-shallow external/cocoapi external/models
+  ```
 
-2. Start to work
-
-```
-. venv/bin/activate
-```
-
-## Tests
-In virtual environment run tests:
-
-```
-cd /<path_to_working_dir>/training_toolbox/tensorflow_toolkit
-nosetests
-```
-
-or if you are going to use the OpenVino toolkit:
-
-```
-cd /<path_to_working_dir>/training_toolbox/tensorflow_toolkit
-export OPEN_VINO_DIR=<PATH_TO_OPENVINO>
-nosetests
-```
-
-Note: if you have installed the OpenVino toolkit after creating
-a virtual environment then you have to [recreate one](#create_venv)
-to install required packages for the Model Optimizer into one.
-
-Do not forget to update several environment variables are required to compile and run OpenVINO™ toolkit applications, for details see:
-[https://software.intel.com/en-us/articles/OpenVINO-Install-Linux](https://software.intel.com/en-us/articles/OpenVINO-Install-Linux).
-
+2. Compile Protobuf libraries
+  ```Bash
+  cd openvino_training_extensions/external/models/research/
+  protoc object_detection/protos/*.proto --python_out=.
+  ```
 
 ## Models
 After installation, you are ready to train your own models, evaluate them, use
@@ -64,3 +44,4 @@ them for predictions.
 * [SSD Object Detection](ssd_detector)
 * [LPRNet](lpr)
 * [Vehicle Attributes](vehicle_attributes)
+* [Person Bike Vehicle Detector](person_bike_vehicle_detector)
