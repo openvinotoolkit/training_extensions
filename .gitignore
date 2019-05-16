@@ -2,8 +2,12 @@
 __pycache__
 .idea/
 *.iml
-**/venv
-data/test
-external/cocoapi
-tensorflow_toolkit/tests/models
-tensorflow_toolkit/**/model
+
+venv
+env
+.env
+
+data/*
+external/*
+
+*egg-info
