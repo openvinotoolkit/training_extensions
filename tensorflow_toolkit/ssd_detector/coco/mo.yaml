@@ -1,0 +1,8 @@
+framework: 'tf'
+model_name: 'coco'
+output:
+  - ssd_heads/concat_reshape_softmax/mbox_loc_final
+  - ssd_heads/concat_reshape_softmax/mbox_conf_final
+  - ssd_heads/concat_reshape_softmax/mbox_priorbox
+scale: 127.5
+mean_value: '[127.5,127.5,127.5]'

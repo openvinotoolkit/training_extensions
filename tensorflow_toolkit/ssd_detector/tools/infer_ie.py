@@ -34,10 +34,10 @@ def build_argparser():
   parser.add_argument("--dump_predictions_to_json", help="Dump predictions to json file", default=True)
   parser.add_argument("--output_json_path", help="Path to output json file with predictions",
                       default="ie_preidctions.json")
-  parser.add_argument("--show", help="Show predictions", default=True)
+  parser.add_argument("--show", dest='show', action='store_true', help="Show predictions")
   parser.add_argument("--dump_output_video", help="Save output video with predictions", default=True)
   parser.add_argument("--path_to_output_video", help="Path to output video with predictions", default="output.avi")
-
+  parser.add_argument("--delay", help="Delay before show next image", default=10, type=int)
   return parser
 
 
@@ -104,7 +104,7 @@ def main():
 
   # Read IR
   log.info("Reading IR...")
-  net = IENetwork.from_ir(model=model_xml, weights=model_bin)
+  net = IENetwork(model=model_xml, weights=model_bin)
 
   if "CPU" in plugin.device:
     supported_layers = plugin.get_supported_layers(net)
@@ -121,8 +121,9 @@ def main():
   out_blob = next(iter(net.outputs))
   log.info("Loading IR to the plugin...")
   exec_net = plugin.load(network=net, num_requests=2)
+
   # Read and pre-process input image
-  batch, channels, height, width = net.inputs[input_blob]
+  batch, channels, height, width = net.inputs[input_blob].shape
   del net
 
   predictions = []
@@ -178,9 +179,10 @@ def main():
     if args.dump_output_video:
       img_resized = cv2.resize(frame, (out_width, out_height))
       out.write(img_resized)
+
     if args.show:
       cv2.imshow("Detection Results", frame)
-      key = cv2.waitKey(10)
+      key = cv2.waitKey(args.delay)
       if key == 27:
         break
 

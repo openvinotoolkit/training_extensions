@@ -4,7 +4,7 @@ import os
 import cv2
 import tensorflow as tf
 
-from utils.helpers import load_module
+from tfutils.helpers import load_module
 from ssd_detector.trainer import create_session, detection_model, InputTrainData
 
 
