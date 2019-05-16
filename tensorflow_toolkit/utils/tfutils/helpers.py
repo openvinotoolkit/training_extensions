@@ -195,14 +195,15 @@ def download_archive_and_extract(url, target_dir):
   zipfile.extractall(target_dir)
 
 
-def execute_mo(config_path, frozen, output_dir, shape, data_type, mo_path='mo.py'):
+def execute_mo(config_path, frozen, output_dir, shape, data_type,
+               custom_operations_config=None, mo_path='mo.py'):
   import subprocess
   import yaml
 
   with open(config_path, 'r') as stream:
     config = yaml.safe_load(stream)
 
-  params = [
+  command = [
     mo_path,
     '--input_model={}'.format(frozen),
     '--output_dir={}'.format(output_dir),
@@ -210,18 +211,21 @@ def execute_mo(config_path, frozen, output_dir, shape, data_type, mo_path='mo.py
     '--data_type={}'.format(data_type),
   ]
 
+  if custom_operations_config:
+    command.append('--tensorflow_use_custom_operations_config={}'.format(custom_operations_config))
+
   for arg, value in config.items():
     if isinstance(value, bool):
       if value:
-        params.append('--{}'.format(arg))
+        command.append('--{}'.format(arg))
     elif isinstance(value, (str, int, float)):
-      params.append('--{}={}'.format(arg, value))
+      command.append('--{}={}'.format(arg, value))
     elif isinstance(value, list):
-      params.append('--{}={}'.format(arg, ','.join([str(x) for x in value])))
+      command.append('--{}={}'.format(arg, ','.join([str(x) for x in value])))
     else:
       raise Exception('Unexpected format of value in mo_config: {}'.format(value))
 
   print('')
-  print(' '.join(params))
+  print(' '.join(command))
 
-  subprocess.call(params)
+  subprocess.call(command)
