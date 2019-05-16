@@ -15,14 +15,12 @@ inference.
   ```
   cd /<path_to_working_dir>
   git clone https://github.com/opencv/openvino_training_extensions.git
-  cd openvino_training_extensions
-  git submodule update --init --recursive
   ```
 
 2. Install prerequisites
 
   ```
-  sudo apt-get install libturbojpeg python3-tk python3-pip virtualenv 2to3
+  sudo apt-get install libturbojpeg python3-tk python3-pip virtualenv
   ```
 
 
