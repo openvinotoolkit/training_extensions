@@ -86,7 +86,7 @@ To train a model, go through the following steps:
     ```
 
 2. Change `annotation_path` in `vlp/config.py` to `data/bitvehicle` instead
-    of test dataset `data/vlc_test`
+    of test dataset `data/vlp_test/`
 
 3. If necessary, you can modify training settings by editing
     [training_toolbox/ssd_detector/vlp/config.py](vlp/config.py) or leave them by

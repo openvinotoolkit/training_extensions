@@ -88,7 +88,6 @@ To train a model, go through the following steps:
     parameters in train section to paths of obtained `train` and `val`
     annotation files accordingly.
 
-2. To start training go to `training_toolbox/lpr` directory and type in command line:
 
 ### Train and evaluation
 
@@ -123,8 +122,6 @@ To train a model, go through the following steps:
 
     And view results in a browser: [http://localhost:6006](http://localhost:6006).
 
-4. When training is complete, model from the checkpoint could be infered on
-    input data by running `training_toolbox/lpr/chinese_lp/infer.py`:
 
 ### Export to OpenVINO
 
@@ -137,9 +134,8 @@ python3 tools/export.py --data_type FP32 \
   chinese_lp/config.py
 ```
 
-As a result, you'll find three new artifacts:
-- `lpr/model/export_<step>/frozen_graph/` - path to frozen graph
- - `lpr/model/export_<step>/IR/<data_type>/` - path to converted model in IR format
+`lpr/model/export_<step>/frozen_graph` - path to frozen graph
+`lpr/model/export_<step>/IR/<data_type>` - path to converted model in IR format
 
 ## Demo
 
