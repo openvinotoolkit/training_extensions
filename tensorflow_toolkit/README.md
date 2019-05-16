@@ -42,6 +42,6 @@ After installation, you are ready to train your own models, evaluate them, use
 them for predictions.
 
 * [SSD Object Detection](ssd_detector)
-* [LPRNet](lpr)
+* [License Plate Recognition](lpr)
 * [Vehicle Attributes](vehicle_attributes)
 * [Person Bike Vehicle Detector](person_bike_vehicle_detector)
