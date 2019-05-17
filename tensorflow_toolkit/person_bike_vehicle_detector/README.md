@@ -1,4 +1,4 @@
-# Crossroad vehicle-pedestrian-non_vehicle object detector
+# Person Bike Vehicle Detector
 
 
 ## Information
@@ -6,41 +6,55 @@
 The crossroad detection network model provides detection of 3 class objects: vehicle, pedestrian, non-vehicle (ex: bikes). This detector was trained on the data from crossroad cameras.
 
 
-## Prerequisites
+## Setup
+
+### Prerequisites
+
+* Ubuntu 16.04
+* Python 3.6
+* TensorFlow 1.13.1
+* OpenVINO 2019 R1 with Python API
+
+### Installation
 
 1. Download submodules
-   ```bash
-   cd openvino_training_extensions
-   git submodule update --init --recursive
-   ```
+```bash
+cd openvino_training_extensions
+git submodule update --init --recursive
+```
 
-2. Build cocoapi
-   ```bash
-   cd openvino_training_extensions/external/cocoapi
-   2to3 . -w
-   cd PythonAPI
-   make install
-   ```
+2. Create virtual environment
+```bash
+virtualenv venv -p python3 --prompt="(pbv)"
+```
 
-3. Compile Protobuf files
-   ```bash
-   cd openvino_training_extensions/external/models/research/
-   protoc object_detection/protos/*.proto --python_out=.
-   ```
+3. Modify `venv/bin/activate` to set environment variables
+```
+cat <<EOT >> venv/bin/activate
+export PYTHONPATH=\$PYTHONPATH:$(git rev-parse --show-toplevel)/external/models/research
+export PYTHONPATH=\$PYTHONPATH:$(git rev-parse --show-toplevel)/external/models/research/slim
+. /opt/intel/openvino/bin/setupvars.sh
+EOT
+```
 
-4. Appended following directories to `PYTHONPATH`:
-   ```
-   openvino_training_extensions/tensorflow_toolkit
-   openvino_training_extensions/external/models/research
-   openvino_training_extensions/external/models/research/slim
-   ```
+4. Activate virtual environment and setup OpenVINO variables
+```bash
+. venv/bin/activate
+```
 
-5. Install requirements modules
-   ```bash
-   cd  openvino_training_extensions/tensorflow_toolkit/veh_ped_nonveh_ssd _mobilenetv2_detector
-   pip install -r requirements.txt
-   pip install -r  "${INTEL_OPENVINO_DIR}/deployment_tools/model_optimizer/requiremen ts_tf.txt"
-   ```
+5. Install modules
+```
+pip3 install -r requirements.txt
+pip3 install -e ../utils
+```
+
+6. Build and install COCO API for python
+```bash
+cd $(git rev-parse --show-toplevel)/external/cocoapi
+2to3 . -w
+cd PythonAPI
+make install
+```
 
 ## Training and evaluation example
 
@@ -48,7 +62,8 @@ The crossroad detection network model provides detection of 3 class objects: veh
 
 1. Go to `openvino_training_extensions/tensorflow_toolkit/veh_ped_nonveh_ssd_mobilenetv2_detector/` directory
 
-2. The example dataset has annotation in coco format. You can find it here: `openvino_training_extensions/tensorflow_toolkit/veh_ped_nonveh_ssd_mobilenetv2_detector/dataset`
+2. The example dataset has annotation in coco format. You can find it here:
+   `openvino_training_extensions/tensorflow_toolkit/veh_ped_nonveh_ssd_mobilenetv2_detector/dataset`
    To collect annotation used [COCO object detection format](http://cocodataset.org/#format-data). .
 
 3. To convert the dataset to tfrecords you have to run:
