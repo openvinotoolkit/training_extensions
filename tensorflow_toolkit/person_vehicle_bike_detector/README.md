@@ -1,4 +1,4 @@
-# Person Bike Vehicle Detector
+# Person Vehicle Bike Detector
 
 
 ## Information
@@ -25,7 +25,7 @@ git submodule update --init --recursive
 
 2. Create virtual environment
 ```bash
-virtualenv venv -p python3 --prompt="(pbv)"
+virtualenv venv -p python3 --prompt="(pvb)"
 ```
 
 3. Modify `venv/bin/activate` to set environment variables
@@ -45,7 +45,6 @@ EOT
 5. Install modules
 ```
 pip3 install -r requirements.txt
-pip3 install -e ../utils
 ```
 
 6. Build and install COCO API for python

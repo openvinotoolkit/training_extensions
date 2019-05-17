@@ -36,6 +36,6 @@ inference.
 * [TensorFlow](tensorflow_toolkit)
 
   * [License Plate Recognition](tensorflow_toolkit/lpr)
-  * [Person Bike Vehicle Detector](tensorflow_toolkit/person_bike_vehicle_detector)
+  * [Person Vehicle Bike Detector](tensorflow_toolkit/person_vehicle_bike_detector)
   * [SSD Object Detection](tensorflow_toolkit/ssd_detector)
   * [Vehicle Attributes](tensorflow_toolkit/vehicle_attributes)
