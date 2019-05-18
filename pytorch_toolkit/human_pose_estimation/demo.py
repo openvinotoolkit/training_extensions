@@ -5,9 +5,9 @@ import numpy as np
 import torch
 
 from models.with_mobilenet import PoseEstimationWithMobileNet
-from modules.keypoints import extract_keypoints, group_keypoints, BODY_PARTS_KPT_IDS, BODY_PARTS_PAF_IDS
+from modules.keypoints import extract_keypoints, group_keypoints
 from modules.load_state import load_state
-from modules.person_id import propagate_person_id
+from modules.pose import Pose, propagate_ids
 from val import normalize, pad_width
 
 
@@ -78,38 +78,14 @@ def infer_fast(net, img, net_input_height_size, stride, upsample_ratio, cpu,
     return heatmaps, pafs, scale, pad
 
 
-class Pose(object):
-    last_id = -1
-
-    def __init__(self, keypoints):
-        super().__init__()
-        self.keypoints = keypoints
-        found_keypoints = np.zeros((np.count_nonzero(keypoints[:, 0] != -1), 2), dtype=np.int32)
-        found_kpt_id = 0
-        for kpt_id in range(keypoints.shape[0]):
-            if keypoints[kpt_id, 0] == -1:
-                continue
-            found_keypoints[found_kpt_id] = keypoints[kpt_id]
-            found_kpt_id += 1
-        self.bbox = cv2.boundingRect(found_keypoints)
-        self.id = -1  # unset
-
-    def update_id(self, id=None):
-        self.id = id
-        if not self.id:
-            self.id = Pose.last_id + 1
-            Pose.last_id += 1
-
-
-def run_demo(net, image_provider, height_size, cpu):
+def run_demo(net, image_provider, height_size, cpu, track_ids):
     net = net.eval()
     if not cpu:
         net = net.cuda()
 
     stride = 8
     upsample_ratio = 4
-    color = [0, 224, 255]
-    num_keypoints = 18
+    num_keypoints = Pose.num_kpts
     previous_poses = []
     for img in image_provider:
         orig_img = img.copy()
@@ -133,29 +109,19 @@ def run_demo(net, image_provider, height_size, cpu):
                 if pose_entries[n][kpt_id] != -1.0:  # keypoint was found
                     pose_keypoints[kpt_id, 0] = int(all_keypoints[int(pose_entries[n][kpt_id]), 0])
                     pose_keypoints[kpt_id, 1] = int(all_keypoints[int(pose_entries[n][kpt_id]), 1])
-            current_poses.append(Pose(pose_keypoints))
-            for part_id in range(len(BODY_PARTS_PAF_IDS) - 2):
-                kpt_a_id = BODY_PARTS_KPT_IDS[part_id][0]
-                global_kpt_a_id = pose_entries[n][kpt_a_id]
-                if global_kpt_a_id != -1:
-                    x_a, y_a = all_keypoints[int(global_kpt_a_id), 0:2]
-                    cv2.circle(img, (int(x_a), int(y_a)), 3, color, -1)
-                kpt_b_id = BODY_PARTS_KPT_IDS[part_id][1]
-                global_kpt_b_id = pose_entries[n][kpt_b_id]
-                if global_kpt_b_id != -1:
-                    x_b, y_b = all_keypoints[int(global_kpt_b_id), 0:2]
-                    cv2.circle(img, (int(x_b), int(y_b)), 3, color, -1)
-                if global_kpt_a_id != -1 and global_kpt_b_id != -1:
-                    cv2.line(img, (int(x_a), int(y_a)), (int(x_b), int(y_b)), color, 2)
+            pose = Pose(pose_keypoints, pose_entries[n][18])
+            current_poses.append(pose)
+            pose.draw(img)
 
         img = cv2.addWeighted(orig_img, 0.6, img, 0.4, 0)
-        propagate_person_id(previous_poses, current_poses)
-        previous_poses = current_poses
-        for pose in current_poses:
-            cv2.rectangle(img, (pose.bbox[0], pose.bbox[1]), (pose.bbox[0] + pose.bbox[2], pose.bbox[1] + pose.bbox[3]),
-                          (0, 255, 0), 2)
-            cv2.putText(img, 'id: {}'.format(pose.id), (pose.bbox[0], pose.bbox[1] - 16),
-                        cv2.FONT_HERSHEY_COMPLEX, 0.5, (0, 0, 255))
+        if track_ids:
+            propagate_ids(previous_poses, current_poses)
+            previous_poses = current_poses
+            for pose in current_poses:
+                cv2.rectangle(img, (pose.bbox[0], pose.bbox[1]),
+                              (pose.bbox[0] + pose.bbox[2], pose.bbox[1] + pose.bbox[3]), (0, 255, 0))
+                cv2.putText(img, 'id: {}'.format(pose.id), (pose.bbox[0], pose.bbox[1] - 16),
+                            cv2.FONT_HERSHEY_COMPLEX, 0.5, (0, 0, 255))
         cv2.imshow('Lightweight Human Pose Estimation Python Demo', img)
         key = cv2.waitKey(33)
         if key == 27:  # esc
@@ -172,6 +138,7 @@ if __name__ == '__main__':
     parser.add_argument('--video', type=str, default='', help='path to video file or camera id')
     parser.add_argument('--images', nargs='+', default='', help='path to input image(s)')
     parser.add_argument('--cpu', action='store_true', help='run network inference on cpu')
+    parser.add_argument('--track-ids', action='store_true', help='track poses ids')
     args = parser.parse_args()
 
     if args.video == '' and args.images == '':
@@ -185,4 +152,4 @@ if __name__ == '__main__':
     if args.video != '':
         frame_provider = VideoReader(args.video)
 
-    run_demo(net, frame_provider, args.height_size, args.cpu)
+    run_demo(net, frame_provider, args.height_size, args.cpu, args.track_ids)
