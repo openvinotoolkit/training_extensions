@@ -15,14 +15,12 @@ inference.
 - (Optional) [OpenVINO™ R3](https://software.intel.com/en-us/openvino-toolkit)
   for exporting of the trained models
 
-# Quick Start Guide
-
-## Setup for TensorFlow
+## Setup
 
 1. Install requirements
   ```Bash
   pip3 install cython
-  sudo apt install 2to3
+  sudo apt install 2to3 protobuf-compiler
   ```
 
 1. Download submodules
