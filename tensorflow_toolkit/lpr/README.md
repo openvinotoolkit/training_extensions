@@ -129,9 +129,7 @@ To run the model via OpenVINO one has to freeze TensorFlow graph and
 then convert it to OpenVINO Internal Representation (IR) using Model Optimizer:
 
 ```Bash
-python3 tools/export.py --data_type FP32 \
-  --mo_config chinese_lp/mo.yaml \
-  chinese_lp/config.py
+python3 tools/export.py --data_type FP32 chinese_lp/config.py
 ```
 
 `lpr/model/export_<step>/frozen_graph` - path to frozen graph

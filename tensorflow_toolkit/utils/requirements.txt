@@ -3,4 +3,3 @@ tensorboard>=1.10.0
 tensorflow-gpu>=1.10.0
 opencv-python>=3.4.2.17
 numpy>=1.14.5
-PyYAML>=5.1

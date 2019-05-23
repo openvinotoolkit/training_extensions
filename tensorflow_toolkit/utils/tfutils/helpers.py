@@ -17,6 +17,7 @@ from importlib import util
 from os import path, system
 import sys
 
+import subprocess
 import numpy as np
 import tensorflow as tf
 import cv2
@@ -195,33 +196,23 @@ def download_archive_and_extract(url, target_dir):
   zipfile.extractall(target_dir)
 
 
-def execute_mo(config_path, frozen, output_dir, shape, data_type,
-               custom_operations_config=None, mo_path='mo.py'):
-  import subprocess
-  import yaml
-
-  with open(config_path, 'r') as stream:
-    config = yaml.safe_load(stream)
-
+def execute_mo(config, frozen, output_dir):
   command = [
-    mo_path,
+    'mo.py',
+    '--framework=tf',
     '--input_model={}'.format(frozen),
     '--output_dir={}'.format(output_dir),
-    '--input_shape=[{}]'.format(','.join([str(x) for x in shape])),
-    '--data_type={}'.format(data_type),
   ]
 
-  if custom_operations_config:
-    command.append('--tensorflow_use_custom_operations_config={}'.format(custom_operations_config))
-
   for arg, value in config.items():
+    if not value:
+      continue
     if isinstance(value, bool):
-      if value:
         command.append('--{}'.format(arg))
     elif isinstance(value, (str, int, float)):
       command.append('--{}={}'.format(arg, value))
     elif isinstance(value, list):
-      command.append('--{}={}'.format(arg, ','.join([str(x) for x in value])))
+      command.append('--{}=[{}]'.format(arg, ','.join([str(x) for x in value])))
     else:
       raise Exception('Unexpected format of value in mo_config: {}'.format(value))
 

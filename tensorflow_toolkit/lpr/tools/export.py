@@ -28,8 +28,6 @@ from tfutils.helpers import load_module, execute_mo
 
 def parse_args():
   parser = argparse.ArgumentParser(description='Export model in IE format')
-  parser.add_argument('--mo', default='mo.py', help="Path to model optimizer 'mo.py' script")
-  parser.add_argument('--mo_config', default='chinese_lp/mo.yaml', help="Path config for model optimizer")
   parser.add_argument('--data_type', default='FP32', choices=['FP32', 'FP16'], help='Data type of IR')
   parser.add_argument('--checkpoint', default=None, help='Default: latest')
   parser.add_argument('path_to_config', help='Path to a config.py')
@@ -81,8 +79,19 @@ def main(_):
 
   # Export to IR
   export_dir = os.path.join(output_dir, 'IR', args.data_type)
-  input_shape = [1] + list(config.input_shape) # Add batch size 1 in shape
-  execute_mo(args.mo_config, frozen_graph, export_dir, input_shape, args.data_type, args.mo)
+
+  mo_params = {
+    'framework': 'tf',
+    'model_name': 'lpr',
+    'input': 'input',
+    'output': 'd_predictions',
+    'reverse_input_channels': True,
+    'scale': 255,
+    'input_shape': [1] + list(config.input_shape),
+    'data_type': args.data_type,
+  }
+
+  execute_mo(mo_params, frozen_graph, export_dir)
 
 if __name__ == '__main__':
   tf.logging.set_verbosity(tf.logging.INFO)

@@ -67,9 +67,14 @@ def main(_):
 
   # Export to IR
   export_dir = os.path.join(output_dir, 'IR', args.data_type)
-  input_shape = [1] + list(config.input_shape) # Add batch size 1 in shape
-  execute_mo(args.mo_config, frozen_graph, export_dir, input_shape, args.data_type, args.mo)
 
+  mo_params = {
+    'model_name': 'vehicle_attributes',
+    'scale': 255,
+    'input_shape': [1] + list(config.input_shape),
+    'data_type': args.data_type,
+  }
+  execute_mo(mo_params, frozen_graph, export_dir)
 
 if __name__ == '__main__':
   tf.logging.set_verbosity(tf.logging.INFO)
