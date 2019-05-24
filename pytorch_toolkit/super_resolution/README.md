@@ -107,4 +107,4 @@ python test.py --test_data_path PATH_TO_TEST_DATA --exp_name test --models_path 
 
 # Checkpoints
 
-Checkpoints can be downloaded [here](). Place *011_repro* (x4) and *021_repro2* (x3) into the model directory. Start training from the checkpoint with --resume flag.
+Checkpoints can be downloaded [here](https://download.01.org/opencv/openvino_training_extensions/models/super_resolution/super_resolution.tar.gz). Place *011_repro* (x4) and *021_repro2* (x3) into the model directory. Start training from the checkpoint with --resume flag.
