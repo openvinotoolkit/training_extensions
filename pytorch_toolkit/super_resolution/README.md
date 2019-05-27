@@ -1,5 +1,5 @@
 # Super Resolution Training Toolbox Pytorch
-This code is intended for training Super Resolution (SR) algorithms in Pytorch. 
+This code is intended for training Super Resolution (SR) algorithms in Pytorch.
 
 # Models
 Two typologies are available for training at this point:
