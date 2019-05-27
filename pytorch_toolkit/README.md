@@ -47,3 +47,4 @@ them for predictions.
 * [Face recognition](face_recognition)
 * [Human pose estimation](human_pose_estimation)
 * [Instance segmentation](instance_segmentation)
+* [Super resolution](super_resolution)

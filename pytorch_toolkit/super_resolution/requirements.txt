@@ -1,0 +1,5 @@
+torch>=0.4
+opencv-python
+scikit-image>=0.14.1
+numpy
+tensorboardX
