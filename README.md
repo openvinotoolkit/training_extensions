@@ -15,17 +15,28 @@ inference.
   ```
   cd /<path_to_working_dir>
   git clone https://github.com/opencv/openvino_training_extensions.git
-  cd openvino_training_extensions
-  git submodule update --init --recursive
   ```
 
 2. Install prerequisites
 
   ```
-  sudo apt-get install libturbojpeg python3-tk python3-pip virtualenv 2to3
+  sudo apt-get install libturbojpeg python3-tk python3-pip virtualenv
   ```
 
 
-## Frameworks
-* [Tensorflow](tensorflow_toolkit)
+# Models
+
 * [PyTorch](pytorch_toolkit)
+
+  * [Action recognition](pytorch_toolkit/action_recognition)
+  * [Face recognition](pytorch_toolkit/face_recognition)
+  * [Human pose estimation](pytorch_toolkit/human_pose_estimation)
+  * [Instance segmentation](pytorch_toolkit/instance_segmentation)
+  * [Super resolution](pytorch_toolkit/super_resolution)
+
+* [TensorFlow](tensorflow_toolkit)
+
+  * [License Plate Recognition](tensorflow_toolkit/lpr)
+  * [Person Vehicle Bike Detector](tensorflow_toolkit/person_vehicle_bike_detector)
+  * [SSD Object Detection](tensorflow_toolkit/ssd_detector)
+  * [Vehicle Attributes](tensorflow_toolkit/vehicle_attributes)
