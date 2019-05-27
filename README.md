@@ -32,6 +32,7 @@ inference.
   * [Face recognition](pytorch_toolkit/face_recognition)
   * [Human pose estimation](pytorch_toolkit/human_pose_estimation)
   * [Instance segmentation](pytorch_toolkit/instance_segmentation)
+  * [Super resolution](pytorch_toolkit/super_resolution)
 
 * [TensorFlow](tensorflow_toolkit)
 
