@@ -1,6 +1,7 @@
 """ This module contains loss definition. """
 
 import tensorflow as tf
+from tensorflow.python.ops import array_ops
 
 
 class ClassificationLoss():
@@ -66,11 +67,13 @@ class ClassificationLoss():
         segm_weights = pos_segm_weights_flatten + tf.cast(selected_neg_pixel_mask, tf.float32)
         n_neg = tf.cast(tf.reduce_sum(input_tensor=selected_neg_pixel_mask), tf.float32)
 
+        loss = 0.0
         if n_neg + n_pos > 0:
-            loss = tf.reduce_sum(input_tensor=segm_loss * segm_weights) / (n_neg + n_pos)
-            return loss * 2.0
+            loss = tf.reduce_sum(input_tensor=segm_loss * segm_weights) / (n_neg + n_pos) * 2.0
 
-        return 0.0
+        loss = loss / self.conf['num_replicas']
+
+        return loss
 
 
 class LinkageLoss():
@@ -88,6 +91,7 @@ class LinkageLoss():
 
         n_pos = tf.reduce_sum(tf.cast(tf.equal(segm_labels, self.conf['text_label']), tf.float32))
 
+        loss = 0.0
         if n_pos > 0:
             link_loss = tf.nn.sparse_softmax_cross_entropy_with_logits(
                 logits=link_logits, labels=link_labels)
@@ -96,14 +100,15 @@ class LinkageLoss():
                 mask = tf.equal(link_labels, label)
                 weights = link_weights * tf.cast(mask, tf.float32)
                 n_links = tf.reduce_sum(input_tensor=weights)
-                if n_links > 0:
-                    loss = tf.reduce_sum(input_tensor=link_loss * weights) / n_links
-                    return loss
-                return 0.0
+                loss = tf.reduce_sum(input_tensor=link_loss * weights)
+                loss = tf.math.divide_no_nan(loss, n_links)
+
+                return loss
 
             neg_link_loss = get_loss(self.conf['background_label'])
             pos_link_loss = get_loss(self.conf['text_label'])
-            link_loss = pos_link_loss + neg_link_loss
-            return link_loss
+            loss = pos_link_loss + neg_link_loss
 
-        return 0.0
+        loss = loss / self.conf['num_replicas']
+
+        return loss

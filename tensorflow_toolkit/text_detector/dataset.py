@@ -279,7 +279,8 @@ class TFRecordDataset:
             dataset = dataset.map(self.preprocess_input_train)
             dataset = dataset.map(self.prepare_groundtruth,
                                   num_parallel_calls=tf.data.experimental.AUTOTUNE)
-            dataset = dataset.batch(self.config['batch_size'], drop_remainder=True)
+            dataset = dataset.batch(self.config['batch_size'] * self.config['num_replicas'],
+                                    drop_remainder=True)
             dataset = dataset.repeat()
         else:
             dataset = dataset.map(self.preprocess_input_test)
@@ -346,6 +347,7 @@ class TFRecordDataset:
 
     def preprocess_input(self, image):
         image = tf.cast(image, tf.float32)
+        shape = image.shape
 
         def preprocess(image):
             if self.config['model_type'] in ['ka_resnet50', 'ka_vgg16']:
@@ -359,7 +361,10 @@ class TFRecordDataset:
             else:
                 raise Exception('model_type is not specified.')
 
-        return tf.numpy_function(preprocess, [image], image.dtype)
+        image = tf.numpy_function(preprocess, [image], image.dtype)
+        image.set_shape(shape)
+
+        return image
 
     def preprocess_input_train(self, image, labels, x_coords, y_coords):
         return self.preprocess_input(image), labels, x_coords, y_coords
@@ -491,7 +496,7 @@ class TFRecordDataset:
 
         return tf.clip_by_value(image, 0.0, 1.0)
 
-    def prepare_groundtruth(self, images, labels, x_coords, y_coords):
+    def prepare_groundtruth(self, image, labels, x_coords, y_coords):
         """ Prepares groundtruth. """
 
         segm_labels, segm_weights, link_labels, link_weights = \
@@ -506,4 +511,4 @@ class TFRecordDataset:
         cls_output = tf.keras.layers.concatenate([segm_labels, segm_weights])
         output = tf.keras.layers.concatenate([cls_output, link_labels, link_weights])
 
-        return images, (cls_output, tf.expand_dims(output, axis=-1))
+        return image, (cls_output, tf.expand_dims(output, axis=-1))
