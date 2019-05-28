@@ -5,6 +5,7 @@ import argparse
 import numpy as np
 from tqdm import tqdm
 import yaml
+import os
 
 import tensorflow as tf
 
@@ -125,7 +126,7 @@ def mask_to_bboxes(mask, config, image_shape):
     for bbox_idx in range(1, max_bbox_idx + 1):
         bbox_mask = (mask == bbox_idx).astype(np.uint8)
         cnts = cv2.findContours(bbox_mask, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)[-2]
-        if cnts == 0:
+        if len(cnts) == 0:
             continue
         cnt = cnts[0]
         rect, rect_area = min_area_rect(cnt)
@@ -180,7 +181,8 @@ def arg_parser():
 
     parser = argparse.ArgumentParser(description='Runs an evaluation of text detection.')
 
-    parser.add_argument('--weights', required=True)
+    parser.add_argument('--weights')
+    parser.add_argument('--weights_folder')
     parser.add_argument('--resolution', nargs=2, type=int, default=(1280, 768))
     parser.add_argument('--dataset', required=True)
     parser.add_argument('--config', required=True)
@@ -199,8 +201,14 @@ def load_config(path):
     return config
 
 
+def parse_epoch(path):
+    return int(os.path.basename(path).split('.')[0].split('-')[-1])
+
+
 def test(args, config, model=None, dataset=None):
     """This function performs testing of text detection neural network."""
+
+    print('Evaluating:', args.weights)
 
     config['segm_conf_thr'] = 0.8
     config['link_conf_thr'] = 0.8
@@ -249,6 +257,18 @@ def test(args, config, model=None, dataset=None):
 
     method_recall, method_precision, method_hmean, _ = eval(pr_annotations, gt_annotations)
 
+    epoch = parse_epoch(args.weights)
+    ema = 'ema' in os.path.basename(args.weights)
+
+    if ema:
+        tf.summary.scalar('ema/hmean', data=method_hmean, step=epoch)
+        tf.summary.scalar('ema/precision', data=method_precision, step=epoch)
+        tf.summary.scalar('ema/recall', data=method_recall, step=epoch)
+    else:
+        tf.summary.scalar('common/hmean', data=method_hmean, step=epoch)
+        tf.summary.scalar('common/precision', data=method_precision, step=epoch)
+        tf.summary.scalar('common/recall', data=method_recall, step=epoch)
+
     return method_recall, method_precision, method_hmean
 
 
@@ -257,7 +277,39 @@ def main():
 
     args = arg_parser().parse_args()
     config = load_config(args.config)
-    print('(recall, precision, method_hmean)', test(args, config))
+
+    if args.weights:
+        print(args.weights, '(recall, precision, method_hmean)', test(args, config))
+    elif args.weights_folder:
+        args.weights_folder = os.path.abspath(args.weights_folder)
+
+        try:
+            with open(os.path.join(args.weights_folder,'evaluations.txt')) as opened_file:
+                already_tested_weights = [line.strip().split()[0] for line in opened_file.readlines()]
+        except:
+            already_tested_weights = []
+
+        model = pixel_link_model(tf.keras.Input(shape=list(args.resolution)[::-1] + [3]), config)
+
+        newly_tested = []
+        with tf.summary.create_file_writer(
+                os.path.join(args.weights_folder, '../logs')).as_default():
+
+            weights_list = ['.'.join(x.split('.')[:-1]) for x in os.listdir(args.weights_folder) if x.startswith('model')]
+            weights_list = list(set(weights_list))
+            weights_list = [os.path.join(args.weights_folder, x) for x in weights_list]
+            weights_list = [x for x in weights_list if x not in already_tested_weights]
+            weights_list = sorted(weights_list, key=lambda x: parse_epoch(x))
+
+            for weights in weights_list:
+                args.weights = weights
+                result = test(args, config, model=model)
+                newly_tested.append(args.weights + str(result[-1]))
+                already_tested_weights.append(args.weights)
+                print(args.weights, '(recall, precision, method_hmean)', result)
+
+                with open(os.path.join(args.weights_folder,'evaluations.txt'), 'a+') as opened_file:
+                    opened_file.write('{} {}\n'.format(args.weights, result[-1]))
 
 
 if __name__ == '__main__':
