@@ -116,7 +116,7 @@ def fcn_head(inputs, num_classes, name, weights_decay=0):
 def keras_applications_mobilenetv2(inputs, alpha):
     from tensorflow.keras.applications.mobilenet_v2 import MobileNetV2
 
-    base_model = MobileNetV2(alpha=alpha, depth_multiplier=1, include_top=False,
+    base_model = MobileNetV2(alpha=alpha, include_top=False,
                              weights='imagenet', input_tensor=inputs)
 
     outputs = {'4x': base_model.get_layer('block_2_add').output,
@@ -145,10 +145,16 @@ def keras_applications_resnet50(inputs):
 
     base_model = ResNet50(input_tensor=inputs, weights='imagenet', include_top=False)
 
-    outputs = {'4x': base_model.get_layer('activation_9').output,
-               '8x': base_model.get_layer('activation_21').output,
-               '16x': base_model.get_layer('activation_39').output,
-               '32x': base_model.get_layer('activation_48').output}
+    try:
+        outputs = {'4x': base_model.get_layer('activation_9').output,
+                   '8x': base_model.get_layer('activation_21').output,
+                   '16x': base_model.get_layer('activation_39').output,
+                   '32x': base_model.get_layer('activation_48').output}
+    except:
+        outputs = {'4x': base_model.get_layer('activation_58').output,
+                   '8x': base_model.get_layer('activation_70').output,
+                   '16x': base_model.get_layer('activation_88').output,
+                   '32x': base_model.get_layer('activation_97').output}
 
     return outputs
 
