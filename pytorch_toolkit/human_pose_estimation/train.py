@@ -91,8 +91,8 @@ def train(prepared_train_labels, train_images_folder, num_refinement_stages, bas
 
             losses = []
             for loss_idx in range(len(total_losses) // 2):
-                losses.append(l2_loss(stages_output[loss_idx * 2], keypoint_maps, keypoint_masks, images.shape[0]))
-                losses.append(l2_loss(stages_output[loss_idx * 2 + 1], paf_maps, paf_masks, images.shape[0]))
+                losses.append(l2_loss(stages_output[loss_idx * 2], keypoint_maps, images.shape[0], keypoint_masks))
+                losses.append(l2_loss(stages_output[loss_idx * 2 + 1], paf_maps, images.shape[0], paf_masks))
                 total_losses[loss_idx * 2] += losses[-2].item() / batches_per_iter
                 total_losses[loss_idx * 2 + 1] += losses[-1].item() / batches_per_iter
 
