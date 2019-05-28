@@ -68,7 +68,7 @@ def freeze(args, config):
 
     input_tensor = tf.compat.v1.placeholder(dtype=tf.float32,
                                             shape=[1] + list(args.resolution[::-1]) + [3])
-    model = pixel_link_model(tf.keras.Input(tensor=input_tensor))
+    model = pixel_link_model(tf.keras.Input(tensor=input_tensor), config=config)
     segm_logits, link_logits = model(input_tensor, training=False)
     link_logits = tf.reshape(link_logits, link_logits.shape.as_list()[0:3] +
                              [config['num_neighbours'] * 2])
