@@ -19,8 +19,8 @@ def parse_args():
                       required=True)
     args.add_argument('--in_annotation', help='Path to annotation in source format.')
     args.add_argument('--images', help='Path to dataset images.', required=True)
-    args.add_argument('--type', choices=['icdar15', 'toy'], help='Source dataset type/name.',
-                      required=True)
+    args.add_argument('--type', choices=['icdar15', 'toy', 'icdar17_mlt', 'icdar19_mlt', 'cocotext_v2'],
+                      help='Source dataset type/name.', required=True)
     args.add_argument('--train', action='store_true')
     args.add_argument('--imshow_delay', type=int, default=-1,
                       help='If it is non-negative, this script will draw detected and groundtruth'
@@ -59,6 +59,9 @@ class TextDetectionDataset:
         text_detection_dataset.annotation = self.annotation + dataset.annotation
         return text_detection_dataset
 
+    def __len__(self):
+        return len(self.annotation)
+
     def write(self, path):
         """ Writes dataset annotation as json file. """
 
@@ -82,10 +85,14 @@ class TextDetectionDataset:
                 cv2.line(image, tuple(points[2:4]), tuple(points[4:6]), color, lwd)
                 cv2.line(image, tuple(points[4:6]), tuple(points[6:8]), color, lwd)
                 cv2.line(image, tuple(points[6:8]), tuple(points[0:2]), color, lwd)
-            cv2.imshow('image', image)
-            k = cv2.waitKey(imshow_delay)
-            if k == 27:
-                break
+            try:
+                image = cv2.resize(image, (1920, 1080))
+                cv2.imshow('image', image)
+                k = cv2.waitKey(imshow_delay)
+                if k == 27:
+                    break
+            except:
+                print('Error: image is empty or corrupted: ', frame['image_path'])
 
     @staticmethod
     def read_from_icdar2015(images_folder, annotations_folder, is_training):
@@ -189,40 +196,47 @@ class TextDetectionDataset:
         return dataset
 
     @staticmethod
-    def read_from_coco_text(path):
+    def read_from_coco_text(path, no_boxes_is_ok=False, sets=['train']):
         """ Converts annotation from COCO-TEXT format to internal format. """
 
         dataset = TextDetectionDataset()
 
         with open(path) as read_file:
 
-            annotations = json.load(read_file)['anns']
+            json_loaded = json.load(read_file)
 
-            new_annotation_temp = collections.defaultdict(list)
+            for id, value in json_loaded['imgs'].items():
+                image_path = os.path.join(os.path.dirname(path),'train2014', value['file_name'])
+                dataset_type = value['set']
 
-            for element in tqdm(annotations):
-                image_id = int(annotations[element]['image_id'])
+                if dataset_type not in sets:
+                    continue
 
-                text = annotations[element]['utf8_string']
-                language = annotations[element]['language']
+                bboxes = []
+                for annotation_id  in json_loaded['imgToAnns'][id]:
+                    annotation_value = json_loaded['anns'][str(annotation_id)]
 
-                mask = np.reshape(np.array(annotations[element]['mask'], np.int32), (-1, 2))
-                box = cv2.boxPoints(cv2.minAreaRect(mask))
-                quadrilateral = [int(x) for x in box.reshape([-1])]
+                    text = annotation_value['utf8_string']
+                    language = annotation_value['language']
+                    readable = annotation_value['legibility'] == 'legible'
 
-                image_path = os.path.join(os.path.dirname(path),
-                                          'train2014/COCO_train2014_{:012}.jpg'.format(image_id))
+                    mask = np.reshape(np.array(annotation_value['mask'], np.int32), (-1, 2))
+                    box = cv2.boxPoints(cv2.minAreaRect(mask))
+                    quadrilateral = [int(x) for x in box.reshape([-1])]
 
-                new_annotation_temp[image_path].append({
-                    'quadrilateral': quadrilateral,
-                    'transcription': text,
-                    'readable': annotations[element]['legibility'] == 'legible',
-                    'language': language})
+                    bboxes.append({
+                        'quadrilateral': quadrilateral,
+                        'transcription': text,
+                        'readable': readable,
+                        'language': language}
+                    )
 
-            for image_path in sorted(new_annotation_temp):
-                dataset.annotation.append(
-                    {'image_path': image_path,
-                     'bboxes': new_annotation_temp[image_path]})
+
+                if no_boxes_is_ok or bboxes:
+                    dataset.annotation.append({
+                        'image_path': image_path,
+                        'bboxes': bboxes
+                    })
 
         return dataset
 
@@ -264,6 +278,74 @@ class TextDetectionDataset:
 
         return dataset
 
+    @staticmethod
+    def read_from_icdar2019_mlt(folder):
+        """ Converts annotation from toy dataset (available) to internal format. """
+
+        def parse_line(line):
+            line = line.split(',')
+            quadrilateral = [int(x) for x in line[:8]]
+            language = line[8]
+            transcription = ','.join(line[9:])
+            readable = True
+            if transcription == '###':
+                transcription = ''
+                readable = False
+            return {'quadrilateral': quadrilateral, 'transcription': transcription,
+                    'readable': readable, 'language': language}
+
+        dataset = TextDetectionDataset()
+
+
+        for image_part in [1, 2]:
+            for image_path in os.listdir(os.path.join(folder, 'ImagesPart{}'.format(image_part))):
+                annotation_path = os.path.join(folder, 'train_gt_t13', image_path)[:-3] + 'txt'
+                image_path = os.path.join(folder, 'ImagesPart{}'.format(image_part), image_path)
+
+                frame = {'image_path': image_path, 'bboxes': []}
+
+                with open(annotation_path, encoding='utf-8-sig') as read_file:
+                    content = [line.strip() for line in read_file.readlines()]
+                    for line in content:
+                        frame['bboxes'].append(parse_line(line))
+
+                dataset.annotation.append(frame)
+
+        return dataset
+
+    @staticmethod
+    def read_from_icdar2017_mlt(folder, is_training):
+        """ Converts annotation from toy dataset (available) to internal format. """
+
+        def parse_line(line):
+            line = line.split(',')
+            quadrilateral = [int(x) for x in line[:8]]
+            language = line[8]
+            transcription = ','.join(line[9:])
+            readable = True
+            if transcription == '###':
+                transcription = ''
+                readable = False
+            return {'quadrilateral': quadrilateral, 'transcription': transcription,
+                    'readable': readable, 'language': language}
+
+        dataset = TextDetectionDataset()
+
+        for image_path in os.listdir(os.path.join(folder, 'ch8_validation_images')):
+            annotation_path = os.path.join(folder, 'ch8_validation_localization_transcription_gt_v2', 'gt_' + image_path)[:-3] + 'txt'
+            image_path = os.path.join(folder, 'ch8_validation_images', image_path)
+
+            frame = {'image_path': image_path, 'bboxes': []}
+
+            with open(annotation_path, encoding='utf-8-sig') as read_file:
+                content = [line.strip() for line in read_file.readlines()]
+                for line in content:
+                    frame['bboxes'].append(parse_line(line))
+
+            dataset.annotation.append(frame)
+
+        return dataset
+
 
 def main():
     """ Main function. """
@@ -272,6 +354,12 @@ def main():
     if args.type == 'icdar15':
         text_detection_dataset = TextDetectionDataset.read_from_icdar2015(
             args.images, args.annotation, is_training=args.train)
+    elif args.type == 'icdar19_mlt':
+        text_detection_dataset = TextDetectionDataset.read_from_icdar2019_mlt(args.images)
+    elif args.type == 'icdar17_mlt':
+        text_detection_dataset = TextDetectionDataset.read_from_icdar2017_mlt(args.images, is_training=False)
+    elif args.type == 'cocotext_v2':
+        text_detection_dataset = TextDetectionDataset.read_from_coco_text(args.images)
     elif args.type == 'toy':
         text_detection_dataset = TextDetectionDataset.read_from_toy_dataset(args.images)
 
