@@ -48,9 +48,9 @@ class UShapedContextBlock(nn.Module):
     def forward(self, x):
         e1 = self.encoder1(x)
         e2 = self.encoder2(e1)
-        d2 = self.decoder2(torch.cat([e1, F.interpolate(e2, size=(e1.size()[2], e1.size()[3]),
+        d2 = self.decoder2(torch.cat([e1, F.interpolate(e2, size=(16, 16),
                                                         mode='bilinear', align_corners=False)], 1))
-        d1 = self.decoder1(torch.cat([x, F.interpolate(d2, size=(x.size()[2], x.size()[3]),
+        d1 = self.decoder1(torch.cat([x, F.interpolate(d2, size=(32, 32),
                                                        mode='bilinear', align_corners=False)], 1))
         return d1
 
