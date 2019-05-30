@@ -33,7 +33,7 @@ from action_recognition.validation import validate
 
 
 def export_onnx(args, model, export_name):
-    model = model.module
+    model = model.module if args.cuda else model
     model.eval()
 
     param = next(model.parameters())
