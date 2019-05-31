@@ -13,6 +13,7 @@ This repository contains training code for the paper [Real-time 2D Multi-Person 
 * [Training](#training)
 * [Validation](#validation)
 * [Pre-trained model](#pre-trained-model)
+* [Output format](#output-format)
 * [C++ demo](#cpp-demo)
 * [Python demo](#python-demo)
 * [Fine-tuning](#fine-tuning)
@@ -91,6 +92,18 @@ Pre-trained on COCO model is available at: https://download.01.org/opencv/openvi
 
 1. Convert PyTorch model to ONNX format: run script in terminal `python scripts/convert_to_onnx.py --checkpoint-path <CHECKPOINT>`. It produces `human-pose-estimation.onnx`.
 2. Convert ONNX model to OpenVINO format with Model Optimizer: run in terminal `python <OpenVINO_INSTALL_DIR>/deployment_tools/model_optimizer/mo.py --input_model human-pose-estimation.onnx --input data --mean_values data[128.0,128.0,128.0] --scale_values data[256] --output stage_1_output_0_pafs,stage_1_output_1_heatmaps`. This produces model `human-pose-estimation.xml` and weights `human-pose-estimation.bin` in single-precision floating-point format (FP32).
+
+## Output format <a name="output-format"/>
+
+Network has two outputs:
+* Keypoints heatmaps
+* Part affinity fileds (used in grouping by persons instances)
+
+These outputs are post-processed, and [`group_keypoints`](https://github.com/opencv/openvino_training_extensions/blob/develop/pytorch_toolkit/human_pose_estimation/modules/keypoints.py#L51) function returns found poses, represented as two lists:
+* `all_keypoints` - list of keypoints for all poses found in image. Each element is a keypoint with its confidence and global id, represented as tuple with 4 elements: 0, 1 - keypoints coordinates, 2 - keypoint confidence (value from heatmap) and the last one is global keypoint id in this list.
+* `pose_entries` - list of poses. Each pose is a list of 20 elements: [0,17] - global keypoints ids, 18 is pose confidence (sum of keypoints confidences and confidences of connections between keypoints), the last one is number of found keypoints for pose.
+
+Keypoints order and names are defined in the [Pose](https://github.com/opencv/openvino_training_extensions/blob/develop/pytorch_toolkit/human_pose_estimation/modules/pose.py#L7) class. Example of parsing is shown in [demo](https://github.com/opencv/openvino_training_extensions/blob/develop/pytorch_toolkit/human_pose_estimation/demo.py#L112).
 
 ## C++ Demo <a name="cpp-demo"/>
 
