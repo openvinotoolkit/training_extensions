@@ -40,6 +40,7 @@ inference.
 
 * [TensorFlow](tensorflow_toolkit)
 
+  * [Action Detection](tensorflow_toolkit/action_detection)
   * [License Plate Recognition](tensorflow_toolkit/lpr)
   * [Person Vehicle Bike Detector](tensorflow_toolkit/person_vehicle_bike_detector)
   * [SSD Object Detection](tensorflow_toolkit/ssd_detector)

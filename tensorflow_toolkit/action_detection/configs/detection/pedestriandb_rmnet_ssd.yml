@@ -1,0 +1,65 @@
+"NETWORK_TYPE": "detection"
+"NETWORK_BACKBONE": "rmnet"
+"NETWORK_VERSION": ""
+"NETWORK_NAME": "SSD"
+
+"USE_NESTEROV": true
+"NORMALIZE_KERNELS": false
+
+"IMAGE_SIZE": [400, 680, 3]
+
+"TRAIN_DATA_SIZE": 1403458
+"VAL_DATA_SIZE": 3600
+"MAX_NUM_DETECTIONS_PER_IMAGE": 60
+"USE_CLASS_BALANCING": false
+
+"MAX_NUM_TRAIN_EPOCHS": 12
+"LR_EPOCH_DROPS": [2, 4, 8]
+"LR_EPOCH_VALUES": [0.01, 0.001, 0.0001, 0.00001]
+
+# Target probabilities like in original Caffe SSD
+"FREE_PROB": 0.07142857142857142
+"EXPAND_PROB": 0.5
+"CROP_PROB": 0.8571428571428571
+
+"MAX_EXPAND_RATIO": 4.0
+"CROP_SCALE_DELTA": 0.3
+"CROP_SCALE_LIMITS": [0.3, 1.0]
+"CROP_SHIFT_DELTA": 0.6
+"BRIGHTNESS_DELTA": 0.12549019607843137  # 32.0 / 255.0
+"SATURATION_LIMITS": [0.5, 1.5]
+
+"MBOX_THRESHOLD": 0.5
+"MBOX_NEG_FACTOR": 3.0
+"MBOX_CL_WEIGHTS": 1.0
+"MBOX_ENTROPY_WEIGHT": null
+"MBOX_MAX_NUM_MATCHES_PER_GT": 3
+"MBOX_MATCHES_DROP_RATIO": null
+"MBOX_DO_INSTANCE_NORMALIZATION": null
+"MBOX_COMPACTNESS_LOSS_MAX_NUM_SAMPLES": 5
+"MBOX_REPULSION_LOSS_WEIGHT": -1.0
+"MBOX_FOCAL_ALPHA": 0.25
+"MBOX_FOCAL_GAMMA": 2.0
+"MBOX_GRADIENT_HARMONIZED_LOSS_NUM_BINS": null
+
+"NUM_CLASSES": 2
+"BG_CLASS_ID": 0
+
+"NORMALIZED_ANCHORS": {16: [[0.16759259, 0.04401043],
+                            [0.22592595, 0.06093752],
+                            [0.32314813, 0.08541667],
+                            [0.47500002, 0.13385415]]}
+"VARIANCE": [0.1, 0.1, 0.2, 0.2]
+
+"INTERNAL_HEAD_SIZES": {16: 256}
+
+"LABELS_MAP": {0: 1,  # sitting --> person
+               1: 1,  # standing --> person
+               2: 1,  # raising_hand --> person
+               3: 1,  # listening --> person
+               4: 1,  # reading --> person
+               5: 1,  # writing --> person
+               6: 1,  # lie_on_the_desk --> person
+               7: 1,  # busy --> person
+               8: 1,  # in_group_discussions --> person
+               9: 1}  # __undefined__ --> person
