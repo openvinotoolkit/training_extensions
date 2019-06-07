@@ -10,10 +10,11 @@ Network"](https://arxiv.org/pdf/1609.04802.pdf)) but with reduced number of chan
 2. Attention-Based single image super resolution network (https://arxiv.org/pdf/1807.06779.pdf) with reduced number of channels and changes in network architecture.
 
 # Results
+The PSNR values were calculated with Y channel from YCrCb image.
 
 | Model    | Set5, PSNRx3, dB | Set5, PSNRx4, dB |
 | :------- | ----: | :---: |
-| SmallModel    | 33.19 | 31.29 |
+| SmallModel    | 33.15 | 31.16 |
 
 # Dependencies
 pytorch 0.4+, python 3.5, opencv, skimage 0.14.1, numpy

@@ -41,9 +41,9 @@ def _PSNR(pred, gt, shave_border=0):
     gt = gt[shave_border:height - shave_border, shave_border:width - shave_border]
     imdff = (pred - gt) #rgb color space
 
-    r = imdff[:,:,0]
+    r = imdff[:,:,2]
     g = imdff[:,:,1]
-    b = imdff[:,:,2]
+    b = imdff[:,:,0]
 
     y = (r * 65.738 + g * 129.057 + b * 25.064) / 256
 
