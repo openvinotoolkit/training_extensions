@@ -2,10 +2,10 @@ import torch
 from torch import nn as nn
 from torch.nn import functional as F
 
-from ..utils import get_fine_tuning_parameters, load_state
 from .backbone import make_encoder
 from .modules import Identity, squash_dims, unsquash_dim
 from .modules.self_attention import DecoderBlock, PositionEncoding
+from ..utils import get_fine_tuning_parameters, load_state
 
 
 class VideoTransformer(nn.Module):
@@ -17,6 +17,7 @@ class VideoTransformer(nn.Module):
         encoder = make_encoder(encoder, input_size=input_size, pretrained=pretrained, input_channels=input_channels)
         self.resnet = encoder.features  # name is kept for compatibility with older checkpoints
         self.last_feature_size = encoder.features_shape[1]
+        self.embed_size = embed_size
 
         if encoder.features_shape[0] != embed_size:
             self.reduce_conv = nn.Conv2d(encoder.features_shape[0], embed_size, 1)
@@ -32,6 +33,7 @@ class VideoTransformer(nn.Module):
 
         self.init_weights()
         self.input_channels = input_channels
+        self.input_size = input_size
 
     def init_weights(self):
         """Initialize the weights."""
@@ -63,6 +65,33 @@ class VideoTransformer(nn.Module):
 
     def load_checkpoint(self, state_dict):
         load_state(self, state_dict, 'fc')
+
+
+class VideoTransformerEncoder(VideoTransformer):
+    def forward(self, rgb_frame):
+        features = self.resnet(rgb_frame)
+        features = self.reduce_conv(features)
+        features = F.avg_pool2d(features, 7)
+        return features
+
+    def export_onnx(self, export_path):
+        first_param = next(self.parameters())
+        input_tensor = first_param.new_zeros(1, self.input_channels, self.input_size, self.input_size)
+        with torch.no_grad():
+            torch.onnx.export(self, (input_tensor,), export_path, verbose=True)
+
+
+class VideoTransformerDecoder(VideoTransformer):
+    def forward(self, features):
+        ys = self.self_attention_decoder(features)
+        ys = self.fc(ys)
+        return ys.mean(1)
+
+    def export_onnx(self, export_path):
+        first_param = next(self.parameters())
+        input_tensor = first_param.new_zeros(1, self.sequence_size, self.embed_size)
+        with torch.no_grad():
+            torch.onnx.export(self, (input_tensor,), export_path, verbose=True)
 
 
 class SelfAttentionDecoder(nn.Module):

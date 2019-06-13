@@ -18,7 +18,6 @@ MODEL_REGISTRY = {
         args.sample_size,
         False if args.pretrain_path or args.resume_path else True,
         layer_norm=args.layer_norm,
-
     ),
     'lstm': lambda args, encoder: lstm_attention.VisualAttentionLSTM(
         args.hidden_size,
@@ -61,7 +60,24 @@ MODEL_REGISTRY = {
         mode='flow',
         layer_norm=args.layer_norm,
     ),
-
+    'vtn_encoder': lambda args, encoder: video_transformer.VideoTransformerEncoder(
+        args.hidden_size,
+        args.sample_duration,
+        encoder,
+        args.n_classes,
+        args.sample_size,
+        False if args.pretrain_path or args.resume_path else True,
+        layer_norm=args.layer_norm,
+    ),
+    'vtn_decoder': lambda args, encoder: video_transformer.VideoTransformerDecoder(
+        args.hidden_size,
+        args.sample_duration,
+        encoder,
+        args.n_classes,
+        args.sample_size,
+        False if args.pretrain_path or args.resume_path else True,
+        layer_norm=args.layer_norm,
+    ),
     'vtn_two_stream': lambda args, encoder: vtn_two_stream.VideoTransformerTwoStream(
         args.hidden_size,
         args.sample_duration,
