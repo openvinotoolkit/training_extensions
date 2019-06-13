@@ -29,7 +29,7 @@ This repository contains TensorFlow code for deployment of person detection (PD)
 
 ## Model training
 Proposed repository allows to carry out the full cycle model training procedure. There are two ways to get the high accurate model:
- - Fine-tune from the proposed initial weights: `$REPO_ROOT/weights`. This way is most simple and fast due to reducing training stages to single one - training PD&AR model directly.
+ - Fine-tune from the proposed [initial weights](https://download.01.org/opencv/openvino_training_extensions/models/action_detection/person-detection-action-recognition-0006.tar.gz). This way is most simple and fast due to reducing training stages to single one - training PD&AR model directly.
  - Full cycle model pre-training on classification and detection datasets and final PD&AR model training. To get most accurate model we recommend to pre-train model on the next tasks:
    1. Classification on ImageNet dataset (see classifier training [instruction](./README_CLASSIFIER.md))
    2. Detection on Pascal VOC0712 dataset (see detector training [instruction](./README_DETECTOR.md))
