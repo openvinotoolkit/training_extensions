@@ -2,6 +2,8 @@
 
 This repository contains training code for the paper [Real-time 2D Multi-Person Pose Estimation on CPU: Lightweight OpenPose](https://arxiv.org/pdf/1811.12004.pdf). This work heavily optimizes the [OpenPose](https://github.com/CMU-Perceptual-Computing-Lab/openpose) approach to reach real-time inference on CPU with negliable accuracy drop. It detects a skeleton (which consists of keypoints and connections between them) to identify human poses for every person inside the image. The pose may contain up to 18 keypoints: ears, eyes, nose, neck, shoulders, elbows, wrists, hips, knees, and ankles. On COCO 2017 Keypoint Detection validation set this code achives 40% AP for the single scale inference (no flip or any post-processing done). The result can be reproduced using this repository.
 
+The implementation of our paper for single-person pose estimation problem [Global Context for Convolutional Pose Machines](https://arxiv.org/pdf/1906.04104.pdf) is added. See [README_single.md](README_single.md) for the details.
+
 <p align="center">
   <img src="data/preview.jpg" />
 </p>

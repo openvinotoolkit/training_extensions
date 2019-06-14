@@ -46,14 +46,14 @@ class CocoTrainDataset(Dataset):
             sample = self._transform(sample)
 
         mask = cv2.resize(sample['mask'], dsize=None, fx=1/self._stride, fy=1/self._stride, interpolation=cv2.INTER_AREA)
-        keypoint_maps = self._generate_keypoint_maps(sample)
+        keypoint_maps = self.generate_keypoint_maps(sample)
         sample['keypoint_maps'] = keypoint_maps
         keypoint_mask = np.zeros(shape=keypoint_maps.shape, dtype=np.float32)
         for idx in range(keypoint_mask.shape[0]):
             keypoint_mask[idx] = mask
         sample['keypoint_mask'] = keypoint_mask
 
-        paf_maps = self._generate_paf_maps(sample)
+        paf_maps = self.generate_paf_maps(sample)
         sample['paf_maps'] = paf_maps
         paf_mask = np.zeros(shape=paf_maps.shape, dtype=np.float32)
         for idx in range(paf_mask.shape[0]):
@@ -68,7 +68,7 @@ class CocoTrainDataset(Dataset):
     def __len__(self):
         return len(self._labels)
 
-    def _generate_keypoint_maps(self, sample):
+    def generate_keypoint_maps(self, sample):
         n_keypoints = 18
         n_rows, n_cols, _ = sample['image'].shape
         keypoint_maps = np.zeros(shape=(n_keypoints + 1,
@@ -78,15 +78,16 @@ class CocoTrainDataset(Dataset):
         for keypoint_idx in range(n_keypoints):
             keypoint = label['keypoints'][keypoint_idx]
             if keypoint[2] <= 1:
-                self._add_gaussian(keypoint_maps[keypoint_idx], keypoint[0], keypoint[1], self._stride, self._sigma)
+                CocoTrainDataset.add_gaussian(keypoint_maps[keypoint_idx], keypoint[0], keypoint[1], self._stride, self._sigma)
             for another_annotation in label['processed_other_annotations']:
                 keypoint = another_annotation['keypoints'][keypoint_idx]
                 if keypoint[2] <= 1:
-                    self._add_gaussian(keypoint_maps[keypoint_idx], keypoint[0], keypoint[1], self._stride, self._sigma)
+                    CocoTrainDataset.add_gaussian(keypoint_maps[keypoint_idx], keypoint[0], keypoint[1], self._stride, self._sigma)
         keypoint_maps[-1] = 1 - keypoint_maps.max(axis=0)
         return keypoint_maps
 
-    def _add_gaussian(self, keypoint_map, x, y, stride, sigma):
+    @staticmethod
+    def add_gaussian(keypoint_map, x, y, stride, sigma):
         n_sigma = 4
         tl = [int(x - n_sigma * sigma), int(y - n_sigma * sigma)]
         tl[0] = max(tl[0], 0)
@@ -109,7 +110,7 @@ class CocoTrainDataset(Dataset):
                 if keypoint_map[map_y, map_x] > 1:
                     keypoint_map[map_y, map_x] = 1
 
-    def _generate_paf_maps(self, sample):
+    def generate_paf_maps(self, sample):
         n_pafs = len(BODY_PARTS_KPT_IDS)
         n_rows, n_cols, _ = sample['image'].shape
         paf_maps = np.zeros(shape=(n_pafs * 2, n_rows // self._stride, n_cols // self._stride), dtype=np.float32)
@@ -119,19 +120,20 @@ class CocoTrainDataset(Dataset):
             keypoint_a = label['keypoints'][BODY_PARTS_KPT_IDS[paf_idx][0]]
             keypoint_b = label['keypoints'][BODY_PARTS_KPT_IDS[paf_idx][1]]
             if keypoint_a[2] <= 1 and keypoint_b[2] <= 1:
-                self._set_paf(paf_maps[paf_idx * 2:paf_idx * 2 + 2],
-                              keypoint_a[0], keypoint_a[1], keypoint_b[0], keypoint_b[1],
-                              self._stride, self._paf_thickness)
+                CocoTrainDataset.set_paf(paf_maps[paf_idx * 2:paf_idx * 2 + 2],
+                                         keypoint_a[0], keypoint_a[1], keypoint_b[0], keypoint_b[1],
+                                         self._stride, self._paf_thickness)
             for another_annotation in label['processed_other_annotations']:
                 keypoint_a = another_annotation['keypoints'][BODY_PARTS_KPT_IDS[paf_idx][0]]
                 keypoint_b = another_annotation['keypoints'][BODY_PARTS_KPT_IDS[paf_idx][1]]
                 if keypoint_a[2] <= 1 and keypoint_b[2] <= 1:
-                    self._set_paf(paf_maps[paf_idx * 2:paf_idx * 2 + 2],
-                                  keypoint_a[0], keypoint_a[1], keypoint_b[0], keypoint_b[1],
-                                  self._stride, self._paf_thickness)
+                    CocoTrainDataset.set_paf(paf_maps[paf_idx * 2:paf_idx * 2 + 2],
+                                             keypoint_a[0], keypoint_a[1], keypoint_b[0], keypoint_b[1],
+                                             self._stride, self._paf_thickness)
         return paf_maps
 
-    def _set_paf(self, paf_map, x_a, y_a, x_b, y_b, stride, thickness):
+    @staticmethod
+    def set_paf(paf_map, x_a, y_a, x_b, y_b, stride, thickness):
         x_a /= stride
         y_a /= stride
         x_b /= stride
