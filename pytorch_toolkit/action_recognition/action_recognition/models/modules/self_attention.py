@@ -2,8 +2,8 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.init as init
-from torch.nn import functional as F
 
+from .functional import unsquash_dim
 from .modules import Identity
 
 
@@ -149,9 +149,10 @@ class MultiHeadAttention(nn.Module):
         outputs, attns = self.attention(q_s, k_s, v_s)
 
         # back to original mb_size batch, result size = mb_size x len_q x (n_head*d_v)
-
         split_size = mb_size.item() if isinstance(mb_size, torch.Tensor) else mb_size
-        outputs = torch.cat(torch.split(outputs, split_size, dim=0), dim=-1)
+        outputs = unsquash_dim(outputs, 0, (-1, split_size))
+        outputs = outputs.permute(1, 2, 0, 3).contiguous().view(split_size, len_q, -1)
+        # outputs = torch.cat(outputs.split(split_size, dim=0), dim=-1)
 
         if self.use_proj:
             # project back to residual size

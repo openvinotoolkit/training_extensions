@@ -36,6 +36,10 @@ def export_onnx(args, model, export_name):
     model = model.module if args.cuda else model
     model.eval()
 
+    if hasattr(model, "export_onnx"):
+        model.export_onnx(export_name)
+        return
+
     param = next(model.parameters())
     x = param.new_zeros(1, args.sample_duration, 3, args.sample_size, args.sample_size)
 
