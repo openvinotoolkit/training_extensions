@@ -1,5 +1,6 @@
-torch>=0.4
-opencv-python
+torch==0.4.1
+numpy==1.16.3
 scikit-image>=0.14.1
-numpy
+opencv-python
 tensorboardX
+tqdm==4.32.2

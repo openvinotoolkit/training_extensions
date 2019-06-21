@@ -17,13 +17,14 @@
 import argparse
 import os
 import os.path as osp
-from matplotlib import pyplot as plt
 import skimage
 from skimage import io
 from skimage import transform
 from tqdm import tqdm
 
-parser = argparse.ArgumentParser(description="Val dataset generator. It crops and resizes given images to specified size.")
+
+parser = argparse.ArgumentParser(description="Val dataset generator."
+                                             "It crops and resizes given images to specified size.")
 
 parser.add_argument("--input_folder_path", default="", type=str, help="Path to folder with input images", required=True)
 parser.add_argument("--output_folder_path", default="", type=str, help="Path to output folder", required=True)
@@ -31,7 +32,7 @@ parser.add_argument("--count", default=None, type=int, help="Number of cropped i
 parser.add_argument("--w", default=None, type=int, help="Width of cropped image")
 parser.add_argument("--h", default=None, type=int, help="Height of cropped image")
 parser.add_argument("--ds_factor", default=4, type=int, help="Downscaling factor")
-parser.add_argument("--show", action='store_true', help="Show results")
+
 
 def main():
     opt = parser.parse_args()
@@ -71,13 +72,13 @@ def main():
             cropped_h = cropped.shape[0]
             cropped_w = cropped.shape[1]
 
-            assert(cropped_h % ds_factor == 0)
-            assert(cropped_w % ds_factor == 0)
+            assert cropped_h % ds_factor == 0
+            assert cropped_w % ds_factor == 0
 
             im = skimage.img_as_float32(cropped)
             resized = transform.resize(image=im, output_shape=(cropped_h / ds_factor, cropped_w / ds_factor), order=3,
-                                          mode='reflect', anti_aliasing=True,
-                                          anti_aliasing_sigma=None, preserve_range=True)
+                                       mode='reflect', anti_aliasing=True,
+                                       anti_aliasing_sigma=None, preserve_range=True)
 
 
             name_wo_ext = os.path.splitext(name)[0]
@@ -87,12 +88,7 @@ def main():
             out_image_path = osp.join(output_folder, name_wo_ext + "_hr.png")
             io.imsave(out_image_path, cropped)
 
-            if opt.show:
-                f1 = plt.figure()
-                plt.imshow(cropped)
-                f2 = plt.figure()
-                plt.imshow(resized)
-                plt.show()
+
 
 if __name__ == "__main__":
     main()

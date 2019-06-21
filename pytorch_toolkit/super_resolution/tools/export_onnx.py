@@ -17,7 +17,7 @@
 import argparse
 import os
 import torch.onnx
-import train
+from sr.trainer import Trainer
 
 parser = argparse.ArgumentParser(description="PyTorch SR export to onnx")
 parser.add_argument("--test_data_path", default="", type=str, help="path to test data")
@@ -38,16 +38,16 @@ def main():
     x = torch.randn(1, 3, input_size[0], input_size[1], requires_grad=True).cuda()
     cubic = torch.randn(1, 3, scale*input_size[0], scale*input_size[1], requires_grad=True).cuda()
 
-    trainer = train.Trainer(name=name, models_root=models_path, resume=True)
+    trainer = Trainer(name=name, models_root=models_path, resume=True)
     trainer.load_best()
 
     trainer.model = trainer.model.train(False)
 
-    torch_out = torch.onnx.export(trainer.model,  # model being run
-                                  [x, cubic],  # model input (or a tuple for multiple inputs)
-                                  os.path.join(models_path, name, "model.onnx"),  # where to save the model (can be a file or file-like object)
-                                  export_params=True,
-                                  verbose=True)  # store the trained parameter weights inside the model file
+    torch.onnx.export(trainer.model,  # model being run
+                      [x, cubic],  # model input (or a tuple for multiple inputs)
+                      os.path.join(models_path, name, "model.onnx"),  # where to save the model
+                      export_params=True,
+                      verbose=True)  # store the trained parameter weights inside the model file
 
 if __name__ == "__main__":
     main()

@@ -15,12 +15,12 @@
 # and limitations under the License.
 
 import argparse
-import dataset
-import metrics
 import time
 import torch.utils.data as Data
 from tqdm import tqdm
-import train
+from sr.metrics import PSNR
+from sr.dataset import DatasetFromSingleImages
+from sr.trainer import Trainer
 
 parser = argparse.ArgumentParser(description="PyTorch SR test")
 parser.add_argument("--test_data_path", default="", type=str, help="path to test data")
@@ -34,7 +34,8 @@ def main():
     opt = parser.parse_args()
     print(opt)
 
-    test_set = dataset.DatasetFromSingleImages(path=opt.test_data_path, patch_size=None, aug_resize_factor_range=None, scale=opt.scale)
+    test_set = DatasetFromSingleImages(path=opt.test_data_path, patch_size=None,
+                                       aug_resize_factor_range=None, scale=opt.scale)
 
     batch_sampler = Data.BatchSampler(
         sampler=Data.SequentialSampler(test_set),
@@ -44,10 +45,10 @@ def main():
 
     evaluation_data_loader = Data.DataLoader(dataset=test_set, num_workers=0, batch_sampler=batch_sampler)
 
-    trainer = train.Trainer(name=opt.exp_name, models_root=opt.models_path, resume=True)
+    trainer = Trainer(name=opt.exp_name, models_root=opt.models_path, resume=True)
     trainer.load_best()
 
-    psnr = metrics.PSNR(name='PSNR', border=opt.border)
+    psnr = PSNR(name='PSNR', border=opt.border)
 
     tic = time.time()
     count = 0

@@ -15,24 +15,25 @@
 # and limitations under the License.
 
 import argparse
-import numpy as np
 import random
 import torch
 import torch.backends.cudnn as cudnn
 import torch.optim as optim
 import torch.utils.data as Data
 from torch.utils.data.dataloader import DataLoader
+import numpy as np
 
-from dataset import DatasetFromSingleImages
-import train
-import metrics
-from models import make_model, MSE_loss
+from sr.dataset import DatasetFromSingleImages
+from sr.trainer import Trainer
+from sr.metrics import PSNR, RMSE
+from sr.models import make_model, MSE_loss
 
 # Training settings
 parser = argparse.ArgumentParser(description="Super Resolution PyTorch")
 parser.add_argument("--scale", type=int, default=4, help="Upsampling factor for SR")
 parser.add_argument("--model", default="SmallModel", type=str, choices=['SRResNetLight', 'SmallModel'], help="SR model")
-parser.add_argument("--patch_size", nargs='+', default=[196, 196], type=int, help="Patch size used for training (None - whole image)")
+parser.add_argument("--patch_size", nargs='+', default=[196, 196], type=int,
+                    help="Patch size used for training (None - whole image)")
 parser.add_argument("--border", type=int, default=4, help="Ignored border")
 parser.add_argument("--aug_resize_factor_range", nargs='+', default=[0.75, 1.1], type=float,
                     help="Range of resize factor for training patch, used for augmentation")
@@ -65,7 +66,7 @@ def main():
     scale = opt.scale
     model = make_model(opt.model, scale)
 
-    trainer = train.Trainer(model=model, name=opt.exp_name, models_root=opt.models_path, resume=opt.resume)
+    trainer = Trainer(model=model, name=opt.exp_name, models_root=opt.models_path, resume=opt.resume)
 
     random.seed(opt.seed)
     torch.manual_seed(opt.seed)
@@ -107,10 +108,10 @@ def main():
                   training_data_loader=training_data_loader,
                   evaluation_data_loader=evaluation_data_loader,
                   pretrained_weights=None,
-                  train_metrics=[metrics.PSNR(name='PSNR', border=opt.border),
-                                 metrics.RMSE(name='RMSE', border=opt.border)],
-                  val_metrics=[metrics.PSNR(name='PSNR', border=opt.border),
-                               metrics.RMSE(name='RMSE', border=opt.border)],
+                  train_metrics=[PSNR(name='PSNR', border=opt.border),
+                                 RMSE(name='RMSE', border=opt.border)],
+                  val_metrics=[PSNR(name='PSNR', border=opt.border),
+                               RMSE(name='RMSE', border=opt.border)],
                   track_metric='PSNR',
                   epoches=opt.num_of_epochs
                   )

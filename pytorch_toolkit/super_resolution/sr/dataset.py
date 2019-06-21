@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import cv2
 import os
 import os.path as osp
-import numpy as np
 from random import Random
+import numpy as np
+import cv2
 import skimage
 from skimage import transform
 import torch
@@ -50,25 +50,25 @@ class DatasetFromPairedImages(data.Dataset):
         lr_image = skimage.img_as_float32(cv2.imread(lr_name))
         bic_image = cv2.resize(lr_image, hr_image.shape[:2][::-1], cv2.INTER_CUBIC)
 
-        data = [torch.from_numpy(lr_image.transpose((2, 0, 1))).float(),
+        item = [torch.from_numpy(lr_image.transpose((2, 0, 1))).float(),
                 torch.from_numpy(bic_image.transpose((2, 0, 1))).float()],\
                [torch.from_numpy(hr_image.transpose((2, 0, 1))).float()]
 
-        return data
+        return item
 
     def __len__(self):
         return self.count
 
-
+# pylint: disable=too-many-arguments
 class DatasetFromSingleImages(data.Dataset):
-    def __init__(self, path, patch_size=None, scale=4, aug_resize_factor_range=[0.5, 1.5], count=None,
+    def __init__(self, path, patch_size=None, scale=4, aug_resize_factor_range=None, count=None,
                  cache_images=False, seed=1337, dataset_size_factor=1):
         super(DatasetFromSingleImages, self).__init__()
         self.path = path
         self.cache_images = cache_images
         self.dataset_size_factor = dataset_size_factor
         self.count = count
-        self.aug_resize_factor_range = aug_resize_factor_range
+        self.resize_factor = aug_resize_factor_range
 
         self.patch_size = patch_size
         if self.patch_size is not None:
@@ -100,9 +100,12 @@ class DatasetFromSingleImages(data.Dataset):
         for f in files:
             image = cv2.imread(osp.join(self.path, f))
 
-            if len(image.shape) != 3 or image.shape[2] != 3 or \
-                    (self.patch_size is not None and np.any([image.shape[i] * self.aug_resize_factor_range[0] < self.patch_size[i] for i in range(2)])) or \
-                    (self.patch_size is None and np.any([image.shape[i] % self.ds_factor for i in range(2)])):
+            if len(image.shape) != 3 or image.shape[2] != 3:
+                continue
+
+            if (self.patch_size is not None and \
+                 np.any([image.shape[i] * self.resize_factor[0] < self.patch_size[i] for i in range(2)])) or \
+               (self.patch_size is None and np.any([image.shape[i] % self.ds_factor for i in range(2)])):
                 continue
 
             if self.cache_images:
@@ -124,9 +127,9 @@ class DatasetFromSingleImages(data.Dataset):
 
         if self.patch_size is not None:
 
-            h, w, c = image.shape
+            h, w, _ = image.shape
 
-            resize_rate = self.random.random() * (self.aug_resize_factor_range[1] - self.aug_resize_factor_range[0]) + self.aug_resize_factor_range[0]
+            resize_rate = self.random.random() * (self.resize_factor[1] - self.resize_factor[0]) + self.resize_factor[0]
 
             if w == self.patch_size[1]:
                 x = 0
@@ -138,30 +141,34 @@ class DatasetFromSingleImages(data.Dataset):
             else:
                 y = self.random.randint(0, int(h - self.patch_size[0]*resize_rate))
 
-            sample = transform.resize(image[y:y + self.patch_size[0], x:x + self.patch_size[1], :], output_shape=self.patch_size,
-                                      order=3, mode='reflect', anti_aliasing=True, anti_aliasing_sigma=None, preserve_range=True)
+            sample = transform.resize(image[y:y + self.patch_size[0], x:x + self.patch_size[1], :],
+                                      output_shape=self.patch_size, order=3, mode='reflect', anti_aliasing=True,
+                                      anti_aliasing_sigma=None, preserve_range=True)
 
             sample_ds = transform.resize(image=sample, output_shape=self.patch_size_ds, order=3, mode='reflect',
                                          anti_aliasing=True, anti_aliasing_sigma=None, preserve_range=True)
             cubic = cv2.resize(sample_ds, sample.shape[:2][::-1], interpolation=cv2.INTER_CUBIC)
         else:
 
-            h, w, c = image.shape
+            h, w, _ = image.shape
             if h % self.ds_factor or w % self.ds_factor:
                 raise Exception('ERROR: image size should be divisible by scale')
 
             sample = image
-            sample_ds = transform.resize(image=sample, output_shape=[i // self.ds_factor for i in sample.shape[:2]], order=3, mode='reflect',
+            sample_ds = transform.resize(image=sample,
+                                         output_shape=[i // self.ds_factor for i in sample.shape[:2]],
+                                         order=3,
+                                         mode='reflect',
                                          anti_aliasing=True,
                                          anti_aliasing_sigma=None, preserve_range=True)
 
             cubic = cv2.resize(sample_ds, sample.shape[:2][::-1], interpolation=cv2.INTER_CUBIC)
 
-        data = [torch.from_numpy(sample_ds.transpose((2, 0, 1))).float(),
+        item = [torch.from_numpy(sample_ds.transpose((2, 0, 1))).float(),
                 torch.from_numpy(cubic.transpose((2, 0, 1))).float()], \
                [torch.from_numpy(sample.transpose((2, 0, 1))).float()]
 
-        return data
+        return item
 
     def __len__(self):
         return self.count*self.dataset_size_factor

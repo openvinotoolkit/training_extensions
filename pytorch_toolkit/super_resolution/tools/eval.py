@@ -15,10 +15,10 @@
 # and limitations under the License.
 
 import argparse
-import numpy as np
 import math
 import os
 import os.path as osp
+import numpy as np
 from PIL import Image
 
 parser = argparse.ArgumentParser(description="Calculates average PSNR for all pairs od images (*_hr.png and _sr)")
@@ -26,6 +26,7 @@ parser.add_argument("--input_folder_path", default="", type=str, help="path to f
 parser.add_argument("--hr_suffix_name", default="_hr.png", type=str, help="")
 parser.add_argument("--sr_suffix_name", default="_sr_x4.png", type=str, help="")
 parser.add_argument("--shave_border", default=4, type=int, help="")
+
 
 def PSNR(pred, gt, shave_border=0):
     pred = np.asarray(pred).astype(np.float)
@@ -36,9 +37,9 @@ def PSNR(pred, gt, shave_border=0):
     gt = gt[shave_border:height - shave_border, shave_border:width - shave_border]
     imdff = (pred - gt) / 255.
 
-    r = imdff[:,:,0]
-    g = imdff[:,:,1]
-    b = imdff[:,:,2]
+    r = imdff[:, :, 0]
+    g = imdff[:, :, 1]
+    b = imdff[:, :, 2]
 
     y = (r * 65.738 + g * 129.057 + b * 25.064) / 256
 
@@ -61,7 +62,7 @@ def main():
     hr_image_names.sort()
 
     PSNRs = []
-    for i, hr_name in enumerate(hr_image_names):
+    for hr_name in hr_image_names:
         name_root = hr_name.split(hr_suffix_name)[0]
         sr_name = osp.join(input_folder, name_root + sr_suffix_name)
 
@@ -74,7 +75,7 @@ def main():
         hr_image = Image.open(hr_name)
         sr_image = Image.open(sr_name)
 
-        assert (hr_image.size == sr_image.size)
+        assert hr_image.size == sr_image.size
 
         psnr = PSNR(sr_image, hr_image, shave_border)
         # print(i, ')PSNR for', name_root, '=', psnr)

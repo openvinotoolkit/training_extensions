@@ -16,12 +16,55 @@ The PSNR values were calculated with Y channel from YCrCb image.
 | :------- | ----: | :---: |
 | SmallModel    | 33.15 | 31.16 |
 
-# Dependencies
-pytorch 0.4+, python 3.5, opencv, skimage 0.14.1, numpy
+
+## Setup
+
+### Prerequisites
+
+* Ubuntu 16.04
+* Python 3.6
+* OpenVINO 2019 R1
+
+
+### Installation
+
+1. Create virtual environment
+```bash
+virtualenv venv -p python3 --prompt="(sr)"
+```
+
+2. Activate virtual environment and setup OpenVINO variables
+```bash
+. venv/bin/activate
+. /opt/intel/openvino/bin/setupvars.sh
+```
+**NOTE** Good practice is adding `. /opt/intel/openvino/bin/setupvars.sh` to the end of the `venv/bin/activate`.
+```
+echo ". /opt/intel/openvino/bin/setupvars.sh" >> venv/bin/activate
+```
+
+3. Install the modules
+```bash
+pip3 install -e .
+```
+
+### Prepare dataset
+Create two directories for train and test images. Train images may have any resolution more than `path_size`.
+Validataion images should have resolution like `path_size`.
+
+```
+./data
+├── train
+│   ├── 000000.png
+│   ...
+└── val
+    ├── 000000.png
+    ...
+```
 
 # Training
 
-*main.py* script should be used to start training process:
+*tools/main.py* script should be used to start training process:
 
 ```
 usage: main.py [-h] [--scale SCALE] [--model {SRResNetLight,SmallModel}]
@@ -77,12 +120,24 @@ optional arguments:
 
 Example:
 ```
-python ./main.py --batch_size 256 --num_of_epochs 100 --num_of_data_loader_threads 8 --train_path PATH_TO_TRAIN_DATA --validation_path PATH_TO_VAL_DATA --exp_name test --models_path PATH_TO_MODELS_PATH  --milestones 8 12 16 --scale 4 --patch_size 192 192 --model SRResNetLight --aug_resize_factor_range 0.8 1.2
+python tools/main.py \
+    --train_path PATH_TO_TRAIN_DATA \
+    --validation_path PATH_TO_VAL_DATA \
+    --models_path PATH_TO_MODELS_PATH  \
+    --batch_size 256 \
+    --num_of_epochs 100 \
+    --num_of_data_loader_threads 8 \
+    --exp_name test \
+    --milestones 8 12 16 \
+    --scale 4 \
+    --patch_size 192 192 \
+    --model SRResNetLight \
+    --aug_resize_factor_range 0.8 1.2
 ```
 
 # Testing
 
-*test.py* script can be used to evaluate the trained model.
+*tools/test.py* script can be used to evaluate the trained model.
 
 ```
 usage: test.py [-h] [--test_data_path TEST_DATA_PATH] [--exp_name EXP_NAME]
@@ -101,9 +156,14 @@ optional arguments:
   --border BORDER       Ignored border
 
 ```
+
 Example:
 ```
-python test.py --test_data_path PATH_TO_TEST_DATA --exp_name test --models_path PATH_TO_MODELS_PATH --scale 4 --border 4
+python tools/test.py --test_data_path PATH_TO_TEST_DATA \
+    --exp_name test \
+    --models_path PATH_TO_MODELS_PATH \
+    --scale 4 \
+    --border 4
 ```
 
 # Checkpoints
