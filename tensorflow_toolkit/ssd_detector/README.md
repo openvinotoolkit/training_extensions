@@ -151,8 +151,8 @@ then convert it to OpenVINO Internal Representation (IR) using Model Optimizer:
 python3 tools/export.py --data_type FP32 --output_dir <export_path> vlp/config.py
 ```
 
-As a result, you'll find three new artifacts:
-**default export path**
+As a result, you'll find three new artifacts:  
+**default export path**  
 - `vlp/model/export_<step>/frozen_graph/` - path to frozen graph
 - `vlp/model/export_<step>/IR/<data_type>/` - path to converted model in IR format
 

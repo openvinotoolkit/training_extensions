@@ -125,7 +125,7 @@ then convert it to OpenVINO Internal Representation (IR) using Model Optimizer:
 python3 tools/export.py --data_type FP32 --output_dir <export_path> cars_100/config.py
 ```
 
-**default export path**
+**default export path**  
 - `lpr/model/export_<step>/frozen_graph/` - path to frozen graph
 - `lpr/model/export_<step>/IR/<data_type>/` - path to converted model in IR format
 
