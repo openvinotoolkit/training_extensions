@@ -28,6 +28,7 @@ def parse_args():
   parser.add_argument('--mo', default='mo.py', help="Path to model optimizer 'mo.py' script")
   parser.add_argument('--mo_config', default='cars_100/mo.yaml', help="Path config for model optimizer")
   parser.add_argument('--data_type', default='FP32', choices=['FP32', 'FP16'], help='Data type of IR')
+  parser.add_argument('--output_dir', default=None, help='Output Directory')
   parser.add_argument('--checkpoint', default=None, help='Default: latest')
   parser.add_argument('path_to_config', help='Path to a config.py')
   return parser.parse_args()
@@ -59,7 +60,7 @@ def main(_):
     raise FileNotFoundError(str(checkpoint))
 
   step = checkpoint.split('.')[-1].split('-')[-1]
-  output_dir = os.path.join(config.model_dir, 'export_{}'.format(step))
+  output_dir = args.output_dir if args.output_dir else os.path.join(config.model_dir, 'export_{}'.format(step))
 
   # Freezing graph
   frozen_dir = os.path.join(output_dir, 'frozen_graph')
