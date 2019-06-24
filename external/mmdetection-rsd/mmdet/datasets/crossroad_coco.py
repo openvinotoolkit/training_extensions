@@ -11,13 +11,12 @@ class CrossroadDataset(CustomDataset):
     def load_annotations(self, ann_file):
         self.coco = COCO(ann_file)
         self.cat_ids = self.coco.getCatIds()
-        print (self.cat_ids)
+
         self.cat2label = {
             cat_id: i 
             for i, cat_id in enumerate(self.cat_ids)
         }
 
-        print (self.cat2label)
 
         self.img_ids = self.coco.getImgIds()
         img_infos = []
@@ -32,21 +31,7 @@ class CrossroadDataset(CustomDataset):
         ann_ids = self.coco.getAnnIds(imgIds=[img_id])
         ann_info = self.coco.loadAnns(ann_ids)        
         parse_ann_info = self._parse_ann_info(ann_info)
-        # print (parse_ann_info)
-        # image = cv2.imread(self.img_infos[idx]['image'])
-        # if image is None:
-        #     return parse_ann_info
-        # for b,l in zip (parse_ann_info['bboxes'], parse_ann_info['labels']):
-        #     if l == 0:
-        #         cv2.rectangle(image, (b[0], b[1]), (b[2], b[3]),  (255,0,0), 2)
-        #     elif l ==1 :
-        #         cv2.rectangle(image, (b[0], b[1]), (b[2], b[3]),  (0,255,0), 2)
-        #     elif l ==2 :
-        #         cv2.rectangle(image, (b[0], b[1]), (b[2], b[3]),  (0,0,255), 2)
-        #     else:
-        #         cv2.rectangle(image, (b[0], b[1]), (b[2], b[3]),  (255,255,255), 2)
-        # cv2.imshow("test", image)
-        # cv2.waitKey(0)
+
         return parse_ann_info
 
     def _filter_imgs(self, min_size=32):

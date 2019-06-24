@@ -91,7 +91,7 @@ class SSDMobilenetV2(nn.Module):
                  scales=1):
         super(SSDMobilenetV2, self).__init__()
         self.input_size = input_size
-        self.single_scale = single_scale == 1
+        self.single_scale = scales == 1
         self.width_mult = width_mult
         block = InvertedResidual
         input_channel = 32
@@ -153,9 +153,9 @@ class SSDMobilenetV2(nn.Module):
 
             for i in range(scales-2):
                 fms = features_map_sizes[i]
-                self.extra_convs.append(conv_1x1_bn(last_channel, fms / 2))
-                self.extra_convs.append(conv_bn(fms / 2, fms / 2, 2, groups=fms / 2))            
-                self.extra_convs.append(conv_1x1_bn(fms / 2, fms))
+                self.extra_convs.append(conv_1x1_bn(last_channel, int(fms / 2)))
+                self.extra_convs.append(conv_bn(int(fms / 2), int(fms / 2), 2, groups=int(fms / 2)))            
+                self.extra_convs.append(conv_1x1_bn(int(fms / 2), fms))
                 last_channel = fms
 
             self.extra_convs = nn.Sequential(*self.extra_convs)
@@ -235,5 +235,8 @@ class SSDMobilenetV2(nn.Module):
 
         if self.single_scale:
             outs.append(x)
+
+        for o in outs:
+            print (o.size())
 
         return tuple(outs)

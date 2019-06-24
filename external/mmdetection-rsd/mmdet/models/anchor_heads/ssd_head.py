@@ -4,8 +4,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from mmcv.cnn import xavier_init
 
-from mmdet.core import (AnchorGenerator, anchor_target, weighted_smoothl1, weighted_generalized_iou,
-                        multi_apply, delta2bbox, MultilossAdaptiveBalancer, MultilossSummator)
+from mmdet.core import (AnchorGenerator, anchor_target, multi_apply)
 from .anchor_head import AnchorHead
 from .ssd_export_helpers import get_proposals, PriorBox, PriorBoxClustered, DetectionOutput
 from ..registry import HEADS
@@ -24,6 +23,7 @@ class SSDHead(AnchorHead):
                  anchor_widths=[],
                  target_means=(.0, .0, .0, .0),
                  target_stds=(1.0, 1.0, 1.0, 1.0),
+                 loss_balancing=False,
                  depthwise_heads=False,
                  adaptive_loss_weighting=False):
         super(AnchorHead, self).__init__()
@@ -119,13 +119,12 @@ class SSDHead(AnchorHead):
 
         self.target_means = target_means
         self.target_stds = target_stds
-        self.use_sigmoid_cls = False
-        self.use_focal_loss = False
-
-        if adaptive_loss_weighting:
-            self.loss_balancer = MultilossAdaptiveBalancer(2)
-        else:
-            self.loss_balancer = MultilossSummator(2)
+        self.cls_focal_loss = False
+        self.loss_balancing = loss_balancing
+        if self.loss_balancing:
+            self.loss_weights = torch.nn.Parameter(torch.FloatTensor(2))
+            for i in range(2):
+                self.loss_weights.data[i] = 0.
 
     def init_weights(self):
         for m in self.modules():
@@ -165,23 +164,13 @@ class SSDHead(AnchorHead):
         loss_cls_neg = topk_loss_cls_neg.sum()
         loss_cls = (loss_cls_pos + loss_cls_neg) / num_total_samples
 
-        if cfg.use_giou:
-            loss_reg = weighted_generalized_iou(
-                bbox_pred,
-                bbox_targets,
-                anchors,
-                self.target_means,
-                self.target_stds,
-                torch.sum(bbox_weights, dim=1) / 4,
-                avg_factor=num_total_samples)
-        else:
-            loss_reg = weighted_smoothl1(
-                bbox_pred,
-                bbox_targets,
-                bbox_weights,
-                beta=cfg.smoothl1_beta,
-                avg_factor=num_total_samples)
-        return loss_cls[None], loss_reg
+        loss_bbox = smooth_l1_loss(
+            bbox_pred,
+            bbox_targets,
+            bbox_weights,
+            beta=cfg.smoothl1_beta,
+            avg_factor=num_total_samples)
+        return loss_cls[None], loss_bbox
 
     def loss(self,
              cls_scores,
