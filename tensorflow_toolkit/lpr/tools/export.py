@@ -74,7 +74,6 @@ def main(_):
   step = checkpoint.split('.')[-2].split('-')[-1]
   output_dir = args.output_dir if args.output_dir else os.path.join(config.model_dir, 'export_{}'.format(step))
 
-
   # Freezing graph
   frozen_dir = os.path.join(output_dir, 'frozen_graph')
   frozen_graph = freezing_graph(config, checkpoint, frozen_dir)
