@@ -1,5 +1,5 @@
 def l2_loss(input, target, batch_size, mask=None):
-    if mask:
+    if mask is not None:
         loss = (input - target) * mask
     else:
         loss = (input - target)
