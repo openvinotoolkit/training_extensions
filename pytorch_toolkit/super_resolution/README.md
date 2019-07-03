@@ -66,9 +66,9 @@ Validation images should have resolution like `path_size`.
 
 ### Training
 
-Use `tools/main.py` script to start training process:
+Use `tools/train.py` script to start training process:
 ```
-python3 tools/main.py \
+python3 tools/train.py \
     --train_path PATH_TO_TRAIN_DATA \
     --validation_path PATH_TO_VAL_DATA \
     --models_path PATH_TO_MODELS_PATH  \
@@ -127,5 +127,4 @@ python3 tools/infer_ie.py --model <PATH_TO_IR_XML> \
 
 ## Know issues
 
-1. Network can't be reshaped after convertation ot IR. You can set `input_size` when run `tools/export.py`.
-2. IR model can't be inferred on `GPU` and `MYRIAD` devices.
+1. Network can't be reshaped after conversation to IR. You should set `input_size` when run `tools/export.py`.

@@ -27,14 +27,16 @@ def parse_args():
     parser.add_argument("--input_size", type=int, nargs='+', default=(200, 200), help="Input image size")
     parser.add_argument("--scale", type=int, default=4, help="Upsampling factor for SR")
     parser.add_argument('--data_type', default='FP32', choices=['FP32', 'FP16'], help='Data type of IR')
+    parser.add_argument('--output_dir', default=None, help='Output Directory')
     return parser.parse_args()
 
-def execute_mo(input_model, output_dir, name):
+def execute_mo(input_model, output_dir, name, data_type):
     command = [
         'mo.py',
         '--input_model={}'.format(input_model),
         '--output_dir={}'.format(output_dir),
-        '--model_name={}'.format(name)
+        '--model_name={}'.format(name),
+        '--data_type={}'.format(data_type)
     ]
     subprocess.call(command)
 
@@ -55,15 +57,21 @@ def main():
     trainer.model = trainer.model.train(False)
 
     model_dir = os.path.join(models_path, name)
-    model_onnx_path = os.path.join(model_dir, "model.onnx")
+
+    export_dir = opt.output_dir if opt.output_dir else os.path.join(model_dir, 'export')
+    model_onnx_path = os.path.join(export_dir, "model.onnx")
+
+    if not os.path.exists(export_dir):
+        os.makedirs(export_dir)
+
     torch.onnx.export(trainer.model,  # model being run
                       [x, cubic],  # model input (or a tuple for multiple inputs)
                       model_onnx_path,  # where to save the model
                       export_params=True,
                       verbose=True)  # store the trained parameter weights inside the model file
 
-    ir_name = "sr_scale_{}_{}".format(opt.scale, opt.data_type.lower())
-    execute_mo(model_onnx_path, model_dir, ir_name)
+    ir_export_dir = os.path.join(export_dir, 'IR', opt.data_type)
+    execute_mo(model_onnx_path, ir_export_dir, 'sr', opt.data_type)
 
 if __name__ == "__main__":
     main()
