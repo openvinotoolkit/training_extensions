@@ -67,7 +67,6 @@ Validation images should have resolution like `path_size`.
 ### Training
 
 Use `tools/main.py` script to start training process:
-
 ```
 python3 tools/main.py \
     --train_path PATH_TO_TRAIN_DATA \
@@ -83,6 +82,9 @@ python3 tools/main.py \
     --model SmallModel \
     --aug_resize_factor_range 0.8 1.2
 ```
+
+To start from pretrained checkpoint add `--init_checkpoint PATH_TO_CHECKPOINT`.
+Checkpoints can be downloaded [here](https://download.01.org/opencv/openvino_training_extensions/models/super_resolution/super_resolution.tar.gz).
 
 ### Testing
 
@@ -127,6 +129,3 @@ python3 tools/infer_ie.py --model <PATH_TO_IR_XML> \
 
 1. Network can't be reshaped after convertation ot IR. You can set `input_size` when run `tools/export.py`.
 2. IR model can't be inferred on `GPU` and `MYRIAD` devices.
-
-
-Checkpoints can be downloaded [here](https://download.01.org/opencv/openvino_training_extensions/models/super_resolution/super_resolution.tar.gz). Place *011_repro* (x4) and *021_repro2* (x3) into the model directory. Start training from the checkpoint with --resume flag.

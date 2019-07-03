@@ -115,7 +115,7 @@ class Trainer():
             tac = time.time()
             print('Epoch %d, time %s \n' % (i, tac - tic))
 
-            self._save(suffix='_epoch_' + str(self.state.epoch))
+            self._save(suffix='epoch_' + str(self.state.epoch))
             self._save(suffix='last_model')
             self.state.epoch = self.state.epoch + 1
 
@@ -215,11 +215,11 @@ class Trainer():
         s = {'state': self.state,
              'model': self.model}
 
-        torch.save(s, os.path.join(self.model_path, self.name + suffix + '.pth'))
+        torch.save(s, os.path.join(self.model_path, self.name + '_' + suffix + '.pth'))
 
     def _load(self, suffix):
         print('loading model...')
-        model_path = os.path.join(self.model_path, self.name + suffix + '.pth')
+        model_path = os.path.join(self.model_path, self.name + '_' + suffix + '.pth')
         s = torch.load(model_path)
         self.state = s['state']
         if self.model is None:

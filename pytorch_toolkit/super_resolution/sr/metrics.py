@@ -94,5 +94,4 @@ class RMSE(Metrics):
         assert gr.shape == pred.shape
 
         self.accumulator += ((((pred-gr)**2).sum(axis=(1, 2, 3))/np.prod(gr.shape[1:]))**0.5).mean()
-
         self.samples += 1

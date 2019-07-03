@@ -28,43 +28,48 @@ from sr.trainer import Trainer
 from sr.metrics import PSNR, RMSE
 from sr.models import make_model, MSE_loss
 
-# Training settings
-parser = argparse.ArgumentParser(description="Super Resolution PyTorch")
-parser.add_argument("--scale", type=int, default=4, help="Upsampling factor for SR")
-parser.add_argument("--model", default="SmallModel", type=str, choices=['SRResNetLight', 'SmallModel'], help="SR model")
-parser.add_argument("--patch_size", nargs='+', default=[196, 196], type=int,
-                    help="Patch size used for training (None - whole image)")
-parser.add_argument("--border", type=int, default=4, help="Ignored border")
-parser.add_argument("--aug_resize_factor_range", nargs='+', default=[0.75, 1.1], type=float,
-                    help="Range of resize factor for training patch, used for augmentation")
-parser.add_argument("--num_of_train_images", type=int, default=None,
-                    help="Number of training images (None - use all images)")
-parser.add_argument("--num_of_patches_per_image", type=int, default=10, help="Number of patches from one image")
-parser.add_argument("--num_of_val_images", type=int, default=None,
-                    help="Number of val images (None - use all images)")
-parser.add_argument("--resume", action='store_true', help="Resume training from the latest state")
 
-parser.add_argument("--batch_size", type=int, default=16, help="Training batch size")
-parser.add_argument("--num_of_epochs", type=int, default=500, help="Number of epochs to train for")
-parser.add_argument("--num_of_data_loader_threads", type=int, default=0,
-                    help="Number of threads for data loader to use, Default: 1")
-parser.add_argument("--train_path", default="", type=str, help="Path to train data")
-parser.add_argument("--validation_path", default="", type=str, help="Path to folder with val images")
-parser.add_argument("--exp_name", default="test", type=str, help="Experiment name")
-parser.add_argument("--models_path", default="./models", type=str, help="Path to models folder")
-parser.add_argument("--seed", default=1337, type=int, help="Seed for random generators")
-parser.add_argument('--milestones', nargs='+', default=[8, 12, 16], type=int,
-                    help='List of epoch indices, where learning rate decay is applied')
+def parse_args():
+    parser = argparse.ArgumentParser(description="Super Resolution PyTorch")
+    parser.add_argument("--scale", type=int, default=4, help="Upsampling factor for SR")
+    parser.add_argument("--model", default="SmallModel", type=str,
+                        choices=['SRResNetLight', 'SmallModel'], help="SR model")
+    parser.add_argument("--patch_size", nargs='+', default=[196, 196], type=int,
+                        help="Patch size used for training (None - whole image)")
+    parser.add_argument("--border", type=int, default=4, help="Ignored border")
+    parser.add_argument("--aug_resize_factor_range", nargs='+', default=[0.75, 1.1], type=float,
+                        help="Range of resize factor for training patch, used for augmentation")
+    parser.add_argument("--num_of_train_images", type=int, default=None,
+                        help="Number of training images (None - use all images)")
+    parser.add_argument("--num_of_patches_per_image", type=int, default=10, help="Number of patches from one image")
+    parser.add_argument("--num_of_val_images", type=int, default=None,
+                        help="Number of val images (None - use all images)")
+    parser.add_argument("--resume", action='store_true', help="Resume training from the latest state")
+    parser.add_argument("--init_checkpoint", help="Path to checkpoint")
 
-
+    parser.add_argument("--batch_size", type=int, default=16, help="Training batch size")
+    parser.add_argument("--num_of_epochs", type=int, default=500, help="Number of epochs to train for")
+    parser.add_argument("--num_of_data_loader_threads", type=int, default=0,
+                        help="Number of threads for data loader to use, Default: 1")
+    parser.add_argument("--train_path", default="", type=str, help="Path to train data")
+    parser.add_argument("--validation_path", default="", type=str, help="Path to folder with val images")
+    parser.add_argument("--exp_name", default="test", type=str, help="Experiment name")
+    parser.add_argument("--models_path", default="./models", type=str, help="Path to models folder")
+    parser.add_argument("--seed", default=1337, type=int, help="Seed for random generators")
+    parser.add_argument('--milestones', nargs='+', default=[8, 12, 16], type=int,
+                        help='List of epoch indices, where learning rate decay is applied')
+    return parser.parse_args()
 
 def main():
-    opt = parser.parse_args()
+    opt = parse_args()
     print('Parameters:', opt)
 
     print("===> Building model")
     scale = opt.scale
     model = make_model(opt.model, scale)
+    if opt.init_checkpoint:
+        s = torch.load(opt.init_checkpoint)
+        model.load_state_dict(s['model'].state_dict())
 
     trainer = Trainer(model=model, name=opt.exp_name, models_root=opt.models_path, resume=opt.resume)
 
