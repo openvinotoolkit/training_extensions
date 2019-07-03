@@ -1,6 +1,8 @@
 # Super Resolution Training Toolbox Pytorch
 This code is intended for training Super Resolution (SR) algorithms in Pytorch.
 
+![](./sr.jpg)
+
 # Models
 Two typologies are available for training at this point:
 
@@ -21,9 +23,9 @@ The PSNR values were calculated with Y channel from YCrCb image.
 
 ### Prerequisites
 
-- Ubuntu 16.04 or newer
-* Python 3
+* Ubuntu 16.04 or newer
 * OpenVINO 2019 R1 or newer
+* Python 3
 
 
 ### Installation
