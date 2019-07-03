@@ -28,6 +28,7 @@ class ModelInterface(nn.Module):
 
 from .rmnet_angular import RMNetAngular
 from .mobilefacenet import MobileFaceNet
+from .dsm_landnet import DsmNet
 from .landnet import LandmarksNet
 from .resnet_angular import ResNetAngular
 from .se_resnet_angular import SEResNetAngular
@@ -37,4 +38,4 @@ from .shufflenet_v2_angular import ShuffleNetV2Angular
 models_backbones = {'rmnet': RMNetAngular, 'mobilenet': MobileFaceNet, 'resnet': ResNetAngular,
                     'shufflenetv2': ShuffleNetV2Angular, 'se_resnet': SEResNetAngular}
 
-models_landmarks = {'landnet': LandmarksNet}
+models_landmarks = {'landnet': LandmarksNet, 'dsmnet': DsmNet}
