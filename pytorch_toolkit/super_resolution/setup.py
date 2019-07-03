@@ -12,12 +12,20 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+import os
 from setuptools import setup
 
 with open('./requirements.txt') as f:
     REQUIRED = f.read().splitlines()
 
+# Add Model Optimizer requirements
+requirements_onnx = os.path.join(os.environ.get('INTEL_OPENVINO_DIR', '/opt/intel/openvino'),
+                                 './deployment_tools/model_optimizer/requirements_onnx.txt')
+if os.path.isfile(requirements_onnx):
+    with open(requirements_onnx) as f:
+        REQUIRED += f.read().splitlines()
+
 setup(
     name='sr',
-    install_requires=REQUIRED
+    install_requires=REQUIRED,
 )

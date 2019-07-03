@@ -59,8 +59,9 @@ class DatasetFromPairedImages(data.Dataset):
     def __len__(self):
         return self.count
 
-# pylint: disable=too-many-arguments
+
 class DatasetFromSingleImages(data.Dataset):
+    # pylint: disable=too-many-arguments
     def __init__(self, path, patch_size=None, scale=4, aug_resize_factor_range=None, count=None,
                  cache_images=False, seed=1337, dataset_size_factor=1):
         super(DatasetFromSingleImages, self).__init__()

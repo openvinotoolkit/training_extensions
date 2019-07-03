@@ -19,6 +19,7 @@ import torch
 from torch.autograd import Variable
 from tensorboardX import SummaryWriter
 
+
 class TrainingState():
     def __init__(self):
         self.epoch = 0
@@ -56,7 +57,7 @@ class Trainer():
             os.mkdir(self.model_path)
             os.mkdir(self.logs_path)
 
-        self.tb_writer = SummaryWriter(log_dir=self.logs_path)
+        self.tb_writer = SummaryWriter(logdir=self.logs_path)
 
     # pylint: disable=too-many-arguments
     def train(self, criterion, optimizer, optimizer_params, scheduler, scheduler_params, training_data_loader,
@@ -65,8 +66,6 @@ class Trainer():
 
         # pylint: disable=protected-access
         assert isinstance(criterion, (tuple, list, torch.nn.modules.loss._Loss))
-
-        # TODO: custom initializer here
 
         # load weights if any
         if self.resume_training:
@@ -131,7 +130,6 @@ class Trainer():
         output = self.model(data)
         return output
 
-    # pylint: disable=too-many-arguments
     def _train_one_epoch(self, criterion, optimizer, training_data_loader, train_metrics, train_metrics_results, epoch,
                          global_step):
 
@@ -177,7 +175,6 @@ class Trainer():
         self.state.optimizer_state = optimizer.state_dict()
         return global_step
 
-    # pylint: disable=too-many-arguments
     def _evaluate_and_save(self, evaluation_data_loader, val_metrics, track_metric, val_metrics_results, epoch,
                            comparator):
 
@@ -222,7 +219,8 @@ class Trainer():
 
     def _load(self, suffix):
         print('loading model...')
-        s = torch.load(os.path.join(self.model_path, self.name + suffix + '.pth'))
+        model_path = os.path.join(self.model_path, self.name + suffix + '.pth')
+        s = torch.load(model_path)
         self.state = s['state']
         if self.model is None:
             self.model = s['model']

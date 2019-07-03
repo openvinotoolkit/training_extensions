@@ -15,6 +15,7 @@
 import math
 import numpy as np
 
+
 class Metrics():
     def __init__(self, name):
         self.name = name
@@ -53,7 +54,6 @@ def _PSNR(pred, gt, shave_border=0):
         return np.Infinity
 
     return - 10 * math.log10(mse)
-
 
 
 class PSNR(Metrics):

@@ -16,6 +16,7 @@ import math
 import torch
 import torch.nn as nn
 
+
 def make_model(name_of_the_model, scale):
     if name_of_the_model == 'SRResNetLight':
         model = SRResNetLight(scale=scale).cuda()
@@ -32,6 +33,7 @@ def make_layer(block, num_of_layer):
     for _ in range(num_of_layer):
         layers.append(block)
     return nn.Sequential(*layers)
+
 
 class ResBlock(nn.Module):
     def __init__(self, num_of_channels):

@@ -16,19 +16,30 @@
 
 import argparse
 import os
+import subprocess
 import torch.onnx
 from sr.trainer import Trainer
 
-parser = argparse.ArgumentParser(description="PyTorch SR export to onnx")
-parser.add_argument("--test_data_path", default="", type=str, help="path to test data")
-parser.add_argument("--exp_name", default="test", type=str, help="experiment name")
-parser.add_argument("--models_path", default="/models", type=str, help="path to models folder")
-parser.add_argument("--input_size", type=int, nargs='+', default=(200, 200), help="Input image size")
-parser.add_argument("--scale", type=int, default=4, help="Upsampling factor for SR")
+def parse_args():
+    parser = argparse.ArgumentParser(description="PyTorch SR export to onnx and IR")
+    parser.add_argument("--exp_name", default="test", type=str, help="experiment name")
+    parser.add_argument("--models_path", default="./models", type=str, help="path to models folder")
+    parser.add_argument("--input_size", type=int, nargs='+', default=(200, 200), help="Input image size")
+    parser.add_argument("--scale", type=int, default=4, help="Upsampling factor for SR")
+    parser.add_argument('--data_type', default='FP32', choices=['FP32', 'FP16'], help='Data type of IR')
+    return parser.parse_args()
 
+def execute_mo(input_model, output_dir, name):
+    command = [
+        'mo.py',
+        '--input_model={}'.format(input_model),
+        '--output_dir={}'.format(output_dir),
+        '--model_name={}'.format(name)
+    ]
+    subprocess.call(command)
 
 def main():
-    opt = parser.parse_args()
+    opt = parse_args()
 
     models_path = opt.models_path
     name = opt.exp_name
@@ -39,15 +50,20 @@ def main():
     cubic = torch.randn(1, 3, scale*input_size[0], scale*input_size[1], requires_grad=True).cuda()
 
     trainer = Trainer(name=name, models_root=models_path, resume=True)
-    trainer.load_best()
+    trainer.load_latest()
 
     trainer.model = trainer.model.train(False)
 
+    model_dir = os.path.join(models_path, name)
+    model_onnx_path = os.path.join(model_dir, "model.onnx")
     torch.onnx.export(trainer.model,  # model being run
                       [x, cubic],  # model input (or a tuple for multiple inputs)
-                      os.path.join(models_path, name, "model.onnx"),  # where to save the model
+                      model_onnx_path,  # where to save the model
                       export_params=True,
                       verbose=True)  # store the trained parameter weights inside the model file
+
+    ir_name = "sr_scale_{}_{}".format(opt.scale, opt.data_type.lower())
+    execute_mo(model_onnx_path, model_dir, ir_name)
 
 if __name__ == "__main__":
     main()

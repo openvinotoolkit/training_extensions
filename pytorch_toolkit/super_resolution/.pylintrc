@@ -30,7 +30,15 @@ load-plugins=
 # Disable the message, report, category or checker with the given id(s). You
 # can either give multiple identifier separated by comma (,) or put this option
 # multiple time.
-disable=import-error,missing-docstring,no-name-in-module,no-member,fixme,redefined-builtin,wrong-import-position,too-few-public-methods,no-init,no-else-return,not-context-manager,duplicate-code, invalid-name
+disable=import-error,
+        missing-docstring,
+        invalid-name,
+        too-few-public-methods,
+        redefined-builtin,
+        duplicate-code,
+        no-name-in-module,
+        no-member,
+        unsubscriptable-object
 
 
 
@@ -213,7 +221,7 @@ int-import-graph=
 # A comma-separated list of package or module names from where C extensions may
 # be loaded. Extensions are loading into the active Python interpreter and may
 # run arbitrary code.
-extension-pkg-whitelist=numpy,cv2,openvino
+extension-pkg-whitelist=numpy,cv2,openvino,torch
 
 
 [CLASSES]

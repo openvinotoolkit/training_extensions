@@ -51,7 +51,7 @@ parser.add_argument("--num_of_data_loader_threads", type=int, default=0,
 parser.add_argument("--train_path", default="", type=str, help="Path to train data")
 parser.add_argument("--validation_path", default="", type=str, help="Path to folder with val images")
 parser.add_argument("--exp_name", default="test", type=str, help="Experiment name")
-parser.add_argument("--models_path", default="/models", type=str, help="Path to models folder")
+parser.add_argument("--models_path", default="./models", type=str, help="Path to models folder")
 parser.add_argument("--seed", default=1337, type=int, help="Seed for random generators")
 parser.add_argument('--milestones', nargs='+', default=[8, 12, 16], type=int,
                     help='List of epoch indices, where learning rate decay is applied')
