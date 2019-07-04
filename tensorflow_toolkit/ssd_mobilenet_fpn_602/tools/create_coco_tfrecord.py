@@ -14,7 +14,8 @@ This script helps generate similar training and validation splits
 as the ones used in TensorFlow Object Detection API, which is much
 different than organic coco train2017 and val2017.
 By selecting ~8k specific images(called minival) for validation,
-total training image set would be [coco_train2017+coco_val2017-minival].
+total training image set would be [coco_train2017+coco_val2017-minival]
+(called train_plus in this script).
 
 This script is designed for benchmarking a fine-tuned model with
 retraining or transfer learning based on a TensorFlow Object
@@ -70,6 +71,44 @@ TRAIN_TFRECORD_NAME = 'coco_train2017_plus.record'
 VAL_FOLDER_NAME = 'val2017'
 VAL_ANNOTATION_NAME = 'instances_val2017.json'
 VAL_TFRECORD_NAME = 'coco_minival2017.record'
+
+
+def create_tfrecord_from_coco(train_image_folder,
+                              val_image_folder,
+                              train_annotation_file,
+                              val_annotation_file,
+                              train_tfrecord,
+                              val_tfrecord,
+                              coco_minival_ids_file):
+    minival_list = parse_minival_ids(coco_minival_ids_file)
+    images, annotations, categories = merge_annotations(
+        train_annotation_file, val_annotation_file)
+
+    tf.logging.info('number of total images is {}'.format(len(images)))
+    tf.logging.info('number of total annotations is {}'.format(len(annotations)))
+
+    category_index = label_map_util.create_category_index(categories)
+    annotation_index = generate_annotation_index(annotations)
+    train_plus_images, minival_images = split_minival(images, minival_list)
+
+    tf.logging.info('category index is {}'.format(category_index))
+    tf.logging.info('number of train plus images is {}'
+                    .format(len(train_plus_images)))
+    tf.logging.info('number of minival images is {}'
+                    .format(len(minival_images)))
+
+    image_folders = [train_image_folder, val_image_folder]
+    write_tfrecord(image_arr=train_plus_images,
+                   anno_index=annotation_index,
+                   category_index=category_index,
+                   image_folders=image_folders,
+                   output_tfrecord=train_tfrecord)
+    write_tfrecord(image_arr=minival_images,
+                   anno_index=annotation_index,
+                   category_index=category_index,
+                   image_folders=image_folders,
+                   output_tfrecord=val_tfrecord,
+                   tfrecord_shards=10)
 
 
 def create_tf_example(image,
@@ -153,15 +192,14 @@ def create_tf_example(image,
     return key, example
 
 
-def parse_minival_ids(coco_minival_ids_file):
-    assert os.path.exists(coco_minival_ids_file), \
-        'minival_ids_file {} does not exist!'.format(coco_minival_ids_file)
-    with open(coco_minival_ids_file, 'r') as f:
-        minival_list = [int(line) for line in f.readlines()]
-    assert minival_list,\
-        'minival ids is None, please check the coco_minival_ids_file'
-
-    return minival_list
+def generate_annotation_index(annotations):
+    annotation_index = {}
+    for annotation in annotations:
+        image_id = annotation['image_id']
+        if image_id not in annotation_index:
+            annotation_index[image_id] = []
+        annotation_index[image_id].append(annotation)
+    return annotation_index
 
 
 def load_annotation(annotation_file):
@@ -169,7 +207,7 @@ def load_annotation(annotation_file):
         'annotation file {} does not exist!'.format(annotation_file)
     with tf.gfile.GFile(annotation_file, 'r') as f:
         info = json.load(f)
-    assert info,\
+    assert info, \
         'annotation is None, please check the annotation file'
 
     images = info['images']
@@ -180,9 +218,9 @@ def load_annotation(annotation_file):
 
 
 def merge_annotations(train_annotation_file, val_annotation_file):
-    train_images, train_annotations, categories =\
+    train_images, train_annotations, categories = \
         load_annotation(train_annotation_file)
-    val_images, val_annotations, _ =\
+    val_images, val_annotations, _ = \
         load_annotation(val_annotation_file)
 
     tf.logging.info('number of organic train2017 images is {}'
@@ -196,6 +234,17 @@ def merge_annotations(train_annotation_file, val_annotation_file):
     return train_images, train_annotations, categories
 
 
+def parse_minival_ids(coco_minival_ids_file):
+    assert os.path.exists(coco_minival_ids_file), \
+        'minival_ids_file {} does not exist!'.format(coco_minival_ids_file)
+    with open(coco_minival_ids_file, 'r') as f:
+        minival_list = [int(line) for line in f.readlines()]
+    assert minival_list,\
+        'minival ids is None, please check the coco_minival_ids_file'
+
+    return minival_list
+
+
 def split_minival(images, minival_list):
     train_plus_images = []
     minival_images = []
@@ -206,16 +255,6 @@ def split_minival(images, minival_list):
         else:
             minival_images.append(image)
     return train_plus_images, minival_images
-
-
-def generate_annotation_index(annotations):
-    annotation_index = {}
-    for annotation in annotations:
-        image_id = annotation['image_id']
-        if image_id not in annotation_index:
-            annotation_index[image_id] = []
-        annotation_index[image_id].append(annotation)
-    return annotation_index
 
 
 def write_tfrecord(image_arr,
@@ -251,44 +290,6 @@ def write_tfrecord(image_arr,
 
     tf.logging.info('Finished writing, total {} annotations, '
                     'skipped {} images.'.format(length, skipped))
-
-
-def create_tfrecord_from_coco(train_image_folder,
-                              val_image_folder,
-                              train_annotation_file,
-                              val_annotation_file,
-                              train_tfrecord,
-                              val_tfrecord,
-                              coco_minival_ids_file):
-    minival_list = parse_minival_ids(coco_minival_ids_file)
-    images, annotations, categories = merge_annotations(
-        train_annotation_file, val_annotation_file)
-
-    tf.logging.info('number of total images is {}'.format(len(images)))
-    tf.logging.info('number of total annotations is {}'.format(len(annotations)))
-
-    category_index = label_map_util.create_category_index(categories)
-    annotation_index = generate_annotation_index(annotations)
-    train_plus_images, minival_images = split_minival(images, minival_list)
-
-    tf.logging.info('category index is {}'.format(category_index))
-    tf.logging.info('number of train plus images is {}'
-                    .format(len(train_plus_images)))
-    tf.logging.info('number of minival images is {}'
-                    .format(len(minival_images)))
-
-    image_folders = [train_image_folder, val_image_folder]
-    write_tfrecord(image_arr=train_plus_images,
-                   anno_index=annotation_index,
-                   category_index=category_index,
-                   image_folders=image_folders,
-                   output_tfrecord=train_tfrecord)
-    write_tfrecord(image_arr=minival_images,
-                   anno_index=annotation_index,
-                   category_index=category_index,
-                   image_folders=image_folders,
-                   output_tfrecord=val_tfrecord,
-                   tfrecord_shards=10)
 
 
 def main(_):
