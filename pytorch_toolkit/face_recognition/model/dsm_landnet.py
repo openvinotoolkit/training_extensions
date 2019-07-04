@@ -1,10 +1,11 @@
-import torch.nn as nn
 import torch
+import torch.nn as nn
 
-from .common import ModelInterface
+
+# from .common import ModelInterface
 
 
-class DsmNet(ModelInterface):
+class DsmNet(nn.Module):
     """Facial landmarks localization network"""
     def __init__(self):
         super(DsmNet, self).__init__()
@@ -280,10 +281,13 @@ class DsmNet(ModelInterface):
     def set_dropout_ratio(self, ratio):
         pass
 
-# def main():
-#     net = DsmNet()
-#     input = torch.randint(0, 255, (2, 3, 60, 60), dtype=torch.float32)
-#     out = net.forward(input)
-#     print(out.shape)
-#
-# main()
+def main():
+    input = torch.randint(0, 255, (2, 3, 60, 60), dtype=torch.float32)
+    input.cuda()
+    print(input)
+    model = DsmNet()
+    model.cuda(0)
+    out = model.forward(input)
+    print(out.shape)
+
+main()

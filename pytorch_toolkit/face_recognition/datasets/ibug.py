@@ -44,7 +44,8 @@ class IBUG(Dataset):
 
     def __getitem__(self, idx):
         img = cv.imread(self.sample_info[0][idx], cv.IMREAD_COLOR)
-        landmarks = np.array(json.loads(self.sample_info[1][idx]))
+        with open(self.sample_info[1][idx], 'r') as f:
+            landmarks = np.array(json.load(f))
         data = {'img': img, 'landmarks': landmarks}
         if self.transform:
             data = self.transform(data)

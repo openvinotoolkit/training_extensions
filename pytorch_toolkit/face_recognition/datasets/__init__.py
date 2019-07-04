@@ -6,5 +6,6 @@ from .imdbface import IMDBFace
 
 from .celeba import CelebA
 from .ndg import NDG
+from .ibug import IBUG
 
-__all__ = [LFW, VGGFace2, MSCeleb1M, TrillionPairs, IMDBFace, CelebA, NDG]
+__all__ = [LFW, VGGFace2, MSCeleb1M, TrillionPairs, IMDBFace, CelebA, NDG, IBUG]
