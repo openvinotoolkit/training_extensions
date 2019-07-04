@@ -22,6 +22,11 @@ else
   echo "Model optimizer requirements were not installed. Please install the OpenVino toolkit to use one."
 fi
 
+. venv/bin/activate
+cd ../../external/mmdetection/
+bash compile.sh
+python setup.py develop
+deactivate
 
 echo
 echo "===================================================="
