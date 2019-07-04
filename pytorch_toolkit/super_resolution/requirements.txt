@@ -4,3 +4,4 @@ scikit-image==0.15.0
 opencv-python==4.1.0.25
 tensorboardX==1.7
 tqdm==4.32.2
+Pillow==6.0.0

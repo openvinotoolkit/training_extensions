@@ -21,6 +21,8 @@ import skimage
 from skimage import transform
 import torch
 import torch.utils.data as data
+from PIL import Image as pil_image
+from tqdm import tqdm
 
 
 class DatasetFromPairedImages(data.Dataset):
@@ -98,18 +100,16 @@ class DatasetFromSingleImages(data.Dataset):
         if self.count is not None:
             max_count = self.count
 
-        for f in files:
-            image = cv2.imread(osp.join(self.path, f))
-
-            if len(image.shape) != 3 or image.shape[2] != 3:
-                continue
+        for f in tqdm(files):
+            image_size = np.array(pil_image.open(osp.join(self.path, f)).size)
 
             if (self.patch_size is not None and \
-                 np.any([image.shape[i] * self.resize_factor[0] < self.patch_size[i] for i in range(2)])) or \
-               (self.patch_size is None and np.any([image.shape[i] % self.ds_factor for i in range(2)])):
+                 np.any([image_size[i] * self.resize_factor[0] < self.patch_size[i] for i in range(2)])) or \
+               (self.patch_size is None and np.any([image_size[i] % self.ds_factor for i in range(2)])):
                 continue
 
             if self.cache_images:
+                image = cv2.imread(osp.join(self.path, f))
                 self.cache.append(image)
             self.image_names.append(f)
             cache_count += 1
@@ -118,6 +118,11 @@ class DatasetFromSingleImages(data.Dataset):
                 break
 
         self.count = len(self.image_names)
+        num_skipped = len(files) - self.count
+        if num_skipped:
+            print("[WARNING] Skipped {} images".format(num_skipped))
+
+        assert self.count != 0
 
     def __getitem__(self, index):
         index = index % self.count
