@@ -114,7 +114,7 @@ python3 tools/export.py --models_path PATH_TO_MODELS_PATH \
 ### For the latest checkpoint
 ```
 python3 tools/infer.py --model <PATH_TO_CHECKPOINT> \
-    --scale 4
+    --scale 4 \
     image_path
 ```
 
