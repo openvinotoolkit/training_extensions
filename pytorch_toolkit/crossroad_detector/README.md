@@ -63,7 +63,7 @@ To show results of network model working run
 ### Demo
 
 ```Bash
-  python3 ../../external/mmdetection/tools/test.py configs/ssd512_mb2_crossroad_clustered.py ssd512_mb2_crossroad_clustered/epoch_5.pth --show
+  python ../../external/mmdetection/tools/test.py configs/ssd512_mb2_crossroad_clustered.py ssd512_mb2_crossroad_clustered/epoch_5.pth --show
 ```
 
 ## Conversion to onnx fromat
