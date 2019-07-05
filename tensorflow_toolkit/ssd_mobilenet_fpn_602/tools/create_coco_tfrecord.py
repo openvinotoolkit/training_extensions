@@ -24,7 +24,6 @@ result, since the pre-trained models are claimed having been trained with
 the same splits.
 
 Please follow below dataset structure:
-
 \_dataset
   \_images
   | \_train2017
@@ -41,6 +40,10 @@ Please follow below dataset structure:
   | |_instances_train2017.json
   | |_instances_val2017.json
   |_mscoco_minival_ids.txt
+
+NOTE: `train2017` and `val2017` folders are supposed to exist at passed-in
+`--images` directory. `instances_train2017.json` and `instances_val2017.json`
+are supposed to exist at passed-in `--annotations` directory.
 """
 
 
@@ -48,11 +51,12 @@ flags = tf.app.flags
 tf.flags.DEFINE_string(
         'image_folder',
         None,
-        'Folder of images, must include named train and val folders.')
+        'Folder of images, must include `train2017` and `val2017` folders.')
 tf.flags.DEFINE_string(
         'annotation_folder',
         None,
-        'Folder of annotations, must include named annoation files.')
+        'Folder of annotations, must include `instances_train2017.json` '
+        'and `instances_val2017.json` files.')
 tf.flags.DEFINE_string(
         'coco_minival_ids_file',
         None,
