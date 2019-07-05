@@ -1,4 +1,10 @@
 torch==1.1
+mmcv
+tensorboardX
+tensorboard
+opencv-python 
+pycocotools
+terminaltables
 cython
 matplotlib
 ptflops
