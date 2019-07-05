@@ -1,6 +1,8 @@
 # Super Resolution Training Toolbox Pytorch
 This code is intended for training Super Resolution (SR) algorithms in Pytorch.
 
+![](./sr.jpg)
+
 # Models
 Two typologies are available for training at this point:
 
@@ -12,100 +14,119 @@ Network"](https://arxiv.org/pdf/1609.04802.pdf)) but with reduced number of chan
 # Results
 The PSNR values were calculated with Y channel from YCrCb image.
 
-| Model    | Set5, PSNRx3, dB | Set5, PSNRx4, dB |
-| :------- | ----: | :---: |
-| SmallModel    | 33.15 | 31.16 |
+| Model      | Set5, PSNRx3, dB | Set5, PSNRx4, dB |
+| :--------- | :--------------: | :--------------: |
+| SmallModel | 33.15            | 31.16            |
 
-# Dependencies
-pytorch 0.4+, python 3.5, opencv, skimage 0.14.1, numpy
 
-# Training
+## Setup
 
-*main.py* script should be used to start training process:
+### Prerequisites
 
-```
-usage: main.py [-h] [--scale SCALE] [--model {SRResNetLight,SmallModel}]
-               [--patch_size PATCH_SIZE [PATCH_SIZE ...]] [--border BORDER]
-               [--aug_resize_factor_range AUG_RESIZE_FACTOR_RANGE [AUG_RESIZE_FACTOR_RANGE ...]]
-               [--num_of_train_images NUM_OF_TRAIN_IMAGES]
-               [--num_of_patches_per_image NUM_OF_PATCHES_PER_IMAGE]
-               [--num_of_val_images NUM_OF_VAL_IMAGES] [--resume]
-               [--batch_size BATCH_SIZE] [--num_of_epochs NUM_OF_EPOCHS]
-               [--num_of_data_loader_threads NUM_OF_DATA_LOADER_THREADS]
-               [--train_path TRAIN_PATH] [--validation_path VALIDATION_PATH]
-               [--exp_name EXP_NAME] [--models_path MODELS_PATH] [--seed SEED]
-               [--milestones MILESTONES [MILESTONES ...]]
+* Ubuntu 16.04 or newer
+* OpenVINO 2019 R1 or newer
+* Python 3
 
-Super Resolution PyTorch
 
-optional arguments:
-  -h, --help            show this help message and exit
-  --scale SCALE         Upsampling factor for SR
-  --model {SRResNetLight,SmallModel}
-                        SR model
-  --patch_size PATCH_SIZE [PATCH_SIZE ...]
-                        Patch size used for training (None - whole image)
-  --border BORDER       Ignored border
-  --aug_resize_factor_range AUG_RESIZE_FACTOR_RANGE [AUG_RESIZE_FACTOR_RANGE ...]
-                        Range of resize factor for training patch, used for
-                        augmentation
-  --num_of_train_images NUM_OF_TRAIN_IMAGES
-                        Number of training images (None - use all images)
-  --num_of_patches_per_image NUM_OF_PATCHES_PER_IMAGE
-                        Number of patches from one image
-  --num_of_val_images NUM_OF_VAL_IMAGES
-                        Number of val images (None - use all images)
-  --resume              Resume training from the latest state
-  --batch_size BATCH_SIZE
-                        Training batch size
-  --num_of_epochs NUM_OF_EPOCHS
-                        Number of epochs to train for
-  --num_of_data_loader_threads NUM_OF_DATA_LOADER_THREADS
-                        Number of threads for data loader to use, Default: 1
-  --train_path TRAIN_PATH
-                        Path to train data
-  --validation_path VALIDATION_PATH
-                        Path to folder with val images
-  --exp_name EXP_NAME   Experiment name
-  --models_path MODELS_PATH
-                        Path to models folder
-  --seed SEED           Seed for random generators
-  --milestones MILESTONES [MILESTONES ...]
-                        List of epoch indices, where learning rate decay is
-                        applied
+### Installation
+
+1. Create virtual environment
+```bash
+virtualenv venv -p python3 --prompt="(sr)"
 ```
 
-Example:
+2. Activate virtual environment and setup OpenVINO variables
+```bash
+. venv/bin/activate
+. /opt/intel/openvino/bin/setupvars.sh
 ```
-python ./main.py --batch_size 256 --num_of_epochs 100 --num_of_data_loader_threads 8 --train_path PATH_TO_TRAIN_DATA --validation_path PATH_TO_VAL_DATA --exp_name test --models_path PATH_TO_MODELS_PATH  --milestones 8 12 16 --scale 4 --patch_size 192 192 --model SRResNetLight --aug_resize_factor_range 0.8 1.2
+**NOTE** Good practice is adding `. /opt/intel/openvino/bin/setupvars.sh` to the end of the `venv/bin/activate`.
 ```
-
-# Testing
-
-*test.py* script can be used to evaluate the trained model.
-
-```
-usage: test.py [-h] [--test_data_path TEST_DATA_PATH] [--exp_name EXP_NAME]
-               [--models_path MODELS_PATH] [--scale SCALE] [--border BORDER]
-
-PyTorch SR test
-
-optional arguments:
-  -h, --help            show this help message and exit
-  --test_data_path TEST_DATA_PATH
-                        path to test data
-  --exp_name EXP_NAME   experiment name
-  --models_path MODELS_PATH
-                        path to models folder
-  --scale SCALE         Upsampling factor for SR
-  --border BORDER       Ignored border
-
-```
-Example:
-```
-python test.py --test_data_path PATH_TO_TEST_DATA --exp_name test --models_path PATH_TO_MODELS_PATH --scale 4 --border 4
+echo ". /opt/intel/openvino/bin/setupvars.sh" >> venv/bin/activate
 ```
 
-# Checkpoints
+3. Install the module
+```bash
+pip3 install -e .
+```
 
-Checkpoints can be downloaded [here](https://download.01.org/opencv/openvino_training_extensions/models/super_resolution/super_resolution.tar.gz). Place *011_repro* (x4) and *021_repro2* (x3) into the model directory. Start training from the checkpoint with --resume flag.
+## Train and evaluation
+
+### Prepare dataset
+Create two directories for train and test images. Train images may have any resolution more than `path_size`.
+Validation images should have resolution like `path_size`.
+
+```
+./data
+├── train
+│   ├── 000000.png
+│   ...
+└── val
+    ├── 000000.png
+    ...
+```
+
+### Training
+
+Use `tools/train.py` script to start training process:
+```
+python3 tools/train.py \
+    --train_path PATH_TO_TRAIN_DATA \
+    --validation_path PATH_TO_VAL_DATA \
+    --models_path PATH_TO_MODELS_PATH  \
+    --exp_name EXPERIMENT_NAME \
+    --batch_size 256 \
+    --num_of_epochs 100 \
+    --num_of_data_loader_threads 8 \
+    --milestones 8 12 16 \
+    --scale 4 \
+    --patch_size 192 192 \
+    --model SmallModel \
+    --aug_resize_factor_range 0.8 1.2
+```
+
+To start from pretrained checkpoint add `--init_checkpoint PATH_TO_CHECKPOINT`.
+Checkpoints can be downloaded [here](https://download.01.org/opencv/openvino_training_extensions/models/super_resolution/super_resolution.tar.gz).
+
+### Testing
+
+Use `tools/test.py` script to evaluate the trained model.
+
+```
+python3 tools/test.py --test_data_path PATH_TO_TEST_DATA \
+    --models_path PATH_TO_MODELS_PATH \
+    --exp_name EXPERIMENT_NAME \
+    --scale 4 \
+    --border 4
+```
+
+## Export to OpenVINO
+```
+python3 tools/export.py --models_path PATH_TO_MODELS_PATH \
+    --exp_name EXPERIMENT_NAME \
+    --input_size 200 200 \
+    --scale 4 \
+    --data_type FP32
+```
+
+## Demo
+
+### For the latest checkpoint
+```
+python3 tools/infer.py --model <PATH_TO_CHECKPOINT> \
+    --scale 4 \
+    image_path
+```
+
+### For Intermediate Representation (IR)
+```
+python3 tools/infer_ie.py --model <PATH_TO_IR_XML> \
+    image_path
+```
+
+[C++ demo](https://github.com/opencv/open_model_zoo/tree/master/demos/super_resolution_demo)
+
+
+## Know issues
+
+1. Network can't be reshaped after conversation to IR. You should set `input_size` when run `tools/export.py`.

@@ -16,6 +16,7 @@ import math
 import torch
 import torch.nn as nn
 
+
 def make_model(name_of_the_model, scale):
     if name_of_the_model == 'SRResNetLight':
         model = SRResNetLight(scale=scale).cuda()
@@ -26,6 +27,12 @@ def make_model(name_of_the_model, scale):
         raise NotImplementedError
 
     return model
+
+def make_layer(block, num_of_layer):
+    layers = []
+    for _ in range(num_of_layer):
+        layers.append(block)
+    return nn.Sequential(*layers)
 
 
 class ResBlock(nn.Module):
@@ -40,6 +47,7 @@ class ResBlock(nn.Module):
                                padding=1, bias=False)
         self.in2 = nn.InstanceNorm2d(num_of_channels, affine=True)
 
+    # pylint: disable=arguments-differ
     def forward(self, x):
         orig = x
         output = self.relu(self.in1(self.conv1(x)))
@@ -58,7 +66,7 @@ class SRResNetLight(nn.Module):
                                     bias=False)
         self.relu = nn.ReLU(inplace=True)
 
-        self.residual = self.make_layer(ResBlock(num_of_channels), num_of_res_blocks)
+        self.residual = make_layer(ResBlock(num_of_channels), num_of_res_blocks)
 
         self.conv_mid = nn.Conv2d(in_channels=num_of_channels, out_channels=num_of_channels, kernel_size=3, stride=1,
                                   padding=1, bias=False)
@@ -91,7 +99,8 @@ class SRResNetLight(nn.Module):
         elif scale == 3:
             factor = 3
             self.upscale = nn.Sequential(
-                nn.Conv2d(in_channels=num_of_channels, out_channels=num_of_channels*factor*factor, kernel_size=3, stride=1, padding=1, bias=True),
+                nn.Conv2d(in_channels=num_of_channels, out_channels=num_of_channels*factor*factor,
+                          kernel_size=3, stride=1, padding=1, bias=True),
                 nn.PixelShuffle(factor),
                 nn.ReLU(inplace=True),
             )
@@ -99,7 +108,7 @@ class SRResNetLight(nn.Module):
             raise NotImplementedError
 
         self.conv_output = nn.Conv2d(in_channels=num_of_channels, out_channels=3, kernel_size=9, stride=1, padding=4,
-                                        bias=False)
+                                     bias=False)
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
@@ -108,12 +117,7 @@ class SRResNetLight(nn.Module):
                 if m.bias is not None:
                     m.bias.data.zero_()
 
-    def make_layer(self, block, num_of_layer):
-        layers = []
-        for _ in range(num_of_layer):
-            layers.append(block)
-        return nn.Sequential(*layers)
-
+    # pylint: disable=arguments-differ
     def forward(self, x):
         input = x
         if isinstance(x, (list, tuple)):
@@ -139,6 +143,7 @@ class SmallBlock(nn.Module):
         self.conv2 = nn.Conv2d(in_channels=channels, out_channels=channels, kernel_size=3, stride=1, padding=1,
                                bias=False)
 
+    # pylint: disable=arguments-differ
     def forward(self, x):
         identity_data = x
         output = self.relu(x)
@@ -153,19 +158,23 @@ class SmallModel(nn.Module):
     def __init__(self, scale=3, num_of_ch_enc=16, num_of_ch_dec=8, num_of_res_blocks=4):
         super(SmallModel, self).__init__()
 
-        self.conv_input = nn.Conv2d(in_channels=3, out_channels=num_of_ch_enc, kernel_size=3, stride=1, padding=1, bias=True)
+        self.conv_input = nn.Conv2d(in_channels=3, out_channels=num_of_ch_enc,
+                                    kernel_size=3, stride=1, padding=1, bias=True)
         self.relu = nn.ReLU(inplace=False)
         self.sigmoid = nn.Sigmoid()
 
-        self.conv_cubic1 = nn.Conv2d(in_channels=3, out_channels=num_of_ch_dec, kernel_size=3, stride=1, padding=1, bias=True)
-        self.conv_cubic2 = nn.Conv2d(in_channels=num_of_ch_dec, out_channels=1, kernel_size=3, stride=1, padding=1, bias=True)
+        self.conv_cubic1 = nn.Conv2d(in_channels=3, out_channels=num_of_ch_dec,
+                                     kernel_size=3, stride=1, padding=1, bias=True)
+        self.conv_cubic2 = nn.Conv2d(in_channels=num_of_ch_dec, out_channels=1,
+                                     kernel_size=3, stride=1, padding=1, bias=True)
 
         self.residual1 = SmallBlock(num_of_ch_enc)
         self.residual2 = SmallBlock(num_of_ch_enc)
         self.residual3 = SmallBlock(num_of_ch_enc)
         self.residual4 = SmallBlock(num_of_ch_enc)
 
-        self.conv_mid = nn.Conv2d(in_channels=num_of_ch_enc * (num_of_res_blocks + 1), out_channels=num_of_ch_dec, kernel_size=3, stride=1, padding=1, bias=True)
+        self.conv_mid = nn.Conv2d(in_channels=num_of_ch_enc * (num_of_res_blocks + 1), out_channels=num_of_ch_dec,
+                                  kernel_size=3, stride=1, padding=1, bias=True)
 
         if scale == 4:
             factor = 2
@@ -175,7 +184,8 @@ class SmallModel(nn.Module):
                 nn.PixelShuffle(factor),
                 nn.ReLU(inplace=True),
 
-                nn.Conv2d(num_of_ch_dec, num_of_ch_dec * factor * factor, kernel_size=3, padding=1, stride=1, bias=True),
+                nn.Conv2d(num_of_ch_dec, num_of_ch_dec * factor * factor,
+                          kernel_size=3, padding=1, stride=1, bias=True),
                 nn.PixelShuffle(factor),
                 nn.ReLU(inplace=True)
             )
@@ -189,8 +199,10 @@ class SmallModel(nn.Module):
         else:
             raise NotImplementedError
 
-        self.conv_output = nn.Conv2d(in_channels=num_of_ch_dec, out_channels=3, kernel_size=3, stride=1, padding=1, bias=True)
+        self.conv_output = nn.Conv2d(in_channels=num_of_ch_dec, out_channels=3,
+                                     kernel_size=3, stride=1, padding=1, bias=True)
 
+    # pylint: disable=arguments-differ
     def forward(self, x):
         input = x[0]
         cubic = x[1]
@@ -223,8 +235,9 @@ class MSE_loss(nn.Module):
         super(MSE_loss, self).__init__()
         self.border = border
 
+    # pylint: disable=arguments-differ
     def forward(self, x, y):
-        assert (x[0].shape == y[0].shape)
+        assert x[0].shape == y[0].shape
 
         h, w = x[0].shape[2:]
 

@@ -15,12 +15,14 @@
 import math
 import numpy as np
 
-class Metrics(object):
+
+class Metrics():
     def __init__(self, name):
         self.name = name
         self.accumulator = 0.0
         self.samples = 0.0
 
+    # pylint: disable=unused-argument
     def update(self, ground, predict):
         self.samples = self.samples + 1
 
@@ -41,9 +43,9 @@ def _PSNR(pred, gt, shave_border=0):
     gt = gt[shave_border:height - shave_border, shave_border:width - shave_border]
     imdff = (pred - gt) #rgb color space
 
-    r = imdff[:,:,2]
-    g = imdff[:,:,1]
-    b = imdff[:,:,0]
+    r = imdff[:, :, 2]
+    g = imdff[:, :, 1]
+    b = imdff[:, :, 0]
 
     y = (r * 65.738 + g * 129.057 + b * 25.064) / 256
 
@@ -52,7 +54,6 @@ def _PSNR(pred, gt, shave_border=0):
         return np.Infinity
 
     return - 10 * math.log10(mse)
-
 
 
 class PSNR(Metrics):
@@ -66,7 +67,7 @@ class PSNR(Metrics):
         pred = predict[self.input_index].cpu().detach().numpy()
         gr = ground[self.target_index].cpu().detach().numpy()
 
-        assert (gr.shape == pred.shape)
+        assert gr.shape == pred.shape
 
         for i in range(gr.shape[0]):
             _pred = pred[i].T
@@ -86,11 +87,11 @@ class RMSE(Metrics):
 
     def update(self, ground, predict):
         h, w = ground[0].shape[2:]
-        pred = predict[self.input_index].cpu().detach().numpy()[:,:,self.border:h-self.border,self.border:w-self.border]
-        gr = ground[self.target_index].cpu().detach().numpy()[:,:,self.border:h-self.border,self.border:w-self.border]
+        b = self.border
+        pred = predict[self.input_index].cpu().detach().numpy()[:, :, b:h-b, b:w-b]
+        gr = ground[self.target_index].cpu().detach().numpy()[:, :, b:h-b, b:w-b]
 
-        assert (gr.shape == pred.shape)
+        assert gr.shape == pred.shape
 
         self.accumulator += ((((pred-gr)**2).sum(axis=(1, 2, 3))/np.prod(gr.shape[1:]))**0.5).mean()
-
         self.samples += 1
