@@ -107,5 +107,8 @@ python3 tools/count_flops.py  \
 
 ## Fine-tuning
 
-* The annotations have to be in [PASCAL VOC](http://host.robots.ox.ac.uk/pascal/VOC/voc2012/index.html#data) format.
-* Fine-tuning steps are the same as step 2 for training, just edit the initial checkpoint and data paths in detector config.
+* Dataset should have the same data layout as WIDER Face in VOC format
+ described in this instruction.
+* Fine-tuning steps are the same as step 2 for training, but some adjustments in config are needed:
+  - specify initial checkpoint containing a valid detector in `load_from` field of config `../../external/mmdetection/configs/wider_face/mobilenetv2_tiny_ssd300_wider_face.py`
+  - edit `data` section of config to pass a custom dataset.
