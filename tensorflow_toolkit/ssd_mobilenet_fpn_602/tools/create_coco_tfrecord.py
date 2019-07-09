@@ -10,7 +10,7 @@ import tensorflow as tf
 
 
 """
-This script helps generate similar training and validation splits 
+This script helps generate similar training and validation splits
 as the ones used in TensorFlow Object Detection API, which is much
 different than organic coco train2017 and val2017.
 By selecting ~8k specific images(called minival) for validation,
