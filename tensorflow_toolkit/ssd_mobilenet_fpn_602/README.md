@@ -159,7 +159,7 @@ Note:
         --input_model=./models/frozen_graph/frozen_inference_graph.pb \
         --output_dir=./models/openvino_ir \
         --tensorflow_object_detection_api_pipeline_config=./configs/pipeline.config \
-        --tensorflow_use_custom_operation_config="${INTEL_OPENVINO_DIR}"/deployment_tools/model_optimizer/extensions/front/tf/ssd_v2_support.json
+        --tensorflow_use_custom_operations_config="${INTEL_OPENVINO_DIR}"/deployment_tools/model_optimizer/extensions/front/tf/ssd_v2_support.json
     ```
 
 ## OpenVINO Demo
