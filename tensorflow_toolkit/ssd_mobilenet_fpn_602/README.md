@@ -123,7 +123,9 @@ tensorboard --logdir=./models/checkpoint
 python ../../external/models/research/object_detection/model_main.py \
     --model_dir=./models/checkpoint \
     --pipeline_config_path=./configs/pipeline.config \
-    --checkpoint_dir=./models/checkpoint
+    --sample_1_of_n_eval_examples=1 \
+    --checkpoint_dir=./models/checkpoint \
+    --run_once=True
 ```
 
 ## Model Conversion
