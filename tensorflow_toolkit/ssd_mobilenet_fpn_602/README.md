@@ -10,7 +10,7 @@ This training extension is designed for running SSD MobileNet with FPN on Intel 
 * Ubuntu 16.04
 * Python 3.5
 * TensorFlow 1.13.1
-* OpenVINO 2019 R1 with Python API
+* OpenVINO 2019 R1 with built Inference Engine Samples
 
 ### Installation
 
@@ -82,16 +82,16 @@ unzip dataset/val2017.zip -d dataset/images
 ```bash
 # From openvino_training_extensions/tensorflow_toolkit/ssd_mobilenet_fpn_602/
 python tools/create_coco_tfrecord.py \
---image_folder=dataset/images \
---annotation_folder=dataset/annotations \
---coco_minival_ids_file=../../external/models/research/object_detection/data/mscoco_minival_ids.txt \
---output_folder=dataset/tfrecord
+    --image_folder=dataset/images \
+    --annotation_folder=dataset/annotations \
+    --coco_minival_ids_file=../../external/models/research/object_detection/data/mscoco_minival_ids.txt \
+    --output_folder=dataset/tfrecord
 ```
 
 3. After data preparation, tfrecords are located at **dataset/tfrecord**. Files with *coco_train2017_plus.record* and *coco_minival2017.record* prefixes can be used for training and validatation respectively.
 
 
-## Training and Evaluation
+## Fine-tuning and Evaluation
 
 1. Download pre-trained model from TensorFlow Object Detection Model Zoo and extract it.
 ```bash
@@ -103,21 +103,61 @@ tar xzvf models/ssd_mobilenet_v1_fpn_shared_box_predictor_640x640_coco14_sync_20
 
 2. Configure settings in *configs/pipeline.config*. Replace `PATH_TO_BE_CONFIGURED` with corresponding path.
 
-3. Run training as follows.
+3. Run fine-tuning as follows(note that evaluation metrics will be printed out during fine-tuning).
 ```bash
+# From openvino_training_extensions/tensorflow_toolkit/ssd_mobilenet_fpn_602/
 python ../../external/models/research/object_detection/model_main.py \
---model_dir=./models/checkpoint \
---pipeline_config_path=./configs/pipeline.config
+    --model_dir=./models/checkpoint \
+    --pipeline_config_path=./configs/pipeline.config
 ```
 
-4. Run following command visualization, and follow the terminal instruction to view training and evaluation result in browser.
+4. Run following command for visualization, and follow the terminal instruction to view fine-tuning and evaluation result in browser.
 ```bash
-tensorboard --logdir=./model
+# From openvino_training_extensions/tensorflow_toolkit/ssd_mobilenet_fpn_602/
+tensorboard --logdir=./models/checkpoint
+```
+
+5. After fine-tuning, a single evaluation can be run as follows.
+```bash
+# From openvino_training_extensions/tensorflow_toolkit/ssd_mobilenet_fpn_602/
+python ../../external/models/research/object_detection/model_main.py \
+    --model_dir=./models/checkpoint \
+    --pipeline_config_path=./configs/pipeline.config \
+    --checkpoint_dir=./models/checkpoint
 ```
 
 ## Model Conversion
 
-1. Convert TF checkpoints into frozen inference graph.
-2. Convert TF frozen inference graph in OpenVINO IR.
+1. New TF checkpoints are generated after fine-tuning, which can be converted into frozen inference graph as follows.
+```bash
+# From openvino_training_extensions/tensorflow_toolkit/ssd_mobilenet_fpn_602/
+python ../../external/models/research/object_detection/export_inference_graph.py \
+    --input_type=image_tensor \
+    --pipeline_config_path=./configs/pipeline.config \
+    --trained_checkpoint_prefix=./models/checkpoint/model.ckpt-2500 \
+    --output_directory=./models/frozen_graph
+```
+
+2. *frozen_inference_graph.pb* will be genereted after Step 1 conversion. It then can be converted in OpenVINO IR.
+```bash
+# From openvino_training_extensions/tensorflow_toolkit/ssd_mobilenet_fpn_602/
+python "${INTEL_OPENVINO_DIR}"/deployment_tools/model_optimizer/mo_tf.py \
+    --input_model=./models/frozen_graph/frozen_inference_graph.pb \
+    --output_dir=./models/openvino_ir \
+    --tensorflow_object_detection_api_pipeline_config=./configs/pipeline.config \
+    --tensorflow_use_custom_operation_config="${INTEL_OPENVINO_DIR}"/deployment_tools/model_optimizer/extensions/front/tf/ssd_v2_support.json
+```
 
 ## OpenVINO Demo
+
+Run OpenVINO SSD sample after OpenVINO IR is generated as follows.
+
+Note: OpenVINO R1 Inference Engine Samples are assumed built already. Please refer to [OpenVINO build the sample applications](https://docs.openvinotoolkit.org/latest/_docs_IE_DG_Samples_Overview.html#build_the_sample_applications) for those who haven't done this before.
+```bash
+"${OPENVINO_SAMPLES_BUILD_DIR}"/intel64/Release/object_detection_sample_ssd \
+    -i ./assets/test.jpg \
+    -m ./models/openvino_ir/frozen_inference_graph.xml \
+    -d ${DEVICE}
+```
+Try `export ${DEVICE}=MYRIAD` to run this model on VPU.
+
