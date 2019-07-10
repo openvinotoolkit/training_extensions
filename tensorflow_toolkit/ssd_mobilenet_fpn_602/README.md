@@ -140,7 +140,7 @@ python ../../external/models/research/object_detection/export_inference_graph.py
     --output_directory=./models/frozen_graph
 ```
 
-2. *frozen_inference_graph.pb* will be genereted after Step 1 conversion. It then can be converted in OpenVINO IR.
+2. *frozen_inference_graph.pb* will be genereted after Step 1 conversion. It then can be converted into OpenVINO IR.
 ```bash
 # From openvino_training_extensions/tensorflow_toolkit/ssd_mobilenet_fpn_602/
 python "${INTEL_OPENVINO_DIR}"/deployment_tools/model_optimizer/mo_tf.py \
@@ -157,7 +157,7 @@ Run OpenVINO SSD sample after OpenVINO IR is generated as follows.
 Note: OpenVINO R1 Inference Engine Samples are assumed built already. Please refer to [OpenVINO build the sample applications](https://docs.openvinotoolkit.org/latest/_docs_IE_DG_Samples_Overview.html#build_the_sample_applications) for those who haven't done this before.
 ```bash
 "${OPENVINO_SAMPLES_BUILD_DIR}"/intel64/Release/object_detection_sample_ssd \
-    -i ./assets/test.jpg \
+    -i ./assets/000000322211.jpg \
     -m ./models/openvino_ir/frozen_inference_graph.xml \
     -d ${DEVICE}
 ```
