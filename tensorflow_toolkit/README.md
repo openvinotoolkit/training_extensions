@@ -43,3 +43,4 @@ them for predictions.
 * [Person Vehicle Bike Detector](person_vehicle_bike_detector)
 * [SSD Object Detection](ssd_detector)
 * [Vehicle Attributes](vehicle_attributes)
+* [SSD MobileNet FPN 602](ssd_mobilenet_fpn_602)
