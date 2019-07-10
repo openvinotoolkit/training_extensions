@@ -78,7 +78,7 @@ class HorizontalFlip:
 
         if float(torch.FloatTensor(1).uniform_()) < self.p:
             image = cv.flip(image, 1)
-            landmarks = landmarks.reshape(5, 2)
+            landmarks = landmarks.reshape(16, 2)
             landmarks[:, 0] = 1. - landmarks[:, 0]
             tmp = np.copy(landmarks[0])
             landmarks[0] = landmarks[1]
@@ -137,7 +137,7 @@ class RandomRotate:
             rot_mat = cv.getRotationMatrix2D((w*0.5, h*0.5), angle, 1.)
             image = cv.warpAffine(image, rot_mat, (w, h), flags=cv.INTER_LANCZOS4)
             rot_mat_l = cv.getRotationMatrix2D((0.5, 0.5), angle, 1.)
-            landmarks = cv.transform(landmarks.reshape(1, 5, 2), rot_mat_l).reshape(5, 2)
+            landmarks = cv.transform(landmarks.reshape(1, 16, 2), rot_mat_l).reshape(16, 2)
 
         return {'img': image, 'landmarks': landmarks}
 
@@ -175,6 +175,6 @@ class RandomScale:
             rot_mat = cv.getRotationMatrix2D((w*0.5, h*0.5), 0, scale)
             image = cv.warpAffine(image, rot_mat, (w, h), flags=cv.INTER_LANCZOS4)
             rot_mat_l = cv.getRotationMatrix2D((0.5, 0.5), 0, scale)
-            landmarks = cv.transform(landmarks.reshape(1, 5, 2), rot_mat_l).reshape(5, 2)
+            landmarks = cv.transform(landmarks.reshape(1, 16, 2), rot_mat_l).reshape(16, 2)
 
         return {'img': image, 'landmarks': landmarks}

@@ -43,8 +43,8 @@ class IBUG(Dataset):
         return len(self.sample_info)
 
     def __getitem__(self, idx):
-        img = cv.imread(self.sample_info[0][idx], cv.IMREAD_COLOR)
-        with open(self.sample_info[1][idx], 'r') as f:
+        img = cv.imread(self.sample_info[idx][0], cv.IMREAD_COLOR)
+        with open(self.sample_info[idx][1], 'r') as f:
             landmarks = np.array(json.load(f))
         data = {'img': img, 'landmarks': landmarks}
         if self.transform:

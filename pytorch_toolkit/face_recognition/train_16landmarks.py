@@ -24,10 +24,11 @@ import torch.optim as optim
 from torch.utils.data import DataLoader
 from torchvision.transforms import transforms
 
-from datasets import VGGFace2, CelebA, NDG
+from datasets import IBUG
 
 from model.common import models_landmarks
-from utils import landmarks_augmentation
+# from utils import landmarks_augmentation
+from utils import landmarks_augmentation16
 from utils.utils import save_model_cpu, load_model_state
 from losses.alignment import AlignmentLoss
 from evaluate_landmarks import evaluate
@@ -35,59 +36,60 @@ from evaluate_landmarks import evaluate
 
 def train(args):
     """Launches training of landmark regression model"""
-    if args.dataset == 'vgg':
-        drops_schedule = [1, 6, 9, 13]
-        dataset = VGGFace2(args.train, args.t_list, args.t_land, landmarks_training=True)
-    elif args.dataset == 'celeba':
-        drops_schedule = [10, 20]
-        dataset = CelebA(args.train, args.t_land)
-    else:
-        drops_schedule = [90, 140, 200]
-        dataset = NDG(args.train, args.t_land)
 
-    if dataset.have_landmarks:
-        log.info('Use alignment for the train data')
-        dataset.transform = transforms.Compose([landmarks_augmentation.Rescale((56, 56)),
-                                                landmarks_augmentation.Blur(k=3, p=.2),
-                                                landmarks_augmentation.HorizontalFlip(p=.5),
-                                                landmarks_augmentation.RandomRotate(50),
-                                                landmarks_augmentation.RandomScale(.8, .9, p=.4),
-                                                landmarks_augmentation.RandomCrop(48),
-                                                landmarks_augmentation.ToTensor(switch_rb=True)])
-    else:
-        log.info('Error: training dataset has no landmarks data')
-        exit()
+    drops_schedule = [80]
+    dataset = IBUG(args.train, args.t_land)
+
+    log.info('Use alignment for the train data')
+    # dataset.transform = transforms.Compose([landmarks_augmentation16.Rescale((68, 68)),
+    #                                         landmarks_augmentation16.Blur(k=3, p=.2),
+    #                                         landmarks_augmentation16.HorizontalFlip(p=.5),
+    #                                         landmarks_augmentation16.RandomRotate(50),
+    #                                         landmarks_augmentation16.RandomScale(.8, .9, p=.4),
+    #                                         landmarks_augmentation16.RandomCrop(60),
+    #                                         landmarks_augmentation16.ToTensor(switch_rb=True)])
+    dataset.transform = transforms.Compose([landmarks_augmentation16.Rescale((60, 60)),
+                                           landmarks_augmentation16.ToTensor(switch_rb=True)])
 
     train_loader = DataLoader(dataset, batch_size=args.train_batch_size, num_workers=4, shuffle=True)
     writer = SummaryWriter('./logs_landm/{:%Y_%m_%d_%H_%M}_'.format(datetime.datetime.now()) + args.snap_prefix)
-    model = models_landmarks['landnet']
+    model = models_landmarks['dsmnet']()
 
-    if args.snap_to_resume is not None:
-        log.info('Resuming snapshot ' + args.snap_to_resume + ' ...')
-        model = load_model_state(model, args.snap_to_resume, args.device, eval_state=False)
-        model = torch.nn.DataParallel(model, device_ids=[args.device])
-    else:
-        model = torch.nn.DataParallel(model, device_ids=[args.device])
-        model.cuda()
-        model.train()
-        cudnn.enabled = True
-        cudnn.benchmark = True
+    # print(model)
+
+    # if args.snap_to_resume is not None:
+    #     log.info('Resuming snapshot ' + args.snap_to_resume + ' ...')
+    #     model = load_model_state(model, args.snap_to_resume, args.device, eval_state=False)
+    #     model = torch.nn.DataParallel(model, device_ids=[args.device])
+    # else:
+    #     model = torch.nn.DataParallel(model, device_ids=[0])
+    #     model.cuda()
+    #     model.train()
+    #     cudnn.enabled = True
+    #     cudnn.benchmark = True
+    model.cuda()
+    model.train()
+    cudnn.enabled = True
+    cudnn.benchmark = True
 
     log.info('Face landmarks model:')
     log.info(model)
 
-    criterion = AlignmentLoss('wing')
+    criterion = AlignmentLoss('l2')
     optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
+    # optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
     scheduler = optim.lr_scheduler.MultiStepLR(optimizer, drops_schedule)
     for epoch_num in range(args.epoch_total_num):
         scheduler.step()
-        if epoch_num > 5:
-            model.module.set_dropout_ratio(0.)
+        # if epoch_num > 5:
+        #     model.module.set_dropout_ratio(0.)
         for i, data in enumerate(train_loader, 0):
             iteration = epoch_num * len(train_loader) + i
 
             data, gt_landmarks = data['img'].cuda(), data['landmarks'].cuda()
+            # print(gt_landmarks)
             predicted_landmarks = model(data)
+            # print(predicted_landmarks)
 
             optimizer.zero_grad()
             loss = criterion(predicted_landmarks, gt_landmarks)
@@ -124,17 +126,17 @@ def main():
     parser.add_argument('--train_list', dest='t_list', required=False, type=str, help='Path to train data image list.')
     parser.add_argument('--train_landmarks', default='', dest='t_land', required=False, type=str,
                         help='Path to landmarks for the train images.')
-    parser.add_argument('--train_batch_size', type=int, default=170, help='Train batch size.')
-    parser.add_argument('--epoch_total_num', type=int, default=30, help='Number of epochs to train.')
-    parser.add_argument('--lr', type=float, default=0.4, help='Learning rate.')
+    parser.add_argument('--train_batch_size', type=int, default=24, help='Train batch size.')
+    parser.add_argument('--epoch_total_num', type=int, default=100, help='Number of epochs to train.')
+    parser.add_argument('--lr', type=float, default=0.01, help='Learning rate.')
     parser.add_argument('--momentum', type=float, default=0.9, help='Momentum.')
-    parser.add_argument('--val_step', type=int, default=2000, help='Evaluate model each val_step during each epoch.')
+    parser.add_argument('--val_step', type=int, default=1000, help='Evaluate model each val_step during each epoch.')
     parser.add_argument('--weight_decay', type=float, default=0.0001, help='Weight decay.')
     parser.add_argument('--device', '-d', default=0, type=int)
     parser.add_argument('--snap_folder', type=str, default='./snapshots/', help='Folder to save snapshots.')
-    parser.add_argument('--snap_prefix', type=str, default='LandmarksNet', help='Prefix for snapshots.')
+    parser.add_argument('--snap_prefix', type=str, default='DsmNet', help='Prefix for snapshots.')
     parser.add_argument('--snap_to_resume', type=str, default=None, help='Snapshot to resume.')
-    parser.add_argument('--dataset', choices=['vgg', 'celeb', 'ngd'], type=str, default='vgg', help='Dataset.')
+    parser.add_argument('--dataset', choices=['vgg', 'celeb', 'ngd', 'ibug'], type=str, default='ibug', help='Dataset.')
     arguments = parser.parse_args()
 
     with torch.cuda.device(arguments.device):

@@ -47,17 +47,19 @@ class AlignmentLoss(nn.Module):
         if self.core_func_type == 'l2':
             loss = torch.norm(loss, p=2, dim=2)
             loss = loss.pow(2)
-            eyes_dist = (torch.norm(target[:, 0:2] - target[:, 2:4], p=2, dim=1).reshape(-1)).pow_(2)
+            # eyes_dist = (torch.norm(target[:, 0:2] - target[:, 10:12], p=2, dim=1).reshape(-1)).pow_(2)
+            # eyes_dist = (torch.norm(target[:, 0:2] - target[:, 10:12], p=2, dim=1).reshape(-1))
+            # print(eyes_dist)
         elif self.core_func_type == 'l1':
             loss = torch.norm(loss, p=1, dim=2)
-            eyes_dist = (torch.norm(target[:, 0:2] - target[:, 2:4], p=1, dim=1).reshape(-1))
+            eyes_dist = (torch.norm(target[:, 0:2] - target[:, 10:12], p=1, dim=1).reshape(-1))
         elif self.core_func_type == 'wing':
             wing_const = self.w - wing_core(self.w, self.w, self.eps)
             loss = torch.abs(loss)
             loss[loss < wing_const] = self.w*torch.log(1. + loss[loss < wing_const] / self.eps)
             loss[loss >= wing_const] -= wing_const
             loss = torch.sum(loss, 2)
-            eyes_dist = (torch.norm(target[:, 0:2] - target[:, 2:4], p=1, dim=1).reshape(-1))
+            eyes_dist = (torch.norm(target[:, 0:2] - target[:, 10:12], p=1, dim=1).reshape(-1))
 
         if self.uniform_weights:
             loss = torch.sum(loss, 1)
@@ -67,6 +69,6 @@ class AlignmentLoss(nn.Module):
             loss = torch.mul(loss, self.weights)
             loss = torch.sum(loss, 1)
 
-        loss = torch.div(loss, eyes_dist)
+        # loss = torch.div(loss, eyes_dist)
         loss = torch.sum(loss)
         return loss / (2.*bs)

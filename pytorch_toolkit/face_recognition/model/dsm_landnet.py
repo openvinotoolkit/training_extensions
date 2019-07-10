@@ -1,11 +1,11 @@
 import torch
 import torch.nn as nn
+import math
+
+from .common import ModelInterface
 
 
-# from .common import ModelInterface
-
-
-class DsmNet(nn.Module):
+class DsmNet(ModelInterface):
     """Facial landmarks localization network"""
     def __init__(self):
         super(DsmNet, self).__init__()
@@ -206,6 +206,7 @@ class DsmNet(nn.Module):
             nn.Conv2d(128, 32, kernel_size=1)
 
         )
+        self.init_weights()
 
     def forward(self, x):
         out = self.bn_first(x)
@@ -272,22 +273,39 @@ class DsmNet(nn.Module):
                              lm49x, lm49y, lm52x, lm52y, lm55x, lm55y, lm67x, lm67y), dim=1)
 
         out = self.fc_loc(feature)
-        out = torch.flatten(out)
+        # out = torch.flatten(out)
         return out
+
 
     def get_input_res(self):
         return 60, 60
 
+    @classmethod
     def set_dropout_ratio(self, ratio):
         pass
 
-def main():
-    input = torch.randint(0, 255, (2, 3, 60, 60), dtype=torch.float32)
-    input.cuda()
-    print(input)
-    model = DsmNet()
-    model.cuda(0)
-    out = model.forward(input)
-    print(out.shape)
+    def init_weights(self):
+        """Initializes weights of the model before training"""
+        for m in self.modules():
+            if isinstance(m, nn.Conv2d):
+                n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
+                m.weight.data.normal_(0, math.sqrt(2. / n))
+                if m.bias is not None:
+                    m.bias.data.zero_()
+            elif isinstance(m, nn.BatchNorm2d):
+                if m.weight is not None:
+                    m.weight.data.fill_(1)
+                if m.bias is not None:
+                    m.bias.data.zero_()
 
-main()
+
+# def main():
+#     input = torch.randint(0, 255, (2, 3, 60, 60), dtype=torch.float32)
+#     input.cuda()
+#     print(input)
+#     model = DsmNet()
+#     model.cuda(0)
+#     out = model.forward(input)
+#     print(out.shape)
+#
+# main()
