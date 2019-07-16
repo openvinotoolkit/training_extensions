@@ -20,7 +20,7 @@ The crossroad detection network model provides detection of 3 class objects: veh
 1. Download submodules
 ```bash
 cd openvino_training_extensions
-git submodule update --init --recursive
+git submodule update --init --recommend-shallow external/cocoapi external/models
 ```
 
 2. Create virtual environment
@@ -55,6 +55,12 @@ cd PythonAPI
 make install
 ```
 
+7. Compile Protobuf libraries
+```Bash
+cd $(git rev-parse --show-toplevel)/external/models/research/
+protoc object_detection/protos/*.proto --python_out=.
+```
+
 ## Training and evaluation example
 
 **NOTE** To train model on own dataset you should change `num_steps: 10` in `configs/pipeline.config`.
@@ -68,11 +74,11 @@ make install
 3. To convert the dataset to tfrecords you have to run:
    ```bash
    python ./tools/create_crossroad_extra_tf_records.py \
-       --train_image_dir=./dataset/ssd_mbv2_data_train \
-       --val_image_dir=./dataset/ssd_mbv2_data_val/ \
-       --train_annotations_file=./dataset/annotation_example_train.json \
-       --val_annotations_file=./dataset/annotation_example_val.json \
-       --output_dir=dataset/tfrecords
+       --train_image_dir=../../data/airport/train/ \
+       --val_image_dir=../../data/airport/val/ \
+       --train_annotations_file=../../data/airport/annotation_example_train.json \
+       --val_annotations_file=../../data/airport/annotation_example_val.json \
+       --output_dir=../../data/airport/tfrecords
    ```
 
 4. To start training you have to run:
@@ -106,8 +112,8 @@ python ../../external/models/research/object_detection/export_inference_graph.py
 
 ```Bash
 python tools/infer.py --model=model/export_10/frozen_inference_graph.pb \
-  --label_map=dataset/crossroad_label_map.pbtxt \
-  dataset/ssd_mbv2_data_val/image_000000.jpg
+  --label_map=../../data/airport/crossroad_label_map.pbtxt \
+  ../../data/airport/val/image_000000.jpg
 ```
 
 ## Conversion to Intermediate Representation (IR) of the network
