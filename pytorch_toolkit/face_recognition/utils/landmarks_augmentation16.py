@@ -80,13 +80,13 @@ class HorizontalFlip:
             image = cv.flip(image, 1)
             landmarks = landmarks.reshape(16, 2)
             landmarks[:, 0] = 1. - landmarks[:, 0]
-            tmp = np.copy(landmarks[0])
-            landmarks[0] = landmarks[1]
-            landmarks[1] = tmp
+            # tmp = np.copy(landmarks[0])
+            # landmarks[0] = landmarks[1]
+            # landmarks[1] = tmp
 
-            tmp = np.copy(landmarks[3])
-            landmarks[3] = landmarks[4]
-            landmarks[4] = tmp
+            # tmp = np.copy(landmarks[3])
+            # landmarks[3] = landmarks[4]
+            # landmarks[4] = tmp
 
         return {'img': image, 'landmarks': landmarks}
 
@@ -178,3 +178,4 @@ class RandomScale:
             landmarks = cv.transform(landmarks.reshape(1, 16, 2), rot_mat_l).reshape(16, 2)
 
         return {'img': image, 'landmarks': landmarks}
+

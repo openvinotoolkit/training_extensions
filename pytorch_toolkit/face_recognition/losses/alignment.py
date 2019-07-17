@@ -40,16 +40,16 @@ class AlignmentLoss(nn.Module):
 
     def forward(self, input_values, target):
         bs = input_values.shape[0]
+        target = torch.squeeze(target)
         loss = input_values - target
         n_points = loss.shape[1] // 2
         loss = loss.view(-1, n_points, 2)
 
         if self.core_func_type == 'l2':
             loss = torch.norm(loss, p=2, dim=2)
-            loss = loss.pow(2)
+            # loss = loss.pow(2)
             # eyes_dist = (torch.norm(target[:, 0:2] - target[:, 10:12], p=2, dim=1).reshape(-1)).pow_(2)
-            # eyes_dist = (torch.norm(target[:, 0:2] - target[:, 10:12], p=2, dim=1).reshape(-1))
-            # print(eyes_dist)
+            eyes_dist = (torch.norm(target[:, 0:2] - target[:, 10:12], p=2, dim=1).reshape(-1))
         elif self.core_func_type == 'l1':
             loss = torch.norm(loss, p=1, dim=2)
             eyes_dist = (torch.norm(target[:, 0:2] - target[:, 10:12], p=1, dim=1).reshape(-1))
@@ -69,6 +69,6 @@ class AlignmentLoss(nn.Module):
             loss = torch.mul(loss, self.weights)
             loss = torch.sum(loss, 1)
 
-        # loss = torch.div(loss, eyes_dist)
+        loss = torch.div(loss, eyes_dist)
         loss = torch.sum(loss)
         return loss / (2.*bs)

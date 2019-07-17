@@ -36,6 +36,7 @@ def evaluate(val_loader, model):
     for _, data in enumerate(tqdm(val_loader), 0):
         data, gt_landmarks = data['img'].cuda(), data['landmarks'].cuda()
         predicted_landmarks = model(data)
+        gt_landmarks = torch.squeeze(gt_landmarks)
         loss = predicted_landmarks - gt_landmarks
         items_num += loss.shape[0]
         n_points = loss.shape[1] // 2
