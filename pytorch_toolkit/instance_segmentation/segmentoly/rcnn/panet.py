@@ -18,6 +18,7 @@ import torch
 import torch.nn as nn
 
 from .base import FeatureExtractor, duplicate
+from .deformable_conv import ConvOffset2d
 from .group_norm import GroupNorm
 from ..utils.weights import xavier_fill, msra_fill, get_group_gn
 
@@ -36,7 +37,7 @@ class PANet(FeatureExtractor):
 
     def _init_weights(self):
         for m in self.modules():
-            if isinstance(m, (nn.Conv2d, nn.ConvTranspose2d)):
+            if isinstance(m, (nn.Conv2d, nn.ConvTranspose2d, ConvOffset2d)):
                 msra_fill(m.weight)
                 if hasattr(m, 'bias') and m.bias is not None:
                     nn.init.constant_(m.bias, 0)
@@ -126,6 +127,89 @@ class BottomUpPathAugmentation(PANet):
         # Apply max pooling to N5
         out.append(self.maxpool(out[-1]))
         return out
+
+
+class BottomUpPathAugmentationWithDeformConv(PANet):
+    """Feature bottom-up-path-augmentation where 2d convolutions 3x3 are replaced by
+    deformable convolutions with the same parameters (kernel_size, stride, padding, bias)
+    """
+    def __init__(self, output_levels, dims_in, scales_in, dim_out, group_norm, num_deformable_groups=1):
+        """
+        Initialization with the next parameters:
+        :param output_levels: number of levels (feature maps) from FPN
+        :param dims_in: number of channels in input feature maps
+        :param dim_out: number of channels in output feature maps
+        :param group_norm: if set, 2d convolutions are continued by group normalization layer
+        :param num_deformable_groups:
+        """
+        super().__init__(group_norm)
+        self.output_levels = output_levels
+        self.num_deformable_groups = num_deformable_groups
+
+        self.offset1 = nn.ModuleList()
+        self.conv1 = nn.ModuleList()
+        self.gn_relu1 = nn.ModuleList()
+
+        self.offset2 = nn.ModuleList()
+        self.conv2 = nn.ModuleList()
+        self.gn_relu2 = nn.ModuleList()
+
+        self.scales_in = scales_in
+        self.scales_out = scales_in
+        self.dims_in = dims_in
+        self.dim_out = dim_out
+        dims_out = dim_out
+        if not isinstance(dims_out, (tuple, list)):
+            dims_out = duplicate(dims_out, len(dims_in))
+        self.dims_out = dims_out
+
+        self.maxpool = nn.MaxPool2d(kernel_size=1, stride=2, padding=0)
+
+        deform_out_dim = self.num_deformable_groups * 2 * 3 * 3
+
+        for i in range(self.output_levels - 2):
+            # Conv1 block
+            self.offset1.append(nn.Conv2d(dims_in[i], deform_out_dim, kernel_size=3, stride=2, padding=1, bias=False))
+            self.conv1.append(ConvOffset2d(dims_in[i], dim_out, kernel_size=(3, 3), stride=2, padding=1,
+                                           num_deformable_groups=self.num_deformable_groups))
+            self.gn_relu1.append(self._gn_relu_block(dim_out))
+
+            # Conv2 block
+            self.offset2.append(nn.Conv2d(dims_in[i], deform_out_dim, kernel_size=3, stride=1, padding=1, bias=False))
+            self.conv2.append(ConvOffset2d(dims_in[i], dim_out, kernel_size=(3, 3), stride=1, padding=1,
+                                           num_deformable_groups=self.num_deformable_groups))
+            self.gn_relu2.append(self._gn_relu_block(dim_out))
+
+        self._init_weights()
+
+    def _init_weights(self):
+        super()._init_weights()
+        for i in range(self.output_levels - 2):
+            nn.init.constant_(self.offset1[i].weight, 0)
+            nn.init.constant_(self.offset2[i].weight, 0)
+
+    def forward(self, x):
+        """
+        :param x: (list) FPN output in order [P2, P3, P4, P5, P6]
+        :return: list [N2, N3, N4, N5, N6], where N2 == P2, N6 = max pooling from N5.
+                 Ni = ((Ni-1 -> offset1) -> conv1 -> ReLU + Pi) -> offset2 -> conv2 -> ReLU if 2 < i < 6
+        """
+        out = []
+        out.append(x[0])  # N2 = P2 from FPN
+        for i in range(self.output_levels - 2):  # Except 2 levels: P2 and P6
+            offset = self.offset1[i](out[-1])
+            out.append(self.conv1[i](out[-1], offset))
+            out[-1] = self.gn_relu1[i](out[-1])
+
+            out[-1] = out[-1] + x[i + 1]
+
+            offset = self.offset2[i](out[-1])
+            out[-1] = self.conv2[i](out[-1], offset)
+            out[-1] = self.gn_relu2[i](out[-1])
+        # Apply max pooling to N5
+        out.append(self.maxpool(out[-1]))
+        return out
+
 
 
 class BboxHead(PANet):

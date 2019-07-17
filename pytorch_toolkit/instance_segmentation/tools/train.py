@@ -156,7 +156,7 @@ def main(args):
 
     train_tool.training_data_loader = torch.utils.data.DataLoader(
         train_dataset,
-        batch_size=args.batch_size,
+        batch_size=args.batch_size // train_tool.virtual_iter_size,
         num_workers=args.num_workers,
         shuffle=True,
         collate_fn=collate

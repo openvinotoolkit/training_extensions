@@ -38,6 +38,7 @@ if torch.cuda.is_available() and CUDA_HOME is not None:
     sources_gpu = [
         osp.join(extensions_dir, 'nms', 'gpu', 'nms_kernel.cu'),
         osp.join(extensions_dir, 'roi_align', 'gpu', 'roi_align_kernel.cu'),
+        osp.join(extensions_dir, 'deformable_conv', 'deform_conv_kernel.cu'),
     ]
     extension = CUDAExtension
     sources += sources_gpu

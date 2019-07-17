@@ -18,10 +18,14 @@
 
 #include "nms/nms.h"
 #include "roi_align/roi_align.h"
+#include "deformable_conv/deform_conv_kernel.h"
 
 
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("nms", &nms, "NMS");
   m.def("roi_align_forward", &roi_align_forward, "roi_align_forward");
   m.def("roi_align_backward", &roi_align_backward, "roi_align_backward");
+  m.def("deform_conv_forward_cuda", &deform_conv_forward_cuda, "deform_conv_forward_cuda");
+  m.def("deform_conv_backward_input_cuda", &deform_conv_backward_input_cuda, "deform_conv_backward_input_cuda");
+  m.def("deform_conv_backward_parameters_cuda", &deform_conv_backward_parameters_cuda, "deform_conv_backward_parameters_cuda");
 }
