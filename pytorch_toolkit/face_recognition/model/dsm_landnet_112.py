@@ -2,13 +2,13 @@ import torch
 import torch.nn as nn
 import math
 
-# from .common import ModelInterface
+from .common import ModelInterface
 
 
-class DsmNet(nn.Module):
+class DsmNet112(ModelInterface):
     """Facial landmarks localization network"""
     def __init__(self):
-        super(DsmNet, self).__init__()
+        super(DsmNet112, self).__init__()
         self.bn_first = nn.BatchNorm2d(3)
         activation = nn.ReLU
         softmax = nn.Softmax2d
@@ -307,11 +307,11 @@ class DsmNet(nn.Module):
                     m.bias.data.zero_()
 
 
-def main():
-    input = torch.randint(0, 255, (2, 3, 112, 112), dtype=torch.float32)
-    print(input)
-    model = DsmNet()
-    out = model.forward(input)
-    print(out.shape)
+# def main():
+#     input = torch.randint(0, 255, (2, 3, 112, 112), dtype=torch.float32)
+#     print(input)
+#     model = DsmNet()
+#     out = model.forward(input)
+#     print(out.shape)
 
-main()
+# main()

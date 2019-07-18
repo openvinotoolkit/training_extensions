@@ -42,17 +42,17 @@ def train(args):
     val_dataset = IBUG(args.train, args.t_land, test=True)
 
     log.info('Use alignment for the train data')
-    # dataset.transform = transforms.Compose([
-    #                                         landmarks_augmentation16.Rescale((120, 120)),
-    #                                         landmarks_augmentation16.Blur(k=3, p=.2),
-    #                                         landmarks_augmentation16.HorizontalFlip(p=.5),
-    #                                         landmarks_augmentation16.RandomRotate(30),
-    #                                         landmarks_augmentation16.RandomScale(.8, .9, p=.4),
-    #                                         landmarks_augmentation16.RandomCrop(112),
-    #                                         landmarks_augmentation16.ToTensor(switch_rb=True)])
-    dataset.transform = transforms.Compose([landmarks_augmentation16.Rescale((112, 112)),
+    dataset.transform = transforms.Compose([
+                                            landmarks_augmentation16.Rescale((120, 120)),
+                                            landmarks_augmentation16.Blur(k=3, p=.2),
                                             landmarks_augmentation16.HorizontalFlip(p=.5),
-                                           landmarks_augmentation16.ToTensor(switch_rb=True)])
+                                            landmarks_augmentation16.RandomRotate(30),
+                                            landmarks_augmentation16.RandomScale(.8, .9, p=.4),
+                                            landmarks_augmentation16.RandomCrop(112),
+                                            landmarks_augmentation16.ToTensor(switch_rb=True)])
+    # dataset.transform = transforms.Compose([landmarks_augmentation16.Rescale((112, 112)),
+    #                                         landmarks_augmentation16.HorizontalFlip(p=.5),
+    #                                        landmarks_augmentation16.ToTensor(switch_rb=True)])
     val_dataset.transform = transforms.Compose([landmarks_augmentation16.Rescale((112, 112)),
                                                 landmarks_augmentation16.ToTensor(switch_rb=True)])
 
@@ -66,9 +66,9 @@ def train(args):
     if args.snap_to_resume is not None:
         log.info('Resuming snapshot ' + args.snap_to_resume + ' ...')
         model = load_model_state(model, args.snap_to_resume, args.device, eval_state=False)
-        model = torch.nn.DataParallel(model, device_ids=[0, 1])
-        cudnn.enabled = False
-        cudnn.benchmark = False
+        # model = torch.nn.DataParallel(model, device_ids=[0, 1])
+        cudnn.enabled = True
+        cudnn.benchmark = True
     # else:
     #     model = torch.nn.DataParallel(model, device_ids=[0])
     #     model.cuda()
@@ -77,15 +77,15 @@ def train(args):
     #     cudnn.benchmark = True
     else:
         model.cuda(args.device)
-        model = torch.nn.DataParallel(model, device_ids=[0, 1])
+        # model = torch.nn.DataParallel(model, device_ids=[0, 1])
         model.train()
-        cudnn.enabled = False
-        cudnn.benchmark = False
+        cudnn.enabled = True
+        cudnn.benchmark = True
 
     log.info('Face landmarks model:')
     log.info(model)
 
-    criterion = AlignmentLoss('l2')
+    criterion = AlignmentLoss('l1')
     # optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
     optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
     scheduler = optim.lr_scheduler.MultiStepLR(optimizer, drops_schedule)
@@ -120,10 +120,10 @@ def train(args):
 
                 model.eval()
                 log.info('Evaluating Snapshot: ' + snapshot_name)
-                avg_err, per_point_avg_err, failures_rate = evaluate(train_loader, model)
-                weights = per_point_avg_err / np.sum(per_point_avg_err)
-                criterion.set_weights(weights)
-                log.info(str(weights))
+                avg_err, per_point_avg_err, failures_rate = evaluate(val_loader, model)
+                # weights = per_point_avg_err / np.sum(per_point_avg_err)
+                # criterion.set_weights(weights)
+                # log.info(str(weights))
                 log.info('Avg train error: {}'.format(avg_err))
                 log.info('Train failure rate: {}'.format(failures_rate))
                 writer.add_scalar('Quality/Avg_error', avg_err, iteration)
@@ -138,15 +138,15 @@ def main():
     parser.add_argument('--train_list', dest='t_list', required=False, type=str, help='Path to train data image list.')
     parser.add_argument('--train_landmarks', default='', dest='t_land', required=False, type=str,
                         help='Path to landmarks for the train images.')
-    parser.add_argument('--train_batch_size', type=int, default=200, help='Train batch size.')
+    parser.add_argument('--train_batch_size', type=int, default=110, help='Train batch size.')
     parser.add_argument('--epoch_total_num', type=int, default=2000, help='Number of epochs to train.')
-    parser.add_argument('--lr', type=float, default=0.0001, help='Learning rate.')
+    parser.add_argument('--lr', type=float, default=0.00005, help='Learning rate.')
     parser.add_argument('--momentum', type=float, default=0.9, help='Momentum.')
     parser.add_argument('--val_step', type=int, default=500, help='Evaluate model each val_step during each epoch.')
     parser.add_argument('--weight_decay', type=float, default=0.000001, help='Weight decay.')
     parser.add_argument('--device', '-d', default=0, type=int)
     parser.add_argument('--snap_folder', type=str, default='./snapshots/', help='Folder to save snapshots.')
-    parser.add_argument('--snap_prefix', type=str, default='LandNet', help='Prefix for snapshots.')
+    parser.add_argument('--snap_prefix', type=str, default='LandNet_l1', help='Prefix for snapshots.')
     parser.add_argument('--snap_to_resume', type=str, default=None, help='Snapshot to resume.')
     parser.add_argument('--dataset', choices=['vgg', 'celeb', 'ngd', 'ibug'], type=str, default='ibug', help='Dataset.')
     arguments = parser.parse_args()

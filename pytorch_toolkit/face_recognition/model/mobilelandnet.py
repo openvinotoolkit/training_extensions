@@ -65,18 +65,19 @@ class MobileLandNet(ModelInterface):
         self.conv2 = nn.Sequential(nn.Conv2d(2*in_channel_num, embedding_size, 7, 1, 0, bias=False),
                                    nn.BatchNorm2d(embedding_size),
                                    nn.ReLU())
-        self.fc_loc = nn.Sequential(nn.Linear(self.fc_channel_num, 32),
-                                    nn.Sigmoid())
-
+        self.fc_loc = nn.Linear(self.fc_channel_num, 32)
         self.init_weights()
 
     def forward(self, x):
         s1 = self.s1(x)
         s2 = self.conv1(s1)
         s3 = self.conv2(s2)
-        s1 = s1.view(s1.size(0), -1)
-        s2 = s2.view(s2.size(0), -1)
-        s3 = s3.view(s3.size(0), -1)
+        # s1 = s1.view(s1.size(0), -1)
+        # s2 = s2.view(s2.size(0), -1)
+        # s3 = s3.view(s3.size(0), -1)
+        s1 = torch.flatten(s1, start_dim=1)
+        s2 = torch.flatten(s2, start_dim=1)
+        s3 = torch.flatten(s3, start_dim=1)
         out = torch.cat((s1, s2, s3), dim=1)
         out = self.fc_loc(out)
         return out

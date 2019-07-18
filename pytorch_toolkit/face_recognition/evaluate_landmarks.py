@@ -42,10 +42,11 @@ def evaluate(val_loader, model):
         n_points = loss.shape[1] // 2
         per_point_error = loss.data.view(-1, n_points, 2)
         per_point_error = torch.norm(per_point_error, p=2, dim=2)
-        # print(per_point_error.shape)
         avg_error = torch.sum(per_point_error, 1) / n_points
-        # print(avg_error)
-        eyes_dist = torch.norm(gt_landmarks[:, 0:2] - gt_landmarks[:, 10:12], p=2, dim=1).reshape(-1)
+     
+        
+        eyes_dist = torch.norm(gt_landmarks[:, 0:2] - gt_landmarks[:, 18:20], p=2, dim=1).reshape(-1)
+        
 
 
         per_point_error = torch.div(per_point_error, eyes_dist.view(-1, 1))
@@ -53,7 +54,7 @@ def evaluate(val_loader, model):
 
         avg_error = torch.div(avg_error, eyes_dist)
         # print(avg_error)
-        failures_num += torch.nonzero(avg_error > 0.2).shape[0]
+        failures_num += torch.nonzero(avg_error > 0.1).shape[0]
         total_loss += torch.sum(avg_error)
 
     return total_loss / items_num, (total_pp_error / items_num).data.cpu().numpy(), float(failures_num) / items_num
