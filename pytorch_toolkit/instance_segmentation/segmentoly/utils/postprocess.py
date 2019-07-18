@@ -35,6 +35,13 @@ def postprocess_batch(batch_ids, scores, classes, boxes, raw_cls_masks,
     if batch_ids is None:
         return scores_all, classes_all, boxes_all, masks_all
 
+    scale_x = im_scale_x
+    scale_y = im_scale_y
+    if im_scale is not None:
+        scale_x = im_scale
+        scale_y = im_scale
+    assert len(scale_x) == len(scale_y)
+
     batch_ids = to_numpy(batch_ids)
 
     num_objs_per_batch = []
@@ -55,14 +62,16 @@ def postprocess_batch(batch_ids, scores, classes, boxes, raw_cls_masks,
     for i in range(batch_size):
         scores_all[i], classes_all[i], boxes_all[i], masks_all[i] = \
             postprocess(scores_all[i], classes_all[i], boxes_all[i], raw_masks_all[i],
-                        im_h[i], im_w[i], im_scale[i], full_image_masks, encode_masks,
+                        im_h[i], im_w[i], scale_y[i], scale_x[i], None,
+                        full_image_masks, encode_masks,
                         confidence_threshold)
 
     return scores_all, classes_all, boxes_all, masks_all
 
 
 def postprocess(scores, classes, boxes, raw_cls_masks,
-                im_h, im_w, im_scale, full_image_masks=True, encode_masks=False,
+                im_h, im_w, im_scale_y=None, im_scale_x=None, im_scale=None,
+                full_image_masks=True, encode_masks=False,
                 confidence_threshold=0.0):
     no_detections = (np.empty((0, ), dtype=np.float32), np.empty((0, ), dtype=np.float32),\
                      np.empty((0, 4), dtype=np.float32), [])
@@ -70,6 +79,9 @@ def postprocess(scores, classes, boxes, raw_cls_masks,
         return no_detections
 
     scale = im_scale
+    if scale is None:
+        assert (im_scale_x is not None) and (im_scale_y is not None)
+        scale = [im_scale_x, im_scale_y, im_scale_x, im_scale_y]
 
     scores = to_numpy(scores)
     classes = to_numpy(classes)

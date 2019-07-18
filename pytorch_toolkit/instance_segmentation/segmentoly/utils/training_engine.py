@@ -250,8 +250,10 @@ class DefaultMaskRCNNTrainingEngine(TrainingEngine):
             scores, classes, boxes, masks = postprocess(scores, classes, boxes, masks,
                                                         im_h=meta['original_size'][0],
                                                         im_w=meta['original_size'][1],
-                                                        im_scale=meta['processed_size'][0] /
-                                                                 meta['original_size'][0],
+                                                        im_scale_y=meta['processed_size'][0] /
+                                                                   meta['original_size'][0],
+                                                        im_scale_x=meta['processed_size'][1] /
+                                                                   meta['original_size'][1],
                                                         full_image_masks=True, encode_masks=True)
             boxes_all.append(boxes)
             masks_all.append(masks)
