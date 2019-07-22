@@ -1,0 +1,6 @@
+tensorflow==2.0.0.a0
+tqdm==4.31.1
+numpy==1.16.2
+fpdf==1.7.2
+pygit2==0.28.2
+scikit_learn==0.21.2

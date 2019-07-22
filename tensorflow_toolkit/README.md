@@ -43,3 +43,4 @@ them for predictions.
 * [Person Vehicle Bike Detector](person_vehicle_bike_detector)
 * [SSD Object Detection](ssd_detector)
 * [Vehicle Attributes](vehicle_attributes)
+* [Textile Detection and Recognition](textile)
