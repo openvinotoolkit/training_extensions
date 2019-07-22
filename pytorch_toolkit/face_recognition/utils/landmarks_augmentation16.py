@@ -14,6 +14,7 @@
 import cv2 as cv
 import numpy as np
 import torch
+import math
 
 
 class Rescale:
@@ -69,7 +70,7 @@ class RandomCrop:
 
 
 class HorizontalFlip:
-    """Flips an input image and landmarks horizontally with a given probability"""
+    """Flips an input image and landmarks horizontally with a given p"""
     def __init__(self, p=.5):
         self.p = p
 
@@ -92,7 +93,7 @@ class HorizontalFlip:
 
 
 class Blur:
-    """Blurs an image with the given sigma and probability"""
+    """Blurs an image with the given sigma and p"""
     def __init__(self, p, k):
         self.p = p
         assert k % 2 == 1
@@ -179,3 +180,69 @@ class RandomScale:
 
         return {'img': image, 'landmarks': landmarks}
 
+
+class RandomBlack:
+    def __init__(self, p=.5):
+        self.p = p
+
+    def __call__(self, sample):
+        image, landmarks = sample['img'], sample['landmarks']
+        if float(torch.FloatTensor(1).uniform_()) < self.p:
+            h, w = image.shape[:2]
+            block_h, block_w = int(0.2*h), int(0.2*w)
+
+            top = np.random.randint(0, h - block_h)
+            left = np.random.randint(0, w - block_w)
+
+            image[top: top + block_h, left: left + block_w] = 0
+
+        return {'img': image, 'landmarks': landmarks}
+
+class RandomErasing:
+    """ Randomly selects a rectangle region in an image and erases its pixels.
+        'Random Erasing Data Augmentation' by Zhong et al.
+        See https://arxiv.org/pdf/1708.04896.pdf
+        This variant of RandomErasing is intended to be applied to either a batch
+        or single image tensor after it has been normalized by dataset mean and std.
+    Args:
+         p: The p that the Random Erasing operation will be performed.
+         sl: Minimum proportion of erased area against input image.
+         sh: Maximum proportion of erased area against input image.`
+         min_aspect: Minimum aspect ratio of erased area.
+         mode: pixel color mode, one of 'const', 'rand', or 'pixel'
+            'const' - erase block is constant color of 0 for all channels
+            'rand'  - erase block is same per-cannel random (normal) color
+            'pixel' - erase block is per-pixel random (normal) color
+    """
+ 
+    def __init__(self, p=0.5, min_aspect=0.3,mode='const'):
+        self.p = p
+        self.min_aspect = min_aspect
+        mode = mode.lower()
+        self.rand_color = False
+        self.per_pixel = False
+        if mode == 'rand':
+            self.rand_color = True  # per block random normal
+        elif mode == 'pixel':
+            self.per_pixel = True  # per pixel random normal
+        else:
+            assert not mode or mode == 'const'        
+
+    def __call__(self, sample):
+        
+        image, landmarks = sample['img'], sample['landmarks']
+        img_h, img_w, chan = image.shape
+        if float(torch.FloatTensor(1).uniform_()) < self.p:
+            area = img_h * img_w
+            for attempt in range(100):
+                target_area = 0.2 * area
+                aspect_ratio = np.random.uniform(self.min_aspect, 1 / self.min_aspect)
+                h = int(round(math.sqrt(target_area * aspect_ratio)))
+                w = int(round(math.sqrt(target_area / aspect_ratio)))
+                if w < img_w and h < img_h:
+                    top = np.random.randint(0, img_h - h)
+                    left = np.random.randint(0, img_w - w)
+                    image[top:top + h, left:left + w] = 0
+                    break
+
+        return {'img': image, 'landmarks': landmarks}

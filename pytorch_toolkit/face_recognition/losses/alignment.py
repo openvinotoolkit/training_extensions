@@ -40,7 +40,7 @@ class AlignmentLoss(nn.Module):
 
     def forward(self, input_values, target):
         bs = input_values.shape[0]
-        target = torch.squeeze(target)
+        # target = torch.squeeze(target)
         loss = input_values - target
         n_points = loss.shape[1] // 2
         loss = loss.view(-1, n_points, 2)

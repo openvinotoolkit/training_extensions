@@ -22,15 +22,15 @@ def draw_landmark_point(image, points):
         cv2.circle(image, (int(point[0]), int(
             point[1])), 3, (0, 255, 0), -1, cv2.LINE_AA)
 def test():
-    dataset = IBUG(data_root, ld_root)
+    dataset = IBUG(data_root, ld_root, test=True)
 
     dataset.transform = transforms.Compose([landmarks_augmentation16.Rescale((112, 112)),
                                         landmarks_augmentation16.ToTensor(switch_rb=True)])
     val_loader = DataLoader(dataset, batch_size=1, num_workers=4, shuffle=False)
     image_names = open(os.path.join(ld_root, 'test.txt'), 'r').read().splitlines()
     image_list = [i + '.jpg' for i in image_names]
-    snap_name = os.path.join(os.getcwd(),'snapshots', 'DsmNet112_aug_25500.pt')
-    model = models_landmarks['dsmnet112']()
+    snap_name = os.path.join(os.getcwd(),'snapshots', 'LandNet_50500.pt')
+    model = models_landmarks['mobilelandnet']()
     load_model_state(model, snap_name, -1, eval_state=True)
     for i, data in enumerate(val_loader, 0):
         data, gt_landmarks = data['img'], data['landmarks']
@@ -38,7 +38,6 @@ def test():
         pts = np.reshape(predicted_landmarks.data.numpy(), (-1, 2))
         marks = pts * PREVIEW_SIZE
         img = cv2.imread(os.path.join(data_root,image_list[i]))
-        cv2.imshow("result", img)
         img = cv2.resize(img, (PREVIEW_SIZE, PREVIEW_SIZE))
         draw_landmark_point(img, marks)
         cv2.imshow("result", img)
@@ -46,12 +45,11 @@ def test():
             exit()
 def test_trans():
     dataset = IBUG(data_root, ld_root, test=True)
-    dataset.transform = transforms.Compose([landmarks_augmentation16.RandomScale(.8, .9, p=.4),
+    dataset.transform = transforms.Compose([landmarks_augmentation16.RandomErasing(p=1.0),
                                             landmarks_augmentation16.Rescale((112, 112)),
                                             landmarks_augmentation16.ToTensor(switch_rb=True)])
     image_names = open(os.path.join(ld_root, 'test.txt'), 'r').read().splitlines()
     image_list = [i + '.jpg' for i in image_names]
-    unloader = transforms.ToPILImage()
     val_loader = DataLoader(dataset, batch_size=1, num_workers=4, shuffle=False)
     for i, data in enumerate(val_loader, 0):
         data, gt_landmarks = data['img'], data['landmarks']
@@ -68,8 +66,28 @@ def test_trans():
         if cv2.waitKey() == 27:
             exit()
 
+def test_image():
+    root_dir = "/home/share/dsm_dataset/faces"
+    snap_name = os.path.join(os.getcwd(),'snapshots', 'LandNet_50500.pt')
+    model = models_landmarks['mobilelandnet']()
+    load_model_state(model, snap_name, -1, eval_state=True)
+    for root, _, files in os.walk(root_dir):
+        for file in files:
+            path = os.path.join(root, file)
+            img = cv2.imread(path, cv2.IMREAD_COLOR)
+            img_resized = cv2.resize(img, (112, 112)).transpose(2, 0 ,1)
+            data = (torch.from_numpy(img_resized).type(torch.FloatTensor) / 255).unsqueeze(0)
+            predicted_landmarks = model(data)
+            pts = np.reshape(predicted_landmarks.data.numpy(), (-1, 2))
+            marks = pts * PREVIEW_SIZE
+            img = cv2.resize(img, (PREVIEW_SIZE, PREVIEW_SIZE))
+            draw_landmark_point(img, marks)
+            cv2.imshow("result", img)
+            if cv2.waitKey() == 27:
+                exit()
+
 def main():
-    test()
+    test_image()
 
 if __name__ == '__main__':
     main()

@@ -12,6 +12,9 @@
 """
 
 import argparse
+from collections import OrderedDict
+import csv
+from tensorboardX import SummaryWriter
 
 import glog as log
 import torch
@@ -20,7 +23,7 @@ from torch.utils.data import DataLoader
 from torchvision.transforms import transforms as t
 from tqdm import tqdm
 
-from datasets import VGGFace2, CelebA, NDG
+from datasets import IBUG
 
 from model.common import models_landmarks
 from utils.landmarks_augmentation import Rescale, ToTensor
@@ -36,7 +39,7 @@ def evaluate(val_loader, model):
     for _, data in enumerate(tqdm(val_loader), 0):
         data, gt_landmarks = data['img'].cuda(), data['landmarks'].cuda()
         predicted_landmarks = model(data)
-        gt_landmarks = torch.squeeze(gt_landmarks)
+        # gt_landmarks = gt_landmarks.view(-1, 32)
         loss = predicted_landmarks - gt_landmarks
         items_num += loss.shape[0]
         n_points = loss.shape[1] // 2
@@ -44,11 +47,8 @@ def evaluate(val_loader, model):
         per_point_error = torch.norm(per_point_error, p=2, dim=2)
         avg_error = torch.sum(per_point_error, 1) / n_points
      
-        
         eyes_dist = torch.norm(gt_landmarks[:, 0:2] - gt_landmarks[:, 18:20], p=2, dim=1).reshape(-1)
         
-
-
         per_point_error = torch.div(per_point_error, eyes_dist.view(-1, 1))
         total_pp_error += torch.sum(per_point_error, 0)
 
@@ -59,6 +59,38 @@ def evaluate(val_loader, model):
 
     return total_loss / items_num, (total_pp_error / items_num).data.cpu().numpy(), float(failures_num) / items_num
 
+def start_evaluation_300w(args):
+
+    dataset = IBUG(args.val, args.v_land, test=True)
+    dataset.transform = t.Compose([Rescale((112, 112)), ToTensor(switch_rb=True)])
+    val_loader = DataLoader(dataset, batch_size=args.val_batch_size, num_workers=4, shuffle=False, pin_memory=True)
+    writer = SummaryWriter('./logs_landm/LandNet-R')
+    for i in range(0, 17501, 350):
+        model = models_landmarks['mobilelandnet']()
+        # assert args.snapshot is not None
+        log.info('Testing snapshot ' + "./snapshots/LandNet_{}.pt".format(str(i)) + ' ...')
+        model = load_model_state(model, "./snapshots/LandNet-R_{}.pt".format(str(i)), args.device, eval_state=True)
+        model.eval()
+        cudnn.benchmark = False
+        model = torch.nn.DataParallel(model)
+    
+        log.info('Face landmarks model:')
+        log.info(model)
+
+        avg_err, per_point_avg_err, failures_rate = evaluate(val_loader, model)
+        log.info('Avg RMSE error: {}'.format(avg_err))
+        log.info('Per landmark RMSE error: {}'.format(per_point_avg_err))
+        log.info('Failure rate: {}'.format(failures_rate))
+        # info[i] = (avg_err.cpu().item(), failures_rate)
+        writer.add_scalar('Quality/Avg_error', avg_err, i)
+        writer.add_scalar('Quality/Failure_rate', failures_rate, i)
+    # print(info)
+    # write_csv(info)
+
+def write_csv(dic):
+    with open("result.csv", "w") as outfile:
+        writer = csv.writer(outfile)
+        writer.writerow(dic)
 
 def start_evaluation(args):
     """Launches the evaluation process"""
@@ -84,7 +116,7 @@ def start_evaluation(args):
     model = load_model_state(model, args.snapshot, args.device, eval_state=True)
     model.eval()
     cudnn.benchmark = True
-    model = torch.nn.DataParallel(model, device_ids=[args.device], )
+    model = torch.nn.DataParallel(model, device_ids=[args.device])
 
     log.info('Face landmarks model:')
     log.info(model)
@@ -110,7 +142,8 @@ def main():
     arguments = parser.parse_args()
 
     with torch.cuda.device(arguments.device):
-        start_evaluation(arguments)
+        # start_evaluation(arguments)
+        start_evaluation_300w(arguments)
 
 if __name__ == '__main__':
     main()
