@@ -72,6 +72,8 @@ To view all arguments available to configure run
 $ python3 tools/train.py --help
 ```
 
+Instructions for training models from OpenVINO Open Model Zoo can be found in [OpenVINO.md](OpenVINO.md)
+
 ## Demo
 
 `tools/demo.py` script implements a live demo application, that runs a given
