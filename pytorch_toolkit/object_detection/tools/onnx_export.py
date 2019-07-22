@@ -1,3 +1,20 @@
+#!/usr/bin/env python3
+#
+# Copyright (C) 2019 Intel Corporation
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+
+# pylint: disable=all
 import argparse
 
 import numpy as np
@@ -50,8 +67,7 @@ def export_forward_ssd_head(self, cls_scores, bbox_preds, cfg, rescale,
                                           feats[i],
                                           img_tensor, self.target_stds))
     anchors = torch.cat(anchors, 2)
-    cls_scores, bbox_preds = self._prepare_cls_scores_bbox_preds(
-                                                cls_scores, bbox_preds)
+    cls_scores, bbox_preds = self._prepare_cls_scores_bbox_preds(cls_scores, bbox_preds)
 
     return DetectionOutput.apply(cls_scores, bbox_preds, img_metas, cfg,
                                  rescale, anchors, self.cls_out_channels,
@@ -79,8 +95,7 @@ def prepare_cls_scores_bbox_preds_ssd_head(self, cls_scores, bbox_preds):
     return cls_scores, bbox_preds
 
 
-def get_bboxes_ssd_head(self, cls_scores, bbox_preds, img_metas, cfg,
-               rescale=False):
+def get_bboxes_ssd_head(self, cls_scores, bbox_preds, img_metas, cfg, rescale=False):
     assert len(cls_scores) == len(bbox_preds)
     num_levels = len(cls_scores)
     mlvl_anchors = [
@@ -90,7 +105,7 @@ def get_bboxes_ssd_head(self, cls_scores, bbox_preds, img_metas, cfg,
     ]
     mlvl_anchors = torch.cat(mlvl_anchors, 0)
     cls_scores, bbox_preds = self._prepare_cls_scores_bbox_preds(
-                                                    cls_scores, bbox_preds)
+        cls_scores, bbox_preds)
     bboxes_list = get_proposals(img_metas, cls_scores, bbox_preds,
                                 mlvl_anchors, cfg, rescale,
                                 self.cls_out_channels,
@@ -99,8 +114,7 @@ def get_bboxes_ssd_head(self, cls_scores, bbox_preds, img_metas, cfg,
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='MMDet onnx exporter for \
-                                                  SSD detector')
+    parser = argparse.ArgumentParser(description='MMDet onnx exporter for SSD detector')
     parser.add_argument('config', help='config file path')
     parser.add_argument('checkpoint', help='checkpoint file')
     parser.add_argument('output', help='onnx file')
@@ -113,15 +127,14 @@ def main():
 
     model = init_detector(args.config, args.checkpoint)
     cfg = model.cfg
-    assert getattr(detectors, cfg.model['type']) is \
-        detectors.SingleStageDetector
+    assert getattr(detectors, cfg.model['type']) is detectors.SingleStageDetector
     model = MMDataParallel(model, device_ids=[0])
 
     batch = torch.FloatTensor(1, 3, cfg.input_size, cfg.input_size).cuda()
     input_shape = (cfg.input_size, cfg.input_size, 3)
     scale = np.array([1, 1, 1, 1], dtype=np.float32)
-    data = dict(img=batch, img_meta=[{'img_shape': input_shape,
-                                      'scale_factor': scale}])
+    data = dict(img=batch, img_meta=[{'img_shape': input_shape, 'scale_factor': scale}])
+
     model.eval()
     model.module.onnx_export = onnx_export.__get__(model.module)
     model.module.forward = forward.__get__(model.module)

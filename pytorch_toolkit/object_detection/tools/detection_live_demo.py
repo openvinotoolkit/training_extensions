@@ -1,3 +1,19 @@
+#!/usr/bin/env python3
+#
+# Copyright (C) 2019 Intel Corporation
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+
 import argparse
 import cv2 as cv
 from mmdet.apis import inference_detector, init_detector
@@ -18,7 +34,7 @@ def decode_detections(detections, conf_t=0.5):
 
 def draw_detections(frame, detections, class_name):
     """Draws detections and labels"""
-    for i, rect in enumerate(detections):
+    for rect in detections:
         left, top, right, bottom = rect[0]
         cv.rectangle(frame, (left, top), (right, bottom),
                      (0, 255, 0), thickness=2)
