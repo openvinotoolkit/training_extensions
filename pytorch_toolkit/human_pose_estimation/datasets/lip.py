@@ -25,19 +25,6 @@ class LipTrainDataset(Dataset):
     def __getitem__(self, idx):
         tokens = self._labels[idx].split(',')
         image = cv2.imread(os.path.join(self._dataset_folder, 'TrainVal_images', 'train_images', tokens[0]), cv2.IMREAD_COLOR)
-        h, w, c = image.shape
-        if random.random() > 0.5:
-            center_x = random.randint(w//3, w-1-w//3)
-            center_y = random.randint(h//3, h-1-h//3)
-            percentage = 0.3
-            kpt = [
-                [center_x - random.randint(1, int(w*percentage)), center_y - random.randint(1, int(h*percentage))],
-                [center_x + random.randint(1, int(w*percentage)), center_y - random.randint(1, int(h*percentage))],
-                [center_x + random.randint(1, int(w*percentage)), center_y + random.randint(1, int(h*percentage))],
-                [center_x - random.randint(1, int(w*percentage)), center_y + random.randint(1, int(h*percentage))]
-                ]
-            cv2.fillConvexPoly(image, np.array(kpt, dtype=np.int32), (128, 128, 128))
-
         keypoints = np.ones(LipTrainDataset.num_keypoints*3, dtype=np.float32) * -1
         for id in range(keypoints.shape[0]//3):
             if tokens[1 + id*3] != 'nan':
