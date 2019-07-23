@@ -14,20 +14,18 @@ directories `WIDER_train` and `WIDER_val`. Also annotation lists `val.txt` and `
 The directory should be like this:
 
 ```
-
 data
-├── WIDERFace
+└── WIDERFace
     ├── WIDER_train
     │   ├──0--Parade
     │   ├── ...
-    │   ├── Annotations
+    │   └── Annotations
     ├── WIDER_val
     │   ├──0--Parade
     │   ├── ...
-    │   ├── Annotations
+    │   └── Annotations
     ├── val.txt
-    ├── train.txt
-
+    └── train.txt
 ```
 
 ## Training
