@@ -32,6 +32,10 @@ inference.
   * [Face recognition](pytorch_toolkit/face_recognition)
   * [Human pose estimation](pytorch_toolkit/human_pose_estimation)
   * [Instance segmentation](pytorch_toolkit/instance_segmentation)
+  * [Object Detection](pytorch_toolkit/object_detection)
+    - [Face Detection](pytorch_toolkit/object_detection/face_detection.md)
+    - [Person Vehicle Bike Detector](pytorch_toolkit/object_detection/person_vehicle_bike_detection.md)
+  * [Segmentation of thoracic organs](pytorch_toolkit/segthor)
   * [Super resolution](pytorch_toolkit/super_resolution)
 
 * [TensorFlow](tensorflow_toolkit)

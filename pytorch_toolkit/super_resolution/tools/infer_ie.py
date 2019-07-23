@@ -69,7 +69,7 @@ def main():
     if image.shape[0] != ih or image.shape[1] != iw:
         image = image[0:ih, 0:iw]
 
-    cubic = cv2.resize(image, tuple(inputs[1][1][2:]), interpolation=cv2.INTER_CUBIC)
+    cubic = cv2.resize(image, (inputs[1][1][3], inputs[1][1][2]), interpolation=cv2.INTER_CUBIC)
 
     blob1 = image_to_blob(image, (inputs[0][1]))
     blob2 = image_to_blob(cubic, (inputs[1][1]))

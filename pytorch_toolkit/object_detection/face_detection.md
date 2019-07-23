@@ -5,10 +5,8 @@ This repository contains training scripts for lightweight SSD-based face detecto
 
 ## Prerequisites
 
-1. Download mmdetection submodule:
-  `git submodule update --init --recommend-shallow ../../external/mmdetection`
-2. Download the [WIDER Face](http://shuoyang1213.me/WIDERFACE/) and unpack it to `data` folder.
-3. Annotation in the VOC format can be found in this
+1. Download the [WIDER Face](http://shuoyang1213.me/WIDERFACE/) and unpack it to `data` folder.
+2. Annotation in the VOC format can be found in this
 [repo](https://github.com/sovrasov/wider-face-pascal-voc-annotations.git). Move the annotation files from
 `WIDER_train_annotations` and `WIDER_val_annotations` folders to the `Annotation` folders inside the corresponding
 directories `WIDER_train` and `WIDER_val`. Also annotation lists `val.txt` and `train.txt` should be copied to
@@ -16,21 +14,18 @@ directories `WIDER_train` and `WIDER_val`. Also annotation lists `val.txt` and `
 The directory should be like this:
 
 ```
-object_detection
-├── tools
-├── data
-│   ├── WIDERFace
-│   │   ├── WIDER_train
-│   |   │   ├──0--Parade
-│   |   │   ├── ...
-│   |   │   ├── Annotations
-│   │   ├── WIDER_val
-│   |   │   ├──0--Parade
-│   |   │   ├── ...
-│   |   │   ├── Annotations
-│   │   ├── val.txt
-│   │   ├── train.txt
-
+data
+└── WIDERFace
+    ├── WIDER_train
+    │   ├──0--Parade
+    │   ├── ...
+    │   └── Annotations
+    ├── WIDER_val
+    │   ├──0--Parade
+    │   ├── ...
+    │   └── Annotations
+    ├── val.txt
+    └── train.txt
 ```
 
 ## Training
@@ -40,7 +35,7 @@ object_detection
 2. To train the detector on a single GPU run in terminal:
   ```bash
   python3 ../../external/mmdetection/tools/train.py \
-    ../../external/mmdetection/configs/wider_face/mobilenetv2_tiny_ssd300_wider_face.py
+  configs/mobilenetv2_tiny_ssd300_wider_face.py
   ```
 
 
@@ -58,7 +53,7 @@ object_detection
   ```bash
   python3 ../../external/mmdetection/tools/voc_eval.py    \
     result.pkl    \
-    ../../external/mmdetection/configs/wider_face/mobilenetv2_tiny_ssd300_wider_face.py
+    configs/mobilenetv2_tiny_ssd300_wider_face.py
   ```
   One should observe 0.305 AP on validation set. For more detailed results and comparison with vanilla SSD300 see `../../external/mmdetection/configs/wider_face/README.md`.
 
@@ -67,7 +62,7 @@ object_detection
 1. Convert PyTorch model to ONNX format: run script in terminal
   ```bash
   python3 tools/onnx_export.py \
-        ../../external/mmdetection/configs/wider_face/mobilenetv2_tiny_ssd300_wider_face.py
+        configs/mobilenetv2_tiny_ssd300_wider_face.py
         <CHECKPOINT> \
         face_detector.onnx
   ```
@@ -89,7 +84,7 @@ object_detection
 To run the demo connect a webcam end execute command:
 ```bash
 python3 tools/detection_live_demo.py  \
-  ../../external/mmdetection/configs/wider_face/mobilenetv2_tiny_ssd300_wider_face.py \
+  configs/mobilenetv2_tiny_ssd300_wider_face.py \
   <CHECKPOINT> \
   --cam_id 0
 ```
@@ -109,5 +104,5 @@ python3 tools/count_flops.py configs/mobilenetv2_tiny_ssd300_wider_face.py
  described in this instruction.
 * Fine-tuning steps are the same as step 2 for training, but some adjustments in config are needed:
   - specify initial checkpoint containing a valid detector in `load_from` field of config
-    `configsmobilenetv2_tiny_ssd300_wider_face.py`
+    `configs/mobilenetv2_tiny_ssd300_wider_face.py`
   - edit `data` section of config to pass a custom dataset.
