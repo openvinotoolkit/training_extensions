@@ -53,10 +53,10 @@ python3 textile_recognition/train.py \
         --loss triplet \
         --model mobilenet_v2 \
         --input_size 224 \
-        --augmentation_config augmentation_config.json
+        --augmentation_config textile_recognition/configs/augmentation_config.json
 ```
 
-The file `augmentation_config.json` should contain the following parameters:
+The file `augmentation_config.json` contains the following parameters on gallery images augmentation:
 ```
 {
     "apply_gray_noise": true,
