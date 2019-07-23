@@ -11,3 +11,8 @@ data/*
 external/*
 
 *egg-info
+
+*.pth
+*.onnx
+*.xml
+*.bin
