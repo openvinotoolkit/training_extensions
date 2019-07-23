@@ -148,7 +148,7 @@ python3 tools/test.py --name pai_0620 \
 
 1. Download and setup [OpenVINO](https://software.intel.com/en-us/openvino-toolkit)
 2. Download a [model](https://drive.google.com/file/d/1QRqJpYYbb08N4rLeU8ZCXW-G2F1FHbXK/view?usp=sharing), [weights](https://drive.google.com/file/d/1bLjC_x3ueeColeEkEPfYAqxRsjBf8y-S/view?usp=sharing) and [mapping](https://drive.google.com/file/d/1jaWj1SjqbLNa0jvHuqm9WoK1g5mvAdCA/view?usp=sharing).
-3. Run thoracic_segmentation.py
+3. Run `thoracic_segmentation.py`
 
 ```
 python3.6 tools/thoracic_segmentation.py \
