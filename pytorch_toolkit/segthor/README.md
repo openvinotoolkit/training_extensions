@@ -22,7 +22,8 @@ between them. We employed strided convolutions for downsampling in encoder and p
 ## Results
 
 The Dice index and Hausdorff distance are reported for each organ (Esophagus, heart, Trachea, Aorta). For local
-validation, the scores reported without post-processing and test time augmentation,
+validation, the scores reported without post-processing and test time augmentation. The number in the brackets is the
+leaderboard placement by the time of this commit.
 
 |              | Esophagus (D) | Heart (D)   | Trachea (D) | Aorta (D)   |
 | :----------- | :-----------: | :---------: | :---------: | :---------: |
@@ -30,8 +31,7 @@ validation, the scores reported without post-processing and test time augmentati
 | SegTHOR Test | 0.8646 (3)    | 0.9423 (18) | 0.9172 (10) | 0.9369 (13) |
 
 The Hausdorff distance is reported in voxels. For Test, scores include post-processing and test time augmentation, the
-Hausdorff distance is reported in mm. The number in the brackets is the leaderboard placement by the time of this
-commit.
+Hausdorff distance is reported in mm.
 
 |              | Esophagus (H) | Heart (H)   | Trachea (H) | Aorta (H)   |
 | :----------- | :-----------: | :---------: | :---------: | :---------: |
@@ -40,9 +40,9 @@ commit.
 
 
 ### Pre-trained model
-Download checkpoint with the following
-[link](https://drive.google.com/file/d/1sUOq0WsyBN8mg-CJR-mv_Y5xnP5uORfX/view?usp=sharing), where the experiment name is
-`pai_0620`.
+Download checkpoint with the following [Google
+Drive](https://drive.google.com/file/d/1sUOq0WsyBN8mg-CJR-mv_Y5xnP5uORfX/view?usp=sharing) or
+[01.org](https://download.01.org/opencv/openvino_training_extensions/models/segthor/segthor_0620_best_model.pth).
 
 ## Setup
 
