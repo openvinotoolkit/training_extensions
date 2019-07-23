@@ -104,8 +104,8 @@ pip3 install -e .
 
 ```
 python tools/prepare_training_dataset.py \
-  --input_path /home/localadmin/segthor/data/train \
-  --output_path /home/localadmin/segthor/data/experimental \
+  --input_path data/train \
+  --output_path data/experimental \
   --new_scale 1 1 2.5
 ```
 
