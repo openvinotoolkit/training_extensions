@@ -1,3 +1,19 @@
+"""
+ Copyright (c) 2019 Intel Corporation
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+"""
+
 import logging
 import os.path as osp
 import resource
@@ -19,8 +35,8 @@ class Trainer(DefaultMaskRCNNTrainingEngine):
         super().__init__()
         self.identifier = 'instance-segmentation-security-0050'
         self.description = 'Training of instance-segmentation-security-0050'
-        self.root_directory = osp.join(osp.dirname(osp.abspath(__file__)), '..', 'data', 'artifacts')
-        self.run_directory = self.create_run_directory(self.root_directory)
+        self.root_directory = osp.join(osp.dirname(osp.abspath(__file__)), '..')
+        self.run_directory = self.create_run_directory(osp.join(self.root_directory, 'outputs'))
 
         setup_logging(file_path=osp.join(self.run_directory, 'log.txt'))
 
@@ -101,12 +117,12 @@ class Trainer(DefaultMaskRCNNTrainingEngine):
         logger.info(self.lr_scheduler)
 
         self.start_step = 0
-        checkpoint_file_path = osp.join(self.root_directory, '..', 'data', 'model_zoo',
+        checkpoint_file_path = osp.join(self.root_directory, 'data', 'pretrained_models',
                                         'converted', 'imagenet', 'detectron', 'resnet50.pth')
         if not osp.exists(checkpoint_file_path):
             raise IOError('Initial checkpoint file "{}" does not exist. '
                           'Please fetch pre-trained backbone networks using '
-                          'tools/download_pretrained_weights.py script first.')
+                          'tools/download_pretrained_weights.py script first.'.format(checkpoint_file_path))
         logger.info('Loading weights from "{}"'.format(checkpoint_file_path))
         load_checkpoint(self.model.backbone, checkpoint_file_path)
 
