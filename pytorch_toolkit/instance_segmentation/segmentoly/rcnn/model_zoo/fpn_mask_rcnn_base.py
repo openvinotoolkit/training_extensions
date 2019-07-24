@@ -174,7 +174,7 @@ class FPNMaskRCNN(nn.Module):
 
         self.backbone = backbone
 
-        self.fpn = FPN(self.backbone.dims_out, self.backbone.scales_out, 256, 256, group_norm=group_norm)
+        self.fpn = self.add_fpn(self.backbone.dims_out, self.backbone.scales_out, group_norm=group_norm)
 
         self.prior_boxes, priors_num = self.add_priors_generator()
         self.rpn = self.add_rpn(priors_num, self.fpn.dims_out)
@@ -221,6 +221,10 @@ class FPNMaskRCNN(nn.Module):
         assert priors_per_level_num[1:] == priors_per_level_num[:-1]
         priors_num = priors_per_level_num[0]
         return prior_boxes, priors_num
+
+    @staticmethod
+    def add_fpn(dims_in, scales_in, group_norm=False, **kwargs):
+        return FPN(dims_in, scales_in, 256, 256, group_norm=group_norm)
 
     @staticmethod
     def add_rpn(priors_num, features_dim_in):

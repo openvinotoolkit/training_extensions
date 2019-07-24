@@ -1,7 +1,7 @@
-## Training instance segmentation models released in OpenVINO
+## Training instance segmentation models from Open Model Zoo
 
 
-### Model-0010
+### instance-segmentation-security-0010
 
 [Description](https://github.com/opencv/open_model_zoo/tree/develop/intel_models/instance-segmentation-security-0010/description/instance-segmentation-security-0010.md)
 
@@ -19,7 +19,7 @@ $ python3 tools/train.py \
 ```
 > **Note:** Trained on 4 P100
 
-### Model-0083
+### instance-segmentation-security-0083
 
 [Description](https://github.com/opencv/open_model_zoo/tree/develop/intel_models/instance-segmentation-security-0083/description/instance-segmentation-security-0083.md)
 
@@ -36,3 +36,11 @@ $ python3 tools/train.py \
     --load_backbone data/pretrained_models/converted/imagenet/detectron/resnext152.pth
 ```
 > **Note:** Trained on 2 P100
+
+### instance-segmentation-security-0050
+
+[Description](https://github.com/opencv/open_model_zoo/tree/develop/intel_models/instance-segmentation-security-0050/description/instance-segmentation-security-0050.md)
+
+```bash
+$ python3 tools/train_0050.py
+```

@@ -28,6 +28,7 @@ from segmentoly.utils.logging import setup_logging
 from segmentoly.utils.postprocess import postprocess_batch
 from segmentoly.utils.stats import add_flops_counting_methods, flops_to_string, print_model_with_flops
 from segmentoly.utils.weights import load_checkpoint
+from segmentoly.utils.profile import Timer
 
 
 def parse_args():
@@ -42,14 +43,18 @@ def parse_args():
     parser.add_argument('--mean_pixel', default=(0.0, 0.0, 0.0), type=float, nargs=3,
                         metavar='<num>',
                         help='Mean pixel value to subtract from image.')
+    parser.add_argument('--rgb', action='store_true',
+                        help='Use RGB instead of BGR.')
     image_resize_group = parser.add_mutually_exclusive_group(required=True)
     image_resize_group.add_argument('--fit_max', dest='fit_max_image_size', default=None, type=int, nargs=2,
                                     metavar='<num>',
-                                    help='Max processed image size in a format '
-                                         '(max short side, max long side).')
+                                    help='Max processed image size in a (max short side, max long side) format.')
     image_resize_group.add_argument('--fit_window', dest='fit_window_size', default=None, type=int, nargs=2,
                                     metavar='<num>',
-                                    help='Max processed image size in a format (max height, max width).')
+                                    help='Max processed image size in a (max height, max width) format.')
+    image_resize_group.add_argument('--size', dest='size', default=None, type=int, nargs=2,
+                                    metavar='<num>',
+                                    help='Input resolution in a (height, width) format.')
 
     openvino_parser = subparsers.add_parser('openvino')
     openvino_parser.add_argument('--model', dest='openvino_model_path', type=str, required=True, metavar='"<path>"',
@@ -88,22 +93,24 @@ def parse_args():
 def main(args):
     transforms = Compose(
         [
-            Resize(max_size=args.fit_max_image_size, window_size=args.fit_window_size),
+            Resize(max_size=args.fit_max_image_size, window_size=args.fit_window_size, size=args.size),
             ToTensor(),
-            Normalize(mean=args.mean_pixel, std=[1., 1., 1.], rgb=False),
+            Normalize(mean=args.mean_pixel, std=[1., 1., 1.], rgb=args.rgb),
         ]
     )
     dataset = get_dataset(args.dataset, False, False, transforms)
     logging.info(dataset)
     num_workers = args.num_workers
 
+    inference_timer = Timer()
+
     logging.info('Using {} backend'.format(args.backend))
 
     logging.info('Loading network...')
     if args.backend == 'pytorch':
-        net = locate(args.pytorch_model_class)(dataset.classes_num)
+        net = locate(args.pytorch_model_class)(dataset.classes_num, force_max_output_size=False)
         net.eval()
-        load_checkpoint(net, args.checkpoint_file_path)
+        load_checkpoint(net, args.checkpoint_file_path, verbose=True)
         net = add_flops_counting_methods(net)
         net.reset_flops_count()
         net.start_flops_count()
@@ -139,16 +146,18 @@ def main(args):
     for data_batch in tqdm(iter(data_loader)):
         batch_meta = data_batch['meta']
         actual_batch_size = len(batch_meta)
-        with torch.no_grad():
+        with torch.no_grad(), inference_timer:
             boxes, classes, scores, batch_ids, masks = net(**data_batch)
 
         im_heights = [meta['original_size'][0] for meta in batch_meta]
         im_widths = [meta['original_size'][1] for meta in batch_meta]
-        im_scales = [meta['processed_size'][0] / meta['original_size'][0] for meta in batch_meta]
+        im_scale_y = [meta['processed_size'][0] / meta['original_size'][0] for meta in batch_meta]
+        im_scale_x = [meta['processed_size'][1] / meta['original_size'][1] for meta in batch_meta]
         scores, classes, boxes, masks = postprocess_batch(batch_ids, scores, classes, boxes, masks, actual_batch_size,
                                                           im_h=im_heights,
                                                           im_w=im_widths,
-                                                          im_scale=im_scales,
+                                                          im_scale_y=im_scale_y,
+                                                          im_scale_x=im_scale_x,
                                                           full_image_masks=True, encode_masks=True)
         boxes_all.extend(boxes)
         masks_all.extend(masks)
@@ -163,6 +172,8 @@ def main(args):
     logging.info('Evaluating results...')
     evaluation_results = dataset.evaluate(scores_all, classes_all, boxes_all, masks_all)
     logging.info(evaluation_results)
+
+    logging.info('Average inference time {}'.format(inference_timer.average_time))
 
     if args.backend == 'pytorch':
         if torch.cuda.is_available():

@@ -45,6 +45,8 @@ def parse_args():
     parser.add_argument('--mean_pixel', default=(0.0, 0.0, 0.0), type=float, nargs=3,
                         metavar='<num>',
                         help='Mean pixel value to subtract from image.')
+    parser.add_argument('--rgb', action='store_true',
+                        help='Use RGB instead of BGR.')
     image_resize_group = parser.add_mutually_exclusive_group(required=True)
     image_resize_group.add_argument('--fit_max', dest='fit_max_image_size', default=None, type=int, nargs=2,
                                     metavar='<num>',
@@ -53,6 +55,9 @@ def parse_args():
     image_resize_group.add_argument('--fit_window', dest='fit_window_size', default=None, type=int, nargs=2,
                                     metavar='<num>',
                                     help='Max processed image size in a format (max height, max width).')
+    image_resize_group.add_argument('--size', dest='size', default=None, type=int, nargs=2,
+                                    metavar='<num>',
+                                    help='Precise input size (height, width).')
 
     data_source_parser = parser.add_mutually_exclusive_group(required=True)
     data_source_parser.add_argument('-v', '--video', default=None, type=str,
@@ -105,9 +110,9 @@ def parse_args():
 def main(args):
     transforms = Compose(
         [
-            Resize(max_size=args.fit_max_image_size, window_size=args.fit_window_size),
+            Resize(max_size=args.fit_max_image_size, window_size=args.fit_window_size, size=args.size),
             ToTensor(),
-            Normalize(mean=args.mean_pixel, std=[1., 1., 1.], rgb=False),
+            Normalize(mean=args.mean_pixel, std=[1., 1., 1.], rgb=args.rgb),
         ]
     )
     dataset = get_dataset(args.dataset, False, False, transforms)
@@ -178,7 +183,8 @@ def main(args):
         scores, classes, boxes, masks = postprocess(scores, classes, boxes, masks,
                                                     im_h=meta['original_size'][0],
                                                     im_w=meta['original_size'][1],
-                                                    im_scale=meta['processed_size'][0] / meta['original_size'][0],
+                                                    im_scale_y=meta['processed_size'][0] / meta['original_size'][0],
+                                                    im_scale_x=meta['processed_size'][1] / meta['original_size'][1],
                                                     full_image_masks=True, encode_masks=False,
                                                     confidence_threshold=args.prob_threshold)
 
