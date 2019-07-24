@@ -18,7 +18,7 @@ import os
 import json
 import cv2
 
-from dataset import fit_to_max_size
+from textile.dataset import fit_to_max_size
 
 def parse_args():
     args = argparse.ArgumentParser()

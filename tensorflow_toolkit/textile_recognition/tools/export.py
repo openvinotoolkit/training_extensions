@@ -12,25 +12,25 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import tensorflow as tf
-from tensorflow.python.tools.freeze_graph import freeze_graph
 
-from model import keras_applications_mobilenetv2, keras_applications_resnet50
-
+import os
 import argparse
 import tempfile
-import os
+import tensorflow as tf
+from tensorflow.python.tools.freeze_graph import freeze_graph
+from textile.model import keras_applications_mobilenetv2, keras_applications_resnet50
 
 tf.compat.v1.disable_v2_behavior()
 
 
 def parse_args():
-    args = argparse.ArgumentParser()
-    args.add_argument('--model_weights', required=True, help='Path to model weights.')
-    args.add_argument('--input_size', default=128, type=int, help='Input image size.')
-    args.add_argument('--model', choices=['resnet50', 'mobilenet_v2'], required=True)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--model_weights', required=True, help='Path to model weights.')
+    parser.add_argument('--input_size', default=128, type=int, help='Input image size.')
+    parser.add_argument('--model', choices=['resnet50', 'mobilenet_v2'], required=True)
 
-    return args.parse_args()
+    return parser.parse_args()
+
 
 def print_flops(graph):
     """ Prints information about FLOPs. """
@@ -61,9 +61,9 @@ def load_frozen_graph(frozen_graph_filename):
 
     return graph
 
-if __name__ == '__main__':
-    args = parse_args()
 
+def main():
+    args = parse_args()
 
     input_tensor = tf.compat.v1.placeholder(dtype=tf.float32,
                                             shape=[1, args.input_size, args.input_size, 3])
@@ -109,8 +109,10 @@ if __name__ == '__main__':
 
         graph = load_frozen_graph(frozen_graph_path)
         print_flops(graph)
- 
+
         print('Run model_optimizer to get IR: mo.py --input_model {} --framework tf'.format(
             frozen_graph_path))
 
 
+if __name__ == '__main__':
+    main()

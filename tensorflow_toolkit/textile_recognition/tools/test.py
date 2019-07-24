@@ -18,9 +18,9 @@ import time
 
 import cv2
 
-from common import *
-from frames_provider import FramesProvider, CvatFramesProvider, VideoFramesProvider
-from image_retrieval import ImageRetrieval
+from textile.common import *
+from textile.frames_provider import FramesProvider, CvatFramesProvider, VideoFramesProvider
+from textile.image_retrieval import ImageRetrieval
 import logging as log
 
 

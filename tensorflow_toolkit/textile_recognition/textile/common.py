@@ -12,9 +12,10 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import cv2
 import os
+import cv2
 import numpy as np
+
 
 def max_central_square_crop(image):
     h, w = image.shape[:2]
@@ -26,6 +27,7 @@ def max_central_square_crop(image):
 
     return image
 
+
 def preproces_image(image):
     image = image / 127.5 - 1.0
     return image
@@ -36,6 +38,7 @@ def depreprocess_image(image):
     image = image.astype(np.uint8)
     return image
 
+
 def fit_to_max_size(image, max_side):
     if image.shape[0] > max_side or image.shape[1] > max_side:
         if image.shape[0] > image.shape[1]:
@@ -44,6 +47,7 @@ def fit_to_max_size(image, max_side):
             image = cv2.resize(image, (max_side, int(image.shape[0] / (image.shape[1] / max_side))))
 
     return image
+
 
 def crop_resize_shift_scale(image, input_size):
     image = max_central_square_crop(image)
@@ -56,8 +60,9 @@ def crop_resize_shift_scale(image, input_size):
 def central_crop(image, divide_by, shift):
     h, w = image.shape[0:2]
     image = image[h // divide_by * shift: h // divide_by * (divide_by - shift),
-            w // divide_by * shift: w // divide_by * (divide_by - shift)]
+                  w // divide_by * shift: w // divide_by * (divide_by - shift)]
     return image
+
 
 def from_list(path, multiple_images_per_label=True):
     impaths = []

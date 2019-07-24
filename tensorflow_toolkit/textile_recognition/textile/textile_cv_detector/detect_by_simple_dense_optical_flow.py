@@ -12,17 +12,16 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import os
+
 import sys
-import argparse
-import numpy as np
 import cv2
 from collections import namedtuple
-import math
 from pprint import pprint
+import math
 import datetime
 import xml.etree.ElementTree as ET
 import logging as log
+import numpy as np
 
 Rect = namedtuple("Rect", ["tl_x", "tl_y", "w", "h"]) # stores rectangle as tuple of left_x, top_y, width, and height
 Point = namedtuple("Point", ["x", "y"])

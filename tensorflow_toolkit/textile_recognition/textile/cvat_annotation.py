@@ -12,12 +12,11 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import argparse
-
-import cv2
 import os
+import argparse
+import cv2
+from textile.common import fit_to_max_size
 
-from common import fit_to_max_size
 
 class CvatAnnotation:
     def __init__(self, path):
