@@ -1,4 +1,4 @@
-# Textile Detection And Recognition Demo
+# Textile Recognition
 
 ## Description
 

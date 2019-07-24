@@ -17,15 +17,15 @@ import os
 
 import tensorflow as tf
 from tensorflow_addons.losses import triplet_semihard_loss
-from losses import am_softmax_loss
+from textile.losses import am_softmax_loss
 
-from model import keras_applications_mobilenetv2, keras_applications_resnet50
+from textile.model import keras_applications_mobilenetv2, keras_applications_resnet50
 import test
-from dataset import create_dataset_path
+from textile.dataset import create_dataset_path
 
 import json
 
-from dataset import depreprocess_image
+from textile.dataset import depreprocess_image
 
 from pygit2 import Repository
 

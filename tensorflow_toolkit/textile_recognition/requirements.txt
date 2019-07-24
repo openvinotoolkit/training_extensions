@@ -1,4 +1,5 @@
 tensorflow==2.0.0.a0
+tensorflow-gpu==2.0.0.a0
 tqdm==4.31.1
 numpy==1.16.2
 fpdf==1.7.2
