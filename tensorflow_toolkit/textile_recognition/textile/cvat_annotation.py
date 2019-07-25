@@ -70,15 +70,13 @@ class CvatAnnotation:
 
         #tree.write(path, short_empty_elements=True)
 
-
-if __name__ == '__main__':
-
+def main():
     def parse_args():
         args = argparse.ArgumentParser()
         args.add_argument('--path', required=True)
-        args.add_argument('--videos_root', default='/home/ikrylov/datasets/')
+        args.add_argument('--videos_root', required=False)
         args.add_argument('--crops_folder', required=False)
-        args.add_argument('--patterns_root', default='/home/ikrylov/datasets/textile/20190523/img_retrieval_cal_acc/query_db')
+        args.add_argument('--patterns_root', required=False)
 
         return args.parse_args()
 
@@ -93,7 +91,7 @@ if __name__ == '__main__':
 
     idx = 0
     while True:
-        ret, frame = capture.read()
+        _, frame = capture.read()
         if frame is None:
             break
 
@@ -111,7 +109,7 @@ if __name__ == '__main__':
 
                 cv2.rectangle(frame, (obj['xtl'], obj['ytl']), (obj['xbr'], obj['ybr']),
                               (0, 255, 0), 5)
-                cv2.putText(frame,  obj['id'], (obj['xtl'], obj['ytl'] + 100), 1, 5.0, (255, 0, 0), 5)
+                cv2.putText(frame, obj['id'], (obj['xtl'], obj['ytl'] + 100), 1, 5.0, (255, 0, 0), 5)
 
         frame = cv2.resize(frame, (1280, 720))
 
@@ -133,3 +131,7 @@ if __name__ == '__main__':
             break
 
         idx += 1
+
+
+if __name__ == '__main__':
+    main()

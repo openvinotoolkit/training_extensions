@@ -12,16 +12,16 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import os
-import numpy as np
-import cv2
-import tensorflow as tf
-import tensorflow_addons as tfa
 import json
 import math
 import random
 
-from common import *
+import cv2
+import numpy as np
+import tensorflow as tf
+
+from textile.common import (max_central_square_crop, preproces_image, depreprocess_image, fit_to_max_size, from_list)
+
 
 def blur(image):
     kernel = np.ones((3, 3), np.float32) / 9
@@ -106,6 +106,7 @@ def distort_color(image):
     return image
 
 
+#pylint: disable=R0915
 def create_dataset(impaths, labels, is_real, input_size, batch_size, params, return_original=False):
 
     if params['weighted_sampling']:
@@ -198,7 +199,7 @@ def create_dataset(impaths, labels, is_real, input_size, batch_size, params, ret
 
     def random_rotate(original, image, label):
         if params['add_rot_angle'] > 0 or params['rot90']:
-            image,  = tf.numpy_function(cv2_rotate, [image], [tf.float32])
+            image, = tf.numpy_function(cv2_rotate, [image], [tf.float32])
         return original, image, label
 
     def random_crop_and_resize(original, image, label):
@@ -228,7 +229,7 @@ def create_dataset(impaths, labels, is_real, input_size, batch_size, params, ret
     dataset = tf.data.Dataset.from_generator(random_number, (tf.int32), (tf.TensorShape([1])))
     dataset = dataset.map(read_image, num_parallel_calls=tf.data.experimental.AUTOTUNE)
     if params['max_tiling'] > 1:
-       dataset = dataset.map(tf_tile, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+        dataset = dataset.map(tf_tile, num_parallel_calls=tf.data.experimental.AUTOTUNE)
     dataset = dataset.map(random_crop_and_resize, num_parallel_calls=tf.data.experimental.AUTOTUNE)
     if params['vertical_flip']:
         dataset = dataset.map(tf_vertical_flip, num_parallel_calls=tf.data.experimental.AUTOTUNE)
@@ -252,11 +253,12 @@ def create_dataset(impaths, labels, is_real, input_size, batch_size, params, ret
 
 def create_dataset_path(path, input_size, batch_size, params, return_original=False):
     impaths, labels, is_real, _ = from_list(path)
+
     return create_dataset(impaths, labels, is_real, input_size, batch_size, params, return_original)
 
-
-if __name__ == '__main__':
+def main():
     import argparse
+    import time
 
     args = argparse.ArgumentParser()
     args.add_argument('--gallery_folder', required=True)
@@ -268,8 +270,7 @@ if __name__ == '__main__':
         augmentation_config = json.load(f)
 
     dataset, _ = create_dataset_path(args.gallery_folder, args.input_size, 1, augmentation_config,
-                                return_original=True)
-    import time
+                                     return_original=True)
 
     t = time.time()
     for original, preprocessed, label in dataset.take(1000):
@@ -280,3 +281,7 @@ if __name__ == '__main__':
         if cv2.waitKey(0) == 27:
             break
     print(time.time() - t)
+
+
+if __name__ == '__main__':
+    main()

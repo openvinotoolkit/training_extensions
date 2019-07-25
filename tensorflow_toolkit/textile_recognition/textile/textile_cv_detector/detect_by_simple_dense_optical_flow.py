@@ -14,40 +14,44 @@
 
 
 import sys
-import cv2
 from collections import namedtuple
-from pprint import pprint
 import math
 import datetime
 import xml.etree.ElementTree as ET
 import logging as log
+import cv2
 import numpy as np
+
 
 Rect = namedtuple("Rect", ["tl_x", "tl_y", "w", "h"]) # stores rectangle as tuple of left_x, top_y, width, and height
 Point = namedtuple("Point", ["x", "y"])
 
 IncreaseRectParams = namedtuple("IncreaseRectParams", ["increase_cell_coeff", "shift_x", "shift_y"])
-CellParams = namedtuple("CellParams",
-        ["cell_height", "cell_aspect_ratio", "cell_overlap", "num_cells_x", "num_cells_y", "list_v_len"])
+CellParams = namedtuple("CellParams", ["cell_height", "cell_aspect_ratio", "cell_overlap",
+                                       "num_cells_x", "num_cells_y", "list_v_len"])
 
 CellData = namedtuple("CellData", ["rect", "increased_rect", "list_v", "calculated"])
 
 ConnectedComponent = namedtuple("ConnectedComponent", ["label_id", "mask", "centroid", "rect", "area", "num"])
 
-SHOULD_SHOW=False
+
+SHOULD_SHOW = False
 def my_imshow(name, img):
     if SHOULD_SHOW:
         cv2.imshow(name, img)
 
-SHOULD_SHOW_DEBUG=False
+
+SHOULD_SHOW_DEBUG = False
 def dbg_imshow(name, img):
     if SHOULD_SHOW_DEBUG:
         my_imshow(name, img)
+
 
 def _log_work_time(prefix, name_point, begin_work_time):
     work_dt = datetime.datetime.now() - begin_work_time
     work_dt_ms = int(1000*work_dt.total_seconds())
     log.info("{}: {} = {} ms".format(prefix, name_point, work_dt_ms))
+
 
 def get_rect_in_center(image_shape, size):
     H, W = image_shape[:2]
@@ -56,11 +60,13 @@ def get_rect_in_center(image_shape, size):
     tl_y = int(H / 2. - h / 2.)
     return Rect(tl_x, tl_y, w, h)
 
+
 def get_center_fp(rect):
     tl_x, tl_y, w, h = rect
     c_x = tl_x + w/2.
     c_y = tl_y + h/2.
     return Point(c_x, c_y)
+
 
 def get_center(rect):
     c_x, c_y = get_center_fp(rect)
@@ -68,12 +74,13 @@ def get_center(rect):
     c_y = int(c_y)
     return Point(c_x, c_y)
 
+
 def increase_rect(rect, increase_rect_params):
     coeff = increase_rect_params.increase_cell_coeff
     shift_x = increase_rect_params.shift_x
     shift_y = increase_rect_params.shift_y
 
-    tl_x, tl_y, w, h = rect
+    _, _, w, h = rect
 
     new_w = math.ceil(w * coeff + 2*shift_x)
     new_h = math.ceil(h * coeff + 2*shift_y)
@@ -84,11 +91,15 @@ def increase_rect(rect, increase_rect_params):
 
     return Rect(new_tl_x, new_tl_y, new_w, new_h)
 
+
 def get_rect_tl(rect):
     return Point(rect[0], rect[1])
+
+
 def get_rect_br(rect):
     tl_x, tl_y, w, h = rect
     return Point(tl_x + w - 1, tl_y + h - 1)
+
 
 def intersect_rects(rect1, rect2):
     if rect1 is None or rect2 is None:
@@ -104,12 +115,13 @@ def intersect_rects(rect1, rect2):
     br_y = min(br_y_1, br_y_2)
 
     if br_x < tl_x or br_y < tl_y:
-        return Rect(0,0,0,0)
+        return Rect(0, 0, 0, 0)
 
     w = br_x - tl_x + 1
     h = br_y - tl_y + 1
 
     return Rect(tl_x, tl_y, w, h)
+
 
 def get_union_rects(rect1, rect2):
     if rect1 is None or rect2 is None:
@@ -125,18 +137,20 @@ def get_union_rects(rect1, rect2):
     br_y = max(br_y_1, br_y_2)
 
     if br_x < tl_x or br_y < tl_y:
-        return Rect(0,0,0,0)
+        return Rect(0, 0, 0, 0)
 
     w = br_x - tl_x + 1
     h = br_y - tl_y + 1
 
     return Rect(tl_x, tl_y, w, h)
 
+
 def get_area_rect(rect):
     if rect is None:
         return None
     assert rect.w >= 0 and rect.h >= 0
     return rect.w * rect.h
+
 
 def get_iou_rects(rect1, rect2):
     if rect1 is None or rect2 is None:
@@ -147,9 +161,11 @@ def get_iou_rects(rect1, rect2):
     a12 = get_area_rect(rect12)
     return float(a12) / (a1 + a2 - a12)
 
+
 def scale_rect(rect, scale):
     scaled_vals = [int(scale * v) for v in rect]
     return Rect(*scaled_vals)
+
 
 def get_subimage(image, rect):
     tl_x, tl_y, w, h = rect
@@ -159,6 +175,7 @@ def get_subimage(image, rect):
     assert subimage.shape[1] == w
 
     return subimage.copy()
+
 
 def get_median_of_rects(rects):
     list_tl_x = []
@@ -188,14 +205,16 @@ def get_median_of_rects(rects):
 
     return Rect(tl_x, tl_y, w, h)
 
+
 def draw_match(match, min_val, max_val, show_size_coeff=10):
     if not SHOULD_SHOW:
         return
     divisor = (max_val - min_val) if max_val > min_val else 1.
     match_to_draw = (match - min_val) / divisor
-    h,w = match_to_draw.shape[:2]
+    h, w = match_to_draw.shape[:2]
     match_to_draw = cv2.resize(match_to_draw, (show_size_coeff * w, show_size_coeff * h))
     dbg_imshow("match", match_to_draw)
+
 
 def run_match_template_on_rect(image, prev_image, rect, increased_rect):
     subimage = get_subimage(image, increased_rect)
@@ -203,7 +222,7 @@ def run_match_template_on_rect(image, prev_image, rect, increased_rect):
 
     match = cv2.matchTemplate(subimage, prev_template, cv2.TM_SQDIFF)
 
-    min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(match)
+    min_val, max_val, min_loc, _ = cv2.minMaxLoc(match)
 
     dx, dy = min_loc
     template_h, template_w = prev_template.shape[:2]
@@ -218,7 +237,8 @@ def run_match_template_on_rect(image, prev_image, rect, increased_rect):
 
     return v
 
-def draw_arrow(image, pt, v, color1=(0,255,0), color2=None):
+
+def draw_arrow(image, pt, v, color1=(0, 255, 0), color2=None):
     if not SHOULD_SHOW:
         return
     if color2 is None:
@@ -233,7 +253,8 @@ def draw_arrow(image, pt, v, color1=(0,255,0), color2=None):
     cv2.line(image, tuple(pt), tuple(pt2_b), color=color2, thickness=3)
     cv2.line(image, tuple(pt), tuple(pt2_a), color=color1, thickness=1)
 
-def draw_rect(image, rect, color=(255,0,0), thickness=3):
+
+def draw_rect(image, rect, color=(255, 0, 0), thickness=3):
     if not SHOULD_SHOW:
         return
     if rect is None:
@@ -257,14 +278,16 @@ def decrease_image_to_min_side(image, target_min_side):
     image = cv2.resize(image, (new_w, new_h))
     return image
 
+
 def get_median_from_list(list_v, N_median):
-    xs = np.array([x for x,y in list_v[-N_median:]])
+    xs = np.array([x for x, y in list_v[-N_median:]])
     median_x = np.median(xs)
 
-    ys = np.array([y for x,y in list_v[-N_median:]])
+    ys = np.array([y for x, y in list_v[-N_median:]])
     median_y = np.median(ys)
 
     return Point(median_x, median_y)
+
 
 def check_is_rect_valid(rect, frame_shape):
     tl_x, tl_y, w, h = rect
@@ -277,6 +300,7 @@ def check_is_rect_valid(rect, frame_shape):
     if br_x > frame_w or br_y > frame_h:
         return False
     return True
+
 
 class TextileMotionDetector:
     @staticmethod
@@ -301,16 +325,14 @@ class TextileMotionDetector:
         is_valid = check_is_rect_valid(cell_rect, frame_shape)
         is_increased_valid = check_is_rect_valid(cell_increased_rect, frame_shape)
         log.debug("_init_cell_data: (i,j) = {}, (rel_i, rel_j) = {}, cell_rect = {}, "
-                "cell_increased_rect = {}, is_valid={}, is_increased_valid={}".format(
-                    (i,j), (rel_i, rel_j), cell_rect, cell_increased_rect, is_valid, is_increased_valid))
+                  "cell_increased_rect = {}, is_valid={}, is_increased_valid={}".format(
+                      (i, j), (rel_i, rel_j), cell_rect, cell_increased_rect, is_valid, is_increased_valid))
 
         if not is_valid or not is_increased_valid:
             return None
 
-        cell_data = CellData(rect=cell_rect,
-                increased_rect=cell_increased_rect,
-                list_v=[],
-                calculated={"median": None})
+        cell_data = CellData(rect=cell_rect, increased_rect=cell_increased_rect,
+                             list_v=[], calculated={"median": None})
         return cell_data
 
     def __init__(self, frame_shape, cell_params, increase_rect_params, N_median, min_motion=6):
@@ -320,18 +342,16 @@ class TextileMotionDetector:
         self.N_median = N_median
 
         self.min_motion = min_motion
-        self.total_v = Point(0,0)
+        self.total_v = Point(0, 0)
 
         self.cells_data = {}
         for i in range(self.cell_params.num_cells_y):
             for j in range(self.cell_params.num_cells_x):
-                cell_data = self._init_cell_data(i, j,
-                        frame_shape=frame_shape,
-                        cell_params=cell_params,
-                        increase_rect_params=increase_rect_params)
+                cell_data = self._init_cell_data(i, j, frame_shape=frame_shape, cell_params=cell_params,
+                                                 increase_rect_params=increase_rect_params)
                 if cell_data is None:
                     continue
-                self.cells_data[(i,j)] = cell_data
+                self.cells_data[(i, j)] = cell_data
 
     def handle_cell(self, cell_data, frame, prev_frame):
         rect = cell_data.rect
@@ -353,15 +373,15 @@ class TextileMotionDetector:
             cell_data.rect, cell_data.calculated["median"]))
 
     def recalculate_medians(self):
-        for i,j in sorted(self.cells_data.keys()):
-            log.debug("recalculate_medians: (i,j)={}".format((i,j)))
-            cell_data = self.cells_data[(i,j)]
+        for i, j in sorted(self.cells_data.keys()):
+            log.debug("recalculate_medians: (i,j)={}".format((i, j)))
+            cell_data = self.cells_data[(i, j)]
             self.recalculate_median_in_cell(cell_data)
 
     def drop_last_motion_in_cells(self):
-        for i,j in sorted(self.cells_data.keys()):
-            log.debug("drop_last_motion_in_cells: (i,j)={}".format((i,j)))
-            cell_data = self.cells_data[(i,j)]
+        for i, j in sorted(self.cells_data.keys()):
+            log.debug("drop_last_motion_in_cells: (i,j)={}".format((i, j)))
+            cell_data = self.cells_data[(i, j)]
             del cell_data.list_v[-1]
             log.debug("now len(list_v) = {}".format(len(cell_data.list_v)))
 
@@ -373,9 +393,9 @@ class TextileMotionDetector:
         prev_img_to_show = prev_frame.copy()
 
         num_cells_with_motions = 0
-        for i,j in sorted(self.cells_data.keys()):
-            log.debug("handle_image: (i,j)={}".format((i,j)))
-            cell_data = self.cells_data[(i,j)]
+        for i, j in sorted(self.cells_data.keys()):
+            log.debug("handle_image: (i,j)={}".format((i, j)))
+            cell_data = self.cells_data[(i, j)]
             self.handle_cell(cell_data, frame, prev_frame)
 
             rect = cell_data.rect
@@ -383,8 +403,8 @@ class TextileMotionDetector:
             if np.linalg.norm(v) >= self.min_motion:
                 num_cells_with_motions += 1
 
-            draw_arrow(prev_img_to_show, get_center(rect), v, (0,255,0))
-            draw_rect(prev_img_to_show, rect, color=(255,0,0), thickness=1)
+            draw_arrow(prev_img_to_show, get_center(rect), v, (0, 255, 0))
+            draw_rect(prev_img_to_show, rect, color=(255, 0, 0), thickness=1)
 
         log.debug("num_cells_with_motions = {}".format(num_cells_with_motions))
         if num_cells_with_motions < len(self.cells_data) // 2:
@@ -395,7 +415,7 @@ class TextileMotionDetector:
         self.recalculate_medians()
 
         list_medians = [np.array(cell_data.calculated["median"])
-                for cell_data in self.cells_data.values() if cell_data.calculated.get("median")]
+                        for cell_data in self.cells_data.values() if cell_data.calculated.get("median")]
         log.debug("len(list_medians) = {}".format(len(list_medians)))
         list_medians = [v for v in list_medians if np.linalg.norm(v) >= self.min_motion]
 
@@ -407,11 +427,11 @@ class TextileMotionDetector:
         log.debug("after filtering len(list_medians) = {}".format(len(list_medians)))
         if list_medians:
             list_medians = np.array(list_medians)
-            log.debug("list_medians =\n" + str(list_medians))
+            log.debug("list_medians =\n%s", str(list_medians))
             total_v = np.median(list_medians, axis=0)
             total_v = Point(*total_v.tolist())
         else:
-            total_v = Point(0,0)
+            total_v = Point(0, 0)
 
         self.total_v = total_v
         log.debug("total_v = {}".format(self.total_v))
@@ -421,6 +441,7 @@ class TextileMotionDetector:
         log.info("TextileMotionDetector.handle_image: work_time = {} ms".format(work_time_ms))
 
         return img_to_show, prev_img_to_show
+
 
 def get_subframe_for_motion(frame, vx, vy):
     def _get_subframe_from_tl(frame, vx, vy):
@@ -437,8 +458,8 @@ def get_subframe_for_motion(frame, vx, vy):
     vy_p = int((vy + abs(vy)) / 2)
     vy_n = int((vy - abs(vy)) / 2)
 
-    assert vx_p >=0 and vy_p >= 0
-    assert vx_n <=0 and vy_n <= 0
+    assert vx_p >= 0 and vy_p >= 0
+    assert vx_n <= 0 and vy_n <= 0
     assert vx == vx_p + vx_n
     assert vy == vy_p + vy_n
     assert abs(vx_p * vx_n) < 1e-8 and abs(vy_p * vy_n) < 1e-8
@@ -479,7 +500,7 @@ def move_mask_back_to_frame_size(mask, vx, vy, frame_shape):
 
     return mask
 
-def get_diff_as_mask(frame, prev_frame, total_v, blur_kernel_size = 5, max_diff_to_be_same = 10):
+def get_diff_as_mask(frame, prev_frame, total_v, blur_kernel_size=5, max_diff_to_be_same=10):
     begin_work_time = datetime.datetime.now()
     assert total_v is not None
     vx, vy = total_v
@@ -518,8 +539,8 @@ def get_diff_as_mask(frame, prev_frame, total_v, blur_kernel_size = 5, max_diff_
     absdiff = np.abs(diff)
     absdiff_nomotion = np.abs(diff_nomotion)
     assert absdiff.shape[2] == 3
-    absdiff1 = absdiff[:,:,0] + absdiff[:,:,1] + absdiff[:,:,2]
-    absdiff_nomotion1 = absdiff_nomotion[:,:,0] + absdiff_nomotion[:,:,1] + absdiff_nomotion[:,:,2]
+    absdiff1 = absdiff[:, :, 0] + absdiff[:, :, 1] + absdiff[:, :, 2]
+    absdiff_nomotion1 = absdiff_nomotion[:, :, 0] + absdiff_nomotion[:, :, 1] + absdiff_nomotion[:, :, 2]
     _log_work_time("get_diff_as_mask", "dt after absdiff", begin_work_time)
     dbg_imshow("absdiff1 from max", absdiff1 / np.amax(absdiff1))
     dbg_imshow("absdiff_nomotion1 from max", absdiff_nomotion1 / np.amax(absdiff_nomotion1))
@@ -581,11 +602,11 @@ def find_threshold(average_mask, min_quantile=0.6):
     hist, bin_edges = np.histogram(average_mask, 20)
 
     assert bin_edges[0] >= 0, "bin_edges={}, min={}, max={}".format(
-            bin_edges, np.amin(average_mask), np.amax(average_mask))
+        bin_edges, np.amin(average_mask), np.amax(average_mask))
 
     total_num_el = average_mask.shape[0] * average_mask.shape[1]
     num_vals_lt_cur_bin_edge = 0
-    for i in range(1,len(bin_edges)):
+    for i in range(1, len(bin_edges)):
         cur_bin_edge = bin_edges[i]
         assert cur_bin_edge > 0
         num_vals_lt_cur_bin_edge += hist[i-1]
@@ -594,8 +615,9 @@ def find_threshold(average_mask, min_quantile=0.6):
 
     raise RuntimeError("Error of the algorithm -- wrong work with histogram")
 
+
 def find_best_bbox_from_motion_mask(average_motion_mask, frame_shape, rel_threshold_for_center=0.9, quantile=0.6,
-        max_num_of_best_masks_to_unite=10, desired_rel_num_pixels_in_united_mask=0.3):
+                                    max_num_of_best_masks_to_unite=10, desired_rel_num_pixels_in_united_mask=0.3):
     begin_work_time = datetime.datetime.now()
 
     quantile_edge = find_threshold(average_motion_mask, quantile)
@@ -609,7 +631,7 @@ def find_best_bbox_from_motion_mask(average_motion_mask, frame_shape, rel_thresh
 
     connected_components = convert_connection_components(retval, labels, stats, centroids, thresholded_mask)
 
-    connected_components_sorted_by_num = sorted(connected_components, key = lambda c : -int(c.num))
+    connected_components_sorted_by_num = sorted(connected_components, key=lambda c: -int(c.num))
 
     for ii in range(min(max_num_of_best_masks_to_unite + 2, len(connected_components_sorted_by_num))):
         # this cycle is for debugging only
@@ -618,8 +640,8 @@ def find_best_bbox_from_motion_mask(average_motion_mask, frame_shape, rel_thresh
         dbg_imshow("conn component ii="+str(ii), cur_component.mask * 255)
 
     desired_num = int(average_motion_mask.shape[0]
-            * average_motion_mask.shape[1]
-            * desired_rel_num_pixels_in_united_mask)
+                      * average_motion_mask.shape[1]
+                      * desired_rel_num_pixels_in_united_mask)
     best_components = []
     sum_best_components_num = 0
     log.debug("scanning connected components: desired_num = {}".format(desired_num))
@@ -646,15 +668,16 @@ def find_best_bbox_from_motion_mask(average_motion_mask, frame_shape, rel_thresh
         best_component_to_show += cv2.cvtColor(c.mask*255, cv2.COLOR_GRAY2BGR)
 
     for c in best_components:
-        draw_rect(best_component_to_show, c.rect, (255,0,0), 3)
+        draw_rect(best_component_to_show, c.rect, (255, 0, 0), 3)
 
     my_imshow("best_component", best_component_to_show)
     _log_work_time("find_best_bbox_from_motion_mask", "work_time", begin_work_time)
 
     return res_bbox
 
+
 class VideoWrapper:
-    def __init__(self, video_path, desired_min_side = None):
+    def __init__(self, video_path, desired_min_side=None):
         self._capture = cv2.VideoCapture(video_path)
         assert self._capture.isOpened(), "Cannot open video '{}'".format(video_path)
 
@@ -676,7 +699,7 @@ class VideoWrapper:
     def _get_frame_shape(video_path):
         tmp_capture = cv2.VideoCapture(video_path)
         assert tmp_capture.isOpened()
-        ret, frame = tmp_capture.read()
+        _, frame = tmp_capture.read()
         if frame is None:
             return None
         frame_shape = frame.shape
@@ -702,12 +725,14 @@ class VideoWrapper:
     def get_target_size(self):
         return self._target_size
 
+
+#pylint: disable=R0902,R0913
 class TextileDetectorImpl:
     def __init__(self, cell_params, increase_rect_params, N_median, min_motion_to_work,
-            max_num_of_best_masks_to_unite=5,
-            desired_rel_num_pixels_in_united_mask=0.3,
-            required_num_motions_in_last_frames=5,
-            num_last_frames_to_count_motions=1000):
+                 max_num_of_best_masks_to_unite=5,
+                 desired_rel_num_pixels_in_united_mask=0.3,
+                 required_num_motions_in_last_frames=5,
+                 num_last_frames_to_count_motions=1000):
 
         self.frame_size = None # (w, h)
         self.motion_detector = None
@@ -751,7 +776,7 @@ class TextileDetectorImpl:
 
         assert frame.shape == prev_frame.shape
         assert tuple(frame.shape[:2]) == tuple(self.frame_size[::-1]), (
-                "frame.shape[:2]={}, self.frame_size[::-1]={}".format(frame.shape[:2], self.frame_size[::-1]))
+            "frame.shape[:2]={}, self.frame_size[::-1]={}".format(frame.shape[:2], self.frame_size[::-1]))
         assert isinstance(frame_id, int)
         assert not self.last_frame_ids_with_motions or (self.last_frame_ids_with_motions[-1] < frame_id)
 
@@ -776,7 +801,7 @@ class TextileDetectorImpl:
 
         # required to calculate res_bbox_confidence
         while (self.last_frame_ids_with_motions and
-                (frame_id - self.last_frame_ids_with_motions[0] > self.num_last_frames_to_count_motions)):
+               (frame_id - self.last_frame_ids_with_motions[0] > self.num_last_frames_to_count_motions)):
             del self.last_frame_ids_with_motions[0]
 
         # simple approach to calculate res_bbox_confidence
@@ -792,14 +817,15 @@ class TextileDetectorImpl:
             average_motion_mask = self.sum_motion_masks / self.num_summed_masks
             dbg_imshow("average motion mask", average_motion_mask)
 
-            self.res_bbox = find_best_bbox_from_motion_mask(average_motion_mask, prev_frame.shape,
-                    rel_threshold_for_center = self.rel_threshold_for_center,
-                    quantile = self.quantile_for_best_bbox,
-                    max_num_of_best_masks_to_unite = self.max_num_of_best_masks_to_unite,
-                    desired_rel_num_pixels_in_united_mask = self.desired_rel_num_pixels_in_united_mask)
+            self.res_bbox = find_best_bbox_from_motion_mask(
+                                average_motion_mask, prev_frame.shape,
+                                rel_threshold_for_center=self.rel_threshold_for_center,
+                                quantile=self.quantile_for_best_bbox,
+                                max_num_of_best_masks_to_unite=self.max_num_of_best_masks_to_unite,
+                                desired_rel_num_pixels_in_united_mask=self.desired_rel_num_pixels_in_united_mask)
 
         if self.res_bbox:
-            conf_color = (200,155,0) if self.res_bbox_confidence == 1 else (255,255,55)
+            conf_color = (200, 155, 0) if self.res_bbox_confidence == 1 else (255, 255, 55)
             draw_rect(self.result_img_to_show, self.res_bbox, conf_color, 2)
 
         my_imshow("result", self.result_img_to_show)
@@ -824,6 +850,7 @@ class TextileDetectorImpl:
     def get_result_img_to_show(self):
         return self.result_img_to_show
 
+
 class TextileDetector:
     """
     The class allows to detect textile on frames received from a video sequence
@@ -841,7 +868,7 @@ class TextileDetector:
         num_cells_x = 3
         num_cells_y = 3
         cell_params = CellParams(cell_height=grid_cell_size, cell_aspect_ratio=cell_aspect_ratio,
-                cell_overlap=0, num_cells_x = num_cells_x, num_cells_y=num_cells_y, list_v_len=100)
+                                 cell_overlap=0, num_cells_x=num_cells_x, num_cells_y=num_cells_y, list_v_len=100)
 
         N_median = 20
         min_motion_to_work = 1.5 / 160.0 * desired_min_side
@@ -927,7 +954,7 @@ class TextileDetector:
 
 
         should_return_bbox = ((self.last_frame_detected_bbox is not None) and
-                (self.frame_idx - self.last_frame_detected_bbox) < self.max_frames_keep_bbox)
+                              (self.frame_idx - self.last_frame_detected_bbox) < self.max_frames_keep_bbox)
 
         if not should_return_bbox:
             return None
@@ -937,7 +964,7 @@ class TextileDetector:
         return rescaled_bbox
 
 
-
+#pylint: disable=R0912,R0915,W0603
 def handle_video(video_wrapper, last_frame, args, ann_avg_rect=None):
     """
     The function reads frames from video_wrapper and handles them until it receives the frame
@@ -953,18 +980,16 @@ def handle_video(video_wrapper, last_frame, args, ann_avg_rect=None):
 
     should_show = not args.should_not_show
     global SHOULD_SHOW
-    SHOULD_SHOW=should_show
+    SHOULD_SHOW = should_show
 
     keyboard_wait_time = 0 if args.should_stop_at_start_and_end else 1
 
     N_median = 20
-    data = {}
 
     increase_rect_params = IncreaseRectParams(args.increase_cell_coeff, args.shift_x, args.shift_y)
-    cell_params = CellParams(cell_height=args.grid_cell_size, cell_aspect_ratio=args.cell_aspect_ratio,
-            cell_overlap=0, num_cells_x = args.num_cells_x, num_cells_y=args.num_cells_y, list_v_len=100)
+    cell_params = CellParams(cell_height=args.grid_cell_size, cell_aspect_ratio=args.cell_aspect_ratio, cell_overlap=0,
+                             num_cells_x=args.num_cells_x, num_cells_y=args.num_cells_y, list_v_len=100)
 
-    frame_size = video_wrapper.get_target_size()
     textile_detector = TextileDetectorImpl(cell_params, increase_rect_params, N_median, args.min_motion_to_work)
 
     frame_number = -1
@@ -1023,9 +1048,9 @@ def handle_video(video_wrapper, last_frame, args, ann_avg_rect=None):
         res_bbox = None
     result_img_to_show = textile_detector.get_result_img_to_show()
 
-    draw_rect(result_img_to_show, res_bbox, (255,0,0), 2)
+    draw_rect(result_img_to_show, res_bbox, (255, 0, 0), 2)
     if ann_avg_rect is not None:
-        draw_rect(result_img_to_show, ann_avg_rect, (0,0,255), 2)
+        draw_rect(result_img_to_show, ann_avg_rect, (0, 0, 255), 2)
     my_imshow("result", result_img_to_show)
 
 
@@ -1041,12 +1066,13 @@ def handle_video(video_wrapper, last_frame, args, ann_avg_rect=None):
     print("RESULT={}".format(res_bbox))
     return res_bbox, reading_res
 
+
 def read_annotation(path):
     tree = ET.parse(path)
     assert tree
 
     root = tree.getroot()
-    assert root.tag == "annotations", "Not a standard CVAT annotation file, tag={}".format(ann_root.tag)
+    assert root.tag == "annotations", "Not a standard CVAT annotation file, tag={}".format(root.tag)
     annotation_dict = {}
     for track_el in root:
         if track_el.tag != "track":
@@ -1075,13 +1101,14 @@ def read_annotation(path):
 
     return annotation_dict
 
+
 def read_averaged_bbox_from_annotation(path):
     ann_dict = read_annotation(path)
 
-    sum_rects = [0.,0.,0.,0.]
+    sum_rects = [0., 0., 0., 0.]
     num_rects = 0
 
-    for track_id, track_rects in ann_dict.items():
+    for _, track_rects in ann_dict.items():
         for r in track_rects:
             for i in range(4):
                 sum_rects[i] += r[i]

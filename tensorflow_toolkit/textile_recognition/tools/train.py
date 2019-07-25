@@ -12,22 +12,24 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import argparse
 import os
-
+import json
+import argparse
+from pygit2 import Repository
+from sklearn.metrics.pairwise import cosine_distances
 import tensorflow as tf
+import numpy as np
+import cv2
+
+
 from tensorflow_addons.losses import triplet_semihard_loss
 from textile.losses import am_softmax_loss
 
 from textile.model import keras_applications_mobilenetv2, keras_applications_resnet50
-import test
 from textile.dataset import create_dataset_path
-
-import json
-
 from textile.dataset import depreprocess_image
 
-from pygit2 import Repository
+from textile.metrics import test_model
 
 
 def parse_args():
@@ -56,13 +58,8 @@ def latest_checkpoint_number(train_dir):
     latest_checkpoint = tf.train.latest_checkpoint(train_dir)
     if latest_checkpoint:
         return int(latest_checkpoint.split('-')[-1])
-    else:
-        return -1
+    return -1
 
-
-from sklearn.metrics.pairwise import cosine_distances
-import numpy as np
-import cv2
 
 def collect_hard_images(images, labels, distances, indices, positive):
     hard_examples = []
@@ -106,12 +103,12 @@ def collect_hard_images(images, labels, distances, indices, positive):
 def greatest_loss(images, labels, embeddings):
     arr = cosine_distances(embeddings, embeddings)
     args_max = np.dstack(np.unravel_index(np.argsort(-arr.ravel()),
-                                   (embeddings.shape[0], embeddings.shape[0])))[0]
+                                          (embeddings.shape[0], embeddings.shape[0])))[0]
 
     args_min = args_max[::-1]
 
 
-    np_images = depreprocess_image(images.numpy())[:,:,:,::-1]
+    np_images = depreprocess_image(images.numpy())[:, :, :, ::-1]
     np_labels = labels.numpy()
 
     hard_positives = collect_hard_images(np_images, np_labels, arr, args_max, True)
@@ -141,7 +138,7 @@ def save_args(args, path):
 
 
 def save_git_info(path):
-    repo = Repository(os.path.dirname(os.path.abspath(__file__)))
+    repo = Repository(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../.."))
     info = {
         "branch": repo.head.shorthand,
         "commit_hex": repo.revparse_single('HEAD').hex,
@@ -152,7 +149,9 @@ def save_git_info(path):
         json.dump(info, f)
 
 
-def main(args):
+#pylint: disable=R0912,R0915
+def main():
+    args = parse_args()
     if args.model == 'resnet50':
         model = keras_applications_resnet50(
             tf.keras.layers.Input(shape=(args.input_size, args.input_size, 3)))
@@ -160,23 +159,11 @@ def main(args):
         model = keras_applications_mobilenetv2(
             tf.keras.layers.Input(shape=(args.input_size, args.input_size, 3)))
 
-
-    # dataset_params = {
-    #     'rot90': True,
-    #     'add_rot_angle': 0.1,
-    #     'apply_gray_noise': True,
-    #     'blur': True,
-    #     'vertical_flip': True,
-    #     'horizontal_flip': True,
-    #     'max_tiling': 4,
-    #     'fit_to_max_size': 0,
-    # }
-
     with open(args.augmentation_config) as f:
         augmentation_config = json.load(f)
 
     dataset, num_classes = create_dataset_path(args.gallery_folder, args.input_size, args.batch_size,
-                                          augmentation_config)
+                                               augmentation_config)
 
     if args.model_weights:
         model.load_weights(args.model_weights)
@@ -252,8 +239,14 @@ def main(args):
                 else:
                     gallery_folder = args.gallery_folder
 
-                top1, top5, top10, mean_pos = test.test(model_path=None, model_backend=None, model=model, gallery_path=gallery_folder, test_data_path=args.test_images_folder,
-                                                        test_data_type='crops', test_annotation_path=None, input_size=args.input_size, imshow_delay=-1)
+                top1, top5, top10, mean_pos = test_model(model_path=None, model_backend=None,
+                                                         model=model,
+                                                         gallery_path=gallery_folder,
+                                                         test_data_path=args.test_images_folder,
+                                                         test_data_type='crops',
+                                                         test_annotation_path=None,
+                                                         input_size=args.input_size,
+                                                         imshow_delay=-1)
 
                 tf.summary.scalar('test/top1', data=top1, step=cur_step)
                 tf.summary.scalar('test/top5', data=top5, step=cur_step)
@@ -265,5 +258,4 @@ def main(args):
 
 
 if __name__ == '__main__':
-    args = parse_args()
-    main(args)
+    main()
