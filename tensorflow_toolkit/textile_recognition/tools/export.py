@@ -15,10 +15,10 @@
 
 import os
 import argparse
-import tempfile
 import tensorflow as tf
 from tensorflow.python.tools.freeze_graph import freeze_graph
 from textile.model import keras_applications_mobilenetv2, keras_applications_resnet50
+from tfutils.helpers import execute_mo
 
 tf.compat.v1.disable_v2_behavior()
 
@@ -28,7 +28,8 @@ def parse_args():
     parser.add_argument('--model_weights', required=True, help='Path to model weights.')
     parser.add_argument('--input_size', default=128, type=int, help='Input image size.')
     parser.add_argument('--model', choices=['resnet50', 'mobilenet_v2'], required=True)
-
+    parser.add_argument('--data_type', default='FP32', choices=['FP32', 'FP16'], help='Data type of IR')
+    parser.add_argument('--output_dir', default=None, help='Output Directory')
     return parser.parse_args()
 
 
@@ -78,7 +79,10 @@ def main():
 
     with tf.compat.v1.Session() as sess:
         model.load_weights(args.model_weights)
-        export_folder = tempfile.mktemp()
+        model_dir = os.path.dirname(args.model_weights)
+        export_folder = args.output_dir if args.output_dir else os.path.join(model_dir, 'export')
+
+        # export_folder = tempfile.mktemp()
         output_node_name = 'model/flatten/Reshape'
         #print(embedding.name[:-2])
 
@@ -110,8 +114,12 @@ def main():
         graph = load_frozen_graph(frozen_graph_path)
         print_flops(graph)
 
-        print('Run model_optimizer to get IR: mo.py --input_model {} --framework tf'.format(
-            frozen_graph_path))
+        mo_params = {
+            'framework': 'tf',
+            'model_name': 'textile',
+            'data_type': args.data_type,
+        }
+        execute_mo(mo_params, frozen_graph_path, export_folder)
 
 
 if __name__ == '__main__':
