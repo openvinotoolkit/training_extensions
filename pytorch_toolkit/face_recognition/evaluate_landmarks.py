@@ -39,7 +39,7 @@ def evaluate(val_loader, model):
     for _, data in enumerate(tqdm(val_loader), 0):
         data, gt_landmarks = data['img'].cuda(), data['landmarks'].cuda()
         predicted_landmarks = model(data)
-        # gt_landmarks = gt_landmarks.view(-1, 32)
+        gt_landmarks = gt_landmarks.view(-1, 32)
         loss = predicted_landmarks - gt_landmarks
         items_num += loss.shape[0]
         n_points = loss.shape[1] // 2
@@ -64,15 +64,15 @@ def start_evaluation_300w(args):
     dataset = IBUG(args.val, args.v_land, test=True)
     dataset.transform = t.Compose([Rescale((112, 112)), ToTensor(switch_rb=True)])
     val_loader = DataLoader(dataset, batch_size=args.val_batch_size, num_workers=4, shuffle=False, pin_memory=True)
-    writer = SummaryWriter('./logs_landm/LandNet-R')
-    for i in range(0, 17501, 350):
+    writer = SummaryWriter('./logs_landm/LandNet-G')
+    for i in range(20000, 69501, 500):
         model = models_landmarks['mobilelandnet']()
         # assert args.snapshot is not None
         log.info('Testing snapshot ' + "./snapshots/LandNet_{}.pt".format(str(i)) + ' ...')
-        model = load_model_state(model, "./snapshots/LandNet-R_{}.pt".format(str(i)), args.device, eval_state=True)
+        model = load_model_state(model, "./LandNet/LandNet_{}.pt".format(str(i)), args.device, eval_state=True)
         model.eval()
-        cudnn.benchmark = False
-        model = torch.nn.DataParallel(model)
+        cudnn.benchmark = True
+        # model = torch.nn.DataParallel(model)
     
         log.info('Face landmarks model:')
         log.info(model)

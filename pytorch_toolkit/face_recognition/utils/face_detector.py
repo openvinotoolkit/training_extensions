@@ -10,7 +10,7 @@ WIDTH = 300
 HEIGHT = 300
 
 PROTOTXT = '/home/vic/workspace/facial_landmark/openvino_training_extensions/pytorch_toolkit/face_recognition/utils/assets/deploy.prototxt'
-MODEL = '/home/vic/workspace/facial_landmark/openvino_training_extensions/pytorch_toolkit/face_recognition/utils/assets/res10_300x300_ssd_iter_140000.caffemodel'
+MODEL = '/home/vic/workspace/facial_landmark/openvino_training_extensions/pytorch_toolkit/face_recognition/utils/assets/res10_300x300_ssd_iter_140000_fp16.caffemodel'
 
 # CASCADES_FILE = "/opt/opencv/data/lbpcascades/lbpcascade_frontalface_improved.xml"
 # CASCADES = cv.CascadeClassifier(CASCADES_FILE)
@@ -32,7 +32,6 @@ def get_facebox(image=None, threshold=0.5):
     NET.setInput(dnn.blobFromImage(
         image, 1.0, (WIDTH, HEIGHT), (104.0, 177.0, 123.0), False, False))
     detections = NET.forward()
-
     for result in detections[0, 0, :, :]:
         confidence = result[2]
         if confidence > threshold:
@@ -48,6 +47,7 @@ def get_facebox(image=None, threshold=0.5):
 
 def draw_result(image, confidences, faceboxes):
     """Draw the detection result on image"""
+    h, w = image.shape[0], image.shape[1]
     for result in zip(confidences, faceboxes):
         conf = result[0]
         facebox = result[1]
@@ -70,13 +70,12 @@ def draw_result1(image, faceboxes):
     if faceboxes is not None:
         for result in faceboxes:
             facebox = result
-
             cv.rectangle(image, (facebox[0], facebox[1]),
                          (facebox[2], facebox[3]), (0, 255, 0))
 
 
 
-def draw_box(image, faceboxes, box_color=(255, 255, 255), line_width=4):
+def draw_box(image, faceboxes, box_color=(0, 255, 0), line_width=1):
     """Draw square boxes on image"""
     for facebox in faceboxes:
         cv.rectangle(image, (facebox[0], facebox[1]),
