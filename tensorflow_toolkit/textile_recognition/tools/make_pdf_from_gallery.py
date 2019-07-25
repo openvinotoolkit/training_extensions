@@ -12,13 +12,14 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import argparse
-import fpdf
 import os
 import json
+import argparse
+import fpdf
 import cv2
 
 from textile.dataset import fit_to_max_size
+
 
 def parse_args():
     args = argparse.ArgumentParser()

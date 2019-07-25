@@ -20,7 +20,7 @@ with open('./requirements.txt') as f:
 
 # Add Model Optimizer requirements
 requirements_onnx = os.path.join(os.environ.get('INTEL_OPENVINO_DIR', '/opt/intel/openvino'),
-                                 './deployment_tools/model_optimizer/requirements_onnx.txt')
+                                 './deployment_tools/model_optimizer/requirements_tf.txt')
 if os.path.isfile(requirements_onnx):
     with open(requirements_onnx) as f:
         REQUIRED += f.read().splitlines()

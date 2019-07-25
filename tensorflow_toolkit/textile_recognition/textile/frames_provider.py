@@ -14,7 +14,7 @@
 
 import os
 import cv2
-from textile_cv_detector.detect_by_simple_dense_optical_flow import TextileDetector, get_rect_tl, get_rect_br
+from textile.textile_cv_detector.detect_by_simple_dense_optical_flow import TextileDetector, get_rect_tl, get_rect_br
 
 
 class FramesProvider:
@@ -22,7 +22,7 @@ class FramesProvider:
         self.impaths = []
         self.probe_classes = []
         for probe_class in os.listdir(images_folder):
-            for idx, path in enumerate(os.listdir(os.path.join(images_folder, probe_class))):
+            for path in os.listdir(os.path.join(images_folder, probe_class)):
                 full_path = os.path.join(images_folder, probe_class, path)
                 self.impaths.append(full_path)
                 self.probe_classes.append(probe_class)
@@ -38,13 +38,12 @@ class FramesProvider:
 
 class CvatFramesProvider:
     def __init__(self, cvat_xmls_folder, videos_root_folder):
-        self.should_go_to_next_video = False
+        from textile.cvat_annotation import CvatAnnotation
 
-        import cvat_annotation
+        self.should_go_to_next_video = False
         self.annotations = []
         for xml_path in os.listdir(cvat_xmls_folder):
-            self.annotations.append(
-                cvat_annotation.CvatAnnotation(os.path.join(cvat_xmls_folder, xml_path)))
+            self.annotations.append(CvatAnnotation(os.path.join(cvat_xmls_folder, xml_path)))
         self.videos_root_folder = videos_root_folder
 
     def go_to_next_video(self):
@@ -90,6 +89,8 @@ class VideoFramesProvider:
         self.videos_root_folder = videos_root_folder
         self.frame_step = 5
         self.should_go_to_next_video = False
+
+        data_dir = os.path.dirname(filelist_path)
         with open(filelist_path) as f_list:
             for line in f_list:
                 line = line.strip()
@@ -97,8 +98,8 @@ class VideoFramesProvider:
                     continue
                 chunks = line.split()
                 assert len(chunks) == 2
-                rel_video_path, probe_class = chunks
-                self.videos_list.append({"rel_path": rel_video_path, "probe_class": probe_class})
+                video_path, probe_class = chunks
+                self.videos_list.append({"rel_path": os.path.join(data_dir, video_path), "probe_class": probe_class})
 
     def go_to_next_video(self):
         self.should_go_to_next_video = True
@@ -107,7 +108,7 @@ class VideoFramesProvider:
         for video_descr in self.videos_list:
             rel_path = video_descr["rel_path"]
             probe_class = video_descr["probe_class"]
-            video_path = os.path.join(self.videos_root_folder, rel_path)
+            video_path = rel_path # os.path.join(self.videos_root_folder, rel_path)
 
             if not os.path.exists(video_path):
                 raise Exception('File not found: {}'.format(video_path))

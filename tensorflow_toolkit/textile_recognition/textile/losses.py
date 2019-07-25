@@ -22,6 +22,7 @@ class AMSoftmax(tf.keras.layers.Layer):
         self.units = units
         self.s = s
         self.m = m
+        self.kernel = None
 
     def build(self, input_shape):
         self.kernel = self.add_weight(shape=(input_shape[-1], self.units),
