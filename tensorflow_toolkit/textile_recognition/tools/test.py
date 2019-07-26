@@ -39,7 +39,7 @@ def main():
 
     test_model(model_path=args.model_weights,
                model_backend=args.ie,
-               model=None,
+               model=args.model,
                gallery_path=args.gallery,
                test_data_path=args.test_data_path,
                test_data_type=args.test_data_type,

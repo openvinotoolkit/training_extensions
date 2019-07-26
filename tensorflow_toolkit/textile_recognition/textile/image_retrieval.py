@@ -29,19 +29,19 @@ class ImageRetrieval:
 
         self.input_size = input_size
 
-        if model is None:
+        if model is None or isinstance(model, str):
             if model_backend == 'tf':
                 import tensorflow as tf
-                from model import keras_applications_mobilenetv2, keras_applications_resnet50
+                from textile.model import keras_applications_mobilenetv2, keras_applications_resnet50
 
-                if args.model == 'resnet50':
+                if model == 'resnet50':
                     self.model = keras_applications_resnet50(
-                        tf.keras.layers.Input(shape=(args.input_size, args.input_size, 3)))
-                if args.model == 'mobilenet_v2':
+                        tf.keras.layers.Input(shape=(input_size, input_size, 3)))
+                if model == 'mobilenet_v2':
                     self.model = keras_applications_mobilenetv2(
-                        tf.keras.layers.Input(shape=(args.input_size, args.input_size, 3)))
+                        tf.keras.layers.Input(shape=(input_size, input_size, 3)))
 
-                self.model.load_weights(args.model_weights)
+                self.model.load_weights(model_path)
             else:
                 from openvino.inference_engine import IENetwork, IEPlugin
                 class IEModel():
