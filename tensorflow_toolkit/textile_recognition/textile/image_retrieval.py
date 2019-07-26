@@ -18,7 +18,7 @@ import cv2
 from sklearn.metrics.pairwise import cosine_distances
 from tqdm import tqdm
 
-from common import from_list, crop_resize_shift_scale
+from textile.common import from_list, crop_resize_shift_scale
 
 class ImageRetrieval:
 
