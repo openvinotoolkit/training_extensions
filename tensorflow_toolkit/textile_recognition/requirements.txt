@@ -1,5 +1,5 @@
 tensorflow-gpu==2.0.0-beta1
-tensorflow-addons==0.4.0
+tfa-nightly==0.5.0.dev20190729
 tqdm==4.31.1
 numpy==1.16.2
 fpdf==1.7.2
