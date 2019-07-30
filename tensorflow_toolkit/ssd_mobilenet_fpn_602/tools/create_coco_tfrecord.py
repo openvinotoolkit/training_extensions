@@ -1,30 +1,20 @@
-# Copyright (C) 2019 Intel Corporation
+# Copyright 2019 Intel Corporation
+# Copyright 2017 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-# http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an "AS IS" BASIS,
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions
-# and limitations under the License.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ==============================================================================
 
-import contextlib2
-import json
-import hashlib
-import os
-
-from object_detection.dataset_tools import tf_record_creation_util
-from object_detection.utils import dataset_util
-from object_detection.utils import label_map_util
-import tensorflow as tf
-
-
-"""
-This script helps generate similar training and validation splits
+r"""This script helps generate similar training and validation splits
 as the ones used in TensorFlow Object Detection API, which is much
 different than organic coco train2017 and val2017.
 By selecting ~8k specific images(called minival) for validation,
@@ -60,6 +50,17 @@ NOTE: `train2017` and `val2017` folders are supposed to exist at passed-in
 are supposed to exist at passed-in `--annotations` directory.
 """
 
+import json
+import hashlib
+import os
+import contextlib2
+
+import tensorflow as tf
+from object_detection.dataset_tools import tf_record_creation_util
+from object_detection.utils import dataset_util
+from object_detection.utils import label_map_util
+
+# pylint: disable=too-many-locals,too-many-arguments
 
 flags = tf.app.flags
 tf.flags.DEFINE_string(
@@ -371,7 +372,6 @@ def write_tfrecord(image_list,
                 tfrecord_writer[shard_index].write(tf_example.SerializeToString())
             except (ValueError, OSError):
                 skipped += 1
-                pass
 
     tf.logging.info('Finished writing, total {} annotations, '
                     'skipped {} images.'.format(length, skipped))
