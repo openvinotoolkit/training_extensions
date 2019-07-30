@@ -21,13 +21,10 @@ import tensorflow as tf
 import numpy as np
 import cv2
 
-
-from tensorflow_addons.losses import triplet_semihard_loss
-from textile.losses import am_softmax_loss
+from textile.losses import am_softmax_loss, triplet_loss
 
 from textile.model import keras_applications_mobilenetv2, keras_applications_resnet50
-from textile.dataset import create_dataset_path
-from textile.dataset import depreprocess_image
+from textile.dataset import create_dataset_path, depreprocess_image
 
 from textile.metrics import test_model
 
@@ -83,7 +80,8 @@ def collect_hard_images(images, labels, distances, indices, positive):
 
         header = np.zeros((50, c.shape[1], 3))
 
-        text = str(labels[pair[0]]) + '-' + str(labels[pair[1]]) + ': ' + str(distances[pair[0], pair[1]])
+        text = str(labels[pair[0]]) + '-' + str(labels[pair[1]]) + ': ' + str(
+            distances[pair[0], pair[1]])
 
         cv2.putText(header, text, (0, 50), 1, 2.0, (255, 255, 255), 2)
 
@@ -100,13 +98,13 @@ def collect_hard_images(images, labels, distances, indices, positive):
 
     return hard_examples
 
+
 def greatest_loss(images, labels, embeddings):
     arr = cosine_distances(embeddings, embeddings)
     args_max = np.dstack(np.unravel_index(np.argsort(-arr.ravel()),
                                           (embeddings.shape[0], embeddings.shape[0])))[0]
 
     args_min = args_max[::-1]
-
 
     np_images = depreprocess_image(images.numpy())[:, :, :, ::-1]
     np_labels = labels.numpy()
@@ -115,6 +113,7 @@ def greatest_loss(images, labels, embeddings):
     hard_negatives = collect_hard_images(np_images, np_labels, arr, args_min, False)
 
     return hard_positives, hard_negatives
+
 
 def dump_embeddings(model, dataset, dir, batches=10):
     embeddings_folder = os.path.join(dir, 'embs')
@@ -149,7 +148,7 @@ def save_git_info(path):
         json.dump(info, f)
 
 
-#pylint: disable=R0912,R0915
+# pylint: disable=R0912,R0915
 def main():
     args = parse_args()
     if args.model == 'resnet50':
@@ -162,7 +161,8 @@ def main():
     with open(args.augmentation_config) as f:
         augmentation_config = json.load(f)
 
-    dataset, num_classes = create_dataset_path(args.gallery_folder, args.input_size, args.batch_size,
+    dataset, num_classes = create_dataset_path(args.gallery_folder, args.input_size,
+                                               args.batch_size,
                                                augmentation_config)
 
     if args.model_weights:
@@ -191,7 +191,7 @@ def main():
         print(s, m)
         loss_function = am_softmax_loss(num_classes, s, m)
     elif args.loss == 'triplet':
-        loss_function = triplet_semihard_loss
+        loss_function = triplet_loss(margin=1.0)
     else:
         raise Exception('unknown loss')
 
@@ -202,7 +202,6 @@ def main():
         staircase=True)
 
     model.compile(loss=loss_function, optimizer=tf.keras.optimizers.Adam(lr_schedule))
-
 
     with tf.summary.create_file_writer(args.train_dir + "/logs").as_default():
         while True:

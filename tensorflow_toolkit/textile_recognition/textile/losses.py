@@ -69,3 +69,12 @@ def am_softmax_loss(num_classes, s, m, alpha=1.0, gamma=0.0):
         return amsoftmax_loss(labels, output)
 
     return loss
+
+
+def triplet_loss(margin):
+
+    def loss(labels, embeddings):
+        from tensorflow_addons.losses import triplet_semihard_loss
+        return triplet_semihard_loss(labels, embeddings, margin=margin)
+
+    return loss
