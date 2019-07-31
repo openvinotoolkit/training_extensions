@@ -15,7 +15,7 @@
 import os
 import json
 import argparse
-from pygit2 import Repository
+# from pygit2 import Repository
 from sklearn.metrics.pairwise import cosine_distances
 import tensorflow as tf
 import numpy as np
@@ -136,16 +136,16 @@ def save_args(args, path):
         json.dump(args.__dict__, f)
 
 
-def save_git_info(path):
-    repo = Repository(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../.."))
-    info = {
-        "branch": repo.head.shorthand,
-        "commit_hex": repo.revparse_single('HEAD').hex,
-        "commit_message": repo.revparse_single('HEAD').message,
-    }
-
-    with open(path, 'w') as f:
-        json.dump(info, f)
+# def save_git_info(path):
+#     repo = Repository(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../.."))
+#     info = {
+#         "branch": repo.head.shorthand,
+#         "commit_hex": repo.revparse_single('HEAD').hex,
+#         "commit_message": repo.revparse_single('HEAD').message,
+#     }
+#
+#     with open(path, 'w') as f:
+#         json.dump(info, f)
 
 
 # pylint: disable=R0912,R0915
@@ -178,7 +178,7 @@ def main():
         os.makedirs(args.train_dir)
 
     save_args(args, os.path.join(args.train_dir, 'args.json'))
-    save_git_info(os.path.join(args.train_dir, 'git_info.json'))
+    #save_git_info(os.path.join(args.train_dir, 'git_info.json'))
 
     if args.loss.startswith('focal-amsoftmax'):
         _, s, m, alpha, gamma = args.loss.split('_')
