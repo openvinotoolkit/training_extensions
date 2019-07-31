@@ -5,3 +5,4 @@ numpy==1.16.2
 fpdf==1.7.2
 pygit2==0.28.2
 scikit_learn==0.21.2
+opencv-python
