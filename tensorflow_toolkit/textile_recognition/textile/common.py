@@ -73,6 +73,8 @@ def from_list(path, multiple_images_per_label=True):
 
     uniques_labels = set()
 
+    root = path.split()[0]
+
     with open(path) as f:
         for line in f.readlines():
             line = line.strip().split(' ')
@@ -91,7 +93,7 @@ def from_list(path, multiple_images_per_label=True):
             uniques_labels.add(label)
 
             is_real.append(real)
-            impaths.append(impath)
+            impaths.append(os.path.join(root, impath))
             labels.append(int(label))
 
     return impaths, labels, is_real, text_label_to_class_id
