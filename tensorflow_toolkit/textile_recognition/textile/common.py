@@ -73,7 +73,7 @@ def from_list(path, multiple_images_per_label=True):
 
     uniques_labels = set()
 
-    root = path.split()[0]
+    root = os.path.dirname(os.path.abspath(path))
 
     with open(path) as f:
         for line in f.readlines():
@@ -93,6 +93,7 @@ def from_list(path, multiple_images_per_label=True):
             uniques_labels.add(label)
 
             is_real.append(real)
+            print(os.path.join(root, impath))
             impaths.append(os.path.join(root, impath))
             labels.append(int(label))
 
