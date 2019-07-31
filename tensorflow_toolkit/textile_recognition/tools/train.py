@@ -190,8 +190,10 @@ def main():
         s, m = float(s), float(m)
         print(s, m)
         loss_function = am_softmax_loss(num_classes, s, m)
-    elif args.loss == 'triplet':
-        loss_function = triplet_loss(margin=1.0)
+    elif args.loss.startswith('triplet'):
+        _, margin = args.loss.split('_')
+        margin = float(margin)
+        loss_function = triplet_loss(margin=margin)
     else:
         raise Exception('unknown loss')
 
