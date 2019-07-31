@@ -93,7 +93,6 @@ def from_list(path, multiple_images_per_label=True):
             uniques_labels.add(label)
 
             is_real.append(real)
-            print(os.path.join(root, impath))
             impaths.append(os.path.join(root, impath))
             labels.append(int(label))
 
