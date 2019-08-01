@@ -1,0 +1,347 @@
+<?xml version="1.0" ?>
+<mapping>
+	<map>
+		<framework name="shadow/LSTMLayers/decoder/stack_bidirectional_rnn/cell_0/ReverseV2" out_port_id="0"/>
+		<IR id="66" name="shadow/LSTMLayers/decoder/stack_bidirectional_rnn/cell_0/ReverseV2/ReverseSequence/" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="shadow/LSTMLayers/decoder/stack_bidirectional_rnn/cell_1/bidirectional_rnn/fw/fw/transpose_1" out_port_id="0"/>
+		<IR id="72" name="shadow/LSTMLayers/decoder/stack_bidirectional_rnn/cell_1/bidirectional_rnn/fw/fw/transpose_1" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="shadow/BatchNorm_4/FusedBatchNorm" out_port_id="0"/>
+		<IR id="10" name="shadow/Conv_3/Conv2D" out_port_id="3"/>
+	</map>
+	<map>
+		<framework name="shadow/LSTMLayers/decoder/stack_bidirectional_rnn/cell_0/bidirectional_rnn/bw/bw/while/Enter_3" out_port_id="0"/>
+		<IR id="62" name="shadow/LSTMLayers/decoder/stack_bidirectional_rnn/cell_0/bidirectional_rnn/bw/bw/while/Enter_3/Output_0/Data__const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="shadow/Dropout/Identity" out_port_id="0"/>
+		<IR id="1" name="Mul1_/Fused_Mul_/fused_power" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="shadow/BatchNorm/FusedBatchNorm" out_port_id="0"/>
+		<IR id="1" name="Mul1_/Fused_Mul_/fused_power" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="shadow/LSTMLayers/encoder/stack_bidirectional_rnn/cell_0/bidirectional_rnn/bw/bw/transpose_1" out_port_id="0"/>
+		<IR id="34" name="shadow/LSTMLayers/encoder/stack_bidirectional_rnn/cell_0/bidirectional_rnn/bw/bw/transpose_1" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="shadow/LSTMLayers/decoder/stack_bidirectional_rnn/cell_0/bidirectional_rnn/bw/bw/transpose_1" out_port_id="0"/>
+		<IR id="64" name="shadow/LSTMLayers/decoder/stack_bidirectional_rnn/cell_0/bidirectional_rnn/bw/bw/transpose_1" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="shadow/BatchNorm_6/Relu" out_port_id="0"/>
+		<IR id="16" name="shadow/BatchNorm_6/Relu" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="shadow/LSTMLayers/encoder/stack_bidirectional_rnn/cell_0/bidirectional_rnn/fw/fw/while/Enter_4" out_port_id="0"/>
+		<IR id="24" name="shadow/LSTMLayers/encoder/stack_bidirectional_rnn/cell_0/bidirectional_rnn/fw/fw/while/Enter_4/Output_0/Data__const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="shadow/LSTMLayers/decoder/stack_bidirectional_rnn/cell_1/ReverseV2" out_port_id="0"/>
+		<IR id="81" name="shadow/LSTMLayers/decoder/stack_bidirectional_rnn/cell_1/ReverseV2/ReverseSequence/" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="shadow/BatchNorm_7/FusedBatchNorm" out_port_id="0"/>
+		<IR id="18" name="shadow/Conv_6/Conv2D" out_port_id="3"/>
+	</map>
+	<map>
+		<framework name="shadow/LSTMLayers/encoder/stack_bidirectional_rnn/cell_1/bidirectional_rnn/bw/bw/TensorArrayStack/TensorArrayGatherV3" out_port_id="0"/>
+		<IR id="48" name="shadow/LSTMLayers/encoder/stack_bidirectional_rnn/cell_1/bidirectional_rnn/bw/bw/while/LoopCond/TensorIteratorCondition_/TensorIterator" out_port_id="3"/>
+	</map>
+	<map>
+		<framework name="shadow/LSTMLayers/encoder/stack_bidirectional_rnn/cell_1/bidirectional_rnn/fw/fw/while/Enter_4" out_port_id="0"/>
+		<IR id="39" name="shadow/LSTMLayers/encoder/stack_bidirectional_rnn/cell_1/bidirectional_rnn/fw/fw/while/Enter_4/Output_0/Data__const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="shadow/BatchNorm_2/FusedBatchNorm" out_port_id="0"/>
+		<IR id="5" name="shadow/Conv_1/Conv2D" out_port_id="3"/>
+	</map>
+	<map>
+		<framework name="shadow/LSTMLayers/encoder/stack_bidirectional_rnn/cell_0/bidirectional_rnn/fw/fw/TensorArrayStack/TensorArrayGatherV3" out_port_id="0"/>
+		<IR id="26" name="shadow/LSTMLayers/encoder/stack_bidirectional_rnn/cell_0/bidirectional_rnn/fw/fw/while/LoopCond/TensorIteratorCondition_/TensorIterator" out_port_id="3"/>
+	</map>
+	<map>
+		<framework name="shadow/LSTMLayers/encoder/stack_bidirectional_rnn/cell_1/concat" out_port_id="0"/>
+		<IR id="52" name="shadow/LSTMLayers/encoder/stack_bidirectional_rnn/cell_1/concat" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="shadow/LSTMLayers/decoder/stack_bidirectional_rnn/cell_1/bidirectional_rnn/bw/bw/transpose_1" out_port_id="0"/>
+		<IR id="79" name="shadow/LSTMLayers/decoder/stack_bidirectional_rnn/cell_1/bidirectional_rnn/bw/bw/transpose_1" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="shadow/LSTMLayers/encoder/stack_bidirectional_rnn/cell_1/ReverseV2" out_port_id="0"/>
+		<IR id="51" name="shadow/LSTMLayers/encoder/stack_bidirectional_rnn/cell_1/ReverseV2/ReverseSequence/" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="shadow/LSTMLayers/decoder/stack_bidirectional_rnn/cell_0/bidirectional_rnn/bw/bw/TensorArrayStack/TensorArrayGatherV3" out_port_id="0"/>
+		<IR id="63" name="shadow/LSTMLayers/decoder/stack_bidirectional_rnn/cell_0/bidirectional_rnn/bw/bw/while/LoopCond/TensorIteratorCondition_/TensorIterator" out_port_id="3"/>
+	</map>
+	<map>
+		<framework name="shadow/LSTMLayers/encoder/stack_bidirectional_rnn/cell_1/bidirectional_rnn/bw/bw/while/Enter_3" out_port_id="0"/>
+		<IR id="47" name="shadow/LSTMLayers/encoder/stack_bidirectional_rnn/cell_1/bidirectional_rnn/bw/bw/while/Enter_3/Output_0/Data__const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="shadow/LSTMLayers/transpose" out_port_id="0"/>
+		<IR id="88" name="shadow/LSTMLayers/transpose" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="shadow/Dropout_1/Identity" out_port_id="0"/>
+		<IR id="4" name="shadow/MaxPool2D/MaxPool" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="shadow/MaxPool2D/MaxPool" out_port_id="0"/>
+		<IR id="4" name="shadow/MaxPool2D/MaxPool" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="shadow/LSTMLayers/encoder/stack_bidirectional_rnn/cell_0/concat" out_port_id="0"/>
+		<IR id="37" name="shadow/LSTMLayers/encoder/stack_bidirectional_rnn/cell_0/concat" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="shadow/LSTMLayers/decoder/stack_bidirectional_rnn/cell_1/bidirectional_rnn/bw/bw/while/Enter_3" out_port_id="0"/>
+		<IR id="77" name="shadow/LSTMLayers/decoder/stack_bidirectional_rnn/cell_1/bidirectional_rnn/bw/bw/while/Enter_3/Output_0/Data__const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="shadow/LSTMLayers/decoder/stack_bidirectional_rnn/cell_0/bidirectional_rnn/fw/fw/transpose" out_port_id="0"/>
+		<IR id="53" name="shadow/LSTMLayers/decoder/stack_bidirectional_rnn/cell_0/bidirectional_rnn/fw/fw/transpose" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="shadow/LSTMLayers/decoder/stack_bidirectional_rnn/cell_0/bidirectional_rnn/fw/fw/TensorArrayStack/TensorArrayGatherV3" out_port_id="0"/>
+		<IR id="56" name="shadow/LSTMLayers/decoder/stack_bidirectional_rnn/cell_0/bidirectional_rnn/fw/fw/while/LoopCond/TensorIteratorCondition_/TensorIterator" out_port_id="3"/>
+	</map>
+	<map>
+		<framework name="shadow/LSTMLayers/encoder/stack_bidirectional_rnn/cell_0/bidirectional_rnn/bw/bw/transpose" out_port_id="0"/>
+		<IR id="30" name="shadow/LSTMLayers/encoder/stack_bidirectional_rnn/cell_0/bidirectional_rnn/bw/bw/transpose" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="shadow/LSTMLayers/decoder/stack_bidirectional_rnn/cell_1/bidirectional_rnn/fw/fw/while/Enter_4" out_port_id="0"/>
+		<IR id="69" name="shadow/LSTMLayers/decoder/stack_bidirectional_rnn/cell_1/bidirectional_rnn/fw/fw/while/Enter_4/Output_0/Data__const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="shadow/LSTMLayers/Reshape_1" out_port_id="0"/>
+		<IR id="87" name="shadow/LSTMLayers/Reshape_1" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="shadow/Dropout_6/Identity" out_port_id="0"/>
+		<IR id="17" name="shadow/MaxPool2D_3/MaxPool" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="shadow/MaxPool2D_3/MaxPool" out_port_id="0"/>
+		<IR id="17" name="shadow/MaxPool2D_3/MaxPool" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="shadow/BatchNorm_3/FusedBatchNorm" out_port_id="0"/>
+		<IR id="8" name="shadow/Conv_2/Conv2D" out_port_id="3"/>
+	</map>
+	<map>
+		<framework name="shadow/LSTMLayers/encoder/stack_bidirectional_rnn/cell_0/bidirectional_rnn/bw/bw/while/Enter_3" out_port_id="0"/>
+		<IR id="32" name="shadow/LSTMLayers/encoder/stack_bidirectional_rnn/cell_0/bidirectional_rnn/bw/bw/while/Enter_3/Output_0/Data__const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="shadow/LSTMLayers/decoder/stack_bidirectional_rnn/cell_0/bidirectional_rnn/bw/bw/while/Enter_4" out_port_id="0"/>
+		<IR id="61" name="shadow/LSTMLayers/decoder/stack_bidirectional_rnn/cell_0/bidirectional_rnn/bw/bw/while/Enter_4/Output_0/Data__const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="shadow/LSTMLayers/decoder/stack_bidirectional_rnn/cell_1/bidirectional_rnn/fw/fw/while/Enter_3" out_port_id="0"/>
+		<IR id="70" name="shadow/LSTMLayers/decoder/stack_bidirectional_rnn/cell_1/bidirectional_rnn/fw/fw/while/Enter_3/Output_0/Data__const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="shadow/LSTMLayers/decoder/stack_bidirectional_rnn/cell_0/bidirectional_rnn/fw/fw/while/Enter_3" out_port_id="0"/>
+		<IR id="55" name="shadow/LSTMLayers/decoder/stack_bidirectional_rnn/cell_0/bidirectional_rnn/fw/fw/while/Enter_3/Output_0/Data__const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="shadow/LSTMLayers/encoder/stack_bidirectional_rnn/cell_0/bidirectional_rnn/fw/fw/while/Enter_3" out_port_id="0"/>
+		<IR id="25" name="shadow/LSTMLayers/encoder/stack_bidirectional_rnn/cell_0/bidirectional_rnn/fw/fw/while/Enter_3/Output_0/Data__const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="shadow/LSTMLayers/fully_connected/BiasAdd" out_port_id="0"/>
+		<IR id="85" name="shadow/LSTMLayers/fully_connected/MatMul" out_port_id="3"/>
+	</map>
+	<map>
+		<framework name="shadow/LSTMLayers/Reshape_1/shape" out_port_id="0"/>
+		<IR id="86" name="shadow/LSTMLayers/Reshape_1/shape/Output_0/Data__const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="shadow/LSTMLayers/decoder/stack_bidirectional_rnn/cell_0/bidirectional_rnn/fw/fw/while/Enter_4" out_port_id="0"/>
+		<IR id="54" name="shadow/LSTMLayers/decoder/stack_bidirectional_rnn/cell_0/bidirectional_rnn/fw/fw/while/Enter_4/Output_0/Data__const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="shadow/LSTMLayers/decoder/stack_bidirectional_rnn/cell_1/bidirectional_rnn/fw/fw/transpose" out_port_id="0"/>
+		<IR id="68" name="shadow/LSTMLayers/decoder/stack_bidirectional_rnn/cell_1/bidirectional_rnn/fw/fw/transpose" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="shadow/LSTMLayers/encoder/stack_bidirectional_rnn/cell_1/bidirectional_rnn/fw/fw/transpose" out_port_id="0"/>
+		<IR id="38" name="shadow/LSTMLayers/encoder/stack_bidirectional_rnn/cell_1/bidirectional_rnn/fw/fw/transpose" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="shadow/Dropout_4/Identity" out_port_id="0"/>
+		<IR id="12" name="shadow/MaxPool2D_2/MaxPool" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="shadow/MaxPool2D_2/MaxPool" out_port_id="0"/>
+		<IR id="12" name="shadow/MaxPool2D_2/MaxPool" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="shadow/LSTMLayers/encoder/stack_bidirectional_rnn/cell_1/bidirectional_rnn/fw/fw/TensorArrayStack/TensorArrayGatherV3" out_port_id="0"/>
+		<IR id="41" name="shadow/LSTMLayers/encoder/stack_bidirectional_rnn/cell_1/bidirectional_rnn/fw/fw/while/LoopCond/TensorIteratorCondition_/TensorIterator" out_port_id="3"/>
+	</map>
+	<map>
+		<framework name="shadow/LSTMLayers/decoder/stack_bidirectional_rnn/cell_0/bidirectional_rnn/bw/ReverseV2" out_port_id="0"/>
+		<IR id="59" name="shadow/LSTMLayers/decoder/stack_bidirectional_rnn/cell_0/bidirectional_rnn/bw/ReverseV2/ReverseSequence/" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="shadow/LSTMLayers/encoder/stack_bidirectional_rnn/cell_0/bidirectional_rnn/bw/ReverseV2" out_port_id="0"/>
+		<IR id="29" name="shadow/LSTMLayers/encoder/stack_bidirectional_rnn/cell_0/bidirectional_rnn/bw/ReverseV2/ReverseSequence/" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="shadow/BatchNorm_1/FusedBatchNorm" out_port_id="0"/>
+		<IR id="2" name="shadow/Conv/Conv2D" out_port_id="3"/>
+	</map>
+	<map>
+		<framework name="shadow/LSTMLayers/encoder/stack_bidirectional_rnn/cell_0/ReverseV2" out_port_id="0"/>
+		<IR id="36" name="shadow/LSTMLayers/encoder/stack_bidirectional_rnn/cell_0/ReverseV2/ReverseSequence/" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="shadow/BatchNorm_1/Relu" out_port_id="0"/>
+		<IR id="3" name="shadow/BatchNorm_1/Relu" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="shadow/LSTMLayers/decoder/stack_bidirectional_rnn/cell_0/bidirectional_rnn/fw/fw/transpose_1" out_port_id="0"/>
+		<IR id="57" name="shadow/LSTMLayers/decoder/stack_bidirectional_rnn/cell_0/bidirectional_rnn/fw/fw/transpose_1" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="shadow/LSTMLayers/encoder/stack_bidirectional_rnn/cell_0/bidirectional_rnn/fw/fw/transpose" out_port_id="0"/>
+		<IR id="23" name="shadow/LSTMLayers/encoder/stack_bidirectional_rnn/cell_0/bidirectional_rnn/fw/fw/transpose" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="shadow/LSTMLayers/encoder/stack_bidirectional_rnn/cell_1/bidirectional_rnn/bw/bw/while/Enter_4" out_port_id="0"/>
+		<IR id="46" name="shadow/LSTMLayers/encoder/stack_bidirectional_rnn/cell_1/bidirectional_rnn/bw/bw/while/Enter_4/Output_0/Data__const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="shadow/LSTMLayers/encoder/stack_bidirectional_rnn/cell_1/bidirectional_rnn/bw/ReverseV2" out_port_id="0"/>
+		<IR id="44" name="shadow/LSTMLayers/encoder/stack_bidirectional_rnn/cell_1/bidirectional_rnn/bw/ReverseV2/ReverseSequence/" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="shadow/LSTMLayers/decoder/stack_bidirectional_rnn/cell_1/bidirectional_rnn/bw/ReverseV2" out_port_id="0"/>
+		<IR id="74" name="shadow/LSTMLayers/decoder/stack_bidirectional_rnn/cell_1/bidirectional_rnn/bw/ReverseV2/ReverseSequence/" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="Placeholder" out_port_id="0"/>
+		<IR id="0" name="Placeholder" out_port_id="0"/>
+	</map>
+	<map>
+		<framework name="shadow/LSTMLayers/encoder/stack_bidirectional_rnn/cell_0/bidirectional_rnn/bw/bw/while/Enter_4" out_port_id="0"/>
+		<IR id="31" name="shadow/LSTMLayers/encoder/stack_bidirectional_rnn/cell_0/bidirectional_rnn/bw/bw/while/Enter_4/Output_0/Data__const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="shadow/BatchNorm_7/Relu" out_port_id="0"/>
+		<IR id="20" name="shadow/BatchNorm_7/Relu/Transpose" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="shadow/LSTMLayers/decoder/stack_bidirectional_rnn/cell_0/concat" out_port_id="0"/>
+		<IR id="67" name="shadow/LSTMLayers/decoder/stack_bidirectional_rnn/cell_0/concat" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="shadow/LSTMLayers/decoder/stack_bidirectional_rnn/cell_1/concat" out_port_id="0"/>
+		<IR id="82" name="shadow/LSTMLayers/decoder/stack_bidirectional_rnn/cell_1/concat" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="shadow/LSTMLayers/Reshape" out_port_id="0"/>
+		<IR id="84" name="shadow/LSTMLayers/Reshape" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="shadow/BatchNorm_4/Relu" out_port_id="0"/>
+		<IR id="11" name="shadow/BatchNorm_4/Relu" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="shadow/LSTMLayers/encoder/stack_bidirectional_rnn/cell_1/bidirectional_rnn/bw/bw/transpose_1" out_port_id="0"/>
+		<IR id="49" name="shadow/LSTMLayers/encoder/stack_bidirectional_rnn/cell_1/bidirectional_rnn/bw/bw/transpose_1" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="shadow/LSTMLayers/encoder/stack_bidirectional_rnn/cell_1/bidirectional_rnn/fw/fw/transpose_1" out_port_id="0"/>
+		<IR id="42" name="shadow/LSTMLayers/encoder/stack_bidirectional_rnn/cell_1/bidirectional_rnn/fw/fw/transpose_1" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="shadow/LSTMLayers/encoder/stack_bidirectional_rnn/cell_1/bidirectional_rnn/bw/bw/transpose" out_port_id="0"/>
+		<IR id="45" name="shadow/LSTMLayers/encoder/stack_bidirectional_rnn/cell_1/bidirectional_rnn/bw/bw/transpose" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="shadow/Squeeze" out_port_id="0"/>
+		<IR id="22" name="shadow/Squeeze" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="shadow/LSTMLayers/encoder/stack_bidirectional_rnn/cell_0/bidirectional_rnn/fw/fw/transpose_1" out_port_id="0"/>
+		<IR id="27" name="shadow/LSTMLayers/encoder/stack_bidirectional_rnn/cell_0/bidirectional_rnn/fw/fw/transpose_1" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="shadow/LSTMLayers/Reshape/shape" out_port_id="0"/>
+		<IR id="83" name="shadow/LSTMLayers/Reshape/shape/Output_0/Data__const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="shadow/LSTMLayers/decoder/stack_bidirectional_rnn/cell_1/bidirectional_rnn/bw/bw/transpose" out_port_id="0"/>
+		<IR id="75" name="shadow/LSTMLayers/decoder/stack_bidirectional_rnn/cell_1/bidirectional_rnn/bw/bw/transpose" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="shadow/Dropout_3/Identity" out_port_id="0"/>
+		<IR id="9" name="shadow/BatchNorm_3/Relu" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="shadow/BatchNorm_3/Relu" out_port_id="0"/>
+		<IR id="9" name="shadow/BatchNorm_3/Relu" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="shadow/BatchNorm_2/Relu" out_port_id="0"/>
+		<IR id="6" name="shadow/BatchNorm_2/Relu" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="shadow/BatchNorm_6/FusedBatchNorm" out_port_id="0"/>
+		<IR id="15" name="shadow/Conv_5/Conv2D" out_port_id="3"/>
+	</map>
+	<map>
+		<framework name="shadow/LSTMLayers/decoder/stack_bidirectional_rnn/cell_1/bidirectional_rnn/fw/fw/TensorArrayStack/TensorArrayGatherV3" out_port_id="0"/>
+		<IR id="71" name="shadow/LSTMLayers/decoder/stack_bidirectional_rnn/cell_1/bidirectional_rnn/fw/fw/while/LoopCond/TensorIteratorCondition_/TensorIterator" out_port_id="3"/>
+	</map>
+	<map>
+		<framework name="shadow/LSTMLayers/decoder/stack_bidirectional_rnn/cell_0/bidirectional_rnn/bw/bw/transpose" out_port_id="0"/>
+		<IR id="60" name="shadow/LSTMLayers/decoder/stack_bidirectional_rnn/cell_0/bidirectional_rnn/bw/bw/transpose" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="shadow/Dropout_2/Identity" out_port_id="0"/>
+		<IR id="7" name="shadow/MaxPool2D_1/MaxPool" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="shadow/MaxPool2D_1/MaxPool" out_port_id="0"/>
+		<IR id="7" name="shadow/MaxPool2D_1/MaxPool" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="shadow/LSTMLayers/encoder/stack_bidirectional_rnn/cell_1/bidirectional_rnn/fw/fw/while/Enter_3" out_port_id="0"/>
+		<IR id="40" name="shadow/LSTMLayers/encoder/stack_bidirectional_rnn/cell_1/bidirectional_rnn/fw/fw/while/Enter_3/Output_0/Data__const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="shadow/BatchNorm_5/FusedBatchNorm" out_port_id="0"/>
+		<IR id="13" name="shadow/Conv_4/Conv2D" out_port_id="3"/>
+	</map>
+	<map>
+		<framework name="shadow/LSTMLayers/decoder/stack_bidirectional_rnn/cell_1/bidirectional_rnn/bw/bw/TensorArrayStack/TensorArrayGatherV3" out_port_id="0"/>
+		<IR id="78" name="shadow/LSTMLayers/decoder/stack_bidirectional_rnn/cell_1/bidirectional_rnn/bw/bw/while/LoopCond/TensorIteratorCondition_/TensorIterator" out_port_id="3"/>
+	</map>
+	<map>
+		<framework name="shadow/LSTMLayers/decoder/stack_bidirectional_rnn/cell_1/bidirectional_rnn/bw/bw/while/Enter_4" out_port_id="0"/>
+		<IR id="76" name="shadow/LSTMLayers/decoder/stack_bidirectional_rnn/cell_1/bidirectional_rnn/bw/bw/while/Enter_4/Output_0/Data__const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="shadow/LSTMLayers/encoder/stack_bidirectional_rnn/cell_0/bidirectional_rnn/bw/bw/TensorArrayStack/TensorArrayGatherV3" out_port_id="0"/>
+		<IR id="33" name="shadow/LSTMLayers/encoder/stack_bidirectional_rnn/cell_0/bidirectional_rnn/bw/bw/while/LoopCond/TensorIteratorCondition_/TensorIterator" out_port_id="3"/>
+	</map>
+	<map>
+		<framework name="shadow/Dropout_5/Identity" out_port_id="0"/>
+		<IR id="14" name="shadow/BatchNorm_5/Relu" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="shadow/BatchNorm_5/Relu" out_port_id="0"/>
+		<IR id="14" name="shadow/BatchNorm_5/Relu" out_port_id="1"/>
+	</map>
+</mapping>
