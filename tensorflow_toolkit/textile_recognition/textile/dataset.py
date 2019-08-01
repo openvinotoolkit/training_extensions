@@ -19,7 +19,7 @@ import random
 import cv2
 import numpy as np
 import tensorflow as tf
-
+from tqdm import tqdm
 from textile.common import (max_central_square_crop, preproces_image, depreprocess_image, fit_to_max_size, from_list)
 
 
@@ -107,17 +107,47 @@ def distort_color(image):
 
 
 #pylint: disable=R0915
-def create_dataset(impaths, labels, is_real, input_size, batch_size, params, return_original=False):
+def create_dataset(impaths, labels, is_real, input_size, batch_size, params):
+
+    tiled_images = []
+    tiled_images_labels = []
+    tiled_images_is_real = []
+
+
+    for impath, label, real in zip(impaths, labels, is_real):
+        read_image = cv2.imread(impath)
+
+        tiled_images_labels.append(label)
+        tiled_images.append(read_image)
+        tiled_images_is_real.append(real)
+
+        if not real:
+            for tile in range(2, params['max_tiling'] + 1):
+                aspect_ratio = read_image.shape[1] / read_image.shape[0]
+                if aspect_ratio < 1:
+                    w_repeats = tile
+                    h_repeats = max(1 if tile != params['max_tiling'] else 2, int(tile * aspect_ratio))
+                else:
+                    h_repeats = tile
+                    w_repeats = max(1 if tile != params['max_tiling'] else 2, int(tile / aspect_ratio))
+
+                image = np.tile(read_image, (h_repeats, w_repeats, 1))
+
+                image = fit_to_max_size(image, input_size * 2)
+
+                tiled_images_labels.append(label)
+                tiled_images.append(image)
+                tiled_images_is_real.append(real)
 
     if params['weighted_sampling']:
         frequency = {}
-        for l in labels:
+        for l in tiled_images_labels:
             if l not in frequency:
                 frequency[l] = 0
             frequency[l] += 1
 
-        probs = list(range(len(impaths)))
-        for idx, l in enumerate(labels):
+        probs = list(range(len(tiled_images)))
+        for idx, l in enumerate(tiled_images_labels):
             probs[idx] = 1.0 / frequency[l]
 
         probs = np.array(probs)
@@ -126,9 +156,9 @@ def create_dataset(impaths, labels, is_real, input_size, batch_size, params, ret
     assert math.log(params['duplicate_n_times'], 2) == int(math.log(params['duplicate_n_times'], 2))
 
     def random_number():
-        choices = list(range(len(impaths)))
+        choices = list(range(len(tiled_images)))
         if params['weighted_sampling']:
-            choices = np.random.choice(choices, len(impaths), p=probs)
+            choices = np.random.choice(choices, len(tiled_images), p=probs)
         elif params['shuffle']:
             np.random.shuffle(choices)
 
@@ -138,53 +168,37 @@ def create_dataset(impaths, labels, is_real, input_size, batch_size, params, ret
         for choise in choices:
             yield [choise]
 
-    def cv2_preprocess(image):
+    def cv2_noise_and_blur(image):
         image = image.astype(np.float32)
 
         if params['apply_gray_noise'] and np.random.choice([True, False]):
             image = gray_noise(image)
-
-        if params['fit_to_max_size']:
-            image = fit_to_max_size(image, params['fit_to_max_size'])
 
         if params['blur'] and np.random.choice([True, False]):
             image = blur(image)
 
         return image
 
+    def noise_and_blur(image, label):
+        image, = tf.numpy_function(cv2_noise_and_blur, [image], [tf.float32])
+        return image, label
+
     def read(choice):
-        original = cv2.imread(impaths[choice[0]])
-        image = cv2_preprocess(original)
+        image = tiled_images[choice[0]].astype(np.float32)
 
-        if params['sample_original_prob'] > 0 or return_original:
-            original = max_central_square_crop(original)
-            original = cv2.resize(original, (input_size, input_size))
-            original = preproces_image(original)
-            original = original.astype(np.float32)
-        else:
-            original = np.zeros((), dtype=np.float32)
-
-        return original, image, labels[choice[0]], is_real[choice[0]]
+        return image, tiled_images_labels[choice[0]]
 
     def read_image(choice):
-        original, image, label, is_real = tf.numpy_function(read, [choice], [tf.float32, tf.float32, tf.int64, tf.bool])
-        return original, image, label, is_real
+        image, label = tf.numpy_function(read, [choice], [tf.float32, tf.int64])
+        return image, label
 
-    def tf_horizontal_flip(original, image, label):
+    def tf_horizontal_flip(image, label):
         image = tf.image.random_flip_left_right(image)
-        return original, image, label
+        return image, label
 
-    def tf_vertical_flip(original, image, label):
+    def tf_vertical_flip(image, label):
         image = tf.image.random_flip_up_down(image)
-        return original, image, label
-
-    @tf.function
-    def tf_tile(original, image, label, is_real):
-        if tf.not_equal(is_real, tf.constant(True)):
-            vtimes = tf.random.uniform((), 1, params['max_tiling'], dtype=tf.int32)
-            htimes = tf.maximum(1, vtimes + tf.random.uniform((), -1, 1, dtype=tf.int32))
-            image = tf.tile(image, [vtimes, htimes, 1])
-        return original, image, label
+        return image, label
 
     def cv2_rotate(image):
         c_xy = image.shape[1] / 2, image.shape[0] / 2
@@ -197,40 +211,28 @@ def create_dataset(impaths, labels, is_real, input_size, batch_size, params, ret
         img_rotation = cv2.warpAffine(image, rotation_matrix, (image.shape[1], image.shape[0]))
         return img_rotation
 
-    def random_rotate(original, image, label):
+    def random_rotate(image, label):
         if params['add_rot_angle'] > 0 or params['rot90']:
             image, = tf.numpy_function(cv2_rotate, [image], [tf.float32])
-        return original, image, label
-
-    def random_crop_and_resize(original, image, label):
-        image = tf_random_crop_and_resize(image, input_size)
-        return original, image, label
-
-    def random_distort_color(original, image, label):
-        image = distort_color(image)
-
-        return original, image, label
-
-    @tf.function
-    def normalize(original, image, label):
-        image = preproces_image(image)
-
-        if params['sample_original_prob'] > 0:
-            if tf.less(tf.random.uniform((), 0.0, 1.0), params['sample_original_prob']):
-                return original, original, label
-
-        return original, image, label
-
-    def last(original, image, label):
-        if return_original:
-            return original, image, label
         return image, label
+
+    def random_crop_and_resize(image, label):
+        image = tf_random_crop_and_resize(image, input_size)
+        return image, label
+
+    def random_distort_color(image, label):
+        image = distort_color(image)
+        return image, label
+
+    def normalize(image, label):
+        image = preproces_image(image)
+        return image, label
+
 
     dataset = tf.data.Dataset.from_generator(random_number, (tf.int32), (tf.TensorShape([1])))
     dataset = dataset.map(read_image, num_parallel_calls=tf.data.experimental.AUTOTUNE)
-    if params['max_tiling'] > 1:
-        dataset = dataset.map(tf_tile, num_parallel_calls=tf.data.experimental.AUTOTUNE)
     dataset = dataset.map(random_crop_and_resize, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+    dataset = dataset.map(noise_and_blur, num_parallel_calls=tf.data.experimental.AUTOTUNE)
     if params['vertical_flip']:
         dataset = dataset.map(tf_vertical_flip, num_parallel_calls=tf.data.experimental.AUTOTUNE)
     if params['horizontal_flip']:
@@ -238,23 +240,19 @@ def create_dataset(impaths, labels, is_real, input_size, batch_size, params, ret
     dataset = dataset.map(random_rotate, num_parallel_calls=tf.data.experimental.AUTOTUNE)
     dataset = dataset.map(random_distort_color, num_parallel_calls=tf.data.experimental.AUTOTUNE)
     dataset = dataset.map(normalize, num_parallel_calls=tf.data.experimental.AUTOTUNE)
-    dataset = dataset.map(last, num_parallel_calls=tf.data.experimental.AUTOTUNE)
 
-    if return_original:
-        pass
-    else:
-        dataset = dataset.batch(batch_size, drop_remainder=True)
+    dataset = dataset.batch(batch_size, drop_remainder=True)
 
     dataset = dataset.prefetch(tf.data.experimental.AUTOTUNE)
     if params['repeat']:
         dataset = dataset.repeat()
 
-    return dataset, len(set(labels))
+    return dataset, len(set(tiled_images_labels))
 
-def create_dataset_path(path, input_size, batch_size, params, return_original=False):
+def create_dataset_path(path, input_size, batch_size, params):
     impaths, labels, is_real, _ = from_list(path)
 
-    return create_dataset(impaths, labels, is_real, input_size, batch_size, params, return_original)
+    return create_dataset(impaths, labels, is_real, input_size, batch_size, params)
 
 def main():
     import argparse
@@ -269,8 +267,7 @@ def main():
     with open(args.augmentation_config) as f:
         augmentation_config = json.load(f)
 
-    dataset, _ = create_dataset_path(args.gallery_folder, args.input_size, 1, augmentation_config,
-                                     return_original=True)
+    dataset, _ = create_dataset_path(args.gallery_folder, args.input_size, 1, augmentation_config)
 
     t = time.time()
     for original, preprocessed, label in dataset.take(1000):
