@@ -24,16 +24,19 @@ from tensorflow.python.tools.freeze_graph import freeze_graph
 
 from text_recognizer.model import TextRecognition
 from text_recognizer.dataset import Dataset
+from tfutils.helpers import execute_mo
 
 def parse_args():
     """ Parses input arguments. """
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--weights_path', required=True, help='Pretrained model path.')
+    parser.add_argument('--checkpoint', required=True, help='Pretrained model path.')
+    parser.add_argument('--data_type', default='FP32', choices=['FP32', 'FP16'], help='Data type of IR')
+    parser.add_argument('--output_dir', default=None, help='Output Directory')
     return parser.parse_args()
 
 
-def dump_for_tfmo(sess, graph_file, output_node_names):
+def freezing_graph(sess, graph_file, output_node_names):
     """ Saves model as frozen graph."""
 
     assert graph_file.endswith('.pb')
@@ -83,12 +86,21 @@ def main():
     model = TextRecognition(is_training=False, num_classes=num_classes)
     model_out = model(inputdata=tf.placeholder(tf.float32, [1, image_height, image_width, 1]))
 
+    output_dir = args.output_dir if args.output_dir else os.path.join(os.path.basename(args.checkpoint), 'export')
+
     saver = tf.train.Saver()
     with tf.Session() as sess:
-        saver.restore(sess=sess, save_path=args.weights_path)
-        graph_file = 'dump/graph.pb'
-        dump_for_tfmo(sess, graph_file, output_node_names=[model_out.name[:-2]])
+        saver.restore(sess=sess, save_path=args.checkpoint)
+        graph_file = os.path.join(output_dir, 'graph.pb')
+        frozen_graph = freezing_graph(sess, graph_file, output_node_names=[model_out.name[:-2]])
 
+    mo_params = {
+        'model_name': 'text_recognizer',
+        'data_type': args.data_type,
+    }
+
+    export_ir_dir = os.path.join(output_dir, 'IR', args.data_type)
+    execute_mo(mo_params, frozen_graph, export_ir_dir)
 
 if __name__ == '__main__':
     main()

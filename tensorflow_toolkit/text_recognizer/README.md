@@ -32,6 +32,7 @@ echo ". /opt/intel/openvino/bin/setupvars.sh" >> venv/bin/activate
 3. Install the module
 ```bash
 pip3 install -e .
+pip3 install -e ../utils
 ```
 
 ## <a name="Dataset"> Dataset </a>
@@ -80,17 +81,14 @@ python tools/train.py \
 
 ## Export to OpenVINO (IR)
 
-* First step is to freeze your model. The `freeze.py` script will save frozen graph to `./dump/graph.pb.frozen`.
+To run the model via OpenVINO one has to freeze TensorFlow graph and then convert it to OpenVINO Internal Representation
+(IR) using Model Optimizer:
 
 ```bash
-python tools/export.py --weights_path some_pre_trained_weights
+python tools/export.py --checkpoint checkpoint_path \
+    --data
 ```
 
-* Second step is to run `mo.py`
-
-```bash
-mo.py --input_model ./dump/graph.pb.frozen --framework tf
-```
 
 ## Evaluation
 
