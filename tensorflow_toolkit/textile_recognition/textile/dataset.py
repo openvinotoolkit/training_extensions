@@ -107,11 +107,10 @@ def distort_color(image):
 
 
 #pylint: disable=R0915
-def create_dataset(impaths, labels, is_real, input_size, batch_size, params, return_original = False):
+def create_dataset(impaths, labels, is_real, input_size, batch_size, params, return_original=False):
     tiled_images = []
     tiled_images_labels = []
     tiled_images_is_real = []
-
 
     for impath, label, real in zip(impaths, labels, is_real):
         read_image = cv2.imread(impath)
@@ -169,12 +168,7 @@ def create_dataset(impaths, labels, is_real, input_size, batch_size, params, ret
 
     def read(choice):
         image = tiled_images[choice[0]].astype(np.float32)
-
         return image, tiled_images_labels[choice[0]]
-
-    def read_image(choice):
-        image, label = tf.numpy_function(read, [choice], [tf.float32, tf.int64])
-        return image, label
 
     def cv2_rotate(image):
         c_xy = image.shape[1] / 2, image.shape[0] / 2
@@ -187,13 +181,6 @@ def create_dataset(impaths, labels, is_real, input_size, batch_size, params, ret
         img_rotation = cv2.warpAffine(image, rotation_matrix, (image.shape[1], image.shape[0]))
         return img_rotation
 
-    def random_crop_and_resize(original, label):
-        image = tf_random_crop_and_resize(original, input_size)
-        if not return_original:
-            original = tf.constant(0.0)
-        return image, label, original
-
-
     def cv2_noise_and_blur(image):
         image = image.astype(np.float32)
 
@@ -205,56 +192,28 @@ def create_dataset(impaths, labels, is_real, input_size, batch_size, params, ret
 
         return image
 
-    def noise_and_blur(image, label, original):
+    def train_preprocess(choice):
+        original, label = tf.numpy_function(read, [choice], [tf.float32, tf.int64])
+        image = tf_random_crop_and_resize(original, input_size)
         image, = tf.numpy_function(cv2_noise_and_blur, [image], [tf.float32])
-        return image, label, original
-
-    def tf_horizontal_flip(image, label, original):
         if params['horizontal_flip']:
             image = tf.image.random_flip_left_right(image)
-        return image, label, original
-
-    def tf_vertical_flip(image, label, original):
         if params['vertical_flip']:
             image = tf.image.random_flip_up_down(image)
-        return image, label, original
-
-    def random_rotate(image, label, original):
         if params['add_rot_angle'] > 0 or params['rot90']:
             image, = tf.numpy_function(cv2_rotate, [image], [tf.float32])
-        return image, label, original
-
-    def random_distort_color(image, label, original):
         image = distort_color(image)
-        return image, label, original
-
-    def normalize(image, label, original):
         image = preproces_image(image)
-        return image, label, original
-
-    def last(image, label, original):
         if return_original:
             return image, label, original
-        else:
-            return image, label
-
+        return image, label
 
     dataset = tf.data.Dataset.from_generator(random_number, (tf.int32), (tf.TensorShape([1])))
-    dataset = dataset.map(read_image, num_parallel_calls=tf.data.experimental.AUTOTUNE)
-    dataset = dataset.map(random_crop_and_resize, num_parallel_calls=tf.data.experimental.AUTOTUNE)
-    dataset = dataset.map(noise_and_blur, num_parallel_calls=tf.data.experimental.AUTOTUNE)
-    dataset = dataset.map(tf_vertical_flip, num_parallel_calls=tf.data.experimental.AUTOTUNE)
-    dataset = dataset.map(tf_horizontal_flip, num_parallel_calls=tf.data.experimental.AUTOTUNE)
-    dataset = dataset.map(random_rotate, num_parallel_calls=tf.data.experimental.AUTOTUNE)
-    dataset = dataset.map(random_distort_color, num_parallel_calls=tf.data.experimental.AUTOTUNE)
-    dataset = dataset.map(normalize, num_parallel_calls=tf.data.experimental.AUTOTUNE)
-    dataset = dataset.map(last, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+    dataset = dataset.map(train_preprocess, num_parallel_calls=tf.data.experimental.AUTOTUNE)
 
     if not return_original:
         dataset = dataset.batch(batch_size, drop_remainder=True)
-
-    dataset = dataset.prefetch(tf.data.experimental.AUTOTUNE)
-    if params['repeat']:
+        dataset = dataset.prefetch(tf.data.experimental.AUTOTUNE)
         dataset = dataset.repeat()
 
     return dataset, len(set(tiled_images_labels))
