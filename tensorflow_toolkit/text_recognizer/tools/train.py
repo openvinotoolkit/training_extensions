@@ -1,23 +1,37 @@
+#!/usr/bin/env python3
+#
+# Copyright (C) 2019 Intel Corporation
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+
 """ This script allows you to train Text Recognition model. """
 
 import argparse
 import os
+import time
 import numpy as np
 import tensorflow as tf
-import time
 
-from model import TextRecognition
-from dataset import Dataset
+from text_recognizer.model import TextRecognition
+from text_recognizer.dataset import Dataset
 
 
 def parse_args():
     """ Parses input arguments. """
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--annotation_path', type=str, required=True,
-                        help='Training annotation path.')
-    parser.add_argument('--annotation_path_test', type=str, required=False, default='',
-                        help='Test annotation path.')
+    parser.add_argument('--annotation_path', type=str, required=True, help='Training annotation path.')
+    parser.add_argument('--annotation_path_test', type=str, required=False, default='', help='Test annotation path.')
     parser.add_argument('--weights_path', type=str, help='Pretrained model weights.')
     parser.add_argument('--reg', action='store_true', help='Use weights regularization.')
     parser.add_argument('--backbone_dropout', type=float, default=0.0, help='Use dropout')
@@ -25,7 +39,7 @@ def parse_args():
 
     return parser.parse_args()
 
-
+# pylint: disable=too-many-locals,too-many-statements
 def main():
     """ Main training function. """
 

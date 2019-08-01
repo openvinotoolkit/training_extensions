@@ -1,4 +1,4 @@
-# Text Recognition in TensorFlow 1.13
+# Text Recognition in TensorFlow
 
 This repository contains inference and training code for LSTM-based text recognition networks.
 Models code is designed to enable export to frozen graph and inference on CPU via OpenVINO.
@@ -14,27 +14,31 @@ Models code is designed to enable export to frozen graph and inference on CPU vi
 
 ### Installation
 
-It is recommended to use virtual environment, to do that please install `virtualenv`
+1. Create virtual environment
 ```bash
-sudo apt update
-sudo apt install python3-dev python3-pip
-sudo pip3 install -U virtualenv  # system-wide install
-
-virtualenv -p python3 ./venv
-source ./venv/bin/activate
+virtualenv venv -p python3 --prompt="(tr)"
 ```
 
-To install required dependencies run
-
+2. Activate virtual environment and setup OpenVINO variables
 ```bash
-pip install -r requirements.txt
+. venv/bin/activate
+. /opt/intel/openvino/bin/setupvars.sh
+```
+  **NOTE** Good practice is adding `. /opt/intel/openvino/bin/setupvars.sh` to the end of the `venv/bin/activate`.
+```
+echo ". /opt/intel/openvino/bin/setupvars.sh" >> venv/bin/activate
+```
+
+3. Install the module
+```bash
+pip3 install -e .
 ```
 
 ## <a name="Dataset"> Dataset </a>
 
 ### Sources
 
-There is a toy dataset located in `./data`. You can use it to do all steps including:
+There is a toy dataset located in `../../data/text_recognition/annotation.txt`. You can use it to do all steps including:
 * model training
 * model evaluation
 
@@ -58,29 +62,28 @@ See `./data` for more details
 
 
 ```bash
-$ python train.py \
---annotation_path data/annotation.txt \
---learning_rate 0.1 \
+python tools/train.py \
+    --annotation_path ../../data/text_recognition/annotation.txt \
+    --learning_rate 0.1
 ```
 
 You can add one more parameter such as:
-* `weights_path` - weights of pretrained model (checkpoint). That can give your faster convergence and better model.
+* `weights_path` - weights of [pretrained model (checkpoint)](https://download.01.org/opencv/openvino_training_extensions/models/text_recognition/text_recognition.tar.gz). That can give your faster convergence and better model.
 
 ```bash
-$ python train.py \
---annotation_path data/annotation.txt \
---learning_rate 0.1 \
---weights_path some_pre_trained_weights
+python tools/train.py \
+    --annotation_path ../../data/text_recognition/annotation.txt \
+    --learning_rate 0.1 \
+    --weights_path some_pre_trained_weights
 ```
 
 
-## Export TF1.13 models to OpenVINO (IR)
+## Export to OpenVINO (IR)
 
 * First step is to freeze your model. The `freeze.py` script will save frozen graph to `./dump/graph.pb.frozen`.
 
 ```bash
-python freeze.py \
---weights_path some_pre_trained_weights
+python tools/export.py --weights_path some_pre_trained_weights
 ```
 
 * Second step is to run `mo.py`
@@ -89,12 +92,12 @@ python freeze.py \
 mo.py --input_model ./dump/graph.pb.frozen --framework tf
 ```
 
-## Evaluation in TF1.13
+## Evaluation
 
 ```bash
-python test.py \
---annotation_path data/annotation.txt \
---weights_path some_pre_trained_weights
+python tools/test.py \
+    --annotation_path ../../data/text_recognition/annotation.txt \
+    --weights_path some_pre_trained_weights
 ```
 
 ## Demo in OpenVINO

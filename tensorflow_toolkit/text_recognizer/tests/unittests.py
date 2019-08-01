@@ -1,13 +1,25 @@
+# Copyright (C) 2019 Intel Corporation
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions
+# and limitations under the License.
 """ This module contains unit tests. """
 
-import os
-import numpy as np
 import unittest
+import numpy as np
 
 import tensorflow as tf
 
-from dataset import Dataset
-from model import TextRecognition
+from text_recognizer.dataset import Dataset
+from text_recognizer.model import TextRecognition
 
 
 class TestCreateAnnotaion(unittest.TestCase):
@@ -17,9 +29,9 @@ class TestCreateAnnotaion(unittest.TestCase):
         """ setUp method for tests. """
 
         self.image_width = 120
-        self.image_height = 64
-        self.dataset = \
-            Dataset('./data/annotation.txt', self.image_width, self.image_height, repeat=1)
+        self.image_height = 32
+        self.dataset = Dataset('../../data/text_recognition/annotation.txt',
+                               self.image_width, self.image_height, repeat=1)
 
     def test_num_frames(self):
         """ Test for checking number of frames in annotation. """
@@ -39,24 +51,28 @@ class TestCreateAnnotaion(unittest.TestCase):
 class TestTraining(unittest.TestCase):
     """ Tests set for training. """
 
-    def test_training_loss(self):
-        """ Test for checking that training loss decreases. """
+    def setUp(self):
+        """ setUp method for tests. """
 
-        seq_length = 30
-        batch_size = 64
+        self.seq_length = 30
+        self.batch_size = 64
 
         self.image_width = 120
         self.image_height = 32
+        self.dataset = Dataset('../../data/text_recognition/annotation.txt',
+                               self.image_width, self.image_height,
+                               repeat=None, batch_size=self.batch_size)
 
-        self.dataset = Dataset('./data/annotation.txt', self.image_width, self.image_height,
-                               repeat=None, batch_size=batch_size)
+    def test_training_loss(self):
+        """ Test for checking that training loss decreases. """
+
         model = TextRecognition(is_training=True, num_classes=self.dataset.num_classes)
 
         next_sample = self.dataset().make_one_shot_iterator().get_next()
         model_out = model(inputdata=next_sample[0])
 
         ctc_loss = tf.reduce_mean(tf.nn.ctc_loss(labels=next_sample[1], inputs=model_out,
-                                                 sequence_length=seq_length * np.ones(batch_size)))
+                                                 sequence_length=self.seq_length * np.ones(self.batch_size)))
 
         update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
 
