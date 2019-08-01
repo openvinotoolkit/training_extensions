@@ -1,0 +1,22 @@
+{
+    "model": "mobilenetv2",
+    "input_sample_size": [2, 3, 224, 224],
+    "num_classes": 1000,
+    "batch_size" : 256,
+    "weights": "<WEIGHTS_PATH>", // From here https://github.com/tonylins/pytorch-mobilenet-v2
+    "epochs": 5,
+    "optimizer": {
+        "type": "Adam",
+        "base_lr": 0.00001,
+        "schedule_type": "multistep",
+        "steps": [
+            5
+        ]
+    },
+    "compression": {
+        "algorithm": "quantization",
+        "initializer": {
+            "num_init_steps": 10
+        }
+    }
+}

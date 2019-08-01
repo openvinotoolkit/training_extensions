@@ -53,3 +53,4 @@ them for predictions.
   - [Person Vehicle Bike Detector](object_detection/person_vehicle_bike_detection.md)
 * [Segmentation of thoracic organs](segthor)
 * [Super resolution](super_resolution)
+* [Neural Networks Compression Framework](nncf)

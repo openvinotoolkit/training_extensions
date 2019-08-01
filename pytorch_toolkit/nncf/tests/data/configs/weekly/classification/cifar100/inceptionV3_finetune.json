@@ -1,0 +1,21 @@
+{
+    "model": "incept_v3_cifar100",
+    "input_sample_size": [
+        2,
+        3,
+        32,
+        32
+    ],
+    "dataset": "CIFAR100",
+    "batch_size": 256,
+    "optimizer": {
+        "type": "Adam",
+        "weight_decay": 5e-4,
+        "base_lr": 1e-3,
+        "schedule_type": "plateau",
+        "scheduler_params": {
+            "threshold": 0.1,
+            "cooldown": 30
+        }
+    }
+}

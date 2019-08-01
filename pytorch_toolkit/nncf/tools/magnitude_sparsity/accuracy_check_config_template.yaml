@@ -1,0 +1,28 @@
+models:
+  - name: resnet50
+    launchers:
+
+      - framework: dlsdk
+        device: CPU
+        model:   <XML_FILE>
+        weights: <BIN_FILE>
+        adapter: classification
+
+    datasets:
+      - name: ImageNet
+        data_source: <DATA_DIR>
+        annotation: <ANNOTATIONS_FILE>
+        reader: pillow_imread
+        preprocessing:
+          - type: resize
+            size: 256
+            use_pil: True
+            interpolation: BILINEAR
+            aspect_ratio_scale: greater
+          - type: crop
+            size: 224
+            use_pillow: True
+        metrics:
+          - name: accuracy@top1
+            type: accuracy
+            top_k: 1
