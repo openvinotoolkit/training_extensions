@@ -86,7 +86,8 @@ To run the model via OpenVINO one has to freeze TensorFlow graph and then conver
 
 ```bash
 python tools/export.py --checkpoint checkpoint_path \
-    --data
+    --data_type FP32 \
+    --output_dir export
 ```
 
 

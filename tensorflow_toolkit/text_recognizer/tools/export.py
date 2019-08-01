@@ -86,7 +86,7 @@ def main():
     model = TextRecognition(is_training=False, num_classes=num_classes)
     model_out = model(inputdata=tf.placeholder(tf.float32, [1, image_height, image_width, 1]))
 
-    output_dir = args.output_dir if args.output_dir else os.path.join(os.path.basename(args.checkpoint), 'export')
+    output_dir = args.output_dir if args.output_dir else os.path.join(os.path.dirname(args.checkpoint), 'export')
 
     saver = tf.train.Saver()
     with tf.Session() as sess:
