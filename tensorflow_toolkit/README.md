@@ -41,6 +41,7 @@ them for predictions.
 
 * [License Plate Recognition](lpr)
 * [Person Vehicle Bike Detector](person_vehicle_bike_detector)
-* [SSD Object Detection](ssd_detector)
-* [Vehicle Attributes](vehicle_attributes)
 * [SSD MobileNet FPN 602](ssd_mobilenet_fpn_602)
+* [SSD Object Detection](ssd_detector)
+* [Text recognition](text_recognition)
+* [Vehicle Attributes](vehicle_attributes)
