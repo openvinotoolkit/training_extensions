@@ -103,9 +103,7 @@ def main():
     # Set tf summary
     train_start_time = time.strftime('%Y-%m-%d-%H-%M-%S', time.localtime(time.time()))
 
-    model_descr = '{}_bs{}_ilr{}_bbdropout{}_seqlen{}_reg{}' \
-        .format(str(train_start_time), batch_size, starter_learning_rate,
-                args.backbone_dropout, seq_length, args.reg)
+    model_descr = str(train_start_time)
 
     tboard_save_path = 'tboard/' + model_descr
 
