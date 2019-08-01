@@ -30,12 +30,13 @@ def blur(image):
 
 
 def gray_noise(image):
-    gray = np.random.uniform(0.0, 100.0, image.shape[0:2])
-    gray3 = np.array([gray, gray, gray])
-    gray3 = np.transpose(gray3, (1, 2, 0))
-    gray3 = cv2.blur(gray3, ksize=(7, 7))
-    image -= gray3
-    image = np.clip(image, 0.0, 255.0)
+    if np.mean(image) > 100:
+        gray = np.random.uniform(0.0, 100.0, image.shape[0:2])
+        gray3 = np.array([gray, gray, gray])
+        gray3 = np.transpose(gray3, (1, 2, 0))
+        gray3 = cv2.blur(gray3, ksize=(7, 7))
+        image -= gray3
+        image = np.clip(image, 0.0, 255.0)
 
     return image
 
@@ -107,8 +108,7 @@ def distort_color(image):
 
 
 #pylint: disable=R0915
-def create_dataset(impaths, labels, is_real, input_size, batch_size, params):
-
+def create_dataset(impaths, labels, is_real, input_size, batch_size, params, return_original = False):
     tiled_images = []
     tiled_images_labels = []
     tiled_images_is_real = []
@@ -168,21 +168,6 @@ def create_dataset(impaths, labels, is_real, input_size, batch_size, params):
         for choise in choices:
             yield [choise]
 
-    def cv2_noise_and_blur(image):
-        image = image.astype(np.float32)
-
-        if params['apply_gray_noise'] and np.random.choice([True, False]):
-            image = gray_noise(image)
-
-        if params['blur'] and np.random.choice([True, False]):
-            image = blur(image)
-
-        return image
-
-    def noise_and_blur(image, label):
-        image, = tf.numpy_function(cv2_noise_and_blur, [image], [tf.float32])
-        return image, label
-
     def read(choice):
         image = tiled_images[choice[0]].astype(np.float32)
 
@@ -190,14 +175,6 @@ def create_dataset(impaths, labels, is_real, input_size, batch_size, params):
 
     def read_image(choice):
         image, label = tf.numpy_function(read, [choice], [tf.float32, tf.int64])
-        return image, label
-
-    def tf_horizontal_flip(image, label):
-        image = tf.image.random_flip_left_right(image)
-        return image, label
-
-    def tf_vertical_flip(image, label):
-        image = tf.image.random_flip_up_down(image)
         return image, label
 
     def cv2_rotate(image):
@@ -211,37 +188,70 @@ def create_dataset(impaths, labels, is_real, input_size, batch_size, params):
         img_rotation = cv2.warpAffine(image, rotation_matrix, (image.shape[1], image.shape[0]))
         return img_rotation
 
-    def random_rotate(image, label):
+    def random_crop_and_resize(original, label):
+        image = tf_random_crop_and_resize(original, input_size)
+        if not return_original:
+            original = tf.constant(0.0)
+        return image, label, original
+
+    def tf_horizontal_flip(image, label, original):
+        if params['horizontal_flip']:
+            image = tf.image.random_flip_left_right(image)
+        return image, label, original
+
+    def tf_vertical_flip(image, label, original):
+        if params['vertical_flip']:
+            image = tf.image.random_flip_up_down(image)
+        return image, label, original
+
+    def random_rotate(image, label, original):
         if params['add_rot_angle'] > 0 or params['rot90']:
             image, = tf.numpy_function(cv2_rotate, [image], [tf.float32])
-        return image, label
+        return image, label, original
 
-    def random_crop_and_resize(image, label):
-        image = tf_random_crop_and_resize(image, input_size)
-        return image, label
+    def cv2_noise_and_blur(image):
+        image = image.astype(np.float32)
 
-    def random_distort_color(image, label):
+        if params['apply_gray_noise'] and np.random.choice([True, False]):
+            image = gray_noise(image)
+
+        if params['blur'] and np.random.choice([True, False]):
+            image = blur(image)
+
+        return image
+
+    def noise_and_blur(image, label, original):
+        image, = tf.numpy_function(cv2_noise_and_blur, [image], [tf.float32])
+        return image, label, original
+
+    def random_distort_color(image, label, original):
         image = distort_color(image)
-        return image, label
+        return image, label, original
 
-    def normalize(image, label):
+    def normalize(image, label, original):
         image = preproces_image(image)
-        return image, label
+        return image, label, original
+
+    def last(image, label, original):
+        if return_original:
+            return image, label, original
+        else:
+            return image, label
 
 
     dataset = tf.data.Dataset.from_generator(random_number, (tf.int32), (tf.TensorShape([1])))
     dataset = dataset.map(read_image, num_parallel_calls=tf.data.experimental.AUTOTUNE)
     dataset = dataset.map(random_crop_and_resize, num_parallel_calls=tf.data.experimental.AUTOTUNE)
     dataset = dataset.map(noise_and_blur, num_parallel_calls=tf.data.experimental.AUTOTUNE)
-    if params['vertical_flip']:
-        dataset = dataset.map(tf_vertical_flip, num_parallel_calls=tf.data.experimental.AUTOTUNE)
-    if params['horizontal_flip']:
-        dataset = dataset.map(tf_horizontal_flip, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+    dataset = dataset.map(tf_vertical_flip, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+    dataset = dataset.map(tf_horizontal_flip, num_parallel_calls=tf.data.experimental.AUTOTUNE)
     dataset = dataset.map(random_rotate, num_parallel_calls=tf.data.experimental.AUTOTUNE)
     dataset = dataset.map(random_distort_color, num_parallel_calls=tf.data.experimental.AUTOTUNE)
     dataset = dataset.map(normalize, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+    dataset = dataset.map(last, num_parallel_calls=tf.data.experimental.AUTOTUNE)
 
-    dataset = dataset.batch(batch_size, drop_remainder=True)
+    if not return_original:
+        dataset = dataset.batch(batch_size, drop_remainder=True)
 
     dataset = dataset.prefetch(tf.data.experimental.AUTOTUNE)
     if params['repeat']:
@@ -260,20 +270,19 @@ def main():
 
     args = argparse.ArgumentParser()
     args.add_argument('--gallery_folder', required=True)
-    args.add_argument('--input_size', default=128, type=int)
+    args.add_argument('--input_size', default=224, type=int)
     args.add_argument('--augmentation_config', required=True)
     args = args.parse_args()
 
     with open(args.augmentation_config) as f:
         augmentation_config = json.load(f)
 
-    dataset, _ = create_dataset_path(args.gallery_folder, args.input_size, 1, augmentation_config)
+    dataset, _ = create_dataset_path(args.gallery_folder, args.input_size, 1, augmentation_config, True)
 
     t = time.time()
-    for original, preprocessed, label in dataset.take(1000):
-        assert original.shape
-        cv2.imshow('original', depreprocess_image(original.numpy()))
+    for preprocessed, label, original in dataset.take(1000):
         cv2.imshow('preprocessed', depreprocess_image(preprocessed.numpy()))
+        cv2.imshow('original', original.numpy().astype(np.uint8))
         print(label)
         if cv2.waitKey(0) == 27:
             break
