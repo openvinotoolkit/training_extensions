@@ -19,7 +19,6 @@ import random
 import cv2
 import numpy as np
 import tensorflow as tf
-from tqdm import tqdm
 from textile.common import (max_central_square_crop, preproces_image, depreprocess_image, fit_to_max_size, from_list)
 
 
@@ -194,20 +193,6 @@ def create_dataset(impaths, labels, is_real, input_size, batch_size, params, ret
             original = tf.constant(0.0)
         return image, label, original
 
-    def tf_horizontal_flip(image, label, original):
-        if params['horizontal_flip']:
-            image = tf.image.random_flip_left_right(image)
-        return image, label, original
-
-    def tf_vertical_flip(image, label, original):
-        if params['vertical_flip']:
-            image = tf.image.random_flip_up_down(image)
-        return image, label, original
-
-    def random_rotate(image, label, original):
-        if params['add_rot_angle'] > 0 or params['rot90']:
-            image, = tf.numpy_function(cv2_rotate, [image], [tf.float32])
-        return image, label, original
 
     def cv2_noise_and_blur(image):
         image = image.astype(np.float32)
@@ -222,6 +207,21 @@ def create_dataset(impaths, labels, is_real, input_size, batch_size, params, ret
 
     def noise_and_blur(image, label, original):
         image, = tf.numpy_function(cv2_noise_and_blur, [image], [tf.float32])
+        return image, label, original
+
+    def tf_horizontal_flip(image, label, original):
+        if params['horizontal_flip']:
+            image = tf.image.random_flip_left_right(image)
+        return image, label, original
+
+    def tf_vertical_flip(image, label, original):
+        if params['vertical_flip']:
+            image = tf.image.random_flip_up_down(image)
+        return image, label, original
+
+    def random_rotate(image, label, original):
+        if params['add_rot_angle'] > 0 or params['rot90']:
+            image, = tf.numpy_function(cv2_rotate, [image], [tf.float32])
         return image, label, original
 
     def random_distort_color(image, label, original):
