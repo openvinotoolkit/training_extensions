@@ -17,11 +17,9 @@ import tensorflow.keras.backend as K
 
 
 class AMSoftmax(tf.keras.layers.Layer):
-    def __init__(self, units, s=10, m=0.35, **kwargs):
+    def __init__(self, units, **kwargs):
         super(AMSoftmax, self).__init__(**kwargs)
         self.units = units
-        self.s = s
-        self.m = m
         self.kernel = None
 
     def build(self, input_shape):
@@ -29,44 +27,63 @@ class AMSoftmax(tf.keras.layers.Layer):
                                       initializer=tf.keras.initializers.get('glorot_uniform'))
 
     def call(self, inputs, **kwargs):
-        kernel = tf.nn.l2_normalize(self.kernel * 1000, axis=0, epsilon=1e-13)
+        kernel = tf.nn.l2_normalize(self.kernel, axis=0, epsilon=1e-13)
+
+        # tf.print('kernel.shape', kernel.shape)
+        # tf.print('inputs.shape', inputs.shape)
+
+        # tf.print('kernel.norm', tf.norm(kernel, axis=0))
+        # tf.print('inputs.norm', tf.norm(inputs, axis=1))
 
         cos_theta = K.dot(inputs, kernel)
+
         cos_theta = K.clip(cos_theta, -1.0, 1.0)
+        #
+        # phi_theta = cos_theta - self.m
 
-        psi = cos_theta - self.m
 
-        e_cos_theta = K.exp(self.s * cos_theta)
 
-        e_psi = K.exp(self.s * psi)
 
-        sum_x = K.sum(e_cos_theta, axis=-1, keepdims=True)
+        # e_cos_theta = K.exp(self.s * cos_theta)
+        #
+        # e_psi = K.exp(self.s * phi_theta)
+        #
+        # sum_x = K.sum(e_cos_theta, axis=-1, keepdims=True)
+        #
+        # temp = e_psi - e_cos_theta
+        #
+        # temp = temp + sum_x
+        #
+        # output = e_psi / temp
 
-        temp = e_psi - e_cos_theta
-
-        temp = temp + sum_x
-
-        output = e_psi / temp
-
-        return tf.identity(output)
+        return tf.identity(cos_theta)
 
 
 def am_softmax_loss(num_classes, s, m, alpha=1.0, gamma=0.0):
-    def amsoftmax_loss(y_true, y_pred):
+    def amsoftmax_loss(y_true, cos_theta):
+        phi_theta = cos_theta - m
+
         y_true = tf.reshape(y_true, (-1,))
-        y_true = tf.one_hot(tf.cast(y_true, tf.int32), num_classes)
-        d1 = K.sum(y_true * y_pred, axis=-1)
+        y_true_one_hot = tf.one_hot(tf.cast(y_true, tf.int32), num_classes)
 
-        d1 = K.clip(d1, K.epsilon(), 1.0 - K.epsilon())
 
-        d1 = alpha * (tf.math.pow(1.0 - d1, gamma)) * K.log(d1)
+        output = tf.where(tf.cast(y_true_one_hot, tf.bool), phi_theta, cos_theta)
 
-        loss = -K.mean(d1, axis=-1)
+        output = output * s
+
+
+        # d1 = K.sum(y_true * y_pred, axis=-1)
+        #
+        # d1 = K.clip(d1, K.epsilon(), 1.0 - K.epsilon())
+        #
+        # d1 = alpha * (tf.math.pow(1.0 - d1, gamma)) * K.log(d1)
+
+        loss = tf.keras.losses.CategoricalCrossentropy(from_logits=True)(y_true_one_hot, output)
         return loss
 
     def loss(labels, embeddings):
-        output = AMSoftmax(num_classes, s, m)(embeddings)
-        return amsoftmax_loss(labels, output)
+        cos_theta = AMSoftmax(num_classes)(embeddings)
+        return amsoftmax_loss(labels, cos_theta)
 
     return loss
 
