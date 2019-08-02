@@ -45,3 +45,9 @@ inference.
   * [SSD Object Detection](tensorflow_toolkit/ssd_detector)
   * [Text recognition](text_recognition)
   * [Vehicle Attributes](tensorflow_toolkit/vehicle_attributes)
+
+# Tools
+
+* [PyTorch](pytorch_toolkit)
+
+  * [Neural Networks Compression Framework](pytorch_toolkit/nncf)

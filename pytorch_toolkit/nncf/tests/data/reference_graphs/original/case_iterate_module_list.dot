@@ -1,0 +1,4 @@
+strict digraph  {
+"0 Net/ModuleList[ml]/Conv2d[0]/conv2d" [id=0, scope="Net/ModuleList[ml]/Conv2d[0]", type=conv2d];
+"1 Net/ModuleList[ml]/Conv2d[1]/conv2d" [id=1, scope="Net/ModuleList[ml]/Conv2d[1]", type=conv2d];
+}
