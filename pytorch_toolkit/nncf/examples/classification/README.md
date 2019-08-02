@@ -41,7 +41,7 @@ To export a model to OpenVINO IR and run it using Intel Deep Learning Deployment
 ### Results   for INT8 quantization
 
 | Model | Dataset | FP32 baseline | Compressed model accuracy | Config path | Checkpoint |
-|--|--|--|--|--|--|
+| :-- | :-: | :-: | :-: | :-: | :-: |
 | ResNet-50 INT8 quantized | ImageNet | 76.13 | 76.49 | examples/classification/configs/quantization/resnet50_imagenet_int8.json |  [Link](https://download.01.org/opencv/openvino_training_extensions/models/nncf/resnet50_imagenet_int8.pth) |
 | ResNet-50 INT8 w/ 60% of sparsity (RB) | ImageNet | 76.13 | 75.2 | examples/classification/configs/sparsity_quantization/resnet50_imagenet_sparsity_int8.json |  [Link](https://download.01.org/opencv/openvino_training_extensions/models/nncf/resnet50_imagenet_sparsity_int8.pth) |
 | Inception v3 INT8 quantized | ImageNet | 77.32 | 78.06 | examples/classification/configs/quantization/inceptionV3_imagenet_int8.json |  [Link](https://download.01.org/opencv/openvino_training_extensions/models/nncf/inception_v3_imagenet_int8.pth) |

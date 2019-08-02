@@ -10,7 +10,7 @@ Logically all parameters are divided into two groups:
 ## Example of the configuration file
 This is an example of the configuration file that contains training and compression parameters for two algorithms: sparsity and INT8 quantization which are applied to MobileNet v2 model on ImageNet classification task.  See the description of each setting as comments inside the file.
 
-```json
+```yaml
 {
     /* Training hyperparameters */
     "model": "mobilenetv2", // Model name

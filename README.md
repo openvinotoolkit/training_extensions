@@ -44,3 +44,9 @@ inference.
   * [Person Vehicle Bike Detector](tensorflow_toolkit/person_vehicle_bike_detector)
   * [SSD Object Detection](tensorflow_toolkit/ssd_detector)
   * [Vehicle Attributes](tensorflow_toolkit/vehicle_attributes)
+
+# Tools
+
+* [PyTorch](pytorch_toolkit)
+
+  * [Neural Networks Compression Framework](pytorch_toolkit/nncf)

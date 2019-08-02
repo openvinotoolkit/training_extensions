@@ -42,7 +42,7 @@ To export a model to OpenVINO IR and run it using Intel Deep Learning Deployment
 ### Results
   
 | Model | Compression Algorithms | Dataset | mIoU | Config path | PyTorch checkpoint |
-|--|--|--|--|--|--|
+| :-- | :-: | :-: | :-: | :-: | :-: |
 | UNet | None (FP32) | CamVid | 71.95 | examples/segmentation/configs/unet_camvid.json | [Link](https://download.01.org/opencv/openvino_training_extensions/models/nncf/unet_camvid.pth) |
 | UNet | Int8 | CamVid | 71.82 | examples/segmentation/configs/unet_camvid_int8.json | [Link](https://download.01.org/opencv/openvino_training_extensions/models/nncf/unet_camvid_int8.pth) |
 | UNet | Int8 + 60% magnitude sparsity  | CamVid | 71.90 | examples/segmentation/configs/unet_camvid_magnitude_sparsity_int8.json | [Link](https://download.01.org/opencv/openvino_training_extensions/models/nncf/unet_camvid_magnitude_sparsity_int8.pth) |

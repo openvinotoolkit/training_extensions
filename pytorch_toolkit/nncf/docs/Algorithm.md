@@ -6,7 +6,8 @@ The compression method is divided into three logical parts:
 - The scheduler that implements API of `CompressionScheduler` class and compression method scheduling control logic.
 - The loss that implements API of `CompressionLoss` class and loss function that is used in the compression method during the training process.
 
-Note: In case a custom compression method does not implement its own scheduler and loss then the default implementations are used.
+**Note**: In case a custom compression method does not implement its own scheduler and loss then the default implementations are used.
+
 ## `CompressionAlgorithm`
 `CompressionAlgorithm` class is designed to represent the compression method and its logic. It should contain references to the `CompressionScheduler`, `CompressionLoss`, and compressing model instances that are used in the method so they are accessible in the training loop.
 The class methods:

@@ -40,7 +40,7 @@ To export a model to OpenVINO IR and run it using Intel Deep Learning Deployment
 ### Results
   
 | Model | Compression Algorithms | Dataset | mAP @ 0.5IoU | Config path | PyTorch checkpoint |
-|--|--|--|--|--|--|
+| :-- | :-: | :-: | :-: | :-: | :-: |
 | SSD300-BN | None (FP32) | VOC12+07 | 78.28 | examples/object_detection/configs/ssd300_vgg_voc.json | [Link](https://download.01.org/opencv/openvino_training_extensions/models/nncf/ssd300_vgg_voc.pth) |
 | SSD300-BN | Int8 | VOC12+07 | 78.18 | examples/object_detection/configs/ssd300_vgg_int8_voc.json | [Link](https://download.01.org/opencv/openvino_training_extensions/models/nncf/ssd300_vgg_voc_int8.pth) |
 | SSD300-BN | Int8 + Sparsity 70% (Magnitude) | VOC12+07 | 77.63 | examples/object_detection/configs/ssd300_vgg_int8_mag_voc.json | [Link](https://download.01.org/opencv/openvino_training_extensions/models/nncf/ssd300_vgg_voc_int8_sparse.pth) |

@@ -41,8 +41,8 @@ Do not forget to update several environment variables are required to compile an
 
 
 ## Models
-After installation, you are ready to train your own models, evaluate them, use
-them for predictions.
+After installation, you are ready to train your own models, evaluate and use
+them for prediction.
 
 * [Action recognition](action_recognition)
 * [Face recognition](face_recognition)
@@ -53,4 +53,9 @@ them for predictions.
   - [Person Vehicle Bike Detector](object_detection/person_vehicle_bike_detection.md)
 * [Segmentation of thoracic organs](segthor)
 * [Super resolution](super_resolution)
+
+## Tools
+Tools are intended to perform manipulations with traned models, e.g. compress models using Quantization-aware training or sparsity.
+
 * [Neural Networks Compression Framework](nncf)
+
