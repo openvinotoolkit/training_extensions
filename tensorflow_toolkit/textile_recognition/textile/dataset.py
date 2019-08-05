@@ -13,6 +13,7 @@
 # and limitations under the License.
 
 import json
+import collections
 import math
 import random
 
@@ -112,9 +113,12 @@ def create_dataset(impaths, labels, is_real, input_size, batch_size, params, ret
     tiled_images_labels = []
     tiled_images_is_real = []
 
+    tiled_images_indexes_per_class = collections.defaultdict(list)
+
     for impath, label, real in zip(impaths, labels, is_real):
         read_image = cv2.imread(impath)
 
+        tiled_images_indexes_per_class[label].append(len(tiled_images))
         tiled_images_labels.append(label)
         tiled_images.append(read_image)
         tiled_images_is_real.append(real)
@@ -135,6 +139,7 @@ def create_dataset(impaths, labels, is_real, input_size, batch_size, params, ret
 
                 image = fit_to_max_size(image, input_size * 2)
 
+                tiled_images_indexes_per_class[label].append(len(tiled_images))
                 tiled_images_labels.append(label)
                 tiled_images.append(image)
                 tiled_images_is_real.append(real)
@@ -162,10 +167,12 @@ def create_dataset(impaths, labels, is_real, input_size, batch_size, params, ret
         elif params['shuffle']:
             np.random.shuffle(choices)
 
-        for _ in range(int(math.log(params['duplicate_n_times'], 2))):
-            choices = [x for t in zip(choices, choices) for x in t]
+        ducplicated_choices = []
+        for choice in choices:
+            for _ in range(params['duplicate_n_times']):
+                ducplicated_choices.append(int(np.random.choice(tiled_images_indexes_per_class[tiled_images_labels[choice]], 1)))
 
-        for choise in choices:
+        for choise in ducplicated_choices:
             yield [choise]
 
     def read(choice):
