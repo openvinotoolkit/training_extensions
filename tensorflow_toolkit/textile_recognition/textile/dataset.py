@@ -19,7 +19,7 @@ import random
 import cv2
 import numpy as np
 import tensorflow as tf
-from textile.common import (max_central_square_crop, preproces_image, depreprocess_image, fit_to_max_size, from_list)
+from textile.common import preproces_image, depreprocess_image, fit_to_max_size, from_list
 
 
 def blur(image):
@@ -106,7 +106,7 @@ def distort_color(image):
     return image
 
 
-#pylint: disable=R0915
+# pylint: disable=R0915
 def create_dataset(impaths, labels, is_real, input_size, batch_size, params, return_original=False):
     tiled_images = []
     tiled_images_labels = []
@@ -124,10 +124,12 @@ def create_dataset(impaths, labels, is_real, input_size, batch_size, params, ret
                 aspect_ratio = read_image.shape[1] / read_image.shape[0]
                 if aspect_ratio < 1:
                     w_repeats = tile
-                    h_repeats = max(1 if tile != params['max_tiling'] else 2, int(tile * aspect_ratio))
+                    h_repeats = max(1 if tile != params['max_tiling'] else 2,
+                                    int(tile * aspect_ratio))
                 else:
                     h_repeats = tile
-                    w_repeats = max(1 if tile != params['max_tiling'] else 2, int(tile / aspect_ratio))
+                    w_repeats = max(1 if tile != params['max_tiling'] else 2,
+                                    int(tile / aspect_ratio))
 
                 image = np.tile(read_image, (h_repeats, w_repeats, 1))
 
@@ -218,10 +220,12 @@ def create_dataset(impaths, labels, is_real, input_size, batch_size, params, ret
 
     return dataset, len(set(tiled_images_labels))
 
+
 def create_dataset_path(path, input_size, batch_size, params):
     impaths, labels, is_real, _ = from_list(path)
 
     return create_dataset(impaths, labels, is_real, input_size, batch_size, params)
+
 
 def main():
     import argparse
@@ -236,7 +240,8 @@ def main():
     with open(args.augmentation_config) as f:
         augmentation_config = json.load(f)
 
-    dataset, _ = create_dataset_path(args.gallery_folder, args.input_size, 1, augmentation_config, True)
+    dataset, _ = create_dataset_path(args.gallery_folder, args.input_size, 1, augmentation_config,
+                                     True)
 
     t = time.time()
     for preprocessed, label, original in dataset.take(1000):
