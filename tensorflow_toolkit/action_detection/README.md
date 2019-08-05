@@ -4,7 +4,6 @@ This repository contains TensorFlow code for deployment of person detection (PD)
 ## Pre-requisites
 - Ubuntu 16.04 / 18.04
 - Python 2.7
-- For Python pre-requisites refer to `requirements.txt`
 
 ## Installation
  1. Create virtual environment
@@ -39,7 +38,7 @@ Proposed repository allows to carry out the full cycle model training procedure.
 To prepare a dataset follow the [instruction](./README_DATA.md)
 
 ## Action list definition
-Current repository is configured to work with 6-class action detection task but you can easily define own set of actions. After the [data preparation](#data-preparation) step you should have the configured class mapping file. Next we will use class `IDs` from there. Then change `$REPO_ROOT/configs/action/pedestriandb_twinnet_actionnet.yml` file according you set of actions:
+Current repository is configured to work with 6-class action detection task but you can easily define own set of actions. After the [data preparation](#data-preparation) step you should have the configured class mapping file. Next we will use class `IDs` from there. Then change `configs/action/pedestriandb_twinnet_actionnet.yml` file according you set of actions:
  1. Field `ACTIONS_MAP` maps class `IDs` of input data into final set of actions. Note, that some kind of `undefined` class (if you have it) should be placed at he end of action list (to exclude it during training).
  2. Field `VALID_ACTION_NAMES` stores names of valid actions, which you want to recognize (excluding `undefined` action).
  4. If you have the `undefined` class set field `UNDEFINED_ACTION_ID` to `ID` of this class from `ACTIONS_MAP` map. Also add this `ID` to list: `IGNORE_CLASSES`.
@@ -75,8 +74,8 @@ Bellow you can see the example of the valid field definition:
 ## Person Detection and Action Recognition model training
 Assume we have a pre-trained model and want to fine-tune PD&AR model. In this case the the train procedure consists of next consistent stages:
  1. [Model training](#action-detection-model-training)
- 2. (Optional) [Model evaluation](#action-detection-model-evaluation)
- 3. (Optional) [Model demostration](#action-detection-model-demonstration)
+ 2. [Model evaluation](#action-detection-model-evaluation)
+ 3. [Model demonstration](#action-detection-model-demonstration)
  4. [Graph optimization](#action-detection-model-optimization)
  5. [Export to IR format](#export-to-ir-format)
 
@@ -136,7 +135,7 @@ Note to scale the output screen size you can specify the `--out_scale` key with 
 
 ```Shell
 PYTHONPATH=$PYTHONPATH:$REPO_ROOT \
-python2 tools/models/optimize.py -c configs/action/pedestriandb_twinnet_actionnet.yml \ # path to config file
+python2 tools/models/export.py -c configs/action/pedestriandb_twinnet_actionnet.yml \ # path to config file
                                  -s <PATH_TO_SNAPSHOT> \                                # snapshot model weights
                                  -o <PATH_TO_OUTPUT_DIR> \                              # directory for the output model
 ```

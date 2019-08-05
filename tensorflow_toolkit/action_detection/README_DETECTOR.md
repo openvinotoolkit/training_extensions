@@ -1,8 +1,8 @@
 # Object detection
 Current repository includes training and evaluation tools for general object detection task. You can use one of the prepared config files to train the model on:
- - Pascal VOC0712 dataset (`$REPO_ROOT/configs/detection/pascal_rmnet_ssd.yml`)
- - MS COCO dataset (`$REPO_ROOT/configs/detection/coco_rmnet_ssd.yml`)
- - Pedestrian DB dataset (`$REPO_ROOT/configs/detection/pedestriandb_rmnet_ssd.yml`)
+ - Pascal VOC0712 dataset (`configs/detection/pascal_rmnet_ssd.yml`)
+ - MS COCO dataset (`configs/detection/coco_rmnet_ssd.yml`)
+ - Pedestrian DB dataset (`configs/detection/pedestriandb_rmnet_ssd.yml`)
 
 ## Data preparation
 To prepare a dataset follow the [instruction](./README_DATA.md)

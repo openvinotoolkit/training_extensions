@@ -1,6 +1,6 @@
 # Image classification
 Current repository includes training and evaluation tools for image classification task. You can use one of the prepared config files to train the model on:
- - ImageNet dataset (`$REPO_ROOT/configs/classification/imagenet_rmnet.yml`)
+ - ImageNet dataset (`configs/classification/imagenet_rmnet.yml`)
 
 ## Data preparation
 Assume next structure of data:
