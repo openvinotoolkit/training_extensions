@@ -112,9 +112,6 @@ def test_model(model_path, model_backend, model, gallery_path, test_data_path, t
     compute_embeddings_times = []
     search_in_gallery_times = []
 
-    # fourcc = cv2.VideoWriter_fourcc(*'H264')
-    # out = cv2.VideoWriter('output.avi', fourcc, 15.0, (980, 920))
-
     for image, probe_class, view_frame in frames.frames_gen():
         if image is not None:
             image = central_crop(image, divide_by=5, shift=1)

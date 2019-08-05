@@ -82,9 +82,7 @@ def main():
         model_dir = os.path.dirname(args.model_weights)
         export_folder = args.output_dir if args.output_dir else os.path.join(model_dir, 'export')
 
-        # export_folder = tempfile.mktemp()
         output_node_name = 'model/flatten/Reshape'
-        #print(embedding.name[:-2])
 
         tf.compat.v1.saved_model.simple_save(sess, export_folder,
                                              inputs={'input': input_tensor},
