@@ -28,7 +28,8 @@ def parse_args():
     parser.add_argument('--model_weights', required=True, help='Path to model weights.')
     parser.add_argument('--input_size', default=128, type=int, help='Input image size.')
     parser.add_argument('--model', choices=['resnet50', 'mobilenet_v2'], required=True)
-    parser.add_argument('--data_type', default='FP32', choices=['FP32', 'FP16'], help='Data type of IR')
+    parser.add_argument('--data_type', default='FP32', choices=['FP32', 'FP16'],
+                        help='Data type of IR')
     parser.add_argument('--output_dir', default=None, help='Output Directory')
     return parser.parse_args()
 
@@ -89,10 +90,6 @@ def main():
                                              outputs={embedding.name[:-2]: embedding})
 
         frozen_graph_path = os.path.join(export_folder, 'frozen_graph.pb')
-
-
-        print(output_node_name)
-
 
         freeze_graph(
             input_graph=None,
