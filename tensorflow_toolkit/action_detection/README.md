@@ -23,7 +23,7 @@ This repository contains TensorFlow code for deployment of person detection (PD)
 
  3. Install modules
  ```bash
- pip2 install -r requirements.txt
+ pip2 install -e .
  ```
 
 ## Model training

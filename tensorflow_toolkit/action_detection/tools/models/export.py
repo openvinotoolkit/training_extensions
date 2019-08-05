@@ -15,7 +15,7 @@ from os import makedirs
 from os.path import exists, basename, join
 from argparse import ArgumentParser
 
-from nn.monitors.factory import get_monitor
+from action_detection.nn.monitors.factory import get_monitor
 
 BASE_FILE_NAME = 'converted_model'
 CKPT_FILE_NAME = '{}.ckpt'.format(BASE_FILE_NAME)

@@ -14,7 +14,7 @@
 from os.path import exists
 from argparse import ArgumentParser
 
-from nn.monitors.factory import get_monitor
+from action_detection.nn.monitors.factory import get_monitor
 
 
 def main():

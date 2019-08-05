@@ -11,26 +11,5 @@
  limitations under the License.
 """
 
-from __future__ import print_function
-
-from os.path import exists
-from argparse import ArgumentParser
-
-from action_detection.nn.monitors.factory import get_monitor
-
-
-def main():
-    """Carry out model performance estimation.
-    """
-
-    parser = ArgumentParser()
-    parser.add_argument('--config', '-c', type=str, required=True, help='Path to config file')
-    args = parser.parse_args()
-
-    assert exists(args.config)
-
-    task_monitor = get_monitor(args.config)
-    task_monitor.performance()
-
-if __name__ == '__main__':
-    main()
+from action_detection.nn.backbones.common import get_backbone
+from action_detection.nn.backbones.common import get_orthogonal_scope_name
