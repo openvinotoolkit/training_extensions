@@ -44,7 +44,7 @@ def parse_args():
     args.add_argument('--lr_init', type=float, default=0.001)
     args.add_argument('--lr_drop_value', type=float, default=0.1)
     args.add_argument('--lr_drop_step', type=int, default=100000)
-    args.add_argument('--dump_embeddings', action='store_true')
+    args.add_argument('--dump_hard_examples', action='store_true')
     args.add_argument('--batch_size', type=int, default=256)
     args.add_argument('--augmentation_config', required=True)
 
@@ -115,7 +115,7 @@ def greatest_loss(images, labels, embeddings):
     return hard_positives, hard_negatives
 
 
-def dump_embeddings(model, dataset, dir, batches=10):
+def collect_hard_examples(model, dataset, dir, batches=10):
     embeddings_folder = os.path.join(dir, 'embs')
     os.makedirs(embeddings_folder, exist_ok=True)
     embeddings_path = os.path.join(embeddings_folder, 'embeddings.tsv')
@@ -125,10 +125,6 @@ def dump_embeddings(model, dataset, dir, batches=10):
             predicted_embeddings = model.predict(x)
 
             return greatest_loss(x, y, predicted_embeddings)
-
-            for i in range(predicted_embeddings.shape[0]):
-                f1.write('\t'.join([str(x) for x in predicted_embeddings[i]]) + '\n')
-                f2.write(str(y[i].numpy()) + '\n')
 
 
 def save_args(args, path):
@@ -225,8 +221,9 @@ def main():
 
             print('Saved: {}'.format(save_to))
 
-            if args.dump_embeddings:
-                hard_positives, hard_negatives = dump_embeddings(model, dataset, args.train_dir)
+            if args.dump_hard_examples:
+                hard_positives, hard_negatives = collect_hard_examples(model, dataset,
+                                                                       args.train_dir)
 
                 hard_positives = tf.convert_to_tensor(hard_positives)
                 hard_negatives = tf.convert_to_tensor(hard_negatives)
