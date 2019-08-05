@@ -24,7 +24,7 @@ import cv2
 from textile.losses import am_softmax_loss, triplet_loss
 
 from textile.model import keras_applications_mobilenetv2, keras_applications_resnet50
-from textile.dataset import create_dataset_path, depreprocess_image
+from textile.dataset import create_dataset_from_list, depreprocess_image
 
 from textile.metrics import test_model
 
@@ -157,9 +157,9 @@ def main():
     with open(args.augmentation_config) as f:
         augmentation_config = json.load(f)
 
-    dataset, num_classes = create_dataset_path(args.gallery_folder, args.input_size,
-                                               args.batch_size,
-                                               augmentation_config)
+    dataset, num_classes = create_dataset_from_list(args.gallery_folder, args.input_size,
+                                                    args.batch_size,
+                                                    augmentation_config)
 
     if args.model_weights:
         model.load_weights(args.model_weights)
