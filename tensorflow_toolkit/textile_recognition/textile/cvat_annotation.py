@@ -28,14 +28,6 @@ class CvatAnnotation:
 
         self.task_name = root.find('meta').find('task').find('name').text
 
-        # id_map = {}
-
-        # for imname in os.listdir('/home/ikrylov/Desktop/patterns_20190607/Full_size'):
-        #     pattern_index, pattern_name = imname.split('_')
-        #     pattern_name = pattern_name[:-8]
-        #
-        #     id_map[pattern_index] = pattern_name
-
         for track in root.findall('track'):
             for box in track.findall('box'):
                 frame = int(box.get('frame'))
@@ -46,11 +38,6 @@ class CvatAnnotation:
                 ybr = int(float(box.get('ybr')))
 
                 pattern_id = box.find('attribute')
-
-                # try:
-                #     pattern_id.text = id_map[pattern_id.text]
-                # except:
-                #     pass
 
                 if pattern_id is None:
                     pattern_id = ''
@@ -68,15 +55,13 @@ class CvatAnnotation:
                     'id': pattern_id
                 })
 
-        #tree.write(path, short_empty_elements=True)
-
 def main():
     def parse_args():
         args = argparse.ArgumentParser()
         args.add_argument('--path', required=True)
-        args.add_argument('--videos_root', required=False)
+        args.add_argument('--videos_root', required=True)
         args.add_argument('--crops_folder', required=False)
-        args.add_argument('--patterns_root', required=False)
+        args.add_argument('--patterns_root', required=True)
 
         return args.parse_args()
 

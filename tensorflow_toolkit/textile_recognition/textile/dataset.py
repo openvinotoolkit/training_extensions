@@ -221,10 +221,10 @@ def create_dataset(impaths, labels, is_real, input_size, batch_size, params, ret
     return dataset, len(set(tiled_images_labels))
 
 
-def create_dataset_path(path, input_size, batch_size, params):
+def create_dataset_path(path, input_size, batch_size, params, return_original):
     impaths, labels, is_real, _ = from_list(path)
 
-    return create_dataset(impaths, labels, is_real, input_size, batch_size, params)
+    return create_dataset(impaths, labels, is_real, input_size, batch_size, params, return_original)
 
 
 def main():
@@ -240,8 +240,7 @@ def main():
     with open(args.augmentation_config) as f:
         augmentation_config = json.load(f)
 
-    dataset, _ = create_dataset_path(args.gallery_folder, args.input_size, 1, augmentation_config,
-                                     True)
+    dataset, _ = create_dataset_path(args.gallery_folder, args.input_size, 1, augmentation_config, True)
 
     t = time.time()
     for preprocessed, label, original in dataset.take(1000):
