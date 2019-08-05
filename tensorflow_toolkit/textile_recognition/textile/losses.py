@@ -28,15 +28,7 @@ class AMSoftmax(tf.keras.layers.Layer):
 
     def call(self, inputs, **kwargs):
         kernel = tf.nn.l2_normalize(self.kernel, axis=0, epsilon=1e-13)
-
-        # tf.print('kernel.shape', kernel.shape)
-        # tf.print('inputs.shape', inputs.shape)
-
-        # tf.print('kernel.norm', tf.norm(kernel, axis=0))
-        # tf.print('inputs.norm', tf.norm(inputs, axis=1))
-
         cos_theta = K.dot(inputs, kernel)
-
         cos_theta = K.clip(cos_theta, -1.0, 1.0)
         #
         # phi_theta = cos_theta - self.m
