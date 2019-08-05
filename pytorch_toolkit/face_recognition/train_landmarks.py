@@ -60,7 +60,7 @@ def train(args):
 
     train_loader = DataLoader(dataset, batch_size=args.train_batch_size, num_workers=4, shuffle=True)
     writer = SummaryWriter('./logs_landm/{:%Y_%m_%d_%H_%M}_'.format(datetime.datetime.now()) + args.snap_prefix)
-    model = models_landmarks['landnet']
+    model = models_landmarks['landnet']()
 
     if args.snap_to_resume is not None:
         log.info('Resuming snapshot ' + args.snap_to_resume + ' ...')
