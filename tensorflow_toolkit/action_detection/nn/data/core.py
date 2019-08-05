@@ -11,7 +11,7 @@
  limitations under the License.
 """
 
-from os.path import exists
+from os.path import exists, dirname, realpath, isabs, join
 from collections import namedtuple
 
 import tensorflow as tf
@@ -48,6 +48,7 @@ def parse_text_records(input_data_file_path, types):
             raise Exception('Cannot convert to dtype: {}'.format(dtype))
 
     assert len(types) > 0
+    data_dir = dirname(realpath(input_data_file_path))
 
     out_data = [[] for _ in xrange(len(types))]
     with open(input_data_file_path, 'r') as input_stream:
@@ -64,6 +65,8 @@ def parse_text_records(input_data_file_path, types):
             encoded_data = []
             valid_record = True
             for i in xrange(len(types)):
+                if not isabs(line_data[i]):
+                    line_data[i] = join(data_dir, line_data[i])
                 encoded_value = _encode(line_data[i], types[i])
                 if encoded_value is None:
                     valid_record = False
