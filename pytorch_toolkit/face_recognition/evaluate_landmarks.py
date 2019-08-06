@@ -72,7 +72,7 @@ def start_evaluation(args):
 
     val_loader = DataLoader(dataset, batch_size=args.val_batch_size, num_workers=4, shuffle=False, pin_memory=True)
 
-    model = models_landmarks['landnet']
+    model = models_landmarks['landnet']()
     assert args.snapshot is not None
     log.info('Testing snapshot ' + args.snapshot + ' ...')
     model = load_model_state(model, args.snapshot, args.device, eval_state=True)
