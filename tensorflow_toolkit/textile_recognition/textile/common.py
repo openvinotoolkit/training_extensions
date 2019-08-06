@@ -1,16 +1,18 @@
-# Copyright (C) 2019 Intel Corporation
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions
-# and limitations under the License.
+"""
+ Copyright (c) 2019 Intel Corporation
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+"""
 
 import os
 import cv2
@@ -18,38 +20,48 @@ import numpy as np
 
 
 def max_central_square_crop(image):
-    h, w = image.shape[:2]
+    ''' Makes max-sized central squared crop. '''
 
-    if w > h:
-        image = image[:, (w - h) // 2:(w - h) // 2 + h]
+    height, width = image.shape[:2]
+
+    if width > height:
+        image = image[:, (width - height) // 2:(width - height) // 2 + height]
     else:
-        image = image[(h - w) // 2:(h - w) // 2 + w, :]
+        image = image[(height - width) // 2:(height - width) // 2 + width, :]
 
     return image
 
 
 def preproces_image(image):
+    ''' Scales and subtracts mean value from image. '''
+
     image = image / 127.5 - 1.0
     return image
 
 
 def depreprocess_image(image):
+    ''' Makes transform which is inverse to preprocessing. '''
+
     image = (image + 1.0) * 127.5
     image = image.astype(np.uint8)
     return image
 
 
-def fit_to_max_size(image, max_side):
-    if image.shape[0] > max_side or image.shape[1] > max_side:
+def fit_to_max_size(image, max_size):
+    ''' Fits input image to max_size. '''
+
+    if image.shape[0] > max_size or image.shape[1] > max_size:
         if image.shape[0] > image.shape[1]:
-            image = cv2.resize(image, (int(image.shape[1] / (image.shape[0] / max_side)), max_side))
+            image = cv2.resize(image, (int(image.shape[1] / (image.shape[0] / max_size)), max_size))
         else:
-            image = cv2.resize(image, (max_side, int(image.shape[0] / (image.shape[1] / max_side))))
+            image = cv2.resize(image, (max_size, int(image.shape[0] / (image.shape[1] / max_size))))
 
     return image
 
 
 def crop_resize_shift_scale(image, input_size):
+    ''' Makes max-sized central crop, resizes to input_size, scales and subtracts mean values. '''
+
     image = max_central_square_crop(image)
     image = cv2.resize(image, (input_size, input_size))
     image = preproces_image(image)
@@ -58,13 +70,17 @@ def crop_resize_shift_scale(image, input_size):
 
 
 def central_crop(image, divide_by, shift):
-    h, w = image.shape[0:2]
-    image = image[h // divide_by * shift: h // divide_by * (divide_by - shift),
-                  w // divide_by * shift: w // divide_by * (divide_by - shift)]
+    ''' Makes central crops dividing input image by number of equal cells. '''
+
+    height, width = image.shape[0:2]
+    image = image[height // divide_by * shift: height // divide_by * (divide_by - shift),
+                  width // divide_by * shift: width // divide_by * (divide_by - shift)]
     return image
 
 
 def from_list(path, multiple_images_per_label=True):
+    ''' Loads images list. '''
+
     impaths = []
     labels = []
     is_real = []
@@ -75,8 +91,8 @@ def from_list(path, multiple_images_per_label=True):
 
     root = os.path.dirname(os.path.abspath(path))
 
-    with open(path) as f:
-        for line in f.readlines():
+    with open(path) as opened_file:
+        for line in opened_file.readlines():
             line = line.strip().split(' ')
             if len(line) == 2:
                 impath, label = line
