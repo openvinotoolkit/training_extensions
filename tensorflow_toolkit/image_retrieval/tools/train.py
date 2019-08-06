@@ -238,8 +238,6 @@ def main():
                                                          model=model,
                                                          gallery_path=gallery_folder,
                                                          test_data_path=args.test_images_folder,
-                                                         test_data_type='crops',
-                                                         test_annotation_path=None,
                                                          input_size=args.input_size)
 
                 tf.summary.scalar('test/top1', data=top1, step=cur_step)
