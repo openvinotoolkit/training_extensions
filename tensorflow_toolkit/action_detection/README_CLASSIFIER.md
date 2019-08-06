@@ -18,7 +18,6 @@ Each data file (`train_data.txt` and `test_data.txt`) describes a data to train/
 ## Model training
 To train object detection model from scratch run the command:
 ```Shell
-PYTHONPATH=$PYTHONPATH:$REPO_ROOT \
 python2 tools/models/train.py -c configs/classification/imagenet_rmnet.yml \ # path to config file
                               -t <PATH_TO_DATA_FILE> \                       # file with train data paths
                               -l <PATH_TO_LOG_DIR> \                         # directory for logging
@@ -31,7 +30,6 @@ python2 tools/models/train.py -c configs/classification/imagenet_rmnet.yml \ # p
 
 Bellow the command to run the training procedure from the pre-trained model:
 ```Shell
-PYTHONPATH=$PYTHONPATH:$REPO_ROOT \
 python2 tools/models/train.py -c configs/classification/imagenet_rmnet.yml \ # path to config file
                               -t <PATH_TO_DATA_FILE> \                       # file with train data paths
                               -l <PATH_TO_LOG_DIR> \                         # directory for logging
@@ -45,7 +43,6 @@ python2 tools/models/train.py -c configs/classification/imagenet_rmnet.yml \ # p
 To evaluate the quality of the trained Image Classification model you should prepare the test data according [instruction](#data-preparation).
 
 ```Shell
-PYTHONPATH=$PYTHONPATH:$REPO_ROOT \
 python2 tools/models/eval.py -c configs/classification/imagenet_rmnet.yml \ # path to config file
                              -v <PATH_TO_DATA_FILE> \                       # file with test data paths
                              -b 4 \                                         # batch size

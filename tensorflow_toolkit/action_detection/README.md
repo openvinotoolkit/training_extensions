@@ -83,7 +83,6 @@ Assume we have a pre-trained model and want to fine-tune PD&AR model. In this ca
 ### Action Detection model training
 If you want to fine-tune the model with custom set of actions you can use the provided init weights. To do this run the command:
 ```Shell
-PYTHONPATH=$PYTHONPATH:$REPO_ROOT \
 python2 tools/models/train.py -c configs/action/pedestriandb_twinnet_actionnet.yml \ # path to config file
                               -t <PATH_TO_DATA_FILE> \                               # file with train data paths
                               -l <PATH_TO_LOG_DIR> \                                 # directory for logging
@@ -95,7 +94,6 @@ python2 tools/models/train.py -c configs/action/pedestriandb_twinnet_actionnet.y
 
 Note to continue model training (e.g. after stopping) from your snapshot you should run the same command but with key `-s <PATH_TO_SNAPSHOT>` and without specifying `--src_scope` key:
 ```Shell
-PYTHONPATH=$PYTHONPATH:$REPO_ROOT \
 python2 tools/models/train.py -c configs/action/pedestriandb_twinnet_actionnet.yml \ # path to config file
                               -t <PATH_TO_DATA_FILE> \                               # file with train data paths
                               -l <PATH_TO_LOG_DIR> \                                 # directory for logging
@@ -112,7 +110,6 @@ If you want to initialize the model from the weights differ than provided you sh
 To evaluate the quality of the trained Action Detection model you should prepare the test data according [instruction](./README_DATA.md).
 
 ```Shell
-PYTHONPATH=$PYTHONPATH:$REPO_ROOT \
 python2 tools/models/eval.py -c configs/action/pedestriandb_twinnet_actionnet.yml \ # path to config file
                              -v <PATH_TO_DATA_FILE> \                               # file with test data paths
                              -b 4 \                                                 # batch size
@@ -123,7 +120,6 @@ python2 tools/models/eval.py -c configs/action/pedestriandb_twinnet_actionnet.ym
 ### Action Detection model demonstration
 
 ```Shell
-PYTHONPATH=$PYTHONPATH:$REPO_ROOT \
 python2 tools/models/demo.py -c configs/action/pedestriandb_twinnet_actionnet.yml \ # path to config file
                              -i <PATH_TO_VIDEO_FILE> \                              # file with video
                              -s <PATH_TO_SNAPSHOT> \                                # snapshot model weights
@@ -134,7 +130,6 @@ Note to scale the output screen size you can specify the `--out_scale` key with 
 ### Action Detection model optimization
 
 ```Shell
-PYTHONPATH=$PYTHONPATH:$REPO_ROOT \
 python2 tools/models/export.py -c configs/action/pedestriandb_twinnet_actionnet.yml \ # path to config file
                                  -s <PATH_TO_SNAPSHOT> \                                # snapshot model weights
                                  -o <PATH_TO_OUTPUT_DIR> \                              # directory for the output model

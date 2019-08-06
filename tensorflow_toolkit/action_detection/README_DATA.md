@@ -77,7 +77,6 @@ annotations/annotation_file_3.xml 1920,1080 images/video3
 ## Train/eval data file generation
 To generate the final data file (train or test) run the command:
 ```Shell
-PYTHONPATH=$PYTHONPATH:$REPO_ROOT \
 python2 tools/data/prepare_pedestrian_db.py -t <PATH_TO_TASKS> \      # path to file with tasks
                                             -o <PATH_TO_OUTPUT_DIR> \ # output directory
 ```

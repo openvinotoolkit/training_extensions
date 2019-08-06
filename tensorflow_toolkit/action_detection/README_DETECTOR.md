@@ -10,7 +10,6 @@ To prepare a dataset follow the [instruction](./README_DATA.md)
 ## Model training
 To train object detection model from scratch run the command:
 ```Shell
-PYTHONPATH=$PYTHONPATH:$REPO_ROOT \
 python2 tools/models/train.py -c configs/detection/pedestriandb_rmnet_ssd.yml \ # path to config file
                               -t <PATH_TO_DATA_FILE> \                          # file with train data paths
                               -l <PATH_TO_LOG_DIR> \                            # directory for logging
@@ -24,7 +23,6 @@ python2 tools/models/train.py -c configs/detection/pedestriandb_rmnet_ssd.yml \ 
 
 Bellow the command to run the training procedure from the pre-trained model:
 ```Shell
-PYTHONPATH=$PYTHONPATH:$REPO_ROOT \
 python2 tools/models/train.py -c configs/detection/pedestriandb_rmnet_ssd.yml \ # path to config file
                               -t <PATH_TO_DATA_FILE> \                          # file with train data paths
                               -l <PATH_TO_LOG_DIR> \                            # directory for logging
@@ -38,7 +36,6 @@ python2 tools/models/train.py -c configs/detection/pedestriandb_rmnet_ssd.yml \ 
 To evaluate the quality of the trained Object Detection model you should prepare the test data according [instruction](./README_DATA.md).
 
 ```Shell
-PYTHONPATH=$PYTHONPATH:$REPO_ROOT \
 python2 tools/models/eval.py -c configs/detection/pedestriandb_rmnet_ssd.yml \ # path to config file
                              -v <PATH_TO_DATA_FILE> \                          # file with test data paths
                              -b 4 \                                            # batch size
