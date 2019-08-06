@@ -39,6 +39,7 @@ inference.
 After installation, you are ready to train your own models, evaluate them, use
 them for predictions.
 
+* [Action Detection](action_detection)
 * [License Plate Recognition](lpr)
 * [Person Vehicle Bike Detector](person_vehicle_bike_detector)
 * [SSD MobileNet FPN 602](ssd_mobilenet_fpn_602)
