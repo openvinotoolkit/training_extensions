@@ -147,9 +147,11 @@ def main():
     if args.model == 'resnet50':
         model = keras_applications_resnet50(
             tf.keras.layers.Input(shape=(args.input_size, args.input_size, 3)))
-    if args.model == 'mobilenet_v2':
+    elif args.model == 'mobilenet_v2':
         model = keras_applications_mobilenetv2(
             tf.keras.layers.Input(shape=(args.input_size, args.input_size, 3)))
+    else:
+        raise Exception('unknown model')
 
     with open(args.augmentation_config) as f:
         augmentation_config = json.load(f)

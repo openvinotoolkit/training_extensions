@@ -78,6 +78,8 @@ def main():
     elif args.model == 'mobilenet_v2':
         model = keras_applications_mobilenetv2(
             tf.keras.layers.Input(tensor=input_tensor))
+    else:
+        raise Exception('unknown model')
 
     embedding = model(input_tensor, training=False)
 
