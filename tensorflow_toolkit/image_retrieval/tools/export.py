@@ -1,24 +1,27 @@
-# Copyright (C) 2019 Intel Corporation
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions
-# and limitations under the License.
+"""
+ Copyright (c) 2019 Intel Corporation
 
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-import os
+      http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+"""
+
 import argparse
+import os
+
 import tensorflow as tf
 from tensorflow.python.tools.freeze_graph import freeze_graph
-from image_retrieval.model import keras_applications_mobilenetv2, keras_applications_resnet50
 from tfutils.helpers import execute_mo
+
+from image_retrieval.model import keras_applications_mobilenetv2, keras_applications_resnet50
 
 tf.compat.v1.disable_v2_behavior()
 
@@ -72,7 +75,7 @@ def main():
     if args.model == 'resnet50':
         model = keras_applications_resnet50(
             tf.keras.layers.Input(tensor=input_tensor))
-    if args.model == 'mobilenet_v2':
+    elif args.model == 'mobilenet_v2':
         model = keras_applications_mobilenetv2(
             tf.keras.layers.Input(tensor=input_tensor))
 

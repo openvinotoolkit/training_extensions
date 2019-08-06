@@ -24,7 +24,8 @@ def l2_normalized_embeddings(inputs):
     output = tf.keras.layers.GlobalAveragePooling2D()(inputs)
     output = tf.keras.layers.Reshape([1, 1, output.shape[-1]])(output)
     output = tf.keras.layers.Conv2D(filters=EMBEDDINGS_DIM, kernel_size=1, padding='same',
-                                    kernel_regularizer=tf.keras.regularizers.l2(l=WEIGHT_DECAY))(output)
+                                    kernel_regularizer=tf.keras.regularizers.l2(l=WEIGHT_DECAY))(
+        output)
     output = tf.keras.layers.Flatten()(output)
     output = tf.nn.l2_normalize(output * 1000, axis=-1, epsilon=1e-13)
     return output

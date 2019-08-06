@@ -1,32 +1,33 @@
-# Copyright (C) 2019 Intel Corporation
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions
-# and limitations under the License.
+"""
+ Copyright (c) 2019 Intel Corporation
 
-import os
-import json
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+"""
+
 import argparse
+import json
+import os
+
+import cv2
+import numpy as np
+import tensorflow as tf
 from pygit2 import Repository
 from sklearn.metrics.pairwise import cosine_distances
-import tensorflow as tf
-import numpy as np
-import cv2
 
-from image_retrieval.losses import am_softmax_loss, triplet_loss
-
-from image_retrieval.model import keras_applications_mobilenetv2, keras_applications_resnet50
 from image_retrieval.dataset import create_dataset_from_list, depreprocess_image
-
+from image_retrieval.losses import am_softmax_loss, triplet_loss
 from image_retrieval.metrics import test_model
+from image_retrieval.model import keras_applications_mobilenetv2, keras_applications_resnet50
 
 
 def parse_args():

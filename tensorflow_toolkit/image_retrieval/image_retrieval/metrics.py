@@ -14,25 +14,18 @@
  limitations under the License.
 """
 
-
 import collections
 
 import numpy as np
 
 from image_retrieval.common import central_crop
-from image_retrieval.frames_provider import FramesProvider, CvatFramesProvider
+from image_retrieval.frames_provider import FramesProvider
 from image_retrieval.image_retrieval import ImageRetrieval
 
 
-def test_model(model_path, model_backend, model, gallery_path, test_data_path, test_data_type,
-               test_annotation_path, input_size):
+def test_model(model_path, model_backend, model, gallery_path, test_data_path, input_size):
     img_retrieval = ImageRetrieval(model_path, model_backend, model, gallery_path, input_size)
-
-    if test_data_type == 'crops':
-        frames = FramesProvider(test_data_path)
-    elif test_data_type == 'cvat_annotation':
-        assert test_annotation_path
-        frames = CvatFramesProvider(test_annotation_path, test_data_path)
+    frames = FramesProvider(test_data_path)
 
     top1_counters = []
     top5_counters = []
@@ -41,13 +34,13 @@ def test_model(model_path, model_backend, model, gallery_path, test_data_path, t
 
     results = collections.defaultdict(list)
 
-    for image, probe_class, view_frame in frames.frames_gen():
+    for image, probe_class in frames:
         if image is not None:
             image = central_crop(image, divide_by=5, shift=1)
 
             probe_embedding = img_retrieval.compute_embedding(image)
 
-            sorted_indexes, distances = img_retrieval.search_in_gallery(probe_embedding)
+            sorted_indexes, _ = img_retrieval.search_in_gallery(probe_embedding)
 
             sorted_classes = [img_retrieval.gallery_classes[i] for i in sorted_indexes]
             position = sorted_classes.index(img_retrieval.text_label_to_class_id[probe_class])
