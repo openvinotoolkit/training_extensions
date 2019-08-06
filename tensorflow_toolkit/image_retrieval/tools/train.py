@@ -21,12 +21,12 @@ import tensorflow as tf
 import numpy as np
 import cv2
 
-from textile.losses import am_softmax_loss, triplet_loss
+from image_retrieval.losses import am_softmax_loss, triplet_loss
 
-from textile.model import keras_applications_mobilenetv2, keras_applications_resnet50
-from textile.dataset import create_dataset_from_list, depreprocess_image
+from image_retrieval.model import keras_applications_mobilenetv2, keras_applications_resnet50
+from image_retrieval.dataset import create_dataset_from_list, depreprocess_image
 
-from textile.metrics import test_model
+from image_retrieval.metrics import test_model
 
 
 def parse_args():

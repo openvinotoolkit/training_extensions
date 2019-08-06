@@ -17,7 +17,7 @@ import os
 import argparse
 import tensorflow as tf
 from tensorflow.python.tools.freeze_graph import freeze_graph
-from textile.model import keras_applications_mobilenetv2, keras_applications_resnet50
+from image_retrieval.model import keras_applications_mobilenetv2, keras_applications_resnet50
 from tfutils.helpers import execute_mo
 
 tf.compat.v1.disable_v2_behavior()
@@ -111,7 +111,7 @@ def main():
 
         mo_params = {
             'framework': 'tf',
-            'model_name': 'textile',
+            'model_name': 'image_retrieval',
             'data_type': args.data_type,
         }
         execute_mo(mo_params, frozen_graph_path, export_folder)

@@ -20,7 +20,7 @@ import random
 import cv2
 import numpy as np
 import tensorflow as tf
-from textile.common import preproces_image, depreprocess_image, fit_to_max_size, from_list
+from image_retrieval.common import preproces_image, depreprocess_image, fit_to_max_size, from_list
 
 
 def blur(image):

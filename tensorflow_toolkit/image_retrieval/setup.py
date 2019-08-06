@@ -26,6 +26,6 @@ if os.path.isfile(requirements):
         REQUIRED += f.read().splitlines()
 
 setup(
-    name='textile',
+    name='image_retrieval',
     install_requires=REQUIRED,
 )

@@ -17,7 +17,7 @@ import os
 
 import cv2
 
-from textile.common import fit_to_max_size
+from image_retrieval.common import fit_to_max_size
 
 
 class CvatAnnotation:

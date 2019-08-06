@@ -14,7 +14,7 @@
 
 import argparse
 import logging as log
-from textile.metrics import test_model
+from image_retrieval.metrics import test_model
 
 def parse_args():
     args = argparse.ArgumentParser()
@@ -25,7 +25,6 @@ def parse_args():
     args.add_argument('--test_annotation_path')
     args.add_argument('--input_size', default=224, type=int, help='Input image size.')
     args.add_argument('--model', choices=['resnet50', 'mobilenet_v2'], default='mobilenet_v2')
-    args.add_argument('--imshow_delay', type=int, default=-1)
     args.add_argument('--ie', choices=['tf', 'ie'], required=True)
 
     return args.parse_args()
@@ -44,8 +43,7 @@ def main():
                test_data_path=args.test_data_path,
                test_data_type=args.test_data_type,
                test_annotation_path=args.test_annotation_path,
-               input_size=args.input_size,
-               imshow_delay=args.imshow_delay)
+               input_size=args.input_size)
 
 
 if __name__ == '__main__':

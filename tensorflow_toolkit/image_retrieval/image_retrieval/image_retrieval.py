@@ -18,7 +18,7 @@ import cv2
 from sklearn.metrics.pairwise import cosine_distances
 from tqdm import tqdm
 
-from textile.common import from_list, crop_resize_shift_scale
+from image_retrieval.common import from_list, crop_resize_shift_scale
 
 class ImageRetrieval:
 
@@ -32,7 +32,7 @@ class ImageRetrieval:
         if model is None or isinstance(model, str):
             if model_backend == 'tf':
                 import tensorflow as tf
-                from textile.model import keras_applications_mobilenetv2, keras_applications_resnet50
+                from image_retrieval.model import keras_applications_mobilenetv2, keras_applications_resnet50
 
                 if model == 'resnet50':
                     self.model = keras_applications_resnet50(
