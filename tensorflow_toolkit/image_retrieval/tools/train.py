@@ -76,20 +76,20 @@ def collect_hard_images(images, labels, distances, indices, positive):
         else:
             already_in.add((pair[0], pair[1]))
 
-        c = np.concatenate((images[pair[0]], images[pair[1]]), axis=1)
+        concatenated = np.concatenate((images[pair[0]], images[pair[1]]), axis=1)
 
-        header = np.zeros((50, c.shape[1], 3))
+        header = np.zeros((50, concatenated.shape[1], 3))
 
         text = str(labels[pair[0]]) + '-' + str(labels[pair[1]]) + ': ' + str(
             distances[pair[0], pair[1]])
 
         cv2.putText(header, text, (0, 50), 1, 2.0, (255, 255, 255), 2)
 
-        c = np.concatenate((header, c), axis=0)
+        concatenated = np.concatenate((header, concatenated), axis=0)
 
-        c = c / 255.0
+        concatenated = concatenated / 255.0
 
-        hard_examples.append(c)
+        hard_examples.append(concatenated)
 
         if len(hard_examples) == 10:
             break
@@ -115,16 +115,12 @@ def greatest_loss(images, labels, embeddings):
     return hard_positives, hard_negatives
 
 
-def collect_hard_examples(model, dataset, dir, batches=10):
+def collect_hard_examples(model, dataset, dir):
     embeddings_folder = os.path.join(dir, 'embs')
     os.makedirs(embeddings_folder, exist_ok=True)
-    embeddings_path = os.path.join(embeddings_folder, 'embeddings.tsv')
-    labels_path = os.path.join(embeddings_folder, 'labels.tsv')
-    with open(embeddings_path, 'w') as f1, open(labels_path, 'w') as f2:
-        for x, y in dataset.take(batches):
-            predicted_embeddings = model.predict(x)
-
-            return greatest_loss(x, y, predicted_embeddings)
+    for x, y in dataset.take(1):
+        predicted_embeddings = model.predict(x)
+        return greatest_loss(x, y, predicted_embeddings)
 
 
 def save_args(args, path):
@@ -243,8 +239,7 @@ def main():
                                                          test_data_path=args.test_images_folder,
                                                          test_data_type='crops',
                                                          test_annotation_path=None,
-                                                         input_size=args.input_size,
-                                                         imshow_delay=-1)
+                                                         input_size=args.input_size)
 
                 tf.summary.scalar('test/top1', data=top1, step=cur_step)
                 tf.summary.scalar('test/top5', data=top5, step=cur_step)
