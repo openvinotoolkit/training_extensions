@@ -14,14 +14,15 @@
  limitations under the License.
 """
 
-import json
 import collections
+import json
 import math
 import random
 
 import cv2
 import numpy as np
 import tensorflow as tf
+
 from image_retrieval.common import preproces_image, depreprocess_image, fit_to_max_size, from_list
 
 
@@ -172,7 +173,9 @@ def create_dataset(impaths, labels, is_real, input_size, batch_size, params, ret
         ducplicated_choices = []
         for choice in choices:
             for _ in range(params['duplicate_n_times']):
-                ducplicated_choices.append(int(np.random.choice(tiled_images_indexes_per_class[tiled_images_labels[choice]], 1)))
+                ducplicated_choices.append(int(
+                    np.random.choice(tiled_images_indexes_per_class[tiled_images_labels[choice]],
+                                     1)))
 
         for choise in ducplicated_choices:
             yield [choise]
@@ -249,7 +252,8 @@ def main():
     with open(args.augmentation_config) as f:
         augmentation_config = json.load(f)
 
-    dataset, _ = create_dataset_from_list(args.gallery_folder, args.input_size, 1, augmentation_config, True)
+    dataset, _ = create_dataset_from_list(args.gallery_folder, args.input_size, 1,
+                                          augmentation_config, True)
 
     t = time.time()
     for preprocessed, label, original in dataset.take(1000):
