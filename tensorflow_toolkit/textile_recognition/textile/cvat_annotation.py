@@ -12,9 +12,11 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import os
 import argparse
+import os
+
 import cv2
+
 from textile.common import fit_to_max_size
 
 
@@ -55,6 +57,7 @@ class CvatAnnotation:
                     'id': pattern_id
                 })
 
+
 def main():
     def parse_args():
         args = argparse.ArgumentParser()
@@ -69,7 +72,6 @@ def main():
 
     annotation = CvatAnnotation(args.path)
     capture = cv2.VideoCapture(os.path.join(args.videos_root, annotation.task_name))
-
 
     if args.crops_folder:
         os.makedirs(args.crops_folder, exist_ok=True)
@@ -89,12 +91,14 @@ def main():
 
                 if args.crops_folder:
                     os.makedirs(os.path.join(args.crops_folder, obj['id']), exist_ok=True)
-                    cv2.imwrite(os.path.join(args.crops_folder, obj['id'], 'frame_{}.png'.format(idx)),
-                                frame[obj['ytl']:obj['ybr'], obj['xtl']:obj['xbr']])
+                    cv2.imwrite(
+                        os.path.join(args.crops_folder, obj['id'], 'frame_{}.png'.format(idx)),
+                        frame[obj['ytl']:obj['ybr'], obj['xtl']:obj['xbr']])
 
                 cv2.rectangle(frame, (obj['xtl'], obj['ytl']), (obj['xbr'], obj['ybr']),
                               (0, 255, 0), 5)
-                cv2.putText(frame, obj['id'], (obj['xtl'], obj['ytl'] + 100), 1, 5.0, (255, 0, 0), 5)
+                cv2.putText(frame, obj['id'], (obj['xtl'], obj['ytl'] + 100), 1, 5.0, (255, 0, 0),
+                            5)
 
         frame = cv2.resize(frame, (1280, 720))
 
@@ -106,11 +110,9 @@ def main():
 
             pattern = fit_to_max_size(pattern, 256)
 
-
             frame[:pattern.shape[0], :pattern.shape[1]] = pattern
 
         cv2.imshow('Webcam', frame)
-
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
