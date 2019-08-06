@@ -16,7 +16,7 @@
 import collections
 import numpy as np
 from image_retrieval.common import central_crop
-from image_retrieval.frames_provider import FramesProvider, CvatFramesProvider, VideoFramesProvider
+from image_retrieval.frames_provider import FramesProvider, CvatFramesProvider
 from image_retrieval.image_retrieval import ImageRetrieval
 
 
@@ -29,9 +29,6 @@ def test_model(model_path, model_backend, model, gallery_path, test_data_path, t
     elif test_data_type == 'cvat_annotation':
         assert test_annotation_path
         frames = CvatFramesProvider(test_annotation_path, test_data_path)
-    elif test_data_type == 'videos':
-        assert test_annotation_path
-        frames = VideoFramesProvider(test_annotation_path, test_data_path)
 
     top1_counters = []
     top5_counters = []
