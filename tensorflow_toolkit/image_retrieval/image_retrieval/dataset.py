@@ -244,7 +244,7 @@ def main():
     import time
 
     args = argparse.ArgumentParser()
-    args.add_argument('--gallery_folder', required=True)
+    args.add_argument('--gallery', required=True)
     args.add_argument('--input_size', default=224, type=int)
     args.add_argument('--augmentation_config', required=True)
     args = args.parse_args()
@@ -252,8 +252,8 @@ def main():
     with open(args.augmentation_config) as f:
         augmentation_config = json.load(f)
 
-    dataset, _ = create_dataset_from_list(args.gallery_folder, args.input_size, 1,
-                                          augmentation_config, True)
+    dataset, _ = create_dataset_from_list(args.gallery, args.input_size, 1, augmentation_config,
+                                          True)
 
     t = time.time()
     for preprocessed, label, original in dataset.take(1000):
