@@ -16,60 +16,50 @@
 
 import tensorflow as tf
 import tensorflow.keras.backend as K
+import math
 
 
 class AMSoftmax(tf.keras.layers.Layer):
-    def __init__(self, units, s=10, m=0.35, **kwargs):
+    def __init__(self, units, **kwargs):
         super(AMSoftmax, self).__init__(**kwargs)
         self.units = units
-        self.s = s
-        self.m = m
+        self.kernel = None
 
     def build(self, input_shape):
         self.kernel = self.add_weight(shape=(input_shape[-1], self.units),
                                       initializer=tf.keras.initializers.get('glorot_uniform'))
 
     def call(self, inputs, **kwargs):
-        kernel = tf.nn.l2_normalize(self.kernel * 1000, axis=0, epsilon=1e-13)
+        kernel = tf.nn.l2_normalize(self.kernel, axis=0, epsilon=1e-13)
+        inputs = tf.nn.l2_normalize(inputs, axis=1, epsilon=1e-13)
 
         cos_theta = K.dot(inputs, kernel)
         cos_theta = K.clip(cos_theta, -1.0, 1.0)
 
-        psi = cos_theta - self.m
-
-        e_cos_theta = K.exp(self.s * cos_theta)
-
-        e_psi = K.exp(self.s * psi)
-
-        sum_x = K.sum(e_cos_theta, axis=-1, keepdims=True)
-
-        temp = e_psi - e_cos_theta
-
-        temp = temp + sum_x
-
-        output = e_psi / temp
-
-        return tf.identity(output)
+        return tf.identity(cos_theta)
 
 
-def am_softmax_loss(num_classes, s, m, alpha=1.0, gamma=0.0):
-    def amsoftmax_loss(y_true, y_pred):
-        y_true = tf.reshape(y_true, (-1,))
-        y_true = tf.one_hot(tf.cast(y_true, tf.int32), num_classes)
-        d1 = K.sum(y_true * y_pred, axis=-1)
+def am_softmax_loss(num_classes, s, m):
+    if s is None:
+        s = math.sqrt(2) * math.log(num_classes - 1)
 
-        d1 = K.clip(d1, K.epsilon(), 1.0 - K.epsilon())
+    def loss(y_true, cos_theta):
+        phi_theta = cos_theta - m
+        y_true_reshaped = tf.reshape(y_true, (-1,))
+        y_true_one_hot = tf.one_hot(tf.cast(y_true_reshaped, tf.int32), num_classes)
 
-        d1 = alpha * (tf.math.pow(1.0 - d1, gamma)) * K.log(d1)
+        output = tf.where(tf.cast(y_true_one_hot, tf.bool), phi_theta, cos_theta)
+        output = output * s
 
-        loss = -K.mean(d1, axis=-1)
+        y_pred = tf.keras.layers.Softmax()(output)
+        loss = tf.keras.losses.SparseCategoricalCrossentropy()(y_true, y_pred)
+
         return loss
 
-    def loss(labels, embeddings):
-        output = AMSoftmax(num_classes, s, m)(embeddings)
-        return amsoftmax_loss(labels, output)
-
     return loss
+
+
+
 
 
 def triplet_loss(margin):
