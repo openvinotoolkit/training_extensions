@@ -78,9 +78,10 @@ $ python train.py \
 --learning_rate 0.001 \
 --train_dir model \
 --train_dataset ./data/annotation.tfrecord \
---batch_size 20 \
 --epochs_per_evaluation 100 \
---test_dataset ./data/annotation.tfrecord
+--test_dataset ./data/annotation.tfrecord \
+--model_type mobilenet_v2_ext \
+--config configs/config.yaml
 ```
 
 You can add one more parameter such as:
@@ -91,9 +92,10 @@ $ python train.py \
 --learning_rate 0.001 \
 --train_dir model \
 --train_dataset ./data/annotation.tfrecord \
---batch_size 20 \
 --epochs_per_evaluation 100 \
 --test_dataset ./data/annotation.tfrecord \
+--model_type mobilenet_v2_ext \
+--config configs/config.yaml
 --weights some_pretrained_model.saved_weights
 ```
 

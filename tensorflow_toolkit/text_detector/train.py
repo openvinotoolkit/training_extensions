@@ -26,19 +26,16 @@ def arg_parser():
                                                'ka_mobilenet_v2_1_4',
                                                'ka_xception'],
                       required=True)
-    args.add_argument('--batch_size', type=int, default=24, help='Training batch size.')
     args.add_argument('--learning_rate', type=float, default=0.01, help='Learning rate')
     args.add_argument('--momentum', type=float, default=0.9,
                       help='The momentum for the MomentumOptimizer')
-    args.add_argument('--weights_decay', type=float, default=0.0001, help='Weights decay.')
     args.add_argument('--weights', help='Path to pretrained weights.')
     args.add_argument('--train_dataset', required=True, help='Training dataset path.')
     args.add_argument('--test_dataset', help='Test dataset path.')
-    args.add_argument('--train_resolution', type=int, nargs=2, default=[512, 512],
-                      help='Training image resolution.')
     args.add_argument('--test_resolution', type=int, nargs=2, default=[1280, 768],
                       help='Test image resolution.')
     args.add_argument('--epochs_per_evaluation', type=int, default=1)
+    args.add_argument('--config', required=True, help='Path to configuration file.')
 
     return args
 
@@ -46,35 +43,11 @@ def arg_parser():
 def config_initialization(args):
     """ Initializes training configuration. """
 
-    strides = 4
-    config = {
-        'model_type': args.model_type,
-        'weights_decay': args.weights_decay,
-        'batch_size': args.batch_size,
-        'train_image_shape': args.train_resolution[::-1],
-        'score_map_shape': [args.train_resolution[1] // strides,
-                            args.train_resolution[0] // strides],
-        'rotate': True,
-        'rotation_prob': 0.5,
-        'distort_color': True,
-        'random_crop': True,
-        'imagenet_preprocessing': args.model_type != 'mobilenet_v2_ext',
-        'min_object_covered': 0.1,
-        'bbox_crop_overlap': 0.2,
-        'crop_aspect_ratio_range': (0.5, 2.),
-        'area_range': [0.1, 1],
-        'using_shorter_side_filtering': True,
-        'min_shorter_side': 10,
-        'max_shorter_side': np.infty,
-        'min_area': 300,
-        'min_height': 10,
-        'max_neg_pos_ratio': 3,
-        'num_neighbours': 8,
-        'num_classes': 2,
-        'ignore_label': -1,
-        'background_label': 0,
-        'text_label': 1,
-    }
+    with open(args.config) as opened_file:
+        config = yaml.load(opened_file)
+
+    config['model_type'] = args.model_type
+    config['imagenet_preprocessing'] = args.model_type != 'mobilenet_v2_ext'
 
     return config
 
@@ -159,7 +132,7 @@ def train(args, config):
 
     with mirrored_strategy.scope():
         model = pixel_link_model(
-            inputs=tf.keras.Input(shape=(args.train_resolution[1], args.train_resolution[0], 3)),
+            inputs=tf.keras.Input(shape=config['train_image_shape'] + [3]),
             config=config)
 
         loss = [ClassificationLoss(config), LinkageLoss(config)]
@@ -196,7 +169,7 @@ def train(args, config):
                     model.load_weights(get_weights_path(latest_checkpoint_before_fit, is_ema=False))
 
             history = model.fit(dataset, epochs=args.epochs_per_evaluation,
-                                steps_per_epoch=size // args.batch_size, callbacks=[ema_cb])
+                                steps_per_epoch=size // config['batch_size'], callbacks=[ema_cb])
             with mirrored_strategy.scope():
                 checkpoint.save(os.path.join(args.train_dir, 'model'))
 
@@ -219,7 +192,7 @@ def train(args, config):
                               data=history.history['link_logits_loss'][-1] * config['num_replicas'],
                               step=epoch)
             tf.summary.scalar('training/learning_rate', data=args.learning_rate, step=epoch)
-            tf.summary.scalar('training/batch_size', data=args.batch_size, step=epoch)
+            tf.summary.scalar('training/batch_size', data=config['batch_size'], step=epoch)
 
             if args.test_dataset:
                 test_args.weights = get_weights_path(latest_checkpoint_after_fit, is_ema=False)
