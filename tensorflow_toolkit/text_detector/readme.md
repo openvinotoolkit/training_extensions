@@ -18,7 +18,7 @@ and inference on CPU via OpenVINO. You can refer to [Original implementation](ht
 It is recommended to use virtual environment, to do that please install `virtualenv`
 ```bash
 sudo apt update
-sudo apt install python3-dev python3-pip
+sudo apt install python3-dev python3-pip graphviz
 sudo pip3 install -U virtualenv  # system-wide install
 
 virtualenv -p python3 ./venv
@@ -76,7 +76,7 @@ To run training you need to specify :
 ```bash
 $ python train.py \
 --learning_rate 0.001 \
---train_dir /tmp/training_dir \
+--train_dir model \
 --train_dataset ./data/annotation.tfrecord \
 --batch_size 20 \
 --epochs_per_evaluation 100 \
@@ -89,7 +89,7 @@ You can add one more parameter such as:
 ```bash
 $ python train.py \
 --learning_rate 0.001 \
---train_dir /tmp/training_dir \
+--train_dir model \
 --train_dataset ./data/annotation.tfrecord \
 --batch_size 20 \
 --epochs_per_evaluation 100 \

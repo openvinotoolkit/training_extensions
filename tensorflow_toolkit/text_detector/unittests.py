@@ -136,6 +136,7 @@ class TestCreateTFRecordDataset(unittest.TestCase):
             'ignore_label': -1,
             'background_label': 0,
             'text_label': 1,
+            'num_replicas': 1
         }
 
         dataset, _ = TFRecordDataset(self.output_path, config, test=False)()
@@ -191,6 +192,7 @@ class TestTraining(unittest.TestCase):
             'ignore_label': -1,
             'background_label': 0,
             'text_label': 1,
+            'num_replicas': 1
         }
 
         self.model = pixel_link_model(tf.keras.Input(shape=(256, 256, 3)), self.config)
@@ -198,8 +200,9 @@ class TestTraining(unittest.TestCase):
         self.model.compile(loss=[ClassificationLoss(self.config),
                                  LinkageLoss(self.config)], optimizer=optimizer)
 
-        _, self.saved_weigts = tempfile.mkstemp()
-        self.model.save_weights(self.saved_weigts)
+        _, self.saved_weights = tempfile.mkstemp()
+        self.saved_weights = self.saved_weights + '-1'
+        self.model.save_weights(self.saved_weights)
 
     def test_loss_history(self):
         """ Test for checking loss history. """
@@ -220,7 +223,7 @@ class TestTraining(unittest.TestCase):
                 self.resolution = (256, 256)
 
         dataset, _ = TFRecordDataset(self.output_path, self.config, test=True)()
-        test(Args(self.saved_weigts), self.config, model=self.model, dataset=dataset)
+        test(Args(self.saved_weights), self.config, model=self.model, dataset=dataset)
 
 
 if __name__ == '__main__':
