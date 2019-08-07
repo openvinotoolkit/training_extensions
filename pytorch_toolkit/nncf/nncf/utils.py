@@ -157,32 +157,6 @@ def print_statistics(stats):
             print("{}: {}".format(key, val))
 
 
-def init_flops(model, node_names, size, cuda=False):
-    training = model.training
-    model = model.eval()
-    hooks = []
-    for node_name in node_names:
-        def compute_flops_per_channel_hook(self, _input, output):
-            h, w = output.size(2), output.size(3)
-            ks = self.weight.data.size()
-            self.mask.flops = ks[0] * ks[2] * ks[3] * w * h
-
-        apply_by_node_name(model, [node_name],
-                           command=lambda m: hooks.append(m.register_forward_hook(compute_flops_per_channel_hook)))
-    var = torch.randn(size).cuda() if cuda else torch.randn(size)
-    model.module(var)
-    for hook in hooks:
-        hook.remove()
-    flops_total = 0
-    for node_name in node_names:
-        m = get_module_by_node_name(model, node_name)
-        print("{}: {}".format(node_name, m.mask.flops * m.mask.channels_in))
-        flops_total += m.mask.flops * m.mask.channels_in
-    if training:
-        model.train()
-    return flops_total
-
-
 def manual_seed(seed):
     np.random.seed(seed)
     random.seed(seed)
