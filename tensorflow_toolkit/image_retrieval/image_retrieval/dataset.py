@@ -110,15 +110,22 @@ def distort_color(image):
     return image
 
 
+def reassing_labels(labels):
+    unique_labels = list(set(labels))
+    return [unique_labels.index(l) for l in labels]
+
+
 # pylint: disable=R0915
 def create_dataset(impaths, labels, is_real, input_size, batch_size, params, return_original=False):
     tiled_images = []
     tiled_images_labels = []
     tiled_images_is_real = []
 
+    new_labels = reassing_labels(labels)
+
     tiled_images_indexes_per_class = collections.defaultdict(list)
 
-    for impath, label, real in zip(impaths, labels, is_real):
+    for impath, label, real in zip(impaths, new_labels, is_real):
         read_image = cv2.imread(impath)
 
         tiled_images_indexes_per_class[label].append(len(tiled_images))

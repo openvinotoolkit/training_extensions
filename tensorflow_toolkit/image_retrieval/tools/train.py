@@ -25,7 +25,7 @@ from pygit2 import Repository
 from sklearn.metrics.pairwise import cosine_distances
 
 from image_retrieval.dataset import create_dataset_from_list, depreprocess_image
-from image_retrieval.losses import am_softmax_loss, triplet_loss
+from image_retrieval.losses import am_softmax_loss, triplet_loss, AMSoftmax
 from image_retrieval.metrics import test_model
 from image_retrieval.model import keras_applications_mobilenetv2, keras_applications_resnet50
 
@@ -185,6 +185,10 @@ def main():
         s, m = float(s), float(m)
         print(s, m)
         loss_function = am_softmax_loss(num_classes, s, m)
+        training_model = tf.keras.Sequential([
+            model,
+            AMSoftmax(num_classes)
+        ])
     elif args.loss.startswith('triplet'):
         _, margin = args.loss.split('_')
         margin = float(margin)
@@ -198,18 +202,18 @@ def main():
         decay_rate=args.lr_drop_value,
         staircase=True)
 
-    model.compile(loss=loss_function, optimizer=tf.keras.optimizers.Adam(lr_schedule))
+    training_model.compile(loss=loss_function, optimizer=tf.keras.optimizers.Adam(lr_schedule))
 
     with tf.summary.create_file_writer(args.train_dir + "/logs").as_default():
         while True:
-            cur_step = model.optimizer.iterations.numpy()
-            lr = model.optimizer.lr(cur_step).numpy()
+            cur_step = training_model.optimizer.iterations.numpy()
+            lr = training_model.optimizer.lr(cur_step).numpy()
             print('lr', lr)
 
-            history = model.fit(dataset, steps_per_epoch=args.steps_per_epoch)
+            history = training_model.fit(dataset, steps_per_epoch=args.steps_per_epoch)
 
-            cur_step = model.optimizer.iterations.numpy()
-            lr = model.optimizer.lr(cur_step).numpy()
+            cur_step = training_model.optimizer.iterations.numpy()
+            lr = training_model.optimizer.lr(cur_step).numpy()
 
             tf.summary.scalar('training/loss', data=history.history['loss'][-1], step=cur_step)
             tf.summary.scalar('training/lr', data=lr, step=cur_step)

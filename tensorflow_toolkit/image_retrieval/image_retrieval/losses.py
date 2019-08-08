@@ -51,8 +51,8 @@ def am_softmax_loss(num_classes, s, m):
         output = tf.where(tf.cast(y_true_one_hot, tf.bool), phi_theta, cos_theta)
         output = output * s
 
-        y_pred = tf.keras.layers.Softmax()(output)
-        loss = tf.keras.losses.SparseCategoricalCrossentropy()(y_true, y_pred)
+        loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)(y_true, output)
+
 
         return loss
 
