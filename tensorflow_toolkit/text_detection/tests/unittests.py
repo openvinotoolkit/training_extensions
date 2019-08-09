@@ -8,12 +8,11 @@ import numpy as np
 
 import tensorflow as tf
 
-from annotation import TextDetectionDataset
-from create_dataset import write_to_tfrecords
-from dataset import  TFRecordDataset
-from loss import  ClassificationLoss, LinkageLoss
-from model import pixel_link_model
-from test import test
+from text_detection.annotation import TextDetectionDataset, write_to_tfrecords
+from text_detection.dataset import  TFRecordDataset
+from text_detection.loss import  ClassificationLoss, LinkageLoss
+from text_detection.model import pixel_link_model
+from text_detection.metrics import test
 
 
 class TestCreateAnnotaion(unittest.TestCase):

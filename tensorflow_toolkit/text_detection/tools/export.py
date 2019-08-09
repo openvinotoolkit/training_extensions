@@ -8,7 +8,8 @@ import yaml
 import tensorflow as tf
 from tensorflow.python.tools.freeze_graph import freeze_graph
 
-from model import pixel_link_model
+from text_detection.model import pixel_link_model
+from text_detection.common import load_config
 
 tf.compat.v1.disable_v2_behavior()
 
@@ -21,17 +22,8 @@ def arg_parser():
     parser.add_argument('--weights', help='Path to trained weights.')
     parser.add_argument('--resolution', nargs=2, type=int, default=(1280, 768))
     parser.add_argument('--config', required=True, help='Path to training configuration file.')
-
+    parser.add_argument('--output_dir', default=None, help='Output Directory')
     return parser
-
-
-def load_config(path):
-    """ Load saved configuration from yaml file. """
-
-    with open(path, "r") as read_file:
-        config = yaml.load(read_file)
-    return config
-
 
 def print_flops(graph):
     """ Prints information about FLOPs. """
@@ -73,10 +65,11 @@ def freeze(args, config):
     link_logits = tf.reshape(link_logits, link_logits.shape.as_list()[0:3] +
                              [config['num_neighbours'] * 2])
 
+    export_folder = args.output_dir if args.output_dir else os.path.join(os.path.dirname(args.weights), 'export')
+
     with tf.compat.v1.Session() as sess:
         model.load_weights(args.weights)
 
-        export_folder = tempfile.mktemp()
         tf.compat.v1.saved_model.simple_save(sess, export_folder,
                                              inputs={'input': input_tensor},
                                              outputs={segm_logits.name[:-2]: segm_logits,

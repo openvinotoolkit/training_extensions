@@ -9,9 +9,9 @@ import numpy as np
 
 import tensorflow as tf
 
-from loss import ClassificationLoss, LinkageLoss
-from model import pixel_link_model
-from dataset import TFRecordDataset
+from text_detection.loss import ClassificationLoss, LinkageLoss
+from text_detection.model import pixel_link_model
+from text_detection.dataset import TFRecordDataset
 
 
 def arg_parser():
@@ -70,7 +70,7 @@ class ExponentialMovingAverageCallback(tf.keras.callbacks.Callback):
         self.decay = 0.9999
         self.epoch = epoch
         self.averages = {}
-        
+
 
         self.num_updates = 0
         with tf.name_scope('ema'):

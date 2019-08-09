@@ -229,4 +229,3 @@ def eval(pr_annotations, gt_annotations, images=None, imshow_delay=1):
     average_precision = compute_ap(arr_global_confidences, arr_global_matches, num_global_care_gt)
 
     return method_recall, method_precision, method_hmean, average_precision
-
