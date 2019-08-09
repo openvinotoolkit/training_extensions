@@ -1,18 +1,10 @@
 """ This module performs testing of text detection neural network. """
 
 import argparse
-import cv2
 import os
-import yaml
-from tqdm import tqdm
-import numpy as np
 import tensorflow as tf
 
-
 from text_detection.model import pixel_link_model
-from text_detection.evaluation import eval
-from text_detection.dataset import get_neighbours, is_valid_coord, TFRecordDataset
-
 from text_detection.metrics import test
 from text_detection.common import load_config, parse_epoch
 
@@ -33,6 +25,7 @@ def arg_parser():
 
     return parser
 
+
 def main():
     """ Main function. """
 
@@ -45,7 +38,7 @@ def main():
         args.weights_folder = os.path.abspath(args.weights_folder)
 
         try:
-            with open(os.path.join(args.weights_folder,'evaluations.txt')) as opened_file:
+            with open(os.path.join(args.weights_folder, 'evaluations.txt')) as opened_file:
                 already_tested_weights = [line.strip().split()[0] for line in opened_file.readlines()]
         except:
             already_tested_weights = []
@@ -56,7 +49,8 @@ def main():
         with tf.summary.create_file_writer(
                 os.path.join(args.weights_folder, '../logs')).as_default():
 
-            weights_list = ['.'.join(x.split('.')[:-1]) for x in os.listdir(args.weights_folder) if x.startswith('model')]
+            weights_list = ['.'.join(x.split('.')[:-1])
+                            for x in os.listdir(args.weights_folder) if x.startswith('model')]
             weights_list = list(set(weights_list))
             weights_list = [os.path.join(args.weights_folder, x) for x in weights_list]
             weights_list = [x for x in weights_list if x not in already_tested_weights]
@@ -69,7 +63,7 @@ def main():
                 already_tested_weights.append(args.weights)
                 print(args.weights, '(recall, precision, method_hmean)', result)
 
-                with open(os.path.join(args.weights_folder,'evaluations.txt'), 'a+') as opened_file:
+                with open(os.path.join(args.weights_folder, 'evaluations.txt'), 'a+') as opened_file:
                     opened_file.write('{} {}\n'.format(args.weights, result[-1]))
 
 

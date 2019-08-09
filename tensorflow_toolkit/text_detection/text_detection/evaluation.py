@@ -1,6 +1,5 @@
 """ This module contains evaluation procedure. """
 
-import argparse
 import numpy as np
 
 import Polygon as plg
@@ -8,6 +7,7 @@ import cv2
 
 IOU_CONSTRAINT = 0.5
 AREA_PRECISION_CONSTRAINT = 0.5
+
 
 def polygon_from_points(points):
     """ Returns a Polygon object to use with the Polygon2 class from a list of 8 points:
@@ -65,7 +65,7 @@ def get_intersection(polygon1, polygon2):
     """ Returns are of intersection of two polygons. """
 
     intersection = polygon1 & polygon2
-    if len(intersection) == 0:
+    if not intersection:
         return 0
     return intersection.area()
 

@@ -2,14 +2,13 @@
 
 import argparse
 import os
-import tempfile
-import yaml
 
 import tensorflow as tf
 from tensorflow.python.tools.freeze_graph import freeze_graph
 
 from text_detection.model import pixel_link_model
 from text_detection.common import load_config
+
 
 tf.compat.v1.disable_v2_behavior()
 
@@ -45,9 +44,9 @@ def print_flops(graph):
 def load_frozen_graph(frozen_graph_filename):
     """ Loads and returns frozen graph. """
 
-    with tf.io.gfile.GFile(frozen_graph_filename, "rb") as f:
+    with tf.io.gfile.GFile(frozen_graph_filename, "rb") as file:
         graph_def = tf.compat.v1.GraphDef()
-        graph_def.ParseFromString(f.read())
+        graph_def.ParseFromString(file.read())
 
     with tf.Graph().as_default() as graph:
         tf.import_graph_def(graph_def, name='')

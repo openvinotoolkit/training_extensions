@@ -166,8 +166,8 @@ def keras_applications_xception(inputs):
 
     tf.keras.utils.plot_model(base_model, 'model.png')
 
-    for l in base_model.layers:
-        print(l.name, l.output)
+    for layer in base_model.layers:
+        print(layer.name, layer.output)
 
     outputs = {
         '4x': tf.keras.layers.ZeroPadding2D(((0, 1), (0, 1)))(base_model.get_layer('add').output),

@@ -1,14 +1,6 @@
 """ This module allows you to convert source dataset to internal format. """
 
 import argparse
-import collections
-import json
-import os
-
-import numpy as np
-from tqdm import tqdm
-
-import cv2
 from text_detection.annotation import TextDetectionDataset
 
 

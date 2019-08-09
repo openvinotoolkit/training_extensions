@@ -1,16 +1,10 @@
-
-import json
 import os
-
-
+import json
 import tempfile
 from tqdm import tqdm
-
-import numpy as np
-
-import tensorflow as tf
 import cv2
-
+import numpy as np
+import tensorflow as tf
 
 
 class TextDetectionDataset:
@@ -180,8 +174,11 @@ class TextDetectionDataset:
         return dataset
 
     @staticmethod
-    def read_from_coco_text(path, no_boxes_is_ok=False, sets=['train']):
+    def read_from_coco_text(path, no_boxes_is_ok=False, sets=None):
         """ Converts annotation from COCO-TEXT format to internal format. """
+
+        if sets is None:
+            sets = ['train']
 
         dataset = TextDetectionDataset()
 
@@ -190,7 +187,7 @@ class TextDetectionDataset:
             json_loaded = json.load(read_file)
 
             for id, value in json_loaded['imgs'].items():
-                image_path = os.path.join(os.path.dirname(path),'train2014', value['file_name'])
+                image_path = os.path.join(os.path.dirname(path), 'train2014', value['file_name'])
                 dataset_type = value['set']
 
                 if dataset_type not in sets:
@@ -212,15 +209,13 @@ class TextDetectionDataset:
                         'quadrilateral': quadrilateral,
                         'transcription': text,
                         'readable': readable,
-                        'language': language}
-                    )
+                        'language': language})
 
 
                 if no_boxes_is_ok or bboxes:
                     dataset.annotation.append({
                         'image_path': image_path,
-                        'bboxes': bboxes
-                    })
+                        'bboxes': bboxes})
 
         return dataset
 
@@ -298,7 +293,7 @@ class TextDetectionDataset:
         return dataset
 
     @staticmethod
-    def read_from_icdar2017_mlt(folder, is_training):
+    def read_from_icdar2017_mlt(folder, _):
         """ Converts annotation from toy dataset (available) to internal format. """
 
         def parse_line(line):
@@ -316,7 +311,8 @@ class TextDetectionDataset:
         dataset = TextDetectionDataset()
 
         for image_path in os.listdir(os.path.join(folder, 'ch8_validation_images')):
-            annotation_path = os.path.join(folder, 'ch8_validation_localization_transcription_gt_v2', 'gt_' + image_path)[:-3] + 'txt'
+            annotation_path = os.path.join(folder, 'ch8_validation_localization_transcription_gt_v2',
+                                           'gt_' + image_path)[:-3] + 'txt'
             image_path = os.path.join(folder, 'ch8_validation_images', image_path)
 
             frame = {'image_path': image_path, 'bboxes': []}
@@ -393,7 +389,6 @@ def write_to_tfrecords(output_path, datasets, resize_to=None, imshow_delay=-1):
                     visualize(image, bboxes, imshow_delay)
 
 
-
 def convert_to_example(image_data, labels, labels_text, bboxes, oriented_bboxes, shape):
     """ Convert dataset element to tf.train.Example. """
 
@@ -401,7 +396,7 @@ def convert_to_example(image_data, labels, labels_text, bboxes, oriented_bboxes,
     bboxes = np.asarray(bboxes)
 
     def get_list(obj, idx):
-        if len(obj) > 0:
+        if obj:
             return list(obj[:, idx])
         return []
 
@@ -433,4 +428,3 @@ def convert_to_example(image_data, labels, labels_text, bboxes, oriented_bboxes,
         'image/format': byte_feature([b'JPEG']),
         'image/encoded': byte_feature([image_data])}))
     return example
-

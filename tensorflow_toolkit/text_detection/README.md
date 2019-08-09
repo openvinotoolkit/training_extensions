@@ -57,7 +57,7 @@ You can use `annotation.py` module to convert listed above datasets to internal 
 To convert toy dataset located in `./data` folder please run:
 
 ```bash
-python tools/annotation.py \
+python tools/prepare_annotation.py \
   --type toy \
   --images data \
   --out_annotation data/annotation.json

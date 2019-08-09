@@ -10,7 +10,7 @@ import tensorflow as tf
 
 from text_detection.annotation import TextDetectionDataset, write_to_tfrecords
 from text_detection.dataset import  TFRecordDataset
-from text_detection.loss import  ClassificationLoss, LinkageLoss
+from text_detection.loss import ClassificationLoss, LinkageLoss
 from text_detection.model import pixel_link_model
 from text_detection.metrics import test
 
@@ -202,6 +202,7 @@ class TestTraining(unittest.TestCase):
         _, self.saved_weights = tempfile.mkstemp()
         self.saved_weights = self.saved_weights + '-1'
         self.model.save_weights(self.saved_weights)
+        self.history = None
 
     def test_loss_history(self):
         """ Test for checking loss history. """

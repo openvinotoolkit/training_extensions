@@ -1,7 +1,6 @@
 """ This module contains loss definition. """
 
 import tensorflow as tf
-from tensorflow.python.ops import array_ops
 
 
 class ClassificationLoss():

@@ -1,16 +1,14 @@
-import argparse
-import cv2
 import os
-import yaml
+import cv2
 from tqdm import tqdm
 import numpy as np
 import tensorflow as tf
-
 
 from text_detection.model import pixel_link_model
 from text_detection.evaluation import eval
 from text_detection.dataset import get_neighbours, is_valid_coord, TFRecordDataset
 from text_detection.common import parse_epoch
+
 
 def decode_image(segm_scores, link_scores, segm_conf_threshold, link_conf_threshold):
     """ Convert softmax scores to mask. """
@@ -122,7 +120,7 @@ def mask_to_bboxes(mask, config, image_shape):
     for bbox_idx in range(1, max_bbox_idx + 1):
         bbox_mask = (mask == bbox_idx).astype(np.uint8)
         cnts = cv2.findContours(bbox_mask, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)[-2]
-        if len(cnts) == 0:
+        if not cnts:
             continue
         cnt = cnts[0]
         rect, rect_area = min_area_rect(cnt)

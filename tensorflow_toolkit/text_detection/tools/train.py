@@ -5,8 +5,6 @@ import os
 import test
 import yaml
 
-import numpy as np
-
 import tensorflow as tf
 
 from text_detection.loss import ClassificationLoss, LinkageLoss
