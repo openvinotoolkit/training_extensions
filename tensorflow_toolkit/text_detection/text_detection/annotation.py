@@ -410,7 +410,7 @@ def convert_to_example(image_data, labels, labels_text, bboxes, oriented_bboxes,
     bboxes = np.asarray(bboxes)
 
     def get_list(obj, idx):
-        if obj:
+        if len(obj) > 0:
             return list(obj[:, idx])
         return []
 

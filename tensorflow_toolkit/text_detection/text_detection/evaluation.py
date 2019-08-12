@@ -15,9 +15,8 @@
 """ This module contains evaluation procedure. """
 
 import numpy as np
-
-import Polygon as plg
 import cv2
+import Polygon as plg
 
 IOU_CONSTRAINT = 0.5
 AREA_PRECISION_CONSTRAINT = 0.5
@@ -79,7 +78,7 @@ def get_intersection(polygon1, polygon2):
     """ Returns are of intersection of two polygons. """
 
     intersection = polygon1 & polygon2
-    if not intersection:
+    if len(intersection) == 0:
         return 0
     return intersection.area()
 

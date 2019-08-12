@@ -134,7 +134,7 @@ def mask_to_bboxes(mask, config, image_shape):
     for bbox_idx in range(1, max_bbox_idx + 1):
         bbox_mask = (mask == bbox_idx).astype(np.uint8)
         cnts = cv2.findContours(bbox_mask, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)[-2]
-        if not cnts:
+        if len(cnts) == 0:
             continue
         cnt = cnts[0]
         rect, rect_area = min_area_rect(cnt)

@@ -50,10 +50,8 @@ disable=import-error,
     unexpected-keyword-arg,
     cell-var-from-loop,
     unsupported-assignment-operation,
-    no-self-use
-
-
-
+    no-self-use,
+    len-as-condition
 
 [REPORTS]
 

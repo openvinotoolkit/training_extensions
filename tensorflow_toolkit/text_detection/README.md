@@ -156,7 +156,11 @@ source /opt/intel/openvino/bin/setupvars.sh
 
 4. Run model optimizer tool to export frozen graph to IR
 ```bash
-mo.py --input_model model/weights/export/frozen_graph.pb --reverse_input_channels
+mo.py --model_name text_detection \
+  --input_model model/weights/export/frozen_graph.pb \
+  --reverse_input_channels \
+  --data_type FP32 \
+  --output_dir IR
 ```
 
 
