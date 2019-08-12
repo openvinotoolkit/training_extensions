@@ -25,7 +25,7 @@ from pygit2 import Repository
 from sklearn.metrics.pairwise import cosine_distances
 
 from image_retrieval.dataset import create_dataset_from_list, depreprocess_image
-from image_retrieval.losses import am_softmax_loss, triplet_loss, AMSoftmax
+from image_retrieval.losses import am_softmax_loss, triplet_loss, AMSoftmaxLogits
 from image_retrieval.metrics import test_model
 from image_retrieval.model import keras_applications_mobilenetv2, keras_applications_resnet50
 
@@ -175,24 +175,20 @@ def main():
     save_args(args, os.path.join(args.train_dir, 'args.json'))
     save_git_info(os.path.join(args.train_dir, 'git_info.json'))
 
-    if args.loss.startswith('focal-amsoftmax'):
-        _, s, m, alpha, gamma = args.loss.split('_')
-        s, m, alpha, gamma = float(s), float(m), float(alpha), float(gamma)
-        print(s, m, alpha, gamma)
-        loss_function = am_softmax_loss(num_classes, s, m, alpha, gamma)
-    elif args.loss.startswith('amsoftmax'):
+    if args.loss.startswith('amsoftmax'):
         _, s, m = args.loss.split('_')
         s, m = float(s), float(m)
         print(s, m)
         loss_function = am_softmax_loss(num_classes, s, m)
         training_model = tf.keras.Sequential([
             model,
-            AMSoftmax(num_classes)
+            AMSoftmaxLogits(num_classes)
         ])
     elif args.loss.startswith('triplet'):
         _, margin = args.loss.split('_')
         margin = float(margin)
         loss_function = triplet_loss(margin=margin)
+        training_model = model
     else:
         raise Exception('unknown loss')
 

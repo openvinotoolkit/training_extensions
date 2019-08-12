@@ -19,9 +19,9 @@ import tensorflow.keras.backend as K
 import math
 
 
-class AMSoftmax(tf.keras.layers.Layer):
+class AMSoftmaxLogits(tf.keras.layers.Layer):
     def __init__(self, units, **kwargs):
-        super(AMSoftmax, self).__init__(**kwargs)
+        super(AMSoftmaxLogits, self).__init__(**kwargs)
         self.units = units
         self.kernel = None
 
@@ -53,13 +53,9 @@ def am_softmax_loss(num_classes, s, m):
 
         loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)(y_true, output)
 
-
         return loss
 
     return loss
-
-
-
 
 
 def triplet_loss(margin):
