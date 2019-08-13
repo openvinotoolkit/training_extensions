@@ -38,7 +38,8 @@ def execute_mo(input_model, output_dir, name, data_type):
         '--input_model={}'.format(input_model),
         '--output_dir={}'.format(output_dir),
         '--model_name={}'.format(name),
-        '--data_type={}'.format(data_type)
+        '--data_type={}'.format(data_type),
+        '--scale_values=0[255],1[255]'
     ]
     subprocess.call(command)
 
@@ -74,7 +75,7 @@ def main():
                       [x, cubic],       # model input (or a tuple for multiple inputs)
                       model_onnx_path,  # where to save the model
                       export_params=True,
-                      verbose=True)     # store the trained parameter weights inside the model file
+                      verbose=True)    # store the trained parameter weights inside the model file
 
     ir_export_dir = os.path.join(export_dir, 'IR', args.data_type)
     execute_mo(model_onnx_path, ir_export_dir, model_name, args.data_type)

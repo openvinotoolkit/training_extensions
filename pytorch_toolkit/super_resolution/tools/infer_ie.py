@@ -52,7 +52,6 @@ def load_ir_model(model_xml, device):
 
 def image_to_blob(image, shape):
     blob = image.copy()
-    blob = skimage.img_as_float32(blob)
     blob = blob.transpose((2, 0, 1))  # from HWC to CHW
     blob = blob.reshape(shape)
     return blob
