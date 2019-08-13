@@ -14,8 +14,10 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+import os
 import argparse
 import random
+import shutil
 import torch
 import torch.backends.cudnn as cudnn
 import torch.optim as optim
@@ -27,70 +29,53 @@ from sr.dataset import DatasetFromSingleImages
 from sr.trainer import Trainer
 from sr.metrics import PSNR, RMSE
 from sr.models import make_model, MSE_loss
+from sr.common import load_config
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Super Resolution PyTorch")
-    parser.add_argument("--scale", type=int, default=4, help="Upsampling factor for SR")
-    parser.add_argument("--model", default="SmallModel", type=str,
-                        choices=['SRResNetLight', 'SmallModel'], help="SR model")
-    parser.add_argument("--patch_size", nargs='+', default=[196, 196], type=int,
-                        help="Patch size used for training (None - whole image)")
-    parser.add_argument("--border", type=int, default=4, help="Ignored border")
-    parser.add_argument("--aug_resize_factor_range", nargs='+', default=[0.75, 1.1], type=float,
-                        help="Range of resize factor for training patch, used for augmentation")
-    parser.add_argument("--num_of_train_images", type=int, default=None,
-                        help="Number of training images (None - use all images)")
-    parser.add_argument("--num_of_patches_per_image", type=int, default=10, help="Number of patches from one image")
-    parser.add_argument("--num_of_val_images", type=int, default=None,
-                        help="Number of val images (None - use all images)")
-    parser.add_argument("--resume", action='store_true', help="Resume training from the latest state")
-    parser.add_argument("--init_checkpoint", help="Path to checkpoint")
-
-    parser.add_argument("--batch_size", type=int, default=16, help="Training batch size")
-    parser.add_argument("--num_of_epochs", type=int, default=500, help="Number of epochs to train for")
-    parser.add_argument("--num_of_data_loader_threads", type=int, default=0,
-                        help="Number of threads for data loader to use, Default: 1")
-    parser.add_argument("--train_path", default="", type=str, help="Path to train data")
-    parser.add_argument("--validation_path", default="", type=str, help="Path to folder with val images")
-    parser.add_argument("--exp_name", default="test", type=str, help="Experiment name")
-    parser.add_argument("--models_path", default="./models", type=str, help="Path to models folder")
-    parser.add_argument("--seed", default=1337, type=int, help="Seed for random generators")
-    parser.add_argument('--milestones', nargs='+', default=[8, 12, 16], type=int,
-                        help='List of epoch indices, where learning rate decay is applied')
+    parser = argparse.ArgumentParser(description='Super Resolution PyTorch')
+    parser.add_argument('--config', help='Path to config file')
     return parser.parse_args()
 
-def main():
-    opt = parse_args()
-    print('Parameters:', opt)
 
-    print("===> Building model")
-    scale = opt.scale
-    model = make_model(opt.model, scale)
-    if opt.init_checkpoint:
-        s = torch.load(opt.init_checkpoint)
+def main():
+    args = parse_args()
+    config = load_config(args.config)
+    print('Config:', config)
+
+    print('===> Building model')
+    scale = config['scale']
+    model = make_model(config['model'], scale)
+
+    if config['init_checkpoint']:
+        s = torch.load(config['init_checkpoint'])
         model.load_state_dict(s['model'].state_dict())
 
-    trainer = Trainer(model=model, name=opt.exp_name, models_root=opt.models_path, resume=opt.resume)
+    trainer = Trainer(model=model, name=config['exp_name'], models_root=config['models_path'], resume=config['resume'])
 
-    random.seed(opt.seed)
-    torch.manual_seed(opt.seed)
-    np.random.seed(opt.seed)
-    torch.cuda.manual_seed(opt.seed)
+    # Copy config in train directory agter create trainer object
+    model_path = os.path.join(config['models_path'], config['exp_name'])
+    shutil.copyfile(args.config, os.path.join(model_path, 'config.yaml'))
+
+    random.seed(config['seed'])
+    torch.manual_seed(config['seed'])
+    np.random.seed(config['seed'])
+    torch.cuda.manual_seed(config['seed'])
 
     cudnn.benchmark = True
 
-    print("===> Loading datasets")
-    train_set = DatasetFromSingleImages(path=opt.train_path, patch_size=opt.patch_size,
-                                        aug_resize_factor_range=opt.aug_resize_factor_range,
-                                        scale=scale, count=opt.num_of_train_images, cache_images=False,
-                                        seed=opt.seed, dataset_size_factor=opt.num_of_patches_per_image)
+    print('===> Loading datasets')
+    train_set = DatasetFromSingleImages(path=config['train_path'], patch_size=config['patch_size'],
+                                        aug_resize_factor_range=config['aug_resize_factor_range'],
+                                        scale=scale, count=config['num_of_train_images'], cache_images=False,
+                                        seed=config['seed'], dataset_size_factor=config['num_of_patches_per_image'])
 
-    val_set = DatasetFromSingleImages(path=opt.validation_path, patch_size=None, aug_resize_factor_range=None,
-                                      scale=scale, count=opt.num_of_val_images, cache_images=False, seed=opt.seed)
+    val_set = DatasetFromSingleImages(path=config['validation_path'], patch_size=None, aug_resize_factor_range=None,
+                                      scale=scale, count=config['num_of_val_images'], cache_images=False,
+                                      seed=config['seed'])
 
-    training_data_loader = DataLoader(dataset=train_set, num_workers=opt.num_of_data_loader_threads,
-                                      batch_size=opt.batch_size, shuffle=True, drop_last=True)
+    training_data_loader = DataLoader(dataset=train_set, num_workers=config['num_of_data_loader_threads'],
+                                      batch_size=config['batch_size'], shuffle=True, drop_last=True)
 
     batch_sampler = Data.BatchSampler(
         sampler=Data.SequentialSampler(val_set),
@@ -100,29 +85,29 @@ def main():
 
     evaluation_data_loader = DataLoader(dataset=val_set, num_workers=0,
                                         batch_sampler=batch_sampler)
-    print("===> Building model")
-    criterion = [MSE_loss(opt.border).cuda()]
+    print('===> Building model')
+    criterion = [MSE_loss(config['border']).cuda()]
 
-    print("===> Training")
+    print('===> Training')
 
     trainer.train(criterion=criterion,
                   optimizer=optim.Adam,
-                  optimizer_params={"lr": 1e-3},
+                  optimizer_params={'lr': 1e-3},
                   scheduler=torch.optim.lr_scheduler.MultiStepLR,
-                  scheduler_params={"milestones": opt.milestones},
+                  scheduler_params={'milestones': config['milestones']},
                   training_data_loader=training_data_loader,
                   evaluation_data_loader=evaluation_data_loader,
                   pretrained_weights=None,
-                  train_metrics=[PSNR(name='PSNR', border=opt.border),
-                                 RMSE(name='RMSE', border=opt.border)],
-                  val_metrics=[PSNR(name='PSNR', border=opt.border),
-                               RMSE(name='RMSE', border=opt.border)],
+                  train_metrics=[PSNR(name='PSNR', border=config['border']),
+                                 RMSE(name='RMSE', border=config['border'])],
+                  val_metrics=[PSNR(name='PSNR', border=config['border']),
+                               RMSE(name='RMSE', border=config['border'])],
                   track_metric='PSNR',
-                  epoches=opt.num_of_epochs
+                  epoches=config['num_of_epochs']
                   )
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     try:
         torch.multiprocessing.set_start_method('spawn')
     except RuntimeError:

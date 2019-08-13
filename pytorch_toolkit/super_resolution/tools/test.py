@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+import os
 import argparse
 import time
 import torch.utils.data as Data
@@ -21,21 +22,25 @@ from tqdm import tqdm
 from sr.metrics import PSNR
 from sr.dataset import DatasetFromSingleImages
 from sr.trainer import Trainer
+from sr.common import load_config
 
-parser = argparse.ArgumentParser(description="PyTorch SR test")
-parser.add_argument("--test_data_path", default="", type=str, help="path to test data")
-parser.add_argument("--exp_name", default="test", type=str, help="experiment name")
-parser.add_argument("--models_path", default="/models", type=str, help="path to models folder")
-parser.add_argument("--scale", type=int, default=4, help="Upsampling factor for SR")
-parser.add_argument("--border", type=int, default=4, help="Ignored border")
+
+def parse_args():
+    parser = argparse.ArgumentParser(description="PyTorch SR test")
+    parser.add_argument("--test_data_path", default="", type=str, help="path to test data")
+    parser.add_argument("--exp_name", default="test", type=str, help="experiment name")
+    parser.add_argument("--models_path", default="./models", type=str, help="path to models folder")
+    return parser.parse_args()
 
 
 def main():
-    opt = parser.parse_args()
-    print(opt)
+    args = parse_args()
 
-    test_set = DatasetFromSingleImages(path=opt.test_data_path, patch_size=None,
-                                       aug_resize_factor_range=None, scale=opt.scale)
+    config = load_config(os.path.join(args.models_path, args.exp_name))
+
+
+    test_set = DatasetFromSingleImages(path=args.test_data_path, patch_size=None,
+                                       aug_resize_factor_range=None, scale=config['scale'])
 
     batch_sampler = Data.BatchSampler(
         sampler=Data.SequentialSampler(test_set),
@@ -45,10 +50,10 @@ def main():
 
     evaluation_data_loader = Data.DataLoader(dataset=test_set, num_workers=0, batch_sampler=batch_sampler)
 
-    trainer = Trainer(name=opt.exp_name, models_root=opt.models_path, resume=True)
+    trainer = Trainer(name=args.exp_name, models_root=args.models_path, resume=True)
     trainer.load_best()
 
-    psnr = PSNR(name='PSNR', border=opt.border)
+    psnr = PSNR(name='PSNR', border=config['border'])
 
     tic = time.time()
     count = 0
