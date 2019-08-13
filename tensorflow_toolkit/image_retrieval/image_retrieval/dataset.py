@@ -17,9 +17,9 @@
 import collections
 import json
 import random
-import numpy as np
 
 import cv2
+import numpy as np
 import tensorflow as tf
 
 from image_retrieval.common import preproces_image, depreprocess_image, fit_to_max_size, from_list
@@ -123,14 +123,14 @@ class Dataset:
         self.labels = Dataset.reassign_labels(labels)
         self.is_real = is_real
 
+        if self.params['preload']:
+            self.preload()
+            if self.params['pretile']:
+                self.pretile()
+
         self.images_indexes_per_class = collections.defaultdict(list)
         for index, label in enumerate(self.labels):
             self.images_indexes_per_class[label].append(index)
-
-        if self.params['preload']:
-            self.preload(images_paths, self.labels, is_real)
-        else:
-            assert not self.params['pretile']
 
         if self.params['weighted_sampling']:
             self.calc_sampling_probs()
@@ -147,23 +147,32 @@ class Dataset:
             probs[idx] = 1.0 / frequency[l]
         self.probs = probs / np.sum(probs)
 
-    def preload(self, impaths, labels, is_real):
-        ''' Pre-loads images in RAM, it also can pre-tile images. It allows making training faster,
-            but requires a lot of RAM memory.
-        '''
+    def preload(self):
+        ''' Pre-loads images in RAM. '''
 
-        for impath, label, real in zip(impaths, labels, is_real):
-            read_image = cv2.imread(impath)
-            self.loaded_images.append(read_image)
+        for image_path in self.images_paths:
+            self.loaded_images.append(cv2.imread(image_path))
 
-            if self.params['pretile'] and not real:
+    def pretile(self):
+        ''' Pre-tiles images in RAM. Makes training faster but requires huge amount of RAM. '''
+
+        tiled_labels = []
+        tiled_is_real = []
+        tiled_loaded_images = []
+
+        for read_image, label, real in zip(self.loaded_images, self.labels, self.is_real):
+            if not real:
                 for n in range(2, self.params['max_tiling'] + 1):
                     image = self.tile(read_image, n)
 
-                    self.images_indexes_per_class[label].append(len(self.labels))
-                    self.labels.append(label)
-                    self.is_real.append(real)
-                    self.loaded_images.append(image)
+                    tiled_labels.append(label)
+                    tiled_is_real.append(real)
+                    tiled_loaded_images.append(image)
+
+        self.labels.extend(tiled_labels)
+        self.is_real.extend(tiled_is_real)
+        self.loaded_images.extend(tiled_loaded_images)
+
 
     def tile(self, image, n):
         ''' Tiles images taking their aspect ratios into account. '''
@@ -192,7 +201,6 @@ class Dataset:
             choices = np.random.choice(choices, len(self.labels), p=self.probs)
         elif self.params['shuffle']:
             np.random.shuffle(choices)
-
 
         # duplication is required for triplet loss at least.
         duplicated_choices = []
