@@ -70,22 +70,10 @@ Validation images should have resolution like `path_size`.
 
 Use `tools/train.py` script to start training process:
 ```
-python3 tools/train.py \
-    --train_path PATH_TO_TRAIN_DATA \
-    --validation_path PATH_TO_VAL_DATA \
-    --models_path PATH_TO_MODELS_PATH  \
-    --exp_name EXPERIMENT_NAME \
-    --batch_size 256 \
-    --num_of_epochs 100 \
-    --num_of_data_loader_threads 8 \
-    --milestones 8 12 16 \
-    --scale 4 \
-    --patch_size 192 192 \
-    --model SmallModel \
-    --aug_resize_factor_range 0.8 1.2
+python3 tools/train.py --config configs/smallmodel_scale4.yaml
 ```
 
-To start from pretrained checkpoint add `--init_checkpoint PATH_TO_CHECKPOINT`.
+To start from pretrained checkpoint set `init_checkpoint` in config.
 Checkpoints can be downloaded [here](https://download.01.org/opencv/openvino_training_extensions/models/super_resolution/super_resolution.tar.gz).
 
 ### Testing
@@ -95,9 +83,7 @@ Use `tools/test.py` script to evaluate the trained model.
 ```
 python3 tools/test.py --test_data_path PATH_TO_TEST_DATA \
     --models_path PATH_TO_MODELS_PATH \
-    --exp_name EXPERIMENT_NAME \
-    --scale 4 \
-    --border 4
+    --exp_name EXPERIMENT_NAME
 ```
 
 ## Export to OpenVINO
@@ -105,7 +91,6 @@ python3 tools/test.py --test_data_path PATH_TO_TEST_DATA \
 python3 tools/export.py --models_path PATH_TO_MODELS_PATH \
     --exp_name EXPERIMENT_NAME \
     --input_size 200 200 \
-    --scale 4 \
     --data_type FP32
 ```
 
@@ -113,7 +98,7 @@ python3 tools/export.py --models_path PATH_TO_MODELS_PATH \
 
 ### For the latest checkpoint
 ```
-python3 tools/infer.py --model <PATH_TO_CHECKPOINT> \
+python3 tools/infer.py --model PATH_TO_CHECKPOINT \
     --scale 4 \
     image_path
 ```

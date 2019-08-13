@@ -16,6 +16,7 @@
 
 from argparse import ArgumentParser
 import os
+import warnings
 import cv2
 import skimage
 import numpy as np
@@ -27,8 +28,10 @@ def build_argparser():
     parser.add_argument("--model", type=str, required=True, help="Path to an .xml file with a trained model.")
     parser.add_argument("--device", help="Specify the target device to infer on. (default: %(default)s)",
                         choices=["CPU", "GPU", "MYRIAD"], default="CPU")
+    parser.add_argument('--output_dir', default=None, help='Output debugirectory')
     parser.add_argument('input_image', help='Image')
-    return parser
+    return parser.parse_args()
+
 
 def load_ir_model(model_xml, device):
     model_bin = os.path.splitext(model_xml)[0] + ".bin"
@@ -46,21 +49,27 @@ def load_ir_model(model_xml, device):
 
     return exec_net, plugin, inputs, out_blob
 
+
 def image_to_blob(image, shape):
     blob = image.copy()
-    blob = skimage.img_as_float32(blob)
     blob = blob.transpose((2, 0, 1))  # from HWC to CHW
     blob = blob.reshape(shape)
     return blob
 
+
 def blob_to_img(blob):
     blob = blob.transpose((1, 2, 0))   # from CHW to HWC
     blob = np.clip(blob, 0.0, 1.0)
-    blob = skimage.img_as_ubyte(blob)
+
+    # Suppression skimage warning:
+    #    UserWarning: Possible precision loss when converting from float32 to uint8
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        blob = skimage.img_as_ubyte(blob)
     return blob
 
 def main():
-    args = build_argparser().parse_args()
+    args = build_argparser()
     exec_net, _, inputs, out_blob = load_ir_model(args.model, args.device)
 
     # Prepare input blobs
@@ -80,7 +89,8 @@ def main():
     # Postprocessing
     out_img = blob_to_img(result[out_blob][0])
 
-    out_path = os.path.join(os.path.dirname(args.input_image), "sr_" + os.path.basename(args.input_image))
+    outpur_dir = args.output_dir if args.output_dir else os.path.dirname(args.input_image)
+    out_path = os.path.join(outpur_dir, "sr_" + os.path.basename(args.input_image))
     cv2.imwrite(out_path, out_img)
     print("Saved: ", out_path)
 
