@@ -15,8 +15,9 @@
 """
 
 import os
-import cv2
 import numpy as np
+
+import cv2
 
 
 def max_central_square_crop(image):
@@ -81,7 +82,7 @@ def central_crop(image, divide_by, shift):
 def from_list(path, multiple_images_per_label=True):
     ''' Loads images list. '''
 
-    impaths = []
+    images_path = []
     labels = []
     is_real = []
 
@@ -95,13 +96,13 @@ def from_list(path, multiple_images_per_label=True):
         for line in opened_file.readlines():
             line = line.strip().split(' ')
             if len(line) == 2:
-                impath, label = line
+                image_path, label = line
                 real = False
             else:
-                impath, label, real = line
+                image_path, label, real = line
                 real = real.lower() == 'r'
 
-            text_label_to_class_id[os.path.basename(impath).split('.')[0]] = int(label)
+            text_label_to_class_id[os.path.basename(image_path).split('.')[0]] = int(label)
 
             if not multiple_images_per_label and label in uniques_labels:
                 continue
@@ -109,7 +110,7 @@ def from_list(path, multiple_images_per_label=True):
             uniques_labels.add(label)
 
             is_real.append(real)
-            impaths.append(os.path.join(root, impath))
+            images_path.append(os.path.join(root, image_path))
             labels.append(int(label))
 
-    return impaths, labels, is_real, text_label_to_class_id
+    return images_path, labels, is_real, text_label_to_class_id

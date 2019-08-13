@@ -24,7 +24,7 @@ import tensorflow as tf
 from pygit2 import Repository
 from sklearn.metrics.pairwise import cosine_distances
 
-from image_retrieval.dataset import create_dataset_from_list, depreprocess_image
+from image_retrieval.dataset import Dataset, depreprocess_image
 from image_retrieval.losses import am_softmax_loss, triplet_loss, AMSoftmaxLogits
 from image_retrieval.metrics import test_model
 from image_retrieval.model import keras_applications_mobilenetv2, keras_applications_resnet50
@@ -156,8 +156,7 @@ def main():
     with open(args.augmentation_config) as f:
         augmentation_config = json.load(f)
 
-    dataset, num_classes = create_dataset_from_list(args.gallery, args.input_size,
-                                                    args.batch_size,
+    dataset, num_classes = Dataset.create_from_list(args.gallery, args.input_size, args.batch_size,
                                                     augmentation_config)
 
     if args.model_weights:

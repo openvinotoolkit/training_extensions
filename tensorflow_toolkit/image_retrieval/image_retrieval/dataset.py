@@ -16,11 +16,10 @@
 
 import collections
 import json
-import math
 import random
+import numpy as np
 
 import cv2
-import numpy as np
 import tensorflow as tf
 
 from image_retrieval.common import preproces_image, depreprocess_image, fit_to_max_size, from_list
@@ -73,7 +72,7 @@ def tf_random_crop_and_resize(image, input_size):
 
 
 @tf.function
-def distort_color(image):
+def tf_distort_color(image):
     """ Distorts color. """
 
     image = image / 255.0
@@ -110,140 +109,194 @@ def distort_color(image):
     return image
 
 
-def reassing_labels(labels):
-    unique_labels = list(set(labels))
-    return [unique_labels.index(l) for l in labels]
+class Dataset:
 
+    def __init__(self, images_paths, labels, is_real, input_size, batch_size, params,
+                 return_original=False):
+        self.images_paths = images_paths
+        self.input_size = input_size
+        self.batch_size = batch_size
+        self.params = params
+        self.return_original = return_original
 
-# pylint: disable=R0915
-def create_dataset(impaths, labels, is_real, input_size, batch_size, params, return_original=False):
-    tiled_images = []
-    tiled_images_labels = []
-    tiled_images_is_real = []
+        self.loaded_images = []
+        self.labels = Dataset.reassign_labels(labels)
+        self.is_real = is_real
 
-    new_labels = reassing_labels(labels)
+        self.images_indexes_per_class = collections.defaultdict(list)
+        for index, label in enumerate(self.labels):
+            self.images_indexes_per_class[label].append(index)
 
-    tiled_images_indexes_per_class = collections.defaultdict(list)
+        if self.params['preload']:
+            self.preload(images_paths, self.labels, is_real)
+        else:
+            assert not self.params['pretile']
 
-    for impath, label, real in zip(impaths, new_labels, is_real):
-        read_image = cv2.imread(impath)
+        if self.params['weighted_sampling']:
+            self.calc_sampling_probs()
 
-        tiled_images_indexes_per_class[label].append(len(tiled_images))
-        tiled_images_labels.append(label)
-        tiled_images.append(read_image)
-        tiled_images_is_real.append(real)
+    def calc_sampling_probs(self):
+        ''' Counts number of images per class and returns probability distribution so that
+            distribution of images classes becomes uniform.
+        '''
 
-        if not real:
-            for tile in range(2, params['max_tiling'] + 1):
-                aspect_ratio = read_image.shape[1] / read_image.shape[0]
-                if aspect_ratio < 1:
-                    w_repeats = tile
-                    h_repeats = max(1 if tile != params['max_tiling'] else 2,
-                                    int(tile * aspect_ratio))
-                else:
-                    h_repeats = tile
-                    w_repeats = max(1 if tile != params['max_tiling'] else 2,
-                                    int(tile / aspect_ratio))
+        frequency = {l: self.labels.count(l) for l in set(self.labels)}
 
-                image = np.tile(read_image, (h_repeats, w_repeats, 1))
-
-                image = fit_to_max_size(image, input_size * 2)
-
-                tiled_images_indexes_per_class[label].append(len(tiled_images))
-                tiled_images_labels.append(label)
-                tiled_images.append(image)
-                tiled_images_is_real.append(real)
-
-    if params['weighted_sampling']:
-        frequency = {}
-        for l in tiled_images_labels:
-            if l not in frequency:
-                frequency[l] = 0
-            frequency[l] += 1
-
-        probs = list(range(len(tiled_images)))
-        for idx, l in enumerate(tiled_images_labels):
+        probs = np.empty((len(self.labels)), dtype=np.float32)
+        for idx, l in enumerate(self.labels):
             probs[idx] = 1.0 / frequency[l]
+        self.probs = probs / np.sum(probs)
 
-        probs = np.array(probs)
-        probs = probs / np.sum(probs)
+    def preload(self, impaths, labels, is_real):
+        ''' Pre-loads images in RAM, it also can pre-tile images. It allows making training faster,
+            but requires a lot of RAM memory.
+        '''
 
-    assert math.log(params['duplicate_n_times'], 2) == int(math.log(params['duplicate_n_times'], 2))
+        for impath, label, real in zip(impaths, labels, is_real):
+            read_image = cv2.imread(impath)
+            self.loaded_images.append(read_image)
 
-    def random_number():
-        choices = list(range(len(tiled_images)))
-        if params['weighted_sampling']:
-            choices = np.random.choice(choices, len(tiled_images), p=probs)
-        elif params['shuffle']:
+            if self.params['pretile'] and not real:
+                for n in range(2, self.params['max_tiling'] + 1):
+                    image = self.tile(read_image, n)
+
+                    self.images_indexes_per_class[label].append(len(self.labels))
+                    self.labels.append(label)
+                    self.is_real.append(real)
+                    self.loaded_images.append(image)
+
+    def tile(self, image, n):
+        ''' Tiles images taking their aspect ratios into account. '''
+
+        aspect_ratio = image.shape[1] / image.shape[0]
+        if aspect_ratio < 1:
+            w_repeats = n
+            h_repeats = max(1 if n != self.params['max_tiling'] else 2, int(n * aspect_ratio))
+        else:
+            h_repeats = n
+            w_repeats = max(1 if n != self.params['max_tiling'] else 2, int(n / aspect_ratio))
+
+        image = np.tile(image, (h_repeats, w_repeats, 1))
+
+        fit_size = self.input_size * 3
+        if image.shape[0] > fit_size or image.shape[1] > fit_size:
+            image = fit_to_max_size(image, self.input_size * 3)
+
+        return image
+
+    def sample_index(self):
+        ''' Samples indexes. '''
+
+        choices = list(range(len(self.labels)))
+        if self.params['weighted_sampling']:
+            choices = np.random.choice(choices, len(self.labels), p=self.probs)
+        elif self.params['shuffle']:
             np.random.shuffle(choices)
 
-        ducplicated_choices = []
+
+        # duplication is required for triplet loss at least.
+        duplicated_choices = []
         for choice in choices:
-            for _ in range(params['duplicate_n_times']):
-                ducplicated_choices.append(int(
-                    np.random.choice(tiled_images_indexes_per_class[tiled_images_labels[choice]],
-                                     1)))
+            for _ in range(self.params['duplicate_n_times']):
+                duplicated_choices.append(int(
+                    np.random.choice(
+                        self.images_indexes_per_class[self.labels[choice]],
+                        1)))
 
-        for choise in ducplicated_choices:
-            yield [choise]
+        for choice in duplicated_choices:
+            yield [choice]
 
-    def read(choice):
-        image = tiled_images[choice[0]].astype(np.float32)
-        return image, tiled_images_labels[choice[0]]
+    def read(self, index):
+        ''' Reads an image from RAM or disk and returns it with corresponding class label. '''
 
-    def cv2_rotate(image):
+        if self.params['preload']:
+            image = self.loaded_images[index[0]].astype(np.float32)
+        else:
+            image = cv2.imread(self.images_paths[index[0]]).astype(np.float32)
+
+        if not self.params['pretile'] and not self.is_real[index[0]]:
+            n = random.randint(1, self.params['max_tiling'])
+            image = self.tile(image, n)
+
+        return image, self.labels[index[0]]
+
+    def cv2_rotate(self, image):
+        ''' Rotates images on random angle using opencv. '''
+
         c_xy = image.shape[1] / 2, image.shape[0] / 2
-        angle = random.uniform(-params['add_rot_angle'], params['add_rot_angle']) * 57.2958
+        angle = random.uniform(-self.params['add_rot_angle'],
+                               self.params['add_rot_angle']) * 57.2958
 
-        if params['rot90']:
+        if self.params['rot90']:
             angle += random.randint(0, 3) * 180
 
         rotation_matrix = cv2.getRotationMatrix2D(c_xy, angle, 1)
         img_rotation = cv2.warpAffine(image, rotation_matrix, (image.shape[1], image.shape[0]))
         return img_rotation
 
-    def cv2_noise_and_blur(image):
+    def cv2_noise_and_blur(self, image):
+        ''' Adds noise making image darker and blur.'''
+
         image = image.astype(np.float32)
 
-        if params['apply_gray_noise'] and np.random.choice([True, False]):
+        if self.params['apply_gray_noise'] and np.random.choice([True, False]):
             image = gray_noise(image)
 
-        if params['blur'] and np.random.choice([True, False]):
+        if self.params['blur'] and np.random.choice([True, False]):
             image = blur(image)
 
         return image
 
-    def train_preprocess(choice):
-        original, label = tf.numpy_function(read, [choice], [tf.float32, tf.int64])
-        image = tf_random_crop_and_resize(original, input_size)
-        image, = tf.numpy_function(cv2_noise_and_blur, [image], [tf.float32])
-        if params['horizontal_flip']:
+    def train_preprocess(self, choice):
+        ''' Applies training preprocessing. '''
+
+        original, label = tf.numpy_function(self.read, [choice], [tf.float32, tf.int64])
+        image = tf_random_crop_and_resize(original, self.input_size)
+        image, = tf.numpy_function(self.cv2_noise_and_blur, [image], [tf.float32])
+        if self.params['horizontal_flip']:
             image = tf.image.random_flip_left_right(image)
-        if params['vertical_flip']:
+        if self.params['vertical_flip']:
             image = tf.image.random_flip_up_down(image)
-        if params['add_rot_angle'] > 0 or params['rot90']:
-            image, = tf.numpy_function(cv2_rotate, [image], [tf.float32])
-        image = distort_color(image)
+        if self.params['add_rot_angle'] > 0 or self.params['rot90']:
+            image, = tf.numpy_function(self.cv2_rotate, [image], [tf.float32])
+        image = tf_distort_color(image)
         image = preproces_image(image)
-        if return_original:
+        if self.return_original:
             return image, label, original
         return image, label
 
-    dataset = tf.data.Dataset.from_generator(random_number, (tf.int32), (tf.TensorShape([1])))
-    dataset = dataset.map(train_preprocess, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+    def __call__(self, *args, **kwargs):
+        ''' Returns tf.data.Dataset instance as well as number of classes in training set. '''
 
-    if not return_original:
-        dataset = dataset.batch(batch_size, drop_remainder=True)
-        dataset = dataset.prefetch(tf.data.experimental.AUTOTUNE)
-        dataset = dataset.repeat()
+        dataset = tf.data.Dataset.from_generator(self.sample_index, (tf.int32),
+                                                 (tf.TensorShape([1])))
+        dataset = dataset.map(self.train_preprocess,
+                              num_parallel_calls=tf.data.experimental.AUTOTUNE)
 
-    return dataset, len(set(tiled_images_labels))
+        if not self.return_original:
+            dataset = dataset.batch(self.batch_size, drop_remainder=True)
+            dataset = dataset.prefetch(tf.data.experimental.AUTOTUNE)
+            dataset = dataset.repeat()
 
+        return dataset, len(set(self.labels))
 
-def create_dataset_from_list(path, input_size, batch_size, params, return_original=False):
-    impaths, labels, is_real, _ = from_list(path)
+    @staticmethod
+    def create_from_list(path, input_size, batch_size, params, return_original=False):
+        ''' Creates Dataset instance from path to images list.
+            Images list has following format:
+            <relative_path_to_image> <class_label>
+        '''
 
-    return create_dataset(impaths, labels, is_real, input_size, batch_size, params, return_original)
+        impaths, labels, is_real, _ = from_list(path)
+
+        return Dataset(impaths, labels, is_real, input_size, batch_size, params, return_original)()
+
+    @staticmethod
+    def reassign_labels(labels):
+        ''' Re-assign class labels so that they starts from 0 and ends with (num_classes - 1). '''
+
+        unique_labels = list(set(labels))
+        return [unique_labels.index(l) for l in labels]
 
 
 def main():
@@ -259,8 +312,8 @@ def main():
     with open(args.augmentation_config) as f:
         augmentation_config = json.load(f)
 
-    dataset, _ = create_dataset_from_list(args.gallery, args.input_size, 1, augmentation_config,
-                                          True)
+    dataset, _ = Dataset.create_from_list(args.gallery, args.input_size, 1,
+                                          augmentation_config, True)
 
     t = time.time()
     for preprocessed, label, original in dataset.take(1000):

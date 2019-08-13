@@ -14,9 +14,10 @@
  limitations under the License.
 """
 
+import math
+
 import tensorflow as tf
 import tensorflow.keras.backend as K
-import math
 
 
 class AMSoftmaxLogits(tf.keras.layers.Layer):
@@ -29,7 +30,7 @@ class AMSoftmaxLogits(tf.keras.layers.Layer):
         self.kernel = self.add_weight(shape=(input_shape[-1], self.units),
                                       initializer=tf.keras.initializers.get('glorot_uniform'))
 
-    def call(self, inputs, **kwargs):
+    def call(self, inputs):
         kernel = tf.nn.l2_normalize(self.kernel, axis=0, epsilon=1e-13)
         inputs = tf.nn.l2_normalize(inputs, axis=1, epsilon=1e-13)
 

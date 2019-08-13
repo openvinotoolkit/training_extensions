@@ -14,10 +14,12 @@
  limitations under the License.
 """
 
-import cv2
-import numpy as np
-from sklearn.metrics.pairwise import cosine_distances
 from tqdm import tqdm
+
+import numpy as np
+
+import cv2
+from sklearn.metrics.pairwise import cosine_distances
 
 from image_retrieval.common import from_list, crop_resize_shift_scale
 
