@@ -29,7 +29,7 @@ def nothing(image):
 
 class ImageRetrieval:
 
-    def __init__(self, model_path, model_backend, model, gallery_path, input_size,
+    def __init__(self, model_path, model_backend, model, gallery_path, input_size, cpu_extensions,
                  multiple_images_per_label=False):
         self.impaths, self.gallery_classes, _, self.text_label_to_class_id = from_list(
             gallery_path, multiple_images_per_label)
@@ -52,14 +52,13 @@ class ImageRetrieval:
                 self.model.load_weights(model_path)
                 self.preprocess = preproces_image
             else:
-                CPU_EXTENSIONS = \
-                    '/opt/intel/openvino/inference_engine/lib/intel64/libcpu_extension_avx2.so'
                 from openvino.inference_engine import IENetwork, IECore
                 class IEModel():
 
                     def __init__(self, model_path):
                         ie = IECore()
-                        ie.add_extension(CPU_EXTENSIONS, 'CPU')
+                        if cpu_extensions:
+                            ie.add_extension(cpu_extensions, 'CPU')
 
                         path = '.'.join(model_path.split('.')[:-1])
                         self.net = IENetwork(model=path + '.xml', weights=path + '.bin')

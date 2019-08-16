@@ -22,8 +22,9 @@ from image_retrieval.frames_provider import FramesProvider
 from image_retrieval.image_retrieval import ImageRetrieval
 
 
-def test_model(model_path, model_backend, model, gallery_path, test_images, input_size):
-    img_retrieval = ImageRetrieval(model_path, model_backend, model, gallery_path, input_size)
+def test_model(model_path, model_backend, model, gallery_path, test_images, input_size,
+               cpu_extensions):
+    img_retrieval = ImageRetrieval(model_path, model_backend, model, gallery_path, input_size, cpu_extensions)
     frames = FramesProvider(test_images)
 
     top1_counters = []

@@ -28,6 +28,7 @@ def parse_args():
     args.add_argument('--input_size', default=224, type=int, help='Input image size.')
     args.add_argument('--model', choices=['resnet50', 'mobilenet_v2'], default='mobilenet_v2')
     args.add_argument('--ie', choices=['tf', 'ie'], required=True)
+    args.add_argument('--cpu_extensions', help='Path to lib cpu extensions.')
 
     return args.parse_args()
 
@@ -44,7 +45,8 @@ def main():
                model=args.model,
                gallery_path=args.gallery,
                test_images=args.test_images,
-               input_size=args.input_size)
+               input_size=args.input_size,
+               cpu_extensions=args.cpu_extensions)
 
 
 if __name__ == '__main__':
