@@ -36,25 +36,29 @@ def test_model(model_path, model_backend, model, gallery_path, test_images_folde
 
     for image, probe_class in frames:
         if image is not None:
-            image = central_crop(image, divide_by=5, shift=1)
-
             probe_embedding = img_retrieval.compute_embedding(image)
 
             sorted_indexes, _ = img_retrieval.search_in_gallery(probe_embedding)
 
             sorted_classes = [img_retrieval.gallery_classes[i] for i in sorted_indexes]
-            position = sorted_classes.index(img_retrieval.text_label_to_class_id[probe_class])
+            position = sorted_classes.index(probe_class)
             results[probe_class].append(position)
 
+    global_top1 = 0
+    global_counter = 0
     for probe_class in sorted(results.keys()):
         top1, top5, top10 = 0, 0, 0
         for p in results[probe_class]:
             if p < 1:
                 top1 += 1
+                global_top1 += 1
             if p < 5:
                 top5 += 1
             if p < 10:
                 top10 += 1
+
+            global_counter += 1
+
         top1 /= len(results[probe_class])
         top5 /= len(results[probe_class])
         top10 /= len(results[probe_class])
@@ -76,6 +80,8 @@ def test_model(model_path, model_backend, model, gallery_path, test_images_folde
             np.mean(top10_counters),
             np.mean(mean_positions)
         ))
+
+    print('AVERAGE top1 over all queries: {0:6.3f}'.format(global_top1 / global_counter))
 
     return np.mean(top1_counters), np.mean(top5_counters), np.mean(top10_counters), np.mean(
         mean_positions)
