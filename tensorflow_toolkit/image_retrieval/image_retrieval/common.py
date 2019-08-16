@@ -60,11 +60,18 @@ def fit_to_max_size(image, max_size):
     return image
 
 
-def crop_resize_shift_scale(image, input_size):
-    ''' Makes max-sized central crop, resizes to input_size, scales and subtracts mean values. '''
+def crop_resize(image, input_size):
+    ''' Makes max-sized central crop, resizes to input_size. '''
 
     image = max_central_square_crop(image)
     image = cv2.resize(image, (input_size, input_size))
+    return image
+
+
+def crop_resize_shift_scale(image, input_size):
+    ''' Makes max-sized central crop, resizes to input_size, scales and subtracts mean values. '''
+
+    image = crop_resize(image, input_size)
     image = preproces_image(image)
     image = np.expand_dims(image, axis=0)
     return image
