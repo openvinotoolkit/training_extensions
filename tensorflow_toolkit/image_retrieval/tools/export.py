@@ -88,8 +88,6 @@ def main():
         model_dir = os.path.dirname(args.model_weights)
         export_folder = args.output_dir if args.output_dir else os.path.join(model_dir, 'export')
 
-        output_node_name = 'model/flatten/Reshape'
-
         tf.compat.v1.saved_model.simple_save(sess, export_folder,
                                              inputs={'input': input_tensor},
                                              outputs={embedding.name[:-2]: embedding})
@@ -101,7 +99,7 @@ def main():
             input_saver='',
             input_binary=True,
             input_checkpoint='',
-            output_node_names=output_node_name,
+            output_node_names=embedding.name[:-2],
             restore_op_name='save/restore_all',
             filename_tensor_name='save/Const:0',
             output_graph=frozen_graph_path,
