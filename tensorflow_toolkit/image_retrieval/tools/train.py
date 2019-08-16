@@ -229,7 +229,7 @@ def main():
                 tf.summary.image('hard_positives', hard_positives, cur_step, max_outputs=10)
                 tf.summary.image('hard_negatives', hard_negatives, cur_step, max_outputs=10)
 
-            if args.test_images_folder:
+            if args.test_images:
                 if args.test_gallery:
                     gallery = args.test_gallery
                 else:

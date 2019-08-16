@@ -23,7 +23,7 @@ from image_retrieval.image_retrieval import ImageRetrieval
 
 
 def test_model(model_path, model_backend, model, gallery_path, test_images, input_size,
-               cpu_extensions):
+               cpu_extensions=None):
     img_retrieval = ImageRetrieval(model_path, model_backend, model, gallery_path, input_size, cpu_extensions)
     frames = FramesProvider(test_images)
 

@@ -36,6 +36,8 @@ class ImageRetrieval:
 
         self.input_size = input_size
 
+        self.preprocess = preproces_image
+
         if model is None or isinstance(model, str):
             if model_backend == 'tf':
                 import tensorflow as tf
@@ -50,7 +52,6 @@ class ImageRetrieval:
                         tf.keras.layers.Input(shape=(input_size, input_size, 3)))
 
                 self.model.load_weights(model_path)
-                self.preprocess = preproces_image
             else:
                 from openvino.inference_engine import IENetwork, IECore
                 class IEModel():
