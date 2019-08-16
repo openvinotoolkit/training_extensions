@@ -114,8 +114,10 @@ def main():
 
         mo_params = {
             'framework': 'tf',
-            'model_name': 'image_retrieval',
+            'model_name': 'image-retrieval-0001',
             'data_type': args.data_type,
+            'mean_values': [127.5, 127.5, 127.5],
+            'scale': 127.5
         }
         execute_mo(mo_params, frozen_graph_path, export_folder)
 
