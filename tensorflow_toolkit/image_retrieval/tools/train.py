@@ -34,8 +34,8 @@ def parse_args():
     args = argparse.ArgumentParser()
     args.add_argument('--gallery', required=True, help='Gallery images list.')
     args.add_argument('--test_gallery', help='Test gallery images list.')
-    args.add_argument('--test_images_folder', help='Test images folder.')
-    args.add_argument('--input_size', type=int, default=128, help='Input image size.')
+    args.add_argument('--test_images', help='Test images list.')
+    args.add_argument('--input_size', type=int, default=224, help='Input image size.')
     args.add_argument('--train_dir', required=True, help='Training folder.')
     args.add_argument('--model_weights', required=False, help='Path to model weights.')
     args.add_argument('--steps_per_epoch', default=10000, type=int)
@@ -238,7 +238,7 @@ def main():
                 top1, top5, top10, mean_pos = test_model(model_path=None, model_backend=None,
                                                          model=model,
                                                          gallery_path=gallery,
-                                                         test_images_folder=args.test_images_folder,
+                                                         test_images=args.test_images,
                                                          input_size=args.input_size)
 
                 tf.summary.scalar('test/top1', data=top1, step=cur_step)

@@ -20,14 +20,18 @@ import cv2
 
 
 class FramesProvider:
-    def __init__(self, images_folder):
+    def __init__(self, images_list_path):
         self.impaths = []
         self.probe_classes = []
-        for probe_class in os.listdir(images_folder):
-            for path in os.listdir(os.path.join(images_folder, probe_class)):
-                full_path = os.path.join(images_folder, probe_class, path)
-                self.impaths.append(full_path)
-                self.probe_classes.append(probe_class)
+
+        with open(images_list_path) as f:
+            content = [line.strip().split() for line in f.readlines()]
+
+        root = os.path.dirname(images_list_path)
+
+        for impath, label in content:
+            self.impaths.append(os.path.join(root, impath))
+            self.probe_classes.append(int(label))
 
     def __iter__(self):
         for impath, probe_class in zip(self.impaths, self.probe_classes):

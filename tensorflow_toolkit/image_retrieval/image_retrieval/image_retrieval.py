@@ -21,7 +21,10 @@ import numpy as np
 import cv2
 from sklearn.metrics.pairwise import cosine_distances
 
-from image_retrieval.common import from_list, crop_resize_shift_scale
+from image_retrieval.common import from_list, preproces_image
+
+def nothing(image):
+    return image
 
 
 class ImageRetrieval:
@@ -47,35 +50,40 @@ class ImageRetrieval:
                         tf.keras.layers.Input(shape=(input_size, input_size, 3)))
 
                 self.model.load_weights(model_path)
+                self.preprocess = preproces_image
             else:
-                from openvino.inference_engine import IENetwork, IEPlugin
+                CPU_EXTENSIONS = \
+                    '/opt/intel/openvino/inference_engine/lib/intel64/libcpu_extension_avx2.so'
+                from openvino.inference_engine import IENetwork, IECore
                 class IEModel():
 
                     def __init__(self, model_path):
-                        self.plugin = IEPlugin(device='CPU', plugin_dirs=None)
+                        ie = IECore()
+                        ie.add_extension(CPU_EXTENSIONS, 'CPU')
+
                         path = '.'.join(model_path.split('.')[:-1])
                         self.net = IENetwork(model=path + '.xml', weights=path + '.bin')
-                        self.plugin.load(network=self.net)
-                        self.exec_net = self.plugin.load(network=self.net)
+                        self.exec_net = ie.load_network(network=self.net, device_name='CPU')
 
                     def predict(self, image):
                         assert len(image.shape) == 4
 
                         image = np.transpose(image, (0, 3, 1, 2))
                         out = self.exec_net.infer(inputs={'Placeholder': image})[
-                            'model/flatten/Reshape']
-                        out = out / np.linalg.norm(out, axis=-1)
+                            'model/tf_op_layer_mul/mul/Normalize']
 
                         return out
 
                 self.model = IEModel(model_path)
+                self.preprocess = nothing
         else:
             self.model = model
 
         self.embeddings = self.compute_gallery_embeddings()
 
     def compute_embedding(self, image):
-        image = crop_resize_shift_scale(image, self.input_size)
+        image = self.preprocess(image)
+        image = np.expand_dims(image, axis=0)
         embedding = self.model.predict(image)
         return embedding
 
@@ -91,7 +99,8 @@ class ImageRetrieval:
             image = cv2.imread(full_path)
             if image is None:
                 print("ERROR: cannot find image, full_path =", full_path)
-            image = crop_resize_shift_scale(image, self.input_size)
+            image = self.preprocess(image)
+            image = np.expand_dims(image, axis=0)
             images.append(image)
 
         embeddings = [None for _ in self.impaths]

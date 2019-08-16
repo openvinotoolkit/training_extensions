@@ -23,8 +23,8 @@ from image_retrieval.metrics import test_model
 def parse_args():
     args = argparse.ArgumentParser()
     args.add_argument('--model_weights', required=True, help='Path to model weights.')
-    args.add_argument('--gallery', required=True, help='Gallery images folder.')
-    args.add_argument('--test_images_folder', required=True, help='Test images folder.')
+    args.add_argument('--gallery', required=True, help='Gallery images list.')
+    args.add_argument('--test_images', required=True, help='Test images list.')
     args.add_argument('--input_size', default=224, type=int, help='Input image size.')
     args.add_argument('--model', choices=['resnet50', 'mobilenet_v2'], default='mobilenet_v2')
     args.add_argument('--ie', choices=['tf', 'ie'], required=True)
@@ -43,7 +43,7 @@ def main():
                model_backend=args.ie,
                model=args.model,
                gallery_path=args.gallery,
-               test_images_folder=args.test_images_folder,
+               test_images=args.test_images,
                input_size=args.input_size)
 
 
