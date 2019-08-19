@@ -112,7 +112,7 @@ into groups (but in the simplest case it may be different for each line).
 
 ## Evaluation
 
-To test the image retrieval model run the script `test.py` as follows:
+To test the image retrieval model using TensorFlow run the script `test.py` as follows:
 ```
 python tools/test.py \
 --model_weights pretrained_model/weights-251920 \
@@ -121,9 +121,20 @@ python tools/test.py \
 --ie tf
 ```
 
+or using OpenVINO:
+
+```
+python tools/test.py \
+--model_weights image-retrieval-0001.xml \
+--gallery data/gallery/gallery.txt \
+--test_images data/queries/quieries.txt \
+--ie ie \
+--cpu_extension /opt/intel/openvino/inference_engine/lib/intel64/libcpu_extension_avx512.so
+```
+
 As result you should get:
 ```
-9	  1.00	1.00	1.00	0.00
+ 9	1.00	1.00	1.00	0.00
 13	1.00	1.00	1.00	0.00
 16	1.00	1.00	1.00	0.00
 21	1.00	1.00	1.00	0.00
