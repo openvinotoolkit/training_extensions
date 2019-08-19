@@ -20,16 +20,16 @@ import time
 import torch.utils.data as Data
 from tqdm import tqdm
 from sr.metrics import PSNR
-from sr.dataset import DatasetFromSingleImages
+from sr.dataset import DatasetFromSingleImages, DatasetTextImages
 from sr.trainer import Trainer
 from sr.common import load_config
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="PyTorch SR test")
-    parser.add_argument("--test_data_path", default="", type=str, help="path to test data")
-    parser.add_argument("--exp_name", default="test", type=str, help="experiment name")
-    parser.add_argument("--models_path", default="./models", type=str, help="path to models folder")
+    parser = argparse.ArgumentParser(description='PyTorch SR test')
+    parser.add_argument('--test_data_path', default='', type=str, help='path to test data')
+    parser.add_argument('--exp_name', default='test', type=str, help='experiment name')
+    parser.add_argument('--models_path', default='./models', type=str, help='path to models folder')
     return parser.parse_args()
 
 
@@ -38,9 +38,12 @@ def main():
 
     config = load_config(os.path.join(args.models_path, args.exp_name))
 
-
-    test_set = DatasetFromSingleImages(path=args.test_data_path, patch_size=None,
-                                       aug_resize_factor_range=None, scale=config['scale'])
+    if config['model'] == 'TextTransposeModel':
+        test_set = DatasetTextImages(path=args.test_data_path, patch_size=None,
+                                     aug_resize_factor_range=None, scale=config['scale'])
+    else:
+        test_set = DatasetFromSingleImages(path=args.test_data_path, patch_size=None,
+                                           aug_resize_factor_range=None, scale=config['scale'])
 
     batch_sampler = Data.BatchSampler(
         sampler=Data.SequentialSampler(test_set),
@@ -59,15 +62,14 @@ def main():
     count = 0
     for batch in tqdm(evaluation_data_loader):
         output = trainer.predict(batch=batch)
-
-        psnr.update(batch[1], output)
+        psnr.update(batch[1], [batch[0][1]])
         count += 1
 
     toc = time.time()
 
-    print("FPS: {}, SAMPLES: {}".format(float(count) / (toc - tic), count))
-    print("PSNR: {}".format(psnr.get()))
+    print('FPS: {}, SAMPLES: {}'.format(float(count) / (toc - tic), count))
+    print('PSNR: {}'.format(psnr.get()))
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

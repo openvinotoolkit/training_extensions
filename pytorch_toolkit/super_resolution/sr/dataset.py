@@ -178,3 +178,111 @@ class DatasetFromSingleImages(data.Dataset):
 
     def __len__(self):
         return self.count*self.dataset_size_factor
+
+
+class DatasetTextImages(data.Dataset):
+    # pylint: disable=too-many-arguments
+    def __init__(self, path, patch_size=None, scale=4, aug_resize_factor_range=None,
+                 seed=1337, dataset_size_factor=1):
+        super(DatasetTextImages, self).__init__()
+        self.path = path
+        self.dataset_size_factor = dataset_size_factor
+        self.resize_factor = aug_resize_factor_range
+
+        self.patch_size = patch_size
+        if self.patch_size is not None:
+            if patch_size[0] % scale or patch_size[1] % scale:
+                raise Exception('ERROR: patch_size should be divisible by scale')
+
+            self.patch_size_ds = [i // scale for i in patch_size]
+
+        self.ds_factor = scale
+
+        self.image_names = []
+
+        self._load_images()
+
+        self.random = Random()
+        self.random.seed(seed)
+
+    def _load_images(self):
+        all_files = os.listdir(self.path)
+        files = [f for f in all_files if f.endswith(('.bmp', '.png', '.jpg'))]
+        files.sort()
+        files = files[:100]
+        for f in tqdm(files):
+            pimage = pil_image.open(osp.join(self.path, f))
+            image_size = np.array(pimage.size)
+
+            if pimage.mode != 'L':
+                # Image should be in gray scale format
+                continue
+            if self.patch_size is not None and \
+                 np.any([image_size[i] * self.resize_factor[0] < self.patch_size[i] for i in range(2)]):
+                continue
+            if self.patch_size is None and np.any([image_size[i] % self.ds_factor for i in range(2)]):
+                print(image_size, [image_size[i] % self.ds_factor for i in range(2)])
+                continue
+
+            self.image_names.append(f)
+
+
+        self.count = len(self.image_names)
+        num_skipped = len(files) - self.count
+        if num_skipped:
+            print("[WARNING] Skipped {} images".format(num_skipped))
+
+        assert self.count != 0
+
+    def __getitem__(self, index):
+        index = index % self.count
+        # Read image in original format
+        image = skimage.img_as_float32(cv2.imread(osp.join(self.path, self.image_names[index]), 0))
+        image = image.reshape(image.shape[0], image.shape[1], 1)
+        if self.patch_size is not None:
+
+            h, w = image.shape[:2]
+
+            resize_rate = self.random.random() * (self.resize_factor[1] - self.resize_factor[0]) + self.resize_factor[0]
+
+            if w == self.patch_size[1]:
+                x = 0
+            else:
+                x = self.random.randint(0, int(w - self.patch_size[1]*resize_rate))
+
+            if h == self.patch_size_ds[0]:
+                y = 0
+            else:
+                y = self.random.randint(0, int(h - self.patch_size[0]*resize_rate))
+
+            sample = transform.resize(image[y:y + self.patch_size[0], x:x + self.patch_size[1], :],
+                                      output_shape=self.patch_size, order=3, mode='reflect', anti_aliasing=True,
+                                      anti_aliasing_sigma=None, preserve_range=True)
+
+            sample_ds = transform.resize(image=sample, output_shape=self.patch_size_ds, order=3, mode='reflect',
+                                         anti_aliasing=True, anti_aliasing_sigma=None, preserve_range=True)
+        else:
+
+            h, w, _ = image.shape
+            if h % self.ds_factor or w % self.ds_factor:
+                raise Exception('ERROR: image size should be divisible by scale')
+
+            sample = image
+            sample_ds = transform.resize(image=sample,
+                                         output_shape=[i // self.ds_factor for i in sample.shape[:2]],
+                                         order=3,
+                                         mode='reflect',
+                                         anti_aliasing=True,
+                                         anti_aliasing_sigma=None, preserve_range=True)
+
+        cubic = cv2.resize(sample_ds, sample.shape[:2][::-1], interpolation=cv2.INTER_CUBIC)
+        cubic = cubic.reshape(cubic.shape[0], cubic.shape[1], 1)
+
+        item = [torch.from_numpy(sample_ds.transpose((2, 0, 1))).float(),
+                torch.from_numpy(cubic.transpose((2, 0, 1))).float()], \
+               [torch.from_numpy(sample.transpose((2, 0, 1))).float()]
+
+        return item
+
+    def __len__(self):
+        return self.count*self.dataset_size_factor

@@ -25,7 +25,7 @@ import torch.utils.data as Data
 from torch.utils.data.dataloader import DataLoader
 import numpy as np
 
-from sr.dataset import DatasetFromSingleImages
+from sr.dataset import DatasetFromSingleImages, DatasetTextImages
 from sr.trainer import Trainer
 from sr.metrics import PSNR, RMSE
 from sr.models import make_model, MSE_loss
@@ -51,7 +51,8 @@ def main():
         s = torch.load(config['init_checkpoint'])
         model.load_state_dict(s['model'].state_dict())
 
-    trainer = Trainer(model=model, name=config['exp_name'], models_root=config['models_path'], resume=config['resume'])
+    trainer = Trainer(model=model, name=config['exp_name'],
+                      models_root=config['models_path'], resume=config['resume'])
 
     # Copy config in train directory agter create trainer object
     model_path = os.path.join(config['models_path'], config['exp_name'])
@@ -65,14 +66,38 @@ def main():
     cudnn.benchmark = True
 
     print('===> Loading datasets')
-    train_set = DatasetFromSingleImages(path=config['train_path'], patch_size=config['patch_size'],
-                                        aug_resize_factor_range=config['aug_resize_factor_range'],
-                                        scale=scale, count=config['num_of_train_images'], cache_images=False,
-                                        seed=config['seed'], dataset_size_factor=config['num_of_patches_per_image'])
 
-    val_set = DatasetFromSingleImages(path=config['validation_path'], patch_size=None, aug_resize_factor_range=None,
-                                      scale=scale, count=config['num_of_val_images'], cache_images=False,
-                                      seed=config['seed'])
+    if config['model'] == 'TextTransposeModel':
+        train_set = DatasetTextImages(path=config['train_path'],
+                                      patch_size=config['patch_size'],
+                                      aug_resize_factor_range=config['aug_resize_factor_range'],
+                                      scale=scale,
+                                      seed=config['seed'],
+                                      dataset_size_factor=config['num_of_patches_per_image'])
+
+        val_set = DatasetTextImages(path=config['validation_path'],
+                                    patch_size=None,
+                                    aug_resize_factor_range=None,
+                                    scale=scale,
+                                    seed=config['seed'])
+
+    else:
+        train_set = DatasetFromSingleImages(path=config['train_path'],
+                                            patch_size=config['patch_size'],
+                                            aug_resize_factor_range=config['aug_resize_factor_range'],
+                                            scale=scale,
+                                            count=config['num_of_train_images'],
+                                            cache_images=False,
+                                            seed=config['seed'],
+                                            dataset_size_factor=config['num_of_patches_per_image'])
+
+        val_set = DatasetFromSingleImages(path=config['validation_path'],
+                                          patch_size=None,
+                                          aug_resize_factor_range=None,
+                                          scale=scale,
+                                          count=config['num_of_val_images'],
+                                          cache_images=False,
+                                          seed=config['seed'])
 
     training_data_loader = DataLoader(dataset=train_set, num_workers=config['num_of_data_loader_threads'],
                                       batch_size=config['batch_size'], shuffle=True, drop_last=True)

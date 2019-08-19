@@ -1,15 +1,17 @@
-# Super Resolution Training Toolbox Pytorch
+# Super Resolution
+
 This code is intended for training Super Resolution (SR) algorithms in Pytorch.
 
 ![](./sr.jpg)
 
 # Models
-Two typologies are available for training at this point:
+Typologies are available for training at this point:
 
 1. Single image super resolution network based on SRResNet architecture
 (["Photo-Realistic Single Image Super-Resolution Using a Generative Adversarial
 Network"](https://arxiv.org/pdf/1609.04802.pdf)) but with reduced number of channels and depthwise convolution in decoder.
 2. Attention-Based single image super resolution network (https://arxiv.org/pdf/1807.06779.pdf) with reduced number of channels and changes in network architecture.
+3. [Tiny model to upsampling scanned text images](./README_text.md)
 
 # Results
 The PSNR values were calculated with Y channel from YCrCb image.

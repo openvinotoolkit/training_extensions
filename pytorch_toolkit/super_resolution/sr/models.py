@@ -22,6 +22,8 @@ def make_model(name_of_the_model, scale):
         model = SRResNetLight(scale=scale).cuda()
     elif name_of_the_model == 'SmallModel':
         model = SmallModel(scale=scale).cuda()
+    elif name_of_the_model == 'TextTransposeModel':
+        model = TextTransposeModel(scale=scale).cuda()
     else:
         print('ERROR:', name_of_the_model, ' model is not supported.')
         raise NotImplementedError
@@ -154,6 +156,7 @@ class SmallBlock(nn.Module):
         output = torch.add(output, identity_data)
         return output
 
+
 class SmallModel(nn.Module):
     def __init__(self, scale=3, num_of_ch_enc=16, num_of_ch_dec=8, num_of_res_blocks=4):
         super(SmallModel, self).__init__()
@@ -228,6 +231,43 @@ class SmallModel(nn.Module):
         out = self.conv_output(out)
 
         return [torch.add(out*c2, cubic)]
+
+
+class TextTransposeModel(nn.Module):
+    def __init__(self, scale=3, num_of_ch_enc=4, num_of_ch_dec=4, img_channels=1):
+        super(TextTransposeModel, self).__init__()
+        self.scale = scale
+        self.img_channels = img_channels
+
+        self.conv_input = nn.Conv2d(in_channels=self.img_channels, out_channels=num_of_ch_enc,
+                                    kernel_size=3, stride=1, padding=1, bias=True)
+        self.relu = nn.ReLU(inplace=False)
+
+
+        if scale == 3:
+            self.upscale = nn.Sequential(
+                nn.Conv2d(in_channels=num_of_ch_enc, out_channels=num_of_ch_dec * scale * scale,
+                          kernel_size=3, stride=1, padding=1, bias=True),
+                nn.ConvTranspose2d(in_channels=num_of_ch_dec * scale * scale, out_channels=num_of_ch_dec,
+                                   kernel_size=3, stride=scale, padding=0, output_padding=0),
+                nn.ReLU(inplace=True)
+            )
+        else:
+            raise NotImplementedError
+
+        self.conv_output = nn.Conv2d(in_channels=num_of_ch_dec, out_channels=self.img_channels,
+                                     kernel_size=3, stride=1, padding=1, bias=True)
+
+    # pylint: disable=arguments-differ
+    def forward(self, x):
+        input = x[0]
+
+        out = self.conv_input(input)
+        out = self.relu(out)
+        out = self.upscale(out)
+        out = self.conv_output(out)
+
+        return [out]
 
 
 class MSE_loss(nn.Module):
