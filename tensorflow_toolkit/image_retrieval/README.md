@@ -46,11 +46,11 @@ To train the image retrieval model run the script `train.py` as follows:
 ```
 python tools/train.py \
 --gallery train.txt \
---test_images_folder crops_test/ \
+--test_images test_images.txt \
 --test_gallery test.txt \
 --train_dir model \
 --model mobilenet_v2 \
---augmentation_config augmentation_configs/augmentation_config.json \
+--augmentation_config configs/augmentation_config.json \
 --loss triplet_1.0 \
 --steps_per_epoch 10000 \
 --batch_size 128 \
