@@ -198,10 +198,13 @@ def main():
         staircase=True)
 
     training_model.compile(loss=loss_function, optimizer=tf.keras.optimizers.Adam(lr_schedule))
+    if args.model_weights:
+        training_model.optimizer.iterations.assign(0)
 
     with tf.summary.create_file_writer(args.train_dir + "/logs").as_default():
         while True:
             cur_step = training_model.optimizer.iterations.numpy()
+            print('cur_step', cur_step)
             lr = training_model.optimizer.lr(cur_step).numpy()
             print('lr', lr)
 
