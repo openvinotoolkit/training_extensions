@@ -27,7 +27,7 @@ def l2_normalized_embeddings(inputs):
         filters=EMBEDDINGS_DIM, kernel_size=1, padding='same',
         kernel_regularizer=tf.keras.regularizers.l2(l=WEIGHT_DECAY))(output)
 
-    output = tf.reshape(output, [-1,EMBEDDINGS_DIM])
+    output = tf.reshape(output, [-1, EMBEDDINGS_DIM])
     output = tf.nn.l2_normalize(output * 1000, axis=1, epsilon=1e-13)
     return output
 

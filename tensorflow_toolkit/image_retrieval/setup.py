@@ -14,18 +14,10 @@
  limitations under the License.
 """
 
-import os
 from setuptools import setup
 
 with open('./requirements.txt') as f:
     REQUIRED = f.read().splitlines()
-
-# Add Model Optimizer requirements
-requirements = os.path.join(os.environ.get('INTEL_OPENVINO_DIR', '/opt/intel/openvino'),
-                            './deployment_tools/model_optimizer/requirements_tf.txt')
-if os.path.isfile(requirements):
-    with open(requirements) as f:
-        REQUIRED += f.read().splitlines()
 
 setup(
     name='image_retrieval',

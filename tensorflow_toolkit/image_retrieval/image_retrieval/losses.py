@@ -27,9 +27,11 @@ class AMSoftmaxLogits(tf.keras.layers.Layer):
         self.kernel = None
 
     def build(self, input_shape):
+        # pylint: disable=no-value-for-parameter
         self.kernel = self.add_weight(shape=(input_shape[-1], self.units),
                                       initializer=tf.keras.initializers.get('glorot_uniform'))
 
+    # pylint: disable=arguments-differ
     def call(self, inputs):
         kernel = tf.nn.l2_normalize(self.kernel, axis=0, epsilon=1e-13)
         inputs = tf.nn.l2_normalize(inputs, axis=1, epsilon=1e-13)

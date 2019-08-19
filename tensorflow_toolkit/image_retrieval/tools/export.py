@@ -19,7 +19,6 @@ import os
 
 import tensorflow as tf
 from tensorflow.python.tools.freeze_graph import freeze_graph
-from tfutils.helpers import execute_mo
 
 from image_retrieval.model import keras_applications_mobilenetv2, keras_applications_resnet50
 
@@ -112,15 +111,7 @@ def main():
         graph = load_frozen_graph(frozen_graph_path)
         print_flops(graph)
 
-        mo_params = {
-            'framework': 'tf',
-            'model_name': 'image-retrieval-0001',
-            'data_type': args.data_type,
-            'mean_values': [127.5, 127.5, 127.5],
-            'scale': 127.5
-        }
-        execute_mo(mo_params, frozen_graph_path, export_folder)
-
+        print("Path to frozen graph: %s" % frozen_graph_path)
 
 if __name__ == '__main__':
     main()

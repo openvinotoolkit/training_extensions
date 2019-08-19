@@ -213,6 +213,7 @@ def main():
             cur_step = training_model.optimizer.iterations.numpy()
             lr = training_model.optimizer.lr(cur_step).numpy()
 
+            # pylint: disable=unexpected-keyword-arg, no-value-for-parameter
             tf.summary.scalar('training/loss', data=history.history['loss'][-1], step=cur_step)
             tf.summary.scalar('training/lr', data=lr, step=cur_step)
             tf.summary.scalar('training/batch_size', data=args.batch_size, step=cur_step)
@@ -229,6 +230,7 @@ def main():
                 hard_positives = tf.convert_to_tensor(hard_positives)
                 hard_negatives = tf.convert_to_tensor(hard_negatives)
 
+                # pylint: disable=redundant-keyword-arg
                 tf.summary.image('hard_positives', hard_positives, cur_step, max_outputs=10)
                 tf.summary.image('hard_negatives', hard_negatives, cur_step, max_outputs=10)
 

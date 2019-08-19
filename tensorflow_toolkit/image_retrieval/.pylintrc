@@ -169,14 +169,14 @@ generated-members=REQUEST,acl_users,aq_parent
 [DESIGN]
 
 # Maximum number of arguments for function / method
-max-args=7
+max-args=8
 
 # Argument names that match this expression will be ignored. Default to name
 # with leading underscore
 ignored-argument-names=_.*
 
 # Maximum number of locals for function / method body
-max-locals=26
+max-locals=28
 
 # Maximum number of return / yield for function / method body
 max-returns=6
@@ -220,7 +220,7 @@ int-import-graph=
 # A comma-separated list of package or module names from where C extensions may
 # be loaded. Extensions are loading into the active Python interpreter and may
 # run arbitrary code.
-extension-pkg-whitelist=numpy,cv2,openvino,torch
+extension-pkg-whitelist=numpy,cv2,openvino,torch,tensorflow
 
 
 [CLASSES]
