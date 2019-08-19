@@ -46,3 +46,4 @@ them for predictions.
 * [SSD Object Detection](ssd_detector)
 * [Text recognition](text_recognition)
 * [Vehicle Attributes](vehicle_attributes)
+* [Image Retrieval](image_retrieval)
