@@ -29,7 +29,7 @@ tf.compat.v1.disable_v2_behavior()
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--model_weights', required=True, help='Path to model weights.')
-    parser.add_argument('--input_size', default=128, type=int, help='Input image size.')
+    parser.add_argument('--input_size', default=224, type=int, help='Input image size.')
     parser.add_argument('--model', choices=['resnet50', 'mobilenet_v2'], required=True)
     parser.add_argument('--data_type', default='FP32', choices=['FP32', 'FP16'],
                         help='Data type of IR')

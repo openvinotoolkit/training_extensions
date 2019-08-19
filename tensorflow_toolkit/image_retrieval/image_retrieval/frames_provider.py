@@ -25,7 +25,7 @@ class FramesProvider:
         self.probe_classes = []
 
         with open(images_list_path) as f:
-            content = [line.strip().split() for line in f.readlines()]
+            content = [line.strip().split() for line in f.readlines() if line.strip()]
 
         root = os.path.dirname(images_list_path)
 

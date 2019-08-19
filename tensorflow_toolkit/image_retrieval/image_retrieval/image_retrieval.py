@@ -82,6 +82,7 @@ class ImageRetrieval:
         self.embeddings = self.compute_gallery_embeddings()
 
     def compute_embedding(self, image):
+        image = cv2.resize(image, (self.input_size, self.input_size))
         image = self.preprocess(image)
         image = np.expand_dims(image, axis=0)
         embedding = self.model.predict(image)
@@ -99,6 +100,7 @@ class ImageRetrieval:
             image = cv2.imread(full_path)
             if image is None:
                 print("ERROR: cannot find image, full_path =", full_path)
+            image = cv2.resize(image, (self.input_size, self.input_size))
             image = self.preprocess(image)
             image = np.expand_dims(image, axis=0)
             images.append(image)
