@@ -84,7 +84,7 @@ python train.py -m 0.35 @./my_config.yml #here m can be overwritten with the val
 ## Models
 
 1. You can download pretrained model from fileshare as well - [mobilenetv2](https://download.01.org/opencv/openvino_training_extensions/models/face_recognition/Mobilenet_se_focal_121000.pt),
-[mobilenetv2_2x](TBD).
+[mobilenetv2_2x](https://download.01.org/opencv/openvino_training_extensions/models/face_recognition/Mobilenet_2x_se_121000.pt).
 
 ```bash
 cd $FR_ROOT
