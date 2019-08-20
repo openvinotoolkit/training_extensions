@@ -36,14 +36,16 @@ cd $FR_ROOT/
 ```
 
 2. To start training FR model:
+
 ```bash
 python train.py --train_data_root $VGGFace2_ROOT/train/ --train_list $VGGFace2_ROOT/meta/train_list.txt
 --train_landmarks  $VGGFace2_ROOT/bb_landmark/ --val_data_root  $LFW_ROOT/lfw/ --val_list $LFW_ROOT/pairs.txt  
 --val_landmarks $LFW_ROOT/lfw_landmark.txt --train_batch_size 200  --snap_prefix mobilenet_256 --lr 0.35
---embed_size 256 --model mobilenet --device 1
+--embed_size 256 --model mobilenetv2 --device 1
 ```
 
 3. To evaluate FR snapshot (let's say we have MobileNet with 256 embedding size trained for 300k):
+
 ```bash
  python evaluate_lfw.py --val_data_root $LFW_ROOT/lfw/ --val_list $LFW_ROOT/pairs.txt
  --val_landmarks $LFW_ROOT/lfw_landmark.txt --snap /path/to/snapshot/mobilenet_256_300000.pt --model mobilenet --embed_size 256
@@ -62,7 +64,7 @@ margin_type: cos
 s: 30
 m: 0.35
 #model parameters
-model: mobilenet
+model: mobilenetv2
 embed_size: 256
 #misc
 snap_prefix: MobileFaceNet
@@ -81,7 +83,9 @@ python train.py -m 0.35 @./my_config.yml #here m can be overwritten with the val
 
 ## Models
 
-1. You can download pretrained model from fileshare as well - https://download.01.org/opencv/openvino_training_extensions/models/face_recognition/Mobilenet_se_focal_121000.pt
+1. You can download pretrained model from fileshare as well - [mobilenetv2](https://download.01.org/opencv/openvino_training_extensions/models/face_recognition/Mobilenet_se_focal_121000.pt),
+[mobilenetv2_2x](https://download.01.org/opencv/openvino_training_extensions/models/face_recognition/Mobilenet_2x_se_121000.pt).
+
 ```bash
 cd $FR_ROOT
 python evaluate_lfw.py --val_data_root $LFW_ROOT/lfw/ --val_list $LFW_ROOT/pairs.txt --val_landmarks $LFW_ROOT/lfw_landmark.txt
@@ -89,6 +93,7 @@ python evaluate_lfw.py --val_data_root $LFW_ROOT/lfw/ --val_list $LFW_ROOT/pairs
 ```
 
 2. You should get the following output:
+- for `mobilenetv2`:
 ```
 I1114 09:33:37.846870 10544 evaluate_lfw.py:242] Accuracy/Val_same_accuracy mean: 0.9923
 I1114 09:33:37.847019 10544 evaluate_lfw.py:243] Accuracy/Val_diff_accuracy mean: 0.9970
@@ -97,6 +102,18 @@ I1114 09:33:37.847179 10544 evaluate_lfw.py:245] Accuracy/Val_accuracy std dev: 
 I1114 09:33:37.847229 10544 evaluate_lfw.py:246] AUC: 0.9995
 I1114 09:33:37.847305 10544 evaluate_lfw.py:247] Estimated threshold: 0.7241
 ```
+- for `mobilenetv2_2x`:
+```
+I0820 15:48:06.307454 23328 evaluate_lfw.py:262] Accuracy/Val_same_accuracy mean: 0.9893
+I0820 15:48:06.307612 23328 evaluate_lfw.py:263] Accuracy/Val_diff_accuracy mean: 0.9990
+I0820 15:48:06.307647 23328 evaluate_lfw.py:264] Accuracy/Val_accuracy mean: 0.9942
+I0820 15:48:06.307732 23328 evaluate_lfw.py:265] Accuracy/Val_accuracy std dev: 0.0061
+I0820 15:48:06.307766 23328 evaluate_lfw.py:266] AUC: 0.9992
+I0820 15:48:06.307812 23328 evaluate_lfw.py:267] Estimated threshold: 0.6721
+```
+
+`mobilenetv2_2x` is slightly worse on the LFW benchmark than `mobilenetv2`, but it's heavier and achieves higher score in the
+uncleaned version of the [MegaFace](http://megaface.cs.washington.edu/participate/challenge.html) benchmark: 73.77% rank-1 at 1M distractors in reidentification protocol vs 70.2%.
 
 ## Face Recognition Demo
 

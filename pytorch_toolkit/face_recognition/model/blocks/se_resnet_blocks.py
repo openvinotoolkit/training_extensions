@@ -30,7 +30,10 @@ class SEBottleneck(nn.Module):
         self.conv3 = nn.Conv2d(planes, planes * 4, kernel_size=1, bias=False)
         self.bn3 = nn.BatchNorm2d(planes * 4)
 
-        self.relu = make_activation(activation)
+        self.relu1 = make_activation(activation)
+        self.relu2 = make_activation(activation)
+        self.relu3 = make_activation(activation)
+        self.relu4 = make_activation(activation)
 
         # SE
         self.global_pool = nn.AdaptiveAvgPool2d(1)
@@ -47,18 +50,18 @@ class SEBottleneck(nn.Module):
 
         out = self.conv1(x)
         out = self.bn1(out)
-        out = self.relu(out)
+        out = self.relu1(out)
 
         out = self.conv2(out)
         out = self.bn2(out)
-        out = self.relu(out)
+        out = self.relu2(out)
 
         out = self.conv3(out)
         out = self.bn3(out)
 
         out1 = self.global_pool(out)
         out1 = self.conv_down(out1)
-        out1 = self.relu(out1)
+        out1 = self.relu3(out1)
         out1 = self.conv_up(out1)
         out1 = self.sig(out1)
 
@@ -66,6 +69,6 @@ class SEBottleneck(nn.Module):
             residual = self.downsample(x)
 
         res = out1 * out + residual
-        res = self.relu(res)
+        res = self.relu4(res)
 
         return res

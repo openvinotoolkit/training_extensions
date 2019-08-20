@@ -18,7 +18,7 @@ from model.blocks.shared_blocks import make_activation
 
 
 class ResNet(nn.Module):
-    def __init__(self, block, layers, num_classes=1000, activation=nn.ReLU):
+    def __init__(self, block, layers, num_classes=1000, activation=nn.ReLU, head=False):
         self.inplanes = 64
         super(ResNet, self).__init__()
         self.conv1 = nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1,
@@ -32,7 +32,12 @@ class ResNet(nn.Module):
         self.layer4 = self._make_layer(block, 512, layers[3], stride=2, activation=activation)
         self.avgpool = nn.Conv2d(512 * block.expansion, 512 * block.expansion, 7,
                                  groups=512 * block.expansion, bias=False)
-        self.fc = nn.Conv2d(512 * block.expansion, num_classes, 1, stride=1, padding=0, bias=False)
+        self.head = head
+        if not self.head:
+            self.output_channels = 512 * block.expansion
+        else:
+            self.fc = nn.Conv2d(512 * block.expansion, num_classes, 1, stride=1, padding=0, bias=False)
+            self.output_channels = num_classes
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
@@ -70,9 +75,13 @@ class ResNet(nn.Module):
         x = self.layer4(x)
 
         x = self.avgpool(x)
-        x = self.fc(x)
+        if self.head:
+            x = self.fc(x)
 
         return x
+
+    def get_output_channels(self):
+        return self.output_channels
 
 
 def resnet50(**kwargs):
