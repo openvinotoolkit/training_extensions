@@ -113,7 +113,7 @@ I0820 15:48:06.307812 23328 evaluate_lfw.py:267] Estimated threshold: 0.6721
 ```
 
 `mobilenetv2_2x` is slightly worse on the LFW benchmark than `mobilenetv2`, but it's heavier and achieves higher score in the
-uncleaned version of the MegaFace benchmark: 70.2% rank-1 at 1M distractors in reidentification protocol vs 73.77%.
+uncleaned version of the [MegaFace](http://megaface.cs.washington.edu/participate/challenge.html) benchmark: 73.77% rank-1 at 1M distractors in reidentification protocol vs 70.2%.
 
 ## Face Recognition Demo
 

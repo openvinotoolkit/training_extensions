@@ -120,7 +120,7 @@ def main(args):
 
     emb_array = np.zeros((nrof_images, args.embedding_size), dtype=np.float32)
 
-    dataset.transform = t.Compose([ResizeNumpy(models_backbones[args.model].get_input_res()),
+    dataset.transform = t.Compose([ResizeNumpy(models_backbones[args.model]().get_input_res()),
                                    NumpyToTensor(switch_rb=True)])
     val_loader = DataLoader(dataset, batch_size=args.batch_size, num_workers=5, shuffle=False)
 

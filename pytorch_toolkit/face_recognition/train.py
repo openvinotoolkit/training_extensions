@@ -11,7 +11,6 @@
  limitations under the License.
 """
 
-import argparse
 import datetime
 import os.path as osp
 import os
@@ -36,9 +35,10 @@ import utils.augmentation as augm
 from utils.parser_yaml import ArgumentParserWithYaml
 from model.common import models_backbones
 
+
 def train(args):
     """Performs training of a face recognition network"""
-    input_size = models_backbones[args.model].get_input_res()
+    input_size = models_backbones[args.model]().get_input_res()
     if args.train_dataset == 'vgg':
         assert args.t_list
         dataset = VGGFace2(args.train, args.t_list, args.t_land)

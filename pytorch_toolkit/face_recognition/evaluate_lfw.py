@@ -271,7 +271,7 @@ def evaluate(args, dataset, model, compute_embeddings_fun, val_batch_size=16,
 
 def load_test_dataset(arguments):
     """Loads and configures the LFW dataset"""
-    input_size = models_backbones[arguments.model].get_input_res()
+    input_size = models_backbones[arguments.model]().get_input_res()
     lfw = LFW(arguments.val, arguments.v_list, arguments.v_land)
     assert lfw.use_landmarks
     log.info('Using landmarks for the LFW images.')
