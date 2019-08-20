@@ -14,12 +14,13 @@
 import torch.nn as nn
 
 from model.blocks.shared_blocks import SELayer
+from model.blocks.shared_blocks import make_activation
 
 
 class SEBottleneckX(nn.Module):
     expansion = 4
 
-    def __init__(self, inplanes, planes, cardinality, stride=1, downsample=None):
+    def __init__(self, inplanes, planes, cardinality, stride=1, downsample=None, activation=nn.ReLU):
         super(SEBottleneckX, self).__init__()
         self.conv1 = nn.Conv2d(inplanes, planes * 2, kernel_size=1, bias=False)
         self.bn1 = nn.BatchNorm2d(planes * 2)
@@ -31,9 +32,12 @@ class SEBottleneckX(nn.Module):
         self.conv3 = nn.Conv2d(planes * 2, planes * 4, kernel_size=1, bias=False)
         self.bn3 = nn.BatchNorm2d(planes * 4)
 
-        self.selayer = SELayer(planes * 4, 16, nn.ReLU)
+        self.selayer = SELayer(planes * 4, 16, activation)
 
-        self.relu = nn.ReLU(inplace=True)
+        self.relu1 = make_activation(activation)
+        self.relu2 = make_activation(activation)
+        self.relu3 = make_activation(activation)
+
         self.downsample = downsample
         self.stride = stride
 
@@ -42,11 +46,11 @@ class SEBottleneckX(nn.Module):
 
         out = self.conv1(x)
         out = self.bn1(out)
-        out = self.relu(out)
+        out = self.relu1(out)
 
         out = self.conv2(out)
         out = self.bn2(out)
-        out = self.relu(out)
+        out = self.relu2(out)
 
         out = self.conv3(out)
         out = self.bn3(out)
@@ -57,6 +61,6 @@ class SEBottleneckX(nn.Module):
             residual = self.downsample(x)
 
         out += residual
-        out = self.relu(out)
+        out = self.relu3(out)
 
         return out

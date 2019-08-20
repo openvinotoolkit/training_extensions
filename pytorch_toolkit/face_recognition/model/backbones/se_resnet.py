@@ -12,16 +12,15 @@
 """
 
 import math
-
 import torch.nn as nn
 
 from model.blocks.se_resnet_blocks import SEBottleneck
 
 
 class SEResNet(nn.Module):
-    def __init__(self, block, layers, num_classes=1000, activation=nn.ReLU):
-        self.inplanes = 64
+    def __init__(self, block, layers, num_classes=1000, activation=nn.ReLU, head=False):
         super(SEResNet, self).__init__()
+        self.inplanes = 64
         self.conv1 = nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1,
                                bias=False)
         self.bn1 = nn.BatchNorm2d(64)
@@ -33,7 +32,12 @@ class SEResNet(nn.Module):
         self.layer4 = self._make_layer(block, 512, layers[3], stride=2, activation=activation)
         self.avgpool = nn.Conv2d(512 * block.expansion, 512 * block.expansion, 7,
                                  groups=512 * block.expansion, bias=False)
-        self.fc = nn.Conv2d(512 * block.expansion, num_classes, 1, stride=1, padding=0, bias=False)
+        self.head = head
+        if not self.head:
+            self.output_channels = 512 * block.expansion
+        else:
+            self.fc = nn.Conv2d(512 * block.expansion, num_classes, 1, stride=1, padding=0, bias=False)
+            self.output_channels = num_classes
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
@@ -72,9 +76,13 @@ class SEResNet(nn.Module):
         x = self.layer4(x)
 
         x = self.avgpool(x)
-        x = self.fc(x)
+        if self.head:
+            x = self.fc(x)
 
         return x
+
+    def get_output_channels(self):
+        return self.output_channels
 
 
 def se_resnet50(**kwargs):

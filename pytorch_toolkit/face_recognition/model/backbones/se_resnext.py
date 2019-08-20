@@ -18,25 +18,29 @@ from model.blocks.se_resnext_blocks import SEBottleneckX
 
 
 class SEResNeXt(nn.Module):
-
-    def __init__(self, block, layers, cardinality=32, num_classes=1000):
+    def __init__(self, block, layers, cardinality=32, num_classes=1000, activation=nn.ReLU, head=False):
         super(SEResNeXt, self).__init__()
         self.cardinality = cardinality
         self.inplanes = 64
 
-        self.conv1 = nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3,
+        self.conv1 = nn.Conv2d(3, 64, kernel_size=7, stride=1, padding=3,
                                bias=False)
         self.bn1 = nn.BatchNorm2d(64)
         self.relu = nn.ReLU(inplace=True)
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
 
-        self.layer1 = self._make_layer(block, 64, layers[0])
-        self.layer2 = self._make_layer(block, 128, layers[1], stride=2)
-        self.layer3 = self._make_layer(block, 256, layers[2], stride=2)
-        self.layer4 = self._make_layer(block, 512, layers[3], stride=2)
-
-        self.avgpool = nn.AdaptiveAvgPool2d(1)
-        self.fc = nn.Linear(512 * block.expansion, num_classes)
+        self.layer1 = self._make_layer(block, 64, layers[0], activation=activation)
+        self.layer2 = self._make_layer(block, 128, layers[1], stride=2, activation=activation)
+        self.layer3 = self._make_layer(block, 256, layers[2], stride=2, activation=activation)
+        self.layer4 = self._make_layer(block, 512, layers[3], stride=2, activation=activation)
+        self.avgpool = nn.Conv2d(512 * block.expansion, 512 * block.expansion, 7,
+                                 groups=512 * block.expansion, bias=False)
+        self.head = head
+        if not self.head:
+            self.output_channels = 512 * block.expansion
+        else:
+            self.fc = nn.Conv2d(512 * block.expansion, num_classes, 1, stride=1, padding=0, bias=False)
+            self.output_channels = num_classes
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
@@ -48,7 +52,7 @@ class SEResNeXt(nn.Module):
                 m.weight.data.fill_(1)
                 m.bias.data.zero_()
 
-    def _make_layer(self, block, planes, blocks, stride=1):
+    def _make_layer(self, block, planes, blocks, stride=1, activation=nn.ReLU):
         downsample = None
         if stride != 1 or self.inplanes != planes * block.expansion:
             downsample = nn.Sequential(
@@ -58,10 +62,10 @@ class SEResNeXt(nn.Module):
             )
 
         layers = []
-        layers.append(block(self.inplanes, planes, self.cardinality, stride, downsample))
+        layers.append(block(self.inplanes, planes, self.cardinality, stride, downsample, activation=activation))
         self.inplanes = planes * block.expansion
         for _ in range(1, blocks):
-            layers.append(block(self.inplanes, planes, self.cardinality))
+            layers.append(block(self.inplanes, planes, self.cardinality, activation=activation))
 
         return nn.Sequential(*layers)
 
@@ -77,11 +81,13 @@ class SEResNeXt(nn.Module):
         x = self.layer4(x)
 
         x = self.avgpool(x)
-        x = x.view(x.size(0), -1)
-
-        x = self.fc(x)
+        if self.head:
+            x = self.fc(x)
 
         return x
+
+    def get_output_channels(self):
+        return self.output_channels
 
 
 def se_resnext50(**kwargs):

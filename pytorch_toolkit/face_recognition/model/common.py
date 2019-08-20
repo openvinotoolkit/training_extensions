@@ -11,6 +11,7 @@
  limitations under the License.
 """
 from abc import abstractmethod
+from functools import partial
 import torch.nn as nn
 
 
@@ -29,12 +30,24 @@ class ModelInterface(nn.Module):
 from .rmnet_angular import RMNetAngular
 from .mobilefacenet import MobileFaceNet
 from .landnet import LandmarksNet
-from .resnet_angular import ResNetAngular
 from .se_resnet_angular import SEResNetAngular
 from .shufflenet_v2_angular import ShuffleNetV2Angular
+from .backbones.se_resnet import se_resnet50, se_resnet101, se_resnet152
+from .backbones.resnet import resnet50
+from .backbones.se_resnext import se_resnext50, se_resnext101, se_resnext152
 
 
-models_backbones = {'rmnet': RMNetAngular, 'mobilenet': MobileFaceNet, 'resnet': ResNetAngular,
-                    'shufflenetv2': ShuffleNetV2Angular, 'se_resnet': SEResNetAngular}
+models_backbones = {'rmnet': RMNetAngular,
+                    'mobilenetv2': MobileFaceNet,
+                    'mobilenetv2_2x': partial(MobileFaceNet, width_multiplier=2.0),
+                    'mobilenetv2_1_5x': partial(MobileFaceNet, width_multiplier=1.5),
+                    'resnet50': partial(SEResNetAngular, base=resnet50),
+                    'se_resnet50': partial(SEResNetAngular, base=se_resnet50),
+                    'se_resnet101': partial(SEResNetAngular, base=se_resnet101),
+                    'se_resnet152': partial(SEResNetAngular, base=se_resnet152),
+                    'se_resnext50': partial(SEResNetAngular, base=se_resnext50),
+                    'se_resnext101': partial(SEResNetAngular, base=se_resnext101),
+                    'se_resnext152': partial(SEResNetAngular, base=se_resnext152),
+                    'shufflenetv2': ShuffleNetV2Angular}
 
 models_landmarks = {'landnet': LandmarksNet}
