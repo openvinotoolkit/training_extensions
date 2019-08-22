@@ -162,7 +162,7 @@ def main():
     if args.model_weights:
         model.load_weights(args.model_weights)
 
-    if os.path.exists(args.train_dir):
+    elif os.path.exists(args.train_dir):
         latest_checkpoint = tf.train.latest_checkpoint(args.train_dir)
         if latest_checkpoint:
             assert not args.model_weights
