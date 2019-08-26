@@ -73,7 +73,8 @@ def main():
                                       aug_resize_factor_range=config['aug_resize_factor_range'],
                                       scale=scale,
                                       seed=config['seed'],
-                                      dataset_size_factor=config['num_of_patches_per_image'])
+                                      dataset_size_factor=config['num_of_patches_per_image'],
+                                      rotate=config['rotate'])
 
         val_set = DatasetTextImages(path=config['validation_path'],
                                     patch_size=None,

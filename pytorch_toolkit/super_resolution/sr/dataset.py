@@ -14,7 +14,7 @@
 
 import os
 import os.path as osp
-from random import Random
+from random import Random, choice
 import numpy as np
 import cv2
 import skimage
@@ -23,7 +23,6 @@ import torch
 import torch.utils.data as data
 from PIL import Image as pil_image
 from tqdm import tqdm
-
 
 class DatasetFromPairedImages(data.Dataset):
     def __init__(self, path, suffix_lr, suffix_hr, count=None):
@@ -183,12 +182,11 @@ class DatasetFromSingleImages(data.Dataset):
 class DatasetTextImages(data.Dataset):
     # pylint: disable=too-many-arguments
     def __init__(self, path, patch_size=None, scale=4, aug_resize_factor_range=None,
-                 seed=1337, dataset_size_factor=1):
+                 seed=1337, dataset_size_factor=1, rotate=False):
         super(DatasetTextImages, self).__init__()
         self.path = path
         self.dataset_size_factor = dataset_size_factor
         self.resize_factor = aug_resize_factor_range
-
         self.patch_size = patch_size
         if self.patch_size is not None:
             if patch_size[0] % scale or patch_size[1] % scale:
@@ -204,6 +202,11 @@ class DatasetTextImages(data.Dataset):
 
         self.random = Random()
         self.random.seed(seed)
+
+        self.rotate = rotate
+        if self.rotate:
+            if self.patch_size is None or self.patch_size[0] != self.patch_size[1]:
+                raise Exception('ERROR: Disable rotation or set square patch')
 
     def _load_images(self):
         all_files = os.listdir(self.path)
@@ -244,6 +247,13 @@ class DatasetTextImages(data.Dataset):
             h, w = image.shape[:2]
 
             resize_rate = self.random.random() * (self.resize_factor[1] - self.resize_factor[0]) + self.resize_factor[0]
+
+            if self.rotate:
+                rotate = choice([None, cv2.ROTATE_90_CLOCKWISE, cv2.ROTATE_180, cv2.ROTATE_90_COUNTERCLOCKWISE])
+                if rotate:
+                    image = cv2.rotate(image, rotate)
+                    if len(image.shape) == 2:
+                        image = image.reshape(image.shape[0], image.shape[1], 1)
 
             if w == self.patch_size[1]:
                 x = 0

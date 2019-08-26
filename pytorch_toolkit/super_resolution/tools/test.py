@@ -62,7 +62,7 @@ def main():
     count = 0
     for batch in tqdm(evaluation_data_loader):
         output = trainer.predict(batch=batch)
-        psnr.update(batch[1], [batch[0][1]])
+        psnr.update(batch[1], output)
         count += 1
 
     toc = time.time()
