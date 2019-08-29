@@ -41,13 +41,18 @@ def _PSNR(pred, gt, shave_border=0):
     height, width = pred.shape[:2]
     pred = pred[shave_border:height - shave_border, shave_border:width - shave_border]
     gt = gt[shave_border:height - shave_border, shave_border:width - shave_border]
-    imdff = (pred - gt) #rgb color space
+    imdff = (pred - gt)
 
-    r = imdff[:, :, 2]
-    g = imdff[:, :, 1]
-    b = imdff[:, :, 0]
+    if len(imdff.shape) > 2 and imdff.shape[2] == 3:
+        # RGB image
+        r = imdff[:, :, 2]
+        g = imdff[:, :, 1]
+        b = imdff[:, :, 0]
 
-    y = (r * 65.738 + g * 129.057 + b * 25.064) / 256
+        y = (r * 65.738 + g * 129.057 + b * 25.064) / 256
+    else:
+        # Gray scale
+        y = imdff
 
     mse = np.mean(y ** 2)
     if mse == 0:
@@ -67,7 +72,7 @@ class PSNR(Metrics):
         pred = predict[self.input_index].cpu().detach().numpy()
         gr = ground[self.target_index].cpu().detach().numpy()
 
-        assert gr.shape == pred.shape
+        assert gr.shape == pred.shape, "{} != {}".format(gr.shape, pred.shape)
 
         for i in range(gr.shape[0]):
             _pred = pred[i].T

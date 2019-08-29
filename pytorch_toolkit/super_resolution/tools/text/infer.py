@@ -27,8 +27,8 @@ from torch.autograd import Variable
 def parse_args():
     parser = ArgumentParser()
     parser.add_argument('--model', help='Path to checpoint', required=True, type=str)
-    parser.add_argument('--scale', type=int, default=4, help='Upsampling factor for SR')
     parser.add_argument('--output_dir', default=None, help='Output debugirectory')
+    parser.add_argument('--threshold', default=125, type=int, help='Threshould for postprocessing')
     parser.add_argument('input_image', help='Image with license plate')
     return parser.parse_args()
 
@@ -62,19 +62,19 @@ def main():
     model.eval()
 
     # Prepare input blobs
-    image = cv2.imread(args.input_image)
+    image = cv2.imread(args.input_image, 0)
 
-    ih, iw = image.shape[:2]
-    cubic = cv2.resize(image, (iw*args.scale, ih*args.scale), interpolation=cv2.INTER_CUBIC)
+    assert len(image.shape) == 2
 
+    image = image.reshape(image.shape[0], image.shape[1], 1)
     blob1 = image_to_blob(image)
-    blob2 = image_to_blob(cubic)
 
     # Inference
-    result = model([Variable(blob1), Variable(blob2)])
+    result = model([Variable(blob1)])
 
     # Postprocessing
     out_img = blob_to_img(result[0][0])
+    out_img = np.where(out_img > args.threshold, 255, 0)
 
     outpur_dir = args.output_dir if args.output_dir else os.path.dirname(args.input_image)
     out_path = os.path.join(outpur_dir, 'sr_' + os.path.basename(args.input_image))
