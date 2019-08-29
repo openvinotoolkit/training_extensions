@@ -121,6 +121,7 @@ class RandomResize(object):
             self.size = (self.heights[height_idx], self.widths[width_idx])
 
     def __call__(self, sample):
+        self.update()
         resizer = Resize(**{self.mode: self.size})
         return resizer(sample)
 
@@ -144,6 +145,7 @@ class RandomHorizontalFlip(object):
         self.do_flip = random.random() < self.prob
 
     def __call__(self, sample):
+        self.update()
         if self.do_flip:
             sample['image'] = cv2.flip(sample['image'], 1)
             width = sample['image'].shape[1]
