@@ -40,10 +40,12 @@ After installation, you are ready to train your own models, evaluate them, use
 them for predictions.
 
 * [Action Detection](action_detection)
+* [Image retrieval](image_retrieval)
 * [License Plate Recognition](lpr)
 * [Person Vehicle Bike Detector](person_vehicle_bike_detector)
 * [SSD MobileNet FPN 602](ssd_mobilenet_fpn_602)
 * [SSD Object Detection](ssd_detector)
+* [Text detection](text_detection)
 * [Text recognition](text_recognition)
 * [Vehicle Attributes](vehicle_attributes)
 * [Image Retrieval](image_retrieval)
