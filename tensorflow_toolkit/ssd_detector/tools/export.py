@@ -108,6 +108,7 @@ def main(_):
     'scale': scale,
     'mean_value': mean_value,
     'tensorflow_use_custom_operations_config': ssd_config_path,
+    'data_type':args.data_type,
   }
   execute_mo(mo_params, frozen_graph, export_dir)
 
