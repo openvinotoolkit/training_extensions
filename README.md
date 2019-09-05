@@ -44,7 +44,7 @@ inference.
   * [Image retrieval](tensorflow_toolkit/image_retrieval)
   * [License Plate Recognition](tensorflow_toolkit/lpr)
   * [Person Vehicle Bike Detector](tensorflow_toolkit/person_vehicle_bike_detector)
-  * [SSD MobileNet FPN 602](ssd_mobilenet_fpn_602)
+  * [SSD MobileNet FPN 602](tensorflow_toolkit/ssd_mobilenet_fpn_602)
   * [SSD Object Detection](tensorflow_toolkit/ssd_detector)
   * [Text detection](tensorflow_toolkit/text_detection)
   * [Text recognition](tensorflow_toolkit/text_recognition)
