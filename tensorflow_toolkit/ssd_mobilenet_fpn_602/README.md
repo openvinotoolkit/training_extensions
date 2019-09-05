@@ -72,7 +72,7 @@ protoc object_detection/protos/*.proto --python_out=.
 ```
 
 ## Data Preparation
-1. Please download images and annotations from [cocodataset.org](cocodataset.org/#download). COCO2017 is used in this
+1. Please download images and annotations from [cocodataset.org](https://cocodataset.org/#download). COCO2017 is used in this
 repo for training and validation.
 ```bash
 # From openvino_training_extensions/tensorflow_toolkit/ssd_mobilenet_fpn_602/
@@ -123,7 +123,7 @@ result in browser.
 ```bash
 tensorboard --logdir=./models/checkpoint
 ```
-![](assets/tensorboard_loss.png)
+![](assets/tensorboard_loss.jpg)
 
 4. After fine-tuning, a single evaluation can be run as follows.
 ```bash
@@ -134,7 +134,7 @@ python ../../external/models/research/object_detection/model_main.py \
     --checkpoint_dir=./models/checkpoint \
     --run_once=True
 ```
-![](assets/tensorboard_evaluation.png)
+![](assets/tensorboard_evaluation.jpg)
 
 ## Model Conversion
 

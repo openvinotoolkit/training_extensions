@@ -181,4 +181,4 @@ We provide some pre-trained models for your convenience:
 | SE-ResNext101_32x4d-VTN| RGB-diff | HMDB51  | 73.22%| [Download](https://download.01.org/opencv/openvino_training_extensions/models/action_recognition/se_resnext_101_32x4d_vtn_rgbd_hmdb51_s1.pth) | `python main.py --dataset hmdb51_1 --model se-resnext101-32x4d_vtn_rgbdiff -b16 --lr 1e-5 --seq 16 --st 2 --no-mean-norm --no-std-norm --pretrain-path /PATH/TO/PRETRAINED/MODEL`  |
 
 ## Demo
-You can try your models after converting it to the OpenVINO format or [pre-trained model from OpenVINO](https://docs.openvinotoolkit.org/latest/_docs_Pre_Trained_Models.html#action_recognition_models) using the [demo application from OpenVINO toolkit](https://docs.openvinotoolkit.org/latest/_inference_engine_ie_bridges_python_sample_action_recognition_README.html
+You can try your models after converting it to the OpenVINO format or [pre-trained model from OpenVINO](https://docs.openvinotoolkit.org/latest/usergroup10.html) using the [demo application from OpenVINO toolkit](https://docs.openvinotoolkit.org/latest/_demos_python_demos_action_recognition_README.html)

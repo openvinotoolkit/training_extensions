@@ -3,7 +3,7 @@
 
 ### instance-segmentation-security-0010
 
-[Description](https://github.com/opencv/open_model_zoo/tree/develop/intel_models/instance-segmentation-security-0010/description/instance-segmentation-security-0010.md)
+[Description](https://github.com/opencv/open_model_zoo/blob/develop/models/intel/instance-segmentation-security-0010/description/instance-segmentation-security-0010.md)
 
 ```bash
 $ python3 tools/train.py \
@@ -21,7 +21,7 @@ $ python3 tools/train.py \
 
 ### instance-segmentation-security-0083
 
-[Description](https://github.com/opencv/open_model_zoo/tree/develop/intel_models/instance-segmentation-security-0083/description/instance-segmentation-security-0083.md)
+[Description](https://github.com/opencv/open_model_zoo/blob/develop/models/intel/instance-segmentation-security-0083/description/instance-segmentation-security-0083.md)
 
 ```bash
 $ python3 tools/train.py \
@@ -39,7 +39,7 @@ $ python3 tools/train.py \
 
 ### instance-segmentation-security-0050
 
-[Description](https://github.com/opencv/open_model_zoo/tree/develop/intel_models/instance-segmentation-security-0050/description/instance-segmentation-security-0050.md)
+[Description](https://github.com/opencv/open_model_zoo/blob/develop/models/intel/instance-segmentation-security-0050/description/instance-segmentation-security-0050.md)
 
 ```bash
 $ python3 tools/train_0050.py
