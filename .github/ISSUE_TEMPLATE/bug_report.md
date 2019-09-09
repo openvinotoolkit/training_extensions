@@ -14,21 +14,11 @@ assignees: AlexanderDokuchaev
 
 **Describe the bug**
 <!--
-A clear and concise description of what the bug is.
-How has this issue affected you?
-What are you trying to accomplish?
+    A clear and concise description of what the bug is.
+    How has this issue affected you?
+    What are you trying to accomplish?
 -->
 
-
-**Expected behavior**
-<!--
-A clear and concise description of what you expected to happen.
--->
-
-**Current Behavior**
-<!--
-Tell us what happens instead of the expected behavior.
--->
 
 **Steps to Reproduce**
 
@@ -38,10 +28,11 @@ Tell us what happens instead of the expected behavior.
 4.
 
 
-**Desktop (please complete the following information):**
+**Environment:**
  - OS: <!--[e.g. Linux Ubuntu 16.04]-->
  - Framework version: <!--[TensorFlow or PyTorch]-->
  - Python version:
+ - OpenVINO version:
  - CUDA/cuDNN version:
  - GPU model and memory:
 
