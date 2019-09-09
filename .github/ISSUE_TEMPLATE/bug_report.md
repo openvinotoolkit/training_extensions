@@ -35,7 +35,7 @@ assignees: AlexanderDokuchaev
  - OpenVINO version:
  - CUDA/cuDNN version:
  - GPU model and memory:
+<!--
+Include as many relevant details about the environment with which you experienced the bug.
+-->
 
-
-**Additional context**
-Add any other context about the problem here.
