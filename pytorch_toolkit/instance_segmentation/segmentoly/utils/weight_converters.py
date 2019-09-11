@@ -17,10 +17,15 @@
 import logging
 import pickle
 from collections import OrderedDict
+from shutil import copyfile
 
 import torch
 
 from ..rcnn.backbones.resnet import ResBlock, ResBlockWithFusedBN, ResNetBody
+
+
+def as_is_converter(src_model_path, dst_model_path):
+    copyfile(src_model_path, dst_model_path)
 
 
 def maskrcnn_benchmark_models_converter(src_model_path, dst_model_path, weights_mapping):
