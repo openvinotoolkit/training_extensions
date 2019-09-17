@@ -47,8 +47,8 @@ For training from ImageNet weights run:
 $ python3 tools/train_0050.py
 ```
 
-Sample fine-tuning sample can be found at `tools/finetune_0050.py`.
+Fine-tuning sample can be found at `tools/finetune_0050.py`.
 Checkpoint has to be downloaded via
 `tools/download_pretrained_weights.py` first.
 Please make necessary changes for learning rate, batch size,
-number of training step or other training parameters there before running.
+number of training steps or other training parameters there before running.
