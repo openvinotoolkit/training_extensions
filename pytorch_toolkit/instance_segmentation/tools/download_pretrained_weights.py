@@ -143,7 +143,7 @@ def main(args):
                     output_onnx_file = osp.join(args.output_dir, 'onnx', target['dst_file'])
                     output_onnx_file = osp.splitext(output_onnx_file)[0] + '.onnx'
                     mkdir_for_file(output_onnx_file)
-                    net = locate(target['model'])(81, fc_detection_head=False).cpu()
+                    net = locate(target['model'])(81, fc_detection_head=False)
                     load_checkpoint(net, output_converted_file, verbose=False)
                     onnx_export(net, target['input_size'], output_onnx_file)
                     logging.info('ONNX file is saved to {}'.format(output_onnx_file))
@@ -168,11 +168,10 @@ def main(args):
                         logging.info('IR files saved to {}'.format(output_ir_dir))
 
         except Exception as ex:
-            logging.warning(ex)
+            logging.warning(repr(ex))
 
 
 if __name__ == '__main__':
-    os.environ['CUDA_VISIBLE_DEVICES'] = ''
     setup_logging()
     args = parse_args()
     main(args)
