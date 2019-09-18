@@ -65,14 +65,22 @@ To train Mask R-CNN model run
 ```bash
 $ python3 tools/train.py
 ```
-This script has a default configuration which conforms to end-to-end Mask R-CNN baseline from Detectron.
+
+This script has a default configuration which conforms to end-to-end Mask R-CNN
+baseline from Detectron.
 To view all arguments available to configure run
 
 ```bash
 $ python3 tools/train.py --help
 ```
 
-Instructions for training models from OpenVINO Open Model Zoo can be found in [OpenVINO.md](OpenVINO.md)
+For fine-tuning just pass a path to a model's weights file to the training script.
+
+Another option for training models is to use dedicated scripts for particular
+models (like `tools/train_0050.py`) that solely encapsulate the training setup.
+
+Instructions for training models from OpenVINO Open Model Zoo
+can be found in [OpenVINO.md](OpenVINO.md)
 
 ## Demo
 

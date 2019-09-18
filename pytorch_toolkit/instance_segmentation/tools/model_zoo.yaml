@@ -175,3 +175,39 @@ models:
     convert_to_ir: true
     input_size: [ 800, 1344 ]
     mean_pixel: [ 102.9801, 115.9465, 122.7717 ]
+  - name: "instance_segmentation_security_0050"
+    dst_file: "coco/ote/instance_segmentation_security_0050.pth"
+    type: "instance_segmentation"
+    dataset: "coco"
+    framework: "ote"
+    model: "segmentoly.rcnn.model_zoo.instance_segmentation_security_0050.InstanceSegmentationSecurity0050"
+    weights_converter: "segmentoly.utils.weight_converters.as_is_converter"
+    storage_type: "web"
+    url: "https://download.01.org/opencv/openvino_training_extensions/models/instance_segmentation/instance_segmentation_security_0050.pth"
+    convert_to_ir: true
+    input_size: [ 480, 480 ]
+    mean_pixel: [ 102.9801, 115.9465, 122.7717 ]
+  - name: "instance_segmentation_security_0083"
+    dst_file: "coco/ote/instance_segmentation_security_0083.pth"
+    type: "instance_segmentation"
+    dataset: "coco"
+    framework: "ote"
+    model: "segmentoly.rcnn.model_zoo.resnet_fpn_mask_rcnn.ResNeXt152FPNMaskRCNN"
+    weights_converter: "segmentoly.utils.weight_converters.as_is_converter"
+    storage_type: "web"
+    url: "https://download.01.org/opencv/openvino_training_extensions/models/instance_segmentation/instance_segmentation_security_0083.pth"
+    convert_to_ir: true
+    input_size: [ 480, 640 ]
+    mean_pixel: [ 102.9801, 115.9465, 122.7717 ]
+  - name: "instance_segmentation_security_0010"
+    dst_file: "coco/ote/instance_segmentation_security_0010.pth"
+    type: "instance_segmentation"
+    dataset: "coco"
+    framework: "ote"
+    model: "segmentoly.rcnn.model_zoo.resnet_panet_mask_rcnn.ResNeXt101PANetMaskRCNN"
+    weights_converter: "segmentoly.utils.weight_converters.as_is_converter"
+    storage_type: "web"
+    url: "https://download.01.org/opencv/openvino_training_extensions/models/instance_segmentation/instance_segmentation_security_0010.pth"
+    convert_to_ir: true
+    input_size: [ 800, 1344 ]
+    mean_pixel: [ 102.9801, 115.9465, 122.7717 ]
