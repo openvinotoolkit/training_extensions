@@ -16,3 +16,6 @@ external/*
 *.onnx
 *.xml
 *.bin
+
+*.tar.gz
+*.zip

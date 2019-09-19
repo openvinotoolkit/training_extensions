@@ -33,6 +33,7 @@ def build_argparser():
     parser.add_argument("--device", default="CPU", choices=["CPU", "GPU", "FPGA", "MYRIAD"],
                         help="Specify the target device to infer on;"
                              "Sample will look for a suitable plugin for device specified (%(default)s by default)")
+    parser.add_argument('--output', help='Output image')
     parser.add_argument('input_image', help='Image path')
     return parser.parse_args()
 
@@ -104,8 +105,11 @@ def main():
 
     draw(image, detections)
 
-    cv2.imshow('image', image)
-    cv2.waitKey()
+    if args.output:
+        cv2.imwrite(args.output, image)
+    else:
+        cv2.imshow('License Plate', image)
+        cv2.waitKey(0)
 
 
 if __name__ == "__main__":

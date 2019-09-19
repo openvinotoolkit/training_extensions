@@ -25,6 +25,7 @@ def build_argparser():
   parser = ArgumentParser()
   parser.add_argument("--model", help="Path to frozen graph", required=True, type=str)
   parser.add_argument("--label_map", help="Path to frozen graph", default="dataset/crossroad_label_map.pbtxt", type=str)
+  parser.add_argument('--output', '-o', help='Output image')
   parser.add_argument('input_image', help='Image with license plate')
   return parser.parse_args()
 
@@ -84,8 +85,11 @@ def main():
 
   draw(image, output, label_map)
 
-  cv2.imshow('image', image)
-  cv2.waitKey()
+  if args.output:
+    cv2.imwrite(args.output, image)
+  else:
+    cv2.imshow('Image', image)
+    cv2.waitKey(0)
 
 
 if __name__ == "__main__":

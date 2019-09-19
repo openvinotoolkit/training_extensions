@@ -56,7 +56,7 @@ dataset_type = 'CustomDataset'
 img_norm_cfg = dict(
     mean=[0, 0, 0], std=[255, 255, 255], to_rgb=False)
 
-data_root = '/home/adokucha/work/pr/y1/data/airport'
+data_root = '../../data/airport'
 data = dict(
     imgs_per_gpu=4,
     workers_per_gpu=0,

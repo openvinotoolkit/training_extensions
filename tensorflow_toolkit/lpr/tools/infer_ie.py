@@ -37,6 +37,7 @@ def build_argparser():
                            "will look for a suitable plugin for device specified (CPU by default)", default="CPU",
                       type=str)
   parser.add_argument('--config', help='Path to a config.py', required=True)
+  parser.add_argument('--output', help='Output image')
   parser.add_argument('input_image', help='Image with license plate')
   return parser
 
@@ -111,8 +112,11 @@ def main():
   lp_number = decode_ie_output(lp_code, cfg.r_vocab)
   print('Output: {}'.format(lp_number))
   img_to_display = display_license_plate(lp_number, img_to_display)
-  cv2.imshow('License Plate', img_to_display)
-  cv2.waitKey(0)
+  if args.output:
+    cv2.imwrite(args.output, img_to_display)
+  else:
+    cv2.imshow('License Plate', img_to_display)
+    cv2.waitKey(0)
 
   del exec_net
   del plugin

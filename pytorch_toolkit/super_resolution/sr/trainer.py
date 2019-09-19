@@ -54,8 +54,8 @@ class Trainer():
                 shutil.rmtree(self.model_path)
 
         if not os.path.exists(self.model_path):
-            os.mkdir(self.model_path)
-            os.mkdir(self.logs_path)
+            os.makedirs(self.model_path)
+            os.makedirs(self.logs_path)
 
         self.tb_writer = SummaryWriter(logdir=self.logs_path)
 

@@ -36,6 +36,7 @@ def parse_args():
     parser.add_argument('--reg', action='store_true', help='Use weights regularization.')
     parser.add_argument('--backbone_dropout', type=float, default=0.0, help='Use dropout')
     parser.add_argument('--learning_rate', type=float, default=0.1)
+    parser.add_argument('--num_steps', type=int, default=1000000)
 
     return parser.parse_args()
 
@@ -142,7 +143,7 @@ def main():
         if args.annotation_path_test != '':
             test_handle = sess.run(iterator_test.string_handle())
 
-        while True:
+        for _ in range(args.num_steps):
             _, c, step, summary = sess.run([optimizer, ctc_loss, global_step, merge_summary_op],
                                            feed_dict={is_training_ph: True,
                                                       handle: training_handle})

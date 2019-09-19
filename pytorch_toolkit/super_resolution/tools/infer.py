@@ -26,7 +26,7 @@ from torch.autograd import Variable
 
 def parse_args():
     parser = ArgumentParser()
-    parser.add_argument('--model', help='Path to checpoint', required=True, type=str)
+    parser.add_argument('--model', help='Path to checkpoint', required=True, type=str)
     parser.add_argument('--scale', type=int, default=4, help='Upsampling factor for SR')
     parser.add_argument('--output_dir', default=None, help='Output debugirectory')
     parser.add_argument('input_image', help='Image with license plate')
