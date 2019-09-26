@@ -98,4 +98,5 @@ class TestSparseModules:
             assert pytest.approx(scheduler.current_sparsity_level) == ref_level
 
         for m in compression_algo.sparsified_module_info:
-            assert not m.operand.sparsify
+            if hasattr(m.operand, "sparsify"):
+                assert not m.operand.sparsify

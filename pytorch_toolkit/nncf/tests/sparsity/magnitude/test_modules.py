@@ -17,16 +17,16 @@ from torch import nn
 
 from nncf.layers import NNCFConv2d, NNCFLinear
 from nncf.operations import UpdateWeight
-from nncf.sparsity.magnitude.functions import normed_magnitude, abs_magnitude
-from nncf.sparsity.magnitude.layers import MagnitudeSparsifyingWeight
+from nncf.sparsity.layers import BinaryMask
+from nncf.sparsity.magnitude.functions import normed_magnitude, abs_magnitude, calc_magnitude_binary_mask
 from tests.test_helpers import fill_conv_weight, fill_linear_weight, fill_bias
 
 
 class TestModel(nn.Module):
-    def __init__(self, layer, weight_importance=None):
+    def __init__(self, layer):
         super().__init__()
         self.layer = layer
-        sparsifier = MagnitudeSparsifyingWeight(layer.weight.size(), weight_importance)
+        sparsifier = BinaryMask(layer.weight.size())
         self.op_key = self.layer.register_pre_forward_operation(UpdateWeight(sparsifier))
 
     @property
@@ -35,17 +35,6 @@ class TestModel(nn.Module):
 
     def forward(self, x):
         return self.layer(x)
-
-
-@pytest.mark.parametrize('module',
-                         (NNCFConv2d, NNCFLinear))
-class TestSparseModules:
-    def test_can_create_magnitude_sparse_conv__with_default(self, module):
-        nncf_module = module(1, 1, 2)
-        sparse_model = TestModel(nncf_module)
-        sparsifier = sparse_model.sparsifier
-        assert isinstance(sparsifier.weight_importance, type(abs_magnitude))
-        assert sparsifier.threshold == 0
 
 
 @pytest.mark.parametrize(
@@ -64,12 +53,16 @@ class TestSparseModules:
 )
 def test_can_infer_magnitude_sparse_conv(weight_importance, threshold, ref_output):
     nncf_module = NNCFConv2d(1, 1, 2)
-    sparse_model = TestModel(nncf_module, weight_importance)
+    sparse_model = TestModel(nncf_module)
     sparsifier = sparse_model.sparsifier
     fill_conv_weight(nncf_module, 9)
     fill_bias(nncf_module, 0)
+
     if threshold is not None:
-        sparsifier.threshold = threshold
+        sparsifier.binary_mask = calc_magnitude_binary_mask(sparse_model.layer.weight,
+                                                            weight_importance,
+                                                            threshold)
+
     act_output = sparse_model(torch.ones([1, 1, 2, 2]))
     assert act_output.item() == ref_output
 
@@ -90,11 +83,15 @@ def test_can_infer_magnitude_sparse_conv(weight_importance, threshold, ref_outpu
 )
 def test_can_infer_magnitude_sparse_linear(weight_importance, threshold, ref_output):
     nncf_module = NNCFLinear(4, 1)
-    sparse_model = TestModel(nncf_module, weight_importance)
+    sparse_model = TestModel(nncf_module)
     sparsifier = sparse_model.sparsifier
     fill_linear_weight(nncf_module, 9)
     fill_bias(nncf_module, 0)
+
     if threshold is not None:
-        sparsifier.threshold = threshold
+        sparsifier.binary_mask = calc_magnitude_binary_mask(sparse_model.layer.weight,
+                                                            weight_importance,
+                                                            threshold)
+
     act_output = sparse_model(torch.ones([1, 4]))
     assert act_output.item() == ref_output

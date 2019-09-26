@@ -114,11 +114,11 @@ strict digraph  {
 "2 ResNet/NNCFConv2d[conv1]/conv2d" -> "3 ResNet/BatchNorm2d[bn1]/batch_norm";
 "3 ResNet/BatchNorm2d[bn1]/batch_norm" -> "4 ResNet/RELU";
 "4 ResNet/RELU" -> "7 ResNet/Sequential[layer1]/BasicBlock[0]/NNCFConv2d[conv1]/conv2d";
-"4 ResNet/RELU" -> "14 ResNet/Sequential[layer1]/BasicBlock[0]/__iadd__";
 "5 ResNet/Sequential[layer1]/BasicBlock[0]/NNCFConv2d[conv1]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/calc_rb_binary_mask" -> "6 ResNet/Sequential[layer1]/BasicBlock[0]/NNCFConv2d[conv1]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask";
 "6 ResNet/Sequential[layer1]/BasicBlock[0]/NNCFConv2d[conv1]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask" -> "7 ResNet/Sequential[layer1]/BasicBlock[0]/NNCFConv2d[conv1]/conv2d";
 "7 ResNet/Sequential[layer1]/BasicBlock[0]/NNCFConv2d[conv1]/conv2d" -> "8 ResNet/Sequential[layer1]/BasicBlock[0]/BatchNorm2d[bn1]/batch_norm";
 "8 ResNet/Sequential[layer1]/BasicBlock[0]/BatchNorm2d[bn1]/batch_norm" -> "9 ResNet/Sequential[layer1]/BasicBlock[0]/RELU";
+"4 ResNet/RELU" -> "14 ResNet/Sequential[layer1]/BasicBlock[0]/__iadd__";
 "9 ResNet/Sequential[layer1]/BasicBlock[0]/RELU" -> "12 ResNet/Sequential[layer1]/BasicBlock[0]/NNCFConv2d[conv2]/conv2d";
 "10 ResNet/Sequential[layer1]/BasicBlock[0]/NNCFConv2d[conv2]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/calc_rb_binary_mask" -> "11 ResNet/Sequential[layer1]/BasicBlock[0]/NNCFConv2d[conv2]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask";
 "11 ResNet/Sequential[layer1]/BasicBlock[0]/NNCFConv2d[conv2]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask" -> "12 ResNet/Sequential[layer1]/BasicBlock[0]/NNCFConv2d[conv2]/conv2d";
@@ -210,11 +210,11 @@ strict digraph  {
 "91 ResNet/Sequential[layer4]/BasicBlock[0]/Sequential[shortcut]/BatchNorm2d[1]/batch_norm" -> "92 ResNet/Sequential[layer4]/BasicBlock[0]/__iadd__";
 "92 ResNet/Sequential[layer4]/BasicBlock[0]/__iadd__" -> "93 ResNet/Sequential[layer4]/BasicBlock[0]/RELU";
 "93 ResNet/Sequential[layer4]/BasicBlock[0]/RELU" -> "96 ResNet/Sequential[layer4]/BasicBlock[1]/NNCFConv2d[conv1]/conv2d";
-"93 ResNet/Sequential[layer4]/BasicBlock[0]/RELU" -> "103 ResNet/Sequential[layer4]/BasicBlock[1]/__iadd__";
 "94 ResNet/Sequential[layer4]/BasicBlock[1]/NNCFConv2d[conv1]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/calc_rb_binary_mask" -> "95 ResNet/Sequential[layer4]/BasicBlock[1]/NNCFConv2d[conv1]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask";
 "95 ResNet/Sequential[layer4]/BasicBlock[1]/NNCFConv2d[conv1]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask" -> "96 ResNet/Sequential[layer4]/BasicBlock[1]/NNCFConv2d[conv1]/conv2d";
 "96 ResNet/Sequential[layer4]/BasicBlock[1]/NNCFConv2d[conv1]/conv2d" -> "97 ResNet/Sequential[layer4]/BasicBlock[1]/BatchNorm2d[bn1]/batch_norm";
 "97 ResNet/Sequential[layer4]/BasicBlock[1]/BatchNorm2d[bn1]/batch_norm" -> "98 ResNet/Sequential[layer4]/BasicBlock[1]/RELU";
+"93 ResNet/Sequential[layer4]/BasicBlock[0]/RELU" -> "103 ResNet/Sequential[layer4]/BasicBlock[1]/__iadd__";
 "98 ResNet/Sequential[layer4]/BasicBlock[1]/RELU" -> "101 ResNet/Sequential[layer4]/BasicBlock[1]/NNCFConv2d[conv2]/conv2d";
 "99 ResNet/Sequential[layer4]/BasicBlock[1]/NNCFConv2d[conv2]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/calc_rb_binary_mask" -> "100 ResNet/Sequential[layer4]/BasicBlock[1]/NNCFConv2d[conv2]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask";
 "100 ResNet/Sequential[layer4]/BasicBlock[1]/NNCFConv2d[conv2]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask" -> "101 ResNet/Sequential[layer4]/BasicBlock[1]/NNCFConv2d[conv2]/conv2d";

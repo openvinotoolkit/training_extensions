@@ -1,11 +1,11 @@
 # Semantic segmentation sample
 This sample demonstrates DL model compression capabilities for semantic segmentation problem
- 
+
 ## Features:
 - UNet and ICNet with implementations as close as possible to the original papers
 - Loaders for CamVid, Cityscapes (20-class), Mapillary Vistas(20-class), Pascal VOC (reuses the loader integrated into torchvision)
 - Configuration file examples for sparsity and quantization
-- Export to ONNX compatible with OpenVINO 
+- Export to ONNX compatible with OpenVINO
 - DataParallel and DistributedDataParallel modes
 - Tensorboard output
 
@@ -38,17 +38,17 @@ To export trained model to ONNX format use the following command:
 #### Export to OpenVINO Intermediate Representation (IR)
 
 To export a model to OpenVINO IR and run it using Intel Deep Learning Deployment Toolkit please refer to this [tutorial](https://software.intel.com/en-us/openvino-toolkit).
-  
+
 ### Results
-  
+
 | Model | Compression Algorithms | Dataset | mIoU | Config path | PyTorch checkpoint |
-| :-- | :-: | :-: | :-: | :-: | :-: |
+| :-: | :-: | :-: | :-: | :-: | :-: |
 | UNet | None (FP32) | CamVid | 71.95 | examples/segmentation/configs/unet_camvid.json | [Link](https://download.01.org/opencv/openvino_training_extensions/models/nncf/unet_camvid.pth) |
-| UNet | Int8 | CamVid | 71.82 | examples/segmentation/configs/unet_camvid_int8.json | [Link](https://download.01.org/opencv/openvino_training_extensions/models/nncf/unet_camvid_int8.pth) |
-| UNet | Int8 + 60% magnitude sparsity  | CamVid | 71.90 | examples/segmentation/configs/unet_camvid_magnitude_sparsity_int8.json | [Link](https://download.01.org/opencv/openvino_training_extensions/models/nncf/unet_camvid_magnitude_sparsity_int8.pth) |
+| UNet | Int8 | CamVid | 71.66 | examples/segmentation/configs/unet_camvid_int8.json | [Link](https://download.01.org/opencv/openvino_training_extensions/models/nncf/unet_camvid_int8.pth) |
+| UNet | Int8 + 60% magnitude sparsity  | CamVid | 71.72 | examples/segmentation/configs/unet_camvid_magnitude_sparsity_int8.json | [Link](https://download.01.org/opencv/openvino_training_extensions/models/nncf/unet_camvid_magnitude_sparsity_int8.pth) |
 | UNet | None (FP32) | Mapillary | 56.23 | examples/segmentation/configs/unet_mapillary.json | [Link](https://download.01.org/opencv/openvino_training_extensions/models/nncf/unet_mapillary.pth) |
 | UNet | Int8 | Mapillary | 56.16 | examples/segmentation/configs/unet_mapillary_int8.json | [Link](https://download.01.org/opencv/openvino_training_extensions/models/nncf/unet_mapillary_int8.pth) |
 | UNet | Int8 + 60% magnitude sparsity | Mapillary | 54.30 | examples/segmentation/configs/unet_mapillary_magnitude_sparsity_int8.json | [Link](https://download.01.org/opencv/openvino_training_extensions/models/nncf/unet_mapillary_magnitude_sparsity_int8.pth) |
 | ICNet | None (FP32) | CamVid | 67.89 | examples/segmentation/configs/icnet_camvid.json | [Link](https://download.01.org/opencv/openvino_training_extensions/models/nncf/icnet_camvid.pth) |
-| ICNet | Int8 | CamVid | 67.69 | examples/segmentation/configs/icnet_camvid_int8.json | [Link](https://download.01.org/opencv/openvino_training_extensions/models/nncf/icnet_camvid_int8.pth) |
-| ICNet | Int8 + 60% magnitude sparsity | CamVid | 67.53 | examples/segmentation/configs/icnet_camvid_magnitude_sparsity_int8.json | [Link](https://download.01.org/opencv/openvino_training_extensions/models/nncf/icnet_camvid_magnitude_sparsity_int8.pth) |
+| ICNet | Int8 | CamVid | 67.78 | examples/segmentation/configs/icnet_camvid_int8.json | [Link](https://download.01.org/opencv/openvino_training_extensions/models/nncf/icnet_camvid_int8.pth) |
+| ICNet | Int8 + 60% magnitude sparsity | CamVid | 67.55 | examples/segmentation/configs/icnet_camvid_magnitude_sparsity_int8.json | [Link](https://download.01.org/opencv/openvino_training_extensions/models/nncf/icnet_camvid_magnitude_sparsity_int8.pth) |

@@ -122,13 +122,28 @@ PATCHED_OPERATORS = [
     "sigmoid",
     "softmax",
     "hardtanh",
+    "elu",
+    "elu_",
+    "prelu",
+    "conv3d",
+    "conv_transpose3d",
+    "max_pool3d",
+    "adaptive_max_pool3d",
+    "avg_pool3d",
+    "adaptive_avg_pool3d",
+    "max_unpool3d",
+    "dropout3d",
+    "pad"
 ]
+
 CORE_OPERATORS = [
     "cat",
     "relu",
     "relu_",
     "max",
     "min",
+    "sigmoid",
+    "flatten"
 ]
 
 TENSOR_OPERATORS = [
@@ -145,7 +160,9 @@ TENSOR_OPERATORS = [
     "__div__",
     "__truediv__",
     # "__getitem__",
-    "round"
+    "round",
+    "squeeze",
+    "flatten"
 ]
 
 

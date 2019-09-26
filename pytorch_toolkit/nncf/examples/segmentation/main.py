@@ -31,15 +31,16 @@ import examples.segmentation.utils.loss_funcs as loss_funcs
 import examples.segmentation.utils.transforms as JT
 from examples.common.argparser import get_common_argument_parser
 from examples.common.distributed import configure_distributed, is_main_process
-from examples.common.execution import ExecutionMode, create_compressed_model, get_device, get_execution_mode, \
+from examples.common.execution import ExecutionMode, get_device, get_execution_mode, \
     prepare_model_for_execution, start_worker
-from examples.common.model_loader import load_model, load_state
 from examples.common.optimizer import make_optimizer
 from examples.common.utils import configure_logging, configure_paths, make_additional_checkpoints, print_args
 from examples.segmentation.metric import IoU
 from examples.segmentation.test import Test
 from examples.segmentation.train import Train
+from examples.common.model_loader import load_model
 from examples.segmentation.utils.checkpoint import load_checkpoint, save_checkpoint
+from nncf.helpers import create_compressed_model, load_state
 from nncf.config import Config
 from nncf.dynamic_graph import patch_torch_operators
 from nncf.utils import print_statistics
@@ -53,7 +54,7 @@ def get_arguments(args):
     parser.add_argument(
         "--dataset",
         help="Dataset to use.",
-        choices=["camvid", "cityscapes", "voc", "mapillary"],
+        choices=["camvid", "cityscapes", "mapillary"],
         default=None
     )
     return parser.parse_args(args=args)
@@ -132,8 +133,6 @@ def get_dataset(dataset_name: str) -> torch.utils.data.Dataset:
         del dataset.color_encoding['road_marking']
     elif dataset_name.lower() == 'cityscapes':
         from examples.segmentation.datasets import Cityscapes as dataset
-    elif dataset_name.lower() == 'voc':
-        from examples.segmentation.datasets import PascalVoc as dataset
     elif dataset_name.lower() == 'mapillary':
         from examples.segmentation.datasets import Mapillary as dataset
     else:

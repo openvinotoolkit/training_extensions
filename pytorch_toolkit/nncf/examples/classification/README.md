@@ -1,4 +1,3 @@
-
 # Image classification sample
 This sample demonstrates DL model compression in case of the image classification problem. The sample consists of basic steps such as DL model initialization, dataset preparation, training loop over epochs, training and validation steps. The sample receives a configuration file where the training schedule, hyper-parameters, and compression settings are defined.
 
@@ -38,14 +37,26 @@ To export trained model to ONNX format use the following command:
 
 To export a model to OpenVINO IR and run it using Intel Deep Learning Deployment Toolkit please refer to this [tutorial](https://software.intel.com/en-us/openvino-toolkit).
 
-### Results   for INT8 quantization
+### Results for INT8 quantization
 
 | Model | Dataset | FP32 baseline | Compressed model accuracy | Config path | Checkpoint |
 | :-- | :-: | :-: | :-: | :-: | :-: |
 | ResNet-50 INT8 quantized | ImageNet | 76.13 | 76.49 | examples/classification/configs/quantization/resnet50_imagenet_int8.json |  [Link](https://download.01.org/opencv/openvino_training_extensions/models/nncf/resnet50_imagenet_int8.pth) |
 | ResNet-50 INT8 w/ 60% of sparsity (RB) | ImageNet | 76.13 | 75.2 | examples/classification/configs/sparsity_quantization/resnet50_imagenet_sparsity_int8.json |  [Link](https://download.01.org/opencv/openvino_training_extensions/models/nncf/resnet50_imagenet_sparsity_int8.pth) |
-| Inception v3 INT8 quantized | ImageNet | 77.32 | 78.06 | examples/classification/configs/quantization/inceptionV3_imagenet_int8.json |  [Link](https://download.01.org/opencv/openvino_training_extensions/models/nncf/inception_v3_imagenet_int8.pth) |
-| Inception v3 INT8 w/ 60% of sparsity (RB) | ImageNet | 77.32 | 76.8 | examples/classification/configs/sparsity_quantization/inceptionV3_imagenet_sparsity_int8.json |  [Link](https://download.01.org/opencv/openvino_training_extensions/models/nncf/inceptionV3_imagenet_sparsity_int8.pth) |
-| MobileNet v2 INT8 quantized | ImageNet | 71.8 | 71.3 | examples/classification/configs/quantization/mobilenetV2_imagenet_int8.json |  [Link](https://download.01.org/opencv/openvino_training_extensions/models/nncf/mobilenetv2_imagenet_int8.pth) |
-| MobileNet v2 INT8 w/ 51% of sparsity (RB) | ImageNet | 71.8 | 70.9 | examples/classification/configs/sparsity_quantization/mobilenetV2_imagenet_sparsity_int8.json |  [Link](https://download.01.org/opencv/openvino_training_extensions/models/nncf/mobilenetv2_imagenet_sparse_int8.pth) |
-| SqueezeNet v1.1 INT8 quantized | ImageNet | 58.19 | 57.9 | examples/classification/configs/quantization/squeezenet1_1_imagenet_int8.json |  [Link](https://download.01.org/opencv/openvino_training_extensions/models/nncf/squeezenet1_1_imagenet_int8.pth) |
+| Inception v3 INT8 quantized | ImageNet | 77.32 | 78.36 | examples/classification/configs/quantization/inceptionV3_imagenet_int8.json |  [Link](https://download.01.org/opencv/openvino_training_extensions/models/nncf/inception_v3_imagenet_int8.pth) |
+| Inception v3 INT8 w/ 60% of sparsity (RB) | ImageNet | 77.32 | 77.05 | examples/classification/configs/sparsity_quantization/inceptionV3_imagenet_sparsity_int8.json |  [Link](https://download.01.org/opencv/openvino_training_extensions/models/nncf/inceptionV3_imagenet_sparsity_int8.pth) |
+| MobileNet v2 INT8 quantized | ImageNet | 71.8 | 71.33 | examples/classification/configs/quantization/mobilenetV2_imagenet_int8.json |  [Link](https://download.01.org/opencv/openvino_training_extensions/models/nncf/mobilenetv2_imagenet_int8.pth) |
+| MobileNet v2 INT8 w/ 51% of sparsity (RB) | ImageNet | 71.8 | 70.84 | examples/classification/configs/sparsity_quantization/mobilenetV2_imagenet_sparsity_int8.json |  [Link](https://download.01.org/opencv/openvino_training_extensions/models/nncf/mobilenetv2_imagenet_sparse_int8.pth) |
+| SqueezeNet v1.1 INT8 quantized | ImageNet | 58.19 | 58.16 | examples/classification/configs/quantization/squeezenet1_1_imagenet_int8.json |  [Link](https://download.01.org/opencv/openvino_training_extensions/models/nncf/squeezenet1_1_imagenet_int8.pth) |
+
+
+#### Binarization
+
+As an example of NNCF convolution binarization capabilities, you may use the configs in `examples/classification/configs/binarization` to binarize ResNet18. Use the same steps/command line parameters as for quantization (for best results, specify `--pretrained`), except for the actual binarization config path.
+
+
+### Results for binarization
+| Model | Weight binarization type | Activation binarization type | Dataset | FP32 baseline | Compressed model accuracy | Config path | Checkpoint |
+| :-- | :-: | :-: | :-: | :-: | :-: | :-: | :-: |
+| ResNet-18 | XNOR | Scale/threshold | ImageNet | 69.75 | 61.71 | examples/classification/configs/binarization/resnet18_imagenet_bin_xnor.json |  [Link](https://download.01.org/opencv/openvino_training_extensions/models/nncf/resnet18_imagenet_binarization_xnor.pth) |
+| ResNet-18 | DoReFa | Scale/threshold | ImageNet | 69.75 | 61.58 | examples/classification/configs/binarization/resnet18_imagenet_bin_dorefa.json |  [Link](https://download.01.org/opencv/openvino_training_extensions/models/nncf/resnet18_imagenet_binarization_dorefa.pth) |

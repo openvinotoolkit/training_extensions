@@ -11,15 +11,8 @@
  limitations under the License.
 """
 
-import os.path as osp
-
 import torch
 import torch.multiprocessing as mp
-
-from examples.common.distributed import is_main_process
-from nncf.dynamic_graph.utils import dump_graph, build_graph
-from nncf.utils import get_all_modules
-from nncf.algo_selector import create_compression_algorithm
 
 
 class ExecutionMode:
@@ -57,26 +50,6 @@ def get_device(config):
     return "cuda"
 
 
-def create_compressed_model(model, config):
-    input_args = (next(model.parameters()).new_empty(config['input_sample_size']),)
-    if is_main_process():
-        print(*get_all_modules(model).keys(), sep="\n")
-        ctx = build_graph(model, input_args, {}, 'create_model', reset_context=True)
-        dump_graph(ctx, osp.join(config.log_dir, "original_graph.dot"))
-
-    compression_algo = create_compression_algorithm(model, config)
-
-    if is_main_process():
-        if hasattr(compression_algo.model, "build_graph"):
-            ctx = compression_algo.model.build_graph()
-        else:
-            ctx = build_graph(compression_algo.model, input_args, {}, "create_model_compressed", reset_context=True)
-        dump_graph(ctx, osp.join(config.log_dir, "compressed_graph.dot"))
-
-    model = compression_algo.model
-    return compression_algo, model
-
-
 def prepare_model_for_execution(model, config):
     model_without_dp = model
 
@@ -92,6 +65,7 @@ def prepare_model_for_execution(model, config):
     #         print("Current PyTorch version does not support SyncBatchNorm!")
 
     model.to(config.device)
+
     if config.execution_mode == ExecutionMode.MULTIPROCESSING_DISTRIBUTED:
         # For multiprocessing distributed, DistributedDataParallel constructor
         # should always set the single device scope, otherwise,

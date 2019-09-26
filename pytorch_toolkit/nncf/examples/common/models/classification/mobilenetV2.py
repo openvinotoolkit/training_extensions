@@ -11,7 +11,7 @@
  limitations under the License.
 """
 
-# SqueezeNet implementation from:
+# Mobilenetv2 implementation from:
 # https://github.com/tonylins/pytorch-mobilenet-v2
 
 import math

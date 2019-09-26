@@ -25,13 +25,14 @@ from examples.common.argparser import get_common_argument_parser
 from examples.common.distributed import DistributedSampler, configure_distributed
 from examples.common.execution import ExecutionMode, get_device, get_execution_mode
 from examples.common.execution import prepare_model_for_execution, start_worker
-from examples.common.model_loader import load_state
-from examples.common.optimizer import get_parameter_groups, make_optimizer
 from examples.common.utils import configure_logging, configure_paths, create_code_snapshot, is_on_first_rank, print_args
+from examples.common.optimizer import get_parameter_groups, make_optimizer
 from examples.object_detection.dataset import detection_collate, get_testing_dataset, get_training_dataset
 from examples.object_detection.eval import test_net
 from examples.object_detection.layers.modules import MultiBoxLoss
 from examples.object_detection.model import build_ssd
+
+from nncf.helpers import load_state
 from nncf.algo_selector import create_compression_algorithm
 from nncf.config import Config
 from nncf.dynamic_graph import patch_torch_operators
@@ -144,7 +145,7 @@ def main_worker(current_gpu, config):
         # use checkpoint itself in case of only state dict is saved
         # i.e. checkpoint is created with `torch.save(module.state_dict())`
         state_dict = checkpoint.get('state_dict', checkpoint)
-        load_state(net, state_dict, is_resume=True, strict=True)
+        load_state(net, state_dict, is_resume=True)
         if config.mode.lower() == 'train' and config.to_onnx is None:
             compression_algo.scheduler.load_state_dict(checkpoint['scheduler'])
             optimizer.load_state_dict(checkpoint.get('optimizer', optimizer.state_dict()))

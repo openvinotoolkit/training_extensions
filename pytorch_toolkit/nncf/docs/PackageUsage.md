@@ -29,6 +29,7 @@ from nncf.algo_selector import create_compression_algorithm
 	```
 	Where `config` is a configuration file for compression methods where all the options and hyperparameters are specified. For more information about the configuration file please refer to the following [description](./Configuration.md).
  - Then you can **wrap your model** with `DataParallel` or `DistributedDataParallel` classes for multi-GPU training. In the case of distributed training you also need to call `compression_algo.distributed()` method.
+ - You should call the `compression_algo.initialize()` method before the start of your training loop. Some compression algorithms (e.g. quantiztion) require arguments (`train_loader` for your training dataset) to be supplied to the `initialize()` method.
  - In the **training loop** you should do the following changes:
 	 - After inferencing the model take a compression loss and add it (using `+` operator) to the common loss. e.g. cross-entropy loss:
 		```
@@ -45,3 +46,7 @@ from nncf.algo_selector import create_compression_algorithm
 		 ```
 
 Note: You can find these changes in the samples published in the NNCF repository.
+
+Important points you should consider when training your networks with compression algorithms: 
+  - Turn off the `Dropout` layers (and similar ones e.g. `DropConnect`) when training a network with quantization or sparsity
+  - It's better to turn off additional regularization in the loss function (e.g. L2 regularization via `weight_decay`) when training the network with RB sparsity, since it already imposes an L0 regularization term.

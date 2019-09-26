@@ -61,6 +61,14 @@ EXTRAS_REQUIRE = {
     "docs": []
 }
 
+package_data = {'nncf': ['quantization/cpu/functions_cpu.cpp',
+                         'quantization/cuda/functions_cuda.cpp',
+                         'quantization/cuda/functions_cuda_kernel.cu',
+                         'binarization/cpu/functions_cpu.cpp',
+                         'binarization/cuda/functions_cuda.cpp',
+                         'binarization/cuda/functions_cuda_kernel.cu']}
+
+
 setuptools.setup(
     name="nncf",
     version=find_version(os.path.join(here, "nncf/version.py")),
@@ -77,5 +85,6 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     install_requires=INSTALL_REQUIRES,
-    extras_require=EXTRAS_REQUIRE
+    extras_require=EXTRAS_REQUIRE,
+    package_data=package_data
 )

@@ -1,0 +1,70 @@
+{
+    "model": "RMNetClassifierCifar",
+    "dataset": "CIFAR100",
+    "num_classes": 100,
+    "pretrained": true,
+    "weights": "<WEIGHTS_PATH>",
+    "batch_size": 256,
+    "epochs": 300,
+    "input_sample_size": [
+        2,
+        3,
+        32,
+        32
+    ],
+    "optimizer": {
+        "type": "Adam",
+        "base_lr": 0.0001,
+        "schedule_type": "multistep",
+        "steps": [
+            20,
+            45
+        ]
+    },
+    "compression": {
+        "algorithm": "quantization",
+        "initializer": {
+            "num_init_steps": 1
+        },
+        "activations": {
+            "signed_scope": [
+                "RMNetClassifierCifar/RMNetBody[backbone]/Sequential[stages]/Sequential[stage_1]/RMBlock[0]/ELU[activation]",
+                "RMNetClassifierCifar/RMNetBody[backbone]/Sequential[stages]/Sequential[stage_1]/RMBlock[1]/ELU[activation]",
+                "RMNetClassifierCifar/RMNetBody[backbone]/Sequential[stages]/Sequential[stage_1]/RMBlock[2]/ELU[activation]",
+                "RMNetClassifierCifar/RMNetBody[backbone]/Sequential[stages]/Sequential[stage_1]/RMBlock[3]/ELU[activation]",
+                "RMNetClassifierCifar/RMNetBody[backbone]/Sequential[stages]/Sequential[stage_2]/RMBlock[0]/ELU[activation]",
+                "RMNetClassifierCifar/RMNetBody[backbone]/Sequential[stages]/Sequential[stage_2]/RMBlock[1]/ELU[activation]",
+                "RMNetClassifierCifar/RMNetBody[backbone]/Sequential[stages]/Sequential[stage_2]/RMBlock[2]/ELU[activation]",
+                "RMNetClassifierCifar/RMNetBody[backbone]/Sequential[stages]/Sequential[stage_2]/RMBlock[3]/ELU[activation]",
+                "RMNetClassifierCifar/RMNetBody[backbone]/Sequential[stages]/Sequential[stage_2]/RMBlock[4]/ELU[activation]",
+                "RMNetClassifierCifar/RMNetBody[backbone]/Sequential[stages]/Sequential[stage_2]/RMBlock[5]/ELU[activation]",
+                "RMNetClassifierCifar/RMNetBody[backbone]/Sequential[stages]/Sequential[stage_2]/RMBlock[6]/ELU[activation]",
+                "RMNetClassifierCifar/RMNetBody[backbone]/Sequential[stages]/Sequential[stage_2]/RMBlock[7]/ELU[activation]",
+                "RMNetClassifierCifar/RMNetBody[backbone]/Sequential[stages]/Sequential[stage_2]/RMBlock[8]/ELU[activation]",
+                "RMNetClassifierCifar/RMNetBody[backbone]/Sequential[stages]/Sequential[stage_3]/RMBlock[0]/ELU[activation]",
+                "RMNetClassifierCifar/RMNetBody[backbone]/Sequential[stages]/Sequential[stage_3]/RMBlock[1]/ELU[activation]",
+                "RMNetClassifierCifar/RMNetBody[backbone]/Sequential[stages]/Sequential[stage_3]/RMBlock[2]/ELU[activation]",
+                "RMNetClassifierCifar/RMNetBody[backbone]/Sequential[stages]/Sequential[stage_3]/RMBlock[3]/ELU[activation]",
+                "RMNetClassifierCifar/RMNetBody[backbone]/Sequential[stages]/Sequential[stage_3]/RMBlock[4]/ELU[activation]",
+                "RMNetClassifierCifar/RMNetBody[backbone]/Sequential[stages]/Sequential[stage_3]/RMBlock[5]/ELU[activation]",
+                "RMNetClassifierCifar/RMNetBody[backbone]/Sequential[stages]/Sequential[stage_3]/RMBlock[6]/ELU[activation]",
+                "RMNetClassifierCifar/RMNetBody[backbone]/Sequential[stages]/Sequential[stage_3]/RMBlock[7]/ELU[activation]",
+                "RMNetClassifierCifar/RMNetBody[backbone]/Sequential[stages]/Sequential[stage_3]/RMBlock[8]/ELU[activation]",
+                "RMNetClassifierCifar/RMNetBody[backbone]/Sequential[stages]/Sequential[stage_3]/RMBlock[9]/ELU[activation]",
+                "RMNetClassifierCifar/RMNetBody[backbone]/Sequential[stages]/Sequential[stage_3]/RMBlock[10]/ELU[activation]",
+                "RMNetClassifierCifar/RMNetBody[backbone]/Sequential[stages]/Sequential[stage_4]/RMBlock[0]/ELU[activation]",
+                "RMNetClassifierCifar/RMNetBody[backbone]/Sequential[stages]/Sequential[stage_4]/RMBlock[1]/ELU[activation]",
+                "RMNetClassifierCifar/RMNetBody[backbone]/Sequential[stages]/Sequential[stage_4]/RMBlock[2]/ELU[activation]",
+                "RMNetClassifierCifar/RMNetBody[backbone]/Sequential[stages]/Sequential[stage_4]/RMBlock[3]/ELU[activation]",
+                "RMNetClassifierCifar/RMNetBody[backbone]/Sequential[stages]/Sequential[stage_4]/RMBlock[4]/ELU[activation]",
+                "RMNetClassifierCifar/RMNetBody[backbone]/Sequential[stages]/Sequential[stage_4]/RMBlock[5]/ELU[activation]",
+                "RMNetClassifierCifar/RMNetBody[backbone]/Sequential[stages]/Sequential[stage_4]/RMBlock[6]/ELU[activation]",
+                "RMNetClassifierCifar/RMNetBody[backbone]/Sequential[stages]/Sequential[stage_4]/RMBlock[7]/ELU[activation]",
+                "RMNetClassifierCifar/RMNetBody[backbone]/Sequential[stages]/Sequential[stage_4]/RMBlock[8]/ELU[activation]",
+                "RMNetClassifierCifar/RMNetBody[backbone]/Sequential[stages]/Sequential[stage_4]/RMBlock[9]/ELU[activation]",
+                "RMNetClassifierCifar/RMNetBody[backbone]/Sequential[stages]/Sequential[stage_4]/RMBlock[10]/ELU[activation]",
+                "RMNetClassifierCifar/RMNetBody[backbone]/Sequential[stages]/Sequential[stage_4]/RMBlock[11]/ELU[activation]"
+            ]
+        }
+    }
+}

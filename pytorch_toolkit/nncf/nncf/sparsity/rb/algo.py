@@ -27,21 +27,23 @@ logger = logging.getLogger(__name__)
 
 @COMPRESSION_ALGORITHMS.register('rb_sparsity')
 class RBSparsity(BaseSparsityAlgo):
-    def __init__(self, model, input_size, config):
-        super().__init__(model, input_size, config)
+    def __init__(self, model, config, input_size, **kwargs):
+        super().__init__(model, config, input_size)
 
         self._distributed = False
 
-        self.ignored_scopes = self.config.get('ignored_scopes', [])
+        self.ignored_scopes = self.config.get('ignored_scopes')
+        self.target_scopes = self.config.get('target_scopes')
 
         device = next(model.parameters()).device
 
-        self._replace_sparsifying_modules_by_nncf_modules(device, self.ignored_scopes, logger)
-        self._register_weight_sparsifying_operations(device, self.ignored_scopes, logger)
+        self._replace_sparsifying_modules_by_nncf_modules(device, self.ignored_scopes, self.target_scopes, logger)
+        self._register_weight_sparsifying_operations(device, self.ignored_scopes, self.target_scopes, logger)
 
         sparsify_operations = [m.operand for m in self.sparsified_module_info]
         self._loss = SparseLoss(sparsify_operations)
-        scheduler_cls = SPARSITY_SCHEDULERS.get(self.config["params"].get("schedule", "exponential"))
+        params = self.config.get("params", {})
+        scheduler_cls = SPARSITY_SCHEDULERS.get(params.get("schedule", "exponential"))
         self._scheduler = scheduler_cls(self, self.config)
 
     def set_sparsity_level(self, sparsity_level):

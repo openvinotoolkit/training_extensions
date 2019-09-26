@@ -23,12 +23,11 @@ class BaseHook:
 
 
 class InsertAfterNodeHook(BaseHook):
-    def __init__(self, fn, nodes=None, scopes=None, keys=None):
+    def __init__(self, fn, nodes=None, keys=None):
         if nodes is None:
             self.nodes = keys
         else:
             self.nodes = {(n['type'], tuple(n['scope']), n['context']) for n in nodes}
-        self.scopes = scopes
         self.fn = fn
 
     def _must_run_callback(self, context, node, inputs, outputs):

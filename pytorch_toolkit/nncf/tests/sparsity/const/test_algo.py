@@ -15,7 +15,7 @@ from copy import deepcopy
 
 import torch
 
-from examples.common.model_loader import load_state
+from nncf.helpers import load_state
 from nncf.algo_selector import create_compression_algorithm
 from nncf.dynamic_graph import reset_context
 from nncf.operations import UpdateWeight

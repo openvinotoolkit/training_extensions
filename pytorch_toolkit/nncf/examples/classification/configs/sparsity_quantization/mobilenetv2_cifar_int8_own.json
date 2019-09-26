@@ -1,0 +1,46 @@
+{
+    "model": "mobilenetv2",
+    "input_sample_size": [2, 3, 32, 32],
+    "num_classes": 100,
+    "batch_size" : 256,
+    "test_every_n_epochs": 5,
+    "weights": "/home/alex_k/work/algo/nn-compression-framework/results/int8/cifar100/mobilenetv2_CIFAR100_FP32_acc1@64.53.pth",
+    //"weights": "/home/alex_k/work/algo/nncf_last/nn-compression-framework/tests/data/weekly_test_checkpoints/classification/cifar100/mobilenetV2.sd",
+    "dataset": "CIFAR100",
+
+    "optimizer": {
+        "type": "Adam",
+        "base_lr": 0.001,
+        "schedule_type": "multistep",
+        "steps": [140, 160, 180]
+    },
+    "compression": [
+        {
+            "algorithm": "rb_sparsity",
+            "params": {
+                "schedule": "multistep",
+                "steps": [
+                    20,
+                    40,
+                    60,
+                    80
+                ],
+                "sparsity_levels": [
+                    0.1,
+                    0.2,
+                    0.3,
+                    0.4,
+                    0.52
+                ],
+                "sparsity_training_steps": 120
+            },
+            "ignored_scopes": ["MobileNetV2/Sequential[features]/Sequential[0]/Conv2d[0]"]
+        },
+        {
+            "algorithm": "quantization",
+            "initializer": {
+                "num_init_steps": 1
+            }
+        }
+    ]
+}

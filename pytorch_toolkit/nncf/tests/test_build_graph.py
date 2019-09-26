@@ -12,6 +12,7 @@
 """
 
 import os
+from collections import namedtuple
 from functools import partial
 
 import networkx as nx
@@ -20,10 +21,12 @@ import torch
 import torch.nn as nn
 
 from nncf import QuantizedNetwork
-from nncf.algo_selector import create_compression_algorithm
+from nncf import SymmetricQuantizer
+from nncf.algo_selector import create_compression_algorithm, create_dummy_forward_fn
 from nncf.dynamic_graph import patch_torch_operators, reset_context, context
 from nncf.dynamic_graph.context import get_version_agnostic_name
 from nncf.dynamic_graph.utils import to_networkx
+from nncf.quantization.layers import AsymmetricQuantizer, QuantizerConfig, QuantizationParams
 from nncf.utils import get_all_modules_by_type
 from tests import test_models
 from tests.test_helpers import get_empty_config
@@ -52,6 +55,28 @@ def get_version_agnostic_graph(nx_graph):
     return nx_graph
 
 
+def sort_dot(path):
+    with open(path, 'r') as f:
+        content = f.readlines()
+    start_line = 'strict digraph  {\n'
+    end_line = '}\n'
+    content.remove(start_line)
+    content.remove(end_line)
+
+    def graph_key(line, offset):
+        key = line.split(' ')[0].replace('"', '')
+        if '->' in line:
+            key += line.split(' ')[3].replace('"', '')
+            return int(key) + offset
+        return int(key)
+
+    sorted_content = sorted(content, key=partial(graph_key, offset=len(content)))
+    with open(path, 'w') as f:
+        f.write(start_line)
+        f.writelines(sorted_content)
+        f.write(end_line)
+
+
 def check_graph(nx_graph, path_to_dot, graph_dir):
     data_dir = os.path.join(os.path.dirname(__file__), 'data/reference_graphs')
     path_to_dot = os.path.abspath(os.path.join(data_dir, graph_dir, path_to_dot))
@@ -59,6 +84,7 @@ def check_graph(nx_graph, path_to_dot, graph_dir):
     # validate .dot file manually!
     if not os.path.exists(path_to_dot):
         nx.drawing.nx_pydot.write_dot(nx_graph, path_to_dot)
+        sort_dot(path_to_dot)
 
     load_graph = nx.drawing.nx_pydot.read_dot(path_to_dot)
     load_graph = get_version_agnostic_graph(load_graph)
@@ -71,6 +97,23 @@ def check_graph(nx_graph, path_to_dot, graph_dir):
 
     assert load_graph.nodes.keys() == nx_graph.nodes.keys()
     assert nx.DiGraph(load_graph).edges == nx_graph.edges
+
+
+QuantizeConfig = namedtuple('QuantizeConfig', ['quantizer', 'graph_dir'])
+
+QUANTIZERS = [
+    QuantizeConfig(lambda _, is_weights=False: SymmetricQuantizer(
+        QuantizerConfig(QuantizationParams(signed=is_weights), is_weights=is_weights)),
+                   'symmetric'),
+    QuantizeConfig(lambda _, is_weights: AsymmetricQuantizer(QuantizerConfig(QuantizationParams())), 'asymmetric')
+]
+
+
+@pytest.fixture(scope='function', params=QUANTIZERS, ids=[pair.graph_dir for pair in QUANTIZERS])
+def _quantize_config(request):
+    config = request.param
+    graph_dir = os.path.join('quantized', config.graph_dir)
+    return QuantizeConfig(config.quantizer, graph_dir)
 
 
 TEST_MODELS = [
@@ -120,10 +163,9 @@ class TestModelsGraph:
         ("algo", "params"),
         (
             ("rb_sparsity", {}),
-            ("magnitude_sparsity", {"update_mask_on_forward": True}),
-            ("magnitude_sparsity", {"update_mask_on_forward": False}),
+            ("magnitude_sparsity", {}),
             ("const_sparsity", {})
-        ), ids=['RB', 'Magnitude', 'Magnitude_Frozen', 'Const']
+        ), ids=['RB', 'Magnitude', 'Const']
     )
     def test_sparse_network(self, model_name, model_builder, input_size, algo, params):
         model = model_builder()
@@ -140,42 +182,45 @@ class TestModelsGraph:
             _ = model(torch.zeros(input_size))
             c.reset_scope_operator_call_counters()
             _ = model(torch.zeros(input_size))
-        if params and not params.get('update_mask_on_forward', None):
-            algo += '_frozen'
         check_graph(to_networkx(ctx), model_name, algo)
 
-    def test_quantize_network(self, model_name, model_builder, input_size):
+    def test_quantize_network(self, model_name, model_builder, input_size, _quantize_config):
         net = model_builder()
         ctx = reset_context('orig')
         ctx = reset_context('quantized_graphs')
-        qnet = QuantizedNetwork(net, input_size)
+        qnet = QuantizedNetwork(net, _quantize_config.quantizer, input_size,
+                                dummy_forward_fn=create_dummy_forward_fn(input_size))
         _ = qnet(torch.zeros(*input_size))
         _ = qnet(torch.zeros(*input_size))
-        check_graph(to_networkx(ctx), model_name, 'quantized')
+        check_graph(to_networkx(ctx), model_name, _quantize_config.graph_dir)
 
 
-def test_resnet18__with_qinput():
+def test_resnet18__with_not_qinput(_quantize_config):
     net = test_models.ResNet18()
     ctx = reset_context('orig')
     ctx = reset_context('quantized_graphs')
     input_shape = (1, 3, 32, 32)
-    qnet = QuantizedNetwork(net, input_shape, quantize_inputs=True)
+    qnet = QuantizedNetwork(net, _quantize_config.quantizer, input_shape,
+                            dummy_forward_fn=create_dummy_forward_fn(input_shape),
+                            quantize_inputs=False)
     _ = qnet(torch.zeros(*input_shape))
     _ = qnet(torch.zeros(*input_shape))
 
-    check_graph(to_networkx(ctx), 'resnet18_qinput.dot', 'quantized')
+    check_graph(to_networkx(ctx), 'resnet18_no_qinput.dot', _quantize_config.graph_dir)
 
 
-def test_resnet18__with_ignore():
+def test_resnet18__with_ignore(_quantize_config):
     net = test_models.ResNet18()
     ctx = reset_context('orig')
     ctx = reset_context('quantized_graphs')
     input_shape = (1, 3, 32, 32)
-    qnet = QuantizedNetwork(net, input_shape, ignored_scopes=['ResNet/Sequential[layer3]'])
+    qnet = QuantizedNetwork(net, _quantize_config.quantizer, input_shape,
+                            dummy_forward_fn=create_dummy_forward_fn(input_shape),
+                            ignored_scopes=['ResNet/Sequential[layer3]'])
     _ = qnet(torch.zeros(*input_shape))
     _ = qnet(torch.zeros(*input_shape))
 
-    check_graph(to_networkx(ctx), 'resnet18_ignore.dot', 'quantized')
+    check_graph(to_networkx(ctx), 'resnet18_ignore.dot', _quantize_config.graph_dir)
 
 
 def test_iterate_module_list():
@@ -194,3 +239,33 @@ def test_iterate_module_list():
         _ = net(torch.zeros(1, 1, 1, 1))
 
     check_graph(to_networkx(ctx), 'case_iterate_module_list.dot', 'original')
+
+
+def test_output_quantization(_quantize_config):
+    net = test_models.UNet()
+    ctx = reset_context('orig')
+    ctx = reset_context('quantized_graphs')
+    input_shape = (1, 3, 360, 480)
+    qnet = QuantizedNetwork(net, _quantize_config.quantizer, input_shape,
+                            dummy_forward_fn=create_dummy_forward_fn(input_shape),
+                            quantize_outputs=True)
+    _ = qnet(torch.zeros(*input_shape))
+    _ = qnet(torch.zeros(*input_shape))
+
+    check_graph(to_networkx(ctx), 'unet_qoutput.dot', _quantize_config.graph_dir)
+
+
+def test_custom_quantizable_subgraph_patterns(_quantize_config):
+    net = test_models.SENet18()
+    ctx = reset_context('orig')
+    ctx = reset_context('quantized_graphs')
+    input_shape = (1, 3, 32, 32)
+    qnet = QuantizedNetwork(net, _quantize_config.quantizer, input_shape,
+                            dummy_forward_fn=create_dummy_forward_fn(input_shape),
+                            quantize_outputs=False,
+                            quantizable_subgraph_patterns=(("sigmoid", "__mul__"),
+                                                           ("__iadd__", "batch_norm")))
+    _ = qnet(torch.zeros(*input_shape))
+    _ = qnet(torch.zeros(*input_shape))
+
+    check_graph(to_networkx(ctx), 'senet_custom_patterns.dot', _quantize_config.graph_dir)

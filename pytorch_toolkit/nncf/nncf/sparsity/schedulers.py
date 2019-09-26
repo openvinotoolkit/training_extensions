@@ -19,7 +19,7 @@ from ..algo_selector import Registry
 from ..compression_method_api import CompressionScheduler
 from ..config import Config
 
-SPARSITY_SCHEDULERS = Registry("sparsity scheduler")
+SPARSITY_SCHEDULERS = Registry("sparsity_schedulers")
 
 
 class SparsityScheduler(CompressionScheduler):
@@ -27,7 +27,7 @@ class SparsityScheduler(CompressionScheduler):
         super().__init__()
         if config is None:
             config = Config()
-        c = config['params']
+        c = config.get('params', {})
         self.config = config
         self.algo = sparsity_algo
         self.sparsity_training_steps = c.get('sparsity_training_steps', 100)

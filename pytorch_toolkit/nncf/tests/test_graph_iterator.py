@@ -129,7 +129,7 @@ def test_get_all_layers_by_type__with_ignored_scope(ignored_scope):
         model_modules.add(module.__class__.__name__)
     model_modules = list(model_modules)
 
-    act_modules = get_all_modules_by_type(model, model_modules, ignored_scope=ignored_scope)
+    act_modules = get_all_modules_by_type(model, model_modules, ignored_scopes=ignored_scope)
 
     for module_name in act_modules:
         for scope in ignored_scope:

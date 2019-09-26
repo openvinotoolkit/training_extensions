@@ -15,7 +15,7 @@ import os
 
 import torch
 
-from examples.common.model_loader import load_state
+from nncf.helpers import load_state
 
 
 def save_checkpoint(model, optimizer, epoch, miou, compression_scheduler, config):

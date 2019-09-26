@@ -287,11 +287,11 @@ strict digraph  {
 "2 MobileNetV2/NNCFConv2d[conv1]/conv2d" -> "3 MobileNetV2/BatchNorm2d[bn1]/batch_norm";
 "3 MobileNetV2/BatchNorm2d[bn1]/batch_norm" -> "4 MobileNetV2/RELU";
 "4 MobileNetV2/RELU" -> "7 MobileNetV2/Sequential[layers]/Block[0]/NNCFConv2d[conv1]/conv2d";
-"4 MobileNetV2/RELU" -> "21 MobileNetV2/Sequential[layers]/Block[0]/Sequential[shortcut]/NNCFConv2d[0]/conv2d";
 "5 MobileNetV2/Sequential[layers]/Block[0]/NNCFConv2d[conv1]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/calc_rb_binary_mask" -> "6 MobileNetV2/Sequential[layers]/Block[0]/NNCFConv2d[conv1]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask";
 "6 MobileNetV2/Sequential[layers]/Block[0]/NNCFConv2d[conv1]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask" -> "7 MobileNetV2/Sequential[layers]/Block[0]/NNCFConv2d[conv1]/conv2d";
 "7 MobileNetV2/Sequential[layers]/Block[0]/NNCFConv2d[conv1]/conv2d" -> "8 MobileNetV2/Sequential[layers]/Block[0]/BatchNorm2d[bn1]/batch_norm";
 "8 MobileNetV2/Sequential[layers]/Block[0]/BatchNorm2d[bn1]/batch_norm" -> "9 MobileNetV2/Sequential[layers]/Block[0]/RELU";
+"4 MobileNetV2/RELU" -> "21 MobileNetV2/Sequential[layers]/Block[0]/Sequential[shortcut]/NNCFConv2d[0]/conv2d";
 "9 MobileNetV2/Sequential[layers]/Block[0]/RELU" -> "12 MobileNetV2/Sequential[layers]/Block[0]/NNCFConv2d[conv2]/conv2d";
 "10 MobileNetV2/Sequential[layers]/Block[0]/NNCFConv2d[conv2]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/calc_rb_binary_mask" -> "11 MobileNetV2/Sequential[layers]/Block[0]/NNCFConv2d[conv2]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask";
 "11 MobileNetV2/Sequential[layers]/Block[0]/NNCFConv2d[conv2]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask" -> "12 MobileNetV2/Sequential[layers]/Block[0]/NNCFConv2d[conv2]/conv2d";
@@ -373,7 +373,6 @@ strict digraph  {
 "84 MobileNetV2/Sequential[layers]/Block[4]/NNCFConv2d[conv3]/conv2d" -> "85 MobileNetV2/Sequential[layers]/Block[4]/BatchNorm2d[bn3]/batch_norm";
 "85 MobileNetV2/Sequential[layers]/Block[4]/BatchNorm2d[bn3]/batch_norm" -> "86 MobileNetV2/Sequential[layers]/Block[4]/__add__";
 "86 MobileNetV2/Sequential[layers]/Block[4]/__add__" -> "89 MobileNetV2/Sequential[layers]/Block[5]/NNCFConv2d[conv1]/conv2d";
-"86 MobileNetV2/Sequential[layers]/Block[4]/__add__" -> "101 MobileNetV2/Sequential[layers]/Block[5]/__add__";
 "87 MobileNetV2/Sequential[layers]/Block[5]/NNCFConv2d[conv1]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/calc_rb_binary_mask" -> "88 MobileNetV2/Sequential[layers]/Block[5]/NNCFConv2d[conv1]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask";
 "88 MobileNetV2/Sequential[layers]/Block[5]/NNCFConv2d[conv1]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask" -> "89 MobileNetV2/Sequential[layers]/Block[5]/NNCFConv2d[conv1]/conv2d";
 "89 MobileNetV2/Sequential[layers]/Block[5]/NNCFConv2d[conv1]/conv2d" -> "90 MobileNetV2/Sequential[layers]/Block[5]/BatchNorm2d[bn1]/batch_norm";
@@ -386,6 +385,7 @@ strict digraph  {
 "96 MobileNetV2/Sequential[layers]/Block[5]/RELU" -> "99 MobileNetV2/Sequential[layers]/Block[5]/NNCFConv2d[conv3]/conv2d";
 "97 MobileNetV2/Sequential[layers]/Block[5]/NNCFConv2d[conv3]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/calc_rb_binary_mask" -> "98 MobileNetV2/Sequential[layers]/Block[5]/NNCFConv2d[conv3]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask";
 "98 MobileNetV2/Sequential[layers]/Block[5]/NNCFConv2d[conv3]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask" -> "99 MobileNetV2/Sequential[layers]/Block[5]/NNCFConv2d[conv3]/conv2d";
+"86 MobileNetV2/Sequential[layers]/Block[4]/__add__" -> "101 MobileNetV2/Sequential[layers]/Block[5]/__add__";
 "99 MobileNetV2/Sequential[layers]/Block[5]/NNCFConv2d[conv3]/conv2d" -> "100 MobileNetV2/Sequential[layers]/Block[5]/BatchNorm2d[bn3]/batch_norm";
 "100 MobileNetV2/Sequential[layers]/Block[5]/BatchNorm2d[bn3]/batch_norm" -> "101 MobileNetV2/Sequential[layers]/Block[5]/__add__";
 "101 MobileNetV2/Sequential[layers]/Block[5]/__add__" -> "104 MobileNetV2/Sequential[layers]/Block[6]/NNCFConv2d[conv1]/conv2d";

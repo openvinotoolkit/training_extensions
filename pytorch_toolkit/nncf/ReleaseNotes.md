@@ -1,7 +1,16 @@
 # Release Notes
 
 ## Introduction
-*Neural Network Compression Framework (NNCF)* is a toolset for Neural Networks model compression. The framework organized as a Python module that can be built and used standalone or within samples distributed with the code.  The samples demonstrate the usage of compression methods on public models and datasets for three different use cases: Image Classification, Object Detection, and Semantic Segmentation.
+*Neural Network Compression Framework  (NNCF)* is a toolset for Neural Networks model compression. The framework organized as a Python module that can be built and used standalone or within samples distributed with the code.  The samples demonstrate the usage of compression methods on public models and datasets for three different use cases: Image Classification, Object Detection, and Semantic Segmentation.
+
+## New in Release 1.1:
+- Binary networks using XNOR and DoReFa methods.
+- Asymmetric quantization scheme and per-channel quantization of Convolution.
+- 3D models support.
+- Support of integration into the [mmdetection](https://github.com/open-mmlab/mmdetection) repository.
+- Custom search patterns for FakeQuantize operation insertion.
+- Quantization of the model input by default.
+- Support of quantization of non-ReLU models (ELU, sigmoid, swish, hswish, etc.).
 
 ## New in Release 1.0:
 

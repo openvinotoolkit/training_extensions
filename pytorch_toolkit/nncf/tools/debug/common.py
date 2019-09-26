@@ -18,8 +18,8 @@ import numpy as np
 import torch
 from torch import nn
 
-from examples.common.execution import create_compressed_model
-from examples.common.model_loader import load_model, load_state
+from examples.common.model_loader import load_model
+from nncf.helpers import load_state, create_compressed_model
 from nncf.layers import NNCFConv2d, NNCFLinear
 from nncf.utils import print_statistics
 
@@ -78,10 +78,10 @@ def is_weightable(layer):
 
 
 def has_sparse_quant_weights(layer, name):
-    from nncf.quantization.layers import Quantize
+    from nncf.quantization.layers import SymmetricQuantizer
     from nncf.sparsity.rb.layers import RBSparsifyingWeight
     return (isinstance(layer, RBSparsifyingWeight) and ('sparsified_weight' in name)) or \
-           (isinstance(layer, Quantize) and ('quantized_weight' in name))
+           (isinstance(layer, SymmetricQuantizer) and ('quantized_weight' in name))
 
 
 def save_dump_(path, ext, saver, data, force=False):

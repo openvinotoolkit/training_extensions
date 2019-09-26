@@ -38,11 +38,19 @@ def pytest_addoption(parser):
     parser.addoption(
         "--weekly-models", type=str, default=None, help="Path to models' weights for weekly tests"
     )
+    parser.addoption(
+        "--imagenet", action="store_true", default=False, help="Enable tests with imagenet"
+    )
 
 
 @pytest.fixture(scope="module")
 def dataset_dir(request):
     return request.config.getoption("--data")
+
+
+@pytest.fixture(scope="module")
+def enable_imagenet(request):
+    return request.config.getoption("--imagenet")
 
 
 @pytest.fixture(scope="module")
