@@ -26,7 +26,7 @@ import torch
 
 # pylint: disable=redefined-outer-name
 from examples.common.optimizer import get_default_weight_decay
-from examples.common.utils import get_name
+from examples.common.utils import get_name, is_binarization
 from nncf.config import Config
 from nncf.dynamic_graph import reset_context
 from tests.conftest import EXAMPLES_DIR, PROJECT_ROOT, TEST_ROOT
@@ -131,24 +131,25 @@ def create_command_line(args, sample_type):
 SAMPLE_TYPES = ["classification", "segmentation"]
 
 DATASETS = {
-    "classification": ["cifar10"],
+    "classification": ["cifar10", "cifar100"],
     "segmentation": ["camvid"],
 }
 
 CONFIGS = {
-    "classification": [TEST_ROOT.joinpath("data", "configs", "squeezenet1_1_cifar10_sparsity_int8.json")],
+    "classification": [TEST_ROOT.joinpath("data", "configs", "squeezenet1_1_cifar10_sparsity_int8.json"),
+                       TEST_ROOT.joinpath("data", "configs", "resnet18_cifar100_bin_xnor.json")],
     "segmentation": [TEST_ROOT.joinpath("data", "configs", "unet_camvid_int8.json")]
 }
 
 BATCHSIZE_PER_GPU = {
-    "classification": [256],
+    "classification": [256, 256],
     "segmentation": [2],
 }
 
 DATASET_PATHS = {
     "classification": {
-        DATASETS["classification"][0]: lambda dataset_root: dataset_root if dataset_root else os.path.join(
-            tempfile.gettempdir(), DATASETS["classification"][0])
+        x: lambda dataset_root: dataset_root if dataset_root else os.path.join(
+            tempfile.gettempdir(), x) for x in DATASETS["classification"]
     },
     "segmentation":
         {
@@ -254,7 +255,8 @@ def test_pretrained_model_train(config, tmp_path, multiprocessing_distributed):
         "--batch-size": c["batch_size"] * torch.cuda.device_count(),
         "--workers": 1,
         "--epochs": 1,
-        "--checkpoint-save-dir": checkpoint_save_dir
+        "--checkpoint-save-dir": checkpoint_save_dir,
+        "--dist-url": "tcp://127.0.0.1:8989"
     }
 
     if multiprocessing_distributed:
@@ -387,9 +389,15 @@ def test_cpu_only_mode_produces_cpu_only_model(config, tmp_path, mocker):
 
     if config["sample_type"] == "classification":
         import examples.classification.main as sample
-        mocker.patch("examples.classification.main.train_epoch")
-        mocker.patch("examples.classification.main.validate")
-        sample.validate.return_value = (0, 0)
+        if is_binarization(config['config']):
+            mocker.patch("examples.classification.binarization_worker.train_epoch_bin")
+            mocker.patch("examples.classification.binarization_worker.validate")
+            import examples.classification.binarization_worker as bin_worker
+            bin_worker.validate.return_value = (0, 0)
+        else:
+            mocker.patch("examples.classification.main.train_epoch")
+            mocker.patch("examples.classification.main.validate")
+            sample.validate.return_value = (0, 0)
     elif config["sample_type"] == "segmentation":
         import examples.segmentation.main as sample
         import examples.segmentation.train
@@ -399,7 +407,11 @@ def test_cpu_only_mode_produces_cpu_only_model(config, tmp_path, mocker):
 
     # pylint: disable=no-member
     if config["sample_type"] == "classification":
-        model_to_be_trained = sample.train_epoch.call_args[0][1]  # model
+        if is_binarization(config['config']):
+            import examples.classification.binarization_worker as bin_worker
+            model_to_be_trained = bin_worker.train_epoch_bin.call_args[0][2]  # model
+        else:
+            model_to_be_trained = sample.train_epoch.call_args[0][1]  # model
     elif config["sample_type"] == "segmentation":
         model_to_be_trained = examples.segmentation.train.Train.__init__.call_args[0][1]  # model
     for p in model_to_be_trained.parameters():

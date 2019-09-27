@@ -15,19 +15,21 @@ import re
 from copy import deepcopy
 from functools import partial
 
+import pytest
 import torch
 import torch.utils.data
 from pytest import approx
 from torchvision.models import resnet50
 
 from examples.common.models.classification import squeezenet1_1_custom
-from examples.common.utils import safe_thread_call
-from nncf import Quantization, Quantize
+from nncf import Quantization, SymmetricQuantizer
 from nncf import utils
 from nncf.algo_selector import create_compression_algorithm
 from nncf.compression_method_api import CompressionLoss, CompressionScheduler
 from nncf.config import Config
 from nncf.dynamic_graph import reset_context, patch_torch_operators
+from nncf.helpers import safe_thread_call, create_compressed_model, load_state
+from nncf.initializers import InitializeDataLoader
 from nncf.operations import UpdateWeight, UpdateInputs
 from nncf.utils import get_all_modules_by_type
 from tests.test_helpers import BasicConvTestModel, TwoConvTestModel, get_empty_config
@@ -50,6 +52,13 @@ def get_basic_quantization_config(model_size=4):
                 "params": {}
             }
     })
+    return config
+
+
+def get_basic_asym_quantization_config(model_size=4):
+    config = get_basic_quantization_config(model_size)
+    config['compression']['activations'] = {"mode": "asymmetric"}
+    config['compression']['weights'] = {"mode": "asymmetric"}
     return config
 
 
@@ -91,7 +100,7 @@ def test_can_load_quant_algo__with_defaults():
 
         store = []
         for op in quant_model_conv[quant_module_name].pre_ops.values():
-            if isinstance(op, (UpdateInputs, UpdateWeight)) and isinstance(op.operand, Quantize):
+            if isinstance(op, (UpdateInputs, UpdateWeight)) and isinstance(op.operand, SymmetricQuantizer):
                 assert op.__class__.__name__ not in store
                 store.append(op.__class__.__name__)
         assert UpdateWeight.__name__ in store
@@ -165,9 +174,9 @@ def scale_signed_dumping_worker(gpu, ngpus_per_node, config, tmp_path):
     compression_algo.initialize(data_loader)
 
     act_sum = 0
-    for layer in get_all_modules_by_type(model, "Quantize").values():
+    for layer in get_all_modules_by_type(model, "SymmetricQuantizer").values():
         act_sum += layer.scale
-    ref_sum = 3464.32
+    ref_sum = 3518.797
     assert act_sum.item() == approx(ref_sum, 0.01), \
         'sum of scales is not expected {} vs {} rank {}'.format(act_sum.item(), ref_sum, config.rank)
 
@@ -202,7 +211,7 @@ def get_path_after_broadcast(tmp_path, rank):
 
 def save_params(model, out_file_path):
     gpu_scale_signed_params = []
-    for _, layer in utils.get_all_modules_by_type(model, 'Quantize').items():
+    for _, layer in utils.get_all_modules_by_type(model, 'SymmetricQuantizer').items():
         gpu_scale_signed_params.append((layer.scale.to(torch.device('cpu')),
                                         layer.signed_tensor.to(torch.device('cpu'))))
     with out_file_path.open('wb') as out_file:
@@ -242,50 +251,92 @@ def test_multiprocessing_distributed_shares_init_scales_signedness_across_gpus(t
     assert not compare_scales_and_sign(config, tmp_path, get_path_path_after_train_iters)
 
 
-def test_scale_and_sign_init_for_quant_algo():
-    model = TwoConvTestModel()
+class OnesDatasetMock:
+    def __init__(self, input_size):
+        self.input_size = input_size
+        super().__init__()
 
-    config = get_empty_config()
-    config['compression'] = {'algorithm': 'quantization', 'initializer': {'num_init_steps': 1}}
+    def __getitem__(self, index):
+        return torch.ones(self.input_size), torch.ones(1)
 
-    reset_context('orig')
-    reset_context('quantized_graphs')
-    compression_algo = create_compression_algorithm(model, config)
-    model = compression_algo.model
+    def __len__(self):
+        return 1
 
-    input_sample_size = config.input_sample_size
 
-    class OnesDatasetMock:
-        def __init__(self, input_size):
-            self.input_size = input_size
-            super().__init__()
+@pytest.mark.parametrize("wrap_dataloader",
+                         (True, False),
+                         ids=['wrapped_dataloader', 'standard_dataloader'])
+class TestInit:
+    @staticmethod
+    def create_algo(config):
+        model = TwoConvTestModel()
+        reset_context('orig')
+        reset_context('quantized_graphs')
+        compression_algo = create_compression_algorithm(model, config)
+        return compression_algo
 
-        def __getitem__(self, index):
-            return torch.ones(self.input_size), torch.ones(1)
+    @staticmethod
+    def create_config():
+        config = get_empty_config()
+        config['compression'] = {'algorithm': 'quantization', 'initializer': {'num_init_steps': 1}}
+        return config
 
-        def __len__(self):
-            return 1
+    @staticmethod
+    def create_dataloader(wrap_dataloader, config, algo):
+        input_sample_size = config.input_sample_size
+        data_loader = torch.utils.data.DataLoader(OnesDatasetMock(input_sample_size[1:]),
+                                                  batch_size=1,
+                                                  num_workers=1,
+                                                  shuffle=False)
+        if wrap_dataloader:
+            device = next(algo.model.parameters()).device
+            data_loader = InitializeDataLoader(data_loader=data_loader,
+                                               device=device,
+                                               kwargs={})
+        return data_loader
 
-    data_loader = torch.utils.data.DataLoader(OnesDatasetMock(input_sample_size[1:]),
-                                              batch_size=1,
-                                              num_workers=1,
-                                              shuffle=False)
-    compression_algo.initialize(data_loader)
+    @staticmethod
+    def check_sign_and_scale(algo, ref_table):
+        model_conv = get_all_modules_by_type(algo.model, 'SymmetricQuantizer')
+        for name, module in model_conv.items():
+            for pattern, ref_values in ref_table.items():
+                match = re.search(pattern, name)
+                if match:
+                    assert isinstance(module, SymmetricQuantizer)
+                    assert module.signed == ref_values[0], 'sign is not matched for {}'.format(name)
+                    assert module.scale == ref_values[1], 'scale is not matched for {}'.format(name)
 
-    model_conv = get_all_modules_by_type(model, 'Quantize')
-    ref_table = {
-        '.*Sequential\\[0\\].*UpdateWeight.*': (True, 1),
-        '.*Sequential\\[1\\].*UpdateWeight. *': (False, 1),
-        '.*activation_quantizers.*Sequential\\[0\\].*': (True, 4),
-        '.*activation_quantizers.*Sequential\\[1\\].*': (True, 24)
-    }
-    for name, module in model_conv.items():
-        for pattern, ref_values in ref_table.items():
-            match = re.search(pattern, name)
-            if match:
-                assert isinstance(module, Quantize)
-                assert module.signed == ref_values[0], 'sign is not matched for {}'.format(name)
-                assert module.scale == ref_values[1], 'scale is not matched for {}'.format(name)
+    def test_scale_and_sign_init_for_quant_algo(self, wrap_dataloader):
+        config = self.create_config()
+        algo = self.create_algo(config)
+        data_loader = self.create_dataloader(wrap_dataloader, config, algo)
+
+        algo.initialize(data_loader)
+
+        self.check_sign_and_scale(algo, {
+            '.*Sequential\\[0\\].*UpdateWeight.*': (True, 1),
+            '.*Sequential\\[1\\].*UpdateWeight. *': (False, 1),
+            '.*activation_quantizers.*Sequential\\[0\\].*': (True, 4),
+            '.*activation_quantizers.*Sequential\\[1\\].*': (True, 24)
+        })
+
+    def test_scale_and_sign_init_for_quant_algo__after_load_state(self, wrap_dataloader):
+        config = self.create_config()
+        algo = self.create_algo(config)
+        load_state(algo.model, {
+            'module.features.0.0.pre_ops.0.op.signed_tensor': torch.tensor([0.]),  # quantizer of 1st conv's weights
+            'module.features.1.0.pre_ops.0.op.scale': torch.tensor([100])  # quantizer of 2nd conv's weights
+        })
+        data_loader = self.create_dataloader(wrap_dataloader, config, algo)
+
+        algo.initialize(data_loader)
+
+        self.check_sign_and_scale(algo, {
+            '.*Sequential\\[0\\].*UpdateWeight.*': (False, 1),
+            '.*Sequential\\[1\\].*UpdateWeight. *': (False, 100),
+            '.*activation_quantizers.*Sequential\\[0\\].*': (True, 4),
+            '.*activation_quantizers.*Sequential\\[1\\].*': (True, 24)
+        })
 
 
 def get_path_to_keys(tmp_path, rank):
@@ -322,3 +373,23 @@ def test_activation_quantizers_order_is_the_same__for_resnet50(tmp_path):
         with open(get_path_to_keys(tmp_path, i), 'r') as f:
             curr_list = f.readlines()
             assert curr_list == ref_list
+
+
+def test_load_state_sets_initialized_flag(tmp_path):
+    config = get_basic_quantization_config()
+    config.log_dir = str(tmp_path)
+    reset_context('orig')
+    reset_context('quantized_graphs')
+    _, model = create_compressed_model(TwoConvTestModel(), config)
+
+    load_state(model, {
+        'module.features.0.0.pre_ops.0.op.signed_tensor': torch.tensor([1.0]),  # quantizer of 1st conv's weights
+        'module.features.1.0.pre_ops.0.op.scale': torch.tensor([1.0])  # quantizer of 2nd conv's weights
+    })
+
+    quantizers = get_all_modules_by_type(model, 'SymmetricQuantizer')
+    for name, module in quantizers.items():
+        if 'activation_quantizers' in name or 'UpdateInputs' in name:
+            assert not module.initialized
+        else:
+            assert module.initialized

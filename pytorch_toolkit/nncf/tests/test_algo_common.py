@@ -13,16 +13,17 @@
 
 import itertools
 import os
+from functools import partial
 
 import pytest
 from torch import nn
 from torch.nn import DataParallel
 
-from examples.common.model_loader import load_state
+from nncf.helpers import load_state
 from nncf.algo_selector import create_compression_algorithm
 from nncf.dynamic_graph import reset_context
 from nncf.utils import print_statistics
-from tests.quantization.test_quant_algo import get_basic_quantization_config
+from tests.quantization.test_quant_algo import get_basic_quantization_config, get_basic_asym_quantization_config
 from tests.sparsity.magnitude.test_helpers import get_basic_magnitude_sparsity_config
 from tests.sparsity.rb.test_algo import get_basic_sparsity_config
 from tests.test_helpers import BasicConvTestModel, get_empty_config
@@ -50,9 +51,10 @@ def create_test_compression_algo(config, model):
     return compression_algo
 
 
-@pytest.mark.parametrize('config_provider', (get_basic_quantization_config, get_basic_sparsity_config,
+@pytest.mark.parametrize('config_provider', (get_basic_quantization_config, get_basic_asym_quantization_config,
+                                             get_basic_sparsity_config,
                                              get_basic_magnitude_sparsity_config, get_const_sparsity_config),
-                         ids=('Quantization', 'Sparsity', 'MagnitudeSparsity', 'ConstSparsity'))
+                         ids=('SymQuantization', 'AsymQuantization', 'Sparsity', 'MagnitudeSparsity', 'ConstSparsity'))
 @pytest.mark.parametrize('model_provider', (BasicConvTestModel, BasicLinearTestModel),
                          ids=('Conv2d', 'Linear'))
 class TestCompressionAlgos:
@@ -63,7 +65,6 @@ class TestCompressionAlgos:
         compression_algo = create_test_compression_algo(config, model)
 
         compression_algo.export_model(test_path)
-
         assert os.path.exists(test_path)
 
     def test_can_print_stats(self, config_provider, model_provider):
@@ -120,34 +121,33 @@ WRAPPERS = list(itertools.product(MODEL_WRAPPER, MODEL_WRAPPER))
 
 @pytest.fixture(scope='function', params=WRAPPERS,
                 ids=['_'.join(['from:' + w[0], 'to:' + w[1]]) for w in WRAPPERS])
-def _models(request):
+def _model_wrapper(request):
     modes = request.param
 
-    def wrap_model(mode):
-        model = BasicConvTestModel()
+    def wrap_model(mode, model):
         if mode == "GPU":
             model = DataParallel(model, [0])
         return model
 
     return {
-        'save_model': wrap_model(modes[0]),
-        'resume_model': wrap_model(modes[1]),
+        'save_model': partial(wrap_model, modes[0]),
+        'resume_model': partial(wrap_model, modes[1]),
     }
 
 
 @pytest.mark.parametrize('is_resume', (True, False), ids=['resume', 'load_weights'])
-def test_load_state_interoperability(_algos, _models, is_resume):
+def test_load_state_interoperability(_algos, _model_wrapper, is_resume):
     config_save = get_empty_config()
     config_save['compression'] = [{'algorithm': algo, 'params': {}} for algo in _algos['save_algos']]
-    algo_save = create_test_compression_algo(config_save, _models['save_model'])
-    model_save = algo_save.model
+    algo_save = create_test_compression_algo(config_save, BasicConvTestModel())
+    model_save = _model_wrapper['save_model'](algo_save.model)
     saved_model_state = model_save.state_dict()
     ref_num_loaded = len(saved_model_state)
 
     config_resume = get_empty_config()
     config_resume['compression'] = [{'algorithm': algo, 'params': {}} for algo in _algos['load_algos']]
-    algo_resume = create_test_compression_algo(config_resume, _models['resume_model'])
-    model_resume = algo_resume.model
+    algo_resume = create_test_compression_algo(config_resume, BasicConvTestModel())
+    model_resume = _model_wrapper['resume_model'](algo_resume.model)
 
     if not is_resume or (is_resume and _algos['is_resume_ok']):
         act_num_loaded = load_state(model_resume, saved_model_state, is_resume)
@@ -168,16 +168,16 @@ LIST_ALGOS += SPARSITY_ALGOS  # 3S
 
 @pytest.mark.parametrize('is_resume', (True, False), ids=['resume', 'load_weights'])
 @pytest.mark.parametrize('algo', tuple(LIST_ALGOS))
-def test_ordinary_load(algo, _models, is_resume):
+def test_ordinary_load(algo, _model_wrapper, is_resume):
     config = get_empty_config()
     if algo:
         config['compression'] = {'algorithm': algo, 'params': {}}
 
-    algo_save = create_test_compression_algo(config, _models['save_model'])
-    model_save = algo_save.model
+    algo_save = create_test_compression_algo(config, BasicConvTestModel())
+    model_save = _model_wrapper['save_model'](algo_save.model)
 
-    algo_resume = create_test_compression_algo(config, _models['resume_model'])
-    model_resume = algo_resume.model
+    algo_resume = create_test_compression_algo(config, BasicConvTestModel())
+    model_resume = _model_wrapper['resume_model'](algo_resume.model)
 
     num_loaded = load_state(model_resume, model_save.state_dict(), is_resume)
 

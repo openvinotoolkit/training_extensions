@@ -11,13 +11,13 @@
  limitations under the License.
 """
 
+import random
+import warnings
 from collections import OrderedDict
 from contextlib import contextmanager
 
-import random
 import numpy as np
 import torch
-import warnings
 from texttable import Texttable
 
 from .dynamic_graph.utils import build_graph
@@ -45,7 +45,7 @@ def scopes_matched(scope_stack_0, scope_stack_1):
 def in_scope_list(scope, scope_list):
     if scope_list is None:
         return False
-    checked_scope_stack = scope.split('/') if isinstance(scope, str) else scope
+    checked_scope_stack = scope.split('/')
     for item in [scope_list] if isinstance(scope_list, str) else scope_list:
         scope_stack = item.split('/') if isinstance(item, str) else item
         if scopes_matched(checked_scope_stack, scope_stack):
@@ -54,7 +54,17 @@ def in_scope_list(scope, scope_list):
 
 
 def parse_node_name(name):
-    slash_pos = name.rfind('/')
+    slash_pos = -1
+    nbrackets = 0
+    for i, ch in enumerate(reversed(name)):
+        if ch == ']':
+            nbrackets += 1
+        elif ch == '[':
+            nbrackets -= 1
+        elif ch == '/' and nbrackets == 0:
+            slash_pos = len(name) - i - 1
+            break
+
     prefix = None if slash_pos < 0 else name[:slash_pos]
 
     last_name = name[slash_pos + 1:]
@@ -76,7 +86,7 @@ def get_all_node_names(model, input_sample_size, graph_scope=None):
     if graph_scope is None:
         graph_scope = 'utils'
     input_args = (next(model.parameters()).new_empty(input_sample_size),)
-    ctx = build_graph(model, input_args, {}, graph_scope, reset_context=True)
+    ctx = build_graph(model, graph_scope, input_args=input_args, reset_context=True)
     return get_node_names_from_context(ctx)
 
 
@@ -93,7 +103,7 @@ def get_all_modules(model, prefix=None):
     return found
 
 
-def get_all_modules_by_type(model, module_types, prefix=None, ignored_scope=None):
+def get_all_modules_by_type(model, module_types, prefix=None, ignored_scopes=None, target_scopes=None):
     if isinstance(module_types, str):
         module_types = [module_types]
     found = OrderedDict()
@@ -102,12 +112,28 @@ def get_all_modules_by_type(model, module_types, prefix=None, ignored_scope=None
     for name, module in model.named_children():
         full_node_name = get_node_name(module, name, prefix)
 
-        if ignored_scope and in_scope_list(full_node_name, ignored_scope):
+        if in_scope_list(full_node_name, ignored_scopes):
             continue
 
-        if module_types.count(str(type(module).__name__)) != 0:
+        if target_scopes is None or in_scope_list(full_node_name, target_scopes):
+            if module_types.count(str(type(module).__name__)) != 0:
+                found[full_node_name] = module
+            sub_found = get_all_modules_by_type(module, module_types,
+                                                prefix=full_node_name,
+                                                ignored_scopes=ignored_scopes,
+                                                target_scopes=target_scopes)
+            if sub_found:
+                found.update(sub_found)
+    return found
+
+
+def get_state_dict_names_with_modules(model, str_types=None, prefix=''):
+    found = OrderedDict()
+    for name, module in model.named_children():
+        full_node_name = "{}{}".format(prefix, name)
+        if str_types is not None and type(module).__name__ in str_types:
             found[full_node_name] = module
-        sub_found = get_all_modules_by_type(module, module_types, prefix=full_node_name, ignored_scope=ignored_scope)
+        sub_found = get_state_dict_names_with_modules(module, str_types, prefix=full_node_name + '.')
         if sub_found:
             found.update(sub_found)
     return found
@@ -195,3 +221,33 @@ def check_for_quantization_before_sparsity(child_algos: list):
             warnings.warn("Applying quantization before sparsity may lead to incorrect "
                           "sparsity metrics calculation. Consider revising the config file to specify "
                           "sparsity algorithms before quantization ones", RuntimeWarning)
+
+
+def sum_like(tensor_to_sum, ref_tensor):
+    """Warning: may modify tensor_to_sum"""
+    if ref_tensor.size == 1:
+        return tensor_to_sum.sum()
+
+    for dim, size in enumerate(ref_tensor.shape):
+        if size == 1:
+            if isinstance(tensor_to_sum, np.ndarray):
+                tensor_to_sum = tensor_to_sum.sum(dim, keepdims=True)
+            else:
+                tensor_to_sum = tensor_to_sum.sum(dim, keepdim=True)
+    return tensor_to_sum
+
+
+def get_per_channel_scale_shape(input_shape, is_weights):
+    scale_shape = [1 for _ in input_shape]
+    if is_weights:
+        scale_shape[0] = input_shape[0]  # Per weight channel scales
+    else:
+        scale_shape[1] = input_shape[1]  # Per activation channel scales
+
+    elements = 1
+    for i in scale_shape:
+        elements *= i
+    if elements == 1:
+        return 1
+
+    return scale_shape

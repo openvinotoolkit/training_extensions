@@ -39,26 +39,22 @@ def test_magnitude_scheduler_can_do_epoch_step__with_norm():
     assert isinstance(scheduler, MultiStepSparsityScheduler)
 
     assert pytest.approx(compression_algo.sparsity_level) == 0.1
-    for module_info in compression_algo.sparsified_module_info:
-        assert module_info.operand.threshold == pytest.approx(0.219, 0.01)
+    assert compression_algo.threshold == pytest.approx(0.219, 0.01)
     assert scheduler.prev_ind == 0
 
     scheduler.epoch_step()
     assert compression_algo.sparsity_level == 0.5
-    for module_info in compression_algo.sparsified_module_info:
-        assert module_info.operand.threshold == pytest.approx(0.243, 0.01)
+    assert compression_algo.threshold == pytest.approx(0.243, 0.01)
     assert scheduler.prev_ind == 1
 
     scheduler.epoch_step()
     assert compression_algo.sparsity_level == 0.5
-    for module_info in compression_algo.sparsified_module_info:
-        assert module_info.operand.threshold == pytest.approx(0.243, 0.01)
+    assert compression_algo.threshold == pytest.approx(0.243, 0.01)
     assert scheduler.prev_ind == 1
 
     scheduler.epoch_step()
     assert compression_algo.sparsity_level == 0.9
-    for module_info in compression_algo.sparsified_module_info:
-        assert module_info.operand.threshold == pytest.approx(0.371, 0.01)
+    assert compression_algo.threshold == pytest.approx(0.371, 0.01)
     assert scheduler.prev_ind == 2
 
 
@@ -71,14 +67,12 @@ def test_magnitude_scheduler_can_do_epoch_step__with_last():
     scheduler.epoch_step(3)
     assert scheduler.prev_ind == 2
     assert compression_algo.sparsity_level == 0.9
-    for module_info in compression_algo.sparsified_module_info:
-        assert module_info.operand.threshold == pytest.approx(0.371, 0.01)
+    assert compression_algo.threshold == pytest.approx(0.371, 0.01)
 
     scheduler.epoch_step()
     assert scheduler.prev_ind == 2
     assert compression_algo.sparsity_level == 0.9
-    for module_info in compression_algo.sparsified_module_info:
-        assert module_info.operand.threshold == pytest.approx(0.371, 0.01)
+    assert compression_algo.threshold == pytest.approx(0.371, 0.01)
 
 
 def test_magnitude_scheduler_can_do_epoch_step__with_multistep():

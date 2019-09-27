@@ -5,19 +5,19 @@
     "num_classes": 1000,
     "batch_size" : 256,
     "weight_decay": 1e-5,
-    "epochs": 1,
+    "epochs": 5,
     "optimizer": {
         "type": "Adam",
         "base_lr": 0.00001,
         "schedule_type": "multistep",
         "steps": [
-            1
+            3
         ]
     },
     "compression": {
         "algorithm": "quantization",
         "initializer": {
-            "num_init_steps": 10
+            "num_init_steps": 1
         }
     }
 }

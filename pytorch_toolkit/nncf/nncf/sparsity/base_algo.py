@@ -17,7 +17,8 @@ from texttable import Texttable
 
 from nncf.compression_method_api import CompressionAlgorithm
 from nncf.dynamic_graph.transform_graph import replace_modules_by_nncf_modules
-from nncf.layers import NNCF_MODULES, COMPRESSION_MODULES
+from nncf.layers import NNCF_MODULES
+from nncf.layer_utils import COMPRESSION_MODULES
 from nncf.operations import UpdateWeight
 from nncf.utils import get_all_modules_by_type, in_scope_list
 
@@ -31,22 +32,26 @@ class BaseSparsityAlgo(CompressionAlgorithm):
     def set_sparsity_level(self, sparsity_level):
         raise NotImplementedError
 
-    def _replace_sparsifying_modules_by_nncf_modules(self, device, ignored_scope, logger):
-        self._model = replace_modules_by_nncf_modules(self._model, ignored_scope=ignored_scope, logger=logger)
+    def _replace_sparsifying_modules_by_nncf_modules(self, device, ignored_scopes, target_scopes, logger):
+        self._model = replace_modules_by_nncf_modules(self._model,
+                                                      ignored_scopes=ignored_scopes,
+                                                      target_scopes=target_scopes,
+                                                      logger=logger)
         self._model.to(device)
 
-    def _register_weight_sparsifying_operations(self, device, ignored_scope, logger):
+    def _register_weight_sparsifying_operations(self, device, ignored_scopes, target_scopes, logger):
         sparsified_modules = get_all_modules_by_type(self._model, NNCF_MODULES)
         self.sparsified_module_info = []
         for module_name, module in sparsified_modules.items():
-            if in_scope_list(module_name, ignored_scope):
+            if in_scope_list(module_name, ignored_scopes):
                 logger.info("Ignored adding Weight Sparsifier in scope: {}".format(module_name))
                 continue
-
-            logger.info("Adding Weight Sparsifier in scope: {}".format(module_name))
-            operation = self.create_weight_sparsifying_operation(module)
-            opid = module.register_pre_forward_operation(UpdateWeight(operation).to(device))
-            self.sparsified_module_info.append(SparseModuleInfo(module_name, module, module.get_pre_op(opid).operand))
+            if target_scopes is None or in_scope_list(module_name, target_scopes):
+                logger.info("Adding Weight Sparsifier in scope: {}".format(module_name))
+                operation = self.create_weight_sparsifying_operation(module)
+                opid = module.register_pre_forward_operation(UpdateWeight(operation).to(device))
+                self.sparsified_module_info.append(
+                    SparseModuleInfo(module_name, module, module.get_pre_op(opid).operand))
 
     def create_weight_sparsifying_operation(self, module):
         raise NotImplementedError

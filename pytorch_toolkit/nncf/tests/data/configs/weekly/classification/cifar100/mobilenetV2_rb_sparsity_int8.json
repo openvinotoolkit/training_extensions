@@ -24,10 +24,10 @@
             "params": {
                 "schedule": "multistep",
                 "steps": [
-                    8,
                     16,
                     24,
-                    32
+                    32,
+                    40
                 ],
                 "sparsity_levels": [
                     0.1,
@@ -49,6 +49,6 @@
             }
         }
     ],
-    "epochs": 85,
+    "epochs": 100,
     "test_every_n_epochs": 5
 }

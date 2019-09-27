@@ -14,7 +14,7 @@
 import torch
 import torch.nn as nn
 
-from nncf.layers import COMPRESSION_MODULES
+from nncf.layer_utils import COMPRESSION_MODULES
 from nncf.sparsity.functions import apply_binary_mask as apply_binary_mask_impl
 from nncf.utils import is_tracing_state, no_jit_trace
 
@@ -39,14 +39,10 @@ class BinaryMask(nn.Module):
             with no_jit_trace():
                 return weight.mul_(self.binary_mask)
         tmp_tensor = self._calc_training_binary_mask(weight)
-        self.binary_mask = self._calc_binary_mask(weight)
         return apply_binary_mask_impl(tmp_tensor, weight)
 
     def _calc_training_binary_mask(self, weight):
-        raise NotImplementedError
-
-    def _calc_binary_mask(self, weight):
-        raise NotImplementedError
+        return self.binary_mask
 
     def apply_binary_mask(self, weight):
         return apply_binary_mask_impl(self.binary_mask, weight)

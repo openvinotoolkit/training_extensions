@@ -17,7 +17,7 @@ import torch
 import torch.nn as nn
 from examples.object_detection.layers import L2Norm
 from examples.object_detection.layers.modules.ssd_head import MultiOutputSequential, SSDDetectionOutput
-from examples.common.model_loader import load_state
+from nncf.helpers import load_state
 
 BASE_NUM_OUTPUTS = {
     300: [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 'C', 512, 512, 512, 'M', 512, 512, 512],
@@ -164,5 +164,5 @@ def build_ssd_vgg(cfg, size, num_classes, config):
             wn = wn.replace('features.', '')
             new_weights[wn] = wv
 
-        load_state(ssd_vgg.basenet, new_weights, strict=False)
+        load_state(ssd_vgg.basenet, new_weights, is_resume=False)
     return ssd_vgg

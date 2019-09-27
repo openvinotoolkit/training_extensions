@@ -11,6 +11,7 @@
  limitations under the License.
 """
 
+import torch
 import logging
 from copy import copy
 
@@ -40,19 +41,36 @@ def remove_key(d, key):
     return sd
 
 
-def create_compression_algorithm(model, config):
+def create_dummy_forward_fn(input_size):
+
+    def default_dummy_forward_fn(model):
+        device = next(model.parameters()).device
+        model.forward(torch.randn(input_size).to(device))
+
+    return default_dummy_forward_fn
+
+
+def create_compression_algorithm(model, config, dummy_forward_fn=None):
     compression_config = config.get('compression', {})
     input_size = config.get("input_sample_size", (1, 3, 224, 224))
+
+    if dummy_forward_fn is None:
+        dummy_forward_fn = create_dummy_forward_fn(input_size)
+
     if isinstance(compression_config, dict):
-        return get_compression_algorithm(compression_config)(model, compression_config, input_size)
+        return get_compression_algorithm(compression_config)(model, compression_config, input_size,
+                                                             dummy_forward_fn=dummy_forward_fn)
+    if isinstance(compression_config, list) and len(compression_config) == 1:
+        return get_compression_algorithm(compression_config[0])(model, compression_config[0], input_size,
+                                                                dummy_forward_fn=dummy_forward_fn)
 
     logger.info("Creating composite compression algorithm:")
     composite_compression_algorithm = CompositeCompressionAlgorithm(model, compression_config, input_size)
 
     for algo_config in compression_config:
         compression_algorithm = get_compression_algorithm(algo_config)(
-            composite_compression_algorithm.model, algo_config, input_size
-        )
+            composite_compression_algorithm.model, algo_config, input_size,
+            dummy_forward_fn=dummy_forward_fn)
         composite_compression_algorithm.add(compression_algorithm)
 
     from nncf.utils import check_for_quantization_before_sparsity

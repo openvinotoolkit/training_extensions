@@ -14,12 +14,20 @@
 import torch.nn as nn
 import torch.nn.functional as F
 
-from nncf.layers import NNCFConv2d
+from nncf.algo_selector import create_dummy_forward_fn
 from nncf.dynamic_graph import patch_torch_operators, reset_context
-from nncf.quantization import QuantizedNetwork
+from nncf.layers import NNCFConv2d
 from nncf.operations import UpdateWeight, UpdateInputs
+from nncf.quantization import QuantizedNetwork
+from nncf.quantization import SymmetricQuantizer
+from nncf.quantization.layers import QuantizerConfig, QuantizationParams
 
 patch_torch_operators()
+
+
+def create_quantize_module(_, is_weights=False):
+    params = QuantizationParams(signed=is_weights)
+    return SymmetricQuantizer(QuantizerConfig(params, is_weights=is_weights))
 
 
 def test_ambiguous_function():
@@ -38,7 +46,9 @@ def test_ambiguous_function():
     reset_context('orig')
     reset_context('quantized_graphs')
     mod = Model()
-    QuantizedNetwork(mod, inputs_shape=(1, 1, 1, 1))
+    QuantizedNetwork(mod, create_quantize_module,
+                     inputs_shape=(1, 1, 1, 1),
+                     dummy_forward_fn=create_dummy_forward_fn((1, 1, 1, 1)))
 
 
 def test_quantize_has_proper_is_weights_flag():
@@ -54,7 +64,9 @@ def test_quantize_has_proper_is_weights_flag():
     model = Model()
     reset_context('orig')
     reset_context('quantized_graphs')
-    quant_model = QuantizedNetwork(model, inputs_shape=(1, 1, 2, 2))
+
+    quant_model = QuantizedNetwork(model, create_quantize_module, inputs_shape=(1, 1, 2, 2),
+                                   dummy_forward_fn=create_dummy_forward_fn((1, 1, 2, 2)))
     for module in quant_model.modules():
         if isinstance(module, NNCFConv2d):
             for op in module.pre_ops.values():

@@ -15,7 +15,7 @@ import torch
 import torch.nn as nn
 
 from examples.object_detection.layers.modules.ssd_head import MultiOutputSequential, SSDDetectionOutput
-from examples.common.model_loader import load_state
+from nncf.helpers import load_state
 
 
 def conv_bn(inp, oup, kernel, stride, padding):
@@ -111,5 +111,5 @@ def build_ssd_mobilenet(cfg, size, num_classes, config):
             wn = wn.replace('model.', '')
             new_weights[wn] = wv
 
-        load_state(mobilenet_ssd.basenet, new_weights, strict=False)
+        load_state(mobilenet_ssd.basenet, new_weights, is_resume=False)
     return mobilenet_ssd

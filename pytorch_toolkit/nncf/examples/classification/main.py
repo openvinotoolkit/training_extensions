@@ -33,13 +33,15 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torchvision.datasets import CIFAR10, CIFAR100
 
 from examples.common.argparser import get_common_argument_parser
+from examples.common.model_loader import load_model
 from examples.common.distributed import configure_distributed, is_main_process
-from examples.common.execution import ExecutionMode, create_compressed_model, get_device, get_execution_mode, \
+from examples.common.execution import ExecutionMode, get_device, get_execution_mode, \
     prepare_model_for_execution, start_worker
-from examples.common.model_loader import load_model, load_state
+
+from nncf.helpers import create_compressed_model, load_state, safe_thread_call
 from examples.common.optimizer import get_parameter_groups, make_optimizer
 from examples.common.utils import configure_logging, configure_paths, create_code_snapshot, \
-    print_args, make_additional_checkpoints, get_name, safe_thread_call
+    print_args, make_additional_checkpoints, get_name, is_binarization
 from nncf.config import Config
 from nncf.dynamic_graph import patch_torch_operators
 from nncf.utils import manual_seed, print_statistics
@@ -51,8 +53,6 @@ logging.basicConfig(level=logging.INFO, stream=sys.stdout)
 model_names = sorted(name for name in models.__dict__
                      if name.islower() and not name.startswith("__")
                      and callable(models.__dict__[name]))
-
-best_acc1 = 0
 
 
 def get_argument_parser():
@@ -89,11 +89,14 @@ def main(argv):
 
     config.execution_mode = get_execution_mode(config)
 
-    start_worker(main_worker, config)
+    if not is_binarization(config):
+        start_worker(main_worker, config)
+    else:
+        from examples.classification.binarization_worker import main_worker_binarization
+        start_worker(main_worker_binarization, config)
 
 
 def main_worker(current_gpu, config):
-    global best_acc1
     config.current_gpu = current_gpu
     config.distributed = config.execution_mode in (ExecutionMode.DISTRIBUTED, ExecutionMode.MULTIPROCESSING_DISTRIBUTED)
     if config.distributed:
@@ -134,9 +137,10 @@ def main_worker(current_gpu, config):
     optimizer, lr_scheduler = make_optimizer(params_to_optimize, config)
 
     resuming_checkpoint = config.resuming_checkpoint
+    best_acc1 = 0
     # optionally resume from a checkpoint
     if resuming_checkpoint is not None:
-        model, config, optimizer, compression_algo = \
+        model, config, optimizer, compression_algo, best_acc1 = \
             resume_from_checkpoint(resuming_checkpoint, model,
                                    config, optimizer, compression_algo)
 
@@ -159,12 +163,11 @@ def main_worker(current_gpu, config):
         if not resuming_checkpoint:
             compression_algo.initialize(train_loader)
         train(config, compression_algo, model, criterion, is_inception, lr_scheduler, model_name, optimizer,
-              train_loader, train_sampler, val_loader)
+              train_loader, train_sampler, val_loader, best_acc1)
 
 
 def train(config, compression_algo, model, criterion, is_inception, lr_scheduler, model_name, optimizer,
-          train_loader, train_sampler, val_loader):
-    global best_acc1
+          train_loader, train_sampler, val_loader, best_acc1=0):
     for epoch in range(config.start_epoch, config.epochs):
         config.cur_epoch = epoch
         if config.distributed:
@@ -174,6 +177,9 @@ def train(config, compression_algo, model, criterion, is_inception, lr_scheduler
         # train for one epoch
         train_epoch(train_loader, model, criterion, optimizer, compression_algo, epoch, config,
                     is_inception)
+
+        # update compression scheduler state at the end of the epoch
+        compression_algo.scheduler.epoch_step()
 
         # compute compression algo statistics
         stats = compression_algo.statistics()
@@ -186,9 +192,6 @@ def train(config, compression_algo, model, criterion, is_inception, lr_scheduler
         # remember best acc@1 and save checkpoint
         is_best = acc1 > best_acc1
         best_acc1 = max(acc1, best_acc1)
-
-        # update compression scheduler state at the end of the epoch
-        compression_algo.scheduler.epoch_step()
 
         if is_main_process():
             print_statistics(stats)
@@ -212,7 +215,7 @@ def train(config, compression_algo, model, criterion, is_inception, lr_scheduler
 
 
 def resume_from_checkpoint(resuming_checkpoint, model, config, optimizer, compression_algo):
-    global best_acc1
+    best_acc1 = 0
     if osp.isfile(resuming_checkpoint):
         print("=> loading checkpoint '{}'".format(resuming_checkpoint))
         checkpoint = torch.load(resuming_checkpoint, map_location='cpu')
@@ -228,7 +231,7 @@ def resume_from_checkpoint(resuming_checkpoint, model, config, optimizer, compre
             print("=> loaded checkpoint '{}'".format(resuming_checkpoint))
     else:
         raise FileNotFoundError("no checkpoint found at '{}'".format(resuming_checkpoint))
-    return model, config, optimizer, compression_algo
+    return model, config, optimizer, compression_algo, best_acc1
 
 
 def get_dataset(dataset_config, config, transform, is_train):

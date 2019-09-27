@@ -13,7 +13,7 @@
 
 import logging
 
-from nncf.sparsity.const.layers import ConstSparsifyingWeight
+from ..layers import  BinaryMask
 from ..base_algo import BaseSparsityAlgo
 from ...algo_selector import COMPRESSION_ALGORITHMS
 
@@ -22,17 +22,18 @@ logger = logging.getLogger(__name__)
 
 @COMPRESSION_ALGORITHMS.register('const_sparsity')
 class ConstSparsity(BaseSparsityAlgo):
-    def __init__(self, model, config, input_size):
+    def __init__(self, model, config, input_size, **kwargs):
         super().__init__(model, config, input_size)
         device = next(model.parameters()).device
 
-        self.ignored_scopes = self.config.get('ignored_scopes', [])
+        self.ignored_scopes = self.config.get('ignored_scopes')
+        self.target_scopes = self.config.get('target_scopes')
 
-        self._replace_sparsifying_modules_by_nncf_modules(device, self.ignored_scopes, logger)
-        self._register_weight_sparsifying_operations(device, self.ignored_scopes, logger)
+        self._replace_sparsifying_modules_by_nncf_modules(device, self.ignored_scopes, self.target_scopes, logger)
+        self._register_weight_sparsifying_operations(device, self.ignored_scopes, self.target_scopes, logger)
 
     def create_weight_sparsifying_operation(self, module):
-        return ConstSparsifyingWeight(module.weight.size())
+        return BinaryMask(module.weight.size())
 
     def freeze(self):
         pass

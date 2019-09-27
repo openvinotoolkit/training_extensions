@@ -89,13 +89,17 @@ class CompressionAlgorithm:
     training loop.
     """
 
-    def __init__(self, model, config, input_size):
+    def __init__(self, model, config, input_size,
+                 dummy_forward_fn=None):
         """
         Arguments:
           `model` - an instance of the model to be compressed
           `config` - a dictionary that contains parameters of compression method
           `input_size` - a tuple of values (B, C, H, W) specifying the input tensor
           dimensions for the model
+          `dummy_forward_fn` - optional, a function that takes the model as an
+          argument and performs a forward pass of the model with any valid
+          sample input
         """
         self.config = config
         self.input_size = input_size

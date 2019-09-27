@@ -9,7 +9,7 @@
     "num_classes": 100,
     "epochs": 5,
     "dataset": "CIFAR100",
-    "batch_size": 256,
+    "batch_size": 200,
     "optimizer": {
         "type": "Adam",
         "base_lr": 1e-5,

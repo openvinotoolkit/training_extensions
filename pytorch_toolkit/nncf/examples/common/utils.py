@@ -21,13 +21,12 @@ from pathlib import Path
 from shutil import copyfile
 
 from tensorboardX import SummaryWriter
-from torch import distributed
-
-from examples.common.distributed import is_dist_avail_and_initialized, is_main_process
 
 
 def get_name(config):
-    dataset = config["dataset"] if config["dataset"] is not None else 'imagenet'
+    dataset = config.get('dataset', 'imagenet')
+    if dataset is None:
+        dataset = 'imagenet'
     retval = config["model"] + "_" + dataset
     compression_config = config.get('compression', [])
     if not isinstance(compression_config, list):
@@ -36,7 +35,8 @@ def get_name(config):
         algo_name = algo_dict["algorithm"]
         if algo_name == "quantization":
             params_dict = algo_dict.get("params", {})
-            bits = params_dict.get('bits', 8)
+            activations = params_dict.get('activations', {})
+            bits = activations.get('bits', 8)
             retval += "_int{}".format(bits)
         else:
             retval += "_{}".format(algo_name)
@@ -69,7 +69,7 @@ def is_on_first_rank(config):
                                                       and config.rank % config.ngpus_per_node == 0)
 
 
-def create_code_snapshot(root, dst_path, extensions=(".py", ".json")):
+def create_code_snapshot(root, dst_path, extensions=(".py", ".json", ".cpp", ".cu")):
     """Creates tarball with the source code"""
     with tarfile.open(str(dst_path), "w:gz") as tar:
         for path in Path(root).rglob("*"):
@@ -141,14 +141,11 @@ class ForkedPdb(pdb.Pdb):
             sys.stdin = _stdin
 
 
-def safe_thread_call(main_call_fn, after_barrier_call_fn=None):
-    result = None
-    if is_dist_avail_and_initialized():
-        if is_main_process():
-            result = main_call_fn()
-        distributed.barrier()
-        if not is_main_process():
-            result = after_barrier_call_fn() if after_barrier_call_fn else main_call_fn()
-    else:
-        result = main_call_fn()
-    return result
+def is_binarization(config):
+    compression_config = config.get('compression', {})
+    if isinstance(compression_config, list):
+        compression_config = compression_config[0]
+    algo_type = compression_config.get("algorithm")
+    if algo_type is not None and algo_type == "binarization":
+        return True
+    return False

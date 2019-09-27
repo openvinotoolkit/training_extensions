@@ -593,7 +593,6 @@ strict digraph  {
 "65 Inception3/InceptionA[Mixed_5c]/BasicConv2d[branch1x1]/NNCFConv2d[conv]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask" -> "66 Inception3/InceptionA[Mixed_5c]/BasicConv2d[branch1x1]/NNCFConv2d[conv]/conv2d";
 "66 Inception3/InceptionA[Mixed_5c]/BasicConv2d[branch1x1]/NNCFConv2d[conv]/conv2d" -> "67 Inception3/InceptionA[Mixed_5c]/BasicConv2d[branch1x1]/BatchNorm2d[bn]/batch_norm";
 "67 Inception3/InceptionA[Mixed_5c]/BasicConv2d[branch1x1]/BatchNorm2d[bn]/batch_norm" -> "68 Inception3/InceptionA[Mixed_5c]/BasicConv2d[branch1x1]/RELU";
-"68 Inception3/InceptionA[Mixed_5c]/BasicConv2d[branch1x1]/RELU" -> "100 Inception3/InceptionA[Mixed_5c]/cat";
 "69 Inception3/InceptionA[Mixed_5c]/BasicConv2d[branch5x5_1]/NNCFConv2d[conv]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/calc_rb_binary_mask" -> "70 Inception3/InceptionA[Mixed_5c]/BasicConv2d[branch5x5_1]/NNCFConv2d[conv]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask";
 "70 Inception3/InceptionA[Mixed_5c]/BasicConv2d[branch5x5_1]/NNCFConv2d[conv]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask" -> "71 Inception3/InceptionA[Mixed_5c]/BasicConv2d[branch5x5_1]/NNCFConv2d[conv]/conv2d";
 "71 Inception3/InceptionA[Mixed_5c]/BasicConv2d[branch5x5_1]/NNCFConv2d[conv]/conv2d" -> "72 Inception3/InceptionA[Mixed_5c]/BasicConv2d[branch5x5_1]/BatchNorm2d[bn]/batch_norm";
@@ -603,7 +602,6 @@ strict digraph  {
 "75 Inception3/InceptionA[Mixed_5c]/BasicConv2d[branch5x5_2]/NNCFConv2d[conv]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask" -> "76 Inception3/InceptionA[Mixed_5c]/BasicConv2d[branch5x5_2]/NNCFConv2d[conv]/conv2d";
 "76 Inception3/InceptionA[Mixed_5c]/BasicConv2d[branch5x5_2]/NNCFConv2d[conv]/conv2d" -> "77 Inception3/InceptionA[Mixed_5c]/BasicConv2d[branch5x5_2]/BatchNorm2d[bn]/batch_norm";
 "77 Inception3/InceptionA[Mixed_5c]/BasicConv2d[branch5x5_2]/BatchNorm2d[bn]/batch_norm" -> "78 Inception3/InceptionA[Mixed_5c]/BasicConv2d[branch5x5_2]/RELU";
-"78 Inception3/InceptionA[Mixed_5c]/BasicConv2d[branch5x5_2]/RELU" -> "100 Inception3/InceptionA[Mixed_5c]/cat";
 "79 Inception3/InceptionA[Mixed_5c]/BasicConv2d[branch3x3dbl_1]/NNCFConv2d[conv]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/calc_rb_binary_mask" -> "80 Inception3/InceptionA[Mixed_5c]/BasicConv2d[branch3x3dbl_1]/NNCFConv2d[conv]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask";
 "80 Inception3/InceptionA[Mixed_5c]/BasicConv2d[branch3x3dbl_1]/NNCFConv2d[conv]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask" -> "81 Inception3/InceptionA[Mixed_5c]/BasicConv2d[branch3x3dbl_1]/NNCFConv2d[conv]/conv2d";
 "81 Inception3/InceptionA[Mixed_5c]/BasicConv2d[branch3x3dbl_1]/NNCFConv2d[conv]/conv2d" -> "82 Inception3/InceptionA[Mixed_5c]/BasicConv2d[branch3x3dbl_1]/BatchNorm2d[bn]/batch_norm";
@@ -618,12 +616,14 @@ strict digraph  {
 "90 Inception3/InceptionA[Mixed_5c]/BasicConv2d[branch3x3dbl_3]/NNCFConv2d[conv]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask" -> "91 Inception3/InceptionA[Mixed_5c]/BasicConv2d[branch3x3dbl_3]/NNCFConv2d[conv]/conv2d";
 "91 Inception3/InceptionA[Mixed_5c]/BasicConv2d[branch3x3dbl_3]/NNCFConv2d[conv]/conv2d" -> "92 Inception3/InceptionA[Mixed_5c]/BasicConv2d[branch3x3dbl_3]/BatchNorm2d[bn]/batch_norm";
 "92 Inception3/InceptionA[Mixed_5c]/BasicConv2d[branch3x3dbl_3]/BatchNorm2d[bn]/batch_norm" -> "93 Inception3/InceptionA[Mixed_5c]/BasicConv2d[branch3x3dbl_3]/RELU";
-"93 Inception3/InceptionA[Mixed_5c]/BasicConv2d[branch3x3dbl_3]/RELU" -> "100 Inception3/InceptionA[Mixed_5c]/cat";
 "94 Inception3/InceptionA[Mixed_5c]/avg_pool2d" -> "97 Inception3/InceptionA[Mixed_5c]/BasicConv2d[branch_pool]/NNCFConv2d[conv]/conv2d";
 "95 Inception3/InceptionA[Mixed_5c]/BasicConv2d[branch_pool]/NNCFConv2d[conv]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/calc_rb_binary_mask" -> "96 Inception3/InceptionA[Mixed_5c]/BasicConv2d[branch_pool]/NNCFConv2d[conv]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask";
 "96 Inception3/InceptionA[Mixed_5c]/BasicConv2d[branch_pool]/NNCFConv2d[conv]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask" -> "97 Inception3/InceptionA[Mixed_5c]/BasicConv2d[branch_pool]/NNCFConv2d[conv]/conv2d";
 "97 Inception3/InceptionA[Mixed_5c]/BasicConv2d[branch_pool]/NNCFConv2d[conv]/conv2d" -> "98 Inception3/InceptionA[Mixed_5c]/BasicConv2d[branch_pool]/BatchNorm2d[bn]/batch_norm";
 "98 Inception3/InceptionA[Mixed_5c]/BasicConv2d[branch_pool]/BatchNorm2d[bn]/batch_norm" -> "99 Inception3/InceptionA[Mixed_5c]/BasicConv2d[branch_pool]/RELU";
+"68 Inception3/InceptionA[Mixed_5c]/BasicConv2d[branch1x1]/RELU" -> "100 Inception3/InceptionA[Mixed_5c]/cat";
+"78 Inception3/InceptionA[Mixed_5c]/BasicConv2d[branch5x5_2]/RELU" -> "100 Inception3/InceptionA[Mixed_5c]/cat";
+"93 Inception3/InceptionA[Mixed_5c]/BasicConv2d[branch3x3dbl_3]/RELU" -> "100 Inception3/InceptionA[Mixed_5c]/cat";
 "99 Inception3/InceptionA[Mixed_5c]/BasicConv2d[branch_pool]/RELU" -> "100 Inception3/InceptionA[Mixed_5c]/cat";
 "100 Inception3/InceptionA[Mixed_5c]/cat" -> "103 Inception3/InceptionA[Mixed_5d]/BasicConv2d[branch1x1]/NNCFConv2d[conv]/conv2d";
 "100 Inception3/InceptionA[Mixed_5c]/cat" -> "108 Inception3/InceptionA[Mixed_5d]/BasicConv2d[branch5x5_1]/NNCFConv2d[conv]/conv2d";

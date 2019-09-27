@@ -1,18 +1,19 @@
 #include <torch/torch.h>
-#include <iostream>
 
 #include <vector>
 
-at::Tensor qs_cuda_forward(
+at::Tensor q_cuda_forward(
         at::Tensor input,
-        at::Tensor scale,
-        int level_low,
-        int level_high);
+        at::Tensor input_low,
+        at::Tensor input_range,
+        int levels);
 
-std::vector<at::Tensor> qs_cuda_backward(
+std::vector<at::Tensor> q_cuda_backward(
         at::Tensor grad_output,
         at::Tensor input,
-        at::Tensor scale,
+        at::Tensor input_low,
+        at::Tensor input_range,
+        int levels,
         int level_low,
         int level_high);
 
@@ -20,31 +21,35 @@ std::vector<at::Tensor> qs_cuda_backward(
 #define CHECK_CONTIGUOUS(x) AT_ASSERTM(x.is_contiguous(), #x " must be contiguous")
 #define CHECK_INPUT(x) CHECK_CUDA(x); CHECK_CONTIGUOUS(x)
 
-at::Tensor qs_forward(
+at::Tensor q_forward(
         at::Tensor input,
-        at::Tensor scale,
-        int level_low,
-        int level_high) {
+        at::Tensor input_low,
+        at::Tensor input_range,
+        int levels) {
     CHECK_INPUT(input);
-    CHECK_INPUT(scale);
+    CHECK_INPUT(input_low);
+    CHECK_INPUT(input_range);
 
-    return qs_cuda_forward(input, scale, level_low, level_high);
+    return q_cuda_forward(input, input_low, input_range, levels);
 }
 
-std::vector<at::Tensor> qs_backward(
+std::vector<at::Tensor> q_backward(
         at::Tensor grad_output,
         at::Tensor input,
-        at::Tensor scale,
+        at::Tensor input_low,
+        at::Tensor input_range,
+        int levels,
         int level_low,
         int level_high) {
     CHECK_INPUT(grad_output);
     CHECK_INPUT(input);
-    CHECK_INPUT(scale);
+    CHECK_INPUT(input_low);
+    CHECK_INPUT(input_range);
 
-    return qs_cuda_backward(grad_output, input, scale, level_low, level_high);
+    return q_cuda_backward(grad_output, input, input_low, input_range, levels, level_low, level_high);
 }
 
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
-  m.def("QuantizeSymmetric_forward", &qs_forward, "QuantizeSymmetric forward");
-  m.def("QuantizeSymmetric_backward", &qs_backward, "QuantizeSymmetric backward");
+  m.def("Quantize_forward", &q_forward, "Quantize forward");
+  m.def("Quantize_backward", &q_backward, "Quantize backward");
 }

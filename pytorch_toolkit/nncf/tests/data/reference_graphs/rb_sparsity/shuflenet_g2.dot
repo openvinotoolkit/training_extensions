@@ -337,11 +337,11 @@ strict digraph  {
 "2 ShuffleNet/NNCFConv2d[conv1]/conv2d" -> "3 ShuffleNet/BatchNorm2d[bn1]/batch_norm";
 "3 ShuffleNet/BatchNorm2d[bn1]/batch_norm" -> "4 ShuffleNet/RELU";
 "4 ShuffleNet/RELU" -> "7 ShuffleNet/Sequential[layer1]/Bottleneck[0]/NNCFConv2d[conv1]/conv2d";
-"4 ShuffleNet/RELU" -> "23 ShuffleNet/Sequential[layer1]/Bottleneck[0]/Sequential[shortcut]/AvgPool2d[0]/avg_pool2d";
 "5 ShuffleNet/Sequential[layer1]/Bottleneck[0]/NNCFConv2d[conv1]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/calc_rb_binary_mask" -> "6 ShuffleNet/Sequential[layer1]/Bottleneck[0]/NNCFConv2d[conv1]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask";
 "6 ShuffleNet/Sequential[layer1]/Bottleneck[0]/NNCFConv2d[conv1]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask" -> "7 ShuffleNet/Sequential[layer1]/Bottleneck[0]/NNCFConv2d[conv1]/conv2d";
 "7 ShuffleNet/Sequential[layer1]/Bottleneck[0]/NNCFConv2d[conv1]/conv2d" -> "8 ShuffleNet/Sequential[layer1]/Bottleneck[0]/BatchNorm2d[bn1]/batch_norm";
 "8 ShuffleNet/Sequential[layer1]/Bottleneck[0]/BatchNorm2d[bn1]/batch_norm" -> "9 ShuffleNet/Sequential[layer1]/Bottleneck[0]/RELU";
+"4 ShuffleNet/RELU" -> "23 ShuffleNet/Sequential[layer1]/Bottleneck[0]/Sequential[shortcut]/AvgPool2d[0]/avg_pool2d";
 "9 ShuffleNet/Sequential[layer1]/Bottleneck[0]/RELU" -> "10 ShuffleNet/Sequential[layer1]/Bottleneck[0]/ShuffleBlock[shuffle1]/view";
 "10 ShuffleNet/Sequential[layer1]/Bottleneck[0]/ShuffleBlock[shuffle1]/view" -> "11 ShuffleNet/Sequential[layer1]/Bottleneck[0]/ShuffleBlock[shuffle1]/permute";
 "11 ShuffleNet/Sequential[layer1]/Bottleneck[0]/ShuffleBlock[shuffle1]/permute" -> "12 ShuffleNet/Sequential[layer1]/Bottleneck[0]/ShuffleBlock[shuffle1]/contiguous";
@@ -422,7 +422,6 @@ strict digraph  {
 "83 ShuffleNet/Sequential[layer1]/Bottleneck[3]/BatchNorm2d[bn3]/batch_norm" -> "84 ShuffleNet/Sequential[layer1]/Bottleneck[3]/__add__";
 "84 ShuffleNet/Sequential[layer1]/Bottleneck[3]/__add__" -> "85 ShuffleNet/Sequential[layer1]/Bottleneck[3]/RELU";
 "85 ShuffleNet/Sequential[layer1]/Bottleneck[3]/RELU" -> "88 ShuffleNet/Sequential[layer2]/Bottleneck[0]/NNCFConv2d[conv1]/conv2d";
-"85 ShuffleNet/Sequential[layer1]/Bottleneck[3]/RELU" -> "104 ShuffleNet/Sequential[layer2]/Bottleneck[0]/Sequential[shortcut]/AvgPool2d[0]/avg_pool2d";
 "86 ShuffleNet/Sequential[layer2]/Bottleneck[0]/NNCFConv2d[conv1]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/calc_rb_binary_mask" -> "87 ShuffleNet/Sequential[layer2]/Bottleneck[0]/NNCFConv2d[conv1]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask";
 "87 ShuffleNet/Sequential[layer2]/Bottleneck[0]/NNCFConv2d[conv1]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask" -> "88 ShuffleNet/Sequential[layer2]/Bottleneck[0]/NNCFConv2d[conv1]/conv2d";
 "88 ShuffleNet/Sequential[layer2]/Bottleneck[0]/NNCFConv2d[conv1]/conv2d" -> "89 ShuffleNet/Sequential[layer2]/Bottleneck[0]/BatchNorm2d[bn1]/batch_norm";
@@ -436,6 +435,7 @@ strict digraph  {
 "96 ShuffleNet/Sequential[layer2]/Bottleneck[0]/NNCFConv2d[conv2]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask" -> "97 ShuffleNet/Sequential[layer2]/Bottleneck[0]/NNCFConv2d[conv2]/conv2d";
 "97 ShuffleNet/Sequential[layer2]/Bottleneck[0]/NNCFConv2d[conv2]/conv2d" -> "98 ShuffleNet/Sequential[layer2]/Bottleneck[0]/BatchNorm2d[bn2]/batch_norm";
 "98 ShuffleNet/Sequential[layer2]/Bottleneck[0]/BatchNorm2d[bn2]/batch_norm" -> "99 ShuffleNet/Sequential[layer2]/Bottleneck[0]/RELU";
+"85 ShuffleNet/Sequential[layer1]/Bottleneck[3]/RELU" -> "104 ShuffleNet/Sequential[layer2]/Bottleneck[0]/Sequential[shortcut]/AvgPool2d[0]/avg_pool2d";
 "99 ShuffleNet/Sequential[layer2]/Bottleneck[0]/RELU" -> "102 ShuffleNet/Sequential[layer2]/Bottleneck[0]/NNCFConv2d[conv3]/conv2d";
 "100 ShuffleNet/Sequential[layer2]/Bottleneck[0]/NNCFConv2d[conv3]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/calc_rb_binary_mask" -> "101 ShuffleNet/Sequential[layer2]/Bottleneck[0]/NNCFConv2d[conv3]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask";
 "101 ShuffleNet/Sequential[layer2]/Bottleneck[0]/NNCFConv2d[conv3]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask" -> "102 ShuffleNet/Sequential[layer2]/Bottleneck[0]/NNCFConv2d[conv3]/conv2d";

@@ -82,7 +82,7 @@ def draw_dot(context):
     return dot
 
 
-def build_graph(module: nn.Module, args, kwargs, context_name, reset_context=False):
+def build_graph(module: nn.Module, context_name, input_args=None, reset_context=False):
     logger.info("Building graph: {}".format(context_name))
     sd = deepcopy(module.state_dict())
 
@@ -91,7 +91,9 @@ def build_graph(module: nn.Module, args, kwargs, context_name, reset_context=Fal
     else:
         ctx = dynamic_graph.get_context(context_name)
     with dynamic_graph.context(context_name):
-        module(*args, **kwargs)
-
+        if hasattr(module, "dummy_forward_fn"):
+            module.dummy_forward_fn(module)
+        else:
+            module(*input_args)
     module.load_state_dict(sd)
     return ctx

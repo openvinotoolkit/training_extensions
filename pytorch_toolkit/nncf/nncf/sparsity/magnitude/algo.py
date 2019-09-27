@@ -15,8 +15,8 @@ import logging
 
 import torch
 
-from .functions import WEIGHT_IMPORTANCE_FUNCTIONS
-from .layers import MagnitudeSparsifyingWeight
+from .functions import WEIGHT_IMPORTANCE_FUNCTIONS, calc_magnitude_binary_mask
+from ..layers import BinaryMask
 from ..base_algo import BaseSparsityAlgo
 from ..schedulers import SPARSITY_SCHEDULERS
 from ...algo_selector import COMPRESSION_ALGORITHMS
@@ -26,19 +26,23 @@ logger = logging.getLogger(__name__)
 
 @COMPRESSION_ALGORITHMS.register('magnitude_sparsity')
 class MagnitudeSparsity(BaseSparsityAlgo):
-    def __init__(self, model, config, input_size):
+    def __init__(self, model, config, input_size,
+                 dummy_forward_fn=None, **kwargs):
         super().__init__(model, config, input_size)
         self.sparsity_level = self.threshold = 0
-        self.ignored_scopes = self.config.get('ignored_scopes', [])
+
+        self.ignored_scopes = self.config.get('ignored_scopes')
+        self.target_scopes = self.config.get('target_scopes')
+
         params = self.config.get("params", {})
-        self.update_mask_on_forward = params.get("update_mask_on_forward", False)
         device = next(model.parameters()).device
+        self.dummy_forward_fn = dummy_forward_fn
 
         self.weight_importance = WEIGHT_IMPORTANCE_FUNCTIONS.get(
             self.config.get('weight_importance', 'normed_abs'))
 
-        self._replace_sparsifying_modules_by_nncf_modules(device, self.ignored_scopes, logger)
-        self._register_weight_sparsifying_operations(device, self.ignored_scopes, logger)
+        self._replace_sparsifying_modules_by_nncf_modules(device, self.ignored_scopes, self.target_scopes, logger)
+        self._register_weight_sparsifying_operations(device, self.ignored_scopes, self.target_scopes, logger)
 
         scheduler_cls = SPARSITY_SCHEDULERS.get(params.get("schedule", "polynomial"))
         self._scheduler = scheduler_cls(self, self.config)
@@ -50,18 +54,13 @@ class MagnitudeSparsity(BaseSparsityAlgo):
         return stas
 
     def freeze(self):
-        self.set_sparsify(False)
-
-    def set_sparsify(self, sparsify):
-        for minfo in self.sparsified_module_info:
-            minfo.operand.sparsify = sparsify
+        pass
 
     def do_dummy_forward(self):
-        device = next(self.model.parameters()).device
         train_mode = self.model.training
         self.model.eval()
         with torch.no_grad():
-            self.model(torch.randn(self.input_size).to(device))
+            self.dummy_forward_fn(self.model)
         if train_mode:
             self.model.train()
 
@@ -71,30 +70,36 @@ class MagnitudeSparsity(BaseSparsityAlgo):
                 'Sparsity level should be within interval [0,1), actual value to set is: {}'.format(sparsity_level))
         self.sparsity_level = sparsity_level
         self.threshold = self._select_threshold()
-        self._set_threshold(self.threshold)
-        if not self.update_mask_on_forward:
-            self.set_sparsify(True)
-            self.do_dummy_forward()
-            self.set_sparsify(False)
+        self._set_masks_for_threshold(self.threshold)
 
     def _select_threshold(self):
         all_weights = self._collect_all_weights()
         threshold = all_weights[int(all_weights.size(0) * self.sparsity_level)].item()
         return threshold
 
-    def _set_threshold(self, threshold_val):
+    def _set_masks_for_threshold(self, threshold_val):
+
+        def hook(module, inputs):
+            module.binary_mask = calc_magnitude_binary_mask(inputs[0],
+                                                            self.weight_importance,
+                                                            threshold_val)
+
+        handles = []
         for layer in self.sparsified_module_info:
-            layer.operand.threshold = threshold_val
+            handles.append(layer.operand.register_forward_pre_hook(hook))
+        self.do_dummy_forward()
+        for h in handles:
+            h.remove()
 
     def _collect_all_weights(self):
         all_weights = []
 
-        def hook(module, inputs, _):
-            all_weights.append(module.weight_importance(inputs[0]).view(-1))
+        def hook(module, inputs):
+            all_weights.append(self.weight_importance(inputs[0]).view(-1))
 
         handles = []
         for minfo in self.sparsified_module_info:
-            handles.append(minfo.operand.register_forward_hook(hook))
+            handles.append(minfo.operand.register_forward_pre_hook(hook))
         self.do_dummy_forward()
         all_weights, _ = torch.cat(all_weights).sort()
         for h in handles:
@@ -102,4 +107,4 @@ class MagnitudeSparsity(BaseSparsityAlgo):
         return all_weights
 
     def create_weight_sparsifying_operation(self, module):
-        return MagnitudeSparsifyingWeight(module.weight.size(), self.weight_importance)
+        return BinaryMask(module.weight.size())

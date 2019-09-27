@@ -1,6 +1,6 @@
-from .algo import MagnitudeSparsity, MagnitudeSparsifyingWeight
+from .algo import MagnitudeSparsity
 from .functions import abs_magnitude
 
 __all__ = [
-    'MagnitudeSparsity', 'MagnitudeSparsifyingWeight', 'abs_magnitude'
+    'MagnitudeSparsity', 'abs_magnitude'
 ]
