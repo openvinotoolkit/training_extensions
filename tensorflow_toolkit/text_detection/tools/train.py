@@ -22,6 +22,7 @@ import test
 import yaml
 
 import tensorflow as tf
+import numpy as np
 
 from text_detection.loss import ClassificationLoss, LinkageLoss
 from text_detection.model import pixel_link_model
@@ -49,6 +50,7 @@ def arg_parser():
     args.add_argument('--test_resolution', type=int, nargs=2, default=[1280, 768],
                       help='Test image resolution.')
     args.add_argument('--epochs_per_evaluation', type=int, default=1)
+    args.add_argument('--num_epochs', type=int, default=1000000)
     args.add_argument('--config', required=True, help='Path to configuration file.')
 
     return args
@@ -91,6 +93,7 @@ class ExponentialMovingAverageCallback(tf.keras.callbacks.Callback):
             for var in model.trainable_variables:
                 self.averages[var] = tf.Variable(var)
 
+    # pylint: disable=unused-argument
     def on_batch_end(self, batch, logs=None):
         """ Exponential Moving Average computation callback. """
         if self.epoch == 0:
@@ -176,7 +179,7 @@ def train(args, config):
         dataset_test, _ = TFRecordDataset(args.test_dataset, config, test=True)()
 
     with tf.summary.create_file_writer(args.train_dir + "/logs").as_default():
-        while True:
+        for _ in range(int(np.ceil(args.num_epochs / args.epochs_per_evaluation))):
             with mirrored_strategy.scope():
                 latest_checkpoint_before_fit = tf.train.latest_checkpoint(args.train_dir)
                 if latest_checkpoint_before_fit is not None:

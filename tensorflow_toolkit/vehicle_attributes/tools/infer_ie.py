@@ -25,10 +25,10 @@ import cv2
 from openvino.inference_engine import IENetwork, IEPlugin
 
 CLASS_MAP = {
-    0: 'car',
-    1: 'bus',
-    2: 'track',
-    3: 'van',
+  0: 'car',
+  1: 'bus',
+  2: 'track',
+  3: 'van',
 }
 
 def normalized_to_absolute(prediction):
@@ -54,6 +54,7 @@ def build_argparser():
                       help='Specify the target device to infer on; CPU, GPU, FPGA or MYRIAD is acceptable. Sample '
                            'will look for a suitable plugin for device specified (CPU by default)', default='CPU',
                       type=str)
+  parser.add_argument('--output', '-o', help='Output image')
   parser.add_argument('input_image', help='Image with a vehicle')
   return parser
 
@@ -104,11 +105,18 @@ def main():
   colorcar = normalized_to_absolute(res['resnet_v1_10/color'][0])
   rgb_color = cv2.cvtColor(colorcar, cv2.COLOR_LAB2BGR)[0, 0].tolist()
 
+  print("Type: %s" % vtype)
+  print("Color: %s" % rgb_color)
+
   cv2.rectangle(frame, (0, 0), (30, 30), rgb_color, -1)
   font = cv2.FONT_HERSHEY_PLAIN
   cv2.putText(frame, vtype, (0, 15), font, 1, (0, 0, 0), 2, cv2.LINE_AA)
-  cv2.imshow('Vehicle_attributes', frame)
-  cv2.waitKey(0)
+
+  if args.output:
+    cv2.imwrite(args.output, frame)
+  else:
+    cv2.imshow('Vehicle_attributes', frame)
+    cv2.waitKey(0)
 
 
 if __name__ == '__main__':

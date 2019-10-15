@@ -20,10 +20,10 @@ import numpy as np
 import cv2
 
 CLASS_MAP = {
-    0: 'car',
-    1: 'bus',
-    2: 'track',
-    3: 'van',
+  0: 'car',
+  1: 'bus',
+  2: 'track',
+  3: 'van',
 }
 
 def load_graph(frozen_graph_filename):
@@ -47,7 +47,8 @@ def normalized_to_absolute(prediction):
 
 def build_argparser():
   parser = ArgumentParser()
-  parser.add_argument('--model', help='Path to frozen graph file with a trained model.', required=True, type=str)
+  parser.add_argument('--model', '-m', help='Path to frozen graph file with a trained model.', required=True, type=str)
+  parser.add_argument('--output', '-o', help='Output image')
   parser.add_argument('input_image', help='Image with license plate')
   return parser
 
@@ -75,11 +76,18 @@ def main():
     colorcar = normalized_to_absolute(results[1][0])
     rgb_color = cv2.cvtColor(colorcar, cv2.COLOR_LAB2BGR)[0, 0].tolist()
 
+    print("Type: %s" % vtype)
+    print("Color: %s" % rgb_color)
+
     cv2.rectangle(image, (0, 0), (30, 30), rgb_color, -1)
     font = cv2.FONT_HERSHEY_PLAIN
     cv2.putText(image, vtype, (0, 15), font, 1, (0, 0, 0), 2, cv2.LINE_AA)
-    cv2.imshow('Vehicle_attributes', image)
-    cv2.waitKey(0)
+
+    if args.output:
+      cv2.imwrite(args.output, image)
+    else:
+      cv2.imshow('Vehicle_attributes', image)
+      cv2.waitKey(0)
 
 
 if __name__ == "__main__":

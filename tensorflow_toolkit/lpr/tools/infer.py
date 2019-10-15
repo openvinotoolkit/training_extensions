@@ -48,6 +48,7 @@ def build_argparser():
   parser = ArgumentParser()
   parser.add_argument('--model', help='Path to frozen graph file with a trained model.', required=True, type=str)
   parser.add_argument('--config', help='Path to a config.py', required=True, type=str)
+  parser.add_argument('--output', help='Output image')
   parser.add_argument('input_image', help='Image with license plate')
   return parser
 
@@ -75,8 +76,13 @@ def main():
     print(decoded_lp)
 
     img_to_display = display_license_plate(decoded_lp, image)
-    cv2.imshow('License Plate', img_to_display)
-    cv2.waitKey(0)
+
+    if args.output:
+      cv2.imwrite(args.output, img_to_display)
+    else:
+      cv2.imshow('License Plate', img_to_display)
+      cv2.waitKey(0)
+
 
 if __name__ == "__main__":
   main()

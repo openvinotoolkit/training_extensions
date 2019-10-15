@@ -64,15 +64,12 @@ protoc object_detection/protos/*.proto --python_out=.
 ## Training and evaluation example
 
 **NOTE** To train model on own dataset you should change `num_steps: 10` in `configs/pipeline.config`.
-The dataset for this model is located in .`openvino_training_extensions/data/airport/
-The recommended Tensorflow version for these steps is v 1.13.1.  pip install tensorflow=1.13.1
 
 1. Go to `openvino_training_extensions/tensorflow_toolkit/person_vehicle_bike_detector/` directory
 
 2. The example dataset has annotation in coco format. You can find it here:
-   `openvino_training_extensions/data/coco`
+   `openvino_training_extensions/data/airport`
    To collect annotation used [COCO object detection format](http://cocodataset.org/#format-data). .
-
 
 3. To convert the dataset to tfrecords you have to run:
    ```bash
@@ -83,7 +80,7 @@ The recommended Tensorflow version for these steps is v 1.13.1.  pip install ten
        --val_annotations_file=../../data/airport/annotation_example_val.json \
        --output_dir=../../data/airport/tfrecords
    ```
-  
+
 4. To start training you have to run:
    ```bash
    python ../../external/models/research/object_detection/model_main.py \

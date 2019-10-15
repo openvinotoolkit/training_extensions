@@ -5,3 +5,4 @@ opencv-python==4.1.0.25
 tensorboardX==1.7
 tqdm==4.32.2
 Pillow==6.0.0
+PyYaml==5.1.2

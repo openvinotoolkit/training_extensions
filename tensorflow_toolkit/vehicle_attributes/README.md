@@ -137,7 +137,7 @@ When training is complete, model from the checkpoint could be infered on
 input data by running `tools/infer.py`:
 
 ```
-python3 tools/infer.py cars_100/config.py
+python3 tools/infer_checkpoint.py cars_100/config.py
 ```
 
 ### For frozen graph

@@ -17,7 +17,7 @@ model_dir = 'model'
 
 class train:
   batch_size = 32
-  steps = 2000000
+  steps = 1000
 
   random_seed = 666
 

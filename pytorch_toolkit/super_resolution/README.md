@@ -76,7 +76,7 @@ python3 tools/train.py --config configs/smallmodel_scale4.yaml
 ```
 
 To start from pretrained checkpoint set `init_checkpoint` in config.
-Checkpoints can be downloaded [here](https://download.01.org/opencv/openvino_training_extensions/models/super_resolution/super_resolution.tar.gz).
+Checkpoints can be downloaded [here](https://download.01.org/opencv/openvino_training_extensions/models/super_resolution/image_super_resolution.tar.gz).
 
 ### Testing
 

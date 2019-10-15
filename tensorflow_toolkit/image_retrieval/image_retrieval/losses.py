@@ -20,6 +20,7 @@ import tensorflow as tf
 import tensorflow.keras.backend as K
 
 
+# pylint: disable=abstract-method
 class AMSoftmaxLogits(tf.keras.layers.Layer):
     def __init__(self, units, **kwargs):
         super(AMSoftmaxLogits, self).__init__(**kwargs)
