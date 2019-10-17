@@ -2,7 +2,7 @@
 name: Question
 about: Ask any question about this repository
 title: ''
-labels: ''
+labels: 'question'
 assignees: AlexanderDokuchaev
 
 ---
