@@ -17,7 +17,6 @@
 from __future__ import print_function
 import argparse
 import os
-import subprocess
 
 import tensorflow as tf
 from tfutils.helpers import dump_frozen_graph, load_module, execute_mo
