@@ -23,7 +23,7 @@ mo_requirements = os.path.join(os.environ.get('INTEL_OPENVINO_DIR', ''),
                                'deployment_tools/model_optimizer/requirements_tf.txt')
 if os.path.isfile(mo_requirements):
   with open(mo_requirements) as f:
-    REQUIRED += f.read().splitlines()
+    REQUIRED += [x for x in f.read().splitlines() if not x.startswith('tensorflow')]
 
 setup(
   name='tfutils',

@@ -17,18 +17,12 @@ The crossroad detection network model provides detection of 3 class objects: veh
 
 ### Installation
 
-1. Download submodules
-```bash
-cd openvino_training_extensions
-git submodule update --init --recommend-shallow external/cocoapi external/models
-```
-
-2. Create virtual environment
+1. Create virtual environment
 ```bash
 virtualenv venv -p python3 --prompt="(pvb)"
 ```
 
-3. Modify `venv/bin/activate` to set environment variables
+2. Modify `venv/bin/activate` to set environment variables
 ```
 cat <<EOT >> venv/bin/activate
 export PYTHONPATH=\$PYTHONPATH:$(git rev-parse --show-toplevel)/external/models/research
@@ -37,28 +31,19 @@ export PYTHONPATH=\$PYTHONPATH:$(git rev-parse --show-toplevel)/external/models/
 EOT
 ```
 
-4. Activate virtual environment and setup OpenVINO variables
+3. Activate virtual environment and setup OpenVINO variables
 ```bash
 . venv/bin/activate
 ```
 
-5. Install modules
+4. Install modules
 ```
 pip3 install -r requirements.txt
 ```
 
-6. Build and install COCO API for python
+5. Download and prepare required submodules
 ```bash
-cd $(git rev-parse --show-toplevel)/external/cocoapi
-2to3 . -w
-cd PythonAPI
-make install
-```
-
-7. Compile Protobuf libraries
-```Bash
-cd $(git rev-parse --show-toplevel)/external/models/research/
-protoc object_detection/protos/*.proto --python_out=.
+bash ../prepare_modules.sh
 ```
 
 ## Training and evaluation example

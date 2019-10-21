@@ -12,10 +12,14 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+import os
 from setuptools import setup
 
 with open('./requirements.txt') as f:
   REQUIRED = f.read().splitlines()
+
+if os.environ.get('CPU_ONLY', None) == 'true':
+  REQUIRED = [p.replace('-gpu', '') if p.startswith('tensorflow') else p for p in REQUIRED]
 
 setup(
   name='lpr',
