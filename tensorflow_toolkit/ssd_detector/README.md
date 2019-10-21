@@ -33,13 +33,15 @@ echo ". /opt/intel/openvino/bin/setupvars.sh" >> venv/bin/activate
 pip3 install -e .
 pip3 install -e ../utils
 ```
-
-4. Build and install COCO API for python
+For case without GPU use `CPU_ONLY=true` environment variable
 ```bash
-cd openvino_training_extensions/external/cocoapi
-2to3 . -w
-cd PythonAPI
-make install
+CPU_ONLY=true pip3 install -e .
+pip3 install -e ../utils
+```
+
+3. Download and prepare required submodules
+```bash
+bash ../prepare_modules.sh
 ```
 
 ## Train SSD detection model
@@ -148,7 +150,7 @@ To run the model via OpenVINO one has to freeze TensorFlow graph and
 then convert it to OpenVINO Internal Representation (IR) using Model Optimizer:
 
 ```
-python3 tools/export.py --data_type FP32 --output_dir <export_path> vlp/config.py
+python3 tools/export.py --data_type FP32 --output_dir vlp/model/export vlp/config.py
 ```
 
 As a result, you'll find three new artifacts:  
@@ -171,13 +173,13 @@ python3 infer_checkpoint.py vlp/config.py --json --input=<path_to_annotation_jso
 
 ### For frozen graph
 ```Bash
-python3 tools/infer.py --model vlp/model/export_<step>/frozen_graph/graph.pb.frozen \
+python3 tools/infer.py --model vlp/model/export/frozen_graph/graph.pb.frozen \
     <image_path>
 ```
 
 ### For Intermediate Representation (IR)
 ```Bash
-python3 tools/infer_ie.py --model vlp/model/export_<step>/frozen_graph/graph.pb.frozen \
+python3 tools/infer_ie.py --model vlp/model/export/frozen_graph/graph.pb.frozen \
   --device=CPU \
   --cpu_extension="${INTEL_OPENVINO_DIR}/deployment_tools/inference_engine/lib/intel64/libcpu_extension_avx2.so" \
   --input_type json \

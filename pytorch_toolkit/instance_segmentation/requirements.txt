@@ -11,3 +11,4 @@ torch==0.4.1
 torchvision==0.2.1
 tqdm==4.24.0
 pycocotools==2.0.0
+networkx==2.3

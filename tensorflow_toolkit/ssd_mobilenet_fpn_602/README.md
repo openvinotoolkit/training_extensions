@@ -6,14 +6,14 @@ devices as well as achieves decent accuracy close to the original 640-size model
 
 | Model Name     | Size | AP IOU=0.50:0.95 | AP IOU=0.50 | AR maxDets=100 |
 | :------------- | :--: | :--------------: | :---------: | :------------: |
-| Pretrained[*1] | 640  | 0.291            | 0.445       | 0.370          |
-| Resized[*2]    | 602  | 0.234            | 0.424       | 0.309          |
-| Fine-tuned[*3] | 602  | 0.283            | 0.439       | 0.361          |
+| Pretrained[1] | 640  | 0.291            | 0.445       | 0.370          |
+| Resized[2]    | 602  | 0.234            | 0.424       | 0.309          |
+| Fine-tuned[3] | 602  | 0.283            | 0.439       | 0.361          |
 
 Note:
-- [*1] is the [640-size model downloaded from TensorFlow Model Zoo](http://download.tensorflow.org/models/object_detection/ssd_mobilenet_v1_fpn_shared_box_predictor_640x640_coco14_sync_2018_07_03.tar.gz);
-- [*2] is the 602-size model resized from [*1] straight away;
-- [*3] is the fine-tuned 602-size model in this extension;
+- [1] is the [640-size model downloaded from TensorFlow Model Zoo](http://download.tensorflow.org/models/object_detection/ssd_mobilenet_v1_fpn_shared_box_predictor_640x640_coco14_sync_2018_07_03.tar.gz);
+- [2] is the 602-size model resized from [1] straight away;
+- [3] is the fine-tuned 602-size model in this extension;
 
 ## Setup
 
@@ -26,18 +26,12 @@ Note:
 
 ### Installation
 
-1. Download submodules
-```bash
-cd openvino_training_extensions
-git submodule update --init --recursive
-```
-
-2. Create virtual environment
+1. Create virtual environment
 ```bash
 virtualenv venv -p python3 --prompt="(ssd_mobilenet_fpn_602)"
 ```
 
-3. Modify `venv/bin/activate` to set environment variables
+2. Modify `venv/bin/activate` to set environment variables
 ```bash
 cat <<EOT >> venv/bin/activate
 export PYTHONPATH=\$PYTHONPATH:$(git rev-parse --show-toplevel)/external/models/research
@@ -46,29 +40,20 @@ export PYTHONPATH=\$PYTHONPATH:$(git rev-parse --show-toplevel)/external/models/
 EOT
 ```
 
-4. Activate virtual environment and setup OpenVINO variables
+3. Activate virtual environment and setup OpenVINO variables
 ```bash
 . venv/bin/activate
 ```
 
-5. Install modules
+4. Install modules
 ```bash
 pip3 install -r requirements.txt
 pip3 install -r ${INTEL_OPENVINO_DIR}/deployment_tools/model_optimizer/requirements_tf.txt
 ```
 
-6. Build and install COCO API for python
+5. Download and prepare required submodules
 ```bash
-cd $(git rev-parse --show-toplevel)/external/cocoapi
-2to3 . -w
-cd PythonAPI
-make install
-```
-
-7. Protobuf Compilation
-```bash
-cd openvino_training_extensions/external/models/research/
-protoc object_detection/protos/*.proto --python_out=.
+bash ../prepare_modules.sh
 ```
 
 ## Data Preparation

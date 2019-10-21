@@ -23,18 +23,6 @@ inference.
   sudo apt install 2to3 protobuf-compiler
   ```
 
-1. Download submodules
-  ```Bash
-  cd openvino_training_extensions
-  git submodule update --init --recommend-shallow external/cocoapi external/models
-  ```
-
-2. Compile Protobuf libraries
-  ```Bash
-  cd openvino_training_extensions/external/models/research/
-  protoc object_detection/protos/*.proto --python_out=.
-  ```
-
 ## Models
 After installation, you are ready to train your own models, evaluate them, use
 them for predictions.
