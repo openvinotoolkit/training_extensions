@@ -1,13 +1,17 @@
 import argparse
 import cv2
 import numpy as np
-
+import importlib
 import torch
 
 from datasets.lip import LipValDataset
+from datasets.coco_single import CocoSingleValDataset
 from models.single_person_pose_with_mobilenet import SinglePersonPoseEstimationWithMobileNet
 from modules.calc_pckh import calc_pckh
 from modules.load_state import load_state
+from val import run_coco_eval
+import json
+import os
 
 
 def extract_keypoints(heatmap, min_confidence=-100):
@@ -16,7 +20,7 @@ def extract_keypoints(heatmap, min_confidence=-100):
         ind = (-1, -1)
     else:
         ind = (int(ind[1]), int(ind[0]))
-    return ind
+    return heatmap[ind[1]][ind[0]], ind
 
 
 def normalize(img, img_mean, img_scale):
@@ -69,7 +73,7 @@ def evaluate(dataset, output_name, net, multiscale=False, visualize=False):
         file_name = sample['file_name']
         img = sample['image']
 
-        avg_heatmaps = infer(net, img, scales, base_height, stride)
+        avg_heatmaps = infer(net, img, scales, base_height, stride, num_keypoints=dataset.num_keypoints)
 
         flip = False
         if flip:
@@ -83,11 +87,11 @@ def evaluate(dataset, output_name, net, multiscale=False, visualize=False):
             avg_heatmaps = (avg_heatmaps + flipped_avg_heatmaps[:, ::-1]) / 2
 
         all_keypoints = []
-        for kpt_idx in range(16):
+        for kpt_idx in range(dataset.num_keypoints):
             all_keypoints.append(extract_keypoints(avg_heatmaps[:, :, kpt_idx]))
 
         res_file.write('{}'.format(file_name))
-        for id in range(16):
+        for id in range(dataset.num_keypoints):
             val = [int(all_keypoints[id][0]), int(all_keypoints[id][1])]
             if val[0] == -1:
                 val[0], val[1] = 'nan', 'nan'
@@ -118,6 +122,89 @@ def evaluate(dataset, output_name, net, multiscale=False, visualize=False):
     res_file.close()
 
 
+def affine_transform(pt, t):
+    new_pt = np.array([pt[0], pt[1], 1.]).T
+    new_pt = np.dot(t, new_pt)
+    return new_pt[:2]
+
+
+def coco_evaluate(dataset, output_name, net, visualize=False):
+    net = net.cuda().eval()
+
+    with open(output_name, 'w') as res_file:
+        coco_result = []
+        for sample_id in range(len(dataset)):
+            sample = dataset[sample_id]
+            img = sample['image']
+            tensor_img = torch.from_numpy(img[None, ]).float().cuda()
+            stages_output = net(tensor_img)
+            heatmaps = np.transpose(stages_output[-1].squeeze().cpu().data.numpy(), (1, 2, 0))
+
+            sum_score = 0
+            all_keypoints = []
+            scores = []
+            for kpt_idx in range(dataset.num_keypoints):
+                score, coord = extract_keypoints(heatmaps[:, :, kpt_idx])
+                scores.append(score)
+                all_keypoints.append(affine_transform(coord, sample['rev_trans']))
+                sum_score += score
+
+            coco_format_keypoints = []
+            for ind in range(dataset.num_keypoints):
+                    coco_format_keypoints.append(all_keypoints[ind][0])
+                    coco_format_keypoints.append(all_keypoints[ind][1])
+                    coco_format_keypoints.append(1)
+
+            coco_result.append({
+                'image_id': sample['image_id'],
+                'category_id': 1,  # person
+                'keypoints': coco_format_keypoints,
+                'score': sum_score / 17.0
+            })
+
+            if visualize:
+                kpt_names = ['nose', 'left_eye', 'right_eye', 'left_ear', 'right_ear', 'left_shoulder',
+                             'right_shoulder', 'left_elbow', 'right_elbow', 'left_wrist', 'right_wrist',
+                             'left_hip', 'right_hip', 'left_knee', 'right_knee', 'left_ankle', 'right_ankle']
+                colors = [(0, 0, 255),
+                          (255, 0, 0), (0, 255, 0), (255, 0, 0), (0, 255, 0),
+                          (255, 0, 0), (0, 255, 0), (255, 0, 0), (0, 255, 0),
+                          (255, 0, 0), (0, 255, 0), (255, 0, 0), (0, 255, 0),
+                          (255, 0, 0), (0, 255, 0), (255, 0, 0), (0, 255, 0)]
+
+                for id in range(len(all_keypoints)):
+                    keypoint = all_keypoints[id]
+                    if keypoint[0] != -1:
+                        radius = 3
+                        if colors[id] == (255, 0, 0):
+                            cv2.circle(sample['input'], (int(keypoint[0]), int(keypoint[1])),
+                                       radius + 2, (255, 0, 0), -1)
+                        else:
+                            cv2.circle(sample['input'], (int(keypoint[0]), int(keypoint[1])),
+                                       radius, colors[id], -1)
+                cv2.imshow('keypoints', sample['input'])
+                key = cv2.waitKey()
+
+        json.dump(coco_result, res_file, indent=4)
+
+
+def val(net, val_dataset, predictions_name, name_dataset):
+    if name_dataset == "Lip":
+        evaluate(val_dataset, predictions_name, net)
+        pck = calc_pckh(val_dataset.labels_file_path, predictions_name)
+        val_loss = 100 - pck[-1][-1]
+    else:
+        if name_dataset == "CocoSingle":
+            coco_evaluate(val_dataset, predictions_name, net)
+            ap_metric = run_coco_eval(os.path.join(val_dataset._dataset_folder, 'annotations', 'val_subset.json'),
+                                      predictions_name)
+            val_loss = 100 - ap_metric[0] * 100
+        else:
+            raise NameError('Name of dataset is not correct')
+
+    return val_loss
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--dataset-folder', type=str, required=True, help='path to dataset folder')
@@ -126,12 +213,21 @@ if __name__ == '__main__':
     parser.add_argument('--checkpoint-path', type=str, required=True, help='path to the checkpoint')
     parser.add_argument('--multiscale', action='store_true', help='average inference results over multiple scales')
     parser.add_argument('--visualize', action='store_true', help='show keypoints')
+    parser.add_argument('--name-dataset', type=str, required=True,
+                        help='name dataset for validate: <Lip> or <CocoSingle>')
     args = parser.parse_args()
 
-    net = SinglePersonPoseEstimationWithMobileNet(num_refinement_stages=5)
+    if args.name_dataset == 'CocoSingle':
+        val_dataset = CocoSingleValDataset(args.dataset_folder)
+        num_heatmaps = val_dataset.num_keypoints
+    else:
+        val_dataset = LipValDataset(args.dataset_folder)
+        num_heatmaps = val_dataset.num_keypoints + 1
+
+    net = SinglePersonPoseEstimationWithMobileNet(num_refinement_stages=5, num_heatmaps=num_heatmaps)
     checkpoint = torch.load(args.checkpoint_path)
     load_state(net, checkpoint)
 
-    dataset = LipValDataset(args.dataset_folder)
-    evaluate(dataset, args.output_name, net, args.multiscale, args.visualize)
-    pck = calc_pckh(dataset.labels_file_path, args.output_name, eval_num=len(dataset))
+    val_loss = val(net, val_dataset, args.output_name, args.name_dataset)
+
+    print('Val loss: {}'.format(val_loss))

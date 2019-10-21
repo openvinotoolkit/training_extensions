@@ -7,17 +7,28 @@ This repository contains training code for the paper [Global Context for Convolu
 1. Download the [Look Into Person dataset](http://47.100.21.47:9999/overview.php) and unpack it to `<LIP_HOME>` folder.
 2. Create virtual environment `bash init_venv.sh`
 
-## Training
+## Training on LIP dataset
 
 1. Download pre-trained MobileNet v1 weights `mobilenet_sgd_68.848.pth.tar` from: [https://github.com/marvis/pytorch-mobilenet](https://github.com/marvis/pytorch-mobilenet) (sgd option).
 2. Run in terminal: `python train_single.py --dataset-folder <LIP_HOME> --checkpoint-path mobilenet_sgd_68.848.pth.tar --from-mobilenet`
 
-## Validation
+## Validation on LIP dataset
 1. Run in terminal `python val_single.py --dataset-folder <LIP_HOME> --checkpoint-path <CHECKPOINT>`. One should observe ~84% PCKh on validation set (use `--multiscale` and set `flip` to `True` for better results).
 
   [OPTIONAL] Pass `--visualize` key to see predicted keypoints results.
 
 The final number on the test set was obtained with addition of validation data into training.
+
+## Training on COCO2017 dataset
+
+1. Download pre-trained MobileNet v1 weights `mobilenet_sgd_68.848.pth.tar` from: [https://github.com/marvis/pytorch-mobilenet](https://github.com/marvis/pytorch-mobilenet) (sgd option).
+2. Run in terminal: `python train_single_coco.py --dataset-folder <COCO_HOME> --checkpoint-path mobilenet_sgd_68.848.pth.tar --from-mobilenet`
+
+## Validation on COCO2017 dataset
+1. Run in terminal `python val_single.py --dataset-folder <COCO_HOME> --checkpoint-path <CHECKPOINT>` --name-dataset <CocoSingle or Lip>.
+
+  [OPTIONAL] Pass `--visualize` key to see predicted keypoints results.
+
 
 ## Conversion to OpenVINO format:
 
