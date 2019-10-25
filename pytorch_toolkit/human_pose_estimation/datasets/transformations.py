@@ -564,7 +564,7 @@ class HalfBodyTransform(object):
                 h = target_points[:, 1].max() - target_points[:, 1].min()
 
                 if w > self.aspect_ratio * h:
-                    h = w * 1.0 / self.aspect_ratio
+                    h = w / self.aspect_ratio
                 elif w < self.aspect_ratio * h:
                     w = h * self.aspect_ratio
 

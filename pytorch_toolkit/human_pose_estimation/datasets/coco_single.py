@@ -27,8 +27,8 @@ def preprocess_bbox(bbox, image):
         bbox[2] = bbox[3] * aspect_ratio
 
     s = np.array([bbox[2] / 200., bbox[3] / 200.], np.float32)
-    if center[0] != -1:
-        scale = s * 1.25
+    scale = s * 1.25
+
     return center, scale
 
 
@@ -129,10 +129,9 @@ class CocoSingleValDataset(Dataset):
         self._transform = transform
         with open(os.path.join(self._dataset_folder, 'annotations', 'val_subset.json')) as f:
             data = json.load(f)
-        if num_images > 0:
-            self._annotations = data['annotations'][:num_images]
-        else:
-            self._annotations = data['annotations']
+
+        self._annotations = data['annotations'][:num_images]
+
         self._images = data['images']
 
     def __getitem__(self, idx):
@@ -146,6 +145,7 @@ class CocoSingleValDataset(Dataset):
 
         sample = {
             'image': image,
+            'input': copy.deepcopy(image),
             'image_id': self._annotations[idx]['image_id'],
             'bbox': bbox,
             'center': c,
@@ -156,10 +156,6 @@ class CocoSingleValDataset(Dataset):
         if self._transform:
             sample = self._transform(sample)
 
-        mean = [0.485, 0.456, 0.406]
-        std = [0.229, 0.224, 0.225]
-        sample['image'] = sample['image'] / 255
-        sample['image'] = (sample['image'] - mean) / std
         sample['image'] = sample['image'].transpose(2, 0, 1)
         return sample
 

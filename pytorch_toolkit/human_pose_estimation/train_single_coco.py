@@ -37,7 +37,6 @@ def train(images_folder, num_refinement_stages, base_lr, batch_size, batches_per
                                          Normalization(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
                                          ChannelPermutation()
                                          ]))
-    #batch_size=1
     net = SinglePersonPoseEstimationWithMobileNet(num_refinement_stages, num_heatmaps=dataset.num_keypoints).cuda()
     train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=num_workers)
 
@@ -118,7 +117,8 @@ def train(images_folder, num_refinement_stages, base_lr, batch_size, batches_per
         net.eval()
         eval_num = -1
         val_dataset = CocoSingleValDataset(images_folder, eval_num, transform=transforms.Compose([
-                                         SinglePersonRandomAffineTransform(mode='val')]))
+                                         SinglePersonRandomAffineTransform(mode='val'),
+            Normalization(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])]))
         predictions_name = '{}/val_results2.json'.format(checkpoints_folder)
         val_loss = val(net, val_dataset, predictions_name, 'CocoSingle')
         print('Val loss: {}'.format(val_loss))

@@ -3,10 +3,13 @@ import cv2
 import numpy as np
 import importlib
 import torch
+import torchvision
 
+from datasets.transformations import SinglePersonRandomAffineTransform, Normalization
 from datasets.lip import LipValDataset
 from datasets.coco_single import CocoSingleValDataset
 from models.single_person_pose_with_mobilenet import SinglePersonPoseEstimationWithMobileNet
+
 from modules.calc_pckh import calc_pckh
 from modules.load_state import load_state
 from val import run_coco_eval
@@ -145,9 +148,11 @@ def coco_evaluate(dataset, output_name, net, visualize=False):
             scores = []
             for kpt_idx in range(dataset.num_keypoints):
                 score, coord = extract_keypoints(heatmaps[:, :, kpt_idx])
-                scores.append(score)
+
+                if score > 0.2:
+                    sum_score += score
+                    scores.append(score)
                 all_keypoints.append(affine_transform(coord, sample['rev_trans']))
-                sum_score += score
 
             coco_format_keypoints = []
             for ind in range(dataset.num_keypoints):
@@ -159,7 +164,7 @@ def coco_evaluate(dataset, output_name, net, visualize=False):
                 'image_id': sample['image_id'],
                 'category_id': 1,  # person
                 'keypoints': coco_format_keypoints,
-                'score': sum_score / 17.0
+                'score': sum_score / len(scores)
             })
 
             if visualize:
@@ -188,14 +193,14 @@ def coco_evaluate(dataset, output_name, net, visualize=False):
         json.dump(coco_result, res_file, indent=4)
 
 
-def val(net, val_dataset, predictions_name, name_dataset):
+def val(net, val_dataset, predictions_name, name_dataset, vis):
     if name_dataset == "Lip":
         evaluate(val_dataset, predictions_name, net)
         pck = calc_pckh(val_dataset.labels_file_path, predictions_name)
         val_loss = 100 - pck[-1][-1]
     else:
         if name_dataset == "CocoSingle":
-            coco_evaluate(val_dataset, predictions_name, net)
+            coco_evaluate(val_dataset, predictions_name, net, vis)
             ap_metric = run_coco_eval(os.path.join(val_dataset._dataset_folder, 'annotations', 'val_subset.json'),
                                       predictions_name)
             val_loss = 100 - ap_metric[0] * 100
@@ -216,9 +221,11 @@ if __name__ == '__main__':
     parser.add_argument('--name-dataset', type=str, required=True,
                         help='name dataset for validate: <Lip> or <CocoSingle>')
     args = parser.parse_args()
+    t = torchvision.transforms.Compose([SinglePersonRandomAffineTransform(mode='val'),
+                                        Normalization(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])])
 
     if args.name_dataset == 'CocoSingle':
-        val_dataset = CocoSingleValDataset(args.dataset_folder)
+        val_dataset = CocoSingleValDataset(args.dataset_folder, transform=t)
         num_heatmaps = val_dataset.num_keypoints
     else:
         val_dataset = LipValDataset(args.dataset_folder)
@@ -228,6 +235,6 @@ if __name__ == '__main__':
     checkpoint = torch.load(args.checkpoint_path)
     load_state(net, checkpoint)
 
-    val_loss = val(net, val_dataset, args.output_name, args.name_dataset)
+    val_loss = val(net, val_dataset, args.output_name, args.name_dataset, args.visualize)
 
     print('Val loss: {}'.format(val_loss))

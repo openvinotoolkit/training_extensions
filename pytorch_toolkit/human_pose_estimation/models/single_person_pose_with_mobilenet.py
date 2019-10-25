@@ -48,10 +48,17 @@ class UShapedContextBlock(nn.Module):
     def forward(self, x):
         e1 = self.encoder1(x)
         e2 = self.encoder2(e1)
-        d2 = self.decoder2(torch.cat([e1, F.interpolate(e2, size=(e1.shape[2], e1.shape[3]),
-                                                        mode='bilinear', align_corners=False)], 1))
-        d1 = self.decoder1(torch.cat([x, F.interpolate(d2, size=(x.shape[2], x.shape[3]),
-                                                       mode='bilinear', align_corners=False)], 1))
+        #d2 = self.decoder2(torch.cat([e1, F.interpolate(e2, size=(e1.shape[2], e1.shape[3]),
+        #                                                mode='nearest')], 1))
+        #d1 = self.decoder1(torch.cat([x, F.interpolate(d2, size=(x.shape[2], x.shape[3]),
+        #                                               mode='nearest')], 1))
+
+        d2 = self.decoder2(torch.cat([e1, F.interpolate(e2, size=(24, 18),
+                                                         mode='nearest')], 1))
+        d1 = self.decoder1(torch.cat([x, F.interpolate(d2, size=(48, 36),
+                                                         mode='nearest')], 1))
+
+
         return d1
 
 
@@ -77,7 +84,7 @@ class RefinementStage(nn.Module):
 
 
 class SinglePersonPoseEstimationWithMobileNet(nn.Module):
-    def __init__(self, num_refinement_stages=1, num_channels=128, num_heatmaps=17):
+    def __init__(self, num_refinement_stages=5, num_channels=128, num_heatmaps=17):
         super().__init__()
         self.model = nn.Sequential(
             conv(     3,  32, stride=2, bias=False),
