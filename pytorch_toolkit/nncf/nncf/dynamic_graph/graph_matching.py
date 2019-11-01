@@ -205,7 +205,8 @@ class BranchingExpression(Expression):
 def search_all(ex, graph):
     matches = []
     matched_nodes = set()
-    for subgraph in nx.weakly_connected_component_subgraphs(graph):
+    subgraphs = [graph.subgraph(c) for c in nx.weakly_connected_components(graph)]
+    for subgraph in subgraphs:
         dfs_order = nx.topological_sort(subgraph)
         for node in dfs_order:
             match, _ = ex.match([node], graph)

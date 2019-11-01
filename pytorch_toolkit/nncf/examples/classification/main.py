@@ -33,17 +33,16 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torchvision.datasets import CIFAR10, CIFAR100
 
 from examples.common.argparser import get_common_argument_parser
-from examples.common.model_loader import load_model
 from examples.common.distributed import configure_distributed, is_main_process
 from examples.common.execution import ExecutionMode, get_device, get_execution_mode, \
     prepare_model_for_execution, start_worker
-
-from nncf.helpers import create_compressed_model, load_state, safe_thread_call
+from examples.common.model_loader import load_model
 from examples.common.optimizer import get_parameter_groups, make_optimizer
 from examples.common.utils import configure_logging, configure_paths, create_code_snapshot, \
     print_args, make_additional_checkpoints, get_name, is_binarization
 from nncf.config import Config
 from nncf.dynamic_graph import patch_torch_operators
+from nncf.helpers import create_compressed_model, load_state, safe_thread_call
 from nncf.utils import manual_seed, print_statistics
 
 patch_torch_operators()
