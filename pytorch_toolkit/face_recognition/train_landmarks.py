@@ -18,12 +18,16 @@ import os.path as osp
 import numpy as np
 import glog as log
 from tensorboardX import SummaryWriter
+
 import torch
 import torch.backends.cudnn as cudnn
 import torch.optim as optim
 from torch.utils.data import DataLoader
 from torchvision.transforms import transforms
 
+from nncf.config import Config
+from nncf.dynamic_graph import patch_torch_operators
+from nncf.algo_selector import create_compression_algorithm
 from datasets import VGGFace2, CelebA, NDG
 
 from model.common import models_landmarks
@@ -32,9 +36,12 @@ from utils.utils import save_model_cpu, load_model_state
 from losses.alignment import AlignmentLoss
 from evaluate_landmarks import evaluate
 
+patch_torch_operators()
+
 
 def train(args):
     """Launches training of landmark regression model"""
+    input_size = models_landmarks['landnet']().get_input_res()
     if args.dataset == 'vgg':
         drops_schedule = [1, 6, 9, 13]
         dataset = VGGFace2(args.train, args.t_list, args.t_land, landmarks_training=True)
@@ -61,10 +68,18 @@ def train(args):
     train_loader = DataLoader(dataset, batch_size=args.train_batch_size, num_workers=4, shuffle=True)
     writer = SummaryWriter('./logs_landm/{:%Y_%m_%d_%H_%M}_'.format(datetime.datetime.now()) + args.snap_prefix)
     model = models_landmarks['landnet']()
-
+    
+    set_dropout_fn = model.set_dropout_ratio
+    
+    compression_algo = None
     if args.snap_to_resume is not None:
+        if args.compr_config:
+            config = Config.from_json(args.compr_config)
+            compression_algo = create_compression_algorithm(model, config)
+            model = compression_algo.model
+
         log.info('Resuming snapshot ' + args.snap_to_resume + ' ...')
-        model = load_model_state(model, args.snap_to_resume, args.device, eval_state=False)
+        model = load_model_state(model, args.snap_to_resume, args.device, eval_state=True)
         model = torch.nn.DataParallel(model, device_ids=[args.device])
     else:
         model = torch.nn.DataParallel(model, device_ids=[args.device])
@@ -73,35 +88,39 @@ def train(args):
         cudnn.enabled = True
         cudnn.benchmark = True
 
+    if args.to_onnx is not None:
+        if args.compr_config:
+            compression_algo.export_model(args.to_onnx)
+        else:
+            model = model.eval().cpu()
+            input_shape = tuple([1, 3] + list(input_size))
+            with torch.no_grad():
+                torch.onnx.export(model.module, torch.randn(input_shape), args.to_onnx, verbose=True)
+
+        print("Saved to", args.to_onnx)
+        return
+
     log.info('Face landmarks model:')
     log.info(model)
 
     criterion = AlignmentLoss('wing')
     optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
     scheduler = optim.lr_scheduler.MultiStepLR(optimizer, drops_schedule)
+
+    log.info('Epoch length: %d' % len(train_loader))
     for epoch_num in range(args.epoch_total_num):
+        log.info('Epoch: %d' % epoch_num)
+
         scheduler.step()
-        if epoch_num > 5:
-            model.module.set_dropout_ratio(0.)
+        if epoch_num > 5 or args.compr_config:
+            set_dropout_fn(0.)
+            
         for i, data in enumerate(train_loader, 0):
             iteration = epoch_num * len(train_loader) + i
-
-            data, gt_landmarks = data['img'].cuda(), data['landmarks'].cuda()
-            predicted_landmarks = model(data)
-
-            optimizer.zero_grad()
-            loss = criterion(predicted_landmarks, gt_landmarks)
-            loss.backward()
-            optimizer.step()
-
-            if i % 10 == 0:
-                log.info('Iteration %d, Loss: %.4f' % (iteration, loss))
-                log.info('Learning rate: %f' % scheduler.get_lr()[0])
-                writer.add_scalar('Loss/train_loss', loss.item(), iteration)
-                writer.add_scalar('Learning_rate', scheduler.get_lr()[0], iteration)
-
+            
             if iteration % args.val_step == 0:
-                snapshot_name = osp.join(args.snap_folder, args.snap_prefix + '_{0}.pt'.format(iteration))
+                snapshot_name = osp.join(args.snap_folder,
+                                         args.snap_prefix + '_{0}.pt'.format(iteration))
                 log.info('Saving Snapshot: ' + snapshot_name)
                 save_model_cpu(model, optimizer, snapshot_name, epoch_num)
 
@@ -115,7 +134,32 @@ def train(args):
                 log.info('Train failure rate: {}'.format(failures_rate))
                 writer.add_scalar('Quality/Avg_error', avg_err, iteration)
                 writer.add_scalar('Quality/Failure_rate', failures_rate, iteration)
+                writer.add_scalar('Epoch', epoch_num, iteration)
                 model.train()
+
+            data, gt_landmarks = data['img'].cuda(), data['landmarks'].cuda()
+            predicted_landmarks = model(data)
+
+            optimizer.zero_grad()
+            compr_loss = compression_algo.loss() if args.compr_config else 0
+            loss = criterion(predicted_landmarks, gt_landmarks) + compr_loss
+            loss.backward()
+            optimizer.step()
+            if args.compr_config:
+                compression_algo.scheduler.step()
+
+            if i % 10 == 0:
+                log.info('Iteration %d, Loss: %.4f' % (iteration, loss))
+                log.info('Learning rate: %f' % scheduler.get_lr()[0])
+                writer.add_scalar('Loss/train_loss', loss.item(), iteration)
+                writer.add_scalar('Learning_rate', scheduler.get_lr()[0], iteration)
+                if args.compr_config and "sparsity_level" in compression_algo.statistics():
+                    log.info('Sparsity_level: %.4f' % compression_algo.statistics()["sparsity_level"])
+                    writer.add_scalar('Sparsity_level', compression_algo.statistics()["sparsity_level"], iteration)
+
+        if args.compr_config:
+            compression_algo.scheduler.epoch_step()
+            
 
 def main():
     """Creates a command line parser"""
@@ -135,10 +179,13 @@ def main():
     parser.add_argument('--snap_prefix', type=str, default='LandmarksNet', help='Prefix for snapshots.')
     parser.add_argument('--snap_to_resume', type=str, default=None, help='Snapshot to resume.')
     parser.add_argument('--dataset', choices=['vgg', 'celeb', 'ngd'], type=str, default='vgg', help='Dataset.')
+    parser.add_argument('-c', '--compr_config', help='Path to a file with compression parameters', required=False)
+    parser.add_argument('--to-onnx', type=str, metavar='PATH', default=None, help='Export to ONNX model by given path')
     arguments = parser.parse_args()
 
     with torch.cuda.device(arguments.device):
         train(arguments)
+
 
 if __name__ == '__main__':
     main()

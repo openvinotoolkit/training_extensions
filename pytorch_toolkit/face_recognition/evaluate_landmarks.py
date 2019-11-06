@@ -12,19 +12,24 @@
 """
 
 import argparse
+from tqdm import tqdm
 
 import glog as log
 import torch
 import torch.backends.cudnn as cudnn
 from torch.utils.data import DataLoader
 from torchvision.transforms import transforms as t
-from tqdm import tqdm
 
+from nncf.config import Config
+from nncf.dynamic_graph import patch_torch_operators
+from nncf.algo_selector import create_compression_algorithm
 from datasets import VGGFace2, CelebA, NDG
 
 from model.common import models_landmarks
 from utils.landmarks_augmentation import Rescale, ToTensor
 from utils.utils import load_model_state
+
+patch_torch_operators()
 
 
 def evaluate(val_loader, model):
@@ -73,7 +78,13 @@ def start_evaluation(args):
     val_loader = DataLoader(dataset, batch_size=args.val_batch_size, num_workers=4, shuffle=False, pin_memory=True)
 
     model = models_landmarks['landnet']()
+    
     assert args.snapshot is not None
+    if args.compr_config:
+        config = Config.from_json(args.compr_config)
+        compression_algo = create_compression_algorithm(model, config)
+        model = compression_algo.model
+    
     log.info('Testing snapshot ' + args.snapshot + ' ...')
     model = load_model_state(model, args.snapshot, args.device, eval_state=True)
     model.eval()
@@ -84,10 +95,11 @@ def start_evaluation(args):
     log.info(model)
 
     avg_err, per_point_avg_err, failures_rate = evaluate(val_loader, model)
-
     log.info('Avg RMSE error: {}'.format(avg_err))
     log.info('Per landmark RMSE error: {}'.format(per_point_avg_err))
     log.info('Failure rate: {}'.format(failures_rate))
+    if args.compr_config and "sparsity_level" in compression_algo.statistics():
+        log.info("Sparsity level: {0:.2f}".format(compression_algo.statistics()['sparsity_rate_for_sparsified_modules']))
 
 
 def main():
@@ -101,10 +113,12 @@ def main():
     parser.add_argument('--val_batch_size', type=int, default=1, help='Validation batch size.')
     parser.add_argument('--snapshot', type=str, default=None, help='Snapshot to evaluate.')
     parser.add_argument('--dataset', choices=['vgg', 'celeb', 'ngd'], type=str, default='vgg', help='Dataset.')
+    parser.add_argument('-c', '--compr_config', help='Path to a file with compression parameters', required=False)
     arguments = parser.parse_args()
 
     with torch.cuda.device(arguments.device):
         start_evaluation(arguments)
+
 
 if __name__ == '__main__':
     main()

@@ -9,7 +9,8 @@
 2. [Preparation](#preparation)
 3. [Train/Eval](#traineval)
 4. [Models](#models)
-5. [Face Recognition Demo](#demo)
+5. [Face Recognition Demo](#face-recognition-demo)
+6. [Compression](#train-compressed-model-using-nncf)
 
 ## Installation
 1. Create and activate virtual python environment
@@ -118,3 +119,89 @@ uncleaned version of the [MegaFace](http://megaface.cs.washington.edu/participat
 ## Face Recognition Demo
 
 1. For setting up demo, please go to [Face Recognition demo with OpenVINO Toolkit](./demo/README.md)
+
+## Train compressed model using [NNCF](https://github.com/opencv/openvino_training_extensions/tree/develop/pytorch_toolkit/nncf)
+
+
+[NNCF](https://github.com/opencv/openvino_training_extensions/tree/develop/pytorch_toolkit/nncf) - is a framework for neural network compression using quantization and sparsification algorithms.
+
+To use NNCF as a standalone package refer to this [manual](https://github.com/opencv/openvino_training_extensions/blob/develop/pytorch_toolkit/nncf/docs/PackageUsage.md).
+After these preparation steps NNCF is ready to use.
+
+
+1. Go to `$FR_ROOT` folder
+```bash
+cd $FR_ROOT/
+```
+
+
+2. Put pretrained model in ```$SNAPSHOT_ROOT``` folder
+
+
+3. Landnet
+- To start Landnet compression (remember that is it necessary to define '--snap_to_resume'):
+
+```
+python train_landmarks.py --train_data_root $NDG_ROOT/mnt/big_ssd/landmarks_datasets
+--train_landmarks $NDG_ROOT/list_train_large.json --lr 0.4 --train_batch_size 512
+--devices 0 --snap_prefix Landnet_Compr_ --dataset ngd --val_step 500
+--epoch_total_num 300 --snap_to_resume <PATH_TO_SNAPSHOT>
+--snap_folder snapshots/compression --compr_config <PATH_TO_COMPRESSION_CONFIG>
+```
+
+During the first iterations of a quantization training, it is expected that loss will increase dramatically. It is connected with initialization of new quantization layers.
+
+
+- To evaluate compressed Landnet put [CelebA dataset](http://mmlab.ie.cuhk.edu.hk/projects/CelebA.html) (total memory is about 10Gb) in folder, which will be ```$CelebA_ROOT``` . After that run the following command:
+```
+python evaluate_landmarks.py --val_data_root $CelebA_ROOT/Img/img_celeba
+--val_landmarks $CelebA_ROOT/Anno --dataset celeb --val_batch_size 128
+--snapshot <PATH_TO_SNAPSHOT> --device 0 --compr_config <PATH_TO_COMPRESSION_CONFIG>
+```
+For evaluating use the same compression config as for training.
+
+4. MobileFaceNet
+- To start MobileFaceNet compression (remember that is it necessary to define '--snap_to_resume' in configuration file):
+
+```
+python train.py @./configs/MobileFaceNet/mobilefacenet_vgg2.yml
+--compr_config <PATH_TO_COMPRESSION_CONFIG>
+```
+
+
+- To evaluate compressed MobileFaceNet:
+
+```
+python evaluate_lfw.py --val_data_root $LFW_ROOT/lfw/ --val_list $LFW_ROOT/pairs.txt
+--val_landmarks $LFW_ROOT/lfw_landmark.txt --snap <PATH_TO_SNAPSHOT> --model mobilenet
+--embed_size 256 --compr_config <PATH_TO_COMPRESSION_CONFIG>
+```
+
+
+
+5. More about compression parameters read in [NNCF description](https://github.com/opencv/openvino_training_extensions/blob/develop/pytorch_toolkit/nncf/nncf/README.md)
+
+
+6. Compressed models results
+
+
+- **Landnet compression on NGD dataset**
+
+| Algorithm | RMSE | Config path |
+| :-- | :-: | :-: |
+| Original | 0.078 | - |
+| Quantization int8  | 0.078 | configs/Landnet/landnet_ngd_int8.json |
+| Sparsification 52%  | 0.082 | configs/Landnet/landnet_ngd_sparsity52%.json |
+| Int8 + Spars 52%  |  0.080 | configs/Landnet/landnet_ngd_int8_sparsity52%.json |
+
+
+- **MobileFaceNet compression on VGG2Face dataset**
+
+| Algorithm | Accuracy | Config path |
+| :-- | :-: | :-: |
+| Original | 99.47 | - |
+| Quantization int8  | 99.5 | configs/MobileFaceNet/mobilefacenet_vgg2_int8.json |
+| Sparsification 52%  | 99.5 | configs/MobileFaceNet/mobilefacenet_vgg2_sparsity52%.json |
+
+
+
