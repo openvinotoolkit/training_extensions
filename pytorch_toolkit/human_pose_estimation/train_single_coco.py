@@ -9,7 +9,7 @@ from torch.utils.data import DataLoader
 from torchvision import transforms
 
 from datasets.coco_single import CocoSingleTrainDataset, CocoSingleValDataset
-from datasets.transformations import CocoSinglePersonFlip,\
+from datasets.transformations import SinglePersonFlip,\
     SinglePersonBodyMasking, ChannelPermutation, SinglePersonRandomAffineTransform, RandomScaleRotate,\
     HalfBodyTransform, Normalization
 from models.single_person_pose_with_mobilenet import SinglePersonPoseEstimationWithMobileNet
@@ -24,14 +24,15 @@ cv2.ocl.setUseOpenCL(False)  # To prevent freeze of DataLoader
 def train(images_folder, num_refinement_stages, base_lr, batch_size, batches_per_iter,
           num_workers, checkpoint_path, weights_only, from_mobilenet, checkpoints_folder,
           log_after, checkpoint_after):
-
     stride = 8
     sigma = 7
+    right = [6, 7, 8, 12, 13, 14, 18, 19, 20, 24, 25, 26, 30, 31, 32, 36, 37, 38, 42, 43, 44, 48, 49, 50]
+    left = [3, 4, 5, 9, 10, 11, 15, 16, 17, 21, 22, 23, 27, 28, 29, 33, 34, 35, 39, 40, 41, 45, 46, 47]
     dataset = CocoSingleTrainDataset(images_folder, stride, sigma,
                                      transform=transforms.Compose([
                                          HalfBodyTransform(),
                                          RandomScaleRotate(),
-                                         CocoSinglePersonFlip(),
+                                         SinglePersonFlip(right_keypoints_indice=right, left_keypoints_indice=left),
                                          SinglePersonRandomAffineTransform(),
                                          SinglePersonBodyMasking(),
                                          Normalization(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
@@ -40,7 +41,7 @@ def train(images_folder, num_refinement_stages, base_lr, batch_size, batches_per
     net = SinglePersonPoseEstimationWithMobileNet(num_refinement_stages, num_heatmaps=dataset.num_keypoints).cuda()
     train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=num_workers)
 
-    optimizer = optim.Adam(net.parameters(), lr=0.001)
+    optimizer = optim.Adam(net.parameters(), lr=base_lr)
     scheduler = optim.lr_scheduler.MultiStepLR(optimizer, [170, 200], 0.1)
 
     num_iter = 0
@@ -74,11 +75,12 @@ def train(images_folder, num_refinement_stages, base_lr, batch_size, batches_per
 
             losses = []
             for loss_idx in range(len(total_losses)):
-                losses.append(mse_loss(stages_output[loss_idx], keypoint_maps, batch_data['keypoints'][:, 2::3]))
+                losses.append(mse_loss(stages_output[loss_idx], keypoint_maps,
+                                       batch_data['keypoints'][:, 2::3].view(batch_data['keypoints'].shape[0], -1, 1)))
                 total_losses[loss_idx] += losses[-1].item() / batches_per_iter
 
             loss = 0
-            for loss_idx in range(1, len(losses)):
+            for loss_idx in range(len(losses)):
                 loss += losses[loss_idx]
             loss /= batches_per_iter
             loss.backward()
@@ -115,10 +117,9 @@ def train(images_folder, num_refinement_stages, base_lr, batch_size, batches_per
                        snapshot_name)
         print('Validation...')
         net.eval()
-        eval_num = -1
-        val_dataset = CocoSingleValDataset(images_folder, eval_num, transform=transforms.Compose([
+        val_dataset = CocoSingleValDataset(images_folder, transform=transforms.Compose([
                                          SinglePersonRandomAffineTransform(mode='val'),
-            Normalization(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])]))
+                                         Normalization(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])]))
         predictions_name = '{}/val_results2.json'.format(checkpoints_folder)
         val_loss = val(net, val_dataset, predictions_name, 'CocoSingle')
         print('Val loss: {}'.format(val_loss))
@@ -129,10 +130,10 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--dataset-folder', type=str, required=True, help='path to dataset folder')
     parser.add_argument('--num-refinement-stages', type=int, default=1, help='number of refinement stages')
-    parser.add_argument('--base-lr', type=float, default=4e-5, help='initial learning rate')
+    parser.add_argument('--base-lr', type=float, default=0.001, help='initial learning rate')
     parser.add_argument('--batch-size', type=int, default=32, help='batch size')
     parser.add_argument('--batches-per-iter', type=int, default=1, help='number of batches to accumulate gradient from')
-    parser.add_argument('--num-workers', type=int, default=1, help='number of workers')
+    parser.add_argument('--num-workers', type=int, default=16, help='number of workers')
     parser.add_argument('--checkpoint-path', type=str, required=True,
                         help='path to the checkpoint to continue training from')
     parser.add_argument('--from-mobilenet', action='store_true',

@@ -44,7 +44,7 @@ class CocoSingleTrainDataset(Dataset):
         self._transform = transform
         self.aspect_ratio = 0.75
 
-        with open(os.path.join(self._dataset_folder, 'annotations', 'person_keypoints_train2017_subset_20.json')) as f:
+        with open(os.path.join(self._dataset_folder, 'annotations', 'person_keypoints_train2017_converted_all.json')) as f:
             self._labels = json.load(f)
 
 
@@ -54,13 +54,13 @@ class CocoSingleTrainDataset(Dataset):
         tokens = self._labels['annotations'][idx]['keypoints']
         bbox = copy.deepcopy(self._labels['annotations'][idx]['bbox'])
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        c, s = preprocess_bbox(bbox, image)
-        r = 0
+        center, scale = preprocess_bbox(bbox, image)
+        rotate = 0
 
         keypoints = np.zeros(CocoSingleTrainDataset.num_keypoints*3, dtype=np.float32)
 
         for id in range(keypoints.shape[0] // 3):
-            if tokens[id*3] != 0:
+            if tokens[id * 3] != 0:
                 keypoints[id * 3] = int(tokens[id*3])          # x
                 keypoints[id * 3 + 1] = int(tokens[id*3 + 1])  # y
                 if tokens[id * 3 + 2] > 0:
@@ -69,9 +69,9 @@ class CocoSingleTrainDataset(Dataset):
         sample = {
             'keypoints': keypoints,
             'image': image,
-            'center': c,
-            'scale': s,
-            'rotate': r
+            'center': center,
+            'scale': scale,
+            'rotate': rotate
         }
 
         if self._transform:
@@ -123,14 +123,16 @@ class CocoSingleTrainDataset(Dataset):
 class CocoSingleValDataset(Dataset):
     num_keypoints = 17
 
-    def __init__(self, dataset_folder, num_images=-1, transform=None):
+    def __init__(self, dataset_folder, num_images=None, transform=None):
         super().__init__()
         self._dataset_folder = dataset_folder
         self._transform = transform
         with open(os.path.join(self._dataset_folder, 'annotations', 'val_subset.json')) as f:
             data = json.load(f)
 
-        self._annotations = data['annotations'][:num_images]
+        self._annotations = data['annotations']
+        if num_images is not None:
+            self._annotations = data['annotations'][:num_images]
 
         self._images = data['images']
 
@@ -140,17 +142,16 @@ class CocoSingleValDataset(Dataset):
 
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         bbox = self._annotations[idx]['bbox']
-        c, s = preprocess_bbox(bbox, image)
-        r = 0
+        center, scale = preprocess_bbox(bbox, image)
+        rotate = 0
 
         sample = {
             'image': image,
-            'input': copy.deepcopy(image),
             'image_id': self._annotations[idx]['image_id'],
             'bbox': bbox,
-            'center': c,
-            'scale': s,
-            'rotate': r
+            'center': center,
+            'scale': scale,
+            'rotate': rotate
         }
 
         if self._transform:
