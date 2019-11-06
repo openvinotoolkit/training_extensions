@@ -20,7 +20,7 @@ This repository contains training code for the paper [Global Context for Convolu
 The final number on the test set was obtained with addition of validation data into training.
 
 ## Training on COCO2017 dataset
-
+0. Run in terminal: `python scripts/convert_coco_labels.py --labels-path <COCO_HOME>/annotations/person_keypoints_train2017.json --output-name <COCO_HOME>/annotations/person_keypoints_converted_all.json`
 1. Download pre-trained MobileNet v1 weights `mobilenet_sgd_68.848.pth.tar` from: [https://github.com/marvis/pytorch-mobilenet](https://github.com/marvis/pytorch-mobilenet) (sgd option).
 2. Run in terminal: `python train_single_coco.py --dataset-folder <COCO_HOME> --checkpoint-path mobilenet_sgd_68.848.pth.tar --from-mobilenet`
 
