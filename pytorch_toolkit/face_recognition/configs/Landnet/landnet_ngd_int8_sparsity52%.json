@@ -1,0 +1,26 @@
+{
+  "input_sample_size": [
+    10,
+    3,
+    128,
+    128
+  ],
+  "compression": [
+    {
+      "algorithm": "magnitude_sparsity",
+      "params": {
+        "sparsity_init": 0.01,
+        "sparsity_target": 0.52,
+        "sparsity_steps": 100,
+        "sparsity_training_steps": 120
+      }
+    },
+    {
+      "algorithm": "quantization",
+      "signed_activations": true,
+      "initializer": {
+        "num_init_steps": 1
+      }
+    }
+  ]
+}
