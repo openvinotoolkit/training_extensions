@@ -79,7 +79,7 @@ def train(args):
             model = compression_algo.model
 
         log.info('Resuming snapshot ' + args.snap_to_resume + ' ...')
-        model = load_model_state(model, args.snap_to_resume, args.device, eval_state=True)
+        model = load_model_state(model, args.snap_to_resume, args.device, eval_state=False)
         model = torch.nn.DataParallel(model, device_ids=[args.device])
     else:
         model = torch.nn.DataParallel(model, device_ids=[args.device])
