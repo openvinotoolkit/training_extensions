@@ -11,7 +11,6 @@
  limitations under the License.
 """
 
-
 import torch
 import torch.multiprocessing as mp
 import torch.nn as nn
@@ -19,7 +18,6 @@ import torch.nn as nn
 from nncf.quantization import SymmetricQuantizer
 from nncf.quantization.layers import QuantizerConfig, QuantizationParams, AsymmetricQuantizer
 from nncf.utils import sum_like, get_per_channel_scale_shape
-
 from tools.benchmark import run_profile, run_wall, run_worker
 
 TIME_SCALES = {'ms': 1000}
@@ -94,7 +92,6 @@ class ReferenceQuantize(nn.Module):
 
     def forward(self, input_):
         return self.quantize(input_, self.scale, self.num_bits)
-
 
 
 if __name__ == '__main__':
@@ -199,7 +196,6 @@ if __name__ == '__main__':
             'cuda',
             gpu_runs)
 
-
     # CPU low batch
     print()
     print("CPU low batch")
@@ -302,9 +298,8 @@ if __name__ == '__main__':
         'cpu',
         CPU_RUNS)
 
-
     # CUDA DataParallel high batch
-    device_ids = [x for x in range(torch.cuda.device_count())]
+    device_ids = list(range(torch.cuda.device_count()))
     print()
     print("CUDA DataParallel high batch")
     print("------------------------------------------------")
