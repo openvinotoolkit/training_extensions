@@ -309,6 +309,7 @@ def label_to_color(label, class_encoding):
 
 
 def color_to_label(color_labels, class_encoding: OrderedDict):
+    # pylint: disable=unsubscriptable-object
     color_labels = np.array(color_labels.convert('RGB'))
     labels = np.zeros((color_labels.shape[0], color_labels.shape[1]), dtype=np.int64)
 
