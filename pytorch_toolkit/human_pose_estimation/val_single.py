@@ -148,7 +148,7 @@ def coco_evaluate(dataset, output_name, net, visualize=False):
                 scores = []
                 sum_score_thr = 0
                 num_kp_thr = 0
-                for kpt_idx in range(dataset.num_keypoints):
+                for kpt_idx in range(dataset._num_keypoints):
                     score, coord = extract_keypoints(heatmaps[:, :, kpt_idx])
                     scores.append(score)
                     all_keypoints.append(affine_transform(coord, sample['rev_trans']))
@@ -159,10 +159,10 @@ def coco_evaluate(dataset, output_name, net, visualize=False):
                 if num_kp_thr > 0:
                     pose_score = sum_score_thr / num_kp_thr
                 else:
-                    pose_score = sum_score / dataset.num_keypoints
+                    pose_score = sum_score / dataset._num_keypoints
 
                 coco_format_keypoints = []
-                for ind in range(dataset.num_keypoints):
+                for ind in range(dataset._num_keypoints):
                         coco_format_keypoints.append(all_keypoints[ind][0])
                         coco_format_keypoints.append(all_keypoints[ind][1])
                         coco_format_keypoints.append(1)
@@ -233,7 +233,7 @@ if __name__ == '__main__':
         val_dataset = CocoSingleValDataset(args.dataset_folder, transform=transforms.Compose([
                                          SinglePersonRandomAffineTransform(mode='val'),
                                          Normalization(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])]))
-        num_heatmaps = val_dataset.num_keypoints
+        num_heatmaps = val_dataset._num_keypoints
     else:
         val_dataset = LipValDataset(args.dataset_folder)
         num_heatmaps = val_dataset.num_keypoints + 1
