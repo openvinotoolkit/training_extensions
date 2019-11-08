@@ -6,7 +6,6 @@ import cv2
 import numpy as np
 from torch.utils.data.dataset import Dataset
 
-
 def preprocess_bbox(bbox, image):
     aspect_ratio = 0.75
     bbox[0] = np.max((0, bbox[0]))
@@ -31,9 +30,7 @@ def preprocess_bbox(bbox, image):
 
     return center, scale
 
-
 class CocoSingleTrainDataset(Dataset):
-
     def __init__(self, dataset_folder, input_size_img=(288, 384), stride=(8, 8), sigma=3, transform=None):
         super().__init__()
         self._num_keypoints = 17
@@ -50,7 +47,6 @@ class CocoSingleTrainDataset(Dataset):
         self._heatmap_size = [self._input_size_img[0] // self._stride[0], self._input_size_img[1] // self._stride[1]]
         with open(os.path.join(self._dataset_folder, 'annotations', 'person_keypoints_train2017_converted_all.json')) as f:
             self._labels = json.load(f)
-
 
     def __getitem__(self, idx):
         image_path = self._labels['annotations'][idx]['image_path']
@@ -96,7 +92,6 @@ class CocoSingleTrainDataset(Dataset):
     def __len__(self):
         return len(self._labels['annotations'])
 
-
     def _generate_keypoint_maps(self, sample):
         keypoints = sample['keypoints']
         target = np.zeros((len(keypoints) // 3, self._heatmap_size[1], self._heatmap_size[0]), dtype=np.float32)
@@ -128,10 +123,7 @@ class CocoSingleTrainDataset(Dataset):
 
         return target
 
-
 class CocoSingleValDataset(Dataset):
-
-
     def __init__(self, dataset_folder, num_images=None, transform=None):
         super().__init__()
         self._num_keypoints = 17

@@ -32,7 +32,7 @@ The final number on the test set was obtained with addition of validation data i
 
 ## Conversion to OpenVINO format:
 
-1. Convert PyTorch model to ONNX format: run script in terminal `python scripts/convert_to_onnx.py --checkpoint-path <CHECKPOINT> --single-person`. It produces `human-pose-estimation.onnx`
+1. Convert PyTorch model to ONNX format: run script in terminal `python scripts/convert_to_onnx.py --checkpoint-path <CHECKPOINT> --single-person --input-size 256 256`(for model on COCO dataset `--input-size 384 288`). It produces `human-pose-estimation.onnx`
 2. Convert ONNX model to OpenVINO format with Model Optimizer: run in terminal for model on LIP dataset `python <OpenVINO_INSTALL_DIR>/deployment_tools/model_optimizer/mo.py --input_model human-pose-estimation.onnx --input data --mean_values data[128.0,128.0,128.0] --scale_values data[256] --output stage_1_output_1_heatmaps`. This produces model `human-pose-estimation.xml` and weights `human-pose-estimation.bin` in single-precision floating-point format (FP32) and
    run in terminal for model on COCO dataset `python <OpenVINO_INSTALL_DIR>/deployment_tools/model_optimizer/mo.py --input_model human-pose-estimation.onnx  --input_shape=[1,3,384,288]  --input='data' --mean_values=[123.675,116.28,103.53] --scale_values=[58.395,57.12,57.375] --output="stage_4_output_1_heatmaps" --reverse_input_channels`
 ## Citation:

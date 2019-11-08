@@ -283,7 +283,6 @@ class SinglePersonBodyMasking(object):
 
 
 class SinglePersonFlip(object):
-
     def __init__(self, prob=0.5):
         self._prob = prob
         self._left_keypoints_indice = None
@@ -328,6 +327,7 @@ class ChannelPermutation(object):
         sample['image'] = image
 
         return sample
+
 
 class SinglePersonRotate(object):
     def __init__(self, pad=(128, 128, 128), max_rotate_degree=40):
@@ -490,7 +490,6 @@ class SinglePersonRandomAffineTransform(object):
     def _rotation(point, r):
         r = np.pi * r / 180
         return [point[0] * np.cos(r) - point[1] * np.sin(r), point[0] * np.sin(r) + point[1] * np.cos(r)]
-
 
 
 class HalfBodyTransform(object):

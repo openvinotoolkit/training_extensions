@@ -9,7 +9,6 @@ def l2_loss(input, target, batch_size, mask=None):
 
     return loss.sum()
 
-
 def mse_loss(output, target, mask):
     mse = nn.MSELoss(reduction='mean')
     batch_size = output.size(0)
