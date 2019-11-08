@@ -24,21 +24,18 @@ cv2.ocl.setUseOpenCL(False)  # To prevent freeze of DataLoader
 def train(images_folder, num_refinement_stages, base_lr, batch_size, batches_per_iter,
           num_workers, checkpoint_path, weights_only, from_mobilenet, checkpoints_folder,
           log_after, checkpoint_after):
-    stride = 8
-    sigma = 7
-    right = [6, 7, 8, 12, 13, 14, 18, 19, 20, 24, 25, 26, 30, 31, 32, 36, 37, 38, 42, 43, 44, 48, 49, 50]
-    left = [3, 4, 5, 9, 10, 11, 15, 16, 17, 21, 22, 23, 27, 28, 29, 33, 34, 35, 39, 40, 41, 45, 46, 47]
-    dataset = CocoSingleTrainDataset(images_folder, stride, sigma,
+
+    dataset = CocoSingleTrainDataset(images_folder,
                                      transform=transforms.Compose([
                                          HalfBodyTransform(),
                                          RandomScaleRotate(),
-                                         SinglePersonFlip(right_keypoints_indice=right, left_keypoints_indice=left),
+                                         SinglePersonFlip(),
                                          SinglePersonRandomAffineTransform(),
                                          SinglePersonBodyMasking(),
                                          Normalization(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
                                          ChannelPermutation()
                                          ]))
-    net = SinglePersonPoseEstimationWithMobileNet(num_refinement_stages, num_heatmaps=dataset.num_keypoints).cuda()
+    net = SinglePersonPoseEstimationWithMobileNet(num_refinement_stages, num_heatmaps=dataset._num_keypoints).cuda()
     train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=num_workers)
 
     optimizer = optim.Adam(net.parameters(), lr=base_lr)
@@ -129,7 +126,7 @@ def train(images_folder, num_refinement_stages, base_lr, batch_size, batches_per
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--dataset-folder', type=str, required=True, help='path to dataset folder')
-    parser.add_argument('--num-refinement-stages', type=int, default=1, help='number of refinement stages')
+    parser.add_argument('--num-refinement-stages', type=int, default=5, help='number of refinement stages')
     parser.add_argument('--base-lr', type=float, default=0.001, help='initial learning rate')
     parser.add_argument('--batch-size', type=int, default=32, help='batch size')
     parser.add_argument('--batches-per-iter', type=int, default=1, help='number of batches to accumulate gradient from')

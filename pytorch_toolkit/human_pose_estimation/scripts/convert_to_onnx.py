@@ -14,13 +14,7 @@ def convert_to_onnx(net, output_name, single_person):
                     'stage_1_output_1_heatmaps', 'stage_1_output_0_pafs']
     if single_person:
         input = torch.randn(1, 3, 384, 288)
-        output_names = 'output_data'
-        output_names = ['stage_0_output_1_heatmaps',
-                       # 'stage_1_output_1_heatmaps',
-                       # 'stage_2_output_1_heatmaps',
-                       # 'stage_3_output_1_heatmaps',
-                       # 'stage_4_output_1_heatmaps',
-                       ]
+        output_names = ['stage_4_output_1_heatmaps']
 
     torch.onnx.export(net, input, output_name, verbose=True, input_names=input_names, output_names=output_names)
 
@@ -35,7 +29,7 @@ if __name__ == '__main__':
 
     net = PoseEstimationWithMobileNet()
     if args.single_person:
-        net = SinglePersonPoseEstimationWithMobileNet(num_refinement_stages=1)
+        net = SinglePersonPoseEstimationWithMobileNet(num_refinement_stages=5)
     checkpoint = torch.load(args.checkpoint_path)
     load_state(net, checkpoint)
 

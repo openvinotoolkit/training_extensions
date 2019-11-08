@@ -1,9 +1,9 @@
 import os
+import json
 import copy
 
 import cv2
 import numpy as np
-import json
 from torch.utils.data.dataset import Dataset
 
 
@@ -33,17 +33,21 @@ def preprocess_bbox(bbox, image):
 
 
 class CocoSingleTrainDataset(Dataset):
-    num_keypoints = 17
 
-    def __init__(self, dataset_folder, stride, sigma, transform=None):
+    def __init__(self, dataset_folder, input_size_img=(288, 384), stride=(8, 8), sigma=3, transform=None):
         super().__init__()
-        self.num_keypoints = 17
+        self._num_keypoints = 17
+        self._right_keypoints_indice = [6, 7, 8, 12, 13, 14, 18, 19, 20, 24, 25, 26, 30,
+                                     31, 32, 36, 37, 38, 42, 43, 44, 48, 49, 50]
+        self._left_keypoints_indice = [3, 4, 5, 9, 10, 11, 15, 16, 17, 21, 22, 23, 27,
+                                        28, 29, 33, 34, 35, 39, 40, 41, 45, 46, 47]
         self._dataset_folder = dataset_folder
+        self._input_size_img = input_size_img
         self._stride = stride
         self._sigma = sigma
         self._transform = transform
-        self.aspect_ratio = 0.75
-
+        self._aspect_ratio = self._input_size_img[0] / self._input_size_img[1]
+        self._heatmap_size = [self._input_size_img[0] // self._stride[0], self._input_size_img[1] // self._stride[1]]
         with open(os.path.join(self._dataset_folder, 'annotations', 'person_keypoints_train2017_converted_all.json')) as f:
             self._labels = json.load(f)
 
@@ -57,9 +61,9 @@ class CocoSingleTrainDataset(Dataset):
         center, scale = preprocess_bbox(bbox, image)
         rotate = 0
 
-        keypoints = np.zeros(CocoSingleTrainDataset.num_keypoints*3, dtype=np.float32)
+        keypoints = np.zeros(self._num_keypoints * 3, dtype=np.float32)
 
-        for id in range(keypoints.shape[0] // 3):
+        for id in range(self._num_keypoints):
             if tokens[id * 3] != 0:
                 keypoints[id * 3] = int(tokens[id*3])          # x
                 keypoints[id * 3 + 1] = int(tokens[id*3 + 1])  # y
@@ -75,6 +79,12 @@ class CocoSingleTrainDataset(Dataset):
         }
 
         if self._transform:
+            for t in self._transform.transforms:
+                if hasattr(t, '_right_keypoints_indice'):
+                    setattr(t, '_right_keypoints_indice', self._right_keypoints_indice)
+                    setattr(t, '_left_keypoints_indice', self._left_keypoints_indice)
+                if hasattr(t, '_num_keypoints'):
+                    setattr(t, '_num_keypoints', self._num_keypoints)
             sample = self._transform(sample)
 
         keypoint_maps = self._generate_keypoint_maps(sample)
@@ -86,51 +96,52 @@ class CocoSingleTrainDataset(Dataset):
     def __len__(self):
         return len(self._labels['annotations'])
 
-    def _generate_keypoint_maps(self, sample,  stride=(8, 8), sigma=3):
+
+    def _generate_keypoint_maps(self, sample):
         keypoints = sample['keypoints']
-        heatmap_size = [36, 48]
-        target = np.zeros((len(keypoints) // 3, heatmap_size[1], heatmap_size[0]), dtype=np.float32)
-        eps = sigma * sigma
-        for i in range(len(keypoints) // 3):
+        target = np.zeros((len(keypoints) // 3, self._heatmap_size[1], self._heatmap_size[0]), dtype=np.float32)
+        eps = self._sigma * self._sigma
+        for i in range(self._num_keypoints):
+            if keypoints[i * 3 + 2] > 0:  # visible
+                x = int(keypoints[i * 3] / self._stride[0] + 0.5)
+                y = int(keypoints[i * 3 + 1] / self._stride[1] + 0.5)
+                lt = [x - eps, y - eps]
+                rb = [x + eps + 1, y + eps + 1]
+                if lt[0] >= self._heatmap_size[0] or lt[1] >= self._heatmap_size[1] \
+                        or rb[0] < 0 or rb[1] < 0:
+                    keypoints[i * 3 + 2] = 0
+                    continue
+                grid_x = np.arange(0, 2 * eps + 1, 1, np.float32)
+                grid_y = grid_x[:, None]
+                x0 = (2 * eps + 1) // 2
+                y0 = x0
+                gaussian = np.exp(- ((grid_x - x0) ** 2 + (grid_y - y0) ** 2) / (2 * self._sigma ** 2))
+                lt_heatmap = [max(0, lt[0]), max(0, lt[1])]
+                rb_heatmap = [min(rb[0], self._heatmap_size[0]), min(rb[1], self._heatmap_size[1])]
 
-                if keypoints[i * 3 + 2] > 0:  # visible
-                    x = int(keypoints[i * 3] / stride[0] + 0.5)
-                    y = int(keypoints[i * 3 + 1] / stride[1] + 0.5)
-                    lt = [x - eps, y - eps]
-                    rb = [x + eps + 1, y + eps + 1]
-                    if lt[0] >= heatmap_size[0] or lt[1] >= heatmap_size[1] \
-                            or rb[0] < 0 or rb[1] < 0:
-                        keypoints[i * 3 + 2] = 0
-                        continue
-                    grid_x = np.arange(0, 2 * eps + 1, 1, np.float32)
-                    grid_y = grid_x[:, None]
-                    x0 = (2 * eps + 1) // 2
-                    y0 = x0
-                    gaussian = np.exp(- ((grid_x - x0) ** 2 + (grid_y - y0) ** 2) / (2 * sigma ** 2))
-                    lt_heatmap = [max(0, lt[0]), max(0, lt[1])]
-                    rb_heatmap = [min(rb[0], heatmap_size[0]), min(rb[1], heatmap_size[1])]
+                lt_gaussian = [max(0, -lt[0]), max(0, -lt[1])]
+                rb_gaussian = [min(rb[0], self._heatmap_size[0]) - lt[0], min(rb[1], self._heatmap_size[1]) - lt[1]]
 
-                    lt_gaussian = [max(0, -lt[0]), max(0, -lt[1])]
-                    rb_gaussian = [min(rb[0], heatmap_size[0]) - lt[0], min(rb[1], heatmap_size[1]) - lt[1]]
-
-                    if keypoints[i * 3 + 1] > 0.5:
-                        target[i][lt_heatmap[1]:rb_heatmap[1], lt_heatmap[0]:rb_heatmap[0]] = \
-                            gaussian[lt_gaussian[1]:rb_gaussian[1], lt_gaussian[0]:rb_gaussian[0]]
+                if keypoints[i * 3 + 1] > 0.5:
+                    target[i][lt_heatmap[1]:rb_heatmap[1], lt_heatmap[0]:rb_heatmap[0]] = \
+                        gaussian[lt_gaussian[1]:rb_gaussian[1], lt_gaussian[0]:rb_gaussian[0]]
 
         return target
 
 
 class CocoSingleValDataset(Dataset):
-    num_keypoints = 17
+
 
     def __init__(self, dataset_folder, num_images=None, transform=None):
         super().__init__()
+        self._num_keypoints = 17
         self._dataset_folder = dataset_folder
         self._transform = transform
         with open(os.path.join(self._dataset_folder, 'annotations', 'val_subset.json')) as f:
             data = json.load(f)
 
         self._annotations = data['annotations']
+
         if num_images is not None:
             self._annotations = data['annotations'][:num_images]
 

@@ -48,17 +48,10 @@ class UShapedContextBlock(nn.Module):
     def forward(self, x):
         e1 = self.encoder1(x)
         e2 = self.encoder2(e1)
-        #d2 = self.decoder2(torch.cat([e1, F.interpolate(e2, size=(e1.shape[2], e1.shape[3]),
-        #                                                mode='nearest')], 1))
-        #d1 = self.decoder1(torch.cat([x, F.interpolate(d2, size=(x.shape[2], x.shape[3]),
-        #                                               mode='nearest')], 1))
-
-        d2 = self.decoder2(torch.cat([e1, F.interpolate(e2, size=(24, 18),
-                                                         mode='nearest')], 1))
-        d1 = self.decoder1(torch.cat([x, F.interpolate(d2, size=(48, 36),
-                                                         mode='nearest')], 1))
-
-
+        d2 = self.decoder2(torch.cat([e1, F.interpolate(e2, size=(int(e1.shape[2]), int(e1.shape[3])),
+                                                        mode='nearest')], 1))
+        d1 = self.decoder1(torch.cat([x, F.interpolate(d2, size=(int(x.shape[2]), int(x.shape[3])),
+                                                       mode='nearest')], 1))
         return d1
 
 

@@ -11,10 +11,12 @@ from datasets.coco import CocoTrainDataset
 
 
 class LipTrainDataset(Dataset):
-    num_keypoints = 16
 
     def __init__(self, dataset_folder, stride, sigma, transform=None):
         super().__init__()
+        self._right_keypoints_indice = [0, 1, 2, 3, 4, 5, 6, 7, 8, 30, 31, 32, 33, 34, 35, 36, 37, 38]
+        self._left_keypoints_indice = [15, 16, 17, 12, 13, 14, 9, 10, 11, 45, 46, 47, 42, 43, 44, 39, 40, 41]
+        self.num_keypoints = 16
         self._dataset_folder = dataset_folder
         self._stride = stride
         self._sigma = sigma
@@ -25,7 +27,7 @@ class LipTrainDataset(Dataset):
     def __getitem__(self, idx):
         tokens = self._labels[idx].split(',')
         image = cv2.imread(os.path.join(self._dataset_folder, 'TrainVal_images', 'train_images', tokens[0]), cv2.IMREAD_COLOR)
-        keypoints = np.ones(LipTrainDataset.num_keypoints*3, dtype=np.float32) * -1
+        keypoints = np.ones(self.num_keypoints*3, dtype=np.float32) * -1
         for id in range(keypoints.shape[0]//3):
             if tokens[1 + id*3] != 'nan':
                 keypoints[id * 3] = int(tokens[1 + id*3])          # x
@@ -39,6 +41,10 @@ class LipTrainDataset(Dataset):
             'image': image,
         }
         if self._transform:
+            for t in self._transform.transforms:
+                if hasattr(t, '_right_keypoints_indice'):
+                    setattr(t, '_right_keypoints_indice', self._right_keypoints_indice)
+                    setattr(t, '_left_keypoints_indice', self._left_keypoints_indice)
             sample = self._transform(sample)
 
         keypoint_maps = self._generate_keypoint_maps(sample)
@@ -54,7 +60,7 @@ class LipTrainDataset(Dataset):
 
     def _generate_keypoint_maps(self, sample):
         n_rows, n_cols, _ = sample['image'].shape
-        keypoint_maps = np.zeros(shape=(LipTrainDataset.num_keypoints + 1,
+        keypoint_maps = np.zeros(shape=(self.num_keypoints + 1,
                                         n_rows // self._stride, n_cols // self._stride), dtype=np.float32)  # +1 for bg
 
         keypoints = sample['keypoints']
