@@ -67,7 +67,7 @@ class Quantization(CompressionAlgorithm):
                 init_type = init_config.get('type', 'min_max')
                 initializer_cls = QUANTIZATION_INITIALIZERS.get(init_type)
                 initializer = initializer_cls(self.model, num_init_steps)
-                if self.distributed:
+                if self.is_distributed:
                     # Multi-process data loading heavily slows down collecting statistics. The best option, when data
                     # fetching is done in the same process a DataLoader is initialized, i.e. num_workers should be 0.
                     num_workers = data_loader.num_workers

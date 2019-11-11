@@ -10,9 +10,8 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 """
-
 from ..layers import BinaryMask
-from ...layers import COMPRESSION_MODULES
+from ...layer_utils import COMPRESSION_MODULES
 
 
 @COMPRESSION_MODULES.register()

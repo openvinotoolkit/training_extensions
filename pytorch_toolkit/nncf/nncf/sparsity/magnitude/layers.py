@@ -13,7 +13,7 @@
 
 from .functions import calc_magnitude_binary_mask as calc_magnitude_binary_mask_impl, abs_magnitude
 from ..layers import BinaryMask
-from ...layers import COMPRESSION_MODULES
+from ...layer_utils import COMPRESSION_MODULES
 
 
 @COMPRESSION_MODULES.register()

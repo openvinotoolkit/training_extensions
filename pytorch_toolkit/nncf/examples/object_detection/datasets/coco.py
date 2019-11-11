@@ -12,6 +12,7 @@
 """
 
 import json
+import sys
 from collections import OrderedDict
 from pathlib import Path
 
@@ -117,7 +118,7 @@ class COCODataset(data.Dataset):
 
         if not boxes.size:
             print("error: no annotation on image")
-            exit(-1)
+            sys.exit(-1)
 
         if self.target_transform is not None:
             annotation = self.target_transform(self.annotation, width, height)
