@@ -310,8 +310,6 @@ def main():
     parser.add_argument('--fr_model', type=str, required=False)
     parser.add_argument('--lm_model', type=str, required=False)
     parser.add_argument('-pp', '--plugin_dir', type=str, default=None, help='Path to a plugin folder')
-    
-    # Compression parameter
     parser.add_argument('-c', '--compr_config', help='Path to a file with compression parameters', required=False)
     args = parser.parse_args()
 

@@ -262,8 +262,6 @@ def main():
     parser.add_argument('--snap_prefix', type=str, default='FaceReidNet', help='Prefix for snapshots.')
     parser.add_argument('--snap_to_resume', type=str, default=None, help='Snapshot to resume.')
     parser.add_argument('--weighted', action='store_true')
-
-    # compression parameters
     parser.add_argument('-c', '--compr_config', help='Path to a file with compression parameters', required=False)
     parser.add_argument('--to-onnx', type=str, metavar='PATH', default=None, help='Export to ONNX model by given path')
 
