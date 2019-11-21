@@ -153,7 +153,8 @@ After these preparation steps NNCF is ready to use.
 ### Landmark model
 
 1. Train
-To start Landnet compression (remember that is it necessary to define '--snap_to_resume'):
+
+To start Landnet compression (remember that it is necessary to define '--snap_to_resume'):
 
 ```
 python train_landmarks.py --train_data_root $NDG_ROOT/mnt/big_ssd/landmarks_datasets \
@@ -171,6 +172,7 @@ python train_landmarks.py --train_data_root $NDG_ROOT/mnt/big_ssd/landmarks_data
 During the first iterations of a quantization training, it is expected that loss will increase dramatically. It is connected with initialization of new quantization layers.
 
 2. Eval
+
 To evaluate compressed Landnet put [CelebA dataset](http://mmlab.ie.cuhk.edu.hk/projects/CelebA.html) (total memory is about 10Gb) in folder, which will be ```$CelebA_ROOT``` . After that run the following command:
 ```
 python evaluate_landmarks.py --val_data_root $CelebA_ROOT/Img/img_celeba \
@@ -184,7 +186,8 @@ For evaluating use the same compression config as for training.
 
 ### Face recognition model
 1. Train
-To start MobileFaceNet compression (remember that is it necessary to define '--snap_to_resume' in configuration file):
+
+To start MobileFaceNet compression (remember that it is necessary to define '--snap_to_resume' in configuration file):
 
 ```
 python train.py @./configs/MobileFaceNet/mobilefacenet_vgg2.yml
@@ -192,6 +195,7 @@ python train.py @./configs/MobileFaceNet/mobilefacenet_vgg2.yml
 ```
 
 2. Eval
+
 To evaluate compressed MobileFaceNet:
 
 ```
