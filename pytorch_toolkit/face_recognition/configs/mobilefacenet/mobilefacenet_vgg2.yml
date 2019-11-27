@@ -1,0 +1,27 @@
+#optimizer parameters
+lr: 0.4
+train_batch_size: 256
+epoch_total_num: 20
+#loss options
+margin_type: cos
+s: 30
+m: 0.35
+mining_type: sv
+t: 1.1
+#model parameters
+model: mobilenet
+embed_size: 256
+
+train_dataset: vgg
+snap_prefix: MobileFaceNet
+devices: [0,1]
+train_dataset: vgg
+train_data_root: $VGGFace2_ROOT/train/
+train_list: $VGGFace2_ROOT/meta/train_list.txt
+train_landmarks:  $VGGFace2_ROOT/bb_landmark/
+
+val_data_root:  $LFW_ROOT/lfw/ 
+val_list: $LFW_ROOT/pairs.txt  
+val_landmarks: $LFW_ROOT/lfw_landmark.txt 
+
+snap_to_resume: <SNAPSHOT_PATH> 
