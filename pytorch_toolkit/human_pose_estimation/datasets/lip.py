@@ -12,10 +12,11 @@ from datasets.coco import CocoTrainDataset
 
 class LipTrainDataset(Dataset):
 
+    right_keypoints_indice = [0, 1, 2, 3, 4, 5, 6, 7, 8, 30, 31, 32, 33, 34, 35, 36, 37, 38]
+    left_keypoints_indice = [15, 16, 17, 12, 13, 14, 9, 10, 11, 45, 46, 47, 42, 43, 44, 39, 40, 41]
+
     def __init__(self, dataset_folder, stride, sigma, transform=None):
         super().__init__()
-        self._right_keypoints_indice = [0, 1, 2, 3, 4, 5, 6, 7, 8, 30, 31, 32, 33, 34, 35, 36, 37, 38]
-        self._left_keypoints_indice = [15, 16, 17, 12, 13, 14, 9, 10, 11, 45, 46, 47, 42, 43, 44, 39, 40, 41]
         self.num_keypoints = 16
         self._dataset_folder = dataset_folder
         self._stride = stride
@@ -41,10 +42,6 @@ class LipTrainDataset(Dataset):
             'image': image,
         }
         if self._transform:
-            for t in self._transform.transforms:
-                if hasattr(t, '_right_keypoints_indice'):
-                    setattr(t, '_right_keypoints_indice', self._right_keypoints_indice)
-                    setattr(t, '_left_keypoints_indice', self._left_keypoints_indice)
             sample = self._transform(sample)
 
         keypoint_maps = self._generate_keypoint_maps(sample)

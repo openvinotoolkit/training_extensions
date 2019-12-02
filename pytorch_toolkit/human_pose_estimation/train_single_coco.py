@@ -29,13 +29,17 @@ def train(images_folder, num_refinement_stages, base_lr, batch_size, batches_per
                                      transform=transforms.Compose([
                                          HalfBodyTransform(),
                                          RandomScaleRotate(),
-                                         SinglePersonFlip(),
+                                         SinglePersonFlip(left_keypoints_indice=
+                                                          CocoSingleTrainDataset.left_keypoints_indice,
+                                                          right_keypoints_indice=
+                                                          CocoSingleTrainDataset.right_keypoints_indice),
                                          SinglePersonRandomAffineTransform(),
                                          SinglePersonBodyMasking(),
                                          Normalization(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
                                          ChannelPermutation()
                                          ]))
-    net = SinglePersonPoseEstimationWithMobileNet(num_refinement_stages, num_heatmaps=dataset._num_keypoints).cuda()
+    net = SinglePersonPoseEstimationWithMobileNet(num_refinement_stages, num_heatmaps=dataset._num_keypoints,
+                                                  mode='nearest').cuda()
     train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=num_workers)
 
     optimizer = optim.Adam(net.parameters(), lr=base_lr)

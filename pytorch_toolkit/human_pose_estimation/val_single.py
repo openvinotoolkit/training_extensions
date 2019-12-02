@@ -133,71 +133,71 @@ def affine_transform(pt, t):
 def coco_evaluate(dataset, output_name, net, visualize=False):
     net = net.cuda().eval()
 
-    with open(output_name, 'w') as res_file:
-        coco_result = []
-        with torch.no_grad():
-            for sample_id in range(len(dataset)):
-                sample = dataset[sample_id]
-                img = sample['image']
-                tensor_img = torch.from_numpy(img[None, ]).float().cuda()
-                stages_output = net(tensor_img)
-                heatmaps = np.transpose(stages_output[-1].squeeze().cpu().data.numpy(), (1, 2, 0))
+    coco_result = []
+    with torch.no_grad():
+        for sample_id in range(len(dataset)):
+            sample = dataset[sample_id]
+            img = sample['image']
+            tensor_img = torch.from_numpy(img[None, ]).float().cuda()
+            stages_output = net(tensor_img)
+            heatmaps = np.transpose(stages_output[-1].squeeze().cpu().data.numpy(), (1, 2, 0))
 
-                sum_score = 0
-                all_keypoints = []
-                scores = []
-                sum_score_thr = 0
-                num_kp_thr = 0
-                for kpt_idx in range(dataset._num_keypoints):
-                    score, coord = extract_keypoints(heatmaps[:, :, kpt_idx])
-                    scores.append(score)
-                    all_keypoints.append(affine_transform(coord, sample['rev_trans']))
-                    sum_score += score
-                    if score > 0.2:
-                        sum_score_thr += score
-                        num_kp_thr += 1
-                if num_kp_thr > 0:
-                    pose_score = sum_score_thr / num_kp_thr
-                else:
-                    pose_score = sum_score / dataset._num_keypoints
+            sum_score = 0
+            all_keypoints = []
+            scores = []
+            sum_score_thr = 0
+            num_kp_thr = 0
+            for kpt_idx in range(dataset._num_keypoints):
+                score, coord = extract_keypoints(heatmaps[:, :, kpt_idx])
+                scores.append(score)
+                all_keypoints.append(affine_transform(coord, sample['rev_trans']))
+                sum_score += score
+                if score > 0.2:
+                    sum_score_thr += score
+                    num_kp_thr += 1
+            if num_kp_thr > 0:
+                pose_score = sum_score_thr / num_kp_thr
+            else:
+                pose_score = sum_score / dataset._num_keypoints
 
-                coco_format_keypoints = []
-                for ind in range(dataset._num_keypoints):
-                        coco_format_keypoints.append(all_keypoints[ind][0])
-                        coco_format_keypoints.append(all_keypoints[ind][1])
-                        coco_format_keypoints.append(1)
+            coco_format_keypoints = []
+            for ind in range(dataset._num_keypoints):
+                    coco_format_keypoints.append(all_keypoints[ind][0])
+                    coco_format_keypoints.append(all_keypoints[ind][1])
+                    coco_format_keypoints.append(1)
 
-                coco_result.append({
-                    'image_id': sample['image_id'],
-                    'category_id': 1,  # person
-                    'keypoints': coco_format_keypoints,
-                    'score': pose_score
-                })
+            coco_result.append({
+                'image_id': sample['image_id'],
+                'category_id': 1,  # person
+                'keypoints': coco_format_keypoints,
+                'score': pose_score
+            })
 
-                if visualize:
-                    kpt_names = ['nose', 'left_eye', 'right_eye', 'left_ear', 'right_ear', 'left_shoulder',
-                                 'right_shoulder', 'left_elbow', 'right_elbow', 'left_wrist', 'right_wrist',
-                                 'left_hip', 'right_hip', 'left_knee', 'right_knee', 'left_ankle', 'right_ankle']
-                    colors = [(0, 0, 255),
-                              (255, 0, 0), (0, 255, 0), (255, 0, 0), (0, 255, 0),
-                              (255, 0, 0), (0, 255, 0), (255, 0, 0), (0, 255, 0),
-                              (255, 0, 0), (0, 255, 0), (255, 0, 0), (0, 255, 0),
-                              (255, 0, 0), (0, 255, 0), (255, 0, 0), (0, 255, 0)]
+            if visualize:
+                kpt_names = ['nose', 'left_eye', 'right_eye', 'left_ear', 'right_ear', 'left_shoulder',
+                             'right_shoulder', 'left_elbow', 'right_elbow', 'left_wrist', 'right_wrist',
+                             'left_hip', 'right_hip', 'left_knee', 'right_knee', 'left_ankle', 'right_ankle']
+                colors = [(0, 0, 255),
+                          (255, 0, 0), (0, 255, 0), (255, 0, 0), (0, 255, 0),
+                          (255, 0, 0), (0, 255, 0), (255, 0, 0), (0, 255, 0),
+                          (255, 0, 0), (0, 255, 0), (255, 0, 0), (0, 255, 0),
+                          (255, 0, 0), (0, 255, 0), (255, 0, 0), (0, 255, 0)]
 
-                    for id in range(len(all_keypoints)):
-                        keypoint = all_keypoints[id]
-                        if keypoint[0] != -1:
-                            radius = 3
-                            if colors[id] == (255, 0, 0):
-                                cv2.circle(sample['input'], (int(keypoint[0]), int(keypoint[1])),
-                                           radius + 2, (255, 0, 0), -1)
-                            else:
-                                cv2.circle(sample['input'], (int(keypoint[0]), int(keypoint[1])),
-                                           radius, colors[id], -1)
-                    cv2.imshow('keypoints', sample['input'])
-                    key = cv2.waitKey()
+                for id in range(len(all_keypoints)):
+                    keypoint = all_keypoints[id]
+                    if keypoint[0] != -1:
+                        radius = 3
+                        if colors[id] == (255, 0, 0):
+                            cv2.circle(sample['input'], (int(keypoint[0]), int(keypoint[1])),
+                                       radius + 2, (255, 0, 0), -1)
+                        else:
+                            cv2.circle(sample['input'], (int(keypoint[0]), int(keypoint[1])),
+                                       radius, colors[id], -1)
+                cv2.imshow('keypoints', sample['input'])
+                key = cv2.waitKey()
 
-        json.dump(coco_result, res_file, indent=4)
+        with open(output_name, 'w') as res_file:
+            json.dump(coco_result, res_file, indent=4)
 
 
 def val(net, val_dataset, predictions_name, name_dataset):
@@ -205,14 +205,13 @@ def val(net, val_dataset, predictions_name, name_dataset):
         evaluate(val_dataset, predictions_name, net)
         pck = calc_pckh(val_dataset.labels_file_path, predictions_name)
         val_loss = 100 - pck[-1][-1]
-    else:
-        if name_dataset == "CocoSingle":
+    elif name_dataset == "CocoSingle":
             coco_evaluate(val_dataset, predictions_name, net)
             ap_metric = run_coco_eval(os.path.join(val_dataset._dataset_folder, 'annotations', 'val_subset.json'),
                                       predictions_name)
             val_loss = 100 - ap_metric[0] * 100
-        else:
-            raise NameError('Name of dataset is not correct')
+    else:
+        raise RuntimeError("Unknown dataset.")
 
     return val_loss
 
@@ -225,8 +224,8 @@ if __name__ == '__main__':
     parser.add_argument('--checkpoint-path', type=str, required=True, help='path to the checkpoint')
     parser.add_argument('--multiscale', action='store_true', help='average inference results over multiple scales')
     parser.add_argument('--visualize', action='store_true', help='show keypoints')
-    parser.add_argument('--name-dataset', type=str, required=True,
-                        help='name dataset for validate: <Lip> or <CocoSingle>')
+    parser.add_argument('--name-dataset', type=str, required=True, choices=['CocoSingle', 'Lip'],
+                        help='name dataset for validation: <Lip> or <CocoSingle>')
     args = parser.parse_args()
 
     if args.name_dataset == 'CocoSingle':
@@ -234,9 +233,11 @@ if __name__ == '__main__':
                                          SinglePersonRandomAffineTransform(mode='val'),
                                          Normalization(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])]))
         num_heatmaps = val_dataset._num_keypoints
-    else:
+    elif args.name_dataset == "Lip":
         val_dataset = LipValDataset(args.dataset_folder)
         num_heatmaps = val_dataset.num_keypoints + 1
+    else:
+        raise RuntimeError("Unknown dataset.")
 
     net = SinglePersonPoseEstimationWithMobileNet(num_refinement_stages=5, num_heatmaps=num_heatmaps)
     checkpoint = torch.load(args.checkpoint_path)

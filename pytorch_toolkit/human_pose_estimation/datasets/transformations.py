@@ -283,10 +283,10 @@ class SinglePersonBodyMasking(object):
 
 
 class SinglePersonFlip(object):
-    def __init__(self, prob=0.5):
+    def __init__(self, left_keypoints_indice, right_keypoints_indice, prob=0.5):
+        self._left_keypoints_indice = left_keypoints_indice
+        self._right_keypoints_indice = right_keypoints_indice
         self._prob = prob
-        self._left_keypoints_indice = None
-        self._right_keypoints_indice = None
 
     def __call__(self, sample):
         rand = random.random()
@@ -307,7 +307,7 @@ class SinglePersonFlip(object):
 
     def _swap_left_right(self, keypoints):
         keypoints[self._right_keypoints_indice + self._left_keypoints_indice] =\
-            keypoints.copy()[self._left_keypoints_indice + self._right_keypoints_indice]
+            keypoints[self._left_keypoints_indice + self._right_keypoints_indice]
 
 
 class ChannelPermutation(object):
@@ -316,7 +316,7 @@ class ChannelPermutation(object):
 
     def __call__(self, sample):
         rand = random.random()
-        do_cp =rand > self._prob
+        do_cp = rand < self._prob
         if not do_cp:
             return sample
 
@@ -436,14 +436,14 @@ class RandomScaleRotate(object):
 
 
 class SinglePersonRandomAffineTransform(object):
-    def __init__(self, scale=0.35, rotate=45, mode='train', input_width=288, input_height=384, stride=8):
+    def __init__(self, scale=0.35, rotate=45, mode='train', input_width=288, input_height=384, stride=8, num_keypoints=17):
         self._mode = mode
         self._scale = scale
         self._rotate = rotate
         self._width = input_width
         self._height = input_height
         self._stride = stride
-        self._num_keypoints = None
+        self._num_keypoints = num_keypoints
 
     def __call__(self, sample):
         scale = sample['scale']
@@ -493,10 +493,10 @@ class SinglePersonRandomAffineTransform(object):
 
 
 class HalfBodyTransform(object):
-    def __init__(self, aspect_ratio=0.75, prob=0.3):
+    def __init__(self, aspect_ratio=0.75, prob=0.3, num_keypoints=17):
         self._prob = prob
         self.aspect_ratio = aspect_ratio
-        self._num_keypoints = None
+        self._num_keypoints = num_keypoints
     def __call__(self, sample):
         rand = np.random.uniform()
         do_body_transform = rand <= self._prob and np.sum(sample['keypoints'][2:][::3]) > self._num_keypoints

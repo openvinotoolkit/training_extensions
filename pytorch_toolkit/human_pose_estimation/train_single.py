@@ -34,7 +34,9 @@ def train(images_folder, num_refinement_stages, base_lr, batch_size, batches_per
                                    ChannelPermutation(),
                                    SinglePersonRotate(pad=(128, 128, 128), max_rotate_degree=40),
                                    SinglePersonCropPad(pad=(128, 128, 128), crop_x=256, crop_y=256),
-                                   SinglePersonFlip()]))
+                                   SinglePersonFlip(left_keypoints_indice=LipTrainDataset.left_keypoints_indice,
+                                                    right_keypoints_indice=LipTrainDataset.right_keypoints_indice)
+                              ]))
     train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=num_workers)
 
     optimizer = optim.Adam([

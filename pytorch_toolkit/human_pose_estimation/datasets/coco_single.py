@@ -31,13 +31,15 @@ def preprocess_bbox(bbox, image):
     return center, scale
 
 class CocoSingleTrainDataset(Dataset):
+
+    right_keypoints_indice = [6, 7, 8, 12, 13, 14, 18, 19, 20, 24, 25, 26, 30,
+                                    31, 32, 36, 37, 38, 42, 43, 44, 48, 49, 50]
+    left_keypoints_indice = [3, 4, 5, 9, 10, 11, 15, 16, 17, 21, 22, 23, 27,
+                                   28, 29, 33, 34, 35, 39, 40, 41, 45, 46, 47]
+
     def __init__(self, dataset_folder, input_size_img=(288, 384), stride=(8, 8), sigma=3, transform=None):
         super().__init__()
         self._num_keypoints = 17
-        self._right_keypoints_indice = [6, 7, 8, 12, 13, 14, 18, 19, 20, 24, 25, 26, 30,
-                                     31, 32, 36, 37, 38, 42, 43, 44, 48, 49, 50]
-        self._left_keypoints_indice = [3, 4, 5, 9, 10, 11, 15, 16, 17, 21, 22, 23, 27,
-                                        28, 29, 33, 34, 35, 39, 40, 41, 45, 46, 47]
         self._dataset_folder = dataset_folder
         self._input_size_img = input_size_img
         self._stride = stride
@@ -75,16 +77,11 @@ class CocoSingleTrainDataset(Dataset):
         }
 
         if self._transform:
-            for t in self._transform.transforms:
-                if hasattr(t, '_right_keypoints_indice'):
-                    setattr(t, '_right_keypoints_indice', self._right_keypoints_indice)
-                    setattr(t, '_left_keypoints_indice', self._left_keypoints_indice)
-                if hasattr(t, '_num_keypoints'):
-                    setattr(t, '_num_keypoints', self._num_keypoints)
             sample = self._transform(sample)
 
         keypoint_maps = self._generate_keypoint_maps(sample)
         sample['keypoint_maps'] = keypoint_maps
+
         sample['image'] = sample['image'].transpose(2, 0, 1)
 
         return sample
