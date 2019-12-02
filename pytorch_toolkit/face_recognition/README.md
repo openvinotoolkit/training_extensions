@@ -187,7 +187,7 @@ For evaluating use the same compression config as for training.
 To start MobileFaceNet compression (remember that is it necessary to define '--snap_to_resume' in configuration file):
 
 ```
-python train.py @./configs/MobileFaceNet/mobilefacenet_vgg2.yml
+python train.py @./configs/mobilefacenet/mobilefacenet_vgg2.yml
 --compr_config <PATH_TO_COMPRESSION_CONFIG>
 ```
 
