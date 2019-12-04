@@ -37,7 +37,6 @@ from utils.augmentation import ResizeNumpy, CenterCropNumpy, NumpyToTensor
 from utils.face_align import FivePointsAligner
 from model.common import models_backbones
 
-patch_torch_operators()
 
 def get_subset(container, subset_bounds):
     """Returns a subset of the given list with respect to the list of bounds"""
@@ -315,22 +314,26 @@ def main():
 
     if args.engine == 'pt':
         assert args.snap is not None, 'To evaluate PyTorch snapshot, please, specify --snap option.'
+
+        if args.compr_config:
+            patch_torch_operators()
+
         with torch.cuda.device(args.devices[0]):
             data, embeddings_fun = load_test_dataset(args)
             model = models_backbones[args.model](embedding_size=args.embed_size, feature=True)
-            
+
             if args.compr_config:
                 config = Config.from_json(args.compr_config)
                 compression_algo = create_compression_algorithm(model, config)
                 model = compression_algo.model
-            
+
             model = load_model_state(model, args.snap, args.devices[0])
             evaluate(args, data, model, embeddings_fun, args.val_batch_size, args.dump_embeddings,
                      args.roc_fname, args.snap, True, args.show_failed)
-            
+
             if args.compr_config and "sparsity_level" in compression_algo.statistics():
                 log.info("Sparsity level: {0:.2f}".format(
-                    compression_algo.statistics()['sparsity_rate_for_sparsified_modules']))          
+                    compression_algo.statistics()['sparsity_rate_for_sparsified_modules']))
     else:
         from utils.ie_tools import load_ie_model
 

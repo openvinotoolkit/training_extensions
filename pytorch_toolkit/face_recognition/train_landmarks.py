@@ -36,8 +36,6 @@ from utils.utils import save_model_cpu, load_model_state
 from losses.alignment import AlignmentLoss
 from evaluate_landmarks import evaluate
 
-patch_torch_operators()
-
 
 def train(args):
     """Launches training of landmark regression model"""
@@ -68,12 +66,11 @@ def train(args):
     train_loader = DataLoader(dataset, batch_size=args.train_batch_size, num_workers=4, shuffle=True)
     writer = SummaryWriter('./logs_landm/{:%Y_%m_%d_%H_%M}_'.format(datetime.datetime.now()) + args.snap_prefix)
     model = models_landmarks['landnet']()
-    
+
     set_dropout_fn = model.set_dropout_ratio
-    
+
     compression_algo = None
     if args.snap_to_resume is not None:
-        if args.compr_config:
             config = Config.from_json(args.compr_config)
             compression_algo = create_compression_algorithm(model, config)
             model = compression_algo.model
@@ -114,10 +111,10 @@ def train(args):
         scheduler.step()
         if epoch_num > 5 or args.compr_config:
             set_dropout_fn(0.)
-            
+
         for i, data in enumerate(train_loader, 0):
             iteration = epoch_num * len(train_loader) + i
-            
+
             if iteration % args.val_step == 0:
                 snapshot_name = osp.join(args.snap_folder,
                                          args.snap_prefix + '_{0}.pt'.format(iteration))
@@ -159,7 +156,7 @@ def train(args):
 
         if args.compr_config:
             compression_algo.scheduler.epoch_step()
-            
+
 
 def main():
     """Creates a command line parser"""
@@ -182,6 +179,9 @@ def main():
     parser.add_argument('-c', '--compr_config', help='Path to a file with compression parameters', required=False)
     parser.add_argument('--to-onnx', type=str, metavar='PATH', default=None, help='Export to ONNX model by given path')
     arguments = parser.parse_args()
+
+    if args.compr_config:
+        patch_torch_operators()
 
     with torch.cuda.device(arguments.device):
         train(arguments)

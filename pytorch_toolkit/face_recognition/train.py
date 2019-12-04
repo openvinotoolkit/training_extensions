@@ -39,7 +39,6 @@ import utils.augmentation as augm
 from utils.parser_yaml import ArgumentParserWithYaml
 from model.common import models_backbones
 
-patch_torch_operators()
 
 def train(args):
     """Performs training of a face recognition network"""
@@ -267,6 +266,9 @@ def main():
 
     args = parser.parse_args()
     log.info('Arguments:\n' + pformat(args.__dict__))
+
+    if args.compr_config:
+        patch_torch_operators()
 
     with torch.cuda.device(args.devices[0]):
         train(args)

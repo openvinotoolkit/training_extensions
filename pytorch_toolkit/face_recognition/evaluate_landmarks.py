@@ -29,8 +29,6 @@ from model.common import models_landmarks
 from utils.landmarks_augmentation import Rescale, ToTensor
 from utils.utils import load_model_state
 
-patch_torch_operators()
-
 
 def evaluate(val_loader, model):
     """Calculates average error"""
@@ -78,13 +76,13 @@ def start_evaluation(args):
     val_loader = DataLoader(dataset, batch_size=args.val_batch_size, num_workers=4, shuffle=False, pin_memory=True)
 
     model = models_landmarks['landnet']()
-    
+
     assert args.snapshot is not None
     if args.compr_config:
         config = Config.from_json(args.compr_config)
         compression_algo = create_compression_algorithm(model, config)
         model = compression_algo.model
-    
+
     log.info('Testing snapshot ' + args.snapshot + ' ...')
     model = load_model_state(model, args.snapshot, args.device, eval_state=True)
     model.eval()
@@ -114,10 +112,13 @@ def main():
     parser.add_argument('--snapshot', type=str, default=None, help='Snapshot to evaluate.')
     parser.add_argument('--dataset', choices=['vgg', 'celeb', 'ngd'], type=str, default='vgg', help='Dataset.')
     parser.add_argument('-c', '--compr_config', help='Path to a file with compression parameters', required=False)
-    arguments = parser.parse_args()
+    args = parser.parse_args()
 
-    with torch.cuda.device(arguments.device):
-        start_evaluation(arguments)
+    if args.compr_config:
+        patch_torch_operators()
+
+    with torch.cuda.device(args.device):
+        start_evaluation(args)
 
 
 if __name__ == '__main__':
