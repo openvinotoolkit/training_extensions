@@ -1,0 +1,15 @@
+{
+  "input_sample_size": [
+    10,
+    3,
+    128,
+    128
+  ],
+  "compression": {
+    "signed_activations": true,
+    "algorithm": "quantization",
+    "initializer": {
+      "num_init_steps": 1
+    }
+  }
+}

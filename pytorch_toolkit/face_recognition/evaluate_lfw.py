@@ -27,6 +27,10 @@ from tqdm import tqdm
 import numpy as np
 from tensorboardX import SummaryWriter
 
+from nncf.config import Config
+from nncf.dynamic_graph import patch_torch_operators
+from nncf.algo_selector import create_compression_algorithm
+
 from datasets.lfw import LFW
 from utils.utils import load_model_state, get_model_parameters_number, flip_tensor
 from utils.augmentation import ResizeNumpy, CenterCropNumpy, NumpyToTensor
@@ -265,7 +269,9 @@ def evaluate(args, dataset, model, compute_embeddings_fun, val_batch_size=16,
         log.info('Accuracy/Val_accuracy std dev: {0:.4f}'.format(np.std(val_scores)))
         log.info('AUC: {0:.4f}'.format(auc))
         log.info('Estimated threshold: {0:.4f}'.format(np.mean(threshs)))
-
+        if args.compr_config and "sparsity_level" in compression_algo.statistics():
+            log.info(
+                "Sparsity level: {0:.2f}".format(compression_algo.statistics()['sparsity_rate_for_sparsified_modules']))
     return same_acc, diff_acc, overall_acc, auc
 
 
@@ -279,6 +285,7 @@ def load_test_dataset(arguments):
                            NumpyToTensor(switch_rb=True)])
     lfw.transform = transform
     return lfw, partial(compute_embeddings_lfw, flipped_embeddings=arguments.flipped_emb)
+
 
 def main():
     parser = argparse.ArgumentParser(description='Evaluation script for Face Recognition in PyTorch')
@@ -302,16 +309,31 @@ def main():
     parser.add_argument('--fr_model', type=str, required=False)
     parser.add_argument('--lm_model', type=str, required=False)
     parser.add_argument('-pp', '--plugin_dir', type=str, default=None, help='Path to a plugin folder')
+    parser.add_argument('-c', '--compr_config', help='Path to a file with compression parameters', required=False)
     args = parser.parse_args()
 
     if args.engine == 'pt':
         assert args.snap is not None, 'To evaluate PyTorch snapshot, please, specify --snap option.'
+
+        if args.compr_config:
+            patch_torch_operators()
+
         with torch.cuda.device(args.devices[0]):
             data, embeddings_fun = load_test_dataset(args)
             model = models_backbones[args.model](embedding_size=args.embed_size, feature=True)
+
+            if args.compr_config:
+                config = Config.from_json(args.compr_config)
+                compression_algo = create_compression_algorithm(model, config)
+                model = compression_algo.model
+
             model = load_model_state(model, args.snap, args.devices[0])
             evaluate(args, data, model, embeddings_fun, args.val_batch_size, args.dump_embeddings,
                      args.roc_fname, args.snap, True, args.show_failed)
+
+            if args.compr_config and "sparsity_level" in compression_algo.statistics():
+                log.info("Sparsity level: {0:.2f}".format(
+                    compression_algo.statistics()['sparsity_rate_for_sparsified_modules']))
     else:
         from utils.ie_tools import load_ie_model
 
@@ -332,6 +354,7 @@ def main():
 
         evaluate(args, lfw, fr_model, partial(compute_embeddings_lfw_ie, lm_model=lm_model), val_batch_size=1,
                  dump_embeddings=False, roc_fname='', snap_name='', verbose=True, show_failed=False)
+
 
 if __name__ == '__main__':
     main()
