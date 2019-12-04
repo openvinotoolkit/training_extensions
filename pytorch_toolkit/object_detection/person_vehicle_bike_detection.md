@@ -7,10 +7,10 @@ The crossroad detection network model provides detection of 3 class objects: veh
 
 **NOTE** To train model on own dataset you should modify `configs/person_vehicle_bike_sd512_mb2_clustered.py`.
 
-1. Go to `openvino_training_extensions/pytorch_toolkit/crossroad_detector/` directory
+1. Go to `openvino_training_extensions/pytorch_toolkit/object_detection/` directory
 
 2. The example dataset has annotation in coco and mmdetection CustomDataset format. You can find it here:
-   `openvino_training_extensions/pytorch_toolkit/crossroad_detector/dataset`
+   `openvino_training_extensions/data/airport`
    To collect CustomDataset annotation used [mmdetection CustomDataset object detection format](https://github.com/open-mmlab/mmdetection/blob/master/docs/GETTING_STARTED.md#use-my-own-datasets). .
 
 3. Download pretreined [checkpoint](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/person_vehicle_bike_sd512_mb2_clustered_epoch_21.pth) to `object_detection/checkpoint`.
