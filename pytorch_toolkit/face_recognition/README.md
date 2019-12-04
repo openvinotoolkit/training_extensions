@@ -12,6 +12,7 @@
 4. [Models](#models)
 5. [Face Recognition Demo](#face-recognition-demo)
 6. [Model compression](#model-compression)
+7. [Demo](#demo)
 
 ## Installation
 
@@ -133,11 +134,6 @@ I0820 15:48:06.307812 23328 evaluate_lfw.py:267] Estimated threshold: 0.6721
 uncleaned version of the [MegaFace](http://megaface.cs.washington.edu/participate/challenge.html) benchmark: 73.77% rank-1 at 1M distractors in reidentification protocol vs 70.2%.
 
 
-## Face Recognition Demo
-
-1. For setting up demo, please go to [Face Recognition demo with OpenVINO Toolkit](./demo/README.md)
-
-
 ## Model compression
 
 To train compressed models used
@@ -224,3 +220,8 @@ python evaluate_lfw.py \
     --model mobilenet \
     --embed_size 256 --compr_config <PATH_TO_COMPRESSION_CONFIG>
 ```
+
+
+## Demo
+
+1. For setting up demo, please go to [Face Recognition demo with OpenVINO Toolkit](./demo/README.md)
