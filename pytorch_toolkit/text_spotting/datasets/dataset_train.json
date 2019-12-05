@@ -1,0 +1,45 @@
+[
+  {
+    "name": "ICDAR2013DatasetConverter",
+    "kwargs": {
+      "images_folder": "icdar2013/Challenge2_Training_Task12_Images",
+      "annotations_folder": "icdar2013/Challenge2_Training_Task1_GT",
+      "is_train": true
+    }
+  },
+  {
+    "name": "ICDAR2013DatasetConverter",
+    "kwargs": {
+      "images_folder": "icdar2013/Challenge2_Test_Task12_Images",
+      "annotations_folder": "icdar2013/Challenge2_Test_Task1_GT",
+      "is_train": false
+    }
+  },
+  {
+    "name": "ICDAR2015DatasetConverter",
+    "kwargs": {
+      "images_folder": "icdar2015/ch4_training_images",
+      "annotations_folder": "icdar2015/ch4_training_localization_transcription_gt",
+      "is_train": true
+    }
+  },
+  {
+    "name": "MSRATD500DatasetConverter",
+    "kwargs": {
+      "folder": "MSRA-TD500/train"
+    }
+  },
+  {
+    "name": "MSRATD500DatasetConverter",
+    "kwargs": {
+      "folder": "MSRA-TD500/test"
+    }
+  },
+  {
+    "name": "COCOTextDatasetConverter",
+    "kwargs": {
+      "path": "coco-text/cocotext.v2.json",
+      "sets": ["train", "val"]
+    }
+  }
+]

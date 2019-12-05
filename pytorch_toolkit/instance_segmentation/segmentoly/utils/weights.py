@@ -30,7 +30,7 @@ from torch.nn import init
 logger = logging.getLogger(__name__)
 
 
-def load_checkpoint(model, ckpt_path, mapping=None, verbose=False):
+def load_checkpoint(model, ckpt_path, mapping=None, verbose=False, skip_prefix=''):
     if mapping is None:
         mapping = {}
 
@@ -40,13 +40,17 @@ def load_checkpoint(model, ckpt_path, mapping=None, verbose=False):
 
     from collections import OrderedDict
     source_state = OrderedDict([(mapping.get(k, k), v) for k, v in ckpt.items()])
+    if skip_prefix:
+        source_state = OrderedDict([(k, v) for k, v in source_state.items() if not k.startswith(skip_prefix)])
 
+    target_state = model.state_dict()
     if verbose:
-        target_state = model.state_dict()
         logger.info(colored('missed weights:', 'red'))
         logger.info('\n'.join([colored(x, 'red') for x in target_state.keys() if x not in source_state]))
         logger.info(colored('extra weights:', 'magenta'))
         logger.info('\n'.join([colored(x, 'magenta') for x in source_state.keys() if x not in target_state]))
+
+    source_state = OrderedDict({k:v for k, v in source_state.items() if k in target_state.keys()})
 
     for name in source_state:
         # Avoid error when number of classes was changed and sizes of tensors are different
