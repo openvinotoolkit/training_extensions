@@ -20,15 +20,21 @@ This repository contains training code for the paper [Global Context for Convolu
 
 1. Download the [Look Into Person dataset](http://47.100.21.47:9999/overview.php) and unpack it to `<LIP_HOME>` folder.
 2. To start training run in terminal:
-```
-python train_single.py --dataset-folder <LIP_HOME> --checkpoint-path mobilenet_sgd_68.848.pth.tar --from-mobilenet
+```bash
+python train_single.py \
+    --dataset-folder <LIP_HOME> \
+    --checkpoint-path mobilenet_sgd_68.848.pth.tar \
+    --from-mobilenet
 ```
 
 #### Validation
 
 * Run in terminal:
-```
-python val_single.py --dataset-folder <LIP_HOME> --checkpoint-path <CHECKPOINT> --name-dataset Lip
+```bash
+python val_single.py \
+    --dataset-folder <LIP_HOME> \
+    --checkpoint-path <CHECKPOINT> \
+    --name-dataset Lip
 ```
 One should observe ~84% PCKh on validation set (use `--multiscale` and set `flip` to `True` for better results).
 
@@ -41,18 +47,26 @@ The final number on the test set was obtained with addition of validation data i
 1. Download COCO 2017 dataset: [http://cocodataset.org/#download](http://cocodataset.org/#download) (train, val, annotations) and unpack it to `<COCO_HOME>` folder.
 2. Convert train annotations in internal format. Run in terminal:
 ```
-python scripts/convert_coco_labels.py --labels-path <COCO_HOME>/annotations/person_keypoints_train2017.json --output-name <COCO_HOME>/annotations/person_keypoints_converted_all.json
+python scripts/convert_coco_labels.py \
+    --labels-path <COCO_HOME>/annotations/person_keypoints_train2017.json \
+    --output-name <COCO_HOME>/annotations/person_keypoints_converted_all.json
 ```
 3. To start training run in terminal:
 ```
-python train_single_coco.py --dataset-folder <COCO_HOME> --checkpoint-path mobilenet_sgd_68.848.pth.tar --from-mobilenet
+python train_single_coco.py \
+    --dataset-folder <COCO_HOME> \
+    --checkpoint-path mobilenet_sgd_68.848.pth.tar \
+    --from-mobilenet
 ```
 
 #### Validation
 
 * Run in terminal:
 ```
-python val_single.py --dataset-folder <COCO_HOME> --checkpoint-path <CHECKPOINT>` --name-dataset CocoSingle
+python val_single.py \
+    --dataset-folder <COCO_HOME> \
+    --checkpoint-path <CHECKPOINT>` \
+    --name-dataset CocoSingle
 ```
 One should observe ~68% mAP on validation set.
 
@@ -98,7 +112,7 @@ python <OpenVINO_INSTALL_DIR>/deployment_tools/model_optimizer/mo.py --input_mod
 
 ## OpenVINO demo <a name="openvino-demo"/>
 
-OpenVINO provides multi-person pose estimation demo, which is able to use these models as pose estimation networks. Please, see details in the demo [readme](https://github.com/opencv/open_model_zoo/tree/demos/python_demos/single_human_pose_estimation_demo/README.md).
+OpenVINO provides multi-person pose estimation demo, which is able to use these models as pose estimation networks. Please, see details in the [demo](https://github.com/opencv/open_model_zoo/tree/develop/demos/python_demos/single_human_pose_estimation_demo).
 
 ## Citation:
 
