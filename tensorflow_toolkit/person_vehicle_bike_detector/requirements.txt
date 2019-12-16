@@ -1,5 +1,5 @@
 absl-py==0.7.1
-tensorflow==1.13.1
+tensorflow==1.15.0
 tensorboard==1.13.1
 tensorflow-gpu==1.13.1
 opencv-python==3.4.2.17
