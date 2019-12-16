@@ -1,6 +1,6 @@
 tensorflow==1.13.1
 tensorboard==1.13.1
-tensorflow-gpu==1.13.1
+tensorflow-gpu==1.15.0
 opencv-python==3.4.2.17
 cachetools==2.1.0
 cython==0.28.4
