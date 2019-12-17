@@ -1,9 +1,9 @@
 # Person re-identification
 
 This repository contains training and inference code for person re-identification
-neural network. The network is based on [OSNet](https://arxiv.org/abs/1905.00953)
+neural networks. The networks are based on [OSNet](https://arxiv.org/abs/1905.00953)
 architecture provided by [torchreid](https://github.com/KaiyangZhou/deep-person-reid.git)
-module. The code supports conversion to ONNX format and inference OpenVINO models.
+project. The code supports conversion to ONNX format and inference of OpenVINO models.
 
 ## Setup
 
@@ -11,19 +11,17 @@ module. The code supports conversion to ONNX format and inference OpenVINO model
 
 * Ubuntu 16.04
 * Python 3.5.2
-* Pytorch 1.0 or higher
+* PyTorch 1.3 or higher
 * OpenVINO 2019 R4 (or later) with Python API
 
 ### Installation
 
-This repository needs `torchreid` module. To install it use the next command:
+1. Create and activate virtual python environment
 
 ```bash
-git clone https://github.com/KaiyangZhou/deep-person-reid.git
-cd deep-person-reid
-git checkout 099b0ae7fcead522e56228860221a4f8b06cdaad
-pip install -r requirements.txt
-python setup.py develop
+cd $(git rev-parse --show-toplevel)/pytorch_toolkit/person_reidentification
+bash init_venv.sh
+. venv/bin/activate
 ```
 
 ### Datasets
@@ -60,7 +58,7 @@ root
         └── list_val.txt
 ```
 
-### Configuration file
+### Configuration files
 
 Script for training and inference uses a configuration file.
 [default_config.py](config/default_config.py) consists of default parameters.
@@ -87,11 +85,18 @@ For visualization results set parameter `test.visrank` to True (it works only wh
 `test.evaluate` is `True`).
 For visualization activation maps set parameter `test.visactmap` to True.
 
+### Pretrained models
 
-### Test OpenVINO models
+You can download pretrained models in PyTorch format corresponding to the provided configs from fileshare as well:
+- [person-reidentification-retail-0103](link)
+- [person-reidentification-retail-0107](link)
+- [person-reidentification-retail-0200](link)
 
-To run OpenVINO model should have the one in IR format (*.xml and *.bin files).
-To use this model just set in config file the next parameters:
+
+### Test OpenVINO reidentification models
+
+OpenVINO models are represented by \*.xml and \*.bin files (IR format).
+To use such a model just set in config file the next parameters:
 
 ```bash
 model:
@@ -99,12 +104,12 @@ model:
     name: /path/to/model/in/IR/format.xml
     cpu_extension: /path/to/cpu/extension/lib.so
 ```
-*.xml and *.bin files should be saved in the same directory.
+\*.xml and \*.bin files should be saved in the same directory.
 
 
-## Conversion pytorch model to ONNX format
+## Conversion PyTorch model to ONNX format
 
-To convert trained model from pytorch to ONNX format use the next command:
+To convert trained model from PyTorch to ONNX format use the next command:
 
 ```bash
 python convert_to_onnx.py \

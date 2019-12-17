@@ -30,6 +30,7 @@ inference.
 
   * [Action recognition](pytorch_toolkit/action_recognition)
   * [Face recognition](pytorch_toolkit/face_recognition)
+  * [Person reidentification](pytorch_toolkit/person_reidentification)
   * [Human pose estimation](pytorch_toolkit/human_pose_estimation)
   * [Instance segmentation](pytorch_toolkit/instance_segmentation)
   * [Object Detection](pytorch_toolkit/object_detection)
