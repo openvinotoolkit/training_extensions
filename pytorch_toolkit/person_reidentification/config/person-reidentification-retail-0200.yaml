@@ -8,7 +8,7 @@ model:
 data:
   type: 'image'
   sources: ['msmt17', 'market1501']
-  targets: ['dukemtmcreid']
+  targets: ['market1501']
   height: 256
   width: 128
   combineall: True
