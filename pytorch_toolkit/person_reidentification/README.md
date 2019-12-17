@@ -36,12 +36,6 @@ Structure of the root directory:
 
 ```
 root
-├── dukemtmc-reid
-│   └── DukeMTMC-reID
-│       ├── bounding_box_test
-│       ├── bounding_box_train
-│       └── query
-│
 ├── market1501
 │   └── Market-1501-v15.09.15
 │       ├── bounding_box_test
