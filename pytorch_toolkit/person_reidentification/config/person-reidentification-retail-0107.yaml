@@ -48,7 +48,7 @@ metric_losses:
 train:
   optim: 'radam'
   lr: 0.0015
-  max_epoch: 30
+  max_epoch: 20
   batch_size: 128
   fixbase_epoch: 5
   open_layers: ['conv1', 'fc', 'classifier', 'global_avgpool']
