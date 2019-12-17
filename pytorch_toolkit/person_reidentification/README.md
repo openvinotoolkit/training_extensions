@@ -98,7 +98,7 @@ You can download pretrained models in PyTorch format corresponding to the provid
 OpenVINO models are represented by \*.xml and \*.bin files (IR format).
 To use such a model just set in config file the next parameters:
 
-```bash
+```yaml
 model:
   openvino:
     name: /path/to/model/in/IR/format.xml
@@ -107,8 +107,9 @@ model:
 \*.xml and \*.bin files should be saved in the same directory.
 
 
-## Conversion PyTorch model to ONNX format
+## Conversion PyTorch model to OpenVINO format
 
+The conversion is done in two stages: first - convert a PyTorch model to the ONNX format and second - convert the obtained ONNX model to the IR format.
 To convert trained model from PyTorch to ONNX format use the next command:
 
 ```bash
@@ -121,3 +122,17 @@ Name of output model will be ended with `.onnx` automatically.
 By default output model path is `model.onnx`. Be careful about parameter
 `load_weights` in config file. `verbose` argument is non-required and
 switches on detailed output in conversion function.
+
+After the ONNX model is obtained one can convert it to IR.
+This produces model `model.xml` and weights `model.bin` in single-precision floating-point format (FP32):
+
+```bash
+python <OpenVINO_INSTALL_DIR>/deployment_tools/model_optimizer/mo.py --input_model model.onnx  \
+    --mean_values '[123.675, 116.28 , 103.53]' \
+    --scale_values '[58.395, 57.12 , 57.375]' \
+    --reverse_input_channels
+```
+
+## OpenVINO demo
+
+OpenVINO provides multi-camera-multi-person tracking demo, which is able to use these models as person reidentification networks. Please, see details in the [demo](https://github.com/opencv/open_model_zoo/tree/develop/demos/python_demos/multi_camera_multi_person_tracking).
