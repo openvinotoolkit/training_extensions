@@ -1,4 +1,8 @@
 """
+ MIT License
+
+ Copyright (c) 2018 Kaiyang Zhou
+
  Copyright (c) 2019 Intel Corporation
 
  Licensed under the Apache License, Version 2.0 (the "License");
@@ -59,7 +63,7 @@ class Random2DTranslation(object):
         interpolation (int, optional): desired interpolation. Default is
             ``PIL.Image.BILINEAR``
     """
-    
+
     def __init__(self, height, width, p=0.5, interpolation=Image.BILINEAR, **kwargs):
         self.height = height
         self.width = width
@@ -69,7 +73,7 @@ class Random2DTranslation(object):
     def __call__(self, img, *args, **kwargs):
         if random.uniform(0, 1) > self.p:
             return img.resize((self.width, self.height), self.interpolation)
-        
+
         new_width, new_height = int(round(self.width * 1.125)), int(round(self.height * 1.125))
         resized_img = img.resize((new_width, new_height), self.interpolation)
         x_maxrange = new_width - self.width
@@ -96,21 +100,21 @@ class RandomErasing(object):
         r1 (float, optional): min aspect ratio.
         mean (list, optional): erasing value.
     """
-    
+
     def __init__(self, p=0.5, sl=0.02, sh=0.4, r1=0.3, mean=(0.4914, 0.4822, 0.4465), **kwargs):
         self.probability = p
         self.mean = mean
         self.sl = sl
         self.sh = sh
         self.r1 = r1
-       
+
     def __call__(self, img, *args, **kwargs):
         if random.uniform(0, 1) > self.probability:
             return img
 
         for attempt in range(100):
             area = img.size()[1] * img.size()[2]
-       
+
             target_area = random.uniform(self.sl, self.sh) * area
             aspect_ratio = random.uniform(self.r1, 1/self.r1)
 
@@ -141,7 +145,7 @@ class ColorAugmentation(object):
         p (float, optional): probability that this operation takes place.
             Default is 0.5.
     """
-    
+
     def __init__(self, p=0.5, **kwargs):
         self.p = p
         self.eig_vec = torch.Tensor([
@@ -206,7 +210,7 @@ class RandomPatch(object):
     """Random patch data augmentation.
 
     There is a patch pool that stores randomly extracted pathces from person images.
-    
+
     For each input image,
         1) we extract a random patch and store the patch in the patch pool;
         2) randomly select a patch from the patch pool and paste it on the
@@ -215,19 +219,19 @@ class RandomPatch(object):
     Reference:
         - Zhou et al. Omni-Scale Feature Learning for Person Re-Identification. ICCV, 2019.
     """
-    
+
     def __init__(self, p=0.5, pool_capacity=50000, min_sample_size=100,
                  patch_min_area=0.01, patch_max_area=0.5, patch_min_ratio=0.1,
                  prob_rotate=0.5, prob_flip_leftright=0.5, **kwargs):
         self.prob_happen = p
-        
+
         self.patch_min_area = patch_min_area
         self.patch_max_area = patch_max_area
         self.patch_min_ratio = patch_min_ratio
 
         self.prob_rotate = prob_rotate
         self.prob_flip_leftright = prob_flip_leftright
-        
+
         self.patchpool = deque(maxlen=pool_capacity)
         self.min_sample_size = min_sample_size
 
@@ -444,7 +448,7 @@ def build_transforms(height, width, transforms=None, norm_mean=(0.485, 0.456, 0.
     """
     if transforms is None:
         return None, None
-    
+
     if norm_mean is None or norm_std is None:
         norm_mean = [0.485, 0.456, 0.406]  # imagenet mean
         norm_std = [0.229, 0.224, 0.225]  # imagenet std

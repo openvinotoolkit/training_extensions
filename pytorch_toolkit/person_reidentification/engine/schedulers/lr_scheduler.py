@@ -1,4 +1,8 @@
 """
+ MIT License
+
+ Copyright (c) 2018 Kaiyang Zhou
+
  Copyright (c) 2019 Intel Corporation
 
  Licensed under the Apache License, Version 2.0 (the "License");
@@ -51,11 +55,11 @@ def build_lr_scheduler(optimizer, lr_scheduler='single_step', stepsize=1, gamma=
     """
     if lr_scheduler not in AVAI_SCH:
         raise ValueError('Unsupported scheduler: {}. Must be one of {}'.format(lr_scheduler, AVAI_SCH))
-    
+
     if lr_scheduler == 'single_step':
         if isinstance(stepsize, list):
             stepsize = stepsize[-1]
-        
+
         if not isinstance(stepsize, int):
             raise TypeError(
                 'For single_step lr_scheduler, stepsize must '

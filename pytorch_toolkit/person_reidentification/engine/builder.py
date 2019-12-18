@@ -1,4 +1,8 @@
 """
+ MIT License
+
+ Copyright (c) 2018 Kaiyang Zhou
+
  Copyright (c) 2019 Intel Corporation
 
  Licensed under the Apache License, Version 2.0 (the "License");
@@ -53,41 +57,7 @@ def build_engine(cfg, datamanager, model, optimizer, scheduler, writer=None, ope
                 writer=writer,
                 openvino_model=openvino_model,
             )
-        else:
-            engine = torchreid.engine.ImageTripletEngine(
-                datamanager,
-                model,
-                optimizer,
-                margin=cfg.loss.triplet.margin,
-                weight_t=cfg.loss.triplet.weight_t,
-                weight_x=cfg.loss.triplet.weight_x,
-                scheduler=scheduler,
-                use_gpu=cfg.use_gpu,
-                label_smooth=cfg.loss.softmax.label_smooth
-            )
-
     else:
-        if cfg.loss.name == 'softmax':
-            engine = torchreid.engine.VideoSoftmaxEngine(
-                datamanager,
-                model,
-                optimizer,
-                scheduler=scheduler,
-                use_gpu=cfg.use_gpu,
-                label_smooth=cfg.loss.softmax.label_smooth,
-                pooling_method=cfg.video.pooling_method
-            )
-        else:
-            engine = torchreid.engine.VideoTripletEngine(
-                datamanager,
-                model,
-                optimizer,
-                margin=cfg.loss.triplet.margin,
-                weight_t=cfg.loss.triplet.weight_t,
-                weight_x=cfg.loss.triplet.weight_x,
-                scheduler=scheduler,
-                use_gpu=cfg.use_gpu,
-                label_smooth=cfg.loss.softmax.label_smooth
-            )
+        raise Exception('This code supports image data type only')
 
     return engine
