@@ -22,19 +22,19 @@ import logging as log
 import torch
 from torch import nn
 
-from torchreid.models.osnet import OSNet, OSBlock, ConvLayer
+from torchreid.models.osnet import OSNet, OSBlock, ConvLayer, pretrained_urls
 
 from .modules.fpn import FPN
 
 
 __all__ = ['fpn_osnet_x1_0', 'fpn_osnet_x0_75', 'fpn_osnet_x0_5', 'fpn_osnet_x0_25', 'fpn_osnet_ibn_x1_0']
 
-pretrained_urls = {
-    'fpn_osnet_x1_0': 'https://drive.google.com/uc?id=1LaG1EJpHrxdAxKnSCJ_i0u-nbxSAeiFY',
-    'fpn_osnet_x0_75': 'https://drive.google.com/uc?id=1uwA9fElHOk3ZogwbeY5GkLI6QPTX70Hq',
-    'fpn_osnet_x0_5': 'https://drive.google.com/uc?id=16DGLbZukvVYgINws8u8deSaOqjybZ83i',
-    'fpn_osnet_x0_25': 'https://drive.google.com/uc?id=1rb8UN5ZzPKRc_xvtHlyDh-cSz88YX9hs',
-    'fpn_osnet_ibn_x1_0': 'https://drive.google.com/uc?id=1sr90V6irlYYDd4_4ISU2iruoRG8J__6l'
+pretrained_urls_fpn = {
+    'fpn_osnet_x1_0': pretrained_urls['osnet_x1_0'],
+    'fpn_osnet_x0_75': pretrained_urls['osnet_x0_75'],
+    'fpn_osnet_x0_5': pretrained_urls['osnet_x0_5'],
+    'fpn_osnet_x0_25': pretrained_urls['osnet_x0_25'],
+    'fpn_osnet_ibn_x1_0': pretrained_urls['osnet_ibn_x1_0']
 }
 
 
@@ -252,7 +252,7 @@ def init_pretrained_weights(model, key=''):
     cached_file = os.path.join(model_dir, filename)
 
     if not os.path.exists(cached_file):
-        gdown.download(pretrained_urls[key], cached_file, quiet=False)
+        gdown.download(pretrained_urls_fpn[key], cached_file, quiet=False)
 
     state_dict = torch.load(cached_file)
     model_dict = model.state_dict()
