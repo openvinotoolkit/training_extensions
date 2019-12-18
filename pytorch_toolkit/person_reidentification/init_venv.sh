@@ -8,7 +8,6 @@ if [[ -e venv ]]; then
   exit
 fi
 
-# Create virtual environment
 virtualenv venv -p python3 --prompt="(pytorch-toolbox) "
 echo "export PYTHONPATH=\$PYTHONPATH:${work_dir}" >> venv/bin/activate
 . venv/bin/activate
@@ -16,11 +15,12 @@ echo "export PYTHONPATH=\$PYTHONPATH:${work_dir}" >> venv/bin/activate
 pip install -r ${work_dir}/requirements.txt
 pip install -e ../nncf
 
-git clone https://github.com/KaiyangZhou/deep-person-reid.git
-cd deep-person-reid
-git checkout 099b0ae7fcead522e56228860221a4f8b06cdaad
+# Download and setup 3rd party repo
+git submodule update --init --recommend-shallow ../../external/deep-person-reid
+cd ../../external/deep-person-reid
 pip install -r requirements.txt
 python setup.py develop
+cd -
 
 # Install OpenVino Model Optimizer (optional)
 mo_requirements_file="${INTEL_OPENVINO_DIR:-/opt/indel/openvino}/deployment_tools/model_optimizer/requirements_onnx.txt"
