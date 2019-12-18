@@ -26,49 +26,53 @@ from torchreid.utils import load_pretrained_weights
 
 from models.builder import build_model
 
+def main():
 
-parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument('--config-file', type=str, default='', help='path to config file')
-parser.add_argument('--output-name', type=str, default='model')
-parser.add_argument('--verbose', default=False, action='store_true',
-                    help='Verbose mode for onnx.export')
-args = parser.parse_args()
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('--config-file', type=str, default='', help='path to config file')
+    parser.add_argument('--output-name', type=str, default='model')
+    parser.add_argument('--verbose', default=False, action='store_true',
+                        help='Verbose mode for onnx.export')
+    args = parser.parse_args()
 
-cfg = get_default_config()
-if args.config_file:
-    cfg.merge_from_file(args.config_file)
-cfg.freeze()
+    cfg = get_default_config()
+    if args.config_file:
+        cfg.merge_from_file(args.config_file)
+    cfg.freeze()
 
-model = build_model(
-        name=cfg.model.name,
-        num_classes=1041,  # Does not matter in conversion
-        loss=cfg.loss.name,
-        pretrained=False,
-        use_gpu=True,
-        feature_dim=cfg.model.feature_dim,
-        fpn_dim=cfg.model.fpn_dim,
-        gap_as_conv=cfg.model.gap_as_conv,
-        IN_first=cfg.model.IN_first
+    model = build_model(
+            name=cfg.model.name,
+            num_classes=1041,  # Does not matter in conversion
+            loss=cfg.loss.name,
+            pretrained=False,
+            use_gpu=True,
+            feature_dim=cfg.model.feature_dim,
+            fpn_dim=cfg.model.fpn_dim,
+            gap_as_conv=cfg.model.gap_as_conv,
+            IN_first=cfg.model.IN_first
+        )
+
+    load_pretrained_weights(model, cfg.model.load_weights)
+    model.eval()
+
+    _, transform = build_transforms(
+        cfg.data.height, cfg.data.width,
+        transforms=cfg.data.transforms,
+        norm_mean=cfg.data.norm_mean,
+        norm_std=cfg.data.norm_std,
+        apply_masks_to_test=False
     )
 
-load_pretrained_weights(model, cfg.model.load_weights)
-model.eval()
+    input_size = (cfg.data.height, cfg.data.width, 3)
+    img = np.random.rand(*input_size).astype(np.float32)
+    img = np.uint8(img * 255)
+    im = Image.fromarray(img)
+    blob = transform(im).unsqueeze(0)
 
-_, transform = build_transforms(
-    cfg.data.height, cfg.data.width,
-    transforms=cfg.data.transforms,
-    norm_mean=cfg.data.norm_mean,
-    norm_std=cfg.data.norm_std,
-    apply_masks_to_test=False
-)
+    torch.onnx.export(model, blob, args.output_name + '.onnx',
+                      verbose=False, export_params=True,
+                      input_names=['data'], output_names=['reid_embedding'],
+                      opset_version=9)  # 9th version resolves nearest upsample issue
 
-input_size = (cfg.data.height, cfg.data.width, 3)
-img = np.random.rand(*input_size).astype(np.float32)
-img = np.uint8(img * 255)
-im = Image.fromarray(img)
-blob = transform(im).unsqueeze(0)
-
-torch.onnx.export(model, blob, args.output_name + '.onnx',
-                  verbose=False, export_params=True,
-                  input_names=['data'], output_names=['reid_embedding'],
-                  opset_version=9)  # 9th version resolves nearest upsample issue
+if __name__ == '__main__':
+    main()
