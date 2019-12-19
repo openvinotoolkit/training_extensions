@@ -192,12 +192,12 @@ class ImageAMSoftmaxEngine(ImageSoftmaxEngine):
                 metric_loss = self.metric_losses(embeddings, pids, epoch, epoch * num_batches + batch_idx)
                 self.metric_losses.end_iteration()
                 loss += metric_loss
+                metric_losses.update(metric_loss.item(), pids.size(0))
 
             loss.backward()
             self.optimizer.step()
 
             losses.update(loss.item(), pids.size(0))
-            metric_losses.update(metric_loss.item(), pids.size(0))
             accs.update(metrics.accuracy(outputs, pids)[0].item())
             batch_time.update(time.time() - start_time)
 
