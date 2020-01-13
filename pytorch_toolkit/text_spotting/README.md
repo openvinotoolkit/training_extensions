@@ -82,8 +82,8 @@ Extract downloaded datasets in following images_folder:  `$WORK_DIR/openvino_tra
 Convert extracted datasets to format that is used internally.
 
 ```bash
-python3 tools/create_dataset.py --config dataset_train.json --output dataset.json
-python3 tools/create_dataset.py --config dataset_test.json --output dataset.json
+python3 tools/create_dataset.py --config dataset_train.json --output IC13TRAINTEST_IC15TRAIN_MSRATD500TRAINTEST_COCOTEXTTRAINVAL.json
+python3 tools/create_dataset.py --config dataset_test.json --output IC15TEST.json
 ```
 
 
