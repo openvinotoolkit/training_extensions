@@ -57,6 +57,7 @@ def parse_args():
     parser.add_argument('--size', dest='size', default=None, type=int, nargs=2,
                         metavar='<num>',
                         help='Input resolution in a (height, width) format.')
+    parser.add_argument('--visualize', action='store_true', help='Visualize text spotting results.')
 
     openvino_parser = subparsers.add_parser('openvino')
     openvino_parser.add_argument('--detector_model', dest='openvino_detector_model_path', type=str,
@@ -185,7 +186,7 @@ def main(args):
 
     logging.info('Evaluating results...')
     evaluation_results = dataset.evaluate(scores_all, classes_all, boxes_all, masks_all,
-                                          text_probs_all, dump='dump')
+                                          text_probs_all, dump='dump', visualize=args.visualize)
     logging.info(evaluation_results)
 
     logging.info('Average inference time {}'.format(inference_timer.average_time))

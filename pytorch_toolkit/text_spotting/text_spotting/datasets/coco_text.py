@@ -183,7 +183,7 @@ class COCOTextDataset(COCODataset):
                     file.write('\n')
 
     def evaluate(self, scores, classes, boxes, masks, text_log_softmax=None, output_dir='',
-                 iou_types=('bbox', 'segm'), dump=None):
+                 iou_types=('bbox', 'segm'), dump=None, visualize=False):
         """
         Runs COCO procedure to evaluate mAP of detection and segmentation as well as
         ICDAR procedure to evaluate text detection and word spotting recall, recall and
@@ -201,8 +201,17 @@ class COCOTextDataset(COCODataset):
         flat_results['text_detection/hmean'] = hmean
 
         if text_log_softmax:
-            recall, precision, hmean, _ = text_eval(predictions, self.gt_annotations,
-                                                    use_transcriptions=True)
+            paths = []
+            if visualize:
+                for img_id in self.ids:
+                    path = self.coco.loadImgs(img_id)[0]['file_name']
+                    paths.append(osp.join(self.root_dir_path, path))
+                assert len(predictions) == len(self.gt_annotations)
+                assert len(predictions) == len(paths), f'len(predictions)={len(predictions)}, len(paths)={len(paths)}'
+
+            recall, precision, hmean, _ = text_eval(predictions, self.gt_annotations, paths,
+                                                    imshow_delay=0, use_transcriptions=True)
+
             print(
                 ' Text spotting  recall={} precision={} hmean={}'.format(recall, precision, hmean))
             flat_results['text_spotting/recall'] = recall

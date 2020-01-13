@@ -55,7 +55,7 @@ def polygon_from_points(points):
         x1,y1,x2,y2,x3,y3,x4,y4
     """
 
-    point_mat = np.array(points[:8]).astype(np.int32).reshape(4, 2)
+    point_mat = np.array(points[:]).astype(np.int32).reshape(-1, 2)
     return plg.Polygon(point_mat)
 
 
@@ -64,9 +64,9 @@ def draw_gt_polygons(image, gt_polygons, gt_dont_care_nums):
 
     for point_idx, polygon in enumerate(gt_polygons):
         color = (128, 128, 128) if point_idx in gt_dont_care_nums else (255, 0, 0)
-        for i in range(4):
+        for i in range(len(polygon[0])):
             pt1 = int(polygon[0][i][0]), int(polygon[0][i][1])
-            pt2 = int(polygon[0][(i + 1) % 4][0]), int(polygon[0][(i + 1) % 4][1])
+            pt2 = int(polygon[0][(i + 1) % len(polygon[0])][0]), int(polygon[0][(i + 1) % len(polygon[0])][1])
             cv2.line(image, pt1, pt2, color, 2)
     return image
 
@@ -340,20 +340,22 @@ def text_eval(pr_annotations, gt_annotations, images=None, imshow_delay=1,
         num_global_care_gt += len(gt_polygons_list) - len(gt_dont_care_polygon_nums)
         num_global_care_pr += len(pr_polygons_list) - len(pr_dont_care_polygon_nums)
 
-        if images is not None:
+        if images:
             image = images[frame_id]
+            if isinstance(image, str):
+                image = cv2.imread(image)
             draw_gt_polygons(image, gt_polygons_list, gt_dont_care_polygon_nums)
             draw_pr_polygons(image, pr_polygons_list, pr_dont_care_polygon_nums,
                              pr_matched_nums, pr_confidences_list)
             if use_transcriptions:
                 draw_pr_polygons(image, pr_polygons_list, pr_dont_care_polygon_nums,
-                                 pr_matched_but_not_recognized, pr_confidences_list,
+                                 pr_matched_nums + pr_matched_but_not_recognized, pr_confidences_list,
                                  pr_transcriptions)
             image = cv2.resize(image, (640, 480))
             cv2.imshow('result', image)
             k = cv2.waitKey(imshow_delay)
             if k == 27:
-                return -1, -1, -1
+                return -1, -1, -1, -1
 
     method_recall = 0 if num_global_care_gt == 0 else float(matched_sum) / num_global_care_gt
     method_precision = 0 if num_global_care_pr == 0 else float(matched_sum) / num_global_care_pr
