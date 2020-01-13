@@ -128,7 +128,7 @@ To train Text Spotter model run (**do not forget to point where training and tes
 python3 tools/train.py configs/text-spotting-0001.json
 ```
 
-One can point to pre-trained model (checkpoint) inside configuration file to start training from pre-trained weights. See `configs/text-spotting-0001.json`.
+One can point to pre-trained model [checkpoint](https://download.01.org/opencv/openvino_training_extensions/models/text_spotter/model_step_200000.pth) inside configuration file to start training from pre-trained weights. See `configs/text-spotting-0001.json`.
 ```
 ...
 "checkpoint": "",
