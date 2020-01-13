@@ -23,26 +23,11 @@ def dataset_size(fname):
       count += 1
   return count
 
-
-LPR_PATTERNS = [
-  '^<[^>]*>[A-Z][0-9A-Z]{5}$',
-  '^<[^>]*>[A-Z][0-9A-Z][0-9]{3}<police>$',
-  '^<[^>]*>[A-Z][0-9A-Z]{4}<[^>]*>$',  # <Guangdong>, <Hebei>
-  '^WJ<[^>]*>[0-9]{4}[0-9A-Z]$',
-]
-
-def lpr_pattern_check(label):
-  for pattern in LPR_PATTERNS:
+def lpr_pattern_check(label, lpr_patterns):
+  for pattern in lpr_patterns:
     if re.match(pattern, label):
       return True
   return False
-
-def find_best(predictions):
-  for prediction in predictions:
-    if lpr_pattern_check(prediction):
-      return prediction
-  return predictions[0]  # fallback
-
 
 def edit_distance(string1, string2):
   len1 = len(string1) + 1
@@ -60,13 +45,13 @@ def edit_distance(string1, string2):
   return tbl[i, j]
 
 
-def accuracy(label, val, vocab, r_vocab):
+def accuracy(label, val, vocab, r_vocab, lpr_patterns):
   pred = decode_beams(val, r_vocab)
   label_len = len(label)
   acc, acc1 = 0, 0
   num = 0
   for i in range(label_len):
-    if not lpr_pattern_check(label[i].decode('utf-8')):  # GT label fails
+    if not lpr_pattern_check(label[i].decode('utf-8'), lpr_patterns):  # GT label fails
       print('GT label fails: ' + label[i].decode('utf-8'))
       continue
     best = pred[i]
