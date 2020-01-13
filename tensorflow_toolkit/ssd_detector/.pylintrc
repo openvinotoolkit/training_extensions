@@ -30,7 +30,7 @@ load-plugins=
 # Disable the message, report, category or checker with the given id(s). You
 # can either give multiple identifier separated by comma (,) or put this option
 # multiple time.
-disable=import-error,missing-docstring,no-name-in-module,no-member,fixme,redefined-builtin,wrong-import-position,too-few-public-methods,no-init,no-else-return,not-context-manager,duplicate-code
+disable=import-error,missing-docstring,no-name-in-module,no-member,fixme,redefined-builtin,wrong-import-position,too-few-public-methods,no-init,no-else-return,not-context-manager,duplicate-code,unsupported-membership-test,unsubscriptable-object
 
 
 
