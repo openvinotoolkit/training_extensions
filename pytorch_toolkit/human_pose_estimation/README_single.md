@@ -18,7 +18,7 @@ This repository contains training code for the paper [Global Context for Convolu
 
 ## Training on LIP dataset <a name="training-lip"/>
 
-1. Download the [Look Into Person dataset](http://47.100.21.47:9999/overview.php) and unpack it to `<LIP_HOME>` folder.
+1. Download the [Look Into Person dataset (2.1 Single Person)](http://sysu-hcp.net/lip/overview.php) and unpack it to `<LIP_HOME>` folder.
 2. To start training run in terminal:
 ```bash
 python train_single.py \
