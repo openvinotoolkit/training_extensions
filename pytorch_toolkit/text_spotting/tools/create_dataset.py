@@ -46,7 +46,7 @@ def main():
     ann = TextOnlyCocoAnnotation()
     for dataset in config:
         assert isinstance(dataset, dict)
-        dataset['kwargs']['root'] = root_data_dir()
+        dataset['kwargs']['root'] = os.readlink(root_data_dir())
         ann += str_to_class[dataset['name']](**dataset['kwargs'])()
 
     ann.write(args.output)
