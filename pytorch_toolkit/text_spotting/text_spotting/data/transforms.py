@@ -263,6 +263,75 @@ class FilterTextByLength:
         return format_string
 
 
+class RandomCrop:
+    """ Class for random cropping. """
+
+    OUTSIDE = 0
+    INSIDE = 1
+    ON_BORDER = 2
+
+    def __init__(self, min_relative_size, attempts):
+        self.min_relative_size = min_relative_size
+        self.attempts = attempts
+
+    @staticmethod
+    def position(box, crop_height, crop_width):
+        if box[0] <= 0 and box[1] <= 0 and box[2] <= 0 and box[3] <= 0:
+            return RandomCrop.OUTSIDE
+        elif box[0] >= crop_width and box[1] >= crop_height and box[2] >= crop_width and box[
+            3] >= crop_height:
+            return RandomCrop.OUTSIDE
+        elif box[0] >= 0 and box[1] >= 0 and box[2] < crop_width and box[3] < crop_height:
+            return RandomCrop.INSIDE
+        else:
+            return RandomCrop.ON_BORDER
+
+    def __call__(self, sample):
+        height, width = sample['image'].shape[:2]
+
+        for attempt in range(self.attempts):
+            crop_height = random.randint(int(self.min_relative_size * height), height)
+            crop_width = random.randint(int(self.min_relative_size * width), width)
+
+            crop_min_y = random.randint(0, height - crop_height)
+            crop_min_x = random.randint(0, width - crop_width)
+
+            if 'gt_boxes' in sample:
+                boxes = np.copy(sample['gt_boxes'])
+                boxes[:, 0] -= crop_min_x
+                boxes[:, 1] -= crop_min_y
+                boxes[:, 2] -= crop_min_x
+                boxes[:, 3] -= crop_min_y
+
+                positions = np.array(
+                    [RandomCrop.position(box, crop_height, crop_width) for box in boxes])
+                if RandomCrop.ON_BORDER in positions:
+                    continue
+                if RandomCrop.INSIDE not in positions:
+                    continue
+
+                sample['gt_texts'] = np.array(sample['gt_texts'])[positions == RandomCrop.INSIDE]
+                sample['gt_texts'] = list(sample['gt_texts'])
+                sample['gt_boxes'] = boxes[positions == RandomCrop.INSIDE]
+                sample['gt_masks'] = np.array(sample['gt_masks'])[positions == RandomCrop.INSIDE]
+                sample['gt_classes'] = sample['gt_classes'][positions == RandomCrop.INSIDE]
+
+                polygons = list(sample['gt_masks'])
+                for i, obj in enumerate(polygons):
+                    for j, _ in enumerate(obj):
+                        polygons[i][j][:, 0] -= crop_min_x
+                        polygons[i][j][:, 1] -= crop_min_y
+
+                sample['gt_masks'] = polygons
+
+                sample['image'] = sample['image'][crop_min_y:crop_min_y + crop_height,
+                                  crop_min_x:crop_min_x + crop_width]
+
+                break
+
+        return sample
+
+
 class Visualize:
     """ Visualizes image with rectangles, masks, texts using cv2.imshow. """
 
