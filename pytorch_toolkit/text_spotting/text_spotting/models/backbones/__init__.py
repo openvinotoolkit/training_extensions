@@ -44,4 +44,9 @@ def get_backbone(name, **kwargs):
     else:
         raise IOError(f'Invalid backbone name {name}')
 
+    if 'freeze_stages_params' in kwargs:
+        backbone.freeze_stages_params(range(kwargs['freeze_stages_params']))
+    if 'freeze_stages_bns' in kwargs:
+        backbone.freeze_stages_bns(range(kwargs['freeze_stages_bns']))
+
     return backbone
