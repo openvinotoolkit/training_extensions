@@ -14,6 +14,8 @@
  limitations under the License.
 """
 
+import logging
+
 from text_spotting.models.backbones.efficientnet import EfficientNet
 from text_spotting.models.backbones.mobilenet_v2 import MobileNetV2
 from text_spotting.models.backbones.mobilenet_v3 import mobilenetv3_large
@@ -27,10 +29,14 @@ def get_backbone(name, **kwargs):
         # backbone.freeze_stages_bns(range(19))
         backbone.set_output_stages((3, 6, 13, 18))
     elif name == 'resnet50':
-        backbone = resnet50(pretrained=True, progress=True)
-        # backbone.freeze_stages_params(range(2))
-        # backbone.freeze_stages_bns(range(5))
-        backbone.set_output_stages((1, 2, 3, 4))
+        replace_stride_with_dilation = None
+        if 'replace_stride_with_dilation' in kwargs:
+            replace_stride_with_dilation = kwargs['replace_stride_with_dilation']
+
+        backbone = resnet50(pretrained=True, progress=True,
+                            replace_stride_with_dilation=replace_stride_with_dilation)
+        output_stages = (1, 2, 3, 4)
+
     elif name == 'mobilenet_v3_large':
         backbone = mobilenetv3_large(shape=kwargs['shape'])
         # backbone.freeze_stages_params(range(2))
@@ -45,8 +51,15 @@ def get_backbone(name, **kwargs):
         raise IOError(f'Invalid backbone name {name}')
 
     if 'freeze_stages_params' in kwargs:
+        logging.info(f'Freezing stages params {kwargs["freeze_stages_params"]}')
         backbone.freeze_stages_params(range(kwargs['freeze_stages_params']))
     if 'freeze_stages_bns' in kwargs:
+        logging.info(f'Freezing stages bns {kwargs["freeze_stages_bns"]}')
         backbone.freeze_stages_bns(range(kwargs['freeze_stages_bns']))
+
+    if 'output_stages' in kwargs:
+        output_stages = kwargs['output_stages']
+    logging.info(f'Setting output stages {output_stages}')
+    backbone.set_output_stages(output_stages)
 
     return backbone
