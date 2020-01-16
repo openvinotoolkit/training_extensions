@@ -1,51 +1,55 @@
 # Neural Network Compression Framework  (NNCF)
 
-This module contains a PyTorch-based framework and samples for neural networks compression. The framework organized as a Python module that can be built and used in a standalone mode. The framework architecture is unified to make it easy to add different compression methods. The samples demonstrate the usage of compression algorithms for three different use cases on public models and datasets: Image Classification, Object Detection and Semantic Segmentation.
+This module contains a PyTorch\*-based framework and samples for neural networks compression. The framework is organized as a Python\* module that can be built and used in a standalone mode. The framework architecture is unified to make it easy to add different compression methods. The samples demonstrate the usage of compression algorithms for three different use cases on public models and datasets: Image Classification, Object Detection and Semantic Segmentation.
 
-## Key features:
+## Key Features
 
-- Support of quantization, binarization and sparsity algorithms with fine-tuning.
+- Support of quantization, binarization, and sparsity algorithms with fine-tuning
 - Automatic model graph transformation. The model is wrapped by the custom class and additional layers are inserted in the graph. The transformations are configurable.
-- Common interface for compression methods.
-- GPU-accelerated layers for fast model fine-tuning.
-- Distributed training support.
-- Configuration file examples for sparsity, quantization and sparsity with quantization. Each type of compression requires only one additional fine-tuning stage.
-- Export models to ONNX format that is supported by [OpenVINO](https://github.com/opencv/dldt) Toolkit.
+- Common interface for compression methods
+- GPU-accelerated layers for fast model fine-tuning
+- Distributed training support
+- Configuration file examples for sparsity, quantization, and sparsity with quantization. Each type of compression requires only one additional fine-tuning stage.
+- Export models to ONNX\* format that is supported by the [OpenVINO&trade; toolkit](https://github.com/opencv/dldt).
 
-For more details about framework architecture please refer to [NNCF description](nncf/README.md).
+For more details about framework architecture, refer to  the [NNCF description](nncf/README.md).
 
 ## Usage
-It is assumed that NNCF can be used in two different ways:
-- A standalone package that can installed and integrated into a custom training pipeline. For example, NNCF can be used with [mmdetection](https://github.com/open-mmlab/mmdetection) pip package into the Python environment. For more information about NNCF standalone usage refer to this [manual](./docs/PackageUsage.md).
-- Training sample that demonstrates model compression capabilities.
+
+The NNCF can be used in two different ways:
+- A standalone package that can be installed and integrated into a custom training pipeline. For example, the NNCF can be used with the [mmdetection](https://github.com/open-mmlab/mmdetection) pip package into the Python environment. For more information about NNCF standalone usage, refer to this [manual](./docs/PackageUsage.md).
+- Training sample that demonstrates model compression capabilities
 
 Any of these two options implies providing a configuration file which contains hyperparameters of training and compression algorithms. Each of compression samples contains examples of configuration files which implements compression of standard DL models. For more information about configuration files please refer to the corresponding [manual file](docs/Configuration.md).
 
-### Model compression samples
-To run the samples please refer to the corresponding tutorials:
+### Model Compression Samples
+
+To run the samples,refer to the corresponding tutorials:
 - [Image Classification sample](examples/classification/README.md)
 - [Object Detection sample](examples/object_detection/README.md)
 - [Semantic Segmentation sample](examples/segmentation/README.md)
 
-### System requirements
-- Ubuntu 16.04 or later (64-bit)
-- Python 3.5 or later
-- NVidia CUDA Toolkit 9.0 or later
-- PyTorch 1.0 or higher.
+### System Requirements
+
+- Ubuntu\* 16.04 or later (64-bit)
+- Python\* 3.5 or later
+- NVidia CUDA\* Toolkit 9.0 or later
+- PyTorch\* 1.0 or higher.
 
 ### Installation
-We suggest to install or use the package into the [Python virtual environment](https://docs.python.org/3/tutorial/venv.html).
+
+We suggest to install or use the package in the [Python virtual environment](https://docs.python.org/3/tutorial/venv.html).
 - Install the following dependencies: `sudo apt-get install python3-dev`
 - Activate environment and install the project dependencies running `pip install -r requirements.txt`
 - Use as a standalone package:
-   - Clone repository
-   - In the project folder run `python setup.py bdist_wheel` to build package
-   - Then you can install package running `pip install dist/nncf-<vesion>.whl`
+   1. Clone repository
+   2. In the project folder, run `python setup.py bdist_wheel` to build package
+   3. Install package running `pip install dist/nncf-<vesion>.whl`
 - Use project samples
-   - Clone repository
-   - In the project folder run `python setup.py develop` to install NNCF in your environment
+   1. Clone repository
+   2. In the project folder run `python setup.py develop` to install NNCF in your environment
 
-## Some recent results
+## Some Recent Results
 
 | Model | Dataset | PyTorch FP32 baseline | PyTorch compressed accuracy  |
 | :-- | :-: | :-: | :-: |

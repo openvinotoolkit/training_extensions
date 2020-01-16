@@ -1,51 +1,56 @@
-# Smart classroom scenario
-This repository contains TensorFlow code for deployment of person detection (PD) and action recognition (AR) models for smart classroom use-case. You can define own list of possible actions (see annotation file [format](./README_DATA.md) and steps for model training to change the list of actions) but this repository shows example for 6 action classes: standing, sitting, raising hand, writing, turned-around and lie-on-the-desk.
+# Smart Classroom Scenario
 
-## Pre-requisites
-- Ubuntu 16.04 / 18.04
-- Python 2.7
+This repository contains the TensorFlow\* code for deployment of person detection (PD) and action recognition (AR) models for the smart classroom use case. You can define your own list of possible actions (see annotation file [format](./README_DATA.md) and steps for model training to change the list of actions), but this repository shows example for 6 action classes: stand, sit, raise a hand, write, turn around, and lay on the desk.
+
+## Prerequisites
+
+- Ubuntu\* 16.04 / 18.04
+- Python\* 2.7
 
 ## Installation
- 1. Create virtual environment
- ```bash
- virtualenv venv -p python2 --prompt="(action)"
- ```
 
- 2. Activate virtual environment and setup OpenVINO variables
- ```bash
- . venv/bin/activate
- . /opt/intel/openvino/bin/setupvars.sh
- ```
- **NOTE** Good practice is adding `. /opt/intel/openvino/bin/setupvars.sh` to the end of the `venv/bin/activate`.
- ```
- echo ". /opt/intel/openvino/bin/setupvars.sh" >> venv/bin/activate
- ```
+ 1. Create virtual environment
+    ```bash
+    virtualenv venv -p python2 --prompt="(action)"
+    ```
+
+ 2. Activate virtual environment and setup the OpenVINO&trade; variables:
+    ```bash
+    . venv/bin/activate
+    . /opt/intel/openvino/bin/setupvars.sh
+    ```
+    > **TIP:** Good practice is adding `. /opt/intel/openvino/bin/setupvars.sh` to the end of the `venv/bin/activate`.
+    ```
+    echo ". /opt/intel/openvino/bin/setupvars.sh" >> venv/bin/activate
+    ```
 
  3. Install modules
- ```bash
- pip2 install -e .
- ```
+    ```bash
+    pip2 install -e .
+    ```
 
-## Model training
-Proposed repository allows to carry out the full cycle model training procedure. There are two ways to get the high accurate model:
- - Fine-tune from the proposed [initial weights](https://download.01.org/opencv/openvino_training_extensions/models/action_detection/person-detection-action-recognition-0006.tar.gz). This way is most simple and fast due to reducing training stages to single one - training PD&AR model directly.
- - Full cycle model pre-training on classification and detection datasets and final PD&AR model training. To get most accurate model we recommend to pre-train model on the next tasks:
-   1. Classification on ImageNet dataset (see classifier training [instruction](./README_CLASSIFIER.md))
-   2. Detection on Pascal VOC0712 dataset (see detector training [instruction](./README_DETECTOR.md))
-   3. Detection on MS COCO dataset
+## Train a Model
 
-## Data preparation
-To prepare a dataset follow the [instruction](./README_DATA.md)
+There are two ways to get a high-accuracy model:
+ - Fine-tune from the proposed [initial weights](https://download.01.org/opencv/openvino_training_extensions/models/action_detection/person-detection-action-recognition-0006.tar.gz). This way is the most simple and the fastest due to the reduction of training stages to a single one - training PD&AR model directly.
+ - Full cycle model pretraining on classification and detection datasets and final PD&AR model training. To get the most accurate model, pretrain a model on the next tasks:
+   1. Classification on the ImageNet\* dataset (see classifier training [instruction](./README_CLASSIFIER.md))
+   2. Detection on Pascal VOC0712 dataset (see the detector training [instruction](./README_DETECTOR.md))
+   3. Detection on the MS COCO dataset
 
-## Action list definition
-Current repository is configured to work with 6-class action detection task but you can easily define own set of actions. After the [data preparation](#data-preparation) step you should have the configured class mapping file. Next we will use class `IDs` from there. Then change `configs/action/pedestriandb_twinnet_actionnet.yml` file according you set of actions:
- 1. Field `ACTIONS_MAP` maps class `IDs` of input data into final set of actions. Note, that some kind of `undefined` class (if you have it) should be placed at he end of action list (to exclude it during training).
- 2. Field `VALID_ACTION_NAMES` stores names of valid actions, which you want to recognize (excluding `undefined` action).
- 4. If you have the `undefined` class set field `UNDEFINED_ACTION_ID` to `ID` of this class from `ACTIONS_MAP` map. Also add this `ID` to list: `IGNORE_CLASSES`.
- 4. If you plan to use the demo mode (see [header](#action-detection-model-demostration)) change colors of the actions by setting fields: `ACTION_COLORS_MAP` and `UNDEFINED_ACTION_COLOR`.
- 5. You can exclude some actions from the training procedure by including them into the list `IGNORE_CLASSES` but to achieve best performance it's recommended to label all boxes with persons even the target action is undefined for them (this boxes is still useful to train person detector model part).
+## Data Preparation
+To prepare a dataset, follow the [instructions](./README_DATA.md)
 
-Bellow you can see the example of the valid field definition:
+## Action List Definition
+Current repository is configured to work with a 6-class action detection task, but you can easily define your own set of actions. After the [data preparation](#data-preparation) step you should have the configured class mapping file. We will use the class `IDs` from there. Then change the `configs/action/pedestriandb_twinnet_actionnet.yml` file according to the set of actions:
+ 1. Field `ACTIONS_MAP` maps class `IDs` of input data into final set of actions.
+    > **NOTE**: If you have an `undefined` class, place it at the end of the action list to exclude it during training.
+ 2. Field `VALID_ACTION_NAMES` stores names of valid actions that you want to recognize (excluding the `undefined` action).
+ 4. If you have the `undefined` class, set the `UNDEFINED_ACTION_ID` field  to `ID` of this class from the `ACTIONS_MAP` map and add this `ID` to the `IGNORE_CLASSES` list.
+ 4. If you plan to use the demo mode (see [header](#action-detection-model-demostration)) change colors of the actions by setting the `ACTION_COLORS_MAP` and `UNDEFINED_ACTION_COLOR` fields.
+ 5. You can exclude some actions from the training procedure by including them into the `IGNORE_CLASSES` list. However, to achieve the best performance, label all boxes with persons even if the target action is undefined for them, because these boxes are still useful to train the person-detector model part.
+
+Example of the valid field definition:
 ```yaml
 "ACTIONS_MAP": {0:  0,   # sitting --> sitting
                 1:  3,   # standing --> standing
@@ -71,8 +76,9 @@ Bellow you can see the example of the valid field definition:
 "UNDEFINED_ACTION_COLOR": [255, 255, 255]
 ```
 
-## Person Detection and Action Recognition model training
-Assume we have a pre-trained model and want to fine-tune PD&AR model. In this case the the train procedure consists of next consistent stages:
+## Person-Detection and Action-Recognition Model Training
+
+Assume we have a pretrained model and want to fine-tune a PD&AR model. In this case, the train procedure consists of the consistent stages:
  1. [Model training](#action-detection-model-training)
  2. [Model evaluation](#action-detection-model-evaluation)
  3. [Model demonstration](#action-detection-model-demonstration)
@@ -80,8 +86,9 @@ Assume we have a pre-trained model and want to fine-tune PD&AR model. In this ca
  5. [Export to IR format](#export-to-ir-format)
 
 
-### Action Detection model training
-If you want to fine-tune the model with custom set of actions you can use the provided init weights. To do this run the command:
+### Action-Detection Model Training
+
+If you want to fine-tune the model with a custom set of actions, use the provided init weights by running the command:
 ```Shell
 python2 tools/models/train.py -c configs/action/pedestriandb_twinnet_actionnet.yml \ # path to config file
                               -t <PATH_TO_DATA_FILE> \                               # file with train data paths
@@ -92,7 +99,7 @@ python2 tools/models/train.py -c configs/action/pedestriandb_twinnet_actionnet.y
                               --src_scope "ActionNet/twinnet"                        # name of scope to load weights from
 ```
 
-Note to continue model training (e.g. after stopping) from your snapshot you should run the same command but with key `-s <PATH_TO_SNAPSHOT>` and without specifying `--src_scope` key:
+> **NOTE**: To continue model training (for example, after stopping) from your snapshot, run the same command but with the `-s <PATH_TO_SNAPSHOT>` key and without specifying the `--src_scope` key:
 ```Shell
 python2 tools/models/train.py -c configs/action/pedestriandb_twinnet_actionnet.yml \ # path to config file
                               -t <PATH_TO_DATA_FILE> \                               # file with train data paths
@@ -102,12 +109,13 @@ python2 tools/models/train.py -c configs/action/pedestriandb_twinnet_actionnet.y
                               -s <PATH_TO_SNAPSHOT> \                                # snapshot model weights
 ```
 
-If you want to initialize the model from the weights differ than provided you should set the valid `--src_scope` key value:
- - To initialize the model after pre-training on ImageNet classification dataset set `--src_scope "ImageNetModel/rmnet"`
- - To initialize the model after pre-training on Pascal or COCO detection dataset set `--src_scope "SSD/rmnet"`
+If you want to initialize the model from the weights different from the provided ones, set the valid `--src_scope` key value:
+ - To initialize the model after pretraining on ImageNet classification dataset, set `--src_scope "ImageNetModel/rmnet"`
+ - To initialize the model after pretraining on Pascal VOC or COCO detection dataset, set `--src_scope "SSD/rmnet"`
 
-### Action Detection model evaluation
-To evaluate the quality of the trained Action Detection model you should prepare the test data according [instruction](./README_DATA.md).
+### Action-Detection Model Evaluation
+
+To evaluate the quality of the trained Action Detection model, prepare the test data according to the [instructions](./README_DATA.md).
 
 ```Shell
 python2 tools/models/eval.py -c configs/action/pedestriandb_twinnet_actionnet.yml \ # path to config file
@@ -117,7 +125,7 @@ python2 tools/models/eval.py -c configs/action/pedestriandb_twinnet_actionnet.ym
 ```
 
 
-### Action Detection model demonstration
+### Action-Detection Model Demonstration
 
 ```Shell
 python2 tools/models/demo.py -c configs/action/pedestriandb_twinnet_actionnet.yml \ # path to config file
@@ -125,9 +133,9 @@ python2 tools/models/demo.py -c configs/action/pedestriandb_twinnet_actionnet.ym
                              -s <PATH_TO_SNAPSHOT> \                                # snapshot model weights
 ```
 
-Note to scale the output screen size you can specify the `--out_scale` key with desirable scale factor: `--out_scale 0.5`
+>**NOTE**: To scale the output screen size, specify the `--out_scale` key with the desirable scale factor: `--out_scale 0.5`
 
-### Action Detection model optimization
+### Action-Detection Model Optimization
 
 ```Shell
 python2 tools/models/export.py -c configs/action/pedestriandb_twinnet_actionnet.yml \ # path to config file
@@ -135,11 +143,11 @@ python2 tools/models/export.py -c configs/action/pedestriandb_twinnet_actionnet.
                                  -o <PATH_TO_OUTPUT_DIR> \                              # directory for the output model
 ```
 
-Note that the frozen graph will be stored in: `<PATH_TO_OUTPUT_DIR>/frozen.pb`.
+>**NOTE**: The frozen graph is stored at `<PATH_TO_OUTPUT_DIR>/frozen.pb`.
 
-### Export to IR format
+### Export to OpenVINO&trade; Intermediate Representation (IR) format
 
-Run model optimizer for the trained Action Detection model (OpenVINO should be installed before):
+Run the Model Optimizer for the trained Actio- Detection model (OpenVINO&trade; should be installed before):
 ```Shell
 python mo_tf.py --input_model <PATH_TO_FROZEN_GRAPH> \
                 --output_dir <OUTPUT_DIR> \

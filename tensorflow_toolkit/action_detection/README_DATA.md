@@ -1,7 +1,7 @@
-# Data preparation
+# Data Preparation
 
-Assume next structure of data:
-<pre>
+Assume the following structure of the data:
+```
     |-- data_dir
          |-- images
             |-- video_1
@@ -19,12 +19,14 @@ Assume next structure of data:
             annotation_file_3.xml
          train_tasks.txt
          test_tasks.txt
-</pre>
-Each annotation file (see [this](#annotation-file-format) header) describes a single source of images (see [this](#image-file-format) header).
+```
 
-## Annotation file format
-For annotating it's better to use [CVAT](https://github.com/opencv/cvat) utility. So we assume that annotation file is stored in appropriate `.xml` [format](https://github.com/opencv/cvat/blob/develop/cvat/apps/documentation/xml_format.md). In annotation file we have single independent track for each person on video which includes of bounding box description on each frame. General structure of annotation file:
-<pre>
+Each annotation file (see [this header](#annotation-file-format)) describes a single source of images (see [this header](#image-file-format)).
+
+## Annotation File Format
+
+For annotating, it is better to use the [CVAT](https://github.com/opencv/cvat) utility. We assume that annotation file is stored in the appropriate `.xml` [format](https://github.com/opencv/cvat/blob/develop/cvat/apps/documentation/xml_format.md). In the annotation file, we have a single independent track for each person on video that includes a bounding box description on each frame. General structure of an annotation file:
+```
     |-- root
          |-- track_0
               bounding_box_0
@@ -32,9 +34,9 @@ For annotating it's better to use [CVAT](https://github.com/opencv/cvat) utility
          |-- track_1
               bounding_box_0
               bounding_box_1
-</pre>
+```
 
-Toy example of annotation file:
+Toy example of an annotation file:
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
 <annotations count="1">
@@ -45,44 +47,47 @@ Toy example of annotation file:
     </track>
 </annotations>
 ```
-where fields have next description:
+The fields have the following description:
  - `count` - number of tracks
  - `id` - unique ID of track in file
- - `label` - label of track (data loader will skips all other labels except `person`)
+ - `label` - label of track (data loader skips all other labels except `person`)
  - `frame` - unique ID of frame in track
  - `xtl`, `ytl`, `xbr`, `ybr` - bounding box coordinates of top-left and bottom-right corners
  - `occluded` - marker to highlight heavy occluded bounding boxes (can be skipped during training)
- - `name` - name of bounding box attribute (data loader is sensitive for `action` class only)
- - `action_name` - valid name of action (you can define own list of actions)
+ - `name` - name of bounding box attribute (data loader is sensitive for the `action` class only)
+ - `action_name` - valid name of action (you can define your own list of actions)
 
-## Image file format
-Our implementation of data loader works with independent images stored on the drive. Each image should be named in format `frame_xxxxxx.png` or `frame_xxxxxx.jpg` (where `xxxxxx` is unique image number).
+## Image File Format
 
-**NOTE** To extract images from the video you can use `tools/data/dump_frames.py`
+Our implementation of data loader works with independent images stored on the drive. Each image should be named in the `frame_xxxxxx.png` or `frame_xxxxxx.jpg` format(where `xxxxxx` is unique image number).
 
-## Tasks file format
-For more robust control of image sources we have created separate file where each row represents a single source in next format: `annotation_file_path.xml image_height,image_width images_directory_path`. We assume that all images from the same source are resize to `image_height,image_width` sizes (it needs to properly decode annotations).
+> **NOTE**: To extract images from the video, use `tools/data/dump_frames.py`.
 
-Example of `train_tasks.txt` file:
+## Tasks File Format
+
+For more robust control of image sources, we have created a separate file, where each row represents a single source in the following format: `annotation_file_path.xml image_height,image_width images_directory_path`. We assume that all images from the same source are resized to the `image_height,image_width` sizes (it needs to properly decode annotations).
+
+Example of a `train_tasks.txt` file:
 ```
 annotations/annotation_file_1.xml 1920,1080 images/video1
 annotations/annotation_file_2.xml 1920,1080 images/video2
 ```
 
-Example of `test_tasks.txt` file:
+Example of a `test_tasks.txt` file:
 ```
 annotations/annotation_file_3.xml 1920,1080 images/video3
 ```
 
-## Train/eval data file generation
-To generate the final data file (train or test) run the command:
+## Train/Eval Data File Generation
+
+To generate the final data file (train or test), run the command:
 ```Shell
 python2 tools/data/prepare_pedestrian_db.py -t <PATH_TO_TASKS> \      # path to file with tasks
                                             -o <PATH_TO_OUTPUT_DIR> \ # output directory
 ```
 
-The output directory structure (some example of script output you can find in `./dataset` folder):
-<pre>
+The output directory structure (see an example of script output in the `./dataset` folder):
+```
     |-- root
          |-- annotation
               |-- video_1
@@ -93,21 +98,22 @@ The output directory structure (some example of script output you can find in `.
                 sample_000000.json
          data.txt
          class_map.yml
-</pre>
+```
 
 Generated files:
- - `data.txt` file should be used as input for the train/eval scripts.
- - `class_map.txt` file will include generate mapping from class names onto class IDs.
+ - `data.txt` - input for the train/eval scripts
+ - `class_map.txt` - mapping from class names onto class IDs
 
-**Note 1** To specify class IDs directly you can set `-i` key: `-i <PATH_TO_CLASS_MAP>` (see example `tools/data/pedestriandb_class_map.yml`). If you specify own class mapping than the `class_map.txt` file will not be generated.
+>**NOTE 1**: To specify class IDs directly, set the `-i` key: `-i <PATH_TO_CLASS_MAP>` (see example `tools/data/pedestriandb_class_map.yml`). If you specify your own class mapping, the `class_map.txt` file is not generated.
 
-**Note 2** To generate valid class mapping for testing purpose you should set `-i <PATH_TO_CLASS_MAP>`, where `<PATH_TO_CLASS_MAP>` is generated by script `class_map.txt` file or your own class mapping file. Otherwise order of class IDs will be different.
+>**NOTE 2**: To generate a valid class mapping for a testing purpose, set `-i <PATH_TO_CLASS_MAP>`, where `<PATH_TO_CLASS_MAP>` is generated by the `class_map.txt`script file or your own class mapping file. Otherwis, the order of class IDs will be different.
 
-**Note 3** You can use prepared toy dataset (`./dataset` folder) to start you model training. You only need to specify the full path to images (`./dataset/images` folder) in `data.txt` file.
+>**NOTE 3**: Use a prepared toy dataset (`./dataset` folder) to start your model training. You only need to specify the full path to images (`./dataset/images` folder) in the `data.txt` file.
 
-## Config specification
-For the generated dataset you should set the correct field values in appropriate config file:
+## Config Specification
+
+For the generated dataset, set the correct field values in the appropriate config file:
  - `IMAGE_SIZE` - target image size in format `[height, width, num_channels]`
- - `TRAIN_DATA_SIZE` - number training samples
- - `VAL_DATA_SIZE` - number testing samples
- - `MAX_NUM_DETECTIONS_PER_IMAGE` - max number of objects on single image (if it's more than subset of objects will be used)
+ - `TRAIN_DATA_SIZE` - number of training samples
+ - `VAL_DATA_SIZE` - number of testing samples
+ - `MAX_NUM_DETECTIONS_PER_IMAGE` - maximum number of objects on a single image (if it is higher, then a subset of objects is used)

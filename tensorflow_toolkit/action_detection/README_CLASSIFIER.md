@@ -1,22 +1,27 @@
-# Image classification
-Current repository includes training and evaluation tools for image classification task. You can use one of the prepared config files to train the model on:
+# Image Classification
+
+Current repository includes training and evaluation tools for the image classification task. Use one of the prepared config files to train the model on:
  - ImageNet dataset (`configs/classification/imagenet_rmnet.yml`)
 
-## Data preparation
-Assume next structure of data:
-<pre>
+## Data Preparation
+
+Assume the following structure of data:
+
+```
     |-- data_dir
          |-- images
             image_000000.png
             image_000001.png
          train_data.txt
          test_data.txt
-</pre>
-Each data file (`train_data.txt` and `test_data.txt`) describes a data to train/eval model. Each row in data file represents a single source in next format: `path_to_image image_label`.
+```
+
+Each data file (`train_data.txt` and `test_data.txt`) describes data to train and evaluate model. Each row in a data file represents a single source in the next format: `path_to_image image_label`.
 
 
-## Model training
-To train object detection model from scratch run the command:
+## Model Training
+
+To train an object-detection model from scratch, run the command:
 ```Shell
 python2 tools/models/train.py -c configs/classification/imagenet_rmnet.yml \ # path to config file
                               -t <PATH_TO_DATA_FILE> \                       # file with train data paths
@@ -25,10 +30,10 @@ python2 tools/models/train.py -c configs/classification/imagenet_rmnet.yml \ # p
                               -n 1 \                                         # number of target GPU devices
 ```
 
-**Note** If you want to initialize the model from the pre-trained model weights you should specify `-i` key as a path to init weights and set the valid `--src_scope` key value:
- - To initialize the model after pre-training on any other classification dataset with `DATASET_NAME` name set `--src_scope "DATASET_NAME/rmnet"`
+> **NOTE**: To initialize the model from the pretrained model weights, specify the `-i` key as a path to init weights and set the valid `--src_scope` key value:
+>  to initialize the model after pretraining on any other classification dataset with the `DATASET_NAME` name, set `--src_scope "DATASET_NAME/rmnet"`.
 
-Bellow the command to run the training procedure from the pre-trained model:
+The command to run the training procedure from the pretrained model:
 ```Shell
 python2 tools/models/train.py -c configs/classification/imagenet_rmnet.yml \ # path to config file
                               -t <PATH_TO_DATA_FILE> \                       # file with train data paths
@@ -39,8 +44,8 @@ python2 tools/models/train.py -c configs/classification/imagenet_rmnet.yml \ # p
                               --src_scope "DATASET_NAME/rmnet"               # name of scope to load weights from
 ```
 
-## Model evaluation
-To evaluate the quality of the trained Image Classification model you should prepare the test data according [instruction](#data-preparation).
+## Model Evaluation
+To evaluate the quality of the trained Image-Classification model, prepare the test data according the  [instruction](#data-preparation).
 
 ```Shell
 python2 tools/models/eval.py -c configs/classification/imagenet_rmnet.yml \ # path to config file

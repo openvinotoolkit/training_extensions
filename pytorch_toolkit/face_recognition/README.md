@@ -1,22 +1,22 @@
-# Face Recognition in PyTorch
+# Face Recognition in PyTorch*
 
 ## Introduction
 
-*A repository for different experimental FR models.*
+*A repository for different experimental face-recognition (FR) models*
 
 ## Contents
 
 1. [Installation](#installation)
 2. [Preparation](#preparation)
-3. [Train and evaluation](#train-and-evaluation)
+3. [Train and Evaluation](#train-and-evaluation)
 4. [Models](#models)
 5. [Face Recognition Demo](#face-recognition-demo)
-6. [Model compression](#model-compression)
+6. [Model Compression](#model-compression)
 7. [Demo](#demo)
 
 ## Installation
 
-1. Create and activate virtual python environment
+Create and activate virtual python environment by running the command below:
 
 ```bash
 cd $(git rev-parse --show-toplevel)/pytorch_toolkit/face_recognition
@@ -27,13 +27,13 @@ bash init_venv.sh
 
 ## Preparation
 
-1. For Face Recognition training you should download [VGGFace2](http://www.robots.ox.ac.uk/~vgg/data/vgg_face2/) data. We will refer to this folder as `$VGGFace2_ROOT`.
-2. For Face Recognition evaluation you need to download [LFW](http://vis-www.cs.umass.edu/lfw/) data and [LFW landmarks](https://github.com/clcarwin/sphereface_pytorch/blob/master/data/lfw_landmark.txt).  Place everything in one folder, which will be `$LFW_ROOT`.
+1. For a face-recognition training, download the [VGGFace2](http://www.robots.ox.ac.uk/~vgg/data/vgg_face2/) data. We will refer to this folder as `$VGGFace2_ROOT`.
+2. For a face-recognition evaluation, download the [LFW](http://vis-www.cs.umass.edu/lfw/) data and [LFW landmarks](https://github.com/clcarwin/sphereface_pytorch/blob/master/data/lfw_landmark.txt).  Place everything in one folder, which will refer to as `$LFW_ROOT`.
 
 
-## Train and evaluation
+## Train and Evaluate
 
-1. To start training FR model:
+1. To start training an FR model, run the command below:
 
 ```bash
 python train.py \
@@ -51,7 +51,7 @@ python train.py \
     --device 1
 ```
 
-2. To evaluate FR snapshot (let's say we have MobileNet with 256 embedding size trained for 300k):
+2. To evaluate an FR snapshot, run the command as shown in the example below that uses MobileNet with the 256 embedding size trained for 300k:
 
 ```bash
 python evaluate_lfw.py \
@@ -63,10 +63,10 @@ python evaluate_lfw.py \
     --embed_size 256
 ```
 
-## Configuration files
+## Configuration Files
 
-Besides passing all the required parameters via command line, the training script allows to read them from a `yaml` configuration file.
-Each line of such file should contain a valid description of one parameter in the `yaml` fromat.
+Besides passing all the required parameters via the command line, the training script allows to read them from a `.yaml` configuration file.
+Each line of such file should contain a valid description of one parameter in the `.yaml` format.
 Example:
 ```yml
 #optimizer parameters
@@ -87,15 +87,16 @@ train_dataset: vgg
 train_data_root: $VGGFace2_ROOT/train/
 #... and so on
 ```
-Path to the config file can be passed to the training script via command line. In case if any other arguments were passed before the config, they will be overwritten.
+Path to the configuration file can be passed to the training script via the command line. If any other arguments are passed before the configurations, they are overwritten
 ```bash
 python train.py -m 0.35 @./my_config.yml #here m can be overwritten with the value from my_config.yml
 ```
 
 ## Models
 
-1. You can download pretrained model from fileshare as well - [mobilenetv2](https://download.01.org/opencv/openvino_training_extensions/models/face_recognition/Mobilenet_se_focal_121000.pt),
-[mobilenetv2_2x](https://download.01.org/opencv/openvino_training_extensions/models/face_recognition/Mobilenet_2x_se_121000.pt).
+1. You can download a pretrained model from fileshare as well:
+ - [mobilenetv2](https://download.01.org/opencv/openvino_training_extensions/models/face_recognition/Mobilenet_se_focal_121000.pt)
+- [mobilenetv2_2x](https://download.01.org/opencv/openvino_training_extensions/models/face_recognition/Mobilenet_2x_se_121000.pt)
 
 ```bash
 python evaluate_lfw.py \
@@ -130,38 +131,39 @@ I0820 15:48:06.307766 23328 evaluate_lfw.py:266] AUC: 0.9992
 I0820 15:48:06.307812 23328 evaluate_lfw.py:267] Estimated threshold: 0.6721
 ```
 
-`mobilenetv2_2x` is slightly worse on the LFW benchmark than `mobilenetv2`, but it's heavier and achieves higher score in the
-uncleaned version of the [MegaFace](http://megaface.cs.washington.edu/participate/challenge.html) benchmark: 73.77% rank-1 at 1M distractors in reidentification protocol vs 70.2%.
+`mobilenetv2_2x` does not perform on the LFW benchmark as good as `mobilenetv2`, but it is heavier and achieves a higher score in the
+uncleaned version of the [MegaFace](http://megaface.cs.washington.edu/participate/challenge.html) benchmark: 73.77% and 70.2% rank-1 at 1M distractors in reidentification protocol respectively.
 
 
-## Model compression
+## Model Compression
 
-To train compressed models used
-[NNCF](https://github.com/opencv/openvino_training_extensions/tree/develop/pytorch_toolkit/nncf), it is a framework for neural network compression using quantization and sparsification algorithms.
+To train compressed models, use the [Neural Network Compression Framework (NNCF)](https://github.com/opencv/openvino_training_extensions/tree/develop/pytorch_toolkit/nncf), which compresses networks using quantization and sparsification algorithms.
 
-- **Landnet compression results on NGD dataset**
+**LandNet compression results on the NGD dataset**
 
 | Algorithm          | RMSE  | Config path                                    |
 | :----------------- | :---: | :--------------------------------------------- |
 | Original           | 0.078 | -                                              |
-| Quantization int8  | 0.078 | configs/landnet/landnet_ngd_int8.json          |
+| Quantization INT8  | 0.078 | configs/landnet/landnet_ngd_int8.json          |
 | Sparsification 52% | 0.082 | configs/landnet/landnet_ngd_sparsity.json      |
-| Int8 + Spars 52%   | 0.080 | configs/landnet/landnet_ngd_int8_sparsity.json |
+| INT8 + Spars 52%   | 0.080 | configs/landnet/landnet_ngd_int8_sparsity.json |
 
-- **MobileFaceNet compression results on VGG2Face dataset**
+**MobileFaceNet compression results on the VGG2Face dataset**
 
 | Algorithm          | Accuracy | Config path                                            |
 | :----------------- | :------: | :----------------------------------------------------- |
 | Original           |  99.47   | -                                                      |
-| Quantization int8  |   99.5   | configs/mobilefacenet/mobilefacenet_vgg2_int8.json     |
+| Quantization INT8  |   99.5   | configs/mobilefacenet/mobilefacenet_vgg2_int8.json     |
 | Sparsification 52% |   99.5   | configs/mobilefacenet/mobilefacenet_vgg2_sparsity.json |
 
 
-### Landmark model
+### Landmark Model
 
 1. Train
 
-To start Landnet compression (remember that it is necessary to define '--snap_to_resume'):
+To start LandNet compression, run the following:
+
+> **NOTE**: Define the `--snap_to_resume` argument. 
 
 ```bash
 python train_landmarks.py \
@@ -177,11 +179,11 @@ python train_landmarks.py \
     --snap_folder snapshots/compression --compr_config <PATH_TO_COMPRESSION_CONFIG>
 ```
 
-During the first iterations of a quantization training, it is expected that loss will increase dramatically. It is connected with initialization of new quantization layers.
+During the first iterations of a quantization training, it is expected that loss increases dramatically due to initialization of new quantization layers.
 
 2. Evaluate
 
-To evaluate compressed Landnet put [CelebA dataset](http://mmlab.ie.cuhk.edu.hk/projects/CelebA.html) (total memory is about 10Gb) in folder, which will be ```$CelebA_ROOT``` . After that run the following command:
+To evaluate a compressed LandNet model, put the [CelebA dataset](http://mmlab.ie.cuhk.edu.hk/projects/CelebA.html) (total memory is about 10Gb) in the ```$CelebA_ROOT``` folder and run the following command:
 
 ```bash
 python evaluate_landmarks.py \
@@ -193,14 +195,16 @@ python evaluate_landmarks.py \
     --compr_config <PATH_TO_COMPRESSION_CONFIG>
 ```
 
-For evaluating use the same compression config as for training.
+For evaluating, use the same compression configurations as for training.
 
 
-### Face recognition model
+### Face-Recognition Demo
 
 1. Train
 
-To start MobileFaceNet compression (remember that it is necessary to define '--snap_to_resume' in configuration file):
+To start MobileFaceNet compression, run the following:
+
+> **NOTE**: Define the `--snap_to_resume` argument in the configurations file. 
 
 ```bash
 python train.py @./configs/mobilefacenet/mobilefacenet_vgg2.yml \
@@ -209,7 +213,7 @@ python train.py @./configs/mobilefacenet/mobilefacenet_vgg2.yml \
 
 2. Evaluate
 
-To evaluate compressed MobileFaceNet:
+To evaluate a compressed MobileFaceNet model, run the command below::
 
 ```bash
 python evaluate_lfw.py \
@@ -224,4 +228,4 @@ python evaluate_lfw.py \
 
 ## Demo
 
-1. For setting up demo, please go to [Face Recognition demo with OpenVINO Toolkit](./demo/README.md)
+To set up a demo, go to the [Face Recognition demo with the OpenVINO&trade; Toolkit](./demo/README.md)
