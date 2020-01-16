@@ -127,9 +127,9 @@ def detection_loss_reg(box_deltas, classification_targets, regression_targets, c
             box_coordinates_num = 4
             boxes_num = deltas.shape[0]
             classes_num = deltas.shape[1] // box_coordinates_num
-            mask = torch.zeros((boxes_num, classes_num), dtype=torch.uint8, device=device)
+            mask = torch.zeros((boxes_num, classes_num), dtype=torch.bool, device=device)
             idx = torch.stack((torch.arange(boxes_num, device=device), valid_cls_targets), dim=1).t_()
-            mask.index_put_(tuple(idx), torch.tensor([1], dtype=torch.uint8, device=device))
+            mask.index_put_(tuple(idx), torch.tensor([1], dtype=torch.bool, device=device))
             # Mask that selects target regression values (4 values corresponding to a box of a ground truth class)
             # from the whole output blob.
             expanded_mask = mask.unsqueeze(-1).expand(boxes_num, classes_num, box_coordinates_num).reshape(

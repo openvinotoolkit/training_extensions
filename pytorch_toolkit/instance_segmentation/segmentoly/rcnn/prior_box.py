@@ -54,9 +54,9 @@ class PriorGridGenerator(torch.autograd.Function):
         shifts = torch.stack((shift_x, shift_y, shift_x, shift_y)).t().to(device=device, dtype=torch.float32)
         prior_boxes_grid = (prior_boxes.unsqueeze(0) + shifts.unsqueeze(1))
         if flatten:
-            prior_boxes_grid = prior_boxes_grid.view(-1, 4)
+            prior_boxes_grid = prior_boxes_grid.reshape(-1, 4)
         else:
-            prior_boxes_grid = prior_boxes_grid.view(grid_h, grid_w, -1, 4)
+            prior_boxes_grid = prior_boxes_grid.reshape(grid_h, grid_w, -1, 4)
         return prior_boxes_grid
 
 
