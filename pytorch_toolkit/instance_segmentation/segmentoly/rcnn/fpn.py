@@ -47,7 +47,7 @@ class TopDownLateral(nn.Module):
         # Top-down 2x upsampling
         factor = lat.shape[-1] // top_blob.shape[-1]
         assert lat.shape[-2] // top_blob.shape[-2] == factor
-        td = F.interpolate(top_blob, scale_factor=factor, mode='nearest') if factor > 1 else top_blob
+        td = F.interpolate(top_blob, scale_factor=int(factor), mode='nearest') if factor > 1 else top_blob
         # Sum lateral and top-down
         lat += td
         return lat
