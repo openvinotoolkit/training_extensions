@@ -59,7 +59,7 @@ class Trainer(DefaultMaskRCNNTrainingEngine):
         self.description = config['description']
         self.root_directory = work_dir if work_dir else osp.join(osp.dirname(osp.abspath(__file__)),
                                                                  '..')
-        self.run_directory = self.create_run_directory(osp.join(self.root_directory, 'outputs'))
+        self.run_directory = self.create_run_directory(osp.join(self.root_directory, 'models'))
 
         setup_logging(file_path=osp.join(self.run_directory, 'log.txt'))
 

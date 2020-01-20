@@ -1,139 +1,91 @@
-# Text Spotting in PyTorch
+# Text Spotting
 
-This repository contains inference and training code for Text Spotting models based on Mask R-CNN like networks. Models code is designed to enable ONNX export (with custom operations) and inference on CPU via OpenVINO.
+This repository contains inference and training code for Text Spotting models based on Mask R-CNN like networks.
+Models code is designed to enable ONNX\* export (with custom operations) and inference on CPU via OpenVINO™.
 
 ## Setup
 
 ### Prerequisites
 
-* Ubuntu 16.04
-* GCC 7.4.0
-* Python 3.7.4
-* PyTorch (custom, see Installation section)
-* CUDA 10.1
-* OpenVINO 2019 R4 with Python API
+* Ubuntu\* 16.04
+* GCC\* 7.4.0
+* Python\* 3.6 or newer
+* PyTorch\* (custom, see Installation section)
+* CUDA\* 10.1
+* OpenVINO™ 2020.1 with Python API
 
 ### Installation
 
-0. Define your working directory.
+Create and activate virtual environment:
+
 ```bash
-export WORK_DIR=~/work_dir
-mkdir -p $WORK_DIR
+virtualenv -p python3 --prompt="(text_spotting)" venv
+source venv/bin/activate
+bash init_venv.sh
 ```
 
-1. Create virtual environment and activate it.
-```bash
-virtualenv -p python3.7 --prompt="(text_spotting)" $WORK_DIR/venv
-source $WORK_DIR/venv/bin/activate
-```
+> **NOTE** on this step will be install custom version of
+> [Pytorch](https://github.com/Ilya-Krylov/pytorch/tree/enable_export_of_custom_onnx_operations_with_tuples_as_output)
+> and [torchvison](https://github.com/pytorch/vision/tree/be6dd4720652d630e95d968be2a4e1ae62f8807e) from specific
+> commit. For more information, see the [init_venv.sh](init_venv.sh)
 
-2. Clone OpenVINO Training Extensions and install Text Spotting dependencies.
-```bash
-cd $WORK_DIR
-git clone https://github.com/opencv/openvino_training_extensions.git
-cd $WORK_DIR/openvino_training_extensions/pytorch_toolkit/text_spotting
-cat requirements.txt | xargs -n 1 -L 1 pip3 install
-```
-
-3. Clone custom version of PyTorch to resolve known problems with ONNX export of custom python layers.
-```bash
-cd $WORK_DIR
-git clone https://github.com/Ilya-Krylov/pytorch.git
-cd $WORK_DIR/pytorch
-git checkout -b enable_export_of_custom_onnx_operations_with_tuples_as_output origin/enable_export_of_custom_onnx_operations_with_tuples_as_output
-git submodule update --init --recursive
-python setup.py install
-```
-
-4. Clone custom version of torchvision and install it. You might need to updated your ffmpeg up to version 4.x and install libavcodec-dev.
-```bash
-cd $WORK_DIR
-git clone https://github.com/pytorch/vision.git
-cd $WORK_DIR/vision
-git checkout be6dd4720652d630e95d968be2a4e1ae62f8807e
-python setup.py install
-```
-
-5. Build Instance Segmentation (Segmentoly) package that is base for Text Spotting.
-```bash
-cd $WORK_DIR/openvino_training_extensions/pytorch_toolkit/instance_segmentation
-python setup.py develop build_ext
-```
-
-6. Install Text Spotting.
-```bash
-cd $WORK_DIR/openvino_training_extensions/pytorch_toolkit/text_spotting
-python setup.py develop
-```
-
-### Download dataset
+### Download Datasets
 
 To be able to train networks and/or get quality metrics for pre-trained ones,
 one have to download one dataset at least.
 * https://rrc.cvc.uab.es/ - ICDAR2013 (Focused Scene Text), ICDAR2013 (Incidental Scene Text), ICDAR2017 (MLT), ... .
 * http://www.iapr-tc11.org/mediawiki/index.php/MSRA_Text_Detection_500_Database_(MSRA-TD500) MSRA-TD500.
 * https://bgshih.github.io/cocotext/ COCO-Text.
-* ...
 
-### Convert dataset
+### Convert Datasets
 
 Extract downloaded datasets in following images_folder:  `$WORK_DIR/openvino_training_extensions/pytorch_toolkit/text_spotting/data/coco`
 
 Convert extracted datasets to format that is used internally.
 
 ```bash
-python3 tools/create_dataset.py --config dataset_train.json --output IC13TRAINTEST_IC15TRAIN_MSRATD500TRAINTEST_COCOTEXTTRAINVAL.json
-python3 tools/create_dataset.py --config dataset_test.json --output IC15TEST.json
-```
-
-
-The dataset_\*.json should look like:
-
-```
-[
-  {
-    "name": "ICDAR2013DatasetConverter",
-    "kwargs": {
-      "images_folder": "icdar2013/Challenge2_Training_Task12_Images",
-      "annotations_folder": "icdar2013/Challenge2_Training_Task1_GT",
-      "is_train": true
-    }
-  },
-  {
-    "name": "ICDAR2013DatasetConverter",
-    "kwargs": {
-      "images_folder": "icdar2013/Challenge2_Test_Task12_Images",
-      "annotations_folder": "icdar2013/Challenge2_Test_Task1_GT",
-      "is_train": false
-    }
-  },
-  {
-    "name": "ICDAR2015DatasetConverter",
-    "kwargs": {
-      "images_folder": "icdar2015/ch4_training_images",
-      "annotations_folder": "icdar2015/ch4_training_localization_transcription_gt",
-      "is_train": true
-    }
-  }
-]
+python3 tools/create_dataset.py --config datasets/dataset_train.json --output data/coco/IC13TRAINTEST_IC15TRAIN_MSRATD500TRAINTEST_COCOTEXTTRAINVAL.json
+python3 tools/create_dataset.py --config datasets/dataset_test.json --output data/coco/IC15TEST.json
 ```
 
 Examples of dataset_configuration.json can be found in `openvino_training_extensions/pytorch_toolkit/text_spotting/datasets`.
 
+The structure of the folder with datasets:
+```
+texxt_spotting/data/coco/
+    ├── coco-text
+    ├── icdar2013
+    ├── icdar2015
+    ├── MSRA-TD500
+    ├── IC13TRAINTEST_IC15TRAIN_MSRATD500TRAINTEST_COCOTEXTTRAINVAL.json
+    └── IC15TEST.json
+```
+
+
 ## Training
 
-To train Text Spotter model run (**do not forget to point where training and testing datasets are located inside text-spotting-0001.json**):
+To train Text Spotter model run:
 
 ```bash
 python3 tools/train.py configs/text-spotting-0001.json
 ```
 
-One can point to pre-trained model [checkpoint](https://download.01.org/opencv/openvino_training_extensions/models/text_spotter/model_step_200000.pth) inside configuration file to start training from pre-trained weights. See `configs/text-spotting-0001.json`.
+One can point to pre-trained model [checkpoint](https://download.01.org/opencv/openvino_training_extensions/models/text_spotter/model_step_200000.pth) inside configuration file to start training from pre-trained weights. Change `configs/text-spotting-0001.json`:
 ```
 ...
-"checkpoint": "",
+"checkpoint": "<path_to_weights>",
 ...
 ```
+
+> **Known issue:** 'Nan' in log output.
+> ```
+> metrics/detection/cls_accuracy: 0.95204, metrics/rpn/cls_accuracy/0: 0.969265, metrics/rpn/cls_accuracy/1: 1.0,
+> metrics/rpn/cls_accuracy/2: 1.0, metrics/rpn/cls_accuracy/3: nan, metrics/rpn/cls_accuracy/4: nan, metrics/rpn/cls_precision/0: nan,
+> metrics/rpn/cls_precision/1: nan, metrics/rpn/cls_precision/2: nan, metrics/rpn/cls_precision/3: nan, metrics/rpn/cls_precision/4: nan,
+> metrics/rpn/cls_recall/0: nan, metrics/rpn/cls_recall/1: nan, metrics/rpn/cls_recall/2: nan, metrics/rpn/cls_recall/3: nan,
+> time elapsed/~left: 0:34:33 / 2 days, 7:37:14 (1.01 sec/it)
+> WARNING 17-01-20 13:42:25 x2num.py:  14] NaN or Inf found in input tensor.
+> ```
 
 ## Evaluation
 
@@ -148,7 +100,7 @@ using PyTorch backend run:
 ```bash
 python tools/test.py \
     --prob_threshold 0.8 \
-    --dataset IC15TEST_FIXED.json \
+    --dataset IC15TEST.json \
     --mean_pixel 123.675 116.28 103.53 \
     --std_pixel 58.395 57.12 57.375 \
     --rgb \
@@ -164,12 +116,12 @@ CPU backend.
 
 ## Demo
 
-In order to see how trained model works using OpenVINO please refer to [Text Spotting Python* Demo](https://github.com/opencv/open_model_zoo/tree/develop/demos/python_demos/text_spotting_demo). Before running the demo you have to export trained model to IR. Please see below how to do that.
+In order to see how trained model works using OpenVINO™ please refer to [Text Spotting Python* Demo](https://github.com/opencv/open_model_zoo/tree/develop/demos/python_demos/text_spotting_demo). Before running the demo you have to export trained model to IR. Please see below how to do that.
 
-## Export PyTorch models to OpenVINO
+## Export PyTorch Models to OpenVINO™
 
-To run the model via OpenVINO one has to export PyTorch model to ONNX first and
-then convert it to OpenVINO Internal Representation (IR) using Model Optimizer.
+To run the model via OpenVINO™ one has to export PyTorch model to ONNX first and
+then convert to OpenVINO™ Internal Representation (IR) using Model Optimizer.
 
 Model will be split into three parts:
 - Text detector (Mask-RCNN like)
@@ -177,7 +129,7 @@ Model will be split into three parts:
   - Text recognition encoder
   - Text recognition decoder
 
-### Export to ONNX
+### Export to ONNX*
 
 The `tools/convert_to_onnx.py` script exports a given model to ONNX representation.
 
@@ -187,38 +139,39 @@ python tools/convert_to_onnx.py \
     --ckpt <path_to_checkpoint>.pth \
     --input_size 768 1280 \
     --show_flops \
-    --output_folder /tmp/output_folder
+    --output_folder export
 ```
 
 
 ### Convert to IR
 
+Conversion from ONNX model representation to OpenVINO™ IR is straightforward and
+handled by OpenVINO™ Model Optimizer. Please refer to [Model Optimizer
+documentation](https://docs.openvinotoolkit.org/latest/_docs_MO_DG_Deep_Learning_Model_Optimizer_DevGuide.html) for details on how it works.
 
-Conversion from ONNX model representation to OpenVINO IR is straightforward and
-handled by OpenVINO Model Optimizer. Please refer to Model Optimizer
-documentation for details on how it works.
+1. text-spotting-0001-detector:
+    ```bash
+    mo.py \
+        --model_name text-spotting-0001-detector \
+        --input_shape="[1,3,768,1280],[1,3]" \
+        --input=im_data,im_info \
+        --mean_values="im_data[123.675,116.28,103.53]" \
+        --scale_values="im_data[58.395000005673076,57.120000003655676,57.37500003220172],im_info[1]" \
+        --output=boxes,scores,classes,raw_masks,text_features \
+        --reverse_input_channels \
+        --input_model export/detector.onnx
+    ```
 
-1. text-spotting-0001-detector
-```bash
-mo.py \
-    --model_name text-spotting-0001-detector \
-    --input_shape="[1,3,768,1280],[1,3]" \
-    --input=im_data,im_info \
-    --mean_values="im_data[123.675,116.28,103.53]" \
-    --scale_values="im_data[58.395000005673076,57.120000003655676,57.37500003220172],im_info[1]" \
-    --output=boxes,scores,classes,raw_masks,text_features \
-    --reverse_input_channels \
-    --input_model /tmp/output_folder/detector.onnx
-```
-3. text-spotting-0001-encoder
-```bash
-mo.py \
-    --model_name text-spotting-0001-encoder \
-    --input_model /tmp/output_folder/encoder.onnx
-```
-3. text-spotting-0001-decoder
-```bash
-mo.py \
-    --model_name text-spotting-0001-decoder \
-    --input_model /tmp/output_folder/decoder.onnx
-```
+3. text-spotting-0001-encoder:
+    ```bash
+    mo.py \
+        --model_name text-spotting-0001-encoder \
+        --input_model export/encoder.onnx
+    ```
+
+3. text-spotting-0001-decoder:
+    ```bash
+    mo.py \
+        --model_name text-spotting-0001-decoder \
+        --input_model export/decoder.onnx
+    ```

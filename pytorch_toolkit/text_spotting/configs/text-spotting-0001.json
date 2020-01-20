@@ -87,7 +87,7 @@
   },
   "shape": [768, 1280],
   "checkpoint": "",
-  "training_dataset_name": "IC13TRAINTEST_IC15TRAIN_MSRATD500TRAINTEST_COCOTEXTTRAINVAL_FIXED.json",
+  "training_dataset_name": "IC13TRAINTEST_IC15TRAIN_MSRATD500TRAINTEST_COCOTEXTTRAINVAL.json",
   "training_transforms": {
     "RandomRotate90": {},
     "RandomResize": {
@@ -103,7 +103,7 @@
       "rgb": true
     }
   },
-  "validation_dataset_name": "IC15TEST_FIXED.json",
+  "validation_dataset_name": "IC15TEST.json",
   "validation_transforms": {
     "Resize": {
       "size": [768, 1280]

@@ -31,7 +31,7 @@ def parse_args():
                       required=True)
     args.add_argument('--output', help='Path where to save annotation (json).',
                       required=True)
-
+    args.add_argument('--visualize', action='store_true', help='Visualize annotation.')
     return args.parse_args()
 
 
@@ -52,7 +52,8 @@ def main():
     ann.write(args.output)
 
     ann = TextOnlyCocoAnnotation(args.output, os.path.dirname(args.output))
-    ann.visualize(put_text=True, imshow_delay=1)
+    if args.visualize:
+        ann.visualize(put_text=True, imshow_delay=1)
 
 
 if __name__ == '__main__':
