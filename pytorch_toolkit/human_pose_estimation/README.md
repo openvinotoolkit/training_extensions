@@ -12,7 +12,7 @@ The implementation of our paper for single-person pose estimation problem [Globa
 * [Prerequisites](#prerequisites)
 * [Training](#training)
 * [Validation](#validation)
-* [Pretrained Model](#pre-trained-model)
+* [Pretrained Model](#pretrained-model)
 * [Output Format](#output-format)
 * [C++ Demo](#cpp-demo)
 * [Python Demo](#python-demo)
