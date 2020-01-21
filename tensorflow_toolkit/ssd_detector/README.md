@@ -155,7 +155,7 @@ The script results in three new artifacts:
 
 **Default export path**
 - `vlp/model/export_<step>/frozen_graph/` - path to the frozen graph
-- `vlp/model/export_<step>/IR/<data_type>/` - path to the  converted model in the IR format
+- `vlp/model/export_<step>/IR/<data_type>/` - path to the converted model in the IR format
 
 
 ## Demo
