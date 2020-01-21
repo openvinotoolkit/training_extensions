@@ -180,7 +180,8 @@ Training binarized networks requires special scheduling of the training process.
 
 ### Non-Structured Sparsity
 
-Sparsity algorithm zeros weights in convolutional and fully-connected layers in a non-structured way, so that zero values are randomly distributed inside the tensor. Most of the sparsity algorithms set less to zero the less important weights but the criteria of how they do it is different. The framework contains several implementations of sparsity methods.
+Sparsity algorithm zeros weights in Convolutional and Fully-Connected layers in a non-structured way, 
+so that zero values are randomly distributed inside the tensor. Most of the sparsity algorithms set less to zero the less important weights but the criteria of how they do it is different. The framework contains several implementations of sparsity methods.
 
 #### RB-Sparsity
 

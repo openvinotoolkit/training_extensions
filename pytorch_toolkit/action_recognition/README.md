@@ -158,7 +158,7 @@ python3 main.py --root-path ~/data --result-path ~/logs/ --dataset ucf101 --mode
     --batch 64 -j 12 --clip-size 16 --st 2 --lr 1e-5 --pretrain-path ~/resnet34_vtn_kinetcs.pth
 ```
 
-#### Convert a Model to the ONNX\* and OpenVINO&trade; format
+#### Convert a Model to the ONNX\* and OpenVINO™ format
 
 > **NOTE**: Modules that used `LayerNormalization` can be converted to ONNX\* only with the `--no-layer-norm` > flag, but this might decrease the accuracy of the converted model.
 > Otherwise, the script crashes with the following message: `RuntimeError: ONNX export failed: Couldn't export operator aten::std`.
@@ -168,7 +168,7 @@ PyTorch to ONNX:
 python3 main.py --model resnet34_vtn --clip-size 16 --st 2 --pretrain-path ~/resnet34_vtn_kinetics.pth --onnx resnet34_vtn.onnx
 ```
 
-ONNX to OpenVINO&trade;:
+ONNX to OpenVINO™:
 ```bash
 mo.py --input_model resnet34_vtn.onnx --input_shape '[1,16,3,224,224]'
 ```
@@ -191,4 +191,4 @@ mo.py --input_model resnet34_vtn.onnx --input_shape '[1,16,3,224,224]'
 
 ## Demo
 
-You can try your models after converting them to the OpenVINO&trade; format or a [pretrained model from OpenVINO&trade;](https://docs.openvinotoolkit.org/latest/usergroup10.html) using the [demo application from OpenVINO&trade; toolkit](https://docs.openvinotoolkit.org/latest/_demos_python_demos_action_recognition_README.html)
+You can try your models after converting them to the OpenVINO™ format or a [pretrained model from OpenVINO™](https://docs.openvinotoolkit.org/latest/usergroup10.html) using the [demo application from OpenVINO™ toolkit](https://docs.openvinotoolkit.org/latest/_demos_python_demos_action_recognition_README.html)

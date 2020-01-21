@@ -228,4 +228,4 @@ python evaluate_lfw.py \
 
 ## Demo
 
-To set up a demo, go to the [Face Recognition demo with the OpenVINO&trade; Toolkit](./demo/README.md)
+To set up a demo, go to the [Face Recognition demo with the OpenVINO™ Toolkit](./demo/README.md)

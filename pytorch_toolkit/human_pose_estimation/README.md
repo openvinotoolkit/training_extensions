@@ -114,14 +114,14 @@ To get rid of it, increase the limit to a bigger number. For example, to increas
 The model expects a normalized image (mean=[128, 128, 128], scale=[1/256, 1/256, 1/256]) in the planar BGR format.
 A model pretrained on COCO is available at the [Intel&reg; Open Source Technology Center](https://download.01.org/opencv/openvino_training_extensions/models/human_pose_estimation/checkpoint_iter_370000.pth), it has 40% of AP on the COCO validation set (38.6% of AP on the val *subset*).
 
-#### Conversion to the OpenVINO&trade; Format
+#### Conversion to the OpenVINO™ Format
 
 1. Convert a PyTorch\* model to the ONNX\* format by running the script in the terminal:
     ```bash
     python scripts/convert_to_onnx.py --checkpoint-path <CHECKPOINT>
     ```
     The script produces `human-pose-estimation.onnx`.
-2. Convert the ONNX model to the OpenVINO&trade; format with Model Optimizer by running the script below in the terminal: 
+2. Convert the ONNX model to the OpenVINO™ format with Model Optimizer by running the script below in the terminal: 
     ```bash
     python <OpenVINO_INSTALL_DIR>/deployment_tools/model_optimizer/mo.py --input_model human-pose-estimation.onnx --input data --mean_values data[128.0,128.0,128.0] --scale_values data[256] --output stage_1_output_0_pafs,stage_1_output_1_heatmaps 
     ```
@@ -141,7 +141,7 @@ Keypoints order and names are defined in the [Pose](https://github.com/opencv/op
 
 ## <a name="cpp-demo"/>C++ Demo</a>
 
-To run the demo, download the Intel&reg; OpenVINO&trade; Toolkit [https://software.intel.com/en-us/openvino-toolkit/choose-download](https://software.intel.com/en-us/openvino-toolkit/choose-download), install it and [build the samples](https://software.intel.com/en-us/articles/OpenVINO-InferEngine) (*Inferring Your Model with the Inference Engine Samples* part). Then run `<SAMPLES_BIN_FOLDER>/human_pose_estimation_demo -m <path_to>/human-pose-estimation.xml -i <path_to_video_file>` for the inference on CPU.
+To run the demo, download the Intel&reg; OpenVINO™ Toolkit [https://software.intel.com/en-us/openvino-toolkit/choose-download](https://software.intel.com/en-us/openvino-toolkit/choose-download), install it and [build the samples](https://software.intel.com/en-us/articles/OpenVINO-InferEngine) (*Inferring Your Model with the Inference Engine Samples* part). Then run `<SAMPLES_BIN_FOLDER>/human_pose_estimation_demo -m <path_to>/human-pose-estimation.xml -i <path_to_video_file>` for the inference on CPU.
 
 ## <a name="python-demo"/>Python* Demo </a>
 
