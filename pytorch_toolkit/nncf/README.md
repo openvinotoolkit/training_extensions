@@ -1,4 +1,4 @@
-# Neural Network Compression Framework  (NNCF)
+# Neural Network Compression Framework (NNCF)
 
 This module contains a PyTorch\*-based framework and samples for neural networks compression. The framework is organized as a Python\* module that can be built and used in a standalone mode. The framework architecture is unified to make it easy to add different compression methods. The samples demonstrate the usage of compression algorithms for three different use cases on public models and datasets: Image Classification, Object Detection and Semantic Segmentation.
 
@@ -71,4 +71,3 @@ We suggest to install or use the package in the [Python virtual environment](htt
 | UNet INT8 w/ 60% of sparsity (Magnitude) | Mapillary | 56.23 | 54.30 |
 | ICNet INT8 quantized | CamVid | 67.89 | 67.69 |
 | ICNet INT8 w/ 60% of sparsity (Magnitude) | CamVid | 67.89 | 67.53 |
-
