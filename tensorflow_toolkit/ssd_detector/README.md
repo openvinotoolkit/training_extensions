@@ -131,7 +131,7 @@ To train a model, go through the following steps:
     evaluation are performed simultaneously.
 
 3. Training and evaluation artifacts are stored by default in
-    `training_toolbox/ssd_detector/vlp/model`.  To visualize training and evaluation, go to
+    `training_toolbox/ssd_detector/vlp/model`. To visualize training and evaluation, go to
     `training_toolbox/ssd_detector/vlp` and run tensorboard with the command below:
 
     ```
