@@ -17,7 +17,7 @@ This detector was trained on the data from crossroad cameras.
 * Ubuntu\* 16.04
 * Python\* 3.6
 * PyTorch\* 1.0.1
-* OpenVINO&trade; 2019 R1 with Python API
+* OpenVINO™ 2019 R1 with Python API
 
 ### Installation
 
@@ -31,7 +31,7 @@ bash init_venv.sh
 . venv/bin/activate
 ```
 
-## Training and evaluation
+## Training and Evaluation
 
 * [Face Detection](./face_detection.md)
 * [Person Vehicle Bike Detection](./person_vehicle_bike_detection.md)

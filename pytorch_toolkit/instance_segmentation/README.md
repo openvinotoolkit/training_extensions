@@ -2,10 +2,10 @@
 
 This repository contains inference and training code for Mask R-CNN like
 networks. Models code is designed to enable ONNX\* export (with custom operations)
-and inference on CPU via OpenVINO&trade;.
+and inference on CPU via OpenVINO™ .
 [Detectron](https://github.com/facebookresearch/Detectron) and
 [maskrcnn-benchmark](https://github.com/facebookresearch/maskrcnn-benchmark)
-models are wrapped to export their weights to ONNX and OpenVINO&trade;.
+models are wrapped to export their weights to ONNX and OpenVINO™ .
 
 ## Setup
 
@@ -14,7 +14,7 @@ models are wrapped to export their weights to ONNX and OpenVINO&trade;.
 * Ubuntu\* 16.04
 * Python\* 3.5.2
 * PyTorch\* 0.4.1
-* OpenVINO&trade; 2019 R1 with Python API
+* OpenVINO™  2019 R1 with Python API
 
 ### Installation
 
@@ -34,10 +34,10 @@ $ pip3 install -e .
 
 A bunch of top-performing models from Detectron and maskrcnn-benchmark projects
 can be easily obtained and automatically prepared for running in PyTorch and
-OpenVINO&trade; via the `tools/download_pretrained_weights.py` script. By default, the script
+OpenVINO™  via the `tools/download_pretrained_weights.py` script. By default, the script
 requires no parameters to run, for details on its configuration, run it with
 the `-h` key. This script could also be considered as a sample, showing how models
-are supposed to be converted to ONNX/OpenVINO&trade; Intermediate Representation (IR).
+are supposed to be converted to ONNX/OpenVINO™  Intermediate Representation (IR).
 
 ### Download MS COCO Dataset
 
@@ -79,14 +79,14 @@ For fine-tuning, pass a path to a file with the model weights to the training sc
 Another option for training models is to use dedicated scripts for particular
 models (like `tools/train_0050.py`) that solely encapsulate the training setup.
 
-Instructions for training models from the OpenVINO&trade; Open Model Zoo
+Instructions for training models from the OpenVINO™  Open Model Zoo
 can be found in [OpenVINO.md](OpenVINO.md)
 
 ## Demo
 
 `tools/demo.py` script implements a live demo application that runs a given
 Mask R-CNN like a model on a set of images or a video and shows resulting instance
-segmentation mask. Both PyTorch and OpenVINO&trade; backends are supported.
+segmentation mask. Both PyTorch and OpenVINO™  backends are supported.
 
 ### PyTorch
 
@@ -140,13 +140,13 @@ $ python3 tools/demo.py \
 (if any) GPUs to use during evaluation. If empty value is assigned, PyTorch uses the
 CPU backend.
 
-### OpenVINO&trade;
+### OpenVINO™ 
 
 The same demo application can be used for running instance segmentation models
 on CPU via OpenVINO. Almost the same set of parameters is available in this
 case. The major difference is that the model (`--model` argument) should be defined
-as a path to an XML file with the OpenVINO&trade; IR description, rather than a PyTorch
-class, and the `--ckpt` argument should point to a BIN file with OpenVINO&trade; IR
+as a path to an XML file with the OpenVINO™  IR description, rather than a PyTorch
+class, and the `--ckpt` argument should point to a BIN file with OpenVINO™  IR
 weights.
 
 Example:
@@ -158,21 +158,21 @@ $ python3 tools/demo.py \
     --video 0 \
     --delay 1 \
     --show_fps \
-    OpenVINO&trade; \
+    OpenVINO™  \
     --model data/pretrained_models/ir/coco/detectron/mask_rcnn_resnet50_fpn_2x.xml
 ```
 
 > **NOTE:** For most of the Detectron and `maskrcnn-benchmark` models mean pixel
   value of [102.9801, 115.9465, 122.7717] is used while running with a PyTorch
   backend. On the other hand, this value is integrated into the model itself
-  by OpenVINO&trade; Model Optimizer during export to IR, so there is no need
-  to specify this value when running with an OpenVINO&trade; backend.
+  by OpenVINO™  Model Optimizer during export to IR, so there is no need
+  to specify this value when running with an OpenVINO™  backend.
 
 ## Evaluation
 
 `tools/test.py` script is designed for quality evaluation of instance
 segmentation models. The script has almost the same interface as a demo script,
-and supports both PyTorch and OpenVINO&trade; backends.
+and supports both PyTorch and OpenVINO™  backends.
 
 ### PyTorch
 
@@ -194,34 +194,34 @@ $ python3 tools/test.py \
 (if any) GPUs to use during evaluation. If empty value is assigned, PyTorch uses
 CPU backend.
 
-### OpenVINO&trade;
+### OpenVINO™ 
 
 For example, to evaluate ResNet50-FPN Mask R-CNN model on COCO 2017 Val dataset
-using OpenVINO&trade; backend run:
+using OpenVINO™  backend run:
 
 ```bash
 $ python3 tools/test.py \
     --dataset coco_2017_val \
     --ckpt data/pretrained_models/ir/coco/detectron/mask_rcnn_resnet50_fpn_2x.bin \
     --fit_window 800 1333 \
-    OpenVINO&trade; \
+    OpenVINO™  \
     --model data/pretrained_models/ir/coco/detectron/mask_rcnn_resnet50_fpn_2x.xml
 ```
 
 > **NOTE:** Default quality evaluation protocol for Mask R-CNN model uses
 `fit_max` image resize mode at a preprocessing stage (see the note above about
-resize modes), although by default OpenVINO&trade; IR models created by the
+resize modes), although by default OpenVINO™  IR models created by the
 `tools/download_pretrained_weights.py` script are configured to work properly
 with the `fit_window` mode only. This has no difference for landscape-oriented
 images, but affects portrait-oriented ones. So to directly reproduce the reference
-quality numbers, export PyTorch models to OpenVINO&trade; IR manually setting the
+quality numbers, export PyTorch models to OpenVINO™  IR manually setting the
 `MAXSIZE`x`MAXSIZE` input resolution. This will be fixed in later releases.
 
 
-## Export PyTorch models to OpenVINO&trade;
+## Export PyTorch models to OpenVINO™ 
 
-To run the model via OpenVINO&trade;, export the PyTorch model to ONNX first and
-then convert it to OpenVINO&trade; Intermediate Representation using Model Optimizer.
+To run the model via OpenVINO™ , export the PyTorch model to ONNX first and
+then convert it to OpenVINO™  Intermediate Representation using Model Optimizer.
 
 ### Export to ONNX
 
@@ -263,11 +263,11 @@ mode with `SCALE` 800 and `MAXSIZE` 1333, maximal input resolution is actually
 800x1344 to ensure divisibility.
 
 
-### Convert to the OpenVINO&trade; Intermediate Representation (IR)
+### Convert to the OpenVINO™  Intermediate Representation (IR)
 
 
-Conversion from ONNX model representation to OpenVINO&trade; IR is straightforward and
-handled by OpenVINO&trade; Model Optimizer. Please refer to the Model Optimizer
+Conversion from ONNX model representation to OpenVINO™  IR is straightforward and
+handled by OpenVINO™  Model Optimizer. Please refer to the Model Optimizer
 documentation for details on how it works.
 
 For example, here is the command used inside the

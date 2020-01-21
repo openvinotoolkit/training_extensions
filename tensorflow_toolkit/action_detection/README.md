@@ -14,7 +14,7 @@ This repository contains the TensorFlow\* code for deployment of person detectio
     virtualenv venv -p python2 --prompt="(action)"
     ```
 
- 2. Activate virtual environment and setup the OpenVINO&trade; variables:
+ 2. Activate virtual environment and setup the OpenVINO™  variables:
     ```bash
     . venv/bin/activate
     . /opt/intel/openvino/bin/setupvars.sh
@@ -39,9 +39,11 @@ There are two ways to get a high-accuracy model:
    3. Detection on the MS COCO dataset
 
 ## Data Preparation
+
 To prepare a dataset, follow the [instructions](./README_DATA.md)
 
 ## Action List Definition
+
 Current repository is configured to work with a 6-class action detection task, but you can easily define your own set of actions. After the [data preparation](#data-preparation) step you should have the configured class mapping file. We will use the class `IDs` from there. Then change the `configs/action/pedestriandb_twinnet_actionnet.yml` file according to the set of actions:
  1. Field `ACTIONS_MAP` maps class `IDs` of input data into final set of actions.
     > **NOTE**: If you have an `undefined` class, place it at the end of the action list to exclude it during training.
@@ -145,9 +147,9 @@ python2 tools/models/export.py -c configs/action/pedestriandb_twinnet_actionnet.
 
 >**NOTE**: The frozen graph is stored at `<PATH_TO_OUTPUT_DIR>/frozen.pb`.
 
-### Export to OpenVINO&trade; Intermediate Representation (IR) format
+### Export to OpenVINO™  Intermediate Representation (IR) format
 
-Run the Model Optimizer for the trained Actio- Detection model (OpenVINO&trade; should be installed before):
+Run the Model Optimizer for the trained Actio- Detection model (OpenVINO™  should be installed before):
 ```Shell
 python mo_tf.py --input_model <PATH_TO_FROZEN_GRAPH> \
                 --output_dir <OUTPUT_DIR> \

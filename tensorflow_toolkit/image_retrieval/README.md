@@ -17,7 +17,7 @@ This code is intended to be used for image retrieval algorithm training when the
 * Ubuntu\* 16.04
 * Python\* 3.5 or 3.6
 * TensorFlow\* 2.0.0a0 (for training only)
-* OpenVINO&trade; 2019 R1 with Python API (to infer pretrained model only)
+* OpenVINO™ 2019 R1 with Python API (to infer pretrained model only)
 
 ### Installation
 
@@ -26,7 +26,7 @@ This code is intended to be used for image retrieval algorithm training when the
     virtualenv venv -p python3 --prompt="(image_retrieval)"
     ```
 
-2. Activate virtual environment and setup OpenVINO variables
+2. Activate virtual environment and setup OpenVINO™ variables
     ```bash
     . venv/bin/activate
     ```
@@ -93,7 +93,7 @@ python tools/test.py \
   --ie tf
 ```
 
-To test the image retrieval model using OpenVINO&trade;, run the `test.py` script as follows:
+To test the image retrieval model using OpenVINO™ , run the `test.py` script as follows:
 ```
 python tools/test.py \
   --model_weights image-retrieval-0001.xml \
@@ -133,7 +133,7 @@ AVERAGE top1 over all queries:  1.000
         . venv_mo/bin/activate
         ```
 
-    2. Install modules and activate environment for OpenVINO&trade;:
+    2. Install modules and activate environment for OpenVINO™ :
         ```bash
         pip3 install -r requirements-mo.txt
         source /opt/intel/openvino/bin/setupvars.sh

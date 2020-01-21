@@ -1,14 +1,15 @@
-# Configuration file description
+# Configuration File Description
 
-The Neural Network Compression Framework (NNCF) and the training samples are designed to work with the configuration file where hyperparameters of training and compression algorithm are specified. These parameters are organized as a dictionary and stored in JSON file that is deserialized when the training starts. JSON file allows using comments that are supported by the [jstyleson](https://github.com/linjackson78/jstyleson) Python package.
+The Neural Network Compression Framework (NNCF) and the training samples are designed to work with the configuration file where hyperparameters of training and compression algorithm are specified. These parameters are organized as a dictionary and stored in a JSON file that is deserialized when the training starts. The JSON file allows using comments that are supported by the [jstyleson](https://github.com/linjackson78/jstyleson) Python package.
 Logically all parameters are divided into two groups:
-- **Training parameters** that are related to the training process and used by training sample (e.g. *learning rate*, *weight decay*, *optimizer type*, etc.)
-- **Compression parameters** that are related to the compression method (e.g. *compression algorithm name*, *target sparsity ratio*, etc.)
+- **Training parameters** that are related to the training process and used by a training sample (for example, *learning rate*, *weight decay*, *optimizer type*, and others)
+- **Compression parameters** that are related to the compression method (for example, *compression algorithm name*, *target sparsity ratio*, and others)
 
-**Note**: Compression parameters are optional and can be skipped. In this case, a regular model training will be executed without any compression method.
+> **NOTE**: Compression parameters are optional and can be skipped. In this case, a regular model training is executed without any compression method.
 
-## Example of the configuration file
-This is an example of the configuration file that contains training and compression parameters for two algorithms: sparsity and INT8 quantization which are applied to MobileNet v2 model on ImageNet classification task.  See the description of each setting as comments inside the file.
+## Example of a Configuration File
+
+This is an example of the configuration file that contains training and compression parameters for two algorithms: sparsity and INT8 quantization which are applied to the MobileNet v2 model on the ImageNet classification task.  See the description of each setting as comments inside the file.
 
 ```yaml
 {
@@ -36,11 +37,11 @@ This is an example of the configuration file that contains training and compress
             "algorithm": "rb_sparsity", // Compression algorithm name
             "params": {
                 // A type of scheduler that is used to increase the sparsity rate from `sparsity_init` to `sparsity_target`.
-                // By default it is `exponential` for RB algo, and `polynomial` - for Magnitude one.
+                // By default it is `exponential` for the RB algorithm and `polynomial` for Magnitude one.
                 "schedule": "exponential",
-                "sparsity_init": 0.01, // Inital sparsity ratio, e.g. value "0.1" means that the method sets 10% of zero weights as a target after the training process starts
-                "sparsity_target": 0.52, // Desired sparsity ratio, e.g. value "0.5" means that the method will schedule the training so that to get 50% of zero weights in the end
-                "sparsity_steps": 5, // Number of epochs at which sparsity ratio will be increased from "sparsity_init" value up to "sparsity_target" value
+                "sparsity_init": 0.01, // Initial sparsity ratio, for example value "0.1" means that the method sets 10% of zero weights as a target after the training process starts
+                "sparsity_target": 0.52, // Desired sparsity ratio, for example value "0.5" means that the method schedules the training to get 50% of zero weights in the end
+                "sparsity_steps": 5, // Number of epochs at which sparsity ratio is increased from "sparsity_init" value up to "sparsity_target" value
                 "sparsity_training_steps": 10 // Overall number of epochs that are used to train sparsity mask
             },
             "ignored_scopes": ["MobileNetV2/Sequential[features]/Sequential[0]/Conv2d[0]"] // Layers or blocks that are excluded from compression

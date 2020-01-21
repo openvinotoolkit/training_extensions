@@ -2,13 +2,12 @@
 
 ## Setup
 
-
 ### Prerequisites
 
 * Ubuntu\* 16.04
 * Python\* 3.6
 * TensorFlow\* 1.10.0
-* OpenVINO&trade;  2019 R1 with Python API
+* OpenVINO™   2019 R1 with Python API
 
 
 ### Installation
@@ -18,7 +17,7 @@
     virtualenv venv -p python3 --prompt="(ssd)"
     ```
 
-2. Activate virtual environment and setup OpenVINO&trade;  variables:
+2. Activate virtual environment and setup OpenVINO™   variables:
     ```bash
     . venv/bin/activate
     . /opt/intel/openvino/bin/setupvars.sh
@@ -144,9 +143,9 @@ To train a model, go through the following steps:
     ![BitVehicle TensorBoard](vlp/docs/tensorboard.png "TensorBoard for BitVehicle training")
 
 
-### Export to OpenVINO&trade; 
+### Export to OpenVINO™  
 
-To run the model via OpenVINO&trade;, freeze the TensorFlow graph and convert it to the OpenVINO&trade;  Internal Representation (IR) using the Model Optimizer:
+To run the model via OpenVINO™ , freeze the TensorFlow graph and convert it to the OpenVINO™   Internal Representation (IR) using the Model Optimizer:
 
 ```
 python3 tools/export.py --data_type FP32 --output_dir vlp/model/export vlp/config.py
@@ -190,7 +189,7 @@ python3 tools/infer_ie.py --model vlp/model/export/frozen_graph/graph.pb.frozen 
   --output_json_path test.json
 ```
 
-A model in the IR format could be inferred using the Python sample from OpenVINO&trade; located at `<path_to_computer_vision_sdk>/inference_engine/samples/python_samples/object_detection_demo_ssd_async/object_detection_demo_ssd_async.py`
+A model in the IR format could be inferred using the Python sample from OpenVINO™  located at `<path_to_computer_vision_sdk>/inference_engine/samples/python_samples/object_detection_demo_ssd_async/object_detection_demo_ssd_async.py`
 
 ```
 python3 object_detection_demo_ssd_async.py -m <path_to_converted_model>/graph.xml -l <path_to_computer_vision_sdk>/deployment_tools/inference_engine/lib/ubuntu_16.04/intel64/libcpu_extension_avx2.so -i <path_to_input_video>

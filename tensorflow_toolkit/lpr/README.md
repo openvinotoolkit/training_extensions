@@ -11,7 +11,7 @@
 * Ubuntu\* 16.04
 * Python\* 3.6
 * TensorFlow\* 1.13.1
-* OpenVINO&trade; 2019 R1 with Python API
+* OpenVINO™  2019 R1 with Python API
 
 
 ### Installation
@@ -129,10 +129,10 @@ To train a model, go through the steps described in the following sections.
     Then view results in a browser: [http://localhost:6006](http://localhost:6006).
 
 
-### Export to OpenVINO&trade; 
+### Export to OpenVINO™  
 
-To run the model via OpenVINO&trade;, freeze the TensorFlow graph and
-then convert it to the OpenVINO&trade; Intermediate Representation (IR) using the Model Optimizer:
+To run the model via OpenVINO™ , freeze the TensorFlow graph and
+then convert it to the OpenVINO™  Intermediate Representation (IR) using the Model Optimizer:
 
 ```Bash
 python3 tools/export.py --data_type FP32 --output_dir model/export chinese_lp/config.py

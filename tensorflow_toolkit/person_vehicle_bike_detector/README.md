@@ -12,7 +12,7 @@ The crossroad detection network model provides detection of 3 class objects: veh
 * Ubuntu\* 16.04
 * Python\* 3.6
 * TensorFlow\* 1.13.1
-* OpenVINO&trade;  2019 R1 with Python API
+* OpenVINO™   2019 R1 with Python API
 
 ### Installation
 
@@ -30,7 +30,7 @@ The crossroad detection network model provides detection of 3 class objects: veh
     EOT
     ```
 
-3. Activate virtual environment and setup OpenVINO&trade;  variables:
+3. Activate virtual environment and setup OpenVINO™   variables:
     ```bash
     . venv/bin/activate
     ```

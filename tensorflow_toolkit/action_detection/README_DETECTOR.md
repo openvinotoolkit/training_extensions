@@ -7,7 +7,7 @@ Current repository includes training and evaluation tools for general object-det
 
 ## Data Preparation
 
-To prepare a dataset, follow the [instruction](./README_DATA.md)
+To prepare a dataset, follow the [instructions](./README_DATA.md)
 
 ## Model Training
 

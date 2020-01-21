@@ -1,32 +1,31 @@
-# OpenVINO Training Extensions
+# OpenVINO™ Training Extensions
 
-OpenVINO Training Extensions provide a convenient environment to train
-Deep Learning models and convert them using [OpenVINO™
-Toolkit](https://software.intel.com/en-us/openvino-toolkit) for optimized
+OpenVINO™ Training Extensions provide a convenient environment to train
+Deep Learning models and convert them using the [OpenVINO™
+toolkit](https://software.intel.com/en-us/openvino-toolkit) for optimized
 inference.
-
 
 # Quick Start Guide
 
-## Setup OpenVINO Training Extensions
+## Setup OpenVINO™ Training Extensions
 
-1. Clone repository in the working directory
+1. Clone repository in the working directory by running the following: 
 
-  ```
-  cd /<path_to_working_dir>
-  git clone https://github.com/opencv/openvino_training_extensions.git
-  ```
+    ```
+    cd /<path_to_working_dir>
+    git clone https://github.com/opencv/openvino_training_extensions.git
+    ```
 
-2. Install prerequisites
+2. Install prerequisites by running the following:
 
-  ```
-  sudo apt-get install libturbojpeg python3-tk python3-pip virtualenv
-  ```
+    ```
+    sudo apt-get install libturbojpeg python3-tk python3-pip virtualenv
+    ```
 
 
 # Models
 
-* [PyTorch](pytorch_toolkit)
+* [PyTorch\*](pytorch_toolkit)
 
   * [Action recognition](pytorch_toolkit/action_recognition)
   * [Face recognition](pytorch_toolkit/face_recognition)
@@ -39,7 +38,7 @@ inference.
   * [Segmentation of thoracic organs](pytorch_toolkit/segthor)
   * [Super resolution](pytorch_toolkit/super_resolution)
 
-* [TensorFlow](tensorflow_toolkit)
+* [TensorFlow\*](tensorflow_toolkit)
 
   * [Action Detection](tensorflow_toolkit/action_detection)
   * [Image retrieval](tensorflow_toolkit/image_retrieval)

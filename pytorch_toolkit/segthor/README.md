@@ -144,9 +144,9 @@ python3 tools/test.py --name pai_0620 \
   --new_scale 1 1 2.5
 ```
 
-### Run test with OpenVINO&trade;
+### Run test with OpenVINO™ 
 
-1. Download and setup [OpenVINO&trade;](https://software.intel.com/en-us/openvino-toolkit)
+1. Download and setup [OpenVINO™ ](https://software.intel.com/en-us/openvino-toolkit)
 
 2. Run `thoracic_segmentation.py`
 

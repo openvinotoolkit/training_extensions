@@ -31,7 +31,7 @@ inference.
     . venv/bin/activate
     ```
 
-    >**NOTE**: If you have installed the OpenVINO&trade; toolkit after creating
+    >**NOTE**: If you have installed the OpenVINO™  toolkit after creating
     a virtual environment, [recreate one](#create_venv)
     to install required packages for the Model Optimizer into a single virtual environment.
 

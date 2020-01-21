@@ -1,6 +1,6 @@
 # Image Classification
 
-Current repository includes training and evaluation tools for the image classification task. Use one of the prepared config files to train the model on:
+Current repository includes training and evaluation tools for the image classification task. Use the following prepared configuration files to train the model on:
  - ImageNet dataset (`configs/classification/imagenet_rmnet.yml`)
 
 ## Data Preparation
@@ -16,13 +16,14 @@ Assume the following structure of data:
          test_data.txt
 ```
 
-Each data file (`train_data.txt` and `test_data.txt`) describes data to train and evaluate model. Each row in a data file represents a single source in the next format: `path_to_image image_label`.
+Both data files, `train_data.txt` and `test_data.txt`, describe data to train and evaluate a model. 
+Each row in a data file represents a single source in the following format: `path_to_image image_label`.
 
 
-## Model Training
+## Train a Model
 
-To train an object-detection model from scratch, run the command:
-```Shell
+To train an image-classification model from scratch, run the command:
+```shell
 python2 tools/models/train.py -c configs/classification/imagenet_rmnet.yml \ # path to config file
                               -t <PATH_TO_DATA_FILE> \                       # file with train data paths
                               -l <PATH_TO_LOG_DIR> \                         # directory for logging
@@ -45,9 +46,10 @@ python2 tools/models/train.py -c configs/classification/imagenet_rmnet.yml \ # p
 ```
 
 ## Model Evaluation
-To evaluate the quality of the trained Image-Classification model, prepare the test data according the  [instruction](#data-preparation).
 
-```Shell
+To evaluate the quality of the trained image-classification model, prepare the test data according to the  [instruction](#data-preparation).
+
+```shell
 python2 tools/models/eval.py -c configs/classification/imagenet_rmnet.yml \ # path to config file
                              -v <PATH_TO_DATA_FILE> \                       # file with test data paths
                              -b 4 \                                         # batch size

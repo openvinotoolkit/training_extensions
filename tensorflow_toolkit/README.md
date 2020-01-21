@@ -1,4 +1,4 @@
-# Training Toolbox for TensorFlow\*
+# Training Toolbox for TensorFlow*
 
 Training Toolbox for TensorFlow\* provides a convenient environment to train
 Deep Learning models and convert them using [OpenVINO™

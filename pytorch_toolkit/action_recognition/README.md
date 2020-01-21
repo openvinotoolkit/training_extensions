@@ -130,7 +130,7 @@ python3 main.py --root-path ~/data --result-path ~/logs/ --dataset kinetics --mo
     --batch 64 -j 12 --clip-size 16 --st 2 --no-train --no-val --test --pretrain-path ~/resnet34_vtn.pth
 ```
 
-#### Train a Model (with ImageNet\* Pretrain)
+#### Train a Model (with ImageNet Pretrain)
 
 ```bash
 python3 main.py --root-path ~/data --result-path ~/logs/experiment_name --dataset kinetics --model resnet34_vtn \
@@ -160,7 +160,7 @@ python3 main.py --root-path ~/data --result-path ~/logs/ --dataset ucf101 --mode
 
 #### Convert a Model to the ONNX\* and OpenVINO&trade; format
 
-**NOTE** Modules that used `LayerNormalization` can be converted to ONNX\* only with the `--no-layer-norm` > flag, but this might decrease the accuracy of the converted model.
+> **NOTE**: Modules that used `LayerNormalization` can be converted to ONNX\* only with the `--no-layer-norm` > flag, but this might decrease the accuracy of the converted model.
 > Otherwise, the script crashes with the following message: `RuntimeError: ONNX export failed: Couldn't export operator aten::std`.
 
 PyTorch to ONNX:
@@ -190,4 +190,5 @@ mo.py --input_model resnet34_vtn.onnx --input_shape '[1,16,3,224,224]'
 | SE-ResNext101_32x4d-VTN| RGB-diff | HMDB51  | 73.22%| [Download](https://download.01.org/opencv/openvino_training_extensions/models/action_recognition/se_resnext_101_32x4d_vtn_rgbd_hmdb51_s1.pth) | `python main.py --dataset hmdb51_1 --model se-resnext101-32x4d_vtn_rgbdiff -b16 --lr 1e-5 --seq 16 --st 2 --no-mean-norm --no-std-norm --pretrain-path /PATH/TO/PRETRAINED/MODEL`  |
 
 ## Demo
+
 You can try your models after converting them to the OpenVINO&trade; format or a [pretrained model from OpenVINO&trade;](https://docs.openvinotoolkit.org/latest/usergroup10.html) using the [demo application from OpenVINO&trade; toolkit](https://docs.openvinotoolkit.org/latest/_demos_python_demos_action_recognition_README.html)
