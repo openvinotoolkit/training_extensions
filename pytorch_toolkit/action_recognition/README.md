@@ -61,7 +61,7 @@ python3 utils/ucf101_json.py ${data}/ucf-101/ucfTrainTestlist
 
 Download the [HMDB-51 videos and train/test splits](http://serre-lab.clps.brown.edu/resource/hmdb-a-large-human-motion-database/).
 
-Convert all splitsm to the JSON format:
+Convert all splits to the JSON format:
 
 ```bash
 python3 utils/hmdb51_json.py ${data}/hmdb-51/splits/
