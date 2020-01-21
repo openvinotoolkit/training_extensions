@@ -1,6 +1,6 @@
 # Real-time 2D Multi-Person Pose Estimation on CPU: Lightweight OpenPose
 
-This repository contains training code for the paper [Real-time 2D Multi-Person Pose Estimation on CPU: Lightweight OpenPose](https://arxiv.org/pdf/1811.12004.pdf). This work heavily optimizes the [OpenPose](https://github.com/CMU-Perceptual-Computing-Lab/openpose) approach to reach real-time inference on CPU with a negligible accuracy drop. It detects a skeleton (which consists of keypoints and connections between them) to identify human poses for every person inside the image. The pose may contain up to 18 keypoints: ears, eyes, nose, neck, shoulders, elbows, wrists, hips, knees, and ankles. This code achieves a 40% AP for the single-scale inference on the COCO 2017 Keypoint Detection validation set without a flip or post-processing.You can reproduce the result using this repository.
+This repository contains training code for the paper [Real-time 2D Multi-Person Pose Estimation on CPU: Lightweight OpenPose](https://arxiv.org/pdf/1811.12004.pdf). This work heavily optimizes the [OpenPose](https://github.com/CMU-Perceptual-Computing-Lab/openpose) approach to reach real-time inference on CPU with a negligible accuracy drop. It detects a skeleton (which consists of keypoints and connections between them) to identify human poses for every person inside the image. The pose may contain up to 18 keypoints: ears, eyes, nose, neck, shoulders, elbows, wrists, hips, knees, and ankles. This code achieves a 40% AP for the single-scale inference on the COCO 2017 Keypoint Detection validation set without a flip or post-processing. You can reproduce the result using this repository.
 
 The implementation of our paper for single-person pose estimation problem [Global Context for Convolutional Pose Machines](https://arxiv.org/pdf/1906.04104.pdf) is added. See [README_single.md](README_single.md) for details.
 
@@ -12,7 +12,7 @@ The implementation of our paper for single-person pose estimation problem [Globa
 * [Prerequisites](#prerequisites)
 * [Training](#training)
 * [Validation](#validation)
-* [Pretrained Model](#pre-trained-model)
+* [Pretrained Model](#pretrained-model)
 * [Output Format](#output-format)
 * [C++ Demo](#cpp-demo)
 * [Python Demo](#python-demo)
@@ -42,7 +42,7 @@ Training consists of three steps (given AP values for full validation dataset):
 
 
 ### Training Flow
-1. Download the pretrained MobileNet v1 weights `mobilenet_sgd_68.848.pth.tar` from the [Pytorch*-MobileNet repository](https://github.com/marvis/pytorch-mobilenet) (choose the sgd option).
+1. Download the pretrained MobileNet v1 weights `mobilenet_sgd_68.848.pth.tar` from the [pytorch-mobilenet repository](https://github.com/marvis/pytorch-mobilenet) (choose the sgd option).
 
 2. Convert the train annotations to the internal format by running the following:   
     ```bash 
@@ -112,7 +112,7 @@ To get rid of it, increase the limit to a bigger number. For example, to increas
 ## Pretrained Model
 
 The model expects a normalized image (mean=[128, 128, 128], scale=[1/256, 1/256, 1/256]) in the planar BGR format.
-A model pretrained on COCO is available at the [Intel&reg; Open Source Technology Center](https://download.01.org/opencv/openvino_training_extensions/models/human_pose_estimation/checkpoint_iter_370000.pth), it has 40% of AP on theCOCO validation set (38.6% of AP on the val *subset*).
+A model pretrained on COCO is available at the [Intel&reg; Open Source Technology Center](https://download.01.org/opencv/openvino_training_extensions/models/human_pose_estimation/checkpoint_iter_370000.pth), it has 40% of AP on the COCO validation set (38.6% of AP on the val *subset*).
 
 #### Conversion to the OpenVINO&trade; Format
 
@@ -160,13 +160,13 @@ We provide the Python demo just for the quick results preview. Consider the C++ 
 We will perform fine-tuning on the first half of validation dataset and report the performance on the second part (see image indices in `data/val2017_2nd_half_indices.txt` for the reference) after 200 iterations (~6 epoches).
 
 * Validate before fine-tuning:  
-  ```
+  ```bash
   python val.py --labels val2017_2nd_part.json --output-name detections.json --images-folder <COCO_HOME>/val2017 --checkpoint-path <path_to>/checkpoint_iter_370000.pth
   ```   
   AP before fine-tuning is 39%.
 
 * Perform fine-tuning for 200 iterations:
-    ```
+    ```bash
     python train.py --train-images-folder <COCO_HOME>/val2017/ --prepared-train-labels prepared_val2017_1st_part_annotation.pkl --val-labels val2017_2nd_part.json --val-images-folder <COCO_HOME>/val2017/ --checkpoint-path <path_to>/checkpoint_iter_370000.pth --weights-only --checkpoint-after 200 --val-after 100 --log-after 12 --base-lr 0.00000444444
     ```
     Expected AP after 200 iterations of fine-tuning is 39.1%-39.2%.
