@@ -66,7 +66,7 @@ python evaluate_lfw.py \
 ## Configuration Files
 
 Besides passing all the required parameters via the command line, the training script allows to read them from a `.yaml` configuration file.
-Each line of such file should contain a valid description of one parameter in the `.yaml` format.
+Each line of such file should contain a valid description of one parameter in the YAML format.
 Example:
 ```yml
 #optimizer parameters
