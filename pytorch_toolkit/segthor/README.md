@@ -77,6 +77,7 @@ Download checkpoint with the following
     ```
 
 ## Train
+
 1. Download the [SegTHOR dataset](https://competitions.codalab.org/competitions/21012#participate)
 2. Create the directory tree
 3. Prepare the training dataset

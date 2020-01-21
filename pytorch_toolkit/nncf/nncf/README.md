@@ -47,7 +47,7 @@ Quantization is parametrized by clamping range and number of quantization levels
 
 ####  Symmetric Quantization
 
-During the training? we optimize the **scale** parameter that represents the range `[input_low, input_range]` of the original signal using gradient descent:
+During the training, we optimize the **scale** parameter that represents the range `[input_low, input_range]` of the original signal using gradient descent:
 
 ![input\_low=scale*\frac{level\_low}{level\_high}](https://latex.codecogs.com/gif.latex?input%5C_low%3Dscale*%5Cfrac%7Blevel%5C_low%7D%7Blevel%5C_high%7D)
 
