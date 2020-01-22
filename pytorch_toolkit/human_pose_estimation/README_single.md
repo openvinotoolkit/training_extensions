@@ -7,7 +7,7 @@ This repository contains training code for the  [Global Context for Convolutiona
 * [Prerequisites](#prerequisites)
 * [Training on LIP dataset](#training-lip)
 * [Training on COCO dataset](#training-coco)
-* [Pre-trained model](#pretrained-model)
+* [Pretrained model](#pretrained-model)
 * [OpenVINO demo](#openvino-demo)
 * [Citation](#citation)
 
