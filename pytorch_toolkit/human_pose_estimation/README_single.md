@@ -72,7 +72,7 @@ You should observe about 68% mAP on the validation set.
 
 *Optional*: Pass the `--visualize` key to see predicted keypoints results.
 
-## <a name="pre-trained-model"/>Pretrained model </a>
+## <a name="pretrained-model"/>Pretrained model </a>
 
 [Pretrained on the COCO dataset model](https://download.01.org/opencv/openvino_training_extensions/models/human_pose_estimation/single-human-pose-estimation-0001.pth)
 
