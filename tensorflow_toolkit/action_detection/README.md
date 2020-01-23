@@ -14,7 +14,7 @@ This repository contains the TensorFlow\* code for deployment of person detectio
     virtualenv venv -p python2 --prompt="(action)"
     ```
 
- 2. Activate virtual environment and setup the OpenVINO™  variables:
+ 2. Activate virtual environment and setup the OpenVINO™ variables:
     ```bash
     . venv/bin/activate
     . /opt/intel/openvino/bin/setupvars.sh
@@ -48,7 +48,7 @@ Current repository is configured to work with a 6-class action detection task, b
  1. Field `ACTIONS_MAP` maps class `IDs` of input data into final set of actions.
     > **NOTE**: If you have an `undefined` class, place it at the end of the action list to exclude it during training.
  2. Field `VALID_ACTION_NAMES` stores names of valid actions that you want to recognize (excluding the `undefined` action).
- 4. If you have the `undefined` class, set the `UNDEFINED_ACTION_ID` field  to `ID` of this class from the `ACTIONS_MAP` map and add this `ID` to the `IGNORE_CLASSES` list.
+ 4. If you have the `undefined` class, set the `UNDEFINED_ACTION_ID` field to `ID` of this class from the `ACTIONS_MAP` map and add this `ID` to the `IGNORE_CLASSES` list.
  4. If you plan to use the demo mode (see [header](#action-detection-model-demostration)) change colors of the actions by setting the `ACTION_COLORS_MAP` and `UNDEFINED_ACTION_COLOR` fields.
  5. You can exclude some actions from the training procedure by including them into the `IGNORE_CLASSES` list. However, to achieve the best performance, label all boxes with persons even if the target action is undefined for them, because these boxes are still useful to train the person-detector model part.
 
@@ -147,9 +147,9 @@ python2 tools/models/export.py -c configs/action/pedestriandb_twinnet_actionnet.
 
 >**NOTE**: The frozen graph is stored at `<PATH_TO_OUTPUT_DIR>/frozen.pb`.
 
-### Export to OpenVINO™  Intermediate Representation (IR) format
+### Export to OpenVINO™ Intermediate Representation (IR) format
 
-Run the Model Optimizer for the trained Actio- Detection model (OpenVINO™  should be installed before):
+Run the Model Optimizer for the trained Actio- Detection model (OpenVINO™ should be installed before):
 ```Shell
 python mo_tf.py --input_model <PATH_TO_FROZEN_GRAPH> \
                 --output_dir <OUTPUT_DIR> \

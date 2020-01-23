@@ -22,7 +22,7 @@ devices as well as achieves decent accuracy close to the original 640-size model
 * Ubuntu\* 16.04
 * Python\* 3.5
 * TensorFlow\* 1.13.1
-* OpenVINO™  2019 R1 with built Inference Engine Samples
+* OpenVINO™ 2019 R1 with built Inference Engine Samples
 
 ### Installation
 
@@ -40,7 +40,7 @@ devices as well as achieves decent accuracy close to the original 640-size model
     EOT
     ```
 
-3. Activate virtual environment and setup OpenVINO™  variables:
+3. Activate virtual environment and setup OpenVINO™ variables:
     ```bash
     . venv/bin/activate
     ```
@@ -142,15 +142,15 @@ result in a browser:
             --tensorflow_use_custom_operations_config="${INTEL_OPENVINO_DIR}"/deployment_tools/model_optimizer/extensions/front/tf/ssd_v2_support.json
         ```
 
-## OpenVINO™  Demo
+## OpenVINO™ Demo
 
-1. Build OpenVINO™  samples:
+1. Build OpenVINO™ samples:
     ```bash
     cd ${INTEL_OPENVINO_DIR}/deployment_tools/inference_engine/samples
     bash build_samples.sh
     ```
 
-2. Run OpenVINO™  SSD sample after OpenVINO™  IR is generated:
+2. Run OpenVINO™ SSD sample after OpenVINO™ IR is generated:
         ```bash
         $HOME/inference_engine_samples_build/intel64/Release/object_detection_sample_ssd \
             -i ./assets/000000322211.jpg \
@@ -162,7 +162,7 @@ result in a browser:
 
 ![](assets/000000322211_out.jpg)
 
-> **NOTE**: This document assumes you have already built the OpenVINO™  R1 Inference Engine Samples. In case you have not, refer to the [OpenVINO™  build the sample
+> **NOTE**: This document assumes you have already built the OpenVINO™ R1 Inference Engine Samples. In case you have not, refer to the [OpenVINO™ build the sample
 applications](https://docs.openvinotoolkit.org/latest/_docs_IE_DG_Samples_Overview.html#build_the_sample_applications).
 
 > **NOTE**: Try `export ${DEVICE}=MYRIAD` to run this model on VPU.

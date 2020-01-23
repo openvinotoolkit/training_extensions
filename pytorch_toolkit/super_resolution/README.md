@@ -28,7 +28,7 @@ The PSNR values were calculated with Y channel from YCrCb image.
 ### Prerequisites
 
 * Ubuntu\* 16.04 or higher
-* OpenVINO™  2019 R1 or higher
+* OpenVINO™ 2019 R1 or higher
 * Python\* 3
 
 
@@ -39,7 +39,7 @@ The PSNR values were calculated with Y channel from YCrCb image.
     virtualenv venv -p python3 --prompt="(sr)"
     ```
 
-2. Activate virtual environment and setup OpenVINO™  variables:
+2. Activate virtual environment and setup OpenVINO™ variables:
     ```bash
     . venv/bin/activate
     . /opt/intel/openvino/bin/setupvars.sh

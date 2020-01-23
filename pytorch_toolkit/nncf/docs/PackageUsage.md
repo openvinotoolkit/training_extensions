@@ -10,7 +10,7 @@ Follow the steps below to use the NNCF compression algorithm.
 
 - Clone the NNCF repository
 - Install prerequisites: `pip install -r requirements.txt`. We suggest creating and installing all the packages in the separate virtual environment.
-- Enter the repository root folder and run the following command to  build the NNCF package:
+- Enter the repository root folder and run the following command to build the NNCF package:
  `python setup.py bdist_wheel`
  - Now you can find the package in `dist/nncf-<vesion>.whl` and install it using the `pip` tool.
 

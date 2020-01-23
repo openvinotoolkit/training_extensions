@@ -55,7 +55,7 @@ root
 ### Configuration Files
 
 The script for training and inference uses a configuration file
-[default_config.py](config/default_config.py), which  consists of default parameters.
+[default_config.py](config/default_config.py), which consists of default parameters.
 This file also has description of parameters.
 Parameters that you wish to change must be in your own configuration file.
 Example: [person-reidentification-retail-0200.yaml](config/person-reidentification-retail-0200.yaml)
@@ -124,12 +124,12 @@ Follow the steps below:
 
 ```bash
 python <OpenVINO_INSTALL_DIR>/deployment_tools/model_optimizer/mo.py --input_model model.onnx  \
-    --mean_values '[123.675, 116.28 , 103.53]' \
-    --scale_values '[58.395, 57.12 , 57.375]' \
+    --mean_values '[123.675, 116.28, 103.53]' \
+    --scale_values '[58.395, 57.12, 57.375]' \
     --reverse_input_channels
 ```
 
-This produces the `model.xml`model  and weights `model.bin` in single-precision floating-point format (FP32).
+This produces the `model.xml`model and weights `model.bin` in single-precision floating-point format (FP32).
 
 ## OpenVINO™ Demo
 

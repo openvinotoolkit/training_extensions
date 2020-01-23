@@ -38,7 +38,7 @@ This code is intended to be used for image retrieval algorithm training when the
 
 ## Training
 
-* To train an image-retrieval model, run the `train.py` script  as follows:
+* To train an image-retrieval model, run the `train.py` script as follows:
   ```
   python tools/train.py \
     --gallery data/gallery/gallery.txt \
@@ -55,7 +55,7 @@ This code is intended to be used for image retrieval algorithm training when the
     --lr_drop_step 500
   ```
 
-* To fine-tune the image-retrieval model, run the `train.py` script  as follows:
+* To fine-tune the image-retrieval model, run the `train.py` script as follows:
   ```
   python tools/train.py \
     --gallery data/gallery/gallery.txt \
@@ -93,7 +93,7 @@ python tools/test.py \
   --ie tf
 ```
 
-To test the image retrieval model using OpenVINO™ , run the `test.py` script as follows:
+To test the image retrieval model using OpenVINO™, run the `test.py` script as follows:
 ```
 python tools/test.py \
   --model_weights image-retrieval-0001.xml \

@@ -44,7 +44,7 @@ A toy dataset located in `./data`. You can use it to do all steps including the 
 * model training
 * model evaluation
 
-> **NOTE**: This dataset is considerably small. It is highly recommended to use  at least several thousand images datasets like ICDAR-* (ICDAR 2013, ICDAR 2015, ICDAR 2017, ...), COCO-TEXT, MSRA-TD500, and others.
+> **NOTE**: This dataset is considerably small. It is highly recommended to use at least several thousand images datasets like ICDAR-* (ICDAR 2013, ICDAR 2015, ICDAR 2017, ...), COCO-TEXT, MSRA-TD500, and others.
 
 ### Conversion
 
@@ -112,7 +112,7 @@ python tools/test.py \
   --weights model/weights/model-500.save_weights
 ```
 
-## Export models to OpenVINO™  (IR)
+## Export models to OpenVINO™ (IR)
 
 1. Freeze your model:
     > **NOTE**: Use the configuration file that appears in `train_dir` during training.
@@ -124,7 +124,7 @@ python tools/test.py \
       --weights model/weights/model-500.save_weights
     ```
 
-    The command prints information about the frozen model and  getting IR:
+    The command prints information about the frozen model and getting IR:
 
     ```
     Operations number: 51.075934092 GFlops

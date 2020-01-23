@@ -117,7 +117,7 @@ For complete list of options, run `python3 main.py --help`. The summary of some 
 * `--result-path` -- Directory where logs and checkpoints are stored. If you provide the path to a directory from previous runs, the training is resumed from the latest checkpoint unless you provide `--no-resume-train`.
 * `--model` -- Name of the model. The string before the first underscore symbol may be recognized as an encoder name (like resnet34_vtn)en *ENCODER_DECODER*. You can find all implemented models at: `./action_recognition/models/`.
 * `--clip-size` -- Number of frames in input clips. Note that you should multiply it by `--st` to get effective temporal receptive field.
-* `--st` -- Number of skipped frames when sampling input clip. For example, if st=2, every second frame is  skipped.
+* `--st` -- Number of skipped frames when sampling input clip. For example, if st=2, every second frame is skipped.
 * `--resume-path` -- Path to checkpoint with a pretrained model, either for validation or fine-tuning.
 * `--no-cuda` -- Use this option in an environment without CUDA
 

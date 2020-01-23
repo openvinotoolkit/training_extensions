@@ -11,7 +11,7 @@
 * Ubuntu\* 16.04
 * Python\* 3.6
 * TensorFlow\* 1.13.1
-* OpenVINO™  2019 R1 with Python API
+* OpenVINO™ 2019 R1 with Python API
 
 ### Installation
 
@@ -126,8 +126,8 @@ To train a model, go through the steps described in the following sections.
 
 ### Export to OpenVINO™
 
-To run the model via OpenVINO™ , freeze the TensorFlow graph and
-then convert it to the OpenVINO™  Intermediate Representation (IR) using the Model Optimizer:
+To run the model via OpenVINO™, freeze the TensorFlow graph and
+then convert it to the OpenVINO™ Intermediate Representation (IR) using the Model Optimizer:
 
 ```Bash
 python3 tools/export.py --data_type FP32 --output_dir model/export chinese_lp/config.py
@@ -141,7 +141,7 @@ python3 tools/export.py --data_type FP32 --output_dir model/export chinese_lp/co
 
 ### For the Latest Checkpoint
 
-> **NOTE**: Input data for inference should be set via the `infer.file_list_path` parameter  in
+> **NOTE**: Input data for inference should be set via the `infer.file_list_path` parameter in
 `training_toolbox/lpr/chinese_lp/config.py` and must look like a text file
 with a list of paths to license plates images in the following format:
 ```

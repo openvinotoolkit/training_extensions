@@ -223,7 +223,7 @@ The method requires a long schedule of the training process in order to minimize
 
 > **NOTE**: In all our sparsity experiments, we used the Adam optimizer and initial learning rate `0.001` for model weights and sparsity mask.
 
-#### Magnitude  Sparsity
+#### Magnitude Sparsity
 
 The magnitude sparsity method implements a naive approach that is based on the assumption that the contribution of lower weights is lower so that they can be pruned. After each training epoch, the method calculates a threshold based on the current sparsity ratio and applies it to zero weights which are lower than this threshold using one of the options below:
 - Weights are used as is during the threshold calculation procedure.
@@ -234,7 +234,7 @@ The magnitude sparsity method implements a naive approach that is based on the a
 
 All other parameters are the same as in the RB-sparsity algorithm.
 
-#### Constant  Sparsity
+#### Constant Sparsity
 
 This type of sparsity provides the ability to preserve weights sparsity during the further stages of fine-tuning. This method assumes that we already trained the model using one of the sparsity methods from the NNCF.
 

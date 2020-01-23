@@ -43,7 +43,7 @@ A toy dataset located in `../../data/text_recognition/annotation.txt`. You can u
 * model training
 * model evaluation
 
-> **NOTE**: This dataset is considerably small. It is highly recommended to use  at least several thousand images datasets like [MJSynth](https://www.robots.ox.ac.uk/~vgg/data/text/) and [SynthText in the Wild Dataset](http://www.robots.ox.ac.uk/~vgg/data/scenetext/).
+> **NOTE**: This dataset is considerably small. It is highly recommended to use at least several thousand images datasets like [MJSynth](https://www.robots.ox.ac.uk/~vgg/data/text/) and [SynthText in the Wild Dataset](http://www.robots.ox.ac.uk/~vgg/data/scenetext/).
 
 ### Format
 
