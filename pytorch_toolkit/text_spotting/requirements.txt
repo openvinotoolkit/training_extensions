@@ -1,0 +1,14 @@
+Cython==0.29.14
+imagesize==1.2.0
+matplotlib==3.1.2
+networkx==2.4
+numpy==1.17.4
+onnx==1.6.0
+opencv-python==4.1.2.30
+Polygon3==3.0.8
+pycocotools==2.0.0
+PyYAML==5.3
+tensorboardX==2.0
+tqdm==4.41.1
+Pillow==6.2.1
+defusedxml==0.6.0

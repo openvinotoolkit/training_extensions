@@ -36,6 +36,7 @@ inference.
     - [Person Vehicle Bike Detector](pytorch_toolkit/object_detection/person_vehicle_bike_detection.md)
   * [Segmentation of Thoracic Organs](pytorch_toolkit/segthor)
   * [Super Resolution](pytorch_toolkit/super_resolution)
+  * [Text Spotting](pytorch_toolkit/text_spotting)
 
 * [TensorFlow\*](tensorflow_toolkit)
 

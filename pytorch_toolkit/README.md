@@ -52,10 +52,10 @@ them for prediction.
   - [Person Vehicle Bike Detector](object_detection/person_vehicle_bike_detection.md)
 * [Segmentation of Thoracic Organs](segthor)
 * [Super Resolution](super_resolution)
+* [Text Spotting](text_spotting)
 
 ### Tools
 
 Tools are intended to perform manipulations with trained models, like compressing models using Quantization-aware training or sparsity.
 
 * [Neural Networks Compression Framework](nncf)
-
