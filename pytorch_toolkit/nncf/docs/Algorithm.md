@@ -1,6 +1,6 @@
 # Compression Method API
 
-This is a description of the Compression Method API. The Neural Network Compression Framework (NNCF) is designed to be extendable and it is assumed that the end user can easily add new compression methods to the framework implementing an API which is specified [here](../common.py).
+This is a description of the Compression Method API. The Neural Network Compression Framework (NNCF) is designed to be extendable and it is assumed that the end user can easily add new compression methods to the framework implementing an API which is specified [here](../nncf/compression_method_api.py).
 The compression method is divided into three logical parts:
 - The algorithm itself that implements the API of the `CompressionAlgorithm` class and logic of the compression method.
 - The scheduler that implements the API of the `CompressionScheduler` class and the compression method scheduling control logic.
