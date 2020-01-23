@@ -10,9 +10,9 @@ This module contains a PyTorch\*-based framework and samples for neural networks
 - GPU-accelerated layers for fast model fine-tuning
 - Distributed training support
 - Configuration file examples for sparsity, quantization, and sparsity with quantization. Each type of compression requires only one additional fine-tuning stage.
-- Export models to ONNX\* format that is supported by the [OpenVINO™ toolkit](https://github.com/opencv/dldt).
+- Export models to ONNX\* format that is supported by the [OpenVINO&trade; toolkit](https://github.com/opencv/dldt).
 
-For more details about framework architecture, refer to  the [NNCF description](nncf/README.md).
+For more details about framework architecture, refer to the [NNCF description](nncf/README.md).
 
 ## Usage
 
