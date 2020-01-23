@@ -213,7 +213,7 @@ python train.py @./configs/mobilefacenet/mobilefacenet_vgg2.yml \
 
 2. Evaluate
 
-To evaluate a compressed MobileFaceNet model, run the command below::
+To evaluate a compressed MobileFaceNet model, run the command below:
 
 ```bash
 python evaluate_lfw.py \

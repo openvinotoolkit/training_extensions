@@ -2,7 +2,7 @@
 
 ## Introduction
 
-*Neural Network Compression Framework  (NNCF)* is a toolset for Neural Networks model compression.
+*Neural Network Compression Framework (NNCF)* is a toolset for Neural Networks model compression.
 The framework organized as a Python module that can be built and used as standalone or within
 samples distributed with the code.  The samples demonstrate the usage of compression methods on
 public models and datasets for three different use cases: Image Classification, Object Detection,

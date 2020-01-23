@@ -1,4 +1,4 @@
-# Neural Network Compression Framework  (NNCF)
+# Neural Network Compression Framework (NNCF)
 
 This is a PyTorch\*-based framework for neural networks compression.
 

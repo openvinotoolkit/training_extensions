@@ -44,13 +44,13 @@ At this step, you need to revise your training code and make several changes, wh
 		loss = cross_entropy_loss + compression_loss
 		```
 	 - Call the scheduler `step()` after each training iteration:
-		 ```
-		  compression_algo.scheduler.step()
-		 ```
+		```
+		compression_algo.scheduler.step()
+		```
 	 - Call the scheduler `epoch_step()` after each training epoch:
-		  ```
-		  compression_algo.scheduler.epoch_step()
-		 ```
+		```
+		compression_algo.scheduler.epoch_step()
+		```
 
 > **NOTE**: Find these changes in the samples published in the NNCF repository.
 
