@@ -47,7 +47,7 @@ python2 tools/models/train.py -c configs/classification/imagenet_rmnet.yml \ # p
 
 ## Model Evaluation
 
-To evaluate the quality of the trained image-classification model, prepare the test data according to the  [instruction](#data-preparation).
+To evaluate the quality of the trained image-classification model, prepare the test data according to the [instruction](#data-preparation).
 
 ```shell
 python2 tools/models/eval.py -c configs/classification/imagenet_rmnet.yml \ # path to config file

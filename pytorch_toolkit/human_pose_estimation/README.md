@@ -151,7 +151,7 @@ We provide the Python demo just for the quick results preview. Consider the C++ 
 
 * The annotations have to be in the [COCO format](http://cocodataset.org/#format-data).
 * If the number of keypoints differs from this model (18), then the network structure and result parsing code (e.g. `modules/keypoints.py`) adjustments are required.
-* The output order of keypoints is consistent to the  [OpenPose format](https://github.com/CMU-Perceptual-Computing-Lab/openpose/blob/master/doc/output.md#pose-output-format-body_25) (from 1 to 18).
+* The output order of keypoints is consistent to the [OpenPose format](https://github.com/CMU-Perceptual-Computing-Lab/openpose/blob/master/doc/output.md#pose-output-format-body_25) (from 1 to 18).
 * Fine-tuning steps are the same as steps 2-3 for training, just pass the path to the pretrained checkpoint and your data.
 
 #### Example

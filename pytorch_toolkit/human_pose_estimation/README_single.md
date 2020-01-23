@@ -1,6 +1,6 @@
 # Global Context for Convolutional Pose Machines
 
-This repository contains training code for the  [Global Context for Convolutional Pose Machines](https://arxiv.org/pdf/1906.04104.pdf) paper. The work improves original [convolutional pose machine](https://arxiv.org/pdf/1602.00134.pdf) architecture for articulated human pose estimation in both accuracy and inference speed. On the Look Into Person (LIP) test set this code achieves 87.9% PCKh for a single model, the 2-stage version of this network runs with more than 160 frames per second on a GPU and about 20 frames per second on a CPU. The result can be reproduced using this repository.
+This repository contains training code for the [Global Context for Convolutional Pose Machines](https://arxiv.org/pdf/1906.04104.pdf) paper. The work improves original [convolutional pose machine](https://arxiv.org/pdf/1602.00134.pdf) architecture for articulated human pose estimation in both accuracy and inference speed. On the Look Into Person (LIP) test set this code achieves 87.9% PCKh for a single model, the 2-stage version of this network runs with more than 160 frames per second on a GPU and about 20 frames per second on a CPU. The result can be reproduced using this repository.
 
 ## Table of Contents
 
