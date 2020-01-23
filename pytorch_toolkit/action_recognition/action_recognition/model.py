@@ -186,7 +186,7 @@ def create_model(args, model, pretrain_path=None):
     else:
         model = MODEL_REGISTRY[model_type](args, encoder_name)
 
-    # load pre-trained model
+    # load pretrained model
     if pretrain_path:
         print('loading pretrained model {}'.format(args.pretrain_path))
         pretrain = torch.load(str(args.pretrain_path))

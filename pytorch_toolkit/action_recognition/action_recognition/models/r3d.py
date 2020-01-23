@@ -280,7 +280,7 @@ def R3D_18(pretrained=False, **kwargs):
     """Constructs a R3D-18 model.
 
     Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
+        pretrained (bool): If True, returns a model pretrained on ImageNet
     """
     model = R3D(BasicBlockR3D, [2, 2, 2, 2], decomposed=False, **kwargs)
 
@@ -296,7 +296,7 @@ def R3D_34(pretrained=False, **kwargs):
     """Constructs a R3D-34 model.
 
     Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
+        pretrained (bool): If True, returns a model pretrained on ImageNet
     """
     model = R3D(BasicBlockR3D, [3, 4, 6, 3], decomposed=False, **kwargs)
     num_channels = 3
@@ -323,7 +323,7 @@ def R3D_50(pretrained=False, **kwargs):
     """Constructs a R3D-50 model.
 
     Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
+        pretrained (bool): If True, returns a model pretrained on ImageNet
     """
     model = R3D(BottleneckR3D, [3, 4, 6, 3], decomposed=False, **kwargs)
     num_channels = 3
@@ -338,7 +338,7 @@ def R3D_101(pretrained=False, **kwargs):
     """Constructs a R3D-101 model.
 
     Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
+        pretrained (bool): If True, returns a model pretrained on ImageNet
     """
     model = R3D(BottleneckR3D, [3, 4, 23, 3], decomposed=False, **kwargs)
     num_channels = 3
@@ -353,7 +353,7 @@ def R3D_152(pretrained=False, **kwargs):
     """Constructs a R3D-152 model.
 
     Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
+        pretrained (bool): If True, returns a model pretrained on ImageNet
     """
     model = R3D(BottleneckR3D, [3, 8, 36, 3], decomposed=False, **kwargs)
     num_channels = 3

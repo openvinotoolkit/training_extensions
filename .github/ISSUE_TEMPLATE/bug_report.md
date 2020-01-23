@@ -29,13 +29,13 @@ assignees: AlexanderDokuchaev
 
 
 **Environment:**
- - OS: <!--[e.g. Linux Ubuntu 16.04]-->
+ - OS: <!--[for example, Linux Ubuntu 16.04]-->
  - Framework version: <!--[TensorFlow or PyTorch]-->
  - Python version:
  - OpenVINO version:
  - CUDA/cuDNN version:
  - GPU model and memory:
 <!--
-Include as many relevant details about the environment with which you experienced the bug.
+Include as many relevant details about the environment in which you experienced the bug as you can.
 -->
 

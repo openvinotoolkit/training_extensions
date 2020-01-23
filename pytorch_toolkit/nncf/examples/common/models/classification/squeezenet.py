@@ -118,7 +118,7 @@ def squeezenet1_0_custom(pretrained=False, **kwargs):
     <https://arxiv.org/abs/1602.07360>`_ paper.
 
     Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
+        pretrained (bool): If True, returns a model pretrained on ImageNet
     """
     model = SqueezeNet(version=1.0, **kwargs)
     if pretrained:
@@ -133,7 +133,7 @@ def squeezenet1_1_custom(pretrained=False, **kwargs):
     than SqueezeNet 1.0, without sacrificing accuracy.
 
     Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
+        pretrained (bool): If True, returns a model pretrained on ImageNet
     """
     model = SqueezeNet(version=1.1, **kwargs)
     if pretrained:

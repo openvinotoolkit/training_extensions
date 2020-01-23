@@ -9,7 +9,7 @@ This sample demonstrates DL model compression capabilities for semantic segmenta
 - DataParallel and DistributedDataParallel modes
 - Tensorboard output
 
-## Quantize FP32 pre-trained model
+## Quantize FP32 pretrained model
 This scenario demonstrates quantization with fine-tuning of UNet on Mapillary Vistas dataset.
 
 #### Dataset preparation

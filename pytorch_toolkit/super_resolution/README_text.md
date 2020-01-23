@@ -1,13 +1,14 @@
-# Super Resolution for scanned text images
+# Super Resolution for Scanned Text Images
 
-The tinny model to upscale scanned images with text. The model used `ConvTranspose2d` layer instead of `PixelShuffle` as result the
+The tiny model to upscale scanned images with text. The model uses the `ConvTranspose2d` layer instead of `PixelShuffle`, so the
 model can be launched on GPU and MYRIAD devices and Inference Engine support `reshape` function.
 
-## Train and evaluation
+## Train and Evaluation
 
-### Prepare dataset
-Create two directories for train and test images. Train images may have any resolution more than `path_size`.
-Validation images should have resolution like `path_size`.
+### Prepare Dataset
+
+Create two directories for train and test images. Train images may have any resolution higher than the `path_size`.
+Validation images should have the resolution like the `path_size`.
 
 ```
 ./data
@@ -18,25 +19,25 @@ Validation images should have resolution like `path_size`.
     ├── 000000.png
     ...
 ```
-Image should be in gray scale format and contain only black (0) and white (255) pixels
 
-**NOTE** Better use cropped images (for example: 500x500), because large resolution
-dramatically increase time to reading images
+>**NOTE**: Image should be in the gray scale format and contain only black (0) and white (255) pixels.
+
+> **TIP**: It is better to use cropped images like 500x500, because large resolution dramatically increases the time to read images.
 
 
 ### Training
 
-Use `tools/train.py` script to start training process:
+Use the `tools/train.py` script to start the training process:
 ```
 python3 tools/train.py --config configs/text_scale3.yaml
 ```
 
-To start from pretrained checkpoint set `init_checkpoint` in config.
-Checkpoints can be downloaded [here](https://download.01.org/opencv/openvino_training_extensions/models/super_resolution/text_super_resolution.tar.gz).
+To start from the pretrained [checkpoint](https://download.01.org/opencv/openvino_training_extensions/models/super_resolution/text_super_resolution.tar.gz), set `init_checkpoint` in config.
 
-### Testing
 
-Use `tools/test.py` script to evaluate the trained model.
+### Test
+
+Use the `tools/test.py` script to evaluate the trained model:
 
 ```
 python3 tools/test.py --test_data_path PATH_TO_TEST_DATA \
@@ -44,7 +45,8 @@ python3 tools/test.py --test_data_path PATH_TO_TEST_DATA \
     --exp_name EXPERIMENT_NAME
 ```
 
-## Export to OpenVINO
+## Export to OpenVINO™
+
 ```
 python3 tools/export.py --models_path PATH_TO_MODELS_PATH \
     --exp_name EXPERIMENT_NAME \
@@ -54,12 +56,14 @@ python3 tools/export.py --models_path PATH_TO_MODELS_PATH \
 
 ## Demo
 
-### For the latest checkpoint
+### For the Latest Checkpoint
+
 ```
 python3 tools/text/infer.py --model PATH_TO_CHECKPOINT IMAGE_PATH
 ```
 
 ### For Intermediate Representation (IR)
+
 ```
 python3 tools/text/infer_ie.py --model <PATH_TO_IR_XML> \
     --device CPU \

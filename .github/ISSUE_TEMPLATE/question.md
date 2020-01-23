@@ -10,6 +10,5 @@ assignees: AlexanderDokuchaev
 <!--
     Thank you very much for contributing to this project by creating an issue!
 
-    Try to clear and concise describe your quastion.
-    Do not forget to specify the context.
+    Try to describe your issue clearly and concisely and include the context.
 -->
