@@ -2,10 +2,10 @@
 
 This repository contains inference and training code for Mask R-CNN like
 networks. Models code is designed to enable ONNX\* export (with custom operations)
-and inference on CPU via OpenVINO™ .
+and inference on CPU via OpenVINO™.
 [Detectron](https://github.com/facebookresearch/Detectron) and
 [maskrcnn-benchmark](https://github.com/facebookresearch/maskrcnn-benchmark)
-models are wrapped to export their weights to ONNX and OpenVINO™ .
+models are wrapped to export their weights to ONNX and OpenVINO™.
 
 ## Setup
 
@@ -18,7 +18,7 @@ models are wrapped to export their weights to ONNX and OpenVINO™ .
 
 ### Installation
 
-To install required dependencies, run the command: 
+To install required dependencies, run the command:
 
 ```bash
 $ cat requirements.txt | xargs -n 1 -L 1 pip3 install
@@ -107,7 +107,7 @@ As an input, the demo application takes:
     - `--fix_max SCALE MAXSIZE` command-line argument forces image to be resized
     to such a size that its shorter and larger sides are not greater than
     `SCALE` and `MAXSIZE` respectively, while the original aspect ratio is left
-    unchanged. 
+    unchanged.
     - `--fit_window MAXHEIGHT MAXWIDTH` option enables the mode
     when image height and width are made not greater than `MAXHEIGHT` and
     `MAXWIDTH` respectively, while the original aspect ratio is preserved.
@@ -140,7 +140,7 @@ $ python3 tools/demo.py \
 (if any) GPUs to use during evaluation. If empty value is assigned, PyTorch uses the
 CPU backend.
 
-### OpenVINO™ 
+### OpenVINO™
 
 The same demo application can be used for running instance segmentation models
 on CPU via OpenVINO. Almost the same set of parameters is available in this
@@ -194,7 +194,7 @@ $ python3 tools/test.py \
 (if any) GPUs to use during evaluation. If empty value is assigned, PyTorch uses
 CPU backend.
 
-### OpenVINO™ 
+### OpenVINO™
 
 For example, to evaluate ResNet50-FPN Mask R-CNN model on COCO 2017 Val dataset
 using OpenVINO™  backend run:
@@ -218,7 +218,7 @@ quality numbers, export PyTorch models to OpenVINO™  IR manually setting the
 `MAXSIZE`x`MAXSIZE` input resolution. This will be fixed in later releases.
 
 
-## Export PyTorch models to OpenVINO™ 
+## Export PyTorch models to OpenVINO™
 
 To run the model via OpenVINO™ , export the PyTorch model to ONNX first and
 then convert it to OpenVINO™  Intermediate Representation using Model Optimizer.

@@ -10,7 +10,7 @@ This is a PyTorch\*-based framework for neural networks compression.
 - GPU-accelerated layers for fast model fine-tuning
 - Distributed training support
 - Configuration file examples for sparsity, quantization, and sparsity with quantization. Each type of compression requires only one additional fine-tuning stage.
-- Export models to ONNX\* format that is supported by the [OpenVINO&trade; toolkit](https://github.com/opencv/dldt).
+- Export models to ONNX\* format that is supported by the [OpenVINO™ toolkit](https://github.com/opencv/dldt).
 
 ## Compression Algorithm Architecture Overview
 
@@ -36,14 +36,13 @@ The method performs differentiable sampling of the continuous signal (for exampl
 
 Quantization is parametrized by clamping range and number of quantization levels. The sampling formula is the following:
 
-![output = \frac{\left\lfloor (clamp(input; input\_low, input\_high)-input\_low)  *s\right \rceil}{s} + input\_low\\](https://latex.codecogs.com/gif.latex?output%20%3D%20%5Cfrac%7B%5Cleft%5Clfloor%20%28clamp%28input%3B%20input%5C_low%2C%20input%5C_high%29-input%5C_low%29%20*s%5Cright%20%5Crceil%7D%7Bs%7D%20&plus;%20input%5C_low%5C%5C) 
+![output = \frac{\left\lfloor (clamp(input; input\_low, input\_high)-input\_low)  *s\right \rceil}{s} + input\_low\\](https://latex.codecogs.com/gif.latex?output%20%3D%20%5Cfrac%7B%5Cleft%5Clfloor%20%28clamp%28input%3B%20input%5C_low%2C%20input%5C_high%29-input%5C_low%29%20*s%5Cright%20%5Crceil%7D%7Bs%7D%20&plus;%20input%5C_low%5C%5C)
 
 ![clamp(input; input\_low, input\_high) = min(max(input, input\_low), input\_high)))](https://latex.codecogs.com/gif.latex?clamp%28input%3B%20input%5C_low%2C%20input%5C_high%29%20%3D%20min%28max%28input%2C%20input%5C_low%29%2C%20input%5C_high%29%29%29)
 
-![s=\frac{levels-1}{input\_high - input\_low}](https://latex.codecogs.com/gif.latex?s%3D%5Cfrac%7Blevels-1%7D%7Binput%5C_high%20-%20input%5C_low%7D) 
+![s=\frac{levels-1}{input\_high - input\_low}](https://latex.codecogs.com/gif.latex?s%3D%5Cfrac%7Blevels-1%7D%7Binput%5C_high%20-%20input%5C_low%7D)
 
 `input_low` and `input_high` represent the quantization range and ![\left\lfloor\cdot\right \rceil](https://latex.codecogs.com/gif.latex?%5Cleft%5Clfloor%5Ccdot%5Cright%20%5Crceil) denotes rounding to the nearest integer.
-
 
 ####  Symmetric Quantization
 
@@ -54,28 +53,28 @@ During the training, we optimize the **scale** parameter that represents the ran
 ![input\_high=scale](https://latex.codecogs.com/gif.latex?input%5C_high%3Dscale)
 
 In the formula above, `level_low` and `level_high` represent the range of the discrete signal.
- - For weights: 
- 
-    ![level\_low=-2^{bits-1}+1](https://latex.codecogs.com/png.latex?%5Cinline%20%5Cdpi%7B120%7D%20level%5C_low%3D-2%5E%7Bbits-1%7D&plus;1), 
-    
+ - For weights:
+
+    ![level\_low=-2^{bits-1}+1](https://latex.codecogs.com/png.latex?%5Cinline%20%5Cdpi%7B120%7D%20level%5C_low%3D-2%5E%7Bbits-1%7D&plus;1),
+
     ![level\_high=2^{bits-1}-1](https://latex.codecogs.com/png.latex?%5Cinline%20%5Cdpi%7B120%7D%20level%5C_high%3D2%5E%7Bbits-1%7D-1)
 
     ![levels=255](https://latex.codecogs.com/gif.latex?levels%3D255)
- 
- - For unsigned activations: 
- 
+
+ - For unsigned activations:
+
     ![level\_low=0](https://latex.codecogs.com/png.latex?%5Cinline%20%5Cdpi%7B120%7D%20level%5C_low%3D0)
-    
+
     ![level\_high=2^{bits}-1](https://latex.codecogs.com/png.latex?%5Cinline%20%5Cdpi%7B120%7D%20level%5C_high%3D2%5E%7Bbits%7D-1)
-    
+
     ![levels=256](https://latex.codecogs.com/gif.latex?levels%3D256)
 
- - For signed activations: 
- 
+ - For signed activations:
+
     ![level\_low=-2^{bits-1}](https://latex.codecogs.com/png.latex?%5Cdpi%7B120%7D%20level%5C_low%3D-2%5E%7Bbits-1%7D)
-    
+
     ![level\_high=2^{bits-1}-1](https://latex.codecogs.com/png.latex?%5Cinline%20%5Cdpi%7B120%7D%20level%5C_high%3D2%5E%7Bbits-1%7D-1)
-    
+
     ![levels=256](https://latex.codecogs.com/gif.latex?levels%3D256)
 
 For all the cases listed above, the common quantization formula is simplified after substitution of `input_low`, `input_high` and `levels`:
@@ -89,11 +88,11 @@ Use the `num_init_steps` parameter from the `initializer` group to initialize th
 During the training we optimize the **input_low** and **input_range** parameters using gradient descent:
 
 ![input\_high=input\_low + input\_range](https://latex.codecogs.com/gif.latex?input%5C_high%3Dinput%5C_low%20&plus;%20input%5C_range)
- 
+
 ![levels=256](https://latex.codecogs.com/gif.latex?levels%3D256)
 
 ![level\_low=0](https://latex.codecogs.com/png.latex?%5Cinline%20%5Cdpi%7B120%7D%20level%5C_low%3D0)
- 
+
 ![level\_high=2^{bits}-1](https://latex.codecogs.com/png.latex?%5Cinline%20%5Cdpi%7B120%7D%20level%5C_high%3D2%5E%7Bbits%7D-1)
 
 For better accuracy, floating-point zero should be within quantization range and strictly mapped into quant (without rounding). Therefore, the following scheme is applied to ranges of weights and activations before quantization:
@@ -120,12 +119,11 @@ In our implementation, we use a slightly transformed formula. It is equivalent b
 
 ![s = \frac{level\_high}{|input\_range^{*}| + eps}](https://latex.codecogs.com/gif.latex?s%20%3D%20%5Cfrac%7Blevel%5C_high%7D%7B%7Cinput%5C_range%5E%7B*%7D%7C%20&plus;%20eps%7D)
 
-For asymmetric:  
+For asymmetric:
 ![\\input\_low^{*} = input\_low \\ input\_range^{*} = input\_range ](https://latex.codecogs.com/gif.latex?%5C%5Cinput%5C_low%5E%7B*%7D%20%3D%20input%5C_low%20%5C%5C%20input%5C_range%5E%7B*%7D%20%3D%20input%5C_range)
 
-For symmetric:  
+For symmetric:
 ![\\input\_low^{*} = 0 \\ input\_range^{*} = scale](https://latex.codecogs.com/gif.latex?%5C%5Cinput%5C_low%5E%7B*%7D%20%3D%200%20%5C%5C%20input%5C_range%5E%7B*%7D%20%3D%20scale)
-
 
 **Algorithm Parameters**:
 - `algorithm` - the name of the compression algorithm should be `quantization` in this case.
@@ -133,7 +131,7 @@ For symmetric:
 - `quantize_outputs` - if True, quantize outputs of the model (optional, default is False).
 - `ignored_scopes` - blacklist: layers that should be excluded from the compression (optional).
 - `target_scopes` - whitelist: only the layers listed here should be compressed (optional)
-- `activations` - quantization parameters of activations 
+- `activations` - quantization parameters of activations
     -  `bits` - number of bits,  `8` by default.
     -  `mode` - a type of the quantization.  Can be `symmetric` and `asymmetric`. The default value is `symmetric`.
     -  `signed` - if True, signed quantization is allowed in the model. `false` for activations and `true` for weights by default.
@@ -143,7 +141,6 @@ For symmetric:
     -  `mode` - a type of the quantization.  Can be one of these values: `symmetric` and `asymmetric`. `symmetric` by default.
 - `initializer` - parameters of initialization stage.
     - `num_init_steps` - a number of steps to calculate per-layer activations statistics that can be used for quantization range initialization. `1` by default.
-
 
 ### Binarization
 
@@ -155,10 +152,10 @@ Binarization of activations is implemented via binarizing inputs to the convolut
 
 ![\text{out} = s * H(\text{in} - s*t)](https://latex.codecogs.com/png.latex?%5Ctext%7Bout%7D%20%3D%20s%20*%20H%28%5Ctext%7Bin%7D%20-%20s*t%29)
 
-In the formula above,   
- - ![\text{in}](https://latex.codecogs.com/png.latex?%5Ctext%7Bin%7D) - non-binarized activation values  
-  - ![\text{out}](https://latex.codecogs.com/png.latex?%5Ctext%7Bout%7D) - binarized activation values  
- -  ![H(x)](https://latex.codecogs.com/png.latex?H%28x%29) is the Heaviside step function  
+In the formula above,
+ - ![\text{in}](https://latex.codecogs.com/png.latex?%5Ctext%7Bin%7D) - non-binarized activation values
+  - ![\text{out}](https://latex.codecogs.com/png.latex?%5Ctext%7Bout%7D) - binarized activation values
+ -  ![H(x)](https://latex.codecogs.com/png.latex?H%28x%29) is the Heaviside step function
   - ![s](https://latex.codecogs.com/png.latex?s) and ![t](https://latex.codecogs.com/png.latex?t) are trainable parameters corresponding to binarization scale and threshold respectively
 
 Training binarized networks requires special scheduling of the training process. For instance, binarizing a pretrained ResNet18 model on ImageNet is a four-stage process, with each stage taking a certain number of epochs. During the stage 1, the network is trained without any binarization. During the stage 2, the training continues with binarization enabled for activations only. During the stage 3, binarization is enabled both for activations and weights. Finally, during the stage 4 the optimizer learning rate, which was kept constant at previous stages, is decreased according to a polynomial law, while weight decay parameter of the optimizer is set to 0. The configuration files for the NNCF binarization algorithm allow to control certain parameters of this training schedule.
@@ -177,10 +174,9 @@ Training binarized networks requires special scheduling of the training process.
    - `lr_poly_drop_duration_epochs` - specifies the duration of the learning rate polynomial drop stage in training epochs. Default is 30.
    - `disable_wd_start_epoch` - (optional) starting from this training epoch, the weight decay parameter of the optimizer is set to 0.
 
-
 ### Non-Structured Sparsity
 
-Sparsity algorithm zeros weights in Convolutional and Fully-Connected layers in a non-structured way, 
+Sparsity algorithm zeros weights in Convolutional and Fully-Connected layers in a non-structured way,
 so that zero values are randomly distributed inside the tensor. Most of the sparsity algorithms set the less important weights to zero but the criteria of how they do it is different. The framework contains several implementations of sparsity methods.
 
 #### RB-Sparsity

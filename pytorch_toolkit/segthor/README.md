@@ -3,20 +3,18 @@
 This code was written for participation in the [SegTHOR: Segmentation of THoracic Organs at Risk in CT images](https://competitions.codalab.org/competitions/21145).
 The code is based on [the corresponding paper](http://ceur-ws.org/Vol-2349/SegTHOR2019_paper_10.pdf), where we employ deep learning approach and explore two concepts: attention mechanism and pixel shuffle as an upsampling  operator. The method in this repository differs from the one described in the paper by a few aspects: we have changed the backbone from ResNet to ResNeXt and added a postprocessing step.
 
-An example of the final segmentation:  
+An example of the final segmentation:
 
 ![](media/3dvis.png)
 
 The visualization is done with ITK-SNAP.
 
-
 ## Network Architecture
 
 It is a 3D UNet with ResNext blocks. The architecture consists of decoding and encoding paths with skip-connections
-between them. We employed strided convolutions for downsampling in encoder and pixel-shuffle for upsampling in decoder.  
+between them. We employed strided convolutions for downsampling in encoder and pixel-shuffle for upsampling in decoder.
 
 ![](media/3d_pix_shuffle.png)
-
 
 ## Results
 
@@ -37,8 +35,7 @@ Hausdorff distance is reported in mm.
 | CV 5         | 13.14vx       | 47.28vx     | 37.79vx     | 22.26vx     |
 | SegTHOR Test | 0.2847 (4)    | 0.1883 (13) | 0.2178 (13) | 0.1658 (10) |
 
-
-### Pre-Trained Model
+### Model
 Download checkpoint with the following
 [01.org](https://download.01.org/opencv/openvino_training_extensions/models/segthor/segthor_0620_best_model.pth).
 
@@ -50,7 +47,6 @@ Download checkpoint with the following
 * Python\* 3.6
 * NVidia\* GPU for training
 * 32GB RAM for inference
-
 
 ### Installation
 
@@ -134,7 +130,6 @@ The tensorboard log will be accessible in the `models\test_run\logs` folder.
 
 Ensure that the test directory contains a series of CT samples in the NIfTI format with the `.nii.gz` extension.
 
-
 ### Run Test
 
 ```
@@ -145,7 +140,7 @@ python3 tools/test.py --name pai_0620 \
   --new_scale 1 1 2.5
 ```
 
-### Run test with OpenVINO™ 
+### Run test with OpenVINO™
 
 1. Download and setup [OpenVINO™ ](https://software.intel.com/en-us/openvino-toolkit)
 

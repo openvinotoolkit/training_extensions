@@ -3,7 +3,7 @@
 This repository contains training and inference code for person re-identification
 neural networks. The networks are based on the [OSNet](https://arxiv.org/abs/1905.00953)
 architecture provided by the [torchreid](https://github.com/KaiyangZhou/deep-person-reid.git)
-project. The code supports conversion to the ONNX\* format and inference of OpenVINO&trade; models.
+project. The code supports conversion to the ONNX\* format and inference of OpenVINO™ models.
 
 ## Setup
 
@@ -12,7 +12,7 @@ project. The code supports conversion to the ONNX\* format and inference of Open
 * Ubuntu\* 16.04
 * Python\* 3.5.2
 * PyTorch\* 1.3 or higher
-* OpenVINO&trade; 2019 R4 (or lower) with Python API
+* OpenVINO™ 2019 R4 (or lower) with Python API
 
 ### Installation
 
@@ -87,9 +87,9 @@ You can download pretrained models in the PyTorch format corresponding to the pr
 - [person-reidentification-retail-0200](https://download.01.org/opencv/openvino_training_extensions/models/person_reidentification/person-reidentification-retail-0200.pt)
 
 
-### Test OpenVINO&trade; Re-Identification Models
+### Test OpenVINO™ Re-Identification Models
 
-OpenVINO&trade; models are represented by \*.xml and \*.bin files (Intermediate Representation (IR) format).
+OpenVINO™ models are represented by \*.xml and \*.bin files (Intermediate Representation (IR) format).
 To use such a model, set the next parameters in the config file:
 
 ```yaml
@@ -102,7 +102,7 @@ model:
 > **NOTE**: \*.xml and \*.bin files should be saved in the same directory.
 
 
-## Convert a PyTorch Model to the OpenVINO&trade; Format
+## Convert a PyTorch Model to the OpenVINO™ Format
 
 Follow the steps below:
 
@@ -114,7 +114,7 @@ Follow the steps below:
         --output-name /path/to/output/model \
         --verbose
     ```
-    
+
     Name of the output model ends with `.onnx` automatically.
     By default, the output model path is `model.onnx`. Be careful about the `load_weights` parameter
      in the configurations file. The `verbose` argument is non-required and
@@ -131,6 +131,6 @@ python <OpenVINO_INSTALL_DIR>/deployment_tools/model_optimizer/mo.py --input_mod
 
 This produces the `model.xml`model  and weights `model.bin` in single-precision floating-point format (FP32).
 
-## OpenVINO&trade; Demo
+## OpenVINO™ Demo
 
-OpenVINO&trade; provides the multi-camera-multi-person tracking demo, which is able to use these models as person re-identification networks. See details in the [demo](https://github.com/opencv/open_model_zoo/tree/develop/demos/python_demos/multi_camera_multi_person_tracking).
+OpenVINO™ provides the multi-camera-multi-person tracking demo, which is able to use these models as person re-identification networks. See details in the [demo](https://github.com/opencv/open_model_zoo/tree/develop/demos/python_demos/multi_camera_multi_person_tracking).

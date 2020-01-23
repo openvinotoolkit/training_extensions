@@ -30,7 +30,7 @@ The crossroad detection network model provides detection of 3 class objects: veh
     EOT
     ```
 
-3. Activate virtual environment and setup OpenVINO™   variables:
+3. Activate virtual environment and setup OpenVINO™ variables:
     ```bash
     . venv/bin/activate
     ```
@@ -100,7 +100,7 @@ python tools/infer.py --model=model/export_10/frozen_inference_graph.pb \
   ../../data/airport/val/image_000000.jpg
 ```
 
-## Convert a Model = to Intermediate Representation (IR) 
+## Convert a Model = to Intermediate Representation (IR)
 
 ```bash
 "${INTEL_OPENVINO_DIR}"/deployment_tools/model_optimizer/mo_tf.py \

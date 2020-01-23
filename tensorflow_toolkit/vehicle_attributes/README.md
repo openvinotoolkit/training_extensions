@@ -11,7 +11,6 @@
 * TensorFlow\* 1.13.1
 * OpenVINO™ 2019 R1 with Python API
 
-
 ### Installation
 
 1. Create virtual environment:
@@ -35,7 +34,6 @@
     pip3 install -e ../utils
     ```
 
-
 ## Train a Vehicle Attributes (VA) Model
 
 To train a Vehicle Attributes model, jump to the
@@ -44,7 +42,7 @@ demonstrating how to train a VA model.
 
 We provide predefined configuration for vehicle type and color recognition:
   - Configuration file: [training_toolbox/vehicle_attributes/cars_100/config.py](cars_100/config.py).
-  - Trained model: [Vehicle Attributes](https://download.01.org/opencv/openvino_training_extensions/models/vehicle_attributes/vehicle-attributes-barrier-0103.tar.gz).  
+  - Trained model: [Vehicle Attributes](https://download.01.org/opencv/openvino_training_extensions/models/vehicle_attributes/vehicle-attributes-barrier-0103.tar.gz).
     A model has two output nodes:
     * type is four components: one for each of 4 types - car, van, truck, bus. The resulting type is `argmax` of these values.
     * color is three components: LAB format normalized from `0` to `1`.
@@ -53,7 +51,7 @@ For the demonstration purpose, only a small dataset is uploaded [cars_100](https
 It is split into two subsets of images for training and evaluation and serves just as an example of flow.
 The resulting model is trained on the internal dataset of more than 50000 images of front-facing vehicles in different
 lighting and weather conditions where number of white/black/gray vehicle colors more than twice exceeds others.
-It has about 74% of car images, 15% of truck images, 2%  of bus images, and 9% of van images.
+It has about 74% of car images, 15% of truck images, 2% of bus images, and 9% of van images.
 It was evaluated on the [BitVehicle](http://iitlab.bit.edu.cn/mcislab/vehicledb/) dataset:
 
 | Metric                                    | Value    |
@@ -89,7 +87,6 @@ To train a model, go through the steps described in the sections below.
     the corresponding configuration flag `use_pretrained_weights` to True. Make sure that the correct path
     to the pretrained model is set in the configuration file.
 
-
 ### Training and Evaluation
 
 1.  Open the command line in the `training_toolbox/vehicle_attributes` directory, run the command below:
@@ -98,7 +95,7 @@ To train a model, go through the steps described in the sections below.
     python3 tools/train.py cars_100/config.py
     ```
 
-2. In the `training_toolbox/vehicle_attributes` directory, run the command below:    
+2. In the `training_toolbox/vehicle_attributes` directory, run the command below:
     > **NOTE**: Run in parallel in another terminal, so training and evaluation are performed simultaneously.
     ```bash
     python3 eval.py cars_100/config.py
@@ -113,7 +110,6 @@ To train a model, go through the steps described in the sections below.
     ```
 
     View results in a browser: [http://localhost:6006](http://localhost:6006).
-
 
 ### Export to OpenVINO™
 

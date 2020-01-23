@@ -16,7 +16,7 @@ Assume the following structure of data:
          test_data.txt
 ```
 
-Both data files, `train_data.txt` and `test_data.txt`, describe data to train and evaluate a model. 
+Both data files, `train_data.txt` and `test_data.txt`, describe data to train and evaluate a model.
 Each row in a data file represents a single source in the following format: `path_to_image image_label`.
 
 

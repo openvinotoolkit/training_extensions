@@ -7,7 +7,7 @@ This sample demonstrates a DL model compression in case of an image-classificati
 - Torchvision models (ResNets, VGG, Inception, etc.) and datasets (ImageNet, CIFAR 10, CIFAR 100) support
 - Custom models support
 - Configuration file examples for sparsity, quantization, and quantization with sparsity
-- Export to ONNX that is supported by the OpenVINO&trade; toolkit
+- Export to ONNX that is supported by the OpenVINO™ toolkit
 - DataParallel and DistributedDataParallel modes
 - Tensorboard-compatible output
 
@@ -31,9 +31,9 @@ To prepare the ImageNet dataset, refer to the following [tutorial](https://githu
 - Use the `--multiprocessing-distributed` flag to run in the distributed mode.
 - Use the `--resume` flag with the path to a previously saved model to resume training.
 
-#### Validate Your Model Checkpoint 
+#### Validate Your Model Checkpoint
 
-To estimate the test scores of your model checkpoint, use the following command:  
+To estimate the test scores of your model checkpoint, use the following command:
 ```
 python main.py -m test --config=configs/quantization/mobilenetV2_imagenet_int8.json --resume <path_to_trained_model_checkpoint>
 ```
@@ -46,9 +46,9 @@ To export trained model to the ONNX format, use the following command:
 python main.py -m test --config=configs/quantization/mobilenetV2_imagenet_int8.json --resume=../../results/quantization/mobilenetV2_int8/6/checkpoints/epoch_1.pth --to-onnx=../../results/mobilenetV2_int8.onnx
 ```
 
-#### Export to OpenVINO&trade; Intermediate Representation (IR)
+#### Export to OpenVINO™ Intermediate Representation (IR)
 
-To export a model to the OpenVINO IR and run it using the Intel&reg; Deep Learning Deployment Toolkit, refer to this [tutorial](https://software.intel.com/en-us/openvino-toolkit).
+To export a model to the OpenVINO IR and run it using the Intel® Deep Learning Deployment Toolkit, refer to this [tutorial](https://software.intel.com/en-us/openvino-toolkit).
 
 ### Results for INT8 quantization
 
@@ -62,11 +62,9 @@ To export a model to the OpenVINO IR and run it using the Intel&reg; Deep Learni
 | MobileNet v2 INT8 w/ 51% of sparsity (RB) | ImageNet | 71.8 | 70.84 | examples/classification/configs/sparsity_quantization/mobilenetV2_imagenet_sparsity_int8.json |  [Link](https://download.01.org/opencv/openvino_training_extensions/models/nncf/mobilenetv2_imagenet_sparse_int8.pth) |
 | SqueezeNet v1.1 INT8 quantized | ImageNet | 58.19 | 58.16 | examples/classification/configs/quantization/squeezenet1_1_imagenet_int8.json |  [Link](https://download.01.org/opencv/openvino_training_extensions/models/nncf/squeezenet1_1_imagenet_int8.pth) |
 
-
 #### Binarization
 
 As an example of NNCF convolution binarization capabilities, you may use the configs in `examples/classification/configs/binarization` to binarize ResNet18. Use the same steps/command line parameters as for quantization (for best results, specify `--pretrained`), except for the actual binarization config path.
-
 
 ### Results for binarization
 | Model | Weight binarization type | Activation binarization type | Dataset | FP32 baseline | Compressed model accuracy | Config path | Checkpoint |

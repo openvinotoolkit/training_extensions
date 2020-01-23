@@ -68,11 +68,11 @@ Optional arguments:
 * `--model-path` - path to a directory with Python file(s), containing description of a PyTorch model chosen for
   conversion. This parameter should be provided for public models that are not a part of torchvision package.
 * `--input-names` - space-separated (if several) names of input layers. The input layers names are presented by
-  these values in the ONNX model. Indexes of layers are  used if this argument was not provided.
+  these values in the ONNX model. Indexes of layers are used if this argument was not provided.
 * `--output-names` - space-separated (if several) names of output layers. The output layers names are presented by
-  these values in the ONNX model. Indexes of layers are  used if this argument was not provided.
+  these values in the ONNX model. Indexes of layers are used if this argument was not provided.
 
-Rrefer to `-h, --help` option to get the full list of script arguments.
+Refer to `-h, --help` option to get the full list of script arguments.
 
 ## Example
 
@@ -81,7 +81,7 @@ To convert the ResNet-50-v1 model from torchvision, use the following command:
 ```bash
 python3 pytorch_to_onnx.py \
     --model-name resnet-v1-50 \
-    --weights  <path_to_downloaded_pretrained_weights>/resnet50-19c8e357.pth \
+    --weights <path_to_downloaded_pretrained_weights>/resnet50-19c8e357.pth \
     --input-shape 1 3 224 224 \
     --output-file <path_to_save_converted_model>/resnet-v1-50.onnx \
     --input-names data \

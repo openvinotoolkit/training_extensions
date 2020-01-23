@@ -33,7 +33,7 @@ def inception_v3(pretrained=False, **kwargs):
         N x 3 x 299 x 299, so ensure your images are sized accordingly.
 
     Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
+        pretrained (bool): If True, returns a model pretrained on ImageNet
     """
     if pretrained:
         if 'transform_input' not in kwargs:

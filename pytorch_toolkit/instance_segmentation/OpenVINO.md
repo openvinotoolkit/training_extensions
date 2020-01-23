@@ -40,7 +40,7 @@ $ python3 tools/train.py \
 
 [Description](https://github.com/opencv/open_model_zoo/blob/develop/models/intel/instance-segmentation-security-0050/description/instance-segmentation-security-0050.md)
 
-To train from ImageNet weights, run the command below:: 
+To train from ImageNet weights, run the command below:
 
 ```bash
 $ python3 tools/train_0050.py
@@ -49,5 +49,5 @@ $ python3 tools/train_0050.py
 Find the fine-tuning sample in `tools/finetune_0050.py`.
 
 > **NOTE**: Download checkpoints via `tools/download_pretrained_weights.py` first.
-> Before running, make necessary changes to learning rate, batch size, number of training steps or 
+> Before running, make necessary changes to learning rate, batch size, number of training steps or
 > other training parameters there.

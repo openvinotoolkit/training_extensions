@@ -2,7 +2,6 @@
 
 This repository contains training scripts for lightweight SSD-based face detector. The detector is based on the MobileNetV2 backbone and has a single SSD head with manually designed anchors. As a result, its computational complexity is 0.51 GMACs and it has 1.03 M of parameters.
 
-
 ## Prerequisites
 
 1. Download the [WIDER Face](http://shuoyang1213.me/WIDERFACE/) and unpack it to the `data` folder.
@@ -31,7 +30,7 @@ The directory should be like this:
 ## Training
 
 1. Download [pretrained MobileNetV2 weights](https://github.com/tonylins/pytorch-mobilenet-v2) `mobilenet_v2.pth.tar`. Move the file with weights to the folder `snapshots`.
-   Or use the [checkpoint](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/wider_face_tiny_ssd_075x_epoch_70.pth) that was trained on Wider.  
+   Or use the [checkpoint](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/wider_face_tiny_ssd_075x_epoch_70.pth) that was trained on Wider.
 2. To train the detector on a single GPU, run in your terminal:
     ```bash
     python3 ../../external/mmdetection/tools/train.py \
@@ -77,7 +76,6 @@ The directory should be like this:
   This produces model `face_detector.xml` and weights `face_detector.bin` in single-precision floating-point format
   (FP32). The obtained model expects normalized image in planar BGR format.
 
-
 ## Python Demo
 
 To run the demo, connect a webcam end execute the command:
@@ -88,14 +86,12 @@ python3 tools/detection_live_demo.py  \
   --cam_id 0
 ```
 
-
 ## Estimate Theoretical Computational Complexity
 
 To get per-layer computational complexity estimations, run the following command:
 ```bash
 python3 tools/count_flops.py configs/mobilenetv2_tiny_ssd300_wider_face.py
 ```
-
 
 ## Fine-Tuning
 

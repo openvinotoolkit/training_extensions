@@ -1,8 +1,7 @@
 # Text Detection in TensorFlow*
 
 This repository contains inference and training code for [PixelLink](https://arxiv.org/abs/1801.01315)-like model
-networks. Models code is designed to enable export to a frozen graph
-and inference on CPU via OpenVINO™ . 
+networks. Models code is designed to enable export to a frozen graph and inference on CPU via OpenVINO™.
 
 > **NOTE**: Refer to the [original implementation](https://github.com/ZJULearning/pixel_link) for details.
 
@@ -21,12 +20,12 @@ and inference on CPU via OpenVINO™ .
 
 ### Installation
 
-1. Create virtual environment:  
+1. Create virtual environment:
     ```bash
     virtualenv venv -p python3 --prompt="(td)"
     ```
 
-2. Activate virtual environment and set up OpenVINO™  variables:
+2. Activate virtual environment and set up OpenVINO™ variables:
     ```bash
     . venv/bin/activate
     ```
@@ -70,7 +69,7 @@ python tools/create_dataset.py \
 
 ## Training
 
-To run training, run the following:   
+To run training, run the following:
 ```bash
 python tools/train.py \
   --learning_rate 0.001 \
@@ -118,13 +117,12 @@ python tools/test.py \
 1. Freeze your model:
     > **NOTE**: Use the configuration file that appears in `train_dir` during training.
 
-
-        ```bash
-        python tools/export.py \
-          --resolution 1280 768 \
-          --config model/configuration.yaml \
-          --weights model/weights/model-500.save_weights
-        ```
+    ```bash
+    python tools/export.py \
+      --resolution 1280 768 \
+      --config model/configuration.yaml \
+      --weights model/weights/model-500.save_weights
+    ```
 
     The command prints information about the frozen model and  getting IR:
 
@@ -162,7 +160,6 @@ python tools/test.py \
       --output_dir IR
     ```
 
-
-## Demo in OpenVINO™ 
+## Demo in OpenVINO™
 
 See https://github.com/opencv/open_model_zoo/tree/master/demos/text_detection_demo.

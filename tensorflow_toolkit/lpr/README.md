@@ -13,7 +13,6 @@
 * TensorFlow\* 1.13.1
 * OpenVINO™  2019 R1 with Python API
 
-
 ### Installation
 
 1. Create and activate virtual environment:
@@ -41,17 +40,15 @@
     bash ../prepare_modules.sh
     ```
 
-
 ## Train an LPRNet Model
 
 Predefined configuration for Chinese license plates recognition:
   - Configuration file: [training_toolbox/lpr/chinese_lp/config.py](chinese_lp/config.py).
   - Trained model: [LPRNet 94x24](https://download.01.org/opencv/openvino_training_extensions/models/license_plate_recognition/license-plate-recognition-barrier-0007.tar.gz).
 
-Training dataset: [Synthetic Chinese License Plates](https://download.01.org/opencv/openvino_training_extensions/datasets/license_plate_recognition/Synthetic_Chinese_License_Plates.tar.gz) 
+Training dataset: [Synthetic Chinese License Plates](https://download.01.org/opencv/openvino_training_extensions/datasets/license_plate_recognition/Synthetic_Chinese_License_Plates.tar.gz)
 
 To train a model, go through the steps described in the following sections.
-
 
 ### Prepare a Dataset
 
@@ -64,7 +61,7 @@ To train a model, go through the steps described in the following sections.
 
 2. After extracting the training data archive, run the Python script from
     `data/synthetic_chinese_license_plates/make_train_val_split.py` to split the annotations into `train` and `val` by passing the path to `data/synthetic_chinese_license_plates/annotation`
-    file from archive as an input. The script outputs the `data/synthetic_chinese_license_plates/train` and 
+    file from archive as an input. The script outputs the `data/synthetic_chinese_license_plates/train` and
     `data/synthetic_chinese_license_plates/val` annotation files with full paths to images and labels in the folder
     with extracted data.
     Use the command below:
@@ -92,7 +89,6 @@ To train a model, go through the steps described in the following sections.
     parameters in train section to paths of obtained `train` and `val`
     annotation files respectively.
 
-
 ### Train and Evaluate
 
 1. To start the training process, use the command below:
@@ -114,7 +110,7 @@ To train a model, go through the steps described in the following sections.
     python3 tools/eval.py chinese_lp/config.py
     ```
 
-    > **NOTE** Before taking the step 4, make sure that the `eval.file_list_path` parameter  in
+    > **NOTE** Before taking the step 4, make sure that the `eval.file_list_path` parameter in
     `lpr/chinese_lp/config.py` points out to the file with
     annotations to test on. Take the step 4 in another terminal, so training and
     evaluation are performed simultaneously.
@@ -128,8 +124,7 @@ To train a model, go through the steps described in the following sections.
 
     Then view results in a browser: [http://localhost:6006](http://localhost:6006).
 
-
-### Export to OpenVINO™  
+### Export to OpenVINO™
 
 To run the model via OpenVINO™ , freeze the TensorFlow graph and
 then convert it to the OpenVINO™  Intermediate Representation (IR) using the Model Optimizer:
@@ -179,7 +174,6 @@ python3 tools/infer_ie.py --model model/export/IR/FP32/lpr.xml \
   --config chinese_lp/config.py \
   <image_path>
 ```
-
 
 ## Citation
 

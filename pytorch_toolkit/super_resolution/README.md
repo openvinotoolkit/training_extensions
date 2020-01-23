@@ -91,7 +91,7 @@ python3 tools/test.py --test_data_path PATH_TO_TEST_DATA \
     --exp_name EXPERIMENT_NAME
 ```
 
-## Export to OpenVINO™ 
+## Export to OpenVINO™
 
 ```
 python3 tools/export.py --models_path PATH_TO_MODELS_PATH \

@@ -9,7 +9,6 @@
 * TensorFlow\* 1.10.0
 * OpenVINO™   2019 R1 with Python API
 
-
 ### Installation
 
 1. Create virtual environment:
@@ -17,7 +16,7 @@
     virtualenv venv -p python3 --prompt="(ssd)"
     ```
 
-2. Activate virtual environment and setup OpenVINO™   variables:
+2. Activate virtual environment and setup OpenVINO™ variables:
     ```bash
     . venv/bin/activate
     . /opt/intel/openvino/bin/setupvars.sh
@@ -109,7 +108,6 @@ To train a model, go through the following steps:
        > **NOTE**: Caching might cause system slowdown, so if you do not have
        enough RAM memory, disable cashing by passing `NONE` to this parameter.
 
-
 ### Train and Evaluate
 
 1. To start training, go to the `training_toolbox/ssd_detector` directory and run the command below:
@@ -126,7 +124,6 @@ To train a model, go through the following steps:
     python3 tools/eval.py vlp/config.py
     ```
 
-
     > **NOTE**: Take the step 4 in another terminal, so training and
     evaluation are performed simultaneously.
 
@@ -142,8 +139,7 @@ To train a model, go through the following steps:
 
     ![BitVehicle TensorBoard](vlp/docs/tensorboard.png "TensorBoard for BitVehicle training")
 
-
-### Export to OpenVINO™  
+### Export to OpenVINO™
 
 To run the model via OpenVINO™ , freeze the TensorFlow graph and convert it to the OpenVINO™   Internal Representation (IR) using the Model Optimizer:
 
@@ -156,7 +152,6 @@ The script results in three new artifacts:
 **Default export path**
 - `vlp/model/export_<step>/frozen_graph/` - path to the frozen graph
 - `vlp/model/export_<step>/IR/<data_type>/` - path to the converted model in the IR format
-
 
 ## Demo
 

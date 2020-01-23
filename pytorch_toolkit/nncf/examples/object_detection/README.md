@@ -9,7 +9,7 @@ This sample demonstrates DL model compression capabailites for object detection 
 - DataParallel and DistributedDataParallel modes
 - Tensorboard output
 
-## Quantize FP32 pre-trained model
+## Quantize FP32 pretrained model
 This scenario demonstrates quantization with fine-tuning of SSD300 on VOC dataset.
 
 #### Dataset preparation

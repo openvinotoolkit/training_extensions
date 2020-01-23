@@ -10,7 +10,7 @@ def load_state(net, checkpoint):
             new_target_state[target_key] = source_state[target_key]
         else:
             new_target_state[target_key] = target_state[target_key]
-            print('[WARNING] Not found pre-trained parameters for {}'.format(target_key))
+            print('[WARNING] Not found pretrained parameters for {}'.format(target_key))
 
     net.load_state_dict(new_target_state)
 
@@ -27,6 +27,6 @@ def load_from_mobilenet(net, checkpoint):
             new_target_state[target_key] = source_state[k]
         else:
             new_target_state[target_key] = target_state[target_key]
-            print('[WARNING] Not found pre-trained parameters for {}'.format(target_key))
+            print('[WARNING] Not found pretrained parameters for {}'.format(target_key))
 
     net.load_state_dict(new_target_state)

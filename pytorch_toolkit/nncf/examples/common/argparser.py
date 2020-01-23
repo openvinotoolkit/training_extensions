@@ -60,7 +60,7 @@ def get_common_argument_parser():
     parser.add_argument(
         "--pretrained",
         dest="pretrained",
-        help="Use pre-trained models from the model zoo",
+        help="Use pretrained models from the model zoo",
         action="store_true",
     )
 

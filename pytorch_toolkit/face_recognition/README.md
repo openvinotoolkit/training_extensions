@@ -163,7 +163,7 @@ To train compressed models, use the [Neural Network Compression Framework (NNCF)
 
 To start LandNet compression, run the following:
 
-> **NOTE**: Define the `--snap_to_resume` argument. 
+> **NOTE**: Define the `--snap_to_resume` argument.
 
 ```bash
 python train_landmarks.py \
@@ -204,7 +204,7 @@ For evaluating, use the same compression configurations as for training.
 
 To start MobileFaceNet compression, run the following:
 
-> **NOTE**: Define the `--snap_to_resume` argument in the configurations file. 
+> **NOTE**: Define the `--snap_to_resume` argument in the configurations file.
 
 ```bash
 python train.py @./configs/mobilefacenet/mobilefacenet_vgg2.yml \

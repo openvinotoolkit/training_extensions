@@ -23,8 +23,8 @@ total training image set would be [coco_train2017+coco_val2017-minival]
 
 This script is designed for benchmarking a fine-tuned model with
 retraining or transfer learning based on a TensorFlow Object
-Detection API pre-trained model to have a fair and reliable validation
-result, since the pre-trained models are claimed having been trained with
+Detection API pretrained model to have a fair and reliable validation
+result, since the pretrained models are claimed having been trained with
 the same splits.
 
 Please follow below dataset structure:

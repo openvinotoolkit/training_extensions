@@ -16,7 +16,7 @@ This repository contains training code for the  [Global Context for Convolutiona
 1. Create virtual environment: `bash init_venv.sh`.
 2. [Download pretrained MobileNet v1 weights `mobilenet_sgd_68.848.pth.tar`](https://github.com/marvis/pytorch-mobilenet) (sgd option) for training.
 
-## <a name="training-lip"/>Training on the LIP Dataset</a> 
+## <a name="training-lip"/>Training on the LIP Dataset</a>
 
 1. Download the [Look Into Person dataset (2.1 Single Person)](http://sysu-hcp.net/lip/overview.php) and unpack it to the `<LIP_HOME>` folder.
 2. To start training, run in the terminal:
@@ -42,7 +42,7 @@ One should observe about 84% PCKh on validation set (use `--multiscale` and set 
 
 The final number on the test set was obtained with addition of validation data into training.
 
-## <a name="training-coco"/>Training on the COCO Dataset</a> 
+## <a name="training-coco"/>Training on the COCO Dataset</a>
 
 1. Download the [COCO 2017 dataset](http://cocodataset.org/#download) (train, val, annotations) and unpack it to the`<COCO_HOME>` folder.
 2. Convert train annotations into the internal format:

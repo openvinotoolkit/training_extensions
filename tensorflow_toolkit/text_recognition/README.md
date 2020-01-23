@@ -1,7 +1,7 @@
 # Text Recognition in TensorFlow*
 
 This repository contains inference and training code for LSTM-based text recognition networks.
-Models code is designed to enable export to frozen graph and inference on CPU via OpenVINO™ .
+Models code is designed to enable export to frozen graph and inference on CPU via OpenVINO™.
 
 ## Setup
 
@@ -14,12 +14,12 @@ Models code is designed to enable export to frozen graph and inference on CPU vi
 
 ### Installation
 
-1. Create virtual environment:  
+1. Create virtual environment:
     ```bash
     virtualenv venv -p python3 --prompt="(tr)"
     ```
 
-2. Activate virtual environment and setup OpenVINO™  variables:   
+2. Activate virtual environment and setup OpenVINO™ variables:
     ```bash
     . venv/bin/activate
     . /opt/intel/openvino/bin/setupvars.sh
@@ -44,7 +44,6 @@ A toy dataset located in `../../data/text_recognition/annotation.txt`. You can u
 * model evaluation
 
 > **NOTE**: This dataset is considerably small. It is highly recommended to use  at least several thousand images datasets like [MJSynth](https://www.robots.ox.ac.uk/~vgg/data/text/) and [SynthText in the Wild Dataset](http://www.robots.ox.ac.uk/~vgg/data/scenetext/).
-
 
 ### Format
 
@@ -75,10 +74,9 @@ python tools/train.py \
     --weights_path some_pre_trained_weights
 ```
 
-
 ## Export to OpenVINO™ Intermediate Representation (IR)
 
-To run the model via OpenVINO™ , freeze TensorFlow graph and then convert it to OpenVINO™  Intermediate Representation
+To run the model via OpenVINO™, freeze TensorFlow graph and then convert it to OpenVINO™ Intermediate Representation
 (IR) using Model Optimizer:
 
 ```bash
@@ -86,7 +84,6 @@ python tools/export.py --checkpoint checkpoint_path \
     --data_type FP32 \
     --output_dir export
 ```
-
 
 ## Evaluation
 
@@ -96,6 +93,6 @@ python tools/test.py \
     --weights_path some_pre_trained_weights
 ```
 
-## Demo in OpenVINO™ 
+## Demo in OpenVINO™
 
 See https://github.com/opencv/open_model_zoo/tree/master/demos/text_detection_demo.

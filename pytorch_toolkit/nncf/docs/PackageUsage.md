@@ -1,8 +1,8 @@
 # Use Neural Network Compression Framework (NNCF) as Standalone
 
-This is a step-by-step tutorial on how to integrate the NNCF package into the existing project. The 
-use case implies that the user already has a training pipeline that reproduces training of the model 
-in the floating-point precision and pretrained model. The task is to compress this model in order to 
+This is a step-by-step tutorial on how to integrate the NNCF package into the existing project. The
+use case implies that the user already has a training pipeline that reproduces training of the model
+in the floating-point precision and pretrained model. The task is to compress this model in order to
 accelerate the inference time.
 Follow the steps below to use the NNCF compression algorithm.
 
@@ -54,6 +54,6 @@ At this step, you need to revise your training code and make several changes, wh
 
 > **NOTE**: Find these changes in the samples published in the NNCF repository.
 
-Important points you should consider when training your networks with compression algorithms: 
+Important points you should consider when training your networks with compression algorithms:
   - Turn off the `Dropout` layers (and similar ones like `DropConnect`) when training a network with quantization or sparsity
   - It is better to turn off additional regularization in the loss function (for example, L2 regularization via `weight_decay`) when training the network with RB sparsity, since it already imposes an L0 regularization term.
