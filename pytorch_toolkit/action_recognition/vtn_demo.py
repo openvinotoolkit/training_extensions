@@ -9,6 +9,7 @@ import torch
 import torch.nn.functional as F
 
 from action_recognition.model import create_model
+from action_recognition.options import add_input_args
 from action_recognition.spatial_transforms import (CenterCrop, Compose,
                                                    Normalize, Scale, ToTensor, MEAN_STATISTICS, STD_STATISTICS)
 from action_recognition.utils import load_state, generate_args
@@ -24,6 +25,7 @@ class TorchActionRecognition:
     def __init__(self, encoder, checkpoint_path, num_classes=400):
         model_type = "{}_vtn".format(encoder)
         args, _ = generate_args(model=model_type, n_classes=num_classes, layer_norm=False)
+        self.args = args
         self.model, _ = create_model(args, model_type)
 
         self.model = self.model.module
@@ -41,7 +43,7 @@ class TorchActionRecognition:
         return self.preprocessing(frame)
 
     def infer_frame(self, frame):
-        embedding = self._infer_embed(frame)
+        embedding = self._infer_embed(self.preprocess_frame(frame))
         self.embeds.append(embedding)
         sequence = self.get_seq()
         return self._infer_logits(sequence)
@@ -63,16 +65,19 @@ class TorchActionRecognition:
 
     def _infer_seq(self, frame):
         with torch.no_grad():
-            result = self.model(frame.view(1, 16, 3, 224, 224).to('cuda'))
+            result = self.model(frame.view(1, self.args.sample_duration, 3,
+                                           self.args.sample_size, self.args.sample_size).to('cuda'))
         return result.cpu()
 
     def get_seq(self):
         sequence = torch.stack(tuple(self.embeds), 1)
-        sequence = sequence[:, ::2, :]
+        if self.args.temporal_stride > 1:
+            sequence = sequence[:, ::self.args.temporal_stride, :]
 
-        if sequence.size(1) < 16:
-            num_repeats = 15 // sequence.size(1) + 1
-            sequence = sequence.repeat(1, num_repeats, 1)[:, :16, :]
+        n = self.args.sample_duration
+        if sequence.size(1) < n:
+            num_repeats = (n - 1) // sequence.size(1) + 1
+            sequence = sequence.repeat(1, num_repeats, 1)[:, :n, :]
 
         return sequence
 
@@ -114,25 +119,31 @@ def render_frame(frame, probs, labels):
 
 
 def run_demo(model, video_cap, labels):
+    fps = float(video_cap.get(cv2.CAP_PROP_FPS))
+    print('fps: {}'.format(fps))
+    if not fps:
+        fps = 30.0
+    delay = max(1, int(1000 / fps))
     tick = time.time()
+
     while video_cap.isOpened():
         ok, frame = video_cap.read()
 
         if not ok:
             break
 
-        logits = model.infer_frame(model.preprocess_frame(frame))
-        probs = F.softmax(logits[0])
+        logits = model.infer_frame(frame)
+        probs = F.softmax(logits[0], dim=0)
         frame = render_frame(frame, probs, labels)
 
         tock = time.time()
-        expected_time = tick + 1 / 30.
+        expected_time = tick + 1 / fps
         if tock < expected_time:
-            time.sleep(expected_time - tock)
+            delay = max(1, int((expected_time - tock) * 1000))
         tick = tock
 
         cv2.imshow("demo", frame)
-        key = cv2.waitKey(1)
+        key = cv2.waitKey(delay)
         if key == 27 or key == ord('q'):
             break
 
@@ -144,6 +155,7 @@ def main():
     parser.add_argument("--input-video", type=str, help="Path to input video", required=True)
     parser.add_argument("--labels", help="Path to labels file (new-line separated file with label names)", type=str,
                         required=True)
+    add_input_args(parser)
     args = parser.parse_args()
 
     with open(args.labels) as fd:
