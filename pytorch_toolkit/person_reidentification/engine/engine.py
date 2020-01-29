@@ -351,5 +351,6 @@ class ImageAMSoftmaxEngine(ImageSoftmaxEngine):
             lambd = self.batch_transform_cfg.anchor_bias \
                     + (1 - self.batch_transform_cfg.anchor_bias) \
                     * self.lambd_distr.sample((imgs.shape[0],))
+            lambd = lambd.view(-1, 1, 1, 1)
             imgs = lambd * imgs + (1 - lambd) * imgs[permuted_idx]
         return imgs, pids
