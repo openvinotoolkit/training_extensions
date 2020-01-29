@@ -81,9 +81,10 @@ def sample_clips(videos, num_samples_per_video, sample_duration):
 
         else:
 
-            if num_samples_per_video == 0:
-                # use all sequential clips with sample_duration
-                step = sample_duration
+            if num_samples_per_video <= 0:
+                # Use all clips of sample_duration or the whole video if it's short enough.
+                step = 1
+                num_samples_per_video = max(1, n_frames - sample_duration)
             else:
                 step = max(1, (n_frames - sample_duration) // (num_samples_per_video - 1))
 
