@@ -105,7 +105,6 @@ class VideoDataset(data.Dataset):
         video_path (Path): Directory with video files. Will be used by annotation_loader to resolve real paths.
         annotation_path (Path): Path to annotation file.
         subset (str): Which subset of dataset to use (validation/training/testing)
-        annotation_format (str): Format of the annotation file.
         n_samples_for_each_video (int): How many clips should be sampled from every video per epoch.
         spatial_transform (callable): A function/transform that takes in a clip (list of frames) and returns
             transformed version

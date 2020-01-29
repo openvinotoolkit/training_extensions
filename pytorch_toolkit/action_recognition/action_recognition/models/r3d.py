@@ -225,7 +225,7 @@ class R3D(nn.Module):
         return get_fine_tuning_parameters(self, param_groups)
 
 
-def chek_conv1_params(model, pretrained_weights):
+def check_conv1_params(model, pretrained_weights):
     if model.conv1.in_channels != pretrained_weights['conv1.weight'].size(1):
         # get mean over RGB channels weights
         rgb_mean = torch.mean(pretrained_weights['conv1.weight'], dim=1)
@@ -259,7 +259,7 @@ def average_conv1_weights(old_params, in_channels):
 def load_pretrained_resnet(model, resnet_name='resnet34', num_channels=3):
     if num_channels == 3:
         pretrained_weights = model_zoo.load_url(model_urls[resnet_name])
-        chek_conv1_params(model, pretrained_weights)
+        check_conv1_params(model, pretrained_weights)
         model.load_state_dict(pretrained_weights)
     else:
         pretrained_dict = model_zoo.load_url(model_urls[resnet_name])

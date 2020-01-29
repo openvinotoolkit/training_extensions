@@ -102,12 +102,12 @@ def draw_rect(image, bottom_left, top_right, color=(0, 0, 0), alpha=1.):
 def render_frame(frame, probs, labels):
     order = probs.argsort(descending=True)
 
-    status_bar_coorinates = (
+    status_bar_coordinates = (
         (0, 0),  # top left
         (650, 25 + TEXT_VERTICAL_INTERVAL * NUM_LABELS_TO_DISPLAY)  # bottom right
     )
 
-    draw_rect(frame, status_bar_coorinates[0], status_bar_coorinates[1], alpha=0.5)
+    draw_rect(frame, status_bar_coordinates[0], status_bar_coordinates[1], alpha=0.5)
 
     for i, imax in enumerate(order[:NUM_LABELS_TO_DISPLAY]):
         text = '{} - {:.1f}%'.format(labels[imax], probs[imax] * 100)

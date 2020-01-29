@@ -254,7 +254,7 @@ def human_readable_fmt(value):
     return "{:.2f}M".format((value / 1e6))
 
 
-def print_statisctics():
+def print_statistics():
     layers_table = []
 
     for layer in all_layers:
@@ -302,7 +302,7 @@ def main():
     out = net(var)
 
     restore_module_names(net)
-    print_statisctics()
+    print_statistics()
 
 
 if __name__ == '__main__':

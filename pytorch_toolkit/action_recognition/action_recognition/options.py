@@ -244,7 +244,7 @@ def add_input_args(parser):
         '--hflip',
         default=True,
         action=BoolFlagAction,
-        help='Should horizontal flipping be performed for autgumentation'
+        help='Should horizontal flipping be performed for augmentation'
     )
     group.add_argument(
         '--drop-last',

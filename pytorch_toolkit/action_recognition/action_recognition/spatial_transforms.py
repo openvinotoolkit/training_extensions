@@ -486,7 +486,7 @@ class RandomSaturation(VideoSpatialTransform):
 
 class RandomHue(VideoSpatialTransform):
     def __init__(self, delta=14.0):
-        assert delta >= 0.0 and delta <= 360.0
+        assert 0.0 <= delta <= 360.0
         self.delta = delta
 
     def __call__(self, image):
