@@ -134,21 +134,21 @@ python3 main.py --root-path ~/data --result-path ~/logs/ --dataset kinetics --mo
 
 ```bash
 python3 main.py --root-path ~/data --result-path ~/logs/experiment_name --dataset kinetics --model resnet34_vtn \
-    --batch 64 -j 12 --clip-size 16 --st 2 --epochs 120 --lr 1e-4
+    --batch 64 -j 12 --clip-size 16 --st 2 --n-epochs 120 --lr 1e-4
 ```
 
 #### Continue Training from a Checkpoint
 
 ```bash
 python3 main.py --root-path ~/data --result-path ~/logs/experiment_name --dataset kinetics --model resnet34_vtn \
-    --batch 64 -j 12 --clip-size 16 --st 2 --epochs 120 --lr 1e-4 --resume-path ~/save_100.pth
+    --batch 64 -j 12 --clip-size 16 --st 2 --n-epochs 120 --lr 1e-4 --resume-path ~/save_100.pth
 ```
 
 #### Continue Training from the Last Checkpoint
 
 ```bash
 python3 main.py --root-path ~/data --result-path ~/logs/experiment_name/2 --dataset kinetics --model resnet34_vtn  \
-    --batch 64 -j 12 --clip-size 16 --st 2 --epochs 120 --lr 1e-4
+    --batch 64 -j 12 --clip-size 16 --st 2 --n-epochs 120 --lr 1e-4
 ```
 
 #### Fine-tune a Pretrained Model (for example, from Kinetics to UCF)

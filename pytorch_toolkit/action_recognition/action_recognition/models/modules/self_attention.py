@@ -215,7 +215,7 @@ class PositionEncoding(nn.Module):
         self.enc.weight = torch.nn.Parameter(torch.from_numpy(position_enc).to(self.enc.weight.device, torch.float))
 
     def forward(self, x):
-        indeces = torch.arange(0, x.size(1)).to(self.enc.weight.device, torch.long)
-        encodings = self.enc(indeces)
+        indices = torch.arange(0, x.size(1)).to(self.enc.weight.device, torch.long)
+        encodings = self.enc(indices)
         x += encodings
         return x

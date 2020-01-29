@@ -21,12 +21,12 @@ __all__ = ['SynchronizedBatchNorm1d', 'SynchronizedBatchNorm2d', 'SynchronizedBa
 
 
 def _sum_ft(tensor):
-    """sum over the first and last dimention"""
+    """sum over the first and last dimension"""
     return tensor.sum(dim=0).sum(dim=-1)
 
 
 def _unsqueeze_ft(tensor):
-    """add new dementions at the front and the tail"""
+    """add new dimensions at the front and the tail"""
     return tensor.unsqueeze(0).unsqueeze(-1)
 
 

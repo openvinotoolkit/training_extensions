@@ -316,7 +316,7 @@ class TrainingLogger:
             scope (str): Name of the scope that will wrap every iteration.
             total_time (str): Name of the value that will be used for logging total iteration time (if set to any value)
             fetch_time (str): Name of the value that will be used for logging time that iterable takes to produce new
-            item (if set to any value).
+                              item (if set to any value).
             body_time (str): Name of the value that will be used for logging time of executing loop body (if set to
             any value).
 

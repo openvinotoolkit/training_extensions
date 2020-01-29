@@ -67,7 +67,7 @@ def add_common_args(parser):
     parser.add_argument(
         '--sync-bn',
         action=BoolFlagAction,
-        help='Replace all synchronized batchnorm operations with synchronized batchnorm'
+        help='Replace all batchnorm operations with synchronized batchnorm'
     )
     parser.add_argument(
         '--fp16',
@@ -199,7 +199,7 @@ def add_input_args(parser):
         help='Temporal duration of input clips'
     )
     group.add_argument(
-        '--temporal_stride', '--st',
+        '--temporal-stride', '--st',
         default=1, type=int,
         help='Frame skip rate of sampled clips'
     )
@@ -244,7 +244,7 @@ def add_input_args(parser):
         '--hflip',
         default=True,
         action=BoolFlagAction,
-        help='Should horizontal flipping be performed for autgumentation'
+        help='Should horizontal flipping be performed for augmentation'
     )
     group.add_argument(
         '--drop-last',
