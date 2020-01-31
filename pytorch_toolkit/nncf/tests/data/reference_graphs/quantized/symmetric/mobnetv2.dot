@@ -294,9 +294,8 @@ strict digraph  {
 "292 MobileNetV2/SymmetricQuantizer/symmetric_quantize" [id=292, scope="MobileNetV2/SymmetricQuantizer", type=symmetric_quantize];
 "293 MobileNetV2/avg_pool2d" [id=293, scope=MobileNetV2, type=avg_pool2d];
 "294 MobileNetV2/SymmetricQuantizer/symmetric_quantize" [id=294, scope="MobileNetV2/SymmetricQuantizer", type=symmetric_quantize];
-"295 MobileNetV2/view" [id=295, scope=MobileNetV2, type=view];
-"296 MobileNetV2/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/SymmetricQuantizer[op]/symmetric_quantize" [id=296, scope="MobileNetV2/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/SymmetricQuantizer[op]", type=symmetric_quantize];
-"297 MobileNetV2/NNCFLinear[linear]/linear" [id=297, scope="MobileNetV2/NNCFLinear[linear]", type=linear];
+"295 MobileNetV2/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/SymmetricQuantizer[op]/symmetric_quantize" [id=295, scope="MobileNetV2/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/SymmetricQuantizer[op]", type=symmetric_quantize];
+"296 MobileNetV2/NNCFLinear[linear]/linear" [id=296, scope="MobileNetV2/NNCFLinear[linear]", type=linear];
 "0 MobileNetV2/NNCFConv2d[conv1]/ModuleDict[pre_ops]/UpdateWeight[0]/SymmetricQuantizer[op]/symmetric_quantize" -> "2 MobileNetV2/NNCFConv2d[conv1]/conv2d";
 "1 MobileNetV2/NNCFConv2d[conv1]/ModuleDict[pre_ops]/UpdateInputs[1]/SymmetricQuantizer[op]/symmetric_quantize" -> "2 MobileNetV2/NNCFConv2d[conv1]/conv2d";
 "2 MobileNetV2/NNCFConv2d[conv1]/conv2d" -> "3 MobileNetV2/BatchNorm2d[bn1]/batch_norm";
@@ -605,7 +604,6 @@ strict digraph  {
 "291 MobileNetV2/RELU" -> "292 MobileNetV2/SymmetricQuantizer/symmetric_quantize";
 "292 MobileNetV2/SymmetricQuantizer/symmetric_quantize" -> "293 MobileNetV2/avg_pool2d";
 "293 MobileNetV2/avg_pool2d" -> "294 MobileNetV2/SymmetricQuantizer/symmetric_quantize";
-"294 MobileNetV2/SymmetricQuantizer/symmetric_quantize" -> "295 MobileNetV2/view";
-"295 MobileNetV2/view" -> "297 MobileNetV2/NNCFLinear[linear]/linear";
-"296 MobileNetV2/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/SymmetricQuantizer[op]/symmetric_quantize" -> "297 MobileNetV2/NNCFLinear[linear]/linear";
+"294 MobileNetV2/SymmetricQuantizer/symmetric_quantize" -> "296 MobileNetV2/NNCFLinear[linear]/linear";
+"295 MobileNetV2/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/SymmetricQuantizer[op]/symmetric_quantize" -> "296 MobileNetV2/NNCFLinear[linear]/linear";
 }

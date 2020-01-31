@@ -1,0 +1,20 @@
+{
+    "model": "squeezenet1_1_custom",
+    "pretrained": true,
+
+    "input_info": {
+      "sample_size": [1, 3, 224, 224]
+    },
+    "num_classes": 1000,
+    "batch_size" : 256,
+    "weight_decay": 1e-5,
+    "epochs": 5,
+    "optimizer": {
+        "type": "Adam",
+        "base_lr": 0.00001,
+        "schedule_type": "multistep",
+        "steps": [
+            3
+        ]
+    }
+}

@@ -128,22 +128,26 @@ def create_command_line(args, sample_type):
     )
 
 
-SAMPLE_TYPES = ["classification", "segmentation"]
+SAMPLE_TYPES = ["classification", "semantic_segmentation", "object_detection"]
 
 DATASETS = {
     "classification": ["cifar10", "cifar100"],
-    "segmentation": ["camvid"],
+    "semantic_segmentation": ["camvid", "camvid"],
+    "object_detection": ["voc"],
 }
 
 CONFIGS = {
-    "classification": [TEST_ROOT.joinpath("data", "configs", "squeezenet1_1_cifar10_sparsity_int8.json"),
+    "classification": [TEST_ROOT.joinpath("data", "configs", "squeezenet1_1_cifar10_rb_sparsity_int8.json"),
                        TEST_ROOT.joinpath("data", "configs", "resnet18_cifar100_bin_xnor.json")],
-    "segmentation": [TEST_ROOT.joinpath("data", "configs", "unet_camvid_int8.json")]
+    "semantic_segmentation": [TEST_ROOT.joinpath("data", "configs", "unet_camvid_int8.json"),
+                              TEST_ROOT.joinpath("data", "configs", "unet_camvid_rb_sparsity.json")],
+    "object_detection": [TEST_ROOT.joinpath("data", "configs", "ssd300_vgg_voc_int8.json")]
 }
 
 BATCHSIZE_PER_GPU = {
     "classification": [256, 256],
-    "segmentation": [2],
+    "semantic_segmentation": [2, 2],
+    "object_detection": [128],
 }
 
 DATASET_PATHS = {
@@ -151,10 +155,14 @@ DATASET_PATHS = {
         x: lambda dataset_root: dataset_root if dataset_root else os.path.join(
             tempfile.gettempdir(), x) for x in DATASETS["classification"]
     },
-    "segmentation":
-        {
-            DATASETS["segmentation"][0]: lambda dataset_root: TEST_ROOT.joinpath("data", "mock_datasets", "camvid")
-        }
+    "semantic_segmentation": {
+        DATASETS["semantic_segmentation"][0]: lambda dataset_root: TEST_ROOT.joinpath("data", "mock_datasets",
+                                                                                      "camvid"),
+        DATASETS["semantic_segmentation"][0]: lambda dataset_root: TEST_ROOT.joinpath("data", "mock_datasets", "camvid")
+    },
+    "object_detection": {
+        DATASETS["object_detection"][0]: lambda dataset_root: TEST_ROOT.joinpath("data", "mock_datasets", "voc")
+    },
 }
 
 CONFIG_PARAMS = list()
@@ -337,6 +345,8 @@ def test_resume(config, tmp_path, multiprocessing_distributed):
     ckpt_path = os.path.join(c["checkpoint_save_dir"],
                              "distributed" if multiprocessing_distributed else "data_parallel",
                              get_name(config_factory.config) + "_last.pth")
+    if "max_iter" in config_factory.config:
+        config_factory.config["max_iter"] += 2
     args = {
         "--mode": "train",
         "--data": c["dataset_path"],
@@ -398,10 +408,13 @@ def test_cpu_only_mode_produces_cpu_only_model(config, tmp_path, mocker):
             mocker.patch("examples.classification.main.train_epoch")
             mocker.patch("examples.classification.main.validate")
             sample.validate.return_value = (0, 0)
-    elif config["sample_type"] == "segmentation":
-        import examples.segmentation.main as sample
-        import examples.segmentation.train
-        mocker.spy(examples.segmentation.train.Train, "__init__")
+    elif config["sample_type"] == "semantic_segmentation":
+        import examples.semantic_segmentation.main as sample
+        import examples.semantic_segmentation.train
+        mocker.spy(examples.semantic_segmentation.train.Train, "__init__")
+    elif config["sample_type"] == "object_detection":
+        import examples.object_detection.main as sample
+        mocker.patch("examples.object_detection.main.train")
 
     sample.main(shlex.split(command_line))
 
@@ -412,7 +425,10 @@ def test_cpu_only_mode_produces_cpu_only_model(config, tmp_path, mocker):
             model_to_be_trained = bin_worker.train_epoch_bin.call_args[0][2]  # model
         else:
             model_to_be_trained = sample.train_epoch.call_args[0][1]  # model
-    elif config["sample_type"] == "segmentation":
-        model_to_be_trained = examples.segmentation.train.Train.__init__.call_args[0][1]  # model
+    elif config["sample_type"] == "semantic_segmentation":
+        model_to_be_trained = examples.semantic_segmentation.train.Train.__init__.call_args[0][1]  # model
+    elif config["sample_type"] == "object_detection":
+        model_to_be_trained = sample.train.call_args[0][0]  # net
+
     for p in model_to_be_trained.parameters():
         assert not p.is_cuda

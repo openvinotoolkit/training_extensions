@@ -22,15 +22,17 @@ from pytest import approx
 from torchvision.models import resnet50
 
 from examples.common.models.classification import squeezenet1_1_custom
-from nncf import Quantization, SymmetricQuantizer
+from nncf import Quantization, SymmetricQuantizer, AsymmetricQuantizer
 from nncf import utils
 from nncf.algo_selector import create_compression_algorithm
 from nncf.compression_method_api import CompressionLoss, CompressionScheduler
 from nncf.config import Config
 from nncf.dynamic_graph import reset_context, patch_torch_operators
+from nncf.dynamic_graph.graph_builder import create_input_infos
 from nncf.helpers import safe_thread_call, create_compressed_model, load_state
-from nncf.initializers import InitializeDataLoader
+from nncf.initialization import InitializingDataLoader, INITIALIZABLE_MODULES
 from nncf.operations import UpdateWeight, UpdateInputs
+from nncf.quantization.layers import QuantizationMode, QuantizerConfig
 from nncf.utils import get_all_modules_by_type
 from tests.test_helpers import BasicConvTestModel, TwoConvTestModel, get_empty_config
 
@@ -42,7 +44,10 @@ def get_basic_quantization_config(model_size=4):
     config.update({
         "model": "basic_quant_conv",
         "model_size": model_size,
-        "input_sample_size": (1, 1, model_size, model_size),
+        "input_info":
+            {
+                "sample_size": (1, 1, model_size, model_size),
+            },
         "compression":
             {
                 "algorithm": "quantization",
@@ -67,7 +72,10 @@ def get_squeezenet_quantization_config(model_size=32):
     config.update({
         "model": "squeezenet1_1_custom",
         "model_size": model_size,
-        "input_sample_size": (3, 3, model_size, model_size),
+        "input_info":
+            {
+                "sample_size": (3, 3, model_size, model_size),
+            },
         "compression":
             {
                 "algorithm": "quantization",
@@ -89,7 +97,7 @@ def test_can_load_quant_algo__with_defaults():
     quant_model = compression_algo.model
 
     model_conv = get_all_modules_by_type(model, 'Conv2d')
-    quant_model_conv = get_all_modules_by_type(quant_model.module, 'NNCFConv2d')
+    quant_model_conv = get_all_modules_by_type(quant_model.get_nncf_wrapped_module(), 'NNCFConv2d')
     assert len(model_conv) == len(quant_model_conv)
 
     for module_name in model_conv:
@@ -119,6 +127,76 @@ def test_can_create_quant_loss_and_scheduler():
 
     scheduler = compression_algo.scheduler
     assert isinstance(scheduler, CompressionScheduler)
+
+
+def split_quantizers(quant_model):
+    quantizers = get_all_modules_by_type(quant_model, list(INITIALIZABLE_MODULES.registry_dict.keys()))
+    weight_quantizers = []
+    activation_quantizers = []
+    for name, data in quantizers.items():
+        if 'UpdateWeight' in name:
+            weight_quantizers.append(data)
+        else:
+            activation_quantizers.append(data)
+    return weight_quantizers, activation_quantizers
+
+
+def compare_qconfigs(first: QuantizerConfig, second: QuantizerConfig):
+    assert first.is_weights == second.is_weights
+    assert first.bits == second.bits
+    assert first.mode == second.mode
+    assert first.per_channel == second.per_channel
+    assert first.signedness_to_force == second.signedness_to_force
+
+
+def test_quantization_configs__with_defaults():
+    model = BasicConvTestModel()
+    config = get_basic_quantization_config()
+    reset_context('orig')
+    reset_context('quantized_graphs')
+    compression_algo = create_compression_algorithm(deepcopy(model), config)
+
+    weight_quantizers, activation_quantizers = split_quantizers(compression_algo.model)
+
+    ref_weight_qconfig = QuantizerConfig(8, QuantizationMode.SYMMETRIC, None, False, None, True)
+    for wq in weight_quantizers:
+        compare_qconfigs(ref_weight_qconfig, wq.config)
+
+    ref_activation_qconfig = QuantizerConfig(8, QuantizationMode.SYMMETRIC, None, False, None, False)
+    for wq in activation_quantizers:
+        compare_qconfigs(ref_activation_qconfig, wq.config)
+
+
+def test_quantization_configs__custom():
+    model = BasicConvTestModel()
+
+    config = get_basic_quantization_config()
+    config['compression'].update({
+        "weights": {
+            "mode": "asymmetric",
+            "per_channel": True,
+            "signed": False,
+            "bits": 4
+        },
+        "activations": {
+            "mode": "asymmetric",
+            "bits": 4,
+            "signed": True,
+        },
+    })
+    reset_context('orig')
+    reset_context('quantized_graphs')
+    compression_algo = create_compression_algorithm(model, config)
+
+    weight_quantizers, activation_quantizers = split_quantizers(compression_algo.model)
+
+    ref_weight_qconfig = QuantizerConfig(4, QuantizationMode.ASYMMETRIC, None, True, None, True)
+    for wq in weight_quantizers:
+        compare_qconfigs(ref_weight_qconfig, wq.config)
+
+    ref_activation_qconfig = QuantizerConfig(4, QuantizationMode.ASYMMETRIC, True, False, None, False)
+    for wq in activation_quantizers:
+        compare_qconfigs(ref_activation_qconfig, wq.config)
 
 
 class RankDatasetMock:
@@ -164,7 +242,8 @@ def scale_signed_dumping_worker(gpu, ngpus_per_node, config, tmp_path):
 
     torch.backends.cudnn.benchmark = True
 
-    input_sample_size = config.input_sample_size
+    input_infos_list = create_input_infos(config)
+    input_sample_size = input_infos_list[0].shape
     data_loader = torch.utils.data.DataLoader(RankDatasetMock(input_sample_size[1:], config.rank),
                                               batch_size=3,
                                               num_workers=1,
@@ -176,7 +255,7 @@ def scale_signed_dumping_worker(gpu, ngpus_per_node, config, tmp_path):
     act_sum = 0
     for layer in get_all_modules_by_type(model, "SymmetricQuantizer").values():
         act_sum += layer.scale
-    ref_sum = 3518.797
+    ref_sum = 3467.322
     assert act_sum.item() == approx(ref_sum, 0.01), \
         'sum of scales is not expected {} vs {} rank {}'.format(act_sum.item(), ref_sum, config.rank)
 
@@ -283,16 +362,17 @@ class TestInit:
 
     @staticmethod
     def create_dataloader(wrap_dataloader, config, algo):
-        input_sample_size = config.input_sample_size
+        input_infos_list = create_input_infos(config)
+        input_sample_size = input_infos_list[0].shape
         data_loader = torch.utils.data.DataLoader(OnesDatasetMock(input_sample_size[1:]),
                                                   batch_size=1,
                                                   num_workers=1,
                                                   shuffle=False)
         if wrap_dataloader:
             device = next(algo.model.parameters()).device
-            data_loader = InitializeDataLoader(data_loader=data_loader,
-                                               device=device,
-                                               kwargs={})
+            data_loader = InitializingDataLoader(data_loader=data_loader,
+                                                 device=device,
+                                                 kwargs={})
         return data_loader
 
     @staticmethod
@@ -337,6 +417,45 @@ class TestInit:
             '.*activation_quantizers.*Sequential\\[0\\].*': (True, 4),
             '.*activation_quantizers.*Sequential\\[1\\].*': (True, 24)
         })
+
+    def test_scope_overrides(self, wrap_dataloader):
+        config = self.create_config()
+        config["compression"]["scope_overrides"] = {
+            r"{re}NNCFConv2d\[[0-9]*\]$": {
+                "bits": 7,
+                "mode": "asymmetric",
+            },
+            r"{re}NNCFConv2d\[[0-9]*\]/conv2d_0": {
+                "bits": 7,
+                "signed": False,
+            }
+        }
+        algo = self.create_algo(config)
+        data_loader = self.create_dataloader(wrap_dataloader, config, algo)
+
+        algo.initialize(data_loader)
+
+        quantizers = get_all_modules_by_type(algo.model, ['SymmetricQuantizer',
+                                                          'AsymmetricQuantizer'])
+        group_1 = [quantizers["QuantizedNetwork/TwoConvTestModel[nncf_module]/Sequential[features]/"
+                              "Sequential[0]/NNCFConv2d[0]/ModuleDict[pre_ops]/UpdateWeight[0]/"
+                              "AsymmetricQuantizer[op]"],
+                   quantizers["QuantizedNetwork/TwoConvTestModel[nncf_module]/Sequential[features]/"
+                              "Sequential[0]/NNCFConv2d[0]/ModuleDict[pre_ops]/UpdateInputs[1]/"
+                              "AsymmetricQuantizer[op]"],
+                   quantizers['QuantizedNetwork/TwoConvTestModel[nncf_module]/Sequential[features]/'
+                              'Sequential[1]/NNCFConv2d[0]/ModuleDict[pre_ops]/UpdateWeight[0]/'
+                              'AsymmetricQuantizer[op]']
+                   ]
+        group_2 = [quantizers['QuantizedNetwork/ModuleDict[activation_quantizers]/'
+                              'SymmetricQuantizer[TwoConvTestModel/Sequential[features]'
+                              '/Sequential[0]/NNCFConv2d[0]/conv2d_0]']]
+        for quantizer in group_1:
+            assert isinstance(quantizer, AsymmetricQuantizer)
+            assert quantizer.levels == 2 ** 7
+        for quantizer in group_2:
+            assert isinstance(quantizer, SymmetricQuantizer)
+            assert not quantizer.signed
 
 
 def get_path_to_keys(tmp_path, rank):

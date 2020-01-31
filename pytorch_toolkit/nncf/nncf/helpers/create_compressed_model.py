@@ -12,29 +12,48 @@
 """
 
 import os.path as osp
+from typing import Callable, Any
 
-from nncf.algo_selector import create_compression_algorithm
-from nncf.dynamic_graph.utils import dump_graph, build_graph
-from nncf.utils import get_all_modules
+from torch.nn import Module
+
+from nncf import QuantizedNetwork
+from nncf.algo_selector import create_compression_algorithm, NoCompressionAlgorithm
+from nncf.config import Config
+from nncf.dynamic_graph.context import reset_context
+from nncf.dynamic_graph.graph_builder import GraphBuilder, create_input_infos
+from nncf.utils import create_dummy_forward_fn, get_all_modules
+
 from .utils import is_main_process
 
 
-def create_compressed_model(model, config):
-    input_args = (next(model.parameters()).new_empty(config['input_sample_size']),)
+def create_compressed_model(model: Module, config: Config, dummy_forward_fn: Callable[[Module], Any] = None):
+    """dummy_forward_fn will be used instead of a *forward* function call to build
+    the graph - useful when the original training pipeline has special formats of
+    data loader output or has additional *forward* arguments other than input tensors.
+    Otherwise, the *forward* call of the model will be made with a single Tensor with
+    a shape and type specified in config."""
+
+    if dummy_forward_fn is None:
+        input_info_list = create_input_infos(config)
+        graph_builder = GraphBuilder(custom_forward_fn=
+                                     create_dummy_forward_fn(input_info_list))
+    else:
+        graph_builder = GraphBuilder(custom_forward_fn=dummy_forward_fn)
+
     if is_main_process():
         print(*get_all_modules(model).keys(), sep="\n")
-        ctx = build_graph(model, 'create_model', input_args=input_args, reset_context=True)
-        dump_graph(ctx, osp.join(config.log_dir, "original_graph.dot"))
+        reset_context('create_model')
+        graph = graph_builder.build_graph(model, 'create_model')
+        graph.dump_graph(osp.join(config.log_dir, "original_graph.dot"))
 
-    compression_algo = create_compression_algorithm(model, config)
+    compression_algo = create_compression_algorithm(model, config, dummy_forward_fn)
 
-    if is_main_process():
-        if hasattr(compression_algo.model, "build_graph"):
-            ctx = compression_algo.model.build_graph()
-        else:
-            ctx = build_graph(compression_algo.model, "create_model_compressed",
-                              input_args=input_args, reset_context=True)
-        dump_graph(ctx, osp.join(config.log_dir, "compressed_graph.dot"))
+    compressed_model = compression_algo.model
+    if is_main_process() and not isinstance(compression_algo, NoCompressionAlgorithm):
+        context_name = 'create_compressed_graph'
+        if isinstance(compressed_model, QuantizedNetwork):
+            context_name = compressed_model.get_context_name()
+        graph = graph_builder.build_graph(compression_algo.model, context_name)
+        graph.dump_graph(osp.join(config.log_dir, "compressed_graph.dot"))
 
-    model = compression_algo.model
-    return compression_algo, model
+    return compression_algo, compressed_model

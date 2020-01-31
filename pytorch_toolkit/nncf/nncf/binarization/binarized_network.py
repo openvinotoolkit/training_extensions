@@ -14,6 +14,7 @@
 import logging
 from collections import OrderedDict
 from texttable import Texttable
+from typing import List
 
 import torch
 from torch import nn
@@ -23,17 +24,18 @@ from ..dynamic_graph.transform_graph import in_scope_list, replace_modules_by_nn
 from ..layers import NNCF_MODULES, NNCFConv2d
 from ..operations import UpdateWeight, UpdateInputs
 from ..utils import get_all_modules_by_type
-
 from .layers import ActivationBinarizationScaleThreshold
+from nncf.dynamic_graph.graph_builder import ModelInputInfo
 
 logger = logging.getLogger(__name__)
 
 
 @ignore_scope
 class BinarizedNetwork(nn.Module):
-    def __init__(self, module, binarize_module_creator_fn, inputs_shape, ignored_scopes=None, target_scopes=None):
+    def __init__(self, module, binarize_module_creator_fn, input_infos: List[ModelInputInfo],
+                 ignored_scopes=None, target_scopes=None):
         super().__init__()
-        self.inputs_shape = inputs_shape
+        self.input_infos = input_infos
         self.ignored_scopes = ignored_scopes
         self.target_scopes = target_scopes
         self.module = module
@@ -54,10 +56,10 @@ class BinarizedNetwork(nn.Module):
         return out
 
     def _replace_binarized_modules_by_nncf_modules(self, device):
-        self.module = replace_modules_by_nncf_modules(self.module,
-                                                      ignored_scopes=self.ignored_scopes,
-                                                      target_scopes=self.target_scopes,
-                                                      logger=logger)
+        self.module, _ = replace_modules_by_nncf_modules(self.module,
+                                                         ignored_scopes=self.ignored_scopes,
+                                                         target_scopes=self.target_scopes,
+                                                         logger=logger)
         self.module = self.module.to(device)
 
     def _register_binarization_operation(self, module_name, module, device):
@@ -83,6 +85,9 @@ class BinarizedNetwork(nn.Module):
             if self.target_scopes is None or in_scope_list(name, self.target_scopes):
                 self.binarized_modules[name] = module
                 self._register_binarization_operation(name, module, device)
+
+    def get_context_name(self):
+        return None
 
     def _compute_and_display_flops_binarization_rate(self):
         net = self.module
@@ -110,7 +115,7 @@ class BinarizedNetwork(nn.Module):
 
         hook_list = [m.register_forward_hook(get_hook(n)) for n, m in net.named_modules()]
 
-        input_shape = tuple([1] + list(self.inputs_shape)[1:])
+        input_shape = tuple([1] + list(self.input_infos[0].shape)[1:])
         var = torch.randn(*input_shape, device=device)
 
         net.eval()
@@ -150,10 +155,3 @@ class BinarizedNetwork(nn.Module):
         table.add_rows(table_data)
         print(table.draw())
         print("Total binarized MAC share: {:.1f}%".format(ops_bin / ops_total * 100))
-
-    def export(self, filename):
-        self.eval()
-        with torch.no_grad():
-            param = next(self.parameters())
-            input_shape = tuple([1] + list(self.inputs_shape)[1:])
-            torch.onnx.export(self, param.new_zeros(input_shape), filename, verbose=True)

@@ -11,18 +11,24 @@
  limitations under the License.
 """
 
+from typing import Callable, Any
+
+import torch
+
 from .layers import BINARIZATION_MODULES, BinarizationMode, WeightBinarizer, ActivationBinarizer
 from .binarized_network import BinarizedNetwork
 from .schedulers import BINARIZATION_SCHEDULERS
 from ..algo_selector import COMPRESSION_ALGORITHMS
 from ..compression_method_api import CompressionAlgorithm
+from nncf.dynamic_graph.graph_builder import ModelInputInfo
 
 
 @COMPRESSION_ALGORITHMS.register('binarization')
 class Binarization(CompressionAlgorithm):
-    def __init__(self, model, config, input_size,
-                 dummy_forward_fn=None):
-        super().__init__(model, config, input_size)
+    def __init__(self, model, config,
+                 input_infos: ModelInputInfo = None,
+                 dummy_forward_fn: Callable[[torch.nn.Module], Any] = None):
+        super().__init__(model, config, input_infos, dummy_forward_fn)
 
         self.ignored_scopes = self.config.get('ignored_scopes')
         self.target_scopes = self.config.get('target_scopes')
@@ -30,15 +36,12 @@ class Binarization(CompressionAlgorithm):
         self.mode = self.config.get('mode', BinarizationMode.XNOR)
 
         self._model = BinarizedNetwork(model, self.__create_binarize_module,
-                                       inputs_shape=self.input_size,
+                                       input_infos=self.input_infos,
                                        ignored_scopes=self.ignored_scopes,
                                        target_scopes=self.target_scopes)
         self.is_distributed = False
         scheduler_cls = BINARIZATION_SCHEDULERS.get("staged")
         self._scheduler = scheduler_cls(self, self.config)
-
-    def export_model(self, filename):
-        self._model.export(filename)
 
     def distributed(self):
         self.is_distributed = True

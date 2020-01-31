@@ -1,0 +1,32 @@
+<annotation>
+	<folder>VOC2007</folder>
+	<filename>000002.jpg</filename>
+	<source>
+		<database>empty</database>
+		<annotation>empty</annotation>
+		<image>empty</image>
+		<flickrid>empty</flickrid>
+	</source>
+	<owner>
+		<flickrid>empty</flickrid>
+		<name>empty</name>
+	</owner>
+	<size>
+		<width>335</width>
+		<height>500</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>train</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>140</xmin>
+			<ymin>201</ymin>
+			<xmax>208</xmax>
+			<ymax>302</ymax>
+		</bndbox>
+	</object>
+</annotation>

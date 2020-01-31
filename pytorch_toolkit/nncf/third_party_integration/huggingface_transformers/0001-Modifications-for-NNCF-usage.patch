@@ -1,0 +1,903 @@
+From c16d2d8c51086d820ec50053e0166936c09cb4d5 Mon Sep 17 00:00:00 2001
+From: Vasily Shamporov <vasily.shamporov@intel.com>
+Date: Fri, 29 Nov 2019 18:33:05 +0300
+Subject: [PATCH] Modifications for NNCF usage
+
+---
+ examples/run_glue.py          | 134 +++++++++++++++++++++++++++++-----
+ examples/run_squad.py         | 117 ++++++++++++++++++++++++-----
+ examples/run_xnli.py          | 127 +++++++++++++++++++++++++++-----
+ examples/utils_squad.py       |   4 +-
+ nncf_bert_config_squad.json   |  35 +++++++++
+ nncf_bert_config_xnli.json    |  35 +++++++++
+ nncf_roberta_config_mnli.json |  38 ++++++++++
+ 7 files changed, 432 insertions(+), 58 deletions(-)
+ create mode 100644 nncf_bert_config_squad.json
+ create mode 100644 nncf_bert_config_xnli.json
+ create mode 100644 nncf_roberta_config_mnli.json
+
+diff --git a/examples/run_glue.py b/examples/run_glue.py
+index 550a0b8..f7663a8 100644
+--- a/examples/run_glue.py
++++ b/examples/run_glue.py
+@@ -22,12 +22,15 @@ import glob
+ import logging
+ import os
+ import random
++import sys
+ 
+ import numpy as np
+ import torch
+ from torch.utils.data import (DataLoader, RandomSampler, SequentialSampler,
+                               TensorDataset)
+ from torch.utils.data.distributed import DistributedSampler
++from torch import onnx
++import torch.distributed
+ 
+ try:
+     from torch.utils.tensorboard import SummaryWriter
+@@ -60,6 +63,19 @@ from transformers import glue_output_modes as output_modes
+ from transformers import glue_processors as processors
+ from transformers import glue_convert_examples_to_features as convert_examples_to_features
+ 
++
++from nncf.dynamic_graph import patch_torch_operators
++from nncf.helpers import create_compressed_model
++from nncf.helpers.model_loader import load_state
++
++from nncf.config import Config
++
++from nncf.initialization import InitializingDataLoader
++from examples.common.distributed import is_main_process
++
++patch_torch_operators()
++
++logging.basicConfig(level=logging.INFO, stream=sys.stdout)
+ logger = logging.getLogger(__name__)
+ 
+ ALL_MODELS = sum((tuple(conf.pretrained_config_archive_map.keys()) for conf in (BertConfig, XLNetConfig, XLMConfig, 
+@@ -83,7 +99,7 @@ def set_seed(args):
+         torch.cuda.manual_seed_all(args.seed)
+ 
+ 
+-def train(args, train_dataset, model, tokenizer):
++def train(args, train_dataset, model, tokenizer, compression_algo=None):
+     """ Train the model """
+     if args.local_rank in [-1, 0]:
+         tb_writer = SummaryWriter()
+@@ -92,6 +108,21 @@ def train(args, train_dataset, model, tokenizer):
+     train_sampler = RandomSampler(train_dataset) if args.local_rank == -1 else DistributedSampler(train_dataset)
+     train_dataloader = DataLoader(train_dataset, sampler=train_sampler, batch_size=args.train_batch_size)
+ 
++    if compression_algo is not None:
++        class TensorDatasetInitializingDataloader(InitializingDataLoader):
++            def __next__(self):
++                batch = tuple(t.to(args.device) for t in next(iter(self.data_loader)))
++                inputs = {'attention_mask': batch[1],
++                          'labels': batch[3]}
++
++                if args.model_type != 'distilbert':
++                    inputs['token_type_ids'] = batch[2] if args.model_type in ['bert',
++                                                                               'xlnet'] else None  # XLM, DistilBERT and RoBERTa don't use segment_ids
++                return batch[0], inputs
++        compression_algo.initialize(TensorDatasetInitializingDataloader(train_dataloader,
++                                                                        device=args.device,
++                                                                        kwargs={}))
++
+     if args.max_steps > 0:
+         t_total = args.max_steps
+         args.num_train_epochs = args.max_steps // (len(train_dataloader) // args.gradient_accumulation_steps) + 1
+@@ -150,6 +181,10 @@ def train(args, train_dataset, model, tokenizer):
+             if args.model_type != 'distilbert':
+                 inputs['token_type_ids'] = batch[2] if args.model_type in ['bert', 'xlnet'] else None  # XLM, DistilBERT and RoBERTa don't use segment_ids
+             outputs = model(**inputs)
++
++            if compression_algo is not None:
++                compression_algo.scheduler.step()
++
+             loss = outputs[0]  # model outputs are always tuple in transformers (see doc)
+ 
+             if args.n_gpu > 1:
+@@ -164,6 +199,7 @@ def train(args, train_dataset, model, tokenizer):
+                 loss.backward()
+ 
+             tr_loss += loss.item()
++            epoch_iterator.set_postfix(loss=loss.item())
+             if (step + 1) % args.gradient_accumulation_steps == 0:
+                 if args.fp16:
+                     torch.nn.utils.clip_grad_norm_(amp.master_params(optimizer), args.max_grad_norm)
+@@ -190,14 +226,20 @@ def train(args, train_dataset, model, tokenizer):
+                     output_dir = os.path.join(args.output_dir, 'checkpoint-{}'.format(global_step))
+                     if not os.path.exists(output_dir):
+                         os.makedirs(output_dir)
+-                    model_to_save = model.module if hasattr(model, 'module') else model  # Take care of distributed/parallel training
+-                    model_to_save.save_pretrained(output_dir)
++
++                    if compression_algo is not None:
++                        output_model_file = os.path.join(output_dir, WEIGHTS_NAME)
++                        torch.save(model.state_dict(), output_model_file)
++                    else:
++                        model_to_save = model.module if hasattr(model, 'module') else model  # Take care of distributed/parallel training
++                        model_to_save.save_pretrained(output_dir)
+                     torch.save(args, os.path.join(output_dir, 'training_args.bin'))
+                     logger.info("Saving model checkpoint to %s", output_dir)
+ 
+             if args.max_steps > 0 and global_step > args.max_steps:
+                 epoch_iterator.close()
+                 break
++        compression_algo.scheduler.epoch_step()
+         if args.max_steps > 0 and global_step > args.max_steps:
+             train_iterator.close()
+             break
+@@ -222,7 +264,7 @@ def evaluate(args, model, tokenizer, prefix=""):
+ 
+         args.eval_batch_size = args.per_gpu_eval_batch_size * max(1, args.n_gpu)
+         # Note that DistributedSampler samples randomly
+-        eval_sampler = SequentialSampler(eval_dataset) if args.local_rank == -1 else DistributedSampler(eval_dataset)
++        eval_sampler = SequentialSampler(eval_dataset) # Sample sequentially even in distributed mode to get more consistent evaluation metric results
+         eval_dataloader = DataLoader(eval_dataset, sampler=eval_sampler, batch_size=args.eval_batch_size)
+ 
+         # multi-gpu eval
+@@ -407,6 +449,10 @@ def main():
+                         help="For distributed training: local_rank")
+     parser.add_argument('--server_ip', type=str, default='', help="For distant debugging.")
+     parser.add_argument('--server_port', type=str, default='', help="For distant debugging.")
++    parser.add_argument('--to-onnx', type=str, metavar='PATH', default=None,
++                        help='Export to ONNX model by given path')
++    parser.add_argument('--nncf-config', type=str, help='path to NNCF config .json file to be used for compressed model'
++                                                        'fine-tuning')
+     args = parser.parse_args()
+ 
+     if os.path.exists(args.output_dir) and os.listdir(args.output_dir) and args.do_train and not args.overwrite_output_dir:
+@@ -471,15 +517,36 @@ def main():
+     if args.local_rank == 0:
+         torch.distributed.barrier()  # Make sure only the first process in distributed training will download model & vocab
+ 
++
++    compression_algo = None
++    nncf_config = None
++    if args.nncf_config is not None:
++        nncf_config = Config.from_json(args.nncf_config)
++        compression_algo, model = create_compressed_model(model, nncf_config)
++
++        if not (args.local_rank == -1 or args.no_cuda):
++            compression_algo.distributed()
++
+     model.to(args.device)
+ 
+     logger.info("Training/evaluation parameters %s", args)
++    if args.do_train and (args.local_rank == -1 or torch.distributed.get_rank() == 0):
++        # Create output directory if needed
++        if not os.path.exists(args.output_dir) and args.local_rank in [-1, 0]:
++            os.makedirs(args.output_dir)
+ 
++        logger.info("Saving model checkpoint to %s", args.output_dir)
++        # Save a trained model, configuration and tokenizer using `save_pretrained()`.
++        # They can then be reloaded using `from_pretrained()`
++        model_to_save = model.module if hasattr(model,
++                                                'module') else model  # Take care of distributed/parallel training
++        model_to_save.save_pretrained(args.output_dir)
++        tokenizer.save_pretrained(args.output_dir)
+ 
+     # Training
+     if args.do_train:
+         train_dataset = load_and_cache_examples(args, args.task_name, tokenizer, evaluate=False)
+-        global_step, tr_loss = train(args, train_dataset, model, tokenizer)
++        global_step, tr_loss = train(args, train_dataset, model, tokenizer, compression_algo)
+         logger.info(" global_step = %s, average loss = %s", global_step, tr_loss)
+ 
+ 
+@@ -490,23 +557,43 @@ def main():
+             os.makedirs(args.output_dir)
+ 
+         logger.info("Saving model checkpoint to %s", args.output_dir)
+-        # Save a trained model, configuration and tokenizer using `save_pretrained()`.
+-        # They can then be reloaded using `from_pretrained()`
+-        model_to_save = model.module if hasattr(model, 'module') else model  # Take care of distributed/parallel training
+-        model_to_save.save_pretrained(args.output_dir)
++
++        if compression_algo is not None:
++            output_model_file = os.path.join(args.output_dir, WEIGHTS_NAME)
++            torch.save(model.state_dict(), output_model_file)
++        else:
++            # Save a trained model, configuration and tokenizer using `save_pretrained()`.
++            # They can then be reloaded using `from_pretrained()`
++            model_to_save = model.module if hasattr(model, 'module') else model  # Take care of distributed/parallel training
++            model_to_save.save_pretrained(args.output_dir)
+         tokenizer.save_pretrained(args.output_dir)
+ 
+         # Good practice: save your training arguments together with the trained model
+         torch.save(args, os.path.join(args.output_dir, 'training_args.bin'))
+ 
+         # Load a trained model and vocabulary that you have fine-tuned
+-        model = model_class.from_pretrained(args.output_dir)
++        if compression_algo is not None:
++            model = model_class.from_pretrained(args.output_dir)
++        else:
++            state_dict = torch.load(args.output_dir + '/pytorch_model.bin')
++            load_state(model, state_dict, is_resume=True)
+         tokenizer = tokenizer_class.from_pretrained(args.output_dir)
+         model.to(args.device)
+ 
+ 
+     # Evaluation
+     results = {}
++
++    if args.to_onnx:
++        if compression_algo is not None:
++            compression_algo.export_model(args.to_onnx)
++        else:
++            model.to('cpu')
++            dummy_tensor = torch.ones([1, args.max_seq_length], dtype=torch.long)
++            dummy_tensor_zeros = torch.zeros([1, args.max_seq_length], dtype=torch.long)
++            onnx.export(model, (dummy_tensor, dummy_tensor, dummy_tensor_zeros), args.to_onnx)
++
++    model.to(args.device)
+     if args.do_eval and args.local_rank in [-1, 0]:
+         tokenizer = tokenizer_class.from_pretrained(args.output_dir, do_lower_case=args.do_lower_case)
+         checkpoints = [args.output_dir]
+@@ -514,16 +601,27 @@ def main():
+             checkpoints = list(os.path.dirname(c) for c in sorted(glob.glob(args.output_dir + '/**/' + WEIGHTS_NAME, recursive=True)))
+             logging.getLogger("transformers.modeling_utils").setLevel(logging.WARN)  # Reduce logging
+         logger.info("Evaluate the following checkpoints: %s", checkpoints)
+-        for checkpoint in checkpoints:
+-            global_step = checkpoint.split('-')[-1] if len(checkpoints) > 1 else ""
+-            prefix = checkpoint.split('/')[-1] if checkpoint.find('checkpoint') != -1 else ""
+-            
+-            model = model_class.from_pretrained(checkpoint)
+-            model.to(args.device)
+-            result = evaluate(args, model, tokenizer, prefix=prefix)
+-            result = dict((k + '_{}'.format(global_step), v) for k, v in result.items())
++
++        if nncf_config is not None:
++            state_dict = torch.load(checkpoints[0] + '/pytorch_model.bin')
++            load_state(model, state_dict, is_resume=True)
++            # Evaluate
++            result = evaluate(args, model, tokenizer)
++
++            result = dict((k, v) for k, v in result.items())
+             results.update(result)
+ 
++        else:
++            for checkpoint in checkpoints:
++                global_step = checkpoint.split('-')[-1] if len(checkpoints) > 1 else ""
++                prefix = checkpoint.split('/')[-1] if checkpoint.find('checkpoint') != -1 else ""
++
++                model = model_class.from_pretrained(checkpoint)
++                model.to(args.device)
++                result = evaluate(args, model, tokenizer, prefix=prefix)
++                result = dict((k + '_{}'.format(global_step), v) for k, v in result.items())
++                results.update(result)
++
+     return results
+ 
+ 
+diff --git a/examples/run_squad.py b/examples/run_squad.py
+index 59683c0..aead315 100644
+--- a/examples/run_squad.py
++++ b/examples/run_squad.py
+@@ -23,6 +23,7 @@ import os
+ import random
+ import glob
+ import timeit
++import sys
+ 
+ import numpy as np
+ import torch
+@@ -36,6 +37,7 @@ except:
+     from tensorboardX import SummaryWriter
+ 
+ from tqdm import tqdm, trange
++from torch import onnx
+ 
+ from transformers import (WEIGHTS_NAME, BertConfig,
+                                   BertForQuestionAnswering, BertTokenizer,
+@@ -57,6 +59,17 @@ from utils_squad import (read_squad_examples, convert_examples_to_features,
+ # We've added it here for automated tests (see examples/test_examples.py file)
+ from utils_squad_evaluate import EVAL_OPTS, main as evaluate_on_squad
+ 
++from nncf.dynamic_graph import patch_torch_operators
++from nncf.helpers import create_compressed_model
++from nncf.helpers.model_loader import load_state
++
++from nncf.config import Config
++
++from nncf.initialization import InitializingDataLoader
++
++patch_torch_operators()
++
++logging.basicConfig(level=logging.INFO, stream=sys.stdout)
+ logger = logging.getLogger(__name__)
+ 
+ ALL_MODELS = sum((tuple(conf.pretrained_config_archive_map.keys()) \
+@@ -80,7 +93,7 @@ def set_seed(args):
+ def to_list(tensor):
+     return tensor.detach().cpu().tolist()
+ 
+-def train(args, train_dataset, model, tokenizer):
++def train(args, train_dataset, model, tokenizer, compression_algo=None):
+     """ Train the model """
+     if args.local_rank in [-1, 0]:
+         tb_writer = SummaryWriter()
+@@ -89,6 +102,23 @@ def train(args, train_dataset, model, tokenizer):
+     train_sampler = RandomSampler(train_dataset) if args.local_rank == -1 else DistributedSampler(train_dataset)
+     train_dataloader = DataLoader(train_dataset, sampler=train_sampler, batch_size=args.train_batch_size)
+ 
++    if compression_algo is not None:
++        class TensorDatasetInitializingDataloader(InitializingDataLoader):
++            def __next__(self):
++                batch = tuple(t.to(args.device) for t in next(iter(self.data_loader)))
++                inputs = {'attention_mask': batch[1],
++                          'start_positions': batch[3],
++                          'end_positions': batch[4]}
++                if args.model_type != 'distilbert':
++                    inputs['token_type_ids'] = None if args.model_type == 'xlm' else batch[2]
++                if args.model_type in ['xlnet', 'xlm']:
++                    inputs.update({'cls_index': batch[5],
++                                   'p_mask': batch[6]})
++                return batch[0], inputs
++        compression_algo.initialize(TensorDatasetInitializingDataloader(train_dataloader,
++                                                                        device=args.device,
++                                                                        kwargs={}))
++
+     if args.max_steps > 0:
+         t_total = args.max_steps
+         args.num_train_epochs = args.max_steps // (len(train_dataloader) // args.gradient_accumulation_steps) + 1
+@@ -150,6 +180,8 @@ def train(args, train_dataset, model, tokenizer):
+                 inputs.update({'cls_index': batch[5],
+                                'p_mask':       batch[6]})
+             outputs = model(**inputs)
++            if compression_algo is not None:
++                compression_algo.scheduler.step()
+             loss = outputs[0]  # model outputs are always tuple in transformers (see doc)
+ 
+             if args.n_gpu > 1:
+@@ -164,6 +196,8 @@ def train(args, train_dataset, model, tokenizer):
+                 loss.backward()
+ 
+             tr_loss += loss.item()
++
++            epoch_iterator.set_postfix(loss=loss.item())
+             if (step + 1) % args.gradient_accumulation_steps == 0:
+                 if args.fp16:
+                     torch.nn.utils.clip_grad_norm_(amp.master_params(optimizer), args.max_grad_norm)
+@@ -190,18 +224,23 @@ def train(args, train_dataset, model, tokenizer):
+                     output_dir = os.path.join(args.output_dir, 'checkpoint-{}'.format(global_step))
+                     if not os.path.exists(output_dir):
+                         os.makedirs(output_dir)
+-                    model_to_save = model.module if hasattr(model, 'module') else model  # Take care of distributed/parallel training
+-                    model_to_save.save_pretrained(output_dir)
++
++                    if compression_algo is not None:
++                        output_model_file = os.path.join(output_dir, WEIGHTS_NAME)
++                        torch.save(model.state_dict(), output_model_file)
++                    else:
++                        model_to_save = model.module if hasattr(model, 'module') else model  # Take care of distributed/parallel training
++                        model_to_save.save_pretrained(output_dir)
+                     torch.save(args, os.path.join(output_dir, 'training_args.bin'))
+                     logger.info("Saving model checkpoint to %s", output_dir)
+ 
+             if args.max_steps > 0 and global_step > args.max_steps:
+                 epoch_iterator.close()
+                 break
++        compression_algo.scheduler.epoch_step()
+         if args.max_steps > 0 and global_step > args.max_steps:
+             train_iterator.close()
+             break
+-
+     if args.local_rank in [-1, 0]:
+         tb_writer.close()
+ 
+@@ -448,6 +487,11 @@ def main():
+                              "See details at https://nvidia.github.io/apex/amp.html")
+     parser.add_argument('--server_ip', type=str, default='', help="Can be used for distant debugging.")
+     parser.add_argument('--server_port', type=str, default='', help="Can be used for distant debugging.")
++    parser.add_argument('--to-onnx', type=str, metavar='PATH', default=None,
++                        help='Export to ONNX model by given path')
++    parser.add_argument('--nncf-config', type=str, help='path to NNCF config .json file to be used for compressed model'
++                                                        'fine-tuning')
++
+     args = parser.parse_args()
+ 
+     if os.path.exists(args.output_dir) and os.listdir(args.output_dir) and args.do_train and not args.overwrite_output_dir:
+@@ -501,6 +545,15 @@ def main():
+     if args.local_rank == 0:
+         torch.distributed.barrier()  # Make sure only the first process in distributed training will download model & vocab
+ 
++    compression_algo = None
++    nncf_config = None
++    if args.nncf_config is not None:
++        nncf_config = Config.from_json(args.nncf_config)
++        compression_algo, model = create_compressed_model(model, nncf_config)
++
++        if not (args.local_rank == -1 or args.no_cuda):
++            compression_algo.distributed()
++
+     model.to(args.device)
+ 
+     logger.info("Training/evaluation parameters %s", args)
+@@ -518,7 +571,8 @@ def main():
+     # Training
+     if args.do_train:
+         train_dataset = load_and_cache_examples(args, tokenizer, evaluate=False, output_examples=False)
+-        global_step, tr_loss = train(args, train_dataset, model, tokenizer)
++
++        global_step, tr_loss = train(args, train_dataset, model, tokenizer, compression_algo)
+         logger.info(" global_step = %s, average loss = %s", global_step, tr_loss)
+ 
+ 
+@@ -529,23 +583,40 @@ def main():
+             os.makedirs(args.output_dir)
+ 
+         logger.info("Saving model checkpoint to %s", args.output_dir)
+-        # Save a trained model, configuration and tokenizer using `save_pretrained()`.
+-        # They can then be reloaded using `from_pretrained()`
+-        model_to_save = model.module if hasattr(model, 'module') else model  # Take care of distributed/parallel training
+-        model_to_save.save_pretrained(args.output_dir)
++        if compression_algo is not None:
++            output_model_file = os.path.join(args.output_dir, WEIGHTS_NAME)
++            torch.save(model.state_dict(), output_model_file)
++        else:
++            # Save a trained model, configuration and tokenizer using `save_pretrained()`.
++            # They can then be reloaded using `from_pretrained()`
++            model_to_save = model.module if hasattr(model, 'module') else model  # Take care of distributed/parallel training
++            model_to_save.save_pretrained(args.output_dir)
+         tokenizer.save_pretrained(args.output_dir)
+ 
+         # Good practice: save your training arguments together with the trained model
+         torch.save(args, os.path.join(args.output_dir, 'training_args.bin'))
+ 
+         # Load a trained model and vocabulary that you have fine-tuned
+-        model = model_class.from_pretrained(args.output_dir, force_download=True)
++        if compression_algo is not None:
++            model = model_class.from_pretrained(args.output_dir, force_download=True)
++        else:
++            state_dict = torch.load(args.output_dir + '/pytorch_model.bin')
++            load_state(model, state_dict, is_resume=True)
+         tokenizer = tokenizer_class.from_pretrained(args.output_dir, do_lower_case=args.do_lower_case)
+         model.to(args.device)
+ 
+ 
+     # Evaluation - we can ask to evaluate all the checkpoints (sub-directories) in a directory
+     results = {}
++    if args.to_onnx:
++        if compression_algo is not None:
++            compression_algo.export_model(args.to_onnx)
++        else:
++            model.to('cpu')
++            dummy_tensor = torch.ones([1, args.max_seq_length], dtype=torch.long)
++            onnx.export(model, (dummy_tensor, dummy_tensor, dummy_tensor), args.to_onnx)
++
++    model.to(args.device)
+     if args.do_eval and args.local_rank in [-1, 0]:
+         checkpoints = [args.output_dir]
+         if args.eval_all_checkpoints:
+@@ -554,18 +625,28 @@ def main():
+ 
+         logger.info("Evaluate the following checkpoints: %s", checkpoints)
+ 
+-        for checkpoint in checkpoints:
+-            # Reload the model
+-            global_step = checkpoint.split('-')[-1] if len(checkpoints) > 1 else ""
+-            model = model_class.from_pretrained(checkpoint, force_download=True)
+-            model.to(args.device)
+-
++        if nncf_config is not None:
++            state_dict = torch.load(checkpoints[0] + '/pytorch_model.bin')
++            load_state(model, state_dict, is_resume=True)
+             # Evaluate
+-            result = evaluate(args, model, tokenizer, prefix=global_step)
++            result = evaluate(args, model, tokenizer)
+ 
+-            result = dict((k + ('_{}'.format(global_step) if global_step else ''), v) for k, v in result.items())
++            result = dict((k, v) for k, v in result.items())
+             results.update(result)
+ 
++        else:
++            for checkpoint in checkpoints:
++                # Reload the model
++                global_step = checkpoint.split('-')[-1] if len(checkpoints) > 1 else ""
++                model = model_class.from_pretrained(checkpoint, force_download=True)
++                model.to(args.device)
++
++                # Evaluate
++                result = evaluate(args, model, tokenizer, prefix=global_step)
++
++                result = dict((k + ('_{}'.format(global_step) if global_step else ''), v) for k, v in result.items())
++                results.update(result)
++
+     logger.info("Results: {}".format(results))
+ 
+     return results
+diff --git a/examples/run_xnli.py b/examples/run_xnli.py
+index a3bc0d4..aa4276f 100644
+--- a/examples/run_xnli.py
++++ b/examples/run_xnli.py
+@@ -23,12 +23,15 @@ import glob
+ import logging
+ import os
+ import random
++import sys
+ 
+ import numpy as np
+ import torch
+ from torch.utils.data import (DataLoader, RandomSampler, SequentialSampler,
+                               TensorDataset)
+ from torch.utils.data.distributed import DistributedSampler
++from torch import onnx
++import torch.distributed
+ 
+ try:
+     from torch.utils.tensorboard import SummaryWriter
+@@ -50,6 +53,19 @@ from transformers import xnli_processors as processors
+ 
+ from transformers import glue_convert_examples_to_features as convert_examples_to_features
+ 
++
++from nncf.dynamic_graph import patch_torch_operators
++from nncf.helpers import create_compressed_model
++from nncf.helpers.model_loader import load_state
++
++from nncf.config import Config
++
++from nncf.initialization import InitializingDataLoader
++from examples.common.distributed import is_main_process
++
++patch_torch_operators()
++
++logging.basicConfig(level=logging.INFO, stream=sys.stdout)
+ logger = logging.getLogger(__name__)
+ 
+ ALL_MODELS = sum((tuple(conf.pretrained_config_archive_map.keys()) for conf in (BertConfig, DistilBertConfig, XLMConfig)), ())
+@@ -69,7 +85,7 @@ def set_seed(args):
+         torch.cuda.manual_seed_all(args.seed)
+ 
+ 
+-def train(args, train_dataset, model, tokenizer):
++def train(args, train_dataset, model, tokenizer, compression_algo=None):
+     """ Train the model """
+     if args.local_rank in [-1, 0]:
+         tb_writer = SummaryWriter()
+@@ -78,6 +94,19 @@ def train(args, train_dataset, model, tokenizer):
+     train_sampler = RandomSampler(train_dataset) if args.local_rank == -1 else DistributedSampler(train_dataset)
+     train_dataloader = DataLoader(train_dataset, sampler=train_sampler, batch_size=args.train_batch_size)
+ 
++    if compression_algo is not None:
++        class TensorDatasetInitializingDataloader(InitializingDataLoader):
++            def __next__(self):
++                batch = tuple(t.to(args.device) for t in next(iter(self.data_loader)))
++                inputs = {'attention_mask': batch[1],
++                          'labels': batch[3]}
++                if args.model_type != 'distilbert':
++                    inputs['token_type_ids'] = batch[2] if args.model_type in ['bert'] else None  # XLM and DistilBERT don't use segment_ids
++                return batch[0], inputs
++        compression_algo.initialize(TensorDatasetInitializingDataloader(train_dataloader,
++                                                                        device=args.device,
++                                                                        kwargs={}))
++
+     if args.max_steps > 0:
+         t_total = args.max_steps
+         args.num_train_epochs = args.max_steps // (len(train_dataloader) // args.gradient_accumulation_steps) + 1
+@@ -134,7 +163,12 @@ def train(args, train_dataset, model, tokenizer):
+                       'labels':         batch[3]}
+             if args.model_type != 'distilbert':
+                 inputs['token_type_ids'] = batch[2] if args.model_type in ['bert'] else None  # XLM and DistilBERT don't use segment_ids
++
+             outputs = model(**inputs)
++
++            if compression_algo is not None:
++                compression_algo.scheduler.step()
++
+             loss = outputs[0]  # model outputs are always tuple in transformers (see doc)
+ 
+             if args.n_gpu > 1:
+@@ -149,6 +183,8 @@ def train(args, train_dataset, model, tokenizer):
+                 loss.backward()
+ 
+             tr_loss += loss.item()
++            epoch_iterator.set_postfix(loss=loss.item())
++
+             if (step + 1) % args.gradient_accumulation_steps == 0:
+                 if args.fp16:
+                     torch.nn.utils.clip_grad_norm_(amp.master_params(optimizer), args.max_grad_norm)
+@@ -175,14 +211,20 @@ def train(args, train_dataset, model, tokenizer):
+                     output_dir = os.path.join(args.output_dir, 'checkpoint-{}'.format(global_step))
+                     if not os.path.exists(output_dir):
+                         os.makedirs(output_dir)
+-                    model_to_save = model.module if hasattr(model, 'module') else model  # Take care of distributed/parallel training
+-                    model_to_save.save_pretrained(output_dir)
++
++                    if compression_algo is not None:
++                        output_model_file = os.path.join(output_dir, WEIGHTS_NAME)
++                        torch.save(model.state_dict(), output_model_file)
++                    else:
++                        model_to_save = model.module if hasattr(model, 'module') else model  # Take care of distributed/parallel training
++                        model_to_save.save_pretrained(output_dir)
++
+                     torch.save(args, os.path.join(output_dir, 'training_args.bin'))
+                     logger.info("Saving model checkpoint to %s", output_dir)
+-
+             if args.max_steps > 0 and global_step > args.max_steps:
+                 epoch_iterator.close()
+                 break
++        compression_algo.scheduler.epoch_step()
+         if args.max_steps > 0 and global_step > args.max_steps:
+             train_iterator.close()
+             break
+@@ -205,8 +247,7 @@ def evaluate(args, model, tokenizer, prefix=""):
+             os.makedirs(eval_output_dir)
+ 
+         args.eval_batch_size = args.per_gpu_eval_batch_size * max(1, args.n_gpu)
+-        # Note that DistributedSampler samples randomly
+-        eval_sampler = SequentialSampler(eval_dataset) if args.local_rank == -1 else DistributedSampler(eval_dataset)
++        eval_sampler = SequentialSampler(eval_dataset) # Sample sequentially even in distributed mode to get more consistent evaluation metric results
+         eval_dataloader = DataLoader(eval_dataset, sampler=eval_sampler, batch_size=args.eval_batch_size)
+ 
+         # multi-gpu eval
+@@ -391,6 +432,10 @@ def main():
+                         help="For distributed training: local_rank")
+     parser.add_argument('--server_ip', type=str, default='', help="For distant debugging.")
+     parser.add_argument('--server_port', type=str, default='', help="For distant debugging.")
++    parser.add_argument('--to-onnx', type=str, metavar='PATH', default=None,
++                        help='Export to ONNX model by given path')
++    parser.add_argument('--nncf-config', type=str, help='path to NNCF config .json file to be used for compressed model'
++                                                        'fine-tuning')
+     args = parser.parse_args()
+ 
+     if os.path.exists(args.output_dir) and os.listdir(args.output_dir) and args.do_train and not args.overwrite_output_dir:
+@@ -455,6 +500,15 @@ def main():
+     if args.local_rank == 0:
+         torch.distributed.barrier()  # Make sure only the first process in distributed training will download model & vocab
+ 
++    compression_algo = None
++    nncf_config = None
++    if args.nncf_config is not None:
++        nncf_config = Config.from_json(args.nncf_config)
++        compression_algo, model = create_compressed_model(model, nncf_config)
++
++        if not (args.local_rank == -1 or args.no_cuda):
++            compression_algo.distributed()
++
+     model.to(args.device)
+ 
+     logger.info("Training/evaluation parameters %s", args)
+@@ -463,7 +517,7 @@ def main():
+     # Training
+     if args.do_train:
+         train_dataset = load_and_cache_examples(args, args.task_name, tokenizer, evaluate=False)
+-        global_step, tr_loss = train(args, train_dataset, model, tokenizer)
++        global_step, tr_loss = train(args, train_dataset, model, tokenizer, compression_algo)
+         logger.info(" global_step = %s, average loss = %s", global_step, tr_loss)
+ 
+ 
+@@ -474,23 +528,45 @@ def main():
+             os.makedirs(args.output_dir)
+ 
+         logger.info("Saving model checkpoint to %s", args.output_dir)
+-        # Save a trained model, configuration and tokenizer using `save_pretrained()`.
+-        # They can then be reloaded using `from_pretrained()`
+-        model_to_save = model.module if hasattr(model, 'module') else model  # Take care of distributed/parallel training
+-        model_to_save.save_pretrained(args.output_dir)
++
++        if compression_algo is not None:
++            output_model_file = os.path.join(args.output_dir, WEIGHTS_NAME)
++            torch.save(model.state_dict(), output_model_file)
++        else:
++            # Save a trained model, configuration and tokenizer using `save_pretrained()`.
++            # They can then be reloaded using `from_pretrained()`
++            model_to_save = model.module if hasattr(model, 'module') else model  # Take care of distributed/parallel training
++            model_to_save.save_pretrained(args.output_dir)
+         tokenizer.save_pretrained(args.output_dir)
+ 
+         # Good practice: save your training arguments together with the trained model
+         torch.save(args, os.path.join(args.output_dir, 'training_args.bin'))
+ 
+         # Load a trained model and vocabulary that you have fine-tuned
+-        model = model_class.from_pretrained(args.output_dir)
++        if compression_algo is not None:
++            model = model_class.from_pretrained(args.output_dir)
++        else:
++            state_dict = torch.load(args.output_dir + '/pytorch_model.bin')
++            load_state(model, state_dict, is_resume=True)
+         tokenizer = tokenizer_class.from_pretrained(args.output_dir)
+         model.to(args.device)
+ 
+ 
+     # Evaluation
+     results = {}
++
++
++    if args.to_onnx:
++        # Expecting the following forward signature:
++        # (input_ids, attention_mask, token_type_ids, ...)
++        if compression_algo is not None:
++            compression_algo.export_model(args.to_onnx)
++        else:
++            model.to('cpu')
++            dummy_tensor = torch.ones([1, args.max_seq_length], dtype=torch.long)
++            onnx.export(model, (dummy_tensor, dummy_tensor, dummy_tensor), args.to_onnx)
++
++    model.to(args.device)
+     if args.do_eval and args.local_rank in [-1, 0]:
+         tokenizer = tokenizer_class.from_pretrained(args.output_dir, do_lower_case=args.do_lower_case)
+         checkpoints = [args.output_dir]
+@@ -498,16 +574,27 @@ def main():
+             checkpoints = list(os.path.dirname(c) for c in sorted(glob.glob(args.output_dir + '/**/' + WEIGHTS_NAME, recursive=True)))
+             logging.getLogger("transformers.modeling_utils").setLevel(logging.WARN)  # Reduce logging
+         logger.info("Evaluate the following checkpoints: %s", checkpoints)
+-        for checkpoint in checkpoints:
+-            global_step = checkpoint.split('-')[-1] if len(checkpoints) > 1 else ""
+-            prefix = checkpoint.split('/')[-1] if checkpoint.find('checkpoint') != -1 else ""
+-            
+-            model = model_class.from_pretrained(checkpoint)
+-            model.to(args.device)
+-            result = evaluate(args, model, tokenizer, prefix=prefix)
+-            result = dict((k + '_{}'.format(global_step), v) for k, v in result.items())
++
++        if nncf_config is not None:
++            state_dict = torch.load(checkpoints[0] + '/pytorch_model.bin')
++            load_state(model, state_dict, is_resume=True)
++            # Evaluate
++            result = evaluate(args, model, tokenizer)
++
++            result = dict((k, v) for k, v in result.items())
+             results.update(result)
+ 
++        else:
++            for checkpoint in checkpoints:
++                global_step = checkpoint.split('-')[-1] if len(checkpoints) > 1 else ""
++                prefix = checkpoint.split('/')[-1] if checkpoint.find('checkpoint') != -1 else ""
++
++                model = model_class.from_pretrained(checkpoint)
++                model.to(args.device)
++                result = evaluate(args, model, tokenizer, prefix=prefix)
++                result = dict((k + '_{}'.format(global_step), v) for k, v in result.items())
++                results.update(result)
++
+     return results
+ 
+ 
+diff --git a/examples/utils_squad.py b/examples/utils_squad.py
+index 4f1c581..e5336d5 100644
+--- a/examples/utils_squad.py
++++ b/examples/utils_squad.py
+@@ -205,8 +205,8 @@ def convert_examples_to_features(examples, tokenizer, max_seq_length,
+     features = []
+     for (example_index, example) in enumerate(tqdm(examples)):
+ 
+-        # if example_index % 100 == 0:
+-        #     logger.info('Converting %s/%s pos %s neg %s', example_index, len(examples), cnt_pos, cnt_neg)
++        if example_index % 100 == 0:
++            logger.info('Converting %s/%s', example_index, len(examples))
+ 
+         query_tokens = tokenizer.tokenize(example.question_text)
+ 
+diff --git a/nncf_bert_config_squad.json b/nncf_bert_config_squad.json
+new file mode 100644
+index 0000000..7bf01f4
+--- /dev/null
++++ b/nncf_bert_config_squad.json
+@@ -0,0 +1,35 @@
++{
++    "input_info": [
++        {
++            "sample_size": [1, 384],
++            "type": "long"
++        },
++        {
++            "sample_size": [1, 384],
++            "type": "long"
++        },
++        {
++            "sample_size": [1, 384],
++            "type": "long"
++        }
++    ],
++    "batch_size" : 1,
++    "compression": {
++        "algorithm": "quantization",
++        "initializer": {
++            "num_init_steps": 1
++        },
++        "disable_shape_matching": true,
++        "ignored_scopes": ["{re}BertSelfAttention\\[self\\]/__add___0"
++        ],
++        "activations":
++        {
++            "mode": "asymmetric"
++        },
++        "weights":
++        {
++            "mode": "asymmetric"
++        }
++    },
++    "log_dir" : "."
++}
+diff --git a/nncf_bert_config_xnli.json b/nncf_bert_config_xnli.json
+new file mode 100644
+index 0000000..aeb0c4f
+--- /dev/null
++++ b/nncf_bert_config_xnli.json
+@@ -0,0 +1,35 @@
++{
++    "input_info": [
++        {
++            "sample_size": [1, 128],
++            "type": "long"
++        },
++        {
++            "sample_size": [1, 128],
++            "type": "long"
++        },
++        {
++            "sample_size": [1, 128],
++            "type": "long"
++        }
++    ],
++    "batch_size" : 1,
++    "compression": {
++        "algorithm": "quantization",
++        "initializer": {
++            "num_init_steps": 1
++        },
++        "disable_shape_matching": true,
++        "ignored_scopes": ["{re}BertSelfAttention\\[self\\]/__add___0"
++        ],
++        "activations":
++        {
++            "mode": "asymmetric"
++        },
++        "weights":
++        {
++            "mode": "asymmetric"
++        }
++    },
++    "log_dir" : "."
++}
+diff --git a/nncf_roberta_config_mnli.json b/nncf_roberta_config_mnli.json
+new file mode 100644
+index 0000000..092e9a3
+--- /dev/null
++++ b/nncf_roberta_config_mnli.json
+@@ -0,0 +1,38 @@
++{
++    "input_info": [
++        {
++            "sample_size": [1, 128],
++            "type": "long",
++            "mock": "ones"
++        },
++        {
++            "sample_size": [1, 128],
++            "type": "long",
++            "mock": "ones"
++        },
++        {
++            "sample_size": [1, 128],
++            "type": "long",
++            "mock": "zeros"
++        }
++    ],
++    "batch_size" : 1,
++    "compression": {
++        "algorithm": "quantization",
++        "initializer": {
++            "num_init_steps": 1
++        },
++        "disable_shape_matching": true,
++        "ignored_scopes": ["{re}BertSelfAttention\\[self\\]/__add___0"
++        ],
++        "activations":
++        {
++            "mode": "asymmetric"
++        },
++        "weights":
++        {
++            "mode": "asymmetric"
++        }
++    },
++    "log_dir" : "."
++}
+-- 
+2.17.1
+

@@ -15,13 +15,16 @@ import random
 import warnings
 from collections import OrderedDict
 from contextlib import contextmanager
+import re
 
 import numpy as np
 import torch
 from texttable import Texttable
 
-from .dynamic_graph.utils import build_graph
+from .dynamic_graph.context import reset_context
 from .layers import NNCF_MODULES_MAP
+from nncf.dynamic_graph.graph_builder import GraphBuilder, ModelInputInfo
+from nncf.algo_selector import create_dummy_forward_fn
 
 
 def scopes_matched(scope_stack_0, scope_stack_1):
@@ -45,8 +48,13 @@ def scopes_matched(scope_stack_0, scope_stack_1):
 def in_scope_list(scope, scope_list):
     if scope_list is None:
         return False
+
     checked_scope_stack = scope.split('/')
     for item in [scope_list] if isinstance(scope_list, str) else scope_list:
+        if "{re}" in item:
+            regex = item.replace("{re}", "")
+            if re.search(regex, scope):
+                return True
         scope_stack = item.split('/') if isinstance(item, str) else item
         if scopes_matched(checked_scope_stack, scope_stack):
             return True
@@ -78,16 +86,14 @@ def get_node_name(module, module_name, prefix):
     return "{prefix}/{cls}[{name}]".format(prefix=prefix, cls=module.__class__.__name__, name=module_name)
 
 
-def get_node_names_from_context(ctx):
-    return [node_name.split(' ', 1)[1] for node_name in ctx.nodes.values()]
-
-
-def get_all_node_names(model, input_sample_size, graph_scope=None):
+def get_all_node_names(model, input_sample_size, graph_scope=None, builder=None):
     if graph_scope is None:
         graph_scope = 'utils'
-    input_args = (next(model.parameters()).new_empty(input_sample_size),)
-    ctx = build_graph(model, graph_scope, input_args=input_args, reset_context=True)
-    return get_node_names_from_context(ctx)
+    reset_context(graph_scope)
+    if not builder:
+        builder = GraphBuilder(create_dummy_forward_fn([ModelInputInfo(input_sample_size), ]))
+    graph = builder.build_graph(model, graph_scope)
+    return [node_name.split(' ', 1)[1] for node_name in graph.get_all_node_keys()]
 
 
 def get_all_modules(model, prefix=None):
@@ -251,3 +257,14 @@ def get_per_channel_scale_shape(input_shape, is_weights):
         return 1
 
     return scale_shape
+
+
+def get_flat_tensor_contents_string(input_tensor):
+    retval = "["
+    for idx, el in enumerate(input_tensor.view(-1)):
+        if idx >= 10:
+            retval += "... (first 10/{} elements shown only) ".format(len(input_tensor.view(-1)))
+            break
+        retval += "{:.4f}, ".format(el.item())
+    retval += "]"
+    return retval

@@ -17,6 +17,7 @@ import torch
 from torch.autograd import Variable
 
 from nncf.binarization.layers import xnor_binarize_op, dorefa_binarize_op, activation_bin_scale_threshold_op
+from tests.test_helpers import check_equal, get_grads
 
 
 # reference impl
@@ -50,7 +51,7 @@ class ReferenceActivationBinarize:
     def forward(x, scale, threshold):
         shape = [1 for s in x.shape]
         shape[1] = x.shape[1]
-        t = threshold*scale
+        t = threshold * scale
         output = (x > t).astype(x.dtype) * scale
         return output
 
@@ -74,21 +75,6 @@ class ReferenceActivationBinarize:
                 grad_threshold = grad_threshold.sum(idx, keepdims=True)
 
         return [grad_input, grad_scale, grad_threshold]
-
-
-def zero_grad(variables):
-    for variable in variables:
-        variable.grad.zero_()
-
-
-def get_grads(variables):
-    return [var.grad.clone() for var in variables]
-
-
-def check_equal(test, reference):
-    for i, (x, y) in enumerate(zip(test, reference)):
-        y = y.cpu().detach().numpy()
-        np.testing.assert_allclose(x, y, rtol=1e-3, err_msg="Index: {}".format(i))
 
 
 def idfn(val):
@@ -149,32 +135,31 @@ class TestParametrized:
                 ref_value = ReferenceDOREFABinarize.forward(ref_input)
                 test_value = dorefa_binarize_op(test_input)
 
-            check_equal(ref_value, test_value)
+            check_equal(ref_value, test_value, rtol=1e-3)
 
-    class TestActivationBinarization:
-        def test_binarize_activations_forward(self, _seed, input_size, use_cuda):
-            ref_input = generate_input(input_size)
-            ref_scale, ref_threshold = generate_scale_threshold(input_size)
+    def test_binarize_activations_forward(self, _seed, input_size, use_cuda):
+        ref_input = generate_input(input_size)
+        ref_scale, ref_threshold = generate_scale_threshold(input_size)
 
-            test_input, test_scale, test_threshold = get_test_data([ref_input, ref_scale, ref_threshold], use_cuda)
+        test_input, test_scale, test_threshold = get_test_data([ref_input, ref_scale, ref_threshold], use_cuda)
 
-            ref_value = ReferenceActivationBinarize.forward(ref_input, ref_scale, ref_threshold)
-            test_value = activation_bin_scale_threshold_op(test_input, test_scale, test_threshold)
+        ref_value = ReferenceActivationBinarize.forward(ref_input, ref_scale, ref_threshold)
+        test_value = activation_bin_scale_threshold_op(test_input, test_scale, test_threshold)
 
-            check_equal(ref_value, test_value)
+        check_equal(ref_value, test_value, rtol=1e-3)
 
-        def test_binarize_activations_backward(self, _seed, input_size, use_cuda):
-            ref_input = generate_input(input_size)
-            ref_scale, ref_threshold = generate_scale_threshold(input_size)
+    def test_binarize_activations_backward(self, _seed, input_size, use_cuda):
+        ref_input = generate_input(input_size)
+        ref_scale, ref_threshold = generate_scale_threshold(input_size)
 
-            test_input, test_scale, test_threshold = get_test_data([ref_input, ref_scale, ref_threshold], use_cuda,
-                                                                   is_backward=True)
+        test_input, test_scale, test_threshold = get_test_data([ref_input, ref_scale, ref_threshold], use_cuda,
+                                                               is_backward=True)
 
-            ref_value = ReferenceActivationBinarize.forward(ref_input, ref_scale, ref_threshold)
-            ref_grads = ReferenceActivationBinarize.backward(np.ones(input_size), ref_input, ref_scale, ref_value)
+        ref_value = ReferenceActivationBinarize.forward(ref_input, ref_scale, ref_threshold)
+        ref_grads = ReferenceActivationBinarize.backward(np.ones(input_size), ref_input, ref_scale, ref_value)
 
-            test_value = activation_bin_scale_threshold_op(test_input, test_scale, test_threshold)
-            test_value.sum().backward()
-            test_grads = get_grads([test_input, test_scale, test_threshold])
+        test_value = activation_bin_scale_threshold_op(test_input, test_scale, test_threshold)
+        test_value.sum().backward()
+        test_grads = get_grads([test_input, test_scale, test_threshold])
 
-            check_equal(ref_grads, test_grads)
+        check_equal(ref_grads, test_grads, rtol=1e-3)

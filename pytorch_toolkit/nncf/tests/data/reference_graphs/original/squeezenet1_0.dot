@@ -64,7 +64,6 @@ strict digraph  {
 "62 SqueezeNet/Sequential[classifier]/Conv2d[1]/conv2d" [id=62, scope="SqueezeNet/Sequential[classifier]/Conv2d[1]", type=conv2d];
 "63 SqueezeNet/Sequential[classifier]/ReLU[2]/RELU" [id=63, scope="SqueezeNet/Sequential[classifier]/ReLU[2]", type=RELU];
 "64 SqueezeNet/Sequential[classifier]/AdaptiveAvgPool2d[3]/adaptive_avg_pool2d" [id=64, scope="SqueezeNet/Sequential[classifier]/AdaptiveAvgPool2d[3]", type=adaptive_avg_pool2d];
-"65 SqueezeNet/view" [id=65, scope=SqueezeNet, type=view];
 "0 SqueezeNet/Sequential[features]/Conv2d[0]/conv2d" -> "1 SqueezeNet/Sequential[features]/ReLU[1]/RELU";
 "1 SqueezeNet/Sequential[features]/ReLU[1]/RELU" -> "2 SqueezeNet/Sequential[features]/MaxPool2d[2]/max_pool2d";
 "2 SqueezeNet/Sequential[features]/MaxPool2d[2]/max_pool2d" -> "3 SqueezeNet/Sequential[features]/Fire[3]/Conv2d[squeeze]/conv2d";
@@ -137,5 +136,4 @@ strict digraph  {
 "61 SqueezeNet/Sequential[classifier]/Dropout[0]/dropout" -> "62 SqueezeNet/Sequential[classifier]/Conv2d[1]/conv2d";
 "62 SqueezeNet/Sequential[classifier]/Conv2d[1]/conv2d" -> "63 SqueezeNet/Sequential[classifier]/ReLU[2]/RELU";
 "63 SqueezeNet/Sequential[classifier]/ReLU[2]/RELU" -> "64 SqueezeNet/Sequential[classifier]/AdaptiveAvgPool2d[3]/adaptive_avg_pool2d";
-"64 SqueezeNet/Sequential[classifier]/AdaptiveAvgPool2d[3]/adaptive_avg_pool2d" -> "65 SqueezeNet/view";
 }

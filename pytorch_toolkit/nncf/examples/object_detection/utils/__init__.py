@@ -1,9 +1,8 @@
-import sys
 from pathlib import Path
 
 import cv2
 import yaml
-
+import sys
 
 def mkdir_if_not_exists(path):
     path = Path(path)

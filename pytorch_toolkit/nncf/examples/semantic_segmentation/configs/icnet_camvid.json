@@ -1,0 +1,44 @@
+{
+    "model": "icnet",
+    "dataset" : "camvid",
+
+    "preprocessing": {
+        "resize": {
+            "height": 768,
+            "width": 960
+        },
+        "normalize":
+        {
+            "mean": [0.39068785, 0.40521392, 0.41434407],
+            "std" : [0.29652068, 0.30514979, 0.30080369]
+        }
+    },
+
+    "augmentations": {
+        "random_hflip": 0.5
+    },
+
+
+    "input_info": {
+      "sample_size": [1, 3, 768, 960]
+    },
+
+    "weighing": "mfb",
+
+    "optimizer": {
+        "type": "adam",
+        "optimizer_params": {
+            "lr": 5.0e-4,
+            "weight_decay": 2.0e-4
+        },
+        "schedule_type": "poly",
+        "scheduler_params": {
+            "power": 0.9
+        }
+    },
+
+    "model_params": {
+         "in_channels": 3,
+         "input_size_hw": [768, 960]
+    }
+}

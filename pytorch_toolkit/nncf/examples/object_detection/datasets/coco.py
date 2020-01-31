@@ -12,9 +12,9 @@
 """
 
 import json
-import sys
 from collections import OrderedDict
 from pathlib import Path
+import sys
 
 import cv2
 import numpy as np

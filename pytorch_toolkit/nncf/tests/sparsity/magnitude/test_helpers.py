@@ -55,7 +55,10 @@ def get_basic_magnitude_sparsity_config(input_sample_size=(1, 1, 4, 4)):
     config = Config()
     config.update({
         "model": "basic_sparse_conv",
-        "input_sample_size": input_sample_size,
+        "input_info":
+            {
+                "sample_size": input_sample_size,
+            },
         "compression":
             {
                 "algorithm": "magnitude_sparsity",

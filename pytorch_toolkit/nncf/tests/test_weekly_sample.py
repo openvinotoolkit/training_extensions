@@ -124,6 +124,26 @@ def get_cli_dict_args(args):
     return cli_args
 
 
+def parse_best_acc1(tmp_path):
+    output_path = None
+    for root, _, names in os.walk(str(tmp_path)):
+        for name in names:
+            if 'output' in name:
+                output_path = os.path.join(root, name)
+
+    assert os.path.exists(output_path)
+    with open(output_path, "r") as f:
+        for line in reversed(f.readlines()):
+            if line != '\n':
+                matches = re.findall("\\d+\\.\\d+", line)
+                if not matches:
+                    raise RuntimeError("Could not parse output log for accuracy!")
+                acc1 = float(matches[0])
+                return acc1
+    raise RuntimeError("Could not parse output log for accuracy!")
+
+
+
 CONFIG_PARAMS = []
 for sample_type_ in GLOBAL_CONFIG:
     datasets = GLOBAL_CONFIG[sample_type_]
@@ -246,14 +266,5 @@ def test_compression_eval_trained(_params, tmp_path):
     res = runner.run(timeout=tc['timeout'])
     assert res == 0
 
-    output_path = None
-    for root, _, names in os.walk(str(tmp_path)):
-        for name in names:
-            if 'output' in name:
-                output_path = os.path.join(root, name)
-
-    assert os.path.exists(output_path)
-    with open(output_path, "r") as f:
-        last_line = f.readlines()[-1]
-        acc1 = float(re.findall("\\d+\\.\\d+", last_line)[0])
-        assert torch.load(checkpoint_path)['best_acc1'] == approx(acc1, abs=tc['absolute_tolerance_eval'])
+    acc1 = parse_best_acc1(tmp_path)
+    assert torch.load(checkpoint_path)['best_acc1'] == approx(acc1, abs=tc['absolute_tolerance_eval'])

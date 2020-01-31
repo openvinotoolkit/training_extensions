@@ -10,12 +10,11 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 """
-
+import numpy as np
 import torch
 from torch import nn
 
 from nncf.config import Config
-from tests.quantization.test_functions import check_equal
 
 
 def fill_conv_weight(conv, value):
@@ -171,6 +170,19 @@ def get_empty_config(model_size=4, input_sample_size=(1, 1, 4, 4)):
     config.update({
         "model": "basic_sparse_conv",
         "model_size": model_size,
-        "input_sample_size": input_sample_size,
+        "input_info":
+            {
+                "sample_size": input_sample_size,
+            },
     })
     return config
+
+
+def get_grads(variables):
+    return [var.grad.clone() for var in variables]
+
+
+def check_equal(test, reference, rtol=1e-4):
+    for i, (x, y) in enumerate(zip(test, reference)):
+        y = y.cpu().detach().numpy()
+        np.testing.assert_allclose(x, y, rtol=rtol, err_msg="Index: {}".format(i))

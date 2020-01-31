@@ -13,6 +13,7 @@
 
 import logging
 import os.path as osp
+import os
 import sys
 import time
 import warnings
@@ -33,18 +34,20 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torchvision.datasets import CIFAR10, CIFAR100
 
 from examples.common.argparser import get_common_argument_parser
+from examples.common.model_loader import load_model
 from examples.common.distributed import configure_distributed, is_main_process
 from examples.common.execution import ExecutionMode, get_device, get_execution_mode, \
     prepare_model_for_execution, start_worker
-from examples.common.model_loader import load_model
+
+from nncf.helpers import create_compressed_model, load_state, safe_thread_call
+from nncf.dynamic_graph.graph_builder import create_input_infos
 from examples.common.optimizer import get_parameter_groups, make_optimizer
 from examples.common.utils import configure_logging, configure_paths, create_code_snapshot, \
     print_args, make_additional_checkpoints, get_name, is_binarization
 from nncf.config import Config
 from nncf.dynamic_graph import patch_torch_operators
-from nncf.helpers import create_compressed_model, load_state, safe_thread_call
 from nncf.utils import manual_seed, print_statistics
-
+from examples.common.utils import write_metrics
 patch_torch_operators()
 
 logging.basicConfig(level=logging.INFO, stream=sys.stdout)
@@ -87,6 +90,16 @@ def main(argv):
                       'from checkpoints.')
 
     config.execution_mode = get_execution_mode(config)
+
+    if config.metrics_dump is not None:
+        avg = 0
+        if config.resuming_checkpoint is None:
+            model_name = os.path.basename(args.config).replace(".json", ".pth")
+        else:
+            model_name = os.path.basename(config.resuming_checkpoint)
+        metrics = {model_name: avg}
+        write_metrics(config, metrics)
+
 
     if not is_binarization(config):
         start_worker(main_worker, config)
@@ -163,7 +176,6 @@ def main_worker(current_gpu, config):
             compression_algo.initialize(train_loader)
         train(config, compression_algo, model, criterion, is_inception, lr_scheduler, model_name, optimizer,
               train_loader, train_sampler, val_loader, best_acc1)
-
 
 def train(config, compression_algo, model, criterion, is_inception, lr_scheduler, model_name, optimizer,
           train_loader, train_sampler, val_loader, best_acc1=0):
@@ -266,11 +278,12 @@ def create_dataloaders(config):
         normalize = transforms.Normalize(mean=(0.5, 0.5, 0.5),
                                          std=(0.5, 0.5, 0.5))
 
-    model_size = config["input_sample_size"][-1]
-    size = int(model_size / 0.875)
+    input_info_list = create_input_infos(config)
+    image_size = input_info_list[0].shape[-1]
+    size = int(image_size / 0.875)
     val_transform = transforms.Compose([
         transforms.Resize(size),
-        transforms.CenterCrop(model_size),
+        transforms.CenterCrop(image_size),
         transforms.ToTensor(),
         normalize,
     ])
@@ -297,7 +310,7 @@ def create_dataloaders(config):
         return None, None, val_loader
 
     train_transforms = transforms.Compose([
-        transforms.RandomResizedCrop(model_size),
+        transforms.RandomResizedCrop(image_size),
         transforms.RandomHorizontalFlip(),
         transforms.ToTensor(),
         normalize,
@@ -454,6 +467,17 @@ def validate(val_loader, model, criterion, config):
 
         print(' * Acc@1 {top1.avg:.3f} Acc@5 {top5.avg:.3f}'
               .format(top1=top1, top5=top5))
+        print()
+
+        if config.metrics_dump is not None:
+            avg = round(top1.avg, 2)
+            if config.resuming_checkpoint is None:
+                model_name = os.path.basename(config.config).replace(".json", ".pth")
+            else:
+                model_name = (os.path.basename(config.resuming_checkpoint))
+            metrics = {model_name: avg}
+            write_metrics(config, metrics)
+
 
     return top1.avg, top5.avg
 

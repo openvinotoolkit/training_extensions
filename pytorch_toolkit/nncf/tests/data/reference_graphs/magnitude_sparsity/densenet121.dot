@@ -541,9 +541,8 @@ strict digraph  {
 "539 DenseNet/BatchNorm2d[bn]/batch_norm" [id=539, scope="DenseNet/BatchNorm2d[bn]", type=batch_norm];
 "540 DenseNet/RELU" [id=540, scope=DenseNet, type=RELU];
 "541 DenseNet/avg_pool2d" [id=541, scope=DenseNet, type=avg_pool2d];
-"542 DenseNet/view" [id=542, scope=DenseNet, type=view];
-"543 DenseNet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/BinaryMask[op]/apply_binary_mask" [id=543, scope="DenseNet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/BinaryMask[op]", type=apply_binary_mask];
-"544 DenseNet/NNCFLinear[linear]/linear" [id=544, scope="DenseNet/NNCFLinear[linear]", type=linear];
+"542 DenseNet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/BinaryMask[op]/apply_binary_mask" [id=542, scope="DenseNet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/BinaryMask[op]", type=apply_binary_mask];
+"543 DenseNet/NNCFLinear[linear]/linear" [id=543, scope="DenseNet/NNCFLinear[linear]", type=linear];
 "0 DenseNet/NNCFConv2d[conv1]/ModuleDict[pre_ops]/UpdateWeight[0]/BinaryMask[op]/apply_binary_mask" -> "1 DenseNet/NNCFConv2d[conv1]/conv2d";
 "1 DenseNet/NNCFConv2d[conv1]/conv2d" -> "2 DenseNet/Sequential[dense1]/Bottleneck[0]/BatchNorm2d[bn1]/batch_norm";
 "2 DenseNet/Sequential[dense1]/Bottleneck[0]/BatchNorm2d[bn1]/batch_norm" -> "3 DenseNet/Sequential[dense1]/Bottleneck[0]/RELU";
@@ -1143,7 +1142,6 @@ strict digraph  {
 "538 DenseNet/Sequential[dense4]/Bottleneck[15]/cat" -> "539 DenseNet/BatchNorm2d[bn]/batch_norm";
 "539 DenseNet/BatchNorm2d[bn]/batch_norm" -> "540 DenseNet/RELU";
 "540 DenseNet/RELU" -> "541 DenseNet/avg_pool2d";
-"541 DenseNet/avg_pool2d" -> "542 DenseNet/view";
-"542 DenseNet/view" -> "544 DenseNet/NNCFLinear[linear]/linear";
-"543 DenseNet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/BinaryMask[op]/apply_binary_mask" -> "544 DenseNet/NNCFLinear[linear]/linear";
+"541 DenseNet/avg_pool2d" -> "543 DenseNet/NNCFLinear[linear]/linear";
+"542 DenseNet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/BinaryMask[op]/apply_binary_mask" -> "543 DenseNet/NNCFLinear[linear]/linear";
 }

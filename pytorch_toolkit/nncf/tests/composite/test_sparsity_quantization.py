@@ -15,7 +15,10 @@ patch_torch_operators()
 def get_basic_sparsity_plus_quantization_config(input_sample_size=(1, 1, 4, 4)):
     config = Config()
     config.update({
-        "input_sample_size": input_sample_size,
+        "input_info":
+            {
+                "sample_size": input_sample_size,
+            },
         "compression": [
             {
                 "algorithm": "rb_sparsity",

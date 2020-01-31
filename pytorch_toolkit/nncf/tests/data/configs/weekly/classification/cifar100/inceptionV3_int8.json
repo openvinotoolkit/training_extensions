@@ -1,11 +1,8 @@
 {
     "model": "incept_v3_cifar100",
-    "input_sample_size": [
-        2,
-        3,
-        32,
-        32
-    ],
+    "input_info": {
+      "sample_size":  [2, 3, 32, 32]
+    },
     "num_classes": 100,
     "epochs": 5,
     "dataset": "CIFAR100",

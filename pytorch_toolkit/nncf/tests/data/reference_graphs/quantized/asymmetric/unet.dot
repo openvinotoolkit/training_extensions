@@ -134,6 +134,7 @@ strict digraph  {
 "19 UNet/ModuleList[down_path]/UNetConvBlock[1]/Sequential[block]/BatchNorm2d[4]/batch_norm" -> "20 UNet/ModuleList[down_path]/UNetConvBlock[1]/Sequential[block]/ReLU[5]/RELU";
 "20 UNet/ModuleList[down_path]/UNetConvBlock[1]/Sequential[block]/ReLU[5]/RELU" -> "21 UNet/ModuleList[down_path]/UNetConvBlock[1]/Sequential[block]/ReLU[5]/AsymmetricQuantizer/asymmetric_quantize";
 "21 UNet/ModuleList[down_path]/UNetConvBlock[1]/Sequential[block]/ReLU[5]/AsymmetricQuantizer/asymmetric_quantize" -> "22 UNet/max_pool2d";
+"21 UNet/ModuleList[down_path]/UNetConvBlock[1]/Sequential[block]/ReLU[5]/AsymmetricQuantizer/asymmetric_quantize" -> "86 UNet/ModuleList[up_path]/UNetUpBlock[2]/cat";
 "22 UNet/max_pool2d" -> "24 UNet/ModuleList[down_path]/UNetConvBlock[2]/Sequential[block]/NNCFConv2d[0]/conv2d";
 "23 UNet/ModuleList[down_path]/UNetConvBlock[2]/Sequential[block]/NNCFConv2d[0]/ModuleDict[pre_ops]/UpdateWeight[0]/AsymmetricQuantizer[op]/asymmetric_quantize" -> "24 UNet/ModuleList[down_path]/UNetConvBlock[2]/Sequential[block]/NNCFConv2d[0]/conv2d";
 "24 UNet/ModuleList[down_path]/UNetConvBlock[2]/Sequential[block]/NNCFConv2d[0]/conv2d" -> "25 UNet/ModuleList[down_path]/UNetConvBlock[2]/Sequential[block]/BatchNorm2d[1]/batch_norm";
@@ -145,6 +146,7 @@ strict digraph  {
 "30 UNet/ModuleList[down_path]/UNetConvBlock[2]/Sequential[block]/BatchNorm2d[4]/batch_norm" -> "31 UNet/ModuleList[down_path]/UNetConvBlock[2]/Sequential[block]/ReLU[5]/RELU";
 "31 UNet/ModuleList[down_path]/UNetConvBlock[2]/Sequential[block]/ReLU[5]/RELU" -> "32 UNet/ModuleList[down_path]/UNetConvBlock[2]/Sequential[block]/ReLU[5]/AsymmetricQuantizer/asymmetric_quantize";
 "32 UNet/ModuleList[down_path]/UNetConvBlock[2]/Sequential[block]/ReLU[5]/AsymmetricQuantizer/asymmetric_quantize" -> "33 UNet/max_pool2d";
+"32 UNet/ModuleList[down_path]/UNetConvBlock[2]/Sequential[block]/ReLU[5]/AsymmetricQuantizer/asymmetric_quantize" -> "72 UNet/ModuleList[up_path]/UNetUpBlock[1]/cat";
 "33 UNet/max_pool2d" -> "35 UNet/ModuleList[down_path]/UNetConvBlock[3]/Sequential[block]/NNCFConv2d[0]/conv2d";
 "34 UNet/ModuleList[down_path]/UNetConvBlock[3]/Sequential[block]/NNCFConv2d[0]/ModuleDict[pre_ops]/UpdateWeight[0]/AsymmetricQuantizer[op]/asymmetric_quantize" -> "35 UNet/ModuleList[down_path]/UNetConvBlock[3]/Sequential[block]/NNCFConv2d[0]/conv2d";
 "35 UNet/ModuleList[down_path]/UNetConvBlock[3]/Sequential[block]/NNCFConv2d[0]/conv2d" -> "36 UNet/ModuleList[down_path]/UNetConvBlock[3]/Sequential[block]/BatchNorm2d[1]/batch_norm";
@@ -156,6 +158,7 @@ strict digraph  {
 "41 UNet/ModuleList[down_path]/UNetConvBlock[3]/Sequential[block]/BatchNorm2d[4]/batch_norm" -> "42 UNet/ModuleList[down_path]/UNetConvBlock[3]/Sequential[block]/ReLU[5]/RELU";
 "42 UNet/ModuleList[down_path]/UNetConvBlock[3]/Sequential[block]/ReLU[5]/RELU" -> "43 UNet/ModuleList[down_path]/UNetConvBlock[3]/Sequential[block]/ReLU[5]/AsymmetricQuantizer/asymmetric_quantize";
 "43 UNet/ModuleList[down_path]/UNetConvBlock[3]/Sequential[block]/ReLU[5]/AsymmetricQuantizer/asymmetric_quantize" -> "44 UNet/max_pool2d";
+"43 UNet/ModuleList[down_path]/UNetConvBlock[3]/Sequential[block]/ReLU[5]/AsymmetricQuantizer/asymmetric_quantize" -> "58 UNet/ModuleList[up_path]/UNetUpBlock[0]/cat";
 "44 UNet/max_pool2d" -> "46 UNet/ModuleList[down_path]/UNetConvBlock[4]/Sequential[block]/NNCFConv2d[0]/conv2d";
 "45 UNet/ModuleList[down_path]/UNetConvBlock[4]/Sequential[block]/NNCFConv2d[0]/ModuleDict[pre_ops]/UpdateWeight[0]/AsymmetricQuantizer[op]/asymmetric_quantize" -> "46 UNet/ModuleList[down_path]/UNetConvBlock[4]/Sequential[block]/NNCFConv2d[0]/conv2d";
 "46 UNet/ModuleList[down_path]/UNetConvBlock[4]/Sequential[block]/NNCFConv2d[0]/conv2d" -> "47 UNet/ModuleList[down_path]/UNetConvBlock[4]/Sequential[block]/BatchNorm2d[1]/batch_norm";
@@ -211,6 +214,7 @@ strict digraph  {
 "96 UNet/ModuleList[up_path]/UNetUpBlock[2]/UNetConvBlock[conv_block]/Sequential[block]/ReLU[5]/AsymmetricQuantizer/asymmetric_quantize" -> "98 UNet/ModuleList[up_path]/UNetUpBlock[3]/NNCFConvTranspose2d[up]/conv_transpose2d";
 "97 UNet/ModuleList[up_path]/UNetUpBlock[3]/NNCFConvTranspose2d[up]/ModuleDict[pre_ops]/UpdateWeight[0]/AsymmetricQuantizer[op]/asymmetric_quantize" -> "98 UNet/ModuleList[up_path]/UNetUpBlock[3]/NNCFConvTranspose2d[up]/conv_transpose2d";
 "98 UNet/ModuleList[up_path]/UNetUpBlock[3]/NNCFConvTranspose2d[up]/conv_transpose2d" -> "99 UNet/ModuleList[up_path]/UNetUpBlock[3]/NNCFConvTranspose2d[up]/AsymmetricQuantizer/asymmetric_quantize";
+"10 UNet/ModuleList[down_path]/UNetConvBlock[0]/Sequential[block]/ReLU[5]/AsymmetricQuantizer/asymmetric_quantize" -> "100 UNet/ModuleList[up_path]/UNetUpBlock[3]/cat";
 "99 UNet/ModuleList[up_path]/UNetUpBlock[3]/NNCFConvTranspose2d[up]/AsymmetricQuantizer/asymmetric_quantize" -> "100 UNet/ModuleList[up_path]/UNetUpBlock[3]/cat";
 "100 UNet/ModuleList[up_path]/UNetUpBlock[3]/cat" -> "102 UNet/ModuleList[up_path]/UNetUpBlock[3]/UNetConvBlock[conv_block]/Sequential[block]/NNCFConv2d[0]/conv2d";
 "101 UNet/ModuleList[up_path]/UNetUpBlock[3]/UNetConvBlock[conv_block]/Sequential[block]/NNCFConv2d[0]/ModuleDict[pre_ops]/UpdateWeight[0]/AsymmetricQuantizer[op]/asymmetric_quantize" -> "102 UNet/ModuleList[up_path]/UNetUpBlock[3]/UNetConvBlock[conv_block]/Sequential[block]/NNCFConv2d[0]/conv2d";

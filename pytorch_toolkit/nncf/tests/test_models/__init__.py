@@ -14,5 +14,7 @@ from .senet import *
 from .shufflenet import *
 from .shufflenetv2 import *
 from .squeezenet import *
+from .ssd_vgg import *
+from .ssd_mobilenet import *
 from .unet import *
 from .vgg import *

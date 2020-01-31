@@ -125,25 +125,26 @@ For asymmetric:
 For symmetric:
 ![\\input\_low^{*} = 0 \\ input\_range^{*} = scale](https://latex.codecogs.com/gif.latex?%5C%5Cinput%5C_low%5E%7B*%7D%20%3D%200%20%5C%5C%20input%5C_range%5E%7B*%7D%20%3D%20scale)
 
+
 **Algorithm Parameters**:
 - `algorithm` - the name of the compression algorithm should be `quantization` in this case.
 - `quantize_inputs` - if True, quantize input of the model (optional, default is True).
 - `quantize_outputs` - if True, quantize outputs of the model (optional, default is False).
-- `ignored_scopes` - blacklist: layers that should be excluded from the compression (optional).
-- `target_scopes` - whitelist: only the layers listed here should be compressed (optional)
-- `activations` - quantization parameters of activations
+- `ignored_scopes` - blacklist: layers that should be excluded from the compression. Prefix scopes with `{re}` to use regular-expression matching (optional).
+- `target_scopes` - whitelist: only the layers listed here should be compressed. Prefix scopes with `{re}` to use regular-expression matching (optional)
+- `activations` - global quantization parameters of activations
     -  `bits` - number of bits,  `8` by default.
     -  `mode` - a type of the quantization.  Can be `symmetric` and `asymmetric`. The default value is `symmetric`.
     -  `signed` - if True, signed quantization is allowed in the model. `false` for activations and `true` for weights by default.
-    -  `signed_scope` - list of layers that require signed quantization. (optional).
-- `weights` - quantization parameters of weights
+- `weights` - global quantization parameters for weights
     -  `bits` - number of bits,  `8` by default.
     -  `mode` - a type of the quantization.  Can be one of these values: `symmetric` and `asymmetric`. `symmetric` by default.
 - `initializer` - parameters of initialization stage.
     - `num_init_steps` - a number of steps to calculate per-layer activations statistics that can be used for quantization range initialization. `1` by default.
+- `scope_overrides` - a dictionary where keys are scopes (prefixed with `{re}` if scope matching uses regular expressions) and values are quantizer config parameters that should be overridden for the key scope, such as `signed`, `bits`, `mode`, `initializer` type, etc.
+
 
 ### Binarization
-
 NNCF supports binarizing weights and activations for 2D convolutional PyTorch\* layers (Conv2D) *only*.
 
 Weight binarization may be done in two ways, depending on the configuration file parameters - either via [XNOR binarization](https://arxiv.org/abs/1603.05279) or via [DoReFa binarization](https://arxiv.org/abs/1606.06160). For DoReFa binarization, the scale of binarized weights for each convolution operation is calculated as the mean of absolute values of non-binarized convolutional filter weights, while for XNOR binarization, each convolutional operation has scales that are calculated in the same manner, but _per input channel_ of the convolutional filter. Refer to the original papers for details.
@@ -154,18 +155,18 @@ Binarization of activations is implemented via binarizing inputs to the convolut
 
 In the formula above,
  - ![\text{in}](https://latex.codecogs.com/png.latex?%5Ctext%7Bin%7D) - non-binarized activation values
-  - ![\text{out}](https://latex.codecogs.com/png.latex?%5Ctext%7Bout%7D) - binarized activation values
+ - ![\text{out}](https://latex.codecogs.com/png.latex?%5Ctext%7Bout%7D) - binarized activation values
  -  ![H(x)](https://latex.codecogs.com/png.latex?H%28x%29) is the Heaviside step function
-  - ![s](https://latex.codecogs.com/png.latex?s) and ![t](https://latex.codecogs.com/png.latex?t) are trainable parameters corresponding to binarization scale and threshold respectively
+ - ![s](https://latex.codecogs.com/png.latex?s) and ![t](https://latex.codecogs.com/png.latex?t) are trainable parameters corresponding to binarization scale and threshold respectively
 
 Training binarized networks requires special scheduling of the training process. For instance, binarizing a pretrained ResNet18 model on ImageNet is a four-stage process, with each stage taking a certain number of epochs. During the stage 1, the network is trained without any binarization. During the stage 2, the training continues with binarization enabled for activations only. During the stage 3, binarization is enabled both for activations and weights. Finally, during the stage 4 the optimizer learning rate, which was kept constant at previous stages, is decreased according to a polynomial law, while weight decay parameter of the optimizer is set to 0. The configuration files for the NNCF binarization algorithm allow to control certain parameters of this training schedule.
 
-**Algorithm Parameters**:
 
+**Algorithm parameters**:
 - `algorithm` - the name of the compression algorithm. Set to `binarization` in this case
 - `mode` - the mode of weight binarization. Set either to `xnor` (default) or `dorefa`
-- `ignored_scopes` - blacklist: layers that should be excluded from binarization (optional)
-- `target_scopes` - whitelist: only the layers listed here should be compressed (optional)
+- `ignored_scopes` - blacklist: layers that should be excluded from binarization. Prefix scopes with `{re}` to use regular-expression matching  (optional).
+- `target_scopes` - whitelist: only the layers listed here should be compressed. Prefix scopes with `{re}` to use regular-expression matching  (optional)
 - `params` - parameters of the binarization algorithm:
    - `batch_multiplier` - allows to increase the effective batch size during training by accumulating the gradients each `batch_multiplier - 1` batches and only performing the optimization step during the next training batch. Increasing this may improve training quality, since binarized networks exhibit noisy gradients requiring larger batch sizes than could be accomodated by GPUs. Default is 1.
    - `activations_bin_start_epoch` - starting from this training epoch, the convolution activations become binarized. Default is 1.
@@ -175,7 +176,6 @@ Training binarized networks requires special scheduling of the training process.
    - `disable_wd_start_epoch` - (optional) starting from this training epoch, the weight decay parameter of the optimizer is set to 0.
 
 ### Non-Structured Sparsity
-
 Sparsity algorithm zeros weights in Convolutional and Fully-Connected layers in a non-structured way,
 so that zero values are randomly distributed inside the tensor. Most of the sparsity algorithms set the less important weights to zero but the criteria of how they do it is different. The framework contains several implementations of sparsity methods.
 
@@ -212,20 +212,20 @@ The method requires a long schedule of the training process in order to minimize
 - `params` - parameters of the RB-sparsity algorithm:
    - `sparsity_training_steps` - an overall number of epochs that are used to train sparsity (usually it is different from the total number of training epochs). After this epoch, current sparsity masks are frozen, so only the model parameters are fine-tuned.
    - `schedule` - a type of scheduler that is used to increase the sparsity rate from `sparsity_init` to `sparsity_target`. Can be one of these values:
-	   - `polynomial`, `exponential`, or `adaptive`, by default it is `exponential` for the RB algorithm and `polynomial` for the Magnitude one.
-	   In this case, the following parameter should be defined in the same scope of parameters:
-		   - `sparsity_init` - initial sparsity rate target (![1 - level](https://latex.codecogs.com/png.latex?%5Cdpi%7B120%7D%201%20-%20level) in the objective). For example, value `0.1` means that at the begging of training, the model is trained to have 10% of its weights zeroed.
-		   - `sparsity_target` - sparsity rate target at the end of the schedule. For example, the value `0.5` means that at the step with the number of `sparsity_steps`, the model is trained to have 50% of its weights zeroed.
-		   - `sparsity_steps` - the number of epochs during which the sparsity rate target is increased from 		`sparsity_init` to `sparsity_target` value. This parameter depends on the number of iterations in one epoch. For example, the parameter in sample configuration files is based on the fact that the training is run on the ImageNet dataset with batch size 256, which corresponds to about 4000 iterations in the epoch.
-		   - `patience` - used in the case of `adaptive` scheduler only and defines the number of epochs for plateau.
-		- `multistep` - this scheduler assumes that target sparsity rates and steps (in epochs) should be defined manually using `steps` and `sparsity_levels` lists.
-- `ignored_scopes` - list of layers that should be excluded from the compression (optional).
+          - `polynomial`, `exponential`, or `adaptive`, by default it is `exponential` for the RB algorithm and `polynomial` for the Magnitude one.
+          In this case, the following parameter should be defined in the same scope of parameters:
+                  - `sparsity_init` - initial sparsity rate target (![1 - level](https://latex.codecogs.com/png.latex?%5Cdpi%7B120%7D%201%20-%20level) in the objective). For example, value `0.1` means that at the begging of training, the model is trained to have 10% of its weights zeroed.
+                  - `sparsity_target` - sparsity rate target at the end of the schedule. For example, the value `0.5` means that at the step with the number of `sparsity_steps`, the model is trained to have 50% of its weights zeroed.
+                  - `sparsity_steps` - the number of epochs during which the sparsity rate target is increased from         `sparsity_init` to `sparsity_target` value. This parameter depends on the number of iterations in one epoch. For example, the parameter in sample configuration files is based on the fact that the training is run on the ImageNet dataset with batch size 256, which corresponds to about 4000 iterations in the epoch.
+                  - `patience` - used in the case of `adaptive` scheduler only and defines the number of epochs for plateau.
+              - `multistep` - this scheduler assumes that target sparsity rates and steps (in epochs) should be defined manually using `steps` and `sparsity_levels` lists.
+- `ignored_scopes` - list of layers that should be excluded from the compression. Prefix scopes with `{re}` to use regular-expression matching  (optional).
 
 > **NOTE**: In all our sparsity experiments, we used the Adam optimizer and initial learning rate `0.001` for model weights and sparsity mask.
 
 #### Magnitude Sparsity
 
-The magnitude sparsity method implements a naive approach that is based on the assumption that the contribution of lower weights is lower so that they can be pruned. After each training epoch, the method calculates a threshold based on the current sparsity ratio and applies it to zero weights which are lower than this threshold using one of the options below:
+The magnitude sparsity method implements a naive approach that is based on the assumption that the contribution of lower weights is lower so that they can be pruned. After each training epoch the method calculates a threshold based on the current sparsity ratio and uses it to zero weights which are lower than this threshold. And here there are two options:
 - Weights are used as is during the threshold calculation procedure.
 - Weights are normalized before the threshold calculation.
 
@@ -240,4 +240,4 @@ This type of sparsity provides the ability to preserve weights sparsity during t
 
 **Algorithm parameters**:
 - `algorithm` - the name of the compression algorithm. In this case, it is `const_sparsity`.
-- `ignored_scopes` - list of layers that should be excluded from the compression (optional).
+- `ignored_scopes` - list of layers that should be excluded from the compression. Prefix scopes with `{re}` to use regular-expression matching  (optional).

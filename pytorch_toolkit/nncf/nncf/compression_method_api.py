@@ -17,9 +17,15 @@ This package defines the API for the NNCF compression methods, so that the user 
 extend the existing algorithms.
 """
 
+from typing import Callable, Any, List
+
 import torch
 from torch import nn
 
+from nncf.config import Config
+from nncf.dynamic_graph.graph_builder import ModelInputInfo, create_mock_tensor
+from functools import partial
+from copy import copy
 
 class CompressionLoss(nn.Module):
     """
@@ -89,20 +95,20 @@ class CompressionAlgorithm:
     training loop.
     """
 
-    def __init__(self, model, config, input_size,
-                 dummy_forward_fn=None):
+    def __init__(self, model: torch.nn.Module, config: Config,
+                 input_infos: List[ModelInputInfo] = None,
+                 dummy_forward_fn: Callable[[torch.nn.Module], Any] = None):
         """
         Arguments:
           `model` - an instance of the model to be compressed
           `config` - a dictionary that contains parameters of compression method
-          `input_size` - a tuple of values (B, C, H, W) specifying the input tensor
-          dimensions for the model
-          `dummy_forward_fn` - optional, a function that takes the model as an
-          argument and performs a forward pass of the model with any valid
-          sample input
+          `input_infos` - a list of ModelInputInfo objects each describing an input to the model
+          `dummy_forward_fn` - optional, an instance of DummyForwardFunctionCaller that
+          handles custom forward procedures for complex training/data loading pipelines
         """
         self.config = config
-        self.input_size = input_size
+        self.input_infos = input_infos
+        self._dummy_forward_fn = dummy_forward_fn
         self._loss = CompressionLoss()
         self._scheduler = CompressionScheduler()
         self._model = model
@@ -136,7 +142,7 @@ class CompressionAlgorithm:
             stats.update(self.model.statistics())
         return stats
 
-    def export_model(self, filename):
+    def export_model(self, filename, *args, **kwargs):
         """
         Used to export the compressed model for inference into the ONNX format.
         Makes method-specific preparations of the model graph,
@@ -144,11 +150,22 @@ class CompressionAlgorithm:
         then exports the model and dumps it into the output file.
         Parameters:
             `filename` - a path to the file for the exported model to be saved into.
+            *args, **kwargs - if the model's `forward` requires additional parameters
+            during export, specify these here.
         """
         model = self._model.eval().cpu()
-        input_shape = tuple([1] + list(self.input_size)[1:])
+        input_tensor_list = []
+        for info in self.input_infos:
+            single_batch_info = copy(info)
+            input_shape = tuple([1] + list(info.shape)[1:])
+            single_batch_info.shape = input_shape
+            input_tensor_list.append(create_mock_tensor(single_batch_info, "cpu"))
+        original_forward = model.forward
+        model.forward = partial(model.forward, *args, **kwargs)
         with torch.no_grad():
-            torch.onnx.export(model, torch.randn(input_shape), filename, verbose=True)
+            torch.onnx.export(model, tuple(input_tensor_list),
+                              filename, verbose=True)
+        model.forward = original_forward
 
     def initialize(self, data_loader=None):
         """

@@ -103,7 +103,7 @@ def build_ssd_mobilenet(cfg, size, num_classes, config):
         raise ValueError("Only Mobilenet-SSD with input size 300 is supported")
     mobilenet_ssd = MobileNetSSD(num_classes, cfg)
 
-    if config.basenet:
+    if config.basenet and (config.resuming_checkpoint is None) and (config.weights is None):
         print('Loading base network...')
         basenet_weights = torch.load(config.basenet)['state_dict']
         new_weights = {}

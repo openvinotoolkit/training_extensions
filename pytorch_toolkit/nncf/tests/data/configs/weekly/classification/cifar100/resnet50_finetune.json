@@ -1,11 +1,8 @@
 {
     "model": "resnet50",
-    "input_sample_size": [
-        2,
-        3,
-        32,
-        32
-    ],
+    "input_info": {
+      "sample_size":  [2, 3, 32, 32]
+    },
     "num_classes": 100,
     "dataset": "CIFAR100",
     "batch_size": 256,

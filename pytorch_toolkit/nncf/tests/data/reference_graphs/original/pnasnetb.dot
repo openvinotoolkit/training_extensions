@@ -307,8 +307,7 @@ strict digraph  {
 "305 PNASNet/Sequential[layer5]/CellB[5]/BatchNorm2d[bn2]/batch_norm" [id=305, scope="PNASNet/Sequential[layer5]/CellB[5]/BatchNorm2d[bn2]", type=batch_norm];
 "306 PNASNet/Sequential[layer5]/CellB[5]/RELU" [id=306, scope="PNASNet/Sequential[layer5]/CellB[5]", type=RELU];
 "307 PNASNet/avg_pool2d" [id=307, scope=PNASNet, type=avg_pool2d];
-"308 PNASNet/view" [id=308, scope=PNASNet, type=view];
-"309 PNASNet/Linear[linear]/linear" [id=309, scope="PNASNet/Linear[linear]", type=linear];
+"308 PNASNet/Linear[linear]/linear" [id=308, scope="PNASNet/Linear[linear]", type=linear];
 "0 PNASNet/Conv2d[conv1]/conv2d" -> "1 PNASNet/BatchNorm2d[bn1]/batch_norm";
 "1 PNASNet/BatchNorm2d[bn1]/batch_norm" -> "2 PNASNet/RELU";
 "2 PNASNet/RELU" -> "3 PNASNet/Sequential[layer1]/CellB[0]/SepConv[sep_conv1]/Conv2d[conv1]/conv2d";
@@ -676,6 +675,5 @@ strict digraph  {
 "304 PNASNet/Sequential[layer5]/CellB[5]/Conv2d[conv2]/conv2d" -> "305 PNASNet/Sequential[layer5]/CellB[5]/BatchNorm2d[bn2]/batch_norm";
 "305 PNASNet/Sequential[layer5]/CellB[5]/BatchNorm2d[bn2]/batch_norm" -> "306 PNASNet/Sequential[layer5]/CellB[5]/RELU";
 "306 PNASNet/Sequential[layer5]/CellB[5]/RELU" -> "307 PNASNet/avg_pool2d";
-"307 PNASNet/avg_pool2d" -> "308 PNASNet/view";
-"308 PNASNet/view" -> "309 PNASNet/Linear[linear]/linear";
+"307 PNASNet/avg_pool2d" -> "308 PNASNet/Linear[linear]/linear";
 }

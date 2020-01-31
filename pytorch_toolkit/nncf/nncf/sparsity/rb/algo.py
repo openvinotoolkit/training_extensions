@@ -21,14 +21,15 @@ from .loss import SparseLoss
 from ..base_algo import BaseSparsityAlgo
 from ..schedulers import SPARSITY_SCHEDULERS
 from ...algo_selector import COMPRESSION_ALGORITHMS
+from nncf.dynamic_graph.graph_builder import ModelInputInfo
 
 logger = logging.getLogger(__name__)
 
 
 @COMPRESSION_ALGORITHMS.register('rb_sparsity')
 class RBSparsity(BaseSparsityAlgo):
-    def __init__(self, model, config, input_size, **kwargs):
-        super().__init__(model, config, input_size)
+    def __init__(self, model, config, input_infos: ModelInputInfo = None, dummy_forward_fn=None, **kwargs):
+        super().__init__(model, config, input_infos, dummy_forward_fn)
 
         self._distributed = False
 
