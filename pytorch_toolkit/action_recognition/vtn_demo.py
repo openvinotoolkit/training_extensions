@@ -2,6 +2,7 @@ import sys
 import time
 from argparse import ArgumentParser
 from collections import deque
+from copy import deepcopy
 
 import cv2
 import numpy as np
@@ -22,9 +23,9 @@ NUM_LABELS_TO_DISPLAY = 2
 
 
 class TorchActionRecognition:
-    def __init__(self, encoder, checkpoint_path, num_classes=400):
+    def __init__(self, encoder, checkpoint_path, num_classes=400, **kwargs):
         model_type = "{}_vtn".format(encoder)
-        args, _ = generate_args(model=model_type, n_classes=num_classes, layer_norm=False)
+        args, _ = generate_args(model=model_type, n_classes=num_classes, layer_norm=False, **kwargs)
         self.args = args
         self.model, _ = create_model(args, model_type)
 
@@ -161,7 +162,13 @@ def main():
     with open(args.labels) as fd:
         labels = fd.read().strip().split('\n')
 
-    model = TorchActionRecognition(args.encoder, args.checkpoint, num_classes=len(labels))
+    extra_args = deepcopy(vars(args))
+    input_data_params = set(x.dest for x in parser._action_groups[-1]._group_actions)
+    for name in list(extra_args.keys()):
+        if name not in input_data_params:
+            del extra_args[name]
+
+    model = TorchActionRecognition(args.encoder, args.checkpoint, num_classes=len(labels), **extra_args)
     cap = cv2.VideoCapture(args.input_video)
     run_demo(model, cap, labels)
 
