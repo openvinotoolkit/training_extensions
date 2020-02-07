@@ -61,7 +61,7 @@ Network was trained on the following datasets:
    ```bash
    python3 tools/get_imagenet_paths.py \
      ../../external/mmaction/data/imagenet/train \
-     ../../external/mmaction/data/msasl/imagenet_train_list.txt
+     ../../external/mmaction/data/imagenet_train_list.txt
    ```
 
 Final `../../external/mmaction/data` directory should be like this:
@@ -78,10 +78,10 @@ Final `../../external/mmaction/data` directory should be like this:
     |   |   └── ...
     |   ├── val100.txt
     |   ├── test100.txt
-    |   ├── train1000.txt
-    |   └── imagenet_train_list.txt
-    └── imagenet
-        └── train
+    |   └── train1000.txt
+    ├── imagenet
+    |   └── train
+    └── imagenet_train_list.txt
     ```
 
 > **Note**: Due to significant noise in the original annotation of MS-ASl dataset we use the cleanned version which includes:
@@ -96,7 +96,7 @@ Final `../../external/mmaction/data` directory should be like this:
 1. Download [S3D-MobileNetV3 model](https://download.01.org/opencv/openvino_training_extensions/models/asl/s3d-mobilenetv3-large-statt-kinetics700.pth) pre-trained on Kinetics-700 dataset. Move the file with weights to the folder `../../external/mmaction/modelzoo`.
 2. To train the model on a single GPU, run in your terminal:
     ```bash
-    python3 ../../external/mmaction/tools/dist_train_recognizer.sh \
+    bash ../../external/mmaction/tools/dist_train_recognizer.sh \
       configs/s3d_rgb_mobilenetv3_stream.py \
       1 --validate \
       --data_dir ../../external/mmaction/data/ \
@@ -157,7 +157,7 @@ python3 ../../external/mmaction/tools/count_flops_recognizer.py \
 * Download the pre-trained on MS-ASL [model](https://download.01.org/opencv/openvino_training_extensions/models/asl/s3d-mobilenetv3-large-statt-msasl1000.pth). Move the file with weights to the folder `../../external/mmaction/modelzoo`.
 * Fine-tune the network on the same way as the step 2 for training:
     ```bash
-    python3 ../../external/mmaction/tools/dist_train_recognizer.sh \
+    bash ../../external/mmaction/tools/dist_train_recognizer.sh \
       configs/s3d_rgb_mobilenetv3_stream.py \
       1 --validate \
       --data_dir ../../external/mmaction/data/ \
