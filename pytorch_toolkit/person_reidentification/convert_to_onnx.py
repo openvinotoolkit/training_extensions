@@ -26,6 +26,7 @@ from torchreid.utils import load_pretrained_weights
 
 from models.builder import build_model
 
+
 def main():
 
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -47,8 +48,10 @@ def main():
             pretrained=False,
             use_gpu=True,
             feature_dim=cfg.model.feature_dim,
+            fpn=cfg.model.fpn,
             fpn_dim=cfg.model.fpn_dim,
             gap_as_conv=cfg.model.gap_as_conv,
+            input_size=(cfg.data.height, cfg.data.width),
             IN_first=cfg.model.IN_first
         )
 
@@ -73,6 +76,7 @@ def main():
                       verbose=False, export_params=True,
                       input_names=['data'], output_names=['reid_embedding'],
                       opset_version=9)  # 9th version resolves nearest upsample issue
+
 
 if __name__ == '__main__':
     main()
