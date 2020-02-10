@@ -29,6 +29,9 @@ def main():
     for line in annotations[train_len:]:
       f.write(os.path.join(annotation_dir, line[0]) + ' ' + line[1] + '\n')
 
+  with open(os.path.join(annotation_dir, 'test_infer'), 'w') as f:
+    for line in annotations[train_len:]:
+      f.write(os.path.join(annotation_dir, line[0]) + '\n')
 
 if __name__ == '__main__':
   main()

@@ -13,6 +13,7 @@ inference.
 
     ```
     git clone https://github.com/opencv/openvino_training_extensions.git
+    cd openvino_training_extensions
     ```
 
 2. Install prerequisites by running the following:
