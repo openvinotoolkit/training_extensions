@@ -276,9 +276,8 @@ strict digraph  {
 "274 GoogLeNet/Inception[b5]/Sequential[b4]/ReLU[3]/RELU" [id=274, scope="GoogLeNet/Inception[b5]/Sequential[b4]/ReLU[3]", type=RELU];
 "275 GoogLeNet/Inception[b5]/cat" [id=275, scope="GoogLeNet/Inception[b5]", type=cat];
 "276 GoogLeNet/AvgPool2d[avgpool]/avg_pool2d" [id=276, scope="GoogLeNet/AvgPool2d[avgpool]", type=avg_pool2d];
-"277 GoogLeNet/view" [id=277, scope=GoogLeNet, type=view];
-"278 GoogLeNet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/BinaryMask[op]/apply_binary_mask" [id=278, scope="GoogLeNet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/BinaryMask[op]", type=apply_binary_mask];
-"279 GoogLeNet/NNCFLinear[linear]/linear" [id=279, scope="GoogLeNet/NNCFLinear[linear]", type=linear];
+"277 GoogLeNet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/BinaryMask[op]/apply_binary_mask" [id=277, scope="GoogLeNet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/BinaryMask[op]", type=apply_binary_mask];
+"278 GoogLeNet/NNCFLinear[linear]/linear" [id=278, scope="GoogLeNet/NNCFLinear[linear]", type=linear];
 "0 GoogLeNet/Sequential[pre_layers]/NNCFConv2d[0]/ModuleDict[pre_ops]/UpdateWeight[0]/BinaryMask[op]/apply_binary_mask" -> "1 GoogLeNet/Sequential[pre_layers]/NNCFConv2d[0]/conv2d";
 "1 GoogLeNet/Sequential[pre_layers]/NNCFConv2d[0]/conv2d" -> "2 GoogLeNet/Sequential[pre_layers]/BatchNorm2d[1]/batch_norm";
 "2 GoogLeNet/Sequential[pre_layers]/BatchNorm2d[1]/batch_norm" -> "3 GoogLeNet/Sequential[pre_layers]/ReLU[2]/RELU";
@@ -582,7 +581,6 @@ strict digraph  {
 "273 GoogLeNet/Inception[b5]/Sequential[b4]/BatchNorm2d[2]/batch_norm" -> "274 GoogLeNet/Inception[b5]/Sequential[b4]/ReLU[3]/RELU";
 "274 GoogLeNet/Inception[b5]/Sequential[b4]/ReLU[3]/RELU" -> "275 GoogLeNet/Inception[b5]/cat";
 "275 GoogLeNet/Inception[b5]/cat" -> "276 GoogLeNet/AvgPool2d[avgpool]/avg_pool2d";
-"276 GoogLeNet/AvgPool2d[avgpool]/avg_pool2d" -> "277 GoogLeNet/view";
-"277 GoogLeNet/view" -> "279 GoogLeNet/NNCFLinear[linear]/linear";
-"278 GoogLeNet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/BinaryMask[op]/apply_binary_mask" -> "279 GoogLeNet/NNCFLinear[linear]/linear";
+"276 GoogLeNet/AvgPool2d[avgpool]/avg_pool2d" -> "278 GoogLeNet/NNCFLinear[linear]/linear";
+"277 GoogLeNet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/BinaryMask[op]/apply_binary_mask" -> "278 GoogLeNet/NNCFLinear[linear]/linear";
 }

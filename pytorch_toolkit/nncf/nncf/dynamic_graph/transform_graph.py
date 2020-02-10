@@ -13,9 +13,18 @@
 
 from functools import partial
 from torch import nn
+from typing import List
 
-from nncf.layers import NNCF_MODULES_DICT
-from nncf.utils import get_node_name, in_scope_list
+from nncf.layers import NNCF_MODULES_DICT, NNCF_MODULES
+from nncf.utils import  in_scope_list
+from nncf.dynamic_graph.context import Scope, ScopeElement
+
+
+def is_nncf_module(module):
+    for nncf_module_name in NNCF_MODULES:
+        if module.__class__.__name__ == nncf_module_name:
+            return True
+    return False
 
 
 def replace_module_by_nncf_module(module: nn.Module):
@@ -28,41 +37,59 @@ def replace_module_by_nncf_module(module: nn.Module):
     return module
 
 
-def replace_modules_by_nncf_modules(model: nn.Module, ignored_scopes=None, target_scopes=None, logger=None):
+def replace_modules_by_nncf_modules(model: nn.Module, ignored_scopes=None,
+                                    target_scopes=None, logger=None) -> (nn.Module, List[Scope]):
     replace_fn = partial(replace_module_by_nncf_module)
-    return replace_modules(model, replace_fn, ignored_scopes=ignored_scopes, target_scopes=target_scopes, logger=logger)
+    affected_scopes = []  # type: List
+    return replace_modules(model, replace_fn, affected_scopes,
+                           ignored_scopes=ignored_scopes, target_scopes=target_scopes, logger=logger)
 
 
-def replace_modules(model: nn.Module, replace_fn, ignored_scopes=None, target_scopes=None, memo=None, prefix=None,
+def replace_modules(model: nn.Module, replace_fn, affected_scopes, ignored_scopes=None, target_scopes=None, memo=None,
+                    current_scope=None,
                     logger=None):
     if memo is None:
         memo = set()
-        prefix = model.__class__.__name__
+        current_scope = Scope()
+        current_scope.push(ScopeElement(model.__class__.__name__))
 
-    if model not in memo:
-        memo.add(model)
-        for name, module in model.named_children():
-            if module is None:
-                continue
+    if model in memo:
+        return model, affected_scopes
 
-            child_name = get_node_name(module, name, prefix)
-            replaced_module = replace_fn(module)
+    memo.add(model)
+    for name, module in model.named_children():
+        if module is None:
+            continue
 
-            if replaced_module is not None and module is not replaced_module:
-                if in_scope_list(child_name, ignored_scopes):
+        child_scope_element = ScopeElement(module.__class__.__name__, name)
+        child_scope = current_scope.copy()
+        child_scope.push(child_scope_element)
+        replaced_module = replace_fn(module)
+
+        if replaced_module is not None:
+            replaced_scope_element = ScopeElement(replaced_module.__class__.__name__, name)
+            replaced_scope = current_scope.copy()
+            replaced_scope.push(replaced_scope_element)
+            if module is not replaced_module:
+                if in_scope_list(str(child_scope), ignored_scopes):
                     if logger is not None:
-                        logger.info("Ignored wrapping modules in scope: {}".format(child_name))
+                        logger.info("Ignored wrapping modules in scope: {}".format(child_scope))
                     continue
 
-                if target_scopes is None or in_scope_list(child_name, target_scopes):
+                if target_scopes is None or in_scope_list(str(child_scope), target_scopes):
+
                     if logger is not None:
-                        logger.info("Wrapping module {} by {}".format(
-                            child_name, get_node_name(replaced_module, name, prefix)))
+                        logger.info("Wrapping module {} by {}".format(str(child_scope),
+                                                                      str(replaced_scope)))
                     if isinstance(model, nn.Sequential):
                         # pylint: disable=protected-access
                         model._modules[name] = replaced_module
                     else:
                         setattr(model, name, replaced_module)
-
-            replace_modules(module, replace_fn, ignored_scopes, target_scopes, memo, child_name, logger)
-    return model
+                    affected_scopes.append(replaced_scope)
+            elif is_nncf_module(replaced_module):
+                # Got an NNCF-wrapped module from previous compression stage, track its scope as well
+                affected_scopes.append(replaced_scope)
+        _, affected_scopes = replace_modules(module, replace_fn, affected_scopes, ignored_scopes, target_scopes,
+                                             memo, child_scope, logger)
+    return model, affected_scopes

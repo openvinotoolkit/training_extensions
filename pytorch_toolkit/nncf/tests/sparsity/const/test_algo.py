@@ -10,14 +10,13 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 """
-
 from copy import deepcopy
 
 import torch
 
-from nncf.helpers import load_state
 from nncf.algo_selector import create_compression_algorithm
-from nncf.dynamic_graph import reset_context
+from nncf.dynamic_graph import reset_context, patch_torch_operators
+from nncf.helpers import load_state, create_compressed_model
 from nncf.operations import UpdateWeight
 from nncf.sparsity.const.algo import ConstSparsity
 from nncf.sparsity.layers import BinaryMask
@@ -88,17 +87,19 @@ def test_can_restore_binary_mask_on_magnitude_algo_resume():
     check_equal(ref_mask_2, op.operand.binary_mask)
 
 
-def test_can_restore_binary_mask_on_magnitude_quant_algo_resume():
+def test_can_restore_binary_mask_on_magnitude_quant_algo_resume(tmp_path):
+    patch_torch_operators()
     config = get_empty_config()
     config["compression"] = [
         {"algorithm": "magnitude_sparsity", "weight_importance": "abs",
          "params": {"schedule": "multistep", "sparsity_levels": [0.3, 0.5]}},
         {"algorithm": "quantization"}]
+    config.log_dir = str(tmp_path)
     reset_context('orig')
     reset_context('quantized_graphs')
-    magnitude_quant_algo = create_compression_algorithm(MagnitudeTestModel(), config)
+    _, model = create_compressed_model(MagnitudeTestModel(), config)
     # load_state doesn't support CPU + Quantization
-    sparse_model = torch.nn.DataParallel(magnitude_quant_algo.model)
+    sparse_model = torch.nn.DataParallel(model)
     sparse_model.cuda()
     with torch.no_grad():
         sparse_model(torch.ones([1, 1, 10, 10]))
@@ -106,14 +107,14 @@ def test_can_restore_binary_mask_on_magnitude_quant_algo_resume():
     reset_context('orig')
     reset_context('quantized_graphs')
     config = get_empty_config()
+    config.log_dir = str(tmp_path)
     config["compression"] = [{"algorithm": "const_sparsity"}, {"algorithm": "quantization"}]
-    const_algo = create_compression_algorithm(MagnitudeTestModel(), config)
-    const_sparse_model = const_algo.model
+    _, const_sparse_model = create_compressed_model(MagnitudeTestModel(), config)
 
     load_state(const_sparse_model, sparse_model.state_dict())
 
-    op = const_sparse_model.module.conv1.pre_ops['0']
+    op = const_sparse_model.get_nncf_wrapped_module().conv1.pre_ops['0']
     check_equal(ref_mask_1, op.operand.binary_mask)
 
-    op = const_sparse_model.module.conv2.pre_ops['0']
+    op = const_sparse_model.get_nncf_wrapped_module().conv2.pre_ops['0']
     check_equal(ref_mask_2, op.operand.binary_mask)

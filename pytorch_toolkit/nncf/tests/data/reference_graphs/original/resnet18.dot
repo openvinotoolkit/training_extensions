@@ -65,8 +65,7 @@ strict digraph  {
 "63 ResNet/Sequential[layer4]/BasicBlock[1]/__iadd__" [id=63, scope="ResNet/Sequential[layer4]/BasicBlock[1]", type=__iadd__];
 "64 ResNet/Sequential[layer4]/BasicBlock[1]/RELU" [id=64, scope="ResNet/Sequential[layer4]/BasicBlock[1]", type=RELU];
 "65 ResNet/avg_pool2d" [id=65, scope=ResNet, type=avg_pool2d];
-"66 ResNet/view" [id=66, scope=ResNet, type=view];
-"67 ResNet/Linear[linear]/linear" [id=67, scope="ResNet/Linear[linear]", type=linear];
+"66 ResNet/Linear[linear]/linear" [id=66, scope="ResNet/Linear[linear]", type=linear];
 "0 ResNet/Conv2d[conv1]/conv2d" -> "1 ResNet/BatchNorm2d[bn1]/batch_norm";
 "1 ResNet/BatchNorm2d[bn1]/batch_norm" -> "2 ResNet/RELU";
 "2 ResNet/RELU" -> "3 ResNet/Sequential[layer1]/BasicBlock[0]/Conv2d[conv1]/conv2d";
@@ -140,6 +139,5 @@ strict digraph  {
 "62 ResNet/Sequential[layer4]/BasicBlock[1]/BatchNorm2d[bn2]/batch_norm" -> "63 ResNet/Sequential[layer4]/BasicBlock[1]/__iadd__";
 "63 ResNet/Sequential[layer4]/BasicBlock[1]/__iadd__" -> "64 ResNet/Sequential[layer4]/BasicBlock[1]/RELU";
 "64 ResNet/Sequential[layer4]/BasicBlock[1]/RELU" -> "65 ResNet/avg_pool2d";
-"65 ResNet/avg_pool2d" -> "66 ResNet/view";
-"66 ResNet/view" -> "67 ResNet/Linear[linear]/linear";
+"65 ResNet/avg_pool2d" -> "66 ResNet/Linear[linear]/linear";
 }

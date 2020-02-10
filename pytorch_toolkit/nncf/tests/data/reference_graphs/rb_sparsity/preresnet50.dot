@@ -271,10 +271,9 @@ strict digraph  {
 "269 PreActResNet/Sequential[layer4]/PreActBottleneck[2]/NNCFConv2d[conv3]/conv2d" [id=269, scope="PreActResNet/Sequential[layer4]/PreActBottleneck[2]/NNCFConv2d[conv3]", type=conv2d];
 "270 PreActResNet/Sequential[layer4]/PreActBottleneck[2]/__iadd__" [id=270, scope="PreActResNet/Sequential[layer4]/PreActBottleneck[2]", type=__iadd__];
 "271 PreActResNet/avg_pool2d" [id=271, scope=PreActResNet, type=avg_pool2d];
-"272 PreActResNet/view" [id=272, scope=PreActResNet, type=view];
-"273 PreActResNet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/calc_rb_binary_mask" [id=273, scope="PreActResNet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]", type=calc_rb_binary_mask];
-"274 PreActResNet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask" [id=274, scope="PreActResNet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]", type=apply_binary_mask];
-"275 PreActResNet/NNCFLinear[linear]/linear" [id=275, scope="PreActResNet/NNCFLinear[linear]", type=linear];
+"272 PreActResNet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/calc_rb_binary_mask" [id=272, scope="PreActResNet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]", type=calc_rb_binary_mask];
+"273 PreActResNet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask" [id=273, scope="PreActResNet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]", type=apply_binary_mask];
+"274 PreActResNet/NNCFLinear[linear]/linear" [id=274, scope="PreActResNet/NNCFLinear[linear]", type=linear];
 "0 PreActResNet/NNCFConv2d[conv1]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/calc_rb_binary_mask" -> "1 PreActResNet/NNCFConv2d[conv1]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask";
 "1 PreActResNet/NNCFConv2d[conv1]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask" -> "2 PreActResNet/NNCFConv2d[conv1]/conv2d";
 "2 PreActResNet/NNCFConv2d[conv1]/conv2d" -> "3 PreActResNet/Sequential[layer1]/PreActBottleneck[0]/BatchNorm2d[bn1]/batch_norm";
@@ -562,8 +561,7 @@ strict digraph  {
 "268 PreActResNet/Sequential[layer4]/PreActBottleneck[2]/NNCFConv2d[conv3]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask" -> "269 PreActResNet/Sequential[layer4]/PreActBottleneck[2]/NNCFConv2d[conv3]/conv2d";
 "269 PreActResNet/Sequential[layer4]/PreActBottleneck[2]/NNCFConv2d[conv3]/conv2d" -> "270 PreActResNet/Sequential[layer4]/PreActBottleneck[2]/__iadd__";
 "270 PreActResNet/Sequential[layer4]/PreActBottleneck[2]/__iadd__" -> "271 PreActResNet/avg_pool2d";
-"271 PreActResNet/avg_pool2d" -> "272 PreActResNet/view";
-"272 PreActResNet/view" -> "275 PreActResNet/NNCFLinear[linear]/linear";
-"273 PreActResNet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/calc_rb_binary_mask" -> "274 PreActResNet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask";
-"274 PreActResNet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask" -> "275 PreActResNet/NNCFLinear[linear]/linear";
+"271 PreActResNet/avg_pool2d" -> "274 PreActResNet/NNCFLinear[linear]/linear";
+"272 PreActResNet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/calc_rb_binary_mask" -> "273 PreActResNet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask";
+"273 PreActResNet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask" -> "274 PreActResNet/NNCFLinear[linear]/linear";
 }

@@ -97,6 +97,7 @@ strict digraph  {
 "5 UNet/ModuleList[down_path]/UNetConvBlock[0]/Sequential[block]/NNCFConv2d[3]/conv2d" -> "6 UNet/ModuleList[down_path]/UNetConvBlock[0]/Sequential[block]/BatchNorm2d[4]/batch_norm";
 "6 UNet/ModuleList[down_path]/UNetConvBlock[0]/Sequential[block]/BatchNorm2d[4]/batch_norm" -> "7 UNet/ModuleList[down_path]/UNetConvBlock[0]/Sequential[block]/ReLU[5]/RELU";
 "7 UNet/ModuleList[down_path]/UNetConvBlock[0]/Sequential[block]/ReLU[5]/RELU" -> "8 UNet/max_pool2d";
+"7 UNet/ModuleList[down_path]/UNetConvBlock[0]/Sequential[block]/ReLU[5]/RELU" -> "79 UNet/ModuleList[up_path]/UNetUpBlock[3]/cat";
 "8 UNet/max_pool2d" -> "10 UNet/ModuleList[down_path]/UNetConvBlock[1]/Sequential[block]/NNCFConv2d[0]/conv2d";
 "9 UNet/ModuleList[down_path]/UNetConvBlock[1]/Sequential[block]/NNCFConv2d[0]/ModuleDict[pre_ops]/UpdateWeight[0]/BinaryMask[op]/apply_binary_mask" -> "10 UNet/ModuleList[down_path]/UNetConvBlock[1]/Sequential[block]/NNCFConv2d[0]/conv2d";
 "10 UNet/ModuleList[down_path]/UNetConvBlock[1]/Sequential[block]/NNCFConv2d[0]/conv2d" -> "11 UNet/ModuleList[down_path]/UNetConvBlock[1]/Sequential[block]/BatchNorm2d[1]/batch_norm";
@@ -106,6 +107,7 @@ strict digraph  {
 "14 UNet/ModuleList[down_path]/UNetConvBlock[1]/Sequential[block]/NNCFConv2d[3]/conv2d" -> "15 UNet/ModuleList[down_path]/UNetConvBlock[1]/Sequential[block]/BatchNorm2d[4]/batch_norm";
 "15 UNet/ModuleList[down_path]/UNetConvBlock[1]/Sequential[block]/BatchNorm2d[4]/batch_norm" -> "16 UNet/ModuleList[down_path]/UNetConvBlock[1]/Sequential[block]/ReLU[5]/RELU";
 "16 UNet/ModuleList[down_path]/UNetConvBlock[1]/Sequential[block]/ReLU[5]/RELU" -> "17 UNet/max_pool2d";
+"16 UNet/ModuleList[down_path]/UNetConvBlock[1]/Sequential[block]/ReLU[5]/RELU" -> "68 UNet/ModuleList[up_path]/UNetUpBlock[2]/cat";
 "17 UNet/max_pool2d" -> "19 UNet/ModuleList[down_path]/UNetConvBlock[2]/Sequential[block]/NNCFConv2d[0]/conv2d";
 "18 UNet/ModuleList[down_path]/UNetConvBlock[2]/Sequential[block]/NNCFConv2d[0]/ModuleDict[pre_ops]/UpdateWeight[0]/BinaryMask[op]/apply_binary_mask" -> "19 UNet/ModuleList[down_path]/UNetConvBlock[2]/Sequential[block]/NNCFConv2d[0]/conv2d";
 "19 UNet/ModuleList[down_path]/UNetConvBlock[2]/Sequential[block]/NNCFConv2d[0]/conv2d" -> "20 UNet/ModuleList[down_path]/UNetConvBlock[2]/Sequential[block]/BatchNorm2d[1]/batch_norm";
@@ -115,6 +117,7 @@ strict digraph  {
 "23 UNet/ModuleList[down_path]/UNetConvBlock[2]/Sequential[block]/NNCFConv2d[3]/conv2d" -> "24 UNet/ModuleList[down_path]/UNetConvBlock[2]/Sequential[block]/BatchNorm2d[4]/batch_norm";
 "24 UNet/ModuleList[down_path]/UNetConvBlock[2]/Sequential[block]/BatchNorm2d[4]/batch_norm" -> "25 UNet/ModuleList[down_path]/UNetConvBlock[2]/Sequential[block]/ReLU[5]/RELU";
 "25 UNet/ModuleList[down_path]/UNetConvBlock[2]/Sequential[block]/ReLU[5]/RELU" -> "26 UNet/max_pool2d";
+"25 UNet/ModuleList[down_path]/UNetConvBlock[2]/Sequential[block]/ReLU[5]/RELU" -> "57 UNet/ModuleList[up_path]/UNetUpBlock[1]/cat";
 "26 UNet/max_pool2d" -> "28 UNet/ModuleList[down_path]/UNetConvBlock[3]/Sequential[block]/NNCFConv2d[0]/conv2d";
 "27 UNet/ModuleList[down_path]/UNetConvBlock[3]/Sequential[block]/NNCFConv2d[0]/ModuleDict[pre_ops]/UpdateWeight[0]/BinaryMask[op]/apply_binary_mask" -> "28 UNet/ModuleList[down_path]/UNetConvBlock[3]/Sequential[block]/NNCFConv2d[0]/conv2d";
 "28 UNet/ModuleList[down_path]/UNetConvBlock[3]/Sequential[block]/NNCFConv2d[0]/conv2d" -> "29 UNet/ModuleList[down_path]/UNetConvBlock[3]/Sequential[block]/BatchNorm2d[1]/batch_norm";
@@ -124,6 +127,7 @@ strict digraph  {
 "32 UNet/ModuleList[down_path]/UNetConvBlock[3]/Sequential[block]/NNCFConv2d[3]/conv2d" -> "33 UNet/ModuleList[down_path]/UNetConvBlock[3]/Sequential[block]/BatchNorm2d[4]/batch_norm";
 "33 UNet/ModuleList[down_path]/UNetConvBlock[3]/Sequential[block]/BatchNorm2d[4]/batch_norm" -> "34 UNet/ModuleList[down_path]/UNetConvBlock[3]/Sequential[block]/ReLU[5]/RELU";
 "34 UNet/ModuleList[down_path]/UNetConvBlock[3]/Sequential[block]/ReLU[5]/RELU" -> "35 UNet/max_pool2d";
+"34 UNet/ModuleList[down_path]/UNetConvBlock[3]/Sequential[block]/ReLU[5]/RELU" -> "46 UNet/ModuleList[up_path]/UNetUpBlock[0]/cat";
 "35 UNet/max_pool2d" -> "37 UNet/ModuleList[down_path]/UNetConvBlock[4]/Sequential[block]/NNCFConv2d[0]/conv2d";
 "36 UNet/ModuleList[down_path]/UNetConvBlock[4]/Sequential[block]/NNCFConv2d[0]/ModuleDict[pre_ops]/UpdateWeight[0]/BinaryMask[op]/apply_binary_mask" -> "37 UNet/ModuleList[down_path]/UNetConvBlock[4]/Sequential[block]/NNCFConv2d[0]/conv2d";
 "37 UNet/ModuleList[down_path]/UNetConvBlock[4]/Sequential[block]/NNCFConv2d[0]/conv2d" -> "38 UNet/ModuleList[down_path]/UNetConvBlock[4]/Sequential[block]/BatchNorm2d[1]/batch_norm";

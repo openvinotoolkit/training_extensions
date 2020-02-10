@@ -13,7 +13,7 @@
 
 from .create_compressed_model import create_compressed_model
 from .model_loader import match_keys, process_problematic_keys, load_state
-from .utils import safe_thread_call, is_dist_avail_and_initialized, get_rank, is_main_process
+from .utils import safe_thread_call, is_dist_avail_and_initialized, get_rank, is_main_process, replace_lstm
 
 __all__ = ["safe_thread_call", "is_dist_avail_and_initialized", "get_rank", "is_main_process",
-           "match_keys", "process_problematic_keys", "load_state", "create_compressed_model"]
+           "match_keys", "process_problematic_keys", "load_state", "create_compressed_model", "replace_lstm"]

@@ -13,6 +13,7 @@
 
 import logging
 import os.path as osp
+import os
 import sys
 import time
 from pathlib import Path
@@ -26,17 +27,19 @@ from examples.common.distributed import DistributedSampler, configure_distribute
 from examples.common.execution import ExecutionMode, get_device, get_execution_mode
 from examples.common.execution import prepare_model_for_execution, start_worker
 from examples.common.utils import configure_logging, configure_paths, create_code_snapshot, is_on_first_rank, print_args
+from examples.common.utils import get_name, make_additional_checkpoints
+from examples.common.utils import write_metrics
 from examples.common.optimizer import get_parameter_groups, make_optimizer
 from examples.object_detection.dataset import detection_collate, get_testing_dataset, get_training_dataset
 from examples.object_detection.eval import test_net
 from examples.object_detection.layers.modules import MultiBoxLoss
 from examples.object_detection.model import build_ssd
 
-from nncf.helpers import load_state
-from nncf.algo_selector import create_compression_algorithm
+from nncf.helpers import load_state, create_compressed_model
 from nncf.config import Config
 from nncf.dynamic_graph import patch_torch_operators
 from nncf.utils import print_statistics
+from nncf.dynamic_graph.graph_builder import create_input_infos
 
 patch_torch_operators()
 
@@ -79,7 +82,7 @@ def main(argv):
     config.execution_mode = get_execution_mode(config)
 
     if config.dataset_dir is not None:
-        config.train_imgs = config.train_ano = config.test_imgs = config.test_anno = config.dataset_dir
+        config.train_imgs = config.train_anno = config.test_imgs = config.test_anno = config.dataset_dir
     start_worker(main_worker, config)
 
 
@@ -97,6 +100,15 @@ def main_worker(current_gpu, config):
 
     config.device = get_device(config)
     config.start_iter = 0
+
+    ##########################
+    # Prepare metrics log file
+    ##########################
+
+    if config.metrics_dump and config.resuming_checkpoint is not None:
+        avg = 0
+        metrics = {os.path.basename(config.resuming_checkpoint): avg}
+        write_metrics(config, metrics)
 
     ##################
     # Prepare model
@@ -129,12 +141,6 @@ def main_worker(current_gpu, config):
     )
 
     ###########################
-    # Prepare data
-    ###########################
-
-    test_data_loader, train_data_loader = create_dataloaders(config)
-
-    ###########################
     # Load checkpoint
     ###########################
 
@@ -156,11 +162,21 @@ def main_worker(current_gpu, config):
         print("Saved to {}".format(config.to_onnx))
         return
 
+    ###########################
+    # Prepare data
+    ###########################
+
+    test_data_loader, train_data_loader = create_dataloaders(config)
+
     if config.mode.lower() == 'test':
         with torch.no_grad():
             print_statistics(compression_algo.statistics())
             net.eval()
-            test_net(net, config.device, test_data_loader, distributed=config.distributed)
+            mAp = test_net(net, config.device, test_data_loader, distributed=config.distributed)
+            if config.metrics_dump and config.resuming_checkpoint is not None:
+                avg = mAp*100
+                metrics = {os.path.basename(config.resuming_checkpoint): round(avg, 2)}
+                write_metrics(config, metrics)
             return
 
     if not resuming_checkpoint:
@@ -206,9 +222,10 @@ def create_dataloaders(config):
 
 
 def create_model(config):
-    ssd_net = build_ssd(config.model, config.ssd_params, config.input_sample_size[-1], config.num_classes, config)
-    ssd_net.to(config.device)
-    compression_algo = create_compression_algorithm(ssd_net, config)
+    input_info_list = create_input_infos(config)
+    image_size = input_info_list[0].shape[-1]
+    ssd_net = build_ssd(config.model, config.ssd_params, image_size, config.num_classes, config)
+    compression_algo, ssd_net = create_compressed_model(ssd_net, config)
     ssd_net = compression_algo.model
     weights = config.get('weights')
     if weights:
@@ -322,6 +339,18 @@ def train(net, compression_algo, train_data_loader, test_data_loader, criterion,
             config.tb.add_scalar("train/loss_c", batch_loss_c.item(), iteration)
             config.tb.add_scalar("train/loss", batch_loss.item(), iteration)
 
+            checkpoint_file_path = osp.join(config.checkpoint_save_dir, "{}_last.pth".format(get_name(config)))
+            torch.save({
+                'state_dict': net.state_dict(),
+                'optimizer': optimizer.state_dict(),
+                'iter': config['max_iter'],
+                'scheduler': compression_algo.scheduler.state_dict()
+            }, str(checkpoint_file_path))
+            make_additional_checkpoints(checkpoint_file_path,
+                                        is_best=True,
+                                        epoch=epoch + 1,
+                                        config=config)
+
         if iteration % config.print_freq == 0:
             t_finish = time.time()
             t_elapsed = t_finish - t_start
@@ -331,13 +360,6 @@ def train(net, compression_algo, train_data_loader, test_data_loader, criterion,
                 loss_comp.item() if isinstance(loss_comp, torch.Tensor) else loss_comp
             ))
 
-    final_checkpoint_file_path = osp.join(config.checkpoint_save_dir, "{}.pth".format(config.model))
-    torch.save({
-        'state_dict': net.state_dict(),
-        'optimizer': optimizer.state_dict(),
-        'iter': config['max_iter'],
-        'scheduler': compression_algo.scheduler.state_dict()
-    }, str(final_checkpoint_file_path))
 
 
 if __name__ == '__main__':

@@ -152,11 +152,8 @@ def build_vgg_ssd_extra(num_outputs, output_indices, statrt_input_channels=1024,
 
 def build_ssd_vgg(cfg, size, num_classes, config):
     ssd_vgg = SSD_VGG(cfg, size, num_classes, batch_norm=config.get('batchnorm', False))
-    print('Initializing weights...')
 
-    # ssd_vgg.apply(weights_init)
-
-    if config.basenet:
+    if config.basenet and (config.resuming_checkpoint is None) and (config.weights is None):
         print('Loading base network...')
         basenet_weights = torch.load(config.basenet)
         new_weights = {}

@@ -105,10 +105,9 @@ strict digraph  {
 "103 ResNet/Sequential[layer4]/BasicBlock[1]/__iadd__" [id=103, scope="ResNet/Sequential[layer4]/BasicBlock[1]", type=__iadd__];
 "104 ResNet/Sequential[layer4]/BasicBlock[1]/RELU" [id=104, scope="ResNet/Sequential[layer4]/BasicBlock[1]", type=RELU];
 "105 ResNet/avg_pool2d" [id=105, scope=ResNet, type=avg_pool2d];
-"106 ResNet/view" [id=106, scope=ResNet, type=view];
-"107 ResNet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/calc_rb_binary_mask" [id=107, scope="ResNet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]", type=calc_rb_binary_mask];
-"108 ResNet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask" [id=108, scope="ResNet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]", type=apply_binary_mask];
-"109 ResNet/NNCFLinear[linear]/linear" [id=109, scope="ResNet/NNCFLinear[linear]", type=linear];
+"106 ResNet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/calc_rb_binary_mask" [id=106, scope="ResNet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]", type=calc_rb_binary_mask];
+"107 ResNet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask" [id=107, scope="ResNet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]", type=apply_binary_mask];
+"108 ResNet/NNCFLinear[linear]/linear" [id=108, scope="ResNet/NNCFLinear[linear]", type=linear];
 "0 ResNet/NNCFConv2d[conv1]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/calc_rb_binary_mask" -> "1 ResNet/NNCFConv2d[conv1]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask";
 "1 ResNet/NNCFConv2d[conv1]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask" -> "2 ResNet/NNCFConv2d[conv1]/conv2d";
 "2 ResNet/NNCFConv2d[conv1]/conv2d" -> "3 ResNet/BatchNorm2d[bn1]/batch_norm";
@@ -222,8 +221,7 @@ strict digraph  {
 "102 ResNet/Sequential[layer4]/BasicBlock[1]/BatchNorm2d[bn2]/batch_norm" -> "103 ResNet/Sequential[layer4]/BasicBlock[1]/__iadd__";
 "103 ResNet/Sequential[layer4]/BasicBlock[1]/__iadd__" -> "104 ResNet/Sequential[layer4]/BasicBlock[1]/RELU";
 "104 ResNet/Sequential[layer4]/BasicBlock[1]/RELU" -> "105 ResNet/avg_pool2d";
-"105 ResNet/avg_pool2d" -> "106 ResNet/view";
-"106 ResNet/view" -> "109 ResNet/NNCFLinear[linear]/linear";
-"107 ResNet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/calc_rb_binary_mask" -> "108 ResNet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask";
-"108 ResNet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask" -> "109 ResNet/NNCFLinear[linear]/linear";
+"105 ResNet/avg_pool2d" -> "108 ResNet/NNCFLinear[linear]/linear";
+"106 ResNet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/calc_rb_binary_mask" -> "107 ResNet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask";
+"107 ResNet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask" -> "108 ResNet/NNCFLinear[linear]/linear";
 }

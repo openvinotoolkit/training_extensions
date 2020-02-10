@@ -33,10 +33,10 @@ class BaseSparsityAlgo(CompressionAlgorithm):
         raise NotImplementedError
 
     def _replace_sparsifying_modules_by_nncf_modules(self, device, ignored_scopes, target_scopes, logger):
-        self._model = replace_modules_by_nncf_modules(self._model,
-                                                      ignored_scopes=ignored_scopes,
-                                                      target_scopes=target_scopes,
-                                                      logger=logger)
+        self._model, _ = replace_modules_by_nncf_modules(self._model,
+                                                         ignored_scopes=ignored_scopes,
+                                                         target_scopes=target_scopes,
+                                                         logger=logger)
         self._model.to(device)
 
     def _register_weight_sparsifying_operations(self, device, ignored_scopes, target_scopes, logger):

@@ -1,12 +1,17 @@
 # Release Notes
 
 ## Introduction
-
 *Neural Network Compression Framework (NNCF)* is a toolset for Neural Networks model compression.
 The framework organized as a Python module that can be built and used as standalone or within
 samples distributed with the code.  The samples demonstrate the usage of compression methods on
 public models and datasets for three different use cases: Image Classification, Object Detection,
 and Semantic Segmentation.
+
+## New in Release 1.2:
+- Support for transformer-based networks quantization (tested on BERT and RoBERTa)
+- Added instructions and Git patches for integrating NNCF into third-party repositories ([mmdetection](https://github.com/open-mmlab/mmdetection), [transformers](https://github.com/huggingface/transformers))
+- Support for GNMT quantization
+- Regular expression format support for specifying ignored/target scopes in config files - prefix the regex-enabled scope with {re}
 
 ## New in Release 1.1
 
@@ -23,9 +28,9 @@ and Semantic Segmentation.
 - Support of symmetric quantization and two sparsity algorithms with fine-tuning
 - Automatic model graph transformation. The model is wrapped by the custom class and additional layers are inserted in the graph. The transformations are configurable.
 - Three training samples which demonstrate usage of compression methods from the NNCF:
-	- Image Classification:  torchvision models for classification and custom models on ImageNet and CIFAR10/100 datasets.
-	- Object Detection: SSD300, SSD512, MobileNet SSD on Pascal VOC2007, Pascal VOC2012, and COCO datasets.
-	- Semantic Segmentation: UNet, ICENet on CamVid and Mapillary Vistas datasets.
+    - Image Classification:  torchvision models for classification and custom models on ImageNet and CIFAR10/100 datasets.
+    - Object Detection: SSD300, SSD512, MobileNet SSD on Pascal VOC2007, Pascal VOC2012, and COCO datasets.
+    - Semantic Segmentation: UNet, ICNet on CamVid and Mapillary Vistas datasets.
 - Unified interface for compression methods.
 - GPU-accelerated *Quantization* layer for fast model fine-tuning.
 - Distributed training support in all samples.

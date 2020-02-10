@@ -168,6 +168,7 @@ def test_get_all_nodes():
         'TestModel/Sequential[layer2]/MaxPool2d[pool02]/max_pool2d',
         'TestModel/AvgPool2d[avgpool]/avg_pool2d'
     ]
+
     act_list = get_all_node_names(model, (1, 1, 4, 4))
     assert ref_list == act_list
 

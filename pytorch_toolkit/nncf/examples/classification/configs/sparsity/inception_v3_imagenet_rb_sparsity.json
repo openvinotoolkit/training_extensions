@@ -1,0 +1,30 @@
+{
+    "model": "inception_v3",
+    "pretrained": true,
+    "input_info": {
+      "sample_size": [2, 3, 299, 299]
+    },
+    "num_classes": 1000,
+    "batch_size" : 256,
+    "epochs": 40,
+    "multiprocessing_distributed" : true,
+    "optimizer": {
+        "type": "Adam",
+        "base_lr": 0.001,
+        "schedule_type": "multistep",
+        "steps": [
+            15,
+            20,
+            25
+        ]
+    },
+    "compression": {
+        "algorithm": "rb_sparsity",
+        "params": {
+            "sparsity_init": 0.02,
+            "sparsity_target": 0.61,
+            "sparsity_steps": 5,
+            "sparsity_training_steps": 10
+        }
+    }
+}

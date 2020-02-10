@@ -35,7 +35,10 @@ def get_basic_sparsity_config(model_size=4, input_sample_size=(1, 1, 4, 4),
     config.update({
         "model": "basic_sparse_conv",
         "model_size": model_size,
-        "input_sample_size": input_sample_size,
+        "input_info":
+            {
+                "sample_size": input_sample_size,
+            },
         "compression":
             {
                 "algorithm": "rb_sparsity",

@@ -172,9 +172,8 @@ strict digraph  {
 "170 ResNeXt/Sequential[layer3]/Block[2]/AsymmetricQuantizer/asymmetric_quantize" [id=170, scope="ResNeXt/Sequential[layer3]/Block[2]/AsymmetricQuantizer", type=asymmetric_quantize];
 "171 ResNeXt/avg_pool2d" [id=171, scope=ResNeXt, type=avg_pool2d];
 "172 ResNeXt/AsymmetricQuantizer/asymmetric_quantize" [id=172, scope="ResNeXt/AsymmetricQuantizer", type=asymmetric_quantize];
-"173 ResNeXt/view" [id=173, scope=ResNeXt, type=view];
-"174 ResNeXt/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/AsymmetricQuantizer[op]/asymmetric_quantize" [id=174, scope="ResNeXt/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/AsymmetricQuantizer[op]", type=asymmetric_quantize];
-"175 ResNeXt/NNCFLinear[linear]/linear" [id=175, scope="ResNeXt/NNCFLinear[linear]", type=linear];
+"173 ResNeXt/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/AsymmetricQuantizer[op]/asymmetric_quantize" [id=173, scope="ResNeXt/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/AsymmetricQuantizer[op]", type=asymmetric_quantize];
+"174 ResNeXt/NNCFLinear[linear]/linear" [id=174, scope="ResNeXt/NNCFLinear[linear]", type=linear];
 "0 ResNeXt/NNCFConv2d[conv1]/ModuleDict[pre_ops]/UpdateWeight[0]/AsymmetricQuantizer[op]/asymmetric_quantize" -> "2 ResNeXt/NNCFConv2d[conv1]/conv2d";
 "1 ResNeXt/NNCFConv2d[conv1]/ModuleDict[pre_ops]/UpdateInputs[1]/AsymmetricQuantizer[op]/asymmetric_quantize" -> "2 ResNeXt/NNCFConv2d[conv1]/conv2d";
 "2 ResNeXt/NNCFConv2d[conv1]/conv2d" -> "3 ResNeXt/BatchNorm2d[bn1]/batch_norm";
@@ -356,7 +355,6 @@ strict digraph  {
 "169 ResNeXt/Sequential[layer3]/Block[2]/RELU" -> "170 ResNeXt/Sequential[layer3]/Block[2]/AsymmetricQuantizer/asymmetric_quantize";
 "170 ResNeXt/Sequential[layer3]/Block[2]/AsymmetricQuantizer/asymmetric_quantize" -> "171 ResNeXt/avg_pool2d";
 "171 ResNeXt/avg_pool2d" -> "172 ResNeXt/AsymmetricQuantizer/asymmetric_quantize";
-"172 ResNeXt/AsymmetricQuantizer/asymmetric_quantize" -> "173 ResNeXt/view";
-"173 ResNeXt/view" -> "175 ResNeXt/NNCFLinear[linear]/linear";
-"174 ResNeXt/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/AsymmetricQuantizer[op]/asymmetric_quantize" -> "175 ResNeXt/NNCFLinear[linear]/linear";
+"172 ResNeXt/AsymmetricQuantizer/asymmetric_quantize" -> "174 ResNeXt/NNCFLinear[linear]/linear";
+"173 ResNeXt/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/AsymmetricQuantizer[op]/asymmetric_quantize" -> "174 ResNeXt/NNCFLinear[linear]/linear";
 }

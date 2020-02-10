@@ -12,12 +12,9 @@
 """
 
 import logging
-from copy import deepcopy
 
 from graphviz import Digraph
 from torch import nn
-
-from .. import dynamic_graph
 
 logger = logging.getLogger(__name__)
 
@@ -31,22 +28,6 @@ graph_theme = {
     "margin": "0,0",
     "padding": "1.0,1.0",
 }
-
-
-def to_networkx(context):
-    import networkx as nx
-    graph = nx.DiGraph()
-    for node_name, node in context.graph.nodes.items():
-        graph.add_node(node_name, type=node['type'], id=node['id'], scope='/'.join(node['scope']))
-    for u, v in context.graph.edges:
-        graph.add_edge(u, v)
-    return graph
-
-
-def dump_graph(context, path):
-    import networkx as nx
-    nx_graph = to_networkx(context)
-    nx.drawing.nx_pydot.write_dot(nx_graph, path)
 
 
 def draw_dot(context):
@@ -82,18 +63,15 @@ def draw_dot(context):
     return dot
 
 
-def build_graph(module: nn.Module, context_name, input_args=None, reset_context=False):
-    logger.info("Building graph: {}".format(context_name))
-    sd = deepcopy(module.state_dict())
-
-    if reset_context:
-        ctx = dynamic_graph.reset_context(context_name)
-    else:
-        ctx = dynamic_graph.get_context(context_name)
-    with dynamic_graph.context(context_name):
-        if hasattr(module, "dummy_forward_fn"):
-            module.dummy_forward_fn(module)
-        else:
-            module(*input_args)
-    module.load_state_dict(sd)
-    return ctx
+def get_module_for_scope(base_module: nn.Module, scope: 'Scope'):
+    curr_module = base_module
+    for scope_element in scope[1:]:  # omit first scope element which corresponds to base module
+        # pylint: disable=protected-access
+        next_module = curr_module._modules.get(scope_element.calling_field_name)
+        if next_module is None:
+            raise RuntimeError("Could not find a {} module member in {} module of scope {} during node search"
+                               .format(scope_element.calling_field_name,
+                                       scope_element.calling_module_class_name,
+                                       str(scope)))
+        curr_module = next_module
+    return curr_module

@@ -213,9 +213,8 @@ strict digraph  {
 "211 SENet/Sequential[layer4]/PreActBlock[1]/AsymmetricQuantizer/asymmetric_quantize" [id=211, scope="SENet/Sequential[layer4]/PreActBlock[1]/AsymmetricQuantizer", type=asymmetric_quantize];
 "212 SENet/avg_pool2d" [id=212, scope=SENet, type=avg_pool2d];
 "213 SENet/AsymmetricQuantizer/asymmetric_quantize" [id=213, scope="SENet/AsymmetricQuantizer", type=asymmetric_quantize];
-"214 SENet/view" [id=214, scope=SENet, type=view];
-"215 SENet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/AsymmetricQuantizer[op]/asymmetric_quantize" [id=215, scope="SENet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/AsymmetricQuantizer[op]", type=asymmetric_quantize];
-"216 SENet/NNCFLinear[linear]/linear" [id=216, scope="SENet/NNCFLinear[linear]", type=linear];
+"214 SENet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/AsymmetricQuantizer[op]/asymmetric_quantize" [id=214, scope="SENet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/AsymmetricQuantizer[op]", type=asymmetric_quantize];
+"215 SENet/NNCFLinear[linear]/linear" [id=215, scope="SENet/NNCFLinear[linear]", type=linear];
 "0 SENet/NNCFConv2d[conv1]/ModuleDict[pre_ops]/UpdateWeight[0]/AsymmetricQuantizer[op]/asymmetric_quantize" -> "2 SENet/NNCFConv2d[conv1]/conv2d";
 "1 SENet/NNCFConv2d[conv1]/ModuleDict[pre_ops]/UpdateInputs[1]/AsymmetricQuantizer[op]/asymmetric_quantize" -> "2 SENet/NNCFConv2d[conv1]/conv2d";
 "2 SENet/NNCFConv2d[conv1]/conv2d" -> "3 SENet/BatchNorm2d[bn1]/batch_norm";
@@ -445,7 +444,6 @@ strict digraph  {
 "210 SENet/Sequential[layer4]/PreActBlock[1]/__iadd__" -> "211 SENet/Sequential[layer4]/PreActBlock[1]/AsymmetricQuantizer/asymmetric_quantize";
 "211 SENet/Sequential[layer4]/PreActBlock[1]/AsymmetricQuantizer/asymmetric_quantize" -> "212 SENet/avg_pool2d";
 "212 SENet/avg_pool2d" -> "213 SENet/AsymmetricQuantizer/asymmetric_quantize";
-"213 SENet/AsymmetricQuantizer/asymmetric_quantize" -> "214 SENet/view";
-"214 SENet/view" -> "216 SENet/NNCFLinear[linear]/linear";
-"215 SENet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/AsymmetricQuantizer[op]/asymmetric_quantize" -> "216 SENet/NNCFLinear[linear]/linear";
+"213 SENet/AsymmetricQuantizer/asymmetric_quantize" -> "215 SENet/NNCFLinear[linear]/linear";
+"214 SENet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/AsymmetricQuantizer[op]/asymmetric_quantize" -> "215 SENet/NNCFLinear[linear]/linear";
 }

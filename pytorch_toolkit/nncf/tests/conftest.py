@@ -39,7 +39,17 @@ def pytest_addoption(parser):
         "--weekly-models", type=str, default=None, help="Path to models' weights for weekly tests"
     )
     parser.addoption(
+        "--sota-checkpoints-dir", type=str, default=None, help="Path to checkpoints directory for sota accuracy test"
+    )
+    parser.addoption(
+        "--sota-data-dir", type=str, default=None, help="Path to datasets directory for sota accuracy test"
+    )
+    parser.addoption(
         "--imagenet", action="store_true", default=False, help="Enable tests with imagenet"
+    )
+    parser.addoption(
+        "--backward-compat-models", type=str, default=None, help="Path to NNCF-traned model checkpoints that are tested"
+                                                                 "to be strictly loadable"
     )
 
 
@@ -56,6 +66,19 @@ def enable_imagenet(request):
 @pytest.fixture(scope="module")
 def weekly_models_path(request):
     return request.config.getoption("--weekly-models")
+
+@pytest.fixture(scope="module")
+def sota_checkpoints_dir(request):
+    return request.config.getoption("--sota-checkpoints-dir")
+
+@pytest.fixture(scope="module")
+def sota_data_dir(request):
+    return request.config.getoption("--sota-data-dir")
+
+
+@pytest.fixture(scope="module")
+def backward_compat_models_path(request):
+    return request.config.getoption("--backward-compat-models")
 
 
 @pytest.fixture(autouse=True)

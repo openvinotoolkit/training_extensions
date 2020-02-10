@@ -1,7 +1,9 @@
 {
   "model": "ssd_vgg",
   "batchnorm": true,
-  "input_sample_size": [1, 3, 512, 512],
+  "input_info": {
+    "sample_size":  [1, 3, 512, 512]
+  },
   "pretrained": false,
   "basenet": "./vgg16_bn-6c64b313.pth", // taken from https://download.pytorch.org/models/vgg16_bn-6c64b313.pth
   "num_classes": 21,

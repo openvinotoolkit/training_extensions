@@ -44,8 +44,7 @@ strict digraph  {
 "42 VGG/Sequential[features]/ReLU[42]/RELU" [id=42, scope="VGG/Sequential[features]/ReLU[42]", type=RELU];
 "43 VGG/Sequential[features]/MaxPool2d[43]/max_pool2d" [id=43, scope="VGG/Sequential[features]/MaxPool2d[43]", type=max_pool2d];
 "44 VGG/Sequential[features]/AvgPool2d[44]/avg_pool2d" [id=44, scope="VGG/Sequential[features]/AvgPool2d[44]", type=avg_pool2d];
-"45 VGG/view" [id=45, scope=VGG, type=view];
-"46 VGG/Linear[classifier]/linear" [id=46, scope="VGG/Linear[classifier]", type=linear];
+"45 VGG/Linear[classifier]/linear" [id=45, scope="VGG/Linear[classifier]", type=linear];
 "0 VGG/Sequential[features]/Conv2d[0]/conv2d" -> "1 VGG/Sequential[features]/BatchNorm2d[1]/batch_norm";
 "1 VGG/Sequential[features]/BatchNorm2d[1]/batch_norm" -> "2 VGG/Sequential[features]/ReLU[2]/RELU";
 "2 VGG/Sequential[features]/ReLU[2]/RELU" -> "3 VGG/Sequential[features]/Conv2d[3]/conv2d";
@@ -90,6 +89,5 @@ strict digraph  {
 "41 VGG/Sequential[features]/BatchNorm2d[41]/batch_norm" -> "42 VGG/Sequential[features]/ReLU[42]/RELU";
 "42 VGG/Sequential[features]/ReLU[42]/RELU" -> "43 VGG/Sequential[features]/MaxPool2d[43]/max_pool2d";
 "43 VGG/Sequential[features]/MaxPool2d[43]/max_pool2d" -> "44 VGG/Sequential[features]/AvgPool2d[44]/avg_pool2d";
-"44 VGG/Sequential[features]/AvgPool2d[44]/avg_pool2d" -> "45 VGG/view";
-"45 VGG/view" -> "46 VGG/Linear[classifier]/linear";
+"44 VGG/Sequential[features]/AvgPool2d[44]/avg_pool2d" -> "45 VGG/Linear[classifier]/linear";
 }

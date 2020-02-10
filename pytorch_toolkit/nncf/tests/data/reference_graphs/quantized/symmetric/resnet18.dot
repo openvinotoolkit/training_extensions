@@ -115,9 +115,8 @@ strict digraph  {
 "113 ResNet/Sequential[layer4]/BasicBlock[1]/SymmetricQuantizer/symmetric_quantize" [id=113, scope="ResNet/Sequential[layer4]/BasicBlock[1]/SymmetricQuantizer", type=symmetric_quantize];
 "114 ResNet/avg_pool2d" [id=114, scope=ResNet, type=avg_pool2d];
 "115 ResNet/SymmetricQuantizer/symmetric_quantize" [id=115, scope="ResNet/SymmetricQuantizer", type=symmetric_quantize];
-"116 ResNet/view" [id=116, scope=ResNet, type=view];
-"117 ResNet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/SymmetricQuantizer[op]/symmetric_quantize" [id=117, scope="ResNet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/SymmetricQuantizer[op]", type=symmetric_quantize];
-"118 ResNet/NNCFLinear[linear]/linear" [id=118, scope="ResNet/NNCFLinear[linear]", type=linear];
+"116 ResNet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/SymmetricQuantizer[op]/symmetric_quantize" [id=116, scope="ResNet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/SymmetricQuantizer[op]", type=symmetric_quantize];
+"117 ResNet/NNCFLinear[linear]/linear" [id=117, scope="ResNet/NNCFLinear[linear]", type=linear];
 "0 ResNet/NNCFConv2d[conv1]/ModuleDict[pre_ops]/UpdateWeight[0]/SymmetricQuantizer[op]/symmetric_quantize" -> "2 ResNet/NNCFConv2d[conv1]/conv2d";
 "1 ResNet/NNCFConv2d[conv1]/ModuleDict[pre_ops]/UpdateInputs[1]/SymmetricQuantizer[op]/symmetric_quantize" -> "2 ResNet/NNCFConv2d[conv1]/conv2d";
 "2 ResNet/NNCFConv2d[conv1]/conv2d" -> "3 ResNet/BatchNorm2d[bn1]/batch_norm";
@@ -241,7 +240,6 @@ strict digraph  {
 "112 ResNet/Sequential[layer4]/BasicBlock[1]/RELU" -> "113 ResNet/Sequential[layer4]/BasicBlock[1]/SymmetricQuantizer/symmetric_quantize";
 "113 ResNet/Sequential[layer4]/BasicBlock[1]/SymmetricQuantizer/symmetric_quantize" -> "114 ResNet/avg_pool2d";
 "114 ResNet/avg_pool2d" -> "115 ResNet/SymmetricQuantizer/symmetric_quantize";
-"115 ResNet/SymmetricQuantizer/symmetric_quantize" -> "116 ResNet/view";
-"116 ResNet/view" -> "118 ResNet/NNCFLinear[linear]/linear";
-"117 ResNet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/SymmetricQuantizer[op]/symmetric_quantize" -> "118 ResNet/NNCFLinear[linear]/linear";
+"115 ResNet/SymmetricQuantizer/symmetric_quantize" -> "117 ResNet/NNCFLinear[linear]/linear";
+"116 ResNet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/SymmetricQuantizer[op]/symmetric_quantize" -> "117 ResNet/NNCFLinear[linear]/linear";
 }

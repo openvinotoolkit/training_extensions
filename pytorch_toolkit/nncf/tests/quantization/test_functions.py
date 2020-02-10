@@ -18,6 +18,7 @@ from torch.autograd import Variable
 
 from nncf.quantization.quantize_functions import asymmetric_quantize, symmetric_quantize
 from nncf.utils import sum_like
+from tests.test_helpers import get_grads, check_equal
 
 EPS = 1
 
@@ -78,16 +79,6 @@ class ReferenceQuantizeAsymmetric:
 def zero_grad(variables):
     for variable in variables:
         variable.grad.zero_()
-
-
-def get_grads(variables):
-    return [var.grad.clone() for var in variables]
-
-
-def check_equal(test, reference):
-    for i, (x, y) in enumerate(zip(test, reference)):
-        y = y.cpu().detach().numpy()
-        np.testing.assert_allclose(x, y, rtol=1e-4, err_msg="Index: {}".format(i))
 
 
 def idfn(val):
@@ -197,7 +188,7 @@ class TestParametrized:
 
             test_value = symmetric_quantize(test_input, levels, level_low, level_high, test_scale, EPS)
 
-            check_equal(ref_value, test_value)
+            check_equal(ref_value, test_value, rtol=1e-3)
 
         def test_quantize_symmetric_backward(self, _seed, is_signed, is_weights, input_size, bits, use_cuda,
                                              scale_mode):

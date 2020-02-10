@@ -57,9 +57,8 @@ strict digraph  {
 "55 VGG/Sequential[features]/ReLU[42]/RELU" [id=55, scope="VGG/Sequential[features]/ReLU[42]", type=RELU];
 "56 VGG/Sequential[features]/MaxPool2d[43]/max_pool2d" [id=56, scope="VGG/Sequential[features]/MaxPool2d[43]", type=max_pool2d];
 "57 VGG/Sequential[features]/AvgPool2d[44]/avg_pool2d" [id=57, scope="VGG/Sequential[features]/AvgPool2d[44]", type=avg_pool2d];
-"58 VGG/view" [id=58, scope=VGG, type=view];
-"59 VGG/NNCFLinear[classifier]/ModuleDict[pre_ops]/UpdateWeight[0]/BinaryMask[op]/apply_binary_mask" [id=59, scope="VGG/NNCFLinear[classifier]/ModuleDict[pre_ops]/UpdateWeight[0]/BinaryMask[op]", type=apply_binary_mask];
-"60 VGG/NNCFLinear[classifier]/linear" [id=60, scope="VGG/NNCFLinear[classifier]", type=linear];
+"58 VGG/NNCFLinear[classifier]/ModuleDict[pre_ops]/UpdateWeight[0]/BinaryMask[op]/apply_binary_mask" [id=58, scope="VGG/NNCFLinear[classifier]/ModuleDict[pre_ops]/UpdateWeight[0]/BinaryMask[op]", type=apply_binary_mask];
+"59 VGG/NNCFLinear[classifier]/linear" [id=59, scope="VGG/NNCFLinear[classifier]", type=linear];
 "0 VGG/Sequential[features]/NNCFConv2d[0]/ModuleDict[pre_ops]/UpdateWeight[0]/BinaryMask[op]/apply_binary_mask" -> "1 VGG/Sequential[features]/NNCFConv2d[0]/conv2d";
 "1 VGG/Sequential[features]/NNCFConv2d[0]/conv2d" -> "2 VGG/Sequential[features]/BatchNorm2d[1]/batch_norm";
 "2 VGG/Sequential[features]/BatchNorm2d[1]/batch_norm" -> "3 VGG/Sequential[features]/ReLU[2]/RELU";
@@ -117,7 +116,6 @@ strict digraph  {
 "54 VGG/Sequential[features]/BatchNorm2d[41]/batch_norm" -> "55 VGG/Sequential[features]/ReLU[42]/RELU";
 "55 VGG/Sequential[features]/ReLU[42]/RELU" -> "56 VGG/Sequential[features]/MaxPool2d[43]/max_pool2d";
 "56 VGG/Sequential[features]/MaxPool2d[43]/max_pool2d" -> "57 VGG/Sequential[features]/AvgPool2d[44]/avg_pool2d";
-"57 VGG/Sequential[features]/AvgPool2d[44]/avg_pool2d" -> "58 VGG/view";
-"58 VGG/view" -> "60 VGG/NNCFLinear[classifier]/linear";
-"59 VGG/NNCFLinear[classifier]/ModuleDict[pre_ops]/UpdateWeight[0]/BinaryMask[op]/apply_binary_mask" -> "60 VGG/NNCFLinear[classifier]/linear";
+"57 VGG/Sequential[features]/AvgPool2d[44]/avg_pool2d" -> "59 VGG/NNCFLinear[classifier]/linear";
+"58 VGG/NNCFLinear[classifier]/ModuleDict[pre_ops]/UpdateWeight[0]/BinaryMask[op]/apply_binary_mask" -> "59 VGG/NNCFLinear[classifier]/linear";
 }

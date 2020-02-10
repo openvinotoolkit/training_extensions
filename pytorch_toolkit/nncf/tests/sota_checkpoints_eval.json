@@ -1,0 +1,330 @@
+{
+    "classification":
+        {
+            "imagenet":
+                {
+                    "resnet50_imagenet":
+                        {
+                            "config":"quantization/resnet50_imagenet.json",
+                            "target":76.13,
+                            "metric_type":"Acc@1",
+                            "model_description":"ResNet-50"
+                        },
+                    "resnet50_imagenet_int8":
+                        {
+                            "config":"quantization/resnet50_imagenet_int8.json",
+                            "reference":"resnet50_imagenet",
+                            "target":76.54,
+                            "metric_type":"Acc@1",
+                            "resume":"resnet50_imagenet_int8.pth",
+                            "model_description":"ResNet-50",
+                            "compression_description":"INT8",
+                            "diff_fp32_min":-1,
+                            "diff_fp32_max":0.1
+                        },
+                    "resnet50_imagenet_rb_sparsity_int8":
+                        {
+                            "config":"sparsity_quantization/resnet50_imagenet_rb_sparsity_int8.json",
+                            "reference":"resnet50_imagenet",
+                            "target":75.28,
+                            "metric_type":"Acc@1",
+                            "resume":"resnet50_imagenet_rb_sparsity_int8.pth",
+                            "model_description":"ResNet-50",
+                            "compression_description":"INT8 + Sparsity 61% (RB)",
+                            "diff_fp32_min":-1,
+                            "diff_fp32_max":0.1
+                        },
+                    "inception_v3_imagenet":
+                        {
+                            "config":"quantization/inception_v3_imagenet.json",
+                            "target":77.32,
+                            "metric_type":"Acc@1",
+                            "model_description":"Inception V3"
+                        },
+                    "inception_v3_imagenet_int8":
+                        {
+                            "config":"quantization/inception_v3_imagenet_int8.json",
+                            "reference":"inception_v3_imagenet",
+                            "target":77.46,
+                            "metric_type":"Acc@1",
+                            "resume":"inception_v3_imagenet_int8.pth",
+                            "model_description":"Inception V3",
+                            "compression_description":"INT8",
+                            "diff_fp32_min":-1,
+                            "diff_fp32_max":0.1
+                        },
+                    "inception_v3_imagenet_rb_sparsity_int8":
+                        {
+                            "config":"sparsity_quantization/inception_v3_imagenet_rb_sparsity_int8.json",
+                            "reference":"inception_v3_imagenet",
+                            "target":77.02,
+                            "metric_type":"Acc@1",
+                            "resume":"inception_v3_imagenet_rb_sparsity_int8.pth",
+                            "model_description":"Inception V3",
+                            "compression_description":"INT8 + Sparsity 61% (RB)",
+                            "diff_fp32_min":-1,
+                            "diff_fp32_max":0.1
+                        },
+                    "mobilenetv2_imagenet":
+                        {
+                            "config":"quantization/mobilenetv2_imagenet.json",
+                            "target":71.81,
+                            "metric_type":"Acc@1",
+                            "resume":"mobilenetv2_imagenet.pth",
+                            "model_description":"MobileNet V2"
+                        },
+                    "mobilenetv2_imagenet_int8":
+                        {
+                            "config":"quantization/mobilenetv2_imagenet_int8.json",
+                            "reference":"mobilenetv2_imagenet",
+                            "target":71.33,
+                            "metric_type":"Acc@1",
+                            "resume":"mobilenetv2_imagenet_int8.pth",
+                            "model_description":"MobileNet V2",
+                            "compression_description":"INT8",
+                            "diff_fp32_min":-1,
+                            "diff_fp32_max":0.1
+                        },
+                    "mobilenetv2_imagenet_rb_sparsity_int8":
+                        {
+                            "config":"sparsity_quantization/mobilenetv2_imagenet_rb_sparsity_int8.json",
+                            "reference":"mobilenetv2_imagenet",
+                            "target":71.04,
+                            "metric_type":"Acc@1",
+                            "resume":"mobilenetv2_imagenet_rb_sparsity_int8.pth",
+                            "model_description":"MobileNet V2",
+                            "compression_description":"INT8 + Sparsity 52% (RB)",
+                            "diff_fp32_min":-1,
+                            "diff_fp32_max":0.1
+                        },
+                    "squeezenet1_1_imagenet":
+                        {
+                            "config":"quantization/squeezenet1_1_imagenet.json",
+                            "target":58.18,
+                            "metric_type":"Acc@1",
+                            "model_description":"SqueezeNet V1.1"
+                        },
+                    "squeezenet1_1_imagenet_int8":
+                        {
+                            "config":"quantization/squeezenet1_1_imagenet_int8.json",
+                            "reference":"squeezenet1_1_imagenet",
+                            "target":58.31,
+                            "metric_type":"Acc@1",
+                            "resume":"squeezenet1_1_imagenet_int8.pth",
+                            "model_description":"SqueezeNet V1.1",
+                            "compression_description":"INT8",
+                            "diff_fp32_min":-1,
+                            "diff_fp32_max":0.1
+                        },
+                    "resnet18_imagenet":
+                        {
+                            "config":"binarization/resnet18_imagenet.json",
+                            "target":69.76,
+                            "metric_type":"Acc@1",
+                            "model_description":"ResNet-18"
+                        },
+                    "resnet18_imagenet_binarization_xnor":
+                        {
+                            "config":"binarization/resnet18_imagenet_bin_xnor.json",
+                            "reference":"resnet18_imagenet",
+                            "target":61.58,
+                            "metric_type":"Acc@1",
+                            "resume":"resnet18_imagenet_binarization_xnor.pth",
+                            "model_description":"ResNet-18",
+                            "compression_description":"XNOR (weights), scale/threshold (activations)",
+                            "diff_fp32_min":-1,
+                            "diff_fp32_max":0.1
+                        },
+                    "resnet18_imagenet_binarization_dorefa":
+                        {
+                            "config":"binarization/resnet18_imagenet_bin_dorefa.json",
+                            "reference":"resnet18_imagenet",
+                            "target":61.57,
+                            "metric_type":"Acc@1",
+                            "resume":"resnet18_imagenet_binarization_dorefa.pth",
+                            "model_description":"ResNet-18",
+                            "compression_description":"DoReFa (weights), scale/threshold (activations)",
+                            "diff_fp32_min":-1,
+                            "diff_fp32_max":0.1
+                        }
+                }
+        },
+    "object_detection":
+        {
+            "VOCdevkit":
+                {
+                    "ssd300_vgg_voc":
+                        {
+                            "config":"ssd300_vgg_voc.json",
+                            "target":78.28,
+                            "metric_type":"Mean AP",
+                            "resume":"ssd300_vgg_voc.pth",
+                            "batch":120,
+                            "model_description":"SSD300-BN"
+                        },
+                    "ssd300_vgg_voc_int8":
+                        {
+                            "config":"ssd300_vgg_voc_int8.json",
+                            "reference":"ssd300_vgg_voc",
+                            "target":78.02,
+                            "metric_type":"Mean AP",
+                            "resume":"ssd300_vgg_voc_int8.pth",
+                            "model_description":"SSD300-BN",
+                            "compression_description":"INT8",
+                            "diff_fp32_min":-1,
+                            "diff_fp32_max":0.1
+                        },
+                    "ssd300_vgg_voc_magnitude_sparsity_int8":
+                        {
+                            "config":"ssd300_vgg_voc_magnitude_sparsity_int8.json",
+                            "reference":"ssd300_vgg_voc",
+                            "target":77.96,
+                            "metric_type":"Mean AP",
+                            "resume":"ssd300_vgg_voc_magnitude_sparsity_int8.pth",
+                            "model_description":"SSD300-BN",
+                            "compression_description":"INT8 + Sparsity 70% (Magnitude)",
+                            "diff_fp32_min":-1,
+                            "diff_fp32_max":0.1
+                        },
+                    "ssd512_vgg_voc":
+                        {
+                            "config":"ssd512_vgg_voc.json",
+                            "target":80.26,
+                            "metric_type":"Mean AP",
+                            "resume":"ssd512_vgg_voc.pth",
+                            "batch":60,
+                            "model_description":"SSD512-BN"
+                        },
+                    "ssd512_vgg_voc_int8":
+                        {
+                            "config":"ssd512_vgg_voc_int8.json",
+                            "reference":"ssd512_vgg_voc",
+                            "target":80.58,
+                            "metric_type":"Mean AP",
+                            "resume":"ssd512_vgg_voc_int8.pth",
+                            "model_description":"SSD512-BN",
+                            "compression_description":"INT8",
+                            "diff_fp32_min":-1,
+                            "diff_fp32_max":0.1
+                        },
+                    "ssd512_vgg_voc_magnitude_sparsity_int8":
+                        {
+                            "config":"ssd512_vgg_voc_magnitude_sparsity_int8.json",
+                            "reference":"ssd512_vgg_voc",
+                            "target":80.11,
+                            "metric_type":"Mean AP",
+                            "resume":"ssd512_vgg_voc_magnitude_sparsity_int8.pth",
+                            "batch":60,
+                            "model_description":"SSD512-BN",
+                            "compression_description":"INT8 + Sparsity 70% (Magnitude)",
+                            "diff_fp32_min":-1,
+                            "diff_fp32_max":0.1
+                        }
+                }
+        },
+    "semantic_segmentation":
+        {
+            "camvid":
+                {
+                    "unet_camvid":
+                        {
+                            "config":"unet_camvid.json",
+                            "target":71.95,
+                            "metric_type":"Mean IoU",
+                            "resume":"unet_camvid.pth",
+                            "model_description":"UNet"
+                        },
+                    "unet_camvid_int8":
+                        {
+                            "config":"unet_camvid_int8.json",
+                            "reference":"unet_camvid",
+                            "target":71.66,
+                            "metric_type":"Mean IoU",
+                            "resume":"unet_camvid_int8.pth",
+                            "model_description":"UNet",
+                            "compression_description":"INT8",
+                            "diff_fp32_min":-1,
+                            "diff_fp32_max":0.1
+                        },
+                    "unet_camvid_magnitude_sparsity_int8":
+                        {
+                            "config":"unet_camvid_magnitude_sparsity_int8.json",
+                            "reference":"unet_camvid",
+                            "target":71.72,
+                            "metric_type":"Mean IoU",
+                            "resume":"unet_camvid_magnitude_sparsity_int8.pth",
+                            "model_description":"UNet",
+                            "compression_description":"INT8 + Sparsity 60% (Magnitude)",
+                            "diff_fp32_min":-1,
+                            "diff_fp32_max":0.1
+                        },
+                    "icnet_camvid":
+                        {
+                            "config":"icnet_camvid.json",
+                            "target":67.89,
+                            "metric_type":"Mean IoU",
+                            "resume":"icnet_camvid.pth",
+                            "model_description":"ICNet"
+                        },
+                    "icnet_camvid_int8":
+                        {
+                            "config":"icnet_camvid_int8.json",
+                            "reference":"icnet_camvid",
+                            "target":67.78,
+                            "metric_type":"Mean IoU",
+                            "resume":"icnet_camvid_int8.pth",
+                            "model_description":"ICNet",
+                            "compression_description":"INT8",
+                            "diff_fp32_min":-1,
+                            "diff_fp32_max":0.1
+                        },
+                    "icnet_camvid_magnitude_sparsity_int8":
+                        {
+                            "config":"icnet_camvid_magnitude_sparsity_int8.json",
+                            "reference":"icnet_camvid",
+                            "target":67.55,
+                            "metric_type":"Mean IoU",
+                            "resume":"icnet_camvid_magnitude_sparsity_int8.pth",
+                            "model_description":"ICNet",
+                            "compression_description":"INT8 + Sparsity 60% (Magnitude)",
+                            "diff_fp32_min":-1,
+                            "diff_fp32_max":0.1
+                        }
+                },
+            "mapillary_vistas":
+                {
+                    "unet_mapillary":
+                        {
+                            "config":"unet_mapillary.json",
+                            "target":56.23,
+                            "metric_type":"Mean IoU",
+                            "resume":"unet_mapillary.pth",
+                            "model_description":"UNet"
+                        },
+                    "unet_mapillary_int8":
+                        {
+                            "config":"unet_mapillary_int8.json",
+                            "reference":"unet_mapillary",
+                            "target":56.12,
+                            "metric_type":"Mean IoU",
+                            "resume":"unet_mapillary_int8.pth",
+                            "model_description":"UNet",
+                            "compression_description":"INT8",
+                            "diff_fp32_min":-1,
+                            "diff_fp32_max":0.1
+                        },
+                    "unet_mapillary_magnitude_sparsity_int8":
+                        {
+                            "config":"unet_mapillary_magnitude_sparsity_int8.json",
+                            "reference":"unet_mapillary",
+                            "target":56.0,
+                            "metric_type":"Mean IoU",
+                            "resume":"unet_mapillary_magnitude_sparsity_int8.pth",
+                            "model_description":"UNet",
+                            "compression_description":"INT8 + Sparsity 60% (Magnitude)",
+                            "diff_fp32_min":-1,
+                            "diff_fp32_max":0.1
+                        }
+                }
+        }
+}

@@ -103,9 +103,8 @@ strict digraph  {
 "101 ResNet/Sequential[layer4]/BasicBlock[1]/AsymmetricQuantizer/asymmetric_quantize" [id=101, scope="ResNet/Sequential[layer4]/BasicBlock[1]/AsymmetricQuantizer", type=asymmetric_quantize];
 "102 ResNet/avg_pool2d" [id=102, scope=ResNet, type=avg_pool2d];
 "103 ResNet/AsymmetricQuantizer/asymmetric_quantize" [id=103, scope="ResNet/AsymmetricQuantizer", type=asymmetric_quantize];
-"104 ResNet/view" [id=104, scope=ResNet, type=view];
-"105 ResNet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/AsymmetricQuantizer[op]/asymmetric_quantize" [id=105, scope="ResNet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/AsymmetricQuantizer[op]", type=asymmetric_quantize];
-"106 ResNet/NNCFLinear[linear]/linear" [id=106, scope="ResNet/NNCFLinear[linear]", type=linear];
+"104 ResNet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/AsymmetricQuantizer[op]/asymmetric_quantize" [id=104, scope="ResNet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/AsymmetricQuantizer[op]", type=asymmetric_quantize];
+"105 ResNet/NNCFLinear[linear]/linear" [id=105, scope="ResNet/NNCFLinear[linear]", type=linear];
 "0 ResNet/NNCFConv2d[conv1]/ModuleDict[pre_ops]/UpdateWeight[0]/AsymmetricQuantizer[op]/asymmetric_quantize" -> "2 ResNet/NNCFConv2d[conv1]/conv2d";
 "1 ResNet/NNCFConv2d[conv1]/ModuleDict[pre_ops]/UpdateInputs[1]/AsymmetricQuantizer[op]/asymmetric_quantize" -> "2 ResNet/NNCFConv2d[conv1]/conv2d";
 "2 ResNet/NNCFConv2d[conv1]/conv2d" -> "3 ResNet/BatchNorm2d[bn1]/batch_norm";
@@ -217,7 +216,6 @@ strict digraph  {
 "100 ResNet/Sequential[layer4]/BasicBlock[1]/RELU" -> "101 ResNet/Sequential[layer4]/BasicBlock[1]/AsymmetricQuantizer/asymmetric_quantize";
 "101 ResNet/Sequential[layer4]/BasicBlock[1]/AsymmetricQuantizer/asymmetric_quantize" -> "102 ResNet/avg_pool2d";
 "102 ResNet/avg_pool2d" -> "103 ResNet/AsymmetricQuantizer/asymmetric_quantize";
-"103 ResNet/AsymmetricQuantizer/asymmetric_quantize" -> "104 ResNet/view";
-"104 ResNet/view" -> "106 ResNet/NNCFLinear[linear]/linear";
-"105 ResNet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/AsymmetricQuantizer[op]/asymmetric_quantize" -> "106 ResNet/NNCFLinear[linear]/linear";
+"103 ResNet/AsymmetricQuantizer/asymmetric_quantize" -> "105 ResNet/NNCFLinear[linear]/linear";
+"104 ResNet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/AsymmetricQuantizer[op]/asymmetric_quantize" -> "105 ResNet/NNCFLinear[linear]/linear";
 }

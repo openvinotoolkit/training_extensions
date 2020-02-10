@@ -1,0 +1,28 @@
+strict digraph  {
+"0 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/Linear[input_linear]/linear" [id=0, scope="LSTMCellNNCF/LSTMCellForwardNNCF[cell]/Linear[input_linear]", type=linear];
+"1 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/Linear[hidden_linear]/linear" [id=1, scope="LSTMCellNNCF/LSTMCellForwardNNCF[cell]/Linear[hidden_linear]", type=linear];
+"2 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/__add__" [id=2, scope="LSTMCellNNCF/LSTMCellForwardNNCF[cell]", type=__add__];
+"3 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/sigmoid" [id=3, scope="LSTMCellNNCF/LSTMCellForwardNNCF[cell]", type=sigmoid];
+"4 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/sigmoid" [id=4, scope="LSTMCellNNCF/LSTMCellForwardNNCF[cell]", type=sigmoid];
+"5 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/tanh" [id=5, scope="LSTMCellNNCF/LSTMCellForwardNNCF[cell]", type=tanh];
+"6 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/sigmoid" [id=6, scope="LSTMCellNNCF/LSTMCellForwardNNCF[cell]", type=sigmoid];
+"7 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/__mul__" [id=7, scope="LSTMCellNNCF/LSTMCellForwardNNCF[cell]", type=__mul__];
+"8 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/__mul__" [id=8, scope="LSTMCellNNCF/LSTMCellForwardNNCF[cell]", type=__mul__];
+"9 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/__add__" [id=9, scope="LSTMCellNNCF/LSTMCellForwardNNCF[cell]", type=__add__];
+"10 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/tanh" [id=10, scope="LSTMCellNNCF/LSTMCellForwardNNCF[cell]", type=tanh];
+"11 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/__mul__" [id=11, scope="LSTMCellNNCF/LSTMCellForwardNNCF[cell]", type=__mul__];
+"0 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/Linear[input_linear]/linear" -> "2 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/__add__";
+"1 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/Linear[hidden_linear]/linear" -> "2 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/__add__";
+"2 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/__add__" -> "3 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/sigmoid";
+"2 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/__add__" -> "4 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/sigmoid";
+"2 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/__add__" -> "5 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/tanh";
+"2 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/__add__" -> "6 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/sigmoid";
+"3 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/sigmoid" -> "8 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/__mul__";
+"4 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/sigmoid" -> "7 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/__mul__";
+"5 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/tanh" -> "8 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/__mul__";
+"7 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/__mul__" -> "9 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/__add__";
+"8 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/__mul__" -> "9 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/__add__";
+"6 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/sigmoid" -> "11 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/__mul__";
+"9 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/__add__" -> "10 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/tanh";
+"10 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/tanh" -> "11 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/__mul__";
+}

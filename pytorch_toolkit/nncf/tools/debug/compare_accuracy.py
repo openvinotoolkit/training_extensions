@@ -18,6 +18,7 @@ from functools import partial
 import os
 
 from openvino.inference_engine import IENetwork, IEPlugin, get_version
+from nncf.dynamic_graph.graph_builder import create_input_infos
 
 from tools.ir_utils import get_ir_paths
 
@@ -62,9 +63,11 @@ def main():
     model_bin, model_xml = get_ir_paths(args.model, args.bin)
 
     config = json.load(open(args.config))
-    model_size = config["input_sample_size"][-1]
 
-    size = int(model_size / 0.875)
+    input_infos_list = create_input_infos(config)
+    image_size = input_infos_list[0].shape[-1]
+
+    size = int(image_size / 0.875)
 
     print('IE version: {}'.format(get_version()))
 
@@ -81,7 +84,7 @@ def main():
     val_loader = DataLoader(
         datasets.ImageFolder(args.data, transforms.Compose([
             transforms.Resize(size),
-            transforms.CenterCrop(model_size),
+            transforms.CenterCrop(image_size),
             transforms.ToTensor(),
             transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
         ])),

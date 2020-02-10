@@ -1,9 +1,11 @@
 {
   "model": "ssd_vgg",
   "batchnorm": true,
-  "input_sample_size": [1, 3, 300, 300],
+  "input_info": {
+    "sample_size":  [2, 3, 300, 300]
+  },
   "pretrained": true,
-  "basenet": "./vgg16_bn-6c64b313.pth", // taken from https://download.pytorch.org/models/vgg16_bn-6c64b313.pth
+  "basenet": "./vgg16_bn-6c64b313.pth", // Download this from https://download.pytorch.org/models/vgg16_bn-6c64b313.pth if you want to pretrain your own FP32 net
   "num_classes": 21,
   "dataset": "voc",
   "preprocessing": {

@@ -12,19 +12,20 @@
 """
 
 import logging
-from collections import namedtuple
 from functools import partial
+from typing import Dict
 
 import numpy as np
 import torch
 import torch.nn as nn
 from torch import distributed
 
-from .initializers import MIN_MAX_INITIALIZERS
+from nncf.debug import is_debug
+from nncf.initialization import INITIALIZABLE_MODULES
 from .quantize_functions import symmetric_quantize, asymmetric_quantize
 from ..layer_utils import COMPRESSION_MODULES
 from ..registry import Registry
-from ..utils import get_per_channel_scale_shape
+from ..utils import get_per_channel_scale_shape, get_flat_tensor_contents_string
 
 logger = logging.getLogger(__name__)
 
@@ -42,19 +43,18 @@ class BinarizationMode:
     DOREFA = "dorefa"
 
 
-QuantizationParams = namedtuple(
-    'QuantizationParams', ['bits', 'mode', 'signed', 'signed_scope', 'per_channel']
-)
-QuantizationParams.__new__.__defaults__ = (8, QuantizationMode.SYMMETRIC, False, [], False)
-
-
 class QuantizerConfig:
-    def __init__(self, params: QuantizationParams, input_shape=None, is_weights=False, per_channel=False,
-                 within_signed_scope=False):
-        self.params = params
-        self.is_weights = is_weights
-        self.within_signed_scope = within_signed_scope
+    def __init__(self, bits=8,
+                 mode=QuantizationMode.SYMMETRIC,
+                 signedness_to_force=None,
+                 per_channel=False,
+                 input_shape=None,
+                 is_weights=False):
+        self.bits = bits
+        self.mode = mode
+        self.signedness_to_force = signedness_to_force
         self.per_channel = per_channel
+        self.is_weights = is_weights
         self.input_shape = input_shape
 
 
@@ -65,6 +65,8 @@ class BaseQuantizer(nn.Module):
         self.init_stage = False
         self.initialized = False
         self.state_dict_name = None
+        self.call_count = 0
+        self.scale_shape = 1
 
         class LoadStateListener:
             """
@@ -89,6 +91,8 @@ class BaseQuantizer(nn.Module):
         self.load_listener = LoadStateListener(self)
 
     def forward(self, x):
+        if is_debug():
+            self.call_count += 1
         if self.init_stage:
             return x
         return self.quantize(x)
@@ -96,27 +100,35 @@ class BaseQuantizer(nn.Module):
     def quantize(self, x):
         raise NotImplementedError
 
+    def reset_call_counter(self):
+        self.call_count = 0
+
+    def get_trainable_params(self) -> Dict[str, torch.Tensor]:
+        raise NotImplementedError
+
+    def apply_minmax_init(self, min_values, max_values, distributed_,
+                          log_module_name: str = None):
+        raise NotImplementedError
 
 @COMPRESSION_MODULES.register()
 @QUANTIZATION_MODULES.register(QuantizationMode.SYMMETRIC)
+@INITIALIZABLE_MODULES.register()
 class SymmetricQuantizer(BaseQuantizer):
+    SCALE_PARAM_NAME = 'scale'
+
     def __init__(self, config):
         super().__init__(config)
         self.input_shape = config.input_shape
         self.per_channel = config.per_channel
         self.is_weights = config.is_weights
-        self.within_signed_scope = config.within_signed_scope
-        params = config.params
-        self.num_bits = params.bits
-        self.signed_tensor = nn.Parameter(torch.IntTensor([params.signed]), requires_grad=False)
+        self.num_bits = config.bits
+        self.signedness_to_force = config.signedness_to_force
+        self.signed_tensor = nn.Parameter(torch.IntTensor([0]), requires_grad=False)
         self.collect_scale_statistics = False
 
-        scale_shape = 1
         if self.per_channel:
-            scale_shape = get_per_channel_scale_shape(self.input_shape, self.is_weights)
-        self.scale = nn.Parameter(torch.ones(scale_shape), requires_grad=True)
-
-        self.init_stage = False
+            self.scale_shape = get_per_channel_scale_shape(self.input_shape, self.is_weights)
+        self.scale = nn.Parameter(torch.ones(self.scale_shape), requires_grad=True)
         self.eps = 1e-16
 
         self.level_high = self.level_low = 0
@@ -146,43 +158,55 @@ class SymmetricQuantizer(BaseQuantizer):
         self.set_level_ranges()
         return symmetric_quantize(x, self.levels, self.level_low, self.level_high, self.scale, self.eps)
 
+    def get_trainable_params(self) -> Dict[str, torch.Tensor]:
+        return {self.SCALE_PARAM_NAME: self.scale.detach()}
 
-@MIN_MAX_INITIALIZERS.register('SymmetricQuantizer')
-def _initializer(module, name, min_value, max_value, distributed_):
-    if min_value.item == np.inf or max_value.item() == -np.inf:
-        raise AttributeError('Statistics is not collected for {}'.format(name))
-    sign = min_value.item() < 0 or module.within_signed_scope
-    if sign != module.signed:
-        logger.warning("signed set incorrectly")
-    module.signed = int(sign)
-    if abs(max_value) > 0.1:
-        module.scale.data.fill_(max_value.item())
-    if distributed_:
-        distributed.broadcast(module.scale, 0)
-        distributed.broadcast(module.signed_tensor, 0)
-    logger.debug("Statistics: min={:.2f} max={:.2f}".format(min_value.item(), max_value.item()))
-    logger.info(
-        "Set sign: {} and scale: {:04.2f} for {}".format(module.signed, module.scale.item(), name))
+    def apply_minmax_init(self, min_values, max_values, distributed_, log_module_name: str = None):
+        if self.initialized:
+            logger.debug("Skipped initializing {} - loaded from checkpoint".format(log_module_name))
+            return
+        if torch.any(torch.eq(min_values, np.inf)) or torch.any(torch.eq(max_values, -np.inf)):
+            raise AttributeError('Statistics is not collected for {}'.format(log_module_name))
+        sign = torch.any(torch.lt(min_values, 0))
+        if self.signedness_to_force is not None and sign != self.signedness_to_force:
+            logger.warning("Forcing signed to {} for module {}".format(self.signedness_to_force, log_module_name))
+            sign = self.signedness_to_force
+        self.signed = int(sign)
 
+        abs_max = torch.max(torch.abs(max_values), torch.abs(min_values))
+        SCALE_LOWER_THRESHOLD = 0.1
+        self.scale.fill_(SCALE_LOWER_THRESHOLD)
+        self.scale.masked_scatter_(torch.gt(abs_max, SCALE_LOWER_THRESHOLD), abs_max)
+
+        if distributed_:
+            distributed.broadcast(self.scale, 0)
+            distributed.broadcast(self.signed_tensor, 0)
+
+        logger.info(
+            "Set sign: {} and scale: {} for {}".format(self.signed,
+                                                       get_flat_tensor_contents_string(self.scale),
+                                                       log_module_name))
 
 @COMPRESSION_MODULES.register()
 @QUANTIZATION_MODULES.register(QuantizationMode.ASYMMETRIC)
+@INITIALIZABLE_MODULES.register()
 class AsymmetricQuantizer(BaseQuantizer):
+    INPUT_LOW_PARAM_NAME = 'input_low'
+    INPUT_RANGE_PARAM_NAME = 'input_range'
+
     def __init__(self, config):
         super().__init__(config)
         self.is_weights = config.is_weights
         self.input_shape = config.input_shape
         self.per_channel = config.per_channel
+        self.bits = config.bits
 
-        params = config.params
-        self.bits = params.bits
-
-        scale_shape = 1
+        self.scale_shape = 1
         if self.per_channel:
-            scale_shape = get_per_channel_scale_shape(self.input_shape, self.is_weights)
+            self.scale_shape = get_per_channel_scale_shape(self.input_shape, self.is_weights)
 
-        self.input_low = nn.Parameter(torch.zeros(scale_shape), requires_grad=True)
-        self.input_range = nn.Parameter(torch.ones(scale_shape), requires_grad=True)
+        self.input_low = nn.Parameter(torch.zeros(self.scale_shape), requires_grad=True)
+        self.input_range = nn.Parameter(torch.ones(self.scale_shape), requires_grad=True)
         self.eps = 1e-16
 
     @property
@@ -205,18 +229,23 @@ class AsymmetricQuantizer(BaseQuantizer):
         return asymmetric_quantize(x, self.levels, self.level_low, self.level_high, self.input_low, self.input_range,
                                    self.eps)
 
+    def get_trainable_params(self) -> Dict[str, torch.Tensor]:
+        return {self.INPUT_LOW_PARAM_NAME: self.input_low.detach(),
+                self.INPUT_RANGE_PARAM_NAME: self.input_range.detach()}
 
-@MIN_MAX_INITIALIZERS.register('AsymmetricQuantizer')
-def _initializer(module, name, min_value, max_value, distributed_):
-    if min_value.item() == np.inf or max_value.item() == -np.inf:
-        raise AttributeError('Statistics is not collected for {}'.format(name))
-    module.input_low.data.fill_(min_value.item())
-    range_ = (max_value - min_value).item()
-    if range_ > 0.01:
-        module.input_range.data.fill_(range_)
-    if distributed_:
-        distributed.broadcast(module.input_low, 0)
-        distributed.broadcast(module.input_range, 0)
-    logger.debug("Statistics: min={:.2f} max={:.2f}".format(min_value.item(), max_value.item()))
-    logger.info("Set input_low: {:04.2f} and input_range: {:04.2f} for {}"
-                .format(module.input_low.item(), module.input_range.item(), name))
+    def apply_minmax_init(self, min_values, max_values, distributed_, log_module_name: str = None):
+        if self.initialized:
+            logger.debug("Skipped initializing {} - loaded from checkpoint".format(log_module_name))
+            return
+        if torch.any(torch.eq(min_values, np.inf)) or torch.any(torch.eq(max_values, -np.inf)):
+            raise AttributeError('Statistics is not collected for {}'.format(log_module_name))
+        self.input_low.data = min_values.data
+        range_ = max_values - min_values
+        self.input_range.masked_scatter_(torch.gt(range_, 0.01), range_)
+
+        if distributed_:
+            distributed.broadcast(self.input_low, 0)
+            distributed.broadcast(self.input_range, 0)
+        logger.info("Set input_low: {} and input_range: {} for {}"
+                    .format(get_flat_tensor_contents_string(self.input_low),
+                            get_flat_tensor_contents_string(self.input_range), log_module_name))

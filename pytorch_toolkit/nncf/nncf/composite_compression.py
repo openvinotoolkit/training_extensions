@@ -10,9 +10,11 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 """
+from typing import List
 
 from torch import nn
 from nncf.compression_method_api import CompressionLoss, CompressionAlgorithm, CompressionScheduler
+from nncf.dynamic_graph.graph_builder import ModelInputInfo
 
 
 class CompositeCompressionLoss(CompressionLoss):
@@ -74,8 +76,8 @@ class CompositeCompressionScheduler(CompressionScheduler):
 
 
 class CompositeCompressionAlgorithm(CompressionAlgorithm):
-    def __init__(self, model, config, input_size):
-        super().__init__(model, config, input_size)
+    def __init__(self, model, config, input_infos: List[ModelInputInfo] = None, dummy_forward_fn=None):
+        super().__init__(model, config, input_infos, dummy_forward_fn)
         self._child_algos = []
         self._loss = CompositeCompressionLoss()
         self._scheduler = CompositeCompressionScheduler()

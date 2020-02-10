@@ -30,7 +30,7 @@ def test_simple():
 
     ex = N('b') + N('c')
 
-    matches = search_all(ex, g)
+    matches = search_all(g, ex)
     assert matches == [[2, 3]]
 
 
@@ -41,7 +41,7 @@ def test_two_matched():
 
     ex = N('b') + N('c')
 
-    matches = search_all(ex, g)
+    matches = search_all(g, ex)
     assert matches == [[2, 3], [5, 6]]
 
 
@@ -52,7 +52,7 @@ def test_graph_branching():
 
     ex = N('a') + N('b')
 
-    matches = search_all(ex, g)
+    matches = search_all(g, ex)
     assert matches == [[1, 2]]
 
 
@@ -64,7 +64,7 @@ def test_graph_branching_other_order():
 
     ex = N('a') + N('b')
 
-    matches = search_all(ex, g)
+    matches = search_all(g, ex)
     assert matches == [[1, 3]]
 
 
@@ -76,7 +76,7 @@ def test_alternating():
 
     ex = N('a') + (N('a') | N('b'))
 
-    matches = search_all(ex, g)
+    matches = search_all(g, ex)
     assert matches == [[1, 2]]
 
 
@@ -91,8 +91,8 @@ def test_alternating_longest():
     ex = N('a') + (N('b') | N('b') + N('c'))
     ex2 = N('a') + (N('b') + N('c') | N('b'))
 
-    matches = search_all(ex, g)
-    matches2 = search_all(ex2, g)
+    matches = search_all(g, ex)
+    matches2 = search_all(g, ex2)
 
     assert matches2 == matches == [[1, 2, 3]]
 
@@ -111,7 +111,7 @@ def test_branching_expression():
 
     ex = N('a') + (N('b') & N('c')) + N('d')
 
-    matches = search_all(ex, g)
+    matches = search_all(g, ex)
     assert matches == [[1, 2, 3, 4]]
 
 
@@ -129,7 +129,7 @@ def test_branching_expression3():
 
     ex = N('a') + (N('b') & N('c')) + N('d')
 
-    matches = search_all(ex, g)
+    matches = search_all(g, ex)
     assert matches == [[1, 2, 3, 4]]
 
 
@@ -145,5 +145,5 @@ def test_branching_expression2():
     node_expression = N('d')
     ex = n + c_ + node_expression
 
-    matches = search_all(ex, g)
+    matches = search_all(g, ex)
     assert matches == [[1, 2, 3, 5, 4]]

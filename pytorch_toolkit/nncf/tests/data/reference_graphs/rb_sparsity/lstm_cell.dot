@@ -1,0 +1,36 @@
+strict digraph  {
+"0 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/NNCFLinear[input_linear]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/calc_rb_binary_mask" [id=0, scope="LSTMCellNNCF/LSTMCellForwardNNCF[cell]/NNCFLinear[input_linear]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]", type=calc_rb_binary_mask];
+"1 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/NNCFLinear[input_linear]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask" [id=1, scope="LSTMCellNNCF/LSTMCellForwardNNCF[cell]/NNCFLinear[input_linear]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]", type=apply_binary_mask];
+"2 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/NNCFLinear[input_linear]/linear" [id=2, scope="LSTMCellNNCF/LSTMCellForwardNNCF[cell]/NNCFLinear[input_linear]", type=linear];
+"3 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/NNCFLinear[hidden_linear]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/calc_rb_binary_mask" [id=3, scope="LSTMCellNNCF/LSTMCellForwardNNCF[cell]/NNCFLinear[hidden_linear]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]", type=calc_rb_binary_mask];
+"4 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/NNCFLinear[hidden_linear]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask" [id=4, scope="LSTMCellNNCF/LSTMCellForwardNNCF[cell]/NNCFLinear[hidden_linear]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]", type=apply_binary_mask];
+"5 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/NNCFLinear[hidden_linear]/linear" [id=5, scope="LSTMCellNNCF/LSTMCellForwardNNCF[cell]/NNCFLinear[hidden_linear]", type=linear];
+"6 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/__add__" [id=6, scope="LSTMCellNNCF/LSTMCellForwardNNCF[cell]", type=__add__];
+"7 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/sigmoid" [id=7, scope="LSTMCellNNCF/LSTMCellForwardNNCF[cell]", type=sigmoid];
+"8 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/sigmoid" [id=8, scope="LSTMCellNNCF/LSTMCellForwardNNCF[cell]", type=sigmoid];
+"9 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/tanh" [id=9, scope="LSTMCellNNCF/LSTMCellForwardNNCF[cell]", type=tanh];
+"10 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/sigmoid" [id=10, scope="LSTMCellNNCF/LSTMCellForwardNNCF[cell]", type=sigmoid];
+"11 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/__mul__" [id=11, scope="LSTMCellNNCF/LSTMCellForwardNNCF[cell]", type=__mul__];
+"12 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/__mul__" [id=12, scope="LSTMCellNNCF/LSTMCellForwardNNCF[cell]", type=__mul__];
+"13 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/__add__" [id=13, scope="LSTMCellNNCF/LSTMCellForwardNNCF[cell]", type=__add__];
+"14 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/tanh" [id=14, scope="LSTMCellNNCF/LSTMCellForwardNNCF[cell]", type=tanh];
+"15 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/__mul__" [id=15, scope="LSTMCellNNCF/LSTMCellForwardNNCF[cell]", type=__mul__];
+"0 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/NNCFLinear[input_linear]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/calc_rb_binary_mask" -> "1 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/NNCFLinear[input_linear]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask";
+"1 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/NNCFLinear[input_linear]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask" -> "2 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/NNCFLinear[input_linear]/linear";
+"2 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/NNCFLinear[input_linear]/linear" -> "6 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/__add__";
+"3 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/NNCFLinear[hidden_linear]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/calc_rb_binary_mask" -> "4 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/NNCFLinear[hidden_linear]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask";
+"4 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/NNCFLinear[hidden_linear]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask" -> "5 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/NNCFLinear[hidden_linear]/linear";
+"5 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/NNCFLinear[hidden_linear]/linear" -> "6 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/__add__";
+"6 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/__add__" -> "7 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/sigmoid";
+"6 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/__add__" -> "8 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/sigmoid";
+"6 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/__add__" -> "9 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/tanh";
+"6 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/__add__" -> "10 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/sigmoid";
+"7 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/sigmoid" -> "12 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/__mul__";
+"8 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/sigmoid" -> "11 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/__mul__";
+"9 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/tanh" -> "12 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/__mul__";
+"10 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/sigmoid" -> "15 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/__mul__";
+"11 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/__mul__" -> "13 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/__add__";
+"12 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/__mul__" -> "13 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/__add__";
+"13 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/__add__" -> "14 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/tanh";
+"14 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/tanh" -> "15 LSTMCellNNCF/LSTMCellForwardNNCF[cell]/__mul__";
+}

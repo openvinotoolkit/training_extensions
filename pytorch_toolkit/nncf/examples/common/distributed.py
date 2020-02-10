@@ -82,6 +82,11 @@ class DistributedSampler(Sampler):
         self.samples_per_rank = (len(indices) - 1) // self.world_size + 1
         self.indices = indices[self.rank * self.samples_per_rank: (self.rank + 1) * self.samples_per_rank]
 
+        if len(self.indices) < self.samples_per_rank:
+            # Workaround for mock datasets with a small number of entries
+            pad = [0] * (self.samples_per_rank - len(self.indices))
+            self.indices += pad
+
     def __iter__(self):
         return iter(self.indices)
 

@@ -728,9 +728,8 @@ strict digraph  {
 "726 DenseNet/SymmetricQuantizer/symmetric_quantize" [id=726, scope="DenseNet/SymmetricQuantizer", type=symmetric_quantize];
 "727 DenseNet/avg_pool2d" [id=727, scope=DenseNet, type=avg_pool2d];
 "728 DenseNet/SymmetricQuantizer/symmetric_quantize" [id=728, scope="DenseNet/SymmetricQuantizer", type=symmetric_quantize];
-"729 DenseNet/view" [id=729, scope=DenseNet, type=view];
-"730 DenseNet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/SymmetricQuantizer[op]/symmetric_quantize" [id=730, scope="DenseNet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/SymmetricQuantizer[op]", type=symmetric_quantize];
-"731 DenseNet/NNCFLinear[linear]/linear" [id=731, scope="DenseNet/NNCFLinear[linear]", type=linear];
+"729 DenseNet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/SymmetricQuantizer[op]/symmetric_quantize" [id=729, scope="DenseNet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/SymmetricQuantizer[op]", type=symmetric_quantize];
+"730 DenseNet/NNCFLinear[linear]/linear" [id=730, scope="DenseNet/NNCFLinear[linear]", type=linear];
 "0 DenseNet/NNCFConv2d[conv1]/ModuleDict[pre_ops]/UpdateWeight[0]/SymmetricQuantizer[op]/symmetric_quantize" -> "2 DenseNet/NNCFConv2d[conv1]/conv2d";
 "1 DenseNet/NNCFConv2d[conv1]/ModuleDict[pre_ops]/UpdateInputs[1]/SymmetricQuantizer[op]/symmetric_quantize" -> "2 DenseNet/NNCFConv2d[conv1]/conv2d";
 "2 DenseNet/NNCFConv2d[conv1]/conv2d" -> "3 DenseNet/NNCFConv2d[conv1]/SymmetricQuantizer/symmetric_quantize";
@@ -1517,7 +1516,6 @@ strict digraph  {
 "725 DenseNet/RELU" -> "726 DenseNet/SymmetricQuantizer/symmetric_quantize";
 "726 DenseNet/SymmetricQuantizer/symmetric_quantize" -> "727 DenseNet/avg_pool2d";
 "727 DenseNet/avg_pool2d" -> "728 DenseNet/SymmetricQuantizer/symmetric_quantize";
-"728 DenseNet/SymmetricQuantizer/symmetric_quantize" -> "729 DenseNet/view";
-"729 DenseNet/view" -> "731 DenseNet/NNCFLinear[linear]/linear";
-"730 DenseNet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/SymmetricQuantizer[op]/symmetric_quantize" -> "731 DenseNet/NNCFLinear[linear]/linear";
+"728 DenseNet/SymmetricQuantizer/symmetric_quantize" -> "730 DenseNet/NNCFLinear[linear]/linear";
+"729 DenseNet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/SymmetricQuantizer[op]/symmetric_quantize" -> "730 DenseNet/NNCFLinear[linear]/linear";
 }
