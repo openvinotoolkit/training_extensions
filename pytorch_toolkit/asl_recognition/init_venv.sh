@@ -11,10 +11,10 @@ if [[ -e venv ]]; then
 fi
 
 # Download mmaction
-git submodule update --init --recommend-shallow ../../external/mmaction
+git submodule update --init --recursive --recommend-shallow ../../external/mmaction
 
 # Create virtual environment
-virtualenv venv -p python3 --prompt="(action)"
+virtualenv venv -p python3.7 --prompt="(action)"
 
 path_openvino_vars="${INTEL_OPENVINO_DIR:-/opt/intel/openvino}/bin/setupvars.sh"
 if [[ -e "${path_openvino_vars}" ]]; then

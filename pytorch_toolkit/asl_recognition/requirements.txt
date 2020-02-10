@@ -9,6 +9,7 @@ tensorboardX==1.8
 opencv-python==4.1.0.25
 terminaltables==3.1.0
 scikit-learn==0.21.3
-ptflops==0.3
+ptflops==0.5.2
 tqdm==4.32.2
 youtube-dl==2020.1.24
+onnx==1.5.0
