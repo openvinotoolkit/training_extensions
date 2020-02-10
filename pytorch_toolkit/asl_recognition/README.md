@@ -26,13 +26,15 @@ The code supports conversion to the ONNX\* format and inference of OpenVINO™ m
    . venv/bin/activate
    ```
 
-## Data preparation
+## Datasets
 
 Network was trained on the following datasets:
 
 * ImageNet-1000 (2D pre-training)
 * Kinetics-700 (3D pre-training)
 * MS-ASL-1000 (final training)
+
+## Data preparation
 
 1. Download the [MS-ASL](https://www.microsoft.com/en-us/research/project/ms-asl/#!downloads) annotation and unpack it to `msasl_data` folder.
 
@@ -73,7 +75,7 @@ Network was trained on the following datasets:
 
 6. Final `../../external/mmaction/data` directory should be like this:
 
-   ```bash
+   ```
    ../../external/mmaction/data
    ├── msasl
    |   ├── global_crops
