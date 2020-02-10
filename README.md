@@ -27,6 +27,7 @@ inference.
 * [PyTorch\*](pytorch_toolkit)
 
   * [Action Recognition](pytorch_toolkit/action_recognition)
+  * [ASL Recognition](pytorch_toolkit/asl_recognition)
   * [Face Recognition](pytorch_toolkit/face_recognition)
   * [Person Reidentification](pytorch_toolkit/person_reidentification)
   * [Human Pose Estimation](pytorch_toolkit/human_pose_estimation)

@@ -11,3 +11,6 @@
 [submodule "external/deep-person-reid"]
 	path = external/deep-person-reid
 	url = https://github.com/KaiyangZhou/deep-person-reid.git
+[submodule "external/mmaction"]
+	path = external/mmaction
+	url = https://github.com/evgeny-izutov/mmaction.git

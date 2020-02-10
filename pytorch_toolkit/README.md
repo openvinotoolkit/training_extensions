@@ -44,6 +44,7 @@ After installation, you are ready to train your own models, evaluate and use
 them for prediction.
 
 * [Action Recognition](action_recognition)
+* [ASL Recognition](asl_recognition)
 * [Face Recognition](face_recognition)
 * [Human Pose Estimation](human_pose_estimation)
 * [Instance Segmentation](instance_segmentation)
