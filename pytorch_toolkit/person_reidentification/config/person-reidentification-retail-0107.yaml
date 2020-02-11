@@ -1,10 +1,9 @@
 model:
   name: 'fpn_osnet_x0_25'
   pretrained: True
-  dropout_prob: 0.
   feature_dim: 256
   IN_first: True
-  gap_as_conv: True
+  pooling_type: 'conv'
   fpn:
     enable: False
 
@@ -42,9 +41,7 @@ loss:
 
 metric_losses:
   enable: True
-  center_coeff: 1.0
-  glob_push_plus_loss_coeff: 1.2
-  balance_losses: True
+  local_push_weight: 1.0
 
 train:
   optim: 'radam'

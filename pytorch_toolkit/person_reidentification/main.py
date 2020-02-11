@@ -101,14 +101,13 @@ def main():
         loss=cfg.loss.name,
         pretrained=cfg.model.pretrained,
         use_gpu=cfg.use_gpu,
-        dropout_prob=cfg.model.dropout_prob,
+        dropout_cfg=cfg.model.dropout,
         feature_dim=cfg.model.feature_dim,
-        fpn=cfg.model.fpn.enable,
-        fpn_dim=cfg.model.fpn.dim,
-        gap_as_conv=cfg.model.gap_as_conv,
+        fpn_cfg=cfg.model.fpn,
+        pooling_type=cfg.model.pooling_type,
         input_size=(cfg.data.height, cfg.data.width),
         IN_first=cfg.model.IN_first,
-        fpn_process=cfg.model.fpn.process,
+        extra_blocks=cfg.model.extra_blocks
     )
     num_params, flops = compute_model_complexity(model, (1, 3, cfg.data.height, cfg.data.width))
     print('Model complexity: params={:,} flops={:,}'.format(num_params, flops))

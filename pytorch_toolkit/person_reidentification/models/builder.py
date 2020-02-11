@@ -33,8 +33,9 @@ __model_factory['fpn_osnet_ibn_x1_0'] = fpn_osnet_ibn_x1_0
 
 
 def build_model(name, num_classes, loss='softmax', pretrained=True,
-                use_gpu=True, dropout_prob=0.0, feature_dim=512, fpn=True, fpn_dim=256,
-                gap_as_conv=False, input_size=(256, 128), IN_first=False, fpn_process='concatenation'):
+                use_gpu=True, dropout_cfg=None, feature_dim=512, fpn_cfg=None,
+                pooling_type='avg', input_size=(256, 128), IN_first=False,
+                extra_blocks=False):
     """A function wrapper for building a model.
     """
     avai_models = list(__model_factory.keys())
@@ -45,12 +46,11 @@ def build_model(name, num_classes, loss='softmax', pretrained=True,
         loss=loss,
         pretrained=pretrained,
         use_gpu=use_gpu,
-        dropout_prob=dropout_prob,
+        dropout_cfg=dropout_cfg,
         feature_dim=feature_dim,
-        fpn=fpn,
-        fpn_dim=fpn_dim,
-        gap_as_conv=gap_as_conv,
+        fpn_cfg=fpn_cfg,
+        pooling_type=pooling_type,
         input_size=input_size,
         IN_first=IN_first,
-        fpn_process=fpn_process,
+        extra_blocks=extra_blocks
     )

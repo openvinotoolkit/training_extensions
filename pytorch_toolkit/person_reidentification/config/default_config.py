@@ -26,10 +26,15 @@ def get_default_config():
     cfg.model.pretrained = True  # Automatically load pretrained model weights if available
     cfg.model.load_weights = ''  # Path to model weights
     cfg.model.resume = ''  # Path to checkpoint for resume training
-    cfg.model.dropout_prob = 0.0
+    cfg.model.dropout = CN()
+    cfg.model.dropout.p = 0.0
+    cfg.model.dropout.mu = 0.1
+    cfg.model.dropout.sigma = 0.03
+    cfg.model.dropout.dist = 'none'
     cfg.model.feature_dim = 512
-    cfg.model.gap_as_conv = False
+    cfg.model.pooling_type = 'avg'
     cfg.model.IN_first = False
+    cfg.model.extra_blocks = False
     cfg.model.openvino = CN()
     cfg.model.openvino.name = ''  # Path to *.xml
     cfg.model.openvino.cpu_extension = ''
@@ -110,6 +115,7 @@ def get_default_config():
     cfg.loss.softmax = CN()
     cfg.loss.softmax.label_smooth = True  # Use label smoothing regularizer
     cfg.loss.softmax.conf_pen = 0.0
+    cfg.loss.softmax.pr_product = False
     cfg.loss.softmax.m = 0.35
     cfg.loss.softmax.s = 30
     cfg.loss.triplet = CN()
@@ -120,9 +126,7 @@ def get_default_config():
     # metric_losses
     cfg.metric_losses = CN()
     cfg.metric_losses.enable = False
-    cfg.metric_losses.center_coeff = 0.0
-    cfg.metric_losses.glob_push_plus_loss_coeff = 0.0
-    cfg.metric_losses.balance_losses = False
+    cfg.metric_losses.local_push_weight = 0.0
 
     # regularizers
     cfg.reg = CN()

@@ -1,10 +1,9 @@
 model:
   name: 'fpn_osnet_x0_5'
   pretrained: True
-  dropout_prob: 0.
   feature_dim: 256
   IN_first: True
-  gap_as_conv: True
+  pooling_type: 'conv'
   fpn:
     enable: False
 

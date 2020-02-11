@@ -39,7 +39,7 @@ from torchreid.utils import AverageMeter, open_specified_layers, open_all_layers
 from .losses.am_softmax import AMSoftmaxLoss
 from .losses.cross_entropy_loss import CrossEntropyLoss
 from .losses.regularizers import get_regularizer
-from .losses.metric import MetricLosses
+from .losses.metric import LocalPushLoss
 
 
 class ImageAMSoftmaxEngine(ImageSoftmaxEngine):
@@ -48,7 +48,7 @@ class ImageAMSoftmaxEngine(ImageSoftmaxEngine):
 
     def __init__(self, datamanager, model, optimizer, reg_cfg, metric_cfg, batch_transform_cfg, scheduler=None, use_gpu=False,
                  softmax_type='stock', label_smooth=True, conf_penalty=False,
-                 m=0.35, s=10, writer=None, openvino_model=None):
+                 pr_product=False, m=0.35, s=10, writer=None, openvino_model=None):
         super(ImageAMSoftmaxEngine, self).__init__(datamanager, model, optimizer, scheduler, use_gpu)
 
         self.regularizer = get_regularizer(reg_cfg)
@@ -67,7 +67,8 @@ class ImageAMSoftmaxEngine(ImageSoftmaxEngine):
                 num_classes=self.datamanager.num_train_pids,
                 use_gpu=self.use_gpu,
                 conf_penalty=conf_penalty,
-                m=m, s=s
+                m=m, s=s,
+                pr_product=pr_product
             )
 
         self.batch_transform_cfg = batch_transform_cfg
@@ -75,13 +76,9 @@ class ImageAMSoftmaxEngine(ImageSoftmaxEngine):
                                                          self.batch_transform_cfg.alpha)
 
         if metric_cfg.enable:
-            self.metric_losses = MetricLosses(self.datamanager.num_train_pids,
-                                              self.model.module.feature_dim, self.writer,
-                                              metric_cfg.balance_losses,
-                                              metric_cfg.center_coeff,
-                                              metric_cfg.glob_push_plus_loss_coeff)
+            self.metric_loss = LocalPushLoss(weight=metric_cfg.local_push_weight)
         else:
-            self.metric_losses = None
+            self.metric_loss = None
 
     def run(self, save_dir='log', max_epoch=0, start_epoch=0, fixbase_epoch=0, open_layers=None,
             start_eval=0, eval_freq=-1, test_only=False, print_freq=10,
@@ -150,7 +147,7 @@ class ImageAMSoftmaxEngine(ImageSoftmaxEngine):
     def train(self, epoch, max_epoch, trainloader, fixbase_epoch=0, open_layers=None, print_freq=10):
         losses = AverageMeter()
         reg_ow_loss = AverageMeter()
-        metric_losses = AverageMeter()
+        metric_loss = AverageMeter()
         accs = AverageMeter()
         batch_time = AverageMeter()
         data_time = AverageMeter()
@@ -174,7 +171,7 @@ class ImageAMSoftmaxEngine(ImageSoftmaxEngine):
                 pids = pids.cuda()
 
             self.optimizer.zero_grad()
-            if self.metric_losses is not None:
+            if self.metric_loss is not None:
                 embeddings, outputs = self.model(imgs, get_embeddings=True)
             else:
                 outputs = self.model(imgs)
@@ -186,13 +183,11 @@ class ImageAMSoftmaxEngine(ImageSoftmaxEngine):
                 reg_ow_loss.update(reg_loss.item(), pids.size(0))
                 loss += reg_loss
 
-            if self.metric_losses is not None:
-                self.metric_losses.writer = self.writer
-                self.metric_losses.init_iteration()
-                metric_loss = self.metric_losses(embeddings, pids, epoch, epoch * num_batches + batch_idx)
-                self.metric_losses.end_iteration()
-                loss += metric_loss
-                metric_losses.update(metric_loss.item(), pids.size(0))
+            if self.metric_loss is not None:
+                metric_val = self.metric_loss(F.normalize(embeddings, dim=1),
+                                              outputs, pids)
+                loss += metric_val
+                metric_loss.update(metric_val.item(), pids.size(0))
 
             loss.backward()
             self.optimizer.step()
@@ -216,7 +211,7 @@ class ImageAMSoftmaxEngine(ImageSoftmaxEngine):
                           epoch + 1, max_epoch, batch_idx + 1, num_batches,
                           batch_time=batch_time,
                           data_time=data_time,
-                          aux_losses=metric_losses,
+                          aux_losses=metric_loss,
                           loss=losses,
                           acc=accs,
                           lr=self.optimizer.param_groups[0]['lr'],
@@ -236,6 +231,9 @@ class ImageAMSoftmaxEngine(ImageSoftmaxEngine):
                         self.writer.add_scalar('Loss/reg_ow', reg_ow_loss.avg, n_iter)
                     self.writer.add_scalar('Accuracy/train', accs.avg, n_iter)
                     self.writer.add_scalar('Learning rate', self.optimizer.param_groups[0]['lr'], n_iter)
+                    if self.metric_loss is not None:
+                        self.writer.add_scalar('Loss/local_push_loss',
+                                               metric_val.item(), n_iter)
             start_time = time.time()
 
         if self.scheduler is not None:
