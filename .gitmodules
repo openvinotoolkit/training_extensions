@@ -7,7 +7,7 @@
 	url = https://github.com/tensorflow/models.git
 [submodule "external/mmdetection"]
 	path = external/mmdetection
-	url = https://github.com/sovrasov/mmdetection/
+	url = https://github.com/ovextra/mmdetection
 [submodule "external/deep-person-reid"]
 	path = external/deep-person-reid
 	url = https://github.com/KaiyangZhou/deep-person-reid.git
