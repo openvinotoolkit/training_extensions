@@ -111,9 +111,9 @@ If you would like to start **fine-tuning** from pre-trained weights do not forge
     This produces model `model.xml` and weights `model.bin` in single-precision floating-point format
     (FP32). The obtained model expects **normalized image** in planar BGR format.
 
-### 7. Demo
+### 7. Validataion of IR
 
-Please refer to ???WHICH DEMO??? [OpenModelZoo](https://github.com/opencv/open_model_zoo).
+Instead running of `test.py` you need to tun `test_exported.py` and then repeat steps listed in [Validation paragraph](person_vehicle_bike_detection.md#5-validation).
 
 
 ## Other
