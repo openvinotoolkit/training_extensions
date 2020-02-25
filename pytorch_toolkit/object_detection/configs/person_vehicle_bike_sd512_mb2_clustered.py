@@ -51,11 +51,10 @@ test_cfg = dict(
     score_thr=0.02,
     max_per_img=200)
 # dataset settings
-dataset_type = 'CustomDataset'
+dataset_type = 'CustomCocoDataset'
+data_root = '../../data/airport'
 img_norm_cfg = dict(
     mean=[0, 0, 0], std=[255, 255, 255], to_rgb=False)
-
-data_root = '../../data/airport'
 train_pipeline = [
     dict(type='LoadImageFromFile', to_float32=True),
     dict(type='LoadAnnotations', with_bbox=True),
@@ -93,19 +92,22 @@ data = dict(
     workers_per_gpu=0,
     train=dict(
         type=dataset_type,
-        ann_file=data_root+'/annotation_example_train.pkl',
-        img_prefix=data_root,
+        classes=('vehicle', 'person', 'non-vehicle'),
+        ann_file=data_root+'/annotation_example_train.json',
+        img_prefix=data_root + '/train',
         pipeline=train_pipeline
         ),
     val=dict(
         type=dataset_type,
-        ann_file=data_root+'/annotation_example_val.pkl',
-        img_prefix=data_root,
+        classes=('vehicle', 'person', 'non-vehicle'),
+        ann_file=data_root+'/annotation_example_val.json',
+        img_prefix=data_root + '/val',
         pipeline=test_pipeline),
     test=dict(
         type=dataset_type,
-        ann_file=data_root+'/annotation_example_val.pkl',
-        img_prefix=data_root,
+        classes=('vehicle', 'person', 'non-vehicle'),
+        ann_file=data_root+'/annotation_example_val.json',
+        img_prefix=data_root + '/val',
         pipeline=test_pipeline))
 # optimizer
 optimizer = dict(type='SGD', lr=0.0001, momentum=0.9, weight_decay=0.0001)

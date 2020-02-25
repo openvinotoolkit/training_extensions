@@ -2,63 +2,94 @@
 
 The crossroad-detection network model provides detection of three class objects: vehicle, pedestrian, non-vehicle (like bikes). This detector was trained on the data from crossroad cameras.
 
-## Training and Evaluation Example
+## Training pipeline
 
-> **NOTE**: To train model on your own dataset, modify `configs/person_vehicle_bike_sd512_mb2_clustered.py`.
+### 1. Select a training configuration file and get pre-trained snapshot if available.
 
-1. Go to the `openvino_training_extensions/pytorch_toolkit/object_detection/` directory.
+```bash
+$ export CONFIGURATION_FILE=./configs/person_vehicle_bike_sd512_mb2_clustered.py
+```
 
-2. The example dataset has annotation in the Common Objects in Context (COCO) and mmdetection CustomDataset format. You can find it here in
-   `openvino_training_extensions/data/airport`.
-   To collect CustomDataset annotation, use [mmdetection CustomDataset object detection format](https://github.com/open-mmlab/mmdetection/blob/master/docs/GETTING_STARTED.md#use-my-own-datasets).
+Pre-trained model is available [here](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/person_vehicle_bike_sd512_mb2_clustered_epoch_21.pth).
 
-3. Download pretrained [checkpoint](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/person_vehicle_bike_sd512_mb2_clustered_epoch_21.pth) to `object_detection/checkpoint`.
+### 2. Collect dataset
 
-4. To start training, run the following:
-    ```bash
-    ../../external/mmdetection/tools/dist_train.sh configs/person_vehicle_bike_sd512_mb2_clustered.py 1
-    ```
-   Training artifacts will be stored by default in `person_vehicle_bike_sd512_mb2_clustered`
+You can train a model on existing toy dataset `openvino_training_extensions/data/airport`. Obviously such dataset is not sufficient for training good enough model.
 
-5. Evaluation artifacts are stored by default in `models/person_vehicle_bike_sd512_mb2_clustered`.
-   To see results of network model working, run the following:
+### 3. Prepare annotation
+
+The existing toy dataset has annotation in the Common Objects in Context (COCO) and mmdetection CustomDataset format.
+
+### 4. Training and Fine-tuning
+Try both following variants and select the best one:
+   * By **training** from scratch or using pre-trained weights - only if you have a lot of data, let's say tens of thousands or even more images. This variant assumes long training process starting from big values of learning rate and eventually decreasing it according to training schedule.
+   * By **fine-tuning**. This variant assumes training staring from pre-trained weights with small learning rate that was used in the end of training process of existing snapshot. One should understand that during training model is forgetting about data that was initially trained on (if you don't use it your current training). That's why you should no train you model too long to avoid making model worse than it was before your training has started, especially if you have small dataset.
+
+If you would like to start **training** from pre-trained weights do not forget to modify `load_from` path inside configuration file.
+
+If you would like to start **fine-tuning** from pre-trained weights do not forget to modify `resume_from` path inside configuration file as well as increase `total_epochs`. Otherwise training will be ended immideately.
+* To train the detector on a single GPU, run in your terminal:
    ```bash
-   tensorboard --logdir=./models/person_vehicle_bike_sd512_mb2_clustered
+   $ python ../../external/mmdetection/tools/train.py \
+            $CONFIGURATION_FILE
    ```
 
-### Demo
+* To train the detector on multiple GPUs, run in your terminal:
+   ```bash
+   $ ../../external/mmdetection/tools/dist_train.sh \
+            $CONFIGURATION_FILE \
+            <GPU_NUM>
+   ```
 
-```Bash
-python ../../external/mmdetection/tools/test.py \
-  configs/person_vehicle_bike_sd512_mb2_clustered.py \
-  models/person_vehicle_bike_sd512_mb2_clustered/epoch_5.pth \
-  --show
-```
 
-## Conversion to ONNX\* Format
+### 5. Validation
 
-```bash
-python tools/onnx_export.py \
-  configs/person_vehicle_bike_sd512_mb2_clustered.py \
-  models/person_vehicle_bike_sd512_mb2_clustered/epoch_5.pth \
-  person_vehicle_bike_sd512_mb2_clustered.onnx
-```
+* To dump detection of your model as well as compute MS-COCO metrics run:
+   ```bash
+   $ python ../../external/mmdetection/tools/test.py \
+            $CONFIGURATION_FILE \
+            <CHECKPOINT> \
+            --out result.pkl \
+            --eval bbox
+   ```
 
-## Conversion to Intermediate Representation (IR) of the Network
+### 6. Export
+* Export to ONNX
+  * In most cases you can convert PyTorch\* model to the ONNX\* format by running the `export.py` script:
+     ```bash
+     $ python ../../external/mmdetection/tools/export.py \
+              $CONFIGURATION_FILE \
+              <CHECKPOINT> \
+              model.onnx
+     ```
 
-```bash
-mo.py --input_model=person_vehicle_bike_sd512_mb2_clustered.onnx \
-  --scale 255 \
-  --reverse_input_channels \
-  --output_dir=./IR \
-  --data_type=FP32
-```
+  * If your model is SSD-like detector you can convert PyTorch\* model to the ONNX\* format by running the `export_ssd.py` script. Note: model exported in such way will produce a bit different results (non-significant in most cases) but it also might be faster that model exported by `export.py`. The `export.py` can export SSD models as well.
+     ```bash
+     $ python ../../external/mmdetection/tools/export_ssd.py \
+              $CONFIGURATION_FILE \
+              <CHECKPOINT> \
+              model.onnx
+     ```
+  2. Convert ONNX model to the OpenVINO™ format with the Model Optimizer with the command below:
+     ```bash
+     python ../../external/mmdetection/tools/convert_to_ir.py \
+            $CONFIGURATION_FILE \
+            model.onnx \
+            <EXPORT_FOLDER>
+     ```
+    This produces model `model.xml` and weights `model.bin` in single-precision floating-point format
+    (FP32). The obtained model expects **normalized image** in planar BGR format.
 
-### Demo
+### 7. Demo
 
-```Bash
-python tools/infer_ie.py --model IR/person_vehicle_bike_sd512_mb2_clustered.xml \
-  --device=CPU \
-  --cpu_extension="${INTEL_OPENVINO_DIR}/deployment_tools/inference_engine/lib/intel64/libcpu_extension_avx2.so" \
-  ../../data/airport/val/image_000009.jpg
-```
+Please refer to ???WHICH DEMO??? [OpenModelZoo](https://github.com/opencv/open_model_zoo).
+
+
+## Other
+### Theoretical computational complexity estimation
+
+To get per-layer computational complexity estimations, run the following command:
+   ```bash
+   $ python ../../external/mmdetection/tools/get_flops.py \
+            $CONFIGURATION_FILE \
+   ```
