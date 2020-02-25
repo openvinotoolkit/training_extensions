@@ -253,8 +253,8 @@ def voc_eval(result_file, dataset, iou_thr, image_size):
 
 def main():
     parser = ArgumentParser(description='VOC Evaluation')
-    parser.add_argument('result', help='result file path')
     parser.add_argument('config', help='config file path')
+    parser.add_argument('input', help='output result file from test.py')
     parser.add_argument('--imsize', nargs=2, type=int, default=(1024, 1024),
                         help='Image resolution. Used for filtering.')
     parser.add_argument('--iou-thr', type=float, default=0.5, help='IoU threshold for evaluation')
@@ -262,7 +262,7 @@ def main():
 
     cfg = mmcv.Config.fromfile(args.config)
     test_dataset = mmcv.runner.obj_from_dict(cfg.data.test, datasets)
-    voc_eval(args.result, test_dataset, args.iou_thr, args.imsize)
+    voc_eval(args.input, test_dataset, args.iou_thr, args.imsize)
 
 
 if __name__ == '__main__':
