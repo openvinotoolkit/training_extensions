@@ -113,7 +113,30 @@ If you would like to start **fine-tuning** from pre-trained weights do not forge
 
 ### 7. Validataion of IR
 
-Instead running of `test.py` you need to tun `test_exported.py` and then repeat steps listed in [Validation paragraph](person_vehicle_bike_detection.md#5-validation).
+Instead running of `test.py` you need to run `test_exported.py` and then repeat steps listed in [Validation paragraph](#5-validation).
+
+If you exported model using `export_ssd.py` you need to add `--with_detection_output` option, otherwise you don't need to use such flag. If you converted the exported model using `convert_to_ir.py` then the model expects **normalized image** in planar BGR format, so you need to disable data pre-processing by adding `--do_not_normalize`.
+   ```bash
+   python ../../external/mmdetection/tools/test_exported.py  \
+          $CONFIGURATION_FILE \
+          <EXPORT_FOLDER>/model.xml \
+          --with_detection_output \
+          --do_not_normalize \
+          --out results.pkl \
+          --eval bbox
+   ```
+
+### 8. Demo
+
+To see how the converted model works using OpenVINO you need to run `test_exported.py` with `--show` option.
+   ```bash
+   python ../../external/mmdetection/tools/test_exported.py  \
+          $CONFIGURATION_FILE \
+          <EXPORT_FOLDER>/model.xml \
+          --with_detection_output \
+          --do_not_normalize \
+          --show
+   ```
 
 
 ## Other
