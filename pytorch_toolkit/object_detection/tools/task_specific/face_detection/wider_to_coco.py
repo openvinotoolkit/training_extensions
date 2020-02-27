@@ -7,7 +7,8 @@ from tqdm import tqdm
 
 
 def parse_wider_gt(ann_file):
-    annotation = dict()
+    bboxes = dict()
+    landmarks = dict()
     with open(ann_file) as f:
         content = [line.strip() for line in f.readlines()]
         new_file = True
@@ -15,7 +16,8 @@ def parse_wider_gt(ann_file):
         while True:
             if new_file:
                 image_name = content[i]
-                annotation[image_name] = list()
+                bboxes[image_name] = list()
+                landmarks[image_name] = list()
                 new_file = False
                 i += 1
             else:
@@ -24,7 +26,8 @@ def parse_wider_gt(ann_file):
                 for _ in range(bbox_num):
                     x, y, w, h = [int(x) for x in content[i].split(' ')[:4]]
                     if w >= 0 and h >= 0:
-                        annotation[image_name].append([x, y, w, h])
+                        bboxes[image_name].append([x, y, w, h])
+                        landmarks[image_name].append([])
                     else:
                         print('Ignored because of invalid size: ', [x, y, w, h])
                     i += 1
@@ -32,7 +35,41 @@ def parse_wider_gt(ann_file):
                     break
                 new_file = True
 
-    return annotation
+    return bboxes, landmarks
+
+def parse_wider_gt_with_landmarks(ann_file):
+    bboxes = dict()
+    landmarks = dict()
+    with open(ann_file) as f:
+        content = [line.strip() for line in f.readlines()]
+        new_file = True
+        i = 0
+        while True:
+            if new_file:
+                image_name = content[i][2:]
+                bboxes[image_name] = list()
+                landmarks[image_name] = list()
+                new_file = False
+                i += 1
+            else:
+                i += 1
+                while True:
+                    if i == len(content) or content[i].startswith('#'):
+                        break
+                    line_split = content[i].split(' ')
+                    x, y, w, h = [int(x) for x in line_split[:4]]
+                    if w >= 0 and h >= 0:
+                        bboxes[image_name].append([x, y, w, h])
+                        points = [float(x) for i, x in enumerate(line_split[4:-1]) if (i + 1) % 3 != 0]
+                        landmarks[image_name].append(points if points[0] >= 0 else [])
+                    else:
+                        print('Ignored because of invalid size: ', [x, y, w, h])
+                    i += 1
+                if i == len(content):
+                    break
+                new_file = True
+
+    return bboxes, landmarks
 
 
 def parse_args():
@@ -42,11 +79,13 @@ def parse_args():
     parser.add_argument('images_dir',
                         help="Path to folder with images like WIDER_train/images")
     parser.add_argument('output_annotation', help="Path to output json file")
+    parser.add_argument('--with_landmarks', action='store_true',
+                        help="Whether to read landmarks")
 
     return parser.parse_args()
 
 
-def convert_wider_annots(ann_file, data_dir, out_file):
+def convert_wider_annots(ann_file, data_dir, out_file, with_landmarks):
     img_id = 0
     ann_id = 0
     cat_id = 1
@@ -55,9 +94,13 @@ def convert_wider_annots(ann_file, data_dir, out_file):
     categories = [{"id": 1, "name": 'face'}]
     images = []
     annotations = []
-    wider_annot_dict = parse_wider_gt(ann_file)
 
-    for filename in tqdm(wider_annot_dict.keys()):
+    if with_landmarks:
+        boxes, landmarks = parse_wider_gt_with_landmarks(ann_file)
+    else:
+        boxes, landmarks = parse_wider_gt(ann_file)
+
+    for filename in tqdm(boxes.keys()):
         image = {}
         image['id'] = img_id
         img_id += 1
@@ -68,12 +111,12 @@ def convert_wider_annots(ann_file, data_dir, out_file):
             os.path.join(data_dir, filename), os.path.dirname(out_file))
         images.append(image)
 
-        for gt_bbox in wider_annot_dict[filename]:
+        for gt_bbox, gt_landmarks in zip(boxes[filename], landmarks[filename]):
             ann = {}
             ann['id'] = ann_id
             ann_id += 1
             ann['image_id'] = image['id']
-            ann['segmentation'] = []
+            ann['segmentation'] = [gt_landmarks]
             ann['category_id'] = cat_id  # 1:"face" for WIDER
             ann['iscrowd'] = 0
             ann['area'] = gt_bbox[2] * gt_bbox[3]
@@ -95,4 +138,4 @@ def convert_wider_annots(ann_file, data_dir, out_file):
 if __name__ == '__main__':
     args = parse_args()
     convert_wider_annots(args.input_annotation, args.images_dir,
-                         args.output_annotation)
+                         args.output_annotation, args.with_landmarks)
