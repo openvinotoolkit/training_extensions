@@ -1,5 +1,7 @@
 import random
 
+from .spatial_transforms import _repr_params
+
 
 class LoopPadding(object):
     """Extend short clip to a given size"""
@@ -17,8 +19,11 @@ class LoopPadding(object):
 
         return out
 
+    def __repr__(self):
+        return self.__class__.__name__ + _repr_params(size=self.size)
 
-class TemporalStride:
+
+class TemporalStride(object):
     """Skips frames with a given step. Increases effective temporal receptive field."""
 
     def __init__(self, stride=1):
@@ -26,6 +31,9 @@ class TemporalStride:
 
     def __call__(self, frame_indices):
         return frame_indices[::self.stride]
+
+    def __repr__(self):
+        return self.__class__.__name__ + _repr_params(stride=self.stride)
 
 
 class TemporalBeginCrop(object):
@@ -50,6 +58,9 @@ class TemporalBeginCrop(object):
             out.append(index)
 
         return out
+
+    def __repr__(self):
+        return self.__class__.__name__ + _repr_params(size=self.size)
 
 
 class TemporalCenterCrop(object):
@@ -86,6 +97,9 @@ class TemporalCenterCrop(object):
 
         return out
 
+    def __repr__(self):
+        return self.__class__.__name__ + _repr_params(size=self.size)
+
 
 class TemporalRandomCrop(object):
     """Temporally crop the given frame indices at a random location.
@@ -120,3 +134,6 @@ class TemporalRandomCrop(object):
             out.append(index)
 
         return out
+
+    def __repr__(self):
+        return self.__class__.__name__ + _repr_params(size=self.size)

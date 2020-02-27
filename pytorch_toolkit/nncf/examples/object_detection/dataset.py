@@ -19,6 +19,7 @@ import torch
 from examples.object_detection.datasets.coco import COCODataset
 from examples.object_detection.datasets.voc0712 import VOCDetection, VOCAnnotationTransform
 from examples.object_detection.utils.augmentations import SSDAugmentation
+from nncf.dynamic_graph.graph_builder import create_input_infos
 
 VOC_MEAN = (0.406, 0.456, 0.485)
 VOC_STD = (0.255, 0.224, 0.229)
@@ -42,8 +43,10 @@ def get_training_dataset(dataset_name, path_to_annotations, path_to_imgs, config
     # for VOC path_to_imgs = path_to_annotations = voc_root
     assert dataset_name in ['voc', 'coco']
     preprocessing = get_preprocessing(config)
+    input_info_list = create_input_infos(config)
+    image_size = input_info_list[0].shape[-1]
     ssd_transform = SSDAugmentation(
-        config.input_sample_size[-1],
+        image_size,
         preprocessing.mean,
         preprocessing.std,
         preprocessing.normalize_coef
@@ -72,8 +75,10 @@ def get_testing_dataset(dataset_name, path_to_annotations, path_to_imgs, config)
     # for VOC path_to_imgs = path_to_annotations = voc_root
     assert dataset_name in ['voc', 'coco']
     preprocessing = get_preprocessing(config)
+    input_info_list = create_input_infos(config)
+    image_size = input_info_list[0].shape[-1]
     transform = BaseTransform(
-        config.input_sample_size[-1],
+        image_size,
         preprocessing.mean,
         preprocessing.std,
         preprocessing.normalize_coef

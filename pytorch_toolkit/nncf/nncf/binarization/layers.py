@@ -104,7 +104,7 @@ class ActivationBinarizationScaleThreshold(ActivationBinarizer):
         self.scale = torch.nn.Parameter(torch.Tensor([0]), requires_grad=enabled)
         self.scale.data.zero_()
 
-        # Need scale_is_initialized as buffer for it to appear in the model state dict
+        # Need scale_initialized as buffer for it to appear in the model state dict
         self.register_buffer('scale_initialized', torch.IntTensor([0]))
 
         threshold_shape = get_per_channel_scale_shape(self.input_shape, is_weights=False)

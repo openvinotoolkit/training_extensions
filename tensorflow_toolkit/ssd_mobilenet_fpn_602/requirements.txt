@@ -3,3 +3,4 @@ Cython==0.29.12
 matplotlib==2.2.2
 Pillow==5.3
 tensorflow==1.13.1
+networkx==2.3

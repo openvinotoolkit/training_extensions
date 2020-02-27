@@ -1,4 +1,5 @@
 import random
+import copy
 
 import cv2
 import numpy as np
@@ -261,7 +262,6 @@ class Flip(object):
 
 class SinglePersonBodyMasking(object):
     def __init__(self, prob=0.5, percentage=0.3, mask_color=(128, 128, 128)):
-        super().__init__()
         self._prob = prob
         self._percentage = percentage
         self._mask_color = mask_color
@@ -283,48 +283,49 @@ class SinglePersonBodyMasking(object):
 
 
 class SinglePersonFlip(object):
-    def __init__(self, prob=0.5):
-        super().__init__()
+    def __init__(self, left_keypoints_indice, right_keypoints_indice, prob=0.5):
+        self._left_keypoints_indice = left_keypoints_indice
+        self._right_keypoints_indice = right_keypoints_indice
         self._prob = prob
 
     def __call__(self, sample):
-        prob = random.random()
-        do_flip = prob <= self._prob
+        rand = random.random()
+        do_flip = rand <= self._prob
         if not do_flip:
             return sample
 
         sample['image'] = cv2.flip(sample['image'], 1)
-
         w, h = sample['image'].shape[1], sample['image'].shape[0]
+        sample['center'] = w - sample['center'] - 1
         for id in range(len(sample['keypoints']) // 3):
             if sample['keypoints'][id * 3] == -1:
                 continue
             sample['keypoints'][id * 3] = w - 1 - sample['keypoints'][id * 3]
-        sample['keypoints'] = self._swap_left_right(sample['keypoints'])
+        self._swap_left_right(sample['keypoints'])
 
         return sample
 
     def _swap_left_right(self, keypoints):
-        right = [0, 1, 2, 3, 4, 5, 6, 7, 8, 30, 31, 32, 33, 34, 35, 36, 37, 38]
-        left = [15, 16, 17, 12, 13, 14, 9, 10, 11, 45, 46, 47, 42, 43, 44, 39, 40, 41]
-        for r, l in zip(right, left):
-            keypoints[r], keypoints[l] = keypoints[l], keypoints[r]
-        return keypoints
+        keypoints[self._right_keypoints_indice + self._left_keypoints_indice] =\
+            keypoints[self._left_keypoints_indice + self._right_keypoints_indice]
 
 
 class ChannelPermutation(object):
     def __init__(self, prob=0.5):
-        super().__init__()
         self._prob = prob
 
     def __call__(self, sample):
-        prob = random.random()
-        if prob > 0.5:
-            new_order = np.random.permutation(3)
-            image = sample['image']
-            image[:, :, 0], image[:, :, 1], image[:, :, 2] =\
-                image[:, :, new_order[0]], image[:, :, new_order[1]], image[:, :, new_order[2]]
-            sample['image'] = image
+        rand = random.random()
+        do_cp = rand < self._prob
+        if not do_cp:
+            return sample
+
+        new_order = np.random.permutation(3)
+        image = sample['image']
+        image[:, :, 0], image[:, :, 1], image[:, :, 2] =\
+            image[:, :, new_order[0]], image[:, :, new_order[1]], image[:, :, new_order[2]]
+        sample['image'] = image
+
         return sample
 
 
@@ -411,5 +412,143 @@ class SinglePersonCropPad(object):
                 continue
             sample['keypoints'][id * 3] = (sample['keypoints'][id * 3] * rnd_scale + rnd_offset_x) * scale + offset_x
             sample['keypoints'][id * 3 + 1] = (sample['keypoints'][id * 3 + 1] * rnd_scale + rnd_offset_y) * scale + offset_y
+
+        return sample
+
+
+class RandomScaleRotate(object):
+    def __init__(self, scale=0.35, rotate=45):
+        self._scale = scale
+        self._rotate = rotate
+
+    def __call__(self, sample):
+        scale = sample['scale']
+        rotate = sample['rotate']
+
+        scale = scale * np.clip(np.random.normal(loc=1, scale=scale) + 1, 1 - scale, 1 + scale)
+        rotate = np.clip(np.random.normal(loc=1, scale=rotate), -rotate * 2, rotate * 2)\
+              if np.random.uniform() <= 0.6 else 0
+
+        sample['scale'] = scale
+        sample['rotate'] = rotate
+
+        return sample
+
+
+class SinglePersonRandomAffineTransform(object):
+    def __init__(self, scale=0.35, rotate=45, mode='train', input_width=288, input_height=384, stride=8, num_keypoints=17):
+        self._mode = mode
+        self._scale = scale
+        self._rotate = rotate
+        self._width = input_width
+        self._height = input_height
+        self._stride = stride
+        self._num_keypoints = num_keypoints
+
+    def __call__(self, sample):
+        scale = sample['scale']
+        center = sample['center']
+        rotate = sample['rotate']
+
+        trans, _ = self._get_transformation_matrix(center, scale, rotate, [self._width, self._height])
+        input = cv2.warpAffine(sample['image'], trans, (self._width, self._height), flags=cv2.INTER_LINEAR)
+        sample['trans'] = trans
+        if self._mode == 'train':
+            for id in range(self._num_keypoints):
+                sample['keypoints'][3 * id: 3 * id + 2] = self._affine_transform(sample['keypoints'][3 * id: 3 * id + 2], trans)
+        else:
+            sample['rev_trans'] = self._get_transformation_matrix(center, scale, rotate,
+                                                                  [self._width // self._stride, self._height // self._stride])[1]
+        sample['image'] = input
+
+        return sample
+
+    def _get_transformation_matrix(self, center, scale, rotate, output_size):
+        w, _ = scale * 200
+        shift_y = self._rotation([0, -w * 0.5], rotate)
+        shift_x = self._rotation([-w * 0.5, 0], rotate)
+
+        points = np.array([center, center + shift_x, center + shift_y], dtype=np.float32)
+        transformed_points = np.array([[output_size[0] * 0.5, output_size[1] * 0.5],
+                                       [0, output_size[1] * 0.5],
+                                       [output_size[0] * 0.5, output_size[1] * 0.5 - output_size[0] * 0.5]],
+                                       dtype=np.float32)
+
+        rev_trans = cv2.getAffineTransform(np.float32(transformed_points), np.float32(points))
+
+        trans = cv2.getAffineTransform(np.float32(points), np.float32(transformed_points))
+
+        return trans, rev_trans
+
+    @staticmethod
+    def _affine_transform(pt, t):
+        new_pt = np.array([pt[0], pt[1], 1.])
+        new_pt = np.dot(t, new_pt)
+        return new_pt[:2]
+
+    @staticmethod
+    def _rotation(point, r):
+        r = np.pi * r / 180
+        return [point[0] * np.cos(r) - point[1] * np.sin(r), point[0] * np.sin(r) + point[1] * np.cos(r)]
+
+
+class HalfBodyTransform(object):
+    def __init__(self, aspect_ratio=0.75, prob=0.3, num_keypoints=17):
+        self._prob = prob
+        self.aspect_ratio = aspect_ratio
+        self._num_keypoints = num_keypoints
+    def __call__(self, sample):
+        rand = np.random.uniform()
+        do_body_transform = rand <= self._prob and np.sum(sample['keypoints'][2:][::3]) > self._num_keypoints
+        if not do_body_transform:
+            return sample
+
+        upper_points = []
+        lower_points = []
+        for idx in range(len(sample['keypoints']) // 3):
+            if sample['keypoints'][idx * 3 + 2] > 0:
+                if idx < 11:
+                    upper_points.append([sample['keypoints'][idx * 3], sample['keypoints'][idx * 3 + 1]])
+                else:
+                    lower_points.append([sample['keypoints'][idx * 3], sample['keypoints'][idx * 3 + 1]])
+
+        if np.random.uniform() < 0.5 and len(upper_points) > 2 or len(lower_points) < 2:
+            target_points = upper_points
+        else:
+            target_points = lower_points
+
+        if len(target_points) < 2:
+            center, scale = None, None
+        else:
+            target_points = np.array(target_points, dtype=np.float32)
+            center = np.array([target_points[:, 0].sum() / len(target_points),
+                               target_points[:, 1].sum() / len(target_points)], dtype=np.float32)
+
+            w = target_points[:, 0].max() - target_points[:, 0].min()
+            h = target_points[:, 1].max() - target_points[:, 1].min()
+
+            if w > self.aspect_ratio * h:
+                h = w / self.aspect_ratio
+            elif w < self.aspect_ratio * h:
+                w = h * self.aspect_ratio
+
+            scale = np.array([w / 200, h / 200], dtype=np.float32)
+            scale *= 1.5
+
+        if center is not None:
+            sample['center'] = center
+            sample['scale'] = scale
+
+        return sample
+
+
+class Normalization(object):
+    def __init__(self, mean=0.5, std=1):
+        self._mean = mean
+        self._std = std
+
+    def __call__(self, sample):
+        sample['image'] = sample['image'] / 255
+        sample['image'] = (sample['image'] - self._mean) / self._std
 
         return sample

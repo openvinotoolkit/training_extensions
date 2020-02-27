@@ -221,9 +221,8 @@ strict digraph  {
 "219 SENet/Sequential[layer4]/PreActBlock[1]/SymmetricQuantizer/symmetric_quantize" [id=219, scope="SENet/Sequential[layer4]/PreActBlock[1]/SymmetricQuantizer", type=symmetric_quantize];
 "220 SENet/avg_pool2d" [id=220, scope=SENet, type=avg_pool2d];
 "221 SENet/SymmetricQuantizer/symmetric_quantize" [id=221, scope="SENet/SymmetricQuantizer", type=symmetric_quantize];
-"222 SENet/view" [id=222, scope=SENet, type=view];
-"223 SENet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/SymmetricQuantizer[op]/symmetric_quantize" [id=223, scope="SENet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/SymmetricQuantizer[op]", type=symmetric_quantize];
-"224 SENet/NNCFLinear[linear]/linear" [id=224, scope="SENet/NNCFLinear[linear]", type=linear];
+"222 SENet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/SymmetricQuantizer[op]/symmetric_quantize" [id=222, scope="SENet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/SymmetricQuantizer[op]", type=symmetric_quantize];
+"223 SENet/NNCFLinear[linear]/linear" [id=223, scope="SENet/NNCFLinear[linear]", type=linear];
 "0 SENet/NNCFConv2d[conv1]/ModuleDict[pre_ops]/UpdateWeight[0]/SymmetricQuantizer[op]/symmetric_quantize" -> "2 SENet/NNCFConv2d[conv1]/conv2d";
 "1 SENet/NNCFConv2d[conv1]/ModuleDict[pre_ops]/UpdateInputs[1]/SymmetricQuantizer[op]/symmetric_quantize" -> "2 SENet/NNCFConv2d[conv1]/conv2d";
 "2 SENet/NNCFConv2d[conv1]/conv2d" -> "3 SENet/BatchNorm2d[bn1]/batch_norm";
@@ -461,7 +460,6 @@ strict digraph  {
 "218 SENet/Sequential[layer4]/PreActBlock[1]/__iadd__" -> "219 SENet/Sequential[layer4]/PreActBlock[1]/SymmetricQuantizer/symmetric_quantize";
 "219 SENet/Sequential[layer4]/PreActBlock[1]/SymmetricQuantizer/symmetric_quantize" -> "220 SENet/avg_pool2d";
 "220 SENet/avg_pool2d" -> "221 SENet/SymmetricQuantizer/symmetric_quantize";
-"221 SENet/SymmetricQuantizer/symmetric_quantize" -> "222 SENet/view";
-"222 SENet/view" -> "224 SENet/NNCFLinear[linear]/linear";
-"223 SENet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/SymmetricQuantizer[op]/symmetric_quantize" -> "224 SENet/NNCFLinear[linear]/linear";
+"221 SENet/SymmetricQuantizer/symmetric_quantize" -> "223 SENet/NNCFLinear[linear]/linear";
+"222 SENet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/SymmetricQuantizer[op]/symmetric_quantize" -> "223 SENet/NNCFLinear[linear]/linear";
 }

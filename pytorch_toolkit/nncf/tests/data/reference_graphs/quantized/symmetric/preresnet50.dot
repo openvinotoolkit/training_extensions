@@ -301,9 +301,8 @@ strict digraph  {
 "299 PreActResNet/Sequential[layer4]/PreActBottleneck[2]/SymmetricQuantizer/symmetric_quantize" [id=299, scope="PreActResNet/Sequential[layer4]/PreActBottleneck[2]/SymmetricQuantizer", type=symmetric_quantize];
 "300 PreActResNet/avg_pool2d" [id=300, scope=PreActResNet, type=avg_pool2d];
 "301 PreActResNet/SymmetricQuantizer/symmetric_quantize" [id=301, scope="PreActResNet/SymmetricQuantizer", type=symmetric_quantize];
-"302 PreActResNet/view" [id=302, scope=PreActResNet, type=view];
-"303 PreActResNet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/SymmetricQuantizer[op]/symmetric_quantize" [id=303, scope="PreActResNet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/SymmetricQuantizer[op]", type=symmetric_quantize];
-"304 PreActResNet/NNCFLinear[linear]/linear" [id=304, scope="PreActResNet/NNCFLinear[linear]", type=linear];
+"302 PreActResNet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/SymmetricQuantizer[op]/symmetric_quantize" [id=302, scope="PreActResNet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/SymmetricQuantizer[op]", type=symmetric_quantize];
+"303 PreActResNet/NNCFLinear[linear]/linear" [id=303, scope="PreActResNet/NNCFLinear[linear]", type=linear];
 "0 PreActResNet/NNCFConv2d[conv1]/ModuleDict[pre_ops]/UpdateWeight[0]/SymmetricQuantizer[op]/symmetric_quantize" -> "2 PreActResNet/NNCFConv2d[conv1]/conv2d";
 "1 PreActResNet/NNCFConv2d[conv1]/ModuleDict[pre_ops]/UpdateInputs[1]/SymmetricQuantizer[op]/symmetric_quantize" -> "2 PreActResNet/NNCFConv2d[conv1]/conv2d";
 "2 PreActResNet/NNCFConv2d[conv1]/conv2d" -> "3 PreActResNet/Sequential[layer1]/PreActBottleneck[0]/BatchNorm2d[bn1]/batch_norm";
@@ -621,7 +620,6 @@ strict digraph  {
 "298 PreActResNet/Sequential[layer4]/PreActBottleneck[2]/__iadd__" -> "299 PreActResNet/Sequential[layer4]/PreActBottleneck[2]/SymmetricQuantizer/symmetric_quantize";
 "299 PreActResNet/Sequential[layer4]/PreActBottleneck[2]/SymmetricQuantizer/symmetric_quantize" -> "300 PreActResNet/avg_pool2d";
 "300 PreActResNet/avg_pool2d" -> "301 PreActResNet/SymmetricQuantizer/symmetric_quantize";
-"301 PreActResNet/SymmetricQuantizer/symmetric_quantize" -> "302 PreActResNet/view";
-"302 PreActResNet/view" -> "304 PreActResNet/NNCFLinear[linear]/linear";
-"303 PreActResNet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/SymmetricQuantizer[op]/symmetric_quantize" -> "304 PreActResNet/NNCFLinear[linear]/linear";
+"301 PreActResNet/SymmetricQuantizer/symmetric_quantize" -> "303 PreActResNet/NNCFLinear[linear]/linear";
+"302 PreActResNet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/SymmetricQuantizer[op]/symmetric_quantize" -> "303 PreActResNet/NNCFLinear[linear]/linear";
 }

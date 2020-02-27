@@ -225,7 +225,7 @@ class R3D(nn.Module):
         return get_fine_tuning_parameters(self, param_groups)
 
 
-def chek_conv1_params(model, pretrained_weights):
+def check_conv1_params(model, pretrained_weights):
     if model.conv1.in_channels != pretrained_weights['conv1.weight'].size(1):
         # get mean over RGB channels weights
         rgb_mean = torch.mean(pretrained_weights['conv1.weight'], dim=1)
@@ -259,7 +259,7 @@ def average_conv1_weights(old_params, in_channels):
 def load_pretrained_resnet(model, resnet_name='resnet34', num_channels=3):
     if num_channels == 3:
         pretrained_weights = model_zoo.load_url(model_urls[resnet_name])
-        chek_conv1_params(model, pretrained_weights)
+        check_conv1_params(model, pretrained_weights)
         model.load_state_dict(pretrained_weights)
     else:
         pretrained_dict = model_zoo.load_url(model_urls[resnet_name])
@@ -280,7 +280,7 @@ def R3D_18(pretrained=False, **kwargs):
     """Constructs a R3D-18 model.
 
     Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
+        pretrained (bool): If True, returns a model pretrained on ImageNet
     """
     model = R3D(BasicBlockR3D, [2, 2, 2, 2], decomposed=False, **kwargs)
 
@@ -296,7 +296,7 @@ def R3D_34(pretrained=False, **kwargs):
     """Constructs a R3D-34 model.
 
     Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
+        pretrained (bool): If True, returns a model pretrained on ImageNet
     """
     model = R3D(BasicBlockR3D, [3, 4, 6, 3], decomposed=False, **kwargs)
     num_channels = 3
@@ -323,7 +323,7 @@ def R3D_50(pretrained=False, **kwargs):
     """Constructs a R3D-50 model.
 
     Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
+        pretrained (bool): If True, returns a model pretrained on ImageNet
     """
     model = R3D(BottleneckR3D, [3, 4, 6, 3], decomposed=False, **kwargs)
     num_channels = 3
@@ -338,7 +338,7 @@ def R3D_101(pretrained=False, **kwargs):
     """Constructs a R3D-101 model.
 
     Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
+        pretrained (bool): If True, returns a model pretrained on ImageNet
     """
     model = R3D(BottleneckR3D, [3, 4, 23, 3], decomposed=False, **kwargs)
     num_channels = 3
@@ -353,7 +353,7 @@ def R3D_152(pretrained=False, **kwargs):
     """Constructs a R3D-152 model.
 
     Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
+        pretrained (bool): If True, returns a model pretrained on ImageNet
     """
     model = R3D(BottleneckR3D, [3, 8, 36, 3], decomposed=False, **kwargs)
     num_channels = 3

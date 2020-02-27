@@ -1,0 +1,41 @@
+{
+    "model": "unet",
+    "dataset" : "mapillary",
+    "preprocessing": {
+        "resize": {
+            "height": 512,
+            "width": 1024
+        },
+        "normalize": {
+            "mean": [0.485, 0.456, 0.406],
+            "std" : [0.229, 0.224, 0.225]
+        }
+    },
+
+    "input_info": {
+      "sample_size": [1, 3, 512, 1024]
+    },
+
+    "weighing": [0.0000, 0.0554, 0.3358, 0.0843, 0.7865, 0.7753, 1.1966, 5.1031, 2.4255,
+        0.0679, 0.8589, 0.0389, 2.8977, 9.4937, 0.2531, 1.8852, 2.1179, 2.1978,
+        5.9516, 6.4394],
+
+    "optimizer": {
+        "type": "SGD",
+        "optimizer_params": {
+            "lr": 0.01,
+            "weight_decay": 2.0e-5,
+            "momentum": 0.99
+        },
+        "schedule_type": "plateau",
+        "scheduler_params": {
+            "threshold": 0.001,
+            "patience": 3
+        },
+        "gamma": 0.1
+    },
+
+    "model_params": {
+         "input_size_hw": [512, 1024]
+    }
+}

@@ -165,8 +165,7 @@ strict digraph  {
 "163 PreActResNet/Sequential[layer4]/PreActBottleneck[2]/Conv2d[conv3]/conv2d" [id=163, scope="PreActResNet/Sequential[layer4]/PreActBottleneck[2]/Conv2d[conv3]", type=conv2d];
 "164 PreActResNet/Sequential[layer4]/PreActBottleneck[2]/__iadd__" [id=164, scope="PreActResNet/Sequential[layer4]/PreActBottleneck[2]", type=__iadd__];
 "165 PreActResNet/avg_pool2d" [id=165, scope=PreActResNet, type=avg_pool2d];
-"166 PreActResNet/view" [id=166, scope=PreActResNet, type=view];
-"167 PreActResNet/Linear[linear]/linear" [id=167, scope="PreActResNet/Linear[linear]", type=linear];
+"166 PreActResNet/Linear[linear]/linear" [id=166, scope="PreActResNet/Linear[linear]", type=linear];
 "0 PreActResNet/Conv2d[conv1]/conv2d" -> "1 PreActResNet/Sequential[layer1]/PreActBottleneck[0]/BatchNorm2d[bn1]/batch_norm";
 "1 PreActResNet/Sequential[layer1]/PreActBottleneck[0]/BatchNorm2d[bn1]/batch_norm" -> "2 PreActResNet/Sequential[layer1]/PreActBottleneck[0]/RELU";
 "2 PreActResNet/Sequential[layer1]/PreActBottleneck[0]/RELU" -> "3 PreActResNet/Sequential[layer1]/PreActBottleneck[0]/Sequential[shortcut]/Conv2d[0]/conv2d";
@@ -348,6 +347,5 @@ strict digraph  {
 "162 PreActResNet/Sequential[layer4]/PreActBottleneck[2]/RELU" -> "163 PreActResNet/Sequential[layer4]/PreActBottleneck[2]/Conv2d[conv3]/conv2d";
 "163 PreActResNet/Sequential[layer4]/PreActBottleneck[2]/Conv2d[conv3]/conv2d" -> "164 PreActResNet/Sequential[layer4]/PreActBottleneck[2]/__iadd__";
 "164 PreActResNet/Sequential[layer4]/PreActBottleneck[2]/__iadd__" -> "165 PreActResNet/avg_pool2d";
-"165 PreActResNet/avg_pool2d" -> "166 PreActResNet/view";
-"166 PreActResNet/view" -> "167 PreActResNet/Linear[linear]/linear";
+"165 PreActResNet/avg_pool2d" -> "166 PreActResNet/Linear[linear]/linear";
 }

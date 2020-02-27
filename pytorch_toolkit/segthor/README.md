@@ -1,28 +1,25 @@
-# Segmentation of thoracic organs using pixel shuffle
+# Segmentation of Thoracic Organs Using Pixel Shuffle
 
-This code was written for participation in the [SegTHOR: Segmentation of THoracic Organs at Risk in CT images](https://competitions.codalab.org/competitions/21012).
-The code is based on [the corresponding paper](http://ceur-ws.org/Vol-2349/SegTHOR2019_paper_10.pdf), where we employ deep learning approach and explore two concepts: attention mechanism and pixel shuffle as an upsampling  operator. The method in this repository differs from the one described in the paper in a few aspects: we've changed backbone from ResNet to ResNeXt and added a postprocessing step.
+This code was written for participation in the [SegTHOR: Segmentation of THoracic Organs at Risk in CT images](https://competitions.codalab.org/competitions/21145).
+The code is based on [the corresponding paper](http://ceur-ws.org/Vol-2349/SegTHOR2019_paper_10.pdf), where we employ deep learning approach and explore two concepts: attention mechanism and pixel shuffle as an upsampling operator. The method in this repository differs from the one described in the paper by a few aspects: we have changed the backbone from ResNet to ResNeXt and added a postprocessing step.
 
-The example of final segmentation:  
+An example of the final segmentation:
 
-<img src="media/3dvis.png" alt="drawing" height="150"/>
+![](media/3dvis.png)
 
+The visualization is done with ITK-SNAP.
 
-The visualisation is done with ITK-SNAP
-
-
-## Network architecture
+## Network Architecture
 
 It is a 3D UNet with ResNext blocks. The architecture consists of decoding and encoding paths with skip-connections
-between them. We employed strided convolutions for downsampling in encoder and pixel-shuffle for upsampling in decoder.  
+between them. We employed strided convolutions for downsampling in encoder and pixel-shuffle for upsampling in decoder.
 
-
-<img src="media/3d_pix_shuffle.png" alt="drawing" height="150"/>
+![](media/3d_pix_shuffle.png)
 
 ## Results
 
-The Dice index and Hausdorff distance are reported for each organ (Esophagus, heart, Trachea, Aorta). For local
-validation, the scores reported without post-processing and test time augmentation. The number in the brackets is the
+The Dice index and Hausdorff distance are reported for each organ (esophagus, heart, trachea, aorta). For local
+validation, the scores are reported without post-processing and test time augmentation. The number in the brackets is the
 leaderboard placement by the time of this commit.
 
 |              | Esophagus (D) | Heart (D)   | Trachea (D) | Aorta (D)   |
@@ -30,7 +27,7 @@ leaderboard placement by the time of this commit.
 | CV 5         | 0.8249        | 0.9475      | 0.9007      | 0.9310      |
 | SegTHOR Test | 0.8646 (3)    | 0.9423 (18) | 0.9172 (10) | 0.9369 (13) |
 
-The Hausdorff distance is reported in voxels. For Test, scores include post-processing and test time augmentation, the
+The Hausdorff distance is reported in voxels. For test, scores include post-processing and test time augmentation, the
 Hausdorff distance is reported in mm.
 
 |              | Esophagus (H) | Heart (H)   | Trachea (H) | Aorta (H)   |
@@ -38,53 +35,53 @@ Hausdorff distance is reported in mm.
 | CV 5         | 13.14vx       | 47.28vx     | 37.79vx     | 22.26vx     |
 | SegTHOR Test | 0.2847 (4)    | 0.1883 (13) | 0.2178 (13) | 0.1658 (10) |
 
-
-### Pre-trained model
-Download checkpoint with the following [Google
-Drive](https://drive.google.com/file/d/1sUOq0WsyBN8mg-CJR-mv_Y5xnP5uORfX/view?usp=sharing) or
+### Model
+Download checkpoint with the following
 [01.org](https://download.01.org/opencv/openvino_training_extensions/models/segthor/segthor_0620_best_model.pth).
 
 ## Setup
 
 ### Prerequisites
 
-* Ubuntu 16.04
-* Python 3.6
-* NVidia GPU for training
+* Ubuntu\* 16.04
+* Python\* 3.6
+* NVidia\* GPU for training
 * 32GB RAM for inference
-
 
 ### Installation
 
 1. Create virtual environment
-```bash
-virtualenv venv -p python3 --prompt="(segthor)"
-```
+    ```bash
+    virtualenv venv -p python3 --prompt="(segthor)"
+    ```
 
-2. Activate virtual environment and setup OpenVINO variables
-```bash
-. venv/bin/activate
-. /opt/intel/openvino/bin/setupvars.sh
-```
-**NOTE** Good practice is adding `. /opt/intel/openvino/bin/setupvars.sh` to the end of the `venv/bin/activate`.
-```
-echo ". /opt/intel/openvino/bin/setupvars.sh" >> venv/bin/activate
-```
+2. Activate virtual environment and setup OpenVINO variables:
+    ```bash
+    . venv/bin/activate
+    . /opt/intel/openvino/bin/setupvars.sh
+    ```
+
+    >**TIP**: Good practice is adding `. /opt/intel/openvino/bin/setupvars.sh` to the end of the `venv/bin/activate`.
+
+    ```
+    echo ". /opt/intel/openvino/bin/setupvars.sh" >> venv/bin/activate
+    ```
 
 3. Install the module
-```bash
-pip3 install -e .
-```
+    ```bash
+    pip3 install -e .
+    ```
 
-## How to train
-1. Download SegTHOR Dataset from the [website](https://competitions.codalab.org/competitions/21012#participate)
+## Train
+
+1. Download the [SegTHOR dataset](https://competitions.codalab.org/competitions/21012#participate)
 2. Create the directory tree
-3. Prepare training dataset
-4. Run training
+3. Prepare the training dataset
+4. Run the training
 
-### Creating directory tree
+### Creating the Directory Tree
 
-`Data` directory should contain two subdirectories: pre-processed data for training and original
+The data directory should contain two subdirectories: preprocessed data for training and original
 [data](https://competitions.codalab.org/competitions/21012#participate).
 
 ```
@@ -93,14 +90,14 @@ pip3 install -e .
 |   +-- preprocessed
 ```
 
-`Models` directory should contain all the experiments you run. Your new experiments will be added here.
+The models directory should contain all the experiments you run. Your new experiments will be added here.
 
 ```
 +-- models
 |   +-- ..
 ```
 
-### Prepare training dataset
+### Prepare the Training Dataset
 
 ```
 python tools/prepare_training_dataset.py \
@@ -109,11 +106,11 @@ python tools/prepare_training_dataset.py \
   --new_scale 1 1 2.5
 ```
 
-As a result, you should get a set of folders in the `output_path` with preprocessed data. The data can be visualized with ITK-SNAP.
+You should get a set of folders in the `output_path` with preprocessed data. The data can be visualized with ITK-SNAP.
 
-### Run training
+### Run Training
 
-Run script `main.py`
+Run the `main.py` script:
 
 ```
 python3 tools/main.py \
@@ -127,14 +124,13 @@ python3 tools/main.py \
   --gpus 2
 ```
 
-Then, The tensorboard log will be accessible in `models\test_run\logs` folder
+The tensorboard log will be accessible in the `models\test_run\logs` folder.
 
-## How to perform prediction
+## How to Perform Prediction
 
-Ensure that the test directory contains a series of CT samples in nifti format with `.nii.gz` extension.
+Ensure that the test directory contains a series of CT samples in the NIfTI format with the `.nii.gz` extension.
 
-
-### Run test
+### Run Test
 
 ```
 python3 tools/test.py --name pai_0620 \
@@ -144,11 +140,11 @@ python3 tools/test.py --name pai_0620 \
   --new_scale 1 1 2.5
 ```
 
-### Run test with OpenVINO
+### Run test with OpenVINO™
 
-1. Download and setup [OpenVINO](https://software.intel.com/en-us/openvino-toolkit)
-2. Download a [model](https://drive.google.com/file/d/1QRqJpYYbb08N4rLeU8ZCXW-G2F1FHbXK/view?usp=sharing), [weights](https://drive.google.com/file/d/1bLjC_x3ueeColeEkEPfYAqxRsjBf8y-S/view?usp=sharing) and [mapping](https://drive.google.com/file/d/1jaWj1SjqbLNa0jvHuqm9WoK1g5mvAdCA/view?usp=sharing).
-3. Run `thoracic_segmentation.py`
+1. Download and setup [OpenVINO™ ](https://software.intel.com/en-us/openvino-toolkit)
+
+2. Run `thoracic_segmentation.py`
 
 ```
 python3.6 tools/thoracic_segmentation.py \

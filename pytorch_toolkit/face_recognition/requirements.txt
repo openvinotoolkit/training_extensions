@@ -7,7 +7,8 @@ python-gflags==3.1.2
 scipy==1.1.0
 six==1.11.0
 tensorboardX==1.4
-torch==0.4.1
+torch==1.2.0
 torchvision==0.2.1
 tqdm==4.28.1
 pyyaml>=3.12
+networkx==2.3

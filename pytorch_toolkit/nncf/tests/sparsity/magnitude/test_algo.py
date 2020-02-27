@@ -26,6 +26,7 @@ from nncf.utils import get_all_modules_by_type
 from tests.quantization.test_functions import check_equal
 from tests.sparsity.const.test_algo import ref_mask_2, ref_mask_1
 from tests.sparsity.magnitude.test_helpers import MagnitudeTestModel, get_basic_magnitude_sparsity_config
+from tests.test_helpers import BasicConvTestModel, get_empty_config
 
 
 def test_can_create_magnitude_sparse_algo__with_defaults():
@@ -132,3 +133,31 @@ def test_magnitude_algo_set_binary_mask_on_forward():
 
     op = model.conv2.pre_ops['0']
     check_equal(ref_mask_2, op.operand.binary_mask)
+
+
+def test_magnitude_algo_binary_masks_are_applied():
+    model = BasicConvTestModel()
+    config = get_empty_config()
+    config['compression']['algorithm'] = "magnitude_sparsity"
+    compression_algo = create_compression_algorithm(model, config)
+    compressed_model = compression_algo.model
+    minfo_list = compression_algo.sparsified_module_info  # type: List[SparseModuleInfo]
+    minfo = minfo_list[0]  # type: SparseModuleInfo
+
+    minfo.operand.binary_mask = torch.ones_like(minfo.module.weight)  # 1x1x2x2
+    input_ = torch.ones(size=(1, 1, 5, 5))
+    ref_output_1 = -4 * torch.ones(size=(2, 4, 4))
+    output_1 = compressed_model(input_)
+    assert torch.all(torch.eq(output_1, ref_output_1))
+
+    minfo.operand.binary_mask[0][0][0][1] = 0
+    minfo.operand.binary_mask[1][0][1][0] = 0
+    ref_output_2 = - 3 * torch.ones_like(ref_output_1)
+    output_2 = compressed_model(input_)
+    assert torch.all(torch.eq(output_2, ref_output_2))
+
+    minfo.operand.binary_mask[1][0][0][1] = 0
+    ref_output_3 = ref_output_2.clone()
+    ref_output_3[1] = -2 * torch.ones_like(ref_output_1[1])
+    output_3 = compressed_model(input_)
+    assert torch.all(torch.eq(output_3, ref_output_3))

@@ -12,6 +12,7 @@
 """
 
 import re
+from nncf.quantization.quantized_network import MODULE_WRAPPED_BY_NNCF_ATTR_NAME
 
 
 def load_state(model, saved_state_dict, is_resume=False):
@@ -68,10 +69,19 @@ def match_keys(is_resume, saved_state_dict, state_dict, key_normalizer):
         skipped_keys.append(key)
         return num_loaded_layers
 
-    clipped_keys = {k.replace('module.', ''): k for k in state_dict.keys()}
+    clip_patterns = [MODULE_WRAPPED_BY_NNCF_ATTR_NAME + '.',
+                     'module.']
+
+    clipped_keys = list(state_dict.keys())
+    for pattern in clip_patterns:
+        for i, _ in enumerate(clipped_keys):
+            clipped_keys[i] = clipped_keys[i].replace(pattern, '')
+
+    clipped_key_to_model_key_dict = dict(zip(clipped_keys, state_dict.keys()))
+
     norm_clipped_keys = {}
     collisions = []
-    for clipped_key, orig_key in clipped_keys.items():
+    for clipped_key, orig_key in clipped_key_to_model_key_dict.items():
         normalized_key = key_normalizer(clipped_key)
         if normalized_key in norm_clipped_keys:
             collisions.append(clipped_key)
@@ -80,9 +90,12 @@ def match_keys(is_resume, saved_state_dict, state_dict, key_normalizer):
     unexpected_keys = []
 
     for (saved_key, saved_value) in saved_state_dict.items():
-        clipped_saved_key = saved_key.replace('module.', '')
-        if clipped_saved_key in clipped_keys:
-            key = clipped_keys[clipped_saved_key]
+        clipped_saved_key = saved_key
+        for pattern in clip_patterns:
+            clipped_saved_key = clipped_saved_key.replace(pattern, '')
+
+        if clipped_saved_key in clipped_key_to_model_key_dict:
+            key = clipped_key_to_model_key_dict[clipped_saved_key]
             num_loaded_layers = check_parameter_size(key, saved_value, num_loaded_layers)
         else:
             norm_clipped_saved_key = key_normalizer(clipped_saved_key)

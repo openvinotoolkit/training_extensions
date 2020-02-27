@@ -1,0 +1,129 @@
+{
+  "identifier": "instance-segmentation-security-0050",
+  "description": "Training of instance-segmentation-security-0050",
+  "model": {
+    "class_name": "FPNTextMaskRCNN",
+    "backbone": {
+      "name": "resnet50"
+    },
+    "bupa_dim_out": 64,
+    "fpn_dim_out": 64,
+    "rpn_dim": 64,
+    "mask_head_dim": 64,
+    "use_text_masking": false,
+    "prior_boxes_sizes": {
+      "widths": [
+        [
+          25.373308895665545,
+          57.32880800439066,
+          44.816390240735046
+        ],
+        [
+          101.44746025664782,
+          83.6313259044273,
+          166.55515517926642
+        ],
+        [
+          274.84093773541287,
+          108.98453121497765,
+          220.8833382946159
+        ],
+        [
+          437.2767346879714,
+          395.481862252806,
+          684.7478603787224
+        ],
+        [
+          244.10763509993072,
+          1052.7555941586754,
+          898.1588607545873
+        ]
+      ],
+      "heights": [
+        [
+          14.638593839667141,
+          18.7326774643089,
+          41.96789582807998
+        ],
+        [
+          28.95213012729713,
+          81.79945264691226,
+          41.62500059387807
+        ],
+        [
+          47.716535798782466,
+          184.5240849079048,
+          110.62391322293963
+        ],
+        [
+          80.4183773707516,
+          211.89428420216396,
+          128.18987120739303
+        ],
+        [
+          452.6903768620026,
+          170.504537199972,
+          393.9769382658725
+        ]
+      ]
+    },
+    "segm_roi_featuremap_resolution": 14,
+    "text_recognition_head": {
+      "name": "TextRecognitionHeadAttention",
+      "param": {
+          "input_feature_size": [28, 28],
+          "encoder_dim_input":  64,
+          "encoder_dim_internal": 256,
+          "encoder_num_layers": 3,
+          "decoder_input_feature_size": [28, 28],
+          "decoder_max_seq_len": 28,
+          "decoder_vocab_size": 38,
+          "decoder_dim_hidden": 256,
+          "decoder_sos_index": 0,
+          "decoder_rnn_type": "GRU",
+          "visualize": false
+      }
+    }
+  },
+  "shape": [768, 1280],
+  "checkpoint": "",
+  "training_dataset_name": "IC13TRAINTEST_IC15TRAIN_MSRATD500TRAINTEST_COCOTEXTTRAINVAL.json",
+  "training_transforms": {
+    "RandomRotate90": {},
+    "RandomResize": {
+      "mode": "size",
+      "heights": [384, 576, 640, 768, 960],
+      "widths": [576, 640, 768, 960, 1280]
+    },
+    "FilterTextByArea": {"min_area": 256},
+    "ToTensor": {},
+    "Normalize": {
+      "mean": [123.675, 116.28, 103.53],
+      "std": [58.395, 57.12, 57.375],
+      "rgb": true
+    }
+  },
+  "validation_dataset_name": "IC15TEST.json",
+  "validation_transforms": {
+    "Resize": {
+      "size": [768, 1280]
+    },
+    "ToTensor": {},
+    "Normalize": {
+      "mean": [123.675, 116.28, 103.53],
+      "std": [58.395, 57.12, 57.375],
+      "rgb": true
+    }
+  },
+  "validation_confidence_threshold": 0.8,
+  "training_details": {
+    "validate_every": 1000,
+    "checkpoint_every": 1000,
+    "training_iterations_num": 200000,
+    "batch_size": 32,
+    "virtual_iter_size": 1,
+    "weight_decay": 0.0001,
+    "base_lr": 0.02,
+    "lr_scheduler_milestones": [150000, 180000]
+  }
+}

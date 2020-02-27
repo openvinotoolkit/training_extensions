@@ -145,7 +145,7 @@ if __name__ == '__main__':
     parser.add_argument('--from-mobilenet', action='store_true',
                         help='load weights from mobilenet feature extractor')
     parser.add_argument('--weights-only', action='store_true',
-                        help='just initialize layers with pre-trained weights and start training from the beginning')
+                        help='just initialize layers with pretrained weights and start training from the beginning')
     parser.add_argument('--experiment-name', type=str, default='default',
                         help='experiment name to create folder for checkpoints')
     parser.add_argument('--log-after', type=int, default=100, help='number of iterations to print train loss')

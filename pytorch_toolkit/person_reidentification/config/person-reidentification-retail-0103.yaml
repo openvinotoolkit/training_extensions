@@ -1,0 +1,65 @@
+model:
+  name: 'fpn_osnet_x0_5'
+  pretrained: True
+  dropout_prob: 0.
+  feature_dim: 256
+  IN_first: True
+  gap_as_conv: True
+  fpn: False
+
+data:
+  root: './'
+  type: 'image'
+  sources: ['msmt17', 'market1501']
+  targets: ['market1501']
+  height: 256
+  width: 128
+  combineall: True
+  save_dir: 'outputs/reid-0103'
+  transforms:
+    random_flip:
+      enable: True
+      p: 0.5
+    color_jitter:
+      enable: True
+      p: 1.0
+      saturation: 0.1
+      hue: 0.1
+      brightness: 0.2
+      contrast: 0.15
+    batch_transform:
+      enable: False
+      anchor_bias: 0.9
+
+loss:
+  name: 'am_softmax'
+  softmax:
+    label_smooth: False
+    conf_pen: 0.3
+    m: 0.35
+    s: 30
+
+metric_losses:
+  enable: True
+  center_coeff: 1.0
+  glob_push_plus_loss_coeff: 1.2
+  balance_losses: True
+
+train:
+  optim: 'radam'
+  lr: 0.0015
+  max_epoch: 20
+  batch_size: 128
+  fixbase_epoch: 5
+  open_layers: ['conv1', 'fc', 'classifier', 'global_avgpool']
+  lr_scheduler: 'single_step'
+  stepsize: [19]
+
+test:
+  batch_size: 300
+  dist_metric: 'cosine'
+  normalize_feature: True
+  evaluate: False
+  eval_freq: 5
+  rerank: False
+  visactmap: False

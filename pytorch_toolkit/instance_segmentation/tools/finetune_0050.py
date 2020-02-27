@@ -121,7 +121,7 @@ class Trainer(DefaultMaskRCNNTrainingEngine):
                                         'converted', 'coco', 'ote', 'instance_segmentation_security_0050.pth')
         if not osp.exists(checkpoint_file_path):
             raise IOError('Initial checkpoint file "{}" does not exist. '
-                          'Please fetch pre-trained networks using '
+                          'Please fetch pretrained networks using '
                           'tools/download_pretrained_weights.py script first.'.format(checkpoint_file_path))
         logger.info('Loading weights from "{}"'.format(checkpoint_file_path))
         load_checkpoint(self.model, checkpoint_file_path)

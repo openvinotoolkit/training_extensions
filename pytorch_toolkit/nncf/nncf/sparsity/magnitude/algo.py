@@ -20,23 +20,26 @@ from ..layers import BinaryMask
 from ..base_algo import BaseSparsityAlgo
 from ..schedulers import SPARSITY_SCHEDULERS
 from ...algo_selector import COMPRESSION_ALGORITHMS
+from nncf.dynamic_graph.graph_builder import ModelInputInfo
+from nncf.algo_selector import create_dummy_forward_fn
 
 logger = logging.getLogger(__name__)
 
 
 @COMPRESSION_ALGORITHMS.register('magnitude_sparsity')
 class MagnitudeSparsity(BaseSparsityAlgo):
-    def __init__(self, model, config, input_size,
-                 dummy_forward_fn=None, **kwargs):
-        super().__init__(model, config, input_size)
+    def __init__(self, model, config, input_infos: ModelInputInfo = None, dummy_forward_fn=None, **kwargs):
+        super().__init__(model, config, input_infos, dummy_forward_fn)
         self.sparsity_level = self.threshold = 0
 
         self.ignored_scopes = self.config.get('ignored_scopes')
         self.target_scopes = self.config.get('target_scopes')
+        self.dummy_forward_fn = dummy_forward_fn
+        if self.dummy_forward_fn is None:
+            self.dummy_forward_fn = create_dummy_forward_fn(input_infos)
 
         params = self.config.get("params", {})
         device = next(model.parameters()).device
-        self.dummy_forward_fn = dummy_forward_fn
 
         self.weight_importance = WEIGHT_IMPORTANCE_FUNCTIONS.get(
             self.config.get('weight_importance', 'normed_abs'))
@@ -48,10 +51,10 @@ class MagnitudeSparsity(BaseSparsityAlgo):
         self._scheduler = scheduler_cls(self, self.config)
 
     def statistics(self):
-        stas = super().statistics()
-        stas['sparsity_threshold'] = self.threshold
-        stas['sparsity_level'] = self.sparsity_level
-        return stas
+        stats = super().statistics()
+        stats['sparsity_threshold'] = self.threshold
+        stats['sparsity_level'] = self.sparsity_level
+        return stats
 
     def freeze(self):
         pass

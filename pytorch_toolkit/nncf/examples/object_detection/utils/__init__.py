@@ -2,7 +2,7 @@ from pathlib import Path
 
 import cv2
 import yaml
-
+import sys
 
 def mkdir_if_not_exists(path):
     path = Path(path)
@@ -25,7 +25,7 @@ def showAnnotation(dataset, class_names=None):
         cv2.imshow("img", image)
         k = cv2.waitKey()
         if k == 27:
-            exit()
+            sys.exit()
 
 
 def read_config(path_to_config, img_size):

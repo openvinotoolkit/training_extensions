@@ -37,8 +37,9 @@ def find_version(*file_paths):
 
 
 INSTALL_REQUIRES = ["addict",
-                    "torch",
-                    "torchvision",
+                    "torch==1.2.0",
+                    "torchvision==0.4.0",
+                    "pillow==6.2.1",
                     "texttable",
                     "scipy",
                     "ninja",
@@ -53,7 +54,10 @@ INSTALL_REQUIRES = ["addict",
                     "tqdm",
                     "onnx",
                     "opencv-python",
-                    "pytest-mock"]
+                    "pytest-mock",
+                    "prettytable",
+                    "mdutils",
+                    "yattag"]
 
 EXTRAS_REQUIRE = {
     "tests": [

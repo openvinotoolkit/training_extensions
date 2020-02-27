@@ -12,8 +12,10 @@
 """
 
 import torch
-from nncf.utils import no_jit_trace
 from torch import nn
+
+from nncf.utils import no_jit_trace
+from nncf.dynamic_graph.context import no_nncf_trace
 
 from ..box_utils import decode, nms
 
@@ -72,7 +74,7 @@ class DetectionOutputFunction(torch.autograd.Function):
             prior_data: (tensor) Prior boxes and variances from priorbox layers
                 Shape: [1,2,num_priors*4]
         """
-        with no_jit_trace():
+        with no_jit_trace(), no_nncf_trace():
             if detection_output_params.nms_threshold <= 0:
                 raise ValueError('nms_threshold must be non negative.')
             device = loc_data.device

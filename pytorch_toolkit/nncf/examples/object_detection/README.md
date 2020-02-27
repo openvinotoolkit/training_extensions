@@ -9,7 +9,7 @@ This sample demonstrates DL model compression capabailites for object detection 
 - DataParallel and DistributedDataParallel modes
 - Tensorboard output
 
-## Quantize FP32 pre-trained model
+## Quantize FP32 pretrained model
 This scenario demonstrates quantization with fine-tuning of SSD300 on VOC dataset.
 
 #### Dataset preparation
@@ -39,11 +39,11 @@ To export a model to OpenVINO IR and run it using Intel Deep Learning Deployment
 
 ### Results
 
-| Model | Compression Algorithms | Dataset | mAP @ 0.5IoU | Config path | PyTorch checkpoint |
-| :-- | :-: | :-: | :-: | :-: | :-: |
-| SSD300-BN | None (FP32) | VOC12+07 | 78.28 | examples/object_detection/configs/ssd300_vgg_voc.json | [Link](https://download.01.org/opencv/openvino_training_extensions/models/nncf/ssd300_vgg_voc.pth) |
-| SSD300-BN | Int8 | VOC12+07 | 78.22 | examples/object_detection/configs/ssd300_vgg_int8_voc.json | [Link](https://download.01.org/opencv/openvino_training_extensions/models/nncf/ssd300_vgg_voc_int8.pth) |
-| SSD300-BN | Int8 + Sparsity 70% (Magnitude) | VOC12+07 | 77.94 | examples/object_detection/configs/ssd300_vgg_int8_mag_voc.json | [Link](https://download.01.org/opencv/openvino_training_extensions/models/nncf/ssd300_vgg_voc_int8_sparse.pth) |
-| SSD512-BN | None (FP32) | VOC12+07 | 80.26 | examples/object_detection/configs/ssd512_vgg_voc.json | [Link](https://download.01.org/opencv/openvino_training_extensions/models/nncf/ssd512_vgg_voc.pth) |
-| SSD512-BN | Int8 | VOC12+07 | 80.48 | examples/object_detection/configs/ssd_vgg_int8_voc.json | [Link](https://download.01.org/opencv/openvino_training_extensions/models/nncf/ssd512_vgg_voc_int8.pth) |
-| SSD512-BN | Int8 + Sparsity 70% (Magnitude) | VOC12+07 | 80.11 | examples/object_detection/configs/ssd512_vgg_int8_mag_voc.json | [Link](https://download.01.org/opencv/openvino_training_extensions/models/nncf/ssd512_vgg_voc_int8_sparse.pth) |
+|Model|Compression algorithm|Dataset|PyTorch compressed accuracy|Config path|PyTorch Checkpoint|
+| :---: | :---: | :---: | :---: | :---: | :---: |
+|SSD300-BN|None|VOC12+07|78.28|examples/object_detection/config/ssd300_vgg_voc.json|https://download.01.org/opencv/openvino_training_extensions/models/nncf/ssd300_vgg_voc.pth|
+|SSD300-BN|INT8|VOC12+07|78.02|examples/object_detection/config/ssd300_vgg_voc_int8.json|https://download.01.org/opencv/openvino_training_extensions/models/nncf/ssd300_vgg_voc_int8.pth|
+|SSD300-BN|INT8 + Sparsity 70% (Magnitude)|VOC12+07|77.96|examples/object_detection/config/ssd300_vgg_voc_magnitude_sparsity_int8.json|https://download.01.org/opencv/openvino_training_extensions/models/nncf/ssd300_vgg_voc_magnitude_sparsity_int8.pth|
+|SSD512-BN|None|VOC12+07|80.26|examples/object_detection/config/ssd512_vgg_voc.json|https://download.01.org/opencv/openvino_training_extensions/models/nncf/ssd512_vgg_voc.pth|
+|SSD512-BN|INT8|VOC12+07|80.58|examples/object_detection/config/ssd512_vgg_voc_int8.json|https://download.01.org/opencv/openvino_training_extensions/models/nncf/ssd512_vgg_voc_int8.pth|
+|SSD512-BN|INT8 + Sparsity 70% (Magnitude)|VOC12+07|80.11|examples/object_detection/config/ssd512_vgg_voc_magnitude_sparsity_int8.json|https://download.01.org/opencv/openvino_training_extensions/models/nncf/ssd512_vgg_voc_magnitude_sparsity_int8.pth|

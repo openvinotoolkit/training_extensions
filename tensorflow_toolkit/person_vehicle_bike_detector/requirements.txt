@@ -13,3 +13,4 @@ pylint==2.2.2
 contextlib2==0.5.5
 Pillow==5.3
 numpy==1.16.2
+networkx==2.3

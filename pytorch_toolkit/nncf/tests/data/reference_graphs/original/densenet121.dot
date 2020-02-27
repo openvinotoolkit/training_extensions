@@ -421,8 +421,7 @@ strict digraph  {
 "419 DenseNet/BatchNorm2d[bn]/batch_norm" [id=419, scope="DenseNet/BatchNorm2d[bn]", type=batch_norm];
 "420 DenseNet/RELU" [id=420, scope=DenseNet, type=RELU];
 "421 DenseNet/avg_pool2d" [id=421, scope=DenseNet, type=avg_pool2d];
-"422 DenseNet/view" [id=422, scope=DenseNet, type=view];
-"423 DenseNet/Linear[linear]/linear" [id=423, scope="DenseNet/Linear[linear]", type=linear];
+"422 DenseNet/Linear[linear]/linear" [id=422, scope="DenseNet/Linear[linear]", type=linear];
 "0 DenseNet/Conv2d[conv1]/conv2d" -> "1 DenseNet/Sequential[dense1]/Bottleneck[0]/BatchNorm2d[bn1]/batch_norm";
 "0 DenseNet/Conv2d[conv1]/conv2d" -> "7 DenseNet/Sequential[dense1]/Bottleneck[0]/cat";
 "1 DenseNet/Sequential[dense1]/Bottleneck[0]/BatchNorm2d[bn1]/batch_norm" -> "2 DenseNet/Sequential[dense1]/Bottleneck[0]/RELU";
@@ -902,6 +901,5 @@ strict digraph  {
 "418 DenseNet/Sequential[dense4]/Bottleneck[15]/cat" -> "419 DenseNet/BatchNorm2d[bn]/batch_norm";
 "419 DenseNet/BatchNorm2d[bn]/batch_norm" -> "420 DenseNet/RELU";
 "420 DenseNet/RELU" -> "421 DenseNet/avg_pool2d";
-"421 DenseNet/avg_pool2d" -> "422 DenseNet/view";
-"422 DenseNet/view" -> "423 DenseNet/Linear[linear]/linear";
+"421 DenseNet/avg_pool2d" -> "422 DenseNet/Linear[linear]/linear";
 }

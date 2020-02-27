@@ -9,3 +9,4 @@ simplejson==3.16.0
 matplotlib==2.2.2
 tqdm==4.23.4
 lxml==4.2.2
+networkx==2.3

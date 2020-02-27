@@ -40,7 +40,7 @@ def incept_v3_cifar100(pretrained=False, progress=True, **kwargs):
         N x 3 x 299 x 299, so ensure your images are sized accordingly.
 
     Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
+        pretrained (bool): If True, returns a model pretrained on ImageNet
         progress (bool): If True, displays a progress bar of the download to stderr
         aux_logits (bool): If True, add an auxiliary branch that can improve training.
             Default: *True*

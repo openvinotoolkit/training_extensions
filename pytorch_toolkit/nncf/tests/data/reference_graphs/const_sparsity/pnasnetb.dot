@@ -390,9 +390,8 @@ strict digraph  {
 "388 PNASNet/Sequential[layer5]/CellB[5]/BatchNorm2d[bn2]/batch_norm" [id=388, scope="PNASNet/Sequential[layer5]/CellB[5]/BatchNorm2d[bn2]", type=batch_norm];
 "389 PNASNet/Sequential[layer5]/CellB[5]/RELU" [id=389, scope="PNASNet/Sequential[layer5]/CellB[5]", type=RELU];
 "390 PNASNet/avg_pool2d" [id=390, scope=PNASNet, type=avg_pool2d];
-"391 PNASNet/view" [id=391, scope=PNASNet, type=view];
-"392 PNASNet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/BinaryMask[op]/apply_binary_mask" [id=392, scope="PNASNet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/BinaryMask[op]", type=apply_binary_mask];
-"393 PNASNet/NNCFLinear[linear]/linear" [id=393, scope="PNASNet/NNCFLinear[linear]", type=linear];
+"391 PNASNet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/BinaryMask[op]/apply_binary_mask" [id=391, scope="PNASNet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/BinaryMask[op]", type=apply_binary_mask];
+"392 PNASNet/NNCFLinear[linear]/linear" [id=392, scope="PNASNet/NNCFLinear[linear]", type=linear];
 "0 PNASNet/NNCFConv2d[conv1]/ModuleDict[pre_ops]/UpdateWeight[0]/BinaryMask[op]/apply_binary_mask" -> "1 PNASNet/NNCFConv2d[conv1]/conv2d";
 "1 PNASNet/NNCFConv2d[conv1]/conv2d" -> "2 PNASNet/BatchNorm2d[bn1]/batch_norm";
 "2 PNASNet/BatchNorm2d[bn1]/batch_norm" -> "3 PNASNet/RELU";
@@ -843,7 +842,6 @@ strict digraph  {
 "387 PNASNet/Sequential[layer5]/CellB[5]/NNCFConv2d[conv2]/conv2d" -> "388 PNASNet/Sequential[layer5]/CellB[5]/BatchNorm2d[bn2]/batch_norm";
 "388 PNASNet/Sequential[layer5]/CellB[5]/BatchNorm2d[bn2]/batch_norm" -> "389 PNASNet/Sequential[layer5]/CellB[5]/RELU";
 "389 PNASNet/Sequential[layer5]/CellB[5]/RELU" -> "390 PNASNet/avg_pool2d";
-"390 PNASNet/avg_pool2d" -> "391 PNASNet/view";
-"391 PNASNet/view" -> "393 PNASNet/NNCFLinear[linear]/linear";
-"392 PNASNet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/BinaryMask[op]/apply_binary_mask" -> "393 PNASNet/NNCFLinear[linear]/linear";
+"390 PNASNet/avg_pool2d" -> "392 PNASNet/NNCFLinear[linear]/linear";
+"391 PNASNet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/BinaryMask[op]/apply_binary_mask" -> "392 PNASNet/NNCFLinear[linear]/linear";
 }

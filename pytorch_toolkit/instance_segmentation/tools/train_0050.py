@@ -121,7 +121,7 @@ class Trainer(DefaultMaskRCNNTrainingEngine):
                                         'converted', 'imagenet', 'detectron', 'resnet50.pth')
         if not osp.exists(checkpoint_file_path):
             raise IOError('Initial checkpoint file "{}" does not exist. '
-                          'Please fetch pre-trained backbone networks using '
+                          'Please fetch pretrained backbone networks using '
                           'tools/download_pretrained_weights.py script first.'.format(checkpoint_file_path))
         logger.info('Loading weights from "{}"'.format(checkpoint_file_path))
         load_checkpoint(self.model.backbone, checkpoint_file_path)

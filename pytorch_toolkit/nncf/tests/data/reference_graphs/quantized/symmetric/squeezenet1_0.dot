@@ -117,8 +117,6 @@ strict digraph  {
 "115 SqueezeNet/Sequential[classifier]/ReLU[2]/RELU" [id=115, scope="SqueezeNet/Sequential[classifier]/ReLU[2]", type=RELU];
 "116 SqueezeNet/Sequential[classifier]/ReLU[2]/SymmetricQuantizer/symmetric_quantize" [id=116, scope="SqueezeNet/Sequential[classifier]/ReLU[2]/SymmetricQuantizer", type=symmetric_quantize];
 "117 SqueezeNet/Sequential[classifier]/AdaptiveAvgPool2d[3]/adaptive_avg_pool2d" [id=117, scope="SqueezeNet/Sequential[classifier]/AdaptiveAvgPool2d[3]", type=adaptive_avg_pool2d];
-"118 SqueezeNet/Sequential[classifier]/AdaptiveAvgPool2d[3]/SymmetricQuantizer/symmetric_quantize" [id=118, scope="SqueezeNet/Sequential[classifier]/AdaptiveAvgPool2d[3]/SymmetricQuantizer", type=symmetric_quantize];
-"119 SqueezeNet/view" [id=119, scope=SqueezeNet, type=view];
 "0 SqueezeNet/Sequential[features]/NNCFConv2d[0]/ModuleDict[pre_ops]/UpdateWeight[0]/SymmetricQuantizer[op]/symmetric_quantize" -> "2 SqueezeNet/Sequential[features]/NNCFConv2d[0]/conv2d";
 "1 SqueezeNet/Sequential[features]/NNCFConv2d[0]/ModuleDict[pre_ops]/UpdateInputs[1]/SymmetricQuantizer[op]/symmetric_quantize" -> "2 SqueezeNet/Sequential[features]/NNCFConv2d[0]/conv2d";
 "2 SqueezeNet/Sequential[features]/NNCFConv2d[0]/conv2d" -> "3 SqueezeNet/Sequential[features]/ReLU[1]/RELU";
@@ -244,6 +242,4 @@ strict digraph  {
 "114 SqueezeNet/Sequential[classifier]/NNCFConv2d[1]/conv2d" -> "115 SqueezeNet/Sequential[classifier]/ReLU[2]/RELU";
 "115 SqueezeNet/Sequential[classifier]/ReLU[2]/RELU" -> "116 SqueezeNet/Sequential[classifier]/ReLU[2]/SymmetricQuantizer/symmetric_quantize";
 "116 SqueezeNet/Sequential[classifier]/ReLU[2]/SymmetricQuantizer/symmetric_quantize" -> "117 SqueezeNet/Sequential[classifier]/AdaptiveAvgPool2d[3]/adaptive_avg_pool2d";
-"117 SqueezeNet/Sequential[classifier]/AdaptiveAvgPool2d[3]/adaptive_avg_pool2d" -> "118 SqueezeNet/Sequential[classifier]/AdaptiveAvgPool2d[3]/SymmetricQuantizer/symmetric_quantize";
-"118 SqueezeNet/Sequential[classifier]/AdaptiveAvgPool2d[3]/SymmetricQuantizer/symmetric_quantize" -> "119 SqueezeNet/view";
 }

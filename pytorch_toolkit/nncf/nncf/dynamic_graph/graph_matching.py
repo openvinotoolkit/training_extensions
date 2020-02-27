@@ -12,9 +12,10 @@
 """
 
 from itertools import chain, combinations
+from typing import Callable, List
 
-import networkx as nx
 import numpy as np
+import networkx as nx
 
 
 def powerset(iterable, min_r=1, max_r=None):
@@ -59,30 +60,6 @@ class Expression:
         if not all_matches:
             return None, None
         return max(all_matches, key=lambda x: len(x[0]))
-
-
-class NodeExpression(Expression):
-    def __init__(self, node_type=None, filter_fn=None):
-        self.filter = filter_fn
-        self.node_type = node_type
-
-    def _iterate_alternatives(self, nodes):
-        for node in nodes:
-            yield [node]
-
-    def _match(self, nodes, graph):
-        if len(nodes) != 1:
-            return None
-
-        node_name = nodes[0]
-        node = graph.nodes[node_name]
-        if self.node_type == node['type']:
-            if self.filter and not self.filter(node):
-                return None
-
-            following = graph.successors(node_name)
-            return node_name, following
-        return None
 
 
 class ConcatExpression(Expression):
@@ -202,13 +179,44 @@ class BranchingExpression(Expression):
         return BranchingExpression(self.expressions + [other])
 
 
-def search_all(ex, graph):
+class NodeExpression(Expression):
+    def __init__(self, node_type: str = None, filter_fn=None, node_type_fn: Callable[[dict], str] = None):
+        self.filter = filter_fn
+        self.node_type = node_type
+        if node_type_fn is None:
+            self.node_type_fn = lambda x: x['type']
+        else:
+            self.node_type_fn = node_type_fn
+
+    def _iterate_alternatives(self, nodes):
+        for node in nodes:
+            yield [node]
+
+    def _match(self, nodes, graph):
+        if len(nodes) != 1:
+            return None
+
+        node_name = nodes[0]
+        node = graph.nodes[node_name]
+        node_type = self.node_type_fn(node)
+        if self.node_type == node_type:
+            if self.filter and not self.filter(node):
+                return None
+
+            following = graph.successors(node_name)
+            return node_name, following
+        return None
+
+
+def search_all(graph: nx.DiGraph, expression: Expression) -> List[List[str]]:
+    """Returns list of node key lists that match the expression."""
     matches = []
     matched_nodes = set()
-    for subgraph in nx.weakly_connected_component_subgraphs(graph):
+    weakly_subgraphs = [graph.subgraph(c) for c in nx.weakly_connected_components(graph)]
+    for subgraph in weakly_subgraphs:
         dfs_order = nx.topological_sort(subgraph)
         for node in dfs_order:
-            match, _ = ex.match([node], graph)
+            match, _ = expression.match([node], graph)
 
             if node in matched_nodes:
                 continue

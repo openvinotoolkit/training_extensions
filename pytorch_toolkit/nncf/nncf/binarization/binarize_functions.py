@@ -86,7 +86,6 @@ class ActivationBinarizationScaleThresholdFn(torch.autograd.Function):
         zero = g.constant(0, [1], 'float')
         zero = g.op("Unsqueeze", zero, axes_i=[0, 2, 3])
         threshold = g.op("Mul", threshold, scale)
-        threshold = g.op("Unsqueeze", threshold, axes_i=[0, 2, 3])
         scale = g.op("Unsqueeze", scale, axes_i=[0, 2, 3])
         return g.op("FakeQuantize", x, threshold, threshold, zero, scale, levels_i=2)
 

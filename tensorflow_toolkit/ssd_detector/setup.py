@@ -21,7 +21,7 @@ with open('./requirements.txt') as f:
   REQUIRED = f.read().splitlines()
 
 # Under the Travis-CI we have to use a CPU version
-if os.environ.get('TRAVIS', None) == 'true':
+if os.environ.get('CPU_ONLY', None) == 'true':
   REQUIRED = [p.replace('-gpu', '') if p.startswith('tensorflow') else p for p in REQUIRED]
 
 setup(

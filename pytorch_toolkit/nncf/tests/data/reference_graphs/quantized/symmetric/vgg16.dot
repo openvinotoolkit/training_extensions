@@ -72,9 +72,8 @@ strict digraph  {
 "70 VGG/Sequential[features]/MaxPool2d[43]/max_pool2d" [id=70, scope="VGG/Sequential[features]/MaxPool2d[43]", type=max_pool2d];
 "71 VGG/Sequential[features]/AvgPool2d[44]/avg_pool2d" [id=71, scope="VGG/Sequential[features]/AvgPool2d[44]", type=avg_pool2d];
 "72 VGG/Sequential[features]/AvgPool2d[44]/SymmetricQuantizer/symmetric_quantize" [id=72, scope="VGG/Sequential[features]/AvgPool2d[44]/SymmetricQuantizer", type=symmetric_quantize];
-"73 VGG/view" [id=73, scope=VGG, type=view];
-"74 VGG/NNCFLinear[classifier]/ModuleDict[pre_ops]/UpdateWeight[0]/SymmetricQuantizer[op]/symmetric_quantize" [id=74, scope="VGG/NNCFLinear[classifier]/ModuleDict[pre_ops]/UpdateWeight[0]/SymmetricQuantizer[op]", type=symmetric_quantize];
-"75 VGG/NNCFLinear[classifier]/linear" [id=75, scope="VGG/NNCFLinear[classifier]", type=linear];
+"73 VGG/NNCFLinear[classifier]/ModuleDict[pre_ops]/UpdateWeight[0]/SymmetricQuantizer[op]/symmetric_quantize" [id=73, scope="VGG/NNCFLinear[classifier]/ModuleDict[pre_ops]/UpdateWeight[0]/SymmetricQuantizer[op]", type=symmetric_quantize];
+"74 VGG/NNCFLinear[classifier]/linear" [id=74, scope="VGG/NNCFLinear[classifier]", type=linear];
 "0 VGG/Sequential[features]/NNCFConv2d[0]/ModuleDict[pre_ops]/UpdateWeight[0]/SymmetricQuantizer[op]/symmetric_quantize" -> "2 VGG/Sequential[features]/NNCFConv2d[0]/conv2d";
 "1 VGG/Sequential[features]/NNCFConv2d[0]/ModuleDict[pre_ops]/UpdateInputs[1]/SymmetricQuantizer[op]/symmetric_quantize" -> "2 VGG/Sequential[features]/NNCFConv2d[0]/conv2d";
 "2 VGG/Sequential[features]/NNCFConv2d[0]/conv2d" -> "3 VGG/Sequential[features]/BatchNorm2d[1]/batch_norm";
@@ -147,7 +146,6 @@ strict digraph  {
 "69 VGG/Sequential[features]/ReLU[42]/SymmetricQuantizer/symmetric_quantize" -> "70 VGG/Sequential[features]/MaxPool2d[43]/max_pool2d";
 "70 VGG/Sequential[features]/MaxPool2d[43]/max_pool2d" -> "71 VGG/Sequential[features]/AvgPool2d[44]/avg_pool2d";
 "71 VGG/Sequential[features]/AvgPool2d[44]/avg_pool2d" -> "72 VGG/Sequential[features]/AvgPool2d[44]/SymmetricQuantizer/symmetric_quantize";
-"72 VGG/Sequential[features]/AvgPool2d[44]/SymmetricQuantizer/symmetric_quantize" -> "73 VGG/view";
-"73 VGG/view" -> "75 VGG/NNCFLinear[classifier]/linear";
-"74 VGG/NNCFLinear[classifier]/ModuleDict[pre_ops]/UpdateWeight[0]/SymmetricQuantizer[op]/symmetric_quantize" -> "75 VGG/NNCFLinear[classifier]/linear";
+"72 VGG/Sequential[features]/AvgPool2d[44]/SymmetricQuantizer/symmetric_quantize" -> "74 VGG/NNCFLinear[classifier]/linear";
+"73 VGG/NNCFLinear[classifier]/ModuleDict[pre_ops]/UpdateWeight[0]/SymmetricQuantizer[op]/symmetric_quantize" -> "74 VGG/NNCFLinear[classifier]/linear";
 }

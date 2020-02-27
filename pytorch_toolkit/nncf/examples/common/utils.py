@@ -16,6 +16,7 @@ import os
 import pdb
 import sys
 import tarfile
+import json
 from os import path as osp
 from pathlib import Path
 from shutil import copyfile
@@ -41,6 +42,19 @@ def get_name(config):
         else:
             retval += "_{}".format(algo_name)
     return retval
+
+
+def write_metrics(config, metrics):
+    if os.path.isfile(config.metrics_dump):
+        print("File ", config.metrics_dump, " is found")
+        path = Path(config.metrics_dump)
+        data = json.loads(path.read_text(encoding='utf-8'))
+        data.update(metrics)
+        path.write_text(json.dumps(data, indent=2), encoding='utf-8')
+    else:
+        print("Creating ", config.metrics_dump, " file")
+        with open(config.metrics_dump, 'w') as outfile:
+            json.dump(metrics, outfile)
 
 
 def configure_paths(config):

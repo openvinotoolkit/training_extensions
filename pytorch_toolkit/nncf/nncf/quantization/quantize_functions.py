@@ -27,6 +27,9 @@ class QuantizeSymmetric(torch.autograd.Function):
         input_range = scale - input_low
 
         if input_.is_cuda:
+            if not input_.is_contiguous():
+                warnings.warn("input_ is not contiguous!", RuntimeWarning)
+                input_ = input_.contiguous()
             output = QuantizedFunctionsCUDA.Quantize_forward(input_, input_low, input_range, levels)
         else:
             output = QuantizedFunctionsCPU.Quantize_forward(input_, input_low, input_range, levels)
@@ -65,6 +68,9 @@ class QuantizeAsymmetric(torch.autograd.Function):
     @staticmethod
     def forward(ctx, input_, input_low, input_range, level_low, level_high, levels):
         if input_.is_cuda:
+            if not input_.is_contiguous():
+                warnings.warn("input_ is not contiguous!", RuntimeWarning)
+                input_ = input_.contiguous()
             output = QuantizedFunctionsCUDA.Quantize_forward(input_, input_low, input_range, levels)
         else:
             output = QuantizedFunctionsCPU.Quantize_forward(input_, input_low, input_range, levels)

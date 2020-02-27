@@ -164,8 +164,7 @@ strict digraph  {
 "162 MobileNetV2/BatchNorm2d[bn2]/batch_norm" [id=162, scope="MobileNetV2/BatchNorm2d[bn2]", type=batch_norm];
 "163 MobileNetV2/RELU" [id=163, scope=MobileNetV2, type=RELU];
 "164 MobileNetV2/avg_pool2d" [id=164, scope=MobileNetV2, type=avg_pool2d];
-"165 MobileNetV2/view" [id=165, scope=MobileNetV2, type=view];
-"166 MobileNetV2/Linear[linear]/linear" [id=166, scope="MobileNetV2/Linear[linear]", type=linear];
+"165 MobileNetV2/Linear[linear]/linear" [id=165, scope="MobileNetV2/Linear[linear]", type=linear];
 "0 MobileNetV2/Conv2d[conv1]/conv2d" -> "1 MobileNetV2/BatchNorm2d[bn1]/batch_norm";
 "1 MobileNetV2/BatchNorm2d[bn1]/batch_norm" -> "2 MobileNetV2/RELU";
 "2 MobileNetV2/RELU" -> "3 MobileNetV2/Sequential[layers]/Block[0]/Conv2d[conv1]/conv2d";
@@ -344,6 +343,5 @@ strict digraph  {
 "161 MobileNetV2/Conv2d[conv2]/conv2d" -> "162 MobileNetV2/BatchNorm2d[bn2]/batch_norm";
 "162 MobileNetV2/BatchNorm2d[bn2]/batch_norm" -> "163 MobileNetV2/RELU";
 "163 MobileNetV2/RELU" -> "164 MobileNetV2/avg_pool2d";
-"164 MobileNetV2/avg_pool2d" -> "165 MobileNetV2/view";
-"165 MobileNetV2/view" -> "166 MobileNetV2/Linear[linear]/linear";
+"164 MobileNetV2/avg_pool2d" -> "165 MobileNetV2/Linear[linear]/linear";
 }

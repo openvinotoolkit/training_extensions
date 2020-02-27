@@ -122,6 +122,7 @@ strict digraph  {
 "7 UNet/ModuleList[down_path]/UNetConvBlock[0]/Sequential[block]/NNCFConv2d[3]/conv2d" -> "8 UNet/ModuleList[down_path]/UNetConvBlock[0]/Sequential[block]/BatchNorm2d[4]/batch_norm";
 "8 UNet/ModuleList[down_path]/UNetConvBlock[0]/Sequential[block]/BatchNorm2d[4]/batch_norm" -> "9 UNet/ModuleList[down_path]/UNetConvBlock[0]/Sequential[block]/ReLU[5]/RELU";
 "9 UNet/ModuleList[down_path]/UNetConvBlock[0]/Sequential[block]/ReLU[5]/RELU" -> "10 UNet/max_pool2d";
+"9 UNet/ModuleList[down_path]/UNetConvBlock[0]/Sequential[block]/ReLU[5]/RELU" -> "99 UNet/ModuleList[up_path]/UNetUpBlock[3]/cat";
 "10 UNet/max_pool2d" -> "13 UNet/ModuleList[down_path]/UNetConvBlock[1]/Sequential[block]/NNCFConv2d[0]/conv2d";
 "11 UNet/ModuleList[down_path]/UNetConvBlock[1]/Sequential[block]/NNCFConv2d[0]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/calc_rb_binary_mask" -> "12 UNet/ModuleList[down_path]/UNetConvBlock[1]/Sequential[block]/NNCFConv2d[0]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask";
 "12 UNet/ModuleList[down_path]/UNetConvBlock[1]/Sequential[block]/NNCFConv2d[0]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask" -> "13 UNet/ModuleList[down_path]/UNetConvBlock[1]/Sequential[block]/NNCFConv2d[0]/conv2d";
@@ -133,6 +134,7 @@ strict digraph  {
 "18 UNet/ModuleList[down_path]/UNetConvBlock[1]/Sequential[block]/NNCFConv2d[3]/conv2d" -> "19 UNet/ModuleList[down_path]/UNetConvBlock[1]/Sequential[block]/BatchNorm2d[4]/batch_norm";
 "19 UNet/ModuleList[down_path]/UNetConvBlock[1]/Sequential[block]/BatchNorm2d[4]/batch_norm" -> "20 UNet/ModuleList[down_path]/UNetConvBlock[1]/Sequential[block]/ReLU[5]/RELU";
 "20 UNet/ModuleList[down_path]/UNetConvBlock[1]/Sequential[block]/ReLU[5]/RELU" -> "21 UNet/max_pool2d";
+"20 UNet/ModuleList[down_path]/UNetConvBlock[1]/Sequential[block]/ReLU[5]/RELU" -> "85 UNet/ModuleList[up_path]/UNetUpBlock[2]/cat";
 "21 UNet/max_pool2d" -> "24 UNet/ModuleList[down_path]/UNetConvBlock[2]/Sequential[block]/NNCFConv2d[0]/conv2d";
 "22 UNet/ModuleList[down_path]/UNetConvBlock[2]/Sequential[block]/NNCFConv2d[0]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/calc_rb_binary_mask" -> "23 UNet/ModuleList[down_path]/UNetConvBlock[2]/Sequential[block]/NNCFConv2d[0]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask";
 "23 UNet/ModuleList[down_path]/UNetConvBlock[2]/Sequential[block]/NNCFConv2d[0]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask" -> "24 UNet/ModuleList[down_path]/UNetConvBlock[2]/Sequential[block]/NNCFConv2d[0]/conv2d";
@@ -144,6 +146,7 @@ strict digraph  {
 "29 UNet/ModuleList[down_path]/UNetConvBlock[2]/Sequential[block]/NNCFConv2d[3]/conv2d" -> "30 UNet/ModuleList[down_path]/UNetConvBlock[2]/Sequential[block]/BatchNorm2d[4]/batch_norm";
 "30 UNet/ModuleList[down_path]/UNetConvBlock[2]/Sequential[block]/BatchNorm2d[4]/batch_norm" -> "31 UNet/ModuleList[down_path]/UNetConvBlock[2]/Sequential[block]/ReLU[5]/RELU";
 "31 UNet/ModuleList[down_path]/UNetConvBlock[2]/Sequential[block]/ReLU[5]/RELU" -> "32 UNet/max_pool2d";
+"31 UNet/ModuleList[down_path]/UNetConvBlock[2]/Sequential[block]/ReLU[5]/RELU" -> "71 UNet/ModuleList[up_path]/UNetUpBlock[1]/cat";
 "32 UNet/max_pool2d" -> "35 UNet/ModuleList[down_path]/UNetConvBlock[3]/Sequential[block]/NNCFConv2d[0]/conv2d";
 "33 UNet/ModuleList[down_path]/UNetConvBlock[3]/Sequential[block]/NNCFConv2d[0]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/calc_rb_binary_mask" -> "34 UNet/ModuleList[down_path]/UNetConvBlock[3]/Sequential[block]/NNCFConv2d[0]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask";
 "34 UNet/ModuleList[down_path]/UNetConvBlock[3]/Sequential[block]/NNCFConv2d[0]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask" -> "35 UNet/ModuleList[down_path]/UNetConvBlock[3]/Sequential[block]/NNCFConv2d[0]/conv2d";
@@ -155,6 +158,7 @@ strict digraph  {
 "40 UNet/ModuleList[down_path]/UNetConvBlock[3]/Sequential[block]/NNCFConv2d[3]/conv2d" -> "41 UNet/ModuleList[down_path]/UNetConvBlock[3]/Sequential[block]/BatchNorm2d[4]/batch_norm";
 "41 UNet/ModuleList[down_path]/UNetConvBlock[3]/Sequential[block]/BatchNorm2d[4]/batch_norm" -> "42 UNet/ModuleList[down_path]/UNetConvBlock[3]/Sequential[block]/ReLU[5]/RELU";
 "42 UNet/ModuleList[down_path]/UNetConvBlock[3]/Sequential[block]/ReLU[5]/RELU" -> "43 UNet/max_pool2d";
+"42 UNet/ModuleList[down_path]/UNetConvBlock[3]/Sequential[block]/ReLU[5]/RELU" -> "57 UNet/ModuleList[up_path]/UNetUpBlock[0]/cat";
 "43 UNet/max_pool2d" -> "46 UNet/ModuleList[down_path]/UNetConvBlock[4]/Sequential[block]/NNCFConv2d[0]/conv2d";
 "44 UNet/ModuleList[down_path]/UNetConvBlock[4]/Sequential[block]/NNCFConv2d[0]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/calc_rb_binary_mask" -> "45 UNet/ModuleList[down_path]/UNetConvBlock[4]/Sequential[block]/NNCFConv2d[0]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask";
 "45 UNet/ModuleList[down_path]/UNetConvBlock[4]/Sequential[block]/NNCFConv2d[0]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask" -> "46 UNet/ModuleList[down_path]/UNetConvBlock[4]/Sequential[block]/NNCFConv2d[0]/conv2d";

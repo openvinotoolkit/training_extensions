@@ -182,10 +182,9 @@ strict digraph  {
 "180 SENet/Sequential[layer4]/PreActBlock[1]/__mul__" [id=180, scope="SENet/Sequential[layer4]/PreActBlock[1]", type=__mul__];
 "181 SENet/Sequential[layer4]/PreActBlock[1]/__iadd__" [id=181, scope="SENet/Sequential[layer4]/PreActBlock[1]", type=__iadd__];
 "182 SENet/avg_pool2d" [id=182, scope=SENet, type=avg_pool2d];
-"183 SENet/view" [id=183, scope=SENet, type=view];
-"184 SENet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/calc_rb_binary_mask" [id=184, scope="SENet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]", type=calc_rb_binary_mask];
-"185 SENet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask" [id=185, scope="SENet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]", type=apply_binary_mask];
-"186 SENet/NNCFLinear[linear]/linear" [id=186, scope="SENet/NNCFLinear[linear]", type=linear];
+"183 SENet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/calc_rb_binary_mask" [id=183, scope="SENet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]", type=calc_rb_binary_mask];
+"184 SENet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask" [id=184, scope="SENet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]", type=apply_binary_mask];
+"185 SENet/NNCFLinear[linear]/linear" [id=185, scope="SENet/NNCFLinear[linear]", type=linear];
 "0 SENet/NNCFConv2d[conv1]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/calc_rb_binary_mask" -> "1 SENet/NNCFConv2d[conv1]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask";
 "1 SENet/NNCFConv2d[conv1]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask" -> "2 SENet/NNCFConv2d[conv1]/conv2d";
 "2 SENet/NNCFConv2d[conv1]/conv2d" -> "3 SENet/BatchNorm2d[bn1]/batch_norm";
@@ -384,8 +383,7 @@ strict digraph  {
 "179 SENet/Sequential[layer4]/PreActBlock[1]/sigmoid" -> "180 SENet/Sequential[layer4]/PreActBlock[1]/__mul__";
 "180 SENet/Sequential[layer4]/PreActBlock[1]/__mul__" -> "181 SENet/Sequential[layer4]/PreActBlock[1]/__iadd__";
 "181 SENet/Sequential[layer4]/PreActBlock[1]/__iadd__" -> "182 SENet/avg_pool2d";
-"182 SENet/avg_pool2d" -> "183 SENet/view";
-"183 SENet/view" -> "186 SENet/NNCFLinear[linear]/linear";
-"184 SENet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/calc_rb_binary_mask" -> "185 SENet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask";
-"185 SENet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask" -> "186 SENet/NNCFLinear[linear]/linear";
+"182 SENet/avg_pool2d" -> "185 SENet/NNCFLinear[linear]/linear";
+"183 SENet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/calc_rb_binary_mask" -> "184 SENet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask";
+"184 SENet/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask" -> "185 SENet/NNCFLinear[linear]/linear";
 }

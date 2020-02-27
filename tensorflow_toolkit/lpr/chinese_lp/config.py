@@ -21,6 +21,14 @@ use_oi_concat = False
 max_lp_length = 20
 rnn_cells_num = 128
 
+# Licens plate patterns
+lpr_patterns = [
+  '^<[^>]*>[A-Z][0-9A-Z]{5}$',
+  '^<[^>]*>[A-Z][0-9A-Z][0-9]{3}<police>$',
+  '^<[^>]*>[A-Z][0-9A-Z]{4}<[^>]*>$',  # <Guangdong>, <Hebei>
+  '^WJ<[^>]*>[0-9]{4}[0-9A-Z]$',
+]
+
 # Path to the folder where all training and evaluation artifacts will be located
 model_dir = os.path.realpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'model'))
 if not os.path.exists(model_dir):
@@ -38,7 +46,7 @@ class train:
   opt_type = 'Adam'
 
   save_checkpoints_steps = 1000      # Number of training steps when checkpoint should be saved
-  display_iter = 10
+  display_iter = 100
 
   apply_basic_aug = False
   apply_stn_aug = True

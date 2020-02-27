@@ -23,6 +23,8 @@ import torch
 from torch import distributed as dist
 from torch.nn import functional as F
 
+from nncf.helpers.utils import is_main_process, is_dist_avail_and_initialized
+
 
 def str2bool(v):
     return v.lower() in ("yes", "true", "t", "1")
@@ -54,7 +56,7 @@ class Timer:
 
 
 def evaluate_detections(box_list, dataset, use_07=True):
-    cachedir = os.path.join('eval', 'annotations_cache')
+    cachedir = os.path.join('cache', 'annotations_cache')
     aps = []
     # The PASCAL VOC metric changed in 2010
     use_07_metric = use_07
@@ -178,26 +180,27 @@ def extract_gt_bboxes(classname, dataset, gt, imagenames):
 
 
 def load_detection_annotations(cachedir, dataset):
-    pathlib.Path(cachedir).mkdir(parents=True, exist_ok=True)
     cachefile = os.path.join(cachedir, 'annots_{}.pkl'.format(dataset.name))
     imagenames = dataset.get_img_names()
-    if not os.path.isfile(cachefile):
-        # load annots
-        gt = {}
-        for i, imagename in enumerate(imagenames):
-            _, gt[imagename] = dataset.pull_anno(i)
+    if is_main_process():
+        if not os.path.isfile(cachefile):
+            # load annots
+            gt = {}
+            for i, imagename in enumerate(imagenames):
+                _, gt[imagename] = dataset.pull_anno(i)
 
-            if i % 100 == 0:
-                print('Reading annotation for {:d}/{:d}'.format(
-                    i + 1, len(imagenames)))
-        # save
-        print('Saving cached annotations to {:s}'.format(cachefile))
-        with open(cachefile, 'wb') as f:
-            pickle.dump(gt, f)
-    else:
-        # load
-        with open(cachefile, 'rb') as f:
-            gt = pickle.load(f)
+                if i % 100 == 0:
+                    print('Reading annotation for {:d}/{:d}'.format(
+                        i + 1, len(imagenames)))
+            # save
+            print('Saving cached annotations to {:s}'.format(cachefile))
+            pathlib.Path(cachedir).mkdir(parents=True, exist_ok=True)
+            with open(cachefile, 'wb') as f:
+                pickle.dump(gt, f)
+    if is_dist_avail_and_initialized():
+        dist.barrier()
+    with open(cachefile, 'rb') as f:
+        gt = pickle.load(f)
     return gt, imagenames
 
 
@@ -276,8 +279,9 @@ def predict_detections(data_loader, device, net):
 
         all_detections.append(batch_detections.cpu())
         print('Detect for batch: {:d}/{:d} {:.3f}s'.format(batch_ind + 1, num_batches, detect_time))
-    all_detections = torch.cat(all_detections)
-    return all_detections
+    if all_detections:
+        return torch.cat(all_detections)
+    return None  # No predictions
 
 
 def test_net(net, device, data_loader, distributed=False):

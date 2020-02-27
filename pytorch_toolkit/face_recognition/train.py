@@ -11,6 +11,7 @@
  limitations under the License.
 """
 
+import argparse
 import datetime
 import os.path as osp
 import os
@@ -24,6 +25,9 @@ import torch.backends.cudnn as cudnn
 from torchvision import transforms as t
 from tensorboardX import SummaryWriter
 
+from nncf.config import Config
+from nncf.dynamic_graph import patch_torch_operators
+from nncf.algo_selector import create_compression_algorithm
 from datasets import LFW, VGGFace2, MSCeleb1M, IMDBFace, TrillionPairs
 
 from losses.am_softmax import AMSoftmaxLoss
@@ -90,7 +94,16 @@ def train(args):
 
     model = models_backbones[args.model](embedding_size=args.embed_size,
                                          num_classes=dataset.get_num_classes(), feature=False)
+
+    set_dropout_fn = model.set_dropout_ratio
+
+    compression_algo = None
     if args.snap_to_resume is not None:
+        if args.compr_config:
+            config = Config.from_json(args.compr_config)
+            compression_algo = create_compression_algorithm(model, config)
+            model = compression_algo.model
+
         log.info('Resuming snapshot ' + args.snap_to_resume + ' ...')
         model = load_model_state(model, args.snap_to_resume, args.devices[0], eval_state=False)
         model = torch.nn.DataParallel(model, device_ids=args.devices)
@@ -99,6 +112,18 @@ def train(args):
         model.cuda()
         model.train()
         cudnn.benchmark = True
+
+    if args.to_onnx is not None:
+        if args.compr_config:
+            compression_algo.export_model(args.to_onnx)
+        else:
+            model = model.eval().cpu()
+            input_shape = tuple([1, 3] + list(input_size))
+            with torch.no_grad():
+                torch.onnx.export(model.module, torch.randn(input_shape), args.to_onnx, verbose=True)
+
+        print("Saved to", args.to_onnx)
+        return
 
     log.info('Face Recognition model:')
     log.info(model)
@@ -109,11 +134,20 @@ def train(args):
         softmax_criterion = AMSoftmaxLoss(t=args.t, m=0.35, margin_type=args.margin_type, s=args.s)
     aux_losses = MetricLosses(dataset.get_num_classes(), args.embed_size, writer)
     optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
-    scheduler = optim.lr_scheduler.MultiStepLR(optimizer, [3, 6, 9, 13])
+
+    if args.compr_config:
+        scheduler = optim.lr_scheduler.MultiStepLR(optimizer, [0, 2, 4, 6, 8])
+    else:
+        scheduler = optim.lr_scheduler.MultiStepLR(optimizer, [3, 6, 9, 13])
+
+    log.info('Epoch length: %d' % len(train_loader))
     for epoch_num in range(args.epoch_total_num):
+        log.info('Epoch: %d' % epoch_num)
         scheduler.step()
-        if epoch_num > 6:
-            model.module.set_dropout_ratio(0.)
+
+        if epoch_num > 6 or args.compr_config:
+            set_dropout_fn(0.)
+
         classification_correct = 0
         classification_total = 0
 
@@ -136,6 +170,7 @@ def train(args):
                 log.info('Validation accuracy: {0:.4f}, {1:.4f}'.format(same_acc, diff_acc))
                 log.info('Validation accuracy mean: {0:.4f}'.format(all_acc))
                 log.info('Validation AUC: {0:.4f}'.format(auc))
+                writer.add_scalar('Epoch', epoch_num, iteration)
                 writer.add_scalar('Accuracy/Val_same_accuracy', same_acc, iteration)
                 writer.add_scalar('Accuracy/Val_diff_accuracy', diff_acc, iteration)
                 writer.add_scalar('Accuracy/Val_accuracy', all_acc, iteration)
@@ -148,7 +183,8 @@ def train(args):
             aux_losses.init_iteration()
             aux_loss, aux_log = aux_losses(features, label, epoch_num, iteration)
             loss_sm = softmax_criterion(sm_outputs, label)
-            loss = loss_sm + aux_loss
+            compr_loss = compression_algo.loss() if args.compr_config else 0
+            loss = loss_sm + aux_loss + compr_loss
             loss.backward()
             aux_losses.end_iteration()
             optimizer.step()
@@ -165,6 +201,15 @@ def train(args):
                 writer.add_scalar('Loss/softmax_loss', loss_sm, iteration)
                 writer.add_scalar('Learning_rate', scheduler.get_lr()[0], iteration)
                 writer.add_scalar('Accuracy/classification', train_acc, iteration)
+                if args.compr_config and "sparsity_level" in compression_algo.statistics():
+                    log.info('Sparsity_level: %.4f' % compression_algo.statistics()["sparsity_level"])
+                    writer.add_scalar('Sparsity_level', compression_algo.statistics()["sparsity_level"], iteration)
+
+            if args.compr_config:
+                compression_algo.scheduler.step()
+
+        if args.compr_config:
+            compression_algo.scheduler.epoch_step()
 
 
 def main():
@@ -216,12 +261,18 @@ def main():
     parser.add_argument('--snap_prefix', type=str, default='FaceReidNet', help='Prefix for snapshots.')
     parser.add_argument('--snap_to_resume', type=str, default=None, help='Snapshot to resume.')
     parser.add_argument('--weighted', action='store_true')
+    parser.add_argument('-c', '--compr_config', help='Path to a file with compression parameters', required=False)
+    parser.add_argument('--to-onnx', type=str, metavar='PATH', default=None, help='Export to ONNX model by given path')
 
     args = parser.parse_args()
     log.info('Arguments:\n' + pformat(args.__dict__))
 
+    if args.compr_config:
+        patch_torch_operators()
+
     with torch.cuda.device(args.devices[0]):
         train(args)
+
 
 if __name__ == '__main__':
     main()

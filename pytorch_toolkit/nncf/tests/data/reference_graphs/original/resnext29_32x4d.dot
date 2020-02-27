@@ -99,8 +99,7 @@ strict digraph  {
 "97 ResNeXt/Sequential[layer3]/Block[2]/__iadd__" [id=97, scope="ResNeXt/Sequential[layer3]/Block[2]", type=__iadd__];
 "98 ResNeXt/Sequential[layer3]/Block[2]/RELU" [id=98, scope="ResNeXt/Sequential[layer3]/Block[2]", type=RELU];
 "99 ResNeXt/avg_pool2d" [id=99, scope=ResNeXt, type=avg_pool2d];
-"100 ResNeXt/view" [id=100, scope=ResNeXt, type=view];
-"101 ResNeXt/Linear[linear]/linear" [id=101, scope="ResNeXt/Linear[linear]", type=linear];
+"100 ResNeXt/Linear[linear]/linear" [id=100, scope="ResNeXt/Linear[linear]", type=linear];
 "0 ResNeXt/Conv2d[conv1]/conv2d" -> "1 ResNeXt/BatchNorm2d[bn1]/batch_norm";
 "1 ResNeXt/BatchNorm2d[bn1]/batch_norm" -> "2 ResNeXt/RELU";
 "2 ResNeXt/RELU" -> "3 ResNeXt/Sequential[layer1]/Block[0]/Conv2d[conv1]/conv2d";
@@ -209,6 +208,5 @@ strict digraph  {
 "96 ResNeXt/Sequential[layer3]/Block[2]/BatchNorm2d[bn3]/batch_norm" -> "97 ResNeXt/Sequential[layer3]/Block[2]/__iadd__";
 "97 ResNeXt/Sequential[layer3]/Block[2]/__iadd__" -> "98 ResNeXt/Sequential[layer3]/Block[2]/RELU";
 "98 ResNeXt/Sequential[layer3]/Block[2]/RELU" -> "99 ResNeXt/avg_pool2d";
-"99 ResNeXt/avg_pool2d" -> "100 ResNeXt/view";
-"100 ResNeXt/view" -> "101 ResNeXt/Linear[linear]/linear";
+"99 ResNeXt/avg_pool2d" -> "100 ResNeXt/Linear[linear]/linear";
 }

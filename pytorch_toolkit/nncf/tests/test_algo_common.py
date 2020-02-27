@@ -80,7 +80,7 @@ QUANTIZATION = 'quantization'
 SPARSITY_TYPES = ['magnitude', 'rb', 'const']
 SPARSITY_ALGOS = ['_'.join([type, 'sparsity']) for type in SPARSITY_TYPES]  # 3S
 
-LOAD_ALGOS = [algo_list for algo_list in itertools.product([QUANTIZATION], SPARSITY_ALGOS)]  # Q + 3S
+LOAD_ALGOS = list(itertools.product([QUANTIZATION], SPARSITY_ALGOS))  # Q + 3S
 LOAD_ALGOS += itertools.product(SPARSITY_ALGOS, [QUANTIZATION])  # 3S + Q
 
 SAVE_ALGOS = [[algo] for algo in SPARSITY_ALGOS]  # 3S

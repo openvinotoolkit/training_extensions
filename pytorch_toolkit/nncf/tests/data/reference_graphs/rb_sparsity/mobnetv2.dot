@@ -278,10 +278,9 @@ strict digraph  {
 "276 MobileNetV2/BatchNorm2d[bn2]/batch_norm" [id=276, scope="MobileNetV2/BatchNorm2d[bn2]", type=batch_norm];
 "277 MobileNetV2/RELU" [id=277, scope=MobileNetV2, type=RELU];
 "278 MobileNetV2/avg_pool2d" [id=278, scope=MobileNetV2, type=avg_pool2d];
-"279 MobileNetV2/view" [id=279, scope=MobileNetV2, type=view];
-"280 MobileNetV2/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/calc_rb_binary_mask" [id=280, scope="MobileNetV2/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]", type=calc_rb_binary_mask];
-"281 MobileNetV2/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask" [id=281, scope="MobileNetV2/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]", type=apply_binary_mask];
-"282 MobileNetV2/NNCFLinear[linear]/linear" [id=282, scope="MobileNetV2/NNCFLinear[linear]", type=linear];
+"279 MobileNetV2/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/calc_rb_binary_mask" [id=279, scope="MobileNetV2/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]", type=calc_rb_binary_mask];
+"280 MobileNetV2/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask" [id=280, scope="MobileNetV2/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]", type=apply_binary_mask];
+"281 MobileNetV2/NNCFLinear[linear]/linear" [id=281, scope="MobileNetV2/NNCFLinear[linear]", type=linear];
 "0 MobileNetV2/NNCFConv2d[conv1]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/calc_rb_binary_mask" -> "1 MobileNetV2/NNCFConv2d[conv1]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask";
 "1 MobileNetV2/NNCFConv2d[conv1]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask" -> "2 MobileNetV2/NNCFConv2d[conv1]/conv2d";
 "2 MobileNetV2/NNCFConv2d[conv1]/conv2d" -> "3 MobileNetV2/BatchNorm2d[bn1]/batch_norm";
@@ -574,8 +573,7 @@ strict digraph  {
 "275 MobileNetV2/NNCFConv2d[conv2]/conv2d" -> "276 MobileNetV2/BatchNorm2d[bn2]/batch_norm";
 "276 MobileNetV2/BatchNorm2d[bn2]/batch_norm" -> "277 MobileNetV2/RELU";
 "277 MobileNetV2/RELU" -> "278 MobileNetV2/avg_pool2d";
-"278 MobileNetV2/avg_pool2d" -> "279 MobileNetV2/view";
-"279 MobileNetV2/view" -> "282 MobileNetV2/NNCFLinear[linear]/linear";
-"280 MobileNetV2/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/calc_rb_binary_mask" -> "281 MobileNetV2/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask";
-"281 MobileNetV2/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask" -> "282 MobileNetV2/NNCFLinear[linear]/linear";
+"278 MobileNetV2/avg_pool2d" -> "281 MobileNetV2/NNCFLinear[linear]/linear";
+"279 MobileNetV2/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/calc_rb_binary_mask" -> "280 MobileNetV2/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask";
+"280 MobileNetV2/NNCFLinear[linear]/ModuleDict[pre_ops]/UpdateWeight[0]/RBSparsifyingWeight[op]/apply_binary_mask" -> "281 MobileNetV2/NNCFLinear[linear]/linear";
 }

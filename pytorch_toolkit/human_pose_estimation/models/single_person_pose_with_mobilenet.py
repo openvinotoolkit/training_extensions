@@ -26,8 +26,9 @@ class InitialStage(nn.Module):
 
 
 class UShapedContextBlock(nn.Module):
-    def __init__(self, in_channels):
+    def __init__(self, in_channels, mode='bilinear'):
         super().__init__()
+        self.mode_interpolation = mode
         self.encoder1 = nn.Sequential(
             conv(in_channels, in_channels*2, stride=2),
             conv(in_channels*2, in_channels*2),
@@ -48,19 +49,19 @@ class UShapedContextBlock(nn.Module):
     def forward(self, x):
         e1 = self.encoder1(x)
         e2 = self.encoder2(e1)
-        d2 = self.decoder2(torch.cat([e1, F.interpolate(e2, size=(16, 16),
-                                                        mode='bilinear', align_corners=False)], 1))
-        d1 = self.decoder1(torch.cat([x, F.interpolate(d2, size=(32, 32),
-                                                       mode='bilinear', align_corners=False)], 1))
+        d2 = self.decoder2(torch.cat([e1, F.interpolate(e2, size=(int(e1.shape[2]), int(e1.shape[3])),
+                                                        mode=self.mode_interpolation)], 1))
+        d1 = self.decoder1(torch.cat([x, F.interpolate(d2, size=(int(x.shape[2]), int(x.shape[3])),
+                                                       mode=self.mode_interpolation)], 1))
         return d1
 
 
 class RefinementStage(nn.Module):
-    def __init__(self, in_channels, out_channels, num_heatmaps):
+    def __init__(self, in_channels, out_channels, num_heatmaps, mode='bilinear'):
         super().__init__()
 
         self.trunk = nn.Sequential(
-            UShapedContextBlock(in_channels),
+            UShapedContextBlock(in_channels, mode),
             RefinementStageBlock(in_channels, out_channels),
             RefinementStageBlock(out_channels, out_channels),
             RefinementStageBlock(out_channels, out_channels),
@@ -77,7 +78,7 @@ class RefinementStage(nn.Module):
 
 
 class SinglePersonPoseEstimationWithMobileNet(nn.Module):
-    def __init__(self, num_refinement_stages=1, num_channels=128, num_heatmaps=17):
+    def __init__(self, num_refinement_stages=1, num_channels=128, num_heatmaps=17, mode='bilinear'):
         super().__init__()
         self.model = nn.Sequential(
             conv(     3,  32, stride=2, bias=False),
@@ -101,7 +102,7 @@ class SinglePersonPoseEstimationWithMobileNet(nn.Module):
         self.initial_stage = InitialStage(num_channels, num_heatmaps)
         self.refinement_stages = nn.ModuleList()
         for idx in range(num_refinement_stages):
-            self.refinement_stages.append(RefinementStage(num_channels + num_heatmaps, num_channels, num_heatmaps))
+            self.refinement_stages.append(RefinementStage(num_channels + num_heatmaps, num_channels, num_heatmaps, mode))
 
     def forward(self, x):
         backbone_features = self.model(x)
