@@ -57,17 +57,36 @@ Training consists of three steps (given AP values for full validation dataset):
 
 3. To train from the MobileNet weights, run the following:
     ```bash
-    python train.py --train-images-folder <COCO_HOME>/train2017/ --prepared-train-labels prepared_train_annotation.pkl --val-labels val_subset.json --val-images-folder <COCO_HOME>/val2017/ --checkpoint-path <path_to>/mobilenet_sgd_68.848.pth.tar --from-mobilenet
+    python train.py \
+        --train-images-folder <COCO_HOME>/train2017/ \
+        --prepared-train-labels prepared_train_annotation.pkl \
+        --val-labels val_subset.json \
+        --val-images-folder <COCO_HOME>/val2017/ \
+        --checkpoint-path <path_to>/mobilenet_sgd_68.848.pth.tar \
+        --from-mobilenet
     ```
 
 4. To train from the checkpoint from the previous step, run the command below:
     ```bash
-    python train.py --train-images-folder <COCO_HOME>/train2017/ --prepared-train-labels prepared_train_annotation.pkl --val-labels val_subset.json --val-images-folder <COCO_HOME>/val2017/ --checkpoint-path <path_to>/checkpoint_iter_420000.pth --weights-only
+    python train.py \
+        --train-images-folder <COCO_HOME>/train2017/ \
+        --prepared-train-labels prepared_train_annotation.pkl \
+        --val-labels val_subset.json \
+        --val-images-folder <COCO_HOME>/val2017/ \
+        --checkpoint-path <path_to>/checkpoint_iter_420000.pth \
+        --weights-only
     ```
 
 5. To train from the checkpoint from the previous step and three refinement stages in the network, run the following:
     ```bash
-    python train.py --train-images-folder <COCO_HOME>/train2017/ --prepared-train-labels prepared_train_annotation.pkl --val-labels val_subset.json --val-images-folder <COCO_HOME>/val2017/ --checkpoint-path <path_to>/checkpoint_iter_280000.pth --weights-only --num-refinement-stages 3
+    python train.py \
+        --train-images-folder <COCO_HOME>/train2017/ \
+        --prepared-train-labels prepared_train_annotation.pkl \
+        --val-labels val_subset.json \
+        --val-images-folder <COCO_HOME>/val2017/ \
+        --checkpoint-path <path_to>/checkpoint_iter_280000.pth \
+        --weights-only \
+        --num-refinement-stages 3
     ```
     We took the checkpoint after 370000 iterations as the final one.
 
@@ -105,7 +124,10 @@ To get rid of it, increase the limit to a bigger number. For example, to increas
 
  Run the following:
  ```bash
- python val.py --labels <COCO_HOME>/annotations/person_keypoints_val2017.json --images-folder <COCO_HOME>/val2017 --checkpoint-path <CHECKPOINT>
+ python val.py \
+    --labels <COCO_HOME>/annotations/person_keypoints_val2017.json \
+    --images-folder <COCO_HOME>/val2017 \
+    --checkpoint-path <CHECKPOINT>
  ```
 
 ## Pretrained Model
@@ -116,13 +138,21 @@ A model pretrained on COCO is available at the [Intel® Open Source Technology C
 #### Conversion to the OpenVINO™ Format
 
 1. Convert a PyTorch\* model to the ONNX\* format by running the script in the terminal:
+
     ```bash
     python scripts/convert_to_onnx.py --checkpoint-path <CHECKPOINT>
     ```
     The script produces `human-pose-estimation.onnx`.
+
 2. Convert the ONNX model to the OpenVINO™ format with Model Optimizer by running the script below in the terminal:
+
     ```bash
-    python <OpenVINO_INSTALL_DIR>/deployment_tools/model_optimizer/mo.py --input_model human-pose-estimation.onnx --input data --mean_values data[128.0,128.0,128.0] --scale_values data[256] --output stage_1_output_0_pafs,stage_1_output_1_heatmaps
+    python <OpenVINO_INSTALL_DIR>/deployment_tools/model_optimizer/mo.py \
+        --input_model human-pose-estimation.onnx \
+        --input data \
+        --mean_values data[128.0,128.0,128.0] \
+        --scale_values data[256] \
+        --output stage_1_output_0_pafs,stage_1_output_1_heatmaps
     ```
     This produces the `human-pose-estimation.xml` model and weights `human-pose-estimation.bin` in single-precision floating-point format (FP32).
 
@@ -160,13 +190,27 @@ We will perform fine-tuning on the first half of validation dataset and report t
 
 * Validate before fine-tuning:
   ```bash
-  python val.py --labels val2017_2nd_part.json --output-name detections.json --images-folder <COCO_HOME>/val2017 --checkpoint-path <path_to>/checkpoint_iter_370000.pth
+  python val.py \
+    --labels val2017_2nd_part.json \
+    --output-name detections.json \
+    --images-folder <COCO_HOME>/val2017 \
+    --checkpoint-path <path_to>/checkpoint_iter_370000.pth
   ```
   AP before fine-tuning is 39%.
 
 * Perform fine-tuning for 200 iterations:
     ```bash
-    python train.py --train-images-folder <COCO_HOME>/val2017/ --prepared-train-labels prepared_val2017_1st_part_annotation.pkl --val-labels val2017_2nd_part.json --val-images-folder <COCO_HOME>/val2017/ --checkpoint-path <path_to>/checkpoint_iter_370000.pth --weights-only --checkpoint-after 200 --val-after 100 --log-after 12 --base-lr 0.00000444444
+    python train.py \
+        --train-images-folder <COCO_HOME>/val2017/ \
+        --prepared-train-labels prepared_val2017_1st_part_annotation.pkl \
+        --val-labels val2017_2nd_part.json \
+        --val-images-folder <COCO_HOME>/val2017/ \
+        --checkpoint-path <path_to>/checkpoint_iter_370000.pth \
+        --weights-only \
+        --checkpoint-after 200 \
+        --val-after 100 \
+        --log-after 12 \
+        --base-lr 0.00000444444
     ```
     Expected AP after 200 iterations of fine-tuning is 39.1%-39.2%.
 
