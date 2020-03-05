@@ -2,9 +2,10 @@ CONFIG=`find $1 -name "*.py"`
 CHECKPOINT=`find $1 -name latest.pth`
 echo "CONFIGURATION FILE" $CONFIG
 echo "CHEKPOINT         " $CHECKPOINT
-TMP_DIR=$(mktemp -d -t ci-XXXXXXXXXX)
+TMP_DIR=$1/export
 echo $TMP_DIR
-#PyTorch
+mkdir -p $TMP_DIR
+##PyTorch
 echo ""
 echo "Testing model..."
 OUTPUT_FILE=$TMP_DIR/res.pkl
@@ -16,7 +17,7 @@ python ./tools/task_specific/face_detection/wider_custom_eval.py $CONFIG $OUTPUT
 echo ""
 echo "Exporting model to onnx (export_ssd.py)..."
 ONNX_FILE=$TMP_DIR/model_ssd.onnx
-python ../../external/mmdetection/tools/export_ssd.py $CONFIG $CHECKPOINT $ONNX_FILE > $TMP_DIR/log.export_ssd.py 2>&1
+python ../../external/mmdetection/tools/export_ssd.py $CONFIG $CHECKPOINT $ONNX_FILE > $TMP_DIR/log.export_ssd 2>&1
 if [[ -f $ONNX_FILE ]]
 then
   echo ""
@@ -40,7 +41,14 @@ fi
 echo ""
 echo "Exporting model to onnx (export.py)..."
 ONNX_FILE=$TMP_DIR/model.onnx
-python ../../external/mmdetection/tools/export.py $CONFIG $CHECKPOINT $ONNX_FILE > $TMP_DIR/log.export.py 2>&1
+for i in {1..5}; do
+  echo "attempt" $i
+  python ../../external/mmdetection/tools/export.py $CONFIG $CHECKPOINT $ONNX_FILE > $TMP_DIR/log.export 2>&1
+  if [[ -f $ONNX_FILE ]]
+  then
+    break
+  fi
+done
 if [[ -f $ONNX_FILE ]]
 then
   echo ""
