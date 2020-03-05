@@ -53,13 +53,14 @@ One should observe about 84% PCKh on validation set (use `--multiscale` and set 
 
 The final number on the test set was obtained with addition of validation data into training.
 
-### Conversion to OpenVINO™ format:
+### Conversion to OpenVINO™ format
 
 1. Convert PyTorch\* model to ONNX\* format: run script in terminal:
 
     ```bash
     python scripts/convert_to_onnx.py --checkpoint-path <CHECKPOINT> \
         --single-person \
+        --output-name single-human-pose-estimation.onnx \
         --input-size 256 256 \
         --mode-interpolation nearest \
         --num-refinement-stages 1
@@ -68,7 +69,8 @@ The final number on the test set was obtained with addition of validation data i
 2. Convert the ONNX\* model to OpenVINO™ format with the Model Optimizer:
 
     ```bash
-    python <OpenVINO_INSTALL_DIR>/deployment_tools/model_optimizer/mo.py --input_model human-pose-estimation.onnx \
+    python <OpenVINO_INSTALL_DIR>/deployment_tools/model_optimizer/mo.py \
+        --input_model single-human-pose-estimation.onnx \
         --input data \
         --mean_values data[128.0,128.0,128.0] \
         --scale_values data[256] \
@@ -84,13 +86,15 @@ The final number on the test set was obtained with addition of validation data i
 1. Download the [COCO 2017 dataset](http://cocodataset.org/#download) (train, val, annotations) and unpack it to the`<COCO_HOME>` folder.
 
 2. Convert train annotations into the internal format:
+
     ```bash
     python scripts/convert_coco_labels.py \
         --labels-path <COCO_HOME>/annotations/person_keypoints_train2017.json \
-        --output-name <COCO_HOME>/annotations/person_keypoints_converted_all.json
+        --output-name <COCO_HOME>/annotations/person_keypoints_train2017_converted.json
     ```
 
 3. To start training, run in the terminal:
+
     ```bash
     python train_single_coco.py \
         --dataset-folder <COCO_HOME> \
@@ -98,27 +102,39 @@ The final number on the test set was obtained with addition of validation data i
         --from-mobilenet
     ```
 
+    To use pretrained model as init checkpoint use follow command:
+
+    ```bash
+    python train_single_coco.py \
+        --dataset-folder <COCO_HOME> \
+        --checkpoint-path single-human-pose-estimation-0001.pth \
+        --weights-only
+    ```
+
 ### Validation
 
 * Run in the terminal:
+
     ```bash
     python val_single.py \
         --dataset-folder <COCO_HOME> \
         --checkpoint-path <CHECKPOINT> \
         --name-dataset CocoSingle
     ```
+
 You should observe about 68% mAP on the validation set.
 
 *Optional*: Pass the `--visualize` key to see predicted keypoints results.
 
 
-### Conversion to OpenVINO™ format:
+### Conversion to OpenVINO™ format
 
 1. Convert PyTorch model to ONNX format:
 
     ```bash
     python scripts/convert_to_onnx.py --checkpoint-path <CHECKPOINT> \
         --single-person \
+        --output-name single-human-pose-estimation.onnx \
         --input-size 384 288 \
         --mode-interpolation nearest \
         --num-refinement-stages 4
@@ -127,8 +143,9 @@ You should observe about 68% mAP on the validation set.
 2. Convert the ONNX\* model to OpenVINO™ format with the Model Optimizer:
 
     ```bash
-    python <OpenVINO_INSTALL_DIR>/deployment_tools/model_optimizer/mo.py --input_model human-pose-estimation.onnx  \
-        --input_shape [1,3,384,288]  \
+    python <OpenVINO_INSTALL_DIR>/deployment_tools/model_optimizer/mo.py \
+        --input_model single-human-pose-estimation.onnx \
+        --input_shape [1,3,384,288] \
         --input data \
         --mean_values data[123.675,116.28,103.53] \
         --scale_values data[58.395,57.12,57.375] \
@@ -140,7 +157,7 @@ You should observe about 68% mAP on the validation set.
 
 OpenVINO™ provides multi-person pose estimation demo, which is able to use these models as pose estimation networks. See details in the [demo](https://github.com/opencv/open_model_zoo/tree/develop/demos/python_demos/single_human_pose_estimation_demo).
 
-## Citation:
+## Citation
 
 If this helps your research, please cite the papers:
 

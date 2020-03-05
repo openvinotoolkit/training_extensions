@@ -17,7 +17,7 @@ class LipTrainDataset(Dataset):
 
     def __init__(self, dataset_folder, stride, sigma, transform=None):
         super().__init__()
-        self.num_keypoints = 16
+        self._num_keypoints = 16
         self._dataset_folder = dataset_folder
         self._stride = stride
         self._sigma = sigma
@@ -28,7 +28,7 @@ class LipTrainDataset(Dataset):
     def __getitem__(self, idx):
         tokens = self._labels[idx].split(',')
         image = cv2.imread(os.path.join(self._dataset_folder, 'TrainVal_images', 'train_images', tokens[0]), cv2.IMREAD_COLOR)
-        keypoints = np.ones(self.num_keypoints*3, dtype=np.float32) * -1
+        keypoints = np.ones(self._num_keypoints*3, dtype=np.float32) * -1
         for id in range(keypoints.shape[0]//3):
             if tokens[1 + id*3] != 'nan':
                 keypoints[id * 3] = int(tokens[1 + id*3])          # x
@@ -57,7 +57,7 @@ class LipTrainDataset(Dataset):
 
     def _generate_keypoint_maps(self, sample):
         n_rows, n_cols, _ = sample['image'].shape
-        keypoint_maps = np.zeros(shape=(self.num_keypoints + 1,
+        keypoint_maps = np.zeros(shape=(self._num_keypoints + 1,
                                         n_rows // self._stride, n_cols // self._stride), dtype=np.float32)  # +1 for bg
 
         keypoints = sample['keypoints']
@@ -73,6 +73,7 @@ class LipTrainDataset(Dataset):
 class LipValDataset(Dataset):
     def __init__(self, dataset_folder, num_images=-1):
         super().__init__()
+        self._num_keypoints = 16
         self._dataset_folder = dataset_folder
         self.labels_file_path = os.path.join(self._dataset_folder, 'TrainVal_pose_annotations', 'lip_val_set.csv')
         self._labels = [line.rstrip('\n') for line in open(self.labels_file_path, 'r')]
@@ -95,6 +96,7 @@ class LipValDataset(Dataset):
 class LipTestDataset(Dataset):
     def __init__(self, dataset_folder):
         super().__init__()
+        self._num_keypoints = 16
         self._dataset_folder = dataset_folder
         self._names = [line.rstrip('\n') for line in open(os.path.join(self._dataset_folder, 'Testing_images', 'test_id.txt'), 'r')]
 

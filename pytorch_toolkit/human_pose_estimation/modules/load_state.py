@@ -2,7 +2,7 @@ import collections
 
 
 def load_state(net, checkpoint):
-    source_state = checkpoint
+    source_state = checkpoint['state_dict'] if 'state_dict' in checkpoint else checkpoint
     target_state = net.state_dict()
     new_target_state = collections.OrderedDict()
     for target_key, target_value in target_state.items():

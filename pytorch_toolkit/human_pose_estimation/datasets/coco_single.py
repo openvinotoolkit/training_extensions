@@ -47,7 +47,7 @@ class CocoSingleTrainDataset(Dataset):
         self._transform = transform
         self._aspect_ratio = self._input_size_img[0] / self._input_size_img[1]
         self._heatmap_size = [self._input_size_img[0] // self._stride[0], self._input_size_img[1] // self._stride[1]]
-        with open(os.path.join(self._dataset_folder, 'annotations', 'person_keypoints_train2017_converted_all.json')) as f:
+        with open(os.path.join(self._dataset_folder, 'annotations', 'person_keypoints_train2017_converted.json')) as f:
             self._labels = json.load(f)
 
     def __getitem__(self, idx):
@@ -126,7 +126,7 @@ class CocoSingleValDataset(Dataset):
         self._num_keypoints = 17
         self._dataset_folder = dataset_folder
         self._transform = transform
-        with open(os.path.join(self._dataset_folder, 'annotations', 'val_subset.json')) as f:
+        with open(os.path.join(self._dataset_folder, 'annotations', 'person_keypoints_val2017.json')) as f:
             data = json.load(f)
 
         self._annotations = data['annotations']
