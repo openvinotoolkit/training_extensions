@@ -52,7 +52,6 @@ def parse_wider_gt_with_landmarks(ann_file):
                 new_file = False
                 i += 1
             else:
-                i += 1
                 while True:
                     if i == len(content) or content[i].startswith('#'):
                         break
@@ -60,8 +59,8 @@ def parse_wider_gt_with_landmarks(ann_file):
                     x, y, w, h = [int(x) for x in line_split[:4]]
                     if w >= 0 and h >= 0:
                         bboxes[image_name].append([x, y, w, h])
-                        points = [float(x) for i, x in enumerate(line_split[4:-1]) if (i + 1) % 3 != 0]
-                        landmarks[image_name].append(points if points[0] >= 0 else [])
+                        points = [float(x) if (i + 1) % 3 != 0 else float(x) + 1 for i, x in enumerate(line_split[4:-1])]
+                        landmarks[image_name].append(points)
                     else:
                         print('Ignored because of invalid size: ', [x, y, w, h])
                     i += 1
@@ -116,7 +115,8 @@ def convert_wider_annots(ann_file, data_dir, out_file, with_landmarks):
             ann['id'] = ann_id
             ann_id += 1
             ann['image_id'] = image['id']
-            ann['segmentation'] = [gt_landmarks]
+            ann['segmentation'] = []
+            ann['keypoints'] = gt_landmarks
             ann['category_id'] = cat_id  # 1:"face" for WIDER
             ann['iscrowd'] = 0
             ann['area'] = gt_bbox[2] * gt_bbox[3]
