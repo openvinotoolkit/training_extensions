@@ -10,7 +10,7 @@ def l2_loss(input, target, batch_size, mask=None):
     return loss.sum()
 
 def mse_loss(output, target, mask):
-    mse = nn.MSELoss(reduction='mean')
+    mse = nn.MSELoss()
     batch_size = output.size(0)
     num_keypoints = output.size(1)
     heatmaps_target = target.reshape((batch_size, num_keypoints, -1)).split(1, 1)

@@ -295,8 +295,8 @@ class SinglePersonFlip(object):
             return sample
 
         sample['image'] = cv2.flip(sample['image'], 1)
+
         w, h = sample['image'].shape[1], sample['image'].shape[0]
-        sample['center'] = w - sample['center'] - 1
         for id in range(len(sample['keypoints']) // 3):
             if sample['keypoints'][id * 3] == -1:
                 continue

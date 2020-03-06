@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -e
 
 work_dir=$(realpath "$(dirname $0)")
 
@@ -9,10 +10,11 @@ if [[ -e venv ]]; then
 fi
 
 # Create virtual environment
-virtualenv venv -p python3 --prompt="(pytorch-toolbox) "
+virtualenv venv -p python3 --prompt="(hpe) "
 echo "export PYTHONPATH=\$PYTHONPATH:${work_dir}" >> venv/bin/activate
 . venv/bin/activate
-pip install -r ${work_dir}/requirements.txt
+
+cat requirements.txt | xargs -n 1 -L 1 pip3 install
 
 # Install OpenVino Model Optimizer (optional)
 mo_requirements_file="${INTEL_OPENVINO_DIR:-/opt/indel/openvino}/deployment_tools/model_optimizer/requirements_onnx.txt"

@@ -75,7 +75,7 @@ def evaluate(dataset, output_name, net, multiscale=False, visualize=False):
         file_name = sample['file_name']
         img = sample['image']
 
-        avg_heatmaps = infer(net, img, scales, base_height, stride, num_keypoints=dataset.num_keypoints)
+        avg_heatmaps = infer(net, img, scales, base_height, stride)
 
         flip = False
         if flip:
@@ -89,12 +89,13 @@ def evaluate(dataset, output_name, net, multiscale=False, visualize=False):
             avg_heatmaps = (avg_heatmaps + flipped_avg_heatmaps[:, ::-1]) / 2
 
         all_keypoints = []
-        for kpt_idx in range(dataset.num_keypoints):
+        for kpt_idx in range(dataset._num_keypoints):
             all_keypoints.append(extract_keypoints(avg_heatmaps[:, :, kpt_idx]))
 
         res_file.write('{}'.format(file_name))
-        for id in range(dataset.num_keypoints):
-            val = [int(all_keypoints[id][0]), int(all_keypoints[id][1])]
+        for id in range(dataset._num_keypoints):
+            score, ind = all_keypoints[id]
+            val = [int(ind[0]), int(ind[1])]
             if val[0] == -1:
                 val[0], val[1] = 'nan', 'nan'
             res_file.write(',{},{}'.format(val[0], val[1]))
@@ -107,7 +108,7 @@ def evaluate(dataset, output_name, net, multiscale=False, visualize=False):
                       (0, 255, 0), (0, 255, 0), (0, 255, 0),
                       (255, 0, 0), (255, 0, 0), (255, 0, 0), (0, 0, 255), (0, 0, 255), (0, 0, 255)]
             for id in range(len(all_keypoints)):
-                keypoint = all_keypoints[id]
+                score, keypoint = all_keypoints[id]
                 if keypoint[0] != -1:
                     radius = 3
                     if colors[id] == (255, 0, 0):
@@ -206,10 +207,10 @@ def val(net, val_dataset, predictions_name, name_dataset):
         pck = calc_pckh(val_dataset.labels_file_path, predictions_name)
         val_loss = 100 - pck[-1][-1]
     elif name_dataset == "CocoSingle":
-            coco_evaluate(val_dataset, predictions_name, net)
-            ap_metric = run_coco_eval(os.path.join(val_dataset._dataset_folder, 'annotations', 'val_subset.json'),
-                                      predictions_name)
-            val_loss = 100 - ap_metric[0] * 100
+        coco_evaluate(val_dataset, predictions_name, net)
+        ap_metric = run_coco_eval(os.path.join(val_dataset._dataset_folder, 'annotations', 'person_keypoints_val2017.json'),
+                                    predictions_name)
+        val_loss = 100 - ap_metric[0] * 100
     else:
         raise RuntimeError("Unknown dataset.")
 
@@ -235,7 +236,7 @@ if __name__ == '__main__':
         num_heatmaps = val_dataset._num_keypoints
     elif args.name_dataset == "Lip":
         val_dataset = LipValDataset(args.dataset_folder)
-        num_heatmaps = val_dataset.num_keypoints + 1
+        num_heatmaps = val_dataset._num_keypoints + 1
     else:
         raise RuntimeError("Unknown dataset.")
 

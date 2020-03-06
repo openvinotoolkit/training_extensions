@@ -30,11 +30,13 @@ if __name__ == '__main__':
                         help='Size of input image in format: height width')
     parser.add_argument('--mode-interpolation', type=str, required=False, default='bilinear',
                         help='type interpolation <bilinear> or <nearest>')
+    parser.add_argument('--num-refinement-stages', type=int, default=1, help='number of refinement stages')
+
     args = parser.parse_args()
 
     net = PoseEstimationWithMobileNet()
     if args.single_person:
-        net = SinglePersonPoseEstimationWithMobileNet(mode=args.mode_interpolation)
+        net = SinglePersonPoseEstimationWithMobileNet(mode=args.mode_interpolation, num_refinement_stages=args.num_refinement_stages)
     checkpoint = torch.load(args.checkpoint_path)
     load_state(net, checkpoint)
 
