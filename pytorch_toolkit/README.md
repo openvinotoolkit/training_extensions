@@ -14,29 +14,6 @@ inference.
 - *(Optional)* [OpenVINO™ R3](https://software.intel.com/en-us/openvino-toolkit)
   to export trained models
 
-## Quick Start Guide
-
-### Setup Training Toolbox for PyTorch
-
-1. <a name="create-venv"/>Create virtual environment</a>:
-
-    ```
-    cd /<path_to_working_dir>/training_toolbox/pytorch_toolkit/<model>
-    bash init_venv.sh
-    ```
-
-2. Start working:
-
-    ```
-    . venv/bin/activate
-    ```
-
-    >**NOTE**: If you have installed the OpenVINO™ toolkit after creating
-    a virtual environment, [recreate one](#create_venv)
-    to install required packages for the Model Optimizer into a single virtual environment.
-
-> **NOTE**: Update several environment variables required to compile and run OpenVINO™ toolkit applications, for details see [Install Intel® Distribution of OpenVINO™ toolkit for Linux*](https://software.intel.com/en-us/articles/OpenVINO-Install-Linux).
-
 
 ### Models
 
@@ -54,6 +31,7 @@ them for prediction.
 * [Segmentation of Thoracic Organs](segthor)
 * [Super Resolution](super_resolution)
 * [Text Spotting](text_spotting)
+
 
 ### Tools
 
