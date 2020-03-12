@@ -59,7 +59,7 @@ python3 utils/ucf101_json.py ${data}/ucf-101/ucfTrainTestlist
 
 #### HMDB-51
 
-Download the [HMDB-51 videos and train/test splits](http://serre-lab.clps.brown.edu/resource/hmdb-a-large-human-motion-database/).
+Download the [HMDB-51 videos and train/test splits](https://serre-lab.clps.brown.edu/resource/hmdb-a-large-human-motion-database/).
 
 Convert all splits to the JSON format:
 
