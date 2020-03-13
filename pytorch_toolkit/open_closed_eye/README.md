@@ -1,6 +1,6 @@
 ### Eye State classification
 
-This repository contains training scripts for the eye state classificator. The classificator is based on the 
+This repository contains training scripts for the eye state classifier.
 
 ## Setup
 
