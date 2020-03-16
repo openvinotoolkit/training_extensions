@@ -27,7 +27,7 @@ then
   echo ""
   echo "Testing exported IR (export_ssd.py)..."
   IR_MODEL=$IR_DIR/model_ssd.xml
-  python ~/git/model-zoo-tools/model-analyzer/model_analyzer.py -m$IR_MODEL
+  python ~/git/model-zoo-tools/model-analyzer/model_analyzer.py -m $IR_MODEL
   python /opt/intel/openvino/deployment_tools/tools/benchmark_tool/benchmark_app.py -m $IR_MODEL -api sync
   IR_OUTPUT_FILE=$TMP_DIR/res_ir_ssd.pkl
   python ../../external/mmdetection/tools/test_exported.py $CONFIG $IR_MODEL --out $IR_OUTPUT_FILE --backend openvino --with_detection_output --do_not_normalize
