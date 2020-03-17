@@ -30,6 +30,7 @@ def get_default_config():
     cfg.model.feature_dim = 512
     cfg.model.fpn = True
     cfg.model.fpn_dim = 256
+    cfg.model.fpn_process = 'concatenation'
     cfg.model.gap_as_conv = False
     cfg.model.IN_first = False
     cfg.model.openvino = CN()

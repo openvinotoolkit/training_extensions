@@ -107,7 +107,8 @@ def main():
         fpn_dim=cfg.model.fpn_dim,
         gap_as_conv=cfg.model.gap_as_conv,
         input_size=(cfg.data.height, cfg.data.width),
-        IN_first=cfg.model.IN_first
+        IN_first=cfg.model.IN_first,
+        fpn_process=cfg.model.fpn_process,
     )
     num_params, flops = compute_model_complexity(model, (1, 3, cfg.data.height, cfg.data.width))
     print('Model complexity: params={:,} flops={:,}'.format(num_params, flops))

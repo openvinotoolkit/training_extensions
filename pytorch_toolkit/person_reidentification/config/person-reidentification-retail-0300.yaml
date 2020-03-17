@@ -3,8 +3,8 @@ model:
   pretrained: True
   feature_dim: 512
   fpn: True
-  fpn_dim: 256
-  fpn_process: 'max_pooling'
+  fpn_dim: 128
+  fpn_process: 'concatenation'
 
 data:
   type: 'image'
@@ -21,7 +21,7 @@ data:
       enable: True
       p: 0.5
     random_figures:
-      enable: True
+      enable: False
       p: 0.33
     random_padding:
       enable: True
@@ -40,9 +40,9 @@ data:
       enable: True
       p: 0.1
     random_grid:
-      enable: True
+      enable: False
       p: 0.15
-  save_dir: 'outputs/reid-0200'
+  save_dir: 'outputs/reid-0300'
 
 sampler:
   train_sampler: 'RandomIdentitySamplerV2'
@@ -75,4 +75,5 @@ test:
   eval_freq: 2
   rerank: False
   visactmap: False
+  visrank: False
   apply_masks: False
