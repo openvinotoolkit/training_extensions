@@ -7,7 +7,6 @@ from .validation import validate
 
 
 def train_epoch(args, epoch, data_loader, model, criterion, optimizer, logger):
-    print('train at epoch {}'.format(epoch))
     model.train()
 
     for i, (inputs_dict, targets) in logger.scope_enumerate(data_loader, epoch, total_time='time/train_epoch',
@@ -32,8 +31,8 @@ def train_epoch(args, epoch, data_loader, model, criterion, optimizer, logger):
 
         optimizer.step()
 
-        logger.log_value('train/loss', loss.item(), batch_size)
-        logger.log_value('train/acc', acc, batch_size)
+        logger.log_value('train/loss', loss.item(), batch_size, epoch * len(data_loader) + i)
+        logger.log_value('train/acc', acc, batch_size, epoch * len(data_loader) + i)
         if 'kd' in criterion.values:
             logger.log_value("train/kd_loss", criterion.values['kd'].item())
 

@@ -99,7 +99,7 @@ class StreamHandler(PeriodicHandler):
             self.stream.flush()
 
     def format_value(self, value):
-        if value.instant_value and self.display_instant:
+        if value.instant_value is not None and self.display_instant:
             return "{name} {ival:.4f} ({val:.4f})".format(name=value.display_name, val=value.value,
                                                           ival=value.instant_value)
         else:
