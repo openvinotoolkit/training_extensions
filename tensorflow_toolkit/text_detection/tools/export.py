@@ -72,13 +72,13 @@ def load_frozen_graph(frozen_graph_filename):
 
 def freeze(args, config):
     """ Exports model to TF 1.x saved_model (simple_save) and freezes graph. """
-
+    tf.keras.backend.set_learning_phase(0)
     input_tensor = tf.compat.v1.placeholder(dtype=tf.float32,
-                                            shape=[1] + list(args.resolution[::-1]) + [3])
+                                            shape=[1, None, None, 3])
     model = pixel_link_model(tf.keras.Input(tensor=input_tensor), config=config)
     segm_logits, link_logits = model(input_tensor, training=False)
-    link_logits = tf.reshape(link_logits, link_logits.shape.as_list()[0:3] +
-                             [config['num_neighbours'] * 2])
+
+    link_logits = tf.reshape(link_logits, tf.concat([tf.shape(link_logits)[0:3], [config['num_neighbours'] * 2]], -1))
 
     export_folder = args.output_dir if args.output_dir else os.path.join(os.path.dirname(args.weights), 'export')
 
