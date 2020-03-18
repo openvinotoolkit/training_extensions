@@ -56,9 +56,10 @@ def train(args, model, train_loader, val_loader, criterion, optimizer, scheduler
             checkpoint_name = 'save_{}.pth'.format(epoch)
             save_checkpoint(checkpoint_name, model, optimizer, epoch, args)
 
-        with logger.scope(epoch):
-            val_acc = validate(args, epoch, val_loader, model, criterion, logger)
-            logger.log_value("val/generalization_error", val_acc - train_acc)
+        if epoch % args.validate == 0:
+            with logger.scope(epoch):
+                val_acc = validate(args, epoch, val_loader, model, criterion, logger)
+                logger.log_value("val/generalization_error", val_acc - train_acc)
 
         if isinstance(scheduler, lr_scheduler.ReduceLROnPlateau):
             scheduler.step(val_acc)
