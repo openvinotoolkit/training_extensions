@@ -157,6 +157,7 @@ python tools/test.py \
       --input_model model/weights/export/frozen_graph.pb \
       --reverse_input_channels \
       --data_type FP32 \
+      --input_shape="[1,768,1280,3]" \
       --output_dir IR
     ```
 
