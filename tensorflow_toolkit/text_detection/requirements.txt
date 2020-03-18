@@ -13,7 +13,7 @@ Polygon3==3.0.8
 protobuf==3.7.1
 PyYAML==5.1
 six==1.12.0
-tb-nightly==1.14.0a20190301
+tensorboard==2.1.1
 tensorflow-gpu==2.0.0b1
 termcolor==1.1.0
 tf-estimator-nightly==1.14.0.dev2019030115
