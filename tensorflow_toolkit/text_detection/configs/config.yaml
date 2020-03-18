@@ -1,6 +1,6 @@
 area_range: [0.1, 1]
 background_label: 0
-batch_size: 20
+batch_size: 10
 bbox_crop_overlap: 0.2
 crop_aspect_ratio_range: !!python/tuple [0.5, 2.0]
 distort_color: true

@@ -138,35 +138,30 @@ def train(args, config):
             return 0
         return int(latest_checkpoint.split('-')[-1])
 
-    mirrored_strategy = tf.distribute.MirroredStrategy()
-    args.learning_rate *= mirrored_strategy.num_replicas_in_sync
-
-    config['num_replicas'] = mirrored_strategy.num_replicas_in_sync
-
     save_config(config, args.train_dir)
+    config['num_replicas'] = 1
 
     dataset, size = TFRecordDataset(args.train_dataset, config)()
 
-    with mirrored_strategy.scope():
-        model = pixel_link_model(
-            inputs=tf.keras.Input(shape=config['train_image_shape'] + [3]),
-            config=config)
+    model = pixel_link_model(
+        inputs=tf.keras.Input(shape=config['train_image_shape'] + [3]),
+        config=config)
 
-        loss = [ClassificationLoss(config), LinkageLoss(config)]
+    loss = [ClassificationLoss(config), LinkageLoss(config)]
 
-        optimizer = tf.optimizers.SGD(learning_rate=args.learning_rate, momentum=args.momentum)
-        model.compile(loss=loss, optimizer=optimizer)
+    optimizer = tf.optimizers.SGD(learning_rate=args.learning_rate, momentum=args.momentum)
+    model.compile(loss=loss, optimizer=optimizer)
 
-        checkpoint = tf.train.Checkpoint(optimizer=optimizer, model=model)
+    checkpoint = tf.train.Checkpoint(optimizer=optimizer, model=model)
 
-        if args.weights:
-            model.load_weights(args.weights)
+    if args.weights:
+        model.load_weights(args.weights)
 
-        latest_checkpoint = tf.train.latest_checkpoint(args.train_dir)
-        if latest_checkpoint is not None:
-            checkpoint.restore(latest_checkpoint)
-            # Here is a workaround how to save/load EMA weights.
-            model.load_weights(get_weights_path(latest_checkpoint, is_ema=True))
+    latest_checkpoint = tf.train.latest_checkpoint(args.train_dir)
+    if latest_checkpoint is not None:
+        checkpoint.restore(latest_checkpoint)
+        # Here is a workaround how to save/load EMA weights.
+        model.load_weights(get_weights_path(latest_checkpoint, is_ema=True))
 
     ema_cb = ExponentialMovingAverageCallback(model, get_epoch(latest_checkpoint))
     ema_cb.copy_weights_from_model()
@@ -180,24 +175,22 @@ def train(args, config):
 
     with tf.summary.create_file_writer(args.train_dir + "/logs").as_default():
         for _ in range(int(np.ceil(args.num_epochs / args.epochs_per_evaluation))):
-            with mirrored_strategy.scope():
-                latest_checkpoint_before_fit = tf.train.latest_checkpoint(args.train_dir)
-                if latest_checkpoint_before_fit is not None:
-                    model.load_weights(get_weights_path(latest_checkpoint_before_fit, is_ema=False))
+            latest_checkpoint_before_fit = tf.train.latest_checkpoint(args.train_dir)
+            if latest_checkpoint_before_fit is not None:
+                model.load_weights(get_weights_path(latest_checkpoint_before_fit, is_ema=False))
 
             history = model.fit(dataset, epochs=args.epochs_per_evaluation,
                                 steps_per_epoch=size // config['batch_size'], callbacks=[ema_cb])
-            with mirrored_strategy.scope():
-                checkpoint.save(os.path.join(args.train_dir, 'model'))
+            checkpoint.save(os.path.join(args.train_dir, 'model'))
 
-                latest_checkpoint_after_fit = tf.train.latest_checkpoint(args.train_dir)
+            latest_checkpoint_after_fit = tf.train.latest_checkpoint(args.train_dir)
 
-                # Save weights.
-                model.save_weights(get_weights_path(latest_checkpoint_after_fit, is_ema=False))
+            # Save weights.
+            model.save_weights(get_weights_path(latest_checkpoint_after_fit, is_ema=False))
 
-                # Save ema weights.
-                ema_cb.copy_weights_to_model()
-                model.save_weights(get_weights_path(latest_checkpoint_after_fit, is_ema=True))
+            # Save ema weights.
+            ema_cb.copy_weights_to_model()
+            model.save_weights(get_weights_path(latest_checkpoint_after_fit, is_ema=True))
 
             epoch = get_epoch(latest_checkpoint_after_fit)
 
