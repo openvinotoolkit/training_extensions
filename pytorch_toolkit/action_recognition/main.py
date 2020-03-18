@@ -352,7 +352,12 @@ def main():
             class_weights = getattr(args, 'class_weights', None)
             sampler = WeightedRandomSampler(train_data.get_sample_weights(class_weights), len(train_data))
         else:
-            sampler = RandomSampler(train_data)
+            replacement = False
+            num_samples = len(train_data)
+            if len(train_data) < args.batch_size:
+                replacement = True
+                num_samples = args.batch_size
+            sampler = RandomSampler(train_data, replacement=replacement, num_samples=num_samples)
 
         train_loader = torch.utils.data.DataLoader(
             train_data,

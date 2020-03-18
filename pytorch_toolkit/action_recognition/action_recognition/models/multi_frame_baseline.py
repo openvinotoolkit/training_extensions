@@ -32,13 +32,14 @@ class MultiFrameBaseline(nn.Module):
     def forward(self, images):
         """Extract the image feature vectors."""
         # (B x T x C x H x W) -> (B*T x C x H x W)
+        batch_size = images.shape[0]
         images = squash_dims(images, (0, 1))
 
         features = self.resnet(images)
         # features = self.dropout(features)
 
         features = F.avg_pool2d(features, self.last_feature_size)  # (B*T) x C
-        features = unsquash_dim(features, 0, (-1, self.sequence_size))
+        features = unsquash_dim(features, 0, (batch_size, -1))
         ys = self.fc(features.squeeze(-1).squeeze(-1))
 
         return ys.mean(1)
