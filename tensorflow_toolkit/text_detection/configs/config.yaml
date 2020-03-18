@@ -22,3 +22,5 @@ text_label: 1
 train_image_shape: [512, 512]
 using_shorter_side_filtering: true
 weights_decay: 0.0001
+model_type: ka_mobilenet_v2_1_4
+imagenet_preprocessing: true
