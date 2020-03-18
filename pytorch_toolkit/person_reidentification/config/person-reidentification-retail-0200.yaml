@@ -8,7 +8,7 @@ model:
 
 data:
   type: 'image'
-  sources: ['msmt17']
+  sources: ['msmt17', 'market1501']
   targets: ['market1501']
   height: 256
   width: 128
