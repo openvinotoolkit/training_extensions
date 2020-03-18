@@ -110,6 +110,20 @@ MODEL_REGISTRY = {
         args.sample_size,
         False if args.pretrain_path or args.resume_path else True
     ),
+    'baseline_encoder': lambda args, encoder: multi_frame_baseline.MultiFrameBaselineEncoder(
+        args.sample_duration,
+        encoder,
+        args.n_classes,
+        args.sample_size,
+        False if args.pretrain_path or args.resume_path else True
+    ),
+    'baseline_decoder': lambda args, encoder: multi_frame_baseline.MultiFrameBaselineDecoder(
+        args.sample_duration,
+        encoder,
+        args.n_classes,
+        args.sample_size,
+        False if args.pretrain_path or args.resume_path else True
+    ),
 
     'resnet34_attn_single': lambda args, encoder: lstm_attention.ResnetAttSingleInput(
         args.hidden_size,
