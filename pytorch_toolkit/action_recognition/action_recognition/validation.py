@@ -1,13 +1,9 @@
 import torch
 
 from .utils import AverageMeter, calculate_accuracy, prepare_batch
-import torch
-
-from .utils import AverageMeter, calculate_accuracy, prepare_batch
 
 
 def validate(args, epoch, data_loader, model, criterion, logger):
-    print('validation at epoch {}'.format(epoch))
     model.eval()
 
     video_acc = AverageMeter()
@@ -39,6 +35,6 @@ def validate(args, epoch, data_loader, model, criterion, logger):
 
         logger.log_value("val/loss", loss.item(), batch_size)
         logger.log_value("val/acc", acc, batch_size)
-        logger.log_value("val/video", video_acc.avg)
+    logger.log_value("val/video", video_acc.avg)
 
     return logger.get_value("val/acc")

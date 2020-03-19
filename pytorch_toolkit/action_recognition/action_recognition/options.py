@@ -55,6 +55,12 @@ def add_common_args(parser):
         help='Whether validation should be performed'
     )
     parser.add_argument(
+        '--validate',
+        default=5,
+        type=int,
+        help='Validation is run every `validate` epochs'
+    )
+    parser.add_argument(
         '--test',
         action=BoolFlagAction,
         default=True,

@@ -7,7 +7,6 @@ from .validation import validate
 
 
 def train_epoch(args, epoch, data_loader, model, criterion, optimizer, logger):
-    print('train at epoch {}'.format(epoch))
     model.train()
 
     for i, (inputs_dict, targets) in logger.scope_enumerate(data_loader, epoch, total_time='time/train_epoch',
@@ -32,8 +31,8 @@ def train_epoch(args, epoch, data_loader, model, criterion, optimizer, logger):
 
         optimizer.step()
 
-        logger.log_value('train/loss', loss.item(), batch_size)
-        logger.log_value('train/acc', acc, batch_size)
+        logger.log_value('train/loss', loss.item(), batch_size, epoch * len(data_loader) + i)
+        logger.log_value('train/acc', acc, batch_size, epoch * len(data_loader) + i)
         if 'kd' in criterion.values:
             logger.log_value("train/kd_loss", criterion.values['kd'].item())
 
@@ -57,9 +56,10 @@ def train(args, model, train_loader, val_loader, criterion, optimizer, scheduler
             checkpoint_name = 'save_{}.pth'.format(epoch)
             save_checkpoint(checkpoint_name, model, optimizer, epoch, args)
 
-        with logger.scope(epoch):
-            val_acc = validate(args, epoch, val_loader, model, criterion, logger)
-            logger.log_value("val/generalization_error", val_acc - train_acc)
+        if epoch % args.validate == 0:
+            with logger.scope(epoch):
+                val_acc = validate(args, epoch, val_loader, model, criterion, logger)
+                logger.log_value("val/generalization_error", val_acc - train_acc)
 
         if isinstance(scheduler, lr_scheduler.ReduceLROnPlateau):
             scheduler.step(val_acc)

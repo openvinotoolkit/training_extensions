@@ -17,11 +17,13 @@ MEAN_STATISTICS = {
     'imagenet': [0.485, 0.456, 0.406],
     'kinetics': [0.434, 0.405, 0.378],
     'activitynet': [0.450, 0.422, 0.390],
+    'none': [0.0, 0.0, 0.0]
 }
 
 STD_STATISTICS = {
     'imagenet': [0.229, 0.224, 0.225],
     'kinetics': [0.152, 0.148, 0.157],
+    'none': [1.0, 1.0, 1.0]
 }
 
 

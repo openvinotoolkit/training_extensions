@@ -1,4 +1,5 @@
 import cv2
+import numpy as np
 
 from .utils import load_json, load_value_file
 
@@ -11,8 +12,11 @@ def get_video_names_and_annotations(data, subset):
     for key, value in data['database'].items():
         this_subset = value['subset']
         if this_subset == subset:
-            label = value['annotations']['label']
-            video_names.append('{}/{}'.format(label, key))
+            video_name = key
+            label = value['annotations'].get('label', '')
+            if label:
+                video_name = label + '/' + video_name
+            video_names.append(video_name)
             annotations.append(value)
 
     return video_names, annotations
@@ -66,17 +70,40 @@ def load_json_annotation(root_path, annotation_path, subset, flow_path=None, vid
         if flow_path is not None:
             flow_full_path = (flow_path / video_name).as_posix()
 
-        begin_t = 1
-        end_t = n_frames
-        sample = {
-            'video': video_path.as_posix(),
-            'flow': flow_full_path,
-            'segment': [begin_t, end_t],
-            'n_frames': n_frames,
-            'fps': fps,
-            'video_id': video_name.split('/')[1],
-            'label': class_to_idx[annotation['annotations']['label']],
-        }
-        videos.append(sample)
+        try:
+            video_id = video_name.split('/')[1]
+        except IndexError:
+            video_id = video_name
+
+        def add_sample(begin_frame, end_frame, label):
+            sample = {
+                'video': video_path.as_posix(),
+                'flow': flow_full_path,
+                'segment': [begin_frame, end_frame],
+                'n_frames': n_frames,
+                'fps': fps,
+                'video_id': video_id,
+                'label': class_to_idx[label]
+            }
+            videos.append(sample)
+
+        video_annotation = annotation['annotations']
+        events_annotation = video_annotation.get('events', None)
+        if events_annotation is not None:
+            for event in events_annotation:
+                begin_time = float(event['start'])
+                end_time = float(event['stop'])
+                label = event['event']
+                assert label in class_to_idx
+                # From time to frame number.
+                timestamps = video_annotation['timestamps']
+                begin_frame, end_frame = np.searchsorted(timestamps, [begin_time, end_time])
+                end_frame -= 1
+                assert begin_frame < end_frame
+                add_sample(begin_frame, end_frame, label)
+        else:
+            begin_frame = 1
+            end_frame = n_frames
+            add_sample(begin_frame, end_frame, annotation['annotations']['label'])
 
     return videos, idx_to_class
