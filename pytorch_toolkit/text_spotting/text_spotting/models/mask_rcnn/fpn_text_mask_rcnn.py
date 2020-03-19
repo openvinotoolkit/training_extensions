@@ -236,13 +236,6 @@ class FPNTextMaskRCNN(FPNMaskRCNN):
                                                                     masks=text_mask)
                     raw_text_output = raw_text_output.permute((1, 0, 2))
 
-                # Following stuff is workaround for model optimizer.
-                delta = 0.0000000001
-                boxes = boxes + delta
-                classes = (classes.float() + delta).long()
-                scores = scores + delta
-                raw_text_output = raw_text_output + delta
-
                 return_values.extend(
                     (boxes, classes, scores, batch_ids, raw_mask_output, raw_text_output))
             loss = None
