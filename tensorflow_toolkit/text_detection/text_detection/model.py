@@ -214,7 +214,7 @@ def pixel_link_model(inputs, config):
     link_logits = fcn_head(backbone, num_classes=16, name='link_logits_',
                            weights_decay=config['weights_decay'])
 
-    link_logits = tf.keras.layers.Reshape(
-        link_logits.shape[1:3].as_list() + [8, 2], name='link_logits')(link_logits)
+    new_shape = tf.shape(link_logits)[1], tf.shape(link_logits)[2], 8, 2
+    link_logits = tf.keras.layers.Reshape(new_shape, name='link_logits')(link_logits)
 
     return tf.keras.Model(inputs, [segm_logits, link_logits])
