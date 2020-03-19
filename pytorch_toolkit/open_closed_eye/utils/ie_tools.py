@@ -1,5 +1,5 @@
 """
- Copyright (c) 2018 Intel Corporation
+ Copyright (c) 2018-2020 Intel Corporation
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
  You may obtain a copy of the License at
@@ -16,7 +16,8 @@ import os
 
 import glog as log
 import numpy as np
-from openvino.inference_engine import IENetwork, IEPlugin # pylint: disable=import-error,E0611
+from openvino.inference_engine import IENetwork, IEPlugin  # pylint: disable=import-error,E0611
+
 
 class IEModel:
     """Class for inference of models in the Inference Engine format"""
