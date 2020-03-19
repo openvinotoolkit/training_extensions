@@ -2,9 +2,10 @@ model:
   name: 'fpn_osnet_x1_0'
   pretrained: True
   feature_dim: 512
-  fpn: True
-  fpn_dim: 128
-  fpn_process: 'concatenation'
+  fpn:
+    enable: True
+    dim: 128
+    process: 'concatenation'
 
 data:
   type: 'image'
