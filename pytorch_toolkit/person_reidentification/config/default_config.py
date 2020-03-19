@@ -28,13 +28,15 @@ def get_default_config():
     cfg.model.resume = ''  # Path to checkpoint for resume training
     cfg.model.dropout_prob = 0.0
     cfg.model.feature_dim = 512
-    cfg.model.fpn = True
-    cfg.model.fpn_dim = 256
     cfg.model.gap_as_conv = False
     cfg.model.IN_first = False
     cfg.model.openvino = CN()
     cfg.model.openvino.name = ''  # Path to *.xml
     cfg.model.openvino.cpu_extension = ''
+    cfg.model.fpn = CN()
+    cfg.model.fpn.enable = True
+    cfg.model.fpn.dim = 256
+    cfg.model.fpn.process = 'concatenation'
 
     # data
     cfg.data = CN()

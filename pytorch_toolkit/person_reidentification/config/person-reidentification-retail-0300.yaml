@@ -2,12 +2,14 @@ model:
   name: 'fpn_osnet_x1_0'
   pretrained: True
   feature_dim: 512
-  fpn: True
-  fpn_dim: 256
+  fpn:
+    enable: True
+    dim: 128
+    process: 'concatenation'
 
 data:
   type: 'image'
-  sources: ['msmt17', 'market1501']
+  sources: ['msmt17']
   targets: ['market1501']
   height: 256
   width: 128
@@ -20,7 +22,7 @@ data:
       enable: True
       p: 0.5
     random_figures:
-      enable: True
+      enable: False
       p: 0.33
     random_padding:
       enable: True
@@ -39,9 +41,9 @@ data:
       enable: True
       p: 0.1
     random_grid:
-      enable: True
+      enable: False
       p: 0.15
-  save_dir: 'outputs/reid-0200'
+  save_dir: 'outputs/reid-0300'
 
 sampler:
   train_sampler: 'RandomIdentitySamplerV2'
@@ -74,4 +76,5 @@ test:
   eval_freq: 2
   rerank: False
   visactmap: False
+  visrank: False
   apply_masks: False

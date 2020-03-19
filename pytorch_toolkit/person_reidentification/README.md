@@ -58,7 +58,7 @@ The script for training and inference uses a configuration file
 [default_config.py](config/default_config.py), which consists of default parameters.
 This file also has description of parameters.
 Parameters that you wish to change must be in your own configuration file.
-Example: [person-reidentification-retail-0200.yaml](config/person-reidentification-retail-0200.yaml)
+Example: [person-reidentification-retail-0300.yaml](config/person-reidentification-retail-0300.yaml)
 
 ## Training
 
@@ -69,7 +69,7 @@ Example:
 ```bash
 python main.py \
     --root /path/to/datasets/directory/root \
-    --config config/person-reidentification-retail-0200.yaml
+    --config config/person-reidentification-retail-0300.yaml
 ```
 
 ## Test
@@ -84,7 +84,7 @@ For visualization activation maps, set the `test.visactmap` parameter to `True`.
 You can download pretrained models in the PyTorch format corresponding to the provided configs from a fileshare as well:
 - [person-reidentification-retail-0103](https://download.01.org/opencv/openvino_training_extensions/models/person_reidentification/person-reidentification-retail-0103.pt)
 - [person-reidentification-retail-0107](https://download.01.org/opencv/openvino_training_extensions/models/person_reidentification/person-reidentification-retail-0107.pt)
-- [person-reidentification-retail-0200](https://download.01.org/opencv/openvino_training_extensions/models/person_reidentification/person-reidentification-retail-0200.pt)
+- [person-reidentification-retail-0300](https://download.01.org/opencv/openvino_training_extensions/models/person_reidentification/person-reidentification-retail-0300.pt)
 
 
 ### Test OpenVINO™ Re-Identification Models
@@ -129,7 +129,7 @@ python <OpenVINO_INSTALL_DIR>/deployment_tools/model_optimizer/mo.py --input_mod
     --reverse_input_channels
 ```
 
-This produces the `model.xml`model and weights `model.bin` in single-precision floating-point format (FP32).
+This produces the `model.xml` model and weights `model.bin` in single-precision floating-point format (FP32).
 
 ## OpenVINO™ Demo
 

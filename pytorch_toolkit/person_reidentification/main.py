@@ -103,11 +103,12 @@ def main():
         use_gpu=cfg.use_gpu,
         dropout_prob=cfg.model.dropout_prob,
         feature_dim=cfg.model.feature_dim,
-        fpn=cfg.model.fpn,
-        fpn_dim=cfg.model.fpn_dim,
+        fpn=cfg.model.fpn.enable,
+        fpn_dim=cfg.model.fpn.dim,
         gap_as_conv=cfg.model.gap_as_conv,
         input_size=(cfg.data.height, cfg.data.width),
-        IN_first=cfg.model.IN_first
+        IN_first=cfg.model.IN_first,
+        fpn_process=cfg.model.fpn.process,
     )
     num_params, flops = compute_model_complexity(model, (1, 3, cfg.data.height, cfg.data.width))
     print('Model complexity: params={:,} flops={:,}'.format(num_params, flops))

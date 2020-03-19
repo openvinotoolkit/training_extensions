@@ -59,11 +59,14 @@ class OSNetFPN(OSNet):
                  gap_as_conv=False,
                  input_size=(256, 128),
                  IN_first=False,
+                 fpn_process='concatenation',
                  **kwargs):
         super(OSNetFPN, self).__init__(num_classes, blocks, layers, channels, feature_dim, loss, instance_norm)
         self.feature_scales = (4, 8, 16, 16)
         self.fpn_dim = fpn_dim
         self.feature_dim = feature_dim
+        self.fpn_process = fpn_process
+        assert fpn_process in ['concatenation', 'max_pooling', 'elementwise_sum']
 
         self.use_IN_first = IN_first
         if IN_first:
@@ -82,7 +85,8 @@ class OSNetFPN(OSNet):
         self.fpn = FPN(channels, self.feature_scales, fpn_dim, fpn_dim) if fpn else None
 
         if fpn:
-            self.fc = self._construct_fc_layer(feature_dim, fpn_dim, dropout_p=dropout_prob)
+            fpn_out_dim = fpn_dim if fpn_process in ['max_pooling', 'elementwise_sum'] else int(fpn_dim * len(self.fpn.dims_out))
+            self.fc = self._construct_fc_layer(feature_dim, fpn_out_dim, dropout_p=dropout_prob)
         else:
             self.fc = self._construct_fc_layer(feature_dim, channels[3], dropout_p=None)
 
@@ -91,6 +95,11 @@ class OSNetFPN(OSNet):
         else:
             from engine.losses.am_softmax import AngleSimpleLinear
             self.classifier = AngleSimpleLinear(self.feature_dim, num_classes)
+
+        if fpn and fpn_process == 'concatenation':
+            self.fpn_extra_conv = ConvLayer(fpn_dim * len(self.fpn.dims_out), feature_dim, 3, stride=1, padding=1, IN=False)
+        else:
+            self.fpn_extra_conv = None
 
         self._init_params()
 
@@ -144,7 +153,8 @@ class OSNetFPN(OSNet):
             return x
 
         v = self.global_avgpool(x)
-        v = v.view(v.size(0), -1)
+        if isinstance(self.fc[0], nn.Linear):
+            v = v.view(v.size(0), -1)
 
         if self.fc is not None:
             if self.training:
@@ -170,15 +180,23 @@ class OSNetFPN(OSNet):
         else:
             raise KeyError("Unsupported loss: {}".format(self.loss))
 
-    @staticmethod
-    def process_feature_pyramid(feature_pyramid):
+    def process_feature_pyramid(self, feature_pyramid):
         feature_pyramid = feature_pyramid[:-1]
         target_shape = feature_pyramid[-1].shape[2:]
         for i in range(len(feature_pyramid) - 1):
             kernel_size = int(feature_pyramid[i].shape[2] // target_shape[0])
             feature_pyramid[i] = nn.functional.max_pool2d(feature_pyramid[i], kernel_size=kernel_size)
-            feature_pyramid[-1] = torch.max(feature_pyramid[i], feature_pyramid[-1])
-        return feature_pyramid[-1]
+            if self.fpn_process == 'max_pooling':
+                feature_pyramid[-1] = torch.max(feature_pyramid[i], feature_pyramid[-1])
+            elif self.fpn_process == 'elementwise_sum':
+                feature_pyramid[-1] = torch.add(feature_pyramid[i], feature_pyramid[-1])
+            else:
+                feature_pyramid[-1] = torch.cat((feature_pyramid[i], feature_pyramid[-1]), dim=1)
+        if self.fpn_process == 'concatenation':
+            output = self.fpn_extra_conv(feature_pyramid[-1])
+        else:
+            output = feature_pyramid[-1]
+        return output
 
 
 def fpn_osnet_x1_0(num_classes=1000, pretrained=True, loss='softmax', **kwargs):

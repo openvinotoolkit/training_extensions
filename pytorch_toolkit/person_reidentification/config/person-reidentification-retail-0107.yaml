@@ -5,7 +5,8 @@ model:
   feature_dim: 256
   IN_first: True
   gap_as_conv: True
-  fpn: False
+  fpn:
+    enable: False
 
 data:
   root: './'
