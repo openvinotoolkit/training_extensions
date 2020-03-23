@@ -20,16 +20,31 @@ data:
     random_flip:
       enable: True
       p: 0.5
+    random_erase:
+      enable: True
+      p: 0.5
+    random_figures:
+      enable: True
+      p: 0.33
+    random_padding:
+      enable: True
+      p: 0.25
     color_jitter:
       enable: True
-      p: 1.0
+      p: 0.8
       saturation: 0.1
       hue: 0.1
-      brightness: 0.2
+      brightness: 0.15
       contrast: 0.15
-    batch_transform:
-      enable: False
-      anchor_bias: 0.9
+    random_rotate:
+      enable: True
+      p: 0.33
+    random_gray_scale:
+      enable: True
+      p: 0.1
+    random_grid:
+      enable: True
+      p: 0.15
 
 loss:
   name: 'am_softmax'

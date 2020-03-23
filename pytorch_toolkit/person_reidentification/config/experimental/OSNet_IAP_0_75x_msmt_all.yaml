@@ -1,5 +1,5 @@
 model:
-  name: 'fpn_osnet_x0_25'
+  name: 'fpn_osnet_x0_75'
   pretrained: True
   feature_dim: 256
   IN_first: True
@@ -15,7 +15,7 @@ data:
   height: 256
   width: 128
   combineall: True
-  save_dir: 'outputs/reid-0248'
+  save_dir: 'outputs/reid-exp'
   transforms:
     random_flip:
       enable: True
@@ -55,12 +55,12 @@ loss:
     s: 30
     pr_product: True
 
+sampler:
+  train_sampler: 'RandomIdentitySamplerV2'
+
 metric_losses:
   enable: False
   local_push_weight: 1.0
-
-sampler:
-  train_sampler: 'RandomIdentitySamplerV2'
 
 train:
   optim: 'amsgrad'
