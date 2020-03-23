@@ -4,12 +4,12 @@ Models that are able to detect faces on given images.
 
 | Model Name                  | Complexity (GFLOPs) | Size (Mp) | Metrics Value | Links                                                                        |
 | --------------------------- | ------------------- | --------- | ------------- | ------------------------------------------------------------------------------|
-| face-detection-retail-0005  | 0.982               | 1.021     | TBD           | [weights](TBD), [configuration file](.configs/face-detection-retail-0005.py) |
-| face-detection-0100         | 0.785               | 1.828     | TBD           | [weights](TBD), [configuration file](.configs/face-detection-retail-0005.py) |
-| face-detection-0102         | 1.767               | 1.842     | TBD           | [weights](TBD), [configuration file](.configs/face-detection-retail-0005.py) |
-| face-detection-0104         | 2.405               | 1.851     | TBD           | [weights](TBD), [configuration file](.configs/face-detection-retail-0005.py) |
-| face-detection-0105         | 2.405               | 2.392     | TBD           | [weights](TBD), [configuration file](.configs/face-detection-retail-0005.py) |
-| face-detection-0106         | 339.597             | 69.920    | TBD           | [weights](TBD), [configuration file](.configs/face-detection-retail-0005.py) |
+| face-detection-retail-0005  | 0.982               | 1.021     | TBD           | [weights](TBD), [configuration file](./configs/face-detection-retail-0005.py) |
+| face-detection-0100         | 0.785               | 1.828     | TBD           | [weights](TBD), [configuration file](./configs/face-detection-retail-0005.py) |
+| face-detection-0102         | 1.767               | 1.842     | TBD           | [weights](TBD), [configuration file](./configs/face-detection-retail-0005.py) |
+| face-detection-0104         | 2.405               | 1.851     | TBD           | [weights](TBD), [configuration file](./configs/face-detection-retail-0005.py) |
+| face-detection-0105         | 2.405               | 2.392     | TBD           | [weights](TBD), [configuration file](./configs/face-detection-retail-0005.py) |
+| face-detection-0106         | 339.597             | 69.920    | TBD           | [weights](TBD), [configuration file](./configs/face-detection-retail-0005.py) |
 
 ## Training pipeline
 
