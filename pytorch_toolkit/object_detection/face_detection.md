@@ -4,22 +4,20 @@ Models that are able to detect faces on given images.
 
 | Model Name                  | Complexity (GFLOPs) | Size (Mp) | Metrics Value | Links                                                                        |
 | --------------------------- | ------------------- | --------- | ------------- | ---------------------------------------------------------------------------- |
-| face-detection-retail-0005  | 0.982               | 1.021     | TBD           | [weights](TBD), [configuration file](.configs/face-detection-retail-0005.py) |
-| face-detection-0100         | 0.785               | 1.828     | TBD           | [weights](TBD), [configuration file](.configs/face-detection-0100.py)        |
-| face-detection-0102         | 1.767               | 1.842     | TBD           | [weights](TBD), [configuration file](.configs/face-detection-0102.py)        |
-| face-detection-0104         | 2.405               | 1.851     | TBD           | [weights](TBD), [configuration file](.configs/face-detection-0104.py)        |
-| face-detection-0105         | 2.405               | 2.392     | TBD           | [weights](TBD), [configuration file](.configs/face-detection-0105.py)        |
-| face-detection-0106         | 339.597             | 69.920    | TBD           | [weights](TBD), [configuration file](.configs/face-detection-0105.py)        |
+| face-detection-retail-0005  | 0.982               | 1.021     | TBD           | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/wider_face_tiny_ssd_075x_epoch_70.pth), [configuration file](./configs/face-detection-retail-0005.py) |
+| face-detection-0100         | 0.785               | 1.828     | TBD           | [snapshot](TBD), [configuration file](./configs/face-detection-0100.py)        |
+| face-detection-0102         | 1.767               | 1.842     | TBD           | [snapshot](TBD), [configuration file](./configs/face-detection-0102.py)        |
+| face-detection-0104         | 2.405               | 1.851     | TBD           | [snapshot](TBD), [configuration file](./configs/face-detection-0104.py)        |
+| face-detection-0105         | 2.405               | 2.392     | TBD           | [snapshot](TBD), [configuration file](./configs/face-detection-0105.py)        |
+| face-detection-0106         | 339.597             | 69.920    | TBD           | [snapshot](TBD), [configuration file](./configs/face-detection-0105.py)        |
 
 ## Training pipeline
 
-### 1. Select a training configuration file and get pre-trained snapshot if available.
+### 1. Select a training configuration file and get pre-trained snapshot if available. Please see the table above.
 
 ```bash
-$ export CONFIGURATION_FILE=./configs/mobilenetv2_tiny_ssd300_wider_face.py
+$ export CONFIGURATION_FILE=./configs/face-detection-0100.py
 ```
-
-Pre-trained model is available [here](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/wider_face_tiny_ssd_075x_epoch_70.pth).
 
 ### 2. Collect dataset
 
