@@ -5,11 +5,11 @@ Models that are able to detect faces on given images.
 | Model Name                  | Complexity (GFLOPs) | Size (Mp) | AP ([WIDER](http://mmlab.ie.cuhk.edu.hk/projects/WIDERFace/)) | Links                                                                        |
 | --------------------------- | ------------------- | --------- | ------------- | ---------------------------------------------------------------------------- |
 | face-detection-retail-0005  | 0.982               | 1.021     | 84.52%           | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/wider_face_tiny_ssd_075x_epoch_70.pth), [configuration file](./configs/face-detection-retail-0005.py) |
-| face-detection-0100         | 0.785               | 1.828     | 86.16%           | [snapshot](TBD), [configuration file](./configs/face-detection-0100.py)        |
-| face-detection-0102         | 1.767               | 1.842     | 91.47%           | [snapshot](TBD), [configuration file](./configs/face-detection-0102.py)        |
-| face-detection-0104         | 2.405               | 1.851     | 92.69%           | [snapshot](TBD), [configuration file](./configs/face-detection-0104.py)        |
-| face-detection-0105         | 2.853               | 2.392     | 93.34%           | [snapshot](TBD), [configuration file](./configs/face-detection-0105.py)        |
-| face-detection-0106         | 339.597             | 69.920    | 94.49%           | [snapshot](TBD), [configuration file](./configs/face-detection-0105.py)        |
+| face-detection-0100         | 0.785               | 1.828     | 86.16%           | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/face-detection-0100.pth), [configuration file](./configs/face-detection-0100.py)        |
+| face-detection-0102         | 1.767               | 1.842     | 91.47%           | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/face-detection-0102.pth), [configuration file](./configs/face-detection-0102.py)        |
+| face-detection-0104         | 2.405               | 1.851     | 92.69%           | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/face-detection-0104.pth), [configuration file](./configs/face-detection-0104.py)        |
+| face-detection-0105         | 2.853               | 2.392     | 93.34%           | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/face-detection-0105.pth), [configuration file](./configs/face-detection-0105.py)        |
+| face-detection-0106         | 339.597             | 69.920    | 94.49%           | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/face-detection-0106.pth), [configuration file](./configs/face-detection-0105.py)        |
 
 Average Precision (AP) is defined as an area under the precision/recall curve. All numbers were evaluated by taking into account only faces bigger than 64 x 64 pixels.
 
