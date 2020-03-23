@@ -1,15 +1,10 @@
-# Object detection models
+# Object detection
 
-This repository contains training scripts for object detection models.
+## Pre-trained models
 
-## [Face Detection](face_detection.md)
+### [Face Detection](face_detection.md)
 
-This repository contains training scripts for the lightweight SSD-based face detector. The detector is based on the MobileNetV2 backbone and has a single SSD head with manually designed anchors. As a result, it has computational complexity 0.51 GMACs and 1.03 M of parameters.
-
-## [Person Vehicle Bike Detection](person_vehicle_bike_detection.md)
-
-The detection network model provides detection of 3 class objects: vehicle, pedestrian, non-vehicle (ex: bikes).
-This detector was trained on the data from crossroad cameras.
+### [Person Vehicle Bike Detection](person_vehicle_bike_detection.md)
 
 ## Setup
 
