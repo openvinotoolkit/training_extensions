@@ -10,12 +10,12 @@ model:
 data:
   root: './'
   type: 'image'
-  sources: ['msmt17', 'market1501']
+  sources: ['msmt17']
   targets: ['market1501']
   height: 256
   width: 128
   combineall: True
-  save_dir: 'outputs/reid-0103'
+  save_dir: 'outputs/reid-0249'
   transforms:
     random_flip:
       enable: True
@@ -38,22 +38,26 @@ loss:
     conf_pen: 0.3
     m: 0.35
     s: 30
+    pr_product: True
 
 metric_losses:
-  enable: True
-  center_coeff: 1.0
-  glob_push_plus_loss_coeff: 1.2
-  balance_losses: True
+  enable: False
+  local_push_weight: 1.0
+
+sampler:
+  train_sampler: 'RandomIdentitySamplerV2'
 
 train:
-  optim: 'radam'
+  optim: 'amsgrad'
   lr: 0.0015
-  max_epoch: 20
-  batch_size: 128
+  max_epoch: 65
+  batch_size: 64
   fixbase_epoch: 5
-  open_layers: ['conv1', 'fc', 'classifier', 'global_avgpool']
-  lr_scheduler: 'single_step'
-  stepsize: [19]
+  open_layers: ['classifier', 'fc', 'global_avgpool']
+  lr_scheduler: 'multi_step'
+  stepsize: [40, 50]
+  warmup: 0
+  warmup_factor_base: 0.01
 
 test:
   batch_size: 300
