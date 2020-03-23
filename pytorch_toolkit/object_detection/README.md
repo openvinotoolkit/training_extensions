@@ -18,8 +18,8 @@ Models that are able to detect 3 classes of objects: person, vehicle, non-vehicl
 
 * Ubuntu\* 16.04
 * Python\* 3.7
-* PyTorch\* 1.0.1
-* OpenVINO™ 2020.1 with Python API
+* PyTorch\* 1.4.0
+* OpenVINO™ 2020.2 with Python API
 
 ### Installation
 
