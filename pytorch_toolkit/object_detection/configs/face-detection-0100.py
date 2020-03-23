@@ -138,7 +138,7 @@ log_config = dict(
 total_epochs = 70
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-work_dir = os.path.join(os.path.dirname(__file__), 'outputs')
+work_dir = os.path.join('outputs', os.path.basename(__file__)[:-3])
 load_from = None
 resume_from = None
 workflow = [('train', 1)]

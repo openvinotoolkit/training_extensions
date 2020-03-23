@@ -1,3 +1,5 @@
+import os
+
 # model settings
 input_size = 512
 model = dict(
@@ -133,7 +135,7 @@ total_epochs = 5
 # device_ids = range(8)
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-work_dir = './models/person_vehicle_bike_sd512_mb2_clustered'
+work_dir = os.path.join('outputs', os.path.basename(__file__)[:-3])
 load_from = None
 resume_from = None
 workflow = [('train', 1)]
