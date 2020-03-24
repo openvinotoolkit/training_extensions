@@ -35,6 +35,7 @@ def get_default_config():
     cfg.model.pooling_type = 'avg'
     cfg.model.IN_first = False
     cfg.model.extra_blocks = False
+    cfg.model.lct_gate = False
     cfg.model.openvino = CN()
     cfg.model.openvino.name = ''  # Path to *.xml
     cfg.model.openvino.cpu_extension = ''

@@ -26,6 +26,7 @@ import logging as log
 import torch
 from torch import nn
 from torch.nn import functional as F
+import numpy as np
 
 from torchreid.models.osnet import OSNet, ConvLayer, LightConv3x3, Conv1x1Linear, \
                                    ChannelGate, Conv1x1, pretrained_urls
@@ -45,11 +46,32 @@ pretrained_urls_fpn = {
 }
 
 
+class LCTGate(nn.Module):
+    def __init__(self, channels, groups=16):
+        super(LCTGate, self).__init__()
+        assert channels > 0
+        assert groups > 0
+        while channels % groups != 0:
+            groups //= 2
+        self.gn = nn.GroupNorm(groups, channels, affine=True)
+        nn.init.ones_(self.gn.bias)
+        nn.init.zeros_(self.gn.weight)
+        self.global_avgpool = nn.AdaptiveAvgPool2d(1)
+        self.gate_activation = nn.Sigmoid()
+
+    def forward(self, x):
+        input = x
+        x = self.global_avgpool(x)
+        x = self.gn(x)
+        x = self.gate_activation(x)
+        return input * x
+
+
 class OSBlock(nn.Module):
     """Omni-scale feature learning block."""
 
     def __init__(self, in_channels, out_channels, IN=False, bottleneck_reduction=4,
-                 dropout_cfg=None, **kwargs):
+                 dropout_cfg=None, channel_gate=ChannelGate, **kwargs):
         super(OSBlock, self).__init__()
         mid_channels = out_channels // bottleneck_reduction
         self.conv1 = Conv1x1(in_channels, mid_channels)
@@ -69,7 +91,7 @@ class OSBlock(nn.Module):
             LightConv3x3(mid_channels, mid_channels),
             LightConv3x3(mid_channels, mid_channels),
         )
-        self.gate = ChannelGate(mid_channels)
+        self.gate = channel_gate(mid_channels)
         self.conv3 = Conv1x1Linear(mid_channels, out_channels)
         self.downsample = None
         if in_channels != out_channels:
@@ -117,9 +139,11 @@ class OSNetFPN(OSNet):
                  input_size=(256, 128),
                  IN_first=False,
                  extra_blocks=False,
+                 lct_gate=False,
                  **kwargs):
         self.dropout_cfg = dropout_cfg
         self.extra_blocks = extra_blocks
+        self.channel_gate = LCTGate if lct_gate else ChannelGate
         if self.extra_blocks:
             for i, l in enumerate(layers):
                 layers[i] = l + 1
@@ -181,7 +205,8 @@ class OSNetFPN(OSNet):
 
         layers.append(block(in_channels, out_channels, IN=IN))
         for i in range(1, layer):
-            layers.append(block(out_channels, out_channels, IN=IN, dropout_cfg=self.dropout_cfg))
+            layers.append(block(out_channels, out_channels, IN=IN,
+                                dropout_cfg=self.dropout_cfg, channel_gate=self.channel_gate))
 
         if reduce_spatial_size:
             layers.append(

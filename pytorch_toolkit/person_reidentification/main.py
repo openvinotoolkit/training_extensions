@@ -106,7 +106,8 @@ def main():
         pooling_type=cfg.model.pooling_type,
         input_size=(cfg.data.height, cfg.data.width),
         IN_first=cfg.model.IN_first,
-        extra_blocks=cfg.model.extra_blocks
+        extra_blocks=cfg.model.extra_blocks,
+        lct_gate=cfg.model.lct_gate
     )
     num_params, flops = compute_model_complexity(model, (1, 3, cfg.data.height, cfg.data.width))
     print('Model complexity: params={:,} flops={:,}'.format(num_params, flops))
