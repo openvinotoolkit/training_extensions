@@ -43,7 +43,6 @@ from data.datamanager import ImageDataManagerWithTransforms
 from engine.builder import build_engine
 from engine.schedulers.lr_scheduler import build_lr_scheduler
 from models.builder import build_model
-from models.openvino_wrapper import OpenVINOModel
 
 
 def build_datamanager(cfg):
@@ -125,6 +124,7 @@ def main():
         args.start_epoch = resume_from_checkpoint(cfg.model.resume, model, optimizer=optimizer)
 
     if len(cfg.model.openvino.name):
+        from models.openvino_wrapper import OpenVINOModel
         openvino_model = OpenVINOModel(cfg.model.openvino.name, cfg.model.openvino.cpu_extension)
     else:
         openvino_model = None
