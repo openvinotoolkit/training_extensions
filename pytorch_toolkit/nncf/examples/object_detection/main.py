@@ -266,7 +266,8 @@ def train_step(batch_iterator, compression_algo, config, criterion, net, train_d
 
 
 def train_epoch_end(config, compression_algo, net, epoch, iteration, epoch_size, lr_scheduler, optimizer,
-                    test_data_loader):
+                    test_data_loader, best_mAp):
+    is_best = False
     test_freq_in_epochs = max(config.test_interval // epoch_size, 1)
     compression_algo.scheduler.epoch_step(epoch)
     if not isinstance(lr_scheduler, ReduceLROnPlateau):
@@ -277,20 +278,27 @@ def train_epoch_end(config, compression_algo, net, epoch, iteration, epoch_size,
         with torch.no_grad():
             net.eval()
             mAP = test_net(net, config.device, test_data_loader, distributed=config.multiprocessing_distributed)
+            if mAP > best_mAp:
+                is_best = True
+                best_mAp = mAP
+            if config.metrics_dump is not None:
+                write_metrics(mAP, config)
             if isinstance(lr_scheduler, ReduceLROnPlateau):
                 lr_scheduler.step(mAP)
             net.train()
-    if epoch > 0 and epoch % config.save_freq == 0 and is_on_first_rank(config):
-        print('Saving state, iter:', iteration)
-        checkpoint_file_path = osp.join(config.intermediate_checkpoints_path,
-                                        "{}_{}.pth".format(config.model, iteration))
+    if is_on_first_rank(config):
+        checkpoint_file_path = osp.join(config.checkpoint_save_dir, "{}_last.pth".format(get_name(config)))
         torch.save({
             'state_dict': net.state_dict(),
             'optimizer': optimizer.state_dict(),
             'iter': iteration,
             'scheduler': compression_algo.scheduler.state_dict()
         }, str(checkpoint_file_path))
-
+        make_additional_checkpoints(checkpoint_file_path,
+                                    is_best=is_best,
+                                    epoch=epoch + 1,
+                                    config=config)
+    return best_mAp
 
 def train(net, compression_algo, train_data_loader, test_data_loader, criterion, optimizer, config, lr_scheduler):
     net.train()
@@ -305,6 +313,8 @@ def train(net, compression_algo, train_data_loader, test_data_loader, criterion,
     t_start = time.time()
     print_statistics(compression_algo.statistics())
 
+    best_mAp = 0
+
     for iteration in range(config.start_iter, config['max_iter']):
         if (not batch_iterator) or (iteration % epoch_size == 0):
             # create batch iterator
@@ -312,8 +322,9 @@ def train(net, compression_algo, train_data_loader, test_data_loader, criterion,
 
         epoch = iteration // epoch_size
         if iteration % epoch_size == 0:
-            train_epoch_end(config, compression_algo, net, epoch, iteration, epoch_size, lr_scheduler, optimizer,
-                            test_data_loader)
+            best_mAp = train_epoch_end(config, compression_algo, net, epoch, iteration, epoch_size, lr_scheduler,
+                                       optimizer,
+                                       test_data_loader, best_mAp)
 
         compression_algo.scheduler.step(iteration - config.start_iter)
 
@@ -338,18 +349,6 @@ def train(net, compression_algo, train_data_loader, test_data_loader, criterion,
             config.tb.add_scalar("train/loss_l", batch_loss_l.item(), iteration)
             config.tb.add_scalar("train/loss_c", batch_loss_c.item(), iteration)
             config.tb.add_scalar("train/loss", batch_loss.item(), iteration)
-
-            checkpoint_file_path = osp.join(config.checkpoint_save_dir, "{}_last.pth".format(get_name(config)))
-            torch.save({
-                'state_dict': net.state_dict(),
-                'optimizer': optimizer.state_dict(),
-                'iter': config['max_iter'],
-                'scheduler': compression_algo.scheduler.state_dict()
-            }, str(checkpoint_file_path))
-            make_additional_checkpoints(checkpoint_file_path,
-                                        is_best=True,
-                                        epoch=epoch + 1,
-                                        config=config)
 
         if iteration % config.print_freq == 0:
             t_finish = time.time()
