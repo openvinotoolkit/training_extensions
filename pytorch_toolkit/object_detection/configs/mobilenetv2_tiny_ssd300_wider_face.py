@@ -1,5 +1,3 @@
-import os
-
 # model settings
 input_size = 300
 width_mult = 0.75
@@ -28,9 +26,9 @@ model = dict(
                          162.9, 124.5, 105.1, 72.6],),
         target_means=(.0, .0, .0, .0),
         target_stds=(0.1, 0.1, 0.2, 0.2),
-        depthwise_heads=True,
-        depthwise_heads_activations='relu',
-        loss_balancing=True))
+        loss_balancing=True,
+        lite_heads=True,
+        lite_activation_type='relu'))
 cudnn_benchmark = True
 train_cfg = dict(
     assigner=dict(
@@ -54,41 +52,9 @@ test_cfg = dict(
     max_per_img=200)
 # model training and testing settings
 # dataset settings
-dataset_type = 'CustomCocoDataset'
-data_root = 'data/'
+dataset_type = 'WIDERFaceDataset'
+data_root = 'data/WIDERFace/'
 img_norm_cfg = dict(mean=[0, 0, 0], std=[255, 255, 255], to_rgb=True)
-train_pipeline = [
-    dict(type='LoadImageFromFile', to_float32=True),
-    dict(type='LoadAnnotations', with_bbox=True),
-    dict(
-        type='PhotoMetricDistortion',
-        brightness_delta=32,
-        contrast_range=(0.5, 1.5),
-        saturation_range=(0.5, 1.5),
-        hue_delta=18),
-    dict(
-        type='MinIoURandomCrop',
-        min_ious=(0.1, 0.3, 0.5, 0.7, 0.9),
-        min_crop_size=0.1),
-    dict(type='Resize', img_scale=(input_size, input_size), keep_ratio=False),
-    dict(type='Normalize', **img_norm_cfg),
-    dict(type='RandomFlip', flip_ratio=0.5),
-    dict(type='DefaultFormatBundle'),
-    dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels']),
-]
-test_pipeline = [
-    dict(type='LoadImageFromFile'),
-    dict(
-        type='MultiScaleFlipAug',
-        img_scale=(input_size, input_size),
-        flip=False,
-        transforms=[
-            dict(type='Resize', keep_ratio=False),
-            dict(type='Normalize', **img_norm_cfg),
-            dict(type='ImageToTensor', keys=['img']),
-            dict(type='Collect', keys=['img']),
-        ])
-]
 data = dict(
     imgs_per_gpu=65,
     workers_per_gpu=2,
@@ -97,22 +63,57 @@ data = dict(
         times=2,
         dataset=dict(
             type=dataset_type,
-            classes=('face',),
             ann_file=[
-                data_root + '/train.json',
+                data_root + 'train.txt',
             ],
             min_size=17,
-            img_prefix=[data_root],
-            pipeline=train_pipeline
-        )
-    ),
+            img_prefix=[data_root + 'WIDER_train/'],
+            img_scale=(input_size, input_size),
+            img_norm_cfg=img_norm_cfg,
+            size_divisor=None,
+            flip_ratio=0.5,
+            with_mask=False,
+            with_crowd=False,
+            with_label=True,
+            test_mode=False,
+            extra_aug=dict(
+                photo_metric_distortion=dict(
+                    brightness_delta=32,
+                    contrast_range=(0.5, 1.5),
+                    saturation_range=(0.5, 1.5),
+                    hue_delta=18),
+                expand=dict(
+                    mean=img_norm_cfg['mean'],
+                    to_rgb=img_norm_cfg['to_rgb'],
+                    ratio_range=(1, 2),
+                    prob=0.0),
+                random_crop=dict(
+                    min_ious=(0.1, 0.3, 0.5, 0.7, 0.9), min_crop_size=0.1)),
+            resize_keep_ratio=False)),
+    val=dict(
+        type=dataset_type,
+        ann_file=data_root + '/val.txt',
+        img_prefix=data_root + 'WIDER_val/',
+        img_scale=(input_size, input_size),
+        img_norm_cfg=img_norm_cfg,
+        size_divisor=None,
+        flip_ratio=0,
+        with_mask=False,
+        with_label=False,
+        test_mode=True,
+        resize_keep_ratio=False),
     test=dict(
         type=dataset_type,
-        classes=('face',),
-        ann_file=data_root + '/val.json',
-        img_prefix=data_root,
+        ann_file=data_root + '/val.txt',
+        img_prefix=data_root + 'WIDER_val/',
+        img_scale=(input_size, input_size),
+        img_norm_cfg=img_norm_cfg,
+        size_divisor=None,
+        flip_ratio=0,
+        with_mask=False,
+        with_label=False,
         test_mode=True,
-        pipeline=test_pipeline))
+        resize_keep_ratio=False))
 # optimizer
 optimizer = dict(type='SGD', lr=0.5*1e-1, momentum=0.9, weight_decay=5e-4)
 optimizer_config = dict()
@@ -136,7 +137,7 @@ log_config = dict(
 total_epochs = 70
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-work_dir = os.path.join('outputs', os.path.basename(__file__)[:-3])
+work_dir = './models/wider_face_ssd300_mobilenet'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]

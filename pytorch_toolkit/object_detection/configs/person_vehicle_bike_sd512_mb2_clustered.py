@@ -1,5 +1,3 @@
-import os
-
 # model settings
 input_size = 512
 model = dict(
@@ -27,9 +25,10 @@ model = dict(
                         ),
         target_means=(.0, .0, .0, .0),
         target_stds=(0.1, 0.1, 0.2, 0.2),
-        depthwise_heads=True,
-        depthwise_heads_activations='relu',
-        loss_balancing=True))
+        lite_heads=True,
+        loss_balancing=True,
+        lite_activation_type='relu'
+        ))
 # training and testing settings
 cudnn_benchmark = True
 train_cfg = dict(
@@ -53,64 +52,65 @@ test_cfg = dict(
     score_thr=0.02,
     max_per_img=200)
 # dataset settings
-dataset_type = 'CustomCocoDataset'
-data_root = '../../data/airport'
+dataset_type = 'CustomDataset'
 img_norm_cfg = dict(
     mean=[0, 0, 0], std=[255, 255, 255], to_rgb=False)
-train_pipeline = [
-    dict(type='LoadImageFromFile', to_float32=True),
-    dict(type='LoadAnnotations', with_bbox=True),
-    dict(
-        type='PhotoMetricDistortion',
-        brightness_delta=32,
-        contrast_range=(0.5, 1.5),
-        saturation_range=(0.5, 1.5),
-        hue_delta=18),
-    dict(
-        type='MinIoURandomCrop',
-        min_ious=(0.1, 0.3, 0.5, 0.7, 0.9),
-        min_crop_size=0.3),
-    dict(type='Resize', img_scale=(input_size, input_size), keep_ratio=False),
-    dict(type='Normalize', **img_norm_cfg),
-    dict(type='RandomFlip', flip_ratio=0.5),
-    dict(type='DefaultFormatBundle'),
-    dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels']),
-]
-test_pipeline = [
-    dict(type='LoadImageFromFile'),
-    dict(
-        type='MultiScaleFlipAug',
-        img_scale=(input_size, input_size),
-        flip=False,
-        transforms=[
-            dict(type='Resize', keep_ratio=False),
-            dict(type='Normalize', **img_norm_cfg),
-            dict(type='ImageToTensor', keys=['img']),
-            dict(type='Collect', keys=['img']),
-        ])
-]
+
+data_root = '../../data/airport'
 data = dict(
     imgs_per_gpu=4,
     workers_per_gpu=0,
+    img_scale=(512, 512),
     train=dict(
         type=dataset_type,
-        classes=('vehicle', 'person', 'non-vehicle'),
-        ann_file=data_root+'/annotation_example_train.json',
-        img_prefix=data_root + '/train',
-        pipeline=train_pipeline
+        ann_file=data_root+'/annotation_example_train.pkl',
+        img_prefix=data_root,
+        img_scale=(512, 512),
+        img_norm_cfg=img_norm_cfg,
+        size_divisor=32,
+        flip_ratio=0.5,
+        with_mask=False,
+        with_crowd=False,
+        with_label=True,
+        resize_keep_ratio=False,
+        extra_aug=dict(
+            photo_metric_distortion=dict(
+                brightness_delta=32,
+                contrast_range=(0.5, 1.5),
+                saturation_range=(0.5, 1.5),
+                hue_delta=18),
+            expand=dict(
+                mean=img_norm_cfg['mean'],
+                to_rgb=img_norm_cfg['to_rgb'],
+                ratio_range=(1, 4)),
+            random_crop=dict(
+                min_ious=(0.1, 0.3, 0.5, 0.7, 0.9), min_crop_size=0.3)),
         ),
     val=dict(
         type=dataset_type,
-        classes=('vehicle', 'person', 'non-vehicle'),
-        ann_file=data_root+'/annotation_example_val.json',
-        img_prefix=data_root + '/val',
-        pipeline=test_pipeline),
+        ann_file=data_root+'/annotation_example_val.pkl',
+        img_prefix=data_root,
+        img_scale=(512, 512),
+        img_norm_cfg=img_norm_cfg,
+        size_divisor=32,
+        flip_ratio=0,
+        resize_keep_ratio=False,
+        with_mask=False,
+        with_crowd=False,
+        with_label=True),
     test=dict(
         type=dataset_type,
-        classes=('vehicle', 'person', 'non-vehicle'),
-        ann_file=data_root+'/annotation_example_val.json',
-        img_prefix=data_root + '/val',
-        pipeline=test_pipeline))
+        ann_file=data_root+'/annotation_example_val.pkl',
+        img_prefix=data_root,
+        img_scale=(512, 512),
+        img_norm_cfg=img_norm_cfg,
+        size_divisor=32,
+        flip_ratio=0,
+        with_mask=False,
+        with_crowd=False,
+        with_label=False,
+        test_mode=True,
+        resize_keep_ratio=False))
 # optimizer
 optimizer = dict(type='SGD', lr=0.0001, momentum=0.9, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
@@ -135,7 +135,7 @@ total_epochs = 5
 # device_ids = range(8)
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-work_dir = os.path.join('outputs', os.path.basename(__file__)[:-3])
-load_from = None
+work_dir = './models/person_vehicle_bike_sd512_mb2_clustered'
+load_from = './checkpoint/person_vehicle_bike_sd512_mb2_clustered_epoch_21.pth'
 resume_from = None
 workflow = [('train', 1)]
