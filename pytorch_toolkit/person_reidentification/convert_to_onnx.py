@@ -34,11 +34,14 @@ def main():
     parser.add_argument('--output-name', type=str, default='model')
     parser.add_argument('--verbose', default=False, action='store_true',
                         help='Verbose mode for onnx.export')
+    parser.add_argument('opts', default=None, nargs=argparse.REMAINDER,
+                        help='Modify config options using the command-line')
     args = parser.parse_args()
 
     cfg = get_default_config()
     if args.config_file:
         cfg.merge_from_file(args.config_file)
+    cfg.merge_from_list(args.opts)
     cfg.freeze()
 
     model = build_model(
@@ -48,11 +51,12 @@ def main():
             pretrained=False,
             use_gpu=True,
             feature_dim=cfg.model.feature_dim,
-            fpn=cfg.model.fpn,
-            fpn_dim=cfg.model.fpn_dim,
-            gap_as_conv=cfg.model.gap_as_conv,
+            fpn_cfg=cfg.model.fpn,
+            pooling_type=cfg.model.pooling_type,
             input_size=(cfg.data.height, cfg.data.width),
-            IN_first=cfg.model.IN_first
+            dropout_cfg=cfg.model.dropout,
+            IN_first=cfg.model.IN_first,
+            extra_blocks=cfg.model.extra_blocks
         )
 
     load_pretrained_weights(model, cfg.model.load_weights)

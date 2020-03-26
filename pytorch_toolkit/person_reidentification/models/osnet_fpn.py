@@ -25,10 +25,13 @@ import logging as log
 
 import torch
 from torch import nn
+from torch.nn import functional as F
 
-from torchreid.models.osnet import OSNet, OSBlock, ConvLayer, pretrained_urls
-
+from torchreid.models.osnet import OSNet, ConvLayer, LightConv3x3, Conv1x1Linear, \
+                                   ChannelGate, Conv1x1, pretrained_urls
 from .modules.fpn import FPN
+from .modules.dropout import Dropout
+from .modules.gmp import GeneralizedMeanPooling
 
 
 __all__ = ['fpn_osnet_x1_0', 'fpn_osnet_x0_75', 'fpn_osnet_x0_5', 'fpn_osnet_x0_25', 'fpn_osnet_ibn_x1_0']
@@ -42,6 +45,61 @@ pretrained_urls_fpn = {
 }
 
 
+class OSBlock(nn.Module):
+    """Omni-scale feature learning block."""
+
+    def __init__(self, in_channels, out_channels, IN=False, bottleneck_reduction=4,
+                 dropout_cfg=None, **kwargs):
+        super(OSBlock, self).__init__()
+        mid_channels = out_channels // bottleneck_reduction
+        self.conv1 = Conv1x1(in_channels, mid_channels)
+        self.conv2a = LightConv3x3(mid_channels, mid_channels)
+        self.conv2b = nn.Sequential(
+            LightConv3x3(mid_channels, mid_channels),
+            LightConv3x3(mid_channels, mid_channels),
+        )
+        self.conv2c = nn.Sequential(
+            LightConv3x3(mid_channels, mid_channels),
+            LightConv3x3(mid_channels, mid_channels),
+            LightConv3x3(mid_channels, mid_channels),
+        )
+        self.conv2d = nn.Sequential(
+            LightConv3x3(mid_channels, mid_channels),
+            LightConv3x3(mid_channels, mid_channels),
+            LightConv3x3(mid_channels, mid_channels),
+            LightConv3x3(mid_channels, mid_channels),
+        )
+        self.gate = ChannelGate(mid_channels)
+        self.conv3 = Conv1x1Linear(mid_channels, out_channels)
+        self.downsample = None
+        if in_channels != out_channels:
+            self.downsample = Conv1x1Linear(in_channels, out_channels)
+        self.IN = None
+        if IN:
+            self.IN = nn.InstanceNorm2d(out_channels, affine=True)
+        self.dropout = None
+        if dropout_cfg is not None:
+            self.dropout = Dropout(**dropout_cfg)
+
+    def forward(self, x):
+        identity = x
+        x1 = self.conv1(x)
+        x2a = self.conv2a(x1)
+        x2b = self.conv2b(x1)
+        x2c = self.conv2c(x1)
+        x2d = self.conv2d(x1)
+        x2 = self.gate(x2a) + self.gate(x2b) + self.gate(x2c) + self.gate(x2d)
+        x3 = self.conv3(x2)
+        if self.downsample is not None:
+            identity = self.downsample(identity)
+        if self.dropout:
+            x3 = self.dropout(x3)
+        out = x3 + identity
+        if self.IN is not None:
+            out = self.IN(out)
+        return F.relu(out)
+
+
 class OSNetFPN(OSNet):
     """Omni-Scale Network.
 
@@ -53,42 +111,43 @@ class OSNetFPN(OSNet):
                  feature_dim=256,
                  loss='softmax',
                  instance_norm=False,
-                 dropout_prob=0,
-                 fpn=True,
-                 fpn_dim=256,
-                 gap_as_conv=False,
+                 dropout_cfg=None,
+                 fpn_cfg=None,
+                 pooling_type='avg',
                  input_size=(256, 128),
                  IN_first=False,
-                 fpn_process='concatenation',
+                 extra_blocks=False,
                  **kwargs):
+        self.dropout_cfg = dropout_cfg
+        self.extra_blocks = extra_blocks
+        if self.extra_blocks:
+            for i, l in enumerate(layers):
+                layers[i] = l + 1
         super(OSNetFPN, self).__init__(num_classes, blocks, layers, channels, feature_dim, loss, instance_norm)
+
         self.feature_scales = (4, 8, 16, 16)
-        self.fpn_dim = fpn_dim
+        if fpn_cfg is not None:
+            self.fpn_enable = fpn_cfg.enable
+            self.fpn_dim = fpn_cfg.dim
+            self.fpn_process = fpn_cfg.process
+            assert self.fpn_process in ['concatenation', 'max_pooling', 'elementwise_sum']
+        else:
+            self.fpn_enable = False
         self.feature_dim = feature_dim
-        self.fpn_process = fpn_process
-        assert fpn_process in ['concatenation', 'max_pooling', 'elementwise_sum']
 
         self.use_IN_first = IN_first
         if IN_first:
             self.in_first = nn.InstanceNorm2d(3, affine=True)
             self.conv1 = ConvLayer(3, channels[0], 7, stride=2, padding=3, IN=self.use_IN_first)
 
-        kernel_size = (input_size[0] // self.feature_scales[-1], input_size[1] // self.feature_scales[-1])
-        if gap_as_conv:
-            if fpn:
-                self.global_avgpool = nn.Conv2d(fpn_dim, fpn_dim, kernel_size, groups=fpn_dim)
-            else:
-                self.global_avgpool = nn.Conv2d(channels[3], channels[3], kernel_size, groups=channels[3])
+        if self.fpn_enable:
+            self.fpn = FPN(channels, self.feature_scales, self.fpn_dim, self.fpn_dim)
+            fpn_out_dim = self.fpn_dim if self.fpn_process in ['max_pooling', 'elementwise_sum'] \
+                          else feature_dim
+            self.fc = self._construct_fc_layer(feature_dim, fpn_out_dim, dropout_cfg)
         else:
-            self.global_avgpool = nn.AvgPool2d(kernel_size)
-
-        self.fpn = FPN(channels, self.feature_scales, fpn_dim, fpn_dim) if fpn else None
-
-        if fpn:
-            fpn_out_dim = fpn_dim if fpn_process in ['max_pooling', 'elementwise_sum'] else int(fpn_dim * len(self.fpn.dims_out))
-            self.fc = self._construct_fc_layer(feature_dim, fpn_out_dim, dropout_p=dropout_prob)
-        else:
-            self.fc = self._construct_fc_layer(feature_dim, channels[3], dropout_p=None)
+            self.fpn = None
+            self.fc = self._construct_fc_layer(feature_dim, channels[3], dropout_cfg)
 
         if self.loss not in ['am_softmax', ]:
             self.classifier = nn.Linear(self.feature_dim, num_classes)
@@ -96,15 +155,46 @@ class OSNetFPN(OSNet):
             from engine.losses.am_softmax import AngleSimpleLinear
             self.classifier = AngleSimpleLinear(self.feature_dim, num_classes)
 
-        if fpn and fpn_process == 'concatenation':
-            self.fpn_extra_conv = ConvLayer(fpn_dim * len(self.fpn.dims_out), feature_dim, 3, stride=1, padding=1, IN=False)
+        if 'conv' in pooling_type:
+            kernel_size = (input_size[0] // self.feature_scales[-1], input_size[1] // self.feature_scales[-1])
+            if self.fpn_enable:
+                self.global_avgpool = nn.Conv2d(fpn_out_dim, fpn_out_dim, kernel_size, groups=fpn_out_dim)
+            else:
+                self.global_avgpool = nn.Conv2d(channels[3], channels[3], kernel_size, groups=channels[3])
+        elif 'avg' in pooling_type:
+            self.global_avgpool = nn.AdaptiveAvgPool2d(1)
+        elif 'gmp' in pooling_type:
+            self.global_avgpool = GeneralizedMeanPooling()
+        else:
+            raise ValueError('Incorrect pooling type')
+
+        if self.fpn_enable and self.fpn_process == 'concatenation':
+            self.fpn_extra_conv = ConvLayer(self.fpn_dim * len(self.fpn.dims_out),
+                                            feature_dim, 3, stride=1, padding=1, IN=False)
         else:
             self.fpn_extra_conv = None
 
         self._init_params()
 
+    def _make_layer(self, block, layer, in_channels, out_channels, reduce_spatial_size, IN=False):
+        layers = []
+
+        layers.append(block(in_channels, out_channels, IN=IN))
+        for i in range(1, layer):
+            layers.append(block(out_channels, out_channels, IN=IN, dropout_cfg=self.dropout_cfg))
+
+        if reduce_spatial_size:
+            layers.append(
+                nn.Sequential(
+                    Conv1x1(out_channels, out_channels),
+                    nn.AvgPool2d(2, stride=2)
+                )
+            )
+
+        return nn.Sequential(*layers)
+
     def _construct_fc_layer(self, fc_dims, input_dim, dropout_p=None):
-        if fc_dims is None or fc_dims<0:
+        if fc_dims is None or fc_dims < 0:
             self.feature_dim = input_dim
             return None
 
@@ -120,7 +210,7 @@ class OSNetFPN(OSNet):
             else:
                 layers.append(nn.PReLU())
             if dropout_p is not None:
-                layers.append(nn.Dropout(p=dropout_p))
+                layers.append(nn.Dropout(p=dropout_p.p))
             input_dim = dim
 
         self.feature_dim = fc_dims[-1]

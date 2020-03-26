@@ -53,7 +53,8 @@ class AMSoftmaxLoss(nn.Module):
 
     def __init__(self, num_classes, epsilon=0.1, use_gpu=True,
                  conf_penalty=0.,
-                 margin_type='cos', gamma=0., m=0.5, s=30, t=1.):
+                 margin_type='cos', gamma=0., m=0.5, s=30, t=1.,
+                 pr_product=False):
         super(AMSoftmaxLoss, self).__init__()
         self.num_classes = num_classes
         self.use_gpu = use_gpu
@@ -73,6 +74,12 @@ class AMSoftmaxLoss(nn.Module):
         self.th = math.cos(math.pi - m)
         assert t >= 1
         self.t = t
+        self.pr_product = pr_product
+
+    def _pr_product(self, prod):
+        alpha = torch.sqrt(1.0 - prod.pow(2.0))
+        out_prod = alpha.detach() * prod + prod.detach() * (1.0 - alpha)
+        return out_prod
 
     def get_last_info(self):
         return {}
@@ -85,6 +92,8 @@ class AMSoftmaxLoss(nn.Module):
             targets (torch.LongTensor): ground truth labels with shape (batch_size).
                 Each position contains the label index.
         """
+        if self.pr_product:
+            cos_theta = self._pr_product(cos_theta)
 
         if self.margin_type == 'cos':
             phi_theta = cos_theta - self.m

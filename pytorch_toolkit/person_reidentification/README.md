@@ -134,3 +134,17 @@ This produces the `model.xml` model and weights `model.bin` in single-precision 
 ## OpenVINO™ Demo
 
 OpenVINO™ provides the multi-camera-multi-person tracking demo, which is able to use these models as person re-identification networks. See details in the [demo](https://github.com/opencv/open_model_zoo/tree/develop/demos/python_demos/multi_camera_multi_person_tracking).
+
+## Citation
+If this training code helped your research, please cite the paper:
+
+```
+@misc{sovrasov2020building,
+    title={Building Computationally Efficient and Well-Generalizing Person Re-Identification Models with Metric Learning},
+    author={Vladislav Sovrasov and Dmitry Sidnev},
+    year={2020},
+    eprint={2003.07618},
+    archivePrefix={arXiv},
+    primaryClass={cs.CV}
+}
+```
