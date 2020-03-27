@@ -9,7 +9,9 @@ from mmdet.datasets import build_dataset
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='MMDet test detector')
+    parser = argparse.ArgumentParser(description='This script converts output of test.py (mmdetection) to '
+                                                 'a set of files that can be passed to official WiderFace '
+                                                 'evaluation procedure.')
     parser.add_argument('config', help='test config file path')
     parser.add_argument('input', help='output result file from test.py')
     parser.add_argument('out_folder', help='folder where to store WiderFace '
@@ -25,12 +27,6 @@ def main():
         raise ValueError('The input file must be a pkl file.')
 
     cfg = mmcv.Config.fromfile(args.config)
-    # set cudnn_benchmark
-    if cfg.get('cudnn_benchmark', False):
-        torch.backends.cudnn.benchmark = True
-    cfg.model.pretrained = None
-    cfg.data.test.test_mode = True
-
     dataset = build_dataset(cfg.data.test)
 
     results = mmcv.load(args.input)

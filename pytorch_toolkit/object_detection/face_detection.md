@@ -9,7 +9,7 @@ Models that are able to detect faces on given images.
 | face-detection-0102         | 1.767               | 1.842     | 91.47%                                                        | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/face-detection-0102.pth), [configuration file](./configs/face-detection-0102.py)                      | 2       |
 | face-detection-0104         | 2.405               | 1.851     | 92.69%                                                        | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/face-detection-0104.pth), [configuration file](./configs/face-detection-0104.py)                      | 4       |
 | face-detection-0105         | 2.853               | 2.392     | 93.34%                                                        | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/face-detection-0105.pth), [configuration file](./configs/face-detection-0105.py)                      | 4       |
-| face-detection-0106         | 339.597             | 69.920    | 94.49%                                                        | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/face-detection-0106.pth), [configuration file](./configs/face-detection-0105.py)                      | 8       |
+| face-detection-0106         | 339.597             | 69.920    | 94.49%                                                        | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/face-detection-0106.pth), [configuration file](./configs/face-detection-0106.py)                      | 8       |
 
 Average Precision (AP) is defined as an area under the precision/recall curve. All numbers were evaluated by taking into account only faces bigger than 64 x 64 pixels.
 
@@ -47,8 +47,8 @@ Convert downloaded and extracted annotation to MSCOCO format with `face` as the 
 
 ### 4. Training and Fine-tuning
 Try both following variants and select the best one:
-   * By **training** from scratch or using pre-trained weights - only if you have a lot of data, let's say tens of thousands or even more images. This variant assumes long training process starting from big values of learning rate and eventually decreasing it according to training schedule.
-   * By **fine-tuning**. This variant assumes training staring from pre-trained weights with small learning rate that was used in the end of training process of existing snapshot. One should understand that during training model is forgetting about data that was initially trained on (if you don't use it your current training). That's why you should no train you model too long to avoid making model worse than it was before your training has started, especially if you have small dataset.
+   * **Training** from scratch or pre-trained weights -- only if you have a lot of data, let's say tens of thousands or even more images. This variant assumes long training process starting from big values of learning rate and eventually decreasing it according to a training schedule.
+   * **Fine-tuning** from pre-trained weights. If the dataset is not big enough, then the model tends to overfit quickly, forgetting about the data that was used for pre-training and reducing the generalization ability of the final model. Hence, small starting learning rate and short training schedule are recommended.
 
 If you would like to start **training** from pre-trained weights do not forget to modify `load_from` path inside configuration file.
 
@@ -154,5 +154,5 @@ To see how the converted model works using OpenVINO you need to run `test_export
 To get per-layer computational complexity estimations, run the following command:
    ```bash
    $ python ../../external/mmdetection/tools/get_flops.py \
-            $CONFIGURATION_FILE \
+            $CONFIGURATION_FILE
    ```

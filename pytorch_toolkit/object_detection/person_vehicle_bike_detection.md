@@ -25,8 +25,8 @@ The existing toy dataset has annotation in the Common Objects in Context (COCO) 
 
 ### 4. Training and Fine-tuning
 Try both following variants and select the best one:
-   * By **training** from scratch or using pre-trained weights - only if you have a lot of data, let's say tens of thousands or even more images. This variant assumes long training process starting from big values of learning rate and eventually decreasing it according to training schedule.
-   * By **fine-tuning**. This variant assumes training staring from pre-trained weights with small learning rate that was used in the end of training process of existing snapshot. One should understand that during training model is forgetting about data that was initially trained on (if you don't use it your current training). That's why you should no train you model too long to avoid making model worse than it was before your training has started, especially if you have small dataset.
+   * **Training** from scratch or pre-trained weights -- only if you have a lot of data, let's say tens of thousands or even more images. This variant assumes long training process starting from big values of learning rate and eventually decreasing it according to a training schedule.
+   * **Fine-tuning** from pre-trained weights. If the dataset is not big enough, then the model tends to overfit quickly, forgetting about the data that was used for pre-training and reducing the generalization ability of the final model. Hence, small starting learning rate and short training schedule are recommended.
 
 If you would like to start **training** from pre-trained weights do not forget to modify `load_from` path inside configuration file.
 
@@ -117,5 +117,5 @@ To see how the converted model works using OpenVINO you need to run `test_export
 To get per-layer computational complexity estimations, run the following command:
    ```bash
    $ python ../../external/mmdetection/tools/get_flops.py \
-            $CONFIGURATION_FILE \
+            $CONFIGURATION_FILE
    ```
