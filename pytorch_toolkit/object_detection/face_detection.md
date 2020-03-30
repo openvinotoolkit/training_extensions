@@ -2,7 +2,7 @@
 
 Models that are able to detect faces on given images.
 
-| Model Name                  | Complexity (GFLOPs) | Size (Mp) | AP for faces > 64x64 | [WiderFace](http://shuoyang1213.me/WIDERFACE/WiderFace_Results.html) (Easy/Medium/Hard)  | Links                                                                                                                                    | GPU_NUM |
+| Model Name                  | Complexity (GFLOPs) | Size (Mp) | AP for faces > 64x64 | [WiderFace](http://shuoyang1213.me/WIDERFACE/WiderFace_Results.html)(Easy/Medium/Hard)  | Links                                                                                                                                    | GPU_NUM |
 | --------------------------- | ------------------- | --------- | -------------------- |---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
 | face-detection-retail-0005  | 0.982               | 1.021     | 84.52%               | 78.97% / 70.80% / 37.32%    | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/wider_face_tiny_ssd_075x_epoch_70.pth), [configuration file](./configs/face-detection-retail-0005.py) | 2       |
 | face-detection-0100         | 0.785               | 1.828     | 86.16%               | 82.50% / 75.77% / 40.83%    | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/face-detection-0100.pth), [configuration file](./configs/face-detection-0100.py)                      | 2       |
