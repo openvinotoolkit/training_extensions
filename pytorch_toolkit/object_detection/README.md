@@ -20,6 +20,7 @@ Models that are able to detect 3 classes of objects: person, vehicle, non-vehicl
 * Python\* 3.7
 * PyTorch\* 1.4.0
 * OpenVINO™ 2020.2 with Python API
+* mmdetection (../../external/mmdetection)
 
 ### Installation
 
