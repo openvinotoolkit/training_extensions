@@ -55,7 +55,7 @@ test_cfg = dict(
 # model training and testing settings
 # dataset settings
 dataset_type = 'CustomCocoDataset'
-data_root = 'data/'
+data_root = 'data/WIDERFace/'
 img_norm_cfg = dict(mean=[0, 0, 0], std=[255, 255, 255], to_rgb=True)
 train_pipeline = [
     dict(type='LoadImageFromFile', to_float32=True),
@@ -98,17 +98,22 @@ data = dict(
         dataset=dict(
             type=dataset_type,
             classes=('face',),
-            ann_file=[
-                data_root + '/train.json',
-            ],
+            ann_file=data_root + '/train.json',
             min_size=17,
-            img_prefix=[data_root],
+            img_prefix=data_root,
             pipeline=train_pipeline
         )
     ),
+    val=dict(
+        type=dataset_type,
+        classes=('face', ),
+        ann_file=data_root + '/val.json',
+        img_prefix=data_root,
+        test_mode=True,
+        pipeline=test_pipeline),
     test=dict(
         type=dataset_type,
-        classes=('face',),
+        classes=('face', ),
         ann_file=data_root + '/val.json',
         img_prefix=data_root,
         test_mode=True,
