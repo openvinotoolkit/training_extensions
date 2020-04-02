@@ -1,29 +1,45 @@
+# Copyright (C) 2020 Intel Corporation
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+
+""" This script computes AveragePrecision (VOC) for faces in specific size ranges. """
+
 from argparse import ArgumentParser
 from bisect import bisect
 from collections import namedtuple
-
-import mmcv
 import numpy as np
 from tqdm import tqdm
 
+import cv2
+import mmcv
 from mmdet import datasets
 
 
 def voc_ap(recall, precision, use_07_metric=False):
-    """ ap = voc_ap(rec, prec, [use_07_metric])
+    """ average_precision = voc_ap(rec, prec, [use_07_metric])
     Compute VOC AP given precision and recall.
     If use_07_metric is true, uses the
     VOC 07 11 point method (default:False).
     """
     if use_07_metric:
         # 11 point metric
-        ap = 0.0
-        for t in np.arange(0., 1.1, 0.1):
-            if np.sum(recall >= t) == 0:
-                p = 0
+        average_precision = 0.0
+        for threshold in np.arange(0., 1.1, 0.1):
+            if np.sum(recall >= threshold) == 0:
+                precision_at_threshold = 0
             else:
-                p = np.max(precision[recall >= t])
-            ap += p / 11.
+                precision_at_threshold = np.max(precision[recall >= threshold])
+            average_precision += precision_at_threshold / 11.
     else:
         # Correct AP calculation.
         # First append sentinel values at the end.
@@ -39,20 +55,24 @@ def voc_ap(recall, precision, use_07_metric=False):
         i = np.where(mrec[1:] != mrec[:-1])[0]
 
         # And sum (\Delta recall) * prec.
-        ap = np.sum((mrec[i + 1] - mrec[i]) * mpre[i + 1])
-    return ap
+        average_precision = np.sum((mrec[i + 1] - mrec[i]) * mpre[i + 1])
+    return average_precision
 
 
-def miss_rate(miss_rates, fppis, fppi_level=0.1):
+def compute_miss_rate(miss_rates, fppis, fppi_level=0.1):
+    """ Compute miss rate at fppi level. """
+
     position = bisect(fppis, fppi_level)
-    p1 = position - 1
-    p2 = position if position < len(miss_rates) else p1
-    return 0.5 * (miss_rates[p1] + miss_rates[p2])
+    position1 = position - 1
+    position2 = position if position < len(miss_rates) else position1
+    return 0.5 * (miss_rates[position1] + miss_rates[position2])
 
 
 def evaluate_detections(ground_truth, predictions, class_name, overlap_threshold=0.5,
                         allow_multiple_matches_per_ignored=True,
                         verbose=True):
+    """ Compute set of object detection quality metrics. """
+
     Detection = namedtuple('Detection', ['image', 'bbox', 'score', 'gt_match'])
     GT = namedtuple('GroundTruth', ['bbox', 'is_matched', 'is_ignored'])
     detections = [Detection(image=img_pred.image_path,
@@ -67,16 +87,17 @@ def evaluate_detections(ground_truth, predictions, class_name, overlap_threshold
     sorted_ind = np.argsort(-scores)
     detections = [detections[i] for i in sorted_ind]
 
-    gts = {img_gt.image_path: GT(
-        bbox=np.vstack([np.array(obj_gt["bbox"]) for obj_gt in img_gt]) if img_gt else np.empty(
-            (0, 4)),
-        is_matched=np.zeros(len(img_gt), dtype=bool),
-        is_ignored=np.array([obj_gt.get("is_ignored", False) for obj_gt in img_gt], dtype=bool))
-        for img_gt in ground_truth}
+    gts = {}
+    for img_gt in ground_truth:
+        gts[img_gt.image_path] = GT(
+            bbox=np.vstack([np.array(obj_gt["bbox"]) for obj_gt in img_gt]) if img_gt else np.empty(
+                (0, 4)),
+            is_matched=np.zeros(len(img_gt), dtype=bool),
+            is_ignored=np.array([obj_gt.get("is_ignored", False) for obj_gt in img_gt], dtype=bool))
 
-    nd = len(detections)
-    tp = np.zeros(nd)
-    fp = np.zeros(nd)
+    detections_num = len(detections)
+    true_pos = np.zeros(detections_num)
+    false_pos = np.zeros(detections_num)
 
     for i, detection in tqdm(enumerate(detections), desc="Processing detections",
                              disable=not verbose):
@@ -121,39 +142,39 @@ def evaluate_detections(ground_truth, predictions, class_name, overlap_threshold
         if max_overlap >= overlap_threshold:
             if not gts[image_path].is_ignored[argmax_overlap]:
                 if not gts[image_path].is_matched[argmax_overlap]:
-                    tp[i] = 1.
+                    true_pos[i] = 1.
                     gts[image_path].is_matched[argmax_overlap] = True
                 else:
-                    fp[i] = 1.
+                    false_pos[i] = 1.
             elif not allow_multiple_matches_per_ignored:
                 gts[image_path].is_matched[argmax_overlap] = True
         else:
-            fp[i] = 1.
+            false_pos[i] = 1.
 
-    fp = np.cumsum(fp)
-    tp = np.cumsum(tp)
+    false_pos = np.cumsum(false_pos)
+    true_pos = np.cumsum(true_pos)
 
     debug_visualization = False
     if debug_visualization:
-        for im, bboxes_gt in gts.iteritems():
-            import cv2
-            print(im)
-            image = cv2.imread(im)
+        for image_path, bboxes_gt in gts.items():
+
+            print(image_path)
+            image = cv2.imread(image_path)
             image_gt = np.copy(image)
-            for b in bboxes_gt.bbox:
-                cv2.rectangle(image_gt, tuple(b[:2]), tuple(b[2:] + b[:2]), color=(255, 255, 0),
-                              thickness=2)
+            for bbox in bboxes_gt.bbox:
+                cv2.rectangle(image_gt, tuple(bbox[:2]), tuple(bbox[2:] + bbox[:2]),
+                              color=(255, 255, 0), thickness=2)
             cv2.imshow("gt", image_gt)
             for detection in detections:
-                if detection.image != im:
+                if detection.image != image_path:
                     continue
-                b = detection.bbox
-                cv2.rectangle(image, tuple(b[:2]), tuple(b[2:] + b[:2]), color=(0, 255, 0),
+                bbox = detection.bbox
+                cv2.rectangle(image, tuple(bbox[:2]), tuple(bbox[2:] + bbox[:2]), color=(0, 255, 0),
                               thickness=2)
                 if detection.gt_match is not None:
-                    b = bboxes_gt.bbox[detection.gt_match]
-                    cv2.rectangle(image, tuple(b[:2]), tuple(b[2:] + b[:2]), color=(0, 0, 255),
-                                  thickness=1)
+                    bbox = bboxes_gt.bbox[detection.gt_match]
+                    cv2.rectangle(image, tuple(bbox[:2]), tuple(bbox[2:] + bbox[:2]),
+                                  color=(0, 0, 255), thickness=1)
                 cv2.imshow("image", image)
                 cv2.waitKey(0)
 
@@ -162,20 +183,22 @@ def evaluate_detections(ground_truth, predictions, class_name, overlap_threshold
     ind = len(scores) - np.unique(scores[sorted_ind[::-1]], return_index=True)[1] - 1
     ind = ind[::-1]
     # Though away redundant points.
-    fp = fp[ind]
-    tp = tp[ind]
+    false_pos = false_pos[ind]
+    true_pos = true_pos[ind]
 
     total_positives_num = np.sum([np.count_nonzero(~gt.is_ignored) for gt in gts.values()])
-    recall = tp / float(total_positives_num)
+    recall = true_pos / float(total_positives_num)
     # Avoid divide by zero in case the first detection matches an ignored ground truth.
-    precision = tp / np.maximum(tp + fp, np.finfo(np.float64).eps)
+    precision = true_pos / np.maximum(true_pos + false_pos, np.finfo(np.float64).eps)
     miss_rate = 1.0 - recall
-    fppi = fp / float(len(gts))
+    fppi = false_pos / float(len(gts))
 
     return recall, precision, miss_rate, fppi
 
 
 class ImageAnnotation:
+    """ Represent image annotation. """
+
     def __init__(self, image_path, objects=None, ignore_regs=None):
         self.image_path = image_path
         self.objects = objects if objects else []
@@ -189,24 +212,30 @@ class ImageAnnotation:
 
 
 def points_2_xywh(box):
+    """ Converts [xmin, ymin, xmax, ymax] to [xmin, ymin, width, height]. """
+
     box = [box[0], box[1], box[2] - box[0], box[3] - box[1]]
     box = [int(round(x)) for x in box]
     return box
 
 
 def clip_bbox(bbox, im_size):
+    """ Clips box. """
+
     bbox = np.maximum(np.copy(bbox), 0)
-    x, y, w, h = bbox
-    w = min(x + w, im_size[0]) - x
-    h = min(y + h, im_size[1]) - y
-    if w == 0 and h == 0:
-        x = y = w = h = -1
-    return np.array([x, y, w, h])
+    xmin, ymin, width, height = bbox
+    width = min(xmin + width, im_size[0]) - xmin
+    height = min(ymin + height, im_size[1]) - ymin
+    if width == 0 and height == 0:
+        xmin = ymin = width = height = -1
+    return np.array([xmin, ymin, width, height])
 
 
 def voc_eval(result_file, dataset, iou_thr, image_size):
+    """ VOC AP evaluation procedure for range of face sizes. """
+
     det_results = mmcv.load(result_file)
-    MIN_DETECTION_CONFIDENCE = 0.01
+    min_detection_confidence = 0.01
 
     for obj_size in ((10, 1024), (32, 1024), (64, 1024), (100, 1024)):
 
@@ -234,24 +263,26 @@ def voc_eval(result_file, dataset, iou_thr, image_size):
             # filter out predictions with too low confidence
             detections = [{'bbox': points_2_xywh(bbox[:4]), 'score': bbox[4], 'type': 'face'} for
                           bbox
-                          in det_results[i][0] if bbox[4] > MIN_DETECTION_CONFIDENCE]
+                          in det_results[i][0] if bbox[4] > min_detection_confidence]
             predictions.append(ImageAnnotation(dataset.img_infos[i]['id'], detections))
 
-        recall, precision, miss_rates, fppis = evaluate_detections(groundtruth,
-                                                                   predictions,
-                                                                   'face',
-                                                                   allow_multiple_matches_per_ignored=
-                                                                   True,
-                                                                   overlap_threshold=iou_thr)
+        recall, precision, miss_rates, fppis = evaluate_detections(
+            groundtruth, predictions, 'face',
+            allow_multiple_matches_per_ignored=True,
+            overlap_threshold=iou_thr)
 
-        mr = miss_rate(miss_rates, fppis) * 100
-        ap = voc_ap(recall, precision) * 100
+        miss_rate = compute_miss_rate(miss_rates, fppis) * 100
+        average_precision = voc_ap(recall, precision) * 100
 
-        print(
-            f'ImageSize = {image_size}, ObjSize = {obj_size}, AP = {ap:.2f}%, MissRate = {mr:.2f}%')
+        print(f'ImageSize = {image_size}, '
+              f'ObjSize = {obj_size}, '
+              f'AP = {average_precision:.2f}%, '
+              f'MissRate = {miss_rate:.2f}%')
 
 
 def main():
+    """ Main function. """
+
     parser = ArgumentParser(description='VOC Evaluation')
     parser.add_argument('config', help='config file path')
     parser.add_argument('input', help='output result file from test.py')
