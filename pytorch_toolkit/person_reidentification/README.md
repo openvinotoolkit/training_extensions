@@ -82,8 +82,8 @@ For visualization activation maps, set the `test.visactmap` parameter to `True`.
 ### Pretrained Models
 
 You can download pretrained models in the PyTorch format corresponding to the provided configs from a fileshare as well:
-- [person-reidentification-retail-0103](https://download.01.org/opencv/openvino_training_extensions/models/person_reidentification/person-reidentification-retail-0103.pt)
-- [person-reidentification-retail-0107](https://download.01.org/opencv/openvino_training_extensions/models/person_reidentification/person-reidentification-retail-0107.pt)
+- [person-reidentification-retail-0248](https://download.01.org/opencv/openvino_training_extensions/models/person_reidentification/person-reidentification-retail-0248.pt)
+- [person-reidentification-retail-0249](https://download.01.org/opencv/openvino_training_extensions/models/person_reidentification/person-reidentification-retail-0249.pt)
 - [person-reidentification-retail-0300](https://download.01.org/opencv/openvino_training_extensions/models/person_reidentification/person-reidentification-retail-0300.pt)
 
 
