@@ -55,7 +55,8 @@ def face_detection_test_case(model_name):
             self.configuration_file = f'./configs/{self.model_name}.py'
             os.system(f'cp {self.configuration_file} {self.work_dir}/')
             self.configuration_file = os.path.join(self.work_dir, os.path.basename(self.configuration_file))
-            self.url = f'https://download.01.org/opencv/openvino_training_extensions/models/object_detection/{self.model_name}.pth'
+            self.ote_url = 'https://download.01.org/opencv/openvino_training_extensions'
+            self.url = f'{self.ote_url}/models/object_detection/{self.model_name}.pth'
             os.system(f'wget {self.url} -P {self.work_dir}')
 
             assert replace_text_in_file(self.configuration_file, 'imgs_per_gpu=', 'imgs_per_gpu=2 ,#')
@@ -73,7 +74,8 @@ def face_detection_test_case(model_name):
         def test_fine_tuning(self):
             log_file = os.path.join(self.work_dir, 'test_fine_tuning.log')
             os.system(
-                f'../../external/mmdetection/tools/dist_train.sh {self.configuration_file} 1 --validate 2>&1 | tee {log_file}')
+                f'../../external/mmdetection/tools/dist_train.sh {self.configuration_file} 1 --validate 2>&1 |'
+                f' tee {log_file}')
             ap = collect_ap(log_file)
             self.assertEqual(len((ap)), 5)
             self.assertLess(ap[0], ap[-1])
