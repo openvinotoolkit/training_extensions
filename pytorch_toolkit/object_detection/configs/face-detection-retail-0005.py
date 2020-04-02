@@ -14,12 +14,12 @@ model = dict(
         width_mult=width_mult,
         activation_type='relu',
         scales=1
-        ),
+    ),
     neck=None,
     bbox_head=dict(
         type='SSDHead',
         input_size=input_size,
-        in_channels=(int(width_mult*480),),
+        in_channels=(int(width_mult * 480),),
         num_classes=2,
         anchor_strides=(16,),
         anchor_widths=([9.4, 25.1, 14.7, 34.7, 143.0,
@@ -106,14 +106,14 @@ data = dict(
     ),
     val=dict(
         type=dataset_type,
-        classes=('face', ),
+        classes=('face',),
         ann_file=data_root + '/val.json',
         img_prefix=data_root,
         test_mode=True,
         pipeline=test_pipeline),
     test=dict(
         type=dataset_type,
-        classes=('face', ),
+        classes=('face',),
         ann_file=data_root + '/val.json',
         img_prefix=data_root,
         test_mode=True,

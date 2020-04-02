@@ -14,6 +14,8 @@
 
 """ This script computes AveragePrecision (VOC) for faces in specific size ranges. """
 
+# pylint: disable=R0912,R0913,R0914,R0915
+
 from argparse import ArgumentParser
 from bisect import bisect
 from collections import namedtuple
@@ -106,7 +108,7 @@ def evaluate_detections(ground_truth, predictions, class_name, overlap_threshold
         bbox = detection.bbox
         max_overlap = -np.inf
 
-        if bboxes_gt is not None and len(bboxes_gt) > 0:
+        if bboxes_gt is not None and bboxes_gt.shape[0] > 0:
             intersection_xmin = np.maximum(bboxes_gt[:, 0], bbox[0])
             intersection_ymin = np.maximum(bboxes_gt[:, 1], bbox[1])
             intersection_xmax = np.minimum(bboxes_gt[:, 0] + bboxes_gt[:, 2], bbox[0] + bbox[2])

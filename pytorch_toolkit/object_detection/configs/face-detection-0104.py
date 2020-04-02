@@ -16,11 +16,17 @@ model = dict(
     bbox_head=dict(
         type='SSDHead',
         input_size=input_size,
-        in_channels=(int(width_mult*96), int(width_mult*320)),
+        in_channels=(int(width_mult * 96), int(width_mult * 320)),
         num_classes=2,
         anchor_strides=(16, 32),
-        anchor_widths=( [ 9.4 * 1.49333333333, 25.1 * 1.49333333333, 14.7 * 1.49333333333, 34.7 * 1.49333333333], [143.0 * 1.49333333333,  77.4 * 1.49333333333, 128.8 * 1.49333333333,  51.1 * 1.49333333333, 75.6 * 1.49333333333]),
-        anchor_heights=([15.0 * 1.49333333333, 39.6 * 1.49333333333, 25.5 * 1.49333333333, 63.2 * 1.49333333333], [227.5 * 1.49333333333, 162.9 * 1.49333333333, 124.5 * 1.49333333333, 105.1 * 1.49333333333, 72.6 * 1.49333333333]),
+        anchor_widths=(
+        [9.4 * 1.49333333333, 25.1 * 1.49333333333, 14.7 * 1.49333333333, 34.7 * 1.49333333333],
+        [143.0 * 1.49333333333, 77.4 * 1.49333333333, 128.8 * 1.49333333333, 51.1 * 1.49333333333,
+         75.6 * 1.49333333333]),
+        anchor_heights=(
+        [15.0 * 1.49333333333, 39.6 * 1.49333333333, 25.5 * 1.49333333333, 63.2 * 1.49333333333],
+        [227.5 * 1.49333333333, 162.9 * 1.49333333333, 124.5 * 1.49333333333, 105.1 * 1.49333333333,
+         72.6 * 1.49333333333]),
         target_means=(.0, .0, .0, .0),
         target_stds=(0.1, 0.1, 0.2, 0.2),
         depthwise_heads=True,
@@ -101,14 +107,14 @@ data = dict(
     ),
     val=dict(
         type=dataset_type,
-        classes=('face', ),
+        classes=('face',),
         ann_file=data_root + '/val.json',
         img_prefix=data_root,
         test_mode=True,
         pipeline=test_pipeline),
     test=dict(
         type=dataset_type,
-        classes=('face', ),
+        classes=('face',),
         ann_file=data_root + '/val.json',
         img_prefix=data_root,
         test_mode=True,
