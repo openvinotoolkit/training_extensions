@@ -9,7 +9,7 @@ if [[ -e venv ]]; then
 fi
 
 # Create virtual environment
-virtualenv venv -p python3 --prompt="(text_spotting) "
+virtualenv venv -p python3.6 --prompt="(text_spotting) "
 . venv/bin/activate
 cat requirements.txt | xargs -n 1 -L 1 pip3 install
 
@@ -20,9 +20,9 @@ pushd venv
 git clone --depth=1 \
     --branch enable_export_of_custom_onnx_operations_with_tuples_as_output \
     https://github.com/Ilya-Krylov/pytorch.git
-git submodule update --init --recursive
 
 pushd pytorch
+git submodule update --init --recursive
 python setup.py install
 popd
 

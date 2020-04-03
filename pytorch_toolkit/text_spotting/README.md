@@ -19,8 +19,6 @@ Models code is designed to enable ONNX\* export (with custom operations) and inf
 Create and activate virtual environment:
 
 ```bash
-virtualenv -p python3 --prompt="(text_spotting)" venv
-source venv/bin/activate
 bash init_venv.sh
 ```
 
