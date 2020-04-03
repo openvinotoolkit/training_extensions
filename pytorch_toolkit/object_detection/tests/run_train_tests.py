@@ -16,12 +16,14 @@
 
 """ This module contains unit tests. """
 
+import sys
 import unittest
 
 
 def main():
     testsuite = unittest.TestLoader().discover('tests', pattern='train_tests_*.py')
-    unittest.TextTestRunner(verbosity=1).run(testsuite)
+    ret = not unittest.TextTestRunner(verbosity=1).run(testsuite).wasSuccessful()
+    sys.exit(ret)
 
 
 if __name__ == '__main__':
