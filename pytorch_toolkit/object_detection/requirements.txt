@@ -1,12 +1,5 @@
-cython==0.29.12
-numpy==1.16.4
-torch==1.1
-mmcv==0.2.10
-tensorboardX==1.8
-tensorboard==1.14.0
+-r ../../external/mmdetection/requirements.txt
+networkx==2.3
 opencv-python==4.1.0.25
 pycocotools==2.0.0
-terminaltables==3.1.0
-matplotlib==3.1.1
-ptflops==0.3
-networkx==2.3
+tensorboardX==1.8

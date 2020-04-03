@@ -8,13 +8,14 @@ if [[ -e venv ]]; then
   echo
   echo "Virtualenv already exists. Use command to start working:"
   echo "$ . venv/bin/activate"
+  exit
 fi
 
 # Download mmdetection
-git submodule update --init --recommend-shallow ../../external/mmdetection
+git submodule update --init ../../external/mmdetection
 
 # Create virtual environment
-virtualenv venv -p python3 --prompt="(detection)"
+virtualenv venv -p python3.6 --prompt="(detection)"
 
 path_openvino_vars="${INTEL_OPENVINO_DIR:-/opt/intel/openvino}/bin/setupvars.sh"
 if [[ -e "${path_openvino_vars}" ]]; then
@@ -36,7 +37,6 @@ fi
 
 
 cd ../../external/mmdetection/
-bash compile.sh
 python setup.py develop
 deactivate
 
