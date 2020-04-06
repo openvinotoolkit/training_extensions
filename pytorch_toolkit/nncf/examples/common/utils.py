@@ -35,8 +35,7 @@ def get_name(config):
     for algo_dict in compression_config:
         algo_name = algo_dict["algorithm"]
         if algo_name == "quantization":
-            params_dict = algo_dict.get("params", {})
-            activations = params_dict.get('activations', {})
+            activations = algo_dict.get('activations', {})
             bits = activations.get('bits', 8)
             retval += "_int{}".format(bits)
         else:
