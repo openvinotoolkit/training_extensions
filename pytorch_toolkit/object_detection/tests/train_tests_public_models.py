@@ -73,6 +73,12 @@ class PublicModelsTestCase(unittest.TestCase):
             os.system(f'wget  {url} -P {self.snapshots_dir}')
         return path
 
+    def test_atss__atss_r50_fpn_1x(self):
+        origin_config = '../../external/mmdetection/configs/atss/atss_r50_fpn_1x.py'
+        url = 'https://open-mmlab.s3.ap-northeast-2.amazonaws.com/mmdetection/' \
+              'models/atss/atss_r50_fpn_1x_20200113-a7aa251e.pth'
+        self.run_test(origin_config, self.download_if_not_yet(url))
+
     def test_dcn_faster_rcnn_dconv_c3_c5_r50_fpn_1x(self):
         origin_config = '../../external/mmdetection/configs/dcn/faster_rcnn_dconv_c3-c5_r50_fpn_1x.py'
         url = 'https://s3.ap-northeast-2.amazonaws.com/open-mmlab/mmdetection/models/' \
