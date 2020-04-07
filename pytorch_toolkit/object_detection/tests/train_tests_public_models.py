@@ -73,10 +73,16 @@ class PublicModelsTestCase(unittest.TestCase):
             os.system(f'wget  {url} -P {self.snapshots_dir}')
         return path
 
+    def test_gn_mask_rcnn_r50_fpn_gn_2x(self):
+        origin_config = '../../external/mmdetection/configs/gn/mask_rcnn_r50_fpn_gn_2x.py'
+        url = 'https://s3.ap-northeast-2.amazonaws.com/open-mmlab/mmdetection/models/' \
+              'gn/mask_rcnn_r50_fpn_gn_2x_20180113-86832cf2.pth'
+        self.run_test(origin_config, self.download_if_not_yet(url))
+
     def test_ms_rcnn__ms_rcnn_r50_caffe_fpn_1x(self):
         origin_config = '../../external/mmdetection/configs/ms_rcnn/ms_rcnn_r50_caffe_fpn_1x.py'
-        url = f'https://open-mmlab.s3.ap-northeast-2.amazonaws.com/mmdetection/models/ms-rcnn/' \
-              f'ms_rcnn_r50_caffe_fpn_1x_20190624-619934b5.pth'
+        url = 'https://open-mmlab.s3.ap-northeast-2.amazonaws.com/mmdetection/models/ms-rcnn/' \
+              'ms_rcnn_r50_caffe_fpn_1x_20190624-619934b5.pth'
         self.run_test(origin_config, self.download_if_not_yet(url))
 
     def test_htc__htc_r50_fpn_1x(self):
@@ -87,8 +93,8 @@ class PublicModelsTestCase(unittest.TestCase):
 
     def test_cascade_mask_rcnn_r50_fpn_1x(self):
         origin_config = '../../external/mmdetection/configs/cascade_mask_rcnn_r50_fpn_1x.py'
-        url = f'https://s3.ap-northeast-2.amazonaws.com/open-mmlab/mmdetection/models/' \
-              f'cascade_mask_rcnn_r50_fpn_1x_20181123-88b170c9.pth'
+        url = 'https://s3.ap-northeast-2.amazonaws.com/open-mmlab/mmdetection/models/' \
+              'cascade_mask_rcnn_r50_fpn_1x_20181123-88b170c9.pth'
         self.run_test(origin_config, self.download_if_not_yet(url))
 
     def test_cascade_rcnn_r50_caffe_c4_1x(self):
