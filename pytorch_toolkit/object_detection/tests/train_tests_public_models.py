@@ -73,7 +73,7 @@ class PublicModelsTestCase(unittest.TestCase):
             os.system(f'wget  {url} -P {self.snapshots_dir}')
         return path
 
-    def test_ms_rcnn_r50_caffe_fpn_1x(self):
+    def test_ms_rcnn__ms_rcnn_r50_caffe_fpn_1x(self):
         origin_config = '../../external/mmdetection/configs/ms_rcnn/ms_rcnn_r50_caffe_fpn_1x.py'
         url = f'https://open-mmlab.s3.ap-northeast-2.amazonaws.com/mmdetection/models/ms-rcnn/' \
               f'ms_rcnn_r50_caffe_fpn_1x_20190624-619934b5.pth'
@@ -109,6 +109,17 @@ class PublicModelsTestCase(unittest.TestCase):
               'ssd300_coco_vgg16_caffe_120e_20181221-84d7110b.pth'
         self.run_test(origin_config, self.download_if_not_yet(url))
 
+    def test_htc__htc_r50_fpn_1x(self):
+        origin_config = '../../external/mmdetection/configs/htc/htc_r50_fpn_1x.py'
+        url = 'https://s3.ap-northeast-2.amazonaws.com/open-mmlab/mmdetection/models/htc/' \
+              'htc_r50_fpn_1x_20190408-878c1712.pth'
+        self.run_test(origin_config, self.download_if_not_yet(url))
+
+    def test_faster_rcnn_r50_caffe_c4_1x(self):
+        origin_config = '../../external/mmdetection/configs/faster_rcnn_r50_caffe_c4_1x.py'
+        url = 'https://s3.ap-northeast-2.amazonaws.com/open-mmlab/mmdetection/models/' \
+              'faster_rcnn_r50_caffe_c4_1x-75ecfdfa.pth'
+        self.run_test(origin_config, self.download_if_not_yet(url))
 
 if __name__ == '__main__':
     unittest.main()
