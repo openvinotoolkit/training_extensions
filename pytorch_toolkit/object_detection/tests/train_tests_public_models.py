@@ -1,6 +1,7 @@
 import json
 import os
 import unittest
+import sys
 
 from common import replace_text_in_file, collect_ap
 
@@ -44,7 +45,7 @@ class PublicModelsTestCase(unittest.TestCase):
                                100)
 
     def run_test(self, config_path, snapshot):
-        print('\n\ntesting ' + config_path)
+        print('\n\ntesting ' + config_path, file=sys.stderr)
         name = config_path.replace('../../external/mmdetection/configs', '')[:-3]
         test_dir = f'/tmp/{name}'
         log_file = os.path.join(test_dir, 'log.txt')
