@@ -191,6 +191,35 @@ class Class(unittest.TestCase):
 
         self.assertEqual(content['map'], ap[0])
 
+    def test_ssd300_coco(self):
+        model_name = 'ssd300_coco'
+        origin_config = f'../../external/mmdetection/configs/{model_name}.py'
+        test_dir = f'/tmp/{os.path.basename(origin_config)[:-3]}'
+        log_file = os.path.join(test_dir, 'log.txt')
+        os.makedirs(test_dir, exist_ok=True)
+        target_config_path = os.path.join(test_dir, 'config.py')
+        os.system(f'cp  {origin_config} {target_config_path}')
+
+        url = f'https://s3.ap-northeast-2.amazonaws.com/open-mmlab/mmdetection/models/' \
+              f'ssd300_coco_vgg16_caffe_120e_20181221-84d7110b.pth'
+        snapshot = download_if_not_yet(url, self.snapshots_dir)
+
+        assert replace_text_in_file(target_config_path, "data_root = 'data/coco/'",
+                                    f"data_root = '{self.coco_dir}/'")
+
+        os.system(f'python ../../external/mmdetection/tools/test.py '
+                  f'{target_config_path} '
+                  f'{snapshot} '
+                  f'--out {test_dir}/res.pkl --eval bbox  2>&1 | tee {log_file}')
+
+        ap = collect_ap(log_file)
+
+        with open(f'tests/expected_outputs/public/{model_name}.json') as read_file:
+            content = json.load(read_file)
+
+        self.assertEqual(content['map'], ap[0])
+
+
 
 if __name__ == '__main__':
     unittest.main()
