@@ -91,6 +91,12 @@ class PublicModelsTestCase(unittest.TestCase):
               'ws/faster_rcnn_r50_fpn_gn_ws_1x_20190418-935d00b6.pth'
         self.run_test(origin_config, self.download_if_not_yet(url))
 
+    def test_fcos__fcos_r50_caffe_fpn_gn_1x_4gpu(self):
+        origin_config = '../../external/mmdetection/configs/fcos/fcos_r50_caffe_fpn_gn_1x_4gpu.py'
+        url = 'https://s3.ap-northeast-2.amazonaws.com/open-mmlab/mmdetection/models/' \
+              'fcos/fcos_r50_caffe_fpn_gn_1x_4gpu_20190516-9f253a93.pth'
+        self.run_test(origin_config, self.download_if_not_yet(url))
+
     def test_ms_rcnn__ms_rcnn_r50_caffe_fpn_1x(self):
         origin_config = '../../external/mmdetection/configs/ms_rcnn/ms_rcnn_r50_caffe_fpn_1x.py'
         url = 'https://open-mmlab.s3.ap-northeast-2.amazonaws.com/mmdetection/models/ms-rcnn/' \
