@@ -5,15 +5,7 @@ import unittest
 from common import replace_text_in_file, collect_ap
 
 
-def download_if_not_yet(url, snapshots_dir):
-    os.makedirs(snapshots_dir, exist_ok=True)
-    path = os.path.join(snapshots_dir, os.path.basename(url))
-    if not os.path.exists(path):
-        os.system(f'wget  {url} -P {snapshots_dir}')
-    return path
-
-
-class Class(unittest.TestCase):
+class PublicModelsTestCase(unittest.TestCase):
     coco_dir = '/tmp/coco'
     snapshots_dir = '/tmp/snapshots'
 
@@ -51,174 +43,71 @@ class Class(unittest.TestCase):
         cls.shorten_annotation(os.path.join(cls.coco_dir, 'annotations/instances_val2017.json'),
                                100)
 
-    def test_ms_rcnn_r50_caffe_fpn_1x(self):
-        model_name = 'ms_rcnn_r50_caffe_fpn_1x'
-        origin_config = f'../../external/mmdetection/configs/ms_rcnn/{model_name}.py'
-        test_dir = f'/tmp/{os.path.basename(origin_config)[:-3]}'
+    def run_test(self, config_path, snapshot):
+        print('\n\ntesting ' + config_path)
+        name = config_path.replace('../../external/mmdetection/configs', '')[:-3]
+        test_dir = f'/tmp/{name}'
         log_file = os.path.join(test_dir, 'log.txt')
         os.makedirs(test_dir, exist_ok=True)
         target_config_path = os.path.join(test_dir, 'config.py')
-        os.system(f'cp  {origin_config} {target_config_path}')
+        os.system(f'cp  {config_path} {target_config_path}')
+        assert replace_text_in_file(target_config_path, "data_root = 'data/coco/'",
+                                    f"data_root = '{self.coco_dir}/'")
 
+        os.system(f'python ../../external/mmdetection/tools/test.py '
+                  f'{target_config_path} '
+                  f'{snapshot} '
+                  f'--out {test_dir}/res.pkl --eval bbox  2>&1 | tee {log_file}')
+
+        ap = collect_ap(log_file)
+
+        with open(f'tests/expected_outputs/public/{name}.json') as read_file:
+            content = json.load(read_file)
+
+        self.assertEqual(content['map'], ap[0])
+
+    def download_if_not_yet(self, url):
+        os.makedirs(self.snapshots_dir, exist_ok=True)
+        path = os.path.join(self.snapshots_dir, os.path.basename(url))
+        if not os.path.exists(path):
+            os.system(f'wget  {url} -P {self.snapshots_dir}')
+        return path
+
+    def test_ms_rcnn_r50_caffe_fpn_1x(self):
+        origin_config = '../../external/mmdetection/configs/ms_rcnn/ms_rcnn_r50_caffe_fpn_1x.py'
         url = f'https://open-mmlab.s3.ap-northeast-2.amazonaws.com/mmdetection/models/ms-rcnn/' \
               f'ms_rcnn_r50_caffe_fpn_1x_20190624-619934b5.pth'
-        snapshot = download_if_not_yet(url, self.snapshots_dir)
-
-        assert replace_text_in_file(target_config_path, "data_root = 'data/coco/'",
-                                    f"data_root = '{self.coco_dir}/'")
-
-        os.system(f'python ../../external/mmdetection/tools/test.py '
-                  f'{target_config_path} '
-                  f'{snapshot} '
-                  f'--out {test_dir}/res.pkl --eval bbox  2>&1 | tee {log_file}')
-
-        ap = collect_ap(log_file)
-
-        with open(f'tests/expected_outputs/public/{model_name}.json') as read_file:
-            content = json.load(read_file)
-
-        self.assertEqual(content['map'], ap[0])
+        self.run_test(origin_config, self.download_if_not_yet(url))
 
     def test_cascade_mask_rcnn_r50_fpn_1x(self):
-        model_name = 'cascade_mask_rcnn_r50_fpn_1x'
-        origin_config = f'../../external/mmdetection/configs/{model_name}.py'
-        test_dir = f'/tmp/{os.path.basename(origin_config)[:-3]}'
-        log_file = os.path.join(test_dir, 'log.txt')
-        os.makedirs(test_dir, exist_ok=True)
-        target_config_path = os.path.join(test_dir, 'config.py')
-        os.system(f'cp  {origin_config} {target_config_path}')
-
+        origin_config = '../../external/mmdetection/configs/cascade_mask_rcnn_r50_fpn_1x.py'
         url = f'https://s3.ap-northeast-2.amazonaws.com/open-mmlab/mmdetection/models/' \
               f'cascade_mask_rcnn_r50_fpn_1x_20181123-88b170c9.pth'
-        snapshot = download_if_not_yet(url, self.snapshots_dir)
-
-        assert replace_text_in_file(target_config_path, "data_root = 'data/coco/'",
-                                    f"data_root = '{self.coco_dir}/'")
-
-        os.system(f'python ../../external/mmdetection/tools/test.py '
-                  f'{target_config_path} '
-                  f'{snapshot} '
-                  f'--out {test_dir}/res.pkl --eval bbox  2>&1 | tee {log_file}')
-
-        ap = collect_ap(log_file)
-
-        with open(f'tests/expected_outputs/public/{model_name}.json') as read_file:
-            content = json.load(read_file)
-
-        self.assertEqual(content['map'], ap[0])
+        self.run_test(origin_config, self.download_if_not_yet(url))
 
     def test_mask_rcnn_r50_caffe_c4_1x(self):
-        model_name = 'mask_rcnn_r50_caffe_c4_1x'
-        origin_config = f'../../external/mmdetection/configs/{model_name}.py'
-        test_dir = f'/tmp/{os.path.basename(origin_config)[:-3]}'
-        log_file = os.path.join(test_dir, 'log.txt')
-        os.makedirs(test_dir, exist_ok=True)
-        target_config_path = os.path.join(test_dir, 'config.py')
-        os.system(f'cp  {origin_config} {target_config_path}')
-
-        url = f'https://s3.ap-northeast-2.amazonaws.com/open-mmlab/mmdetection/models/' \
-              f'mask_rcnn_r50_caffe_c4_1x-02a4ad3b.pth'
-        snapshot = download_if_not_yet(url, self.snapshots_dir)
-
-        assert replace_text_in_file(target_config_path, "data_root = 'data/coco/'",
-                                    f"data_root = '{self.coco_dir}/'")
-
-        os.system(f'python ../../external/mmdetection/tools/test.py '
-                  f'{target_config_path} '
-                  f'{snapshot} '
-                  f'--out {test_dir}/res.pkl --eval bbox  2>&1 | tee {log_file}')
-
-        ap = collect_ap(log_file)
-
-        with open(f'tests/expected_outputs/public/{model_name}.json') as read_file:
-            content = json.load(read_file)
-
-        self.assertEqual(content['map'], ap[0])
+        origin_config = '../../external/mmdetection/configs/mask_rcnn_r50_caffe_c4_1x.py'
+        url = 'https://s3.ap-northeast-2.amazonaws.com/open-mmlab/mmdetection/models/' \
+              'mask_rcnn_r50_caffe_c4_1x-02a4ad3b.pth'
+        self.run_test(origin_config, self.download_if_not_yet(url))
 
     def test_cascade_rcnn_r50_caffe_c4_1x(self):
-        model_name = 'cascade_rcnn_r50_caffe_c4_1x'
-        origin_config = f'../../external/mmdetection/configs/{model_name}.py'
-        test_dir = f'/tmp/{os.path.basename(origin_config)[:-3]}'
-        log_file = os.path.join(test_dir, 'log.txt')
-        os.makedirs(test_dir, exist_ok=True)
-        target_config_path = os.path.join(test_dir, 'config.py')
-        os.system(f'cp  {origin_config} {target_config_path}')
-
-        url = f'https://s3.ap-northeast-2.amazonaws.com/open-mmlab/mmdetection/models/' \
-              f'cascade_rcnn_r50_caffe_c4_1x-7c85c62b.pth'
-        snapshot = download_if_not_yet(url, self.snapshots_dir)
-
-        assert replace_text_in_file(target_config_path, "data_root = 'data/coco/'",
-                                    f"data_root = '{self.coco_dir}/'")
-
-        os.system(f'python ../../external/mmdetection/tools/test.py '
-                  f'{target_config_path} '
-                  f'{snapshot} '
-                  f'--out {test_dir}/res.pkl --eval bbox  2>&1 | tee {log_file}')
-
-        ap = collect_ap(log_file)
-
-        with open(f'tests/expected_outputs/public/{model_name}.json') as read_file:
-            content = json.load(read_file)
-
-        self.assertEqual(content['map'], ap[0])
+        origin_config = '../../external/mmdetection/configs/cascade_rcnn_r50_caffe_c4_1x.py'
+        url = 'https://s3.ap-northeast-2.amazonaws.com/open-mmlab/mmdetection/models/' \
+              'cascade_rcnn_r50_caffe_c4_1x-7c85c62b.pth'
+        self.run_test(origin_config, self.download_if_not_yet(url))
 
     def test_retinanet_r50_fpn_1x(self):
-        model_name = 'retinanet_r50_fpn_1x'
-        origin_config = f'../../external/mmdetection/configs/{model_name}.py'
-        test_dir = f'/tmp/{os.path.basename(origin_config)[:-3]}'
-        log_file = os.path.join(test_dir, 'log.txt')
-        os.makedirs(test_dir, exist_ok=True)
-        target_config_path = os.path.join(test_dir, 'config.py')
-        os.system(f'cp  {origin_config} {target_config_path}')
-
-        url = f'https://s3.ap-northeast-2.amazonaws.com/open-mmlab/mmdetection/models/' \
-              f'retinanet_r50_fpn_1x_20181125-7b0c2548.pth'
-        snapshot = download_if_not_yet(url, self.snapshots_dir)
-
-        assert replace_text_in_file(target_config_path, "data_root = 'data/coco/'",
-                                    f"data_root = '{self.coco_dir}/'")
-
-        os.system(f'python ../../external/mmdetection/tools/test.py '
-                  f'{target_config_path} '
-                  f'{snapshot} '
-                  f'--out {test_dir}/res.pkl --eval bbox  2>&1 | tee {log_file}')
-
-        ap = collect_ap(log_file)
-
-        with open(f'tests/expected_outputs/public/{model_name}.json') as read_file:
-            content = json.load(read_file)
-
-        self.assertEqual(content['map'], ap[0])
+        origin_config = '../../external/mmdetection/configs/retinanet_r50_fpn_1x.py'
+        url = 'https://s3.ap-northeast-2.amazonaws.com/open-mmlab/mmdetection/models/' \
+              'retinanet_r50_fpn_1x_20181125-7b0c2548.pth'
+        self.run_test(origin_config, self.download_if_not_yet(url))
 
     def test_ssd300_coco(self):
-        model_name = 'ssd300_coco'
-        origin_config = f'../../external/mmdetection/configs/{model_name}.py'
-        test_dir = f'/tmp/{os.path.basename(origin_config)[:-3]}'
-        log_file = os.path.join(test_dir, 'log.txt')
-        os.makedirs(test_dir, exist_ok=True)
-        target_config_path = os.path.join(test_dir, 'config.py')
-        os.system(f'cp  {origin_config} {target_config_path}')
-
-        url = f'https://s3.ap-northeast-2.amazonaws.com/open-mmlab/mmdetection/models/' \
-              f'ssd300_coco_vgg16_caffe_120e_20181221-84d7110b.pth'
-        snapshot = download_if_not_yet(url, self.snapshots_dir)
-
-        assert replace_text_in_file(target_config_path, "data_root = 'data/coco/'",
-                                    f"data_root = '{self.coco_dir}/'")
-
-        os.system(f'python ../../external/mmdetection/tools/test.py '
-                  f'{target_config_path} '
-                  f'{snapshot} '
-                  f'--out {test_dir}/res.pkl --eval bbox  2>&1 | tee {log_file}')
-
-        ap = collect_ap(log_file)
-
-        with open(f'tests/expected_outputs/public/{model_name}.json') as read_file:
-            content = json.load(read_file)
-
-        self.assertEqual(content['map'], ap[0])
-
+        origin_config = '../../external/mmdetection/configs/ssd300_coco.py'
+        url = 'https://s3.ap-northeast-2.amazonaws.com/open-mmlab/mmdetection/models/' \
+              'ssd300_coco_vgg16_caffe_120e_20181221-84d7110b.pth'
+        self.run_test(origin_config, self.download_if_not_yet(url))
 
 
 if __name__ == '__main__':
