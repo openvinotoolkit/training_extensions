@@ -14,8 +14,7 @@ class PublicModelsTestCase(unittest.TestCase):
     def shorten_annotation(path, num_images):
         with open(path) as read_file:
             content = json.load(read_file)
-            selected_indexes = [item['id'] for item in
-                                sorted(content['images'], key=lambda x: x['id'])]
+            selected_indexes = sorted([item['id'] for item in content['images']])
             selected_indexes = selected_indexes[:num_images]
             content['images'] = [item for item in content['images'] if
                                  item['id'] in selected_indexes]
