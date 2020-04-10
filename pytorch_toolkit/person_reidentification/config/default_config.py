@@ -150,6 +150,7 @@ def get_default_config():
     cfg.test.visrank_topk = 10  # Top-k ranks to visualize
     cfg.test.visactmap = False  # Visualize CNN activation maps
     cfg.test.apply_masks = False
+    cfg.test.use_flip = False
 
     # Augmentations
     cfg.data.transforms = CN()

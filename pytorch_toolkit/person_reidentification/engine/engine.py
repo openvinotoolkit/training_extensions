@@ -48,12 +48,13 @@ class ImageAMSoftmaxEngine(ImageSoftmaxEngine):
 
     def __init__(self, datamanager, model, optimizer, reg_cfg, metric_cfg, batch_transform_cfg, scheduler=None, use_gpu=False,
                  softmax_type='stock', label_smooth=True, conf_penalty=False,
-                 pr_product=False, m=0.35, s=10, writer=None, openvino_model=None):
+                 pr_product=False, m=0.35, s=10, writer=None, openvino_model=None, flip_eval=False):
         super(ImageAMSoftmaxEngine, self).__init__(datamanager, model, optimizer, scheduler, use_gpu)
 
         self.regularizer = get_regularizer(reg_cfg)
         self.openvino_model = openvino_model
         self.writer = writer
+        self.flip_eval = flip_eval
 
         if softmax_type == 'stock':
             self.criterion = CrossEntropyLoss(
@@ -332,10 +333,15 @@ class ImageAMSoftmaxEngine(ImageSoftmaxEngine):
 
         return cmc[0]
 
+    @torch.no_grad()
     def _extract_features(self, input, img_path=None):
         if self.openvino_model is None:
             self.model.eval()
             out_pytorch = self.model(input)
+            if self.flip_eval:
+                input_flipped = torch.flip(input, (3,))
+                out_pytorch += self.model(input_flipped)
+                out_pytorch /= 2.
             return out_pytorch
         else:
             out_openvino = self.openvino_model.forward(img_path)
