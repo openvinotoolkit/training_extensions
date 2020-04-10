@@ -102,14 +102,13 @@ This produces model `model.xml` and weights `model.bin` in single-precision floa
 
 Instead running of `test.py` you need to run `test_exported.py` and then repeat steps listed in [Validation paragraph](#5-validation).
 
-If you exported model using `export_ssd.py` you need to add `--with_detection_output` option, otherwise you don't need to use such flag. If you converted the exported model using `convert_to_ir.py` then the model expects **normalized image** in planar BGR format, so you need to disable data pre-processing by adding `--do_not_normalize`.
+If you exported model using `export_ssd.py` you need to add `--with_detection_output` option, otherwise you don't need to use such flag.
 
    ```bash
    python ../../external/mmdetection/tools/test_exported.py  \
           $CONFIGURATION_FILE \
           <EXPORT_FOLDER>/model.xml \
           --with_detection_output \
-          --do_not_normalize \
           --out results.pkl \
           --eval bbox
    ```
@@ -123,7 +122,6 @@ To see how the converted model works using OpenVINO you need to run `test_export
           $CONFIGURATION_FILE \
           <EXPORT_FOLDER>/model.xml \
           --with_detection_output \
-          --do_not_normalize \
           --show
    ```
 
