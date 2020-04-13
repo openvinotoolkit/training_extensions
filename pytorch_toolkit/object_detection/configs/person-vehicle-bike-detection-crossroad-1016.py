@@ -8,7 +8,7 @@ model = dict(
     backbone=dict(
         type='SSDMobilenetV2',
         input_size=input_size,
-        scales=3,
+        scales=6,
         ),
     neck=None,
     bbox_head=dict(
@@ -29,7 +29,7 @@ model = dict(
         target_stds=(0.1, 0.1, 0.2, 0.2),
         depthwise_heads=True,
         depthwise_heads_activations='relu',
-        loss_balancing=True))
+        loss_balancing=False))
 # training and testing settings
 cudnn_benchmark = True
 train_cfg = dict(
