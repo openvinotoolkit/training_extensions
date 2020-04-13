@@ -6,7 +6,7 @@ model = dict(
     backbone=dict(
         type='SSDMobilenetV2',
         input_size=input_size,
-        scales=3,
+        scales=6,
         ),
     neck=None,
     bbox_head=dict(
@@ -26,7 +26,7 @@ model = dict(
         target_means=(.0, .0, .0, .0),
         target_stds=(0.1, 0.1, 0.2, 0.2),
         lite_heads=True,
-        loss_balancing=True,
+        loss_balancing=False,
         lite_activation_type='relu'
         ))
 # training and testing settings
