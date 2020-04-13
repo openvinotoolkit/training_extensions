@@ -39,6 +39,7 @@ def build_engine(cfg, datamanager, model, optimizer, scheduler, writer=None, ope
                 softmax_type='stock',
                 writer=writer,
                 openvino_model=openvino_model,
+                flip_eval=cfg.test.use_flip
             )
         elif cfg.loss.name == 'am_softmax':
             engine = ImageAMSoftmaxEngine(
@@ -57,6 +58,7 @@ def build_engine(cfg, datamanager, model, optimizer, scheduler, writer=None, ope
                 s=cfg.loss.softmax.s,
                 writer=writer,
                 openvino_model=openvino_model,
+                flip_eval=cfg.test.use_flip
             )
     else:
         raise Exception('This code supports image data type only')
