@@ -13,7 +13,8 @@ Average Precision (AP) is defined as an area under the precision/recall curve.
 ### 1. Select a training configuration file and get pre-trained snapshot if available. Please see the table above.
 
 ```bash
-export CONFIGURATION_FILE=./configs/person-vehicle-bike-detection-crossroad-1016.py
+export MODEL_NAME=person-vehicle-bike-detection-crossroad-1016
+export CONFIGURATION_FILE=./configs/$MODEL_NAME.py
 ```
 
 ### 2. Collect dataset
@@ -62,66 +63,46 @@ python ../../external/mmdetection/tools/test.py \
         --eval bbox
 ```
 
-### 6. Export to ONNX\*
+### 6. Export PyTorch\* model to the OpenVINO™ format
 
-* In most cases you can convert PyTorch\* model to the ONNX\* format by running the `export.py` script:
-
-    ```bash
-    python ../../external/mmdetection/tools/export.py \
-          $CONFIGURATION_FILE \
-          <CHECKPOINT> \
-          model.onnx
-    ```
-
-* If your model is SSD-like detector you can convert PyTorch\* model to the ONNX\* format by running the `export_ssd.py` script.
-
-    > **Note** the model exported in such way will produce a bit different results (non-significant in most cases) but it also might be faster that model exported by `export.py`. The `export.py` can export SSD models as well.
-
-    ```bash
-    python ../../external/mmdetection/tools/export_ssd.py \
-          $CONFIGURATION_FILE \
-          <CHECKPOINT> \
-          model.onnx
-    ```
-
-### 7. Convert ONNX\* model to the OpenVINO™ format
-
-Convert ONNX\* model to the OpenVINO™ format with the Model Optimizer with the command below:
+To convert PyTorch\* model to the OpenVINO™ IR format run the `export.py` script:
 
 ```bash
-python ../../external/mmdetection/tools/convert_to_ir.py \
-       $CONFIGURATION_FILE \
-       model.onnx \
-       <EXPORT_FOLDER>
- ```
+python ../../external/mmdetection/tools/export.py \
+      $CONFIGURATION_FILE \
+      <CHECKPOINT> \
+      <EXPORT_FOLDER> \
+      openvino
+```
 
-This produces model `model.xml` and weights `model.bin` in single-precision floating-point format
+This produces model `$MODEL_NAME.xml` and weights `$MODEL_NAME.bin` in single-precision floating-point format
 (FP32). The obtained model expects **normalized image** in planar BGR format.
 
-### 8. Validation of IR
+For SSD networks an alternative OpenVINO™ representation is possible.
+To opt for it use extra `--alt_ssd_export` key to the `export.py` script.
+SSD model exported in such way will produce a bit different results (non-significant in most cases),
+but it also might be faster than the default one.
 
-Instead running of `test.py` you need to run `test_exported.py` and then repeat steps listed in [Validation paragraph](#5-validation).
+### 7. Validation of IR
 
-If you exported model using `export_ssd.py` you need to add `--with_detection_output` option, otherwise you don't need to use such flag.
+Instead of running `test.py` you need to run `test_exported.py` and then repeat steps listed in [Validation paragraph](#5-validation).
 
-   ```bash
-   python ../../external/mmdetection/tools/test_exported.py  \
-          $CONFIGURATION_FILE \
-          <EXPORT_FOLDER>/model.xml \
-          --with_detection_output \
-          --out results.pkl \
-          --eval bbox
-   ```
+```bash
+python ../../external/mmdetection/tools/test_exported.py  \
+      $CONFIGURATION_FILE \
+      <EXPORT_FOLDER>/$MODEL_NAME.xml \
+      --out results.pkl \
+      --eval bbox
+```
 
-### 9. Demo
+### 8. Demo
 
 To see how the converted model works using OpenVINO you need to run `test_exported.py` with `--show` option.
 
    ```bash
    python ../../external/mmdetection/tools/test_exported.py  \
           $CONFIGURATION_FILE \
-          <EXPORT_FOLDER>/model.xml \
-          --with_detection_output \
+          <EXPORT_FOLDER>/$MODEL_NAME.xml \
           --show
    ```
 
