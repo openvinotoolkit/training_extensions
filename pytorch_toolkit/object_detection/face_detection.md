@@ -16,7 +16,8 @@ Models that are able to detect faces on given images.
 ### 1. Select a training configuration file and get pre-trained snapshot if available. Please see the table above.
 
 ```bash
-export CONFIGURATION_FILE=./configs/face-detection-0100.py
+export MODEL_NAME=face-detection-0100
+export CONFIGURATION_FILE=./configs/$MODEL_NAME.py
 ```
 
 ### 2. Collect dataset
@@ -115,7 +116,7 @@ python ../../external/mmdetection/tools/export.py \
       openvino
 ```
 
-This produces model `model.xml` and weights `model.bin` in single-precision floating-point format
+This produces model `$MODEL_NAME.xml` and weights `$MODEL_NAME.bin` in single-precision floating-point format
 (FP32). The obtained model expects **normalized image** in planar BGR format.
 
 For SSD networks an alternative OpenVINO™ representation is possible.
@@ -130,7 +131,7 @@ Instead of running `test.py` you need to run `test_exported.py` and then repeat 
 ```bash
 python ../../external/mmdetection/tools/test_exported.py  \
       $CONFIGURATION_FILE \
-      <EXPORT_FOLDER>/model.xml \
+      <EXPORT_FOLDER>/$MODEL_NAME.xml \
       --out results.pkl \
       --eval bbox
 ```
@@ -142,7 +143,7 @@ To see how the converted model works using OpenVINO you need to run `test_export
 ```bash
 python ../../external/mmdetection/tools/test_exported.py  \
       $CONFIGURATION_FILE \
-      <EXPORT_FOLDER>/model.xml \
+      <EXPORT_FOLDER>/$MODEL_NAME.xml \
       --show
 ```
 
