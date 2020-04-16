@@ -27,7 +27,7 @@ def face_detection_test_case(model_name):
 
             self.data_folder = '../../data'
             self.work_dir = os.path.join('/tmp/', self.model_name)
-            os.makedirs(self.work_di, exist_ok=True)
+            os.makedirs(self.work_dir, exist_ok=True)
             self.configuration_file = f'./configs/{self.model_name}.py'
             os.system(f'cp {self.configuration_file} {self.work_dir}/')
             self.configuration_file = os.path.join(self.work_dir,
