@@ -14,13 +14,15 @@
 
 """ This module contains unit tests. """
 
+import sys
 import unittest
 
 
-class ExportDummyTestCase(unittest.TestCase):
-    def test(self):
-        self.assertEqual(0, 0)
+def main():
+    testsuite = unittest.TestLoader().discover('tests', pattern='export_tests_*.py')
+    ret = not unittest.TextTestRunner(verbosity=1).run(testsuite).wasSuccessful()
+    sys.exit(ret)
 
 
 if __name__ == '__main__':
-    unittest.main()
+    main()
