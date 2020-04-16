@@ -12,72 +12,12 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import json
-import os
-import unittest
 
-from common import replace_text_in_file, collect_ap, download_if_not_yet, relative_abs_error
+from common.test_case import export_test_case
 
 
-class PersonVehicleBikeDetectionCrossroad1016TestCase(unittest.TestCase):
-
-    def setUp(self):
-        self.model_name = 'person-vehicle-bike-detection-crossroad-1016'
-        self.snapshot_name = 'person_vehicle_bike_sd512_mb2_clustered_epoch_21.pth'
-
-        self.data_folder = '../../data'
-        self.work_dir = os.path.join('/tmp', self.model_name)
-        os.makedirs(self.work_dir, exist_ok=True)
-        self.configuration_file = f'./configs/{self.model_name}.py'
-        os.system(f'cp {self.configuration_file} {self.work_dir}/')
-        self.configuration_file = os.path.join(self.work_dir,
-                                               os.path.basename(self.configuration_file))
-        self.ote_url = 'https://download.01.org/opencv/openvino_training_extensions'
-        self.url = f'{self.ote_url}/models/object_detection/{self.snapshot_name}'
-        download_if_not_yet(self.work_dir, self.url)
-
-    def test_alt_ssd_export(self):
-        export_dir = os.path.join(self.work_dir, "alt_ssd_export")
-        log_file = os.path.join(export_dir, 'test_alt_ssd_export.log')
-
-        os.system(
-            f'/opt/intel/openvino/bin/setupvars.sh;'
-            f'python ../../external/mmdetection/tools/export.py '
-            f'{self.configuration_file} '
-            f'{os.path.join(self.work_dir, self.snapshot_name)} '
-            f'{export_dir} '
-            f'openvino --alt_ssd_export;'
-            f'python ../../external/mmdetection/tools/test_exported.py '
-            f'{self.configuration_file} '
-            f'{os.path.join(export_dir, self.model_name + ".xml")} '
-            f'--out res.pkl --eval bbox 2>&1 | tee {log_file}')
-
-        ap = collect_ap(log_file)
-
-        with open(f'tests/expected_outputs/{self.model_name}.json') as read_file:
-            content = json.load(read_file)
-
-        self.assertLess(relative_abs_error(content['map'], ap[0]), 0.02)
-
-    def test_export(self):
-        export_dir = os.path.join(self.work_dir, "export")
-        log_file = os.path.join(export_dir, 'test_export.log')
-
-        os.system(
-            f'/opt/intel/openvino/bin/setupvars.sh;'
-            f'python ../../external/mmdetection/tools/export.py '
-            f'{self.configuration_file} '
-            f'{os.path.join(self.work_dir, self.snapshot_name)} '
-            f'{export_dir} '
-            f'openvino;'
-            f'python ../../external/mmdetection/tools/test_exported.py '
-            f'{self.configuration_file} '
-            f'{os.path.join(export_dir, self.model_name + ".xml")} '
-            f'--out res.pkl --eval bbox 2>&1 | tee {log_file}')
-
-        ap = collect_ap(log_file)
-
-        with open(f'tests/expected_outputs/{self.model_name}.json') as read_file:
-            content = json.load(read_file)
-
-        self.assertLess(relative_abs_error(content['map'], ap[0]), 0.01)
+class PersonVehicleBikeDetectionCrossroad1016TestCase(
+    export_test_case('person-vehicle-bike-detection-crossroad-1016',
+                     'person_vehicle_bike_sd512_mb2_clustered_epoch_21.pth',
+                     True)):
+    """ Test case for person-vehicle-bike-detection-crossroad-1016 export. """
