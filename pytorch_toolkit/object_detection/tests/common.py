@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+import os
+
+
 def replace_text_in_file(path, replace_what, replace_by):
     with open(path) as read_file:
         content = '\n'.join([line.rstrip() for line in read_file.readlines()])
@@ -32,3 +35,15 @@ def collect_ap(path):
             if line.startswith(beginning):
                 ap.append(float(line.replace(beginning, '')))
     return ap
+
+
+def download_if_not_yet(output_folder, url):
+    os.makedirs(output_folder, exist_ok=True)
+    path = os.path.join(output_folder, os.path.basename(url))
+    if not os.path.exists(path):
+        os.system(f'wget --no-verbose {url} -P {output_folder}')
+    return path
+
+
+def relative_abs_error(expected, actual):
+    return abs(expected - actual) / expected
