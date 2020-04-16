@@ -16,7 +16,7 @@ import json
 import os
 import unittest
 
-from common import replace_text_in_file, collect_ap, download_if_not_yet
+from common.utils import replace_text_in_file, collect_ap, download_if_not_yet
 
 
 def face_detection_test_case(model_name):
