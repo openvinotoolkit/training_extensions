@@ -12,17 +12,12 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-""" This module contains unit tests. """
 
-import sys
-import unittest
+from common.test_case import export_test_case
 
 
-def main():
-    testsuite = unittest.TestLoader().discover('tests', pattern='export_tests_*.py')
-    ret = not unittest.TextTestRunner(verbosity=1).run(testsuite).wasSuccessful()
-    sys.exit(ret)
-
-
-if __name__ == '__main__':
-    main()
+class PersonVehicleBikeDetectionCrossroad1016TestCase(
+        export_test_case('person-vehicle-bike-detection-crossroad-1016',
+                         'person_vehicle_bike_sd512_mb2_clustered_epoch_21.pth',
+                         True)):
+    """ Test case for person-vehicle-bike-detection-crossroad-1016 export. """
