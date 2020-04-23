@@ -20,7 +20,7 @@ import json
 import os
 
 import argparse
-import cv2
+import imagesize
 from tqdm import tqdm
 
 
@@ -42,6 +42,8 @@ def parse_wider_gt(ann_file):
                 i += 1
             else:
                 bbox_num = int(content[i])
+                if bbox_num == 0:
+                    i += 1
                 i += 1
                 for _ in range(bbox_num):
                     xmin, ymin, width, height = [int(x) for x in content[i].split(' ')[:4]]
@@ -131,9 +133,7 @@ def convert_wider_annotation(ann_file, data_dir, out_file, with_landmarks):
         image_info = {}
         image_info['id'] = img_id
         img_id += 1
-        image = cv2.imread(os.path.join(data_dir, filename))
-        image_info['width'] = image.height
-        image_info['height'] = image.width
+        image_info['width'], image_info['height'] = imagesize.get(os.path.join(data_dir, filename))
         image_info['file_name'] = os.path.relpath(
             os.path.join(data_dir, filename), os.path.dirname(out_file))
         images_info.append(image_info)
