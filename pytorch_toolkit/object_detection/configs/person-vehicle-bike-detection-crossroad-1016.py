@@ -1,5 +1,3 @@
-import os
-
 # model settings
 input_size = 512
 model = dict(
@@ -135,7 +133,7 @@ total_epochs = 5
 # device_ids = range(8)
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-work_dir = os.path.join('outputs', os.path.basename(__file__)[:-3])
+work_dir = 'outputs/person-vehicle-bike-detection-crossroad-1016'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]

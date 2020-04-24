@@ -1,5 +1,3 @@
-import os
-
 # model settings
 input_size = 416
 width_mult = 1.0
@@ -148,7 +146,7 @@ log_config = dict(
 total_epochs = 70
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-work_dir = os.path.join('outputs', os.path.basename(__file__)[:-3])
+work_dir = 'outputs/face-detection-0105'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]
