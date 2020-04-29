@@ -17,8 +17,8 @@ import torch
 import torch.nn as nn
 from examples.object_detection.layers import L2Norm
 from examples.object_detection.layers.modules.ssd_head import MultiOutputSequential, SSDDetectionOutput
-from nncf.helpers import load_state
 from nncf.config import Config
+from nncf.checkpoint_loading import load_state
 
 BASE_NUM_OUTPUTS = {
     300: [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 'C', 512, 512, 512, 'M', 512, 512, 512],

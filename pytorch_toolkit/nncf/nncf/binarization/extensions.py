@@ -14,6 +14,7 @@
 import os
 import pathlib
 import os.path
+from nncf.definitions import get_install_type
 
 from torch.utils.cpp_extension import load
 
@@ -31,11 +32,12 @@ BinarizedFunctionsCPU = load(
     verbose=False
 )
 
-ext_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cuda")
-BinarizedFunctionsCUDA = load(
-    'binarized_functions_cuda', [
-        os.path.join(ext_dir, 'functions_cuda.cpp'),
-        os.path.join(ext_dir, 'functions_cuda_kernel.cu')
-    ],
-    verbose=False
-)
+if get_install_type() == "GPU":
+    ext_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cuda")
+    BinarizedFunctionsCUDA = load(
+        'binarized_functions_cuda', [
+            os.path.join(ext_dir, 'functions_cuda.cpp'),
+            os.path.join(ext_dir, 'functions_cuda_kernel.cu')
+        ],
+        verbose=False
+    )

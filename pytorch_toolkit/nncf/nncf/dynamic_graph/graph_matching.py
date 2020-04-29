@@ -208,6 +208,13 @@ class NodeExpression(Expression):
         return None
 
 
+def get_edge_boundaries(match: List[str], graph: nx.DiGraph):
+    out_edge_boundary = list(nx.edge_boundary(graph, match, data=True))
+    complement = list(filter(lambda x: x not in match, graph.nodes.keys()))
+    in_edge_boundary = list(nx.edge_boundary(graph, complement, data=True))
+    return in_edge_boundary, out_edge_boundary
+
+
 def search_all(graph: nx.DiGraph, expression: Expression) -> List[List[str]]:
     """Returns list of node key lists that match the expression."""
     matches = []

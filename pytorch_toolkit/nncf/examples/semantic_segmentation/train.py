@@ -12,7 +12,7 @@
 """
 
 from examples.semantic_segmentation.utils.loss_funcs import do_model_specific_postprocessing
-
+from examples.common.example_logger import logger
 
 class Train:
     """Performs the training of ``model`` given a training dataset data
@@ -31,12 +31,12 @@ class Train:
     of the results (i.e. whether center crop should be applied, what outputs should be counted in metrics, etc.)
     """
 
-    def __init__(self, model, data_loader, optim, criterion, compression_algo, metric, device, model_name):
+    def __init__(self, model, data_loader, optim, criterion, compression_ctrl, metric, device, model_name):
         self.model = model
         self.data_loader = data_loader
         self.optim = optim
         self.criterion = criterion
-        self.compression_algo = compression_algo
+        self.compression_ctrl = compression_ctrl
         self.metric = metric
         self.device = device
         self.model_name = model_name
@@ -51,7 +51,7 @@ class Train:
         - The epoch loss (float).
 
         """
-        compression_scheduler = self.compression_algo.scheduler
+        compression_scheduler = self.compression_ctrl.scheduler
 
         self.model.train()
         epoch_loss = 0.0
@@ -69,7 +69,7 @@ class Train:
             # Loss computation
             loss = self.criterion(loss_outputs, labels)
 
-            compression_loss = self.compression_algo.loss()
+            compression_loss = self.compression_ctrl.loss()
             loss += compression_loss
 
             # Backpropagation
@@ -86,6 +86,6 @@ class Train:
             self.metric.add(metric_outputs.detach(), labels.detach())
 
             if iteration_loss:
-                print("[Step: %d] Iteration loss: %.4f" % (step, loss.item()))
+                logger.info("[Step: {}] Iteration loss: {:.4f}".format(step, loss.item()))
 
         return epoch_loss / len(self.data_loader), self.metric.value()

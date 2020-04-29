@@ -1,5 +1,5 @@
 """
- Copyright (c) 2019 Intel Corporation
+ Copyright (c) 2019-2020 Intel Corporation
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
  You may obtain a copy of the License at
@@ -12,19 +12,18 @@
 """
 
 import os
-
 import pytest
 import torch
 
-from nncf.config import Config
-from nncf.helpers import create_compressed_model, load_state
-from nncf.dynamic_graph import patch_torch_operators, reset_context
-from examples.common.model_loader import load_model
-from examples.common.execution import ExecutionMode, prepare_model_for_execution, get_device
 from examples.common.distributed import configure_distributed
+from examples.common.execution import ExecutionMode, prepare_model_for_execution, get_device
+from examples.common.model_loader import load_model
+from nncf.config import Config
+from nncf.checkpoint_loading import load_state
 from tests.conftest import TEST_ROOT
-from tests.test_weekly_sample import get_cli_dict_args, parse_best_acc1
+from tests.test_helpers import create_compressed_model_and_algo_for_test
 from tests.test_sanity_sample import Command, create_command_line
+from tests.test_compression_training import get_cli_dict_args, parse_best_acc1
 
 GLOBAL_CONFIG = {
     TEST_ROOT.joinpath("data", "configs", "squeezenet1_1_cifar10_rb_sparsity_int8.json"): [
@@ -63,7 +62,7 @@ def _params(request, backward_compat_models_path):
     }
 
 
-def test_model_can_be_loaded_with_resume(_params, tmp_path):
+def test_model_can_be_loaded_with_resume(_params):
     p = _params
     config_path = p['nncf_config_path']
     checkpoint_path = p['checkpoint_path']
@@ -72,7 +71,6 @@ def test_model_can_be_loaded_with_resume(_params, tmp_path):
     config.execution_mode = p['execution_mode']
 
     config.current_gpu = 0
-    config.log_dir = str(tmp_path)
     config.device = get_device(config)
     config.distributed = config.execution_mode in (ExecutionMode.DISTRIBUTED, ExecutionMode.MULTIPROCESSING_DISTRIBUTED)
     if config.distributed:
@@ -88,15 +86,12 @@ def test_model_can_be_loaded_with_resume(_params, tmp_path):
                        num_classes=config.get('num_classes', 1000),
                        model_params=config.get('model_params'))
 
-    patch_torch_operators()
-    compression_algo, model = create_compressed_model(model, config)
+    model, compression_ctrl = create_compressed_model_and_algo_for_test(model, config)
     model, _ = prepare_model_for_execution(model, config)
 
     if config.distributed:
-        compression_algo.distributed()
+        compression_ctrl.distributed()
 
-    reset_context('orig')
-    reset_context('quantized_graphs')
     checkpoint = torch.load(checkpoint_path, map_location='cpu')
     load_state(model, checkpoint['state_dict'], is_resume=True)
 
@@ -122,8 +117,6 @@ def test_loaded_model_evals_according_to_saved_acc(_params, tmp_path):
     else:
         pytest.skip("DataParallel eval takes too long for this test to be run during pre-commit")
 
-    reset_context('orig')
-    reset_context('quantized_graphs')
     runner = Command(create_command_line(get_cli_dict_args(args), "classification"))
     res = runner.run()
     assert res == 0

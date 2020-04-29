@@ -1,5 +1,5 @@
 """
- Copyright (c) 2019 Intel Corporation
+ Copyright (c) 2019-2020 Intel Corporation
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
  You may obtain a copy of the License at
@@ -10,11 +10,25 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 """
-import numpy as np
-import torch
-from torch import nn
+from collections import namedtuple
+from typing import Dict
+from typing import Tuple
 
+import numpy as np
+import pytest
+import torch
+from copy import deepcopy
+from functools import partial
+from torch import nn
+from torch.nn import Module
+
+from nncf.compression_method_api import CompressionAlgorithmController
 from nncf.config import Config
+from nncf.dynamic_graph.context import Scope
+from nncf.model_creation import create_compressed_model
+from nncf.layers import NNCF_MODULES_MAP
+from nncf.nncf_network import NNCFNetwork
+from nncf.utils import get_all_modules_by_type, objwalk
 
 
 def fill_conv_weight(conv, value):
@@ -186,3 +200,124 @@ def check_equal(test, reference, rtol=1e-4):
     for i, (x, y) in enumerate(zip(test, reference)):
         y = y.cpu().detach().numpy()
         np.testing.assert_allclose(x, y, rtol=rtol, err_msg="Index: {}".format(i))
+
+
+def create_compressed_model_and_algo_for_test(model: NNCFNetwork, config) -> Tuple[
+        NNCFNetwork, CompressionAlgorithmController]:
+    algo, model = create_compressed_model(model, config, dump_graphs=False)
+    return model, algo
+
+
+class MockModel(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.field = nn.Linear(1, 1)
+
+    def forward(self, *input_, **kwargs):
+        return None
+
+
+def check_correct_nncf_modules_replacement(model: NNCFNetwork, compressed_model: NNCFNetwork) -> Tuple[
+        Dict[Scope, Module],
+        Dict[Scope, Module]]:
+    """
+    Check that all convolutions in model was replaced by NNCF convolution.
+    :param model: original model
+    :param compressed_model: compressed model
+    :return: list of all convolutions in  original model and list of all NNCF convolutions from compressed model
+    """
+    NNCF_MODULES_REVERSED_MAP = {value: key for key, value in NNCF_MODULES_MAP.items()}
+    original_modules = get_all_modules_by_type(model, list(NNCF_MODULES_MAP.values()))
+    nncf_modules = get_all_modules_by_type(compressed_model.get_nncf_wrapped_model(),
+                                           list(NNCF_MODULES_MAP.keys()))
+    assert len(original_modules) == len(nncf_modules)
+    print(original_modules, nncf_modules)
+    for scope in original_modules.keys():
+        sparse_scope = deepcopy(scope)
+        elt = sparse_scope.pop()  # type: ScopeElement
+        elt.calling_module_class_name = NNCF_MODULES_REVERSED_MAP[elt.calling_module_class_name]
+        sparse_scope.push(elt)
+        print(sparse_scope, nncf_modules)
+        assert sparse_scope in nncf_modules
+    return original_modules, nncf_modules
+
+
+class ObjwalkTestClass:
+    def __init__(self, field: int):
+        self.field = field
+
+    def member_fn(self, val):
+        return ObjwalkTestClass(self.field + 1)
+
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
+
+NamedTuple = namedtuple("NamedTuple", ("field1", "field2"))
+
+OBJWALK_INIT_VAL = 0
+OBJWALK_REF_VAL = OBJWALK_INIT_VAL + 1
+TEST_VS_REF_OBJECTS_TO_WALK = [
+    (0,
+     0),
+
+    ("foo",
+     "foo"),
+
+    (ObjwalkTestClass(OBJWALK_INIT_VAL),
+     ObjwalkTestClass(OBJWALK_REF_VAL)),
+
+    ([0, ObjwalkTestClass(OBJWALK_INIT_VAL), "bar"],
+     [0, ObjwalkTestClass(OBJWALK_REF_VAL), "bar"]),
+
+    ([ObjwalkTestClass(OBJWALK_INIT_VAL), ObjwalkTestClass(OBJWALK_INIT_VAL), (5, 8)],
+     [ObjwalkTestClass(OBJWALK_REF_VAL), ObjwalkTestClass(OBJWALK_REF_VAL), (5, 8)]),
+
+    (
+        {
+            "obj1": ObjwalkTestClass(OBJWALK_INIT_VAL),
+            "obj2": ObjwalkTestClass(OBJWALK_INIT_VAL)
+        },
+        {
+            "obj1": ObjwalkTestClass(OBJWALK_REF_VAL),
+            "obj2": ObjwalkTestClass(OBJWALK_REF_VAL)
+        }
+    ),
+
+    ((ObjwalkTestClass(OBJWALK_INIT_VAL), 42),
+     (ObjwalkTestClass(OBJWALK_REF_VAL), 42)),
+
+    ([(ObjwalkTestClass(OBJWALK_INIT_VAL), 8), [ObjwalkTestClass(OBJWALK_INIT_VAL), "foo"],
+      {"bar": ObjwalkTestClass(OBJWALK_INIT_VAL),
+       "baz": (ObjwalkTestClass(OBJWALK_INIT_VAL), ObjwalkTestClass(OBJWALK_INIT_VAL)),
+       "xyzzy": {1337: ObjwalkTestClass(OBJWALK_INIT_VAL),
+                 31337: ObjwalkTestClass(OBJWALK_INIT_VAL)}}],
+     [(ObjwalkTestClass(OBJWALK_REF_VAL), 8), [ObjwalkTestClass(OBJWALK_REF_VAL), "foo"],
+      {"bar": ObjwalkTestClass(OBJWALK_REF_VAL),
+       "baz": (ObjwalkTestClass(OBJWALK_REF_VAL), ObjwalkTestClass(OBJWALK_REF_VAL)),
+       "xyzzy": {1337: ObjwalkTestClass(OBJWALK_REF_VAL),
+                 31337: ObjwalkTestClass(OBJWALK_REF_VAL)}}]
+    ),
+    (
+        (0, NamedTuple(field1=ObjwalkTestClass(OBJWALK_INIT_VAL), field2=-5.3), "bar"),
+        (0, NamedTuple(field1=ObjwalkTestClass(OBJWALK_REF_VAL), field2=-5.3), "bar"),
+    )
+]
+
+
+@pytest.fixture(name="objwalk_objects", params=TEST_VS_REF_OBJECTS_TO_WALK)
+def objwalk_objects_(request):
+    return request.param
+
+
+def test_objwalk(objwalk_objects):
+    start_obj = objwalk_objects[0]
+    ref_obj = objwalk_objects[1]
+
+    def is_target_class(obj):
+        return isinstance(obj, ObjwalkTestClass)
+
+    fn_to_apply = partial(ObjwalkTestClass.member_fn, val=OBJWALK_REF_VAL)
+
+    test_obj = objwalk(start_obj, is_target_class, fn_to_apply)
+
+    assert test_obj == ref_obj

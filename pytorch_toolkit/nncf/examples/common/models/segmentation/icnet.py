@@ -26,6 +26,7 @@ import torch.nn as nn
 import torch
 import torch.nn.functional as F
 
+from examples.common.example_logger import logger
 from nncf.utils import is_tracing_state
 
 
@@ -337,6 +338,6 @@ def icnet(num_classes, pretrained=False, **kwargs):
     model = ICNet(n_classes=num_classes, **kwargs)
 
     if pretrained:
-        print("ICNet has no pretrained weights")
+        logger.warning("ICNet has no pretrained weights")
 
     return model

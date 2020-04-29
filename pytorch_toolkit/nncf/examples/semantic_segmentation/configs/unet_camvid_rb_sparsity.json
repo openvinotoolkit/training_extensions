@@ -37,8 +37,5 @@
     },
     "compression": {
         "algorithm": "rb_sparsity",
-        "initializer": {
-            "num_init_steps": 1
-        }
-    }
+}
 }

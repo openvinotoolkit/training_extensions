@@ -1,15 +1,11 @@
-from nncf.dynamic_graph import patch_torch_operators
-from nncf.algo_selector import create_compression_algorithm
-from nncf.composite_compression import CompositeCompressionAlgorithm
+from nncf.composite_compression import CompositeCompressionAlgorithmController
 from nncf.utils import get_all_modules_by_type
 from nncf.sparsity.rb.layers import RBSparsifyingWeight
 from nncf.quantization.layers import SymmetricQuantizer
-from nncf.operations import UpdateWeight, UpdateInputs
-from tests.test_helpers import BasicConvTestModel
+from nncf.module_operations import UpdateWeight, UpdateInputs
+from tests.test_helpers import BasicConvTestModel, create_compressed_model_and_algo_for_test
 from nncf.config import Config
-from nncf.dynamic_graph import reset_context
 
-patch_torch_operators()
 
 
 def get_basic_sparsity_plus_quantization_config(input_sample_size=(1, 1, 4, 4)):
@@ -24,7 +20,7 @@ def get_basic_sparsity_plus_quantization_config(input_sample_size=(1, 1, 4, 4)):
                 "algorithm": "rb_sparsity",
             },
             {
-                "algorithm": "quantization",
+                "algorithm": "quantization"
             }
         ]
     })
@@ -32,14 +28,10 @@ def get_basic_sparsity_plus_quantization_config(input_sample_size=(1, 1, 4, 4)):
 
 
 def test_can_quantize_inputs_for_sparsity_plus_quantization():
-    reset_context('orig')
-    reset_context('quantized_graphs')
-    reset_context('test')
     model = BasicConvTestModel()
     config = get_basic_sparsity_plus_quantization_config()
-    compression_algo = create_compression_algorithm(model, config)
-    assert isinstance(compression_algo, CompositeCompressionAlgorithm)
-    sparse_quantized_model = compression_algo.model
+    sparse_quantized_model, compression_ctrl = create_compressed_model_and_algo_for_test(model, config)
+    assert isinstance(compression_ctrl, CompositeCompressionAlgorithmController)
 
     sparse_quantized_model_conv = get_all_modules_by_type(sparse_quantized_model, 'NNCFConv2d')
 

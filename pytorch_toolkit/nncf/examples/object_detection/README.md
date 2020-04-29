@@ -41,9 +41,9 @@ To export a model to OpenVINO IR and run it using Intel Deep Learning Deployment
 
 |Model|Compression algorithm|Dataset|PyTorch compressed accuracy|Config path|PyTorch Checkpoint|
 | :---: | :---: | :---: | :---: | :---: | :---: |
-|SSD300-BN|None|VOC12+07|78.28|examples/object_detection/config/ssd300_vgg_voc.json|https://download.01.org/opencv/openvino_training_extensions/models/nncf/ssd300_vgg_voc.pth|
-|SSD300-BN|INT8|VOC12+07|78.02|examples/object_detection/config/ssd300_vgg_voc_int8.json|https://download.01.org/opencv/openvino_training_extensions/models/nncf/ssd300_vgg_voc_int8.pth|
-|SSD300-BN|INT8 + Sparsity 70% (Magnitude)|VOC12+07|77.96|examples/object_detection/config/ssd300_vgg_voc_magnitude_sparsity_int8.json|https://download.01.org/opencv/openvino_training_extensions/models/nncf/ssd300_vgg_voc_magnitude_sparsity_int8.pth|
-|SSD512-BN|None|VOC12+07|80.26|examples/object_detection/config/ssd512_vgg_voc.json|https://download.01.org/opencv/openvino_training_extensions/models/nncf/ssd512_vgg_voc.pth|
-|SSD512-BN|INT8|VOC12+07|80.58|examples/object_detection/config/ssd512_vgg_voc_int8.json|https://download.01.org/opencv/openvino_training_extensions/models/nncf/ssd512_vgg_voc_int8.pth|
-|SSD512-BN|INT8 + Sparsity 70% (Magnitude)|VOC12+07|80.11|examples/object_detection/config/ssd512_vgg_voc_magnitude_sparsity_int8.json|https://download.01.org/opencv/openvino_training_extensions/models/nncf/ssd512_vgg_voc_magnitude_sparsity_int8.pth|
+|SSD300-BN|None|VOC12+07|78.28|examples/object_detection/configs/ssd300_vgg_voc.json|https://download.01.org/opencv/openvino_training_extensions/models/nncf/ssd300_vgg_voc.pth|
+|SSD300-BN|INT8|VOC12+07|78.07|examples/object_detection/configs/ssd300_vgg_voc_int8.json|https://download.01.org/opencv/openvino_training_extensions/models/nncf/ssd300_vgg_voc_int8.pth|
+|SSD300-BN|INT8 + Sparsity 70% (Magnitude)|VOC12+07|78.01|examples/object_detection/configs/ssd300_vgg_voc_magnitude_sparsity_int8.json|https://download.01.org/opencv/openvino_training_extensions/models/nncf/ssd300_vgg_voc_magnitude_sparsity_int8.pth|
+|SSD512-BN|None|VOC12+07|80.26|examples/object_detection/configs/ssd512_vgg_voc.json|https://download.01.org/opencv/openvino_training_extensions/models/nncf/ssd512_vgg_voc.pth|
+|SSD512-BN|INT8|VOC12+07|80.02|examples/object_detection/configs/ssd512_vgg_voc_int8.json|https://download.01.org/opencv/openvino_training_extensions/models/nncf/ssd512_vgg_voc_int8.pth|
+|SSD512-BN|INT8 + Sparsity 70% (Magnitude)|VOC12+07|79.98|examples/object_detection/configs/ssd512_vgg_voc_magnitude_sparsity_int8.json|https://download.01.org/opencv/openvino_training_extensions/models/nncf/ssd512_vgg_voc_magnitude_sparsity_int8.pth|

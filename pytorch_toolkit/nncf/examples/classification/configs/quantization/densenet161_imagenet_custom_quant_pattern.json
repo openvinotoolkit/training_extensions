@@ -17,7 +17,9 @@
         "algorithm": "quantization",
         "quantizable_subgraph_patterns": [["cat", "batch_norm"], "cat"],
         "initializer": {
-            "num_init_steps": 10
+            "range": {
+                "num_init_steps": 10
+            }
         }
     }
 }

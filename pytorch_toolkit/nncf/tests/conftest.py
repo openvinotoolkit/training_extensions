@@ -13,17 +13,23 @@
 from pathlib import Path
 
 import pytest
-import torch
+try:
+    import torch
+    from torch.backends import cudnn
+    from nncf.utils import manual_seed
+except ImportError:
+    torch = None
+
 
 TEST_ROOT = Path(__file__).parent.absolute()
-PROJECT_ROOT = TEST_ROOT.parent
+PROJECT_ROOT = TEST_ROOT.parent.absolute()
 EXAMPLES_DIR = PROJECT_ROOT / 'examples'
 
 
 @pytest.fixture(scope="function", autouse=True)
 def empty_cache():
     yield
-    if torch.cuda.is_available():
+    if torch:
         torch.cuda.empty_cache()
 
 
@@ -48,6 +54,9 @@ def pytest_addoption(parser):
         "--imagenet", action="store_true", default=False, help="Enable tests with imagenet"
     )
     parser.addoption(
+        "--test-install-type", type=str, help="Type of installation, use CPU or GPU for appropriate install"
+    )
+    parser.addoption(
         "--backward-compat-models", type=str, default=None, help="Path to NNCF-traned model checkpoints that are tested"
                                                                  "to be strictly loadable"
     )
@@ -67,13 +76,20 @@ def enable_imagenet(request):
 def weekly_models_path(request):
     return request.config.getoption("--weekly-models")
 
+
 @pytest.fixture(scope="module")
 def sota_checkpoints_dir(request):
     return request.config.getoption("--sota-checkpoints-dir")
 
+
 @pytest.fixture(scope="module")
 def sota_data_dir(request):
     return request.config.getoption("--sota-data-dir")
+
+
+@pytest.fixture(scope="module")
+def install_type(request):
+    return request.config.getoption("--test-install-type")
 
 
 @pytest.fixture(scope="module")
@@ -86,3 +102,10 @@ def torch_home_dir(request, monkeypatch):
     torch_home = request.config.getoption("--torch-home")
     if torch_home:
         monkeypatch.setenv('TORCH_HOME', torch_home)
+
+
+@pytest.fixture
+def _seed():
+    manual_seed(0)
+    cudnn.deterministic = True
+    cudnn.benchmark = False

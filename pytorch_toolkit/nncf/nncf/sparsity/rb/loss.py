@@ -1,5 +1,5 @@
 """
- Copyright (c) 2019 Intel Corporation
+ Copyright (c) 2019-2020 Intel Corporation
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
  You may obtain a copy of the License at
@@ -18,20 +18,23 @@ from ...compression_method_api import CompressionLoss
 
 # Actually in responsible to lean density to target value
 class SparseLoss(CompressionLoss):
-    def __init__(self, sparse_layers, target=1.0, p=0.05):
+    def __init__(self, sparse_layers=None, target=1.0, p=0.05):
         super().__init__()
-        self.sparse_layers = sparse_layers
+        self._sparse_layers = sparse_layers
         self.target = target
         self.p = p
         self.disabled = False
         self.current_sparsity = 0
         self.mean_sparse_prob = 0
 
+    def set_layers(self, sparse_layers):
+        self._sparse_layers = sparse_layers
+
     def disable(self):
         if not self.disabled:
             self.disabled = True
 
-            for sparse_layer in self.sparse_layers:
+            for sparse_layer in self._sparse_layers:
                 sparse_layer.sparsify = False
 
     def forward(self):
@@ -41,7 +44,7 @@ class SparseLoss(CompressionLoss):
         params = 0
         loss = 0
         sparse_prob_sum = 0
-        for sparse_layer in self.sparse_layers:
+        for sparse_layer in self._sparse_layers:
             if not self.disabled and not sparse_layer.sparsify:
                 raise AssertionError(
                     "Invalid state of SparseLoss and SparsifiedWeight: mask is frozen for enabled loss")

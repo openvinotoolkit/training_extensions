@@ -23,7 +23,7 @@
     "base_lr": 1e-4,
     "weight_decay": 5e-4,
     "schedule_type": "multistep",
-    "steps": [460, 700, 900]
+    "steps": [2, 3, 4] // in epochs
   },
   "ssd_params": {
     "clip": false,

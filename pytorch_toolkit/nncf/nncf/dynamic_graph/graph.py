@@ -1,5 +1,5 @@
 """
- Copyright (c) 2019 Intel Corporation
+ Copyright (c) 2019-2020 Intel Corporation
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
  You may obtain a copy of the License at
@@ -11,22 +11,23 @@
  limitations under the License.
 """
 
-import logging
+
 from _warnings import warn
-from typing import Callable, List, Optional, Tuple
+from typing import Callable, List, Optional, Tuple, Any
 
 import networkx as nx
+from copy import deepcopy
+from networkx.drawing.nx_agraph import to_agraph
 from torch import Tensor
 
-from nncf.dynamic_graph.graph_matching import Expression, NodeExpression, search_all
+from nncf.dynamic_graph.graph_matching import Expression, NodeExpression, search_all, get_edge_boundaries
 from nncf.dynamic_graph.trace_tensor import TensorMeta, TracedTensor
-from nncf.registry import Registry
+from nncf.layers import ITERATION_MODULES
 
-logger = logging.getLogger(__name__)
-
-ITERATION_MODULES = Registry('iteration_modules')
+from nncf.nncf_logger import logger as nncf_logger
 
 
+# pylint: disable=too-many-public-methods
 class TensorMetaComparator:
     def __call__(self, lhs: TensorMeta, rhs: TensorMeta) -> bool:
         raise NotImplementedError
@@ -112,7 +113,7 @@ class OperationExecutionContext:
 
     def __init__(self,
                  operator_name: str,
-                 scope_in_model: List['ScopeElement'],
+                 scope_in_model: 'Scope',
                  call_order: int,
                  tensor_metas: List[TensorMeta],
                  tm_comparators: List[TensorMetaComparator] = None,
@@ -141,7 +142,7 @@ class OperationExecutionContext:
             else:
                 input_info_str += str(meta) + ";"
 
-        return super().__str__(self) + '(' + input_info_str + ')'
+        return super().__str__() + '(' + input_info_str + ')'
 
     @property
     def operator_name(self):
@@ -161,25 +162,34 @@ class NNCFNode:
         self.node_id = node_id
         self.op_exec_context = op_exec_context
 
+    def __str__(self):
+        return str(self.node_id) + " " + str(self.op_exec_context)
+
+    def __hash__(self):
+        return hash(str(self))
+
+    def __eq__(self, other):
+        return self.node_id == other.node_id and self.op_exec_context == other.op_exec_context
+
 
 class DefaultScopeNodeMatcher:
     def __init__(self, node_id_to_key_dict, nx_graph, nx_node_to_nncf_node):
         self._node_id_to_key_dict = node_id_to_key_dict
         self._nx_graph = nx_graph
         self._nx_node_to_nncf_node = nx_node_to_nncf_node
-        self._input_nx_nodes = dict()
+        self._inputless_nx_nodes = dict()
 
     def get_node_by_id(self, node_id):
         return self._nx_graph.nodes[self._node_id_to_key_dict[node_id]]
 
-    def _find_input_nodes(self, op_exec_context: OperationExecutionContext):
+    def _find_nodes_with_matching_context_among_inputless(self, op_exec_context: OperationExecutionContext):
         node_candidates = {}
-        for nx_node_key, nx_node in self._input_nx_nodes.items():
+        for nx_node_key, nx_node in self._inputless_nx_nodes.items():
             if nx_node[NNCFGraph.OP_EXEC_CONTEXT_NODE_ATTR] == op_exec_context:
                 node_candidates[nx_node_key] = nx_node
         return node_candidates
 
-    def _find_consumer_nodes(self, op_exec_context: OperationExecutionContext):
+    def _find_nodes_with_matching_context_and_inputs(self, op_exec_context: OperationExecutionContext):
         node_candidates = {}
         for info in op_exec_context.tensor_metas:
             if info is None or info.creator_id is None:
@@ -197,7 +207,7 @@ class DefaultScopeNodeMatcher:
         name_parts = (str(op_exec_context.scope_in_model), op_exec_context.operator_name)
         node_key = '{idx} {uri}'.format(uri='/'.join(name_parts), idx=node_id)
 
-        logger.debug("New node added to NNCF graph: {}".format(node_key))
+        nncf_logger.debug("New node added to NNCF graph: {}".format(node_key))
 
         self._node_id_to_key_dict[node_id] = node_key
         attrs = {
@@ -214,9 +224,10 @@ class DefaultScopeNodeMatcher:
             parent = self._node_id_to_key_dict[info.creator_id]
             self._nx_graph.add_edge(parent, node_key)
             has_traced_inputs = True
+            self._nx_graph.edges[parent, node_key][NNCFGraph.ACTIVATION_SHAPE_EDGE_ATTR] = info.shape
 
         if not has_traced_inputs:
-            self._input_nx_nodes[node_key] = self._nx_graph.nodes[node_key]
+            self._inputless_nx_nodes[node_key] = self._nx_graph.nodes[node_key]
 
         return self._nx_node_to_nncf_node(self._nx_graph.nodes[node_key])
 
@@ -229,9 +240,9 @@ class DefaultScopeNodeMatcher:
                                                     tensor_metas,
                                                     tm_comparators=tm_comparators)
         nncf_node_candidates = []
-        node_candidates = self._find_consumer_nodes(op_exec_context)
+        node_candidates = self._find_nodes_with_matching_context_and_inputs(op_exec_context)
         if not node_candidates:
-            node_candidates = self._find_input_nodes(op_exec_context)
+            node_candidates = self._find_nodes_with_matching_context_among_inputless(op_exec_context)
 
         for nx_node in node_candidates.values():
             nncf_node_candidates.append(NNCFNode(nx_node[NNCFGraph.ID_NODE_ATTR],
@@ -295,7 +306,7 @@ class IterationScopeNodeMatcher(DefaultScopeNodeMatcher):
                 if has_input_outside_iteration:
                     node_name = str(op_exec_context.input_agnostic)
                     first_nodes[node_name] = node
-                    logging.debug('Found first iteration node: {} in scope: {}'.format(name, iter_scope))
+                    nncf_logger.debug('Found first iteration node: {} in scope: {}'.format(name, iter_scope))
 
     def add_node(self, op_exec_context: OperationExecutionContext, inputs) -> NNCFNode:
         node = super().add_node(op_exec_context, inputs)
@@ -317,14 +328,14 @@ class IterationScopeNodeMatcher(DefaultScopeNodeMatcher):
                                                     tensor_metas,
                                                     input_matcher=input_matcher,
                                                     tm_comparators=tm_comparators)
-        node_candidates = self._find_consumer_nodes(op_exec_context)
+        node_candidates = self._find_nodes_with_matching_context_and_inputs(op_exec_context)
         if not node_candidates:
             op_exec_context = OperationExecutionContext(ia_op_exec_context.operator_name,
                                                         ia_op_exec_context.scope_in_model,
                                                         ia_op_exec_context.call_order,
                                                         tensor_metas,
                                                         tm_comparators=tm_comparators)
-            node_candidates = self._find_input_nodes(op_exec_context)
+            node_candidates = self._find_nodes_with_matching_context_among_inputless(op_exec_context)
             if not node_candidates and iter_scopes:
                 # ignore information about node creator and index of input
                 comparators = tm_comparators + [ShapeOnlyTensorMetaComparator()]
@@ -417,15 +428,45 @@ class NodeManager:
         return matcher.add_node(op_exec_context, inputs)
 
 
+class NNCFGraphEdge:
+    def __init__(self, from_node: NNCFNode, to_node: NNCFNode, tensor_shape: Tuple):
+        self.from_node = from_node
+        self.to_node = to_node
+        self.tensor_shape = tensor_shape
+
+    def __str__(self):
+        return str(self.from_node) + " -> " + str(self.tensor_shape) + " -> " + str(self.to_node)
+
+    def __hash__(self):
+        return hash(str(self))
+
+    def __eq__(self, other):
+        return self.from_node == other.from_node and self.to_node == other.to_node \
+               and self.tensor_shape == other.tensor_shape
+
+
+class NNCFGraphPatternIO:
+    def __init__(self, input_edges: List[NNCFGraphEdge], output_edges: List[NNCFGraphEdge],
+                 input_nodes: List[NNCFNode],
+                 output_nodes: List[NNCFNode],
+                 ):
+        self.input_edges = input_edges
+        self.output_edges = output_edges
+        self.input_nodes = input_nodes
+        self.output_nodes = output_nodes
+
+
 class NNCFGraph:
     ID_NODE_ATTR = "id"
     KEY_NODE_ATTR = "key"
     OP_EXEC_CONTEXT_NODE_ATTR = "op_exec_context"
+    ACTIVATION_SHAPE_EDGE_ATTR = "activation_shape"
 
     def __init__(self):
         self._nx_graph = nx.DiGraph()
         self._node_id_to_key_dict = dict()
         self.match_manager = NodeManager(self._node_id_to_key_dict, self._nx_graph, self._nx_node_to_nncf_node)
+        self._input_nncf_nodes = []
 
     def find_node(self,
                   ia_op_exec_context: InputAgnosticOperationExecutionContext,
@@ -437,44 +478,83 @@ class NNCFGraph:
                  tensor_metas: List[TensorMeta],
                  input_comparators_per_scope: List[Tuple[TensorMetaComparator, List[str]]],
                  inputs) -> NNCFNode:
-        return self.match_manager.add_node(ia_op_exec_context, tensor_metas, input_comparators_per_scope, inputs)
+        node = self.match_manager.add_node(ia_op_exec_context, tensor_metas, input_comparators_per_scope, inputs)
+
+        from nncf.dynamic_graph.patch_pytorch import MODEL_INPUT_OP_NAME
+        if node.op_exec_context.operator_name == MODEL_INPUT_OP_NAME:  # TODO: refactorable model input node name
+            self._input_nncf_nodes.append(node)
+        return node
+
+    def get_nx_node_by_key(self, key: str):
+        return self._nx_graph.nodes[key]
+
+    def get_node_id_by_iap_context(self, iap_ctx: InputAgnosticOperationExecutionContext) -> str:
+        for node_key, node in self._nx_graph.nodes.items():
+            if node[NNCFGraph.OP_EXEC_CONTEXT_NODE_ATTR].input_agnostic == iap_ctx:
+                return node_key
+        raise AttributeError('Failed to get node by context={}'.format(str(iap_ctx)))
+
+    def get_successors(self, node_name: str):
+        return self._nx_graph.successors(node_name)
 
     def get_all_node_keys(self):
         return self._node_id_to_key_dict.copy().values()
 
+    def get_all_node_idxs(self):
+        return self._node_id_to_key_dict.keys()
+
     def get_node_key_by_id(self, node_id):
         return self._node_id_to_key_dict[node_id]
 
-    def get_insertion_point_nodes_after_pattern(self, expression: Expression) -> List[NNCFNode]:
+    def get_matching_nncf_graph_pattern_io_list(self, expression: Expression) -> List[NNCFGraphPatternIO]:
         matched_node_key_sequences = search_all(self._nx_graph, expression)
-        ip_node_keys = self._find_insertion_points(matched_node_key_sequences)
-        return [NNCFGraph._nx_node_to_nncf_node(self._nx_graph.nodes[key]) for key in ip_node_keys]
+        pattern_ios = [self._get_nncf_graph_pattern_io_list(match) for match in matched_node_key_sequences]
+        return pattern_ios
 
-    def dump_graph(self, path):
-        nx.drawing.nx_pydot.write_dot(self._get_graph_to_dump(), path)
+    def dump_graph(self, path, extended=False):
+        nx.drawing.nx_pydot.write_dot(self._get_graph_to_dump(extended), path)
 
     def is_output_node(self, node: NNCFNode) -> bool:
         return not list(self._nx_graph.successors(self._node_id_to_key_dict[node.node_id]))
 
-    def get_graph_roots(self) -> List[NNCFNode]:
-        retval = []
-        for nx_node_key, deg in self._nx_graph.in_degree():
+    def get_nx_graph_copy(self) -> nx.DiGraph:
+        return deepcopy(self._nx_graph)
+
+    def get_input_nodes(self) -> List[NNCFNode]:
+        return self._input_nncf_nodes
+
+    def get_graph_outputs(self) -> List[NNCFNode]:
+        outputs = []
+        for nx_node_key, deg in self._nx_graph.out_degree():
             if deg == 0:
-                retval.append(self._nx_node_to_nncf_node(self._nx_graph.nodes[nx_node_key]))
-        return retval
+                outputs.append(self._nx_node_to_nncf_node(self._nx_graph.nodes[nx_node_key]))
+        return outputs
 
     def get_next_nodes(self, node: NNCFNode) -> Optional[List[NNCFNode]]:
         nx_node_keys = self._nx_graph.succ[self._node_id_to_key_dict[node.node_id]]
         return [self._nx_node_to_nncf_node(self._nx_graph.nodes[key]) for key in nx_node_keys]
 
+    def get_previous_nodes(self, node: NNCFNode) -> Optional[List[NNCFNode]]:
+        nx_node_keys = self._nx_graph.pred[self._node_id_to_key_dict[node.node_id]]
+        return [self._nx_node_to_nncf_node(self._nx_graph.nodes[key]) for key in nx_node_keys]
+
     def get_inputs_count(self, node: NNCFNode) -> int:
         return self._nx_graph.in_degree()[self._node_id_to_key_dict[node.node_id]]
 
-    def traverse_graph(self, curr_node: NNCFNode, traverse_function: Callable[[NNCFNode], bool]):
-        is_finished = traverse_function(curr_node)
+    def traverse_graph(self, curr_node: NNCFNode, traverse_function: Callable[[NNCFNode], Tuple[bool, List[Any]]],
+                       traverse_forward: bool = True):
+        output = []
+        return self._traverse_graph_recursive_helper(curr_node, traverse_function, output, traverse_forward)
+
+    def _traverse_graph_recursive_helper(self, curr_node: NNCFNode,
+                                         traverse_function: Callable[[NNCFNode], Tuple[bool, List[Any]]],
+                                         output: List[Any], traverse_forward: bool):
+        is_finished, output = traverse_function(curr_node, output)
+        get_nodes_fn = self.get_next_nodes if traverse_forward else self.get_previous_nodes
         if not is_finished:
-            for successor_node in self.get_next_nodes(curr_node):
-                self.traverse_graph(successor_node, traverse_function)
+            for node in get_nodes_fn(curr_node):
+                self._traverse_graph_recursive_helper(node, traverse_function, output, traverse_forward)
+        return output
 
     def get_nodes_count(self):
         return self._nx_graph.number_of_nodes()
@@ -483,7 +563,15 @@ class NNCFGraph:
     def node_type_fn(node: dict) -> str:
         return node[NNCFGraph.OP_EXEC_CONTEXT_NODE_ATTR].operator_name
 
-    def _get_graph_to_dump(self) -> nx.DiGraph:
+    def get_output_shapes_for_ia_op_exec_context(self,
+                                                 ia_op_exec_context: InputAgnosticOperationExecutionContext)\
+                                                 -> List[Tuple]:
+        node_key = self.get_node_id_by_iap_context(ia_op_exec_context)
+        succs = list(self._nx_graph.successors(node_key))
+        edge_list = [self._nx_graph.edges[node_key, to_node_key] for to_node_key in succs]
+        return [edge[NNCFGraph.ACTIVATION_SHAPE_EDGE_ATTR] for edge in edge_list]
+
+    def _get_graph_to_dump(self, extended=False) -> nx.DiGraph:
         """The graph to dump has certain node attributes omitted, compared to the graph stored
          inside NNCFGraph."""
         out_graph = nx.DiGraph()
@@ -493,11 +581,16 @@ class NNCFGraph:
             out_graph.add_node(node_name, type=op_exec_context.operator_name,
                                id=node[NNCFGraph.ID_NODE_ATTR],
                                scope=scope_str)
-        for u, v in self._nx_graph.edges:
-            out_graph.add_edge(u, v)
+        if extended:
+            for u, v in self._nx_graph.edges:
+                out_graph.add_edge(u, v, label=self._nx_graph.edges[u, v][NNCFGraph.ACTIVATION_SHAPE_EDGE_ATTR])
+        else:
+            for u, v in self._nx_graph.edges:
+                out_graph.add_edge(u, v)
+
         return out_graph
 
-    def _find_insertion_points(self, matches: List[List[str]]) -> List[str]:
+    def _get_topologically_last_nodes(self, matches: List[List[str]]) -> List[str]:
         topological_order = {node: k for k, node in enumerate(nx.topological_sort(self._nx_graph))}
         insertion_points = {max(match, key=topological_order.__getitem__) for match in matches}
         for match in matches:
@@ -507,10 +600,118 @@ class NNCFGraph:
 
         return list(insertion_points)
 
+    def _get_nncf_graph_pattern_input_output(self, match: List[str]) -> NNCFGraphPatternIO:
+        out_edge_boundary = list(nx.edge_boundary(self._nx_graph, match, data=True))
+        complement = list(filter(lambda x: x not in match, self._nx_graph.nodes.keys()))
+        in_edge_boundary = list(nx.edge_boundary(self._nx_graph, complement, data=True))
+        boundary = in_edge_boundary + out_edge_boundary
+        input_nncf_edges = []
+        output_nncf_edges = []
+        input_nncf_nodes = []
+        output_nncf_nodes = []
+        for key in match:
+            # Currently we treat the nodes without incoming edges as "input" and the nodes without
+            # outcoming edges as "output".
+            # A proper way to find the input nodes would be to mark the tensors arriving at NNCFNetwork's
+            # "forward" as input, then drop the marking once the first operation with an input tensor
+            # has been done; the node corresponding to this operation would be "input" by definition.
+            # Same with output nodes - should check the model output for TracedTensors and mark the
+            # nodes from which such tensors originated as "output".
+            # TODO: implement the functionality above.
+            if not list(self._nx_graph.successors(key)):
+                output_nncf_nodes.append(self._nx_node_to_nncf_node(self._nx_graph.nodes[key]))
+            if not list(self._nx_graph.predecessors(key)):
+                input_nncf_nodes.append(self._nx_node_to_nncf_node(self._nx_graph.nodes[key]))
+
+        for nx_edge in boundary:
+            from_node_key = nx_edge[0]
+            to_node_key = nx_edge[1]
+            data = nx_edge[2]
+            nncf_edge = NNCFGraphEdge(self._nx_node_to_nncf_node(self._nx_graph.nodes[from_node_key]),
+                                      self._nx_node_to_nncf_node(self._nx_graph.nodes[to_node_key]),
+                                      data[NNCFGraph.ACTIVATION_SHAPE_EDGE_ATTR])
+            if from_node_key in match:
+                output_nncf_edges.append(nncf_edge)
+            elif to_node_key in match:
+                input_nncf_edges.append(nncf_edge)
+            else:
+                raise RuntimeError("Invalid graph expression supplied!")
+
+        return NNCFGraphPatternIO(input_nncf_edges, output_nncf_edges,
+                                  input_nncf_nodes, output_nncf_nodes)
+
+    def _get_nncf_graph_pattern_io_list(self, match: List[str]) -> NNCFGraphPatternIO:
+        in_edge_boundary, out_edge_boundary = get_edge_boundaries(match, self._nx_graph)
+        boundary = in_edge_boundary + out_edge_boundary
+        input_nncf_edges = []
+        output_nncf_edges = []
+        input_nncf_nodes = []
+        output_nncf_nodes = []
+        for key in match:
+            # Currently we treat the nodes without incoming edges as "input" and the nodes without
+            # outcoming edges as "output".
+            # A proper way to find the input nodes would be to mark the tensors arriving at NNCFNetwork's
+            # "forward" as input, then drop the marking once the first operation with an input tensor
+            # has been done; the node corresponding to this operation would be "input" by definition.
+            # Same with output nodes - should check the model output for TracedTensors and mark the
+            # nodes from which such tensors originated as "output".
+            # TODO: implement the functionality above.
+            if not list(self._nx_graph.successors(key)):
+                output_nncf_nodes.append(self._nx_node_to_nncf_node(self._nx_graph.nodes[key]))
+            if not list(self._nx_graph.predecessors(key)):
+                input_nncf_nodes.append(self._nx_node_to_nncf_node(self._nx_graph.nodes[key]))
+
+        for nx_edge in boundary:
+            from_node_key = nx_edge[0]
+            to_node_key = nx_edge[1]
+            data = nx_edge[2]
+            nncf_edge = NNCFGraphEdge(self._nx_node_to_nncf_node(self._nx_graph.nodes[from_node_key]),
+                                      self._nx_node_to_nncf_node(self._nx_graph.nodes[to_node_key]),
+                                      data[NNCFGraph.ACTIVATION_SHAPE_EDGE_ATTR])
+            if from_node_key in match:
+                output_nncf_edges.append(nncf_edge)
+            elif to_node_key in match:
+                input_nncf_edges.append(nncf_edge)
+            else:
+                raise RuntimeError("Invalid graph expression supplied!")
+
+        return NNCFGraphPatternIO(input_nncf_edges, output_nncf_edges,
+                                  input_nncf_nodes, output_nncf_nodes)
+
     @staticmethod
     def _nx_node_to_nncf_node(nx_node) -> 'NNCFNode':
         return NNCFNode(nx_node[NNCFGraph.ID_NODE_ATTR],
                         nx_node[NNCFGraph.OP_EXEC_CONTEXT_NODE_ATTR])
+
+    def find_node_in_nx_graph_by_scope(self, scope: 'Scope') -> Optional[dict]:
+        """
+        Looking for node with scope == scope in networkx graph.
+        :param self: graphs to work on
+        :param scope: Scope to find in graph
+        :return: node from networkx graph for graph (or None if such scope is not found)
+        """
+        nodes = self._nx_graph.nodes
+        for node_key in nodes:
+            if nodes[node_key][NNCFGraph.OP_EXEC_CONTEXT_NODE_ATTR].scope_in_model == scope:
+                return nodes[node_key]
+        return None
+
+    def visualize_graph(self, path):
+        out_graph = nx.DiGraph()
+        for node_name, node in self._nx_graph.nodes.items():
+            op_exec_context = node[NNCFGraph.OP_EXEC_CONTEXT_NODE_ATTR]
+            scope_str = str(op_exec_context.scope_in_model)
+            out_graph.add_node(node_name, type=op_exec_context.operator_name,
+                               id=node[NNCFGraph.ID_NODE_ATTR],
+                               scope=scope_str)
+        for u, v in self._nx_graph.edges:
+            out_graph.add_edge(u, v, label=self._nx_graph.edges[u, v][NNCFGraph.ACTIVATION_SHAPE_EDGE_ATTR])
+        try:
+            A = to_agraph(out_graph)
+            A.layout('dot')
+            A.draw(path)
+        except ImportError:
+            warn("Graphviz is not installed - no graph visualization will be done")
 
 
 class NNCFNodeExpression(NodeExpression):

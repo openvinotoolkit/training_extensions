@@ -1,0 +1,52 @@
+{
+    "model": "squeezenet1_1_custom",
+    "pretrained": true,
+    "input_info": {
+        "sample_size": [
+            1,
+            3,
+            224,
+            224
+        ]
+    },
+    "num_classes": 1000,
+    "batch_size": 256,
+    "epochs": 150,
+    "optimizer": {
+        "base_lr": 0.00031,
+        "schedule_type": "plateau",
+        "type": "Adam",
+        "scheduler_params": {
+            "threshold": 0.1,
+            "cooldown": 3
+        },
+        "weight_decay": 1e-05
+    },
+    "compression": {
+        "algorithm": "quantization",
+        "weights": {
+            "mode": "asymmetric",
+            "bits": 4,
+            "per_channel": true
+        },
+        "activations": {
+            "mode": "asymmetric",
+            "bits": 8
+        },
+        "initializer": {
+            "precision": {
+                "type": "hawq",
+                "bits": [
+                    4,
+                    8
+                ],
+                "tolerance": 1e-5,
+                "num_data_points": 1000,
+                "iter_number": 500
+            },
+            "range": {
+                "type": "min_max"
+            }
+        }
+    }
+}

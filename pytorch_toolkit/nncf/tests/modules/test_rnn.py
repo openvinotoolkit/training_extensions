@@ -1,5 +1,5 @@
 """
- Copyright (c) 2019 Intel Corporation
+ Copyright (c) 2019-2020 Intel Corporation
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
  You may obtain a copy of the License at
@@ -10,32 +10,62 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 """
-import copy
 import logging
-import os
 import sys
 from collections import namedtuple
-from functools import partial
 from typing import List, Tuple
 
+import copy
 import onnx
+import os
 import pytest
 import torch
 import torch.nn.functional as F
+from functools import partial
 from torch import nn
 from torch.autograd import Variable
-from torch.backends import cudnn
 from torch.nn.utils.rnn import PackedSequence
 
-from nncf.dynamic_graph import reset_context, patch_torch_operators, context
-from nncf.dynamic_graph.patch_pytorch import ITERATION_MODULES
-from nncf.helpers import create_compressed_model
-from nncf.helpers.utils import replace_lstm
-from nncf.layers import LSTMCellNNCF, NNCF_RNN
-from nncf.utils import manual_seed
+from nncf.dynamic_graph.context import TracingContext
+from nncf.dynamic_graph.transform_graph import replace_modules
+from nncf.model_creation import create_compressed_model
+from nncf.layers import LSTMCellNNCF, NNCF_RNN, ITERATION_MODULES
 from tests.modules.seq2seq.gnmt import GNMT
-from tests.test_helpers import get_empty_config, get_grads
+from tests.test_helpers import get_empty_config, get_grads, create_compressed_model_and_algo_for_test
 
+
+def replace_lstm(model):
+    def replace_fn(module_):
+        if not isinstance(module_, nn.LSTM):
+            return module_
+        device = next(module_.parameters()).device
+        custom_lstm = NNCF_RNN('LSTM', input_size=module_.input_size, hidden_size=module_.hidden_size,
+                               num_layers=module_.num_layers, bidirectional=module_.bidirectional,
+                               batch_first=module_.batch_first, dropout=module_.dropout,
+                               bias=module_.bias)
+
+        def get_param_names(bias):
+            # type: (bool) -> List[str]
+            suffixes = ['ih', 'hh']
+            names = ['weight_' + suffix for suffix in suffixes]
+            if bias:
+                names += ['bias_' + suffix for suffix in suffixes]
+            return names
+
+        for l in range(custom_lstm.num_layers):
+            for d in range(custom_lstm.num_directions):
+                for name in get_param_names(custom_lstm.bias):
+                    suffix = '_reverse' if d == 1 else ''
+                    param_name = name + '_l{}{}'.format(l, suffix)
+                    param = getattr(module_, param_name)
+                    getattr(custom_lstm, param_name).data.copy_(param.data)
+        custom_lstm.to(device)
+        return custom_lstm
+
+    if isinstance(model, nn.LSTM):
+        return replace_fn(model)
+    affected_scopes = []
+    return replace_modules(model, replace_fn, affected_scopes)[0]
 
 def clone_test_data(data_list):
     # type: (LSTMTestData) -> List[torch.Tensor]
@@ -58,14 +88,6 @@ def clone_test_data(data_list):
 
 LSTMTestSizes = namedtuple('LSTMTestSizes', ['input_size', 'hidden_size', 'batch', 'seq_length'])
 LSTMTestData = namedtuple('LSTMTestData', ['x', 'h0', 'c0', 'weight_ih', 'weight_hh', 'bias_ih', 'bias_hh'])
-
-
-@pytest.fixture
-def _seed():
-    torch.random.manual_seed(0)
-    manual_seed(0)
-    cudnn.deterministic = True
-    cudnn.benchmark = False
 
 
 @pytest.mark.parametrize('sizes',
@@ -169,14 +191,10 @@ class TestLSTMCell:
 
 
 def test_export_lstm_cell(tmp_path):
-    patch_torch_operators()
     config = get_empty_config(model_size=1, input_sample_size=(1, 1))
     config['compression'] = {'algorithm': 'quantization'}
 
-    config.log_dir = str(tmp_path)
-    reset_context('orig')
-    reset_context('quantized_graphs')
-    algo, model = create_compressed_model(LSTMCellNNCF(1, 1), config)
+    model, algo = create_compressed_model_and_algo_for_test(LSTMCellNNCF(1, 1), config)
 
     test_path = str(tmp_path.joinpath('test.onnx'))
     algo.export_model(test_path)
@@ -188,7 +206,7 @@ def test_export_lstm_cell(tmp_path):
     for node in model.graph.node:
         if node.op_type == 'FakeQuantize':
             onnx_num += 1
-    assert onnx_num == 13
+    assert onnx_num == 12
 
 
 @pytest.mark.parametrize('sizes',
@@ -346,17 +364,13 @@ class TestLSTM:
 
 def test_export_stacked_bi_lstm(tmp_path):
     p = LSTMTestSizes(3, 3, 3, 3)
-    patch_torch_operators()
     config = get_empty_config(input_sample_size=(1, p.hidden_size, p.input_size))
     config['compression'] = {'algorithm': 'quantization'}
 
-    config.log_dir = str(tmp_path)
-    reset_context('orig')
-    reset_context('quantized_graphs')
     # TODO: batch_first=True fails with building graph: ambiguous call to mul or sigmoid
     test_rnn = NNCF_RNN('LSTM', input_size=p.input_size, hidden_size=p.hidden_size, num_layers=2, bidirectional=True,
                         batch_first=False)
-    algo, model = create_compressed_model(test_rnn, config)
+    model, algo = create_compressed_model_and_algo_for_test(test_rnn, config)
 
     test_path = str(tmp_path.joinpath('test.onnx'))
     algo.export_model(test_path)
@@ -368,27 +382,22 @@ def test_export_stacked_bi_lstm(tmp_path):
     for node in model.graph.node:
         if node.op_type == 'FakeQuantize':
             onnx_num += 1
-    assert onnx_num == 54
+    assert onnx_num == 50
 
 
-@ITERATION_MODULES.register('Inner')
 class TestNumberOfNodes:
     logging.basicConfig(level=logging.INFO, stream=sys.stdout)
 
-    def test_number_of_calling_fq_for_lstm(self, tmp_path):
+    def test_number_of_calling_fq_for_lstm(self):
         p = LSTMTestSizes(1, 1, 1, 5)
         num_layers = 2
         bidirectional = True
         num_directions = 2 if bidirectional else 1
         bias = True
         batch_first = False
-        patch_torch_operators()
         config = get_empty_config(input_sample_size=(p.seq_length, p.batch, p.input_size))
         config['compression'] = {'algorithm': 'quantization', 'quantize_inputs': True}
 
-        config.log_dir = str(tmp_path)
-        reset_context('orig')
-        reset_context('quantized_graphs')
         test_data = TestLSTMCell.generate_lstm_data(p, num_layers, num_directions, bias=bias, batch_first=batch_first)
 
         test_rnn = NNCF_RNN('LSTM', input_size=p.input_size, hidden_size=p.hidden_size, num_layers=num_layers,
@@ -396,9 +405,7 @@ class TestNumberOfNodes:
         TestLSTM.set_ref_lstm_weights(test_data, test_rnn, num_layers, num_directions, bias)
         test_hidden = TestLSTM.get_test_lstm_hidden(test_data)
 
-        _ = reset_context('orig')
-        _ = reset_context('quantized_graphs')
-        _, model = create_compressed_model(test_rnn, config)
+        model, algo = create_compressed_model_and_algo_for_test(test_rnn, config)
 
         class Counter:
             def __init__(self):
@@ -411,19 +418,17 @@ class TestNumberOfNodes:
             counter.next()
 
         counters = {}
-        for name, quantizer in model.all_quantizations.items():
+        for name, quantizer in algo.all_quantizations.items():
             counter = Counter()
             counters[name] = counter
             quantizer.register_forward_pre_hook(partial(hook, counter=counter))
-        with context('quantized_graphs') as ctx:
-            _ = model(test_data.x, test_hidden)
-            assert ctx.graph.get_nodes_count() == 110
-            ctx.graph.dump_graph(os.path.join(config.log_dir, "compressed_graph_next.dot"))
-        assert len(counters) == 54
+        _ = model(test_data.x, test_hidden)
+        assert model.get_graph().get_nodes_count() == 107  # NB: may always fail in debug due to superfluous 'cat' nodes
+        assert len(counters) == 50
         for counter in counters.values():
             assert counter.count == p.seq_length
 
-    def test_number_of_calling_fq_for_gnmt(self, tmp_path):
+    def test_number_of_calling_fq_for_gnmt(self):
         torch.cuda.set_device(0)
         device = torch.device('cuda')
         batch_first = False
@@ -438,7 +443,6 @@ class TestNumberOfNodes:
         batch_size = 128
         sequence_size = 50
         input_sample_size = (batch_size, sequence_size) if batch_first else (sequence_size, batch_size)
-        patch_torch_operators()
         config = get_empty_config(input_sample_size=input_sample_size)
         config['compression'] = \
             {'algorithm': 'quantization',
@@ -447,13 +451,9 @@ class TestNumberOfNodes:
                                                ["sigmoid", "__mul__", "__add__"],
                                                ["__add__", "tanh", "__mul__"],
                                                ["sigmoid", "__mul__"]],
-             'scopes_without_shape_matching':
-                 ['GNMT/ResidualRecurrentDecoder[decoder]/RecurrentAttention[att_rnn]/BahdanauAttention[attn]'],
              'disable_function_quantization_hooks': True}
-
-        config.log_dir = str(tmp_path)
-        reset_context('orig')
-        reset_context('quantized_graphs')
+        config['scopes_without_shape_matching'] = \
+            ['GNMT/ResidualRecurrentDecoder[decoder]/RecurrentAttention[att_rnn]/BahdanauAttention[attn]', ]
 
         model = GNMT(**model_config)
         model = replace_lstm(model)
@@ -473,9 +473,9 @@ class TestNumberOfNodes:
             input_encoder = x_data
             input_enc_len = seq_lens.to(device)
             input_decoder = gen_packed_sequence()[0]
-            model.forward(input_encoder, input_enc_len, input_decoder)
+            model(input_encoder, input_enc_len, input_decoder)
 
-        _, model = create_compressed_model(model, config, dummy_forward_fn)
+        algo, model = create_compressed_model(model, config, dummy_forward_fn, dump_graphs=False)
         model.to(device)
 
         class Counter:
@@ -489,34 +489,33 @@ class TestNumberOfNodes:
             counter.next()
 
         counters = {}
-        for name, quantizer in model.all_quantizations.items():
+        for name, quantizer in algo.all_quantizations.items():
             counter = Counter()
-            counters[name] = counter
+            counters[str(name)] = counter
             quantizer.register_forward_pre_hook(partial(hook, counter=counter))
-        with context('quantized_graphs') as ctx:
-            dummy_forward_fn(model)
-            assert ctx.graph.get_nodes_count() == 239
-            assert len(counters) == 68
-            for name, counter in counters.items():
-                if 'cell' in name or "LSTMCellForwardNNCF" in name:
-                    assert counter.count == sequence_size, name
-                else:
-                    assert counter.count == 1, name
-            new_seq_len = int(sequence_size / 2)
-            dummy_forward_fn(model, new_seq_len)
-            assert ctx.graph.get_nodes_count() == 239
-            assert len(counters) == 68
-            for name, counter in counters.items():
-                if 'cell' in name or "LSTMCellForwardNNCF" in name:
-                    assert counter.count == sequence_size + new_seq_len, name
-                else:
-                    assert counter.count == 2, name
+        dummy_forward_fn(model)
+        assert model.get_graph().get_nodes_count() == 230  # NB: may always fail in debug due to superfluous 'cat' nodes
+        assert len(counters) == 55
+        for name, counter in counters.items():
+            if 'cell' in name or "LSTMCellForwardNNCF" in name:
+                assert counter.count == sequence_size, name
+            else:
+                assert counter.count == 1, name
+        new_seq_len = int(sequence_size / 2)
+        dummy_forward_fn(model, new_seq_len)
+        assert model.get_graph().get_nodes_count() == 230  # NB: may always fail in debug due to superfluous 'cat' nodes
+        assert len(counters) == 55
+        for name, counter in counters.items():
+            if 'cell' in name or "LSTMCellForwardNNCF" in name:
+                assert counter.count == sequence_size + new_seq_len, name
+            else:
+                assert counter.count == 2, name
 
     def test_number_of_nodes_for_module_in_loop(self):
         num_iter = 5
-        patch_torch_operators()
 
         class LoopModule(nn.Module):
+            @ITERATION_MODULES.register('Inner')
             class Inner(nn.Module):
                 def __init__(self):
                     super().__init__()
@@ -546,14 +545,13 @@ class TestNumberOfNodes:
                 return self.inner.nodes_number()
 
         test_module = LoopModule()
-        reset_context('test')
-        with context('test') as ctx:
+        context = TracingContext()
+        with context as ctx:
             _ = test_module(torch.zeros(1))
             assert ctx.graph.get_nodes_count() == test_module.nodes_number()
 
     def test_number_of_nodes_for_module_in_loop__not_input_node(self):
         num_iter = 5
-        patch_torch_operators()
 
         class LoopModule(nn.Module):
             class Inner(nn.Module):
@@ -580,14 +578,13 @@ class TestNumberOfNodes:
                 return self.inner.nodes_number() + num_iter
 
         test_module = LoopModule()
-        reset_context('test')
-        with context('test') as ctx:
+        context = TracingContext()
+        with context as ctx:
             _ = test_module(torch.zeros(1))
             assert ctx.graph.get_nodes_count() == test_module.nodes_number()
 
     def test_number_of_nodes_for_module_with_nested_loops(self):
         num_iter = 5
-        patch_torch_operators()
 
         class TestIterModule(nn.Module):
             @ITERATION_MODULES.register()
@@ -638,13 +635,12 @@ class TestNumberOfNodes:
                         return result
 
         test_module = TestIterModule()
-        reset_context('test')
-        with context('test') as ctx:
+        context = TracingContext()
+        with context as ctx:
             _ = test_module(torch.zeros(1))
             assert ctx.graph.get_nodes_count() == num_iter
 
     def test_number_of_nodes_for_repeated_module(self):
-        patch_torch_operators()
 
         class LoopModule(nn.Module):
             def __init__(self):
@@ -661,9 +657,9 @@ class TestNumberOfNodes:
                 return x
 
         test_module = LoopModule()
-        reset_context('test')
-        with context('test') as ctx:
+        context = TracingContext()
+        with context as ctx:
             x = test_module(torch.zeros(1, 1, 1, 1))
-            assert ctx.graph.get_nodes_count() == 4
+            assert ctx.graph.get_nodes_count() == 4  # NB: may always fail in debug due to superfluous 'cat' nodes
             _ = test_module(x)
-            assert ctx.graph.get_nodes_count() == 8
+            assert ctx.graph.get_nodes_count() == 8  # NB: may always fail in debug due to superfluous 'cat' nodes

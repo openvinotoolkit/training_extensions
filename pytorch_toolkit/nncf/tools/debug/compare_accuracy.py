@@ -12,14 +12,13 @@
 """
 
 import argparse
-import json
-from functools import partial
 
 import os
-
+from functools import partial
 from openvino.inference_engine import IENetwork, IEPlugin, get_version
-from nncf.dynamic_graph.graph_builder import create_input_infos
 
+from nncf.config import Config
+from nncf.dynamic_graph.graph_builder import create_input_infos
 from tools.ir_utils import get_ir_paths
 
 
@@ -43,10 +42,8 @@ args = argparser.parse_args()
 
 
 def validate_torch_model(output_dir, config, num_layers, dump, val_loader=None, cuda=False):
-    from nncf.dynamic_graph import patch_torch_operators
     from tools.debug.common import load_torch_model, register_print_hooks
 
-    patch_torch_operators()
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
@@ -62,7 +59,7 @@ def validate_torch_model(output_dir, config, num_layers, dump, val_loader=None, 
 def main():
     model_bin, model_xml = get_ir_paths(args.model, args.bin)
 
-    config = json.load(open(args.config))
+    config = Config.from_json(args.config)
 
     input_infos_list = create_input_infos(config)
     image_size = input_infos_list[0].shape[-1]
@@ -91,6 +88,7 @@ def main():
         batch_size=1, shuffle=False, num_workers=4, pin_memory=True)
     if not os.path.exists(args.output_dir):
         os.makedirs(args.output_dir)
+    config['log_dir'] = args.output_dir
 
     infer_fn = partial(infer_ie_model, net=net)
     validate_general(val_loader, exec_net, infer_fn)

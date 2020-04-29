@@ -16,10 +16,7 @@
         ]
     },
     "compression": {
-        "algorithm": "quantization",
-        "initializer": {
-            "num_init_steps": 1
-        }
+        "algorithm": "quantization"
     },
     "model_params": {
         "aux_logits": false

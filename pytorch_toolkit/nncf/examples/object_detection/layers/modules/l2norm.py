@@ -28,7 +28,7 @@ class L2Norm(nn.Module):
         self.reset_parameters()
 
     def reset_parameters(self):
-        init.constant(self.weight, self.scale)
+        init.constant_(self.weight, self.scale)
 
     def forward(self, x):
         if self.training:

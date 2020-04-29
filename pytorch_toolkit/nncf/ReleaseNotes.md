@@ -7,6 +7,18 @@ samples distributed with the code.  The samples demonstrate the usage of compres
 public models and datasets for three different use cases: Image Classification, Object Detection,
 and Semantic Segmentation.
 
+## New in Release 1.3:
+- Filter pruning algorithm added
+- Mixed precision quantization with manual and automatic (HAWQ-powered) precision setup
+- Support for DistilBERT
+- Selecting quantization parameters based on hardware configuration preset (CPU, GPU, VPU)
+- Propagation-based quantizer position setup mode (quantizers are position as early in the network control flow graph as possible while keeping inputs of target operation quantized)
+- Improved model graph tracing with introduction of input nodes and intermediate tensor shape tracking
+- Updated third-party integration patches for consistency with NNCF release v1.3
+- CPU-only installation mode for execution on machines without CUDA GPU hardware installed
+- Docker images supplied for easier setup in container-based environments
+- Usability improvements (NNCF config .JSON file validation by schema, less boilerplate code, separate logging and others)
+
 ## New in Release 1.2:
 - Support for transformer-based networks quantization (tested on BERT and RoBERTa)
 - Added instructions and Git patches for integrating NNCF into third-party repositories ([mmdetection](https://github.com/open-mmlab/mmdetection), [transformers](https://github.com/huggingface/transformers))

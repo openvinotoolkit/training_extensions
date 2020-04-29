@@ -11,6 +11,7 @@
  limitations under the License.
 """
 
+
 class Registry:
     def __init__(self, name):
         self._name = name

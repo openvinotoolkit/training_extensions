@@ -35,9 +35,6 @@
          "input_size_hw": [512, 1024]
     },
     "compression": {
-        "algorithm": "quantization",
-        "initializer": {
-            "num_init_steps": 1
-        }
+            "algorithm": "quantization"
     }
 }

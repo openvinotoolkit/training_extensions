@@ -1,5 +1,5 @@
 """
- Copyright (c) 2019 Intel Corporation
+ Copyright (c) 2019-2020 Intel Corporation
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
  You may obtain a copy of the License at
@@ -11,31 +11,23 @@
  limitations under the License.
 """
 
-import logging
-
-from ..layers import  BinaryMask
-from ..base_algo import BaseSparsityAlgo
-from ...algo_selector import COMPRESSION_ALGORITHMS
-from nncf.dynamic_graph.graph_builder import ModelInputInfo
-
-logger = logging.getLogger(__name__)
+from nncf.compression_method_api import CompressionAlgorithmController
+from nncf.nncf_network import NNCFNetwork
+from nncf.sparsity.layers import BinaryMask
+from nncf.sparsity.base_algo import BaseSparsityAlgoBuilder, BaseSparsityAlgoController
+from nncf.algo_selector import COMPRESSION_ALGORITHMS
 
 
 @COMPRESSION_ALGORITHMS.register('const_sparsity')
-class ConstSparsity(BaseSparsityAlgo):
-    def __init__(self, model, config, input_infos: ModelInputInfo = None, dummy_forward_fn=None, **kwargs):
-        super().__init__(model, config, input_infos, dummy_forward_fn)
-        device = next(model.parameters()).device
-
-        self.ignored_scopes = self.config.get('ignored_scopes')
-        self.target_scopes = self.config.get('target_scopes')
-
-        self._replace_sparsifying_modules_by_nncf_modules(device, self.ignored_scopes, self.target_scopes, logger)
-        self._register_weight_sparsifying_operations(device, self.ignored_scopes, self.target_scopes, logger)
-
+class ConstSparsityBuilder(BaseSparsityAlgoBuilder):
     def create_weight_sparsifying_operation(self, module):
         return BinaryMask(module.weight.size())
 
+    def build_controller(self, target_model: NNCFNetwork) -> CompressionAlgorithmController:
+        return ConstSparsityController(target_model, self._sparsified_module_info)
+
+
+class ConstSparsityController(BaseSparsityAlgoController):
     def freeze(self):
         pass
 

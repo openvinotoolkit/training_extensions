@@ -23,8 +23,9 @@ import torch
 from torch import distributed as dist
 from torch.nn import functional as F
 
-from nncf.helpers.utils import is_main_process, is_dist_avail_and_initialized
+from nncf.utils import is_main_process, is_dist_avail_and_initialized, get_world_size
 
+from examples.common.example_logger import logger
 
 def str2bool(v):
     return v.lower() in ("yes", "true", "t", "1")
@@ -60,16 +61,16 @@ def evaluate_detections(box_list, dataset, use_07=True):
     aps = []
     # The PASCAL VOC metric changed in 2010
     use_07_metric = use_07
-    print('VOC07 metric? ' + ('Yes' if use_07_metric else 'No'))
+    logger.info('VOC07 metric? {}'.format('Yes' if use_07_metric else 'No'))
     for cls_ind, cls in enumerate(dataset.classes):  # for each class
         class_boxes = box_list[box_list[:, 1] == cls_ind + 1]
         ap, _, _ = voc_eval(  # calculate rec, prec, ap
             class_boxes, dataset, cls, cachedir,
             ovthresh=0.5, use_07_metric=use_07_metric)
         aps += [ap]
-        print('AP for {} = {:.4f}'.format(cls, ap))
+        logger.info('AP for {} = {:.4f}'.format(cls, ap))
     mAp = np.mean(aps)
-    print('Mean AP = {:.4f}'.format(mAp))
+    logger.info('Mean AP = {:.4f}'.format(mAp))
     return mAp
 
 
@@ -190,10 +191,10 @@ def load_detection_annotations(cachedir, dataset):
                 _, gt[imagename] = dataset.pull_anno(i)
 
                 if i % 100 == 0:
-                    print('Reading annotation for {:d}/{:d}'.format(
+                    logger.info('Reading annotation for {:d}/{:d}'.format(
                         i + 1, len(imagenames)))
             # save
-            print('Saving cached annotations to {:s}'.format(cachefile))
+            logger.info('Saving cached annotations to {:s}'.format(cachefile))
             pathlib.Path(cachedir).mkdir(parents=True, exist_ok=True)
             with open(cachefile, 'wb') as f:
                 pickle.dump(gt, f)
@@ -234,7 +235,7 @@ def match_bbox(gt_boxes, bbox):
 
 
 def gather_detections(all_detections, samples_per_rank):
-    world_size = dist.get_world_size()
+    world_size = get_world_size()
     result = [torch.zeros(samples_per_rank, *all_detections.shape[1:]).cuda() for _ in range(world_size)]
     all_detections = F.pad(all_detections, [0, 0, 0, 0, 0, samples_per_rank - all_detections.size(0)])
     dist.all_gather(result, all_detections.cuda())
@@ -278,7 +279,7 @@ def predict_detections(data_loader, device, net):
         batch_detections[..., 6] *= hs
 
         all_detections.append(batch_detections.cpu())
-        print('Detect for batch: {:d}/{:d} {:.3f}s'.format(batch_ind + 1, num_batches, detect_time))
+        logger.info('Detect for batch: {:d}/{:d} {:.3f}s'.format(batch_ind + 1, num_batches, detect_time))
     if all_detections:
         return torch.cat(all_detections)
     return None  # No predictions
@@ -286,7 +287,7 @@ def predict_detections(data_loader, device, net):
 
 def test_net(net, device, data_loader, distributed=False):
     """Test a Fast R-CNN network on an image database."""
-    print("Testing...")
+    logger.info("Testing...")
     num_images = len(data_loader.dataset)
     batch_detections = predict_detections(data_loader, device, net)
     if distributed:
@@ -294,5 +295,5 @@ def test_net(net, device, data_loader, distributed=False):
     batch_detections = batch_detections[:num_images]
     all_boxes = convert_detections(batch_detections)
 
-    print('Evaluating detections')
+    logger.info('Evaluating detections')
     return evaluate_detections(all_boxes, data_loader.dataset)

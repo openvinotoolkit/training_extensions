@@ -1,5 +1,5 @@
 """
- Copyright (c) 2019 Intel Corporation
+ Copyright (c) 2019-2020 Intel Corporation
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
  You may obtain a copy of the License at
@@ -13,10 +13,10 @@
 
 import pytest
 
-from nncf.algo_selector import create_compression_algorithm
 from nncf.sparsity.schedulers import PolynomialSparseScheduler, ExponentialSparsityScheduler, \
     AdaptiveSparsityScheduler, MultiStepSparsityScheduler
-from tests.test_helpers import BasicConvTestModel, get_empty_config
+from tests.test_helpers import BasicConvTestModel, get_empty_config, create_compressed_model_and_algo_for_test, \
+    MockModel
 
 
 @pytest.mark.parametrize('algo',
@@ -27,20 +27,22 @@ from tests.test_helpers import BasicConvTestModel, get_empty_config
                              ('exponential', ExponentialSparsityScheduler),
                              ('multistep', MultiStepSparsityScheduler)
                          ))
+
+
 def test_can_choose_scheduler(algo, schedule_type, scheduler_class):
     config = get_empty_config()
     config['compression']['algorithm'] = algo
     config['compression']["params"]["schedule"] = schedule_type
-    compression_algo = create_compression_algorithm(BasicConvTestModel(), config)
-    assert isinstance(compression_algo.scheduler, scheduler_class)
+    _, compression_ctrl = create_compressed_model_and_algo_for_test(MockModel(), config)
+    assert isinstance(compression_ctrl.scheduler, scheduler_class)
 
 
 def test_can_create_rb_algo__with_adaptive_scheduler():
     config = get_empty_config()
     config['compression']['algorithm'] = 'rb_sparsity'
     config['compression']["params"]["schedule"] = 'adaptive'
-    compression_algo = create_compression_algorithm(BasicConvTestModel(), config)
-    assert isinstance(compression_algo.scheduler, AdaptiveSparsityScheduler)
+    _, compression_ctrl = create_compressed_model_and_algo_for_test(MockModel(), config)
+    assert isinstance(compression_ctrl.scheduler, AdaptiveSparsityScheduler)
 
 
 def test_can_not_create_magnitude_algo__with_adaptive_scheduler():
@@ -48,7 +50,7 @@ def test_can_not_create_magnitude_algo__with_adaptive_scheduler():
     config['compression']['algorithm'] = 'magnitude_sparsity'
     config['compression']["params"]["schedule"] = 'adaptive'
     with pytest.raises(TypeError):
-        create_compression_algorithm(BasicConvTestModel(), config)
+        _, _ = create_compressed_model_and_algo_for_test(MockModel(), config)
 
 
 def get_poly_params():
@@ -72,8 +74,8 @@ class TestSparseModules:
         config = get_empty_config()
         config['compression']['algorithm'] = algo
         config['compression']["params"]["schedule"] = 'polynomial'
-        compression_algo = create_compression_algorithm(BasicConvTestModel(), config)
-        scheduler = compression_algo.scheduler
+        _, compression_ctrl = create_compressed_model_and_algo_for_test(MockModel(), config)
+        scheduler = compression_ctrl.scheduler
         assert scheduler.initial_sparsity == 0
         assert scheduler.max_sparsity == 0.5
         assert scheduler.max_step == 90
@@ -89,14 +91,16 @@ class TestSparseModules:
         config['compression']['algorithm'] = algo
         config['compression']["params"] = get_params()
         config['compression']["params"]["schedule"] = schedule
-        compression_algo = create_compression_algorithm(model, config)
-        scheduler = compression_algo.scheduler
+
+        _, compression_ctrl = create_compressed_model_and_algo_for_test(model, config)
+
+        scheduler = compression_ctrl.scheduler
 
         assert pytest.approx(scheduler.current_sparsity_level) == ref_levels[0]
         for ref_level in ref_levels[1:]:
             scheduler.epoch_step()
             assert pytest.approx(scheduler.current_sparsity_level) == ref_level
 
-        for m in compression_algo.sparsified_module_info:
+        for m in compression_ctrl.sparsified_module_info:
             if hasattr(m.operand, "sparsify"):
                 assert not m.operand.sparsify

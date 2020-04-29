@@ -15,11 +15,12 @@ from functools import partial
 import torchvision.models
 
 import examples.common.models as custom_models
-from nncf.helpers.utils import safe_thread_call
+from examples.common.example_logger import logger
+from nncf.utils import safe_thread_call
 
 
 def load_model(model, pretrained=True, num_classes=1000, model_params=None):
-    print("Loading model: {}".format(model))
+    logger.info("Loading model: {}".format(model))
     if model_params is None:
         model_params = {}
     if model in torchvision.models.__dict__:

@@ -16,7 +16,7 @@ import os
 import pytest
 import torch
 
-from nncf.helpers import load_state
+from nncf.checkpoint_loading import load_state
 from nncf.utils import get_all_modules_by_type
 
 from examples.common.model_loader import load_model

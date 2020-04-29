@@ -10,12 +10,11 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 """
+import torch
 import warnings
 
-import torch
-
 from .extensions import QuantizedFunctionsCPU, QuantizedFunctionsCUDA
-from ..dynamic_graph import register_operator
+from ..dynamic_graph.patch_pytorch import register_operator
 from ..functions import STRound, clamp
 from ..utils import is_tracing_state, no_jit_trace
 

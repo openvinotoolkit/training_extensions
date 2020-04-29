@@ -1,5 +1,5 @@
 """
- Copyright (c) 2019 Intel Corporation
+ Copyright (c) 2019-2020 Intel Corporation
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
  You may obtain a copy of the License at
@@ -12,23 +12,22 @@
 """
 
 import json
-import os
 import shlex
 import signal
 import subprocess
 import sys
-import tempfile
 import threading
 import time
 
+import os
 import pytest
+import tempfile
 import torch
 
 # pylint: disable=redefined-outer-name
 from examples.common.optimizer import get_default_weight_decay
 from examples.common.utils import get_name, is_binarization
 from nncf.config import Config
-from nncf.dynamic_graph import reset_context
 from tests.conftest import EXAMPLES_DIR, PROJECT_ROOT, TEST_ROOT
 
 
@@ -171,9 +170,9 @@ for sample_type in SAMPLE_TYPES:
         CONFIG_PARAMS.append((sample_type,) + tpl)
 
 
-@pytest.fixture(scope="module", params=CONFIG_PARAMS,
+@pytest.fixture(params=CONFIG_PARAMS,
                 ids=["-".join([p[0], p[1].name, p[2], str(p[3])]) for p in CONFIG_PARAMS])
-def config(request, tmp_path_factory, dataset_dir):
+def config(request, dataset_dir):
     sample_type, config_path, dataset_name, batch_size = request.param
     dataset_path = DATASET_PATHS[sample_type][dataset_name](dataset_dir)
 
@@ -185,16 +184,19 @@ def config(request, tmp_path_factory, dataset_dir):
 
     jconfig["dataset"] = dataset_name
 
-    checkpoint_save_dir = str(tmp_path_factory.mktemp("models"))
-
     return {
         "sample_type": sample_type,
         'config': jconfig,
         "model_name": jconfig["model"],
         "dataset_path": dataset_path,
-        "checkpoint_save_dir": checkpoint_save_dir,
         "batch_size": batch_size,
-        "results_dir": str(tmp_path_factory.mktemp("results_dir"))
+    }
+
+
+@pytest.fixture(scope="module")
+def case_common_dirs(tmp_path_factory):
+    return {
+        "checkpoint_save_dir": str(tmp_path_factory.mktemp("models"))
     }
 
 
@@ -203,9 +205,9 @@ def test_pretrained_model_export(config, tmp_path):
     config_factory = ConfigFactory(c['config'], tmp_path / 'config.json')
 
     if isinstance(config_factory['compression'], list):
-        config_factory['compression'][0]['initializer'] = {'num_init_steps': 0}
+        config_factory['compression'][0]['initializer'] = {'range': {'num_init_steps': 0}}
     else:
-        config_factory['compression']['initializer'] = {'num_init_steps': 0}
+        config_factory['compression']['initializer'] = {'range': {'num_init_steps': 0}}
 
     onnx_path = os.path.join(str(tmp_path), "model.onnx")
     args = {
@@ -249,10 +251,10 @@ def test_pretrained_model_eval(config, tmp_path, multiprocessing_distributed):
         pytest.param(True, marks=pytest.mark.dependency(name=["train_distributed"])),
         pytest.param(False, marks=pytest.mark.dependency(name=["train_dataparallel"]))],
     ids=['distributed', 'dataparallel'])
-def test_pretrained_model_train(config, tmp_path, multiprocessing_distributed):
+def test_pretrained_model_train(config, tmp_path, multiprocessing_distributed, case_common_dirs):
     c = config
 
-    checkpoint_save_dir = os.path.join(c["checkpoint_save_dir"],
+    checkpoint_save_dir = os.path.join(case_common_dirs["checkpoint_save_dir"],
                                        "distributed" if multiprocessing_distributed else "data_parallel")
     config_factory = ConfigFactory(config['config'], tmp_path / 'config.json')
     args = {
@@ -281,11 +283,11 @@ def test_pretrained_model_train(config, tmp_path, multiprocessing_distributed):
         pytest.param(True, marks=pytest.mark.dependency(depends=["train_distributed"])),
         pytest.param(False, marks=pytest.mark.dependency(depends=["train_dataparallel"]))],
     ids=['distributed', 'dataparallel'])
-def test_trained_model_export(config, tmp_path, multiprocessing_distributed):
+def test_trained_model_export(config, tmp_path, multiprocessing_distributed, case_common_dirs):
     c = config
 
     config_factory = ConfigFactory(config['config'], tmp_path / 'config.json')
-    ckpt_path = os.path.join(c["checkpoint_save_dir"],
+    ckpt_path = os.path.join(case_common_dirs["checkpoint_save_dir"],
                              "distributed" if multiprocessing_distributed else "data_parallel",
                              get_name(config_factory.config) + "_last.pth")
     onnx_path = os.path.join(str(tmp_path), "model.onnx")
@@ -307,11 +309,11 @@ def test_trained_model_export(config, tmp_path, multiprocessing_distributed):
         pytest.param(True, marks=pytest.mark.dependency(depends=["train_distributed"])),
         pytest.param(False, marks=pytest.mark.dependency(depends=["train_dataparallel"]))],
     ids=['distributed', 'dataparallel'])
-def test_trained_model_eval(config, tmp_path, multiprocessing_distributed):
+def test_trained_model_eval(config, tmp_path, multiprocessing_distributed, case_common_dirs):
     c = config
 
     config_factory = ConfigFactory(config['config'], tmp_path / 'config.json')
-    ckpt_path = os.path.join(c["checkpoint_save_dir"],
+    ckpt_path = os.path.join(case_common_dirs["checkpoint_save_dir"],
                              "distributed" if multiprocessing_distributed else "data_parallel",
                              get_name(config_factory.config) + "_last.pth")
     args = {
@@ -337,12 +339,12 @@ def test_trained_model_eval(config, tmp_path, multiprocessing_distributed):
         pytest.param(True, marks=pytest.mark.dependency(depends=["train_distributed"])),
         pytest.param(False, marks=pytest.mark.dependency(depends=["train_dataparallel"]))],
     ids=['distributed', 'dataparallel'])
-def test_resume(config, tmp_path, multiprocessing_distributed):
+def test_resume(config, tmp_path, multiprocessing_distributed, case_common_dirs):
     c = config
 
     checkpoint_save_dir = os.path.join(str(tmp_path), "models")
     config_factory = ConfigFactory(config['config'], tmp_path / 'config.json')
-    ckpt_path = os.path.join(c["checkpoint_save_dir"],
+    ckpt_path = os.path.join(case_common_dirs["checkpoint_save_dir"],
                              "distributed" if multiprocessing_distributed else "data_parallel",
                              get_name(config_factory.config) + "_last.pth")
     if "max_iter" in config_factory.config:
@@ -380,8 +382,6 @@ def test_get_default_weight_decay(algo, ref_weight_decay):
 
 
 def test_cpu_only_mode_produces_cpu_only_model(config, tmp_path, mocker):
-    reset_context('orig')
-    reset_context('quantized_graphs')
     c = config
 
     config_factory = ConfigFactory(config['config'], tmp_path / 'config.json')

@@ -1,0 +1,112 @@
+{
+    "model": "mobilenet_v2",
+    "pretrained": true,
+    "input_info": {
+        "sample_size": [
+            2,
+            3,
+            224,
+            224
+        ]
+    },
+    "num_classes": 1000,
+    "batch_size": 200,
+    "workers": 6,
+    "epochs": 100,
+    "multiprocessing_distributed": true,
+    "optimizer": {
+        "base_lr": 3.1e-4,
+        "schedule_type": "plateau",
+        "type": "Adam",
+        "scheduler_params": {
+            "threshold": 0.1,
+            "cooldown": 3
+        },
+        "weight_decay": 1e-05
+    },
+    "compression": {
+        "algorithm": "quantization",
+        "weights": {
+            "mode": "asymmetric",
+            "per_channel": true,
+            "bits": 4
+        },
+        "activations": {
+            "mode": "asymmetric",
+            "bits": 8
+        },
+        "quantize_inputs": true,
+        "initializer": {
+            "precision": {
+                "bitwidth_per_scope": [
+                    // | num_bits | % weights | % activations | % total |
+                    // | 8        | 22.881    | 23.729        | 46.610  |
+                    // | 4        | 22.034    | 31.356        | 53.390  |
+                    [8, "MobileNetV2/Sequential[features]/InvertedResidual[10]/Sequential[conv]/ConvBNReLU[1]/NNCFConv2d[0]/ModuleDict[pre_ops]/UpdateWeight[0]/AsymmetricQuantizer[op]"],
+                    [8, "MobileNetV2/Sequential[features]/InvertedResidual[11]/Sequential[conv]/ConvBNReLU[1]/NNCFConv2d[0]/ModuleDict[pre_ops]/UpdateWeight[0]/AsymmetricQuantizer[op]"],
+                    [8, "MobileNetV2/Sequential[features]/InvertedResidual[11]/Sequential[conv]/NNCFConv2d[2]/ModuleDict[pre_ops]/UpdateWeight[0]/AsymmetricQuantizer[op]"],
+                    [8, "MobileNetV2/Sequential[features]/InvertedResidual[12]/Sequential[conv]/ConvBNReLU[1]/NNCFConv2d[0]/ModuleDict[pre_ops]/UpdateWeight[0]/AsymmetricQuantizer[op]"],
+                    [8, "MobileNetV2/Sequential[features]/InvertedResidual[14]/Sequential[conv]/NNCFConv2d[2]/ModuleDict[pre_ops]/UpdateWeight[0]/AsymmetricQuantizer[op]"],
+                    [8, "MobileNetV2/Sequential[features]/InvertedResidual[15]/Sequential[conv]/ConvBNReLU[1]/NNCFConv2d[0]/ModuleDict[pre_ops]/UpdateWeight[0]/AsymmetricQuantizer[op]"],
+                    [8, "MobileNetV2/Sequential[features]/InvertedResidual[17]/Sequential[conv]/ConvBNReLU[1]/NNCFConv2d[0]/ModuleDict[pre_ops]/UpdateWeight[0]/AsymmetricQuantizer[op]"],
+                    [8, "MobileNetV2/Sequential[features]/InvertedResidual[1]/Sequential[conv]/NNCFConv2d[0]/ModuleDict[pre_ops]/UpdateWeight[0]/AsymmetricQuantizer[op]"],
+                    [8, "MobileNetV2/Sequential[features]/InvertedResidual[1]/Sequential[conv]/ConvBNReLU[1]/NNCFConv2d[0]/ModuleDict[pre_ops]/UpdateWeight[0]/AsymmetricQuantizer[op]"],
+                    [8, "MobileNetV2/Sequential[features]/InvertedResidual[2]/Sequential[conv]/NNCFConv2d[0]/ModuleDict[pre_ops]/UpdateWeight[0]/AsymmetricQuantizer[op]"],
+                    [8, "MobileNetV2/Sequential[features]/InvertedResidual[2]/Sequential[conv]/ConvBNReLU[1]/NNCFConv2d[0]/ModuleDict[pre_ops]/UpdateWeight[0]/AsymmetricQuantizer[op]"],
+                    [8, "MobileNetV2/Sequential[features]/InvertedResidual[2]/Sequential[conv]/NNCFConv2d[2]/ModuleDict[pre_ops]/UpdateWeight[0]/AsymmetricQuantizer[op]"],
+                    [8, "MobileNetV2/Sequential[features]/InvertedResidual[3]/Sequential[conv]/NNCFConv2d[0]/ModuleDict[pre_ops]/UpdateWeight[0]/AsymmetricQuantizer[op]"],
+                    [8, "MobileNetV2/Sequential[features]/InvertedResidual[3]/Sequential[conv]/ConvBNReLU[1]/NNCFConv2d[0]/ModuleDict[pre_ops]/UpdateWeight[0]/AsymmetricQuantizer[op]"],
+                    [8, "MobileNetV2/Sequential[features]/InvertedResidual[3]/Sequential[conv]/NNCFConv2d[2]/ModuleDict[pre_ops]/UpdateWeight[0]/AsymmetricQuantizer[op]"],
+                    [8, "MobileNetV2/Sequential[features]/InvertedResidual[4]/Sequential[conv]/NNCFConv2d[0]/ModuleDict[pre_ops]/UpdateWeight[0]/AsymmetricQuantizer[op]"],
+                    [8, "MobileNetV2/Sequential[features]/InvertedResidual[4]/Sequential[conv]/ConvBNReLU[1]/NNCFConv2d[0]/ModuleDict[pre_ops]/UpdateWeight[0]/AsymmetricQuantizer[op]"],
+                    [8, "MobileNetV2/Sequential[features]/InvertedResidual[4]/Sequential[conv]/NNCFConv2d[2]/ModuleDict[pre_ops]/UpdateWeight[0]/AsymmetricQuantizer[op]"],
+                    [8, "MobileNetV2/Sequential[features]/InvertedResidual[5]/Sequential[conv]/ConvBNReLU[1]/NNCFConv2d[0]/ModuleDict[pre_ops]/UpdateWeight[0]/AsymmetricQuantizer[op]"],
+                    [8, "MobileNetV2/Sequential[features]/InvertedResidual[5]/Sequential[conv]/NNCFConv2d[2]/ModuleDict[pre_ops]/UpdateWeight[0]/AsymmetricQuantizer[op]"],
+                    [8, "MobileNetV2/Sequential[features]/InvertedResidual[6]/Sequential[conv]/ConvBNReLU[1]/NNCFConv2d[0]/ModuleDict[pre_ops]/UpdateWeight[0]/AsymmetricQuantizer[op]"],
+                    [8, "MobileNetV2/Sequential[features]/InvertedResidual[6]/Sequential[conv]/NNCFConv2d[2]/ModuleDict[pre_ops]/UpdateWeight[0]/AsymmetricQuantizer[op]"],
+                    [8, "MobileNetV2/Sequential[features]/InvertedResidual[7]/Sequential[conv]/ConvBNReLU[1]/NNCFConv2d[0]/ModuleDict[pre_ops]/UpdateWeight[0]/AsymmetricQuantizer[op]"],
+                    [8, "MobileNetV2/Sequential[features]/InvertedResidual[7]/Sequential[conv]/NNCFConv2d[2]/ModuleDict[pre_ops]/UpdateWeight[0]/AsymmetricQuantizer[op]"],
+                    [8, "MobileNetV2/Sequential[features]/InvertedResidual[8]/Sequential[conv]/ConvBNReLU[1]/NNCFConv2d[0]/ModuleDict[pre_ops]/UpdateWeight[0]/AsymmetricQuantizer[op]"],
+                    [8, "MobileNetV2/Sequential[features]/InvertedResidual[9]/Sequential[conv]/ConvBNReLU[1]/NNCFConv2d[0]/ModuleDict[pre_ops]/UpdateWeight[0]/AsymmetricQuantizer[op]"],
+                    [8, "MobileNetV2/Sequential[features]/Sequential[0]/NNCFConv2d[0]/ModuleDict[pre_ops]/UpdateWeight[0]/AsymmetricQuantizer[op]"],
+                    [4, "ModuleDict/AsymmetricQuantizer[MobileNetV2/Sequential[features]/InvertedResidual[10]/Sequential[conv]/BatchNorm2d[3]/batch_norm_0]"],
+                    [4, "ModuleDict/AsymmetricQuantizer[MobileNetV2/Sequential[features]/InvertedResidual[10]/Sequential[conv]/ConvBNReLU[1]/ReLU6[2]/hardtanh_0]"],
+                    [4, "ModuleDict/AsymmetricQuantizer[MobileNetV2/Sequential[features]/InvertedResidual[10]/__add___0]"],
+                    [4, "ModuleDict/AsymmetricQuantizer[MobileNetV2/Sequential[features]/InvertedResidual[11]/Sequential[conv]/BatchNorm2d[3]/batch_norm_0]"],
+                    [4, "ModuleDict/AsymmetricQuantizer[MobileNetV2/Sequential[features]/InvertedResidual[12]/Sequential[conv]/BatchNorm2d[3]/batch_norm_0]"],
+                    [4, "ModuleDict/AsymmetricQuantizer[MobileNetV2/Sequential[features]/InvertedResidual[12]/Sequential[conv]/ConvBNReLU[1]/ReLU6[2]/hardtanh_0]"],
+                    [4, "ModuleDict/AsymmetricQuantizer[MobileNetV2/Sequential[features]/InvertedResidual[12]/__add___0]"],
+                    [4, "ModuleDict/AsymmetricQuantizer[MobileNetV2/Sequential[features]/InvertedResidual[13]/Sequential[conv]/BatchNorm2d[3]/batch_norm_0]"],
+                    [4, "ModuleDict/AsymmetricQuantizer[MobileNetV2/Sequential[features]/InvertedResidual[13]/Sequential[conv]/ReLU6[2]/hardtanh_0]"],
+                    [4, "ModuleDict/AsymmetricQuantizer[MobileNetV2/Sequential[features]/InvertedResidual[13]/Sequential[conv]/ConvBNReLU[1]/ReLU6[2]/hardtanh_0]"],
+                    [4, "ModuleDict/AsymmetricQuantizer[MobileNetV2/Sequential[features]/InvertedResidual[13]/__add___0]"],
+                    [4, "ModuleDict/AsymmetricQuantizer[MobileNetV2/Sequential[features]/InvertedResidual[14]/Sequential[conv]/BatchNorm2d[3]/batch_norm_0]"],
+                    [4, "ModuleDict/AsymmetricQuantizer[MobileNetV2/Sequential[features]/InvertedResidual[14]/Sequential[conv]/ReLU6[2]/hardtanh_0]"],
+                    [4, "ModuleDict/AsymmetricQuantizer[MobileNetV2/Sequential[features]/InvertedResidual[15]/Sequential[conv]/BatchNorm2d[3]/batch_norm_0]"],
+                    [4, "ModuleDict/AsymmetricQuantizer[MobileNetV2/Sequential[features]/InvertedResidual[15]/Sequential[conv]/ConvBNReLU[1]/ReLU6[2]/hardtanh_0]"],
+                    [4, "ModuleDict/AsymmetricQuantizer[MobileNetV2/Sequential[features]/InvertedResidual[15]/__add___0]"],
+                    [4, "ModuleDict/AsymmetricQuantizer[MobileNetV2/Sequential[features]/InvertedResidual[16]/Sequential[conv]/BatchNorm2d[3]/batch_norm_0]"],
+                    [4, "ModuleDict/AsymmetricQuantizer[MobileNetV2/Sequential[features]/InvertedResidual[16]/Sequential[conv]/ReLU6[2]/hardtanh_0]"],
+                    [4, "ModuleDict/AsymmetricQuantizer[MobileNetV2/Sequential[features]/InvertedResidual[16]/Sequential[conv]/ConvBNReLU[1]/ReLU6[2]/hardtanh_0]"],
+                    [4, "ModuleDict/AsymmetricQuantizer[MobileNetV2/Sequential[features]/InvertedResidual[16]/__add___0]"],
+                    [4, "ModuleDict/AsymmetricQuantizer[MobileNetV2/Sequential[features]/InvertedResidual[17]/Sequential[conv]/BatchNorm2d[3]/batch_norm_0]"],
+                    [4, "ModuleDict/AsymmetricQuantizer[MobileNetV2/Sequential[features]/InvertedResidual[17]/Sequential[conv]/ConvBNReLU[1]/ReLU6[2]/hardtanh_0]"],
+                    [4, "ModuleDict/AsymmetricQuantizer[MobileNetV2/Sequential[features]/InvertedResidual[4]/Sequential[conv]/BatchNorm2d[3]/batch_norm_0]"],
+                    [4, "ModuleDict/AsymmetricQuantizer[MobileNetV2/Sequential[features]/InvertedResidual[5]/Sequential[conv]/BatchNorm2d[3]/batch_norm_0]"],
+                    [4, "ModuleDict/AsymmetricQuantizer[MobileNetV2/Sequential[features]/InvertedResidual[5]/__add___0]"],
+                    [4, "ModuleDict/AsymmetricQuantizer[MobileNetV2/Sequential[features]/InvertedResidual[6]/Sequential[conv]/BatchNorm2d[3]/batch_norm_0]"],
+                    [4, "ModuleDict/AsymmetricQuantizer[MobileNetV2/Sequential[features]/InvertedResidual[6]/__add___0]"],
+                    [4, "ModuleDict/AsymmetricQuantizer[MobileNetV2/Sequential[features]/InvertedResidual[7]/Sequential[conv]/BatchNorm2d[3]/batch_norm_0]"],
+                    [4, "ModuleDict/AsymmetricQuantizer[MobileNetV2/Sequential[features]/InvertedResidual[8]/Sequential[conv]/BatchNorm2d[3]/batch_norm_0]"],
+                    [4, "ModuleDict/AsymmetricQuantizer[MobileNetV2/Sequential[features]/InvertedResidual[8]/Sequential[conv]/ConvBNReLU[1]/ReLU6[2]/hardtanh_0]"],
+                    [4, "ModuleDict/AsymmetricQuantizer[MobileNetV2/Sequential[features]/InvertedResidual[8]/__add___0]"],
+                    [4, "ModuleDict/AsymmetricQuantizer[MobileNetV2/Sequential[features]/InvertedResidual[9]/Sequential[conv]/BatchNorm2d[3]/batch_norm_0]"],
+                    [4, "ModuleDict/AsymmetricQuantizer[MobileNetV2/Sequential[features]/InvertedResidual[9]/Sequential[conv]/ConvBNReLU[1]/ReLU6[2]/hardtanh_0]"],
+                    [4, "ModuleDict/AsymmetricQuantizer[MobileNetV2/Sequential[features]/InvertedResidual[9]/__add___0]"],
+                    [4, "ModuleDict/AsymmetricQuantizer[MobileNetV2/Sequential[features]/ConvBNReLU[18]/ReLU6[2]/hardtanh_0]"],
+                    [4, "ModuleDict/AsymmetricQuantizer[MobileNetV2/mean_0]"]
+                ]
+            }
+        }
+    }
+}

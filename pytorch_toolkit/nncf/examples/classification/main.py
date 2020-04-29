@@ -1,5 +1,5 @@
 """
- Copyright (c) 2019 Intel Corporation
+ Copyright (c) 2019-2020 Intel Corporation
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
  You may obtain a copy of the License at
@@ -11,13 +11,9 @@
  limitations under the License.
 """
 
-import logging
 import os.path as osp
-import os
 import sys
 import time
-import warnings
-from functools import partial
 from pathlib import Path
 
 import torch
@@ -30,32 +26,29 @@ import torch.utils.data.distributed
 import torchvision.datasets as datasets
 import torchvision.models as models
 import torchvision.transforms as transforms
+import warnings
+from functools import partial
+from shutil import copyfile
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torchvision.datasets import CIFAR10, CIFAR100
 
 from examples.common.argparser import get_common_argument_parser
-from examples.common.model_loader import load_model
-from examples.common.distributed import configure_distributed, is_main_process
+from examples.common.distributed import configure_distributed
+from examples.common.example_logger import logger
 from examples.common.execution import ExecutionMode, get_device, get_execution_mode, \
     prepare_model_for_execution, start_worker
-
-from nncf.helpers import create_compressed_model, load_state, safe_thread_call
-from nncf.dynamic_graph.graph_builder import create_input_infos
+from examples.common.model_loader import load_model
 from examples.common.optimizer import get_parameter_groups, make_optimizer
 from examples.common.utils import configure_logging, configure_paths, create_code_snapshot, \
-    print_args, make_additional_checkpoints, get_name, is_binarization
-from nncf.config import Config
-from nncf.dynamic_graph import patch_torch_operators
-from nncf.utils import manual_seed, print_statistics
+    print_args, make_additional_checkpoints, get_name, is_binarization, print_statistics
 from examples.common.utils import write_metrics
-patch_torch_operators()
+from nncf.utils import manual_seed, safe_thread_call, is_main_process
 
-logging.basicConfig(level=logging.INFO, stream=sys.stdout)
-
+from nncf import Config, create_compressed_model, load_state
+from nncf.dynamic_graph.graph_builder import create_input_infos
 model_names = sorted(name for name in models.__dict__
                      if name.islower() and not name.startswith("__")
                      and callable(models.__dict__[name]))
-
 
 def get_argument_parser():
     parser = get_common_argument_parser()
@@ -79,6 +72,7 @@ def main(argv):
         config.update_from_env()
 
     configure_paths(config)
+    copyfile(args.config, osp.join(config.log_dir, 'config.json'))
     source_root = Path(__file__).absolute().parents[2]  # nncf root
     create_code_snapshot(source_root, osp.join(config.log_dir, "snapshot.tar.gz"))
 
@@ -92,14 +86,7 @@ def main(argv):
     config.execution_mode = get_execution_mode(config)
 
     if config.metrics_dump is not None:
-        avg = 0
-        if config.resuming_checkpoint is None:
-            model_name = os.path.basename(args.config).replace(".json", ".pth")
-        else:
-            model_name = os.path.basename(config.resuming_checkpoint)
-        metrics = {model_name: avg}
-        write_metrics(config, metrics)
-
+        write_metrics(0, config.metrics_dump)
 
     if not is_binarization(config):
         start_worker(main_worker, config)
@@ -117,7 +104,7 @@ def main_worker(current_gpu, config):
     config.device = get_device(config)
 
     if is_main_process():
-        configure_logging(config)
+        configure_logging(logger, config)
         print_args(config)
 
     if config.seed is not None:
@@ -132,12 +119,12 @@ def main_worker(current_gpu, config):
                        pretrained=config.get('pretrained', True) if weights is None else False,
                        num_classes=config.get('num_classes', 1000),
                        model_params=config.get('model_params'))
-    compression_algo, model = create_compressed_model(model, config)
+    compression_ctrl, model = create_compressed_model(model, config)
     if weights:
         load_state(model, torch.load(weights, map_location='cpu'))
     model, _ = prepare_model_for_execution(model, config)
     if config.distributed:
-        compression_algo.distributed()
+        compression_ctrl.distributed()
 
     is_inception = 'inception' in model_name
 
@@ -152,48 +139,51 @@ def main_worker(current_gpu, config):
     best_acc1 = 0
     # optionally resume from a checkpoint
     if resuming_checkpoint is not None:
-        model, config, optimizer, compression_algo, best_acc1 = \
+        model, config, optimizer, compression_ctrl, best_acc1 = \
             resume_from_checkpoint(resuming_checkpoint, model,
-                                   config, optimizer, compression_algo)
+                                   config, optimizer, compression_ctrl)
 
     if config.to_onnx is not None:
-        compression_algo.export_model(config.to_onnx)
-        print("Saved to", config.to_onnx)
+        compression_ctrl.export_model(config.to_onnx)
+        logger.info("Saved to {}".format(config.to_onnx))
         return
 
     if config.execution_mode != ExecutionMode.CPU_ONLY:
         cudnn.benchmark = True
 
     # Data loading code
-    train_loader, train_sampler, val_loader = create_dataloaders(config)
+    train_dataset, val_dataset = create_datasets(config)
+    train_loader, train_sampler, val_loader = create_data_loaders(config, train_dataset, val_dataset)
 
     if config.mode.lower() == 'test':
-        print_statistics(compression_algo.statistics())
+        print_statistics(compression_ctrl.statistics())
         validate(val_loader, model, criterion, config)
 
     if config.mode.lower() == 'train':
         if not resuming_checkpoint:
-            compression_algo.initialize(train_loader)
-        train(config, compression_algo, model, criterion, is_inception, lr_scheduler, model_name, optimizer,
+            compression_ctrl.initialize(data_loader=train_loader, criterion=criterion)
+        train(config, compression_ctrl, model, criterion, is_inception, lr_scheduler, model_name, optimizer,
               train_loader, train_sampler, val_loader, best_acc1)
 
-def train(config, compression_algo, model, criterion, is_inception, lr_scheduler, model_name, optimizer,
+
+def train(config, compression_ctrl, model, criterion, is_inception, lr_scheduler, model_name, optimizer,
           train_loader, train_sampler, val_loader, best_acc1=0):
     for epoch in range(config.start_epoch, config.epochs):
         config.cur_epoch = epoch
         if config.distributed:
             train_sampler.set_epoch(epoch)
-        lr_scheduler.step(epoch if not isinstance(lr_scheduler, ReduceLROnPlateau) else best_acc1)
 
         # train for one epoch
-        train_epoch(train_loader, model, criterion, optimizer, compression_algo, epoch, config,
-                    is_inception)
+        train_epoch(train_loader, model, criterion, optimizer, compression_ctrl, epoch, config, is_inception)
+
+        # Learning rate scheduling should be applied after optimizer’s update
+        lr_scheduler.step(epoch if not isinstance(lr_scheduler, ReduceLROnPlateau) else best_acc1)
 
         # update compression scheduler state at the end of the epoch
-        compression_algo.scheduler.epoch_step()
+        compression_ctrl.scheduler.epoch_step()
 
         # compute compression algo statistics
-        stats = compression_algo.statistics()
+        stats = compression_ctrl.statistics()
 
         acc1 = best_acc1
         if epoch % config.test_every_n_epochs == 0:
@@ -203,7 +193,9 @@ def train(config, compression_algo, model, criterion, is_inception, lr_scheduler
         # remember best acc@1 and save checkpoint
         is_best = acc1 > best_acc1
         best_acc1 = max(acc1, best_acc1)
-
+        acc = best_acc1 / 100
+        if config.metrics_dump is not None:
+            write_metrics(acc, config.metrics_dump)
         if is_main_process():
             print_statistics(stats)
 
@@ -213,8 +205,9 @@ def train(config, compression_algo, model, criterion, is_inception, lr_scheduler
                 'arch': model_name,
                 'state_dict': model.state_dict(),
                 'best_acc1': best_acc1,
+                'acc1': acc1,
                 'optimizer': optimizer.state_dict(),
-                'scheduler': compression_algo.scheduler.state_dict()
+                'scheduler': compression_ctrl.scheduler.state_dict()
             }
 
             torch.save(checkpoint, checkpoint_path)
@@ -225,24 +218,24 @@ def train(config, compression_algo, model, criterion, is_inception, lr_scheduler
                     config.tb.add_scalar("compression/statistics/{0}".format(key), value, len(train_loader) * epoch)
 
 
-def resume_from_checkpoint(resuming_checkpoint, model, config, optimizer, compression_algo):
+def resume_from_checkpoint(resuming_checkpoint, model, config, optimizer, compression_ctrl):
     best_acc1 = 0
     if osp.isfile(resuming_checkpoint):
-        print("=> loading checkpoint '{}'".format(resuming_checkpoint))
+        logger.info("=> loading checkpoint '{}'".format(resuming_checkpoint))
         checkpoint = torch.load(resuming_checkpoint, map_location='cpu')
         load_state(model, checkpoint['state_dict'], is_resume=True)
         if config.mode.lower() == 'train' and config.to_onnx is None:
             config.start_epoch = checkpoint['epoch']
             best_acc1 = checkpoint['best_acc1']
-            compression_algo.scheduler.load_state_dict(checkpoint['scheduler'])
+            compression_ctrl.scheduler.load_state_dict(checkpoint['scheduler'])
             optimizer.load_state_dict(checkpoint['optimizer'])
-            print("=> loaded checkpoint '{}' (epoch: {}, best_acc1: {:.3f})"
-                  .format(resuming_checkpoint, checkpoint['epoch'], best_acc1))
+            logger.info("=> loaded checkpoint '{}' (epoch: {}, best_acc1: {:.3f})"
+                        .format(resuming_checkpoint, checkpoint['epoch'], best_acc1))
         else:
-            print("=> loaded checkpoint '{}'".format(resuming_checkpoint))
+            logger.info("=> loaded checkpoint '{}'".format(resuming_checkpoint))
     else:
         raise FileNotFoundError("no checkpoint found at '{}'".format(resuming_checkpoint))
-    return model, config, optimizer, compression_algo, best_acc1
+    return model, config, optimizer, compression_ctrl, best_acc1
 
 
 def get_dataset(dataset_config, config, transform, is_train):
@@ -263,7 +256,7 @@ def create_cifar(config, dataset_config, is_train, transform):
     return None
 
 
-def create_dataloaders(config):
+def create_datasets(config):
     dataset_config = config.dataset if config.dataset is not None else 'imagenet'
     dataset_config = dataset_config.lower()
     assert dataset_config in ['imagenet', 'cifar100', 'cifar10'], "Unknown dataset option"
@@ -289,7 +282,22 @@ def create_dataloaders(config):
     ])
 
     val_dataset = get_dataset(dataset_config, config, val_transform, is_train=False)
+    if config.mode.lower() == "test":
+        return None, val_dataset
 
+    train_transforms = transforms.Compose([
+        transforms.RandomResizedCrop(image_size),
+        transforms.RandomHorizontalFlip(),
+        transforms.ToTensor(),
+        normalize,
+    ])
+
+    train_dataset = get_dataset(dataset_config, config, train_transforms, is_train=True)
+
+    return train_dataset, val_dataset
+
+
+def create_data_loaders(config, train_dataset, val_dataset):
     pin_memory = config.execution_mode != ExecutionMode.CPU_ONLY
 
     # When using a single GPU per process and per
@@ -309,27 +317,17 @@ def create_dataloaders(config):
     if config.mode.lower() == "test":
         return None, None, val_loader
 
-    train_transforms = transforms.Compose([
-        transforms.RandomResizedCrop(image_size),
-        transforms.RandomHorizontalFlip(),
-        transforms.ToTensor(),
-        normalize,
-    ])
-
-    train_dataset = get_dataset(dataset_config, config, train_transforms, is_train=True)
-
+    train_sampler = None
     if config.distributed:
         train_sampler = torch.utils.data.distributed.DistributedSampler(train_dataset)
-    else:
-        train_sampler = None
+
     train_loader = torch.utils.data.DataLoader(
         train_dataset, batch_size=batch_size, shuffle=(train_sampler is None),
         num_workers=workers, pin_memory=pin_memory, sampler=train_sampler)
     return train_loader, train_sampler, val_loader
 
 
-def train_epoch(train_loader, model, criterion, optimizer, compression_algo, epoch, config,
-                is_inception=False):
+def train_epoch(train_loader, model, criterion, optimizer, compression_ctrl, epoch, config, is_inception=False):
     batch_time = AverageMeter()
     data_time = AverageMeter()
     losses = AverageMeter()
@@ -338,7 +336,7 @@ def train_epoch(train_loader, model, criterion, optimizer, compression_algo, epo
     top1 = AverageMeter()
     top5 = AverageMeter()
 
-    compression_scheduler = compression_algo.scheduler
+    compression_scheduler = compression_ctrl.scheduler
 
     # switch to train mode
     model.train()
@@ -363,7 +361,7 @@ def train_epoch(train_loader, model, criterion, optimizer, compression_algo, epo
             criterion_loss = criterion(output, target)
 
         # compute compression loss
-        compression_loss = compression_algo.loss()
+        compression_loss = compression_ctrl.loss()
         loss = criterion_loss + compression_loss
 
         # measure accuracy and record loss
@@ -387,7 +385,7 @@ def train_epoch(train_loader, model, criterion, optimizer, compression_algo, epo
         end = time.time()
 
         if i % config.print_freq == 0:
-            print(
+            logger.info(
                 '{rank}: '
                 'Epoch: [{0}][{1}/{2}] '
                 'Lr: {3:.3} '
@@ -413,7 +411,7 @@ def train_epoch(train_loader, model, criterion, optimizer, compression_algo, epo
             config.tb.add_scalar("train/top1", top1.avg, i + global_step)
             config.tb.add_scalar("train/top5", top5.avg, i + global_step)
 
-            for stat_name, stat_value in compression_algo.statistics().items():
+            for stat_name, stat_value in compression_ctrl.statistics().items():
                 if isinstance(stat_value, (int, float)):
                     config.tb.add_scalar('train/statistics/{}'.format(stat_name), stat_value, i + global_step)
 
@@ -448,7 +446,7 @@ def validate(val_loader, model, criterion, config):
             end = time.time()
 
             if i % config.print_freq == 0:
-                print(
+                logger.info(
                     '{rank}'
                     'Test: [{0}/{1}] '
                     'Time: {batch_time.val:.3f} ({batch_time.avg:.3f}) '
@@ -465,19 +463,11 @@ def validate(val_loader, model, criterion, config):
             config.tb.add_scalar("val/top1", top1.avg, len(val_loader) * config.get('cur_epoch', 0))
             config.tb.add_scalar("val/top5", top5.avg, len(val_loader) * config.get('cur_epoch', 0))
 
-        print(' * Acc@1 {top1.avg:.3f} Acc@5 {top5.avg:.3f}'
-              .format(top1=top1, top5=top5))
-        print()
+        logger.info(' * Acc@1 {top1.avg:.3f} Acc@5 {top5.avg:.3f}\n'.format(top1=top1, top5=top5))
 
+        acc = top1.avg / 100
         if config.metrics_dump is not None:
-            avg = round(top1.avg, 2)
-            if config.resuming_checkpoint is None:
-                model_name = os.path.basename(config.config).replace(".json", ".pth")
-            else:
-                model_name = (os.path.basename(config.resuming_checkpoint))
-            metrics = {model_name: avg}
-            write_metrics(config, metrics)
-
+            write_metrics(acc, config.metrics_dump)
 
     return top1.avg, top5.avg
 

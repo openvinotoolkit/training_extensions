@@ -17,6 +17,7 @@
 import torch.nn as nn
 import torch
 
+from examples.common.example_logger import logger
 
 class InitialBlock(nn.Module):
     """The initial block is composed of two branches:
@@ -667,6 +668,6 @@ def enet(num_classes, pretrained=False, **kwargs):
     model = ENet(num_classes, **kwargs)
 
     if pretrained:
-        print("ENet has no pretrained weights")
+        logger.warning("ENet has no pretrained weights")
 
     return model

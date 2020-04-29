@@ -15,7 +15,9 @@
     "compression": {
         "algorithm": "quantization",
         "initializer": {
-            "num_init_steps": 10
+            "range": {
+                "num_init_steps": 10
+            }
         },
         "activations": {
             "mode": "asymmetric"

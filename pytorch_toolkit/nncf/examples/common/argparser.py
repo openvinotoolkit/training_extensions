@@ -12,6 +12,7 @@
 """
 
 from nncf.config import CustomArgumentParser
+from nncf.hw_config import HWConfigType
 
 
 def get_common_argument_parser():
@@ -22,6 +23,12 @@ def get_common_argument_parser():
 
     parser.add_argument('-c', '--config', help='Path to a config file with task/model-specific parameters',
                         required=True)
+
+    parser.add_argument('--hw-config', help='Type of the hardware configuration for compression algorithms',
+                        type=str,
+                        default=None,
+                        dest="hw_config_type",
+                        choices=[t.value for t in HWConfigType])
 
     parser.add_argument(
         "--mode",

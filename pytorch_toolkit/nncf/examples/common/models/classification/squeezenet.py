@@ -50,7 +50,7 @@ class Fire(nn.Module):
 
 class SqueezeNet(nn.Module):
 
-    def __init__(self, version=1.0, num_classes=1000):
+    def __init__(self, version=1.0, num_classes=1000, dropout=0.5):
         super(SqueezeNet, self).__init__()
         if version not in [1.0, 1.1]:
             raise ValueError("Unsupported SqueezeNet version {version}:"
@@ -91,7 +91,7 @@ class SqueezeNet(nn.Module):
         # Final convolution is initialized differently form the rest
         final_conv = nn.Conv2d(512, self.num_classes, kernel_size=1)
         self.classifier = nn.Sequential(
-            nn.Dropout(p=0.5),
+            nn.Dropout(p=dropout),
             final_conv,
             nn.ReLU(inplace=True),
             nn.AdaptiveAvgPool2d((1, 1))

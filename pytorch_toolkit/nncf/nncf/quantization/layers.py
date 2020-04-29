@@ -11,36 +11,29 @@
  limitations under the License.
 """
 
-import logging
-from functools import partial
 from typing import Dict
 
 import numpy as np
 import torch
 import torch.nn as nn
+from functools import partial
 from torch import distributed
 
 from nncf.debug import is_debug
-from nncf.initialization import INITIALIZABLE_MODULES
+from nncf.functions import clamp
+from nncf.nncf_logger import logger as nncf_logger
 from .quantize_functions import symmetric_quantize, asymmetric_quantize
 from ..layer_utils import COMPRESSION_MODULES
 from ..registry import Registry
 from ..utils import get_per_channel_scale_shape, get_flat_tensor_contents_string
 
-logger = logging.getLogger(__name__)
-
 QUANTIZATION_MODULES = Registry('quantization_modules')
-BINARIZATION_MODULES = Registry('binarization_modules')
+INITIALIZABLE_MODULES = Registry('initializable_modules')
 
 
 class QuantizationMode:
     SYMMETRIC = "symmetric"
     ASYMMETRIC = "asymmetric"
-
-
-class BinarizationMode:
-    XNOR = "xnor"
-    DOREFA = "dorefa"
 
 
 class QuantizerConfig:
@@ -56,12 +49,42 @@ class QuantizerConfig:
         self.per_channel = per_channel
         self.is_weights = is_weights
         self.input_shape = input_shape
+        # TODO: add optional level_low and level_high setting to be parsed from HW config
+
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
+
+    def __str__(self):
+        return "B:{bits} M:{mode} SGN:{signedness} W:{is_weights} PC:{per_channel}".format(
+            bits=self.bits,
+            mode='S' if self.mode == QuantizationMode.SYMMETRIC else 'A',
+            signedness='ANY' if self.signedness_to_force is None else ('S' if self.signedness_to_force else 'U'),
+            is_weights='Y' if self.is_weights else 'N',
+            per_channel='Y' if self.per_channel else 'N')
+
+    def __hash__(self):
+        return hash(str(self))
+
+    def __lt__(self, other):
+        return self.bits < other.bits or \
+               (self.mode == QuantizationMode.SYMMETRIC and other.mode == QuantizationMode.ASYMMETRIC) or \
+               (self.signedness_to_force is None and other.signedness_to_force is not None) or \
+               (not self.per_channel and other.per_channel)
 
 
 class BaseQuantizer(nn.Module):
     def __init__(self, config: QuantizerConfig):
         super().__init__()
-        self.config = config
+        self.input_shape = config.input_shape
+        self.per_channel = config.per_channel
+        self.is_weights = config.is_weights
+        self.signedness_to_force = config.signedness_to_force
+        self._num_bits = nn.Parameter(torch.IntTensor([config.bits]), requires_grad=False)
+
+        self.level_high = 0
+        self.level_low = 0
+        self.levels = 0
+
         self.init_stage = False
         self.initialized = False
         self.state_dict_name = None
@@ -90,11 +113,18 @@ class BaseQuantizer(nn.Module):
 
         self.load_listener = LoadStateListener(self)
 
+    def enable_gradients(self):
+        return NotImplementedError
+
+    def disable_gradients(self):
+        return NotImplementedError
+
     def forward(self, x):
         if is_debug():
             self.call_count += 1
         if self.init_stage:
             return x
+        self.set_level_ranges()
         return self.quantize(x)
 
     def quantize(self, x):
@@ -110,31 +140,44 @@ class BaseQuantizer(nn.Module):
                           log_module_name: str = None):
         raise NotImplementedError
 
+    def set_level_ranges(self):
+        raise NotImplementedError
+
+    @property
+    def signed(self):
+        return NotImplementedError
+
+    @property
+    def num_bits(self):
+        return self._num_bits.item()
+
+    @num_bits.setter
+    def num_bits(self, num_bits: int):
+        self._num_bits.fill_(num_bits)
+
+    def broadcast_num_bits(self, src: int = 0):
+        distributed.broadcast(self._num_bits, src=src)
+
+
 @COMPRESSION_MODULES.register()
 @QUANTIZATION_MODULES.register(QuantizationMode.SYMMETRIC)
-@INITIALIZABLE_MODULES.register()
 class SymmetricQuantizer(BaseQuantizer):
     SCALE_PARAM_NAME = 'scale'
 
     def __init__(self, config):
         super().__init__(config)
-        self.input_shape = config.input_shape
-        self.per_channel = config.per_channel
-        self.is_weights = config.is_weights
-        self.num_bits = config.bits
-        self.signedness_to_force = config.signedness_to_force
         self.signed_tensor = nn.Parameter(torch.IntTensor([0]), requires_grad=False)
         self.collect_scale_statistics = False
-
         if self.per_channel:
             self.scale_shape = get_per_channel_scale_shape(self.input_shape, self.is_weights)
         self.scale = nn.Parameter(torch.ones(self.scale_shape), requires_grad=True)
         self.eps = 1e-16
 
-        self.level_high = self.level_low = 0
-        self.levels = 2 ** self.num_bits
-        if self.is_weights:
-            self.levels -= 1
+    def enable_gradients(self):
+        self.scale.requires_grad = True
+
+    def disable_gradients(self):
+        self.scale.requires_grad = False
 
     def set_level_ranges(self):
         if self.signed:
@@ -145,6 +188,9 @@ class SymmetricQuantizer(BaseQuantizer):
         else:
             self.level_high = 2 ** self.num_bits - 1
             self.level_low = 0
+        self.levels = 2 ** self.num_bits
+        if self.is_weights:
+            self.levels -= 1
 
     @property
     def signed(self):
@@ -155,7 +201,6 @@ class SymmetricQuantizer(BaseQuantizer):
         self.signed_tensor.fill_(signed)
 
     def quantize(self, x):
-        self.set_level_ranges()
         return symmetric_quantize(x, self.levels, self.level_low, self.level_high, self.scale, self.eps)
 
     def get_trainable_params(self) -> Dict[str, torch.Tensor]:
@@ -163,13 +208,13 @@ class SymmetricQuantizer(BaseQuantizer):
 
     def apply_minmax_init(self, min_values, max_values, distributed_, log_module_name: str = None):
         if self.initialized:
-            logger.debug("Skipped initializing {} - loaded from checkpoint".format(log_module_name))
+            nncf_logger.debug("Skipped initializing {} - loaded from checkpoint".format(log_module_name))
             return
         if torch.any(torch.eq(min_values, np.inf)) or torch.any(torch.eq(max_values, -np.inf)):
             raise AttributeError('Statistics is not collected for {}'.format(log_module_name))
         sign = torch.any(torch.lt(min_values, 0))
         if self.signedness_to_force is not None and sign != self.signedness_to_force:
-            logger.warning("Forcing signed to {} for module {}".format(self.signedness_to_force, log_module_name))
+            nncf_logger.warning("Forcing signed to {} for module {}".format(self.signedness_to_force, log_module_name))
             sign = self.signedness_to_force
         self.signed = int(sign)
 
@@ -182,25 +227,20 @@ class SymmetricQuantizer(BaseQuantizer):
             distributed.broadcast(self.scale, 0)
             distributed.broadcast(self.signed_tensor, 0)
 
-        logger.info(
+        nncf_logger.info(
             "Set sign: {} and scale: {} for {}".format(self.signed,
                                                        get_flat_tensor_contents_string(self.scale),
                                                        log_module_name))
 
+
 @COMPRESSION_MODULES.register()
 @QUANTIZATION_MODULES.register(QuantizationMode.ASYMMETRIC)
-@INITIALIZABLE_MODULES.register()
 class AsymmetricQuantizer(BaseQuantizer):
     INPUT_LOW_PARAM_NAME = 'input_low'
     INPUT_RANGE_PARAM_NAME = 'input_range'
 
     def __init__(self, config):
         super().__init__(config)
-        self.is_weights = config.is_weights
-        self.input_shape = config.input_shape
-        self.per_channel = config.per_channel
-        self.bits = config.bits
-
         self.scale_shape = 1
         if self.per_channel:
             self.scale_shape = get_per_channel_scale_shape(self.input_shape, self.is_weights)
@@ -209,21 +249,22 @@ class AsymmetricQuantizer(BaseQuantizer):
         self.input_range = nn.Parameter(torch.ones(self.scale_shape), requires_grad=True)
         self.eps = 1e-16
 
+    def enable_gradients(self):
+        self.input_low.requires_grad = True
+        self.input_range.requires_grad = True
+
+    def disable_gradients(self):
+        self.input_low.requires_grad = False
+        self.input_range.requires_grad = False
+
     @property
     def signed(self):
         return True
 
-    @property
-    def level_high(self):
-        return 2 ** self.bits - 1
-
-    @property
-    def level_low(self):
-        return 0
-
-    @property
-    def levels(self):
-        return 2 ** self.bits
+    def set_level_ranges(self):
+        self.level_high = 2 ** self.num_bits - 1
+        self.level_low = 0
+        self.levels = 2 ** self.num_bits
 
     def quantize(self, x):
         return asymmetric_quantize(x, self.levels, self.level_low, self.level_high, self.input_low, self.input_range,
@@ -235,17 +276,20 @@ class AsymmetricQuantizer(BaseQuantizer):
 
     def apply_minmax_init(self, min_values, max_values, distributed_, log_module_name: str = None):
         if self.initialized:
-            logger.debug("Skipped initializing {} - loaded from checkpoint".format(log_module_name))
+            nncf_logger.debug("Skipped initializing {} - loaded from checkpoint".format(log_module_name))
             return
         if torch.any(torch.eq(min_values, np.inf)) or torch.any(torch.eq(max_values, -np.inf)):
             raise AttributeError('Statistics is not collected for {}'.format(log_module_name))
-        self.input_low.data = min_values.data
-        range_ = max_values - min_values
-        self.input_range.masked_scatter_(torch.gt(range_, 0.01), range_)
+        ranges = max_values - min_values
+        max_range = torch.max(max_values - min_values)
+        eps = 1e-2
+        correction = (clamp(ranges, low=eps * max_range, high=max_range) - ranges) * 0.5
+        self.input_range.data = (ranges + 2 * correction).data
+        self.input_low.data = (min_values - correction).data
 
         if distributed_:
             distributed.broadcast(self.input_low, 0)
             distributed.broadcast(self.input_range, 0)
-        logger.info("Set input_low: {} and input_range: {} for {}"
-                    .format(get_flat_tensor_contents_string(self.input_low),
-                            get_flat_tensor_contents_string(self.input_range), log_module_name))
+        nncf_logger.info("Set input_low: {} and input_range: {} for {}"
+                         .format(get_flat_tensor_contents_string(self.input_low),
+                                 get_flat_tensor_contents_string(self.input_range), log_module_name))

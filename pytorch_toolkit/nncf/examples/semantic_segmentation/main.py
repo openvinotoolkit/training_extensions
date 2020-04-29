@@ -16,7 +16,6 @@
 # https://github.com/pytorch/vision/tree/master/references/segmentation
 
 import functools
-import logging
 import os
 import sys
 from os import path as osp
@@ -24,31 +23,27 @@ from os import path as osp
 import numpy as np
 import torch
 import torchvision.transforms as T
+from nncf.utils import is_main_process
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 import examples.semantic_segmentation.utils.data as data_utils
 import examples.semantic_segmentation.utils.loss_funcs as loss_funcs
 import examples.semantic_segmentation.utils.transforms as JT
+
 from examples.common.argparser import get_common_argument_parser
-from examples.common.distributed import configure_distributed, is_main_process
+from examples.common.distributed import configure_distributed
 from examples.common.execution import ExecutionMode, get_device, get_execution_mode, \
     prepare_model_for_execution, start_worker
+from examples.common.model_loader import load_model
 from examples.common.optimizer import make_optimizer
-from examples.common.utils import configure_logging, configure_paths, make_additional_checkpoints, print_args
+from examples.common.utils import configure_logging, configure_paths, make_additional_checkpoints, print_args, \
+    write_metrics, print_statistics
 from examples.semantic_segmentation.metric import IoU
 from examples.semantic_segmentation.test import Test
 from examples.semantic_segmentation.train import Train
-from examples.common.model_loader import load_model
 from examples.semantic_segmentation.utils.checkpoint import load_checkpoint, save_checkpoint
-from nncf.helpers import create_compressed_model, load_state
-from nncf.config import Config
-from nncf.dynamic_graph import patch_torch_operators
-from nncf.utils import print_statistics
-from examples.common.utils import write_metrics
-
-patch_torch_operators()
-logging.basicConfig(level=logging.INFO, stream=sys.stdout)
-
+from examples.common.example_logger import logger
+from nncf import Config, create_compressed_model, load_state
 
 def get_arguments(args):
     parser = get_common_argument_parser()
@@ -105,7 +100,7 @@ def get_joint_transforms(is_train, config):
 
 def get_class_weights(train_set, num_classes, config):
     # Get class weights from the selected weighing technique
-    print("\nWeighing technique:", config.weighing)
+    logger.info("\nWeighing technique: {}".format(config.weighing))
     weighing = config.get('weighing', 'none')
     if isinstance(weighing, list):
         # Class weights were directly specified in config
@@ -114,8 +109,8 @@ def get_class_weights(train_set, num_classes, config):
     train_loader_for_weight_count = torch.utils.data.DataLoader(
         train_set,
         batch_size=1, collate_fn=data_utils.collate_fn)
-    print("Computing class weights...")
-    print("(this can take a while depending on the dataset size)")
+    logger.info("Computing class weights...")
+    logger.info("(this can take a while depending on the dataset size)")
     if weighing.lower() == 'enet':
         class_weights = data_utils.enet_weighing(train_loader_for_weight_count, num_classes)
     elif weighing.lower() == 'mfb':
@@ -145,10 +140,10 @@ def get_dataset(dataset_name: str) -> torch.utils.data.Dataset:
 
 
 def load_dataset(dataset, config):
-    print("\nLoading dataset...\n")
+    logger.info("\nLoading dataset...\n")
 
-    print("Selected dataset:", config.dataset)
-    print("Dataset directory:", config.dataset_dir)
+    logger.info("Selected dataset: {}".format(config.dataset))
+    logger.info("Dataset directory: {}".format(config.dataset_dir))
 
     transforms_train = get_joint_transforms(is_train=True, config=config)
     transforms_val = get_joint_transforms(is_train=False, config=config)
@@ -196,22 +191,22 @@ def load_dataset(dataset, config):
     num_classes = len(class_encoding)
 
     # Print information for debugging
-    print("Number of classes to predict:", num_classes)
-    print("Train dataset size:", len(train_set))
-    print("Validation dataset size:", len(val_set))
+    logger.info("Number of classes to predict: {}".format(num_classes))
+    logger.info("Train dataset size: {}".format(len(train_set)))
+    logger.info("Validation dataset size: {}".format(len(val_set)))
 
     # Get a batch of samples to display
     if config.mode.lower() == 'test':
         images, labels = iter(val_loader).next()
     else:
         images, labels = iter(train_loader).next()
-    print("Image size:", images.size())
-    print("Label size:", labels.size())
-    print("Class-color encoding:", class_encoding)
+    logger.info("Image size: {}".format(images.size()))
+    logger.info("Label size: {}".format(labels.size()))
+    logger.info("Class-color encoding: {}".format(class_encoding))
 
     # Show a batch of samples and labels
     if config.imshow_batch and config.mode.lower() != 'test':
-        print("Close the figure window to continue...")
+        logger.info("Close the figure window to continue...")
         label_to_rgb = T.Compose([
             data_utils.LongTensorToRGBPIL(class_encoding),
             T.ToTensor()
@@ -229,7 +224,7 @@ def load_dataset(dataset, config):
             ignore_index = list(class_encoding).index('unlabeled')
             class_weights[ignore_index] = 0
 
-    print("Class weights:", class_weights)
+    logger.info("Class weights: {}".format(class_weights))
 
     return (train_loader, val_loader), class_weights
 
@@ -258,11 +253,11 @@ def get_aux_loss_dependent_params(model_without_dp, class_weights, aux_lr, confi
 
 # pylint: disable=too-many-branches
 # pylint: disable=too-many-statements
-def train(model, model_without_dp, compression_algo, train_loader, val_loader, class_weights, class_encoding, config):
-    print("\nTraining...\n")
+def train(model, model_without_dp, compression_ctrl, train_loader, val_loader, class_weights, class_encoding, config):
+    logger.info("\nTraining...\n")
 
     # Check if the network architecture is correct
-    print(model)
+    logger.info(model)
 
     optim_config = config.get('optimizer', {})
     optim_params = optim_config.get('optimizer_params', {})
@@ -291,49 +286,49 @@ def train(model, model_without_dp, compression_algo, train_loader, val_loader, c
         model, optimizer, start_epoch, best_miou, _ = \
             load_checkpoint(
                 model, resuming_checkpoint, config.device,
-                optimizer, compression_algo.scheduler)
-        print("Resuming from model: Start epoch = {0} "
-              "| Best mean IoU = {1:.4f}".format(start_epoch, best_miou))
+                optimizer, compression_ctrl.scheduler)
+        logger.info("Resuming from model: Start epoch = {0} "
+                    "| Best mean IoU = {1:.4f}".format(start_epoch, best_miou))
         config.start_epoch = start_epoch
 
     # Start Training
-    train_obj = Train(model, train_loader, optimizer, criterion, compression_algo, metric, config.device,
+    train_obj = Train(model, train_loader, optimizer, criterion, compression_ctrl, metric, config.device,
                       config.model)
     val_obj = Test(model, val_loader, criterion, metric, config.device,
                    config.model)
 
     for epoch in range(config.start_epoch, config.epochs):
-        print(">>>> [Epoch: {0:d}] Training".format(epoch))
+        logger.info(">>>> [Epoch: {0:d}] Training".format(epoch))
 
         if config.distributed:
             train_loader.sampler.set_epoch(epoch)
 
-        if not isinstance(lr_scheduler, ReduceLROnPlateau):
-            lr_scheduler.step(epoch)
-
         epoch_loss, (iou, miou) = train_obj.run_epoch(config.print_step)
-        compression_algo.scheduler.epoch_step()
+        if not isinstance(lr_scheduler, ReduceLROnPlateau):
+            # Learning rate scheduling should be applied after optimizer’s update
+            lr_scheduler.step(epoch)
+        compression_ctrl.scheduler.epoch_step()
 
-        print(">>>> [Epoch: {0:d}] Avg. loss: {1:.4f} | Mean IoU: {2:.4f}".
-              format(epoch, epoch_loss, miou))
+        logger.info(">>>> [Epoch: {0:d}] Avg. loss: {1:.4f} | Mean IoU: {2:.4f}".
+                    format(epoch, epoch_loss, miou))
 
         if is_main_process():
             config.tb.add_scalar("train/loss", epoch_loss, epoch)
             config.tb.add_scalar("train/mIoU", miou, epoch)
             config.tb.add_scalar("train/learning_rate", optimizer.param_groups[0]['lr'], epoch)
-            config.tb.add_scalar("train/compression_loss", compression_algo.loss(), epoch)
+            config.tb.add_scalar("train/compression_loss", compression_ctrl.loss(), epoch)
 
-            for key, value in compression_algo.statistics().items():
+            for key, value in compression_ctrl.statistics().items():
                 if isinstance(value, (int, float)):
                     config.tb.add_scalar("compression/statistics/{0}".format(key), value, epoch)
 
         if (epoch + 1) % config.save_freq == 0 or epoch + 1 == config.epochs:
-            print(">>>> [Epoch: {0:d}] Validation".format(epoch))
+            logger.info(">>>> [Epoch: {0:d}] Validation".format(epoch))
 
             loss, (iou, miou) = val_obj.run_epoch(config.print_step)
 
-            print(">>>> [Epoch: {0:d}] Avg. loss: {1:.4f} | Mean IoU: {2:.4f}".
-                  format(epoch, loss, miou))
+            logger.info(">>>> [Epoch: {0:d}] Avg. loss: {1:.4f} | Mean IoU: {2:.4f}".
+                        format(epoch, loss, miou))
 
             if is_main_process():
                 config.tb.add_scalar("val/mIoU", miou, epoch)
@@ -344,28 +339,32 @@ def train(model, model_without_dp, compression_algo, train_loader, val_loader, c
             is_best = miou > best_miou
             best_miou = max(miou, best_miou)
 
+            if config.metrics_dump is not None:
+                write_metrics(best_miou, config.metrics_dump)
+
             if isinstance(lr_scheduler, ReduceLROnPlateau):
+                # Learning rate scheduling should be applied after optimizer’s update
                 lr_scheduler.step(best_miou)
 
             # Print per class IoU on last epoch or if best iou
             if epoch + 1 == config.epochs or is_best:
                 for key, class_iou in zip(class_encoding.keys(), iou):
-                    print("{0}: {1:.4f}".format(key, class_iou))
+                    logger.info("{0}: {1:.4f}".format(key, class_iou))
 
             # Save the model if it's the best thus far
             if is_main_process():
                 checkpoint_path = save_checkpoint(model,
                                                   optimizer, epoch + 1, best_miou,
-                                                  compression_algo.scheduler, config)
+                                                  compression_ctrl.scheduler, config)
 
                 make_additional_checkpoints(checkpoint_path, is_best, epoch + 1, config)
-                print_statistics(compression_algo.statistics())
+                print_statistics(compression_ctrl.statistics())
 
     return model
 
 
 def test(model, test_loader, class_weights, class_encoding, config):
-    print("\nTesting...\n")
+    logger.info("\nTesting...\n")
 
     _, criterion = get_aux_loss_dependent_params(model,
                                                  class_weights,
@@ -385,24 +384,22 @@ def test(model, test_loader, class_weights, class_encoding, config):
     # Test the trained model on the test set
     test_obj = Test(model, test_loader, criterion, metric, config.device, config.model)
 
-    print(">>>> Running test dataset")
+    logger.info(">>>> Running test dataset")
 
     loss, (iou, miou) = test_obj.run_epoch(config.print_step)
     class_iou = dict(zip(class_encoding.keys(), iou))
 
-    print(">>>> Avg. loss: {0:.4f} | Mean IoU: {1:.4f}".format(loss, miou))
-    if config.metrics_dump and config.resuming_checkpoint is not None:
-        avg = miou*100 # Average accuracy
-        metrics = {os.path.basename(config.resuming_checkpoint): round(avg, 2)}
-        write_metrics(config, metrics)
+    logger.info(">>>> Avg. loss: {0:.4f} | Mean IoU: {1:.4f}".format(loss, miou))
+    if config.metrics_dump is not None:
+        write_metrics(miou, config.metrics_dump)
 
     # Print per class IoU
     for key, class_iou in zip(class_encoding.keys(), iou):
-        print("{0}: {1:.4f}".format(key, class_iou))
+        logger.info("{0}: {1:.4f}".format(key, class_iou))
 
     # Show a batch of samples and labels
     if config.imshow_batch:
-        print("A batch of predictions from the test set...")
+        logger.info("A batch of predictions from the test set...")
         images, gt_labels = iter(test_loader).next()
         color_predictions = predict(model, images, class_encoding, config)
 
@@ -439,27 +436,25 @@ def main_worker(current_gpu, config):
         configure_distributed(config)
 
     if is_main_process():
-        configure_logging(config)
+        configure_logging(logger, config)
         print_args(config)
 
-    print(config)
+    logger.info(config)
 
     config.device = get_device(config)
     dataset = get_dataset(config.dataset)
     color_encoding = dataset.color_encoding
     num_classes = len(color_encoding)
 
-    if config.metrics_dump and config.resuming_checkpoint is not None:
-        avg = 0
-        metrics = {os.path.basename(config.resuming_checkpoint): avg}
-        write_metrics(config, metrics)
+    if config.metrics_dump is not None:
+        write_metrics(0, config.metrics_dump)
 
     weights = config.get('weights')
     model = load_model(config.model,
                        pretrained=config.get('pretrained', True) if weights is None else False,
                        num_classes=num_classes,
                        model_params=config.get('model_params', {}))
-    compression_algo, model = create_compressed_model(model, config)
+    compression_ctrl, model = create_compressed_model(model, config)
     if weights:
         sd = torch.load(weights, map_location='cpu')
         load_state(model, sd)
@@ -467,7 +462,7 @@ def main_worker(current_gpu, config):
     model, model_without_dp = prepare_model_for_execution(model, config)
 
     if config.distributed:
-        compression_algo.distributed()
+        compression_ctrl.distributed()
 
     resuming_checkpoint = config.resuming_checkpoint
 
@@ -476,31 +471,30 @@ def main_worker(current_gpu, config):
             # Load the previously saved model state
             model, _, _, _, _ = \
                 load_checkpoint(model, resuming_checkpoint, config.device,
-                                compression_scheduler=compression_algo.scheduler)
+                                compression_scheduler=compression_ctrl.scheduler)
 
     if config.to_onnx is not None:
-        compression_algo.export_model(config.to_onnx)
-        print("Saved to", config.to_onnx)
+        compression_ctrl.export_model(config.to_onnx)
+        logger.info("Saved to {}".format(config.to_onnx))
         return
 
     if config.mode.lower() == 'test':
-        print(model)
+        logger.info(model)
         model_parameters = filter(lambda p: p.requires_grad, model.parameters())
         params = sum([np.prod(p.size()) for p in model_parameters])
-        print("Trainable argument count:{params}".format(params=params))
+        logger.info("Trainable argument count:{params}".format(params=params))
 
         model = model.to(config.device)
         loaders, w_class = load_dataset(dataset, config)
         _, val_loader = loaders
         test(model, val_loader, w_class, color_encoding, config)
-        print_statistics(compression_algo.statistics())
+        print_statistics(compression_ctrl.statistics())
     elif config.mode.lower() == 'train':
         loaders, w_class = load_dataset(dataset, config)
         train_loader, val_loader = loaders
         if not resuming_checkpoint:
-            compression_algo.initialize(train_loader)
-        model = \
-            train(model, model_without_dp, compression_algo, train_loader, val_loader, w_class, color_encoding, config)
+            compression_ctrl.initialize(train_loader)
+        train(model, model_without_dp, compression_ctrl, train_loader, val_loader, w_class, color_encoding, config)
     else:
         # Should never happen...but just in case it does
         raise RuntimeError(
@@ -522,7 +516,7 @@ def main(argv):
 
         config.log_dir = str(config.log_dir)
         configure_paths(config)
-        print("Save directory:", config.log_dir)
+        logger.info("Save directory: {}".format(config.log_dir))
     else:
         config.log_dir = "/tmp/"
 

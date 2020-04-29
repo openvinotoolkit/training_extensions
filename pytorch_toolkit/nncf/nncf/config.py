@@ -12,7 +12,12 @@
 """
 
 import argparse
+import itertools
 import os
+import jsonschema
+import logging
+
+from nncf.config_schema import ROOT_NNCF_CONFIG_SCHEMA, validate_single_compression_algo_schema
 
 try:
     import jstyleson as json
@@ -21,10 +26,12 @@ except ImportError:
 
 from addict import Dict
 
+
 _DEFAULT_KEY_TO_ENV = {
     "world_size": "WORLD_SIZE",
 }
 
+logger = logging.getLogger('nncf')
 
 class ActionWrapper(argparse.Action):
     def __init__(self, action):
@@ -69,6 +76,7 @@ class CustomArgumentParser(CustomActionContainer, argparse.ArgumentParser):
 
 
 class Config(Dict):
+    """A regular dictionary object extended with some utility functions."""
     def __getattr__(self, item):
         if item not in self:
             raise KeyError("Key {} not found in config".format(item))
@@ -77,7 +85,26 @@ class Config(Dict):
     @classmethod
     def from_json(cls, path):
         with open(path) as f:
-            return cls(json.load(f))
+            loaded_json = cls(json.load(f))
+        try:
+            jsonschema.validate(loaded_json, schema=ROOT_NNCF_CONFIG_SCHEMA)
+
+            compression_section = loaded_json.get("compression")
+            if compression_section is None:
+                # No compression specified
+                return loaded_json
+
+            if isinstance(compression_section, dict):
+                validate_single_compression_algo_schema(compression_section)
+            else:
+                # Passed a list of dicts
+                for compression_algo_dict in compression_section:
+                    validate_single_compression_algo_schema(compression_algo_dict)
+
+        except jsonschema.ValidationError:
+            logger.error("Invalid NNCF config supplied!")
+            raise
+        return loaded_json
 
     def update_from_args(self, args, argparser=None):
         if argparser is not None:
@@ -100,3 +127,10 @@ class Config(Dict):
         for k, v in key_to_env_dict:
             if v in os.environ:
                 self[k] = int(os.environ[v])
+
+
+def product_dict(d):
+    keys = d.keys()
+    vals = d.values()
+    for instance in itertools.product(*vals):
+        yield dict(zip(keys, instance))

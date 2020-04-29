@@ -22,6 +22,7 @@ import torch.nn.functional as F
 
 from nncf.utils import is_tracing_state
 
+from examples.common.example_logger import logger
 
 class UNet(nn.Module):
     def __init__(
@@ -170,6 +171,6 @@ def unet(num_classes, pretrained=False, **kwargs):
     model = UNet(n_classes=num_classes, **kwargs)
 
     if pretrained:
-        print("UNet has no pretrained weights")
+        logger.warning("UNet has no pretrained weights")
 
     return model

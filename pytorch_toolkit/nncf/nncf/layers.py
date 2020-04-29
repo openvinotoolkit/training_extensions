@@ -10,23 +10,39 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 """
-import logging
 import math
 import numbers
-import warnings
 from typing import Tuple, Optional
 
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
+import warnings
+from torch import nn
 from torch.nn import init
 from torch.nn.utils.rnn import PackedSequence
 
-import nncf.utils
-from nncf.dynamic_graph.patch_pytorch import ITERATION_MODULES
+from nncf.registry import Registry
 from .layer_utils import _NNCFModuleMixin
 
-logger = logging.getLogger(__name__)
+
+def dict_update(src, dst, recursive=True):
+    for name, value in dst.items():
+        if recursive and name in src and isinstance(value, dict):
+            dict_update(src[name], value, recursive)
+        else:
+            src[name] = value
+
+
+class NNCFConv1d(_NNCFModuleMixin, nn.Conv1d):
+    @staticmethod
+    def from_module(module):
+        assert module.__class__.__name__ == nn.Conv1d.__name__
+        nncf_conv = NNCFConv1d(
+            module.in_channels, module.out_channels, module.kernel_size, module.stride,
+            module.padding, module.dilation, module.groups, hasattr(module, 'bias')
+        )
+        dict_update(nncf_conv.__dict__, module.__dict__)
+        return nncf_conv
 
 
 class NNCFConv2d(_NNCFModuleMixin, nn.Conv2d):
@@ -37,7 +53,7 @@ class NNCFConv2d(_NNCFModuleMixin, nn.Conv2d):
             module.in_channels, module.out_channels, module.kernel_size, module.stride,
             module.padding, module.dilation, module.groups, hasattr(module, 'bias')
         )
-        nncf.utils.dict_update(nncf_conv.__dict__, module.__dict__)
+        dict_update(nncf_conv.__dict__, module.__dict__)
         return nncf_conv
 
 
@@ -47,7 +63,7 @@ class NNCFLinear(_NNCFModuleMixin, nn.Linear):
         assert module.__class__.__name__ == nn.Linear.__name__
 
         nncf_linear = NNCFLinear(module.in_features, module.out_features, hasattr(module, 'bias'))
-        nncf.utils.dict_update(nncf_linear.__dict__, module.__dict__)
+        dict_update(nncf_linear.__dict__, module.__dict__)
         return nncf_linear
 
 
@@ -61,7 +77,7 @@ class NNCFConvTranspose2d(_NNCFModuleMixin, nn.ConvTranspose2d):
         if hasattr(module, 'padding_mode'):
             args.append(module.padding_mode)
         nncf_conv_transpose2d = NNCFConvTranspose2d(*args)
-        nncf.utils.dict_update(nncf_conv_transpose2d.__dict__, module.__dict__)
+        dict_update(nncf_conv_transpose2d.__dict__, module.__dict__)
         return nncf_conv_transpose2d
 
 
@@ -74,7 +90,7 @@ class NNCFConv3d(_NNCFModuleMixin, nn.Conv3d):
             module.in_channels, module.out_channels, module.kernel_size, module.stride,
             module.padding, module.dilation, module.groups, hasattr(module, 'bias')
         )
-        nncf.utils.dict_update(nncf_conv3d.__dict__, module.__dict__)
+        dict_update(nncf_conv3d.__dict__, module.__dict__)
         return nncf_conv3d
 
 
@@ -88,20 +104,34 @@ class NNCFConvTranspose3d(_NNCFModuleMixin, nn.ConvTranspose3d):
         if hasattr(module, 'padding_mode'):
             args.append(module.padding_mode)
         nncf_conv_transpose3d = NNCFConvTranspose3d(*args)
-        nncf.utils.dict_update(nncf_conv_transpose3d.__dict__, module.__dict__)
+        dict_update(nncf_conv_transpose3d.__dict__, module.__dict__)
         return nncf_conv_transpose3d
 
 
 NNCF_MODULES_DICT = {
+    NNCFConv1d: nn.Conv1d,
     NNCFConv2d: nn.Conv2d,
+    NNCFConv3d: nn.Conv3d,
     NNCFLinear: nn.Linear,
     NNCFConvTranspose2d: nn.ConvTranspose2d,
-    NNCFConv3d: nn.Conv3d,
     NNCFConvTranspose3d: nn.ConvTranspose3d,
 }
 
 NNCF_MODULES_MAP = {k.__name__: v.__name__ for k, v in NNCF_MODULES_DICT.items()}
 NNCF_MODULES = list(NNCF_MODULES_MAP.keys())
+
+
+NNCF_CONV_MODULES_DICT = {
+    NNCFConv1d: nn.Conv1d,
+    NNCFConv2d: nn.Conv2d,
+    NNCFConv3d: nn.Conv3d,
+}
+NNCF_DECONV_MODULES_DICT = {
+    NNCFConvTranspose2d: nn.ConvTranspose2d,
+    NNCFConvTranspose3d: nn.ConvTranspose3d,
+}
+NNCF_CONV_MODULES_MAP = {k.__name__: v.__name__ for k, v in NNCF_CONV_MODULES_DICT.items()}
+NNCF_CONV_MODULES = list(NNCF_CONV_MODULES_MAP.keys())
 
 
 class RNNCellBaseNNCF(nn.Module):
@@ -155,6 +185,8 @@ class RNNCellBaseNNCF(nn.Module):
     def forward(self, input_, hidden):
         raise NotImplementedError
 
+
+ITERATION_MODULES = Registry('iteration_modules')
 
 @ITERATION_MODULES.register()
 class LSTMCellForwardNNCF(nn.Module):

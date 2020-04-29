@@ -17,7 +17,10 @@ import torch
 import torch.nn as nn
 from examples.object_detection.layers import L2Norm
 from examples.object_detection.layers.modules.ssd_head import MultiOutputSequential, SSDDetectionOutput
-from nncf.helpers import load_state
+from nncf.checkpoint_loading import load_state
+
+from examples.common.example_logger import logger
+
 
 BASE_NUM_OUTPUTS = {
     300: [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 'C', 512, 512, 512, 'M', 512, 512, 512],
@@ -72,12 +75,12 @@ class SSD_VGG(nn.Module):
     def load_weights(self, base_file):
         _, ext = os.path.splitext(base_file)
         if ext == '.pkl' or '.pth':
-            print('Loading weights into state dict...')
+            logger.debug('Loading weights into state dict...')
             self.load_state_dict(torch.load(base_file,
                                             map_location=lambda storage, loc: storage))
-            print('Finished!')
+            logger.debug('Finished!')
         else:
-            print('Sorry only .pth and .pkl files supported.')
+            logger.error('Sorry only .pth and .pkl files supported.')
 
 
 def make_ssd_vgg_layer(input_features, output_features, kernel=3, padding=1, dilation=1, modifier=None,
@@ -154,7 +157,7 @@ def build_ssd_vgg(cfg, size, num_classes, config):
     ssd_vgg = SSD_VGG(cfg, size, num_classes, batch_norm=config.get('batchnorm', False))
 
     if config.basenet and (config.resuming_checkpoint is None) and (config.weights is None):
-        print('Loading base network...')
+        logger.debug('Loading base network...')
         basenet_weights = torch.load(config.basenet)
         new_weights = {}
         for wn, wv in basenet_weights.items():

@@ -25,10 +25,7 @@
         },
         {
             "algorithm": "quantization",
-            "initializer": {
-                "num_init_steps": 1
-            },
-            "weights" : {
+            "weights": {
                 "per_channel": true
             }
         }

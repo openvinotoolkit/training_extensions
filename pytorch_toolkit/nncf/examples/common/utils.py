@@ -12,16 +12,23 @@
 """
 
 import datetime
-import os
+import json
+import logging
 import pdb
 import sys
-import tarfile
-import json
 from os import path as osp
 from pathlib import Path
-from shutil import copyfile
 
+import os
+import tarfile
+from shutil import copyfile
 from tensorboardX import SummaryWriter
+from texttable import Texttable
+
+from examples.common.example_logger import logger as default_logger
+
+GENERAL_LOG_FILE_NAME = "output.log"
+NNCF_LOG_FILE_NAME = "nncf_output.log"
 
 
 def get_name(config):
@@ -35,24 +42,34 @@ def get_name(config):
     for algo_dict in compression_config:
         algo_name = algo_dict["algorithm"]
         if algo_name == "quantization":
-            activations = algo_dict.get('activations', {})
-            bits = activations.get('bits', 8)
-            retval += "_int{}".format(bits)
+            initializer = algo_dict.get("initializer", {})
+            precision = initializer.get("precision", {})
+            if precision:
+                retval += "_mixed_int"
+            else:
+                activations = algo_dict.get('activations', {})
+                a_bits = activations.get('bits', 8)
+                weights = algo_dict.get('weights', {})
+                w_bits = weights.get('bits', 8)
+                if a_bits == w_bits:
+                    retval += "_int{}".format(a_bits)
+                else:
+                    retval += "_a_int{}_w_int{}".format(a_bits, w_bits)
         else:
             retval += "_{}".format(algo_name)
     return retval
 
 
-def write_metrics(config, metrics):
-    if os.path.isfile(config.metrics_dump):
-        print("File ", config.metrics_dump, " is found")
-        path = Path(config.metrics_dump)
+def write_metrics(acc, filename):
+    avg = round(acc * 100, 2)
+    metrics = {"Accuracy": avg}
+    if os.path.isfile(filename):
+        path = Path(filename)
         data = json.loads(path.read_text(encoding='utf-8'))
         data.update(metrics)
         path.write_text(json.dumps(data, indent=2), encoding='utf-8')
     else:
-        print("Creating ", config.metrics_dump, " file")
-        with open(config.metrics_dump, 'w') as outfile:
+        with open(filename, 'w') as outfile:
             json.dump(metrics, outfile)
 
 
@@ -72,9 +89,17 @@ def configure_paths(config):
     os.makedirs(config.checkpoint_save_dir, exist_ok=True)
 
 
-def configure_logging(config):
-    config.tee = TeedStream(osp.join(config.log_dir, 'output.log'))
+def configure_logging(sample_logger, config):
     config.tb = SummaryWriter(config.log_dir)
+
+    training_pipeline_log_file_handler = logging.FileHandler(osp.join(config.log_dir, GENERAL_LOG_FILE_NAME))
+    training_pipeline_log_file_handler.setFormatter(logging.Formatter("%(message)s"))
+    sample_logger.addHandler(training_pipeline_log_file_handler)
+
+    nncf_log_file_handler = logging.FileHandler(osp.join(config.log_dir, NNCF_LOG_FILE_NAME))
+    nncf_log_file_handler.setFormatter(logging.Formatter("%(levelname)s:%(name)s:%(message)s"))
+    from nncf.nncf_logger import logger as nncf_logger
+    nncf_logger.addHandler(nncf_log_file_handler)
 
 
 def is_on_first_rank(config):
@@ -92,9 +117,9 @@ def create_code_snapshot(root, dst_path, extensions=(".py", ".json", ".cpp", ".c
                 tar.add(path.as_posix(), arcname=path.relative_to(root).as_posix(), recursive=True)
 
 
-def print_args(config):
+def print_args(config, logger=default_logger):
     for arg in sorted(config):
-        print("{: <27s}: {}".format(arg, config.get(arg)))
+        logger.info("{: <27s}: {}".format(arg, config.get(arg)))
 
 
 def make_link(src, dst, exists_ok=True):
@@ -116,26 +141,6 @@ def make_additional_checkpoints(checkpoint_path, is_best, epoch, config):
         intermediate_checkpoint = osp.join(config.intermediate_checkpoints_path,
                                            'epoch_{}.pth'.format(epoch))
         copyfile(checkpoint_path, intermediate_checkpoint)
-
-
-class TeedStream:
-    """Copy stdout to the file"""
-
-    def __init__(self, fname, mode='w'):
-        self.file = open(str(fname), mode)
-        self.stdout = sys.stdout
-        sys.stdout = self
-
-    def __del__(self):
-        sys.stdout = self.stdout
-        self.file.close()
-
-    def write(self, data):
-        self.file.write(data)
-        self.stdout.write(data)
-
-    def flush(self):
-        self.file.flush()
 
 
 # pylint:disable=no-member
@@ -162,3 +167,12 @@ def is_binarization(config):
     if algo_type is not None and algo_type == "binarization":
         return True
     return False
+
+
+def print_statistics(stats, logger=default_logger):
+    for key, val in stats.items():
+        if isinstance(val, Texttable):
+            logger.info(key)
+            logger.info(val.draw())
+        else:
+            logger.info("{}: {}".format(key, val))

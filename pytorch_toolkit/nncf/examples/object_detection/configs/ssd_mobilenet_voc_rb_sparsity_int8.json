@@ -21,7 +21,7 @@
     "base_lr": 1e-4,
     "weight_decay": 5e-4,
     "schedule_type": "multistep",
-    "steps": [300, 320],
+    "steps": [1, 1],
     "parameter_groups": [
       {"lr":  1e-3, "weight_decay":  0, "re": ".*\\._mask"},
       {"lr":  1e-4, "weight_decay":  1e-4}
@@ -44,15 +44,12 @@
         "schedule": "adaptive",
         "sparsity_init": 0.3,
         "sparsity_target": 0.9,
-        "sparsity_steps": 75000,
-        "sparsity_training_steps": 75000
+        "sparsity_steps": 300,
+        "sparsity_training_steps": 300
       }
     },
     {
-      "algorithm": "quantization",
-      "initializer": {
-        "num_init_steps": 1
-      }
+      "algorithm": "quantization"
     }
   ]
 }

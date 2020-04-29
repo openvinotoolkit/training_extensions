@@ -13,8 +13,11 @@
 
 import os
 import re
+import sys
 import codecs
 import setuptools
+import glob
+import sysconfig
 
 here = os.path.abspath(os.path.dirname(__file__))
 
@@ -36,20 +39,19 @@ def find_version(*file_paths):
     raise RuntimeError("Unable to find version string.")
 
 
-INSTALL_REQUIRES = ["addict",
-                    "torch==1.2.0",
-                    "torchvision==0.4.0",
+INSTALL_REQUIRES = ["ninja",
+                    "addict",
                     "pillow==6.2.1",
                     "texttable",
-                    "scipy",
-                    "ninja",
+                    "scipy==1.3.2",
                     "pyyaml",
                     "networkx",
                     "graphviz",
+                    "jsonschema",
                     "pydot",
                     "tensorboardX",
                     "jstyleson",
-                    "matplotlib",
+                    "matplotlib==3.0.3",
                     "numpy",
                     "tqdm",
                     "onnx",
@@ -57,7 +59,34 @@ INSTALL_REQUIRES = ["addict",
                     "pytest-mock",
                     "prettytable",
                     "mdutils",
-                    "yattag"]
+                    "yattag",
+                    "jsonschema",
+                    "wheel"]
+
+DEPENDENCY_LINKS = []
+if "--cpu-only" in sys.argv:
+    INSTALL_REQUIRES.extend(["torch", "torchvision"])
+    if sys.version_info[:2] == (3, 5):
+        DEPENDENCY_LINKS = [
+            'https://download.pytorch.org/whl/cpu/torch-1.3.1%2Bcpu-cp35-cp35m-linux_x86_64.whl',
+            'https://download.pytorch.org/whl/cpu/torchvision-0.4.2%2Bcpu-cp35-cp35m-linux_x86_64.whl']
+    elif sys.version_info[:2] == (3, 6):
+        DEPENDENCY_LINKS = [
+            'https://download.pytorch.org/whl/cpu/torch-1.3.1%2Bcpu-cp36-cp36m-linux_x86_64.whl',
+            'https://download.pytorch.org/whl/cpu/torchvision-0.4.2%2Bcpu-cp36-cp36m-linux_x86_64.whl']
+    elif sys.version_info[:2] >= (3, 7):
+        DEPENDENCY_LINKS = [
+            'https://download.pytorch.org/whl/cpu/torch-1.3.1%2Bcpu-cp37-cp37m-linux_x86_64.whl',
+            'https://download.pytorch.org/whl/cpu/torchvision-0.4.2%2Bcpu-cp37-cp37m-linux_x86_64.whl']
+    else:
+        print("Only Python > 3.5 is supported")
+        sys.exit(0)
+    KEY = ["CPU"]
+    sys.argv.remove("--cpu-only")
+else:
+    INSTALL_REQUIRES.extend(["torch==1.3.1", "torchvision==0.4.2"])
+    KEY = ["GPU"]
+
 
 EXTRAS_REQUIRE = {
     "tests": [
@@ -78,11 +107,12 @@ setuptools.setup(
     version=find_version(os.path.join(here, "nncf/version.py")),
     author="Intel",
     author_email="alexander.kozlov@intel.com",
-    description="Neural Networls Compression Framework",
+    description="Neural Networks Compression Framework",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/opencv/openvino-training-extensions",
     packages=setuptools.find_packages(),
+    dependency_links=DEPENDENCY_LINKS,
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: Apache Software License",
@@ -90,5 +120,12 @@ setuptools.setup(
     ],
     install_requires=INSTALL_REQUIRES,
     extras_require=EXTRAS_REQUIRE,
-    package_data=package_data
+    package_data=package_data,
+    keywords=KEY
 )
+
+path_to_ninja = glob.glob(str(sysconfig.get_paths()["purelib"]+"/ninja*/ninja/data/bin/"))
+if path_to_ninja:
+    path_to_ninja = str(path_to_ninja[0]+"ninja")
+    if not os.access(path_to_ninja, os.X_OK):
+        os.chmod(path_to_ninja, 755)

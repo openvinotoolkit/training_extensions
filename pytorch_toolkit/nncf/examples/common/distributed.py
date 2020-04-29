@@ -14,39 +14,11 @@
 from __future__ import print_function
 
 import os
-
 import torch
 from torch import distributed as dist
 from torch.utils.data import Sampler
 
-
-def is_dist_avail_and_initialized():
-    if not dist.is_available():
-        return False
-    if not dist.is_initialized():
-        return False
-    return True
-
-
-def get_world_size():
-    if not is_dist_avail_and_initialized():
-        return 1
-    return dist.get_world_size()
-
-
-def get_rank():
-    if not is_dist_avail_and_initialized():
-        return 0
-    return dist.get_rank()
-
-
-def is_main_process():
-    return get_rank() == 0
-
-
-def save_on_master(*args, **kwargs):
-    if is_main_process():
-        torch.save(*args, **kwargs)
+from examples.common.example_logger import logger
 
 
 def configure_distributed(config):
@@ -58,8 +30,8 @@ def configure_distributed(config):
         # Distributed multiprocessing
         config.rank = config.rank * config.ngpus_per_node + config.current_gpu
 
-    print('| distributed init (rank {}): {}'.format(
-        config.rank, config.dist_url), flush=True)
+    logger.info('| distributed init (rank {}): {}'.format(
+        config.rank, config.dist_url))
     dist.init_process_group(backend=config.dist_backend, init_method=config.dist_url,
                             world_size=config.world_size, rank=config.rank)
     config.world_size = dist.get_world_size()

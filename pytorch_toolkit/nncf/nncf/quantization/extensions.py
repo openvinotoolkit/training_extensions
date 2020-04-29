@@ -14,7 +14,7 @@
 import os
 import pathlib
 import os.path
-
+from nncf.definitions import get_install_type
 from torch.utils.cpp_extension import load
 
 
@@ -30,12 +30,14 @@ QuantizedFunctionsCPU = load(
     ],
     verbose=False
 )
-
-ext_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cuda")
-QuantizedFunctionsCUDA = load(
-    'quantized_functions_cuda', [
-        os.path.join(ext_dir, 'functions_cuda.cpp'),
-        os.path.join(ext_dir, 'functions_cuda_kernel.cu')
-    ],
-    verbose=False
-)
+if get_install_type() == 'GPU':
+    ext_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cuda")
+    QuantizedFunctionsCUDA = load(
+        'quantized_functions_cuda', [
+            os.path.join(ext_dir, 'functions_cuda.cpp'),
+            os.path.join(ext_dir, 'functions_cuda_kernel.cu')
+        ],
+        verbose=False
+    )
+else:
+    QuantizedFunctionsCUDA = None
