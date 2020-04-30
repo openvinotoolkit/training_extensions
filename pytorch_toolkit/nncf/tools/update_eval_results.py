@@ -53,29 +53,27 @@ def examples_table_maker(sample_type, sota_checkpoints_dict, metrics):
                     compression = model_name[configs].get('compression_description', {})
                 else:
                     compression = None
-                config_path = 'examples/{}/config/'.format(sample_type) + conf_file
-                if compression is None and sample_type == "classification":
+                if compression is None and sample_type == "classification" and ("mobilenet_v2" not in model_name):
                     checkpoint_link = "-"
                 else:
                     checkpoint_link = 'https://download.01.org/opencv/openvino_training_extensions/models/nncf/'\
                                       + resume
                 if sample_ == sample_type:
-                    row_ext = [str(table_name), str(compression), str(dataset_name), str(metrics[resume]),
-                               str(config_path), str(checkpoint_link)]
+                    row_ext = [str(table_name), str(compression), str(dataset_name), str(metrics[configs]),
+                               str(conf_file), str(checkpoint_link)]
                     examples_row.extend(row_ext)
                     md_table_writer(sample_, examples_row)
                 fp32_ref_metric = fp32_ref(reference, metrics)
                 common_row_ext = [str(table_name), str(compression), str(dataset_name), str(fp32_ref_metric),
-                                  str(metrics[resume])]
+                                  str(metrics[configs])]
                 common_row.extend(common_row_ext)
                 md_table_writer("common", common_row)
                 if args.output is not None:
-                    model_name[configs]['target'] = measured_metrics[resume]
+                    model_name[configs]['target'] = measured_metrics[configs]
 
 
 def fp32_ref(reference_, metrics_):
     if reference_ is not None:
-        reference_ += ".pth"
         fp32_ref_metric = metrics_[reference_]
     else:
         fp32_ref_metric = "-"

@@ -13,8 +13,8 @@
 
 import torch
 
-from ...dynamic_graph import register_operator
-from ...functions import STThreshold, logit
+from nncf.dynamic_graph.patch_pytorch import register_operator
+from nncf.functions import STThreshold, logit
 
 
 def binary_mask(mask):

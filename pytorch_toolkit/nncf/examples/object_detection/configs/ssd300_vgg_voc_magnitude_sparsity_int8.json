@@ -16,12 +16,13 @@
   "batch_size": 128,
   "iter_size": 1,
   "save_freq": 10,
+  "epochs": 130,
   "optimizer": {
     "type": "Adam",
     "base_lr": 1e-4,
     "weight_decay": 1e-4,
     "schedule_type": "multistep",
-    "steps": [100, 110]
+    "steps": [1, 1]
   },
   "ssd_params": {
     "clip": false,
@@ -38,14 +39,16 @@
       "algorithm": "magnitude_sparsity",
       "params": {
         "schedule": "multistep",
-        "sparsity_levels": [0.3, 0.5, 0.7],
-        "steps": [40, 80]
+        "multistep_sparsity_levels": [0.3, 0.5, 0.7],
+        "multistep_steps": [40, 80]
       }
     },
     {
       "algorithm": "quantization",
       "initializer": {
-        "num_init_steps": 10
+        "range": {
+          "num_init_steps": 10
+        }
       }
     }
   ]

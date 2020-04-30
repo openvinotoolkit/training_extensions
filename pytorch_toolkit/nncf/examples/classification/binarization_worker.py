@@ -1,5 +1,5 @@
 """
- Copyright (c) 2019 Intel Corporation
+ Copyright (c) 2019-2020 Intel Corporation
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
  You may obtain a copy of the License at
@@ -11,10 +11,11 @@
  limitations under the License.
 """
 
-import os.path as osp
 import time
-import copy
 
+
+import copy
+import os.path as osp
 import torch
 import torch.backends.cudnn as cudnn
 import torch.nn as nn
@@ -23,16 +24,16 @@ import torch.optim
 import torch.utils.data
 import torch.utils.data.distributed
 
-from nncf.utils import manual_seed, print_statistics
-from nncf.binarization.algo import Binarization
-from nncf.helpers import create_compressed_model
-from nncf.helpers.model_loader import load_state
-
-from examples.common.distributed import configure_distributed, is_main_process
+from examples.classification.main import create_data_loaders, validate, AverageMeter, accuracy, get_lr, create_datasets
+from examples.common.distributed import configure_distributed
+from examples.common.example_logger import logger
 from examples.common.execution import ExecutionMode, get_device, prepare_model_for_execution
 from examples.common.model_loader import load_model
-from examples.common.utils import configure_logging, print_args, make_additional_checkpoints, get_name
-from examples.classification.main import create_dataloaders, AverageMeter, accuracy, get_lr, validate
+from examples.common.utils import configure_logging, print_args, make_additional_checkpoints, get_name, print_statistics
+from nncf.binarization.algo import BinarizationController
+from nncf.model_creation import create_compressed_model
+from nncf.checkpoint_loading import load_state
+from nncf.utils import manual_seed, is_main_process
 
 
 class KDLossCalculator:
@@ -105,7 +106,7 @@ def main_worker_binarization(current_gpu, config):
     config.device = get_device(config)
 
     if is_main_process():
-        configure_logging(config)
+        configure_logging(logger, config)
         print_args(config)
 
     if config.seed is not None:
@@ -122,8 +123,8 @@ def main_worker_binarization(current_gpu, config):
                        model_params=config.get('model_params'))
 
     original_model = copy.deepcopy(model)
-    compression_algo, model = create_compressed_model(model, config)
-    if not isinstance(compression_algo, Binarization):
+    compression_ctrl, model = create_compressed_model(model, config)
+    if not isinstance(compression_ctrl, BinarizationController):
         raise RuntimeError("The binarization sample worker may only be run with the binarization algorithm!")
 
     if weights:
@@ -133,7 +134,7 @@ def main_worker_binarization(current_gpu, config):
     original_model.to(config.device)
 
     if config.distributed:
-        compression_algo.distributed()
+        compression_ctrl.distributed()
 
     is_inception = 'inception' in model_name
 
@@ -153,35 +154,36 @@ def main_worker_binarization(current_gpu, config):
     best_acc1 = 0
     # optionally resume from a checkpoint
     if resuming_checkpoint is not None:
-        model, config, optimizer, optimizer_scheduler, kd_loss_calculator, compression_algo, best_acc1 = \
+        model, config, optimizer, optimizer_scheduler, kd_loss_calculator, compression_ctrl, best_acc1 = \
             resume_from_checkpoint(resuming_checkpoint, model,
-                                   config, optimizer, optimizer_scheduler, kd_loss_calculator, compression_algo)
+                                   config, optimizer, optimizer_scheduler, kd_loss_calculator, compression_ctrl)
 
     if config.to_onnx is not None:
-        compression_algo.export_model(config.to_onnx)
-        print("Saved to", config.to_onnx)
+        compression_ctrl.export_model(config.to_onnx)
+        logger.info("Saved to {}".format(config.to_onnx))
         return
 
     if config.execution_mode != ExecutionMode.CPU_ONLY:
         cudnn.benchmark = True
 
     # Data loading code
-    train_loader, train_sampler, val_loader = create_dataloaders(config)
+    train_dataset, val_dataset = create_datasets(config)
+    train_loader, train_sampler, val_loader = create_data_loaders(config, train_dataset, val_dataset)
 
     if config.mode.lower() == 'test':
-        print_statistics(compression_algo.statistics())
+        print_statistics(compression_ctrl.statistics())
         validate(val_loader, model, criterion, config)
 
     if config.mode.lower() == 'train':
         if not resuming_checkpoint:
-            compression_algo.initialize(train_loader)
+            compression_ctrl.initialize(data_loader=train_loader, criterion=criterion)
 
         batch_multiplier = (binarization_config.get("params", {})).get("batch_multiplier", 1)
-        train_bin(config, compression_algo, model, criterion, is_inception, optimizer_scheduler, model_name, optimizer,
+        train_bin(config, compression_ctrl, model, criterion, is_inception, optimizer_scheduler, model_name, optimizer,
                   train_loader, train_sampler, val_loader, kd_loss_calculator, batch_multiplier, best_acc1)
 
 
-def train_bin(config, compression_algo, model, criterion, is_inception, optimizer_scheduler, model_name, optimizer,
+def train_bin(config, compression_ctrl, model, criterion, is_inception, optimizer_scheduler, model_name, optimizer,
               train_loader, train_sampler, val_loader, kd_loss_calculator, batch_multiplier, best_acc1=0):
     for epoch in range(config.start_epoch, config.epochs):
         config.cur_epoch = epoch
@@ -190,10 +192,10 @@ def train_bin(config, compression_algo, model, criterion, is_inception, optimize
 
         # train for one epoch
         train_epoch_bin(train_loader, batch_multiplier, model, criterion, optimizer, optimizer_scheduler,
-                        kd_loss_calculator, compression_algo, epoch, config, is_inception)
+                        kd_loss_calculator, compression_ctrl, epoch, config, is_inception)
 
         # compute compression algo statistics
-        stats = compression_algo.statistics()
+        stats = compression_ctrl.statistics()
 
         acc1 = best_acc1
         if epoch % config.test_every_n_epochs == 0:
@@ -205,7 +207,7 @@ def train_bin(config, compression_algo, model, criterion, is_inception, optimize
         best_acc1 = max(acc1, best_acc1)
 
         # update compression scheduler state at the end of the epoch
-        compression_algo.scheduler.epoch_step()
+        compression_ctrl.scheduler.epoch_step()
         optimizer_scheduler.epoch_step()
 
         if is_main_process():
@@ -219,7 +221,7 @@ def train_bin(config, compression_algo, model, criterion, is_inception, optimize
                 'original_model_state_dict': kd_loss_calculator.original_model.state_dict(),
                 'best_acc1': best_acc1,
                 'optimizer': optimizer.state_dict(),
-                'compression_scheduler': compression_algo.scheduler.state_dict(),
+                'compression_scheduler': compression_ctrl.scheduler.state_dict(),
                 'optimizer_scheduler': optimizer_scheduler.state_dict()
             }
 
@@ -232,31 +234,31 @@ def train_bin(config, compression_algo, model, criterion, is_inception, optimize
 
 
 def resume_from_checkpoint(resuming_checkpoint, model, config, optimizer, optimizer_scheduler, kd_loss_calculator,
-                           compression_algo):
+                           compression_ctrl):
     best_acc1 = 0
     if osp.isfile(resuming_checkpoint):
-        print("=> loading checkpoint '{}'".format(resuming_checkpoint))
+        logger.info("=> loading checkpoint '{}'".format(resuming_checkpoint))
         checkpoint = torch.load(resuming_checkpoint, map_location='cpu')
         load_state(model, checkpoint['state_dict'], is_resume=True)
         if config.mode.lower() == 'train' and config.to_onnx is None:
             config.start_epoch = checkpoint['epoch']
             best_acc1 = checkpoint['best_acc1']
             kd_loss_calculator.original_model.load_state_dict(checkpoint['original_model_state_dict'])
-            compression_algo.scheduler.load_state_dict(checkpoint['compression_scheduler'])
+            compression_ctrl.scheduler.load_state_dict(checkpoint['compression_scheduler'])
             optimizer.load_state_dict(checkpoint['optimizer'])
             optimizer_scheduler.load_state_dict(checkpoint['optimizer_scheduler'])
-            print("=> loaded checkpoint '{}' (epoch: {}, best_acc1: {:.3f})"
-                  .format(resuming_checkpoint, checkpoint['epoch'], best_acc1))
+            logger.info("=> loaded checkpoint '{}' (epoch: {}, best_acc1: {:.3f})"
+                        .format(resuming_checkpoint, checkpoint['epoch'], best_acc1))
         else:
-            print("=> loaded checkpoint '{}'".format(resuming_checkpoint))
+            logger.info("=> loaded checkpoint '{}'".format(resuming_checkpoint))
     else:
         raise FileNotFoundError("no checkpoint found at '{}'".format(resuming_checkpoint))
-    return model, config, optimizer, optimizer_scheduler, kd_loss_calculator, compression_algo, best_acc1
+    return model, config, optimizer, optimizer_scheduler, kd_loss_calculator, compression_ctrl, best_acc1
 
 
 def train_epoch_bin(train_loader, batch_multiplier, model, criterion, optimizer,
                     optimizer_scheduler: BinarizationOptimizerScheduler, kd_loss_calculator: KDLossCalculator,
-                    compression_algo, epoch, config, is_inception=False):
+                    compression_ctrl, epoch, config, is_inception=False):
     batch_time = AverageMeter()
     data_time = AverageMeter()
     losses = AverageMeter()
@@ -265,7 +267,7 @@ def train_epoch_bin(train_loader, batch_multiplier, model, criterion, optimizer,
     top1 = AverageMeter()
     top5 = AverageMeter()
 
-    compression_scheduler = compression_algo.scheduler
+    compression_scheduler = compression_ctrl.scheduler
 
     # switch to train mode
     model.train()
@@ -319,7 +321,7 @@ def train_epoch_bin(train_loader, batch_multiplier, model, criterion, optimizer,
         end = time.time()
 
         if i % config.print_freq == 0:
-            print(
+            logger.info(
                 '{rank}: '
                 'Epoch: [{0}][{1}/{2}] '
                 'Lr: {3:.3} '
@@ -346,7 +348,7 @@ def train_epoch_bin(train_loader, batch_multiplier, model, criterion, optimizer,
             config.tb.add_scalar("train/top1", top1.avg, i + global_step)
             config.tb.add_scalar("train/top5", top5.avg, i + global_step)
 
-            for stat_name, stat_value in compression_algo.statistics().items():
+            for stat_name, stat_value in compression_ctrl.statistics().items():
                 if isinstance(stat_value, (int, float)):
                     config.tb.add_scalar('train/statistics/{}'.format(stat_name), stat_value, i + global_step)
 

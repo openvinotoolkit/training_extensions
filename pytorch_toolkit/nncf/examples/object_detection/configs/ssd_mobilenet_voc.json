@@ -2,7 +2,7 @@
   "model": "ssd_mobilenet",
   "batchnorm": true,
   "input_info": {
-    "sample_size": [1, 3, 300, 300]
+    "sample_size": [2, 3, 300, 300]
   },
   "pretrained": true,
   "num_classes": 21,

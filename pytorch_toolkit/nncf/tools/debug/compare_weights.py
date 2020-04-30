@@ -21,11 +21,9 @@ import os
 import numpy as np
 from torch import randn
 
-from nncf.dynamic_graph import patch_torch_operators
 from tools.ir_utils import get_ir_paths, find_all_parameters
 from tools.debug.common import save_dump, register_print_hooks, load_torch_model, get_full_dump_paths, print_args
 
-patch_torch_operators()
 
 argparser = argparse.ArgumentParser()
 argparser.add_argument("-m", "--model", help="input IR name", required=True)

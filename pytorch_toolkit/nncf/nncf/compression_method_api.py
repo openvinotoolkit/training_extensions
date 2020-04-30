@@ -1,5 +1,5 @@
 #
-#  Copyright (c) 2019 Intel Corporation
+#  Copyright (c) 2019-2020 Intel Corporation
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
 #  You may obtain a copy of the License at
@@ -17,15 +17,18 @@ This package defines the API for the NNCF compression methods, so that the user 
 extend the existing algorithms.
 """
 
-from typing import Callable, Any, List
-
 import torch
+from copy import copy
+from functools import partial
 from torch import nn
+from torch.nn.modules.loss import _Loss
+from torch.utils.data import DataLoader
 
 from nncf.config import Config
-from nncf.dynamic_graph.graph_builder import ModelInputInfo, create_mock_tensor
-from functools import partial
-from copy import copy
+from nncf.dynamic_graph.graph_builder import create_mock_tensor
+from nncf.nncf_network import NNCFNetwork
+from nncf.utils import in_scope_list
+
 
 class CompressionLoss(nn.Module):
     """
@@ -35,6 +38,7 @@ class CompressionLoss(nn.Module):
     sparsity algorithm calculates the number of non-zero weights in convolutional
     and fully-connected layers to construct the loss function.
     """
+
     def forward(self):
         """
         Returns the compression loss value.
@@ -55,6 +59,7 @@ class CompressionScheduler:
     epoch. For example, the sparsity method can smoothly increase the sparsity rate
     over several epochs.
     """
+
     def __init__(self):
         self.last_epoch = 0
         self.last_step = 0
@@ -86,36 +91,19 @@ class CompressionScheduler:
         default_keys = {'last_step', 'last_epoch'}
         return {key: val for key, val in self.__dict__.items() if key in default_keys}
 
+    def initialize(self):
+        pass
 
-class CompressionAlgorithm:
-    """
-    Represents the compression method and its logic. Should contain references
-    to the `CompressionScheduler`, `CompressionLoss`, and compressing model instances
-    that are used in the compression method so that they are accessible in the
-    training loop.
-    """
 
-    def __init__(self, model: torch.nn.Module, config: Config,
-                 input_infos: List[ModelInputInfo] = None,
-                 dummy_forward_fn: Callable[[torch.nn.Module], Any] = None):
-        """
-        Arguments:
-          `model` - an instance of the model to be compressed
-          `config` - a dictionary that contains parameters of compression method
-          `input_infos` - a list of ModelInputInfo objects each describing an input to the model
-          `dummy_forward_fn` - optional, an instance of DummyForwardFunctionCaller that
-          handles custom forward procedures for complex training/data loading pipelines
-        """
-        self.config = config
-        self.input_infos = input_infos
-        self._dummy_forward_fn = dummy_forward_fn
+class CompressionAlgorithmController:
+    """Serves as a handle to the additional modules, parameters and hooks inserted
+    into the original uncompressed model in order to enable algorithm-specific compression.
+    Hosts entities that are to be used during the training process, such as compression scheduler and
+    compression loss."""
+    def __init__(self, target_model: NNCFNetwork):
+        self._model = target_model
         self._loss = CompressionLoss()
         self._scheduler = CompressionScheduler()
-        self._model = model
-
-    @property
-    def model(self):
-        return self._model
 
     @property
     def loss(self):
@@ -129,8 +117,8 @@ class CompressionAlgorithm:
         """
         Should be called when distributed training with multiple training processes
         is going to be used (i.e. after the model is wrapped with DistributedDataParallel).
-        Preparation for the algorithm to properly support distributed training should be
-        made inside this function.
+        Any special preparations for the algorithm to properly support distributed training
+        should be made inside this function.
         """
 
     def statistics(self):
@@ -138,8 +126,8 @@ class CompressionAlgorithm:
         Returns a dictionary of printable statistics.
         """
         stats = self._loss.statistics()
-        if hasattr(self.model, 'statistics'):
-            stats.update(self.model.statistics())
+        if hasattr(self._model, 'statistics'):
+            stats.update(self._model.statistics())
         return stats
 
     def export_model(self, filename, *args, **kwargs):
@@ -155,7 +143,7 @@ class CompressionAlgorithm:
         """
         model = self._model.eval().cpu()
         input_tensor_list = []
-        for info in self.input_infos:
+        for info in self._model.input_infos:
             single_batch_info = copy(info)
             input_shape = tuple([1] + list(info.shape)[1:])
             single_batch_info.shape = input_shape
@@ -167,9 +155,55 @@ class CompressionAlgorithm:
                               filename, verbose=True)
         model.forward = original_forward
 
-    def initialize(self, data_loader=None):
+    def initialize(self, data_loader: DataLoader = None, criterion: _Loss = None):
         """
-        Configures certain parameters of the algorithm that could not be set during __init__.
-        In particular, for the quantization algorithm this method calculates per-layer activation
-        statistics on training dataset in order to choose proper output range for quantization.
+        Configures certain parameters of the algorithm that could not be set during __init__
+        and require access to the dataset that the model was originally trained on (for example,
+        in order to do range initialization for activation quantizers) or to the
+        loss function to be used during fine-tuning (for example, to determine
+        quantizer precision bitwidth using HAWQ).
         """
+
+
+class CompressionAlgorithmBuilder:
+    """
+    Determines which modifications should be made to the original FP32 model in
+    order to enable algorithm-specific compression during fine-tuning. Operates
+    on an NNCFNetwork object wrapping a target PyTorch model (torch.nn.Module).
+    """
+
+    def __init__(self, config: Config):
+        """
+        Arguments:
+          `config` - a dictionary that contains parameters of compression method
+        """
+        self.config = config
+        if not isinstance(self.config, list):
+            self.ignored_scopes = self.config.get('ignored_scopes')
+            self.target_scopes = self.config.get('target_scopes')
+
+    def apply_to(self, target_model: NNCFNetwork) -> NNCFNetwork:
+        """
+        Applies algorithm-specific modifications to the model. Hooks to be executed during model
+        forward operation may be registered using NNCFNetwork command insertion methods. Additional
+        compression modules that are expected to be saved along with the network via torch.save should also be
+        registered and added to the model here.
+        :param target_model: An instance of NNCFNetwork for the algorithm to be applied to.
+        :return: NNCFNetwork with algorithm-specific modifications applied
+        """
+        self._model = target_model  # type: NNCFNetwork
+        return target_model
+
+    def build_controller(self, target_model: NNCFNetwork) -> CompressionAlgorithmController:
+        """
+        Should be called once the compressed model target_model is fully constructed (i.e. hooks are applied and
+        modules are in place. Returns a CompressionAlgorithmController object containing information
+        and references to the compressed model or specific modules thereof required for the corresponding compression
+        scheduler operation or compression loss calculation.
+        :param target_model: An instance of NNCFNetwork with current algorithm already applied
+        :return: A CompressionAlgorithmController object.
+        """
+
+    def _should_consider_scope(self, scope_str: str) -> bool:
+        return (self.target_scopes is None or in_scope_list(scope_str, self.target_scopes)) \
+               and not in_scope_list(scope_str, self.ignored_scopes)

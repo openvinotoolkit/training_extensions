@@ -21,6 +21,8 @@ import numpy as np
 import torch
 import torch.utils.data as data
 
+from examples.common.example_logger import logger
+
 COCO_CLASSES = (  # always index 0
     "person", "bicycle", "car", "motorcycle", "airplane", "bus", "train", "truck", "boat", "traffic light",
     "fire hydrant", "stop sign", "parking meter", "bench", "bird", "cat", "dog", "horse", "sheep", "cow", "elephant",
@@ -117,7 +119,7 @@ class COCODataset(data.Dataset):
             boxes /= np.array([width, height, width, height])
 
         if not boxes.size:
-            print("error: no annotation on image")
+            logger.error("error: no annotation on image")
             sys.exit(-1)
 
         if self.target_transform is not None:

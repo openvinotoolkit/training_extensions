@@ -11,19 +11,17 @@
  limitations under the License.
 """
 
-import logging
-
 import torch
 import torch.nn as nn
 
+from nncf.dynamic_graph.patch_pytorch import register_operator
 from nncf.layer_utils import COMPRESSION_MODULES
 from nncf.registry import Registry
-from nncf.dynamic_graph import register_operator
 from nncf.utils import get_per_channel_scale_shape
 from nncf.binarization.binarize_functions import XNORBinarizeFn, DOREFABinarizeFn
 from nncf.binarization.binarize_functions import ActivationBinarizationScaleThresholdFn
 
-logger = logging.getLogger(__name__)
+from nncf.nncf_logger import logger as nncf_logger
 
 BINARIZATION_MODULES = Registry('binarization_modules')
 
@@ -127,7 +125,7 @@ class ActivationBinarizationScaleThreshold(ActivationBinarizer):
             top_num = max(1, round(d.shape[0]*0.001))
             topk_res = d.topk(top_num)
             scale = topk_res[0].min()
-            logger.info("Binarized activation scale set to: {}".format(scale.item()))
+            nncf_logger.info("Binarized activation scale set to: {}".format(scale.item()))
             self.scale.data[:] = scale.log()
             self.is_scale_initialized = True
 

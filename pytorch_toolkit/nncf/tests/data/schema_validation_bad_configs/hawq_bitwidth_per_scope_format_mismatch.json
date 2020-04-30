@@ -1,0 +1,47 @@
+{
+    "model": "mobilenetv2",
+    "input_info": {
+        "sample_size": [
+            2,
+            3,
+            224,
+            224
+        ]
+    },
+    "num_classes": 1000,
+    "batch_size": 200,
+    "workers": 6,
+    "epochs": 100,
+    "multiprocessing_distributed": true,
+    "optimizer": {
+        "base_lr": 3.1e-4,
+        "schedule_type": "plateau",
+        "type": "Adam",
+        "scheduler_params": {
+            "threshold": 0.1,
+            "cooldown": 3
+        },
+        "weight_decay": 1e-05
+    },
+    "compression": {
+        "algorithm": "quantization",
+        "weights": {
+            "mode": "asymmetric",
+            "per_channel": true,
+            "bits": 4
+        },
+        "activations": {
+            "mode": "asymmetric",
+            "bits": 8
+        },
+        "quantize_inputs": true,
+        "initializer": {
+            "precision": {
+                "bitwidth_per_scope": [
+                    ["MobileNetV2/Sequential[features]/InvertedResidual[10]/Sequential[conv]/NNCFConv2d[3]/ModuleDict[pre_ops]/UpdateWeight[0]/AsymmetricQuantizer[op]", 8],
+                    ["MobileNetV2/Sequential[features]/InvertedResidual[11]/Sequential[conv]/NNCFConv2d[3]/ModuleDict[pre_ops]/UpdateWeight[0]/AsymmetricQuantizer[op]", 8]
+                ]
+            }
+        }
+    }
+}

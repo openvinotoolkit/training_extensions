@@ -19,9 +19,10 @@ import torch
 from torch import nn
 
 from examples.common.model_loader import load_model
-from nncf.helpers import load_state, create_compressed_model
+from nncf.model_creation import create_compressed_model
+from nncf.checkpoint_loading import load_state
 from nncf.layers import NNCFConv2d, NNCFLinear
-from nncf.utils import print_statistics
+from examples.common.utils import print_statistics
 
 
 def dump_in_out_hook(module, inputs, output):
@@ -138,18 +139,18 @@ def register_print_hooks(path, model, data_to_compare, num_layers=-1, dump_activ
 
 def load_torch_model(config, cuda=False):
     weights = config.get('weights')
-    model = load_model(config.model,
+    model = load_model(config.get('model'),
                        pretrained=config.get('pretrained', True) if weights is None else False,
                        num_classes=config.get('num_classes', 1000),
                        model_params=config.get('model_params', {}))
-    compression_algo, model = create_compressed_model(model, config)
+    compression_ctrl, model = create_compressed_model(model, config)
     if weights:
         sd = torch.load(weights, map_location='cpu')
         load_state(model, sd)
     if cuda:
         model = model.cuda()
         model = torch.nn.DataParallel(model)
-    print_statistics(compression_algo.statistics())
+    print_statistics(compression_ctrl.statistics())
     return model
 
 

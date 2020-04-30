@@ -1,0 +1,50 @@
+{
+    /* Training hyperparameters */
+    "model": "mobilenet_v2", // Model name
+    "pretrained": true, // Whether to use a pretrained checkpoint from torchvision
+
+    "input_info": {
+      "sample_size": [1, 3, 224, 224]
+    }, // Input size of the model (including a "batch dimension")
+    "num_classes": 1000, // Number of classes in the dataset
+    "batch_size" : 256, // Batch size
+    "checkpoint_save_dir": "results/snapshots", // A path where to dump best and last model snapshots, this is a log directory by default.
+
+    // FP32 snapshot that is used as a starting point during the model compression.
+    // "weights": "<SNAPSHOT_FILE_PATH>",  // Commented because it is more convenient to use the corresponding command line parameter instead.
+    "epochs": 40, //Number of training epochs
+    // Optimizer parameters
+    // Note that we used "Adam" optimizer in all our experiments due to its better convergence and stability.
+    // In all our sparsity experiments we used initial learning rate "0.001" for model weights and sparsity mask.
+    "optimizer": {
+        "type": "Adam",
+        "base_lr": 0.001,
+        "schedule_type": "multistep",
+        "steps": [20, 30, 40]
+    },
+
+    /* Compression hyperparameters */
+    "compression": [
+        {
+            "algorithm": "rb_sparsity", // Compression algorithm name
+            "params": {
+                "sparsity_init": 0.01, // Inital sparsity ratio, e.g. value "0.1" means that the method sets 10% of zero weights as a target after the training process starts
+                "sparsity_target": 0.52, // Desired sparsity ratio, e.g. value "0.5" means that the method will schedule the training so that to get 50% of zero weights in the end
+                "sparsity_steps": 5, // Number of epochs at which sparsity ratio will be increased from "sparsity_init" value up to "sparsity_target" value
+                "sparsity_training_steps": 10 // Overall number of epochs that are used to train sparsity mask
+            },
+            "ignored_scopes": ["MobileNetV2/Sequential[features]/ConvBNReLU[0]/NNCFConv2d[0]"] // Layers or blocks that are excluded from compression
+        },
+        {
+            "algorithm": "quantization", // Compression algorithm name
+            "initializer": {
+                "range": {
+                    "num_init_steps": 1,
+                    // Number of steps to calculate per-layer activations statistics that can be used for "scale" initialization.
+                    "type": "min_max"
+                    // Type of collected statistics. Value "min_max" means that scale is initialized by maximum value and sign of minimum value defines sign of activations.
+                }
+            }
+        }
+    ]
+}

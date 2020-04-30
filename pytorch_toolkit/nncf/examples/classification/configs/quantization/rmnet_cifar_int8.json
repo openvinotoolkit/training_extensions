@@ -19,9 +19,6 @@
     },
     "compression": {
         "algorithm": "quantization",
-        "initializer": {
-            "num_init_steps": 1
-        },
         "scope_overrides": {
             "{re}RMBlock\\[[0-9]*\\]/ELU\\[activation\\]": {
                 "signed": true

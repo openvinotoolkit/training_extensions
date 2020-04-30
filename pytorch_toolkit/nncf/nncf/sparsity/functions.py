@@ -10,8 +10,7 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 """
-
-from ..dynamic_graph import register_operator
+from nncf.dynamic_graph.patch_pytorch import register_operator
 
 
 @register_operator()

@@ -13,6 +13,8 @@
 
 from tqdm import tqdm
 import torch
+
+from examples.common.example_logger import logger
 from examples.semantic_segmentation.utils.loss_funcs import do_model_specific_postprocessing
 
 
@@ -76,6 +78,6 @@ class Test:
             self.metric.add(metric_outputs.detach(), labels.detach())
 
             if iteration_loss:
-                print("[Step: %d] Iteration loss: %.4f" % (step, loss.item()))
+                logger.info("[Step: {}] Iteration loss: {:.4f}".format(step, loss.item()))
 
         return epoch_loss / len(self.data_loader), self.metric.value()

@@ -11,7 +11,7 @@
  limitations under the License.
 """
 
-import logging
+
 
 import torch
 import torch.nn as nn
@@ -21,7 +21,6 @@ from .functions import calc_rb_binary_mask, binary_mask
 from ...functions import logit
 from ...layer_utils import COMPRESSION_MODULES
 
-logger = logging.getLogger(__name__)
 
 
 @COMPRESSION_MODULES.register()

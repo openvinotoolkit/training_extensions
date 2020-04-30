@@ -1,5 +1,5 @@
 """
- Copyright (c) 2019 Intel Corporation
+ Copyright (c) 2019-2020 Intel Corporation
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
  You may obtain a copy of the License at
@@ -11,9 +11,8 @@
  limitations under the License.
 """
 
-import logging
+
 import os.path as osp
-import os
 import sys
 import time
 from pathlib import Path
@@ -26,25 +25,20 @@ from examples.common.argparser import get_common_argument_parser
 from examples.common.distributed import DistributedSampler, configure_distributed
 from examples.common.execution import ExecutionMode, get_device, get_execution_mode
 from examples.common.execution import prepare_model_for_execution, start_worker
-from examples.common.utils import configure_logging, configure_paths, create_code_snapshot, is_on_first_rank, print_args
-from examples.common.utils import get_name, make_additional_checkpoints
+from examples.common.utils import get_name, make_additional_checkpoints, print_statistics
 from examples.common.utils import write_metrics
 from examples.common.optimizer import get_parameter_groups, make_optimizer
+from examples.common.utils import configure_logging, configure_paths, create_code_snapshot, is_on_first_rank, print_args
 from examples.object_detection.dataset import detection_collate, get_testing_dataset, get_training_dataset
 from examples.object_detection.eval import test_net
 from examples.object_detection.layers.modules import MultiBoxLoss
 from examples.object_detection.model import build_ssd
+from examples.common.example_logger import logger
 
-from nncf.helpers import load_state, create_compressed_model
-from nncf.config import Config
-from nncf.dynamic_graph import patch_torch_operators
-from nncf.utils import print_statistics
+
+from nncf import Config, create_compressed_model, load_state
+
 from nncf.dynamic_graph.graph_builder import create_input_infos
-
-patch_torch_operators()
-
-logging.basicConfig(level=logging.INFO, stream=sys.stdout)
-
 
 def str2bool(v):
     return v.lower() in ("yes", "true", "t", "1")
@@ -95,7 +89,7 @@ def main_worker(current_gpu, config):
     if config.distributed:
         configure_distributed(config)
     if is_on_first_rank(config):
-        configure_logging(config)
+        configure_logging(logger, config)
         print_args(config)
 
     config.device = get_device(config)
@@ -105,20 +99,18 @@ def main_worker(current_gpu, config):
     # Prepare metrics log file
     ##########################
 
-    if config.metrics_dump and config.resuming_checkpoint is not None:
-        avg = 0
-        metrics = {os.path.basename(config.resuming_checkpoint): avg}
-        write_metrics(config, metrics)
+    if config.metrics_dump is not None:
+        write_metrics(0, config.metrics_dump)
 
     ##################
     # Prepare model
     ##################
 
-    compression_algo, net = create_model(config)
+    compression_ctrl, net = create_model(config)
     if config.distributed:
         config.batch_size //= config.ngpus_per_node
         config.workers //= config.ngpus_per_node
-        compression_algo.distributed()
+        compression_ctrl.distributed()
 
     ###########################
     # Criterion and optimizer
@@ -146,20 +138,20 @@ def main_worker(current_gpu, config):
 
     resuming_checkpoint = config.resuming_checkpoint
     if resuming_checkpoint:
-        print('Resuming training, loading {}...'.format(resuming_checkpoint))
+        logger.info('Resuming training, loading {}...'.format(resuming_checkpoint))
         checkpoint = torch.load(resuming_checkpoint, map_location='cpu')
         # use checkpoint itself in case of only state dict is saved
         # i.e. checkpoint is created with `torch.save(module.state_dict())`
         state_dict = checkpoint.get('state_dict', checkpoint)
         load_state(net, state_dict, is_resume=True)
         if config.mode.lower() == 'train' and config.to_onnx is None:
-            compression_algo.scheduler.load_state_dict(checkpoint['scheduler'])
+            compression_ctrl.scheduler.load_state_dict(checkpoint['scheduler'])
             optimizer.load_state_dict(checkpoint.get('optimizer', optimizer.state_dict()))
             config.start_iter = checkpoint.get('iter', 0) + 1
 
     if config.to_onnx:
-        compression_algo.export_model(config.to_onnx)
-        print("Saved to {}".format(config.to_onnx))
+        compression_ctrl.export_model(config.to_onnx)
+        logger.info("Saved to {}".format(config.to_onnx))
         return
 
     ###########################
@@ -170,25 +162,23 @@ def main_worker(current_gpu, config):
 
     if config.mode.lower() == 'test':
         with torch.no_grad():
-            print_statistics(compression_algo.statistics())
+            print_statistics(compression_ctrl.statistics())
             net.eval()
             mAp = test_net(net, config.device, test_data_loader, distributed=config.distributed)
-            if config.metrics_dump and config.resuming_checkpoint is not None:
-                avg = mAp*100
-                metrics = {os.path.basename(config.resuming_checkpoint): round(avg, 2)}
-                write_metrics(config, metrics)
+            if config.metrics_dump is not None:
+                write_metrics(mAp, config.metrics_dump)
             return
 
     if not resuming_checkpoint:
-        compression_algo.initialize(train_data_loader)
+        compression_ctrl.initialize(train_data_loader)
 
-    train(net, compression_algo, train_data_loader, test_data_loader, criterion, optimizer, config, lr_scheduler)
+    train(net, compression_ctrl, train_data_loader, test_data_loader, criterion, optimizer, config, lr_scheduler)
 
 
 def create_dataloaders(config):
-    print('Loading Dataset...')
+    logger.info('Loading Dataset...')
     train_dataset = get_training_dataset(config.dataset, config.train_anno, config.train_imgs, config)
-    print("Loaded {} training images".format(len(train_dataset)))
+    logger.info("Loaded {} training images".format(len(train_dataset)))
     if config.distributed:
         train_sampler = torch.utils.data.distributed.DistributedSampler(train_dataset,
                                                                         num_replicas=config.ngpus_per_node,
@@ -204,7 +194,7 @@ def create_dataloaders(config):
         sampler=train_sampler
     )
     test_dataset = get_testing_dataset(config.dataset, config.test_anno, config.test_imgs, config)
-    print("Loaded {} testing images".format(len(test_dataset)))
+    logger.info("Loaded {} testing images".format(len(test_dataset)))
     if config.distributed:
         test_sampler = DistributedSampler(test_dataset, config.rank, config.world_size)
     else:
@@ -225,18 +215,17 @@ def create_model(config):
     input_info_list = create_input_infos(config)
     image_size = input_info_list[0].shape[-1]
     ssd_net = build_ssd(config.model, config.ssd_params, image_size, config.num_classes, config)
-    compression_algo, ssd_net = create_compressed_model(ssd_net, config)
-    ssd_net = compression_algo.model
+    compression_ctrl, ssd_net = create_compressed_model(ssd_net, config)
     weights = config.get('weights')
     if weights:
         sd = torch.load(weights, map_location='cpu')
         load_state(ssd_net, sd)
     ssd_net.train()
     model, _ = prepare_model_for_execution(ssd_net, config)
-    return compression_algo, model
+    return compression_ctrl, model
 
 
-def train_step(batch_iterator, compression_algo, config, criterion, net, train_data_loader):
+def train_step(batch_iterator, compression_ctrl, config, criterion, net, train_data_loader):
     batch_loss_l = torch.tensor(0.).to(config.device)
     batch_loss_c = torch.tensor(0.).to(config.device)
     batch_loss = torch.tensor(0.).to(config.device)
@@ -245,7 +234,7 @@ def train_step(batch_iterator, compression_algo, config, criterion, net, train_d
         try:
             images, targets = next(batch_iterator)
         except StopIteration:
-            print("StopIteration: can not load batch")
+            logger.debug("StopIteration: can not load batch")
             batch_iterator = iter(train_data_loader)
             break
 
@@ -256,7 +245,7 @@ def train_step(batch_iterator, compression_algo, config, criterion, net, train_d
         out = net(images)
         # backprop
         loss_l, loss_c = criterion(out, targets)
-        loss_comp = compression_algo.loss()
+        loss_comp = compression_ctrl.loss()
         loss = loss_l + loss_c + loss_comp
         batch_loss += loss
         loss.backward()
@@ -265,55 +254,21 @@ def train_step(batch_iterator, compression_algo, config, criterion, net, train_d
     return batch_iterator, batch_loss, batch_loss_c, batch_loss_l, loss_comp
 
 
-def train_epoch_end(config, compression_algo, net, epoch, iteration, epoch_size, lr_scheduler, optimizer,
-                    test_data_loader, best_mAp):
-    is_best = False
-    test_freq_in_epochs = max(config.test_interval // epoch_size, 1)
-    compression_algo.scheduler.epoch_step(epoch)
-    if not isinstance(lr_scheduler, ReduceLROnPlateau):
-        lr_scheduler.step(epoch)
-    if epoch % test_freq_in_epochs == 0 and iteration != 0:
-        if is_on_first_rank(config):
-            print_statistics(compression_algo.statistics())
-        with torch.no_grad():
-            net.eval()
-            mAP = test_net(net, config.device, test_data_loader, distributed=config.multiprocessing_distributed)
-            if mAP > best_mAp:
-                is_best = True
-                best_mAp = mAP
-            if config.metrics_dump is not None:
-                write_metrics(mAP, config)
-            if isinstance(lr_scheduler, ReduceLROnPlateau):
-                lr_scheduler.step(mAP)
-            net.train()
-    if is_on_first_rank(config):
-        checkpoint_file_path = osp.join(config.checkpoint_save_dir, "{}_last.pth".format(get_name(config)))
-        torch.save({
-            'state_dict': net.state_dict(),
-            'optimizer': optimizer.state_dict(),
-            'iter': iteration,
-            'scheduler': compression_algo.scheduler.state_dict()
-        }, str(checkpoint_file_path))
-        make_additional_checkpoints(checkpoint_file_path,
-                                    is_best=is_best,
-                                    epoch=epoch + 1,
-                                    config=config)
-    return best_mAp
-
-def train(net, compression_algo, train_data_loader, test_data_loader, criterion, optimizer, config, lr_scheduler):
+def train(net, compression_ctrl, train_data_loader, test_data_loader, criterion, optimizer, config, lr_scheduler):
     net.train()
     # loss counters
     loc_loss = 0  # epoch
     conf_loss = 0
 
     epoch_size = len(train_data_loader)
-    print('Training ', config.model, ' on ', train_data_loader.dataset.name, ' dataset...')
+    logger.info('Training {} on {} dataset...'.format(config.model, train_data_loader.dataset.name))
     batch_iterator = None
 
     t_start = time.time()
-    print_statistics(compression_algo.statistics())
+    print_statistics(compression_ctrl.statistics())
 
     best_mAp = 0
+    test_freq_in_epochs = max(config.test_interval // epoch_size, 1)
 
     for iteration in range(config.start_iter, config['max_iter']):
         if (not batch_iterator) or (iteration % epoch_size == 0):
@@ -321,18 +276,53 @@ def train(net, compression_algo, train_data_loader, test_data_loader, criterion,
             batch_iterator = iter(train_data_loader)
 
         epoch = iteration // epoch_size
-        if iteration % epoch_size == 0:
-            best_mAp = train_epoch_end(config, compression_algo, net, epoch, iteration, epoch_size, lr_scheduler,
-                                       optimizer,
-                                       test_data_loader, best_mAp)
 
-        compression_algo.scheduler.step(iteration - config.start_iter)
+        if (iteration + 1) % epoch_size == 0:
+            compression_ctrl.scheduler.epoch_step(epoch)
+
+            is_best = False
+
+            if (epoch + 1) % test_freq_in_epochs == 0:
+                if is_on_first_rank(config):
+                    print_statistics(compression_ctrl.statistics())
+                with torch.no_grad():
+                    net.eval()
+                    mAP = test_net(net, config.device, test_data_loader, distributed=config.multiprocessing_distributed)
+                    if mAP > best_mAp:
+                        is_best = True
+                        best_mAp = mAP
+                    net.train()
+
+            # Learning rate scheduling should be applied after optimizer’s update
+            if not isinstance(lr_scheduler, ReduceLROnPlateau):
+                lr_scheduler.step(epoch)
+            else:
+                lr_scheduler.step(mAP)
+
+            if is_on_first_rank(config):
+                logger.info('Saving state, iter: {}'.format(iteration))
+
+                checkpoint_file_path = osp.join(config.checkpoint_save_dir, "{}_last.pth".format(get_name(config)))
+                torch.save({
+                    'state_dict': net.state_dict(),
+                    'optimizer': optimizer.state_dict(),
+                    'iter': config['max_iter'],
+                    'scheduler': compression_ctrl.scheduler.state_dict()
+                }, str(checkpoint_file_path))
+                make_additional_checkpoints(checkpoint_file_path,
+                                            is_best=is_best,
+                                            epoch=epoch + 1,
+                                            config=config)
+
+        compression_ctrl.scheduler.step(iteration - config.start_iter)
 
         optimizer.zero_grad()
         batch_iterator, batch_loss, batch_loss_c, batch_loss_l, loss_comp = train_step(
-            batch_iterator, compression_algo, config, criterion, net, train_data_loader
+            batch_iterator, compression_ctrl, config, criterion, net, train_data_loader
         )
         optimizer.step()
+
+
         batch_loss_l = batch_loss_l / config.iter_size
         batch_loss_c = batch_loss_c / config.iter_size
         model_loss = (batch_loss_l + batch_loss_c) / config.iter_size
@@ -354,11 +344,13 @@ def train(net, compression_algo, train_data_loader, test_data_loader, criterion,
             t_finish = time.time()
             t_elapsed = t_finish - t_start
             t_start = time.time()
-            print('{}: iter {} epoch {} || Loss: {:.4} || Time {:.4}s || lr: {} || CR loss: {}'.format(
+            logger.info('{}: iter {} epoch {} || Loss: {:.4} || Time {:.4}s || lr: {} || CR loss: {}'.format(
                 config.rank, iteration, epoch, model_loss.item(), t_elapsed, optimizer.param_groups[0]['lr'],
                 loss_comp.item() if isinstance(loss_comp, torch.Tensor) else loss_comp
             ))
 
+    if config.metrics_dump is not None:
+        write_metrics(best_mAp, config.metrics_dump)
 
 
 if __name__ == '__main__':

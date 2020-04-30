@@ -15,8 +15,9 @@ import torch
 import torch.nn as nn
 
 from examples.object_detection.layers.modules.ssd_head import MultiOutputSequential, SSDDetectionOutput
-from nncf.helpers import load_state
 from nncf.config import Config
+from nncf.checkpoint_loading import load_state
+
 
 def conv_bn(inp, oup, kernel, stride, padding):
     return nn.Sequential(

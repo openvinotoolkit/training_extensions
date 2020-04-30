@@ -18,6 +18,7 @@
   "test_interval": 500, // in iterations
   "iter_size": 1,
   "save_freq": 3, // in epochs
+  "epochs": 3,
   "optimizer": {
     "type": "Adam",
     "base_lr": 1e-5,
@@ -37,8 +38,10 @@
   },
   "compression": {
       "algorithm": "quantization",
-      "initializer": {
-        "num_init_steps": 10
-      }
-    }
+        "initializer": {
+            "range": {
+                "num_init_steps": 10
+            }
+        }
+  }
 }

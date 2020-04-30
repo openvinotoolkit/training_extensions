@@ -1,5 +1,5 @@
 """
- Copyright (c) 2019 Intel Corporation
+ Copyright (c) 2019-2020 Intel Corporation
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
  You may obtain a copy of the License at
@@ -17,15 +17,13 @@ import pytest
 import torch.nn.functional as F
 from torch.nn import Module, Conv2d, BatchNorm2d, ReLU, MaxPool2d, Sequential, AvgPool2d, init
 
+from nncf.dynamic_graph.version_agnostic_op_names import VersionAgnosticNames
 from nncf.utils import get_all_modules_by_type, get_module_by_node_name, get_all_node_names, \
     apply_by_node_name, set_module_by_node_name, parse_node_name
-from nncf.dynamic_graph import patch_torch_operators
-from nncf.operator_names import VersionAgnosticNames
-
-patch_torch_operators()
 
 
-class TestModel(Module):
+
+class ModelForTest(Module):
     def __init__(self, size=1):
         super().__init__()
         self.size = size
@@ -62,111 +60,113 @@ class TestModel(Module):
 
 
 def test_get_module_by_node_name__for_non_nested_module():
-    model = TestModel()
-    assert get_module_by_node_name(model, 'TestModel/BatchNorm2d[bn1]') == model.bn1
+    model = ModelForTest()
+    assert get_module_by_node_name(model, 'ModelForTest/BatchNorm2d[bn1]') == model.bn1
 
 
 def test_get_module_by_node_name__for_nested_module():
-    model = TestModel()
-    assert get_module_by_node_name(model, 'TestModel/Sequential[layer2]/Sequential[layer1]') == model.layer1
+    model = ModelForTest()
+    assert get_module_by_node_name(model, 'ModelForTest/Sequential[layer2]/Sequential[layer1]') == model.layer1
 
 
-def test_get_all_layers_by_type__for_standart_type():
-    model = TestModel()
+def test_get_all_layers_by_type__for_standard_type():
+    model = ModelForTest()
     act_bn = get_all_modules_by_type(model, 'BatchNorm2d')
+    act_bn = OrderedDict((str(k), v) for k, v in act_bn.items())
     ref_bn = {
-        'TestModel/BatchNorm2d[bn1]': model.bn1,
-        'TestModel/BatchNorm2d[bn2]': model.bn2,
-        'TestModel/BatchNorm2d[norm10]': model.norm10,
-        'TestModel/BatchNorm2d[norm20]': model.norm20,
-        'TestModel/Sequential[layer1]/BatchNorm2d[norm01]': model.norm10,
-        'TestModel/Sequential[layer2]/BatchNorm2d[norm02]': model.norm20,
-        'TestModel/Sequential[layer2]/Sequential[layer1]/BatchNorm2d[norm01]': model.norm10,
+        'ModelForTest/BatchNorm2d[bn1]': model.bn1,
+        'ModelForTest/BatchNorm2d[bn2]': model.bn2,
+        'ModelForTest/BatchNorm2d[norm10]': model.norm10,
+        'ModelForTest/BatchNorm2d[norm20]': model.norm20,
+        'ModelForTest/Sequential[layer1]/BatchNorm2d[norm01]': model.norm10,
+        'ModelForTest/Sequential[layer2]/BatchNorm2d[norm02]': model.norm20,
+        'ModelForTest/Sequential[layer2]/Sequential[layer1]/BatchNorm2d[norm01]': model.norm10,
     }
     assert act_bn == ref_bn
 
 
 def test_get_all_layers_by_type__for_multiple_type():
-    model = TestModel()
+    model = ModelForTest()
     act_bn = get_all_modules_by_type(model, ['ReLU', 'AvgPool2d'])
+    act_bn = OrderedDict((str(k), v) for k, v in act_bn.items())
     ref_bn = [
-        'TestModel/AvgPool2d[avgpool]',
-        'TestModel/Sequential[layer1]/ReLU[relu01]',
-        'TestModel/Sequential[layer2]/Sequential[layer1]/ReLU[relu01]',
-        'TestModel/Sequential[layer2]/ReLU[relu02]']
+        'ModelForTest/AvgPool2d[avgpool]',
+        'ModelForTest/Sequential[layer1]/ReLU[relu01]',
+        'ModelForTest/Sequential[layer2]/Sequential[layer1]/ReLU[relu01]',
+        'ModelForTest/Sequential[layer2]/ReLU[relu02]']
     assert list(act_bn.keys()) == ref_bn
     assert isinstance(act_bn, OrderedDict)
 
 
 def test_get_all_layers_by_type__for_not_exact_type():
-    model = TestModel()
+    model = ModelForTest()
     l = get_all_modules_by_type(model, 'Avg')
     assert not l
 
 
 def test_get_all_layers_by_type__for_subtype():
-    model = TestModel()
+    model = ModelForTest()
     l = get_all_modules_by_type(model, 'AvgPool2d_dummy')
     assert not l
 
 
 IGNORED_SCOPES = [
-    ("single", ['TestModel/Sequential[layer2]/Sequential[layer1]/ReLU[relu01]']),
-    ("multiple", ['TestModel/Sequential[layer2]/Sequential[layer1]/ReLU[relu01]',
-                  'TestModel/Sequential[layer2]/Conv2d[conv02]']),
-    ("common", ['TestModel/Sequential[layer1]'])
+    ("single", ['ModelForTest/Sequential[layer2]/Sequential[layer1]/ReLU[relu01]']),
+    ("multiple", ['ModelForTest/Sequential[layer2]/Sequential[layer1]/ReLU[relu01]',
+                  'ModelForTest/Sequential[layer2]/Conv2d[conv02]']),
+    ("common", ['ModelForTest/Sequential[layer1]'])
     ]
 
 
 @pytest.mark.parametrize(
-    "ignored_scope", [s[1] for s in IGNORED_SCOPES], ids=[s[0] for s in IGNORED_SCOPES]
+    "ignored_scopes", [s[1] for s in IGNORED_SCOPES], ids=[s[0] for s in IGNORED_SCOPES]
 )
-def test_get_all_layers_by_type__with_ignored_scope(ignored_scope):
-    model = TestModel()
+def test_get_all_layers_by_type__with_ignored_scope(ignored_scopes):
+    model = ModelForTest()
 
     model_modules = set()
     for _, module in model.named_modules():
         model_modules.add(module.__class__.__name__)
     model_modules = list(model_modules)
 
-    act_modules = get_all_modules_by_type(model, model_modules, ignored_scopes=ignored_scope)
+    act_modules = get_all_modules_by_type(model, model_modules, ignored_scopes=ignored_scopes)
 
-    for module_name in act_modules:
-        for scope in ignored_scope:
-            assert not module_name.startswith(scope)
+    for module_scope, _ in act_modules.items():
+        for scope in ignored_scopes:
+            assert not str(module_scope).startswith(str(scope))
 
 
 def test_set_module_by_node_name__for_non_nested_module():
-    model = TestModel()
+    model = ModelForTest()
     new_module = ReLU()
-    set_module_by_node_name(model, 'TestModel/BatchNorm2d[bn1]', new_module)
-    assert new_module == get_module_by_node_name(model, 'TestModel/ReLU[bn1]')
+    set_module_by_node_name(model, 'ModelForTest/BatchNorm2d[bn1]', new_module)
+    assert new_module == get_module_by_node_name(model, 'ModelForTest/ReLU[bn1]')
 
 
 def test_set_module_by_node_name__for_nested_module():
-    model = TestModel()
+    model = ModelForTest()
     new_module = ReLU()
-    set_module_by_node_name(model, 'TestModel/Sequential[layer2]/Sequential[layer1]', new_module)
-    assert new_module == get_module_by_node_name(model, 'TestModel/Sequential[layer2]/ReLU[layer1]')
+    set_module_by_node_name(model, 'ModelForTest/Sequential[layer2]/Sequential[layer1]', new_module)
+    assert new_module == get_module_by_node_name(model, 'ModelForTest/Sequential[layer2]/ReLU[layer1]')
 
 
 def test_get_all_nodes():
-    model = TestModel()
+    model = ModelForTest()
     ref_list = [
-        'TestModel/Conv2d[conv1]/conv2d',
-        'TestModel/BatchNorm2d[bn1]/batch_norm',
-        'TestModel/ReLU/' + VersionAgnosticNames.RELU,
-        'TestModel/' + VersionAgnosticNames.RELU,
-        'TestModel/BatchNorm2d[bn2]/batch_norm',
-        'TestModel/Sequential[layer2]/Sequential[layer1]/Conv2d[conv01]/conv2d',
-        'TestModel/Sequential[layer2]/Sequential[layer1]/BatchNorm2d[norm01]/batch_norm',
-        'TestModel/Sequential[layer2]/Sequential[layer1]/ReLU[relu01]/' + VersionAgnosticNames.RELU,
-        'TestModel/Sequential[layer2]/Sequential[layer1]/MaxPool2d[pool01]/max_pool2d',
-        'TestModel/Sequential[layer2]/Conv2d[conv02]/conv2d',
-        'TestModel/Sequential[layer2]/ReLU[relu02]/' + VersionAgnosticNames.RELU,
-        'TestModel/Sequential[layer2]/BatchNorm2d[norm02]/batch_norm',
-        'TestModel/Sequential[layer2]/MaxPool2d[pool02]/max_pool2d',
-        'TestModel/AvgPool2d[avgpool]/avg_pool2d'
+        'ModelForTest/Conv2d[conv1]/conv2d',
+        'ModelForTest/BatchNorm2d[bn1]/batch_norm',
+        'ModelForTest/ReLU/' + VersionAgnosticNames.RELU,
+        'ModelForTest/' + VersionAgnosticNames.RELU,
+        'ModelForTest/BatchNorm2d[bn2]/batch_norm',
+        'ModelForTest/Sequential[layer2]/Sequential[layer1]/Conv2d[conv01]/conv2d',
+        'ModelForTest/Sequential[layer2]/Sequential[layer1]/BatchNorm2d[norm01]/batch_norm',
+        'ModelForTest/Sequential[layer2]/Sequential[layer1]/ReLU[relu01]/' + VersionAgnosticNames.RELU,
+        'ModelForTest/Sequential[layer2]/Sequential[layer1]/MaxPool2d[pool01]/max_pool2d',
+        'ModelForTest/Sequential[layer2]/Conv2d[conv02]/conv2d',
+        'ModelForTest/Sequential[layer2]/ReLU[relu02]/' + VersionAgnosticNames.RELU,
+        'ModelForTest/Sequential[layer2]/BatchNorm2d[norm02]/batch_norm',
+        'ModelForTest/Sequential[layer2]/MaxPool2d[pool02]/max_pool2d',
+        'ModelForTest/AvgPool2d[avgpool]/avg_pool2d'
     ]
 
     act_list = get_all_node_names(model, (1, 1, 4, 4))
@@ -174,8 +174,8 @@ def test_get_all_nodes():
 
 
 def test_apply_by_node_name():
-    model = TestModel()
-    node_name = 'TestModel/BatchNorm2d[bn1]'
+    model = ModelForTest()
+    node_name = 'ModelForTest/BatchNorm2d[bn1]'
     bn1 = get_module_by_node_name(model, node_name)
     bn1.weight.data.fill_(1)
     assert bn1.weight == 1

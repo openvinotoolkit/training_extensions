@@ -1,26 +1,19 @@
-From a715090be60100dc2557a00a0a87e739da238e4e Mon Sep 17 00:00:00 2001
+From 31f04a0902ca066b6e340ead50f9fd8e48dc23d6 Mon Sep 17 00:00:00 2001
 From: Ivan Lazarevich <ivan.lazarevich@intel.com>
-Date: Tue, 10 Dec 2019 20:14:52 +0300
+Date: Tue, 28 Apr 2020 17:47:34 +0300
 Subject: [PATCH] Modifications for NNCF usage
 
 ---
- configs/pascal_voc/ssd300_voc_int8.py           | 141 ++++++++++++++++++++++++
- configs/retinanet_r50_fpn_1x_int8.py            | 136 +++++++++++++++++++++++
- mmdet/apis/train.py                             |  65 +++++++++--
- mmdet/core/__init__.py                          |   1 +
- mmdet/core/nncf/__init__.py                     |   7 ++
- mmdet/core/nncf/hooks.py                        |  17 +++
- mmdet/core/nncf/utils.py                        |  92 ++++++++++++++++
- mmdet/models/anchor_heads/anchor_head.py        |   2 +
- mmdet/models/anchor_heads/fcos_head.py          |   2 +
- mmdet/models/anchor_heads/ga_rpn_head.py        |   2 +
- mmdet/models/anchor_heads/guided_anchor_head.py |   2 +
- mmdet/models/anchor_heads/rpn_head.py           |   2 +
- mmdet/models/anchor_heads/ssd_head.py           |   2 +
- mmdet/models/detectors/base.py                  |   7 ++
- mmdet/models/detectors/single_stage.py          |   4 +
- tools/train.py                                  |  10 +-
- 16 files changed, 483 insertions(+), 9 deletions(-)
+ configs/pascal_voc/ssd300_voc_int8.py | 146 ++++++++++++++++++++++++++++++++++
+ configs/retinanet_r50_fpn_1x_int8.py  | 139 ++++++++++++++++++++++++++++++++
+ mmdet/apis/train.py                   |  66 +++++++++++++--
+ mmdet/core/__init__.py                |   1 +
+ mmdet/core/nncf/__init__.py           |  11 +++
+ mmdet/core/nncf/hooks.py              |  25 ++++++
+ mmdet/core/nncf/utils.py              |  83 +++++++++++++++++++
+ mmdet/models/detectors/base.py        |   9 ++-
+ tools/train.py                        |   7 ++
+ 9 files changed, 480 insertions(+), 7 deletions(-)
  create mode 100644 configs/pascal_voc/ssd300_voc_int8.py
  create mode 100644 configs/retinanet_r50_fpn_1x_int8.py
  create mode 100644 mmdet/core/nncf/__init__.py
@@ -29,15 +22,16 @@ Subject: [PATCH] Modifications for NNCF usage
 
 diff --git a/configs/pascal_voc/ssd300_voc_int8.py b/configs/pascal_voc/ssd300_voc_int8.py
 new file mode 100644
-index 0000000..f87e4f0
+index 0000000..08a0827
 --- /dev/null
 +++ b/configs/pascal_voc/ssd300_voc_int8.py
-@@ -0,0 +1,141 @@
+@@ -0,0 +1,146 @@
 +# model settings
 +input_size = 300
 +model = dict(
 +    type='SingleStageDetector',
 +    pretrained='open-mmlab://vgg16_caffe',
++    # pretrained='torchvision://vgg11',
 +    backbone=dict(
 +        type='SSDVGG',
 +        input_size=input_size,
@@ -58,6 +52,7 @@ index 0000000..f87e4f0
 +        anchor_ratios=([2], [2, 3], [2, 3], [2, 3], [2], [2]),
 +        target_means=(.0, .0, .0, .0),
 +        target_stds=(0.1, 0.1, 0.2, 0.2)))
++# model training and testing settings
 +cudnn_benchmark = True
 +train_cfg = dict(
 +    assigner=dict(
@@ -77,14 +72,50 @@ index 0000000..f87e4f0
 +    min_bbox_size=0,
 +    score_thr=0.02,
 +    max_per_img=200)
-+# model training and testing settings
 +# dataset settings
 +dataset_type = 'VOCDataset'
 +data_root = 'data/VOCdevkit/'
 +img_norm_cfg = dict(mean=[123.675, 116.28, 103.53], std=[1, 1, 1], to_rgb=True)
++train_pipeline = [
++    dict(type='LoadImageFromFile', to_float32=True),
++    dict(type='LoadAnnotations', with_bbox=True),
++    dict(
++        type='PhotoMetricDistortion',
++        brightness_delta=32,
++        contrast_range=(0.5, 1.5),
++        saturation_range=(0.5, 1.5),
++        hue_delta=18),
++    dict(
++        type='Expand',
++        mean=img_norm_cfg['mean'],
++        to_rgb=img_norm_cfg['to_rgb'],
++        ratio_range=(1, 4)),
++    dict(
++        type='MinIoURandomCrop',
++        min_ious=(0.1, 0.3, 0.5, 0.7, 0.9),
++        min_crop_size=0.3),
++    dict(type='Resize', img_scale=(300, 300), keep_ratio=False),
++    dict(type='Normalize', **img_norm_cfg),
++    dict(type='RandomFlip', flip_ratio=0.5),
++    dict(type='DefaultFormatBundle'),
++    dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels']),
++]
++test_pipeline = [
++    dict(type='LoadImageFromFile'),
++    dict(
++        type='MultiScaleFlipAug',
++        img_scale=(300, 300),
++        flip=False,
++        transforms=[
++            dict(type='Resize', keep_ratio=False),
++            dict(type='Normalize', **img_norm_cfg),
++            dict(type='ImageToTensor', keys=['img']),
++            dict(type='Collect', keys=['img']),
++        ])
++]
 +data = dict(
 +    imgs_per_gpu=4,
-+    workers_per_gpu=2,
++    workers_per_gpu=4,
 +    train=dict(
 +        type='RepeatDataset',
 +        times=10,
@@ -95,60 +126,27 @@ index 0000000..f87e4f0
 +                data_root + 'VOC2012/ImageSets/Main/trainval.txt'
 +            ],
 +            img_prefix=[data_root + 'VOC2007/', data_root + 'VOC2012/'],
-+            img_scale=(300, 300),
-+            img_norm_cfg=img_norm_cfg,
-+            size_divisor=None,
-+            flip_ratio=0.5,
-+            with_mask=False,
-+            with_crowd=False,
-+            with_label=True,
-+            test_mode=False,
-+            extra_aug=dict(
-+                photo_metric_distortion=dict(
-+                    brightness_delta=32,
-+                    contrast_range=(0.5, 1.5),
-+                    saturation_range=(0.5, 1.5),
-+                    hue_delta=18),
-+                expand=dict(
-+                    mean=img_norm_cfg['mean'],
-+                    to_rgb=img_norm_cfg['to_rgb'],
-+                    ratio_range=(1, 4)),
-+                random_crop=dict(
-+                    min_ious=(0.1, 0.3, 0.5, 0.7, 0.9), min_crop_size=0.3)),
-+            resize_keep_ratio=False)),
++            pipeline=train_pipeline)),
 +    val=dict(
 +        type=dataset_type,
 +        ann_file=data_root + 'VOC2007/ImageSets/Main/test.txt',
 +        img_prefix=data_root + 'VOC2007/',
-+        img_scale=(300, 300),
-+        img_norm_cfg=img_norm_cfg,
-+        size_divisor=None,
-+        flip_ratio=0,
-+        with_mask=False,
-+        with_label=False,
-+        test_mode=True,
-+        resize_keep_ratio=False),
++        pipeline=test_pipeline),
 +    test=dict(
 +        type=dataset_type,
 +        ann_file=data_root + 'VOC2007/ImageSets/Main/test.txt',
 +        img_prefix=data_root + 'VOC2007/',
-+        img_scale=(300, 300),
-+        img_norm_cfg=img_norm_cfg,
-+        size_divisor=None,
-+        flip_ratio=0,
-+        with_mask=False,
-+        with_label=False,
-+        test_mode=True,
-+        resize_keep_ratio=False))
++        pipeline=test_pipeline))
++evaluation = dict(interval=1, metric='mAP')
 +# optimizer
-+optimizer = dict(type='SGD', lr=1e-3, momentum=0.9, weight_decay=5e-4)
++optimizer = dict(type='SGD', lr=1e-4, momentum=0.9, weight_decay=5e-4)
 +optimizer_config = dict()
 +# learning policy
 +lr_config = dict(
 +    policy='step',
 +    warmup='linear',
 +    warmup_iters=500,
-+    warmup_ratio=1.0 / 3,
++    warmup_ratio=1.0 / 10,
 +    step=[16, 20])
 +checkpoint_config = dict(interval=1)
 +# yapf:disable
@@ -160,26 +158,26 @@ index 0000000..f87e4f0
 +    ])
 +# yapf:enable
 +# runtime settings
-+total_epochs = 24
++total_epochs = 5
 +dist_params = dict(backend='nccl')
 +log_level = 'INFO'
-+work_dir = './work_dirs/ssd300_voc'
-+load_from = None
++work_dir = './work_dirs/ssd300_voc_int8'
++# we start from the pre-trained checkpoint available from the mmdet github repo
++# download from here: https://s3.ap-northeast-2.amazonaws.com/open-mmlab/mmdetection/models/ssd300_voc_vgg16_caffe_240e_20190501-7160d09a.pth
++load_from = './checkpoints/ssd300_voc_vgg16_caffe_240e_20190501-7160d09a.pth'
 +resume_from = None
 +workflow = [('train', 1)]
 +# nncf config
-+ignored_scopes = ["SingleStageDetector/SSDHead[bbox_head]/ModuleList[reg_convs]",
-+                  "SingleStageDetector/SSDHead[bbox_head]/ModuleList[cls_convs]"]
-+nncf_config = dict(compression=[dict(algorithm="quantization",
-+                                     ignored_scopes=ignored_scopes)],
-+                   log_dir=work_dir,
-+                   input_sample_size=(1, 3, input_size, input_size))
++nncf_config = dict(compression=[dict(algorithm='quantization',
++                                     initializer=dict(range=dict(num_init_steps=10,
++                                                                 type='threesigma')))],
++                   log_dir=work_dir)
 diff --git a/configs/retinanet_r50_fpn_1x_int8.py b/configs/retinanet_r50_fpn_1x_int8.py
 new file mode 100644
-index 0000000..5be1188
+index 0000000..6d28bd4
 --- /dev/null
 +++ b/configs/retinanet_r50_fpn_1x_int8.py
-@@ -0,0 +1,136 @@
+@@ -0,0 +1,139 @@
 +# model settings
 +model = dict(
 +    type='RetinaNet',
@@ -190,6 +188,7 @@ index 0000000..5be1188
 +        num_stages=4,
 +        out_indices=(0, 1, 2, 3),
 +        frozen_stages=1,
++        norm_cfg=dict(type='BN', requires_grad=True),
 +        style='pytorch'),
 +    neck=dict(
 +        type='FPN',
@@ -236,46 +235,53 @@ index 0000000..5be1188
 +    max_per_img=100)
 +# dataset settings
 +dataset_type = 'CocoDataset'
-+data_root = '/data/coco_mmdet/'
++data_root = 'data/coco/'
 +img_norm_cfg = dict(
 +    mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
++train_pipeline = [
++    dict(type='LoadImageFromFile'),
++    dict(type='LoadAnnotations', with_bbox=True),
++    dict(type='Resize', img_scale=(1333, 800), keep_ratio=True),
++    dict(type='RandomFlip', flip_ratio=0.5),
++    dict(type='Normalize', **img_norm_cfg),
++    dict(type='Pad', size_divisor=32),
++    dict(type='DefaultFormatBundle'),
++    dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels']),
++]
++test_pipeline = [
++    dict(type='LoadImageFromFile'),
++    dict(
++        type='MultiScaleFlipAug',
++        img_scale=(1333, 800),
++        flip=False,
++        transforms=[
++            dict(type='Resize', keep_ratio=True),
++            dict(type='RandomFlip'),
++            dict(type='Normalize', **img_norm_cfg),
++            dict(type='Pad', size_divisor=32),
++            dict(type='ImageToTensor', keys=['img']),
++            dict(type='Collect', keys=['img']),
++        ])
++]
 +data = dict(
-+    imgs_per_gpu=1,
++    imgs_per_gpu=2,
 +    workers_per_gpu=2,
 +    train=dict(
 +        type=dataset_type,
 +        ann_file=data_root + 'annotations/instances_train2017.json',
 +        img_prefix=data_root + 'train2017/',
-+        img_scale=(1333, 800),
-+        img_norm_cfg=img_norm_cfg,
-+        size_divisor=32,
-+        flip_ratio=0.5,
-+        with_mask=False,
-+        with_crowd=False,
-+        with_label=True),
++        pipeline=train_pipeline),
 +    val=dict(
 +        type=dataset_type,
 +        ann_file=data_root + 'annotations/instances_val2017.json',
 +        img_prefix=data_root + 'val2017/',
-+        img_scale=(1333, 800),
-+        img_norm_cfg=img_norm_cfg,
-+        size_divisor=32,
-+        flip_ratio=0,
-+        with_mask=False,
-+        with_crowd=False,
-+        with_label=True),
++        pipeline=test_pipeline),
 +    test=dict(
 +        type=dataset_type,
 +        ann_file=data_root + 'annotations/instances_val2017.json',
 +        img_prefix=data_root + 'val2017/',
-+        img_scale=(1333, 800),
-+        img_norm_cfg=img_norm_cfg,
-+        size_divisor=32,
-+        flip_ratio=0,
-+        with_mask=False,
-+        with_crowd=False,
-+        with_label=False,
-+        test_mode=True))
++        pipeline=test_pipeline))
++evaluation = dict(interval=1, metric='bbox')
 +# optimizer
 +optimizer = dict(type='SGD', lr=0.001, momentum=0.9, weight_decay=0.0001)
 +optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
@@ -284,7 +290,7 @@ index 0000000..5be1188
 +    policy='step',
 +    warmup='linear',
 +    warmup_iters=500,
-+    warmup_ratio=1.0 / 3,
++    warmup_ratio=1.0 / 10,
 +    step=[8, 11])
 +checkpoint_config = dict(interval=1)
 +# yapf:disable
@@ -296,94 +302,98 @@ index 0000000..5be1188
 +    ])
 +# yapf:enable
 +# runtime settings
-+total_epochs = 12
-+device_ids = range(8)
++total_epochs = 3
 +dist_params = dict(backend='nccl')
 +log_level = 'INFO'
-+work_dir = './work_dirs/retinanet_r50_fpn_1x'
-+load_from = None
++work_dir = './work_dirs/retinanet_r50_fpn_1x_int8'
++# we start from the pre-trained checkpoint available from the mmdet github repo
++# download from here: https://open-mmlab.s3.ap-northeast-2.amazonaws.com/mmdetection/models/retinanet_r50_fpn_2x_20190616-75574209.pth
++load_from = './checkpoints/retinanet_r50_fpn_2x_20190616-75574209.pth'
 +resume_from = None
 +workflow = [('train', 1)]
 +# nncf config
-+ignored_scopes = ["RetinaNet/RetinaHead[bbox_head]/Conv2d[retina_reg]",
-+                  "RetinaNet/RetinaHead[bbox_head]/Conv2d[retina_cls]", ]
-+sparsity_params = dict(schedule="multistep",
-+                       sparsity_levels=[0.5, 0.7],
-+                       steps=[15])
 +input_size = 800
-+nncf_config = dict(compression=[dict(algorithm="quantization",
-+                                     initializer=dict(num_init_steps=10),
-+                                     ignored_scopes=ignored_scopes)],
-+                   log_dir=work_dir,
-+                   input_sample_size=(1, 3, input_size, input_size))
++nncf_config = dict(compression=[dict(algorithm='quantization',
++                                     initializer=dict(range=dict(num_init_steps=10,
++                                                                 type='threesigma')))],
++                   log_dir=work_dir)
 diff --git a/mmdet/apis/train.py b/mmdet/apis/train.py
-index 35ad34c..0e707cc 100644
+index 8359f30..e244feb 100644
 --- a/mmdet/apis/train.py
 +++ b/mmdet/apis/train.py
-@@ -8,9 +8,16 @@ from mmcv.runner import DistSamplerSeedHook, Runner, obj_from_dict
+@@ -8,10 +8,15 @@ from mmcv.parallel import MMDataParallel, MMDistributedDataParallel
+ from mmcv.runner import DistSamplerSeedHook, Runner
  
- from mmdet import datasets
- from mmdet.core import (CocoDistEvalmAPHook, CocoDistEvalRecallHook,
--                        DistEvalmAPHook, DistOptimizerHook, Fp16OptimizerHook)
-+                        DistEvalmAPHook, DistOptimizerHook,
-+                        Fp16OptimizerHook, CompressionHook)
- from mmdet.datasets import DATASETS, build_dataloader
- from mmdet.models import RPN
-+
+ from mmdet.core import (DistEvalHook, DistOptimizerHook, EvalHook,
+-                        Fp16OptimizerHook, build_optimizer)
++                        Fp16OptimizerHook, CompressionHook, build_optimizer)
+ from mmdet.datasets import build_dataloader, build_dataset
+ from mmdet.utils import get_root_logger
+ 
 +from nncf.utils import get_all_modules
 +from mmdet.core.nncf import load_checkpoint
 +from mmdet.core.nncf import wrap_nncf_model
 +from mmdet.core.nncf import nncf_algo_initialize
 +
- from .env import get_root_logger
  
- 
-@@ -34,10 +41,14 @@ def parse_losses(losses):
+ def set_random_seed(seed, deterministic=False):
+     """Set random seed.
+@@ -56,7 +61,7 @@ def parse_losses(losses):
      return loss, log_vars
  
  
 -def batch_processor(model, data, train_mode):
-+def batch_processor(model, data, compression_algo, train_mode):
++def batch_processor(model, data, compression_ctrl, train_mode):
+     """Process a data batch.
+ 
+     This method is required as an argument of Runner, which defines how to
+@@ -75,6 +80,10 @@ def batch_processor(model, data, train_mode):
      losses = model(**data)
      loss, log_vars = parse_losses(losses)
  
-+    if compression_algo is not None:
-+        compression_loss = compression_algo.loss()
++    if compression_ctrl is not None:
++        compression_loss = compression_ctrl.loss()
 +        loss += compression_loss
 +
      outputs = dict(
          loss=loss, log_vars=log_vars, num_samples=len(data['img'].data))
  
-@@ -142,9 +153,16 @@ def _dist_train(model, dataset, cfg, validate=False):
-             ds, cfg.data.imgs_per_gpu, cfg.data.workers_per_gpu, dist=True)
-         for ds in dataset
+@@ -128,6 +137,14 @@ def _dist_train(model,
+             dist=True,
+             seed=cfg.seed) for ds in dataset
      ]
++
 +    # nncf model wrapper
 +    if cfg.ENABLE_COMPRESSION:
-+        model, compression_algo = wrap_nncf_model(model, cfg)
++        model, compression_ctrl = wrap_nncf_model(model, cfg)
 +        print(*get_all_modules(model).keys(), sep="\n")
 +    else:
-+        compression_algo = None
++        compression_ctrl = None
++
      # put model on gpus
-     model = MMDistributedDataParallel(model.cuda())
--
+     find_unused_parameters = cfg.get('find_unused_parameters', False)
+     # Sets the `find_unused_parameters` parameter in
+@@ -138,6 +155,9 @@ def _dist_train(model,
+         broadcast_buffers=False,
+         find_unused_parameters=find_unused_parameters)
+ 
 +    if cfg.ENABLE_COMPRESSION:
-+        compression_algo.distributed()
++        compression_ctrl.distributed()
++
      # build runner
      optimizer = build_optimizer(model, cfg.optimizer)
-     runner = Runner(model, batch_processor, optimizer, cfg.work_dir,
-@@ -162,6 +180,10 @@ def _dist_train(model, dataset, cfg, validate=False):
+     runner = Runner(
+@@ -162,6 +182,9 @@ def _dist_train(model,
      runner.register_training_hooks(cfg.lr_config, optimizer_config,
                                     cfg.checkpoint_config, cfg.log_config)
      runner.register_hook(DistSamplerSeedHook())
 +    if cfg.ENABLE_COMPRESSION:
-+        nncf_hook = runner.build_hook({'compression_algo': compression_algo},
-+                                          CompressionHook)
-+        runner.register_hook(nncf_hook)
++        runner.register_hook(CompressionHook(compression_ctrl=compression_ctrl))
++
      # register eval hooks
      if validate:
-         val_dataset_cfg = cfg.data.val
-@@ -182,8 +204,17 @@ def _dist_train(model, dataset, cfg, validate=False):
+         val_dataset = build_dataset(cfg.data.val, dict(test_mode=True))
+@@ -177,8 +200,18 @@ def _dist_train(model,
      if cfg.resume_from:
          runner.resume(cfg.resume_from)
      elif cfg.load_from:
@@ -395,36 +405,37 @@ index 35ad34c..0e707cc 100644
 +        except:
 +            runner.load_checkpoint(cfg.load_from)
 +
-+    if compression_algo is not None:
-+        nncf_algo_initialize(compression_algo, data_loaders)
++    if compression_ctrl is not None:
++        nncf_algo_initialize(compression_ctrl, data_loaders,
++                             device=next(model.parameters()).device)
 +
 +    runner.run(data_loaders, cfg.workflow, cfg.total_epochs,
-+               compression_algo=compression_algo)
++               compression_ctrl=compression_ctrl)
  
  
- def _non_dist_train(model, dataset, cfg, validate=False):
-@@ -197,6 +228,12 @@ def _non_dist_train(model, dataset, cfg, validate=False):
-             cfg.gpus,
-             dist=False) for ds in dataset
+ def _non_dist_train(model,
+@@ -199,6 +232,14 @@ def _non_dist_train(model,
+             dist=False,
+             seed=cfg.seed) for ds in dataset
      ]
++
 +    # nncf model wrapping
 +    if cfg.ENABLE_COMPRESSION:
-+        model, compression_algo = wrap_nncf_model(model, cfg)
++        model, compression_ctrl = wrap_nncf_model(model, cfg)
 +        print(*get_all_modules(model).keys(), sep="\n")
 +    else:
-+        compression_algo = None
++        compression_ctrl = None
++
      # put model on gpus
      model = MMDataParallel(model, device_ids=range(cfg.gpus)).cuda()
  
-@@ -213,9 +250,21 @@ def _non_dist_train(model, dataset, cfg, validate=False):
-         optimizer_config = cfg.optimizer_config
-     runner.register_training_hooks(cfg.lr_config, optimizer_config,
-                                    cfg.checkpoint_config, cfg.log_config)
--
+@@ -235,8 +276,21 @@ def _non_dist_train(model,
+         eval_cfg = cfg.get('evaluation', {})
+         runner.register_hook(EvalHook(val_dataloader, **eval_cfg))
+ 
 +    if cfg.ENABLE_COMPRESSION:
-+        nncf_hook = runner.build_hook({'compression_algo': compression_algo},
-+                                      CompressionHook)
-+        runner.register_hook(nncf_hook)
++        runner.register_hook(CompressionHook(compression_ctrl=compression_ctrl))
++
      if cfg.resume_from:
          runner.resume(cfg.resume_from)
      elif cfg.load_from:
@@ -436,99 +447,107 @@ index 35ad34c..0e707cc 100644
 +        except:
 +            runner.load_checkpoint(cfg.load_from)
 +
-+    if compression_algo is not None:
-+        nncf_algo_initialize(compression_algo, data_loaders)
++    if compression_ctrl is not None:
++        nncf_algo_initialize(compression_ctrl, data_loaders,
++                             device=next(model.parameters()).device)
 +
 +    runner.run(data_loaders, cfg.workflow, cfg.total_epochs,
-+               compression_algo=compression_algo)
++               compression_ctrl=compression_ctrl)
 diff --git a/mmdet/core/__init__.py b/mmdet/core/__init__.py
-index f8eb6cb..14f2c89 100644
+index 675c7b9..6efa709 100644
 --- a/mmdet/core/__init__.py
 +++ b/mmdet/core/__init__.py
-@@ -5,3 +5,4 @@ from .fp16 import *  # noqa: F401, F403
- from .mask import *  # noqa: F401, F403
+@@ -6,3 +6,4 @@ from .mask import *  # noqa: F401, F403
+ from .optimizer import *  # noqa: F401, F403
  from .post_processing import *  # noqa: F401, F403
  from .utils import *  # noqa: F401, F403
 +from .nncf import *
 diff --git a/mmdet/core/nncf/__init__.py b/mmdet/core/nncf/__init__.py
 new file mode 100644
-index 0000000..cd304c1
+index 0000000..11ecb87
 --- /dev/null
 +++ b/mmdet/core/nncf/__init__.py
-@@ -0,0 +1,7 @@
+@@ -0,0 +1,11 @@
 +from .hooks import CompressionHook
 +from .utils import get_all_modules, wrap_nncf_model
 +from .utils import load_checkpoint, nncf_algo_initialize
 +
-+__all__ = ['CompressionHook', 'get_all_modules',
-+           'wrap_nncf_model', 'load_checkpoint',
-+           'nncf_algo_initialize']
++__all__ = [
++    'CompressionHook',
++    'get_all_modules',
++    'wrap_nncf_model',
++    'load_checkpoint',
++    'nncf_algo_initialize',
++]
 diff --git a/mmdet/core/nncf/hooks.py b/mmdet/core/nncf/hooks.py
 new file mode 100644
-index 0000000..b5b6c5d
+index 0000000..60d9a82
 --- /dev/null
 +++ b/mmdet/core/nncf/hooks.py
-@@ -0,0 +1,17 @@
+@@ -0,0 +1,25 @@
++from texttable import Texttable
 +from mmcv.runner.hooks.hook import Hook
-+from nncf.utils import print_statistics as print_nncf_statistics
 +
 +
 +class CompressionHook(Hook):
-+
-+    def __init__(self, compression_algo=None):
-+        self.compression_algo = compression_algo
++    def __init__(self, compression_ctrl=None):
++        self.compression_ctrl = compression_ctrl
 +
 +    def after_train_iter(self, runner):
-+        self.compression_algo.scheduler.step()
++        self.compression_ctrl.scheduler.step()
 +
 +    def after_train_epoch(self, runner):
-+        self.compression_algo.scheduler.epoch_step()
++        self.compression_ctrl.scheduler.epoch_step()
 +
 +    def before_run(self, runner):
-+        runner.logger.info(print_nncf_statistics(self.compression_algo.statistics()))
++        runner.logger.info(print_statistics(self.compression_ctrl.statistics()))
++
++
++def print_statistics(stats):
++    for key, val in stats.items():
++        if isinstance(val, Texttable):
++            logger.info(key)
++            logger.info(val.draw())
++        else:
++            logger.info('{}: {}'.format(key, val))
 diff --git a/mmdet/core/nncf/utils.py b/mmdet/core/nncf/utils.py
 new file mode 100644
-index 0000000..b1e400e
+index 0000000..205e63f
 --- /dev/null
 +++ b/mmdet/core/nncf/utils.py
-@@ -0,0 +1,92 @@
+@@ -0,0 +1,83 @@
 +import pathlib
 +from collections import OrderedDict
 +
 +import torch
 +
 +from nncf.utils import get_all_modules
-+from nncf.config import Config as NNCFConfig
-+from nncf.helpers import load_state, create_compressed_model
++from nncf import Config as NNCFConfig
++from nncf import load_state
++from nncf import create_compressed_model
 +
 +
 +def wrap_nncf_model(model, cfg):
 +    pathlib.Path(cfg.work_dir).mkdir(parents=True, exist_ok=True)
 +    nncf_config = NNCFConfig(cfg.nncf_config)
-+    input_size = nncf_config.get("input_sample_size",
-+                                 (1, 3, cfg.input_size, cfg.input_size))
++    input_size = nncf_config.get(
++        'input_sample_size', (1, 3, cfg.input_size, cfg.input_size)
++    )
 +
 +    def dummy_forward(model):
 +        device = next(model.parameters()).device
-+        input_args = ([torch.randn(input_size).to(device), ],)
-+        input_kwargs = dict(img_meta=[],
-+                            return_loss=False,
-+                            dummy_forward=True)
-+        model.forward(*input_args, **input_kwargs)
++        input_args = ([torch.randn(input_size).to(device),],)
++        input_kwargs = dict(return_loss=False, dummy_forward=True)
++        model(*input_args, **input_kwargs)
 +
 +    model.dummy_forward_fn = dummy_forward
-+
-+    compression_algo, model = create_compressed_model(model, nncf_config,
-+                                                      dummy_forward_fn=dummy_forward)
-+    print(*get_all_modules(model).keys(), sep='\n')
-+
-+    return model, compression_algo
++    compression_ctrl, model = create_compressed_model(
++        model, nncf_config, dummy_forward_fn=dummy_forward
++    )
++    return model, compression_ctrl
 +
 +
-+def load_checkpoint(model,
-+                    filename,
-+                    map_location=None,
-+                    strict=False):
++def load_checkpoint(model, filename, map_location=None, strict=False):
 +    """Load checkpoint from a file or URI.
 +
 +    Args:
@@ -549,16 +568,15 @@ index 0000000..b1e400e
 +    elif isinstance(checkpoint, dict) and 'state_dict' in checkpoint:
 +        state_dict = checkpoint['state_dict']
 +    else:
-+        raise RuntimeError(
-+            'No state_dict found in checkpoint file {}'.format(filename))
++        raise RuntimeError('No state_dict found in checkpoint file {}'.format(filename))
 +    _ = load_state(model, state_dict, strict)
 +    return checkpoint
 +
 +
 +class MMInitializeDataLoader:
-+
 +    def __init__(self, data_loader, kwargs, device):
 +        self.data_loader = data_loader
++        self.data_iterator = self.data_loader.__iter__()
 +        self.kwargs = kwargs
 +        self.device = device
 +        self.num_workers = data_loader.num_workers
@@ -569,208 +587,71 @@ index 0000000..b1e400e
 +    def __next__(self):
 +        # redefined InitializeDataLoader because
 +        # of DataContainer format in mmdet
-+        input = self.data_loader.__iter__().__next__()
++        input = self.data_iterator.__next__()
 +        input_tensor = input['img']._data[0].to(self.device)
-+        return ([input_tensor, ], self.kwargs)
++        return ([input_tensor,], None, self.kwargs)
 +
 +
-+def nncf_algo_initialize(compression_algo, data_loaders):
-+    mmdet_kwargs = dict(img_meta=[],
-+                        return_loss=False,
-+                        dummy_forward=True)
-+    device = next(compression_algo.model.parameters()).device
-+    wrapped_loader = MMInitializeDataLoader(data_loader=data_loaders[0],
-+                                            kwargs=mmdet_kwargs,
-+                                            device=device)
++def nncf_algo_initialize(compression_ctrl, data_loaders, device):
++    mmdet_kwargs = dict(return_loss=False, dummy_forward=True)
++    wrapped_loader = MMInitializeDataLoader(
++        data_loader=data_loaders[0], kwargs=mmdet_kwargs, device=device
++    )
 +
-+    compression_algo.initialize(wrapped_loader)
-diff --git a/mmdet/models/anchor_heads/anchor_head.py b/mmdet/models/anchor_heads/anchor_head.py
-index b3fb5b4..aac992d 100644
---- a/mmdet/models/anchor_heads/anchor_head.py
-+++ b/mmdet/models/anchor_heads/anchor_head.py
-@@ -4,6 +4,7 @@ import numpy as np
- import torch
- import torch.nn as nn
- from mmcv.cnn import normal_init
-+from nncf.dynamic_graph.context import no_nncf_trace
- 
- from mmdet.core import (AnchorGenerator, anchor_target, delta2bbox, force_fp32,
-                         multi_apply, multiclass_nms)
-@@ -150,6 +151,7 @@ class AnchorHead(nn.Module):
-             avg_factor=num_total_samples)
-         return loss_cls, loss_bbox
- 
-+    @no_nncf_trace()
-     @force_fp32(apply_to=('cls_scores', 'bbox_preds'))
-     def loss(self,
-              cls_scores,
-diff --git a/mmdet/models/anchor_heads/fcos_head.py b/mmdet/models/anchor_heads/fcos_head.py
-index c01e4ea..65b633d 100644
---- a/mmdet/models/anchor_heads/fcos_head.py
-+++ b/mmdet/models/anchor_heads/fcos_head.py
-@@ -1,6 +1,7 @@
- import torch
- import torch.nn as nn
- from mmcv.cnn import normal_init
-+from nncf.dynamic_graph.context import no_nncf_trace
- 
- from mmdet.core import distance2bbox, force_fp32, multi_apply, multiclass_nms
- from ..builder import build_loss
-@@ -113,6 +114,7 @@ class FCOSHead(nn.Module):
-         bbox_pred = scale(self.fcos_reg(reg_feat)).float().exp()
-         return cls_score, bbox_pred, centerness
- 
-+    @no_nncf_trace()
-     @force_fp32(apply_to=('cls_scores', 'bbox_preds', 'centernesses'))
-     def loss(self,
-              cls_scores,
-diff --git a/mmdet/models/anchor_heads/ga_rpn_head.py b/mmdet/models/anchor_heads/ga_rpn_head.py
-index 11512ff..1a9f550 100644
---- a/mmdet/models/anchor_heads/ga_rpn_head.py
-+++ b/mmdet/models/anchor_heads/ga_rpn_head.py
-@@ -2,6 +2,7 @@ import torch
- import torch.nn as nn
- import torch.nn.functional as F
- from mmcv.cnn import normal_init
-+from nncf.dynamic_graph.context import no_nncf_trace
- 
- from mmdet.core import delta2bbox
- from mmdet.ops import nms
-@@ -32,6 +33,7 @@ class GARPNHead(GuidedAnchorHead):
-          loc_pred) = super(GARPNHead, self).forward_single(x)
-         return cls_score, bbox_pred, shape_pred, loc_pred
- 
-+    @no_nncf_trace()
-     def loss(self,
-              cls_scores,
-              bbox_preds,
-diff --git a/mmdet/models/anchor_heads/guided_anchor_head.py b/mmdet/models/anchor_heads/guided_anchor_head.py
-index d2d71d0..4e7c328 100644
---- a/mmdet/models/anchor_heads/guided_anchor_head.py
-+++ b/mmdet/models/anchor_heads/guided_anchor_head.py
-@@ -4,6 +4,7 @@ import numpy as np
- import torch
- import torch.nn as nn
- from mmcv.cnn import normal_init
-+from nncf.dynamic_graph.context import no_nncf_trace
- 
- from mmdet.core import (AnchorGenerator, anchor_inside_flags, anchor_target,
-                         delta2bbox, force_fp32, ga_loc_target, ga_shape_target,
-@@ -389,6 +390,7 @@ class GuidedAnchorHead(AnchorHead):
-             avg_factor=loc_avg_factor)
-         return loss_loc
- 
-+    @no_nncf_trace()
-     @force_fp32(
-         apply_to=('cls_scores', 'bbox_preds', 'shape_preds', 'loc_preds'))
-     def loss(self,
-diff --git a/mmdet/models/anchor_heads/rpn_head.py b/mmdet/models/anchor_heads/rpn_head.py
-index 50f1cc5..17e35e4 100644
---- a/mmdet/models/anchor_heads/rpn_head.py
-+++ b/mmdet/models/anchor_heads/rpn_head.py
-@@ -2,6 +2,7 @@ import torch
- import torch.nn as nn
- import torch.nn.functional as F
- from mmcv.cnn import normal_init
-+from nncf.dynamic_graph.context import no_nncf_trace
- 
- from mmdet.core import delta2bbox
- from mmdet.ops import nms
-@@ -34,6 +35,7 @@ class RPNHead(AnchorHead):
-         rpn_bbox_pred = self.rpn_reg(x)
-         return rpn_cls_score, rpn_bbox_pred
- 
-+    @no_nncf_trace()
-     def loss(self,
-              cls_scores,
-              bbox_preds,
-diff --git a/mmdet/models/anchor_heads/ssd_head.py b/mmdet/models/anchor_heads/ssd_head.py
-index 600dd4a..c0630ac 100644
---- a/mmdet/models/anchor_heads/ssd_head.py
-+++ b/mmdet/models/anchor_heads/ssd_head.py
-@@ -3,6 +3,7 @@ import torch
- import torch.nn as nn
- import torch.nn.functional as F
- from mmcv.cnn import xavier_init
-+from nncf.dynamic_graph.context import no_nncf_trace
- 
- from mmdet.core import AnchorGenerator, anchor_target, multi_apply
- from ..losses import smooth_l1_loss
-@@ -132,6 +133,7 @@ class SSDHead(AnchorHead):
-             avg_factor=num_total_samples)
-         return loss_cls[None], loss_bbox
- 
-+    @no_nncf_trace()
-     def loss(self,
-              cls_scores,
-              bbox_preds,
++    compression_ctrl.initialize(wrapped_loader)
 diff --git a/mmdet/models/detectors/base.py b/mmdet/models/detectors/base.py
-index 038dd10..286ffb6 100644
+index 0a71307..628382e 100644
 --- a/mmdet/models/detectors/base.py
 +++ b/mmdet/models/detectors/base.py
-@@ -48,6 +48,10 @@ class BaseDetector(nn.Module):
-         pass
- 
-     @abstractmethod
-+    def dummy_forward(self, img, **kwargs):
-+        pass
-+
-+    @abstractmethod
-     def simple_test(self, img, img_meta, **kwargs):
-         pass
- 
-@@ -66,6 +70,9 @@ class BaseDetector(nn.Module):
+@@ -109,6 +109,9 @@ class BaseDetector(nn.Module, metaclass=ABCMeta):
                  raise TypeError('{} must be a list, but got {}'.format(
                      name, type(var)))
  
 +        if kwargs['dummy_forward']:
-+            return self.dummy_forward(imgs[0], **kwargs)
++            return self.forward_dummy(imgs[0])
 +
          num_augs = len(imgs)
          if num_augs != len(img_metas):
              raise ValueError(
-diff --git a/mmdet/models/detectors/single_stage.py b/mmdet/models/detectors/single_stage.py
-index 9587392..331644f 100644
---- a/mmdet/models/detectors/single_stage.py
-+++ b/mmdet/models/detectors/single_stage.py
-@@ -71,5 +71,9 @@ class SingleStageDetector(BaseDetector):
-         ]
-         return bbox_results[0]
+@@ -133,8 +136,12 @@ class BaseDetector(nn.Module, metaclass=ABCMeta):
+             assert 'proposals' not in kwargs
+             return self.aug_test(imgs, img_metas, **kwargs)
  
-+    def dummy_forward(self, img, **kwargs):
-+        x = self.extract_feat(img)
-+        outs = self.bbox_head(x)
++    @abstractmethod
++    def forward_dummy(self, img, **kwargs):
++        pass
 +
-     def aug_test(self, imgs, img_metas, rescale=False):
-         raise NotImplementedError
+     @auto_fp16(apply_to=('img', ))
+-    def forward(self, img, img_metas, return_loss=True, **kwargs):
++    def forward(self, img, img_metas=[], return_loss=True, **kwargs):
+         """
+         Calls either forward_train or forward_test depending on whether
+         return_loss=True. Note this setting will change the expected inputs.
 diff --git a/tools/train.py b/tools/train.py
-index 0854163..0f0086c 100644
+index 01df1ca..7d36c50 100644
 --- a/tools/train.py
 +++ b/tools/train.py
-@@ -3,6 +3,10 @@ import argparse
- import os
+@@ -7,6 +7,7 @@ import time
  
+ import mmcv
  import torch
 +
-+from nncf.dynamic_graph import patch_torch_operators
-+patch_torch_operators()
-+
  from mmcv import Config
+ from mmcv.runner import init_dist
  
- from mmdet import __version__
-@@ -74,7 +78,11 @@ def main():
-     # init logger before other steps
-     logger = get_root_logger(cfg.log_level)
+@@ -103,6 +104,12 @@ def main():
      logger.info('Distributed training: {}'.format(distributed))
--
-+    if "nncf_config" in cfg:
+     logger.info('Config:\n{}'.format(cfg.text))
+ 
++    if 'nncf_config' in cfg:
 +        logger.info('NNCF config: {}'.format(cfg.nncf_config))
 +        cfg.ENABLE_COMPRESSION = True
 +    else:
 +        cfg.ENABLE_COMPRESSION = False
++
      # set random seeds
      if args.seed is not None:
-         logger.info('Set random seed to {}'.format(args.seed))
+         logger.info('Set random seed to {}, deterministic: {}'.format(
 -- 
 2.7.4
 

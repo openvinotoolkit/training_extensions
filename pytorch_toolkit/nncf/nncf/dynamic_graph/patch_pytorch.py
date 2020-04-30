@@ -1,5 +1,5 @@
 """
- Copyright (c) 2019 Intel Corporation
+ Copyright (c) 2019-2020 Intel Corporation
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
  You may obtain a copy of the License at
@@ -10,19 +10,15 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 """
-import warnings
-from typing import Callable
+from typing import Callable, List
 
+import warnings
 from torch import Tensor
 from torch.nn import DataParallel
 from torch.nn.parallel import DistributedDataParallel
 
-from nncf.debug import is_debug
-from nncf.dynamic_graph.context import get_current_context, OperatorInput
-from nncf.dynamic_graph.graph import ITERATION_MODULES
-from nncf.dynamic_graph.trace_tensor import TracedTensor, flatten_args, trace_tensors
-
-_IGNORED_SCOPES = []
+from nncf.dynamic_graph.trace_tensor import TracedTensor, flatten_args
+from nncf.dynamic_graph.wrappers import wrap_operator, wrap_module_call, ignore_scope
 
 
 class CustomTraceFunction:
@@ -83,12 +79,6 @@ class PatchedOperatorInfo:
         self.custom_trace_fn = custom_trace_fn
 
 
-def ignore_scope(cls):
-    if cls not in _IGNORED_SCOPES:
-        _IGNORED_SCOPES.append(cls)
-    return cls
-
-
 def register_operator(name=None):
     def wrap(operator):
         op_name = name
@@ -98,65 +88,7 @@ def register_operator(name=None):
 
     return wrap
 
-
-def wrap_operator(operator, operator_info: PatchedOperatorInfo):
-    # do not wrap function twice
-    _orig_op = getattr(operator, '_original_op', None)
-    if _orig_op is not None:
-        raise Exception("Operator: {} is already wrapped".format(_orig_op.__name__))
-
-    def wrapped(*args, **kwargs):
-        ctx = get_current_context()
-        if not ctx or getattr(ctx, 'in_operator', False) or not ctx.is_tracing:
-            op1 = operator(*args, **kwargs)
-            return op1
-
-        ctx.in_operator = True
-
-        if operator_info.custom_trace_fn is not None:
-            result = operator_info.custom_trace_fn(operator, *args, **kwargs)
-        else:
-            ia_op_exec_context = ctx.get_caller_context(operator_info.name)
-            ctx.register_operator_call(ia_op_exec_context.operator_name, ia_op_exec_context.scope_in_model)
-
-            op_input = OperatorInput(list(args), kwargs)
-            processed_input = ctx.execute_pre_hooks(ia_op_exec_context, op_input)
-            args = tuple(processed_input.op_args)
-            kwargs = processed_input.op_kwargs
-            fargs = flatten_args(args, kwargs)
-
-            node = ctx.find_operator_node(fargs, ia_op_exec_context)
-            if is_debug():
-                ctx.register_node_call(ctx.graph.get_node_key_by_id(node.node_id))
-
-            result = operator(*args, **kwargs)
-
-            result = trace_tensors(result, node)
-            result = ctx.execute_post_hooks(ia_op_exec_context, result)
-
-        ctx.in_operator = False
-        return result
-
-    # pylint: disable=protected-access
-    wrapped._original_op = operator
-    return wrapped
-
-
-def wrap_module_call(module_call):
-    def wrapped(self, *args, **kwargs):
-        ctx = get_current_context()
-        if not ctx or self.__class__ in _IGNORED_SCOPES:
-            if isinstance(self, DataParallel):
-                _warn_data_parallel()
-            return module_call(self, *args, **kwargs)
-        ctx.push_scope(self)
-        retval = module_call(self, *args, **kwargs)
-        if type(self).__name__ in ITERATION_MODULES.registry_dict.keys():
-            ctx.reset_operator_call_count_in_scope(ctx.scope)
-        ctx.pop_scope()
-        return retval
-
-    return wrapped
+    # TODO: Use same wrapper for model.forward() calls
 
 
 def torch_jit_script_wrapper(*args, **kwargs):
@@ -170,126 +102,54 @@ def torch_jit_script_wrapper(*args, **kwargs):
 
     # pylint:disable=unused-import,redefined-outer-name,reimported
 
-    retval = ORIGINAL_OPERATORS["script"](*args, **kwargs)
+    retval = _ORIG_JIT_SCRIPT(*args, **kwargs)
     patch_torch_operators()
     return retval
 
 
-def _warn_data_parallel():
-    if getattr(_warn_data_parallel, 'warned_once', False):
-        return
-    _warn_data_parallel.warned_once = True
-    warnings.warn("You are using DataParallel, which may cause significant performance issues with dynamic graph "
-                  "building. Consider using distributed training (DistributedDataParallel) instead")
-
-
-PATCHED_OPERATORS = [
-    PatchedOperatorInfo("conv2d"),
-    PatchedOperatorInfo("conv_transpose2d"),
-    PatchedOperatorInfo("max_pool2d"),
-    PatchedOperatorInfo("linear"),
-    PatchedOperatorInfo("dropout"),
-    PatchedOperatorInfo("threshold"),
-    PatchedOperatorInfo("batch_norm"),
-    PatchedOperatorInfo("avg_pool2d"),
-    PatchedOperatorInfo("adaptive_avg_pool2d"),
-    PatchedOperatorInfo("sigmoid"),
-    PatchedOperatorInfo("softmax"),
-    PatchedOperatorInfo("hardtanh"),
-    PatchedOperatorInfo("tanh"),
-    PatchedOperatorInfo("elu"),
-    PatchedOperatorInfo("elu_"),
-    PatchedOperatorInfo("prelu"),
-    PatchedOperatorInfo("conv3d"),
-    PatchedOperatorInfo("conv_transpose3d"),
-    PatchedOperatorInfo("max_pool3d"),
-    PatchedOperatorInfo("adaptive_max_pool3d"),
-    PatchedOperatorInfo("avg_pool3d"),
-    PatchedOperatorInfo("adaptive_avg_pool3d"),
-    PatchedOperatorInfo("max_unpool3d"),
-    PatchedOperatorInfo("dropout3d"),
-    PatchedOperatorInfo("pad", ForwardTraceOnly()),
-    PatchedOperatorInfo("layer_norm"),
-    PatchedOperatorInfo("gelu"),
-    PatchedOperatorInfo("embedding")
-]
-
-CORE_OPERATORS = [
-    PatchedOperatorInfo("cat"),
-    PatchedOperatorInfo("relu"),
-    PatchedOperatorInfo("relu_"),
-    PatchedOperatorInfo("max"),
-    PatchedOperatorInfo("min"),
-    PatchedOperatorInfo("sigmoid"),
-    PatchedOperatorInfo("flatten", ForwardTraceOnly()),
-    PatchedOperatorInfo("div"),
-    PatchedOperatorInfo("exp"),
-    PatchedOperatorInfo("bmm"),
-    PatchedOperatorInfo("tanh"),
-    PatchedOperatorInfo("erf"),
-    PatchedOperatorInfo("matmul"),
-    PatchedOperatorInfo("arange"),
-    PatchedOperatorInfo("squeeze", ForwardTraceOnly()),
-    PatchedOperatorInfo("unsqueeze", ForwardTraceOnly()),
-    PatchedOperatorInfo("transpose", ForwardTraceOnly()),
-    PatchedOperatorInfo("index_select", ForwardTraceOnly()),
-]
-
-TENSOR_OPERATORS = [
-    PatchedOperatorInfo("view", ForwardTraceOnly()),
-    PatchedOperatorInfo("permute", ForwardTraceOnly()),
-    PatchedOperatorInfo("contiguous", ForwardTraceOnly()),
-    PatchedOperatorInfo("reshape", ForwardTraceOnly()),
-    PatchedOperatorInfo("mean"),
-    PatchedOperatorInfo("__iadd__"),
-    PatchedOperatorInfo("__add__"),
-    PatchedOperatorInfo("__imul__"),
-    PatchedOperatorInfo("__mul__"),
-    PatchedOperatorInfo("__idiv__"),
-    PatchedOperatorInfo("__div__"),
-    PatchedOperatorInfo("__truediv__"),
-    PatchedOperatorInfo("__getitem__", ForwardTraceOnly()),
-    PatchedOperatorInfo("round"),
-    PatchedOperatorInfo("squeeze", ForwardTraceOnly()),
-    PatchedOperatorInfo("unsqueeze", ForwardTraceOnly()),
-    PatchedOperatorInfo("flatten", ForwardTraceOnly()),
-    PatchedOperatorInfo("transpose", ForwardTraceOnly()),
-    PatchedOperatorInfo("chunk", ForwardTraceOnly()),
-    PatchedOperatorInfo("__radd__"),
-    PatchedOperatorInfo("masked_fill"),
-    PatchedOperatorInfo("matmul"),
-    PatchedOperatorInfo("expand", ForwardTraceOnly()),
-    PatchedOperatorInfo("index_select", ForwardTraceOnly()),
-    PatchedOperatorInfo("masked_fill_", ForwardTraceOnly()),
-]
-
-
-class FunctionQuantizationInfo:
-    def __init__(self, name: str, positions_of_args_to_quantize: list):
-        self.name = name
-        self.positions_of_args_to_quantize = positions_of_args_to_quantize
-
-
-FUNCTIONS_TO_QUANTIZE = [
-    FunctionQuantizationInfo('linear', [0, 1])
-]
-
-
 def get_arg_positions_to_quantize(op_name: str):
+    from nncf.dynamic_graph.function_input_quantization import FUNCTIONS_TO_QUANTIZE
     return next((x.positions_of_args_to_quantize for x in FUNCTIONS_TO_QUANTIZE
                  if x.name == op_name), None)
 
 
-ORIGINAL_OPERATORS = {}
+class OriginalOpInfo:
+    def __init__(self, name: str, namespace, op):
+        self.name = name
+        self.namespace = namespace
+        self.op = op
+
+
+ORIGINAL_OPERATORS = []  # type: List[OriginalOpInfo]
 _JIT_ALREADY_WRAPPED = False
 _OPERATORS_ALREADY_WRAPPED = False
+_ORIG_JIT_SCRIPT = None
 
 
 def patch_torch_jit_script():
     import torch
     orig = getattr(torch.jit, "script")
-    ORIGINAL_OPERATORS["script"] = orig
+    ORIGINAL_OPERATORS.append(OriginalOpInfo("script", torch.jit, orig))
+    global _ORIG_JIT_SCRIPT
+    _ORIG_JIT_SCRIPT = orig
     setattr(torch.jit, "script", torch_jit_script_wrapper)
+
+
+def patch_namespace_opname(namespace, patched_op_info: PatchedOperatorInfo):
+    name = patched_op_info.name
+    if hasattr(namespace, name):
+        orig = getattr(namespace, name)
+        ORIGINAL_OPERATORS.append(OriginalOpInfo(name, namespace, orig))
+        setattr(namespace, name, wrap_operator(orig, patched_op_info))
+    else:
+        warnings.warn("Not patching {} since it is missing in this version of PyTorch"
+                      .format(name))
+
+
+def patch_namespace_by_patchspec(namespace, patchspec: 'PatchSpec'):
+    for op_name in patchspec.underlying_function_names:
+        patched_op_info = PatchedOperatorInfo(op_name, patchspec.custom_trace_fn)
+        patch_namespace_opname(namespace, patched_op_info)
 
 
 def patch_torch_operators():
@@ -305,41 +165,22 @@ def patch_torch_operators():
         return
     _OPERATORS_ALREADY_WRAPPED = True
 
-    # patch nn.functional operators
+    # patch operators
     import torch.nn.functional as F
-    for op_info in PATCHED_OPERATORS:
-        op_name = op_info.name
-        if hasattr(F, op_name):
-            orig = getattr(F, op_name)
-            ORIGINAL_OPERATORS[op_name] = orig
-            setattr(F, op_info.name, wrap_operator(orig, op_info))
-        else:
-            warnings.warn("Not patching {} in torch.nn.functional since it is missing in this version of PyTorch"
-                          .format(op_name))
-
-    # patch core operators
     import torch
-    for op_info in CORE_OPERATORS:
-        op_name = op_info.name
-        if hasattr(torch, op_name):
-            orig = getattr(torch, op_name)
-            ORIGINAL_OPERATORS[op_name] = orig
-            setattr(torch, op_name, wrap_operator(orig, op_info))
-        else:
-            warnings.warn("Not patching {} in torch since it is missing in this version of PyTorch"
-                          .format(op_name))
+    from nncf.dynamic_graph.operator_metatypes import OPERATOR_METATYPES
+    for op_meta_class in OPERATOR_METATYPES.registry_dict.values():  # type: OperatorMetatype
+        if op_meta_class.torch_nn_functional_patch_spec is not None:
+            ps = op_meta_class.torch_nn_functional_patch_spec
+            patch_namespace_by_patchspec(F, ps)
+        if op_meta_class.torch_module_patch_spec is not None:
+            ps = op_meta_class.torch_module_patch_spec
+            patch_namespace_by_patchspec(torch, ps)
+        if op_meta_class.torch_tensor_patch_spec is not None:
+            ps = op_meta_class.torch_tensor_patch_spec
+            patch_namespace_by_patchspec(TracedTensor, ps)
 
-    for op_info in TENSOR_OPERATORS:
-        op_name = op_info.name
-        if hasattr(TracedTensor, op_name):
-            orig = getattr(TracedTensor, op_name)
-            ORIGINAL_OPERATORS[op_name] = orig
-            setattr(TracedTensor, op_name, wrap_operator(orig, op_info))
-        else:
-            warnings.warn("Not patching {} in torch.Tensor since it is missing in this version of PyTorch"
-                          .format(op_name))
-
-    ORIGINAL_OPERATORS["__call__"] = torch.nn.Module.__call__
+    ORIGINAL_OPERATORS.append(OriginalOpInfo("__call__", torch.nn.Module, torch.nn.Module.__call__))
     torch.nn.Module.__call__ = wrap_module_call(torch.nn.Module.__call__)
     ignore_scope(DataParallel)
     ignore_scope(DistributedDataParallel)
@@ -351,17 +192,16 @@ def unpatch_torch_operators():
         return
     _OPERATORS_ALREADY_WRAPPED = False
 
-    # unpatch nn.functional operators
-    import torch.nn.functional as F
-    for op_info in PATCHED_OPERATORS:
-        setattr(F, op_info.name, ORIGINAL_OPERATORS[op_info.name])
+    for orig_op_info in ORIGINAL_OPERATORS:
+        setattr(orig_op_info.namespace, orig_op_info.name, orig_op_info.op)
 
-    # patch core operators
-    import torch
-    for op_info in CORE_OPERATORS:
-        setattr(torch, op_info.name, ORIGINAL_OPERATORS[op_info.name])
 
-    for op_info in TENSOR_OPERATORS:
-        setattr(TracedTensor, op_info.name, ORIGINAL_OPERATORS[op_info.name])
+@register_operator()
+def nncf_model_input(tensor: 'torch.Tensor'):
+    return tensor
 
-    torch.nn.Module.__call__ = ORIGINAL_OPERATORS["__call__"]
+
+# Access via _original op because by this moment the nncf_model_input name will already be wrapped by wrap_operator
+# and its __name__ attribute changed correspondingly.
+# pylint:disable=protected-access
+MODEL_INPUT_OP_NAME = nncf_model_input._original_op.__name__

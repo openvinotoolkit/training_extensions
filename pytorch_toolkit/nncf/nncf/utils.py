@@ -1,5 +1,5 @@
 """
- Copyright (c) 2019 Intel Corporation
+ Copyright (c) 2019-2020 Intel Corporation
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
  You may obtain a copy of the License at
@@ -12,22 +12,21 @@
 """
 
 import random
-import warnings
 from collections import OrderedDict
 from contextlib import contextmanager
 import re
+from typing import Dict, Callable, Any, Mapping, Sequence, Set
 
 import numpy as np
 import torch
-from texttable import Texttable
+from torch import distributed as dist
+from torch.nn import Module
 
-from .dynamic_graph.context import reset_context
-from .layers import NNCF_MODULES_MAP
-from nncf.dynamic_graph.graph_builder import GraphBuilder, ModelInputInfo
-from nncf.algo_selector import create_dummy_forward_fn
+from nncf.dynamic_graph.graph_builder import GraphBuilder, ModelInputInfo, create_dummy_forward_fn
 
 
 def scopes_matched(scope_stack_0, scope_stack_1):
+    from nncf.layers import NNCF_MODULES_MAP
     if len(scope_stack_1) > len(scope_stack_0):
         return False
 
@@ -86,13 +85,10 @@ def get_node_name(module, module_name, prefix):
     return "{prefix}/{cls}[{name}]".format(prefix=prefix, cls=module.__class__.__name__, name=module_name)
 
 
-def get_all_node_names(model, input_sample_size, graph_scope=None, builder=None):
-    if graph_scope is None:
-        graph_scope = 'utils'
-    reset_context(graph_scope)
+def get_all_node_names(model, input_sample_size, builder=None):
     if not builder:
         builder = GraphBuilder(create_dummy_forward_fn([ModelInputInfo(input_sample_size), ]))
-    graph = builder.build_graph(model, graph_scope)
+    graph = builder.build_graph(model)
     return [node_name.split(' ', 1)[1] for node_name in graph.get_all_node_keys()]
 
 
@@ -109,23 +105,29 @@ def get_all_modules(model, prefix=None):
     return found
 
 
-def get_all_modules_by_type(model, module_types, prefix=None, ignored_scopes=None, target_scopes=None):
+def get_all_modules_by_type(model, module_types, current_scope=None,
+                            ignored_scopes=None, target_scopes=None) -> Dict['Scope', Module]:
     if isinstance(module_types, str):
         module_types = [module_types]
     found = OrderedDict()
-    if prefix is None:
-        prefix = model.__class__.__name__
+    from nncf.dynamic_graph.context import Scope
+    from nncf.dynamic_graph.context import ScopeElement
+    if current_scope is None:
+        current_scope = Scope()
+        current_scope.push(ScopeElement(model.__class__.__name__))
     for name, module in model.named_children():
-        full_node_name = get_node_name(module, name, prefix)
+        child_scope_element = ScopeElement(module.__class__.__name__, name)
+        child_scope = current_scope.copy()
+        child_scope.push(child_scope_element)
 
-        if in_scope_list(full_node_name, ignored_scopes):
+        if in_scope_list(str(child_scope), ignored_scopes):
             continue
 
-        if target_scopes is None or in_scope_list(full_node_name, target_scopes):
+        if target_scopes is None or in_scope_list(str(child_scope), target_scopes):
             if module_types.count(str(type(module).__name__)) != 0:
-                found[full_node_name] = module
+                found[child_scope] = module
             sub_found = get_all_modules_by_type(module, module_types,
-                                                prefix=full_node_name,
+                                                current_scope=child_scope,
                                                 ignored_scopes=ignored_scopes,
                                                 target_scopes=target_scopes)
             if sub_found:
@@ -157,14 +159,14 @@ def set_module_by_node_name(model, node_name, module_to_set, prefix=None):
         set_module_by_node_name(module, node_name, module_to_set, full_node_name)
 
 
-def get_module_by_node_name(model, node_name, prefix=None):
+def get_module_by_node_name(model: torch.nn.Module, node_scope_str: str, prefix=None) -> torch.nn.Module:
     if prefix is None:
         prefix = model.__class__.__name__
     for name, module in model.named_children():
         full_node_name = get_node_name(module, name, prefix)
-        if full_node_name == node_name:
+        if full_node_name == node_scope_str:
             return module
-        sub_result = get_module_by_node_name(module, node_name, full_node_name)
+        sub_result = get_module_by_node_name(module, node_scope_str, full_node_name)
         if sub_result is not None:
             return sub_result
     return None
@@ -178,15 +180,6 @@ def apply_by_node_name(model, node_names, command=lambda x: x, prefix=None):
         if node_name in node_names:
             command(module)
         apply_by_node_name(module, node_names=node_names, command=command, prefix=node_name)
-
-
-def print_statistics(stats):
-    for key, val in stats.items():
-        if isinstance(val, Texttable):
-            print(key)
-            print(val.draw())
-        else:
-            print("{}: {}".format(key, val))
 
 
 def manual_seed(seed):
@@ -209,24 +202,6 @@ def no_jit_trace():
     disable_tracing.__exit__()
 
 
-def dict_update(src, dst, recursive=True):
-    for name, value in dst.items():
-        if recursive and name in src and isinstance(value, dict):
-            dict_update(src[name], value, recursive)
-        else:
-            src[name] = value
-
-
-def check_for_quantization_before_sparsity(child_algos: list):
-    from nncf.sparsity.base_algo import BaseSparsityAlgo
-    from nncf.quantization.algo import Quantization
-    for idx, algo in enumerate(child_algos):
-        if idx == len(child_algos) - 1:
-            return
-        if isinstance(algo, Quantization) and isinstance(child_algos[idx + 1], BaseSparsityAlgo):
-            warnings.warn("Applying quantization before sparsity may lead to incorrect "
-                          "sparsity metrics calculation. Consider revising the config file to specify "
-                          "sparsity algorithms before quantization ones", RuntimeWarning)
 
 
 def sum_like(tensor_to_sum, ref_tensor):
@@ -268,3 +243,93 @@ def get_flat_tensor_contents_string(input_tensor):
         retval += "{:.4f}, ".format(el.item())
     retval += "]"
     return retval
+
+
+def is_dist_avail_and_initialized():
+    if not dist.is_available():
+        return False
+    if not dist.is_initialized():
+        return False
+    return True
+
+
+def get_rank():
+    if not is_dist_avail_and_initialized():
+        return 0
+    return dist.get_rank()
+
+
+def is_main_process():
+    return get_rank() == 0
+
+
+def get_world_size():
+    if not is_dist_avail_and_initialized():
+        return 1
+    return dist.get_world_size()
+
+
+def safe_thread_call(main_call_fn, after_barrier_call_fn=None):
+    result = None
+    if is_dist_avail_and_initialized():
+        if is_main_process():
+            result = main_call_fn()
+        dist.barrier()
+        if not is_main_process():
+            result = after_barrier_call_fn() if after_barrier_call_fn else main_call_fn()
+    else:
+        result = main_call_fn()
+    return result
+
+string_types = (str, bytes)
+iteritems = lambda mapping: getattr(mapping, 'iteritems', mapping.items)()
+
+
+def objwalk(obj, unary_predicate: Callable[[Any], bool], apply_fn: Callable, memo=None):
+    if memo is None:
+        memo = set()
+
+    is_tuple = isinstance(obj, tuple)
+    if is_tuple:
+        obj = list(obj)
+
+    def maybe_get_iterator(obj):
+        it = None
+        if isinstance(obj, Mapping):
+            it = iteritems
+        elif isinstance(obj, (Sequence, Set)) and not isinstance(obj, string_types):
+            it = enumerate
+        return it
+
+    iterator = maybe_get_iterator(obj)
+
+    if iterator is not None:
+        if id(obj) not in memo:
+            memo.add(id(obj))
+            indices_to_apply_fn_to = set()
+            indices_vs_tuples_to_assign = {}  # type: Dict[Any, list]
+            for idx, value in iterator(obj):
+                next_level_it = maybe_get_iterator(value)
+                if next_level_it is None:
+                    if unary_predicate(value):
+                        indices_to_apply_fn_to.add(idx)
+                else:
+                    if isinstance(value, tuple):
+                        processed_tuple = objwalk(value, unary_predicate, apply_fn, memo)
+                        indices_vs_tuples_to_assign[idx] = processed_tuple
+                    else:
+                        objwalk(value, unary_predicate, apply_fn)
+            for idx in indices_to_apply_fn_to:
+                obj[idx] = apply_fn(obj[idx])
+            for idx, tpl in indices_vs_tuples_to_assign.items():
+                obj[idx] = tuple(tpl)
+
+            memo.remove(id(obj))
+    else:
+        if unary_predicate(obj):
+            return apply_fn(obj)
+
+    if is_tuple:
+        return tuple(obj)
+
+    return obj

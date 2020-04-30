@@ -1,5 +1,5 @@
 """
- Copyright (c) 2019 Intel Corporation
+ Copyright (c) 2019-2020 Intel Corporation
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
  You may obtain a copy of the License at
@@ -11,22 +11,20 @@
  limitations under the License.
 """
 
-import logging
+import re
 import threading
 from collections import deque
 from contextlib import contextmanager
 from typing import Callable, List
+from copy import deepcopy
 
 from nncf.debug import is_debug
 from nncf.dynamic_graph.graph import InputAgnosticOperationExecutionContext
 from nncf.dynamic_graph.graph import NNCFGraph, NNCFNode
 from nncf.dynamic_graph.trace_tensor import make_input_infos
-from ..operator_names import get_version_agnostic_name
+from nncf.dynamic_graph.version_agnostic_op_names import get_version_agnostic_name
 
 _CURRENT_CONTEXT = None
-_ALL_CONTEXTS = {}
-
-logger = logging.getLogger(__name__)
 
 
 class OperatorInput:
@@ -52,6 +50,17 @@ class ScopeElement:
 
     def __hash__(self):
         return hash((self.calling_module_class_name, self.calling_field_name))
+
+    @staticmethod
+    def from_str(string: str):
+        matches = re.search(r"(.*)\[(.*)\]|(.*)", string)
+        if matches is None:
+            raise RuntimeError("Invalid scope element string")
+        if matches.groups()[0] is None and matches.groups()[1] is None:
+            return ScopeElement(matches.groups()[2])
+        if matches.groups()[0] is not None and matches.groups()[1] is not None:
+            return ScopeElement(matches.groups()[0], matches.groups()[1])
+        raise RuntimeError("Could not parse the scope element string")
 
 
 class Scope:
@@ -82,20 +91,28 @@ class Scope:
                 return False
         return True
 
+    def __add__(self, rhs):
+        init_list = self.scope_elements + rhs.scope_elements
+        return Scope(init_list)
+
     def copy(self):
-        return Scope(self.scope_elements.copy())
+        return Scope(deepcopy(self.scope_elements))
 
     def push(self, scope_element: ScopeElement):
         self.scope_elements.append(scope_element)
 
-    def pop(self):
-        self.scope_elements.pop()
+    def pop(self) -> ScopeElement:
+        return self.scope_elements.pop()
+
+    @staticmethod
+    def from_str(string: str) -> 'Scope':
+        elts = string.split('/')
+        return Scope([ScopeElement.from_str(s) for s in elts])
 
 
 # pylint: disable=too-many-public-methods
 class TracingContext:
-    def __init__(self, name):
-        self.name = name
+    def __init__(self):
         self.graph = NNCFGraph()
 
         self._save_context = None
@@ -109,6 +126,20 @@ class TracingContext:
         self._cond = threading.Condition()
         self.is_tracing = True
         self._input_comparators_per_scope = []
+
+    def __enter__(self):
+        global _CURRENT_CONTEXT
+        self._save_context = _CURRENT_CONTEXT
+        _CURRENT_CONTEXT = self
+        self._init_thread_local()
+        if is_debug():
+            self.reset_node_call_counters()
+
+        return self
+
+    def __exit__(self, *args):
+        self.reset_scope_operator_call_counters()
+        self.leave()
 
     def find_operator_node(self, inputs,
                            ia_op_exec_context: InputAgnosticOperationExecutionContext) -> NNCFNode:
@@ -146,12 +177,10 @@ class TracingContext:
         order (e.g. if comments were added to the .py file with the model)
         """
         version_agnostic_operator_type = get_version_agnostic_name(operator_type)
-        if version_agnostic_operator_type is not None:
-            operator_type = version_agnostic_operator_type
 
-        call_order = self.get_operator_call_count_in_scope(operator_type, self.scope)
+        call_order = self.get_operator_call_count_in_scope(version_agnostic_operator_type, self.scope)
 
-        ia_op_exec_context = InputAgnosticOperationExecutionContext(operator_type,
+        ia_op_exec_context = InputAgnosticOperationExecutionContext(version_agnostic_operator_type,
                                                                     self.scope,
                                                                     call_order)
         return ia_op_exec_context
@@ -333,25 +362,6 @@ class TracingContext:
         self.graph = NNCFGraph()
 
 
-def set_current_context(context_name=None):
-    current_context = get_context(context_name)
-    current_context.enter()
-    return current_context
-
-
-@contextmanager
-def context(name):
-    ctx = get_context(name)
-    ctx.enter()
-    if is_debug():
-        ctx.reset_node_call_counters()
-    try:
-        yield ctx
-    finally:
-        ctx.reset_scope_operator_call_counters()
-        ctx.leave()
-
-
 @contextmanager
 def no_nncf_trace():
     ctx = get_current_context()
@@ -360,20 +370,6 @@ def no_nncf_trace():
     yield
     if ctx is not None:
         ctx.enable_tracing()
-
-
-def get_context(context_name=None) -> TracingContext:
-    if context_name in _ALL_CONTEXTS:
-        return _ALL_CONTEXTS[context_name]
-    _ALL_CONTEXTS[context_name] = TracingContext(context_name)
-    return _ALL_CONTEXTS[context_name]
-
-
-def reset_context(context_name=None) -> TracingContext:
-    if context_name in _ALL_CONTEXTS:
-        _ALL_CONTEXTS[context_name] = TracingContext(context_name)
-        return _ALL_CONTEXTS[context_name]
-    return get_context(context_name)
 
 
 def get_current_context() -> TracingContext:

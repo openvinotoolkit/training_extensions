@@ -19,6 +19,7 @@ from nncf.layers import NNCF_MODULES_DICT, NNCF_MODULES
 from nncf.utils import  in_scope_list
 from nncf.dynamic_graph.context import Scope, ScopeElement
 
+from nncf.nncf_logger import logger as nncf_logger
 
 def is_nncf_module(module):
     for nncf_module_name in NNCF_MODULES:
@@ -38,16 +39,15 @@ def replace_module_by_nncf_module(module: nn.Module):
 
 
 def replace_modules_by_nncf_modules(model: nn.Module, ignored_scopes=None,
-                                    target_scopes=None, logger=None) -> (nn.Module, List[Scope]):
+                                    target_scopes=None) -> (nn.Module, List[Scope]):
     replace_fn = partial(replace_module_by_nncf_module)
     affected_scopes = []  # type: List
     return replace_modules(model, replace_fn, affected_scopes,
-                           ignored_scopes=ignored_scopes, target_scopes=target_scopes, logger=logger)
+                           ignored_scopes=ignored_scopes, target_scopes=target_scopes)
 
 
 def replace_modules(model: nn.Module, replace_fn, affected_scopes, ignored_scopes=None, target_scopes=None, memo=None,
-                    current_scope=None,
-                    logger=None):
+                    current_scope=None):
     if memo is None:
         memo = set()
         current_scope = Scope()
@@ -72,15 +72,12 @@ def replace_modules(model: nn.Module, replace_fn, affected_scopes, ignored_scope
             replaced_scope.push(replaced_scope_element)
             if module is not replaced_module:
                 if in_scope_list(str(child_scope), ignored_scopes):
-                    if logger is not None:
-                        logger.info("Ignored wrapping modules in scope: {}".format(child_scope))
+                    nncf_logger.info("Ignored wrapping modules in scope: {}".format(child_scope))
                     continue
 
                 if target_scopes is None or in_scope_list(str(child_scope), target_scopes):
-
-                    if logger is not None:
-                        logger.info("Wrapping module {} by {}".format(str(child_scope),
-                                                                      str(replaced_scope)))
+                    nncf_logger.info("Wrapping module {} by {}".format(str(child_scope),
+                                                                       str(replaced_scope)))
                     if isinstance(model, nn.Sequential):
                         # pylint: disable=protected-access
                         model._modules[name] = replaced_module
@@ -91,5 +88,5 @@ def replace_modules(model: nn.Module, replace_fn, affected_scopes, ignored_scope
                 # Got an NNCF-wrapped module from previous compression stage, track its scope as well
                 affected_scopes.append(replaced_scope)
         _, affected_scopes = replace_modules(module, replace_fn, affected_scopes, ignored_scopes, target_scopes,
-                                             memo, child_scope, logger)
+                                             memo, child_scope)
     return model, affected_scopes

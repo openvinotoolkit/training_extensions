@@ -43,12 +43,12 @@ To export a model to OpenVINO IR and run it using Intel Deep Learning Deployment
 
 |Model|Compression algorithm|Dataset|PyTorch compressed accuracy|Config path|PyTorch Checkpoint|
 | :---: | :---: | :---: | :---: | :---: | :---: |
-|UNet|None|CamVid|71.95|examples/semantic_segmentation/config/unet_camvid.json|https://download.01.org/opencv/openvino_training_extensions/models/nncf/unet_camvid.pth|
-|UNet|INT8|CamVid|71.66|examples/semantic_segmentation/config/unet_camvid_int8.json|https://download.01.org/opencv/openvino_training_extensions/models/nncf/unet_camvid_int8.pth|
-|UNet|INT8 + Sparsity 60% (Magnitude)|CamVid|71.72|examples/semantic_segmentation/config/unet_camvid_magnitude_sparsity_int8.json|https://download.01.org/opencv/openvino_training_extensions/models/nncf/unet_camvid_magnitude_sparsity_int8.pth|
-|ICNet|None|CamVid|67.89|examples/semantic_segmentation/config/icnet_camvid.json|https://download.01.org/opencv/openvino_training_extensions/models/nncf/icnet_camvid.pth|
-|ICNet|INT8|CamVid|67.78|examples/semantic_segmentation/config/icnet_camvid_int8.json|https://download.01.org/opencv/openvino_training_extensions/models/nncf/icnet_camvid_int8.pth|
-|ICNet|INT8 + Sparsity 60% (Magnitude)|CamVid|67.55|examples/semantic_segmentation/config/icnet_camvid_magnitude_sparsity_int8.json|https://download.01.org/opencv/openvino_training_extensions/models/nncf/icnet_camvid_magnitude_sparsity_int8.pth|
-|UNet|None|Mapillary|56.23|examples/semantic_segmentation/config/unet_mapillary.json|https://download.01.org/opencv/openvino_training_extensions/models/nncf/unet_mapillary.pth|
-|UNet|INT8|Mapillary|56.12|examples/semantic_segmentation/config/unet_mapillary_int8.json|https://download.01.org/opencv/openvino_training_extensions/models/nncf/unet_mapillary_int8.pth|
-|UNet|INT8 + Sparsity 60% (Magnitude)|Mapillary|56.0|examples/semantic_segmentation/config/unet_mapillary_magnitude_sparsity_int8.json|https://download.01.org/opencv/openvino_training_extensions/models/nncf/unet_mapillary_magnitude_sparsity_int8.pth|
+|UNet|None|CamVid|71.95|examples/semantic_segmentation/configs/unet_camvid.json|https://download.01.org/opencv/openvino_training_extensions/models/nncf/unet_camvid.pth|
+|UNet|INT8|CamVid|71.66|examples/semantic_segmentation/configs/unet_camvid_int8.json|https://download.01.org/opencv/openvino_training_extensions/models/nncf/unet_camvid_int8.pth|
+|UNet|INT8 + Sparsity 60% (Magnitude)|CamVid|71.72|examples/semantic_segmentation/configs/unet_camvid_magnitude_sparsity_int8.json|https://download.01.org/opencv/openvino_training_extensions/models/nncf/unet_camvid_magnitude_sparsity_int8.pth|
+|ICNet|None|CamVid|67.89|examples/semantic_segmentation/configs/icnet_camvid.json|https://download.01.org/opencv/openvino_training_extensions/models/nncf/icnet_camvid.pth|
+|ICNet|INT8|CamVid|67.87|examples/semantic_segmentation/configs/icnet_camvid_int8.json|https://download.01.org/opencv/openvino_training_extensions/models/nncf/icnet_camvid_int8.pth|
+|ICNet|INT8 + Sparsity 60% (Magnitude)|CamVid|67.24|examples/semantic_segmentation/configs/icnet_camvid_magnitude_sparsity_int8.json|https://download.01.org/opencv/openvino_training_extensions/models/nncf/icnet_camvid_magnitude_sparsity_int8.pth|
+|UNet|None|Mapillary|56.23|examples/semantic_segmentation/configs/unet_mapillary.json|https://download.01.org/opencv/openvino_training_extensions/models/nncf/unet_mapillary.pth|
+|UNet|INT8|Mapillary|56.12|examples/semantic_segmentation/configs/unet_mapillary_int8.json|https://download.01.org/opencv/openvino_training_extensions/models/nncf/unet_mapillary_int8.pth|
+|UNet|INT8 + Sparsity 60% (Magnitude)|Mapillary|56.0|examples/semantic_segmentation/configs/unet_mapillary_magnitude_sparsity_int8.json|https://download.01.org/opencv/openvino_training_extensions/models/nncf/unet_mapillary_magnitude_sparsity_int8.pth|

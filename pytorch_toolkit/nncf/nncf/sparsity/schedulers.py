@@ -1,5 +1,5 @@
 """
- Copyright (c) 2019 Intel Corporation
+ Copyright (c) 2019-2020 Intel Corporation
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
  You may obtain a copy of the License at
@@ -23,17 +23,21 @@ SPARSITY_SCHEDULERS = Registry("sparsity_schedulers")
 
 
 class SparsityScheduler(CompressionScheduler):
-    def __init__(self, sparsity_algo, config=None):
+    def __init__(self, sparsity_algo, params: Config = None):
         super().__init__()
-        if config is None:
-            config = Config()
-        c = config.get('params', {})
-        self.config = config
+        if params is None:
+            self._params = Config()
+        else:
+            self._params = params
+
         self.algo = sparsity_algo
-        self.sparsity_training_steps = c.get('sparsity_training_steps', 100)
-        self.max_step = c.get('sparsity_steps', 90)
-        self.max_sparsity = c.get('sparsity_target', 0.5)
-        self.initial_sparsity = c.get('sparsity_init', 0)
+        self.sparsity_training_steps = self._params.get('sparsity_training_steps', 100)
+        self.max_step = self._params.get('sparsity_steps', 90)
+        self.max_sparsity = self._params.get('sparsity_target', 0.5)
+        self.initial_sparsity = self._params.get('sparsity_init', 0)
+
+    def initialize(self):
+        self._set_sparsity_level()
 
     def epoch_step(self, epoch=None):
         super().epoch_step(epoch)
@@ -58,9 +62,9 @@ class SparsityScheduler(CompressionScheduler):
 
 @SPARSITY_SCHEDULERS.register("polynomial")
 class PolynomialSparseScheduler(SparsityScheduler):
-    def __init__(self, sparsity_algo, config=None):
-        super().__init__(sparsity_algo, config)
-        self.power = self.config['params'].get('power', 0.9)
+    def __init__(self, sparsity_algo, params=None):
+        super().__init__(sparsity_algo, params)
+        self.power = self._params.get('power', 0.9)
         self._set_sparsity_level()
 
     def epoch_step(self, epoch=None):
@@ -79,8 +83,8 @@ class PolynomialSparseScheduler(SparsityScheduler):
 
 @SPARSITY_SCHEDULERS.register("exponential")
 class ExponentialSparsityScheduler(SparsityScheduler):
-    def __init__(self, sparsity_algo, config=None):
-        super().__init__(sparsity_algo, config)
+    def __init__(self, sparsity_algo, params=None):
+        super().__init__(sparsity_algo, params)
         self.a, self.k = self._init_exp(self.initial_sparsity, self.max_sparsity, sparsity_steps=self.max_step)
         self._set_sparsity_level()
 
@@ -100,17 +104,16 @@ class ExponentialSparsityScheduler(SparsityScheduler):
 
 @SPARSITY_SCHEDULERS.register("adaptive")
 class AdaptiveSparsityScheduler(SparsityScheduler):
-    def __init__(self, sparsity_algo, config=None):
-        super().__init__(sparsity_algo, config)
+    def __init__(self, sparsity_algo, params=None):
+        super().__init__(sparsity_algo, params)
         self.sparsity_loss = sparsity_algo.loss
         from .rb.loss import SparseLoss
         if not isinstance(self.sparsity_loss, SparseLoss):
             raise TypeError('AdaptiveSparseScheduler expects SparseLoss, but {} is given'.format(
                 self.sparsity_loss.__class__.__name__))
-        c = self.config['params']
-        self.decay_step = c.get('step', 0.05)
-        self.eps = c.get('eps', 0.03)
-        self.patience = c.get('patience', 1)
+        self.decay_step = params.get('step', 0.05)
+        self.eps = params.get('eps', 0.03)
+        self.patience = params.get('patience', 1)
         self.sparsity_target = self.initial_sparsity
         self.num_bad_epochs = 0
         self._set_sparsity_level()
@@ -140,11 +143,10 @@ class MultiStepSparsityScheduler(SparsityScheduler):
     def _calc_density_level(self):
         return 1 - self.sparsity_level
 
-    def __init__(self, sparsity_algo, config):
-        super().__init__(sparsity_algo, config)
-        params = config['params']
-        self.sparsity_levels = params.get('sparsity_levels', [0.1, 0.5])
-        self.steps = params.get('steps', [90])
+    def __init__(self, sparsity_algo, params):
+        super().__init__(sparsity_algo, params)
+        self.sparsity_levels = self._params.get('sparsity_levels', [0.1, 0.5])
+        self.steps = self._params.get('steps', [90])
         if len(self.steps) + 1 != len(self.sparsity_levels):
             raise AttributeError('number of sparsity levels must equal to number of steps + 1')
 

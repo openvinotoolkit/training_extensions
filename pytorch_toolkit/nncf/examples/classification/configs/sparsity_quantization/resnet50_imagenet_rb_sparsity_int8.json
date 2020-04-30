@@ -21,14 +21,11 @@
                 "sparsity_init": 0.01,
                 "sparsity_target": 0.61,
                 "sparsity_steps": 5,
-                "sparsity_training_steps": 10
+                "sparsity_training_steps": 10,
             }
         },
         {
-            "algorithm": "quantization",
-            "initializer": {
-                "num_init_steps": 1
-            }
+            "algorithm": "quantization"
         }
     ]
 }

@@ -15,8 +15,9 @@ import torch
 import torch.nn as nn
 
 from examples.object_detection.layers.modules.ssd_head import MultiOutputSequential, SSDDetectionOutput
-from nncf.helpers import load_state
+from nncf.checkpoint_loading import load_state
 
+from examples.common.example_logger import logger
 
 def conv_bn(inp, oup, kernel, stride, padding):
     return nn.Sequential(
@@ -104,7 +105,7 @@ def build_ssd_mobilenet(cfg, size, num_classes, config):
     mobilenet_ssd = MobileNetSSD(num_classes, cfg)
 
     if config.basenet and (config.resuming_checkpoint is None) and (config.weights is None):
-        print('Loading base network...')
+        logger.debug('Loading base network...')
         basenet_weights = torch.load(config.basenet)['state_dict']
         new_weights = {}
         for wn, wv in basenet_weights.items():

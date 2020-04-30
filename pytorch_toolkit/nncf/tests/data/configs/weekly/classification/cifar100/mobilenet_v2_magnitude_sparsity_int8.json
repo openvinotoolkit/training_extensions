@@ -1,0 +1,44 @@
+{
+    "model": "mobilenet_v2",
+    "input_info": {
+      "sample_size":  [2, 3, 32, 32]
+    },
+    "num_classes": 100,
+    "batch_size": 256,
+    "optimizer": {
+        "type": "Adam",
+        "base_lr": 0.00001,
+        "schedule_type": "multistep",
+        "steps": [
+            10
+        ]
+    },
+    "compression": [
+        {
+            "algorithm": "magnitude_sparsity",
+            "params": {
+                "schedule": "multistep",
+                "multistep_steps": [
+                    2,
+                    4,
+                    6,
+                    8,
+                    10
+                ],
+                "multistep_sparsity_levels": [
+                    0.1,
+                    0.2,
+                    0.3,
+                    0.4,
+                    0.5,
+                    0.6
+                ]
+            }
+        },
+        {
+            "algorithm": "quantization"
+        }
+    ],
+    "dataset": "cifar100",
+    "epochs": 12
+}

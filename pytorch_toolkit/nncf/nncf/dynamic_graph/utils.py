@@ -11,12 +11,7 @@
  limitations under the License.
 """
 
-import logging
-
 from graphviz import Digraph
-from torch import nn
-
-logger = logging.getLogger(__name__)
 
 graph_theme = {
     "background_color": "#FFFFFF",
@@ -61,17 +56,3 @@ def draw_dot(context):
         for child in graph.successors(node):
             dot.edge(node, child)
     return dot
-
-
-def get_module_for_scope(base_module: nn.Module, scope: 'Scope'):
-    curr_module = base_module
-    for scope_element in scope[1:]:  # omit first scope element which corresponds to base module
-        # pylint: disable=protected-access
-        next_module = curr_module._modules.get(scope_element.calling_field_name)
-        if next_module is None:
-            raise RuntimeError("Could not find a {} module member in {} module of scope {} during node search"
-                               .format(scope_element.calling_field_name,
-                                       scope_element.calling_module_class_name,
-                                       str(scope)))
-        curr_module = next_module
-    return curr_module

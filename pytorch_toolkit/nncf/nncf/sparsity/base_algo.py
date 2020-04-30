@@ -1,5 +1,5 @@
 """
- Copyright (c) 2019 Intel Corporation
+ Copyright (c) 2019-2020 Intel Corporation
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
  You may obtain a copy of the License at
@@ -12,48 +12,75 @@
 """
 
 from collections import namedtuple
+from typing import List
+
 
 from texttable import Texttable
 
-from nncf.compression_method_api import CompressionAlgorithm
-from nncf.dynamic_graph.transform_graph import replace_modules_by_nncf_modules
-from nncf.layers import NNCF_MODULES
+from nncf.nncf_network import NNCFNetwork
+from nncf.compression_method_api import CompressionAlgorithmBuilder, CompressionAlgorithmController
+from nncf.dynamic_graph.graph import InputAgnosticOperationExecutionContext
 from nncf.layer_utils import COMPRESSION_MODULES
-from nncf.operations import UpdateWeight
-from nncf.utils import get_all_modules_by_type, in_scope_list
+from nncf.nncf_network import InsertionCommand, InsertionPoint, InsertionType, OperationPriority
+from nncf.module_operations import UpdateWeight
+from nncf.nncf_logger import logger as nncf_logger
 
 SparseModuleInfo = namedtuple('SparseModuleInfo', ['module_name', 'module', 'operand'])
 
 
-class BaseSparsityAlgo(CompressionAlgorithm):
+class BaseSparsityAlgoBuilder(CompressionAlgorithmBuilder):
+    def __init__(self, config):
+        super().__init__(config)
+        self._sparsified_module_info = []
+
+    def apply_to(self, target_model: NNCFNetwork) -> NNCFNetwork:
+        insertion_commands = self._sparsify_weights(target_model)
+        for command in insertion_commands:
+            target_model.register_insertion_command(command)
+        target_model.register_algorithm(self)
+        return target_model
+
+    def _sparsify_weights(self, target_model: NNCFNetwork) -> List[InsertionCommand]:
+        device = next(target_model.parameters()).device
+        sparsified_modules = target_model.get_nncf_modules()
+        insertion_commands = []
+        for module_scope, module in sparsified_modules.items():
+            scope_str = str(module_scope)
+
+            if not self._should_consider_scope(scope_str):
+                nncf_logger.info("Ignored adding Weight Sparsifier in scope: {}".format(scope_str))
+                continue
+
+            nncf_logger.info("Adding Weight Sparsifier in scope: {}".format(scope_str))
+            operation = self.create_weight_sparsifying_operation(module)
+            hook = UpdateWeight(operation).to(device)
+            insertion_commands.append(InsertionCommand(InsertionPoint(
+                InputAgnosticOperationExecutionContext("", module_scope, 0),
+                InsertionType.NNCF_MODULE_PRE_OP),
+                                                       hook,
+                                                       OperationPriority.SPARSIFICATION_PRIORITY))
+            self._sparsified_module_info.append(
+                SparseModuleInfo(scope_str, module, hook.operand))
+
+        return insertion_commands
+
+    def build_controller(self, target_model: NNCFNetwork) -> CompressionAlgorithmController:
+        return BaseSparsityAlgoController(target_model, self._sparsified_module_info)
+
+    def create_weight_sparsifying_operation(self, target_module):
+        raise NotImplementedError
+
+
+class BaseSparsityAlgoController(CompressionAlgorithmController):
+    def __init__(self, target_model: NNCFNetwork,
+                 sparsified_module_info: List[SparseModuleInfo]):
+        super().__init__(target_model)
+        self.sparsified_module_info = sparsified_module_info
+
     def freeze(self):
         raise NotImplementedError
 
     def set_sparsity_level(self, sparsity_level):
-        raise NotImplementedError
-
-    def _replace_sparsifying_modules_by_nncf_modules(self, device, ignored_scopes, target_scopes, logger):
-        self._model, _ = replace_modules_by_nncf_modules(self._model,
-                                                         ignored_scopes=ignored_scopes,
-                                                         target_scopes=target_scopes,
-                                                         logger=logger)
-        self._model.to(device)
-
-    def _register_weight_sparsifying_operations(self, device, ignored_scopes, target_scopes, logger):
-        sparsified_modules = get_all_modules_by_type(self._model, NNCF_MODULES)
-        self.sparsified_module_info = []
-        for module_name, module in sparsified_modules.items():
-            if in_scope_list(module_name, ignored_scopes):
-                logger.info("Ignored adding Weight Sparsifier in scope: {}".format(module_name))
-                continue
-            if target_scopes is None or in_scope_list(module_name, target_scopes):
-                logger.info("Adding Weight Sparsifier in scope: {}".format(module_name))
-                operation = self.create_weight_sparsifying_operation(module)
-                opid = module.register_pre_forward_operation(UpdateWeight(operation).to(device))
-                self.sparsified_module_info.append(
-                    SparseModuleInfo(module_name, module, module.get_pre_op(opid).operand))
-
-    def create_weight_sparsifying_operation(self, module):
         raise NotImplementedError
 
     @property
@@ -80,7 +107,7 @@ class BaseSparsityAlgo(CompressionAlgorithm):
         nonzero = 0
         count = 0
 
-        for m in self.model.modules():
+        for m in self._model.modules():
             if isinstance(m, tuple(COMPRESSION_MODULES.registry_dict.values())):
                 continue
 

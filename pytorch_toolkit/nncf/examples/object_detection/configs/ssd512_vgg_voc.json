@@ -23,7 +23,7 @@
     "base_lr": 1e-4,
     "weight_decay": 5e-4,
     "schedule_type": "multistep",
-    "steps": [300, 400, 500]
+    "steps": [1, 2, 3]
   },
   "ssd_params": {
     "steps": [8, 16, 32, 64, 128, 256, 512],

@@ -1,0 +1,20 @@
+{
+    // Use a checkpoint downloaded from https://github.com/tonylins/pytorch-mobilenet-v2
+    // supply it via command line using --weights parameter to obtain a pre-trained model.
+    "model": "mobilenet_v2",
+    "pretrained": true,
+    "input_info": {
+      "sample_size": [2, 3, 224, 224]
+    },
+    "num_classes": 1000,
+    "batch_size" : 256,
+    "epochs": 5,
+    "optimizer": {
+        "type": "Adam",
+        "base_lr": 0.00001,
+        "schedule_type": "multistep",
+        "steps": [
+            5
+        ]
+    }
+}

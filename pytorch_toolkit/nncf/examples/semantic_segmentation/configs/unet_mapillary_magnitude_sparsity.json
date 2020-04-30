@@ -39,14 +39,14 @@
         "algorithm": "magnitude_sparsity",
         "params": {
             "schedule": "multistep",
-            "steps": [
+            "multistep_steps": [
                 5,
                 10,
                 20,
                 30,
                 40
             ],
-            "sparsity_levels": [
+            "multistep_sparsity_levels": [
                 0.1,
                 0.2,
                 0.3,

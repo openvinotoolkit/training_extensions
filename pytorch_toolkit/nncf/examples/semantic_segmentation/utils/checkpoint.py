@@ -15,7 +15,7 @@ import os
 
 import torch
 
-from nncf.helpers import load_state
+from nncf.checkpoint_loading import load_state
 
 
 def save_checkpoint(model, optimizer, epoch, miou, compression_scheduler, config):
@@ -64,7 +64,7 @@ def load_checkpoint(model, model_path, device_name, optimizer=None, compression_
               and the actual model will be loaded into model.module
     - optimizer (``torch.optim``): The stored optimizer state is copied to this
     optimizer instance.
-    - compression_algo: The compression scheduler for the saved state
+    - compression_ctrl: The compression scheduler for the saved state
                         to be loaded into
 
     Returns:

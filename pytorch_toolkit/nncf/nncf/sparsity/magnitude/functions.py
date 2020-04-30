@@ -1,5 +1,5 @@
 """
- Copyright (c) 2019 Intel Corporation
+ Copyright (c) 2019-2020 Intel Corporation
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
  You may obtain a copy of the License at
@@ -12,8 +12,6 @@
 """
 
 import torch
-
-from ...dynamic_graph import register_operator
 
 
 def abs_magnitude(weight):
@@ -30,6 +28,5 @@ WEIGHT_IMPORTANCE_FUNCTIONS = {
 }
 
 
-@register_operator()
 def calc_magnitude_binary_mask(weight, weight_importance, threshold):
     return (weight_importance(weight) > threshold).float()

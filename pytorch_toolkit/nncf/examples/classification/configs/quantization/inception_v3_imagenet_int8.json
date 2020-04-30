@@ -5,12 +5,12 @@
       "sample_size": [2, 3, 299, 299]
     },
     "num_classes": 1000,
-    "batch_size" : 144,
-    "epochs": 5,
+    "batch_size" : 32,
+    "epochs": 1,
     "multiprocessing_distributed" : true,
     "optimizer": {
         "type": "Adam",
-        "base_lr": 1e-6,
+        "base_lr": 1e-5,
         "schedule_type": "multistep",
         "steps": [
             1
@@ -19,7 +19,17 @@
     "compression": {
         "algorithm": "quantization",
         "initializer": {
-            "num_init_steps": 10
-        }
+            "range": {
+                "num_init_steps": 5
+            }
+        },
+        "ignored_scopes": [
+            "Inception3/__add___0",
+            "Inception3/__add___1",
+            "Inception3/__add___2",
+            "Inception3/__mul___0",
+            "Inception3/__mul___1",
+            "Inception3/__mul___2"
+        ]
     }
 }

@@ -18,9 +18,6 @@
         ]
     },
     "compression": {
-        "algorithm": "quantization",
-        "initializer": {
-            "num_init_steps": 1
-        }
+        "algorithm": "quantization"
     }
 }

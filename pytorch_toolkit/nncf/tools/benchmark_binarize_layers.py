@@ -15,8 +15,8 @@
 import torch
 import torch.nn as nn
 
+from nncf.binarization.layers import XNORBinarize, DOREFABinarize, ActivationBinarizationScaleThreshold
 from tools.benchmark import run_profile
-from nncf.binarization import XNORBinarize, DOREFABinarize, ActivationBinarizationScaleThreshold
 from nncf.utils import get_per_channel_scale_shape
 
 NBITS = 8

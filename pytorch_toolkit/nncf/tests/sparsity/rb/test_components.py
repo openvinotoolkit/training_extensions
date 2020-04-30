@@ -16,7 +16,7 @@ import torch
 from torch import nn
 
 from nncf.layers import NNCFConv2d, NNCFLinear, NNCFConvTranspose2d
-from nncf.operations import UpdateWeight
+from nncf.module_operations import UpdateWeight
 from nncf.sparsity.rb.layers import RBSparsifyingWeight
 from nncf.sparsity.rb.loss import SparseLoss
 

@@ -26,9 +26,14 @@
         },
         {
             "algorithm": "quantization",
-            "initializer": {
-                "num_init_steps": 1
-            }
+            "ignored_scopes": [
+                "Inception3/__add___0",
+                "Inception3/__add___1",
+                "Inception3/__add___2",
+                "Inception3/__mul___0",
+                "Inception3/__mul___1",
+                "Inception3/__mul___2"
+            ]
         }
     ]
 }
