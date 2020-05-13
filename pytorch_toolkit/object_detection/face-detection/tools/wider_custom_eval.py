@@ -19,6 +19,7 @@
 from argparse import ArgumentParser
 from bisect import bisect
 from collections import namedtuple
+import json
 import numpy as np
 from tqdm import tqdm
 
@@ -239,6 +240,8 @@ def voc_eval(result_file, dataset, iou_thr, image_size):
     det_results = mmcv.load(result_file)
     min_detection_confidence = 0.01
 
+    out = []
+
     for obj_size in ((10, 1024), (32, 1024), (64, 1024), (100, 1024)):
 
         groundtruth = []
@@ -276,10 +279,16 @@ def voc_eval(result_file, dataset, iou_thr, image_size):
         miss_rate = compute_miss_rate(miss_rates, fppis) * 100
         average_precision = voc_ap(recall, precision) * 100
 
-        print(f'ImageSize = {image_size}, '
-              f'ObjSize = {obj_size}, '
-              f'AP = {average_precision:.2f}%, '
-              f'MissRate = {miss_rate:.2f}%')
+        print(f'image_size = {image_size}, '
+              f'object_size = {obj_size}, '
+              f'average_precision = {average_precision:.2f}%, '
+              f'miss_rate = {miss_rate:.2f}%')
+
+        out.append({'image_size': image_size,
+                    'object_size': obj_size,
+                    'average_precision': average_precision,
+                    'miss_rate': miss_rate})
+    return out
 
 
 def main():
@@ -291,11 +300,16 @@ def main():
     parser.add_argument('--imsize', nargs=2, type=int, default=(1024, 1024),
                         help='Image resolution. Used for filtering.')
     parser.add_argument('--iou-thr', type=float, default=0.5, help='IoU threshold for evaluation')
+    parser.add_argument('--out', help='A path to file where metrics values will be saved (*.json).')
     args = parser.parse_args()
 
     cfg = mmcv.Config.fromfile(args.config)
     test_dataset = mmcv.runner.obj_from_dict(cfg.data.test, datasets)
-    voc_eval(args.input, test_dataset, args.iou_thr, args.imsize)
+    out = voc_eval(args.input, test_dataset, args.iou_thr, args.imsize)
+
+    if args.out:
+        with open(args.out, 'w') as write_file:
+            json.dump(out, write_file, indent=4)
 
 
 if __name__ == '__main__':
