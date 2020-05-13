@@ -39,7 +39,7 @@ comp_ctrl, compressed_model = create_compressed_model(model, nncf_config)
 # ... the rest of the usual PyTorch-powered training pipeline
 
 # Export to ONNX or .pth when done fine-tuning
-compressed_model.export_model("compressed_model.onnx")
+comp_ctrl.export_model("compressed_model.onnx")
 torch.save(compressed_model.state_dict(), "compressed_model.pth")
 ```
 
