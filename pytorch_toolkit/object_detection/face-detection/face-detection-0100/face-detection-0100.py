@@ -135,7 +135,7 @@ log_config = dict(
     ])
 # yapf:enable
 # runtime settings
-total_epochs = 70 + 1
+total_epochs = 70
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
 work_dir = 'outputs/face-detection-0100'
