@@ -280,8 +280,7 @@ def evaluation(pred, gt_path, iou_thresh=0.5):
     return out
 
 
-if __name__ == '__main__':
-
+def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-p', '--pred')
     parser.add_argument('-g', '--gt')
@@ -292,3 +291,7 @@ if __name__ == '__main__':
     if args.out:
         with open(args.out, 'w') as write_file:
             json.dump(out, write_file, indent=4)
+
+
+if __name__ == '__main__':
+    main()
