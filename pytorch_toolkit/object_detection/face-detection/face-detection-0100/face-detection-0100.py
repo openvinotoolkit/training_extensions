@@ -87,7 +87,7 @@ test_pipeline = [
         ])
 ]
 data = dict(
-    imgs_per_gpu=15,
+    imgs_per_gpu=65,
     workers_per_gpu=2,
     train=dict(
         type='RepeatDataset',
@@ -128,7 +128,7 @@ lr_config = dict(
 checkpoint_config = dict(interval=1)
 # yapf:disable
 log_config = dict(
-    interval=1,
+    interval=100,
     hooks=[
         dict(type='TextLoggerHook'),
         dict(type='TensorboardLoggerHook')
@@ -140,5 +140,5 @@ dist_params = dict(backend='nccl')
 log_level = 'INFO'
 work_dir = 'outputs/face-detection-0100'
 load_from = None
-resume_from = 'face-detection-0100.pth'
+resume_from = None
 workflow = [('train', 1)]
