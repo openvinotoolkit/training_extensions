@@ -8,25 +8,26 @@ framework: PyTorch
 idlp: true
 license: https://github.com/opencv/openvino_training_extensions/blob/develop/LICENSE
 metrics:
-- displayName: AP [IoU=0.50:0.95]
+- displayName: AP @ [IoU=0.50:0.95]
   key: ap
   unit: '%'
-  value: 15.7
+  value: 19.9
 - displayName: AP for faces > 64x64
   key: ap_64x64
   unit: '%'
-  value: 86.401
+  value: 91.592
 - displayName: WiderFace Easy
   key: widerface_e
   unit: '%'
-  value: 81.983
+  value: 88.904
 - displayName: WiderFace Medium
   key: widerface_m
   unit: '%'
-  value: 75.192
+  value: 83.506
 - displayName: WiderFace Hard
   key: widerface_h
   unit: '%'
+  value: 49.577
 - displayName: Size
   key: size
   unit: Mp
@@ -34,5 +35,5 @@ metrics:
 - displayName: Complexity
   key: complexity
   unit: GFLOPs
-  value: 0.82
+  value: 1.84
 task_type: detection
