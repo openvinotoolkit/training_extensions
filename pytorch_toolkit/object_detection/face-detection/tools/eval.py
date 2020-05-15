@@ -114,7 +114,7 @@ def custom_ap_eval(face_detection_tools, config_path, work_dir, res_pkl, outputs
         f' {config_path} {res_pkl} --out {res_custom_metrics}'.split(' '))
     with open(res_custom_metrics) as read_file:
         ap_64x64 = [x['average_precision'] for x in json.load(read_file) if x['object_size'][0] == 64][0]
-        outputs.append({'key': 'ap_64x64', 'value': ap_64x64, 'displayName': 'AP for faces > 64x64'})
+        outputs.append({'key': 'ap_64x64', 'value': ap_64x64, 'displayName': 'AP for faces > 64x64', 'unit': '%'})
     return outputs
 
 
