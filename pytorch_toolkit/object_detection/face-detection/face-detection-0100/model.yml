@@ -1,0 +1,52 @@
+# Copyright (c) 2020 Intel Corporation
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+description: >-
+  Face Detection based on MobileNetV2 (SSD).
+task_type: detection
+files:
+  - name: face-detection-0100.pth
+    size: 21679958
+    sha256: b92eafebb93d26f00998bf845e30ee972897dcef3cc2f921adac3a7120a299d1
+    source: https://download.01.org/opencv/openvino_training_extensions/models/object_detection/face-detection-0100.pth
+metrics:
+  - displayName: AP [IoU=0.50:0.95]
+    key: ap
+    unit: '%'
+    value: 15.7
+  - displayName: AP for faces > 64x64
+    key: ap_64x64
+    unit: '%'
+    value: 86.401
+  - displayName: WiderFace Easy
+    key: widerface_e
+    unit: '%'
+    value: 81.983
+  - displayName: WiderFace Medium
+    key: widerface_m
+    unit: '%'
+    value: 75.192
+  - displayName: WiderFace Hard
+    key: widerface_h
+    unit: '%'
+  - displayName: Size
+    key: size
+    unit: Mp
+    value: 3.53
+  - displayName: Complexity
+    key: complexity
+    unit: GFLOPs
+    value: 0.82
+framework: PyTorch
+license: https://github.com/opencv/openvino_training_extensions/blob/develop/LICENSE
