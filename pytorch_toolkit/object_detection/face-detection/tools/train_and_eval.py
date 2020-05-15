@@ -19,11 +19,14 @@ def install_and_import(package):
 
 def parse_args():
     args = argparse.ArgumentParser()
-    args.add_argument('config')
-    args.add_argument('gpu_num')
-    args.add_argument('--out')
-    args.add_argument('--compute_wider_metrics', action='store_true')
-    args.add_argument('--wider_dir', default='wider')
+    args.add_argument('config',
+                      help='A path to model training configuration file (.py).')
+    args.add_argument('gpu_num',
+                      help='A number of GPU to use in training.')
+    args.add_argument('out',
+                      help='A path to output file where models metrics will be saved (.yml).')
+    args.add_argument('--wider_dir',
+                      help='Specify this  path if you would like to test your model on WiderFace dataset.')
 
     return args.parse_args()
 
@@ -40,7 +43,7 @@ def main():
 
     cfg = Config.fromfile(args.config)
 
-    eval(args.config, snapshot=os.path.join(cfg.work_dir, "latest.pth"))
+    eval(args.config, os.path.join(cfg.work_dir, "latest.pth"), args.wider_dir, args.out)
 
 
 if __name__ == '__main__':
