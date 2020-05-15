@@ -1,9 +1,9 @@
 description: Face Detection based on MobileNetV2 (SSD).
 files:
-- name: face-detection-0100.pth
-  sha256: b92eafebb93d26f00998bf845e30ee972897dcef3cc2f921adac3a7120a299d1
-  size: 21679958
-  source: https://download.01.org/opencv/openvino_training_extensions/models/object_detection/face-detection-0100.pth
+- name: face-detection-0102.pth
+  sha256: 492519fc887d19b263917d0c95d80d26e8f612102f38cc9818e1e2f8a9c4d6d8
+  size: 21681060
+  source: https://download.01.org/opencv/openvino_training_extensions/models/object_detection/face-detection-0102.pth
 framework: PyTorch
 idlp: true
 license: https://github.com/opencv/openvino_training_extensions/blob/develop/LICENSE
