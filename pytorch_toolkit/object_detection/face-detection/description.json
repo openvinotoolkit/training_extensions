@@ -1,14 +1,14 @@
 {
-  'title': 'Face Detection',
-  'subtitle': 'Detection faces for corner cameras',
-  'favorite': False,
-  'repo': 'https://github.com/open.git',
-  'imagesUrls': [
-    'https://cdn.datafloq.com/cache/blog_pictures/878x531/face-detection-with-intel-distribution-for-python.png',
-    'https://hackernoon.com/drafts/9145e3n15.png',
-    'https://www.pymnts.com/wp-content/uploads/2019/06/biometrics-GAO-FBI-facial-recognition.jpg',
-    'https://s.marketwatch.com/public/resources/images/MW-HQ875_Face_ZH_20190906235240.jpg',
-    'https://d1t0xk6rn1avc6.cloudfront.net/wp-content/uploads/facial-750x450.jpg'
+  "title": "Face Detection",
+  "subtitle": "Detection faces for corner cameras",
+  "favorite": False,
+  "repo": "https://github.com/open.git",
+  "imagesUrls": [
+    "https://cdn.datafloq.com/cache/blog_pictures/878x531/face-detection-with-intel-distribution-for-python.png",
+    "https://hackernoon.com/drafts/9145e3n15.png",
+    "https://www.pymnts.com/wp-content/uploads/2019/06/biometrics-GAO-FBI-facial-recognition.jpg",
+    "https://s.marketwatch.com/public/resources/images/MW-HQ875_Face_ZH_20190906235240.jpg",
+    "https://d1t0xk6rn1avc6.cloudfront.net/wp-content/uploads/facial-750x450.jpg"
   ],
-  'description': 'Lorem ipsum dolor sit amet, consectetur adipisicing elit. Amet laboriosam, officia quod quos ratione repellendus. Asperiores dolorum eligendi repellendus totam. Architecto facere, id obcaecati odit optio quidem reiciendis rem sapiente. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Amet laboriosam, officia quod quos ratione repellendus. Asperiores dolorum eligendi repellendus totam. Architecto facere, id obcaecati odit optio quidem reiciendis rem sapiente. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Amet laboriosam, officia quod quos ratione repellendus. Asperiores dolorum eligendi repellendus totam. Architecto facere, id obcaecati odit optio quidem reiciendis rem sapiente. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Amet laboriosam, officia quod quos ratione repellendus. Asperiores dolorum eligendi repellendus totam. Architecto facere, id obcaecati odit optio quidem reiciendis rem sapiente. Asperiores dolorum eligendi repellendus totam. Architecto facere, id obcaecati odit optio quidem reiciendis rem sapiente. Asperiores dolorum eligendi repellendus totam. Architecto facere, id obcaecati odit optio quidem reiciendis rem sapiente. Asperiores dolorum eligendi repellendus totam. Architecto facere, id obcaecati odit optio quidem reiciendis rem sapiente.'
+  "description": "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Amet laboriosam, officia quod quos ratione repellendus. Asperiores dolorum eligendi repellendus totam. Architecto facere, id obcaecati odit optio quidem reiciendis rem sapiente. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Amet laboriosam, officia quod quos ratione repellendus. Asperiores dolorum eligendi repellendus totam. Architecto facere, id obcaecati odit optio quidem reiciendis rem sapiente. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Amet laboriosam, officia quod quos ratione repellendus. Asperiores dolorum eligendi repellendus totam. Architecto facere, id obcaecati odit optio quidem reiciendis rem sapiente. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Amet laboriosam, officia quod quos ratione repellendus. Asperiores dolorum eligendi repellendus totam. Architecto facere, id obcaecati odit optio quidem reiciendis rem sapiente. Asperiores dolorum eligendi repellendus totam. Architecto facere, id obcaecati odit optio quidem reiciendis rem sapiente. Asperiores dolorum eligendi repellendus totam. Architecto facere, id obcaecati odit optio quidem reiciendis rem sapiente. Asperiores dolorum eligendi repellendus totam. Architecto facere, id obcaecati odit optio quidem reiciendis rem sapiente."
 }
