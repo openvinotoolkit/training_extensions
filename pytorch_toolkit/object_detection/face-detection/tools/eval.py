@@ -170,7 +170,7 @@ def eval(config_path, snapshot, wider_dir, out):
         metric['value'] = round(metric['value'], 3)
 
     outputs = {
-        'files': files,
+        'files': [files],
         'metrics': metrics
     }
 
