@@ -1,7 +1,7 @@
 {
   "title": "Face Detection",
   "subtitle": "Detection faces for corner cameras",
-  "favorite": False,
+  "favorite": false,
   "repo": "https://github.com/open.git",
   "imagesUrls": [
     "https://cdn.datafloq.com/cache/blog_pictures/878x531/face-detection-with-intel-distribution-for-python.png",
