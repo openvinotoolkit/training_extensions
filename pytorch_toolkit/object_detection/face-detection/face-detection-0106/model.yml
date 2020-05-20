@@ -1,39 +1,39 @@
 description: Face Detection based on MobileNetV2 (SSD).
+name: face-detection-0106
 files:
-- name: face-detection-0106.pth
-  sha256: 22a48a42ee4533f2cbccb072d54738921936c4c3c859ce05dc06e31e89c05bbf
-  size: 519371557
-  source: https://download.01.org/opencv/openvino_training_extensions/models/object_detection/face-detection-0106.pth
+  - name: snaoshot.pth
+    sha256: 22a48a42ee4533f2cbccb072d54738921936c4c3c859ce05dc06e31e89c05bbf
+    size: 519371557
+    source: https://download.01.org/opencv/openvino_training_extensions/models/object_detection/face-detection-0106.pth
 framework: PyTorch
-idlp: false
 license: https://github.com/opencv/openvino_training_extensions/blob/develop/LICENSE
 metrics:
-- displayName: AP @ [IoU=0.50:0.95]
-  key: ap
-  unit: '%'
-  value: 34.6
-- displayName: AP for faces > 64x64
-  key: ap_64x64
-  unit: '%'
-  value: 94.666
-- displayName: WiderFace Easy
-  key: widerface_e
-  unit: '%'
-  value: 94.506
-- displayName: WiderFace Medium
-  key: widerface_m
-  unit: '%'
-  value: 93.203
-- displayName: WiderFace Hard
-  key: widerface_h
-  unit: '%'
-  value: 83.095
-- displayName: Size
-  key: size
-  unit: Mp
-  value: 65.84
-- displayName: Complexity
-  key: complexity
-  unit: GFLOPs
-  value: 340.06
+  - display_name: AP @ [IoU=0.50:0.95]
+    key: ap
+    unit: '%'
+    value: 34.6
+  - display_name: AP for faces > 64x64
+    key: ap_64x64
+    unit: '%'
+    value: 94.666
+  - display_name: WiderFace Easy
+    key: widerface_e
+    unit: '%'
+    value: 94.506
+  - display_name: WiderFace Medium
+    key: widerface_m
+    unit: '%'
+    value: 93.203
+  - display_name: WiderFace Hard
+    key: widerface_h
+    unit: '%'
+    value: 83.095
+  - display_name: Size
+    key: size
+    unit: Mp
+    value: 65.84
+  - display_name: Complexity
+    key: complexity
+    unit: GFLOPs
+    value: 340.06
 task_type: detection
