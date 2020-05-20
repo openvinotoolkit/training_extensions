@@ -1,7 +1,7 @@
 description: Face Detection based on MobileNetV2 (SSD).
 name: face-detection-0106
 files:
-  - name: snaoshot.pth
+  - name: snapshot.pth
     sha256: 22a48a42ee4533f2cbccb072d54738921936c4c3c859ce05dc06e31e89c05bbf
     size: 519371557
     source: https://download.01.org/opencv/openvino_training_extensions/models/object_detection/face-detection-0106.pth
