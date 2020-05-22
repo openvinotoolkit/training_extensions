@@ -284,6 +284,8 @@ def voc_eval(result_file, dataset, iou_thr, image_size):
               f'average_precision = {average_precision:.2f}%, '
               f'miss_rate = {miss_rate:.2f}%')
 
+        average_precision = average_precision if not np.isnan(average_precision) else -1.0
+
         out.append({'image_size': image_size,
                     'object_size': obj_size,
                     'average_precision': average_precision,
