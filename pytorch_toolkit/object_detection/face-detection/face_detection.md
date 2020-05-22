@@ -4,11 +4,11 @@ Models that are able to detect faces on given images.
 
 | Model Name                  | Complexity (GFLOPs) | Size (Mp) | AP for faces > 64x64 | [WiderFace](http://shuoyang1213.me/WIDERFACE/WiderFace_Results.html)(Easy/Medium/Hard)  | Links                                                                                                                                    | GPU_NUM |
 | --------------------------- | ------------------- | --------- | -------------------- |---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
-| face-detection-0100         | 0.785               | 1.828     | 86.16%               | 82.50% / 75.77% / 40.83%    | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/face-detection-0100.pth), [configuration file](./configs/face-detection-0100.py)                      | 2       |
-| face-detection-0102         | 1.767               | 1.842     | 91.47%               | 88.90% / 83.51% / 49.58%    | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/face-detection-0102.pth), [configuration file](./configs/face-detection-0102.py)                      | 2       |
-| face-detection-0104         | 2.405               | 1.851     | 92.69%               | 90.15% / 84.80% / 51.61%    | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/face-detection-0104.pth), [configuration file](./configs/face-detection-0104.py)                      | 4       |
-| face-detection-0105         | 2.853               | 2.392     | 93.34%               | 91.61% / 85.94% / 52.93%    | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/face-detection-0105.pth), [configuration file](./configs/face-detection-0105.py)                      | 4       |
-| face-detection-0106         | 339.597             | 69.920    | 94.49%               | 94.51% / 93.20% / 83.09%    | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/face-detection-0106.pth), [configuration file](./configs/face-detection-0106.py)                      | 8       |
+| face-detection-0100         | 0.785               | 1.828     | 86.16%               | 82.50% / 75.77% / 40.83%    | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/face-detection-0100.pth), [configuration file](./face-detection/face-detection-0100/config.py)                      | 2       |
+| face-detection-0102         | 1.767               | 1.842     | 91.47%               | 88.90% / 83.51% / 49.58%    | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/face-detection-0102.pth), [configuration file](./face-detection/face-detection-0102/config.py)                      | 2       |
+| face-detection-0104         | 2.405               | 1.851     | 92.69%               | 90.15% / 84.80% / 51.61%    | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/face-detection-0104.pth), [configuration file](./face-detection/face-detection-0104/config4.py)                      | 4       |
+| face-detection-0105         | 2.853               | 2.392     | 93.34%               | 91.61% / 85.94% / 52.93%    | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/face-detection-0105.pth), [configuration file](./face-detection/face-detection-0105/config.py)                      | 4       |
+| face-detection-0106         | 339.597             | 69.920    | 94.49%               | 94.51% / 93.20% / 83.09%    | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/face-detection-0106.pth), [configuration file](./face-detection/face-detection-0106/config.py)                      | 8       |
 
 ## Training pipeline
 
@@ -16,7 +16,7 @@ Models that are able to detect faces on given images.
 
 ```bash
 export MODEL_NAME=face-detection-0100
-export CONFIGURATION_FILE=./configs/$MODEL_NAME.py
+export CONFIGURATION_FILE=./face-detection/$MODEL_NAME/config.py
 ```
 
 ### 2. Collect dataset
@@ -69,6 +69,22 @@ If you would like to start **fine-tuning** from pre-trained weights do not forge
    ../../external/mmdetection/tools/dist_train.sh \
             $CONFIGURATION_FILE \
             <GPU_NUM>
+   ```
+* To train the detector on multiple GPUs and to perform quality metrics estimation as soon as training is finished, run in your terminal
+
+   ```bash
+   python ./face-detection/tools/train_and_eval.py \
+            $CONFIGURATION_FILE \
+            <GPU_NUM>
+   ```
+
+   If you have WiderFace dataset downloaded you also can specify `--wider_dir` parameter where `WIDER_val.zip` file is stored (so that <WIDER_FACE>/WIDER_val.zip)
+
+   ```bash
+   python ./face-detection/tools/train_and_eval.py \
+            $CONFIGURATION_FILE \
+            <GPU_NUM> \
+            --wider_dir <WIDER_FACE_DIR>
    ```
 
 ### 5. Validation
