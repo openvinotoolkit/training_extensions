@@ -30,7 +30,7 @@ Convert downloaded and extracted annotation to MSCOCO format with `face` as the 
 * Training annotation
 
    ```bash
-   python tools/task_specific/face_detection/wider_to_coco.py \
+   python face-detection/tools/wider_to_coco.py \
             data/wider_face_split/wider_face_train_bbx_gt.txt \
             data/WIDER_train/images/ \
             data/train.json
@@ -39,7 +39,7 @@ Convert downloaded and extracted annotation to MSCOCO format with `face` as the 
 * Validation annotation
 
    ```bash
-   python tools/task_specific/face_detection/wider_to_coco.py \
+   python face-detection/tools/wider_to_coco.py \
             data/wider_face_split/wider_face_val_bbx_gt.txt \
             data/WIDER_val/images/ \
             data/val.json
@@ -73,7 +73,7 @@ If you would like to start **fine-tuning** from pre-trained weights do not forge
 * To train the detector on multiple GPUs and to perform quality metrics estimation as soon as training is finished, run in your terminal
 
    ```bash
-   python ./face-detection/tools/train_and_eval.py \
+   python face-detection/tools/train_and_eval.py \
             $CONFIGURATION_FILE \
             <GPU_NUM>
    ```
@@ -81,7 +81,7 @@ If you would like to start **fine-tuning** from pre-trained weights do not forge
    If you have WiderFace dataset downloaded you also can specify `--wider_dir` parameter where `WIDER_val.zip` file is stored (so that <WIDER_FACE>/WIDER_val.zip)
 
    ```bash
-   python ./face-detection/tools/train_and_eval.py \
+   python face-detection/tools/train_and_eval.py \
             $CONFIGURATION_FILE \
             <GPU_NUM> \
             --wider_dir <WIDER_FACE_DIR>
@@ -104,7 +104,7 @@ If you would like to start **fine-tuning** from pre-trained weights do not forge
   1. Convert `result.pkl` obtained from previous step to WiderFace-friendly output:
 
      ```bash
-     python tools/test_out_to_wider_predictions.py \
+     python face-detection/tools/test_out_to_wider_predictions.py \
               $CONFIGURATION_FILE \
               result.pkl \
               <OUTPUT_FOLDER>
