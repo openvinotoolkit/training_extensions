@@ -103,7 +103,7 @@ def coco_ap_eval(mmdetection_tools, config_path, work_dir, snapshot, res_pkl, ou
             f' {config_path} {snapshot}'
             f' --out {res_pkl} --eval bbox'.split(' '), stdout=test_py_stdout)
     ap = collect_ap(os.path.join(work_dir, 'test_py_stdout'))[0]
-    outputs.append({'key': 'ap', 'value': ap * 100, 'unit': '%', 'displayName': 'AP @ [IoU=0.50:0.95]'})
+    outputs.append({'key': 'ap', 'value': ap * 100, 'unit': '%', 'display_name': 'AP @ [IoU=0.50:0.95]'})
     return outputs
 
 
@@ -114,7 +114,7 @@ def custom_ap_eval(face_detection_tools, config_path, work_dir, res_pkl, outputs
         f' {config_path} {res_pkl} --out {res_custom_metrics}'.split(' '))
     with open(res_custom_metrics) as read_file:
         ap_64x64 = [x['average_precision'] for x in json.load(read_file) if x['object_size'][0] == 64][0]
-        outputs.append({'key': 'ap_64x64', 'value': ap_64x64, 'displayName': 'AP for faces > 64x64', 'unit': '%'})
+        outputs.append({'key': 'ap_64x64', 'value': ap_64x64, 'display_name': 'AP for faces > 64x64', 'unit': '%'})
     return outputs
 
 
@@ -153,6 +153,9 @@ def eval(config_path, snapshot, wider_dir, out):
 
     work_dir = tempfile.mkdtemp()
     print('results are stored in:', work_dir)
+
+    if os.path.islink(snapshot):
+        snapshot = os.path.join(os.path.dirname(snapshot), os.readlink(snapshot))
 
     files = get_file_size_and_sha256(snapshot, work_dir)
 

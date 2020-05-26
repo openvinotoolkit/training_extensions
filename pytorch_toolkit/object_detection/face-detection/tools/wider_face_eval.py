@@ -269,15 +269,15 @@ def evaluation(pred, gt_path, iou_thresh=0.5):
     out = [
         {'key': 'widerface_e',
          'value': aps[0] * 100,
-         'displayName': 'WiderFace Easy',
+         'display_name': 'WiderFace Easy',
          'unit': '%'},
         {'key': 'widerface_m',
          'value': aps[1] * 100,
-         'displayName': 'WiderFace Medium',
+         'display_name': 'WiderFace Medium',
          'unit': '%'},
         {'key': 'widerface_h',
          'value': aps[2] * 100,
-         'displayName': 'WiderFace Hard',
+         'display_name': 'WiderFace Hard',
          'unit': '%'}
     ]
     return out
