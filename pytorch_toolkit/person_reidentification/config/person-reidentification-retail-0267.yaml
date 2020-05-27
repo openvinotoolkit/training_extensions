@@ -4,6 +4,7 @@ model:
   feature_dim: 256
   IN_first: True
   pooling_type: 'conv'
+  lct_gate: True
   fpn:
     enable: False
 
@@ -15,7 +16,7 @@ data:
   height: 256
   width: 128
   combineall: True
-  save_dir: 'outputs/reid-0249'
+  save_dir: 'outputs/reid-0267'
   transforms:
     random_flip:
       enable: True
