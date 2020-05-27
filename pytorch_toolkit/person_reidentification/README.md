@@ -83,8 +83,8 @@ For visualization activation maps, set the `test.visactmap` parameter to `True`.
 
 You can download pretrained models in the PyTorch format corresponding to the provided configs from a fileshare as well:
 - [person-reidentification-retail-0248](https://download.01.org/opencv/openvino_training_extensions/models/person_reidentification/person-reidentification-retail-0248.pt)
-- [person-reidentification-retail-0249](https://download.01.org/opencv/openvino_training_extensions/models/person_reidentification/person-reidentification-retail-0249.pt)
-- [person-reidentification-retail-0300](https://download.01.org/opencv/openvino_training_extensions/models/person_reidentification/person-reidentification-retail-0300.pt)
+- [person-reidentification-retail-0267](https://download.01.org/opencv/openvino_training_extensions/models/person_reidentification/person-reidentification-retail-0249.pt)
+- [person-reidentification-retail-0265](https://download.01.org/opencv/openvino_training_extensions/models/person_reidentification/person-reidentification-retail-0300.pt)
 
 
 ### Test OpenVINO™ Re-Identification Models
