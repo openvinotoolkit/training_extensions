@@ -82,7 +82,8 @@ def main():
             input_size=(cfg.data.height, cfg.data.width),
             dropout_cfg=cfg.model.dropout,
             IN_first=cfg.model.IN_first,
-            extra_blocks=cfg.model.extra_blocks
+            extra_blocks=cfg.model.extra_blocks,
+            lct_gate=cfg.model.lct_gate
         )
 
     load_pretrained_weights(model, cfg.model.load_weights)
