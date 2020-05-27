@@ -26,7 +26,6 @@ import logging as log
 import torch
 from torch import nn
 from torch.nn import functional as F
-import numpy as np
 
 from torchreid.models.osnet import OSNet, ConvLayer, LightConv3x3, Conv1x1Linear, \
                                    ChannelGate, Conv1x1, pretrained_urls
