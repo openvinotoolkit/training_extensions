@@ -58,7 +58,7 @@ The script for training and inference uses a configuration file
 [default_config.py](config/default_config.py), which consists of default parameters.
 This file also has description of parameters.
 Parameters that you wish to change must be in your own configuration file.
-Example: [person-reidentification-retail-0300.yaml](config/person-reidentification-retail-0300.yaml)
+Example: [person-reidentification-retail-0265.yaml](config/person-reidentification-retail-0265.yaml)
 
 ## Training
 
@@ -69,7 +69,7 @@ Example:
 ```bash
 python main.py \
     --root /path/to/datasets/directory/root \
-    --config config/person-reidentification-retail-0300.yaml
+    --config config/person-reidentification-retail-0265.yaml
 ```
 
 ## Test
