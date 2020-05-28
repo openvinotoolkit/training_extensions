@@ -1,3 +1,4 @@
+# https://github.com/wondervictor/WiderFace-Evaluation/blob/master/box_overlaps.pyx
 # --------------------------------------------------------
 # Fast R-CNN
 # Copyright (c) 2015 Microsoft

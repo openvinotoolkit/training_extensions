@@ -1,3 +1,17 @@
+# Copyright (C) 2020 Intel Corporation
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+
 import argparse
 import yaml
 import json
@@ -6,16 +20,6 @@ import os
 import tempfile
 
 from mmcv.utils import Config
-
-
-def install_and_import(package):
-    import importlib
-    try:
-        importlib.import_module(package)
-    except ImportError:
-        subprocess.run('python -m pip install gdown'.split(' '))
-    finally:
-        globals()[package] = importlib.import_module(package)
 
 
 def collect_ap(path):
@@ -64,10 +68,7 @@ def compute_wider_metrics(face_detection_tools, config_path, res_pkl, work_dir, 
     os.makedirs(wider_data_folder, exist_ok=True)
 
     wider_data_zip = os.path.join(wider_data_folder, 'WIDER_val.zip')
-    if not os.path.exists(wider_data_zip):
-        subprocess.run(
-            f'gdown https://drive.google.com/uc?id=0B6eKvaijfFUDd3dIRmpvSk8tLUk'
-            f' -O {wider_data_zip}'.split(' '))
+    assert os.path.exists(wider_data_zip), f'failed to find WIDER_val.zip here: {wider_data_zip}'
     if not os.path.exists(os.path.join(wider_data_folder, 'WIDER_val')):
         subprocess.run(f'unzip {wider_data_zip} -d {wider_data_folder}'.split(' '))
 
@@ -145,7 +146,6 @@ def get_file_size_and_sha256(snapshot, work_dir):
 
 
 def eval(config_path, snapshot, wider_dir, out):
-    install_and_import('gdown')
     mmdetection_tools = '../../external/mmdetection/tools'
     face_detection_tools = 'face-detection/tools'
 
