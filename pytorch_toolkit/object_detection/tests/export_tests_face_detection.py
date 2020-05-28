@@ -17,7 +17,7 @@ from common.utils import replace_text_in_file
 
 
 def face_detection_test_case(model_name, alt_ssd_export):
-    class ExportTestCase(export_test_case(model_name, alt_ssd_export=alt_ssd_export)):
+    class ExportTestCase(export_test_case('face-detection', model_name, alt_ssd_export=alt_ssd_export)):
         def setUp(self):
             super().setUp()
 

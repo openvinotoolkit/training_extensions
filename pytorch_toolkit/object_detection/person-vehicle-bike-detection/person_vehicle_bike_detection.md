@@ -4,7 +4,7 @@ The crossroad-detection network model provides detection of three class objects:
 
 | Model Name                  | Complexity (GFLOPs) | Size (Mp) | Mean Average Precision (mAP) | Links                                                                        |
 | --------------------------- | ------------------- | --------- | ------------- | ---------------------------------------------------------------------------- |
-| person-vehicle-bike-detection-crossroad-1016  | 3.560               | 	2.887    | 62.55%          | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/person_vehicle_bike_sd512_mb2_clustered_epoch_21.pth), [configuration file](./configs/person-vehicle-bike-detection-crossroad-1016.py) |
+| person-vehicle-bike-detection-crossroad-1016  | 3.560               | 	2.887    | 62.55%          | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/person_vehicle_bike_sd512_mb2_clustered_epoch_21.pth), [configuration file](./person-vehicle-bike-detection-crossroad-1016.py) |
 
 Average Precision (AP) is defined as an area under the precision/recall curve.
 
