@@ -12,58 +12,24 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+# pylint: disable=C0301,C0114,W0622,W1510,R0914
+
 import argparse
-import yaml
 import json
-import subprocess
 import os
+import subprocess
 import tempfile
+import yaml
 
 from mmcv.utils import Config
 
-mmdetection_tools = '../../external/mmdetection/tools'
-face_detection_tools = 'face-detection/tools'
-
-
-def replace_text_in_file(path, replace_what, replace_by):
-    with open(path) as read_file:
-        content = '\n'.join([line.rstrip() for line in read_file.readlines()])
-        if content.find(replace_what) == -1:
-            return False
-        content = content.replace(replace_what, replace_by)
-    with open(path, 'w') as write_file:
-        write_file.write(content)
-    return True
-
-
-def collect_ap(path):
-    ap = []
-    beginning = 'Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = '
-    with open(path) as read_file:
-        content = [line.strip() for line in read_file.readlines()]
-        for line in content:
-            if line.startswith(beginning):
-                ap.append(float(line.replace(beginning, '')))
-    return ap
-
-
-def get_sha256(path, work_dir):
-    os.makedirs(work_dir, exist_ok=True)
-    os.system(f'sha256sum {path} > {work_dir}/sha256.txt')
-    with open(f'{work_dir}/sha256.txt') as f:
-        sha256 = f.readlines()[0].strip().split(' ')[0]
-    return sha256
-
-
-def get_size(path, work_dir):
-    os.makedirs(work_dir, exist_ok=True)
-    os.system(f'ls -l {path} > {work_dir}/ls.txt')
-    with open(f'{work_dir}/ls.txt') as f:
-        size = f.readlines()[0].strip().split(' ')[4]
-    return int(size)
+MMDETECTION_TOOLS = '../../external/mmdetection/tools'
+FACE_DETECTION_TOOLS = 'face-detection/tools'
 
 
 def parse_args():
+    """ Parses input args. """
+
     args = argparse.ArgumentParser()
     args.add_argument('config',
                       help='A path to model training configuration file (.py).')
@@ -77,7 +43,55 @@ def parse_args():
     return args.parse_args()
 
 
+def replace_text_in_file(path, replace_what, replace_by):
+    """ Replaces text in file. """
+
+    with open(path) as read_file:
+        content = '\n'.join([line.rstrip() for line in read_file.readlines()])
+        if content.find(replace_what) == -1:
+            return False
+        content = content.replace(replace_what, replace_by)
+    with open(path, 'w') as write_file:
+        write_file.write(content)
+    return True
+
+
+def collect_ap(path):
+    """ Collects average precision values in log file. """
+
+    average_precisions = []
+    beginning = 'Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = '
+    with open(path) as read_file:
+        content = [line.strip() for line in read_file.readlines()]
+        for line in content:
+            if line.startswith(beginning):
+                average_precisions.append(float(line.replace(beginning, '')))
+    return average_precisions
+
+
+def get_sha256(path, work_dir):
+    """ Gets sha256. """
+
+    os.makedirs(work_dir, exist_ok=True)
+    os.system(f'sha256sum {path} > {work_dir}/sha256.txt')
+    with open(f'{work_dir}/sha256.txt') as read_file:
+        sha256 = read_file.readlines()[0].strip().split(' ')[0]
+    return sha256
+
+
+def get_size(path, work_dir):
+    """ Gets size of a file. """
+
+    os.makedirs(work_dir, exist_ok=True)
+    os.system(f'ls -l {path} > {work_dir}/ls.txt')
+    with open(f'{work_dir}/ls.txt') as read_file:
+        size = read_file.readlines()[0].strip().split(' ')[4]
+    return int(size)
+
+
 def compute_wider_metrics(config_path, snapshot, work_dir, wider_dir, outputs):
+    """ Computes WiderFace metrics on easy, medium, hard subsets. """
+
     wider_data_folder = wider_dir
     os.makedirs(wider_data_folder, exist_ok=True)
 
@@ -103,7 +117,7 @@ def compute_wider_metrics(config_path, snapshot, work_dir, wider_dir, outputs):
     wider_images = os.path.join(wider_dir, 'WIDER_val', 'images')
     wider_coco_annotation = os.path.join(wider_dir, 'instances_val.json')
     subprocess.run(
-        f'python {face_detection_tools}/wider_to_coco.py'
+        f'python {FACE_DETECTION_TOOLS}/wider_to_coco.py'
         f' {wider_annotation} {wider_images} {wider_coco_annotation}'.split(' '))
 
     res_pkl = os.path.join(work_dir, 'wider_face_res.pkl')
@@ -114,18 +128,18 @@ def compute_wider_metrics(config_path, snapshot, work_dir, wider_dir, outputs):
 
     with open(os.path.join(work_dir, 'test_py_on_wider_stdout_'), 'w') as test_py_stdout:
         subprocess.run(
-            f'python {mmdetection_tools}/test.py'
+            f'python {MMDETECTION_TOOLS}/test.py'
             f' {config_with_wider_face} {snapshot}'
             f' --out {res_pkl}'.split(' '), stdout=test_py_stdout)
 
     wider_face_predictions = tempfile.mkdtemp()
     subprocess.run(
-        f'python {face_detection_tools}/test_out_to_wider_predictions.py'
+        f'python {FACE_DETECTION_TOOLS}/test_out_to_wider_predictions.py'
         f' {config_with_wider_face} {res_pkl} {wider_face_predictions}'.split(' '))
     print(wider_face_predictions)
     res_wider_metrics = os.path.join(work_dir, "wider_metrics.json")
     subprocess.run(
-        f'python {face_detection_tools}/wider_face_eval.py'
+        f'python {FACE_DETECTION_TOOLS}/wider_face_eval.py'
         f' -g {wider_data_folder}/eval_tools/ground_truth/'
         f' -p {wider_face_predictions}'
         f' --out {res_wider_metrics}'.split(' '))
@@ -136,20 +150,24 @@ def compute_wider_metrics(config_path, snapshot, work_dir, wider_dir, outputs):
 
 
 def coco_ap_eval(config_path, work_dir, snapshot, res_pkl, outputs):
+    """ Computes COCO AP. """
+
     with open(os.path.join(work_dir, 'test_py_stdout'), 'w') as test_py_stdout:
         subprocess.run(
-            f'python {mmdetection_tools}/test.py'
+            f'python {MMDETECTION_TOOLS}/test.py'
             f' {config_path} {snapshot}'
             f' --out {res_pkl} --eval bbox'.split(' '), stdout=test_py_stdout)
-    ap = collect_ap(os.path.join(work_dir, 'test_py_stdout'))[0]
-    outputs.append({'key': 'ap', 'value': ap * 100, 'unit': '%', 'display_name': 'AP @ [IoU=0.50:0.95]'})
+    average_precision = collect_ap(os.path.join(work_dir, 'test_py_stdout'))[0]
+    outputs.append({'key': 'ap', 'value': average_precision * 100, 'unit': '%', 'display_name': 'AP @ [IoU=0.50:0.95]'})
     return outputs
 
 
 def custom_ap_eval(config_path, work_dir, res_pkl, outputs):
+    """ Computes AP on faces that are greater than 64x64. """
+
     res_custom_metrics = os.path.join(work_dir, "custom_metrics.json")
     subprocess.run(
-        f'python {face_detection_tools}/wider_custom_eval.py'
+        f'python {FACE_DETECTION_TOOLS}/wider_custom_eval.py'
         f' {config_path} {res_pkl} --out {res_custom_metrics}'.split(' '))
     with open(res_custom_metrics) as read_file:
         ap_64x64 = [x['average_precision'] for x in json.load(read_file) if x['object_size'][0] == 64][0]
@@ -158,13 +176,15 @@ def custom_ap_eval(config_path, work_dir, res_pkl, outputs):
 
 
 def get_complexity_and_size(cfg, config_path, work_dir, outputs):
+    """ Gets complexity and size of a model. """
+
     image_shape = [x['img_scale'] for x in cfg.test_pipeline if 'img_scale' in x][0][::-1]
     image_shape = " ".join([str(x) for x in image_shape])
 
     res_complexity = os.path.join(work_dir, "complexity.json")
 
     subprocess.run(
-        f'python {mmdetection_tools}/get_flops.py'
+        f'python {MMDETECTION_TOOLS}/get_flops.py'
         f' {config_path}'
         f' --shape {image_shape}'
         f' --out {res_complexity}'.split(' '))
@@ -175,6 +195,8 @@ def get_complexity_and_size(cfg, config_path, work_dir, outputs):
 
 
 def get_file_size_and_sha256(snapshot, work_dir):
+    """ Gets size and sha256 of a file. """
+
     return {
         'sha256': get_sha256(snapshot, work_dir),
         'size': get_size(snapshot, work_dir),
@@ -184,6 +206,8 @@ def get_file_size_and_sha256(snapshot, work_dir):
 
 
 def eval(config_path, snapshot, wider_dir, out):
+    """ Main evaluation procedure. """
+
     cfg = Config.fromfile(config_path)
 
     work_dir = tempfile.mkdtemp()
@@ -223,6 +247,8 @@ def eval(config_path, snapshot, wider_dir, out):
 
 
 def main():
+    """ Main function. """
+
     args = parse_args()
     eval(args.config, args.snapshot, args.wider_dir, args.out)
 

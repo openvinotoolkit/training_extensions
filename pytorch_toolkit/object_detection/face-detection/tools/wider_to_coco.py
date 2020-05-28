@@ -14,7 +14,7 @@
 
 """ Converts WiderFace annotation to COCO format. """
 
-# pylint: disable=R0914
+# pylint: disable=C0301,C0114,W0622,W1510,R0914,R0801
 
 import json
 import os

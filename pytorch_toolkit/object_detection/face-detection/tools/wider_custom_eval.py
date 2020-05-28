@@ -14,7 +14,7 @@
 
 """ This script computes AveragePrecision (VOC) for faces in specific size ranges. """
 
-# pylint: disable=R0912,R0913,R0914,R0915
+# pylint: disable=R0912,R0913,R0914,R0915,C0301,C0114,W0622,W1510,R0914,I1101,C0116
 
 from argparse import ArgumentParser
 from bisect import bisect

@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+# pylint: disable=C0301,C0114,W0622,W1510,R0914
+
 import argparse
 import subprocess
 import os
@@ -22,6 +24,8 @@ from eval import eval
 
 
 def parse_args():
+    """ Parses input args. """
+
     args = argparse.ArgumentParser()
     args.add_argument('config',
                       help='A path to model training configuration file (.py).')
@@ -36,6 +40,8 @@ def parse_args():
 
 
 def main():
+    """ Main function. """
+
     args = parse_args()
 
     if args.wider_dir:

@@ -6,6 +6,8 @@ mail: tianhengcheng@gmail.com
 copyright@wondervictor
 """
 
+# pylint: disable=C0301,C0114,W0622,W1510,R0914,C0103,I1101,C0116,C0411,C0116,C0200
+
 import os
 import tqdm
 import pickle
