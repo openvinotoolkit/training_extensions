@@ -21,6 +21,20 @@ import tempfile
 
 from mmcv.utils import Config
 
+mmdetection_tools = '../../external/mmdetection/tools'
+face_detection_tools = 'face-detection/tools'
+
+
+def replace_text_in_file(path, replace_what, replace_by):
+    with open(path) as read_file:
+        content = '\n'.join([line.rstrip() for line in read_file.readlines()])
+        if content.find(replace_what) == -1:
+            return False
+        content = content.replace(replace_what, replace_by)
+    with open(path, 'w') as write_file:
+        write_file.write(content)
+    return True
+
 
 def collect_ap(path):
     ap = []
@@ -63,27 +77,51 @@ def parse_args():
     return args.parse_args()
 
 
-def compute_wider_metrics(face_detection_tools, config_path, res_pkl, work_dir, wider_dir, outputs):
+def compute_wider_metrics(config_path, snapshot, work_dir, wider_dir, outputs):
     wider_data_folder = wider_dir
     os.makedirs(wider_data_folder, exist_ok=True)
 
     wider_data_zip = os.path.join(wider_data_folder, 'WIDER_val.zip')
     assert os.path.exists(wider_data_zip), f'failed to find WIDER_val.zip here: {wider_data_zip}'
-    if not os.path.exists(os.path.join(wider_data_folder, 'WIDER_val')):
-        subprocess.run(f'unzip {wider_data_zip} -d {wider_data_folder}'.split(' '))
+    subprocess.run(f'unzip -q -o {wider_data_zip} -d {wider_data_folder}'.split(' '))
 
     eval_tools_zip = os.path.join(wider_data_folder, 'eval_tools.zip')
     if not os.path.exists(eval_tools_zip):
         subprocess.run(
             f'wget http://shuoyang1213.me/WIDERFACE/support/eval_script/eval_tools.zip'
             f' -O {eval_tools_zip}'.split(' '))
-    if not os.path.exists(os.path.join(wider_data_folder, 'eval_tools')):
-        subprocess.run(f'unzip {eval_tools_zip} -d {wider_data_folder}'.split(' '))
+    subprocess.run(f'unzip -q -o {eval_tools_zip} -d {wider_data_folder}'.split(' '))
+
+    wider_annotation_zip = os.path.join(wider_data_folder, 'ider_face_split.zip')
+    if not os.path.exists(wider_annotation_zip):
+        subprocess.run(
+            f'wget http://mmlab.ie.cuhk.edu.hk/projects/WIDERFace/support/bbx_annotation/wider_face_split.zip'
+            f' -O {wider_annotation_zip}'.split(' '))
+    subprocess.run(f'unzip -q -o {wider_annotation_zip} -d {wider_data_folder}'.split(' '))
+
+    wider_annotation = os.path.join(wider_dir, 'wider_face_split', 'wider_face_val_bbx_gt.txt')
+    wider_images = os.path.join(wider_dir, 'WIDER_val', 'images')
+    wider_coco_annotation = os.path.join(wider_dir, 'instances_val.json')
+    subprocess.run(
+        f'python {face_detection_tools}/wider_to_coco.py'
+        f' {wider_annotation} {wider_images} {wider_coco_annotation}'.split(' '))
+
+    res_pkl = os.path.join(work_dir, 'wider_face_res.pkl')
+    config_with_wider_face = os.path.join(work_dir, 'config_with_wider_face.py')
+    os.system(f'cp {config_path} {config_with_wider_face}')
+    replace_text_in_file(config_with_wider_face, 'ann_file=', f'ann_file="{wider_coco_annotation}",#')
+    replace_text_in_file(config_with_wider_face, 'img_prefix=', f'img_prefix="{wider_dir}",#')
+
+    with open(os.path.join(work_dir, 'test_py_on_wider_stdout_'), 'w') as test_py_stdout:
+        subprocess.run(
+            f'python {mmdetection_tools}/test.py'
+            f' {config_with_wider_face} {snapshot}'
+            f' --out {res_pkl}'.split(' '), stdout=test_py_stdout)
 
     wider_face_predictions = tempfile.mkdtemp()
     subprocess.run(
         f'python {face_detection_tools}/test_out_to_wider_predictions.py'
-        f' {config_path} {res_pkl} {wider_face_predictions}'.split(' '))
+        f' {config_with_wider_face} {res_pkl} {wider_face_predictions}'.split(' '))
     print(wider_face_predictions)
     res_wider_metrics = os.path.join(work_dir, "wider_metrics.json")
     subprocess.run(
@@ -97,7 +135,7 @@ def compute_wider_metrics(face_detection_tools, config_path, res_pkl, work_dir, 
     return outputs
 
 
-def coco_ap_eval(mmdetection_tools, config_path, work_dir, snapshot, res_pkl, outputs):
+def coco_ap_eval(config_path, work_dir, snapshot, res_pkl, outputs):
     with open(os.path.join(work_dir, 'test_py_stdout'), 'w') as test_py_stdout:
         subprocess.run(
             f'python {mmdetection_tools}/test.py'
@@ -108,7 +146,7 @@ def coco_ap_eval(mmdetection_tools, config_path, work_dir, snapshot, res_pkl, ou
     return outputs
 
 
-def custom_ap_eval(face_detection_tools, config_path, work_dir, res_pkl, outputs):
+def custom_ap_eval(config_path, work_dir, res_pkl, outputs):
     res_custom_metrics = os.path.join(work_dir, "custom_metrics.json")
     subprocess.run(
         f'python {face_detection_tools}/wider_custom_eval.py'
@@ -119,7 +157,7 @@ def custom_ap_eval(face_detection_tools, config_path, work_dir, res_pkl, outputs
     return outputs
 
 
-def get_complexity_and_size(mmdetection_tools, cfg, config_path, work_dir, outputs):
+def get_complexity_and_size(cfg, config_path, work_dir, outputs):
     image_shape = [x['img_scale'] for x in cfg.test_pipeline if 'img_scale' in x][0][::-1]
     image_shape = " ".join([str(x) for x in image_shape])
 
@@ -146,9 +184,6 @@ def get_file_size_and_sha256(snapshot, work_dir):
 
 
 def eval(config_path, snapshot, wider_dir, out):
-    mmdetection_tools = '../../external/mmdetection/tools'
-    face_detection_tools = 'face-detection/tools'
-
     cfg = Config.fromfile(config_path)
 
     work_dir = tempfile.mkdtemp()
@@ -161,13 +196,13 @@ def eval(config_path, snapshot, wider_dir, out):
 
     metrics = []
     res_pkl = os.path.join(work_dir, "res.pkl")
-    metrics = coco_ap_eval(mmdetection_tools, config_path, work_dir, snapshot, res_pkl, metrics)
-    metrics = custom_ap_eval(face_detection_tools, config_path, work_dir, res_pkl, metrics)
+    metrics = coco_ap_eval(config_path, work_dir, snapshot, res_pkl, metrics)
+    metrics = custom_ap_eval(config_path, work_dir, res_pkl, metrics)
 
     if wider_dir:
-        metrics = compute_wider_metrics(face_detection_tools, config_path, res_pkl, work_dir, wider_dir, metrics)
+        metrics = compute_wider_metrics(config_path, snapshot, work_dir, wider_dir, metrics)
 
-    metrics = get_complexity_and_size(mmdetection_tools, cfg, config_path, work_dir, metrics)
+    metrics = get_complexity_and_size(cfg, config_path, work_dir, metrics)
 
     for metric in metrics:
         metric['value'] = round(metric['value'], 3)

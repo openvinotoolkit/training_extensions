@@ -21,16 +21,6 @@ from mmcv.utils import Config
 from eval import eval
 
 
-def install_and_import(package):
-    import importlib
-    try:
-        importlib.import_module(package)
-    except ImportError:
-        subprocess.run('python -m pip install gdown'.split(' '))
-    finally:
-        globals()[package] = importlib.import_module(package)
-
-
 def parse_args():
     args = argparse.ArgumentParser()
     args.add_argument('config',
@@ -46,8 +36,11 @@ def parse_args():
 
 
 def main():
-    install_and_import('gdown')
     args = parse_args()
+
+    if args.wider_dir:
+        wider_val_zip = os.path.join(args.wider_dir, 'WIDER_val.zip')
+        assert os.path.exists(wider_val_zip), f'failed to find WIDER_val.zip here: {wider_val_zip}'
 
     mmdetection_tools = '../../external/mmdetection/tools'
 

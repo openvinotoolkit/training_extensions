@@ -28,6 +28,17 @@ import mmcv
 from mmdet import datasets
 
 
+def replace_text_in_file(path, replace_what, replace_by):
+    with open(path) as read_file:
+        content = '\n'.join([line.rstrip() for line in read_file.readlines()])
+        if content.find(replace_what) == -1:
+            return False
+        content = content.replace(replace_what, replace_by)
+    with open(path, 'w') as write_file:
+        write_file.write(content)
+    return True
+
+
 def voc_ap(recall, precision, use_07_metric=False):
     """ average_precision = voc_ap(rec, prec, [use_07_metric])
     Compute VOC AP given precision and recall.
@@ -254,7 +265,7 @@ def voc_eval(result_file, dataset, iou_thr, image_size):
             # +1 is to compensate pre-processing in XMLDataset
             if isinstance(dataset, datasets.XMLDataset):
                 bboxes = [np.array(bbox) + np.array((1, 1, 1, 1)) for bbox in bboxes]
-            elif isinstance(dataset, datasets.CustomCocoDataset):
+            elif isinstance(dataset, datasets.CocoDataset):
                 bboxes = [np.array(bbox) + np.array((0, 0, 1, 1)) for bbox in bboxes]
             # convert from [xmin, ymin, xmax, ymax] to [xmin, ymin, w, h]
             bboxes = [points_2_xywh(bbox) for bbox in bboxes]
@@ -306,7 +317,7 @@ def main():
     args = parser.parse_args()
 
     cfg = mmcv.Config.fromfile(args.config)
-    test_dataset = mmcv.runner.obj_from_dict(cfg.data.test, datasets)
+    test_dataset = datasets.builder.build_dataset(cfg.data.test)
     out = voc_eval(args.input, test_dataset, args.iou_thr, args.imsize)
 
     if args.out:
