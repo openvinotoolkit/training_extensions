@@ -6,7 +6,7 @@ mail: tianhengcheng@gmail.com
 copyright@wondervictor
 """
 
-# pylint: disable=C0301,C0114,W0622,W1510,R0914,C0103,I1101,C0116,C0411,C0116,C0200
+# pylint: disable=C0301,W0622,R0914,C0103,I1101,C0116,C0411,C0200
 
 import os
 import tqdm
@@ -50,7 +50,6 @@ def get_gt_boxes_from_txt(gt_path, cache_dir):
     lines = f.readlines()
     lines = list(map(lambda x: x.rstrip('\r\n'), lines))
     boxes = {}
-    print(len(lines))
     f.close()
     current_boxes = []
     current_name = None
@@ -118,7 +117,7 @@ def norm_score(pred):
 
     for _, k in pred.items():
         for _, v in k.items():
-            if len(v) == 0:
+            if v.shape[0] == 0:
                 continue
             _min = np.min(v[:, -1])
             _max = np.max(v[:, -1])
@@ -128,7 +127,7 @@ def norm_score(pred):
     diff = max_score - min_score
     for _, k in pred.items():
         for _, v in k.items():
-            if len(v) == 0:
+            if v.shape[0] == 0:
                 continue
             v[:, -1] = (v[:, -1] - min_score) / diff
 
@@ -175,7 +174,7 @@ def img_pr_info(thresh_num, pred_info, proposal_list, pred_recall):
 
         thresh = 1 - (t + 1) / thresh_num
         r_index = np.where(pred_info[:, 4] >= thresh)[0]
-        if len(r_index) == 0:
+        if r_index.shape[0] == 0:
             pr_info[t, 0] = 0
             pr_info[t, 1] = 0
         else:
@@ -245,10 +244,10 @@ def evaluation(pred, gt_path, iou_thresh=0.5):
                 keep_index = sub_gt_list[j][0]
                 count_face += len(keep_index)
 
-                if len(gt_boxes) == 0 or len(pred_info) == 0:
+                if gt_boxes.shape[0] == 0 or pred_info.shape[0] == 0:
                     continue
                 ignore = np.zeros(gt_boxes.shape[0])
-                if len(keep_index) != 0:
+                if keep_index.shape[0] != 0:
                     ignore[keep_index - 1] = 1
                 pred_recall, proposal_list = image_eval(pred_info, gt_boxes, ignore, iou_thresh)
 

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-# pylint: disable=C0301,C0114,W0622,W1510,R0914
+# pylint: disable=C0301,W0622,R0914
 
 import argparse
 import subprocess
@@ -52,7 +52,7 @@ def main():
 
     subprocess.run(f'{mmdetection_tools}/dist_train.sh'
                    f' {args.config}'
-                   f' {args.gpu_num}'.split(' '))
+                   f' {args.gpu_num}'.split(' '), check=True)
 
     cfg = Config.fromfile(args.config)
 
