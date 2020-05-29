@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-# pylint: disable=C0301,C0114,W0622,W1510,R0914
+# pylint: disable=C0301,W0622,R0914
 
 import argparse
 import json
@@ -97,28 +97,28 @@ def compute_wider_metrics(config_path, snapshot, work_dir, wider_dir, outputs):
 
     wider_data_zip = os.path.join(wider_data_folder, 'WIDER_val.zip')
     assert os.path.exists(wider_data_zip), f'failed to find WIDER_val.zip here: {wider_data_zip}'
-    subprocess.run(f'unzip -q -o {wider_data_zip} -d {wider_data_folder}'.split(' '))
+    subprocess.run(f'unzip -q -o {wider_data_zip} -d {wider_data_folder}'.split(' '), check=True)
 
     eval_tools_zip = os.path.join(wider_data_folder, 'eval_tools.zip')
     if not os.path.exists(eval_tools_zip):
         subprocess.run(
             f'wget http://shuoyang1213.me/WIDERFACE/support/eval_script/eval_tools.zip'
-            f' -O {eval_tools_zip}'.split(' '))
-    subprocess.run(f'unzip -q -o {eval_tools_zip} -d {wider_data_folder}'.split(' '))
+            f' -O {eval_tools_zip}'.split(' '), check=True)
+    subprocess.run(f'unzip -q -o {eval_tools_zip} -d {wider_data_folder}'.split(' '), check=True)
 
     wider_annotation_zip = os.path.join(wider_data_folder, 'ider_face_split.zip')
     if not os.path.exists(wider_annotation_zip):
         subprocess.run(
             f'wget http://mmlab.ie.cuhk.edu.hk/projects/WIDERFace/support/bbx_annotation/wider_face_split.zip'
-            f' -O {wider_annotation_zip}'.split(' '))
-    subprocess.run(f'unzip -q -o {wider_annotation_zip} -d {wider_data_folder}'.split(' '))
+            f' -O {wider_annotation_zip}'.split(' '), check=True)
+    subprocess.run(f'unzip -q -o {wider_annotation_zip} -d {wider_data_folder}'.split(' '), check=True)
 
     wider_annotation = os.path.join(wider_dir, 'wider_face_split', 'wider_face_val_bbx_gt.txt')
     wider_images = os.path.join(wider_dir, 'WIDER_val', 'images')
     wider_coco_annotation = os.path.join(wider_dir, 'instances_val.json')
     subprocess.run(
         f'python {FACE_DETECTION_TOOLS}/wider_to_coco.py'
-        f' {wider_annotation} {wider_images} {wider_coco_annotation}'.split(' '))
+        f' {wider_annotation} {wider_images} {wider_coco_annotation}'.split(' '), check=True)
 
     res_pkl = os.path.join(work_dir, 'wider_face_res.pkl')
     config_with_wider_face = os.path.join(work_dir, 'config_with_wider_face.py')
@@ -130,19 +130,19 @@ def compute_wider_metrics(config_path, snapshot, work_dir, wider_dir, outputs):
         subprocess.run(
             f'python {MMDETECTION_TOOLS}/test.py'
             f' {config_with_wider_face} {snapshot}'
-            f' --out {res_pkl}'.split(' '), stdout=test_py_stdout)
+            f' --out {res_pkl}'.split(' '), stdout=test_py_stdout, check=True)
 
     wider_face_predictions = tempfile.mkdtemp()
     subprocess.run(
         f'python {FACE_DETECTION_TOOLS}/test_out_to_wider_predictions.py'
-        f' {config_with_wider_face} {res_pkl} {wider_face_predictions}'.split(' '))
+        f' {config_with_wider_face} {res_pkl} {wider_face_predictions}'.split(' '), check=True)
     print(wider_face_predictions)
     res_wider_metrics = os.path.join(work_dir, "wider_metrics.json")
     subprocess.run(
         f'python {FACE_DETECTION_TOOLS}/wider_face_eval.py'
         f' -g {wider_data_folder}/eval_tools/ground_truth/'
         f' -p {wider_face_predictions}'
-        f' --out {res_wider_metrics}'.split(' '))
+        f' --out {res_wider_metrics}'.split(' '), check=True)
     with open(res_wider_metrics) as read_file:
         content = json.load(read_file)
         outputs.extend(content)
@@ -156,7 +156,7 @@ def coco_ap_eval(config_path, work_dir, snapshot, res_pkl, outputs):
         subprocess.run(
             f'python {MMDETECTION_TOOLS}/test.py'
             f' {config_path} {snapshot}'
-            f' --out {res_pkl} --eval bbox'.split(' '), stdout=test_py_stdout)
+            f' --out {res_pkl} --eval bbox'.split(' '), stdout=test_py_stdout, check=True)
     average_precision = collect_ap(os.path.join(work_dir, 'test_py_stdout'))[0]
     outputs.append({'key': 'ap', 'value': average_precision * 100, 'unit': '%', 'display_name': 'AP @ [IoU=0.50:0.95]'})
     return outputs
@@ -168,7 +168,7 @@ def custom_ap_eval(config_path, work_dir, res_pkl, outputs):
     res_custom_metrics = os.path.join(work_dir, "custom_metrics.json")
     subprocess.run(
         f'python {FACE_DETECTION_TOOLS}/wider_custom_eval.py'
-        f' {config_path} {res_pkl} --out {res_custom_metrics}'.split(' '))
+        f' {config_path} {res_pkl} --out {res_custom_metrics}'.split(' '), check=True)
     with open(res_custom_metrics) as read_file:
         ap_64x64 = [x['average_precision'] for x in json.load(read_file) if x['object_size'][0] == 64][0]
         outputs.append({'key': 'ap_64x64', 'value': ap_64x64, 'display_name': 'AP for faces > 64x64', 'unit': '%'})
@@ -187,7 +187,7 @@ def get_complexity_and_size(cfg, config_path, work_dir, outputs):
         f'python {MMDETECTION_TOOLS}/get_flops.py'
         f' {config_path}'
         f' --shape {image_shape}'
-        f' --out {res_complexity}'.split(' '))
+        f' --out {res_complexity}'.split(' '), check=True)
     with open(res_complexity) as read_file:
         content = json.load(read_file)
         outputs.extend(content)
