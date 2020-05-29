@@ -6,7 +6,7 @@ mail: tianhengcheng@gmail.com
 copyright@wondervictor
 """
 
-# pylint: disable=C0301,W0622,R0914,C0103,I1101,C0116,C0411,C0200
+# pylint: disable=C0301,W0622,R0914,C0103,I1101,C0411,C0200
 
 import os
 import tqdm
