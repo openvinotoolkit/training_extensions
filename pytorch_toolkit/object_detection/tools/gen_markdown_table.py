@@ -92,7 +92,7 @@ def main():
     keys = models_infos[0].keys()
 
     for info in models_infos:
-        assert keys == info.keys(), f'{keys} <> {info.keys()}'
+        assert keys == info.keys(), f'{keys} does not equal to {info.keys()}'
 
     print(build_table(models_infos))
 
