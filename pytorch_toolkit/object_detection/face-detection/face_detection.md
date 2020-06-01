@@ -2,13 +2,13 @@
 
 Models that are able to detect faces on given images.
 
-| Model Name                  | Complexity (GFLOPs) | Size (Mp) | AP for faces > 64x64 | [WiderFace](http://shuoyang1213.me/WIDERFACE/WiderFace_Results.html)(Easy/Medium/Hard)  | Links                                                                                                                                    | GPU_NUM |
-| --------------------------- | ------------------- | --------- | -------------------- |---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
-| face-detection-0100         | 0.785               | 1.828     | 86.16%               | 82.50% / 75.77% / 40.83%    | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/face-detection-0100.pth), [configuration file](./face-detection-0100/config.py)                      | 2       |
-| face-detection-0102         | 1.767               | 1.842     | 91.47%               | 88.90% / 83.51% / 49.58%    | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/face-detection-0102.pth), [configuration file](./face-detection-0102/config.py)                      | 2       |
-| face-detection-0104         | 2.405               | 1.851     | 92.69%               | 90.15% / 84.80% / 51.61%    | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/face-detection-0104.pth), [configuration file](./face-detection-0104/config.py)                      | 4       |
-| face-detection-0105         | 2.853               | 2.392     | 93.34%               | 91.61% / 85.94% / 52.93%    | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/face-detection-0105.pth), [configuration file](./face-detection-0105/config.py)                      | 4       |
-| face-detection-0106         | 339.597             | 69.920    | 94.49%               | 94.51% / 93.20% / 83.09%    | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/face-detection-0106.pth), [configuration file](./face-detection-0106/config.py)                      | 8       |
+| Model Name | Complexity (GFLOPs) | Size (Mp) | AP @ [IoU=0.50:0.95] (%) | AP for faces > 64x64 (%) | WiderFace Easy (%) | WiderFace Medium (%) | WiderFace Hard (%) | Links | GPU_NUM |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| face-detection-0100 | 0.82 | 0.82 | 15.7 | 86.625 | 82.501 | 75.768 | 40.826 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/face-detection-0100.pth), [configuration file](./face-detection-0100/config.py) | 2 |
+| face-detection-0102 | 1.84 | 1.84 | 19.9 | 91.592 | 88.904 | 83.506 | 49.577 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/face-detection-0102.pth), [configuration file](./face-detection-0102/config.py) | 2 |
+| face-detection-0104 | 2.52 | 2.52 | 20.9 | 92.738 | 90.145 | 84.802 | 51.615 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/face-detection-0104.pth), [configuration file](./face-detection-0104/config.py) | 4 |
+| face-detection-0105 | 2.94 | 2.94 | 20.9 | 93.335 | 91.607 | 85.94 | 52.925 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/face-detection-0105.pth), [configuration file](./face-detection-0105/config.py) | 4 |
+| face-detection-0106 | 340.06 | 340.06 | 34.6 | 94.666 | 94.506 | 93.203 | 83.095 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/face-detection-0106.pth), [configuration file](./face-detection-0106/config.py) | 8 |
 
 ## Training pipeline
 

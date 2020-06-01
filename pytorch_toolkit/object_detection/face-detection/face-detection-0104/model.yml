@@ -37,3 +37,4 @@ metrics:
     unit: GFLOPs
     value: 2.52
 task_type: detection
+training_gpu_num: 4
