@@ -114,21 +114,19 @@ def compute_wider_metrics(config_path, snapshot, work_dir, wider_dir, outputs):
         f' {wider_annotation} {wider_images} {wider_coco_annotation}'.split(' '), check=True)
 
     res_pkl = os.path.join(work_dir, 'wider_face_res.pkl')
-    config_with_wider_face = os.path.join(work_dir, 'config_with_wider_face.py')
-    os.system(f'cp {config_path} {config_with_wider_face}')
-    replace_text_in_file(config_with_wider_face, 'ann_file=', f'ann_file="{wider_coco_annotation}",#')
-    replace_text_in_file(config_with_wider_face, 'img_prefix=', f'img_prefix="{wider_dir}",#')
 
     with open(os.path.join(work_dir, 'test_py_on_wider_stdout_'), 'w') as test_py_stdout:
         subprocess.run(
             f'python {MMDETECTION_TOOLS}/test.py'
-            f' {config_with_wider_face} {snapshot}'
-            f' --out {res_pkl}'.split(' '), stdout=test_py_stdout, check=True)
+            f' {config_path} {snapshot}'
+            f' --out {res_pkl}'
+            f' --update_config data.test.ann_file={wider_coco_annotation} data.test.img_prefix={wider_dir}'.split(' '),
+            stdout=test_py_stdout, check=True)
 
     wider_face_predictions = tempfile.mkdtemp()
     subprocess.run(
         f'python {FACE_DETECTION_TOOLS}/test_out_to_wider_predictions.py'
-        f' {config_with_wider_face} {res_pkl} {wider_face_predictions}'.split(' '), check=True)
+        f' {config_path} {res_pkl} {wider_face_predictions}'.split(' '), check=True)
     print(wider_face_predictions)
     res_wider_metrics = os.path.join(work_dir, "wider_metrics.json")
     subprocess.run(
