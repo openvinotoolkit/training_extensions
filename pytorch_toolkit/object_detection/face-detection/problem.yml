@@ -9,6 +9,5 @@ imagesUrls:
   - https://www.pymnts.com/wp-content/uploads/2019/06/biometrics-GAO-FBI-facial-recognition.jpg
   - https://s.marketwatch.com/public/resources/images/MW-HQ875_Face_ZH_20190906235240.jpg
   - https://d1t0xk6rn1avc6.cloudfront.net/wp-content/uploads/facial-750x450.jpg
-repo: https://github.com/open.git
 subtitle: Detection faces in digital images
 title: Face Detection
