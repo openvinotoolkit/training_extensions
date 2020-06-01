@@ -44,7 +44,7 @@ def extract_info(descr):
     info.update({get_header(complexity): complexity['value']})
 
     size = [metrics for metrics in descr['metrics'] if metrics['key'] == 'size'][0]
-    info.update({get_header(size): complexity['value']})
+    info.update({get_header(size): size['value']})
 
     for metrics in descr['metrics']:
         if metrics['key'] not in ['size', 'complexity']:
