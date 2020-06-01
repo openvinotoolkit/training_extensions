@@ -15,6 +15,7 @@
 # pylint: disable=C0301,W0622,R0914
 
 import argparse
+import hashlib
 import json
 import os
 import subprocess
@@ -69,24 +70,16 @@ def collect_ap(path):
     return average_precisions
 
 
-def get_sha256(path, work_dir):
-    """ Gets sha256. """
+def sha256sum(filename):
+    """ Computes sha256sum. """
 
-    os.makedirs(work_dir, exist_ok=True)
-    os.system(f'sha256sum {path} > {work_dir}/sha256.txt')
-    with open(f'{work_dir}/sha256.txt') as read_file:
-        sha256 = read_file.readlines()[0].strip().split(' ')[0]
-    return sha256
-
-
-def get_size(path, work_dir):
-    """ Gets size of a file. """
-
-    os.makedirs(work_dir, exist_ok=True)
-    os.system(f'ls -l {path} > {work_dir}/ls.txt')
-    with open(f'{work_dir}/ls.txt') as read_file:
-        size = read_file.readlines()[0].strip().split(' ')[4]
-    return int(size)
+    h = hashlib.sha256()
+    b = bytearray(128*1024)
+    mv = memoryview(b)
+    with open(filename, 'rb', buffering=0) as f:
+        for n in iter(lambda: f.readinto(mv), 0):
+            h.update(mv[:n])
+    return h.hexdigest()
 
 
 def compute_wider_metrics(config_path, snapshot, work_dir, wider_dir, outputs):
@@ -194,12 +187,12 @@ def get_complexity_and_size(cfg, config_path, work_dir, outputs):
     return outputs
 
 
-def get_file_size_and_sha256(snapshot, work_dir):
+def get_file_size_and_sha256(snapshot):
     """ Gets size and sha256 of a file. """
 
     return {
-        'sha256': get_sha256(snapshot, work_dir),
-        'size': get_size(snapshot, work_dir),
+        'sha256': sha256sum(snapshot),
+        'size': os.path.getsize(snapshot),
         'name': os.path.basename(snapshot),
         'source': snapshot
     }
@@ -216,7 +209,7 @@ def eval(config_path, snapshot, wider_dir, out):
     if os.path.islink(snapshot):
         snapshot = os.path.join(os.path.dirname(snapshot), os.readlink(snapshot))
 
-    files = get_file_size_and_sha256(snapshot, work_dir)
+    files = get_file_size_and_sha256(snapshot)
 
     metrics = []
     res_pkl = os.path.join(work_dir, "res.pkl")
