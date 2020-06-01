@@ -4,13 +4,8 @@
 
 This repo contains scripts and tutorials for object detection models training.
 
-### [Face Detection](face-detection/face_detection.md)
-
-Models that are able to detect faces on given images.
-
-### [Person Vehicle Bike Detection](person-vehicle-bike-detection/person_vehicle_bike_detection.md)
-
-Models that are able to detect 3 classes of objects: person, vehicle, non-vehicle (e.g. bike).
+* [Face Detection](face-detection/readme.md) - models that are able to detect faces on given images.
+* [Person Vehicle Bike Detection](person-vehicle-bike-detection/readme.md) - models that are able to detect 3 classes of objects: person, vehicle, non-vehicle (e.g. bike).
 
 ## Setup
 
