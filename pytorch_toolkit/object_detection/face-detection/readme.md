@@ -12,7 +12,11 @@ Models that are able to detect faces on given images.
 
 ## Training pipeline
 
-### 0. Change a directory in your terminal to `openvino_training_extensions/pytorch_toolkit/object_detection`.
+### 0. Change a directory in your terminal to object_detection.
+
+```bash
+cd <openvino_training_extensions>/pytorch_toolkit/object_detection
+```
 
 ### 1. Select a training configuration file and get pre-trained snapshot if available. Please see the table above.
 
