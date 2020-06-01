@@ -48,7 +48,7 @@ def main():
         wider_val_zip = os.path.join(args.wider_dir, 'WIDER_val.zip')
         assert os.path.exists(wider_val_zip), f'failed to find WIDER_val.zip here: {wider_val_zip}'
 
-    mmdetection_tools = '../../external/mmdetection/tools'
+    mmdetection_tools = f'{os.path.dirname(__file__)}/../../../../external/mmdetection/tools'
 
     subprocess.run(f'{mmdetection_tools}/dist_train.sh'
                    f' {args.config}'

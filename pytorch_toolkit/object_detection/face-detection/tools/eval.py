@@ -23,8 +23,8 @@ import yaml
 
 from mmcv.utils import Config
 
-MMDETECTION_TOOLS = '../../external/mmdetection/tools'
-FACE_DETECTION_TOOLS = 'face-detection/tools'
+MMDETECTION_TOOLS = f'{os.path.dirname(__file__)}/../../../../external/mmdetection/tools'
+FACE_DETECTION_TOOLS = os.path.dirname(__file__)
 
 
 def parse_args():
