@@ -4,17 +4,23 @@ The crossroad-detection network model provides detection of three class objects:
 
 | Model Name                  | Complexity (GFLOPs) | Size (Mp) | Mean Average Precision (mAP) | Links                                                                        |
 | --------------------------- | ------------------- | --------- | ------------- | ---------------------------------------------------------------------------- |
-| person-vehicle-bike-detection-crossroad-1016  | 3.560               | 	2.887    | 62.55%          | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/person_vehicle_bike_sd512_mb2_clustered_epoch_21.pth), [configuration file](./configs/person-vehicle-bike-detection-crossroad-1016.py) |
+| person-vehicle-bike-detection-crossroad-1016  | 3.560               | 	2.887    | 62.55%          | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/person_vehicle_bike_sd512_mb2_clustered_epoch_21.pth), [configuration file](./person-vehicle-bike-detection-crossroad-1016/config.py) |
 
 Average Precision (AP) is defined as an area under the precision/recall curve.
 
 ## Training pipeline
 
+### 0. Change a directory in your terminal to object_detection.
+
+```bash
+cd <openvino_training_extensions>/pytorch_toolkit/object_detection
+```
+
 ### 1. Select a training configuration file and get pre-trained snapshot if available. Please see the table above.
 
 ```bash
 export MODEL_NAME=person-vehicle-bike-detection-crossroad-1016
-export CONFIGURATION_FILE=./configs/$MODEL_NAME.py
+export CONFIGURATION_FILE=./person-vehicle-bike-detection/$MODEL_NAME/config.py
 ```
 
 ### 2. Collect dataset
@@ -38,14 +44,14 @@ If you would like to start **fine-tuning** from pre-trained weights do not forge
 
 * To train the detector on a single GPU, run in your terminal:
 
-  ```bash
+   ```bash
    python ../../external/mmdetection/tools/train.py \
             $CONFIGURATION_FILE
    ```
 
 * To train the detector on multiple GPUs, run in your terminal:
 
-  ```bash
+   ```bash
    ../../external/mmdetection/tools/dist_train.sh \
             $CONFIGURATION_FILE \
             <GPU_NUM>
@@ -99,12 +105,12 @@ python ../../external/mmdetection/tools/test_exported.py  \
 
 To see how the converted model works using OpenVINO you need to run `test_exported.py` with `--show` option.
 
-   ```bash
-   python ../../external/mmdetection/tools/test_exported.py  \
-          $CONFIGURATION_FILE \
-          <EXPORT_FOLDER>/$MODEL_NAME.xml \
-          --show
-   ```
+```bash
+python ../../external/mmdetection/tools/test_exported.py  \
+      $CONFIGURATION_FILE \
+      <EXPORT_FOLDER>/$MODEL_NAME.xml \
+      --show
+```
 
 ## Other
 
@@ -114,5 +120,5 @@ To get per-layer computational complexity estimations, run the following command
 
 ```bash
 python ../../external/mmdetection/tools/get_flops.py \
-        $CONFIGURATION_FILE
+       $CONFIGURATION_FILE
 ```

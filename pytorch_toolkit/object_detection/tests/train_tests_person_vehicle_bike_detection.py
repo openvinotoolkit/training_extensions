@@ -28,7 +28,7 @@ class PersonVehicleBikeDetectionCrossroad1016TestCase(unittest.TestCase):
         self.data_folder = '../../data'
         self.work_dir = os.path.join('/tmp', self.model_name)
         os.makedirs(self.work_dir, exist_ok=True)
-        self.configuration_file = f'./configs/{self.model_name}.py'
+        self.configuration_file = f'./person-vehicle-bike-detection/{self.model_name}/config.py'
         os.system(f'cp {self.configuration_file} {self.work_dir}/')
         self.configuration_file = os.path.join(self.work_dir,
                                                os.path.basename(self.configuration_file))
@@ -65,7 +65,7 @@ class PersonVehicleBikeDetectionCrossroad1016TestCase(unittest.TestCase):
             f'--out res.pkl --eval bbox 2>&1 | tee {log_file}')
         ap = collect_ap(log_file)
 
-        with open(f'tests/expected_outputs/{self.model_name}.json') as read_file:
+        with open(f'tests/expected_outputs/person-vehicle-bike-detection/{self.model_name}.json') as read_file:
             content = json.load(read_file)
 
         self.assertEqual(content['map'], ap[0])

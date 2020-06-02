@@ -19,9 +19,10 @@ import unittest
 from common.utils import download_if_not_yet, collect_ap
 
 
-def export_test_case(model_name, snapshot_name=None, alt_ssd_export=False):
+def export_test_case(problem_name, model_name, snapshot_name=None, alt_ssd_export=False):
     class ExportTestCase(unittest.TestCase):
         def setUp(self):
+            self.problem_name = problem_name
             self.model_name = model_name
             if snapshot_name is None:
                 self.snapshot_name = f'{self.model_name}.pth'
@@ -31,7 +32,7 @@ def export_test_case(model_name, snapshot_name=None, alt_ssd_export=False):
             self.data_folder = '../../data'
             self.work_dir = os.path.join('/tmp/', self.model_name)
             os.makedirs(self.work_dir, exist_ok=True)
-            self.configuration_file = f'./configs/{self.model_name}.py'
+            self.configuration_file = f'./{self.problem_name}/{self.model_name}/config.py'
             os.system(f'cp {self.configuration_file} {self.work_dir}/')
             self.configuration_file = os.path.join(self.work_dir,
                                                    os.path.basename(self.configuration_file))
@@ -60,12 +61,12 @@ def export_test_case(model_name, snapshot_name=None, alt_ssd_export=False):
                 f'openvino {export_command_end};'
                 f'python ../../external/mmdetection/tools/test_exported.py '
                 f'{self.configuration_file} '
-                f'{os.path.join(export_dir, self.model_name + ".xml")} '
+                f'{os.path.join(export_dir, "config.xml")} '
                 f'--out res.pkl --eval bbox 2>&1 | tee {log_file}')
 
             ap = collect_ap(log_file)
 
-            with open(f'tests/expected_outputs/{self.model_name}.json') as read_file:
+            with open(f'tests/expected_outputs/{self.problem_name}/{self.model_name}.json') as read_file:
                 content = json.load(read_file)
 
             self.assertGreater(ap[0], content['map'] - thr)

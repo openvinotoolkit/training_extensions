@@ -1,0 +1,40 @@
+description: Face Detection based on MobileNetV2 (SSD).
+name: face-detection-0102
+files:
+  - name: snapshot.pth
+    sha256: 492519fc887d19b263917d0c95d80d26e8f612102f38cc9818e1e2f8a9c4d6d8
+    size: 21681060
+    source: https://download.01.org/opencv/openvino_training_extensions/models/object_detection/face-detection-0102.pth
+framework: PyTorch
+license: https://github.com/opencv/openvino_training_extensions/blob/develop/LICENSE
+metrics:
+  - display_name: AP @ [IoU=0.50:0.95]
+    key: ap
+    unit: '%'
+    value: 19.9
+  - display_name: AP for faces > 64x64
+    key: ap_64x64
+    unit: '%'
+    value: 91.592
+  - display_name: WiderFace Easy
+    key: widerface_e
+    unit: '%'
+    value: 88.904
+  - display_name: WiderFace Medium
+    key: widerface_m
+    unit: '%'
+    value: 83.506
+  - display_name: WiderFace Hard
+    key: widerface_h
+    unit: '%'
+    value: 49.577
+  - display_name: Size
+    key: size
+    unit: Mp
+    value: 3.53
+  - display_name: Complexity
+    key: complexity
+    unit: GFLOPs
+    value: 1.84
+task_type: detection
+training_gpu_num: 2
