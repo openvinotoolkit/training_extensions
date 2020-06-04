@@ -57,7 +57,7 @@ inference.
 
 * [PyTorch\*](pytorch_toolkit)
 
-  * [Neural Networks Compression Framework](pytorch_toolkit/nncf)
+  * [Neural Networks Compression Framework](pytorch_toolkit/nncf) - versions <= 1.3 only, for more recent versions check the [new NNCF repository](https://github.com/openvinotoolkit/nncf_pytorch)
 
 ---
 \* Other names and brands may be claimed as the property of others.

@@ -1,3 +1,7 @@
+**IMPORTANT**: Starting from version 1.3.1, NNCF development and release publishing **has moved** to a new repository: https://github.com/openvinotoolkit/nncf_pytorch
+
+Older versions will still be available in this repository, for the time being.
+
 # Neural Network Compression Framework (NNCF)
 
 This module contains a PyTorch\*-based framework and samples for neural networks compression. The framework is organized as a Python\* package that can be built and used in a standalone mode. The framework architecture is unified to make it easy to add different compression methods. The samples demonstrate the usage of compression algorithms for three different use cases on public models and datasets: Image Classification, Object Detection and Semantic Segmentation.
@@ -135,4 +139,3 @@ Achieved using sample scripts and NNCF configuration files provided with this re
 |UNet|None|Mapillary|-|56.23|
 |UNet|INT8|Mapillary|56.23|56.12|
 |UNet|INT8 + Sparsity 60% (Magnitude)|Mapillary|56.23|56.0|
-
