@@ -1,0 +1,110 @@
+From 7501f84aeed5d5747c91019a1f22a35d4b3dd12e Mon Sep 17 00:00:00 2001
+From: Pallavi G <pallavi.g@intel.com>
+Date: Thu, 4 Jun 2020 16:35:47 +0800
+Subject: [PATCH] Add support to export the saved model to the
+ run_classifier.py and run_squad.py
+
+---
+ run_classifier.py | 20 +++++++++++++++++++-
+ run_squad.py      | 19 +++++++++++++++++++
+ 2 files changed, 38 insertions(+), 1 deletion(-)
+
+diff --git a/run_classifier.py b/run_classifier.py
+index 817b147..6f02076 100644
+--- a/run_classifier.py
++++ b/run_classifier.py
+@@ -123,6 +123,9 @@ flags.DEFINE_integer(
+     "num_tpu_cores", 8,
+     "Only used if `use_tpu` is True. Total number of TPU cores to use.")
+ 
++flags.DEFINE_string(
++    "export_dir", None,
++    "The export directory where the saved model exported.")
+ 
+ class InputExample(object):
+   """A single training/test example for simple sequence classification."""
+@@ -505,7 +508,6 @@ def file_based_convert_examples_to_features(
+     writer.write(tf_example.SerializeToString())
+   writer.close()
+ 
+-
+ def file_based_input_fn_builder(input_file, seq_length, is_training,
+                                 drop_remainder):
+   """Creates an `input_fn` closure to be passed to TPUEstimator."""
+@@ -780,6 +782,19 @@ def convert_examples_to_features(examples, label_list, max_seq_length,
+   return features
+ 
+ 
++def serving_input_fn():
++    label_ids = tf.placeholder(tf.int32, [None], name='label_ids')
++    input_ids = tf.placeholder(tf.int32, [None, FLAGS.max_seq_length], name='input_ids')
++    input_mask = tf.placeholder(tf.int32, [None, FLAGS.max_seq_length], name='input_mask')
++    segment_ids = tf.placeholder(tf.int32, [None, FLAGS.max_seq_length], name='segment_ids')
++    input_fn = tf.estimator.export.build_raw_serving_input_receiver_fn({
++        'label_ids': label_ids,
++        'input_ids': input_ids,
++        'input_mask': input_mask,
++        'segment_ids': segment_ids,
++    })()
++    return input_fn
++
+ def main(_):
+   tf.logging.set_verbosity(tf.logging.INFO)
+ 
+@@ -970,6 +985,9 @@ def main(_):
+         writer.write(output_line)
+         num_written_lines += 1
+     assert num_written_lines == num_actual_predict_examples
++  if FLAGS.export_dir != None:
++    estimator._export_to_tpu = False
++    estimator.export_savedmodel(FLAGS.export_dir, serving_input_fn)
+ 
+ 
+ if __name__ == "__main__":
+diff --git a/run_squad.py b/run_squad.py
+index edd4c3e..e44cc79 100644
+--- a/run_squad.py
++++ b/run_squad.py
+@@ -153,6 +153,10 @@ flags.DEFINE_float(
+     "null_score_diff_threshold", 0.0,
+     "If null_score - best_non_null is greater than the threshold predict null.")
+ 
++flags.DEFINE_string(
++    "export_dir", None,
++    "The export directory where the saved model exported.")
++
+ 
+ class SquadExample(object):
+   """A single training/test example for simple sequence classification.
+@@ -1122,6 +1126,18 @@ def validate_flags_or_throw(bert_config):
+         "The max_seq_length (%d) must be greater than max_query_length "
+         "(%d) + 3" % (FLAGS.max_seq_length, FLAGS.max_query_length))
+ 
++def serving_input_fn():
++  unique_ids = tf.placeholder(tf.int32, [None], name='unique_ids')
++  input_ids = tf.placeholder(tf.int32, [None, FLAGS.max_seq_length], name='input_ids')
++  input_mask = tf.placeholder(tf.int32, [None, FLAGS.max_seq_length], name='input_mask')
++  segment_ids = tf.placeholder(tf.int32, [None, FLAGS.max_seq_length], name='segment_ids')
++  input_fn = tf.estimator.export.build_raw_serving_input_receiver_fn({
++      'unique_ids': unique_ids,
++      'input_ids': input_ids,
++      'input_mask': input_mask,
++      'segment_ids': segment_ids,
++  })()
++  return input_fn
+ 
+ def main(_):
+   tf.logging.set_verbosity(tf.logging.INFO)
+@@ -1274,6 +1290,9 @@ def main(_):
+                       FLAGS.n_best_size, FLAGS.max_answer_length,
+                       FLAGS.do_lower_case, output_prediction_file,
+                       output_nbest_file, output_null_log_odds_file)
++  if FLAGS.export_dir != None:
++    estimator._export_to_tpu = False
++    estimator.export_savedmodel(FLAGS.export_dir, serving_input_fn)
+ 
+ 
+ if __name__ == "__main__":
+-- 
+2.17.1
+
