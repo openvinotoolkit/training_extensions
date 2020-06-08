@@ -1,4 +1,4 @@
-**IMPORTANT**: Starting from version 1.3.1, NNCF development and release publishing **has moved** to a new repository: https://github.com/openvinotoolkit/nncf_pytorch
+**IMPORTANT**: Starting from version 1.3.1, NNCF development and release publishing **have moved** to a new repository: https://github.com/openvinotoolkit/nncf_pytorch
 
 Older versions will still be available in this repository, for the time being.
 
