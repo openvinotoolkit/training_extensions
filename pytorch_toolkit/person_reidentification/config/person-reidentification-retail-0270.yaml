@@ -1,26 +1,24 @@
 model:
-  name: 'fpn_osnet_x1_0'
-  pretrained: True
+  name: 'fpn_osnet_x0_75'
+  pretrained: False
   feature_dim: 256
   IN_first: True
-  dropout:
-    p: 0.1
-    mu: 0.1
-    sigma: 0.03
-    dist: 'gaussian'
-  pooling_type: 'avg'
+  pooling_type: 'conv'
+  lct_gate: True
   fpn:
     enable: False
 
 data:
   root: './'
   type: 'image'
-  sources: ['msmt17']
+  sources:  ['msmt17', 'market-train']
   targets: ['market1501']
   height: 256
   width: 128
-  combineall: False
-  save_dir: 'outputs/reid-exp'
+  min_samples_per_id: 10
+  combineall: True
+  save_dir: 'outputs/reid-0270'
+  min_samples_per_id: 8
   transforms:
     random_flip:
       enable: True
@@ -51,17 +49,18 @@ data:
       enable: True
       p: 0.15
 
-loss:
-  name: 'am_softmax'
-  softmax:
-    label_smooth: False
-    conf_penalty: 0.3
-    m: 0.35
-    s: 30.0
-    pr_product: False
 
 sampler:
   train_sampler: 'RandomIdentitySamplerV2'
+
+loss:
+  name: 'am_softmax'
+  softmax:
+    label_smooth: True
+    conf_penalty: 0.3
+    m: 0.35
+    s: 30.0
+    pr_product: True
 
 metric_losses:
   enable: False
@@ -86,3 +85,4 @@ test:
   eval_freq: 5
   rerank: False
   visactmap: False
+  apply_masks: False

@@ -50,9 +50,9 @@ loss:
   name: 'am_softmax'
   softmax:
     label_smooth: False
-    conf_pen: 0.3
+    conf_penalty: 0.3
     m: 0.35
-    s: 30
+    s: 30.0
     pr_product: False
 
 sampler:
@@ -60,7 +60,6 @@ sampler:
 
 metric_losses:
   enable: False
-  local_push_weight: 1.0
 
 train:
   optim: 'amsgrad'
