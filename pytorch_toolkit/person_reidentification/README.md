@@ -11,8 +11,8 @@ project. The code supports conversion to the ONNX\* format and inference of Open
 
 * Ubuntu\* 16.04
 * Python\* 3.5.2
-* PyTorch\* 1.3 or higher
-* OpenVINO™ 2019 R4 (or lower) with Python API
+* PyTorch\* 1.4 or higher
+* OpenVINO™ 2020 R3 (or newer) with Python API
 
 ### Installation
 
