@@ -55,14 +55,14 @@ root
 ### Configuration Files
 
 The script for training and inference uses a configuration file
-[default_config.py](../../external/deep-object-reid/scripts/default_config.py), which consists of default parameters.
+[default_config.py](https://github.com/opencv/deep-object-reid/tree/ote/scripts/default_config.py), which consists of default parameters.
 This file also has description of parameters.
 Parameters that you wish to change must be in your own configuration file.
 Example: [person-reidentification-retail-0265.yaml](config/person-reidentification-retail-0265.yaml)
 
 ## Training
 
-To start training, create or choose a configuration file and use the [main.py](../../external/deep-object-reid/scripts/main.py) script.
+To start training, create or choose a configuration file and use the [main.py](https://github.com/opencv/deep-object-reid/tree/ote/scripts/main.py) script.
 
 Example:
 
