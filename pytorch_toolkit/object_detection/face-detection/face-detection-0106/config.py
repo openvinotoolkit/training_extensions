@@ -25,16 +25,20 @@ model = dict(
         relu_before_extra_convs=True),
     bbox_head=dict(
         type='ATSSHead',
-        num_classes=2,
+        num_classes=1,
         in_channels=256,
         stacked_convs=4,
         feat_channels=128,
-        octave_base_scale=8,
-        scales_per_octave=1,
-        anchor_ratios=[1.0],
-        anchor_strides=(4, 8, 16, 32, 64),
-        target_means=[.0, .0, .0, .0],
-        target_stds=[0.1, 0.1, 0.2, 0.2],
+        anchor_generator=dict(
+            type='AnchorGenerator',
+            ratios=[1.0],
+            octave_base_scale=8,
+            scales_per_octave=1,
+            strides=[4, 8, 16, 32, 64]),
+        bbox_coder=dict(
+            type='DeltaXYWHBBoxCoder',
+            target_means=[.0, .0, .0, .0],
+            target_stds=[0.1, 0.1, 0.2, 0.2]),
         loss_cls=dict(
             type='FocalLoss',
             use_sigmoid=True,
@@ -58,7 +62,7 @@ test_cfg = dict(
     max_per_img=750)
 # model training and testing settings
 # dataset settings
-dataset_type = 'CustomCocoDataset'
+dataset_type = 'CocoDataset'
 data_root = 'data/WIDERFace/'
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
@@ -95,7 +99,7 @@ test_pipeline = [
         ])
 ]
 data = dict(
-    imgs_per_gpu=5,
+    samples_per_gpu=5,
     workers_per_gpu=3,
     train=dict(
         type='RepeatDataset',
@@ -136,7 +140,7 @@ lr_config = dict(
 checkpoint_config = dict(interval=1)
 # yapf:disable
 log_config = dict(
-    interval=100,
+    interval=10,
     hooks=[
         dict(type='TextLoggerHook'),
         dict(type='TensorboardLoggerHook')
