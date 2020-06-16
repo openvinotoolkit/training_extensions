@@ -16,8 +16,8 @@ pip install -r ${work_dir}/requirements.txt
 pip install -e ../nncf
 
 # Download and setup 3rd party repo
-git submodule update --init --recommend-shallow ../../external/deep-person-reid
-cd ../../external/deep-person-reid
+git submodule update --init --recommend-shallow ../../external/deep-object-reid
+cd ../../external/deep-object-reid
 pip install -r requirements.txt
 python setup.py develop
 cd -

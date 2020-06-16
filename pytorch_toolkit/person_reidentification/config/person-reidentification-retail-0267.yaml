@@ -1,19 +1,24 @@
 model:
-  name: 'fpn_osnet_x1_0'
-  pretrained: True
-  feature_dim: 512
+  name: 'fpn_osnet_x0_5'
+  pretrained: False
+  feature_dim: 256
+  IN_first: True
+  pooling_type: 'conv'
+  lct_gate: True
   fpn:
-    enable: True
-    dim: 128
-    process: 'concatenation'
+    enable: False
 
 data:
+  root: './'
   type: 'image'
-  sources: ['msmt17']
+  sources:  ['msmt17']
   targets: ['market1501']
   height: 256
   width: 128
+  min_samples_per_id: 10
   combineall: True
+  save_dir: 'outputs/reid-0267'
+  min_samples_per_id: 8
   transforms:
     random_flip:
       enable: True
@@ -22,7 +27,7 @@ data:
       enable: True
       p: 0.5
     random_figures:
-      enable: False
+      enable: True
       p: 0.33
     random_padding:
       enable: True
@@ -41,9 +46,9 @@ data:
       enable: True
       p: 0.1
     random_grid:
-      enable: False
+      enable: True
       p: 0.15
-  save_dir: 'outputs/reid-0300'
+
 
 sampler:
   train_sampler: 'RandomIdentitySamplerV2'
@@ -52,29 +57,32 @@ loss:
   name: 'am_softmax'
   softmax:
     label_smooth: True
-    conf_pen: 0.3
+    conf_penalty: 0.3
     m: 0.35
-    s: 30
+    s: 30.0
+    pr_product: True
+
+metric_losses:
+  enable: False
 
 train:
   optim: 'amsgrad'
   lr: 0.0015
-  max_epoch: 64
+  max_epoch: 65
   batch_size: 64
   fixbase_epoch: 5
-  open_layers: ['classifier', 'fc']
-  lr_scheduler: 'multi_step_warmup'
+  open_layers: ['classifier', 'fc', 'global_avgpool']
+  lr_scheduler: 'multi_step'
   stepsize: [40, 50]
-  warmup: 4
+  warmup: 0
   warmup_factor_base: 0.01
 
 test:
   batch_size: 300
   dist_metric: 'cosine'
-  normalize_feature: False
+  normalize_feature: True
   evaluate: False
-  eval_freq: 2
+  eval_freq: 5
   rerank: False
   visactmap: False
-  visrank: False
   apply_masks: False
