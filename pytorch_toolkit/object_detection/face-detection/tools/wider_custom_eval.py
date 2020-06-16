@@ -274,13 +274,13 @@ def voc_eval(result_file, dataset, iou_thr, image_size):
             # filter out boxes with to small height or with invalid size (-1)
             ignored = [not (obj_size[0] <= b[3] <= obj_size[1]) or np.any(b == -1) for b in bboxes]
             objects = [{'bbox': bbox, 'is_ignored': ignor} for bbox, ignor in zip(bboxes, ignored)]
-            groundtruth.append(ImageAnnotation(dataset.img_infos[i]['id'], objects))
+            groundtruth.append(ImageAnnotation(dataset.data_infos[i]['id'], objects))
 
             # filter out predictions with too low confidence
             detections = [{'bbox': points_2_xywh(bbox[:4]), 'score': bbox[4], 'type': 'face'} for
                           bbox
                           in det_results[i][0] if bbox[4] > min_detection_confidence]
-            predictions.append(ImageAnnotation(dataset.img_infos[i]['id'], detections))
+            predictions.append(ImageAnnotation(dataset.data_infos[i]['id'], detections))
 
         recall, precision, miss_rates, fppis = evaluate_detections(
             groundtruth, predictions, 'face',

@@ -54,7 +54,7 @@ def main():
 
     wider_friendly_results = []
     for i, sample in enumerate(tqdm(dataset)):
-        filename = sample['img_meta'][0].data['filename']
+        filename = sample['img_metas'][0].data['filename']
         folder, image_name = filename.split('/')[-2:]
         wider_friendly_results.append({'folder': folder, 'name': image_name[:-4],
                                        'boxes': results[i][0]})
