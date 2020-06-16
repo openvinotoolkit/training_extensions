@@ -1,0 +1,40 @@
+description: Face Detection based on ShuffleNetV2 (SSD).
+name: face-detection-0108
+files:
+  - name: epoch_70.pth
+    sha256: f20d68064ceb17c6cf0d7c81bb2462c1cdaa68b96faa43603a2448f3df8b15f7
+    size: 12681362
+    source: https://download.01.org/opencv/openvino_training_extensions/models/object_detection/face-detection-0108.pth
+framework: PyTorch
+license: https://github.com/opencv/openvino_training_extensions/blob/develop/LICENSE
+metrics:
+  - display_name: AP @ [IoU=0.50:0.95]
+    key: ap
+    unit: '%'
+    value: 20.8
+  - display_name: AP for faces > 64x64
+    key: ap_64x64
+    unit: '%'
+    value: 92.251
+  - display_name: WiderFace Easy
+    key: widerface_e
+    unit: '%'
+    value: 89.683
+  - display_name: WiderFace Medium
+    key: widerface_m
+    unit: '%'
+    value: 83.888
+  - display_name: WiderFace Hard
+    key: widerface_h
+    unit: '%'
+    value: 50.476
+  - display_name: Size
+    key: size
+    unit: Mp
+    value: 2.31
+  - display_name: Complexity
+    key: complexity
+    unit: GFLOPs
+    value: 2.5
+task_type: detection
+training_gpu_num: 4
