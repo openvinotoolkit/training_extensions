@@ -8,23 +8,25 @@ model = dict(
         out_indices=(4, 5),
         frozen_stages=-1,
         norm_eval=False,
-        pretrained=True,
+        pretrained=True
     ),
     neck=None,
     bbox_head=dict(
         type='SSDHead',
-        input_size=input_size,
+        num_classes=1,
         in_channels=(int(width_mult * 96), int(width_mult * 320)),
-        num_classes=2,
-        anchor_strides=(16, 32),
-        anchor_widths=(
-            [14.0373, 37.4827, 21.952, 51.8187],
-            [213.5467, 115.584, 192.3413, 76.3093, 112.896]),
-        anchor_heights=(
-            [22.4, 59.136, 38.08, 94.3787],
-            [339.7333, 243.264, 185.92, 156.9493, 108.416]),
-        target_means=(.0, .0, .0, .0),
-        target_stds=(0.1, 0.1, 0.2, 0.2),
+        anchor_generator=dict(
+            type='SSDAnchorGeneratorClustered',
+            strides=(16, 32),
+            widths=([14.0373, 37.4827, 21.952, 51.8187],
+                    [213.5467, 115.584, 192.3413, 76.3093, 112.896]),
+            heights=([22.4, 59.136, 38.08, 94.3787],
+                     [339.7333, 243.264, 185.92, 156.9493, 108.416]),
+            ),
+        bbox_coder=dict(
+            type='DeltaXYWHBBoxCoder',
+            target_means=(.0, .0, .0, .0),
+            target_stds=(0.1, 0.1, 0.2, 0.2),),
         depthwise_heads=True,
         depthwise_heads_activations='relu',
         loss_balancing=True))
@@ -51,7 +53,7 @@ test_cfg = dict(
     max_per_img=200)
 # model training and testing settings
 # dataset settings
-dataset_type = 'CustomCocoDataset'
+dataset_type = 'CocoDataset'
 data_root = 'data/WIDERFace/'
 img_norm_cfg = dict(mean=[0, 0, 0], std=[255, 255, 255], to_rgb=True)
 train_pipeline = [
@@ -128,7 +130,7 @@ lr_config = dict(
 checkpoint_config = dict(interval=1)
 # yapf:disable
 log_config = dict(
-    interval=100,
+    interval=10,
     hooks=[
         dict(type='TextLoggerHook'),
         dict(type='TensorboardLoggerHook')

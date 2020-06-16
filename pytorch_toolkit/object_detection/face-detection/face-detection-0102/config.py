@@ -8,21 +8,25 @@ model = dict(
         out_indices=(4, 5),
         frozen_stages=-1,
         norm_eval=False,
-        pretrained=True,
+        pretrained=True
     ),
     neck=None,
     bbox_head=dict(
         type='SSDHead',
-        input_size=input_size,
+        num_classes=1,
         in_channels=(int(width_mult * 96), int(width_mult * 320)),
-        num_classes=2,
-        anchor_strides=(16, 32),
-        anchor_widths=([9.4 * 1.28, 25.1 * 1.28, 14.7 * 1.28, 34.7 * 1.28],
-                       [143.0 * 1.28, 77.4 * 1.28, 128.8 * 1.28, 51.1 * 1.28, 75.6 * 1.28]),
-        anchor_heights=([15.0 * 1.28, 39.6 * 1.28, 25.5 * 1.28, 63.2 * 1.28],
-                        [227.5 * 1.28, 162.9 * 1.28, 124.5 * 1.28, 105.1 * 1.28, 72.6 * 1.28]),
-        target_means=(.0, .0, .0, .0),
-        target_stds=(0.1, 0.1, 0.2, 0.2),
+        anchor_generator=dict(
+            type='SSDAnchorGeneratorClustered',
+            strides=(16, 32),
+            widths=([9.4 * 1.28, 25.1 * 1.28, 14.7 * 1.28, 34.7 * 1.28],
+                    [143.0 * 1.28, 77.4 * 1.28, 128.8 * 1.28, 51.1 * 1.28, 75.6 * 1.28]),
+            heights=([15.0 * 1.28, 39.6 * 1.28, 25.5 * 1.28, 63.2 * 1.28],
+                     [227.5 * 1.28, 162.9 * 1.28, 124.5 * 1.28, 105.1 * 1.28, 72.6 * 1.28]),
+            ),
+        bbox_coder=dict(
+            type='DeltaXYWHBBoxCoder',
+            target_means=(.0, .0, .0, .0),
+            target_stds=(0.1, 0.1, 0.2, 0.2),),
         depthwise_heads=True,
         depthwise_heads_activations='relu',
         loss_balancing=True))
@@ -49,7 +53,7 @@ test_cfg = dict(
     max_per_img=200)
 # model training and testing settings
 # dataset settings
-dataset_type = 'CustomCocoDataset'
+dataset_type = 'CocoDataset'
 data_root = 'data/WIDERFace/'
 img_norm_cfg = dict(mean=[0, 0, 0], std=[255, 255, 255], to_rgb=True)
 train_pipeline = [
@@ -85,7 +89,7 @@ test_pipeline = [
         ])
 ]
 data = dict(
-    imgs_per_gpu=65,
+    samples_per_gpu=65,
     workers_per_gpu=2,
     train=dict(
         type='RepeatDataset',
@@ -126,7 +130,7 @@ lr_config = dict(
 checkpoint_config = dict(interval=1)
 # yapf:disable
 log_config = dict(
-    interval=100,
+    interval=10,
     hooks=[
         dict(type='TextLoggerHook'),
         dict(type='TensorboardLoggerHook')
