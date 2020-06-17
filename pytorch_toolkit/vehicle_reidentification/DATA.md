@@ -6,7 +6,7 @@ This tollkit contains configs for training on the following datasets:
 * [VeRi-Wild](https://github.com/PKU-IMRE/VERI-Wild)
 * UniverseModels (set of make/model classification datasets with merged annotation)
   - [CompCars](http://mmlab.ie.cuhk.edu.hk/datasets/comp_cars/index.html)
-  - [VMMRdb](http://vmmrdb.cecsresearch.org)
+  - [VMMRdb](https://github.com/faezetta/VMMRdb)
 
 VeRi-776 and VeRi-Wild datasets are used without any changes and no future preparation are needed.
 
