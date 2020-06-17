@@ -73,7 +73,7 @@ python ../../external/deep-object-reid/scripts/main.py \
 
 ## Fine-tuning
 
-To start fine-tuning, create or choose a configuration file, choose init model weigts (you can use the pre-trained weights -- see [section](#pre-trained-models)) and use the [main.py](../../external/deep-object-reid/scripts/main.py) script.
+To start fine-tuning, create or choose a configuration file, choose init model weigts (you can use the pre-trained weights -- see [section](#pre-trained-models)) and use the [main.py](https://github.com/opencv/deep-object-reid/blob/ote/scripts/main.py) script.
 
 Example:
 
@@ -86,7 +86,7 @@ python ../../external/deep-object-reid/scripts/main.py \
 
 ## Testing
 
-To test your network, specify your configuration file and use the [main.py](../../external/deep-object-reid/scripts/main.py) script.
+To test your network, specify your configuration file and use the [main.py](https://github.com/opencv/deep-object-reid/blob/ote/scripts/main.py) script.
 
 Example:
 

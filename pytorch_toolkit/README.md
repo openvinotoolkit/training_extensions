@@ -23,7 +23,7 @@ them for prediction.
 * [Action Recognition](action_recognition)
 * [ASL Recognition](asl_recognition)
 * [Face Recognition](face_recognition)
-* [Object Reidentification]()
+* Object Reidentification
   - [Person Reidentification](person_reidentification)
   - [Vehicle Reidentification](vehicle_reidentification)
 * [Human Pose Estimation](human_pose_estimation)
