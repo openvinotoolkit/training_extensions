@@ -23,9 +23,9 @@ them for prediction.
 * [Action Recognition](action_recognition)
 * [ASL Recognition](asl_recognition)
 * [Face Recognition](face_recognition)
-* Object Reidentification
-  - [Person Reidentification](person_reidentification)
-  - [Vehicle Reidentification](vehicle_reidentification)
+* [Object Re-Identification](object_reidentification)
+  - [Person Re-Identification](object_reidentification/person_reidentification)
+  - [Vehicle Re-Identification](object_reidentification/vehicle_reidentification)
 * [Human Pose Estimation](human_pose_estimation)
 * [Instance Segmentation](instance_segmentation)
 * [Object Detection](object_detection)
