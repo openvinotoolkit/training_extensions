@@ -63,7 +63,7 @@ The script for training and inference uses a configuration file
 [default_config.py](https://github.com/opencv/deep-object-reid/tree/ote/scripts/default_config.py), which consists of default parameters.
 This file also has description of parameters.
 Parameters that you wish to change must be in your own configuration file.
-Example: [person-reidentification-retail-0265.yaml](config/person-reidentification-retail-0265.yaml)
+Example: [person-reidentification-retail-0265.yaml](configs/person-reidentification-retail-0265.yaml)
 
 ## Training
 
@@ -74,7 +74,7 @@ Example:
 ```bash
 python ../../../external/deep-object-reid/scripts/main.py \
     --root /path/to/datasets/directory/root \
-    --config config/person-reidentification-retail-0265.yaml
+    --config configs/person-reidentification-retail-0265.yaml
 ```
 
 ## Test
@@ -131,7 +131,7 @@ This produces the `model.xml` model and weights `model.bin` in single-precision 
 
 ## OpenVINO™ Demo
 
-OpenVINO™ provides the multi-camera-multi-person tracking demo, which is able to use these models as person re-identification networks. See details in the [demo](https://github.com/opencv/open_model_zoo/tree/develop/demos/python_demos/multi_camera_multi_person_tracking).
+OpenVINO™ provides the multi-camera-multi-person tracking demo, which is able to use these models as person re-identification networks. See details in the [demo](https://github.com/opencv/open_model_zoo/tree/develop/demos/python_demos/multi_camera_multi_target_tracking).
 
 ## Citation
 If this training code helped your research, please cite the paper:
