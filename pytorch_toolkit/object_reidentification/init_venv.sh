@@ -13,7 +13,6 @@ echo "export PYTHONPATH=\$PYTHONPATH:${work_dir}" >> venv/bin/activate
 . venv/bin/activate
 
 pip install -r ${work_dir}/requirements.txt
-pip install -e ../nncf
 
 # Download and setup 3rd party repo
 git submodule update --init --recommend-shallow ../../external/deep-object-reid
