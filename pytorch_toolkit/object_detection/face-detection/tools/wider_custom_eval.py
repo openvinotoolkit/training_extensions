@@ -25,6 +25,7 @@ from tqdm import tqdm
 
 import cv2
 import mmcv
+from mmcv import DictAction
 from mmdet import datasets
 
 
@@ -314,9 +315,14 @@ def main():
                         help='Image resolution. Used for filtering.')
     parser.add_argument('--iou-thr', type=float, default=0.5, help='IoU threshold for evaluation')
     parser.add_argument('--out', help='A path to file where metrics values will be saved (*.json).')
+    parser.add_argument(
+        '--update_config', nargs='+', action=DictAction,
+        help='Update configuration file by parameters specified here.')
     args = parser.parse_args()
 
     cfg = mmcv.Config.fromfile(args.config)
+    if args.update_config:
+        cfg.merge_from_dict(args.update_config)
     test_dataset = datasets.builder.build_dataset(cfg.data.test)
     out = voc_eval(args.input, test_dataset, args.iou_thr, args.imsize)
 
