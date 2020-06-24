@@ -261,7 +261,7 @@ def main():
     """ Main function. """
 
     args = parse_args()
-    eval(args.config, args.snapshot, args.wider_dir, args.out)
+    eval(args.config, args.snapshot, args.wider_dir, args.out, args.update_config)
 
 
 if __name__ == '__main__':
