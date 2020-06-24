@@ -21,6 +21,7 @@ import os
 import subprocess
 import tempfile
 import yaml
+import sys
 
 from mmcv.utils import Config
 
@@ -39,7 +40,8 @@ def parse_args():
     args.add_argument('out',
                       help='A path to output file where models metrics will be saved (.yml).')
     args.add_argument('--wider_dir',
-                      help='Specify this  path if you would like to test your model on WiderFace dataset.')
+                      help='Specify this  path if you would like to test your model on WiderFace dataset.',
+                      default='data/wider_face')
 
     return args.parse_args()
 
@@ -89,7 +91,19 @@ def compute_wider_metrics(config_path, snapshot, work_dir, wider_dir, outputs):
     os.makedirs(wider_data_folder, exist_ok=True)
 
     wider_data_zip = os.path.join(wider_data_folder, 'WIDER_val.zip')
-    assert os.path.exists(wider_data_zip), f'failed to find WIDER_val.zip here: {wider_data_zip}'
+    if not os.path.exists(wider_data_zip):
+        print('', file=sys.stderr)
+        print('#########################################################################', file=sys.stderr)
+        print('Cannot compute WiderFace metrics, failed to find WIDER_val.zip here:', file=sys.stderr)
+        print(f'    {os.path.abspath(wider_data_zip)}', file=sys.stderr)
+        print('Please download the data from', file=sys.stderr)
+        print('    https://drive.google.com/file/d/0B6eKvaijfFUDd3dIRmpvSk8tLUk/view', file=sys.stderr)
+        print('Save downloaded data as:', file=sys.stderr)
+        print(f'    {os.path.abspath(wider_data_zip)}', file=sys.stderr)
+        print(f'#########################################################################', file=sys.stderr)
+
+        return outputs
+
     subprocess.run(f'unzip -q -o {wider_data_zip} -d {wider_data_folder}'.split(' '), check=True)
 
     eval_tools_zip = os.path.join(wider_data_folder, 'eval_tools.zip')
@@ -210,14 +224,12 @@ def eval(config_path, snapshot, wider_dir, out):
     files = get_file_size_and_sha256(snapshot)
 
     metrics = []
+
+    metrics = get_complexity_and_size(cfg, config_path, work_dir, metrics)
     res_pkl = os.path.join(work_dir, "res.pkl")
     metrics = coco_ap_eval(config_path, work_dir, snapshot, res_pkl, metrics)
     metrics = custom_ap_eval(config_path, work_dir, res_pkl, metrics)
-
-    if wider_dir:
-        metrics = compute_wider_metrics(config_path, snapshot, work_dir, wider_dir, metrics)
-
-    metrics = get_complexity_and_size(cfg, config_path, work_dir, metrics)
+    metrics = compute_wider_metrics(config_path, snapshot, work_dir, wider_dir, metrics)
 
     for metric in metrics:
         metric['value'] = round(metric['value'], 3)
@@ -229,7 +241,7 @@ def eval(config_path, snapshot, wider_dir, out):
 
     if os.path.exists(out):
         with open(out) as read_file:
-            content = yaml.load(read_file)
+            content = yaml.load(read_file, Loader=yaml.FullLoader)
         content.update(outputs)
         outputs = content
 

@@ -34,7 +34,8 @@ def parse_args():
     args.add_argument('out',
                       help='A path to output file where models metrics will be saved (.yml).')
     args.add_argument('--wider_dir',
-                      help='Specify this  path if you would like to test your model on WiderFace dataset.')
+                      help='Specify this  path if you would like to test your model on WiderFace dataset.',
+                      default='data/wider_dir')
 
     return args.parse_args()
 
@@ -43,10 +44,6 @@ def main():
     """ Main function. """
 
     args = parse_args()
-
-    if args.wider_dir:
-        wider_val_zip = os.path.join(args.wider_dir, 'WIDER_val.zip')
-        assert os.path.exists(wider_val_zip), f'failed to find WIDER_val.zip here: {wider_val_zip}'
 
     mmdetection_tools = f'{os.path.dirname(__file__)}/../../../../external/mmdetection/tools'
 
