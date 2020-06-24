@@ -33,11 +33,11 @@ def face_detection_test_case(model_name):
             self.configuration_file = os.path.join(self.work_dir,
                                                    os.path.basename(self.configuration_file))
             self.ote_url = 'https://download.01.org/opencv/openvino_training_extensions'
-            self.url = f'{self.ote_url}/models/object_detection/{self.model_name}.pth'
+            self.url = f'{self.ote_url}/models/object_detection/v2/{self.model_name}.pth'
             download_if_not_yet(self.work_dir, self.url)
 
-            assert replace_text_in_file(self.configuration_file, 'imgs_per_gpu=',
-                                        'imgs_per_gpu=1 ,#')
+            assert replace_text_in_file(self.configuration_file, 'samples_per_gpu=',
+                                        'samples_per_gpu=1 ,#')
             assert replace_text_in_file(self.configuration_file, 'total_epochs = 70',
                                         'total_epochs = 75')
             assert replace_text_in_file(self.configuration_file, 'data/WIDERFace',
@@ -54,7 +54,7 @@ def face_detection_test_case(model_name):
         def test_fine_tuning(self):
             log_file = os.path.join(self.work_dir, 'test_fine_tuning.log')
             os.system(
-                f'../../external/mmdetection/tools/dist_train.sh {self.configuration_file} 1 --validate 2>&1 |'
+                f'../../external/mmdetection/tools/dist_train.sh {self.configuration_file} 1 2>&1 |'
                 f' tee {log_file}')
             ap = collect_ap(log_file)
             self.assertEqual(len((ap)), 5)
@@ -77,29 +77,29 @@ def face_detection_test_case(model_name):
     return Class
 
 
-class FaceDetection0100TestCase(face_detection_test_case('face-detection-0100')):
-    """ Test case for face-detection-0100 model. """
+class FaceDetection0100TestCase(face_detection_test_case('face-detection-0200')):
+    """ Test case for face-detection-0200 model. """
 
 
-class FaceDetection0102TestCase(face_detection_test_case('face-detection-0102')):
-    """ Test case for face-detection-0102 model. """
+class FaceDetection0102TestCase(face_detection_test_case('face-detection-0202')):
+    """ Test case for face-detection-0202 model. """
 
 
-class FaceDetection0104TestCase(face_detection_test_case('face-detection-0104')):
-    """ Test case for face-detection-0104 model. """
+class FaceDetection0104TestCase(face_detection_test_case('face-detection-0204')):
+    """ Test case for face-detection-0204 model. """
 
 
-class FaceDetection0105TestCase(face_detection_test_case('face-detection-0105')):
-    """ Test case for face-detection-0105 model. """
+class FaceDetection0105TestCase(face_detection_test_case('face-detection-0205')):
+    """ Test case for face-detection-0205 model. """
 
 
-class FaceDetection0106TestCase(face_detection_test_case('face-detection-0106')):
-    """ Test case for face-detection-0106 model. """
-
-
-class FaceDetection0107TestCase(face_detection_test_case('face-detection-0107')):
-    """ Test case for face-detection-0107 model. """
-
-
-class FaceDetection0108TestCase(face_detection_test_case('face-detection-0108')):
-    """ Test case for face-detection-0108 model. """
+class FaceDetection0106TestCase(face_detection_test_case('face-detection-0206')):
+    """ Test case for face-detection-0206 model. """
+#
+#
+# class FaceDetection0107TestCase(face_detection_test_case('face-detection-0107')):
+#     """ Test case for face-detection-0107 model. """
+#
+#
+# class FaceDetection0108TestCase(face_detection_test_case('face-detection-0108')):
+#     """ Test case for face-detection-0108 model. """
