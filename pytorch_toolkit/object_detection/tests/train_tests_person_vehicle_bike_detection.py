@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import json
-import os
-import unittest
-
-from common.utils import replace_text_in_file, collect_ap, download_if_not_yet
-
+# import json
+# import os
+# import unittest
+#
+# from common.utils import replace_text_in_file, collect_ap, download_if_not_yet
+#
 #
 # class PersonVehicleBikeDetectionCrossroad1016TestCase(unittest.TestCase):
 #
