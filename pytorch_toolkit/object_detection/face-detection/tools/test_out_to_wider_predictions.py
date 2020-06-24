@@ -20,7 +20,7 @@ import os
 from tqdm import tqdm
 
 import mmcv
-from mmcv import Config, DictAction
+from mmcv import DictAction
 from mmdet.datasets import build_dataset
 
 

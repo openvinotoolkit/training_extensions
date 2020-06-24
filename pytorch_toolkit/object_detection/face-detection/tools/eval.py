@@ -42,6 +42,10 @@ def parse_args():
     args.add_argument('--wider_dir',
                       help='Specify this  path if you would like to test your model on WiderFace dataset.',
                       default='data/wider_face')
+    args.add_argument('--update_config',
+                      help='Update configuration file by parameters specified here.'
+                           'Use quotes if you are going to change several params.',
+                      default='')
 
     return args.parse_args()
 
@@ -156,14 +160,15 @@ def compute_wider_metrics(config_path, snapshot, work_dir, wider_dir, outputs):
     return outputs
 
 
-def coco_ap_eval(config_path, work_dir, snapshot, res_pkl, outputs):
+def coco_ap_eval(config_path, work_dir, snapshot, res_pkl, outputs, update_config):
     """ Computes COCO AP. """
 
     with open(os.path.join(work_dir, 'test_py_stdout'), 'w') as test_py_stdout:
+        update_config = f'--update_config {update_config}' if update_config else ''
         subprocess.run(
             f'python {MMDETECTION_TOOLS}/test.py'
             f' {config_path} {snapshot}'
-            f' --out {res_pkl} --eval bbox'.split(' '), stdout=test_py_stdout, check=True)
+            f' --out {res_pkl} --eval bbox {update_config}'.split(' '), stdout=test_py_stdout, check=True)
     average_precision = collect_ap(os.path.join(work_dir, 'test_py_stdout'))[0]
     outputs.append({'key': 'ap', 'value': average_precision * 100, 'unit': '%', 'display_name': 'AP @ [IoU=0.50:0.95]'})
     return outputs
@@ -212,7 +217,7 @@ def get_file_size_and_sha256(snapshot):
     }
 
 
-def eval(config_path, snapshot, wider_dir, out):
+def eval(config_path, snapshot, wider_dir, out, update_config):
     """ Main evaluation procedure. """
 
     cfg = Config.fromfile(config_path)
@@ -229,7 +234,7 @@ def eval(config_path, snapshot, wider_dir, out):
 
     metrics = get_complexity_and_size(cfg, config_path, work_dir, metrics)
     res_pkl = os.path.join(work_dir, "res.pkl")
-    metrics = coco_ap_eval(config_path, work_dir, snapshot, res_pkl, metrics)
+    metrics = coco_ap_eval(config_path, work_dir, snapshot, res_pkl, metrics, update_config)
     metrics = custom_ap_eval(config_path, work_dir, res_pkl, metrics)
     metrics = compute_wider_metrics(config_path, snapshot, work_dir, wider_dir, metrics)
 
