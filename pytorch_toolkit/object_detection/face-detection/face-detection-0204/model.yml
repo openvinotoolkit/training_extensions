@@ -1,32 +1,32 @@
 description: Face Detection based on MobileNetV2 (SSD).
-name: face-detection-0100_2.0
-training_gpu_num: 2
+name: face-detection-0204
+training_gpu_num: 4
 files:
 - name: epoch_70.pth
-  sha256: 122e194b95ef631f578fac0dc88ba2be7b2ef9d06263ff6e7a69c846990a85f7
-  size: 14904296
-  source: /media/cluster_fs/user/ikrylov/experiments/face_detection/0200_like0100_mm2.0/outputs/epoch_70.pth
+  sha256: 7a227579f8ebc9017a742ed66b3a9bdc3582090a1c06c9ccbf84722b4a2ffad2
+  size: 14904360
+  source: /media/cluster_fs/user/ikrylov/experiments/face_detection/0204_like0204_mm2.0/outputs/epoch_70.pth
 metrics:
 - display_name: AP @ [IoU=0.50:0.95]
   key: ap
   unit: '%'
-  value: 16.0
+  value: 21.4
 - display_name: AP for faces > 64x64
   key: ap_64x64
   unit: '%'
-  value: 86.743
+  value: 92.888
 - display_name: WiderFace Easy
   key: widerface_e
   unit: '%'
-  value: 82.917
+  value: 90.453
 - display_name: WiderFace Medium
   key: widerface_m
   unit: '%'
-  value: 76.198
+  value: 85.448
 - display_name: WiderFace Hard
   key: widerface_h
   unit: '%'
-  value: 41.443
+  value: 52.091
 - display_name: Size
   key: size
   unit: Mp
@@ -34,4 +34,4 @@ metrics:
 - display_name: Complexity
   key: complexity
   unit: GFLOPs
-  value: 0.82
+  value: 2.52

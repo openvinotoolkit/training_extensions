@@ -1,5 +1,5 @@
 description: Face Detection based on MobileNetV2 (SSD).
-name: face-detection-0102_2.0
+name: face-detection-0202
 training_gpu_num: 2
 files:
 - name: epoch_70.pth

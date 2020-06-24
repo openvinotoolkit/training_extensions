@@ -4,16 +4,11 @@ Models that are able to detect faces on given images.
 
 | Model Name | Complexity (GFLOPs) | Size (Mp) | AP @ [IoU=0.50:0.95] (%) | AP for faces > 64x64 (%) | WiderFace Easy (%) | WiderFace Medium (%) | WiderFace Hard (%) | Links | GPU_NUM |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| face-detection-0100 | 0.82 | 3.53 | 15.7 | 86.625 | 82.501 | 75.768 | 40.826 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/face-detection-0100.pth), [configuration file](./face-detection-0100/config.py) | 2 |
-| face-detection-0100_2.0 | 0.82 | 1.83 | 16.0 | 86.743 | 82.917 | 76.198 | 41.443 | [snapshot](0200_like0100_mm2.0/outputs/epoch_70.pth), [configuration file](./face-detection-0100_2.0/config.py) | 2 |
-| face-detection-0102 | 1.84 | 3.53 | 19.9 | 91.592 | 88.904 | 83.506 | 49.577 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/face-detection-0102.pth), [configuration file](./face-detection-0102/config.py) | 2 |
-| face-detection-0102_2.0 | 1.84 | 1.83 | 20.3 | 91.938 | 89.382 | 83.919 | 50.189 | [snapshot](0202_like0102_mm2.0/outputs/epoch_70.pth), [configuration file](./face-detection-0102_2.0/config.py) | 2 |
-| face-detection-0104 | 2.52 | 3.53 | 20.9 | 92.738 | 90.145 | 84.802 | 51.615 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/face-detection-0104.pth), [configuration file](./face-detection-0104/config.py) | 4 |
-| face-detection-0104_2.0 | 2.52 | 1.83 | 21.4 | 92.888 | 90.453 | 85.448 | 52.091 | [snapshot](0204_like0204_mm2.0/outputs/epoch_70.pth), [configuration file](./face-detection-0104_2.0/config.py) | 4 |
-| face-detection-0105 | 2.94 | 3.72 | 20.9 | 93.335 | 91.607 | 85.94 | 52.925 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/face-detection-0105.pth), [configuration file](./face-detection-0105/config.py) | 4 |
-| face-detection-0105_2.0 | 2.94 | 2.02 | 21.6 | 93.566 | 92.032 | 86.717 | 54.055 | [snapshot](0205_like0105_mm2.0/outputs/epoch_70.pth), [configuration file](./face-detection-0105_2.0/config.py) | 4 |
-| face-detection-0106 | 340.06 | 65.84 | 34.6 | 94.666 | 94.506 | 93.203 | 83.095 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/face-detection-0106.pth), [configuration file](./face-detection-0106/config.py) | 8 |
-| face-detection-0106_2.0 | 340.06 | 63.79 | 34.2 | 94.274 | 94.281 | 93.207 | 84.439 | [snapshot](0206_like0106_mm2.0/outputs/epoch_70.pth), [configuration file](./face-detection-0106_2.0/config.py) | 8 |
+| face-detection-0200 | 0.82 | 1.83 | 16.0 | 86.743 | 82.917 | 76.198 | 41.443 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/face-detection-0200.pth), [configuration file](./face-detection-0200/config.py) | 2 |
+| face-detection-0202 | 1.84 | 1.83 | 20.3 | 91.938 | 89.382 | 83.919 | 50.189 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/face-detection-0202.pth), [configuration file](./face-detection-0202/config.py) | 2 |
+| face-detection-0204 | 2.52 | 1.83 | 21.4 | 92.888 | 90.453 | 85.448 | 52.091 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/face-detection-0204.pth), [configuration file](./face-detection-0204/config.py) | 4 |
+| face-detection-0205 | 2.94 | 2.02 | 21.6 | 93.566 | 92.032 | 86.717 | 54.055 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/face-detection-0205.pth), [configuration file](./face-detection-0205/config.py) | 4 |
+| face-detection-0206 | 340.06 | 63.79 | 34.2 | 94.274 | 94.281 | 93.207 | 84.439 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/face-detection-0206.pth), [configuration file](./face-detection-0206/config.py) | 8 |
 
 ## Training pipeline
 
