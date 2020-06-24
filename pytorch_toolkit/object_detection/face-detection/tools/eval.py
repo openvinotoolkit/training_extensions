@@ -140,8 +140,10 @@ def compute_wider_metrics(config_path, snapshot, work_dir, wider_dir, outputs):
     wider_face_predictions = tempfile.mkdtemp()
     subprocess.run(
         f'python {FACE_DETECTION_TOOLS}/test_out_to_wider_predictions.py'
-        f' {config_path} {res_pkl} {wider_face_predictions}'.split(' '), check=True)
-    print(wider_face_predictions)
+        f' {config_path} {res_pkl} {wider_face_predictions}'
+        f' --update_config data.test.ann_file={wider_coco_annotation} data.test.img_prefix={wider_dir}'.split(' '),
+        check=True)
+
     res_wider_metrics = os.path.join(work_dir, "wider_metrics.json")
     subprocess.run(
         f'python {FACE_DETECTION_TOOLS}/wider_face_eval.py'
