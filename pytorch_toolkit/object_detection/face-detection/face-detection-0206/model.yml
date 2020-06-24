@@ -5,7 +5,7 @@ files:
 - name: epoch_70.pth
   sha256: 677a04f317d0250193ded307d8ec89e06436e5110f6a61bdef5fe10a17e282ea
   size: 511179725
-  source: /media/cluster_fs/user/ikrylov/experiments/face_detection/0206_like0106_mm2.0/outputs/epoch_70.pth
+  source: https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/face-detection-0206.pth
 metrics:
 - display_name: AP @ [IoU=0.50:0.95]
   key: ap
@@ -35,3 +35,4 @@ metrics:
   key: complexity
   unit: GFLOPs
   value: 340.06
+show_on_chart: False
