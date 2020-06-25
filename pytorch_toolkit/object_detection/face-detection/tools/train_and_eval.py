@@ -18,7 +18,6 @@ import argparse
 import subprocess
 import os
 
-from mmcv import DictAction
 from mmcv.utils import Config
 
 from eval import eval
