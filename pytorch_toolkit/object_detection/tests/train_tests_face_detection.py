@@ -77,23 +77,23 @@ def face_detection_test_case(model_name):
     return Class
 
 
-class FaceDetection0100TestCase(face_detection_test_case('face-detection-0200')):
+class FaceDetection0200TestCase(face_detection_test_case('face-detection-0200')):
     """ Test case for face-detection-0200 model. """
 
 
-class FaceDetection0102TestCase(face_detection_test_case('face-detection-0202')):
+class FaceDetection0202TestCase(face_detection_test_case('face-detection-0202')):
     """ Test case for face-detection-0202 model. """
 
 
-class FaceDetection0104TestCase(face_detection_test_case('face-detection-0204')):
+class FaceDetection0204TestCase(face_detection_test_case('face-detection-0204')):
     """ Test case for face-detection-0204 model. """
 
 
-class FaceDetection0105TestCase(face_detection_test_case('face-detection-0205')):
+class FaceDetection0205TestCase(face_detection_test_case('face-detection-0205')):
     """ Test case for face-detection-0205 model. """
 
 
-class FaceDetection0106TestCase(face_detection_test_case('face-detection-0206')):
+class FaceDetection0206TestCase(face_detection_test_case('face-detection-0206')):
     """ Test case for face-detection-0206 model. """
 #
 #

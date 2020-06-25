@@ -29,21 +29,21 @@ def face_detection_test_case(model_name, alt_ssd_export):
     return ExportTestCase
 
 
-class FaceDetection0100TestCase(face_detection_test_case('face-detection-0200', True)):
+class FaceDetection0200TestCase(face_detection_test_case('face-detection-0200', True)):
     """ Test case for face-detection-0200 model export. """
 
 
-class FaceDetection0102TestCase(face_detection_test_case('face-detection-0202', True)):
+class FaceDetection0202TestCase(face_detection_test_case('face-detection-0202', True)):
     """ Test case for face-detection-0202 model export. """
 
 
-class FaceDetection0104TestCase(face_detection_test_case('face-detection-0204', True)):
+class FaceDetection0204TestCase(face_detection_test_case('face-detection-0204', True)):
     """ Test case for face-detection-0204 model export. """
 
 
-class FaceDetection0105TestCase(face_detection_test_case('face-detection-0205', False)):
+class FaceDetection0205TestCase(face_detection_test_case('face-detection-0205', False)):
     """ Test case for face-detection-0205 model export. """
 
 
-class FaceDetection0106TestCase(face_detection_test_case('face-detection-0206', False)):
+class FaceDetection0206TestCase(face_detection_test_case('face-detection-0206', False)):
     """ Test case for face-detection-0206 model export. """
