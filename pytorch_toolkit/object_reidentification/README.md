@@ -6,6 +6,7 @@ This repo contains scripts and tutorials for object reidentification models trai
 
 * [Person Re-Identification](person_reidentification)
 * [Vehicle Re-Identification](vehicle_reidentification)
+* [Face recognition](face_recognition)
 
 ## Setup
 
