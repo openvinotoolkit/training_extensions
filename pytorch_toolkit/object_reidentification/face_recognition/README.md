@@ -80,20 +80,48 @@ python ../../../external/deep-object-reid/scripts/main.py \
 To test your network on the LFW dataset, set in a configuration file the `test.evaluate` parameter to `True`
 and run a command like the one used for training.
 
+## Training and evaluation of landmarks regression model
+
+To train the landmarks regression model we need to use the original
+unaligned VGGFace2 dataset:
+
+```bash
+python ../../../external/deep-object-reid/projects/landmarks_regression/train.py \
+                --train_data_root $VGGFace2_ROOT/train/ \
+                --train_list $VGGFace2_ROOT/meta/train_list.txt \
+                --train_landmarks $VGGFace2_ROOT/bb_landmark/ \
+                --dataset vgg --snap_folder <snapshots_folder>
+```
+
+To evaluate the trained model run the corresponding script:
+```bash
+python3 evaluate.py \
+          --dataset vgg \
+          --val_data_root $VGGFace2_ROOT/train/ \
+          --val_list /mnt/big_ssd/VGGFace2/meta/test_list.txt \
+          --val_landmarks /mnt/big_ssd/VGGFace2/bb_landmark/ \
+          --snapshot <path to snashot>
+```
+
+**Note:** VGGFace2 contains auto-generated annotation of facial landmarks, therefore, this annotation is not very precise, but it's enuogh to train a decent model.
+
 ## Convert a PyTorch Model to the OpenVINO™ Format
 
-Follow the steps below:
+To convert the obtained face recognition model, the following:
 
-1. Convert a PyTorch model to the ONNX format by running the following:
+```bash
+python ../../../external/deep-object-reid/tools/convert_to_onnx.py \
+    --config /path/to/config/file.yaml \
+    --output-name /path/to/output/model \
+    --verbose
+```
 
-    ```bash
-    python ../../../external/deep-object-reid/tools/convert_to_onnx.py \
-        --config /path/to/config/file.yaml \
-        --output-name /path/to/output/model \
-        --verbose
-    ```
+Name of the output model ends with `.onnx` automatically.
+By default, the output model path is `model.onnx`. Be careful about the `load_weights` parameter
+ in the configurations file. The `verbose` argument is non-required and switches on detailed output in conversion function.
 
-    Name of the output model ends with `.onnx` automatically.
-    By default, the output model path is `model.onnx`. Be careful about the `load_weights` parameter
-     in the configurations file. The `verbose` argument is non-required and
-    switches on detailed output in conversion function.
+To convert the trained landmark regression model launch the script:
+
+```bash
+python3 convert_onnx.py --snap <path to snapshot> --output_dir <output directory>
+```
