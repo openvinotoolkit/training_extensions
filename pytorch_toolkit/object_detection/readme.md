@@ -6,6 +6,7 @@ This repo contains scripts and tutorials for object detection models training.
 
 * [Face Detection](face-detection/readme.md) - models that are able to detect faces on given images.
 * [Person Vehicle Bike Detection](person-vehicle-bike-detection/readme.md) - models that are able to detect 3 classes of objects: person, vehicle, non-vehicle (e.g. bike).
+* [Horizontal Text Detection](text_detection.md) - model that is able to detect more or less horizontal text with high speed.
 
 ## Setup
 
