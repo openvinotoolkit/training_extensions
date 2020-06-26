@@ -25,6 +25,7 @@ from mmdet.datasets import build_dataset
 from mmdet.core.evaluation.coco_utils import results2json
 from mmdet.core.evaluation.text_evaluation import text_eval
 
+
 def parse_args():
     """ Parses input arguments. """
     parser = argparse.ArgumentParser(
@@ -75,12 +76,12 @@ def main():
         img_paths = None
 
     recall, precision, hmean, _ = text_eval(
-          predictions, gt_annotations,
-          cfg.test_cfg.score_thr,
-          images=img_paths,
-          show_recall_graph=args.draw_graph)
+        predictions, gt_annotations,
+        cfg.test_cfg.score_thr,
+        images=img_paths,
+        show_recall_graph=args.draw_graph)
     print('Text detection recall={:.4f} precision={:.4f} hmean={:.4f}'.
-                      format(recall, precision, hmean))
+          format(recall, precision, hmean))
 
 
 if __name__ == '__main__':

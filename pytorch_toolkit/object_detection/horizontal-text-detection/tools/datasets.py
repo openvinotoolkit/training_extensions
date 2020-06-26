@@ -151,7 +151,8 @@ class TextOnlyCocoAnnotation:
                 k = cv2.waitKey(imshow_delay)
                 if k == 27:
                     break
-            except:
+
+            except (IndexError, cv2.error):
                 print('Error: image is empty or corrupted: ', frame['file_name'])
 
     def extract_text_recognition_dataset(self, path):
@@ -179,8 +180,11 @@ class TextOnlyCocoAnnotation:
                             crop_path = os.path.join(path, 'images', f'image{len(annotation)}.jpg')
                             annotation.append(f'{crop_path} {transcription}')
                             cv2.imwrite(crop_path, image[coord_y1:coord_y2, coord_x1:coord_x2])
-                    except:
-                        print('Something went wrong with', frame['file_name'])
+                    except KeyError:
+                        print('Missing transcription in ', frame['file_name'])
+                        break
+                    except IndexError:
+                        print('Error in image processing ', frame['file_name'])
                         break
 
         with open(os.path.join(path, 'annotation.txt'), 'w') as file:
@@ -746,8 +750,6 @@ class COCOTextDatasetConverter:
                     dataset.add_bbox(image_path, imagesize.get(image_path), word_annotation)
 
         return dataset
-
-
 
 
 str_to_class = {
