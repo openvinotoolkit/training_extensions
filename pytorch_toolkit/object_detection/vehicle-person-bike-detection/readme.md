@@ -2,7 +2,7 @@
 
 The crossroad-detection network model provides detection of three class objects: vehicle, pedestrian, non-vehicle (like bikes). This detector was trained on the data from crossroad cameras.
 
-| Model Name | Complexity (GFLOPs) | Size (Mp) | AP @ [IoU=0.50:0.95] (%) | Links | GPU_NUM |
+| Model Name | Complexity (GFLOPs) | Size (Mp) | mAP @ [IoU=0.50:0.95] (%) | Links | GPU_NUM |
 | --- | --- | --- | --- | --- | --- |
 | vehicle-person-bike-detection-2000 | 0.82 | 1.84 | 16.4 | [snapshot](/media/cluster_fs/user/ikrylov/release_models/object_detection/v2/vehicle-person-bike-detection-2000.pth), [configuration file](./vehicle-person-bike-detection-2000/config.py) | 2 |
 | vehicle-person-bike-detection-2001 | 1.86 | 1.84 | 20.5 | [snapshot](/media/cluster_fs/user/ikrylov/release_models/object_detection/v2/vehicle-person-bike-detection-2001.pth), [configuration file](./vehicle-person-bike-detection-2001/config.py) | 2 |

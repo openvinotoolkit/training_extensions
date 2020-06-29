@@ -89,7 +89,7 @@ def coco_ap_eval(config_path, work_dir, snapshot, res_pkl, outputs):
             f' {config_path} {snapshot}'
             f' --out {res_pkl} --eval bbox'.split(' '), stdout=test_py_stdout, check=True)
     average_precision = collect_ap(os.path.join(work_dir, 'test_py_stdout'))[0]
-    outputs.append({'key': 'ap', 'value': average_precision * 100, 'unit': '%', 'display_name': 'AP @ [IoU=0.50:0.95]'})
+    outputs.append({'key': 'map', 'value': average_precision * 100, 'unit': '%', 'display_name': 'mAP @ [IoU=0.50:0.95]'})
     return outputs
 
 

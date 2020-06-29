@@ -14,8 +14,8 @@ metrics:
   key: complexity
   unit: GFLOPs
   value: 1.86
-- display_name: AP @ [IoU=0.50:0.95]
-  key: ap
+- display_name: mAP @ [IoU=0.50:0.95]
+  key: map
   unit: '%'
   value: 20.5
 training_gpu_num: 2
