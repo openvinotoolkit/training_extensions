@@ -145,7 +145,7 @@ log_config = dict(
 total_epochs = 14
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-work_dir = '/media/cluster_fs/user/ikrylov/experiments/vehicle_detection/0202/outputs'
+work_dir = 'outputs/vehicle-detection-0202'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]

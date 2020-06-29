@@ -1,4 +1,4 @@
-# Person Detection
+# Vehicle Detection
 
 Models that are able to detect vehicles on given images.
 
