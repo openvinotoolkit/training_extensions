@@ -2,7 +2,7 @@ description: Face Detection based on MobileNetV2 (SSD).
 name: face-detection-0206
 training_gpu_num: 8
 files:
-- name: epoch_70.pth
+- name: snapshot.pth
   sha256: 677a04f317d0250193ded307d8ec89e06436e5110f6a61bdef5fe10a17e282ea
   size: 511179725
   source: https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/face-detection-0206.pth

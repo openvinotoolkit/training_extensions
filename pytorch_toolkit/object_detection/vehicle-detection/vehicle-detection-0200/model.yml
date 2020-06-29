@@ -1,5 +1,7 @@
+description: Vehicle Detection based on MobileNetV2 (SSD).
+name: vehicle-detection-0200
 files:
-- name: vehicle-detection-0200
+- name: snapshot.pth
   sha256: 4133a5297268de93dbd4721a095daf4f72d1d61ac17adbb23b247a87d0c78321
   size: 14905225
   source: TBD
@@ -16,3 +18,5 @@ metrics:
   key: ap
   unit: '%'
   value: 26.1
+training_gpu_num: 2
+show_on_chart: True

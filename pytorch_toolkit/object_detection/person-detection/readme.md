@@ -2,6 +2,11 @@
 
 Models that are able to detect persons on given images.
 
+| Model Name | Complexity (GFLOPs) | Size (Mp) | AP @ [IoU=0.50:0.95] (%) | Links | GPU_NUM |
+| --- | --- | --- | --- | --- | --- |
+| person-detection-0200 | 0.82 | 1.83 | 20.9 | [snapshot](TBD), [configuration file](./person-detection-0200/config.py) | 2 |
+| person-detection-0202 | 3.28 | 1.83 | 27.2 | [snapshot](TBD), [configuration file](./person-detection-0202/config.py) | 4 |
+
 ## Training pipeline
 
 ### 0. Change a directory in your terminal to object_detection.
