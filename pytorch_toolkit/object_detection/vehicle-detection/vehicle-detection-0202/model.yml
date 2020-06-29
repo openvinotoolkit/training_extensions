@@ -1,0 +1,18 @@
+files:
+- name: vehicle-detection-0202
+  sha256: cad32de28a6d8749e8ab7692de9aa001e5defa26307dbbe35e4e69783bbf99af
+  size: 14905221
+  source: TBD
+metrics:
+- display_name: Size
+  key: size
+  unit: Mp
+  value: 1.83
+- display_name: Complexity
+  key: complexity
+  unit: GFLOPs
+  value: 3.28
+- display_name: AP @ [IoU=0.50:0.95]
+  key: ap
+  unit: '%'
+  value: 36.3
