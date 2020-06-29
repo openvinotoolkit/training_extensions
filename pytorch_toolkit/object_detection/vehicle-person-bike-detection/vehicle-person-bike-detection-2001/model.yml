@@ -1,0 +1,22 @@
+description: Vehicle Person Bike Detection based on MobileNetV2 (SSD).
+name: vehicle-person-bike-detection-2001
+files:
+- name: snapshot.pth
+  sha256: 23b5726985dc2e23e14690bf263e844ef6c0c492df98acc64e3c12d3eb60e015
+  size: 14937189
+  source: /media/cluster_fs/user/ikrylov/release_models/object_detection/v2/vehicle-person-bike-detection-2001.pth
+metrics:
+- display_name: Size
+  key: size
+  unit: Mp
+  value: 1.84
+- display_name: Complexity
+  key: complexity
+  unit: GFLOPs
+  value: 1.86
+- display_name: AP @ [IoU=0.50:0.95]
+  key: ap
+  unit: '%'
+  value: 20.5
+training_gpu_num: 2
+show_on_chart: True

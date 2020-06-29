@@ -1,10 +1,12 @@
-# Person Vehicle Bike Detector
+# Vehicle Person Bike Detector
 
 The crossroad-detection network model provides detection of three class objects: vehicle, pedestrian, non-vehicle (like bikes). This detector was trained on the data from crossroad cameras.
 
-| Model Name                  | Complexity (GFLOPs) | Size (Mp) | Mean Average Precision (mAP) | Links                                                                        |
-| --------------------------- | ------------------- | --------- | ------------- | ---------------------------------------------------------------------------- |
-| person-vehicle-bike-detection-crossroad-1016  | 3.560               | 	2.887    | 62.55%          | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/person_vehicle_bike_sd512_mb2_clustered_epoch_21.pth), [configuration file](./person-vehicle-bike-detection-crossroad-1016/config.py) |
+| Model Name | Complexity (GFLOPs) | Size (Mp) | AP @ [IoU=0.50:0.95] (%) | Links | GPU_NUM |
+| --- | --- | --- | --- | --- | --- |
+| vehicle-person-bike-detection-2000 | 0.82 | 1.84 | 16.4 | [snapshot](/media/cluster_fs/user/ikrylov/release_models/object_detection/v2/vehicle-person-bike-detection-2000.pth), [configuration file](./vehicle-person-bike-detection-2000/config.py) | 2 |
+| vehicle-person-bike-detection-2001 | 1.86 | 1.84 | 20.5 | [snapshot](/media/cluster_fs/user/ikrylov/release_models/object_detection/v2/vehicle-person-bike-detection-2001.pth), [configuration file](./vehicle-person-bike-detection-2001/config.py) | 2 |
+| vehicle-person-bike-detection-2002 | 3.3 | 1.84 | 22.4 | [snapshot](/media/cluster_fs/user/ikrylov/release_models/object_detection/v2/vehicle-person-bike-detection-2002.pth), [configuration file](./vehicle-person-bike-detection-2002/config.py) | 4 |
 
 Average Precision (AP) is defined as an area under the precision/recall curve.
 
@@ -19,8 +21,8 @@ cd <openvino_training_extensions>/pytorch_toolkit/object_detection
 ### 1. Select a training configuration file and get pre-trained snapshot if available. Please see the table above.
 
 ```bash
-export MODEL_NAME=person-vehicle-bike-detection-crossroad-1016
-export CONFIGURATION_FILE=./person-vehicle-bike-detection/$MODEL_NAME/config.py
+export MODEL_NAME=vehicle-person-bike-detection-2000
+export CONFIGURATION_FILE=./vehicle-person-bike-detection/$MODEL_NAME/config.py
 ```
 
 ### 2. Collect dataset
