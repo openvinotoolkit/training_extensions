@@ -150,7 +150,7 @@ log_config = dict(
 total_epochs = 70
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-work_dir = 'outputs/face-detection-0106'
+work_dir = 'outputs/face-detection-0206'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]

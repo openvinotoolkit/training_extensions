@@ -59,7 +59,7 @@ test_cfg = dict(
 # model training and testing settings
 # dataset settings
 dataset_type = 'CocoDataset'
-data_root = '/media/cluster_fs/user/yurygoru/crossroad_extra/'
+data_root = '../../data/airport/'
 img_norm_cfg = dict(mean=[0, 0, 0], std=[255, 255, 255], to_rgb=True)
 train_pipeline = [
     dict(type='LoadImageFromFile', to_float32=True),
@@ -102,24 +102,24 @@ data = dict(
         dataset=dict(
             type=dataset_type,
             classes=('person',),
-            ann_file='/media/cluster_fs/datasets/crossroad_extra_2.0_1920x1080_limited/annotation_train/instances_person_train.json',
+            ann_file=data_root + 'annotation_person_train.json',
             min_size=20,
-            img_prefix='/media/cluster_fs/datasets/crossroad_extra_2.0_1920x1080_limited/',
+            img_prefix=data_root + 'train',
             pipeline=train_pipeline
         )
     ),
     val=dict(
         type=dataset_type,
         classes=('person',),
-        ann_file='/media/cluster_fs/datasets/crossroad_extra_2.0/annotation_trainval/instances_person_trainval.json',
-        img_prefix='/media/cluster_fs/datasets/crossroad_extra_2.0',
+        ann_file=data_root + 'annotation_person_val.json',
+        img_prefix=data_root + 'val',
         test_mode=True,
         pipeline=test_pipeline),
     test=dict(
         type=dataset_type,
         classes=('person',),
-        ann_file='/media/cluster_fs/datasets/crossroad_extra_2.0/annotation_trainval/instances_person_trainval.json',
-        img_prefix='/media/cluster_fs/datasets/crossroad_extra_2.0',
+        ann_file=data_root + 'annotation_person_val.json',
+        img_prefix=data_root + 'val',
         test_mode=True,
         pipeline=test_pipeline))
 # optimizer
@@ -145,7 +145,7 @@ log_config = dict(
 total_epochs = 14
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-work_dir = '/media/cluster_fs/user/ikrylov/experiments/person_detection/0201_cr2.0/outputs'
+work_dir = 'outputs/person-detection-0201'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]
