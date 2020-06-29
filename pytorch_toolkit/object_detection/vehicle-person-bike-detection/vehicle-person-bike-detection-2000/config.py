@@ -59,7 +59,7 @@ test_cfg = dict(
 # model training and testing settings
 # dataset settings
 dataset_type = 'CocoDataset'
-data_root = '/media/cluster_fs/user/yurygoru/crossroad_extra/'
+data_root = '../../data/airport/'
 img_norm_cfg = dict(mean=[0, 0, 0], std=[255, 255, 255], to_rgb=True)
 train_pipeline = [
     dict(type='LoadImageFromFile', to_float32=True),
@@ -102,24 +102,24 @@ data = dict(
         dataset=dict(
             type=dataset_type,
             classes=('vehicle', 'person', 'non-vehicle'),
-            ann_file='/media/cluster_fs/datasets/crossroad_extra_2.0_1920x1080_limited/annotation_train/instances_train.json',
+            ann_file=data_root + 'annotation_example_train.json',
+            img_prefix=data_root + 'train',
             min_size=20,
-            img_prefix='/media/cluster_fs/datasets/crossroad_extra_2.0_1920x1080_limited/',
             pipeline=train_pipeline
         )
     ),
     val=dict(
         type=dataset_type,
         classes=('vehicle', 'person', 'non-vehicle'),
-        ann_file='/media/cluster_fs/datasets/crossroad_extra_2.0/annotation_trainval/instances_trainval.json',
-        img_prefix='/media/cluster_fs/datasets/crossroad_extra_2.0',
+        ann_file=data_root + 'annotation_example_val.json',
+        img_prefix=data_root + 'val',
         test_mode=True,
         pipeline=test_pipeline),
     test=dict(
         type=dataset_type,
         classes=('vehicle', 'person', 'non-vehicle'),
-        ann_file='/media/cluster_fs/datasets/crossroad_extra_2.0/annotation_trainval/instances_trainval.json',
-        img_prefix='/media/cluster_fs/datasets/crossroad_extra_2.0',
+        ann_file=data_root + 'annotation_example_val.json',
+        img_prefix=data_root + 'val',
         test_mode=True,
         pipeline=test_pipeline))
 # optimizer
@@ -145,7 +145,7 @@ log_config = dict(
 total_epochs = 20
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-work_dir = '/media/cluster_fs/user/ikrylov/experiments/vehicle_person_bike_detection/0200/outputs'
+work_dir = 'outputs/vehicle-person-bike-detection-2000'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]
