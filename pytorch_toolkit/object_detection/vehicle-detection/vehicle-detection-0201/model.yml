@@ -2,11 +2,9 @@ description: Vehicle Detection based on MobileNetV2 (SSD).
 name: vehicle-detection-0201
 files:
 - name: snapshot.pth
-files:
-- name: vehicle-detection-0201
   sha256: a12832ab386ac48c3eef569e520399fca3d1982e188aa27ec24343fbd7222e35
   size: 14905229
-  source: TBD
+  source: https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/vehicle-detection-0200.pth
 metrics:
 - display_name: Size
   key: size

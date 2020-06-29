@@ -4,7 +4,7 @@ files:
 - name: snapshot.pth
   sha256: cad32de28a6d8749e8ab7692de9aa001e5defa26307dbbe35e4e69783bbf99af
   size: 14905221
-  source: TBD
+  source: https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/vehicle-detection-0200.pth
 metrics:
 - display_name: Size
   key: size
