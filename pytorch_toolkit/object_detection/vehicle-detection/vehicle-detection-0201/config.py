@@ -59,7 +59,7 @@ test_cfg = dict(
 # model training and testing settings
 # dataset settings
 dataset_type = 'CocoDataset'
-data_root = '/media/cluster_fs/user/yurygoru/crossroad_extra/'
+data_root = 'TBD'
 img_norm_cfg = dict(mean=[0, 0, 0], std=[255, 255, 255], to_rgb=True)
 train_pipeline = [
     dict(type='LoadImageFromFile', to_float32=True),
@@ -102,24 +102,24 @@ data = dict(
         dataset=dict(
             type=dataset_type,
             classes=('vehicle',),
-            ann_file='/media/cluster_fs/datasets/crossroad_extra_2.0_1920x1080_limited/annotation_train/instances_vehicle_train.json',
+            ann_file='ANNOTATION_TRAIN_TBD.json',
+            img_prefix='IMGS_PREFIX_TRAIN_TBD',
             min_size=20,
-            img_prefix='/media/cluster_fs/datasets/crossroad_extra_2.0_1920x1080_limited/',
             pipeline=train_pipeline
         )
     ),
     val=dict(
         type=dataset_type,
         classes=('vehicle',),
-        ann_file='/media/cluster_fs/datasets/crossroad_extra_2.0/annotation_trainval/instances_vehicle_trainval.json',
-        img_prefix='/media/cluster_fs/datasets/crossroad_extra_2.0',
+        ann_file='ANNOTATION_VAL_TBD.json',
+        img_prefix='IMGS_PREFIX_VAL_TBD',
         test_mode=True,
         pipeline=test_pipeline),
     test=dict(
         type=dataset_type,
         classes=('vehicle',),
-        ann_file='/media/cluster_fs/datasets/crossroad_extra_2.0/annotation_trainval/instances_vehicle_trainval.json',
-        img_prefix='/media/cluster_fs/datasets/crossroad_extra_2.0',
+        ann_file='ANNOTATION_TEST_TBD.json',
+        img_prefix='IMGS_PREFIX_TEST_TBD',
         test_mode=True,
         pipeline=test_pipeline))
 # optimizer
