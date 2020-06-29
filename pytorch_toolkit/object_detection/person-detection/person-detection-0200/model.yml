@@ -1,0 +1,18 @@
+files:
+- name: person-detection-0200
+  sha256: db72a287934733c7369d3e667fe04ef4cd918a153a2e7ada681bbc4b0df76916
+  size: 14905232
+  source: TBD
+metrics:
+- display_name: Size
+  key: size
+  unit: Mp
+  value: 1.83
+- display_name: Complexity
+  key: complexity
+  unit: GFLOPs
+  value: 0.82
+- display_name: AP @ [IoU=0.50:0.95]
+  key: ap
+  unit: '%'
+  value: 20.9
