@@ -2,6 +2,12 @@
 
 Models that are able to detect vehicles on given images.
 
+| Model Name | Complexity (GFLOPs) | Size (Mp) | AP @ [IoU=0.50:0.95] (%) | Links | GPU_NUM |
+| --- | --- | --- | --- | --- | --- |
+| vehicle-detection-0200 | 0.82 | 1.83 | 26.1 | [snapshot](TBD), [configuration file](./vehicle-detection-0200/config.py) | 2 |
+| vehicle-detection-0201 | 1.84 | 1.83 | 32.5 | [snapshot](TBD), [configuration file](./vehicle-detection-0201/config.py) | 2 |
+| vehicle-detection-0202 | 3.28 | 1.83 | 36.3 | [snapshot](TBD), [configuration file](./vehicle-detection-0202/config.py) | 4 |
+
 ## Training pipeline
 
 ### 0. Change a directory in your terminal to object_detection.
