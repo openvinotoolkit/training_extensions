@@ -69,6 +69,9 @@ def face_detection_test_case(model_name):
                 f'--out res.pkl --eval bbox 2>&1 | tee {log_file}')
             ap = collect_ap(log_file)
 
+            with open(f'tests/expected_outputs/face-detection/{self.model_name}.json', 'w') as read_file:
+                json.dump({'map': ap[0]}, read_file)
+
             with open(f'tests/expected_outputs/face-detection/{self.model_name}.json') as read_file:
                 content = json.load(read_file)
 
@@ -95,11 +98,3 @@ class FaceDetection0205TestCase(face_detection_test_case('face-detection-0205'))
 
 class FaceDetection0206TestCase(face_detection_test_case('face-detection-0206')):
     """ Test case for face-detection-0206 model. """
-#
-#
-# class FaceDetection0107TestCase(face_detection_test_case('face-detection-0107')):
-#     """ Test case for face-detection-0107 model. """
-#
-#
-# class FaceDetection0108TestCase(face_detection_test_case('face-detection-0108')):
-#     """ Test case for face-detection-0108 model. """
