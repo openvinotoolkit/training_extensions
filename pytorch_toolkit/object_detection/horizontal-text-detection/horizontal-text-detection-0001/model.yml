@@ -1,0 +1,21 @@
+description: Text Detection based on MobileNetV2 (FCOS).
+name: horizontal-text-detection-0001
+training_gpu_num: 2
+files:
+- name: horizontal-text-detection-0001.pth
+  sha256: ac879a21e3558b5d516f04e76444e697553309873908e45a6fa67fc5dda397f9
+  size: 15825821
+  source: https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/horizontal-text-detection-0001.pth
+metrics:
+- display_name: Size
+  key: size
+  unit: Mp
+  value: 1.95
+- display_name: Complexity
+  key: complexity
+  unit: GFLOPs
+  value: 8.0
+- display_name: Harmonic mean
+  key: f1
+  unit: '%'
+  value: 88.45

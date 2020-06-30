@@ -94,6 +94,14 @@ If you would like to start **fine-tuning** from pre-trained weights do not forge
             <GPU_NUM>
    ```
 
+* To train the detector on multiple GPUs and to perform quality metrics estimation as soon as training is finished, run in your terminal
+
+   ```bash
+   python horizontal-text-detection/tools/train_and_eval.py \
+            $CONFIGURATION_FILE \
+            <GPU_NUM>
+   ```
+
 ### 5. Validation
 
 * To dump detection of your model as well as compute metrics for text detection (F1-score, precision and recall) run:
