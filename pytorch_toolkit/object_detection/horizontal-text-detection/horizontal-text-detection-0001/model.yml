@@ -15,7 +15,15 @@ metrics:
   key: complexity
   unit: GFLOPs
   value: 8.0
-- display_name: Harmonic mean
+- display_name: F1-score
   key: f1
   unit: '%'
   value: 88.45
+- display_name: Recall
+  key: recall
+  unit: '%'
+  value: 86.39
+- display_name: Precision
+  key: precision
+  unit: '%'
+  value: 90.61

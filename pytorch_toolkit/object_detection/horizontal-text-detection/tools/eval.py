@@ -60,17 +60,18 @@ def replace_text_in_file(path, replace_what, replace_by):
 
 
 def collect_f1(path):
-    metric = 'hmean'
+    metrics = ['recall', 'precision', 'hmean']
     content = []
-    hmean = []
+    result = []
     with open(path) as read_file:
         content += [line.split() for line in read_file.readlines()]
         for line in content:
-            if (len(line) > 0) and (line[0] == 'Text'):
+            if (len(line) > 2) and (line[0] == 'Text'):
                 for word in line[2:]:
-                    if word.startswith(metric):
-                        hmean.append(float(word.replace(metric+'=', '')))
-    return hmean
+                    for metric in metrics:
+                        if word.startswith(metric):
+                            result.append(float(word.replace(metric+'=', '')))
+    return result
 
 
 def sha256sum(filename):
@@ -94,8 +95,10 @@ def coco_f1_eval(config_path, work_dir, snapshot, res_pkl, outputs, update_confi
             f'python {MMDETECTION_TOOLS}/test.py'
             f' {config_path} {snapshot}'
             f' --out {res_pkl} --eval f1{update_config}'.split(' '), stdout=test_py_stdout, check=True)
-    hmean = collect_f1(os.path.join(work_dir, 'test_py_stdout'))[0]
-    outputs.append({'key': 'f1', 'value': hmean * 100, 'unit': '%', 'display_name': 'Harmonic mean'})
+    hmean = collect_f1(os.path.join(work_dir, 'test_py_stdout'))
+    outputs.append({'key': 'f1', 'value': hmean[2] * 100, 'unit': '%', 'display_name': 'F1-score'})
+    outputs.append({'key': 'recall', 'value': hmean[0] * 100, 'unit': '%', 'display_name': 'Recall'})
+    outputs.append({'key': 'precision', 'value': hmean[1] * 100, 'unit': '%', 'display_name': 'Precision'})
     return outputs
 
 
