@@ -38,3 +38,4 @@ them for predictions.
 * [Text Recognition](text_recognition)
 * [Vehicle Attributes](vehicle_attributes)
 * [Image Retrieval](image_retrieval)
+* [Bert](../external/bert)
