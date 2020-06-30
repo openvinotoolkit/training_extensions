@@ -37,7 +37,7 @@ def export_test_case(problem_name, model_name, snapshot_name=None, alt_ssd_expor
             self.configuration_file = os.path.join(self.work_dir,
                                                    os.path.basename(self.configuration_file))
             self.ote_url = 'https://download.01.org/opencv/openvino_training_extensions'
-            self.url = f'{self.ote_url}/models/object_detection/{self.snapshot_name}'
+            self.url = f'{self.ote_url}/models/object_detection/v2/{self.snapshot_name}'
             download_if_not_yet(self.work_dir, self.url)
 
             self.test_export_thr = 0.01

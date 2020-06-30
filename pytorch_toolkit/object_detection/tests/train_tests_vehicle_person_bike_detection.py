@@ -19,7 +19,7 @@ import unittest
 from common.utils import replace_text_in_file, collect_ap, download_if_not_yet
 
 
-def vehicle_person_bike_detection_test_case(model_name):
+def test_case(model_name):
     class Class(unittest.TestCase):
 
         def setUp(self):
@@ -74,16 +74,13 @@ def vehicle_person_bike_detection_test_case(model_name):
     return Class
 
 
-class VehiclePersonBikeDetection2000TestCase(
-    vehicle_person_bike_detection_test_case('vehicle-person-bike-detection-2000')):
+class VehiclePersonBikeDetection2000TestCase(test_case('vehicle-person-bike-detection-2000')):
     """ Test case for vehicle-person-bike-detection-2000 model. """
 
 
-class VehiclePersonBikeDetection2001TestCase(
-    vehicle_person_bike_detection_test_case('vehicle-person-bike-detection-2001')):
+class VehiclePersonBikeDetection2001TestCase(test_case('vehicle-person-bike-detection-2001')):
     """ Test case for vehicle-person-bike-detection-2001 model. """
 
 
-class VehiclePersonBikeDetection2002TestCase(
-    vehicle_person_bike_detection_test_case('vehicle-person-bike-detection-2002')):
+class VehiclePersonBikeDetection2002TestCase(test_case('vehicle-person-bike-detection-2002')):
     """ Test case for vehicle-person-bike-detection-2002 model. """
