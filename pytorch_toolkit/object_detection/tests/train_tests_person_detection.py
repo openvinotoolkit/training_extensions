@@ -56,7 +56,6 @@ def person_detection_test_case(model_name):
                 f' tee {log_file}')
             ap = collect_ap(log_file)
             self.assertEqual(len((ap)), 5)
-            self.assertLess(ap[0], ap[-1])
 
         def test_quality_metrics(self):
             log_file = os.path.join(self.work_dir, 'test_quality_metrics.log')

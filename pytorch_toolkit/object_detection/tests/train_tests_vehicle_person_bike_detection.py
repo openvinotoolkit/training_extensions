@@ -56,7 +56,6 @@ def vehicle_person_bike_detection_test_case(model_name):
                 f' tee {log_file}')
             ap = collect_ap(log_file)
             self.assertEqual(len((ap)), 5)
-            self.assertLess(ap[0], ap[-1])
 
         def test_quality_metrics(self):
             log_file = os.path.join(self.work_dir, 'test_quality_metrics.log')
@@ -75,13 +74,16 @@ def vehicle_person_bike_detection_test_case(model_name):
     return Class
 
 
-class VehiclePersonBikeDetection2000TestCase(vehicle_person_bike_detection_test_case('vehicle-person-bike-detection-2000')):
+class VehiclePersonBikeDetection2000TestCase(
+    vehicle_person_bike_detection_test_case('vehicle-person-bike-detection-2000')):
     """ Test case for vehicle-person-bike-detection-2000 model. """
 
 
-class VehiclePersonBikeDetection2001TestCase(vehicle_person_bike_detection_test_case('vehicle-person-bike-detection-2001')):
+class VehiclePersonBikeDetection2001TestCase(
+    vehicle_person_bike_detection_test_case('vehicle-person-bike-detection-2001')):
     """ Test case for vehicle-person-bike-detection-2001 model. """
 
 
-class VehiclePersonBikeDetection2002TestCase(vehicle_person_bike_detection_test_case('vehicle-person-bike-detection-2002')):
+class VehiclePersonBikeDetection2002TestCase(
+    vehicle_person_bike_detection_test_case('vehicle-person-bike-detection-2002')):
     """ Test case for vehicle-person-bike-detection-2002 model. """
