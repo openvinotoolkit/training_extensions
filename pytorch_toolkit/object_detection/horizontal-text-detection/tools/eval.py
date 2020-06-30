@@ -46,20 +46,8 @@ def parse_args():
     return args.parse_args()
 
 
-def replace_text_in_file(path, replace_what, replace_by):
-    """ Replaces text in file. """
-
-    with open(path) as read_file:
-        content = '\n'.join([line.rstrip() for line in read_file.readlines()])
-        if content.find(replace_what) == -1:
-            return False
-        content = content.replace(replace_what, replace_by)
-    with open(path, 'w') as write_file:
-        write_file.write(content)
-    return True
-
-
 def collect_f1(path):
+    """ Collects precision, recall and f1 score values in log file. """
     metrics = ['recall', 'precision', 'hmean']
     content = []
     result = []
@@ -74,6 +62,19 @@ def collect_f1(path):
     return result
 
 
+def collect_ap(path):
+    """ Collects average precision values in log file. """
+
+    average_precisions = []
+    beginning = 'Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = '
+    with open(path) as read_file:
+        content = [line.strip() for line in read_file.readlines()]
+        for line in content:
+            if line.startswith(beginning):
+                average_precisions.append(float(line.replace(beginning, '')))
+    return average_precisions
+
+
 def sha256sum(filename):
     """ Computes sha256sum. """
 
@@ -86,34 +87,23 @@ def sha256sum(filename):
     return h.hexdigest()
 
 
-def coco_f1_eval(config_path, work_dir, snapshot, res_pkl, outputs, update_config):
-    """ Computes COCO F1. """
+def coco_eval(config_path, work_dir, snapshot, res_pkl, outputs, update_config):
+    """ Computes metrics: precision, recall, hmean and COCO AP. """
 
     with open(os.path.join(work_dir, 'test_py_stdout'), 'w') as test_py_stdout:
         update_config = f' --update_config {update_config}' if update_config else ''
         subprocess.run(
             f'python {MMDETECTION_TOOLS}/test.py'
             f' {config_path} {snapshot}'
-            f' --out {res_pkl} --eval f1{update_config}'.split(' '), stdout=test_py_stdout, check=True)
+            f' --out {res_pkl} --eval f1 bbox{update_config}'.split(' '), stdout=test_py_stdout, check=True)
     hmean = collect_f1(os.path.join(work_dir, 'test_py_stdout'))
     outputs.append({'key': 'f1', 'value': hmean[2] * 100, 'unit': '%', 'display_name': 'F1-score'})
     outputs.append({'key': 'recall', 'value': hmean[0] * 100, 'unit': '%', 'display_name': 'Recall'})
     outputs.append({'key': 'precision', 'value': hmean[1] * 100, 'unit': '%', 'display_name': 'Precision'})
+
+    average_precision = collect_ap(os.path.join(work_dir, 'test_py_stdout'))[0]
+    outputs.append({'key': 'ap', 'value': average_precision * 100, 'unit': '%', 'display_name': 'AP @ [IoU=0.50:0.95]'})
     return outputs
-
-
-# def custom_ap_eval(config_path, work_dir, res_pkl, outputs, update_config):
-#     """ Computes AP on faces that are greater than 64x64. """
-#
-#     res_custom_metrics = os.path.join(work_dir, "custom_metrics.json")
-#     update_config = f'--update_config {update_config}' if update_config else ''
-#     subprocess.run(
-#         f'python {FACE_DETECTION_TOOLS}/wider_custom_eval.py'
-#         f' {config_path} {res_pkl} --out {res_custom_metrics} {update_config}'.split(' '), check=True)
-#     with open(res_custom_metrics) as read_file:
-#         ap_64x64 = [x['average_precision'] for x in json.load(read_file) if x['object_size'][0] == 64][0]
-#         outputs.append({'key': 'ap_64x64', 'value': ap_64x64, 'display_name': 'AP for faces > 64x64', 'unit': '%'})
-#     return outputs
 
 
 def get_complexity_and_size(cfg, config_path, work_dir, outputs):
@@ -163,7 +153,7 @@ def eval(config_path, snapshot, out, update_config):
 
     metrics = get_complexity_and_size(cfg, config_path, work_dir, metrics)
     res_pkl = os.path.join(work_dir, "res.pkl")
-    metrics = coco_f1_eval(config_path, work_dir, snapshot, res_pkl, metrics, update_config)
+    metrics = coco_eval(config_path, work_dir, snapshot, res_pkl, metrics, update_config)
 
     for metric in metrics:
         metric['value'] = round(metric['value'], 3)

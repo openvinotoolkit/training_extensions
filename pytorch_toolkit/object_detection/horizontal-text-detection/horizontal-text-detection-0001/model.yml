@@ -27,3 +27,7 @@ metrics:
   key: precision
   unit: '%'
   value: 90.61
+- display_name: AP @ [IoU=0.50:0.95]
+  key: ap
+  unit: '%'
+  value: 52.4
