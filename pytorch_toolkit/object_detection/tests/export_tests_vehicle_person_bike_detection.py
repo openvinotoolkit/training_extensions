@@ -17,21 +17,21 @@ from common.test_case import export_test_case
 
 
 class VehiclePersonBikeDetection2000TestCase(
-    export_test_case('vehicle-person-bike-detection',
-                     'vehicle-person-bike-detection-2000',
-                     alt_ssd_export=True)):
+        export_test_case('vehicle-person-bike-detection',
+                         'vehicle-person-bike-detection-2000',
+                         alt_ssd_export=True)):
     """ Test case for vehicle-person-bike-detection-2000 export. """
 
 
 class VehiclePersonBikeDetection2001TestCase(
-    export_test_case('vehicle-person-bike-detection',
-                     'vehicle-person-bike-detection-2001',
-                     alt_ssd_export=True)):
+        export_test_case('vehicle-person-bike-detection',
+                         'vehicle-person-bike-detection-2001',
+                         alt_ssd_export=True)):
     """ Test case for vehicle-person-bike-detection-2001 export. """
 
 
-class VehiclePersonBikeDetection2000TestCase(
-    export_test_case('vehicle-person-bike-detection',
-                     'vehicle-person-bike-detection-2002',
-                     alt_ssd_export=True)):
+class VehiclePersonBikeDetection2002TestCase(
+        export_test_case('vehicle-person-bike-detection',
+                         'vehicle-person-bike-detection-2002',
+                         alt_ssd_export=True)):
     """ Test case for vehicle-person-bike-detection-2002 export. """

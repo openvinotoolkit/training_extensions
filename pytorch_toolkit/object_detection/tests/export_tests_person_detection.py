@@ -17,21 +17,15 @@ from common.test_case import export_test_case
 
 
 class PersonDetection0200TestCase(
-    export_test_case('person-detection',
-                     'person-detection-0200',
-                     alt_ssd_export=True)):
+        export_test_case('person-detection', 'person-detection-0200', alt_ssd_export=True)):
     """ Test case for person-detection-0200 export. """
 
 
 class PersonDetection0201TestCase(
-    export_test_case('person-detection',
-                     'person-detection-0201',
-                     alt_ssd_export=True)):
+        export_test_case('person-detection', 'person-detection-0201', alt_ssd_export=True)):
     """ Test case for person-detection-0201 export. """
 
 
 class PersonDetection0202TestCase(
-    export_test_case('person-detection',
-                     'person-detection-0202',
-                     alt_ssd_export=True)):
+        export_test_case('person-detection', 'person-detection-0202', alt_ssd_export=True)):
     """ Test case for person-detection-0202 export. """
