@@ -1,0 +1,21 @@
+description: Person Detection based on MobileNetV2 (SSD).
+name: person-detection-0202
+files:
+- name: snapshot.pth
+  sha256: 586e21d5c3f18387d47632a3ba83e37626051989f65dd49b94b78816827d2826
+  size: 14905234
+  source: https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/person-detection-0202.pth
+metrics:
+- display_name: Size
+  key: size
+  unit: Mp
+  value: 1.83
+- display_name: Complexity
+  key: complexity
+  unit: GFLOPs
+  value: 3.28
+- display_name: AP @ [IoU=0.50:0.95]
+  key: ap
+  unit: '%'
+  value: 27.2
+training_gpu_num: 4

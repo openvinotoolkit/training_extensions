@@ -19,7 +19,7 @@ import unittest
 from common.utils import replace_text_in_file, collect_ap, download_if_not_yet
 
 
-def face_detection_test_case(model_name):
+def test_case(model_name):
     class Class(unittest.TestCase):
 
         def setUp(self):
@@ -28,7 +28,7 @@ def face_detection_test_case(model_name):
             self.data_folder = '../../data'
             self.work_dir = os.path.join('/tmp/', self.model_name)
             os.makedirs(self.work_dir, exist_ok=True)
-            self.configuration_file = f'./face-detection/{self.model_name}/config.py'
+            self.configuration_file = f'./vehicle-person-bike-detection/{self.model_name}/config.py'
             os.system(f'cp {self.configuration_file} {self.work_dir}/')
             self.configuration_file = os.path.join(self.work_dir,
                                                    os.path.basename(self.configuration_file))
@@ -38,16 +38,14 @@ def face_detection_test_case(model_name):
 
             assert replace_text_in_file(self.configuration_file, 'samples_per_gpu=',
                                         'samples_per_gpu=1 ,#')
-            assert replace_text_in_file(self.configuration_file, 'total_epochs = 70',
-                                        'total_epochs = 75')
-            assert replace_text_in_file(self.configuration_file, 'data/WIDERFace',
-                                        '../../data/airport')
+            assert replace_text_in_file(self.configuration_file, 'total_epochs = 20',
+                                        'total_epochs = 25')
             assert replace_text_in_file(self.configuration_file, 'work_dir =',
                                         f'work_dir = "{os.path.join(self.work_dir, "outputs")}" #')
-            assert replace_text_in_file(self.configuration_file, 'train.json',
-                                        'annotation_faces_train.json')
-            assert replace_text_in_file(self.configuration_file, 'val.json',
-                                        'annotation_faces_train.json')
+            assert replace_text_in_file(self.configuration_file, 'annotation_example_val.json',
+                                        'annotation_example_train.json')
+            assert replace_text_in_file(self.configuration_file, "data_root + 'val'",
+                                        "data_root + 'train'")
             assert replace_text_in_file(self.configuration_file, 'resume_from = None',
                                         f'resume_from = "{os.path.join(self.work_dir, self.model_name)}.pth"')
 
@@ -58,7 +56,6 @@ def face_detection_test_case(model_name):
                 f' tee {log_file}')
             ap = collect_ap(log_file)
             self.assertEqual(len((ap)), 5)
-            self.assertLess(ap[0], ap[-1])
 
         def test_quality_metrics(self):
             log_file = os.path.join(self.work_dir, 'test_quality_metrics.log')
@@ -69,10 +66,10 @@ def face_detection_test_case(model_name):
                 f'--out res.pkl --eval bbox 2>&1 | tee {log_file}')
             ap = collect_ap(log_file)
 
-            with open(f'tests/expected_outputs/face-detection/{self.model_name}.json', 'w') as read_file:
+            with open(f'tests/expected_outputs/vehicle-person-bike-detection/{self.model_name}.json', 'w') as read_file:
                 json.dump({'map': ap[0]}, read_file)
 
-            with open(f'tests/expected_outputs/face-detection/{self.model_name}.json') as read_file:
+            with open(f'tests/expected_outputs/vehicle-person-bike-detection/{self.model_name}.json') as read_file:
                 content = json.load(read_file)
 
             self.assertEqual(content['map'], ap[0])
@@ -80,21 +77,13 @@ def face_detection_test_case(model_name):
     return Class
 
 
-class FaceDetection0200TestCase(face_detection_test_case('face-detection-0200')):
-    """ Test case for face-detection-0200 model. """
+class VehiclePersonBikeDetection2000TestCase(test_case('vehicle-person-bike-detection-2000')):
+    """ Test case for vehicle-person-bike-detection-2000 model. """
 
 
-class FaceDetection0202TestCase(face_detection_test_case('face-detection-0202')):
-    """ Test case for face-detection-0202 model. """
+class VehiclePersonBikeDetection2001TestCase(test_case('vehicle-person-bike-detection-2001')):
+    """ Test case for vehicle-person-bike-detection-2001 model. """
 
 
-class FaceDetection0204TestCase(face_detection_test_case('face-detection-0204')):
-    """ Test case for face-detection-0204 model. """
-
-
-class FaceDetection0205TestCase(face_detection_test_case('face-detection-0205')):
-    """ Test case for face-detection-0205 model. """
-
-
-class FaceDetection0206TestCase(face_detection_test_case('face-detection-0206')):
-    """ Test case for face-detection-0206 model. """
+class VehiclePersonBikeDetection2002TestCase(test_case('vehicle-person-bike-detection-2002')):
+    """ Test case for vehicle-person-bike-detection-2002 model. """

@@ -1,32 +1,45 @@
-import os
-
 # model settings
-input_size = 448
+input_size = 384
+image_width, image_height = input_size, input_size
 width_mult = 1.0
 model = dict(
     type='SingleStageDetector',
     backbone=dict(
-        type='shufflenetv2_w1',
-        out_indices=(2, 3),
+        type='mobilenetv2_w1',
+        out_indices=(4, 5),
         frozen_stages=-1,
         norm_eval=False,
-        pretrained=True,
+        pretrained=True
     ),
     neck=None,
     bbox_head=dict(
         type='SSDHead',
-        input_size=input_size,
-        in_channels=(int(width_mult * 232), int(width_mult * 464)),
-        num_classes=2,
-        anchor_strides=(16, 32),
-        anchor_widths=(
-            [14.0373, 37.4827, 21.952, 51.8187],
-            [213.5467, 115.584, 192.3413, 76.3093, 112.896]),
-        anchor_heights=(
-            [22.4, 59.136, 38.08, 94.3787],
-            [339.7333, 243.264, 185.92, 156.9493, 108.416]),
-        target_means=(.0, .0, .0, .0),
-        target_stds=(0.1, 0.1, 0.2, 0.2),
+        num_classes=3,
+        in_channels=(int(width_mult * 96), int(width_mult * 320)),
+        anchor_generator=dict(
+            type='SSDAnchorGeneratorClustered',
+            strides=(16, 32),
+            widths=[
+                [image_width * x for x in
+                 [0.030319100851883052, 0.06983469562113481, 0.0896789415692108,
+                  0.2483828203507245]],
+                [image_width * x for x in
+                 [0.16599406375283482, 0.22625136235966045, 0.5378538906986432, 0.42348993106325517,
+                  0.8319818652057693]],
+            ],
+            heights=[
+                [image_height * x for x in
+                 [0.05278004605817635, 0.13254872810382887, 0.2676618623745634,
+                  0.21563111510925026]],
+                [image_height * x for x in
+                 [0.439776191190808, 0.6682003099037013, 0.47115695974153415, 0.8533047297744046,
+                  0.8352805754271161]],
+            ],
+        ),
+        bbox_coder=dict(
+            type='DeltaXYWHBBoxCoder',
+            target_means=(.0, .0, .0, .0),
+            target_stds=(0.1, 0.1, 0.2, 0.2), ),
         depthwise_heads=True,
         depthwise_heads_activations='relu',
         loss_balancing=True))
@@ -53,8 +66,8 @@ test_cfg = dict(
     max_per_img=200)
 # model training and testing settings
 # dataset settings
-dataset_type = 'CustomCocoDataset'
-data_root = 'data/WIDERFace/'
+dataset_type = 'CocoDataset'
+data_root = '../../data/airport/'
 img_norm_cfg = dict(mean=[0, 0, 0], std=[255, 255, 255], to_rgb=True)
 train_pipeline = [
     dict(type='LoadImageFromFile', to_float32=True),
@@ -71,7 +84,7 @@ train_pipeline = [
         min_crop_size=0.1),
     dict(type='Resize', img_scale=(input_size, input_size), keep_ratio=False),
     dict(type='Normalize', **img_norm_cfg),
-    dict(type='RandomFlip', flip_ratio=0.5),
+    dict(type='RandomFlip', flip_ratio=0.0),
     dict(type='DefaultFormatBundle'),
     dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels']),
 ]
@@ -89,32 +102,32 @@ test_pipeline = [
         ])
 ]
 data = dict(
-    imgs_per_gpu=32,
+    samples_per_gpu=65,
     workers_per_gpu=4,
     train=dict(
         type='RepeatDataset',
-        times=2,
+        times=5,
         dataset=dict(
             type=dataset_type,
-            classes=('face',),
-            ann_file=data_root + '/train.json',
-            min_size=17,
-            img_prefix=data_root,
+            classes=('vehicle', 'person', 'non-vehicle'),
+            ann_file=data_root + 'annotation_example_train.json',
+            img_prefix=data_root + 'train',
+            min_size=20,
             pipeline=train_pipeline
         )
     ),
     val=dict(
         type=dataset_type,
-        classes=('face',),
-        ann_file=data_root + '/val.json',
-        img_prefix=data_root,
+        classes=('vehicle', 'person', 'non-vehicle'),
+        ann_file=data_root + 'annotation_example_val.json',
+        img_prefix=data_root + 'val',
         test_mode=True,
         pipeline=test_pipeline),
     test=dict(
         type=dataset_type,
-        classes=('face',),
-        ann_file=data_root + '/val.json',
-        img_prefix=data_root,
+        classes=('vehicle', 'person', 'non-vehicle'),
+        ann_file=data_root + 'annotation_example_val.json',
+        img_prefix=data_root + 'val',
         test_mode=True,
         pipeline=test_pipeline))
 # optimizer
@@ -126,21 +139,21 @@ lr_config = dict(
     warmup='linear',
     warmup_iters=1200,
     warmup_ratio=1.0 / 3,
-    step=[40, 55, 65])
+    step=[8, 15, 18])
 checkpoint_config = dict(interval=1)
 # yapf:disable
 log_config = dict(
-    interval=100,
+    interval=1,
     hooks=[
         dict(type='TextLoggerHook'),
         dict(type='TensorboardLoggerHook')
     ])
 # yapf:enable
 # runtime settings
-total_epochs = 70
+total_epochs = 20
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-work_dir = os.path.join('outputs', os.path.basename(__file__)[:-3])
+work_dir = 'outputs/vehicle-person-bike-detection-2001'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]

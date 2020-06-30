@@ -37,10 +37,10 @@ def export_test_case(problem_name, model_name, snapshot_name=None, alt_ssd_expor
             self.configuration_file = os.path.join(self.work_dir,
                                                    os.path.basename(self.configuration_file))
             self.ote_url = 'https://download.01.org/opencv/openvino_training_extensions'
-            self.url = f'{self.ote_url}/models/object_detection/{self.snapshot_name}'
+            self.url = f'{self.ote_url}/models/object_detection/v2/{self.snapshot_name}'
             download_if_not_yet(self.work_dir, self.url)
 
-            self.test_export_thr = 0.01
+            self.test_export_thr = 0.031
 
         def export_test(self, alt_ssd_export, thr):
             if alt_ssd_export:
@@ -78,7 +78,7 @@ def export_test_case(problem_name, model_name, snapshot_name=None, alt_ssd_expor
 
         def setUp(self):
             super().setUp()
-            self.test_alt_ssd_export_thr = 0.03
+            self.test_alt_ssd_export_thr = 0.031
 
         def test_alt_ssd_export(self):
             self.export_test(True, self.test_alt_ssd_export_thr)

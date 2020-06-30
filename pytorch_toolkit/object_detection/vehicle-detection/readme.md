@@ -1,12 +1,12 @@
-# Person Vehicle Bike Detector
+# Vehicle Detection
 
-The crossroad-detection network model provides detection of three class objects: vehicle, pedestrian, non-vehicle (like bikes). This detector was trained on the data from crossroad cameras.
+Models that are able to detect vehicles on given images.
 
-| Model Name                  | Complexity (GFLOPs) | Size (Mp) | Mean Average Precision (mAP) | Links                                                                        |
-| --------------------------- | ------------------- | --------- | ------------- | ---------------------------------------------------------------------------- |
-| person-vehicle-bike-detection-crossroad-1016  | 3.560               | 	2.887    | 62.55%          | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/person_vehicle_bike_sd512_mb2_clustered_epoch_21.pth), [configuration file](./person-vehicle-bike-detection-crossroad-1016/config.py) |
-
-Average Precision (AP) is defined as an area under the precision/recall curve.
+| Model Name | Complexity (GFLOPs) | Size (Mp) | AP @ [IoU=0.50:0.95] (%) | Links | GPU_NUM |
+| --- | --- | --- | --- | --- | --- |
+| vehicle-detection-0200 | 0.82 | 1.83 | 26.1 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/vehicle-detection-0200.pth), [configuration file](./vehicle-detection-0200/config.py) | 2 |
+| vehicle-detection-0201 | 1.84 | 1.83 | 32.5 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/vehicle-detection-0200.pth), [configuration file](./vehicle-detection-0201/config.py) | 2 |
+| vehicle-detection-0202 | 3.28 | 1.83 | 36.3 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/vehicle-detection-0200.pth), [configuration file](./vehicle-detection-0202/config.py) | 4
 
 ## Training pipeline
 
@@ -19,17 +19,17 @@ cd <openvino_training_extensions>/pytorch_toolkit/object_detection
 ### 1. Select a training configuration file and get pre-trained snapshot if available. Please see the table above.
 
 ```bash
-export MODEL_NAME=person-vehicle-bike-detection-crossroad-1016
-export CONFIGURATION_FILE=./person-vehicle-bike-detection/$MODEL_NAME/config.py
+export MODEL_NAME=vehicle-detection-0200
+export CONFIGURATION_FILE=./vehicle-detection/$MODEL_NAME/config.py
 ```
 
 ### 2. Collect dataset
 
-You can train a model on existing toy dataset `openvino_training_extensions/data/airport`. Obviously such dataset is not sufficient for training good enough model.
+Collect or download images with vehicles presented on them.
 
 ### 3. Prepare annotation
 
-The existing toy dataset has annotation in the Common Objects in Context (COCO) and mmdetection CustomDataset format.
+Annotate dataset and save annotation to MSCOCO format with `vehicle` as the only one class.
 
 ### 4. Training and Fine-tuning
 
@@ -56,18 +56,25 @@ If you would like to start **fine-tuning** from pre-trained weights do not forge
             $CONFIGURATION_FILE \
             <GPU_NUM>
    ```
+* To train the detector on multiple GPUs and to perform quality metrics estimation as soon as training is finished, run in your terminal
+
+   ```bash
+   python vehicle-detection/tools/train_and_eval.py \
+            $CONFIGURATION_FILE \
+            <GPU_NUM>
+   ```
 
 ### 5. Validation
 
-To dump detection of your model as well as compute MS-COCO metrics run:
+* To dump detection of your model as well as compute MS-COCO metrics run:
 
-```bash
-python ../../external/mmdetection/tools/test.py \
-        $CONFIGURATION_FILE \
-        <CHECKPOINT> \
-        --out result.pkl \
-        --eval bbox
-```
+   ```bash
+   python ../../external/mmdetection/tools/test.py \
+            $CONFIGURATION_FILE \
+            <CHECKPOINT> \
+            --out result.pkl \
+            --eval bbox
+   ```
 
 ### 6. Export PyTorch\* model to the OpenVINO™ format
 

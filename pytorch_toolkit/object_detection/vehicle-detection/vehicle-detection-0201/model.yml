@@ -1,0 +1,22 @@
+description: Vehicle Detection based on MobileNetV2 (SSD).
+name: vehicle-detection-0201
+files:
+- name: snapshot.pth
+  sha256: a12832ab386ac48c3eef569e520399fca3d1982e188aa27ec24343fbd7222e35
+  size: 14905229
+  source: https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/vehicle-detection-0200.pth
+metrics:
+- display_name: Size
+  key: size
+  unit: Mp
+  value: 1.83
+- display_name: Complexity
+  key: complexity
+  unit: GFLOPs
+  value: 1.84
+- display_name: AP @ [IoU=0.50:0.95]
+  key: ap
+  unit: '%'
+  value: 32.5
+training_gpu_num: 2
+show_on_chart: True
