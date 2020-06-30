@@ -37,6 +37,7 @@ inference.
   * [Instance Segmentation](pytorch_toolkit/instance_segmentation)
   * [Object Detection](pytorch_toolkit/object_detection)
     - [Face Detection](pytorch_toolkit/object_detection/face-detection)
+    - [Horizontal Text Detection](pytorch_toolkit/object_detection/horizontal-text-detection/)
     - [Person Detection](pytorch_toolkit/object_detection/person-detection/)
     - [Vehicle Detection](pytorch_toolkit/object_detection/vehicle-detection)
     - [Vehicle Person Bike Detection](pytorch_toolkit/object_detection/vehicle-person-bike-detection)

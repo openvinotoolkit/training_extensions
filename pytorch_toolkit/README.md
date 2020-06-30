@@ -30,6 +30,7 @@ them for prediction.
 * [Instance Segmentation](instance_segmentation)
 * [Object Detection](object_detection)
   - [Face Detection](object_detection/face-detection)
+  - [Horizontal Text Detection](object_detection/horizontal-text-detection)
   - [Person Detection](object_detection/person-detection)
   - [Vehicle Detection](object_detection/vehicle-detection)
   - [Vehicle Person Bike Detection](object_detection/vehicle-person-bike-detection)
