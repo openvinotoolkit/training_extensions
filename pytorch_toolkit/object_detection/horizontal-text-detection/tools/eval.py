@@ -20,7 +20,6 @@ import json
 import os
 import subprocess
 import tempfile
-import sys
 import yaml
 
 from mmcv.utils import Config

@@ -57,6 +57,10 @@ def main():
 
     cfg = Config.fromfile(args.config)
 
+    overrided_work_dir = [p.split('=') for p in args.update_config.strip().split(' ') if p.startswith('work_dir=')]
+    if overrided_work_dir:
+        cfg.work_dir = overrided_work_dir[0][1]
+
     eval(args.config, os.path.join(cfg.work_dir, "latest.pth"), args.out, args.update_config)
 
 
