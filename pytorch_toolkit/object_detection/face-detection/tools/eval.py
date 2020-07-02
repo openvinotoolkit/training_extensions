@@ -178,10 +178,10 @@ def custom_ap_eval(config_path, work_dir, res_pkl, outputs, update_config):
     """ Computes AP on faces that are greater than 64x64. """
 
     res_custom_metrics = os.path.join(work_dir, "custom_metrics.json")
-    update_config = f'--update_config {update_config}' if update_config else ''
+    update_config = f' --update_config {update_config}' if update_config else ''
     subprocess.run(
         f'python {FACE_DETECTION_TOOLS}/wider_custom_eval.py'
-        f' {config_path} {res_pkl} --out {res_custom_metrics} {update_config}'.split(' '), check=True)
+        f' {config_path} {res_pkl} --out {res_custom_metrics}{update_config}'.split(' '), check=True)
     with open(res_custom_metrics) as read_file:
         ap_64x64 = [x['average_precision'] for x in json.load(read_file) if x['object_size'][0] == 64][0]
         outputs.append({'key': 'ap_64x64', 'value': ap_64x64, 'display_name': 'AP for faces > 64x64', 'unit': '%'})

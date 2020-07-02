@@ -26,6 +26,7 @@ from mmcv.utils import Config
 
 MMDETECTION_TOOLS = f'{os.path.dirname(__file__)}/../../../../external/mmdetection/tools'
 
+
 def parse_args():
     """ Parses input args. """
 
@@ -74,7 +75,7 @@ def sha256sum(filename):
     """ Computes sha256sum. """
 
     h = hashlib.sha256()
-    b = bytearray(128*1024)
+    b = bytearray(128 * 1024)
     mv = memoryview(b)
     with open(filename, 'rb', buffering=0) as f:
         for n in iter(lambda: f.readinto(mv), 0):
