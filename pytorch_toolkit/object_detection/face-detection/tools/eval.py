@@ -218,7 +218,7 @@ def get_file_size_and_sha256(snapshot):
     }
 
 
-def eval(config_path, snapshot, wider_dir, out, update_config):
+def eval(config_path, snapshot, out, update_config, wider_dir='.'):
     """ Main evaluation procedure. """
 
     cfg = Config.fromfile(config_path)
@@ -261,7 +261,7 @@ def main():
     """ Main function. """
 
     args = parse_args()
-    eval(args.config, args.snapshot, args.wider_dir, args.out, args.update_config)
+    eval(args.config, args.snapshot, args.out, args.update_config, args.wider_dir)
 
 
 if __name__ == '__main__':
