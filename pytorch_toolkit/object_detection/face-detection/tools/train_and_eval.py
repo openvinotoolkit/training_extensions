@@ -64,7 +64,7 @@ def main():
     if overrided_work_dir:
         cfg.work_dir = overrided_work_dir[0][1]
 
-    eval(args.config, args.wider_dir, args.out, args.update_config, os.path.join(cfg.work_dir, "latest.pth"))
+    eval(args.config, os.path.join(cfg.work_dir, "latest.pth"), args.out, args.update_config, args.wider_dir)
 
 
 if __name__ == '__main__':
