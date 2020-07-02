@@ -33,9 +33,6 @@ def parse_args():
                       help='A number of GPU to use in training.')
     args.add_argument('out',
                       help='A path to output file where models metrics will be saved (.yml).')
-    args.add_argument('--wider_dir',
-                      help='Specify this  path if you would like to test your model on WiderFace dataset.',
-                      default='data/wider_dir')
     args.add_argument(
         '--update_config',
         help='Update configuration file by parameters specified here.'
@@ -64,7 +61,7 @@ def main():
     if overrided_work_dir:
         cfg.work_dir = overrided_work_dir[0][1]
 
-    eval(args.config, os.path.join(cfg.work_dir, "latest.pth"), args.wider_dir, args.out, args.update_config)
+    eval(args.config, os.path.join(cfg.work_dir, "latest.pth"), args.out, args.update_config)
 
 
 if __name__ == '__main__':
