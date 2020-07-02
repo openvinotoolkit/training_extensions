@@ -1,0 +1,11 @@
+description:  >-
+  Text detection is a computer technology being used in a variety of applications
+  that finds every word in digital images. Text detection can be regarded as
+  a specific case of object-class detection.
+favorite: false
+imagesUrls:
+  - https://miro.medium.com/max/1026/1*Bc-C54f2E0YwIrAfsZ8ZVQ.png
+  - https://i.stack.imgur.com/j49si.jpg
+  - https://docs.openvinotoolkit.org/latest/text-detection-0004.png
+subtitle: Detection words in digital images
+title: Text Detection
