@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-# pylint: disable=C0301,W0622,R0914
+# pylint: disable=C0301,W0622,R0914,R0913
 
 import argparse
 import hashlib
@@ -25,7 +25,6 @@ import yaml
 from mmcv.utils import Config
 
 MMDETECTION_TOOLS = f'{os.path.dirname(__file__)}/../../../../external/mmdetection/tools'
-FACE_DETECTION_TOOLS = os.path.dirname(__file__)
 
 
 def parse_args():
@@ -38,6 +37,10 @@ def parse_args():
                       help='A path to pre-trained snapshot (.pth).')
     args.add_argument('out',
                       help='A path to output file where models metrics will be saved (.yml).')
+    args.add_argument('--update_config',
+                      help='Update configuration file by parameters specified here.'
+                           'Use quotes if you are going to change several params.',
+                      default='')
 
     return args.parse_args()
 
@@ -72,7 +75,7 @@ def sha256sum(filename):
     """ Computes sha256sum. """
 
     h = hashlib.sha256()
-    b = bytearray(128*1024)
+    b = bytearray(128 * 1024)
     mv = memoryview(b)
     with open(filename, 'rb', buffering=0) as f:
         for n in iter(lambda: f.readinto(mv), 0):
@@ -80,16 +83,17 @@ def sha256sum(filename):
     return h.hexdigest()
 
 
-def coco_ap_eval(config_path, work_dir, snapshot, res_pkl, outputs):
+def coco_ap_eval(config_path, work_dir, snapshot, res_pkl, outputs, update_config):
     """ Computes COCO AP. """
 
     with open(os.path.join(work_dir, 'test_py_stdout'), 'w') as test_py_stdout:
+        update_config = f' --update_config {update_config}' if update_config else ''
         subprocess.run(
             f'python {MMDETECTION_TOOLS}/test.py'
             f' {config_path} {snapshot}'
-            f' --out {res_pkl} --eval bbox'.split(' '), stdout=test_py_stdout, check=True)
+            f' --out {res_pkl} --eval bbox{update_config}'.split(' '), stdout=test_py_stdout, check=True)
     average_precision = collect_ap(os.path.join(work_dir, 'test_py_stdout'))[0]
-    outputs.append({'key': 'map', 'value': average_precision * 100, 'unit': '%', 'display_name': 'mAP @ [IoU=0.50:0.95]'})
+    outputs.append({'key': 'ap', 'value': average_precision * 100, 'unit': '%', 'display_name': 'AP @ [IoU=0.50:0.95]'})
     return outputs
 
 
@@ -123,7 +127,7 @@ def get_file_size_and_sha256(snapshot):
     }
 
 
-def eval(config_path, snapshot, out):
+def eval(config_path, snapshot, out, update_config):
     """ Main evaluation procedure. """
 
     cfg = Config.fromfile(config_path)
@@ -137,9 +141,10 @@ def eval(config_path, snapshot, out):
     files = get_file_size_and_sha256(snapshot)
 
     metrics = []
-    res_pkl = os.path.join(work_dir, "res.pkl")
-    metrics = coco_ap_eval(config_path, work_dir, snapshot, res_pkl, metrics)
+
     metrics = get_complexity_and_size(cfg, config_path, work_dir, metrics)
+    res_pkl = os.path.join(work_dir, "res.pkl")
+    metrics = coco_ap_eval(config_path, work_dir, snapshot, res_pkl, metrics, update_config)
 
     for metric in metrics:
         metric['value'] = round(metric['value'], 3)
@@ -151,7 +156,7 @@ def eval(config_path, snapshot, out):
 
     if os.path.exists(out):
         with open(out) as read_file:
-            content = yaml.load(read_file)
+            content = yaml.load(read_file, Loader=yaml.FullLoader)
         content.update(outputs)
         outputs = content
 
@@ -163,7 +168,7 @@ def main():
     """ Main function. """
 
     args = parse_args()
-    eval(args.config, args.snapshot, args.out)
+    eval(args.config, args.snapshot, args.out, args.update_config)
 
 
 if __name__ == '__main__':

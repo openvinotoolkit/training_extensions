@@ -33,9 +33,6 @@ def parse_args():
                       help='A number of GPU to use in training.')
     args.add_argument('out',
                       help='A path to output file where models metrics will be saved (.yml).')
-    args.add_argument('--wider_dir',
-                      help='Specify this  path if you would like to test your model on WiderFace dataset.',
-                      default='data/wider_dir')
     args.add_argument(
         '--update_config',
         help='Update configuration file by parameters specified here.'
