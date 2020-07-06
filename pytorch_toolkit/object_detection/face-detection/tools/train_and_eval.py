@@ -17,6 +17,7 @@
 import argparse
 import subprocess
 import os
+import yaml
 
 from mmcv.utils import Config
 
@@ -65,6 +66,11 @@ def main():
         cfg.work_dir = overrided_work_dir[0][1]
 
     eval(args.config, os.path.join(cfg.work_dir, "latest.pth"), args.out, args.update_config, args.wider_dir)
+
+    with open(args.out, 'r+') as dst_file:
+        content = yaml.load(dst_file, Loader=yaml.FullLoader)
+        content['training_gpu_num'] = args.gpu_num
+        yaml.dump(content, dst_file)
 
 
 if __name__ == '__main__':
