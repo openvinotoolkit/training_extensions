@@ -1,0 +1,3 @@
+description: Custom Object Detection based on MobileNetV2 (SSD).
+name: mobilenet_v2-2s_ssd-256x256
+custom: True
