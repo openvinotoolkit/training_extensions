@@ -15,8 +15,10 @@
 # pylint: disable=C0301,W0622,R0914
 
 import argparse
+import json
 import subprocess
 import os
+import tempfile
 import yaml
 
 from mmcv.utils import Config
@@ -52,11 +54,52 @@ def main():
 
     cfg = Config.fromfile(args.config)
 
-    update_config = f'--update_config {args.update_config}' if args.update_config else ''
+    update_config = f' --update_config {args.update_config}' if args.update_config else ''
+    if hasattr(cfg.model, 'bbox_head') and cfg.model.bbox_head.type == 'SSDHead':
+        if cfg.model.bbox_head.anchor_generator.type == 'SSDAnchorGeneratorClustered':
+            widths = cfg.model.bbox_head.anchor_generator.widths
+            n_clust = 0
+            for w in widths:
+                n_clust += len(w) if isinstance(w, (list, tuple)) else 1
+            n_clust = ' --n_clust ' + str(n_clust)
+
+            group_as = ''
+            if isinstance(widths[0], (list, tuple)):
+                group_as = ' --group_as ' + ' '.join([str(len(w)) for w in widths])
+
+            config = ' --config ' + args.config
+
+            tmp_file = tempfile.NamedTemporaryFile(delete=False)
+            out = f' --out {tmp_file.name}'
+
+            if 'pipeline' in cfg.data.train:
+                img_shape = [t for t in cfg.data.train.pipeline if t['type'] == 'Resize'][0]['img_scale']
+            else:
+                img_shape = [t for t in cfg.data.train.dataset.pipeline if t['type'] == 'Resize'][0]['img_scale']
+
+            img_shape = f' --image_size_wh {img_shape[0]} {img_shape[1]}'
+
+            subprocess.run(f'python {mmdetection_tools}/cluster_boxes.py'
+                           f'{config}'
+                           f'{n_clust}'
+                           f'{group_as}'
+                           f'{update_config}'
+                           f'{img_shape}'
+                           f'{out}'.split(' '), check=True)
+
+            with open(tmp_file.name) as src_file:
+                content = json.load(src_file)
+                widths, heights = content['widths'], content['heights']
+
+            if not update_config:
+                update_config = ' --update_config'
+            update_config += f' cfg.model.bbox_head.anchor_generator.widths={str(widths).replace(" ", "")}'
+            update_config += f' cfg.model.bbox_head.anchor_generator.heights={str(heights).replace(" ", "")}'
+
     subprocess.run(f'{mmdetection_tools}/dist_train.sh'
                    f' {args.config}'
                    f' {args.gpu_num}'
-                   f' {update_config}'.split(' '), check=True)
+                   f'{update_config}'.split(' '), check=True)
 
     overrided_work_dir = [p.split('=') for p in args.update_config.strip().split(' ') if p.startswith('work_dir=')]
     if overrided_work_dir:

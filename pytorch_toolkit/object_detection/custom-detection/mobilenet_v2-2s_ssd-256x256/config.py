@@ -14,26 +14,15 @@ model = dict(
     neck=None,
     bbox_head=dict(
         type='SSDHead',
-        num_classes=1,
+        num_classes='TBD',
         in_channels=(int(width_mult * 96), int(width_mult * 320)),
         anchor_generator=dict(
             type='SSDAnchorGeneratorClustered',
             strides=(16, 32),
-            widths=[
-                [image_width * x for x in
-                 [0.0221902727105487, 0.054625211024679, 0.102332663312817, 0.14364042118466025]],
-                [image_width * x for x in
-                 [0.20817454792318996, 0.45909577824808057, 0.2758748647618599, 0.5238139227422672,
-                  0.8531110786213814]],
-            ],
-            heights=[
-                [image_height * x for x in
-                 [0.06031581928255733, 0.14855637858557702, 0.2668119832636703,
-                  0.4203179599319901]],
-                [image_height * x for x in
-                 [0.6082611972029469, 0.44005493324397005, 0.8207143765730922, 0.8343620047507052,
-                  0.851994025022708]],
-            ],
+            widths=[[image_width * x for x in range(4)],
+                    [image_width * x for x in range(5)]],
+            heights=[[image_height * x for x in range(4)],
+                     [image_height * x for x in range(5)]],
         ),
         bbox_coder=dict(
             type='DeltaXYWHBBoxCoder',

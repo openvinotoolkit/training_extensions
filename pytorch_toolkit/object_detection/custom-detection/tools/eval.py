@@ -97,19 +97,20 @@ def coco_ap_eval(config_path, work_dir, snapshot, res_pkl, outputs, update_confi
     return outputs
 
 
-def get_complexity_and_size(cfg, config_path, work_dir, outputs):
+def get_complexity_and_size(cfg, config_path, work_dir, outputs, update_config):
     """ Gets complexity and size of a model. """
 
     image_shape = [x['img_scale'] for x in cfg.test_pipeline if 'img_scale' in x][0][::-1]
     image_shape = " ".join([str(x) for x in image_shape])
 
     res_complexity = os.path.join(work_dir, "complexity.json")
-
+    update_config = f' --update_config {update_config}' if update_config else ''
     subprocess.run(
         f'python {MMDETECTION_TOOLS}/get_flops.py'
         f' {config_path}'
         f' --shape {image_shape}'
-        f' --out {res_complexity}'.split(' '), check=True)
+        f' --out {res_complexity}'
+        f'{update_config}'.split(' '), check=True)
     with open(res_complexity) as read_file:
         content = json.load(read_file)
         outputs.extend(content)
@@ -142,7 +143,7 @@ def eval(config_path, snapshot, out, update_config):
 
     metrics = []
 
-    metrics = get_complexity_and_size(cfg, config_path, work_dir, metrics)
+    metrics = get_complexity_and_size(cfg, config_path, work_dir, metrics, update_config)
     res_pkl = os.path.join(work_dir, "res.pkl")
     metrics = coco_ap_eval(config_path, work_dir, snapshot, res_pkl, metrics, update_config)
 
