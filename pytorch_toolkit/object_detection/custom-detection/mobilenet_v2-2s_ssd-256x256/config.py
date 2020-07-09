@@ -14,7 +14,7 @@ model = dict(
     neck=None,
     bbox_head=dict(
         type='SSDHead',
-        num_classes='TBD',
+        num_classes=80,
         in_channels=(int(width_mult * 96), int(width_mult * 320)),
         anchor_generator=dict(
             type='SSDAnchorGeneratorClustered',
@@ -136,7 +136,7 @@ log_config = dict(
     ])
 # yapf:enable
 # runtime settings
-total_epochs = 14
+total_epochs = 0
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
 work_dir = 'outputs/mobilenet_v2-2s_ssd-256x256'
