@@ -45,6 +45,18 @@ def parse_args():
     return args.parse_args()
 
 
+def is_clustering_needed(cfg, update_config):
+    # resume_from = [p.split('=') for p in update_config.strip().split(' ') if p.startswith('resume_from=')]
+    # resume_from = resume_from[0][1] if resume_from else str(cfg.resume_from)
+    # if resume_from.lower() not in ['', 'none']:
+    #    return False
+    if not hasattr(cfg.model, 'bbox_head') or not cfg.model.bbox_head.type == 'SSDHead':
+        return False
+    if not cfg.model.bbox_head.anchor_generator.type == 'SSDAnchorGeneratorClustered':
+        return False
+    return True
+
+
 def main():
     """ Main function. """
 
@@ -55,46 +67,46 @@ def main():
     cfg = Config.fromfile(args.config)
 
     update_config = f' --update_config {args.update_config}' if args.update_config else ''
-    if hasattr(cfg.model, 'bbox_head') and cfg.model.bbox_head.type == 'SSDHead':
-        if cfg.model.bbox_head.anchor_generator.type == 'SSDAnchorGeneratorClustered':
-            widths = cfg.model.bbox_head.anchor_generator.widths
-            n_clust = 0
-            for w in widths:
-                n_clust += len(w) if isinstance(w, (list, tuple)) else 1
-            n_clust = ' --n_clust ' + str(n_clust)
 
-            group_as = ''
-            if isinstance(widths[0], (list, tuple)):
-                group_as = ' --group_as ' + ' '.join([str(len(w)) for w in widths])
+    if is_clustering_needed(cfg, update_config):
+        widths = cfg.model.bbox_head.anchor_generator.widths
+        n_clust = 0
+        for w in widths:
+            n_clust += len(w) if isinstance(w, (list, tuple)) else 1
+        n_clust = ' --n_clust ' + str(n_clust)
 
-            config = ' --config ' + args.config
+        group_as = ''
+        if isinstance(widths[0], (list, tuple)):
+            group_as = ' --group_as ' + ' '.join([str(len(w)) for w in widths])
 
-            tmp_file = tempfile.NamedTemporaryFile(delete=False)
-            out = f' --out {tmp_file.name}'
+        config = ' --config ' + args.config
 
-            if 'pipeline' in cfg.data.train:
-                img_shape = [t for t in cfg.data.train.pipeline if t['type'] == 'Resize'][0]['img_scale']
-            else:
-                img_shape = [t for t in cfg.data.train.dataset.pipeline if t['type'] == 'Resize'][0]['img_scale']
+        tmp_file = tempfile.NamedTemporaryFile(delete=False)
+        out = f' --out {tmp_file.name}'
 
-            img_shape = f' --image_size_wh {img_shape[0]} {img_shape[1]}'
+        if 'pipeline' in cfg.data.train:
+            img_shape = [t for t in cfg.data.train.pipeline if t['type'] == 'Resize'][0]['img_scale']
+        else:
+            img_shape = [t for t in cfg.data.train.dataset.pipeline if t['type'] == 'Resize'][0]['img_scale']
 
-            subprocess.run(f'python {mmdetection_tools}/cluster_boxes.py'
-                           f'{config}'
-                           f'{n_clust}'
-                           f'{group_as}'
-                           f'{update_config}'
-                           f'{img_shape}'
-                           f'{out}'.split(' '), check=True)
+        img_shape = f' --image_size_wh {img_shape[0]} {img_shape[1]}'
 
-            with open(tmp_file.name) as src_file:
-                content = json.load(src_file)
-                widths, heights = content['widths'], content['heights']
+        subprocess.run(f'python {mmdetection_tools}/cluster_boxes.py'
+                       f'{config}'
+                       f'{n_clust}'
+                       f'{group_as}'
+                       f'{update_config}'
+                       f'{img_shape}'
+                       f'{out}'.split(' '), check=True)
 
-            if not update_config:
-                update_config = ' --update_config'
-            update_config += f' cfg.model.bbox_head.anchor_generator.widths={str(widths).replace(" ", "")}'
-            update_config += f' cfg.model.bbox_head.anchor_generator.heights={str(heights).replace(" ", "")}'
+        with open(tmp_file.name) as src_file:
+            content = json.load(src_file)
+            widths, heights = content['widths'], content['heights']
+
+        if not update_config:
+            update_config = ' --update_config'
+        update_config += f' cfg.model.bbox_head.anchor_generator.widths={str(widths).replace(" ", "")}'
+        update_config += f' cfg.model.bbox_head.anchor_generator.heights={str(heights).replace(" ", "")}'
 
     subprocess.run(f'{mmdetection_tools}/dist_train.sh'
                    f' {args.config}'
