@@ -105,8 +105,8 @@ def main():
 
         if not update_config:
             update_config = ' --update_config'
-        update_config += f' cfg.model.bbox_head.anchor_generator.widths={str(widths).replace(" ", "")}'
-        update_config += f' cfg.model.bbox_head.anchor_generator.heights={str(heights).replace(" ", "")}'
+        update_config += f' model.bbox_head.anchor_generator.widths={str(widths).replace(" ", "")}'
+        update_config += f' model.bbox_head.anchor_generator.heights={str(heights).replace(" ", "")}'
 
     subprocess.run(f'{mmdetection_tools}/dist_train.sh'
                    f' {args.config}'
