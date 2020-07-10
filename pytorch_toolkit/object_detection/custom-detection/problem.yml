@@ -6,3 +6,4 @@ imagesUrls:
   - some_picture_url
 subtitle: Detection custom objects in digital images
 title: Custom Detection
+type: generic
