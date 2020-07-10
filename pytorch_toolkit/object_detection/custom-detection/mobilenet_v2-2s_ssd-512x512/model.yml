@@ -1,3 +1,8 @@
 description: Custom Object Detection based on MobileNetV2 (SSD).
 name: mobilenet_v2-2s_ssd-512x512
+files:
+- name: snapshot.pth
+  sha256: 6632615f58746073536a96f62c60d095a5b825dbcd5d4c2d9a870cb3c6c9cf31
+  size: 8158146
+  source: https://raw.githubusercontent.com/Ilya-Krylov/tmp/master/snapshot.pth
 custom: True

@@ -14,7 +14,7 @@ model = dict(
     neck=None,
     bbox_head=dict(
         type='SSDHead',
-        num_classes='TBD',
+        num_classes=80,
         in_channels=(int(width_mult * 96), int(width_mult * 320)),
         anchor_generator=dict(
             type='SSDAnchorGeneratorClustered',
@@ -93,27 +93,27 @@ data = dict(
     workers_per_gpu=4,
     train=dict(
         type='RepeatDataset',
-        times=5,
+        times=1,
         dataset=dict(
             type=dataset_type,
-            classes='TBD',
-            ann_file='TBD',
-            img_prefix='TBD',
+            # classes='TBD',
+            ann_file='data/coco/annotations/instances_train2017.json',
+            img_prefix='data/coco/train2017',
             pipeline=train_pipeline
         )
     ),
     val=dict(
         type=dataset_type,
-        classes='TBD',
-        ann_file='TBD',
-        img_prefix='TBD',
+        # classes='TBD',
+        ann_file='data/coco/annotations/instances_val2017.json',
+        img_prefix='data/coco/val2017',
         test_mode=True,
         pipeline=test_pipeline),
     test=dict(
         type=dataset_type,
-        classes='TBD',
-        ann_file='TBD',
-        img_prefix='TBD',
+        # classes='TBD',
+        ann_file='data/coco/annotations/instances_val2017.json',
+        img_prefix='data/coco/val2017',
         test_mode=True,
         pipeline=test_pipeline))
 # optimizer
@@ -136,7 +136,7 @@ log_config = dict(
     ])
 # yapf:enable
 # runtime settings
-total_epochs = 14
+total_epochs = 0
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
 work_dir = 'outputs/mobilenet_v2-2s_ssd-384x384'

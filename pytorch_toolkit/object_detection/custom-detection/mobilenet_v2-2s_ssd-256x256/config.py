@@ -93,27 +93,27 @@ data = dict(
     workers_per_gpu=4,
     train=dict(
         type='RepeatDataset',
-        times=5,
+        times=1,
         dataset=dict(
             type=dataset_type,
-            classes='TBD',
-            ann_file='TBD',
-            img_prefix='TBD',
+            # classes='TBD',
+            ann_file='data/coco/annotations/instances_train2017.json',
+            img_prefix='data/coco/train2017',
             pipeline=train_pipeline
         )
     ),
     val=dict(
         type=dataset_type,
-        classes='TBD',
-        ann_file='TBD',
-        img_prefix='TBD',
+        # classes='TBD',
+        ann_file='data/coco/annotations/instances_val2017.json',
+        img_prefix='data/coco/val2017',
         test_mode=True,
         pipeline=test_pipeline),
     test=dict(
         type=dataset_type,
-        classes='TBD',
-        ann_file='TBD',
-        img_prefix='TBD',
+        # classes='TBD',
+        ann_file='data/coco/annotations/instances_val2017.json',
+        img_prefix='data/coco/val2017',
         test_mode=True,
         pipeline=test_pipeline))
 # optimizer
