@@ -1,5 +1,5 @@
 # model settings
-input_size = 128
+input_size = 256
 width_mult = 1.0
 model = dict(
     type='SingleStageDetector',
@@ -99,24 +99,24 @@ data = dict(
         dataset=dict(
             type=dataset_type,
             classes=('face',),
-            ann_file='/home/ikrylov/data/face_detection/wider/instances_train.json',
+            ann_file=data_root + '/train.json',
             min_size=17,
-            img_prefix='/home/ikrylov/data/face_detection/wider/',
+            img_prefix=data_root,
             pipeline=train_pipeline
         )
     ),
     val=dict(
         type=dataset_type,
         classes=('face',),
-        ann_file='/home/ikrylov/data/face_detection/wider/instances_val.json',
-        img_prefix='/home/ikrylov/data/face_detection/wider/',
+        ann_file=data_root + '/val.json',
+        img_prefix=data_root,
         test_mode=True,
         pipeline=test_pipeline),
     test=dict(
         type=dataset_type,
         classes=('face',),
-        ann_file='/home/ikrylov/data/face_detection/wider/instances_val.json',
-        img_prefix='/home/ikrylov/data/face_detection/wider/',
+        ann_file=data_root + '/val.json',
+        img_prefix=data_root,
         test_mode=True,
         pipeline=test_pipeline))
 # optimizer
