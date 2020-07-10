@@ -71,7 +71,7 @@ train_pipeline = [
         min_crop_size=0.1),
     dict(type='Resize', img_scale=(input_size, input_size), keep_ratio=False),
     dict(type='Normalize', **img_norm_cfg),
-    dict(type='RandomFlip', flip_ratio=0.0),
+    dict(type='RandomFlip', flip_ratio=0.5),
     dict(type='DefaultFormatBundle'),
     dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels']),
 ]
@@ -129,7 +129,7 @@ lr_config = dict(
 checkpoint_config = dict(interval=1)
 # yapf:disable
 log_config = dict(
-    interval=1,
+    interval=10,
     hooks=[
         dict(type='TextLoggerHook'),
         dict(type='TensorboardLoggerHook')
