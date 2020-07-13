@@ -17,7 +17,7 @@ Here we provided the steps for fine-tuning XNLI and Squad1.1 NLP tasks from the 
 
 ### Installation
 
-1. Upload bert as git submodule 
+1. Download bert repository
     ```bash
     git submodule update --init --depth 1 $(git rev-parse --show-toplevel)/external/bert 
     ```
@@ -35,7 +35,7 @@ Here we provided the steps for fine-tuning XNLI and Squad1.1 NLP tasks from the 
     . venv/bin/activate
     ```
 
-4. Install the tensorflow\*
+4. Install python modules
     ```bash
     pip3 install -r requirements.txt
     ```
