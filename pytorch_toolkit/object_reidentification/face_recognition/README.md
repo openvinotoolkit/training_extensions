@@ -4,7 +4,7 @@
 This repository contains training and inference code for face recognition neural networks. The face recognition network is based on the [MobileFaceNet](https://arxiv.org/abs/1804.07573) architecture equipped with [Squeeze-and-Excitation blocks](https://arxiv.org/abs/1709.01507). Landmark regression network is a simple CNN consisting from several stacked convolution and pooling layers. The code supports conversion to the ONNX\* format.
 
 | Model Name | LFW accuracy | GFlops | MParams | Links |
-| --- | --- | --- | --- | --- | --- |
+| ---        | ---          | ---    | ---     | ---   |
 | face-reidentification-retail-0095 | 0.9947 | 0.588 | 1.107 | [shapshot](https://download.01.org/opencv/openvino_training_extensions/models/face_recognition/Mobilenet_se_focal_121000.pt), [configuration file](configs/face-reidentification-retail-0095.yaml) |
 | MibileFaceNetSE_2x | 0.9942 | 1.155 | 2.197 | [shapshot](https://download.01.org/opencv/openvino_training_extensions/models/face_recognition/Mobilenet_2x_se_121000.pt), [configuration file](configs/mobile_face_net_se_2x_vgg2.yaml) |
 
