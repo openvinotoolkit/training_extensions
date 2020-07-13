@@ -1,0 +1,65 @@
+model:
+  name: 'mobile_face_net_se_1x'
+  feature_dim: 256
+
+data:
+  root: './'
+  type: 'image'
+  sources: ['vgg_face2']
+  targets: ['lfw']
+  height: 128
+  width: 128
+  norm_mean: [0., 0., 0.]
+  norm_std: [1., 1., 1.]
+  combineall: True
+  save_dir: 'outputs/reid-exp'
+  min_samples_per_id: 1
+  transforms:
+    random_flip:
+      enable: True
+      p: 0.5
+    cut_out_with_prior:
+      enable: True
+      p: 0.05
+      max_area: 0.1
+    random_rotate:
+      p: 0.95
+      angle: (-10, 10)
+
+
+
+loss:
+  name: 'am_softmax'
+  softmax:
+    label_smooth: False
+    conf_penalty: 0.0
+    m: 0.35
+    s: 30.
+    pr_product: False
+
+sampler:
+  train_sampler: 'RandomSampler'
+
+metric_losses:
+  enable: False
+
+train:
+  optim: 'sgd'
+  lr: 0.4
+  max_epoch: 25
+  batch_size: 128
+  fixbase_epoch: 0
+  open_layers: ['classifier']
+  lr_scheduler: 'multi_step'
+  stepsize: [3, 6, 9, 13]
+  warmup: 0
+  warmup_factor_base: 0.01
+
+test:
+  batch_size: 64
+  dist_metric: 'cosine'
+  normalize_feature: True
+  evaluate: False
+  eval_freq: 1
+  rerank: False
+  visactmap: False
