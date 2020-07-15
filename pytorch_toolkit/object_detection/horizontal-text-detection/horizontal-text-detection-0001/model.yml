@@ -31,3 +31,4 @@ metrics:
   key: ap
   unit: '%'
   value: 52.4
+show_on_chart: True

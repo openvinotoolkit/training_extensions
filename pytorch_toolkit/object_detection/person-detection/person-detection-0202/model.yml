@@ -19,3 +19,4 @@ metrics:
   unit: '%'
   value: 27.2
 training_gpu_num: 4
+show_on_chart: True
