@@ -1,6 +1,6 @@
 # Person Detection
 
-Models that are able to detect persons on given images.
+Models that are able to detect persons.
 
 | Model Name | Complexity (GFLOPs) | Size (Mp) | AP @ [IoU=0.50:0.95] (%) | Links | GPU_NUM |
 | --- | --- | --- | --- | --- | --- |

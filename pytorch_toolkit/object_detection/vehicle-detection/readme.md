@@ -1,6 +1,6 @@
 # Vehicle Detection
 
-Models that are able to detect vehicles on given images.
+Models that are able to detect vehicles.
 
 | Model Name | Complexity (GFLOPs) | Size (Mp) | AP @ [IoU=0.50:0.95] (%) | Links | GPU_NUM |
 | --- | --- | --- | --- | --- | --- |
