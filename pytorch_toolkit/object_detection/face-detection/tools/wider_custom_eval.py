@@ -274,7 +274,7 @@ def voc_eval(result_file, dataset, iou_thr, image_size):
             bboxes = [clip_bbox(bbox, image_size) for bbox in bboxes]
             # filter out boxes with to small height or with invalid size (-1)
             ignored = [not (obj_size[0] <= b[3] <= obj_size[1]) or np.any(b == -1) for b in bboxes]
-            objects = [{'bbox': bbox, 'is_ignored': ignor} for bbox, ignor in zip(bboxes, ignored)]
+            objects = [{'bbox': bbox, 'is_ignored': ignore} for bbox, ignore in zip(bboxes, ignored)]
             groundtruth.append(ImageAnnotation(dataset.data_infos[i]['id'], objects))
 
             # filter out predictions with too low confidence
