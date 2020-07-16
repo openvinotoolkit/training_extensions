@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-# pylint: disable=C0301,W0622,R0914,R0913
-
 import argparse
 
 from common.misc import evaluate, coco_ap_eval
@@ -22,19 +20,19 @@ from common.misc import evaluate, coco_ap_eval
 def parse_args():
     """ Parses input args. """
 
-    args = argparse.ArgumentParser()
-    args.add_argument('config',
-                      help='A path to model training configuration file (.py).')
-    args.add_argument('snapshot',
-                      help='A path to pre-trained snapshot (.pth).')
-    args.add_argument('out',
-                      help='A path to output file where models metrics will be saved (.yml).')
-    args.add_argument('--update_config',
-                      help='Update configuration file by parameters specified here.'
-                           'Use quotes if you are going to change several params.',
-                      default='')
+    parser = argparse.ArgumentParser()
+    parser.add_argument('config',
+                        help='A path to model training configuration file (.py).')
+    parser.add_argument('snapshot',
+                        help='A path to pre-trained snapshot (.pth).')
+    parser.add_argument('out',
+                        help='A path to output file where models metrics will be saved (.yml).')
+    parser.add_argument('--update_config',
+                        help='Update configuration file by parameters specified here.'
+                             'Use quotes if you are going to change several params.',
+                        default='')
 
-    return args.parse_args()
+    return parser.parse_args()
 
 
 def main(config, snapshot, out, update_config):
