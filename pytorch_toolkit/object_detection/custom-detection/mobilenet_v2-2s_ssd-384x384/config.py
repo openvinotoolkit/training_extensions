@@ -9,25 +9,37 @@ model = dict(
         out_indices=(4, 5),
         frozen_stages=-1,
         norm_eval=False,
-        pretrained=True
-    ),
+        pretrained=True),
     neck=None,
     bbox_head=dict(
         type='SSDHead',
         num_classes=80,
-        in_channels=(int(width_mult * 96), int(width_mult * 320)),
+        in_channels=(96, 320),
         anchor_generator=dict(
             type='SSDAnchorGeneratorClustered',
             strides=(16, 32),
-            widths=[[image_width * x for x in range(4)],
-                    [image_width * x for x in range(5)]],
-            heights=[[image_height * x for x in range(4)],
-                     [image_height * x for x in range(5)]],
-        ),
+            widths=[[
+                17.665686318905415, 40.73450634200414, 117.61498788545624,
+                64.34307112517054
+            ],
+                    [
+                        94.72263671830719, 173.1972153968913,
+                        320.2371854303864, 207.336830535971, 352.20547313334856
+                    ]],
+            heights=[[
+                22.150579702734092, 68.24921767068975, 68.97260088862039,
+                148.00114686179387
+            ],
+                     [
+                         265.86875666086945, 166.20475919582213,
+                         143.7800147372461, 310.2971364875696,
+                         330.45387885029794
+                     ]]),
+
         bbox_coder=dict(
             type='DeltaXYWHBBoxCoder',
-            target_means=(.0, .0, .0, .0),
-            target_stds=(0.1, 0.1, 0.2, 0.2), ),
+            target_means=(0.0, 0.0, 0.0, 0.0),
+            target_stds=(0.1, 0.1, 0.2, 0.2)),
         depthwise_heads=True,
         depthwise_heads_activations='relu',
         loss_balancing=True))
@@ -37,10 +49,10 @@ train_cfg = dict(
         type='MaxIoUAssigner',
         pos_iou_thr=0.4,
         neg_iou_thr=0.4,
-        min_pos_iou=0.,
+        min_pos_iou=0.0,
         ignore_iof_thr=-1,
         gt_max_assign_all=False),
-    smoothl1_beta=1.,
+    smoothl1_beta=1.0,
     use_giou=False,
     use_focal=False,
     allowed_border=-1,
@@ -89,11 +101,11 @@ test_pipeline = [
         ])
 ]
 data = dict(
-    samples_per_gpu=65,
+    samples_per_gpu=64,
     workers_per_gpu=4,
     train=dict(
         type='RepeatDataset',
-        times=1,
+        times=5,
         dataset=dict(
             type=dataset_type,
             ann_file='data/coco/annotations/instances_train2017.json',
