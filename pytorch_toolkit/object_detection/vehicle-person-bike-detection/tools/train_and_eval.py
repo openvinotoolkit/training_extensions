@@ -12,35 +12,31 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-# pylint: disable=C0301,W0622,R0914
-
 import argparse
-import subprocess
 import os
+import subprocess
+
 import yaml
-
+from eval import main as evaluate
 from mmcv.utils import Config
-
-from eval import eval
 
 
 def parse_args():
     """ Parses input args. """
 
-    args = argparse.ArgumentParser()
-    args.add_argument('config',
-                      help='A path to model training configuration file (.py).')
-    args.add_argument('gpu_num',
-                      help='A number of GPU to use in training.')
-    args.add_argument('out',
-                      help='A path to output file where models metrics will be saved (.yml).')
-    args.add_argument(
-        '--update_config',
-        help='Update configuration file by parameters specified here.'
-             'Use quotes if you are going to change several params.',
-        default='')
+    parser = argparse.ArgumentParser()
+    parser.add_argument('config',
+                        help='A path to model training configuration file (.py).')
+    parser.add_argument('gpu_num',
+                        help='A number of GPU to use in training.')
+    parser.add_argument('out',
+                        help='A path to output file where models metrics will be saved (.yml).')
+    parser.add_argument('--update_config',
+                        help='Update configuration file by parameters specified here.'
+                             'Use quotes if you are going to change several params.',
+                        default='')
 
-    return args.parse_args()
+    return parser.parse_args()
 
 
 def main():
@@ -50,19 +46,21 @@ def main():
 
     mmdetection_tools = f'{os.path.dirname(__file__)}/../../../../external/mmdetection/tools'
 
-    update_config = f'--update_config {args.update_config}' if args.update_config else ''
+    cfg = Config.fromfile(args.config)
+
+    update_config = f' --update_config {args.update_config}' if args.update_config else ''
+
     subprocess.run(f'{mmdetection_tools}/dist_train.sh'
                    f' {args.config}'
                    f' {args.gpu_num}'
-                   f' {update_config}'.split(' '), check=True)
+                   f'{update_config}'.split(' '), check=True)
 
-    cfg = Config.fromfile(args.config)
-
-    overrided_work_dir = [p.split('=') for p in args.update_config.strip().split(' ') if p.startswith('work_dir=')]
+    overrided_work_dir = [p.split('=') for p in args.update_config.strip().split(' ') if
+                          p.startswith('work_dir=')]
     if overrided_work_dir:
         cfg.work_dir = overrided_work_dir[0][1]
 
-    eval(args.config, os.path.join(cfg.work_dir, "latest.pth"), args.out, args.update_config)
+    evaluate(args.config, os.path.join(cfg.work_dir, "latest.pth"), args.out, args.update_config)
 
     with open(args.out, 'r+') as dst_file:
         content = yaml.load(dst_file, Loader=yaml.FullLoader)
