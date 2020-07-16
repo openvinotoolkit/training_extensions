@@ -16,14 +16,13 @@
 
 import argparse
 import json
-import subprocess
 import os
+import subprocess
 import tempfile
+
 import yaml
-
+from eval import main as evaluate
 from mmcv.utils import Config
-
-from eval import eval
 
 
 def parse_args():
@@ -36,20 +35,15 @@ def parse_args():
                       help='A number of GPU to use in training.')
     args.add_argument('out',
                       help='A path to output file where models metrics will be saved (.yml).')
-    args.add_argument(
-        '--update_config',
-        help='Update configuration file by parameters specified here.'
-             'Use quotes if you are going to change several params.',
-        default='')
+    args.add_argument('--update_config',
+                      help='Update configuration file by parameters specified here.'
+                           'Use quotes if you are going to change several params.',
+                      default='')
 
     return args.parse_args()
 
 
-def is_clustering_needed(cfg, update_config):
-    # resume_from = [p.split('=') for p in update_config.strip().split(' ') if p.startswith('resume_from=')]
-    # resume_from = resume_from[0][1] if resume_from else str(cfg.resume_from)
-    # if resume_from.lower() not in ['', 'none']:
-    #    return False
+def is_clustering_needed(cfg):
     if not hasattr(cfg.model, 'bbox_head') or not cfg.model.bbox_head.type == 'SSDHead':
         return False
     if not cfg.model.bbox_head.anchor_generator.type == 'SSDAnchorGeneratorClustered':
@@ -68,7 +62,7 @@ def main():
 
     update_config = f' --update_config {args.update_config}' if args.update_config else ''
 
-    if is_clustering_needed(cfg, update_config):
+    if is_clustering_needed(cfg):
         widths = cfg.model.bbox_head.anchor_generator.widths
         n_clust = 0
         for w in widths:
@@ -85,9 +79,11 @@ def main():
         out = f' --out {tmp_file.name}'
 
         if 'pipeline' in cfg.data.train:
-            img_shape = [t for t in cfg.data.train.pipeline if t['type'] == 'Resize'][0]['img_scale']
+            img_shape = [t for t in cfg.data.train.pipeline if t['type'] == 'Resize'][0][
+                'img_scale']
         else:
-            img_shape = [t for t in cfg.data.train.dataset.pipeline if t['type'] == 'Resize'][0]['img_scale']
+            img_shape = [t for t in cfg.data.train.dataset.pipeline if t['type'] == 'Resize'][0][
+                'img_scale']
 
         img_shape = f' --image_size_wh {img_shape[0]} {img_shape[1]}'
 
@@ -113,11 +109,12 @@ def main():
                    f' {args.gpu_num}'
                    f'{update_config}'.split(' '), check=True)
 
-    overrided_work_dir = [p.split('=') for p in args.update_config.strip().split(' ') if p.startswith('work_dir=')]
+    overrided_work_dir = [p.split('=') for p in args.update_config.strip().split(' ') if
+                          p.startswith('work_dir=')]
     if overrided_work_dir:
         cfg.work_dir = overrided_work_dir[0][1]
 
-    eval(args.config, os.path.join(cfg.work_dir, "latest.pth"), args.out, args.update_config)
+    evaluate(args.config, os.path.join(cfg.work_dir, "latest.pth"), args.out, args.update_config)
 
     with open(args.out, 'r+') as dst_file:
         content = yaml.load(dst_file, Loader=yaml.FullLoader)
