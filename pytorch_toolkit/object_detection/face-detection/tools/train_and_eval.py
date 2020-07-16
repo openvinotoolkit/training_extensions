@@ -24,22 +24,22 @@ from mmcv.utils import Config
 def parse_args():
     """ Parses input args. """
 
-    args = argparse.ArgumentParser()
-    args.add_argument('config',
+    parser = argparse.ArgumentParser()
+    parser.add_argument('config',
                       help='A path to model training configuration file (.py).')
-    args.add_argument('gpu_num',
+    parser.add_argument('gpu_num',
                       help='A number of GPU to use in training.')
-    args.add_argument('out',
+    parser.add_argument('out',
                       help='A path to output file where models metrics will be saved (.yml).')
-    args.add_argument('--wider_dir',
+    parser.add_argument('--wider_dir',
                       help='Specify this  path if you would like to test your model on WiderFace dataset.',
                       default='data/wider_dir')
-    args.add_argument('--update_config',
+    parser.add_argument('--update_config',
                       help='Update configuration file by parameters specified here.'
                            'Use quotes if you are going to change several params.',
                       default='')
 
-    return args.parse_args()
+    return parser.parse_args()
 
 
 def main():
