@@ -5,5 +5,5 @@ description:  >-
 favorite: false
 imagesUrls:
   - https://raw.githubusercontent.com/opencv/open_model_zoo/develop/models/intel/person-vehicle-bike-detection-crossroad-1016/description/person-vehicle-bike-detection-crossroad-1016.png
-subtitle: Detection vehicles, persons, bikes in digital images
+subtitle: Detecting vehicles, persons, bikes in digital images
 title: Vehicle, person, bike Detection
