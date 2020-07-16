@@ -14,7 +14,7 @@
 
 import argparse
 
-from common.misc import evaluate, coco_ap_eval
+from tools.misc import evaluate, coco_ap_eval
 
 
 def parse_args():

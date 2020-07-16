@@ -15,7 +15,7 @@
 import argparse
 import os
 
-from common.misc import evaluate, coco_ap_eval
+from tools.misc import evaluate, coco_ap_eval
 
 MMDETECTION_TOOLS = f'{os.path.dirname(__file__)}/../../../../external/mmdetection/tools'
 

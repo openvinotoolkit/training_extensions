@@ -18,7 +18,7 @@ import argparse
 import os
 import subprocess
 
-from common.misc import evaluate, collect_ap
+from tools.misc import evaluate, collect_ap
 
 MMDETECTION_TOOLS = f'{os.path.dirname(__file__)}/../../../../external/mmdetection/tools'
 
