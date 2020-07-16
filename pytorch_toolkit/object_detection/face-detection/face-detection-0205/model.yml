@@ -1,4 +1,4 @@
-description: Face Detection based on MobileNetV2 (SSD).
+description: Face Detection based on MobileNetV2 (FCOS).
 name: face-detection-0205
 training_gpu_num: 4
 files:

@@ -1,4 +1,4 @@
-description: Face Detection based on MobileNetV2 (SSD).
+description: Face Detection based on ResNet-152 (ATSS).
 name: face-detection-0206
 training_gpu_num: 8
 files:
