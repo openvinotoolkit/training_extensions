@@ -69,9 +69,6 @@ def face_detection_test_case(model_name):
                 f'--out res.pkl --eval bbox 2>&1 | tee {log_file}')
             ap = collect_ap(log_file)
 
-            with open(f'tests/expected_outputs/face-detection/{self.model_name}.json', 'w') as read_file:
-                json.dump({'map': ap[0]}, read_file)
-
             with open(f'tests/expected_outputs/face-detection/{self.model_name}.json') as read_file:
                 content = json.load(read_file)
 
