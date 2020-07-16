@@ -143,7 +143,7 @@ This produces model `$MODEL_NAME.xml` and weights `$MODEL_NAME.bin` in single-pr
 For SSD networks an alternative OpenVINO™ representation is possible.
 To opt for it use extra `--alt_ssd_export` key to the `export.py` script.
 SSD model exported in such way will produce a bit different results (non-significant in most cases),
-but it also might be faster than the default one. Usually SSD models in [Open Model Zoo](https://github.com/opencv/open_model_zoo/) are exported using this option.
+but it also might be faster than the default one. As a rule SSD models in [Open Model Zoo](https://github.com/opencv/open_model_zoo/) are exported using this option.
 
 ### 7. Validation of IR
 
