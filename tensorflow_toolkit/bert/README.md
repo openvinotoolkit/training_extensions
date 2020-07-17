@@ -269,7 +269,7 @@ First download the Standford Question Answering Dataset(SQuAD1.1) to some direct
 ### Fine-tuning
 
 
-1. Download the Pre-trained Bert base uncased model and unzip
+1. Download the Pre-trained Bert Large uncased model and unzip
 
 ```bash
 wget https://storage.googleapis.com/bert_models/2018_10_18/uncased_L-24_H-1024_A-16.zip
@@ -284,6 +284,7 @@ git clone https://github.com/IntelAI/models.git
 ```Bash
 export BERT_LARGE_DIR=/path/to/bert/uncased_L-24_H-1024_A-16
 export SQUAD_DIR=/path/to/bert/squad1.1/data
+cp squad_large_export.py models/models/language_modeling/tensorflow/bert_large/training/fp32/
 cd models/models/language_modeling/tensorflow/bert_large/training/fp32
 python run_squad.py \
 --vocab_file=$BERT_LARGE_DIR/vocab.txt \
