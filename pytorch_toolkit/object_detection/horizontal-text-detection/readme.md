@@ -28,7 +28,7 @@ it's necessary to download at least one dataset from following resources.
 *  [ICDAR2015 (Incidental Scene Text)](https://rrc.cvc.uab.es/?ch=4)
 *  [ICDAR2017 (MLT)](https://rrc.cvc.uab.es/?ch=8)
 *  [ICDAR2019 (MLT)](https://rrc.cvc.uab.es/?ch=15)
-*  [ICDAR2019 (ART)](https://rrc.cvc.uab.es/?ch=14) 
+*  [ICDAR2019 (ART)](https://rrc.cvc.uab.es/?ch=14)
 *  [MSRA-TD500](http://www.iapr-tc11.org/mediawiki/index.php/MSRA_Text_Detection_500_Database_(MSRA-TD500))   
 *  [COCO-Text](https://bgshih.github.io/cocotext/)
 
@@ -51,7 +51,7 @@ python3 horizontal-text-detection/tools/create_dataset.py \
     --output data/text-dataset/IC13TEST.json
 ```
 
-Examples of json file for train and test dataset configuration can be found in `horizontal-text-detection/datasets`. 
+Examples of json file for train and test dataset configuration can be found in `horizontal-text-detection/datasets`.
 So, if you would like not to use all datasets above, please change its content.
 
 The structure of the folder with datasets:
@@ -72,12 +72,12 @@ object_detection/data/text-dataset
 
 Try both following variants and select the best one:
 
-   * **Training** from scratch or pre-trained weights. Only if you have a lot of data, let's say tens of thousands or even more images. 
+   * **Training** from scratch or pre-trained weights. Only if you have a lot of data, let's say tens of thousands or even more images.
    * **Fine-tuning** from pre-trained weights. If the dataset is not big enough, then the model tends to overfit quickly, forgetting about the data that was used for pre-training and reducing the generalization ability of the final model. Hence, small starting learning rate and short training schedule are recommended.
 
 If you would like to start **training** from pre-trained weights do not forget to modify `load_from` path inside configuration file.
 
-If you would like to start **fine-tuning** from pre-trained weights do not forget to modify `resume_from` path inside configuration file as well as increase `total_epochs`. Otherwise training will be ended immideately. If you would like to continue training with smaller learning rate, add the number of the resumed epoch to the `steps` field. 
+If you would like to start **fine-tuning** from pre-trained weights do not forget to modify `resume_from` path inside configuration file as well as increase `total_epochs`. Otherwise training will be ended immideately. If you would like to continue training with smaller learning rate, add the number of the resumed epoch to the `steps` field.
 
 * To train the detector on a single GPU, run in your terminal:
 
@@ -113,24 +113,17 @@ If you would like to start **fine-tuning** from pre-trained weights do not forge
             --out result.pkl \
             --eval f1
    ```
-If you want to change the threshold for confidence of predictions which are used in calculations, change `score_thr` value in the configuration file. 
-Tune it to increase precision (`score_thr` should be lower) or recall (`score_thr` should be higher).
+If you want to change the threshold for confidence of predictions which are used in calculations, change `score_thr` value in the configuration file.
+Tune it to increase precision (`score_thr` should be lower) or recall (`score_thr` should be higher). To compute MS-COCO metrics use `bbox` eval option instead of or with `f1`.
 
-To compute MS-COCO metrics use `bbox` eval option instead of or with `f1`.
+* You can also visualize the result of the detection. To do it use `result.pkl` obtained from previous step:
 
-* You can also visualize the result of the detection.
-
-  To do it use `result.pkl` obtained from previous step:
-
-     ```bash
-     python horizontal-text-detection/tools/visualize_text_detection.py \
-              $CONFIGURATION_FILE \
-              result.pkl 
-     ```
-   
-   To visualize the dependence of recall from the instance size use `--draw_graph` option.
-   
-   To show predictions on the images use `--visualize` option.
+   ```bash
+   python horizontal-text-detection/tools/visualize_text_detection.py \
+            $CONFIGURATION_FILE \
+            result.pkl
+   ```
+To visualize the dependence of recall from the instance size use `--draw_graph` option. To show predictions on the images use `--visualize` option.
 
 ### 6. Export PyTorch\* model to the OpenVINO™ format
 
