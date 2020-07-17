@@ -24,7 +24,7 @@ export CONFIGURATION_FILE==./horizontal-text-detection/$MODEL_NAME/config.py
 
 To be able to train networks and/or get quality metrics for pre-trained ones,  
 it's necessary to download at least one dataset from following resources.  
-*  [ICDAR2013 (Focused Scene Text)](https://rrc.cvc.uab.es/?ch=2) - test past is used to get quality metric.
+*  [ICDAR2013 (Focused Scene Text)](https://rrc.cvc.uab.es/?ch=2) - test part is used to get quality metric.
 *  [ICDAR2015 (Incidental Scene Text)](https://rrc.cvc.uab.es/?ch=4)
 *  [ICDAR2017 (MLT)](https://rrc.cvc.uab.es/?ch=8)
 *  [ICDAR2019 (MLT)](https://rrc.cvc.uab.es/?ch=15)
