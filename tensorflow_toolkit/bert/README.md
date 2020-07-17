@@ -188,6 +188,7 @@ The dev set predictions will be saved into a file called predictions.json in the
 
 ```Bash
 python $SQUAD_DIR/evaluate-v1.1.py $SQUAD_DIR/dev-v1.1.json /tmp/squad_base/predictions.json
+
 ```
 
 ### Results
@@ -253,5 +254,117 @@ convert_annotation squad \
   -o /output/dir/
 
 accuracy_check --config squad_accuracy_check.yaml
+```
+## BERT-Large, Uncased with SQuAD 1.1
+Here we provided the steps for fine-tuning BERT-Large on Squad1.1 using https://github.com/IntelAI/models
+
+### Data-set
+
+First download the Standford Question Answering Dataset(SQuAD1.1) to some directory $SQUAD_DIR
+
+* [train-v1.1.json](https://rajpurkar.github.io/SQuAD-explorer/dataset/train-v1.1.json)
+* [dev-v1.1.json](https://rajpurkar.github.io/SQuAD-explorer/dataset/dev-v1.1.json)
+* [evaluate-v1.1.py](https://github.com/allenai/bi-att-flow/blob/master/squad/evaluate-v1.1.py)
+
+### Fine-tuning
+
+
+1. Download the Pre-trained Bert base uncased model and unzip
+
+```bash
+wget https://storage.googleapis.com/bert_models/2018_10_18/uncased_L-24_H-1024_A-16.zip
+```
+2. Clone the Intel model zoo:
+```bash
+git clone https://github.com/IntelAI/models.git
+```
+
+2. Fine-tune the model
+
+```Bash
+export BERT_LARGE_DIR=/path/to/bert/uncased_L-24_H-1024_A-16
+export SQUAD_DIR=/path/to/bert/squad1.1/data
+cd models/models/language_modeling/tensorflow/bert_large/training/fp32
+python run_squad.py \
+--vocab_file=$BERT_LARGE_DIR/vocab.txt \
+--bert_config_file=$BERT_LARGE_DIR/bert_config.json \
+--init_checkpoint=$BERT_LARGE_DIR/bert_model.ckpt \
+--do_train=True \
+--train_file=$SQUAD_DIR/train-v1.1.json \
+--do_predict=True \
+--predict_file=$SQUAD_DIR/dev-v1.1.json \
+--train_batch_size=24 \
+--learning_rate=3e-5 \
+--num_train_epochs=2.0 \
+--max_seq_length=384 \
+--doc_stride=128 \
+--output_dir=/tmp/squad_bert_large  \
+--use_tpu=False \
+--precision=fp32
+```
+
+The dev set predictions will be saved into a file called predictions.json in the output_dir:
+
+```Bash
+python $SQUAD_DIR/evaluate-v1.1.py $SQUAD_DIR/dev-v1.1.json /tmp/squad_bert_large/predictions.json
+```
+
+### Results
+
+```Bash
+Accuracy Metrics
+Exact_match: 83.52885525070955
+F1: 90.57766975720673
+```
+
+### Export to OpenVino IR
+
+Export the saved model from the trained checkpoint
+
+```Bash
+python squad_large_export.py \
+  --vocab_file=$BERT_LARGE_DIR/vocab.txt \
+  --bert_config_file=$BERT_LARGE_DIR/bert_config.json \
+  --init_checkpoint=/tmp/squad_bert_large/model.ckpt-7299 \
+  --max_seq_length=384 \
+  --output_dir=/tmp/squad_bert_large \
+  --export_dir=/tmp/squad_bert_large/export_dir
+```
+
+#### Frozen Graph
+
+```Bash
+python3 -m tensorflow.python.tools.freeze_graph \
+  --input_saved_model_dir=/tmp/squad_bert_large/export_dir/<saved model folder>/ \
+  --output_graph=bert_large_squad_fp32_graph.pb \
+  --output_node_names=unstack
+```
+
+#### OpenVino Intermediate Representation
+
+```Bash
+python mo.py --framework=tf \
+  --input='input_ids_1,input_mask_1,segment_ids_1' \
+  --output='unstack' \
+  --input_model=bert_large_squad_fp32_graph.pb \
+  --output_dir=fp32/ \
+  --input_shape=[1,384],[1,384],[1,384] \
+  --log_level=DEBUG \
+  --disable_nhwc_to_nchw
+```
+
+### OpenVino Dataset Annotation and Accuracy check
+
+```Bash
+convert_annotation squad \
+  --testing_file $SQUAD_DIR/dev-v1.1.json \
+  --vocab_file $BERT_LARGE_DIR/vocab.txt \
+  --max_seq_length 384 \
+  --doc_stride 128 \
+  --max_query_length 64 \
+  --lower_case True \
+  -o /output/dir/
+
+accuracy_check --config bert_large_squad_accuracycheck.yaml
 ```
 
