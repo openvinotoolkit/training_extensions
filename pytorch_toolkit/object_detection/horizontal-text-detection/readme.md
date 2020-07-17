@@ -36,7 +36,7 @@ it's necessary to download at least one dataset from following resources.
 
 Extract downloaded datasets in `data/text-dataset` folder.
 
-Convert it to format that is used internally and split to the train and test part as you want.
+Convert it to format that is used internally and split to the train and test part.
 
 * Training annotation
 ```bash
