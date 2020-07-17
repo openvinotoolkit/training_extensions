@@ -1,5 +1,3 @@
 -r ../../external/mmdetection/requirements/build.txt
 -r ../../external/mmdetection/requirements.txt
-networkx==2.3
 opencv-python==4.1.0.25
-tensorboardX==1.8
