@@ -17,6 +17,8 @@
 import argparse
 import os
 import subprocess
+import sys
+sys.path.append(f'{os.path.abspath(os.path.dirname(__file__))}/../../')
 
 from tools.misc import evaluate, collect_ap
 

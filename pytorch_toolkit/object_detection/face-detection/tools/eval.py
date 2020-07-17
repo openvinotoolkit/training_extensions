@@ -19,6 +19,7 @@ import json
 import os
 import subprocess
 import sys
+sys.path.append(f'{os.path.abspath(os.path.dirname(__file__))}/../../')
 import tempfile
 
 from tools.misc import evaluate, coco_ap_eval

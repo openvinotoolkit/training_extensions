@@ -13,6 +13,8 @@
 # and limitations under the License.
 
 import argparse
+import sys
+sys.path.append(f'{os.path.abspath(os.path.dirname(__file__))}/../../')
 
 from tools.misc import evaluate, coco_ap_eval
 
