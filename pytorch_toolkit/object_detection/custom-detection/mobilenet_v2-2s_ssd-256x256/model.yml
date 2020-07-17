@@ -5,3 +5,17 @@ files:
   sha256: 4a7b491b5fd45ee6ee760e910a8f9a38768be79ccdeb85a1fb3ae4e4c3dd677f
   size: 16164483
   source: https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/mobilenet_v2-2s_ssd-256x256.pth
+metrics:
+- display_name: Size
+  key: size
+  unit: Mp
+  value: 1.99
+- display_name: Complexity
+  key: complexity
+  unit: GFLOPs
+  value: 0.86
+- display_name: AP @ [IoU=0.50:0.95]
+  key: ap
+  unit: '%'
+  value: 11.3
+training_gpu_num: '3'
