@@ -17,8 +17,9 @@ import os
 import subprocess
 
 import yaml
-from eval import main as evaluate
 from mmcv.utils import Config
+
+from eval import main as evaluate
 
 
 def parse_args():
@@ -26,18 +27,18 @@ def parse_args():
 
     parser = argparse.ArgumentParser()
     parser.add_argument('config',
-                      help='A path to model training configuration file (.py).')
+                        help='A path to model training configuration file (.py).')
     parser.add_argument('gpu_num',
-                      help='A number of GPU to use in training.')
+                        help='A number of GPU to use in training.')
     parser.add_argument('out',
-                      help='A path to output file where models metrics will be saved (.yml).')
+                        help='A path to output file where models metrics will be saved (.yml).')
     parser.add_argument('--wider_dir',
-                      help='Specify this  path if you would like to test your model on WiderFace dataset.',
-                      default='data/wider_dir')
+                        help='Specify this  path if you would like to test your model on WiderFace dataset.',
+                        default='data/wider_dir')
     parser.add_argument('--update_config',
-                      help='Update configuration file by parameters specified here.'
-                           'Use quotes if you are going to change several params.',
-                      default='')
+                        help='Update configuration file by parameters specified here.'
+                             'Use quotes if you are going to change several params.',
+                        default='')
 
     return parser.parse_args()
 
