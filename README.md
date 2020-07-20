@@ -57,6 +57,7 @@ inference.
   * [Text Detection](tensorflow_toolkit/text_detection)
   * [Text Recognition](tensorflow_toolkit/text_recognition)
   * [Vehicle Attributes](tensorflow_toolkit/vehicle_attributes)
+  * [Bert](tensorflow_toolkit/bert)
 
 # Tools
 
