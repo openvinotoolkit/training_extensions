@@ -17,8 +17,9 @@ import os
 import subprocess
 
 import yaml
-from eval import main as evaluate
 from mmcv.utils import Config
+
+from eval import main as evaluate
 
 
 def parse_args():

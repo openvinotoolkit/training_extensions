@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-# pylint: disable=C0301,W0622,R0914,R0913
+# pylint: disable=C0301,W0622,R0914,R0913,C0411,C0413
 
 import argparse
 import os

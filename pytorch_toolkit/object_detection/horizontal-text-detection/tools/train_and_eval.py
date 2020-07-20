@@ -12,13 +12,16 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+# pylint: disable=C0411,C0413
+
 import argparse
 import os
 import subprocess
 
 import yaml
-from eval import main as evaluate
 from mmcv.utils import Config
+
+from eval import main as evaluate
 
 
 def parse_args():
