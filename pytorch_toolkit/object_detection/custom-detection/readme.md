@@ -1,7 +1,7 @@
 # Custom object detector
 
 Custom object detectors are lightweight object detection models that have been pre-trained on MS COCO object detection dataset.
-It is assumed that on will use these pre-trained models as starting points in order to train specific object detection models (e.g. 'cat' and 'dog' detection).
+It is assumed that one will use these pre-trained models as starting points in order to train specific object detection models (e.g. 'cat' and 'dog' detection).
 There was no a goal to train lightweight ready-to-use 80 class detector (MS COCO classes).
 
 | Model Name | Complexity (GFLOPs) | Size (Mp) | AP @ [IoU=0.50:0.95] (%) | Links | GPU_NUM |
