@@ -29,7 +29,6 @@ inference.
 
   * [Action Recognition](pytorch_toolkit/action_recognition)
   * [ASL Recognition](pytorch_toolkit/asl_recognition)
-  * [Face Recognition](pytorch_toolkit/face_recognition)
   * [Object Re-Identification](pytorch_toolkit/object_reidentification)
     - [Person Re-Identification](pytorch_toolkit/object_reidentification/person_reidentification)
     - [Vehicle Re-Identification](pytorch_toolkit/object_reidentification/vehicle_reidentification)
