@@ -16,7 +16,7 @@ import json
 import os
 import unittest
 
-from common.utils import replace_text_in_file, collect_ap, download_if_not_yet
+from common.utils import replace_text_in_file, collect_ap, download_if_not_yet, run_through_shell
 
 
 def text_detection_test_case(model_name):
@@ -29,7 +29,7 @@ def text_detection_test_case(model_name):
             self.work_dir = os.path.join('/tmp', self.model_name)
             os.makedirs(self.work_dir, exist_ok=True)
             self.configuration_file = f'./horizontal-text-detection/{self.model_name}/config.py'
-            os.system(f'cp {self.configuration_file} {self.work_dir}/')
+            run_through_shell(f'cp {self.configuration_file} {self.work_dir}/')
             self.configuration_file = os.path.join(self.work_dir,
                                                    os.path.basename(self.configuration_file))
             self.ote_url = 'https://download.01.org/opencv/openvino_training_extensions'
@@ -52,7 +52,7 @@ def text_detection_test_case(model_name):
         def test_fine_tuning(self):
             log_file = os.path.join(self.work_dir, 'test_fine_tuning.log')
 
-            os.system(
+            run_through_shell(
                 f'../../external/mmdetection/tools/dist_train.sh {self.configuration_file} 1 2>&1 |'
                 f' tee {log_file}')
             ap = collect_ap(log_file)
@@ -61,7 +61,7 @@ def text_detection_test_case(model_name):
 
         def test_quality_metrics(self):
             log_file = os.path.join(self.work_dir, 'test_quality_metrics.log')
-            os.system(
+            run_through_shell(
                 f'python ../../external/mmdetection/tools/test.py '
                 f'{self.configuration_file} '
                 f'{os.path.join(self.work_dir, self.model_name + ".pth")} '
