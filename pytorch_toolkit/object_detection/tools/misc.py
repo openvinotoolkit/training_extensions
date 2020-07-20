@@ -1,3 +1,5 @@
+# pylint: disable=W0702
+
 import hashlib
 import json
 import os
