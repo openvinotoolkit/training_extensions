@@ -24,6 +24,7 @@ import sys
 sys.path.append(f'{os.path.abspath(os.path.dirname(__file__))}/../../')
 
 import yaml
+import torch
 from mmcv.utils import Config
 
 from eval import main as evaluate
@@ -109,10 +110,15 @@ def main():
         update_config += f' model.bbox_head.anchor_generator.widths={str(widths).replace(" ", "")}'
         update_config += f' model.bbox_head.anchor_generator.heights={str(heights).replace(" ", "")}'
 
-    run_with_termination(f'{mmdetection_tools}/dist_train.sh'
-                         f' {args.config}'
-                         f' {args.gpu_num}'
-                         f'{update_config}'.split(' '))
+    if torch.cuda.is_available():
+        run_with_termination(f'{mmdetection_tools}/dist_train.sh'
+                             f' {args.config}'
+                             f' {args.gpu_num}'
+                             f'{update_config}'.split(' '))
+    else:
+        run_with_termination(f'python {mmdetection_tools}/train.py'
+                             f' {args.config}'
+                             f'{update_config}'.split(' '))
 
     overrided_work_dir = [p.split('=') for p in args.update_config.strip().split(' ') if
                           p.startswith('work_dir=')]

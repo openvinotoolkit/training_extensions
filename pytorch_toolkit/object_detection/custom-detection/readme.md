@@ -22,7 +22,7 @@ cd <openvino_training_extensions>/pytorch_toolkit/object_detection
 
 ```bash
 export MODEL_NAME=mobilenet_v2-2s_ssd-256x256
-export CONFIGURATION_FILE=.custom-detection/$MODEL_NAME/config.py
+export CONFIGURATION_FILE=./custom-detection/$MODEL_NAME/config.py
 ```
 
 ### 2. Collect dataset
