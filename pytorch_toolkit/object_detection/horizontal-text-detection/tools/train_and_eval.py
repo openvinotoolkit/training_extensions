@@ -16,12 +16,15 @@
 
 import argparse
 import os
-import subprocess
+import sys
+
+sys.path.append(f'{os.path.abspath(os.path.dirname(__file__))}/../../')
 
 import yaml
 from mmcv.utils import Config
 
 from eval import main as evaluate
+from tools.misc import run_with_termination
 
 
 def parse_args():
@@ -53,10 +56,10 @@ def main():
 
     update_config = f' --update_config {args.update_config}' if args.update_config else ''
 
-    subprocess.run(f'{mmdetection_tools}/dist_train.sh'
-                   f' {args.config}'
-                   f' {args.gpu_num}'
-                   f'{update_config}'.split(' '), check=True)
+    run_with_termination(f'{mmdetection_tools}/dist_train.sh'
+                         f' {args.config}'
+                         f' {args.gpu_num}'
+                         f'{update_config}'.split(' '))
 
     overrided_work_dir = [p.split('=') for p in args.update_config.strip().split(' ') if
                           p.startswith('work_dir=')]

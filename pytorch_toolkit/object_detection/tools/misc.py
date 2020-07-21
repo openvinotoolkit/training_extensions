@@ -3,7 +3,9 @@
 import hashlib
 import json
 import os
+import signal
 import subprocess
+import time
 import tempfile
 
 import yaml
@@ -136,3 +138,24 @@ def evaluate(config_path, snapshot, out, update_config, metrics_functions):
 
     with open(out, 'w') as write_file:
         yaml.dump(outputs, write_file)
+
+
+def run_with_termination(cmd):
+    process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    two_last_stderr_pieces = []
+
+    failure_word = 'Traceback'
+    while process.poll() is None:
+        out = process.stderr.read(1).decode('utf-8')
+        print(out, end='')
+        two_last_stderr_pieces.append(out)
+        if len(two_last_stderr_pieces) > len(failure_word):
+            del two_last_stderr_pieces[0]
+        if failure_word in ''.join(two_last_stderr_pieces):
+            if not os.fork():
+                print('Some exception has been thrown, process group will be terminated soon.')
+                time.sleep(10)
+                try:
+                    os.killpg(os.getpgid(process.pid), signal.SIGTERM)
+                except ProcessLookupError:
+                    pass

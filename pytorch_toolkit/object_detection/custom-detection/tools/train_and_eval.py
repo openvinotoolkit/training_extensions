@@ -19,10 +19,15 @@ import json
 import os
 import subprocess
 import tempfile
+import sys
+
+sys.path.append(f'{os.path.abspath(os.path.dirname(__file__))}/../../')
 
 import yaml
-from eval import main as evaluate
 from mmcv.utils import Config
+
+from eval import main as evaluate
+from tools.misc import run_with_termination
 
 
 def parse_args():
@@ -104,10 +109,10 @@ def main():
         update_config += f' model.bbox_head.anchor_generator.widths={str(widths).replace(" ", "")}'
         update_config += f' model.bbox_head.anchor_generator.heights={str(heights).replace(" ", "")}'
 
-    subprocess.run(f'{mmdetection_tools}/dist_train.sh'
-                   f' {args.config}'
-                   f' {args.gpu_num}'
-                   f'{update_config}'.split(' '), check=True)
+    run_with_termination(f'{mmdetection_tools}/dist_train.sh'
+                         f' {args.config}'
+                         f' {args.gpu_num}'
+                         f'{update_config}'.split(' '))
 
     overrided_work_dir = [p.split('=') for p in args.update_config.strip().split(' ') if
                           p.startswith('work_dir=')]
