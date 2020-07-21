@@ -18,4 +18,4 @@ metrics:
   key: ap
   unit: '%'
   value: 11.3
-training_gpu_num: '3'
+training_gpu_num: 3
