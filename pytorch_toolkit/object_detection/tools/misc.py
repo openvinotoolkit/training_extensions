@@ -5,7 +5,7 @@ import json
 import os
 import signal
 import subprocess
-import time
+import sys
 import tempfile
 
 import yaml
@@ -148,6 +148,7 @@ def run_with_termination(cmd):
     while process.poll() is None:
         out = process.stderr.read(1).decode('utf-8')
         print(out, end='')
+        sys.stdout.flush()
         two_last_stderr_pieces.append(out)
         if len(two_last_stderr_pieces) > len(failure_word):
             del two_last_stderr_pieces[0]
