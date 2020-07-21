@@ -30,7 +30,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('config',
                         help='A path to model training configuration file (.py).')
-    parser.add_argument('gpu_num',
+    parser.add_argument('gpu_num', type=int,
                         help='A number of GPU to use in training.')
     parser.add_argument('out',
                         help='A path to output file where models metrics will be saved (.yml).')
