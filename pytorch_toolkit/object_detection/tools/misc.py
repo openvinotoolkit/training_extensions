@@ -158,5 +158,3 @@ def run_with_termination(cmd):
                 os.killpg(os.getpgid(process.pid), signal.SIGTERM)
             except ProcessLookupError as e:
                 print(e)
-                pass
-

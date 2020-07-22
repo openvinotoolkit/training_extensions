@@ -12,18 +12,17 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-# pylint: disable=no-value-for-parameter
+# pylint: disable=C0411,C0413,no-value-for-parameter
 
 import argparse
 import os
 import sys
 
-sys.path.append(f'{os.path.abspath(os.path.dirname(__file__))}/../../')
-
-import yaml
 from mmcv.utils import Config
+import yaml
 
 from eval import main as evaluate
+sys.path.append(f'{os.path.abspath(os.path.dirname(__file__))}/../../')
 from tools.misc import run_with_termination
 
 
@@ -61,10 +60,10 @@ def main():
                          f' {args.gpu_num}'
                          f'{update_config}'.split(' '))
 
-    overrided_work_dir = [p.split('=') for p in args.update_config.strip().split(' ') if
-                          p.startswith('work_dir=')]
-    if overrided_work_dir:
-        cfg.work_dir = overrided_work_dir[0][1]
+    overridden_work_dir = [p.split('=') for p in args.update_config.strip().split(' ') if
+                           p.startswith('work_dir=')]
+    if overridden_work_dir:
+        cfg.work_dir = overridden_work_dir[0][1]
 
     evaluate(args.config, os.path.join(cfg.work_dir, "latest.pth"), args.out, args.update_config)
 

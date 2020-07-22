@@ -18,16 +18,15 @@ import argparse
 import json
 import os
 import subprocess
-import tempfile
 import sys
+import tempfile
 
-sys.path.append(f'{os.path.abspath(os.path.dirname(__file__))}/../../')
-
-import yaml
-import torch
 from mmcv.utils import Config
+import torch
+import yaml
 
 from eval import main as evaluate
+sys.path.append(f'{os.path.abspath(os.path.dirname(__file__))}/../../')
 from tools.misc import run_with_termination
 
 
@@ -120,10 +119,10 @@ def main():
                              f' {args.config}'
                              f'{update_config}'.split(' '))
 
-    overrided_work_dir = [p.split('=') for p in args.update_config.strip().split(' ') if
-                          p.startswith('work_dir=')]
-    if overrided_work_dir:
-        cfg.work_dir = overrided_work_dir[0][1]
+    overridden_work_dir = [p.split('=') for p in args.update_config.strip().split(' ') if
+                           p.startswith('work_dir=')]
+    if overridden_work_dir:
+        cfg.work_dir = overridden_work_dir[0][1]
 
     evaluate(args.config, os.path.join(cfg.work_dir, "latest.pth"), args.out, args.update_config)
 
