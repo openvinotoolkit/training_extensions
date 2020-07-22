@@ -48,6 +48,8 @@ def main():
     """ Main function. """
 
     args = parse_args()
+    print(sys.argv)
+    sys.stdout.flush()
 
     mmdetection_tools = f'{os.path.dirname(__file__)}/../../../../external/mmdetection/tools'
 
@@ -65,12 +67,10 @@ def main():
     if overridden_work_dir:
         cfg.work_dir = overridden_work_dir[0][1]
 
-    evaluate(args.config, os.path.join(cfg.work_dir, "latest.pth"), args.out, args.update_config)
+    evaluate(os.path.join(cfg.work_dir, "config.py"), os.path.join(cfg.work_dir, "latest.pth"), args.out, '')
 
-    with open(args.out, 'r+') as dst_file:
-        content = yaml.load(dst_file, Loader=yaml.FullLoader)
-        content['training_gpu_num'] = args.gpu_num
-        yaml.dump(content, dst_file)
+    with open(args.out, 'a+') as dst_file:
+        yaml.dump({'training_gpu_num': args.gpu_num}, dst_file)
 
 
 if __name__ == '__main__':
