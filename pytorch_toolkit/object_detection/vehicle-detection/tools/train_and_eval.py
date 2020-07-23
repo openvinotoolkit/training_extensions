@@ -20,6 +20,7 @@ import sys
 
 from mmcv.utils import Config
 import yaml
+import torch
 
 from eval import main as evaluate
 sys.path.append(f'{os.path.abspath(os.path.dirname(__file__))}/../../')
@@ -56,10 +57,22 @@ def main():
 
     update_config = f' --update_config {args.update_config}' if args.update_config else ''
 
-    run_with_termination(f'{mmdetection_tools}/dist_train.sh'
-                         f' {args.config}'
-                         f' {args.gpu_num}'
-                         f'{update_config}'.split(' '))
+    if torch.cuda.is_available():
+        available_gpu_num = torch.cuda.device_count()
+        gpu_num = args.gpu_num
+        if available_gpu_num < args.gpu_num:
+            print(f'available_gpu_num < args.gpu_num: {available_gpu_num} < {args.gpu_num}')
+            print(f'decreased number of gpu to: {available_gpu_num}')
+            gpu_num = available_gpu_num
+            sys.stdout.flush()
+        run_with_termination(f'{mmdetection_tools}/dist_train.sh'
+                             f' {args.config}'
+                             f' {gpu_num}'
+                             f'{update_config}'.split(' '))
+    else:
+        run_with_termination(f'python {mmdetection_tools}/train.py'
+                             f' {args.config}'
+                             f'{update_config}'.split(' '))
 
     overridden_work_dir = [p.split('=') for p in args.update_config.strip().split(' ') if
                            p.startswith('work_dir=')]

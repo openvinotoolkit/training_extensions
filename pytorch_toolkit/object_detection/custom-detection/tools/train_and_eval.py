@@ -112,9 +112,16 @@ def main():
         update_config += f' model.bbox_head.anchor_generator.heights={str(heights).replace(" ", "")}'
 
     if torch.cuda.is_available():
+        available_gpu_num = torch.cuda.device_count()
+        gpu_num = args.gpu_num
+        if available_gpu_num < args.gpu_num:
+            print(f'available_gpu_num < args.gpu_num: {available_gpu_num} < {args.gpu_num}')
+            print(f'decreased number of gpu to: {available_gpu_num}')
+            gpu_num = available_gpu_num
+            sys.stdout.flush()
         run_with_termination(f'{mmdetection_tools}/dist_train.sh'
                              f' {args.config}'
-                             f' {args.gpu_num}'
+                             f' {gpu_num}'
                              f'{update_config}'.split(' '))
     else:
         run_with_termination(f'python {mmdetection_tools}/train.py'
