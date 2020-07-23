@@ -15,16 +15,16 @@
 # pylint: disable=C0411,C0413,no-value-for-parameter
 
 import argparse
+import logging
 import os
 import sys
 
 from mmcv.utils import Config
 import yaml
-import torch
 
 from eval import main as evaluate
 sys.path.append(f'{os.path.abspath(os.path.dirname(__file__))}/../../')
-from tools.misc import run_with_termination
+from tools.misc import train, get_work_dir
 
 
 def parse_args():
@@ -47,43 +47,26 @@ def parse_args():
 
 def main():
     """ Main function. """
+    logging.basicConfig(level=logging.DEBUG)
 
     args = parse_args()
-    print(sys.argv)
-    sys.stdout.flush()
-
-    mmdetection_tools = f'{os.path.dirname(__file__)}/../../../../external/mmdetection/tools'
+    logging.info(f'Commandline:\n{" ".join(sys.argv)}')
 
     cfg = Config.fromfile(args.config)
 
     update_config = f' --update_config {args.update_config}' if args.update_config else ''
 
-    if torch.cuda.is_available():
-        available_gpu_num = torch.cuda.device_count()
-        gpu_num = args.gpu_num
-        if available_gpu_num < args.gpu_num:
-            print(f'available_gpu_num < args.gpu_num: {available_gpu_num} < {args.gpu_num}')
-            print(f'decreased number of gpu to: {available_gpu_num}')
-            gpu_num = available_gpu_num
-            sys.stdout.flush()
-        run_with_termination(f'{mmdetection_tools}/dist_train.sh'
-                             f' {args.config}'
-                             f' {gpu_num}'
-                             f'{update_config}'.split(' '))
-    else:
-        run_with_termination(f'python {mmdetection_tools}/train.py'
-                             f' {args.config}'
-                             f'{update_config}'.split(' '))
+    logging.info('Training started ...')
+    training_info = train(args.config, args.gpu_num, update_config)
+    logging.info('... training completed.')
+    work_dir = get_work_dir(cfg, args.update_config)
 
-    overridden_work_dir = [p.split('=') for p in args.update_config.strip().split(' ') if
-                           p.startswith('work_dir=')]
-    if overridden_work_dir:
-        cfg.work_dir = overridden_work_dir[0][1]
-
-    evaluate(os.path.join(cfg.work_dir, "config.py"), os.path.join(cfg.work_dir, "latest.pth"), args.out, '')
+    logging.info('Evaluation started ...')
+    evaluate(os.path.join(work_dir, "config.py"), os.path.join(work_dir, "latest.pth"), args.out, '')
+    logging.info('... evaluation completed.')
 
     with open(args.out, 'a+') as dst_file:
-        yaml.dump({'training_gpu_num': args.gpu_num}, dst_file)
+        yaml.dump(training_info, dst_file)
 
 
 if __name__ == '__main__':

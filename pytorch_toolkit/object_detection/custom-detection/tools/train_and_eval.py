@@ -16,18 +16,19 @@
 
 import argparse
 import json
+import logging
 import os
 import subprocess
 import sys
 import tempfile
 
 from mmcv.utils import Config
-import torch
 import yaml
 
 from eval import main as evaluate
+
 sys.path.append(f'{os.path.abspath(os.path.dirname(__file__))}/../../')
-from tools.misc import run_with_termination
+from tools.misc import train, get_work_dir
 
 
 def parse_args():
@@ -49,6 +50,8 @@ def parse_args():
 
 
 def is_clustering_needed(cfg):
+    if cfg.total_epochs > 0:
+        return False
     if not hasattr(cfg.model, 'bbox_head') or not cfg.model.bbox_head.type == 'SSDHead':
         return False
     if not cfg.model.bbox_head.anchor_generator.type == 'SSDAnchorGeneratorClustered':
@@ -56,87 +59,79 @@ def is_clustering_needed(cfg):
     return True
 
 
+def cluster(cfg, config_path, update_config):
+    mmdetection_tools = f'{os.path.dirname(__file__)}/../../../../external/mmdetection/tools'
+    logging.info('Clustering started...')
+    widths = cfg.model.bbox_head.anchor_generator.widths
+    n_clust = 0
+    for w in widths:
+        n_clust += len(w) if isinstance(w, (list, tuple)) else 1
+    n_clust = ' --n_clust ' + str(n_clust)
+
+    group_as = ''
+    if isinstance(widths[0], (list, tuple)):
+        group_as = ' --group_as ' + ' '.join([str(len(w)) for w in widths])
+
+    config = ' --config ' + config_path
+
+    tmp_file = tempfile.NamedTemporaryFile(delete=False)
+    out = f' --out {tmp_file.name}'
+
+    if 'pipeline' in cfg.data.train:
+        img_shape = [t for t in cfg.data.train.pipeline if t['type'] == 'Resize'][0][
+            'img_scale']
+    else:
+        img_shape = [t for t in cfg.data.train.dataset.pipeline if t['type'] == 'Resize'][0][
+            'img_scale']
+
+    img_shape = f' --image_size_wh {img_shape[0]} {img_shape[1]}'
+
+    subprocess.run(f'python {mmdetection_tools}/cluster_boxes.py'
+                   f'{config}'
+                   f'{n_clust}'
+                   f'{group_as}'
+                   f'{update_config}'
+                   f'{img_shape}'
+                   f'{out}'.split(' '), check=True)
+
+    with open(tmp_file.name) as src_file:
+        content = json.load(src_file)
+        widths, heights = content['widths'], content['heights']
+
+    if not update_config:
+        update_config = ' --update_config'
+    update_config += f' model.bbox_head.anchor_generator.widths={str(widths).replace(" ", "")}'
+    update_config += f' model.bbox_head.anchor_generator.heights={str(heights).replace(" ", "")}'
+    logging.info('... clustering completed.')
+
+    return update_config
+
+
 def main():
     """ Main function. """
+    logging.basicConfig(level=logging.DEBUG)
 
     args = parse_args()
-    print(sys.argv)
-    sys.stdout.flush()
-
-    mmdetection_tools = f'{os.path.dirname(__file__)}/../../../../external/mmdetection/tools'
+    logging.info(f'Commandline:\n{" ".join(sys.argv)}')
 
     cfg = Config.fromfile(args.config)
 
     update_config = f' --update_config {args.update_config}' if args.update_config else ''
 
     if is_clustering_needed(cfg):
-        widths = cfg.model.bbox_head.anchor_generator.widths
-        n_clust = 0
-        for w in widths:
-            n_clust += len(w) if isinstance(w, (list, tuple)) else 1
-        n_clust = ' --n_clust ' + str(n_clust)
+        update_config = cluster(cfg, args.config, update_config)
 
-        group_as = ''
-        if isinstance(widths[0], (list, tuple)):
-            group_as = ' --group_as ' + ' '.join([str(len(w)) for w in widths])
+    logging.info('Training started ...')
+    training_info = train(args.config, args.gpu_num, update_config)
+    logging.info('... training completed.')
+    work_dir = get_work_dir(cfg, args.update_config)
 
-        config = ' --config ' + args.config
-
-        tmp_file = tempfile.NamedTemporaryFile(delete=False)
-        out = f' --out {tmp_file.name}'
-
-        if 'pipeline' in cfg.data.train:
-            img_shape = [t for t in cfg.data.train.pipeline if t['type'] == 'Resize'][0][
-                'img_scale']
-        else:
-            img_shape = [t for t in cfg.data.train.dataset.pipeline if t['type'] == 'Resize'][0][
-                'img_scale']
-
-        img_shape = f' --image_size_wh {img_shape[0]} {img_shape[1]}'
-
-        subprocess.run(f'python {mmdetection_tools}/cluster_boxes.py'
-                       f'{config}'
-                       f'{n_clust}'
-                       f'{group_as}'
-                       f'{update_config}'
-                       f'{img_shape}'
-                       f'{out}'.split(' '), check=True)
-
-        with open(tmp_file.name) as src_file:
-            content = json.load(src_file)
-            widths, heights = content['widths'], content['heights']
-
-        if not update_config:
-            update_config = ' --update_config'
-        update_config += f' model.bbox_head.anchor_generator.widths={str(widths).replace(" ", "")}'
-        update_config += f' model.bbox_head.anchor_generator.heights={str(heights).replace(" ", "")}'
-
-    if torch.cuda.is_available():
-        available_gpu_num = torch.cuda.device_count()
-        gpu_num = args.gpu_num
-        if available_gpu_num < args.gpu_num:
-            print(f'available_gpu_num < args.gpu_num: {available_gpu_num} < {args.gpu_num}')
-            print(f'decreased number of gpu to: {available_gpu_num}')
-            gpu_num = available_gpu_num
-            sys.stdout.flush()
-        run_with_termination(f'{mmdetection_tools}/dist_train.sh'
-                             f' {args.config}'
-                             f' {gpu_num}'
-                             f'{update_config}'.split(' '))
-    else:
-        run_with_termination(f'python {mmdetection_tools}/train.py'
-                             f' {args.config}'
-                             f'{update_config}'.split(' '))
-
-    overridden_work_dir = [p.split('=') for p in args.update_config.strip().split(' ') if
-                           p.startswith('work_dir=')]
-    if overridden_work_dir:
-        cfg.work_dir = overridden_work_dir[0][1]
-
-    evaluate(os.path.join(cfg.work_dir, "config.py"), os.path.join(cfg.work_dir, "latest.pth"), args.out, '')
+    logging.info('Evaluation started ...')
+    evaluate(os.path.join(work_dir, "config.py"), os.path.join(work_dir, "latest.pth"), args.out, '')
+    logging.info('... evaluation completed.')
 
     with open(args.out, 'a+') as dst_file:
-        yaml.dump({'training_gpu_num': args.gpu_num}, dst_file)
+        yaml.dump(training_info, dst_file)
 
 
 if __name__ == '__main__':

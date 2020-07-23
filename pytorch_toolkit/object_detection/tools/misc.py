@@ -2,14 +2,16 @@
 
 import hashlib
 import json
+import logging
 import os
 import signal
 import subprocess
 import sys
 import tempfile
 
-import yaml
 from mmcv import Config
+import yaml
+import torch
 
 MMDETECTION_TOOLS = f'{os.path.dirname(__file__)}/../../../external/mmdetection/tools'
 
@@ -161,3 +163,35 @@ def run_with_termination(cmd):
                 os.killpg(os.getpgid(process.pid), signal.SIGTERM)
             except ProcessLookupError as e:
                 print(e)
+
+
+def get_work_dir(cfg, update_config):
+    overridden_work_dir = [p.split('=') for p in update_config.strip().split(' ') if
+                           p.startswith('work_dir=')]
+    return overridden_work_dir[0][1] if overridden_work_dir else cfg.work_dir
+
+
+def train(config, gpu_num, update_config):
+    training_info = {'training_gpu_num': 0}
+    if torch.cuda.is_available():
+        logging.info('Training on GPUs started ...')
+        available_gpu_num = torch.cuda.device_count()
+        if available_gpu_num < gpu_num:
+            logging.warning(f'available_gpu_num < args.gpu_num: {available_gpu_num} < {gpu_num}')
+            logging.warning(f'decreased number of gpu to: {available_gpu_num}')
+            gpu_num = available_gpu_num
+            sys.stdout.flush()
+        run_with_termination(f'{MMDETECTION_TOOLS}/dist_train.sh'
+                             f' {config}'
+                             f' {gpu_num}'
+                             f'{update_config}'.split(' '))
+        training_info['training_gpu_num'] = gpu_num
+        logging.info('... training on GPUs completed.')
+    else:
+        logging.info('Training on CPU started ...')
+        run_with_termination(f'python {MMDETECTION_TOOLS}/train.py'
+                             f' {config}'
+                             f'{update_config}'.split(' '))
+        logging.info('... training on CPU completed.')
+
+    return training_info
