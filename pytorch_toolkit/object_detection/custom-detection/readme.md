@@ -2,7 +2,7 @@
 
 Custom object detectors are lightweight object detection models that have been pre-trained on MS COCO object detection dataset.
 It is assumed that one will use these pre-trained models as starting points in order to train specific object detection models (e.g. 'cat' and 'dog' detection).
-There was no a goal to train lightweight ready-to-use 80 class detector (MS COCO classes).
+There was no a goal to train lightweight ready-to-use 80 class (MS COCO classes) detector.
 
 | Model Name | Complexity (GFLOPs) | Size (Mp) | AP @ [IoU=0.50:0.95] (%) | Links | GPU_NUM |
 | --- | --- | --- | --- | --- | --- |
@@ -35,17 +35,19 @@ The existing toy dataset has annotation in the Common Objects in Context (COCO) 
 
 ### 4. Training
 
-Since there are model templates rather than ready-to-use models (though technically one can use the as they are) it is needed to update exsiting configuration file.
+Since there are model templates rather than ready-to-use models (though technically one can use the as they are) it is needed to update existing configuration file.
 It can be done by `--update_args` parameter or modifications inside configuration file.
 ```bash
 export NUM_CLASSES=3
 export CLASSES="vehicle,person,non-vehicle"
+export WORK_DIR="my_custom_detector"
 export UPDATE_CONFIG="model.bbox_head.num_classes=${NUM_CLASSES} \
                       data.train.dataset.classes=${CLASSES} \
                       data.val.classes=${CLASSES} \
                       data.val.classes=${CLASSES} \
                       total_epochs=20 \
-                      resume_from=${MODEL_NAME}.pth"
+                      resume_from=${MODEL_NAME}.pth \
+                      work_dir=${WORK_DIR}"
 ```
 
 * To train the detector on a single GPU, run in your terminal:
@@ -71,7 +73,7 @@ To dump detection of your model as well as compute MS-COCO metrics run:
 
 ```bash
 python ../../external/mmdetection/tools/test.py \
-        $CONFIGURATION_FILE \
+        ${WORK_DIR}/config.py \
         <CHECKPOINT> \
         --out result.pkl \
         --eval bbox \
@@ -84,13 +86,13 @@ To convert PyTorch\* model to the OpenVINO™ IR format run the `export.py` scri
 
 ```bash
 python ../../external/mmdetection/tools/export.py \
-      $CONFIGURATION_FILE \
+      ${WORK_DIR}/config.py \
       <CHECKPOINT> \
       <EXPORT_FOLDER> \
       openvino
 ```
 
-This produces model `$MODEL_NAME.xml` and weights `$MODEL_NAME.bin` in single-precision floating-point format
+This produces model `config.xml` and weights `config.bin` in single-precision floating-point format
 (FP32). The obtained model expects **normalized image** in planar BGR format.
 
 For SSD networks an alternative OpenVINO™ representation is possible.
@@ -104,8 +106,8 @@ Instead of running `test.py` you need to run `test_exported.py` and then repeat 
 
 ```bash
 python ../../external/mmdetection/tools/test_exported.py  \
-      $CONFIGURATION_FILE \
-      <EXPORT_FOLDER>/$MODEL_NAME.xml \
+      ${WORK_DIR}/config.py \
+      <EXPORT_FOLDER>/config.xml \
       --out results.pkl \
       --eval bbox
 ```
@@ -116,8 +118,8 @@ To see how the converted model works using OpenVINO you need to run `test_export
 
 ```bash
 python ../../external/mmdetection/tools/test_exported.py  \
-      $CONFIGURATION_FILE \
-      <EXPORT_FOLDER>/$MODEL_NAME.xml \
+      ${WORK_DIR}/config.py \
+      <EXPORT_FOLDER>/config.xml \
       --show
 ```
 
@@ -129,5 +131,5 @@ To get per-layer computational complexity estimations, run the following command
 
 ```bash
 python ../../external/mmdetection/tools/get_flops.py \
-       $CONFIGURATION_FILE
+      ${WORK_DIR}/config.py
 ```
