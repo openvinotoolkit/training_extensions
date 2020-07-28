@@ -36,17 +36,21 @@ def parse_args():
                         help='Update configuration file by parameters specified here.'
                              'Use quotes if you are going to change several params.',
                         default='')
+    parser.add_argument('--show-dir', '--show_dir', dest='show_dir',
+                        help='A directory where images with drawn detected objects will be saved.')
 
     return parser.parse_args()
 
 
-def main(config, snapshot, out, update_config):
+def main(config, snapshot, out, update_config, show_dir):
     """ Main function. """
 
-    metrics_functions = [coco_ap_eval]
+    metrics_functions = (
+        (coco_ap_eval, (update_config, show_dir)),
+    )
     evaluate(config, snapshot, out, update_config, metrics_functions)
 
 
 if __name__ == '__main__':
     args = parse_args()
-    main(args.config, args.snapshot, args.out, args.update_config)
+    main(args.config, args.snapshot, args.out, args.update_config, args.show_dir)
