@@ -23,6 +23,7 @@ from mmcv.utils import Config
 import yaml
 
 from eval import main as evaluate
+
 sys.path.append(f'{os.path.abspath(os.path.dirname(__file__))}/../../')
 from tools.misc import train, get_work_dir
 
@@ -41,6 +42,8 @@ def parse_args():
                         help='Update configuration file by parameters specified here.'
                              'Use quotes if you are going to change several params.',
                         default='')
+    parser.add_argument('--show-dir', '--show_dir', dest='show_dir',
+                        help='A directory where images with drawn detected objects will be saved.')
 
     return parser.parse_args()
 
@@ -62,7 +65,7 @@ def main():
     work_dir = get_work_dir(cfg, args.update_config)
 
     logging.info('Evaluation started ...')
-    evaluate(os.path.join(work_dir, "config.py"), os.path.join(work_dir, "latest.pth"), args.out, '')
+    evaluate(os.path.join(work_dir, "config.py"), os.path.join(work_dir, "latest.pth"), args.out, '', args.show_dir)
     logging.info('... evaluation completed.')
 
     with open(args.out, 'a+') as dst_file:
