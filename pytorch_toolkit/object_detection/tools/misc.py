@@ -54,16 +54,18 @@ def sha256sum(filename):
     return h.hexdigest()
 
 
-def coco_ap_eval(config_path, work_dir, snapshot, outputs, update_config):
+def coco_ap_eval(config_path, work_dir, snapshot, outputs, update_config, show_dir=''):
     """ Computes COCO AP. """
     try:
         res_pkl = os.path.join(work_dir, 'res.pkl')
         with open(os.path.join(work_dir, 'test_py_stdout'), 'w') as test_py_stdout:
             update_config = f' --update_config {update_config}' if update_config else ''
+            show_dir = f' --show-dir {show_dir}' if show_dir else ''
             subprocess.run(
                 f'python {MMDETECTION_TOOLS}/test.py'
                 f' {config_path} {snapshot}'
-                f' --out {res_pkl} --eval bbox{update_config}'.split(' '), stdout=test_py_stdout,
+                f' --out {res_pkl} --eval bbox'
+                f'{show_dir}{update_config}'.split(' '), stdout=test_py_stdout,
                 check=True)
         average_precision = collect_ap(os.path.join(work_dir, 'test_py_stdout'))[0]
         outputs.append({'key': 'ap', 'value': average_precision * 100, 'unit': '%',
@@ -124,8 +126,8 @@ def evaluate(config_path, snapshot, out, update_config, metrics_functions):
     metrics = []
 
     metrics = get_complexity_and_size(cfg, config_path, work_dir, metrics, update_config)
-    for func in metrics_functions:
-        metrics = func(config_path, work_dir, snapshot, metrics, update_config)
+    for func, args in metrics_functions:
+        metrics = func(config_path, work_dir, snapshot, metrics, *args)
 
     for metric in metrics:
         metric['value'] = round(metric['value'], 3) if metric['value'] else metric['value']
