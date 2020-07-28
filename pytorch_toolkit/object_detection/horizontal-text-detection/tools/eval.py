@@ -39,6 +39,8 @@ def parse_args():
                         help='Update configuration file by parameters specified here.'
                              'Use quotes if you are going to change several params.',
                         default='')
+    parser.add_argument('--show-dir', '--show_dir', dest='show_dir',
+                        help='A directory where images with drawn detected objects will be saved.')
 
     return parser.parse_args()
 
@@ -59,16 +61,18 @@ def collect_f1(path):
     return result
 
 
-def coco_eval(config_path, work_dir, snapshot, outputs, update_config):
+def coco_eval(config_path, work_dir, snapshot, outputs, update_config, show_dir):
     """ Computes metrics: precision, recall, hmean and COCO AP. """
 
     res_pkl = os.path.join(work_dir, 'res.pkl')
     with open(os.path.join(work_dir, 'test_py_stdout'), 'w') as test_py_stdout:
         update_config = f' --update_config {update_config}' if update_config else ''
+        show_dir = f' --show-dir {show_dir}' if show_dir else ''
         subprocess.run(
             f'python {MMDETECTION_TOOLS}/test.py'
             f' {config_path} {snapshot}'
-            f' --out {res_pkl} --eval f1 bbox{update_config}'.split(' '), stdout=test_py_stdout,
+            f' --out {res_pkl} --eval f1 bbox'
+            f'{show_dir}{update_config}'.split(' '), stdout=test_py_stdout,
             check=True)
     hmean = collect_f1(os.path.join(work_dir, 'test_py_stdout'))
     print(hmean)
@@ -85,13 +89,15 @@ def coco_eval(config_path, work_dir, snapshot, outputs, update_config):
     return outputs
 
 
-def main(config, snapshot, out, update_config):
+def main(config, snapshot, out, update_config, show_dir):
     """ Main function. """
 
-    metrics_functions = [coco_eval]
+    metrics_functions = (
+        (coco_eval, (update_config, show_dir)),
+    )
     evaluate(config, snapshot, out, update_config, metrics_functions)
 
 
 if __name__ == '__main__':
     args = parse_args()
-    main(args.config, args.snapshot, args.out, args.update_config)
+    main(args.config, args.snapshot, args.out, args.update_config, args.show_dir)
