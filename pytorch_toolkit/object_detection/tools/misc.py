@@ -4,14 +4,40 @@ import hashlib
 import json
 import logging
 import os
+from queue import Queue, Empty
 import signal
 import subprocess
 import sys
 import tempfile
-
+from threading import Thread
+import time
 from mmcv import Config
 import yaml
 import torch
+
+
+class NonBlockingStreamReader:
+
+    def __init__(self, stream):
+        self.stream = stream
+        self.queue = Queue()
+
+        def populate_queue(stream, queue):
+            while True:
+                line = stream.readline()
+                if line:
+                    queue.put(line)
+
+        self.thread = Thread(target=populate_queue, args=(self.stream, self.queue))
+        self.thread.daemon = True
+        self.thread.start()
+
+    def readline(self, timeout=None):
+        try:
+            return self.queue.get(block=timeout is not None, timeout=timeout)
+        except Empty:
+            return None
+
 
 MMDETECTION_TOOLS = f'{os.path.dirname(__file__)}/../../../external/mmdetection/tools'
 
@@ -149,17 +175,20 @@ def evaluate(config_path, snapshot, out, update_config, metrics_functions):
 
 def run_with_termination(cmd):
     process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    two_last_stderr_pieces = []
+
+    nbsr_err = NonBlockingStreamReader(process.stderr)
+    nbsr_out = NonBlockingStreamReader(process.stdout)
 
     failure_word = 'CUDA out of memory'
     while process.poll() is None:
-        out = process.stderr.read(1).decode('utf-8')
-        print(out, end='')
+        stderr = nbsr_err.readline(0.1)
+        if stderr is None:
+            time.sleep(1)
+            continue
+        stderr = stderr.decode('utf-8')
+        print(stderr, end='')
         sys.stdout.flush()
-        two_last_stderr_pieces.append(out)
-        if len(two_last_stderr_pieces) > len(failure_word):
-            del two_last_stderr_pieces[0]
-        if failure_word in ''.join(two_last_stderr_pieces):
+        if failure_word in stderr:
             try:
                 print('\nTerminated because of:', failure_word)
                 os.killpg(os.getpgid(process.pid), signal.SIGTERM)
