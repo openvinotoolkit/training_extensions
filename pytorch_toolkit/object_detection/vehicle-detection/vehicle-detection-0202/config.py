@@ -21,19 +21,20 @@ model = dict(
             strides=(16, 32),
             widths=[
                 [image_width * x for x in
-                 [0.0355385833877212, 0.09140412233156593, 0.11615246701971448,
-                  0.2325606700918737]],
+                 [0.03190665436176343, 0.07246889234100704, 0.13534887659200423,
+                  0.15785373692633903]],
                 [image_width * x for x in
-                 [0.20702894825214474, 0.43578541012863986, 0.3868570744458358, 0.786708152369126,
-                  0.8395931752500843]],
+                 [0.29641301747833876, 0.3296121909277462, 0.2130097277660658, 0.45965227145427356,
+                  0.6790618020935402]],
+
             ],
             heights=[
                 [image_height * x for x in
-                 [0.04094609677363194, 0.08752466806318163, 0.18402480613518438,
-                  0.16723137580609385]],
+                 [0.03836520511012714, 0.08658721963691468, 0.15106894690367778,
+                  0.30385265971706454]],
                 [image_height * x for x in
-                 [0.35640829190391277, 0.3016395498625446, 0.6230416791968195, 0.4664339940143666,
-                  0.8342319281804879]],
+                 [0.2010092421878013, 0.4087630480186569, 0.6694307467997506, 0.4766551262641776,
+                  0.6573119829938249]],
             ],
         ),
         bbox_coder=dict(
@@ -67,7 +68,7 @@ test_cfg = dict(
 # model training and testing settings
 # dataset settings
 dataset_type = 'CocoDataset'
-data_root = 'TBD'
+data_root = '../../data/airport/'
 img_norm_cfg = dict(mean=[0, 0, 0], std=[255, 255, 255], to_rgb=True)
 train_pipeline = [
     dict(type='LoadImageFromFile', to_float32=True),
@@ -84,7 +85,7 @@ train_pipeline = [
         min_crop_size=0.1),
     dict(type='Resize', img_scale=(input_size, input_size), keep_ratio=False),
     dict(type='Normalize', **img_norm_cfg),
-    dict(type='RandomFlip', flip_ratio=0.5),
+    dict(type='RandomFlip', flip_ratio=0.0),
     dict(type='DefaultFormatBundle'),
     dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels']),
 ]
@@ -102,8 +103,8 @@ test_pipeline = [
         ])
 ]
 data = dict(
-    samples_per_gpu=32,
-    workers_per_gpu=4,
+    samples_per_gpu=30,
+    workers_per_gpu=3,
     train=dict(
         type='RepeatDataset',
         times=5,
@@ -139,7 +140,7 @@ lr_config = dict(
     warmup='linear',
     warmup_iters=1200,
     warmup_ratio=1.0 / 3,
-    step=[8, 11, 13])
+    step=[8, 15, 18])
 checkpoint_config = dict(interval=1)
 # yapf:disable
 log_config = dict(
@@ -150,7 +151,7 @@ log_config = dict(
     ])
 # yapf:enable
 # runtime settings
-total_epochs = 14
+total_epochs = 20
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
 work_dir = 'outputs/vehicle-detection-0202'
