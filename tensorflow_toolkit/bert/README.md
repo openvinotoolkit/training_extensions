@@ -110,7 +110,7 @@ python xnli_export.py \
 #### Frozen Graph
 
 ```Bash
-$ python3 -m tensorflow.python.tools.freeze_graph \
+python3 -m tensorflow.python.tools.freeze_graph \
   --input_saved_model_dir=/tmp/xnli_output/export_model/<saved model folder>/ \
   --output_graph=./bert_xnli_fp32_graph.pb \
   --output_node_names=loss/LogSoftmax
@@ -119,7 +119,7 @@ $ python3 -m tensorflow.python.tools.freeze_graph \
 #### OpenVino Intermediate Representation
 
 ```Bash
-$ python mo.py --framework=tf \
+python mo.py --framework=tf \
   --input='input_ids_1,input_mask_1,segment_ids_1' \
   --output='loss/LogSoftmax' \
   --input_model=fp32_model.pb \
@@ -188,7 +188,6 @@ The dev set predictions will be saved into a file called predictions.json in the
 
 ```Bash
 python $SQUAD_DIR/evaluate-v1.1.py $SQUAD_DIR/dev-v1.1.json /tmp/squad_base/predictions.json
-
 ```
 
 ### Results
@@ -255,7 +254,9 @@ convert_annotation squad \
 
 accuracy_check --config squad_accuracy_check.yaml
 ```
+
 ## BERT-Large, Uncased with SQuAD 1.1
+
 Here we provided the steps for fine-tuning BERT-Large on Squad1.1 using https://github.com/IntelAI/models
 
 ### Data-set
@@ -267,7 +268,6 @@ First download the Standford Question Answering Dataset(SQuAD1.1) to some direct
 * [evaluate-v1.1.py](https://github.com/allenai/bi-att-flow/blob/master/squad/evaluate-v1.1.py)
 
 ### Fine-tuning
-
 
 1. Download the Pre-trained Bert Large uncased model and unzip
 
@@ -287,21 +287,21 @@ export SQUAD_DIR=/path/to/bert/squad1.1/data
 cp squad_large_export.py models/models/language_modeling/tensorflow/bert_large/training/fp32/
 cd models/models/language_modeling/tensorflow/bert_large/training/fp32
 python run_squad.py \
---vocab_file=$BERT_LARGE_DIR/vocab.txt \
---bert_config_file=$BERT_LARGE_DIR/bert_config.json \
---init_checkpoint=$BERT_LARGE_DIR/bert_model.ckpt \
---do_train=True \
---train_file=$SQUAD_DIR/train-v1.1.json \
---do_predict=True \
---predict_file=$SQUAD_DIR/dev-v1.1.json \
---train_batch_size=24 \
---learning_rate=3e-5 \
---num_train_epochs=2.0 \
---max_seq_length=384 \
---doc_stride=128 \
---output_dir=/tmp/squad_bert_large  \
---use_tpu=False \
---precision=fp32
+    --vocab_file=$BERT_LARGE_DIR/vocab.txt \
+    --bert_config_file=$BERT_LARGE_DIR/bert_config.json \
+    --init_checkpoint=$BERT_LARGE_DIR/bert_model.ckpt \
+    --do_train=True \
+    --train_file=$SQUAD_DIR/train-v1.1.json \
+    --do_predict=True \
+    --predict_file=$SQUAD_DIR/dev-v1.1.json \
+    --train_batch_size=24 \
+    --learning_rate=3e-5 \
+    --num_train_epochs=2.0 \
+    --max_seq_length=384 \
+    --doc_stride=128 \
+    --output_dir=/tmp/squad_bert_large  \
+    --use_tpu=False \
+    --precision=fp32
 ```
 
 The dev set predictions will be saved into a file called predictions.json in the output_dir:
@@ -336,7 +336,7 @@ python squad_large_export.py \
 
 ```Bash
 python3 -m tensorflow.python.tools.freeze_graph \
-  --input_saved_model_dir=/tmp/squad_bert_large/export_dir/<saved model folder>/ \
+  --input_saved_model_dir=/tmp/squad_bert_large/export_dir/<saved_model_folder>/ \
   --output_graph=bert_large_squad_fp32_graph.pb \
   --output_node_names=unstack
 ```
