@@ -21,18 +21,21 @@ model = dict(
             strides=(16, 32),
             widths=[
                 [image_width * x for x in
-                 [0.0221902727105487, 0.054625211024679, 0.102332663312817, 0.14364042118466025]],
+                 [0.015411783166343854, 0.033018232306549156, 0.04467156688464953,
+                  0.0610697815328886]],
                 [image_width * x for x in
-                 [0.20817454792318996, 0.45909577824808057, 0.2758748647618599, 0.5238139227422672,
-                  0.8531110786213814]],
+                 [0.0789599954420517, 0.10113984043326349, 0.12805187473050397, 0.16198319380154758,
+                  0.21636496806213493]],
+
             ],
             heights=[
                 [image_height * x for x in
-                 [0.06031581928255733, 0.14855637858557702, 0.2668119832636703,
-                  0.4203179599319901]],
+                 [0.05032631418898226, 0.10070800135152037, 0.15806180366055939,
+                  0.22343401646383804]],
                 [image_height * x for x in
-                 [0.6082611972029469, 0.44005493324397005, 0.8207143765730922, 0.8343620047507052,
-                  0.851994025022708]],
+                 [0.300881401352503, 0.393181898580379, 0.4998807213337051, 0.6386035764261081,
+                  0.8363451552091518]],
+
             ],
         ),
         bbox_coder=dict(
@@ -101,8 +104,8 @@ test_pipeline = [
         ])
 ]
 data = dict(
-    samples_per_gpu=32,
-    workers_per_gpu=4,
+    samples_per_gpu=30,
+    workers_per_gpu=3,
     train=dict(
         type='RepeatDataset',
         times=5,
@@ -138,7 +141,7 @@ lr_config = dict(
     warmup='linear',
     warmup_iters=1200,
     warmup_ratio=1.0 / 3,
-    step=[8, 11, 13])
+    step=[8, 15, 18])
 checkpoint_config = dict(interval=1)
 # yapf:disable
 log_config = dict(
@@ -149,7 +152,7 @@ log_config = dict(
     ])
 # yapf:enable
 # runtime settings
-total_epochs = 14
+total_epochs = 20
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
 work_dir = 'outputs/person-detection-0202'

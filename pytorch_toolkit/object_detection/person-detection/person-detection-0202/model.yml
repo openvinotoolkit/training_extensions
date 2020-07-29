@@ -18,5 +18,5 @@ metrics:
   key: ap
   unit: '%'
   value: 32.8
-training_gpu_num: 4
+training_gpu_num: 2
 show_on_chart: True
