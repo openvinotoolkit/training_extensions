@@ -2,8 +2,8 @@ description: Vehicle Person Bike Detection based on MobileNetV2 (SSD).
 name: vehicle-person-bike-detection-2001
 files:
 - name: snapshot.pth
-  sha256: 23b5726985dc2e23e14690bf263e844ef6c0c492df98acc64e3c12d3eb60e015
-  size: 14937189
+  sha256: 9c4190208d9ff7b7b860821c48264a50ee529e84f23d0d2f6947eceb64c2346a
+  size: 14937205
   source: https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/vehicle-person-bike-detection-2001.pth
 metrics:
 - display_name: Size
@@ -17,6 +17,6 @@ metrics:
 - display_name: mAP @ [IoU=0.50:0.95]
   key: map
   unit: '%'
-  value: 20.5
-training_gpu_num: 2
+  value: 22.6
+training_gpu_num: 4
 show_on_chart: True
