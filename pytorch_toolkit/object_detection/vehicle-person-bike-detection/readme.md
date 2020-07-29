@@ -4,9 +4,9 @@ The crossroad-detection network model provides detection of three class objects:
 
 | Model Name | Complexity (GFLOPs) | Size (Mp) | mAP @ [IoU=0.50:0.95] (%) | Links | GPU_NUM |
 | --- | --- | --- | --- | --- | --- |
-| vehicle-person-bike-detection-2000 | 0.82 | 1.84 | 16.4 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/vehicle-person-bike-detection-2000.pth), [configuration file](./vehicle-person-bike-detection-2000/config.py) | 2 |
-| vehicle-person-bike-detection-2001 | 1.86 | 1.84 | 20.5 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/vehicle-person-bike-detection-2001.pth), [configuration file](./vehicle-person-bike-detection-2001/config.py) | 2 |
-| vehicle-person-bike-detection-2002 | 3.3 | 1.84 | 22.4 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/vehicle-person-bike-detection-2002.pth), [configuration file](./vehicle-person-bike-detection-2002/config.py) | 4 |
+| vehicle-person-bike-detection-2000 | 0.82 | 1.84 | 16.5 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/vehicle-person-bike-detection-2000.pth), [configuration file](./vehicle-person-bike-detection-2000/config.py) | 4 |
+| vehicle-person-bike-detection-2001 | 1.86 | 1.84 | 22.6 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/vehicle-person-bike-detection-2001.pth), [configuration file](./vehicle-person-bike-detection-2001/config.py) | 4 |
+| vehicle-person-bike-detection-2002 | 3.3 | 1.84 | 24.8 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/vehicle-person-bike-detection-2002.pth), [configuration file](./vehicle-person-bike-detection-2002/config.py) | 4 |
 
 Average Precision (AP) is defined as an area under the precision/recall curve.
 
