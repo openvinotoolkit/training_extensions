@@ -33,7 +33,7 @@ def test_case(model_name):
             self.configuration_file = os.path.join(self.work_dir,
                                                    os.path.basename(self.configuration_file))
             self.ote_url = 'https://download.01.org/opencv/openvino_training_extensions'
-            self.url = f'{self.ote_url}/models/object_detection/v2/{self.model_name}.pth'
+            self.url = f'{self.ote_url}/models/object_detection/v2/{self.model_name}-1.pth'
             download_if_not_yet(self.work_dir, self.url)
 
             assert replace_text_in_file(self.configuration_file, 'samples_per_gpu=',
@@ -47,7 +47,7 @@ def test_case(model_name):
             assert replace_text_in_file(self.configuration_file, "data_root + 'val'",
                                         "data_root + 'train'")
             assert replace_text_in_file(self.configuration_file, 'resume_from = None',
-                                        f'resume_from = "{os.path.join(self.work_dir, self.model_name)}.pth"')
+                                        f'resume_from = "{os.path.join(self.work_dir, self.model_name)}-1.pth"')
 
         def test_fine_tuning(self):
             log_file = os.path.join(self.work_dir, 'test_fine_tuning.log')
@@ -62,7 +62,7 @@ def test_case(model_name):
             run_through_shell(
                 f'python ../../external/mmdetection/tools/test.py '
                 f'{self.configuration_file} '
-                f'{os.path.join(self.work_dir, self.model_name + ".pth")} '
+                f'{os.path.join(self.work_dir, self.model_name + "-1.pth")} '
                 f'--out res.pkl --eval bbox 2>&1 | tee {log_file}')
             ap = collect_ap(log_file)
 
