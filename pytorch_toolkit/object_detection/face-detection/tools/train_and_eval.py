@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-# pylint: disable=C0411,C0413,no-value-for-parameter
+# pylint: disable=E1121,W1203,C0411,C0413,no-value-for-parameter
 
 import argparse
 import logging

@@ -1,4 +1,4 @@
-# pylint: disable=W0702
+# pylint: disable=W0702,W1203,R0913
 
 import hashlib
 import json
