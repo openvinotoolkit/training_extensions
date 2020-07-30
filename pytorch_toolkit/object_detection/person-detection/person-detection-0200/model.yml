@@ -4,7 +4,7 @@ files:
 - name: snapshot.pth
   sha256: 14819f129b97750dd8c9679c8fc5896eb477584d9eb0bb537aabeb3f1c311030
   size: 14905197
-  source: https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/person-detection-0200.pth
+  source: https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/person-detection-0200-1.pth
 metrics:
 - display_name: Size
   key: size
