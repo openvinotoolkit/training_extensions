@@ -177,7 +177,6 @@ def run_with_termination(cmd):
     process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     nbsr_err = NonBlockingStreamReader(process.stderr)
-    nbsr_out = NonBlockingStreamReader(process.stdout)
 
     failure_word = 'CUDA out of memory'
     while process.poll() is None:
