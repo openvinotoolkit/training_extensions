@@ -174,7 +174,7 @@ def evaluate(config_path, snapshot, out, update_config, metrics_functions):
 
 
 def run_with_termination(cmd):
-    process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    process = subprocess.Popen(cmd, stderr=subprocess.PIPE)
 
     nbsr_err = NonBlockingStreamReader(process.stderr)
 
