@@ -1,5 +1,5 @@
 # model settings
-input_size = 512
+input_size = 256
 image_width, image_height = input_size, input_size
 width_mult = 1.0
 model = dict(
@@ -102,8 +102,8 @@ test_pipeline = [
         ])
 ]
 data = dict(
-    samples_per_gpu=30,
-    workers_per_gpu=4,
+    samples_per_gpu=192,
+    workers_per_gpu=3,
     train=dict(
         type='RepeatDataset',
         times=5,
@@ -153,7 +153,7 @@ log_config = dict(
 total_epochs = 20
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-work_dir = 'outputs/vehicle-person-bike-detection-2002'
+work_dir = 'outputs/person-vehicle-bike-detection-2000'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]

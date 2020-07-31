@@ -1,5 +1,5 @@
-description: Vehicle Person Bike Detection based on MobileNetV2 (SSD).
-name: vehicle-person-bike-detection-2002
+description: Person Vehicle Bike Detection based on MobileNetV2 (SSD).
+name: person-vehicle-bike-detection-2002
 files:
 - name: snapshot.pth
   sha256: 23d2ba1282bc1a0072e9d9737f969c1becab51bc65b235ca586a22756e260a91

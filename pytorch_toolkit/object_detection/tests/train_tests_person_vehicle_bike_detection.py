@@ -19,7 +19,7 @@ import unittest
 from common.utils import replace_text_in_file, collect_ap, download_if_not_yet, run_through_shell
 
 
-def test_case(model_name):
+def test_case(model_name, snapshot_name):
     class Class(unittest.TestCase):
 
         def setUp(self):
@@ -28,12 +28,12 @@ def test_case(model_name):
             self.data_folder = '../../data'
             self.work_dir = os.path.join('/tmp/', self.model_name)
             os.makedirs(self.work_dir, exist_ok=True)
-            self.configuration_file = f'./vehicle-person-bike-detection/{self.model_name}/config.py'
+            self.configuration_file = f'./person-vehicle-bike-detection/{self.model_name}/config.py'
             run_through_shell(f'cp {self.configuration_file} {self.work_dir}/')
             self.configuration_file = os.path.join(self.work_dir,
                                                    os.path.basename(self.configuration_file))
             self.ote_url = 'https://download.01.org/opencv/openvino_training_extensions'
-            self.url = f'{self.ote_url}/models/object_detection/v2/{self.model_name}-1.pth'
+            self.url = f'{self.ote_url}/models/object_detection/v2/{snapshot_name}'
             download_if_not_yet(self.work_dir, self.url)
 
             assert replace_text_in_file(self.configuration_file, 'samples_per_gpu=',
@@ -47,7 +47,7 @@ def test_case(model_name):
             assert replace_text_in_file(self.configuration_file, "data_root + 'val'",
                                         "data_root + 'train'")
             assert replace_text_in_file(self.configuration_file, 'resume_from = None',
-                                        f'resume_from = "{os.path.join(self.work_dir, self.model_name)}-1.pth"')
+                                        f'resume_from = "{os.path.join(self.work_dir, snapshot_name)}"')
 
         def test_fine_tuning(self):
             log_file = os.path.join(self.work_dir, 'test_fine_tuning.log')
@@ -62,11 +62,11 @@ def test_case(model_name):
             run_through_shell(
                 f'python ../../external/mmdetection/tools/test.py '
                 f'{self.configuration_file} '
-                f'{os.path.join(self.work_dir, self.model_name + "-1.pth")} '
+                f'{os.path.join(self.work_dir, snapshot_name)} '
                 f'--out res.pkl --eval bbox 2>&1 | tee {log_file}')
             ap = collect_ap(log_file)
 
-            with open(f'tests/expected_outputs/vehicle-person-bike-detection/{self.model_name}.json') as read_file:
+            with open(f'tests/expected_outputs/person-vehicle-bike-detection/{self.model_name}.json') as read_file:
                 content = json.load(read_file)
 
             self.assertEqual(content['map'], ap[0])
@@ -74,13 +74,16 @@ def test_case(model_name):
     return Class
 
 
-class VehiclePersonBikeDetection2000TestCase(test_case('vehicle-person-bike-detection-2000')):
-    """ Test case for vehicle-person-bike-detection-2000 model. """
+class PersonVehicleBikeDetection2000TestCase(test_case('person-vehicle-bike-detection-2000',
+                                                       'vehicle-person-bike-detection-2000-1.pth')):
+    """ Test case for person-vehicle-bike-detection-2000 model. """
 
 
-class VehiclePersonBikeDetection2001TestCase(test_case('vehicle-person-bike-detection-2001')):
-    """ Test case for vehicle-person-bike-detection-2001 model. """
+class PersonVehicleBikeDetection2001TestCase(test_case('person-vehicle-bike-detection-2001',
+                                                       'vehicle-person-bike-detection-2001-1.pth')):
+    """ Test case for person-vehicle-bike-detection-2001 model. """
 
 
-class VehiclePersonBikeDetection2002TestCase(test_case('vehicle-person-bike-detection-2002')):
-    """ Test case for vehicle-person-bike-detection-2002 model. """
+class PersonVehicleBikeDetection2002TestCase(test_case('person-vehicle-bike-detection-2002',
+                                                       'vehicle-person-bike-detection-2002-1.pth')):
+    """ Test case for person-vehicle-bike-detection-2002 model. """

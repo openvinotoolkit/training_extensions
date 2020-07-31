@@ -153,7 +153,7 @@ log_config = dict(
 total_epochs = 20
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-work_dir = 'outputs/vehicle-person-bike-detection-2001'
+work_dir = 'outputs/person-vehicle-bike-detection-2001'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]
