@@ -50,7 +50,7 @@ def parse_args():
 
 def main():
     """ Main function. """
-    logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(level=logging.INFO)
 
     args = parse_args()
     logging.info(f'Commandline:\n{" ".join(sys.argv)}')

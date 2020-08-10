@@ -100,8 +100,7 @@ def coco_ap_eval(config_path, work_dir, snapshot, outputs, update_config, show_d
         outputs.append(
             {'key': 'ap', 'value': None, 'unit': '%', 'display_name': 'AP @ [IoU=0.50:0.95]'})
     with open(os.path.join(work_dir, 'test_py_stdout')) as test_py_stdout:
-        print(''.join(test_py_stdout.readlines()))
-        sys.stdout.flush()
+        logging.info(''.join(test_py_stdout.readlines()))
     return outputs
 
 

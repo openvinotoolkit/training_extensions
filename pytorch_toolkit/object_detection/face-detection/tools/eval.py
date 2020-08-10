@@ -15,6 +15,7 @@
 # pylint: disable=C0301,W0622,R0914,R0913,C0413,W0613
 
 import argparse
+import logging
 import json
 import os
 import subprocess
@@ -155,6 +156,7 @@ def custom_ap_eval(config_path, work_dir, snapshot, outputs, update_config):
 
 def main(config, snapshot, out, update_config, wider_dir, show_dir):
     """ Main function. """
+    logging.basicConfig(level=logging.INFO)
 
     metrics_functions = (
         (coco_ap_eval, (update_config, show_dir)),

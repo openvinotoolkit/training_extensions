@@ -15,6 +15,7 @@
 # pylint: disable=C0411,C0413
 
 import argparse
+import logging
 import os
 import sys
 sys.path.append(f'{os.path.abspath(os.path.dirname(__file__))}/../../')
@@ -44,6 +45,7 @@ def parse_args():
 
 def main(config, snapshot, out, update_config, show_dir):
     """ Main function. """
+    logging.basicConfig(level=logging.INFO)
 
     metrics_functions = (
         (coco_ap_eval, (update_config, show_dir)),

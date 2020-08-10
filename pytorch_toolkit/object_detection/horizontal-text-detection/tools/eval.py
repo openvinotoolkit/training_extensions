@@ -15,6 +15,7 @@
 # pylint: disable=C0301,W0622,R0914,R0913,C0411,C0413
 
 import argparse
+import logging
 import os
 import subprocess
 import sys
@@ -75,8 +76,8 @@ def coco_eval(config_path, work_dir, snapshot, outputs, update_config, show_dir)
             f'{show_dir}{update_config}'.split(' '), stdout=test_py_stdout,
             check=True)
     hmean = collect_f1(os.path.join(work_dir, 'test_py_stdout'))
-    print(hmean)
-    print(os.path.join(work_dir, 'test_py_stdout'))
+    with open(os.path.join(work_dir, 'test_py_stdout')) as test_py_stdout:
+        logging.info(''.join(test_py_stdout.readlines()))
     outputs.append({'key': 'f1', 'value': hmean[2] * 100, 'unit': '%', 'display_name': 'F1-score'})
     outputs.append(
         {'key': 'recall', 'value': hmean[0] * 100, 'unit': '%', 'display_name': 'Recall'})
@@ -91,6 +92,7 @@ def coco_eval(config_path, work_dir, snapshot, outputs, update_config, show_dir)
 
 def main(config, snapshot, out, update_config, show_dir):
     """ Main function. """
+    logging.basicConfig(level=logging.INFO)
 
     metrics_functions = (
         (coco_eval, (update_config, show_dir)),

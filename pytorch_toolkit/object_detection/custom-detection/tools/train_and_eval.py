@@ -111,7 +111,7 @@ def cluster(cfg, config_path, update_config):
 
 def main():
     """ Main function. """
-    logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(level=logging.INFO)
 
     args = parse_args()
     logging.info(f'Commandline:\n{" ".join(sys.argv)}')
