@@ -41,10 +41,21 @@ It can be done by `--update_args` parameter or modifications inside configuratio
 ```bash
 export NUM_CLASSES=3
 export CLASSES="vehicle,person,non-vehicle"
+export ANN_FILE_TRAIN="../../data/airport/annotation_example_train.json"
+export ANN_FILE_VAL="../../data/airport/annotation_example_val.json"
+export IMG_PREFIX_TRAIN="../../data/airport/train"
+export IMG_PREFIX_VAL="../../data/airport/val"
 export WORK_DIR="my_custom_detector"
 export UPDATE_CONFIG="model.bbox_head.num_classes=${NUM_CLASSES} \
                       data.train.dataset.classes=${CLASSES} \
+                      data.train.dataset.ann_file=${ANN_FILE_TRAIN} \
+                      data.train.dataset.img_prefix=${IMG_PREFIX_TRAIN} \
                       data.val.classes=${CLASSES} \
+                      data.val.ann_file=${ANN_FILE_VAL} \
+                      data.val.img_prefix=${IMG_PREFIX_VAL} \
+                      data.test.classes=${CLASSES} \
+                      data.test.ann_file=${ANN_FILE_VAL} \
+                      data.test.img_prefix=${IMG_PREFIX_VAL} \
                       total_epochs=20 \
                       resume_from=${MODEL_NAME}.pth \
                       work_dir=${WORK_DIR}"
