@@ -45,7 +45,6 @@ export WORK_DIR="my_custom_detector"
 export UPDATE_CONFIG="model.bbox_head.num_classes=${NUM_CLASSES} \
                       data.train.dataset.classes=${CLASSES} \
                       data.val.classes=${CLASSES} \
-                      data.val.classes=${CLASSES} \
                       total_epochs=20 \
                       resume_from=${MODEL_NAME}.pth \
                       work_dir=${WORK_DIR}"
