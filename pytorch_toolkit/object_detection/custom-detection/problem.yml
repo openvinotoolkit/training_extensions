@@ -2,8 +2,6 @@ description:  >-
   Custom object detection is a computer technology being used in a variety of applications
   that identifies custom object in digital images. You need to define your set of detection classes.
 favorite: false
-imagesUrls:
-  - some_picture_url
 subtitle: Detecting custom objects in digital images
 title: Custom Detection
 type: generic
