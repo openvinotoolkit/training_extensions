@@ -68,7 +68,6 @@ test_cfg = dict(
 # model training and testing settings
 # dataset settings
 dataset_type = 'CocoDataset'
-data_root = 'TBD'
 img_norm_cfg = dict(mean=[0, 0, 0], std=[255, 255, 255], to_rgb=True)
 train_pipeline = [
     dict(type='LoadImageFromFile', to_float32=True),
@@ -111,8 +110,8 @@ data = dict(
         dataset=dict(
             type=dataset_type,
             classes=('vehicle',),
-            ann_file='ANNOTATION_TRAIN_TBD.json',
-            img_prefix='IMGS_PREFIX_TRAIN_TBD',
+            ann_file='data/annotations/instances_train2017car.json',
+            img_prefix='data/train2017',
             min_size=20,
             pipeline=train_pipeline
         )
@@ -120,15 +119,15 @@ data = dict(
     val=dict(
         type=dataset_type,
         classes=('vehicle',),
-        ann_file='ANNOTATION_VAL_TBD.json',
-        img_prefix='IMGS_PREFIX_VAL_TBD',
+        ann_file='data/annotations/instances_val2017car.json',
+        img_prefix='data/val2017',
         test_mode=True,
         pipeline=test_pipeline),
     test=dict(
         type=dataset_type,
         classes=('vehicle',),
-        ann_file='ANNOTATION_TEST_TBD.json',
-        img_prefix='IMGS_PREFIX_TEST_TBD',
+        ann_file='data/annotations/instances_val2017car.json',
+        img_prefix='data/val2017',
         test_mode=True,
         pipeline=test_pipeline))
 # optimizer

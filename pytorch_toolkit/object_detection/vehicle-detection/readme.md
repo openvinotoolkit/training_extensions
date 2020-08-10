@@ -23,7 +23,19 @@ export CONFIGURATION_FILE=./vehicle-detection/$MODEL_NAME/config.py
 
 ### 2. Collect dataset
 
-Collect or download images with vehicles presented on them.
+Collect or download images with vehicles presented on them. One can download MS-COCO dataset and remain images with cars only.
+```bash
+wget http://images.cocodataset.org/zips/val2017.zip -P data/
+wget http://images.cocodataset.org/zips/train2017.zip -P data/
+wget http://images.cocodataset.org/annotations/annotations_trainval2017.zip -P data/
+unzip data/val2017.zip -d data/
+unzip data/train2017.zip -d data/
+unzip data/annotations_trainval2017.zip -d data/
+python ../../external/mmdetection/tools/coco_filter.py data/annotations/instances_train2017.json data/annotations/instances_train2017car.json --filter car --remap
+python ../../external/mmdetection/tools/coco_filter.py data/annotations/instances_val2017.json data/annotations/instances_val2017car.json --filter car --remap
+sed -i "s/car/vehicle/g" data/annotations/instances_val2017car.json
+sed -i "s/car/vehicle/g" data/annotations/instances_train2017car.json
+```
 
 ### 3. Prepare annotation
 
