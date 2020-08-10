@@ -86,7 +86,7 @@ def compute_wider_metrics(config_path, work_dir, snapshot, outputs, wider_dir):
     subprocess.run(f'unzip -q -o {eval_tools_zip} -d {wider_dir}'.split(' '),
                    check=True)
 
-    wider_annotation_zip = os.path.join(wider_dir, 'ider_face_split.zip')
+    wider_annotation_zip = os.path.join(wider_dir, 'wider_face_split.zip')
     if not os.path.exists(wider_annotation_zip):
         subprocess.run(
             f'wget http://mmlab.ie.cuhk.edu.hk/projects/WIDERFace/support/bbx_annotation/wider_face_split.zip'
