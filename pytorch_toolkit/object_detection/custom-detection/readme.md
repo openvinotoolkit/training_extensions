@@ -36,7 +36,7 @@ The existing toy dataset has annotation in the Common Objects in Context (COCO) 
 
 ### 4. Training
 
-Since there are model templates rather than ready-to-use models (though technically one can use the as they are) it is needed to update existing configuration file.
+Since model templates rather than ready-to-use models (though technically one can use them as they are) are provided it is needed to update existing configuration file.
 It can be done by `--update_args` parameter or modifications inside configuration file.
 ```bash
 export NUM_CLASSES=3
