@@ -1,0 +1,9 @@
+description:  >-
+  Vehicle detection is a computer technology being used in a variety of applications
+  that identifies vehicles in digital images. Vehicle detection can be regarded as
+  a specific case of object-class detection.
+favorite: false
+imagesUrls:
+  - https://raw.githubusercontent.com/opencv/open_model_zoo/develop/models/intel/vehicle-detection-adas-0002/description/vehicle-detection-adas-0002.png
+subtitle: Detecting vehicles in digital images
+title: Vehicle Detection

@@ -16,9 +16,25 @@
 from common.test_case import export_test_case
 
 
-class PersonVehicleBikeDetectionCrossroad1016TestCase(
+class PersonVehicleBikeDetection2000TestCase(
         export_test_case('person-vehicle-bike-detection',
-                         'person-vehicle-bike-detection-crossroad-1016',
-                         'person_vehicle_bike_sd512_mb2_clustered_epoch_21.pth',
-                         True)):
-    """ Test case for person-vehicle-bike-detection-crossroad-1016 export. """
+                         'person-vehicle-bike-detection-2000',
+                         'vehicle-person-bike-detection-2000-1.pth',
+                         alt_ssd_export=True)):
+    """ Test case for person-vehicle-bike-detection-2000 export. """
+
+
+class PersonVehicleBikeDetection2001TestCase(
+        export_test_case('person-vehicle-bike-detection',
+                         'person-vehicle-bike-detection-2001',
+                         'vehicle-person-bike-detection-2001-1.pth',
+                         alt_ssd_export=True)):
+    """ Test case for person-vehicle-bike-detection-2001 export. """
+
+
+class PersonVehicleBikeDetection2002TestCase(
+        export_test_case('person-vehicle-bike-detection',
+                         'person-vehicle-bike-detection-2002',
+                         'vehicle-person-bike-detection-2002-1.pth',
+                         alt_ssd_export=True)):
+    """ Test case for person-vehicle-bike-detection-2002 export. """

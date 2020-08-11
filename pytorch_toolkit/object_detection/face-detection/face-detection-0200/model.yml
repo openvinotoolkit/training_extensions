@@ -1,0 +1,38 @@
+description: Face Detection based on MobileNetV2 (SSD).
+name: face-detection-0200
+training_gpu_num: 2
+files:
+- name: snapshot.pth
+  sha256: 122e194b95ef631f578fac0dc88ba2be7b2ef9d06263ff6e7a69c846990a85f7
+  size: 14904296
+  source: https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/face-detection-0200.pth
+metrics:
+- display_name: AP @ [IoU=0.50:0.95]
+  key: ap
+  unit: '%'
+  value: 16.0
+- display_name: AP for faces > 64x64
+  key: ap_64x64
+  unit: '%'
+  value: 86.743
+- display_name: WiderFace Easy
+  key: widerface_e
+  unit: '%'
+  value: 82.917
+- display_name: WiderFace Medium
+  key: widerface_m
+  unit: '%'
+  value: 76.198
+- display_name: WiderFace Hard
+  key: widerface_h
+  unit: '%'
+  value: 41.443
+- display_name: Size
+  key: size
+  unit: Mp
+  value: 1.83
+- display_name: Complexity
+  key: complexity
+  unit: GFLOPs
+  value: 0.82
+show_on_chart: True

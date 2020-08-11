@@ -16,56 +16,74 @@ import json
 import os
 import unittest
 
-from common.utils import replace_text_in_file, collect_ap, download_if_not_yet
+from common.utils import replace_text_in_file, collect_ap, download_if_not_yet, run_through_shell
 
 
-class PersonVehicleBikeDetectionCrossroad1016TestCase(unittest.TestCase):
+def test_case(model_name, snapshot_name):
+    class Class(unittest.TestCase):
 
-    def setUp(self):
-        self.model_name = 'person-vehicle-bike-detection-crossroad-1016'
-        self.snapshot_name = 'person_vehicle_bike_sd512_mb2_clustered_epoch_21.pth'
+        def setUp(self):
+            self.model_name = model_name
 
-        self.data_folder = '../../data'
-        self.work_dir = os.path.join('/tmp', self.model_name)
-        os.makedirs(self.work_dir, exist_ok=True)
-        self.configuration_file = f'./person-vehicle-bike-detection/{self.model_name}/config.py'
-        os.system(f'cp {self.configuration_file} {self.work_dir}/')
-        self.configuration_file = os.path.join(self.work_dir,
-                                               os.path.basename(self.configuration_file))
-        self.ote_url = 'https://download.01.org/opencv/openvino_training_extensions'
-        self.url = f'{self.ote_url}/models/object_detection/{self.snapshot_name}'
-        download_if_not_yet(self.work_dir, self.url)
+            self.data_folder = '../../data'
+            self.work_dir = os.path.join('/tmp/', self.model_name)
+            os.makedirs(self.work_dir, exist_ok=True)
+            self.configuration_file = f'./person-vehicle-bike-detection/{self.model_name}/config.py'
+            run_through_shell(f'cp {self.configuration_file} {self.work_dir}/')
+            self.configuration_file = os.path.join(self.work_dir,
+                                                   os.path.basename(self.configuration_file))
+            self.ote_url = 'https://download.01.org/opencv/openvino_training_extensions'
+            self.url = f'{self.ote_url}/models/object_detection/v2/{snapshot_name}'
+            download_if_not_yet(self.work_dir, self.url)
 
-        assert replace_text_in_file(self.configuration_file, 'total_epochs =',
-                                    'total_epochs = 25#')
-        assert replace_text_in_file(self.configuration_file, 'work_dir =',
-                                    f'work_dir = "{os.path.join(self.work_dir, "outputs")}" #')
-        assert replace_text_in_file(self.configuration_file, 'load_from = None',
-                                    f'load_from = "{os.path.join(self.work_dir, self.snapshot_name)}"')
-        assert replace_text_in_file(self.configuration_file, 'annotation_example_train.json',
-                                    'annotation_example_val.json')
-        assert replace_text_in_file(self.configuration_file, '/train', '/val')
+            assert replace_text_in_file(self.configuration_file, 'samples_per_gpu=',
+                                        'samples_per_gpu=1 ,#')
+            assert replace_text_in_file(self.configuration_file, 'total_epochs = 20',
+                                        'total_epochs = 25')
+            assert replace_text_in_file(self.configuration_file, 'work_dir =',
+                                        f'work_dir = "{os.path.join(self.work_dir, "outputs")}" #')
+            assert replace_text_in_file(self.configuration_file, 'annotation_example_val.json',
+                                        'annotation_example_train.json')
+            assert replace_text_in_file(self.configuration_file, "data_root + 'val'",
+                                        "data_root + 'train'")
+            assert replace_text_in_file(self.configuration_file, 'resume_from = None',
+                                        f'resume_from = "{os.path.join(self.work_dir, snapshot_name)}"')
 
-    def test_fine_tuning(self):
-        log_file = os.path.join(self.work_dir, 'test_fine_tuning.log')
+        def test_fine_tuning(self):
+            log_file = os.path.join(self.work_dir, 'test_fine_tuning.log')
+            run_through_shell(
+                f'../../external/mmdetection/tools/dist_train.sh {self.configuration_file} 1 2>&1 |'
+                f' tee {log_file}')
+            ap = collect_ap(log_file)
+            self.assertEqual(len((ap)), 5)
 
-        os.system(
-            f'../../external/mmdetection/tools/dist_train.sh {self.configuration_file} 1 --validate 2>&1 |'
-            f' tee {log_file}')
-        ap = collect_ap(log_file)
-        self.assertEqual(len((ap)), 25)
-        self.assertLess(ap[0], ap[-1])
+        def test_quality_metrics(self):
+            log_file = os.path.join(self.work_dir, 'test_quality_metrics.log')
+            run_through_shell(
+                f'python ../../external/mmdetection/tools/test.py '
+                f'{self.configuration_file} '
+                f'{os.path.join(self.work_dir, snapshot_name)} '
+                f'--out res.pkl --eval bbox 2>&1 | tee {log_file}')
+            ap = collect_ap(log_file)
 
-    def test_quality_metrics(self):
-        log_file = os.path.join(self.work_dir, 'test_quality_metrics.log')
-        os.system(
-            f'python ../../external/mmdetection/tools/test.py '
-            f'{self.configuration_file} '
-            f'{os.path.join(self.work_dir, self.snapshot_name)} '
-            f'--out res.pkl --eval bbox 2>&1 | tee {log_file}')
-        ap = collect_ap(log_file)
+            with open(f'tests/expected_outputs/person-vehicle-bike-detection/{self.model_name}.json') as read_file:
+                content = json.load(read_file)
 
-        with open(f'tests/expected_outputs/person-vehicle-bike-detection/{self.model_name}.json') as read_file:
-            content = json.load(read_file)
+            self.assertEqual(content['map'], ap[0])
 
-        self.assertEqual(content['map'], ap[0])
+    return Class
+
+
+class PersonVehicleBikeDetection2000TestCase(test_case('person-vehicle-bike-detection-2000',
+                                                       'vehicle-person-bike-detection-2000-1.pth')):
+    """ Test case for person-vehicle-bike-detection-2000 model. """
+
+
+class PersonVehicleBikeDetection2001TestCase(test_case('person-vehicle-bike-detection-2001',
+                                                       'vehicle-person-bike-detection-2001-1.pth')):
+    """ Test case for person-vehicle-bike-detection-2001 model. """
+
+
+class PersonVehicleBikeDetection2002TestCase(test_case('person-vehicle-bike-detection-2002',
+                                                       'vehicle-person-bike-detection-2002-1.pth')):
+    """ Test case for person-vehicle-bike-detection-2002 model. """

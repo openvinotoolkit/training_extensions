@@ -13,6 +13,7 @@
 # and limitations under the License.
 
 import os
+from subprocess import run
 
 
 def replace_text_in_file(path, replace_what, replace_by):
@@ -47,3 +48,7 @@ def download_if_not_yet(output_folder, url):
 
 def relative_abs_error(expected, actual):
     return abs(expected - actual) / expected
+
+
+def run_through_shell(cmd):
+    run(cmd, shell=True, check=True)

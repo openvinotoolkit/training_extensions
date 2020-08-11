@@ -20,7 +20,7 @@ import os
 from tqdm import tqdm
 
 import mmcv
-
+from mmcv import DictAction
 from mmdet.datasets import build_dataset
 
 
@@ -35,6 +35,9 @@ def parse_args():
     parser.add_argument('input', help='output result file from test.py')
     parser.add_argument('out_folder', help='folder where to store WiderFace '
                                            'evaluation-friendly output')
+    parser.add_argument(
+        '--update_config', nargs='+', action=DictAction,
+        help='Update configuration file by parameters specified here.')
     args = parser.parse_args()
     return args
 
@@ -48,13 +51,15 @@ def main():
         raise ValueError('The input file must be a pkl file.')
 
     cfg = mmcv.Config.fromfile(args.config)
+    if args.update_config:
+        cfg.merge_from_dict(args.update_config)
     dataset = build_dataset(cfg.data.test)
 
     results = mmcv.load(args.input)
 
     wider_friendly_results = []
     for i, sample in enumerate(tqdm(dataset)):
-        filename = sample['img_meta'][0].data['filename']
+        filename = sample['img_metas'][0].data['filename']
         folder, image_name = filename.split('/')[-2:]
         wider_friendly_results.append({'folder': folder, 'name': image_name[:-4],
                                        'boxes': results[i][0]})

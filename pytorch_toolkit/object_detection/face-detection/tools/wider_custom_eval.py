@@ -25,6 +25,7 @@ from tqdm import tqdm
 
 import cv2
 import mmcv
+from mmcv import DictAction
 from mmdet import datasets
 
 
@@ -273,14 +274,14 @@ def voc_eval(result_file, dataset, iou_thr, image_size):
             bboxes = [clip_bbox(bbox, image_size) for bbox in bboxes]
             # filter out boxes with to small height or with invalid size (-1)
             ignored = [not (obj_size[0] <= b[3] <= obj_size[1]) or np.any(b == -1) for b in bboxes]
-            objects = [{'bbox': bbox, 'is_ignored': ignor} for bbox, ignor in zip(bboxes, ignored)]
-            groundtruth.append(ImageAnnotation(dataset.img_infos[i]['id'], objects))
+            objects = [{'bbox': bbox, 'is_ignored': ignore} for bbox, ignore in zip(bboxes, ignored)]
+            groundtruth.append(ImageAnnotation(dataset.data_infos[i]['id'], objects))
 
             # filter out predictions with too low confidence
             detections = [{'bbox': points_2_xywh(bbox[:4]), 'score': bbox[4], 'type': 'face'} for
                           bbox
                           in det_results[i][0] if bbox[4] > min_detection_confidence]
-            predictions.append(ImageAnnotation(dataset.img_infos[i]['id'], detections))
+            predictions.append(ImageAnnotation(dataset.data_infos[i]['id'], detections))
 
         recall, precision, miss_rates, fppis = evaluate_detections(
             groundtruth, predictions, 'face',
@@ -314,9 +315,14 @@ def main():
                         help='Image resolution. Used for filtering.')
     parser.add_argument('--iou-thr', type=float, default=0.5, help='IoU threshold for evaluation')
     parser.add_argument('--out', help='A path to file where metrics values will be saved (*.json).')
+    parser.add_argument(
+        '--update_config', nargs='+', action=DictAction,
+        help='Update configuration file by parameters specified here.')
     args = parser.parse_args()
 
     cfg = mmcv.Config.fromfile(args.config)
+    if args.update_config:
+        cfg.merge_from_dict(args.update_config)
     test_dataset = datasets.builder.build_dataset(cfg.data.test)
     out = voc_eval(args.input, test_dataset, args.iou_thr, args.imsize)
 
