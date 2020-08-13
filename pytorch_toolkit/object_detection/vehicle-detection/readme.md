@@ -5,6 +5,10 @@
 | vehicle-detection-0200 | 0.82 | 1.83 | 25.4 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/vehicle-detection-0200-1.pth), [configuration file](./vehicle-detection-0200/config.py) | 4 |
 | vehicle-detection-0201 | 1.84 | 1.83 | 32.3 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/vehicle-detection-0201-1.pth), [configuration file](./vehicle-detection-0201/config.py) | 4 |
 | vehicle-detection-0202 | 3.28 | 1.83 | 36.9 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/vehicle-detection-0202-1.pth), [configuration file](./vehicle-detection-0202/config.py) | 4 |
+| vehicle-detection-0001 | 212.22 | 36.56 | 32.4 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/vehicle-detection-0203.pth), [configuration file](./vehicle-detection-0203/config.py) | 4 |
+| vehicle-detection-0002 | 190.32 | 34.15 | 30.4 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/vehicle-detection-0204.pth), [configuration file](./vehicle-detection-0204/config.py) | 4 |
+| vehicle-detection-0003 | 112.34 | 24.11 | 27.0 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/vehicle-detection-0205.pth), [configuration file](./vehicle-detection-0205/config.py) | 4 |
+
 
 ## Training pipeline
 
@@ -101,7 +105,7 @@ python ../../external/mmdetection/tools/export.py \
 This produces model `$MODEL_NAME.xml` and weights `$MODEL_NAME.bin` in single-precision floating-point format
 (FP32). The obtained model expects **normalized image** in planar BGR format.
 
-For SSD networks an alternative OpenVINO™ representation is possible.
+For SSD networks (0200,0201,0201) an alternative OpenVINO™ representation is possible.
 To opt for it use extra `--alt_ssd_export` key to the `export.py` script.
 SSD model exported in such way will produce a bit different results (non-significant in most cases),
 but it also might be faster than the default one. As a rule SSD models in [Open Model Zoo](https://github.com/opencv/open_model_zoo/) are exported using this option.
