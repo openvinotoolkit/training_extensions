@@ -1,10 +1,10 @@
-description: Parking Vehicle Detection based on ResNet18+fpn+CascadeRCNN.
-name: parking-vehicle-detection-0001
+description: Vehicle Detection based on ResNet18+fpn+CascadeRCNN.
+name: vehicle-detection-0205
 files:
 - name: snapshot.pth
-  sha256: tbd
-  size: tbd
-  source: tbd
+  sha256: 5a40d09d847caabf1d2d48311e8e4caaec8794bf19a84235996236ff4ce10a83
+  size: 193612846
+  source: https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/vehicle-detection-0205.pth
 metrics:
 - display_name: Size
   key: size
