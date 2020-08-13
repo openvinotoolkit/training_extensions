@@ -214,7 +214,7 @@ test_pipeline = [
 data = dict(
     samples_per_gpu=2,
     workers_per_gpu=2,
-        train=dict(
+    train=dict(
         type='RepeatDataset',
         times=5,
         dataset=dict(
@@ -224,8 +224,7 @@ data = dict(
             img_prefix='data/train2017',
             min_size=20,
             pipeline=train_pipeline
-        )
-    ),
+        )),
     val=dict(
         type=dataset_type,
         classes=('vehicle',),
