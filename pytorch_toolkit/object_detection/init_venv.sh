@@ -38,6 +38,15 @@ fi
 
 cd ../../external/mmdetection/
 python setup.py develop
+
+# isntall ote (api)
+cd ../../pytorch_toolkit
+pip install -e .
+
+# install oteod
+cd object_detection
+pip install -e .
+
 deactivate
 
 echo

@@ -12,8 +12,13 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from oteod.api import test_args_parser
-from oteod.evaluationc.common import evaluate
+import os
 
-args = test_args_parser().parse_args()
-evaluate(args.config, args.snapshot, args.out, args.update_config, args.show_dir)
+from ote import MODEL_TEMPLATE_FILENAME
+from ote.api import train_args_parser
+from oteod.args_conversion import convert_ote_to_oteod_train_args
+from oteod.training.common import train
+
+ote_args = train_args_parser(MODEL_TEMPLATE_FILENAME).parse_args()
+oteod_args = convert_ote_to_oteod_train_args(os.path.dirname(__file__), ote_args)
+train(**oteod_args)

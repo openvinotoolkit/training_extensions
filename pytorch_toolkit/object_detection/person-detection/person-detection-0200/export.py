@@ -11,9 +11,3 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions
 # and limitations under the License.
-
-from oteod.api import test_args_parser
-from oteod.evaluationc.common import evaluate
-
-args = test_args_parser().parse_args()
-evaluate(args.config, args.snapshot, args.out, args.update_config, args.show_dir)

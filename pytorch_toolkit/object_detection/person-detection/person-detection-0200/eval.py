@@ -12,8 +12,12 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from oteod.api import test_args_parser
-from oteod.evaluationc.common import evaluate
+import os
 
-args = test_args_parser().parse_args()
-evaluate(args.config, args.snapshot, args.out, args.update_config, args.show_dir)
+from ote.api import test_args_parser
+from oteod.args_conversion import convert_ote_to_oteod_test_args
+from oteod.evaluation.common import evaluate
+
+ote_args = test_args_parser('template.yml').parse_args()
+oteod_args = convert_ote_to_oteod_test_args(os.path.dirname(__file__), ote_args)
+evaluate(**oteod_args)
