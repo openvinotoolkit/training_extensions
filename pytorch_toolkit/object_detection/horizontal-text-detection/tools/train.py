@@ -12,8 +12,9 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from oteod.api import test_args_parser
-from oteod.evaluation.horizontal_text_detection import evaluate
 
-args = test_args_parser().parse_args()
-evaluate(args.config, args.snapshot, args.out, args.update_config, args.show_dir)
+from oteod.api import train_args_parser
+from oteod.misc import train
+
+args = train_args_parser().parse_args()
+train(args.config, args.gpu_num, args.out, args.update_config)
