@@ -12,12 +12,9 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import os
 
-from ote.api import test_args_parser
-from oteod.args_conversion import convert_ote_to_oteod_test_args
-from oteod.evaluation.common import evaluate
+from oteod.api import train_args_parser
+from oteod.misc import train
 
-ote_args = vars(test_args_parser('template.yml').parse_args())
-oteod_args = convert_ote_to_oteod_test_args(os.path.dirname(__file__), ote_args)
-evaluate(**oteod_args)
+args = train_args_parser().parse_args()
+train(args.config, args.gpu_num, args.out, args.update_config)

@@ -13,7 +13,7 @@
 # and limitations under the License.
 
 from oteod.api import test_args_parser
-from oteod.evaluationc.common import evaluate
+from oteod.evaluation.common import evaluate
 
 args = test_args_parser().parse_args()
 evaluate(args.config, args.snapshot, args.out, args.update_config, args.show_dir)

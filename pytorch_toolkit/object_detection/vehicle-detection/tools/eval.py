@@ -12,47 +12,8 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-# pylint: disable=C0411,C0413
+from oteod.api import test_args_parser
+from oteod.evaluation.common import evaluate
 
-import argparse
-import logging
-import os
-import sys
-sys.path.append(f'{os.path.abspath(os.path.dirname(__file__))}/../../')
-
-from tools.misc import evaluate, coco_ap_eval
-
-
-def parse_args():
-    """ Parses input args. """
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument('config',
-                        help='A path to model training configuration file (.py).')
-    parser.add_argument('snapshot',
-                        help='A path to pre-trained snapshot (.pth).')
-    parser.add_argument('out',
-                        help='A path to output file where models metrics will be saved (.yml).')
-    parser.add_argument('--update_config',
-                        help='Update configuration file by parameters specified here.'
-                             'Use quotes if you are going to change several params.',
-                        default='')
-    parser.add_argument('--show-dir', '--show_dir', dest='show_dir',
-                        help='A directory where images with drawn detected objects will be saved.')
-
-    return parser.parse_args()
-
-
-def main(config, snapshot, out, update_config, show_dir):
-    """ Main function. """
-    logging.basicConfig(level=logging.INFO)
-
-    metrics_functions = (
-        (coco_ap_eval, (update_config, show_dir)),
-    )
-    evaluate(config, snapshot, out, update_config, metrics_functions)
-
-
-if __name__ == '__main__':
-    args = parse_args()
-    main(args.config, args.snapshot, args.out, args.update_config, args.show_dir)
+args = test_args_parser().parse_args()
+evaluate(args.config, args.snapshot, args.out, args.update_config, args.show_dir)
