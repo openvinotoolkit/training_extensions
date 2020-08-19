@@ -2,7 +2,7 @@
 
 Model Templates defines training procedure and its interface for a given neural network topology.
 
-## Directory structure
+## Directory structure (openvino_training_extensions/pytorch_toolkit)
 
 Each model template is related to 4 scripts: `train.py`, `eval.py`, `export.py` and `quantize.py`.
 
