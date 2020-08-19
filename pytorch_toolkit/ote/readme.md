@@ -9,7 +9,6 @@
 │   │   │   ├── config.py
 │   │   │   └── template.yml
 │   │   ├── problem.yml
-│   │   ├── readme.md
 │   │   ├── schema.json
 │   │   └── tools
 │   │       ├── eval.py
@@ -19,7 +18,6 @@
 │   │   │   ├── config.py
 │   │   │   └── template.yml
 │   │   ├── problem.yml
-│   │   ├── readme.md
 │   │   ├── schema.json
 │   │   └── tools
 │   │       ├── eval.py
