@@ -24,9 +24,13 @@ def collect_ap(path):
 
 def coco_ap_eval(config_path, work_dir, snapshot, outputs, update_config, show_dir=''):
     """ Computes COCO AP. """
+    assert isinstance(update_config, dict)
+
     try:
         res_pkl = os.path.join(work_dir, 'res.pkl')
         with open(os.path.join(work_dir, 'test_py_stdout'), 'w') as test_py_stdout:
+
+            update_config = ' '.join([f'{k}={v}' for k, v in update_config.items()])
             update_config = f' --update_config {update_config}' if update_config else ''
             show_dir = f' --show-dir {show_dir}' if show_dir else ''
             subprocess.run(
@@ -48,6 +52,8 @@ def coco_ap_eval(config_path, work_dir, snapshot, outputs, update_config, show_d
 
 def evaluate_internal(config_path, snapshot, out, update_config, metrics_functions):
     """ Main evaluation procedure. """
+
+    assert isinstance(update_config, dict)
 
     cfg = Config.fromfile(config_path)
 
@@ -86,6 +92,8 @@ def evaluate_internal(config_path, snapshot, out, update_config, metrics_functio
 def evaluate(config, snapshot, out, update_config, show_dir):
     """ Main function. """
     logging.basicConfig(level=logging.INFO)
+
+    assert isinstance(update_config, dict)
 
     metrics_functions = (
         (coco_ap_eval, (update_config, show_dir)),

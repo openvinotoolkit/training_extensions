@@ -67,6 +67,7 @@ def get_complexity_and_size(cfg, config_path, work_dir, outputs, update_config):
     image_shape = " ".join([str(x) for x in image_shape])
 
     res_complexity = os.path.join(work_dir, "complexity.json")
+    update_config = ' '.join([f'{k}={v}' for k, v in update_config.items()])
     update_config = f' --update_config {update_config}' if update_config else ''
     subprocess.run(
         f'python {MMDETECTION_TOOLS}/get_flops.py'
@@ -114,8 +115,7 @@ def run_with_termination(cmd):
 
 
 def get_work_dir(cfg, update_config):
-    overridden_work_dir = [p.split('=') for p in update_config.strip().split(' ') if
-                           p.startswith('work_dir=')]
+    overridden_work_dir = update_config.get('work_dir', None)
     return overridden_work_dir[0][1] if overridden_work_dir else cfg.work_dir
 
 

@@ -12,9 +12,9 @@ def train_args_parser(template_path):
                             help='Comma-separated paths to training annotation files.')
         parser.add_argument('--train_img_roots', required=True,
                             help='Comma-separated paths to training images folders.')
-        parser.add_argument('--val_ann_files', required=False,
+        parser.add_argument('--val_ann_files', required=True,
                             help='Comma-separated paths to validation annotation files.')
-        parser.add_argument('--val_img_roots', required=False,
+        parser.add_argument('--val_img_roots', required=True,
                             help='Comma-separated paths to validation images folders.')
         parser.add_argument('--resume_from', default='',
                             help='Resume training from previously saved checkpoint')
@@ -23,14 +23,19 @@ def train_args_parser(template_path):
         parser.add_argument('--save_checkpoints_to', default='/tmp/checkpoints',
                             help='Location where checkpoints will be stored')
         parser.add_argument('--epochs', type=int,
-                            default=config['epochs'],
+                            default=config['training_parameters']['epochs'],
                             help='Number of epochs during training')
         parser.add_argument('--batch_size', type=int,
-                            default=config['batch_size'],
+                            default=config['training_parameters']['batch_size'],
                             help='Size of a single batch during training per GPU.')
-        parser.add_argument('--training_gpu_num', type=int,
-                            default=config['training_gpu_num'],
+        parser.add_argument('--gpu_num', type=int,
+                            default=config['training_parameters']['gpu_num'],
                             help='Number of GPUs that will be used in training, 0 is for CPU mode.')
+        parser.add_argument('--base_learning_rate', type=float,
+                            default=config['training_parameters']['base_learning_rate'],
+                            help='Starting value of learning rate that might be changed during '
+                                 'training according to learning rate schedule that is usually '
+                                 'defined in detailed training configuration.')
         parser.add_argument('--config', default=config['config'],
                             help='Location of a file describing detailed model configuration.')
 

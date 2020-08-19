@@ -13,16 +13,17 @@ def convert_ote_to_oteod_train_args(template_folder, args):
         'load_weights': 'load_from',
         'save_checkpoints_to': 'work_dir',
         'batch_size': 'data.samples_per_gpu',
+        'base_learning_rate': 'optimizer.lr',
         'epochs': 'total_epochs',
     }
 
-    update_config = [f'{v}={args[k]}' for k, v in update_config_map.items()]
+    update_config = {v: args[k] for k, v in update_config_map.items()}
 
     oteod_args = {
         'config': os.path.join(template_folder, args['config']),
-        'gpu_num': args['training_gpu_num'],
+        'gpu_num': args['gpu_num'],
         'out': os.path.join(args['save_checkpoints_to'], MODEL_TEMPLATE_FILENAME),
-        'update_config': ' '.join(update_config)
+        'update_config': update_config,
     }
 
     return oteod_args
@@ -34,14 +35,14 @@ def convert_ote_to_oteod_test_args(template_folder, args):
         'test_img_roots': 'data.test.img_prefix',
     }
 
-    update_config = [f'{v}={args[k]}' for k, v in update_config_map.items()]
+    update_config = {v: args[k] for k, v in update_config_map.items()}
 
     oteod_args = {
         'config': os.path.join(template_folder, args['config']),
         'snapshot': args['load_weights'],
         'out': args['save_metrics_to'],
-        'update_config': ' '.join(update_config),
-        'show_dir': args['save_output_images_to']
+        'update_config': update_config,
+        'show_dir': args['save_output_images_to'],
     }
 
     return oteod_args

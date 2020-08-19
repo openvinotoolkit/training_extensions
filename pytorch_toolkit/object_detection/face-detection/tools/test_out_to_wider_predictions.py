@@ -16,12 +16,9 @@
 that can be passed to official WiderFace evaluation procedure."""
 
 import argparse
-import os
-from tqdm import tqdm
 
-import mmcv
 from mmcv import DictAction
-from mmdet.datasets import build_dataset
+from oteod.evaluation.face_detection.wider_face.convert_prediction import convert_to_wider
 
 
 def parse_args():
@@ -35,45 +32,10 @@ def parse_args():
     parser.add_argument('input', help='output result file from test.py')
     parser.add_argument('out_folder', help='folder where to store WiderFace '
                                            'evaluation-friendly output')
-    parser.add_argument(
-        '--update_config', nargs='+', action=DictAction,
-        help='Update configuration file by parameters specified here.')
+    parser.add_argument('--update_config', nargs='+', action=DictAction,
+                        help='Update configuration file by parameters specified here.')
     args = parser.parse_args()
     return args
 
 
-def main():
-    """ Main function. """
-
-    args = parse_args()
-
-    if args.input is not None and not args.input.endswith(('.pkl', '.pickle')):
-        raise ValueError('The input file must be a pkl file.')
-
-    cfg = mmcv.Config.fromfile(args.config)
-    if args.update_config:
-        cfg.merge_from_dict(args.update_config)
-    dataset = build_dataset(cfg.data.test)
-
-    results = mmcv.load(args.input)
-
-    wider_friendly_results = []
-    for i, sample in enumerate(tqdm(dataset)):
-        filename = sample['img_metas'][0].data['filename']
-        folder, image_name = filename.split('/')[-2:]
-        wider_friendly_results.append({'folder': folder, 'name': image_name[:-4],
-                                       'boxes': results[i][0]})
-
-    for result in wider_friendly_results:
-        folder = os.path.join(args.out_folder, result['folder'])
-        os.makedirs(folder, exist_ok=True)
-        with open(os.path.join(folder, result['name'] + '.txt'), 'w') as write_file:
-            write_file.write(result['name'] + '\n')
-            write_file.write(str(len(result['boxes'])) + '\n')
-            for box in result['boxes']:
-                box = box[0], box[1], box[2] - box[0], box[3] - box[1], box[4]
-                write_file.write(' '.join([str(x) for x in box]) + '\n')
-
-
-if __name__ == '__main__':
-    main()
+convert_to_wider(**vars(parse_args()))
