@@ -12,9 +12,13 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+import os
 
-from oteod.api import train_args_parser
-from oteod.misc import train
+from ote import MODEL_TEMPLATE_FILENAME
+from ote.api import train_args_parser
+from oteod.args_conversion import convert_ote_to_oteod_train_args
+from oteod.training.common import train
 
-args = train_args_parser().parse_args()
-train(args.config, args.gpu_num, args.out, args.update_config)
+ote_args = vars(train_args_parser(MODEL_TEMPLATE_FILENAME).parse_args())
+oteod_args = convert_ote_to_oteod_train_args(os.path.dirname(MODEL_TEMPLATE_FILENAME), ote_args)
+train(**oteod_args)
