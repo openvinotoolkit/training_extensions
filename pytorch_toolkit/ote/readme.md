@@ -122,3 +122,29 @@ optional arguments:
   --config CONFIG       Location of a file describing detailed model
                         configuration.
 ```
+
+## eval.py
+```bash
+python ../tools/eval.py -h
+usage: eval.py [-h] --test_ann_files TEST_ANN_FILES --test_img_roots
+               TEST_IMG_ROOTS --load_weights LOAD_WEIGHTS --save_metrics_to
+               SAVE_METRICS_TO [--config CONFIG]
+               [--save_output_images_to SAVE_OUTPUT_IMAGES_TO]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --test_ann_files TEST_ANN_FILES
+                        Comma-separated paths to test annotation files.
+  --test_img_roots TEST_IMG_ROOTS
+                        Comma-separated paths to test images folders.
+  --load_weights LOAD_WEIGHTS
+                        Load only weights from previously saved checkpoint
+  --save_metrics_to SAVE_METRICS_TO
+                        Location where evaluated metrics values will be stored
+                        (yaml file).
+  --config CONFIG       Location of a file describing detailed model
+                        configuration.
+  --save_output_images_to SAVE_OUTPUT_IMAGES_TO
+                        Location where output images (with displayed result of
+                        model work) will be stored.
+```
