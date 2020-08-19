@@ -1,4 +1,11 @@
-## pytorch_toolkit tree
+# Model Templates
+
+Model Templates defines training procedure and its interface for a given neural network topology.
+
+## Directory structure
+
+Each model template is related to 4 scripts: `train.py`, `eval.py`, `export.py` and `quantize.py`.
+
 ```bash
 ├── object_detection
 │   ├── face-detection
