@@ -1,9 +1,9 @@
-name: person-detection-0200
-description: Person Detection based on MobileNetV2 (SSD).
+name: vehicle-detection-0200
+description: Vehicle Detection based on MobileNetV2 (SSD).
 dependencies:
-- sha256: 14819f129b97750dd8c9679c8fc5896eb477584d9eb0bb537aabeb3f1c311030
-  size: 14905197
-  source: https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/person-detection-0200-1.pth
+- sha256: d66bbe25f8d8811a88a2c405310ea4cda968f4f2f7991a5bddcfbe7d40293984
+  size: 14905214
+  source: https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/vehicle-detection-0200-1.pth
   destination: snapshot.pth
 - source: ../tools/train.py
   destination: train.py
@@ -14,8 +14,8 @@ dependencies:
 - source: ../../tools/quantize.py
   destination: quantize.py
 training_parameters:
-  gpu_num: 2
-  batch_size: 122
+  gpu_num: 4
+  batch_size: 185
   base_learning_rate: 0.05
   epochs: 20
 metrics:
@@ -30,5 +30,5 @@ metrics:
 - display_name: AP @ [IoU=0.50:0.95]
   key: ap
   unit: '%'
-  value: 24.4
+  value: 25.4
 config: config.py

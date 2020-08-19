@@ -1,9 +1,9 @@
-name: person-detection-0200
-description: Person Detection based on MobileNetV2 (SSD).
+name: mobilenet_v2-2s_ssd-256x256
+description: Custom Object Detection based on MobileNetV2 (SSD).
 dependencies:
-- sha256: 14819f129b97750dd8c9679c8fc5896eb477584d9eb0bb537aabeb3f1c311030
-  size: 14905197
-  source: https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/person-detection-0200-1.pth
+- sha256: 4a7b491b5fd45ee6ee760e910a8f9a38768be79ccdeb85a1fb3ae4e4c3dd677f
+  size: 16164483
+  source: https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/mobilenet_v2-2s_ssd-256x256.pth
   destination: snapshot.pth
 - source: ../tools/train.py
   destination: train.py
@@ -14,21 +14,21 @@ dependencies:
 - source: ../../tools/quantize.py
   destination: quantize.py
 training_parameters:
-  gpu_num: 2
-  batch_size: 122
+  gpu_num: 3
+  batch_size: 64
   base_learning_rate: 0.05
-  epochs: 20
+  epochs: 0
 metrics:
 - display_name: Size
   key: size
   unit: Mp
-  value: 1.83
+  value: 1.99
 - display_name: Complexity
   key: complexity
   unit: GFLOPs
-  value: 0.82
+  value: 0.86
 - display_name: AP @ [IoU=0.50:0.95]
   key: ap
   unit: '%'
-  value: 24.4
+  value: 11.3
 config: config.py

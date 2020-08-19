@@ -1,0 +1,50 @@
+name: face-detection-0204
+description: Face Detection based on MobileNetV2 (SSD).
+dependencies:
+- sha256: 7a227579f8ebc9017a742ed66b3a9bdc3582090a1c06c9ccbf84722b4a2ffad2
+  size: 14904360
+  source: https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/face-detection-0204.pth
+  destination: snapshot.pth
+- source: ../tools/train.py
+  destination: train.py
+- source: ../tools/eval.py
+  destination: eval.py
+- source: ../../tools/export.py
+  destination: export.py
+- source: ../../tools/quantize.py
+  destination: quantize.py
+training_parameters:
+  gpu_num: 4
+  batch_size: 32
+  base_learning_rate: 0.05
+  epochs: 70
+metrics:
+- display_name: AP @ [IoU=0.50:0.95]
+  key: ap
+  unit: '%'
+  value: 21.4
+- display_name: AP for faces > 64x64
+  key: ap_64x64
+  unit: '%'
+  value: 92.888
+- display_name: WiderFace Easy
+  key: widerface_e
+  unit: '%'
+  value: 90.453
+- display_name: WiderFace Medium
+  key: widerface_m
+  unit: '%'
+  value: 85.448
+- display_name: WiderFace Hard
+  key: widerface_h
+  unit: '%'
+  value: 52.091
+- display_name: Size
+  key: size
+  unit: Mp
+  value: 1.83
+- display_name: Complexity
+  key: complexity
+  unit: GFLOPs
+  value: 2.52
+config: config.py
