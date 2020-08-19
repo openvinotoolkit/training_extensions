@@ -1,47 +1,41 @@
-## pytorch_toolkit/object_detection tree
+## pytorch_toolkit tree
 ```bash
-├── face-detection
-│   ├── face-detection-0200
-│   │   ├── config.py
-│   │   └── template.yml
-│   ├── face-detection-0202
-│   │   ├── config.py
-│   │   └── template.yml
-│   ├── problem.yml
-│   ├── readme.md
-│   ├── schema.json
-│   └── tools
-│       ├── eval.py
-│       └── train.py
-├── horizontal-text-detection
-│   ├── horizontal-text-detection-0001
-│   │   ├── config.py
-│   │   └── template.yml
-│   ├── problem.yml
-│   ├── readme.md
-│   ├── schema.json
-│   └── tools
-│       ├── eval.py
-│       └── train.py
-├── person-detection
-│   ├── person-detection-0200
-│   │   ├── config.py
-│   │   └── template.yml
-│   ├── person-detection-0201
-│   │   ├── config.py
-│   │   └── template.yml
-│   ├── person-detection-0202
-│   │   ├── config.py
-│   │   └── template.yml
-│   ├── problem.yml
-│   ├── readme.md
-│   ├── schema.json
-│   └── tools
-│       ├── eval.py
-│       └── train.py
-├── oteod
-├── requirements.txt
-├── setup.py
+├── object_detection
+│   ├── face-detection
+│   │   ├── face-detection-0200
+│   │   │   ├── config.py
+│   │   │   └── template.yml
+│   │   ├── face-detection-0202
+│   │   │   ├── config.py
+│   │   │   └── template.yml
+│   │   ├── problem.yml
+│   │   ├── readme.md
+│   │   ├── schema.json
+│   │   └── tools
+│   │       ├── eval.py
+│   │       └── train.py
+│   ├── horizontal-text-detection
+│   │   ├── horizontal-text-detection-0001
+│   │   │   ├── config.py
+│   │   │   └── template.yml
+│   │   ├── problem.yml
+│   │   ├── readme.md
+│   │   ├── schema.json
+│   │   └── tools
+│   │       ├── eval.py
+│   │       └── train.py
+│   ├── ...
+│   ├── ...
+│   ├── init_venv.sh
+│   ├── oteod - problem-related package
+│   ├── requirements.txt
+│   ├── setup.py
+├── ...
+├── ...
+├── ote - package with interface defined for all problems
+│   ├── api.py
+│   └── __init__.py
+└── setup.py
 ```
 
 ## template.yml
@@ -148,3 +142,9 @@ optional arguments:
                         Location where output images (with displayed result of
                         model work) will be stored.
 ```
+
+## export.py
+TBD
+
+## quantize.py
+TBD
