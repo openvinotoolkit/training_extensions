@@ -47,3 +47,7 @@ class FaceDetection0205TestCase(face_detection_test_case('face-detection-0205', 
 
 class FaceDetection0206TestCase(face_detection_test_case('face-detection-0206', False)):
     """ Test case for face-detection-0206 model export. """
+
+
+class FaceDetection0207TestCase(face_detection_test_case('face-detection-0207', False)):
+    """ Test case for face-detection-0207 model export. """
