@@ -18,6 +18,13 @@ training_parameters:
   batch_size: 122
   base_learning_rate: 0.05
   epochs: 20
+export:
+  onnx:
+    enabled: true
+  openvino:
+    enabled: true
+    input_format: BGR
+quantization: TBD
 metrics:
 - display_name: Size
   key: size
