@@ -159,7 +159,43 @@ optional arguments:
 ```
 
 ## export.py
-TBD
+```bash
+python ../../tools/export.py -h
+usage: export.py [-h] --load_weights LOAD_WEIGHTS [--config CONFIG]
+                 --save_exported_model_to SAVE_EXPORTED_MODEL_TO
+                 {onnx,openvino} ...
 
+optional arguments:
+  -h, --help            show this help message and exit
+  --load_weights LOAD_WEIGHTS
+                        Load only weights from previously saved checkpoint
+  --config CONFIG       Location of a file describing detailed model
+                        configuration.
+  --save_exported_model_to SAVE_EXPORTED_MODEL_TO
+                        Location where exported model will be stored.
+
+target:
+  {onnx,openvino}       target model format
+    onnx                export to ONNX
+    openvino            export to OpenVINO
+```
+```bash
+python ../../tools/export.py openvino -h
+usage: export.py openvino [-h] [--alt_ssd_export] [--input_format {BGR,RGB}]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --alt_ssd_export      use alternative ONNX representation of SSD net
+  --input_format {BGR,RGB}
+                        Input image format for exported model.
+```
+```bash
+python ../../tools/export.py onnx -h
+usage: export.py onnx [-h]
+
+optional arguments:
+  -h, --help  show this help message and exit
+
+```
 ## quantize.py
 TBD

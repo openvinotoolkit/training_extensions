@@ -67,13 +67,20 @@ def export_args_parser(template_path):
     parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter)
     with open(template_path, 'r') as model_definition:
         config = yaml.safe_load(model_definition)
+        parser.add_argument('--load_weights', required=True,
+                            help='Load only weights from previously saved checkpoint')
         parser.add_argument('--config', default=config['config'],
                             help='Location of a file describing detailed model configuration.')
-        parser.add_argument('--load_weights', default='',
-                            help='Load only weights from previously saved checkpoint')
-        parser.add_argument('--export_format', choices=['openvino', 'onnx'], default='openvino',
-                            help='Export format.')
         parser.add_argument('--save_exported_model_to', required='True',
                             help='Location where exported model will be stored.')
+        subparsers = parser.add_subparsers(title='target', dest='target',
+                                           help='target model format')
+        subparsers.required = True
+        subparsers.add_parser('onnx', help='export to ONNX')
+        parser_openvino = subparsers.add_parser('openvino', help='export to OpenVINO')
+        parser_openvino.add_argument('--alt_ssd_export', action='store_true',
+                                     help='use alternative ONNX representation of SSD net')
+        parser_openvino.add_argument('--input_format', choices=['BGR', 'RGB'], default='BGR',
+                                     help='Input image format for exported model.')
 
     return parser
