@@ -14,8 +14,10 @@
 
 import json
 import os
+import tempfile
 import unittest
 
+import yaml
 from common.utils import replace_text_in_file, collect_ap, download_if_not_yet, run_through_shell
 
 
@@ -87,3 +89,66 @@ class PersonVehicleBikeDetection2001TestCase(test_case('person-vehicle-bike-dete
 class PersonVehicleBikeDetection2002TestCase(test_case('person-vehicle-bike-detection-2002',
                                                        'vehicle-person-bike-detection-2002-1.pth')):
     """ Test case for person-vehicle-bike-detection-2002 model. """
+
+
+class PersonVehicleBikeDetection2000TestCaseOteApi(unittest.TestCase):
+
+    @staticmethod
+    def get_dependencies(template_file):
+        output = {}
+        with open(template_file) as read_file:
+            content = yaml.load(read_file)
+            for dependency in content['dependencies']:
+                output[dependency['destination'].split('.')[0]] = dependency['source']
+        return output
+
+    def test_ok(self):
+        self.model_name = 'person-vehicle-bike-detection-2000'
+
+        self.template_file = f'./person-vehicle-bike-detection/{self.model_name}/template.yml'
+        self.ann_file = '../../../../data/airport/annotation_example_train.json'
+        self.img_root = ' ../../../../data/airport/train'
+        self.ote_url = 'https://download.01.org/opencv/openvino_training_extensions'
+        self.work_dir = tempfile.mkdtemp()
+        self.dependencies = self.get_dependencies(self.template_file)
+
+        download_if_not_yet(self.work_dir, self.dependencies['snapshot'])
+
+        run_through_shell(
+            f'cd {os.path.dirname(self.template_file)};'
+            f'python {self.dependencies["eval"]}'
+            f' --test_ann_files {self.ann_file}'
+            f' --test_img_roots {self.img_root}'
+            f' --save_metrics_to {os.path.join(self.work_dir, "metrics.yaml")}'
+            f' --load_weights {os.path.join(self.work_dir, os.path.basename(self.dependencies["snapshot"]))}')
+
+        with open(os.path.join(self.work_dir, "metrics.yaml")) as read_file:
+            content = yaml.load(read_file)
+
+        ap0 = [metrics['value'] for metrics in content['metrics'] if metrics['key'] == 'ap'][0]
+
+        run_through_shell(
+            f'cd {os.path.dirname(self.template_file)};'
+            f'python {self.dependencies["train"]}'
+            f' --train_ann_files {self.ann_file}'
+            f' --train_img_roots {self.img_root}'
+            f' --val_ann_files {self.ann_file}'
+            f' --val_img_roots {self.img_root}'
+            f' --resume_from {os.path.join(self.work_dir, os.path.basename(self.dependencies["snapshot"]))}'
+            f' --save_checkpoints_to {self.work_dir}'
+            f' --gpu_num 1'
+            f' --epochs 25')
+
+        run_through_shell(
+            f'cd {os.path.dirname(self.template_file)};'
+            f'python {self.dependencies["eval"]}'
+            f' --test_ann_files {self.ann_file}'
+            f' --test_img_roots {self.img_root}'
+            f' --save_metrics_to {os.path.join(self.work_dir, "metrics.yaml")}'
+            f' --load_weights {os.path.join(self.work_dir, "latest.pth")}')
+
+        with open(os.path.join(self.work_dir, "metrics.yaml")) as read_file:
+            content = yaml.load(read_file)
+
+        ap = [metrics['value'] for metrics in content['metrics'] if metrics['key'] == 'ap'][0]
+        assert ap > ap0 * 0.9
