@@ -4,7 +4,7 @@ import subprocess
 
 from oteod import MMDETECTION_TOOLS
 
-from .common import collect_ap, evaluate_internal
+from ..common import collect_ap, evaluate_internal
 
 
 def collect_f1(path):
@@ -28,6 +28,7 @@ def coco_eval(config_path, work_dir, snapshot, outputs, update_config, show_dir)
 
     res_pkl = os.path.join(work_dir, 'res.pkl')
     with open(os.path.join(work_dir, 'test_py_stdout'), 'w') as test_py_stdout:
+        update_config = ' '.join([f'{k}={v}' for k, v in update_config.items()])
         update_config = f' --update_config {update_config}' if update_config else ''
         show_dir = f' --show-dir {show_dir}' if show_dir else ''
         subprocess.run(
