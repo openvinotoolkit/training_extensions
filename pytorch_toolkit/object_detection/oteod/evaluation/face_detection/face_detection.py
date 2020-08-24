@@ -1,3 +1,5 @@
+# pylint: disable=R0913
+
 import json
 import logging
 import os
@@ -8,7 +10,7 @@ import tempfile
 from oteod import MMDETECTION_TOOLS
 from oteod.evaluation.common import coco_ap_eval, evaluate_internal
 
-from .wider_face.conver_annotation import convert_to_coco
+from .wider_face.convert_annotation import convert_to_coco
 from .wider_face.convert_predictions import convert_to_wider
 from .wider_face.wider_face_eval import wider_face_evaluation
 from .custom_voc_ap_eval import custom_voc_ap_evaluation
@@ -73,7 +75,7 @@ def compute_wider_metrics(config_path, work_dir, snapshot, outputs, wider_dir):
             stdout=test_py_stdout, check=True)
 
     wider_face_predictions = tempfile.mkdtemp()
-    update_config =  {
+    update_config = {
         'data.test.ann_file': wider_coco_annotation,
         'data.test.img_prefix':wider_dir
     }

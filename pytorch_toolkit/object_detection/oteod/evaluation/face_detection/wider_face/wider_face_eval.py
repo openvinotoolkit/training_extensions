@@ -8,13 +8,14 @@ copyright@wondervictor
 
 # pylint: disable=C0301,W0622,R0914,C0103,I1101,C0411,C0200
 
+import json
 import os
-import tqdm
 import pickle
 
 import numpy as np
-import json
+import tqdm
 from scipy.io import loadmat
+
 from .box_overlaps import bbox_overlaps
 
 

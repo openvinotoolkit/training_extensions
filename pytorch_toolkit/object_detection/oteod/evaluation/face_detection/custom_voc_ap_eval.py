@@ -1,13 +1,14 @@
+# pylint: disable=R0912,R0913,R0914,R0915
+
+import json
 from bisect import bisect
 from collections import namedtuple
-import json
-import numpy as np
-from tqdm import tqdm
 
 import cv2
 import mmcv
-
+import numpy as np
 from mmdet import datasets
+from tqdm import tqdm
 
 
 def replace_text_in_file(path, replace_what, replace_by):

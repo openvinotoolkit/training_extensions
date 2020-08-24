@@ -3,7 +3,6 @@
 import json
 import os
 
-import argparse
 import imagesize
 from tqdm import tqdm
 
@@ -81,8 +80,6 @@ def parse_wider_gt_with_landmarks(ann_file):
     return bboxes, landmarks
 
 
-
-
 def convert_to_coco(ann_file, data_dir, out_file, with_landmarks):
     """ Converts wider annotation to COCO format. """
 
@@ -130,4 +127,3 @@ def convert_to_coco(ann_file, data_dir, out_file, with_landmarks):
 
     with open(out_file, 'w') as outfile:
         outfile.write(json.dumps(ann_dict))
-

@@ -1,11 +1,11 @@
 import os
-from tqdm import tqdm
 
 import mmcv
 from mmdet.datasets import build_dataset
+from tqdm import tqdm
 
 
-def convert_to_wider(config, input, out_folder, update_config ):
+def convert_to_wider(config, input, out_folder, update_config):
     """ Main function. """
 
     if input is not None and not input.endswith(('.pkl', '.pickle')):

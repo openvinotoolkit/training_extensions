@@ -1,3 +1,5 @@
+# pylint: disable=R0913,W0702
+
 import logging
 import os
 import subprocess
