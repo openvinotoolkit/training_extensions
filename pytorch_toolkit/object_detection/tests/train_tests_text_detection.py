@@ -14,10 +14,10 @@
 
 import json
 import os
-import unittest
-import yaml
 import tempfile
+import unittest
 
+import yaml
 from common.utils import replace_text_in_file, collect_ap, download_if_not_yet, run_through_shell
 
 
