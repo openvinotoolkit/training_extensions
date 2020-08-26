@@ -25,7 +25,7 @@ def parse_args(template_filename):
     """ Parses input args. """
 
     parser = argparse.ArgumentParser(parents=[test_args_parser(template_filename)], add_help=False)
-    parser.add_argument('--wider_dir',
+    parser.add_argument('--wider-dir',
                         help='Location of WiderFace dataset.',
                         default='data/wider_face')
     return parser.parse_args()

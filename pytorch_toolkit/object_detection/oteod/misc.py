@@ -12,6 +12,7 @@ from threading import Thread
 
 from oteod import MMDETECTION_TOOLS
 
+
 class NonBlockingStreamReader:
 
     def __init__(self, stream):
@@ -117,5 +118,3 @@ def run_with_termination(cmd):
 def get_work_dir(cfg, update_config):
     overridden_work_dir = update_config.get('work_dir', None)
     return overridden_work_dir[0][1] if overridden_work_dir else cfg.work_dir
-
-

@@ -7,8 +7,9 @@ from collections import namedtuple
 import cv2
 import mmcv
 import numpy as np
-from mmdet import datasets
 from tqdm import tqdm
+
+from mmdet import datasets
 
 
 def replace_text_in_file(path, replace_what, replace_by):

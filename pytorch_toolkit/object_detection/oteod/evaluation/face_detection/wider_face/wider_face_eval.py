@@ -13,10 +13,10 @@ import os
 import pickle
 
 import numpy as np
-import tqdm
 from scipy.io import loadmat
+from tqdm import tqdm
 
-from .box_overlaps import bbox_overlaps
+from oteod.evaluation.face_detection.wider_face.box_overlaps import bbox_overlaps
 
 
 def get_gt_boxes(gt_dir):
@@ -94,7 +94,7 @@ def read_pred_file(filepath):
 def get_preds(pred_dir):
     events = os.listdir(pred_dir)
     boxes = dict()
-    pbar = tqdm.tqdm(events)
+    pbar = tqdm(events)
 
     for event in pbar:
         pbar.set_description('Reading Predictions ')
@@ -228,7 +228,7 @@ def wider_face_evaluation(pred, gt_path, iou_thresh=0.5, out=''):
         count_face = 0
         pr_curve = np.zeros((thresh_num, 2)).astype('float')
         # [hard, medium, easy]
-        pbar = tqdm.tqdm(range(event_num))
+        pbar = tqdm(range(event_num))
         for i in pbar:
             pbar.set_description('Processing {}'.format(settings[setting_id]))
             event_name = str(event_list[i][0][0])

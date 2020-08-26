@@ -1,8 +1,9 @@
 import os
 
 import mmcv
-from mmdet.datasets import build_dataset
 from tqdm import tqdm
+
+from mmdet.datasets import build_dataset
 
 
 def convert_to_wider(config, input, out_folder, update_config):

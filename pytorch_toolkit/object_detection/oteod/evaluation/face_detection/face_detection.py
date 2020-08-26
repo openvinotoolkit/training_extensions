@@ -9,11 +9,10 @@ import tempfile
 
 from oteod import MMDETECTION_TOOLS
 from oteod.evaluation.common import coco_ap_eval, evaluate_internal
-
-from .wider_face.convert_annotation import convert_to_coco
-from .wider_face.convert_predictions import convert_to_wider
-from .wider_face.wider_face_eval import wider_face_evaluation
-from .custom_voc_ap_eval import custom_voc_ap_evaluation
+from oteod.evaluation.face_detection.custom_voc_ap_eval import custom_voc_ap_evaluation
+from oteod.evaluation.face_detection.wider_face.convert_annotation import convert_to_coco
+from oteod.evaluation.face_detection.wider_face.convert_predictions import convert_to_wider
+from oteod.evaluation.face_detection.wider_face.wider_face_eval import wider_face_evaluation
 
 
 def compute_wider_metrics(config_path, work_dir, snapshot, outputs, wider_dir):
@@ -77,7 +76,7 @@ def compute_wider_metrics(config_path, work_dir, snapshot, outputs, wider_dir):
     wider_face_predictions = tempfile.mkdtemp()
     update_config = {
         'data.test.ann_file': wider_coco_annotation,
-        'data.test.img_prefix':wider_dir
+        'data.test.img_prefix': wider_dir
     }
     convert_to_wider(config_path, res_pkl, wider_face_predictions, update_config)
 
