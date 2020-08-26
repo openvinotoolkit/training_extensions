@@ -1,5 +1,5 @@
 name: face-detection-0204
-description: Face Detection based on MobileNetV2 (SSD).
+summary: Face Detection based on MobileNetV2 (SSD).
 dependencies:
 - sha256: 7a227579f8ebc9017a742ed66b3a9bdc3582090a1c06c9ccbf84722b4a2ffad2
   size: 14904360
@@ -13,8 +13,7 @@ dependencies:
   destination: export.py
 - source: ../../tools/quantize.py
   destination: quantize.py
-training_parameters:
-  gpu_num: 4
+hyper_parameters:
   batch_size: 32
   base_learning_rate: 0.05
   epochs: 70
@@ -54,4 +53,5 @@ metrics:
   key: complexity
   unit: GFLOPs
   value: 2.52
+gpu_num: 4
 config: config.py

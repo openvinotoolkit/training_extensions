@@ -1,5 +1,5 @@
 name: face-detection-0205
-description: Face Detection based on MobileNetV2 (FCOS).
+summary: Face Detection based on MobileNetV2 (FCOS).
 dependencies:
 - sha256: d5ab87ce04f3145a43eaddd2f87c59a85a07ec59f97a86c48d8bdcff9dd6c6b2
   size: 16414233
@@ -13,8 +13,7 @@ dependencies:
   destination: export.py
 - source: ../../tools/quantize.py
   destination: quantize.py
-training_parameters:
-  gpu_num: 4
+hyper_parameters:
   batch_size: 32
   base_learning_rate: 0.05
   epochs: 70
@@ -54,4 +53,5 @@ metrics:
   key: complexity
   unit: GFLOPs
   value: 2.94
+gpu_num: 4
 config: config.py

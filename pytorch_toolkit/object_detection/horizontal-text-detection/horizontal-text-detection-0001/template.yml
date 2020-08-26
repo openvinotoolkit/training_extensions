@@ -1,10 +1,10 @@
 name: horizontal-text-detection-0001
-description: Text Detection based on MobileNetV2 (FCOS).
+summary: Text Detection based on MobileNetV2 (FCOS).
 dependencies:
 - sha256: ac879a21e3558b5d516f04e76444e697553309873908e45a6fa67fc5dda397f9
   size: 15825821
   source: https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/horizontal-text-detection-0001.pth
-  destination: snapshot.pth
+  destination: horizontal-text-detection-0001.pth
 - source: ../tools/train.py
   destination: train.py
 - source: ../tools/eval.py
@@ -13,8 +13,7 @@ dependencies:
   destination: export.py
 - source: ../../tools/quantize.py
   destination: quantize.py
-training_parameters:
-  gpu_num: 2
+hyper_parameters:
   batch_size: 8
   base_learning_rate: 0.01
   epochs: 25
@@ -50,4 +49,5 @@ metrics:
   key: ap
   unit: '%'
   value: 52.4
+gpu_num: 2
 config: config.py

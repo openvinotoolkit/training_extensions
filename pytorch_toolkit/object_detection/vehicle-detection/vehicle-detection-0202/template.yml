@@ -1,5 +1,5 @@
 name: vehicle-detection-0202
-description: Vehicle Detection based on MobileNetV2 (SSD).
+summary: Vehicle Detection based on MobileNetV2 (SSD).
 dependencies:
 - sha256: c38b047192da36facef717dc8cffd4ff832daf690e9f7ccb7b93410c3a5766b0
   size: 14905219
@@ -13,8 +13,7 @@ dependencies:
   destination: export.py
 - source: ../../tools/quantize.py
   destination: quantize.py
-training_parameters:
-  gpu_num: 4
+hyper_parameters:
   batch_size: 30
   base_learning_rate: 0.05
   epochs: 20
@@ -38,4 +37,5 @@ metrics:
   key: ap
   unit: '%'
   value: 36.9
+gpu_num: 4
 config: config.py

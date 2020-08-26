@@ -1,5 +1,5 @@
 name: person-vehicle-bike-detection-2002
-description: Person Vehicle Bike Detection based on MobileNetV2 (SSD).
+summary: Person Vehicle Bike Detection based on MobileNetV2 (SSD).
 dependencies:
 - sha256: 23d2ba1282bc1a0072e9d9737f969c1becab51bc65b235ca586a22756e260a91
   size: 14937174
@@ -13,8 +13,7 @@ dependencies:
   destination: export.py
 - source: ../../tools/quantize.py
   destination: quantize.py
-training_parameters:
-  gpu_num: 4
+hyper_parameters:
   batch_size: 30
   base_learning_rate: 0.05
   epochs: 20
@@ -38,4 +37,5 @@ metrics:
   key: map
   unit: '%'
   value: 24.8
+gpu_num: 4
 config: config.py

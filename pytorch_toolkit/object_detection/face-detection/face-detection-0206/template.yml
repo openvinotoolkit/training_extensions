@@ -1,5 +1,5 @@
 name: face-detection-0206
-description: Face Detection based on ResNet-152 (ATSS).
+summary: Face Detection based on ResNet-152 (ATSS).
 dependencies:
 - sha256: 677a04f317d0250193ded307d8ec89e06436e5110f6a61bdef5fe10a17e282ea
   size: 511179725
@@ -13,8 +13,7 @@ dependencies:
   destination: export.py
 - source: ../../tools/quantize.py
   destination: quantize.py
-training_parameters:
-  gpu_num: 8
+hyper_parameters:
   batch_size: 5
   base_learning_rate: 0.05
   epochs: 70
@@ -54,4 +53,5 @@ metrics:
   key: complexity
   unit: GFLOPs
   value: 340.06
+gpu_num: 8
 config: config.py

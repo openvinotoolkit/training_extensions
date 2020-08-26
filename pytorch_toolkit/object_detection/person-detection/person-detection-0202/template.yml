@@ -1,5 +1,5 @@
 name: person-detection-0202
-description: Person Detection based on MobileNetV2 (SSD).
+summary: Person Detection based on MobileNetV2 (SSD).
 dependencies:
 - sha256: 65b6ac3c9250cf620206525ba3f2a341839ef722c57962441d1470caa2c26bb7
   size: 14905210
@@ -13,8 +13,7 @@ dependencies:
   destination: export.py
 - source: ../../tools/quantize.py
   destination: quantize.py
-training_parameters:
-  gpu_num: 2
+hyper_parameters:
   batch_size: 30
   base_learning_rate: 0.05
   epochs: 20
@@ -38,4 +37,5 @@ metrics:
   key: ap
   unit: '%'
   value: 32.8
+gpu_num: 2
 config: config.py

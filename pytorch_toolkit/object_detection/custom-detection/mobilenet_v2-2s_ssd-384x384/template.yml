@@ -1,5 +1,5 @@
 name: mobilenet_v2-2s_ssd-384x384
-description: Custom Object Detection based on MobileNetV2 (SSD).
+summary: Custom Object Detection based on MobileNetV2 (SSD).
 dependencies:
 - sha256: 923647b5737f6fc5f08660cb43f509f718ce0a5e9abc66f611ffb057e8c60986
   size: 16164456
@@ -13,8 +13,7 @@ dependencies:
   destination: export.py
 - source: ../../tools/quantize.py
   destination: quantize.py
-training_parameters:
-  gpu_num: 3
+hyper_parameters:
   batch_size: 64
   base_learning_rate: 0.05
   epochs: 0
@@ -38,4 +37,5 @@ metrics:
   key: ap
   unit: '%'
   value: 13.3
+gpu_num: 3
 config: config.py
