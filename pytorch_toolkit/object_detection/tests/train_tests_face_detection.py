@@ -124,10 +124,10 @@ class FaceDetection0200TestCaseOteApi(unittest.TestCase):
         run_through_shell(
             f'cd {os.path.dirname(template_file)};'
             f'python {dependencies["eval"]}'
-            f' --test_ann_files {ann_file}'
-            f' --test_img_roots {img_root}'
-            f' --save_metrics_to {os.path.join(work_dir, "metrics.yaml")}'
-            f' --load_weights {os.path.join(work_dir, os.path.basename(dependencies["snapshot"]))}')
+            f' --test-ann-files {ann_file}'
+            f' --test-img-roots {img_root}'
+            f' --save-metrics-to {os.path.join(work_dir, "metrics.yaml")}'
+            f' --load-weights {os.path.join(work_dir, os.path.basename(dependencies["snapshot"]))}')
 
         with open(os.path.join(work_dir, "metrics.yaml")) as read_file:
             content = yaml.load(read_file)
@@ -137,22 +137,22 @@ class FaceDetection0200TestCaseOteApi(unittest.TestCase):
         run_through_shell(
             f'cd {os.path.dirname(template_file)};'
             f'python {dependencies["train"]}'
-            f' --train_ann_files {ann_file}'
-            f' --train_img_roots {img_root}'
-            f' --val_ann_files {ann_file}'
-            f' --val_img_roots {img_root}'
-            f' --resume_from {os.path.join(work_dir, os.path.basename(dependencies["snapshot"]))}'
-            f' --save_checkpoints_to {work_dir}'
-            f' --gpu_num 1'
+            f' --train-ann-files {ann_file}'
+            f' --train-img-roots {img_root}'
+            f' --val-ann-files {ann_file}'
+            f' --val-img-roots {img_root}'
+            f' --resume-from {os.path.join(work_dir, os.path.basename(dependencies["snapshot"]))}'
+            f' --save-checkpoints-to {work_dir}'
+            f' --gpu-num 1'
             f' --epochs 75')
 
         run_through_shell(
             f'cd {os.path.dirname(template_file)};'
             f'python {dependencies["eval"]}'
-            f' --test_ann_files {ann_file}'
-            f' --test_img_roots {img_root}'
-            f' --save_metrics_to {os.path.join(work_dir, "metrics.yaml")}'
-            f' --load_weights {os.path.join(work_dir, "latest.pth")}')
+            f' --test-ann-files {ann_file}'
+            f' --test-img-roots {img_root}'
+            f' --save-metrics-to {os.path.join(work_dir, "metrics.yaml")}'
+            f' --load-weights {os.path.join(work_dir, "latest.pth")}')
 
         with open(os.path.join(work_dir, "metrics.yaml")) as read_file:
             content = yaml.load(read_file)

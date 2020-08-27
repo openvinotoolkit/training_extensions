@@ -4,7 +4,7 @@ dependencies:
 - sha256: ac879a21e3558b5d516f04e76444e697553309873908e45a6fa67fc5dda397f9
   size: 15825821
   source: https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/horizontal-text-detection-0001.pth
-  destination: horizontal-text-detection-0001.pth
+  destination: snapshot.pth
 - source: ../tools/train.py
   destination: train.py
 - source: ../tools/eval.py

@@ -2,7 +2,7 @@ description: Text Detection based on MobileNetV2 (FCOS).
 name: horizontal-text-detection-0001
 training_gpu_num: 2
 files:
-- name: horizontal-text-detection-0001.pth
+- name: snapshot.pth
   sha256: ac879a21e3558b5d516f04e76444e697553309873908e45a6fa67fc5dda397f9
   size: 15825821
   source: https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/horizontal-text-detection-0001.pth
