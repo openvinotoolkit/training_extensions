@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+import argparse
 import os
 
 from ote import MODEL_TEMPLATE_FILENAME
@@ -19,6 +20,14 @@ from ote.api import test_args_parser
 from oteod.args_conversion import convert_ote_to_oteod_test_args
 from oteod.evaluation.common import evaluate
 
-ote_args = vars(test_args_parser(MODEL_TEMPLATE_FILENAME).parse_args())
-oteod_args = convert_ote_to_oteod_test_args(os.path.dirname(__file__), ote_args)
+def parse_args(template_filename):
+    """ Parses input args. """
+
+    parser = argparse.ArgumentParser(parents=[test_args_parser(template_filename)], add_help=False)
+    parser.add_argument('--classes', required=True,
+                        help='Comma-separated list of classes (e.g. "cat,dog,mouse").')
+    return parser.parse_args()
+
+ote_args = vars(parse_args(MODEL_TEMPLATE_FILENAME))
+oteod_args = convert_ote_to_oteod_test_args(os.path.dirname(MODEL_TEMPLATE_FILENAME), ote_args)
 evaluate(**oteod_args)

@@ -19,6 +19,12 @@ def convert_ote_to_oteod_train_args(template_folder, args):
 
     update_config = {v: args[k] for k, v in update_config_map.items()}
 
+    if 'classes' in args and args['classes']:
+        classes = '[' + ','.join(f'"{x}"' for x in args['classes'].split(',')) + ']'
+        update_config['data.train.dataset.classes'] = classes
+        update_config['data.val.classes'] = classes
+        update_config['model.bbox_head.num_classes'] = len(args['classes'].split(','))
+
     oteod_args = {
         'config': os.path.join(template_folder, args['config']),
         'gpu_num': args['gpu_num'],
@@ -36,6 +42,11 @@ def convert_ote_to_oteod_test_args(template_folder, args):
     }
 
     update_config = {v: args[k] for k, v in update_config_map.items()}
+
+    if 'classes' in args and args['classes']:
+        classes = '[' + ','.join(f'"{x}"' for x in args['classes'].split(',')) + ']'
+        update_config['data.test.classes'] = classes
+        update_config['model.bbox_head.num_classes'] = len(args['classes'].split(','))
 
     oteod_args = {
         'config': os.path.join(template_folder, args['config']),
