@@ -1,4 +1,6 @@
 name: vehicle-detection-0202
+domain: Object Detection
+framework: OTEDetection TBD
 summary: Vehicle Detection based on MobileNetV2 (SSD).
 dependencies:
 - sha256: c38b047192da36facef717dc8cffd4ff832daf690e9f7ccb7b93410c3a5766b0

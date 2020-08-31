@@ -1,4 +1,6 @@
 name: horizontal-text-detection-0001
+domain: Object Detection
+framework: OTEDetection TBD
 summary: Text Detection based on MobileNetV2 (FCOS).
 dependencies:
 - sha256: ac879a21e3558b5d516f04e76444e697553309873908e45a6fa67fc5dda397f9

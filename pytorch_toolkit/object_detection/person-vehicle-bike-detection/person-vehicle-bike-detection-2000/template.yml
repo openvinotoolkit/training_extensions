@@ -1,4 +1,6 @@
 name: person-vehicle-bike-detection-2000
+domain: Object Detection
+framework: OTEDetection TBD
 summary: Person Vehicle Bike Detection based on MobileNetV2 (SSD).
 dependencies:
 - sha256: b586ec8ba828ebfc77765ca16849bb1d17b771713bb89373531d2847e7c08d28

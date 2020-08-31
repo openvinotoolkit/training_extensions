@@ -1,4 +1,6 @@
 name: face-detection-0204
+domain: Object Detection
+framework: OTEDetection TBD
 summary: Face Detection based on MobileNetV2 (SSD).
 dependencies:
 - sha256: 7a227579f8ebc9017a742ed66b3a9bdc3582090a1c06c9ccbf84722b4a2ffad2

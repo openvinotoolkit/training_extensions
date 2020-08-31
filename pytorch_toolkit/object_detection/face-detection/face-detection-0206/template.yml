@@ -1,4 +1,6 @@
 name: face-detection-0206
+domain: Object Detection
+framework: OTEDetection TBD
 summary: Face Detection based on ResNet-152 (ATSS).
 dependencies:
 - sha256: 677a04f317d0250193ded307d8ec89e06436e5110f6a61bdef5fe10a17e282ea
