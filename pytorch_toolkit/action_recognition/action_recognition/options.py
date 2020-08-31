@@ -210,22 +210,23 @@ def add_input_args(parser):
         help='Frame skip rate of sampled clips'
     )
     group.add_argument(
-        '--initial-scale',
-        default=1.0,
+        '--scales',
+        nargs=2,
         type=float,
-        help='Initial scale for multiscale cropping'
+        default=(1.0, 1.0),
+        help='Scale range'
     )
     group.add_argument(
-        '--n-scales',
-        default=4,
-        type=int,
-        help='Number of scales for multiscale cropping'
+        '--crop',
+        default='fixed',
+        type=str,
+        choices=('fixed', 'norm', 'uniform'),
+        help='Crop type'
     )
     group.add_argument(
-        '--scale-step',
-        default=2 ** (-1 / 4),
-        type=float,
-        help='Scale step for multiscale cropping'
+        '--photometric',
+        action='store_true',
+        help='Use photometric augmentation'
     )
     group.add_argument(
         '--mean-dataset',
@@ -251,6 +252,12 @@ def add_input_args(parser):
         default=True,
         action=BoolFlagAction,
         help='Should horizontal flipping be performed for augmentation'
+    )
+    group.add_argument(
+        '--vflip',
+        default=True,
+        action=BoolFlagAction,
+        help='Should vertical flipping be performed for augmentation'
     )
     group.add_argument(
         '--drop-last',
@@ -359,6 +366,12 @@ def add_dataset_args(parser):
         default='val',
         choices=('val', 'test'),
         help='Used subset in test (val | test)'
+    )
+    group.add_argument(
+        '--n-clips',
+        default=1,
+        type=int,
+        help='Number of clips to be sampled from video in training'
     )
     group.add_argument(
         '--n-val-clips',
