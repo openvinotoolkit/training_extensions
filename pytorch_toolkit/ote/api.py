@@ -69,15 +69,16 @@ def export_args_parser(template_path):
                             help='Load only weights from previously saved checkpoint')
         parser.add_argument('--save-exported-model-to', required='True',
                             help='Location where exported model will be stored.')
-        subparsers = parser.add_subparsers(title='target', dest='target',
-                                           help='target model format')
-        subparsers.required = True
-        subparsers.add_parser('onnx', help='export to ONNX')
-        parser_openvino = subparsers.add_parser('openvino', help='export to OpenVINO')
-        parser_openvino.add_argument('--alt-ssd-export', action='store_true',
-                                     help='use alternative ONNX representation of SSD net')
-        parser_openvino.add_argument('--input-format', choices=['BGR', 'RGB'], default='BGR',
-                                     help='Input image format for exported model.')
+        parser.add_argument('--onnx', action='store_true', default=config['export']['onnx']['enabled'],
+                            help='Enable onnx export.')
+        parser.add_argument('--openvino', action='store_true',
+                            default=config['export']['openvino']['enabled'],
+                            help='Enable OpenVINO export.')
+        parser.add_argument('--openvino-input-format',
+                            default=config['export']['openvino']['input_format'],
+                            help='Format of an input image for OpenVINO exported model.')
+        parser.add_argument('--openvino-mo-args',
+                            help='Additional args to OpenVINO Model Optimizer.')
         parser.add_argument('--config', default=config['config'], help=argparse.SUPPRESS)
 
     return parser

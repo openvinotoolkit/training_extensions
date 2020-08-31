@@ -19,6 +19,22 @@ from ote import MODEL_TEMPLATE_FILENAME
 from ote.api import export_args_parser
 from oteod import MMDETECTION_TOOLS
 
-args = export_args_parser(MODEL_TEMPLATE_FILENAME).parse_args()
+args = vars(export_args_parser(MODEL_TEMPLATE_FILENAME).parse_args())
 
-#TBD
+if args['openvino']:
+    run(f'python {os.path.join(MMDETECTION_TOOLS, "export.py")} '
+        f'{args["config"]} '
+        f'{args["load_weights"]} '
+        f'{args["save_exported_model_to"]} '
+        f'openvino '
+        f'--input_format {args["openvino_input_format"]}',
+        shell=True,
+        check=True)
+if args['onnx']:
+    run(f'python {os.path.join(MMDETECTION_TOOLS, "export.py")} '
+        f'{args["config"]} '
+        f'{args["load_weights"]} '
+        f'{args["save_exported_model_to"]} '
+        f'onnx ',
+        shell=True,
+        check=True)
