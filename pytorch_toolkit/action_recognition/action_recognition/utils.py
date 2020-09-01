@@ -266,6 +266,10 @@ def generate_args(*args, **kwargs):
                 argv.append(key_format)
             else:
                 argv.append(no_key_format)
+        elif isinstance(v, (list, tuple)):
+            argv.append(key_format)
+            for x in v:
+                argv.append(str(x))
         else:
             argv.append(key_format)
             argv.append(str(v))

@@ -45,8 +45,8 @@ def crop(img, position):
 def flip(img, horizontal=False):
     if isinstance(img, np.ndarray):
         if horizontal:
-            return img[:, ::-1, :]
-        return img[::-1, ...]
+            return np.ascontiguousarray(img[:, ::-1, :])
+        return np.ascontiguousarray(img[::-1, ...])
     if horizontal:
         return img.transpose(Image.FLIP_LEFT_RIGHT)
     return img.transpose(Image.FLIP_TOP_BOTTOM)
@@ -58,6 +58,19 @@ def size(img):
         return w, h
     w, h = img.size
     return w, h
+
+
+def pad(img, p, value):
+    top, bottom, left, right = p
+    if isinstance(img, np.ndarray):
+        new_img = cv2.copyMakeBorder(img, top, bottom, left, right, cv2.BORDER_CONSTANT, value=value)
+    else:
+        width, height = img.size
+        new_width = width + right + left
+        new_height = height + top + bottom
+        new_img = Image.new(img.mode, (new_width, new_height), value)
+        new_img.paste(img, (left, top))
+    return new_img
 
 
 def _repr_params(**kwargs):
@@ -309,11 +322,35 @@ class CornerCrop(VideoSpatialTransform):
                 len(self.crop_positions) - 1)]
 
 
-class GaussCrop(VideoSpatialTransform):
+class PadIfNeeded(VideoSpatialTransform):
+    def __init__(self, size, value=(0, 0, 0), mode='center'):
+        self.size = size
+        self.value = value
+        assert mode in {'center', 'topleft'}
+        self.mode = mode
+
+    def __call__(self, img):
+        w, h = size(img)
+        w_pad = max(self.size[0] - w, 0)
+        h_pad = max(self.size[1] - h, 0)
+        if w_pad > 0 or h_pad > 0:
+            if self.mode == 'center':
+                dh = h_pad // 2
+                dw = w_pad // 2
+                img = pad(img, (dh, h_pad - dh, dw, w_pad - dw), self.value)
+            else:
+                img = pad(img, (0, h_pad, 0, w_pad), self.value)
+        w, h = size(img)
+        return img
+
+
+class RandomCrop(VideoSpatialTransform):
     """Crop image at the random point with the standard normal distribution from the center"""
 
-    def __init__(self, size):
+    def __init__(self, size, mode='norm'):
         self.size = size
+        assert mode in {'norm', 'uniform'}
+        self.mode = mode
 
     def __call__(self, img):
         w, h = size(img)
@@ -321,19 +358,34 @@ class GaussCrop(VideoSpatialTransform):
         sigma_x = max(0, x_c - self.size // 2)
         y_c = h // 2
         sigma_y = max(0, y_c - self.size // 2)
-        x_c = round(random.gauss(x_c, 3 * math.sqrt(sigma_x)))
-        y_c = round(random.gauss(y_c, 3 * math.sqrt(sigma_y)))
-
+        dw = (w - self.size) // 2
+        dh = (h - self.size) // 2
+        if self.mode == 'norm':
+            x_c = max(min(round(random.gauss(x_c, 3 * math.sqrt(sigma_x))), x_c + dw), x_c - dw)
+            y_c = max(min(round(random.gauss(y_c, 3 * math.sqrt(sigma_y))), y_c + dh), y_c - dh)
+        else:
+            if dw > 0:
+                x_c = random.randrange(x_c - dw, x_c + dw)
+            if dh > 0:
+                y_c = random.randrange(y_c - dh, y_c + dh)
         x1 = max(0, x_c - self.size // 2)
         x2 = x1 + self.size
         y1 = max(0, y_c - self.size // 2)
         y2 = y1 + self.size
         img = crop(img, (x1, y1, x2, y2))
+        w, h = size(img)
         return img
 
 
-class RandomHorizontalFlip(VideoSpatialTransform):
-    """Horizontally flip the given PIL.Image randomly with a probability of 0.5."""
+class GaussCrop(RandomCrop):
+    def __init__(self, size):
+        super().__init__(size, mode='norm')
+
+
+class RandomFlip(VideoSpatialTransform):
+    """Flip the given PIL.Image randomly with a probability of 0.5."""
+    def __init__(self, horizontal=True):
+        self.horizontal = horizontal
 
     def __call__(self, img):
         """
@@ -343,11 +395,23 @@ class RandomHorizontalFlip(VideoSpatialTransform):
             PIL.Image: Randomly flipped image.
         """
         if self._rand < 0.5:
-            return flip(img, horizontal=True)
+            return flip(img, horizontal=self.horizontal)
         return img
 
     def randomize_parameters(self):
         self._rand = random.random()
+
+
+class RandomHorizontalFlip(RandomFlip):
+    """Horizontally flip the given PIL.Image randomly with a probability of 0.5."""
+    def __init__(self):
+        super().__init__(horizontal=True)
+
+
+class RandomVerticalFlip(RandomFlip):
+    """Vertically flip the given PIL.Image randomly with a probability of 0.5."""
+    def __init__(self):
+        super().__init__(horizontal=False)
 
 
 class HorizontalFlip(VideoSpatialTransform):
@@ -361,6 +425,26 @@ class HorizontalFlip(VideoSpatialTransform):
             PIL.Image: Flipped image.
         """
         return flip(img)
+
+
+class RandomScale(VideoSpatialTransform):
+    def __init__(self, scale_ratios=None, scale_range=None):
+        self.scale_ratios = scale_ratios
+        self.scale_range = scale_range
+        assert (scale_ratios is None) != (scale_range is None)
+
+    def __call__(self, image):
+        w, h = size(image)
+        if self.scale_ratios is not None:
+            scale = random.choice(self.scale_ratios)
+        else:
+            scale = random.uniform(*self.scale_range)
+        w = int(math.ceil(w * scale))
+        h = int(math.ceil(h * scale))
+        assert w > 0 and h > 0
+        image = resize(image, (w, h))
+        w, h = size(image)
+        return image
 
 
 class MultiScaleCrop(VideoSpatialTransform):
@@ -425,32 +509,26 @@ class MultiScaleCrop(VideoSpatialTransform):
     def fillCropSize(self, input_height, input_width):
         crop_sizes = []
         base_size = np.min((input_height, input_width))
-        scale_rates = self.scale_ratios
-        for h in range(len(scale_rates)):
-            crop_h = int(base_size * scale_rates[h])
-            for w in range(len(scale_rates)):
-                crop_w = int(base_size * scale_rates[w])
-                # append this cropping size into the list
-                if np.absolute(h - w) <= self.max_distort:
-                    crop_sizes.append((crop_h, crop_w))
-
+        for scale in self.scale_ratios:
+            crop_h = int(base_size * scale)
+            crop_w = int(base_size * scale)
+            # append this cropping size into the list
+            crop_sizes.append((crop_h, crop_w))
         return crop_sizes
 
     def __call__(self, image):
         w, h = size(image)
-
         crop_size_pairs = self.fillCropSize(h, w)
-        crop_height = crop_size_pairs[self._crop_scale][0]
-        crop_width = crop_size_pairs[self._crop_scale][1]
+        crop_height, crop_width = crop_size_pairs[self._crop_scale]
 
         if self.fix_crop:
+            # Randomly choosen crop position.
             offsets = self.fillFixOffset(h, w)
-            h_off = offsets[self._crop_offset][0]
-            w_off = offsets[self._crop_offset][1]
+            h_off, w_off = offsets[self._crop_offset]
         else:
-            pass
-            # h_off = random.randint(0, h - self.height)
-            # w_off = random.randint(0, w - self.width)
+            # Center crop.
+            h_off = (h - crop_height) // 2
+            w_off = (w - crop_width) // 2
 
         x1, y1, x2, y2 = w_off, h_off, w_off + crop_width, h_off + crop_height
 
@@ -559,8 +637,16 @@ class RandomContrast(VideoSpatialTransform):
     # expects float image
     def __call__(self, image):
         if self.rnd:
-            enhancer = ImageEnhance.Contrast(image)
-            image = enhancer.enhance(self.factor)
+            if isinstance(image, np.ndarray):
+                im = Image.fromarray(image)
+            else:
+                im = image.copy()
+            enhancer = ImageEnhance.Contrast(im)
+            im = enhancer.enhance(self.factor)
+            if isinstance(image, np.ndarray):
+                image = np.asarray(im)
+            else:
+                image = im
         return image
 
     def randomize_parameters(self):
@@ -579,13 +665,31 @@ class RandomBrightness(VideoSpatialTransform):
 
     def __call__(self, image):
         if self.rnd:
-            enhancer = ImageEnhance.Brightness(image)
-            image = enhancer.enhance(self.factor)
+            if isinstance(image, np.ndarray):
+                im = Image.fromarray(image)
+            else:
+                im = image.copy()
+            enhancer = ImageEnhance.Brightness(im)
+            im = enhancer.enhance(self.factor)
+            if isinstance(image, np.ndarray):
+                image = np.asarray(im)
+            else:
+                image = im
         return image
 
     def randomize_parameters(self):
         self.rnd = random.randint(0, 1)
         self.factor = random.uniform(1.0 - self.delta, 1.0 + self.delta)
+
+class Imshow(VideoSpatialTransform):
+    def __init__(self, winname='img', delay=0):
+        self.delay = delay
+        self.winname = winname
+
+    def __call__(self, image):
+        cv2.imshow(self.winname, image)
+        cv2.waitKey(self.delay)
+        return image
 
 
 class RandomSharpness(VideoSpatialTransform):
@@ -601,8 +705,16 @@ class RandomSharpness(VideoSpatialTransform):
     # expects float image
     def __call__(self, image):
         if self.rnd:
-            enhancer = ImageEnhance.Sharpness(image)
-            image = enhancer.enhance(self.factor)
+            if isinstance(image, np.ndarray):
+                im = Image.fromarray(image)
+            else:
+                im = image.copy()
+            enhancer = ImageEnhance.Sharpness(im)
+            im = enhancer.enhance(self.factor)
+            if isinstance(image, np.ndarray):
+                image = np.asarray(im)
+            else:
+                image = im
         return image
 
     def randomize_parameters(self):

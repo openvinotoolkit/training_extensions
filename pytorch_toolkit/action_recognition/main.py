@@ -18,8 +18,8 @@ from action_recognition.model import create_model
 from action_recognition.options import parse_arguments
 from action_recognition.spatial_transforms import (
     MEAN_STATISTICS, STD_STATISTICS, CenterCrop, Compose, CornerCrop,
-    GaussCrop, HorizontalFlip, MultiScaleCrop, Normalize, RandomHorizontalFlip,
-    Scale, ToTensor
+    GaussCrop, HorizontalFlip, MultiScaleCrop, Normalize, RandomHorizontalFlip, RandomVerticalFlip,
+    Scale, ToTensor, RandomScale, RandomCrop, PadIfNeeded, RandomSharpness, RandomBrightness, RandomContrast
 )
 from action_recognition.target_transforms import ClassLabel
 from action_recognition.temporal_transforms import (
@@ -64,15 +64,30 @@ def setup_dataset(args, train=True, val=True, test=True):
 
     normalization = make_normalization(args)
 
+    photometric = []
+    if args.photometric:
+        photometric = [
+            # RandomContrast(),
+            RandomSharpness(lower=0.1),
+            RandomBrightness(delta=0.75),
+            # PhotometricDistort(),
+        ]
+
     train_spatial_transform = [Compose([
-        Scale(args.sample_size * 8 // 7),
-        MultiScaleCrop((args.sample_size, args.sample_size), args.scales),
-        # PhotometricDistort(),
+        Scale(args.sample_size),
+        RandomScale(scale_range=args.scales),
+        PadIfNeeded((args.sample_size, args.sample_size)),
+        MultiScaleCrop((args.sample_size, args.sample_size), scale_ratios=[1.0])
+            if args.crop == 'fixed'
+            else RandomCrop(args.sample_size, mode=args.crop),
+        *photometric,
         ToTensor(args.norm_value),
         normalization,
     ])]
     if args.hflip:
         train_spatial_transform[0].transforms.insert(1, RandomHorizontalFlip())
+    if args.vflip:
+        train_spatial_transform[0].transforms.insert(1, RandomVerticalFlip())
 
     temporal_stride = TemporalStride(temporal_stride_size)
     train_temporal_transform = Compose(
@@ -289,11 +304,6 @@ def configure():
 
     configure_dataset(args)
     configure_paths(args)
-
-    args.scales = [args.initial_scale]
-    for i in range(1, args.n_scales):
-        args.scales.append(args.scales[-1] * args.scale_step)
-    args.arch = args.model
 
     with (args.result_path / 'opts.json').open('w') as opt_file:
         json.dump(vars(args), opt_file, default=json_serialize)

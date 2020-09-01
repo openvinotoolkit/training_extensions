@@ -24,7 +24,7 @@ def make_dataset(args, subset, spatial_transform, temporal_transform, target_tra
     elif subset == 'validation':
         num_samples_per_video = args.n_val_clips
     else:  # train
-        num_samples_per_video = 1
+        num_samples_per_video = args.n_clips
 
     if subset == 'testing':
         if args.test_subset == 'val':
@@ -159,6 +159,14 @@ class VideoDataset(data.Dataset):
         self.target_transform = target_transform
         self.return_rgb = return_rgb
         self.return_flow = return_flow
+
+    def __str__(self):
+        return 'VideoDataset(rgb={}, flow={}, classes={}, len={})'.format(
+            self.return_rgb,
+            self.return_flow,
+            self.class_names,
+            len(self)
+        )
 
     def __getitem__(self, index):
         """
