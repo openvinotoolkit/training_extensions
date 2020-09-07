@@ -3,7 +3,7 @@ name: Bug report
 about: Create a report to help us improve
 title: ''
 labels: bug
-assignees: AlexanderDokuchaev
+assignees: ''
 
 ---
 
@@ -38,4 +38,3 @@ assignees: AlexanderDokuchaev
 <!--
 Include as many relevant details about the environment in which you experienced the bug as you can.
 -->
-
