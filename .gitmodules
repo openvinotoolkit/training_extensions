@@ -13,7 +13,7 @@
 	url = ../mmaction.git
 [submodule "external/deep-object-reid"]
 	path = external/deep-object-reid
-	url = https://github.com/opencv/deep-object-reid.git
+	url = ../deep-object-reid.git
 [submodule "external/bert"]
 	path = external/bert
 	url = https://github.com/google-research/bert
