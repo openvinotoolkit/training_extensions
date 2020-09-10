@@ -16,6 +16,13 @@ dependencies:
 - source: ../../tools/quantize.py
   destination: quantize.py
 max_nodes: 1
+training_target:
+- CPU
+- GPU
+inference_target:
+- CPU
+- iGPU
+- VPU
 hyper_parameters:
   basic:
     batch_size: 30
