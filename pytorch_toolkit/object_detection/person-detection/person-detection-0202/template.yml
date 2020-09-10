@@ -41,3 +41,4 @@ metrics:
   value: 32.8
 gpu_num: 2
 config: config.py
+max_nodes: 1
