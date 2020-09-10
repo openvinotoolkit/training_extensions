@@ -25,7 +25,7 @@ if args['openvino']:
     run(f'python {os.path.join(MMDETECTION_TOOLS, "export.py")} '
         f'{args["config"]} '
         f'{args["load_weights"]} '
-        f'{args["save_exported_model_to"]} '
+        f'{args["save_model_to"]} '
         f'openvino '
         f'--input_format {args["openvino_input_format"]}',
         shell=True,
@@ -34,7 +34,7 @@ if args['onnx']:
     run(f'python {os.path.join(MMDETECTION_TOOLS, "export.py")} '
         f'{args["config"]} '
         f'{args["load_weights"]} '
-        f'{args["save_exported_model_to"]} '
+        f'{args["save_model_to"]} '
         f'onnx ',
         shell=True,
         check=True)

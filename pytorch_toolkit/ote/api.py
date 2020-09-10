@@ -67,15 +67,15 @@ def export_args_parser(template_path):
         config = yaml.safe_load(model_definition)
         parser.add_argument('--load-weights', required=True,
                             help='Load only weights from previously saved checkpoint')
-        parser.add_argument('--save-exported-model-to', required='True',
+        parser.add_argument('--save-model-to', required='True',
                             help='Location where exported model will be stored.')
-        parser.add_argument('--onnx', action='store_true', default=config['export']['onnx']['enabled'],
+        parser.add_argument('--onnx', action='store_true', default=config['output_format']['onnx']['default'],
                             help='Enable onnx export.')
         parser.add_argument('--openvino', action='store_true',
-                            default=config['export']['openvino']['enabled'],
+                            default=config['output_format']['openvino']['default'],
                             help='Enable OpenVINO export.')
         parser.add_argument('--openvino-input-format',
-                            default=config['export']['openvino']['input_format'],
+                            default=config['output_format']['openvino']['input_format'],
                             help='Format of an input image for OpenVINO exported model.')
         parser.add_argument('--openvino-mo-args',
                             help='Additional args to OpenVINO Model Optimizer.')
