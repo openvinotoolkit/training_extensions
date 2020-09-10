@@ -1,6 +1,6 @@
 name: mobilenet_v2-2s_ssd-384x384
 domain: Object Detection
-framework: OTEDetection TBD
+framework: OTEDetection v2.1.0.1
 summary: Custom Object Detection based on MobileNetV2 (SSD).
 dependencies:
 - sha256: 923647b5737f6fc5f08660cb43f509f718ce0a5e9abc66f611ffb057e8c60986

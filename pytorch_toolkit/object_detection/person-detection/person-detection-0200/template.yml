@@ -1,6 +1,6 @@
 name: person-detection-0200
 domain: Object Detection
-framework: OTEDetection TBD
+framework: OTEDetection v2.1.0.1
 summary: Person Detection based on MobileNetV2 (SSD).
 dependencies:
 - sha256: 14819f129b97750dd8c9679c8fc5896eb477584d9eb0bb537aabeb3f1c311030
