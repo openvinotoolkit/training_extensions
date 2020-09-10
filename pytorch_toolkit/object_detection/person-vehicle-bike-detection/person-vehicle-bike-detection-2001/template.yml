@@ -2,6 +2,7 @@ name: person-vehicle-bike-detection-2001
 domain: Object Detection
 framework: OTEDetection v2.1.0.1
 summary: Person Vehicle Bike Detection based on MobileNetV2 (SSD).
+annotation_format: COCO
 dependencies:
 - sha256: 9c4190208d9ff7b7b860821c48264a50ee529e84f23d0d2f6947eceb64c2346a
   size: 14937205

@@ -2,6 +2,8 @@ name: mobilenet_v2-2s_ssd-512x512
 domain: Object Detection
 framework: OTEDetection v2.1.0.1
 summary: Custom Object Detection based on MobileNetV2 (SSD).
+annotation_format: COCO
+classes: []
 dependencies:
 - sha256: e2808d313d2c2050c36ea32299c2cd7b2ff9d4192534013f0120f40d0e554505
   size: 16164473

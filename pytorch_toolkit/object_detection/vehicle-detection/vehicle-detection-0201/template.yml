@@ -2,6 +2,7 @@ name: vehicle-detection-0201
 domain: Object Detection
 framework: OTEDetection v2.1.0.1
 summary: Vehicle Detection based on MobileNetV2 (SSD).
+annotation_format: COCO
 dependencies:
 - sha256: 3b7ab624089bad9d99592051dc009c1966e6d2f8653b5bb224554956ea37881d
   size: 14905218
