@@ -15,6 +15,7 @@ dependencies:
   destination: export.py
 - source: ../../tools/quantize.py
   destination: quantize.py
+max_nodes: 1
 hyper_parameters:
   batch_size: 32
   base_learning_rate: 0.05
@@ -41,4 +42,3 @@ metrics:
   value: 12.7
 gpu_num: 3
 config: config.py
-max_nodes: 1
