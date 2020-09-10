@@ -17,9 +17,10 @@ dependencies:
   destination: quantize.py
 max_nodes: 1
 hyper_parameters:
-  batch_size: 122
-  base_learning_rate: 0.05
-  epochs: 20
+  basic:
+    batch_size: 122
+    base_learning_rate: 0.05
+    epochs: 20
 export:
   onnx:
     enabled: true
