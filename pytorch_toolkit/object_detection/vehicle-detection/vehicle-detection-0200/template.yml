@@ -28,11 +28,11 @@ hyper_parameters:
     batch_size: 185
     base_learning_rate: 0.05
     epochs: 20
-export:
+output_format:
   onnx:
-    enabled: true
+    default: true
   openvino:
-    enabled: true
+    default: true
     input_format: BGR
 quantization: TBD
 metrics:
