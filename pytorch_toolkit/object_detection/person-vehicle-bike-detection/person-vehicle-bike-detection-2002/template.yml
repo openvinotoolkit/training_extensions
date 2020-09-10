@@ -50,3 +50,4 @@ metrics:
   value: 24.8
 gpu_num: 4
 config: config.py
+estimated_batch_time: 1.0
