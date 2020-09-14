@@ -14,8 +14,9 @@ class Im2latexModel(nn.Module):
 
         def __call__(self, input_images):
             encoded = self.model.backbone(input_images)
-            encoded = self.model.head.encode(encoded)
-            return self.model.head.init_decoder(encoded)
+            row_enc_out, hidden, context = self.model.head.encode(encoded)
+            hidden, context, init_0 = self.model.head.init_decoder(row_enc_out, hidden, context)
+            return row_enc_out, hidden, context, init_0
 
     class Decoder(nn.Module):
 
@@ -23,10 +24,10 @@ class Im2latexModel(nn.Module):
             super().__init__()
             self.model = im2latex_model
 
-        def __call__(self, hidden, context, output, row_enc_out, b_size, device):
+        def __call__(self, hidden, context, output, row_enc_out, tgt):
 
-            return self.model.head.self.decode_without_formulas(
-                hidden, context, output, row_enc_out, b_size, device)
+            return self.model.head.step_decoding(
+                hidden, context, output, row_enc_out, tgt)
 
     def __init__(self, backbone_type, backbone, out_size, head):
         super(Im2latexModel, self).__init__()
@@ -52,5 +53,4 @@ class Im2latexModel(nn.Module):
         return Im2latexModel.Encoder(im2latex_model)
 
     def get_decoder_wrapper(self, im2latex_model):
-
         return Im2latexModel.Decoder(im2latex_model)
