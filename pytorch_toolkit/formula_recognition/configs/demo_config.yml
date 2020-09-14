@@ -15,8 +15,7 @@ head:
   max_len: 256
   n_layer: 1
 input_images:
-- /home/loginov/1
-- /home/loginov/2
+- /home/vloginov/work/im2latex/medium_v2/images_processed/64.png
 model_path: /home/vloginov/work/im2latex/medium_v2/save_dir/model_epoch_1_step_4000_2020-09-10_17-57-51.pth
 val_path: /home/vloginov/work/im2latex/medium_v2/
 vocab_path: /home/vloginov/work/im2latex/medium_v2/vocab.pkl
