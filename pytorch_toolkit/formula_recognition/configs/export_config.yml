@@ -5,7 +5,6 @@ backbone_config:
   enable_last_conv: false
   in_lstm_ch: 64
 backbone_type: resnet50
-device: cuda
 head:
   beam_width: 0
   dec_rnn_h: 512
@@ -17,3 +16,5 @@ head:
 dummy_input: /home/vloginov/work/im2latex/medium_v2/images_processed/12.png
 model_path: /home/vloginov/work/im2latex/medium_v2/save_dir/model_epoch_1_step_4000_2020-09-10_17-57-51.pth
 vocab_path: /home/vloginov/work/im2latex/medium_v2/vocab.pkl
+res_encoder_name: medium_v2_encoder.onnx
+res_decoder_name: medium_v2_decoder.onnx
