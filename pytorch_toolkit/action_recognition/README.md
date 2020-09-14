@@ -49,7 +49,7 @@ Kinetics for data downloading and preprocessing.
 
 #### UCF-101
 
-Download the [UCF-101 and train-test split](http://www.crcv.ucf.edu/data/UCF101.php)
+Download the [UCF-101 and train-test split](https://crcv.ucf.edu/data/UCF101.php)
 
 Convert all splits to the JSON format:
 
