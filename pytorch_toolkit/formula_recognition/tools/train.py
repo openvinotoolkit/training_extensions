@@ -1,8 +1,7 @@
 import argparse
-import json
+import yaml
 import os.path
 import sys
-from collections import OrderedDict
 from functools import partial
 from pprint import pformat
 
@@ -241,7 +240,7 @@ if __name__ == "__main__":
     args = parse_args()
 
     with open(args.config, 'r') as f:
-        config = json.load(f, object_pairs_hook=OrderedDict)
+        config = yaml.load(f, Loader=yaml.SafeLoader)
 
     experiment = Trainer(work_dir=args.work_dir, config=config)
     experiment.train()
