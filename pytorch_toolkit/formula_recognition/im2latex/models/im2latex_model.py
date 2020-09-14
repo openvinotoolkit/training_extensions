@@ -7,6 +7,27 @@ from .text_recognition_heads.attention_based import TextRecognitionHead
 
 
 class Im2latexModel(nn.Module):
+    class Encoder(nn.Module):
+        def __init__(self, im2latex_model):
+            super().__init__()
+            self.model = im2latex_model
+
+        def __call__(self, input_images):
+            encoded = self.model.backbone(input_images)
+            encoded = self.model.head.encode(encoded)
+            return self.model.head.init_decoder(encoded)
+
+    class Decoder(nn.Module):
+
+        def __init__(self, im2latex_model):
+            super().__init__()
+            self.model = im2latex_model
+
+        def __call__(self, hidden, context, output, row_enc_out, b_size, device):
+
+            return self.model.head.self.decode_without_formulas(
+                hidden, context, output, row_enc_out, b_size, device)
+
     def __init__(self, backbone_type, backbone, out_size, head):
         super(Im2latexModel, self).__init__()
         self.head = TextRecognitionHead(out_size, head)
@@ -26,3 +47,10 @@ class Im2latexModel(nn.Module):
             checkpoint = OrderedDict((k.replace(
                 'module.', '') if 'module.' in k else k, v) for k, v in checkpoint.items())
             self.load_state_dict(checkpoint)
+
+    def get_encoder_wrapper(self, im2latex_model):
+        return Im2latexModel.Encoder(im2latex_model)
+
+    def get_decoder_wrapper(self, im2latex_model):
+
+        return Im2latexModel.Decoder(im2latex_model)
