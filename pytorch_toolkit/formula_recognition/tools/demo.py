@@ -1,7 +1,6 @@
 import argparse
-import json
+import yaml
 import os.path
-from collections import OrderedDict
 
 import cv2 as cv
 import torch
@@ -37,21 +36,15 @@ class Im2latexDemo():
 def parse_args():
     args = argparse.ArgumentParser()
     args.add_argument('--config')
-    args.add_argument('--input')
     return args.parse_args()
 
 
 if __name__ == "__main__":
     args = parse_args()
     with open(args.config, 'r') as f:
-        config = json.load(f, object_pairs_hook=OrderedDict)
+        config = yaml.load(f, Loader=yaml.SafeLoader)
     model = Im2latexDemo(config)
-    if not os.path.isdir(args.input):
-        args.input = [args.input]
-    else:
-        args.input = os.listdir(args.input)
-    for inp in args.input:
-        print(os.path.abspath(inp))
-        input_image = cv.imread(os.path.abspath(inp))
+    for inp in config.get('input_images'):
+        input_image = cv.imread(os.path.abspath(inp), cv.IMREAD_COLOR)
         assert input_image is not None, "Error reading image, please, check input path"
         print("Predicted formula for {} is \n{}".format(os.path.abspath(inp), model(input_image)))
