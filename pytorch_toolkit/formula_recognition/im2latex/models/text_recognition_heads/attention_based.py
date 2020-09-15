@@ -12,6 +12,8 @@ INIT = 1e-2
 Candidate = namedtuple('candidate', 'score, dec_state_h, dec_state_c, output, targets, logits')
 
 
+HEAD_LAYERS = ['W_c', "W_out", "V_h_0", "V_c_0", "beta", "W_h", "W_v", "rnn_encoder", "rnn_decoder", "embedding"]
+
 class TextRecognitionHead(nn.Module):
     def __init__(self, out_size, configuration):
         super(TextRecognitionHead, self).__init__()

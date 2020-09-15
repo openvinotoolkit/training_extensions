@@ -1,10 +1,24 @@
 import torch.nn as nn
 import torch
 from collections import OrderedDict
-from .backbones.resnet import ResNetLikeBackbone
-from .backbones.original_harvard_bb import Im2LatexBackBone
-from .text_recognition_heads.attention_based import TextRecognitionHead
+from .backbones.resnet import ResNetLikeBackbone, RESNET_BB_LAYERS
+from .backbones.original_harvard_bb import Im2LatexBackBone, IM2LATEX_BB_LAYERS
+from .text_recognition_heads.attention_based import TextRecognitionHead, HEAD_LAYERS
 
+BB_LAYERS = RESNET_BB_LAYERS
+BB_LAYERS.extend(IM2LATEX_BB_LAYERS)
+
+def head_layers_in_key(key):
+    for head_layer in HEAD_LAYERS:
+        if head_layer in key:
+            return True
+    return False
+
+def bb_layers_in_key(key):
+    for bb_layer in BB_LAYERS:
+        if bb_layer in key:
+            return True
+    return False
 
 class Im2latexModel(nn.Module):
     class Encoder(nn.Module):
@@ -42,11 +56,23 @@ class Im2latexModel(nn.Module):
         features = self.backbone(input_images)
         return self.head(features, formulas)
 
-    def load_weights(self, model_path):
+    def load_weights(self, model_path, old_model=False):
         if model_path is not None:
             checkpoint = torch.load(model_path, map_location='cuda')
             checkpoint = OrderedDict((k.replace(
                 'module.', '') if 'module.' in k else k, v) for k, v in checkpoint.items())
+            # load models trained in previous versions
+            if old_model:
+                new_checkpoint = OrderedDict()
+                for key, value in checkpoint.items():
+                    if head_layers_in_key(key):
+                        new_checkpoint["head.{}".format(key)] = value
+                    elif bb_layers_in_key(key):
+                        new_checkpoint[key.replace("cnn_encoder", "backbone")] = value
+                    else:
+                        raise KeyError("Unrecognized type of layer, could not load the model correctly")
+                self.load_state_dict(new_checkpoint)
+                return
             self.load_state_dict(checkpoint)
 
     def get_encoder_wrapper(self, im2latex_model):

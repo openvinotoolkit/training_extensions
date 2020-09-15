@@ -11,6 +11,9 @@ architectures = {
     "resnext101_32x8d": torchvision.models.resnext101_32x8d,
 }
 
+RESNET_BB_LAYERS = ['groups', "base_width", "conv1", "bn1", "relu",
+                    "maxpool", "layer1", "layer2", "layer3", "layer4", "last_conv"]
+
 
 class ResNetLikeBackbone(nn.Module):
     def __init__(self, configuration):
@@ -25,16 +28,16 @@ class ResNetLikeBackbone(nn.Module):
             self.in_lstm_ch = in_lstm_ch
         else:
             self.in_lstm_ch = 64
-        self._resnet = architectures.get(arch, None)(
+        _resnet = architectures.get(arch, None)(
             pretrained=True, progress=True)
-        self.groups = self._resnet.groups
-        self.base_width = self._resnet.base_width
-        self.conv1 = self._resnet.conv1
-        self.bn1 = self._resnet.bn1
-        self.relu = self._resnet.relu
-        self.maxpool = self._resnet.maxpool
-        self.layer1 = self._resnet.layer1
-        self.layer2 = self._resnet.layer2
+        self.groups = _resnet.groups
+        self.base_width = _resnet.base_width
+        self.conv1 = _resnet.conv1
+        self.bn1 = _resnet.bn1
+        self.relu = _resnet.relu
+        self.maxpool = _resnet.maxpool
+        self.layer1 = _resnet.layer1
+        self.layer2 = _resnet.layer2
         enable_layer_3 = not disable_layer_3
         enable_layer_4 = not disable_layer_4
         if arch == 'resnet18' or arch == 'resnet34':
@@ -45,15 +48,15 @@ class ResNetLikeBackbone(nn.Module):
             assert enable_layer_3, "Cannot enable layer4 w/out enabling layer 3"
 
         if enable_layer_3 and disable_layer_4:
-            self.layer3 = self._resnet.layer3
+            self.layer3 = _resnet.layer3
             self.layer4 = None
             if arch == 'resnet18' or arch == 'resnet34':
                 in_ch = 256
             else:
                 in_ch = 1024
         elif enable_layer_3 and enable_layer_4:
-            self.layer3 = self._resnet.layer3
-            self.layer4 = self._resnet.layer4
+            self.layer3 = _resnet.layer3
+            self.layer4 = _resnet.layer4
             if arch == 'resnet18' or arch == 'resnet34':
                 in_ch = 512
             else:
@@ -61,7 +64,6 @@ class ResNetLikeBackbone(nn.Module):
         else:
             self.layer3 = None
             self.layer4 = None
-        del self._resnet
         print("Initialized cnn encoder {}".format(arch))
         if enable_last_conv:
             print("Last conv enabled")

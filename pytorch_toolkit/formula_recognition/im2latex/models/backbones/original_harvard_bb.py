@@ -1,5 +1,6 @@
 import torch.nn as nn
 
+IM2LATEX_BB_LAYERS = ['cnn_encoder']
 
 class Im2LatexBackBone(nn.Module):
     def __init__(self):
