@@ -15,41 +15,34 @@ Candidate = namedtuple('candidate', 'score, dec_state_h, dec_state_c, output, ta
 class TextRecognitionHead(nn.Module):
     def __init__(self, out_size, configuration):
         super(TextRecognitionHead, self).__init__()
-        emb_size = configuration.get("emb_size")
-        enc_rnn_h = configuration.get("enc_rnn_h")
-        dec_rnn_h = configuration.get("dec_rnn_h")
-        max_len = configuration.get("max_len")
-        n_layer = configuration.get("n_layer")
-        beam_width = configuration.get('beam_width')
-        in_lstm_ch = configuration.get('in_lstm_ch')
-        self.enc_rnn_h = enc_rnn_h
-        self.dec_rnn_h = dec_rnn_h
-        self.emb_dim = emb_size
-        self.out_size = out_size
-
-        self.max_len = max_len
-        self.beam_width = beam_width
-        self.rnn_encoder = nn.LSTM(in_lstm_ch, enc_rnn_h,
+        self.emb_size = configuration.get("emb_size")
+        self.enc_rnn_h = configuration.get("enc_rnn_h")
+        self.dec_rnn_h = configuration.get("dec_rnn_h")
+        self.max_len = configuration.get("max_len")
+        self.n_layer = configuration.get("n_layer")
+        self.beam_width = configuration.get('beam_width')
+        self.in_lstm_ch = configuration.get('in_lstm_ch')
+        self.rnn_encoder = nn.LSTM(self.in_lstm_ch, self.enc_rnn_h,
                                    bidirectional=True,
                                    batch_first=True)
-        self.rnn_decoder = nn.LSTMCell(enc_rnn_h+emb_size, dec_rnn_h)
-        self.embedding = nn.Embedding(out_size, emb_size)
+        self.rnn_decoder = nn.LSTMCell(self.enc_rnn_h+self.emb_size, self.dec_rnn_h)
+        self.embedding = nn.Embedding(out_size, self.emb_size)
 
         # enc_rnn_h*2 is the dimension of context
-        self.W_c = nn.Linear(dec_rnn_h+2*enc_rnn_h, enc_rnn_h)
-        self.W_out = nn.Linear(enc_rnn_h, out_size)
+        self.W_c = nn.Linear(self.dec_rnn_h+2*self.enc_rnn_h, self.enc_rnn_h)
+        self.W_out = nn.Linear(self.enc_rnn_h, out_size)
 
         # a trainable initial hidden state V_h_0 for each row
-        self.V_h_0 = nn.Parameter(torch.Tensor(n_layer*2, enc_rnn_h))
-        self.V_c_0 = nn.Parameter(torch.Tensor(n_layer*2, enc_rnn_h))
+        self.V_h_0 = nn.Parameter(torch.Tensor(self.n_layer*2, self.enc_rnn_h))
+        self.V_c_0 = nn.Parameter(torch.Tensor(self.n_layer*2, self.enc_rnn_h))
         init.uniform_(self.V_h_0, -INIT, INIT)
         init.uniform_(self.V_c_0, -INIT, INIT)
 
         # Attention mechanism
-        self.beta = nn.Parameter(torch.Tensor(dec_rnn_h))
+        self.beta = nn.Parameter(torch.Tensor(self.dec_rnn_h))
         init.uniform_(self.beta, -INIT, INIT)
-        self.W_h = nn.Linear(dec_rnn_h, dec_rnn_h)
-        self.W_v = nn.Linear(enc_rnn_h*2, dec_rnn_h)
+        self.W_h = nn.Linear(self.dec_rnn_h, self.dec_rnn_h)
+        self.W_v = nn.Linear(self.enc_rnn_h*2, self.dec_rnn_h)
 
     def forward(self, features, formulas=None):
         """args:
