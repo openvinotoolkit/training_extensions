@@ -29,10 +29,10 @@ class Evaluator():
         self.load_dataset()
         self.model = Im2latexModel(config.get('backbone_type'), config.get(
             'backbone_config'), len(self.vocab), config.get('head'))
-        if self.model_path is not None:
-            self.model.load_weights(self.model_path)
-
         self.device = config.get('device', 'cpu')
+        if self.model_path is not None:
+            self.model.load_weights(self.model_path, old_model=config.get("old_model"), map_location=self.device)
+
         self.model = self.model.to(self.device)
         self.time = get_timestamp()
 
@@ -63,20 +63,15 @@ class Evaluator():
         with torch.no_grad():
 
             for img_name, imgs, tgt4training, tgt4cal_loss in tqdm(self.val_loader):
-                print(imgs.shape)
                 imgs = imgs.to(self.device)
                 tgt4training = tgt4training.to(self.device)
                 tgt4cal_loss = tgt4cal_loss.to(self.device)
                 _, pred = self.model(imgs)
-                for j, phrase in enumerate(pred):
-                    gold_phrase_str = self.vocab.construct_phrase(tgt4cal_loss[j])
-                    pred_phrase_str = self.vocab.construct_phrase(phrase,
-                                                                  max_len=1 +
-                                                                  len(gold_phrase_str.split()))
+                gold_phrase_str = self.vocab.construct_phrase(tgt4cal_loss[0])
+                pred_phrase_str = self.vocab.construct_phrase(pred[0], max_len=1 + len(gold_phrase_str.split()))
 
-                    annotations.append((gold_phrase_str, img_name[j]))
-                    predictions.append((pred_phrase_str, img_name[j]))
-
+                annotations.append((gold_phrase_str, img_name[0]))
+                predictions.append((pred_phrase_str, img_name[0]))
         res = metric.evaluate(annotations, predictions)
         return res
 
@@ -91,6 +86,6 @@ def parse_args():
 if __name__ == "__main__":
     args = parse_args()
     with open(args.config, 'r') as f:
-        config = yaml.load(f, Loader=yaml.SaveLoadr)
+        config = yaml.load(f, Loader=yaml.SafeLoader)
     validator = Evaluator(args.work_dir, config)
-    print(validator.validate())
+    print("Im2latex metric is: {}".format(validator.validate()))
