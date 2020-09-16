@@ -11,9 +11,6 @@ architectures = {
     "resnext101_32x8d": torchvision.models.resnext101_32x8d,
 }
 
-RESNET_BB_LAYERS = ['groups', "base_width", "conv1", "bn1", "relu",
-                    "maxpool", "layer1", "layer2", "layer3", "layer4", "last_conv"]
-
 
 class ResNetLikeBackbone(nn.Module):
     def __init__(self, configuration):

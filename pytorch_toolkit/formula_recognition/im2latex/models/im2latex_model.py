@@ -1,26 +1,9 @@
 import torch.nn as nn
 import torch
 from collections import OrderedDict
-from .backbones.resnet import ResNetLikeBackbone, RESNET_BB_LAYERS
-from .backbones.original_harvard_bb import Im2LatexBackBone, IM2LATEX_BB_LAYERS
-from .text_recognition_heads.attention_based import TextRecognitionHead, HEAD_LAYERS
-
-BB_LAYERS = RESNET_BB_LAYERS
-BB_LAYERS.extend(IM2LATEX_BB_LAYERS)
-
-
-def head_layers_in_key(key):
-    for head_layer in HEAD_LAYERS:
-        if head_layer in key:
-            return True
-    return False
-
-
-def bb_layers_in_key(key):
-    for bb_layer in BB_LAYERS:
-        if bb_layer in key:
-            return True
-    return False
+from .backbones.resnet import ResNetLikeBackbone
+from .backbones.original_harvard_bb import Im2LatexBackBone
+from .text_recognition_heads.attention_based import TextRecognitionHead
 
 
 class Im2latexModel(nn.Module):
@@ -58,6 +41,17 @@ class Im2latexModel(nn.Module):
         features = self.backbone(input_images)
         return self.head(features, formulas)
 
+    def is_head_layer(self, key):
+        head_layers = self.head.state_dict().keys()
+        if key in head_layers:
+            return True
+        return False
+
+    def is_backbone_layer(self, key):
+        if 'cnn_encoder' in key:
+            return True
+        return False
+
     def load_weights(self, model_path, old_model=False, map_location='cpu'):
         if model_path is None:
             return
@@ -69,12 +63,11 @@ class Im2latexModel(nn.Module):
             self.load_state_dict(checkpoint)
             return
 
-        head_keys = self.head.state_dict().keys()
         new_checkpoint = OrderedDict()
         for key, value in checkpoint.items():
-            if head_layers_in_key(key):
+            if self.is_head_layer(key):
                 new_checkpoint["head.{}".format(key)] = value
-            elif bb_layers_in_key(key):
+            elif self.is_backbone_layer(key):
                 new_checkpoint[key.replace("cnn_encoder", "backbone")] = value
             else:
                 raise KeyError("Unrecognized type of layer, could not load the model correctly")
