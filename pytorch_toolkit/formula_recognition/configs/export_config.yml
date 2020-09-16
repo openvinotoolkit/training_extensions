@@ -19,3 +19,12 @@ vocab_path: /home/vloginov/work/im2latex/medium_v2/vocab.pkl
 res_encoder_name: medium_v2_encoder.onnx
 res_decoder_name: medium_v2_decoder.onnx
 old_model: true
+export_ir: true
+input_shape_decoder:
+  - 1
+  - 3
+  - 160
+  - 1400
+ir_encoder_output_names: "row_enc_out,hidden,context,init_0"
+ir_decoder_input_names: "dec_st_h,dec_st_c,output_prev,row_enc_out,tgt"
+ir_decoder_output_names: "dec_st_h_t,dec_st_c_t,output,logit"

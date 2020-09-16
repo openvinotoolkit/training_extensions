@@ -1,4 +1,5 @@
 import argparse
+import subprocess
 
 import cv2 as cv
 import numpy as np
@@ -47,7 +48,6 @@ class ONNXExporter():
                                         'init_0': {}
                                         },
                           output_names=['row_enc_out', 'hidden', 'context', 'init_0'])
-        return True
 
     def run_encoder(self):
         encoder_onnx = onnxruntime.InferenceSession(self.config.get("res_encoder_name"))
@@ -74,7 +74,6 @@ class ONNXExporter():
                           dynamic_axes={'row_enc_out': {
                               0: 'batch', 1: 'H', 2: 'W'}}
                           )
-        return True
 
     def run_decoder(self, hidden, context, output, row_enc_out):
         decoder_onnx = onnxruntime.InferenceSession(self.config.get("res_decoder_name"))
@@ -108,6 +107,32 @@ class ONNXExporter():
             logits.append(logit_val)
         return np.argmax(np.array(logits).squeeze(1), axis=1)
 
+    def export_encoder_ir(self):
+        subprocess.run(f'/opt/intel/openvino/bin/setupvars.sh && '
+                       f'python /opt/intel/openvino/deployment_tools/model_optimizer/mo.py '
+                       f'--framework onnx '
+                       f'--input_model {self.config.get("res_encoder_name")} '
+                       f'--input_shape "{self.config.get("input_shape_decoder")}" '
+                       f'--output {self.config.get("ir_encoder_output_names")} '
+                       f'--reverse_input_channels '
+                       f'--scale_values "imgs[255,255,255]"',
+                       shell=True
+                       )
+
+    def export_decoder_ir(self):
+        # --input "dec_st_h,dec_st_c,output_prev,row_enc_out,tgt" --input_shape "[1, 512], [1, 512], [1, 256], [1, 20, 175, 512], [1, 1]" --output 'dec_st_h_t,dec_st_c_t,output,logit' --keep_shape_ops --output_dir ./model_optimizer_outputs/medium_scanned_model_160_1400
+        input_shape_encoder = self.config.get("input_shape_decoder")
+        output_h, output_w = input_shape_encoder[2] // 8, input_shape_encoder[3] // 8
+        subprocess.run(f'/opt/intel/openvino/bin/setupvars.sh && '
+                       f'python /opt/intel/openvino/deployment_tools/model_optimizer/mo.py '
+                       f'--framework onnx '
+                       f'--input_model {self.config.get("res_decoder_name")} '
+                       f'--input {self.config.get("ir_decoder_input_names")} '
+                       f'--input_shape "[1, 512], [1, 512], [1, 256], [1, {output_h}, {output_w}, 512], [1, 1]" '
+                       f'--output {self.config.get("ir_decoder_output_names")} ',
+                       shell=True
+                       )
+
 
 def get_onnx_inputs(model):
     names = []
@@ -137,7 +162,11 @@ if __name__ == "__main__":
     exporter.export_encoder()
     row_enc_out, h, c, O_t = exporter.run_encoder()
     exporter.export_decoder(row_enc_out, h, c, O_t)
-    pred_onnx = exporter.vocab.construct_phrase(exporter.run_decoder(h, c, O_t, row_enc_out).astype(np.int32))
-    _, targets = exporter.model(exporter.img)
-    pred_pytorch = exporter.vocab.construct_phrase(targets[0])
-    print("Predicted with ONNX equal to PyTorch: {}".format(pred_onnx == pred_pytorch))
+    targets_onnx = exporter.run_decoder(h, c, O_t, row_enc_out).astype(np.int32)
+    pred_onnx = exporter.vocab.construct_phrase(targets_onnx)
+    _, targets_pytorch = exporter.model(exporter.img)
+    pred_pytorch = exporter.vocab.construct_phrase(targets_pytorch[0])
+    print("Predicted with ONNX is equal to PyTorch: {}".format(pred_onnx == pred_pytorch))
+    if config.get("export_ir"):
+        exporter.export_encoder_ir()
+        exporter.export_decoder_ir()

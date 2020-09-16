@@ -24,25 +24,24 @@ def bb_layers_in_key(key):
 
 
 class Im2latexModel(nn.Module):
-    class Encoder(nn.Module):
+    class EncoderWrapper(nn.Module):
         def __init__(self, im2latex_model):
             super().__init__()
             self.model = im2latex_model
 
-        def __call__(self, input_images):
+        def forward(self, input_images):
             encoded = self.model.backbone(input_images)
             row_enc_out, hidden, context = self.model.head.encode(encoded)
             hidden, context, init_0 = self.model.head.init_decoder(row_enc_out, hidden, context)
             return row_enc_out, hidden, context, init_0
 
-    class Decoder(nn.Module):
+    class DecoderWrapper(nn.Module):
 
         def __init__(self, im2latex_model):
             super().__init__()
             self.model = im2latex_model
 
-        def __call__(self, hidden, context, output, row_enc_out, tgt):
-
+        def forward(self, hidden, context, output, row_enc_out, tgt):
             return self.model.head.step_decoding(
                 hidden, context, output, row_enc_out, tgt)
 
@@ -59,27 +58,30 @@ class Im2latexModel(nn.Module):
         features = self.backbone(input_images)
         return self.head(features, formulas)
 
-    def load_weights(self, model_path, old_model=False):
-        if model_path is not None:
-            checkpoint = torch.load(model_path, map_location='cuda')
-            checkpoint = OrderedDict((k.replace(
-                'module.', '') if 'module.' in k else k, v) for k, v in checkpoint.items())
-            # load models trained in previous versions
-            if old_model:
-                new_checkpoint = OrderedDict()
-                for key, value in checkpoint.items():
-                    if head_layers_in_key(key):
-                        new_checkpoint["head.{}".format(key)] = value
-                    elif bb_layers_in_key(key):
-                        new_checkpoint[key.replace("cnn_encoder", "backbone")] = value
-                    else:
-                        raise KeyError("Unrecognized type of layer, could not load the model correctly")
-                self.load_state_dict(new_checkpoint)
-                return
+    def load_weights(self, model_path, old_model=False, map_location='cpu'):
+        if model_path is None:
+            return
+        checkpoint = torch.load(model_path, map_location=map_location)
+        checkpoint = OrderedDict((k.replace(
+            'module.', '') if 'module.' in k else k, v) for k, v in checkpoint.items())
+        # load models trained in previous versions
+        if not old_model:
             self.load_state_dict(checkpoint)
+            return
+
+        head_keys = self.head.state_dict().keys()
+        new_checkpoint = OrderedDict()
+        for key, value in checkpoint.items():
+            if head_layers_in_key(key):
+                new_checkpoint["head.{}".format(key)] = value
+            elif bb_layers_in_key(key):
+                new_checkpoint[key.replace("cnn_encoder", "backbone")] = value
+            else:
+                raise KeyError("Unrecognized type of layer, could not load the model correctly")
+        self.load_state_dict(new_checkpoint)
 
     def get_encoder_wrapper(self, im2latex_model):
-        return Im2latexModel.Encoder(im2latex_model)
+        return Im2latexModel.EncoderWrapper(im2latex_model)
 
     def get_decoder_wrapper(self, im2latex_model):
-        return Im2latexModel.Decoder(im2latex_model)
+        return Im2latexModel.DecoderWrapper(im2latex_model)
