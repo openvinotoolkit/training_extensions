@@ -10,7 +10,6 @@ from im2latex.data.vocab import read_vocab
 from im2latex.models.im2latex_model import Im2latexModel
 
 
-
 class Im2latexDemo():
     def __init__(self, config):
         self.config = config
@@ -20,7 +19,8 @@ class Im2latexDemo():
         self.model = Im2latexModel(config.get('backbone_type'), config.get(
             'backbone_config'), len(self.vocab), config.get('head'))
         if self.model_path is not None:
-            self.model.load_weights(self.model_path)
+            self.model.load_weights(self.model_path, old_model=config.get(
+                'old_model'), map_location=config.get('map_location', 'cpu'))
 
         self.device = config.get('device', 'cpu')
         self.model = self.model.to(self.device)
