@@ -98,9 +98,10 @@ def load_json_annotation(root_path, annotation_path, subset, flow_path=None, vid
                 # From time to frame number.
                 timestamps = video_annotation['timestamps']
                 begin_frame, end_frame = np.searchsorted(timestamps, [begin_time, end_time])
-                end_frame -= 1
-                assert begin_frame < end_frame
-                add_sample(begin_frame, end_frame, label)
+                # Frame indices are one-based.
+                begin_frame += 1
+                if begin_frame < end_frame:
+                   add_sample(begin_frame, end_frame, label)
         else:
             begin_frame = 1
             end_frame = n_frames

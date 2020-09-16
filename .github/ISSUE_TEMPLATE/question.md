@@ -2,8 +2,8 @@
 name: Question
 about: Ask any question about this repository
 title: ''
-labels: 'question'
-assignees: AlexanderDokuchaev
+labels: question
+assignees: ''
 
 ---
 
