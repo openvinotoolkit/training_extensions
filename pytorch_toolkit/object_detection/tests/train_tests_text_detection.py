@@ -96,7 +96,7 @@ class HorizontalTextDetection0001TestCaseOteApi(unittest.TestCase):
     def test_ok(self):
         model_name = 'horizontal-text-detection-0001'
 
-        template_file = f'./horizontal-text-detection/{model_name}/template.yml'
+        template_file = f'./horizontal-text-detection/{model_name}/template.yaml'
         ann_file = '../../../../data/horizontal_text_detection/annotation.json'
         img_root = '../../../../data/horizontal_text_detection/'
         work_dir = tempfile.mkdtemp()

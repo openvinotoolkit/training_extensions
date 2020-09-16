@@ -1,1 +1,1 @@
-MODEL_TEMPLATE_FILENAME = 'template.yml'
+MODEL_TEMPLATE_FILENAME = 'template.yaml'

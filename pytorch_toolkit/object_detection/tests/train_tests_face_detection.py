@@ -115,7 +115,7 @@ class FaceDetection0200TestCaseOteApi(unittest.TestCase):
     def test_ok(self):
         model_name = 'face-detection-0200'
 
-        template_file = f'./face-detection/{model_name}/template.yml'
+        template_file = f'./face-detection/{model_name}/template.yaml'
         ann_file = '../../../../data/airport/annotation_faces_train.json'
         img_root = '../../../../data/airport/'
         work_dir = tempfile.mkdtemp()

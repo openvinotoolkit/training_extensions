@@ -105,7 +105,7 @@ class PersonVehicleBikeDetection2000TestCaseOteApi(unittest.TestCase):
     def test_ok(self):
         model_name = 'person-vehicle-bike-detection-2000'
 
-        template_file = f'./person-vehicle-bike-detection/{model_name}/template.yml'
+        template_file = f'./person-vehicle-bike-detection/{model_name}/template.yaml'
         ann_file = '../../../../data/airport/annotation_example_train.json'
         img_root = ' ../../../../data/airport/train'
         work_dir = tempfile.mkdtemp()

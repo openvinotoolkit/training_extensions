@@ -102,7 +102,7 @@ class PersonDetection0200TestCaseOteApi(unittest.TestCase):
     def test_ok(self):
         model_name = 'person-detection-0200'
 
-        template_file = f'./person-detection/{model_name}/template.yml'
+        template_file = f'./person-detection/{model_name}/template.yaml'
         ann_file = '../../../../data/airport/annotation_person_val.json'
         img_root = '../../../../data/airport/val'
         work_dir = tempfile.mkdtemp()
