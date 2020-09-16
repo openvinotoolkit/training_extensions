@@ -4,6 +4,7 @@ IM2LATEX_BB_LAYERS = ['cnn_encoder']
 
 class Im2LatexBackBone(nn.Module):
     def __init__(self):
+        super().__init__()
         # follow the original paper's table2: CNN specification
         self.cnn_encoder = nn.Sequential(
             nn.Conv2d(1, 512, 3, 1, 0),

@@ -4,7 +4,7 @@ backbone_config:
   disable_layer_4: true
   enable_last_conv: false
   in_lstm_ch: 512
-backbone_type: resnet50
+backbone_type: resnet
 head:
   beam_width: 0
   dec_rnn_h: 512

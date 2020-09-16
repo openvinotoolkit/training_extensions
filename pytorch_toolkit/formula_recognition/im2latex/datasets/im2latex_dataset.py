@@ -1,10 +1,8 @@
 from copy import deepcopy
-from math import floor
 from os.path import join
 
 import cv2 as cv
 import numpy as np
-from PIL import Image
 from tqdm import tqdm
 
 from torch.utils.data import Dataset, Sampler
@@ -43,7 +41,7 @@ class BatchRandomSampler(Sampler):
 
 
 class Im2LatexDataset(Dataset):
-    def __init__(self, data_dir, split, transform=None, inp_channels=3):
+    def __init__(self, data_dir, split, transform=None):
         """args:
         data_dir: root dir storing the prepoccessed data
         split: train, validate, test or toy
@@ -53,7 +51,6 @@ class Im2LatexDataset(Dataset):
         self.images_dir = join(data_dir, "images_processed")
         self.formulas = self._get_formulas()
         self.transform = transform
-        self.inp_channels = inp_channels
         self.pairs = self._get_pairs(split)
 
     def __getitem__(self, index):
@@ -87,17 +84,11 @@ class Im2LatexDataset(Dataset):
         # get image-formulas pairs
         pairs = []
         with open(map_file, 'r') as f:
-            for i, line in enumerate(tqdm(f, total=total_lines)):
+            for line in tqdm(f, total=total_lines):
                 img_name, formula_id = line.strip('\n').split()
                 # load img and its corresponding formula
                 img_path = join(self.images_dir, img_name)
-                if self.inp_channels == 1:
-                    img = Image.open(img_path).convert('L')
-                elif self.inp_channels == 3:
-                    img = Image.open(img_path).convert('RGB')
-                img = np.array(img, dtype=np.uint8)
-                if self.inp_channels == 1:
-                    img = np.expand_dims(img, 2)
+                img = cv.imread(img_path, cv.IMREAD_COLOR)
                 formula = self.formulas[int(formula_id)]
                 el = {"img_name": img_name,
                       "formula": formula,

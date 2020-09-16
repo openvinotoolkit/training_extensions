@@ -54,7 +54,7 @@ class Trainer():
         self.model = Im2latexModel(config.get('backbone_type'), config.get(
             'backbone_config'), len(self.vocab), config.get('head'))
         if self.model_path is not None:
-            self.model.load_weights(self.model_path)
+            self.model.load_weights(self.model_path, old_model=config.get("old_model"))
 
         self.optimizer = getattr(optim, config.get('optimizer', "Adam"))(self.model.parameters(), self.learing_rate)
         self.lr_scheduler = ReduceLROnPlateau(self.optimizer)
@@ -104,13 +104,10 @@ class Trainer():
         while self.epoch <= self.total_epochs:
             losses = 0.0
             for _, imgs, tgt4training, tgt4cal_loss in self.train_loader:
-                step_loss, step_accuracy = self.train_step(
-                    imgs, tgt4training, tgt4cal_loss)
+                step_loss, step_accuracy = self.train_step(imgs, tgt4training, tgt4cal_loss)
                 losses += step_loss
-                self.writer.add_scalar(
-                    'Train loss', step_loss, self.global_step)
-                self.writer.add_scalar(
-                    'Train accuracy', step_accuracy, self.global_step)
+                self.writer.add_scalar('Train loss', step_loss, self.global_step)
+                self.writer.add_scalar('Train accuracy', step_accuracy, self.global_step)
 
                 # log message
                 if self.global_step % self.print_freq == 0:
@@ -127,16 +124,12 @@ class Trainer():
                         self.step,
                         self.time,
                     ))
-                    lr = self.learing_rate
-                    self.writer.add_scalar(
-                        'Learning rate', lr, self.global_step)
+                    self.writer.add_scalar('Learning rate', self.learing_rate, self.global_step)
                 if self.global_step % self.val_freq == 0:
 
                     step_loss, step_accuracy = self.validate()
-                    self.writer.add_scalar(
-                        'Loss/validation.pth', step_loss, self.global_step)
-                    self.writer.add_scalar(
-                        'Accuracy/validation.pth', step_accuracy, self.global_step)
+                    self.writer.add_scalar('Loss/validation.pth', step_loss, self.global_step)
+                    self.writer.add_scalar('Accuracy/validation.pth', step_accuracy, self.global_step)
                     if step_loss < self.best_val_loss:
                         self.best_val_loss = step_loss
                         self.save_model("loss_best_model_{}.pth".format(self.time))
@@ -145,10 +138,8 @@ class Trainer():
                         self.save_model("accuracy_best_model_{}.pth".format(self.time))
 
                     step_loss, step_accuracy = self.validate(use_gt_token=False)
-                    self.writer.add_scalar(
-                        'Loss/test_mode_validation', step_loss, self.global_step)
-                    self.writer.add_scalar(
-                        'Accuracy/test_mode_validation', step_accuracy, self.global_step)
+                    self.writer.add_scalar('Loss/test_mode_validation', step_loss, self.global_step)
+                    self.writer.add_scalar('Accuracy/test_mode_validation', step_accuracy, self.global_step)
                     if step_loss < self.best_val_loss_test:
                         self.best_val_loss_test = step_loss
                         self.save_model("loss_test_best_model_{}.pth".format(self.time))
@@ -194,12 +185,11 @@ class Trainer():
 
                     for j, phrase in enumerate(pred):
                         gold_phrase_str = self.vocab.construct_phrase(
-                            tgt4cal_loss[j], skip_end_token=False)
+                            tgt4cal_loss[j])
                         pred_phrase_str = self.vocab.construct_phrase(phrase,
                                                                       max_len=1 +
                                                                       len(gold_phrase_str.split(
-                                                                      )),
-                                                                      skip_end_token=False)
+                                                                      )))
                         output_file.write(img_name[j] + '\t' +
                                           pred_phrase_str + '\t' +
                                           gold_phrase_str + '\n')

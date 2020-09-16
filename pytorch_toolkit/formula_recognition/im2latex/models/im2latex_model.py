@@ -8,17 +8,20 @@ from .text_recognition_heads.attention_based import TextRecognitionHead, HEAD_LA
 BB_LAYERS = RESNET_BB_LAYERS
 BB_LAYERS.extend(IM2LATEX_BB_LAYERS)
 
+
 def head_layers_in_key(key):
     for head_layer in HEAD_LAYERS:
         if head_layer in key:
             return True
     return False
 
+
 def bb_layers_in_key(key):
     for bb_layer in BB_LAYERS:
         if bb_layer in key:
             return True
     return False
+
 
 class Im2latexModel(nn.Module):
     class Encoder(nn.Module):
@@ -44,10 +47,10 @@ class Im2latexModel(nn.Module):
                 hidden, context, output, row_enc_out, tgt)
 
     def __init__(self, backbone_type, backbone, out_size, head):
-        super(Im2latexModel, self).__init__()
+        super().__init__()
         self.head = TextRecognitionHead(out_size, head)
         self.backbone_type = backbone_type
-        if 'resnet' in self.backbone_type:
+        if self.backbone_type == 'resnet':
             self.backbone = ResNetLikeBackbone(backbone)
         else:
             self.backbone = Im2LatexBackBone()

@@ -9,7 +9,6 @@ from torchvision.transforms import ToTensor, Compose
 import operator
 
 
-
 from .vocab import END_TOKEN, PAD_TOKEN, START_TOKEN, UNK_TOKEN, Vocab
 import torch.nn.functional as F
 
@@ -442,6 +441,7 @@ def get_num_lines_in_file(path):
             total += 1
     return total
 
+
 def cal_loss(logits, targets, should_cut_by_min=False):
     """args:
         logits: probability distribution return by model
@@ -463,29 +463,23 @@ def cal_loss(logits, targets, should_cut_by_min=False):
     padding = torch.ones_like(targets) * PAD_TOKEN
     mask = (targets != padding)
     targets = targets.masked_select(mask)
-    logits = logits.masked_select(
-        mask.unsqueeze(2).expand(-1, -1, logits.size(2))
-    ).contiguous().view(-1, logits.size(2))
+    logits = logits.masked_select(mask.unsqueeze(2).expand(-1, -1, logits.size(2))
+                                  ).contiguous().view(-1, logits.size(2))
     logits = torch.log(logits)
 
     assert logits.size(0) == targets.size(0)
     pred = torch.max(logits.data, 1)[1]
 
     accuracy = (pred == targets)
-
     accuracy = accuracy.cpu().numpy().astype(np.uint32)
-
     accuracy = np.sum(accuracy) / len(accuracy)
 
     loss = F.nll_loss(logits, targets)
     return loss, accuracy.item()
 
-def count_parameters(model):
-    return sum(p.numel() for p in model.parameters() if p.requires_grad)
-
 
 def collate_fn(sign2id, batch, *, batch_transform=None):
-    # filter the pictures that have different weight or height
+    # filter the pictures that have different width or height
     size = batch[0]['img'].shape
     batch = [img_formula for img_formula in batch
              if img_formula['img'].shape == size]
@@ -503,14 +497,11 @@ def collate_fn(sign2id, batch, *, batch_transform=None):
     imgs = torch.stack(imgs, dim=0)
 
     bsize = len(batch)
-    tgt4training = torch.cat(
-        [torch.ones(bsize, 1).long()*START_TOKEN, formulas_tensor],
-        dim=1
-    )  # targets for training , begin with START_TOKEN
-    tgt4cal_loss = torch.cat(
-        [formulas_tensor, torch.ones(bsize, 1).long()*END_TOKEN],
-        dim=1
-    )  # targets for calculating loss , end with END_TOKEN
+    tgt4training = torch.cat([torch.ones(bsize, 1).long()*START_TOKEN, formulas_tensor],
+                             dim=1
+                             )  # targets for training, begin with START_TOKEN
+    tgt4cal_loss = torch.cat([formulas_tensor, torch.ones(bsize, 1).long()*END_TOKEN],
+                             dim=1)  # targets for calculating loss, end with END_TOKEN
     return img_names, imgs, tgt4training, tgt4cal_loss
 
 
@@ -546,18 +537,18 @@ def create_list_of_transforms(transforms_list):
                 transforms.append(TransformShift(*transform['shifts']))
             elif transform['name'] == TransformRandomBolding:
                 transforms.append(TransformRandomBolding(transform['kernel_size'], transform['iterations'],
-                                transform['threshold'], transform['res_threshold'], transform['sigmaX'], transform['distr']))
+                                                         transform['threshold'], transform['res_threshold'], transform['sigmaX'], transform['distr']))
     transforms.append(BatchToTensor())
     return Compose(transforms)
 
 
 def formulas2tensor(formulas, sign2id):
     """convert formula to tensor"""
-    formulas=[formula.split() for formula in formulas]
-    batch_size=len(formulas)
-    max_len=len(formulas[0])
-    tensors=torch.ones(batch_size, max_len, dtype=torch.long) * PAD_TOKEN
+    formulas = [formula.split() for formula in formulas]
+    batch_size = len(formulas)
+    max_len = len(formulas[0])
+    tensors = torch.ones(batch_size, max_len, dtype=torch.long) * PAD_TOKEN
     for i, formula in enumerate(formulas):
         for j, sign in enumerate(formula):
-            tensors[i][j]=sign2id.get(sign, UNK_TOKEN)
+            tensors[i][j] = sign2id.get(sign, UNK_TOKEN)
     return tensors
