@@ -95,3 +95,7 @@ class FaceDetection0205TestCase(face_detection_test_case('face-detection-0205'))
 
 class FaceDetection0206TestCase(face_detection_test_case('face-detection-0206')):
     """ Test case for face-detection-0206 model. """
+
+
+class FaceDetection0207TestCase(face_detection_test_case('face-detection-0207')):
+    """ Test case for face-detection-0207 model. """
