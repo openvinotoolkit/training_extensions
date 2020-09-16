@@ -22,8 +22,6 @@ optimizer: Adam
 save_dir: ../im2latex/models
 train_paths:
 - /home/vloginov/work/im2latex/medium_v2/
-train_transforms_list:
-- BatchTransformPad
 val_path: /home/vloginov/work/im2latex/medium_v2/
 vocab_path: /home/vloginov/work/im2latex/medium_v2/vocab.pkl
 old_model: true

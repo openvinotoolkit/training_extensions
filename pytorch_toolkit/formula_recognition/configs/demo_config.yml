@@ -1,10 +1,10 @@
 backbone_config:
-  arch: resnet50
+  arch: resnext101_32x8d
   disable_layer_3: true
   disable_layer_4: true
   enable_last_conv: false
-  in_lstm_ch: 64
-backbone_type: resnet50
+  in_lstm_ch: 512
+backbone_type: resnet
 device: cuda
 head:
   beam_width: 0
@@ -15,7 +15,9 @@ head:
   max_len: 256
   n_layer: 1
 input_images:
-- /home/vloginov/work/im2latex/medium_v2/images_processed/64.png
-model_path: /home/vloginov/work/im2latex/medium_v2/save_dir/model_epoch_1_step_4000_2020-09-10_17-57-51.pth
+- /home/vloginov/work/im2latex/medium_v2/images_processed/6124.png
+model_path: /media/cluster_fs/user/vloginov/im2latex_project/0169/models/accuracy_best_model_2020-04-23_08-01-13
+old_model: true
 val_path: /home/vloginov/work/im2latex/medium_v2/
 vocab_path: /home/vloginov/work/im2latex/medium_v2/vocab.pkl
+map_location: cuda
