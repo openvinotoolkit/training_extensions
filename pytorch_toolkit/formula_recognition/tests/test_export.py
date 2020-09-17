@@ -1,7 +1,9 @@
 import unittest
-from tools.export import ONNXExporter
-import yaml
+
 import numpy as np
+import yaml
+
+from tools.export import ONNXExporter
 
 
 class TestExport(unittest.TestCase):
