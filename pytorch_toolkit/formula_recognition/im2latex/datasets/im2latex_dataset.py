@@ -46,7 +46,7 @@ class Im2LatexDataset(Dataset):
         data_dir: root dir storing the prepoccessed data
         split: train, validate, test or toy
         """
-        assert split in ["train", "validate", "test", "toy"]
+        assert split in ["train", "validate", "test", "toy", "reduced_val"]
         self.data_dir = data_dir
         self.images_dir = join(data_dir, "images_processed")
         self.formulas = self._get_formulas()
