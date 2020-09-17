@@ -16,16 +16,14 @@ from tools.evaluation_tools import Im2latexRenderBasedMetric
 
 
 class Evaluator():
-    def __init__(self, work_dir, config):
+    def __init__(self, config):
         self.config = config
         self.model_path = config.get('model_path')
         self.val_path = config.get('val_path')
         self.vocab = read_vocab(config.get('vocab_path'))
         self.val_transforms_list = config.get('val_transforms_list')
-        self.work_dir = work_dir
-        self.val_results_path = os.path.join(self.work_dir, "val_results")
+        self.split = config.get('split_file', 'validate')
         self.print_freq = config.get('print_freq', 16)
-        self.create_dirs()
         self.load_dataset()
         self.model = Im2latexModel(config.get('backbone_type'), config.get(
             'backbone_config'), len(self.vocab), config.get('head'))
@@ -36,15 +34,9 @@ class Evaluator():
         self.model = self.model.to(self.device)
         self.time = get_timestamp()
 
-    def create_dirs(self):
-        if not os.path.exists(self.val_results_path):
-            os.makedirs(self.val_results_path)
-
     def load_dataset(self):
 
-        val_dataset = Im2LatexDataset(self.val_path, 'validate',
-                                      transform=None
-                                      )
+        val_dataset = Im2LatexDataset(self.val_path, self.split)
         val_sampler = BatchRandomSampler(dataset=val_dataset, batch_size=1)
         batch_transform_val = create_list_of_transforms(self.val_transforms_list)
         self.val_loader = DataLoader(
@@ -79,7 +71,6 @@ class Evaluator():
 def parse_args():
     args = argparse.ArgumentParser()
     args.add_argument('--config')
-    args.add_argument('--work_dir')
     return args.parse_args()
 
 
@@ -87,5 +78,5 @@ if __name__ == "__main__":
     args = parse_args()
     with open(args.config, 'r') as f:
         config = yaml.load(f, Loader=yaml.SafeLoader)
-    validator = Evaluator(args.work_dir, config)
+    validator = Evaluator(config)
     print("Im2latex metric is: {}".format(validator.validate()))
