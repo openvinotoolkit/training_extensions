@@ -19,3 +19,4 @@ model_path: /media/cluster_fs/user/vloginov/im2latex_project/0169/models/accurac
 val_path: /home/vloginov/work/im2latex/medium_v2/
 vocab_path: /home/vloginov/work/im2latex/medium_v2/vocab.pkl
 old_model: true
+split_file: reduced_val
