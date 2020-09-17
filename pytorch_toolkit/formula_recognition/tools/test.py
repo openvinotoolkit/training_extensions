@@ -54,7 +54,7 @@ class Evaluator():
         metric = Im2latexRenderBasedMetric()
         with torch.no_grad():
 
-            for img_name, imgs, tgt4training, tgt4cal_loss in tqdm(self.val_loader):
+            for img_name, imgs, tgt4training, tgt4cal_loss in tqdm(self.val_loader, initial=1):
                 imgs = imgs.to(self.device)
                 tgt4training = tgt4training.to(self.device)
                 tgt4cal_loss = tgt4cal_loss.to(self.device)
