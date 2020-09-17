@@ -110,11 +110,20 @@ Config file of the evaluation is similiar to train config:
 ```bash
 python tools/test.py --config configs/eval_config.yml
 ```
+Evaluation process is the following:
+1. Run the model and get predictions
+2. Render predictions from the first step into images of the formulas
+3. Compare images.
+The third step is very important because im LaTeX language one can write different formulas that are looking the same. Example:
+`s^{12]_{i}` and `s_{i]^{12}` looking the same: $s^{i}_{12}$ vs. $s_{12}^{i}$
+That is why we cannot just compare text predictions one-by-one, we have to render images and compare them.
 
 
 ## Demo
 
 In order to see how trained model works using OpenVINO™ please refer to [Formula recognition Python* Demo](https://github.com/opencv/open_model_zoo/tree/develop/demos/python_demos/formula_recognition_demo/). Before running the demo you have to export trained model to IR. Please see below how to do that.
+
+If you want to se how trained pytorch model is working, you can run `tools/demo.py` script with correct `config` file. Fill in the `input_images` variable with the paths to desired images. For every image in this list, model will predict the formula and print it into the terminal.
 
 ## Export PyTorch Models to OpenVINO™
 
