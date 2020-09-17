@@ -25,7 +25,21 @@ bash init_venv.sh
 
 ### Download Datasets
 
-Links to our datasets????
+For training model One has to have dataset. Dataset format is similiar to [im2latex-100k](https://zenodo.org/record/56198#.X2NDQ2gzaUl). Main structure of the dataset is following:
+* `formulas_file` - file with one formula per line
+* `images_folder` - folder containing input images
+* `split_file` - the most important part of the dataset. This file contains `file_name` (tab symbol) `formula_idx` per line connecting corresponding index of the formula in the file with formulas and particular image with `image_name`. Example:
+    ```
+    11.png  11
+    34.png  34
+    ```
+    There should be at least two such files: `train_filter.lst` and `validate_filter.lst`
+
+> **NOTE**:
+> By default code asserts to see dataset structure with the following names:
+> `images_processed` - folder with images
+> `formulas.norm.lst` - file with preprocessed formulas, for details, refer to [im2markup](https://github.com/harvardnlp/im2markup) repository
+> `validate_filter.lst` and `train_filter.lst` - corresponding splits of the data.
 
 
 ## Training
