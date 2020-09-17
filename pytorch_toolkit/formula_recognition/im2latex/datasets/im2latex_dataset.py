@@ -6,7 +6,6 @@ import numpy as np
 from tqdm import tqdm
 
 from torch.utils.data import Dataset, Sampler
-from torchvision import transforms
 
 from ..data.utils import get_num_lines_in_file
 from ..data.vocab import split_number
@@ -41,7 +40,7 @@ class BatchRandomSampler(Sampler):
 
 
 class Im2LatexDataset(Dataset):
-    def __init__(self, data_dir, split, transform=None):
+    def __init__(self, data_dir, split):
         """args:
         data_dir: root dir storing the prepoccessed data
         split: train, validate, test or toy
@@ -50,14 +49,11 @@ class Im2LatexDataset(Dataset):
         self.data_dir = data_dir
         self.images_dir = join(data_dir, "images_processed")
         self.formulas = self._get_formulas()
-        self.transform = transform
         self.pairs = self._get_pairs(split)
 
     def __getitem__(self, index):
 
         el = deepcopy(self.pairs[index])
-        if self.transform:
-            el['img'] = self.transform(el['img'])
         return el
 
     def __len__(self):
