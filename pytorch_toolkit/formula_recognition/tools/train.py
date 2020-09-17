@@ -31,7 +31,7 @@ class Trainer():
         self.train_transforms_list = config.get('train_transforms_list')
         self.val_transforms_list = config.get('val_transforms_list')
         self.total_epochs = config.get('epochs', 30)
-        self.learing_rate = config.get('LR', 1e-3)
+        self.learing_rate = config.get('learning_rate', 1e-3)
         self.clip = config.get('clip_grad', 5.0)
         self.work_dir = work_dir
         self.save_dir = os.path.join(self.work_dir, 'save_dir')
@@ -72,9 +72,7 @@ class Trainer():
 
     def load_dataset(self):
         train_dataset = ConcatDataset(
-            [Im2LatexDataset(train_s, 'train',
-                             transform=None
-                             ) for train_s in self.train_paths]
+            [Im2LatexDataset(train_s, 'train') for train_s in self.train_paths]
         )
         train_sampler = BatchRandomSampler(
             dataset=train_dataset, batch_size=self.config.get('batch_size', 4))
@@ -86,9 +84,7 @@ class Trainer():
                                batch_transform=batch_transform_train),
             num_workers=os.cpu_count())
 
-        val_dataset = Im2LatexDataset(self.val_path, 'validate',
-                                      transform=None
-                                      )
+        val_dataset = Im2LatexDataset(self.val_path, 'validate')
         val_sampler = BatchRandomSampler(dataset=val_dataset, batch_size=1)
         batch_transform_val = create_list_of_transforms(self.val_transforms_list)
         self.val_loader = DataLoader(
@@ -128,8 +124,8 @@ class Trainer():
                 if self.global_step % self.val_freq == 0:
 
                     step_loss, step_accuracy = self.validate()
-                    self.writer.add_scalar('Loss/validation.pth', step_loss, self.global_step)
-                    self.writer.add_scalar('Accuracy/validation.pth', step_accuracy, self.global_step)
+                    self.writer.add_scalar('Loss/validation', step_loss, self.global_step)
+                    self.writer.add_scalar('Accuracy/validation', step_accuracy, self.global_step)
                     if step_loss < self.best_val_loss:
                         self.best_val_loss = step_loss
                         self.save_model("loss_best_model_{}.pth".format(self.time))
