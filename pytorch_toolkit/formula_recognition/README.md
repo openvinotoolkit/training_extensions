@@ -33,8 +33,42 @@ Links to our datasets????
 To train Text Spotter model run:
 
 ```bash
-python3 tools/train.py --config configs/train_config.yml
+python3 tools/train.py --config configs/train_config.yml --work_dir <path to work dir>
 ```
+Work dir is used to store information about learning: saved model checkpoints, logs.
+
+### Description of the possible option in train config:
+ - `backbone_config`:
+    * `arch`: type of the architecture (if backbone_type is resnet). For mor details, please, refer to [ResnetLikeBackBone](im2latex/models/backbones/resnet.py)
+    * `disable_layer_3` and
+    * `disable_layer_4` - disables layer 3 and 4 in resnetlike backbone
+    * `enable_last_conv` - enables additional convolution layer to adjust number of output channels to the number of input channels in the LSTM
+    * `in_lstm_ch` - number of input LSTM channels, used for `last_conv`
+- `backbone_type`: `resnet` for resnetlike backbone or anything else for original backbone from [im2markup](https://arxiv.org/pdf/1609.04938.pdf) paper
+- `batch_size` - batch size used for training
+- `device` - device for training, used in pytorch .to() method. Possible options: 'cuda', 'cpu', etc. `cpu` is used by default.
+- `head` - configuration of the text recognition head
+    * `beam_width` - witdth used in beam search. 0 - do not use beam search, 1 and more - use beam search with corresponding number of possible tracks.
+    * `dec_rnn_h` - number of channels on decoding
+    * `emb_size` - dimension of the embedding
+    * `enc_rnn_h` - number of channels in encoding
+    * `in_lstm_ch` - number of input in lstm channels, should be equal to `backbone_config.in_lstm_ch`
+    * `max_len` - maximum possible length of the formula
+    * `n_layer` - describe
+- `learning_rate` - learining rate
+- `log_path` - path to store training logs
+- `model_path` - path for model (if one wants to aftertune model)
+- `optimizer` - Adam or SGD
+- `save_dir` - dir to save checkpoints
+- `train_paths` - list of paths from where get training data (if more than one path is specified, datasets are concatenated). If one wants to concatenate more than one instance of the desirable dataset, this dataset shoulb be set several times.
+- `val_path` - path for validation data
+- `vocab_path` - path where vocab file is stored
+- `train_transforms_list` and
+- `val_transforms_list` - here you can describe set of desirable transformations for train and validation datasets respectively
+- `epochs` - number of epochs to train
+- `clip_grad` - maximum possible value for gradient
+- `old_model` - use this flag if you want to traing model trained in the previous versions of this framework.
+
 
 One can point to pre-trained model [checkpoint](https://download.01.org/opencv/openvino_training_extensions/models/text_spotter/model_step_200000.pth) inside configuration file to start training from pre-trained weights. Change `configs/train_config.yml`:
 ```
@@ -57,8 +91,7 @@ old_model: true
 
 ### PyTorch
 
-For example, to evaluate text-spotting-0001 model on medium_v2 test dataset
-using PyTorch backend run:
+Config file of the evaluation is similiar to train config:
 
 ```bash
 python tools/test.py --config configs/eval_config.yml
@@ -93,7 +126,7 @@ Conversion from ONNX model representation to OpenVINO™ IR is straightforward a
 handled by OpenVINO™ Model Optimizer. Please refer to [Model Optimizer
 documentation](https://docs.openvinotoolkit.org/latest/_docs_MO_DG_Deep_Learning_Model_Optimizer_DevGuide.html) for details on how it works.
 
-To convert model to IR one has to set flag `export_ir` in `config` file:
+To convert model to IR One has to set flag `export_ir` in `config` file:
 ```
 ...
 export_ir: true
