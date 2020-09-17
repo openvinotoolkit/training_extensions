@@ -38,6 +38,7 @@ class Trainer():
         self.val_results_path = os.path.join(self.save_dir, "val_results")
         self.step = 0
         self.global_step = 0
+        self._test_steps = config.get('_test_steps', 1e18)
         self.epoch = 1
         self.best_val_loss = 1e18
         self.best_val_accuracy = 0.0
@@ -144,6 +145,9 @@ class Trainer():
                         self.save_model("accuracy_test_best_model_{}.pth".format(self.time))
 
                     self.lr_scheduler.step(step_loss)
+                self._current_loss = losses
+                if self.global_step >= self._test_steps:
+                    return
 
             self.epoch += 1
             self.step = 0
