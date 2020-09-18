@@ -16,7 +16,14 @@ from oteod.misc import run_with_termination
 
 def train_internal(config, gpu_num, update_config):
     training_info = {'training_gpu_num': 0}
-    if torch.cuda.is_available():
+    if os.getenv('MASTER_ADDR') is not None and os.getenv('MASTER_PORT') is not None:
+        logging.info('Distributed training started ...')
+        run_with_termination(f'python {MMDETECTION_TOOLS}/train.py'
+                             f' --launcher=pytorch'
+                             f' {config}'
+                             f'{update_config}'.split(' '))
+        logging.info('... distributed training completed.')
+    elif torch.cuda.is_available():
         logging.info('Training on GPUs started ...')
         available_gpu_num = torch.cuda.device_count()
         if available_gpu_num < gpu_num:
