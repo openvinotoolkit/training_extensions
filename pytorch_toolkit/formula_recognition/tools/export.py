@@ -16,6 +16,7 @@
 
 import argparse
 import subprocess
+import os
 
 import cv2 as cv
 import numpy as np
@@ -25,9 +26,18 @@ import torch.onnx
 import torch.optim as optim
 import yaml
 
+from openvino.inference_engine import IECore
+
 from im2latex.data.utils import create_list_of_transforms
 from im2latex.data.vocab import START_TOKEN, END_TOKEN, read_vocab
 from im2latex.models.im2latex_model import Im2latexModel
+
+
+def read_net(model_xml, ie, device):
+    model_bin = os.path.splitext(model_xml)[0] + ".bin"
+    model = ie.read_network(model_xml, model_bin)
+
+    return model
 
 
 class ONNXExporter():
@@ -36,21 +46,30 @@ class ONNXExporter():
         self.model_path = config.get('model_path')
         self.vocab = read_vocab(config.get('vocab_path'))
         self.transform = create_list_of_transforms(config.get('transforms_list'))
+        self.transform_for_ir = create_list_of_transforms(config.get('transforms_list'), ovino_ir=True)
         self.model = Im2latexModel(config.get('backbone_type'), config.get(
             'backbone_config'), len(self.vocab), config.get('head'))
         if self.model_path is not None:
             self.model.load_weights(self.model_path, old_model=config.get("old_model"))
 
         self.input = config.get("dummy_input")
-        self.img = self.read_and_preprocess_img()
+        self.img = self.read_and_preprocess_img(self.transform)
+        self.img_for_ir = self.read_and_preprocess_img_for_ir(self.transform_for_ir)
         self.encoder = self.model.get_encoder_wrapper(self.model)
         self.decoder = self.model.get_decoder_wrapper(self.model)
 
-    def read_and_preprocess_img(self):
+    def read_and_preprocess_img(self, transform):
         img = cv.imread(self.input)
-        img = self.transform(img)
+        img = transform(img)
         img = img[0].unsqueeze(0)
         return img
+
+
+    def read_and_preprocess_img_for_ir(self, transform):
+        img = cv.imread(self.input)
+        img = transform(img)
+        img = np.expand_dims(img[0], axis=0)
+        return np.transpose(img, (0, 3, 1, 2))
 
     def export_encoder(self):
         self.img = self.read_and_preprocess_img()
@@ -122,6 +141,16 @@ class ONNXExporter():
         return np.argmax(np.array(logits).squeeze(1), axis=1)
 
     def export_encoder_ir(self):
+        # --output 'row_enc_out,hidden,context,init_0' --reverse_input_channels  --scale_values "imgs[255,255,255]"
+        if self.config.get('verbose_export'):
+            print(f'/opt/intel/openvino/bin/setupvars.sh && '
+                  f'python /opt/intel/openvino/deployment_tools/model_optimizer/mo.py '
+                  f'--framework onnx '
+                  f'--input_model {self.config.get("res_encoder_name")} '
+                  f'--input_shape "{self.config.get("input_shape_decoder")}" '
+                  f'--output "{self.config.get("encoder_output_names")}" '
+                  f'--reverse_input_channels '
+                  f'--scale_values "imgs[255,255,255]"')
         subprocess.run(f'/opt/intel/openvino/bin/setupvars.sh && '
                        f'python /opt/intel/openvino/deployment_tools/model_optimizer/mo.py '
                        f'--framework onnx '
@@ -130,22 +159,77 @@ class ONNXExporter():
                        f'--output {self.config.get("encoder_output_names")} '
                        f'--reverse_input_channels '
                        f'--scale_values "imgs[255,255,255]"',
-                       shell=True
+                       shell=True, check=True
                        )
 
     def export_decoder_ir(self):
-        # --input "dec_st_h,dec_st_c,output_prev,row_enc_out,tgt" --input_shape "[1, 512], [1, 512], [1, 256], [1, 20, 175, 512], [1, 1]" --output 'dec_st_h_t,dec_st_c_t,output,logit' --keep_shape_ops --output_dir ./model_optimizer_outputs/medium_scanned_model_160_1400
-        input_shape_encoder = self.config.get("input_shape_decoder")
-        output_h, output_w = input_shape_encoder[2] // 8, input_shape_encoder[3] // 8
+        # --input "dec_st_h,dec_st_c,output_prev,row_enc_out,tgt"
+        # --input_shape "[1, 512], [1, 512], [1, 256], [1, 20, 175, 512], [1, 1]"
+        #  --output 'dec_st_h_t,dec_st_c_t,output,logit'
+        input_shape_decoder = self.config.get("input_shape_decoder")
+        output_h, output_w = input_shape_decoder[2] // 8, input_shape_decoder[3] // 8 + 1
+        input_shape = [[1, self.config.get('head').get("dec_rnn_h")],
+                       [1, self.config.get('head').get('dec_rnn_h')],
+                       [1, self.config.get('head').get('enc_rnn_h')],
+                       [1, output_h, output_w, self.config.get('head').get('dec_rnn_h')], [1, 1]]
+        input_shape = "{}, {}, {}, {}, {}".format(*input_shape)
+        if self.config.get('verbose_export'):
+            print(f'/opt/intel/openvino/bin/setupvars.sh && '
+                  f'python /opt/intel/openvino/deployment_tools/model_optimizer/mo.py '
+                  f'--framework onnx '
+                  f'--input_model {self.config.get("res_decoder_name")} '
+                  f'--input "{self.config.get("decoder_input_names")}" '
+                  f'--input_shape "{str(input_shape)}" '
+                  f'--output "{self.config.get("decoder_output_names")}"')
         subprocess.run(f'/opt/intel/openvino/bin/setupvars.sh && '
                        f'python /opt/intel/openvino/deployment_tools/model_optimizer/mo.py '
                        f'--framework onnx '
                        f'--input_model {self.config.get("res_decoder_name")} '
-                       f'--input {self.config.get("decoder_input_names")} '
-                       f'--input_shape "[1, 512], [1, 512], [1, 256], [1, {output_h}, {output_w}, 512], [1, 1]" '
-                       f'--output {self.config.get("decoder_output_names")} ',
-                       shell=True
+                       f'--input "{self.config.get("decoder_input_names")}" '
+                       f'--input_shape "{str(input_shape)}" '
+                       f'--output "{self.config.get("decoder_output_names")}"',
+                       shell=True, check=True
                        )
+
+    def run_ir_model(self):
+        ie = IECore()
+
+        encoder = read_net(self.config.get("res_encoder_name").replace(".onnx", ".xml"), ie, 'cpu')
+        dec_step = read_net(self.config.get("res_decoder_name").replace(".onnx", ".xml"), ie, 'cpu')
+
+        exec_net_encoder = ie.load_network(network=encoder, device_name="CPU")
+        exec_net_decoder = ie.load_network(network=dec_step, device_name="CPU")
+        enc_res = exec_net_encoder.infer(inputs={self.config.get("encoder_input_names").split(",")[0]: self.img_for_ir})
+        enc_out_names = self.config.get("encoder_output_names").split(",")
+        row_enc_out = enc_res[enc_out_names[0]]
+        dec_states_h = enc_res[enc_out_names[1]]
+        dec_states_c = enc_res[enc_out_names[2]]
+        output = enc_res[enc_out_names[3]]
+        dec_in_names = self.config.get("decoder_input_names").split(",")
+        dec_out_names = self.config.get("decoder_output_names").split(",")
+        tgt = np.array([[START_TOKEN]] * self.img.size(0))
+        logits = []
+        for _ in range(self.model.head.max_len):
+            dec_res = exec_net_decoder.infer(inputs={
+                dec_in_names[0]: dec_states_h,
+                dec_in_names[1]: dec_states_c,
+                dec_in_names[2]: output,
+                dec_in_names[3]: row_enc_out,
+                dec_in_names[4]: tgt
+            }
+            )
+
+            dec_states_h = dec_res[dec_out_names[0]]
+            dec_states_c = dec_res[dec_out_names[1]]
+            output = dec_res[dec_out_names[2]]
+            logit = dec_res[dec_out_names[3]]
+            logits.append(logit)
+
+            tgt = np.reshape(np.argmax(logit, axis=1), (self.img.size(0), 1)).astype(np.long)
+            if tgt[0][0] == END_TOKEN:
+                break
+
+        return np.argmax(np.array(logits).squeeze(1), axis=1)
 
 
 def get_onnx_inputs(model):
@@ -178,9 +262,13 @@ if __name__ == "__main__":
     exporter.export_decoder(row_enc_out, h, c, O_t)
     targets_onnx = exporter.run_decoder(h, c, O_t, row_enc_out).astype(np.int32)
     pred_onnx = exporter.vocab.construct_phrase(targets_onnx)
+    print(exporter.img.shape)
     _, targets_pytorch = exporter.model(exporter.img)
     pred_pytorch = exporter.vocab.construct_phrase(targets_pytorch[0])
     print("Predicted with ONNX is equal to PyTorch: {}".format(pred_onnx == pred_pytorch))
     if config.get("export_ir"):
         exporter.export_encoder_ir()
         exporter.export_decoder_ir()
+        targets_ir = exporter.run_ir_model()
+        ir_pred = exporter.vocab.construct_phrase(targets_ir)
+        print("Predicted with OpenvinoIR is equal to PyTorch: {}".format(ir_pred == pred_pytorch))

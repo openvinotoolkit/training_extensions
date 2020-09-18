@@ -64,6 +64,13 @@ class TestExport(unittest.TestCase):
             except:
                 self.fail("Exception raised while exporting decoder to openvino IR")
 
+    def test_6_run_ir_model(self):
+        if self.config.get("export_ir"):
+            ir_pred = self.exporter.vocab.construct_phrase(self.exporter.run_ir_model())
+            _, targets = self.exporter.model(self.exporter.img)
+            pred_pytorch = self.exporter.vocab.construct_phrase(targets[0])
+            self.assertEqual(ir_pred, pred_pytorch)
+
 
 if __name__ == "__main__":
     unittest.main()
