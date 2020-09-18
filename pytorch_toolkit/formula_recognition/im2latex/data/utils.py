@@ -48,52 +48,13 @@ class BatchResizePadToTGTShape():
         for image_raw in imgs:
 
             img_h, img_w = image_raw.shape[0:2]
-            if (img_h, img_w) != (target_height, target_width):
-                if img_h >= target_height and img_w >= target_width:
-                    # dim = (target_width, target_height)
-                    rescale_h = img_h / target_height
-                    rescale_w = img_w / target_width
-                    if rescale_h > rescale_w:
-                        new_h = int(img_h / rescale_h)
-                        new_w = int(img_w / rescale_h)
-                    else:
-                        new_h = int(img_h / rescale_w)
-                        new_w = int(img_w / rescale_w)
-
-                    image_raw = cv.resize(image_raw, (new_w, new_h))
-                    img_h, img_w = image_raw.shape[0:2]
-                    if (img_h, img_w != target_height, target_width):
-                        image_raw = cv.copyMakeBorder(image_raw, 0, target_height - img_h,
-                                                      0, target_width - img_w, cv.BORDER_CONSTANT,
-                                                      None, COLOR_WHITE)
-                elif img_h < target_height and img_w < target_width:
-                    rescale_h = img_h / target_height
-                    rescale_w = img_w / target_width
-                    if rescale_h > rescale_w:
-                        new_h = int(img_h / rescale_h)
-                        new_w = int(img_w / rescale_h)
-                    else:
-                        new_h = int(img_h / rescale_w)
-                        new_w = int(img_w / rescale_w)
-                    image_raw = cv.resize(image_raw, (new_w, new_h))
-                    img_h, img_w = image_raw.shape[0:2]
-                    if (img_h, img_w != target_height, target_width):
-                        image_raw = cv.copyMakeBorder(image_raw, 0, target_height - img_h,
-                                                      0, target_width - img_w, cv.BORDER_CONSTANT,
-                                                      None, COLOR_WHITE)
-                elif img_h < target_height and img_w >= target_width:
-                    dim = (target_width, int(target_width * img_h / img_w))
-                    image_raw = cv.resize(image_raw, dim)
-                    image_raw = cv.copyMakeBorder(image_raw, 0, target_height - image_raw.shape[0],
-                                                  0, 0, cv.BORDER_CONSTANT, None,
-                                                  COLOR_WHITE)
-                elif img_h >= target_height and img_w < target_width:
-                    dim = (int(target_height * img_w / img_h), target_height)
-                    image_raw = cv.resize(image_raw, dim)
-                    img_h, img_w = image_raw.shape[0:2]
-                    image_raw = cv.copyMakeBorder(image_raw, 0, 0,
-                                                  0, target_width - img_w, cv.BORDER_CONSTANT,
-                                                  None, COLOR_WHITE)
+            scale = min(target_height / img_h, target_width / img_w)
+            image_raw = cv.resize(image_raw, None, fx=scale, fy=scale)
+            img_h, img_w = image_raw.shape[0:2]
+            image_raw = cv.copyMakeBorder(image_raw, 0, target_height - img_h,
+                                          0, target_width - img_w, cv.BORDER_CONSTANT,
+                                          None, COLOR_WHITE)
+            assert image_raw.shape[0:2] == self.target_shape
             res.append(image_raw)
         return res
 
@@ -116,36 +77,14 @@ class BatchCropPadToTGTShape():
         res = []
         target_height, target_width = self.target_shape
         for image_raw in imgs:
-
             img_h, img_w = image_raw.shape[0:2]
-            if (img_h, img_w) != (target_height, target_width):
-                if img_h >= target_height and img_w >= target_width:
-                    if len(image_raw.shape) > 2:
-                        image_raw = image_raw[:target_height, :target_width, :]
-                    else:
-                        image_raw = image_raw[:target_height, :target_width]
-                elif img_h < target_height and img_w < target_width:
-
-                    image_raw = cv.copyMakeBorder(image_raw, 0, target_height - img_h,
-                                                  0, target_width - img_w, cv.BORDER_CONSTANT,
-                                                  None, COLOR_WHITE)
-                elif img_h < target_height and img_w >= target_width:
-                    if len(image_raw.shape) > 2:
-                        image_raw = image_raw[:, :target_width, :]
-                    else:
-                        image_raw = image_raw[:, :target_width]
-                    image_raw = cv.copyMakeBorder(image_raw, 0, target_height - image_raw.shape[0],
-                                                  0, 0, cv.BORDER_CONSTANT, None,
-                                                  COLOR_WHITE)
-                elif img_h >= target_height and img_w < target_width:
-                    if len(image_raw.shape) > 2:
-                        image_raw = image_raw[:target_height, :, :]
-                    else:
-                        image_raw = image_raw[:target_height, :]
-                    img_h, img_w = image_raw.shape[0:2]
-                    image_raw = cv.copyMakeBorder(image_raw, 0, 0,
-                                                  0, target_width - img_w, cv.BORDER_CONSTANT,
-                                                  None, COLOR_WHITE)
+            new_w = min(target_width, img_w)
+            new_h = min(target_height, img_h)
+            image_raw = image_raw[:new_h, :new_w, :]
+            img_h, img_w = image_raw.shape[0:2]
+            image_raw = cv.copyMakeBorder(image_raw, 0, target_height - img_h,
+                                          0, target_width - img_w, cv.BORDER_CONSTANT,
+                                          None, COLOR_WHITE)
             res.append(image_raw)
         return res
 
@@ -521,7 +460,7 @@ def collate_fn(sign2id, batch, *, batch_transform=None):
     return img_names, imgs, tgt4training, tgt4cal_loss
 
 
-def create_list_of_transforms(transforms_list):
+def create_list_of_transforms(transforms_list, ovino_ir = False):
     transforms = []
     if transforms_list:
         for transform in transforms_list:
@@ -554,7 +493,8 @@ def create_list_of_transforms(transforms_list):
             elif transform['name'] == TransformRandomBolding:
                 transforms.append(TransformRandomBolding(transform['kernel_size'], transform['iterations'],
                                                          transform['threshold'], transform['res_threshold'], transform['sigmaX'], transform['distr']))
-    transforms.append(BatchToTensor())
+    if not ovino_ir:
+        transforms.append(BatchToTensor())
     return Compose(transforms)
 
 
