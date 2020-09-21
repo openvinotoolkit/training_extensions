@@ -16,7 +16,7 @@ Models that are able to detect faces.
 ### 0. Change a directory in your terminal to object_detection.
 
 ```bash
-cd <openvino_training_extensions>/pytorch_toolkit/object_detection
+cd <training_extensions>/pytorch_toolkit/object_detection/model_templates
 ```
 
 ### 1. Select a training configuration file and get pre-trained snapshot if available. Please see the table above.
@@ -66,14 +66,14 @@ If you would like to start **fine-tuning** from pre-trained weights do not forge
 * To train the detector on a single GPU, run in your terminal:
 
    ```bash
-   python ../../external/mmdetection/tools/train.py \
+   python ../../../external/mmdetection/tools/train.py \
             $CONFIGURATION_FILE
    ```
 
 * To train the detector on multiple GPUs, run in your terminal:
 
    ```bash
-   ../../external/mmdetection/tools/dist_train.sh \
+   ../../../external/mmdetection/tools/dist_train.sh \
             $CONFIGURATION_FILE \
             <GPU_NUM>
    ```
@@ -99,7 +99,7 @@ If you would like to start **fine-tuning** from pre-trained weights do not forge
 * To dump detection of your model as well as compute MS-COCO metrics run:
 
    ```bash
-   python ../../external/mmdetection/tools/test.py \
+   python ../../../external/mmdetection/tools/test.py \
             $CONFIGURATION_FILE \
             <CHECKPOINT> \
             --out result.pkl \
@@ -131,7 +131,7 @@ If you would like to start **fine-tuning** from pre-trained weights do not forge
 To convert PyTorch\* model to the OpenVINO™ IR format run the `export.py` script:
 
 ```bash
-python ../../external/mmdetection/tools/export.py \
+python ../../../external/mmdetection/tools/export.py \
       $CONFIGURATION_FILE \
       <CHECKPOINT> \
       <EXPORT_FOLDER> \
@@ -151,7 +151,7 @@ but it also might be faster than the default one. As a rule SSD models in [Open 
 Instead of running `test.py` you need to run `test_exported.py` and then repeat steps listed in [Validation paragraph](#5-validation).
 
 ```bash
-python ../../external/mmdetection/tools/test_exported.py  \
+python ../../../external/mmdetection/tools/test_exported.py  \
       $CONFIGURATION_FILE \
       <EXPORT_FOLDER>/$MODEL_NAME.xml \
       --out results.pkl \
@@ -163,7 +163,7 @@ python ../../external/mmdetection/tools/test_exported.py  \
 To see how the converted model works using OpenVINO you need to run `test_exported.py` with `--show` option.
 
 ```bash
-python ../../external/mmdetection/tools/test_exported.py  \
+python ../../../external/mmdetection/tools/test_exported.py  \
       $CONFIGURATION_FILE \
       <EXPORT_FOLDER>/$MODEL_NAME.xml \
       --show
@@ -176,7 +176,7 @@ python ../../external/mmdetection/tools/test_exported.py  \
 To get per-layer computational complexity estimations, run the following command:
 
 ```bash
-python ../../external/mmdetection/tools/get_flops.py \
+python ../../../external/mmdetection/tools/get_flops.py \
        $CONFIGURATION_FILE
 ```
 

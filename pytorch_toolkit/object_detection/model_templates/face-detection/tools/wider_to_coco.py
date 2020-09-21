@@ -16,7 +16,7 @@
 
 import argparse
 
-from oteod.evaluation.face_detection.convert_annotation import convert_to_coco
+from oteod.evaluation.face_detection.wider_face.convert_annotation import convert_to_coco
 
 
 def parse_args():
