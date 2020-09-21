@@ -32,7 +32,7 @@ def export_test_case(problem_name, model_name, snapshot_name=None, alt_ssd_expor
             self.data_folder = '../../data'
             self.work_dir = os.path.join('/tmp/', self.model_name)
             os.makedirs(self.work_dir, exist_ok=True)
-            self.configuration_file = f'./{self.problem_name}/{self.model_name}/config.py'
+            self.configuration_file = f'model_templates/{self.problem_name}/{self.model_name}/config.py'
             os.system(f'cp {self.configuration_file} {self.work_dir}/')
             self.configuration_file = os.path.join(self.work_dir,
                                                    os.path.basename(self.configuration_file))
