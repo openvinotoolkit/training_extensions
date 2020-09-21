@@ -30,7 +30,7 @@ def face_detection_test_case(model_name):
             self.data_folder = '../../data'
             self.work_dir = os.path.join('/tmp/', self.model_name)
             os.makedirs(self.work_dir, exist_ok=True)
-            self.configuration_file = f'./face-detection/{self.model_name}/config.py'
+            self.configuration_file = f'model_templates/face-detection/{self.model_name}/config.py'
             run_through_shell(f'cp {self.configuration_file} {self.work_dir}/')
             self.configuration_file = os.path.join(self.work_dir,
                                                    os.path.basename(self.configuration_file))
@@ -115,9 +115,9 @@ class FaceDetection0200TestCaseOteApi(unittest.TestCase):
     def test_ok(self):
         model_name = 'face-detection-0200'
 
-        template_file = f'./face-detection/{model_name}/template.yaml'
-        ann_file = '../../../../data/airport/annotation_faces_train.json'
-        img_root = '../../../../data/airport/'
+        template_file = f'model_templates/face-detection/{model_name}/template.yaml'
+        ann_file = '../../../../../data/airport/annotation_faces_train.json'
+        img_root = '../../../../../data/airport/'
         work_dir = tempfile.mkdtemp()
         dependencies = self.get_dependencies(template_file)
 

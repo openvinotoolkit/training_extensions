@@ -30,7 +30,7 @@ def test_case(model_name, snapshot_name):
             self.data_folder = '../../data'
             self.work_dir = os.path.join('/tmp/', self.model_name)
             os.makedirs(self.work_dir, exist_ok=True)
-            self.configuration_file = f'./person-vehicle-bike-detection/{self.model_name}/config.py'
+            self.configuration_file = f'model_templates/person-vehicle-bike-detection/{self.model_name}/config.py'
             run_through_shell(f'cp {self.configuration_file} {self.work_dir}/')
             self.configuration_file = os.path.join(self.work_dir,
                                                    os.path.basename(self.configuration_file))
@@ -105,9 +105,9 @@ class PersonVehicleBikeDetection2000TestCaseOteApi(unittest.TestCase):
     def test_ok(self):
         model_name = 'person-vehicle-bike-detection-2000'
 
-        template_file = f'./person-vehicle-bike-detection/{model_name}/template.yaml'
-        ann_file = '../../../../data/airport/annotation_example_train.json'
-        img_root = ' ../../../../data/airport/train'
+        template_file = f'model_templates/person-vehicle-bike-detection/{model_name}/template.yaml'
+        ann_file = '../../../../../data/airport/annotation_example_train.json'
+        img_root = '../../../../../data/airport/train'
         work_dir = tempfile.mkdtemp()
         dependencies = self.get_dependencies(template_file)
 

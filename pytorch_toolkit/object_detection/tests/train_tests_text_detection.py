@@ -30,7 +30,7 @@ def text_detection_test_case(model_name):
             self.data_folder = '../../data/horizontal_text_detection'
             self.work_dir = os.path.join('/tmp', self.model_name)
             os.makedirs(self.work_dir, exist_ok=True)
-            self.configuration_file = f'./horizontal-text-detection/{self.model_name}/config.py'
+            self.configuration_file = f'model_templates/horizontal-text-detection/{self.model_name}/config.py'
             run_through_shell(f'cp {self.configuration_file} {self.work_dir}/')
             self.configuration_file = os.path.join(self.work_dir,
                                                    os.path.basename(self.configuration_file))
@@ -96,9 +96,9 @@ class HorizontalTextDetection0001TestCaseOteApi(unittest.TestCase):
     def test_ok(self):
         model_name = 'horizontal-text-detection-0001'
 
-        template_file = f'./horizontal-text-detection/{model_name}/template.yaml'
-        ann_file = '../../../../data/horizontal_text_detection/annotation.json'
-        img_root = '../../../../data/horizontal_text_detection/'
+        template_file = f'model_templates/horizontal-text-detection/{model_name}/template.yaml'
+        ann_file = '../../../../../data/horizontal_text_detection/annotation.json'
+        img_root = '../../../../../data/horizontal_text_detection/'
         work_dir = tempfile.mkdtemp()
         dependencies = self.get_dependencies(template_file)
 
