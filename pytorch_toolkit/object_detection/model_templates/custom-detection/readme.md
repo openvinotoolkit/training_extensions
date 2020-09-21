@@ -16,7 +16,7 @@ but rather provide pre-trained checkpoints for further fine-tuning on a target d
 ### 0. Change a directory in your terminal to object_detection.
 
 ```bash
-cd <openvino_training_extensions>/pytorch_toolkit/object_detection
+cd <training_extensions>/pytorch_toolkit/object_detection/model_templates
 ```
 
 ### 1. Select a training configuration file and get pre-trained snapshot if available. Please see the table above.
@@ -28,7 +28,7 @@ export CONFIGURATION_FILE=./custom-detection/$MODEL_NAME/config.py
 
 ### 2. Collect dataset
 
-You can train a model on existing toy dataset `openvino_training_extensions/data/airport`. Obviously such dataset is not sufficient for training good enough model.
+You can train a model on existing toy dataset `training_extensions/data/airport`. Obviously such dataset is not sufficient for training good enough model.
 
 ### 3. Prepare annotation
 
@@ -41,10 +41,10 @@ It can be done by `--update_args` parameter or modifications inside configuratio
 ```bash
 export NUM_CLASSES=3
 export CLASSES="vehicle,person,non-vehicle"
-export ANN_FILE_TRAIN="../../data/airport/annotation_example_train.json"
-export ANN_FILE_VAL="../../data/airport/annotation_example_val.json"
-export IMG_PREFIX_TRAIN="../../data/airport/train"
-export IMG_PREFIX_VAL="../../data/airport/val"
+export ANN_FILE_TRAIN="../../../data/airport/annotation_example_train.json"
+export ANN_FILE_VAL="../../../data/airport/annotation_example_val.json"
+export IMG_PREFIX_TRAIN="../../../data/airport/train"
+export IMG_PREFIX_VAL="../../../data/airport/val"
 export WORK_DIR="my_custom_detector"
 export UPDATE_CONFIG="model.bbox_head.num_classes=${NUM_CLASSES} \
                       data.train.dataset.classes=${CLASSES} \
@@ -64,7 +64,7 @@ export UPDATE_CONFIG="model.bbox_head.num_classes=${NUM_CLASSES} \
 * To train the detector on a single GPU, run in your terminal:
 
    ```bash
-   python ../../external/mmdetection/tools/train.py \
+   python ../../../external/mmdetection/tools/train.py \
             $CONFIGURATION_FILE \
             --update_config $UPDATE_CONFIG
    ```
@@ -72,7 +72,7 @@ export UPDATE_CONFIG="model.bbox_head.num_classes=${NUM_CLASSES} \
 * To train the detector on multiple GPUs, run in your terminal:
 
    ```bash
-   ../../external/mmdetection/tools/dist_train.sh \
+   ../../../external/mmdetection/tools/dist_train.sh \
             $CONFIGURATION_FILE \
             <GPU_NUM> \
             --update_config $UPDATE_CONFIG
@@ -83,7 +83,7 @@ export UPDATE_CONFIG="model.bbox_head.num_classes=${NUM_CLASSES} \
 To dump detection of your model as well as compute MS-COCO metrics run:
 
 ```bash
-python ../../external/mmdetection/tools/test.py \
+python ../../../external/mmdetection/tools/test.py \
         ${WORK_DIR}/config.py \
         <CHECKPOINT> \
         --out result.pkl \
@@ -96,7 +96,7 @@ python ../../external/mmdetection/tools/test.py \
 To convert PyTorch\* model to the OpenVINO™ IR format run the `export.py` script:
 
 ```bash
-python ../../external/mmdetection/tools/export.py \
+python ../../../external/mmdetection/tools/export.py \
       ${WORK_DIR}/config.py \
       <CHECKPOINT> \
       <EXPORT_FOLDER> \
@@ -116,7 +116,7 @@ but it also might be faster than the default one. As a rule SSD models in [Open 
 Instead of running `test.py` you need to run `test_exported.py` and then repeat steps listed in [Validation paragraph](#5-validation).
 
 ```bash
-python ../../external/mmdetection/tools/test_exported.py  \
+python ../../../external/mmdetection/tools/test_exported.py  \
       ${WORK_DIR}/config.py \
       <EXPORT_FOLDER>/config.xml \
       --out results.pkl \
@@ -128,7 +128,7 @@ python ../../external/mmdetection/tools/test_exported.py  \
 To see how the converted model works using OpenVINO you need to run `test_exported.py` with `--show` option.
 
 ```bash
-python ../../external/mmdetection/tools/test_exported.py  \
+python ../../../external/mmdetection/tools/test_exported.py  \
       ${WORK_DIR}/config.py \
       <EXPORT_FOLDER>/config.xml \
       --show
@@ -141,6 +141,6 @@ python ../../external/mmdetection/tools/test_exported.py  \
 To get per-layer computational complexity estimations, run the following command:
 
 ```bash
-python ../../external/mmdetection/tools/get_flops.py \
+python ../../../external/mmdetection/tools/get_flops.py \
       ${WORK_DIR}/config.py
 ```
