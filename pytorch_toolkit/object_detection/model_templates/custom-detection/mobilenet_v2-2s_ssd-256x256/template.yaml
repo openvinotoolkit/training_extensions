@@ -13,10 +13,16 @@ dependencies:
   destination: train.py
 - source: ../tools/eval.py
   destination: eval.py
-- source: ../../tools/export.py
+- source: ../../../tools/export.py
   destination: export.py
-- source: ../../tools/quantize.py
+- source: ../../../tools/quantize.py
   destination: quantize.py
+- source: ../../../../../pytorch_toolkit/ote
+  destination: ote
+- source: ../../../../object_detection/oteod
+  destination: oteod
+- source: ../../requirements.txt
+  destination: requirements.txt
 max_nodes: 1
 training_target:
 - CPU
