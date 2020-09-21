@@ -16,6 +16,10 @@ dependencies:
   destination: export.py
 - source: ../../tools/quantize.py
   destination: quantize.py
+- source: ../../../../pytorch_toolkit
+  destination: lib_pytorch_toolkit
+- source: ../../../object_detection
+  destination: lib_object_detection
 max_nodes: 1
 training_target:
 - CPU
