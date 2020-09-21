@@ -90,7 +90,7 @@ def create_test_case(problem_name, model_name, ann_file, img_root):
 
             ap = collect_ap(log_file)
             self.assertEqual(len((ap)), self.epochs_delta)
-            self.assertLess(ap[0], ap[-1])
+            self.assertLess(ap[0] * 0.9, ap[-1])
 
     return TestCaseOteApi
 
