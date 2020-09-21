@@ -15,8 +15,84 @@
 import json
 import os
 import unittest
+import yaml
+import tempfile
 
-from common.utils import download_if_not_yet, collect_ap
+from common.utils import download_if_not_yet, collect_ap, run_through_shell
+
+
+def create_test_case(problem_name, model_name, ann_file, img_root):
+    class TestCaseOteApi(unittest.TestCase):
+
+        @staticmethod
+        def get_dependencies(template_file):
+            output = {}
+            with open(template_file) as read_file:
+                content = yaml.load(read_file, yaml.SafeLoader)
+                for dependency in content['dependencies']:
+                    output[dependency['destination'].split('.')[0]] = dependency['source']
+            return output
+
+        @staticmethod
+        def get_epochs(template_file):
+            with open(template_file) as read_file:
+                content = yaml.load(read_file, yaml.SafeLoader)
+            return content['hyper_parameters']['basic']['epochs']
+
+        def setUp(self):
+            self.template_file = f'model_templates/{problem_name}/{model_name}/template.yaml'
+            self.ann_file = ann_file
+            self.img_root = img_root
+            self.work_dir = tempfile.mkdtemp()
+            self.dependencies = self.get_dependencies(self.template_file)
+            self.epochs_delta = 3
+            self.total_epochs = self.get_epochs(self.template_file) + self.epochs_delta
+
+            download_if_not_yet(self.work_dir, self.dependencies['snapshot'])
+
+        def test_evaluation(self):
+            log_file = os.path.join(self.work_dir, 'test_evaluation.log')
+            run_through_shell(
+                f'cd {os.path.dirname(self.template_file)};'
+                f'python {self.dependencies["eval"]}'
+                f' --test-ann-files {self.ann_file}'
+                f' --test-img-roots {self.img_root}'
+                f' --save-metrics-to {os.path.join(self.work_dir, "metrics.yaml")}'
+                f' --load-weights {os.path.join(self.work_dir, os.path.basename(self.dependencies["snapshot"]))}'
+                f' | tee {log_file}')
+
+            with open(os.path.join(self.work_dir, "metrics.yaml")) as read_file:
+                content = yaml.load(read_file, yaml.SafeLoader)
+
+            ap = [metrics['value']
+                  for metrics in content['metrics'] if metrics['key'] == 'ap'][0]
+
+            with open(f'tests/expected_outputs/{problem_name}/{model_name}.json') as read_file:
+                content = json.load(read_file)
+
+            self.assertLess(abs(content['map'] - ap / 100), 1e-6)
+
+        def test_finetuning(self):
+            log_file = os.path.join(self.work_dir, 'test_finetuning.log')
+            run_through_shell(
+                f'cd {os.path.dirname(self.template_file)};'
+                f'python {self.dependencies["train"]}'
+                f' --train-ann-files {self.ann_file}'
+                f' --train-img-roots {self.img_root}'
+                f' --val-ann-files {self.ann_file}'
+                f' --val-img-roots {self.img_root}'
+                f' --resume-from {os.path.join(self.work_dir, os.path.basename(self.dependencies["snapshot"]))}'
+                f' --save-checkpoints-to {self.work_dir}'
+                f' --gpu-num 1'
+                f' --batch-size 1'
+                f' --epochs {self.total_epochs}'
+                f' | tee {log_file}')
+
+            ap = collect_ap(log_file)
+            self.assertEqual(len((ap)), self.epochs_delta)
+            self.assertLess(ap[0], ap[-1])
+
+    return TestCaseOteApi
 
 
 def export_test_case(problem_name, model_name, snapshot_name=None, alt_ssd_export=False):
