@@ -58,7 +58,6 @@ def is_clustering_needed(cfg):
 
 
 def cluster(cfg, config_path, update_config):
-    mmdetection_tools = f'{os.path.dirname(__file__)}/../../../../external/mmdetection/tools'
     logging.info('Clustering started...')
     widths = cfg.model.bbox_head.anchor_generator.widths
     n_clust = 0
@@ -84,7 +83,7 @@ def cluster(cfg, config_path, update_config):
 
     img_shape = f' --image_size_wh {img_shape[0]} {img_shape[1]}'
 
-    subprocess.run(f'python {mmdetection_tools}/cluster_boxes.py'
+    subprocess.run(f'python {MMDETECTION_TOOLS}/cluster_boxes.py'
                    f'{config}'
                    f'{n_clust}'
                    f'{group_as}'

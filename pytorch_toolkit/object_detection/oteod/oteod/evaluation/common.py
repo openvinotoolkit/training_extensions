@@ -34,6 +34,7 @@ def coco_ap_eval(config_path, work_dir, snapshot, outputs, update_config, show_d
 
         update_config = ' '.join([f'{k}={v}' for k, v in update_config.items()])
         update_config = f' --update_config {update_config}' if update_config else ''
+        update_config = update_config.replace('"', '\\"')
         show_dir = f' --show-dir {show_dir}' if show_dir else ''
         if snapshot.split('.')[-1] in {'xml', 'bin', 'onnx'}:
             if snapshot.split('.')[-1] == 'bin':
