@@ -7,23 +7,24 @@ but rather provide pre-trained checkpoints for further fine-tuning on a target d
 
 | Model Name | Complexity (GFLOPs) | Size (Mp) | AP @ [IoU=0.50:0.95] (%) | Links | GPU_NUM |
 | --- | --- | --- | --- | --- | --- |
-| mobilenet_v2-2s_ssd-256x256 | 0.86 | 1.99 | 11.3 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/mobilenet_v2-2s_ssd-256x256.pth), [configuration file](./mobilenet_v2-2s_ssd-256x256/model.py) | 3 |
-| mobilenet_v2-2s_ssd-384x384 | 1.92 | 1.99 | 13.3 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/mobilenet_v2-2s_ssd-384x384.pth), [configuration file](./mobilenet_v2-2s_ssd-384x384/model.py) | 3 |
-| mobilenet_v2-2s_ssd-512x512 | 3.42 | 1.99 | 12.7 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/mobilenet_v2-2s_ssd-512x512.pth), [configuration file](./mobilenet_v2-2s_ssd-512x512/model.py) | 3 |
+| mobilenet_v2-2s_ssd-256x256 | 0.86 | 1.99 | 11.3 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/mobilenet_v2-2s_ssd-256x256.pth), [model template](./mobilenet_v2-2s_ssd-256x256/template.yaml) | 3 |
+| mobilenet_v2-2s_ssd-384x384 | 1.92 | 1.99 | 13.3 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/mobilenet_v2-2s_ssd-384x384.pth), [model template](./mobilenet_v2-2s_ssd-384x384/template.yaml) | 3 |
+| mobilenet_v2-2s_ssd-512x512 | 3.42 | 1.99 | 12.7 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/mobilenet_v2-2s_ssd-512x512.pth), [model template](./mobilenet_v2-2s_ssd-512x512/template.yaml) | 3 |
 
 ## Training pipeline
 
 ### 0. Change a directory in your terminal to object_detection.
 
 ```bash
-cd <training_extensions>/pytorch_toolkit/object_detection/model_templates
+cd <training_extensions>/pytorch_toolkit/object_detection
 ```
 
-### 1. Select a training configuration file and get pre-trained snapshot if available. Please see the table above.
+### 1. Select a model template file and instantiate it in some directory.
 
 ```bash
-export MODEL_NAME=mobilenet_v2-2s_ssd-256x256
-export CONFIGURATION_FILE=./custom-detection/$MODEL_NAME/model.py
+export MODEL_TEMPLATE=./model_templates/custom-detection/mobilenet_v2-2s_ssd-256x256/template.yaml
+export WORK_DIR=/tmp/my-person-vehicle-bike-detection
+python tools/instantiate_template.py ${MODEL_TEMPLATE} ${WORK_DIR}
 ```
 
 ### 2. Collect dataset
@@ -32,63 +33,77 @@ You can train a model on existing toy dataset `training_extensions/data/airport`
 
 ### 3. Prepare annotation
 
-The existing toy dataset has annotation in the Common Objects in Context (COCO) and mmdetection CustomDataset format.
+The existing toy dataset has annotation in the Common Objects in Context (COCO) so it is enough to get started.
+
+```bash
+export TRAIN_ANN_FILE="${OBJ_DET_DIR}/../../data/airport/annotation_example_train.json"
+export TRAIN_IMG_ROOT="${OBJ_DET_DIR}/../../data/airport/train"
+export VAL_ANN_FILE="${OBJ_DET_DIR}/../../data/airport/annotation_example_val.json"
+export VAL_IMG_ROOT="${OBJ_DET_DIR}/../../data/airport/val"
+```
+
+### 4. Change current directory to directory where the model template has been instantiated.
+
+```bash
+export OBJ_DET_DIR=`pwd`
+cd ${WORK_DIR}
+```
 
 ### 4. Training
 
-Since model templates rather than ready-to-use models (though technically one can use them as they are) are provided it is needed to update existing configuration file.
-It can be done by `--update_args` parameter or modifications inside configuration file.
+Since custom detection model templates rather than ready-to-use models (though technically one can use them as they are) are provided it is needed to define `classes`.
+
 ```bash
-export NUM_CLASSES=3
 export CLASSES="vehicle,person,non-vehicle"
-export ANN_FILE_TRAIN="../../../data/airport/annotation_example_train.json"
-export ANN_FILE_VAL="../../../data/airport/annotation_example_val.json"
-export IMG_PREFIX_TRAIN="../../../data/airport/train"
-export IMG_PREFIX_VAL="../../../data/airport/val"
-export WORK_DIR="my_custom_detector"
-export UPDATE_CONFIG="model.bbox_head.num_classes=${NUM_CLASSES} \
-                      data.train.dataset.classes=${CLASSES} \
-                      data.train.dataset.ann_file=${ANN_FILE_TRAIN} \
-                      data.train.dataset.img_prefix=${IMG_PREFIX_TRAIN} \
-                      data.val.classes=${CLASSES} \
-                      data.val.ann_file=${ANN_FILE_VAL} \
-                      data.val.img_prefix=${IMG_PREFIX_VAL} \
-                      data.test.classes=${CLASSES} \
-                      data.test.ann_file=${ANN_FILE_VAL} \
-                      data.test.img_prefix=${IMG_PREFIX_VAL} \
-                      total_epochs=20 \
-                      resume_from=${MODEL_NAME}.pth \
-                      work_dir=${WORK_DIR}"
 ```
 
-* To train the detector on a single GPU, run in your terminal:
+### 5. Training and Fine-tuning
 
-   ```bash
-   python ../../../external/mmdetection/tools/train.py \
-            $CONFIGURATION_FILE \
-            --update_config $UPDATE_CONFIG
-   ```
-
-* To train the detector on multiple GPUs, run in your terminal:
-
-   ```bash
-   ../../../external/mmdetection/tools/dist_train.sh \
-            $CONFIGURATION_FILE \
-            <GPU_NUM> \
-            --update_config $UPDATE_CONFIG
-   ```
-
-### 5. Validation
-
-To dump detection of your model as well as compute MS-COCO metrics run:
+To start **training** from pre-trained weights use `--load-weights` pararmeter. Parameters such as `--epochs`, `--batch-size` and `--gpu-num` can be omitted, default values will be loaded from `${MODEL_TEMPLATE}`. Please be aware of default values for these parameters in particular `{MODEL_TEMPLATE}`.
 
 ```bash
-python ../../../external/mmdetection/tools/test.py \
-        ${WORK_DIR}/model.py \
-        <CHECKPOINT> \
-        --out result.pkl \
-        --eval bbox \
-        --update_config $UPDATE_CONFIG
+export EPOCHS_NUM=15
+export GPUS_NUM=1
+export BATCH_SIZE=32
+
+python train.py \
+   --load-weights ${WORK_DIR}/snapshot.pth \
+   --train-ann-files ${TRAIN_ANN_FILE} \
+   --train-img-roots ${TRAIN_IMG_ROOT} \
+   --val-ann-files ${VAL_ANN_FILE} \
+   --val-img-roots ${VAL_IMG_ROOT} \
+   --save-checkpoints-to ${WORK_DIR}/outputs \
+   --epochs ${EPOCHS_NUM} \
+   --batch-size ${BATCH_SIZE} \
+   --gpu-num ${GPUS_NUM} \
+   --classes ${CLASSES}
+```
+
+### 6. Evaluation
+
+Evaluation procedure allows us to get quality metrics values and complexity numbers such as number of parameters and FLOPs.
+
+To compute MS-COCO metrics and save computed values to `${WORK_DIR}/metrics.yaml` run:
+
+```bash
+python eval.py \
+   --load-weights ${WORK_DIR}/outputs/latest.pth \
+   --test-ann-files ${VAL_ANN_FILE} \
+   --test-img-roots ${VAL_IMG_ROOT} \
+   --save-metrics-to ${WORK_DIR}/metrics.yaml \
+   --classes ${CLASSES}
+```
+
+You can also save images with predicted bounding boxes using `--save-output-images-to` parameter.
+
+```bash
+python eval.py \
+   --load-weights ${WORK_DIR}/outputs/latest.pth \
+   --test-ann-files ${VAL_ANN_FILE} \
+   --test-img-roots ${VAL_IMG_ROOT} \
+   --save-metrics-to ${WORK_DIR}/metrics.yaml \
+   --save-output-images-to ${WORK_DIR/}/output_images \
+   --classes ${CLASSES}
 ```
 
 ### 6. Export PyTorch\* model to the OpenVINO™ format
@@ -96,51 +111,26 @@ python ../../../external/mmdetection/tools/test.py \
 To convert PyTorch\* model to the OpenVINO™ IR format run the `export.py` script:
 
 ```bash
-python ../../../external/mmdetection/tools/export.py \
-      ${WORK_DIR}/model.py \
-      <CHECKPOINT> \
-      <EXPORT_FOLDER> \
-      openvino
+python export.py \
+   --load-weights ${WORK_DIR}/outputs/latest.pth \
+   --save-model-to ${WORK_DIR}/export
 ```
 
-This produces model `config.xml` and weights `config.bin` in single-precision floating-point format
+This produces model `model.xml` and weights `model.bin` in single-precision floating-point format
 (FP32). The obtained model expects **normalized image** in planar BGR format.
 
-For SSD networks an alternative OpenVINO™ representation is possible.
-To opt for it use extra `--alt_ssd_export` key to the `export.py` script.
+For SSD networks an alternative OpenVINO™ representation is done automatically to `${WORK_DIR}/export/alt_ssd_export` folder.
 SSD model exported in such way will produce a bit different results (non-significant in most cases),
 but it also might be faster than the default one. As a rule SSD models in [Open Model Zoo](https://github.com/opencv/open_model_zoo/) are exported using this option.
 
 ### 7. Validation of IR
 
-Instead of running `test.py` you need to run `test_exported.py` and then repeat steps listed in [Validation paragraph](#5-validation).
+Instead of passing `snapshot.pth` you need to pass path to `model.bin` (or `model.xml`).
 
 ```bash
-python ../../../external/mmdetection/tools/test_exported.py  \
-      ${WORK_DIR}/model.py \
-      <EXPORT_FOLDER>/config.xml \
-      --out results.pkl \
-      --eval bbox
-```
-
-### 8. Demo
-
-To see how the converted model works using OpenVINO you need to run `test_exported.py` with `--show` option.
-
-```bash
-python ../../../external/mmdetection/tools/test_exported.py  \
-      ${WORK_DIR}/model.py \
-      <EXPORT_FOLDER>/config.xml \
-      --show
-```
-
-## Other
-
-### Theoretical computational complexity estimation
-
-To get per-layer computational complexity estimations, run the following command:
-
-```bash
-python ../../../external/mmdetection/tools/get_flops.py \
-      ${WORK_DIR}/model.py
+python eval.py \
+   --load-weights ${WORK_DIR}/export/model.bin \
+   --test-ann-files ${VAL_ANN_FILE} \
+   --test-img-roots ${VAL_IMG_ROOT} \
+   --save-metrics-to ${WORK_DIR}/metrics.yaml
 ```

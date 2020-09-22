@@ -116,37 +116,37 @@ Try both following variants and select the best one:
 
 Evaluation procedure allows us to get quality metrics values and complexity numbers such as number of parameters and FLOPs.
 
-* To compute MS-COCO metrics and save computed values to `${WORK_DIR}/metrics.yaml` run:
+To compute MS-COCO metrics and save computed values to `${WORK_DIR}/metrics.yaml` run:
 
-   ```bash
-   python eval.py \
-      --load-weights ${WORK_DIR}/snapshot.pth \ 
-      --test-ann-files ${VAL_ANN_FILE} \
-      --test-img-roots ${VAL_IMG_ROOT} \
-      --save-metrics-to ${WORK_DIR}/metrics.yaml
-   ```
+```bash
+python eval.py \
+   --load-weights ${WORK_DIR}/outputs/latest.pth \
+   --test-ann-files ${VAL_ANN_FILE} \
+   --test-img-roots ${VAL_IMG_ROOT} \
+   --save-metrics-to ${WORK_DIR}/metrics.yaml
+```
 
-   You can also save images with predicted bounding boxes using `--save-output-images-to` parameter.
+You can also save images with predicted bounding boxes using `--save-output-images-to` parameter.
 
-   ```bash
-   python eval.py \
-      --load-weights ${WORK_DIR}/snapshot.pth \
-      --test-ann-files ${VAL_ANN_FILE} \
-      --test-img-roots ${VAL_IMG_ROOT} \
-      --save-metrics-to ${WORK_DIR}/metrics.yaml \
-      --save-output-images-to ${WORK_DIR/}/output_images
-   ```
+```bash
+python eval.py \
+   --load-weights ${WORK_DIR}/outputs/latest.pth \
+   --test-ann-files ${VAL_ANN_FILE} \
+   --test-img-roots ${VAL_IMG_ROOT} \
+   --save-metrics-to ${WORK_DIR}/metrics.yaml \
+   --save-output-images-to ${WORK_DIR/}/output_images
+```
 
-   If you have WiderFace dataset downloaded you also can specify `--wider-dir` parameter where `WIDER_val.zip` file is stored in order to compute official WiderFace metrics.
+If you have WiderFace dataset downloaded you also can specify `--wider-dir` parameter where `WIDER_val.zip` file is stored in order to compute official WiderFace metrics.
 
-   ```bash
-   python eval.py \
-      --load-weights ${WORK_DIR}/snapshot.pth \
-      --test-ann-files ${VAL_ANN_FILE} \
-      --test-img-roots ${VAL_IMG_ROOT} \
-      --save-metrics-to ${WORK_DIR}/metrics.yaml \
-      --wider-dir ${DATA_DIR}
-   ```
+```bash
+python eval.py \
+   --load-weights ${WORK_DIR}/outputs/latest.pth \
+   --test-ann-files ${VAL_ANN_FILE} \
+   --test-img-roots ${VAL_IMG_ROOT} \
+   --save-metrics-to ${WORK_DIR}/metrics.yaml \
+   --wider-dir ${DATA_DIR}
+```
 
 ### 6. Export PyTorch\* model to the OpenVINO™ format
 
@@ -154,7 +154,7 @@ To convert PyTorch\* model to the OpenVINO™ IR format run the `export.py` scri
 
 ```bash
 python export.py \
-   --load-weights ${WORK_DIR}/snapshot.pth \
+   --load-weights ${WORK_DIR}/outputs/latest.pth \
    --save-model-to ${WORK_DIR}/export
 ```
 
