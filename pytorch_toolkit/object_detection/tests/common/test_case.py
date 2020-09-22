@@ -131,7 +131,7 @@ def create_export_test_case(problem_name, model_name, ann_file, img_root, alt_ss
                 f'python {self.dependencies["eval"]}'
                 f' --test-ann-files {ann_file}'
                 f' --test-img-roots {img_root}'
-                f' --load-weights {os.path.join(export_dir, "config.bin")}'
+                f' --load-weights {os.path.join(export_dir, "model.bin")}'
                 f' --save-metrics-to {os.path.join(export_dir, "metrics.yaml")}'
             )
 

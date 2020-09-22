@@ -23,7 +23,7 @@ cd <training_extensions>/pytorch_toolkit/object_detection
 
 ```bash
 export MODEL_TEMPLATE=./model_templates/face-detection/face-detection-0200/template.yaml
-export WORK_DIR = /tmp/face-detection-0200
+export WORK_DIR=/tmp/face-detection-0200
 python tools/instantiate_template.py ${MODEL_TEMPLATE} ${WORK_DIR}
 ```
 
@@ -77,12 +77,12 @@ Try both following variants and select the best one:
    * If you would like to start **training** from pre-trained weights use `--load-weights` pararmeter. Parameters such as `--epochs`, `--batch-size` and `--gpu-num` can be omitted, default values will be loaded from `${MODEL_TEMPLATE}`. Please be aware of default values for these parameters in particular `${MODEL_TEMPLATE}`.
 
       ```bash
-      export EPOCHS_NUM = 70
-      export GPUS_NUM = 1
-      export BATCH_SIZE = 32
+      export EPOCHS_NUM=70
+      export GPUS_NUM=1
+      export BATCH_SIZE=32
 
       python train.py \
-         --load-weights ${WORK_DIR}/snapshot.pth
+         --load-weights ${WORK_DIR}/snapshot.pth \
          --train-ann-files ${TRAIN_ANN_FILE} \
          --train-img-roots ${TRAIN_IMG_ROOT} \
          --val-ann-files ${VAL_ANN_FILE} \
@@ -96,12 +96,12 @@ Try both following variants and select the best one:
    * If you would like to start **fine-tuning** from pre-trained weights use `--resume-from` pararmeter and value of `--epochs` have to exceeds value stored inside `${MODEL_TEMPLATE}` file, otherwise training will be ended immideately. Parameters such as `--batch-size` and `--gpu-num` can be omitted, default values will be loaded from `${MODEL_TEMPLATE}`.  Please be aware of default values for these parameters in particular `${MODEL_TEMPLATE}`.
 
       ```bash
-      export EPOCHS_NUM = 75
-      export GPUS_NUM = 1
-      export BATCH_SIZE = 32
+      export EPOCHS_NUM=75
+      export GPUS_NUM=1
+      export BATCH_SIZE=32
 
       python train.py \
-         --resume-from ${WORK_DIR}/snapshot.pth
+         --resume-from ${WORK_DIR}/snapshot.pth \
          --train-ann-files ${TRAIN_ANN_FILE} \
          --train-img-roots ${TRAIN_IMG_ROOT} \
          --val-ann-files ${VAL_ANN_FILE} \
@@ -114,11 +114,13 @@ Try both following variants and select the best one:
 
 ### 6. Evaluation
 
-* To compute MS-COCO metrics run:
+Evaluation procedure allows us to get quality metrics values and complexity numbers such as number of parameters and FLOPs.
+
+* To compute MS-COCO metrics and save computed values to `${WORK_DIR}/metrics.yaml` run:
 
    ```bash
    python eval.py \
-      --load-weights ${WORK_DIR}/snapshot.pth
+      --load-weights ${WORK_DIR}/snapshot.pth \ 
       --test-ann-files ${VAL_ANN_FILE} \
       --test-img-roots ${VAL_IMG_ROOT} \
       --save-metrics-to ${WORK_DIR}/metrics.yaml
@@ -128,22 +130,22 @@ Try both following variants and select the best one:
 
    ```bash
    python eval.py \
-      --load-weights ${WORK_DIR}/snapshot.pth
+      --load-weights ${WORK_DIR}/snapshot.pth \
       --test-ann-files ${VAL_ANN_FILE} \
       --test-img-roots ${VAL_IMG_ROOT} \
       --save-metrics-to ${WORK_DIR}/metrics.yaml \
       --save-output-images-to ${WORK_DIR/}/output_images
    ```
 
-   If you have WiderFace dataset downloaded you also can specify `--wider-dir` parameter where `WIDER_val.zip` file is stored (so that <WIDER_FACE>/WIDER_val.zip) in order to compute official WiderFace metrics.
+   If you have WiderFace dataset downloaded you also can specify `--wider-dir` parameter where `WIDER_val.zip` file is stored in order to compute official WiderFace metrics.
 
    ```bash
    python eval.py \
-      --load-weights ${WORK_DIR}/snapshot.pth
+      --load-weights ${WORK_DIR}/snapshot.pth \
       --test-ann-files ${VAL_ANN_FILE} \
       --test-img-roots ${VAL_IMG_ROOT} \
       --save-metrics-to ${WORK_DIR}/metrics.yaml \
-      --wider-dir <WIDER_FACE_DIR>
+      --wider-dir ${DATA_DIR}
    ```
 
 ### 6. Export PyTorch\* model to the OpenVINO™ format
@@ -152,14 +154,14 @@ To convert PyTorch\* model to the OpenVINO™ IR format run the `export.py` scri
 
 ```bash
 python export.py \
-   --load-weights ${WORK_DIR}/snapshot.pth
+   --load-weights ${WORK_DIR}/snapshot.pth \
    --save-model-to ${WORK_DIR}/export
 ```
 
 This produces model `model.xml` and weights `model.bin` in single-precision floating-point format
 (FP32). The obtained model expects **normalized image** in planar BGR format.
 
-For SSD networks an alternative OpenVINO™ representation is done automatically to `${WORK_DIR}/export/alt_ssd/export` folder.
+For SSD networks an alternative OpenVINO™ representation is done automatically to `${WORK_DIR}/export/alt_ssd_export` folder.
 SSD model exported in such way will produce a bit different results (non-significant in most cases),
 but it also might be faster than the default one. As a rule SSD models in [Open Model Zoo](https://github.com/opencv/open_model_zoo/) are exported using this option.
 
