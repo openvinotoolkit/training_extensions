@@ -136,9 +136,7 @@ def read_vocab(vocab_path):
     elif 'json' in vocab_path:
         with open(vocab_path, "r") as f:
             vocab_dict = json.load(f)
-            for k, v in vocab_dict['id2sign'].items():
-                del vocab_dict['id2sign'][k]
-                vocab_dict['id2sign'][int(k)] = v
+            vocab_dict['id2sign'] = {int(k): v for k, v in vocab_dict['id2sign'].items()]}
     else:
         raise ValueError("Wrong extension of the vocab file")
     vocab = Vocab(loaded_id2sign=vocab_dict["id2sign"], loaded_sign2id=vocab_dict["sign2id"])
@@ -158,7 +156,7 @@ def pkl_to_json(vocab_path):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Im2Latex Training Program")
+    parser = argparse.ArgumentParser(description="Read file with formulas and create vocab file")
     parser.add_argument('--data_path', help='path to the formulas')
     args = parser.parse_args()
     write_vocab(args.data_path)
