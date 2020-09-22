@@ -30,31 +30,30 @@ def coco_ap_eval(config_path, work_dir, snapshot, outputs, update_config, show_d
 
     try:
         res_pkl = os.path.join(work_dir, 'res.pkl')
-        with open(os.path.join(work_dir, 'test_py_stdout'), 'w') as test_py_stdout:
+        test_py_stdout = os.path.join(work_dir, 'test_py_stdout')
 
-            update_config = ' '.join([f'{k}={v}' for k, v in update_config.items()])
-            update_config = f' --update_config {update_config}' if update_config else ''
-            show_dir = f' --show-dir {show_dir}' if show_dir else ''
-            if snapshot.split('.')[-1] in {'xml', 'bin', 'onnx'}:
-                if snapshot.split('.')[-1] == 'bin':
-                    snapshot = '.'.join(snapshot.split('.')[:-1]) + '.xml'
-                tool = 'test_exported.py'
-            else:
-                tool = 'test.py'
-            subprocess.run(
-                f'python {MMDETECTION_TOOLS}/{tool}'
-                f' {config_path} {snapshot}'
-                f' --out {res_pkl} --eval bbox'
-                f'{show_dir}{update_config}'.split(' '), stdout=test_py_stdout,
-                check=True)
+        update_config = ' '.join([f'{k}={v}' for k, v in update_config.items()])
+        update_config = f' --update_config {update_config}' if update_config else ''
+        show_dir = f' --show-dir {show_dir}' if show_dir else ''
+        if snapshot.split('.')[-1] in {'xml', 'bin', 'onnx'}:
+            if snapshot.split('.')[-1] == 'bin':
+                snapshot = '.'.join(snapshot.split('.')[:-1]) + '.xml'
+            tool = 'test_exported.py'
+        else:
+            tool = 'test.py'
+        subprocess.run(
+            f'python {MMDETECTION_TOOLS}/{tool}'
+            f' {config_path} {snapshot}'
+            f' --out {res_pkl} --eval bbox'
+            f'{show_dir}{update_config}'
+            f' | tee {test_py_stdout}',
+            check=True, shell=True)
         average_precision = collect_ap(os.path.join(work_dir, 'test_py_stdout'))[0]
         outputs.append({'key': 'ap', 'value': average_precision * 100, 'unit': '%',
                         'display_name': 'AP @ [IoU=0.50:0.95]'})
     except:
         outputs.append(
             {'key': 'ap', 'value': None, 'unit': '%', 'display_name': 'AP @ [IoU=0.50:0.95]'})
-    with open(os.path.join(work_dir, 'test_py_stdout')) as test_py_stdout:
-        logging.info(''.join(test_py_stdout.readlines()))
     return outputs
 
 

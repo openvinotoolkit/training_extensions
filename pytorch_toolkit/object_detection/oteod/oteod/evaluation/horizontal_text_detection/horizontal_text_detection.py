@@ -28,25 +28,24 @@ def coco_eval(config_path, work_dir, snapshot, outputs, update_config, show_dir)
     """ Computes metrics: precision, recall, hmean and COCO AP. """
 
     res_pkl = os.path.join(work_dir, 'res.pkl')
-    with open(os.path.join(work_dir, 'test_py_stdout'), 'w') as test_py_stdout:
-        update_config = ' '.join([f'{k}={v}' for k, v in update_config.items()])
-        update_config = f' --update_config {update_config}' if update_config else ''
-        show_dir = f' --show-dir {show_dir}' if show_dir else ''
-        if snapshot.split('.')[-1] in {'xml', 'bin', 'onnx'}:
-            if snapshot.split('.')[-1] == 'bin':
-                snapshot = '.'.join(snapshot.split('.')[:-1]) + '.xml'
-            tool = 'test_exported.py'
-        else:
-            tool = 'test.py'
-        subprocess.run(
-            f'python {MMDETECTION_TOOLS}/{tool}'
-            f' {config_path} {snapshot}'
-            f' --out {res_pkl} --eval f1 bbox'
-            f'{show_dir}{update_config}'.split(' '), stdout=test_py_stdout,
-            check=True)
+    test_py_stdout = os.path.join(work_dir, 'test_py_stdout')
+    update_config = ' '.join([f'{k}={v}' for k, v in update_config.items()])
+    update_config = f' --update_config {update_config}' if update_config else ''
+    show_dir = f' --show-dir {show_dir}' if show_dir else ''
+    if snapshot.split('.')[-1] in {'xml', 'bin', 'onnx'}:
+        if snapshot.split('.')[-1] == 'bin':
+            snapshot = '.'.join(snapshot.split('.')[:-1]) + '.xml'
+        tool = 'test_exported.py'
+    else:
+        tool = 'test.py'
+    subprocess.run(
+        f'python {MMDETECTION_TOOLS}/{tool}'
+        f' {config_path} {snapshot}'
+        f' --out {res_pkl} --eval f1 bbox'
+        f'{show_dir}{update_config}'
+        f' | tee {test_py_stdout}',
+        check=True, shell=True)
     hmean = collect_f1(os.path.join(work_dir, 'test_py_stdout'))
-    with open(os.path.join(work_dir, 'test_py_stdout')) as test_py_stdout:
-        logging.info(''.join(test_py_stdout.readlines()))
     outputs.append({'key': 'f1', 'value': hmean[2] * 100, 'unit': '%', 'display_name': 'F1-score'})
     outputs.append(
         {'key': 'recall', 'value': hmean[0] * 100, 'unit': '%', 'display_name': 'Recall'})
