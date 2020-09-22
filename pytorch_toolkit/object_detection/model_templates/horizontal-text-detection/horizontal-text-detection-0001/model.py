@@ -33,7 +33,7 @@ model = dict(
         loss_bbox=dict(type='IoULoss', loss_weight=1.0),
         loss_centerness=dict(
             type='CrossEntropyLoss', use_sigmoid=True, loss_weight=1.0)))
-evaluation = dict(interval=1, metric=['bbox', 'f1'])
+evaluation = dict(interval=1, metric=['bbox', 'f1'], score_thr=0.25)
 # training and testing settings
 train_cfg = dict(
     assigner=dict(

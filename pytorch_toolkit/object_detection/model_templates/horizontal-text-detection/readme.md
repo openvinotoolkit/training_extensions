@@ -113,7 +113,7 @@ If you would like to start **fine-tuning** from pre-trained weights do not forge
             --out result.pkl \
             --eval f1
    ```
-If you want to change the threshold for confidence of predictions which are used in calculations, change `score_thr` value in the configuration file.
+If you want to change the threshold for confidence of predictions which are used in calculations, change `score_thr` value in the `evaluation` section of the configuration file.
 Tune it to increase precision (`score_thr` should be lower) or recall (`score_thr` should be higher). To compute MS-COCO metrics use `bbox` eval option instead of or with `f1`.
 
 * You can also visualize the result of the detection. To do it use `result.pkl` obtained from previous step:
