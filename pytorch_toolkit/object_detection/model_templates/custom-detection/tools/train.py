@@ -15,6 +15,8 @@
 import argparse
 import os
 
+from mmcv import Config
+
 from ote import MODEL_TEMPLATE_FILENAME
 from ote.api import train_args_parser
 from oteod.args_conversion import convert_ote_to_oteod_train_args
@@ -33,3 +35,6 @@ def parse_args(template_filename):
 ote_args = vars(parse_args(MODEL_TEMPLATE_FILENAME))
 oteod_args = convert_ote_to_oteod_train_args(os.path.dirname(MODEL_TEMPLATE_FILENAME), ote_args)
 train(**oteod_args)
+
+modified_config = Config.fromfile(os.path.join(ote_args['save_checkpoints_to'], ote_args['config']))
+modified_config.dump(ote_args['config'])
