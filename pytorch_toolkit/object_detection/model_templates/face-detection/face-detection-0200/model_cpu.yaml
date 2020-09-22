@@ -1,0 +1,22 @@
+files:
+- name: config.bin
+  sha256: 3a48d53d2bd5071e87d246a491ac9446baca6035086843975b924a88d90f4add
+  size: 7317920
+  source: export/config.bin
+metrics:
+- display_name: Size
+  key: size
+  unit: Mp
+  value: 1.83
+- display_name: Complexity
+  key: complexity
+  unit: GFLOPs
+  value: 0.82
+- display_name: AP @ [IoU=0.50:0.95]
+  key: ap
+  unit: '%'
+  value: 16.0
+- display_name: AP for faces > 64x64
+  key: ap_64x64
+  unit: '%'
+  value: 71.947

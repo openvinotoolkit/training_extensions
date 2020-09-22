@@ -2,9 +2,9 @@
 
 | Model Name | Complexity (GFLOPs) | Size (Mp) | AP @ [IoU=0.50:0.95] (%) | Links | GPU_NUM |
 | --- | --- | --- | --- | --- | --- |
-| vehicle-detection-0200 | 0.82 | 1.83 | 25.4 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/vehicle-detection-0200-1.pth), [configuration file](./vehicle-detection-0200/config.py) | 4 |
-| vehicle-detection-0201 | 1.84 | 1.83 | 32.3 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/vehicle-detection-0201-1.pth), [configuration file](./vehicle-detection-0201/config.py) | 4 |
-| vehicle-detection-0202 | 3.28 | 1.83 | 36.9 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/vehicle-detection-0202-1.pth), [configuration file](./vehicle-detection-0202/config.py) | 4 |
+| vehicle-detection-0200 | 0.82 | 1.83 | 25.4 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/vehicle-detection-0200-1.pth), [configuration file](./vehicle-detection-0200/model.py) | 4 |
+| vehicle-detection-0201 | 1.84 | 1.83 | 32.3 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/vehicle-detection-0201-1.pth), [configuration file](./vehicle-detection-0201/model.py) | 4 |
+| vehicle-detection-0202 | 3.28 | 1.83 | 36.9 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/vehicle-detection-0202-1.pth), [configuration file](./vehicle-detection-0202/model.py) | 4 |
 
 ## Training pipeline
 
@@ -18,7 +18,7 @@ cd <training_extensions>/pytorch_toolkit/object_detection/model_templates
 
 ```bash
 export MODEL_NAME=vehicle-detection-0200
-export CONFIGURATION_FILE=./vehicle-detection/$MODEL_NAME/config.py
+export CONFIGURATION_FILE=./vehicle-detection/$MODEL_NAME/model.py
 ```
 
 ### 2. Collect dataset

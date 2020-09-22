@@ -1,0 +1,839 @@
+<?xml version="1.0" ?>
+<mapping>
+	<map>
+		<framework name="backbone.features.stage4.unit2.conv3.conv.weight" out_port_id="backbone.features.stage4.unit2.conv3.conv.weight"/>
+		<IR id="119" name="BatchNormalization_69/mean/Fused_Mul_1291812920_const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="415" out_port_id="415"/>
+		<IR id="115" name="Conv_65" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="468" out_port_id="468"/>
+		<IR id="217" name="Conv_118" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="482" out_port_id="482"/>
+		<IR id="241" name="Conv_132" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="478" out_port_id="478"/>
+		<IR id="234" name="Clip_128" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="445" out_port_id="445"/>
+		<IR id="165" name="Conv_95" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="backbone.features.stage2.unit1.conv2.conv.weight" out_port_id="backbone.features.stage2.unit1.conv2.conv.weight"/>
+		<IR id="27" name="2026520268_const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="backbone.features.stage4.unit5.conv2.conv.weight" out_port_id="backbone.features.stage4.unit5.conv2.conv.weight"/>
+		<IR id="159" name="2027720280_const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="397" out_port_id="397"/>
+		<IR id="84" name="Clip_47" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="514" out_port_id="514"/>
+		<IR id="277" name="Conv_164" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="375" out_port_id="375"/>
+		<IR id="47" name="Conv_25" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="417" out_port_id="417"/>
+		<IR id="118" name="Clip_67" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="526" out_port_id="526"/>
+		<IR id="295" name="Reshape_174" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="470" out_port_id="470"/>
+		<IR id="220" name="Clip_120" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="504" out_port_id="504"/>
+		<IR id="201" name="Conv_153/Fused_Add_" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="496" out_port_id="496"/>
+		<IR id="264" name="Clip_146" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="455" out_port_id="455"/>
+		<IR id="182" name="Add_105" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="368" out_port_id="368"/>
+		<IR id="35" name="BatchNormalization_18/variance/Fused_Add_" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="369" out_port_id="369"/>
+		<IR id="37" name="Conv_19" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="574" out_port_id="574"/>
+		<IR id="282" name="Concat_210" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="backbone.features.stage3.unit2.conv3.conv.weight" out_port_id="backbone.features.stage3.unit2.conv3.conv.weight"/>
+		<IR id="75" name="BatchNormalization_43/mean/Fused_Mul_1288212884_const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="497" out_port_id="497"/>
+		<IR id="266" name="Conv_147" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="backbone.features.stage5.unit4.conv2.conv.weight" out_port_id="backbone.features.stage5.unit4.conv2.conv.weight"/>
+		<IR id="260" name="2033720340_const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="backbone.features.stage4.unit6.conv2.conv.weight" out_port_id="backbone.features.stage4.unit6.conv2.conv.weight"/>
+		<IR id="173" name="2032520328_const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="backbone.features.stage4.unit1.conv3.conv.weight" out_port_id="backbone.features.stage4.unit1.conv3.conv.weight"/>
+		<IR id="105" name="BatchNormalization_61/mean/Fused_Mul_1290612908_const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="backbone.features.stage1.unit1.conv3.conv.weight" out_port_id="backbone.features.stage1.unit1.conv3.conv.weight"/>
+		<IR id="18" name="BatchNormalization_10/mean/Fused_Mul_1283412836_const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="444" out_port_id="444"/>
+		<IR id="163" name="Clip_94" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="384" out_port_id="384"/>
+		<IR id="62" name="Conv_34" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="410" out_port_id="410"/>
+		<IR id="106" name="Conv_60" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="442" out_port_id="442"/>
+		<IR id="160" name="Conv_92" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="398" out_port_id="398"/>
+		<IR id="86" name="Conv_48" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="536" out_port_id="536"/>
+		<IR id="309" name="Concat_182" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="376" out_port_id="376"/>
+		<IR id="49" name="BatchNormalization_26/variance/Fused_Add_" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="371" out_port_id="371"/>
+		<IR id="40" name="Clip_21" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="458" out_port_id="458"/>
+		<IR id="187" name="Clip_108" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="361" out_port_id="361"/>
+		<IR id="23" name="Conv_11" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="backbone.features.stage3.unit1.conv3.conv.weight" out_port_id="backbone.features.stage3.unit1.conv3.conv.weight"/>
+		<IR id="61" name="BatchNormalization_35/mean/Fused_Mul_1287012872_const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="407" out_port_id="407"/>
+		<IR id="101" name="Conv_57" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="525" out_port_id="525"/>
+		<IR id="294" name="Reshape_174/Cast_120650_const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="476" out_port_id="476"/>
+		<IR id="231" name="Conv_126" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="detection_out" out_port_id="0"/>
+		<IR id="346" name="detection_out" out_port_id="3"/>
+	</map>
+	<map>
+		<framework name="498" out_port_id="498"/>
+		<IR id="268" name="BatchNormalization_148/variance/Fused_Add_" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="509" out_port_id="509"/>
+		<IR id="300" name="Relu_159" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="bbox_head.reg_convs.0.3.weight" out_port_id="bbox_head.reg_convs.0.3.weight"/>
+		<IR id="203" name="onnx_initializer_node_bbox_head.reg_convs.0.3.weight/Output_0/Data__const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="backbone.features.stage5.unit2.conv1.conv.weight" out_port_id="backbone.features.stage5.unit2.conv1.conv.weight"/>
+		<IR id="225" name="BatchNormalization_124/mean/Fused_Mul_1300213004_const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="359" out_port_id="359"/>
+		<IR id="19" name="Conv_9" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="412" out_port_id="412"/>
+		<IR id="110" name="Conv_62" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="423" out_port_id="423"/>
+		<IR id="128" name="Clip_73" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="414" out_port_id="414"/>
+		<IR id="113" name="Clip_64" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="436" out_port_id="436"/>
+		<IR id="150" name="Conv_86" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="454" out_port_id="454"/>
+		<IR id="181" name="BatchNormalization_104/variance/Fused_Add_" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="355" out_port_id="355"/>
+		<IR id="12" name="Clip_5" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="backbone.features.stage5.unit1.conv1.conv.weight" out_port_id="backbone.features.stage5.unit1.conv1.conv.weight"/>
+		<IR id="211" name="BatchNormalization_116/mean/Fused_Mul_1299012992_const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="424" out_port_id="424"/>
+		<IR id="130" name="Conv_74" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="backbone.features.stage4.unit6.conv1.conv.weight" out_port_id="backbone.features.stage4.unit6.conv1.conv.weight"/>
+		<IR id="168" name="BatchNormalization_98/mean/Fused_Mul_1295812960_const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="388" out_port_id="388"/>
+		<IR id="69" name="Clip_38" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="backbone.features.stage3.unit2.conv2.conv.weight" out_port_id="backbone.features.stage3.unit2.conv2.conv.weight"/>
+		<IR id="70" name="2028120284_const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="556" out_port_id="556"/>
+		<IR id="208" name="Transpose_196" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="485" out_port_id="485"/>
+		<IR id="246" name="Conv_135" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="backbone.features.stage3.unit2.conv1.conv.weight" out_port_id="backbone.features.stage3.unit2.conv1.conv.weight"/>
+		<IR id="65" name="BatchNormalization_37/mean/Fused_Mul_1287412876_const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="564" out_port_id="564"/>
+		<IR id="210" name="Reshape_202" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="409" out_port_id="409"/>
+		<IR id="104" name="Clip_59" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="374" out_port_id="374"/>
+		<IR id="45" name="Clip_24" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="bbox_head.cls_convs.1.0.weight" out_port_id="bbox_head.cls_convs.1.0.weight"/>
+		<IR id="296" name="2028920292_const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="490" out_port_id="490"/>
+		<IR id="254" name="Add_140" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="535" out_port_id="535"/>
+		<IR id="308" name="Reshape_181" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="456" out_port_id="456"/>
+		<IR id="184" name="Conv_106" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="394" out_port_id="394"/>
+		<IR id="79" name="Add_44" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="backbone.features.stage2.unit2.conv3.conv.weight" out_port_id="backbone.features.stage2.unit2.conv3.conv.weight"/>
+		<IR id="46" name="BatchNormalization_26/mean/Fused_Mul_1285812860_const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="backbone.features.init_block.conv.weight" out_port_id="backbone.features.init_block.conv.weight"/>
+		<IR id="3" name="image/reverse_input_channels/Concat19646_const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="backbone.features.stage1.unit1.conv1.conv.weight" out_port_id="backbone.features.stage1.unit1.conv1.conv.weight"/>
+		<IR id="8" name="BatchNormalization_4/mean/Fused_Mul_1282612828_const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="backbone.features.stage4.unit7.conv3.conv.weight" out_port_id="backbone.features.stage4.unit7.conv3.conv.weight"/>
+		<IR id="193" name="BatchNormalization_113/mean/Fused_Mul_1297812980_const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="backbone.features.stage3.unit3.conv1.conv.weight" out_port_id="backbone.features.stage3.unit3.conv1.conv.weight"/>
+		<IR id="80" name="BatchNormalization_46/mean/Fused_Mul_1288612888_const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="467" out_port_id="467"/>
+		<IR id="215" name="Clip_117" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="358" out_port_id="358"/>
+		<IR id="17" name="Clip_8" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="420" out_port_id="420"/>
+		<IR id="123" name="Add_70" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="491" out_port_id="491"/>
+		<IR id="256" name="Conv_141" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="573" out_port_id="573"/>
+		<IR id="281" name="Reshape_209" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="backbone.features.stage4.unit4.conv2.conv.weight" out_port_id="backbone.features.stage4.unit4.conv2.conv.weight"/>
+		<IR id="144" name="2029720300_const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="534" out_port_id="534"/>
+		<IR id="307" name="Reshape_181/Cast_120666_const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="backbone.features.stage5.unit4.conv1.conv.weight" out_port_id="backbone.features.stage5.unit4.conv1.conv.weight"/>
+		<IR id="255" name="BatchNormalization_142/mean/Fused_Mul_1302613028_const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="backbone.features.stage5.unit3.conv1.conv.weight" out_port_id="backbone.features.stage5.unit3.conv1.conv.weight"/>
+		<IR id="240" name="BatchNormalization_133/mean/Fused_Mul_1301413016_const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="350" out_port_id="350"/>
+		<IR id="4" name="Conv_0" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="463" out_port_id="463"/>
+		<IR id="196" name="BatchNormalization_113/variance/Fused_Add_" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="484" out_port_id="484"/>
+		<IR id="244" name="Clip_134" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="441" out_port_id="441"/>
+		<IR id="158" name="Clip_91" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="475" out_port_id="475"/>
+		<IR id="229" name="Clip_125" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="513" out_port_id="513"/>
+		<IR id="273" name="Relu_163" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="image" out_port_id="image"/>
+		<IR id="2" name="Mul_" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="backbone.features.stage5.unit2.conv2.conv.weight" out_port_id="backbone.features.stage5.unit2.conv2.conv.weight"/>
+		<IR id="230" name="2034120344_const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="389" out_port_id="389"/>
+		<IR id="71" name="Conv_39" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="360" out_port_id="360"/>
+		<IR id="21" name="BatchNormalization_10/variance/Fused_Add_" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="383" out_port_id="383"/>
+		<IR id="60" name="Clip_33" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="385" out_port_id="385"/>
+		<IR id="64" name="BatchNormalization_35/variance/Fused_Add_" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="backbone.features.stage4.unit3.conv1.conv.weight" out_port_id="backbone.features.stage4.unit3.conv1.conv.weight"/>
+		<IR id="124" name="BatchNormalization_72/mean/Fused_Mul_1292212924_const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="481" out_port_id="481"/>
+		<IR id="239" name="Add_131" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="380" out_port_id="380"/>
+		<IR id="55" name="Clip_30" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="backbone.features.stage4.unit7.conv1.conv.weight" out_port_id="backbone.features.stage4.unit7.conv1.conv.weight"/>
+		<IR id="183" name="BatchNormalization_107/mean/Fused_Mul_1297012972_const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="572" out_port_id="572"/>
+		<IR id="280" name="Reshape_209/Cast_120662_const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="449" out_port_id="449"/>
+		<IR id="172" name="Clip_99" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="backbone.features.stage4.unit2.conv2.conv.weight" out_port_id="backbone.features.stage4.unit2.conv2.conv.weight"/>
+		<IR id="114" name="2028520288_const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="461" out_port_id="461"/>
+		<IR id="192" name="Clip_111" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="backbone.features.stage2.unit1.conv1.conv.weight" out_port_id="backbone.features.stage2.unit1.conv1.conv.weight"/>
+		<IR id="22" name="BatchNormalization_12/mean/Fused_Mul_1283812840_const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="366" out_port_id="366"/>
+		<IR id="31" name="Clip_16" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="bbox_head.cls_convs.0.0.weight" out_port_id="bbox_head.cls_convs.0.0.weight"/>
+		<IR id="283" name="2031320316_const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="402" out_port_id="402"/>
+		<IR id="93" name="BatchNormalization_52/variance/Fused_Add_" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="backbone.features.stage4.unit6.conv3.conv.weight" out_port_id="backbone.features.stage4.unit6.conv3.conv.weight"/>
+		<IR id="178" name="BatchNormalization_104/mean/Fused_Mul_1296612968_const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="547" out_port_id="547"/>
+		<IR id="316" name="Softmax_189" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="450" out_port_id="450"/>
+		<IR id="174" name="Conv_100" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="488" out_port_id="488"/>
+		<IR id="251" name="Conv_138" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="462" out_port_id="462"/>
+		<IR id="194" name="Conv_112" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="459" out_port_id="459"/>
+		<IR id="189" name="Conv_109" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="465" out_port_id="465"/>
+		<IR id="212" name="Conv_115" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="447" out_port_id="447"/>
+		<IR id="169" name="Conv_97" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="516" out_port_id="516"/>
+		<IR id="344" name="PriorBoxClustered_166" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="512" out_port_id="512"/>
+		<IR id="272" name="Conv_161/Fused_Add_" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="545" out_port_id="545"/>
+		<IR id="310" name="Reshape_188/Cast_120664_const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="480" out_port_id="480"/>
+		<IR id="238" name="BatchNormalization_130/variance/Fused_Add_" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="487" out_port_id="487"/>
+		<IR id="249" name="Clip_137" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="493" out_port_id="493"/>
+		<IR id="259" name="Clip_143" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="backbone.features.stage3.unit3.conv2.conv.weight" out_port_id="backbone.features.stage3.unit3.conv2.conv.weight"/>
+		<IR id="85" name="2030520308_const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="554" out_port_id="554"/>
+		<IR id="317" name="Reshape_195/Cast_120654_const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="471" out_port_id="471"/>
+		<IR id="222" name="Conv_121" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="bbox_head.cls_convs.0.3.weight" out_port_id="bbox_head.cls_convs.0.3.weight"/>
+		<IR id="288" name="onnx_initializer_node_bbox_head.cls_convs.0.3.weight/Output_0/Data__const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="430" out_port_id="430"/>
+		<IR id="140" name="Conv_80" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="backbone.features.stage5.unit1.conv3.conv.weight" out_port_id="backbone.features.stage5.unit1.conv3.conv.weight"/>
+		<IR id="221" name="BatchNormalization_122/mean/Fused_Mul_1299813000_const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="446" out_port_id="446"/>
+		<IR id="167" name="BatchNormalization_96/variance/Fused_Add_" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="403" out_port_id="403"/>
+		<IR id="94" name="Add_53" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="372" out_port_id="372"/>
+		<IR id="42" name="Conv_22" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="363" out_port_id="363"/>
+		<IR id="26" name="Clip_13" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="401" out_port_id="401"/>
+		<IR id="91" name="Conv_51" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="508" out_port_id="508"/>
+		<IR id="299" name="Conv_157/Fused_Add_" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="563" out_port_id="563"/>
+		<IR id="209" name="Reshape_202/Cast_120670_const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="393" out_port_id="393"/>
+		<IR id="78" name="BatchNormalization_43/variance/Fused_Add_" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="backbone.features.stage3.unit3.conv3.conv.weight" out_port_id="backbone.features.stage3.unit3.conv3.conv.weight"/>
+		<IR id="90" name="BatchNormalization_52/mean/Fused_Mul_1289412896_const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="419" out_port_id="419"/>
+		<IR id="122" name="BatchNormalization_69/variance/Fused_Add_" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="515" out_port_id="515"/>
+		<IR id="331" name="PriorBoxClustered_165" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="510" out_port_id="510"/>
+		<IR id="304" name="Conv_160" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="438" out_port_id="438"/>
+		<IR id="153" name="Add_88" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="381" out_port_id="381"/>
+		<IR id="57" name="Conv_31" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="427" out_port_id="427"/>
+		<IR id="135" name="Conv_77" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="411" out_port_id="411"/>
+		<IR id="108" name="BatchNormalization_61/variance/Fused_Add_" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="489" out_port_id="489"/>
+		<IR id="253" name="BatchNormalization_139/variance/Fused_Add_" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="464" out_port_id="464"/>
+		<IR id="197" name="Add_114" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="backbone.features.stage1.unit1.conv2.conv.weight" out_port_id="backbone.features.stage1.unit1.conv2.conv.weight"/>
+		<IR id="13" name="2029320296_const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="backbone.features.stage4.unit1.conv2.conv.weight" out_port_id="backbone.features.stage4.unit1.conv2.conv.weight"/>
+		<IR id="100" name="2032120324_const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="426" out_port_id="426"/>
+		<IR id="133" name="Clip_76" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="378" out_port_id="378"/>
+		<IR id="52" name="Conv_28" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="backbone.features.stage4.unit1.conv1.conv.weight" out_port_id="backbone.features.stage4.unit1.conv1.conv.weight"/>
+		<IR id="95" name="BatchNormalization_55/mean/Fused_Mul_1289812900_const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="bbox_head.reg_convs.1.0.weight" out_port_id="bbox_head.reg_convs.1.0.weight"/>
+		<IR id="269" name="2027320276_const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="494" out_port_id="494"/>
+		<IR id="261" name="Conv_144" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="453" out_port_id="453"/>
+		<IR id="179" name="Conv_103" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="backbone.features.stage5.unit3.conv3.conv.weight" out_port_id="backbone.features.stage5.unit3.conv3.conv.weight"/>
+		<IR id="250" name="BatchNormalization_139/mean/Fused_Mul_1302213024_const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="backbone.features.stage4.unit3.conv3.conv.weight" out_port_id="backbone.features.stage4.unit3.conv3.conv.weight"/>
+		<IR id="134" name="BatchNormalization_78/mean/Fused_Mul_1293012932_const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="501" out_port_id="501"/>
+		<IR id="287" name="Relu_151" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="418" out_port_id="418"/>
+		<IR id="120" name="Conv_68" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="backbone.features.stage5.unit3.conv2.conv.weight" out_port_id="backbone.features.stage5.unit3.conv2.conv.weight"/>
+		<IR id="245" name="2031720320_const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="404" out_port_id="404"/>
+		<IR id="96" name="Conv_54" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="backbone.features.stage2.unit2.conv1.conv.weight" out_port_id="backbone.features.stage2.unit2.conv1.conv.weight"/>
+		<IR id="36" name="BatchNormalization_20/mean/Fused_Mul_1285012852_const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="500" out_port_id="500"/>
+		<IR id="286" name="Conv_149/Fused_Add_" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="bbox_head.cls_convs.1.3.weight" out_port_id="bbox_head.cls_convs.1.3.weight"/>
+		<IR id="301" name="onnx_initializer_node_bbox_head.cls_convs.1.3.weight/Output_0/Data__const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="505" out_port_id="505"/>
+		<IR id="202" name="Relu_155" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="367" out_port_id="367"/>
+		<IR id="33" name="Conv_17" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="backbone.features.stage4.unit5.conv3.conv.weight" out_port_id="backbone.features.stage4.unit5.conv3.conv.weight"/>
+		<IR id="164" name="BatchNormalization_96/mean/Fused_Mul_1295412956_const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="472" out_port_id="472"/>
+		<IR id="224" name="BatchNormalization_122/variance/Fused_Add_" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="565" out_port_id="565"/>
+		<IR id="279" name="Transpose_203" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="502" out_port_id="502"/>
+		<IR id="291" name="Conv_152" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="421" out_port_id="421"/>
+		<IR id="125" name="Conv_71" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="bbox_head.reg_convs.1.3.weight" out_port_id="bbox_head.reg_convs.1.3.weight"/>
+		<IR id="274" name="onnx_initializer_node_bbox_head.reg_convs.1.3.weight/Output_0/Data__const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="432" out_port_id="432"/>
+		<IR id="143" name="Clip_82" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="353" out_port_id="353"/>
+		<IR id="9" name="Conv_3" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="452" out_port_id="452"/>
+		<IR id="177" name="Clip_102" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="433" out_port_id="433"/>
+		<IR id="145" name="Conv_83" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="439" out_port_id="439"/>
+		<IR id="155" name="Conv_89" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="555" out_port_id="555"/>
+		<IR id="318" name="Reshape_195" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="364" out_port_id="364"/>
+		<IR id="28" name="Conv_14" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="517" out_port_id="517"/>
+		<IR id="345" name="Concat_167" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="386" out_port_id="386"/>
+		<IR id="66" name="Conv_36" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="356" out_port_id="356"/>
+		<IR id="14" name="Conv_6" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="352" out_port_id="352"/>
+		<IR id="7" name="Clip_2" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="473" out_port_id="473"/>
+		<IR id="226" name="Conv_123" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="backbone.features.stage4.unit5.conv1.conv.weight" out_port_id="backbone.features.stage4.unit5.conv1.conv.weight"/>
+		<IR id="154" name="BatchNormalization_90/mean/Fused_Mul_1294612948_const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="527" out_port_id="527"/>
+		<IR id="306" name="Transpose_175" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="506" out_port_id="506"/>
+		<IR id="206" name="Conv_156" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="backbone.features.stage3.unit1.conv1.conv.weight" out_port_id="backbone.features.stage3.unit1.conv1.conv.weight"/>
+		<IR id="51" name="BatchNormalization_29/mean/Fused_Mul_1286212864_const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="backbone.features.stage5.unit4.conv3.conv.weight" out_port_id="backbone.features.stage5.unit4.conv3.conv.weight"/>
+		<IR id="265" name="BatchNormalization_148/mean/Fused_Mul_1303413036_const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="429" out_port_id="429"/>
+		<IR id="138" name="Add_79" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="435" out_port_id="435"/>
+		<IR id="148" name="Clip_85" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="437" out_port_id="437"/>
+		<IR id="152" name="BatchNormalization_87/variance/Fused_Add_" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="backbone.features.stage3.unit1.conv2.conv.weight" out_port_id="backbone.features.stage3.unit1.conv2.conv.weight"/>
+		<IR id="56" name="2030920312_const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="400" out_port_id="400"/>
+		<IR id="89" name="Clip_50" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="backbone.features.stage5.unit2.conv3.conv.weight" out_port_id="backbone.features.stage5.unit2.conv3.conv.weight"/>
+		<IR id="235" name="BatchNormalization_130/mean/Fused_Mul_1301013012_const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="backbone.features.stage4.unit7.conv2.conv.weight" out_port_id="backbone.features.stage4.unit7.conv2.conv.weight"/>
+		<IR id="188" name="2032920332_const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="backbone.features.stage2.unit2.conv2.conv.weight" out_port_id="backbone.features.stage2.unit2.conv2.conv.weight"/>
+		<IR id="41" name="2033320336_const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="backbone.features.stage4.unit4.conv3.conv.weight" out_port_id="backbone.features.stage4.unit4.conv3.conv.weight"/>
+		<IR id="149" name="BatchNormalization_87/mean/Fused_Mul_1294212944_const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="406" out_port_id="406"/>
+		<IR id="99" name="Clip_56" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="bbox_head.reg_convs.0.0.weight" out_port_id="bbox_head.reg_convs.0.0.weight"/>
+		<IR id="198" name="2026920272_const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="backbone.features.stage5.unit1.conv2.conv.weight" out_port_id="backbone.features.stage5.unit1.conv2.conv.weight"/>
+		<IR id="216" name="2030120304_const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="backbone.features.stage4.unit3.conv2.conv.weight" out_port_id="backbone.features.stage4.unit3.conv2.conv.weight"/>
+		<IR id="129" name="2026120264_const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="395" out_port_id="395"/>
+		<IR id="81" name="Conv_45" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="backbone.features.stage4.unit2.conv1.conv.weight" out_port_id="backbone.features.stage4.unit2.conv1.conv.weight"/>
+		<IR id="109" name="BatchNormalization_63/mean/Fused_Mul_1291012912_const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="377" out_port_id="377"/>
+		<IR id="50" name="Add_27" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="391" out_port_id="391"/>
+		<IR id="74" name="Clip_41" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="392" out_port_id="392"/>
+		<IR id="76" name="Conv_42" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="backbone.features.stage2.unit1.conv3.conv.weight" out_port_id="backbone.features.stage2.unit1.conv3.conv.weight"/>
+		<IR id="32" name="BatchNormalization_18/mean/Fused_Mul_1284612848_const" out_port_id="1"/>
+	</map>
+	<map>
+		<framework name="428" out_port_id="428"/>
+		<IR id="137" name="BatchNormalization_78/variance/Fused_Add_" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="479" out_port_id="479"/>
+		<IR id="236" name="Conv_129" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="518" out_port_id="518"/>
+		<IR id="293" name="Transpose_168" out_port_id="2"/>
+	</map>
+	<map>
+		<framework name="backbone.features.stage4.unit4.conv1.conv.weight" out_port_id="backbone.features.stage4.unit4.conv1.conv.weight"/>
+		<IR id="139" name="BatchNormalization_81/mean/Fused_Mul_1293412936_const" out_port_id="1"/>
+	</map>
+</mapping>

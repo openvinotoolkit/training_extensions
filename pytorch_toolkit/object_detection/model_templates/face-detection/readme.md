@@ -4,31 +4,36 @@ Models that are able to detect faces.
 
 | Model Name | Complexity (GFLOPs) | Size (Mp) | AP @ [IoU=0.50:0.95] (%) | AP for faces > 64x64 (%) | WiderFace Easy (%) | WiderFace Medium (%) | WiderFace Hard (%) | Links | GPU_NUM |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| face-detection-0200 | 0.82 | 1.83 | 16.0 | 86.743 | 82.917 | 76.198 | 41.443 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/face-detection-0200.pth), [configuration file](./face-detection-0200/config.py) | 2 |
-| face-detection-0202 | 1.84 | 1.83 | 20.3 | 91.938 | 89.382 | 83.919 | 50.189 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/face-detection-0202.pth), [configuration file](./face-detection-0202/config.py) | 2 |
-| face-detection-0204 | 2.52 | 1.83 | 21.4 | 92.888 | 90.453 | 85.448 | 52.091 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/face-detection-0204.pth), [configuration file](./face-detection-0204/config.py) | 4 |
-| face-detection-0205 | 2.94 | 2.02 | 21.6 | 93.566 | 92.032 | 86.717 | 54.055 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/face-detection-0205.pth), [configuration file](./face-detection-0205/config.py) | 4 |
-| face-detection-0206 | 340.06 | 63.79 | 34.2 | 94.274 | 94.281 | 93.207 | 84.439 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/face-detection-0206.pth), [configuration file](./face-detection-0206/config.py) | 8 |
-| face-detection-0207 | 1.04 | 0.81 | 17.2 | 88.17 | 84.406 | 76.748 | 43.452 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/face-detection-0207.pth), [configuration file](./face-detection-0207/config.py) | 1 | 
+| face-detection-0200 | 0.82 | 1.83 | 16.0 | 86.743 | 82.917 | 76.198 | 41.443 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/face-detection-0200.pth), [model template](./face-detection-0200/template.yaml) | 2 |
+| face-detection-0202 | 1.84 | 1.83 | 20.3 | 91.938 | 89.382 | 83.919 | 50.189 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/face-detection-0202.pth), [model template](./face-detection-0202/template.yaml) | 2 |
+| face-detection-0204 | 2.52 | 1.83 | 21.4 | 92.888 | 90.453 | 85.448 | 52.091 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/face-detection-0204.pth), [model template](./face-detection-0204/template.yaml) | 4 |
+| face-detection-0205 | 2.94 | 2.02 | 21.6 | 93.566 | 92.032 | 86.717 | 54.055 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/face-detection-0205.pth), [model template](./face-detection-0205/template.yaml) | 4 |
+| face-detection-0206 | 340.06 | 63.79 | 34.2 | 94.274 | 94.281 | 93.207 | 84.439 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/face-detection-0206.pth), [model template](./face-detection-0206/template.yaml) | 8 |
+| face-detection-0207 | 1.04 | 0.81 | 17.2 | 88.17 | 84.406 | 76.748 | 43.452 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/face-detection-0207.pth), [model template](./face-detection-0207/template.yaml) | 1 | 
 
 ## Training pipeline
 
 ### 0. Change a directory in your terminal to object_detection.
 
 ```bash
-cd <training_extensions>/pytorch_toolkit/object_detection/model_templates
+cd <training_extensions>/pytorch_toolkit/object_detection
 ```
 
-### 1. Select a training configuration file and get pre-trained snapshot if available. Please see the table above.
+### 1. Select a model template file and instantiate it in some directory.
 
 ```bash
-export MODEL_NAME=face-detection-0100
-export CONFIGURATION_FILE=./face-detection/$MODEL_NAME/config.py
+export MODEL_TEMPLATE=./model_templates/face-detection/face-detection-0200/template.yaml
+export WORK_DIR = /tmp/face-detection-0200
+python tools/instantiate_template.py ${MODEL_TEMPLATE} ${WORK_DIR}
 ```
 
 ### 2. Collect dataset
 
-Download the [WIDER Face](http://shuoyang1213.me/WIDERFACE/) and unpack it to the `data` folder.
+Download the [WIDER Face](http://shuoyang1213.me/WIDERFACE/) and unpack it to the `${DATA_DIR}` folder.
+
+```bash
+export DATA_DIR=${WORK_DIR}/data
+```
 
 ### 3. Prepare annotation
 
@@ -37,146 +42,135 @@ Convert downloaded and extracted annotation to MSCOCO format with `face` as the 
 * Training annotation
 
    ```bash
-   python face-detection/tools/wider_to_coco.py \
-            data/wider_face_split/wider_face_train_bbx_gt.txt \
-            data/WIDER_train/images/ \
-            data/train.json
+   export TRAIN_ANN_FILE=${DATA_DIR}/train.json
+   export TRAIN_IMG_ROOT=${DATA_DIR}
+   python ./model_templates/face-detection/tools/wider_to_coco.py \
+      ${DATA_DIR}/wider_face_split/wider_face_train_bbx_gt.txt \
+      ${DATA_DIR}/WIDER_train/images/ \
+      ${TRAIN_ANN_FILE}
    ```
 
 * Validation annotation
 
    ```bash
-   python face-detection/tools/wider_to_coco.py \
-            data/wider_face_split/wider_face_val_bbx_gt.txt \
-            data/WIDER_val/images/ \
-            data/val.json
+   export VAL_ANN_FILE=${DATA_DIR}/val.json
+   export VAL_IMG_ROOT=${DATA_DIR}
+   python ./model_templates/face-detection/tools/wider_to_coco.py \
+      ${DATA_DIR}/wider_face_split/wider_face_val_bbx_gt.txt \
+      ${DATA_DIR}/WIDER_val/images/ \
+      ${VAL_ANN_FILE}
    ```
 
-### 4. Training and Fine-tuning
+### 4. Change current directory to directory where the model template has been instantiated.
+
+```bash
+cd ${WORK_DIR}
+```
+
+### 5. Training and Fine-tuning
 
 Try both following variants and select the best one:
 
    * **Training** from scratch or pre-trained weights. Only if you have a lot of data, let's say tens of thousands or even more images. This variant assumes long training process starting from big values of learning rate and eventually decreasing it according to a training schedule.
    * **Fine-tuning** from pre-trained weights. If the dataset is not big enough, then the model tends to overfit quickly, forgetting about the data that was used for pre-training and reducing the generalization ability of the final model. Hence, small starting learning rate and short training schedule are recommended.
 
-If you would like to start **training** from pre-trained weights do not forget to modify `load_from` path inside configuration file.
+   * If you would like to start **training** from pre-trained weights use `--load-weights` pararmeter. Parameters such as `--epochs`, `--batch-size` and `--gpu-num` can be omitted, default values will be loaded from `${MODEL_TEMPLATE}`. Please be aware of default values for these parameters in particular `${MODEL_TEMPLATE}`.
 
-If you would like to start **fine-tuning** from pre-trained weights do not forget to modify `resume_from` path inside configuration file as well as increase `total_epochs`. Otherwise training will be ended immideately.
+      ```bash
+      export EPOCHS_NUM = 70
+      export GPUS_NUM = 1
+      export BATCH_SIZE = 32
 
-* To train the detector on a single GPU, run in your terminal:
+      python train.py \
+         --load-weights ${WORK_DIR}/snapshot.pth
+         --train-ann-files ${TRAIN_ANN_FILE} \
+         --train-img-roots ${TRAIN_IMG_ROOT} \
+         --val-ann-files ${VAL_ANN_FILE} \
+         --val-img-roots ${VAL_IMG_ROOT} \
+         --save-checkpoints-to ${WORK_DIR}/outputs \
+         --epochs ${EPOCHS_NUM} \
+         --batch-size ${BATCH_SIZE} \
+         --gpu-num ${GPUS_NUM}
+      ```
+
+   * If you would like to start **fine-tuning** from pre-trained weights use `--resume-from` pararmeter and value of `--epochs` have to exceeds value stored inside `${MODEL_TEMPLATE}` file, otherwise training will be ended immideately. Parameters such as `--batch-size` and `--gpu-num` can be omitted, default values will be loaded from `${MODEL_TEMPLATE}`.  Please be aware of default values for these parameters in particular `${MODEL_TEMPLATE}`.
+
+      ```bash
+      export EPOCHS_NUM = 75
+      export GPUS_NUM = 1
+      export BATCH_SIZE = 32
+
+      python train.py \
+         --resume-from ${WORK_DIR}/snapshot.pth
+         --train-ann-files ${TRAIN_ANN_FILE} \
+         --train-img-roots ${TRAIN_IMG_ROOT} \
+         --val-ann-files ${VAL_ANN_FILE} \
+         --val-img-roots ${VAL_IMG_ROOT} \
+         --save-checkpoints-to ${WORK_DIR}/outputs \
+         --epochs ${EPOCHS_NUM} \
+         --batch-size ${BATCH_SIZE} \
+         --gpu-num ${GPUS_NUM}
+      ```
+
+### 6. Evaluation
+
+* To compute MS-COCO metrics run:
 
    ```bash
-   python ../../../external/mmdetection/tools/train.py \
-            $CONFIGURATION_FILE
+   python eval.py \
+      --load-weights ${WORK_DIR}/snapshot.pth
+      --test-ann-files ${VAL_ANN_FILE} \
+      --test-img-roots ${VAL_IMG_ROOT} \
+      --save-metrics-to ${WORK_DIR}/metrics.yaml
    ```
 
-* To train the detector on multiple GPUs, run in your terminal:
+   You can also save images with predicted bounding boxes using `--save-output-images-to` parameter.
 
    ```bash
-   ../../../external/mmdetection/tools/dist_train.sh \
-            $CONFIGURATION_FILE \
-            <GPU_NUM>
+   python eval.py \
+      --load-weights ${WORK_DIR}/snapshot.pth
+      --test-ann-files ${VAL_ANN_FILE} \
+      --test-img-roots ${VAL_IMG_ROOT} \
+      --save-metrics-to ${WORK_DIR}/metrics.yaml \
+      --save-output-images-to ${WORK_DIR/}/output_images
    ```
-* To train the detector on multiple GPUs and to perform quality metrics estimation as soon as training is finished, run in your terminal
+
+   If you have WiderFace dataset downloaded you also can specify `--wider-dir` parameter where `WIDER_val.zip` file is stored (so that <WIDER_FACE>/WIDER_val.zip) in order to compute official WiderFace metrics.
 
    ```bash
-   python face-detection/tools/train_and_eval.py \
-            $CONFIGURATION_FILE \
-            <GPU_NUM>
+   python eval.py \
+      --load-weights ${WORK_DIR}/snapshot.pth
+      --test-ann-files ${VAL_ANN_FILE} \
+      --test-img-roots ${VAL_IMG_ROOT} \
+      --save-metrics-to ${WORK_DIR}/metrics.yaml \
+      --wider-dir <WIDER_FACE_DIR>
    ```
-
-   If you have WiderFace dataset downloaded you also can specify `--wider_dir` parameter where `WIDER_val.zip` file is stored (so that <WIDER_FACE>/WIDER_val.zip)
-
-   ```bash
-   python face-detection/tools/train_and_eval.py \
-            $CONFIGURATION_FILE \
-            <GPU_NUM> \
-            --wider_dir <WIDER_FACE_DIR>
-   ```
-
-### 5. Validation
-
-* To dump detection of your model as well as compute MS-COCO metrics run:
-
-   ```bash
-   python ../../../external/mmdetection/tools/test.py \
-            $CONFIGURATION_FILE \
-            <CHECKPOINT> \
-            --out result.pkl \
-            --eval bbox
-   ```
-
-* You can also measure WiderFace quality metrics:
-
-  1. Convert `result.pkl` obtained from previous step to WiderFace-friendly output:
-
-     ```bash
-     python face-detection/tools/test_out_to_wider_predictions.py \
-              $CONFIGURATION_FILE \
-              result.pkl \
-              <OUTPUT_FOLDER>
-     ```
-
-  2. Run WiderFace validation either with
-
-     * [Official Matlab evaluation code](http://shuoyang1213.me/WIDERFACE/support/eval_script/eval_tools.zip)
-     * [Python implementation](https://github.com/wondervictor/WiderFace-Evaluation) (anyway you have to download [Official Matlab evaluation code](http://shuoyang1213.me/WIDERFACE/support/eval_script/eval_tools.zip) to get annotation in matlab format). Run from cloned repo following command
-
-        ```bash
-        python evaluation.py -p <OUTPUT_FOLDER> -g <WIDERFACE_MATLAB_ANNOTATION>
-        ```
 
 ### 6. Export PyTorch\* model to the OpenVINO™ format
 
 To convert PyTorch\* model to the OpenVINO™ IR format run the `export.py` script:
 
 ```bash
-python ../../../external/mmdetection/tools/export.py \
-      $CONFIGURATION_FILE \
-      <CHECKPOINT> \
-      <EXPORT_FOLDER> \
-      openvino
+python export.py \
+   --load-weights ${WORK_DIR}/snapshot.pth
+   --save-model-to ${WORK_DIR}/export
 ```
 
-This produces model `$MODEL_NAME.xml` and weights `$MODEL_NAME.bin` in single-precision floating-point format
+This produces model `model.xml` and weights `model.bin` in single-precision floating-point format
 (FP32). The obtained model expects **normalized image** in planar BGR format.
 
-For SSD networks an alternative OpenVINO™ representation is possible.
-To opt for it use extra `--alt_ssd_export` key to the `export.py` script.
+For SSD networks an alternative OpenVINO™ representation is done automatically to `${WORK_DIR}/export/alt_ssd/export` folder.
 SSD model exported in such way will produce a bit different results (non-significant in most cases),
 but it also might be faster than the default one. As a rule SSD models in [Open Model Zoo](https://github.com/opencv/open_model_zoo/) are exported using this option.
 
 ### 7. Validation of IR
 
-Instead of running `test.py` you need to run `test_exported.py` and then repeat steps listed in [Validation paragraph](#5-validation).
+Instead of passing `snapshot.pth` you need to pass path to `model.bin` (or `model.xml`).
 
 ```bash
-python ../../../external/mmdetection/tools/test_exported.py  \
-      $CONFIGURATION_FILE \
-      <EXPORT_FOLDER>/$MODEL_NAME.xml \
-      --out results.pkl \
-      --eval bbox
+python eval.py \
+   --load-weights ${WORK_DIR}/export/model.bin \
+   --test-ann-files ${VAL_ANN_FILE} \
+   --test-img-roots ${VAL_IMG_ROOT} \
+   --save-metrics-to ${WORK_DIR}/metrics.yaml
 ```
-
-### 8. Demo
-
-To see how the converted model works using OpenVINO you need to run `test_exported.py` with `--show` option.
-
-```bash
-python ../../../external/mmdetection/tools/test_exported.py  \
-      $CONFIGURATION_FILE \
-      <EXPORT_FOLDER>/$MODEL_NAME.xml \
-      --show
-```
-
-## Other
-
-### Theoretical computational complexity estimation
-
-To get per-layer computational complexity estimations, run the following command:
-
-```bash
-python ../../../external/mmdetection/tools/get_flops.py \
-       $CONFIGURATION_FILE
-```
-

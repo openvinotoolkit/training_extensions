@@ -7,9 +7,9 @@ but rather provide pre-trained checkpoints for further fine-tuning on a target d
 
 | Model Name | Complexity (GFLOPs) | Size (Mp) | AP @ [IoU=0.50:0.95] (%) | Links | GPU_NUM |
 | --- | --- | --- | --- | --- | --- |
-| mobilenet_v2-2s_ssd-256x256 | 0.86 | 1.99 | 11.3 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/mobilenet_v2-2s_ssd-256x256.pth), [configuration file](./mobilenet_v2-2s_ssd-256x256/config.py) | 3 |
-| mobilenet_v2-2s_ssd-384x384 | 1.92 | 1.99 | 13.3 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/mobilenet_v2-2s_ssd-384x384.pth), [configuration file](./mobilenet_v2-2s_ssd-384x384/config.py) | 3 |
-| mobilenet_v2-2s_ssd-512x512 | 3.42 | 1.99 | 12.7 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/mobilenet_v2-2s_ssd-512x512.pth), [configuration file](./mobilenet_v2-2s_ssd-512x512/config.py) | 3 |
+| mobilenet_v2-2s_ssd-256x256 | 0.86 | 1.99 | 11.3 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/mobilenet_v2-2s_ssd-256x256.pth), [configuration file](./mobilenet_v2-2s_ssd-256x256/model.py) | 3 |
+| mobilenet_v2-2s_ssd-384x384 | 1.92 | 1.99 | 13.3 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/mobilenet_v2-2s_ssd-384x384.pth), [configuration file](./mobilenet_v2-2s_ssd-384x384/model.py) | 3 |
+| mobilenet_v2-2s_ssd-512x512 | 3.42 | 1.99 | 12.7 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/mobilenet_v2-2s_ssd-512x512.pth), [configuration file](./mobilenet_v2-2s_ssd-512x512/model.py) | 3 |
 
 ## Training pipeline
 
@@ -23,7 +23,7 @@ cd <training_extensions>/pytorch_toolkit/object_detection/model_templates
 
 ```bash
 export MODEL_NAME=mobilenet_v2-2s_ssd-256x256
-export CONFIGURATION_FILE=./custom-detection/$MODEL_NAME/config.py
+export CONFIGURATION_FILE=./custom-detection/$MODEL_NAME/model.py
 ```
 
 ### 2. Collect dataset
@@ -84,7 +84,7 @@ To dump detection of your model as well as compute MS-COCO metrics run:
 
 ```bash
 python ../../../external/mmdetection/tools/test.py \
-        ${WORK_DIR}/config.py \
+        ${WORK_DIR}/model.py \
         <CHECKPOINT> \
         --out result.pkl \
         --eval bbox \
@@ -97,7 +97,7 @@ To convert PyTorch\* model to the OpenVINO™ IR format run the `export.py` scri
 
 ```bash
 python ../../../external/mmdetection/tools/export.py \
-      ${WORK_DIR}/config.py \
+      ${WORK_DIR}/model.py \
       <CHECKPOINT> \
       <EXPORT_FOLDER> \
       openvino
@@ -117,7 +117,7 @@ Instead of running `test.py` you need to run `test_exported.py` and then repeat 
 
 ```bash
 python ../../../external/mmdetection/tools/test_exported.py  \
-      ${WORK_DIR}/config.py \
+      ${WORK_DIR}/model.py \
       <EXPORT_FOLDER>/config.xml \
       --out results.pkl \
       --eval bbox
@@ -129,7 +129,7 @@ To see how the converted model works using OpenVINO you need to run `test_export
 
 ```bash
 python ../../../external/mmdetection/tools/test_exported.py  \
-      ${WORK_DIR}/config.py \
+      ${WORK_DIR}/model.py \
       <EXPORT_FOLDER>/config.xml \
       --show
 ```
@@ -142,5 +142,5 @@ To get per-layer computational complexity estimations, run the following command
 
 ```bash
 python ../../../external/mmdetection/tools/get_flops.py \
-      ${WORK_DIR}/config.py
+      ${WORK_DIR}/model.py
 ```

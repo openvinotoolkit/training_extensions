@@ -4,9 +4,9 @@ Models that are able to detect persons.
 
 | Model Name | Complexity (GFLOPs) | Size (Mp) | AP @ [IoU=0.50:0.95] (%) | Links | GPU_NUM |
 | --- | --- | --- | --- | --- | --- |
-| person-detection-0200 | 0.82 | 1.83 | 24.4 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/person-detection-0200-1.pth), [configuration file](./person-detection-0200/config.py) | 2 |
-| person-detection-0201 | 1.84 | 1.83 | 29.9 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/person-detection-0201-1.pth), [configuration file](./person-detection-0201/config.py) | 4 |
-| person-detection-0202 | 3.28 | 1.83 | 32.8 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/person-detection-0202-1.pth), [configuration file](./person-detection-0202/config.py) | 2 |
+| person-detection-0200 | 0.82 | 1.83 | 24.4 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/person-detection-0200-1.pth), [configuration file](./person-detection-0200/model.py) | 2 |
+| person-detection-0201 | 1.84 | 1.83 | 29.9 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/person-detection-0201-1.pth), [configuration file](./person-detection-0201/model.py) | 4 |
+| person-detection-0202 | 3.28 | 1.83 | 32.8 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/person-detection-0202-1.pth), [configuration file](./person-detection-0202/model.py) | 2 |
 
 ## Training pipeline
 
@@ -20,7 +20,7 @@ cd <training_extensions>/pytorch_toolkit/object_detection/model_templates
 
 ```bash
 export MODEL_NAME=person-detection-0200
-export CONFIGURATION_FILE=./person-detection/$MODEL_NAME/config.py
+export CONFIGURATION_FILE=./person-detection/$MODEL_NAME/model.py
 ```
 
 ### 2. Collect dataset

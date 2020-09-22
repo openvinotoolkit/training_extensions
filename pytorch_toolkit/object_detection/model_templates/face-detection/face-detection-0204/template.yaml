@@ -72,5 +72,5 @@ metrics:
   unit: GFLOPs
   value: 2.52
 gpu_num: 4
-config: config.py
+config: model.py
 estimated_batch_time: 1.0

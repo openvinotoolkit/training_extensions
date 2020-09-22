@@ -4,7 +4,7 @@ Model that is able to detect more or less horizontal text with high speed on CPU
 
 | Model Name                  | Complexity (GFLOPs) | Size (Mp) | F1-score |    precision / recall   | Links                                                                                                                                    | GPU_NUM |
 | --------------------------- | ------------------- | --------- | ------- | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
-| horizontal-text-detection-0001         | 7.72	            |  2.26     |  88.45% |    90.61% / 86.39%    | [configuration file](./horizontal-text-detection-0001/config.py), [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/horizontal-text-detection-0001.pth) | 2       |
+| horizontal-text-detection-0001         | 7.72	            |  2.26     |  88.45% |    90.61% / 86.39%    | [configuration file](./horizontal-text-detection-0001/model.py), [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/horizontal-text-detection-0001.pth) | 2       |
 
 ## Training pipeline
 
@@ -18,7 +18,7 @@ cd <training_extensions>/pytorch_toolkit/object_detection/model_templates
 
 ```bash
 export MODEL_NAME=horizontal-text-detection-0001
-export CONFIGURATION_FILE==./horizontal-text-detection/$MODEL_NAME/config.py
+export CONFIGURATION_FILE==./horizontal-text-detection/$MODEL_NAME/model.py
 ```
 ### 2. Download datasets
 
