@@ -14,10 +14,13 @@
 
 import os
 from subprocess import run
+import yaml
 
 from ote import MODEL_TEMPLATE_FILENAME
 from ote.api import export_args_parser
 from oteod import MMDETECTION_TOOLS
+
+from mmcv import Config
 
 args = vars(export_args_parser(MODEL_TEMPLATE_FILENAME).parse_args())
 
@@ -30,6 +33,20 @@ if args['openvino']:
         f'--input_format {args["openvino_input_format"]}',
         shell=True,
         check=True)
+
+    # FIXME(ikrylov): remove alt_ssd_export block as soon as it becomes useless.
+    with open(MODEL_TEMPLATE_FILENAME) as read_file:
+        if Config.fromfile(yaml.load(read_file, yaml.SafeLoader)['config']).model.bbox_head.type == 'SSDHead':
+            run(f'python {os.path.join(MMDETECTION_TOOLS, "export.py")} '
+                f'{args["config"]} '
+                f'{args["load_weights"]} '
+                f'{os.path.join(args["save_model_to"], "alt_ssd_export")} '
+                f'openvino '
+                f'--input_format {args["openvino_input_format"]} '
+                f'--alt_ssd_export ',
+                shell=True,
+                check=True)
+
 if args['onnx']:
     run(f'python {os.path.join(MMDETECTION_TOOLS, "export.py")} '
         f'{args["config"]} '
