@@ -13,22 +13,37 @@
 # and limitations under the License.
 
 
-from common.test_case import export_test_case
+from common.test_case import create_export_test_case
 
 
 class PersonDetection0200TestCase(
-        export_test_case('person-detection', 'person-detection-0200', 'person-detection-0200-1.pth',
-                         alt_ssd_export=True)):
-    """ Test case for person-detection-0200 export. """
+    create_export_test_case(
+        'person-detection',
+        'person-detection-0200',
+        '../../../../../data/airport/annotation_person_val.json',
+        '../../../../../data/airport/val',
+        True)
+):
+    """ Test case for person-detection-0200 model export. """
 
 
 class PersonDetection0201TestCase(
-        export_test_case('person-detection', 'person-detection-0201', 'person-detection-0201-1.pth',
-                         alt_ssd_export=True)):
-    """ Test case for person-detection-0201 export. """
+    create_export_test_case(
+        'person-detection',
+        'person-detection-0201',
+        '../../../../../data/airport/annotation_person_val.json',
+        '../../../../../data/airport/val',
+        True)
+):
+    """ Test case for person-detection-0201 model export. """
 
 
 class PersonDetection0202TestCase(
-        export_test_case('person-detection', 'person-detection-0202', 'person-detection-0202-1.pth',
-                         alt_ssd_export=True)):
-    """ Test case for person-detection-0202 export. """
+    create_export_test_case(
+        'person-detection',
+        'person-detection-0202',
+        '../../../../../data/airport/annotation_person_val.json',
+        '../../../../../data/airport/val',
+        True)
+):
+    """ Test case for person-detection-0202 model export. """

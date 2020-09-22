@@ -39,17 +39,17 @@ def get_epochs(template_file):
 def create_test_case(problem_name, model_name, ann_file, img_root):
     class TestCaseOteApi(unittest.TestCase):
 
+        @classmethod
+        def setUpClass(cls):
+            cls.template_file = f'model_templates/{problem_name}/{model_name}/template.yaml'
+            cls.ann_file = ann_file
+            cls.img_root = img_root
+            cls.work_dir = tempfile.mkdtemp()
+            cls.dependencies = get_dependencies(cls.template_file)
+            cls.epochs_delta = 3
+            cls.total_epochs = get_epochs(cls.template_file) + cls.epochs_delta
 
-        def setUp(self):
-            self.template_file = f'model_templates/{problem_name}/{model_name}/template.yaml'
-            self.ann_file = ann_file
-            self.img_root = img_root
-            self.work_dir = tempfile.mkdtemp()
-            self.dependencies = get_dependencies(self.template_file)
-            self.epochs_delta = 3
-            self.total_epochs = get_epochs(self.template_file) + self.epochs_delta
-
-            download_if_not_yet(self.work_dir, self.dependencies['snapshot'])
+            download_if_not_yet(cls.work_dir, cls.dependencies['snapshot'])
 
         def test_evaluation(self):
             log_file = os.path.join(self.work_dir, 'test_evaluation.log')
@@ -96,23 +96,25 @@ def create_test_case(problem_name, model_name, ann_file, img_root):
     return TestCaseOteApi
 
 
-def create_export_test_case(problem_name, model_name, alt_ssd_export=False):
+def create_export_test_case(problem_name, model_name, ann_file, img_root, alt_ssd_export=False):
     class ExportTestCase(unittest.TestCase):
-        def setUp(self):
-            self.template_file = f'model_templates/{problem_name}/{model_name}/template.yaml'
-            self.work_dir = tempfile.mkdtemp()
-            self.dependencies = get_dependencies(self.template_file)
 
-            download_if_not_yet(self.work_dir, self.dependencies['snapshot'])
+        @classmethod
+        def setUpClass(cls):
+            cls.template_file = f'model_templates/{problem_name}/{model_name}/template.yaml'
+            cls.work_dir = tempfile.mkdtemp()
+            cls.dependencies = get_dependencies(cls.template_file)
 
-            self.test_export_thr = 0.031
+            download_if_not_yet(cls.work_dir, cls.dependencies['snapshot'])
+
+            cls.test_export_thr = 0.031
 
             run_through_shell(
-                f'cd {os.path.dirname(self.template_file)};'
+                f'cd {os.path.dirname(cls.template_file)};'
                 f'/opt/intel/openvino/bin/setupvars.sh;'
-                f'python {self.dependencies["export"]}'
-                f' --load-weights {os.path.join(self.work_dir, os.path.basename(self.dependencies["snapshot"]))}'
-                f' --save-model-to {os.path.join(self.work_dir, "export")}'
+                f'python {cls.dependencies["export"]}'
+                f' --load-weights {os.path.join(cls.work_dir, os.path.basename(cls.dependencies["snapshot"]))}'
+                f' --save-model-to {os.path.join(cls.work_dir, "export")}'
             )
 
         def export_test(self, alt_ssd_export, thr):
@@ -124,18 +126,23 @@ def create_export_test_case(problem_name, model_name, alt_ssd_export=False):
                 log_file = os.path.join(export_dir, 'test_export.log')
 
             run_through_shell(
+                f'cd {os.path.dirname(self.template_file)};'
                 f'/opt/intel/openvino/bin/setupvars.sh;'
-                f'python ../../external/mmdetection/tools/test_exported.py '
-                f'{self.configuration_file} '
-                f'{os.path.join(export_dir, "config.xml")} '
-                f'--out res.pkl --eval bbox 2>&1 | tee {log_file}')
+                f'python {self.dependencies["eval"]}'
+                f' --test-ann-files {ann_file}'
+                f' --test-img-roots {img_root}'
+                f' --load-weights {os.path.join(export_dir, "config.bin")}'
+                f' --save-metrics-to {os.path.join(export_dir, "metrics.yaml")}'
+            )
 
-            ap = collect_ap(log_file)
+            with open(os.path.join(export_dir, "metrics.yaml")) as read_file:
+                content = yaml.load(read_file, yaml.SafeLoader)
+                ap = [metric for metric in content['metrics'] if metric['key'] == 'ap'][0]['value']
 
-            with open(f'tests/expected_outputs/{self.problem_name}/{self.model_name}.json') as read_file:
+            with open(f'tests/expected_outputs/{problem_name}/{model_name}.json') as read_file:
                 content = json.load(read_file)
 
-            self.assertGreater(ap[0], content['map'] - thr)
+            self.assertGreater(ap, content['map'] - thr)
 
         def test_export(self):
             self.export_test(False, self.test_export_thr)
