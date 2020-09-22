@@ -48,8 +48,8 @@ def text_detection_test_case(model_name):
                                         'annotation.json')
             assert replace_text_in_file(self.configuration_file, 'IC13TEST.json',
                                         'annotation.json')
-            assert replace_text_in_file(self.configuration_file, "evaluation = dict(interval=1, metric='f1')",
-                                        '')
+            assert replace_text_in_file(self.configuration_file, "evaluation = dict(interval=",
+                                        '#')
 
         def test_fine_tuning(self):
             log_file = os.path.join(self.work_dir, 'test_fine_tuning.log')
