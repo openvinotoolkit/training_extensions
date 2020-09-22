@@ -65,12 +65,17 @@ def compute_wider_metrics(config_path, work_dir, snapshot, outputs, wider_dir):
     res_pkl = os.path.join(work_dir, 'wider_face_res.pkl')
 
     with open(os.path.join(work_dir, 'test_py_on_wider_stdout_'), 'w') as test_py_stdout:
+        if snapshot.split('.')[-1] in {'xml', 'bin', 'onnx'}:
+            if snapshot.split('.')[-1] == 'bin':
+                snapshot = '.'.join(snapshot.split('.')[:-1]) + '.xml'
+            tool = 'test_exported.py'
+        else:
+            tool = 'test.py'
         subprocess.run(
-            f'python {MMDETECTION_TOOLS}/test.py'
+            f'python {MMDETECTION_TOOLS}/{tool}'
             f' {config_path} {snapshot}'
             f' --out {res_pkl}'
-            f' --update_config data.test.ann_file={wider_coco_annotation} data.test.img_prefix={wider_dir}'.split(
-                ' '),
+            f' --update_config data.test.ann_file={wider_coco_annotation} data.test.img_prefix={wider_dir}'.split(' '),
             stdout=test_py_stdout, check=True)
 
     wider_face_predictions = tempfile.mkdtemp()
