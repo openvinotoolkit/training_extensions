@@ -4,7 +4,7 @@ Model that is able to detect more or less horizontal text with high speed on CPU
 
 | Model Name                  | Complexity (GFLOPs) | Size (Mp) | F1-score |    precision / recall   | Links                                                                                                                                    | GPU_NUM |
 | --------------------------- | ------------------- | --------- | ------- | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
-| horizontal-text-detection-0001         | 7.72	            |  2.26     |  88.45% |    90.61% / 86.39%    | [configuration file](./horizontal-text-detection-0001/model.py), [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/horizontal-text-detection-0001.pth) | 2       |
+| horizontal-text-detection-0001         | 7.72	            |  2.26     |  88.45% |    90.61% / 86.39%    | [model template](./horizontal-text-detection-0001/template.yaml), [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/horizontal-text-detection-0001.pth) | 2       |
 
 ## Training pipeline
 
@@ -14,12 +14,14 @@ Model that is able to detect more or less horizontal text with high speed on CPU
 cd <training_extensions>/pytorch_toolkit/object_detection/model_templates
 ```
 
-### 1. Select a training configuration file and get pre-trained snapshot if available. Please see the table above.
+### 1. Select a model template file and instantiate it in some directory.
 
 ```bash
-export MODEL_NAME=horizontal-text-detection-0001
-export CONFIGURATION_FILE==./horizontal-text-detection/$MODEL_NAME/model.py
+export MODEL_TEMPLATE=./model_templates/horizontal-text-detection/horizontal-text-detection-0001/template.yaml
+export WORK_DIR=/tmp/horizontal-text-detection-0001
+python tools/instantiate_template.py ${MODEL_TEMPLATE} ${WORK_DIR}
 ```
+
 ### 2. Download datasets
 
 To be able to train networks and/or get quality metrics for pre-trained ones,  
@@ -34,21 +36,29 @@ it's necessary to download at least one dataset from following resources.
 
 ### 3. Convert datasets
 
-Extract downloaded datasets in `data/text-dataset` folder.
+Extract downloaded datasets in `${DATA_DIR}/text-dataset` folder.
+
+```bash
+export DATA_DIR=${WORK_DIR}/data
+```
 
 Convert it to format that is used internally and split to the train and test part.
 
 * Training annotation
 ```bash
-python3 horizontal-text-detection/tools/create_dataset.py \
-    --config horizontal-text-detection/datasets/dataset_train.json \
-    --output data/text-dataset/IC13TRAIN_IC15_IC17_IC19_MSRATD500_COCOTEXT.json
+python3 ./model_templates/horizontal-text-detection/tools/create_dataset.py \
+    --config ./model_templates/horizontal-text-detection/datasets/dataset_train.json \
+    --output ${DATA_DIR}/text-dataset/IC13TRAIN_IC15_IC17_IC19_MSRATD500_COCOTEXT.json
+export TRAIN_ANN_FILE=${DATA_DIR}/text-dataset/IC13TRAIN_IC15_IC17_IC19_MSRATD500_COCOTEXT.json
+export TRAIN_IMG_ROOT=${DATA_DIR}/text-dataset
 ```
 * Testing annotation
 ```bash
-python3 horizontal-text-detection/tools/create_dataset.py \
-    --config horizontal-text-detection/datasets/dataset_test.json \
-    --output data/text-dataset/IC13TEST.json
+python3 ./model_templates/horizontal-text-detection/tools/create_dataset.py \
+    --config ./model_templates/horizontal-text-detection/datasets/dataset_test.json \
+    --output ${DATA_DIR}/text-dataset/IC13TEST.json
+export VAL_ANN_FILE=${DATA_DIR}/text-dataset/IC13TEST.json
+export VAL_IMG_ROOT=${DATA_DIR}/text-dataset
 ```
 
 Examples of json file for train and test dataset configuration can be found in `horizontal-text-detection/datasets`.
@@ -56,7 +66,7 @@ So, if you would like not to use all datasets above, please change its content.
 
 The structure of the folder with datasets:
 ```
-object_detection/data/text-dataset
+${DATA_DIR}/text-dataset
     ├── coco-text
     ├── icdar2013
     ├── icdar2015
@@ -68,113 +78,108 @@ object_detection/data/text-dataset
     └── IC13TEST.json
 ```
 
-### 4. Training and Fine-tuning
+
+### 4. Change current directory to directory where the model template has been instantiated.
+
+```bash
+cd ${WORK_DIR}
+```
+
+### 5. Training and Fine-tuning
 
 Try both following variants and select the best one:
 
-   * **Training** from scratch or pre-trained weights. Only if you have a lot of data, let's say tens of thousands or even more images.
+   * **Training** from scratch or pre-trained weights. Only if you have a lot of data, let's say tens of thousands or even more images. This variant assumes long training process starting from big values of learning rate and eventually decreasing it according to a training schedule.
    * **Fine-tuning** from pre-trained weights. If the dataset is not big enough, then the model tends to overfit quickly, forgetting about the data that was used for pre-training and reducing the generalization ability of the final model. Hence, small starting learning rate and short training schedule are recommended.
 
-If you would like to start **training** from pre-trained weights do not forget to modify `load_from` path inside configuration file.
+   * If you would like to start **training** from pre-trained weights use `--load-weights` pararmeter. Parameters such as `--epochs`, `--batch-size` and `--gpu-num` can be omitted, default values will be loaded from `${MODEL_TEMPLATE}`. Please be aware of default values for these parameters in particular `${MODEL_TEMPLATE}`.
 
-If you would like to start **fine-tuning** from pre-trained weights do not forget to modify `resume_from` path inside configuration file as well as increase `total_epochs`. Otherwise training will be ended immideately. If you would like to continue training with smaller learning rate, add the number of the resumed epoch to the `steps` field.
+      ```bash
+      export EPOCHS_NUM=70
+      export GPUS_NUM=1
+      export BATCH_SIZE=32
 
-* To train the detector on a single GPU, run in your terminal:
+      python train.py \
+         --load-weights ${WORK_DIR}/snapshot.pth \
+         --train-ann-files ${TRAIN_ANN_FILE} \
+         --train-img-roots ${TRAIN_IMG_ROOT} \
+         --val-ann-files ${VAL_ANN_FILE} \
+         --val-img-roots ${VAL_IMG_ROOT} \
+         --save-checkpoints-to ${WORK_DIR}/outputs \
+         --epochs ${EPOCHS_NUM} \
+         --batch-size ${BATCH_SIZE} \
+         --gpu-num ${GPUS_NUM}
+      ```
 
-   ```bash
-   python3 ../../../external/mmdetection/tools/train.py \
-            $CONFIGURATION_FILE
-   ```
+   * If you would like to start **fine-tuning** from pre-trained weights use `--resume-from` pararmeter and value of `--epochs` have to exceeds value stored inside `${MODEL_TEMPLATE}` file, otherwise training will be ended immideately. Parameters such as `--batch-size` and `--gpu-num` can be omitted, default values will be loaded from `${MODEL_TEMPLATE}`.  Please be aware of default values for these parameters in particular `${MODEL_TEMPLATE}`.
 
-* To train the detector on multiple GPUs, run in your terminal:
+      ```bash
+      export EPOCHS_NUM=75
+      export GPUS_NUM=1
+      export BATCH_SIZE=32
 
-   ```bash
-   ../../../external/mmdetection/tools/dist_train.sh \
-            $CONFIGURATION_FILE \
-            <GPU_NUM>
-   ```
+      python train.py \
+         --resume-from ${WORK_DIR}/snapshot.pth \
+         --train-ann-files ${TRAIN_ANN_FILE} \
+         --train-img-roots ${TRAIN_IMG_ROOT} \
+         --val-ann-files ${VAL_ANN_FILE} \
+         --val-img-roots ${VAL_IMG_ROOT} \
+         --save-checkpoints-to ${WORK_DIR}/outputs \
+         --epochs ${EPOCHS_NUM} \
+         --batch-size ${BATCH_SIZE} \
+         --gpu-num ${GPUS_NUM}
+      ```
 
-* To train the detector on multiple GPUs and to perform quality metrics estimation as soon as training is finished, run in your terminal
+### 6. Evaluation
 
-   ```bash
-   python horizontal-text-detection/tools/train_and_eval.py \
-            $CONFIGURATION_FILE \
-            <GPU_NUM>
-   ```
+Evaluation procedure allows us to get quality metrics values and complexity numbers such as number of parameters and FLOPs.
 
-### 5. Validation
+To compute MS-COCO metrics and save computed values to `${WORK_DIR}/metrics.yaml` run:
 
-* To dump detection of your model as well as compute metrics for text detection (F1-score, precision and recall) run:
+```bash
+python eval.py \
+   --load-weights ${WORK_DIR}/outputs/latest.pth \
+   --test-ann-files ${VAL_ANN_FILE} \
+   --test-img-roots ${VAL_IMG_ROOT} \
+   --save-metrics-to ${WORK_DIR}/metrics.yaml
+```
 
-   ```bash
-   python ../../../external/mmdetection/tools/test.py \
-            $CONFIGURATION_FILE \
-            <CHECKPOINT> \
-            --out result.pkl \
-            --eval f1
-   ```
-If you want to change the threshold for confidence of predictions which are used in calculations, change `score_thr` value in the `evaluation` section of the configuration file.
-Tune it to increase precision (`score_thr` should be lower) or recall (`score_thr` should be higher). To compute MS-COCO metrics use `bbox` eval option instead of or with `f1`.
+You can also save images with predicted bounding boxes using `--save-output-images-to` parameter.
 
-* You can also visualize the result of the detection. To do it use `result.pkl` obtained from previous step:
-
-   ```bash
-   python horizontal-text-detection/tools/visualize_text_detection.py \
-            $CONFIGURATION_FILE \
-            result.pkl
-   ```
-To visualize the dependence of recall from the instance size use `--draw_graph` option. To show predictions on the images use `--visualize` option.
+```bash
+python eval.py \
+   --load-weights ${WORK_DIR}/outputs/latest.pth \
+   --test-ann-files ${VAL_ANN_FILE} \
+   --test-img-roots ${VAL_IMG_ROOT} \
+   --save-metrics-to ${WORK_DIR}/metrics.yaml \
+   --save-output-images-to ${WORK_DIR/}/output_images
+```
 
 ### 6. Export PyTorch\* model to the OpenVINO™ format
 
 To convert PyTorch\* model to the OpenVINO™ IR format run the `export.py` script:
 
 ```bash
-python ../../../external/mmdetection/tools/export.py \
-      $CONFIGURATION_FILE \
-      <CHECKPOINT> \
-      <EXPORT_FOLDER> \
-      openvino
+python export.py \
+   --load-weights ${WORK_DIR}/outputs/latest.pth \
+   --save-model-to ${WORK_DIR}/export
 ```
 
-This produces model `$MODEL_NAME.xml` and weights `$MODEL_NAME.bin` in single-precision floating-point format
+This produces model `model.xml` and weights `model.bin` in single-precision floating-point format
 (FP32). The obtained model expects **normalized image** in planar BGR format.
 
-For SSD networks an alternative OpenVINO™ representation is possible.
-To opt for it use extra `--alt_ssd_export` key to the `export.py` script.
+For SSD networks an alternative OpenVINO™ representation is done automatically to `${WORK_DIR}/export/alt_ssd_export` folder.
 SSD model exported in such way will produce a bit different results (non-significant in most cases),
-but it also might be faster than the default one.
+but it also might be faster than the default one. As a rule SSD models in [Open Model Zoo](https://github.com/opencv/open_model_zoo/) are exported using this option.
 
 ### 7. Validation of IR
 
-Instead of running `test.py` you need to run `test_exported.py` and then repeat steps listed in [Validation paragraph](#5-validation).
+Instead of passing `snapshot.pth` you need to pass path to `model.bin` (or `model.xml`).
 
 ```bash
-python ../../../external/mmdetection/tools/test_exported.py  \
-      $CONFIGURATION_FILE \
-      <EXPORT_FOLDER>/$MODEL_NAME.xml \
-      --out results.pkl \
-      --eval bbox
-```
-
-### 8. Demo
-
-To see how the converted model works using OpenVINO you need to run `test_exported.py` with `--show` option.
-
-```bash
-python ../../../external/mmdetection/tools/test_exported.py  \
-      $CONFIGURATION_FILE \
-      <EXPORT_FOLDER>/$MODEL_NAME.xml \
-      --show
-```
-
-## Other
-
-### Theoretical computational complexity estimation
-
-To get per-layer computational complexity estimations, run the following command:
-
-```bash
-python ../../../external/mmdetection/tools/get_flops.py \
-       $CONFIGURATION_FILE
+python eval.py \
+   --load-weights ${WORK_DIR}/export/model.bin \
+   --test-ann-files ${VAL_ANN_FILE} \
+   --test-img-roots ${VAL_IMG_ROOT} \
+   --save-metrics-to ${WORK_DIR}/metrics.yaml
 ```
