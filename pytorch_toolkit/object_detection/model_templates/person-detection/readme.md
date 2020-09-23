@@ -21,7 +21,7 @@ cd <training_extensions>/pytorch_toolkit/object_detection
 ### 1. Select a model template file and instantiate it in some directory.
 
 ```bash
-export MODEL_TEMPLATE=./model_templates/person-detection/person-detection-0200/template.yaml
+export MODEL_TEMPLATE=`realpath ./model_templates/person-detection/person-detection-0200/template.yaml`
 export WORK_DIR=/tmp/my_model
 python tools/instantiate_template.py ${MODEL_TEMPLATE} ${WORK_DIR}
 ```
