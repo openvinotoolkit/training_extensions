@@ -11,6 +11,8 @@ but rather provide pre-trained checkpoints for further fine-tuning on a target d
 | mobilenet_v2-2s_ssd-384x384 | 1.92 | 1.99 | 13.3 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/mobilenet_v2-2s_ssd-384x384.pth), [model template](./mobilenet_v2-2s_ssd-384x384/template.yaml) | 3 |
 | mobilenet_v2-2s_ssd-512x512 | 3.42 | 1.99 | 12.7 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/mobilenet_v2-2s_ssd-512x512.pth), [model template](./mobilenet_v2-2s_ssd-512x512/template.yaml) | 3 |
 
+Average Precision (AP) is defined as an area under the precision/recall curve.
+
 ## Training pipeline
 
 ### 0. Change a directory in your terminal to object_detection.
@@ -23,7 +25,7 @@ cd <training_extensions>/pytorch_toolkit/object_detection
 
 ```bash
 export MODEL_TEMPLATE=./model_templates/custom-detection/mobilenet_v2-2s_ssd-256x256/template.yaml
-export WORK_DIR=/tmp/my-person-vehicle-bike-detection
+export WORK_DIR=/tmp/my_model
 python tools/instantiate_template.py ${MODEL_TEMPLATE} ${WORK_DIR}
 ```
 
@@ -61,10 +63,7 @@ export CLASSES="vehicle,person,non-vehicle"
 
 To start **training** from pre-trained weights use `--load-weights` pararmeter. Parameters such as `--epochs`, `--batch-size` and `--gpu-num` can be omitted, default values will be loaded from `${MODEL_TEMPLATE}`. Please be aware of default values for these parameters in particular `{MODEL_TEMPLATE}`.
 
-```bash
-export EPOCHS_NUM=15
-export GPUS_NUM=1
-export BATCH_SIZE=32
+Also you can use parameters such as `--epochs`, `--batch-size`, `--gpu-num`, `--base-learning-rate`, otherwise default values will be loaded from `${MODEL_TEMPLATE}`.
 
 python train.py \
    --load-weights ${WORK_DIR}/snapshot.pth \
@@ -73,9 +72,6 @@ python train.py \
    --val-ann-files ${VAL_ANN_FILE} \
    --val-img-roots ${VAL_IMG_ROOT} \
    --save-checkpoints-to ${WORK_DIR}/outputs \
-   --epochs ${EPOCHS_NUM} \
-   --batch-size ${BATCH_SIZE} \
-   --gpu-num ${GPUS_NUM} \
    --classes ${CLASSES}
 ```
 

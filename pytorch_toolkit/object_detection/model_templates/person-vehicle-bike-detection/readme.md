@@ -22,7 +22,7 @@ cd <training_extensions>/pytorch_toolkit/object_detection
 
 ```bash
 export MODEL_TEMPLATE=./model_templates/person-vehicle-bike-detection/person-vehicle-bike-detection-2000/template.yaml
-export WORK_DIR=/tmp/person-vehicle-bike-detection-2000
+export WORK_DIR=/tmp/my_model
 python tools/instantiate_template.py ${MODEL_TEMPLATE} ${WORK_DIR}
 ```
 
@@ -55,31 +55,25 @@ Try both following variants and select the best one:
    * **Training** from scratch or pre-trained weights. Only if you have a lot of data, let's say tens of thousands or even more images. This variant assumes long training process starting from big values of learning rate and eventually decreasing it according to a training schedule.
    * **Fine-tuning** from pre-trained weights. If the dataset is not big enough, then the model tends to overfit quickly, forgetting about the data that was used for pre-training and reducing the generalization ability of the final model. Hence, small starting learning rate and short training schedule are recommended.
 
-   * If you would like to start **training** from pre-trained weights use `--load-weights` pararmeter. Parameters such as `--epochs`, `--batch-size` and `--gpu-num` can be omitted, default values will be loaded from `${MODEL_TEMPLATE}`. Please be aware of default values for these parameters in particular `${MODEL_TEMPLATE}`.
+   * If you would like to start **training** from pre-trained weights use `--load-weights` pararmeter.
 
       ```bash
-      export EPOCHS_NUM=70
-      export GPUS_NUM=1
-      export BATCH_SIZE=32
-
       python train.py \
          --load-weights ${WORK_DIR}/snapshot.pth \
          --train-ann-files ${TRAIN_ANN_FILE} \
          --train-img-roots ${TRAIN_IMG_ROOT} \
          --val-ann-files ${VAL_ANN_FILE} \
          --val-img-roots ${VAL_IMG_ROOT} \
-         --save-checkpoints-to ${WORK_DIR}/outputs \
-         --epochs ${EPOCHS_NUM} \
-         --batch-size ${BATCH_SIZE} \
-         --gpu-num ${GPUS_NUM}
+         --save-checkpoints-to ${WORK_DIR}/outputs
       ```
 
-   * If you would like to start **fine-tuning** from pre-trained weights use `--resume-from` pararmeter and value of `--epochs` have to exceeds value stored inside `${MODEL_TEMPLATE}` file, otherwise training will be ended immideately. Parameters such as `--batch-size` and `--gpu-num` can be omitted, default values will be loaded from `${MODEL_TEMPLATE}`.  Please be aware of default values for these parameters in particular `${MODEL_TEMPLATE}`.
+      Also you can use parameters such as `--epochs`, `--batch-size`, `--gpu-num`, `--base-learning-rate`, otherwise default values will be loaded from `${MODEL_TEMPLATE}`.
+
+   * If you would like to start **fine-tuning** from pre-trained weights use `--resume-from` pararmeter and value of `--epochs` have to exceeds value stored inside `${MODEL_TEMPLATE}` file, otherwise training will be ended immideately. Here we add `5` additional epochs.
 
       ```bash
-      export EPOCHS_NUM=75
-      export GPUS_NUM=1
-      export BATCH_SIZE=32
+      export ADD_EPOCHS=5
+      export EPOCHS_NUM=$((`cat ${MODEL_TEMPLATE} | grep epochs | tr -dc '0-9'` + ${ADD_EPOCHS}))
 
       python train.py \
          --resume-from ${WORK_DIR}/snapshot.pth \
@@ -88,9 +82,7 @@ Try both following variants and select the best one:
          --val-ann-files ${VAL_ANN_FILE} \
          --val-img-roots ${VAL_IMG_ROOT} \
          --save-checkpoints-to ${WORK_DIR}/outputs \
-         --epochs ${EPOCHS_NUM} \
-         --batch-size ${BATCH_SIZE} \
-         --gpu-num ${GPUS_NUM}
+         --epochs ${EPOCHS_NUM}
       ```
 
 ### 6. Evaluation
