@@ -8,6 +8,8 @@ Models that are able to detect persons.
 | person-detection-0201 | 1.84 | 1.83 | 29.9 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/person-detection-0201-1.pth), [model template](./person-detection-0201/template.yaml) | 4 |
 | person-detection-0202 | 3.28 | 1.83 | 32.8 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/person-detection-0202-1.pth), [model template](./person-detection-0202/template.yaml) | 2 |
 
+Average Precision (AP) is defined as an area under the precision/recall curve.
+
 ## Training pipeline
 
 ### 0. Change a directory in your terminal to object_detection.

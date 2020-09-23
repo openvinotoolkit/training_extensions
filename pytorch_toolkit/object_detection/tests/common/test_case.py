@@ -119,10 +119,8 @@ def create_export_test_case(problem_name, model_name, ann_file, img_root, alt_ss
         def export_test(self, alt_ssd_export, thr):
             if alt_ssd_export:
                 export_dir = os.path.join(self.work_dir, "export", "alt_ssd_export")
-                log_file = os.path.join(export_dir, 'test_alt_ssd_export.log')
             else:
                 export_dir = os.path.join(self.work_dir, "export")
-                log_file = os.path.join(export_dir, 'test_export.log')
 
             run_through_shell(
                 f'cd {os.path.dirname(self.template_file)};'
