@@ -1,5 +1,6 @@
 name: person-detection-0202
 domain: Object Detection
+problem: Person Detection
 framework: OTEDetection v2.1.0.1
 summary: Person Detection based on MobileNetV2 (SSD).
 annotation_format: COCO

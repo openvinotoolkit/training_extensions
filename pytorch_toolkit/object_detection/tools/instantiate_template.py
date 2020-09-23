@@ -23,6 +23,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('template', help='Location of model template file (template.yaml).')
     parser.add_argument('output', help='Location of output directory where template will be instantiated.')
+    parser.add_argument('--do-not-load-snapshot', action='store_true')
 
     return parser.parse_args()
 
@@ -30,7 +31,7 @@ def parse_args():
 def main():
     args = parse_args()
     with open(args.template) as read_file:
-        content = yaml.load(read_file)
+        content = yaml.load(read_file, yaml.SafeLoader)
 
     os.makedirs(args.output, exist_ok=True)
     os.system(f'cp -r {os.path.dirname(args.template)}/* {args.output}')
@@ -42,7 +43,8 @@ def main():
             rel_source = os.path.join(os.path.dirname(args.template), source)
             run(f'cp -r {rel_source} {os.path.join(args.output, destination)}', check=True, shell=True)
         else:
-            run(f'wget -O {os.path.join(args.output, destination)} {source}', check=True, shell=True)
+            if not args.do_not_load_snapshot:
+                run(f'wget -O {os.path.join(args.output, destination)} {source}', check=True, shell=True)
 
 
 if __name__ == '__main__':
