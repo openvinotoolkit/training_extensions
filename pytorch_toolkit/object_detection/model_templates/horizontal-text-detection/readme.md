@@ -11,7 +11,7 @@ Model that is able to detect more or less horizontal text with high speed on CPU
 ### 0. Change a directory in your terminal to object_detection.
 
 ```bash
-cd <training_extensions>/pytorch_toolkit/object_detection/model_templates
+cd <training_extensions>/pytorch_toolkit/object_detection
 ```
 
 ### 1. Select a model template file and instantiate it in some directory.

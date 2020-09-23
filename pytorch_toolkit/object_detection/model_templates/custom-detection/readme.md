@@ -36,6 +36,7 @@ You can train a model on existing toy dataset `training_extensions/data/airport`
 The existing toy dataset has annotation in the Common Objects in Context (COCO) so it is enough to get started.
 
 ```bash
+export OBJ_DET_DIR=`pwd`
 export TRAIN_ANN_FILE="${OBJ_DET_DIR}/../../data/airport/annotation_example_train.json"
 export TRAIN_IMG_ROOT="${OBJ_DET_DIR}/../../data/airport/train"
 export VAL_ANN_FILE="${OBJ_DET_DIR}/../../data/airport/annotation_example_val.json"
@@ -45,7 +46,6 @@ export VAL_IMG_ROOT="${OBJ_DET_DIR}/../../data/airport/val"
 ### 4. Change current directory to directory where the model template has been instantiated.
 
 ```bash
-export OBJ_DET_DIR=`pwd`
 cd ${WORK_DIR}
 ```
 
