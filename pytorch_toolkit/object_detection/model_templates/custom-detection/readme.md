@@ -129,5 +129,6 @@ python eval.py \
    --load-weights ${WORK_DIR}/export/model.bin \
    --test-ann-files ${VAL_ANN_FILE} \
    --test-img-roots ${VAL_IMG_ROOT} \
-   --save-metrics-to ${WORK_DIR}/metrics.yaml
+   --save-metrics-to ${WORK_DIR}/metrics.yaml \
+   --classes ${CLASSES}
 ```
