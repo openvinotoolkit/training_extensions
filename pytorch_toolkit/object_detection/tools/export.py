@@ -12,15 +12,18 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+# pylint: disable=W0511
+
 import os
 from subprocess import run
 import yaml
+
+from mmcv import Config
 
 from ote import MODEL_TEMPLATE_FILENAME
 from ote.api import export_args_parser
 from oteod import MMDETECTION_TOOLS
 
-from mmcv import Config
 
 args = vars(export_args_parser(MODEL_TEMPLATE_FILENAME).parse_args())
 

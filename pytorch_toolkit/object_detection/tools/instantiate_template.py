@@ -14,8 +14,9 @@
 
 import argparse
 import os
-import yaml
 from subprocess import run
+
+import yaml
 
 
 def parse_args():

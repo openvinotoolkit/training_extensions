@@ -16,11 +16,11 @@ from common.test_case import create_export_test_case
 
 
 class FaceDetection0200TestCase(
-    create_export_test_case(
-        'horizontal-text-detection',
-        'horizontal-text-detection-0001',
-        '../../../../../data/horizontal_text_detection/annotation.json',
-        '../../../../../data/horizontal_text_detection/',
-        False)
+        create_export_test_case(
+            'horizontal-text-detection',
+            'horizontal-text-detection-0001',
+            '../../../../../data/horizontal_text_detection/annotation.json',
+            '../../../../../data/horizontal_text_detection/',
+            False)
 ):
     """ Test case for horizontal-text-detection-0001 model export. """
