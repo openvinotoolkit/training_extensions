@@ -4,9 +4,9 @@ The crossroad-detection network model provides detection of three class objects:
 
 | Model Name | Complexity (GFLOPs) | Size (Mp) | mAP @ [IoU=0.50:0.95] (%) | Links | GPU_NUM |
 | --- | --- | --- | --- | --- | --- |
-| person-vehicle-bike-detection-2000 | 0.82 | 1.84 | 16.5 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/vehicle-person-bike-detection-2000-1.pth), [configuration file](./person-vehicle-bike-detection-2000/model.py) | 4 |
-| person-vehicle-bike-detection-2001 | 1.86 | 1.84 | 22.6 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/vehicle-person-bike-detection-2001-1.pth), [configuration file](./person-vehicle-bike-detection-2001/model.py) | 4 |
-| person-vehicle-bike-detection-2002 | 3.3 | 1.84 | 24.8 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/vehicle-person-bike-detection-2002-1.pth), [configuration file](./person-vehicle-bike-detection-2002/model.py) | 4 |
+| person-vehicle-bike-detection-2000 | 0.82 | 1.84 | 16.5 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/vehicle-person-bike-detection-2000-1.pth), [model template](./person-vehicle-bike-detection-2000/template.yaml) | 4 |
+| person-vehicle-bike-detection-2001 | 1.86 | 1.84 | 22.6 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/vehicle-person-bike-detection-2001-1.pth), [model template](./person-vehicle-bike-detection-2001/template.yaml) | 4 |
+| person-vehicle-bike-detection-2002 | 3.3 | 1.84 | 24.8 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/vehicle-person-bike-detection-2002-1.pth), [model template](./person-vehicle-bike-detection-2002/template.yaml) | 4 |
 
 Average Precision (AP) is defined as an area under the precision/recall curve.
 
@@ -14,62 +14,108 @@ Average Precision (AP) is defined as an area under the precision/recall curve.
 
 ### 0. Change a directory in your terminal to object_detection.
 
-
 ```bash
-cd <training_extensions>/pytorch_toolkit/object_detection/model_templates
+cd <training_extensions>/pytorch_toolkit/object_detection
 ```
 
-### 1. Select a training configuration file and get pre-trained snapshot if available. Please see the table above.
+### 1. Select a model template file and instantiate it in some directory.
 
 ```bash
-export MODEL_NAME=person-vehicle-bike-detection-2000
-export CONFIGURATION_FILE=./person-vehicle-bike-detection/$MODEL_NAME/model.py
+export MODEL_TEMPLATE=./model_templates/person-vehicle-bike-detection/person-vehicle-bike-detection-2000/template.yaml
+export WORK_DIR=/tmp/person-vehicle-bike-detection-2000
+python tools/instantiate_template.py ${MODEL_TEMPLATE} ${WORK_DIR}
 ```
 
 ### 2. Collect dataset
 
-You can train a model on existing toy dataset `training_extensions/data/airport`. Obviously such dataset is not sufficient for training good enough model.
+Collect or download images with `vehicle`, `person`, `non-vehicle` objects presented on them.
 
 ### 3. Prepare annotation
 
-The existing toy dataset has annotation in the Common Objects in Context (COCO) and mmdetection CustomDataset format.
+Annotate dataset and save annotation to MSCOCO format with `vehicle`, `person`, `non-vehicle` as classes or you can start with existing toy data.
 
-### 4. Training and Fine-tuning
+```bash
+export OBJ_DET_DIR=`pwd`
+export TRAIN_ANN_FILE="${OBJ_DET_DIR}/../../data/airport/annotation_example_train.json"
+export TRAIN_IMG_ROOT="${OBJ_DET_DIR}/../../data/airport/train"
+export VAL_ANN_FILE="${OBJ_DET_DIR}/../../data/airport/annotation_example_val.json"
+export VAL_IMG_ROOT="${OBJ_DET_DIR}/../../data/airport/val"
+```
+
+### 4. Change current directory to directory where the model template has been instantiated.
+
+```bash
+cd ${WORK_DIR}
+```
+
+### 5. Training and Fine-tuning
 
 Try both following variants and select the best one:
 
    * **Training** from scratch or pre-trained weights. Only if you have a lot of data, let's say tens of thousands or even more images. This variant assumes long training process starting from big values of learning rate and eventually decreasing it according to a training schedule.
    * **Fine-tuning** from pre-trained weights. If the dataset is not big enough, then the model tends to overfit quickly, forgetting about the data that was used for pre-training and reducing the generalization ability of the final model. Hence, small starting learning rate and short training schedule are recommended.
 
-If you would like to start **training** from pre-trained weights do not forget to modify `load_from` path inside configuration file.
+   * If you would like to start **training** from pre-trained weights use `--load-weights` pararmeter. Parameters such as `--epochs`, `--batch-size` and `--gpu-num` can be omitted, default values will be loaded from `${MODEL_TEMPLATE}`. Please be aware of default values for these parameters in particular `${MODEL_TEMPLATE}`.
 
-If you would like to start **fine-tuning** from pre-trained weights do not forget to modify `resume_from` path inside configuration file as well as increase `total_epochs`. Otherwise training will be ended immideately.
+      ```bash
+      export EPOCHS_NUM=70
+      export GPUS_NUM=1
+      export BATCH_SIZE=32
 
-* To train the detector on a single GPU, run in your terminal:
+      python train.py \
+         --load-weights ${WORK_DIR}/snapshot.pth \
+         --train-ann-files ${TRAIN_ANN_FILE} \
+         --train-img-roots ${TRAIN_IMG_ROOT} \
+         --val-ann-files ${VAL_ANN_FILE} \
+         --val-img-roots ${VAL_IMG_ROOT} \
+         --save-checkpoints-to ${WORK_DIR}/outputs \
+         --epochs ${EPOCHS_NUM} \
+         --batch-size ${BATCH_SIZE} \
+         --gpu-num ${GPUS_NUM}
+      ```
 
-   ```bash
-   python ../../../external/mmdetection/tools/train.py \
-            $CONFIGURATION_FILE
-   ```
+   * If you would like to start **fine-tuning** from pre-trained weights use `--resume-from` pararmeter and value of `--epochs` have to exceeds value stored inside `${MODEL_TEMPLATE}` file, otherwise training will be ended immideately. Parameters such as `--batch-size` and `--gpu-num` can be omitted, default values will be loaded from `${MODEL_TEMPLATE}`.  Please be aware of default values for these parameters in particular `${MODEL_TEMPLATE}`.
 
-* To train the detector on multiple GPUs, run in your terminal:
+      ```bash
+      export EPOCHS_NUM=75
+      export GPUS_NUM=1
+      export BATCH_SIZE=32
 
-   ```bash
-   ../../../external/mmdetection/tools/dist_train.sh \
-            $CONFIGURATION_FILE \
-            <GPU_NUM>
-   ```
+      python train.py \
+         --resume-from ${WORK_DIR}/snapshot.pth \
+         --train-ann-files ${TRAIN_ANN_FILE} \
+         --train-img-roots ${TRAIN_IMG_ROOT} \
+         --val-ann-files ${VAL_ANN_FILE} \
+         --val-img-roots ${VAL_IMG_ROOT} \
+         --save-checkpoints-to ${WORK_DIR}/outputs \
+         --epochs ${EPOCHS_NUM} \
+         --batch-size ${BATCH_SIZE} \
+         --gpu-num ${GPUS_NUM}
+      ```
 
-### 5. Validation
+### 6. Evaluation
 
-To dump detection of your model as well as compute MS-COCO metrics run:
+Evaluation procedure allows us to get quality metrics values and complexity numbers such as number of parameters and FLOPs.
+
+To compute MS-COCO metrics and save computed values to `${WORK_DIR}/metrics.yaml` run:
 
 ```bash
-python ../../../external/mmdetection/tools/test.py \
-        $CONFIGURATION_FILE \
-        <CHECKPOINT> \
-        --out result.pkl \
-        --eval bbox
+python eval.py \
+   --load-weights ${WORK_DIR}/outputs/latest.pth \
+   --test-ann-files ${VAL_ANN_FILE} \
+   --test-img-roots ${VAL_IMG_ROOT} \
+   --save-metrics-to ${WORK_DIR}/metrics.yaml
+```
+
+You can also save images with predicted bounding boxes using `--save-output-images-to` parameter.
+
+```bash
+python eval.py \
+   --load-weights ${WORK_DIR}/outputs/latest.pth \
+   --test-ann-files ${VAL_ANN_FILE} \
+   --test-img-roots ${VAL_IMG_ROOT} \
+   --save-metrics-to ${WORK_DIR}/metrics.yaml \
+   --save-output-images-to ${WORK_DIR/}/output_images
 ```
 
 ### 6. Export PyTorch\* model to the OpenVINO™ format
@@ -77,51 +123,26 @@ python ../../../external/mmdetection/tools/test.py \
 To convert PyTorch\* model to the OpenVINO™ IR format run the `export.py` script:
 
 ```bash
-python ../../../external/mmdetection/tools/export.py \
-      $CONFIGURATION_FILE \
-      <CHECKPOINT> \
-      <EXPORT_FOLDER> \
-      openvino
+python export.py \
+   --load-weights ${WORK_DIR}/outputs/latest.pth \
+   --save-model-to ${WORK_DIR}/export
 ```
 
-This produces model `$MODEL_NAME.xml` and weights `$MODEL_NAME.bin` in single-precision floating-point format
+This produces model `model.xml` and weights `model.bin` in single-precision floating-point format
 (FP32). The obtained model expects **normalized image** in planar BGR format.
 
-For SSD networks an alternative OpenVINO™ representation is possible.
-To opt for it use extra `--alt_ssd_export` key to the `export.py` script.
+For SSD networks an alternative OpenVINO™ representation is done automatically to `${WORK_DIR}/export/alt_ssd_export` folder.
 SSD model exported in such way will produce a bit different results (non-significant in most cases),
 but it also might be faster than the default one. As a rule SSD models in [Open Model Zoo](https://github.com/opencv/open_model_zoo/) are exported using this option.
 
 ### 7. Validation of IR
 
-Instead of running `test.py` you need to run `test_exported.py` and then repeat steps listed in [Validation paragraph](#5-validation).
+Instead of passing `snapshot.pth` you need to pass path to `model.bin` (or `model.xml`).
 
 ```bash
-python ../../../external/mmdetection/tools/test_exported.py  \
-      $CONFIGURATION_FILE \
-      <EXPORT_FOLDER>/$MODEL_NAME.xml \
-      --out results.pkl \
-      --eval bbox
-```
-
-### 8. Demo
-
-To see how the converted model works using OpenVINO you need to run `test_exported.py` with `--show` option.
-
-```bash
-python ../../../external/mmdetection/tools/test_exported.py  \
-      $CONFIGURATION_FILE \
-      <EXPORT_FOLDER>/$MODEL_NAME.xml \
-      --show
-```
-
-## Other
-
-### Theoretical computational complexity estimation
-
-To get per-layer computational complexity estimations, run the following command:
-
-```bash
-python ../../../external/mmdetection/tools/get_flops.py \
-       $CONFIGURATION_FILE
+python eval.py \
+   --load-weights ${WORK_DIR}/export/model.bin \
+   --test-ann-files ${VAL_ANN_FILE} \
+   --test-img-roots ${VAL_IMG_ROOT} \
+   --save-metrics-to ${WORK_DIR}/metrics.yaml
 ```
