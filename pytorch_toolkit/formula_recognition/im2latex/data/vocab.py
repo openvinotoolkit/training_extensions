@@ -136,7 +136,7 @@ def read_vocab(vocab_path):
     elif 'json' in vocab_path:
         with open(vocab_path, "r") as f:
             vocab_dict = json.load(f)
-            vocab_dict['id2sign'] = {int(k): v for k, v in vocab_dict['id2sign'].items()]}
+            vocab_dict['id2sign'] = {int(k): v for k, v in vocab_dict['id2sign'].items()}
     else:
         raise ValueError("Wrong extension of the vocab file")
     vocab = Vocab(loaded_id2sign=vocab_dict["id2sign"], loaded_sign2id=vocab_dict["sign2id"])
