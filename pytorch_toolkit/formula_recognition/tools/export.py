@@ -72,7 +72,6 @@ class ONNXExporter():
         return np.transpose(img, (0, 3, 1, 2))
 
     def export_encoder(self):
-        self.img = self.read_and_preprocess_img()
         torch.onnx.export(self.encoder, self.img, self.config.get("res_encoder_name"),
                           opset_version=11,
                           input_names=self.config.get("encoder_input_names").split(','),
