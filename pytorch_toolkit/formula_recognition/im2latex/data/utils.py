@@ -416,10 +416,11 @@ def cal_loss(logits, targets, should_cut_by_min=False):
         logits = logits.narrow(1, 0, targets.size(1))
 
     padding = torch.ones_like(targets) * PAD_TOKEN
-    mask = (targets != padding)
-    targets = targets.masked_select(mask)
-    logits = logits.masked_select(mask.unsqueeze(2).expand(-1, -1, logits.size(2))
-                                  ).contiguous().view(-1, logits.size(2))
+    mask_for_tgt = (targets != padding)
+    B, L, vocab_size = logits.shape # batch size, length of the formula, vocab size
+    targets = targets.masked_select(mask_for_tgt)
+    mask_for_logits = mask_for_tgt.unsqueeze(2).expand(-1, -1, vocab_size)
+    logits = logits.masked_select(mask_for_logits).contiguous().view(-1, vocab_size)
     logits = torch.log(logits)
 
     assert logits.size(0) == targets.size(0)
