@@ -1,8 +1,8 @@
 # PyTorch realization of the Im2Markup
 
 This repository contains inference and training code for Im2LaTeX models.
-Source [repository](https://github.com/harvardnlp/im2markup/). This repository is a fork of [PyTorch realization](https://github.com/luopeixiang/im2latex/)
-Models code is designed to enable ONNX\* export and inference on CPU via OpenVINO™.
+Source [repository](https://github.com/harvardnlp/im2markup/). This repository is based on a [PyTorch realization](https://github.com/luopeixiang/im2latex/)
+Models code is designed to enable ONNX\* export and inference on CPU\GPU via OpenVINO™.
 
 ## Setup
 
@@ -25,10 +25,10 @@ bash init_venv.sh
 
 ### Download Datasets
 
-For training model One has to have dataset. Dataset format is similiar to [im2latex-100k](https://zenodo.org/record/56198#.X2NDQ2gzaUl). Main structure of the dataset is following:
+For training model one has to have dataset. Dataset format is similiar to [im2latex-100k](https://zenodo.org/record/56198#.X2NDQ2gzaUl). Main structure of the dataset is following:
 * `formulas_file` - file with one formula per line
 * `images_folder` - folder containing input images
-* `split_file` - the most important part of the dataset. This file contains `file_name` (tab symbol) `formula_idx` per line connecting corresponding index of the formula in the file with formulas and particular image with `image_name`. Example:
+* `split_file` - this file contains `file_name` (tab symbol) `formula_idx` per line connecting corresponding index of the formula in the file with formulas and particular image with `image_name`. Example:
     ```
     11.png  11
     34.png  34
@@ -36,7 +36,7 @@ For training model One has to have dataset. Dataset format is similiar to [im2la
     There should be at least two such files: `train_filter.lst` and `validate_filter.lst`
 
 > **NOTE**:
-> By default code asserts to see dataset structure with the following names:
+> By default the following structure of the dataset is assumed:
 > `images_processed` - folder with images
 > `formulas.norm.lst` - file with preprocessed formulas, for details, refer to [im2markup](https://github.com/harvardnlp/im2markup) repository
 > `validate_filter.lst` and `train_filter.lst` - corresponding splits of the data.
@@ -44,37 +44,36 @@ For training model One has to have dataset. Dataset format is similiar to [im2la
 
 ## Training
 
-To train Text Spotter model run:
+To train formula-recognition model run:
 
 ```bash
 python3 tools/train.py --config configs/train_config.yml --work_dir <path to work dir>
 ```
 Work dir is used to store information about learning: saved model checkpoints, logs.
 
-### Description of the possible option in train config:
+### Description of possible options in train config:
  - `backbone_config`:
     * `arch`: type of the architecture (if backbone_type is resnet). For mor details, please, refer to [ResnetLikeBackBone](im2latex/models/backbones/resnet.py)
-    * `disable_layer_3` and
-    * `disable_layer_4` - disables layer 3 and 4 in resnetlike backbone
+    * `disable_layer_3` and `disable_layer_4` - disables layer 3 and 4 in resnet-like backbone
     * `enable_last_conv` - enables additional convolution layer to adjust number of output channels to the number of input channels in the LSTM
     * `in_lstm_ch` - number of input LSTM channels, used for `last_conv`
-- `backbone_type`: `resnet` for resnetlike backbone or anything else for original backbone from [im2markup](https://arxiv.org/pdf/1609.04938.pdf) paper
+- `backbone_type`: `resnet` for resnet-like backbone or anything else for original backbone from [im2markup](https://arxiv.org/pdf/1609.04938.pdf) paper
 - `batch_size` - batch size used for training
 - `device` - device for training, used in pytorch .to() method. Possible options: 'cuda', 'cpu', etc. `cpu` is used by default.
 - `head` - configuration of the text recognition head
     * `beam_width` - witdth used in beam search. 0 - do not use beam search, 1 and more - use beam search with corresponding number of possible tracks.
-    * `dec_rnn_h` - number of channels on decoding
+    * `dec_rnn_h` - number of channels in decoding
     * `emb_size` - dimension of the embedding
     * `enc_rnn_h` - number of channels in encoding
     * `in_lstm_ch` - number of input in lstm channels, should be equal to `backbone_config.in_lstm_ch`
-    * `max_len` - maximum possible length of the formula
+    * `max_len` - maximum possible length of the predicted formula
     * `n_layer` - describe
 - `learning_rate` - learining rate
 - `log_path` - path to store training logs
 - `model_path` - path for model (if one wants to aftertune model)
 - `optimizer` - Adam or SGD
 - `save_dir` - dir to save checkpoints
-- `train_paths` - list of paths from where get training data (if more than one path is specified, datasets are concatenated). If one wants to concatenate more than one instance of the desirable dataset, this dataset shoulb be set several times.
+- `train_paths` - list of paths from where get training data (if more than one path is specified, datasets are concatenated). If one wants to concatenate more than one instance of the desirable dataset, this dataset should be specified several times.
 - `val_path` - path for validation data
 - `vocab_path` - path where vocab file is stored
 - `train_transforms_list` and
@@ -91,7 +90,7 @@ model_path: <path_to_weights>
 ...
 ```
 
-If the model was marked `old_model`, that means that means that model was trained in older version of this framework (concretly, model checkpoint keys are different from keys used in model now), so if you want to use this model in any context, point out this fact in `config`:
+If the model was marked `old_model`, that means the model was trained in older version of this framework (concretely, model checkpoint keys are different from keys used in model now), so if you want to use this model in any context, point out this fact in `config`:
 ```
 ...
 old_model: true
@@ -123,7 +122,7 @@ That is why we cannot just compare text predictions one-by-one, we have to rende
 
 In order to see how trained model works using OpenVINO™ please refer to [Formula recognition Python* Demo](https://github.com/opencv/open_model_zoo/tree/develop/demos/python_demos/formula_recognition_demo/). Before running the demo you have to export trained model to IR. Please see below how to do that.
 
-If you want to se how trained pytorch model is working, you can run `tools/demo.py` script with correct `config` file. Fill in the `input_images` variable with the paths to desired images. For every image in this list, model will predict the formula and print it into the terminal.
+If you want to see how trained pytorch model is working, you can run `tools/demo.py` script with correct `config` file. Fill in the `input_images` variable with the paths to desired images. For every image in this list, model will predict the formula and print it into the terminal.
 
 ## Export PyTorch Models to OpenVINO™
 
@@ -149,7 +148,7 @@ Conversion from ONNX model representation to OpenVINO™ IR is straightforward a
 handled by OpenVINO™ Model Optimizer. Please refer to [Model Optimizer
 documentation](https://docs.openvinotoolkit.org/latest/_docs_MO_DG_Deep_Learning_Model_Optimizer_DevGuide.html) for details on how it works.
 
-To convert model to IR One has to set flag `export_ir` in `config` file:
+To convert model to IR one has to set flag `export_ir` in `config` file:
 ```
 ...
 export_ir: true
