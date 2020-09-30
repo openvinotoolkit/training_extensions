@@ -109,8 +109,8 @@ class TextRecognitionHead(nn.Module):
         logit = None
         for _ in range(self.max_len):
             if logit is not None:
-                tgt = torch.reshape(torch.max(logit.data, dim=1)[
-                                    1], (b_size, 1)).clone().detach()
+                # print(logit.shape)
+                tgt = torch.reshape(torch.argmax(logit.data, dim=1), (b_size, 1)).clone().detach())
             else:
                 tgt = torch.tensor([[START_TOKEN]] * b_size)
             tgt = tgt.to(device)
