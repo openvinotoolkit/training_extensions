@@ -24,6 +24,8 @@ class NonBlockingStreamReader:
                 line = stream.readline()
                 if line:
                     queue.put(line)
+                else:
+                    time.sleep(1)
 
         self.thread = Thread(target=populate_queue, args=(self.stream, self.queue))
         self.thread.daemon = True
