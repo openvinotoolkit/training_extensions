@@ -89,7 +89,7 @@ def evaluate_internal(config_path, snapshot, out, update_config, metrics_functio
 
     if os.path.exists(out):
         with open(out) as read_file:
-            content = yaml.load(read_file, Loader=yaml.FullLoader)
+            content = yaml.load(read_file, Loader=yaml.SafeLoader)
         content.update(outputs)
         outputs = content
 
