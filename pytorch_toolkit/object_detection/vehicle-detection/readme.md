@@ -5,9 +5,9 @@
 | vehicle-detection-0200 | 0.82 | 1.83 | 25.4 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/vehicle-detection-0200-1.pth), [configuration file](./vehicle-detection-0200/config.py) | 4 |
 | vehicle-detection-0201 | 1.84 | 1.83 | 32.3 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/vehicle-detection-0201-1.pth), [configuration file](./vehicle-detection-0201/config.py) | 4 |
 | vehicle-detection-0202 | 3.28 | 1.83 | 36.9 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/vehicle-detection-0202-1.pth), [configuration file](./vehicle-detection-0202/config.py) | 4 |
-| vehicle-detection-0003 | 212.22 | 36.56 | 32.4 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/vehicle-detection-0203.pth), [configuration file](./vehicle-detection-0203/config.py) | 4 |
-| vehicle-detection-0004 | 190.32 | 34.15 | 30.4 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/vehicle-detection-0204.pth), [configuration file](./vehicle-detection-0204/config.py) | 4 |
-| vehicle-detection-0005 | 112.34 | 24.11 | 27.0 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/vehicle-detection-0205.pth), [configuration file](./vehicle-detection-0205/config.py) | 4 |
+| vehicle-detection-0003 | 212.22 | 36.56 | 47.6 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/vehicle-detection-0203.pth), [configuration file](./vehicle-detection-0203/config.py) | 4 |
+| vehicle-detection-0004 | 190.32 | 34.15 | 47.3 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/vehicle-detection-0204.pth), [configuration file](./vehicle-detection-0204/config.py) | 4 |
+| vehicle-detection-0005 | 112.34 | 24.11 | 43.8 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/vehicle-detection-0205.pth), [configuration file](./vehicle-detection-0205/config.py) | 4 |
 
 
 ## Training pipeline
