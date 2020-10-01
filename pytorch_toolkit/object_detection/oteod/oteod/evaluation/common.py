@@ -24,9 +24,11 @@ def collect_ap(path):
     return average_precisions
 
 
-def coco_ap_eval(config_path, work_dir, snapshot, outputs, update_config, show_dir=''):
+def coco_ap_eval(config_path, work_dir, snapshot, update_config, show_dir=''):
     """ Computes COCO AP. """
     assert isinstance(update_config, dict)
+
+    outputs = []
 
     try:
         res_pkl = os.path.join(work_dir, 'res.pkl')
@@ -75,9 +77,9 @@ def evaluate_internal(config_path, snapshot, out, update_config, metrics_functio
 
     metrics = []
 
-    metrics = get_complexity_and_size(cfg, config_path, work_dir, metrics, update_config)
+    metrics.extend(get_complexity_and_size(cfg, config_path, work_dir, update_config))
     for func, args in metrics_functions:
-        metrics = func(config_path, work_dir, snapshot, metrics, *args)
+        metrics.extend(func(config_path, work_dir, snapshot, *args))
 
     for metric in metrics:
         metric['value'] = round(metric['value'], 3) if metric['value'] else metric['value']

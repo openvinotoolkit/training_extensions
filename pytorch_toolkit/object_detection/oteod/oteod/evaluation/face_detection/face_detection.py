@@ -15,10 +15,12 @@ from oteod.evaluation.face_detection.wider_face.convert_predictions import conve
 from oteod.evaluation.face_detection.wider_face.wider_face_eval import wider_face_evaluation
 
 
-def compute_wider_metrics(config_path, work_dir, snapshot, outputs, wider_dir):
+def compute_wider_metrics(config_path, work_dir, snapshot, wider_dir):
     """ Computes WiderFace metrics on easy, medium, hard subsets. """
 
     os.makedirs(wider_dir, exist_ok=True)
+
+    outputs = []
 
     wider_data_zip = os.path.join(wider_dir, 'WIDER_val.zip')
     if not os.path.exists(wider_data_zip):
@@ -97,10 +99,12 @@ def compute_wider_metrics(config_path, work_dir, snapshot, outputs, wider_dir):
     return outputs
 
 
-def custom_ap_eval(config_path, work_dir, snapshot, outputs, update_config):
+def custom_ap_eval(config_path, work_dir, snapshot, update_config):
     """ Computes AP on faces that are greater than 64x64. """
 
     assert isinstance(update_config, dict)
+
+    outputs = []
 
     res_pkl = os.path.join(work_dir, 'res.pkl')
     if not os.path.exists(res_pkl):

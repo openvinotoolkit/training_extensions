@@ -24,9 +24,10 @@ def collect_f1(path):
     return result
 
 
-def coco_eval(config_path, work_dir, snapshot, outputs, update_config, show_dir):
+def coco_eval(config_path, work_dir, snapshot, update_config, show_dir):
     """ Computes metrics: precision, recall, hmean and COCO AP. """
 
+    outputs = []
     res_pkl = os.path.join(work_dir, 'res.pkl')
     test_py_stdout = os.path.join(work_dir, 'test_py_stdout')
     update_config = ' '.join([f'{k}={v}' for k, v in update_config.items()])

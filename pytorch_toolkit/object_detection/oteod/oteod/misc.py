@@ -63,7 +63,7 @@ def sha256sum(filename):
     return h.hexdigest()
 
 
-def get_complexity_and_size(cfg, config_path, work_dir, outputs, update_config):
+def get_complexity_and_size(cfg, config_path, work_dir, update_config):
     """ Gets complexity and size of a model. """
 
     image_shape = [x['img_scale'] for x in cfg.test_pipeline if 'img_scale' in x][0][::-1]
@@ -80,8 +80,7 @@ def get_complexity_and_size(cfg, config_path, work_dir, outputs, update_config):
         f'{update_config}'.split(' '), check=True)
     with open(res_complexity) as read_file:
         content = json.load(read_file)
-        outputs.extend(content)
-    return outputs
+    return content
 
 
 def get_file_size_and_sha256(snapshot):
