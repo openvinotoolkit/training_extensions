@@ -51,7 +51,7 @@ export VAL_IMG_ROOT="${OBJ_DET_DIR}/../../data/airport/val"
 cd ${WORK_DIR}
 ```
 
-### 4. Training
+### 5. Training
 
 Since custom detection model templates rather than ready-to-use models (though technically one can use them as they are) are provided it is needed to define `classes`.
 
@@ -59,7 +59,7 @@ Since custom detection model templates rather than ready-to-use models (though t
 export CLASSES="vehicle,person,non-vehicle"
 ```
 
-### 5. Training and Fine-tuning
+### 6. Training and Fine-tuning
 
 To start **training** from pre-trained weights use `--load-weights` pararmeter. Parameters such as `--epochs`, `--batch-size` and `--gpu-num` can be omitted, default values will be loaded from `${MODEL_TEMPLATE}`. Please be aware of default values for these parameters in particular `{MODEL_TEMPLATE}`.
 
@@ -76,7 +76,7 @@ python train.py \
    --classes ${CLASSES}
 ```
 
-### 6. Evaluation
+### 7. Evaluation
 
 Evaluation procedure allows us to get quality metrics values and complexity numbers such as number of parameters and FLOPs.
 
@@ -103,7 +103,7 @@ python eval.py \
    --classes ${CLASSES}
 ```
 
-### 6. Export PyTorch\* model to the OpenVINO™ format
+### 8. Export PyTorch\* model to the OpenVINO™ format
 
 To convert PyTorch\* model to the OpenVINO™ IR format run the `export.py` script:
 
@@ -120,7 +120,7 @@ For SSD networks an alternative OpenVINO™ representation is done automatically
 SSD model exported in such way will produce a bit different results (non-significant in most cases),
 but it also might be faster than the default one. As a rule SSD models in [Open Model Zoo](https://github.com/opencv/open_model_zoo/) are exported using this option.
 
-### 7. Validation of IR
+### 9. Validation of IR
 
 Instead of passing `snapshot.pth` you need to pass path to `model.bin` (or `model.xml`).
 

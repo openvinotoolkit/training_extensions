@@ -110,7 +110,7 @@ python eval.py \
    --save-output-images-to ${WORK_DIR/}/output_images
 ```
 
-### 6. Export PyTorch\* model to the OpenVINO™ format
+### 7. Export PyTorch\* model to the OpenVINO™ format
 
 To convert PyTorch\* model to the OpenVINO™ IR format run the `export.py` script:
 
@@ -127,7 +127,7 @@ For SSD networks an alternative OpenVINO™ representation is done automatically
 SSD model exported in such way will produce a bit different results (non-significant in most cases),
 but it also might be faster than the default one. As a rule SSD models in [Open Model Zoo](https://github.com/opencv/open_model_zoo/) are exported using this option.
 
-### 7. Validation of IR
+### 8. Validation of IR
 
 Instead of passing `snapshot.pth` you need to pass path to `model.bin` (or `model.xml`).
 
