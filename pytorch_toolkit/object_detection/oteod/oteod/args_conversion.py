@@ -6,9 +6,9 @@ from ote import MODEL_TEMPLATE_FILENAME
 def convert_ote_to_oteod_train_args(template_folder, args):
     update_config_map = {
         'train_ann_files': 'data.train.dataset.ann_file',
-        'train_img_roots': 'data.train.dataset.img_prefix',
+        'train_data_roots': 'data.train.dataset.img_prefix',
         'val_ann_files': 'data.val.ann_file',
-        'val_img_roots': 'data.val.img_prefix',
+        'val_data_roots': 'data.val.img_prefix',
         'resume_from': 'resume_from',
         'load_weights': 'load_from',
         'save_checkpoints_to': 'work_dir',
@@ -38,7 +38,7 @@ def convert_ote_to_oteod_train_args(template_folder, args):
 def convert_ote_to_oteod_test_args(template_folder, args):
     update_config_map = {
         'test_ann_files': 'data.test.ann_file',
-        'test_img_roots': 'data.test.img_prefix',
+        'test_data_roots': 'data.test.img_prefix',
     }
 
     update_config = {v: args[k] for k, v in update_config_map.items()}
