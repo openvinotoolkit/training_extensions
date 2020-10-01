@@ -17,7 +17,7 @@ def collect_ap(path):
     average_precisions = []
     beginning = 'Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = '
     with open(path) as read_file:
-        content = [line.strip() for line in read_file.readlines()]
+        content = [line.strip() for line in read_file]
         for line in content:
             if line.startswith(beginning):
                 average_precisions.append(float(line.replace(beginning, '')))

@@ -14,7 +14,7 @@ def collect_f1(path):
     content = []
     result = []
     with open(path) as read_file:
-        content += [line.split() for line in read_file.readlines()]
+        content += [line.split() for line in read_file]
         for line in content:
             if (len(line) > 2) and (line[0] == 'Text'):
                 for word in line[2:]:

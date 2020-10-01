@@ -14,7 +14,7 @@ from mmdet import datasets
 
 def replace_text_in_file(path, replace_what, replace_by):
     with open(path) as read_file:
-        content = '\n'.join([line.rstrip() for line in read_file.readlines()])
+        content = '\n'.join([line.rstrip() for line in read_file])
         if content.find(replace_what) == -1:
             return False
         content = content.replace(replace_what, replace_by)

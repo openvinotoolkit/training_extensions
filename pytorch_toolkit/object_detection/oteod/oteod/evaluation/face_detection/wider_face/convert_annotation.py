@@ -13,7 +13,7 @@ def parse_wider_gt(ann_file):
     bboxes = dict()
     landmarks = dict()
     with open(ann_file) as read_file:
-        content = [line.strip() for line in read_file.readlines()]
+        content = [line.strip() for line in read_file]
         new_file = True
         i = 0
         while True:
@@ -49,7 +49,7 @@ def parse_wider_gt_with_landmarks(ann_file):
     bboxes = dict()
     landmarks = dict()
     with open(ann_file) as read_file:
-        content = [line.strip() for line in read_file.readlines()]
+        content = [line.strip() for line in read_file]
         new_file = True
         i = 0
         while True:
