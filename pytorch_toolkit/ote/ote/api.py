@@ -10,12 +10,12 @@ def train_args_parser(template_path):
 
         parser.add_argument('--train-ann-files', required=True,
                             help='Comma-separated paths to training annotation files.')
-        parser.add_argument('--train-img-roots', required=True,
-                            help='Comma-separated paths to training images folders.')
+        parser.add_argument('--train-data-roots', required=True,
+                            help='Comma-separated paths to training data folders.')
         parser.add_argument('--val-ann-files', required=True,
                             help='Comma-separated paths to validation annotation files.')
-        parser.add_argument('--val-img-roots', required=True,
-                            help='Comma-separated paths to validation images folders.')
+        parser.add_argument('--val-data-roots', required=True,
+                            help='Comma-separated paths to validation data folders.')
         parser.add_argument('--resume-from', default='',
                             help='Resume training from previously saved checkpoint')
         parser.add_argument('--load-weights', default='',
@@ -48,8 +48,8 @@ def test_args_parser(template_path):
 
         parser.add_argument('--test-ann-files', required=True,
                             help='Comma-separated paths to test annotation files.')
-        parser.add_argument('--test-img-roots', required=True,
-                            help='Comma-separated paths to test images folders.')
+        parser.add_argument('--test-data-roots', required=True,
+                            help='Comma-separated paths to test data folders.')
         parser.add_argument('--load-weights', required=True,
                             help='Load only weights from previously saved checkpoint')
         parser.add_argument('--save-metrics-to', required=True,

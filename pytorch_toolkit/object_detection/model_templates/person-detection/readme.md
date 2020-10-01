@@ -61,9 +61,9 @@ Try both following variants and select the best one:
       python train.py \
          --load-weights ${WORK_DIR}/snapshot.pth \
          --train-ann-files ${TRAIN_ANN_FILE} \
-         --train-img-roots ${TRAIN_IMG_ROOT} \
+         --train-data-roots ${TRAIN_IMG_ROOT} \
          --val-ann-files ${VAL_ANN_FILE} \
-         --val-img-roots ${VAL_IMG_ROOT} \
+         --val-data-roots ${VAL_IMG_ROOT} \
          --save-checkpoints-to ${WORK_DIR}/outputs
       ```
 
@@ -78,9 +78,9 @@ Try both following variants and select the best one:
       python train.py \
          --resume-from ${WORK_DIR}/snapshot.pth \
          --train-ann-files ${TRAIN_ANN_FILE} \
-         --train-img-roots ${TRAIN_IMG_ROOT} \
+         --train-data-roots ${TRAIN_IMG_ROOT} \
          --val-ann-files ${VAL_ANN_FILE} \
-         --val-img-roots ${VAL_IMG_ROOT} \
+         --val-data-roots ${VAL_IMG_ROOT} \
          --save-checkpoints-to ${WORK_DIR}/outputs \
          --epochs ${EPOCHS_NUM}
       ```
@@ -95,7 +95,7 @@ To compute MS-COCO metrics and save computed values to `${WORK_DIR}/metrics.yaml
 python eval.py \
    --load-weights ${WORK_DIR}/outputs/latest.pth \
    --test-ann-files ${VAL_ANN_FILE} \
-   --test-img-roots ${VAL_IMG_ROOT} \
+   --test-data-roots ${VAL_IMG_ROOT} \
    --save-metrics-to ${WORK_DIR}/metrics.yaml
 ```
 
@@ -105,7 +105,7 @@ You can also save images with predicted bounding boxes using `--save-output-imag
 python eval.py \
    --load-weights ${WORK_DIR}/outputs/latest.pth \
    --test-ann-files ${VAL_ANN_FILE} \
-   --test-img-roots ${VAL_IMG_ROOT} \
+   --test-data-roots ${VAL_IMG_ROOT} \
    --save-metrics-to ${WORK_DIR}/metrics.yaml \
    --save-output-images-to ${WORK_DIR}/output_images
 ```
@@ -135,6 +135,6 @@ Instead of passing `snapshot.pth` you need to pass path to `model.bin` (or `mode
 python eval.py \
    --load-weights ${WORK_DIR}/export/model.bin \
    --test-ann-files ${VAL_ANN_FILE} \
-   --test-img-roots ${VAL_IMG_ROOT} \
+   --test-data-roots ${VAL_IMG_ROOT} \
    --save-metrics-to ${WORK_DIR}/metrics.yaml
 ```

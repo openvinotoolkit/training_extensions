@@ -57,7 +57,7 @@ def create_test_case(problem_name, model_name, ann_file, img_root):
                 f'cd {os.path.dirname(self.template_file)};'
                 f'python {self.dependencies["eval"]}'
                 f' --test-ann-files {self.ann_file}'
-                f' --test-img-roots {self.img_root}'
+                f' --test-data-roots {self.img_root}'
                 f' --save-metrics-to {os.path.join(self.work_dir, "metrics.yaml")}'
                 f' --load-weights {os.path.join(self.work_dir, os.path.basename(self.dependencies["snapshot"]))}')
 
@@ -78,9 +78,9 @@ def create_test_case(problem_name, model_name, ann_file, img_root):
                 f'cd {os.path.dirname(self.template_file)};'
                 f'python {self.dependencies["train"]}'
                 f' --train-ann-files {self.ann_file}'
-                f' --train-img-roots {self.img_root}'
+                f' --train-data-roots {self.img_root}'
                 f' --val-ann-files {self.ann_file}'
-                f' --val-img-roots {self.img_root}'
+                f' --val-data-roots {self.img_root}'
                 f' --resume-from {os.path.join(self.work_dir, os.path.basename(self.dependencies["snapshot"]))}'
                 f' --save-checkpoints-to {self.work_dir}'
                 f' --gpu-num 1'
@@ -127,7 +127,7 @@ def create_export_test_case(problem_name, model_name, ann_file, img_root, alt_ss
                 f'/opt/intel/openvino/bin/setupvars.sh;'
                 f'python {self.dependencies["eval"]}'
                 f' --test-ann-files {ann_file}'
-                f' --test-img-roots {img_root}'
+                f' --test-data-roots {img_root}'
                 f' --load-weights {os.path.join(export_dir, "model.bin")}'
                 f' --save-metrics-to {os.path.join(export_dir, "metrics.yaml")}'
             )
