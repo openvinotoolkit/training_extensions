@@ -53,7 +53,7 @@ def convert_ote_to_oteod_test_args(template_folder, args):
         'snapshot': args['load_weights'],
         'out': args['save_metrics_to'],
         'update_config': update_config,
-        'show_dir': args['save_output_images_to'],
+        'show_dir': args['save_output_to'],
     }
 
     return oteod_args
