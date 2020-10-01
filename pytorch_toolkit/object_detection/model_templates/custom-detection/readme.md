@@ -99,7 +99,7 @@ python eval.py \
    --test-ann-files ${VAL_ANN_FILE} \
    --test-img-roots ${VAL_IMG_ROOT} \
    --save-metrics-to ${WORK_DIR}/metrics.yaml \
-   --save-output-images-to ${WORK_DIR/}/output_images \
+   --save-output-images-to ${WORK_DIR}/output_images \
    --classes ${CLASSES}
 ```
 

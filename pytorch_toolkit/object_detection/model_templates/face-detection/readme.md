@@ -128,7 +128,7 @@ python eval.py \
    --test-ann-files ${VAL_ANN_FILE} \
    --test-img-roots ${VAL_IMG_ROOT} \
    --save-metrics-to ${WORK_DIR}/metrics.yaml \
-   --save-output-images-to ${WORK_DIR/}/output_images
+   --save-output-images-to ${WORK_DIR}/output_images
 ```
 
 If you have WiderFace dataset downloaded you also can specify `--wider-dir` parameter where `WIDER_val.zip` file is stored in order to compute official WiderFace metrics.
