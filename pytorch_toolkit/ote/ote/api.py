@@ -54,7 +54,7 @@ def test_args_parser(template_path):
                             help='Load only weights from previously saved checkpoint')
         parser.add_argument('--save-metrics-to', required=True,
                             help='Location where evaluated metrics values will be stored (yaml file).')
-        parser.add_argument('--save-output-images-to', default='',
+        parser.add_argument('--save-output-to', default='',
                             help='Location where output images (with displayed result of model work) will be stored.')
         parser.add_argument('--config', default=config['config'], help=argparse.SUPPRESS)
 

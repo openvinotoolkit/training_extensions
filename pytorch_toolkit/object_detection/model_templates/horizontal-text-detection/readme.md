@@ -136,7 +136,7 @@ python eval.py \
    --save-metrics-to ${WORK_DIR}/metrics.yaml
 ```
 
-You can also save images with predicted bounding boxes using `--save-output-images-to` parameter.
+You can also save images with predicted bounding boxes using `--save-output-to` parameter.
 
 ```bash
 python eval.py \
@@ -144,7 +144,7 @@ python eval.py \
    --test-ann-files ${VAL_ANN_FILE} \
    --test-data-roots ${VAL_IMG_ROOT} \
    --save-metrics-to ${WORK_DIR}/metrics.yaml \
-   --save-output-images-to ${WORK_DIR}/output_images
+   --save-output-to ${WORK_DIR}/output_images
 ```
 
 ### 7. Export PyTorch\* model to the OpenVINO™ format
