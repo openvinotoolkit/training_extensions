@@ -33,19 +33,19 @@ class TextRecognitionHead(nn.Module):
         super(TextRecognitionHead, self).__init__()
         self.emb_size = configuration.get("emb_size")
         self.encoder_hidden_size = configuration.get("encoder_hidden_size")
-        self.dec_rnn_h = configuration.get("dec_rnn_h")
+        self.decoder_hidden_size = configuration.get("decoder_hidden_size")
         self.max_len = configuration.get("max_len")
         self.n_layer = configuration.get("n_layer")
         self.beam_width = configuration.get('beam_width')
-        self.in_lstm_ch = configuration.get('in_lstm_ch')
-        self.rnn_encoder = nn.LSTM(self.in_lstm_ch, self.encoder_hidden_size,
+        self.encoder_input_size = configuration.get('encoder_input_size')
+        self.rnn_encoder = nn.LSTM(self.encoder_input_size, self.encoder_hidden_size,
                                    bidirectional=True,
                                    batch_first=True)
-        self.rnn_decoder = nn.LSTMCell(self.encoder_hidden_size+self.emb_size, self.dec_rnn_h)
+        self.rnn_decoder = nn.LSTMCell(self.encoder_hidden_size+self.emb_size, self.decoder_hidden_size)
         self.embedding = nn.Embedding(out_size, self.emb_size)
 
         # encoder_hidden_size*2 is the dimension of context
-        self.W_c = nn.Linear(self.dec_rnn_h+2*self.encoder_hidden_size, self.encoder_hidden_size)
+        self.W_c = nn.Linear(self.decoder_hidden_size+2*self.encoder_hidden_size, self.encoder_hidden_size)
         self.W_out = nn.Linear(self.encoder_hidden_size, out_size)
 
         # a trainable initial hidden state V_h_0 for each row
@@ -55,10 +55,10 @@ class TextRecognitionHead(nn.Module):
         init.uniform_(self.V_c_0, -INIT, INIT)
 
         # Attention mechanism
-        self.beta = nn.Parameter(torch.Tensor(self.dec_rnn_h))
+        self.beta = nn.Parameter(torch.Tensor(self.decoder_hidden_size))
         init.uniform_(self.beta, -INIT, INIT)
-        self.W_h = nn.Linear(self.dec_rnn_h, self.dec_rnn_h)
-        self.W_v = nn.Linear(self.encoder_hidden_size*2, self.dec_rnn_h)
+        self.W_h = nn.Linear(self.decoder_hidden_size, self.decoder_hidden_size)
+        self.W_v = nn.Linear(self.encoder_hidden_size*2, self.decoder_hidden_size)
 
     def forward(self, features, formulas=None):
         """args:
@@ -175,7 +175,7 @@ class TextRecognitionHead(nn.Module):
         row_enc_out, (h, c) = self.rnn_encoder(encoded_imgs, init_hidden)
         # row_enc_out [B*H, W, encoder_hidden_size]
         # hidden: [2, B*H, encoder_hidden_size]
-        row_enc_out = row_enc_out.view(B, H, W, self.dec_rnn_h)  # [B, H, W, dec_rnn_h]
+        row_enc_out = row_enc_out.view(B, H, W, self.decoder_hidden_size)  # [B, H, W, dec_rnn_h]
         h = h.view(2, B, H, self.encoder_hidden_size)
         c = c.view(2, B, H, self.encoder_hidden_size)
         return row_enc_out, h, c
@@ -273,7 +273,7 @@ class TextRecognitionHead(nn.Module):
         hidden = hidden.permute(1, 2, 0, 3).contiguous()
         # Note that 2*encoder_hidden_size = dec_rnn_h
         hidden = hidden.view(hidden.size(
-            0), hidden.size(1), self.dec_rnn_h)  # [B, H, dec_rnn_h]
+            0), hidden.size(1), self.decoder_hidden_size)  # [B, H, dec_rnn_h]
         hidden = hidden.mean(dim=1)  # [B, dec_rnn_h]
 
         return hidden

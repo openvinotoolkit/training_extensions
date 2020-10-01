@@ -7,10 +7,10 @@ backbone_config:
 backbone_type: resnet
 head:
   beam_width: 0
-  dec_rnn_h: 512
+  decoder_hidden_size: 512
   emb_size: 80
   encoder_hidden_size: 256
-  in_lstm_ch: 512
+  encoder_input_size: 512
   max_len: 256
   n_layer: 1
 dummy_input: /home/vloginov/work/im2latex/medium_v2/images_processed/1269.png

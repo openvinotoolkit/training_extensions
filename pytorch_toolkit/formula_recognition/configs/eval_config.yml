@@ -9,10 +9,10 @@ batch_size: 1
 device: cuda
 head:
   beam_width: 0
-  dec_rnn_h: 512
+  decoder_hidden_size: 512
   emb_size: 80
   encoder_hidden_size: 256
-  in_lstm_ch: 512
+  encoder_input_size: 512
   max_len: 256
   n_layer: 1
 model_path: /media/cluster_fs/user/vloginov/im2latex_project/0169/models/accuracy_best_model_2020-04-23_08-01-13

@@ -9,10 +9,10 @@ batch_size: 4
 device: cuda
 head:
   beam_width: 0
-  dec_rnn_h: 512
+  decoder_hidden_size: 512
   emb_size: 80
   encoder_hidden_size: 256
-  in_lstm_ch: 512
+  encoder_input_size: 512
   max_len: 256
   n_layer: 1
 learning_rate: 0.000001
