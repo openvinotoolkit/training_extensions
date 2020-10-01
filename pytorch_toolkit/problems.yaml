@@ -5,7 +5,6 @@ domains:
     description:  >-
       Custom object detection is a computer technology being used in a variety of applications
       that identifies custom object in digital images. You need to define your set of detection classes.
-    favorite: false
     subtitle: Detecting custom objects in digital images
     type: generic
   - title: Face Detection
@@ -13,7 +12,6 @@ domains:
       Face detection is a computer technology being used in a variety of applications
       that identifies human faces in digital images. Face detection can be regarded as
       a specific case of object-class detection.
-    favorite: false
     imagesUrls:
       - https://cdn.datafloq.com/cache/blog_pictures/878x531/face-detection-with-intel-distribution-for-python.png
       - https://hackernoon.com/drafts/9145e3n15.png
@@ -27,7 +25,6 @@ domains:
       Text detection is a computer technology being used in a variety of applications
       that finds every word in digital images. Text detection can be regarded as
       a specific case of object-class detection.
-    favorite: false
     imagesUrls:
       - https://miro.medium.com/max/1026/1*Bc-C54f2E0YwIrAfsZ8ZVQ.png
       - https://i.stack.imgur.com/j49si.jpg
@@ -39,7 +36,6 @@ domains:
       Person detection is a computer technology being used in a variety of applications
       that identifies human in digital images. Person detection can be regarded as
       a specific case of object-class detection.
-    favorite: false
     imagesUrls:
       - https://raw.githubusercontent.com/opencv/open_model_zoo/develop/models/intel/person-detection-0100/description/person-detection-0100.png
     subtitle: Detection persons in digital images
@@ -49,7 +45,6 @@ domains:
       Vehicle, person, bike detection is a computer technology being used in a variety of applications
       that identifies vehicles, persons, bikes in digital images. Vehicle, person, bike detection can be regarded as
       a specific case of object-class detection.
-    favorite: false
     imagesUrls:
       - https://raw.githubusercontent.com/opencv/open_model_zoo/develop/models/intel/person-vehicle-bike-detection-crossroad-1016/description/person-vehicle-bike-detection-crossroad-1016.png
     subtitle: Detecting vehicles, persons, bikes in digital images
@@ -59,7 +54,6 @@ domains:
       Vehicle detection is a computer technology being used in a variety of applications
       that identifies vehicles in digital images. Vehicle detection can be regarded as
       a specific case of object-class detection.
-    favorite: false
     imagesUrls:
       - https://raw.githubusercontent.com/opencv/open_model_zoo/develop/models/intel/vehicle-detection-adas-0002/description/vehicle-detection-adas-0002.png
     subtitle: Detecting vehicles in digital images
