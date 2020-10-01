@@ -11,7 +11,7 @@ head:
   beam_width: 0
   dec_rnn_h: 512
   emb_size: 80
-  enc_rnn_h: 256
+  encoder_hidden_size: 256
   in_lstm_ch: 512
   max_len: 256
   n_layer: 1

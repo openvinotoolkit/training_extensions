@@ -32,25 +32,25 @@ class TextRecognitionHead(nn.Module):
     def __init__(self, out_size, configuration):
         super(TextRecognitionHead, self).__init__()
         self.emb_size = configuration.get("emb_size")
-        self.enc_rnn_h = configuration.get("enc_rnn_h")
+        self.encoder_hidden_size = configuration.get("encoder_hidden_size")
         self.dec_rnn_h = configuration.get("dec_rnn_h")
         self.max_len = configuration.get("max_len")
         self.n_layer = configuration.get("n_layer")
         self.beam_width = configuration.get('beam_width')
         self.in_lstm_ch = configuration.get('in_lstm_ch')
-        self.rnn_encoder = nn.LSTM(self.in_lstm_ch, self.enc_rnn_h,
+        self.rnn_encoder = nn.LSTM(self.in_lstm_ch, self.encoder_hidden_size,
                                    bidirectional=True,
                                    batch_first=True)
-        self.rnn_decoder = nn.LSTMCell(self.enc_rnn_h+self.emb_size, self.dec_rnn_h)
+        self.rnn_decoder = nn.LSTMCell(self.encoder_hidden_size+self.emb_size, self.dec_rnn_h)
         self.embedding = nn.Embedding(out_size, self.emb_size)
 
-        # enc_rnn_h*2 is the dimension of context
-        self.W_c = nn.Linear(self.dec_rnn_h+2*self.enc_rnn_h, self.enc_rnn_h)
-        self.W_out = nn.Linear(self.enc_rnn_h, out_size)
+        # encoder_hidden_size*2 is the dimension of context
+        self.W_c = nn.Linear(self.dec_rnn_h+2*self.encoder_hidden_size, self.encoder_hidden_size)
+        self.W_out = nn.Linear(self.encoder_hidden_size, out_size)
 
         # a trainable initial hidden state V_h_0 for each row
-        self.V_h_0 = nn.Parameter(torch.Tensor(self.n_layer*2, self.enc_rnn_h))
-        self.V_c_0 = nn.Parameter(torch.Tensor(self.n_layer*2, self.enc_rnn_h))
+        self.V_h_0 = nn.Parameter(torch.Tensor(self.n_layer*2, self.encoder_hidden_size))
+        self.V_c_0 = nn.Parameter(torch.Tensor(self.n_layer*2, self.encoder_hidden_size))
         init.uniform_(self.V_h_0, -INIT, INIT)
         init.uniform_(self.V_c_0, -INIT, INIT)
 
@@ -58,7 +58,7 @@ class TextRecognitionHead(nn.Module):
         self.beta = nn.Parameter(torch.Tensor(self.dec_rnn_h))
         init.uniform_(self.beta, -INIT, INIT)
         self.W_h = nn.Linear(self.dec_rnn_h, self.dec_rnn_h)
-        self.W_v = nn.Linear(self.enc_rnn_h*2, self.dec_rnn_h)
+        self.W_v = nn.Linear(self.encoder_hidden_size*2, self.dec_rnn_h)
 
     def forward(self, features, formulas=None):
         """args:
@@ -174,22 +174,22 @@ class TextRecognitionHead(nn.Module):
         # Row Encoder
         self.rnn_encoder.flatten_parameters()
         row_enc_out, (h, c) = self.rnn_encoder(encoded_imgs, init_hidden)
-        # row_enc_out [B*H, W, enc_rnn_h]
-        # hidden: [2, B*H, enc_rnn_h]
+        # row_enc_out [B*H, W, encoder_hidden_size]
+        # hidden: [2, B*H, encoder_hidden_size]
         row_enc_out = row_enc_out.view(B, H, W, self.dec_rnn_h)  # [B, H, W, dec_rnn_h]
-        h = h.view(2, B, H, self.enc_rnn_h)
-        c = c.view(2, B, H, self.enc_rnn_h)
+        h = h.view(2, B, H, self.encoder_hidden_size)
+        c = c.view(2, B, H, self.encoder_hidden_size)
         return row_enc_out, h, c
 
     def step_decoding(self, h, c, output, enc_out, tgt):
         """Runing one step decoding"""
 
         prev_y = self.embedding(tgt).squeeze(1)  # [B, emb_size]
-        inp = torch.cat([prev_y, output], dim=1)  # [B, emb_size+enc_rnn_h]
+        inp = torch.cat([prev_y, output], dim=1)  # [B, emb_size+encoder_hidden_size]
         h_t, c_t = self.rnn_decoder(inp, (h, c))
 
         context_t, attn_scores = self._get_attn(enc_out, h)
-        # [B, enc_rnn_h]
+        # [B, encoder_hidden_size]
         output = self.W_c(torch.cat([h_t, context_t], dim=1)).tanh()
 
         # calculate logit
@@ -227,14 +227,14 @@ class TextRecognitionHead(nn.Module):
     def _get_attn(self, enc_out, prev_h):
         """Attention mechanism
         args:
-            enc_out: row encoder's output [B, H, W, enc_rnn_h]
+            enc_out: row encoder's output [B, H, W, encoder_hidden_size]
             prev_h: the previous time step hidden state [B, dec_rnn_h]
         return:
-            context: this time step context [B, enc_rnn_h]
+            context: this time step context [B, encoder_hidden_size]
             attn_scores: Attention scores
         """
-        # self.W_v(enc_out) [B, H, W, enc_rnn_h]
-        # self.W_h(prev_h) [B, enc_rnn_h]
+        # self.W_v(enc_out) [B, H, W, encoder_hidden_size]
+        # self.W_h(prev_h) [B, encoder_hidden_size]
         B, H, W, _ = enc_out.size()
         linear_prev_h = self.W_h(prev_h)
         lin_pr_sh = linear_prev_h.shape
@@ -249,17 +249,17 @@ class TextRecognitionHead(nn.Module):
         alpha = F.softmax(e.view(B, -1), dim=-1).view(B, H, W)
         attn_scores = alpha.unsqueeze(-1)
         context = torch.sum(attn_scores * enc_out,
-                            dim=[1, 2])  # [B, enc_rnn_h]
+                            dim=[1, 2])  # [B, encoder_hidden_size]
 
         return context, attn_scores
 
     def init_decoder(self, enc_out, hidden, context):
         """args:
-            enc_out: the output of row encoder [B, H, W, enc_rnn_h]
-            hidden: the last step hidden of row encoder [2, B, H, enc_rnn_h]
+            enc_out: the output of row encoder [B, H, W, encoder_hidden_size]
+            hidden: the last step hidden of row encoder [2, B, H, encoder_hidden_size]
           return:
             h_0, c_0  h_0 and c_0's shape: [B, dec_rnn_h]
-            init_O : the average of enc_out  [B, enc_rnn_h]
+            init_O : the average of enc_out  [B, encoder_hidden_size]
             for decoder
         """
         hidden, context = self._convert_hidden(hidden), self._convert_hidden(context)
@@ -272,7 +272,7 @@ class TextRecognitionHead(nn.Module):
     def _convert_hidden(self, hidden):
         """convert row encoder hidden to decoder initial hidden"""
         hidden = hidden.permute(1, 2, 0, 3).contiguous()
-        # Note that 2*enc_rnn_h = dec_rnn_h
+        # Note that 2*encoder_hidden_size = dec_rnn_h
         hidden = hidden.view(hidden.size(
             0), hidden.size(1), self.dec_rnn_h)  # [B, H, dec_rnn_h]
         hidden = hidden.mean(dim=1)  # [B, dec_rnn_h]

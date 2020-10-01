@@ -1,5 +1,5 @@
 backbone_config:
-  arch: resnext101_32x8d
+  arch: resnext50_32x4d
   disable_layer_3: true
   disable_layer_4: true
   enable_last_conv: false
@@ -11,13 +11,13 @@ head:
   beam_width: 0
   dec_rnn_h: 512
   emb_size: 80
-  enc_rnn_h: 256
+  encoder_hidden_size: 256
   in_lstm_ch: 512
   max_len: 256
   n_layer: 1
 learning_rate: 0.000001
 log_path: /home/vloginov/work/im2latex/project/
-model_path: /media/cluster_fs/user/vloginov/im2latex_project/0169/models/accuracy_best_model_2020-04-23_08-01-13
+model_path: /media/cluster_fs/user/vloginov/im2latex_project/0185/models/accuracy_test_best_model_2020-06-25_13-44-39
 optimizer: Adam
 save_dir: ../im2latex/models
 train_paths:
