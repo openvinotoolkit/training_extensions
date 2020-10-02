@@ -15,26 +15,63 @@
 """
 
 import argparse
-import yaml
 import os
 import sys
 from functools import partial
 from pprint import pformat
 
-from tqdm import tqdm
-
 import torch
 import torch.optim as optim
-from im2latex.data.utils import (cal_loss, collate_fn,
-                                 create_list_of_transforms, get_timestamp)
-from im2latex.data.vocab import read_vocab
-from im2latex.datasets.im2latex_dataset import (BatchRandomSampler,
-                                                Im2LatexDataset)
-from im2latex.models.im2latex_model import Im2latexModel
+import yaml
 from torch.nn.utils import clip_grad_norm_
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.data import ConcatDataset, DataLoader
 from torch.utils.tensorboard import SummaryWriter
+from tqdm import tqdm
+
+from im2latex.data.utils import (collate_fn, create_list_of_transforms,
+                                 get_timestamp)
+from im2latex.data.vocab import read_vocab
+from im2latex.datasets.im2latex_dataset import (BatchRandomSampler,
+                                                Im2LatexDataset)
+from im2latex.models.im2latex_model import Im2latexModel
+
+
+def calculate_loss(logits, targets, should_cut_by_min=False):
+    """args:
+        logits: probability distribution return by model
+                [B, MAX_LEN, voc_size]
+        targets: target formulas
+                [B, MAX_LEN]
+    """
+
+    if should_cut_by_min:
+        required_len = min(logits.size(1), targets.size(1))
+        logits = logits.narrow(1, 0, required_len)
+        targets = targets.narrow(1, 0, required_len)
+        if required_len < targets.size(1):
+            warn("Cutting tensor leads to tensor sized less than target")
+    else:
+        # narrows on 1st dim from 'start_pos' 'length' symbols
+        logits = logits.narrow(1, 0, targets.size(1))
+
+    padding = torch.ones_like(targets) * PAD_TOKEN
+    mask_for_tgt = (targets != padding)
+    B, L, vocab_size = logits.shape  # batch size, length of the formula, vocab size
+    targets = targets.masked_select(mask_for_tgt)
+    mask_for_logits = mask_for_tgt.unsqueeze(2).expand(-1, -1, vocab_size)
+    logits = logits.masked_select(mask_for_logits).contiguous().view(-1, vocab_size)
+    logits = torch.log(logits)
+
+    assert logits.size(0) == targets.size(0)
+    pred = torch.max(logits.data, 1)[1]
+
+    accuracy = (pred == targets)
+    accuracy = accuracy.cpu().numpy().astype(np.uint32)
+    accuracy = np.sum(accuracy) / len(accuracy)
+
+    loss = F.nll_loss(logits, targets)
+    return loss, accuracy.item()
 
 
 class Trainer():
@@ -82,10 +119,13 @@ class Trainer():
     def create_dirs(self):
         if not os.path.exists(self.logs_path):
             os.makedirs(self.logs_path)
+        print("Created logs folder: {}".format(self.logs_path))
         if not os.path.exists(self.save_dir):
             os.makedirs(self.save_dir)
+        print("Created save folder: {}".format(self.save_dir))
         if not os.path.exists(self.val_results_path):
             os.makedirs(self.val_results_path)
+        print("Created validation results folder: {}".format(self.val_results_path))
 
     def load_dataset(self):
         train_dataset = ConcatDataset(
@@ -113,7 +153,6 @@ class Trainer():
 
     def train(self):
 
-        print("Created logs folder: {}".format(self.logs_path))
         while self.epoch <= self.total_epochs:
             losses = 0.0
             for _, imgs, tgt4training, tgt4cal_loss in self.train_loader:
@@ -174,7 +213,7 @@ class Trainer():
         tgt4training = tgt4training.to(self.device)
         tgt4cal_loss = tgt4cal_loss.to(self.device)
         logits, _ = self.model(imgs, tgt4training)
-        loss, accuracy = cal_loss(logits, tgt4cal_loss, should_cut_by_min=True)
+        loss, accuracy = calculate_loss(logits, tgt4cal_loss, should_cut_by_min=True)
         self.step += 1
         self.global_step += 1
         loss.backward()
@@ -209,7 +248,7 @@ class Trainer():
                         output_file.write(img_name[j] + '\t' +
                                           pred_phrase_str + '\t' +
                                           gold_phrase_str + '\n')
-                    loss, accuracy = cal_loss(logits, tgt4cal_loss,
+                    loss, accuracy = calculate_loss(logits, tgt4cal_loss,
                                               should_cut_by_min=True)
                     loss = loss.detach()
                     val_total_loss += loss

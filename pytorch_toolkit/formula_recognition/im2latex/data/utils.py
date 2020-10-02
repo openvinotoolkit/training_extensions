@@ -397,43 +397,6 @@ def get_num_lines_in_file(path):
     return total
 
 
-def cal_loss(logits, targets, should_cut_by_min=False):
-    """args:
-        logits: probability distribution return by model
-                [B, MAX_LEN, voc_size]
-        targets: target formulas
-                [B, MAX_LEN]
-    """
-
-    if should_cut_by_min:
-        required_len = min(logits.size(1), targets.size(1))
-        logits = logits.narrow(1, 0, required_len)
-        targets = targets.narrow(1, 0, required_len)
-        if required_len < targets.size(1):
-            warn("Cutting tensor leads to tensor sized less than target")
-    else:
-        # narrows on 1st dim from 'start_pos' 'length' symbols
-        logits = logits.narrow(1, 0, targets.size(1))
-
-    padding = torch.ones_like(targets) * PAD_TOKEN
-    mask_for_tgt = (targets != padding)
-    B, L, vocab_size = logits.shape # batch size, length of the formula, vocab size
-    targets = targets.masked_select(mask_for_tgt)
-    mask_for_logits = mask_for_tgt.unsqueeze(2).expand(-1, -1, vocab_size)
-    logits = logits.masked_select(mask_for_logits).contiguous().view(-1, vocab_size)
-    logits = torch.log(logits)
-
-    assert logits.size(0) == targets.size(0)
-    pred = torch.max(logits.data, 1)[1]
-
-    accuracy = (pred == targets)
-    accuracy = accuracy.cpu().numpy().astype(np.uint32)
-    accuracy = np.sum(accuracy) / len(accuracy)
-
-    loss = F.nll_loss(logits, targets)
-    return loss, accuracy.item()
-
-
 def collate_fn(sign2id, batch, *, batch_transform=None):
     # filter the pictures that have different width or height
     size = batch[0]['img'].shape
