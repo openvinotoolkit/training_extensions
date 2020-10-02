@@ -95,4 +95,5 @@ if __name__ == "__main__":
     with open(args.config, 'r') as f:
         config = yaml.load(f, Loader=yaml.SafeLoader)
     validator = Evaluator(config)
-    print("Im2latex metric is: {}".format(validator.validate()))
+    result = validator.validate()
+    print("Im2latex metric is: {}".format(result))
