@@ -81,19 +81,8 @@ class Vocab(object):
 
         return " ".join(phrase_converted)
 
-    def construct_indices(self, phrase):
-        """
-        given a phrase, returns indices which
-        this phrase corresponds to
-        """
-        indices = []
 
-        for token in phrase.split():
-            indices.append(self.sign2id.get(token))
-        return torch.Tensor(indices)
-
-
-def write_vocab(data_dir, json=True):
+def write_vocab(data_dir, as_json=True):
     """
     traverse training formulas to make vocab
     and store the vocab in the file
@@ -122,8 +111,8 @@ def write_vocab(data_dir, json=True):
             "id2sign": vocab.id2sign,
             "sign2id": vocab.sign2id,
         }
-        if json:
-            json.dump(dict_to_store,
+        if as_json:
+            as_json.dump(dict_to_store,
                       w, indent=4, sort_keys=True)
         else:
             pkl.dump(dict_to_store, w)
@@ -154,9 +143,3 @@ def pkl_to_json(vocab_path):
         with open(json_path, 'w') as dest:
             json.dump(dict_to_store, dest, indent=4, sort_keys=True)
 
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Read file with formulas and create vocab file")
-    parser.add_argument('--data_path', help='path to the formulas')
-    args = parser.parse_args()
-    write_vocab(args.data_path)
