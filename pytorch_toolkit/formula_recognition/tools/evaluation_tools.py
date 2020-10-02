@@ -37,7 +37,6 @@ SOFTWARE.
 
 """
 
-import logging
 import os
 import re
 import subprocess
@@ -173,7 +172,7 @@ def render_routine(line):
         pdf_filename = tex_filename[:-4] + '.pdf'
         png_filename = tex_filename[:-4] + '.png'
         if not os.path.exists(pdf_filename):
-            logging.info('ERROR: %s cannot compile\n', file_idx)
+            print('ERROR: {} cannot compile'.format(file_idx))
         else:
             subprocess.run(['convert', '+profile', '"icc"', '-density', '200', '-quality', '100',
                             pdf_filename, png_filename], check=True, stdout=PIPE, stderr=PIPE)
@@ -305,7 +304,7 @@ class Im2latexRenderBasedMetric():
         self.max_pixel_column_diff = MAX_PX_COL_DIFF
         check_environment()
 
-    def compare_images(self, images_dir):
+    def compare_images(self, images_dir, gold_dir, pred_dir):
         """
         Function reads images and compares them, first, as is
         second, deletes all whitespaces and compares again.
@@ -317,8 +316,6 @@ class Im2latexRenderBasedMetric():
         total_correct_eliminate = 0
         lines = []
         pool = ThreadPool(self.num_threads)
-        gold_dir = os.path.join(images_dir, 'images_gold')
-        pred_dir = os.path.join(images_dir, 'images_pred')
         plots_dir = os.path.join(images_dir, 'diff')
         filenames = os.listdir(gold_dir)
         if not os.path.exists(plots_dir):
@@ -347,13 +344,13 @@ class Im2latexRenderBasedMetric():
 
         correct_ratio = float(total_correct / total_num) if total_num > 0 else 0
         correct_eliminate_ratio = float(total_correct_eliminate / total_num) if total_num > 0 else 0
-        logging.info('------------------------------------')
-        logging.info('Final')
-        logging.info('Total Num: %s', total_num)
-        logging.info('Accuracy (w spaces): %s', correct_ratio)
-        logging.info('Accuracy (w/o spaces): %s', correct_eliminate_ratio)
-        logging.info('Total Correct (w spaces): %s', total_correct)
-        logging.info('Total Correct (w/o spaces): %s', total_correct_eliminate)
+        print('------------------------------------')
+        print('Final')
+        print('Total Num: {}'.format(total_num))
+        print('Accuracy (w spaces): {}'.format(correct_ratio))
+        print('Accuracy (w/o spaces): {}'.format(correct_eliminate_ratio))
+        print('Total Correct (w spaces): {}'.format(total_correct))
+        print('Total Correct (w/o spaces): {}'.format(total_correct_eliminate))
         return correct_eliminate_ratio
 
     def render_images(self, annotations, predictions, images_dir):
@@ -371,9 +368,9 @@ class Im2latexRenderBasedMetric():
         annotations = [(elem[0], elem[1], out_path_gold) for elem in annotations]
         predictions = [(elem[0], elem[1], out_path_pred) for elem in predictions]
         lines = annotations + predictions
-        logging.info('Creating render pool with %s threads', self.num_threads)
+        print('Creating render pool with {} threads'.format(self.num_threads))
         pool = ThreadPool(self.num_threads)
-        logging.info('Jobs running...')
+        print('Jobs running...')
         pairs_images_rendered = 0
         for num, _ in enumerate(pool.imap_unordered(render_routine, lines)):
             if num % (PRINT_FREQ * 2) == 0 and num != 0:
@@ -383,10 +380,11 @@ class Im2latexRenderBasedMetric():
         print("All images rendered")
         pool.close()
         pool.join()
+        return out_path_gold, out_path_pred
 
     def evaluate(self, annotations, predictions):
         result = 0
         with tempfile.TemporaryDirectory() as images_dir:
-            self.render_images(annotations, predictions, images_dir)
-            result = self.compare_images(images_dir)
+            gold_dir, pred_dir = self.render_images(annotations, predictions, images_dir)
+            result = self.compare_images(images_dir, gold_dir, pred_dir)
         return result
