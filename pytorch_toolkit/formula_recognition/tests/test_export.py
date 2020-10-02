@@ -24,8 +24,8 @@ from tools.export import ONNXExporter
 
 class TestExport(unittest.TestCase):
     def setUp(self):
-        with open('configs/export_config.yml', 'r') as f:
-            config = yaml.load(f, Loader=yaml.SafeLoader)
+        with open('configs/config.yml', 'r') as f:
+            config = yaml.load(f, Loader=yaml.SafeLoader).get('export')
         self.config = config
         self.exporter = ONNXExporter(config)
 

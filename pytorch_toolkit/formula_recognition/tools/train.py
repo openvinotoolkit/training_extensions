@@ -42,21 +42,22 @@ import sys
 from functools import partial
 from pprint import pformat
 
+import numpy as np
 import torch
+import torch.nn.functional as F
 import torch.optim as optim
 import yaml
+from im2latex.data.utils import (collate_fn, create_list_of_transforms,
+                                 get_timestamp)
+from im2latex.data.vocab import PAD_TOKEN, read_vocab
+from im2latex.datasets.im2latex_dataset import (BatchRandomSampler,
+                                                Im2LatexDataset)
+from im2latex.models.im2latex_model import Im2latexModel
 from torch.nn.utils import clip_grad_norm_
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.data import ConcatDataset, DataLoader
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
-
-from im2latex.data.utils import (collate_fn, create_list_of_transforms,
-                                 get_timestamp)
-from im2latex.data.vocab import read_vocab
-from im2latex.datasets.im2latex_dataset import (BatchRandomSampler,
-                                                Im2LatexDataset)
-from im2latex.models.im2latex_model import Im2latexModel
 
 
 def calculate_loss(logits, targets, should_cut_by_min=False):
@@ -127,7 +128,7 @@ class Trainer():
         self.writer.add_text("General info", pformat(config))
         self.create_dirs()
         self.load_dataset()
-        self.model = Im2latexModel(config.get('backbone_type'), config.get(
+        self.model = Im2latexModel(config.get('backbone_type', 'resnet'), config.get(
             'backbone_config'), len(self.vocab), config.get('head', {}))
         if self.model_path is not None:
             self.model.load_weights(self.model_path, old_model=config.get("old_model"))
@@ -271,7 +272,7 @@ class Trainer():
                                           pred_phrase_str + '\t' +
                                           gold_phrase_str + '\n')
                     loss, accuracy = calculate_loss(logits, tgt4cal_loss,
-                                              should_cut_by_min=True)
+                                                    should_cut_by_min=True)
                     loss = loss.detach()
                     val_total_loss += loss
                     val_total_accuracy += accuracy
@@ -307,7 +308,7 @@ if __name__ == "__main__":
     args = parse_args()
 
     with open(args.config, 'r') as f:
-        config = yaml.load(f, Loader=yaml.SafeLoader)
+        config = yaml.load(f, Loader=yaml.SafeLoader).get("train")
 
     experiment = Trainer(work_dir=args.work_dir, config=config)
     experiment.train()

@@ -41,7 +41,7 @@ class Evaluator():
         self.split = config.get('split_file', 'validate')
         self.print_freq = config.get('print_freq', 16)
         self.load_dataset()
-        self.model = Im2latexModel(config.get('backbone_type'), config.get(
+        self.model = Im2latexModel(config.get('backbone_type', 'resnet'), config.get(
             'backbone_config'), len(self.vocab), config.get('head', {}))
         self.device = config.get('device', 'cpu')
         if self.model_path is not None:
@@ -93,7 +93,7 @@ def parse_args():
 if __name__ == "__main__":
     args = parse_args()
     with open(args.config, 'r') as f:
-        config = yaml.load(f, Loader=yaml.SafeLoader)
+        config = yaml.load(f, Loader=yaml.SafeLoader).get("eval")
     validator = Evaluator(config)
     result = validator.validate()
     print("Im2latex metric is: {}".format(result))

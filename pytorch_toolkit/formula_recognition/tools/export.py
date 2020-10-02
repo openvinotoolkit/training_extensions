@@ -52,7 +52,7 @@ class ONNXExporter():
         self.vocab = read_vocab(os.path.join(os.path.abspath("./"), config.get('vocab_path')))
         self.transform = create_list_of_transforms(config.get('transforms_list'))
         self.transform_for_ir = create_list_of_transforms(config.get('transforms_list'), ovino_ir=True)
-        self.model = Im2latexModel(config.get('backbone_type'), config.get(
+        self.model = Im2latexModel(config.get('backbone_type', 'resnet'), config.get(
             'backbone_config'), len(self.vocab), config.get('head', {}))
         if self.model_path is not None:
             self.model.load_weights(self.model_path, old_model=config.get("old_model"))
@@ -260,7 +260,7 @@ def parse_args():
 if __name__ == "__main__":
     args = parse_args()
     with open(args.config, 'r') as f:
-        config = yaml.load(f, Loader=yaml.SafeLoader)
+        config = yaml.load(f, Loader=yaml.SafeLoader).get("export")
     exporter = ONNXExporter(config)
     exporter.export_encoder()
     row_enc_out, h, c, O_t = exporter.run_encoder()

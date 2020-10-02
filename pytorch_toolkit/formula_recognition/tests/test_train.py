@@ -24,8 +24,8 @@ from tools.train import Trainer
 
 class TestTrain(unittest.TestCase):
     def setUp(self):
-        with open('configs/train_config.yml', 'r') as f:
-            config = yaml.load(f, Loader=yaml.SafeLoader)
+        with open('configs/config.yml', 'r') as f:
+            config = yaml.load(f, Loader=yaml.SafeLoader).get("train")
         self.config = config
         self.config['epochs'] = 1
         self.config['_test_steps'] = 20

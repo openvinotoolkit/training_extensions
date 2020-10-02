@@ -24,8 +24,8 @@ from tools.test import Evaluator
 
 class TestEval(unittest.TestCase):
     def setUp(self):
-        with open('configs/eval_config.yml', 'r') as f:
-            config = yaml.load(f, Loader=yaml.SafeLoader)
+        with open('configs/config.yml', 'r') as f:
+            config = yaml.load(f, Loader=yaml.SafeLoader).get("eval")
         self.config = config
         self.validator = Evaluator(config=self.config)
 
