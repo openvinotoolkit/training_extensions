@@ -64,4 +64,5 @@ if __name__ == "__main__":
         img_path = os.path.join(os.path.abspath("./"), inp)
         input_image = cv.imread(img_path, cv.IMREAD_COLOR)
         assert input_image is not None, "Error reading image {}, please, check input path".format(img_path)
-        print("Predicted formula for {} is \n{}".format(os.path.abspath(inp), model(input_image)))
+        recognized_formula = model(input_image)
+        print("Predicted formula for {} is \n{}".format(os.path.abspath(inp), recognized_formula))
