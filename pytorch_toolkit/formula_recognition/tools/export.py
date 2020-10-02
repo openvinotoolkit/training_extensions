@@ -33,6 +33,10 @@ from im2latex.data.utils import create_list_of_transforms
 from im2latex.data.vocab import START_TOKEN, END_TOKEN, read_vocab
 from im2latex.models.im2latex_model import Im2latexModel
 
+ENCODER_INPUTS = "imgs"
+ENCODER_OUTPUTS = "row_enc_out,hidden,context,init_0"
+DECODER_INPUTS = "dec_st_h,dec_st_c,output_prev,row_enc_out,tgt"
+DECODER_OUTPUTS = "dec_st_h_t,dec_st_c_t,output,logit"
 
 def read_net(model_xml, ie, device):
     model_bin = os.path.splitext(model_xml)[0] + ".bin"
@@ -73,16 +77,18 @@ class ONNXExporter():
         return np.transpose(img, (0, 3, 1, 2))
 
     def export_encoder(self):
+        encoder_inputs = self.config.get("encoder_input_names", ENCODER_INPUTS).split(',')
+        encoder_outputs = self.config.get("encoder_output_names", ENCODER_OUTPUTS).split(',')
         torch.onnx.export(self.encoder, self.img, self.config.get("res_encoder_name"),
                           opset_version=11,
-                          input_names=self.config.get("encoder_input_names").split(','),
-                          dynamic_axes={self.config.get("encoder_input_names").split(',')[0]:
+                          input_names=encoder_inputs,
+                          dynamic_axes={encoder_inputs[0]:
                                         {0: 'batch', 1: "channels", 2: "height", 3: "width"},
-                                        self.config.get("encoder_output_names").split(',')[0]: {0: 'batch', 1: 'H', 2: 'W'},
-                                        self.config.get("encoder_output_names").split(',')[1]: {1: 'B', 2: "H"},
-                                        self.config.get("encoder_output_names").split(',')[2]: {1: 'B', 2: "H"}
+                                        encoder_outputs[0]: {0: 'batch', 1: 'H', 2: 'W'},
+                                        encoder_outputs[1]: {1: 'B', 2: "H"},
+                                        encoder_outputs[2]: {1: 'B', 2: "H"}
                                         },
-                          output_names=self.config.get("encoder_output_names").split(','))
+                          output_names=encoder_outputs)
 
     def run_encoder(self):
         encoder_onnx = onnxruntime.InferenceSession(self.config.get("res_encoder_name"))
@@ -94,6 +100,8 @@ class ONNXExporter():
 
     def export_decoder(self, row_enc_out, h, c, output):
         tgt = np.array([[START_TOKEN]] * self.img.size(0))
+        decoder_inputs = self.config.get("decoder_input_names", DECODER_INPUTS).split(',')
+        decoder_outputs = self.config.get("decoder_output_names", DECODER_OUTPUTS).split(',')
         torch.onnx.export(self.decoder,
                           (torch.tensor(h),
                            torch.tensor(c),
@@ -102,9 +110,9 @@ class ONNXExporter():
                            torch.tensor(tgt, dtype=torch.long)),
                           self.config.get("res_decoder_name"),
                           opset_version=11,
-                          input_names=self.config.get("decoder_input_names").split(','),
-                          output_names=self.config.get("decoder_output_names").split(','),
-                          dynamic_axes={self.config.get("decoder_input_names").split(',')[0]: {  # row_enc_out name should be here
+                          input_names=decoder_inputs,
+                          output_names=decoder_outputs,
+                          dynamic_axes={decoder_outputs[0]: {  # row_enc_out name should be here
                               0: 'batch', 1: 'H', 2: 'W'}}
                           )
 
@@ -148,7 +156,7 @@ class ONNXExporter():
                   f'--framework onnx '
                   f'--input_model {self.config.get("res_encoder_name")} '
                   f'--input_shape "{self.config.get("input_shape_decoder")}" '
-                  f'--output "{self.config.get("encoder_output_names")}" '
+                  f'--output "{self.config.get("encoder_output_names", ENCODER_OUTPUTS)}" '
                   f'--reverse_input_channels '
                   f'--scale_values "imgs[255,255,255]"')
         subprocess.run(f'/opt/intel/openvino/bin/setupvars.sh && '
@@ -156,7 +164,7 @@ class ONNXExporter():
                        f'--framework onnx '
                        f'--input_model {self.config.get("res_encoder_name")} '
                        f'--input_shape "{self.config.get("input_shape_decoder")}" '
-                       f'--output {self.config.get("encoder_output_names")} '
+                       f'--output {self.config.get("encoder_output_names", ENCODER_OUTPUTS)} '
                        f'--reverse_input_channels '
                        f'--scale_values "imgs[255,255,255]"',
                        shell=True, check=True
@@ -164,11 +172,6 @@ class ONNXExporter():
 
     def export_decoder_ir(self):
         input_shape_decoder = self.config.get("input_shape_decoder")
-        #TODO: resolve output H& W
-        print('*'*20)
-        print(input_shape_decoder[2] / 8)
-        print(input_shape_decoder[3] / 8 )
-        print('*'*20)
         output_h, output_w = math.ceil(input_shape_decoder[2] / 8), math.ceil(input_shape_decoder[3] / 8)
         input_shape = [[1, self.config.get('head', {}).get("decoder_hidden_size", 512)],
                        [1, self.config.get('head', {}).get('decoder_hidden_size', 512)],
@@ -180,16 +183,16 @@ class ONNXExporter():
                   f'python /opt/intel/openvino/deployment_tools/model_optimizer/mo.py '
                   f'--framework onnx '
                   f'--input_model {self.config.get("res_decoder_name")} '
-                  f'--input "{self.config.get("decoder_input_names")}" '
+                  f'--input "{self.config.get("decoder_input_names", DECODER_INPUTS)}" '
                   f'--input_shape "{str(input_shape)}" '
-                  f'--output "{self.config.get("decoder_output_names")}"')
+                  f'--output "{self.config.get("decoder_output_names", DECODER_OUTPUTS)}"')
         subprocess.run(f'/opt/intel/openvino/bin/setupvars.sh && '
                        f'python /opt/intel/openvino/deployment_tools/model_optimizer/mo.py '
                        f'--framework onnx '
                        f'--input_model {self.config.get("res_decoder_name")} '
-                       f'--input "{self.config.get("decoder_input_names")}" '
+                       f'--input "{self.config.get("decoder_input_names", DECODER_INPUTS)}" '
                        f'--input_shape "{str(input_shape)}" '
-                       f'--output "{self.config.get("decoder_output_names")}"',
+                       f'--output "{self.config.get("decoder_output_names", DECODER_OUTPUTS)}"',
                        shell=True, check=True
                        )
 
@@ -201,14 +204,14 @@ class ONNXExporter():
 
         exec_net_encoder = ie.load_network(network=encoder, device_name="CPU")
         exec_net_decoder = ie.load_network(network=dec_step, device_name="CPU")
-        enc_res = exec_net_encoder.infer(inputs={self.config.get("encoder_input_names").split(",")[0]: self.img_for_ir})
-        enc_out_names = self.config.get("encoder_output_names").split(",")
+        enc_res = exec_net_encoder.infer(inputs={self.config.get("encoder_input_names", ENCODER_INPUTS).split(",")[0]: self.img_for_ir})
+        enc_out_names = self.config.get("encoder_output_names", ENCODER_OUTPUTS).split(",")
         row_enc_out = enc_res[enc_out_names[0]]
         dec_states_h = enc_res[enc_out_names[1]]
         dec_states_c = enc_res[enc_out_names[2]]
         output = enc_res[enc_out_names[3]]
-        dec_in_names = self.config.get("decoder_input_names").split(",")
-        dec_out_names = self.config.get("decoder_output_names").split(",")
+        dec_in_names = self.config.get("decoder_input_names", DECODER_INPUTS).split(",")
+        dec_out_names = self.config.get("decoder_output_names", DECODER_OUTPUTS).split(",")
         tgt = np.array([[START_TOKEN]] * self.img.size(0))
         logits = []
         for _ in range(self.model.head.max_len):
