@@ -1,5 +1,5 @@
 """
-Copyright (c) 2018-2020 Intel Corporation
+Copyright (c) 2020 Intel Corporation
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -43,12 +43,11 @@ import subprocess
 import tempfile
 from multiprocessing import cpu_count
 from multiprocessing.dummy import Pool as ThreadPool
-from threading import Timer
 from subprocess import PIPE
+from threading import Timer
 
 import cv2 as cv
 import numpy as np
-
 
 MAX_PX_ROW_DIFF = 3
 MAX_PX_COL_DIFF = 0
