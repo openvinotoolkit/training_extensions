@@ -15,18 +15,13 @@
 """
 
 import datetime
-import pickle as pkl
-import os
 
 import cv2 as cv
 import numpy as np
 import torch
-from torchvision.transforms import ToTensor, Compose
-import operator
+from torchvision.transforms import Compose, ToTensor
 
-
-from .vocab import END_TOKEN, PAD_TOKEN, START_TOKEN, UNK_TOKEN, Vocab
-import torch.nn.functional as F
+from .vocab import END_TOKEN, PAD_TOKEN, START_TOKEN, UNK_TOKEN
 
 COLOR_WHITE = (255, 255, 255)
 
@@ -424,7 +419,7 @@ def collate_fn(sign2id, batch, *, batch_transform=None):
     return img_names, imgs, tgt4training, tgt4cal_loss
 
 
-def create_list_of_transforms(transforms_list, ovino_ir = False):
+def create_list_of_transforms(transforms_list, ovino_ir=False):
     transforms = []
     if transforms_list:
         for transform in transforms_list:
