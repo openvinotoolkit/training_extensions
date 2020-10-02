@@ -17,6 +17,7 @@
 import argparse
 import subprocess
 import os
+import math
 
 import cv2 as cv
 import numpy as np
@@ -43,16 +44,16 @@ def read_net(model_xml, ie, device):
 class ONNXExporter():
     def __init__(self, config):
         self.config = config
-        self.model_path = config.get('model_path')
-        self.vocab = read_vocab(config.get('vocab_path'))
+        self.model_path = os.path.join(os.path.abspath("./"), config.get('model_path'))
+        self.vocab = read_vocab(os.path.join(os.path.abspath("./"), config.get('vocab_path')))
         self.transform = create_list_of_transforms(config.get('transforms_list'))
         self.transform_for_ir = create_list_of_transforms(config.get('transforms_list'), ovino_ir=True)
         self.model = Im2latexModel(config.get('backbone_type'), config.get(
-            'backbone_config'), len(self.vocab), config.get('head'))
+            'backbone_config'), len(self.vocab), config.get('head', {}))
         if self.model_path is not None:
             self.model.load_weights(self.model_path, old_model=config.get("old_model"))
 
-        self.input = config.get("dummy_input")
+        self.input = os.path.join(os.path.abspath("./"), config.get("dummy_input"))
         self.img = self.read_and_preprocess_img(self.transform)
         self.img_for_ir = self.read_and_preprocess_img_for_ir(self.transform_for_ir)
         self.encoder = self.model.get_encoder_wrapper(self.model)
@@ -162,15 +163,17 @@ class ONNXExporter():
                        )
 
     def export_decoder_ir(self):
-        # --input "dec_st_h,dec_st_c,output_prev,row_enc_out,tgt"
-        # --input_shape "[1, 512], [1, 512], [1, 256], [1, 20, 175, 512], [1, 1]"
-        #  --output 'dec_st_h_t,dec_st_c_t,output,logit'
         input_shape_decoder = self.config.get("input_shape_decoder")
-        output_h, output_w = input_shape_decoder[2] // 8, input_shape_decoder[3] // 8 + 1
-        input_shape = [[1, self.config.get('head').get("dec_rnn_h")],
-                       [1, self.config.get('head').get('dec_rnn_h')],
-                       [1, self.config.get('head').get('enc_rnn_h')],
-                       [1, output_h, output_w, self.config.get('head').get('dec_rnn_h')], [1, 1]]
+        #TODO: resolve output H& W
+        print('*'*20)
+        print(input_shape_decoder[2] / 8)
+        print(input_shape_decoder[3] / 8 )
+        print('*'*20)
+        output_h, output_w = math.ceil(input_shape_decoder[2] / 8), math.ceil(input_shape_decoder[3] / 8)
+        input_shape = [[1, self.config.get('head', {}).get("decoder_hidden_size", 512)],
+                       [1, self.config.get('head', {}).get('decoder_hidden_size', 512)],
+                       [1, self.config.get('head', {}).get('encoder_hidden_size', 256)],
+                       [1, output_h, output_w, self.config.get('head', {}).get('decoder_hidden_size', 512)], [1, 1]]
         input_shape = "{}, {}, {}, {}, {}".format(*input_shape)
         if self.config.get('verbose_export'):
             print(f'/opt/intel/openvino/bin/setupvars.sh && '
@@ -261,7 +264,6 @@ if __name__ == "__main__":
     exporter.export_decoder(row_enc_out, h, c, O_t)
     targets_onnx = exporter.run_decoder(h, c, O_t, row_enc_out).astype(np.int32)
     pred_onnx = exporter.vocab.construct_phrase(targets_onnx)
-    print(exporter.img.shape)
     _, targets_pytorch = exporter.model(exporter.img)
     pred_pytorch = exporter.vocab.construct_phrase(targets_pytorch[0])
     print("Predicted with ONNX is equal to PyTorch: {}".format(pred_onnx == pred_pytorch))

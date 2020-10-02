@@ -34,15 +34,15 @@ from tools.evaluation_tools import Im2latexRenderBasedMetric
 class Evaluator():
     def __init__(self, config):
         self.config = config
-        self.model_path = config.get('model_path')
-        self.val_path = config.get('val_path')
-        self.vocab = read_vocab(config.get('vocab_path'))
+        self.model_path = os.path.join(os.path.abspath("./"), config.get('model_path'))
+        self.val_path = os.path.join(os.path.abspath("./"), config.get('val_path'))
+        self.vocab = read_vocab(os.path.join(os.path.abspath("./"), config.get('vocab_path')))
         self.val_transforms_list = config.get('val_transforms_list')
         self.split = config.get('split_file', 'validate')
         self.print_freq = config.get('print_freq', 16)
         self.load_dataset()
         self.model = Im2latexModel(config.get('backbone_type'), config.get(
-            'backbone_config'), len(self.vocab), config.get('head'))
+            'backbone_config'), len(self.vocab), config.get('head', {}))
         self.device = config.get('device', 'cpu')
         if self.model_path is not None:
             self.model.load_weights(self.model_path, old_model=config.get("old_model"), map_location=self.device)

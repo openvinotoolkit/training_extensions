@@ -29,11 +29,11 @@ from im2latex.models.im2latex_model import Im2latexModel
 class Im2latexDemo():
     def __init__(self, config):
         self.config = config
-        self.model_path = config.get('model_path')
-        self.vocab = read_vocab(config.get('vocab_path'))
+        self.model_path = os.path.join(os.path.abspath("./"), config.get('model_path'))
+        self.vocab = read_vocab(os.path.join(os.path.abspath("./"), config.get('vocab_path')))
         self.transform = create_list_of_transforms(config.get('transforms_list'))
         self.model = Im2latexModel(config.get('backbone_type'), config.get(
-            'backbone_config'), len(self.vocab), config.get('head'))
+            'backbone_config'), len(self.vocab), config.get('head', {}))
         if self.model_path is not None:
             self.model.load_weights(self.model_path, old_model=config.get(
                 'old_model'), map_location=config.get('map_location', 'cpu'))
@@ -61,6 +61,7 @@ if __name__ == "__main__":
         config = yaml.load(f, Loader=yaml.SafeLoader)
     model = Im2latexDemo(config)
     for inp in config.get('input_images'):
-        input_image = cv.imread(os.path.abspath(inp), cv.IMREAD_COLOR)
-        assert input_image is not None, "Error reading image, please, check input path"
+        img_path = os.path.join(os.path.abspath("./"), inp)
+        input_image = cv.imread(img_path, cv.IMREAD_COLOR)
+        assert input_image is not None, "Error reading image {}, please, check input path".format(img_path)
         print("Predicted formula for {} is \n{}".format(os.path.abspath(inp), model(input_image)))
