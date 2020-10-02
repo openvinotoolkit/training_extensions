@@ -1,3 +1,0 @@
--r ../../external/mmdetection/requirements/build.txt
--r ../../external/mmdetection/requirements.txt
-opencv-python==4.1.0.25
