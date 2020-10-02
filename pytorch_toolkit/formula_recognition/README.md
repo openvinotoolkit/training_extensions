@@ -114,7 +114,7 @@ Evaluation process is the following:
 2. Render predictions from the first step into images of the formulas
 3. Compare images.
 The third step is very important because im LaTeX language one can write different formulas that are looking the same. Example:
-`s^{12]_{i}` and `s_{i]^{12}` looking the same: $s^{i}_{12}$ vs. $s_{12}^{i}$
+`s^{12}_{i}` and `s_{i}^{12}` looking the same: both of them are rendered as ![equation](https://latex.codecogs.com/gif.latex?%5Cbg_white%20s%5E%7Bi%7D_%7B12%7D)
 That is why we cannot just compare text predictions one-by-one, we have to render images and compare them.
 
 
