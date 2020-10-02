@@ -14,11 +14,13 @@
  limitations under the License.
 """
 
-import torch.nn as nn
-import torch
 from collections import OrderedDict
-from .backbones.resnet import ResNetLikeBackbone
+
+import torch
+import torch.nn as nn
+
 from .backbones.original_harvard_bb import Im2LatexBackBone
+from .backbones.resnet import ResNetLikeBackbone
 from .text_recognition_heads.attention_based import TextRecognitionHead
 
 
