@@ -31,7 +31,7 @@ class TestEval(unittest.TestCase):
 
     def test_validate(self):
         metric = self.validator.validate()
-        self.assertEqual(metric, 1.0)
+        self.assertGreaterEqual(metric, self.config.get("target_metric"))
 
 
 if __name__ == "__main__":
