@@ -29,7 +29,7 @@ class TestTrain(unittest.TestCase):
         self.config = config
         self.config['epochs'] = 1
         self.config['_test_steps'] = 20
-        self.trainer = Trainer(work_dir='./', config=self.config)
+        self.trainer = Trainer(work_dir='./..', config=self.config)
 
     def test_train(self):
         self.trainer.train()
