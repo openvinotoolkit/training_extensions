@@ -1,5 +1,6 @@
-from im2latex.data.vocab import write_vocab
 import argparse
+
+from im2latex.data.vocab import write_vocab
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Read file with formulas and create vocab file")
