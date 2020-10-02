@@ -50,14 +50,14 @@ class TestExport(unittest.TestCase):
         pred_pytorch = self.exporter.vocab.construct_phrase(targets[0])
         self.assertEqual(pred_onnx, pred_pytorch)
 
-    def test_4_encoder_export(self):
+    def test_4_encoder_ir_export(self):
         if self.config.get("export_ir"):
             try:
                 self.exporter.export_encoder_ir()
             except:
                 self.fail("Exception raised while exporting encoder to openvino IR")
 
-    def test_5_decoder_export(self):
+    def test_5_decoder_ir_export(self):
         if self.config.get("export_ir"):
             try:
                 self.exporter.export_decoder_ir()

@@ -31,13 +31,13 @@ Candidate = namedtuple('candidate', 'score, dec_state_h, dec_state_c, output, ta
 class TextRecognitionHead(nn.Module):
     def __init__(self, out_size, configuration):
         super(TextRecognitionHead, self).__init__()
-        self.emb_size = configuration.get("emb_size")
-        self.encoder_hidden_size = configuration.get("encoder_hidden_size")
-        self.decoder_hidden_size = configuration.get("decoder_hidden_size")
-        self.max_len = configuration.get("max_len")
-        self.n_layer = configuration.get("n_layer")
-        self.beam_width = configuration.get('beam_width')
-        self.encoder_input_size = configuration.get('encoder_input_size')
+        self.emb_size = configuration.get("emb_size", 80)
+        self.encoder_hidden_size = configuration.get("encoder_hidden_size", 256)
+        self.decoder_hidden_size = configuration.get("decoder_hidden_size", 512)
+        self.max_len = configuration.get("max_len", 256)
+        self.n_layer = configuration.get("n_layer", 1)
+        self.beam_width = configuration.get('beam_width', 0)
+        self.encoder_input_size = configuration.get('encoder_input_size', 512)
         self.rnn_encoder = nn.LSTM(self.encoder_input_size, self.encoder_hidden_size,
                                    bidirectional=True,
                                    batch_first=True)

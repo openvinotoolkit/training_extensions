@@ -16,7 +16,7 @@
 
 import argparse
 import yaml
-import os.path
+import os
 import sys
 from functools import partial
 from pprint import pformat
@@ -40,17 +40,17 @@ from torch.utils.tensorboard import SummaryWriter
 class Trainer():
     def __init__(self, work_dir, config):
         self.config = config
-        self.model_path = config.get('model_path')
-        self.train_paths = config.get('train_paths')
-        self.val_path = config.get('val_path')
-        self.vocab = read_vocab(config.get('vocab_path'))
+        self.model_path = os.path.join(os.path.abspath("./"), config.get('model_path'))
+        self.train_paths = [os.path.join(os.path.abspath("./"), p) for p in config.get('train_paths')]
+        self.val_path = os.path.join(os.path.abspath("./"), config.get('val_path'))
+        self.vocab = read_vocab(os.path.join(os.path.abspath("./"), config.get('vocab_path')))
         self.train_transforms_list = config.get('train_transforms_list')
         self.val_transforms_list = config.get('val_transforms_list')
         self.total_epochs = config.get('epochs', 30)
         self.learing_rate = config.get('learning_rate', 1e-3)
         self.clip = config.get('clip_grad', 5.0)
-        self.work_dir = work_dir
-        self.save_dir = os.path.join(self.work_dir, 'save_dir')
+        self.work_dir = os.path.abspath(work_dir)
+        self.save_dir = os.path.join(self.work_dir, config.get("save_dir", "model_checkpoints"))
         self.val_results_path = os.path.join(self.save_dir, "val_results")
         self.step = 0
         self.global_step = 0
@@ -63,13 +63,13 @@ class Trainer():
         self.print_freq = config.get('print_freq', 16)
         self.save_freq = config.get('save_freq', 2000)
         self.val_freq = config.get('val_freq', 5000)
-        self.logs_path = os.path.join(self.work_dir, 'logs')
+        self.logs_path = os.path.join(self.work_dir, config.get("log_path", "logs"))
         self.writer = SummaryWriter(self.logs_path)
         self.writer.add_text("General info", pformat(config))
         self.create_dirs()
         self.load_dataset()
         self.model = Im2latexModel(config.get('backbone_type'), config.get(
-            'backbone_config'), len(self.vocab), config.get('head'))
+            'backbone_config'), len(self.vocab), config.get('head', {}))
         if self.model_path is not None:
             self.model.load_weights(self.model_path, old_model=config.get("old_model"))
 

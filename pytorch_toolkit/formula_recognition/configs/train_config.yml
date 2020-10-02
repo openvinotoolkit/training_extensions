@@ -2,26 +2,16 @@ backbone_config:
   arch: resnext50_32x4d
   disable_layer_3: true
   disable_layer_4: true
-  enable_last_conv: false
-  in_lstm_ch: 512
 backbone_type: resnet
 batch_size: 4
 device: cuda
-head:
-  beam_width: 0
-  decoder_hidden_size: 512
-  emb_size: 80
-  encoder_hidden_size: 256
-  encoder_input_size: 512
-  max_len: 256
-  n_layer: 1
 learning_rate: 0.000001
-log_path: /home/vloginov/work/im2latex/project/
-model_path: /media/cluster_fs/user/vloginov/im2latex_project/0185/models/accuracy_test_best_model_2020-06-25_13-44-39
+log_path: logs
+model_path: model_checkpoints/model.pth
 optimizer: Adam
-save_dir: ../im2latex/models
+save_dir: model_sheckpoints
 train_paths:
-- /home/vloginov/work/im2latex/medium_v2/
-val_path: /home/vloginov/work/im2latex/medium_v2/
-vocab_path: /home/vloginov/work/im2latex/medium_v2/vocab.pkl
+- datasets/sample_medium_dataset
+val_path: datasets/sample_medium_dataset
+vocab_path: datasets/sample_medium_dataset/vocab.pkl
 old_model: true

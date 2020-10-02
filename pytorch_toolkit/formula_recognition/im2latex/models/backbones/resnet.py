@@ -34,8 +34,8 @@ class ResNetLikeBackbone(nn.Module):
         disable_layer_3 = configuration.get('disable_layer_3')
         disable_layer_4 = configuration.get('disable_layer_4')
         arch = configuration.get('arch')
-        in_lstm_ch = configuration.get('in_lstm_ch')
-        enable_last_conv = configuration.get('enable_last_conv')
+        in_lstm_ch = configuration.get('in_lstm_ch', 512)
+        enable_last_conv = configuration.get('enable_last_conv', False)
         self.arch = arch
         if in_lstm_ch is not None:
             self.in_lstm_ch = in_lstm_ch
