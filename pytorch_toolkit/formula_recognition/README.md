@@ -86,7 +86,7 @@ In addition to common parameters you can specify the following arguments:
 - `epochs` - number of epochs to train
 
 #### Evaluation-specific parameters
-- `split_file` - name of the file with labels (note: physical file name ends with `_filter.lst`. Default is `validate`
+- `split_file` - name of the file with labels (note: physical file name should end with `_filter.lst`). Default is `validate`
 - `target_metric` - target value of the metric. Used in tests. For test to pass, result value should be greater or equal than `target_metric`
 
 #### Demo-specific parameters
