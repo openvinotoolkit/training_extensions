@@ -6,8 +6,8 @@ summary: Custom Object Detection based on MobileNetV2 (SSD).
 annotation_format: COCO
 classes: []
 dependencies:
-- sha256: 4a7b491b5fd45ee6ee760e910a8f9a38768be79ccdeb85a1fb3ae4e4c3dd677f
-  size: 16164483
+- sha256: b728f07bc7297f0c0606082a8e2cfabf4bebd1450f738c5eff4a10908db48b4c
+  size: 8158061
   source: https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/mobilenet_v2-2s_ssd-256x256.pth
   destination: snapshot.pth
 - source: ../tools/train.py

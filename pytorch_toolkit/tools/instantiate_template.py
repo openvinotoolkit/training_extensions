@@ -18,6 +18,8 @@ from subprocess import run
 
 import yaml
 
+from oteod.misc import get_file_size_and_sha256
+
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -45,6 +47,12 @@ def main():
         else:
             if not args.do_not_load_snapshot:
                 run(f'wget -O {os.path.join(args.output, destination)} {source}', check=True, shell=True)
+                expected_size = dependency['size']
+                expected_sha256 = dependency['sha256']
+                actual = get_file_size_and_sha256(
+                    os.path.join(args.output, destination))
+                assert expected_size == actual['size'], f'{args.template} actual_size {actual["size"]}'
+                assert expected_sha256 == actual['sha256'], f'{args.template} actual_sha256 {actual["sha256"]}'
 
 
 if __name__ == '__main__':
