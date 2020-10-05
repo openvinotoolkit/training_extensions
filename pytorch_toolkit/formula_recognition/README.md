@@ -47,43 +47,61 @@ For training model one has to have dataset. Dataset format is similiar to [im2la
 To train formula-recognition model run:
 
 ```bash
-python3 tools/train.py --config configs/train_config.yml --work_dir <path to work dir>
+python3 tools/train.py --config configs/config.yml --work_dir <path to work dir>
 ```
 Work dir is used to store information about learning: saved model checkpoints, logs.
 
-### Description of possible options in train config:
+### Description of possible options in config:
+The config file is divided into 4 sections: train, eval, export, demo. In every section there could exist common parameter as well as unique parameters.
+#### Common parameters:
  - `backbone_config`:
-    * `arch`: type of the architecture (if backbone_type is resnet). For mor details, please, refer to [ResnetLikeBackBone](im2latex/models/backbones/resnet.py)
+    * `arch`: type of the architecture (if backbone_type is resnet). For more details, please, refer to [ResnetLikeBackBone](im2latex/models/backbones/resnet.py)
     * `disable_layer_3` and `disable_layer_4` - disables layer 3 and 4 in resnet-like backbone
-    * `enable_last_conv` - enables additional convolution layer to adjust number of output channels to the number of input channels in the LSTM
-    * `in_lstm_ch` - number of input LSTM channels, used for `last_conv`
-- `backbone_type`: `resnet` for resnet-like backbone or anything else for original backbone from [im2markup](https://arxiv.org/pdf/1609.04938.pdf) paper
-- `batch_size` - batch size used for training
-- `device` - device for training, used in pytorch .to() method. Possible options: 'cuda', 'cpu', etc. `cpu` is used by default.
-- `head` - configuration of the text recognition head
+    * `enable_last_conv` - enables additional convolution layer to adjust number of output channels to the number of input channels in the LSTM. Optional. Default: false.
+    * `in_lstm_ch` - number of input LSTM channels, used only for `last_conv`.
+- `backbone_type`: `resnet` for resnet-like backbone or anything else for original backbone from [im2markup](https://arxiv.org/pdf/1609.04938.pdf) paper. Optional. Default is `resnet`
+- `head` - configuration of the text recognition head. All of the following parameters have default values, you can check them in [text reconition head](im2latex/models/text_recognition_heads/attention_based.py)
     * `beam_width` - witdth used in beam search. 0 - do not use beam search, 1 and more - use beam search with corresponding number of possible tracks.
     * `dec_rnn_h` - number of channels in decoding
     * `emb_size` - dimension of the embedding
-    * `enc_rnn_h` - number of channels in encoding
-    * `in_lstm_ch` - number of input in lstm channels, should be equal to `backbone_config.in_lstm_ch`
+    * `encoder_hidden_size ` - number of channels in encoding
+    * `encoder_input_size ` - number of input in lstm channels, should be equal to `backbone_config.in_lstm_ch`
     * `max_len` - maximum possible length of the predicted formula
     * `n_layer` - describe
+- `model_path` - path for model
+- `old_model` - use this flag if you want to use the model trained in the previous versions of this framework (flag for previous versions compatibility)
+- `val_path` - path for validation data
+- `vocab_path` - path where vocab file is stored
+- `val_transforms_list` - here you can describe set of desirable transformations for validation datasets respectively An example is given in the config file, for other options, please, refer to [constructor of transforms (section `create_list_of_transforms`)](im2latex/data/utils.py)
+- `device` - device for training, used in pytorch .to() method. Possible options: 'cuda', 'cpu', etc. `cpu` is used by default.
+#### Training-specific parameters
+In addition to common parameters you can specify the following arguments:
+- `batch_size` - batch size used for training
 - `learning_rate` - learining rate
 - `log_path` - path to store training logs
-- `model_path` - path for model (if one wants to aftertune model)
 - `optimizer` - Adam or SGD
 - `save_dir` - dir to save checkpoints
 - `train_paths` - list of paths from where get training data (if more than one path is specified, datasets are concatenated). If one wants to concatenate more than one instance of the desirable dataset, this dataset should be specified several times.
-- `val_path` - path for validation data
-- `vocab_path` - path where vocab file is stored
-- `train_transforms_list` and
-- `val_transforms_list` - here you can describe set of desirable transformations for train and validation datasets respectively
+- `train_transforms_list` - similiar to `val_transforms_list`
 - `epochs` - number of epochs to train
-- `clip_grad` - maximum possible value for gradient
-- `old_model` - use this flag if you want to traing model trained in the previous versions of this framework.
 
+#### Evaluation-specific parameters
+- `split_file` - name of the file with labels (note: physical file name ends with `_filter.lst`. Default is `validate`
+- `target_metric` - target value of the metric. Used in tests. For test to pass, result value should be greater or equal than `target_metric`
 
-One can point to pre-trained model [checkpoint](https://download.01.org/opencv/openvino_training_extensions/models/text_spotter/model_step_200000.pth) inside configuration file to start training from pre-trained weights. Change `configs/train_config.yml`:
+#### Demo-specific parameters
+- `input_images` - list of paths for input images
+
+#### Export-specific parameters
+These are parameters used for model export to ONNX & OpenVINO™ IR:
+- `res_encoder_name` - filename to save the converted encoder model (with `.onnx` postfix)
+- `res_decoder_name` - filename to save the converted decoder model (with `.onnx` postfix)
+- `dummy_input` - input image used for tracing PT model and creating onnx graph. This image is also used to compare that outputs from ONNX model and PyTorch model are the same.
+- `input_shape_decoder` - list of dimensions describing input shape for encoder for OpenVINO IR conversion.
+- `export_ir` - Set this flag to `true` to export model to the OpenVINO IR. For details refer to [convert to IR section](#convert-to-ir)
+- `verbose_export` - Set this flag to `true` to perform verbose export (i.e. print model optimizer commands to terminal)
+
+One can point to pre-trained model [checkpoint](https://download.01.org/opencv/openvino_training_extensions/models/text_spotter/model_step_200000.pth) inside configuration file to start training from pre-trained weights. Change `configs/config.yml`:
 ```
 ...
 model_path: <path_to_weights>
@@ -107,7 +125,7 @@ old_model: true
 Config file of the evaluation is similiar to train config:
 
 ```bash
-python tools/test.py --config configs/eval_config.yml
+python tools/test.py --config configs/config.yml
 ```
 Evaluation process is the following:
 1. Run the model and get predictions
@@ -138,7 +156,7 @@ Model will be split into two parts:
 The `tools/export.py` script exports a given model to ONNX representation.
 
 ```bash
-python tools/export.py --config configs/export_config.yml
+python tools/export.py --config configs/config.yml
 ```
 
 
@@ -155,4 +173,4 @@ export_ir: true
 ...
 ```
 
-If this flag is set, full pipeline (PyTorch -> onnx -> Openvino IR) is running, else model is exported to ONNX only.
+If this flag is set, full pipeline (PyTorch -> onnx -> Openvino™ IR) is running, else model is exported to ONNX only.
