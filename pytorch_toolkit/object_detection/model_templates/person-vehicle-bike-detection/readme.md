@@ -23,7 +23,7 @@ cd <training_extensions>/pytorch_toolkit/object_detection
 ```bash
 export MODEL_TEMPLATE=`realpath ./model_templates/person-vehicle-bike-detection/person-vehicle-bike-detection-2000/template.yaml`
 export WORK_DIR=/tmp/my_model
-python tools/instantiate_template.py ${MODEL_TEMPLATE} ${WORK_DIR}
+python ../tools/instantiate_template.py ${MODEL_TEMPLATE} ${WORK_DIR}
 ```
 
 ### 2. Collect dataset

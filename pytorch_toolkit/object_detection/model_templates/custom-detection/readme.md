@@ -26,7 +26,7 @@ cd <training_extensions>/pytorch_toolkit/object_detection
 ```bash
 export MODEL_TEMPLATE=`realpath ./model_templates/custom-detection/mobilenet_v2-2s_ssd-256x256/template.yaml`
 export WORK_DIR=/tmp/my_model
-python tools/instantiate_template.py ${MODEL_TEMPLATE} ${WORK_DIR}
+python ../tools/instantiate_template.py ${MODEL_TEMPLATE} ${WORK_DIR}
 ```
 
 ### 2. Collect dataset
@@ -61,8 +61,7 @@ export CLASSES="vehicle,person,non-vehicle"
 
 ### 6. Training and Fine-tuning
 
-To start **training** from pre-trained weights use `--load-weights` pararmeter. Parameters such as `--epochs`, `--batch-size` and `--gpu-num` can be omitted, default values will be loaded from `${MODEL_TEMPLATE}`. Please be aware of default values for these parameters in particular `{MODEL_TEMPLATE}`.
-
+To start *для тех, для кого не правильно
 Also you can use parameters such as `--epochs`, `--batch-size`, `--gpu-num`, `--base-learning-rate`, otherwise default values will be loaded from `${MODEL_TEMPLATE}`.
 
 ```bash
