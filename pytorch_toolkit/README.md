@@ -37,6 +37,7 @@ them for prediction.
 * [Eye State Classification](open_closed_eye)
 * [Segmentation of Thoracic Organs](segthor)
 * [Super Resolution](super_resolution)
+* [Formula recognition](formula_recognition)
 * [Text Spotting](text_spotting)
 
 
