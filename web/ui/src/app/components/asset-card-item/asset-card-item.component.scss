@@ -1,0 +1,97 @@
+@import "../../../variables";
+@import "../../../mixins";
+
+@mixin asset-card-item-component-theme($theme) {
+  $primary: map-get($theme, primary);
+  $accent: map-get($theme, accent);
+  $warn: map-get($theme, warn);
+  $foreground: map-get($theme, foreground);
+  $background: map-get($theme, background);
+
+  .asset-card-item-component {
+    position: relative;
+    padding: $unitSize $unitSize*1.5;
+    border: 2px solid map-get($foreground, text);
+    font-size: 0.8em;
+
+    .action-wrapper {
+      font-size: $unitSize*2;
+
+      .icon {
+        margin-bottom: $unitSize/2;
+
+        .mat-icon {
+          @include icon(56px);
+        }
+      }
+
+      .title {
+        line-height: $unitSize*3;
+
+        span {
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+      }
+
+      &.clickable:hover {
+        div {
+          color: mat-color($primary, main);
+        }
+      }
+    }
+
+    .action {
+      position: absolute;
+
+      .mat-icon {
+        &:hover,
+        &:active {
+          color: mat-color($primary, main);
+        }
+      }
+
+      .disabled {
+        color: mat-color($foreground, disabled);
+
+        .mat-icon {
+          &:hover,
+          &:active {
+            color: inherit;
+          }
+        }
+      }
+
+      &.push {
+        top: 8px;
+        right: 8px;
+      }
+
+      &.pull {
+        top: 8px;
+        left: 8px;
+
+        .initial {
+          color: yellow;
+        }
+      }
+    }
+
+    .checkboxes {
+      margin-top: $unitSize;
+      margin-bottom: $unitSize/2;
+    }
+
+    .hline {
+      width: 100%;
+      height: 1px;
+      margin: $unitSize 0;
+      background-color: mat-color($foreground, text);
+    }
+
+    .stat {
+      margin: $unitSize/4 0;
+    }
+  }
+}

@@ -1,0 +1,72 @@
+@import "../../../variables";
+
+@mixin models-table-component-theme($theme) {
+  $primary: map-get($theme, primary);
+  $accent: map-get($theme, accent);
+  $warn: map-get($theme, warn);
+  $foreground: map-get($theme, foreground);
+  $background: map-get($theme, background);
+
+  .models-table-component {
+    .mat-table {
+      width: 100%;
+      border: 2px solid mat-color($background, background);
+
+      .mat-header-cell {
+        font-size: 1em;
+        border-bottom: 1px solid mat-color($background, background);
+      }
+
+      .mat-row {
+        cursor: pointer;
+
+        .mat-cell {
+          border: 1px solid mat-color($background, background);
+          transition: color, background-color 250ms linear;
+
+          &:not(:first-of-type) {
+            font-weight: 500;
+            text-align: center;
+          }
+        }
+
+        .in-progress-cell {
+          color: mat-color($foreground, text);
+          text-align: left !important;
+          padding-left: 10px;
+
+          .progress-bar {
+            width: auto;
+            margin: -10px 10px 0 80px;
+          }
+        }
+
+        &.highlight {
+          .mat-cell {
+            color: mat-contrast($primary, lighter) !important;
+            background-color: yellow !important;
+          }
+        }
+      }
+    }
+
+    .mat-sort-header-container {
+      justify-content: center;
+    }
+
+    .mat-column-name {
+      div {
+        display: flex;
+        align-items: center;
+      }
+
+      .mat-sort-header-container {
+        justify-content: flex-start;
+      }
+    }
+
+    .visibility-indicator {
+      @include icon(16px);
+    }
+  }
+}

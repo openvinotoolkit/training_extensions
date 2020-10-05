@@ -1,0 +1,15 @@
+@import "../app/components/problem-card-item/problem-card-item.component";
+@import "../app/components/asset-card-item/asset-card-item.component";
+@import "../app/components/models-table/models-table.component";
+@import "../app/routed/problem-list/problem-list.component";
+@import "../app/routed/problem-info/problem-info.component";
+@import "../app/routed/problem-assets/problem-assets.component";
+
+@mixin custom-components-theme($theme) {
+  @include problem-card-item-component-theme($theme);
+  @include asset-card-item-component-theme($theme);
+  @include models-table-component-theme($theme);
+  @include problem-list-component-theme($theme);
+  @include problem-info-component-theme($theme);
+  @include problem-assets-component-theme($theme);
+}

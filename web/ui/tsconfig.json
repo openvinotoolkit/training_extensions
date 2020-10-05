@@ -1,0 +1,65 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "baseUrl": "./",
+    "outDir": "./dist/out-tsc",
+    "sourceMap": true,
+    "declaration": false,
+    "downlevelIteration": true,
+    "experimentalDecorators": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "importHelpers": true,
+    "target": "es5",
+    "typeRoots": [
+      "node_modules/@types"
+    ],
+    "lib": [
+      "es2018",
+      "dom"
+    ],
+    "paths": {
+      "@environments/*": [
+        "src/environments/*"
+      ],
+      "@idlp/cdk/*": [
+        "src/app/_core/_cdk/*"
+      ],
+      "@idlp/interceptors/*": [
+        "src/app/_core/_interceptors/*"
+      ],
+      "@idlp/models/*": [
+        "src/app/_core/_models/*"
+      ],
+      "@idlp/providers/*": [
+        "src/app/_core/_providers/*"
+      ],
+      "@idlp/router/*": [
+        "src/app/_core/_router/*"
+      ],
+      "@idlp/store/*": [
+        "src/app/_core/_store/*"
+      ],
+      "@idlp/utils/*": [
+        "src/app/_core/_utils/*"
+      ],
+      "@idlp/shared/*": [
+        "src/app/_shared/*"
+      ],
+      "@idlp/components/*": [
+        "src/app/components/*"
+      ],
+      "@idlp/routed/*": [
+        "src/app/routed/*"
+      ],
+      "@idlp/root/*": [
+        "src/app/*"
+      ]
+    }
+  },
+  "angularCompilerOptions": {
+    "fullTemplateTypeCheck": true,
+    "strictInjectionParameters": true,
+    "disableTypeScriptVersionCheck": true
+  }
+}

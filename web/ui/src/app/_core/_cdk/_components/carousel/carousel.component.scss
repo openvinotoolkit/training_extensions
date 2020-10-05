@@ -1,0 +1,31 @@
+@import "../../../../../variables";
+@import "../../../../../mixins";
+
+.component-wrapper {
+  position: relative;
+  cursor: pointer;
+
+  .counter {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    font-size: 12px;
+    font-weight: 300;
+    color: #666666;
+  }
+
+  .carousel-image-wrapper {
+    width: 100%;
+    background-size: cover;
+    background-position: center;
+    overflow: hidden;
+
+    .carousel-image {
+      height: 100%;
+    }
+  }
+
+  .no-image-icon {
+    @include icon(200px);
+  }
+}

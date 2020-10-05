@@ -1,0 +1,55 @@
+<div class="problem-assets-component">
+
+  <div
+    [matTooltip]="buildButtonTooltip"
+    class="action-build"
+  >
+    <button
+      (click)="createBuild()"
+      [disabled]="!isBuildEnabled"
+      mat-flat-button
+    >
+      <mat-icon>build_circle</mat-icon>
+      Build
+    </button>
+  </div>
+
+  <div class="scroll-container">
+    <div
+      class="component-wrapper"
+      fxFlex="1 1 auto"
+      fxLayout="column"
+      fxLayoutGap="16px"
+    >
+      <fieldset>
+        <legend>
+          <span
+            (click)="loadAssets()"
+            [ngClass]="{'clickable': breadcrumbs.length}"
+          >
+            Root
+          </span>
+          <span
+            (click)="loadAssets(asset)"
+            *ngFor="let asset of breadcrumbs"
+            [ngClass]="{'clickable': breadcrumbs.indexOf(asset) < breadcrumbs.length - 1}"
+          >
+            &nbsp;/ {{asset.name}}
+          </span>
+        </legend>
+        <div fxLayout="row wrap">
+          <idlp-asset-card-item
+            (onAssign)="assetAssign($event)"
+            (onClick)="loadAssets($event)"
+            (onPull)="downloadTaskFromCvat($event)"
+            (onPush)="setupTaskToCvat($event)"
+            *ngFor="let asset of assets"
+            [asset]="asset"
+            [width]="165"
+          >
+          </idlp-asset-card-item>
+        </div>
+      </fieldset>
+    </div>
+  </div>
+</div>

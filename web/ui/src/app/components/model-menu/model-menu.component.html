@@ -1,0 +1,45 @@
+<mat-menu>
+  <button
+    (click)="onMenuItemClick.emit('evaluate')"
+    mat-menu-item
+  >
+    <mat-icon>trending_up</mat-icon>
+    <span>Evaluate</span>
+  </button>
+  <button
+    (click)="onMenuItemClick.emit('finetune')"
+    mat-menu-item
+  >
+    <mat-icon>timeline</mat-icon>
+    <span>Fine Tune</span>
+  </button>
+  <button
+    (click)="onMenuItemClick.emit('tensorboard')"
+    [disabled]="model?.status === 'default'"
+    mat-menu-item
+  >
+    <mat-icon>launch</mat-icon>
+    <span>Tensor Board</span>
+  </button>
+  <button
+    (click)="onMenuItemClick.emit('log')"
+    mat-menu-item
+  >
+    <mat-icon>article</mat-icon>
+    <span>Show Log</span>
+  </button>
+  <button
+    (click)="onMenuItemClick.emit('showonchart')"
+    *ngIf="model.status !== 'inProgress'"
+    mat-menu-item
+  >
+    <div *ngIf="isHiddenOnChart">
+      <mat-icon>visibility</mat-icon>
+      <span>Show on Chart</span>
+    </div>
+    <div *ngIf="!isHiddenOnChart">
+      <mat-icon>visibility_off</mat-icon>
+      <span>Hide on Chart</span>
+    </div>
+  </button>
+</mat-menu>

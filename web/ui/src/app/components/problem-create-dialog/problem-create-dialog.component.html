@@ -1,0 +1,89 @@
+<mat-toolbar color="primary">
+  <span class="dialog-title">Custom Detection</span>
+</mat-toolbar>
+
+<mat-dialog-content
+  [formGroup]="form"
+  fxLayout="column"
+  fxLayoutGap="16px"
+>
+  <mat-form-field fxFlex="50">
+    <input
+      formControlName="title"
+      matInput
+      placeholder="Title"
+    >
+  </mat-form-field>
+  <mat-form-field fxFlex="50">
+    <input
+      formControlName="subtitle"
+      matInput
+      placeholder="Subtitle"
+    >
+  </mat-form-field>
+
+  <mat-form-field fxFlex="50">
+    <input
+      formControlName="labels"
+      matInput
+      placeholder="Labels"
+    >
+    <mat-hint>use comma to separate values (e.g. cat, dog, fish)</mat-hint>
+  </mat-form-field>
+
+  <mat-form-field fxFlex="50">
+    <textarea
+      formControlName="description"
+      matInput
+      placeholder="Description"
+    ></textarea>
+  </mat-form-field>
+
+  <div class="image-uploader">
+    <input
+      #fileInput
+      accept="image/*"
+      style="display:none"
+      type="file"
+    >
+    <button
+      (click)="selectImage()"
+      *ngIf="!imageSrc"
+      color="primary"
+      mat-flat-button
+    >
+      <span>Select Image</span>
+    </button>
+    <div
+      (click)="selectImage()"
+      *ngIf="imageSrc"
+      class="image-wrapper clickable"
+    >
+      <mat-icon
+        (click)="clearImage()"
+        class="clickable"
+        color="warn"
+      >
+        clear
+      </mat-icon>
+      <img [src]="imageSrc"/>
+    </div>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions>
+  <button
+    [disabled]="!form.valid || !isLabelsFormatValid"
+    [matDialogClose]="form.value"
+    color="primary"
+    mat-flat-button
+  >
+    Create
+  </button>
+  <button
+    mat-dialog-close
+    mat-flat-button
+  >
+    Cancel
+  </button>
+</mat-dialog-actions>

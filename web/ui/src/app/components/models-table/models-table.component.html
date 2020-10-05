@@ -1,0 +1,91 @@
+<div class="models-table-component mat-elevation-z8">
+  <table
+    [dataSource]="dataSource"
+    mat-table
+    matSort
+    matSortActive="name"
+    matSortDirection="asc"
+    matSortDisableClear
+  >
+    <ng-container *ngFor="let column of columns" matColumnDef="{{column.key}}">
+      <th *matHeaderCellDef mat-header-cell mat-sort-header>
+        <span>{{column.label}}</span>
+      </th>
+
+      <ng-container *matCellDef="let item">
+        <td
+          *ngIf="item.status !== 'inProgress' else inProgress"
+          [matMenuTriggerFor]="menu.instance"
+          [ngClass]="{'contrast-text': isContrastText(item[column.key].opacity)}"
+          [style]="getCellStyle(item[column.key].opacity)"
+          mat-cell
+        >
+          <div>
+            <span *ngIf="!isEmpty(item[column.key].value) else noValue">
+              {{item[column.key].value}} {{column.unit}}
+            </span>
+            <span *ngIf="column.key === 'name' && isHiddenOnChart(item)">
+              &nbsp;&nbsp;
+            </span>
+            <mat-icon
+              *ngIf="column.key === 'name' && isHiddenOnChart(item)"
+              class="visibility-indicator"
+            >
+              visibility_off
+            </mat-icon>
+          </div>
+
+          <ng-template #noValue>
+            <span>N/A</span>
+          </ng-template>
+        </td>
+
+        <ng-template #inProgress>
+          <td
+            [attr.colspan]="column.key !== 'name' ? columns.length - 1 : 0"
+            [matMenuTriggerFor]="menu.instance"
+            [ngClass]="{'in-progress-cell': column.key !== 'name'}"
+            [style.display]="column.key !== 'name' && column.key !== columns[1].key ? 'none' : 'table-cell'"
+            mat-cell
+          >
+          <span *ngIf="column.key === 'name' else progress">
+            {{item[column.key].value}}
+          </span>
+            <ng-template #progress>
+              <span>In Progress</span>
+              <mat-progress-bar
+                [bufferValue]="0"
+                [value]="0"
+                class="progress-bar"
+                color="primary"
+                mode="buffer">
+              </mat-progress-bar>
+            </ng-template>
+          </td>
+        </ng-template>
+
+        <idlp-model-menu
+          #menu="modelMenu"
+          (onMenuItemClick)="menuItemClick($event)"
+          [model]="item"
+        >
+        </idlp-model-menu>
+
+      </ng-container>
+    </ng-container>
+
+    <tr
+      *matHeaderRowDef="displayColumns"
+      mat-header-row
+    >
+    </tr>
+
+    <tr
+      (click)="rowClick(item)"
+      *matRowDef="let item; columns: displayColumns;"
+      [id]="item.id"
+      mat-row
+    >
+    </tr>
+  </table>
+</div>

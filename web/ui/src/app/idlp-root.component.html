@@ -1,0 +1,63 @@
+<mat-toolbar
+  color="primary"
+  fxLayoutAlign="center center"
+>
+  <div
+    fxFlex="1280px"
+    fxLayout="row"
+    fxLayoutAlign="space-between center"
+    fxLayoutGap="40px"
+  >
+    <span
+      [routerLink]="['/']"
+      class="title"
+    >
+      {{title}}
+    </span>
+
+    <div
+      *ngIf="problemContext"
+      class="navigation"
+      fxFlex="1 1 auto"
+      fxLayout="row"
+      fxLayoutAlign="start center"
+      fxLayoutGap="32px"
+    >
+      <span
+        *ngFor="let item of navMenu"
+        [ngClass]="{'active': selectedPath === item.path}"
+        [routerLink]="[problemId, item.path]"
+        class="navigation-item"
+      >
+        {{item.title}}
+      </span>
+    </div>
+
+    <button
+      [matMenuTriggerFor]="dropMenu"
+      mat-icon-button
+    >
+      <mat-icon>menu</mat-icon>
+    </button>
+
+  </div>
+</mat-toolbar>
+
+<mat-menu #dropMenu="matMenu">
+  <button
+    (click)="setTheme('light')"
+    mat-menu-item
+  >
+    <mat-icon>brightness_5</mat-icon>
+    <span>Light Theme</span>
+  </button>
+  <button
+    (click)="setTheme('dark')"
+    mat-menu-item
+  >
+    <mat-icon>brightness_7</mat-icon>
+    <span>Dark Theme</span>
+  </button>
+</mat-menu>
+
+<router-outlet></router-outlet>

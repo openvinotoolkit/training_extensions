@@ -1,0 +1,52 @@
+<div
+  fxLayout="row"
+  fxLayoutAlign="space-between center"
+>
+  <form [formGroup]="form">
+    <mat-form-field class="y-axis-select">
+      <mat-label>Y Axis</mat-label>
+      <mat-select
+        (selectionChange)="setYAxis($event)"
+        formControlName="yAxisMetric"
+      >
+        <mat-option
+          *ngFor="let metric of yAxis"
+          [value]="metric.key"
+        >
+          <span>{{metric.label}}</span>
+          <span *ngIf="metric.unit?.trim().length">&nbsp;({{metric.unit}})</span>
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </form>
+</div>
+
+<plotly-plot
+  (plotly_click)="onChartItemClick($event)"
+  [data]="data"
+  [layout]="layout"
+>
+</plotly-plot>
+
+<div
+  fxLayout="row"
+  fxLayoutAlign="flex-end center"
+>
+  <form [formGroup]="form">
+    <mat-form-field class="x-axis-select">
+      <mat-label>X Axis</mat-label>
+      <mat-select
+        (selectionChange)="setXAxis($event)"
+        formControlName="xAxisMetric"
+      >
+        <mat-option
+          *ngFor="let metric of xAxis"
+          [value]="metric.key"
+        >
+          <span>{{metric.label}}</span>
+          <span *ngIf="metric.unit?.trim().length">&nbsp;({{metric.unit}})</span>
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </form>
+</div>

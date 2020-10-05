@@ -1,0 +1,134 @@
+<div
+  *ngIf="asset"
+  [style.height]="height === 'auto' ? 'auto' : height + 'px'"
+  [style.width]="width + 'px'"
+  class="asset-card-item-component"
+  fxLayout="column"
+  fxLayoutAlign="space-between"
+>
+  <div
+    [matTooltip]="pushActionTooltip"
+    class="action push"
+  >
+    <div
+      (click)="!pushDisabled && onPush.emit(asset)"
+      *ngIf="showPushAction else loader"
+      [ngClass]="{'disabled': pushDisabled, 'clickable': !pushDisabled}"
+    >
+      <mat-icon>arrow_circle_up</mat-icon>
+    </div>
+  </div>
+
+  <div
+    [matTooltip]="pullActionTooltip"
+    class="action pull"
+  >
+    <div
+      (click)="!pullDisabled && onPull.emit(asset)"
+      *ngIf="showPullAction else loader"
+      [ngClass]="{'disabled': pullDisabled, 'clickable': !pullDisabled, 'initial': asset.status === 'initialPullReady'}"
+    >
+      <mat-icon>arrow_circle_down</mat-icon>
+    </div>
+  </div>
+
+  <div
+    (click)="isClickAllowed && onClick.emit(asset)"
+    [ngClass]="{'clickable': isClickAllowed, 'unclickable': !isClickAllowed}"
+    class="action-wrapper"
+  >
+    <div
+      class="icon"
+      fxLayout="row"
+      fxLayoutAlign="center start"
+    >
+      <ng-container [ngSwitch]="asset.type">
+        <mat-icon *ngSwitchCase="'archive'">archive</mat-icon>
+        <mat-icon *ngSwitchCase="'imageFolder'">photo</mat-icon>
+        <mat-icon *ngSwitchCase="'video'">movie</mat-icon>
+        <mat-icon *ngSwitchDefault>folder</mat-icon>
+      </ng-container>
+    </div>
+
+    <div
+      [matTooltip]="asset.name"
+      class="title"
+      fxLayoutAlign="center center"
+    >
+      <span>{{asset.name}}</span>
+    </div>
+  </div>
+
+  <div
+    class="checkboxes"
+    fxLayout="row"
+    fxLayoutAlign="space-between center"
+  >
+    <div
+      fxLayout="column"
+      fxLayoutAlign="flex-start flex-start"
+    >
+      <div class="train">
+        <mat-checkbox
+          (change)="assign($event)"
+          [(ngModel)]="train"
+          [disableRipple]="true"
+          [indeterminate]="asset.buildSplit.train === 2"
+          color="primary"
+          name="train"
+        >
+          <span>Train</span>
+        </mat-checkbox>
+      </div>
+    </div>
+
+    <div
+      fxLayout="column"
+      fxLayoutAlign="flex-start flex-end"
+    >
+      <div class="val">
+        <mat-checkbox
+          (change)="assign($event)"
+          [(ngModel)]="val"
+          [disableRipple]="true"
+          [indeterminate]="asset.buildSplit.val === 2"
+          color="primary"
+          labelPosition="before"
+          name="val"
+        >
+          <span>Val</span>
+        </mat-checkbox>
+      </div>
+
+    </div>
+  </div>
+  <div class="hline"></div>
+  <div
+    class="stat"
+    fxLayout="row"
+    fxLayoutAlign="space-between center"
+  >
+    <span>Unassigned:</span>
+    <span>{{null | dashed}}</span>
+  </div>
+  <div
+    class="stat"
+    fxLayout="row"
+    fxLayoutAlign="space-between center"
+  >
+    <span>Train:</span>
+    <span>{{null | dashed}}</span>
+  </div>
+  <div
+    class="stat"
+    fxLayout="row"
+    fxLayoutAlign="space-between center"
+  >
+    <span>Val:</span>
+    <span>{{null | dashed}}</span>
+  </div>
+</div>
+
+<ng-template #loader>
+  <mat-spinner [diameter]="24"></mat-spinner>
+</ng-template>

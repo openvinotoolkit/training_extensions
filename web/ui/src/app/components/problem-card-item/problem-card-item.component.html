@@ -1,0 +1,40 @@
+<div
+  (click)="enter.emit()"
+  class="problem-card-item-component clickable"
+>
+  <mat-card
+    [style.height]="height + 'px'"
+    [style.width]="width + 'px'"
+  >
+    <mat-card-header>
+      <mat-card-title>
+      <span
+        class="primer clickable"
+      >
+        {{problem.title}}
+      </span>
+      </mat-card-title>
+      <mat-card-subtitle>
+        {{problem.subtitle}}
+      </mat-card-subtitle>
+    </mat-card-header>
+    <div
+      *ngIf="problem.type === 'generic' else carousel"
+      fxLayout="column"
+      fxLayoutAlign="center center"
+    >
+      <mat-icon class="add-icon">add</mat-icon>
+    </div>
+    <ng-template #carousel>
+      <idlp-cdk-carousel
+        [images]="problem.imagesUrls"
+        [width]="width"
+        mat-card-image
+      >
+      </idlp-cdk-carousel>
+    </ng-template>
+    <mat-card-content>
+      {{description}}
+    </mat-card-content>
+  </mat-card>
+</div>
