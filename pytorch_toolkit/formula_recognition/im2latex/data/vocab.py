@@ -55,7 +55,7 @@ def split_number(sign):
         return [sign]
 
 
-class Vocab(object):
+class Vocab:
     def __init__(self, loaded_sign2id=None, loaded_id2sign=None):
         if loaded_id2sign is None and loaded_sign2id is None:
             self.sign2id = {"<s>": START_TOKEN, "</s>": END_TOKEN,
@@ -136,10 +136,10 @@ def write_vocab(data_dir, as_json=True):
 
 
 def read_vocab(vocab_path):
-    if '.pkl' in vocab_path:
+    if vocab_path.endswith('.pkl'):
         with open(vocab_path, "rb") as f:
             vocab_dict = pkl.load(f)
-    elif 'json' in vocab_path:
+    elif vocab_path.endswith('.json'):
         with open(vocab_path, "r") as f:
             vocab_dict = json.load(f)
             vocab_dict['id2sign'] = {int(k): v for k, v in vocab_dict['id2sign'].items()}
