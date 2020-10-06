@@ -35,7 +35,7 @@ You can train a model on existing toy dataset `training_extensions/data/airport`
 
 ### 3. Prepare annotation
 
-The existing toy dataset has annotation in the Common Objects in Context (COCO) so it is enough to get started.
+The existing toy dataset has annotation in the Common Objects in Context (COCO) format so it is enough to get started.
 
 ```bash
 export OBJ_DET_DIR=`pwd`
