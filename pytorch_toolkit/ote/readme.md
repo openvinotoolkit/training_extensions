@@ -27,7 +27,7 @@ generate, set of supported optimisations and so on.
 
 Here is an example of `template.yaml`:
 
-```bash
+```YAML
 name: face-detection-0200
 domain: Object Detection
 problem: Face Detection
