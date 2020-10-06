@@ -34,11 +34,10 @@ class ResNetLikeBackbone(nn.Module):
         disable_layer_3 = configuration.get('disable_layer_3')
         disable_layer_4 = configuration.get('disable_layer_4')
         arch = configuration.get('arch')
-        in_lstm_ch = configuration.get('in_lstm_ch', 512)
+        self.in_lstm_ch = configuration.get('in_lstm_ch', 512)
         enable_last_conv = configuration.get('enable_last_conv', False)
         self.arch = arch
-        _resnet = architectures.get(arch, "resnet50")(
-            pretrained=True, progress=True)
+        _resnet = architectures.get(arch, "resnet50")(pretrained=True, progress=True)
         self.groups = _resnet.groups
         self.base_width = _resnet.base_width
         self.conv1 = _resnet.conv1
@@ -59,14 +58,14 @@ class ResNetLikeBackbone(nn.Module):
         if enable_layer_3 and disable_layer_4:
             self.layer3 = _resnet.layer3
             self.layer4 = None
-            if arch == 'resnet18' or arch == 'resnet34':
+            if arch in ('resnet18', 'resnet34'):
                 in_ch = 256
             else:
                 in_ch = 1024
         elif enable_layer_3 and enable_layer_4:
             self.layer3 = _resnet.layer3
             self.layer4 = _resnet.layer4
-            if arch == 'resnet18' or arch == 'resnet34':
+            if arch in ('resnet18', 'resnet34'):
                 in_ch = 512
             else:
                 in_ch = 2048
