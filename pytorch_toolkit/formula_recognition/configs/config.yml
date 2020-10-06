@@ -14,7 +14,6 @@ train:
     - datasets/sample_medium_dataset
   val_path: datasets/sample_medium_dataset
   vocab_path: datasets/sample_medium_dataset/vocab.pkl
-  old_model: true
 eval:
   backbone_config:
     arch: resnext101_32x8d
@@ -24,7 +23,6 @@ eval:
   model_path: model_checkpoints/medium_0169.pth
   val_path: datasets/sample_medium_dataset
   vocab_path: datasets/sample_medium_dataset/vocab.pkl
-  old_model: true
   split_file: validate
   target_metric: 0.99
 demo:
@@ -41,7 +39,6 @@ demo:
   input_images:
     - datasets/sample_medium_dataset/images_processed/1.png
   model_path: model_checkpoints/medium_0169.pth
-  old_model: true
   val_path: datasets/sample_medium_dataset
   vocab_path: datasets/sample_medium_dataset/vocab.pkl
   map_location: cuda
@@ -55,7 +52,6 @@ export:
   vocab_path: datasets/sample_medium_dataset/vocab.pkl
   res_encoder_name: medium_v2_encoder.onnx
   res_decoder_name: medium_v2_decoder.onnx
-  old_model: true
   export_ir: true
   verbose_export: false
   input_shape_decoder:
