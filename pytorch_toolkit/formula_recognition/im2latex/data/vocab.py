@@ -36,13 +36,9 @@ SOFTWARE.
  limitations under the License.
 """
 
-import argparse
-import os.path
 import pickle as pkl
 import json
 from os.path import join
-
-# import torch
 
 START_TOKEN = 0
 PAD_TOKEN = 1
@@ -134,8 +130,7 @@ def write_vocab(data_dir, as_json=True):
             "sign2id": vocab.sign2id,
         }
         if as_json:
-            as_json.dump(dict_to_store,
-                      w, indent=4, sort_keys=True)
+            as_json.dump(dict_to_store, w, indent=4, sort_keys=True)
         else:
             pkl.dump(dict_to_store, w)
 
@@ -164,4 +159,3 @@ def pkl_to_json(vocab_path):
         json_path = vocab_path.replace(".pkl", ".json")
         with open(json_path, 'w') as dest:
             json.dump(dict_to_store, dest, indent=4, sort_keys=True)
-
