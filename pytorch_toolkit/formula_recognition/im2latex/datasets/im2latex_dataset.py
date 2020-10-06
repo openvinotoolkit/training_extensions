@@ -41,9 +41,8 @@ from os.path import join
 
 import cv2 as cv
 import numpy as np
-from tqdm import tqdm
-
 from torch.utils.data import Dataset, Sampler
+from tqdm import tqdm
 
 from ..data.utils import get_num_lines_in_file
 from ..data.vocab import split_number
