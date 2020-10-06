@@ -22,7 +22,6 @@ Create and activate virtual environment:
 bash init_venv.sh
 ```
 
-
 ### Download Datasets
 
 For training model one has to have dataset. Dataset format is similiar to [im2latex-100k](https://zenodo.org/record/56198#.X2NDQ2gzaUl). Main structure of the dataset is following:
@@ -44,7 +43,7 @@ For training model one has to have dataset. Dataset format is similiar to [im2la
 
 ## Training
 
-To train formula-recognition model run:
+To train formula recognition model run:
 
 ```bash
 python3 tools/train.py --config configs/config.yml --work_dir <path to work dir>
@@ -131,7 +130,7 @@ Evaluation process is the following:
 1. Run the model and get predictions
 2. Render predictions from the first step into images of the formulas
 3. Compare images.
-The third step is very important because im LaTeX language one can write different formulas that are looking the same. Example:
+The third step is very important because in LaTeX language one can write different formulas that are looking the same. Example:
 `s^{12}_{i}` and `s_{i}^{12}` looking the same: both of them are rendered as ![equation](https://latex.codecogs.com/gif.latex?%5Cbg_white%20s%5E%7Bi%7D_%7B12%7D)
 That is why we cannot just compare text predictions one-by-one, we have to render images and compare them.
 
@@ -148,7 +147,7 @@ To run the model via OpenVINO™ one has to export PyTorch model to ONNX first a
 then convert to OpenVINO™ Intermediate Representation (IR) using Model Optimizer.
 
 Model will be split into two parts:
-- Encoder (cnn-backbone and part of the text recognition head)
+- Encoder (CNN-backbone and part of the text recognition head)
 - Text recognition decoder (LSTM + attention-based head)
 
 ### Export to ONNX*
@@ -173,4 +172,4 @@ export_ir: true
 ...
 ```
 
-If this flag is set, full pipeline (PyTorch -> onnx -> Openvino™ IR) is running, else model is exported to ONNX only.
+If this flag is set, full pipeline (PyTorch -> ONNX -> Openvino™ IR) is running, else model is exported to ONNX only.

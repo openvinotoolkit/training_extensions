@@ -9,7 +9,7 @@ train:
   log_path: logs
   model_path: model_checkpoints/model.pth
   optimizer: Adam
-  save_dir: model_sheckpoints
+  save_dir: model_checkpoints
   train_paths:
     - datasets/sample_medium_dataset
   val_path: datasets/sample_medium_dataset
