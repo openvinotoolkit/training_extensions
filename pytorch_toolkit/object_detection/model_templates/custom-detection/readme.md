@@ -59,10 +59,9 @@ Since custom detection model templates rather than ready-to-use models (though t
 export CLASSES="vehicle,person,non-vehicle"
 ```
 
-### 6. Training and Fine-tuning
+### 6. Training
 
-To start *для тех, для кого не правильно
-Also you can use parameters such as `--epochs`, `--batch-size`, `--gpu-num`, `--base-learning-rate`, otherwise default values will be loaded from `${MODEL_TEMPLATE}`.
+To start training from pre-trained weights use `--load-weights` pararmeter.
 
 ```bash
 python train.py \
@@ -74,6 +73,8 @@ python train.py \
    --save-checkpoints-to ${WORK_DIR}/outputs \
    --classes ${CLASSES}
 ```
+
+Also you can use parameters such as `--epochs`, `--batch-size`, `--gpu-num`, `--base-learning-rate`, otherwise default values will be loaded from `${MODEL_TEMPLATE}`.
 
 ### 7. Evaluation
 
