@@ -1,2 +1,2 @@
-./ote
-./oteod
+./packages/ote
+./packages/oteod

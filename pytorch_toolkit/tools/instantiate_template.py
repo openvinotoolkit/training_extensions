@@ -43,6 +43,7 @@ def main():
         destination = dependency['destination']
         if not source.startswith('http:') and not source.startswith('https:'):
             rel_source = os.path.join(os.path.dirname(args.template), source)
+            os.makedirs(os.path.dirname(os.path.join(args.output, destination)), exist_ok=True)
             run(f'cp -r {rel_source} {os.path.join(args.output, destination)}', check=True, shell=True)
         else:
             if not args.do_not_load_snapshot:
