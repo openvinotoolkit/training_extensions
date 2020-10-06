@@ -17,8 +17,8 @@ import os
 import glob
 from subprocess import run
 
-from tqdm import tqdm
 import yaml
+from tqdm import tqdm
 
 
 def parse_args():
