@@ -46,7 +46,7 @@ def read_net(model_xml, ie, device):
     return model
 
 
-class ONNXExporter():
+class ONNXExporter:
     def __init__(self, config):
         self.config = config
         self.model_path = os.path.join(os.path.abspath("./"), config.get('model_path'))

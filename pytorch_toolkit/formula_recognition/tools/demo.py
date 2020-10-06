@@ -26,7 +26,7 @@ from im2latex.data.vocab import read_vocab
 from im2latex.models.im2latex_model import Im2latexModel
 
 
-class Im2latexDemo():
+class Im2latexDemo:
     def __init__(self, config):
         self.config = config
         self.model_path = os.path.join(os.path.abspath("./"), config.get('model_path'))

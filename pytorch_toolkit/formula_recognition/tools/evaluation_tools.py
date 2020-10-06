@@ -296,7 +296,7 @@ def match_images(params):
     return match_w, match_wout
 
 
-class Im2latexRenderBasedMetric():
+class Im2latexRenderBasedMetric:
 
     def __init__(self):
         self.num_threads = cpu_count()

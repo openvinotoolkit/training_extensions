@@ -31,7 +31,7 @@ from torch.utils.data import DataLoader
 from tools.evaluation_tools import Im2latexRenderBasedMetric
 
 
-class Evaluator():
+class Evaluator:
     def __init__(self, config):
         self.config = config
         self.model_path = os.path.join(os.path.abspath("./"), config.get('model_path'))

@@ -97,7 +97,7 @@ def calculate_loss(logits, targets, should_cut_by_min=False):
     return loss, accuracy.item()
 
 
-class Trainer():
+class Trainer:
     def __init__(self, work_dir, config):
         self.config = config
         self.model_path = os.path.join(os.path.abspath("./"), config.get('model_path'))
