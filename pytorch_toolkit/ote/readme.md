@@ -194,5 +194,6 @@ optional arguments:
   --openvino-mo-args OPENVINO_MO_ARGS
                         Additional args to OpenVINO Model Optimizer
 ```
+
 ## quantize.py
 TBD
