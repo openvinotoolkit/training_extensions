@@ -37,7 +37,7 @@ fi
 
 pip install -e ../../external/mmdetection/
 
-# isntall ote (api)
+# install ote (api)
 pip install -e ../../pytorch_toolkit/ote/
 
 # install oteod
