@@ -19,7 +19,7 @@ automatically by the Platform. Directories does not need to conform to any conve
 └── train.py
 ```
 
-## template.yml
+## template.yaml
 
 Each Model Template should be described by YAML file, which defines configuration supported by its
 implementation. It may define which hyper-parameters are available, what output formats it can
