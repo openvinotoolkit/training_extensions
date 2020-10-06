@@ -26,7 +26,7 @@ from .vocab import END_TOKEN, PAD_TOKEN, START_TOKEN, UNK_TOKEN
 COLOR_WHITE = (255, 255, 255)
 
 
-class BatchResizePadToTGTShape():
+class BatchResizePadToTGTShape:
     """This class helps to resize image to fit the target shape
     and save original aspect ratio and pad
     (if resized image's shape is not equal to target shape)
@@ -41,7 +41,6 @@ class BatchResizePadToTGTShape():
         res = []
         target_height, target_width = self.target_shape
         for image_raw in imgs:
-
             img_h, img_w = image_raw.shape[0:2]
             scale = min(target_height / img_h, target_width / img_w)
             image_raw = cv.resize(image_raw, None, fx=scale, fy=scale)
@@ -305,7 +304,6 @@ class TransformDilation():
 
 class BatchTransformBin():
     def __init__(self, threshold):
-
         self.transform = cv.threshold
         self.thresh_type = cv.THRESH_BINARY
         self.threshold = threshold
@@ -449,7 +447,7 @@ def create_list_of_transforms(transforms_list, ovino_ir=False):
                 transforms.append(TransformResize(transform['target_shape']))
             elif transform['name'] == 'TransformShift':
                 transforms.append(TransformShift(*transform['shifts']))
-            elif transform['name'] == TransformRandomBolding:
+            elif transform['name'] == 'TransformRandomBolding':
                 transforms.append(TransformRandomBolding(transform['kernel_size'], transform['iterations'],
                                                          transform['threshold'], transform['res_threshold'], transform['sigmaX'], transform['distr']))
     if not ovino_ir:
