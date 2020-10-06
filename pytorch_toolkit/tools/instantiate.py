@@ -13,8 +13,8 @@
 # and limitations under the License.
 
 import argparse
-import os
 import glob
+import os
 from subprocess import run
 
 import yaml
