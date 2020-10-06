@@ -35,6 +35,9 @@ class BatchResizePad:
     def __init__(self, target_shape):
         self.target_shape = target_shape
 
+    def __repr__(self):
+        return "BatchResizePad(target_shape={})".format(self.target_shape)
+
     def __call__(self, imgs):
         if not isinstance(imgs, list):
             imgs = [imgs]
@@ -54,16 +57,15 @@ class BatchResizePad:
 
 
 class BatchCropPad:
-    """This class helps to crop image to fit the target shape
-    and save original aspect ratio and pad
-    (if resized image's shape is not equal to target shape)
+    """This class helps to make top-left crop of the image to fit the target shape
+    and save original aspect ratio and pad (if resized image's shape is not equal to target shape)
     """
 
     def __init__(self, target_shape):
         self.target_shape = target_shape
 
     def __repr__(self):
-        return "CropPadToTGTShape object w target_shape {}".format(self.target_shape)
+        return "BatchCropPad(target_shape={})".format(self.target_shape)
 
     def __call__(self, imgs):
         if not isinstance(imgs, list):
@@ -122,27 +124,31 @@ class BatchTransformPad:
     """Random pad batch of images
     """
 
-    def __init__(self, shift_l=50, shift_r=50, shift_b=20, shift_t=20):
-        self.shift_l = shift_l
-        self.shift_r = shift_r
-        self.shift_b = shift_b
-        self.shift_t = shift_t
+    def __init__(self, pad_l=50, pad_r=50, pad_b=20, pad_t=20):
+        self.pad_l = pad_l
+        self.pad_r = pad_r
+        self.pad_b = pad_b
+        self.pad_t = pad_t
+
+    def __repr__(self):
+        return "BatchTransformPad(pad_l={}, pad_r={}, pad_b={}, pad_t={})".format(
+            self.pad_l, self.pad_r, self.pad_b, self.pad_t)
 
     def __call__(self, imgs):
-        if self.shift_l > 0:
-            left_p = np.random.randint(0, self.shift_l)
+        if self.pad_l > 0:
+            left_p = np.random.randint(0, self.pad_l)
         else:
             left_p = None
-        if self.shift_r > 0:
-            right_p = np.random.randint(0, self.shift_r)
+        if self.pad_r > 0:
+            right_p = np.random.randint(0, self.pad_r)
         else:
             right_p = None
-        if self.shift_b > 0:
-            bottom_p = np.random.randint(0, self.shift_b)
+        if self.pad_b > 0:
+            bottom_p = np.random.randint(0, self.pad_b)
         else:
             bottom_p = None
-        if self.shift_t > 0:
-            top_p = np.random.randint(0, self.shift_t)
+        if self.pad_t > 0:
+            top_p = np.random.randint(0, self.pad_t)
         else:
             top_p = None
         if not isinstance(imgs, list):
@@ -154,9 +160,6 @@ class BatchTransformPad:
 
 
 class BatchToTensor:
-    def __init__(self):
-        ...
-
     def __call__(self, imgs):
         if not isinstance(imgs, list):
             imgs = [imgs]
@@ -167,13 +170,16 @@ class BatchTransformBlur:
     def __init__(self, sigmaX=1.15):
         self.sigmaX = sigmaX
 
+    def __repr__(self):
+        return "BatchTransformBlur(sigmaX={})".format(self.sigmaX)
+
     def __call__(self, imgs):
         if not isinstance(imgs, list):
             imgs = [imgs]
         return [cv.GaussianBlur(img, (3, 3), self.sigmaX) for img in imgs]
 
 
-class TransformShift:
+class BatchTransformShift:
     """Shift formula randomly on x and y from a set range
     """
 
@@ -181,12 +187,17 @@ class TransformShift:
         self.shift_x = shift_x
         self.shift_y = shift_y
 
-    def __call__(self, img):
+    def __repr__(self):
+        return "BatchTransformShift(shift_x={}, shift_y={})".format(self.shift_x, self.shift_y)
+
+    def __call__(self, imgs):
+        if not isinstance(imgs, list):
+            imgs = [imgs]
         tx = np.random.randint(0, self.shift_x)
         ty = np.random.randint(0, self.shift_y)
         shift_matrix = np.array([[1, 0, tx], [0, 1, ty]], dtype=np.float32)
-        res = cv.warpAffine(
-            img, shift_matrix, (img.shape[1], img.shape[0]), borderMode=cv.BORDER_CONSTANT, borderValue=COLOR_WHITE)
+        res = [cv.warpAffine(img, shift_matrix, (img.shape[1], img.shape[0]),
+                             borderMode=cv.BORDER_CONSTANT, borderValue=COLOR_WHITE) for img in imgs]
         return res
 
 
@@ -196,6 +207,9 @@ class BatchTransformRandomNoise:
 
     def __init__(self, intensity):
         self.intensity = intensity
+
+    def __repr__(self):
+        return "BatchTransformRandomNoise(intensity={})".format(self.intensity)
 
     def __call__(self, imgs):
         if not isinstance(imgs, list):
@@ -216,6 +230,9 @@ class TransformResize:
     def __init__(self, target_shape):
         self.target_shape = target_shape
 
+    def __repr__(self):
+        return "TransformResize(target_shape={})".format(self.target_shape)
+
     def __call__(self, img):
         if not isinstance(img, list):
             img = [img]
@@ -230,6 +247,9 @@ class TransformErosion:
     def __init__(self, kernel_size=3, iterations=1):
         self.iterations = iterations
         self.kernel = np.ones((kernel_size, kernel_size), np.uint8)
+
+    def __repr__(self):
+        return "TransformErosion(iterations={}, kernel_size={})".format(self.iterations, self.kernel.shape[0])
 
     def __call__(self, img):
         if not isinstance(img, list):
@@ -250,6 +270,11 @@ class TransformRandomBolding:
         self.sigmaX = sigmaX
         self.kernel = (kernel_size, kernel_size)
         self.distr = distr
+
+    def __repr__(self):
+        return """TransformRandomBolding(iterations={}, threshold={}, res_threshold={},
+                sigmaX={}, kernel_size={}, distr={})""".format(
+            self.iterations, self.threshold, self.res_threshold, self.sigmaX, self.kernel[0], self.distr)
 
     def __call__(self, img):
         if not isinstance(img, list):
@@ -296,6 +321,9 @@ class TransformDilation:
         self.iterations = iterations
         self.kernel = np.ones((kernel_size, kernel_size), np.uint8)
 
+    def __repr__(self):
+        return "TransformDilation(iterations={}, kernel={})".format(self.iterations, self.kernel)
+
     def __call__(self, img):
         if not isinstance(img, list):
             img = [img]
@@ -308,6 +336,9 @@ class BatchTransformBin:
         self.thresh_type = cv.THRESH_BINARY
         self.threshold = threshold
         self.max_val = 255
+
+    def __repr__(self):
+        return "BatchTransformBin(threshold={})".format(self.threshold)
 
     def __call__(self, img):
         if not isinstance(img, list):
@@ -324,6 +355,9 @@ class BatchTransfromAdaptiveBin:
         self.threshold = threshold
         self.max_val = 255
 
+    def __repr__(self):
+        return "TransformResize(target_shape={})".format(self.target_shape)
+
     def __call__(self, img):
         if not isinstance(img, list):
             img = [img]
@@ -338,6 +372,9 @@ class BatchTransformRescale:
         self.scale_min = scale_min
         self.scale_max = scale_max
 
+    def __repr__(self):
+        return "TransformResize(target_shape={})".format(self.target_shape)
+
     def __call__(self, imgs):
         fx = np.random.uniform(self.scale_min, self.scale_max)
         fy = fx  # np.random.uniform(fx, self.scale_max)
@@ -350,6 +387,9 @@ class BatchTransformRescale:
 class BatchTransformRotate:
     def __init__(self, angle):
         self.angle = angle
+
+    def __repr__(self):
+        return "TransformResize(target_shape={})".format(self.target_shape)
 
     def __call__(self, imgs):
         bound = self.angle
@@ -365,11 +405,9 @@ class BatchTransformRotate:
         src = np.array([[[0, 0]], [[w, 0]], [[0, h]], [[w, h]]])
 
         new_pts = cv.transform(src, M)
-        top_left, top_right, bottom_left, bottom_right = new_pts.astype(int)
 
         bb = cv.boundingRect(new_pts)
         empty_img_shape = (bb[3], bb[2])
-        empty_img = 255 * np.ones(empty_img_shape)
         shift_matrix = np.array([[0, 0, 0-bb[0]], [0, 0, 0 - bb[1]]])
         M = M + shift_matrix
         rotated = [cv.warpAffine(
@@ -430,7 +468,7 @@ def create_list_of_transforms(transforms_list, ovino_ir=False):
             elif transform['name'] == 'BatchTransformBlur':
                 transforms.append(BatchTransformBlur())
             elif transform['name'] == 'BatchTransformPad':
-                transforms.append(BatchTransformPad(*transform['shifts']))
+                transforms.append(BatchTransformPad(*transform['pads']))
             elif transform['name'] == 'BatchTransformRandomNoise':
                 transforms.append(BatchTransformRandomNoise(transform['intensivity']))
             elif transform['name'] == 'BatchTransformRescale':
@@ -445,8 +483,8 @@ def create_list_of_transforms(transforms_list, ovino_ir=False):
                 transforms.append(TransformErosion())
             elif transform['name'] == 'TransformResize':
                 transforms.append(TransformResize(transform['target_shape']))
-            elif transform['name'] == 'TransformShift':
-                transforms.append(TransformShift(*transform['shifts']))
+            elif transform['name'] == 'BatchTransformShift':
+                transforms.append(BatchTransformShift(*transform['shifts']))
             elif transform['name'] == 'TransformRandomBolding':
                 transforms.append(TransformRandomBolding(transform['kernel_size'], transform['iterations'],
                                                          transform['threshold'], transform['res_threshold'], transform['sigmaX'], transform['distr']))
