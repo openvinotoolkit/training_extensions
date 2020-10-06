@@ -1,7 +1,6 @@
 # PyTorch realization of the Im2Markup
 
-This repository contains inference and training code for Im2LaTeX models.
-Source [repository](https://github.com/harvardnlp/im2markup/). This repository is based on a [PyTorch realization](https://github.com/luopeixiang/im2latex/)
+This repository is based on a [PyTorch realization](https://github.com/luopeixiang/im2latex/) of the code from the original [repository](https://github.com/harvardnlp/im2markup/).
 Models code is designed to enable ONNX\* export and inference on CPU\GPU via OpenVINO™.
 
 ## Setup
@@ -27,7 +26,7 @@ bash init_venv.sh
 For training model one has to have dataset. Dataset format is similiar to [im2latex-100k](https://zenodo.org/record/56198#.X2NDQ2gzaUl). Main structure of the dataset is following:
 * `formulas_file` - file with one formula per line
 * `images_folder` - folder containing input images
-* `split_file` - this file contains `file_name` (tab symbol) `formula_idx` per line connecting corresponding index of the formula in the file with formulas and particular image with `image_name`. Example:
+* `split_file` - this file contains `image_name` (tab symbol) `formula_idx` per line connecting corresponding index of the formula in the file with formulas and particular image with `image_name`. Example:
     ```
     11.png  11
     34.png  34
@@ -46,7 +45,7 @@ For training model one has to have dataset. Dataset format is similiar to [im2la
 To train formula recognition model run:
 
 ```bash
-python3 tools/train.py --config configs/config.yml --work_dir <path to work dir>
+python tools/train.py --config configs/config.yml --work_dir <path to work dir>
 ```
 Work dir is used to store information about learning: saved model checkpoints, logs.
 
@@ -72,7 +71,7 @@ The config file is divided into 4 sections: train, eval, export, demo. In every 
 - `val_path` - path for validation data
 - `vocab_path` - path where vocab file is stored
 - `val_transforms_list` - here you can describe set of desirable transformations for validation datasets respectively An example is given in the config file, for other options, please, refer to [constructor of transforms (section `create_list_of_transforms`)](im2latex/data/utils.py)
-- `device` - device for training, used in pytorch .to() method. Possible options: 'cuda', 'cpu', etc. `cpu` is used by default.
+- `device` - device for training, used in PyTorch .to() method. Possible options: 'cuda', 'cpu', etc. `cpu` is used by default.
 #### Training-specific parameters
 In addition to common parameters you can specify the following arguments:
 - `batch_size` - batch size used for training
@@ -139,7 +138,7 @@ That is why we cannot just compare text predictions one-by-one, we have to rende
 
 In order to see how trained model works using OpenVINO™ please refer to [Formula recognition Python* Demo](https://github.com/opencv/open_model_zoo/tree/develop/demos/python_demos/formula_recognition_demo/). Before running the demo you have to export trained model to IR. Please see below how to do that.
 
-If you want to see how trained pytorch model is working, you can run `tools/demo.py` script with correct `config` file. Fill in the `input_images` variable with the paths to desired images. For every image in this list, model will predict the formula and print it into the terminal.
+If you want to see how trained PyTorch model is working, you can run `tools/demo.py` script with correct `config` file. Fill in the `input_images` variable with the paths to desired images. For every image in this list, model will predict the formula and print it into the terminal.
 
 ## Export PyTorch Models to OpenVINO™
 
@@ -161,9 +160,7 @@ python tools/export.py --config configs/config.yml
 
 ### Convert to IR
 
-Conversion from ONNX model representation to OpenVINO™ IR is straightforward and
-handled by OpenVINO™ Model Optimizer. Please refer to [Model Optimizer
-documentation](https://docs.openvinotoolkit.org/latest/_docs_MO_DG_Deep_Learning_Model_Optimizer_DevGuide.html) for details on how it works.
+Conversion from ONNX model representation to OpenVINO™ IR is straightforward and handled by OpenVINO™ Model Optimizer.
 
 To convert model to IR one has to set flag `export_ir` in `config` file:
 ```
