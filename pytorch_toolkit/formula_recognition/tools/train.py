@@ -125,17 +125,17 @@ class Trainer():
         self.val_freq = config.get('val_freq', 5000)
         self.logs_path = os.path.join(self.work_dir, config.get("log_path", "logs"))
         self.writer = SummaryWriter(self.logs_path)
+        self.device = config.get('device', 'cpu')
         self.writer.add_text("General info", pformat(config))
         self.create_dirs()
         self.load_dataset()
         self.model = Im2latexModel(config.get('backbone_type', 'resnet'), config.get(
             'backbone_config'), len(self.vocab), config.get('head', {}))
         if self.model_path is not None:
-            self.model.load_weights(self.model_path, old_model=config.get("old_model"))
+            self.model.load_weights(self.model_path, map_location=self.device)
 
         self.optimizer = getattr(optim, config.get('optimizer', "Adam"))(self.model.parameters(), self.learing_rate)
         self.lr_scheduler = ReduceLROnPlateau(self.optimizer)
-        self.device = config.get('device', 'cpu')
         self.model = self.model.to(self.device)
         self.time = get_timestamp()
 

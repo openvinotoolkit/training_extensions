@@ -70,13 +70,19 @@ class Im2latexModel(nn.Module):
             return True
         return False
 
-    def load_weights(self, model_path, old_model=False, map_location='cpu'):
+    def load_weights(self, model_path, map_location='cpu'):
         if model_path is None:
             return
         checkpoint = torch.load(model_path, map_location=map_location)
         checkpoint = OrderedDict((k.replace(
             'module.', '') if 'module.' in k else k, v) for k, v in checkpoint.items())
         # load models trained in previous versions
+        def is_old_model(checkpoint):
+            for k in checkpoint.keys():
+                if 'cnn_encoder' in k:
+                    return True
+            return False
+        old_model = is_old_model(checkpoint)
         if not old_model:
             self.load_state_dict(checkpoint)
             return

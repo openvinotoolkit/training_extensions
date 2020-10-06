@@ -35,8 +35,7 @@ class Im2latexDemo():
         self.model = Im2latexModel(config.get('backbone_type', 'resnet'), config.get(
             'backbone_config'), len(self.vocab), config.get('head', {}))
         if self.model_path is not None:
-            self.model.load_weights(self.model_path, old_model=config.get(
-                'old_model'), map_location=config.get('map_location', 'cpu'))
+            self.model.load_weights(self.model_path, map_location=config.get('map_location', 'cpu'))
 
         self.device = config.get('device', 'cpu')
         self.model = self.model.to(self.device)

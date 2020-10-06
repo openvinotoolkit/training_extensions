@@ -38,6 +38,7 @@ ENCODER_OUTPUTS = "row_enc_out,hidden,context,init_0"
 DECODER_INPUTS = "dec_st_h,dec_st_c,output_prev,row_enc_out,tgt"
 DECODER_OUTPUTS = "dec_st_h_t,dec_st_c_t,output,logit"
 
+
 def read_net(model_xml, ie, device):
     model_bin = os.path.splitext(model_xml)[0] + ".bin"
     model = ie.read_network(model_xml, model_bin)
@@ -55,7 +56,7 @@ class ONNXExporter():
         self.model = Im2latexModel(config.get('backbone_type', 'resnet'), config.get(
             'backbone_config'), len(self.vocab), config.get('head', {}))
         if self.model_path is not None:
-            self.model.load_weights(self.model_path, old_model=config.get("old_model"))
+            self.model.load_weights(self.model_path)
 
         self.input = os.path.join(os.path.abspath("./"), config.get("dummy_input"))
         self.img = self.read_and_preprocess_img(self.transform)
@@ -68,7 +69,6 @@ class ONNXExporter():
         img = transform(img)
         img = img[0].unsqueeze(0)
         return img
-
 
     def read_and_preprocess_img_for_ir(self, transform):
         img = cv.imread(self.input)
@@ -204,7 +204,8 @@ class ONNXExporter():
 
         exec_net_encoder = ie.load_network(network=encoder, device_name="CPU")
         exec_net_decoder = ie.load_network(network=dec_step, device_name="CPU")
-        enc_res = exec_net_encoder.infer(inputs={self.config.get("encoder_input_names", ENCODER_INPUTS).split(",")[0]: self.img_for_ir})
+        enc_res = exec_net_encoder.infer(inputs={self.config.get(
+            "encoder_input_names", ENCODER_INPUTS).split(",")[0]: self.img_for_ir})
         enc_out_names = self.config.get("encoder_output_names", ENCODER_OUTPUTS).split(",")
         row_enc_out = enc_res[enc_out_names[0]]
         dec_states_h = enc_res[enc_out_names[1]]

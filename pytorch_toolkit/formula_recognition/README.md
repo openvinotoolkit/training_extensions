@@ -67,7 +67,6 @@ The config file is divided into 4 sections: train, eval, export, demo. In every 
     * `max_len` - maximum possible length of the predicted formula
     * `n_layer` - describe
 - `model_path` - path for model
-- `old_model` - use this flag if you want to use the model trained in the previous versions of this framework (flag for previous versions compatibility)
 - `val_path` - path for validation data
 - `vocab_path` - path where vocab file is stored
 - `val_transforms_list` - here you can describe set of desirable transformations for validation datasets respectively An example is given in the config file, for other options, please, refer to [constructor of transforms (section `create_list_of_transforms`)](im2latex/data/utils.py)
@@ -103,13 +102,6 @@ One can point to pre-trained model [checkpoint](https://download.01.org/opencv/o
 ```
 ...
 model_path: <path_to_weights>
-...
-```
-
-If the model was marked `old_model`, that means the model was trained in older version of this framework (concretely, model checkpoint keys are different from keys used in model now), so if you want to use this model in any context, point out this fact in `config`:
-```
-...
-old_model: true
 ...
 ```
 

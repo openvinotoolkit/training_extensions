@@ -45,7 +45,7 @@ class Evaluator():
             'backbone_config'), len(self.vocab), config.get('head', {}))
         self.device = config.get('device', 'cpu')
         if self.model_path is not None:
-            self.model.load_weights(self.model_path, old_model=config.get("old_model"), map_location=self.device)
+            self.model.load_weights(self.model_path, map_location=self.device)
 
         self.model = self.model.to(self.device)
         self.time = get_timestamp()
