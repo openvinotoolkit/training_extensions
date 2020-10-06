@@ -37,10 +37,6 @@ class ResNetLikeBackbone(nn.Module):
         in_lstm_ch = configuration.get('in_lstm_ch', 512)
         enable_last_conv = configuration.get('enable_last_conv', False)
         self.arch = arch
-        if in_lstm_ch is not None:
-            self.in_lstm_ch = in_lstm_ch
-        else:
-            self.in_lstm_ch = 64
         _resnet = architectures.get(arch, "resnet50")(
             pretrained=True, progress=True)
         self.groups = _resnet.groups
