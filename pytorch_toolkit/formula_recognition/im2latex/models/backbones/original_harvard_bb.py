@@ -39,7 +39,7 @@ SOFTWARE.
 import torch.nn as nn
 
 
-class Im2LatexBackBone(nn.Module):
+class Im2LatexBackbone(nn.Module):
     def __init__(self):
         super().__init__()
         # follow the original paper's table2: CNN specification
