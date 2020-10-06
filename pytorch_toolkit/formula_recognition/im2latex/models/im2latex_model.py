@@ -19,7 +19,7 @@ from collections import OrderedDict
 import torch
 import torch.nn as nn
 
-from .backbones.original_harvard_bb import Im2LatexBackBone
+from .backbones.original_harvard_bb import Im2LatexBackbone
 from .backbones.resnet import ResNetLikeBackbone
 from .text_recognition_heads.attention_based import TextRecognitionHead
 
