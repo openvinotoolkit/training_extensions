@@ -26,7 +26,7 @@ from .vocab import END_TOKEN, PAD_TOKEN, START_TOKEN, UNK_TOKEN
 COLOR_WHITE = (255, 255, 255)
 
 
-class BatchResizePadToTGTShape:
+class BatchResizePad:
     """This class helps to resize image to fit the target shape
     and save original aspect ratio and pad
     (if resized image's shape is not equal to target shape)
@@ -53,7 +53,7 @@ class BatchResizePadToTGTShape:
         return res
 
 
-class BatchCropPadToTGTShape():
+class BatchCropPad:
     """This class helps to crop image to fit the target shape
     and save original aspect ratio and pad
     (if resized image's shape is not equal to target shape)
@@ -83,7 +83,7 @@ class BatchCropPadToTGTShape():
         return res
 
 
-class ImitateWebTransform():
+class ImitateWebTransform:
     """
     Transformation imitates grey formulas
     like they are capture by the web-camera
@@ -118,7 +118,7 @@ class ImitateWebTransform():
         return imgs
 
 
-class BatchTransformPad():
+class BatchTransformPad:
     """Random pad batch of images
     """
 
@@ -153,7 +153,7 @@ class BatchTransformPad():
         return padded_imgs
 
 
-class BatchToTensor():
+class BatchToTensor:
     def __init__(self):
         ...
 
@@ -163,7 +163,7 @@ class BatchToTensor():
         return [ToTensor()(img) for img in imgs]
 
 
-class BatchTransformBlur():
+class BatchTransformBlur:
     def __init__(self, sigmaX=1.15):
         self.sigmaX = sigmaX
 
@@ -173,7 +173,7 @@ class BatchTransformBlur():
         return [cv.GaussianBlur(img, (3, 3), self.sigmaX) for img in imgs]
 
 
-class TransformShift():
+class TransformShift:
     """Shift formula randomly on x and y from a set range
     """
 
@@ -190,7 +190,7 @@ class TransformShift():
         return res
 
 
-class BatchTransformRandomNoise():
+class BatchTransformRandomNoise:
     """Add random noise to batch of images
     """
 
@@ -212,8 +212,8 @@ class BatchTransformRandomNoise():
         return res
 
 
-class TransformResize():
-    def __init__(self, target_shape: tuple):
+class TransformResize:
+    def __init__(self, target_shape):
         self.target_shape = target_shape
 
     def __call__(self, img):
@@ -223,7 +223,7 @@ class TransformResize():
         return res
 
 
-class TransformErosion():
+class TransformErosion:
     """Morphologic erosion
     """
 
@@ -237,7 +237,7 @@ class TransformErosion():
         return [cv.erode(image, self.kernel, iterations=self.iterations) for image in img]
 
 
-class TransformRandomBolding():
+class TransformRandomBolding:
     """
     This class helps to imitate images from scaner \ camera
     after applying binarization on them
@@ -288,7 +288,7 @@ class TransformRandomBolding():
         return res
 
 
-class TransformDilation():
+class TransformDilation:
     """Morphologic dilation
     """
 
@@ -302,7 +302,7 @@ class TransformDilation():
         return [cv.dilate(image, self.kernel, iterations=self.iterations) for image in img]
 
 
-class BatchTransformBin():
+class BatchTransformBin:
     def __init__(self, threshold):
         self.transform = cv.threshold
         self.thresh_type = cv.THRESH_BINARY
@@ -315,7 +315,7 @@ class BatchTransformBin():
         return [cv.threshold(im, self.threshold, self.max_val, self.thresh_type)[1] for im in img]
 
 
-class BatchTransfromAdaptiveBin():
+class BatchTransfromAdaptiveBin:
     def __init__(self, threshold, block_size, method=cv.ADAPTIVE_THRESH_MEAN_C, mean_c=10):
         self.method = method
         self.block_size = block_size
@@ -333,7 +333,7 @@ class BatchTransfromAdaptiveBin():
             self.block_size, self.C) for im in img]
 
 
-class BatchTransformRescale():
+class BatchTransformRescale:
     def __init__(self, scale_min, scale_max):
         self.scale_min = scale_min
         self.scale_max = scale_max
@@ -347,7 +347,7 @@ class BatchTransformRescale():
         return imgs
 
 
-class BatchTransformRotate():
+class BatchTransformRotate:
     def __init__(self, angle):
         self.angle = angle
 
@@ -421,10 +421,10 @@ def create_list_of_transforms(transforms_list, ovino_ir=False):
     transforms = []
     if transforms_list:
         for transform in transforms_list:
-            if transform['name'] == 'BatchResizePadToTGTShape':
-                transforms.append(BatchResizePadToTGTShape(transform['target_shape']))
-            elif transform['name'] == 'BatchCropPadToTGTShape':
-                transforms.append(BatchCropPadToTGTShape(transform['target_shape']))
+            if transform['name'] == 'BatchResizePad':
+                transforms.append(BatchResizePad(transform['target_shape']))
+            elif transform['name'] == 'BatchCropPad':
+                transforms.append(BatchCropPad(transform['target_shape']))
             elif transform['name'] == 'BatchTransformBin':
                 transforms.append(BatchTransformBin(transform['threshold']))
             elif transform['name'] == 'BatchTransformBlur':
