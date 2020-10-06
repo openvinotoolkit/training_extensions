@@ -41,7 +41,7 @@ class ResNetLikeBackbone(nn.Module):
             self.in_lstm_ch = in_lstm_ch
         else:
             self.in_lstm_ch = 64
-        _resnet = architectures.get(arch, None)(
+        _resnet = architectures.get(arch, "resnet50")(
             pretrained=True, progress=True)
         self.groups = _resnet.groups
         self.base_width = _resnet.base_width
