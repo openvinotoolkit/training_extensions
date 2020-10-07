@@ -8,7 +8,7 @@ A single Model Template should consist of a Python script related to model train
 as YAML file that will define template interface. Each model template is related to 4 scripts: `train.py`, `eval.py`, `export.py` and `quantize.py`. Model Templates may be placed in nested directories in the whole repository and will be detected
 automatically by the Platform. Directories does not need to conform to any convention as in the example below:
 
-```bash
+```
 /example_model_template
 ├── network
 │   ├── __init__.py
@@ -109,7 +109,7 @@ estimated_batch_time: 1.0
 ```
 
 ## train.py
-```bash
+```
 python ../tools/train.py -h
 usage: train.py [-h] --train-ann-files TRAIN_ANN_FILES --train-data-roots
                 TRAIN_DATA_ROOTS --val-ann-files VAL_ANN_FILES
@@ -148,7 +148,7 @@ optional arguments:
 ```
 
 ## eval.py
-```bash
+```
 python ../tools/eval.py -h
 usage: eval.py [-h] --test-ann-files TEST_ANN_FILES --test-data-roots
                TEST_DATA_ROOTS --load-weights LOAD_WEIGHTS --save-metrics-to
@@ -174,7 +174,7 @@ optional arguments:
 ```
 
 ## export.py
-```bash
+```
 python ../../tools/export.py -h
 usage: export.py [-h] --load-weights LOAD_WEIGHTS --save-model-to
                  SAVE_MODEL_TO [--onnx] [--openvino]
