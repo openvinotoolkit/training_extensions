@@ -85,41 +85,6 @@ class BatchCropPad:
         return res
 
 
-class ImitateWebTransform:
-    """
-    Transformation imitates grey formulas
-    like they are capture by the web-camera
-    """
-
-    def __init__(self, a=None, b=None, noise_var=10):
-        default_a = 60
-        default_b = 170
-        self.a = a if a is not None else default_a
-        self.b = b if b is not None else default_b
-        assert 0 <= self.a < self.b
-        assert self.b <= 255
-        self.noise_var = noise_var
-
-    def __call__(self, _imgs):
-
-        cur_b = np.random.uniform(self.b, 255)
-        cur_a = np.random.uniform(0, self.a)
-        if not isinstance(_imgs, list):
-            _imgs = [_imgs]
-        imgs = np.stack(_imgs, axis=0)
-        noise = np.random.normal(0, self.noise_var, imgs.shape)
-        imgs = imgs.astype(float)
-        imgs += noise
-        imgs = (cur_b - cur_a) / 255 * imgs + cur_a
-        imgs = np.maximum(0, imgs)
-        imgs = np.minimum(255, imgs)
-        imgs = imgs.astype(dtype=np.uint8)
-        if imgs.shape[-1] == 3:
-            imgs = [cv.cvtColor(img, cv.COLOR_BGR2GRAY) for img in imgs]
-            imgs = [cv.cvtColor(img, cv.COLOR_GRAY2BGR) for img in imgs]
-        return imgs
-
-
 class BatchTransformPad:
     """Random pad batch of images
     """
