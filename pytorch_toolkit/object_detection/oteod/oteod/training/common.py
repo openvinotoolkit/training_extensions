@@ -17,6 +17,7 @@ from oteod.misc import run_with_termination
 def train_internal(config, gpu_num, update_config):
     training_info = {'training_gpu_num': 0}
     if os.getenv('MASTER_ADDR') is not None and os.getenv('MASTER_PORT') is not None:
+        # Distributed training is handled by Kubeflow’s PyTorchJob at a higher level.
         logging.info('Distributed training started ...')
         run_with_termination(f'python {MMDETECTION_TOOLS}/train.py'
                              f' --launcher=pytorch'
