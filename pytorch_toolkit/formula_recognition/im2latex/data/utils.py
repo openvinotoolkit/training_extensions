@@ -183,11 +183,9 @@ class BatchTransformRandomNoise:
         for img in imgs:
             mean = np.mean(img)
             variance = np.std(img)
-            gauss = np.zeros_like(img, dtype=np.uint8)
             noise = np.array(np.random.normal(
                 mean, variance, img.shape), dtype=np.uint8)
-            gauss += noise * self.intensity
-            res.append(img + gauss)
+            res.append(img + noise * self.intensity)
         return res
 
 
