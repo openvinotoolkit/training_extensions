@@ -53,7 +53,7 @@ class Im2latexModel(nn.Module):
         if self.backbone_type == 'resnet':
             self.backbone = ResNetLikeBackbone(backbone)
         else:
-            self.backbone = Im2LatexBackBone()
+            self.backbone = Im2LatexBackbone()
 
     def forward(self, input_images, formulas=None):
         features = self.backbone(input_images)
