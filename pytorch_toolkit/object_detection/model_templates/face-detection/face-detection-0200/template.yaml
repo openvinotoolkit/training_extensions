@@ -74,4 +74,4 @@ metrics:
   value: 0.82
 gpu_num: 2
 config: model.py
-estimated_batch_time: 1.0
+estimated_batch_time: -1
