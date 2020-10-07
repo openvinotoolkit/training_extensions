@@ -37,7 +37,9 @@ class ResNetLikeBackbone(nn.Module):
         self.in_lstm_ch = configuration.get('in_lstm_ch', 512)
         enable_last_conv = configuration.get('enable_last_conv', False)
         self.arch = arch
-        _resnet = architectures.get(arch, "resnet50")(pretrained=True, progress=True)
+        _resnet = architectures.get(arch, None)(pretrained=True, progress=True)
+        if _resnet is None:
+            raise ValueError("Unkown backbone, please, check the field 'arch' in the backbone_config")
         self.groups = _resnet.groups
         self.base_width = _resnet.base_width
         self.conv1 = _resnet.conv1
