@@ -32,7 +32,7 @@ demo:
     disable_layer_4: true
   device: cuda
   transforms_list:
-    - name: "BatchCropPadToTGTShape"
+    - name: "CropPad"
       target_shape:
         - 50
         - 950
@@ -60,7 +60,7 @@ export:
     - 50
     - 950
   transforms_list:
-    - name: "BatchCropPadToTGTShape"
+    - name: "CropPad"
       target_shape:
         - 50
         - 950
