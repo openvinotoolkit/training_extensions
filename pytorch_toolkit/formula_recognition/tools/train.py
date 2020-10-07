@@ -100,7 +100,7 @@ def calculate_loss(logits, targets, should_cut_by_min=False):
 class Trainer:
     def __init__(self, work_dir, config):
         self.config = config
-        self.model_path = os.path.join(os.path.abspath("./"), config.get('model_path'))
+        self.model_path = config.get('model_path')
         self.train_paths = [os.path.join(os.path.abspath("./"), p) for p in config.get('train_paths')]
         self.val_path = os.path.join(os.path.abspath("./"), config.get('val_path'))
         self.vocab = read_vocab(os.path.join(os.path.abspath("./"), config.get('vocab_path')))
@@ -132,6 +132,7 @@ class Trainer:
         self.model = Im2latexModel(config.get('backbone_type', 'resnet'), config.get(
             'backbone_config'), len(self.vocab), config.get('head', {}))
         if self.model_path is not None:
+            self.model_path = os.path.join(os.path.abspath("./"), self.model_path)
             self.model.load_weights(self.model_path, map_location=self.device)
 
         self.optimizer = getattr(optim, config.get('optimizer', "Adam"))(self.model.parameters(), self.learing_rate)
