@@ -44,7 +44,7 @@ class Im2LatexBackbone(nn.Module):
         super().__init__()
         # follow the original paper's table2: CNN specification
         self.cnn_encoder = nn.Sequential(
-            nn.Conv2d(1, 512, 3, 1, 0),
+            nn.Conv2d(3, 512, 3, 1, 0),
             nn.BatchNorm2d(512),
             nn.ReLU(inplace=True),
             nn.Conv2d(512, 512, 3, 1, 1),
