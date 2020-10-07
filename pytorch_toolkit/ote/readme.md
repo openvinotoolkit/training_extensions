@@ -6,7 +6,7 @@ Model Templates defines training procedure and its interface for a given neural 
 
 A single Model Template should consist of a Python script related to model training as well
 as YAML file that will define template interface. Each model template is related to 4 scripts: `train.py`, `eval.py`, `export.py` and `quantize.py`. Model Templates may be placed in nested directories in the whole repository and will be detected
-automatically by the Platform. Directories does not need to conform to any convention as in the example below:
+automatically by the Platform. Directories does not need to conform to any convention. One can organize directory structure as in the example below:
 
 ```
 /example_model_template
