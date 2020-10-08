@@ -26,7 +26,7 @@ from .vocab import END_TOKEN, PAD_TOKEN, START_TOKEN, UNK_TOKEN
 COLOR_WHITE = (255, 255, 255)
 
 
-class ResizePad:
+class TransformResizePad:
     """This class helps to resize image to fit the target shape
     and save original aspect ratio and pad
     (if resized image's shape is not equal to target shape)
@@ -56,7 +56,7 @@ class ResizePad:
         return res
 
 
-class CropPad:
+class TransformCropPad:
     """This class helps to make top-left crop of the image to fit the target shape
     and save original aspect ratio and pad (if resized image's shape is not equal to target shape)
     """
@@ -124,7 +124,7 @@ class TransformPad:
         return padded_imgs
 
 
-class BatchToTensor:
+class TransformToTensor:
     def __call__(self, imgs):
         if not isinstance(imgs, list):
             imgs = [imgs]
@@ -397,6 +397,8 @@ def collate_fn(sign2id, batch, *, batch_transform=None):
     batch = [img_formula for img_formula in batch
              if img_formula['img'].shape == size]
     # sort by the length of formula
+    # the purpose of the sort is to put the longest formula on the first place
+    # to get correct size of the tensor in the formulas2tensor function
     batch.sort(key=lambda img_formula: len(img_formula['formula'].split()),
                reverse=True)
 
@@ -422,10 +424,10 @@ def create_list_of_transforms(transforms_list, ovino_ir=False):
     transforms = []
     if transforms_list:
         for transform in transforms_list:
-            if transform['name'] == 'ResizePad':
-                transforms.append(ResizePad(transform['target_shape']))
-            elif transform['name'] == 'CropPad':
-                transforms.append(CropPad(transform['target_shape']))
+            if transform['name'] == 'TransformResizePad':
+                transforms.append(TransformResizePad(transform['target_shape']))
+            elif transform['name'] == 'TransformCropPad':
+                transforms.append(TransformCropPad(transform['target_shape']))
             elif transform['name'] == 'TransformBin':
                 transforms.append(TransformBin(transform['threshold']))
             elif transform['name'] == 'TransformBlur':
@@ -452,7 +454,7 @@ def create_list_of_transforms(transforms_list, ovino_ir=False):
                 transforms.append(TransformRandomBolding(transform['kernel_size'], transform['iterations'],
                                                          transform['threshold'], transform['res_threshold'], transform['sigmaX'], transform['distr']))
     if not ovino_ir:
-        transforms.append(BatchToTensor())
+        transforms.append(TransformToTensor())
     return Compose(transforms)
 
 
