@@ -70,12 +70,12 @@ class Evaluator:
         metric = Im2latexRenderBasedMetric()
         with torch.no_grad():
 
-            for img_name, imgs, tgt4training, tgt4cal_loss in tqdm(self.val_loader, initial=1):
+            for img_name, imgs, training_gt, loss_computation_gt in tqdm(self.val_loader, initial=1):
                 imgs = imgs.to(self.device)
-                tgt4training = tgt4training.to(self.device)
-                tgt4cal_loss = tgt4cal_loss.to(self.device)
+                training_gt = training_gt.to(self.device)
+                loss_computation_gt = loss_computation_gt.to(self.device)
                 _, pred = self.model(imgs)
-                gold_phrase_str = self.vocab.construct_phrase(tgt4cal_loss[0])
+                gold_phrase_str = self.vocab.construct_phrase(loss_computation_gt[0])
                 pred_phrase_str = self.vocab.construct_phrase(pred[0], max_len=1 + len(gold_phrase_str.split()))
 
                 annotations.append((gold_phrase_str, img_name[0]))

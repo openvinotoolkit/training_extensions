@@ -412,12 +412,11 @@ def collate_fn(sign2id, batch, *, batch_transform=None):
     imgs = torch.stack(imgs, dim=0)
 
     bsize = len(batch)
-    tgt4training = torch.cat([torch.ones(bsize, 1).long()*START_TOKEN, formulas_tensor],
-                             dim=1
-                             )  # targets for training, begin with START_TOKEN
-    tgt4cal_loss = torch.cat([formulas_tensor, torch.ones(bsize, 1).long()*END_TOKEN],
-                             dim=1)  # targets for calculating loss, end with END_TOKEN
-    return img_names, imgs, tgt4training, tgt4cal_loss
+    # Ground truth symbols that are used as a decoding step input for the next symbol prediction during training.
+    training_gt = torch.cat([torch.ones(bsize, 1).long()*START_TOKEN, formulas_tensor], dim=1)
+    # Ground truth values for the outputs of decoder. Used for loss computation.
+    loss_computation_gt = torch.cat([formulas_tensor, torch.ones(bsize, 1).long()*END_TOKEN], dim=1)
+    return img_names, imgs, training_gt, loss_computation_gt
 
 
 def create_list_of_transforms(transforms_list, ovino_ir=False):

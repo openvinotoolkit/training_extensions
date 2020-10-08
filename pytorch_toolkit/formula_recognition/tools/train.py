@@ -179,8 +179,8 @@ class Trainer:
 
         while self.epoch <= self.total_epochs:
             losses = 0.0
-            for _, imgs, tgt4training, tgt4cal_loss in self.train_loader:
-                step_loss, step_accuracy = self.train_step(imgs, tgt4training, tgt4cal_loss)
+            for _, imgs, training_gt, loss_computation_gt in self.train_loader:
+                step_loss, step_accuracy = self.train_step(imgs, training_gt, loss_computation_gt)
                 losses += step_loss
                 self.writer.add_scalar('Train loss', step_loss, self.global_step)
                 self.writer.add_scalar('Train accuracy', step_accuracy, self.global_step)
@@ -231,13 +231,13 @@ class Trainer:
             self.epoch += 1
             self.step = 0
 
-    def train_step(self, imgs, tgt4training, tgt4cal_loss):
+    def train_step(self, imgs, training_gt, loss_computation_gt):
         self.optimizer.zero_grad()
         imgs = imgs.to(self.device)
-        tgt4training = tgt4training.to(self.device)
-        tgt4cal_loss = tgt4cal_loss.to(self.device)
-        logits, _ = self.model(imgs, tgt4training)
-        loss, accuracy = calculate_loss(logits, tgt4cal_loss, should_cut_by_min=True)
+        training_gt = training_gt.to(self.device)
+        loss_computation_gt = loss_computation_gt.to(self.device)
+        logits, _ = self.model(imgs, training_gt)
+        loss, accuracy = calculate_loss(logits, loss_computation_gt, should_cut_by_min=True)
         self.step += 1
         self.global_step += 1
         loss.backward()
@@ -255,16 +255,16 @@ class Trainer:
                                                                   self.epoch, self.step, self.time)
             with open(filename, 'w') as output_file:
 
-                for img_name, imgs, tgt4training, tgt4cal_loss in tqdm(self.val_loader):
+                for img_name, imgs, training_gt, loss_computation_gt in tqdm(self.val_loader):
 
                     imgs = imgs.to(self.device)
-                    tgt4training = tgt4training.to(self.device)
-                    tgt4cal_loss = tgt4cal_loss.to(self.device)
-                    logits, pred = self.model(imgs, tgt4training if use_gt_token else None)
+                    training_gt = training_gt.to(self.device)
+                    loss_computation_gt = loss_computation_gt.to(self.device)
+                    logits, pred = self.model(imgs, training_gt if use_gt_token else None)
 
                     for j, phrase in enumerate(pred):
                         gold_phrase_str = self.vocab.construct_phrase(
-                            tgt4cal_loss[j])
+                            loss_computation_gt[j])
                         pred_phrase_str = self.vocab.construct_phrase(phrase,
                                                                       max_len=1 +
                                                                       len(gold_phrase_str.split(
@@ -272,7 +272,7 @@ class Trainer:
                         output_file.write(img_name[j] + '\t' +
                                           pred_phrase_str + '\t' +
                                           gold_phrase_str + '\n')
-                    loss, accuracy = calculate_loss(logits, tgt4cal_loss,
+                    loss, accuracy = calculate_loss(logits, loss_computation_gt,
                                                     should_cut_by_min=True)
                     loss = loss.detach()
                     val_total_loss += loss
