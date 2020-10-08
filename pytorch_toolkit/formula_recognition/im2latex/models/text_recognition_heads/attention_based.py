@@ -178,9 +178,9 @@ class TextRecognitionHead(nn.Module):
         return logits, targets
 
     def encode(self, encoded_imgs):
-        encoded_imgs = encoded_imgs.permute(0, 2, 3, 1)  # [B, H', W', LSTM_INP_CHANNELS]
+        encoded_imgs = encoded_imgs.permute(0, 2, 3, 1)  # [B, H, W, LSTM_INP_CHANNELS]
         # Prepare data for Row Encoder
-        # poccess data like a new big batch
+        # process data like a new big batch
         B, H, W, out_channels = encoded_imgs.size()
 
         encoded_imgs = encoded_imgs.contiguous().view(B*H, W, out_channels)
