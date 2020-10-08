@@ -48,7 +48,7 @@ class Im2latexModel(nn.Module):
 
     def __init__(self, backbone_type, backbone, out_size, head):
         super().__init__()
-        self.head = TextRecognitionHead(out_size, head)
+        self.head = TextRecognitionHead(out_size, **head)
         self.backbone_type = backbone_type
         if self.backbone_type == 'resnet':
             self.backbone = ResNetLikeBackbone(backbone)
