@@ -84,7 +84,7 @@ class TextRecognitionHead(nn.Module):
 
     def forward(self, features, formulas=None):
         """args:
-        imgs: [B, C, H, W]
+        features: [B, C, H, W]
         formulas: [B, MAX_LEN]
 
         return:
