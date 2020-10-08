@@ -1,3 +1,7 @@
+ARG PYTORCH="1.5"
+ARG CUDA="10.1"
+ARG CUDNN="7"
+
 ############################
 # STEP 1 build executable binary
 ############################
@@ -21,53 +25,106 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o /go/bin/w
 ############################
 # STEP 2 build PyTorch
 ############################
-FROM nvidia/cuda:10.2-devel-ubuntu18.04
-RUN apt update && apt install -y \
-  apt-utils \
-  build-essential \
-  curl \
-  git \
-  libgdbm-dev \
-  libglib2.0-0 \
-  libffi-dev \
-  libncurses5-dev \
-  libnss3-dev \
-  libreadline-dev \
-  libxext6 \
-  libxrender-dev \
-  libsm6 \
-  libssl-dev \
-  python3 \
-  python3-pip \
-  unzip \
-  wget \
-  zlib1g-dev \
-  && apt-get clean \
-  && rm -rf /var/lib/apt/lists/*
+#
+#
+#FROM nvidia/cuda:10.2-devel-ubuntu18.04
+#RUN apt update && apt install -y \
+#  apt-utils \
+#  build-essential \
+#  curl \
+#  git \
+#  libgdbm-dev \
+#  libglib2.0-0 \
+#  libffi-dev \
+#  libncurses5-dev \
+#  libnss3-dev \
+#  libreadline-dev \
+#  libxext6 \
+#  libxrender-dev \
+#  libsm6 \
+#  libssl-dev \
+#  python3 \
+#  python3-pip \
+#  unzip \
+#  wget \
+#  zlib1g-dev \
+#  && apt-get clean \
+#  && rm -rf /var/lib/apt/lists/*
+#
+#RUN ln -sfn /usr/bin/python3 /usr/bin/python
+#RUN curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
+#    python3 get-pip.py && \
+#    rm get-pip.py
 
-RUN ln -sfn /usr/bin/python3 /usr/bin/python
-RUN curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
-    python3 get-pip.py && \
-    rm get-pip.py
+
+
+
+FROM pytorch/pytorch:${PYTORCH}-cuda${CUDA}-cudnn${CUDNN}-devel
+
+ENV TORCH_CUDA_ARCH_LIST="6.0 6.1 7.0+PTX"
+ENV TORCH_NVCC_FLAGS="-Xfatbin -compress-all"
+ENV CMAKE_PREFIX_PATH="$(dirname $(which conda))/../"
+
+RUN apt-get update && apt-get install -y git ninja-build libglib2.0-0 libsm6 libxrender-dev libxext6 \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+#RUN ln -sfn /usr/bin/python3 /usr/bin/python
+#RUN curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
+#    python3 get-pip.py && \
+#    rm get-pip.py
+# Install mmdetection
+#RUN conda install cython -y && conda clean --all
+#ARG MMDET_BRANCH=ote
+#RUN git clone --recursive --branch $MMDET_BRANCH https://github.com/opencv/mmdetection.git /mmdetection
+#WORKDIR /mmdetection
+#ENV FORCE_CUDA="1"
+#RUN pip install --ignore-installed --no-cache-dir -e .['all']
+
+# Install OpenVINO
+RUN apt update && \
+    apt install -y \
+        libgtk-3-dev \
+        cpio \
+        unzip \
+        wget \
+        curl && \
+     rm -rf /var/lib/apt/lists/*
+
 
 ENV FORCE_CUDA="1"
+
+ARG OPENVINO_LINK=http://registrationcenter-download.intel.com/akdlm/irc_nas/16803/l_openvino_toolkit_p_2020.4.287.tgz
+RUN mkdir -p /tmp/openvino_installer && cd /tmp/openvino_installer && \
+    wget --no-verbose $OPENVINO_LINK && \
+    tar xf l_openvino_toolkit*.tgz && \
+    rm l_openvino_toolkit*.tgz && \
+    cd l_openvino_toolkit* && \
+    bash ./install.sh -s silent.cfg --accept_eula && \
+    cd /opt/intel/openvino/install_dependencies/ && \
+    dpkg -i intel-*.deb && \
+    ldconfig && \
+    rm -rf /tmp/openvino_installer && \
+    pip install -r /opt/intel/openvino/deployment_tools/model_optimizer/requirements_onnx.txt && \
+    echo "source /opt/intel/openvino/bin/setupvars.sh" >> /etc/profile
+
 
 # Install packages for mmdetection
 COPY ./pytorch_toolkit/object_detection/requirements.txt /tmp/ote/pytorch_toolkit/object_detection/requirements.txt
 COPY ./external/mmdetection/requirements.txt /tmp/ote/external/mmdetection/requirements.txt
 COPY ./external/mmdetection/requirements /tmp/ote/external/mmdetection/requirements
 WORKDIR /tmp/ote/pytorch_toolkit/object_detection
-RUN cat requirements.txt | xargs -n 1 -L 1 pip3 install
-RUN pip3 install git+https://github.com/open-mmlab/cocoapi.git#subdirectory=pycocotools
-
-# gcc for cgo
-RUN apt-get update && apt-get install -y --no-install-recommends \
-		g++ \
-		gcc \
-		libc6-dev \
-		make \
-		pkg-config \
-	&& rm -rf /var/lib/apt/lists/*
+RUN cat requirements.txt | xargs -n 1 -L 1 pip install
+RUN pip install git+https://github.com/open-mmlab/cocoapi.git#subdirectory=pycocotools
+#
+## gcc for cgo
+#RUN apt-get update && apt-get install -y --no-install-recommends \
+#		g++ \
+#		gcc \
+#		libc6-dev \
+#		make \
+#		pkg-config \
+#	&& rm -rf /var/lib/apt/lists/*
 
 
 #FROM scratch

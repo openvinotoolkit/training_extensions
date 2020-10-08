@@ -67,21 +67,7 @@ func (s *basicDatabaseService) ModelFind(ctx context.Context, req ModelFindReque
 	return t.ModelFindResponse{BaseList: t.BaseList{Total: total}, Items: items}
 }
 
-type ModelInsertOneRequestData struct {
-	ConfigPath        string                `bson:"configPath" json:"configPath"`
-	ProblemId         primitive.ObjectID    `bson:"problemId" json:"problemId"`
-	Dir               string                `bson:"dir" json:"dir"`
-	Metrics           map[string][]t.Metric `bson:"metrics" json:"metrics,omitempty"`
-	Name              string                `bson:"name" json:"name"`
-	ParentModelId     primitive.ObjectID    `bson:"parentModelId" json:"parentModelId"`
-	Scripts           t.Scripts             `bson:"scripts" json:"scripts"`
-	SnapshotPath      string                `bson:"snapshotPath" json:"snapshotPath"`
-	Status            string                `bson:"status" json:"status"`
-	TemplatePath      string                `bson:"templatePath" json:"templatePath"`
-	TensorBoardLogDir string                `bson:"tensorBoardLogDir" json:"tensorBoardLogDir"`
-	TrainingGpuNum    int                   `bson:"trainingGpuNum" json:"trainingGpuNum"`
-	TrainingWorkDir   string                `bson:"trainingWorkDir" json:"trainingWorkDir"`
-}
+type ModelInsertOneRequestData = t.ModelWithoutId
 
 func (s *basicDatabaseService) ModelInsertOne(ctx context.Context, req ModelInsertOneRequestData) (result t.Model, err error) {
 	modelCollection := s.db.Collection(n.CModel)
@@ -119,20 +105,7 @@ func (s *basicDatabaseService) ModelUpdateOne(ctx context.Context, req ModelUpda
 
 }
 
-type ModelUpdateUpsertRequestData struct {
-	ConfigPath     string                `bson:"configPath" json:"configPath"`
-	ProblemId      primitive.ObjectID    `bson:"problemId" json:"problemId"`
-	Description    string                `bson:"description" json:"description" yaml:"description"`
-	Dir            string                `bson:"dir" json:"dir"`
-	Framework      string                `bson:"framework" json:"framework" yaml:"framework"`
-	Metrics        map[string][]t.Metric `bson:"metrics,omitempty" json:"metrics,omitempty" yaml:"metrics,omitempty"`
-	Name           string                `bson:"name" json:"name" yaml:"name"`
-	Scripts        t.Scripts             `bson:"scripts" json:"scripts"`
-	SnapshotPath   string                `bson:"snapshotPath" json:"snapshotPath"`
-	Status         string                `bson:"status" json:"status"`
-	TemplatePath   string                `bson:"templatePath" json:"templatePath"`
-	TrainingGpuNum int                   `bson:"trainingGpuNum" json:"trainingGpuNum"`
-}
+type ModelUpdateUpsertRequestData = t.ModelWithoutId
 
 func (s *basicDatabaseService) ModelUpdateUpsert(ctx context.Context, req ModelUpdateUpsertRequestData) (result t.Model) {
 	modelCollection := s.db.Collection(n.CModel)

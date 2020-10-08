@@ -13,7 +13,6 @@ import (
 	"strings"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"gopkg.in/yaml.v2"
 
 	assetFindOne "server/db/pkg/handler/asset/find_one"
 	buildFindOne "server/db/pkg/handler/build/find_one"
@@ -48,45 +47,71 @@ func (s *basicModelService) FineTune(ctx context.Context, req FineTuneRequestDat
 	go func() {
 		defer close(returnChan)
 		parentModel, build, problem := s.getParentModelBuildProblem(req.ParentModelId, req.BuildId, req.ProblemId)
-		trainingWorkDir, _ := createTrainingWorkDir(problem.WorkingDir, req.Name)
-		gpuNum := s.getOptimalGpuNumber(req.GpuNum, parentModel.TrainingGpuNum)
-		newModel, err := s.createNewModel(ctx, req.Name, problem, parentModel.Id, trainingWorkDir, gpuNum)
+		newModel, err := s.train(ctx, parentModel, build, problem, req.GpuNum, req.BatchSize, req.Epochs, req.Name)
 		if err != nil {
 			returnChan <- kitendpoint.Response{Data: nil, Err: err, IsLast: true}
 			return
 		}
-		commands, newModelOutput := s.prepareFineTuneCommands(newModel.Scripts.Train, req.BatchSize, gpuNum, req.Epochs, newModel, parentModel, build, problem, req.SaveAnnotatedValImages)
-		// TODO: run eval script
-		outputLog := fmt.Sprintf("%s/output.log", newModel.Dir)
-		env := getFineTuneEnv()
-		s.runCommand(commands, env, newModel.TrainingWorkDir, outputLog)
 		copySnapshotLatestToModelPath(newModel.TrainingWorkDir, newModel.SnapshotPath)
-		copyConfigToModelPath(newModel.TrainingWorkDir, newModel.ConfigPath)
-		newModel = s.saveModelMetrics(newModelOutput, build.Id, newModel)
+		newModel = copyTemplateYamlToNewModel(parentModel, newModel)
+		copyConfigModelPy(newModel)
+		newModel = s.eval(newModel, build, problem)
+		newModel = s.fineTuneFinish(newModel)
 
 		returnChan <- kitendpoint.Response{Data: newModel, Err: nil, IsLast: true}
 	}()
 	return returnChan
 }
 
-func getFineTuneEnv() []string {
-	return []string{}
+func copyConfigModelPy(model t.Model) {
+	if err := copyFiles(fp.Join(model.TrainingWorkDir, "model.py"), model.ConfigPath); err != nil {
+		log.Println("fine_tune.copyConfigModelPy.copyFiles(fp.Join(model.TrainingWorkDir, \"model.py\"), model.ConfigPath)", err)
+	}
 }
 
-func (s *basicModelService) saveModelMetrics(output string, buildId primitive.ObjectID, model t.Model) t.Model {
-	newModelYamlFile, err := ioutil.ReadFile(output)
+func copyTemplateYamlToNewModel(parentModel, newModel t.Model) t.Model {
+	newModel.TemplatePath = fp.Join(newModel.Dir, "template.yaml")
+	if err := copyFiles(parentModel.TemplatePath, newModel.TemplatePath); err != nil {
+		log.Println("fine_tune.copyTemplateYamlToNewModel.copyFiles(parentModel.TemplatePath, newModel.TemplatePath)", err)
+	}
+	return newModel
+}
+
+func (s *basicModelService) train(ctx context.Context, parentModel t.Model, build t.Build, problem t.Problem, userGpuNum, batchSize, epochs int, newModelName string) (t.Model, error) {
+	trainingWorkDir, _ := createTrainingWorkDir(problem.WorkingDir, newModelName)
+	gpuNum := s.getOptimalGpuNumber(userGpuNum, parentModel.TrainingGpuNum)
+	newModel, err := s.createNewModel(ctx, newModelName, problem, parentModel, trainingWorkDir, gpuNum, epochs)
 	if err != nil {
-		log.Println("ReadFile", err)
+		return newModel, err
 	}
-	var metrics struct {
-		Metrics []t.Metric `yaml:"metrics"`
+	commands := s.prepareFineTuneCommands(batchSize, gpuNum, newModel, parentModel, build, problem)
+	outputLog := fmt.Sprintf("%s/output.log", newModel.Dir)
+	env := getFineTuneEnv(parentModel)
+	s.runCommand(commands, env, newModel.TrainingWorkDir, outputLog)
+	return newModel, nil
+}
+
+func getFineTuneEnv(model t.Model) []string {
+	return []string{
+		fmt.Sprintf("MODEL_TEMPLATE_FILENAME=%s", model.TemplatePath),
+		"MMDETECTION_DIR=/ote/external/mmdetection",
 	}
-	err = yaml.Unmarshal(newModelYamlFile, &metrics)
-	if err != nil {
-		log.Println("Unmarshal", err)
-	}
-	model.Metrics = make(map[string][]t.Metric)
-	model.Metrics[buildId.Hex()] = metrics.Metrics
+}
+
+func (s *basicModelService) fineTuneFinish(model t.Model) t.Model {
+	// newModelYamlFile, err := ioutil.ReadFile(output)
+	// if err != nil {
+	// 	log.Println("ReadFile", err)
+	// }
+	// var metrics struct {
+	// 	Metrics []t.Metric `yaml:"metrics"`
+	// }
+	// err = yaml.Unmarshal(newModelYamlFile, &metrics)
+	// if err != nil {
+	// 	log.Println("Unmarshal", err)
+	// }
+	// model.Metrics = make(map[string][]t.Metric)
+	// model.Metrics[buildId.Hex()] = metrics.Metrics
 	model.Status = modelStatus.Finished
 
 	modelUpdateOneRes := <-modelUpdateOne.Send(
@@ -97,72 +122,34 @@ func (s *basicModelService) saveModelMetrics(output string, buildId primitive.Ob
 	return modelUpdateOneRes.Data.(modelUpdateOne.ResponseData)
 }
 
-func (s *basicModelService) prepareFineTuneCommands(script string, batchSize, gpuNum, epochs int, model, parentModel t.Model, build t.Build, problem t.Problem, saveAnnotatedValImages bool) ([]string, string) {
-	configPyFile, err := os.Open(parentModel.ConfigPath)
-	if err != nil {
-		fmt.Println("fine_tune.prepareFineTuneCommands.os.Open(parentModel.ConfigPath)", err)
-	}
-	defer configPyFile.Close()
-	byteValue, err := ioutil.ReadAll(configPyFile)
-	if err != nil {
-		log.Println("fine_tune.prepareFineTuneCommands.ioutil.ReadAll(configPyFile)", err)
-	}
-	defaultTotalEpochs := getVarValInt(byteValue, "total_epochs")
+func (s *basicModelService) prepareFineTuneCommands(batchSize, gpuNum int, model, parentModel t.Model, build t.Build, problem t.Problem) []string {
 	trainImgPrefixes, trainAnnFiles := s.getImgPrefixAndAnnotation("train", build, problem)
 	valImgPrefixes, valAnnFiles := s.getImgPrefixAndAnnotation("val", build, problem)
-	testImgPrefixes, testAnnFiles := s.getImgPrefixAndAnnotation("test", build, problem)
-	classes, numClasses := getClasses(problem.Labels)
-	updateConfigArr := []string{
-		fmt.Sprintf("total_epochs=%d", defaultTotalEpochs+epochs),
-		fmt.Sprintf("resume_from=%s", parentModel.SnapshotPath),
-		fmt.Sprintf("work_dir=%s", model.TrainingWorkDir),
-		fmt.Sprintf("data.train.dataset.ann_file=%s", strings.Join(trainAnnFiles, ",")),
-		fmt.Sprintf("data.train.dataset.img_prefix=%s", strings.Join(trainImgPrefixes, ",")),
-		fmt.Sprintf("data.train.dataset.classes=(%s,)", classes),
-		fmt.Sprintf("data.val.ann_file=%s", strings.Join(valAnnFiles, ",")),
-		fmt.Sprintf("data.val.img_prefix=%s", strings.Join(valImgPrefixes, ",")),
-		fmt.Sprintf("data.val.classes=(%s,)", classes),
-		fmt.Sprintf("data.test.ann_file=%s", strings.Join(testAnnFiles, ",")),
-		fmt.Sprintf("data.test.img_prefix=%s", strings.Join(testImgPrefixes, ",")),
-		fmt.Sprintf("data.test.classes=(%s,)", classes),
-		fmt.Sprintf("model.bbox_head.num_classes=%d", numClasses),
-
+	paramsArr := []string{
 		fmt.Sprintf("--resume-from %s", parentModel.SnapshotPath),
 		fmt.Sprintf("--train-ann-files %s", strings.Join(trainAnnFiles, ",")),
 		fmt.Sprintf("--train-data-roots %s", strings.Join(trainImgPrefixes, ",")),
 		fmt.Sprintf("--val-ann-files %s", strings.Join(valAnnFiles, ",")),
 		fmt.Sprintf("--val-data-roots %s", strings.Join(valImgPrefixes, ",")),
 		fmt.Sprintf("--save-checkpoints-to %s", model.TrainingWorkDir),
-		fmt.Sprintf("--epochs %s", defaultTotalEpochs+epochs),
+		fmt.Sprintf("--epochs %d", model.Epochs),
+		fmt.Sprintf("--gpu-num %d", gpuNum),
 	}
 
 	if batchSize > 0 {
-		updateConfigArr = append(updateConfigArr, fmt.Sprintf("data.samples_per_gpu=%d", batchSize))
-	} else {
-		updateConfigArr = append(updateConfigArr, fmt.Sprintf("data.samples_per_gpu=auto"))
+		paramsArr = append(paramsArr, fmt.Sprintf("--batch-size %d", batchSize))
 	}
+	// else {
+	// 	paramsArr = append(paramsArr, fmt.Sprintf("--batch-size auto"))
+	// }
 
-	updateConfigStr := strings.Join(updateConfigArr, " ")
-	output := fp.Join(model.Dir, "model.yml")
-	err = os.Chmod(script, 0777)
-	if err != nil {
-		log.Println("Chmod", err)
-	}
-	fineTuneCommand := fmt.Sprintf(`python3 %s %s %d %s --update_config="%s"`, script, parentModel.ConfigPath, gpuNum, output, updateConfigStr)
-	if saveAnnotatedValImages {
-		annotatedValImagesDir := fp.Join(model.Dir, "valImages")
-		fineTuneCommand = strings.Join([]string{
-			fineTuneCommand,
-			fmt.Sprintf("--show-dir=%s", annotatedValImagesDir),
-		}, " ")
-	}
+	paramsStr := strings.Join(paramsArr, " ")
 	commands := []string{
-		fineTuneCommand,
+		fmt.Sprintf(`pip install -e %s`, fp.Join(problem.Dir, "_tools", "ote")),
+		fmt.Sprintf(`pip install -e %s`, fp.Join(problem.Dir, "_tools", "oteod")),
+		fmt.Sprintf(`python %s %s`, parentModel.Scripts.Train, paramsStr),
 	}
-	for _, c := range commands {
-		log.Println(c)
-	}
-	return commands, output
+	return commands
 }
 
 func (s *basicModelService) getOptimalGpuNumber(gpuNum, parentGpuNum int) int {
@@ -203,9 +190,9 @@ func (s *basicModelService) createNewModel(
 	ctx context.Context,
 	name string,
 	problem t.Problem,
-	parentModelId primitive.ObjectID,
+	parentModel t.Model,
 	trainingWorkDir string,
-	gpuNum int,
+	gpuNum, epochs int,
 ) (t.Model, error) {
 	dir := fp.Join(problem.Dir, name)
 	if err := os.MkdirAll(dir, 0777); err != nil {
@@ -218,12 +205,17 @@ func (s *basicModelService) createNewModel(
 		ctx,
 		s.Conn,
 		modelInsertOne.RequestData{
-			ConfigPath:        configPath,
-			Dir:               dir,
-			Name:              name,
-			ParentModelId:     parentModelId,
-			ProblemId:         problem.Id,
-			SnapshotPath:      snapshotPath,
+			ConfigPath:    configPath,
+			Dir:           dir,
+			Epochs:        parentModel.Epochs + epochs,
+			Name:          name,
+			ParentModelId: parentModel.Id,
+			ProblemId:     problem.Id,
+			SnapshotPath:  snapshotPath,
+			Scripts: t.Scripts{
+				Train: fp.Join(fp.Dir(dir), "_tools", "train.py"),
+				Eval:  fp.Join(fp.Dir(dir), "_tools", "eval.py"),
+			},
 			Status:            modelStatus.InProgress,
 			TensorBoardLogDir: tensorBoardLogDir,
 			TrainingGpuNum:    gpuNum,

@@ -56,10 +56,10 @@ func copyConfigPath(genericModelConfigPath string, model *t.Model) {
 	model.ConfigPath = modelConfigPath
 }
 
-func (s *basicModelService) createModelFromGeneric(genericModel t.Model, problemId primitive.ObjectID, dirPath, snapshotPath string) t.Model {
+func (s *basicModelService) createModelFromGeneric(genericModel t.Model, problemId primitive.ObjectID, dir, snapshotPath string) t.Model {
 	modelInsertOneResp := <-modelInsertOne.Send(context.TODO(), s.Conn, modelInsertOne.RequestData{
 		ConfigPath:        genericModel.ConfigPath,
-		DirPath:           dirPath,
+		Dir:               dir,
 		ProblemId:         problemId,
 		Metrics:           make(map[string][]t.Metric),
 		Name:              genericModel.Name,
@@ -106,7 +106,7 @@ func (s *basicModelService) prepareInitialEvaluateCommands(script, evalYml strin
 	}
 	configUpdatedFields := strings.Join(configArr, " ")
 	commands := []string{
-		fmt.Sprintf(`python3 %s %s %s %s --update_config %q`, script, model.ConfigPath, model.SnapshotPath, evalYml, configUpdatedFields),
+		fmt.Sprintf(`python %s %s %s %s --update_config %q`, script, model.ConfigPath, model.SnapshotPath, evalYml, configUpdatedFields),
 	}
 	return commands
 }

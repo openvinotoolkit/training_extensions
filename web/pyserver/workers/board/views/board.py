@@ -15,7 +15,7 @@ class Tensorboard(web.View, aiohttp_cors.CorsViewMixin):
         cmd_stop = 'pkill -f tensorboard'
         _, _ = await run(cmd_stop)
         print(cmd_stop)
-        cmd_start = f'tensorboard --logdir /training/{folder}/tf_logs --port 6006 --host idlp_tensorboard_worker'
+        cmd_start = f'tensorboard --logdir {folder}/tf_logs --port 6006 --host idlp_tensorboard_worker'
         o, e = await run(cmd_start, forget=True)
         print(cmd_start)
         print("end")

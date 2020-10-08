@@ -27,14 +27,25 @@ import (
 	uFiles "server/kit/utils/basic/files"
 )
 
+type Basic struct {
+	BatchSize        int     `yaml:"batch_size"`
+	BaseLearningrate float64 `yaml:"base_learning_rate"`
+	Epochs           int     `yaml:"epochs"`
+}
+
+type HyperParameters struct {
+	Basic Basic `yaml:"basic"`
+}
+
 type ModelYml struct {
-	Class        string         `yaml:"domain"`
-	Name         string         `yaml:"name"`
-	Problem      string         `yaml:"problem"`
-	Dependencies []t.Dependency `yaml:"dependencies"`
-	Metrics      []t.Metric     `yaml:"metrics"`
-	GpuNum       int            `yaml:"gpu_num"`
-	Config       string         `yaml:"config"`
+	Class           string          `yaml:"domain"`
+	Name            string          `yaml:"name"`
+	Problem         string          `yaml:"problem"`
+	Dependencies    []t.Dependency  `yaml:"dependencies"`
+	Metrics         []t.Metric      `yaml:"metrics"`
+	GpuNum          int             `yaml:"gpu_num"`
+	Config          string          `yaml:"config"`
+	HyperParameters HyperParameters `yaml:"hyper_parameters"`
 }
 
 type UpdateFromLocalRequestData struct {
@@ -158,10 +169,12 @@ func (s *basicModelService) prepareModel(modelYml ModelYml, buildId primitive.Ob
 	metrics := make(map[string][]t.Metric)
 	metrics[buildId.Hex()] = modelYml.Metrics
 	model := t.Model{
+		BatchSize:   modelYml.HyperParameters.Basic.BatchSize,
 		ConfigPath:  fp.Join(dir, modelYml.Config),
 		ProblemId:   problem.Id,
 		Description: "",
 		Dir:         dir,
+		Epochs:      modelYml.HyperParameters.Basic.Epochs,
 		Metrics:     metrics,
 		Name:        modelYml.Name,
 		Scripts: t.Scripts{
@@ -175,6 +188,7 @@ func (s *basicModelService) prepareModel(modelYml ModelYml, buildId primitive.Ob
 		TrainingGpuNum:    modelYml.GpuNum,
 		TrainingWorkDir:   "",
 	}
+	log.Println("Epochs:", modelYml.HyperParameters.Basic.Epochs, model.Epochs)
 	return model
 }
 
@@ -184,6 +198,7 @@ func getModelYaml(path string) (modelYml ModelYml) {
 		log.Println("ReadFile", err)
 	}
 	err = yaml.Unmarshal(yamlFile, &modelYml)
+
 	if err != nil {
 		log.Println("Unmarshal", err)
 	}
@@ -292,6 +307,7 @@ func downloadModelFile(url, dst string) error {
 }
 
 func (s *basicModelService) updateCreateModel(model t.Model) t.Model {
+	log.Println("updateCreateModel.Epochs", model.Epochs)
 	modelResp := <-modelUpdateUpsert.Send(
 		context.TODO(),
 		s.Conn,
@@ -300,6 +316,7 @@ func (s *basicModelService) updateCreateModel(model t.Model) t.Model {
 			ProblemId:      model.ProblemId,
 			Description:    model.Description,
 			Dir:            model.Dir,
+			Epochs:         model.Epochs,
 			Framework:      model.Framework,
 			Metrics:        model.Metrics,
 			Name:           model.Name,

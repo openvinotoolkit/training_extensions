@@ -32,20 +32,25 @@ func (s *basicModelService) Evaluate(ctx context.Context, req EvaluateRequest) c
 	go func() {
 		defer close(returnChan)
 		model, build, problem := s.getModelBuildProblem(req.ModelId, req.BuildId, req.ProblemId)
-		evalFolderPath := createEvalDir(model.Dir, build.Folder)
-		metricsYml := createFile(fp.Join(evalFolderPath, "metrics.yaml"))
-		outputImagesPath := fp.Join(evalFolderPath, "output_images")
-		if err := os.MkdirAll(outputImagesPath, 0777); err != nil {
-			log.Println("evaluate.createFolder.os.MkdirAll(path, 0777)", err)
-		}
-		commands := s.prepareEvaluateCommands(metricsYml, outputImagesPath, model, build, problem)
-		outputLog := createFile(fp.Join(evalFolderPath, "output.log"))
-		env := getEvaluateEnv(model)
-		s.runCommand(commands, env, fp.Join(problem.Dir, "_tools"), outputLog)
-		model = s.saveModelEvalMetrics(metricsYml, build.Id, model)
+		model = s.eval(model, build, problem)
 		returnChan <- kitendpoint.Response{Data: model, Err: nil, IsLast: true}
 	}()
 	return returnChan
+}
+
+func (s *basicModelService) eval(model t.Model, build t.Build, problem t.Problem) t.Model {
+	evalFolderPath := createEvalDir(model.Dir, build.Folder)
+	metricsYml := fp.Join(evalFolderPath, "metrics.yaml")
+	outputImagesPath := fp.Join(evalFolderPath, "output_images")
+	if err := os.MkdirAll(outputImagesPath, 0777); err != nil {
+		log.Println("evaluate.createFolder.os.MkdirAll(path, 0777)", err)
+	}
+	commands := s.prepareEvaluateCommands(metricsYml, outputImagesPath, model, build, problem)
+	outputLog := createFile(fp.Join(evalFolderPath, "output.log"))
+	env := getEvaluateEnv(model)
+	s.runCommand(commands, env, fp.Join(problem.Dir, "_tools"), outputLog)
+	model = s.saveModelEvalMetrics(metricsYml, build.Id, model)
+	return model
 }
 
 func getEvaluateEnv(model t.Model) []string {
@@ -117,9 +122,9 @@ func (s *basicModelService) prepareEvaluateCommands(evalYml, outputImagesPath st
 	}
 	paramsStr := strings.Join(paramsArr, " ")
 	commands := []string{
-		fmt.Sprintf(`pip3 install -e %s`, fp.Join(problem.Dir, "_tools", "ote")),
-		fmt.Sprintf(`pip3 install -e %s`, fp.Join(problem.Dir, "_tools", "oteod")),
-		fmt.Sprintf(`python3 %s %s`, model.Scripts.Eval, paramsStr),
+		fmt.Sprintf(`pip install -e %s`, fp.Join(problem.Dir, "_tools", "ote")),
+		fmt.Sprintf(`pip install -e %s`, fp.Join(problem.Dir, "_tools", "oteod")),
+		fmt.Sprintf(`python %s %s`, model.Scripts.Eval, paramsStr),
 	}
 	return commands
 }
@@ -136,6 +141,9 @@ func (s *basicModelService) saveModelEvalMetrics(evalYml string, buildId primiti
 	err = yaml.Unmarshal(newModelYamlFile, &metrics)
 	if err != nil {
 		log.Println("Unmarshal", err)
+	}
+	if model.Metrics == nil {
+		model.Metrics = make(map[string][]t.Metric)
 	}
 	model.Metrics[buildId.Hex()] = metrics.Metrics
 	modelUpdateOneResp := <-modelUpdateOne.Send(context.TODO(), s.Conn, model)
