@@ -24,8 +24,7 @@ from tqdm import tqdm
 import torch
 from im2latex.data.utils import collate_fn, create_list_of_transforms, get_timestamp
 from im2latex.data.vocab import read_vocab
-from im2latex.datasets.im2latex_dataset import (BatchRandomSampler,
-                                                Im2LatexDataset)
+from im2latex.datasets.im2latex_dataset import Im2LatexDataset
 from im2latex.models.im2latex_model import Im2latexModel
 from torch.utils.data import DataLoader
 from tools.evaluation_tools import Im2latexRenderBasedMetric
@@ -54,11 +53,9 @@ class Evaluator:
     def load_dataset(self):
 
         val_dataset = Im2LatexDataset(self.val_path, self.split)
-        val_sampler = BatchRandomSampler(dataset=val_dataset, batch_size=1)
         batch_transform_val = create_list_of_transforms(self.val_transforms_list)
         self.val_loader = DataLoader(
             val_dataset,
-            batch_sampler=val_sampler,
             collate_fn=partial(collate_fn, self.vocab.sign2id,
                                batch_transform=batch_transform_val),
             num_workers=os.cpu_count())
@@ -70,26 +67,16 @@ class Evaluator:
         predictions = []
         metric = Im2latexRenderBasedMetric()
         formula_acc = 0
-        with open("debug_metric.txt", 'w') as output_file:
-
-            with torch.no_grad():
-                for img_name, imgs, training_gt, loss_computation_gt in tqdm(self.val_loader, initial=1):
-                    imgs = imgs.to(self.device)
-                    training_gt = training_gt.to(self.device)
-                    loss_computation_gt = loss_computation_gt.to(self.device)
-                    _, pred = self.model(imgs)
-                    gold_phrase_str = self.vocab.construct_phrase(loss_computation_gt[0])
-                    pred_phrase_str = self.vocab.construct_phrase(pred[0], max_len=1 + len(gold_phrase_str.split()))
-
-                    annotations.append((gold_phrase_str, img_name[0]))
-                    predictions.append((pred_phrase_str, img_name[0]))
-                    output_file.write(img_name[0] + '\t' +
-                                      gold_phrase_str + '\t' +
-                                      pred_phrase_str + '\t' + '10' + '\t' + '10' + '\n')
-                    if pred_phrase_str == gold_phrase_str:
-                        formula_acc += 1
-        avg_formula_acc = formula_acc / len(self.val_loader)
-        print("Average formula acc", avg_formula_acc)
+        with torch.no_grad():
+            for img_name, imgs, training_gt, loss_computation_gt in tqdm(self.val_loader):
+                imgs = imgs.to(self.device)
+                training_gt = training_gt.to(self.device)
+                loss_computation_gt = loss_computation_gt.to(self.device)
+                _, pred = self.model(imgs)
+                gold_phrase_str = self.vocab.construct_phrase(loss_computation_gt[0])
+                pred_phrase_str = self.vocab.construct_phrase(pred[0], max_len=1 + len(gold_phrase_str.split()))
+                annotations.append((gold_phrase_str, img_name[0]))
+                predictions.append((pred_phrase_str, img_name[0]))
         res = metric.evaluate(annotations, predictions)
         return res
 
