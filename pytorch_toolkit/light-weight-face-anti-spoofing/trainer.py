@@ -159,7 +159,7 @@ class Trainer:
 
     def eval(self, epoch: int, epoch_accuracy: float, save_chkpt: bool=True):
         # evaluate on last 10 epoch and remember best accuracy, AUC, EER, ACER and then save checkpoint
-        if (epoch%10 == 0 or epoch >= (self.config.max_epoch - 10)) and (epoch_accuracy > self.current_accuracy):
+        if (epoch%10 == 0 or epoch >= (self.config.epochs.max_epoch - 10)) and (epoch_accuracy > self.current_accuracy):
             print('__VAL__:')
             AUC, EER, apcer, bpcer, acer = evaluate(self.model, self.val_loader,
                                                     self.config, self.device, compute_accuracy=False)
@@ -303,7 +303,7 @@ class Trainer:
 
     @staticmethod
     def print_result(AUC, EER, accur, apcer, bpcer, acer):
-        results = (f'accuracy on test data = {round(np.mean(accur),3)}\n'
+        results = (f'accuracy on test data = {round(np.mean(accur)*100,3)}\n'
                    + f'AUC = {round(AUC,3)}\n'
                    + f'EER = {round(EER*100,2)}\n'
                    + f'apcer = {round(apcer*100,2)}\n'
