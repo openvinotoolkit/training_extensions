@@ -63,11 +63,11 @@ class TextRecognitionHead(nn.Module):
         self.rnn_encoder = nn.LSTM(self.encoder_input_size, self.encoder_hidden_size,
                                    bidirectional=True,
                                    batch_first=True)
-        self.rnn_decoder = nn.LSTMCell(self.encoder_hidden_size+self.emb_size, self.decoder_hidden_size)
+        self.rnn_decoder = nn.LSTMCell(self.encoder_hidden_size + self.emb_size, self.decoder_hidden_size)
         self.embedding = nn.Embedding(out_size, self.emb_size)
 
         # encoder_hidden_size*2 is the dimension of context
-        self.W_c = nn.Linear(self.decoder_hidden_size+2*self.encoder_hidden_size, self.encoder_hidden_size)
+        self.W_c = nn.Linear(self.decoder_hidden_size + 2 * self.encoder_hidden_size, self.encoder_hidden_size)
         self.W_out = nn.Linear(self.encoder_hidden_size, out_size)
 
         # a trainable initial hidden state V_h_0 for each row
@@ -178,9 +178,9 @@ class TextRecognitionHead(nn.Module):
         return logits, targets
 
     def encode(self, encoded_imgs):
-        encoded_imgs = encoded_imgs.permute(0, 2, 3, 1)  # [B, H', W', LSTM_INP_CHANNELS]
+        encoded_imgs = encoded_imgs.permute(0, 2, 3, 1)  # [B, H, W, LSTM_INP_CHANNELS]
         # Prepare data for Row Encoder
-        # poccess data like a new big batch
+        # process data like a new big batch
         B, H, W, out_channels = encoded_imgs.size()
 
         encoded_imgs = encoded_imgs.contiguous().view(B*H, W, out_channels)
