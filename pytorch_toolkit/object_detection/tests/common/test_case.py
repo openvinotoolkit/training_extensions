@@ -15,73 +15,139 @@
 import json
 import os
 import unittest
+import tempfile
 
-from common.utils import download_if_not_yet, collect_ap
+import yaml
+
+from common.utils import download_if_not_yet, collect_ap, run_through_shell
 
 
-def export_test_case(problem_name, model_name, snapshot_name=None, alt_ssd_export=False):
+def get_dependencies(template_file):
+    output = {}
+    with open(template_file) as read_file:
+        content = yaml.load(read_file, yaml.SafeLoader)
+        for dependency in content['dependencies']:
+            output[dependency['destination'].split('.')[0]] = dependency['source']
+        return output
+
+
+def get_epochs(template_file):
+    with open(template_file) as read_file:
+        content = yaml.load(read_file, yaml.SafeLoader)
+    return content['hyper_parameters']['basic']['epochs']
+
+
+def create_test_case(problem_name, model_name, ann_file, img_root):
+    class TestCaseOteApi(unittest.TestCase):
+
+        @classmethod
+        def setUpClass(cls):
+            cls.template_file = f'model_templates/{problem_name}/{model_name}/template.yaml'
+            cls.ann_file = ann_file
+            cls.img_root = img_root
+            cls.work_dir = tempfile.mkdtemp()
+            cls.dependencies = get_dependencies(cls.template_file)
+            cls.epochs_delta = 2
+            cls.total_epochs = get_epochs(cls.template_file) + cls.epochs_delta
+
+            download_if_not_yet(cls.work_dir, cls.dependencies['snapshot'])
+
+        def test_evaluation(self):
+            run_through_shell(
+                f'cd {os.path.dirname(self.template_file)};'
+                f'python {self.dependencies["eval"]}'
+                f' --test-ann-files {self.ann_file}'
+                f' --test-data-roots {self.img_root}'
+                f' --save-metrics-to {os.path.join(self.work_dir, "metrics.yaml")}'
+                f' --load-weights {os.path.join(self.work_dir, os.path.basename(self.dependencies["snapshot"]))}')
+
+            with open(os.path.join(self.work_dir, "metrics.yaml")) as read_file:
+                content = yaml.load(read_file, yaml.SafeLoader)
+
+            ap = [metrics['value']
+                  for metrics in content['metrics'] if metrics['key'] == 'ap'][0]
+
+            with open(f'tests/expected_outputs/{problem_name}/{model_name}.json') as read_file:
+                content = json.load(read_file)
+
+            self.assertLess(abs(content['map'] - ap / 100), 1e-6)
+
+        def test_finetuning(self):
+            log_file = os.path.join(self.work_dir, 'test_finetuning.log')
+            run_through_shell(
+                f'cd {os.path.dirname(self.template_file)};'
+                f'python {self.dependencies["train"]}'
+                f' --train-ann-files {self.ann_file}'
+                f' --train-data-roots {self.img_root}'
+                f' --val-ann-files {self.ann_file}'
+                f' --val-data-roots {self.img_root}'
+                f' --resume-from {os.path.join(self.work_dir, os.path.basename(self.dependencies["snapshot"]))}'
+                f' --save-checkpoints-to {self.work_dir}'
+                f' --gpu-num 1'
+                f' --batch-size 1'
+                f' --epochs {self.total_epochs}'
+                f' | tee {log_file}')
+
+            ap = collect_ap(log_file)
+            self.assertEqual(len((ap)), self.epochs_delta)
+            self.assertGreater(ap[-1], 0)
+
+    return TestCaseOteApi
+
+
+def create_export_test_case(problem_name, model_name, ann_file, img_root, alt_ssd_export=False):
     class ExportTestCase(unittest.TestCase):
-        def setUp(self):
-            self.problem_name = problem_name
-            self.model_name = model_name
-            if snapshot_name is None:
-                self.snapshot_name = f'{self.model_name}.pth'
-            else:
-                self.snapshot_name = snapshot_name
 
-            self.data_folder = '../../data'
-            self.work_dir = os.path.join('/tmp/', self.model_name)
-            os.makedirs(self.work_dir, exist_ok=True)
-            self.configuration_file = f'./{self.problem_name}/{self.model_name}/config.py'
-            os.system(f'cp {self.configuration_file} {self.work_dir}/')
-            self.configuration_file = os.path.join(self.work_dir,
-                                                   os.path.basename(self.configuration_file))
-            self.ote_url = 'https://download.01.org/opencv/openvino_training_extensions'
-            self.url = f'{self.ote_url}/models/object_detection/v2/{self.snapshot_name}'
-            download_if_not_yet(self.work_dir, self.url)
+        @classmethod
+        def setUpClass(cls):
+            cls.template_file = f'model_templates/{problem_name}/{model_name}/template.yaml'
+            cls.work_dir = tempfile.mkdtemp()
+            cls.dependencies = get_dependencies(cls.template_file)
 
-            self.test_export_thr = 0.031
+            download_if_not_yet(cls.work_dir, cls.dependencies['snapshot'])
+
+            cls.test_export_thr = 0.031
+
+            run_through_shell(
+                f'cd {os.path.dirname(cls.template_file)};'
+                f'/opt/intel/openvino/bin/setupvars.sh;'
+                f'python {cls.dependencies["export"]}'
+                f' --load-weights {os.path.join(cls.work_dir, os.path.basename(cls.dependencies["snapshot"]))}'
+                f' --save-model-to {os.path.join(cls.work_dir, "export")}'
+            )
 
         def export_test(self, alt_ssd_export, thr):
             if alt_ssd_export:
-                export_command_end = '--alt_ssd_export'
-                export_dir = os.path.join(self.work_dir, "alt_ssd_export")
-                log_file = os.path.join(export_dir, 'test_alt_ssd_export.log')
+                export_dir = os.path.join(self.work_dir, "export", "alt_ssd_export")
             else:
                 export_dir = os.path.join(self.work_dir, "export")
-                log_file = os.path.join(export_dir, 'test_export.log')
-                export_command_end = ''
 
-            os.system(
+            run_through_shell(
+                f'cd {os.path.dirname(self.template_file)};'
                 f'/opt/intel/openvino/bin/setupvars.sh;'
-                f'python ../../external/mmdetection/tools/export.py '
-                f'{self.configuration_file} '
-                f'{os.path.join(self.work_dir, self.snapshot_name)} '
-                f'{export_dir} '
-                f'openvino {export_command_end};'
-                f'python ../../external/mmdetection/tools/test_exported.py '
-                f'{self.configuration_file} '
-                f'{os.path.join(export_dir, "config.xml")} '
-                f'--out res.pkl --eval bbox 2>&1 | tee {log_file}')
+                f'python {self.dependencies["eval"]}'
+                f' --test-ann-files {ann_file}'
+                f' --test-data-roots {img_root}'
+                f' --load-weights {os.path.join(export_dir, "model.bin")}'
+                f' --save-metrics-to {os.path.join(export_dir, "metrics.yaml")}'
+            )
 
-            ap = collect_ap(log_file)
+            with open(os.path.join(export_dir, "metrics.yaml")) as read_file:
+                content = yaml.load(read_file, yaml.SafeLoader)
+                ap = [metric for metric in content['metrics'] if metric['key'] == 'ap'][0]['value']
 
-            with open(f'tests/expected_outputs/{self.problem_name}/{self.model_name}.json') as read_file:
+            with open(f'tests/expected_outputs/{problem_name}/{model_name}.json') as read_file:
                 content = json.load(read_file)
 
-            self.assertGreater(ap[0], content['map'] - thr)
+            self.assertGreater(ap, content['map'] - thr)
 
         def test_export(self):
             self.export_test(False, self.test_export_thr)
 
     class ExportWithAltSsdTestCase(ExportTestCase):
 
-        def setUp(self):
-            super().setUp()
-            self.test_alt_ssd_export_thr = 0.031
-
         def test_alt_ssd_export(self):
-            self.export_test(True, self.test_alt_ssd_export_thr)
+            self.export_test(True, self.test_export_thr)
 
     if alt_ssd_export:
         return ExportWithAltSsdTestCase

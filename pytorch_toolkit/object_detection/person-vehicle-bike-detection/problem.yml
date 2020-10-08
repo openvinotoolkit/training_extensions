@@ -1,9 +1,0 @@
-description:  >-
-  Vehicle, person, bike detection is a computer technology being used in a variety of applications
-  that identifies vehicles, persons, bikes in digital images. Vehicle, person, bike detection can be regarded as
-  a specific case of object-class detection.
-favorite: false
-imagesUrls:
-  - https://raw.githubusercontent.com/opencv/open_model_zoo/develop/models/intel/person-vehicle-bike-detection-crossroad-1016/description/person-vehicle-bike-detection-crossroad-1016.png
-subtitle: Detecting vehicles, persons, bikes in digital images
-title: Vehicle, person, bike Detection

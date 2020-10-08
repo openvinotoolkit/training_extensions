@@ -1,0 +1,60 @@
+name: vehicle-detection-0200
+domain: Object Detection
+problem: Vehicle Detection
+framework: OTEDetection v2.1.0.1
+summary: Vehicle Detection based on MobileNetV2 (SSD).
+annotation_format: COCO
+dependencies:
+- sha256: d66bbe25f8d8811a88a2c405310ea4cda968f4f2f7991a5bddcfbe7d40293984
+  size: 14905214
+  source: https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/vehicle-detection-0200-1.pth
+  destination: snapshot.pth
+- source: ../tools/train.py
+  destination: train.py
+- source: ../tools/eval.py
+  destination: eval.py
+- source: ../../../tools/export.py
+  destination: export.py
+- source: ../../../tools/quantize.py
+  destination: quantize.py
+- source: ../../../../../pytorch_toolkit/ote
+  destination: packages/ote
+- source: ../../../../object_detection/oteod
+  destination: packages/oteod
+- source: ../../requirements.txt
+  destination: requirements.txt
+max_nodes: 1
+training_target:
+- CPU
+- GPU
+inference_target:
+- CPU
+- iGPU
+- VPU
+hyper_parameters:
+  basic:
+    batch_size: 185
+    base_learning_rate: 0.05
+    epochs: 20
+output_format:
+  onnx:
+    default: true
+  openvino:
+    default: true
+    input_format: BGR
+quantization: TBD
+metrics:
+- display_name: Size
+  key: size
+  unit: Mp
+  value: 1.83
+- display_name: Complexity
+  key: complexity
+  unit: GFLOPs
+  value: 0.82
+- display_name: AP @ [IoU=0.50:0.95]
+  key: ap
+  unit: '%'
+  value: 25.4
+gpu_num: 4
+config: model.py

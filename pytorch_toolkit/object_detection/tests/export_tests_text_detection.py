@@ -12,22 +12,15 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from common.test_case import export_test_case
-from common.utils import replace_text_in_file
+from common.test_case import create_export_test_case
 
 
-def text_detection_test_case(model_name):
-    class ExportTestCase(export_test_case('horizontal-text-detection', model_name)):
-        def setUp(self):
-            super().setUp()
-
-            assert replace_text_in_file(self.configuration_file, 'data/text-dataset/',
-                                        '../../data/horizontal_text_detection/')
-            assert replace_text_in_file(self.configuration_file, 'IC13TEST.json',
-                                        'annotation.json')
-
-    return ExportTestCase
-
-
-class HorizontalTextDetection0001TestCase(text_detection_test_case('horizontal-text-detection-0001')):
+class FaceDetection0200TestCase(
+        create_export_test_case(
+            'horizontal-text-detection',
+            'horizontal-text-detection-0001',
+            '../../../../../data/horizontal_text_detection/annotation.json',
+            '../../../../../data/horizontal_text_detection/',
+            False)
+):
     """ Test case for horizontal-text-detection-0001 model export. """

@@ -35,9 +35,14 @@ else
   echo "[WARNING] Model optimizer requirements were not installed. Please install the OpenVino toolkit to use one."
 fi
 
+pip install -e ../../external/mmdetection/
 
-cd ../../external/mmdetection/
-python setup.py develop
+# install ote (api)
+pip install -e ../../pytorch_toolkit/ote/
+
+# install oteod
+pip install -e ./oteod/
+
 deactivate
 
 echo

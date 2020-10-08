@@ -1,0 +1,75 @@
+name: face-detection-0205
+domain: Object Detection
+problem: Face Detection
+framework: OTEDetection v2.1.0.1
+summary: Face Detection based on MobileNetV2 (FCOS).
+annotation_format: COCO
+dependencies:
+- sha256: d5ab87ce04f3145a43eaddd2f87c59a85a07ec59f97a86c48d8bdcff9dd6c6b2
+  size: 16414233
+  source: https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/face-detection-0205.pth
+  destination: snapshot.pth
+- source: ../tools/train.py
+  destination: train.py
+- source: ../tools/eval.py
+  destination: eval.py
+- source: ../../../tools/export.py
+  destination: export.py
+- source: ../../../tools/quantize.py
+  destination: quantize.py
+- source: ../../../../../pytorch_toolkit/ote
+  destination: packages/ote
+- source: ../../../../object_detection/oteod
+  destination: packages/oteod
+- source: ../../requirements.txt
+  destination: requirements.txt
+max_nodes: 1
+training_target:
+- CPU
+- GPU
+inference_target:
+- CPU
+- iGPU
+hyper_parameters:
+  basic:
+    batch_size: 32
+    base_learning_rate: 0.05
+    epochs: 70
+output_format:
+  onnx:
+    default: true
+  openvino:
+    default: true
+    input_format: BGR
+quantization: TBD
+metrics:
+- display_name: AP @ [IoU=0.50:0.95]
+  key: ap
+  unit: '%'
+  value: 21.6
+- display_name: AP for faces > 64x64
+  key: ap_64x64
+  unit: '%'
+  value: 93.566
+- display_name: WiderFace Easy
+  key: widerface_e
+  unit: '%'
+  value: 92.032
+- display_name: WiderFace Medium
+  key: widerface_m
+  unit: '%'
+  value: 86.717
+- display_name: WiderFace Hard
+  key: widerface_h
+  unit: '%'
+  value: 54.055
+- display_name: Size
+  key: size
+  unit: Mp
+  value: 2.02
+- display_name: Complexity
+  key: complexity
+  unit: GFLOPs
+  value: 2.94
+gpu_num: 4
+config: model.py

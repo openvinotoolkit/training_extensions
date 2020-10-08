@@ -12,42 +12,70 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from common.test_case import export_test_case
-from common.utils import replace_text_in_file
+from common.test_case import create_export_test_case
 
 
-def face_detection_test_case(model_name, alt_ssd_export):
-    class ExportTestCase(export_test_case('face-detection', model_name, alt_ssd_export=alt_ssd_export)):
-        def setUp(self):
-            super().setUp()
-
-            assert replace_text_in_file(self.configuration_file, 'data/WIDERFace',
-                                        '../../data/airport')
-            assert replace_text_in_file(self.configuration_file, 'val.json',
-                                        'annotation_faces_train.json')
-
-    return ExportTestCase
-
-
-class FaceDetection0200TestCase(face_detection_test_case('face-detection-0200', True)):
+class FaceDetection0200TestCase(
+        create_export_test_case(
+            'face-detection',
+            'face-detection-0200',
+            '../../../../../data/airport/annotation_faces_train.json',
+            '../../../../../data/airport/',
+            True)
+):
     """ Test case for face-detection-0200 model export. """
 
 
-class FaceDetection0202TestCase(face_detection_test_case('face-detection-0202', True)):
+class FaceDetection0202TestCase(
+        create_export_test_case(
+            'face-detection',
+            'face-detection-0202',
+            '../../../../../data/airport/annotation_faces_train.json',
+            '../../../../../data/airport/',
+            True)
+):
     """ Test case for face-detection-0202 model export. """
 
 
-class FaceDetection0204TestCase(face_detection_test_case('face-detection-0204', True)):
+class FaceDetection0204TestCase(
+        create_export_test_case(
+            'face-detection',
+            'face-detection-0204',
+            '../../../../../data/airport/annotation_faces_train.json',
+            '../../../../../data/airport/',
+            True)
+):
     """ Test case for face-detection-0204 model export. """
 
 
-class FaceDetection0205TestCase(face_detection_test_case('face-detection-0205', False)):
+class FaceDetection0205TestCase(
+        create_export_test_case(
+            'face-detection',
+            'face-detection-0205',
+            '../../../../../data/airport/annotation_faces_train.json',
+            '../../../../../data/airport/',
+            False)
+):
     """ Test case for face-detection-0205 model export. """
 
 
-class FaceDetection0206TestCase(face_detection_test_case('face-detection-0206', False)):
+class FaceDetection0206TestCase(
+        create_export_test_case(
+            'face-detection',
+            'face-detection-0206',
+            '../../../../../data/airport/annotation_faces_train.json',
+            '../../../../../data/airport/',
+            False)
+):
     """ Test case for face-detection-0206 model export. """
 
 
-class FaceDetection0207TestCase(face_detection_test_case('face-detection-0207', False)):
+class FaceDetection0207TestCase(
+        create_export_test_case(
+            'face-detection',
+            'face-detection-0207',
+            '../../../../../data/airport/annotation_faces_train.json',
+            '../../../../../data/airport/',
+            True)
+):
     """ Test case for face-detection-0207 model export. """
