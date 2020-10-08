@@ -49,8 +49,9 @@ def read_net(model_xml, ie, device):
 class ONNXExporter:
     def __init__(self, config):
         self.config = config
-        self.model_path = os.path.join(os.path.abspath("./"), config.get('model_path'))
-        self.vocab = read_vocab(os.path.join(os.path.abspath("./"), config.get('vocab_path')))
+        root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        self.model_path = os.path.join(root_dir, config.get('model_path'))
+        self.vocab = read_vocab(os.path.join(root_dir, config.get('vocab_path')))
         self.transform = create_list_of_transforms(config.get('transforms_list'))
         self.transform_for_ir = create_list_of_transforms(config.get('transforms_list'), ovino_ir=True)
         self.model = Im2latexModel(config.get('backbone_type', 'resnet'), config.get(
@@ -58,7 +59,7 @@ class ONNXExporter:
         if self.model_path is not None:
             self.model.load_weights(self.model_path)
 
-        self.input = os.path.join(os.path.abspath("./"), config.get("dummy_input"))
+        self.input = os.path.join(root_dir, config.get("dummy_input"))
         self.img = self.read_and_preprocess_img(self.transform)
         self.img_for_ir = self.read_and_preprocess_img_for_ir(self.transform_for_ir)
         self.encoder = self.model.get_encoder_wrapper(self.model)

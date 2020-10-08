@@ -29,8 +29,9 @@ from im2latex.models.im2latex_model import Im2latexModel
 class Im2latexDemo:
     def __init__(self, config):
         self.config = config
-        self.model_path = os.path.join(os.path.abspath("./"), config.get('model_path'))
-        self.vocab = read_vocab(os.path.join(os.path.abspath("./"), config.get('vocab_path')))
+        self.root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        self.model_path = os.path.join(self.root_dir, config.get('model_path'))
+        self.vocab = read_vocab(os.path.join(self.root_dir, config.get('vocab_path')))
         self.transform = create_list_of_transforms(config.get('transforms_list'))
         self.model = Im2latexModel(config.get('backbone_type', 'resnet'), config.get(
             'backbone_config'), len(self.vocab), config.get('head', {}))
@@ -58,10 +59,10 @@ if __name__ == "__main__":
     args = parse_args()
     with open(args.config, 'r') as f:
         config = yaml.load(f, Loader=yaml.SafeLoader).get("demo")
-    model = Im2latexDemo(config)
+    demo = Im2latexDemo(config)
     for inp in config.get('input_images'):
-        img_path = os.path.join(os.path.abspath("./"), inp)
+        img_path = os.path.join(demo.root_dir, inp)
         input_image = cv.imread(img_path, cv.IMREAD_COLOR)
         assert input_image is not None, "Error reading image {}, please, check input path".format(img_path)
-        recognized_formula = model(input_image)
+        recognized_formula = demo(input_image)
         print("Predicted formula for {} is \n{}".format(os.path.abspath(inp), recognized_formula))
