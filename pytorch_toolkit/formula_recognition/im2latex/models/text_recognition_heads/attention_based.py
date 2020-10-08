@@ -105,7 +105,7 @@ class TextRecognitionHead(nn.Module):
                 h, c, O_t, row_enc_out, b_size, device)
         else:
             assert features.size(
-                0) == 1, "Using beam search, batch size must be equal to zero"
+                0) == 1, "Using beam search, batch size must be equal to one"
             device = features.device
             b_size = features.size(0)
             logits, targets = self.decode_with_bs(
