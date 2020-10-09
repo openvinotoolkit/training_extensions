@@ -22,6 +22,7 @@ import cv2 as cv
 from im2latex.data.utils import create_list_of_transforms
 from im2latex.data.vocab import read_vocab
 from im2latex.models.im2latex_model import Im2latexModel
+from evaluation_tools import render_routine
 
 
 class Im2latexDemo:
@@ -68,4 +69,11 @@ if __name__ == "__main__":
         input_image = cv.imread(inp, cv.IMREAD_COLOR)
         assert input_image is not None, "Error reading image {}, please, check input path".format(inp)
         recognized_formula = demo(input_image)
-        print("Predicted formula for {} is \n{}".format(os.path.abspath(inp), recognized_formula))
+        cv.imshow("Input image", input_image)
+        line_for_render = (recognized_formula, "output.png", "./")
+        render_routine(line_for_render)
+        rendered_formula = cv.imread("output.png", cv.IMREAD_UNCHANGED)
+        cv.imshow("Predicted formula", rendered_formula)
+        cv.waitKey(0)
+        if os.path.exists("output.png"):
+            os.remove("output.png")
