@@ -59,43 +59,12 @@ class Im2latexModel(nn.Module):
         features = self.backbone(input_images)
         return self.head(features, formulas)
 
-    def is_head_layer(self, key):
-        head_layers = self.head.state_dict().keys()
-        if key in head_layers:
-            return True
-        return False
-
-    def is_backbone_layer(self, key):
-        if 'cnn_encoder' in key:
-            return True
-        return False
-
     def load_weights(self, model_path, map_location='cpu'):
         if model_path is None:
             return
         checkpoint = torch.load(model_path, map_location=map_location)
-        checkpoint = OrderedDict((k.replace(
-            'module.', '') if 'module.' in k else k, v) for k, v in checkpoint.items())
-        # load models trained in previous versions
-        def is_old_model(checkpoint):
-            for k in checkpoint.keys():
-                if 'cnn_encoder' in k:
-                    return True
-            return False
-        old_model = is_old_model(checkpoint)
-        if not old_model:
-            self.load_state_dict(checkpoint)
-            return
-
-        new_checkpoint = OrderedDict()
-        for key, value in checkpoint.items():
-            if self.is_head_layer(key):
-                new_checkpoint["head.{}".format(key)] = value
-            elif self.is_backbone_layer(key):
-                new_checkpoint[key.replace("cnn_encoder", "backbone")] = value
-            else:
-                raise KeyError("Unrecognized type of layer, could not load the model correctly")
-        self.load_state_dict(new_checkpoint)
+        checkpoint = OrderedDict((k.replace('module.', '') if 'module.' in k else k, v) for k, v in checkpoint.items())
+        self.load_state_dict(checkpoint)
 
     def get_encoder_wrapper(self, im2latex_model):
         return Im2latexModel.EncoderWrapper(im2latex_model)
