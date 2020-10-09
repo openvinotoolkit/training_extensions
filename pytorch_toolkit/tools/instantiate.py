@@ -44,14 +44,20 @@ def main():
 
     os.makedirs(args.destination, exist_ok=True)
 
+    domain_folders = set()
     for template_filename in template_filenames:
         with open(template_filename) as read_file:
             content = yaml.load(read_file, yaml.SafeLoader)
 
-        problem_folder = os.path.join(
-            args.destination, content['domain'], content['problem']).replace(' ', '_').lower()
-        instance_folder = os.path.join(
-            problem_folder, content['name']).replace(' ', '_').lower()
+        # TODO(ikrylov): remain one of ('-', '_').
+        domain_folder = content['domain'].replace(' ', '_').lower()
+        problem_folder = content['problem'].replace(' ', '-').lower()
+        model_folder = content['name']
+
+        domain_folders.add(domain_folder)
+
+        problem_folder = os.path.join(args.destination, domain_folder, problem_folder)
+        instance_folder = os.path.join(problem_folder, model_folder)
 
         if args.do_not_load_snapshots:
             run(f'python tools/instantiate_template.py {template_filename} {instance_folder}'
@@ -66,6 +72,9 @@ def main():
         if problem_dict.get('type', None) != 'generic':
             with open(os.path.join(problem_folder, 'schema.json'), 'w') as write_file:
                 write_file.write(problem_dict['cvat_schema'])
+
+    for domain_folder in domain_folders:
+        run(f'cd {domain_folder}; ./init_venv.sh {os.path.join(args.destination, domain_folder, "venv")}', shell=True)
 
 
 if __name__ == '__main__':
