@@ -65,8 +65,6 @@ if __name__ == "__main__":
     else:
         inputs = [args.input]
     for inp in inputs:
-        if not os.path.isabs(inp):
-            inp = os.path.join(demo.root_dir, inp)
         input_image = cv.imread(inp, cv.IMREAD_COLOR)
         assert input_image is not None, "Error reading image {}, please, check input path".format(inp)
         recognized_formula = demo(input_image)
