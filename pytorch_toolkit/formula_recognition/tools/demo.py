@@ -15,12 +15,10 @@
 """
 
 import argparse
-import yaml
 import os.path
+import yaml
 
 import cv2 as cv
-import torch
-import torch.optim as optim
 from im2latex.data.utils import create_list_of_transforms
 from im2latex.data.vocab import read_vocab
 from im2latex.models.im2latex_model import Im2latexModel
@@ -52,6 +50,7 @@ class Im2latexDemo:
 def parse_args():
     args = argparse.ArgumentParser()
     args.add_argument('--config')
+    args.add_argument("-i", "--input", help="Path to a folder with images or path to an image files", required=True)
     return args.parse_args()
 
 
@@ -60,9 +59,15 @@ if __name__ == "__main__":
     with open(args.config, 'r') as f:
         config = yaml.load(f, Loader=yaml.SafeLoader).get("demo")
     demo = Im2latexDemo(config)
-    for inp in config.get('input_images'):
-        img_path = os.path.join(demo.root_dir, inp)
-        input_image = cv.imread(img_path, cv.IMREAD_COLOR)
-        assert input_image is not None, "Error reading image {}, please, check input path".format(img_path)
+    if os.path.isdir(args.input):
+        inputs = sorted(os.path.join(args.input, inp)
+                        for inp in os.listdir(args.input))
+    else:
+        inputs = [args.input]
+    for inp in inputs:
+        if not os.path.isabs(inp):
+            inp = os.path.join(demo.root_dir, inp)
+        input_image = cv.imread(inp, cv.IMREAD_COLOR)
+        assert input_image is not None, "Error reading image {}, please, check input path".format(inp)
         recognized_formula = demo(input_image)
         print("Predicted formula for {} is \n{}".format(os.path.abspath(inp), recognized_formula))
