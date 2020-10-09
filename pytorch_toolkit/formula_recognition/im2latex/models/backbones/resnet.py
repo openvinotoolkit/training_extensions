@@ -29,13 +29,9 @@ architectures = {
 
 
 class ResNetLikeBackbone(nn.Module):
-    def __init__(self, configuration):
+    def __init__(self, disable_layer_3, disable_layer_4, arch, in_lstm_ch = 512, enable_last_conv = False):
         super(ResNetLikeBackbone, self).__init__()
-        disable_layer_3 = configuration.get('disable_layer_3')
-        disable_layer_4 = configuration.get('disable_layer_4')
-        arch = configuration.get('arch')
-        self.in_lstm_ch = configuration.get('in_lstm_ch', 512)
-        enable_last_conv = configuration.get('enable_last_conv', False)
+        self.in_lstm_ch = in_lstm_ch
         self.arch = arch
         _resnet = architectures.get(arch, None)
         if _resnet is None:
