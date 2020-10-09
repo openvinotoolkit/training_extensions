@@ -61,7 +61,7 @@ class BatchRandomSampler(Sampler):
 
         self.batch_size = batch_size
         self.len = len(dataset) // self.batch_size
-        self.indices = np.array(range(len(dataset)))[::self.batch_size][:-1]
+        self.indices = np.array(range(self.len * self.batch_size))[::self.batch_size]
 
     def __iter__(self):
         np.random.shuffle(self.indices)
