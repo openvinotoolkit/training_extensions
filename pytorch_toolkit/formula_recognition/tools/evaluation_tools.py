@@ -54,14 +54,10 @@ MAX_PX_COL_DIFF = 0
 TIMEOUT = 10
 PRINT_FREQ = 100
 
-# replace \pmatrix with \begin{pmatrix}\end{pmatrix}
-# replace \matrix with \begin{matrix}\end{matrix}
 template = r"""
 \documentclass[12pt]{article}
 \pagestyle{empty}
 \usepackage{amsmath}
-\newcommand{\mymatrix}[1]{\begin{matrix}#1\end{matrix}}
-\newcommand{\mypmatrix}[1]{\begin{pmatrix}#1\end{pmatrix}}
 \begin{document}
 \begin{displaymath}
 %s
