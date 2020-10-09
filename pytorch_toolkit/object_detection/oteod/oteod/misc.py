@@ -38,19 +38,6 @@ class NonBlockingStreamReader:
             return None
 
 
-def replace_text_in_file(path, replace_what, replace_by):
-    """ Replaces text in file. """
-
-    with open(path) as read_file:
-        content = '\n'.join([line.rstrip() for line in read_file])
-        if content.find(replace_what) == -1:
-            return False
-        content = content.replace(replace_what, replace_by)
-    with open(path, 'w') as write_file:
-        write_file.write(content)
-    return True
-
-
 def sha256sum(filename):
     """ Computes sha256sum. """
 
