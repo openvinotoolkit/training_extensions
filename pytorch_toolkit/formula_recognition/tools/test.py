@@ -29,6 +29,45 @@ from im2latex.models.im2latex_model import Im2latexModel
 from torch.utils.data import DataLoader
 from tools.evaluation_tools import Im2latexRenderBasedMetric
 
+spaces = [r'\,', r'\>', r'\;', r'\:', r'\quad', r'\qquad', '~']
+
+
+def ends_with_space(string):
+    """If string end with one of the latex spaces (given the above),
+    returns True and index of this space, else False and None
+
+    Args:
+        string (str): input string with possible spaces
+
+    Returns:
+        Tuple(bool, int) string ends with space, index of the space
+    """
+    for idx, space in enumerate(spaces):
+        if string.endswith(space):
+            return True, idx
+    return False, None
+
+
+def postprocess_prediction(pred_phrase_str):
+    """Deletes usual space in the end of the string and then checks
+    if string ends with latex space. If yes, deletes latex space.
+    Deletion of spaces is performed because, even though spaces in the end are invisible,
+    they affect on rendering the formula, making it more tight to the left
+
+    Args:
+        pred_phrase_str (str): input string
+
+    Returns:
+        str: postprocessed string
+    """
+    pred_phrase_str = pred_phrase_str.rstrip()
+    ends, idx = ends_with_space(pred_phrase_str)
+    while ends:
+        pred_phrase_str = pred_phrase_str[:len(pred_phrase_str) - len(spaces[idx])]
+        pred_phrase_str = pred_phrase_str.rstrip()
+        ends, idx = ends_with_space(pred_phrase_str)
+    return pred_phrase_str
+
 
 class Evaluator:
     def __init__(self, config):
@@ -66,7 +105,6 @@ class Evaluator:
         annotations = []
         predictions = []
         metric = Im2latexRenderBasedMetric()
-        formula_acc = 0
         with torch.no_grad():
             for img_name, imgs, training_gt, loss_computation_gt in tqdm(self.val_loader):
                 imgs = imgs.to(self.device)
@@ -74,7 +112,8 @@ class Evaluator:
                 loss_computation_gt = loss_computation_gt.to(self.device)
                 _, pred = self.model(imgs)
                 gold_phrase_str = self.vocab.construct_phrase(loss_computation_gt[0])
-                pred_phrase_str = self.vocab.construct_phrase(pred[0], max_len=1 + len(gold_phrase_str.split()))
+                pred_phrase_str = self.vocab.construct_phrase(pred[0])
+                pred_phrase_str = postprocess_prediction(pred_phrase_str)
                 annotations.append((gold_phrase_str, img_name[0]))
                 predictions.append((pred_phrase_str, img_name[0]))
         res = metric.evaluate(annotations, predictions)
