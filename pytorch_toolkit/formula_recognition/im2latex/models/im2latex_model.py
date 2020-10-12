@@ -48,6 +48,13 @@ class Im2latexModel(nn.Module):
 
     def __init__(self, backbone_type, backbone, out_size, head):
         super().__init__()
+        bb_out_channels = backbone.get("output_channels", 512)
+        head_in_channels = head.get("encoder_input_size", 512)
+        assert bb_out_channels == head_in_channels, f"""
+        Number of output channels in the backbone ({bb_out_channels}) must be equal
+        to the number of input channels in the head ({head_in_channels}) in case last conv
+        is disabled
+        """
         self.head = TextRecognitionHead(out_size, **head)
         self.backbone_type = backbone_type
         if self.backbone_type == 'resnet':
