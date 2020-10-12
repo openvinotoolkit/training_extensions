@@ -45,14 +45,12 @@ PAD_TOKEN = 1
 END_TOKEN = 2
 UNK_TOKEN = 3
 NUMBER_SIGNS = set("0123456789.")
-# buid sign2id
 
 
 def split_number(sign):
     if set(sign) <= NUMBER_SIGNS:
         return list(sign)
-    else:
-        return [sign]
+    return [sign]
 
 
 class Vocab:
@@ -122,16 +120,18 @@ def write_vocab(data_dir, as_json=True):
 
             vocab.add_formula(formula_splitted_numbers)
 
-    vocab_file = join(data_dir, 'vocab.pkl')
+    vocab_file = join(data_dir, 'vocab.{}'.format("json" if as_json else 'pkl'))
     print("Writing Vocab File in ", vocab_file)
-    with open(vocab_file, 'wb') as w:
-        dict_to_store = {
-            "id2sign": vocab.id2sign,
-            "sign2id": vocab.sign2id,
-        }
-        if as_json:
-            as_json.dump(dict_to_store, w, indent=4, sort_keys=True)
-        else:
+
+    dict_to_store = {
+        "id2sign": vocab.id2sign,
+        "sign2id": vocab.sign2id,
+    }
+    if as_json:
+        with open(vocab_file, 'w') as w:
+            json.dump(dict_to_store, w, indent=4, sort_keys=True)
+    else:
+        with open(vocab_file, 'wb') as w:
             pkl.dump(dict_to_store, w)
 
 
