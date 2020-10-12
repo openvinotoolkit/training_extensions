@@ -71,7 +71,15 @@ class Im2latexModel(nn.Module):
             return
         checkpoint = torch.load(model_path, map_location=map_location)
         checkpoint = OrderedDict((k.replace('module.', '') if 'module.' in k else k, v) for k, v in checkpoint.items())
-        self.load_state_dict(checkpoint)
+        try:
+            self.load_state_dict(checkpoint)
+        except RuntimeError as missing_keys:
+            print("""
+            Unexpected keys in state_dict.
+            Most probably architecture in the config file differs from the architecture of the checkpoint.
+            Please, check the config file.
+            """)
+            raise RuntimeError from missing_keys
 
     def get_encoder_wrapper(self, im2latex_model):
         return Im2latexModel.EncoderWrapper(im2latex_model)
