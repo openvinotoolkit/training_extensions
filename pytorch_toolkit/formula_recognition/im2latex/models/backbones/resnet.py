@@ -77,6 +77,10 @@ class ResNetLikeBackbone(nn.Module):
             self.last_conv = nn.Conv2d(out_ch, self.output_channels, 1)
         else:
             self.last_conv = None
+            assert out_ch == self.output_channels, f"""
+            Number of the output channels ({out_ch}) of the backbone from the config should be equal
+            to actual number of the output channels ({self.output_channels})
+            """
 
     def forward(self, x):
         x = self.conv1(x)
