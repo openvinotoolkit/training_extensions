@@ -29,9 +29,9 @@ architectures = {
 
 
 class ResNetLikeBackbone(nn.Module):
-    def __init__(self, arch, disable_layer_3, disable_layer_4, in_lstm_ch=512, enable_last_conv=False):
+    def __init__(self, arch, disable_layer_3, disable_layer_4, output_channels=512, enable_last_conv=False):
         super(ResNetLikeBackbone, self).__init__()
-        self.in_lstm_ch = in_lstm_ch
+        self.output_channels = output_channels
         self.arch = arch
         _resnet = architectures.get(arch, None)
         if _resnet is None:
@@ -47,10 +47,10 @@ class ResNetLikeBackbone(nn.Module):
         self.layer2 = _resnet.layer2
         enable_layer_3 = not disable_layer_3
         enable_layer_4 = not disable_layer_4
-        if arch == 'resnet18' or arch == 'resnet34':
-            in_ch = 128
+        if arch in ('resnet18', 'resnet34'):
+            out_ch = 128
         else:
-            in_ch = 512
+            out_ch = 512
         if enable_layer_4:
             assert enable_layer_3, "Cannot enable layer4 w/out enabling layer 3"
 
@@ -58,23 +58,23 @@ class ResNetLikeBackbone(nn.Module):
             self.layer3 = _resnet.layer3
             self.layer4 = None
             if arch in ('resnet18', 'resnet34'):
-                in_ch = 256
+                out_ch = 256
             else:
-                in_ch = 1024
+                out_ch = 1024
         elif enable_layer_3 and enable_layer_4:
             self.layer3 = _resnet.layer3
             self.layer4 = _resnet.layer4
             if arch in ('resnet18', 'resnet34'):
-                in_ch = 512
+                out_ch = 512
             else:
-                in_ch = 2048
+                out_ch = 2048
         else:
             self.layer3 = None
             self.layer4 = None
         print("Initialized cnn encoder {}".format(arch))
         if enable_last_conv:
             print("Last conv enabled")
-            self.last_conv = nn.Conv2d(in_ch, self.in_lstm_ch, 1)
+            self.last_conv = nn.Conv2d(out_ch, self.output_channels, 1)
         else:
             self.last_conv = None
 
