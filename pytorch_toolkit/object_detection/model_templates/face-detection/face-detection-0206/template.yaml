@@ -72,4 +72,5 @@ metrics:
   unit: GFLOPs
   value: 340.06
 gpu_num: 8
+tensorboard: true
 config: model.py

@@ -73,4 +73,5 @@ metrics:
   unit: GFLOPs
   value: 0.82
 gpu_num: 2
+tensorboard: true
 config: model.py

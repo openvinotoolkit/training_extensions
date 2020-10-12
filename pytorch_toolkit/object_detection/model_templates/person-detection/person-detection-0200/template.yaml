@@ -57,4 +57,5 @@ metrics:
   unit: '%'
   value: 24.4
 gpu_num: 2
+tensorboard: true
 config: model.py
