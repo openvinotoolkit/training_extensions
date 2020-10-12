@@ -70,6 +70,7 @@ if __name__ == "__main__":
         assert input_image is not None, "Error reading image {}, please, check input path".format(inp)
         recognized_formula = demo(input_image)
         cv.imshow("Input image", input_image)
+        print(recognized_formula)
         line_for_render = (recognized_formula, "output.png", "./")
         render_routine(line_for_render)
         rendered_formula = cv.imread("output.png", cv.IMREAD_UNCHANGED)
