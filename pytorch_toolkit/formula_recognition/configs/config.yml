@@ -1,6 +1,6 @@
 train:
   backbone_config:
-    arch: resnext50_32x4d
+    arch: resnext101_32x8d
     disable_layer_3: true
     disable_layer_4: true
   batch_size: 4
