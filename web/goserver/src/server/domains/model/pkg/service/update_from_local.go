@@ -10,7 +10,6 @@ import (
 	"net/url"
 	"os"
 	fp "path/filepath"
-	"strings"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"gopkg.in/yaml.v2"
@@ -59,16 +58,16 @@ func (s *basicModelService) UpdateFromLocal(ctx context.Context, req UpdateFromL
 		problem := s.getProblem(ctx, modelYml.Problem)
 		defaultBuild := s.getDefaultBuild(problem.Id)
 		model := s.prepareModel(modelYml, defaultBuild.Id, problem)
-		copyModelFiles(fp.Dir(req.Path), model.Dir, req.Path, modelYml)
+		copyModelFiles(fp.Dir(req.Path), model.Dir, req.Path, problem.ToolsPath, modelYml)
 		model = s.updateCreateModel(model)
 		responseChan <- kitendpoint.Response{Data: model, Err: nil, IsLast: true}
 	}()
 	return responseChan
 }
 
-func copyModelFiles(from, to, modelTemplatePath string, modelYml ModelYml) {
+func copyModelFiles(from, to, modelTemplatePath, toolsPath string, modelYml ModelYml) {
 	copyConfig(from, to, modelYml)
-	copyDependencies(from, to, modelYml)
+	copyDependencies(from, to, toolsPath, modelYml)
 	saveMetrics(to, modelYml)
 	copyTemplateYaml(modelTemplatePath, to)
 }
@@ -85,9 +84,9 @@ func copyTemplateYaml(from, to string) {
 	}
 }
 
-func copyDependencies(from, to string, modelYml ModelYml) {
+func copyDependencies(from, to, toolsPath string, modelYml ModelYml) {
 	for _, d := range modelYml.Dependencies {
-		toDir := dirByDestination(to, d.Destination)
+		toDir := dirByDestination(to, toolsPath, d.Destination)
 		if isValidUrl(d.Source) {
 			if err := downloadWithCheck(d.Source, toDir, d.Sha256, d.Size); err != nil {
 				log.Println("update_from_local.copyDependencies.downloadWithCheck(d.Source, d.Destination, d.Sha256, d.Size)", err)
@@ -122,11 +121,11 @@ func saveMetrics(to string, modelYml ModelYml) {
 	}
 }
 
-func dirByDestination(to, dest string) string {
+func dirByDestination(to, toolsPath, dest string) string {
 	if dest == "snapshot.pth" {
 		return fp.Join(to, dest)
 	}
-	return fp.Join(fp.Dir(to), "_tools", dest)
+	return fp.Join(toolsPath, dest)
 }
 
 func copyFiles(from, to string) error {
@@ -178,8 +177,8 @@ func (s *basicModelService) prepareModel(modelYml ModelYml, buildId primitive.Ob
 		Metrics:     metrics,
 		Name:        modelYml.Name,
 		Scripts: t.Scripts{
-			Train: fp.Join(fp.Dir(dir), "_tools", "train.py"),
-			Eval:  fp.Join(fp.Dir(dir), "_tools", "eval.py"),
+			Train: fp.Join(problem.ToolsPath, "train.py"),
+			Eval:  fp.Join(problem.ToolsPath, "eval.py"),
 		},
 		SnapshotPath:      fp.Join(dir, "snapshot.pth"),
 		Status:            modelStatus.Default,
@@ -214,46 +213,6 @@ func (s *basicModelService) getProblem(ctx context.Context, title string) t.Prob
 		},
 	)
 	return problemResp.Data.(problemFindOne.ResponseData)
-}
-
-func buildModelPath(problemTitle, modelName string) string {
-	problemTitle = strings.ReplaceAll(problemTitle, " ", "_")
-	modelFolder := strings.ReplaceAll(modelName, " ", "_")
-	modelPath := fp.Join("/problem", problemTitle, "models", modelFolder)
-	return modelPath
-}
-
-func makeModelDir(path string) error {
-	err := os.MkdirAll(path, 0777)
-	if err != nil {
-		log.Println("MkdirAll", err)
-	}
-	return nil
-}
-
-func copyConfigPy(src, dst string) string {
-	modelConfigName := "config.py"
-	modelConfigPath := fp.Join(dst, modelConfigName)
-	_, err := uFiles.Copy(
-		fp.Join(src, modelConfigName),
-		modelConfigPath,
-	)
-	if err != nil {
-		log.Println("Copy", err)
-	}
-	return modelConfigPath
-}
-
-func copyModelYml(src, dst string) error {
-	_, err := uFiles.Copy(
-		src,
-		fp.Join(dst, "model.yml"),
-	)
-	if err != nil {
-		log.Println("Copy", err)
-		return err
-	}
-	return nil
 }
 
 func downloadWithCheck(url, dst, sha256 string, size int) error {
@@ -295,15 +254,6 @@ func getSha265(path string) string {
 		return ""
 	}
 	return hex.EncodeToString(h.Sum(nil))
-}
-
-func downloadModelFile(url, dst string) error {
-	_, err := u.DownloadFile(url, dst)
-	if err != nil {
-		log.Println("DownloadFile", err)
-		return err
-	}
-	return nil
 }
 
 func (s *basicModelService) updateCreateModel(model t.Model) t.Model {

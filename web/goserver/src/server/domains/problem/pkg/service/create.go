@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"encoding/base64"
-	"encoding/json"
 	"log"
 	"os"
 	fp "path/filepath"
@@ -21,6 +20,7 @@ import (
 	modelCreateFromGeneric "server/domains/model/pkg/handler/create_from_generic"
 	kitendpoint "server/kit/endpoint"
 	u "server/kit/utils"
+	uFiles "server/kit/utils/basic/files"
 )
 
 type CreateRequestData struct {
@@ -35,8 +35,9 @@ type CreateRequestData struct {
 func (s *basicProblemService) Create(ctx context.Context, req CreateRequestData, responseChan chan kitendpoint.Response) {
 	genericProblem := s.getGenericProblem(req.Class)
 	imageUrl := saveImage(req.Image)
-	problemDir := s.createProblemDir(req.Class, req.Title)
-	problemCreateRequest := getNewProblemCreateRequest(genericProblem, imageUrl, req.Title, req.Subtitle, req.Description, problemDir, req.Class, req.Labels)
+	problemDir := s.createProblemDir(genericProblem.Class, req.Title)
+	problemCreateRequest := getNewProblemCreateRequest(genericProblem, imageUrl, req.Title, req.Subtitle, req.Description, problemDir, genericProblem.Class, req.Labels)
+	copyTools(genericProblem.ToolsPath, problemCreateRequest.ToolsPath)
 	problem := s.createProblem(problemCreateRequest)
 	responseChan <- kitendpoint.Response{Data: problem, IsLast: true, Err: nil}
 
@@ -45,6 +46,12 @@ func (s *basicProblemService) Create(ctx context.Context, req CreateRequestData,
 			GenericModelId: genericModel.Id,
 			ProblemId:      problem.Id,
 		})
+	}
+}
+
+func copyTools(from, to string) {
+	if err := uFiles.CopyDir(from, to); err != nil {
+		log.Println("create.copyTools.uFiles.CopyDir(from, to)", err)
 	}
 }
 
@@ -70,7 +77,7 @@ func (s *basicProblemService) createProblemDir(class, title string) string {
 	return problemDir
 }
 
-func getNewProblemCreateRequest(genericProblem t.Problem, imageUrl, title, subtitle, description, folder, class string, labels []map[string]interface{}) problemUpdateUpsert.RequestData {
+func getNewProblemCreateRequest(genericProblem t.Problem, imageUrl, title, subtitle, description, dir, class string, labels []map[string]interface{}) problemUpdateUpsert.RequestData {
 	var imagesUrls []string
 	if imageUrl != "" {
 		imagesUrls = append(imagesUrls, imageUrl)
@@ -79,10 +86,11 @@ func getNewProblemCreateRequest(genericProblem t.Problem, imageUrl, title, subti
 		Class:       class,
 		Description: description,
 		ImagesUrls:  imagesUrls,
-		Dir:         folder,
+		Dir:         dir,
 		Labels:      labels,
 		Subtitle:    subtitle,
 		Title:       title,
+		ToolsPath:   fp.Join(dir, "_tools"),
 		Type:        problemType.Custom,
 		WorkingDir:  genericProblem.WorkingDir,
 	}
@@ -123,12 +131,4 @@ func (s *basicProblemService) createProblem(req problemUpdateUpsert.RequestData)
 		req,
 	)
 	return problemUpdateUpsertResp.Data.(problemUpdateUpsert.ResponseData)
-}
-
-func UnmarshalLabels(labelsString string) (res []map[string]interface{}) {
-	err := json.Unmarshal([]byte(labelsString), &res)
-	if err != nil {
-		log.Println("domains.problem.pkg.service.create.json.Unmarshal([]byte(labelsString), &res)", err)
-	}
-	return res
 }

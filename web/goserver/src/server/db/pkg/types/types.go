@@ -167,6 +167,20 @@ type ModelFindResponse struct {
 	Items []Model `bson:"items" json:"items"`
 }
 
+type ProblemWithouId struct {
+	Class       string                   `bson:"class" json:"class"`
+	Description string                   `bson:"description" json:"description"`
+	ImagesUrls  []string                 `bson:"imagesUrls" json:"imagesUrls" yaml:"imagesUrls"`
+	Labels      []map[string]interface{} `bson:"labels" json:"labels"`
+	Dir         string                   `bson:"dir" json:"dir"`
+	Subtitle    string                   `bson:"subtitle" json:"subtitle"`
+	Title       string                   `bson:"title" json:"title"`
+	ToolsPath   string                   `bson:"toolsPath" json:"toolsPath"`
+	Type        string                   `bson:"type" json:"type"`
+	WorkingDir  string                   `bson:"workingDir" json:"workingDir"`
+	CvatSchema  string                   `bson:"-" json:"-" yaml:"cvat_schema"`
+}
+
 // TODO: delete CvatSchema
 type Problem struct {
 	Class       string                   `bson:"class" json:"class"`
@@ -177,6 +191,7 @@ type Problem struct {
 	Dir         string                   `bson:"dir" json:"dir"`
 	Subtitle    string                   `bson:"subtitle" json:"subtitle"`
 	Title       string                   `bson:"title" json:"title"`
+	ToolsPath   string                   `bson:"toolsPath" json:"toolsPath"`
 	Type        string                   `bson:"type" json:"type"`
 	WorkingDir  string                   `bson:"workingDir" json:"workingDir"`
 	CvatSchema  string                   `bson:"-" json:"-" yaml:"cvat_schema"`

@@ -84,6 +84,7 @@ func (s *basicProblemService) createOrUpdateProblem(ctx context.Context, problem
 	classFolderName := u.StringToFolderName(domainTitle)
 	problemDir := fp.Join(s.problemPath, classFolderName, problemFolderName)
 	workingDir := fp.Join(s.trainingsPath, classFolderName, problemFolderName)
+	toolsPath := fp.Join(problemDir, "_tools")
 	if problemData.Type == "" {
 		problemData.Type = problemType.Default
 	}
@@ -95,6 +96,7 @@ func (s *basicProblemService) createOrUpdateProblem(ctx context.Context, problem
 		Labels:      problemData.Labels,
 		Subtitle:    problemData.Subtitle,
 		Title:       problemData.Title,
+		ToolsPath:   toolsPath,
 		Type:        problemData.Type,
 		WorkingDir:  workingDir,
 	}

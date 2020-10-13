@@ -53,7 +53,7 @@ func (s *basicModelService) FineTune(ctx context.Context, req FineTuneRequestDat
 			return
 		}
 		copySnapshotLatestToModelPath(newModel.TrainingWorkDir, newModel.SnapshotPath)
-		newModel = copyTemplateYamlToNewModel(parentModel, newModel)
+		copyTemplateYamlToNewModel(parentModel, newModel)
 		copyConfigModelPy(newModel)
 		newModel = s.eval(newModel, build, problem)
 		newModel = s.fineTuneFinish(newModel)
@@ -69,12 +69,10 @@ func copyConfigModelPy(model t.Model) {
 	}
 }
 
-func copyTemplateYamlToNewModel(parentModel, newModel t.Model) t.Model {
-	newModel.TemplatePath = fp.Join(newModel.Dir, "template.yaml")
+func copyTemplateYamlToNewModel(parentModel, newModel t.Model) {
 	if err := copyFiles(parentModel.TemplatePath, newModel.TemplatePath); err != nil {
 		log.Println("fine_tune.copyTemplateYamlToNewModel.copyFiles(parentModel.TemplatePath, newModel.TemplatePath)", err)
 	}
-	return newModel
 }
 
 func (s *basicModelService) train(ctx context.Context, parentModel t.Model, build t.Build, problem t.Problem, userGpuNum, batchSize, epochs int, newModelName string) (t.Model, error) {
@@ -99,21 +97,7 @@ func getFineTuneEnv(model t.Model) []string {
 }
 
 func (s *basicModelService) fineTuneFinish(model t.Model) t.Model {
-	// newModelYamlFile, err := ioutil.ReadFile(output)
-	// if err != nil {
-	// 	log.Println("ReadFile", err)
-	// }
-	// var metrics struct {
-	// 	Metrics []t.Metric `yaml:"metrics"`
-	// }
-	// err = yaml.Unmarshal(newModelYamlFile, &metrics)
-	// if err != nil {
-	// 	log.Println("Unmarshal", err)
-	// }
-	// model.Metrics = make(map[string][]t.Metric)
-	// model.Metrics[buildId.Hex()] = metrics.Metrics
 	model.Status = modelStatus.Finished
-
 	modelUpdateOneRes := <-modelUpdateOne.Send(
 		context.TODO(),
 		s.Conn,
@@ -139,14 +123,11 @@ func (s *basicModelService) prepareFineTuneCommands(batchSize, gpuNum int, model
 	if batchSize > 0 {
 		paramsArr = append(paramsArr, fmt.Sprintf("--batch-size %d", batchSize))
 	}
-	// else {
-	// 	paramsArr = append(paramsArr, fmt.Sprintf("--batch-size auto"))
-	// }
 
 	paramsStr := strings.Join(paramsArr, " ")
 	commands := []string{
-		fmt.Sprintf(`pip install -e %s`, fp.Join(problem.Dir, "_tools", "ote")),
-		fmt.Sprintf(`pip install -e %s`, fp.Join(problem.Dir, "_tools", "oteod")),
+		fmt.Sprintf(`pip install -e %s`, fp.Join(problem.ToolsPath, "ote")),
+		fmt.Sprintf(`pip install -e %s`, fp.Join(problem.ToolsPath, "oteod")),
 		fmt.Sprintf(`python %s %s`, parentModel.Scripts.Train, paramsStr),
 	}
 	return commands
@@ -213,10 +194,11 @@ func (s *basicModelService) createNewModel(
 			ProblemId:     problem.Id,
 			SnapshotPath:  snapshotPath,
 			Scripts: t.Scripts{
-				Train: fp.Join(fp.Dir(dir), "_tools", "train.py"),
-				Eval:  fp.Join(fp.Dir(dir), "_tools", "eval.py"),
+				Train: fp.Join(problem.ToolsPath, "train.py"),
+				Eval:  fp.Join(problem.ToolsPath, "eval.py"),
 			},
 			Status:            modelStatus.InProgress,
+			TemplatePath:      fp.Join(dir, "template.yaml"),
 			TensorBoardLogDir: tensorBoardLogDir,
 			TrainingGpuNum:    gpuNum,
 			TrainingWorkDir:   trainingWorkDir,
@@ -424,12 +406,5 @@ func copySnapshotLatestToModelPath(trainingPath, newSnapshotPath string) {
 	snapshotPath := fmt.Sprintf("%s/latest.pth", trainingPath)
 	if _, err := ufiles.Copy(snapshotPath, newSnapshotPath); err != nil {
 		log.Println("copySnapshotLatestToModelPath.Copy", err)
-	}
-}
-
-func copyConfigToModelPath(trainingPath, newConfigPath string) {
-	configPath := fmt.Sprintf("%s/config.py", trainingPath)
-	if _, err := ufiles.Copy(configPath, newConfigPath); err != nil {
-		log.Println("copyConfigToModelPath.Copy", err)
 	}
 }

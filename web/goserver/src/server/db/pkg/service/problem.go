@@ -84,17 +84,7 @@ func (s *basicDatabaseService) ProblemFind(ctx context.Context, req ProblemFindR
 	return t.ProblemFindResponse{BaseList: t.BaseList{Total: total}, Items: items}
 }
 
-type ProblemUpdateUpsertRequestData struct {
-	Class       string                   `bson:"class" json:"class"`
-	Description string                   `bson:"description" json:"description" yaml:"description"`
-	ImagesUrls  []string                 `bson:"imagesUrls,omitempty" json:"imagesUrls,omitempty" yaml:"imagesUrls,omitempty"`
-	Dir         string                   `bson:"dir" json:"dir" yaml:"dir"`
-	Labels      []map[string]interface{} `bson:"labels" json:"labels" yaml:"cvat_schema"`
-	Subtitle    string                   `bson:"subtitle" json:"subtitle" yaml:"subtitle"`
-	Title       string                   `bson:"title" json:"title" yaml:"title"`
-	Type        string                   `bson:"type" json:"type" yaml:"type"`
-	WorkingDir  string                   `bson:"workingDir" json:"workingDir" yaml:"workingDir"`
-}
+type ProblemUpdateUpsertRequestData = t.ProblemWithouId
 
 func (s *basicDatabaseService) ProblemUpdateUpsert(ctx context.Context, req ProblemUpdateUpsertRequestData) (result t.Problem) {
 	problemCollection := s.db.Collection(n.CProblem)
@@ -111,7 +101,9 @@ func (s *basicDatabaseService) ProblemUpdateUpsert(ctx context.Context, req Prob
 	return result
 }
 
-func (s *basicDatabaseService) ProblemInsertOne(ctx context.Context, req ModelInsertOneRequestData) (result t.Model, err error) {
+type ProblemInsertOneRequestData = t.ProblemWithouId
+
+func (s *basicDatabaseService) ProblemInsertOne(ctx context.Context, req ProblemInsertOneRequestData) (result t.Problem, err error) {
 	problemCollection := s.db.Collection(n.CProblem)
 	r, err := problemCollection.InsertOne(ctx, req)
 	if err != nil {

@@ -48,7 +48,7 @@ func (s *basicModelService) eval(model t.Model, build t.Build, problem t.Problem
 	commands := s.prepareEvaluateCommands(metricsYml, outputImagesPath, model, build, problem)
 	outputLog := createFile(fp.Join(evalFolderPath, "output.log"))
 	env := getEvaluateEnv(model)
-	s.runCommand(commands, env, fp.Join(problem.Dir, "_tools"), outputLog)
+	s.runCommand(commands, env, problem.ToolsPath, outputLog)
 	model = s.saveModelEvalMetrics(metricsYml, build.Id, model)
 	return model
 }
@@ -104,26 +104,28 @@ func (s *basicModelService) prepareEvaluateCommands(evalYml, outputImagesPath st
 	evalDir := fp.Dir(evalYml)
 	if err := os.MkdirAll(evalDir, 0777); err != nil {
 		log.Println("domains.model.pkg.service.evaluate.prepareEvaluateCommands.os.MkdirAll(evalFolder, 0777)", err)
-		return []string{}
 	}
 	if err := os.Chmod(model.Scripts.Eval, 0777); err != nil {
 		log.Println("domains.model.pkg.service.evaluate.prepareEvaluateCommands.os.Chmod(script, 0777)", err)
-		return []string{}
 	}
 	imgPrefix, annFile := s.getImgPrefixAndAnnotation("test", build, problem)
 	imgPrefixStr := strings.Join(imgPrefix, ",")
 	annFileStr := strings.Join(annFile, ",")
+	classes := getClasses(problem.Labels)
 	paramsArr := []string{
 		fmt.Sprintf("--load-weights %s", model.SnapshotPath),
-		fmt.Sprintf("--test-ann-files %s", annFileStr),
-		fmt.Sprintf("--test-data-roots %s", imgPrefixStr),
+		fmt.Sprintf("--test-ann-files '%s'", annFileStr),
+		fmt.Sprintf("--test-data-roots '%s'", imgPrefixStr),
 		fmt.Sprintf("--save-metrics-to %s", evalYml),
-		fmt.Sprintf("--save-output-to %s", outputImagesPath),
+		fmt.Sprintf("--classes %s", classes),
+	}
+	if outputImagesPath != "" {
+		paramsArr = append(paramsArr, fmt.Sprintf("--save-output-to %s", outputImagesPath))
 	}
 	paramsStr := strings.Join(paramsArr, " ")
 	commands := []string{
-		fmt.Sprintf(`pip install -e %s`, fp.Join(problem.Dir, "_tools", "ote")),
-		fmt.Sprintf(`pip install -e %s`, fp.Join(problem.Dir, "_tools", "oteod")),
+		fmt.Sprintf(`pip install -e %s`, fp.Join(problem.ToolsPath, "ote")),
+		fmt.Sprintf(`pip install -e %s`, fp.Join(problem.ToolsPath, "oteod")),
 		fmt.Sprintf(`python %s %s`, model.Scripts.Eval, paramsStr),
 	}
 	return commands
