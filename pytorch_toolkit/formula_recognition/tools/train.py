@@ -111,7 +111,7 @@ class Trainer:
         self.clip = config.get('clip_grad', 5.0)
         self.work_dir = os.path.abspath(work_dir)
         self.save_dir = os.path.join(self.work_dir, config.get("save_dir", "model_checkpoints"))
-        self.val_results_path = os.path.join(self.save_dir, "val_results")
+        self.val_results_path = os.path.join(self.work_dir, "val_results")
         self.step = 0
         self.global_step = 0
         self._test_steps = config.get('_test_steps', 1e18)
