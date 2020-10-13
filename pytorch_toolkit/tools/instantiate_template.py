@@ -18,7 +18,7 @@ from subprocess import run
 
 import yaml
 
-from oteod.misc import get_file_size_and_sha256
+from ote.misc import get_file_size_and_sha256
 
 
 def parse_args():
