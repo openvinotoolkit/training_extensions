@@ -18,7 +18,6 @@ import os
 from subprocess import run
 
 import yaml
-from tqdm import tqdm
 
 
 def parse_args():
@@ -45,7 +44,7 @@ def main():
 
     os.makedirs(args.destination, exist_ok=True)
 
-    for template_filename in tqdm(template_filenames):
+    for template_filename in template_filenames:
         with open(template_filename) as read_file:
             content = yaml.load(read_file, yaml.SafeLoader)
 
