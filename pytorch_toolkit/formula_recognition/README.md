@@ -81,6 +81,36 @@ In addition to common parameters you can specify the following arguments:
 - `train_transforms_list` - similiar to `val_transforms_list`
 - `epochs` - number of epochs to train
 
+One can use some pretrained models. Right now two models are available:
+* medium model:
+    * [checkpoint link](https://download.01.org/opencv/openvino_training_extensions/models/formula_recognition/medium_photograped_0185.pth)
+    * digits, letters, some greek letters, fractions, trigonometric operations are supported; for more details, please, look at corresponding vocab file
+    * to use this model, please, change these fields in the config file:
+    ```
+    backbone_config:
+        arch: resnext50_32x4d
+        disable_layer_3: true
+        disable_layer_4: true
+    model_path: <path to the model>
+    vocab_path: vocabs/vocab_medium.json
+    ```
+The model can be used either for recognizing rendered formulas and for recognizing scanned formulas (e.g. from a scanner or from a phone camera)
+
+* handwritten polynomials model:
+    * [checkpoint](https://download.01.org/opencv/openvino_training_extensions/models/formula_recognition/polynomials_handwritten_0166.pth)
+    * digits, letters, upper indices are supported
+    * to use this model, please, change these field in the config file:
+    ```
+    backbone_config:
+        arch: resnext50_32x4d
+        disable_layer_3: false
+        disable_layer_4: true
+    model_path: <path to the model>
+    vocab_path: vocabs/vocab_handwritten_polynomials.json
+    ```
+The model can be used for recognizing handwritten polynomial equations.
+All the above models can be used for aftertuning or as ready for inference models. To provide maximum quality at recognizing formulas, it is highly recommended to preprocess image - simply binarize it, you can find corresponding prepocessing at [this file](im2latex/data/utils.py). Just state the desired preprocessing at the corresponding section of the config file (train, eval, etc).
+
 #### Evaluation-specific parameters
 - `split_file` - name of the file with labels (note: physical file name should end with `_filter.lst`). Default is `validate`
 - `target_metric` - target value of the metric. Used in tests. For test to pass, result value should be greater or equal than `target_metric`
@@ -97,12 +127,6 @@ These are parameters used for model export to ONNX & OpenVINO™ IR:
 - `export_ir` - Set this flag to `true` to export model to the OpenVINO IR. For details refer to [convert to IR section](#convert-to-ir)
 - `verbose_export` - Set this flag to `true` to perform verbose export (i.e. print model optimizer commands to terminal)
 
-One can point to pre-trained model [checkpoint](https://download.01.org/opencv/openvino_training_extensions/models/text_spotter/model_step_200000.pth) inside configuration file to start training from pre-trained weights. Change `configs/config.yml`:
-```
-...
-model_path: <path_to_weights>
-...
-```
 
 
 ## Evaluation
