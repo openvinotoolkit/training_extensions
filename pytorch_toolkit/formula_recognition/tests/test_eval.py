@@ -16,7 +16,6 @@
 
 import unittest
 
-import numpy as np
 import yaml
 
 from tools.test import Evaluator
