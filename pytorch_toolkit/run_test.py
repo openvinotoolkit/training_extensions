@@ -15,7 +15,6 @@ class GlobalTest(unittest.TestCase):
         logging.info('Instantiating templates has been started.')
         venv_dir = tempfile.mkdtemp()
         cls.work_dir = tempfile.mkdtemp()
-        #cls.work_dir = '/tmp/TEMPO'
         commands = [
             f'virtualenv -p python3 {venv_dir}',
             f'. {venv_dir}/bin/activate',
