@@ -72,10 +72,9 @@ def postprocess_prediction(pred_phrase_str):
 class Evaluator:
     def __init__(self, config):
         self.config = config
-        root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        self.model_path = os.path.join(root_dir, config.get('model_path'))
-        self.val_path = os.path.join(root_dir, config.get('val_path'))
-        self.vocab = read_vocab(os.path.join(root_dir, config.get('vocab_path')))
+        self.model_path = config.get('model_path')
+        self.val_path = config.get('val_path')
+        self.vocab = read_vocab(config.get('vocab_path'))
         self.val_transforms_list = config.get('val_transforms_list')
         self.split = config.get('split_file', 'validate')
         self.print_freq = config.get('print_freq', 16)

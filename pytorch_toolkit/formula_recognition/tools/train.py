@@ -101,10 +101,9 @@ class Trainer:
     def __init__(self, work_dir, config):
         self.config = config
         self.model_path = config.get('model_path')
-        root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        self.train_paths = [os.path.join(root_dir, p) for p in config.get('train_paths')]
-        self.val_path = os.path.join(root_dir, config.get('val_path'))
-        self.vocab = read_vocab(os.path.join(root_dir, config.get('vocab_path')))
+        self.train_paths = config.get('train_paths')
+        self.val_path = config.get('val_path')
+        self.vocab = read_vocab(config.get('vocab_path'))
         self.train_transforms_list = config.get('train_transforms_list')
         self.val_transforms_list = config.get('val_transforms_list')
         self.total_epochs = config.get('epochs', 30)
@@ -133,7 +132,6 @@ class Trainer:
         self.model = Im2latexModel(config.get('backbone_type', 'resnet'), config.get(
             'backbone_config'), len(self.vocab), config.get('head', {}))
         if self.model_path is not None:
-            self.model_path = os.path.join(root_dir, self.model_path)
             self.model.load_weights(self.model_path, map_location=self.device)
 
         self.optimizer = getattr(optim, config.get('optimizer', "Adam"))(self.model.parameters(), self.learing_rate)

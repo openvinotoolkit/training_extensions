@@ -28,9 +28,8 @@ from evaluation_tools import render_routine
 class Im2latexDemo:
     def __init__(self, config):
         self.config = config
-        self.root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        self.model_path = os.path.join(self.root_dir, config.get('model_path'))
-        self.vocab = read_vocab(os.path.join(self.root_dir, config.get('vocab_path')))
+        self.model_path = config.get('model_path')
+        self.vocab = read_vocab(config.get('vocab_path'))
         self.transform = create_list_of_transforms(config.get('transforms_list'))
         self.model = Im2latexModel(config.get('backbone_type', 'resnet'), config.get(
             'backbone_config'), len(self.vocab), config.get('head', {}))
