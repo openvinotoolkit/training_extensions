@@ -1,0 +1,22 @@
+description: Parking Vehicle Detection based on ResNet34+fpn+CascadeRCNN.
+name: parking-vehicle-detection-0002
+files:
+- name: snapshot.pth
+  sha256: tbd
+  size: tbd
+  source: tbd
+metrics:
+- display_name: Size
+  key: size
+  unit: Mp
+  value: 34.15
+- display_name: Complexity
+  key: complexity
+  unit: GFLOPs
+  value: 190.32
+- display_name: AP @ [IoU=0.50:0.95]
+  key: ap
+  unit: '%'
+  value: 30.4
+training_gpu_num: 1
+show_on_chart: True

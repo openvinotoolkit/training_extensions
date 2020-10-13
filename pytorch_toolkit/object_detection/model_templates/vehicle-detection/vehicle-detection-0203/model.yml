@@ -1,22 +1,22 @@
-description: Vehicle Detection based on ResNet50+fpn+CascadeRCNN.
-name: vehicle-detection-0203
+description: Parking Vehicle Detection based on ResNet50+fpn+CascadeRCNN.
+name: parking-vehicle-detection-0001
 files:
 - name: snapshot.pth
   sha256: ead5df12a041ebba9352aff641614330980f49a9ff9c6b699e053c96e2e4826d
   size: 293685529
-  source: https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/vehicle-detection-0203.pth
+  source: tbd
 metrics:
 - display_name: Size
   key: size
   unit: Mp
-  value: 36.56
+  value: 34.15
 - display_name: Complexity
   key: complexity
   unit: GFLOPs
-  value: 212.22
+  value: 190.32
 - display_name: AP @ [IoU=0.50:0.95]
   key: ap
   unit: '%'
-  value: 32.4
+  value: 30.4
 training_gpu_num: 1
 show_on_chart: True
