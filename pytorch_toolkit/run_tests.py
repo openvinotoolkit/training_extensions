@@ -4,7 +4,6 @@ from subprocess import run
 import sys
 import tempfile
 import unittest
-import logging
 
 import yaml
 
@@ -12,7 +11,6 @@ class GlobalTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        logging.info('Instantiating templates has been started.')
         venv_dir = tempfile.mkdtemp()
         cls.work_dir = tempfile.mkdtemp()
         commands = [
@@ -23,8 +21,6 @@ class GlobalTest(unittest.TestCase):
             f'python tools/instantiate.py {cls.work_dir}'
         ]
         run(';'.join(commands), shell=True, check=True)
-        logging.info('Instantiating templates has been completed.')
-        logging.info('')
 
     def test_existance_of_mandatory_files_in_template_dir(self):
         template_files = glob.glob(f'{self.work_dir}/**/template.yaml', recursive=True)

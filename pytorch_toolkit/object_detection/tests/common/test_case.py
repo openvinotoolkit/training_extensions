@@ -83,7 +83,6 @@ def create_test_case(problem_name, model_name, ann_file, img_root):
             self.assertLess(abs(content['map'] - ap / 100), 1e-6)
 
         def test_finetuning(self):
-                    # def test_evaluation(self):
             run_through_shell(
                 f'cd {self.template_folder};'
                 f'. {self.venv_activate_path};'
