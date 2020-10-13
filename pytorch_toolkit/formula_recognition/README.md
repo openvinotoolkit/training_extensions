@@ -85,16 +85,11 @@ One can use some pretrained models. Right now two models are available:
 * medium model:
     * [checkpoint link](https://download.01.org/opencv/openvino_training_extensions/models/formula_recognition/medium_photograped_0185.pth)
     * digits, letters, some greek letters, fractions, trigonometric operations are supported; for more details, please, look at corresponding vocab file
-    * to use this model, please, change these fields in the config file:
+    * to use this model, just set the correct value to the `model_path` field in the config file:
     ```
-    backbone_config:
-        arch: resnext50_32x4d
-        disable_layer_3: true
-        disable_layer_4: true
     model_path: <path to the model>
-    vocab_path: vocabs/vocab_medium.json
     ```
-The model can be used either for recognizing rendered formulas and for recognizing scanned formulas (e.g. from a scanner or from a phone camera)
+The model can be used either for recognizing rendered formulas or for recognizing scanned formulas (e.g. from a scanner or from a phone camera)
 
 * handwritten polynomials model:
     * [checkpoint](https://download.01.org/opencv/openvino_training_extensions/models/formula_recognition/polynomials_handwritten_0166.pth)
@@ -102,9 +97,7 @@ The model can be used either for recognizing rendered formulas and for recognizi
     * to use this model, please, change these field in the config file:
     ```
     backbone_config:
-        arch: resnext50_32x4d
         disable_layer_3: false
-        disable_layer_4: true
     model_path: <path to the model>
     vocab_path: vocabs/vocab_handwritten_polynomials.json
     ```

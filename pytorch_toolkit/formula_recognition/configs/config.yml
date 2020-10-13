@@ -1,33 +1,33 @@
 train:
   backbone_config:
-    arch: resnext101_32x8d
+    arch: resnext50_32x4d
     disable_layer_3: true
     disable_layer_4: true
   batch_size: 4
   device: cuda
   learning_rate: 0.000001
   log_path: logs
-  model_path: model_checkpoints/medium_0169.pth
+  model_path: model_checkpoints/medium_photograped_0185.pth
   optimizer: Adam
   save_dir: model_checkpoints
   train_paths:
     - datasets/sample_medium_dataset
   val_path: datasets/sample_medium_dataset
-  vocab_path: datasets/sample_medium_dataset/vocab.pkl
+  vocab_path: vocabs/vocab_medium.json
 eval:
   backbone_config:
-    arch: resnext101_32x8d
+    arch: resnext50_32x4d
     disable_layer_3: true
     disable_layer_4: true
   device: cuda
-  model_path: model_checkpoints/medium_0169.pth
+  model_path: model_checkpoints/medium_photograped_0185.pth
   val_path: datasets/sample_medium_dataset
-  vocab_path: datasets/sample_medium_dataset/vocab.pkl
+  vocab_path: vocabs/vocab_medium.json
   split_file: validate
   target_metric: 0.99
 demo:
   backbone_config:
-    arch: resnext101_32x8d
+    arch: resnext50_32x4d
     disable_layer_3: true
     disable_layer_4: true
   device: cuda
@@ -38,18 +38,18 @@ demo:
         - 950
   input_images:
     - datasets/sample_medium_dataset/images_processed/1.png
-  model_path: model_checkpoints/medium_0169.pth
+  model_path: model_checkpoints/medium_photograped_0185.pth
   val_path: datasets/sample_medium_dataset
-  vocab_path: datasets/sample_medium_dataset/vocab.pkl
+  vocab_path: vocabs/vocab_medium.json
   map_location: cuda
 export:
   backbone_config:
-    arch: resnext101_32x8d
+    arch: resnext50_32x4d
     disable_layer_3: true
     disable_layer_4: true
   dummy_input: datasets/sample_medium_dataset/images_processed/1.png
-  model_path: model_checkpoints/medium_0169.pth
-  vocab_path: datasets/sample_medium_dataset/vocab.pkl
+  model_path: model_checkpoints/medium_photograped_0185.pth
+  vocab_path: vocabs/vocab_medium.json
   res_encoder_name: medium_v2_encoder.onnx
   res_decoder_name: medium_v2_decoder.onnx
   export_ir: true
