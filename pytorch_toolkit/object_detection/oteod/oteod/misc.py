@@ -1,6 +1,5 @@
 # pylint: disable=W0702,W1203,R0913
 
-import hashlib
 import json
 import os
 import signal
@@ -38,31 +37,6 @@ class NonBlockingStreamReader:
             return None
 
 
-def replace_text_in_file(path, replace_what, replace_by):
-    """ Replaces text in file. """
-
-    with open(path) as read_file:
-        content = '\n'.join([line.rstrip() for line in read_file])
-        if content.find(replace_what) == -1:
-            return False
-        content = content.replace(replace_what, replace_by)
-    with open(path, 'w') as write_file:
-        write_file.write(content)
-    return True
-
-
-def sha256sum(filename):
-    """ Computes sha256sum. """
-
-    h = hashlib.sha256()
-    b = bytearray(128 * 1024)
-    mv = memoryview(b)
-    with open(filename, 'rb', buffering=0) as f:
-        for n in iter(lambda: f.readinto(mv), 0):
-            h.update(mv[:n])
-    return h.hexdigest()
-
-
 def get_complexity_and_size(cfg, config_path, work_dir, update_config):
     """ Gets complexity and size of a model. """
 
@@ -81,17 +55,6 @@ def get_complexity_and_size(cfg, config_path, work_dir, update_config):
     with open(res_complexity) as read_file:
         content = json.load(read_file)
     return content
-
-
-def get_file_size_and_sha256(snapshot):
-    """ Gets size and sha256 of a file. """
-
-    return {
-        'sha256': sha256sum(snapshot),
-        'size': os.path.getsize(snapshot),
-        'name': os.path.basename(snapshot),
-        'source': snapshot
-    }
 
 
 def run_with_termination(cmd):

@@ -8,7 +8,8 @@ import tempfile
 import yaml
 from mmcv import Config
 from oteod import MMDETECTION_TOOLS
-from oteod.misc import get_complexity_and_size, get_file_size_and_sha256
+from oteod.misc import get_complexity_and_size
+from ote.misc import get_file_size_and_sha256
 
 
 def collect_ap(path):
