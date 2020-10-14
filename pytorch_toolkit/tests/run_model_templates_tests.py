@@ -12,16 +12,8 @@ class ModelTemplatesTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        venv_dir = tempfile.mkdtemp()
         cls.work_dir = tempfile.mkdtemp()
-        commands = [
-            f'virtualenv -p python3 {venv_dir}',
-            f'. {venv_dir}/bin/activate',
-            'pip install -r ote/requirements.txt',
-            'pip install -e ote/',
-            f'python tools/instantiate.py {cls.work_dir}'
-        ]
-        run(';'.join(commands), shell=True, check=True)
+        run(f'python3 tools/instantiate.py {cls.work_dir}', shell=True, check=True)
 
     def test_existance_of_mandatory_files_in_template_dir(self):
         template_files = glob.glob(f'{self.work_dir}/**/template.yaml', recursive=True)
