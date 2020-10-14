@@ -57,8 +57,11 @@ def parse_args():
 if __name__ == "__main__":
     args = parse_args()
     with open(args.config, 'r') as f:
-        config = yaml.load(f, Loader=yaml.SafeLoader).get("demo")
-    demo = Im2latexDemo(config)
+        config = yaml.load(f, Loader=yaml.SafeLoader)
+        demo_config = config.get("demo")
+        common_config = config.get("common")
+        demo_config.update(common_config)
+    demo = Im2latexDemo(demo_config)
     if os.path.isdir(args.input):
         inputs = sorted(os.path.join(args.input, inp)
                         for inp in os.listdir(args.input))

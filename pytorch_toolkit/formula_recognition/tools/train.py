@@ -308,7 +308,10 @@ if __name__ == "__main__":
     args = parse_args()
 
     with open(args.config, 'r') as f:
-        config = yaml.load(f, Loader=yaml.SafeLoader).get("train")
+        config = yaml.load(f, Loader=yaml.SafeLoader)
+        train_config = config.get("train")
+        common_config = config.get("common")
+        train_config.update(common_config)
 
-    experiment = Trainer(work_dir=args.work_dir, config=config)
+    experiment = Trainer(work_dir=args.work_dir, config=train_config)
     experiment.train()

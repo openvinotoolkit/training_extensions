@@ -25,9 +25,12 @@ from tools.export import ONNXExporter
 class TestExport(unittest.TestCase):
     def setUp(self):
         with open('configs/config.yml', 'r') as f:
-            config = yaml.load(f, Loader=yaml.SafeLoader).get('export')
-        self.config = config
-        self.exporter = ONNXExporter(config)
+            config = yaml.load(f, Loader=yaml.SafeLoader)
+            export_config = config.get("export")
+            common_config = config.get("common")
+            export_config.update(common_config)
+        self.config = export_config
+        self.exporter = ONNXExporter(self.config)
 
     def test_1_encoder_export(self):
         try:

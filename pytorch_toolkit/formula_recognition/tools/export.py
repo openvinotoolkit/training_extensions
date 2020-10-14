@@ -95,7 +95,7 @@ class ONNXExporter:
         encoder_outputs = get_onnx_outputs(encoder_onnx)
         encoder_input = get_onnx_inputs(encoder_onnx)[0]
         return encoder_onnx.run(encoder_outputs, {
-            encoder_input: np.array(self.img).astype(np.float32)
+            encoder_input: np.array(self.img, dtype=np.float32)
         })
 
     def export_decoder(self, row_enc_out, h, c, output):
@@ -261,8 +261,11 @@ def parse_args():
 if __name__ == "__main__":
     args = parse_args()
     with open(args.config, 'r') as f:
-        config = yaml.load(f, Loader=yaml.SafeLoader).get("export")
-    exporter = ONNXExporter(config)
+        config = yaml.load(f, Loader=yaml.SafeLoader)
+        export_config = config.get("export")
+        common_config = config.get("common")
+        export_config.update(common_config)
+    exporter = ONNXExporter(export_config)
     exporter.export_encoder()
     row_enc_out, h, c, O_t = exporter.run_encoder()
     exporter.export_decoder(row_enc_out, h, c, O_t)
@@ -270,6 +273,8 @@ if __name__ == "__main__":
     pred_onnx = exporter.vocab.construct_phrase(targets_onnx)
     _, targets_pytorch = exporter.model(exporter.img)
     pred_pytorch = exporter.vocab.construct_phrase(targets_pytorch[0])
+    print("Predicted with PyTorch: {}".format(pred_pytorch))
+    print("Predicted with ONNX: {}".format(pred_onnx))
     print("Predicted with ONNX is equal to PyTorch: {}".format(pred_onnx == pred_pytorch))
     if config.get("export_ir"):
         exporter.export_encoder_ir()
@@ -277,3 +282,5 @@ if __name__ == "__main__":
         targets_ir = exporter.run_ir_model()
         ir_pred = exporter.vocab.construct_phrase(targets_ir)
         print("Predicted with OpenvinoIR is equal to PyTorch: {}".format(ir_pred == pred_pytorch))
+        print("Predicted with OpenvinoIR: {}".format(ir_pred))
+        print("Predicted with PyTorch: {}".format(pred_pytorch))

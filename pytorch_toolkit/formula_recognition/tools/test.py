@@ -128,7 +128,10 @@ def parse_args():
 if __name__ == "__main__":
     args = parse_args()
     with open(args.config, 'r') as f:
-        config = yaml.load(f, Loader=yaml.SafeLoader).get("eval")
-    validator = Evaluator(config)
+        config = yaml.load(f, Loader=yaml.SafeLoader)
+        test_config = config.get("eval")
+        common_config = config.get("common")
+        test_config.update(common_config)
+    validator = Evaluator(test_config)
     result = validator.validate()
     print("Im2latex metric is: {}".format(result))
