@@ -7,7 +7,8 @@ import unittest
 
 import yaml
 
-class GlobalTest(unittest.TestCase):
+
+class ModelTemplatesTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -59,8 +60,8 @@ class GlobalTest(unittest.TestCase):
 
 
 def main():
-    testsuite = unittest.TestLoader().discover('.', pattern='*.py')
-    ret = not unittest.TextTestRunner(verbosity=1).run(testsuite).wasSuccessful()
+    suite = unittest.TestSuite((ModelTemplatesTestCase(), ))
+    ret = not unittest.TextTestRunner(verbosity=1).run(suite).wasSuccessful()
     sys.exit(ret)
 
 
