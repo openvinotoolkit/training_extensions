@@ -1,6 +1,6 @@
-# PyTorch realization of the Im2Markup
+# PyTorch realization of the Formula Recognition
 
-This repository is based on a [PyTorch realization](https://github.com/luopeixiang/im2latex/) of the code from the original [repository](https://github.com/harvardnlp/im2markup/).
+This code is based on a [PyTorch realization](https://github.com/luopeixiang/im2latex/) of the code from the original [repository](https://github.com/harvardnlp/im2markup/).
 Models code is designed to enable ONNX\* export and inference on CPU\GPU via OpenVINO™.
 
 ## Setup
@@ -22,7 +22,7 @@ bash init_venv.sh
 
 ### Download Datasets
 
-For training model one has to have dataset. Dataset format is similiar to [im2latex-100k](https://zenodo.org/record/56198#.X2NDQ2gzaUl). Main structure of the dataset is following:
+Dataset format is similar to [im2latex-100k](https://zenodo.org/record/56198#.X2NDQ2gzaUl). Main structure of the dataset is following:
 * `formulas_file` - file with one formula per line
 * `images_folder` - folder containing input images
 * `split_file` - this file contains `image_name` (tab symbol) `formula_idx` per line connecting corresponding index of the formula in the file with formulas and particular image with `image_name`. Example:
@@ -68,8 +68,8 @@ The config file is divided into 4 sections: train, eval, export, demo. In every 
 - `model_path` - path for model
 - `val_path` - path for validation data
 - `vocab_path` - path where vocab file is stored
-- `val_transforms_list` - here you can describe set of desirable transformations for validation datasets respectively An example is given in the config file, for other options, please, refer to [constructor of transforms (section `create_list_of_transforms`)](im2latex/data/utils.py)
-- `device` - device for training, used in PyTorch .to() method. Possible options: 'cuda', 'cpu', etc. `cpu` is used by default.
+- `val_transforms_list` - here you can describe set of desirable transformations for validation datasets respectively. An example is given in the config file, for other options, please, refer to [constructor of transforms (section `create_list_of_transforms`)](im2latex/data/utils.py)
+- `device` - device for training, used in PyTorch .to() method. Possible options: 'cuda', 'cpu'. `cpu` is used by default.
 #### Training-specific parameters
 In addition to common parameters you can specify the following arguments:
 - `batch_size` - batch size used for training
@@ -77,8 +77,8 @@ In addition to common parameters you can specify the following arguments:
 - `log_path` - path to store training logs
 - `optimizer` - Adam or SGD
 - `save_dir` - dir to save checkpoints
-- `train_paths` - list of paths from where get training data (if more than one path is specified, datasets are concatenated). If one wants to concatenate more than one instance of the desirable dataset, this dataset should be specified several times.
-- `train_transforms_list` - similiar to `val_transforms_list`
+- `train_paths` - list of paths from where to get training data (if more than one path is specified, datasets are concatenated). If one wants to concatenate more than one instance of the desirable dataset, this dataset should be specified several times.
+- `train_transforms_list` - similar to `val_transforms_list`
 - `epochs` - number of epochs to train
 
 One can use some pretrained models. Right now two models are available:
@@ -112,7 +112,7 @@ All the above models can be used for aftertuning or as ready for inference model
 - `input_images` - list of paths for input images
 
 #### Export-specific parameters
-These are parameters used for model export to ONNX & OpenVINO™ IR:
+These parameters are used for model export to ONNX & OpenVINO™ IR:
 - `res_encoder_name` - filename to save the converted encoder model (with `.onnx` postfix)
 - `res_decoder_name` - filename to save the converted decoder model (with `.onnx` postfix)
 - `dummy_input` - input image used for tracing PT model and creating onnx graph. This image is also used to compare that outputs from ONNX model and PyTorch model are the same.
@@ -121,14 +121,13 @@ These are parameters used for model export to ONNX & OpenVINO™ IR:
 - `verbose_export` - Set this flag to `true` to perform verbose export (i.e. print model optimizer commands to terminal)
 
 
-
 ## Evaluation
 
 `tools/test.py` script is designed for quality evaluation of im2latex models.
 
 ### PyTorch
 
-Config file of the evaluation is similiar to train config:
+Config file of the evaluation is similar to train config:
 
 ```bash
 python tools/test.py --config configs/config.yml
