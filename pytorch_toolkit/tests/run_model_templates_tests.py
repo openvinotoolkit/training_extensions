@@ -59,11 +59,5 @@ class ModelTemplatesTestCase(unittest.TestCase):
                 f'python3 {os.path.join(domain_folder, "tests", "run_export_tests.py")}', shell=True)
 
 
-def main():
-    suite = unittest.TestSuite((ModelTemplatesTestCase(), ))
-    ret = not unittest.TextTestRunner(verbosity=1).run(suite).wasSuccessful()
-    sys.exit(ret)
-
-
 if __name__ == '__main__':
-    main()
+    unittest.main()
