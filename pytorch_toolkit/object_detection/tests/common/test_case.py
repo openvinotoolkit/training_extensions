@@ -74,30 +74,7 @@ def create_test_case(problem_name, model_name, ann_file, img_root):
             with open(os.path.join(self.template_folder, "metrics.yaml")) as read_file:
                 content = yaml.load(read_file, yaml.SafeLoader)
 
-            ap = [metrics['value']
-                  for metrics in content['metrics'] if metrics['key'] == 'ap'][0]
-
-            with open(f'{os.path.dirname(__file__)}/../expected_outputs/{problem_name}/{model_name}.json') as read_file:
-                content = json.load(read_file)
-
-            self.assertLess(abs(content['map'] - ap / 100), 1e-6)
-
-        def test_finetuning(self):
-            run_through_shell(
-                f'cd {self.template_folder};'
-                f'. {self.venv_activate_path};'
-                f'python eval.py'
-                f' --test-ann-files {self.ann_file}'
-                f' --test-data-roots {self.img_root}'
-                f' --save-metrics-to metrics.yaml'
-                f' --load-weights snapshot.pth'
-                )
-
-            with open(os.path.join(self.template_folder, "metrics.yaml")) as read_file:
-                content = yaml.load(read_file, yaml.SafeLoader)
-
-            ap = [metrics['value']
-                  for metrics in content['metrics'] if metrics['key'] == 'ap'][0]
+            ap = [metrics['value'] for metrics in content['metrics'] if metrics['key'] == 'ap'][0]
 
             with open(f'{os.path.dirname(__file__)}/../expected_outputs/{problem_name}/{model_name}.json') as read_file:
                 content = json.load(read_file)
@@ -106,24 +83,6 @@ def create_test_case(problem_name, model_name, ann_file, img_root):
 
         def test_finetuning(self):
             log_file = os.path.join(self.template_folder, 'test_finetuning.log')
-            run_through_shell(
-                f'cd {self.template_folder};'
-                f'. {self.venv_activate_path};'
-                f'python train.py'
-                f' --train-ann-files {self.ann_file}'
-                f' --train-data-roots {self.img_root}'
-                f' --val-ann-files {self.ann_file}'
-                f' --val-data-roots {self.img_root}'
-                f' --resume-from snapshot.pth'
-                f' --save-checkpoints-to {self.template_folder}'
-                f' --gpu-num 1'
-                f' --batch-size 1'
-                f' --epochs {self.total_epochs}'
-                f' | tee {log_file}')
-
-            ap = collect_ap(log_file)
-            self.assertEqual(len((ap)), self.epochs_delta)
-            self.assertGreater(ap[-1], 0)
             run_through_shell(
                 f'cd {self.template_folder};'
                 f'. {self.venv_activate_path};'
