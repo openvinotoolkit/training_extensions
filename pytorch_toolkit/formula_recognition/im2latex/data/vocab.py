@@ -106,7 +106,7 @@ def write_vocab(data_dir, as_json=True):
     vocab = Vocab()
     formulas_file = join(data_dir, 'formulas.norm.lst')
     with open(formulas_file, 'r') as f:
-        formulas = [formula.strip('\n') for formula in f.readlines()]
+        formulas = [formula.strip('\n') for formula in f]
 
     with open(join(data_dir, 'train_filter.lst'), 'r') as f:
 
