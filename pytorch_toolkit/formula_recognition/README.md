@@ -89,7 +89,7 @@ One can use some pretrained models. Right now two models are available:
     ```
     model_path: <path to the model>
     ```
-The model can be used either for recognizing rendered formulas or for recognizing scanned formulas (e.g. from a scanner or from a phone camera)
+The model can be used for recognizing both rendered and scanned formulas (e.g. from a scanner or from a phone camera)
 
 * handwritten polynomials model:
     * [checkpoint](https://download.01.org/opencv/openvino_training_extensions/models/formula_recognition/polynomials_handwritten_0166.pth)
