@@ -36,6 +36,8 @@ def train_args_parser(template_path):
         parser.add_argument('--gpu-num', type=int,
                             default=config['gpu_num'],
                             help='Number of GPUs that will be used in training, 0 is for CPU mode.')
+        parser.add_argument('--tensorboard-dir',
+                            help='Location where tensorboard logs will be stored.')
         parser.add_argument('--config', default=config['config'], help=argparse.SUPPRESS)
 
     return parser

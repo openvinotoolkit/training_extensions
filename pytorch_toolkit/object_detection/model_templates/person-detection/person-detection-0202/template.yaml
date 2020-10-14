@@ -18,9 +18,9 @@ dependencies:
 - source: ../../../tools/quantize.py
   destination: quantize.py
 - source: ../../../../../pytorch_toolkit/ote
-  destination: ote
+  destination: packages/ote
 - source: ../../../../object_detection/oteod
-  destination: oteod
+  destination: packages/oteod
 - source: ../../requirements.txt
   destination: requirements.txt
 max_nodes: 1
@@ -57,5 +57,5 @@ metrics:
   unit: '%'
   value: 32.8
 gpu_num: 2
+tensorboard: true
 config: model.py
-estimated_batch_time: 1.0

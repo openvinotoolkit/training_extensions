@@ -30,6 +30,7 @@ def convert_ote_to_oteod_train_args(template_folder, args):
         'gpu_num': args['gpu_num'],
         'out': os.path.join(args['save_checkpoints_to'], MODEL_TEMPLATE_FILENAME),
         'update_config': update_config,
+        'tensorboard_dir': args['tensorboard_dir']
     }
 
     return oteod_args

@@ -26,7 +26,7 @@ cd <training_extensions>/pytorch_toolkit/object_detection
 ```bash
 export MODEL_TEMPLATE=`realpath ./model_templates/custom-detection/mobilenet_v2-2s_ssd-256x256/template.yaml`
 export WORK_DIR=/tmp/my_model
-python tools/instantiate_template.py ${MODEL_TEMPLATE} ${WORK_DIR}
+python ../tools/instantiate_template.py ${MODEL_TEMPLATE} ${WORK_DIR}
 ```
 
 ### 2. Collect dataset
@@ -35,7 +35,7 @@ You can train a model on existing toy dataset `training_extensions/data/airport`
 
 ### 3. Prepare annotation
 
-The existing toy dataset has annotation in the Common Objects in Context (COCO) so it is enough to get started.
+The existing toy dataset has annotation in the Common Objects in Context (COCO) format so it is enough to get started.
 
 ```bash
 export OBJ_DET_DIR=`pwd`
@@ -59,11 +59,9 @@ Since custom detection model templates rather than ready-to-use models (though t
 export CLASSES="vehicle,person,non-vehicle"
 ```
 
-### 6. Training and Fine-tuning
+### 6. Training
 
-To start **training** from pre-trained weights use `--load-weights` pararmeter. Parameters such as `--epochs`, `--batch-size` and `--gpu-num` can be omitted, default values will be loaded from `${MODEL_TEMPLATE}`. Please be aware of default values for these parameters in particular `{MODEL_TEMPLATE}`.
-
-Also you can use parameters such as `--epochs`, `--batch-size`, `--gpu-num`, `--base-learning-rate`, otherwise default values will be loaded from `${MODEL_TEMPLATE}`.
+To start training from pre-trained weights use `--load-weights` pararmeter.
 
 ```bash
 python train.py \
@@ -75,6 +73,8 @@ python train.py \
    --save-checkpoints-to ${WORK_DIR}/outputs \
    --classes ${CLASSES}
 ```
+
+Also you can use parameters such as `--epochs`, `--batch-size`, `--gpu-num`, `--base-learning-rate`, otherwise default values will be loaded from `${MODEL_TEMPLATE}`.
 
 ### 7. Evaluation
 
@@ -116,7 +116,7 @@ python export.py \
 This produces model `model.xml` and weights `model.bin` in single-precision floating-point format
 (FP32). The obtained model expects **normalized image** in planar BGR format.
 
-For SSD networks an alternative OpenVINO™ representation is done automatically to `${WORK_DIR}/export/alt_ssd_export` folder.
+For SSD networks an alternative OpenVINO™ representation is saved automatically to `${WORK_DIR}/export/alt_ssd_export` folder.
 SSD model exported in such way will produce a bit different results (non-significant in most cases),
 but it also might be faster than the default one. As a rule SSD models in [Open Model Zoo](https://github.com/opencv/open_model_zoo/) are exported using this option.
 

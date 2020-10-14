@@ -14,13 +14,17 @@ from oteod import MMDETECTION_TOOLS
 from oteod.misc import run_with_termination
 
 
-def train_internal(config, gpu_num, update_config):
+def train_internal(config, gpu_num, update_config, tensorboard_dir):
+    tensorboard_dir = f' --tensorboard-dir {tensorboard_dir}' if tensorboard_dir is not None else ''
+
     training_info = {'training_gpu_num': 0}
     if os.getenv('MASTER_ADDR') is not None and os.getenv('MASTER_PORT') is not None:
+        # Distributed training is handled by Kubeflow’s PyTorchJob at a higher level.
         logging.info('Distributed training started ...')
         run_with_termination(f'python {MMDETECTION_TOOLS}/train.py'
                              f' --launcher=pytorch'
                              f' {config}'
+                             f'{tensorboard_dir}'
                              f'{update_config}'.split(' '))
         logging.info('... distributed training completed.')
     elif torch.cuda.is_available():
@@ -34,6 +38,7 @@ def train_internal(config, gpu_num, update_config):
         run_with_termination(f'{MMDETECTION_TOOLS}/dist_train.sh'
                              f' {config}'
                              f' {gpu_num}'
+                             f'{tensorboard_dir}'
                              f'{update_config}'.split(' '))
         training_info['training_gpu_num'] = gpu_num
         logging.info('... training on GPUs completed.')
@@ -41,6 +46,7 @@ def train_internal(config, gpu_num, update_config):
         logging.info('Training on CPU started ...')
         run_with_termination(f'python {MMDETECTION_TOOLS}/train.py'
                              f' {config}'
+                             f'{tensorboard_dir}'
                              f'{update_config}'.split(' '))
         logging.info('... training on CPU completed.')
 
@@ -104,7 +110,7 @@ def cluster(cfg, config_path, update_config):
     return update_config
 
 
-def train(config, gpu_num, out, update_config):
+def train(config, gpu_num, out, update_config, tensorboard_dir):
     """ Main function. """
 
     logging.basicConfig(level=logging.INFO)
@@ -119,7 +125,7 @@ def train(config, gpu_num, out, update_config):
         update_config = cluster(cfg, config, update_config)
 
     logging.info('Training started ...')
-    training_info = train_internal(config, gpu_num, update_config)
+    training_info = train_internal(config, gpu_num, update_config, tensorboard_dir)
     logging.info('... training completed.')
 
     with open(out, 'a+') as dst_file:

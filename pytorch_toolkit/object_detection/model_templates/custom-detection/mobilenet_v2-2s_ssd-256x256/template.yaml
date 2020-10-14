@@ -6,32 +6,32 @@ summary: Custom Object Detection based on MobileNetV2 (SSD).
 annotation_format: COCO
 classes: []
 dependencies:
-  - sha256: b728f07bc7297f0c0606082a8e2cfabf4bebd1450f738c5eff4a10908db48b4c
-    size: 8158061
-    source: https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/mobilenet_v2-2s_ssd-256x256.pth
-    destination: snapshot.pth
-  - source: ../tools/train.py
-    destination: train.py
-  - source: ../tools/eval.py
-    destination: eval.py
-  - source: ../../../tools/export.py
-    destination: export.py
-  - source: ../../../tools/quantize.py
-    destination: quantize.py
-  - source: ../../../../../pytorch_toolkit/ote
-    destination: ote
-  - source: ../../../../object_detection/oteod
-    destination: oteod
-  - source: ../../requirements.txt
-    destination: requirements.txt
+- sha256: b728f07bc7297f0c0606082a8e2cfabf4bebd1450f738c5eff4a10908db48b4c
+  size: 8158061
+  source: https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/mobilenet_v2-2s_ssd-256x256.pth
+  destination: snapshot.pth
+- source: ../tools/train.py
+  destination: train.py
+- source: ../tools/eval.py
+  destination: eval.py
+- source: ../../../tools/export.py
+  destination: export.py
+- source: ../../../tools/quantize.py
+  destination: quantize.py
+- source: ../../../../../pytorch_toolkit/ote
+  destination: packages/ote
+- source: ../../../../object_detection/oteod
+  destination: packages/oteod
+- source: ../../requirements.txt
+  destination: requirements.txt
 max_nodes: 1
 training_target:
-  - CPU
-  - GPU
+- CPU
+- GPU
 inference_target:
-  - CPU
-  - iGPU
-  - VPU
+- CPU
+- iGPU
+- VPU
 hyper_parameters:
   basic:
     batch_size: 64
@@ -45,18 +45,18 @@ output_format:
     input_format: BGR
 quantization: TBD
 metrics:
-  - display_name: Size
-    key: size
-    unit: Mp
-    value: 1.99
-  - display_name: Complexity
-    key: complexity
-    unit: GFLOPs
-    value: 0.86
-  - display_name: AP @ [IoU=0.50:0.95]
-    key: ap
-    unit: '%'
-    value: 11.3
+- display_name: Size
+  key: size
+  unit: Mp
+  value: 1.99
+- display_name: Complexity
+  key: complexity
+  unit: GFLOPs
+  value: 0.86
+- display_name: AP @ [IoU=0.50:0.95]
+  key: ap
+  unit: '%'
+  value: 11.3
 gpu_num: 3
+tensorboard: true
 config: model.py
-estimated_batch_time: 1.0

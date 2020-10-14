@@ -26,7 +26,7 @@ cd <training_extensions>/pytorch_toolkit/object_detection
 ```bash
 export MODEL_TEMPLATE=`realpath ./model_templates/face-detection/face-detection-0200/template.yaml`
 export WORK_DIR=/tmp/my_model
-python tools/instantiate_template.py ${MODEL_TEMPLATE} ${WORK_DIR}
+python ../tools/instantiate_template.py ${MODEL_TEMPLATE} ${WORK_DIR}
 ```
 
 ### 2. Collect dataset
@@ -90,7 +90,7 @@ Try both following variants and select the best one:
 
       Also you can use parameters such as `--epochs`, `--batch-size`, `--gpu-num`, `--base-learning-rate`, otherwise default values will be loaded from `${MODEL_TEMPLATE}`.
 
-   * If you would like to start **fine-tuning** from pre-trained weights use `--resume-from` pararmeter and value of `--epochs` have to exceeds value stored inside `${MODEL_TEMPLATE}` file, otherwise training will be ended immideately. Here we add `5` additional epochs.
+   * If you would like to start **fine-tuning** from pre-trained weights use `--resume-from` parameter and value of `--epochs` have to exceed the value stored inside `${MODEL_TEMPLATE}` file, otherwise training will be ended immediately. Here we add `5` additional epochs.
 
       ```bash
       export ADD_EPOCHS=5
@@ -155,7 +155,7 @@ python export.py \
 This produces model `model.xml` and weights `model.bin` in single-precision floating-point format
 (FP32). The obtained model expects **normalized image** in planar BGR format.
 
-For SSD networks an alternative OpenVINO™ representation is done automatically to `${WORK_DIR}/export/alt_ssd_export` folder.
+For SSD networks an alternative OpenVINO™ representation is saved automatically to `${WORK_DIR}/export/alt_ssd_export` folder.
 SSD model exported in such way will produce a bit different results (non-significant in most cases),
 but it also might be faster than the default one. As a rule SSD models in [Open Model Zoo](https://github.com/opencv/open_model_zoo/) are exported using this option.
 

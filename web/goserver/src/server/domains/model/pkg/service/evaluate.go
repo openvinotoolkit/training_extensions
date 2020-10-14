@@ -124,8 +124,8 @@ func (s *basicModelService) prepareEvaluateCommands(evalYml, outputImagesPath st
 	}
 	paramsStr := strings.Join(paramsArr, " ")
 	commands := []string{
-		fmt.Sprintf(`pip install -e %s`, fp.Join(problem.ToolsPath, "ote")),
-		fmt.Sprintf(`pip install -e %s`, fp.Join(problem.ToolsPath, "oteod")),
+		fmt.Sprintf(`pip install -e %s`, fp.Join(problem.ToolsPath, "packages", "ote")),
+		fmt.Sprintf(`pip install -e %s`, fp.Join(problem.ToolsPath, "packages", "oteod")),
 		fmt.Sprintf(`python %s %s`, model.Scripts.Eval, paramsStr),
 	}
 	return commands

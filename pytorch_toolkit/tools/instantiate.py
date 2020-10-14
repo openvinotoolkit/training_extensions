@@ -13,12 +13,12 @@
 # and limitations under the License.
 
 import argparse
-import os
 import glob
+import os
 from subprocess import run
 
-from tqdm import tqdm
 import yaml
+from tqdm import tqdm
 
 
 def parse_args():

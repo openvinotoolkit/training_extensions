@@ -5,8 +5,8 @@ framework: OTEDetection v2.1.0.1
 summary: Face Detection based on ShuffleNetV2 (SSD).
 annotation_format: COCO
 dependencies:
-- sha256: 14cc5ed83c8937dcccd2ecd5a9082624de3774a8339ea2792aa8b20efdbb8a57
-  size: 12680858
+- sha256: 5edf9c5d3f518070671cade4cc3e1c01b559d388a10c2bdc954156fe361fe34f
+  size: 6666677
   source: https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/face-detection-0207.pth
   destination: snapshot.pth
 - source: ../tools/train.py
@@ -18,9 +18,9 @@ dependencies:
 - source: ../../../tools/quantize.py
   destination: quantize.py
 - source: ../../../../../pytorch_toolkit/ote
-  destination: ote
+  destination: packages/ote
 - source: ../../../../object_detection/oteod
-  destination: oteod
+  destination: packages/oteod
 - source: ../../requirements.txt
   destination: requirements.txt
 max_nodes: 1
@@ -73,5 +73,5 @@ metrics:
   unit: GFLOPs
   value: 1.04
 gpu_num: 1
+tensorboard: true
 config: model.py
-estimated_batch_time: 1.0
