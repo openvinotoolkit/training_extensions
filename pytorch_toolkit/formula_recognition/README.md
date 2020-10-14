@@ -64,7 +64,7 @@ The config file is divided into 4 sections: train, eval, export, demo. In every 
     * `encoder_hidden_size ` - number of channels in encoding
     * `encoder_input_size ` - number of input in lstm channels, should be equal to `backbone_config.in_lstm_ch`
     * `max_len` - maximum possible length of the predicted formula
-    * `n_layer` - describe
+    * `n_layer` - number of layers in the trainable initial hidden state for each row
 - `model_path` - path for model
 - `val_path` - path for validation data
 - `vocab_path` - path where vocab file is stored
