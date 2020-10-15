@@ -15,7 +15,7 @@ class ModelTemplatesTestCase(unittest.TestCase):
         cls.work_dir = tempfile.mkdtemp()
         run(f'python3 tools/instantiate.py {cls.work_dir}', shell=True, check=True)
 
-    def test_existance_of_mandatory_files_in_template_dir(self):
+    def test_existence_of_mandatory_files_in_template_dir(self):
         template_files = glob.glob(f'{self.work_dir}/**/template.yaml', recursive=True)
         for template in template_files:
             template_dirname = os.path.dirname(template)
