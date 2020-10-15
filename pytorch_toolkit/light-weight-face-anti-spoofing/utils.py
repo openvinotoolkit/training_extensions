@@ -105,26 +105,25 @@ def precision(output, target, s=None):
 def mixup_target(input_, target, config, device):
     # compute mix-up augmentation
     input_, target_a, target_b, lam = mixup_data(input_, target, config.aug.alpha,
-                                                config.aug.beta, device)
+                                                config.aug.beta, device, config.aug.aug_prob)
     return input_, target_a, target_b, lam
 
-def mixup_data(x, y, alpha=1.0, beta=1.0, device='cuda:0'):
+def mixup_data(x, y, alpha=1.0, beta=1.0, device='cuda:0', aug_prob=1.):
     '''Returns mixed inputs, pairs of targets, and lambda'''
-    if alpha > 0:
+    r = np.random.rand(1)
+    if (alpha > 0) and (beta > 0) and (r <= aug_prob):
         lam = np.random.beta(alpha, beta)
-    else:
-        lam = 1
+        batch_size = x.size()[0]
+        index = torch.randperm(batch_size).to(device)
 
-    batch_size = x.size()[0]
-    index = torch.randperm(batch_size).to(device)
-
-    mixed_x = lam * x + (1 - lam) * x[index, :]
-    y_a, y_b = y, y[index]
-    return mixed_x, y_a, y_b, lam
+        mixed_x = lam * x + (1 - lam) * x[index, :]
+        y_a, y_b = y, y[index]
+        return mixed_x, y_a, y_b, lam
+    return x, y, y, 0
 
 def cutmix(input_, target, config, device='cuda:0'):
     r = np.random.rand(1)
-    if (config.aug.beta > 0) and (config.aug.alpha > 0) and (r < config.aug.cutmix_prob):
+    if (config.aug.beta > 0) and (config.aug.alpha > 0) and (r <= config.aug.aug_prob):
         # generate mixed sample
         lam = np.random.beta(config.aug.alpha > 0, config.aug.beta > 0)
         rand_index = torch.randperm(input_.size()[0]).to(device)

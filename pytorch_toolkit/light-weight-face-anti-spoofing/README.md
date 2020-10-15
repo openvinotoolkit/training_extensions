@@ -64,11 +64,11 @@ The script for training and inference uses a configuration file. This is [defaul
 * **resize** - resize of the image
 * **checkpoint** - the name of the checkpoint to save and the path to the experiment folder where checkpoint, tensorboard logs and eval metrics will be kept
 * **loss** - there are available two possible losses: `amsoftmax` with `cos`, `arcos`, `cross_enropy` margins and `soft_triple` with different number of inner classes. For more details about this soft triple loss see in [paper](https://arxiv.org/pdf/1909.05235.pdf)
-* **loss.amsoftmax.ratio**a  - there is availability to use different m for different classes. The ratio is the weights on which provided `m` will be divided for a specific class. For example ratio = [1,2] means that m for the first class will equal to m, but for the second will equal to m/2
+* **loss.amsoftmax.ratio**  - there is availability to use different m for different classes. The ratio is the weights on which provided `m` will be divided for a specific class. For example ratio = [1,2] means that m for the first class will equal to m, but for the second will equal to m/2
 * **loss.amsoftmax.gamma** - if this constant differs from 0 then the focal loss will be switched on with the corresponding gamma
-* **For soft triple loss**: `Cn` - number of classes, `K` - number of proxies for each class, `tau` - parameter for regularisation number of proxies
-* **model** - there are parameters concern model. `pretrained` means that you want to train with the imagenet weights (you can download weights from [google drive](https://drive.google.com/drive/u/0/folders/1A6wa3AlrdjyNPkXT81knIzXxR7SAYm1q) and specify the path to it in the `imagenet weights` parameter. **model_type** - type of the model, 'Mobilenet3' and 'Mobilenet2' are available. **size** param means the size of the mobilenetv3, there are 'large' and 'small' options. Note that this will change mobilenev3 only. **embeding_dim** - the size of the embeding (vector of features after average pooling). **width_mult** - the width scaling parameter of the model. Note, that you will need the appropriate imagenet weights if you want to train your model with transfer learning. On google drive weights with 0.75, 1.0 value of this parameter is available
-* **aug** - advanced augmentation, appropriate value for type is 'cutmix' or 'mixup. lambda = BetaDistribution(alpha, beta), cutmix_prob - probability of applying cutmix on image.
+* **For soft triple loss**: `Cn` - number of classes, `K` - number of proxies for each class, `tau` - parameter for regularization number of proxies
+* **model** - there are parameters concerning model. `pretrained` means that you want to train with the imagenet weights (you can download weights from [google drive](https://drive.google.com/drive/u/0/folders/1A6wa3AlrdjyNPkXT81knIzXxR7SAYm1q) and specify the path to it in the `imagenet weights` parameter. **model_type** - type of the model, 'Mobilenet3' and 'Mobilenet2' are available. **size** param means the size of the mobilenetv3, there are 'large' and 'small' options. Note that this will change mobilenev3 only. **embeding_dim** - the size of the embeding (vector of features after average pooling). **width_mult** - the width scaling parameter of the model. Note, that you will need the appropriate imagenet weights if you want to train your model with transfer learning. On google drive weights with 0.75, 1.0 values of this parameter are available
+* **aug** - there are some advanced augmentations are available. You can specify `cutmix` or `mixup` and appropriate params for them. `alpha` and `beta` are used for choosing `lambda` from beta distribution, `aug_prob` response for the probability of applying augmentation on the image.
 * **curves** - you can specify the name of the curves, then set option `--draw_graph` to `True` when evaluating with eval_protocol.py script
 * **dropout** - `bernoulli` and `gaussian` dropouts are available with respective parameters
 * **data_parallel** - you can train your network on several GPU
@@ -114,7 +114,7 @@ You will see the mean difference (L1 metric distance) on the first and second pr
 
 ## Demo
 ![demo.png](./demo/demo.png)
-To start demo you need to [download] OpenVINO™ face detector model. Concretely, you will need `face-detection-0100` version. 
+To start demo you need to [download] OpenVINO™ face detector model. Concretely, you will need `face-detection-0100` version.
 On [google drive](https://drive.google.com/drive/u/0/folders/1A6wa3AlrdjyNPkXT81knIzXxR7SAYm1q) you will see a trained antispoofing model that you can download and run, or choose your own trained model. Use OpenVINO™ format to obtain the best performance speed, but PyTorch format will work as well.
 
 After preparation start demo by running:

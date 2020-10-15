@@ -54,7 +54,7 @@ model= dict(model_type='Mobilenet3',
 aug = dict(type_aug=None,
             alpha=0.5,
             beta=0.5,
-            cutmix_prob=0.7)
+            aug_prob=0.7)
 
 curves = dict(det_curve='det_curve_0.png',
               roc_curve='roc_curve_0.png')
