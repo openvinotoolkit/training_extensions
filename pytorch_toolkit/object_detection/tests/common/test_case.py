@@ -16,7 +16,6 @@ import json
 import os
 import unittest
 import tempfile
-import logging
 
 import yaml
 
