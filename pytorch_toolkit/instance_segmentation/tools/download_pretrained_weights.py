@@ -158,7 +158,7 @@ def main(args):
                                    '--input_model', output_onnx_file,
                                    '--output_dir', output_ir_dir,
                                    '--input', 'im_data,im_info',
-                                   '--output', 'boxes,scores,classes,batch_ids,raw_masks',
+                                   '--output', 'boxes,scores,classes,raw_masks',
                                    '--mean_values',
                                    'im_data{},im_info[0,0,0]'.format(str(target['mean_pixel']).replace(' ', ''))
                                    ])
