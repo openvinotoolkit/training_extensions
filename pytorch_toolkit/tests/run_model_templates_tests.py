@@ -35,8 +35,9 @@ class ModelTemplatesTestCase(unittest.TestCase):
                 domain_folders.add(domain_folder)
 
         for domain_folder in domain_folders:
-            run(f'export MODEL_TEMPLATES={self.work_dir};'
-                f'python3 {os.path.join(domain_folder, "tests", "run_train_tests.py")}', shell=True)
+            returncode = run(f'export MODEL_TEMPLATES={self.work_dir};'
+                f'python3 {os.path.join(domain_folder, "tests", "run_train_tests.py")}', shell=True).returncode
+            self.assertEqual(returncode, 0)
 
     def test_export(self):
         template_files = glob.glob(f'{self.work_dir}/**/template.yaml', recursive=True)
@@ -47,8 +48,9 @@ class ModelTemplatesTestCase(unittest.TestCase):
                 domain_folders.add(domain_folder)
 
         for domain_folder in domain_folders:
-            run(f'export MODEL_TEMPLATES={self.work_dir};'
-                f'python3 {os.path.join(domain_folder, "tests", "run_export_tests.py")}', shell=True)
+            returncode = run(f'export MODEL_TEMPLATES={self.work_dir};'
+                f'python3 {os.path.join(domain_folder, "tests", "run_export_tests.py")}', shell=True).returncode
+            self.assertEqual(returncode, 0)
 
 
 if __name__ == '__main__':

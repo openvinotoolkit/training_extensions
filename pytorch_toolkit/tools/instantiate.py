@@ -60,10 +60,10 @@ def main():
         instance_folder = os.path.join(problem_folder, model_folder)
 
         if args.do_not_load_snapshots:
-            run(f'python tools/instantiate_template.py {template_filename} {instance_folder}'
+            run(f'python3 tools/instantiate_template.py {template_filename} {instance_folder}'
                 f' --do-not-load-snapshot', check=True, shell=True)
         else:
-            run(f'python tools/instantiate_template.py {template_filename} {instance_folder}',
+            run(f'python3 tools/instantiate_template.py {template_filename} {instance_folder}',
                 check=True, shell=True)
 
         problem_dict = problems_dict[content['problem']]
