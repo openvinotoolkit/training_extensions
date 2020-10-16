@@ -29,6 +29,7 @@ Dataset format is similar to [im2latex-100k](https://zenodo.org/record/56198#.X2
     ```
     11.png  11
     34.png  34
+    ...
     ```
     There should be at least two such files: `train_filter.lst` and `validate_filter.lst`
 
@@ -44,12 +45,12 @@ Dataset format is similar to [im2latex-100k](https://zenodo.org/record/56198#.X2
 To train formula recognition model run:
 
 ```bash
-python tools/train.py --config configs/config.yml --work_dir <path to work dir>
+python tools/train.py --config configs/medium_config.yml --work_dir <path to work dir>
 ```
 Work dir is used to store information about learning: saved model checkpoints, logs.
 
 ### Description of possible options in config:
-The config file is divided into 4 sections: train, eval, export, demo. In every section there could exist common parameter as well as unique parameters.
+The config file is divided into 5 sections: common, train, eval, export, demo. Common parameters (like path to the model) are stored, respectively, in common section. Unique parameters (like learning rate) are stored in other specific sections.
 #### Common parameters:
  - `backbone_config`:
     * `arch`: type of the architecture (if backbone_type is resnet). For more details, please, refer to [ResnetLikeBackBone](im2latex/models/backbones/resnet.py)
@@ -85,7 +86,7 @@ One can use some pretrained models. Right now two models are available:
 * medium model:
     * [checkpoint link](https://download.01.org/opencv/openvino_training_extensions/models/formula_recognition/medium_photograped_0185.pth)
     * digits, letters, some greek letters, fractions, trigonometric operations are supported; for more details, please, look at corresponding vocab file
-    * to use this model, just set the correct value to the `model_path` field in the config file:
+    * to use this model, just set the correct value to the `model_path` field in the corresponding config file:
     ```
     model_path: <path to the model>
     ```
@@ -94,15 +95,12 @@ The model can be used for recognizing both rendered and scanned formulas (e.g. f
 * handwritten polynomials model:
     * [checkpoint](https://download.01.org/opencv/openvino_training_extensions/models/formula_recognition/polynomials_handwritten_0166.pth)
     * digits, letters, upper indices are supported
-    * to use this model, please, change these field in the config file:
+    * to use this model, please, change model path in the corresponding config file:
     ```
-    backbone_config:
-        disable_layer_3: false
     model_path: <path to the model>
-    vocab_path: vocabs/vocab_handwritten_polynomials.json
     ```
 The model can be used for recognizing handwritten polynomial equations.
-All the above models can be used for aftertuning or as ready for inference models. To provide maximum quality at recognizing formulas, it is highly recommended to preprocess image - simply binarize it, you can find corresponding prepocessing at [this file](im2latex/data/utils.py). Just state the desired preprocessing at the corresponding section of the config file (train, eval, etc).
+All the above models can be used for aftertuning or as ready for inference models. To provide maximum quality at recognizing formulas, it is highly recommended to preprocess image - simply binarize it, you can find corresponding prepocessing at [this file](im2latex/data/utils.py). Sample images in the [data](../../data) section of this repo are already preprocessed, you can look at the examples. If you want to use our own dataset, just state the desired preprocessing at the corresponding section of the config file (train, eval, etc).
 
 #### Evaluation-specific parameters
 - `split_file` - name of the file with labels (note: physical file name should end with `_filter.lst`). Default is `validate`
@@ -122,14 +120,13 @@ These parameters are used for model export to ONNX & OpenVINO™ IR:
 
 ## Evaluation
 
-`tools/test.py` script is designed for quality evaluation of im2latex models.
+`tools/test.py` script is designed for quality evaluation of formula-recognition models.
 
 ### PyTorch
 
-Config file of the evaluation is similar to train config:
-
+For example, one can run evaluation process using config for `medium` model.
 ```bash
-python tools/test.py --config configs/config.yml
+python tools/test.py --config configs/medium_config.yml
 ```
 Evaluation process is the following:
 1. Run the model and get predictions
@@ -142,7 +139,7 @@ That is why we cannot just compare text predictions one-by-one, we have to rende
 
 ## Demo
 
-In order to see how trained model works using OpenVINO™ please refer to [Formula recognition Python* Demo](https://github.com/opencv/open_model_zoo/tree/develop/demos/python_demos/formula_recognition_demo/). Before running the demo you have to export trained model to IR. Please see below how to do that.
+In order to see how trained model works using OpenVINO™ please refer to [Formula recognition Python* Demo](https://github.com/opencv/open_model_zoo/tree/develop/demos/python_demos/formula_recognition_demo/). Before running the demo you have to export trained model to IR. Please, see below how to do that.
 
 If you want to see how trained PyTorch model is working, you can run `tools/demo.py` script with correct `config` file. Fill in the `input_images` variable with the paths to desired images. For every image in this list, model will predict the formula and print it into the terminal.
 
@@ -160,7 +157,7 @@ Model will be split into two parts:
 The `tools/export.py` script exports a given model to ONNX representation.
 
 ```bash
-python tools/export.py --config configs/config.yml
+python tools/export.py --config configs/medium_config.yml
 ```
 
 
