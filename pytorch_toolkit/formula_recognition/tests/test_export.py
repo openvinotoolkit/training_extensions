@@ -14,9 +14,9 @@
  limitations under the License.
 """
 
+import os
 import unittest
 
-import numpy as np
 import yaml
 
 from tools.export import ONNXExporter
@@ -33,45 +33,75 @@ class TestExport(unittest.TestCase):
         self.exporter = ONNXExporter(self.config)
 
     def test_1_encoder_export(self):
-        try:
-            self.exporter.export_encoder()
-        except:
-            self.fail("Exception raised while exporting encoder to ONNX")
+        encoder_res_name = self.config.get("res_encoder_name")
+        result_model_exists = os.path.exists(encoder_res_name)
+        if result_model_exists:
+            os.remove(encoder_res_name)
+        self.exporter.export_encoder()
+        result_model_exists = os.path.exists(encoder_res_name)
+        self.assertEqual(True, result_model_exists)
 
     def test_2_decoder_export(self):
-        try:
-            features = self.exporter.run_encoder()
-            self.exporter.export_decoder(*features)
-        except:
-            self.fail("Exception raised while exporting decoder to ONNX")
+        decoder_res_name = self.config.get("res_decoder_name")
+        result_model_exists = os.path.exists(decoder_res_name)
+        if result_model_exists:
+            os.remove(decoder_res_name)
+        self.exporter.export_decoder()
+        result_model_exists = os.path.exists(decoder_res_name)
+        self.assertEqual(True, result_model_exists)
 
     def test_3_onnx(self):
-        row_enc_out, h, c, O_t = self.exporter.run_encoder()
-        pred_onnx = self.exporter.vocab.construct_phrase(
-            self.exporter.run_decoder(h, c, O_t, row_enc_out).astype(np.int32))
+        encoder_features, h, c, O_t = self.exporter.run_encoder()
+        targets_onnx = self.exporter.run_decoder(h, c, O_t, encoder_features)
+        pred_onnx = self.exporter.vocab.construct_phrase(targets_onnx)
         _, targets = self.exporter.model(self.exporter.img)
         pred_pytorch = self.exporter.vocab.construct_phrase(targets[0])
         self.assertEqual(pred_onnx, pred_pytorch)
 
     def test_4_encoder_ir_export(self):
         if self.config.get("export_ir"):
-            try:
-                self.exporter.export_encoder_ir()
-            except:
-                self.fail("Exception raised while exporting encoder to openvino IR")
+            encoder_res_name = self.config.get("res_encoder_name").replace('onnx', 'xml')
+            result_model_exists = os.path.exists(encoder_res_name)
+            if result_model_exists:
+                os.remove(encoder_res_name)
+            encoder_res_name = self.config.get("res_encoder_name").replace('onnx', 'bin')
+            result_model_exists = os.path.exists(encoder_res_name)
+            if result_model_exists:
+                os.remove(encoder_res_name)
+
+            self.exporter.export_encoder_ir()
+            encoder_res_name = self.config.get("res_encoder_name").replace('onnx', 'bin')
+            result_model_exists = os.path.exists(encoder_res_name)
+            self.assertEqual(True, result_model_exists)
+            encoder_res_name = self.config.get("res_encoder_name").replace('onnx', 'xml')
+            result_model_exists = os.path.exists(encoder_res_name)
+            self.assertEqual(True, result_model_exists)
 
     def test_5_decoder_ir_export(self):
         if self.config.get("export_ir"):
-            try:
-                self.exporter.export_decoder_ir()
-            except:
-                self.fail("Exception raised while exporting decoder to openvino IR")
+            decoder_res_name = self.config.get("res_decoder_name").replace('onnx', 'xml')
+            result_model_exists = os.path.exists(decoder_res_name)
+            if result_model_exists:
+                os.remove(decoder_res_name)
+            decoder_res_name = self.config.get("res_decoder_name").replace('onnx', 'bin')
+            result_model_exists = os.path.exists(decoder_res_name)
+            if result_model_exists:
+                os.remove(decoder_res_name)
+
+            self.exporter.export_decoder_ir()
+            decoder_res_name = self.config.get("res_decoder_name").replace('onnx', 'bin')
+            result_model_exists = os.path.exists(decoder_res_name)
+            self.assertEqual(True, result_model_exists)
+            decoder_res_name = self.config.get("res_decoder_name").replace('onnx', 'xml')
+            result_model_exists = os.path.exists(decoder_res_name)
+            self.assertEqual(True, result_model_exists)
 
     def test_6_run_ir_model(self):
         if self.config.get("export_ir"):
-            ir_pred = self.exporter.vocab.construct_phrase(self.exporter.run_ir_model())
-            _, targets = self.exporter.model(self.exporter.img)
-            pred_pytorch = self.exporter.vocab.construct_phrase(targets[0])
+            targets_ir = self.exporter.run_ir_model()
+            ir_pred = self.exporter.vocab.construct_phrase(targets_ir)
+            _, targets_pytorch = self.exporter.model(self.exporter.img)
+            pred_pytorch = self.exporter.vocab.construct_phrase(targets_pytorch[0])
             self.assertEqual(ir_pred, pred_pytorch)
 
 
