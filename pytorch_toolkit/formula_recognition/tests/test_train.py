@@ -15,8 +15,9 @@
 """
 
 import unittest
+import shutil
+import os
 
-import numpy as np
 import yaml
 
 from tools.train import Trainer
@@ -39,6 +40,8 @@ class TestTrain(unittest.TestCase):
         cur_loss = self.trainer._current_loss
         self.trainer.train()
         self.assertLess(self.trainer._current_loss, cur_loss)
+        if os.path.exists(self.trainer.logs_path):
+            shutil.rmtree(self.trainer.logs_path)
 
 
 if __name__ == "__main__":
