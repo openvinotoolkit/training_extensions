@@ -55,18 +55,18 @@ The config file is divided into 4 sections: train, eval, export, demo. In every 
     * `arch`: type of the architecture (if backbone_type is resnet). For more details, please, refer to [ResnetLikeBackBone](im2latex/models/backbones/resnet.py)
     * `disable_layer_3` and `disable_layer_4` - disables layer 3 and 4 in resnet-like backbone
     * `enable_last_conv` - enables additional convolution layer to adjust number of output channels to the number of input channels in the LSTM. Optional. Default: false.
-    * `in_lstm_ch` - number of input LSTM channels, used only for `last_conv`.
+    * `output_channels` - number of output channels channels. If `last_conv` is enabled, this parameter should be equal to `head.encoder_input_size`, otherwise it should be equal to actual number of output channels of the backbone.
 - `backbone_type`: `resnet` for resnet-like backbone or anything else for original backbone from [im2markup](https://arxiv.org/pdf/1609.04938.pdf) paper. Optional. Default is `resnet`
 - `head` - configuration of the text recognition head. All of the following parameters have default values, you can check them in [text reconition head](im2latex/models/text_recognition_heads/attention_based.py)
     * `beam_width` - witdth used in beam search. 0 - do not use beam search, 1 and more - use beam search with corresponding number of possible tracks.
     * `dec_rnn_h` - number of channels in decoding
     * `emb_size` - dimension of the embedding
     * `encoder_hidden_size ` - number of channels in encoding
-    * `encoder_input_size ` - number of input in lstm channels, should be equal to `backbone_config.in_lstm_ch`
+    * `encoder_input_size ` - number of channels in the lstm input, should be equal to `backbone_config.output_channels`
     * `max_len` - maximum possible length of the predicted formula
     * `n_layer` - number of layers in the trainable initial hidden state for each row
-- `model_path` - path for model
-- `val_path` - path for validation data
+- `model_path` - path to the model
+- `val_path` - path to the validation data
 - `vocab_path` - path where vocab file is stored
 - `val_transforms_list` - here you can describe set of desirable transformations for validation datasets respectively. An example is given in the config file, for other options, please, refer to [constructor of transforms (section `create_list_of_transforms`)](im2latex/data/utils.py)
 - `device` - device for training, used in PyTorch .to() method. Possible options: 'cuda', 'cpu'. `cpu` is used by default.
@@ -115,7 +115,6 @@ All the above models can be used for aftertuning or as ready for inference model
 These parameters are used for model export to ONNX & OpenVINO™ IR:
 - `res_encoder_name` - filename to save the converted encoder model (with `.onnx` postfix)
 - `res_decoder_name` - filename to save the converted decoder model (with `.onnx` postfix)
-- `dummy_input` - input image used for tracing PT model and creating onnx graph. This image is also used to compare that outputs from ONNX model and PyTorch model are the same.
 - `input_shape_decoder` - list of dimensions describing input shape for encoder for OpenVINO IR conversion.
 - `export_ir` - Set this flag to `true` to export model to the OpenVINO IR. For details refer to [convert to IR section](#convert-to-ir)
 - `verbose_export` - Set this flag to `true` to perform verbose export (i.e. print model optimizer commands to terminal)
