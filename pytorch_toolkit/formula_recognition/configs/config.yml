@@ -18,13 +18,14 @@ train:
 eval:
   val_path: ../../data/formula_recognition
   split_file: validate
-  target_metric: 0.99
+  target_metric: 0.9
+  val_transforms_list:
+  - name: "TransformRescale"
+    scales:
+      - 1.5
+      - 1.5
+
 demo:
-  transforms_list:
-    - name: "TransformCropPad"
-      target_shape:
-        - 50
-        - 950
   input_images:
     - ../../data/formula_recognition/images_processed/1.png
 export:
@@ -38,8 +39,3 @@ export:
     - 3
     - 50
     - 950
-  transforms_list:
-    - name: "TransformCropPad"
-      target_shape:
-        - 50
-        - 950
