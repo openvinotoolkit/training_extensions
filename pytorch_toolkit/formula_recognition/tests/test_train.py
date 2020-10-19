@@ -56,7 +56,7 @@ class TestMediumRenderedTrain(create_train_test(CONFIGS[0])):
     "Test case for medium config"
 
 
-class TestHandwrittenPolynomialsTrain(create_train_test(CONFIGS[0])):
+class TestHandwrittenPolynomialsTrain(create_train_test(CONFIGS[1])):
     "Test case for handwritten polynomials config"
 
 if __name__ == "__main__":

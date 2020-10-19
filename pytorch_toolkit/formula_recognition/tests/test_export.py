@@ -116,7 +116,7 @@ class TestMediumRenderedExport(create_export_test_case(CONFIGS[0])):
     "Test case for medium config"
 
 
-class TestHandwrittenPolynomialsExport(create_export_test_case(CONFIGS[0])):
+class TestHandwrittenPolynomialsExport(create_export_test_case(CONFIGS[1])):
     "Test case for handwritten polynomials config"
 
 

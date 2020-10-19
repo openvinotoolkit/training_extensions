@@ -47,7 +47,7 @@ class TestMediumRenderedEvaluation(create_evaluation_test_case(CONFIGS[0])):
     "Test case for medium config"
 
 
-class TestHandwrittenPolynomialsEvaluation(create_evaluation_test_case(CONFIGS[0])):
+class TestHandwrittenPolynomialsEvaluation(create_evaluation_test_case(CONFIGS[1])):
     "Test case for handwritten polynomials config"
 
 
