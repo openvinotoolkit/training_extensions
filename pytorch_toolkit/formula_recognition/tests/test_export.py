@@ -20,10 +20,6 @@ import unittest
 import yaml
 from tools.export import ONNXExporter
 
-CONFIGS = [
-    'configs/medium_config.yml',
-    'configs/polynomials_handwritten_config.yml'
-]
 
 def create_export_test_case(config_file):
     class TestExport(unittest.TestCase):
@@ -112,11 +108,11 @@ def create_export_test_case(config_file):
     return TestExport
 
 
-class TestMediumRenderedExport(create_export_test_case(CONFIGS[0])):
+class TestMediumRenderedExport(create_export_test_case("configs/medium_config.yml")):
     "Test case for medium config"
 
 
-class TestHandwrittenPolynomialsExport(create_export_test_case(CONFIGS[1])):
+class TestHandwrittenPolynomialsExport(create_export_test_case('configs/polynomials_handwritten_config.yml')):
     "Test case for handwritten polynomials config"
 
 

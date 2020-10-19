@@ -18,11 +18,6 @@ import unittest
 import yaml
 from tools.test import Evaluator
 
-CONFIGS = [
-    'configs/medium_config.yml',
-    'configs/polynomials_handwritten_config.yml'
-]
-
 
 def create_evaluation_test_case(config_file):
 
@@ -43,11 +38,11 @@ def create_evaluation_test_case(config_file):
     return TestEval
 
 
-class TestMediumRenderedEvaluation(create_evaluation_test_case(CONFIGS[0])):
+class TestMediumRenderedEvaluation(create_evaluation_test_case("configs/medium_config.yml")):
     "Test case for medium config"
 
 
-class TestHandwrittenPolynomialsEvaluation(create_evaluation_test_case(CONFIGS[1])):
+class TestHandwrittenPolynomialsEvaluation(create_evaluation_test_case('configs/polynomials_handwritten_config.yml')):
     "Test case for handwritten polynomials config"
 
 
