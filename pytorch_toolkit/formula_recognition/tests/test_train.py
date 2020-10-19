@@ -14,35 +14,50 @@
  limitations under the License.
 """
 
-import unittest
-import shutil
 import os
+import shutil
+import unittest
 
 import yaml
-
 from tools.train import Trainer
 
+CONFIGS = [
+    'configs/medium_config.yml',
+    'configs/polynomials_handwritten_config.yml'
+]
 
-class TestTrain(unittest.TestCase):
-    def setUp(self):
-        with open('configs/config.yml', 'r') as f:
-            config = yaml.load(f, Loader=yaml.SafeLoader)
-            train_config = config.get("train")
-            common_config = config.get("common")
-            train_config.update(common_config)
-        self.config = train_config
-        self.config['epochs'] = 1
-        self.config['_test_steps'] = 20
-        self.trainer = Trainer(work_dir='./..', config=self.config)
 
-    def test_train(self):
-        self.trainer.train()
-        cur_loss = self.trainer._current_loss
-        self.trainer.train()
-        self.assertLess(self.trainer._current_loss, cur_loss)
-        if os.path.exists(self.trainer.logs_path):
-            shutil.rmtree(self.trainer.logs_path)
+def create_train_test(config_file):
 
+    class TestTrain(unittest.TestCase):
+        @classmethod
+        def setUpClass(cls):
+            with open(config_file, 'r') as f:
+                config = yaml.load(f, Loader=yaml.SafeLoader)
+                train_config = config.get("train")
+                common_config = config.get("common")
+                train_config.update(common_config)
+            cls.config = train_config
+            cls.config['epochs'] = 1
+            cls.config['_test_steps'] = 40
+            cls.trainer = Trainer(work_dir='./..', config=cls.config)
+
+        def test_train(self):
+            self.trainer.train()
+            cur_loss = self.trainer._current_loss
+            self.trainer.train()
+            self.assertLessEqual(self.trainer._current_loss, cur_loss)
+            if os.path.exists(self.trainer.logs_path):
+                shutil.rmtree(self.trainer.logs_path)
+    return TestTrain
+
+
+class TestMediumRenderedTrain(create_train_test(CONFIGS[0])):
+    "Test case for medium config"
+
+
+class TestHandwrittenPolynomialsTrain(create_train_test(CONFIGS[0])):
+    "Test case for handwritten polynomials config"
 
 if __name__ == "__main__":
     unittest.main()
