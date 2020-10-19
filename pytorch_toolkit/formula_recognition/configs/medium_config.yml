@@ -13,10 +13,10 @@ train:
   optimizer: Adam
   save_dir: model_checkpoints
   train_paths:
-    - ../../data/formula_recognition
-  val_path: ../../data/formula_recognition
+    - ../../data/formula_recognition/sample_medium_dataset
+  val_path: ../../data/formula_recognition/sample_medium_dataset
 eval:
-  val_path: ../../data/formula_recognition
+  val_path: ../../data/formula_recognition/sample_medium_dataset
   split_file: validate
   target_metric: 0.9
   val_transforms_list:
@@ -27,9 +27,8 @@ eval:
 
 demo:
   input_images:
-    - ../../data/formula_recognition/images_processed/1.png
+    - ../../data/formula_recognition/sample_medium_dataset/images_processed/1.png
 export:
-  dummy_input: ../../data/formula_recognition/images_processed/1.png
   res_encoder_name: medium_v2_encoder.onnx
   res_decoder_name: medium_v2_decoder.onnx
   export_ir: true
