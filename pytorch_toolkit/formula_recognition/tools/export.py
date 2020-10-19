@@ -19,7 +19,6 @@ import math
 import os
 import subprocess
 
-import cv2 as cv
 import numpy as np
 import onnxruntime
 import torch
@@ -64,7 +63,6 @@ class ONNXExporter:
         if self.model_path is not None:
             self.model.load_weights(self.model_path)
 
-        self.input = config.get("dummy_input")
         self.img_for_ir = np.random.randint(0, 256, size=config.get("input_shape_decoder"), dtype=np.uint8)
         self.img = (ToTensor()(self.img_for_ir.squeeze(0))).unsqueeze(0).permute(0, 2, 3, 1)
         self.encoder = self.model.get_encoder_wrapper(self.model)
@@ -164,7 +162,12 @@ class ONNXExporter:
 
     def export_decoder_ir(self):
         input_shape_decoder = self.config.get("input_shape_decoder")
-        output_h, output_w = math.ceil(input_shape_decoder[2] / 8), math.ceil(input_shape_decoder[3] / 8)
+        output_h, output_w = input_shape_decoder[2] / 32, input_shape_decoder[3] / 32
+        if self.config['backbone_config']['disable_layer_4']:
+            output_h, output_w = output_h * 2, output_w * 2
+        if self.config['backbone_config']['disable_layer_3']:
+            output_h, output_w = output_h * 2, output_w * 2
+        output_h, output_w = math.ceil(output_h), math.ceil(output_w)
         input_shape = [[1, self.config.get('head', {}).get("decoder_hidden_size", 512)],
                        [1, self.config.get('head', {}).get('decoder_hidden_size', 512)],
                        [1, self.config.get('head', {}).get('encoder_hidden_size', 256)],
