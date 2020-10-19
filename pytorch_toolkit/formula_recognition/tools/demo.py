@@ -35,7 +35,7 @@ class Im2latexDemo:
             'backbone_config'), len(self.vocab), config.get('head', {}))
         if self.model_path is not None:
             self.model.load_weights(self.model_path, map_location=config.get('map_location', 'cpu'))
-
+        self.model.eval()
         self.device = config.get('device', 'cpu')
         self.model = self.model.to(self.device)
 
