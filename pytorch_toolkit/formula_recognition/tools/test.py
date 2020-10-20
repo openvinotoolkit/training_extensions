@@ -15,7 +15,6 @@
 """
 
 import argparse
-import yaml
 import os.path
 from functools import partial
 
@@ -28,6 +27,8 @@ from im2latex.datasets.im2latex_dataset import Im2LatexDataset
 from im2latex.models.im2latex_model import Im2latexModel
 from torch.utils.data import DataLoader
 from tools.evaluation_tools import Im2latexRenderBasedMetric
+from tools.get_config import get_config
+
 
 spaces = [r'\,', r'\>', r'\;', r'\:', r'\quad', r'\qquad', '~']
 
@@ -127,11 +128,7 @@ def parse_args():
 
 if __name__ == "__main__":
     args = parse_args()
-    with open(args.config, 'r') as f:
-        config = yaml.load(f, Loader=yaml.SafeLoader)
-        test_config = config.get("eval")
-        common_config = config.get("common")
-        test_config.update(common_config)
+    test_config = get_config(args.config, split='eval')
     validator = Evaluator(test_config)
     result = validator.validate()
     print("Im2latex metric is: {}".format(result))

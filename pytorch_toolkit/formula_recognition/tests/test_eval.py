@@ -15,8 +15,8 @@
 """
 import unittest
 
-import yaml
 from tools.test import Evaluator
+from tools.get_config import get_config
 
 
 def create_evaluation_test_case(config_file):
@@ -24,11 +24,7 @@ def create_evaluation_test_case(config_file):
     class TestEval(unittest.TestCase):
         @classmethod
         def setUpClass(cls):
-            with open(config_file, 'r') as f:
-                config = yaml.load(f, Loader=yaml.SafeLoader)
-                test_config = config.get("eval")
-                common_config = config.get("common")
-                test_config.update(common_config)
+            test_config = get_config(config_file, split='eval')
             cls.config = test_config
             cls.validator = Evaluator(config=cls.config)
 

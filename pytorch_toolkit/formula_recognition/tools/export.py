@@ -24,13 +24,13 @@ import numpy as np
 import onnxruntime
 import torch
 import torch.onnx
-import yaml
 from openvino.inference_engine import IECore
 from torchvision.transforms import ToTensor
 
 from im2latex.data.utils import create_list_of_transforms
 from im2latex.data.vocab import END_TOKEN, START_TOKEN, read_vocab
 from im2latex.models.im2latex_model import Im2latexModel
+from tools.get_config import get_config
 
 ENCODER_INPUTS = "imgs"
 ENCODER_OUTPUTS = "row_enc_out,hidden,context,init_0"
@@ -259,11 +259,7 @@ def parse_args():
 
 if __name__ == "__main__":
     args = parse_args()
-    with open(args.config, 'r') as f:
-        config = yaml.load(f, Loader=yaml.SafeLoader)
-        export_config = config.get("export")
-        common_config = config.get("common")
-        export_config.update(common_config)
+    export_config = get_config(args.config, split='export')
     with torch.no_grad():
         exporter = ONNXExporter(export_config)
         exporter.export_encoder()

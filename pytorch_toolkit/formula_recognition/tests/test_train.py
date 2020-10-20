@@ -18,8 +18,8 @@ import os
 import shutil
 import unittest
 
-import yaml
 from tools.train import Trainer
+from tools.get_config import get_config
 
 
 def create_train_test(config_file):
@@ -27,11 +27,7 @@ def create_train_test(config_file):
     class TestTrain(unittest.TestCase):
         @classmethod
         def setUpClass(cls):
-            with open(config_file, 'r') as f:
-                config = yaml.load(f, Loader=yaml.SafeLoader)
-                train_config = config.get("train")
-                common_config = config.get("common")
-                train_config.update(common_config)
+            train_config = get_config(config_file, split='train')
             cls.config = train_config
             cls.config['epochs'] = 1
             cls.config['_test_steps'] = 40

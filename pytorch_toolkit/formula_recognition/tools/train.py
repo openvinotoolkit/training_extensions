@@ -46,7 +46,6 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 import torch.optim as optim
-import yaml
 from im2latex.data.utils import (collate_fn, create_list_of_transforms,
                                  get_timestamp)
 from im2latex.data.vocab import PAD_TOKEN, read_vocab
@@ -58,6 +57,8 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.data import ConcatDataset, DataLoader
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
+from tools.get_config import get_config
+
 
 
 def calculate_loss(logits, targets, should_cut_by_min=False):
@@ -307,11 +308,7 @@ if __name__ == "__main__":
     assert sys.version_info[0] == 3
     args = parse_args()
 
-    with open(args.config, 'r') as f:
-        config = yaml.load(f, Loader=yaml.SafeLoader)
-        train_config = config.get("train")
-        common_config = config.get("common")
-        train_config.update(common_config)
+    train_config = get_config(args.config, split='train')
 
     experiment = Trainer(work_dir=args.work_dir, config=train_config)
     experiment.train()
