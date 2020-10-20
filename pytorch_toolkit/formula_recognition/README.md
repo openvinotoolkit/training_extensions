@@ -18,7 +18,7 @@ Models code is designed to enable ONNX\* export and inference on CPU\GPU via Ope
 These packages are used for rendering images while evaluation and demo.
 
 ```bash
-bash sudo apt-get update &&
+sudo apt-get update &&
   apt-get install -y --no-install-recommends \
     texlive \
     imagemagick \
@@ -33,7 +33,7 @@ Create and activate virtual environment:
 bash init_venv.sh
 ```
 
-### Download Datasets
+### Download or Prepare Datasets
 
 Dataset format is similar to [im2latex-100k](https://zenodo.org/record/56198#.X2NDQ2gzaUl). Main structure of the dataset is following:
 * `formulas_file` - file with one formula per line
@@ -46,10 +46,12 @@ Dataset format is similar to [im2latex-100k](https://zenodo.org/record/56198#.X2
     ```
     There should be at least two such files: `train_filter.lst` and `validate_filter.lst`
 
+You can prepare your own dataset in the same format as above. Samples of the dataset can be found [here](../../data/formula_recognition). When you prepare your own dataset with `formulas.norm.lst` file, you will have to create a vocabulary file for this dataset. Vocabulary file is a special file which is used to cast token ids to human readable tokens and vice versa. Like letters and digits in the natural language, tokens here are atomic units of the latex language (e.g. `\\sin`, `1`, `\\sqrt`, etc). You can find an example in the [vocabs folder](./vocabs/) of this project. Use [this script](./tools/make_vocab.py) to create vocab file from your own formulas file. The script will read the formulas and create the vocabulary from the formulas used in train split of the dataset.
+
 > **NOTE**:
 > By default the following structure of the dataset is assumed:
 > `images_processed` - folder with images
-> `formulas.norm.lst` - file with preprocessed formulas, for details, refer to [im2markup](https://github.com/harvardnlp/im2markup) repository
+> `formulas.norm.lst` - file with preprocessed formulas. If you want to use your own dataset, formulas should be preprocessed. For details, refer to [this script](https://github.com/harvardnlp/im2markup/blob/master/scripts/preprocessing/preprocess_formulas.py).
 > `validate_filter.lst` and `train_filter.lst` - corresponding splits of the data.
 
 
@@ -63,25 +65,24 @@ python tools/train.py --config configs/medium_config.yml --work_dir <path to wor
 Work dir is used to store information about learning: saved model checkpoints, logs.
 
 ### Description of possible options in config:
-The config file is divided into 5 sections: common, train, eval, export, demo. Common parameters (like path to the model) are stored, respectively, in common section. Unique parameters (like learning rate) are stored in other specific sections.
+The config file is divided into 5 sections: common, train, eval, export, demo. Common parameters (like path to the model) are stored, respectively, in common section. Unique parameters (like learning rate) are stored in other specific sections. Unique parameters and common parameters are mutually exclusive.
 #### Common parameters:
- - `backbone_config`:
+- `backbone_config`:
     * `arch`: type of the architecture (if backbone_type is resnet). For more details, please, refer to [ResnetLikeBackBone](im2latex/models/backbones/resnet.py)
-    * `disable_layer_3` and `disable_layer_4` - disables layer 3 and 4 in resnet-like backbone
+    * `disable_layer_3` and `disable_layer_4` - disables layer 3 and 4 in resnet-like backbone. ResNet backbone from the torchvision module consists of 4 block of layers, each of them increase the number of channels and decrease the spatial dimensionality. These parameters allow to switch off the 3rd and the 4th of such layer, respectively.
     * `enable_last_conv` - enables additional convolution layer to adjust number of output channels to the number of input channels in the LSTM. Optional. Default: false.
-    * `output_channels` - number of output channels channels. If `last_conv` is enabled, this parameter should be equal to `head.encoder_input_size`, otherwise it should be equal to actual number of output channels of the backbone.
+    * `output_channels` - number of output channels channels. If `enable_last_conv` is `true`, this parameter should be equal to `head.encoder_input_size`, otherwise it should be equal to actual number of output channels of the backbone.
 - `backbone_type`: `resnet` for resnet-like backbone or anything else for original backbone from [im2markup](https://arxiv.org/pdf/1609.04938.pdf) paper. Optional. Default is `resnet`
 - `head` - configuration of the text recognition head. All of the following parameters have default values, you can check them in [text reconition head](im2latex/models/text_recognition_heads/attention_based.py)
-    * `beam_width` - witdth used in beam search. 0 - do not use beam search, 1 and more - use beam search with corresponding number of possible tracks.
+    * `beam_width` - width used in beam search. 0 - do not use beam search, 1 and more - use beam search with corresponding number of possible tracks.
     * `dec_rnn_h` - number of channels in decoding
     * `emb_size` - dimension of the embedding
     * `encoder_hidden_size ` - number of channels in encoding
     * `encoder_input_size ` - number of channels in the lstm input, should be equal to `backbone_config.output_channels`
     * `max_len` - maximum possible length of the predicted formula
     * `n_layer` - number of layers in the trainable initial hidden state for each row
-- `model_path` - path to the model
-- `val_path` - path to the validation data
-- `vocab_path` - path where vocab file is stored
+- `model_path` - path to the pretrained model checkpoint (you can find the links to the checkpoints below in this document).
+- `vocab_path` - path where vocabulary file is stored.
 - `val_transforms_list` - here you can describe set of desirable transformations for validation datasets respectively. An example is given in the config file, for other options, please, refer to [constructor of transforms (section `create_list_of_transforms`)](im2latex/data/utils.py)
 - `device` - device for training, used in PyTorch .to() method. Possible options: 'cuda', 'cpu'. `cpu` is used by default.
 #### Training-specific parameters
@@ -92,6 +93,7 @@ In addition to common parameters you can specify the following arguments:
 - `optimizer` - Adam or SGD
 - `save_dir` - dir to save checkpoints
 - `train_paths` - list of paths from where to get training data (if more than one path is specified, datasets are concatenated). If one wants to concatenate more than one instance of the desirable dataset, this dataset should be specified several times.
+- `val_path` - path to the validation data
 - `train_transforms_list` - similar to `val_transforms_list`
 - `epochs` - number of epochs to train
 
@@ -113,11 +115,20 @@ The model can be used for recognizing both rendered and scanned formulas (e.g. f
     model_path: <path to the model>
     ```
 The model can be used for recognizing handwritten polynomial equations.
-All the above models can be used for aftertuning or as ready for inference models. To provide maximum quality at recognizing formulas, it is highly recommended to preprocess image - simply binarize it, you can find corresponding prepocessing at [this file](im2latex/data/utils.py). Sample images in the [data](../../data) section of this repo are already preprocessed, you can look at the examples. If you want to use our own dataset, just state the desired preprocessing at the corresponding section of the config file (train, eval, etc).
+All the above models can be used for aftertuning or as ready for inference models. To provide maximum quality at recognizing formulas, it is highly recommended to preprocess image - simply binarize it:
+```
+val_transform_list:
+    - name: TransformBin
+      threshold: 100
+```
+You can find other prepocessing at [this file](im2latex/data/utils.py).
+Sample images in the [data](../../data) section of this repo are already preprocessed, you can look at the examples.
+
 
 #### Evaluation-specific parameters
 - `split_file` - name of the file with labels (note: physical file name should end with `_filter.lst`). Default is `validate`
 - `target_metric` - target value of the metric. Used in tests. For test to pass, result value should be greater or equal than `target_metric`
+- `val_path` - path to the validation data
 
 #### Demo-specific parameters
 - `input_images` - list of paths for input images
@@ -152,7 +163,7 @@ That is why we cannot just compare text predictions one-by-one, we have to rende
 
 ## Demo
 
-In order to see how trained model works using OpenVINO™ please refer to [Formula recognition Python* Demo](https://github.com/opencv/open_model_zoo/tree/develop/demos/python_demos/formula_recognition_demo/). Before running the demo you have to export trained model to IR. Please, see below how to do that.
+In order to see how trained model works using OpenVINO™ please refer to [Formula recognition Python\* Demo](https://github.com/opencv/open_model_zoo/tree/develop/demos/python_demos/formula_recognition_demo/). Before running the demo you have to export trained model to IR. Please, see below how to do that.
 
 If you want to see how trained PyTorch model is working, you can run `tools/demo.py` script with correct `config` file. Fill in the `input_images` variable with the paths to desired images. For every image in this list, model will predict the formula and print it into the terminal.
 
