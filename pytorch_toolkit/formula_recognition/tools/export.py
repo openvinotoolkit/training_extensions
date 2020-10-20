@@ -19,6 +19,7 @@ import math
 import os
 import subprocess
 
+import cv2 as cv
 import numpy as np
 import onnxruntime
 import torch
@@ -36,6 +37,8 @@ ENCODER_OUTPUTS = "row_enc_out,hidden,context,init_0"
 DECODER_INPUTS = "dec_st_h,dec_st_c,output_prev,row_enc_out,tgt"
 DECODER_OUTPUTS = "dec_st_h_t,dec_st_c_t,output,logit"
 
+OPENVINO_DIR = '/opt/intel/openvino'
+
 FEATURES_SHAPE = 1, 20, 175, 512
 HIDDEN_SHAPE = 1, 512
 CONTEXT_SHAPE = 1, 512
@@ -52,7 +55,6 @@ def read_net(model_xml, ie):
 class ONNXExporter:
     def __init__(self, config):
         self.config = config
-        np.random.seed(seed=42)
         self.model_path = config.get('model_path')
         self.vocab = read_vocab(config.get('vocab_path'))
         self.transform = create_list_of_transforms(config.get('transforms_list'))
@@ -62,8 +64,10 @@ class ONNXExporter:
         self.model.eval()
         if self.model_path is not None:
             self.model.load_weights(self.model_path)
-
-        self.img_for_ir = np.random.randint(0, 256, size=config.get("input_shape_decoder"), dtype=np.uint8)
+        img = np.random.randint(0, 2, size=(self.config.get('input_shape_decoder')[2], self.config.get('input_shape_decoder')[3], 1), dtype=np.uint8)
+        img = img * 255
+        img = cv.cvtColor(img, cv.COLOR_GRAY2RGB)
+        self.img_for_ir = np.expand_dims(np.transpose(img, (2, 0, 1)), axis=0)
         self.img = (ToTensor()(self.img_for_ir.squeeze(0))).unsqueeze(0).permute(0, 2, 3, 1)
         self.encoder = self.model.get_encoder_wrapper(self.model)
         self.encoder.eval()
@@ -141,16 +145,16 @@ class ONNXExporter:
 
     def export_encoder_ir(self):
         if self.config.get('verbose_export'):
-            print(f'/opt/intel/openvino/bin/setupvars.sh && '
-                  f'python /opt/intel/openvino/deployment_tools/model_optimizer/mo.py '
+            print(f'{OPENVINO_DIR}/bin/setupvars.sh && '
+                  f'python {OPENVINO_DIR}/deployment_tools/model_optimizer/mo.py '
                   f'--framework onnx '
                   f'--input_model {self.config.get("res_encoder_name")} '
                   f'--input_shape "{self.config.get("input_shape_decoder")}" '
                   f'--output "{self.config.get("encoder_output_names", ENCODER_OUTPUTS)}" '
                   f'--reverse_input_channels '
                   f'--scale_values "imgs[255,255,255]"')
-        subprocess.run(f'/opt/intel/openvino/bin/setupvars.sh && '
-                       f'python /opt/intel/openvino/deployment_tools/model_optimizer/mo.py '
+        subprocess.run(f'{OPENVINO_DIR}/bin/setupvars.sh && '
+                       f'python {OPENVINO_DIR}/deployment_tools/model_optimizer/mo.py '
                        f'--framework onnx '
                        f'--input_model {self.config.get("res_encoder_name")} '
                        f'--input_shape "{self.config.get("input_shape_decoder")}" '
@@ -174,15 +178,15 @@ class ONNXExporter:
                        [1, output_h, output_w, self.config.get('head', {}).get('decoder_hidden_size', 512)], [1, 1]]
         input_shape = "{}, {}, {}, {}, {}".format(*input_shape)
         if self.config.get('verbose_export'):
-            print(f'/opt/intel/openvino/bin/setupvars.sh && '
-                  f'python /opt/intel/openvino/deployment_tools/model_optimizer/mo.py '
+            print(f'{OPENVINO_DIR}/bin/setupvars.sh && '
+                  f'python {OPENVINO_DIR}/deployment_tools/model_optimizer/mo.py '
                   f'--framework onnx '
                   f'--input_model {self.config.get("res_decoder_name")} '
                   f'--input "{self.config.get("decoder_input_names", DECODER_INPUTS)}" '
                   f'--input_shape "{str(input_shape)}" '
                   f'--output "{self.config.get("decoder_output_names", DECODER_OUTPUTS)}"')
-        subprocess.run(f'/opt/intel/openvino/bin/setupvars.sh && '
-                       f'python /opt/intel/openvino/deployment_tools/model_optimizer/mo.py '
+        subprocess.run(f'{OPENVINO_DIR}/bin/setupvars.sh && '
+                       f'python {OPENVINO_DIR}/deployment_tools/model_optimizer/mo.py '
                        f'--framework onnx '
                        f'--input_model {self.config.get("res_decoder_name")} '
                        f'--input "{self.config.get("decoder_input_names", DECODER_INPUTS)}" '
