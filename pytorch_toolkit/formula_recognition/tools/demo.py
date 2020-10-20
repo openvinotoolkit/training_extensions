@@ -22,7 +22,7 @@ import cv2 as cv
 from im2latex.data.utils import create_list_of_transforms
 from im2latex.data.vocab import read_vocab
 from im2latex.models.im2latex_model import Im2latexModel
-from evaluation_tools import render_routine
+from evaluation_tools import render_routine, check_environment
 
 
 class Im2latexDemo:
@@ -62,6 +62,15 @@ if __name__ == "__main__":
         common_config = config.get("common")
         demo_config.update(common_config)
     demo = Im2latexDemo(demo_config)
+    try:
+        check_environment()
+    except EnvironmentError:
+        print("Warning: cannot render image because some render tools are not installed")
+        print("Check that pdflatex, ghostscript and imagemagick are installed")
+        print("For details, please, refer to README.md")
+        render_images = False
+    else:
+        render_images = True
     if os.path.isdir(args.input):
         inputs = sorted(os.path.join(args.input, inp)
                         for inp in os.listdir(args.input))
@@ -74,9 +83,10 @@ if __name__ == "__main__":
         cv.imshow("Input image", input_image)
         print(recognized_formula)
         line_for_render = (recognized_formula, "output.png", "./")
-        render_routine(line_for_render)
-        rendered_formula = cv.imread("output.png", cv.IMREAD_UNCHANGED)
-        cv.imshow("Predicted formula", rendered_formula)
-        cv.waitKey(0)
-        if os.path.exists("output.png"):
-            os.remove("output.png")
+        if render_images:
+            render_routine(line_for_render)
+            rendered_formula = cv.imread("output.png", cv.IMREAD_UNCHANGED)
+            cv.imshow("Predicted formula", rendered_formula)
+            cv.waitKey(0)
+            if os.path.exists("output.png"):
+                os.remove("output.png")
