@@ -148,10 +148,10 @@ def render_routine(line):
     """Function for rendering single formula
 
     Args:
-        line (tuple): formula idx, formula string, path to store rendered image
+        line (tuple): formula, filename, folder_path to store rendered image
     """
-    formula, file_idx, folder_path = line
-    output_path = os.path.join(folder_path, file_idx)
+    formula, filename, folder_path = line
+    output_path = os.path.join(folder_path, filename)
     pre_name = output_path.replace('/', '_').replace('.', '_')
     formula = preprocess_formula(formula)
     if not os.path.exists(output_path):
@@ -167,7 +167,7 @@ def render_routine(line):
         pdf_filename = tex_filename[:-4] + '.pdf'
         png_filename = tex_filename[:-4] + '.png'
         if not os.path.exists(pdf_filename):
-            print('ERROR: {} cannot compile'.format(file_idx))
+            print('ERROR: {} cannot compile'.format(filename))
         else:
             subprocess.run(['convert', '+profile', '"icc"', '-density', '200', '-quality', '100',
                             pdf_filename, png_filename], check=True, stdout=PIPE, stderr=PIPE)
