@@ -19,13 +19,6 @@ if [[ -e "${path_openvino_vars}" ]]; then
   echo ". ${path_openvino_vars}" >>venv/bin/activate
 fi
 
-# Install required packages for evaluation
-
-sudo apt-get update &&
-  apt-get install -y --no-install-recommends \
-    texlive \
-    imagemagick
-
 . venv/bin/activate
 
 cat requirements.txt | xargs -n 1 -L 1 pip3 install

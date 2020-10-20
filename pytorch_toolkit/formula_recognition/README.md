@@ -12,6 +12,19 @@ Models code is designed to enable ONNX\* export and inference on CPU\GPU via Ope
 * PyTorch\* (1.4.0)
 * OpenVINO™ 2020.4 with Python API
 
+### Optional prerequisites
+
+#### Install required packages for evaluation
+These packages are used for rendering images while evaluation and demo.
+
+```bash
+bash sudo apt-get update &&
+  apt-get install -y --no-install-recommends \
+    texlive \
+    imagemagick \
+    ghostscript
+```
+
 ### Installation
 
 Create and activate virtual environment:
