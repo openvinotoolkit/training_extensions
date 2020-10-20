@@ -36,5 +36,5 @@ export:
   input_shape_decoder:
     - 1
     - 3
-    - 50
-    - 950
+    - 160
+    - 1400
