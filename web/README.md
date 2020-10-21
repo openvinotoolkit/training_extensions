@@ -83,8 +83,8 @@ docker-compose version 1.26.2, build 1110ad01
 ## CPU Setup
 
 ```sh
-$ git clone --recursive git@gitlab-icv.inn.intel.com:idlp/idlp.git
-$ cd idlp
+$ git clone --recursive https://github.com/dmitryagapov/openvino_training_extensions.git
+$ cd openvino_training_extensions
 $ git submodule update --init --recursive
 $ IDLP_HOST=<host.name> docker-compose -f docker-compose.cpu.yml up --build -d
 ```
@@ -247,8 +247,8 @@ EOF
 ## GPU Setup
 
 ```sh
-$ git clone --recursive git@gitlab-icv.inn.intel.com:idlp/idlp.git
-$ cd idlp
+$ git clone --recursive https://github.com/dmitryagapov/openvino_training_extensions.git
+$ cd openvino_training_extensions
 $ git submodule update --init --recursive
 $ IDLP_HOST=<host.name> docker-compose -f docker-compose.gpu.yml up --build -d
 ```
