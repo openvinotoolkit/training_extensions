@@ -21,7 +21,7 @@ from functools import partial
 from tqdm import tqdm
 
 import torch
-from im2latex.data.utils import collate_fn, create_list_of_transforms, get_timestamp
+from im2latex.data.utils import collate_fn, create_list_of_transforms
 from im2latex.data.vocab import read_vocab
 from im2latex.datasets.im2latex_dataset import Im2LatexDataset
 from im2latex.models.im2latex_model import Im2latexModel
@@ -87,7 +87,6 @@ class Evaluator:
             self.model.load_weights(self.model_path, map_location=self.device)
 
         self.model = self.model.to(self.device)
-        self.time = get_timestamp()
 
     def load_dataset(self):
 
