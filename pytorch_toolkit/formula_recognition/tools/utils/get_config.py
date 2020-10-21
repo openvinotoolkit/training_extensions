@@ -22,6 +22,10 @@ def check_and_resolve_path(parameter):
     """Checks if given parameter could be path and tries to resolve it as relative path.
     If obtained path exists, returs it, else returns original input parameter.
     """
+    if isinstance(parameter, list):
+        # handle list of paths (e.g. train paths)
+        parameter = [check_and_resolve_path(p) for p in parameter]
+        return parameter
     if not isinstance(parameter, str):
         return parameter
     try_resolve_path = resolve_relative_path(parameter)
