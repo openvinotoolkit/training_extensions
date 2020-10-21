@@ -82,7 +82,7 @@ The config file is divided into 5 sections: common, train, eval, export, demo. C
 #### Common parameters:
 - `backbone_config`:
     * `arch`: type of the architecture (if backbone_type is resnet). For more details, please, refer to [ResnetLikeBackBone](im2latex/models/backbones/resnet.py)
-    * `disable_layer_3` and `disable_layer_4` - disables layer 3 and 4 in resnet-like backbone. ResNet backbone from the torchvision module consists of 4 block of layers, each of them increase the number of channels and decrease the spatial dimensionality. These parameters allow to switch off the 3rd and the 4th of such layer, respectively.
+    * `disable_layer_3` and `disable_layer_4` - disables layer 3 and 4 in resnet-like backbone. ResNet backbone from the torchvision module consists of 4 block of layers, each of them increase the number of channels and decrease the spatial dimensionality. These parameters allow to switch off the 3rd and the 4th of such layers, respectively.
     * `enable_last_conv` - enables additional convolution layer to adjust number of output channels to the number of input channels in the LSTM. Optional. Default: false.
     * `output_channels` - number of output channels channels. If `enable_last_conv` is `true`, this parameter should be equal to `head.encoder_input_size`, otherwise it should be equal to actual number of output channels of the backbone.
 - `backbone_type`: `resnet` for resnet-like backbone or anything else for original backbone from [im2markup](https://arxiv.org/pdf/1609.04938.pdf) paper. Optional. Default is `resnet`
