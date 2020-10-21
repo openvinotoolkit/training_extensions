@@ -199,7 +199,9 @@ services:
     build:
       context: .
       dockerfile: web/goserver/src/server/workers/train/Dockerfile
+    runtime: "nvidia"
     restart: always
+    shm_size: '8gb'
     volumes:
       - idlp_go_server_v:/go/src/server
       - idlp_problem_v:/problem
