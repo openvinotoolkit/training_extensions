@@ -35,6 +35,7 @@ bash init_venv.sh
 
 ### Download or Prepare Datasets
 
+#### Dataset Format
 Dataset format is similar to [im2latex-100k](https://zenodo.org/record/56198#.X2NDQ2gzaUl). Main structure of the dataset is following:
 * `formulas_file` - file with one formula per line
 * `images_folder` - folder containing input images
@@ -46,13 +47,25 @@ Dataset format is similar to [im2latex-100k](https://zenodo.org/record/56198#.X2
     ```
     There should be at least two such files: `train_filter.lst` and `validate_filter.lst`
 
-You can prepare your own dataset in the same format as above. Samples of the dataset can be found [here](../../data/formula_recognition). When you prepare your own dataset with `formulas.norm.lst` file, you will have to create a vocabulary file for this dataset. Vocabulary file is a special file which is used to cast token ids to human readable tokens and vice versa. Like letters and digits in the natural language, tokens here are atomic units of the latex language (e.g. `\\sin`, `1`, `\\sqrt`, etc). You can find an example in the [vocabs folder](./vocabs/) of this project. Use [this script](./tools/make_vocab.py) to create vocab file from your own formulas file. The script will read the formulas and create the vocabulary from the formulas used in train split of the dataset.
+You can prepare your own dataset in the same format as above.
+Samples of the dataset can be found [here](../../data/formula_recognition).
 
 > **NOTE**:
 > By default the following structure of the dataset is assumed:
 > `images_processed` - folder with images
 > `formulas.norm.lst` - file with preprocessed formulas. If you want to use your own dataset, formulas should be preprocessed. For details, refer to [this script](https://github.com/harvardnlp/im2markup/blob/master/scripts/preprocessing/preprocess_formulas.py).
 > `validate_filter.lst` and `train_filter.lst` - corresponding splits of the data.
+
+
+#### Vocabulary files
+
+When you prepare your own dataset with `formulas.norm.lst` file, you will have to create a vocabulary file for this dataset.
+Vocabulary file is a special file which is used to cast token ids to human readable tokens and vice versa.
+Like letters and digits in the natural language, tokens here are atomic units of the latex language (e.g. `\\sin`, `1`, `\\sqrt`, etc).
+You can find an example in the [vocabs folder](./vocabs/) of this project.
+Use [this script](./tools/make_vocab.py) to create vocab file from your own formulas file.
+The script will read the formulas and create the vocabulary from the formulas used in train split of the dataset.
+
 
 
 ## Training
@@ -131,7 +144,7 @@ Sample images in the [data](../../data) section of this repo are already preproc
 - `val_path` - path to the validation data
 
 #### Demo-specific parameters
-- `input_images` - list of paths for input images
+- `transforms_list` - list of image transformations (optional)
 
 #### Export-specific parameters
 These parameters are used for model export to ONNX & OpenVINO™ IR:
@@ -140,6 +153,7 @@ These parameters are used for model export to ONNX & OpenVINO™ IR:
 - `input_shape_decoder` - list of dimensions describing input shape for encoder for OpenVINO IR conversion.
 - `export_ir` - Set this flag to `true` to export model to the OpenVINO IR. For details refer to [convert to IR section](#convert-to-ir)
 - `verbose_export` - Set this flag to `true` to perform verbose export (i.e. print model optimizer commands to terminal)
+- `test_image` - image for ??????
 
 
 ## Evaluation
