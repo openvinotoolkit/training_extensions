@@ -19,7 +19,7 @@ img_norm_cfg = dict(mean=[0.5931, 0.4690, 0.4229],
 
 optimizer = dict(lr=0.005, momentum=0.9, weight_decay=5e-4)
 
-scheduler = dict(milestones=[20,40], gamma=0.2)
+scheduler = dict(milestones=[20,50], gamma=0.2)
 
 data = dict( batch_size=256,
             data_loader_workers=4,
@@ -49,7 +49,7 @@ model= dict(model_type='Mobilenet3',
             width_mult = 1.0,
             pretrained=True,
             embeding_dim=1280,
-            imagenet_weights='./pretrained/mobilenetv3-large-1cd25616.pth')
+            imagenet_weights='./pretrained/mobilenetv3-large-0.75-9632d2a8.pth')
 
 aug = dict(type_aug=None,
             alpha=0.5,
@@ -60,7 +60,7 @@ curves = dict(det_curve='det_curve_0.png',
               roc_curve='roc_curve_0.png')
 
 dropout = dict(prob_dropout=0.1,
-               classifier=0.35,
+               classifier=0.3,
                type='bernoulli',
                mu=0.5,
                sigma=0.3)

@@ -19,7 +19,7 @@ img_norm_cfg = dict(mean=[0.5931, 0.4690, 0.4229],
 
 optimizer = dict(lr=0.005, momentum=0.9, weight_decay=5e-4)
 
-scheduler = dict(milestones=[20,40], gamma=0.2)
+scheduler = dict(milestones=[20,50], gamma=0.2)
 
 data = dict( batch_size=256,
             data_loader_workers=4,
@@ -46,10 +46,10 @@ epochs = dict(start_epoch=0, max_epoch=71)
 
 model= dict(model_type='Mobilenet3',
             model_size = 'large',
-            width_mult = 1.0,
+            width_mult = 0.75,
             pretrained=True,
-            embeding_dim=1280,
-            imagenet_weights='./pretrained/mobilenetv3-large-1cd25616.pth')
+            embeding_dim=1024,
+            imagenet_weights='./pretrained/mobilenetv3-small-0.75-86c972c3.pth')
 
 aug = dict(type_aug=None,
             alpha=0.5,

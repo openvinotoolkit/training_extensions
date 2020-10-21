@@ -1,13 +1,21 @@
 # Lightweight Face Anti Spoofing
 Towards the solving anti-spoofing problem on RGB only data.
 ## Introduction
-This repository contains a training and evaluation pipeline with different regularization methods for face anti-spoofing network. There are a few models available for training purposes, based on MobileNetv2 (MN2) and MobileNetv3 (MN3). Project supports natively three datasets: [CelebA Spoof](https://github.com/Davidzhangyuanhan/CelebA-Spoof), [LCC FASD](https://csit.am/2019/proceedings/PRIP/PRIP3.pdf), [CASIA-SURF CeFA](https://arxiv.org/pdf/2003.05136.pdf). Also, you may want to train or validate with your own data. Final model based on MN3 trained on the CelebA Spoof dataset. The model has 3.83 times fewer parameters and 28 times fewer GFlops than AENET from the original paper, at the same time MN3 better generalizes on cross-domain. The code contains a demo that you can launch in real-time with your webcam or on the provided video. You can check out the short video on how it works on the [goole drive](https://drive.google.com/drive/u/0/folders/1A6wa3AlrdjyNPkXT81knIzXxR7SAYm1q). Also, the code supports conversion to the ONNX format.
+This repository contains a training and evaluation pipeline with different regularization methods for face anti-spoofing network. There are a few models available for training purposes, based on MobileNetv2 (MN2) and MobileNetv3 (MN3). Project supports natively three datasets: [CelebA Spoof](https://github.com/Davidzhangyuanhan/CelebA-Spoof), [LCC FASD](https://csit.am/2019/proceedings/PRIP/PRIP3.pdf), [CASIA-SURF CeFA](https://arxiv.org/pdf/2003.05136.pdf). Also, you may want to train or validate with your own data. Final model based on MN3 trained on the CelebA Spoof dataset. The model has 3.72 times fewer parameters and 24.3 times fewer GFlops than AENET from the original paper, at the same time MN3 better generalizes on cross-domain. The code contains a demo that you can launch in real-time with your webcam or on the provided video. You can check out the short video on how it works on the [goole drive](https://drive.google.com/drive/u/0/folders/1A6wa3AlrdjyNPkXT81knIzXxR7SAYm1q). Also, the code supports conversion to the ONNX format.
+You can follow the links to the configuration files with smaller models to train them as-is and obtain metrics below.
+
 | model name | dataset | AUC | EER% | APCER% | BPCER% | ACER% | MParam | GFlops | Link to snapshot |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| MN3_large |CelebA-Spoof| 0.998 | 2.26 | 0.69 | 6.92 | 3.8 | 0.13 | 2.93 | [snapshot](https://drive.google.com/drive/u/0/folders/1A6wa3AlrdjyNPkXT81knIzXxR7SAYm1q) |
-| AENET | CelebA-Spoof | 0.999 | 1.12 | 0.23 | 6.27 | 3.25 | 3.64 | 11.22 | [link to repo](https://github.com/Davidzhangyuanhan/CelebA-Spoof) |
-| MN3_large | LCC_FASD | 0.921 | 16.13 | 17.26 | 15.4 | 16.33 | 0.13 | 2.93 | [snapshot](https://drive.google.com/drive/u/0/folders/1A6wa3AlrdjyNPkXT81knIzXxR7SAYm1q) |
-| AENET | CLCC_FASD | 0.868 | 20.91 | 12.52 | 32.7 | 22.61 | 3.64 | 11.22 | [link to repo](https://github.com/Davidzhangyuanhan/CelebA-Spoof) |
+| MN3_large |CelebA-Spoof| 0.998 | 2.26 | 0.69 | 6.92 | 3.8 | 3.02 |  0.15 | [snapshot](https://drive.google.com/drive/u/0/folders/1A6wa3AlrdjyNPkXT81knIzXxR7SAYm1q) |
+| AENET | CelebA-Spoof | 0.999 | 1.12 | 0.23 | 6.27 | 3.25 | 11.22 | 3.64  | [link to repo](https://github.com/Davidzhangyuanhan/CelebA-Spoof) |
+| MN3_large_075 |CelebA-Spoof| 0.997 | 2.79 | 1.21 | 5.44 | 3.32 | 1.86 | 0.1 | [config](./configs/config_large_075.py) |
+| MN3_small |CelebA-Spoof| 0.994 | 3.84 | 1.47 | 8.63 | 5.05 | 1.0 | 0.04 | [config](./configs/config_small.py) |
+| MN3_small_075 |CelebA-Spoof| 0.991 | 4.74 | 1.62 | 10.55 | 6.09 | 0.6 | 0.03 | [config](./configs/config_small_075.py) |
+| MN3_large | LCC_FASD | 0.921 | 16.13 | 17.26 | 15.4 | 16.33 | 3.02 | 0.15 | [snapshot](https://drive.google.com/drive/u/0/folders/1A6wa3AlrdjyNPkXT81knIzXxR7SAYm1q) |
+| AENET | LCC_FASD | 0.868 | 20.91 | 12.52 | 32.7 | 22.61 | 11.22 | 3.64 | [link to repo](https://github.com/Davidzhangyuanhan/CelebA-Spoof) |
+| MN3_large_075 | LCC_FASD | 0.892 | 19.42 | 28.34 | 12.18 | 20.26 | 1.86 | 0.1 | [config](./configs/config_large_075.py) |
+| MN3_small | LCC_FASD | 0.889 | 18.7 | 14.79 | 24.6 | 19.69 | 1.0 | 0.04 | [config](./configs/config_small.py) |
+| MN3_small_075 | LCC_FASD | 0.879 | 21.07 | 22.77 | 19.3 | 21.04 | 0.6 | 0.03 | [config](./configs/config_small_075.py) |
 
 ## Setup
 ### Prerequisites
