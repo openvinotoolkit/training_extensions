@@ -309,7 +309,7 @@ class TransformBin:
         return [cv.threshold(im, self.threshold, self.max_val, self.thresh_type)[1] for im in img]
 
 
-class TransfromAdaptiveBin:
+class TransformAdaptiveBin:
     def __init__(self, threshold, block_size, method=cv.ADAPTIVE_THRESH_MEAN_C, mean_c=10):
         self.method = method
         self.block_size = block_size
@@ -340,7 +340,7 @@ class TransformRescale:
 
     def __call__(self, imgs):
         fx = np.random.uniform(self.scale_min, self.scale_max)
-        fy = fx  # np.random.uniform(fx, self.scale_max)
+        fy = fx
         if not isinstance(imgs, list):
             imgs = [imgs]
         imgs = [cv.resize(img, dsize=None, fx=fx, fy=fy) for img in imgs]
@@ -440,7 +440,7 @@ def create_list_of_transforms(transforms_list, ovino_ir=False):
             elif transform['name'] == 'TransformRotate':
                 transforms.append(TransformRotate(transform['angle']))
             elif transform['name'] == 'TransfromAdaptiveBin':
-                transforms.append(TransfromAdaptiveBin(transform['threshold'], transform['block_size']))
+                transforms.append(TransformAdaptiveBin(transform['threshold'], transform['block_size']))
             elif transform['name'] == 'TransformDilation':
                 transforms.append(TransformDilation())
             elif transform['name'] == 'TransformErosion':
