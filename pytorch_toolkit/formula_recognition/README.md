@@ -37,8 +37,8 @@ bash init_venv.sh
 
 #### Dataset Format
 Dataset format is similar to [im2latex-100k](https://zenodo.org/record/56198#.X2NDQ2gzaUl). Main structure of the dataset is following:
-* `formulas_file` - file with one formula per line
-* `images_folder` - folder containing input images
+* `formulas.norm.lst` - file with one formula per line.
+* `imaged_processed` - folder containing input images.
 * `split_file` - this file contains `image_name` (tab symbol) `formula_idx` per line connecting corresponding index of the formula in the file with formulas and particular image with `image_name`. Example:
     ```
     11.png  11
@@ -113,7 +113,7 @@ In addition to common parameters you can specify the following arguments:
 One can use some pretrained models. Right now two models are available:
 * medium model:
     * [checkpoint link](https://download.01.org/opencv/openvino_training_extensions/models/formula_recognition/medium_photograped_0185.pth)
-    * digits, letters, some greek letters, fractions, trigonometric operations are supported; for more details, please, look at corresponding vocab file
+    * digits, letters, some greek letters, fractions, trigonometric operations are supported; for more details, please, look at [corresponding vocab file](vocabs/vocab_medium.json).
     * to use this model, just set the correct value to the `model_path` field in the corresponding config file:
     ```
     model_path: <path to the model>
