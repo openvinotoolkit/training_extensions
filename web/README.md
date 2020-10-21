@@ -1,6 +1,7 @@
 [CPU Version](#cpu-version)
   - [CPU Requirements](#cpu-requirements)
   - [CPU Setup](#cpu-setup)
+  
 [GPU Version](#gpu-version)
   - [GPU Requirements](#gpu-requirements)
   - [GPU Setup](#gpu-setup)
