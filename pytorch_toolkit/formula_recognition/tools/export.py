@@ -64,7 +64,10 @@ class ONNXExporter:
         self.model.eval()
         if self.model_path is not None:
             self.model.load_weights(self.model_path)
-        img = np.random.randint(0, 2, size=(self.config.get('input_shape_decoder')[2], self.config.get('input_shape_decoder')[3], 1), dtype=np.uint8)
+        img = np.random.randint(0, 2,
+                                size=(self.config.get('input_shape_decoder')[2],
+                                      self.config.get('input_shape_decoder')[3], 1),
+                                dtype=np.uint8)
         img = img * 255
         img = cv.cvtColor(img, cv.COLOR_GRAY2RGB)
         self.img_for_ir = np.expand_dims(np.transpose(img, (2, 0, 1)), axis=0)
@@ -144,23 +147,17 @@ class ONNXExporter:
         return np.argmax(np.array(logits).squeeze(1), axis=1)
 
     def export_encoder_ir(self):
+        export_command = f"""{OPENVINO_DIR}/bin/setupvars.sh && \
+        python {OPENVINO_DIR}/deployment_tools/model_optimizer/mo.py \
+        --framework onnx \
+        --input_model {self.config.get("res_encoder_name")} \
+        --input_shape "{self.config.get("input_shape_decoder")}" \
+        --output "{self.config.get("encoder_output_names", ENCODER_OUTPUTS)}" \
+        --reverse_input_channels \
+        --scale_values 'imgs[255,255,255]'"""
         if self.config.get('verbose_export'):
-            print(f'{OPENVINO_DIR}/bin/setupvars.sh && '
-                  f'python {OPENVINO_DIR}/deployment_tools/model_optimizer/mo.py '
-                  f'--framework onnx '
-                  f'--input_model {self.config.get("res_encoder_name")} '
-                  f'--input_shape "{self.config.get("input_shape_decoder")}" '
-                  f'--output "{self.config.get("encoder_output_names", ENCODER_OUTPUTS)}" '
-                  f'--reverse_input_channels '
-                  f'--scale_values "imgs[255,255,255]"')
-        subprocess.run(f'{OPENVINO_DIR}/bin/setupvars.sh && '
-                       f'python {OPENVINO_DIR}/deployment_tools/model_optimizer/mo.py '
-                       f'--framework onnx '
-                       f'--input_model {self.config.get("res_encoder_name")} '
-                       f'--input_shape "{self.config.get("input_shape_decoder")}" '
-                       f'--output {self.config.get("encoder_output_names", ENCODER_OUTPUTS)} '
-                       f'--reverse_input_channels '
-                       f'--scale_values "imgs[255,255,255]"',
+            print(export_command)
+        subprocess.run(export_command,
                        shell=True, check=True
                        )
 
@@ -177,21 +174,16 @@ class ONNXExporter:
                        [1, self.config.get('head', {}).get('encoder_hidden_size', 256)],
                        [1, output_h, output_w, self.config.get('head', {}).get('decoder_hidden_size', 512)], [1, 1]]
         input_shape = "{}, {}, {}, {}, {}".format(*input_shape)
+        export_command = f"""{OPENVINO_DIR}/bin/setupvars.sh &&
+        python {OPENVINO_DIR}/deployment_tools/model_optimizer/mo.py \
+        --framework onnx \
+        --input_model {self.config.get('res_decoder_name')} \
+        --input {self.config.get("decoder_input_names", DECODER_INPUTS)} \
+        --input_shape '{str(input_shape)}' \
+        --output {self.config.get("decoder_output_names", DECODER_OUTPUTS)}"""
         if self.config.get('verbose_export'):
-            print(f'{OPENVINO_DIR}/bin/setupvars.sh && '
-                  f'python {OPENVINO_DIR}/deployment_tools/model_optimizer/mo.py '
-                  f'--framework onnx '
-                  f'--input_model {self.config.get("res_decoder_name")} '
-                  f'--input "{self.config.get("decoder_input_names", DECODER_INPUTS)}" '
-                  f'--input_shape "{str(input_shape)}" '
-                  f'--output "{self.config.get("decoder_output_names", DECODER_OUTPUTS)}"')
-        subprocess.run(f'{OPENVINO_DIR}/bin/setupvars.sh && '
-                       f'python {OPENVINO_DIR}/deployment_tools/model_optimizer/mo.py '
-                       f'--framework onnx '
-                       f'--input_model {self.config.get("res_decoder_name")} '
-                       f'--input "{self.config.get("decoder_input_names", DECODER_INPUTS)}" '
-                       f'--input_shape "{str(input_shape)}" '
-                       f'--output "{self.config.get("decoder_output_names", DECODER_OUTPUTS)}"',
+            print(export_command)
+        subprocess.run(export_command,
                        shell=True, check=True
                        )
 
