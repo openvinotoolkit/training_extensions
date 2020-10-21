@@ -14,14 +14,21 @@
  limitations under the License.
 """
 
-import yaml
 import os
+import yaml
 
 
 def check_and_resolve_path(parameter):
+    """Checks if given parameter could be path and tries to resolve it as relative path.
+    If obtained path exists, returs it, else returns original input parameter.
+    """
     if not isinstance(parameter, str):
         return parameter
-    if
+    try_resolve_path = resolve_relative_path(parameter)
+    if os.path.exists(try_resolve_path):
+        return try_resolve_path
+    return parameter
+
 
 def resolve_relative_path(path):
     """Resolves relative paths respectively to directory of this project (formula_recognition)
@@ -36,7 +43,6 @@ def resolve_relative_path(path):
         return path
     root_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
     return os.path.join(root_dir, path)
-
 
 
 def get_config(config_path, section):
@@ -57,10 +63,7 @@ def get_config(config_path, section):
         conflict_config_keys = set(specific_config.keys()) & set(common_config.keys())
         if conflict_config_keys:
             raise RuntimeError(
-                "Error: the following config parameters are set both in demo config and common config sections: {}"
-                .format(conflict_config_keys))
+                f"Error: the following config parameters are set both in {section} config and common config sections\n: {conflict_config_keys}")
         specific_config.update(common_config)
-    for k, v in specific_config.items():
-        if isinstance(v, str) and (os.path.isfile(v) or os.path.isdir(v)):
-            specific_config[k] = resolve_relative_path(v)
+    specific_config = {k: check_and_resolve_path(v) for k, v in specific_config.items()}
     return specific_config
