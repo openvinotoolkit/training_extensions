@@ -15,21 +15,44 @@
 """
 
 import yaml
+import os
 
 
-def get_config(config_path, split):
+def check_and_resolve_path(parameter):
+    if not isinstance(parameter, str):
+        return parameter
+    if
+
+def resolve_relative_path(path):
+    """Resolves relative paths respectively to directory of this project (formula_recognition)
+
+    Args:
+        path (path-like or str): input path
+
+    Returns:
+        path-like or str: resolved path
+    """
+    if os.path.isabs(path):
+        return path
+    root_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+    return os.path.join(root_dir, path)
+
+
+
+def get_config(config_path, section):
     """Function reads config from config file and prepares config
-    by merging common parts and specific split of the config (train, eval, demo, export)
+    by merging common parts and specific section of the config (train, eval, demo, export)
 
 
     Args:
         config_path (str or path): path to a config file
-        split (str): specific part of the config to merge with common part (e.g. 'train')
+        section (str): specific part of the config to merge with common part (e.g. 'train')
     """
-    assert split in ['train', 'export', 'demo', 'eval']
+    assert section in ['train', 'export', 'demo', 'eval']
+    config_path = resolve_relative_path(config_path)
     with open(config_path, 'r') as f:
         config = yaml.load(f, Loader=yaml.SafeLoader)
-        specific_config = config.get(split)
+        specific_config = config.get(section)
         common_config = config.get("common")
         conflict_config_keys = set(specific_config.keys()) & set(common_config.keys())
         if conflict_config_keys:
@@ -37,4 +60,7 @@ def get_config(config_path, split):
                 "Error: the following config parameters are set both in demo config and common config sections: {}"
                 .format(conflict_config_keys))
         specific_config.update(common_config)
+    for k, v in specific_config.items():
+        if isinstance(v, str) and (os.path.isfile(v) or os.path.isdir(v)):
+            specific_config[k] = resolve_relative_path(v)
     return specific_config

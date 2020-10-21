@@ -26,8 +26,8 @@ from im2latex.data.vocab import read_vocab
 from im2latex.datasets.im2latex_dataset import Im2LatexDataset
 from im2latex.models.im2latex_model import Im2latexModel
 from torch.utils.data import DataLoader
-from tools.evaluation_tools import Im2latexRenderBasedMetric
-from tools.get_config import get_config
+from tools.utils.evaluation_utils import Im2latexRenderBasedMetric
+from tools.utils.get_config import get_config
 
 
 spaces = [r'\,', r'\>', r'\;', r'\:', r'\quad', r'\qquad', '~']
@@ -127,7 +127,7 @@ def parse_args():
 
 if __name__ == "__main__":
     args = parse_args()
-    test_config = get_config(args.config, split='eval')
+    test_config = get_config(args.config, section='eval')
     validator = Evaluator(test_config)
     result = validator.validate()
     print("Im2latex metric is: {}".format(result))

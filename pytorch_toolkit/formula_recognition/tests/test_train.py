@@ -19,7 +19,7 @@ import shutil
 import unittest
 
 from tools.train import Trainer
-from tools.get_config import get_config
+from tools.utils.get_config import get_config
 
 
 def create_train_test(config_file):
@@ -27,7 +27,7 @@ def create_train_test(config_file):
     class TestTrain(unittest.TestCase):
         @classmethod
         def setUpClass(cls):
-            train_config = get_config(config_file, split='train')
+            train_config = get_config(config_file, section='train')
             cls.config = train_config
             cls.config['epochs'] = 1
             cls.config['_test_steps'] = 40

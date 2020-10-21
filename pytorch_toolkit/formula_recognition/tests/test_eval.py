@@ -16,7 +16,7 @@
 import unittest
 
 from tools.test import Evaluator
-from tools.get_config import get_config
+from tools.utils.get_config import get_config
 
 
 def create_evaluation_test_case(config_file):
@@ -24,7 +24,7 @@ def create_evaluation_test_case(config_file):
     class TestEval(unittest.TestCase):
         @classmethod
         def setUpClass(cls):
-            test_config = get_config(config_file, split='eval')
+            test_config = get_config(config_file, section='eval')
             cls.config = test_config
             cls.validator = Evaluator(config=cls.config)
 

@@ -152,7 +152,8 @@ def render_routine(line):
     """
     formula, filename, folder_path = line
     output_path = os.path.join(folder_path, filename)
-    pre_name = output_path.replace('/', '_').replace('.', '_')
+    pre_name = tempfile.NamedTemporaryFile().name
+    pre_dir = os.path.dirname(pre_name)
     formula = preprocess_formula(formula)
     if not os.path.exists(output_path):
         tex_filename = pre_name + '.tex'
@@ -160,12 +161,12 @@ def render_routine(line):
         aux_filename = pre_name + '.aux'
         with open(tex_filename, "w") as w:
             w.write(template % formula)
-        run("pdflatex -interaction=nonstopmode {}".format(tex_filename), TIMEOUT)
-        for filename in (tex_filename, log_filename, aux_filename):
-            if os.path.exists(filename):
-                os.remove(filename)
-        pdf_filename = tex_filename[:-4] + '.pdf'
-        png_filename = tex_filename[:-4] + '.png'
+        run("cd {} && pdflatex -interaction=nonstopmode {}".format(pre_dir, tex_filename), TIMEOUT)
+        for fname in (tex_filename, log_filename, aux_filename):
+            if os.path.exists(fname):
+                os.remove(fname)
+        pdf_filename = pre_name + '.pdf'
+        png_filename = pre_name + '.png'
         if not os.path.exists(pdf_filename):
             print('ERROR: {} cannot compile'.format(filename))
         else:

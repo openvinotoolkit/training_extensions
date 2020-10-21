@@ -57,7 +57,7 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.data import ConcatDataset, DataLoader
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
-from tools.get_config import get_config
+from tools.utils.get_config import get_config
 
 
 
@@ -308,7 +308,7 @@ if __name__ == "__main__":
     assert sys.version_info[0] == 3
     args = parse_args()
 
-    train_config = get_config(args.config, split='train')
+    train_config = get_config(args.config, section='train')
 
     experiment = Trainer(work_dir=args.work_dir, config=train_config)
     experiment.train()

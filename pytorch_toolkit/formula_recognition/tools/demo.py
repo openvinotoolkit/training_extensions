@@ -21,8 +21,8 @@ import cv2 as cv
 from im2latex.data.utils import create_list_of_transforms
 from im2latex.data.vocab import read_vocab
 from im2latex.models.im2latex_model import Im2latexModel
-from evaluation_tools import render_routine, check_environment
-from tools.get_config import get_config
+from tools.utils.evaluation_utils import render_routine, check_environment
+from tools.utils.get_config import get_config
 
 
 class Im2latexDemo:
@@ -56,7 +56,7 @@ def parse_args():
 
 if __name__ == "__main__":
     args = parse_args()
-    demo_config = get_config(args.config, split='demo')
+    demo_config = get_config(args.config, section='demo')
     demo = Im2latexDemo(demo_config)
     try:
         check_environment()

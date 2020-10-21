@@ -30,7 +30,7 @@ from torchvision.transforms import ToTensor
 from im2latex.data.utils import create_list_of_transforms
 from im2latex.data.vocab import END_TOKEN, START_TOKEN, read_vocab
 from im2latex.models.im2latex_model import Im2latexModel
-from tools.get_config import get_config
+from tools.utils.get_config import get_config
 
 ENCODER_INPUTS = "imgs"
 ENCODER_OUTPUTS = "row_enc_out,hidden,context,init_0"

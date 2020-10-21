@@ -18,14 +18,14 @@ import os
 import unittest
 
 from tools.export import ONNXExporter
-from tools.get_config import get_config
+from tools.utils.get_config import get_config
 
 
 def create_export_test_case(config_file):
     class TestExport(unittest.TestCase):
         @classmethod
         def setUpClass(cls):
-            export_config = get_config(config_file, split='export')
+            export_config = get_config(config_file, section='export')
             cls.config = export_config
             cls.exporter = ONNXExporter(cls.config)
             print("test case for config {} created".format(config_file))
