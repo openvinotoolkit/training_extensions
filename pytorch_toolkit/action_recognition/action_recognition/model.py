@@ -203,7 +203,7 @@ def create_model(args, model, pretrain_path=None):
     # load pretrained model
     if pretrain_path:
         print('loading pretrained model {}'.format(args.pretrain_path))
-        pretrain = torch.load(str(args.pretrain_path))
+        pretrain = torch.load(str(args.pretrain_path), map_location='cpu')
 
         if hasattr(model, 'load_checkpoint'):
             model.load_checkpoint(pretrain['state_dict'])
