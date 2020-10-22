@@ -51,7 +51,7 @@ class TransformResizePad:
             image_raw = cv.copyMakeBorder(image_raw, 0, target_height - img_h,
                                           0, target_width - img_w, cv.BORDER_CONSTANT,
                                           None, COLOR_WHITE)
-            assert image_raw.shape[0:2] == self.target_shape
+            assert tuple(image_raw.shape[0:2]) == tuple(self.target_shape[0:2]), f"image_raw shape {image_raw.shape[0:2]}, tgt_shape: {self.target_shape[0:2]}"
             res.append(image_raw)
         return res
 
@@ -129,6 +129,17 @@ class TransformToTensor:
         if not isinstance(imgs, list):
             imgs = [imgs]
         return [ToTensor()(img) for img in imgs]
+
+
+class TransformOvinoIR:
+    """The same transform as above with the exception that it does not
+    cast input array to [0, 1] range
+    """
+    def __call__(self, imgs):
+        if not isinstance(imgs, list):
+            imgs = [imgs]
+        imgs = [np.transpose(img, [2, 0, 1]) for img in imgs]
+        return [torch.Tensor(img) for img in imgs]
 
 
 class TransformBlur:
@@ -452,7 +463,9 @@ def create_list_of_transforms(transforms_list, ovino_ir=False):
             elif transform['name'] == 'TransformRandomBolding':
                 transforms.append(TransformRandomBolding(transform['kernel_size'], transform['iterations'],
                                                          transform['threshold'], transform['res_threshold'], transform['sigmaX'], transform['distr']))
-    if not ovino_ir:
+    if ovino_ir:
+        transforms.append(TransformOvinoIR())
+    else:
         transforms.append(TransformToTensor())
     return Compose(transforms)
 
