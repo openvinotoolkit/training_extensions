@@ -18,15 +18,17 @@ import os
 import unittest
 
 from tools.export import ONNXExporter
+from tools.test import ExportedModelEvaluator
 from tools.utils.get_config import get_config
 
 
-def create_export_test_case(config_file):
+def create_export_test_case(config_file, expected_outputs):
     class TestExport(unittest.TestCase):
         @classmethod
         def setUpClass(cls):
             export_config = get_config(config_file, section='export')
             cls.config = export_config
+            cls.config.update({"expected_outputs": expected_outputs})
             cls.exporter = ONNXExporter(cls.config)
             print("test case for config {} created".format(config_file))
 
@@ -49,8 +51,9 @@ def create_export_test_case(config_file):
             self.assertEqual(True, result_model_exists)
 
         def test_3_onnx(self):
-            metric_onnx = self.exporter.get_onnx_metric()
-            target_metric = self.exporter.target_metric
+            evaluator = ExportedModelEvaluator(self.config)
+            metric_onnx = evaluator.get_onnx_metric()
+            target_metric = evaluator.expected_outputs.get("target_metric")
             self.assertGreaterEqual(metric_onnx, target_metric)
 
         def test_4_encoder_ir_export(self):
@@ -93,17 +96,24 @@ def create_export_test_case(config_file):
 
         def test_6_run_ir_model(self):
             if self.config.get("export_ir"):
-                ir_metric = self.exporter.get_ir_metric()
-                target_metric = self.exporter.target_metric
+                evaluator = ExportedModelEvaluator(self.config)
+                ir_metric = evaluator.get_ir_metric()
+                target_metric = evaluator.expected_outputs.get("target_metric")
                 self.assertGreaterEqual(ir_metric, target_metric)
     return TestExport
 
 
-class TestMediumRenderedExport(create_export_test_case("configs/medium_config.yml")):
+class TestMediumRenderedExport(
+        create_export_test_case(
+            "configs/medium_config.yml",
+            expected_outputs="tests/expected_outputs/formula_recognition/medium_photographed_0185.json")):
     "Test case for medium config"
 
 
-class TestHandwrittenPolynomialsExport(create_export_test_case('configs/polynomials_handwritten_config.yml')):
+class TestHandwrittenPolynomialsExport(
+        create_export_test_case(
+            'configs/polynomials_handwritten_config.yml',
+            expected_outputs='tests/expected_outputs/formula_recognition/polynomials_handwritten_0166.json')):
     "Test case for handwritten polynomials config"
 
 

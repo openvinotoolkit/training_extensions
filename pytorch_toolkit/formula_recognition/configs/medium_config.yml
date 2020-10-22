@@ -18,7 +18,6 @@ train:
 eval:
   val_path: ../../data/formula_recognition/sample_medium_dataset
   split_file: validate
-  target_metric: 0.9
   val_transforms_list:
     - name: "TransformRescale"
       scales:
@@ -35,10 +34,9 @@ export:
   input_shape_decoder:
     - 1
     - 3
-    - 160
-    - 1400
+    - 65
+    - 1450
   val_path: ../../data/formula_recognition/sample_medium_dataset
-  target_metric: 0.8
   transforms_list:
     - name: "TransformRescale"
       scales:
@@ -46,5 +44,5 @@ export:
         - 1.5
     - name: TransformCropPad
       target_shape:
-        - 160
-        - 1400
+        - 65
+        - 1450

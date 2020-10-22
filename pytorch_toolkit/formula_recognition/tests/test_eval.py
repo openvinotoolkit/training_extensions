@@ -19,26 +19,34 @@ from tools.test import Evaluator
 from tools.utils.get_config import get_config
 
 
-def create_evaluation_test_case(config_file):
+def create_evaluation_test_case(config_file, expected_outputs):
 
     class TestEval(unittest.TestCase):
         @classmethod
         def setUpClass(cls):
             test_config = get_config(config_file, section='eval')
             cls.config = test_config
+            cls.config.update({"expected_outputs": expected_outputs})
             cls.validator = Evaluator(config=cls.config)
 
         def test_validate(self):
             metric = self.validator.validate()
-            self.assertGreaterEqual(metric, self.config.get("target_metric"))
+            target_metric = self.validator.expected_outputs.get("target_metric")
+            self.assertGreaterEqual(metric, target_metric)
     return TestEval
 
 
-class TestMediumRenderedEvaluation(create_evaluation_test_case("configs/medium_config.yml")):
+class TestMediumRenderedEvaluation(
+        create_evaluation_test_case(
+            "configs/medium_config.yml",
+            expected_outputs="tests/expected_outputs/formula_recognition/medium_photographed_0185.json")):
     "Test case for medium config"
 
 
-class TestHandwrittenPolynomialsEvaluation(create_evaluation_test_case('configs/polynomials_handwritten_config.yml')):
+class TestHandwrittenPolynomialsEvaluation(
+        create_evaluation_test_case(
+            'configs/polynomials_handwritten_config.yml',
+            expected_outputs='tests/expected_outputs/formula_recognition/polynomials_handwritten_0166.json')):
     "Test case for handwritten polynomials config"
 
 

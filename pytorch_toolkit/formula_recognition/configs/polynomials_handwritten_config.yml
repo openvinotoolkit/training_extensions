@@ -21,7 +21,7 @@ train:
 eval:
   val_path: ../../data/formula_recognition/sample_handwritten_polynomials
   split_file: validate
-  target_metric: 0.8
+
 demo:
   transforms_list: []
 export:
@@ -35,7 +35,6 @@ export:
     - 96
     - 1024
   val_path: ../../data/formula_recognition/sample_handwritten_polynomials
-  target_metric: 0.8
   transforms_list:
     - name: TransformCropPad
       target_shape:
