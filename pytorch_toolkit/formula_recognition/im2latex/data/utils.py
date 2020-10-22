@@ -210,7 +210,7 @@ class TransformResize:
     def __call__(self, img):
         if not isinstance(img, list):
             img = [img]
-        res = [cv.resize(im, self.target_shape[::-1]) for im in img]
+        res = [cv.resize(im, tuple(self.target_shape[::-1])) for im in img]
         return res
 
 
