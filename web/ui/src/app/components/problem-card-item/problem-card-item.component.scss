@@ -42,6 +42,9 @@
 
           .mat-card-title {
             font-size: $unitSize*3;
+            span {
+              text-overflow: ellipsis;
+            }
           }
         }
       }
@@ -60,6 +63,12 @@
 
     .add-icon {
       @include icon(200px);
+    }
+  }
+
+  mat-menu {
+    :host {
+      display: none;
     }
   }
 }

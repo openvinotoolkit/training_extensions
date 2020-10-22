@@ -1,7 +1,9 @@
 import {Injectable} from '@angular/core';
 import {Action, Selector, State, StateContext} from '@ngxs/store';
 import {ConnectWebSocket, WebSocketConnected, WebSocketDisconnected} from '@ngxs/websocket-plugin';
+import {ImmutableSelector} from '@ngxs-labs/immer-adapter';
 import {WsConnect} from './ws.actions';
+
 
 export class WsStateModel {
   public connected: boolean;
@@ -19,6 +21,7 @@ const defaults = {
 export class WsState {
 
   @Selector()
+  @ImmutableSelector()
   static connected(state: WsStateModel): boolean {
     return state.connected;
   }

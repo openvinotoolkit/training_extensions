@@ -11,6 +11,7 @@ import {Observable, of, Subject} from 'rxjs';
 import {filter, startWith, takeUntil} from 'rxjs/operators';
 import {WS} from '@idlp/root/ws.events';
 import {WebsocketService} from '@idlp/providers/websocket.service';
+import {ActivatedRoute} from '@angular/router';
 
 @Component({
   selector: 'idlp-fine-tune-dialog',
@@ -30,6 +31,7 @@ export class IdlpFineTuneDialogComponent implements OnInit, OnDestroy {
 
   constructor(
     private fb: FormBuilder,
+    private route: ActivatedRoute,
     private websocketService: WebsocketService,
     @Inject(MAT_DIALOG_DATA) public data: any
   ) {
@@ -68,7 +70,7 @@ export class IdlpFineTuneDialogComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.websocketService.send(WS.SEND.BUILD_LIST, {page: 1, size: 500});
+    this.websocketService.send(WS.SEND.BUILD_LIST, {problemId: this.data.problemId});
 
     this.form.get('advanced').valueChanges
       .pipe(

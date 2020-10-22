@@ -10,6 +10,7 @@ import (
 
 type ProblemService interface {
 	Create(ctx context.Context, req CreateRequestData, responseChan chan kitendpoint.Response)
+	Delete(ctx context.Context, req DeleteRequestData, responseChan chan kitendpoint.Response)
 	Details(ctx context.Context, req DetailsRequestData, responseChan chan kitendpoint.Response)
 	List(ctx context.Context, req ListRequestData, responseChan chan kitendpoint.Response)
 	UpdateFromLocal(ctx context.Context, req UpdateFromLocalRequestData, responseChan chan kitendpoint.Response)

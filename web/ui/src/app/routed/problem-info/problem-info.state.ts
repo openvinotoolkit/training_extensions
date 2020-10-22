@@ -19,7 +19,9 @@ import {
 } from '@idlp/routed/problem-info/problem-info.models';
 import {Utils} from '@idlp/utils/utils';
 import {Action, Selector, State, StateContext, Store} from '@ngxs/store';
+import {ImmutableSelector} from '@ngxs-labs/immer-adapter';
 import {
+  Reset,
   UpdateActiveBuild,
   UpdateBuilds,
   UpdateModels,
@@ -79,6 +81,7 @@ export class ProblemInfoState {
   }
 
   @Selector()
+  @ImmutableSelector()
   static problem(state: ProblemInfoStateModel): IProblem {
     return state.problem;
   }
@@ -141,6 +144,11 @@ export class ProblemInfoState {
   @Selector()
   static scatterLayout(state: ProblemInfoStateModel): any {
     return state.scatterLayout;
+  }
+
+  @Action(Reset)
+  reset({setState}: StateContext<ProblemInfoStateModel>): void {
+    setState(defaults);
   }
 
   @Action(UpdateProblemDetails)

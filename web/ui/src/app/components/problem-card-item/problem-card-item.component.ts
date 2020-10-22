@@ -5,6 +5,9 @@
 
 import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {IProblem} from '@idlp/root/models';
+import {Store} from '@ngxs/store';
+import {ProblemDelete} from '@idlp/routed/problem-list/problem-list.actions';
+import {SendWebSocketMessage} from "@ngxs/websocket-plugin";
 
 const DESCRIPTION_LENGTH = 235;
 
@@ -26,6 +29,11 @@ export class IdlpProblemCardItemComponent {
   @Output()
   enter: EventEmitter<void> = new EventEmitter<void>();
 
+  constructor(
+    private store: Store,
+  ) {
+  }
+
   get description(): string {
     if (this.problem.description) {
       if (this.problem.description.length > DESCRIPTION_LENGTH) {
@@ -34,5 +42,12 @@ export class IdlpProblemCardItemComponent {
       return this.problem.description;
     }
     return '';
+  }
+
+  delete(): void {
+    this.store.dispatch(new SendWebSocketMessage({
+      event: ProblemDelete.type,
+      data: {id: this.problem.id},
+    }));
   }
 }

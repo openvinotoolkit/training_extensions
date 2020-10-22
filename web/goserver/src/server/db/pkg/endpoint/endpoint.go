@@ -26,6 +26,7 @@ type Endpoints struct {
 	CvatTaskInsertOne kitendpoint.Endpoint
 	CvatTaskUpdateOne kitendpoint.Endpoint
 
+	ProblemDelete       kitendpoint.Endpoint
 	ProblemFind         kitendpoint.Endpoint
 	ProblemFindOne      kitendpoint.Endpoint
 	ProblemUpdateUpsert kitendpoint.Endpoint
@@ -55,6 +56,7 @@ func New(s service.DatabaseService /*, mdw map[string][]endpoint.Middleware*/) E
 		CvatTaskInsertOne: MakeCvatTaskInsertOneEndpoint(s),
 		CvatTaskUpdateOne: MakeCvatTaskUpdateOneEndpoint(s),
 
+		ProblemDelete:       MakeProblemDeleteEndpoint(s),
 		ProblemFind:         MakeProblemFindEndpoint(s),
 		ProblemFindOne:      MakeProblemFindOneEndpoint(s),
 		ProblemUpdateUpsert: MakeProblemUpdateUpsertEndpoint(s),
@@ -232,6 +234,22 @@ func MakeCvatTaskUpdateOneEndpoint(s service.DatabaseService) kitendpoint.Endpoi
 		go func() {
 			defer close(returnChan)
 			resp := s.CvatTaskUpdateOne(ctx, req.(service.CvatTaskUpdateOneRequestData))
+			returnChan <- kitendpoint.Response{
+				Data:   resp,
+				Err:    nil,
+				IsLast: true,
+			}
+		}()
+		return returnChan
+	}
+}
+
+func MakeProblemDeleteEndpoint(s service.DatabaseService) kitendpoint.Endpoint {
+	return func(ctx context.Context, req interface{}) chan kitendpoint.Response {
+		returnChan := make(chan kitendpoint.Response)
+		go func() {
+			defer close(returnChan)
+			resp := s.ProblemDelete(ctx, req.(service.ProblemDeleteRequestData))
 			returnChan <- kitendpoint.Response{
 				Data:   resp,
 				Err:    nil,

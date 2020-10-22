@@ -17,6 +17,7 @@ import {WsConnect} from '@idlp/root/ws.actions';
 import {WS} from '@idlp/root/ws.events';
 import {WsState} from '@idlp/root/ws.state';
 import {
+  Reset,
   UpdateActiveBuild,
   UpdateBuilds,
   UpdateModels,
@@ -27,7 +28,7 @@ import {ProblemInfoState} from '@idlp/routed/problem-info/problem-info.state';
 import {Select, Store} from '@ngxs/store';
 import {SendWebSocketMessage} from '@ngxs/websocket-plugin';
 import {iif, Observable, Subject, timer} from 'rxjs';
-import {delay, first, map, take} from 'rxjs/operators';
+import {delay, first, map, take, takeUntil} from 'rxjs/operators';
 
 @Component({
   selector: 'idlp-problem-info',
@@ -61,6 +62,7 @@ export class IdlpProblemInfoComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.store.dispatch(new Reset());
     this.store.dispatch(new WsConnect());
     this.store.dispatch(new UpdateProblemId(this.route.snapshot.paramMap.get('id')));
     this.problemId$.subscribe(problemId => this.problemId = problemId);
@@ -70,7 +72,8 @@ export class IdlpProblemInfoComponent implements OnInit, OnDestroy {
     this.connected$
       .pipe(map(connected => iif(() => connected === true)))
       .subscribe(() => {
-        timer(0, 100000)
+        timer(0, 5000)
+          .pipe(takeUntil(this.destroy$))
           .subscribe(() => {
             this.store.dispatch(new SendWebSocketMessage({
               event: UpdateModels.type,
@@ -188,6 +191,7 @@ export class IdlpProblemInfoComponent implements OnInit, OnDestroy {
       disableClose: true,
       width: '550px',
       data: {
+        problemId: this.problemId,
         problemName: this.problem.title,
         buildId: this.activeBuild.id,
         model

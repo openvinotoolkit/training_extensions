@@ -113,3 +113,25 @@ func (s *basicDatabaseService) ProblemInsertOne(ctx context.Context, req Problem
 	err = problemCollection.FindOne(ctx, bson.M{"_id": r.InsertedID}).Decode(&result)
 	return result, err
 }
+
+type ProblemDeleteRequestData struct {
+	Id primitive.ObjectID `json:"id" bson:"_id"`
+}
+
+type ProblemDeleteResponseData struct {
+	Id primitive.ObjectID `json:"id" bson:"_id"`
+}
+
+func (s *basicDatabaseService) ProblemDelete(ctx context.Context, req ProblemDeleteRequestData) ProblemDeleteResponseData {
+	problemCollection := s.db.Collection(n.CProblem)
+	if primitive.ObjectID.IsZero(req.Id) {
+		return ProblemDeleteResponseData{Id: primitive.NilObjectID}
+	}
+	filter := bson.M{"_id": req.Id}
+	_, err := problemCollection.DeleteOne(ctx, filter)
+	if err != nil {
+		log.Println("ProblemDelete.DeleteOne", err)
+		return ProblemDeleteResponseData{Id: primitive.NilObjectID}
+	}
+	return ProblemDeleteResponseData{Id: req.Id}
+}

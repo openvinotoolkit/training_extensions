@@ -16,6 +16,7 @@ const (
 	EModelList     = "MODEL_LIST"
 
 	EProblemCreate  = "PROBLEM_CREATE"
+	EProblemDelete  = "PROBLEM_DELETE"
 	EProblemDetails = "PROBLEM_DETAILS"
 	EProblemList    = "PROBLEM_LIST"
 
@@ -64,6 +65,7 @@ const (
 	RDBCvatTaskInsertOne = "DB_CVAT_TASK_INSERT_ONE"
 	RDBCvatTaskUpdateOne = "DB_CVAT_TASK_UPDATE_ONE"
 
+	RDBProblemDelete       = "DB_PROBLEM_DELETE"
 	RDBProblemFind         = "DB_PROBLEM_FIND"
 	RDBProblemFindOne      = "DB_PROBLEM_FIND_ONE"
 	RDBProblemUpdateUpsert = "DB_PROBLEM_UPDATE_UPSERT"
@@ -95,6 +97,7 @@ func GetEvents() map[string]string {
 		EModelList:             QModel,
 		EModelFineTune:         QModel,
 		EProblemCreate:         QProblem,
+		EProblemDelete:         QProblem,
 		EProblemDetails:        QProblem,
 		EProblemList:           QProblem,
 	}

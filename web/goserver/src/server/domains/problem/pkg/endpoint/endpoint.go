@@ -7,9 +7,9 @@ import (
 	kitendpoint "server/kit/endpoint"
 )
 
-// TODO: Details -> Details
 type Endpoints struct {
 	Create          kitendpoint.Endpoint
+	Delete          kitendpoint.Endpoint
 	Details         kitendpoint.Endpoint
 	List            kitendpoint.Endpoint
 	UpdateFromLocal kitendpoint.Endpoint
@@ -20,6 +20,7 @@ type Endpoints struct {
 func New(s service.ProblemService, mdw map[string][]kitendpoint.Middleware) Endpoints {
 	eps := Endpoints{
 		Create:          MakeCreateEndpoint(s),
+		Delete:          MakeDeleteEndpoint(s),
 		Details:         MakeDetailsEndpoint(s),
 		List:            MakeListEndpoint(s),
 		UpdateFromLocal: MakeUpdateFromLocalEndpoint(s),
@@ -40,8 +41,16 @@ func MakeCreateEndpoint(s service.ProblemService) kitendpoint.Endpoint {
 	}
 }
 
-func MakeDetailsEndpoint(s service.ProblemService) kitendpoint.Endpoint {
+func MakeDeleteEndpoint(s service.ProblemService) kitendpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) chan kitendpoint.Response {
+		req := request.(service.DeleteRequestData)
+		responseChan := make(chan kitendpoint.Response)
+		go s.Delete(ctx, req, responseChan)
+		return responseChan
+	}
+}
 
+func MakeDetailsEndpoint(s service.ProblemService) kitendpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) chan kitendpoint.Response {
 		req := request.(service.DetailsRequestData)
 		responseChan := make(chan kitendpoint.Response)

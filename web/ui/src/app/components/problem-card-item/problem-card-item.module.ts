@@ -10,7 +10,8 @@ import {IdlpCdkCarouselModule} from '@idlp/cdk/_components/carousel/carousel.mod
 import {MatIconModule} from '@angular/material/icon';
 import {MatCardModule} from '@angular/material/card';
 import {MatButtonModule} from '@angular/material/button';
-import {FlexModule} from "@angular/flex-layout";
+import {MatMenuModule} from '@angular/material/menu';
+import {FlexModule} from '@angular/flex-layout';
 
 
 @NgModule({
@@ -22,6 +23,7 @@ import {FlexModule} from "@angular/flex-layout";
     MatIconModule,
     MatButtonModule,
     MatCardModule,
+    MatMenuModule,
     IdlpCdkCarouselModule,
     FlexModule
   ],

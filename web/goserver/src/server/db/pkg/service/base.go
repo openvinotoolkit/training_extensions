@@ -23,6 +23,7 @@ type DatabaseService interface {
 	CvatTaskInsertOne(ctx context.Context, req CvatTaskInsertOneRequestData) t.CvatTask
 	CvatTaskUpdateOne(ctx context.Context, req CvatTaskUpdateOneRequestData) t.CvatTask
 
+	ProblemDelete(ctx context.Context, req ProblemDeleteRequestData) ProblemDeleteResponseData
 	ProblemFind(ctx context.Context, req ProblemFindRequestData) t.ProblemFindResponse
 	ProblemFindOne(ctx context.Context, req ProblemFindOneRequestData) t.Problem
 	ProblemUpdateUpsert(ctx context.Context, req ProblemUpdateUpsertRequestData) t.Problem

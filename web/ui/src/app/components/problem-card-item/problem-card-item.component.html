@@ -1,18 +1,25 @@
 <div
-  (click)="enter.emit()"
-  class="problem-card-item-component clickable"
+  class="problem-card-item-component"
 >
   <mat-card
     [style.height]="height + 'px'"
     [style.width]="width + 'px'"
   >
     <mat-card-header>
-      <mat-card-title>
-      <span
-        class="primer clickable"
-      >
-        {{problem.title}}
-      </span>
+      <mat-card-title fxLayoutAlign="space-between end">
+				<span
+          (click)="enter.emit()"
+          class="primer clickable"
+        >
+					{{problem.title}}
+				</span>
+        <mat-icon
+          *ngIf="problem.type === 'custom'"
+          class="clickable"
+          [matMenuTriggerFor]="menu"
+        >
+          more_vert
+        </mat-icon>
       </mat-card-title>
       <mat-card-subtitle>
         {{problem.subtitle}}
@@ -23,10 +30,16 @@
       fxLayout="column"
       fxLayoutAlign="center center"
     >
-      <mat-icon class="add-icon">add</mat-icon>
+      <mat-icon
+        (click)="enter.emit()"
+        class="add-icon clickable"
+      >add
+      </mat-icon>
     </div>
     <ng-template #carousel>
       <idlp-cdk-carousel
+        (click)="enter.emit()"
+        class="clickable"
         [images]="problem.imagesUrls"
         [width]="width"
         mat-card-image
@@ -38,3 +51,13 @@
     </mat-card-content>
   </mat-card>
 </div>
+
+<mat-menu #menu="matMenu" xPosition="before">
+  <button
+    (click)="delete()"
+    mat-menu-item
+  >
+    <mat-icon>delete</mat-icon>
+    <span>Delete</span>
+  </button>
+</mat-menu>

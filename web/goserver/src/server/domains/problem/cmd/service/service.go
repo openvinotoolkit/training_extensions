@@ -10,6 +10,7 @@ import (
 	n "server/common/names"
 	"server/domains/problem/pkg/endpoint"
 	"server/domains/problem/pkg/handler/create"
+	"server/domains/problem/pkg/handler/delete"
 	"server/domains/problem/pkg/handler/details"
 	"server/domains/problem/pkg/handler/list"
 	updateFromLocal "server/domains/problem/pkg/handler/update_from_local"
@@ -61,6 +62,8 @@ func Run(serviceQueueName, amqpAddr, amqpUser, amqpPass, trainPath, problemPath 
 			switch req.Event {
 			case create.Event:
 				go create.Handle(eps, conn, msg)
+			case delete.Event:
+				go delete.Handle(eps, conn, msg)
 			case details.Event:
 				go details.Handle(eps, conn, msg)
 			case list.Event:

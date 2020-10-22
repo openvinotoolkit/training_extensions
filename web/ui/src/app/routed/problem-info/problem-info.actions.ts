@@ -5,6 +5,13 @@
 import {IAbstractList} from '@idlp/root/models';
 import {IBuild, IModel, IModelsMetricsTableColumn, IProblem} from '@idlp/routed/problem-info/problem-info.models';
 
+export class Reset {
+  static readonly type = '[Problem Info] Reset';
+
+  constructor() {
+  }
+}
+
 export class UpdateProblemDetails {
   static readonly type = 'PROBLEM_DETAILS';
 
