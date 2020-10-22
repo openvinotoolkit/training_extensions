@@ -58,3 +58,4 @@ metrics:
   value: 47.6
 training_gpu_num: 1
 show_on_chart: True
+config: config.py
