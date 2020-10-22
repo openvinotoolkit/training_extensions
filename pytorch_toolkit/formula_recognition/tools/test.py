@@ -78,7 +78,6 @@ class Evaluator:
         self.vocab = read_vocab(config.get('vocab_path'))
         self.val_transforms_list = config.get('val_transforms_list')
         self.split = config.get('split_file', 'validate')
-        self.print_freq = config.get('print_freq', 16)
         self.load_dataset()
         self.model = Im2latexModel(config.get('backbone_type', 'resnet'), config.get(
             'backbone_config'), len(self.vocab), config.get('head', {}))
