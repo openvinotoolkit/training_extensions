@@ -10,6 +10,7 @@ import (
 
 type ModelService interface {
 	CreateFromGeneric(ctx context.Context, req CreateFromGenericRequest) chan kitendpoint.Response
+	Delete(ctx context.Context, req DeleteRequestData, responseChan chan kitendpoint.Response)
 	Evaluate(ctx context.Context, req EvaluateRequest) chan kitendpoint.Response
 	FineTune(ctx context.Context, req FineTuneRequestData) chan kitendpoint.Response
 	List(ctx context.Context, req ListRequestData) chan kitendpoint.Response

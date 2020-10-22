@@ -31,6 +31,7 @@ type Endpoints struct {
 	ProblemFindOne      kitendpoint.Endpoint
 	ProblemUpdateUpsert kitendpoint.Endpoint
 
+	ModelDelete       kitendpoint.Endpoint
 	ModelFind         kitendpoint.Endpoint
 	ModelFindOne      kitendpoint.Endpoint
 	ModelInsertOne    kitendpoint.Endpoint
@@ -61,6 +62,7 @@ func New(s service.DatabaseService /*, mdw map[string][]endpoint.Middleware*/) E
 		ProblemFindOne:      MakeProblemFindOneEndpoint(s),
 		ProblemUpdateUpsert: MakeProblemUpdateUpsertEndpoint(s),
 
+		ModelDelete:       MakeModelDeleteEndpoint(s),
 		ModelFind:         MakeModelFindEndpoint(s),
 		ModelFindOne:      MakeModelFindOneEndpoint(s),
 		ModelInsertOne:    MakeModelInsertOneEndpoint(s),
@@ -298,6 +300,22 @@ func MakeProblemUpdateUpsertEndpoint(s service.DatabaseService) kitendpoint.Endp
 		go func() {
 			defer close(returnChan)
 			resp := s.ProblemUpdateUpsert(ctx, req.(service.ProblemUpdateUpsertRequestData))
+			returnChan <- kitendpoint.Response{
+				Data:   resp,
+				Err:    nil,
+				IsLast: true,
+			}
+		}()
+		return returnChan
+	}
+}
+
+func MakeModelDeleteEndpoint(s service.DatabaseService) kitendpoint.Endpoint {
+	return func(ctx context.Context, req interface{}) chan kitendpoint.Response {
+		returnChan := make(chan kitendpoint.Response)
+		go func() {
+			defer close(returnChan)
+			resp := s.ModelDelete(ctx, req.(service.ModelDeleteRequestData))
 			returnChan <- kitendpoint.Response{
 				Data:   resp,
 				Err:    nil,

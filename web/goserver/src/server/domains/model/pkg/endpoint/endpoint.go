@@ -9,6 +9,7 @@ import (
 
 type Endpoints struct {
 	CreateFromGeneric kitendpoint.Endpoint
+	Delete            kitendpoint.Endpoint
 	Evaluate          kitendpoint.Endpoint
 	FineTune          kitendpoint.Endpoint
 	List              kitendpoint.Endpoint
@@ -18,6 +19,7 @@ type Endpoints struct {
 func New(s service.ModelService, mdw map[string][]kitendpoint.Middleware) Endpoints {
 	eps := Endpoints{
 		CreateFromGeneric: MakeCreateFromGenericEndpoint(s),
+		Delete:            MakeDeleteEndpoint(s),
 		Evaluate:          MakeEvaluateEndpoint(s),
 		FineTune:          MakeFineTuneEndpoint(s),
 		List:              MakeListEndpoint(s),
@@ -30,6 +32,15 @@ func MakeCreateFromGenericEndpoint(s service.ModelService) kitendpoint.Endpoint 
 	return func(ctx context.Context, request interface{}) chan kitendpoint.Response {
 		req := request.(service.CreateFromGenericRequest)
 		return s.CreateFromGeneric(ctx, req)
+	}
+}
+
+func MakeDeleteEndpoint(s service.ModelService) kitendpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) chan kitendpoint.Response {
+		req := request.(service.DeleteRequestData)
+		responseChan := make(chan kitendpoint.Response)
+		go s.Delete(ctx, req, responseChan)
+		return responseChan
 	}
 }
 

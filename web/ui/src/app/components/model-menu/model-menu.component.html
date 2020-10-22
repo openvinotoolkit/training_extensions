@@ -42,4 +42,11 @@
       <span>Hide on Chart</span>
     </div>
   </button>
+  <button
+    (click)="onMenuItemClick.emit('delete')"
+    mat-menu-item
+  >
+    <mat-icon>delete</mat-icon>
+    <span>Delete</span>
+  </button>
 </mat-menu>

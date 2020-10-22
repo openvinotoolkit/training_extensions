@@ -121,3 +121,25 @@ func (s *basicDatabaseService) ModelUpdateUpsert(ctx context.Context, req ModelU
 	}
 	return result
 }
+
+type ModelDeleteRequestData struct {
+	Id primitive.ObjectID `json:"id" bson:"_id"`
+}
+
+type ModelDeleteResponseData struct {
+	Id primitive.ObjectID `json:"id" bson:"_id"`
+}
+
+func (s *basicDatabaseService) ModelDelete(ctx context.Context, req ModelDeleteRequestData) ModelDeleteResponseData {
+	modelCollection := s.db.Collection(n.CModel)
+	if primitive.ObjectID.IsZero(req.Id) {
+		return ModelDeleteResponseData{Id: primitive.NilObjectID}
+	}
+	filter := bson.M{"_id": req.Id}
+	_, err := modelCollection.DeleteOne(ctx, filter)
+	if err != nil {
+		log.Println("ModelDelete.DeleteOne", err)
+		return ModelDeleteResponseData{Id: primitive.NilObjectID}
+	}
+	return ModelDeleteResponseData{Id: req.Id}
+}

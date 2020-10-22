@@ -21,6 +21,7 @@ import {Utils} from '@idlp/utils/utils';
 import {Action, Selector, State, StateContext, Store} from '@ngxs/store';
 import {ImmutableSelector} from '@ngxs-labs/immer-adapter';
 import {
+  ModelDelete,
   Reset,
   UpdateActiveBuild,
   UpdateBuilds,
@@ -175,6 +176,14 @@ export class ProblemInfoState {
     if (buildId) {
       dispatch(new UpdateModelsMetricsTableData(data.items, columns, buildId));
     }
+  }
+
+  @Action(ModelDelete)
+  modelDelete({getState, dispatch}: StateContext<ProblemInfoStateModel>, {data}: ModelDelete): void {
+    const state = getState();
+    const items = state.models.filter(model => model.id !== data.id);
+    const total = items.length;
+    dispatch(new UpdateModels({total, items}));
   }
 
   @Action(UpdateBuilds)

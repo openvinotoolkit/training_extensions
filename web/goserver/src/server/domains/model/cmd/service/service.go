@@ -10,6 +10,7 @@ import (
 	n "server/common/names"
 	"server/domains/model/pkg/endpoint"
 	createFromGeneric "server/domains/model/pkg/handler/create_from_generic"
+	"server/domains/model/pkg/handler/delete"
 	"server/domains/model/pkg/handler/evaluate"
 	fineTune "server/domains/model/pkg/handler/fine_tune"
 	"server/domains/model/pkg/handler/list"
@@ -62,6 +63,8 @@ func Run(serviceQueueName string, amqpAddr, amqpUser, amqpPass, trainingPath, pr
 				fmt.Println(req)
 			}
 			switch req.Event {
+			case delete.Event:
+				go delete.Handle(eps, conn, msg)
 			case list.Event:
 				go list.Handle(eps, conn, msg)
 			case fineTune.Event:

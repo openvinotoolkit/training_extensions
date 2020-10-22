@@ -11,6 +11,7 @@ const (
 	EBuildList             = "BUILD_LIST"
 	EBuildUpdateAssetState = "BUILD_UPDATE_ASSET_STATE"
 
+	EModelDelete   = "MODEL_DELETE"
 	EModelEvaluate = "MODEL_EVALUATE"
 	EModelFineTune = "MODEL_FINE_TUNE"
 	EModelList     = "MODEL_LIST"
@@ -70,6 +71,7 @@ const (
 	RDBProblemFindOne      = "DB_PROBLEM_FIND_ONE"
 	RDBProblemUpdateUpsert = "DB_PROBLEM_UPDATE_UPSERT"
 
+	RDBModelDelete       = "DB_MODEL_DELETE"
 	RDBModelFind         = "DB_MODEL_FIND"
 	RDBModelFindOne      = "DB_MODEL_FIND_ONE"
 	RDBModelInsertOne    = "DB_MODEL_INSERT_ONE"
@@ -93,6 +95,7 @@ func GetEvents() map[string]string {
 		EBuildCreate:           QBuild,
 		EBuildList:             QBuild,
 		EBuildUpdateAssetState: QBuild,
+		EModelDelete:           QModel,
 		EModelEvaluate:         QModel,
 		EModelList:             QModel,
 		EModelFineTune:         QModel,

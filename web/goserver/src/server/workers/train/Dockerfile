@@ -44,7 +44,6 @@ RUN apt update && \
         curl && \
      rm -rf /var/lib/apt/lists/*
 
-
 ENV FORCE_CUDA="1"
 
 ARG OPENVINO_LINK=http://registrationcenter-download.intel.com/akdlm/irc_nas/16803/l_openvino_toolkit_p_2020.4.287.tgz

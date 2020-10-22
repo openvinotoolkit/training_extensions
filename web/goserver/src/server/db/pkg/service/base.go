@@ -28,6 +28,7 @@ type DatabaseService interface {
 	ProblemFindOne(ctx context.Context, req ProblemFindOneRequestData) t.Problem
 	ProblemUpdateUpsert(ctx context.Context, req ProblemUpdateUpsertRequestData) t.Problem
 
+	ModelDelete(ctx context.Context, req ModelDeleteRequestData) ModelDeleteResponseData
 	ModelFind(ctx context.Context, req ModelFindRequestData) t.ModelFindResponse
 	ModelFindOne(ctx context.Context, req ModelFindOneRequestData) t.Model
 	ModelInsertOne(ctx context.Context, req ModelInsertOneRequestData) (t.Model, error)

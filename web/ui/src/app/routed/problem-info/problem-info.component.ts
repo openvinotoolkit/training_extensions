@@ -17,6 +17,7 @@ import {WsConnect} from '@idlp/root/ws.actions';
 import {WS} from '@idlp/root/ws.events';
 import {WsState} from '@idlp/root/ws.state';
 import {
+  ModelDelete,
   Reset,
   UpdateActiveBuild,
   UpdateBuilds,
@@ -72,7 +73,7 @@ export class IdlpProblemInfoComponent implements OnInit, OnDestroy {
     this.connected$
       .pipe(map(connected => iif(() => connected === true)))
       .subscribe(() => {
-        timer(0, 5000)
+        timer(0, 50000)
           .pipe(takeUntil(this.destroy$))
           .subscribe(() => {
             this.store.dispatch(new SendWebSocketMessage({
@@ -122,9 +123,19 @@ export class IdlpProblemInfoComponent implements OnInit, OnDestroy {
     case 'showonchart':
       this.setShowOnChart(menuTrigger.model);
       break;
+    case 'delete':
+      this.delete(menuTrigger.model);
+      break;
     default:
       return;
     }
+  }
+
+  delete(model: IModel): void {
+    this.store.dispatch(new SendWebSocketMessage({
+      event: ModelDelete.type,
+      data: {id: model.id},
+    }));
   }
 
   showModelInTable(modelId: string): void {

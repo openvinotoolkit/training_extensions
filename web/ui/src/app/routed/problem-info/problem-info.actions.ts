@@ -26,6 +26,13 @@ export class UpdateModels {
   }
 }
 
+export class ModelDelete {
+  static readonly type = 'MODEL_DELETE';
+
+  constructor(public data: any) {
+  }
+}
+
 export class UpdateBuilds {
   static readonly type = 'BUILD_LIST';
 

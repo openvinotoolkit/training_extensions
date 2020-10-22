@@ -26,6 +26,7 @@ import (
 	cvatTaskFindOne "server/db/pkg/handler/cvat_task/find_one"
 	cvatTaskInsertOne "server/db/pkg/handler/cvat_task/insert_one"
 	cvatTaskUpdateOne "server/db/pkg/handler/cvat_task/update_one"
+	modelDelete "server/db/pkg/handler/model/delete"
 	modelFind "server/db/pkg/handler/model/find"
 	modelFindOne "server/db/pkg/handler/model/find_one"
 	modelInsertOne "server/db/pkg/handler/model/insert_one"
@@ -124,6 +125,8 @@ func Run(serviceQueueName string, amqpAddr, amqpUser, amqpPass, mongoAddr *strin
 			case problemUpdateUpsert.Request:
 				go problemUpdateUpsert.Handle(eps, conn, msg)
 
+			case modelDelete.Request:
+				go modelDelete.Handle(eps, conn, msg)
 			case modelFind.Request:
 				go modelFind.Handle(eps, conn, msg)
 			case modelFindOne.Request:
