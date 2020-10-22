@@ -15,12 +15,13 @@
         fxLayoutGap="16px"
       >
         <idlp-cdk-carousel
+          [ngClass]="{'clickable' :problem.imagesUrls?.length > 1}"
           [height]="300"
           [images]="problem.imagesUrls"
           [width]="450"
         >
         </idlp-cdk-carousel>
-
+        
         <div
           fxFlex="100%"
           fxLayout="column"
@@ -33,7 +34,7 @@
               <p class="title primer">{{problem.title}}</p>
               <p class="subtitle">{{problem.subtitle}}</p>
             </div>
-
+            
             <mat-form-field>
               <input
                 [matAutocomplete]="build"
@@ -42,7 +43,7 @@
                 placeholder="Build"
               >
               <mat-autocomplete
-                #build="matAutocomplete"
+								#build="matAutocomplete"
                 (optionActivated)="setBuild($event)"
                 (optionSelected)="setBuild($event)"
                 [displayWith]="buildDisplayFn"
@@ -55,22 +56,22 @@
                 </mat-option>
               </mat-autocomplete>
             </mat-form-field>
-
+          
           </div>
           <div class="description">{{problem.description}}</div>
         </div>
       </div>
-
+      
       <idlp-scatter-chart
         (onClick)="showModelInTable($event)"
       >
       </idlp-scatter-chart>
-
+      
       <idlp-models-table
         (onMenuItemClick)="menuItemClick($event)"
       >
       </idlp-models-table>
-
+    
     </div>
   </div>
 </div>

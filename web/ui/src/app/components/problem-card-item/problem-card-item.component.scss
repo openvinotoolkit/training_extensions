@@ -33,18 +33,19 @@
 
           .mat-card-title,
           .mat-card-subtitle {
+            display: flex;
             margin: 0;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
             width: 100%;
+            span {
+              overflow: hidden;
+              text-overflow: ellipsis;
+              white-space: nowrap;
+              width: 100%;
+            }
           }
 
           .mat-card-title {
             font-size: $unitSize*3;
-            span {
-              text-overflow: ellipsis;
-            }
           }
         }
       }

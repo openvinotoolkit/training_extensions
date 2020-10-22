@@ -15,18 +15,19 @@
 				</span>
         <mat-icon
           *ngIf="problem.type === 'custom'"
-          class="clickable"
           [matMenuTriggerFor]="menu"
+          class="clickable"
         >
           more_vert
         </mat-icon>
       </mat-card-title>
       <mat-card-subtitle>
-        {{problem.subtitle}}
+        <span>{{problem.subtitle}}</span>
       </mat-card-subtitle>
     </mat-card-header>
     <div
       *ngIf="problem.type === 'generic' else carousel"
+      class="clickable"
       fxLayout="column"
       fxLayoutAlign="center center"
     >
@@ -38,8 +39,8 @@
     </div>
     <ng-template #carousel>
       <idlp-cdk-carousel
-        (click)="enter.emit()"
         class="clickable"
+        (click)="enter.emit()"
         [images]="problem.imagesUrls"
         [width]="width"
         mat-card-image
