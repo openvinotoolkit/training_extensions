@@ -79,6 +79,7 @@ Work dir is used to store information about learning: saved model checkpoints, l
 
 ### Description of possible options in config:
 The config file is divided into 5 sections: common, train, eval, export, demo. Common parameters (like path to the model) are stored, respectively, in common section. Unique parameters (like learning rate) are stored in other specific sections. Unique parameters and common parameters are mutually exclusive.
+> **Note**: All values in the config file which have 'path' in their name will be treated as paths and the script which reads configuration will try to resolve all relative paths. By default all relative paths are resolved relatively to the folder where this README.md file is placed. Keep this in mind or use full paths.
 #### Common parameters:
 - `backbone_config`:
     * `arch`: type of the architecture (if backbone_type is resnet). For more details, please, refer to [ResnetLikeBackBone](im2latex/models/backbones/resnet.py)
@@ -114,7 +115,7 @@ One can use some pretrained models. Right now two models are available:
 * medium model:
     * [checkpoint link](https://download.01.org/opencv/openvino_training_extensions/models/formula_recognition/medium_photograped_0185.pth)
     * digits, letters, some greek letters, fractions, trigonometric operations are supported; for more details, please, look at [corresponding vocab file](vocabs/vocab_medium.json).
-    * to use this model, just set the correct value to the `model_path` field in the corresponding config file:
+    * to use this model, just set the correct value to the `model_path` field in the bcorresponding config file:
     ```
     model_path: <path to the model>
     ```
