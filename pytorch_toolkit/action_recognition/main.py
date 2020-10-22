@@ -332,7 +332,7 @@ def main():
 
     if args.resume_path:
         print('loading checkpoint {}'.format(args.resume_path))
-        checkpoint = torch.load(str(args.resume_path))
+        checkpoint = torch.load(str(args.resume_path), map_location='cpu')
         load_state(model, checkpoint['state_dict'])
 
         if args.resume_train:
