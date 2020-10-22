@@ -180,7 +180,7 @@ img_norm_cfg = dict(
 train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='LoadAnnotations', with_bbox=True),
-    dict(type='Resize', img_scale=(1333, 800), keep_ratio=True),
+    dict(type='Resize', img_scale=(1333, 800), keep_ratio=False),
     dict(type='RandomFlip', flip_ratio=0.5),
     dict(
         type='Normalize',
@@ -198,7 +198,7 @@ test_pipeline = [
         img_scale=(1333, 800),
         flip=False,
         transforms=[
-            dict(type='Resize', keep_ratio=True),
+            dict(type='Resize', keep_ratio=False),
             dict(type='RandomFlip'),
             dict(
                 type='Normalize',
@@ -237,6 +237,7 @@ data = dict(
         img_prefix='data/val2017',
         test_mode=True,
         pipeline=test_pipeline))
+
 evaluation = dict(interval=12, metric='bbox')
 optimizer = dict(type='SGD', lr=0.02, momentum=0.9, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
