@@ -7,7 +7,7 @@ annotation_format: COCO
 dependencies:
 - sha256: TBD
   size: TBD
-  source: https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/vehicle-detection-0203.pth
+  source: https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/vehicle-detection-0205.pth
   destination: snapshot.pth
 - source: ../tools/train.py
   destination: train.py
