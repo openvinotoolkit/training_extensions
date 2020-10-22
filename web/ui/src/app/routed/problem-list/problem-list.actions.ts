@@ -16,7 +16,7 @@ export class ProblemList {
 export class ProblemCreate {
   static readonly type = 'PROBLEM_CREATE';
 
-  constructor(public problem: IProblem) {
+  constructor(public data: IProblem) {
   }
 }
 

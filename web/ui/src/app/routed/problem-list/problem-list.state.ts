@@ -39,10 +39,10 @@ export class ProblemListState {
   }
 
   @Action(ProblemCreate)
-  add({getState, setState}: StateContext<ProblemListStateModel>, {problem}: ProblemCreate): void {
+  add({getState, setState}: StateContext<ProblemListStateModel>, {data}: ProblemCreate): void {
     const state = getState();
     const problems = state.items.filter((item: IProblem) => item.type !== 'generic');
-    problems.push(problem);
+    problems.push(data);
     state.items.map((item: IProblem) => {
       if (item.type === 'generic') problems.push(item);
     });
