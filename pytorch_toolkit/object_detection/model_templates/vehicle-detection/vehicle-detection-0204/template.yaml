@@ -56,6 +56,6 @@ metrics:
   key: ap
   unit: '%'
   value: 47.3
-training_gpu_num: 1
-show_on_chart: True
+gpu_num: 4
+tensorboard: true
 config: config.py
