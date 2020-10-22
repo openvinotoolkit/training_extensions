@@ -175,7 +175,6 @@ test_cfg = dict(
     rcnn=dict(
         score_thr=0.05, nms=dict(type='nms', iou_thr=0.5), max_per_img=100))
 dataset_type = 'CocoDataset'
-data_root = '/home/yury/pai_cluster_fs/user/yurygoru/crossroad_extra/'
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 train_pipeline = [
@@ -214,7 +213,7 @@ test_pipeline = [
 data = dict(
     samples_per_gpu=2,
     workers_per_gpu=2,
-        train=dict(
+    train=dict(
         type='RepeatDataset',
         times=5,
         dataset=dict(
@@ -223,9 +222,7 @@ data = dict(
             ann_file='data/annotations/instances_train2017car.json',
             img_prefix='data/train2017',
             min_size=20,
-            pipeline=train_pipeline
-        )
-    ),
+            pipeline=train_pipeline)),
     val=dict(
         type=dataset_type,
         classes=('vehicle',),
