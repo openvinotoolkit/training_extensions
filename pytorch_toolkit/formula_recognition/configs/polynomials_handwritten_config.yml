@@ -23,8 +23,7 @@ eval:
   split_file: validate
   target_metric: 0.8
 demo:
-  input_images:
-    - ../../data/formula_recognition/sample_handwritten_polynomials/
+  transforms_list: []
 export:
   res_encoder_name: handwritten_polynoms_encoder.onnx
   res_decoder_name: handwritten_polynoms_decoder.onnx
@@ -35,3 +34,4 @@ export:
     - 3
     - 96
     - 1024
+  test_image: "../../data/formula_recognition/sample_handwritten_polynomials/images_processed/1_2020-02-10_12-36-56.png"

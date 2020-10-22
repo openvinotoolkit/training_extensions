@@ -64,14 +64,13 @@ class ONNXExporter:
         self.model.eval()
         if self.model_path is not None:
             self.model.load_weights(self.model_path)
-        img = np.random.randint(0, 2,
-                                size=(self.config.get('input_shape_decoder')[2],
-                                      self.config.get('input_shape_decoder')[3], 1),
-                                dtype=np.uint8)
-        img = img * 255
-        img = cv.cvtColor(img, cv.COLOR_GRAY2RGB)
-        self.img_for_ir = np.expand_dims(np.transpose(img, (2, 0, 1)), axis=0)
-        self.img = (ToTensor()(self.img_for_ir.squeeze(0))).unsqueeze(0).permute(0, 2, 3, 1)
+        self.img_for_export = torch.rand(self.config.get("input_shape_decoder"))
+        img_for_test = cv.imread(self.config.get("test_image"))
+        assert img_for_test is not None, f"Check path to the image for test: {self.config.get('test_image')}"
+        dst_h, dst_w = self.config.get('input_shape_decoder')[2], self.config.get('input_shape_decoder')[3]
+        img_for_test = cv.resize(img_for_test, dsize=(dst_w, dst_h))
+        self.img_for_test = np.expand_dims(np.transpose(img_for_test, (2, 0, 1)), axis=0)
+        self.img = (ToTensor()(self.img_for_test.squeeze(0))).unsqueeze(0).permute(0, 2, 3, 1)
         self.encoder = self.model.get_encoder_wrapper(self.model)
         self.encoder.eval()
         self.decoder = self.model.get_decoder_wrapper(self.model)
@@ -80,7 +79,7 @@ class ONNXExporter:
     def export_encoder(self):
         encoder_inputs = self.config.get("encoder_input_names", ENCODER_INPUTS).split(',')
         encoder_outputs = self.config.get("encoder_output_names", ENCODER_OUTPUTS).split(',')
-        torch.onnx.export(self.encoder, self.img, self.config.get("res_encoder_name"),
+        torch.onnx.export(self.encoder, self.img_for_export, self.config.get("res_encoder_name"),
                           opset_version=11,
                           input_names=encoder_inputs,
                           output_names=encoder_outputs,
@@ -196,7 +195,7 @@ class ONNXExporter:
         exec_net_encoder = ie.load_network(network=encoder, device_name="CPU")
         exec_net_decoder = ie.load_network(network=dec_step, device_name="CPU")
         enc_res = exec_net_encoder.infer(inputs={self.config.get(
-            "encoder_input_names", ENCODER_INPUTS).split(",")[0]: self.img_for_ir})
+            "encoder_input_names", ENCODER_INPUTS).split(",")[0]: self.img_for_test})
         enc_out_names = self.config.get("encoder_output_names", ENCODER_OUTPUTS).split(",")
         ir_row_enc_out = enc_res[enc_out_names[0]]
         dec_states_h = enc_res[enc_out_names[1]]
@@ -251,7 +250,7 @@ def parse_args():
 
 if __name__ == "__main__":
     args = parse_args()
-    export_config = get_config(args.config, split='export')
+    export_config = get_config(args.config, section='export')
     with torch.no_grad():
         exporter = ONNXExporter(export_config)
         exporter.export_encoder()
