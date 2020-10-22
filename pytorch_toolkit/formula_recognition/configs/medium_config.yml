@@ -37,4 +37,14 @@ export:
     - 3
     - 160
     - 1400
-  test_image: ../../data/formula_recognition/sample_medium_dataset/images_processed/1.png
+  val_path: ../../data/formula_recognition/sample_medium_dataset
+  target_metric: 0.8
+  transforms_list:
+    - name: "TransformRescale"
+      scales:
+        - 1.5
+        - 1.5
+    - name: TransformCropPad
+      target_shape:
+        - 160
+        - 1400

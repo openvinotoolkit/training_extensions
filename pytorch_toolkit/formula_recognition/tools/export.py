@@ -18,18 +18,21 @@ import argparse
 import math
 import os
 import subprocess
+from functools import partial
 
-import cv2 as cv
 import numpy as np
 import onnxruntime
 import torch
 import torch.onnx
-from openvino.inference_engine import IECore
-from torchvision.transforms import ToTensor
-
-from im2latex.data.utils import create_list_of_transforms
+from tqdm import tqdm
+from im2latex.data.utils import collate_fn, create_list_of_transforms
 from im2latex.data.vocab import END_TOKEN, START_TOKEN, read_vocab
+from im2latex.datasets.im2latex_dataset import Im2LatexDataset
 from im2latex.models.im2latex_model import Im2latexModel
+from openvino.inference_engine import IECore
+from torch.utils.data import DataLoader
+
+from tools.utils.evaluation_utils import Im2latexRenderBasedMetric
 from tools.utils.get_config import get_config
 
 ENCODER_INPUTS = "imgs"
@@ -57,24 +60,36 @@ class ONNXExporter:
         self.config = config
         self.model_path = config.get('model_path')
         self.vocab = read_vocab(config.get('vocab_path'))
-        self.transform = create_list_of_transforms(config.get('transforms_list'))
-        self.transform_for_ir = create_list_of_transforms(config.get('transforms_list'), ovino_ir=True)
+        self.val_path = config.get('val_path')
+        self.split = config.get('split_file', 'validate')
+        self.load_dataset()
+        self.target_metric = config.get("target_metric")
         self.model = Im2latexModel(config.get('backbone_type', 'resnet'), config.get(
             'backbone_config'), len(self.vocab), config.get('head', {}))
         self.model.eval()
         if self.model_path is not None:
             self.model.load_weights(self.model_path)
         self.img_for_export = torch.rand(self.config.get("input_shape_decoder"))
-        img_for_test = cv.imread(self.config.get("test_image"))
-        assert img_for_test is not None, f"Check path to the image for test: {self.config.get('test_image')}"
-        dst_h, dst_w = self.config.get('input_shape_decoder')[2], self.config.get('input_shape_decoder')[3]
-        img_for_test = cv.resize(img_for_test, dsize=(dst_w, dst_h))
-        self.img_for_test = np.expand_dims(np.transpose(img_for_test, (2, 0, 1)), axis=0)
-        self.img = (ToTensor()(self.img_for_test.squeeze(0))).unsqueeze(0).permute(0, 2, 3, 1)
         self.encoder = self.model.get_encoder_wrapper(self.model)
         self.encoder.eval()
         self.decoder = self.model.get_decoder_wrapper(self.model)
         self.decoder.eval()
+
+    def load_dataset(self):
+
+        val_dataset = Im2LatexDataset(self.val_path, self.split)
+        batch_transform_onnx = create_list_of_transforms(self.config.get('transforms_list'))
+        self.val_onnx_loader = DataLoader(
+            val_dataset,
+            collate_fn=partial(collate_fn, self.vocab.sign2id,
+                               batch_transform=batch_transform_onnx),
+            num_workers=os.cpu_count())
+        batch_transform_ir = create_list_of_transforms(self.config.get('transforms_list'), ovino_ir=True)
+        self.val_ir_loader = DataLoader(
+            val_dataset,
+            collate_fn=partial(collate_fn, self.vocab.sign2id,
+                               batch_transform=batch_transform_ir),
+            num_workers=os.cpu_count())
 
     def export_encoder(self):
         encoder_inputs = self.config.get("encoder_input_names", ENCODER_INPUTS).split(',')
@@ -89,16 +104,15 @@ class ONNXExporter:
                                         },
                           )
 
-    def run_encoder(self):
-        encoder_onnx = onnxruntime.InferenceSession(self.config.get("res_encoder_name"))
-        encoder_outputs = get_onnx_outputs(encoder_onnx)
-        encoder_input = get_onnx_inputs(encoder_onnx)[0]
-        return encoder_onnx.run(encoder_outputs, {
-            encoder_input: np.array(self.img, dtype=np.float32)
+    def run_encoder(self, img):
+        encoder_outputs = get_onnx_outputs(self.encoder_onnx)
+        encoder_input = get_onnx_inputs(self.encoder_onnx)[0]
+        return self.encoder_onnx.run(encoder_outputs, {
+            encoder_input: np.array(img, dtype=np.float32)
         })
 
     def export_decoder(self):
-        tgt = np.array([[START_TOKEN]] * self.img.size(0))
+        tgt = np.array([[START_TOKEN]] * 1)
         decoder_inputs = self.config.get("decoder_input_names", DECODER_INPUTS).split(',')
         decoder_outputs = self.config.get("decoder_output_names", DECODER_OUTPUTS).split(',')
         row_enc_out = torch.rand(FEATURES_SHAPE)
@@ -121,19 +135,19 @@ class ONNXExporter:
                           )
 
     def run_decoder(self, hidden, context, output, row_enc_out):
-        decoder_onnx = onnxruntime.InferenceSession(self.config.get("res_decoder_name"))
-        decoder_inputs = get_onnx_inputs(decoder_onnx)
-        decoder_outputs = get_onnx_outputs(decoder_onnx)
+
+        decoder_inputs = get_onnx_inputs(self.decoder_onnx)
+        decoder_outputs = get_onnx_outputs(self.decoder_onnx)
         logits = []
         logit = None
         for _ in range(self.model.head.max_len):
             if logit is not None:
-                tgt = np.reshape(np.argmax(logit, axis=1), (self.img.size(0), 1)).astype(np.long)
+                tgt = np.reshape(np.argmax(logit, axis=1), (1, 1)).astype(np.long)
             else:
-                tgt = np.array([[START_TOKEN]] * self.img.size(0))
+                tgt = np.array([[START_TOKEN]] * 1)
             if tgt[0][0] == END_TOKEN:
                 break
-            hidden, context, output, logit = decoder_onnx.run(
+            hidden, context, output, logit = self.decoder_onnx.run(
                 decoder_outputs,
                 {
                     decoder_inputs[0]: hidden,
@@ -144,6 +158,28 @@ class ONNXExporter:
                 })
             logits.append(logit)
         return np.argmax(np.array(logits).squeeze(1), axis=1)
+
+    def load_onnx_model(self):
+        self.decoder_onnx = onnxruntime.InferenceSession(self.config.get("res_decoder_name"))
+        self.encoder_onnx = onnxruntime.InferenceSession(self.config.get("res_encoder_name"))
+
+    def get_onnx_metric(self):
+        print("Loading onnx model")
+        self.load_onnx_model()
+        annotations = []
+        predictions = []
+        print("Starting onnx inference")
+        metric = Im2latexRenderBasedMetric()
+        for img_name, imgs, _, loss_computation_gt in tqdm(self.val_onnx_loader):
+            imgs = imgs.clone().detach().numpy()
+            row_enc_out, h, c, O_t = self.run_encoder(imgs)
+            pred = self.run_decoder(h, c, O_t, row_enc_out).astype(np.int32)
+            gold_phrase_str = self.vocab.construct_phrase(loss_computation_gt[0])
+            pred_phrase_str = self.vocab.construct_phrase(pred)
+            annotations.append((gold_phrase_str, img_name[0]))
+            predictions.append((pred_phrase_str, img_name[0]))
+        res = metric.evaluate(annotations, predictions)
+        return res
 
     def export_encoder_ir(self):
         export_command = f"""{OPENVINO_DIR}/bin/setupvars.sh && \
@@ -186,16 +222,18 @@ class ONNXExporter:
                        shell=True, check=True
                        )
 
-    def run_ir_model(self):
-        ie = IECore()
 
+    def load_ir_model(self):
+        ie = IECore()
         encoder = read_net(self.config.get("res_encoder_name").replace(".onnx", ".xml"), ie)
         dec_step = read_net(self.config.get("res_decoder_name").replace(".onnx", ".xml"), ie)
 
-        exec_net_encoder = ie.load_network(network=encoder, device_name="CPU")
-        exec_net_decoder = ie.load_network(network=dec_step, device_name="CPU")
-        enc_res = exec_net_encoder.infer(inputs={self.config.get(
-            "encoder_input_names", ENCODER_INPUTS).split(",")[0]: self.img_for_test})
+        self.exec_net_encoder = ie.load_network(network=encoder, device_name="CPU")
+        self.exec_net_decoder = ie.load_network(network=dec_step, device_name="CPU")
+
+    def run_ir_model(self, img):
+        enc_res = self.exec_net_encoder.infer(inputs={self.config.get(
+            "encoder_input_names", ENCODER_INPUTS).split(",")[0]: img})
         enc_out_names = self.config.get("encoder_output_names", ENCODER_OUTPUTS).split(",")
         ir_row_enc_out = enc_res[enc_out_names[0]]
         dec_states_h = enc_res[enc_out_names[1]]
@@ -203,10 +241,10 @@ class ONNXExporter:
         output = enc_res[enc_out_names[3]]
         dec_in_names = self.config.get("decoder_input_names", DECODER_INPUTS).split(",")
         dec_out_names = self.config.get("decoder_output_names", DECODER_OUTPUTS).split(",")
-        tgt = np.array([[START_TOKEN]] * self.img.size(0))
+        tgt = np.array([[START_TOKEN]] * 1)
         logits = []
         for _ in range(self.model.head.max_len):
-            dec_res = exec_net_decoder.infer(inputs={
+            dec_res = self.exec_net_decoder.infer(inputs={
                 dec_in_names[0]: dec_states_h,
                 dec_in_names[1]: dec_states_c,
                 dec_in_names[2]: output,
@@ -221,11 +259,28 @@ class ONNXExporter:
             logit = dec_res[dec_out_names[3]]
             logits.append(logit)
 
-            tgt = np.reshape(np.argmax(logit, axis=1), (self.img.size(0), 1)).astype(np.long)
+            tgt = np.reshape(np.argmax(logit, axis=1), (1, 1)).astype(np.long)
             if tgt[0][0] == END_TOKEN:
                 break
 
         return np.argmax(np.array(logits).squeeze(1), axis=1)
+
+    def get_ir_metric(self):
+        print("Loading OpenVINO IR model")
+        self.load_ir_model()
+        annotations = []
+        predictions = []
+        print("Starting OpenVINO IR inference")
+        metric = Im2latexRenderBasedMetric()
+        for img_name, imgs, _, loss_computation_gt in tqdm(self.val_ir_loader):
+            imgs = imgs.clone().detach().numpy()
+            targets_ir = self.run_ir_model(imgs)
+            gold_phrase_str = self.vocab.construct_phrase(loss_computation_gt[0])
+            pred_phrase_str = self.vocab.construct_phrase(targets_ir)
+            annotations.append((gold_phrase_str, img_name[0]))
+            predictions.append((pred_phrase_str, img_name[0]))
+        res = metric.evaluate(annotations, predictions)
+        return res
 
 
 def get_onnx_inputs(model):
@@ -254,20 +309,16 @@ if __name__ == "__main__":
     with torch.no_grad():
         exporter = ONNXExporter(export_config)
         exporter.export_encoder()
-        row_enc_out, h, c, O_t = exporter.run_encoder()
         exporter.export_decoder()
-        targets_onnx = exporter.run_decoder(h, c, O_t, row_enc_out).astype(np.int32)
-        pred_onnx = exporter.vocab.construct_phrase(targets_onnx)
-        _, targets_pytorch = exporter.model(exporter.img)
-        pred_pytorch = exporter.vocab.construct_phrase(targets_pytorch[0])
-        print("Predicted with PyTorch: {}".format(pred_pytorch))
-        print("Predicted with ONNX: {}".format(pred_onnx))
-        print("Predicted with ONNX is equal to PyTorch: {}".format(pred_onnx == pred_pytorch))
+        metric_onnx = exporter.get_onnx_metric()
+        target_metric = exporter.target_metric
+        print("Target metric: {}".format(target_metric))
+        print("ONNX metric: {}".format(metric_onnx))
+        print("ONNX metric is not worse then target metric: {}".format(metric_onnx >= target_metric))
         if export_config.get("export_ir"):
             exporter.export_encoder_ir()
             exporter.export_decoder_ir()
-            targets_ir = exporter.run_ir_model()
-            ir_pred = exporter.vocab.construct_phrase(targets_ir)
-            print("Predicted with OpenvinoIR is equal to PyTorch: {}".format(ir_pred == pred_pytorch))
-            print("Predicted with OpenvinoIR: {}".format(ir_pred))
-            print("Predicted with PyTorch: {}".format(pred_pytorch))
+            ir_metric = exporter.get_ir_metric()
+            print("Target metric: {}".format(target_metric))
+            print("OpenVINO IR metric: {}".format(ir_metric))
+            print("OpenVINO IR metric is not worse then target metric: {}".format(ir_metric >= target_metric))

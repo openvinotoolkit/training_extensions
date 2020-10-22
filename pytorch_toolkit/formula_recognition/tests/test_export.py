@@ -49,12 +49,9 @@ def create_export_test_case(config_file):
             self.assertEqual(True, result_model_exists)
 
         def test_3_onnx(self):
-            encoder_features, h, c, O_t = self.exporter.run_encoder()
-            targets_onnx = self.exporter.run_decoder(h, c, O_t, encoder_features)
-            pred_onnx = self.exporter.vocab.construct_phrase(targets_onnx)
-            _, targets = self.exporter.model(self.exporter.img)
-            pred_pytorch = self.exporter.vocab.construct_phrase(targets[0])
-            self.assertEqual(pred_onnx, pred_pytorch)
+            metric_onnx = self.exporter.get_onnx_metric()
+            target_metric = self.exporter.target_metric
+            self.assertGreaterEqual(metric_onnx, target_metric)
 
         def test_4_encoder_ir_export(self):
             if self.config.get("export_ir"):
@@ -96,11 +93,9 @@ def create_export_test_case(config_file):
 
         def test_6_run_ir_model(self):
             if self.config.get("export_ir"):
-                targets_ir = self.exporter.run_ir_model()
-                ir_pred = self.exporter.vocab.construct_phrase(targets_ir)
-                _, targets_pytorch = self.exporter.model(self.exporter.img)
-                pred_pytorch = self.exporter.vocab.construct_phrase(targets_pytorch[0])
-                self.assertEqual(ir_pred, pred_pytorch)
+                ir_metric = self.exporter.get_ir_metric()
+                target_metric = self.exporter.target_metric
+                self.assertGreaterEqual(ir_metric, target_metric)
     return TestExport
 
 

@@ -34,4 +34,10 @@ export:
     - 3
     - 96
     - 1024
-  test_image: "../../data/formula_recognition/sample_handwritten_polynomials/images_processed/1_2020-02-10_12-36-56.png"
+  val_path: ../../data/formula_recognition/sample_handwritten_polynomials
+  target_metric: 0.8
+  transforms_list:
+    - name: TransformCropPad
+      target_shape:
+        - 96
+        - 1024
