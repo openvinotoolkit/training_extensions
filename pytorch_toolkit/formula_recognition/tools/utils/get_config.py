@@ -18,19 +18,14 @@ import os
 import yaml
 
 
-def check_and_resolve_path(parameter):
+def check_and_resolve_path(key, parameter):
     """Checks if given parameter could be path and tries to resolve it as relative path.
     If obtained path exists, returs it, else returns original input parameter.
     """
-    if isinstance(parameter, list):
-        # handle list of paths (e.g. train paths)
-        parameter = [check_and_resolve_path(p) for p in parameter]
-        return parameter
-    if not isinstance(parameter, str):
-        return parameter
-    try_resolve_path = resolve_relative_path(parameter)
-    if os.path.exists(try_resolve_path):
-        return try_resolve_path
+    if 'paths' in key:
+        return [resolve_relative_path(p) for p in parameter]
+    if 'path' in key:
+        return resolve_relative_path(parameter)
     return parameter
 
 
@@ -69,5 +64,5 @@ def get_config(config_path, section):
             raise RuntimeError(
                 f"Error: the following config parameters are set both in {section} config and common config sections\n: {conflict_config_keys}")
         specific_config.update(common_config)
-    specific_config = {k: check_and_resolve_path(v) for k, v in specific_config.items()}
+    specific_config = {k: check_and_resolve_path(k, v) for k, v in specific_config.items()}
     return specific_config
