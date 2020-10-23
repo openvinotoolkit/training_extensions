@@ -35,7 +35,7 @@ CONTEXT_SHAPE = 1, 512
 OUTPUT_SHAPE = 1, 256
 
 
-class ONNXExporter:
+class Exporter:
     def __init__(self, config):
         self.config = config
         self.model_path = config.get('model_path')
@@ -139,7 +139,7 @@ if __name__ == "__main__":
     args = parse_args()
     export_config = get_config(args.config, section='export')
     with torch.no_grad():
-        exporter = ONNXExporter(export_config)
+        exporter = Exporter(export_config)
         exporter.export_encoder()
         exporter.export_decoder()
         print("Model succesfully exported to ONNX")

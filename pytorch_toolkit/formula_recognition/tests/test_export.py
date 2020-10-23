@@ -17,7 +17,7 @@
 import os
 import unittest
 
-from tools.export import ONNXExporter
+from tools.export import Exporter
 from tools.test import Evaluator, RunnerType
 from tools.utils.get_config import get_config
 
@@ -29,7 +29,7 @@ def create_export_test_case(config_file, expected_outputs):
             export_config = get_config(config_file, section='export')
             cls.config = export_config
             cls.config.update({"expected_outputs": expected_outputs})
-            cls.exporter = ONNXExporter(cls.config)
+            cls.exporter = Exporter(cls.config)
             print("test case for config {} created".format(config_file))
 
         def test_1_encoder_export(self):
@@ -57,49 +57,60 @@ def create_export_test_case(config_file, expected_outputs):
             self.assertGreaterEqual(metric_onnx, target_metric)
 
         def test_4_encoder_ir_export(self):
-            if self.config.get("export_ir"):
-                encoder_res_name = self.config.get("res_encoder_name").replace('onnx', 'xml')
-                result_model_exists = os.path.exists(encoder_res_name)
-                if result_model_exists:
-                    os.remove(encoder_res_name)
-                encoder_res_name = self.config.get("res_encoder_name").replace('onnx', 'bin')
-                result_model_exists = os.path.exists(encoder_res_name)
-                if result_model_exists:
-                    os.remove(encoder_res_name)
+            if not self.config.get("export_ir"):
+                return
+            encoder_res_name = self.config.get("res_encoder_name").replace('onnx', 'xml')
+            result_model_exists = os.path.exists(encoder_res_name)
+            if result_model_exists:
+                os.remove(encoder_res_name)
+            encoder_res_name = self.config.get("res_encoder_name").replace('onnx', 'bin')
+            result_model_exists = os.path.exists(encoder_res_name)
+            if result_model_exists:
+                os.remove(encoder_res_name)
 
-                self.exporter.export_encoder_ir()
-                encoder_res_name = self.config.get("res_encoder_name").replace('onnx', 'bin')
-                result_model_exists = os.path.exists(encoder_res_name)
-                self.assertEqual(True, result_model_exists)
-                encoder_res_name = self.config.get("res_encoder_name").replace('onnx', 'xml')
-                result_model_exists = os.path.exists(encoder_res_name)
-                self.assertEqual(True, result_model_exists)
+            self.exporter.export_encoder_ir()
+            encoder_res_name = self.config.get("res_encoder_name").replace('onnx', 'bin')
+            result_model_exists = os.path.exists(encoder_res_name)
+            self.assertEqual(True, result_model_exists)
+            encoder_res_name = self.config.get("res_encoder_name").replace('onnx', 'xml')
+            result_model_exists = os.path.exists(encoder_res_name)
+            self.assertEqual(True, result_model_exists)
 
         def test_5_decoder_ir_export(self):
-            if self.config.get("export_ir"):
-                decoder_res_name = self.config.get("res_decoder_name").replace('onnx', 'xml')
-                result_model_exists = os.path.exists(decoder_res_name)
-                if result_model_exists:
-                    os.remove(decoder_res_name)
-                decoder_res_name = self.config.get("res_decoder_name").replace('onnx', 'bin')
-                result_model_exists = os.path.exists(decoder_res_name)
-                if result_model_exists:
-                    os.remove(decoder_res_name)
+            if not self.config.get("export_ir"):
+                return
+            decoder_res_name = self.config.get("res_decoder_name").replace('onnx', 'xml')
+            result_model_exists = os.path.exists(decoder_res_name)
+            if result_model_exists:
+                os.remove(decoder_res_name)
+            decoder_res_name = self.config.get("res_decoder_name").replace('onnx', 'bin')
+            result_model_exists = os.path.exists(decoder_res_name)
+            if result_model_exists:
+                os.remove(decoder_res_name)
 
-                self.exporter.export_decoder_ir()
-                decoder_res_name = self.config.get("res_decoder_name").replace('onnx', 'bin')
-                result_model_exists = os.path.exists(decoder_res_name)
-                self.assertEqual(True, result_model_exists)
-                decoder_res_name = self.config.get("res_decoder_name").replace('onnx', 'xml')
-                result_model_exists = os.path.exists(decoder_res_name)
-                self.assertEqual(True, result_model_exists)
+            self.exporter.export_decoder_ir()
+            decoder_res_name = self.config.get("res_decoder_name").replace('onnx', 'bin')
+            result_model_exists = os.path.exists(decoder_res_name)
+            self.assertEqual(True, result_model_exists)
+            decoder_res_name = self.config.get("res_decoder_name").replace('onnx', 'xml')
+            result_model_exists = os.path.exists(decoder_res_name)
+            self.assertEqual(True, result_model_exists)
 
         def test_6_run_ir_model(self):
-            if self.config.get("export_ir"):
-                evaluator = Evaluator(self.config, RunnerType.OpenVINO)
-                ir_metric = evaluator.validate()
-                target_metric = evaluator.expected_outputs.get("target_metric")
-                self.assertGreaterEqual(ir_metric, target_metric)
+            if not self.config.get("export_ir"):
+                return
+            encoder_res_name = self.config.get("res_encoder_name").replace('onnx', 'xml')
+            result_model_exists = os.path.exists(encoder_res_name) and os.path.exists(encoder_res_name.replace('xml', 'bin'))
+            if not result_model_exists:
+                self.exporter.export_encoder_ir()
+            decoder_res_name = self.config.get("res_decoder_name").replace('onnx', 'xml')
+            result_model_exists = os.path.exists(decoder_res_name) and os.path.exists(decoder_res_name.replace('xml', 'bin'))
+            if not result_model_exists:
+                self.exporter.export_decoder_ir()
+            evaluator = Evaluator(self.config, RunnerType.OpenVINO)
+            ir_metric = evaluator.validate()
+            target_metric = evaluator.expected_outputs.get("target_metric")
+            self.assertGreaterEqual(ir_metric, target_metric)
     return TestExport
 
 
