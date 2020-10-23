@@ -1,7 +1,7 @@
 name: face-detection-0206
 domain: Object Detection
 problem: Face Detection
-framework: OTEDetection v2.1.0.1
+framework: OTEDetection v2.1.1
 summary: Face Detection based on ResNet-152 (ATSS).
 annotation_format: COCO
 dependencies:
