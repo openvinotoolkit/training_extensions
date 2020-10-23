@@ -17,6 +17,7 @@
 import argparse
 import json
 import os.path
+from enum import Enum
 from functools import partial
 
 import numpy as np
@@ -88,27 +89,15 @@ def postprocess_prediction(pred_phrase_str):
     return pred_phrase_str
 
 
-class Evaluator():
+class RunnerType(Enum):
+    PyTorch = 0
+    ONNX = 1
+    OpenVINO = 2
+
+
+class BaseRunner:
     def __init__(self, config):
         self.config = config
-        self.vocab = read_vocab(config.get('vocab_path'))
-        self.load_dataset()
-        self.load_model()
-        self.read_expected_outputs()
-
-    def load_dataset(self, ovino_ir=False):
-        val_dataset = Im2LatexDataset(self.config.get("val_path"), self.config.get("split", "validate"))
-        batch_transform_onnx = create_list_of_transforms(self.config.get('val_transforms_list'), ovino_ir=ovino_ir)
-        self.val_loader = DataLoader(
-            val_dataset,
-            collate_fn=partial(collate_fn, self.vocab.sign2id,
-                               batch_transform=batch_transform_onnx),
-            num_workers=os.cpu_count())
-
-    def read_expected_outputs(self):
-        if self.config.get("expected_outputs"):
-            with open(self.config.get("expected_outputs")) as outputs_file:
-                self.expected_outputs = json.load(outputs_file)
 
     def load_model(self):
         raise NotImplementedError
@@ -116,77 +105,30 @@ class Evaluator():
     def run_model(self, img):
         raise NotImplementedError
 
-    def validate(self):
-        annotations = []
-        predictions = []
-        print("Starting inference")
-        metric = Im2latexRenderBasedMetric()
-        for img_name, imgs, _, loss_computation_gt in tqdm(self.val_loader):
-            targets = self.run_model(imgs)
-            gold_phrase_str = self.vocab.construct_phrase(loss_computation_gt[0])
-            pred_phrase_str = postprocess_prediction(self.vocab.construct_phrase(targets))
-            annotations.append((gold_phrase_str, img_name[0]))
-            predictions.append((pred_phrase_str, img_name[0]))
-        res = metric.evaluate(annotations, predictions)
-        return res
+    def openvino_transform(self):
+        raise NotImplementedError
 
 
-class OpenVINOModelEvaluator(Evaluator):
-    def __init__(self, config):
-        super().__init__(config)
-        self.config = config
-
-    def load_dataset(self):
-        super().load_dataset(ovino_ir=True)
-
+class PyTorchRunner(BaseRunner):
     def load_model(self):
-        ie = IECore()
-        encoder = read_net(self.config.get("res_encoder_name").replace(".onnx", ".xml"), ie)
-        dec_step = read_net(self.config.get("res_decoder_name").replace(".onnx", ".xml"), ie)
-        self.exec_net_encoder = ie.load_network(network=encoder, device_name="CPU")
-        self.exec_net_decoder = ie.load_network(network=dec_step, device_name="CPU")
+        vocab_len = len(read_vocab(self.config.get('vocab_path')))
+        self.model = Im2latexModel(self.config.get('backbone_type', 'resnet'), self.config.get(
+            'backbone_config'), vocab_len, self.config.get('head', {}))
+        self.device = self.config.get('device', 'cpu')
+        self.model.load_weights(self.config.get("model_path"), map_location=self.device)
+        self.model = self.model.to(self.device)
+        self.model.eval()
 
     def run_model(self, img):
-        if torch.is_tensor(img):
-            img = img.clone().detach().numpy()
-        enc_res = self.exec_net_encoder.infer(inputs={self.config.get(
-            "encoder_input_names", ENCODER_INPUTS).split(",")[0]: img})
-        enc_out_names = self.config.get("encoder_output_names", ENCODER_OUTPUTS).split(",")
-        ir_row_enc_out = enc_res[enc_out_names[0]]
-        dec_states_h = enc_res[enc_out_names[1]]
-        dec_states_c = enc_res[enc_out_names[2]]
-        output = enc_res[enc_out_names[3]]
-        dec_in_names = self.config.get("decoder_input_names", DECODER_INPUTS).split(",")
-        dec_out_names = self.config.get("decoder_output_names", DECODER_OUTPUTS).split(",")
-        tgt = np.array([[START_TOKEN]] * 1)
-        logits = []
-        for _ in range(256):
-            dec_res = self.exec_net_decoder.infer(inputs={
-                dec_in_names[0]: dec_states_h,
-                dec_in_names[1]: dec_states_c,
-                dec_in_names[2]: output,
-                dec_in_names[3]: ir_row_enc_out,
-                dec_in_names[4]: tgt
-            }
-            )
+        img = img.to(self.device)
+        _, pred = self.model(img)
+        return pred[0]
 
-            dec_states_h = dec_res[dec_out_names[0]]
-            dec_states_c = dec_res[dec_out_names[1]]
-            output = dec_res[dec_out_names[2]]
-            logit = dec_res[dec_out_names[3]]
-            logits.append(logit)
-
-            tgt = np.reshape(np.argmax(logit, axis=1), (1, 1)).astype(np.long)
-            if tgt[0][0] == END_TOKEN:
-                break
-        return np.argmax(np.array(logits).squeeze(1), axis=1)
+    def openvino_transform(self):
+        return False
 
 
-class ONNXModelEvaluator(Evaluator):
-    def __init__(self, config):
-        super().__init__(config)
-        self.config = config
-
+class ONNXRunner(BaseRunner):
     def load_model(self):
         self.decoder_onnx = onnxruntime.InferenceSession(self.config.get("res_decoder_name"))
         self.encoder_onnx = onnxruntime.InferenceSession(self.config.get("res_encoder_name"))
@@ -229,25 +171,122 @@ class ONNXModelEvaluator(Evaluator):
         pred = self.run_decoder(h, c, O_t, row_enc_out).astype(np.int32)
         return pred
 
+    def openvino_transform(self):
+        return False
 
-class PyTorchModelEvaluator(Evaluator):
-    def __init__(self, config):
-        super().__init__(config)
-        self.config = config
 
+class OpenVINORunner(BaseRunner):
     def load_model(self):
-        self.model = Im2latexModel(self.config.get('backbone_type', 'resnet'), self.config.get(
-            'backbone_config'), len(self.vocab), self.config.get('head', {}))
-        self.device = self.config.get('device', 'cpu')
-        self.model.load_weights(self.config.get("model_path"), map_location=self.device)
-
-        self.model = self.model.to(self.device)
-        self.model.eval()
+        ie = IECore()
+        encoder = read_net(self.config.get("res_encoder_name").replace(".onnx", ".xml"), ie)
+        dec_step = read_net(self.config.get("res_decoder_name").replace(".onnx", ".xml"), ie)
+        self.exec_net_encoder = ie.load_network(network=encoder, device_name="CPU")
+        self.exec_net_decoder = ie.load_network(network=dec_step, device_name="CPU")
 
     def run_model(self, img):
-        img = img.to(self.device)
-        _, pred = self.model(img)
-        return pred[0]
+        if torch.is_tensor(img):
+            img = img.clone().detach().numpy()
+        enc_res = self.exec_net_encoder.infer(inputs={self.config.get(
+            "encoder_input_names", ENCODER_INPUTS).split(",")[0]: img})
+        enc_out_names = self.config.get("encoder_output_names", ENCODER_OUTPUTS).split(",")
+        ir_row_enc_out = enc_res[enc_out_names[0]]
+        dec_states_h = enc_res[enc_out_names[1]]
+        dec_states_c = enc_res[enc_out_names[2]]
+        output = enc_res[enc_out_names[3]]
+        dec_in_names = self.config.get("decoder_input_names", DECODER_INPUTS).split(",")
+        dec_out_names = self.config.get("decoder_output_names", DECODER_OUTPUTS).split(",")
+        tgt = np.array([[START_TOKEN]] * 1)
+        logits = []
+        for _ in range(256):
+            dec_res = self.exec_net_decoder.infer(inputs={
+                dec_in_names[0]: dec_states_h,
+                dec_in_names[1]: dec_states_c,
+                dec_in_names[2]: output,
+                dec_in_names[3]: ir_row_enc_out,
+                dec_in_names[4]: tgt
+            }
+            )
+
+            dec_states_h = dec_res[dec_out_names[0]]
+            dec_states_c = dec_res[dec_out_names[1]]
+            output = dec_res[dec_out_names[2]]
+            logit = dec_res[dec_out_names[3]]
+            logits.append(logit)
+
+            tgt = np.reshape(np.argmax(logit, axis=1), (1, 1)).astype(np.long)
+            if tgt[0][0] == END_TOKEN:
+                break
+        return np.argmax(np.array(logits).squeeze(1), axis=1)
+
+    def openvino_transform(self):
+        return True
+
+
+def create_runner(config, runner_type):
+    if runner_type == RunnerType.PyTorch:
+        return PyTorchRunner(config)
+    if runner_type == RunnerType.ONNX:
+        return ONNXRunner(config)
+    if runner_type == RunnerType.OpenVINO:
+        return OpenVINORunner(config)
+    raise ValueError(f"Wrong type of the runner {runner_type}")
+
+
+class Evaluator:
+    def __init__(self, config, runner_type=RunnerType.PyTorch):
+        self.config = config
+        self.runner = create_runner(self.config, runner_type)
+        self.vocab = read_vocab(self.config.get("vocab_path"))
+        self.load_dataset()
+        self.runner.load_model()
+        self.read_expected_outputs()
+
+    def load_dataset(self):
+        val_dataset = Im2LatexDataset(self.config.get("val_path"), self.config.get("split", "validate"))
+        batch_transform = create_list_of_transforms(self.config.get(
+            'val_transforms_list'), ovino_ir=self.runner.openvino_transform())
+        self.val_loader = DataLoader(
+            val_dataset,
+            collate_fn=partial(collate_fn, self.vocab.sign2id,
+                               batch_transform=batch_transform),
+            num_workers=os.cpu_count())
+
+    def read_expected_outputs(self):
+        if self.config.get("expected_outputs"):
+            with open(self.config.get("expected_outputs")) as outputs_file:
+                self.expected_outputs = json.load(outputs_file)
+
+    def validate(self):
+        annotations = []
+        predictions = []
+        print("Starting inference")
+        metric = Im2latexRenderBasedMetric()
+        for img_name, imgs, _, loss_computation_gt in tqdm(self.val_loader):
+            targets = self.runner.run_model(imgs)
+            gold_phrase_str = self.vocab.construct_phrase(loss_computation_gt[0])
+            pred_phrase_str = postprocess_prediction(self.vocab.construct_phrase(targets))
+            annotations.append((gold_phrase_str, img_name[0]))
+            predictions.append((pred_phrase_str, img_name[0]))
+        res = metric.evaluate(annotations, predictions)
+        return res
+
+
+# class OpenVINOModelEvaluator(Evaluator):
+#     def __init__(self, config):
+#         super().__init__(config)
+#         self.config = config
+
+
+# class ONNXModelEvaluator(Evaluator):
+#     def __init__(self, config):
+#         super().__init__(config)
+#         self.config = config
+
+
+# class PyTorchModelEvaluator(Evaluator):
+#     def __init__(self, config):
+#         super().__init__(config)
+#         self.config = config
 
 
 def parse_args():

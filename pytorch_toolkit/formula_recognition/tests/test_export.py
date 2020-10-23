@@ -18,7 +18,7 @@ import os
 import unittest
 
 from tools.export import ONNXExporter
-from tools.test import ONNXModelEvaluator, OpenVINOModelEvaluator
+from tools.test import Evaluator, RunnerType
 from tools.utils.get_config import get_config
 
 
@@ -51,7 +51,7 @@ def create_export_test_case(config_file, expected_outputs):
             self.assertEqual(True, result_model_exists)
 
         def test_3_onnx(self):
-            evaluator = ONNXModelEvaluator(self.config)
+            evaluator = Evaluator(self.config, RunnerType.ONNX)
             metric_onnx = evaluator.validate()
             target_metric = evaluator.expected_outputs.get("target_metric")
             self.assertGreaterEqual(metric_onnx, target_metric)
@@ -96,7 +96,7 @@ def create_export_test_case(config_file, expected_outputs):
 
         def test_6_run_ir_model(self):
             if self.config.get("export_ir"):
-                evaluator = OpenVINOModelEvaluator(self.config)
+                evaluator = Evaluator(self.config, RunnerType.OpenVINO)
                 ir_metric = evaluator.validate()
                 target_metric = evaluator.expected_outputs.get("target_metric")
                 self.assertGreaterEqual(ir_metric, target_metric)
