@@ -5,8 +5,8 @@ framework: OTEDetection v2.1.0.1
 summary: Vehicle Detection based on ResNet18+fpn+CascadeRCNN.
 annotation_format: COCO
 dependencies:
-- sha256: TBD
-  size: TBD
+- sha256: ead5df12a041ebba9352aff641614330980f49a9ff9c6b699e053c96e2e4826d
+  size: 286804
   source: https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/vehicle-detection-0205.pth
   destination: snapshot.pth
 - source: ../tools/train.py
@@ -47,15 +47,15 @@ metrics:
 - display_name: Size
   key: size
   unit: Mp
-  value: 24.11
+  value: 36.56
 - display_name: Complexity
   key: complexity
   unit: GFLOPs
-  value: 112.34
+  value: 212.22
 - display_name: AP @ [IoU=0.50:0.95]
   key: ap
   unit: '%'
-  value: 43.8
+  value: 47.6
 gpu_num: 4
 tensorboard: true
 config: config.py
