@@ -37,7 +37,7 @@ export:
     - 65
     - 1450
   val_path: ../../data/formula_recognition/sample_medium_dataset
-  transforms_list:
+  val_transforms_list:
     - name: "TransformRescale"
       scales:
         - 1.5

@@ -35,7 +35,7 @@ export:
     - 96
     - 1024
   val_path: ../../data/formula_recognition/sample_handwritten_polynomials
-  transforms_list:
+  val_transforms_list:
     - name: TransformCropPad
       target_shape:
         - 96

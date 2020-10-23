@@ -15,7 +15,7 @@
 """
 import unittest
 
-from tools.test import Evaluator
+from tools.test import PyTorchModelEvaluator
 from tools.utils.get_config import get_config
 
 
@@ -27,7 +27,7 @@ def create_evaluation_test_case(config_file, expected_outputs):
             test_config = get_config(config_file, section='eval')
             cls.config = test_config
             cls.config.update({"expected_outputs": expected_outputs})
-            cls.validator = Evaluator(config=cls.config)
+            cls.validator = PyTorchModelEvaluator(config=cls.config)
 
         def test_validate(self):
             metric = self.validator.validate()
