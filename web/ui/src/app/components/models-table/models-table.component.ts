@@ -71,6 +71,19 @@ export class IdlpModelsTableComponent implements OnDestroy, OnInit {
       this.data = data;
       this.dataSource = new MatTableDataSource(data);
       this.dataSource.sort = this.sort;
+      this.dataSource.sortData = (d: { [metric: string]: any }[], sort: MatSort): { [metric: string]: any }[] => {
+        d.sort((a, b) => {
+          if (a[sort.active].value < b[sort.active].value) {
+            return sort.direction === 'asc' ? 1 : -1;
+          }
+          if (a[sort.active].value > b[sort.active].value) {
+            return sort.direction === 'asc' ? -1 : 1;
+
+          }
+          return 0;
+        });
+        return d;
+      };
     });
     this.models$.subscribe((models) => this.models = models);
   }
