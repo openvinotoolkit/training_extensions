@@ -15,118 +15,9 @@
 """
 
 import argparse
-import math
-import subprocess
 
-import numpy as np
-import torch
-import torch.onnx
-from im2latex.data.vocab import START_TOKEN, read_vocab
-from im2latex.models.im2latex_model import Im2latexModel
-from tools.utils.common import (DECODER_INPUTS, DECODER_OUTPUTS,
-                                ENCODER_INPUTS, ENCODER_OUTPUTS)
 from tools.utils.get_config import get_config
-
-OPENVINO_DIR = '/opt/intel/openvino'
-
-FEATURES_SHAPE = 1, 20, 175, 512
-HIDDEN_SHAPE = 1, 512
-CONTEXT_SHAPE = 1, 512
-OUTPUT_SHAPE = 1, 256
-
-
-class Exporter:
-    def __init__(self, config):
-        self.config = config
-        self.model_path = config.get('model_path')
-        self.vocab = read_vocab(config.get('vocab_path'))
-        self.model = Im2latexModel(config.get('backbone_type', 'resnet'), config.get(
-            'backbone_config'), len(self.vocab), config.get('head', {}))
-        self.model.eval()
-        if self.model_path is not None:
-            self.model.load_weights(self.model_path)
-        self.img_for_export = torch.rand(self.config.get("input_shape_decoder"))
-        self.encoder = self.model.get_encoder_wrapper(self.model)
-        self.encoder.eval()
-        self.decoder = self.model.get_decoder_wrapper(self.model)
-        self.decoder.eval()
-
-    def export_encoder(self):
-        encoder_inputs = self.config.get("encoder_input_names", ENCODER_INPUTS).split(',')
-        encoder_outputs = self.config.get("encoder_output_names", ENCODER_OUTPUTS).split(',')
-        torch.onnx.export(self.encoder, self.img_for_export, self.config.get("res_encoder_name"),
-                          opset_version=11,
-                          input_names=encoder_inputs,
-                          output_names=encoder_outputs,
-                          dynamic_axes={encoder_inputs[0]:
-                                        {0: 'batch', 1: "channels", 2: "height", 3: "width"},
-                                        encoder_outputs[0]: {0: 'batch', 1: 'H', 2: 'W'},
-                                        },
-                          )
-
-    def export_decoder(self):
-        tgt = np.array([[START_TOKEN]] * 1)
-        decoder_inputs = self.config.get("decoder_input_names", DECODER_INPUTS).split(',')
-        decoder_outputs = self.config.get("decoder_output_names", DECODER_OUTPUTS).split(',')
-        row_enc_out = torch.rand(FEATURES_SHAPE)
-        hidden = torch.randn(HIDDEN_SHAPE)
-        context = torch.rand(CONTEXT_SHAPE)
-        output = torch.rand(OUTPUT_SHAPE)
-
-        torch.onnx.export(self.decoder,
-                          (hidden,
-                           context,
-                           output,
-                           row_enc_out,
-                           torch.tensor(tgt, dtype=torch.long)),
-                          self.config.get("res_decoder_name"),
-                          opset_version=11,
-                          input_names=decoder_inputs,
-                          output_names=decoder_outputs,
-                          dynamic_axes={decoder_inputs[3]: {  # row_enc_out name should be here
-                              0: 'batch', 1: 'H', 2: 'W'}}
-                          )
-
-    def export_encoder_ir(self):
-        export_command = f"""{OPENVINO_DIR}/bin/setupvars.sh && \
-        python {OPENVINO_DIR}/deployment_tools/model_optimizer/mo.py \
-        --framework onnx \
-        --input_model {self.config.get("res_encoder_name")} \
-        --input_shape "{self.config.get("input_shape_decoder")}" \
-        --output "{self.config.get("encoder_output_names", ENCODER_OUTPUTS)}" \
-        --reverse_input_channels \
-        --scale_values 'imgs[255,255,255]'"""
-        if self.config.get('verbose_export'):
-            print(export_command)
-        subprocess.run(export_command,
-                       shell=True, check=True
-                       )
-
-    def export_decoder_ir(self):
-        input_shape_decoder = self.config.get("input_shape_decoder")
-        output_h, output_w = input_shape_decoder[2] / 32, input_shape_decoder[3] / 32
-        if self.config['backbone_config']['disable_layer_4']:
-            output_h, output_w = output_h * 2, output_w * 2
-        if self.config['backbone_config']['disable_layer_3']:
-            output_h, output_w = output_h * 2, output_w * 2
-        output_h, output_w = math.ceil(output_h), math.ceil(output_w)
-        input_shape = [[1, self.config.get('head', {}).get("decoder_hidden_size", 512)],
-                       [1, self.config.get('head', {}).get('decoder_hidden_size', 512)],
-                       [1, self.config.get('head', {}).get('encoder_hidden_size', 256)],
-                       [1, output_h, output_w, self.config.get('head', {}).get('decoder_hidden_size', 512)], [1, 1]]
-        input_shape = "{}, {}, {}, {}, {}".format(*input_shape)
-        export_command = f"""{OPENVINO_DIR}/bin/setupvars.sh &&
-        python {OPENVINO_DIR}/deployment_tools/model_optimizer/mo.py \
-        --framework onnx \
-        --input_model {self.config.get('res_decoder_name')} \
-        --input {self.config.get("decoder_input_names", DECODER_INPUTS)} \
-        --input_shape '{str(input_shape)}' \
-        --output {self.config.get("decoder_output_names", DECODER_OUTPUTS)}"""
-        if self.config.get('verbose_export'):
-            print(export_command)
-        subprocess.run(export_command,
-                       shell=True, check=True
-                       )
+from tools.utils.exporter import Exporter
 
 
 def parse_args():
@@ -138,12 +29,11 @@ def parse_args():
 if __name__ == "__main__":
     args = parse_args()
     export_config = get_config(args.config, section='export')
-    with torch.no_grad():
-        exporter = Exporter(export_config)
-        exporter.export_encoder()
-        exporter.export_decoder()
-        print("Model succesfully exported to ONNX")
-        if export_config.get("export_ir"):
-            exporter.export_encoder_ir()
-            exporter.export_decoder_ir()
-            print("Model succesfully exported to OpenVINO IR")
+    exporter = Exporter(export_config)
+    exporter.export_encoder()
+    exporter.export_decoder()
+    print("Model succesfully exported to ONNX")
+    if export_config.get("export_ir"):
+        exporter.export_encoder_ir()
+        exporter.export_decoder_ir()
+        print("Model succesfully exported to OpenVINO IR")

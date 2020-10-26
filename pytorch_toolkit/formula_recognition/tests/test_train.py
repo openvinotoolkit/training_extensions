@@ -18,7 +18,7 @@ import os
 import shutil
 import unittest
 
-from tools.train import Trainer
+from tools.utils.trainer import Trainer
 from tools.utils.get_config import get_config
 
 
@@ -49,6 +49,7 @@ class TestMediumRenderedTrain(create_train_test("configs/medium_config.yml")):
 
 class TestHandwrittenPolynomialsTrain(create_train_test('configs/polynomials_handwritten_config.yml')):
     "Test case for handwritten polynomials config"
+
 
 if __name__ == "__main__":
     unittest.main()

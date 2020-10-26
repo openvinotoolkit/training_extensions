@@ -26,3 +26,16 @@ def read_net(model_xml, ie):
     model = ie.read_network(model_xml, model_bin)
 
     return model
+
+
+def export_model_if_not_yet(exporter, model, model_type, ir=False):
+    assert model_type in ('encoder', 'decoder')
+    result_model_exists = os.path.exists(model)
+    if ir:
+        model_xml = model.replace(".onnx", '.xml')
+        model_bin = model.replace(".onnx", '.bin')
+        result_model_exists = os.path.exists(model_xml) and os.path.exists(model_bin)
+    if not result_model_exists:
+        print(f"Model {model} does not exists, exporting it...")
+        export_function_name = f"export_{model_type}{'_ir' if ir else ''}"
+        getattr(exporter, export_function_name)()

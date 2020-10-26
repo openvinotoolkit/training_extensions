@@ -15,7 +15,7 @@
 """
 import unittest
 
-from tools.test import Evaluator
+from tools.utils.evaluator import Evaluator
 from tools.utils.get_config import get_config
 
 
