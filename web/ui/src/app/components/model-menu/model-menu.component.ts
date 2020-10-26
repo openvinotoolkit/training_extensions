@@ -20,6 +20,9 @@ export class IdlpModelMenuComponent {
   @Input()
   model: IModel;
 
+  @Input()
+  isEvaluateDisabled: boolean;
+
   @Output()
   onMenuItemClick: EventEmitter<any> = new EventEmitter<any>();
 

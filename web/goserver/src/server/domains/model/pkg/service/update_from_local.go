@@ -297,7 +297,7 @@ func (s *basicModelService) getDefaultBuild(problemId primitive.ObjectID) (resul
 			buildInsertOne.RequestData{
 				ProblemId: problemId,
 				Name:      "default",
-				Status:    buildStatus.Ready,
+				Status:    buildStatus.Default,
 			},
 		)
 		result = buildInsertOneResp.Data.(buildInsertOne.ResponseData)

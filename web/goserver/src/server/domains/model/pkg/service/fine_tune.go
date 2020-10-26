@@ -109,7 +109,6 @@ func (s *basicModelService) fineTuneFinish(model t.Model) t.Model {
 func (s *basicModelService) prepareFineTuneCommands(batchSize, gpuNum int, model, parentModel t.Model, build t.Build, problem t.Problem) []string {
 	trainImgPrefixes, trainAnnFiles := s.getImgPrefixAndAnnotation("train", build, problem)
 	valImgPrefixes, valAnnFiles := s.getImgPrefixAndAnnotation("val", build, problem)
-	classes := getClasses(problem.Labels)
 	paramsArr := []string{
 		fmt.Sprintf("--resume-from %s", parentModel.SnapshotPath),
 		fmt.Sprintf("--train-ann-files %s", strings.Join(trainAnnFiles, ",")),
@@ -119,7 +118,6 @@ func (s *basicModelService) prepareFineTuneCommands(batchSize, gpuNum int, model
 		fmt.Sprintf("--save-checkpoints-to %s", model.TrainingWorkDir),
 		fmt.Sprintf("--epochs %d", model.Epochs),
 		fmt.Sprintf("--gpu-num %d", gpuNum),
-		fmt.Sprintf("--classes %s", classes),
 	}
 
 	if batchSize > 0 {

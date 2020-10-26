@@ -7,7 +7,11 @@ import {Component, EventEmitter, OnDestroy, OnInit, Output, ViewChild} from '@an
 import {MatSort} from '@angular/material/sort';
 import {MatTableDataSource} from '@angular/material/table';
 import {IMetric, IModel} from '@idlp/root/models';
-import {IModelsMetricsTableColumn, IModelsMetricsTableData} from '@idlp/routed/problem-info/problem-info.models';
+import {
+  IBuild,
+  IModelsMetricsTableColumn,
+  IModelsMetricsTableData
+} from '@idlp/routed/problem-info/problem-info.models';
 import {ProblemInfoState} from '@idlp/routed/problem-info/problem-info.state';
 import {Utils} from '@idlp/utils/utils';
 import {Select} from '@ngxs/store';
@@ -23,6 +27,7 @@ export class IdlpModelsTableComponent implements OnDestroy, OnInit {
   @ViewChild(MatSort, {static: true})
   sort: MatSort;
 
+  @Select(ProblemInfoState.activeBuild) activeBuild$: Observable<IBuild>;
   @Select(ProblemInfoState.modelsMetricsTableData) modelsMetricsTableData$: Observable<IModelsMetricsTableData[]>;
   @Select(ProblemInfoState.modelsMetricsTableColumns) modelsMetricsTableColumns$: Observable<IModelsMetricsTableColumn[]>;
   @Select(ProblemInfoState.models) models$: Observable<IModel[]>;
@@ -45,7 +50,18 @@ export class IdlpModelsTableComponent implements OnDestroy, OnInit {
 
   private destroy$: Subject<any> = new Subject();
 
+  private activeBuild: IBuild;
+
+  isEvaluateDisabled(modelId: string): boolean {
+    if (this.activeBuild.status === 'default') {
+      return true;
+    }
+    const model = this.models.find((m: IModel) => m.id === modelId);
+    return this.activeBuild.id in model.metrics;
+  }
+
   ngOnInit(): void {
+    this.activeBuild$.subscribe((activeBuild: IBuild) => this.activeBuild = activeBuild);
     this.modelsMetricsTableColumns$.subscribe((columns: IModelsMetricsTableColumn[]) => {
       this.columns = columns;
       this.displayColumns = this.columns.map(column => column.key);

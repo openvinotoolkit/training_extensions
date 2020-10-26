@@ -11,7 +11,7 @@
       <th *matHeaderCellDef mat-header-cell mat-sort-header>
         <span>{{column.label}}</span>
       </th>
-
+      
       <ng-container *matCellDef="let item">
         <td
           *ngIf="item.status !== 'inProgress' else inProgress"
@@ -34,12 +34,12 @@
               visibility_off
             </mat-icon>
           </div>
-
+          
           <ng-template #noValue>
             <span>N/A</span>
           </ng-template>
         </td>
-
+        
         <ng-template #inProgress>
           <td
             [attr.colspan]="column.key !== 'name' ? columns.length - 1 : 0"
@@ -63,23 +63,24 @@
             </ng-template>
           </td>
         </ng-template>
-
+        
         <idlp-model-menu
-          #menu="modelMenu"
+					#menu="modelMenu"
           (onMenuItemClick)="menuItemClick($event)"
           [model]="item"
+          [isEvaluateDisabled]="isEvaluateDisabled(item.id)"
         >
         </idlp-model-menu>
-
+      
       </ng-container>
     </ng-container>
-
+    
     <tr
       *matHeaderRowDef="displayColumns"
       mat-header-row
     >
     </tr>
-
+    
     <tr
       (click)="rowClick(item)"
       *matRowDef="let item; columns: displayColumns;"

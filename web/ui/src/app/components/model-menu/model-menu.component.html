@@ -1,6 +1,7 @@
 <mat-menu>
   <button
     (click)="onMenuItemClick.emit('evaluate')"
+    [disabled]="isEvaluateDisabled"
     mat-menu-item
   >
     <mat-icon>trending_up</mat-icon>
@@ -23,6 +24,7 @@
   </button>
   <button
     (click)="onMenuItemClick.emit('log')"
+    [disabled]="model?.status === 'default'"
     mat-menu-item
   >
     <mat-icon>article</mat-icon>
@@ -44,6 +46,7 @@
   </button>
   <button
     (click)="onMenuItemClick.emit('delete')"
+    [disabled]="model?.status === 'default'"
     mat-menu-item
   >
     <mat-icon>delete</mat-icon>
