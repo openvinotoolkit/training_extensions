@@ -73,7 +73,7 @@ export class IdlpProblemInfoComponent implements OnInit, OnDestroy {
     this.connected$
       .pipe(map(connected => iif(() => connected === true)))
       .subscribe(() => {
-        timer(0, 50000)
+        timer(0, 5000)
           .pipe(takeUntil(this.destroy$))
           .subscribe(() => {
             this.store.dispatch(new SendWebSocketMessage({
