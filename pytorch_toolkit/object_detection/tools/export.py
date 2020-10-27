@@ -42,7 +42,7 @@ if args['openvino']:
         config = Config.fromfile(yaml.load(read_file, yaml.SafeLoader)['config'])
         if hasattr(config.model, 'bbox_head'):
             print ("We have bbox_head")
-            if Config.fromfile(yaml.load(read_file, yaml.SafeLoader)['config']).model.bbox_head.type == 'SSDHead':
+            if config.model.bbox_head.type == 'SSDHead':
                 run(f'python {os.path.join(MMDETECTION_TOOLS, "export.py")} '
                     f'{args["config"]} '
                     f'{args["load_weights"]} '
