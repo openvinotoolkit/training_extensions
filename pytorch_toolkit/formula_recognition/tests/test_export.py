@@ -20,7 +20,6 @@ import unittest
 from tools.export import Exporter
 from tools.utils.evaluator import Evaluator, RunnerType
 from tools.utils.get_config import get_config
-from tools.utils.common import export_model_if_not_yet
 
 
 def create_export_test_case(config_file, expected_outputs):
@@ -53,7 +52,7 @@ def create_export_test_case(config_file, expected_outputs):
 
         def test_3_onnx(self):
             for model_type in ('encoder', 'decoder'):
-                export_model_if_not_yet(self.exporter, model=self.config.get(
+                self.exporter.export_model_if_not_yet(model=self.config.get(
                     f"res_{model_type}_name"), model_type=model_type, ir=False)
             evaluator = Evaluator(self.config, RunnerType.ONNX)
             metric_onnx = evaluator.validate()
@@ -63,7 +62,7 @@ def create_export_test_case(config_file, expected_outputs):
         def test_4_encoder_ir_export(self):
             if not self.config.get("export_ir"):
                 return
-            export_model_if_not_yet(self.exporter, model=self.config.get(
+            self.exporter.export_model_if_not_yet(model=self.config.get(
                 "res_encoder_name"), model_type='encoder', ir=False)
             encoder_res_name = self.config.get("res_encoder_name").replace('onnx', 'xml')
             result_model_exists = os.path.exists(encoder_res_name)
@@ -85,7 +84,7 @@ def create_export_test_case(config_file, expected_outputs):
         def test_5_decoder_ir_export(self):
             if not self.config.get("export_ir"):
                 return
-            export_model_if_not_yet(self.exporter, model=self.config.get(
+            self.exporter.export_model_if_not_yet(model=self.config.get(
                 "res_decoder_name"), model_type='decoder', ir=False)
             decoder_res_name = self.config.get("res_decoder_name").replace('onnx', 'xml')
             result_model_exists = os.path.exists(decoder_res_name)
@@ -109,7 +108,7 @@ def create_export_test_case(config_file, expected_outputs):
                 return
             for model_type in ('encoder', 'decoder'):
                 for ir in (False, True):
-                    export_model_if_not_yet(self.exporter, model=self.config.get(
+                    self.exporter.export_model_if_not_yet(model=self.config.get(
                         f"res_{model_type}_name"), model_type=model_type, ir=ir)
             evaluator = Evaluator(self.config, RunnerType.OpenVINO)
             ir_metric = evaluator.validate()

@@ -15,6 +15,7 @@
 """
 
 import math
+import os
 import subprocess
 
 import numpy as np
@@ -86,12 +87,15 @@ class Exporter:
                           )
 
     def export_encoder_ir(self):
+        input_model = self.config.get("res_encoder_name")
+        input_shape = self.config.get("input_shape_decoder")
+        output_names = self.config.get("encoder_output_names", ENCODER_OUTPUTS)
         export_command = f"""{OPENVINO_DIR}/bin/setupvars.sh && \
         python {OPENVINO_DIR}/deployment_tools/model_optimizer/mo.py \
         --framework onnx \
-        --input_model {self.config.get("res_encoder_name")} \
-        --input_shape "{self.config.get("input_shape_decoder")}" \
-        --output "{self.config.get("encoder_output_names", ENCODER_OUTPUTS)}" \
+        --input_model {input_model} \
+        --input_shape "{input_shape}" \
+        --output "{output_names}" \
         --reverse_input_channels \
         --scale_values 'imgs[255,255,255]'"""
         if self.config.get('verbose_export'):
@@ -113,15 +117,31 @@ class Exporter:
                        [1, self.config.get('head', {}).get('encoder_hidden_size', 256)],
                        [1, output_h, output_w, self.config.get('head', {}).get('decoder_hidden_size', 512)], [1, 1]]
         input_shape = "{}, {}, {}, {}, {}".format(*input_shape)
+        input_model = self.config.get('res_decoder_name')
+        input_names = self.config.get("decoder_input_names", DECODER_INPUTS)
+        output_names = self.config.get("decoder_output_names", DECODER_OUTPUTS)
         export_command = f"""{OPENVINO_DIR}/bin/setupvars.sh &&
         python {OPENVINO_DIR}/deployment_tools/model_optimizer/mo.py \
         --framework onnx \
-        --input_model {self.config.get('res_decoder_name')} \
-        --input {self.config.get("decoder_input_names", DECODER_INPUTS)} \
-        --input_shape '{str(input_shape)}' \
-        --output {self.config.get("decoder_output_names", DECODER_OUTPUTS)}"""
+        --input_model {input_model} \
+        --input {input_names} \
+        --input_shape '{input_shape}' \
+        --output {output_names}"""
         if self.config.get('verbose_export'):
             print(export_command)
         subprocess.run(export_command,
                        shell=True, check=True
                        )
+
+    def export_model_if_not_yet(self, model, model_type, ir=False):
+        assert model_type in ('encoder', 'decoder')
+        result_model_exists = os.path.exists(model)
+        if ir:
+            model_xml = model.replace(".onnx", '.xml')
+            model_bin = model.replace(".onnx", '.bin')
+            result_model_exists = os.path.exists(model_xml) and os.path.exists(model_bin)
+        if not result_model_exists:
+            print(f"Model {model} does not exists, exporting it...")
+            ir_suffix = "_ir" if ir else ""
+            export_function_name = f"export_{model_type}{ir_suffix}"
+            getattr(self, export_function_name)()
