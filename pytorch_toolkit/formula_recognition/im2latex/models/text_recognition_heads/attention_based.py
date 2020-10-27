@@ -37,7 +37,7 @@ SOFTWARE.
 """
 
 import math
-from collections import namedtuple, OrderedDict
+from collections import namedtuple
 
 import torch
 import torch.nn as nn
