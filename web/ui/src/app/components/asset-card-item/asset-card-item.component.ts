@@ -5,7 +5,7 @@
 
 import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import {IAsset, IAssetBuildState} from '@idlp/root/models';
-import {MatCheckboxChange} from "@angular/material/checkbox";
+import {MatCheckboxChange} from '@angular/material/checkbox';
 
 @Component({
   selector: 'idlp-asset-card-item',
@@ -55,26 +55,26 @@ export class IdlpAssetCardItemComponent implements OnInit {
 
   get pushActionTooltip(): string {
     switch (this.asset.status) {
-      case 'initial':
-        return 'Push to CVAT';
-      case 'pushInProgress':
-        return 'Pushing to CVAT';
+    case 'initial':
+      return 'Push to CVAT';
+    case 'pushInProgress':
+      return 'Pushing to CVAT';
     }
     return null;
   }
 
   get pullActionTooltip(): string {
     switch (this.asset.status) {
-      case 'pullReady':
-        return 'Pull from CVAT';
-      case 'pullInProgress':
-        return 'Pulling from CVAT';
+    case 'pullReady':
+      return 'Pull from CVAT';
+    case 'pullInProgress':
+      return 'Pulling from CVAT';
     }
     return null;
   }
 
   get isClickAllowed(): boolean {
-    return this.asset.url?.trim().length > 0;
+    return this.asset.type === 'folder' || this.asset.url?.trim().length > 0;
   }
 
   ngOnInit(): void {
@@ -85,12 +85,12 @@ export class IdlpAssetCardItemComponent implements OnInit {
   assign(event: MatCheckboxChange): void {
     if (event.checked) {
       switch (event.source.name) {
-        case 'train':
-          this.val = false;
-          break;
-        case 'val':
-          this.train = false;
-          break
+      case 'train':
+        this.val = false;
+        break;
+      case 'val':
+        this.train = false;
+        break
       }
     }
     this.onAssign.emit({

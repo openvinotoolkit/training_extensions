@@ -1,5 +1,5 @@
 <div class="problem-assets-component">
-
+  
   <div
     [matTooltip]="buildButtonTooltip"
     class="action-build"
@@ -13,7 +13,7 @@
       Build
     </button>
   </div>
-
+  
   <div class="scroll-container">
     <div
       class="component-wrapper"
@@ -27,7 +27,7 @@
             (click)="loadAssets()"
             [ngClass]="{'clickable': breadcrumbs.length}"
           >
-            Root
+            &lt;PROJECT_DIR&gt; / web / data / assets
           </span>
           <span
             (click)="loadAssets(asset)"
