@@ -9,6 +9,7 @@
   </button>
   <button
     (click)="onMenuItemClick.emit('finetune')"
+    [disabled]="isFineTuneDisabled"
     mat-menu-item
   >
     <mat-icon>timeline</mat-icon>
@@ -16,7 +17,7 @@
   </button>
   <button
     (click)="onMenuItemClick.emit('tensorboard')"
-    [disabled]="model?.status === 'default'"
+    [disabled]="isTensorboardDisabled"
     mat-menu-item
   >
     <mat-icon>launch</mat-icon>
@@ -24,7 +25,7 @@
   </button>
   <button
     (click)="onMenuItemClick.emit('log')"
-    [disabled]="model?.status === 'default'"
+    [disabled]="isLogDisabled"
     mat-menu-item
   >
     <mat-icon>article</mat-icon>
@@ -32,7 +33,7 @@
   </button>
   <button
     (click)="onMenuItemClick.emit('showonchart')"
-    *ngIf="model.status !== 'inProgress'"
+    [disabled]="isShowOnChartDisabled"
     mat-menu-item
   >
     <div *ngIf="isHiddenOnChart">
@@ -46,7 +47,7 @@
   </button>
   <button
     (click)="onMenuItemClick.emit('delete')"
-    [disabled]="model?.status === 'default'"
+    [disabled]="isDeleteDisabled"
     mat-menu-item
   >
     <mat-icon>delete</mat-icon>

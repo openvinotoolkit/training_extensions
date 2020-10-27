@@ -14,7 +14,7 @@
       
       <ng-container *matCellDef="let item">
         <td
-          *ngIf="item.status !== 'inProgress' else inProgress"
+          *ngIf="!['inProgress', 'initiate'].includes(item.status) else inProgress"
           [matMenuTriggerFor]="menu.instance"
           [ngClass]="{'contrast-text': isContrastText(item[column.key].opacity)}"
           [style]="getCellStyle(item[column.key].opacity)"
@@ -68,7 +68,7 @@
 					#menu="modelMenu"
           (onMenuItemClick)="menuItemClick($event)"
           [model]="item"
-          [isEvaluateDisabled]="isEvaluateDisabled(item.id)"
+          [isBuildValidForEvaluate]="isBuildValidForEvaluate(item.id)"
         >
         </idlp-model-menu>
       

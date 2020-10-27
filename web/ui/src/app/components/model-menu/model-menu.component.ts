@@ -21,7 +21,7 @@ export class IdlpModelMenuComponent {
   model: IModel;
 
   @Input()
-  isEvaluateDisabled: boolean;
+  isBuildValidForEvaluate: boolean;
 
   @Output()
   onMenuItemClick: EventEmitter<any> = new EventEmitter<any>();
@@ -30,5 +30,32 @@ export class IdlpModelMenuComponent {
     const hoc: string[] = JSON.parse(localStorage.getItem('hoc'));
     if (hoc) return hoc.includes(this.model.id);
     return this.model.showOnChart;
+  }
+
+  get isFineTuneDisabled(): boolean {
+    return ['inProgress', 'initiate'].includes(this.model?.status);
+  }
+
+  get isTensorboardDisabled(): boolean {
+    return ['default', 'initiate'].includes(this.model?.status);
+  }
+
+  get isLogDisabled(): boolean {
+    return ['default', 'initiate'].includes(this.model?.status);
+  }
+
+  get isShowOnChartDisabled(): boolean {
+    return ['inProgress', 'initiate'].includes(this.model?.status);
+  }
+
+  get isEvaluateDisabled(): boolean {
+    if (['inProgress', 'initiate'].includes(this.model?.status)) {
+      return true;
+    }
+    return !this.isBuildValidForEvaluate;
+  }
+
+  get isDeleteDisabled(): boolean {
+    return ['default', 'initiate'].includes(this.model?.status);
   }
 }

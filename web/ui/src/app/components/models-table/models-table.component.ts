@@ -52,12 +52,12 @@ export class IdlpModelsTableComponent implements OnDestroy, OnInit {
 
   private activeBuild: IBuild;
 
-  isEvaluateDisabled(modelId: string): boolean {
+  isBuildValidForEvaluate(modelId: string): boolean {
     if (this.activeBuild.status === 'default') {
-      return true;
+      return false;
     }
     const model = this.models.find((m: IModel) => m.id === modelId);
-    return this.activeBuild.id in model.metrics;
+    return !(model.metrics && this.activeBuild.id in model.metrics);
   }
 
   ngOnInit(): void {
@@ -73,6 +73,9 @@ export class IdlpModelsTableComponent implements OnDestroy, OnInit {
       this.dataSource.sort = this.sort;
       this.dataSource.sortData = (d: { [metric: string]: any }[], sort: MatSort): { [metric: string]: any }[] => {
         d.sort((a, b) => {
+          if (!a[sort.active]?.value || !b[sort.active]?.value) {
+            return 0;
+          }
           if (a[sort.active].value < b[sort.active].value) {
             return sort.direction === 'asc' ? 1 : -1;
           }

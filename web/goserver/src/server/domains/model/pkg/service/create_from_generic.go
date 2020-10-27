@@ -77,7 +77,7 @@ func (s *basicModelService) createModelFromGeneric(genericModel t.Model, problem
 			Eval:  fp.Join(problem.ToolsPath, "eval.py"),
 		},
 		SnapshotPath:      snapshotPath,
-		Status:            modelStatus.InProgress,
+		Status:            modelStatus.Initiate,
 		TemplatePath:      fp.Join(dir, "template.yaml"),
 		TensorBoardLogDir: "",
 		TrainingGpuNum:    genericModel.TrainingGpuNum,
@@ -143,7 +143,7 @@ func copySnapshot(genericSnapshotPath, modelDirPath string) string {
 }
 
 func (s *basicModelService) saveModel(model t.Model) t.Model {
-	model.Status = modelStatus.Finished
+	model.Status = modelStatus.Default
 	modelUpdateOneResp := <-modelUpdateOne.Send(context.TODO(), s.Conn, model)
 	return modelUpdateOneResp.Data.(modelUpdateOne.ResponseData)
 }
