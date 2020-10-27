@@ -331,7 +331,7 @@ volumes:
     driver_opts:
       o: bind
       type: none
-      device: $PWD/web/data/idlp/db
+      device: $PWD/web/data/db
   idlp_go_server_v:
     driver: local
     driver_opts:
@@ -349,25 +349,25 @@ volumes:
     driver_opts:
       o: bind
       type: none
-      device: $PWD/web/data/idlp/problem
+      device: $PWD/web/data/problem
   idlp_training_v:
     driver: local
     driver_opts:
       o: bind
       type: none
-      device: $PWD/web/data/idlp/training
+      device: $PWD/web/data/training
   idlp_cvat_images_v:
     driver: local
     driver_opts:
       o: bind
       type: none
-      device: $PWD/web/data/idlp/images
+      device: $PWD/web/data/images
   idlp_assets_v:
     driver: local
     driver_opts:
       o: bind
       type: none
-      device: $PWD/web/data/idlp/assets
+      device: $PWD/web/data/assets
   idlp_py_server_v:
     driver: local
     driver_opts:
