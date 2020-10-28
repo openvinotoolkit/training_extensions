@@ -20,7 +20,7 @@ train:
   val_path: ../../data/formula_recognition/sample_handwritten_polynomials
 eval:
   val_path: ../../data/formula_recognition/sample_handwritten_polynomials
-  split_file: validate
+  subset: validate
 
 demo:
   transforms_list: []
