@@ -263,11 +263,7 @@ class TextRecognitionHead(nn.Module):
         lin_pr_sh = linear_prev_h.shape
         linear_prev_h = linear_prev_h.view(B, 1, 1, lin_pr_sh[-1])
         linear_prev_h = linear_prev_h.expand(lin_pr_sh[0], H, W, lin_pr_sh[-1])
-        e = torch.sum(self.beta * torch.tanh(
-            linear_prev_h + self.W_v(enc_out)
-        ),
-            dim=-1
-        )  # [B, H, W]
+        e = torch.sum(self.beta * torch.tanh(linear_prev_h + self.W_v(enc_out)), dim=-1)  # [B, H, W]
 
         alpha = F.softmax(e.view(B, -1), dim=-1).view(B, H, W)
         attn_scores = alpha.unsqueeze(-1)
