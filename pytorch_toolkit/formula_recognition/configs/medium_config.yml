@@ -7,9 +7,8 @@ device: cuda
 vocab_path: vocabs/vocab_medium.json
 val_transforms_list:
   - name: "TransformRescale"
-    scales:
-      - 1.5
-      - 1.5
+    scale_min: 1.5
+    scale_max: 1.5
   - name: TransformCropPad
     target_shape:
       - 65
@@ -27,9 +26,8 @@ train:
   val_ann_file: validate_filter.lst
   train_transforms_list:
   - name: "TransformRescale"
-    scales:
-      - 1.5
-      - 1.5
+    scale_min: 1.5
+    scale_max: 1.5
 eval:
   test_path: ../../data/formula_recognition/sample_medium_dataset
   test_ann_file: validate_filter.lst

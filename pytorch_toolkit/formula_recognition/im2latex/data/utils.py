@@ -32,7 +32,7 @@ class TransformResizePad:
     (if resized image's shape is not equal to target shape)
     """
 
-    def __init__(self, target_shape):
+    def __init__(self, target_shape, **kwargs):
         self.target_shape = target_shape
 
     def __repr__(self):
@@ -51,7 +51,8 @@ class TransformResizePad:
             image_raw = cv.copyMakeBorder(image_raw, 0, target_height - img_h,
                                           0, target_width - img_w, cv.BORDER_CONSTANT,
                                           None, COLOR_WHITE)
-            assert tuple(image_raw.shape[0:2]) == tuple(self.target_shape[0:2]), f"image_raw shape {image_raw.shape[0:2]}, tgt_shape: {self.target_shape[0:2]}"
+            assert tuple(image_raw.shape[0:2]) == tuple(self.target_shape[0:2]
+                                                        ), f"image_raw shape {image_raw.shape[0:2]}, tgt_shape: {self.target_shape[0:2]}"
             res.append(image_raw)
         return res
 
@@ -61,7 +62,7 @@ class TransformCropPad:
     and save original aspect ratio and pad (if resized image's shape is not equal to target shape)
     """
 
-    def __init__(self, target_shape):
+    def __init__(self, target_shape, **kwargs):
         self.target_shape = target_shape
 
     def __repr__(self):
@@ -89,7 +90,7 @@ class TransformPad:
     """Random pad batch of images
     """
 
-    def __init__(self, pad_l=50, pad_r=50, pad_b=20, pad_t=20):
+    def __init__(self, pad_l=50, pad_r=50, pad_b=20, pad_t=20, **kwargs):
         self.pad_l = pad_l
         self.pad_r = pad_r
         self.pad_b = pad_b
@@ -125,7 +126,7 @@ class TransformPad:
 
 
 class TransformToTensor:
-    def __call__(self, imgs):
+    def __call__(self, imgs, **kwargs):
         if not isinstance(imgs, list):
             imgs = [imgs]
         return [ToTensor()(img) for img in imgs]
@@ -135,7 +136,8 @@ class TransformOvinoIR:
     """The same transform as above with the exception that it does not
     cast input array to [0, 1] range
     """
-    def __call__(self, imgs):
+
+    def __call__(self, imgs, **kwargs):
         if not isinstance(imgs, list):
             imgs = [imgs]
         imgs = [np.transpose(img, [2, 0, 1]) for img in imgs]
@@ -143,7 +145,7 @@ class TransformOvinoIR:
 
 
 class TransformBlur:
-    def __init__(self, sigmaX=1.15):
+    def __init__(self, sigmaX=1.15, **kwargs):
         self.sigmaX = sigmaX
 
     def __repr__(self):
@@ -159,7 +161,7 @@ class TransformShift:
     """Shift formula randomly on x and y from a set range
     """
 
-    def __init__(self, shift_x, shift_y):
+    def __init__(self, shift_x, shift_y, **kwargs):
         self.shift_x = shift_x
         self.shift_y = shift_y
 
@@ -181,7 +183,7 @@ class TransformRandomNoise:
     """Add random noise to batch of images
     """
 
-    def __init__(self, intensity):
+    def __init__(self, intensity, **kwargs):
         self.intensity = intensity
 
     def __repr__(self):
@@ -201,7 +203,7 @@ class TransformRandomNoise:
 
 
 class TransformResize:
-    def __init__(self, target_shape):
+    def __init__(self, target_shape, **kwargs):
         self.target_shape = target_shape
 
     def __repr__(self):
@@ -218,7 +220,7 @@ class TransformErosion:
     """Morphologic erosion
     """
 
-    def __init__(self, kernel_size=3, iterations=1):
+    def __init__(self, kernel_size=3, iterations=1, **kwargs):
         self.iterations = iterations
         self.kernel = np.ones((kernel_size, kernel_size), np.uint8)
 
@@ -237,7 +239,7 @@ class TransformRandomBolding:
     after applying binarization on them
     """
 
-    def __init__(self, kernel_size=3, iterations=1, threshold=160, res_threshold=190, sigmaX=0.8, distr=0.7):
+    def __init__(self, kernel_size=3, iterations=1, threshold=160, res_threshold=190, sigmaX=0.8, distr=0.7, **kwargs):
         self.iterations = iterations
         self.threshold = threshold
         self.res_threshold = res_threshold
@@ -291,7 +293,7 @@ class TransformDilation:
     """Morphologic dilation
     """
 
-    def __init__(self, kernel_size=3, iterations=3):
+    def __init__(self, kernel_size=3, iterations=3, **kwargs):
         self.iterations = iterations
         self.kernel = np.ones((kernel_size, kernel_size), np.uint8)
 
@@ -305,7 +307,7 @@ class TransformDilation:
 
 
 class TransformBin:
-    def __init__(self, threshold):
+    def __init__(self, threshold, **kwargs):
         self.transform = cv.threshold
         self.thresh_type = cv.THRESH_BINARY
         self.threshold = threshold
@@ -321,7 +323,7 @@ class TransformBin:
 
 
 class TransformAdaptiveBin:
-    def __init__(self, threshold, block_size, method=cv.ADAPTIVE_THRESH_MEAN_C, mean_c=10):
+    def __init__(self, threshold, block_size, method=cv.ADAPTIVE_THRESH_MEAN_C, mean_c=10, **kwargs):
         self.method = method
         self.block_size = block_size
         self.C = mean_c
@@ -342,7 +344,7 @@ class TransformAdaptiveBin:
 
 
 class TransformRescale:
-    def __init__(self, scale_min, scale_max):
+    def __init__(self, scale_min, scale_max, **kwargs):
         self.scale_min = scale_min
         self.scale_max = scale_max
 
@@ -359,7 +361,7 @@ class TransformRescale:
 
 
 class TransformRotate:
-    def __init__(self, angle):
+    def __init__(self, angle, **kwargs):
         self.angle = angle
 
     def __repr__(self):
@@ -388,6 +390,24 @@ class TransformRotate:
             img, M, empty_img_shape[::-1], borderMode=cv.BORDER_CONSTANT, borderValue=COLOR_WHITE) for img in imgs]
 
         return rotated
+
+
+TRANSFORMS = {
+    'TransformResizePad': TransformResizePad,
+    'TransformCropPad': TransformCropPad,
+    'TransformBin': TransformBin,
+    'TransformBlur': TransformBlur,
+    'TransformPad': TransformPad,
+    'TransformRandomNoise': TransformRandomNoise,
+    'TransformRescale': TransformRescale,
+    'TransformRotate': TransformRotate,
+    'TransfromAdaptiveBin': TransformAdaptiveBin,
+    'TransformDilation': TransformDilation,
+    'TransformErosion': TransformErosion,
+    'TransformResize': TransformResize,
+    'TransformShift': TransformShift,
+    'TransformRandomBolding': TransformRandomBolding,
+}
 
 
 def get_timestamp():
@@ -434,35 +454,7 @@ def create_list_of_transforms(transforms_list, ovino_ir=False):
     transforms = []
     if transforms_list:
         for transform in transforms_list:
-            if transform['name'] == 'TransformResizePad':
-                transforms.append(TransformResizePad(transform['target_shape']))
-            elif transform['name'] == 'TransformCropPad':
-                transforms.append(TransformCropPad(transform['target_shape']))
-            elif transform['name'] == 'TransformBin':
-                transforms.append(TransformBin(transform['threshold']))
-            elif transform['name'] == 'TransformBlur':
-                transforms.append(TransformBlur())
-            elif transform['name'] == 'TransformPad':
-                transforms.append(TransformPad(*transform['pads']))
-            elif transform['name'] == 'TransformRandomNoise':
-                transforms.append(TransformRandomNoise(transform['intensivity']))
-            elif transform['name'] == 'TransformRescale':
-                transforms.append(TransformRescale(*transform['scales']))
-            elif transform['name'] == 'TransformRotate':
-                transforms.append(TransformRotate(transform['angle']))
-            elif transform['name'] == 'TransfromAdaptiveBin':
-                transforms.append(TransformAdaptiveBin(transform['threshold'], transform['block_size']))
-            elif transform['name'] == 'TransformDilation':
-                transforms.append(TransformDilation())
-            elif transform['name'] == 'TransformErosion':
-                transforms.append(TransformErosion())
-            elif transform['name'] == 'TransformResize':
-                transforms.append(TransformResize(transform['target_shape']))
-            elif transform['name'] == 'TransformShift':
-                transforms.append(TransformShift(*transform['shifts']))
-            elif transform['name'] == 'TransformRandomBolding':
-                transforms.append(TransformRandomBolding(transform['kernel_size'], transform['iterations'],
-                                                         transform['threshold'], transform['res_threshold'], transform['sigmaX'], transform['distr']))
+            transforms.append(TRANSFORMS[transform['name']](**transform))
     if ovino_ir:
         transforms.append(TransformOvinoIR())
     else:
