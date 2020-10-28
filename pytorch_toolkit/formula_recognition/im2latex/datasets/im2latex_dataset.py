@@ -77,15 +77,15 @@ class BatchRandomSampler(Sampler):
 
 
 class Im2LatexDataset(Dataset):
-    def __init__(self, data_dir, split):
+    def __init__(self, data_dir, subset):
         """args:
         data_dir: root dir storing the prepoccessed data
-        split: train, validate, test or toy
+        subset: train, validate, test or toy
         """
         self.data_dir = data_dir
         self.images_dir = join(data_dir, "images_processed")
         self.formulas = self._get_formulas()
-        self.pairs = self._get_pairs(split)
+        self.pairs = self._get_pairs(subset)
 
     def __getitem__(self, index):
 
@@ -109,9 +109,9 @@ class Im2LatexDataset(Dataset):
                 formulas.append(res_formula)
         return formulas
 
-    def _get_pairs(self, split):
+    def _get_pairs(self, subset):
         # the line in this file map image to formulas
-        map_file = join(self.data_dir, split)
+        map_file = join(self.data_dir, subset)
         total_lines = get_num_lines_in_file(map_file)
         # get image-formulas pairs
         pairs = []
