@@ -1,6 +1,6 @@
 model = dict(
     type='CascadeRCNN',
-    pretrained='torchvision://resnet18',
+    #pretrained='torchvision://resnet18',
     backbone=dict(
         type='ResNet',
         depth=18,
