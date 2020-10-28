@@ -1,6 +1,6 @@
 ### BUILD ###
 
-FROM node:stretch AS build
+FROM node:14.15-stretch AS build
 ARG IDLP_HOST=localhost
 ENV IDLP_HOST=${IDLP_HOST}
 RUN mkdir /code
