@@ -50,8 +50,8 @@ services:
   idlp_mongo:
     image: mongo
     container_name: idlp_mongo
-    ports:
-      - 27017:27017
+    #    ports:
+    #      - 27017:27017
     networks:
       - idlp_network
     volumes:
@@ -77,7 +77,7 @@ services:
   idlp_rabbitmq:
     image: 'rabbitmq:management-alpine'
     ports:
-      - '5672:5672'
+      #      - '5672:5672'
       - '15672:15672'
     container_name: idlp_rabbitmq
     networks:
@@ -92,8 +92,8 @@ services:
       - idlp_go_server_v:/go/src/server
       - idlp_ote_v:/ote
     container_name: idlp_api
-    ports:
-      - 8888:8888
+    #    ports:
+    #      - 8888:8888
     networks:
       - idlp_network
     depends_on:

@@ -64,6 +64,7 @@ RE-LOGIN REQUIRED after this command
 $ sudo curl -L "https://github.com/docker/compose/releases/download/1.26.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
 $ sudo chmod +x /usr/local/bin/docker-compose
 ```
+RE-LOGIN REQUIRED after this command
 
 ### Test Installation
 
@@ -79,7 +80,7 @@ docker-compose version 1.26.2, build 1110ad01
 $ git clone --recursive https://github.com/dmitryagapov/openvino_training_extensions.git
 $ cd openvino_training_extensions
 $ git submodule update --init --recursive
-$ IDLP_HOST=<host.name> docker-compose -f docker-compose.cpu.yml up --build -d
+$ IDLP_HOST=localhost docker-compose -f docker-compose.cpu.yml up --build -d
 ```
 ### Create CVAT root user
 
