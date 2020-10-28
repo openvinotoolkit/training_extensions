@@ -1,11 +1,19 @@
-common:
-  backbone_config:
-    arch: resnext50_32x4d
-    disable_layer_3: true
-    disable_layer_4: true
-  model_path: model_checkpoints/medium_photographed_0185.pth
-  device: cuda
-  vocab_path: vocabs/vocab_medium.json
+backbone_config:
+  arch: resnext50_32x4d
+  disable_layer_3: true
+  disable_layer_4: true
+model_path: model_checkpoints/medium_photographed_0185.pth
+device: cuda
+vocab_path: vocabs/vocab_medium.json
+val_transforms_list:
+  - name: "TransformRescale"
+    scales:
+      - 1.5
+      - 1.5
+  - name: TransformCropPad
+    target_shape:
+      - 65
+      - 1450
 train:
   batch_size: 4
   learning_rate: 0.000001
@@ -14,16 +22,17 @@ train:
   save_dir: model_checkpoints
   train_paths:
     - ../../data/formula_recognition/sample_medium_dataset
+  train_ann_file: train_filter.lst
   val_path: ../../data/formula_recognition/sample_medium_dataset
+  val_ann_file: validate_filter.lst
+  train_transforms_list:
+  - name: "TransformRescale"
+    scales:
+      - 1.5
+      - 1.5
 eval:
-  val_path: ../../data/formula_recognition/sample_medium_dataset
-  subset: validate
-  val_transforms_list:
-    - name: "TransformRescale"
-      scales:
-        - 1.5
-        - 1.5
-
+  test_path: ../../data/formula_recognition/sample_medium_dataset
+  test_ann_file: validate_filter.lst
 demo:
   transforms_list: []
 export:
@@ -36,13 +45,3 @@ export:
     - 3
     - 65
     - 1450
-  val_path: ../../data/formula_recognition/sample_medium_dataset
-  val_transforms_list:
-    - name: "TransformRescale"
-      scales:
-        - 1.5
-        - 1.5
-    - name: TransformCropPad
-      target_shape:
-        - 65
-        - 1450

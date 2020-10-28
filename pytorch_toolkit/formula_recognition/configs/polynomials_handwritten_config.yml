@@ -1,14 +1,18 @@
-common:
-  backbone_config:
-    arch: resnext50_32x4d
-    disable_layer_3: false
-    disable_layer_4: true
-    output_channels: 1024
-  head:
-    encoder_input_size: 1024
-  model_path: model_checkpoints/polynomials_handwritten_0166.pth
-  device: cuda
-  vocab_path: vocabs/vocab_handwritten_polynomials.json
+backbone_config:
+  arch: resnext50_32x4d
+  disable_layer_3: false
+  disable_layer_4: true
+  output_channels: 1024
+head:
+  encoder_input_size: 1024
+model_path: model_checkpoints/polynomials_handwritten_0166.pth
+device: cuda
+vocab_path: vocabs/vocab_handwritten_polynomials.json
+val_transforms_list:
+  - name: TransformCropPad
+    target_shape:
+      - 96
+      - 1024
 train:
   batch_size: 4
   learning_rate: 0.000001
@@ -17,11 +21,12 @@ train:
   save_dir: model_checkpoints
   train_paths:
     - ../../data/formula_recognition/sample_handwritten_polynomials
+  train_ann_file: train_filter.lst
   val_path: ../../data/formula_recognition/sample_handwritten_polynomials
+  val_ann_file: validate_filter.lst
 eval:
-  val_path: ../../data/formula_recognition/sample_handwritten_polynomials
-  subset: validate
-
+  test_path: ../../data/formula_recognition/sample_handwritten_polynomials
+  test_ann_file: validate_filter.lst
 demo:
   transforms_list: []
 export:
@@ -34,9 +39,3 @@ export:
     - 3
     - 96
     - 1024
-  val_path: ../../data/formula_recognition/sample_handwritten_polynomials
-  val_transforms_list:
-    - name: TransformCropPad
-      target_shape:
-        - 96
-        - 1024

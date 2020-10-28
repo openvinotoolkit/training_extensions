@@ -82,7 +82,6 @@ class Im2LatexDataset(Dataset):
         data_dir: root dir storing the prepoccessed data
         split: train, validate, test or toy
         """
-        assert split in ["train", "validate", "test", "toy", "reduced_val"]
         self.data_dir = data_dir
         self.images_dir = join(data_dir, "images_processed")
         self.formulas = self._get_formulas()
@@ -112,7 +111,7 @@ class Im2LatexDataset(Dataset):
 
     def _get_pairs(self, split):
         # the line in this file map image to formulas
-        map_file = join(self.data_dir, split + "_filter.lst")
+        map_file = join(self.data_dir, split)
         total_lines = get_num_lines_in_file(map_file)
         # get image-formulas pairs
         pairs = []

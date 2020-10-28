@@ -150,7 +150,7 @@ class Trainer:
 
     def load_dataset(self):
         train_dataset = ConcatDataset(
-            [Im2LatexDataset(train_s, 'train') for train_s in self.train_paths]
+            [Im2LatexDataset(train_s, self.config.get("train_ann_file")) for train_s in self.train_paths]
         )
         train_sampler = BatchRandomSampler(
             dataset=train_dataset, batch_size=self.config.get('batch_size', 4))
@@ -162,7 +162,7 @@ class Trainer:
                                batch_transform=batch_transform_train),
             num_workers=os.cpu_count())
 
-        val_dataset = Im2LatexDataset(self.val_path, 'validate')
+        val_dataset = Im2LatexDataset(self.val_path, self.config.get("val_ann_file"))
         val_sampler = BatchRandomSampler(dataset=val_dataset, batch_size=1)
         batch_transform_val = create_list_of_transforms(self.val_transforms_list)
         self.val_loader = DataLoader(

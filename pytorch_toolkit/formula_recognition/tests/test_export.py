@@ -27,6 +27,8 @@ def create_export_test_case(config_file, expected_outputs):
         @classmethod
         def setUpClass(cls):
             export_config = get_config(config_file, section='export')
+            val_config = get_config(config_file, section='eval')
+            export_config['test_path'] = val_config['test_path']
             cls.config = export_config
             cls.config.update({"expected_outputs": expected_outputs})
             cls.exporter = Exporter(cls.config)

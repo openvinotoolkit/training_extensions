@@ -241,7 +241,7 @@ class Evaluator:
         self.read_expected_outputs()
 
     def load_dataset(self):
-        val_dataset = Im2LatexDataset(self.config.get("val_path"), self.config.get("subset", "validate"))
+        val_dataset = Im2LatexDataset(self.config.get("test_path"), self.config.get("test_ann_file", "validate_filter.lst"))
         batch_transform = create_list_of_transforms(self.config.get(
             'val_transforms_list'), ovino_ir=self.runner.openvino_transform())
         self.val_loader = DataLoader(

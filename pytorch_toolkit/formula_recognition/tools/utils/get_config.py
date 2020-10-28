@@ -58,11 +58,12 @@ def get_config(config_path, section):
     with open(config_path, 'r') as f:
         config = yaml.load(f, Loader=yaml.SafeLoader)
         specific_config = config.get(section)
-        common_config = config.get("common")
+        common_config = config
         conflict_config_keys = set(specific_config.keys()) & set(common_config.keys())
         if conflict_config_keys:
             raise RuntimeError(
-                f"Error: the following config parameters are set both in {section} config and common config sections\n: {conflict_config_keys}")
+                f"Error: the following config parameters are set both in {section} config"
+                f"and common config sections\n: {conflict_config_keys}")
         specific_config.update(common_config)
     specific_config = {k: check_and_resolve_path(k, v) for k, v in specific_config.items()}
     return specific_config
