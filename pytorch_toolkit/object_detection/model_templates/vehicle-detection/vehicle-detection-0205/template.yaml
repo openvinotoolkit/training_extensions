@@ -58,4 +58,4 @@ metrics:
   value: 47.6
 gpu_num: 4
 tensorboard: true
-config: config.py
+config: model.py
