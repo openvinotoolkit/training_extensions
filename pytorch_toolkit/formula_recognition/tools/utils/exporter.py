@@ -133,7 +133,33 @@ class Exporter:
                        shell=True, check=True
                        )
 
-    def export_model_if_not_yet(self, model, model_type, ir=False):
+    def export_to_onnx_model_if_not_yet(self, model, model_type):
+        """Wrapper for _export_model_if_not_yet. Exports model to ONNX
+
+        Args:
+            model (str): Path to the model file
+            model_type (str): Encoder or decoder
+        """
+        self._export_model_if_not_yet(model, model_type, ir=False)
+
+    def export_to_ir_model_if_not_yet(self, model, model_type):
+        """Wrapper for _export_model_if_not_yet. Exports model to ONNX and to OpenVINO IR
+
+        Args:
+            model (str): Path to the model file
+            model_type (str): Encoder or decoder
+        """
+        self._export_model_if_not_yet(model, model_type, ir=False)
+        self._export_model_if_not_yet(model, model_type, ir=True)
+
+    def _export_model_if_not_yet(self, model, model_type, ir=False):
+        """Checks if given model file exists and if not runs model export
+
+        Args:
+            model (str): Path to the model file
+            model_type (str): encoder or decoder
+            ir (bool, optional): Export to OpenVINO IR. Defaults to False.
+        """
         assert model_type in ('encoder', 'decoder')
         result_model_exists = os.path.exists(model)
         if ir:
