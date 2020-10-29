@@ -21,17 +21,17 @@ from torch.utils.data import Dataset
 
 
 class CasiaSurfDataset(Dataset):
+    PROTOCOLS = {'train': 'train', 'dev': 'dev_ref', 'test': 'test_res'}
+
     def __init__(self, protocol: int, dir_: str = 'data/CASIA_SURF', mode: str = 'train', depth=False, ir=False,
                  transform=None):
         self.dir = dir_
         self.mode = mode
-        submode = {'train': 'train', 'dev': 'dev_ref',
-                   'test': 'test_res'}[mode]
+        submode = PROTOCOLS[mode]
         file_name = '4@{}_{}.txt'.format(protocol, submode)
         with open(os.path.join(dir_, file_name), 'r') as file:
-            lines = file.readlines()
             self.items = []
-            for line in lines:
+            for line in file:
                 if self.mode == 'train':
                     img_name, label = tuple(line[:-1].split(' '))
                     self.items.append(

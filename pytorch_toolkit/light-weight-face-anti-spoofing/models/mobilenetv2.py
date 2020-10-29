@@ -17,57 +17,9 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from .conv2d_cd import Conv2d_cd
-from .dropout import Dropout
+from .model_tools import *
 
 __all__ = ['mobilenetv2']
-
-def _make_divisible(v, divisor, min_value=None):
-    """
-    This function is taken from the original tf repo.
-    It ensures that all layers have a channel number that is divisible by 8
-    It can be seen here:
-    https://github.com/tensorflow/models/blob/master/research/slim/nets/mobilenet/mobilenet.py
-    :param v:
-    :param divisor:
-    :param min_value:
-    :return:
-    """
-    if min_value is None:
-        min_value = divisor
-    new_v = max(min_value, int(v + divisor / 2) // divisor * divisor)
-    # Make sure that round down does not go down by more than 10%.
-    if new_v < 0.9 * v:
-        new_v += divisor
-    return new_v
-
-def conv_3x3_bn(inp, oup, stride, theta):
-    return nn.Sequential(
-        Conv2d_cd(inp, oup, 3, stride, 1, bias=False, theta=theta),
-        nn.BatchNorm2d(oup),
-        nn.ReLU6(inplace=True)
-    )
-
-def conv_3x3_in(inp, oup, stride, theta):
-    return nn.Sequential(
-        Conv2d_cd(inp, oup, 3, stride, 1, bias=False, theta=theta),
-        nn.InstanceNorm2d(oup),
-        nn.ReLU6(inplace=True)
-    )
-
-def conv_1x1_bn(inp, oup):
-    return nn.Sequential(
-        nn.Conv2d(inp, oup, 1, 1, 0, bias=False),
-        nn.BatchNorm2d(oup),
-        nn.ReLU6(inplace=True)
-    )
-
-def conv_1x1_in(inp, oup):
-    return nn.Sequential(
-        nn.Conv2d(inp, oup, 1, 1, 0, bias=False),
-        nn.InstanceNorm2d(oup),
-        nn.ReLU6(inplace=True)
-    )
 
 
 class InvertedResidual(nn.Module):
@@ -110,16 +62,39 @@ class InvertedResidual(nn.Module):
             return self.dropout2d(self.conv(x))
 
 
-class MobileNetV2(nn.Module):
-    def __init__(self, width_mult=1., prob_dropout=0.1, type_dropout='bernoulli',
-                 prob_dropout_linear=0.5, embeding_dim=1280, mu=0.5, sigma=0.3,
-                 theta=0, multi_heads=True, scaling=1):
-        super().__init__()
+class MobileNetV2(MobileNet):
+    def __init__(self, cfgs, **kwargs):
+        super().__init__(**kwargs)
         # setting of inverted residual blocks
-        self.multi_heads = multi_heads
-        self.scaling = scaling
-        self.prob_dropout_linear = prob_dropout_linear
-        self.cfgs = [
+        self.cfgs = cfgs
+
+        # building first layer
+        input_channel = make_divisible(32 * self.width_mult, 4 if self.width_mult == 0.1 else 8)
+        layers = [conv_3x3_bn(3, input_channel, 2, theta=self.theta)]
+        # building inverted residual blocks
+        block = InvertedResidual
+        for t, c, n, s in self.cfgs:
+            output_channel = make_divisible(c * self.width_mult, 4 if self.width_mult == 0.1 else 8)
+            for i in range(n):
+                layers.append(block(input_channel, output_channel,
+                                    s if i == 0 else 1, t,
+                                    prob_dropout=self.prob_dropout,
+                                    type_dropout=self.type_dropout,
+                                    mu=self.mu, sigma=self.sigma, theta=self.theta))
+                input_channel = output_channel
+        self.features = nn.Sequential(*layers)
+        self.conv_last = conv_1x1_bn(input_channel, self.embeding_dim)
+
+    def forward(self, x):
+        x = super().make_features(x)
+        return x
+
+
+def mobilenetv2(**kwargs):
+    """
+    Constructs a MobileNetV2 model
+    """
+    cfgs = [
             # t, c, n, s
             [1,  16, 1, 1],
             [6,  24, 2, 2],
@@ -129,66 +104,4 @@ class MobileNetV2(nn.Module):
             [6, 160, 3, 2],
             [6, 320, 1, 1],
         ]
-
-        # building first layer
-        input_channel = _make_divisible(32 * width_mult, 4 if width_mult == 0.1 else 8)
-        layers = [conv_3x3_bn(3, input_channel, 2, theta=theta)]
-        # building inverted residual blocks
-        block = InvertedResidual
-        for t, c, n, s in self.cfgs:
-            output_channel = _make_divisible(c * width_mult, 4 if width_mult == 0.1 else 8)
-            for i in range(n):
-                layers.append(block(input_channel, output_channel,
-                                    s if i == 0 else 1, t,
-                                    prob_dropout=prob_dropout,
-                                    type_dropout=type_dropout,
-                                    mu=mu, sigma=sigma, theta=theta))
-                input_channel = output_channel
-        self.features = nn.Sequential(*layers)
-        # building last several layers
-        self.conv_last = conv_1x1_bn(input_channel, embeding_dim)
-        self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
-        self.spoofer = nn.Linear(embeding_dim, 2)
-        if self.multi_heads:
-            self.lightning = nn.Linear(embeding_dim, 5)
-            self.spoof_type = nn.Linear(embeding_dim, 11)
-            self.real_atr = nn.Linear(embeding_dim, 40)
-
-    def forward(self, x):
-        x = self.features(x)
-        x = self.conv_last(x)
-        return x
-
-    def forward_to_onnx(self,x):
-        x = self.features(x)
-        x = self.conv_last(x)
-        x = self.avgpool(x)
-        x = x.view(x.size(0), -1)
-        spoof_out = self.spoofer(x)
-        if isinstance(spoof_out, tuple):
-            spoof_out = spoof_out[0]
-        probab = F.softmax(spoof_out*self.scaling, dim=-1)
-        return probab
-
-    def make_logits(self, features):
-        output = self.avgpool(features)
-        output = output.view(output.size(0), -1)
-        spoof_out = self.spoofer(output)
-        if self.multi_heads:
-            type_spoof = self.spoof_type(output)
-            lightning_type = self.lightning(output)
-            real_atr = torch.sigmoid(self.real_atr(output))
-            return spoof_out, type_spoof, lightning_type, real_atr
-        return spoof_out
-
-    def spoof_task(self, features):
-        output = self.avgpool(features)
-        output = output.view(output.size(0), -1)
-        spoof_out = self.spoofer(output)
-        return spoof_out
-
-def mobilenetv2(**kwargs):
-    """
-    Constructs a MobileNet V2 model
-    """
-    return MobileNetV2(**kwargs)
+    return MobileNetV2(cfgs, **kwargs)

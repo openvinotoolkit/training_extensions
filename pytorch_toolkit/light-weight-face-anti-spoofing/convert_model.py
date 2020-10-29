@@ -27,8 +27,6 @@ def main():
                         help='path to configuration file')
     parser.add_argument('--model_path', type=str, default='MobileNetv3.onnx', required=False,
                         help='path where to save the model in onnx format')
-    parser.add_argument('--num_layers', type=int, default=16, required=False,
-                        help='number of the layers of your model to create required number of the input names')
     parser.add_argument('--img_size', type=tuple, default=(128,128), required=False,
                         help='height and width of the image to resize')
     parser.add_argument('--device', type=str, default='cuda',
@@ -63,8 +61,9 @@ def export_onnx(config, device='cuda:0', num_layers=16,
                     optimizer=None, strict=True)
     # convert model to onnx
     model.eval()
-    input_names = [ "actual_input_1" ] + [ "learned_%d" % i for i in range(num_layers) ]
-    output_names = [ "output1" ]
+
+    input_names = ["data"]
+    output_names = ["probs"]
     torch.onnx.export(model, dummy_input, save_path, verbose=True,
                       input_names=input_names, output_names=output_names)
 

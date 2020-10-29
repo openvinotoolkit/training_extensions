@@ -21,7 +21,7 @@ optimizer = dict(lr=0.005, momentum=0.9, weight_decay=5e-4)
 
 scheduler = dict(milestones=[20,40], gamma=0.2)
 
-data = dict( batch_size=256,
+data = dict(batch_size=256,
             data_loader_workers=4,
             sampler=None,
             pin_memory=True)
@@ -39,7 +39,6 @@ loss = dict(loss_type='amsoftmax',
                            smoothing=0.1,
                            ratio=[1,1],
                            gamma=0),
-
             soft_triple=dict(cN=2, K=10, s=1, tau=.2, m=0.35))
 
 epochs = dict(start_epoch=0, max_epoch=71)

@@ -54,8 +54,8 @@ class LccFasdDataset(Dataset):
             self.list_img = spoof_img_test + spoof_img_val + real_img_test + real_img_val
             self.labels = torch.cat((torch.ones(len(spoof_img_test)
                                                 + len(spoof_img_val), dtype=torch.long),
-                                        (torch.zeros(len(real_img_test)
-                                        + len(real_img_val), dtype=torch.long))))
+                                                (torch.zeros(len(real_img_test)
+                                                + len(real_img_val), dtype=torch.long))))
         else:
             spoof_img_train, real_img_train = self.get_train_img(self.root_dir)
             spoof_img_val, real_img_val =self. get_val_img(self.root_dir)
@@ -64,8 +64,8 @@ class LccFasdDataset(Dataset):
                                 + real_img_train + real_img_val + real_img_test)
             self.labels = torch.cat((torch.ones(len(spoof_img_train) + len(spoof_img_val)
                                                 + len(spoof_img_test), dtype=torch.long),
-                                        (torch.zeros(len(real_img_train) + len(real_img_val)
-                                         + len(real_img_test), dtype=torch.long))))
+                                                (torch.zeros(len(real_img_train) + len(real_img_val)
+                                                + len(real_img_test), dtype=torch.long))))
     def __len__(self):
         return self.labels.size(0)
 
@@ -80,7 +80,7 @@ class LccFasdDataset(Dataset):
             image = self.transform(label=y_label, img=image)['image']
         # [batch, channels, height, width]
         image = np.transpose(image, (2, 0, 1)).astype(np.float32)
-        return (torch.tensor(image), y_label)
+        return torch.tensor(image), y_label
 
     @staticmethod
     def get_val_img(root_dir):

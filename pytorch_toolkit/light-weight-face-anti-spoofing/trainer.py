@@ -134,7 +134,7 @@ class Trainer:
                 else:
                     model1 = self.model
 
-                output = model1.make_logits(features)
+                output = model1.make_logits(features, all=True)
                 if isinstance(output, tuple):
                     output = output[0]
 
@@ -184,14 +184,14 @@ class Trainer:
         If use rsc compute output applying rsc method'''
         assert target.shape[1] == 2
         if self.config.RSC.use_rsc:
-            # making features before avg pooling
+            # making features after avg pooling
             features = self.model(input_)
             if self.data_parallel:
                 model1 = self.model.module
             else:
                 model1 = self.model
-            # do everything after convolutions layers, strating with avg pooling
-            all_tasks_output = model1.make_logits(features)
+            # do everything after convolutions layers, strating after the avg pooling
+            all_tasks_output = model1.make_logits(features, all=True)
             logits = (all_tasks_output[0]
                       if self.config.multi_task_learning
                       else all_tasks_output)
@@ -212,11 +212,10 @@ class Trainer:
             quantile = quantile.reshape(input_.size(0),1,1,1)
             # create mask
             mask = gradients < quantile
-
             # element wise product of features and mask, correction for expectition value
             new_features = (features*mask)/(1-self.config.RSC.p)
             # compute new logits
-            new_logits = model1.spoof_task(new_features)
+            new_logits = model1.make_logits(new_features, all=False)
             if isinstance(new_logits, tuple):
                 new_logits = new_logits[0]
             # compute this operation batch wise
@@ -236,7 +235,7 @@ class Trainer:
                 model1 = self.model.module
             else:
                 model1 = self.model
-            output = model1.make_logits(features)
+            output = model1.make_logits(features, all=True)
             return output
 
     def multi_task_criterion(self, output: tuple, target: torch.tensor,

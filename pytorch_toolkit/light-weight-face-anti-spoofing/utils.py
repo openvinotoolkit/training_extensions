@@ -85,7 +85,7 @@ def load_checkpoint(checkpoint_path, net, map_location, optimizer=None, load_opt
         unloaded = net.load_state_dict(checkpoint, strict=strict)
         missing_keys, unexpected_keys = (', '.join(i) for i in unloaded)
     if missing_keys or unexpected_keys:
-        logging.warning(f'NEXT KEYS HAVE NOT BEEN LOADED:\n\nmissing keys: {missing_keys}\
+        logging.warning(f'THE FOLLOWING KEYS HAVE NOT BEEN LOADED:\n\nmissing keys: {missing_keys}\
             \n\nunexpected keys: {unexpected_keys}\n')
         print('proceed traning ...')
     if load_optimizer:

@@ -14,7 +14,7 @@
 import argparse
 
 import albumentations as A
-import cv2
+import cv2 as cv
 import torch
 from torch.utils.data import DataLoader
 from tqdm import tqdm
@@ -32,7 +32,7 @@ def main():
     args = parser.parse_args()
     # transform image
     transforms = A.Compose([
-                                A.Resize(*args.img_size, interpolation=cv2.INTER_CUBIC),
+                                A.Resize(*args.img_size, interpolation=cv.INTER_CUBIC),
                                 A.Normalize(mean=[0, 0, 0], std=[1, 1, 1])
                                 ])
     root_folder = args.root

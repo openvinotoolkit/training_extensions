@@ -62,9 +62,9 @@ def main():
     # preprocessing, making dataset and loader
     normalize = A.Normalize(**config.img_norm_cfg)
     test_transform = A.Compose([
-                A.Resize(**config.resize, interpolation=cv.INTER_CUBIC),
-                normalize
-                ])
+                                A.Resize(**config.resize, interpolation=cv.INTER_CUBIC),
+                                normalize
+                               ])
     test_transform = Transform(val=test_transform)
     test_dataset = make_dataset(config, val_transform=test_transform, mode='eval')
     test_loader = DataLoader(dataset=test_dataset, batch_size=100, shuffle=True, num_workers=2)
