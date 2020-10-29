@@ -23,6 +23,7 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o /go/bin/d
 # STEP 2 build a small image
 ############################
 FROM scratch
+ENV NO_PROXY="cvat"
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 # Copy our static executable.
 COPY --from=builder /go/bin/domains/cvat_task /go/bin/domains/cvat_task
