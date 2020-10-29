@@ -53,6 +53,7 @@ def create_test_case(problem_name, model_name, ann_file, img_root):
             download_if_not_yet(cls.work_dir, cls.dependencies['snapshot'])
 
         def test_evaluation(self):
+            print ("\n\nrun eval!!!!!\n\n")
             run_through_shell(
                 f'cd {os.path.dirname(self.template_file)};'
                 f'python {self.dependencies["eval"]}'
