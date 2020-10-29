@@ -55,7 +55,7 @@ class VehicleDetection0203TestCase(
             'vehicle-detection-0203',
             '../../../../../data/crossroad_vehicle/vehicle_annotation_val.json',
             '../../../../../data/crossroad_vehicle/val',
-            True)
+            False)
 ):
     """ Test case for vehicle-detection-0230 model export. """
 
