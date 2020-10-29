@@ -15,37 +15,37 @@
 from common.test_case import create_test_case
 
 
-class VehicleDetection0200TestCase(
-        create_test_case(
-            'vehicle-detection',
-            'vehicle-detection-0200',
-            '../../../../../data/crossroad_vehicle/vehicle_annotation_train.json',
-            '../../../../../data/crossroad_vehicle/train'
-        )
-):
-    """ Test case for vehicle-detection-0200 model. """
+# class VehicleDetection0200TestCase(
+#         create_test_case(
+#             'vehicle-detection',
+#             'vehicle-detection-0200',
+#             '../../../../../data/crossroad_vehicle/vehicle_annotation_train.json',
+#             '../../../../../data/crossroad_vehicle/train'
+#         )
+# ):
+#     """ Test case for vehicle-detection-0200 model. """
 
 
-class VehicleDetection0201TestCase(
-        create_test_case(
-            'vehicle-detection',
-            'vehicle-detection-0201',
-            '../../../../../data/crossroad_vehicle/vehicle_annotation_train.json',
-            '../../../../../data/crossroad_vehicle/train'
-        )
-):
-    """ Test case for vehicle-detection-0201 model. """
+# class VehicleDetection0201TestCase(
+#         create_test_case(
+#             'vehicle-detection',
+#             'vehicle-detection-0201',
+#             '../../../../../data/crossroad_vehicle/vehicle_annotation_train.json',
+#             '../../../../../data/crossroad_vehicle/train'
+#         )
+# ):
+#     """ Test case for vehicle-detection-0201 model. """
 
 
-class VehicleDetection0202TestCase(
-        create_test_case(
-            'vehicle-detection',
-            'vehicle-detection-0202',
-            '../../../../../data/crossroad_vehicle/vehicle_annotation_train.json',
-            '../../../../../data/crossroad_vehicle/train'
-        )
-):
-    """ Test case for vehicle-detection-0202 model. """
+# class VehicleDetection0202TestCase(
+#         create_test_case(
+#             'vehicle-detection',
+#             'vehicle-detection-0202',
+#             '../../../../../data/crossroad_vehicle/vehicle_annotation_train.json',
+#             '../../../../../data/crossroad_vehicle/train'
+#         )
+# ):
+#     """ Test case for vehicle-detection-0202 model. """
 
 class VehicleDetection0203TestCase(
         create_test_case(
@@ -58,23 +58,23 @@ class VehicleDetection0203TestCase(
     """ Test case for vehicle-detection-0203 model. """
 
 
-class VehicleDetection0204TestCase(
-        create_test_case(
-            'vehicle-detection',
-            'vehicle-detection-0204',
-            '../../../../../data/crossroad_vehicle/vehicle_annotation_train.json',
-            '../../../../../data/crossroad_vehicle/train'
-        )
-):
-    """ Test case for vehicle-detection-0204 model. """
+# class VehicleDetection0204TestCase(
+#         create_test_case(
+#             'vehicle-detection',
+#             'vehicle-detection-0204',
+#             '../../../../../data/crossroad_vehicle/vehicle_annotation_train.json',
+#             '../../../../../data/crossroad_vehicle/train'
+#         )
+# ):
+#     """ Test case for vehicle-detection-0204 model. """
 
 
-class VehicleDetection0205TestCase(
-        create_test_case(
-            'vehicle-detection',
-            'vehicle-detection-0205',
-            '../../../../../data/crossroad_vehicle/vehicle_annotation_train.json',
-            '../../../../../data/crossroad_vehicle/train'
-        )
-):
-    """ Test case for vehicle-detection-0205 model. """
+# class VehicleDetection0205TestCase(
+#         create_test_case(
+#             'vehicle-detection',
+#             'vehicle-detection-0205',
+#             '../../../../../data/crossroad_vehicle/vehicle_annotation_train.json',
+#             '../../../../../data/crossroad_vehicle/train'
+#         )
+# ):
+#     """ Test case for vehicle-detection-0205 model. """
