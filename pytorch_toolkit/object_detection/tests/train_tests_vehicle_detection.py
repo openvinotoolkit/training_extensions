@@ -37,15 +37,15 @@ from common.test_case import create_test_case
 #     """ Test case for vehicle-detection-0201 model. """
 
 
-# class VehicleDetection0202TestCase(
-#         create_test_case(
-#             'vehicle-detection',
-#             'vehicle-detection-0202',
-#             '../../../../../data/crossroad_vehicle/vehicle_annotation_train.json',
-#             '../../../../../data/crossroad_vehicle/train'
-#         )
-# ):
-#     """ Test case for vehicle-detection-0202 model. """
+class VehicleDetection0202TestCase(
+        create_test_case(
+            'vehicle-detection',
+            'vehicle-detection-0202',
+            '../../../../../data/crossroad_vehicle/vehicle_annotation_train.json',
+            '../../../../../data/crossroad_vehicle/train'
+        )
+):
+    """ Test case for vehicle-detection-0202 model. """
 
 class VehicleDetection0203TestCase(
         create_test_case(
