@@ -1,6 +1,6 @@
 model = dict(
     type='CascadeRCNN',
-    # pretrained='torchvision://resnet34',
+    pretrained='torchvision://resnet34',
     backbone=dict(
         type='ResNet',
         depth=34,
@@ -218,26 +218,26 @@ data = dict(
         times=5,
         dataset=dict(
             type=dataset_type,
-            classes=('bg', 'vehicle',),
+            classes=('vehicle',),
             ann_file='data/annotations/instances_train2017car.json',
             img_prefix='data/train2017',
             min_size=20,
             pipeline=train_pipeline)),
     val=dict(
         type=dataset_type,
-        classes=('bg', 'vehicle',),
+        classes=('vehicle',),
         ann_file='data/annotations/instances_val2017car.json',
         img_prefix='data/val2017',
         test_mode=True,
         pipeline=test_pipeline),
     test=dict(
         type=dataset_type,
-        classes=('bg', 'vehicle',),
+        classes=('vehicle',),
         ann_file='data/annotations/instances_val2017car.json',
         img_prefix='data/val2017',
         test_mode=True,
         pipeline=test_pipeline))
-evaluation = dict(interval=12, metric='bbox')
+evaluation = dict(interval=1, metric='bbox')
 optimizer = dict(type='SGD', lr=0.02, momentum=0.9, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 lr_config = dict(
