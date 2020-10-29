@@ -16,37 +16,37 @@
 from common.test_case import create_export_test_case
 
 
-# class VehicleDetection0200TestCase(
-#         create_export_test_case(
-#             'vehicle-detection',
-#             'vehicle-detection-0200',
-#             '../../../../../data/crossroad_vehicle/vehicle_annotation_val.json',
-#             '../../../../../data/crossroad_vehicle/val',
-#             True)
-# ):
-#     """ Test case for vehicle-detection-0200 model export. """
+class VehicleDetection0200TestCase(
+        create_export_test_case(
+            'vehicle-detection',
+            'vehicle-detection-0200',
+            '../../../../../data/crossroad_vehicle/vehicle_annotation_val.json',
+            '../../../../../data/crossroad_vehicle/val',
+            True)
+):
+    """ Test case for vehicle-detection-0200 model export. """
 
 
-# class VehicleDetection0201TestCase(
-#         create_export_test_case(
-#             'vehicle-detection',
-#             'vehicle-detection-0201',
-#             '../../../../../data/crossroad_vehicle/vehicle_annotation_val.json',
-#             '../../../../../data/crossroad_vehicle/val',
-#             True)
-# ):
-#     """ Test case for vehicle-detection-0201 model export. """
+class VehicleDetection0201TestCase(
+        create_export_test_case(
+            'vehicle-detection',
+            'vehicle-detection-0201',
+            '../../../../../data/crossroad_vehicle/vehicle_annotation_val.json',
+            '../../../../../data/crossroad_vehicle/val',
+            True)
+):
+    """ Test case for vehicle-detection-0201 model export. """
 
 
-# class VehicleDetection0202TestCase(
-#         create_export_test_case(
-#             'vehicle-detection',
-#             'vehicle-detection-0202',
-#             '../../../../../data/crossroad_vehicle/vehicle_annotation_val.json',
-#             '../../../../../data/crossroad_vehicle/val',
-#             True)
-# ):
-#     """ Test case for vehicle-detection-0202 model export. """
+class VehicleDetection0202TestCase(
+        create_export_test_case(
+            'vehicle-detection',
+            'vehicle-detection-0202',
+            '../../../../../data/crossroad_vehicle/vehicle_annotation_val.json',
+            '../../../../../data/crossroad_vehicle/val',
+            True)
+):
+    """ Test case for vehicle-detection-0202 model export. """
 
 
 class VehicleDetection0203TestCase(
@@ -60,15 +60,15 @@ class VehicleDetection0203TestCase(
     """ Test case for vehicle-detection-0230 model export. """
 
 
-# class VehicleDetection0204TestCase(
-#         create_export_test_case(
-#             'vehicle-detection',
-#             'vehicle-detection-0204',
-#             '../../../../../data/crossroad_vehicle/vehicle_annotation_val.json',
-#             '../../../../../data/crossroad_vehicle/val',
-#             True)
-# ):
-#     """ Test case for vehicle-detection-0204 model export. """
+class VehicleDetection0204TestCase(
+        create_export_test_case(
+            'vehicle-detection',
+            'vehicle-detection-0204',
+            '../../../../../data/crossroad_vehicle/vehicle_annotation_val.json',
+            '../../../../../data/crossroad_vehicle/val',
+            False)
+):
+    """ Test case for vehicle-detection-0204 model export. """
 
 
 # # class VehicleDetection0205TestCase(

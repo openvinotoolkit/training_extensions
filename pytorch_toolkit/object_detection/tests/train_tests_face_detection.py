@@ -15,67 +15,67 @@
 from common.test_case import create_test_case
 
 
-# class FaceDetection0200TestCase(
-#         create_test_case(
-#             'face-detection',
-#             'face-detection-0200',
-#             '../../../../../data/airport/annotation_faces_train.json',
-#             '../../../../../data/airport/'
-#         )
-# ):
-#     """ Test case for face-detection-0200 model. """
+class FaceDetection0200TestCase(
+        create_test_case(
+            'face-detection',
+            'face-detection-0200',
+            '../../../../../data/airport/annotation_faces_train.json',
+            '../../../../../data/airport/'
+        )
+):
+    """ Test case for face-detection-0200 model. """
 
 
-# class FaceDetection0202TestCase(
-#         create_test_case(
-#             'face-detection',
-#             'face-detection-0202',
-#             '../../../../../data/airport/annotation_faces_train.json',
-#             '../../../../../data/airport/'
-#         )
-# ):
-#     """ Test case for face-detection-0202 model. """
+class FaceDetection0202TestCase(
+        create_test_case(
+            'face-detection',
+            'face-detection-0202',
+            '../../../../../data/airport/annotation_faces_train.json',
+            '../../../../../data/airport/'
+        )
+):
+    """ Test case for face-detection-0202 model. """
 
 
-# class FaceDetection0204TestCase(
-#         create_test_case(
-#             'face-detection',
-#             'face-detection-0204',
-#             '../../../../../data/airport/annotation_faces_train.json',
-#             '../../../../../data/airport/'
-#         )
-# ):
-#     """ Test case for face-detection-0204 model. """
+class FaceDetection0204TestCase(
+        create_test_case(
+            'face-detection',
+            'face-detection-0204',
+            '../../../../../data/airport/annotation_faces_train.json',
+            '../../../../../data/airport/'
+        )
+):
+    """ Test case for face-detection-0204 model. """
 
 
-# class FaceDetection0205TestCase(
-#         create_test_case(
-#             'face-detection',
-#             'face-detection-0205',
-#             '../../../../../data/airport/annotation_faces_train.json',
-#             '../../../../../data/airport/'
-#         )
-# ):
-#     """ Test case for face-detection-0205 model. """
+class FaceDetection0205TestCase(
+        create_test_case(
+            'face-detection',
+            'face-detection-0205',
+            '../../../../../data/airport/annotation_faces_train.json',
+            '../../../../../data/airport/'
+        )
+):
+    """ Test case for face-detection-0205 model. """
 
 
-# class FaceDetection0206TestCase(
-#         create_test_case(
-#             'face-detection',
-#             'face-detection-0206',
-#             '../../../../../data/airport/annotation_faces_train.json',
-#             '../../../../../data/airport/'
-#         )
-# ):
-#     """ Test case for face-detection-0206 model. """
+class FaceDetection0206TestCase(
+        create_test_case(
+            'face-detection',
+            'face-detection-0206',
+            '../../../../../data/airport/annotation_faces_train.json',
+            '../../../../../data/airport/'
+        )
+):
+    """ Test case for face-detection-0206 model. """
 
 
-# class FaceDetection0207TestCase(
-#         create_test_case(
-#             'face-detection',
-#             'face-detection-0207',
-#             '../../../../../data/airport/annotation_faces_train.json',
-#             '../../../../../data/airport/'
-#         )
-# ):
-#     """ Test case for face-detection-0207 model. """
+class FaceDetection0207TestCase(
+        create_test_case(
+            'face-detection',
+            'face-detection-0207',
+            '../../../../../data/airport/annotation_faces_train.json',
+            '../../../../../data/airport/'
+        )
+):
+    """ Test case for face-detection-0207 model. """

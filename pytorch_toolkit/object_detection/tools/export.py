@@ -28,7 +28,7 @@ from oteod import MMDETECTION_TOOLS
 args = vars(export_args_parser(MODEL_TEMPLATE_FILENAME).parse_args())
 
 if args['openvino']:
-    run(f'python {os.path.join(MMDETECTION_TOOLS, "export.py")} '
+    run(f'python3 {os.path.join(MMDETECTION_TOOLS, "export.py")} '
         f'{args["config"]} '
         f'{args["load_weights"]} '
         f'{args["save_model_to"]} '
@@ -41,9 +41,8 @@ if args['openvino']:
     with open(MODEL_TEMPLATE_FILENAME) as read_file:
         config = Config.fromfile(yaml.load(read_file, yaml.SafeLoader)['config'])
         if hasattr(config.model, 'bbox_head'):
-            print("We have bbox_head")
             if config.model.bbox_head.type == 'SSDHead':
-                run(f'python {os.path.join(MMDETECTION_TOOLS, "export.py")} '
+                run(f'python3 {os.path.join(MMDETECTION_TOOLS, "export.py")} '
                     f'{args["config"]} '
                     f'{args["load_weights"]} '
                     f'{os.path.join(args["save_model_to"], "alt_ssd_export")} '
@@ -54,7 +53,7 @@ if args['openvino']:
                     check=True)
 
 if args['onnx']:
-    run(f'python {os.path.join(MMDETECTION_TOOLS, "export.py")} '
+    run(f'python3 {os.path.join(MMDETECTION_TOOLS, "export.py")} '
         f'{args["config"]} '
         f'{args["load_weights"]} '
         f'{args["save_model_to"]} '

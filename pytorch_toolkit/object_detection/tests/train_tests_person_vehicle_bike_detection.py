@@ -15,34 +15,34 @@
 from common.test_case import create_test_case
 
 
-# class PersonVehicleBikeDetection2000TestCase(
-#         create_test_case(
-#             'person-vehicle-bike-detection',
-#             'person-vehicle-bike-detection-2000',
-#             '../../../../../data/airport/annotation_example_train.json',
-#             '../../../../../data/airport/train'
-#         )
-# ):
-#     """ Test case for person-vehicle-bike-detection-2000 model. """
+class PersonVehicleBikeDetection2000TestCase(
+        create_test_case(
+            'person-vehicle-bike-detection',
+            'person-vehicle-bike-detection-2000',
+            '../../../../../data/airport/annotation_example_train.json',
+            '../../../../../data/airport/train'
+        )
+):
+    """ Test case for person-vehicle-bike-detection-2000 model. """
 
 
-# class PersonVehicleBikeDetection2001TestCase(
-#         create_test_case(
-#             'person-vehicle-bike-detection',
-#             'person-vehicle-bike-detection-2001',
-#             '../../../../../data/airport/annotation_example_train.json',
-#             '../../../../../data/airport/train'
-#         )
-# ):
-#     """ Test case for person-vehicle-bike-detection-2001 model. """
+class PersonVehicleBikeDetection2001TestCase(
+        create_test_case(
+            'person-vehicle-bike-detection',
+            'person-vehicle-bike-detection-2001',
+            '../../../../../data/airport/annotation_example_train.json',
+            '../../../../../data/airport/train'
+        )
+):
+    """ Test case for person-vehicle-bike-detection-2001 model. """
 
 
-# class PersonVehicleBikeDetection2002TestCase(
-#         create_test_case(
-#             'person-vehicle-bike-detection',
-#             'person-vehicle-bike-detection-2002',
-#             '../../../../../data/airport/annotation_example_train.json',
-#             '../../../../../data/airport/train'
-#         )
-# ):
-#     """ Test case for person-vehicle-bike-detection-2002 model. """
+class PersonVehicleBikeDetection2002TestCase(
+        create_test_case(
+            'person-vehicle-bike-detection',
+            'person-vehicle-bike-detection-2002',
+            '../../../../../data/airport/annotation_example_train.json',
+            '../../../../../data/airport/train'
+        )
+):
+    """ Test case for person-vehicle-bike-detection-2002 model. """
