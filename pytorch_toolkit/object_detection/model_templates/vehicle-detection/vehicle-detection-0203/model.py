@@ -237,7 +237,7 @@ data = dict(
         img_prefix='data/val2017',
         test_mode=True,
         pipeline=test_pipeline))
-evaluation = dict(interval=12, metric='bbox')
+evaluation = dict(interval=1, metric='bbox')
 optimizer = dict(type='SGD', lr=0.02, momentum=0.9, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 lr_config = dict(
