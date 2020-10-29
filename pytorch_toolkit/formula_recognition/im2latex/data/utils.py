@@ -32,7 +32,7 @@ class TransformResizePad:
     (if resized image's shape is not equal to target shape)
     """
 
-    def __init__(self, target_shape, **kwargs):
+    def __init__(self, target_shape):
         self.target_shape = target_shape
 
     def __repr__(self):
@@ -62,7 +62,7 @@ class TransformCropPad:
     and save original aspect ratio and pad (if resized image's shape is not equal to target shape)
     """
 
-    def __init__(self, target_shape, **kwargs):
+    def __init__(self, target_shape):
         self.target_shape = target_shape
 
     def __repr__(self):
@@ -90,7 +90,7 @@ class TransformPad:
     """Random pad batch of images
     """
 
-    def __init__(self, pad_l=50, pad_r=50, pad_b=20, pad_t=20, **kwargs):
+    def __init__(self, pad_l=50, pad_r=50, pad_b=20, pad_t=20):
         self.pad_l = pad_l
         self.pad_r = pad_r
         self.pad_b = pad_b
@@ -126,7 +126,7 @@ class TransformPad:
 
 
 class TransformToTensor:
-    def __call__(self, imgs, **kwargs):
+    def __call__(self, imgs):
         if not isinstance(imgs, list):
             imgs = [imgs]
         return [ToTensor()(img) for img in imgs]
@@ -137,7 +137,7 @@ class TransformOvinoIR:
     cast input array to [0, 1] range
     """
 
-    def __call__(self, imgs, **kwargs):
+    def __call__(self, imgs):
         if not isinstance(imgs, list):
             imgs = [imgs]
         imgs = [np.transpose(img, [2, 0, 1]) for img in imgs]
@@ -145,7 +145,7 @@ class TransformOvinoIR:
 
 
 class TransformBlur:
-    def __init__(self, sigmaX=1.15, **kwargs):
+    def __init__(self, sigmaX=1.15):
         self.sigmaX = sigmaX
 
     def __repr__(self):
@@ -161,7 +161,7 @@ class TransformShift:
     """Shift formula randomly on x and y from a set range
     """
 
-    def __init__(self, shift_x, shift_y, **kwargs):
+    def __init__(self, shift_x, shift_y):
         self.shift_x = shift_x
         self.shift_y = shift_y
 
@@ -183,7 +183,7 @@ class TransformRandomNoise:
     """Add random noise to batch of images
     """
 
-    def __init__(self, intensity, **kwargs):
+    def __init__(self, intensity):
         self.intensity = intensity
 
     def __repr__(self):
@@ -203,7 +203,7 @@ class TransformRandomNoise:
 
 
 class TransformResize:
-    def __init__(self, target_shape, **kwargs):
+    def __init__(self, target_shape):
         self.target_shape = target_shape
 
     def __repr__(self):
@@ -220,7 +220,7 @@ class TransformErosion:
     """Morphologic erosion
     """
 
-    def __init__(self, kernel_size=3, iterations=1, **kwargs):
+    def __init__(self, kernel_size=3, iterations=1):
         self.iterations = iterations
         self.kernel = np.ones((kernel_size, kernel_size), np.uint8)
 
@@ -239,7 +239,7 @@ class TransformRandomBolding:
     after applying binarization on them
     """
 
-    def __init__(self, kernel_size=3, iterations=1, threshold=160, res_threshold=190, sigmaX=0.8, distr=0.7, **kwargs):
+    def __init__(self, kernel_size=3, iterations=1, threshold=160, res_threshold=190, sigmaX=0.8, distr=0.7):
         self.iterations = iterations
         self.threshold = threshold
         self.res_threshold = res_threshold
@@ -293,7 +293,7 @@ class TransformDilation:
     """Morphologic dilation
     """
 
-    def __init__(self, kernel_size=3, iterations=3, **kwargs):
+    def __init__(self, kernel_size=3, iterations=3):
         self.iterations = iterations
         self.kernel = np.ones((kernel_size, kernel_size), np.uint8)
 
@@ -307,7 +307,7 @@ class TransformDilation:
 
 
 class TransformBin:
-    def __init__(self, threshold, **kwargs):
+    def __init__(self, threshold):
         self.transform = cv.threshold
         self.thresh_type = cv.THRESH_BINARY
         self.threshold = threshold
@@ -323,7 +323,7 @@ class TransformBin:
 
 
 class TransformAdaptiveBin:
-    def __init__(self, threshold, block_size, method=cv.ADAPTIVE_THRESH_MEAN_C, mean_c=10, **kwargs):
+    def __init__(self, threshold, block_size, method=cv.ADAPTIVE_THRESH_MEAN_C, mean_c=10):
         self.method = method
         self.block_size = block_size
         self.C = mean_c
@@ -344,7 +344,7 @@ class TransformAdaptiveBin:
 
 
 class TransformRescale:
-    def __init__(self, scale_min, scale_max, **kwargs):
+    def __init__(self, scale_min, scale_max):
         self.scale_min = scale_min
         self.scale_max = scale_max
 
@@ -361,7 +361,7 @@ class TransformRescale:
 
 
 class TransformRotate:
-    def __init__(self, angle, **kwargs):
+    def __init__(self, angle):
         self.angle = angle
 
     def __repr__(self):
@@ -454,7 +454,8 @@ def create_list_of_transforms(transforms_list, ovino_ir=False):
     transforms = []
     if transforms_list:
         for transform in transforms_list:
-            transforms.append(TRANSFORMS[transform['name']](**transform))
+            transform_name = transform.pop('name')
+            transforms.append(TRANSFORMS[transform_name](**transform))
     if ovino_ir:
         transforms.append(TransformOvinoIR())
     else:
