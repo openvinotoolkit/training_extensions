@@ -78,7 +78,7 @@ python tools/train.py --config configs/medium_config.yml --work_dir <path to wor
 Work dir is used to store information about learning: saved model checkpoints, logs.
 
 ### Description of possible options in config:
-The config file is divided into 5 sections: common, train, eval, export, demo. Common parameters (like path to the model) are stored, respectively, in common section. Unique parameters (like learning rate) are stored in other specific sections. Unique parameters and common parameters are mutually exclusive.
+The config file is divided into 4 sections: train, eval, export, demo. Common parameters (like path to the model) are stored on the same level as train and other sections. Unique parameters (like learning rate) are stored in specific sections. Unique parameters and common parameters are mutually exclusive.
 > **Note**: All values in the config file which have 'path' in their name will be treated as paths and the script which reads configuration will try to resolve all relative paths. By default all relative paths are resolved relatively to the folder where this README.md file is placed. Keep this in mind or use full paths.
 #### Common parameters:
 - `backbone_config`:
@@ -107,7 +107,9 @@ In addition to common parameters you can specify the following arguments:
 - `optimizer` - Adam or SGD
 - `save_dir` - dir to save checkpoints
 - `train_paths` - list of paths from where to get training data (if more than one path is specified, datasets are concatenated). If one wants to concatenate more than one instance of the desirable dataset, this dataset should be specified several times.
+- `train_ann_file` - path to train annotation file with `file_name <\t> formula_number`
 - `val_path` - path to the validation data
+- `val_ann_file` - the same as `train_ann_file`
 - `train_transforms_list` - similar to `val_transforms_list`
 - `epochs` - number of epochs to train
 
@@ -140,9 +142,8 @@ Sample images in the [data](../../data) section of this repo are already preproc
 
 
 #### Evaluation-specific parameters
-- `split_file` - name of the file with labels (note: physical file name should end with `_filter.lst`). Default is `validate`
-- `target_metric` - target value of the metric. Used in tests. For test to pass, result value should be greater or equal than `target_metric`
-- `val_path` - path to the validation data
+- `test_path` - path to the test data
+- `test_ann_file` - path to the test annotation file. The same as `train_ann_file`
 
 #### Demo-specific parameters
 - `transforms_list` - list of image transformations (optional)
@@ -151,10 +152,9 @@ Sample images in the [data](../../data) section of this repo are already preproc
 These parameters are used for model export to ONNX & OpenVINO™ IR:
 - `res_encoder_name` - filename to save the converted encoder model (with `.onnx` postfix)
 - `res_decoder_name` - filename to save the converted decoder model (with `.onnx` postfix)
-- `input_shape_decoder` - list of dimensions describing input shape for encoder for OpenVINO IR conversion.
 - `export_ir` - Set this flag to `true` to export model to the OpenVINO IR. For details refer to [convert to IR section](#convert-to-ir)
 - `verbose_export` - Set this flag to `true` to perform verbose export (i.e. print model optimizer commands to terminal)
-- `test_image` - image for ??????
+- `input_shape_decoder` - list of dimensions describing input shape for encoder for OpenVINO IR conversion.
 
 
 ## Evaluation
