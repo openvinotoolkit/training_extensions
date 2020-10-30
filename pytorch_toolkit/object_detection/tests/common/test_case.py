@@ -15,11 +15,10 @@
 import json
 import os
 import unittest
-import tempfile
 
 import yaml
 
-from common.utils import download_if_not_yet, collect_ap, run_through_shell
+from common.utils import collect_ap, run_through_shell
 
 
 def get_dependencies(template_file):
