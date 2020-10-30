@@ -71,12 +71,12 @@ class VehicleDetection0204TestCase(
     """ Test case for vehicle-detection-0204 model export. """
 
 
-class VehicleDetection0205TestCase(
-        create_export_test_case(
-            'vehicle-detection',
-            'vehicle-detection-0205',
-            '../../../../../data/crossroad_vehicle/vehicle_annotation_val.json',
-            '../../../../../data/crossroad_vehicle/val',
-            False)
-):
-    """ Test case for vehicle-detection-0205 model export. """
+# class VehicleDetection0205TestCase(
+#         create_export_test_case(
+#             'vehicle-detection',
+#             'vehicle-detection-0205',
+#             '../../../../../data/crossroad_vehicle/vehicle_annotation_val.json',
+#             '../../../../../data/crossroad_vehicle/val',
+#             False)
+# ):
+#     """ Test case for vehicle-detection-0205 model export. """
