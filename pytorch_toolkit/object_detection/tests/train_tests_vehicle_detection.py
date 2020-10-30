@@ -45,7 +45,7 @@ class VehicleDetection0202TestCase(
             '../../../../../data/crossroad_vehicle/train'
         )
 ):
-   """ Test case for vehicle-detection-0202 model. """
+    """ Test case for vehicle-detection-0202 model. """
 
 class VehicleDetection0203TestCase(
         create_test_case(
