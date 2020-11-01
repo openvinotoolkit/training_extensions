@@ -199,7 +199,7 @@ class MobileNet(nn.Module):
             self.spoof_type = nn.Linear(embeding_dim, 11)
             self.real_atr = nn.Linear(embeding_dim, 40)
 
-    def make_features(self, x):
+    def forward(self, x):
         x = self.features(x)
         x = self.conv_last(x)
         x = self.avgpool(x)
@@ -217,7 +217,7 @@ class MobileNet(nn.Module):
         return spoof_out
 
     def forward_to_onnx(self,x):
-        x = self.make_features(x)
+        x = self.forward(x)
         x = x.view(x.size(0), -1)
         spoof_out = self.spoofer(x)
         if isinstance(spoof_out, tuple):

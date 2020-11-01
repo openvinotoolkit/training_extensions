@@ -131,9 +131,6 @@ class MobileNetV3(MobileNet):
                 nn.Linear(self.embeding_dim, 40),
             )
 
-    def forward(self, x):
-        x = super().make_features(x)
-        return x
 
 def mobilenetv3_large(**kwargs):
     """

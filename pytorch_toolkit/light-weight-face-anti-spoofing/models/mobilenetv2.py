@@ -85,10 +85,6 @@ class MobileNetV2(MobileNet):
         self.features = nn.Sequential(*layers)
         self.conv_last = conv_1x1_bn(input_channel, self.embeding_dim)
 
-    def forward(self, x):
-        x = super().make_features(x)
-        return x
-
 
 def mobilenetv2(**kwargs):
     """
