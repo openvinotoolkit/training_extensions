@@ -78,7 +78,7 @@ def main():
 
             correct += 1 if predicted == expected else 0
 
-            if args.show and predicted != expected:
+            if args.show:
                 image = np.reshape(images_batch, [image_height, image_width, -1]).astype(np.uint8)
                 cv2.imshow('image', image)
                 print('pr, gt', predicted, expected)
