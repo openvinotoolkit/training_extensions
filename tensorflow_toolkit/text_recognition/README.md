@@ -17,7 +17,7 @@ Models code is designed to enable export to frozen graph and inference on CPU vi
 
 1. Create virtual environment:
     ```bash
-    virtualenv venv -p python3.7 --prompt="(tr)"
+    virtualenv venv -p python3 --prompt="(tr)"
     ```
 
 2. Activate virtual environment and setup OpenVINO™ variables:
