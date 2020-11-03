@@ -9,10 +9,10 @@ model_path: model_checkpoints/polynomials_handwritten_0166.pth
 device: cuda
 vocab_path: vocabs/vocab_handwritten_polynomials.json
 val_transforms_list:
-  - name: TransformCropPad
+  - name: TransformResize
     target_shape:
       - 96
-      - 1024
+      - 990
 train:
   batch_size: 4
   learning_rate: 0.000001
@@ -38,4 +38,4 @@ export:
     - 1
     - 3
     - 96
-    - 1024
+    - 990
