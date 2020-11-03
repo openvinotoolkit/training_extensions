@@ -6,12 +6,13 @@
 import {Component, Inject, OnDestroy, OnInit} from '@angular/core';
 import {FormBuilder, FormGroup, Validators} from '@angular/forms';
 import {MAT_DIALOG_DATA} from '@angular/material/dialog';
-import {IAbstractList, IBuild, IModel} from '@idlp/root/models';
+import {IAbstractList} from '@idlp/root/models';
 import {Observable, of, Subject} from 'rxjs';
 import {filter, startWith, takeUntil} from 'rxjs/operators';
 import {WS} from '@idlp/root/ws.events';
 import {WebsocketService} from '@idlp/providers/websocket.service';
 import {ActivatedRoute} from '@angular/router';
+import {IBuild, IModel} from '@idlp/routed/problem-info/problem-info.models';
 
 @Component({
   selector: 'idlp-fine-tune-dialog',

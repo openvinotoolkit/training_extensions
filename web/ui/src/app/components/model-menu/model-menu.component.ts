@@ -4,8 +4,9 @@
  */
 
 import {Component, EventEmitter, Input, Output, ViewChild} from '@angular/core';
-import {MatMenu} from "@angular/material/menu";
-import {IModel} from "@idlp/root/models";
+import {MatMenu} from '@angular/material/menu';
+import {IModel} from '@idlp/routed/problem-info/problem-info.models';
+
 
 @Component({
   selector: 'idlp-model-menu',

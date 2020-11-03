@@ -12,7 +12,7 @@ import {ActivatedRoute} from '@angular/router';
 import {environment} from '@environments/environment';
 import {IdlpFineTuneDialogComponent} from '@idlp/components/fine-tune-dialog/fine-tune-dialog.component';
 import {WebsocketService} from '@idlp/providers/websocket.service';
-import {IBuild, IFineTuneDialogData, IModel, IProblem} from '@idlp/root/models';
+import {IFineTuneDialogData} from '@idlp/root/models';
 import {WsConnect} from '@idlp/root/ws.actions';
 import {WS} from '@idlp/root/ws.events';
 import {WsState} from '@idlp/root/ws.state';
@@ -30,6 +30,7 @@ import {Select, Store} from '@ngxs/store';
 import {SendWebSocketMessage} from '@ngxs/websocket-plugin';
 import {iif, Observable, Subject, timer} from 'rxjs';
 import {delay, first, map, take, takeUntil} from 'rxjs/operators';
+import {IBuild, IModel, IProblem} from '@idlp/routed/problem-info/problem-info.models';
 
 @Component({
   selector: 'idlp-problem-info',
@@ -163,7 +164,7 @@ export class IdlpProblemInfoComponent implements OnInit, OnDestroy {
   }
 
   private navigateToLogBoard(model: IModel): void {
-    window.open(`${environment.filebrowserUrl}/files/idlp${model.dirPath}/output.log`, '_blank');
+    window.open(`${environment.filebrowserUrl}/files${model.dir}/output.log`, '_blank');
   }
 
   private evaluateModel(model: IModel): void {
@@ -193,7 +194,7 @@ export class IdlpProblemInfoComponent implements OnInit, OnDestroy {
       hoc.push(model.id);
     }
     localStorage.setItem('hoc', JSON.stringify(hoc));
-    this.websocketService.send(WS.SEND.BUILD_LIST, {problemId: this.problemId});
+    // this.websocketService.send(WS.SEND.BUILD_LIST, {problemId: this.problemId});
   }
 
   private fineTuneDialogOpen(model: IModel): void {

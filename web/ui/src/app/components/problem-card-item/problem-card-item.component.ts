@@ -7,7 +7,7 @@ import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {IProblem} from '@idlp/root/models';
 import {Store} from '@ngxs/store';
 import {ProblemDelete} from '@idlp/routed/problem-list/problem-list.actions';
-import {SendWebSocketMessage} from "@ngxs/websocket-plugin";
+import {SendWebSocketMessage} from '@ngxs/websocket-plugin';
 
 const DESCRIPTION_LENGTH = 235;
 

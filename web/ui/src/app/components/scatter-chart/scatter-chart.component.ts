@@ -5,13 +5,12 @@
 
 import {Component, EventEmitter, OnDestroy, OnInit, Output} from '@angular/core';
 import {FormBuilder, FormGroup} from '@angular/forms';
-import {IModel} from '@idlp/root/models';
 import {
   UpdateScatterLayout,
   UpdateXAxisActive,
   UpdateYAxisActive
 } from '@idlp/routed/problem-info/problem-info.actions';
-import {IModelsMetricsTableColumn} from '@idlp/routed/problem-info/problem-info.models';
+import {IModel, IModelsMetricsTableColumn} from '@idlp/routed/problem-info/problem-info.models';
 import {ProblemInfoState} from '@idlp/routed/problem-info/problem-info.state';
 import {Select, Store} from '@ngxs/store';
 import {Observable, Subject} from 'rxjs';

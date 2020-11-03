@@ -39,22 +39,6 @@ export interface IAsset extends IBaseEntity {
   buildSplit: IAssetBuildSplit;
 }
 
-export interface IModel extends IBaseEntity {
-  metrics: { [key: string]: IMetric[] };
-  name: string;
-  status: string;
-  tensorBoardLogDir: string;
-  dirPath: string;
-  showOnChart: boolean;
-}
-
-export interface IMetric extends IBaseEntity {
-  displayName: string;
-  unit: string;
-  key: string;
-  value: any;
-}
-
 export interface IBuild extends IBaseEntity {
   problemId: string;
   id: string;

@@ -6,9 +6,10 @@
 import {Component, EventEmitter, OnDestroy, OnInit, Output, ViewChild} from '@angular/core';
 import {MatSort} from '@angular/material/sort';
 import {MatTableDataSource} from '@angular/material/table';
-import {IMetric, IModel} from '@idlp/root/models';
 import {
   IBuild,
+  IMetric,
+  IModel,
   IModelsMetricsTableColumn,
   IModelsMetricsTableData
 } from '@idlp/routed/problem-info/problem-info.models';

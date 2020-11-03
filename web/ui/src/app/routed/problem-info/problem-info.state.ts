@@ -7,9 +7,9 @@ import {Injectable} from '@angular/core';
 import {environment} from '@environments/environment';
 import {SetTheme} from '@idlp/root/idlp-root.actions';
 import {IdlpRootState} from '@idlp/root/idlp-root.state';
-import {IMetric} from '@idlp/root/models';
 import {
   IBuild,
+  IMetric,
   IModel,
   IModelsMetricsTableColumn,
   IModelsMetricsTableData,
@@ -494,4 +494,6 @@ export class ProblemInfoState {
     }
     return layout;
   }
+
+
 }

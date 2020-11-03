@@ -23,7 +23,7 @@ export interface IModel {
   name: string;
   status: string;
   tensorBoardLogDir: string;
-  dirPath: string;
+  dir: string;
   showOnChart: boolean;
 }
 
