@@ -287,7 +287,7 @@ def custom_voc_ap_evaluation(config, input, iou_thr, imsize, out, update_config)
         cfg.data.test.ann_file = cfg.data.test.ann_file.split(',')
         cfg.data.test.img_prefix = cfg.data.test.img_prefix.split(',')
         assert len(cfg.data.test.ann_file) == len(cfg.data.test.img_prefix)
-    
+ 
     test_dataset = datasets.builder.build_dataset(cfg.data.test)
     output = voc_eval(input, test_dataset, iou_thr, imsize)
 
