@@ -31,20 +31,20 @@
     <mat-icon>article</mat-icon>
     <span>Show Log</span>
   </button>
-  <button
-    (click)="onMenuItemClick.emit('showonchart')"
-    [disabled]="isShowOnChartDisabled"
-    mat-menu-item
-  >
-    <div *ngIf="isHiddenOnChart">
-      <mat-icon>visibility</mat-icon>
-      <span>Show on Chart</span>
-    </div>
-    <div *ngIf="!isHiddenOnChart">
-      <mat-icon>visibility_off</mat-icon>
-      <span>Hide on Chart</span>
-    </div>
-  </button>
+  <!--  <button-->
+  <!--    (click)="onMenuItemClick.emit('showonchart')"-->
+  <!--    [disabled]="isShowOnChartDisabled"-->
+  <!--    mat-menu-item-->
+  <!--  >-->
+  <!--    <div *ngIf="isHiddenOnChart">-->
+  <!--      <mat-icon>visibility</mat-icon>-->
+  <!--      <span>Show on Chart</span>-->
+  <!--    </div>-->
+  <!--    <div *ngIf="!isHiddenOnChart">-->
+  <!--      <mat-icon>visibility_off</mat-icon>-->
+  <!--      <span>Hide on Chart</span>-->
+  <!--    </div>-->
+  <!--  </button>-->
   <button
     (click)="onMenuItemClick.emit('delete')"
     [disabled]="isDeleteDisabled"
