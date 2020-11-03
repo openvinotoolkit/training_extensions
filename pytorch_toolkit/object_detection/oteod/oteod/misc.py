@@ -78,6 +78,14 @@ def run_with_termination(cmd):
             except ProcessLookupError as e:
                 print(e)
 
+    while True:
+        stderr = nbsr_err.readline(0.1)
+        if not stderr:
+            break
+        stderr = stderr.decode('utf-8')
+        print(stderr, end='')
+        sys.stdout.flush()
+
 
 def get_work_dir(cfg, update_config):
     overridden_work_dir = update_config.get('work_dir', None)
