@@ -6,18 +6,18 @@
 ## Install Docker
 
 ```sh
-$ sudo apt update
-$ sudo apt install apt-transport-https ca-certificates curl software-properties-common
-$ curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-$ sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable"
-$ sudo apt update
-$ sudo apt install docker-ce
+sudo apt update
+sudo apt install apt-transport-https ca-certificates curl software-properties-common
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable"
+sudo apt update
+sudo apt install docker-ce
 ```
 
 ### Test Installation
 
 ```sh
-$ sudo systemctl status docker
+sudo systemctl status docker
 ● docker.service - Docker Application Container Engine
    Loaded: loaded (/lib/systemd/system/docker.service; enabled; vendor preset: enabled)
   Drop-In: /etc/systemd/system/docker.service.d
@@ -35,7 +35,7 @@ $ sudo systemctl status docker
 ### Use docker as root
 
 ```sh
-$ sudo usermod -aG docker ${USER}
+sudo usermod -aG docker ${USER}
 ```
 
 ### Config Proxy
@@ -61,15 +61,16 @@ RE-LOGIN REQUIRED after this command
 ## Install Docker-Compose
 
 ```sh
-$ sudo curl -L "https://github.com/docker/compose/releases/download/1.26.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-$ sudo chmod +x /usr/local/bin/docker-compose
+sudo curl -L "https://github.com/docker/compose/releases/download/1.26.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
 ```
 RE-LOGIN REQUIRED after this command
 
 ### Test Installation
 
 ```sh
-$ docker-compose --version
+docker-compose --version
+
 docker-compose version 1.26.2, build 1110ad01
 ```
 
@@ -77,15 +78,15 @@ docker-compose version 1.26.2, build 1110ad01
 ## CPU Setup
 
 ```sh
-$ git clone --branch develop --recursive https://github.com/dmitryagapov/openvino_training_extensions.git
-$ cd openvino_training_extensions
-$ git submodule update --init --recursive
-$ IDLP_HOST=localhost docker-compose -f docker-compose.cpu.yml up --build -d
+git clone --branch develop --recursive https://github.com/dmitryagapov/openvino_training_extensions.git
+cd openvino_training_extensions
+git submodule update --init --recursive
+IDLP_HOST=localhost docker-compose -f docker-compose.cpu.yml up --build -d
 ```
 ### Create CVAT root user
 
 ```sh
-$ docker exec -it cvat bash -ic 'python3 ~/manage.py createsuperuser'
+docker exec -it cvat bash -ic 'python3 ~/manage.py createsuperuser'
 ```
 Username: django
 
@@ -98,7 +99,7 @@ Password: django
 ## CPU Restart
 
 ```sh
-$ git pull
-$ git git submodule update --recursive
-$ IDLP_HOST=<host.name> docker-compose -f docker-compose.cpu.yml up --build -d
+git pull
+git git submodule update --recursive
+IDLP_HOST=localhost docker-compose -f docker-compose.cpu.yml up --build -d
 ```

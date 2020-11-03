@@ -34,18 +34,18 @@ sudo apt-get -y install cuda-10-2
 ## Install Docker
 
 ```sh
-$ sudo apt update
-$ sudo apt install apt-transport-https ca-certificates curl software-properties-common
-$ curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-$ sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable"
-$ sudo apt update
-$ sudo apt install docker-ce
+sudo apt update
+sudo apt install apt-transport-https ca-certificates curl software-properties-common
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable"
+sudo apt update
+sudo apt install docker-ce
 ```
 
 ### Test Installation
 
 ```sh
-$ sudo systemctl status docker
+sudo systemctl status docker
 ● docker.service - Docker Application Container Engine
    Loaded: loaded (/lib/systemd/system/docker.service; enabled; vendor preset: enabled)
   Drop-In: /etc/systemd/system/docker.service.d
@@ -63,7 +63,7 @@ $ sudo systemctl status docker
 ### Use docker as root
 
 ```sh
-$ sudo usermod -aG docker ${USER}
+sudo usermod -aG docker ${USER}
 ```
 
 ### Config Proxy
@@ -89,14 +89,14 @@ RE-LOGIN REQUIRED after this command
 ## Install Docker-Compose
 
 ```sh
-$ sudo curl -L "https://github.com/docker/compose/releases/download/1.26.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-$ sudo chmod +x /usr/local/bin/docker-compose
+sudo curl -L "https://github.com/docker/compose/releases/download/1.26.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
 ```
 
 ### Test Installation
 
 ```sh
-$ docker-compose --version
+docker-compose --version
 docker-compose version 1.26.2, build 1110ad01
 ```
 
@@ -105,18 +105,18 @@ docker-compose version 1.26.2, build 1110ad01
 ### Add the package repositories
 
 ```sh
-$ distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
-$ curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | sudo apt-key add -
-$ curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.list | sudo tee /etc/apt/sources.list.d/nvidia-docker.list
+distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
+curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | sudo apt-key add -
+curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.list | sudo tee /etc/apt/sources.list.d/nvidia-docker.list
 
-$ sudo apt-get update && sudo apt-get install -y nvidia-container-toolkit
-$ sudo systemctl restart docker
+sudo apt-get update && sudo apt-get install -y nvidia-container-toolkit
+sudo systemctl restart docker
 ```
 
 ### Install nvidia-runtime
 
 ```sh
-$ sudo apt-get install nvidia-container-runtime
+sudo apt-get install nvidia-container-runtime
 ```
 
 ### Add Daemon configuration file
@@ -137,16 +137,16 @@ EOF
 ## GPU Setup
 
 ```sh
-$ git clone --recursive https://github.com/dmitryagapov/openvino_training_extensions.git
-$ cd openvino_training_extensions
-$ git submodule update --init --recursive
-$ IDLP_HOST=<host.name> docker-compose -f docker-compose.gpu.yml up --build -d
+git clone --recursive https://github.com/dmitryagapov/openvino_training_extensions.git
+cd openvino_training_extensions
+git submodule update --init --recursive
+IDLP_HOST=<host.name> docker-compose -f docker-compose.gpu.yml up --build -d
 ```
 
 ### Create CVAT root user
 
 ```sh
-$ docker exec -it cvat bash -ic 'python3 ~/manage.py createsuperuser'
+docker exec -it cvat bash -ic 'python3 ~/manage.py createsuperuser'
 ```
 
 Username: django
@@ -161,7 +161,7 @@ Password: django
 ## RESTART LOCAL
 
 ```sh
-$ git pull
-$ git git submodule update --recursive
-$ IDLP_HOST=<host.name> docker-compose -f docker-compose.gpu.yml up --build -d
+git pull
+git git submodule update --recursive
+IDLP_HOST=<host.name> docker-compose -f docker-compose.gpu.yml up --build -d
 ```
