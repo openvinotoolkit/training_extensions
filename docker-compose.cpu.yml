@@ -15,7 +15,7 @@ services:
 
   idlp_nginx:
     container_name: idlp_nginx
-    image: nginx:alpine
+    image: nginx:1.18-alpine
     ports:
       - 8001:8001
       - 8002:8002

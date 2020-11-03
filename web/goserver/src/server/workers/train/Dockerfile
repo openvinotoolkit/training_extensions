@@ -46,21 +46,6 @@ RUN apt update && \
 
 ENV FORCE_CUDA="1"
 
-ARG OPENVINO_LINK=http://registrationcenter-download.intel.com/akdlm/irc_nas/16803/l_openvino_toolkit_p_2020.4.287.tgz
-RUN mkdir -p /tmp/openvino_installer && cd /tmp/openvino_installer && \
-    wget --no-verbose $OPENVINO_LINK && \
-    tar xf l_openvino_toolkit*.tgz && \
-    rm l_openvino_toolkit*.tgz && \
-    cd l_openvino_toolkit* && \
-    bash ./install.sh -s silent.cfg --accept_eula && \
-    cd /opt/intel/openvino/install_dependencies/ && \
-    dpkg -i intel-*.deb && \
-    ldconfig && \
-    rm -rf /tmp/openvino_installer && \
-    pip install -r /opt/intel/openvino/deployment_tools/model_optimizer/requirements_onnx.txt && \
-    echo "source /opt/intel/openvino/bin/setupvars.sh" >> /etc/profile
-
-
 # Install packages for mmdetection
 RUN conda install cython -y && conda clean --all
 COPY ./pytorch_toolkit/object_detection/requirements.txt /tmp/ote/pytorch_toolkit/object_detection/requirements.txt
