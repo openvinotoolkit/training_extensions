@@ -109,7 +109,7 @@ def custom_ap_eval(config_path, work_dir, snapshot, update_config):
     res_pkl = os.path.join(work_dir, 'res.pkl')
     if not os.path.exists(res_pkl):
         # produces res.pkl
-        coco_ap_eval(config_path, work_dir, snapshot, outputs, update_config)
+        coco_ap_eval(config_path, work_dir, snapshot, update_config)
     res_custom_metrics = os.path.join(work_dir, "custom_metrics.json")
     custom_voc_ap_evaluation(config_path, res_pkl, 0.5, (1024, 1024), res_custom_metrics, update_config)
     with open(res_custom_metrics) as read_file:
