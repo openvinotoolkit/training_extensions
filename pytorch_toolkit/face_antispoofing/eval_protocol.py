@@ -131,8 +131,8 @@ def evaluate(model, loader, config, device, compute_accuracy=True):
         proba_accum = np.concatenate((proba_accum, positive_probabilities))
         target_accum = np.concatenate((target_accum, y_true))
 
-    apcer = fp / (tn + fp) if fp != 0 else 0
-    bpcer = fn / (fn + tp) if fn != 0 else 0
+    apcer = fp / (tn + fp) if (tn + fp) != 0 else 0
+    bpcer = fn / (fn + tp) if (fn + tp) != 0 else 0
     acer = (apcer + bpcer) / 2
 
     fpr, tpr, _ = roc_curve(target_accum, proba_accum, pos_label=1)
