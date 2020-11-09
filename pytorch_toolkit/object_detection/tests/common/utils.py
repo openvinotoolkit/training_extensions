@@ -40,4 +40,4 @@ def relative_abs_error(expected, actual):
 
 
 def run_through_shell(cmd):
-    run(cmd, shell=True, check=True)
+    run(cmd, shell=True, check=True, executable="/bin/bash")

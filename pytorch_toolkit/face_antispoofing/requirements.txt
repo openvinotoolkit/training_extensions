@@ -1,0 +1,16 @@
+torch==1.6.0
+torchvision==0.7.0
+albumentations==0.4.6
+attrdict==2.0.1
+opencv-python==4.4.0.44
+numpy==1.19.2
+pandas==1.1.2
+sklearn==0.0
+tqdm==4.50.0
+matplotlib==3.3.2
+tensorboard==2.3.0
+onnx==1.7.0
+glog==0.3.1
+pytest==6.1.0
+pylint==2.6.0
+pytest-pylint==0.17.0

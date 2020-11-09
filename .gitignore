@@ -1,6 +1,7 @@
 *.pyc
 __pycache__
 .idea/
+.vscode/
 *.iml
 
 venv
@@ -16,6 +17,7 @@ external/*
 *.onnx
 *.xml
 *.bin
+*.mapping
 
 *.tar.gz
 *.zip

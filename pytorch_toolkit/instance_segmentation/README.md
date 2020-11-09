@@ -42,8 +42,7 @@ are supposed to be converted to ONNX/OpenVINO™ Intermediate Representation (IR
 ### Download MS COCO Dataset
 
 To be able to train networks and/or get quality metrics for pretrained ones,
-download [the MS COCO datasetthe
-dataset](http://cocodataset.org/#download) (train, val and annotations) and
+download [the MS COCO dataset](http://cocodataset.org/#download) (train, val and annotations) and
 unpack it to the `./data/coco` folder. The resulting structure of the folder should be as follows:
 ```
 data
@@ -122,7 +121,7 @@ default options has been used to fetch public pretrained models, to run the demo
 live video stream from a webcam using the ResNet50-FPN Mask R-CNN model for instance
 segmentation, run the following command:
 
-```bash
+```
 $ python3 tools/demo.py \
     --dataset coco_2017_val \
     --ckpt data/pretrained_models/converted/coco/detectron/mask_rcnn_resnet50_fpn_2x.pth \
@@ -150,7 +149,7 @@ class, and the `--ckpt` argument should point to a BIN file with OpenVINO™ IR
 weights.
 
 Example:
-```bash
+```
 $ python3 tools/demo.py \
     --dataset coco_2017_val \
     --ckpt data/pretrained_models/ir/coco/detectron/mask_rcnn_resnet50_fpn_2x.bin \
@@ -158,7 +157,7 @@ $ python3 tools/demo.py \
     --video 0 \
     --delay 1 \
     --show_fps \
-    OpenVINO™ \
+    openvino \
     --model data/pretrained_models/ir/coco/detectron/mask_rcnn_resnet50_fpn_2x.xml
 ```
 
@@ -179,7 +178,7 @@ and supports both PyTorch and OpenVINO™ backends.
 For example, to evaluate ResNet50-FPN Mask R-CNN model on COCO 2017 Val dataset
 using PyTorch backend run:
 
-```bash
+```
 $ python3 tools/test.py \
     --dataset coco_2017_val \
     --ckpt data/pretrained_models/converted/coco/detectron/mask_rcnn_resnet50_fpn_2x.pth \
@@ -204,7 +203,7 @@ $ python3 tools/test.py \
     --dataset coco_2017_val \
     --ckpt data/pretrained_models/ir/coco/detectron/mask_rcnn_resnet50_fpn_2x.bin \
     --fit_window 800 1333 \
-    OpenVINO™ \
+    openvino \
     --model data/pretrained_models/ir/coco/detectron/mask_rcnn_resnet50_fpn_2x.xml
 ```
 
@@ -274,12 +273,12 @@ For example, here is the command used inside the
 `tools/download_pretrained_weights.py` script to export the ResNet50-FPN Mask R-CNN
 model to IR given its ONNX representation:
 
-```bash
+```
 $ mo.py \
     --framework onnx \
     --input_model data/pretrained_models/onnx/coco/detectron/mask_rcnn_resnet50_fpn_2x.onnx \
     --output_dir data/pretrained_models/ir/coco/detectron/ \
     --input "im_data,im_info" \
-    --output "boxes,scores,classes,batch_ids,raw_masks" \
+    --output "boxes,scores,classes,raw_masks" \
     --mean_values "im_data[102.9801,115.9465,122.7717],im_info[0,0,0]"
 ```
