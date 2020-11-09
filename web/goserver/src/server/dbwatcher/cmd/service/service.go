@@ -4,18 +4,27 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
+
 	"github.com/sirius1024/go-amqp-reconnect/rabbitmq"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"log"
-	cvatTaskFind "server/db/pkg/handler/cvat_task/find"
 
+	n "server/common/names"
 	t "server/common/types"
 	"server/db/pkg/endpoint"
 	"server/db/pkg/service"
+	longendpoint "server/kit/endpoint"
+	kitutils "server/kit/utils"
 )
 
 func Run(serviceQueueName string, amqpAddr, amqpUser, amqpPass, mongoAddr *string) {
+	ctx := context.Background()
+	mongoUrl := fmt.Sprintf("mongodb://%s", *mongoAddr)
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(mongoUrl))
+	if err != nil {
+		log.Panic(err)
+	}
 	amqpUrl := fmt.Sprintf("amqp://%s:%s@%s/", *amqpUser, *amqpPass, *amqpAddr)
 	conn, err := rabbitmq.Dial(amqpUrl)
 	if err != nil {
@@ -27,10 +36,9 @@ func Run(serviceQueueName string, amqpAddr, amqpUser, amqpPass, mongoAddr *strin
 		log.Panic(err)
 	}
 	defer ch.Close()
-	ctx := context.Background()
-	mongoUrl := fmt.Sprintf("mongodb://%s", *mongoAddr)
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(mongoUrl))
-	failOnError(err, "Mongo Connect")
+	servicesQueuesNames := []string{n.QAsset, n.QDatabase, n.QProblem, n.QTrainModel, n.QModel, n.QBuild}
+	kitutils.AmqpServicesQueuesDelare(conn, servicesQueuesNames)
+
 	db := client.Database("db")
 
 	msgs, err := ch.Consume(
@@ -60,8 +68,9 @@ func Run(serviceQueueName string, amqpAddr, amqpUser, amqpPass, mongoAddr *strin
 			}
 			fmt.Println(req.Request)
 			switch req.Request {
-			case cvatTaskFind.Request:
-				go cvatTaskFind.Handle(eps, conn, msg)
+			case problemWatch.Request:
+				go problemWatch.Handle(eps, conn, msg)
+
 			default:
 				log.Println("UNKNOWN REQUEST", req.Request)
 			}
@@ -70,15 +79,16 @@ func Run(serviceQueueName string, amqpAddr, amqpUser, amqpPass, mongoAddr *strin
 	select {}
 }
 
-func failOnError(err error, msg string) {
-	if err != nil {
-		log.Println("%s: %s", msg, err)
-	}
-}
-
 func getServiceMiddleware() (mw []service.Middleware) {
 	mw = []service.Middleware{}
 	// Append your middleware here
+
+	return
+}
+
+func getEndpointMiddleware() (mw map[string][]longendpoint.Middleware) {
+	mw = map[string][]longendpoint.Middleware{}
+	// Add you endpoint middleware here
 
 	return
 }

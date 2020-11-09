@@ -28,7 +28,7 @@ import (
 
 type Basic struct {
 	BatchSize        int     `yaml:"batch_size"`
-	BaseLearningrate float64 `yaml:"base_learning_rate"`
+	BaseLearningRate float64 `yaml:"base_learning_rate"`
 	Epochs           int     `yaml:"epochs"`
 }
 
@@ -201,6 +201,7 @@ func getModelYaml(path string) (modelYml ModelYml) {
 	if err != nil {
 		log.Println("Unmarshal", err)
 	}
+	log.Println("Model BatchSize", modelYml.HyperParameters.Basic.BatchSize)
 	return modelYml
 }
 
@@ -263,7 +264,7 @@ func (s *basicModelService) updateCreateModel(model t.Model) t.Model {
 		s.Conn,
 		modelUpdateUpsert.RequestData{
 			ConfigPath:     model.ConfigPath,
-			ProblemId:      model.ProblemId,
+			BatchSize:      model.BatchSize,
 			Description:    model.Description,
 			Dir:            model.Dir,
 			Epochs:         model.Epochs,
@@ -273,6 +274,7 @@ func (s *basicModelService) updateCreateModel(model t.Model) t.Model {
 			Scripts:        model.Scripts,
 			SnapshotPath:   model.SnapshotPath,
 			Status:         model.Status,
+			ProblemId:      model.ProblemId,
 			TemplatePath:   model.TemplatePath,
 			TrainingGpuNum: model.TrainingGpuNum,
 		},

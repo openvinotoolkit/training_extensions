@@ -29,6 +29,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
          git \
          curl \
          ca-certificates \
+         ffmpeg \
          libjpeg-dev \
          libpng-dev \
          libglib2.0-0 \
@@ -72,13 +73,13 @@ WORKDIR /workspace
 # Install Golang
 
 # gcc for cgo
-RUN apt-get update && apt-get install -y --no-install-recommends \
-		g++ \
-		gcc \
-		libc6-dev \
-		make \
-		pkg-config \
-	&& rm -rf /var/lib/apt/lists/*
+#RUN apt-get update && apt-get install -y --no-install-recommends \
+#		g++ \
+#		gcc \
+#		libc6-dev \
+#		make \
+#		pkg-config \
+#	&& rm -rf /var/lib/apt/lists/*
 
 # Copy our static executable.
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/

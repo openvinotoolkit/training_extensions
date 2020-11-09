@@ -24,7 +24,7 @@ services:
       - idlp_nginx_conf_v:/etc/nginx/conf.d
       - idlp_nginx_media_v:/media
     environment:
-      IDLP_HOST: ${IDLP_HOST}
+      - IDLP_HOST=${IDLP_HOST}
     networks:
       - idlp_network
     depends_on:
@@ -33,6 +33,7 @@ services:
       - idlp_mongo
       - idlp_ui
       - idlp_filebrowser
+    restart: always
 
   idlp_ui:
     build:

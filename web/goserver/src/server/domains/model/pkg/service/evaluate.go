@@ -18,7 +18,9 @@ import (
 	modelUpdateOne "server/db/pkg/handler/model/update_one"
 	problemFindOne "server/db/pkg/handler/problem/find_one"
 	t "server/db/pkg/types"
+	problemType "server/db/pkg/types/problem/types"
 	kitendpoint "server/kit/endpoint"
+	"server/kit/utils/basic/arrays"
 )
 
 type EvaluateRequest struct {
@@ -111,13 +113,18 @@ func (s *basicModelService) prepareEvaluateCommands(evalYml, outputImagesPath st
 	imgPrefix, annFile := s.getImgPrefixAndAnnotation("test", build, problem)
 	imgPrefixStr := strings.Join(imgPrefix, ",")
 	annFileStr := strings.Join(annFile, ",")
-	classes := getClasses(problem.Labels)
 	paramsArr := []string{
 		fmt.Sprintf("--load-weights %s", model.SnapshotPath),
-		fmt.Sprintf("--test-ann-files '%s'", annFileStr),
-		fmt.Sprintf("--test-data-roots '%s'", imgPrefixStr),
 		fmt.Sprintf("--save-metrics-to %s", evalYml),
-		fmt.Sprintf("--classes %s", classes),
+	}
+	if problem.Type == problemType.Default {
+		paramsArr = append(paramsArr, fmt.Sprintf("--test-ann-files %s", annFileStr))
+		paramsArr = append(paramsArr, fmt.Sprintf("--test-data-roots %s", imgPrefixStr))
+	}
+
+	if arrays.ContainsString([]string{problemType.Custom, problemType.Generic}, problem.Type) {
+		classes := getClasses(problem.Labels)
+		paramsArr = append(paramsArr, fmt.Sprintf("--classes %s", classes))
 	}
 	if outputImagesPath != "" {
 		paramsArr = append(paramsArr, fmt.Sprintf("--save-output-to %s", outputImagesPath))

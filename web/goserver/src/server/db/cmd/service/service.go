@@ -42,6 +42,12 @@ import (
 )
 
 func Run(serviceQueueName string, amqpAddr, amqpUser, amqpPass, mongoAddr *string) {
+	ctx := context.Background()
+	mongoUrl := fmt.Sprintf("mongodb://%s", *mongoAddr)
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(mongoUrl))
+	if err != nil {
+		log.Panic(err)
+	}
 	amqpUrl := fmt.Sprintf("amqp://%s:%s@%s/", *amqpUser, *amqpPass, *amqpAddr)
 	conn, err := rabbitmq.Dial(amqpUrl)
 	if err != nil {
@@ -55,10 +61,7 @@ func Run(serviceQueueName string, amqpAddr, amqpUser, amqpPass, mongoAddr *strin
 	defer ch.Close()
 	servicesQueuesNames := []string{n.QAsset, n.QDatabase, n.QProblem, n.QTrainModel, n.QModel, n.QBuild}
 	kitutils.AmqpServicesQueuesDelare(conn, servicesQueuesNames)
-	ctx := context.Background()
-	mongoUrl := fmt.Sprintf("mongodb://%s", *mongoAddr)
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(mongoUrl))
-	failOnError(err, "Mongo Connect")
+
 	db := client.Database("db")
 	if err := initMongoIndexes(db); err != nil {
 		log.Println("initMongoIndexes", err)

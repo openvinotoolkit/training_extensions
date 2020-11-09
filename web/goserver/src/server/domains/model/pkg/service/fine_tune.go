@@ -23,6 +23,7 @@ import (
 	problemFindOne "server/db/pkg/handler/problem/find_one"
 	t "server/db/pkg/types"
 	splitState "server/db/pkg/types/build/split_state"
+	problemType "server/db/pkg/types/problem/types"
 	modelStatus "server/db/pkg/types/status/model"
 	kitendpoint "server/kit/endpoint"
 	"server/kit/utils/basic/arrays"
@@ -118,6 +119,11 @@ func (s *basicModelService) prepareFineTuneCommands(batchSize, gpuNum int, model
 		fmt.Sprintf("--save-checkpoints-to %s", model.TrainingWorkDir),
 		fmt.Sprintf("--epochs %d", model.Epochs),
 		fmt.Sprintf("--gpu-num %d", gpuNum),
+	}
+
+	if problem.Type == problemType.Custom {
+		classes := getClasses(problem.Labels)
+		paramsArr = append(paramsArr, fmt.Sprintf("--classes %s", classes))
 	}
 
 	if batchSize > 0 {
@@ -403,7 +409,7 @@ func getVarValInt(src []byte, name string) int {
 }
 
 func copySnapshotLatestToModelPath(trainingPath, newSnapshotPath string) {
-	snapshotPath := fmt.Sprintf("%s/latest.pth", trainingPath)
+	snapshotPath := fp.Join(trainingPath, "latest.pth")
 	if _, err := ufiles.Copy(snapshotPath, newSnapshotPath); err != nil {
 		log.Println("copySnapshotLatestToModelPath.Copy", err)
 	}

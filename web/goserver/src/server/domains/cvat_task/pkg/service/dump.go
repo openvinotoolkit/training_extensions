@@ -111,6 +111,8 @@ func (s *basicCvatTaskService) Dump(ctx context.Context, req DumpRequestData) ch
 			}
 		} else {
 			log.Println("Cvat annotation export")
+			cvatDataPath := mkUnzipDatasetDir(asset)
+			_ = s.saveCvatDataPathToAsset(asset, cvatDataPath)
 			if _, err := cvatApi.PrepareAnnotation(cvatTask.Annotation); err != nil {
 				returnChan <- kitendpoint.Response{IsLast: true, Data: nil, Err: err}
 				return

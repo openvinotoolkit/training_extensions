@@ -100,6 +100,6 @@ Password: django
 
 ```sh
 git pull
-git git submodule update --recursive
+git submodule update --recursive
 IDLP_HOST=localhost docker-compose -f docker-compose.cpu.yml up --build -d
 ```
