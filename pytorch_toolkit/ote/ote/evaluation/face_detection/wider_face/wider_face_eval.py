@@ -16,7 +16,7 @@ import numpy as np
 from scipy.io import loadmat
 from tqdm import tqdm
 
-from oteod.evaluation.face_detection.wider_face.box_overlaps import bbox_overlaps
+from ote.evaluation.face_detection.wider_face.box_overlaps import bbox_overlaps
 
 
 def get_gt_boxes(gt_dir):

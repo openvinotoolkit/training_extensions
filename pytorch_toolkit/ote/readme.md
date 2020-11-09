@@ -49,8 +49,6 @@ dependencies:
   destination: quantize.py
 - source: ../../../../../pytorch_toolkit/ote
   destination: ote
-- source: ../../../../object_detection/oteod
-  destination: oteod
 - source: ../../requirements.txt
   destination: requirements.txt
 max_nodes: 1
