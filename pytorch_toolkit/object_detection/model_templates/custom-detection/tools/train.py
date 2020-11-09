@@ -19,8 +19,8 @@ from mmcv import Config
 
 from ote import MODEL_TEMPLATE_FILENAME
 from ote.api import train_args_parser
-from oteod.args_conversion import convert_ote_to_oteod_train_args
-from oteod.training.common import train
+from ote.args_conversion import convert_ote_to_oteod_train_args
+from ote.training.common import train
 
 
 def parse_args(template_filename):

@@ -20,9 +20,8 @@ import yaml
 
 from mmcv import Config
 
-from ote import MODEL_TEMPLATE_FILENAME
+from ote import MODEL_TEMPLATE_FILENAME, MMDETECTION_TOOLS
 from ote.api import export_args_parser
-from oteod import MMDETECTION_TOOLS
 
 
 args = vars(export_args_parser(MODEL_TEMPLATE_FILENAME).parse_args())
