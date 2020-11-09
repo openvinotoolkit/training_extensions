@@ -7,12 +7,12 @@ import subprocess
 import sys
 import tempfile
 
-from oteod import MMDETECTION_TOOLS
-from oteod.evaluation.common import coco_ap_eval, evaluate_internal
-from oteod.evaluation.face_detection.custom_voc_ap_eval import custom_voc_ap_evaluation
-from oteod.evaluation.face_detection.wider_face.convert_annotation import convert_to_coco
-from oteod.evaluation.face_detection.wider_face.convert_predictions import convert_to_wider
-from oteod.evaluation.face_detection.wider_face.wider_face_eval import wider_face_evaluation
+from ote import MMDETECTION_TOOLS
+from ote.evaluation.common import coco_ap_eval, evaluate_internal
+from ote.evaluation.face_detection.custom_voc_ap_eval import custom_voc_ap_evaluation
+from ote.evaluation.face_detection.wider_face.convert_annotation import convert_to_coco
+from ote.evaluation.face_detection.wider_face.convert_predictions import convert_to_wider
+from ote.evaluation.face_detection.wider_face.wider_face_eval import wider_face_evaluation
 
 
 def compute_wider_metrics(config_path, work_dir, snapshot, wider_dir):
