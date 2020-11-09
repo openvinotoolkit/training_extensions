@@ -16,8 +16,8 @@ import os
 
 from ote import MODEL_TEMPLATE_FILENAME
 from ote.api import test_args_parser
-from oteod.args_conversion import convert_ote_to_oteod_test_args
-from oteod.evaluation.horizontal_text_detection import evaluate
+from ote.args_conversion import convert_ote_to_oteod_test_args
+from ote.evaluation.horizontal_text_detection import evaluate
 
 ote_args = vars(test_args_parser(MODEL_TEMPLATE_FILENAME).parse_args())
 oteod_args = convert_ote_to_oteod_test_args(os.path.dirname(MODEL_TEMPLATE_FILENAME), ote_args)

@@ -8,7 +8,7 @@ import tempfile
 import yaml
 from mmcv import Config
 from ote import MMDETECTION_TOOLS
-from ote.misc import get_file_size_and_sha256 get_complexity_and_size
+from ote.misc import get_file_size_and_sha256, get_complexity_and_size
 
 
 def collect_ap(path):

@@ -18,7 +18,7 @@ that can be passed to official WiderFace evaluation procedure."""
 import argparse
 
 from mmcv import DictAction
-from oteod.evaluation.face_detection.wider_face.convert_prediction import convert_to_wider
+from ote.evaluation.face_detection.wider_face.convert_prediction import convert_to_wider
 
 
 def parse_args():
