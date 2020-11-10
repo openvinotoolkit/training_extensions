@@ -7,7 +7,7 @@
 	url = https://github.com/tensorflow/models.git
 [submodule "external/mmdetection"]
 	path = external/mmdetection
-	url = ../mmdetection
+	url = https://github.com/openvinotoolkit/mmdetection.git
 [submodule "external/mmaction"]
 	path = external/mmaction
 	url = ../mmaction.git
