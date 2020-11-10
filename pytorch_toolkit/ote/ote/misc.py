@@ -59,11 +59,14 @@ class NonBlockingStreamReader:
             return None
 
 
-def get_complexity_and_size(cfg, config_path, work_dir, update_config):
+def get_complexity_and_size(cfg, config_path, work_dir, update_config, complexity_img_shape=None):
     """ Gets complexity and size of a model. """
 
-    image_shape = [x['img_scale'] for x in cfg.test_pipeline if 'img_scale' in x][0][::-1]
-    image_shape = " ".join([str(x) for x in image_shape])
+    if complexity_img_shape is None:
+        image_shape = [x['img_scale'] for x in cfg.test_pipeline if 'img_scale' in x][0][::-1]
+        image_shape = " ".join([str(x) for x in image_shape])
+    else:
+        image_shape = complexity_img_shape
 
     res_complexity = os.path.join(work_dir, "complexity.json")
     update_config = ' '.join([f'{k}={v}' for k, v in update_config.items()])
