@@ -17,7 +17,7 @@ import os
 
 from ote import MODEL_TEMPLATE_FILENAME
 from ote.api import test_args_parser
-from ote.args_conversion import convert_ote_to_oteod_test_args
+from ote.args_conversion import convert_test_args
 from ote.evaluation.face_detection import evaluate
 
 
@@ -30,6 +30,6 @@ def parse_args(template_filename):
                         default='data/wider_face')
     return parser.parse_args()
 
-ote_args = vars(parse_args(MODEL_TEMPLATE_FILENAME))
-oteod_args = convert_ote_to_oteod_test_args(os.path.dirname(MODEL_TEMPLATE_FILENAME), ote_args)
-evaluate(**oteod_args, wider_dir=ote_args['wider_dir'])
+args = vars(parse_args(MODEL_TEMPLATE_FILENAME))
+ote_args = convert_test_args(os.path.dirname(MODEL_TEMPLATE_FILENAME), args)
+evaluate(**ote_args, wider_dir=args['wider_dir'])
