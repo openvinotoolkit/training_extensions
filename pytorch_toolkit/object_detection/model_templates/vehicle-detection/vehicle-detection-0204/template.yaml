@@ -6,7 +6,7 @@ summary: Vehicle Detection based on ResNet32+fpn+CascadeRCNN.
 annotation_format: COCO
 dependencies:
 - sha256: c2d012f2f56a1a6f8db73ebd0a564b46df4f2bebc6cd1fd04c595ea4f0e2bcb3
-  size: 267808
+  size: 274231556
   source: https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/vehicle-detection-0204.pth
   destination: snapshot.pth
 - source: ../tools/train.py
