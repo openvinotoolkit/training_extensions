@@ -33,7 +33,7 @@ func (s *basicTrainModelService) RunCommands(ctx context.Context, req RunCommand
 		cmdName := cmdArr[0]
 		cmdArgs := cmdArr[1:]
 		cmd := exec.Command(cmdName, cmdArgs...)
-		cmd.Env = append(cmd.Env, req.Env...)
+		cmd.Env = append(os.Environ(), req.Env...)
 		cmd.Dir = req.WorkDir
 		cmd.Stdout = f
 		cmd.Stderr = f
