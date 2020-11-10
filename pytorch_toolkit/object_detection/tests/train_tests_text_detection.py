@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+import os
+
 from common.test_case import create_test_case
 
 
@@ -19,8 +21,8 @@ class HorizontalTextDetection0001TestCase(
         create_test_case(
             'horizontal-text-detection',
             'horizontal-text-detection-0001',
-            '../../../../../data/horizontal_text_detection/annotation.json',
-            '../../../../../data/horizontal_text_detection/'
+            os.path.dirname(__file__) + '/../../../data/horizontal_text_detection/annotation.json',
+            os.path.dirname(__file__) + '/../../../data/horizontal_text_detection/'
         )
 ):
     """ Test case for horizontal-text-detection-0001 model. """

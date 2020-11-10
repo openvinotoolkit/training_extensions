@@ -12,17 +12,6 @@ from tqdm import tqdm
 from mmdet import datasets
 
 
-def replace_text_in_file(path, replace_what, replace_by):
-    with open(path) as read_file:
-        content = '\n'.join([line.rstrip() for line in read_file])
-        if content.find(replace_what) == -1:
-            return False
-        content = content.replace(replace_what, replace_by)
-    with open(path, 'w') as write_file:
-        write_file.write(content)
-    return True
-
-
 def voc_ap(recall, precision, use_07_metric=False):
     """ average_precision = voc_ap(rec, prec, [use_07_metric])
     Compute VOC AP given precision and recall.
@@ -294,6 +283,11 @@ def custom_voc_ap_evaluation(config, input, iou_thr, imsize, out, update_config)
     cfg = mmcv.Config.fromfile(config)
     if update_config:
         cfg.merge_from_dict(update_config)
+    if ',' in cfg.data.test.ann_file:
+        cfg.data.test.ann_file = cfg.data.test.ann_file.split(',')
+        cfg.data.test.img_prefix = cfg.data.test.img_prefix.split(',')
+        assert len(cfg.data.test.ann_file) == len(cfg.data.test.img_prefix)
+
     test_dataset = datasets.builder.build_dataset(cfg.data.test)
     output = voc_eval(input, test_dataset, iou_thr, imsize)
 

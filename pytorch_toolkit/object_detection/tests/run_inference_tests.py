@@ -14,12 +14,23 @@
 
 """ This module contains unit tests. """
 
+import logging
+import os
+from subprocess import run
 import unittest
 
 
-class InferenceDummyTestCase(unittest.TestCase):
-    def test(self):
-        self.assertEqual(0, 0)
+class TestWorkaround(unittest.TestCase):
+
+    def test_all(self):
+        logging.warning('THIS IS WORKAROUND FOR TESTING.')
+        commands = [
+            f'cd {os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../")}',
+            'pip3 install -e ote',
+            'python3 tests/run_model_templates_tests.py'
+        ]
+        returncode = run(';'.join(commands), shell=True, check=True).returncode
+        self.assertEqual(returncode, 0)
 
 
 if __name__ == '__main__':

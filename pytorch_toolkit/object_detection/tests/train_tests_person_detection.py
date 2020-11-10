@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+import os
+
 from common.test_case import create_test_case
 
 
@@ -19,8 +21,8 @@ class PersonDetection0200TestCase(
         create_test_case(
             'person-detection',
             'person-detection-0200',
-            '../../../../../data/airport/annotation_person_train.json',
-            '../../../../../data/airport/train'
+            os.path.dirname(__file__) + '/../../../data/airport/annotation_person_train.json',
+            os.path.dirname(__file__) + '/../../../data/airport/train'
         )
 ):
     """ Test case for person-detection-0200 model. """
@@ -30,8 +32,8 @@ class PersonDetection0201TestCase(
         create_test_case(
             'person-detection',
             'person-detection-0201',
-            '../../../../../data/airport/annotation_person_train.json',
-            '../../../../../data/airport/train'
+            os.path.dirname(__file__) + '/../../../data/airport/annotation_person_train.json',
+            os.path.dirname(__file__) + '/../../../data/airport/train'
         )
 ):
     """ Test case for person-detection-0201 model. """
@@ -41,8 +43,8 @@ class PersonDetection0202TestCase(
         create_test_case(
             'person-detection',
             'person-detection-0202',
-            '../../../../../data/airport/annotation_person_train.json',
-            '../../../../../data/airport/train'
+            os.path.dirname(__file__) + '/../../../data/airport/annotation_person_train.json',
+            os.path.dirname(__file__) + '/../../../data/airport/train'
         )
 ):
     """ Test case for person-detection-0202 model. """

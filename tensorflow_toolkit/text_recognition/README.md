@@ -7,10 +7,11 @@ Models code is designed to enable export to frozen graph and inference on CPU vi
 
 ### Prerequisites
 
-* Ubuntu\* 16.04
-* Python\* 3.5.2
-* TensorFlow\* 1.13
+* Ubuntu\* 16.04-20.04
+* Python\* 3.5-3.7 (Python >=3.8 is not supported by TensorFlow 1.x)
+* TensorFlow\* 1.13-1.15
 * CUDA\* 10.0
+* cuDNN\* 7.6.5
 
 ### Installation
 
@@ -34,6 +35,11 @@ Models code is designed to enable export to frozen graph and inference on CPU vi
     pip3 install -e .
     pip3 install -e ../utils
     ```
+
+4. Add path to CUDA libraries to LD_LIBRARY_PATH
+   ```bash
+   export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/cuda-10.0/lib64
+   ```
 
 ## <a name="Dataset"> Dataset </a>
 

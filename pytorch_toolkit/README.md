@@ -8,7 +8,7 @@ inference.
 ## Prerequisites
 
 - Ubuntu\* 16.04 / 18.04
-- Python\* 3.4-3.6
+- Python\* 3.6+
 - [libturbojpeg](https://github.com/ajkxyz/jpeg4py)
 - For Python prerequisites, refer to `requirements.txt`
 - *(Optional)* [OpenVINO™ R3](https://software.intel.com/en-us/openvino-toolkit)
@@ -37,6 +37,7 @@ them for prediction.
 * [Eye State Classification](open_closed_eye)
 * [Segmentation of Thoracic Organs](segthor)
 * [Super Resolution](super_resolution)
+* [Formula recognition](formula_recognition)
 * [Text Spotting](text_spotting)
 
 
@@ -45,3 +46,12 @@ them for prediction.
 Tools are intended to perform manipulations with trained models, like compressing models using Quantization-aware training or sparsity.
 
 * [Neural Networks Compression Framework](nncf)
+
+### Tests
+
+In order to run tests please execute following commands:
+
+```bash
+pip3 install -e ote
+python3 tests/run_model_templates_tests.py
+```
