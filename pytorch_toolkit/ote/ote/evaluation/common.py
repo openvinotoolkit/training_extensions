@@ -30,7 +30,12 @@ def coco_ap_eval(config_path, work_dir, snapshot, update_config, show_dir=''):
 
     outputs = []
 
-    try:
+    if not(update_config['data.test.ann_file'] and update_config['data.test.img_prefix']):
+        logging.warning('Passed empty path to annotation file or data root folder. '
+                        'Skipping AP calculation.')
+        outputs.append({'key': 'ap', 'value': None, 'unit': '%',
+                        'display_name': 'AP @ [IoU=0.50:0.95]'})
+    else:
         res_pkl = os.path.join(work_dir, 'res.pkl')
         test_py_stdout = os.path.join(work_dir, 'test_py_stdout')
 
@@ -54,9 +59,6 @@ def coco_ap_eval(config_path, work_dir, snapshot, update_config, show_dir=''):
         average_precision = collect_ap(os.path.join(work_dir, 'test_py_stdout'))[0]
         outputs.append({'key': 'ap', 'value': average_precision * 100, 'unit': '%',
                         'display_name': 'AP @ [IoU=0.50:0.95]'})
-    except:
-        outputs.append(
-            {'key': 'ap', 'value': None, 'unit': '%', 'display_name': 'AP @ [IoU=0.50:0.95]'})
     return outputs
 
 
