@@ -49,7 +49,7 @@ func (s *basicModelService) CreateFromGeneric(ctx context.Context, req CreateFro
 func (s *basicModelService) initEval(model t.Model, build t.Build, problem t.Problem) t.Model {
 	evalFolderPath := createEvalDir(model.Dir, build.Folder)
 	metricsYml := fp.Join(evalFolderPath, "metrics.yaml")
-	commands := s.prepareEvaluateCommands(metricsYml, "", model, build, problem)
+	commands := s.prepareEvaluateCommands(metricsYml, "", model, build, problem, true)
 	outputLog := createFile(fp.Join(evalFolderPath, "output.log"))
 	env := getEvaluateEnv(model)
 	s.runCommand(commands, env, problem.ToolsPath, outputLog)

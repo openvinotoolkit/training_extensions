@@ -47,7 +47,7 @@ func (s *basicModelService) eval(model t.Model, build t.Build, problem t.Problem
 	if err := os.MkdirAll(outputImagesPath, 0777); err != nil {
 		log.Println("evaluate.createFolder.os.MkdirAll(path, 0777)", err)
 	}
-	commands := s.prepareEvaluateCommands(metricsYml, outputImagesPath, model, build, problem)
+	commands := s.prepareEvaluateCommands(metricsYml, outputImagesPath, model, build, problem, false)
 	outputLog := createFile(fp.Join(evalFolderPath, "output.log"))
 	env := getEvaluateEnv(model)
 	s.runCommand(commands, env, problem.ToolsPath, outputLog)
@@ -102,7 +102,7 @@ func createEvalDir(modelDirPath, buildName string) string {
 	return newModelDirPath
 }
 
-func (s *basicModelService) prepareEvaluateCommands(evalYml, outputImagesPath string, model t.Model, build t.Build, problem t.Problem) []string {
+func (s *basicModelService) prepareEvaluateCommands(evalYml, outputImagesPath string, model t.Model, build t.Build, problem t.Problem, isInit bool) []string {
 	evalDir := fp.Dir(evalYml)
 	if err := os.MkdirAll(evalDir, 0777); err != nil {
 		log.Println("domains.model.pkg.service.evaluate.prepareEvaluateCommands.os.MkdirAll(evalFolder, 0777)", err)
@@ -117,7 +117,7 @@ func (s *basicModelService) prepareEvaluateCommands(evalYml, outputImagesPath st
 		fmt.Sprintf("--load-weights %s", model.SnapshotPath),
 		fmt.Sprintf("--save-metrics-to %s", evalYml),
 	}
-	if problem.Type == problemType.Default {
+	if isInit == false {
 		paramsArr = append(paramsArr, fmt.Sprintf("--test-ann-files %s", annFileStr))
 		paramsArr = append(paramsArr, fmt.Sprintf("--test-data-roots %s", imgPrefixStr))
 	}
