@@ -48,9 +48,9 @@ def test_args_parser(template_path):
     with open(template_path, 'r') as model_definition:
         config = yaml.safe_load(model_definition)
 
-        parser.add_argument('--test-ann-files', required=False,
+        parser.add_argument('--test-ann-files', required=True,
                             help='Comma-separated paths to test annotation files.')
-        parser.add_argument('--test-data-roots', required=False,
+        parser.add_argument('--test-data-roots', required=True,
                             help='Comma-separated paths to test data folders.')
         parser.add_argument('--load-weights', required=True,
                             help='Load only weights from previously saved checkpoint')
