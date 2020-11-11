@@ -4,8 +4,8 @@ import logging
 import os
 import subprocess
 
-from oteod import MMDETECTION_TOOLS
-from oteod.evaluation.common import collect_ap, evaluate_internal
+from ote import MMDETECTION_TOOLS
+from ote.evaluation.common import collect_ap, evaluate_internal
 
 
 def collect_f1(path):
