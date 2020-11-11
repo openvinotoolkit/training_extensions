@@ -7,9 +7,8 @@ import tempfile
 
 import yaml
 from mmcv import Config
-from oteod import MMDETECTION_TOOLS
-from oteod.misc import get_complexity_and_size
-from ote.misc import get_file_size_and_sha256
+from ote import MMDETECTION_TOOLS
+from ote.misc import get_file_size_and_sha256, get_complexity_and_size
 
 
 def collect_ap(path):
@@ -61,7 +60,7 @@ def coco_ap_eval(config_path, work_dir, snapshot, update_config, show_dir=''):
     return outputs
 
 
-def evaluate_internal(config_path, snapshot, out, update_config, metrics_functions):
+def evaluate_internal(config_path, snapshot, out, update_config, metrics_functions, complexity_img_shape=None):
     """ Main evaluation procedure. """
 
     assert isinstance(update_config, dict)
@@ -78,7 +77,7 @@ def evaluate_internal(config_path, snapshot, out, update_config, metrics_functio
 
     metrics = []
 
-    metrics.extend(get_complexity_and_size(cfg, config_path, work_dir, update_config))
+    metrics.extend(get_complexity_and_size(cfg, config_path, work_dir, update_config, complexity_img_shape))
     for func, args in metrics_functions:
         metrics.extend(func(config_path, work_dir, snapshot, *args))
 
@@ -100,7 +99,7 @@ def evaluate_internal(config_path, snapshot, out, update_config, metrics_functio
         yaml.dump(outputs, write_file)
 
 
-def evaluate(config, snapshot, out, update_config, show_dir):
+def evaluate(config, snapshot, out, update_config, show_dir, complexity_img_shape=None):
     """ Main function. """
     logging.basicConfig(level=logging.INFO)
 
@@ -109,4 +108,4 @@ def evaluate(config, snapshot, out, update_config, show_dir):
     metrics_functions = (
         (coco_ap_eval, (update_config, show_dir)),
     )
-    evaluate_internal(config, snapshot, out, update_config, metrics_functions)
+    evaluate_internal(config, snapshot, out, update_config, metrics_functions, complexity_img_shape)

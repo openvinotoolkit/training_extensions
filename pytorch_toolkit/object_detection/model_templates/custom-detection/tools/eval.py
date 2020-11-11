@@ -17,8 +17,8 @@ import os
 
 from ote import MODEL_TEMPLATE_FILENAME
 from ote.api import test_args_parser
-from oteod.args_conversion import convert_ote_to_oteod_test_args
-from oteod.evaluation.common import evaluate
+from ote.args_conversion import convert_test_args
+from ote.evaluation.common import evaluate
 
 def parse_args(template_filename):
     """ Parses input args. """
@@ -28,6 +28,6 @@ def parse_args(template_filename):
                         help='Comma-separated list of classes (e.g. "cat,dog,mouse").')
     return parser.parse_args()
 
-ote_args = vars(parse_args(MODEL_TEMPLATE_FILENAME))
-oteod_args = convert_ote_to_oteod_test_args(os.path.dirname(MODEL_TEMPLATE_FILENAME), ote_args)
-evaluate(**oteod_args)
+args = vars(parse_args(MODEL_TEMPLATE_FILENAME))
+ote_args = convert_test_args(os.path.dirname(MODEL_TEMPLATE_FILENAME), args)
+evaluate(**ote_args)
