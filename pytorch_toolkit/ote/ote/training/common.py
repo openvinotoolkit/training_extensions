@@ -10,8 +10,8 @@ import tempfile
 import torch
 import yaml
 from mmcv.utils import Config
-from oteod import MMDETECTION_TOOLS
-from oteod.misc import run_with_termination
+from ote import MMDETECTION_TOOLS
+from ote.misc import run_with_termination
 
 
 def train_internal(config, gpu_num, update_config, tensorboard_dir):
