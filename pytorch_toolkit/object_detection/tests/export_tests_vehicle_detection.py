@@ -21,8 +21,8 @@ class VehicleDetection0200TestCase(
         create_export_test_case(
             'vehicle-detection',
             'vehicle-detection-0200',
-            os.path.dirname(__file__) + '../../../data/crossroad_vehicle/vehicle_annotation_val.json',
-            os.path.dirname(__file__) + '../../../data/crossroad_vehicle/val',
+            os.path.dirname(__file__) + '/../../../data/vehicle_detection/vehicle_annotation_val.json',
+            os.path.dirname(__file__) + '/../../../data/vehicle_detection/val',
             True)
 ):
     """ Test case for vehicle-detection-0200 model export. """
@@ -32,8 +32,8 @@ class VehicleDetection0201TestCase(
         create_export_test_case(
             'vehicle-detection',
             'vehicle-detection-0201',
-            os.path.dirname(__file__) + '../../../data/crossroad_vehicle/vehicle_annotation_val.json',
-            os.path.dirname(__file__) + '../../../data/crossroad_vehicle/val',
+            os.path.dirname(__file__) + '/../../../data/vehicle_detection/vehicle_annotation_val.json',
+            os.path.dirname(__file__) + '/../../../data/vehicle_detection/val',
             True)
 ):
     """ Test case for vehicle-detection-0201 model export. """
@@ -43,8 +43,8 @@ class VehicleDetection0202TestCase(
         create_export_test_case(
             'vehicle-detection',
             'vehicle-detection-0202',
-            os.path.dirname(__file__) + '../../../data/crossroad_vehicle/vehicle_annotation_val.json',
-            os.path.dirname(__file__) + '../../../data/crossroad_vehicle/val',
+            os.path.dirname(__file__) + '/../../../data/vehicle_detection/vehicle_annotation_val.json',
+            os.path.dirname(__file__) + '/../../../data/vehicle_detection/val',
             True)
 ):
     """ Test case for vehicle-detection-0202 model export. """
@@ -54,8 +54,8 @@ class VehicleDetection0203TestCase(
         create_export_test_case(
             'vehicle-detection',
             'vehicle-detection-0203',
-            os.path.dirname(__file__) + '../../../data/crossroad_vehicle/vehicle_annotation_val.json',
-            os.path.dirname(__file__) + '../../../data/crossroad_vehicle/val',
+            os.path.dirname(__file__) + '/../../../data/vehicle_detection/vehicle_annotation_val.json',
+            os.path.dirname(__file__) + '/../../../data/vehicle_detection/val',
             False)
 ):
     """ Test case for vehicle-detection-0230 model export. """
@@ -65,8 +65,8 @@ class VehicleDetection0204TestCase(
         create_export_test_case(
             'vehicle-detection',
             'vehicle-detection-0204',
-            os.path.dirname(__file__) + '../../../data/crossroad_vehicle/vehicle_annotation_val.json',
-            os.path.dirname(__file__) + '../../../data/crossroad_vehicle/val',
+            os.path.dirname(__file__) + '/../../../data/vehicle_detection/vehicle_annotation_val.json',
+            os.path.dirname(__file__) + '/../../../data/vehicle_detection/val',
             False)
 ):
     """ Test case for vehicle-detection-0204 model export. """
