@@ -19,7 +19,7 @@ dependencies:
   destination: quantize.py
 - source: ../../../../../pytorch_toolkit/ote
   destination: packages/ote
-- source: ../../../../object_detection/oteod
+- source: ../../../object_detection/oteod
   destination: packages/oteod
 - source: ../../requirements.txt
   destination: requirements.txt
