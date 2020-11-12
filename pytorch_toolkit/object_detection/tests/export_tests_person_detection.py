@@ -12,39 +12,39 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import os
+# import os
 
-from common.test_case import create_export_test_case
-
-
-class PersonDetection0200TestCase(
-        create_export_test_case(
-            'person-detection',
-            'person-detection-0200',
-            os.path.dirname(__file__) + '/../../../data/airport/annotation_example_train.json',
-            os.path.dirname(__file__) + '/../../../data/airport/train',
-            True)
-):
-    """ Test case for person-detection-0200 model export. """
+# from common.test_case import create_export_test_case
 
 
-class PersonDetection0201TestCase(
-        create_export_test_case(
-            'person-detection',
-            'person-detection-0201',
-            os.path.dirname(__file__) + '/../../../data/airport/annotation_example_train.json',
-            os.path.dirname(__file__) + '/../../../data/airport/train',
-            True)
-):
-    """ Test case for person-detection-0201 model export. """
+# class PersonDetection0200TestCase(
+#         create_export_test_case(
+#             'person-detection',
+#             'person-detection-0200',
+#             os.path.dirname(__file__) + '/../../../data/airport/annotation_example_train.json',
+#             os.path.dirname(__file__) + '/../../../data/airport/train',
+#             True)
+# ):
+#     """ Test case for person-detection-0200 model export. """
 
 
-class PersonDetection0202TestCase(
-        create_export_test_case(
-            'person-detection',
-            'person-detection-0202',
-            os.path.dirname(__file__) + '/../../../data/airport/annotation_example_train.json',
-            os.path.dirname(__file__) + '/../../../data/airport/train',
-            True)
-):
-    """ Test case for person-detection-0202 model export. """
+# class PersonDetection0201TestCase(
+#         create_export_test_case(
+#             'person-detection',
+#             'person-detection-0201',
+#             os.path.dirname(__file__) + '/../../../data/airport/annotation_example_train.json',
+#             os.path.dirname(__file__) + '/../../../data/airport/train',
+#             True)
+# ):
+#     """ Test case for person-detection-0201 model export. """
+
+
+# class PersonDetection0202TestCase(
+#         create_export_test_case(
+#             'person-detection',
+#             'person-detection-0202',
+#             os.path.dirname(__file__) + '/../../../data/airport/annotation_example_train.json',
+#             os.path.dirname(__file__) + '/../../../data/airport/train',
+#             True)
+# ):
+#     """ Test case for person-detection-0202 model export. """
