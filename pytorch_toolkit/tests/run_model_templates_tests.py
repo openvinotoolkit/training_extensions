@@ -35,8 +35,13 @@ class ModelTemplatesTestCase(unittest.TestCase):
                 domain_folders.add(domain_folder)
 
         for domain_folder in domain_folders:
-            returncode = run(f'export MODEL_TEMPLATES={self.work_dir};'
-                f'python3 {os.path.join(domain_folder, "tests", "run_train_tests.py")}', shell=True).returncode
+            venv_activate_path = os.path.join(self.work_dir, domain_folder, 'venv', 'bin', 'activate')
+            returncode = run(
+                f'. {venv_activate_path};'
+                f'export MODEL_TEMPLATES={self.work_dir};'
+                f'python3 {os.path.join(domain_folder, "tests", "run_train_tests.py")}',
+                shell=True,
+                executable="/bin/bash").returncode
             self.assertEqual(returncode, 0)
 
     def test_export(self):
@@ -48,8 +53,13 @@ class ModelTemplatesTestCase(unittest.TestCase):
                 domain_folders.add(domain_folder)
 
         for domain_folder in domain_folders:
-            returncode = run(f'export MODEL_TEMPLATES={self.work_dir};'
-                f'python3 {os.path.join(domain_folder, "tests", "run_export_tests.py")}', shell=True).returncode
+            venv_activate_path = os.path.join(self.work_dir, domain_folder, 'venv', 'bin', 'activate')
+            returncode = run(
+                f'. {venv_activate_path};'
+                f'export MODEL_TEMPLATES={self.work_dir};'
+                f'python3 {os.path.join(domain_folder, "tests", "run_export_tests.py")}',
+                shell=True,
+                executable="/bin/bash").returncode
             self.assertEqual(returncode, 0)
 
 
