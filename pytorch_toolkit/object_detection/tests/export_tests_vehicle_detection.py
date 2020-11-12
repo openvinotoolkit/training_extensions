@@ -54,7 +54,7 @@ class VehicleDetection0203TestCase(
         create_export_test_case(
             'vehicle-detection',
             'vehicle-detection-0203',
-            os.path.dirname(__file__) + '/../../../data/vehicle_detection/vehicle_annotation_val.json',
+            os.path.dirname(__file__) + '/../../../data/vehicle_detection/annotation_val.json',
             os.path.dirname(__file__) + '/../../../data/vehicle_detection/val',
             False)
 ):
