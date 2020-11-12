@@ -17,7 +17,7 @@ import os
 from common.test_case import create_export_test_case
 
 
-class FaceDetection0200TestCase(
+class HorizontalTextDetection0001TestCase(
         create_export_test_case(
             'horizontal-text-detection',
             'horizontal-text-detection-0001',
