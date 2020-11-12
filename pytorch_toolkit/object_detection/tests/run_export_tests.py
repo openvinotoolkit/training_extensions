@@ -20,9 +20,8 @@ import unittest
 
 
 def main():
-    # if os.path.abspath(os.getcwd()) == os.path.abspath(os.path.join(os.path.dirname(__file__), '..')):
-    #     print("A")
-    #     return 0
+    if os.path.abspath(os.getcwd()) == os.path.abspath(os.path.join(os.path.dirname(__file__), '..')):
+        return 0
 
     testsuite = unittest.TestLoader().discover(os.path.dirname(__file__), pattern='export_tests_*.py')
     ret = not unittest.TextTestRunner(verbosity=1).run(testsuite).wasSuccessful()
