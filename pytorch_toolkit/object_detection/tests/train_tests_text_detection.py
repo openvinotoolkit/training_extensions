@@ -17,12 +17,12 @@ import os
 from common.test_case import create_test_case
 
 
-# class HorizontalTextDetection0001TestCase(
-#         create_test_case(
-#             'horizontal-text-detection',
-#             'horizontal-text-detection-0001',
-#             os.path.dirname(__file__) + '/../../../data/horizontal_text_detection/annotation.json',
-#             os.path.dirname(__file__) + '/../../../data/horizontal_text_detection/'
-#         )
-# ):
-#     """ Test case for horizontal-text-detection-0001 model. """
+class HorizontalTextDetection0001TestCase(
+        create_test_case(
+            'horizontal-text-detection',
+            'horizontal-text-detection-0001',
+            os.path.dirname(__file__) + '/../../../data/horizontal_text_detection/annotation.json',
+            os.path.dirname(__file__) + '/../../../data/horizontal_text_detection/'
+        )
+):
+    """ Test case for horizontal-text-detection-0001 model. """

@@ -17,67 +17,67 @@ import os
 from common.test_case import create_test_case
 
 
-# class FaceDetection0200TestCase(
-#         create_test_case(
-#             'face-detection',
-#             'face-detection-0200',
-#             os.path.dirname(__file__) + '/../../../data/airport/annotation_faces_train.json',
-#             os.path.dirname(__file__) + '/../../../data/airport/'
-#         )
-# ):
-#     """ Test case for face-detection-0200 model. """
+class FaceDetection0200TestCase(
+        create_test_case(
+            'face-detection',
+            'face-detection-0200',
+            os.path.dirname(__file__) + '/../../../data/airport/annotation_faces_train.json',
+            os.path.dirname(__file__) + '/../../../data/airport/'
+        )
+):
+    """ Test case for face-detection-0200 model. """
 
 
-# class FaceDetection0202TestCase(
-#         create_test_case(
-#             'face-detection',
-#             'face-detection-0202',
-#             os.path.dirname(__file__) + '/../../../data/airport/annotation_faces_train.json',
-#             os.path.dirname(__file__) + '/../../../data/airport/'
-#         )
-# ):
-#     """ Test case for face-detection-0202 model. """
+class FaceDetection0202TestCase(
+        create_test_case(
+            'face-detection',
+            'face-detection-0202',
+            os.path.dirname(__file__) + '/../../../data/airport/annotation_faces_train.json',
+            os.path.dirname(__file__) + '/../../../data/airport/'
+        )
+):
+    """ Test case for face-detection-0202 model. """
 
 
-# class FaceDetection0204TestCase(
-#         create_test_case(
-#             'face-detection',
-#             'face-detection-0204',
-#             os.path.dirname(__file__) + '/../../../data/airport/annotation_faces_train.json',
-#             os.path.dirname(__file__) + '/../../../data/airport/'
-#         )
-# ):
-#     """ Test case for face-detection-0204 model. """
+class FaceDetection0204TestCase(
+        create_test_case(
+            'face-detection',
+            'face-detection-0204',
+            os.path.dirname(__file__) + '/../../../data/airport/annotation_faces_train.json',
+            os.path.dirname(__file__) + '/../../../data/airport/'
+        )
+):
+    """ Test case for face-detection-0204 model. """
 
 
-# class FaceDetection0205TestCase(
-#         create_test_case(
-#             'face-detection',
-#             'face-detection-0205',
-#             os.path.dirname(__file__) + '/../../../data/airport/annotation_faces_train.json',
-#             os.path.dirname(__file__) + '/../../../data/airport/'
-#         )
-# ):
-#     """ Test case for face-detection-0205 model. """
+class FaceDetection0205TestCase(
+        create_test_case(
+            'face-detection',
+            'face-detection-0205',
+            os.path.dirname(__file__) + '/../../../data/airport/annotation_faces_train.json',
+            os.path.dirname(__file__) + '/../../../data/airport/'
+        )
+):
+    """ Test case for face-detection-0205 model. """
 
 
-# class FaceDetection0206TestCase(
-#         create_test_case(
-#             'face-detection',
-#             'face-detection-0206',
-#             os.path.dirname(__file__) + '/../../../data/airport/annotation_faces_train.json',
-#             os.path.dirname(__file__) + '/../../../data/airport/'
-#         )
-# ):
-#     """ Test case for face-detection-0206 model. """
+class FaceDetection0206TestCase(
+        create_test_case(
+            'face-detection',
+            'face-detection-0206',
+            os.path.dirname(__file__) + '/../../../data/airport/annotation_faces_train.json',
+            os.path.dirname(__file__) + '/../../../data/airport/'
+        )
+):
+    """ Test case for face-detection-0206 model. """
 
 
-# class FaceDetection0207TestCase(
-#         create_test_case(
-#             'face-detection',
-#             'face-detection-0207',
-#             os.path.dirname(__file__) + '/../../../data/airport/annotation_faces_train.json',
-#             os.path.dirname(__file__) + '/../../../data/airport/'
-#         )
-# ):
-#     """ Test case for face-detection-0207 model. """
+class FaceDetection0207TestCase(
+        create_test_case(
+            'face-detection',
+            'face-detection-0207',
+            os.path.dirname(__file__) + '/../../../data/airport/annotation_faces_train.json',
+            os.path.dirname(__file__) + '/../../../data/airport/'
+        )
+):
+    """ Test case for face-detection-0207 model. """
