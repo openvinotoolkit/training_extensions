@@ -13,6 +13,7 @@
 # and limitations under the License.
 
 import argparse
+import logging
 import os
 from subprocess import run
 
@@ -31,6 +32,8 @@ def parse_args():
 
 
 def main():
+    logging.basicConfig(level=logging.INFO)
+    
     args = parse_args()
     with open(args.template) as read_file:
         content = yaml.load(read_file, yaml.SafeLoader)
@@ -47,7 +50,9 @@ def main():
             run(f'cp -r {rel_source} {os.path.join(args.output, destination)}', check=True, shell=True)
         else:
             if not args.do_not_load_snapshot:
-                run(f'wget -O {os.path.join(args.output, destination)} {source}', check=True, shell=True)
+                logging.info(f'Downloading {source}')
+                run(f'wget -q -O {os.path.join(args.output, destination)} {source}', check=True, shell=True)
+                logging.info(f'Downloading {source} has been completed.')
                 expected_size = dependency['size']
                 expected_sha256 = dependency['sha256']
                 actual = get_file_size_and_sha256(
