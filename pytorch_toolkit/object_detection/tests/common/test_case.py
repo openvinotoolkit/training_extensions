@@ -57,8 +57,6 @@ def create_test_case(problem_name, model_name, ann_file, img_root):
                 f'pip install -r requirements.txt;'
             )
 
-            
-
         @unittest.skipUnless(torch.cuda.is_available(), 'No GPU found')
         def test_evaluation_on_gpu(self):
             run_through_shell(
@@ -173,7 +171,7 @@ def create_export_test_case(problem_name, model_name, ann_file, img_root, alt_ss
             )
 
         def export_test_on_gpu(self, alt_ssd_export, thr):
-            export_folder = "gpu_export"
+            export_folder = 'gpu_export'
             if not os.path.exists(export_folder):
                 self.do_export(export_folder)
             if alt_ssd_export:
@@ -200,7 +198,7 @@ def create_export_test_case(problem_name, model_name, ann_file, img_root, alt_ss
             self.assertGreater(ap, content['map'] - thr)
 
         def export_test_on_cpu(self, alt_ssd_export, thr):
-            export_folder = "cpu_export"
+            export_folder = 'cpu_export'
             if not os.path.exists(export_folder):
                 self.do_export(export_folder)
             if alt_ssd_export:
