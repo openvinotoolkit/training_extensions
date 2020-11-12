@@ -58,7 +58,7 @@ class VehicleDetection0203TestCase(
             os.path.dirname(__file__) + '/../../../data/vehicle_detection/val',
             False)
 ):
-    """ Test case for vehicle-detection-0230 model export. """
+    """ Test case for vehicle-detection-0203 model export. """
 
 
 class VehicleDetection0204TestCase(
