@@ -48,7 +48,7 @@ domains:
     imagesUrls:
       - https://raw.githubusercontent.com/opencv/open_model_zoo/develop/models/intel/person-vehicle-bike-detection-crossroad-1016/description/person-vehicle-bike-detection-crossroad-1016.png
     subtitle: Detecting vehicles, persons, bikes in digital images
-    cvat_schema: '[{"name": "vehicle", "attributes":[]}]'
+    cvat_schema: '[{"name": "vehicle", "attributes":[]}, {"name": "person", "attributes":[]}, {"name": "non-vehicle", "attributes":[]}]'
   - title: Vehicle Detection
     description:  >-
       Vehicle detection is a computer technology being used in a variety of applications
@@ -57,4 +57,4 @@ domains:
     imagesUrls:
       - https://raw.githubusercontent.com/opencv/open_model_zoo/develop/models/intel/vehicle-detection-adas-0002/description/vehicle-detection-adas-0002.png
     subtitle: Detecting vehicles in digital images
-    cvat_schema: '[{"name": "vehicle", "attributes":[]}, {"name": "person", "attributes":[]}, {"name": "non-vehicle", "attributes":[]}]'
+    cvat_schema: '[{"name": "vehicle", "attributes":[]}]'
