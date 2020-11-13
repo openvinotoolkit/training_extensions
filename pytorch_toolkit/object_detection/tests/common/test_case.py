@@ -238,6 +238,7 @@ def create_export_test_case(problem_name, model_name, ann_file, img_root, alt_ss
             self.export_test_on_gpu(False, self.test_export_thr)
 
         def test_export_on_cpu(self):
+            self.skip_if_cpu_is_not_supported()
             self.export_test_on_cpu(False, self.test_export_thr)
 
     class ExportWithAltSsdTestCase(ExportTestCase):
