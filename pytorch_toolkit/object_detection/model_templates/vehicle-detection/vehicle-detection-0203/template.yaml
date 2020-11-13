@@ -23,7 +23,6 @@ dependencies:
   destination: requirements.txt
 max_nodes: 1
 training_target:
-- CPU
 - GPU
 inference_target:
 - CPU
