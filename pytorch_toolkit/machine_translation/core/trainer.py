@@ -72,6 +72,12 @@ class NMTTrainer(pl.LightningModule):
         self.metric.reset()
         self.log('bleu', bleu, on_epoch=True, prog_bar=True, logger=True)
 
+    def test_step(self, batch, batch_idx):
+        return self.validation_step(batch, batch_idx)
+
+    def test_epoch_end(self, outputs):
+        return self.validation_epoch_end(outputs)
+
     def configure_optimizers(self):
         # optimizer
         groups =  self.model.get_params()
@@ -100,6 +106,10 @@ class NMTTrainer(pl.LightningModule):
             shuffle=False,
             collate_fn=self.tokenizer
         )
+
+    def test_dataloader(self):
+        return self.val_dataloader()
+
 
     def forward(self, *args, **kwargs):
         return self.model(*args, **kwargs)

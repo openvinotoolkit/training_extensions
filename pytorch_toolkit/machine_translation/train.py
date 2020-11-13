@@ -51,7 +51,10 @@ def main(args):
             checkpoint_callback=checkpoint_callback,
             val_check_interval=args.val_check_interval,
         )
-        trainer.fit(nmt_trainer)
+        if not args.eval:
+            trainer.fit(nmt_trainer)
+        else:
+            trainer.test(nmt_trainer)
 
 
 if __name__ == "__main__":
@@ -76,5 +79,7 @@ if __name__ == "__main__":
     parser.add_argument('--to-onnx', action='store_true', help="convert model to onnx")
     parser.add_argument('--onnx-path', type=str, default="model.onnx", help="path to onnx model")
     parser.add_argument('--onnx-denominator', type=int, default=8, help="max input length of onnx model")
+    # evaluate
+    parser.add_argument('--eval', action='store_true', help="run validation only")
     args = parser.parse_args()
     main(args)

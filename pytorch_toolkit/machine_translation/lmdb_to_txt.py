@@ -11,18 +11,17 @@
  limitations under the License.
 """
 import argparse
-from core.tokenizer.spbpe_tokenizer import SPBPETokenizer
+from tqdm import tqdm
+from core.dataset import LMDBContainer
 
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument("--corpus-list", type=str, help="path to txt file that contains list of corpuses")
-    parser.add_argument("--vocab-size", type=int, default=32000, help="vocab size")
-    parser.add_argument("--output", type=str, help="path to store trained tokenizer")
+    parser.add_argument("--input", type=str, help="path to corpus files with comma separator like path1,path2,...,pathN")
+    parser.add_argument("--output", type=str, help="path to output lmdb file")
     args = parser.parse_args()
 
-    SPBPETokenizer.train(
-        args.corpus_list,
-        args.vocab_size,
-        args.output
-    )
+    data = LMDBContainer(args.input)
+    with open(args.output, 'w') as f:
+        for sample in tqdm(data):
+            f.write(sample["text"] + "\n")
