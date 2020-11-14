@@ -56,6 +56,12 @@ def create_test_case(problem_name, model_name, ann_file, img_root):
                 f'pip install -r requirements.txt;'
             )
 
+        def skip_if_cpu_is_not_supported(self):
+            with open(self.template_file) as read_file:
+                training_targets = [x.lower() for x in yaml.load(read_file, yaml.SafeLoader)['training_target']]
+            if 'cpu' not in training_targets:
+                self.skipTest('CPU is not supported.')
+
         @unittest.skipUnless(torch.cuda.is_available(), 'No GPU found')
         def test_evaluation_on_gpu(self):
             run_through_shell(
@@ -78,6 +84,7 @@ def create_test_case(problem_name, model_name, ann_file, img_root):
             self.assertLess(abs(content['map'] - ap / 100), 1e-6)
 
         def test_evaluation_on_cpu(self):
+            self.skip_if_cpu_is_not_supported()
             run_through_shell(
                 'export CUDA_VISIBLE_DEVICES=;'
                 f'cd {self.template_folder};'
@@ -95,7 +102,6 @@ def create_test_case(problem_name, model_name, ann_file, img_root):
 
             with open(f'{os.path.dirname(__file__)}/../expected_outputs/{problem_name}/{model_name}.json') as read_file:
                 content = json.load(read_file)
-
             self.assertLess(abs(content['map'] - ap / 100), 1e-6)
 
         @unittest.skipUnless(torch.cuda.is_available(), 'No GPU found')
@@ -120,10 +126,7 @@ def create_test_case(problem_name, model_name, ann_file, img_root):
             self.assertGreater(ap[-1], 0)
 
         def test_finetuning_on_cpu(self):
-            with open(self.template_file) as read_file:
-                training_targets = [x.lower() for x in yaml.load(read_file)['training_target']]
-            if 'cpu' not in training_targets:
-                self.skipTest('CPU training is not supported.')
+            self.skip_if_cpu_is_not_supported()
             log_file = os.path.join(self.template_folder, 'test_finetuning.log')
             run_through_shell(
                 'export CUDA_VISIBLE_DEVICES=;'
@@ -159,6 +162,12 @@ def create_export_test_case(problem_name, model_name, ann_file, img_root, alt_ss
             cls.img_root = img_root
             cls.dependencies = get_dependencies(cls.template_file)
             cls.test_export_thr = 0.031
+
+        def skip_if_cpu_is_not_supported(self):
+            with open(self.template_file) as read_file:
+                training_targets = [x.lower() for x in yaml.load(read_file, yaml.SafeLoader)['training_target']]
+            if 'cpu' not in training_targets:
+                self.skipTest('CPU is not supported.')
 
         def do_export(self, folder):
             run_through_shell(
@@ -229,6 +238,7 @@ def create_export_test_case(problem_name, model_name, ann_file, img_root, alt_ss
             self.export_test_on_gpu(False, self.test_export_thr)
 
         def test_export_on_cpu(self):
+            self.skip_if_cpu_is_not_supported()
             self.export_test_on_cpu(False, self.test_export_thr)
 
     class ExportWithAltSsdTestCase(ExportTestCase):
@@ -238,6 +248,7 @@ def create_export_test_case(problem_name, model_name, ann_file, img_root, alt_ss
             self.export_test_on_gpu(True, self.test_export_thr)
 
         def test_alt_ssd_export_on_cpu(self):
+            self.skip_if_cpu_is_not_supported()
             self.export_test_on_cpu(True, self.test_export_thr)
 
     if alt_ssd_export:
