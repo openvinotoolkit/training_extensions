@@ -13,14 +13,14 @@ For details about the original model, check out
 
 1. [Requirements](#requirements)
 2. [Preparation](#preparation)
-3. [Train QA model](#train_qa)
-4. [Train Embedding model](#train_qcemb)
-5. [Convert a Model to OpenVINO™ format for Demo](#openvino)
+3. [Train QA model](#trainqamodel)
+4. [Train Embedding model](#train_embedding_model)
+5. [Convert a Model to OpenVINO™ format for Demo](#convert_a_model_to_openvino_format_for_demo)
 
 
 ## Requirements
 
-To run scrips the Python\* 3.6 has to be installed on machine, with dependencies listed in the `requirements.txt` file.
+To run scrips the Python\* 3.6 has to be installed on machine.
 To install the required packages, run the following:
 
 ```bash
