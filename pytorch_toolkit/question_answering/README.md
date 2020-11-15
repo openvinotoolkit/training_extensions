@@ -241,7 +241,7 @@ As result the packed small int8 embedding model has to be located in newly creat
 Each script together with pytorch model also save ONNX\* model into the same output folder. This ONNX\* model can be converted to OpenVINO™ format
 
 ```bash
-mo.py --input_model <path_to_output_onnx>'
+mo.py --input_model <path_to_output_onnx>
 ```
 
 After conversion them to the OpenVINO™ format you can try models using
