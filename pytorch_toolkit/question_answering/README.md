@@ -13,9 +13,9 @@ For details about the original model, check out
 
 1. [Requirements](#requirements)
 2. [Preparation](#preparation)
-3. [Train QA model](#trainqamodel)
-4. [Train Embedding model](#train_embedding_model)
-5. [Convert a Model to OpenVINO™ format for Demo](#convert_a_model_to_openvino_format_for_demo)
+3. [Train QA model](#train-qa)
+4. [Train Embedding model](#train-embedding)
+5. [Convert a Model to OpenVINO™ format for Demo](#convert-a)
 
 
 ## Requirements
