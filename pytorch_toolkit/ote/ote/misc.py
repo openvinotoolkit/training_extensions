@@ -120,22 +120,19 @@ def get_work_dir(cfg, update_config):
 
 
 def download_snapshot_if_not_yet(template_file, output_folder):
-
     with open(template_file) as read_file:
         content = yaml.load(read_file, yaml.SafeLoader)
 
     for dependency in content['dependencies']:
-        source = dependency['source']
         destination = dependency['destination']
         if destination == 'snapshot.pth':
-
+            source = dependency['source']
             expected_size = dependency['size']
             expected_sha256 = dependency['sha256']
             if os.path.exists(os.path.join(output_folder, destination)):
                 actual = get_file_size_and_sha256(os.path.join(output_folder, destination))
                 if expected_size == actual['size'] and expected_sha256 == actual['sha256']:
                     logging.info(f'{source} has been already downloaded.')
-                    exit(-1)
                     return
 
             logging.info(f'Downloading {source}')

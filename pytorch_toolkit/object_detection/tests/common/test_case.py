@@ -22,7 +22,7 @@ import torch
 import yaml
 
 from common.utils import collect_ap, run_through_shell
-from ote.misc import get_file_size_and_sha256, download_snapshot_if_not_yet
+from ote.misc import download_snapshot_if_not_yet
 
 
 def get_dependencies(template_file):
