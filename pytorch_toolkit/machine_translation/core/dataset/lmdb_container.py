@@ -23,7 +23,7 @@ class Page:
         self.page_size = page_size
 
     def add(self, val, key=None):
-        k = self._encode(str(self.idx)) if key is None else key
+        k = self.idx if key is None else key
         self.page[k] = self._encode(val)
         self.idx += 1
         self._check_page_size()
