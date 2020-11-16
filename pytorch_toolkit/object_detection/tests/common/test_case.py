@@ -12,10 +12,8 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import logging
 import json
 import os
-from subprocess import run
 import unittest
 
 import torch
