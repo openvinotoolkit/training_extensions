@@ -87,7 +87,7 @@ class ModelTemplatesTestCase(unittest.TestCase):
                     f'. {venv_activate_path};'
                     f'export MODEL_TEMPLATES={self.work_dir};'
                     f'python3 {os.path.join(domain_folder, "tests", "run_export_tests.py")}'
-                    f' --pattern=train_tests_{problem_folder}.py',
+                    f' --pattern=export_tests_{problem_folder}.py',
                     shell=True,
                     check=True,
                     executable="/bin/bash").returncode
