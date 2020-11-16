@@ -12,14 +12,17 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+import logging
 import json
 import os
+from subprocess import run
 import unittest
 
 import torch
 import yaml
 
 from common.utils import collect_ap, run_through_shell
+from ote.misc import get_file_size_and_sha256, download_snapshot_if_not_yet
 
 
 def get_dependencies(template_file):
@@ -50,6 +53,8 @@ def create_test_case(problem_name, model_name, ann_file, img_root):
             cls.dependencies = get_dependencies(cls.template_file)
             cls.epochs_delta = 2
             cls.total_epochs = get_epochs(cls.template_file) + cls.epochs_delta
+
+            download_snapshot_if_not_yet(cls.template_file, cls.template_folder)
 
             run_through_shell(
                 f'cd {cls.template_folder};'
@@ -162,6 +167,8 @@ def create_export_test_case(problem_name, model_name, ann_file, img_root, alt_ss
             cls.img_root = img_root
             cls.dependencies = get_dependencies(cls.template_file)
             cls.test_export_thr = 0.031
+
+            download_snapshot_if_not_yet(cls.template_file, cls.template_folder)
 
         def skip_if_cpu_is_not_supported(self):
             with open(self.template_file) as read_file:
