@@ -39,7 +39,7 @@ func (s *basicProblemService) UpdateFromLocal(
 		}
 	}
 	log.Println(problems)
-	responseChan <- kitendpoint.Response{Data: problems, IsLast: true, Err: nil}
+	responseChan <- kitendpoint.Response{Data: problems, IsLast: true, Err: kitendpoint.Error{Code: 0}}
 }
 
 func readProblemsYaml(responseChan chan kitendpoint.Response, path string) []t.Domain {
@@ -56,7 +56,7 @@ func readProblemsYaml(responseChan chan kitendpoint.Response, path string) []t.D
 		responseChan <- kitendpoint.Response{
 			Data:   t.Problem{},
 			IsLast: true,
-			Err:    err,
+			Err:    kitendpoint.Error{Code: 1, Message: err.Error()},
 		}
 	}
 	err = yaml.Unmarshal(yamlFile, &result)
@@ -65,7 +65,7 @@ func readProblemsYaml(responseChan chan kitendpoint.Response, path string) []t.D
 		responseChan <- kitendpoint.Response{
 			Data:   t.Problem{},
 			IsLast: true,
-			Err:    err,
+			Err:    kitendpoint.Error{Code: 1, Message: err.Error()},
 		}
 	}
 	for di, domain := range result.Domains {
@@ -84,7 +84,6 @@ func (s *basicProblemService) createOrUpdateProblem(ctx context.Context, problem
 	classFolderName := u.StringToFolderName(domainTitle)
 	problemDir := fp.Join(s.problemPath, classFolderName, problemFolderName)
 	workingDir := fp.Join(s.trainingsPath, classFolderName, problemFolderName)
-	toolsPath := fp.Join(problemDir, "_tools")
 	if problemData.Type == "" {
 		problemData.Type = problemType.Default
 	}
@@ -96,7 +95,6 @@ func (s *basicProblemService) createOrUpdateProblem(ctx context.Context, problem
 		Labels:      problemData.Labels,
 		Subtitle:    problemData.Subtitle,
 		Title:       problemData.Title,
-		ToolsPath:   toolsPath,
 		Type:        problemData.Type,
 		WorkingDir:  workingDir,
 	}

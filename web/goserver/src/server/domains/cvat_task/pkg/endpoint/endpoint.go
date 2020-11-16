@@ -40,7 +40,7 @@ func MakeFindInFolderEndpoint(s service.CvatTaskService) kitendpoint.Endpoint {
 			resp := s.FindInFolder(ctx, req.(service.FindInFolderRequestData))
 			returnChan <- kitendpoint.Response{
 				Data:   resp,
-				Err:    nil,
+				Err:    kitendpoint.Error{Code: 0},
 				IsLast: true,
 			}
 		}()

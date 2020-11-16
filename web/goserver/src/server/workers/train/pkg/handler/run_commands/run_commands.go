@@ -77,10 +77,14 @@ func decodeRequest(_ context.Context, deliv *amqp.Delivery) (interface{}, error)
 func decodeResponse(_ context.Context, deliv *amqp.Delivery) (interface{}, error) {
 	var res kitendpoint.Response
 	var resData ResponseData
+	var resErr kitendpoint.Error
 	err := json.Unmarshal(deliv.Body, &res)
-	b, err := json.Marshal(res.Data)
-	err = json.Unmarshal(b, &resData)
+	bData, err := json.Marshal(res.Data)
+	err = json.Unmarshal(bData, &resData)
 	res.Data = resData
+	bErr, err := json.Marshal(res.Err)
+	err = json.Unmarshal(bErr, &resErr)
+	res.Err = resErr
 	return res, err
 }
 

@@ -1,25 +1,19 @@
-/**
- * @overview
- * @copyright (c) JSC Intel A/O
- */
-
 import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatInputModule} from '@angular/material/input';
 import {MatTableModule} from '@angular/material/table';
 import {MatSortModule} from '@angular/material/sort';
-import {MatProgressBarModule} from '@angular/material/progress-bar';
 import {MatMenuModule} from '@angular/material/menu';
+import {MatProgressBarModule} from '@angular/material/progress-bar';
 import {MatIconModule} from '@angular/material/icon';
 import {IdlpModelMenuModule} from '@idlp/components/model-menu/model-menu.module';
-import {IdlpModelsTableComponent} from './models-table.component';
-import {IdlpModelTableRowModule} from '@idlp/components/model-table-row/model-table-row.module';
+import {IdlpModelTableRowComponent} from '@idlp/components/model-table-row/model-table-row.component';
 
 
 @NgModule({
   declarations: [
-    IdlpModelsTableComponent
+    IdlpModelTableRowComponent
   ],
   imports: [
     CommonModule,
@@ -30,12 +24,11 @@ import {IdlpModelTableRowModule} from '@idlp/components/model-table-row/model-ta
     MatMenuModule,
     MatProgressBarModule,
     MatIconModule,
-    IdlpModelMenuModule,
-    IdlpModelTableRowModule
+    IdlpModelMenuModule
   ],
   exports: [
-    IdlpModelsTableComponent
+    IdlpModelTableRowComponent
   ]
 })
-export class IdlpModelsTableModule {
+export class IdlpModelTableRowModule {
 }

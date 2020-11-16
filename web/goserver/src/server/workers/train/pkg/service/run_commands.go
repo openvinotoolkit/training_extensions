@@ -40,6 +40,7 @@ func (s *basicTrainModelService) RunCommands(ctx context.Context, req RunCommand
 		err = cmd.Run()
 		if err != nil {
 			log.Printf("cmd.Run() failed with %s\n", err)
+			return nil, err
 		}
 		log.Println(command, "finished")
 	}

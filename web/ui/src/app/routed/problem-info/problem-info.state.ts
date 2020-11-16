@@ -220,6 +220,12 @@ export class ProblemInfoState {
 
   @Action(UpdateModelsMetricsTableData)
   updateModelsMetricsTableData({getState, patchState, dispatch}: StateContext<ProblemInfoStateModel>, {models, columns, buildId}: UpdateModelsMetricsTableData): void {
+    const getStatus = (model: IModel): string => {
+      if (!['trainFinished', 'trainDefault'].includes(model.status)) {
+        return model.status;
+      }
+      return model.evaluates[buildId]?.status || 'notEvaluated';
+    };
     const rows: IModelTableRow[] = [];
     const metricsValues: { [key: string]: number[] } = {};
     for (const model of models) {
@@ -228,14 +234,14 @@ export class ProblemInfoState {
         name: {
           value: model.name,
         },
-        status: model.status,
+        status: getStatus(model),
         showOnChart: model.showOnChart,
       };
       for (const {key} of columns) {
         if (key === 'name') {
           continue;
         }
-        const metricValue = model?.metrics?.[buildId]?.find((metric: IMetric) => metric.key === key)?.value;
+        const metricValue = model?.evaluates?.[buildId]?.metrics?.find((metric: IMetric) => metric.key === key)?.value;
         row[key] = {
           value: metricValue,
         };
@@ -377,17 +383,17 @@ export class ProblemInfoState {
       return columns;
     }
     models.forEach((model: IModel) => {
-      if (!('metrics' in model)) {
+      if (!('evaluates' in model)) {
         return;
       }
-      Object.entries(model.metrics).forEach(([_, metrics]) => {
-        if (!metrics) {
+      Object.entries(model?.evaluates || {}).forEach(([_, evaluate]) => {
+        if (!evaluate) {
           return;
         }
-        if (metrics.length === 0) {
+        if (!evaluate?.metrics?.length) {
           return;
         }
-        metrics.forEach((metric) => {
+        evaluate.metrics.forEach((metric) => {
           const column = {key: metric.key, label: metric.displayName, unit: metric.unit};
           if (!columns.find((c) => c.key === column.key)) {
             columns.push(column);

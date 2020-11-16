@@ -87,7 +87,7 @@ func decodeResponse(_ context.Context, deliv *amqp.Delivery) (interface{}, error
 	err := json.Unmarshal(deliv.Body, &res)
 	if err != nil {
 		log.Println("cvat_task.find.decodeResponse.Unmarshal(deliv.Body, &res)", err)
-		res.Err = err
+		res.Err = kitendpoint.Error{Code: 1, Message: err.Error()}
 	}
 	res.Data = resData
 	return res, err

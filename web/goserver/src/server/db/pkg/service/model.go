@@ -71,9 +71,6 @@ type ModelInsertOneRequestData = t.ModelWithoutId
 
 func (s *basicDatabaseService) ModelInsertOne(ctx context.Context, req ModelInsertOneRequestData) (result t.Model, err error) {
 	modelCollection := s.db.Collection(n.CModel)
-	if req.Metrics == nil {
-		req.Metrics = make(map[string][]t.Metric)
-	}
 	r, err := modelCollection.InsertOne(ctx, req)
 	if err != nil {
 		log.Println("ModelInsertOne.InsertOne", err)

@@ -12,28 +12,33 @@ export interface IBuild {
 export interface IMetric {
   id: string;
   displayName: string;
-  unit: string;
   key: string;
   value: any;
+  unit: string;
+}
+
+export interface IEvaluate {
+  metrics: IMetric[];
+  status: string;
 }
 
 export interface IModel {
   id: string;
-  metrics?: { [key: string]: IMetric[] };
+  dir: string;
+  evaluates?: { [key: string]: IEvaluate };
   name: string;
+  showOnChart: boolean;
   status: string;
   tensorBoardLogDir: string;
-  dir: string;
-  showOnChart: boolean;
 }
 
 export interface IProblem {
   id: string;
-  title: string;
-  subtitle: string;
   description: string;
-  type: string;
   imagesUrls?: string[];
+  subtitle: string;
+  title: string;
+  type: string;
 }
 
 export interface IModelsMetricsTableData {

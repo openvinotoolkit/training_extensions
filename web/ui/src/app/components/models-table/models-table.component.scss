@@ -34,11 +34,6 @@
           color: mat-color($foreground, text);
           text-align: left !important;
           padding-left: 10px;
-
-          .progress-bar {
-            width: auto;
-            margin: -10px 10px 0 80px;
-          }
         }
 
         &.highlight {

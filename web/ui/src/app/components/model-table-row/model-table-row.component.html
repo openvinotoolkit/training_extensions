@@ -1,0 +1,11 @@
+<div>
+  <span>{{message}}</span>
+  <mat-progress-bar
+    *ngIf="showProgress"
+    [bufferValue]="0"
+    [value]="0"
+    class="progress-bar"
+    color="primary"
+    mode="buffer">
+  </mat-progress-bar>
+</div>

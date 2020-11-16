@@ -14,7 +14,7 @@
       
       <ng-container *matCellDef="let item">
         <td
-          *ngIf="!['inProgress', 'initiate'].includes(item.status) else inProgress"
+          *ngIf="['evaluateFinished', 'evaluateDefault', 'notEvaluated'].includes(item.status) else inProgress"
           [matMenuTriggerFor]="menu.instance"
           [ngClass]="{'contrast-text': isContrastText(item[column.key].opacity)}"
           [style]="getCellStyle(item[column.key].opacity)"
@@ -48,18 +48,14 @@
             [style.display]="column.key !== 'name' && column.key !== columns[1].key ? 'none' : 'table-cell'"
             mat-cell
           >
-          <span *ngIf="column.key === 'name' else progress">
-            {{item[column.key].value}}
-          </span>
+            <span *ngIf="column.key === 'name' else progress">
+              {{item[column.key].value}}
+            </span>
             <ng-template #progress>
-              <span>In Progress</span>
-              <mat-progress-bar
-                [bufferValue]="0"
-                [value]="0"
-                class="progress-bar"
-                color="primary"
-                mode="buffer">
-              </mat-progress-bar>
+              <idlp-model-table-row-status
+                [message]="modelStatusMessageMapping[item.status]"
+                [showProgress]="modelStatusInProgressMapping[item.status]"
+              ></idlp-model-table-row-status>
             </ng-template>
           </td>
         </ng-template>

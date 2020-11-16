@@ -45,7 +45,7 @@ func MakeCreateEndpoint(s service.BuildService) kitendpoint.Endpoint {
 			s.Create(ctx, req.(service.CreateRequestData))
 			returnChan <- kitendpoint.Response{
 				Data:   "OK",
-				Err:    nil,
+				Err:    kitendpoint.Error{Code: 0},
 				IsLast: true,
 			}
 		}()
@@ -61,7 +61,7 @@ func MakeCreateEmptyEndpoint(s service.BuildService) kitendpoint.Endpoint {
 			resp := s.CreateEmpty(ctx, req.(service.CreateEmptyRequestData))
 			returnChan <- kitendpoint.Response{
 				Data:   resp,
-				Err:    nil,
+				Err:    kitendpoint.Error{Code: 0},
 				IsLast: true,
 			}
 		}()
@@ -77,7 +77,7 @@ func MakeUpdateAssetStateEndpoint(s service.BuildService) kitendpoint.Endpoint {
 			resp := s.UpdateAssetState(ctx, req.(service.UpdateAssetStateRequestData))
 			returnChan <- kitendpoint.Response{
 				Data:   resp,
-				Err:    nil,
+				Err:    kitendpoint.Error{Code: 0},
 				IsLast: true,
 			}
 		}()
@@ -93,7 +93,7 @@ func MakeUpdateTmpsEndpoint(s service.BuildService) kitendpoint.Endpoint {
 			resp := s.UpdateTmps(ctx, req.(service.UpdateTmpsRequestData))
 			returnChan <- kitendpoint.Response{
 				Data:   resp,
-				Err:    nil,
+				Err:    kitendpoint.Error{Code: 0},
 				IsLast: true,
 			}
 		}()

@@ -47,6 +47,20 @@ export class IdlpModelsTableComponent implements OnDestroy, OnInit {
   data: IModelsMetricsTableData[];
   dataSource: MatTableDataSource<{ [metric: string]: string }>;
 
+  modelStatusMessageMapping = {
+    trainInProgress: 'Train In Progress',
+    evaluateInProgress: 'Evaluate In Progress',
+    trainFailed: 'Train Failed',
+    evaluateFailed: 'Evaluate Failed',
+  };
+
+  modelStatusInProgressMapping = {
+    trainInProgress: true,
+    evaluateInProgress: true,
+    trainFailed: false,
+    evaluateFailed: false,
+  };
+
   private models: IModel[] = [];
 
   private destroy$: Subject<any> = new Subject();
@@ -58,7 +72,7 @@ export class IdlpModelsTableComponent implements OnDestroy, OnInit {
       return false;
     }
     const model = this.models.find((m: IModel) => m.id === modelId);
-    return !(model.metrics && this.activeBuild.id in model.metrics);
+    return !(model.evaluates && this.activeBuild.id in model.evaluates);
   }
 
   ngOnInit(): void {

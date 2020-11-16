@@ -20,7 +20,6 @@ import (
 	modelCreateFromGeneric "server/domains/model/pkg/handler/create_from_generic"
 	kitendpoint "server/kit/endpoint"
 	u "server/kit/utils"
-	uFiles "server/kit/utils/basic/files"
 )
 
 type CreateRequestData struct {
@@ -37,21 +36,14 @@ func (s *basicProblemService) Create(ctx context.Context, req CreateRequestData,
 	imageUrl := saveImage(req.Image)
 	problemDir := s.createProblemDir(genericProblem.Class, req.Title)
 	problemCreateRequest := getNewProblemCreateRequest(genericProblem, imageUrl, req.Title, req.Subtitle, req.Description, problemDir, genericProblem.Class, req.Labels)
-	copyTools(genericProblem.ToolsPath, problemCreateRequest.ToolsPath)
 	problem := s.createProblem(problemCreateRequest)
-	responseChan <- kitendpoint.Response{Data: problem, IsLast: true, Err: nil}
+	responseChan <- kitendpoint.Response{Data: problem, IsLast: true, Err: kitendpoint.Error{Code: 0}}
 
 	for _, genericModel := range s.getGenericModels(genericProblem.Id) {
 		modelCreateFromGeneric.Send(context.TODO(), s.Conn, modelCreateFromGeneric.RequestData{
 			GenericModelId: genericModel.Id,
 			ProblemId:      problem.Id,
 		})
-	}
-}
-
-func copyTools(from, to string) {
-	if err := uFiles.CopyDir(from, to); err != nil {
-		log.Println("create.copyTools.uFiles.CopyDir(from, to)", err)
 	}
 }
 
@@ -90,7 +82,6 @@ func getNewProblemCreateRequest(genericProblem t.Problem, imageUrl, title, subti
 		Labels:      labels,
 		Subtitle:    subtitle,
 		Title:       title,
-		ToolsPath:   fp.Join(dir, "_tools"),
 		Type:        problemType.Custom,
 		WorkingDir:  genericProblem.WorkingDir,
 	}

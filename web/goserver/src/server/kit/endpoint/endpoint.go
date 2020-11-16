@@ -4,9 +4,14 @@ import (
 	"context"
 )
 
+type Error struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+}
+
 type Response struct {
 	Data   interface{} `json:"data"`
-	Err    interface{} `json:"err"`
+	Err    Error       `json:"err"`
 	IsLast bool        `json:"isLast"`
 }
 

@@ -18,9 +18,10 @@ import (
 	problemFindOne "server/db/pkg/handler/problem/find_one"
 	t "server/db/pkg/types"
 	buildStatus "server/db/pkg/types/build/status"
-	modelStatus "server/db/pkg/types/status/model"
+	statusModelTrain "server/db/pkg/types/status/model/train"
 	kitendpoint "server/kit/endpoint"
 	u "server/kit/utils"
+	"server/kit/utils/basic/arrays"
 	ufiles "server/kit/utils/basic/files"
 )
 
@@ -37,51 +38,65 @@ func (s *basicModelService) CreateFromGeneric(ctx context.Context, req CreateFro
 		modelDirPath := createModelDirPath(problem, genericModel.Name)
 		modelSnapshotPath := copySnapshot(genericModel.SnapshotPath, modelDirPath)
 		model := s.createModelFromGeneric(genericModel, problem, modelDirPath, modelSnapshotPath)
-		copyTemplateYamlToNewModel(genericModel, model)
-		copyModelPy(genericModel.ConfigPath, model.ConfigPath)
-		model = s.initEval(model, defaultBuild, problem)
-		model = s.saveModel(model)
-		returnChan <- kitendpoint.Response{Data: model, Err: nil, IsLast: true}
+		copyModelFilesFromParentModel(genericModel.Dir, model.Dir, genericModel.TemplatePath, []string{})
+		model = s.eval(ctx, model, defaultBuild, problem, false)
+		returnChan <- kitendpoint.Response{Data: model, Err: kitendpoint.Error{Code: 0}, IsLast: true}
 	}()
 	return returnChan
 }
 
-func (s *basicModelService) initEval(model t.Model, build t.Build, problem t.Problem) t.Model {
-	evalFolderPath := createEvalDir(model.Dir, build.Folder)
-	metricsYml := fp.Join(evalFolderPath, "metrics.yaml")
-	commands := s.prepareEvaluateCommands(metricsYml, "", model, build, problem, true)
-	outputLog := createFile(fp.Join(evalFolderPath, "output.log"))
-	env := getEvaluateEnv(model)
-	s.runCommand(commands, env, problem.ToolsPath, outputLog)
-	model = s.saveModelEvalMetrics(metricsYml, build.Id, model)
-	return model
+func copyModelFilesFromParentModel(from, to, modelTemplatePath string, excluded []string) {
+	templateYamlPath := copyTemplateYaml(modelTemplatePath, to)
+	templateYaml := getTemplateYaml(templateYamlPath)
+	copyConfig(from, to, templateYaml)
+	copyDependenciesFromParentModel(from, to, templateYaml, excluded)
+	saveMetrics(to, templateYaml)
 }
 
-func copyModelPy(from, to string) {
-	log.Println("copyModelPy", from, to)
-	if _, err := ufiles.Copy(from, to); err != nil {
-		log.Println("domains.model.pkg.service.create_from_generic.copyModelPy.ufiles.Copy(from, to)", err)
+func copyDependenciesFromParentModel(from, to string, modelYml ModelYml, excluded []string) {
+	for _, d := range modelYml.Dependencies {
+		if arrays.ContainsString(excluded, d.Destination) {
+			continue
+		}
+		fromPath := fp.Join(from, d.Destination)
+		toPath := fp.Join(to, d.Destination)
+		log.Println(fromPath, toPath)
+		if err := copyFiles(fromPath, toPath); err != nil {
+			log.Println("create_from_generic.copyDependenciesFromParentModel.copyFiles(fromPath, toPath)", err)
+		}
 	}
+}
+
+func (s *basicModelService) updateModelEvaluateStatus(ctx context.Context, model t.Model, buildId primitive.ObjectID, status string) t.Model {
+	if model.Evaluates == nil {
+		model.Evaluates = make(map[string]t.Evaluate)
+	}
+	model.Evaluates[buildId.Hex()] = t.Evaluate{
+		Metrics: model.Evaluates[buildId.Hex()].Metrics,
+		Status:  status,
+	}
+	log.Println("updateModelEvaluateStatus", model.Evaluates)
+	modelUpdateOneResp := <-modelUpdateOne.Send(ctx, s.Conn, model)
+	log.Println("updateModelEvaluateStatus", modelUpdateOneResp.Data.(modelUpdateOne.ResponseData).Evaluates)
+	return modelUpdateOneResp.Data.(modelUpdateOne.ResponseData)
 }
 
 func (s *basicModelService) createModelFromGeneric(genericModel t.Model, problem t.Problem, dir, snapshotPath string) t.Model {
 	modelInsertOneResp := <-modelInsertOne.Send(context.TODO(), s.Conn, modelInsertOne.RequestData{
 		ConfigPath:    fp.Join(dir, "model.py"),
 		Dir:           dir,
+		Evaluates:     make(map[string]t.Evaluate),
 		ProblemId:     problem.Id,
-		Metrics:       make(map[string][]t.Metric),
 		Name:          genericModel.Name,
 		ParentModelId: genericModel.Id,
 		Scripts: t.Scripts{
-			Train: fp.Join(problem.ToolsPath, "train.py"),
-			Eval:  fp.Join(problem.ToolsPath, "eval.py"),
+			Train: fp.Join(dir, "train.py"),
+			Eval:  fp.Join(dir, "eval.py"),
 		},
-		SnapshotPath:      snapshotPath,
-		Status:            modelStatus.Initiate,
-		TemplatePath:      fp.Join(dir, "template.yaml"),
-		TensorBoardLogDir: "",
-		TrainingGpuNum:    genericModel.TrainingGpuNum,
-		TrainingWorkDir:   "",
+		SnapshotPath:   snapshotPath,
+		Status:         statusModelTrain.Default,
+		TemplatePath:   fp.Join(dir, "template.yaml"),
+		TrainingGpuNum: genericModel.TrainingGpuNum,
 	})
 
 	return modelInsertOneResp.Data.(modelInsertOne.ResponseData)
@@ -110,7 +125,6 @@ func (s *basicModelService) getGenericModelDefaultBuildProblem(genericModelId, p
 	problem := problemFindOneResp.Data.(problemFindOne.ResponseData)
 	model := modelFindOneResp.Data.(modelFindOne.ResponseData)
 	build := buildFindOneResp.Data.(buildFindOne.ResponseData)
-	log.Println("BEFORE", build)
 	if build.Id.IsZero() {
 		buildInsertOneResp := <-buildInsertOne.Send(context.TODO(), s.Conn, buildInsertOne.RequestData{
 			ProblemId: problemId,
@@ -120,7 +134,6 @@ func (s *basicModelService) getGenericModelDefaultBuildProblem(genericModelId, p
 		})
 		build = buildInsertOneResp.Data.(buildInsertOne.ResponseData)
 	}
-	log.Println("AFTER", build)
 	return model, build, problem
 }
 
@@ -140,10 +153,4 @@ func copySnapshot(genericSnapshotPath, modelDirPath string) string {
 		log.Println("domains.problem.pkg.service.create.copySnapshot.ufiles.Copy(genericSnapshotPath, snapshotPath)")
 	}
 	return snapshotPath
-}
-
-func (s *basicModelService) saveModel(model t.Model) t.Model {
-	model.Status = modelStatus.Default
-	modelUpdateOneResp := <-modelUpdateOne.Send(context.TODO(), s.Conn, model)
-	return modelUpdateOneResp.Data.(modelUpdateOne.ResponseData)
 }

@@ -96,7 +96,7 @@ func (p Publisher) Endpoint() endpoint.Endpoint {
 			defer close(returnChan)
 			defer p.ch.Close()
 			if err := p.enc(ctx, &pub, request); err != nil {
-				returnChan <- endpoint.Response{Data: nil, Err: err}
+				returnChan <- endpoint.Response{Data: nil, Err: endpoint.Error{Code: 1, Message: err.Error()}}
 				return
 			}
 
@@ -107,7 +107,7 @@ func (p Publisher) Endpoint() endpoint.Endpoint {
 			delivChan, err := p.deliverer(ctx, p, &pub)
 
 			if err != nil {
-				returnChan <- endpoint.Response{Data: nil, Err: err}
+				returnChan <- endpoint.Response{Data: nil, Err: endpoint.Error{Code: 1, Message: err.Error()}}
 				return
 			}
 			for {

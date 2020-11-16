@@ -27,7 +27,7 @@ func (s *basicBuildService) List(
 		buildsListData := s.getBuildsListData(req.ProblemId, req.Size, req.Page)
 		returnChan <- kitendpoint.Response{
 			Data:   buildsListData,
-			Err:    nil,
+			Err:    kitendpoint.Error{Code: 0},
 			IsLast: true,
 		}
 	}()

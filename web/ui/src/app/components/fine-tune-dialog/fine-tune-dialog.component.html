@@ -1,135 +1,135 @@
 <mat-toolbar color="primary">
-	<span class="dialog-title">{{model.name}}</span>
+  <span class="dialog-title">{{model.name}}</span>
 </mat-toolbar>
 
 <mat-dialog-content
-	[formGroup]="form"
-	fxLayout="column"
-	fxLayoutGap="16px"
+  [formGroup]="form"
+  fxLayout="column"
+  fxLayoutGap="16px"
 >
-	<div
-		class="summary"
-		fxLayout="column"
-		fxLayoutAlign="center space-between"
-	>
-		<div
-			class="summary"
-			fxLayout="row wrap"
-			fxLayoutAlign="space-between center"
-		>
-			<ng-container *ngFor="let metric of model.metrics[buildId]; let idx = index">
-				<idlp-display-field
-					[hAlign]="getMetricAlign(idx)"
-					[label]="metric.displayName"
-					fxFlex="33"
-					value="{{metric.value}} {{metric.unit}}"
-				>
-				</idlp-display-field>
-			</ng-container>
-		</div>
-	</div>
-
-	<div
-		class="inputs"
-		fxLayout="row wrap"
-		fxLayoutAlign="space-between center"
-	>
-		<mat-form-field class="name">
-			<input
-				formControlName="name"
-				matInput
-				placeholder="Name"
-			>
-		</mat-form-field>
-
-		<mat-form-field class="build">
-			<input
-				[matAutocomplete]="build"
-				formControlName="build"
-				matInput
-				placeholder="Build"
-			>
-			<mat-autocomplete
+  <div
+    class="summary"
+    fxLayout="column"
+    fxLayoutAlign="center space-between"
+  >
+    <div
+      class="summary"
+      fxLayout="row wrap"
+      fxLayoutAlign="space-between center"
+    >
+      <ng-container *ngFor="let metric of model?.evaluates[buildId]?.metrics; let idx = index">
+        <idlp-display-field
+          [hAlign]="getMetricAlign(idx)"
+          [label]="metric.displayName"
+          fxFlex="33"
+          value="{{metric.value}} {{metric.unit}}"
+        >
+        </idlp-display-field>
+      </ng-container>
+    </div>
+  </div>
+  
+  <div
+    class="inputs"
+    fxLayout="row wrap"
+    fxLayoutAlign="space-between center"
+  >
+    <mat-form-field class="name">
+      <input
+        formControlName="name"
+        matInput
+        placeholder="Name"
+      >
+    </mat-form-field>
+    
+    <mat-form-field class="build">
+      <input
+        [matAutocomplete]="build"
+        formControlName="build"
+        matInput
+        placeholder="Build"
+      >
+      <mat-autocomplete
 				#build="matAutocomplete"
-				[displayWith]="buildDisplayFn"
-			>
-				<mat-option
-					*ngFor="let build of filteredBuilds | async"
-					[value]="build"
-				>
-					{{build.name}}
-				</mat-option>
-			</mat-autocomplete>
-		</mat-form-field>
-
-		<mat-form-field class="epochs">
-			<input
-				formControlName="epochs"
-				matInput
-				placeholder="Epochs"
-				type="number"
-			>
-		</mat-form-field>
-
-		<mat-checkbox
-			class="saveAnnotatedValImages"
-			formControlName="saveAnnotatedValImages"
-		>
-			Save annotated val images
-		</mat-checkbox>
-
-	</div>
-
-	<div
-		*ngIf="advancedEnabled"
-		class="inputs"
-		fxLayout="row"
-		fxLayoutAlign="space-between flex-start"
-	>
-		<mat-form-field class="bach-size">
-			<input
-				formControlName="batchSize"
-				matInput
-				placeholder="Bach size"
-				type="number"
-			>
-		</mat-form-field>
-		<mat-form-field class="gpu-number">
-			<input
-				formControlName="gpuNumber"
-				matInput
-				placeholder="GPU #"
-				type="number"
-			>
-		</mat-form-field>
-	</div>
+        [displayWith]="buildDisplayFn"
+      >
+        <mat-option
+          *ngFor="let build of filteredBuilds | async"
+          [value]="build"
+        >
+          {{build.name}}
+        </mat-option>
+      </mat-autocomplete>
+    </mat-form-field>
+    
+    <mat-form-field class="epochs">
+      <input
+        formControlName="epochs"
+        matInput
+        placeholder="Epochs"
+        type="number"
+      >
+    </mat-form-field>
+    
+    <mat-checkbox
+      class="saveAnnotatedValImages"
+      formControlName="saveAnnotatedValImages"
+    >
+      Save annotated val images
+    </mat-checkbox>
+  
+  </div>
+  
+  <div
+    *ngIf="advancedEnabled"
+    class="inputs"
+    fxLayout="row"
+    fxLayoutAlign="space-between flex-start"
+  >
+    <mat-form-field class="bach-size">
+      <input
+        formControlName="batchSize"
+        matInput
+        placeholder="Bach size"
+        type="number"
+      >
+    </mat-form-field>
+    <mat-form-field class="gpu-number">
+      <input
+        formControlName="gpuNumber"
+        matInput
+        placeholder="GPU #"
+        type="number"
+      >
+    </mat-form-field>
+  </div>
 
 </mat-dialog-content>
 
 <mat-dialog-actions>
-	<div
-		[formGroup]="form"
-		class="advanced"
-	>
-		<mat-checkbox
-			formControlName="advanced"
-		>
-			Advanced
-		</mat-checkbox>
-	</div>
-
-	<button
-		[disabled]="!formValid"
-		[matDialogClose]="form.value"
-		color="primary"
-		mat-flat-button
-	>
-		FineTune
-	</button>
-	<button
-		mat-dialog-close
-		mat-flat-button
-	>
-		Cancel
-	</button>
+  <div
+    [formGroup]="form"
+    class="advanced"
+  >
+    <mat-checkbox
+      formControlName="advanced"
+    >
+      Advanced
+    </mat-checkbox>
+  </div>
+  
+  <button
+    [disabled]="!formValid"
+    [matDialogClose]="form.value"
+    color="primary"
+    mat-flat-button
+  >
+    FineTune
+  </button>
+  <button
+    mat-dialog-close
+    mat-flat-button
+  >
+    Cancel
+  </button>
 </mat-dialog-actions>

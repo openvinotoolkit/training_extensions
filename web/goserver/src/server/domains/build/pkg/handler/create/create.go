@@ -81,7 +81,6 @@ func decodeResponse(_ context.Context, deliv *amqp.Delivery) (interface{}, error
 	err := json.Unmarshal(deliv.Body, &res)
 	if err != nil {
 		log.Println("build.create.decodeResponse.Unmarshal(deliv.Body, &res)", err)
-		res.Err = err
 	}
 	res.Data = resData
 	return res, err

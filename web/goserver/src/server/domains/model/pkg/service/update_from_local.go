@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"errors"
 	"io"
 	"io/ioutil"
 	"log"
@@ -20,7 +21,8 @@ import (
 	problemFindOne "server/db/pkg/handler/problem/find_one"
 	t "server/db/pkg/types"
 	buildStatus "server/db/pkg/types/build/status"
-	modelStatus "server/db/pkg/types/status/model"
+	statusModelEvaluate "server/db/pkg/types/status/model/evaluate"
+	statusModelTrain "server/db/pkg/types/status/model/train"
 	kitendpoint "server/kit/endpoint"
 	u "server/kit/utils"
 	uFiles "server/kit/utils/basic/files"
@@ -54,20 +56,20 @@ type UpdateFromLocalRequestData struct {
 func (s *basicModelService) UpdateFromLocal(ctx context.Context, req UpdateFromLocalRequestData) chan kitendpoint.Response {
 	responseChan := make(chan kitendpoint.Response)
 	go func() {
-		modelYml := getModelYaml(req.Path)
-		problem := s.getProblem(ctx, modelYml.Problem)
+		templateYaml := getTemplateYaml(req.Path)
+		problem := s.getProblem(ctx, templateYaml.Problem)
 		defaultBuild := s.getDefaultBuild(problem.Id)
-		model := s.prepareModel(modelYml, defaultBuild.Id, problem)
-		copyModelFiles(fp.Dir(req.Path), model.Dir, req.Path, problem.ToolsPath, modelYml)
+		model := s.prepareModel(templateYaml, defaultBuild.Id, problem)
+		copyModelFiles(fp.Dir(req.Path), model.Dir, req.Path, templateYaml)
 		model = s.updateCreateModel(model)
-		responseChan <- kitendpoint.Response{Data: model, Err: nil, IsLast: true}
+		responseChan <- kitendpoint.Response{Data: model, Err: kitendpoint.Error{Code: 0}, IsLast: true}
 	}()
 	return responseChan
 }
 
-func copyModelFiles(from, to, modelTemplatePath, toolsPath string, modelYml ModelYml) {
+func copyModelFiles(from, to, modelTemplatePath string, modelYml ModelYml) {
 	copyConfig(from, to, modelYml)
-	copyDependencies(from, to, toolsPath, modelYml)
+	copyDependencies(from, to, modelYml)
 	saveMetrics(to, modelYml)
 	copyTemplateYaml(modelTemplatePath, to)
 }
@@ -78,21 +80,23 @@ func copyConfig(from, to string, modelYml ModelYml) {
 	}
 }
 
-func copyTemplateYaml(from, to string) {
-	if err := copyFiles(from, fp.Join(to, "template.yaml")); err != nil {
+func copyTemplateYaml(from, to string) string {
+	templateYamlPath := fp.Join(to, "template.yaml")
+	if err := copyFiles(from, templateYamlPath); err != nil {
 		log.Println("update_from_local.copyDependencies.copyFiles(fp.Join(from, modelYml.Config), fp.Join(to, modelYml.Config))", err)
 	}
+	return templateYamlPath
 }
 
-func copyDependencies(from, to, toolsPath string, modelYml ModelYml) {
+func copyDependencies(from, to string, modelYml ModelYml) {
 	for _, d := range modelYml.Dependencies {
-		toDir := dirByDestination(to, toolsPath, d.Destination)
+		toPath := fp.Join(to, d.Destination)
 		if isValidUrl(d.Source) {
-			if err := downloadWithCheck(d.Source, toDir, d.Sha256, d.Size); err != nil {
+			if err := downloadWithCheck(d.Source, toPath, d.Sha256, d.Size); err != nil {
 				log.Println("update_from_local.copyDependencies.downloadWithCheck(d.Source, d.Destination, d.Sha256, d.Size)", err)
 			}
 		} else {
-			if err := copyFiles(fp.Join(from, d.Source), toDir); err != nil {
+			if err := copyFiles(fp.Join(from, d.Source), toPath); err != nil {
 				log.Println("update_from_local.copyDependencies.copyFiles(fp.Join(from, d.Source), fp.Join(to, d.Destination))", err)
 			}
 		}
@@ -100,6 +104,9 @@ func copyDependencies(from, to, toolsPath string, modelYml ModelYml) {
 }
 
 func saveMetrics(to string, modelYml ModelYml) {
+	type MetricsYaml struct {
+		Metrics []t.Metric `yaml:"metrics"`
+	}
 	metricsPath := fp.Join(to, "_default", "metrics.yaml")
 	if err := os.MkdirAll(fp.Dir(metricsPath), 0777); err != nil {
 		log.Println("saveMetrics.os.MkdirAll(fp.Dir(metricsPath), 0777)", err)
@@ -108,7 +115,7 @@ func saveMetrics(to string, modelYml ModelYml) {
 	if err != nil {
 		log.Println("saveMetrics.os.Create(metricsPath)", err)
 	}
-	metrics, err := yaml.Marshal(modelYml.Metrics)
+	metrics, err := yaml.Marshal(MetricsYaml{modelYml.Metrics})
 	if err != nil {
 		log.Println("saveMetrics.yaml.Marshal(modelYml.Metrics)", err)
 	}
@@ -121,13 +128,6 @@ func saveMetrics(to string, modelYml ModelYml) {
 	}
 }
 
-func dirByDestination(to, toolsPath, dest string) string {
-	if dest == "snapshot.pth" {
-		return fp.Join(to, dest)
-	}
-	return fp.Join(toolsPath, dest)
-}
-
 func copyFiles(from, to string) error {
 	si, err := os.Stat(from)
 	if err != nil {
@@ -137,7 +137,6 @@ func copyFiles(from, to string) error {
 	if si.IsDir() {
 		if err := uFiles.CopyDir(from, to); err != nil {
 			log.Println("update_from_local.copyFiles.uFiles.CopyDir(from, to)", err)
-			return err
 		}
 	} else {
 		if _, err := uFiles.Copy(from, to); err != nil {
@@ -167,6 +166,11 @@ func (s *basicModelService) prepareModel(modelYml ModelYml, buildId primitive.Ob
 	dir := fp.Join(problem.Dir, modelFolderName)
 	metrics := make(map[string][]t.Metric)
 	metrics[buildId.Hex()] = modelYml.Metrics
+	evaluates := make(map[string]t.Evaluate)
+	evaluates[buildId.Hex()] = t.Evaluate{
+		Metrics: modelYml.Metrics,
+		Status:  statusModelEvaluate.Default,
+	}
 	model := t.Model{
 		BatchSize:   modelYml.HyperParameters.Basic.BatchSize,
 		ConfigPath:  fp.Join(dir, modelYml.Config),
@@ -174,24 +178,22 @@ func (s *basicModelService) prepareModel(modelYml ModelYml, buildId primitive.Ob
 		Description: "",
 		Dir:         dir,
 		Epochs:      modelYml.HyperParameters.Basic.Epochs,
-		Metrics:     metrics,
+		Evaluates:   evaluates,
 		Name:        modelYml.Name,
 		Scripts: t.Scripts{
-			Train: fp.Join(problem.ToolsPath, "train.py"),
-			Eval:  fp.Join(problem.ToolsPath, "eval.py"),
+			Train: fp.Join(dir, "train.py"),
+			Eval:  fp.Join(dir, "eval.py"),
 		},
-		SnapshotPath:      fp.Join(dir, "snapshot.pth"),
-		Status:            modelStatus.Default,
-		TemplatePath:      fp.Join(dir, "template.yaml"),
-		TensorBoardLogDir: "",
-		TrainingGpuNum:    modelYml.GpuNum,
-		TrainingWorkDir:   "",
+		SnapshotPath:   fp.Join(dir, "snapshot.pth"),
+		Status:         statusModelTrain.Default,
+		TemplatePath:   fp.Join(dir, "template.yaml"),
+		TrainingGpuNum: modelYml.GpuNum,
 	}
 	log.Println("Epochs:", modelYml.HyperParameters.Basic.Epochs, model.Epochs)
 	return model
 }
 
-func getModelYaml(path string) (modelYml ModelYml) {
+func getTemplateYaml(path string) (modelYml ModelYml) {
 	yamlFile, err := ioutil.ReadFile(path)
 	if err != nil {
 		log.Println("ReadFile", err)
@@ -224,18 +226,17 @@ func downloadWithCheck(url, dst, sha256 string, size int) error {
 			continue
 		}
 		log.Println(dst, nBytes)
-		// TODO: uncommit
-		// if nBytes != int64(size) {
-		// 	log.Println("downloadWithCheck.WrongSize", err)
-		// 	err = errors.New("wrong size")
-		// 	continue
-		// }
-		// dstSha265 := getSha265(dst)
-		// if dstSha265 != sha256 {
-		// 	log.Println("downloadWithCheck.WrongSha", err)
-		// 	err = errors.New("wrong sha")
-		// 	continue
-		// }
+		if nBytes != int64(size) {
+			log.Println("downloadWithCheck.WrongSize", err)
+			err = errors.New("wrong size")
+			continue
+		}
+		dstSha265 := getSha265(dst)
+		if dstSha265 != sha256 {
+			log.Println("downloadWithCheck.WrongSha", err)
+			err = errors.New("wrong sha")
+			continue
+		}
 		break
 	}
 	return nil
@@ -268,8 +269,8 @@ func (s *basicModelService) updateCreateModel(model t.Model) t.Model {
 			Description:    model.Description,
 			Dir:            model.Dir,
 			Epochs:         model.Epochs,
+			Evaluates:      model.Evaluates,
 			Framework:      model.Framework,
-			Metrics:        model.Metrics,
 			Name:           model.Name,
 			Scripts:        model.Scripts,
 			SnapshotPath:   model.SnapshotPath,

@@ -8,6 +8,9 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strings"
+	"time"
+
 	assetFind "server/db/pkg/handler/asset/find"
 	assetFindOne "server/db/pkg/handler/asset/find_one"
 	buildFindOne "server/db/pkg/handler/build/find_one"
@@ -16,8 +19,6 @@ import (
 	buildStatus "server/db/pkg/types/build/status"
 	typeAsset "server/db/pkg/types/type/asset"
 	kitendpoint "server/kit/endpoint"
-	"strings"
-	"time"
 
 	"github.com/sirius1024/go-amqp-reconnect/rabbitmq"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -88,7 +89,7 @@ func (s *basicCvatTaskService) Setup(ctx context.Context, req SetupRequestData) 
 					Id: childCvatTask.Id,
 				})
 			}
-			returnChan <- kitendpoint.Response{IsLast: true, Data: nil, Err: nil}
+			returnChan <- kitendpoint.Response{IsLast: true, Data: nil, Err: kitendpoint.Error{Code: 0}}
 		}
 
 		if isCvatTaskExists(cvatTask) {
@@ -106,7 +107,7 @@ func (s *basicCvatTaskService) Setup(ctx context.Context, req SetupRequestData) 
 		)
 		tmpBuild := buildFindOneResp.Data.(buildFindOne.ResponseData)
 		buildSplit := findBuildAssetSplit(tmpBuild, asset)
-		returnChan <- kitendpoint.Response{IsLast: false, Data: getCvatTaskAndAsset(cvatTask, asset, buildSplit), Err: nil}
+		returnChan <- kitendpoint.Response{IsLast: false, Data: getCvatTaskAndAsset(cvatTask, asset, buildSplit), Err: kitendpoint.Error{Code: 0}}
 		cvatCreateTaskResponseBody := createCvatTask(cvatTask)
 		cvatTask.Annotation = cvatCreateTaskResponseBody
 
@@ -125,12 +126,12 @@ func (s *basicCvatTaskService) Setup(ctx context.Context, req SetupRequestData) 
 		cvatTask, err = monitorCreateTaskStatus(ctx, s.Conn, cvatTask)
 		if err != nil {
 			deleteTaskFromCvat(cvatTask)
-			returnChan <- kitendpoint.Response{IsLast: true, Data: nil, Err: err}
+			returnChan <- kitendpoint.Response{IsLast: true, Data: nil, Err: kitendpoint.Error{Code: 1}}
 		}
 
 		cvatTask, err = getCvatTask(cvatTask)
 		if err != nil {
-			returnChan <- kitendpoint.Response{IsLast: true, Data: nil, Err: err}
+			returnChan <- kitendpoint.Response{IsLast: true, Data: nil, Err: kitendpoint.Error{Code: 1}}
 		}
 		cvatTask.Status = "initialPullReady"
 		cvatTaskUpdateOneResp = <-cvatTaskUpdateOne.Send(
@@ -150,7 +151,7 @@ func (s *basicCvatTaskService) Setup(ctx context.Context, req SetupRequestData) 
 		tmpBuild = buildFindOneResp.Data.(buildFindOne.ResponseData)
 		buildSplit = findBuildAssetSplit(tmpBuild, asset)
 
-		returnChan <- kitendpoint.Response{IsLast: true, Data: getCvatTaskAndAsset(cvatTask, asset, buildSplit), Err: nil}
+		returnChan <- kitendpoint.Response{IsLast: true, Data: getCvatTaskAndAsset(cvatTask, asset, buildSplit), Err: kitendpoint.Error{Code: 0}}
 	}()
 	return returnChan
 

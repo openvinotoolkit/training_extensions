@@ -120,7 +120,6 @@ func (p *BasicProxy) requestEndpoint(ctx context.Context, request WSRequest) {
 func (p *BasicProxy) WSRead(ctx context.Context) {
 	var request WSRequest
 	ctx, cancel := context.WithCancel(ctx)
-	// defer p.unsubscribeAll()
 	defer cancel()
 	for {
 		err := p.WsConn.ReadJSON(&request)
@@ -131,7 +130,6 @@ func (p *BasicProxy) WSRead(ctx context.Context) {
 		fmt.Println("Request", request)
 
 		if request.Event == n.EUnsubscribe {
-			// p.unsubscribeAll()
 			continue
 		}
 

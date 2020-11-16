@@ -62,13 +62,13 @@ func (s *basicCvatTaskService) Dump(ctx context.Context, req DumpRequestData) ch
 		tmpBuild := buildFindOneResp.Data.(buildFindOne.ResponseData)
 		buildSplit := findBuildAssetSplit(tmpBuild, asset)
 		if cvatTask.Status == "pullInProgress" {
-			returnChan <- kitendpoint.Response{IsLast: true, Data: getCvatTaskAndAsset(cvatTask, asset, buildSplit), Err: nil}
+			returnChan <- kitendpoint.Response{IsLast: true, Data: getCvatTaskAndAsset(cvatTask, asset, buildSplit), Err: kitendpoint.Error{Code: 0}}
 			return
 		}
 		cvatTask.Status = "pullInProgress"
 		resp := <-cvatTaskUpdateOne.Send(context.TODO(), s.Conn, cvatTask)
 		cvatTask = resp.Data.(cvatTaskUpdateOne.ResponseData)
-		returnChan <- kitendpoint.Response{IsLast: false, Data: getCvatTaskAndAsset(cvatTask, asset, buildSplit), Err: nil}
+		returnChan <- kitendpoint.Response{IsLast: false, Data: getCvatTaskAndAsset(cvatTask, asset, buildSplit), Err: kitendpoint.Error{Code: 0}}
 
 		problem := s.getProblem(cvatTask.ProblemId)
 		tmpDirPath := mkTmpDir()
@@ -83,19 +83,19 @@ func (s *basicCvatTaskService) Dump(ctx context.Context, req DumpRequestData) ch
 			cvatDataPath := mkUnzipDatasetDir(asset)
 			_ = s.saveCvatDataPathToAsset(asset, cvatDataPath)
 			if _, err := cvatApi.PrepareDataset(cvatTask.Annotation); err != nil {
-				returnChan <- kitendpoint.Response{IsLast: true, Data: nil, Err: err}
+				returnChan <- kitendpoint.Response{IsLast: true, Data: nil, Err: kitendpoint.Error{Code: 1, Message: err.Error()}}
 				return
 			}
 			if err := cvatApi.CheckStatusPrepareDataset(cvatTask.Annotation); err != nil {
-				returnChan <- kitendpoint.Response{IsLast: true, Data: nil, Err: err}
+				returnChan <- kitendpoint.Response{IsLast: true, Data: nil, Err: kitendpoint.Error{Code: 1, Message: err.Error()}}
 				return
 			}
 			if err := cvatApi.DownloadDatasetZip(cvatTask.Annotation, dataZipPath); err != nil {
-				returnChan <- kitendpoint.Response{IsLast: true, Data: nil, Err: err}
+				returnChan <- kitendpoint.Response{IsLast: true, Data: nil, Err: kitendpoint.Error{Code: 1, Message: err.Error()}}
 				return
 			}
 			if err := UnzipDataset(dataZipPath, cvatDataPath); err != nil {
-				returnChan <- kitendpoint.Response{IsLast: true, Data: nil, Err: err}
+				returnChan <- kitendpoint.Response{IsLast: true, Data: nil, Err: kitendpoint.Error{Code: 1, Message: err.Error()}}
 				return
 			}
 			err := fp.Walk(cvatDataPath,
@@ -114,21 +114,21 @@ func (s *basicCvatTaskService) Dump(ctx context.Context, req DumpRequestData) ch
 			cvatDataPath := mkUnzipDatasetDir(asset)
 			_ = s.saveCvatDataPathToAsset(asset, cvatDataPath)
 			if _, err := cvatApi.PrepareAnnotation(cvatTask.Annotation); err != nil {
-				returnChan <- kitendpoint.Response{IsLast: true, Data: nil, Err: err}
+				returnChan <- kitendpoint.Response{IsLast: true, Data: nil, Err: kitendpoint.Error{Code: 1, Message: err.Error()}}
 				return
 			}
 			if err := cvatApi.CheckStatusPrepareAnnotation(cvatTask.Annotation); err != nil {
-				returnChan <- kitendpoint.Response{IsLast: true, Data: nil, Err: err}
+				returnChan <- kitendpoint.Response{IsLast: true, Data: nil, Err: kitendpoint.Error{Code: 1, Message: err.Error()}}
 				return
 			}
 			if err := cvatApi.DownloadAnnotationZip(cvatTask.Annotation, dataZipPath); err != nil {
-				returnChan <- kitendpoint.Response{IsLast: true, Data: nil, Err: err}
+				returnChan <- kitendpoint.Response{IsLast: true, Data: nil, Err: kitendpoint.Error{Code: 1, Message: err.Error()}}
 				return
 			}
 		}
 
 		if err := UnzipAnnotation(dataZipPath, unzipAnnotationPath); err != nil {
-			returnChan <- kitendpoint.Response{IsLast: true, Data: nil, Err: err}
+			returnChan <- kitendpoint.Response{IsLast: true, Data: nil, Err: kitendpoint.Error{Code: 1, Message: err.Error()}}
 			return
 		}
 
@@ -145,7 +145,7 @@ func (s *basicCvatTaskService) Dump(ctx context.Context, req DumpRequestData) ch
 		cvatTask.Status = "pullReady"
 		resp = <-cvatTaskUpdateOne.Send(context.TODO(), s.Conn, cvatTask)
 		cvatTask = resp.Data.(cvatTaskUpdateOne.ResponseData)
-		returnChan <- kitendpoint.Response{IsLast: true, Data: getCvatTaskAndAsset(cvatTask, asset, buildSplit), Err: nil}
+		returnChan <- kitendpoint.Response{IsLast: true, Data: getCvatTaskAndAsset(cvatTask, asset, buildSplit), Err: kitendpoint.Error{Code: 0}}
 
 	}()
 	return returnChan

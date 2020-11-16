@@ -38,7 +38,6 @@ func (s *basicDatabaseService) CvatTaskFind(ctx context.Context, req CvatTaskFin
 
 	items := []t.CvatTask{}
 	for cur.Next(context.TODO()) {
-		// elem := t.CvatTask{}
 		elem := new(t.CvatTask)
 		elem2 := new(t.CvatTask)
 		err := cur.Decode(elem)

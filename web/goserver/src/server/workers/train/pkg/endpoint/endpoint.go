@@ -2,6 +2,7 @@ package endpoint
 
 import (
 	"context"
+	"log"
 
 	kitendpoint "server/kit/endpoint"
 	"server/workers/train/pkg/service"
@@ -30,11 +31,20 @@ func MakeGetGpuAmountEndpoint(s service.TrainModelService) kitendpoint.Endpoint 
 			if resp == nil {
 				resp = service.GetGpuAmountResponseData{}
 			}
-			returnChan <- kitendpoint.Response{
-				Data:   resp.(service.GetGpuAmountResponseData),
-				Err:    err,
-				IsLast: true,
+			if err != nil {
+				returnChan <- kitendpoint.Response{
+					Data:   resp.(service.GetGpuAmountResponseData),
+					Err:    kitendpoint.Error{Code: 1, Message: err.Error()},
+					IsLast: true,
+				}
+			} else {
+				returnChan <- kitendpoint.Response{
+					Data:   resp.(service.GetGpuAmountResponseData),
+					Err:    kitendpoint.Error{Code: 0},
+					IsLast: true,
+				}
 			}
+
 		}()
 		return returnChan
 
@@ -47,11 +57,21 @@ func MakeRunCommandsEndpoint(s service.TrainModelService) kitendpoint.Endpoint {
 		go func() {
 			defer close(returnChan)
 			resp, err := s.RunCommands(ctx, req.(service.RunCommandsRequestData))
-			returnChan <- kitendpoint.Response{
-				Data:   resp,
-				Err:    err,
-				IsLast: true,
+			log.Println("RunCommands", resp, err)
+			if err != nil {
+				returnChan <- kitendpoint.Response{
+					Data:   nil,
+					Err:    kitendpoint.Error{Code: 1, Message: err.Error()},
+					IsLast: true,
+				}
+			} else {
+				returnChan <- kitendpoint.Response{
+					Data:   nil,
+					Err:    kitendpoint.Error{Code: 0},
+					IsLast: true,
+				}
 			}
+
 		}()
 		return returnChan
 

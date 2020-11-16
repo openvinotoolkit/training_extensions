@@ -80,7 +80,7 @@ func MakeAssetFindEndpoint(s service.DatabaseService) kitendpoint.Endpoint {
 			resp := s.AssetFind(ctx, req.(service.AssetFindRequestData))
 			returnChan <- kitendpoint.Response{
 				Data:   resp,
-				Err:    nil,
+				Err:    kitendpoint.Error{Code: 0},
 				IsLast: true,
 			}
 		}()
@@ -96,7 +96,7 @@ func MakeAssetFindOneEndpoint(s service.DatabaseService) kitendpoint.Endpoint {
 			resp := s.AssetFindOne(ctx, req.(service.AssetFindOneRequestData))
 			returnChan <- kitendpoint.Response{
 				Data:   resp,
-				Err:    nil,
+				Err:    kitendpoint.Error{Code: 0},
 				IsLast: true,
 			}
 		}()
@@ -112,7 +112,7 @@ func MakeAssetUpdateUpsertEndpoint(s service.DatabaseService) kitendpoint.Endpoi
 			resp := s.AssetUpdateUpsert(ctx, req.(service.AssetUpdateUpsertRequestData))
 			returnChan <- kitendpoint.Response{
 				Data:   resp,
-				Err:    nil,
+				Err:    kitendpoint.Error{Code: 0},
 				IsLast: true,
 			}
 		}()
@@ -128,7 +128,7 @@ func MakeBuildFindEndpoint(s service.DatabaseService) kitendpoint.Endpoint {
 			resp := s.BuildFind(ctx, req.(service.BuildFindRequestData))
 			returnChan <- kitendpoint.Response{
 				Data:   resp,
-				Err:    nil,
+				Err:    kitendpoint.Error{Code: 0},
 				IsLast: true,
 			}
 		}()
@@ -144,7 +144,7 @@ func MakeBuildFindOneEndpoint(s service.DatabaseService) kitendpoint.Endpoint {
 			resp := s.BuildFindOne(ctx, req.(service.BuildFindOneRequestData))
 			returnChan <- kitendpoint.Response{
 				Data:   resp,
-				Err:    nil,
+				Err:    kitendpoint.Error{Code: 0},
 				IsLast: true,
 			}
 		}()
@@ -160,7 +160,7 @@ func MakeBuildInsertOneEndpoint(s service.DatabaseService) kitendpoint.Endpoint 
 			resp := s.BuildInsertOne(ctx, req.(service.BuildInsertOneRequestData))
 			returnChan <- kitendpoint.Response{
 				Data:   resp,
-				Err:    nil,
+				Err:    kitendpoint.Error{Code: 0},
 				IsLast: true,
 			}
 		}()
@@ -176,7 +176,7 @@ func MakeBuildUpdateOneEndpoint(s service.DatabaseService) kitendpoint.Endpoint 
 			resp := s.BuildUpdateOne(ctx, req.(service.BuildUpdateOneRequestData))
 			returnChan <- kitendpoint.Response{
 				Data:   resp,
-				Err:    nil,
+				Err:    kitendpoint.Error{Code: 0},
 				IsLast: true,
 			}
 		}()
@@ -190,10 +190,18 @@ func MakeCvatTaskFindEndpoint(s service.DatabaseService) kitendpoint.Endpoint {
 		go func() {
 			defer close(returnChan)
 			resp, err := s.CvatTaskFind(ctx, req.(service.CvatTaskFindRequestData))
-			returnChan <- kitendpoint.Response{
-				Data:   resp,
-				Err:    err,
-				IsLast: true,
+			if err != nil {
+				returnChan <- kitendpoint.Response{
+					Data:   resp,
+					Err:    kitendpoint.Error{Code: 1, Message: err.Error()},
+					IsLast: true,
+				}
+			} else {
+				returnChan <- kitendpoint.Response{
+					Data:   resp,
+					Err:    kitendpoint.Error{Code: 0},
+					IsLast: true,
+				}
 			}
 		}()
 		return returnChan
@@ -208,7 +216,7 @@ func MakeCvatTaskFindOneEndpoint(s service.DatabaseService) kitendpoint.Endpoint
 			resp := s.CvatTaskFindOne(ctx, req.(service.CvatTaskFindOneRequestData))
 			returnChan <- kitendpoint.Response{
 				Data:   resp,
-				Err:    nil,
+				Err:    kitendpoint.Error{Code: 0},
 				IsLast: true,
 			}
 		}()
@@ -223,7 +231,7 @@ func MakeCvatTaskInsertOneEndpoint(s service.DatabaseService) kitendpoint.Endpoi
 			resp := s.CvatTaskInsertOne(ctx, req.(service.CvatTaskInsertOneRequestData))
 			returnChan <- kitendpoint.Response{
 				Data:   resp,
-				Err:    nil,
+				Err:    kitendpoint.Error{Code: 0},
 				IsLast: true,
 			}
 		}()
@@ -238,7 +246,7 @@ func MakeCvatTaskUpdateOneEndpoint(s service.DatabaseService) kitendpoint.Endpoi
 			resp := s.CvatTaskUpdateOne(ctx, req.(service.CvatTaskUpdateOneRequestData))
 			returnChan <- kitendpoint.Response{
 				Data:   resp,
-				Err:    nil,
+				Err:    kitendpoint.Error{Code: 0},
 				IsLast: true,
 			}
 		}()
@@ -254,7 +262,7 @@ func MakeProblemDeleteEndpoint(s service.DatabaseService) kitendpoint.Endpoint {
 			resp := s.ProblemDelete(ctx, req.(service.ProblemDeleteRequestData))
 			returnChan <- kitendpoint.Response{
 				Data:   resp,
-				Err:    nil,
+				Err:    kitendpoint.Error{Code: 0},
 				IsLast: true,
 			}
 		}()
@@ -270,7 +278,7 @@ func MakeProblemFindEndpoint(s service.DatabaseService) kitendpoint.Endpoint {
 			resp := s.ProblemFind(ctx, req.(service.ProblemFindRequestData))
 			returnChan <- kitendpoint.Response{
 				Data:   resp,
-				Err:    nil,
+				Err:    kitendpoint.Error{Code: 0},
 				IsLast: true,
 			}
 		}()
@@ -286,7 +294,7 @@ func MakeProblemFindOneEndpoint(s service.DatabaseService) kitendpoint.Endpoint 
 			resp := s.ProblemFindOne(ctx, req.(service.ProblemFindOneRequestData))
 			returnChan <- kitendpoint.Response{
 				Data:   resp,
-				Err:    nil,
+				Err:    kitendpoint.Error{Code: 0},
 				IsLast: true,
 			}
 		}()
@@ -302,7 +310,7 @@ func MakeProblemUpdateUpsertEndpoint(s service.DatabaseService) kitendpoint.Endp
 			resp := s.ProblemUpdateUpsert(ctx, req.(service.ProblemUpdateUpsertRequestData))
 			returnChan <- kitendpoint.Response{
 				Data:   resp,
-				Err:    nil,
+				Err:    kitendpoint.Error{Code: 0},
 				IsLast: true,
 			}
 		}()
@@ -318,7 +326,7 @@ func MakeModelDeleteEndpoint(s service.DatabaseService) kitendpoint.Endpoint {
 			resp := s.ModelDelete(ctx, req.(service.ModelDeleteRequestData))
 			returnChan <- kitendpoint.Response{
 				Data:   resp,
-				Err:    nil,
+				Err:    kitendpoint.Error{Code: 0},
 				IsLast: true,
 			}
 		}()
@@ -334,7 +342,7 @@ func MakeModelFindEndpoint(s service.DatabaseService) kitendpoint.Endpoint {
 			resp := s.ModelFind(ctx, req.(service.ModelFindRequestData))
 			returnChan <- kitendpoint.Response{
 				Data:   resp,
-				Err:    nil,
+				Err:    kitendpoint.Error{Code: 0},
 				IsLast: true,
 			}
 		}()
@@ -350,7 +358,7 @@ func MakeModelFindOneEndpoint(s service.DatabaseService) kitendpoint.Endpoint {
 			resp := s.ModelFindOne(ctx, req.(service.ModelFindOneRequestData))
 			returnChan <- kitendpoint.Response{
 				Data:   resp,
-				Err:    nil,
+				Err:    kitendpoint.Error{Code: 0},
 				IsLast: true,
 			}
 		}()
@@ -364,11 +372,20 @@ func MakeModelInsertOneEndpoint(s service.DatabaseService) kitendpoint.Endpoint 
 		go func() {
 			defer close(returnChan)
 			resp, err := s.ModelInsertOne(ctx, req.(service.ModelInsertOneRequestData))
-			returnChan <- kitendpoint.Response{
-				Data:   resp,
-				Err:    err,
-				IsLast: true,
+			if err != nil {
+				returnChan <- kitendpoint.Response{
+					Data:   resp,
+					Err:    kitendpoint.Error{Code: 1, Message: err.Error()},
+					IsLast: true,
+				}
+			} else {
+				returnChan <- kitendpoint.Response{
+					Data:   resp,
+					Err:    kitendpoint.Error{Code: 0},
+					IsLast: true,
+				}
 			}
+
 		}()
 		return returnChan
 	}
@@ -382,7 +399,7 @@ func MakeModelUpdateOneEndpoint(s service.DatabaseService) kitendpoint.Endpoint 
 			resp := s.ModelUpdateOne(ctx, req.(service.ModelUpdateOneRequestData))
 			returnChan <- kitendpoint.Response{
 				Data:   resp,
-				Err:    nil,
+				Err:    kitendpoint.Error{Code: 0},
 				IsLast: true,
 			}
 		}()
@@ -398,7 +415,7 @@ func MakeModelUpdateUpsertEndpoint(s service.DatabaseService) kitendpoint.Endpoi
 			resp := s.ModelUpdateUpsert(ctx, req.(service.ModelUpdateUpsertRequestData))
 			returnChan <- kitendpoint.Response{
 				Data:   resp,
-				Err:    nil,
+				Err:    kitendpoint.Error{Code: 0},
 				IsLast: true,
 			}
 		}()
