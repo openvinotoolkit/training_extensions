@@ -19,7 +19,7 @@ from subprocess import run
 
 import yaml
 
-from ote.misc import download_snapshot_if_not_yet
+from ote.utils.misc import download_snapshot_if_not_yet
 
 
 def parse_args():

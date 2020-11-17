@@ -6,7 +6,7 @@ with open(os.path.join(os.path.dirname(__file__), 'requirements.txt')) as read_f
 
 setup(
     name='ote',
-    version='0.1',
-    packages=find_packages(),
+    version='0.2',
+    packages=find_packages(exclude=('tools',)),
     install_requires=requirements
 )

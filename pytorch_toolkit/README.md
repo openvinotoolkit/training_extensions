@@ -21,7 +21,8 @@ After installation, you are ready to train your own models, evaluate and use
 them for prediction.
 
 * [Action Recognition](action_recognition)
-* [ASL Recognition](asl_recognition)
+* [Action Recognition 2](action_recognition_2)
+  - [Gesture Recognition](action_recognition_2/model_templates/gesture-recognition)
 * [Object Re-Identification](object_reidentification)
   - [Face Recognition](object_reidentification/face_recognition)
   - [Person Re-Identification](object_reidentification/person_reidentification)

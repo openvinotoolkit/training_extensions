@@ -38,6 +38,7 @@ class ModelTemplatesTestCase(unittest.TestCase):
             self.assertTrue(os.path.exists(os.path.join(template_dirname, 'export.py')))
             self.assertTrue(os.path.exists(os.path.join(template_dirname, 'quantize.py')))
             self.assertTrue(os.path.exists(os.path.join(template_dirname, 'requirements.txt')))
+            self.assertTrue(os.path.exists(os.path.join(template_dirname, 'modules.yaml')))
 
     def test_train_and_eval(self):
         if not ENABLE_TRAIN_TESTS:

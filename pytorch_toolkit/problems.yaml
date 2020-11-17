@@ -58,3 +58,11 @@ domains:
       - https://raw.githubusercontent.com/opencv/open_model_zoo/develop/models/intel/vehicle-detection-adas-0002/description/vehicle-detection-adas-0002.png
     subtitle: Detecting vehicles in digital images
     cvat_schema: '[{"name": "vehicle", "attributes":[]}, {"name": "person", "attributes":[]}, {"name": "non-vehicle", "attributes":[]}]'
+- title: Action Recognition 2
+  problems:
+  - title: Gesture Recognition
+    description:  >-
+      Gesture recognition is a computer technology being used in a variety of applications
+      that carry outs video stream classification.
+    subtitle: Recognizing gestures in live video streams
+    cvat_schema: '[{}]'
