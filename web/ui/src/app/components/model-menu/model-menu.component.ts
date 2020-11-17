@@ -34,15 +34,15 @@ export class IdlpModelMenuComponent {
   }
 
   get isFineTuneDisabled(): boolean {
-    return ['inProgress', 'initiate'].includes(this.model?.status);
+    return ['trainInProgress', 'trainFailed'].includes(this.model?.status);
   }
 
   get isTensorboardDisabled(): boolean {
-    return ['default', 'initiate'].includes(this.model?.status);
+    return ['trainDefault', 'evaluateDefault'].includes(this.model?.status);
   }
 
   get isLogDisabled(): boolean {
-    return ['default', 'initiate'].includes(this.model?.status);
+    return ['trainDefault', 'evaluateDefault'].includes(this.model?.status);
   }
 
   get isShowOnChartDisabled(): boolean {
@@ -50,13 +50,10 @@ export class IdlpModelMenuComponent {
   }
 
   get isEvaluateDisabled(): boolean {
-    if (['inProgress', 'initiate'].includes(this.model?.status)) {
-      return true;
-    }
-    return !this.isBuildValidForEvaluate;
+    return ['trainInProgress', 'trainFailed', 'evaluateDefault', 'evaluateInProgress', 'evaluateFinished', 'evaluateFailed'].includes(this.model?.status)
   }
 
   get isDeleteDisabled(): boolean {
-    return ['default', 'initiate'].includes(this.model?.status);
+    return ['trainDefault', 'evaluateDefault'].includes(this.model?.status);
   }
 }
