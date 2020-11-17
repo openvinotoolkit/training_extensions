@@ -1,4 +1,21 @@
+# Getting Started
+
+This page provides info how to use Web OTE tool. Before following these instructions please install required packages and build docker containers using [installation guide](README.md#installation).
+
+# Table of contents
+
+- [Data](#data)
+    - [Data location](#data-location)
+    - [Data annotation](#data-annotation-using-cvat)
+    - [Dataset creation](#dataset-creation)
+- [Object detection](#object-detection)
+    - [Fine-tuning](#fine-tuning)
+    - [Evaluation](#evaluation) 
+- [Custom object detection](#custom-detection)   
+- [Known issues](#known-issues-and-problems)
+
 # Data
+
 ## Data Location
 1. First of all, you should put the folder with pictures in `<training_extensions>/web/data/assets`. 
 Please put at least 60 images for proper work.
