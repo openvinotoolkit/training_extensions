@@ -1,4 +1,4 @@
-#Installation
+# Installation
 Choose the target device (CPU or GPU), install required packages and build docker containers as it shown in the instructions below.
 
 [CPU Version](CPU_README.md#cpu-version)
@@ -9,7 +9,7 @@ Choose the target device (CPU or GPU), install required packages and build docke
   - [GPU Requirements](GPU_README.md#gpu-requirements)
   - [GPU Setup](GPU_README.md#gpu-setup)
   
-#Get Started
+# Get Started
 Please refer [Getting Started](GETTING_STARTED.md) page for the basic usage. 
 
 
