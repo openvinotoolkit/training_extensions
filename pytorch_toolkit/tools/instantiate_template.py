@@ -19,7 +19,7 @@ from subprocess import run
 
 import yaml
 
-from ote.misc import get_file_size_and_sha256
+from ote.misc import download_snapshot_if_not_yet
 
 
 def parse_args():
@@ -44,21 +44,13 @@ def main():
     for dependency in content['dependencies']:
         source = dependency['source']
         destination = dependency['destination']
-        if not source.startswith('http:') and not source.startswith('https:'):
+        if destination != 'snapshot.pth':
             rel_source = os.path.join(os.path.dirname(args.template), source)
             os.makedirs(os.path.dirname(os.path.join(args.output, destination)), exist_ok=True)
             run(f'cp -r {rel_source} {os.path.join(args.output, destination)}', check=True, shell=True)
-        else:
-            if not args.do_not_load_snapshot:
-                logging.info(f'Downloading {source}')
-                run(f'wget -q -O {os.path.join(args.output, destination)} {source}', check=True, shell=True)
-                logging.info(f'Downloading {source} has been completed.')
-                expected_size = dependency['size']
-                expected_sha256 = dependency['sha256']
-                actual = get_file_size_and_sha256(
-                    os.path.join(args.output, destination))
-                assert expected_size == actual['size'], f'{args.template} actual_size {actual["size"]}'
-                assert expected_sha256 == actual['sha256'], f'{args.template} actual_sha256 {actual["sha256"]}'
+
+    if not args.do_not_load_snapshot:
+        download_snapshot_if_not_yet(args.template, args.output)
 
 
 if __name__ == '__main__':

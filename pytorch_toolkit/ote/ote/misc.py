@@ -1,5 +1,6 @@
 import hashlib
 import json
+import logging
 import os
 import signal
 import subprocess
@@ -8,6 +9,7 @@ import time
 from queue import Queue, Empty
 from threading import Thread
 
+import yaml
 from ote import MMDETECTION_TOOLS
 
 
@@ -115,3 +117,30 @@ def run_with_termination(cmd):
 def get_work_dir(cfg, update_config):
     overridden_work_dir = update_config.get('work_dir', None)
     return overridden_work_dir[0][1] if overridden_work_dir else cfg.work_dir
+
+
+def download_snapshot_if_not_yet(template_file, output_folder):
+    with open(template_file) as read_file:
+        content = yaml.load(read_file, yaml.SafeLoader)
+
+    for dependency in content['dependencies']:
+        destination = dependency['destination']
+        if destination == 'snapshot.pth':
+            source = dependency['source']
+            expected_size = dependency['size']
+            expected_sha256 = dependency['sha256']
+            if os.path.exists(os.path.join(output_folder, destination)):
+                actual = get_file_size_and_sha256(os.path.join(output_folder, destination))
+                if expected_size == actual['size'] and expected_sha256 == actual['sha256']:
+                    logging.info(f'{source} has been already downloaded.')
+                    return
+
+            logging.info(f'Downloading {source}')
+            subprocess.run(f'wget -q -O {os.path.join(output_folder, destination)} {source}', check=True, shell=True)
+            logging.info(f'Downloading {source} has been completed.')
+            actual = get_file_size_and_sha256(os.path.join(output_folder, destination))
+            assert expected_size == actual['size'], f'{template_file} actual_size {actual["size"]}'
+            assert expected_sha256 == actual['sha256'], f'{template_file} actual_sha256 {actual["sha256"]}'
+            return
+
+    raise RuntimeError('Failed to find snapshot.pth')
