@@ -500,6 +500,4 @@ export class ProblemInfoState {
     }
     return layout;
   }
-
-
 }

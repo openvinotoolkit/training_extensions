@@ -154,7 +154,7 @@ export class IdlpProblemInfoComponent implements OnInit, OnDestroy {
   }
 
   private navigateToTensorBoard(model: IModel): void {
-    const tensorBoardUri = `${environment.tensorBoardUrl}/run?folder=${model.tensorBoardLogDir}`;
+    const tensorBoardUri = `${environment.tensorBoardUrl}/run?folder=${model.dir}`;
     this.http.get(tensorBoardUri)
       .pipe(
         first(),
@@ -194,7 +194,6 @@ export class IdlpProblemInfoComponent implements OnInit, OnDestroy {
       hoc.push(model.id);
     }
     localStorage.setItem('hoc', JSON.stringify(hoc));
-    // this.websocketService.send(WS.SEND.BUILD_LIST, {problemId: this.problemId});
   }
 
   private fineTuneDialogOpen(model: IModel): void {
