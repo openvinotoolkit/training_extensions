@@ -220,12 +220,6 @@ export class ProblemInfoState {
 
   @Action(UpdateModelsMetricsTableData)
   updateModelsMetricsTableData({getState, patchState, dispatch}: StateContext<ProblemInfoStateModel>, {models, columns, buildId}: UpdateModelsMetricsTableData): void {
-    const getStatus = (model: IModel): string => {
-      if (!['trainFinished', 'trainDefault'].includes(model.status)) {
-        return model.status;
-      }
-      return model.evaluates[buildId]?.status || 'notEvaluated';
-    };
     const rows: IModelTableRow[] = [];
     const metricsValues: { [key: string]: number[] } = {};
     for (const model of models) {
@@ -234,7 +228,8 @@ export class ProblemInfoState {
         name: {
           value: model.name,
         },
-        status: getStatus(model),
+        trainStatus: model.status,
+        evalStatus: model.evaluates[buildId]?.status || 'notEvaluated',
         showOnChart: model.showOnChart,
       };
       for (const {key} of columns) {

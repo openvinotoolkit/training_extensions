@@ -5,7 +5,7 @@
 
 import {Component, EventEmitter, Input, Output, ViewChild} from '@angular/core';
 import {MatMenu} from '@angular/material/menu';
-import {IModel} from '@idlp/routed/problem-info/problem-info.models';
+import {IModelTableRow} from '@idlp/routed/problem-info/problem-info.models';
 
 
 @Component({
@@ -19,7 +19,7 @@ export class IdlpModelMenuComponent {
   instance: MatMenu;
 
   @Input()
-  model: IModel;
+  modelRow: IModelTableRow;
 
   @Input()
   isBuildValidForEvaluate: boolean;
@@ -29,31 +29,29 @@ export class IdlpModelMenuComponent {
 
   get isHiddenOnChart(): boolean {
     const hoc: string[] = JSON.parse(localStorage.getItem('hoc'));
-    if (hoc) return hoc.includes(this.model.id);
-    return this.model.showOnChart;
+    if (hoc) return hoc.includes(this.modelRow.id);
+    return this.modelRow.showOnChart;
   }
 
   get isFineTuneDisabled(): boolean {
-    return ['trainInProgress', 'trainFailed'].includes(this.model?.status);
+    return ['trainInProgress', 'trainFailed'].includes(this.modelRow?.trainStatus);
   }
 
   get isTensorboardDisabled(): boolean {
-    return ['trainDefault', 'evaluateDefault'].includes(this.model?.status);
+    return this.modelRow?.trainStatus === 'trainDefault' || this.modelRow?.evalStatus === 'evaluateDefault';
   }
 
   get isLogDisabled(): boolean {
-    return ['trainDefault', 'evaluateDefault'].includes(this.model?.status);
-  }
-
-  get isShowOnChartDisabled(): boolean {
-    return ['inProgress', 'initiate'].includes(this.model?.status);
+    return this.modelRow?.trainStatus === 'trainDefault' || this.modelRow?.evalStatus === 'evaluateDefault';
   }
 
   get isEvaluateDisabled(): boolean {
-    return ['trainInProgress', 'trainFailed', 'evaluateDefault', 'evaluateInProgress', 'evaluateFinished', 'evaluateFailed'].includes(this.model?.status)
+    const trainStatuses = ['trainInProgress', 'trainFailed'];
+    const evalStatuses = ['evaluateDefault', 'evaluateInProgress', 'evaluateFinished', 'evaluateFailed'];
+    return trainStatuses.includes(this.modelRow?.trainStatus) || evalStatuses.includes(this.modelRow?.evalStatus);
   }
 
   get isDeleteDisabled(): boolean {
-    return ['trainDefault', 'evaluateDefault'].includes(this.model?.status);
+    return this.modelRow?.trainStatus === 'trainDefault' || this.modelRow?.evalStatus === 'evaluateDefault';
   }
 }

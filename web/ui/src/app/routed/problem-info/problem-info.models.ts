@@ -65,6 +65,7 @@ export interface IModelTableRow {
 
   id: string;
   name: ITableNameCell;
-  status: string;
   showOnChart: boolean;
+  trainStatus: string;
+  evalStatus: string;
 }

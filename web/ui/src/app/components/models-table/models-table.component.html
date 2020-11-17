@@ -14,7 +14,7 @@
       
       <ng-container *matCellDef="let item">
         <td
-          *ngIf="['evaluateFinished', 'evaluateDefault', 'notEvaluated'].includes(item.status) else inProgress"
+          *ngIf="isModelHaveData(item) else noData"
           [matMenuTriggerFor]="menu.instance"
           [ngClass]="{'contrast-text': isContrastText(item[column.key].opacity)}"
           [style]="getCellStyle(item[column.key].opacity)"
@@ -40,7 +40,7 @@
           </ng-template>
         </td>
         
-        <ng-template #inProgress>
+        <ng-template #noData>
           <td
             [attr.colspan]="column.key !== 'name' ? columns.length - 1 : 0"
             [matMenuTriggerFor]="menu.instance"
@@ -53,8 +53,8 @@
             </span>
             <ng-template #progress>
               <idlp-model-table-row-status
-                [message]="modelStatusMessageMapping[item.status]"
-                [showProgress]="modelStatusInProgressMapping[item.status]"
+                [message]="getModelStatusMessage(item)"
+                [showProgress]="showInProgressAnimation(item)"
               ></idlp-model-table-row-status>
             </ng-template>
           </td>
@@ -63,7 +63,7 @@
         <idlp-model-menu
 					#menu="modelMenu"
           (onMenuItemClick)="menuItemClick($event)"
-          [model]="item"
+          [modelRow]="item"
           [isBuildValidForEvaluate]="isBuildValidForEvaluate(item.id)"
         >
         </idlp-model-menu>

@@ -11,7 +11,8 @@ import {
   IMetric,
   IModel,
   IModelsMetricsTableColumn,
-  IModelsMetricsTableData
+  IModelsMetricsTableData,
+  IModelTableRow
 } from '@idlp/routed/problem-info/problem-info.models';
 import {ProblemInfoState} from '@idlp/routed/problem-info/problem-info.state';
 import {Utils} from '@idlp/utils/utils';
@@ -46,20 +47,6 @@ export class IdlpModelsTableComponent implements OnDestroy, OnInit {
 
   data: IModelsMetricsTableData[];
   dataSource: MatTableDataSource<{ [metric: string]: string }>;
-
-  modelStatusMessageMapping = {
-    trainInProgress: 'Train In Progress',
-    evaluateInProgress: 'Evaluate In Progress',
-    trainFailed: 'Train Failed',
-    evaluateFailed: 'Evaluate Failed',
-  };
-
-  modelStatusInProgressMapping = {
-    trainInProgress: true,
-    evaluateInProgress: true,
-    trainFailed: false,
-    evaluateFailed: false,
-  };
 
   private models: IModel[] = [];
 
@@ -139,5 +126,32 @@ export class IdlpModelsTableComponent implements OnDestroy, OnInit {
 
   rowClick(item: IModel): void {
     this.selectedModel = this.models.filter((model: IModel) => model.id === item.id)[0];
+  }
+
+  getModelStatusMessage(modelRow: IModelTableRow): string {
+    switch (modelRow.trainStatus) {
+    case 'trainInProgress':
+      return 'Train In Progress';
+    case 'trainFailed':
+      return 'Train Failed';
+    }
+    switch (modelRow.evalStatus) {
+    case 'evaluateInProgress':
+      return 'Evaluate In Progress';
+    case 'evaluateFailed':
+      return 'Evaluate Failed';
+    }
+    return '';
+  }
+
+  showInProgressAnimation(modelRow: IModelTableRow): boolean {
+    return modelRow.trainStatus === 'trainInProgress' || modelRow.evalStatus === 'evaluateInProgress';
+  }
+
+  isModelHaveData(modelRow: IModelTableRow): boolean {
+    if (['trainFailed', 'trainInProgress'].includes(modelRow.trainStatus)) {
+      return false;
+    }
+    return !['evaluateFailed', 'evaluateInProgress'].includes(modelRow.evalStatus);
   }
 }
