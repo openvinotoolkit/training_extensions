@@ -31,6 +31,7 @@ inference.
   * [Person Reidentification](pytorch_toolkit/person_reidentification)
   * [Human Pose Estimation](pytorch_toolkit/human_pose_estimation)
   * [Instance Segmentation](pytorch_toolkit/instance_segmentation)
+  * [Machine Translation](pytorch_toolkit/machine_translation)
   * [Object Detection](pytorch_toolkit/object_detection)
     - [Face Detection](pytorch_toolkit/object_detection/face_detection.md)
     - [Person Vehicle Bike Detector](pytorch_toolkit/object_detection/person_vehicle_bike_detection.md)
