@@ -35,6 +35,7 @@ inference.
     - [Vehicle Re-Identification](pytorch_toolkit/object_reidentification/vehicle_reidentification)
   * [Human Pose Estimation](pytorch_toolkit/human_pose_estimation)
   * [Instance Segmentation](pytorch_toolkit/instance_segmentation)
+  * [Machine Translation](pytorch_toolkit/machine_translation)
   * [Object Detection](pytorch_toolkit/object_detection)
     - [Face Detection](pytorch_toolkit/object_detection/model_templates/face-detection)
     - [Horizontal Text Detection](pytorch_toolkit/object_detection/model_templates/horizontal-text-detection/)
