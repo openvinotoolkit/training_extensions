@@ -22,6 +22,8 @@ from subprocess import run
 import torch
 import yaml
 
+from ote.utils.misc import download_snapshot_if_not_yet
+
 
 def run_through_shell(cmd):
     run(cmd, shell=True, check=True, executable="/bin/bash")
@@ -48,12 +50,6 @@ def get_dependencies(template_file):
         return output
 
 
-def get_epochs(template_file):
-    with open(template_file) as read_file:
-        content = yaml.load(read_file, yaml.SafeLoader)
-    return content['hyper_parameters']['basic']['epochs']
-
-
 def create_test_case(problem_name, model_name, ann_file, img_root):
     class TestCaseOteApi(unittest.TestCase):
 
@@ -65,8 +61,8 @@ def create_test_case(problem_name, model_name, ann_file, img_root):
             cls.ann_file = ann_file
             cls.img_root = img_root
             cls.dependencies = get_dependencies(cls.template_file)
-            cls.epochs_delta = 2
-            cls.total_epochs = get_epochs(cls.template_file) + cls.epochs_delta
+
+            download_snapshot_if_not_yet(cls.template_file, cls.template_folder)
 
             run_through_shell(
                 f'cd {cls.template_folder};'
@@ -93,12 +89,13 @@ def create_test_case(problem_name, model_name, ann_file, img_root):
             with open(os.path.join(self.template_folder, "metrics.yaml")) as read_file:
                 content = yaml.load(read_file, yaml.SafeLoader)
 
-            accuracy = [metrics['value'] for metrics in content['metrics'] if metrics['key'] == 'accuracy'][0]
+            est_accuracy = [metrics['value'] for metrics in content['metrics'] if metrics['key'] == 'accuracy'][0]
 
             with open(f'{os.path.dirname(__file__)}/../expected_outputs/{problem_name}/{model_name}.json') as read_file:
                 content = json.load(read_file)
+                ref_accuracy = content['accuracy']
 
-            self.assertLess(abs(content['accuracy'] - accuracy), 1e-6)
+            self.assertLess(abs(ref_accuracy - 1e-2 * est_accuracy), 1e-6)
 
         def test_evaluation_on_cpu(self):
             self.skip_if_cpu_is_not_supported()
@@ -116,12 +113,13 @@ def create_test_case(problem_name, model_name, ann_file, img_root):
             with open(os.path.join(self.template_folder, "metrics.yaml")) as read_file:
                 content = yaml.load(read_file, yaml.SafeLoader)
 
-            accuracy = [metrics['value'] for metrics in content['metrics'] if metrics['key'] == 'accuracy'][0]
+            est_accuracy = [metrics['value'] for metrics in content['metrics'] if metrics['key'] == 'accuracy'][0]
 
             with open(f'{os.path.dirname(__file__)}/../expected_outputs/{problem_name}/{model_name}.json') as read_file:
                 content = json.load(read_file)
+                ref_accuracy = content['accuracy']
 
-            self.assertLess(abs(content['map'] - accuracy), 1e-6)
+            self.assertLess(abs(ref_accuracy - 1e-2 * est_accuracy), 1e-6)
 
         @unittest.skipUnless(torch.cuda.is_available(), 'No GPU found')
         def test_finetuning_on_gpu(self):
@@ -136,13 +134,12 @@ def create_test_case(problem_name, model_name, ann_file, img_root):
                 f' --load-weights snapshot.pth'
                 f' --save-checkpoints-to {self.template_folder}'
                 f' --gpu-num 1'
-                f' --batch-size 1'
-                f' --epochs {self.total_epochs}'
+                f' --batch-size 2'
+                f' --epochs 6'
                 f' | tee {log_file}')
 
             accuracy = collect_accuracy(log_file)
-            self.assertEqual(len(accuracy), self.epochs_delta)
-            self.assertGreater(accuracy[-1], 0)
+            self.assertGreater(accuracy[-1], 0.0)
 
         def test_finetuning_on_cpu(self):
             self.skip_if_cpu_is_not_supported()
@@ -159,13 +156,12 @@ def create_test_case(problem_name, model_name, ann_file, img_root):
                 f' --load-weights snapshot.pth'
                 f' --save-checkpoints-to {self.template_folder}'
                 f' --gpu-num 1'
-                f' --batch-size 1'
-                f' --epochs {self.total_epochs}'
+                f' --batch-size 2'
+                f' --epochs 6'
                 f' | tee {log_file}')
 
             accuracy = collect_accuracy(log_file)
-            self.assertEqual(len(accuracy), self.epochs_delta)
-            self.assertGreater(accuracy[-1], 0)
+            self.assertGreater(accuracy[-1], 0.0)
 
     return TestCaseOteApi
 
@@ -181,7 +177,14 @@ def create_export_test_case(problem_name, model_name, ann_file, img_root):
             cls.ann_file = ann_file
             cls.img_root = img_root
             cls.dependencies = get_dependencies(cls.template_file)
-            cls.test_export_thr = 0.031
+            cls.test_export_thr = 1e-2
+
+            download_snapshot_if_not_yet(cls.template_file, cls.template_folder)
+
+            run_through_shell(
+                f'cd {cls.template_folder};'
+                f'pip install -r requirements.txt;'
+            )
 
         def skip_if_cpu_is_not_supported(self):
             with open(self.template_file) as read_file:
@@ -216,12 +219,13 @@ def create_export_test_case(problem_name, model_name, ann_file, img_root):
 
             with open(os.path.join(export_dir, "metrics.yaml")) as read_file:
                 content = yaml.load(read_file, yaml.SafeLoader)
-                accuracy = [metric['value'] for metric in content['metrics'] if metric['key'] == 'accuracy'][0]
+                est_accuracy = [metric['value'] for metric in content['metrics'] if metric['key'] == 'accuracy'][0]
 
             with open(f'{os.path.dirname(__file__)}/../expected_outputs/{problem_name}/{model_name}.json') as read_file:
                 content = json.load(read_file)
+                ref_accuracy = content['accuracy']
 
-            self.assertGreater(accuracy, content['accuracy'] - thr)
+            self.assertGreater(1e-2 * est_accuracy, ref_accuracy - thr)
 
         def export_test_on_cpu(self, thr):
             export_folder = 'cpu_export'
@@ -242,12 +246,13 @@ def create_export_test_case(problem_name, model_name, ann_file, img_root):
 
             with open(os.path.join(export_dir, "metrics.yaml")) as read_file:
                 content = yaml.load(read_file, yaml.SafeLoader)
-                accuracy = [metric['value'] for metric in content['metrics'] if metric['key'] == 'accuracy'][0]
+                est_accuracy = [metric['value'] for metric in content['metrics'] if metric['key'] == 'accuracy'][0]
 
             with open(f'{os.path.dirname(__file__)}/../expected_outputs/{problem_name}/{model_name}.json') as read_file:
                 content = json.load(read_file)
+                ref_accuracy = content['accuracy']
 
-            self.assertGreater(accuracy, content['accuracy'] - thr)
+            self.assertGreater(1e-2 * est_accuracy, ref_accuracy - thr)
 
         @unittest.skipUnless(torch.cuda.is_available(), 'No GPU found')
         def test_export_on_gpu(self):

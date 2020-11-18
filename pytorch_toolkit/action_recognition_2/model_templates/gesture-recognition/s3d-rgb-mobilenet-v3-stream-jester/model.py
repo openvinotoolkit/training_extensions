@@ -90,7 +90,7 @@ model = dict(
             conf_penalty_weight=0.085,
             filter_type='positives',
             top_k=None,
-            enable_class_weighting=True,
+            enable_class_weighting=False,
             enable_adaptive_margins=False,
         ),
         losses_extra=dict(
@@ -123,14 +123,11 @@ train_pipeline = [
     dict(type='StreamSampleFrames', clip_len=input_clip_length, trg_fps=15, num_clips=2,
          temporal_jitter=True, min_intersection=1.0),
     dict(type='RawFrameDecode'),
-    dict(type='GenerateKptsMask', sigma_scale=0.1, out_name='attention_mask'),
-    dict(type='Resize', scale=(-1, 256),
-         targets=['imgs', 'attention_mask'], interpolation=['bilinear', 'nearest']),
-    dict(type='RandomRotate', delta=10, prob=0.5, targets=['imgs', 'attention_mask']),
+    dict(type='Resize', scale=(-1, 256)),
+    dict(type='RandomRotate', delta=10, prob=0.5),
     dict(type='RatioPreservingCrop',
-         input_size=input_img_size, scale_limits=(1, 0.875),
-         targets=['imgs', 'attention_mask'], interpolation=['bilinear', 'nearest']),
-    dict(type='Flip', flip_ratio=0.5, targets=['imgs', 'attention_mask']),
+         input_size=input_img_size, scale_limits=(1, 0.875)),
+    dict(type='Flip', flip_ratio=0.5),
     dict(type='MapFlippedLabels', map_file=dict(jester='flip_labels_map.txt')),
     dict(type='BlockDropout', scale=0.2, prob=0.1),
     dict(type='PhotometricDistortion',
@@ -138,11 +135,11 @@ train_pipeline = [
          contrast_range=(0.6, 1.4),
          saturation_range=(0.7, 1.3),
          hue_delta=18),
-    dict(type='MixUp',  annot='imagenet_train_list.txt', imgs_root='imagenet/train', alpha=0.2),
+    #dict(type='MixUp',  annot='imagenet_train_list.txt', imgs_root='imagenet/train', alpha=0.2),
     dict(type='Normalize', **img_norm_cfg),
-    dict(type='FormatShape', input_format='NCTHW', targets=['imgs', 'attention_mask']),
-    dict(type='Collect', keys=['imgs', 'label', 'dataset_id', 'attention_mask'], meta_keys=[]),
-    dict(type='ToTensor', keys=['imgs', 'label', 'dataset_id', 'attention_mask'])
+    dict(type='FormatShape', input_format='NCTHW', targets=['imgs']),
+    dict(type='Collect', keys=['imgs', 'label', 'dataset_id'], meta_keys=[]),
+    dict(type='ToTensor', keys=['imgs', 'label', 'dataset_id'])
 ]
 val_pipeline = [
     dict(type='StreamSampleFrames', clip_len=input_clip_length, trg_fps=15, num_clips=1, test_mode=True),
@@ -169,8 +166,6 @@ data = dict(
         source=['jester'],
         ann_file='train.txt',
         pipeline=train_pipeline,
-        kpts_subdir='hand_kpts',
-        load_kpts=True,
     ),
     val=dict(
         source=['jester'],

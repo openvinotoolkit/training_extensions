@@ -5,9 +5,9 @@ framework: OTEAction v0.6.0
 summary: ASL Recognition based on S3D-MobileNet-V3.
 annotation_format: CustomAction
 dependencies:
-- sha256: af11997c274cd61637535638460b98fbfd602c2b8f57686f6235897b6a2cc20f
-  size: 16647750
-  source: https://docs.google.com/uc?export=download&id=1ZrqF1vp71WVi7SMo6QNa14mqyrhpuu2Q
+- sha256: 387f42e4a71ca0955e174d4661f795989b35056993f0049f45df4c56f83273d4
+  size: 33272762
+  source: https://docs.google.com/uc?export=download&id=1lDm2qOxMRyXZW6y7owlQBv8SGvGIKpcX
   destination: snapshot.pth
 - source: ../../../../../pytorch_toolkit/ote/tools/train.py
   destination: train.py

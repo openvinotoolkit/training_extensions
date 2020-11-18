@@ -15,6 +15,9 @@ ENABLE_TESTS_FOR = {
         'text_detection',
         'vehicle_detection',
     ],
+    'action_recognition_2': [
+        'gesture-recognition',
+    ],
 }
 
 ENABLE_TRAIN_TESTS = True
@@ -54,6 +57,7 @@ class ModelTemplatesTestCase(unittest.TestCase):
         for domain_folder in domain_folders:
             if domain_folder not in ENABLE_TESTS_FOR:
                 continue
+
             venv_activate_path = os.path.join(self.work_dir, domain_folder, 'venv', 'bin', 'activate')
             for problem_folder in ENABLE_TESTS_FOR[domain_folder]:
                 logging.info(f'Running tests for {domain_folder}/{problem_folder}.')
@@ -81,6 +85,7 @@ class ModelTemplatesTestCase(unittest.TestCase):
         for domain_folder in domain_folders:
             if domain_folder not in ENABLE_TESTS_FOR:
                 continue
+
             venv_activate_path = os.path.join(self.work_dir, domain_folder, 'venv', 'bin', 'activate')
             for problem_folder in ENABLE_TESTS_FOR[domain_folder]:
                 logging.info(f'Running export tests for {domain_folder}/{problem_folder}.')

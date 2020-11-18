@@ -18,6 +18,7 @@ import hashlib
 import json
 import logging
 import os
+import requests
 import subprocess
 
 import yaml
@@ -62,6 +63,7 @@ def download_snapshot_if_not_yet(template_file, output_folder):
             source = dependency['source']
             expected_size = dependency['size']
             expected_sha256 = dependency['sha256']
+
             if os.path.exists(os.path.join(output_folder, destination)):
                 actual = get_file_size_and_sha256(os.path.join(output_folder, destination))
                 if expected_size == actual['size'] and expected_sha256 == actual['sha256']:
@@ -69,11 +71,30 @@ def download_snapshot_if_not_yet(template_file, output_folder):
                     return
 
             logging.info(f'Downloading {source}')
-            subprocess.run(f'wget -q -O {os.path.join(output_folder, destination)} {source}', check=True, shell=True)
+            destination_file = os.path.join(output_folder, destination)
+            if 'google.com' in source:
+                file_id = source.split('id=')[-1]
+
+                session = requests.Session()
+                gdrive_url = 'https://docs.google.com/uc?export=download'
+                response = session.get(gdrive_url, params={'id': file_id}, stream=True)
+                response.raise_for_status()
+
+                for key, value in response.cookies.items():
+                    if key.startswith('download_warning'):
+                        response = session.get(gdrive_url, params={'id': file_id, 'confirm': value}, stream=True)
+                        response.raise_for_status()
+
+                with open(destination_file, 'wb') as f:
+                    f.write(response.content)
+            else:
+                subprocess.run(f'wget -q -O {destination_file} {source}', check=True, shell=True)
             logging.info(f'Downloading {source} has been completed.')
+
             actual = get_file_size_and_sha256(os.path.join(output_folder, destination))
             assert expected_size == actual['size'], f'{template_file} actual_size {actual["size"]}'
             assert expected_sha256 == actual['sha256'], f'{template_file} actual_sha256 {actual["sha256"]}'
+
             return
 
     raise RuntimeError('Failed to find snapshot.pth')
