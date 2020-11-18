@@ -45,6 +45,7 @@ inference.
   * [Segmentation of Thoracic Organs](pytorch_toolkit/segthor)
   * [Super Resolution](pytorch_toolkit/super_resolution)
   * [Text Spotting](pytorch_toolkit/text_spotting)
+  * [Question Answering](pytorch_toolkit/question_answering)
 
 * [TensorFlow\*](tensorflow_toolkit)
 
