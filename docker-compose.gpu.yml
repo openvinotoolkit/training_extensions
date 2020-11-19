@@ -15,7 +15,7 @@ services:
 
   idlp_nginx:
     container_name: idlp_nginx
-    image: nginx:alpine
+    image: nginx:1.18-alpine
     ports:
       - 8001:8001
       - 8002:8002
@@ -50,8 +50,8 @@ services:
   idlp_mongo:
     image: mongo
     container_name: idlp_mongo
-    ports:
-      - 27017:27017
+    #    ports:
+    #      - 27017:27017
     networks:
       - idlp_network
     volumes:
@@ -77,7 +77,7 @@ services:
   idlp_rabbitmq:
     image: 'rabbitmq:management-alpine'
     ports:
-      - '5672:5672'
+      #      - '5672:5672'
       - '15672:15672'
     container_name: idlp_rabbitmq
     networks:
@@ -92,8 +92,8 @@ services:
       - idlp_go_server_v:/go/src/server
       - idlp_ote_v:/ote
     container_name: idlp_api
-    ports:
-      - 8888:8888
+    #    ports:
+    #      - 8888:8888
     networks:
       - idlp_network
     depends_on:
@@ -139,7 +139,6 @@ services:
     volumes:
       - idlp_go_server_v:/go/src/server
       - idlp_problem_v:/problem
-      - idlp_training_v:/training
       - idlp_ote_v:/ote
     container_name: idlp_model
     networks:
@@ -198,14 +197,13 @@ services:
   idlp_train_worker:
     build:
       context: .
-      dockerfile: web/goserver/src/server/workers/train/Dockerfile
+      dockerfile: web/goserver/src/server/workers/train/Dockerfile.gpu
     runtime: "nvidia"
     restart: always
     shm_size: '8gb'
     volumes:
       - idlp_go_server_v:/go/src/server
       - idlp_problem_v:/problem
-      - idlp_training_v:/training
       - idlp_cvat_images_v:/images
       - idlp_ote_v:/ote
     container_name: idlp_train_worker
@@ -221,7 +219,6 @@ services:
       dockerfile: workers/board/Dockerfile
     volumes:
       - idlp_py_server_v:/code
-      - idlp_training_v:/training:rw
     ports:
       - 6006:6006
       - 8812:8812
@@ -347,12 +344,6 @@ volumes:
       o: bind
       type: none
       device: $PWD/web/data/idlp/problem
-  idlp_training_v:
-    driver: local
-    driver_opts:
-      o: bind
-      type: none
-      device: $PWD/web/data/idlp/training
   idlp_cvat_images_v:
     driver: local
     driver_opts:
