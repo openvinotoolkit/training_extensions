@@ -47,9 +47,11 @@ export TRAIN_ANN_FILE=train.txt
 export TRAIN_DATA_ROOT=${DATA_DIR}
 export VAL_ANN_FILE=val.txt
 export VAL_DATA_ROOT=${DATA_DIR}
-export TEST_ANN_FILE=test.txt
+export TEST_ANN_FILE=val.txt
 export TEST_DATA_ROOT=${DATA_DIR}
 ```
+
+> **Note**: The labels for the test data split is not public, so we use the validation data split only to test a model internally.
 
 To get the most robust model it's recommended to enable the [mixup](https://arxiv.org/abs/1710.09412) augmentation by specifying the paths to images in `imagenet_train_list.txt` file.
 Additionally you should enable MixUp by uncommenting appropriate line in `model.py` config.
