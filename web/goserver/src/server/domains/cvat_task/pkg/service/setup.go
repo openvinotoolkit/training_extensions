@@ -294,7 +294,7 @@ func deleteTaskFromCvat(cvatTask t.CvatTask) {
 	client := http.Client{
 		Timeout: 30 * time.Second,
 	}
-	url := fmt.Sprintf("%s%s%s/%d", cvatHost, cvatBaseUrl, cvatTaskUrl, cvatTask.Annotation.Url)
+	url := fmt.Sprintf("%s%s%s%s", cvatHost, cvatBaseUrl, cvatTaskUrl, cvatTask.Annotation.Url)
 	request, err := http.NewRequest("DELETE", url, nil)
 	if err != nil {
 		log.Println("domains.cvat_task.pkg.service.setup_one.deleteTaskFromCvat.http.NewRequest(\"DELETE\",", url, ", nil)", err)
