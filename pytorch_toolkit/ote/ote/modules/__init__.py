@@ -5,7 +5,7 @@ from .trainers import BaseTrainer, MMActionTrainer, MMDetectionTrainer
 from .evaluators import (BaseEvaluator, MMActionEvaluator, MMDetectionEvaluator,
                          MMFaceDetectionEvaluator, MMHorizontalTextDetectionEvaluator)
 from .exporters import BaseExporter, MMActionExporter, MMDetectionExporter
-from .registry import ARG_PARSERS, ARG_CONVERTERS, TRAINERS, EVALUATORS, EXPORTERS
+from .registry import ARG_PARSERS, ARG_CONVERTERS, TRAINERS, EVALUATORS, EXPORTERS, CONFIG_TRANSFORMERS
 from .builder import build_arg_parser, build_arg_converter, build_trainer, build_evaluator, build_exporter
 
 __all__ = [
@@ -14,6 +14,7 @@ __all__ = [
     'TRAINERS',
     'EVALUATORS',
     'EXPORTERS',
+    'CONFIG_TRANSFORMERS',
     'DefaultArgParser',
     'CustomDetectorArgParser',
     'FaceDetectorArgParser',

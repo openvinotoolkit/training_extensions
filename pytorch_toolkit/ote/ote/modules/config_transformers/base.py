@@ -13,13 +13,17 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 """
+import logging
+from abc import ABCMeta, abstractmethod
 
-from mmcv.utils import Registry
+class BaseConfigTransformer(metaclass=ABCMeta):
+    def __init__(self):
+        pass
 
+    def __call__(self, template):
+        return self.process(template)
 
-ARG_PARSERS = Registry('arg_parser')
-ARG_CONVERTERS = Registry('arg_converter')
-TRAINERS = Registry('trainer')
-EVALUATORS = Registry('evaluator')
-EXPORTERS = Registry('exporter')
-CONFIG_TRANSFORMERS = Registry('config_transformer')
+    @abstractmethod
+    def process(self, template):
+        pass
+
