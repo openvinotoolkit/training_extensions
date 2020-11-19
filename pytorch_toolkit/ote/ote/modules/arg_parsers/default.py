@@ -24,11 +24,11 @@ class DefaultArgParser:
     def __init__(self):
         super(DefaultArgParser, self).__init__()
 
-    def get_train_parser(self, config):
-        return train_args_parser(config)
+    def get_train_parser(self, config_path):
+        return train_args_parser(config_path)
 
-    def get_test_parser(self, config):
-        return test_args_parser(config)
+    def get_test_parser(self, config_path):
+        return test_args_parser(config_path)
 
-    def get_export_parser(self, config):
-        return export_args_parser(config)
+    def get_export_parser(self, config_path):
+        return export_args_parser(config_path)

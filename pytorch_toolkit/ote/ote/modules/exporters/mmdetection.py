@@ -30,11 +30,11 @@ class MMDetectionExporter(BaseExporter):
     def __init__(self):
         super(MMDetectionExporter, self).__init__()
 
-    def _export_to_openvino(self, args, template_cfg, tools_dir):
-        super()._export_to_openvino(args, template_cfg, tools_dir)
+    def _export_to_openvino(self, args, tools_dir):
+        super()._export_to_openvino(args, tools_dir)
 
         # FIXME(ikrylov): remove alt_ssd_export block as soon as it becomes useless.
-        config = Config.fromfile(template_cfg['config'])
+        config = Config.fromfile(args["config"])
         if hasattr(config.model, 'bbox_head'):
             if config.model.bbox_head.type == 'SSDHead':
                 run(f'python {os.path.join(tools_dir, "export.py")} '

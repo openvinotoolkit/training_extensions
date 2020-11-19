@@ -27,8 +27,8 @@ class FaceDetectorArgParser(DefaultArgParser):
     def __init__(self):
         super(FaceDetectorArgParser, self).__init__()
 
-    def get_test_parser(self, config):
-        parser = argparse.ArgumentParser(parents=[test_args_parser(config)], add_help=False)
+    def get_test_parser(self, config_path):
+        parser = argparse.ArgumentParser(parents=[test_args_parser(config_path)], add_help=False)
         parser.add_argument('--wider-dir',
                             help='Location of WiderFace dataset.',
                             default='data/wider_face')

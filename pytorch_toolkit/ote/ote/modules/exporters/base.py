@@ -23,16 +23,16 @@ class BaseExporter(metaclass=ABCMeta):
     def __init__(self):
         pass
 
-    def __call__(self, args, template_cfg):
+    def __call__(self, args):
         tools_dir = self._get_tools_dir()
 
         if args['openvino']:
-            self._export_to_openvino(args, template_cfg, tools_dir)
+            self._export_to_openvino(args, tools_dir)
 
         if args['onnx']:
-            self._export_to_onnx(args, template_cfg, tools_dir)
+            self._export_to_onnx(args, tools_dir)
 
-    def _export_to_openvino(self, args, template_cfg, tools_dir):
+    def _export_to_openvino(self, args, tools_dir):
         run(f'python {os.path.join(tools_dir, "export.py")} '
             f'{args["config"]} '
             f'{args["load_weights"]} '
@@ -42,7 +42,7 @@ class BaseExporter(metaclass=ABCMeta):
             shell=True,
             check=True)
 
-    def _export_to_onnx(self, args, template_cfg, tools_dir):
+    def _export_to_onnx(self, args, tools_dir):
         run(f'python {os.path.join(tools_dir, "export.py")} '
             f'{args["config"]} '
             f'{args["load_weights"]} '

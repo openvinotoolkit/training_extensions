@@ -20,11 +20,10 @@ from ote.modules import build_arg_parser, build_arg_converter, build_evaluator
 
 
 def main():
-    template = load_config(MODEL_TEMPLATE_FILENAME)
     modules = load_config(MODULES_CONFIG_FILENAME)
 
     arg_parser = build_arg_parser(modules['arg_parser'])
-    ote_args = vars(arg_parser.get_test_parser(template).parse_args())
+    ote_args = vars(arg_parser.get_test_parser(MODEL_TEMPLATE_FILENAME).parse_args())
 
     arg_converter = build_arg_converter(modules['arg_converter'])
     eval_args = arg_converter.convert_test_args(MODEL_TEMPLATE_FILENAME, ote_args)

@@ -20,14 +20,13 @@ from ote.modules import build_arg_parser, build_exporter
 
 
 def main():
-    template = load_config(MODEL_TEMPLATE_FILENAME)
     modules = load_config(MODULES_CONFIG_FILENAME)
 
     arg_parser = build_arg_parser(modules['arg_parser'])
-    ote_args = vars(arg_parser.get_export_parser(template).parse_args())
+    ote_args = vars(arg_parser.get_export_parser(MODEL_TEMPLATE_FILENAME).parse_args())
 
     exporter = build_exporter(modules['exporter'])
-    exporter(ote_args, template)
+    exporter(ote_args)
 
 
 if __name__ == '__main__':
