@@ -17,6 +17,7 @@ import (
 	cvatTaskFind "server/db/pkg/handler/cvat_task/find"
 	cvatTaskFindOne "server/db/pkg/handler/cvat_task/find_one"
 	buildStatus "server/db/pkg/types/build/status"
+	statusCvatTask "server/db/pkg/types/status/cvatTask"
 	typeAsset "server/db/pkg/types/type/asset"
 	kitendpoint "server/kit/endpoint"
 
@@ -45,49 +46,14 @@ func (s *basicCvatTaskService) Setup(ctx context.Context, req SetupRequestData) 
 	returnChan := make(chan kitendpoint.Response)
 	go func() {
 		defer close(returnChan)
+		asset, cvatTask := s.getAssetCvatTask(ctx, req.Id)
+		originalCvatTask := cvatTask
 
-		cvatTaskFindOneResp := <-cvatTaskFindOne.Send(
-			ctx,
-			s.Conn,
-			cvatTaskFindOne.RequestData{
-				Id: req.Id,
-			},
-		)
-		cvatTask := cvatTaskFindOneResp.Data.(cvatTaskFindOne.ResponseData)
-		assetFindOneResp := <-assetFindOne.Send(
-			ctx,
-			s.Conn,
-			assetFindOne.RequestData{
-				Id: cvatTask.AssetId,
-			},
-		)
-		asset := assetFindOneResp.Data.(assetFindOne.ResponseData)
 		if asset.Type == typeAsset.Folder {
-			assetFindResp := <-assetFind.Send(
-				ctx,
-				s.Conn,
-				assetFind.RequestData{
-					ParentFolder: strings.Join([]string{asset.ParentFolder, asset.Name}, "/"),
-				},
-			)
-			assets := assetFindResp.Data.(assetFind.ResponseData).Items
-			var assetIds []primitive.ObjectID
-			for _, asset := range assets {
-				assetIds = append(assetIds, asset.Id)
-			}
-			cvatTaskFindResp := <-cvatTaskFind.Send(
-				ctx,
-				s.Conn,
-				cvatTaskFind.RequestData{
-					AssetIds:  assetIds,
-					ProblemId: cvatTask.ProblemId,
-				},
-			)
-			childrenCvatTasks := cvatTaskFindResp.Data.(cvatTaskFind.ResponseData).Items
+			assetIds := s.getChildrenAssetIds(ctx, asset)
+			childrenCvatTasks := s.getCvatTaskByAssets(ctx, assetIds, cvatTask.ProblemId)
 			for _, childCvatTask := range childrenCvatTasks {
-				s.Setup(ctx, SetupRequestData{
-					Id: childCvatTask.Id,
-				})
+				s.Setup(ctx, SetupRequestData{Id: childCvatTask.Id})
 			}
 			returnChan <- kitendpoint.Response{IsLast: true, Data: nil, Err: kitendpoint.Error{Code: 0}}
 		}
@@ -95,66 +61,114 @@ func (s *basicCvatTaskService) Setup(ctx context.Context, req SetupRequestData) 
 		if isCvatTaskExists(cvatTask) {
 			return
 		}
-		cvatTask.Status = "pushInProgress"
-		cvatTaskUpdateOne.Send(context.TODO(), s.Conn, cvatTask)
-		buildFindOneResp := <-buildFindOne.Send(
-			ctx,
-			s.Conn,
-			buildFindOne.RequestData{
-				ProblemId: cvatTask.ProblemId,
-				Status:    buildStatus.Tmp,
-			},
-		)
-		tmpBuild := buildFindOneResp.Data.(buildFindOne.ResponseData)
+		cvatTask = s.updateCvatTaskStatus(ctx, cvatTask, statusCvatTask.PushInProgress)
+		tmpBuild := s.getTmpBuild(ctx, cvatTask.ProblemId)
 		buildSplit := findBuildAssetSplit(tmpBuild, asset)
 		returnChan <- kitendpoint.Response{IsLast: false, Data: getCvatTaskAndAsset(cvatTask, asset, buildSplit), Err: kitendpoint.Error{Code: 0}}
-		cvatCreateTaskResponseBody := createCvatTask(cvatTask)
-		cvatTask.Annotation = cvatCreateTaskResponseBody
-
-		cvatTaskUpdateOneResp := <-cvatTaskUpdateOne.Send(
-			ctx,
-			s.Conn,
-			cvatTask,
-		)
-		cvatTask = cvatTaskUpdateOneResp.Data.(cvatTaskUpdateOne.ResponseData)
-
-		err := addDataToCvatTask(cvatTask, cvatTask.Annotation.Id)
+		cvatTask.Annotation = createCvatTask(cvatTask)
+		cvatTask = s.updateCvatTask(ctx, cvatTask)
+		cvatTask, err := addDataToCvatTask(cvatTask, cvatTask.Annotation.Id)
 		if err != nil {
+			cvatTask = s.updateCvatTask(ctx, originalCvatTask)
+			returnChan <- kitendpoint.Response{IsLast: true, Data: getCvatTaskAndAsset(cvatTask, asset, buildSplit), Err: kitendpoint.Error{Code: 1}}
 			log.Fatalln("domains.cvat_task.pkg.service.setup_one.SetupOne.addDataToCvatTask(cvatTask)", err)
 		}
 
 		cvatTask, err = monitorCreateTaskStatus(ctx, s.Conn, cvatTask)
 		if err != nil {
 			deleteTaskFromCvat(cvatTask)
-			returnChan <- kitendpoint.Response{IsLast: true, Data: nil, Err: kitendpoint.Error{Code: 1}}
+			cvatTask = s.updateCvatTask(ctx, originalCvatTask)
+			returnChan <- kitendpoint.Response{IsLast: true, Data: getCvatTaskAndAsset(cvatTask, asset, buildSplit), Err: kitendpoint.Error{Code: 1}}
+			return
 		}
 
-		cvatTask, err = getCvatTask(cvatTask)
+		cvatTask, err = getTaskFromCvat(cvatTask)
 		if err != nil {
-			returnChan <- kitendpoint.Response{IsLast: true, Data: nil, Err: kitendpoint.Error{Code: 1}}
+			cvatTask = s.updateCvatTask(ctx, originalCvatTask)
+			returnChan <- kitendpoint.Response{IsLast: true, Data: getCvatTaskAndAsset(cvatTask, asset, buildSplit), Err: kitendpoint.Error{Code: 1}}
 		}
-		cvatTask.Status = "initialPullReady"
-		cvatTaskUpdateOneResp = <-cvatTaskUpdateOne.Send(
-			ctx,
-			s.Conn,
-			cvatTask,
-		)
-		cvatTask = cvatTaskUpdateOneResp.Data.(cvatTaskUpdateOne.ResponseData)
-		buildFindOneResp = <-buildFindOne.Send(
-			ctx,
-			s.Conn,
-			buildFindOne.RequestData{
-				ProblemId: cvatTask.ProblemId,
-				Status:    buildStatus.Tmp,
-			},
-		)
-		tmpBuild = buildFindOneResp.Data.(buildFindOne.ResponseData)
+		cvatTask = s.updateCvatTaskStatus(ctx, cvatTask, statusCvatTask.InitialPullReady)
+		tmpBuild = s.getTmpBuild(ctx, cvatTask.ProblemId)
 		buildSplit = findBuildAssetSplit(tmpBuild, asset)
-
 		returnChan <- kitendpoint.Response{IsLast: true, Data: getCvatTaskAndAsset(cvatTask, asset, buildSplit), Err: kitendpoint.Error{Code: 0}}
 	}()
 	return returnChan
 
+}
+
+func (s *basicCvatTaskService) getAssetCvatTask(ctx context.Context, id primitive.ObjectID) (t.Asset, t.CvatTask) {
+	cvatTaskFindOneResp := <-cvatTaskFindOne.Send(
+		ctx,
+		s.Conn,
+		cvatTaskFindOne.RequestData{
+			Id: id,
+		},
+	)
+	cvatTask := cvatTaskFindOneResp.Data.(cvatTaskFindOne.ResponseData)
+	assetFindOneResp := <-assetFindOne.Send(
+		ctx,
+		s.Conn,
+		assetFindOne.RequestData{
+			Id: cvatTask.AssetId,
+		},
+	)
+	asset := assetFindOneResp.Data.(assetFindOne.ResponseData)
+	return asset, cvatTask
+}
+
+func (s *basicCvatTaskService) getChildrenAssetIds(ctx context.Context, parentAsset t.Asset) []primitive.ObjectID {
+	childrenAssetFindResp := <-assetFind.Send(
+		ctx,
+		s.Conn,
+		assetFind.RequestData{
+			ParentFolder: strings.Join([]string{parentAsset.ParentFolder, parentAsset.Name}, "/"),
+		},
+	)
+	childrenAssets := childrenAssetFindResp.Data.(assetFind.ResponseData).Items
+	var assetIds []primitive.ObjectID
+	for _, asset := range childrenAssets {
+		assetIds = append(assetIds, asset.Id)
+	}
+	return assetIds
+}
+
+func (s *basicCvatTaskService) getCvatTaskByAssets(ctx context.Context, assetIds []primitive.ObjectID, problemId primitive.ObjectID) []t.CvatTask {
+	cvatTaskFindResp := <-cvatTaskFind.Send(
+		ctx,
+		s.Conn,
+		cvatTaskFind.RequestData{
+			AssetIds:  assetIds,
+			ProblemId: problemId,
+		},
+	)
+	return cvatTaskFindResp.Data.(cvatTaskFind.ResponseData).Items
+}
+
+func (s *basicCvatTaskService) updateCvatTaskStatus(ctx context.Context, cvatTask t.CvatTask, status string) t.CvatTask {
+	cvatTask.Status = status
+	cvatTaskUpdateOneResp := <-cvatTaskUpdateOne.Send(ctx, s.Conn, cvatTask)
+	return cvatTaskUpdateOneResp.Data.(cvatTaskUpdateOne.ResponseData)
+}
+
+func (s *basicCvatTaskService) getTmpBuild(ctx context.Context, problemId primitive.ObjectID) t.Build {
+	buildFindOneResp := <-buildFindOne.Send(
+		ctx,
+		s.Conn,
+		buildFindOne.RequestData{
+			ProblemId: problemId,
+			Status:    buildStatus.Tmp,
+		},
+	)
+	return buildFindOneResp.Data.(buildFindOne.ResponseData)
+}
+
+func (s *basicCvatTaskService) updateCvatTask(ctx context.Context, cvatTask t.CvatTask) t.CvatTask {
+	cvatTaskUpdateOneResp := <-cvatTaskUpdateOne.Send(
+		ctx,
+		s.Conn,
+		cvatTask,
+	)
+	return cvatTaskUpdateOneResp.Data.(cvatTaskUpdateOne.ResponseData)
 }
 
 func isCvatTaskExists(cvatTask t.CvatTask) bool {
@@ -208,7 +222,7 @@ func createCvatTask(cvatTask t.CvatTask) (responseBody CvatCreateTaskResponseBod
 	return responseBody
 }
 
-func addDataToCvatTask(cvatTask t.CvatTask, cvatCreateTaskResponseBodyId int) (err error) {
+func addDataToCvatTask(cvatTask t.CvatTask, cvatCreateTaskResponseBodyId int) (t.CvatTask, error) {
 	client := http.Client{
 		Timeout: 30 * time.Second,
 	}
@@ -221,26 +235,26 @@ func addDataToCvatTask(cvatTask t.CvatTask, cvatCreateTaskResponseBodyId int) (e
 
 	if err != nil {
 		log.Println("domains.cvat_task.pkg.service.setup_one.addDataToCvatTask.json.Marshal(map[string][]string{", err)
-		return
+		return cvatTask, err
 	}
 	request, err := http.NewRequest("POST", url, bytes.NewBuffer(body))
 	log.Println("Send POST request", url)
 	if err != nil {
 		log.Println("domains.cvat_task.pkg.service.setup_one.addDataToCvatTask.http.NewRequest(\"POST\", url, bytes.NewBuffer(body))", err)
-		return
+		return cvatTask, err
 	}
 	request.SetBasicAuth(cvatUser, cvatPassword)
 	request.Header.Add("Content-Type", "application/json")
 	response, err := client.Do(request)
 	if err != nil {
 		log.Println("domains.cvat_task.pkg.service.setup_one.addDataToCvatTask.ent.Do(request)", err)
-		return
+		return cvatTask, err
 	}
 	if response.StatusCode != 202 {
 		log.Println("domains.cvat_task.pkg.service.setup_one.addDataToCvatTask.response.StatusCode=", response.StatusCode, "Expected=", 202)
-		return fmt.Errorf("domains.cvat_task.pkg.service.setup_one.addDataToCvatTask.response.StatusCode=%d, Expected=%d", response.StatusCode, 202)
+		return cvatTask, fmt.Errorf("domains.cvat_task.pkg.service.setup_one.addDataToCvatTask.response.StatusCode=%d, Expected=%d", response.StatusCode, 202)
 	}
-	return
+	return cvatTask, err
 }
 
 func monitorCreateTaskStatus(ctx context.Context, conn *rabbitmq.Connection, cvatTask t.CvatTask) (t.CvatTask, error) {
@@ -260,19 +274,23 @@ func monitorCreateTaskStatus(ctx context.Context, conn *rabbitmq.Connection, cva
 		response, err := client.Do(request)
 		if err != nil {
 			log.Println("domains.cvat_task.pkg.service.setup_one.SetupOne.client.Do(request)", err)
+			return cvatTask, err
 		}
 		if response.StatusCode != 200 {
 			log.Println("domains.cvat_task.pkg.service.setup_one.SetupOne.response.StatusCode=", response.StatusCode, "Expected=", 200)
+			return cvatTask, err
 		}
 		statusResponseBytes, err := ioutil.ReadAll(response.Body)
 		if err != nil {
-			log.Println("domains.cvat_task.pkg.service.setup_one.SetupOne. ioutil.ReadAll(response.Body)", err)
+			log.Println("domains.cvat_task.pkg.service.setup_one.SetupOne.ioutil.ReadAll(response.Body)", err)
+			return cvatTask, err
 		}
 		response.Body.Close()
 		var responseBody t.CvatTaskCreateTaskStatus
 		err = json.Unmarshal(statusResponseBytes, &responseBody)
 		if err != nil {
 			log.Println("domains.cvat_task.pkg.service.setup_one.SetupOne.json.Unmarshal(statusResponseBytes, &responseBody)", err)
+			return cvatTask, err
 		}
 		cvatTask.CreateTaskStatus = responseBody
 		updateOneResp := <-cvatTaskUpdateOne.Send(
@@ -323,32 +341,32 @@ type GetCvatTaskResponse struct {
 	Segments []CvatTaskSegment `json:"segments"`
 }
 
-func getCvatTask(cvatTask t.CvatTask) (t.CvatTask, error) {
+func getTaskFromCvat(cvatTask t.CvatTask) (t.CvatTask, error) {
 	client := http.Client{
 		Timeout: 30 * time.Second,
 	}
 	url := fmt.Sprintf("%s%s%s/%d", cvatHost, cvatBaseUrl, cvatTaskUrl, cvatTask.Annotation.Id)
 	request, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		log.Println("domains.cvat_task.pkg.service.setup_one.getCvatTask.http.NewRequest(\"GET\",", url, ", nil)", err)
+		log.Println("domains.cvat_task.pkg.service.setup_one.getTaskFromCvat.http.NewRequest(\"GET\",", url, ", nil)", err)
 		return cvatTask, err
 	}
 	request.SetBasicAuth(cvatUser, cvatPassword)
 	response, err := client.Do(request)
 	if err != nil {
-		log.Println("domains.cvat_task.pkg.service.setup_one.getCvatTask.ent.Do(request)", err)
+		log.Println("domains.cvat_task.pkg.service.setup_one.getTaskFromCvat.ent.Do(request)", err)
 		return cvatTask, err
 	}
 	responseBytes, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		log.Println("domains.cvat_task.pkg.service.setup_one.getCvatTask.ioutil.ReadAll(response.Body)", err)
+		log.Println("domains.cvat_task.pkg.service.setup_one.getTaskFromCvat.ioutil.ReadAll(response.Body)", err)
 		return cvatTask, err
 	}
 	response.Body.Close()
 	var responseBody GetCvatTaskResponse
 	err = json.Unmarshal(responseBytes, &responseBody)
 	if err != nil {
-		log.Println("domains.cvat_task.pkg.service.setup_one.getCvatTask.json.Unmarshal(statusResponseBytes, &responseBody)", err)
+		log.Println("domains.cvat_task.pkg.service.setup_one.getTaskFromCvat.json.Unmarshal(statusResponseBytes, &responseBody)", err)
 		return cvatTask, err
 	}
 	var jobs []t.CvatJob

@@ -12,9 +12,7 @@ import (
 	"strconv"
 	"strings"
 
-	buildFindOne "server/db/pkg/handler/build/find_one"
-	cvatTaskUpdateOne "server/db/pkg/handler/cvat_task/update_one"
-	buildStatus "server/db/pkg/types/build/status"
+	statusCvatTask "server/db/pkg/types/status/cvatTask"
 	kitendpoint "server/kit/endpoint"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -51,23 +49,13 @@ func (s *basicCvatTaskService) Dump(ctx context.Context, req DumpRequestData) ch
 			return
 		}
 
-		buildFindOneResp := <-buildFindOne.Send(
-			ctx,
-			s.Conn,
-			buildFindOne.RequestData{
-				ProblemId: cvatTask.ProblemId,
-				Status:    buildStatus.Tmp,
-			},
-		)
-		tmpBuild := buildFindOneResp.Data.(buildFindOne.ResponseData)
+		tmpBuild := s.getTmpBuild(ctx, cvatTask.ProblemId)
 		buildSplit := findBuildAssetSplit(tmpBuild, asset)
-		if cvatTask.Status == "pullInProgress" {
+		if cvatTask.Status == statusCvatTask.PullInProgress {
 			returnChan <- kitendpoint.Response{IsLast: true, Data: getCvatTaskAndAsset(cvatTask, asset, buildSplit), Err: kitendpoint.Error{Code: 0}}
 			return
 		}
-		cvatTask.Status = "pullInProgress"
-		resp := <-cvatTaskUpdateOne.Send(context.TODO(), s.Conn, cvatTask)
-		cvatTask = resp.Data.(cvatTaskUpdateOne.ResponseData)
+		cvatTask = s.updateCvatTaskStatus(ctx, cvatTask, statusCvatTask.PullInProgress)
 		returnChan <- kitendpoint.Response{IsLast: false, Data: getCvatTaskAndAsset(cvatTask, asset, buildSplit), Err: kitendpoint.Error{Code: 0}}
 
 		problem := s.getProblem(cvatTask.ProblemId)
@@ -132,19 +120,9 @@ func (s *basicCvatTaskService) Dump(ctx context.Context, req DumpRequestData) ch
 			return
 		}
 
-		buildFindOneResp = <-buildFindOne.Send(
-			ctx,
-			s.Conn,
-			buildFindOne.RequestData{
-				ProblemId: cvatTask.ProblemId,
-				Status:    buildStatus.Tmp,
-			},
-		)
-		tmpBuild = buildFindOneResp.Data.(buildFindOne.ResponseData)
+		tmpBuild = s.getTmpBuild(ctx, cvatTask.ProblemId)
 		buildSplit = findBuildAssetSplit(tmpBuild, asset)
-		cvatTask.Status = "pullReady"
-		resp = <-cvatTaskUpdateOne.Send(context.TODO(), s.Conn, cvatTask)
-		cvatTask = resp.Data.(cvatTaskUpdateOne.ResponseData)
+		cvatTask = s.updateCvatTaskStatus(ctx, cvatTask, statusCvatTask.PullReady)
 		returnChan <- kitendpoint.Response{IsLast: true, Data: getCvatTaskAndAsset(cvatTask, asset, buildSplit), Err: kitendpoint.Error{Code: 0}}
 
 	}()
@@ -164,7 +142,7 @@ func makeTmpBuildPath(problemDir string) string {
 }
 
 func (s *basicCvatTaskService) getCvatTask(id primitive.ObjectID) t.CvatTask {
-	log.Printf("START: %s%s(%s)", fileLogPrefix, "getCvatTask", id.Hex())
+	log.Printf("START: %s%s(%s)", fileLogPrefix, "getTaskFromCvat", id.Hex())
 	cvatTaskFindOneResp := <-cvatTaskFindOne.Send(
 		context.TODO(),
 		s.Conn,
