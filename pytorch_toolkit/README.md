@@ -42,12 +42,6 @@ them for prediction.
 * [Text Spotting](text_spotting)
 
 
-### Tools
-
-Tools are intended to perform manipulations with trained models, like compressing models using Quantization-aware training or sparsity.
-
-* [Neural Networks Compression Framework](nncf)
-
 ### Tests
 
 In order to run tests please execute following commands:
