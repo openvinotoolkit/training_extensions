@@ -17,6 +17,7 @@ import (
 	assetUpdateUpsert "server/db/pkg/handler/asset/update_upsert"
 	typeAsset "server/db/pkg/types/type/asset"
 	buildUpdateTmps "server/domains/build/pkg/handler/update_tmps"
+	"server/kit/utils/basic/arrays"
 )
 
 func (b *basicAssetBackground) UpdateFromDisk(_ context.Context, root string, timeout time.Duration) {
@@ -69,25 +70,28 @@ func (b *basicAssetBackground) updateAssetsFromDisk(root string) {
 		if err != nil {
 			log.Println("pgk.backgroun.update_from_disk.updateAssetsFromDisk.fp.Rel(root, path)")
 		}
+		allowedImageFormats := []string{".jpg", ".jpeg", ".png"}
+		allowedArchiveFormats := []string{".zip"}
+		allowedVideoFormats := []string{".mp4", ".avi"}
 
 		if info.IsDir() {
 			returnVal = nil
 			parentFolder = relativeDir(path)
 			name = info.Name()
 			aType = typeAsset.Folder
-		} else if fp.Ext(info.Name()) == ".jpg" || fp.Ext(info.Name()) == ".jpeg" {
+		} else if arrays.ContainsString(allowedImageFormats, fp.Ext(info.Name())) {
 			// save parent dir with type ImgDir
 			returnVal = fp.SkipDir
 			path = fp.Dir(path)
 			parentFolder = relativeDir(path)
 			name = fp.Base(path)
 			aType = typeAsset.ImageFolder
-		} else if fp.Ext(info.Name()) == ".zip" {
+		} else if arrays.ContainsString(allowedArchiveFormats, fp.Ext(info.Name())) {
 			returnVal = nil
 			parentFolder = relativeDir(path)
 			name = info.Name()
 			aType = typeAsset.Archive
-		} else if fp.Ext(info.Name()) == ".mp4" {
+		} else if arrays.ContainsString(allowedVideoFormats, fp.Ext(info.Name())) {
 			returnVal = nil
 			parentFolder = relativeDir(path)
 			name = info.Name()
