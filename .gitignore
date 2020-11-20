@@ -9,7 +9,6 @@ env
 .env
 
 data/*
-external/*
 
 *egg-info
 

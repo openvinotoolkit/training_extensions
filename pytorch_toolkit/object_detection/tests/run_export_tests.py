@@ -14,16 +14,26 @@
 
 """ This module contains unit tests. """
 
+import argparse
 import os
 import sys
 import unittest
+
+
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--pattern', default='export_tests_*.py')
+
+    return parser.parse_args()
 
 
 def main():
     if os.path.abspath(os.getcwd()) == os.path.abspath(os.path.join(os.path.dirname(__file__), '..')):
         return 0
 
-    testsuite = unittest.TestLoader().discover(os.path.dirname(__file__), pattern='export_tests_*.py')
+    args = parse_args()
+
+    testsuite = unittest.TestLoader().discover(os.path.dirname(__file__), pattern=args.pattern)
     ret = not unittest.TextTestRunner(verbosity=1).run(testsuite).wasSuccessful()
     sys.exit(ret)
 

@@ -16,8 +16,9 @@ if [[ -e ${venv_dir} ]]; then
   exit
 fi
 
-# Download mmdetection
+# Download mmdetection and nncf submodules
 git submodule update --init ../../external/mmdetection
+git submodule update --init ../../external/nncf_pytorch
 
 # Create virtual environment
 virtualenv ${venv_dir} -p python3 --prompt="(detection)"
@@ -27,9 +28,7 @@ if [[ -e "${path_openvino_vars}" ]]; then
   echo ". ${path_openvino_vars}" >> ${venv_dir}/bin/activate
 fi
 
-
 . ${venv_dir}/bin/activate
-
 
 cat requirements.txt | xargs -n 1 -L 1 pip3 install
 
@@ -43,6 +42,9 @@ fi
 pip install -e ../../external/mmdetection/
 MMDETECTION_DIR=`realpath ../../external/mmdetection/`
 echo "export MMDETECTION_DIR=${MMDETECTION_DIR}" >> ${venv_dir}/bin/activate
+
+# install ote
+pip install -e ../../pytorch_toolkit/ote/
 
 deactivate
 

@@ -107,7 +107,7 @@ def evaluate(model, loader, config, device, compute_accuracy=True):
                 model1 = model.module
             else:
                 model1 = model
-            output = model1.spoof_task(features)
+            output = model1.make_logits(features, all=False)
             if isinstance(output, tuple):
                 output = output[0]
 

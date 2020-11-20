@@ -1,0 +1,5 @@
+arg_parser: DefaultArgParser
+arg_converter: MMActionArgsConverter
+trainer: MMActionTrainer
+evaluator: MMActionEvaluator
+exporter: MMActionExporter

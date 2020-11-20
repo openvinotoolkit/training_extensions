@@ -28,13 +28,15 @@ inference.
 * [PyTorch\*](pytorch_toolkit)
 
   * [Action Recognition](pytorch_toolkit/action_recognition)
-  * [ASL Recognition](pytorch_toolkit/asl_recognition)
+  * [Action Recognition 2](pytorch_toolkit/action_recognition_2)
+    - [Gesture Recognition](pytorch_toolkit/action_recognition_2/model_templates/gesture-recognition)
   * [Object Re-Identification](pytorch_toolkit/object_reidentification)
     - [Face Recognition](pytorch_toolkit/object_reidentification/face_recognition)
     - [Person Re-Identification](pytorch_toolkit/object_reidentification/person_reidentification)
     - [Vehicle Re-Identification](pytorch_toolkit/object_reidentification/vehicle_reidentification)
   * [Human Pose Estimation](pytorch_toolkit/human_pose_estimation)
   * [Instance Segmentation](pytorch_toolkit/instance_segmentation)
+  * [Machine Translation](pytorch_toolkit/machine_translation)
   * [Object Detection](pytorch_toolkit/object_detection)
     - [Face Detection](pytorch_toolkit/object_detection/model_templates/face-detection)
     - [Horizontal Text Detection](pytorch_toolkit/object_detection/model_templates/horizontal-text-detection/)
@@ -45,6 +47,7 @@ inference.
   * [Segmentation of Thoracic Organs](pytorch_toolkit/segthor)
   * [Super Resolution](pytorch_toolkit/super_resolution)
   * [Text Spotting](pytorch_toolkit/text_spotting)
+  * [Question Answering](pytorch_toolkit/question_answering)
 
 * [TensorFlow\*](tensorflow_toolkit)
 
@@ -58,12 +61,6 @@ inference.
   * [Text Recognition](tensorflow_toolkit/text_recognition)
   * [Vehicle Attributes](tensorflow_toolkit/vehicle_attributes)
   * [Bert](tensorflow_toolkit/bert)
-
-# Tools
-
-* [PyTorch\*](pytorch_toolkit)
-
-  * [Neural Networks Compression Framework](pytorch_toolkit/nncf) - versions <= 1.3 only, for more recent versions check the [new NNCF repository](https://github.com/openvinotoolkit/nncf_pytorch)
 
 ---
 \* Other names and brands may be claimed as the property of others.

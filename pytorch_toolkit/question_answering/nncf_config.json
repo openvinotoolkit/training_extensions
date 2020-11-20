@@ -1,0 +1,63 @@
+{
+    "input_info": [
+    {
+        "keyword": "input_ids",
+        "sample_size": [1, 384],
+        "type": "long"
+    },
+    {
+        "keyword": "attention_mask",
+        "sample_size": [1, 384],
+        "type": "long"
+    },
+    {
+        "keyword": "token_type_ids",
+        "sample_size": [1, 384],
+        "type": "long"
+    },
+    ],
+    "quantizer_setup_type": "propagation_based",
+    "target_device": "NONE",
+    "compression": {
+        "algorithm": "quantization",
+        "initializer": {
+            "range": [
+                {
+                    "target_quantizer_group":"weights",
+                    "num_init_steps": 4,
+                    "type": "percentile",
+                    "min_percentile": 0.0001,
+                    "max_percentile": 99.9999
+                },
+                {
+                    "target_quantizer_group":"activations",
+                    "num_init_steps": 4,
+                    "type": "percentile",
+                    "min_percentile": 0.001,
+                    "max_percentile": 99.999
+                },
+            ]
+        },
+        "ignored_scopes": [
+            "{re}BertEmbeddings\\[embeddings\\]/__add___.*",
+            "{re}layer_norm_.*",
+            "{re}BertSelfAttention\\[self\\]/matmul_.*",
+            "{re}BertSelfAttention\\[self\\]/__add___0",
+            "{re}BertSelfAttention\\[self\\]/__truediv___0",
+            "{re}BertPooler\\[pooler\\]/Scale\\[activation\\]/__mul___0"
+        ],
+        "activations":
+        {
+            "mode": "symmetric"
+        },
+        "weights":
+        {
+            "mode": "symmetric",
+            "signed": true,
+            "ignored_scopes": [
+                "{re}input_transform",
+                "{re}output_transforms",
+            ],
+        }
+    }
+}

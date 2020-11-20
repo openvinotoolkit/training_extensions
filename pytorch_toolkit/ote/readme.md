@@ -31,7 +31,7 @@ Here is an example of `template.yaml`:
 name: face-detection-0200
 domain: Object Detection
 problem: Face Detection
-framework: OTEDetection v2.1.0.1
+framework: OTEDetection v2.1.1
 summary: Face Detection based on MobileNetV2 (SSD).
 annotation_format: COCO
 dependencies:
