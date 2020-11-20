@@ -78,7 +78,7 @@ Create or edit the file `~/.docker/config.json` in the home directory of the use
    {
      "httpProxy": "http://127.0.0.1:3001",
      "httpsProxy": "http://127.0.0.1:3001",
-     "noProxy": "*.test.example.com,.example2.com"
+     "noProxy": "*.test.example.com,.example2.com,cvat"
    }
  }
 }

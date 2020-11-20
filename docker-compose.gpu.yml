@@ -1,4 +1,13 @@
-# Copyright (c) JSC Intel A/O
+# Copyright (c) 2020 Intel Corporation
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#      http://www.apache.org/licenses/LICENSE-2.0
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 version: '2.3'
 
@@ -325,7 +334,7 @@ volumes:
     driver_opts:
       o: bind
       type: none
-      device: $PWD/web/data/idlp/db
+      device: $PWD/web/data/db
   idlp_go_server_v:
     driver: local
     driver_opts:
@@ -343,19 +352,19 @@ volumes:
     driver_opts:
       o: bind
       type: none
-      device: $PWD/web/data/idlp/problem
+      device: $PWD/web/data/problem
   idlp_cvat_images_v:
     driver: local
     driver_opts:
       o: bind
       type: none
-      device: $PWD/web/data/idlp/images
+      device: $PWD/web/data/images
   idlp_assets_v:
     driver: local
     driver_opts:
       o: bind
       type: none
-      device: $PWD/web/data/idlp/assets
+      device: $PWD/web/data/assets
   idlp_py_server_v:
     driver: local
     driver_opts:
