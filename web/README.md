@@ -12,7 +12,3 @@ Choose the target device (CPU or GPU), install required packages and build docke
 # Get Started
 Please refer [Getting Started](GETTING_STARTED.md) page for the basic usage. 
 
-
-## Run end to end tests
-
-`cd ui && npm run e2e`
