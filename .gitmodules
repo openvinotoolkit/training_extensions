@@ -7,13 +7,13 @@
 	url = https://github.com/tensorflow/models.git
 [submodule "external/mmdetection"]
 	path = external/mmdetection
-	url = https://github.com/openvinotoolkit/mmdetection
+	url = ../mmdetection
 [submodule "external/mmaction"]
 	path = external/mmaction
-	url = https://github.com/openvinotoolkit/mmaction.git
+	url = ../mmaction.git
 [submodule "external/deep-object-reid"]
 	path = external/deep-object-reid
-	url = https://github.com/openvinotoolkit/deep-object-reid.git
+	url = ../deep-object-reid.git
 [submodule "external/bert"]
 	path = external/bert
 	url = https://github.com/google-research/bert
