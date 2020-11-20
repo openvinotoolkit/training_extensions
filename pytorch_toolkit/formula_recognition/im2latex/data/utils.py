@@ -19,7 +19,7 @@ import datetime
 import cv2 as cv
 import numpy as np
 import torch
-from torchvision.transforms import Compose, ToTensor
+from torchvision.transforms import Compose, ToTensor, RandomApply, RandomChoice
 
 from .vocab import END_TOKEN, PAD_TOKEN, START_TOKEN, UNK_TOKEN
 
@@ -452,10 +452,17 @@ def collate_fn(sign2id, batch, *, batch_transform=None):
 
 def create_list_of_transforms(transforms_list, ovino_ir=False):
     transforms = []
+    bolding_transforms = []
     if transforms_list:
         for transform in transforms_list:
             transform_name = transform.pop('name')
-            transforms.append(TRANSFORMS[transform_name](**transform))
+            transform_prob = transform.pop('prob', 1.0)
+            if transform_name == "TransformRandomBolding":
+                bolding_transforms.append(TRANSFORMS[transform_name](**transform))
+            else:
+                transforms.append(RandomApply([TRANSFORMS[transform_name](**transform)], p=transform_prob))
+        if bolding_transforms:
+            transforms.append(RandomChoice(bolding_transforms))
     if ovino_ir:
         transforms.append(TransformOvinoIR())
     else:
