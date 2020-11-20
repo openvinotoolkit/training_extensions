@@ -20,3 +20,6 @@
 [submodule "external/nncf_pytorch"]
 	path = external/nncf_pytorch
 	url = ../nncf_pytorch
+[submodule "external/cvat"]
+	path = external/cvat
+	url = ../cvat
