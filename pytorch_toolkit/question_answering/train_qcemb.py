@@ -200,7 +200,7 @@ def create_squad_qcemb_dataset(rank, device, squad_file, tokenizer, max_seq_leng
 
 
 train_count=-1
-def train(rank, args, model, model_t, train_dataset_qc, test_dataset_qc, scale_tune=False):
+def train(rank, args, model, model_t, train_dataset_qc, test_dataset_qc, fq_tune_only, model_controller):
     """ Train the model """
     global train_count
     train_count += 1
@@ -215,55 +215,36 @@ def train(rank, args, model, model_t, train_dataset_qc, test_dataset_qc, scale_t
 
     per_gpu_train_batch_size = args.per_gpu_train_batch_size
     train_batch_size = per_gpu_train_batch_size * world_size
-    gradient_accumulation_steps = args.total_train_batch_size // train_batch_size
-    num_train_epochs = args.num_train_epochs
 
-    if scale_tune:
+    if fq_tune_only:
         gradient_accumulation_steps = 1
         num_train_epochs = 1
+    else:
+        gradient_accumulation_steps = args.total_train_batch_size // train_batch_size
+        num_train_epochs = args.num_train_epochs
 
     if rank < 0:
         #single process take all
         q_sampler = RandomSampler(q_dataset)
         q_dataloader = DataLoader(q_dataset, sampler=q_sampler, batch_size=train_batch_size, num_workers=4)
     else:
-        #special sampler that divide samples beween processes
+        #special sampler that divide samples between processes
         q_sampler = torch.utils.data.distributed.DistributedSampler(q_dataset, rank=rank)
         q_dataloader = DataLoader(q_dataset, sampler=q_sampler, batch_size=per_gpu_train_batch_size)
 
     steps_total = int(len(q_dataloader) // gradient_accumulation_steps * num_train_epochs)
 
-    # Prepare optimizer and schedule 'embedding'
+    # Prepare optimizer and schedule
+    named_params, groups = utils.make_param_groups(
+        rank,
+        model,
+        args.freeze_list, #list or str with subnames to define frozen parameters
+        args.learning_rate, #learning rate for no FQ parameters
+        0.01,# learning rate for FQ parameters
+        fq_tune_only,#true if only FQ parameters will be optimized
+        model_controller)
 
-    freeze_list = args.freeze_list.split(',') if args.freeze_list else []
-    named_params = []
-    for n, p in model.named_parameters():
-        if any(fn in n for fn in freeze_list):
-            if rank in [-1, 0]:
-                logger.warning("{} param is frozen and excluded from tune".format(n))
-            continue
-        named_params.append( (n, p) )
-
-
-    # split parameters to scale and others
-    named_params_scale = [(n, p) for n, p in named_params if '.scale' in n]
-    named_params_rest = [(n, p) for n, p in named_params if '.scale' not in n]
-
-    if scale_tune:
-        named_params = named_params_scale
-        named_params_rest = []
-
-    groups = []
-    if named_params_scale:
-        groups.append({'params': [p for n, p in named_params_scale], 'lr': 0.01})
-    if named_params_rest:
-        groups.append({'params': [p for n, p in named_params_rest],  'lr': args.learning_rate})
-
-    optimizer = AdamW(
-        groups,
-        eps=1e-08,
-        lr=args.learning_rate,
-        weight_decay=0)
+    optimizer = AdamW(groups,eps=1e-08,lr=args.learning_rate,weight_decay=0)
 
     def lr_lambda(current_step):
         p = float(current_step) / float(steps_total)
@@ -273,7 +254,7 @@ def train(rank, args, model, model_t, train_dataset_qc, test_dataset_qc, scale_t
     if rank in [-1, 0]:
         for n,p in named_params:
             printlog('param for tune',n)
-        printlog("scale_tune", scale_tune )
+        printlog("fq_tune_only", fq_tune_only)
         printlog("dataset size", len(q_dataset) )
         printlog("epoches", num_train_epochs )
         printlog("per_gpu_train_batch_size", per_gpu_train_batch_size )
@@ -354,7 +335,7 @@ def train(rank, args, model, model_t, train_dataset_qc, test_dataset_qc, scale_t
                 losses.extend([args.supervision_weight*l for l in l_c+l_q])
 
             triplet_num = int(loss_cfg.get('triplet_num', 1))
-            if scale_tune:
+            if fq_tune_only:
                 triplet_num = 0
 
             if triplet_num>0:
@@ -711,6 +692,7 @@ def process(rank, args, port):
         #lets sync after data loaded
         torch.distributed.barrier()
 
+    model_controller = None
     if QUANTIZATION:
 
         if hasattr(model,'merge_'):
@@ -756,11 +738,11 @@ def process(rank, args, port):
             #lets sync after quantization
             torch.distributed.barrier()
 
-        #tune quantize scale model parameters only
-        train(rank, args, model, model_t, train_dataset_qc, test_dataset_qc, scale_tune=True)
+        #tune FQ parameters only
+        train(rank, args, model, model_t, train_dataset_qc, test_dataset_qc, fq_tune_only=True, model_controller=model_controller)
 
     #tune whole quantized model
-    train(rank, args, model, model_t, train_dataset_qc, test_dataset_qc, scale_tune=False)
+    train(rank, args, model, model_t, train_dataset_qc, test_dataset_qc, fq_tune_only=False, model_controller=model_controller )
 
     if rank in [-1, 0]:
         #save and evaluate result
