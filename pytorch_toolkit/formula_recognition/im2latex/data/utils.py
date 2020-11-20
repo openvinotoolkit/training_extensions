@@ -238,55 +238,65 @@ class TransformRandomBolding:
     This class helps to imitate images from scaner \ camera
     after applying binarization on them
     """
+    class SingleBoldingTransform:
+        def __init__(self, kernel_size=3, iterations=1, threshold=160, res_threshold=190, sigmaX=0.8, distr=0.7):
+            self.iterations = iterations
+            self.threshold = threshold
+            self.res_threshold = res_threshold
+            self.sigmaX = sigmaX
+            self.kernel = (kernel_size, kernel_size)
+            self.distr = distr
 
-    def __init__(self, kernel_size=3, iterations=1, threshold=160, res_threshold=190, sigmaX=0.8, distr=0.7):
-        self.iterations = iterations
-        self.threshold = threshold
-        self.res_threshold = res_threshold
-        self.sigmaX = sigmaX
-        self.kernel = (kernel_size, kernel_size)
-        self.distr = distr
-
-    def __repr__(self):
-        return """TransformRandomBolding(iterations={}, threshold={}, res_threshold={},
+        def __repr__(self):
+            return """TransformRandomBolding(iterations={}, threshold={}, res_threshold={},
                 sigmaX={}, kernel_size={}, distr={})""".format(
-            self.iterations, self.threshold, self.res_threshold, self.sigmaX, self.kernel[0], self.distr)
+                self.iterations, self.threshold, self.res_threshold, self.sigmaX, self.kernel[0], self.distr)
+
+        def __call__(self, img):
+            if not isinstance(img, list):
+                img = [img]
+            n = len(img)
+            first_eroded = [
+                cv.erode(image, self.kernel, iterations=self.iterations) for image in img]
+            blurred = [None] * n
+            res = [None] * n
+            for i in range(n):
+                first_eroded[i] = (first_eroded[i] >= self.threshold).astype(np.uint8) * 255
+                blurred[i] = cv.GaussianBlur(first_eroded[i], (3, 3), self.sigmaX)
+                blurred[i] = (blurred[i] >= self.threshold).astype(np.uint8) * 255
+                total_dim = 1
+                for dim in img[i].shape:
+                    total_dim *= dim
+                mask1 = np.zeros(total_dim)
+                ones_len = int(total_dim * self.distr)
+                mask1[0:ones_len] = 1
+                np.random.shuffle(mask1)
+                mask1 = mask1.reshape(img[i].shape)
+                mask2 = 1 - mask1
+
+                masked_source = np.multiply(img[i], mask1)
+                masked_blur = np.multiply(blurred[i], mask2)
+
+                res[i] = masked_blur + masked_source
+                res[i] = cv.GaussianBlur(res[i].astype(np.uint8), (3, 3), self.sigmaX)
+                res[i] = (res[i] >= self.res_threshold).astype(np.uint8) * 255
+
+            return res
+
+    def __init__(self, params):
+        assert isinstance(params, (tuple, list))
+        self.list_of_transforms = []
+        for param in params:
+            self.list_of_transforms.append(TransformRandomBolding.SingleBoldingTransform(**param))
+        self.transform = RandomChoice(self.list_of_transforms)
 
     def __call__(self, img):
         if not isinstance(img, list):
             img = [img]
-        n = len(img)
-        first_eroded = [
-            cv.erode(image, self.kernel, iterations=self.iterations) for image in img]
-        blurred = [None] * n
-        res = [None] * n
-        for i in range(n):
-            first_eroded[i] = (first_eroded[i] >= self.threshold).astype(np.uint8) * 255
-            blurred[i] = cv.GaussianBlur(first_eroded[i], (3, 3), self.sigmaX)
+        return self.transform(img)
 
-            blurred[i] = (blurred[i] >= self.threshold).astype(np.uint8) * 255
-
-            # randint returns random integers in range [low, high)
-            # so 0 here stands for low, 2 - high -> random integers in range [0, 1]
-
-            total_dim = 1
-            for dim in img[i].shape:
-                total_dim *= dim
-            mask1 = np.zeros(total_dim)
-            ones_len = int(total_dim * self.distr)
-            mask1[0:ones_len] = 1
-            np.random.shuffle(mask1)
-            mask1 = mask1.reshape(img[i].shape)
-            mask2 = 1 - mask1
-
-            masked_source = np.multiply(img[i], mask1)
-            masked_blur = np.multiply(blurred[i], mask2)
-
-            res[i] = masked_blur + masked_source
-            res[i] = cv.GaussianBlur(res[i].astype(np.uint8), (3, 3), self.sigmaX)
-            res[i] = (res[i] >= self.res_threshold).astype(np.uint8) * 255
-
-        return res
+    def __repr__(self):
+        return self.list_of_transforms.__repr__()
 
 
 class TransformDilation:
@@ -452,17 +462,11 @@ def collate_fn(sign2id, batch, *, batch_transform=None):
 
 def create_list_of_transforms(transforms_list, ovino_ir=False):
     transforms = []
-    bolding_transforms = []
     if transforms_list:
         for transform in transforms_list:
             transform_name = transform.pop('name')
             transform_prob = transform.pop('prob', 1.0)
-            if transform_name == "TransformRandomBolding":
-                bolding_transforms.append(TRANSFORMS[transform_name](**transform))
-            else:
-                transforms.append(RandomApply([TRANSFORMS[transform_name](**transform)], p=transform_prob))
-        if bolding_transforms:
-            transforms.append(RandomChoice(bolding_transforms))
+            transforms.append(RandomApply([TRANSFORMS[transform_name](**transform)], p=transform_prob))
     if ovino_ir:
         transforms.append(TransformOvinoIR())
     else:
