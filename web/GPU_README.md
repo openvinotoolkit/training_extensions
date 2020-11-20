@@ -137,7 +137,7 @@ EOF
 ## GPU Setup
 
 ```sh
-git clone --recursive https://github.com/dmitryagapov/openvino_training_extensions.git
+git clone --recursive https://github.com/openvinotoolkit/openvino_training_extensions.git
 cd openvino_training_extensions
 git submodule update --init --recursive
 IDLP_HOST=<host.name> docker-compose -f docker-compose.gpu.yml up --build -d
