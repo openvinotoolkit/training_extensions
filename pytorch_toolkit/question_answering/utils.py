@@ -127,3 +127,47 @@ def get_free_port():
             printlog("port {} is used".format(port))
     return None
 
+#prepare parameters groups for optimizer and named list of all optimized parameters
+def make_param_groups(rank, model, freeze_list, lr, lr_fq, fq_tune_only, model_controller):
+    # split parameters to FQ and the rest
+    params_fq = set()
+    if model_controller is not None:
+        for k, v in model_controller.all_quantizations.items():
+            for n, p in v.named_parameters():
+                params_fq.add(p)
+
+    #create total list of named parameters to optimization
+    named_params = []
+    if isinstance(freeze_list,str):
+        freeze_list = freeze_list.split(',') if freeze_list else []
+    for n, p in model.named_parameters():
+        if n.lower()!="none" and any(fn in n for fn in freeze_list):
+            if rank in [-1, 0]:
+                logger.warning("rank {} {} param is frozen and excluded from tune".format(rank,n))
+            continue
+
+        if fq_tune_only and p not in params_fq:
+            continue
+
+        #for unknown reason nncf define internal flags as integer Parameters
+        #these flags are not for optimization so just filter them out
+        if p in params_fq and not p.data.is_floating_point():
+            continue
+
+        named_params.append((n,p))
+
+    #split filtered named_params into 2 groups
+    #1 for FQ parameters
+    #2 for the rest parameters
+    groups = []
+    #add FQ group
+    params = [p for n, p in named_params if p in params_fq]
+    if params:
+        groups.append({'params': params, 'lr': lr_fq})
+    #add rest group
+    params = [p for n, p in named_params if p not in params_fq]
+    if params:
+        groups.append({'params': params,  'lr': lr})
+    del params
+    return named_params, groups
+
