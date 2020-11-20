@@ -7,10 +7,10 @@
 	url = https://github.com/tensorflow/models.git
 [submodule "external/mmdetection"]
 	path = external/mmdetection
-	url = ../mmdetection.git
-[submodule "external/mmaction"]
-	path = external/mmaction
-	url = ../mmaction.git
+	url = ../mmdetection
+[submodule "external/mmaction2"]
+	path = external/mmaction2
+	url = ../mmaction2
 [submodule "external/deep-object-reid"]
 	path = external/deep-object-reid
 	url = ../deep-object-reid.git

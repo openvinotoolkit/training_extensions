@@ -28,7 +28,8 @@ inference.
 * [PyTorch\*](pytorch_toolkit)
 
   * [Action Recognition](pytorch_toolkit/action_recognition)
-  * [ASL Recognition](pytorch_toolkit/asl_recognition)
+  * [Action Recognition 2](pytorch_toolkit/action_recognition_2)
+    - [Gesture Recognition](pytorch_toolkit/action_recognition_2/model_templates/gesture-recognition)
   * [Object Re-Identification](pytorch_toolkit/object_reidentification)
     - [Face Recognition](pytorch_toolkit/object_reidentification/face_recognition)
     - [Person Re-Identification](pytorch_toolkit/object_reidentification/person_reidentification)

@@ -28,9 +28,7 @@ if [[ -e "${path_openvino_vars}" ]]; then
   echo ". ${path_openvino_vars}" >> ${venv_dir}/bin/activate
 fi
 
-
 . ${venv_dir}/bin/activate
-
 
 cat requirements.txt | xargs -n 1 -L 1 pip3 install
 
