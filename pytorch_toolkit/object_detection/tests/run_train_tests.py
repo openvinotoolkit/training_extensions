@@ -23,6 +23,7 @@ import unittest
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--pattern', default='train_tests_*.py')
+    parser.add_argument('--verbose', action='store_true')
 
     return parser.parse_args()
 
@@ -32,9 +33,13 @@ def main():
         return 0
 
     args = parse_args()
+    if args.verbose:
+        verbosity=2
+    else:
+        verbosity=1
 
     testsuite = unittest.TestLoader().discover(os.path.dirname(__file__), pattern=args.pattern)
-    ret = not unittest.TextTestRunner(verbosity=1).run(testsuite).wasSuccessful()
+    ret = not unittest.TextTestRunner(verbosity=verbosity).run(testsuite).wasSuccessful()
     sys.exit(ret)
 
 

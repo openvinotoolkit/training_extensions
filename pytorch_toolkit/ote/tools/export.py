@@ -17,6 +17,7 @@
 from ote import MODEL_TEMPLATE_FILENAME, MODULES_CONFIG_FILENAME
 from ote.utils import load_config
 from ote.modules import build_arg_parser, build_exporter
+from ote.modules.config_transformers import ConfigTransformersEngine
 
 
 def main():
@@ -24,6 +25,9 @@ def main():
 
     arg_parser = build_arg_parser(modules['arg_parser'])
     ote_args = vars(arg_parser.get_export_parser(MODEL_TEMPLATE_FILENAME).parse_args())
+
+    config_transformers_engine = ConfigTransformersEngine(MODEL_TEMPLATE_FILENAME, modules.get("config_transformers"))
+    ote_args = config_transformers_engine.process_args(ote_args)
 
     exporter = build_exporter(modules['exporter'])
     exporter(ote_args)

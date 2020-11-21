@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+import logging
 import os
 from subprocess import run
 
@@ -40,4 +41,5 @@ def relative_abs_error(expected, actual):
 
 
 def run_through_shell(cmd):
+    logging.info(f'Running through shell cmd `{cmd}`') #TODO: consider with Ilya
     run(cmd, shell=True, check=True, executable="/bin/bash")

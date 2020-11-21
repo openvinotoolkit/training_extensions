@@ -16,6 +16,7 @@
 
 import logging
 import yaml
+import datetime
 from tempfile import NamedTemporaryFile
 from copy import copy
 
@@ -26,26 +27,35 @@ def save_config(config, file_path):
     with open(file_path, 'w') as output_stream:
         yaml.dump(config, output_stream)
 
-class ConfigTransformersEngine:
+class _ConfigTransformersHandler:
     def __init__(self, template, config_transformers_names):
         self.template = template
-        self.random_suffix = self._generate_random_suffix()
+        self.timestamp = self._generate_timestamp_suffix()
+
+        if config_transformers_names is None:
+            self.config_transformers = None
+            return
+
+        if not isinstance(config_transformers_names, list):
+            config_transformers_names = [config_transformers_names]
         self.config_transformers = []
         for cfg_transform_name in config_transformers_names:
             self.config_transformers.append(build_config_transformer(cfg_transform_name))
 
-    def __call__(self, **kwargs):
-        assert 'config' in kwargs
-        config_path = kwargs['config']
-        assert not os.path.exists(config_path), f'The initial config path {config_path} is absent'
+    def __call__(self, config_path):
+        if not self.config_transformers:
+            return config_path
+        assert os.path.exists(config_path), f'The initial config path {config_path} is absent'
         prev_config_path = config_path
         for index, config_transformer in enumerate(self.config_transformers):
             generated_config_path = self._generate_config_path(config, index)
-            assert not os.path.exists(generated_config_path), f'During generating configs path {generated_config_path} is absent'
+            assert not os.path.exists(generated_config_path), f'During generating configs path {generated_config_path} is present'
             cfg_update_part = config_transformer(template)
 
-            assert isinstance(cfg_update_part, dict), f'Error in config transformer "{config_transformer}": it returns a value that is not a dict'
-            assert '_base_' not in cfg_update_part, f'Error in config transformer "{config_transformer}": it returns a dict with key "_base_"'
+            assert isinstance(cfg_update_part, dict), (
+                    f'Error in config transformer #{index} "{config_transformer}": it returns a value that is not a dict')
+            assert '_base_' not in cfg_update_part, (
+                    f'Error in config transformer #{index} "{config_transformer}": it returns a dict with key "_base_"')
 
             prev_config_dir = os.path.dirname(prev_config_path) #just to be on the safe side, ideed they should be in the same folder
             cfg_update_part['_base_'] = os.path.relpath(generated_config_path, prev_config_dir)
@@ -55,18 +65,33 @@ class ConfigTransformersEngine:
 
             prev_config_path = generated_config_path
 
-        result_kwargs = copy(kwargs)
-        result_kwargs['config'] = generated_config_path
-        return result_kwargs
+        return generated_config_path
+
+
 
     @staticmethod
-    def _generate_random_suffix():
-        random_suffix = os.path.basename(NamedTemporaryFile())
-        if random_suffix.lower().startswith("tmp"):
-            random_suffix = random_suffix[len("tmp"):]
-        return random_suffix
+    def _generate_timestamp_suffix():
+        return datetime.datetime.now().strftime('%y%m%d%H%M%S')
 
     def _generate_config_path(self, config, index):
-        suffix = self.random_suffix
+        suffix = self.timestamp
         res = config + f'._.{suffix}.{index:04}.yaml'
         return res
+
+class ConfigTransformersEngine:
+    CONFIG_ARG_TO_SUBSTITUTE = 'config'
+    def __init__(self, template, config_transformers_names):
+        self.config_transformers_handler = _ConfigTransformersHandler(template, config_transformers_names)
+
+    def process_args(self, kwargs):
+        # NB: at the moment it is one function, using one variable self.CONFIG_ARG_TO_SUBSTITUTE,
+        #     since all scripts (train, eval, export) use the same parameter 'config'
+        assert self.CONFIG_ARG_TO_SUBSTITUTE in kwargs, (
+                f'Error: kwargs does not contain {self.CONFIG_ARG_TO_SUBSTITUTE}, kwargs={kwargs}')
+        config_path = kwargs[self.CONFIG_ARG_TO_SUBSTITUTE]
+
+        res_config_path = self.config_transformers_handler(config_path)
+
+        kwargs = copy(kwargs)
+        kwargs[self.CONFIG_ARG_TO_SUBSTITUTE] = res_config_path
+        return kwargs

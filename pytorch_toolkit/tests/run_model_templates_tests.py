@@ -1,6 +1,7 @@
 import glob
 import logging
 import os
+import sys
 from subprocess import run
 import tempfile
 import unittest
@@ -23,17 +24,52 @@ ENABLE_TESTS_FOR = {
 ENABLE_TRAIN_TESTS = True
 ENABLE_EXPORT_TESTS = True
 
+VERBOSE = False
+
+def set_verbosity_from_argv():
+    global VERBOSE
+    if '-v' in sys.argv or '--verbose' in sys.argv:
+        VERBOSE = True
+
+def run_with_log(*args, **kwargs):
+    cmd = args[0]
+    if VERBOSE:
+        logging.info(f'Running command `{cmd}`') #TODO: consider with Ilya
+    return run(*args, **kwargs)
 
 class ModelTemplatesTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
         logging.basicConfig(level=logging.INFO)
-        cls.work_dir = tempfile.mkdtemp()
-        run(f'python3 tools/instantiate.py --do-not-load-snapshots {cls.work_dir}', shell=True, check=True)
+        if VERBOSE:
+            logging.info('Running with verbosity=True')
+        workdir = os.environ.get('WORKDIR') #TODO: consider with Ilya
+        if not workdir:
+            cls.work_dir = tempfile.mkdtemp()
+        else:
+            cls.work_dir = os.path.abspath(workdir)
+        templates_pattern_environ = os.environ.get('TEMPLATES_PATTERN') #TODO: consider with Ilya
+        if templates_pattern_environ:
+            templates_pattern_arg = f'--templates-pattern {templates_pattern_environ}'
+        else:
+            templates_pattern_arg = ''
+
+        if VERBOSE:
+            cls.verbosity_flag = '--verbose'
+        else:
+            cls.verbosity_flag = ''
+
+        run_with_log(f'python3 tools/instantiate.py {templates_pattern_arg} --do-not-load-snapshots {cls.work_dir}', shell=True, check=True)
+
+    def _get_template_files(self):
+        #TODO: consider with Ilya
+        template_filenames = glob.glob(f'{self.work_dir}/**/template.yaml', recursive=True)
+        template_filenames = list(template_filenames)
+        return template_filenames
 
     def test_existence_of_mandatory_files_in_template_dir(self):
-        template_files = glob.glob(f'{self.work_dir}/**/template.yaml', recursive=True)
+        template_files = self._get_template_files()
         for template in template_files:
             template_dirname = os.path.dirname(template)
             self.assertTrue(os.path.exists(os.path.join(template_dirname, 'train.py')))
@@ -47,7 +83,7 @@ class ModelTemplatesTestCase(unittest.TestCase):
         if not ENABLE_TRAIN_TESTS:
             return
 
-        template_files = glob.glob(f'{self.work_dir}/**/template.yaml', recursive=True)
+        template_files = self._get_template_files()
         domain_folders = set()
         for template_file in template_files:
             with open(template_file) as read_file:
@@ -61,11 +97,11 @@ class ModelTemplatesTestCase(unittest.TestCase):
             venv_activate_path = os.path.join(self.work_dir, domain_folder, 'venv', 'bin', 'activate')
             for problem_folder in ENABLE_TESTS_FOR[domain_folder]:
                 logging.info(f'Running tests for {domain_folder}/{problem_folder}.')
-                returncode = run(
+                returncode = run_with_log(
                     f'. {venv_activate_path};'
                     f'export MODEL_TEMPLATES={self.work_dir};'
                     f'python3 {os.path.join(domain_folder, "tests", "run_train_tests.py")}'
-                    f' --pattern=train_tests_{problem_folder}.py',
+                    f' --pattern=train_tests_{problem_folder}.py {self.verbosity_flag}',
                     shell=True,
                     check=True,
                     executable="/bin/bash").returncode
@@ -75,7 +111,7 @@ class ModelTemplatesTestCase(unittest.TestCase):
         if not ENABLE_EXPORT_TESTS:
             return
 
-        template_files = glob.glob(f'{self.work_dir}/**/template.yaml', recursive=True)
+        template_files = self._get_template_files()
         domain_folders = set()
         for template_file in template_files:
             with open(template_file) as read_file:
@@ -89,11 +125,11 @@ class ModelTemplatesTestCase(unittest.TestCase):
             venv_activate_path = os.path.join(self.work_dir, domain_folder, 'venv', 'bin', 'activate')
             for problem_folder in ENABLE_TESTS_FOR[domain_folder]:
                 logging.info(f'Running export tests for {domain_folder}/{problem_folder}.')
-                returncode = run(
+                returncode = run_with_log(
                     f'. {venv_activate_path};'
                     f'export MODEL_TEMPLATES={self.work_dir};'
                     f'python3 {os.path.join(domain_folder, "tests", "run_export_tests.py")}'
-                    f' --pattern=export_tests_{problem_folder}.py',
+                    f' --pattern=export_tests_{problem_folder}.py {self.verbosity_flag}',
                     shell=True,
                     check=True,
                     executable="/bin/bash").returncode
@@ -101,4 +137,5 @@ class ModelTemplatesTestCase(unittest.TestCase):
 
 
 if __name__ == '__main__':
+    set_verbosity_from_argv()
     unittest.main()

@@ -44,7 +44,9 @@ def create_test_case(problem_name, model_name, ann_file, img_root):
         @classmethod
         def setUpClass(cls):
             cls.templates_folder = os.environ['MODEL_TEMPLATES']
-            cls.template_folder = os.path.join(cls.templates_folder, 'object_detection', problem_name, model_name)
+            template_folder = os.path.join(cls.templates_folder, 'object_detection', problem_name, model_name)
+            cls.skip_non_instantiated_template_if_its_allowed(template_folder)
+            cls.template_folder = template_folder
             cls.template_file = os.path.join(cls.template_folder, 'template.yaml')
             cls.ann_file = ann_file
             cls.img_root = img_root
@@ -64,6 +66,17 @@ def create_test_case(problem_name, model_name, ann_file, img_root):
                 training_targets = [x.lower() for x in yaml.load(read_file, yaml.SafeLoader)['training_target']]
             if 'cpu' not in training_targets:
                 self.skipTest('CPU is not supported.')
+
+        @staticmethod
+        def skip_non_instantiated_template_if_its_allowed(template_folder):
+            # Note that this is for debug purposes only
+            should_skip_absent_templates = os.environ.get('SHOULD_SKIP_ABSENT_TEMPLATES')
+            if not os.path.isdir(template_folder):
+                if should_skip_absent_templates:
+                    raise unittest.SkipTest(f'The template folder for {problem_name}/{model_name} is not instantiated -- SKIPPING IT')
+                else:
+                    raise unittest.TestCase.failureException(f'The template folder for {problem_name}/{model_name} is not instantiated')
+
 
         @unittest.skipUnless(torch.cuda.is_available(), 'No GPU found')
         def test_evaluation_on_gpu(self):
@@ -159,7 +172,9 @@ def create_export_test_case(problem_name, model_name, ann_file, img_root, alt_ss
         @classmethod
         def setUpClass(cls):
             cls.templates_folder = os.environ['MODEL_TEMPLATES']
-            cls.template_folder = os.path.join(cls.templates_folder, 'object_detection', problem_name, model_name)
+            template_folder = os.path.join(cls.templates_folder, 'object_detection', problem_name, model_name)
+            cls.skip_non_instantiated_template_if_its_allowed(template_folder)
+            cls.template_folder = template_folder
             cls.template_file = os.path.join(cls.template_folder, 'template.yaml')
             cls.ann_file = ann_file
             cls.img_root = img_root
@@ -173,6 +188,17 @@ def create_export_test_case(problem_name, model_name, ann_file, img_root, alt_ss
                 training_targets = [x.lower() for x in yaml.load(read_file, yaml.SafeLoader)['training_target']]
             if 'cpu' not in training_targets:
                 self.skipTest('CPU is not supported.')
+
+        @staticmethod
+        def skip_non_instantiated_template_if_its_allowed(template_folder):
+            # Note that this is for debug purposes only
+            should_skip_absent_templates = os.environ.get('SHOULD_SKIP_ABSENT_TEMPLATES')
+            if not os.path.isdir(template_folder):
+                if should_skip_absent_templates:
+                    raise unittest.SkipTest(f'The template folder for {problem_name}/{model_name} is not instantiated -- SKIPPING IT')
+                else:
+                    raise unittest.TestCase.failureException(f'The template folder for {problem_name}/{model_name} is not instantiated')
+
 
         def do_export(self, folder):
             run_through_shell(

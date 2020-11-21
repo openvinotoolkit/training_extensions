@@ -17,6 +17,7 @@
 from ote import MODEL_TEMPLATE_FILENAME, MODULES_CONFIG_FILENAME
 from ote.utils import load_config
 from ote.modules import build_arg_parser, build_arg_converter, build_evaluator
+from ote.modules.config_transformers import ConfigTransformersEngine
 
 
 def main():
@@ -27,6 +28,9 @@ def main():
 
     arg_converter = build_arg_converter(modules['arg_converter'])
     eval_args = arg_converter.convert_test_args(MODEL_TEMPLATE_FILENAME, ote_args)
+
+    config_transformers_engine = ConfigTransformersEngine(MODEL_TEMPLATE_FILENAME, modules.get('config_transformers'))
+    eval_args = config_transformers_engine.process_args(eval_args)
 
     evaluator = build_evaluator(modules['evaluator'])
     evaluator(**eval_args)
