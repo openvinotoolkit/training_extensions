@@ -19,6 +19,7 @@ import logging
 from ote.utils import load_config
 from ..registry import CONFIG_TRANSFORMERS
 from .base import BaseConfigTransformer
+from .utils import merge_dicts_and_lists_b_into_a
 
 def _convert_value_to_bool(v, key):
     if isinstance(v, bool):
@@ -37,43 +38,6 @@ def _convert_value_to_bool(v, key):
     if key is not None:
         err_str += ' for the key "{key}"'
     raise RuntimeError(err_str)
-
-def _merge_dicts_and_lists_b_into_a(a, b, cur_key=""):
-    """The function is inspired by mmcf.Config._merge_a_into_b,
-    but it
-    * works with usual dicts and lists, won't work with derived types
-    * supports merging of lists (by concatenating the lists)
-    * makes recursive merging for dict + dict case
-    * overwrites when merging scalar into scalar
-
-    Note that we merge b into a (whereas Config makes merge a into b),
-    since otherwise the order of list merging is counter-intuitive.
-    """
-    def _err_str(_a, _b, _key):
-        return (f'Error in merging parts of config: different types for key={_key}, '
-                f'type of left part is {type(_a)}, '
-                f'type of right part is {type(_b)}')
-
-    assert isinstance(a, (dict, list)) and type(a) == type(b), _err_str(a, b, cur_key)
-    if isinstance(a, list):
-        # the main diff w.r.t. mmcf.Config -- merging of lists
-        return a + b
-
-    a = copy(a)
-    for k in b.keys():
-        if k not in a:
-            a[k] = copy(b[k])
-            continue
-        new_cur_key = cur_key + '.' + k if cur_key else k
-        if isinstance(a[k], (dict, list)):
-            a[k] = _merge_dicts_and_lists_b_into_a(a[k], b[k], new_cur_key)
-            continue
-
-        assert not isinstance(b[k], (dict, list)), _err_str(a[k], b[k], new_cur_key)
-
-        # suppose here that a[k] and b[k] are scalars, just overwrite
-        a[k] = b[k]
-    return a
 
 @CONFIG_TRANSFORMERS.register_module()
 class NNCFConfigTransformer(BaseConfigTransformer):
@@ -120,7 +84,7 @@ class NNCFConfigTransformer(BaseConfigTransformer):
                     f'Error: NNCF compression config does not contain the part "{part}", '
                     f'whereas it was selected; see the NNCF config file "{compression_config_path}"')
             try:
-                nncf_config = _merge_dicts_and_lists_b_into_a(nncf_config, compression_parts[part])
+                nncf_config = merge_dicts_and_lists_b_into_a(nncf_config, compression_parts[part])
                 cur_error = None
             except AssertionError as e:
                 cur_error = e
