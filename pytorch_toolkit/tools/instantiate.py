@@ -53,7 +53,6 @@ def main():
 
     domain_folders = set()
     for template_filename in template_filenames:
-        logging.info(f'Instantiate {template_filename}')
         with open(template_filename) as read_file:
             content = yaml.load(read_file, yaml.SafeLoader)
 
@@ -67,6 +66,7 @@ def main():
         problem_folder = os.path.join(args.destination, domain_folder, problem_folder)
         instance_folder = os.path.join(problem_folder, model_folder)
 
+        logging.info(f'Instantiate {template_filename} to {instance_folder}')
         if args.do_not_load_snapshots:
             run_with_log(f'python3 tools/instantiate_template.py {template_filename} {instance_folder}'
                 f' --do-not-load-snapshot', check=True, shell=True)

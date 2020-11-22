@@ -286,3 +286,68 @@ def create_export_test_case(problem_name, model_name, ann_file, img_root, alt_ss
         return ExportWithAltSsdTestCase
 
     return ExportTestCase
+
+
+def create_nncf_test_case(problem_name, model_name, ann_file, img_root):
+    class TestCaseOteApi(unittest.TestCase):
+
+        @classmethod
+        def setUpClass(cls):
+            cls.templates_folder = os.environ['MODEL_TEMPLATES']
+            template_folder = os.path.join(cls.templates_folder, 'object_detection', problem_name, model_name)
+            cls.skip_non_instantiated_template_if_its_allowed(template_folder)
+            cls.template_folder = template_folder
+            cls.template_file = os.path.join(cls.template_folder, 'template.yaml')
+            cls.ann_file = ann_file
+            cls.img_root = img_root
+            cls.dependencies = get_dependencies(cls.template_file)
+            cls.total_epochs = get_epochs(cls.template_file)
+
+            download_snapshot_if_not_yet(cls.template_file, cls.template_folder)
+
+            run_through_shell(
+                f'cd {cls.template_folder};'
+                f'pip install -r requirements.txt;'
+            )
+
+        def skip_if_cpu_is_not_supported(self):
+            with open(self.template_file) as read_file:
+                training_targets = [x.lower() for x in yaml.load(read_file, yaml.SafeLoader)['training_target']]
+            if 'cpu' not in training_targets:
+                self.skipTest('CPU is not supported.')
+
+        @staticmethod
+        def skip_non_instantiated_template_if_its_allowed(template_folder):
+            # Note that this is for debug purposes only
+            # TODO: refactor, make common function skip_non_instantiated_template_if_its_allowed
+            should_skip_absent_templates = os.environ.get('SHOULD_SKIP_ABSENT_TEMPLATES')
+            if not os.path.isdir(template_folder):
+                if should_skip_absent_templates:
+                    raise unittest.SkipTest(f'The template folder for {problem_name}/{model_name} is not instantiated -- SKIPPING IT')
+                else:
+                    raise unittest.TestCase.failureException(f'The template folder for {problem_name}/{model_name} is not instantiated')
+
+        @unittest.skipUnless(torch.cuda.is_available(), 'No GPU found')
+        def test_nncf_on_gpu(self):
+            log_file = os.path.join(self.template_folder, 'test_nncf.log')
+            run_through_shell(
+                f'cd {self.template_folder};'
+                f'python train.py'
+                f' --train-ann-files {self.ann_file}'
+                f' --train-data-roots {self.img_root}'
+                f' --val-ann-files {self.ann_file}'
+                f' --val-data-roots {self.img_root}'
+                f' --load-weights snapshot.pth'
+                f' --save-checkpoints-to {self.template_folder}'
+                f' --gpu-num 1'
+                f' --batch-size 1'
+                f' --epochs {self.total_epochs}'
+                f' |& tee {log_file}')
+            # TODO: think about using |& for other tests
+
+            ap = collect_ap(log_file)
+            self.assertEqual(len((ap)), self.total_epochs+1)
+            self.assertGreater(ap[-1], 0)
+
+    return TestCaseOteApi
+

@@ -23,6 +23,7 @@ ENABLE_TESTS_FOR = {
 
 ENABLE_TRAIN_TESTS = True
 ENABLE_EXPORT_TESTS = True
+ENABLE_NNCF_TESTS = True
 
 VERBOSE = False
 
@@ -51,7 +52,7 @@ class ModelTemplatesTestCase(unittest.TestCase):
             cls.work_dir = os.path.abspath(workdir)
         templates_pattern_environ = os.environ.get('TEMPLATES_PATTERN') #TODO: consider with Ilya
         if templates_pattern_environ:
-            templates_pattern_arg = f'--templates-pattern {templates_pattern_environ}'
+            templates_pattern_arg = f'--templates-pattern "{templates_pattern_environ}"'
         else:
             templates_pattern_arg = ''
 
@@ -135,6 +136,34 @@ class ModelTemplatesTestCase(unittest.TestCase):
                     executable="/bin/bash").returncode
                 self.assertEqual(returncode, 0)
 
+    def test_nncf(self):
+        # TODO : refactor the class to avoid copying between methods
+        if not ENABLE_NNCF_TESTS:
+            return
+
+        template_files = self._get_template_files()
+        domain_folders = set()
+        for template_file in template_files:
+            with open(template_file) as read_file:
+                domain_folder = yaml.load(read_file, yaml.SafeLoader)['domain'].lower().replace(' ', '_')
+                domain_folders.add(domain_folder)
+
+        for domain_folder in domain_folders:
+            if domain_folder not in ENABLE_TESTS_FOR:
+                continue
+
+            venv_activate_path = os.path.join(self.work_dir, domain_folder, 'venv', 'bin', 'activate')
+            for problem_folder in ENABLE_TESTS_FOR[domain_folder]:
+                logging.info(f'Running nncf tests for {domain_folder}/{problem_folder}.')
+                returncode = run_with_log(
+                    f'. {venv_activate_path};'
+                    f'export MODEL_TEMPLATES={self.work_dir};'
+                    f'python3 {os.path.join(domain_folder, "tests", "run_nncf_tests.py")}'
+                    f' --pattern=nncf_tests_{problem_folder}.py {self.verbosity_flag}',
+                    shell=True,
+                    check=True,
+                    executable="/bin/bash").returncode
+                self.assertEqual(returncode, 0)
 
 if __name__ == '__main__':
     set_verbosity_from_argv()

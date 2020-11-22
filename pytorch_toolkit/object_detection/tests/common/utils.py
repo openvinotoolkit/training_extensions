@@ -14,6 +14,7 @@
 
 import logging
 import os
+import unittest
 from subprocess import run
 
 
@@ -43,3 +44,15 @@ def relative_abs_error(expected, actual):
 def run_through_shell(cmd):
     logging.info(f'Running through shell cmd `{cmd}`') #TODO: consider with Ilya
     run(cmd, shell=True, check=True, executable="/bin/bash")
+
+def run_tests_by_pattern(folder, pattern, verbose):
+    # TODO: rewrite ../run_train_tests.py and ../run_export_tests.py
+    #       using this function
+    logging.basicConfig(level=logging.INFO)
+    if verbose:
+        verbosity=2
+    else:
+        verbosity=1
+    testsuite = unittest.TestLoader().discover(folder, pattern=pattern)
+    was_successful = unittest.TextTestRunner(verbosity=verbosity).run(testsuite).wasSuccessful()
+    return was_successful
