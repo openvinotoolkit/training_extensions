@@ -14,6 +14,7 @@
  limitations under the License.
 """
 
+import json
 import logging
 import subprocess
 import tempfile
@@ -34,7 +35,7 @@ class MMDetectionTrainer(BaseTrainer):
 
     def _add_extra_args(self, cfg, config_path, update_config):
         if self.__is_clustering_needed(cfg):
-            update_config = self.__cluster(cfg, config, update_config)
+            update_config = self.__cluster(cfg, config_path, update_config)
 
         return update_config
 
