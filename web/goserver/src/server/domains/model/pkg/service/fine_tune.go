@@ -73,7 +73,8 @@ func (s *basicModelService) train(ctx context.Context, parentModel t.Model, buil
 	commands := s.prepareFineTuneCommands(batchSize, gpuNum, newModel, parentModel, build, problem)
 	outputLog := fmt.Sprintf("%s/output.log", newModel.Dir)
 	env := getFineTuneEnv()
-	if err := s.runCommand(commands, env, newModel.Dir, outputLog); err != nil {
+	err = s.runCommand(commands, env, newModel.Dir, outputLog)
+	if err != nil {
 		newModel = s.updateModelTrainStatus(ctx, newModel, statusModelTrain.Failed)
 	} else {
 		newModel = s.updateModelTrainStatus(ctx, newModel, statusModelTrain.Finished)
