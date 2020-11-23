@@ -48,6 +48,7 @@ func (s *basicModelService) CreateFromGeneric(ctx context.Context, req CreateFro
 func copyModelFilesFromParentModel(from, to, modelTemplatePath string, excluded []string) {
 	templateYamlPath := copyTemplateYaml(modelTemplatePath, to)
 	templateYaml := getTemplateYaml(templateYamlPath)
+	copyModulesYaml(from, to)
 	copyConfig(from, to, templateYaml)
 	copyDependenciesFromParentModel(from, to, templateYaml, excluded)
 	saveMetrics(to, templateYaml)
@@ -83,12 +84,13 @@ func (s *basicModelService) updateModelEvaluateStatus(ctx context.Context, model
 
 func (s *basicModelService) createModelFromGeneric(genericModel t.Model, problem t.Problem, dir, snapshotPath string) t.Model {
 	modelInsertOneResp := <-modelInsertOne.Send(context.TODO(), s.Conn, modelInsertOne.RequestData{
-		ConfigPath:    fp.Join(dir, "model.py"),
-		Dir:           dir,
-		Evaluates:     make(map[string]t.Evaluate),
-		ProblemId:     problem.Id,
-		Name:          genericModel.Name,
-		ParentModelId: genericModel.Id,
+		ConfigPath:      fp.Join(dir, "model.py"),
+		Dir:             dir,
+		Evaluates:       make(map[string]t.Evaluate),
+		ProblemId:       problem.Id,
+		ModulesYamlPath: fp.Join(dir, "modules.yaml"),
+		Name:            genericModel.Name,
+		ParentModelId:   genericModel.Id,
 		Scripts: t.Scripts{
 			Train: fp.Join(dir, "train.py"),
 			Eval:  fp.Join(dir, "eval.py"),

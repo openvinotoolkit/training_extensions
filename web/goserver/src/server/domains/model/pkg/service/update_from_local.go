@@ -74,6 +74,7 @@ func (s *basicModelService) UpdateFromLocal(ctx context.Context, req UpdateFromL
 
 func copyModelFiles(from, to, modelTemplatePath string, modelYml ModelYml) {
 	copyConfig(from, to, modelYml)
+	copyModulesYaml(from, to)
 	copyDependencies(from, to, modelYml)
 	saveMetrics(to, modelYml)
 	copyTemplateYaml(modelTemplatePath, to)
@@ -82,6 +83,13 @@ func copyModelFiles(from, to, modelTemplatePath string, modelYml ModelYml) {
 func copyConfig(from, to string, modelYml ModelYml) {
 	if err := copyFiles(fp.Join(from, modelYml.Config), fp.Join(to, modelYml.Config)); err != nil {
 		log.Println("update_from_local.copyDependencies.copyFiles(fp.Join(from, modelYml.Config), fp.Join(to, modelYml.Config))", err)
+	}
+}
+
+func copyModulesYaml(from, to string) {
+	modulesYaml := "modules.yaml"
+	if err := copyFiles(fp.Join(from, modulesYaml), fp.Join(to, modulesYaml)); err != nil {
+		log.Println("update_from_local.copyDependencies.copyFiles(fp.Join(from,modulesYaml), fp.Join(to, modulesYaml))", err)
 	}
 }
 
@@ -177,14 +185,15 @@ func (s *basicModelService) prepareModel(modelYml ModelYml, buildId primitive.Ob
 		Status:  statusModelEvaluate.Default,
 	}
 	model := t.Model{
-		BatchSize:   modelYml.HyperParameters.Basic.BatchSize,
-		ConfigPath:  fp.Join(dir, modelYml.Config),
-		ProblemId:   problem.Id,
-		Description: "",
-		Dir:         dir,
-		Epochs:      modelYml.HyperParameters.Basic.Epochs,
-		Evaluates:   evaluates,
-		Name:        modelYml.Name,
+		BatchSize:       modelYml.HyperParameters.Basic.BatchSize,
+		ConfigPath:      fp.Join(dir, modelYml.Config),
+		ProblemId:       problem.Id,
+		Description:     "",
+		Dir:             dir,
+		Epochs:          modelYml.HyperParameters.Basic.Epochs,
+		Evaluates:       evaluates,
+		ModulesYamlPath: fp.Join(dir, "modules.yaml"),
+		Name:            modelYml.Name,
 		Scripts: t.Scripts{
 			Train: fp.Join(dir, "train.py"),
 			Eval:  fp.Join(dir, "eval.py"),
@@ -273,20 +282,21 @@ func (s *basicModelService) updateCreateModel(model t.Model) t.Model {
 		context.TODO(),
 		s.Conn,
 		modelUpdateUpsert.RequestData{
-			ConfigPath:     model.ConfigPath,
-			BatchSize:      model.BatchSize,
-			Description:    model.Description,
-			Dir:            model.Dir,
-			Epochs:         model.Epochs,
-			Evaluates:      model.Evaluates,
-			Framework:      model.Framework,
-			Name:           model.Name,
-			Scripts:        model.Scripts,
-			SnapshotPath:   model.SnapshotPath,
-			Status:         model.Status,
-			ProblemId:      model.ProblemId,
-			TemplatePath:   model.TemplatePath,
-			TrainingGpuNum: model.TrainingGpuNum,
+			ConfigPath:      model.ConfigPath,
+			BatchSize:       model.BatchSize,
+			Description:     model.Description,
+			Dir:             model.Dir,
+			Epochs:          model.Epochs,
+			Evaluates:       model.Evaluates,
+			Framework:       model.Framework,
+			ModulesYamlPath: model.ModulesYamlPath,
+			Name:            model.Name,
+			Scripts:         model.Scripts,
+			SnapshotPath:    model.SnapshotPath,
+			Status:          model.Status,
+			ProblemId:       model.ProblemId,
+			TemplatePath:    model.TemplatePath,
+			TrainingGpuNum:  model.TrainingGpuNum,
 		},
 	)
 	return modelResp.Data.(modelUpdateUpsert.ResponseData)

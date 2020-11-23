@@ -111,42 +111,44 @@ type Evaluate struct {
 }
 
 type Model struct {
-	BatchSize      int                 `bson:"batchSize" json:"batchSize"`
-	ConfigPath     string              `bson:"configPath" json:"configPath"`
-	ProblemId      primitive.ObjectID  `bson:"problemId" json:"problemId"`
-	Description    string              `bson:"description" json:"description" yaml:"description"`
-	Dir            string              `bson:"dir" json:"dir"`
-	Dependencies   []Dependency        `bson:"dependencies" json:"dependencies" yaml:"dependencies"`
-	Epochs         int                 `bson:"epochs" json:"epochs"`
-	Evaluates      map[string]Evaluate `bson:"evaluates" json:"evaluates"`
-	Framework      string              `bson:"framework" json:"framework" yaml:"framework"`
-	Id             primitive.ObjectID  `bson:"_id" json:"id"`
-	Name           string              `bson:"name" json:"name" yaml:"name"`
-	ParentModelId  primitive.ObjectID  `bson:"parentModelId" json:"parentModelId"`
-	Scripts        Scripts             `bson:"scripts" json:"scripts"`
-	SnapshotPath   string              `bson:"snapshotPath" json:"snapshotPath"`
-	Status         string              `bson:"status" json:"status"`
-	TemplatePath   string              `bson:"templatePath" json:"templatePath"`
-	TrainingGpuNum int                 `bson:"trainingGpuNum" json:"trainingGpuNum"`
+	BatchSize       int                 `bson:"batchSize" json:"batchSize"`
+	ConfigPath      string              `bson:"configPath" json:"configPath"`
+	ProblemId       primitive.ObjectID  `bson:"problemId" json:"problemId"`
+	Description     string              `bson:"description" json:"description" yaml:"description"`
+	Dir             string              `bson:"dir" json:"dir"`
+	Dependencies    []Dependency        `bson:"dependencies" json:"dependencies" yaml:"dependencies"`
+	Epochs          int                 `bson:"epochs" json:"epochs"`
+	Evaluates       map[string]Evaluate `bson:"evaluates" json:"evaluates"`
+	Framework       string              `bson:"framework" json:"framework" yaml:"framework"`
+	Id              primitive.ObjectID  `bson:"_id" json:"id"`
+	ModulesYamlPath string              `bson:"modulesYamlPath" json:"modulesYamlPath"`
+	Name            string              `bson:"name" json:"name" yaml:"name"`
+	ParentModelId   primitive.ObjectID  `bson:"parentModelId" json:"parentModelId"`
+	Scripts         Scripts             `bson:"scripts" json:"scripts"`
+	SnapshotPath    string              `bson:"snapshotPath" json:"snapshotPath"`
+	Status          string              `bson:"status" json:"status"`
+	TemplatePath    string              `bson:"templatePath" json:"templatePath"`
+	TrainingGpuNum  int                 `bson:"trainingGpuNum" json:"trainingGpuNum"`
 }
 
 type ModelWithoutId struct {
-	BatchSize      int                 `bson:"batchSize" json:"batchSize"`
-	ConfigPath     string              `bson:"configPath" json:"configPath"`
-	ProblemId      primitive.ObjectID  `bson:"problemId" json:"problemId"`
-	Description    string              `bson:"description" json:"description" yaml:"description"`
-	Dir            string              `bson:"dir" json:"dir"`
-	Dependencies   []Dependency        `bson:"dependencies" json:"dependencies" yaml:"dependencies"`
-	Epochs         int                 `bson:"epochs" json:"epochs"`
-	Evaluates      map[string]Evaluate `bson:"evaluates" json:"evaluates"`
-	Framework      string              `bson:"framework" json:"framework" yaml:"framework"`
-	Name           string              `bson:"name" json:"name" yaml:"name"`
-	ParentModelId  primitive.ObjectID  `bson:"parentModelId" json:"parentModelId"`
-	Scripts        Scripts             `bson:"scripts" json:"scripts"`
-	SnapshotPath   string              `bson:"snapshotPath" json:"snapshotPath"`
-	Status         string              `bson:"status" json:"status"`
-	TemplatePath   string              `bson:"templatePath" json:"templatePath"`
-	TrainingGpuNum int                 `bson:"trainingGpuNum" json:"trainingGpuNum"`
+	BatchSize       int                 `bson:"batchSize" json:"batchSize"`
+	ConfigPath      string              `bson:"configPath" json:"configPath"`
+	ProblemId       primitive.ObjectID  `bson:"problemId" json:"problemId"`
+	Description     string              `bson:"description" json:"description" yaml:"description"`
+	Dir             string              `bson:"dir" json:"dir"`
+	Dependencies    []Dependency        `bson:"dependencies" json:"dependencies" yaml:"dependencies"`
+	Epochs          int                 `bson:"epochs" json:"epochs"`
+	Evaluates       map[string]Evaluate `bson:"evaluates" json:"evaluates"`
+	Framework       string              `bson:"framework" json:"framework" yaml:"framework"`
+	ModulesYamlPath string              `bson:"modulesYamlPath" json:"modulesYamlPath"`
+	Name            string              `bson:"name" json:"name" yaml:"name"`
+	ParentModelId   primitive.ObjectID  `bson:"parentModelId" json:"parentModelId"`
+	Scripts         Scripts             `bson:"scripts" json:"scripts"`
+	SnapshotPath    string              `bson:"snapshotPath" json:"snapshotPath"`
+	Status          string              `bson:"status" json:"status"`
+	TemplatePath    string              `bson:"templatePath" json:"templatePath"`
+	TrainingGpuNum  int                 `bson:"trainingGpuNum" json:"trainingGpuNum"`
 }
 
 type Metric struct {
