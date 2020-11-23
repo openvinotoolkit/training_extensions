@@ -156,11 +156,11 @@ nncf_config = dict(
             initializer=dict(
                 range=dict(num_init_steps=10),
                 batchnorm_adaptation=dict(num_bn_adaptation_steps=30))),
-        dict(
-            algorithm='magnitude_sparsity',
-            params=dict(
-                schedule='multistep',
-                multistep_sparsity_levels=[0.3, 0.5, 0.7],
-                multistep_steps=[40, 80]))
+#        dict(
+#            algorithm='magnitude_sparsity',
+#            params=dict(
+#                schedule='multistep',
+#                multistep_sparsity_levels=[0.3, 0.5, 0.7],
+#                multistep_steps=[40, 80]))
     ],
     log_dir='outputs/face-detection-0200/')
