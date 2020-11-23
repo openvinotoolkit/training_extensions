@@ -19,7 +19,7 @@ type ProblemFindOneRequestData struct {
 	Title string             `bson:"title" json:"title"`
 }
 
-func (s *basicDatabaseService) ProblemFindOne(ctx context.Context, req ProblemFindOneRequestData) (result t.Problem) {
+func (s *basicDatabaseService) ProblemFindOne(ctx context.Context, req ProblemFindOneRequestData) (result t.Problem, err error) {
 	problemCollection := s.db.Collection(n.CProblem)
 	filter := make(bson.M)
 	if !primitive.ObjectID.IsZero(req.Id) {
@@ -35,7 +35,7 @@ func (s *basicDatabaseService) ProblemFindOne(ctx context.Context, req ProblemFi
 			filter["class"] = req.Class
 		}
 	}
-	err := problemCollection.FindOne(ctx, filter).Decode(&result)
+	err = problemCollection.FindOne(ctx, filter).Decode(&result)
 	if err != nil {
 		log.Println("ProblemFindOne.FindOne.Decode(&result)", err)
 	}

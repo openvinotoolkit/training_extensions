@@ -291,7 +291,14 @@ func MakeProblemFindOneEndpoint(s service.DatabaseService) kitendpoint.Endpoint 
 		returnChan := make(chan kitendpoint.Response)
 		go func() {
 			defer close(returnChan)
-			resp := s.ProblemFindOne(ctx, req.(service.ProblemFindOneRequestData))
+			resp, err := s.ProblemFindOne(ctx, req.(service.ProblemFindOneRequestData))
+			if err != nil {
+				returnChan <- kitendpoint.Response{
+					Data:   nil,
+					Err:    kitendpoint.Error{Code: 1, Message: err.Error()},
+					IsLast: true,
+				}
+			}
 			returnChan <- kitendpoint.Response{
 				Data:   resp,
 				Err:    kitendpoint.Error{Code: 0},

@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -57,7 +58,11 @@ func (s *basicModelService) UpdateFromLocal(ctx context.Context, req UpdateFromL
 	responseChan := make(chan kitendpoint.Response)
 	go func() {
 		templateYaml := getTemplateYaml(req.Path)
-		problem := s.getProblem(ctx, templateYaml.Problem)
+		problem, err := s.getProblem(ctx, templateYaml.Problem)
+		if err != nil {
+			responseChan <- kitendpoint.Response{Data: nil, Err: kitendpoint.Error{Code: 1}, IsLast: true}
+			return
+		}
 		defaultBuild := s.getDefaultBuild(problem.Id)
 		model := s.prepareModel(templateYaml, defaultBuild.Id, problem)
 		copyModelFiles(fp.Dir(req.Path), model.Dir, req.Path, templateYaml)
@@ -207,7 +212,7 @@ func getTemplateYaml(path string) (modelYml ModelYml) {
 	return modelYml
 }
 
-func (s *basicModelService) getProblem(ctx context.Context, title string) t.Problem {
+func (s *basicModelService) getProblem(ctx context.Context, title string) (t.Problem, error) {
 	problemResp := <-problemFindOne.Send(
 		ctx,
 		s.Conn,
@@ -215,11 +220,15 @@ func (s *basicModelService) getProblem(ctx context.Context, title string) t.Prob
 			Title: title,
 		},
 	)
-	return problemResp.Data.(problemFindOne.ResponseData)
+	var err error = nil
+	if problemResp.Err.Code > 0 {
+		err = fmt.Errorf(problemResp.Err.Message)
+	}
+	return problemResp.Data.(problemFindOne.ResponseData), err
 }
 
 func downloadWithCheck(url, dst, sha256 string, size int) error {
-	for true {
+	for i := 0; i < 10; i++ {
 		nBytes, err := u.DownloadFile(url, dst)
 		if err != nil {
 			log.Println("downloadWithCheck.DownloadFile", err)
