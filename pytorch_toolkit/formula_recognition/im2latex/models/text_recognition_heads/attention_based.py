@@ -79,13 +79,12 @@ class TextRecognitionHead(nn.Module):
         if trainable_initial_hidden:
             self.V_h_0 = nn.Parameter(torch.Tensor(self.n_layer*2, self.encoder_hidden_size))
             self.V_c_0 = nn.Parameter(torch.Tensor(self.n_layer*2, self.encoder_hidden_size))
+            init.uniform_(self.V_h_0, -INIT, INIT)
+            init.uniform_(self.V_c_0, -INIT, INIT)
         else:
-            self.V_h_0 = torch.zeros(self.n_layer*2, self.encoder_hidden_size)
-            self.V_c_0 = torch.zeros(self.n_layer*2, self.encoder_hidden_size)
+            self.V_h_0 = nn.Parameter(torch.zeros(self.n_layer*2, self.encoder_hidden_size), requires_grad=False)
+            self.V_c_0 = nn.Parameter(torch.zeros(self.n_layer*2, self.encoder_hidden_size), requires_grad=False)
         self.positional_encodings = positional_encodings
-        init.uniform_(self.V_h_0, -INIT, INIT)
-        init.uniform_(self.V_c_0, -INIT, INIT)
-
         # Attention mechanism
         self.beta = nn.Parameter(torch.Tensor(self.decoder_hidden_size))
         init.uniform_(self.beta, -INIT, INIT)
@@ -204,10 +203,8 @@ class TextRecognitionHead(nn.Module):
         encoded_imgs = encoded_imgs.contiguous().view(B*H, W, out_channels)
 
         # prepare init hidden for each row
-        init_hidden_h = self.V_h_0.unsqueeze(
-            1).expand(self.V_h_0.shape[0], B*H, self.V_h_0.shape[1]).contiguous()
-        init_hidden_c = self.V_c_0.unsqueeze(
-            1).expand(self.V_h_0.shape[0], B*H, self.V_h_0.shape[1]).contiguous()
+        init_hidden_h = self.V_h_0.unsqueeze(1).expand(self.V_h_0.shape[0], B*H, self.V_h_0.shape[1]).contiguous()
+        init_hidden_c = self.V_c_0.unsqueeze(1).expand(self.V_h_0.shape[0], B*H, self.V_h_0.shape[1]).contiguous()
         init_hidden = (init_hidden_h, init_hidden_c)
 
         # Row Encoder
