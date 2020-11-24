@@ -174,20 +174,19 @@ func (s *basicModelService) createNewModel(
 	if err := os.MkdirAll(dir, 0777); err != nil {
 		log.Println("evaluate.createFolder.os.MkdirAll(path, 0777)", err)
 	}
-	snapshotPath := fp.Join(dir, "snapshot.pth")
-	configPath := fp.Join(dir, "model.py")
 	newModelResp := <-modelInsertOne.Send(
 		ctx,
 		s.Conn,
 		modelInsertOne.RequestData{
-			ConfigPath:      configPath,
+			ConfigPath:      fp.Join(dir, "model.py"),
 			Dir:             dir,
 			Epochs:          parentModel.Epochs + epochs,
+			Evaluates:       make(map[string]t.Evaluate),
 			ModulesYamlPath: fp.Join(dir, "modules.yaml"),
 			Name:            name,
 			ParentModelId:   parentModel.Id,
 			ProblemId:       problem.Id,
-			SnapshotPath:    snapshotPath,
+			SnapshotPath:    fp.Join(dir, "snapshot.pth"),
 			Scripts: t.Scripts{
 				Train: fp.Join(dir, "train.py"),
 				Eval:  fp.Join(dir, "eval.py"),
