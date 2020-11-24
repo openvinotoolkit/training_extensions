@@ -105,7 +105,8 @@ class TextRecognitionHead(nn.Module):
             old_shape = features.shape
             pe = PositionalEncodingPermute2D(channels=self.encoder_input_size)
             encoded = pe(features)
-            features = torch.cat([feature + encoded for feature in features])
+            encoded = encoded.expand(features.shape)
+            features = features + encoded
             assert features.shape == old_shape, f"New shape: {features.shape}, old shape: {old_shape}"
 
         row_enc_out, hidden, context = self.encode(features)
