@@ -17,23 +17,35 @@ import os
 from common.test_case import create_nncf_test_case
 
 
-class FaceDetection0200NNNCFNaive01TestCase(
+#class FaceDetection0200NNCFnocompression(
+#        create_nncf_test_case(
+#            'face-detection',
+#            'face-detection-0200',
+#            os.path.dirname(__file__) + '/../../../data/airport/annotation_faces_train.json',
+#            os.path.dirname(__file__) + '/../../../data/airport/',
+#            {'int8': False}
+#        )
+#):
+#    """ Test case for face-detection-0200 model without NNCF compression. """
+
+class FaceDetection0200NNCFint8(
         create_nncf_test_case(
             'face-detection',
-            'face-detection-0200_nncf_naive_01',
+            'face-detection-0200',
             os.path.dirname(__file__) + '/../../../data/airport/annotation_faces_train.json',
-            os.path.dirname(__file__) + '/../../../data/airport/'
+            os.path.dirname(__file__) + '/../../../data/airport/',
+            {'int8': True}
         )
 ):
-    """ Test case for face-detection-0200 model. """
+    """ Test case for face-detection-0200 model with NNCF int8 compression. """
 
-class FaceDetection0200NNNCF02TestCase(
+class FaceDetection0200NNCFint8sparsity(
         create_nncf_test_case(
             'face-detection',
-            'face-detection-0200_nncf_02',
+            'face-detection-0200',
             os.path.dirname(__file__) + '/../../../data/airport/annotation_faces_train.json',
-            os.path.dirname(__file__) + '/../../../data/airport/'
+            os.path.dirname(__file__) + '/../../../data/airport/',
+            {'int8': True, 'sparsity': True}
         )
 ):
-    """ Test case for face-detection-0200 model. """
-
+    """ Test case for face-detection-0200 model with NNCF int8 and sparsity compression. """

@@ -1,6 +1,0 @@
-arg_parser: FaceDetectorArgParser
-arg_converter: MMDetectionWiderArgsConverter
-trainer: MMDetectionTrainer
-evaluator: MMFaceDetectionEvaluator
-exporter: MMDetectionExporter
-config_transformers: [NNCFConfigTransformer]

@@ -23,13 +23,13 @@ def train_args_parser(template_path):
         parser.add_argument('--save-checkpoints-to', default='/tmp/checkpoints',
                             help='Location where checkpoints will be stored')
         parser.add_argument('--epochs', type=int,
-                            default=config['hyper_parameters']['basic']['epochs'],
+                            default=config.get('hyper_parameters', {}).get('basic', {}).get('epochs'),
                             help='Number of epochs during training')
         parser.add_argument('--batch-size', type=int,
-                            default=config['hyper_parameters']['basic']['batch_size'],
+                            default=config.get('hyper_parameters', {}).get('basic', {}).get('batch_size'),
                             help='Size of a single batch during training per GPU.')
         parser.add_argument('--base-learning-rate', type=float,
-                            default=config['hyper_parameters']['basic']['base_learning_rate'],
+                            default=config.get('hyper_parameters', {}).get('basic', {}).get('base_learning_rate'),
                             help='Starting value of learning rate that might be changed during '
                                  'training according to learning rate schedule that is usually '
                                  'defined in detailed training configuration.')

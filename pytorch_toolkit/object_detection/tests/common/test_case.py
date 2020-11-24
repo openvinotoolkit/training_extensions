@@ -13,6 +13,7 @@
 # and limitations under the License.
 
 import json
+import logging
 import os
 import unittest
 
@@ -288,20 +289,32 @@ def create_export_test_case(problem_name, model_name, ann_file, img_root, alt_ss
     return ExportTestCase
 
 
-def create_nncf_test_case(problem_name, model_name, ann_file, img_root):
+def create_nncf_test_case(problem_name, model_name, ann_file, img_root, compression_params):
     class TestCaseOteApi(unittest.TestCase):
 
         @classmethod
         def setUpClass(cls):
             cls.templates_folder = os.environ['MODEL_TEMPLATES']
-            template_folder = os.path.join(cls.templates_folder, 'object_detection', problem_name, model_name)
-            cls.skip_non_instantiated_template_if_its_allowed(template_folder)
-            cls.template_folder = template_folder
-            cls.template_file = os.path.join(cls.template_folder, 'template.yaml')
+            src_template_folder = os.path.join(cls.templates_folder, 'object_detection', problem_name, model_name)
+            cls.skip_non_instantiated_template_if_its_allowed(src_template_folder)
+            cls.src_template_folder = src_template_folder
+
+            assert all(isinstance(v, bool) for v in compression_params.values())
+
+            logging.debug(f'compression_params = {compression_params}')
+            if compression_params:
+                cls.template_folder = \
+                        cls.copy_template_folder_by_compression_params(cls.src_template_folder,
+                                                                       compression_params)
+                cls.template_file = os.path.join(cls.template_folder, 'template.yaml')
+                cls.apply_compression_params_to_template_file(cls.template_file, compression_params)
+            else:
+                cls.template_folder = cls.src_template_folder
+                cls.template_file = os.path.join(cls.template_folder, 'template.yaml')
+
             cls.ann_file = ann_file
             cls.img_root = img_root
             cls.dependencies = get_dependencies(cls.template_file)
-            cls.total_epochs = get_epochs(cls.template_file)
 
             download_snapshot_if_not_yet(cls.template_file, cls.template_folder)
 
@@ -309,6 +322,27 @@ def create_nncf_test_case(problem_name, model_name, ann_file, img_root):
                 f'cd {cls.template_folder};'
                 f'pip install -r requirements.txt;'
             )
+
+        @staticmethod
+        def copy_template_folder_by_compression_params(src_template_folder, compression_params):
+            template_folder = (src_template_folder +
+                               '__' + "_".join(k+str(compression_params[k]) for k in sorted(compression_params.keys())))
+            logging.info(f'Copying {src_template_folder} to {template_folder}')
+            run_through_shell(f'cp -a "{src_template_folder}" "{template_folder}"')
+            assert os.path.isdir(template_folder), f'Cannot create {template_folder}'
+            return template_folder
+
+        @staticmethod
+        def apply_compression_params_to_template_file(template_file, compression_params):
+            with open(template_file) as f_src:
+                template_data = yaml.safe_load(f_src)
+            with open(template_file + '.~', 'w') as f_backup:
+                yaml.dump(template_data, f_backup)
+            assert 'compression' in template_data, f'The template for {problem_name}/{model_name} does not contain compression part'
+            for k, v in compression_params.items():
+                template_data['compression'][k] = v
+            with open(template_file, 'w') as f_dst:
+                yaml.dump(template_data, f_dst)
 
         def skip_if_cpu_is_not_supported(self):
             with open(self.template_file) as read_file:
@@ -341,12 +375,10 @@ def create_nncf_test_case(problem_name, model_name, ann_file, img_root):
                 f' --save-checkpoints-to {self.template_folder}'
                 f' --gpu-num 1'
                 f' --batch-size 1'
-                f' --epochs {self.total_epochs}'
                 f' |& tee {log_file}')
             # TODO: think about using |& for other tests
 
             ap = collect_ap(log_file)
-            self.assertEqual(len((ap)), self.total_epochs+1)
             self.assertGreater(ap[-1], 0)
 
     return TestCaseOteApi

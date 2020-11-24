@@ -36,6 +36,11 @@ class BaseTrainer(metaclass=ABCMeta):
 
         cfg = Config.fromfile(config)
 
+        # This is required to skip the parameters that were not set in the template
+        # (e.g. base_learning_rate or epochs) -- they will have default value None in
+        # the parser
+        update_config = {k: v for k, v in update_config.items() if v is not None}
+
         update_config = ' '.join([f'{k}={v}' for k, v in update_config.items()])
         update_config = f' --update_config {update_config}' if update_config else ''
 

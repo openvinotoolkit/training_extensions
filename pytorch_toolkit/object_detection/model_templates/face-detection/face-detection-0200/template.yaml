@@ -32,15 +32,16 @@ inference_target:
 hyper_parameters:
   basic:
     batch_size: 65
-    base_learning_rate: 0.05
-    epochs: 70
 output_format:
   onnx:
     default: true
   openvino:
     default: true
     input_format: BGR
-quantization: TBD
+compression:
+  compression_config: compression_config.py
+  int8: false
+  sparsity: false
 metrics:
 - display_name: AP @ [IoU=0.50:0.95]
   key: ap
