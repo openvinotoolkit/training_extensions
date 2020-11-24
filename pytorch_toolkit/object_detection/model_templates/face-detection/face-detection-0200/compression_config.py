@@ -19,6 +19,8 @@ int8 = dict(
         )
 )
 sparsity = dict(
+    optimizer = dict(lr=0.00025),
+    total_epochs = 50,
     nncf_config = dict(
         compression=[
             dict(
@@ -30,3 +32,5 @@ sparsity = dict(
             ],
         )
 )
+
+order_of_parts = ['int8', 'sparsity']

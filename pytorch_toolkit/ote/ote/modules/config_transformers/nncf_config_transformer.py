@@ -82,12 +82,25 @@ class NNCFConfigTransformer(BaseConfigTransformer):
     @staticmethod
     def _merge_nncf_compression_parts(compression_config_path, compression_parts_to_choose):
         compression_parts = Config.fromfile(compression_config_path)
-        assert 'base' in compression_parts, f'Error: the NNCF compression config does not contain the "base" part'
+
+        if 'order_of_parts' in compression_parts:
+            order_of_parts = compression_parts['order_of_parts']
+            assert isinstance(order_of_parts, list), 'The field "order_of_parts" in compression config should be a list'
+
+            for part in compression_parts_to_choose:
+                assert part in order_of_parts, (
+                        f'The part {part} is selected, but it is absent in order_of_parts={order_of_parts},'
+                        f' see the compression config file {compression_config_path}')
+
+            compression_parts_to_choose = [part for part in order_of_parts if part in compression_parts_to_choose]
+
+        assert 'base' in compression_parts, f'Error: the compression config does not contain the "base" part'
         nncf_config_part = compression_parts['base'].to_dict()
+
         for part in compression_parts_to_choose:
             assert part in compression_parts, (
-                    f'Error: NNCF compression config does not contain the part "{part}", '
-                    f'whereas it was selected; see the NNCF config file "{compression_config_path}"')
+                    f'Error: the compression config does not contain the part "{part}", '
+                    f'whereas it was selected; see the compression config file "{compression_config_path}"')
             compression_part_dict = compression_parts[part].to_dict()
             try:
                 nncf_config_part = merge_dicts_and_lists_b_into_a(nncf_config_part, compression_part_dict)
