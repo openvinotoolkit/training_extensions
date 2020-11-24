@@ -19,6 +19,10 @@ from subprocess import run
 
 import yaml
 
+import sys
+# TODO: consider with Ilya: this trick is required when we instantiate template in a clean system without ote installed
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'ote'))
+
 from ote.utils.misc import download_snapshot_if_not_yet
 
 

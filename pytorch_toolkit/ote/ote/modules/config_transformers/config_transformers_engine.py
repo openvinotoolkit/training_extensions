@@ -15,10 +15,12 @@
 """
 
 import logging
+import os
 import yaml
 import datetime
 from tempfile import NamedTemporaryFile
 from copy import copy
+from pprint import pformat
 
 from ote.utils import load_config
 from ..builder import build_config_transformer
@@ -28,8 +30,8 @@ def save_config(config, file_path):
         yaml.dump(config, output_stream)
 
 class _ConfigTransformersHandler:
-    def __init__(self, template, config_transformers_names):
-        self.template = template
+    def __init__(self, template_path, config_transformers_names):
+        self.template_path = template_path
         self.timestamp = self._generate_timestamp_suffix()
 
         if config_transformers_names is None:
@@ -45,21 +47,27 @@ class _ConfigTransformersHandler:
     def __call__(self, config_path):
         if not self.config_transformers:
             return config_path
+        logging.debug(f'_ConfigTransformersHandler: config_path={config_path}')
         assert os.path.exists(config_path), f'The initial config path {config_path} is absent'
         prev_config_path = config_path
         for index, config_transformer in enumerate(self.config_transformers):
-            generated_config_path = self._generate_config_path(config, index)
+            logging.debug(f'_ConfigTransformersHandler: index={index}, config_transformer={config_transformer}')
+            generated_config_path = self._generate_config_path(config_path, index)
+            logging.debug(f'_ConfigTransformersHandler: generated_config_path={generated_config_path}')
             assert not os.path.exists(generated_config_path), f'During generating configs path {generated_config_path} is present'
-            cfg_update_part = config_transformer(template)
+            cfg_update_part = config_transformer(template_path=self.template_path,
+                                                 config_path=prev_config_path)
+            logging.debug(f'_ConfigTransformersHandler: cfg_update_part={pformat(cfg_update_part)}')
 
             assert isinstance(cfg_update_part, dict), (
                     f'Error in config transformer #{index} "{config_transformer}": it returns a value that is not a dict')
             assert '_base_' not in cfg_update_part, (
                     f'Error in config transformer #{index} "{config_transformer}": it returns a dict with key "_base_"')
 
-            prev_config_dir = os.path.dirname(prev_config_path) #just to be on the safe side, ideed they should be in the same folder
+            prev_config_dir = os.path.dirname(prev_config_path) #just to be on the safe side, indeed they should be in the same folder
             cfg_update_part['_base_'] = os.path.relpath(generated_config_path, prev_config_dir)
-            save_config(cfg_update_part, generated_config_path)
+            cfg_update_part.dump(generated_config_path)
+            logging.debug(f'_ConfigTransformersHandler: saved to {generated_config_path}')
 
             assert os.path.exists(generated_config_path), f'Cannot write config file "{generated_config_path}"'
 
@@ -73,15 +81,16 @@ class _ConfigTransformersHandler:
     def _generate_timestamp_suffix():
         return datetime.datetime.now().strftime('%y%m%d%H%M%S')
 
-    def _generate_config_path(self, config, index):
+    def _generate_config_path(self, config_path, index):
         suffix = self.timestamp
-        res = config + f'._.{suffix}.{index:04}.yaml'
+        config_ext = os.path.splitext(config_path)[-1]
+        res = config_path + f'._.{suffix}.{index:04}.{config_ext}'
         return res
 
 class ConfigTransformersEngine:
     CONFIG_ARG_TO_SUBSTITUTE = 'config'
-    def __init__(self, template, config_transformers_names):
-        self.config_transformers_handler = _ConfigTransformersHandler(template, config_transformers_names)
+    def __init__(self, template_path, config_transformers_names):
+        self.config_transformers_handler = _ConfigTransformersHandler(template_path, config_transformers_names)
 
     def process_args(self, kwargs):
         # NB: at the moment it is one function, using one variable self.CONFIG_ARG_TO_SUBSTITUTE,

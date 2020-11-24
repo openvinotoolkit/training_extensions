@@ -25,6 +25,7 @@ ENABLE_TRAIN_TESTS = True
 ENABLE_EXPORT_TESTS = True
 ENABLE_NNCF_TESTS = True
 
+# TODO: replace this variable by short function like set_verbosity_from_argv
 VERBOSE = False
 
 def set_verbosity_from_argv():

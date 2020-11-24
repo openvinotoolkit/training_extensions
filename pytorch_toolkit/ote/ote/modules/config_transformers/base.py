@@ -19,10 +19,10 @@ class BaseConfigTransformer(metaclass=ABCMeta):
     def __init__(self):
         pass
 
-    def __call__(self, template):
-        return self.process(template)
+    def __call__(self, template_path, config_path):
+        return self.process(template_path, config_path)
 
     @abstractmethod
-    def process(self, template):
+    def process(self, template_path, config_path):
         pass
 

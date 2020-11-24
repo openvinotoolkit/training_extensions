@@ -27,4 +27,13 @@ class FaceDetection0200NNNCFNaive01TestCase(
 ):
     """ Test case for face-detection-0200 model. """
 
+class FaceDetection0200NNNCF02TestCase(
+        create_nncf_test_case(
+            'face-detection',
+            'face-detection-0200_nncf_02',
+            os.path.dirname(__file__) + '/../../../data/airport/annotation_faces_train.json',
+            os.path.dirname(__file__) + '/../../../data/airport/'
+        )
+):
+    """ Test case for face-detection-0200 model. """
 

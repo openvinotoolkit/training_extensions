@@ -15,6 +15,10 @@
 """
 
 import logging
+import os # TODO: remove after debugging?
+from copy import copy
+from pprint import pformat
+from mmcv import Config
 
 from ote.utils import load_config
 from ..registry import CONFIG_TRANSFORMERS
@@ -47,20 +51,24 @@ class NNCFConfigTransformer(BaseConfigTransformer):
     def __init__(self):
         super().__init__()
 
-    def process(self, template):
+    def process(self, template_path, config_path):
+        config_path = None #is not used
+        template = load_config(template_path)
         compression_template = template.get('compression')
+        logging.debug(f'NNCFConfigTransformer: compression_template={compression_template}')
         if compression_template is None or compression_template == {}:
             return {}
         assert isinstance(compression_template, dict), f'Error: compression part of template is not a dict: template["compression"]={compression_template}'
-        possible_keys = set(self.POSSIBLE_NNCF_PARTS) + set([self.COMPRESSION_CONFIG_KEY])
+        possible_keys = set(self.POSSIBLE_NNCF_PARTS) | set([self.COMPRESSION_CONFIG_KEY])
         unknown_keys = set(compression_template.keys()) - set(possible_keys)
-        if not unknown_keys:
+        if unknown_keys:
             raise RuntimeError(f'Compression parameters contain unknown keys: {list(unknown_keys)}')
 
         compression_template = copy(compression_template)
         if self.COMPRESSION_CONFIG_KEY not in compression_template:
             raise RuntimeError(f'Error: compression part of template does not contain the key {self.COMPRESSION_CONFIG_KEY}')
         compression_config_path = compression_template.pop(self.COMPRESSION_CONFIG_KEY)
+        logging.debug(f'NNCFConfigTransformer: compression_config_path={compression_config_path}')
 
         compression_parts_to_choose = []
         for k, v in compression_template.items():
@@ -68,6 +76,7 @@ class NNCFConfigTransformer(BaseConfigTransformer):
             if should_pick:
                 compression_parts_to_choose.append(k)
 
+        logging.debug(f'NNCFConfigTransformer: compression_parts_to_choose={compression_parts_to_choose}')
         if not compression_parts_to_choose:
             return {}
 
@@ -75,16 +84,21 @@ class NNCFConfigTransformer(BaseConfigTransformer):
         return {'nncf_config': nncf_config}
 
     @staticmethod
-    def _merge_nncf_compression_parameters(compression_config_path, compression_parts_to_choose):
+    def _merge_nncf_compression_parts(compression_config_path, compression_parts_to_choose):
+        logging.debug(f'cwd = {os.getcwd()}')
         compression_parts = Config.fromfile(compression_config_path)
+        logging.debug(f'NNCFConfigTransformer:: compression_parts={compression_parts}')
         assert 'base' in compression_parts, f'Error: the NNCF compression config does not contain the "base" part'
-        nncf_config = compression_parts['base']
+        nncf_config_part = compression_parts['base']
+        logging.debug(f'NNCFConfigTransformer:: nncf_config_part={pformat(nncf_config_part)}')
         for part in compression_parts_to_choose:
             assert part in compression_parts, (
                     f'Error: NNCF compression config does not contain the part "{part}", '
                     f'whereas it was selected; see the NNCF config file "{compression_config_path}"')
+            logging.debug(f'NNCFConfigTransformer::     part={part}')
             try:
-                nncf_config = merge_dicts_and_lists_b_into_a(nncf_config, compression_parts[part])
+                nncf_config_part = merge_dicts_and_lists_b_into_a(nncf_config_part, compression_parts[part])
+                logging.debug(f'NNCFConfigTransformer::     nncf_config_part={pformat(nncf_config_part)}')
                 cur_error = None
             except AssertionError as e:
                 cur_error = e
@@ -95,4 +109,4 @@ class NNCFConfigTransformer(BaseConfigTransformer):
                         f'the current part={part}, '
                         f'the order of merging parts into base is {compression_parts_to_choose}.\n'
                         f'The error is:\n{cur_error}')
-        return nncf_config
+        return nncf_config_part
