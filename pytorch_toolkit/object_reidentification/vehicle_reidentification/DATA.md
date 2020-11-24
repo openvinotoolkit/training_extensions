@@ -23,7 +23,7 @@ To get custom UniverseModels datasets several steps are needed to do:
 
 2. VMMRdb datsets is provided without any bounding box annotation so we need to align images manually. It's recommended to use HTC model ([config](https://github.com/open-mmlab/mmdetection/blob/master/configs/htc/htc_x101_64x4d_fpn_dconv_c3-c5_mstrain_400_1400_16x1_20e_coco.py), [weigts](https://open-mmlab.s3.ap-northeast-2.amazonaws.com/mmdetection/v2.0/htc/htc_x101_64x4d_fpn_dconv_c3-c5_mstrain_400_1400_16x1_20e_coco/htc_x101_64x4d_fpn_dconv_c3-c5_mstrain_400_1400_16x1_20e_coco_20200312-946fd751.pth)) from [mmdetection](https://github.com/open-mmlab/mmdetection).
 
-    * Install [mmdet](https://github.com/open-mmlab/mmdetection/blob/master/docs/install.md) package.
+    * Install [mmdet](https://github.com/openvinotoolkit/mmdetection/blob/ote/docs/install.md) package.
     * Dump vehicle masks by the command:
     ```bash
     python ../../../external/deep-object-reid/tools/data/dump_masks.py \
