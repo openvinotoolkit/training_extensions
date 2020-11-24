@@ -1,0 +1,80 @@
+############################
+# STEP 1 build executable binary
+############################
+FROM golang:alpine AS builder
+
+# Install git + SSL ca certificates.
+# Git is required for fetching the dependencies.
+# Ca-certificates is required to call HTTPS endpoints.
+RUN apk update && apk add --no-cache git ca-certificates && update-ca-certificates
+
+WORKDIR /go/src/server
+
+# Fetch dependencies.
+COPY web/goserver/src/server/go.mod .
+COPY web/goserver/src/server/go.sum .
+RUN go mod download
+
+COPY web/goserver/src/server .
+# Build the binary.
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o /go/bin/workers/train /go/src/server/workers/train/cmd
+
+############################
+# STEP 2 build PyTorch
+############################
+FROM ubuntu:18.04
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+         build-essential \
+         git \
+         curl \
+         ca-certificates \
+         ffmpeg \
+         libjpeg-dev \
+         libpng-dev \
+         libglib2.0-0 \
+         libsm6 \
+         libxrender-dev \
+         libxext6 \
+         cmake \
+         gcc \
+         protobuf-compiler \
+         libgtk2.0-dev \
+         python3.7-dev \
+         python3-setuptools && \
+     rm -rf /var/lib/apt/lists/*
+
+# Install pip for python3.7
+RUN ln -sfn /usr/bin/python3.7 /usr/bin/python && \
+    ln -sfn /usr/bin/python3.7 /usr/bin/python3 && \
+    curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
+    python3.7 get-pip.py && \
+    rm get-pip.py
+
+# Install PyTorch
+RUN pip install torch==1.4.0+cpu torchvision==0.5.0+cpu -f https://download.pytorch.org/whl/torch_stable.html
+
+COPY ./pytorch_toolkit/object_detection/requirements.txt /tmp/ote/pytorch_toolkit/object_detection/requirements.txt
+COPY ./external/mmdetection/requirements.txt /tmp/ote/external/mmdetection/requirements.txt
+COPY ./external/mmdetection/requirements /tmp/ote/external/mmdetection/requirements
+WORKDIR /tmp/ote/pytorch_toolkit/object_detection
+ENV FORCE_CUDA="0"
+RUN pip install cython
+RUN cat requirements.txt | xargs -n 1 -L 1 pip install
+RUN pip install "git+https://github.com/open-mmlab/cocoapi.git#subdirectory=pycocotools"
+
+# Prepare workspace to use for any user
+ENV BASH_ENV "/etc/profile"
+ENV USER docker
+RUN mkdir -m 777 /workspace
+ENV HOME /workspace
+WORKDIR /workspace
+
+# Copy our static executable.
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+COPY --from=builder /go/bin/workers/train /go/bin/workers/train
+
+ENTRYPOINT rm -rf /ote/external/mmdetection/build && \
+           cd /ote/external/mmdetection && \
+           python setup.py develop && \
+           /go/bin/workers/train

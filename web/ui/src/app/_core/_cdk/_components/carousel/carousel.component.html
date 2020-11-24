@@ -1,0 +1,23 @@
+<div
+  (click)="images?.length && getNextImage()"
+  class="component-wrapper">
+  <div
+    *ngIf="images?.length && currentImage else noImage"
+    [style.backgroundImage]="'url(' + currentImage + ')'"
+    [style.height]="height + 'px'"
+    [style.width]="width + 'px'"
+    class="carousel-image-wrapper"
+  >
+  </div>
+</div>
+
+<ng-template #noImage>
+  <div
+    fxLayout="column"
+    fxLayoutAlign="center center"
+    [style.height]="height + 'px'"
+    [style.width]="width + 'px'"
+  >
+    <mat-icon class="no-image-icon">photo</mat-icon>
+  </div>
+</ng-template>

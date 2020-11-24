@@ -1,0 +1,21 @@
+.image-uploader {
+  min-height: 50px;
+  margin-top: -10px;
+
+  .image-wrapper {
+    position: relative;
+    max-width: 200px;
+    max-height: 160px;
+
+    mat-icon {
+      position: absolute;
+      top: 0;
+      right: 0;
+    }
+
+    img {
+      max-width: 100%;
+      max-height: 100%;
+    }
+  }
+}

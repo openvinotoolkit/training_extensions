@@ -1,0 +1,77 @@
+<div class="scroll-container">
+  <div
+    *ngIf="problem"
+    class="problem-info-component"
+    fxLayout="column"
+    fxLayoutAlign="start center"
+    fxLayoutGap="30px"
+  >
+    <div
+      fxLayout="column"
+      fxLayoutGap="24px"
+    >
+      <div
+        fxLayout="row"
+        fxLayoutGap="16px"
+      >
+        <idlp-cdk-carousel
+          [ngClass]="{'clickable' :problem.imagesUrls?.length > 1}"
+          [height]="300"
+          [images]="problem.imagesUrls"
+          [width]="450"
+        >
+        </idlp-cdk-carousel>
+        
+        <div
+          fxFlex="100%"
+          fxLayout="column"
+        >
+          <div
+            fxLayout="row"
+            fxLayoutAlign="space-between start"
+          >
+            <div class="header-text">
+              <p class="title primer">{{problem.title}}</p>
+              <p class="subtitle">{{problem.subtitle}}</p>
+            </div>
+            
+            <mat-form-field>
+              <input
+                [matAutocomplete]="build"
+                [value]="activeBuild?.name"
+                matInput
+                placeholder="Build"
+              >
+              <mat-autocomplete
+								#build="matAutocomplete"
+                (optionActivated)="setBuild($event)"
+                (optionSelected)="setBuild($event)"
+                [displayWith]="buildDisplayFn"
+              >
+                <mat-option
+                  *ngFor="let build of builds$ | async"
+                  [value]="build"
+                >
+                  {{build.name}}
+                </mat-option>
+              </mat-autocomplete>
+            </mat-form-field>
+          
+          </div>
+          <div class="description">{{problem.description}}</div>
+        </div>
+      </div>
+      
+      <idlp-scatter-chart
+        (onClick)="showModelInTable($event)"
+      >
+      </idlp-scatter-chart>
+      
+      <idlp-models-table
+        (onMenuItemClick)="menuItemClick($event)"
+      >
+      </idlp-models-table>
+    
+    </div>
+  </div>
+</div>

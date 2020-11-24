@@ -24,7 +24,7 @@ To create and activate virtual Python environment follow [installation instructi
 
 ## Data preparation
 
-1. For a face-recognition training, download the [VGGFace2](http://www.robots.ox.ac.uk/~vgg/data/vgg_face2/) data. We will refer to this folder as `$VGGFace2_ROOT`. Then align and crop this dataset using the provided annotation and script:
+1. For a face-recognition training, download the VGGFace2 data. We will refer to this folder as `$VGGFace2_ROOT`. Then align and crop this dataset using the provided annotation and script:
 ```bash
 mv $VGGFace2_ROOT/test/* $VGGFace2_ROOT/train/
 

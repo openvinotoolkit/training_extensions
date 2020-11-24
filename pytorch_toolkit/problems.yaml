@@ -13,11 +13,11 @@ domains:
       that identifies human faces in digital images. Face detection can be regarded as
       a specific case of object-class detection.
     imagesUrls:
-      - https://cdn.datafloq.com/cache/blog_pictures/878x531/face-detection-with-intel-distribution-for-python.png
-      - https://hackernoon.com/drafts/9145e3n15.png
-      - https://www.pymnts.com/wp-content/uploads/2019/06/biometrics-GAO-FBI-facial-recognition.jpg
-      - https://s.marketwatch.com/public/resources/images/MW-HQ875_Face_ZH_20190906235240.jpg
-      - https://d1t0xk6rn1avc6.cloudfront.net/wp-content/uploads/facial-750x450.jpg
+    - https://cdn.datafloq.com/cache/blog_pictures/878x531/face-detection-with-intel-distribution-for-python.png
+    - https://hackernoon.com/drafts/9145e3n15.png
+    - https://www.pymnts.com/wp-content/uploads/2019/06/biometrics-GAO-FBI-facial-recognition.jpg
+    - https://s.marketwatch.com/public/resources/images/MW-HQ875_Face_ZH_20190906235240.jpg
+    - https://d1t0xk6rn1avc6.cloudfront.net/wp-content/uploads/facial-750x450.jpg
     subtitle: Detecting faces in digital images
     cvat_schema: '[{"name": "face", "attributes":[]}]'
   - title: Horizontal Text Detection
@@ -26,9 +26,9 @@ domains:
       that finds every word in digital images. Text detection can be regarded as
       a specific case of object-class detection.
     imagesUrls:
-      - https://miro.medium.com/max/1026/1*Bc-C54f2E0YwIrAfsZ8ZVQ.png
-      - https://i.stack.imgur.com/j49si.jpg
-      - https://docs.openvinotoolkit.org/latest/text-detection-0004.png
+    - https://miro.medium.com/max/1026/1*Bc-C54f2E0YwIrAfsZ8ZVQ.png
+    - https://i.stack.imgur.com/j49si.jpg
+    - https://docs.openvinotoolkit.org/latest/text-detection-0004.png
     subtitle: Detecting words in digital images
     cvat_schema: '[{"name": "text", "attributes":[]}]'
   - title: Person Detection
@@ -37,7 +37,7 @@ domains:
       that identifies human in digital images. Person detection can be regarded as
       a specific case of object-class detection.
     imagesUrls:
-      - https://raw.githubusercontent.com/opencv/open_model_zoo/develop/models/intel/person-detection-0100/description/person-detection-0100.png
+    - https://raw.githubusercontent.com/opencv/open_model_zoo/develop/models/intel/person-detection-0100/description/person-detection-0100.png
     subtitle: Detection persons in digital images
     cvat_schema: '[{"name": "person", "attributes":[]}]'
   - title: Person Vehicle Bike Detection
@@ -46,23 +46,23 @@ domains:
       that identifies vehicles, persons, bikes in digital images. Vehicle, person, bike detection can be regarded as
       a specific case of object-class detection.
     imagesUrls:
-      - https://raw.githubusercontent.com/opencv/open_model_zoo/develop/models/intel/person-vehicle-bike-detection-crossroad-1016/description/person-vehicle-bike-detection-crossroad-1016.png
+    - https://raw.githubusercontent.com/opencv/open_model_zoo/develop/models/intel/person-vehicle-bike-detection-crossroad-1016/description/person-vehicle-bike-detection-crossroad-1016.png
     subtitle: Detecting vehicles, persons, bikes in digital images
-    cvat_schema: '[{"name": "vehicle", "attributes":[]}]'
+    cvat_schema: '[{"name": "vehicle", "attributes":[]}, {"name": "person", "attributes":[]}, {"name": "non-vehicle", "attributes":[]}]'
   - title: Vehicle Detection
     description:  >-
       Vehicle detection is a computer technology being used in a variety of applications
       that identifies vehicles in digital images. Vehicle detection can be regarded as
       a specific case of object-class detection.
     imagesUrls:
-      - https://raw.githubusercontent.com/opencv/open_model_zoo/develop/models/intel/vehicle-detection-adas-0002/description/vehicle-detection-adas-0002.png
+    - https://raw.githubusercontent.com/opencv/open_model_zoo/develop/models/intel/vehicle-detection-adas-0002/description/vehicle-detection-adas-0002.png
     subtitle: Detecting vehicles in digital images
-    cvat_schema: '[{"name": "vehicle", "attributes":[]}, {"name": "person", "attributes":[]}, {"name": "non-vehicle", "attributes":[]}]'
-- title: Action Recognition 2
-  problems:
-  - title: Gesture Recognition
-    description:  >-
-      Gesture recognition is a computer technology being used in a variety of applications
-      that carry outs video stream classification.
-    subtitle: Recognizing gestures in live video streams
-    cvat_schema: '[{}]'
+    cvat_schema: '[{"name": "vehicle", "attributes":[]}]'
+#- title: Action Recognition 2
+#  problems:
+#  - title: Gesture Recognition
+#    description:  >-
+#      Gesture recognition is a computer technology being used in a variety of applications
+#      that carry outs video stream classification.
+#    subtitle: Recognizing gestures in live video streams
+#    cvat_schema: '[{}]'

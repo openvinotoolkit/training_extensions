@@ -13,6 +13,7 @@
 # and limitations under the License.
 
 import argparse
+import logging
 import glob
 import os
 from subprocess import run
@@ -66,12 +67,15 @@ def main():
             run(f'python3 tools/instantiate_template.py {template_filename} {instance_folder}',
                 check=True, shell=True)
 
-        problem_dict = problems_dict[content['problem']]
-        with open(os.path.join(problem_folder, 'problem.yaml'), 'w') as write_file:
-            yaml.dump(problem_dict, write_file)
-        if problem_dict.get('type', None) != 'generic':
-            with open(os.path.join(problem_folder, 'schema.json'), 'w') as write_file:
-                write_file.write(problem_dict['cvat_schema'])
+        problem_dict = problems_dict.get(content['problem'], None)
+        if problem_dict is None:
+            logging.warning(f'The {content["problem"]} is not listed in {problems_filename}. It will not be in Web UI.')
+        else:
+            with open(os.path.join(problem_folder, 'problem.yaml'), 'w') as write_file:
+                yaml.dump(problem_dict, write_file)
+            if problem_dict.get('type', None) != 'generic':
+                with open(os.path.join(problem_folder, 'schema.json'), 'w') as write_file:
+                    write_file.write(problem_dict['cvat_schema'])
 
     for domain_folder in domain_folders:
         run(f'cd {domain_folder}; ./init_venv.sh {os.path.join(args.destination, domain_folder, "venv")}', shell=True)
