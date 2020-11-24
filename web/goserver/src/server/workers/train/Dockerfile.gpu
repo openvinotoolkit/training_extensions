@@ -45,6 +45,7 @@ RUN apt update && \
      rm -rf /var/lib/apt/lists/*
 
 ENV FORCE_CUDA="1"
+ENV MKL_THREADING_LAYER="GNU"
 
 # Install packages for mmdetection
 RUN conda install cython -y && conda clean --all
