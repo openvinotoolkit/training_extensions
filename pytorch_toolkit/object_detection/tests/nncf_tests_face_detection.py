@@ -17,16 +17,20 @@ import os
 from common.test_case import create_nncf_test_case
 
 
-#class FaceDetection0200NNCFnocompression(
-#        create_nncf_test_case(
-#            'face-detection',
-#            'face-detection-0200',
-#            os.path.dirname(__file__) + '/../../../data/airport/annotation_faces_train.json',
-#            os.path.dirname(__file__) + '/../../../data/airport/',
-#            {'int8': False}
-#        )
-#):
-#    """ Test case for face-detection-0200 model without NNCF compression. """
+class FaceDetection0200NNCFnocompression(
+        create_nncf_test_case(
+            'face-detection',
+            'face-detection-0200',
+            os.path.dirname(__file__) + '/../../../data/airport/annotation_faces_train.json',
+            os.path.dirname(__file__) + '/../../../data/airport/',
+            {
+                'compression.int8': False,
+                'hyper_parameters.basic.epochs': 2,
+                'hyper_parameters.basic.base_learning_rate': 0.00025,
+            }
+        )
+):
+    """ Test case for face-detection-0200 model without NNCF compression. """
 
 class FaceDetection0200NNCFint8(
         create_nncf_test_case(
@@ -34,7 +38,7 @@ class FaceDetection0200NNCFint8(
             'face-detection-0200',
             os.path.dirname(__file__) + '/../../../data/airport/annotation_faces_train.json',
             os.path.dirname(__file__) + '/../../../data/airport/',
-            {'int8': True}
+            {'compression.int8': True}
         )
 ):
     """ Test case for face-detection-0200 model with NNCF int8 compression. """
@@ -45,7 +49,7 @@ class FaceDetection0200NNCFint8sparsity(
             'face-detection-0200',
             os.path.dirname(__file__) + '/../../../data/airport/annotation_faces_train.json',
             os.path.dirname(__file__) + '/../../../data/airport/',
-            {'int8': True, 'sparsity': True}
+            {'compression.int8': True, 'compression.sparsity': True}
         )
 ):
     """ Test case for face-detection-0200 model with NNCF int8 and sparsity compression. """

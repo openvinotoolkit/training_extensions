@@ -41,6 +41,10 @@ def get_epochs_for_noncompressed_train(template_file):
     if val_from_template is not None:
         return val_from_template
 
+    # Note that the following gets total_epochs parameter for the
+    # original config files pointed by template, whereas
+    # NNCFConfigTransformer (and may be other transformers)
+    # may change the parameters from the config file.
     config_file_name = content['config']
     config_path = os.path.join(os.path.dirname(template_file), config_file_name)
     config = mmcv.Config.fromfile(config_path)
@@ -297,27 +301,32 @@ def create_export_test_case(problem_name, model_name, ann_file, img_root, alt_ss
     return ExportTestCase
 
 
-def create_nncf_test_case(problem_name, model_name, ann_file, img_root, compression_params):
+def create_nncf_test_case(problem_name, model_name, ann_file, img_root, template_update_dict):
+    """
+    Note that template_update_dict will be used to update template file
+    using the function mmcv.Config.merge_from_dict
+    """
+
+    assert template_update_dict, 'Use this function with non-trivial template_update_dict parameter only'
     class TestCaseOteApi(unittest.TestCase):
 
         @classmethod
         def setUpClass(cls):
+            cls.template_updates_description = cls.generate_template_updates_description(template_update_dict)
+            logging.info(f'Begin setting up class for {problem_name}/{model_name}, {cls.template_updates_description}')
+
             cls.templates_folder = os.environ['MODEL_TEMPLATES']
             src_template_folder = os.path.join(cls.templates_folder, 'object_detection', problem_name, model_name)
+
             cls.skip_non_instantiated_template_if_its_allowed(src_template_folder)
             cls.src_template_folder = src_template_folder
 
-            assert all(isinstance(v, bool) for v in compression_params.values())
+            cls.template_folder = cls.generate_template_folder_name(cls.src_template_folder,
+                                                                    cls.template_updates_description)
+            cls.copy_template_folder(cls.src_template_folder, cls.template_folder)
 
-            if compression_params:
-                cls.template_folder = \
-                        cls.copy_template_folder_by_compression_params(cls.src_template_folder,
-                                                                       compression_params)
-                cls.template_file = os.path.join(cls.template_folder, 'template.yaml')
-                cls.apply_compression_params_to_template_file(cls.template_file, compression_params)
-            else:
-                cls.template_folder = cls.src_template_folder
-                cls.template_file = os.path.join(cls.template_folder, 'template.yaml')
+            cls.template_file = os.path.join(cls.template_folder, 'template.yaml')
+            cls.apply_update_dict_params_to_template_file(cls.template_file, template_update_dict)
 
             cls.ann_file = ann_file
             cls.img_root = img_root
@@ -329,27 +338,33 @@ def create_nncf_test_case(problem_name, model_name, ann_file, img_root, compress
                 f'cd {cls.template_folder};'
                 f'pip install -r requirements.txt;'
             )
+            logging.info(f'End setting up class for {problem_name}/{model_name}, {cls.template_updates_description}')
 
         @staticmethod
-        def copy_template_folder_by_compression_params(src_template_folder, compression_params):
-            template_folder = (src_template_folder +
-                               '__' + "_".join(k+str(compression_params[k]) for k in sorted(compression_params.keys())))
-            logging.info(f'Copying {src_template_folder} to {template_folder}')
-            run_through_shell(f'cp -a "{src_template_folder}" "{template_folder}"')
-            assert os.path.isdir(template_folder), f'Cannot create {template_folder}'
+        def generate_template_updates_description(template_update_dict):
+            keys = sorted(template_update_dict.keys())
+            template_updates_description = "_".join(k+"="+str(template_update_dict[k]) for k in keys)
+            return template_updates_description
+
+        @staticmethod
+        def generate_template_folder_name(src_template_folder, template_updates_description):
+            assert not src_template_folder.endswith('/')
+            template_folder = src_template_folder + '__' +  template_updates_description
             return template_folder
 
         @staticmethod
-        def apply_compression_params_to_template_file(template_file, compression_params):
-            with open(template_file) as f_src:
-                template_data = yaml.safe_load(f_src)
-            with open(template_file + '.~', 'w') as f_backup:
-                yaml.dump(template_data, f_backup)
-            assert 'compression' in template_data, f'The template for {problem_name}/{model_name} does not contain compression part'
-            for k, v in compression_params.items():
-                template_data['compression'][k] = v
-            with open(template_file, 'w') as f_dst:
-                yaml.dump(template_data, f_dst)
+        def copy_template_folder(src_template_folder, template_folder):
+            logging.info(f'Copying {src_template_folder} to {template_folder}')
+            run_through_shell(f'cp -a "{src_template_folder}" "{template_folder}"')
+            assert os.path.isdir(template_folder), f'Cannot create {template_folder}'
+
+        @staticmethod
+        def apply_update_dict_params_to_template_file(template_file, update_params):
+            template_data = mmcv.Config.fromfile(template_file)
+            template_data.dump(template_file + '.backup.yaml')
+
+            template_data.merge_from_dict(update_params)
+            template_data.dump(template_file)
 
         def skip_if_cpu_is_not_supported(self):
             with open(self.template_file) as read_file:
