@@ -6,7 +6,7 @@ def merge_dicts_and_lists_b_into_a(a, b):
 def _merge_dicts_and_lists_b_into_a(a, b, cur_key=None):
     """The function is inspired by mmcf.Config._merge_a_into_b,
     but it
-    * works with usual dicts and lists, won't work with derived types
+    * works with usual dicts and lists and derived types
     * supports merging of lists (by concatenating the lists)
     * makes recursive merging for dict + dict case
     * overwrites when merging scalar into scalar
@@ -24,7 +24,7 @@ def _merge_dicts_and_lists_b_into_a(a, b, cur_key=None):
                 f' type(b) = {type(_b)}')
 
     assert isinstance(a, (dict, list)), f'Can merge only dicts and lists, whereas type(a)={type(a)}'
-    assert type(a) == type(b), _err_str(a, b, cur_key)
+    assert isinstance(a, list) == isinstance(b, list), _err_str(a, b, cur_key)
     if isinstance(a, list):
         # the main diff w.r.t. mmcf.Config -- merging of lists
         return a + b

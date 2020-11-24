@@ -37,7 +37,7 @@ def parse_args():
 
 def main():
     logging.basicConfig(level=logging.INFO)
-    
+
     args = parse_args()
     with open(args.template) as read_file:
         content = yaml.load(read_file, yaml.SafeLoader)

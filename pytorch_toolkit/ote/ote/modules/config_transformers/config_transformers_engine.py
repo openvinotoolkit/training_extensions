@@ -60,13 +60,14 @@ class _ConfigTransformersHandler:
             logging.debug(f'_ConfigTransformersHandler: cfg_update_part={pformat(cfg_update_part)}')
 
             assert isinstance(cfg_update_part, dict), (
-                    f'Error in config transformer #{index} "{config_transformer}": it returns a value that is not a dict')
+                    f'Error in config transformer #{index} "{config_transformer}": it returns a value that is not a dict:'
+                    f' type(cfg_update_part)={type(cfg_update_part)}')
             assert '_base_' not in cfg_update_part, (
                     f'Error in config transformer #{index} "{config_transformer}": it returns a dict with key "_base_"')
 
             prev_config_dir = os.path.dirname(prev_config_path) #just to be on the safe side, indeed they should be in the same folder
             cfg_update_part['_base_'] = os.path.relpath(generated_config_path, prev_config_dir)
-            cfg_update_part.dump(generated_config_path)
+            save_config(cfg_update_part, generated_config_path)
             logging.debug(f'_ConfigTransformersHandler: saved to {generated_config_path}')
 
             assert os.path.exists(generated_config_path), f'Cannot write config file "{generated_config_path}"'
@@ -83,7 +84,8 @@ class _ConfigTransformersHandler:
 
     def _generate_config_path(self, config_path, index):
         suffix = self.timestamp
-        config_ext = os.path.splitext(config_path)[-1]
+        #config_ext = os.path.splitext(config_path)[-1]
+        config_ext = 'yaml'
         res = config_path + f'._.{suffix}.{index:04}.{config_ext}'
         return res
 
