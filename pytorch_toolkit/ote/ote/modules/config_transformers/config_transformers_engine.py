@@ -65,8 +65,8 @@ class _ConfigTransformersHandler:
             assert '_base_' not in cfg_update_part, (
                     f'Error in config transformer #{index} "{config_transformer}": it returns a dict with key "_base_"')
 
-            prev_config_dir = os.path.dirname(prev_config_path) #just to be on the safe side, indeed they should be in the same folder
-            cfg_update_part['_base_'] = os.path.relpath(generated_config_path, prev_config_dir)
+            generated_config_dir = os.path.dirname(generated_config_path) #just to be on the safe side, indeed they should be in the same folder
+            cfg_update_part['_base_'] = os.path.relpath(prev_config_path, generated_config_dir)
             save_config(cfg_update_part, generated_config_path)
             logging.debug(f'_ConfigTransformersHandler: saved to {generated_config_path}')
 
