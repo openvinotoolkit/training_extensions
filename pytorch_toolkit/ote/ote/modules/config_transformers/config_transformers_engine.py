@@ -20,7 +20,6 @@ import yaml
 import datetime
 from tempfile import NamedTemporaryFile
 from copy import copy
-from pprint import pformat
 
 from ote.utils import load_config
 from ..builder import build_config_transformer

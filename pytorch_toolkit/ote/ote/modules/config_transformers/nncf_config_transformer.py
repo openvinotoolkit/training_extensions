@@ -16,7 +16,6 @@
 
 import os # TODO: remove after debugging?
 from copy import copy
-from pprint import pformat
 from mmcv import Config
 
 from ote.utils import load_config
