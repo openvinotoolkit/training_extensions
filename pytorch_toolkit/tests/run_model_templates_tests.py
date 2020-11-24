@@ -25,18 +25,16 @@ ENABLE_TRAIN_TESTS = True
 ENABLE_EXPORT_TESTS = True
 ENABLE_NNCF_TESTS = True
 
-# TODO: replace this variable by short function like set_verbosity_from_argv
-VERBOSE = False
-
-def set_verbosity_from_argv():
-    global VERBOSE
+def _is_verbose_flag_set():
     if '-v' in sys.argv or '--verbose' in sys.argv:
-        VERBOSE = True
+        return True
+    else:
+        return False
 
 def run_with_log(*args, **kwargs):
     cmd = args[0]
-    if VERBOSE:
-        logging.info(f'Running command `{cmd}`') #TODO: consider with Ilya
+    if _is_verbose_flag_set():
+        logging.info(f'Running command\n`{cmd}`') #TODO: consider with Ilya
     return run(*args, **kwargs)
 
 class ModelTemplatesTestCase(unittest.TestCase):
@@ -44,8 +42,10 @@ class ModelTemplatesTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         logging.basicConfig(level=logging.INFO)
-        if VERBOSE:
+        verbose = _is_verbose_flag_set()
+        if verbose:
             logging.info('Running with verbosity=True')
+
         workdir = os.environ.get('WORKDIR') #TODO: consider with Ilya
         if not workdir:
             cls.work_dir = tempfile.mkdtemp()
@@ -57,7 +57,7 @@ class ModelTemplatesTestCase(unittest.TestCase):
         else:
             templates_pattern_arg = ''
 
-        if VERBOSE:
+        if verbose:
             cls.verbosity_flag = '--verbose'
         else:
             cls.verbosity_flag = ''
@@ -167,5 +167,4 @@ class ModelTemplatesTestCase(unittest.TestCase):
                 self.assertEqual(returncode, 0)
 
 if __name__ == '__main__':
-    set_verbosity_from_argv()
     unittest.main()

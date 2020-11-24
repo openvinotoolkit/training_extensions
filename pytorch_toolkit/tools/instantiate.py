@@ -22,7 +22,7 @@ import yaml
 
 def run_with_log(*args, **kwargs):
     cmd = args[0]
-    logging.info(f'Running command `{cmd}`') #TODO: consider with Ilya
+    logging.info(f'Running command\n`{cmd}`') #TODO: consider with Ilya
     return run(*args, **kwargs)
 
 def parse_args():
