@@ -15,7 +15,6 @@
 """
 
 import logging
-from pprint import pformat # TODO: remove after debugging
 
 from ote import MODEL_TEMPLATE_FILENAME, MODULES_CONFIG_FILENAME
 from ote.utils import load_config
