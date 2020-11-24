@@ -35,7 +35,7 @@ def main():
     if os.path.abspath(os.getcwd()) == os.path.abspath(os.path.join(os.path.dirname(__file__), '..')):
         return 0
 
-    logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(level=logging.INFO)
     args = parse_args()
     # TODO: rewrite in a similar way tests for train and export
     was_successful = run_tests_by_pattern(folder=os.path.dirname(__file__),

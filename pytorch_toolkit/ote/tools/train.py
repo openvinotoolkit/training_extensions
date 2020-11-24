@@ -24,7 +24,7 @@ from ote.modules.config_transformers import ConfigTransformersEngine
 
 
 def main():
-    logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(level=logging.INFO)
     modules = load_config(MODULES_CONFIG_FILENAME)
 
     arg_parser = build_arg_parser(modules['arg_parser'])
@@ -33,10 +33,8 @@ def main():
     arg_converter = build_arg_converter(modules['arg_converter'])
     train_args = arg_converter.convert_train_args(MODEL_TEMPLATE_FILENAME, ote_args)
 
-    logging.debug(f'train_args={pformat(train_args)}')
     config_transformers_engine = ConfigTransformersEngine(MODEL_TEMPLATE_FILENAME, modules.get("config_transformers"))
     train_args = config_transformers_engine.process_args(train_args)
-    logging.debug(f'after transformation train_args={pformat(train_args)}')
 
     trainer = build_trainer(modules['trainer'])
     trainer(**train_args)

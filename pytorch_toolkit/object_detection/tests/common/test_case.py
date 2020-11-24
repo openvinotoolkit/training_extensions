@@ -301,7 +301,6 @@ def create_nncf_test_case(problem_name, model_name, ann_file, img_root, compress
 
             assert all(isinstance(v, bool) for v in compression_params.values())
 
-            logging.debug(f'compression_params = {compression_params}')
             if compression_params:
                 cls.template_folder = \
                         cls.copy_template_folder_by_compression_params(cls.src_template_folder,

@@ -51,13 +51,11 @@ class _ConfigTransformersHandler:
         assert os.path.exists(config_path), f'The initial config path {config_path} is absent'
         prev_config_path = config_path
         for index, config_transformer in enumerate(self.config_transformers):
-            logging.debug(f'_ConfigTransformersHandler: index={index}, config_transformer={config_transformer}')
             generated_config_path = self._generate_config_path(config_path, index)
-            logging.debug(f'_ConfigTransformersHandler: generated_config_path={generated_config_path}')
+            logging.debug(f'_ConfigTransformersHandler: index={index}, generated_config_path={generated_config_path}')
             assert not os.path.exists(generated_config_path), f'During generating configs path {generated_config_path} is present'
             cfg_update_part = config_transformer(template_path=self.template_path,
                                                  config_path=prev_config_path)
-            logging.debug(f'_ConfigTransformersHandler: cfg_update_part={pformat(cfg_update_part)}')
 
             assert isinstance(cfg_update_part, dict), (
                     f'Error in config transformer #{index} "{config_transformer}": it returns a value that is not a dict:'
@@ -68,7 +66,6 @@ class _ConfigTransformersHandler:
             generated_config_dir = os.path.dirname(generated_config_path) #just to be on the safe side, indeed they should be in the same folder
             cfg_update_part['_base_'] = os.path.relpath(prev_config_path, generated_config_dir)
             save_config(cfg_update_part, generated_config_path)
-            logging.debug(f'_ConfigTransformersHandler: saved to {generated_config_path}')
 
             assert os.path.exists(generated_config_path), f'Cannot write config file "{generated_config_path}"'
 
