@@ -101,7 +101,7 @@ class TextRecognitionHead(nn.Module):
         logits: [B, MAX_LEN, VOCAB_SIZE]
         """
         # encoding
-        if self.positional_encodings is not None:
+        if self.positional_encodings:
             old_shape = features.shape
             pe = PositionalEncodingPermute2D(channels=self.encoder_input_size)
             features += torch.cat([pe(feature.unsqueeze(dim=0)) for feature in features])
