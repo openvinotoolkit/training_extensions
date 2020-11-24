@@ -227,6 +227,7 @@ services:
       dockerfile: workers/board/Dockerfile
     volumes:
     - idlp_py_server_v:/code
+    - idlp_problem_v:/problem
     ports:
     - 6006:6006
     - 8812:8812
