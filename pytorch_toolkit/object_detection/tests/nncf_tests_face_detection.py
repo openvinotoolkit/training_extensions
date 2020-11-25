@@ -52,7 +52,9 @@ class FaceDetection0200NNCFint8sparsity(
             {
                 'compression.int8': True,
                 'compression.sparsity': True,
-                'hyper_parameters.basic.epochs': 7, #decrease number of epochs for sparsity, the default is 50
+            },
+            {
+                'sparsity.total_epochs': 4
             }
         )
 ):

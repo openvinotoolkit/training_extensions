@@ -290,7 +290,7 @@ def create_export_test_case(problem_name, model_name, ann_file, img_root, alt_ss
     return ExportTestCase
 
 
-def create_nncf_test_case(problem_name, model_name, ann_file, img_root, template_update_dict):
+def create_nncf_test_case(problem_name, model_name, ann_file, img_root, template_update_dict, compression_cfg_update_dict=None):
     """
     Note that template_update_dict will be used to update template file
     using the function mmcv.Config.merge_from_dict
@@ -315,7 +315,7 @@ def create_nncf_test_case(problem_name, model_name, ann_file, img_root, template
             cls.copy_template_folder(cls.src_template_folder, cls.template_folder)
 
             cls.template_file = os.path.join(cls.template_folder, 'template.yaml')
-            cls.apply_update_dict_params_to_template_file(cls.template_file, template_update_dict)
+            cls.apply_update_dict_params_to_template_file(cls.template_file, template_update_dict, compression_cfg_update_dict)
 
             cls.ann_file = ann_file
             cls.img_root = img_root
@@ -348,11 +348,29 @@ def create_nncf_test_case(problem_name, model_name, ann_file, img_root, template
             assert os.path.isdir(template_folder), f'Cannot create {template_folder}'
 
         @staticmethod
-        def apply_update_dict_params_to_template_file(template_file, update_params):
+        def apply_update_dict_params_to_template_file(template_file, template_update_dict, compression_cfg_update_dict):
             template_data = mmcv.Config.fromfile(template_file)
             template_data.dump(template_file + '.backup.yaml')
 
-            template_data.merge_from_dict(update_params)
+            if compression_cfg_update_dict:
+                assert 'compression.compression_config' not in template_update_dict, (
+                        'Config cannot be changed from template_update_dict,'
+                        ' if we patch compression config by compression_cfg_update_dict')
+
+                compression_cfg_rel_path = template_data['compression']['compression_config']
+                compression_cfg_name = os.path.basename(compression_cfg_rel_path)
+                compression_cfg_path = os.path.join(os.path.dirname(template_file), compression_cfg_rel_path)
+                new_compression_cfg_path = compression_cfg_path + '.UPDATE_FROM_TEST.py'
+                cfg_part = mmcv.Config()
+                cfg_part.merge_from_dict(compression_cfg_update_dict)
+                with open(new_compression_cfg_path, 'w') as f_dst:
+                    f_dst.write(f'_base_ = "{compression_cfg_name}"\n')
+                    f_dst.write(cfg_part.pretty_text)
+                assert os.path.isfile(new_compression_cfg_path), f'Cannot write file {new_compression_cfg_path}'
+
+                template_update_dict['compression.compression_config'] = new_compression_cfg_path
+
+            template_data.merge_from_dict(template_update_dict)
             template_data.dump(template_file)
 
         def skip_if_cpu_is_not_supported(self):
