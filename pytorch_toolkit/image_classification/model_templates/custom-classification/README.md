@@ -18,7 +18,7 @@ cd <training_extensions>/pytorch_toolkit/image_classification
 ```bash
 export MODEL_TEMPLATE=`realpath ./model_templates/custom-classification/mobilenet_v2_w1/template.yaml`
 export WORK_DIR=/tmp/my_model
-python ../tools/instantiate_template.py ${MODEL_TEMPLATE} ${WORK_DIR}
+python ../tools/instantiate_template.py ${MODEL_TEMPLATE} ${WORK_DIR} --do-not-load-snapshot
 ```
 
 ### 2. Prepare data

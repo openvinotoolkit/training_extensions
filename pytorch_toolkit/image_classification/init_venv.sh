@@ -20,7 +20,7 @@ fi
 git submodule update --init --recursive --recommend-shallow ../../external/deep-object-reid
 
 # Create virtual environment
-python3 -m virtualenv ${venv_dir} -p python3 --prompt="(action)"
+python3 -m virtualenv ${venv_dir} -p python3 --prompt="(classification)"
 
 path_openvino_vars="${INTEL_OPENVINO_DIR:-/opt/intel/openvino}/bin/setupvars.sh"
 if [[ -e "${path_openvino_vars}" ]]; then
