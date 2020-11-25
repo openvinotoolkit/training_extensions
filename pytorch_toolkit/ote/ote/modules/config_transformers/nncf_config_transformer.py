@@ -19,18 +19,14 @@ from mmcv import Config
 
 from ote.utils import load_config
 from ..registry import CONFIG_TRANSFORMERS
-from .base import BaseConfigTransformer
 from .utils import merge_dicts_and_lists_b_into_a
 
 @CONFIG_TRANSFORMERS.register_module()
-class NNCFConfigTransformer(BaseConfigTransformer):
+class NNCFConfigTransformer:
     POSSIBLE_NNCF_PARTS = ('int8', 'sparsity', 'pruning')
     COMPRESSION_CONFIG_KEY = 'compression_config'
 
-    def __init__(self):
-        super().__init__()
-
-    def process(self, template_path, config_path):
+    def __call__(self, template_path, config_path):
         config_path = None #is not used
         template = load_config(template_path)
         compression_template = template.get('compression')
