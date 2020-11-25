@@ -53,8 +53,7 @@ class _ConfigTransformersHandler:
             generated_config_path = self._generate_config_path(config_path, index)
             logging.debug(f'_ConfigTransformersHandler: index={index}, generated_config_path={generated_config_path}')
             assert not os.path.exists(generated_config_path), f'During generating configs path {generated_config_path} is present'
-            cfg_update_part = config_transformer(template_path=self.template_path,
-                                                 config_path=prev_config_path)
+            cfg_update_part = config_transformer(template_path=self.template_path)
 
             assert isinstance(cfg_update_part, dict), (
                     f'Error in config transformer #{index} "{config_transformer}": it returns a value that is not a dict:'

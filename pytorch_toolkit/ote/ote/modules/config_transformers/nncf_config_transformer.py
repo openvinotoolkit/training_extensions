@@ -26,8 +26,7 @@ class NNCFConfigTransformer:
     POSSIBLE_NNCF_PARTS = ('int8', 'sparsity', 'pruning')
     COMPRESSION_CONFIG_KEY = 'compression_config'
 
-    def __call__(self, template_path, config_path):
-        config_path = None #is not used
+    def __call__(self, template_path):
         template = load_config(template_path)
         compression_template = template.get('compression')
         if compression_template is None or compression_template == {}:
