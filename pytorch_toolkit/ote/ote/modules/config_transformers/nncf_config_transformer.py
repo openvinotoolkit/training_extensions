@@ -22,24 +22,6 @@ from ..registry import CONFIG_TRANSFORMERS
 from .base import BaseConfigTransformer
 from .utils import merge_dicts_and_lists_b_into_a
 
-def _convert_value_to_bool(v, key):
-    if isinstance(v, bool):
-        return v
-    if isinstance(v, str):
-        if v.lower().strip() in ("on", "true", "yes", "y"):
-            return True
-        if v.lower().strip() in ("off", "false", "no", "n"):
-            return False
-    elif isinstance(v, int):
-        if v == 1:
-            return True
-        if v == 0:
-            return False
-    err_str = f'Cannot convert to bool the value `{v}`'
-    if key is not None:
-        err_str += ' for the key "{key}"'
-    raise RuntimeError(err_str)
-
 @CONFIG_TRANSFORMERS.register_module()
 class NNCFConfigTransformer(BaseConfigTransformer):
     POSSIBLE_NNCF_PARTS = ('int8', 'sparsity', 'pruning')
@@ -67,7 +49,7 @@ class NNCFConfigTransformer(BaseConfigTransformer):
 
         compression_parts_to_choose = []
         for k, v in compression_template.items():
-            should_pick = _convert_value_to_bool(v, f'compression.{k}')
+            should_pick = bool(v)
             if should_pick:
                 compression_parts_to_choose.append(k)
 
