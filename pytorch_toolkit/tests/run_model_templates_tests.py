@@ -37,39 +37,44 @@ def run_with_log(*args, **kwargs):
         logging.info(f'Running command\n`{cmd}`') #TODO: consider with Ilya
     return run(*args, **kwargs)
 
-class ModelTemplatesTestCase(unittest.TestCase):
+def create_model_template_tests_base(subfolder_name):
+    class _ModelTemplatesTestBase(unittest.TestCase):
 
-    @classmethod
-    def setUpClass(cls):
-        logging.basicConfig(level=logging.INFO)
-        verbose = _is_verbose_flag_set()
-        if verbose:
-            logging.info('Running with verbosity=True')
+        @classmethod
+        def setUpClass(cls):
+            logging.basicConfig(level=logging.INFO)
+            verbose = _is_verbose_flag_set()
+            if verbose:
+                logging.info('Running with verbosity=True')
 
-        workdir = os.environ.get('WORKDIR') #TODO: consider with Ilya
-        if not workdir:
-            cls.work_dir = tempfile.mkdtemp()
-        else:
-            cls.work_dir = os.path.abspath(workdir)
-        templates_pattern_environ = os.environ.get('TEMPLATES_PATTERN') #TODO: consider with Ilya
-        if templates_pattern_environ:
-            templates_pattern_arg = f'--templates-pattern "{templates_pattern_environ}"'
-        else:
-            templates_pattern_arg = ''
+            workdir = os.environ.get('WORKDIR') #TODO: consider with Ilya
+            if not workdir:
+                cls.work_dir = os.path.join(tempfile.mkdtemp(), subfolder_name)
+            else:
+                cls.work_dir = os.path.join(os.path.abspath(workdir), subfolder_name)
 
-        if verbose:
-            cls.verbosity_flag = '--verbose'
-        else:
-            cls.verbosity_flag = ''
+            templates_pattern_environ = os.environ.get('TEMPLATES_PATTERN') #TODO: consider with Ilya
+            if templates_pattern_environ:
+                templates_pattern_arg = f'--templates-pattern "{templates_pattern_environ}"'
+            else:
+                templates_pattern_arg = ''
 
-        run_with_log(f'python3 tools/instantiate.py {templates_pattern_arg} --do-not-load-snapshots {cls.work_dir}', shell=True, check=True)
+            if verbose:
+                cls.verbosity_flag = '--verbose'
+            else:
+                cls.verbosity_flag = ''
 
-    def _get_template_files(self):
-        #TODO: consider with Ilya
-        template_filenames = glob.glob(f'{self.work_dir}/**/template.yaml', recursive=True)
-        template_filenames = list(template_filenames)
-        return template_filenames
+            run_with_log(f'python3 tools/instantiate.py {templates_pattern_arg} --do-not-load-snapshots {cls.work_dir}', shell=True, check=True)
 
+        def _get_template_files(self):
+            #TODO: consider with Ilya
+            template_filenames = glob.glob(f'{self.work_dir}/**/template.yaml', recursive=True)
+            template_filenames = list(template_filenames)
+            return template_filenames
+
+    return _ModelTemplatesTestBase
+
+class ModelTemplatesTestCase(create_model_template_tests_base('TESTS')):
     def test_existence_of_mandatory_files_in_template_dir(self):
         template_files = self._get_template_files()
         for template in template_files:
@@ -137,6 +142,23 @@ class ModelTemplatesTestCase(unittest.TestCase):
                     executable="/bin/bash").returncode
                 self.assertEqual(returncode, 0)
 
+class ModelTemplatesNNCFTestCase(create_model_template_tests_base('NNCF_TESTS')):
+    """
+    Note that for NNCF tests we create a separate folder, since NNCF tests use
+    each of the folders created by tools/instantiate.py as the base for many
+    other tests.
+    That is, each of the compression tests does as follows:
+    * copies a folder with a model template to a folder with a new name,
+    * then makes changes in template.yaml and other model template files
+      in the copied folder
+    * then runs training/testing/etc.
+    Although the original folder of a model template is stayed unchanged by these
+    operations, other tests (that are not related to NNCF) still may change it.
+    So, it is better to have the original folders created by tools/instantiate.py
+    clean to avoid side effects between tests.
+    This is the reason why we use a separate test case with a separate
+    subfolder for instantiating.
+    """
     def test_nncf(self):
         # TODO : refactor the class to avoid copying between methods
         if not ENABLE_NNCF_TESTS:
