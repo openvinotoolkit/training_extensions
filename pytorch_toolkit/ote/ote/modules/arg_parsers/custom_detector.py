@@ -16,7 +16,10 @@
 
 import argparse
 
-from ote.api import train_args_parser, test_args_parser, export_args_parser
+from ote.api import (train_args_parser,
+                     test_args_parser,
+                     export_args_parser,
+                     compression_args_parser)
 
 from .default import DefaultArgParser
 from ..registry import ARG_PARSERS
@@ -36,6 +39,13 @@ class CustomDetectorArgParser(DefaultArgParser):
 
     def get_test_parser(self, config_path):
         parser = argparse.ArgumentParser(parents=[test_args_parser(config_path)], add_help=False)
+        parser.add_argument('--classes', required=True,
+                            help='Comma-separated list of classes (e.g. "cat,dog,mouse").')
+
+        return parser
+
+    def get_compression_parser(self, config_path):
+        parser = argparse.ArgumentParser(parents=[compression_args_parser(config_path)], add_help=False)
         parser.add_argument('--classes', required=True,
                             help='Comma-separated list of classes (e.g. "cat,dog,mouse").')
 

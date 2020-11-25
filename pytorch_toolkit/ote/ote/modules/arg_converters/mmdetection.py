@@ -20,6 +20,19 @@ from ..registry import ARG_CONVERTERS
 
 @ARG_CONVERTERS.register_module()
 class MMDetectionArgsConverter(BaseArgConverter):
+    # NB: compress_update_args_map is the same as train_update_args_map,
+    #     but without base_learning_rate and epochs
+    # TODO: replace the dicts by a function that returns dicts to avoid copying of code
+    compress_update_args_map = {
+        'train_ann_files': 'data.train.dataset.ann_file',
+        'train_data_roots': 'data.train.dataset.img_prefix',
+        'val_ann_files': 'data.val.ann_file',
+        'val_data_roots': 'data.val.img_prefix',
+        'resume_from': 'resume_from',
+        'load_weights': 'load_from',
+        'save_checkpoints_to': 'work_dir',
+        'batch_size': 'data.samples_per_gpu',
+    }
     train_update_args_map = {
         'train_ann_files': 'data.train.dataset.ann_file',
         'train_data_roots': 'data.train.dataset.img_prefix',

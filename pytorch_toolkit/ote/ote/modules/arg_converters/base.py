@@ -21,7 +21,18 @@ from abc import ABCMeta
 class BaseArgConverter(metaclass=ABCMeta):
     train_update_args_map = {}
     test_update_args_map = {}
+    compress_update_args_map = {}
+    # TODO: replace dicts train_update_args_map, test_update_args_map,
+    #       and compress_update_args_map with call of a special function
+    #       that may be passed to constructor of the class as a
+    #       parameter.
+    #       This will allow to avoid copying between these dicts.
+
     train_out_args_map = {
+        'gpu_num': 'gpu_num',
+        'tensorboard_dir': 'tensorboard_dir'
+    }
+    compress_out_args_map = {
         'gpu_num': 'gpu_num',
         'tensorboard_dir': 'tensorboard_dir'
     }
@@ -47,6 +58,24 @@ class BaseArgConverter(metaclass=ABCMeta):
             'update_config': update_args,
         }
         converted_args.update(self.__map_args(args, self.train_out_args_map))
+
+        return converted_args
+
+    def convert_compress_args(self, model_template_path, args):
+        update_args = self.__map_args(args, self.compress_update_args_map)
+
+        # TODO: think on _get_extra_compress_args
+        #       Now _get_extra_train_args is used since it's the same
+        extra_args = self._get_extra_train_args(args)
+        update_args.update(extra_args)
+
+        template_folder = os.path.dirname(model_template_path)
+        converted_args = {
+            'config': os.path.join(template_folder, args['config']),
+            'out': os.path.join(args['save_checkpoints_to'], model_template_path),
+            'update_config': update_args,
+        }
+        converted_args.update(self.__map_args(args, self.compress_out_args_map))
 
         return converted_args
 

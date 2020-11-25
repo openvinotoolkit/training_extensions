@@ -34,21 +34,10 @@ def get_dependencies(template_file):
         return output
 
 
-def get_epochs_for_noncompressed_train(template_file):
+def get_epochs(template_file):
     with open(template_file) as read_file:
         content = yaml.safe_load(read_file)
-    val_from_template = content.get('hyper_parameters', {}).get('basic', {}).get('epochs')
-    if val_from_template is not None:
-        return val_from_template
-
-    # Note that the following gets total_epochs parameter for the
-    # original config files pointed by template, whereas
-    # NNCFConfigTransformer (and may be other transformers)
-    # may change the parameters from the config file.
-    config_file_name = content['config']
-    config_path = os.path.join(os.path.dirname(template_file), config_file_name)
-    config = mmcv.Config.fromfile(config_path)
-    return config['total_epochs']
+    return content['hyper_parameters']['basic']['epochs']
 
 
 def create_test_case(problem_name, model_name, ann_file, img_root):
@@ -65,7 +54,7 @@ def create_test_case(problem_name, model_name, ann_file, img_root):
             cls.img_root = img_root
             cls.dependencies = get_dependencies(cls.template_file)
             cls.epochs_delta = 2
-            cls.total_epochs = get_epochs_for_noncompressed_train(cls.template_file) + cls.epochs_delta
+            cls.total_epochs = get_epochs(cls.template_file) + cls.epochs_delta
 
             download_snapshot_if_not_yet(cls.template_file, cls.template_folder)
 
@@ -388,7 +377,7 @@ def create_nncf_test_case(problem_name, model_name, ann_file, img_root, template
             log_file = os.path.join(self.template_folder, 'test_nncf.log')
             run_through_shell(
                 f'cd {self.template_folder};'
-                f'python train.py'
+                f'python compress.py'
                 f' --train-ann-files {self.ann_file}'
                 f' --train-data-roots {self.img_root}'
                 f' --val-ann-files {self.ann_file}'

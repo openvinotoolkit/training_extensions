@@ -77,7 +77,7 @@ class ModelTemplatesTestCase(unittest.TestCase):
             self.assertTrue(os.path.exists(os.path.join(template_dirname, 'train.py')))
             self.assertTrue(os.path.exists(os.path.join(template_dirname, 'eval.py')))
             self.assertTrue(os.path.exists(os.path.join(template_dirname, 'export.py')))
-            self.assertTrue(os.path.exists(os.path.join(template_dirname, 'quantize.py')))
+            self.assertTrue(os.path.exists(os.path.join(template_dirname, 'compress.py')))
             self.assertTrue(os.path.exists(os.path.join(template_dirname, 'requirements.txt')))
             self.assertTrue(os.path.exists(os.path.join(template_dirname, 'modules.yaml')))
 

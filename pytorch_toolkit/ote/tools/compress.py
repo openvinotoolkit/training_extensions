@@ -27,15 +27,18 @@ def main():
     modules = load_config(MODULES_CONFIG_FILENAME)
 
     arg_parser = build_arg_parser(modules['arg_parser'])
-    ote_args = vars(arg_parser.get_train_parser(MODEL_TEMPLATE_FILENAME).parse_args())
+    ote_args = vars(arg_parser.get_compression_parser(MODEL_TEMPLATE_FILENAME).parse_args())
 
     arg_converter = build_arg_converter(modules['arg_converter'])
-    train_args = arg_converter.convert_train_args(MODEL_TEMPLATE_FILENAME, ote_args)
+    train_args = arg_converter.convert_compress_args(MODEL_TEMPLATE_FILENAME, ote_args)
 
-    # Note that ConfigTransformersEngine is not applied here.
-    # So, NNCF compression won't be done with this tool.
-    # The tool compress.py should be used for compression.
+    config_transformers_engine = ConfigTransformersEngine(MODEL_TEMPLATE_FILENAME, modules.get("config_transformers"))
+    train_args = config_transformers_engine.process_args(train_args)
 
+    # Note that compression in this tool will be made by the same trainer,
+    # as in the tool train.py
+    # The difference is only in the argparser and in the ConfigTransformersEngine used to
+    # transform the configuration file.
     trainer = build_trainer(modules['trainer'])
     trainer(**train_args)
 

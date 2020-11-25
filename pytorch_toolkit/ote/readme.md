@@ -5,7 +5,7 @@ Model Templates defines training procedure and its interface for a given neural 
 ## Directory structure
 
 A single Model Template should consist of a Python script related to model training as well
-as YAML file that will define template interface. Each model template is related to 4 scripts: `train.py`, `eval.py`, `export.py` and `quantize.py`. Model Templates may be placed in nested directories in the whole repository and will be detected
+as YAML file that will define template interface. Each model template is related to 4 scripts: `train.py`, `eval.py`, `export.py` and `compress.py`. Model Templates may be placed in nested directories in the whole repository and will be detected
 automatically by the Platform. Directories does not need to conform to any convention. One can organize directory structure as in the example below:
 
 ```
@@ -45,8 +45,8 @@ dependencies:
   destination: eval.py
 - source: ../../../tools/export.py
   destination: export.py
-- source: ../../../tools/quantize.py
-  destination: quantize.py
+- source: ../../../tools/compress.py
+  destination: compress.py
 - source: ../../../../../pytorch_toolkit/ote
   destination: ote
 - source: ../../requirements.txt
@@ -193,5 +193,5 @@ optional arguments:
                         Additional args to OpenVINO Model Optimizer
 ```
 
-## quantize.py
+## compress.py
 TBD
