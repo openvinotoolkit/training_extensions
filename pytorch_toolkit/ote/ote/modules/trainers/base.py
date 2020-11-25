@@ -59,6 +59,7 @@ class BaseTrainer(metaclass=ABCMeta):
         with open(out, 'a+') as dst_file:
             yaml.dump(training_info, dst_file)
 
+    @abstractmethod
     def _train_internal(self, config, gpu_num, update_config, tensorboard_dir):
         tools_dir = self._get_tools_dir()
         tensorboard_dir = f' --tensorboard-dir {tensorboard_dir}' if tensorboard_dir is not None else ''
