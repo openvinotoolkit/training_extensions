@@ -14,7 +14,6 @@
  limitations under the License.
 """
 
-import os # TODO: remove after debugging?
 from copy import copy
 from mmcv import Config
 

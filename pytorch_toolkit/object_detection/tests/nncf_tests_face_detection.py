@@ -49,7 +49,11 @@ class FaceDetection0200NNCFint8sparsity(
             'face-detection-0200',
             os.path.dirname(__file__) + '/../../../data/airport/annotation_faces_train.json',
             os.path.dirname(__file__) + '/../../../data/airport/',
-            {'compression.int8': True, 'compression.sparsity': True}
+            {
+                'compression.int8': True,
+                'compression.sparsity': True,
+                'hyper_parameters.basic.epochs': 7, #decrease number of epochs for sparsity, the default is 50
+            }
         )
 ):
     """ Test case for face-detection-0200 model with NNCF int8 and sparsity compression. """
