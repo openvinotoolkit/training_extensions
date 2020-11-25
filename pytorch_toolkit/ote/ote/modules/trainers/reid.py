@@ -51,7 +51,8 @@ class ReidTrainer(BaseTrainer):
 
     def _train_internal(self, config, gpu_num, update_config, tensorboard_dir):
         tools_dir = self._get_tools_dir()
-        tensorboard_dir = f' --tensorboard-dir {tensorboard_dir}' if tensorboard_dir is not None else ''
+        if tensorboard_dir is not None:
+            update_config += f' data.tb_log_dir {tensorboard_dir}'
 
         training_info = {'training_gpu_num': 0}
         if torch.cuda.is_available():
@@ -68,11 +69,10 @@ class ReidTrainer(BaseTrainer):
             gpu_num = 0
             logging.info('Training on CPU started ...')
 
-        run_with_termination(f'python {tools_dir}/main.py' \
-                             f' --config-file {config}' \
-                             f' --gpu-num {gpu_num}' \
-                             f' {tensorboard_dir}' \
-                             f'{update_config}'.split(' '))
+        run_with_termination(f'python {tools_dir}/main.py'
+                             f' --config-file {config}'
+                             f' --gpu-num {gpu_num}'
+                             f' {update_config}'.split(' '))
 
         if torch.cuda.is_available():
             logging.info('... training on GPUs completed.')
