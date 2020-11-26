@@ -1,4 +1,5 @@
 from .base import BaseEvaluator
+from .instance_segmentation import InstanceSegmentationEvaluator
 from .mmaction import MMActionEvaluator
 from .mmdetection import MMDetectionEvaluator
 from .face_detection import MMFaceDetectionEvaluator
@@ -10,4 +11,5 @@ __all__ = [
     'MMDetectionEvaluator',
     'MMFaceDetectionEvaluator',
     'MMHorizontalTextDetectionEvaluator',
+    'InstanceSegmentationEvaluator',
 ]

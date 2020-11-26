@@ -1,0 +1,5 @@
+arg_parser: DefaultArgParser
+arg_converter: InstanceSegmentationArgsConverter
+trainer: InstanceSegmentationTrainer
+evaluator: InstanceSegmentationEvaluator
+exporter: InstanceSegmentationExporter
