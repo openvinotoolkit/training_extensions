@@ -22,6 +22,7 @@ from ..registry import ARG_CONVERTERS
 class ReidArgsConverter(BaseArgConverter):
     train_update_args_map = {
         'train_data_roots': 'data.root',
+        'train_ann_files': '',
         'resume_from': 'model.resume',
         'load_weights': 'model.load_weights',
         'save_checkpoints_to': 'data.save_dir',
@@ -31,7 +32,8 @@ class ReidArgsConverter(BaseArgConverter):
     }
     test_update_args_map = {
         'test_ann_files': '',
-        'test_data_roots': 'root_dir',
+        'test_data_roots': 'data.root',
+        'load_weights': 'model.load_weights',
     }
 
     def __init__(self):
