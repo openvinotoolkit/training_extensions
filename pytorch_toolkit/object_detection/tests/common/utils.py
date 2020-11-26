@@ -42,7 +42,7 @@ def relative_abs_error(expected, actual):
 
 
 def run_through_shell(cmd):
-    logging.info(f'Running through shell cmd\n`{cmd}`') #TODO: consider with Ilya
+    logging.info(f'Running through shell cmd\n`{cmd}`')
     run(cmd, shell=True, check=True, executable="/bin/bash")
 
 def run_tests_by_pattern(folder, pattern, verbose):

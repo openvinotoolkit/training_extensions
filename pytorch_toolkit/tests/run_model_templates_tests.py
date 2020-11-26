@@ -33,8 +33,7 @@ def _is_verbose_flag_set():
 
 def run_with_log(*args, **kwargs):
     cmd = args[0]
-    if _is_verbose_flag_set():
-        logging.info(f'Running command\n`{cmd}`') #TODO: consider with Ilya
+    logging.info(f'Running command\n`{cmd}`')
     return run(*args, **kwargs)
 
 def create_model_template_tests_base(subfolder_name):
