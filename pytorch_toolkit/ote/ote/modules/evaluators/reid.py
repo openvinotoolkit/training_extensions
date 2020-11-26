@@ -14,6 +14,7 @@
  limitations under the License.
 """
 
+from pathlib import Path
 import json
 import os
 import subprocess
@@ -41,6 +42,8 @@ class ReidEvaluator(BaseEvaluator):
         if os.path.islink(snapshot):
             snapshot = os.path.join(os.path.dirname(snapshot), os.readlink(snapshot))
 
+        update_config['classification.data_dir'] = Path(update_config['data.root']).name
+        update_config['data.root'] = Path(update_config['data.root']).parent
         update_config = ' '.join([f'{k} {v}' for k, v in update_config.items() if len(str(v))])
         update_config = update_config if update_config else ''
 
@@ -76,10 +79,6 @@ class ReidEvaluator(BaseEvaluator):
 
         res_complexity = os.path.join(work_dir, "complexity.json")
 
-        print(f'python {tools_dir}/get_flops.py'
-              f' --config-file {config_path}'
-              f' --out {res_complexity}'
-              f' {update_config}')
         subprocess.run(
             f'python {tools_dir}/get_flops.py'
             f' --config-file {config_path}'

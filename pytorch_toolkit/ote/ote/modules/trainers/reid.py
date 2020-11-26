@@ -14,6 +14,7 @@
  limitations under the License.
 """
 
+from pathlib import Path
 import logging
 import os
 import yaml
@@ -40,6 +41,8 @@ class ReidTrainer(BaseTrainer):
         logging.basicConfig(level=logging.INFO)
         logging.info(f'Commandline:\n{" ".join(sys.argv)}')
 
+        update_config['classification.data_dir'] = Path(update_config['data.root']).name
+        update_config['data.root'] = Path(update_config['data.root']).parent
         update_config = ' '.join([f'{k} {v}' for k, v in update_config.items() if len(str(v))])
 
         logging.info('Training started ...')
