@@ -23,17 +23,17 @@ from .utils import merge_dicts_and_lists_b_into_a
 
 @CONFIG_TRANSFORMERS.register_module()
 class NNCFConfigTransformer:
-    POSSIBLE_NNCF_PARTS = ('int8', 'sparsity', 'pruning')
+    POSSIBLE_NNCF_PARTS = {'int8', 'sparsity', 'pruning'}
     COMPRESSION_CONFIG_KEY = 'compression_config'
 
     def __call__(self, template_path):
         template = load_config(template_path)
         compression_template = template.get('compression')
-        if compression_template is None or compression_template == {}:
+        if not compression_template:
             return {}
         assert isinstance(compression_template, dict), f'Error: compression part of template is not a dict: template["compression"]={compression_template}'
-        possible_keys = set(self.POSSIBLE_NNCF_PARTS) | set([self.COMPRESSION_CONFIG_KEY])
-        unknown_keys = set(compression_template.keys()) - set(possible_keys)
+        possible_keys = self.POSSIBLE_NNCF_PARTS | {self.COMPRESSION_CONFIG_KEY}
+        unknown_keys = set(compression_template.keys()) - possible_keys
         if unknown_keys:
             raise RuntimeError(f'Compression parameters contain unknown keys: {list(unknown_keys)}')
 
@@ -59,6 +59,12 @@ class NNCFConfigTransformer:
         compression_parts = Config.fromfile(compression_config_path)
 
         if 'order_of_parts' in compression_parts:
+            # The result of applying the changes from compression parts
+            # may depend on the order of applying the changes
+            # (e.g. if for int8 it is sufficient to have `total_epochs=2`,
+            #  but for sparsity it is required `total_epochs=50`)
+            # So, user can define `order_of_parts` in the compression_config
+            # to specify the order of applying the parts.
             order_of_parts = compression_parts['order_of_parts']
             assert isinstance(order_of_parts, list), 'The field "order_of_parts" in compression config should be a list'
 
