@@ -382,7 +382,7 @@ def create_nncf_test_case(problem_name, model_name, ann_file, img_root, template
         @staticmethod
         def skip_non_instantiated_template_if_its_allowed(template_folder):
             # Note that this is for debug purposes only
-            # TODO: refactor, make common function skip_non_instantiated_template_if_its_allowed
+            # TODO(LeonidBeynenson): refactor, make common function skip_non_instantiated_template_if_its_allowed
             should_skip_absent_templates = os.environ.get('SHOULD_SKIP_ABSENT_TEMPLATES')
             if not os.path.isdir(template_folder):
                 if should_skip_absent_templates:
@@ -405,7 +405,7 @@ def create_nncf_test_case(problem_name, model_name, ann_file, img_root, template
                 f' --gpu-num 1'
                 f' --batch-size 1'
                 f' |& tee {log_file}')
-            # TODO: think about using |& for other tests
+            # TODO(LeonidBeynenson): think about using |& for other tests
 
             ap = collect_ap(log_file)
             self.assertGreater(ap[-1], 0)

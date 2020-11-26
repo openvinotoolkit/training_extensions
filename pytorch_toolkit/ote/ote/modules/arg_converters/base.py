@@ -22,7 +22,7 @@ class BaseArgConverter(metaclass=ABCMeta):
     train_update_args_map = {}
     test_update_args_map = {}
     compress_update_args_map = {}
-    # TODO: replace dicts train_update_args_map, test_update_args_map,
+    # TODO(LeonidBeynenson): replace dicts train_update_args_map, test_update_args_map,
     #       and compress_update_args_map with call of a special function
     #       that may be passed to constructor of the class as a
     #       parameter.
@@ -64,7 +64,7 @@ class BaseArgConverter(metaclass=ABCMeta):
     def convert_compress_args(self, model_template_path, args):
         update_args = self.__map_args(args, self.compress_update_args_map)
 
-        # TODO: think on _get_extra_compress_args
+        # TODO(LeonidBeynenson): think on _get_extra_compress_args
         #       Now _get_extra_train_args is used since it's the same
         extra_args = self._get_extra_train_args(args)
         update_args.update(extra_args)

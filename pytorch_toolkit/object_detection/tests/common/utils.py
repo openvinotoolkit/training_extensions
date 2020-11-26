@@ -46,7 +46,7 @@ def run_through_shell(cmd):
     run(cmd, shell=True, check=True, executable="/bin/bash")
 
 def run_tests_by_pattern(folder, pattern, verbose):
-    # TODO: rewrite ../run_train_tests.py and ../run_export_tests.py
+    # TODO(LeonidBeynenson): rewrite ../run_train_tests.py and ../run_export_tests.py
     #       using this function
     logging.basicConfig(level=logging.INFO)
     if verbose:

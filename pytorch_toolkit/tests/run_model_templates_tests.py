@@ -46,13 +46,13 @@ def create_model_template_tests_base(subfolder_name):
             if verbose:
                 logging.info('Running with verbosity=True')
 
-            workdir = os.environ.get('WORKDIR') #TODO: consider with Ilya
+            workdir = os.environ.get('WORKDIR')
             if not workdir:
                 cls.work_dir = os.path.join(tempfile.mkdtemp(), subfolder_name)
             else:
                 cls.work_dir = os.path.join(os.path.abspath(workdir), subfolder_name)
 
-            templates_pattern_environ = os.environ.get('TEMPLATES_PATTERN') #TODO: consider with Ilya
+            templates_pattern_environ = os.environ.get('TEMPLATES_PATTERN')
             if templates_pattern_environ:
                 templates_pattern_arg = f'--templates-pattern "{templates_pattern_environ}"'
             else:
@@ -66,7 +66,6 @@ def create_model_template_tests_base(subfolder_name):
             run_with_log(f'python3 tools/instantiate.py {templates_pattern_arg} --do-not-load-snapshots {cls.work_dir}', shell=True, check=True)
 
         def _get_template_files(self):
-            #TODO: consider with Ilya
             template_filenames = glob.glob(f'{self.work_dir}/**/template.yaml', recursive=True)
             template_filenames = list(template_filenames)
             return template_filenames
@@ -159,7 +158,7 @@ class ModelTemplatesNNCFTestCase(create_model_template_tests_base('NNCF_TESTS'))
     subfolder for instantiating.
     """
     def test_nncf(self):
-        # TODO : refactor the class to avoid copying between methods
+        # TODO(LeonidBeynenson) : move some big part of the methods to a common function
         if not ENABLE_NNCF_TESTS:
             return
 
@@ -188,4 +187,8 @@ class ModelTemplatesNNCFTestCase(create_model_template_tests_base('NNCF_TESTS'))
                 self.assertEqual(returncode, 0)
 
 if __name__ == '__main__':
+    # TODO(LeonidBeynenson): instead of unittest.main()
+    #     make a usual argparser with parameters like unittest.main()
+    #     plus --workdir and --templates-filter
+    #     instead of environment variables
     unittest.main()

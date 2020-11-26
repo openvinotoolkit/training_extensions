@@ -37,7 +37,7 @@ def main():
 
     logging.basicConfig(level=logging.INFO)
     args = parse_args()
-    # TODO: rewrite in a similar way tests for train and export
+    # TODO(LeonidBeynenson): rewrite in a similar way tests for train and export
     was_successful = run_tests_by_pattern(folder=os.path.dirname(__file__),
                                           pattern=args.pattern,
                                           verbose=args.verbose)

@@ -22,7 +22,7 @@ from ..registry import ARG_CONVERTERS
 class MMActionArgsConverter(BaseArgConverter):
     # NB: compress_update_args_map is the same as train_update_args_map,
     #     but without base_learning_rate and epochs
-    # TODO: replace the dicts by a function that returns dicts to avoid copying of code
+    # TODO(LeonidBeynenson): replace the dicts by a function that returns dicts to avoid copying of code
     compress_update_args_map = {
         'train_ann_files': 'data.train.ann_file',
         'train_data_roots': 'root_dir',
