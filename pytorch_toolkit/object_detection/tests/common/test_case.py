@@ -344,6 +344,11 @@ def create_nncf_test_case(problem_name, model_name, ann_file, img_root, template
         @staticmethod
         def copy_template_folder(src_template_folder, template_folder):
             logging.info(f'Copying {src_template_folder} to {template_folder}')
+            if os.path.isdir(template_folder):
+                logging.warning('')
+                logging.warning(f'ATTENTION: the folder that should be created for this test case exists!')
+                logging.warning(f'           It may cause side effects between tests!')
+                logging.warning(f'The folder is `{template_folder}`.\n')
             run_through_shell(f'cp -a "{src_template_folder}" "{template_folder}"')
             assert os.path.isdir(template_folder), f'Cannot create {template_folder}'
 
