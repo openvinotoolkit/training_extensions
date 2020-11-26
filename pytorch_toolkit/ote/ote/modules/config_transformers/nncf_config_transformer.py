@@ -21,6 +21,8 @@ from ote.utils import load_config
 from ..registry import CONFIG_TRANSFORMERS
 from .utils import merge_dicts_and_lists_b_into_a
 
+# TODO(LeonidBeynenson): implement unit tests on NNCFConfigTransformer
+
 @CONFIG_TRANSFORMERS.register_module()
 class NNCFConfigTransformer:
     POSSIBLE_NNCF_PARTS = {'int8', 'sparsity', 'pruning'}

@@ -28,10 +28,12 @@ def save_config(config, file_path):
     with open(file_path, 'w') as output_stream:
         yaml.dump(config, output_stream)
 
+# TODO(LeonidBeynenson): implement unit tests on _ConfigTransformersHandler
+
 class _ConfigTransformersHandler:
     def __init__(self, template_path, config_transformers_names):
         self.template_path = template_path
-        self.timestamp = self._generate_timestamp_suffix()
+        self.random_suffix = self._generate_random_suffix()
 
         if config_transformers_names is None:
             self.config_transformers = None
@@ -71,15 +73,16 @@ class _ConfigTransformersHandler:
 
         return generated_config_path
 
-
-
     @staticmethod
-    def _generate_timestamp_suffix():
-        return datetime.datetime.now().strftime('%y%m%d%H%M%S')
+    def _generate_random_suffix():
+        random_suffix = os.path.basename(NamedTemporaryFile().name)
+        prefix = 'tmp'
+        if random_suffix.startswith(prefix):
+            random_suffix = random_suffix[len(prefix):]
+        return random_suffix
 
     def _generate_config_path(self, config_path, index):
-        suffix = self.timestamp
-        #config_ext = os.path.splitext(config_path)[-1]
+        suffix = self.random_suffix
         config_ext = 'yaml'
         res = config_path + f'._.{suffix}.{index:04}.{config_ext}'
         return res
