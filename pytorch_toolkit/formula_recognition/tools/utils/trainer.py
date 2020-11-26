@@ -38,7 +38,7 @@ SOFTWARE.
 
 import os
 from functools import partial
-from pprint import pformat
+from pprint import pformat, pprint
 from warnings import warn
 
 import numpy as np
@@ -154,7 +154,8 @@ class Trainer:
         )
         train_sampler = BatchRandomSampler(
             dataset=train_dataset, batch_size=self.config.get('batch_size', 4))
-        batch_transform_train = create_list_of_transforms(self.val_transforms_list)
+        pprint("Creating training transforms list:\n{}".format(self.train_transforms_list), indent=4, width=120)
+        batch_transform_train = create_list_of_transforms(self.train_transforms_list)
         self.train_loader = DataLoader(
             train_dataset,
             batch_sampler=train_sampler,
@@ -164,6 +165,7 @@ class Trainer:
 
         val_dataset = Im2LatexDataset(self.val_path, self.config.get("val_ann_file"))
         val_sampler = BatchRandomSampler(dataset=val_dataset, batch_size=1)
+        pprint("Creating val transforms list:\n{}".format(self.val_transforms_list), indent=4, width=120)
         batch_transform_val = create_list_of_transforms(self.val_transforms_list)
         self.val_loader = DataLoader(
             val_dataset,
