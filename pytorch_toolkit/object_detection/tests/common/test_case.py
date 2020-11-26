@@ -360,12 +360,10 @@ def create_nncf_test_case(problem_name, model_name, ann_file, img_root, template
                 compression_cfg_rel_path = template_data['compression']['compression_config']
                 compression_cfg_name = os.path.basename(compression_cfg_rel_path)
                 compression_cfg_path = os.path.join(os.path.dirname(template_file), compression_cfg_rel_path)
-                new_compression_cfg_path = compression_cfg_path + '.UPDATE_FROM_TEST.py'
-                cfg_part = mmcv.Config()
-                cfg_part.merge_from_dict(compression_cfg_update_dict)
-                with open(new_compression_cfg_path, 'w') as f_dst:
-                    f_dst.write(f'_base_ = "{compression_cfg_name}"\n')
-                    f_dst.write(cfg_part.pretty_text)
+                new_compression_cfg_path = compression_cfg_path + '.UPDATED_FROM_TEST.json'
+                compression_cfg = mmcv.Config.fromfile(compression_cfg_path)
+                compression_cfg.merge_from_dict(compression_cfg_update_dict)
+                compression_cfg.dump(new_compression_cfg_path)
                 assert os.path.isfile(new_compression_cfg_path), f'Cannot write file {new_compression_cfg_path}'
 
                 template_update_dict['compression.compression_config'] = new_compression_cfg_path

@@ -15,6 +15,8 @@
 """
 
 from copy import copy
+import json
+
 from mmcv import Config
 
 from ote.utils import load_config
@@ -57,8 +59,17 @@ class NNCFConfigTransformer:
         return nncf_config_part
 
     @staticmethod
+    def _load_compression_config(compression_config_path, nostrict=False):
+        assert compression_config_path.endswith('.json'), (
+                f'Only json files are allowed as compression configs,'
+                f' compression_config_path={compression_config_path}')
+        with open(compression_config_path) as f_src:
+            compression_parts  = json.load(f_src)
+        return compression_parts
+
+    @staticmethod
     def _merge_nncf_compression_parts(compression_config_path, compression_parts_to_choose):
-        compression_parts = Config.fromfile(compression_config_path)
+        compression_parts = NNCFConfigTransformer._load_compression_config(compression_config_path)
 
         if 'order_of_parts' in compression_parts:
             # The result of applying the changes from compression parts
@@ -78,13 +89,13 @@ class NNCFConfigTransformer:
             compression_parts_to_choose = [part for part in order_of_parts if part in compression_parts_to_choose]
 
         assert 'base' in compression_parts, f'Error: the compression config does not contain the "base" part'
-        nncf_config_part = compression_parts['base'].to_dict()
+        nncf_config_part = compression_parts['base']
 
         for part in compression_parts_to_choose:
             assert part in compression_parts, (
                     f'Error: the compression config does not contain the part "{part}", '
                     f'whereas it was selected; see the compression config file "{compression_config_path}"')
-            compression_part_dict = compression_parts[part].to_dict()
+            compression_part_dict = compression_parts[part]
             try:
                 nncf_config_part = merge_dicts_and_lists_b_into_a(nncf_config_part, compression_part_dict)
                 cur_error = None

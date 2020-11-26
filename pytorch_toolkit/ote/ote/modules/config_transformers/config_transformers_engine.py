@@ -25,6 +25,8 @@ from ote.utils import load_config
 from ..builder import build_config_transformer
 
 def save_config(config, file_path):
+    # TODO(LeonidBeynenson): make it write python instead of yaml
+    #     (otherwise Config tries to write its result config as yaml file too)
     with open(file_path, 'w') as output_stream:
         yaml.dump(config, output_stream)
 

@@ -41,7 +41,7 @@ output_format:
     default: true
     input_format: BGR
 compression:
-  compression_config: compression_config.py
+  compression_config: compression_config.json
   int8: false
   sparsity: false
 metrics:
