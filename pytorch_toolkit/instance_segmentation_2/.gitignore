@@ -1,0 +1,6 @@
+__pycache__/
+models/
+IR/
+checkpoint/
+venv/
+*.onnx

@@ -66,3 +66,11 @@ domains:
 #      that carry outs video stream classification.
 #    subtitle: Recognizing gestures in live video streams
 #    cvat_schema: '[{}]'
+- title: Instance Segmentation 2
+  problems:
+  - title: COCO Instance Segmentation
+    description:  >-
+      Instance segmentation is a computer technology being used in a variety of
+      applications that identifies objects including its contours in digital images.
+    subtitle: Instance segmentation in digital images
+    cvat_schema: '[]'
