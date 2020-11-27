@@ -29,7 +29,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('destination')
     parser.add_argument('--do-not-load-snapshots', action='store_true')
-    parser.add_argument('--templates-pattern', default='**/template.yaml')
+    parser.add_argument('--templates-filter', default='**/template.yaml')
 
     return parser.parse_args()
 
@@ -37,7 +37,7 @@ def parse_args():
 def main():
     logging.basicConfig(level=logging.INFO)
     args = parse_args()
-    template_filenames = glob.glob(args.templates_pattern, recursive=True)
+    template_filenames = glob.glob(args.templates_filter, recursive=True)
     problems_filename = glob.glob('**/problems.yaml', recursive=True)
     assert len(problems_filename) == 1
     problems_filename = problems_filename[0]

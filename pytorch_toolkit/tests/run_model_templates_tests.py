@@ -52,18 +52,18 @@ def create_model_template_tests_base(subfolder_name):
             else:
                 cls.work_dir = os.path.join(os.path.abspath(workdir), subfolder_name)
 
-            templates_pattern_environ = os.environ.get('TEMPLATES_PATTERN')
-            if templates_pattern_environ:
-                templates_pattern_arg = f'--templates-pattern "{templates_pattern_environ}"'
+            templates_filter_environ = os.environ.get('TEMPLATES_FILTER')
+            if templates_filter_environ:
+                templates_filter_arg = f'--templates-filter "{templates_filter_environ}"'
             else:
-                templates_pattern_arg = ''
+                templates_filter_arg = ''
 
             if verbose:
                 cls.verbosity_flag = '--verbose'
             else:
                 cls.verbosity_flag = ''
 
-            run_with_log(f'python3 tools/instantiate.py {templates_pattern_arg} --do-not-load-snapshots {cls.work_dir}', shell=True, check=True)
+            run_with_log(f'python3 tools/instantiate.py {templates_filter_arg} --do-not-load-snapshots {cls.work_dir}', shell=True, check=True)
 
         def _get_template_files(self):
             template_filenames = glob.glob(f'{self.work_dir}/**/template.yaml', recursive=True)
