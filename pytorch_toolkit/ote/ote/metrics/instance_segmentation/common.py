@@ -22,18 +22,6 @@ from ote import MMDETECTION_TOOLS
 from ote.metrics.detection.common import collect_ap
 
 
-#def collect_ap(path):
-#    """ Collects average precision values in log file. """
-#
-#    average_precisions = []
-#    beginning = 'Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = '
-#    with open(path) as read_file:
-#        content = [line.strip() for line in read_file]
-#        for line in content:
-#            if line.startswith(beginning):
-#                average_precisions.append(float(line.replace(beginning, '')))
-#    return average_precisions
-
 def update_outputs(outputs, ap_values):
     display_names = ['Bbox AP @ [IoU=0.50:0.95]', 'Segm AP @ [IoU=0.50:0.95]']
     assert len(ap_values) == len(display_names)
