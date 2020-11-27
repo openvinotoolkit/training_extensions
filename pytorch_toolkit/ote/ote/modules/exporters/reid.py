@@ -75,6 +75,7 @@ class ReidExporter(BaseExporter):
             f' --config-file {args["config"]}'
             f' --num-classes {args["num_classes"]}'
             f' --output-name {onnx_model_path}'
+             ' --disable-dyn-axes'
             f' model.load_weights {args["load_weights"]}',
             shell=True,
             check=True)
