@@ -18,6 +18,7 @@ import logging
 import os
 import subprocess
 
+from mmcv import Config
 from ote import MMDETECTION_TOOLS
 
 
@@ -34,16 +35,25 @@ def collect_ap(path):
     return average_precisions
 
 
-def coco_ap_eval(config_path, work_dir, snapshot, update_config, show_dir='', **kwargs):
+def update_outputs(outputs, metric_names, ap_values):
+    assert len(ap_values) == len(metric_names)
+    for name, ap in zip(metric_names, ap_values):
+        outputs.append(
+            {'key': 'ap', 'value': ap, 'unit': '%', 'display_name': name})
+
+
+def coco_ap_eval(config_path, work_dir, snapshot, update_config, show_dir='',
+                 metric_names=['AP @ [IoU=0.50:0.95]'], **kwargs):
     """ Computes COCO AP. """
 
     outputs = []
 
+    cfg = Config.fromfile(config_path)
+    metrics = ' '.join(cfg.evaluation['metric']) if 'evaluation' in cfg.keys() else 'bbox'
     if not(update_config['data.test.ann_file'] and update_config['data.test.img_prefix']):
         logging.warning('Passed empty path to annotation file or data root folder. '
                         'Skipping AP calculation.')
-        outputs.append({'key': 'ap', 'value': None, 'unit': '%',
-                        'display_name': 'AP @ [IoU=0.50:0.95]'})
+        update_outputs(outputs, metric_names, [None for _ in metrics.split(' ')])
     else:
         res_pkl = os.path.join(work_dir, 'res.pkl')
         test_py_stdout = os.path.join(work_dir, 'test_py_stdout')
@@ -63,15 +73,23 @@ def coco_ap_eval(config_path, work_dir, snapshot, update_config, show_dir='', **
         subprocess.run(
             f'python {MMDETECTION_TOOLS}/{tool}'
             f' {config_path} {snapshot}'
-            f' --out {res_pkl} --eval bbox'
+            f' --out {res_pkl} --eval {metrics}'
             f'{show_dir}{update_config}'
             f' | tee {test_py_stdout}',
             check=True, shell=True
         )
 
-        average_precision = collect_ap(os.path.join(work_dir, 'test_py_stdout'))[0]
-        outputs.append({
-            'key': 'ap', 'value': average_precision * 100, 'unit': '%', 'display_name': 'AP @ [IoU=0.50:0.95]'
-        })
+        average_precision = collect_ap(os.path.join(work_dir, 'test_py_stdout'))
+        update_outputs(outputs, metric_names, average_precision)
 
     return outputs
+
+
+def coco_ap_eval_det(config_path, work_dir, snapshot, update_config, show_dir='', **kwargs):
+    return coco_ap_eval(config_path, work_dir, snapshot, update_config, show_dir)
+
+
+def coco_ap_eval_segm(config_path, work_dir, snapshot, update_config, show_dir='', **kwargs):
+    return coco_ap_eval(
+        config_path, work_dir, snapshot, update_config, show_dir,
+        metric_names=['Bbox AP @ [IoU=0.50:0.95]', 'Segm AP @ [IoU=0.50:0.95]'])

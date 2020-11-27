@@ -19,6 +19,9 @@ ENABLE_TESTS_FOR = {
     'action_recognition_2': [
         'gesture-recognition',
     ],
+    'instance_segmentation_2': [
+        'coco-instance-segmentation',
+    ]
 }
 
 ENABLE_TRAIN_TESTS = True

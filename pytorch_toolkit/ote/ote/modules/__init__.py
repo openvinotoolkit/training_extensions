@@ -29,7 +29,6 @@ __all__ = [
     'MMActionArgsConverter',
     'MMDetectionArgsConverter',
     'MMDetectionWiderArgsConverter',
-    'InstanceSegmentationArgsConverter',
     'BaseTrainer',
     'MMActionTrainer',
     'MMDetectionTrainer',
