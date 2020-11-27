@@ -357,7 +357,7 @@ def create_nncf_test_case(problem_name, model_name, ann_file, img_root, template
             template_data.dump(template_file)
 
         @unittest.skipUnless(torch.cuda.is_available(), 'No GPU found')
-        def test_nncf_on_gpu(self):
+        def test_nncf_compress_on_gpu(self):
             log_file = os.path.join(self.template_folder, 'test_nncf.log')
             run_through_shell(
                 f'cd {self.template_folder};'
@@ -372,6 +372,28 @@ def create_nncf_test_case(problem_name, model_name, ann_file, img_root, template
                 f' --batch-size 1'
                 f' |& tee {log_file}')
             # TODO(LeonidBeynenson): think about using |& for other tests
+
+            ap = collect_ap(log_file)
+            self.assertGreater(ap[-1], 0)
+
+        @unittest.skipUnless(torch.cuda.is_available(), 'No GPU found')
+        def test_nncf_finetune_and_compress_on_gpu(self):
+            log_file = os.path.join(self.template_folder, 'test_nncf.log')
+            total_epochs = get_epochs(self.template_file)
+            total_epochs_with_finetuning = total_epochs + 2
+            run_through_shell(
+                f'cd {self.template_folder};'
+                f'python train.py'
+                f' --train-ann-files {self.ann_file}'
+                f' --train-data-roots {self.img_root}'
+                f' --val-ann-files {self.ann_file}'
+                f' --val-data-roots {self.img_root}'
+                f' --resume-from snapshot.pth'
+                f' --save-checkpoints-to {self.template_folder}'
+                f' --gpu-num 1'
+                f' --batch-size 1'
+                f' --epochs {total_epochs_with_finetuning}'
+                f' |& tee {log_file}')
 
             ap = collect_ap(log_file)
             self.assertGreater(ap[-1], 0)

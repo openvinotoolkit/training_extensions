@@ -41,7 +41,13 @@ def main():
 
     if modules.get('compression') and is_compression_enabled_in_template(MODEL_TEMPLATE_FILENAME):
         # TODO: think on the case if compression is enabled in template.yaml, but modules does not contain 'compression'
-        compress_args = arg_converter.convert_compress_args(MODEL_TEMPLATE_FILENAME, ote_args)
+
+        latest_snapshot = trainer.get_latest_snapshot()
+        if not latest_snapshot:
+            raise RuntimeError('Cannot find latest snapshot to make compression after training')
+
+        compress_args = arg_converter.convert_train_args_to_compress_args(MODEL_TEMPLATE_FILENAME, ote_args)
+        arg_converter.update_converted_args_to_load_from_snapshot(compress_args, latest_snapshot)
 
         compression_arg_transformer = build_compression_arg_transformer(modules['compression'])
         compress_args = compression_arg_transformer.process_args(MODEL_TEMPLATE_FILENAME, compress_args)
