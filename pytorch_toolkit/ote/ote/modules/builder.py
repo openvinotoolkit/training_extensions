@@ -16,7 +16,7 @@
 
 from mmcv.utils import Registry
 
-from .registry import ARG_PARSERS, ARG_CONVERTERS, TRAINERS, EVALUATORS, EXPORTERS, CONFIG_TRANSFORMERS
+from .registry import ARG_PARSERS, ARG_CONVERTERS, TRAINERS, EVALUATORS, EXPORTERS, COMPRESSION
 
 
 def build(obj_type, registry, args=None):
@@ -55,6 +55,6 @@ def build_evaluator(obj_type):
 def build_exporter(obj_type):
     return build(obj_type, EXPORTERS)
 
-def build_config_transformer(obj_type):
-    return build(obj_type, CONFIG_TRANSFORMERS)
+def build_compression_arg_transformer(obj_type):
+    return build(obj_type, COMPRESSION)
 

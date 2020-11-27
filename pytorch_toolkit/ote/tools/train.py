@@ -18,8 +18,7 @@ import logging
 
 from ote import MODEL_TEMPLATE_FILENAME, MODULES_CONFIG_FILENAME
 from ote.utils import load_config
-from ote.modules import build_arg_parser, build_arg_converter, build_trainer
-from ote.modules.config_transformers import ConfigTransformersEngine
+from ote.modules import build_arg_parser, build_arg_converter, build_trainer, build_compression_arg_transformer
 
 
 def main():
@@ -32,7 +31,7 @@ def main():
     arg_converter = build_arg_converter(modules['arg_converter'])
     train_args = arg_converter.convert_train_args(MODEL_TEMPLATE_FILENAME, ote_args)
 
-    # Note that ConfigTransformersEngine is not applied here.
+    # Note that compression args transformer is not applied here.
     # So, NNCF compression won't be done with this tool.
     # The tool compress.py should be used for compression.
 

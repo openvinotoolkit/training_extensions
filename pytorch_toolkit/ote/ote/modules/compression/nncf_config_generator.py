@@ -20,13 +20,11 @@ import json
 from mmcv import Config
 
 from ote.utils import load_config
-from ..registry import CONFIG_TRANSFORMERS
 from .utils import merge_dicts_and_lists_b_into_a
 
-# TODO(LeonidBeynenson): implement unit tests on NNCFConfigTransformer
+# TODO(LeonidBeynenson): implement unit tests on NNCFConfigGenerator
 
-@CONFIG_TRANSFORMERS.register_module()
-class NNCFConfigTransformer:
+class NNCFConfigGenerator:
     POSSIBLE_NNCF_PARTS = {'int8', 'sparsity', 'pruning'}
     COMPRESSION_CONFIG_KEY = 'compression_config'
 
@@ -69,7 +67,7 @@ class NNCFConfigTransformer:
 
     @staticmethod
     def _merge_nncf_compression_parts(compression_config_path, compression_parts_to_choose):
-        compression_parts = NNCFConfigTransformer._load_compression_config(compression_config_path)
+        compression_parts = NNCFConfigGenerator._load_compression_config(compression_config_path)
 
         if 'order_of_parts' in compression_parts:
             # The result of applying the changes from compression parts
