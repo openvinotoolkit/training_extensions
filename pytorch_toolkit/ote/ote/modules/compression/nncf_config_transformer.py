@@ -17,7 +17,6 @@
 import logging
 import os
 import yaml
-import datetime
 from tempfile import NamedTemporaryFile
 from copy import copy
 

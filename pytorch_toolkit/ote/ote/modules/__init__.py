@@ -1,11 +1,11 @@
 from .arg_parsers import DefaultArgParser, CustomDetectorArgParser, FaceDetectorArgParser
 from .arg_converters import (BaseArgConverter, MMActionArgsConverter, MMDetectionArgsConverter,
                              MMDetectionWiderArgsConverter)
-from .trainers import BaseTrainer, MMActionTrainer, MMDetectionTrainer
+from .compression import NNCFConfigTransformer
 from .evaluators import (BaseEvaluator, MMActionEvaluator, MMDetectionEvaluator,
                          MMFaceDetectionEvaluator, MMHorizontalTextDetectionEvaluator)
 from .exporters import BaseExporter, MMActionExporter, MMDetectionExporter
-from .compression import NNCFConfigTransformer
+from .trainers import BaseTrainer, MMActionTrainer, MMDetectionTrainer
 from .registry import ARG_PARSERS, ARG_CONVERTERS, TRAINERS, EVALUATORS, EXPORTERS, COMPRESSION
 from .builder import (build_arg_parser,
                       build_arg_converter,
@@ -17,10 +17,10 @@ from .builder import (build_arg_parser,
 __all__ = [
     'ARG_PARSERS',
     'ARG_CONVERTERS',
-    'TRAINERS',
+    'COMPRESSION',
     'EVALUATORS',
     'EXPORTERS',
-    'COMPRESSION',
+    'TRAINERS',
     'DefaultArgParser',
     'CustomDetectorArgParser',
     'FaceDetectorArgParser',

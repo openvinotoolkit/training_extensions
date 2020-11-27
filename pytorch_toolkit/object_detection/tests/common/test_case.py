@@ -14,10 +14,10 @@
 
 import json
 import logging
-import mmcv
 import os
 import unittest
 
+import mmcv
 import torch
 import yaml
 

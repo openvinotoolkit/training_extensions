@@ -16,9 +16,9 @@ import argparse
 import glob
 import logging
 import os
-from subprocess import run
-
 import yaml
+
+from subprocess import run
 
 def run_with_log(*args, **kwargs):
     cmd = args[0]

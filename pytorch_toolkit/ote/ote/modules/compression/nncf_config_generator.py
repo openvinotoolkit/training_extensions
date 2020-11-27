@@ -14,8 +14,8 @@
  limitations under the License.
 """
 
-from copy import copy
 import json
+from copy import copy
 
 from mmcv import Config
 
