@@ -29,6 +29,9 @@ def main():
     logging.basicConfig(level=logging.INFO)
     modules = load_config(MODULES_CONFIG_FILENAME)
 
+    arg_parser = build_arg_parser(modules['arg_parser'])
+    ote_args = vars(arg_parser.get_compression_parser(MODEL_TEMPLATE_FILENAME).parse_args())
+
     if 'compression' not in modules:
         raise RuntimeError(f'Cannot make compression for the template that'
                            f' does not have "compression" field in its modules'
@@ -36,9 +39,6 @@ def main():
     if not is_compression_enabled_in_template(MODEL_TEMPLATE_FILENAME):
         raise RuntimeError(f'Cannot make compression for the template that'
                            f' does not enable any of compression flags')
-
-    arg_parser = build_arg_parser(modules['arg_parser'])
-    ote_args = vars(arg_parser.get_compression_parser(MODEL_TEMPLATE_FILENAME).parse_args())
 
     arg_converter = build_arg_converter(modules['arg_converter'])
     compress_args = arg_converter.convert_compress_args(MODEL_TEMPLATE_FILENAME, ote_args)

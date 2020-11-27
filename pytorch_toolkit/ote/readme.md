@@ -39,16 +39,16 @@ dependencies:
   size: 14904296
   source: https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/face-detection-0200.pth
   destination: snapshot.pth
-- source: ../tools/train.py
+- source: ../../../../../pytorch_toolkit/ote/tools/train.py
   destination: train.py
-- source: ../tools/eval.py
+- source: ../../../../../pytorch_toolkit/ote/tools/eval.py
   destination: eval.py
-- source: ../../../tools/export.py
+- source: ../../../../../pytorch_toolkit/ote/tools/export.py
   destination: export.py
-- source: ../../../tools/compress.py
+- source: ../../../../../pytorch_toolkit/ote/tools/compress.py
   destination: compress.py
 - source: ../../../../../pytorch_toolkit/ote
-  destination: ote
+  destination: packages/ote
 - source: ../../requirements.txt
   destination: requirements.txt
 max_nodes: 1
@@ -70,7 +70,10 @@ output_format:
   openvino:
     default: true
     input_format: BGR
-quantization: TBD
+compression:
+  compression_config: compression_config.json
+  int8: false
+  sparsity: false
 metrics:
 - display_name: AP @ [IoU=0.50:0.95]
   key: ap
@@ -194,4 +197,38 @@ optional arguments:
 ```
 
 ## compress.py
-TBD
+Note that command line parameters of `compress.py` similar to command line parameters
+of `train.py`, but without parameters `--epochs` and `--base-learning-rate`,
+since these parameters for compression are set internally.
+```
+usage: compress.py [-h] --train-ann-files TRAIN_ANN_FILES --train-data-roots
+                   TRAIN_DATA_ROOTS --val-ann-files VAL_ANN_FILES
+                   --val-data-roots VAL_DATA_ROOTS [--resume-from RESUME_FROM]
+                   [--load-weights LOAD_WEIGHTS]
+                   [--save-checkpoints-to SAVE_CHECKPOINTS_TO]
+                   [--batch-size BATCH_SIZE] [--gpu-num GPU_NUM]
+                   [--tensorboard-dir TENSORBOARD_DIR]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --train-ann-files TRAIN_ANN_FILES
+                        Comma-separated paths to training annotation files.
+  --train-data-roots TRAIN_DATA_ROOTS
+                        Comma-separated paths to training data folders.
+  --val-ann-files VAL_ANN_FILES
+                        Comma-separated paths to validation annotation files.
+  --val-data-roots VAL_DATA_ROOTS
+                        Comma-separated paths to validation data folders.
+  --resume-from RESUME_FROM
+                        Resume training from previously saved checkpoint
+  --load-weights LOAD_WEIGHTS
+                        Load only weights from previously saved checkpoint
+  --save-checkpoints-to SAVE_CHECKPOINTS_TO
+                        Location where checkpoints will be stored
+  --batch-size BATCH_SIZE
+                        Size of a single batch during training per GPU.
+  --gpu-num GPU_NUM     Number of GPUs that will be used in training, 0 is for
+                        CPU mode.
+  --tensorboard-dir TENSORBOARD_DIR
+                        Location where tensorboard logs will be stored.
+```
