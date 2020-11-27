@@ -1,9 +1,14 @@
 # Image classification
 
 Models that are able to classify images on CPU.
-                          | 4       |
+
+| Model Name | Complexity (GFLOPs) | Size (Mp) | Top-1 on ImageNet (%) | Links |
+| ---        | ---                 | ---       | ---                   | ---                   |
+| MobilenetV2 1.0 | 0.66           | 3.50      | 73.0                  | [model template](./mobilenet_v2_w1/template.yaml)
 
 ## Datasets
+
+The model was initially trained on [ImageNet](http://image-net.org/challenges/LSVRC/2012/), but can be trained from scratch or fine tuned to classify arbitrary images.
 
 ## Training pipeline
 
@@ -22,6 +27,45 @@ python ../tools/instantiate_template.py ${MODEL_TEMPLATE} ${WORK_DIR} --do-not-l
 ```
 
 ### 2. Prepare data
+
+The training script assumes the data for classification is divided by folders in such a way when
+each class has it's own folder. The script automatically computes number of subfolders in ine train
+dataset directory and assumes each directory to represent one class. Indexes of classes are assigned
+according to alphabetically sorted list of folders.
+
+An example of the directory structure:
+
+```
+DATA_DIR
+├── train
+│   ├── Class1
+|   |   └── <train images that belong to class 1>
+│   ├── Class2
+|   |   └── <train images that belong to class 2>
+│   |── ....
+│   └── ClassN
+|       └── <train images that belong to class N>
+│
+└── val
+    ├── Class1
+    |   └── <val images that belong to class 1>
+    ├── Class2
+    |   └── <val images that belong to class 2>
+    └── ....
+    └── ClassN
+        └── <val images that belong to class N>
+```
+
+After the data was arranged, export the variables required for launching training and evaluation scripts:
+
+```bash
+export TRAIN_ANN_FILE=''
+export TRAIN_DATA_ROOT=${DATA_DIR}
+export VAL_ANN_FILE=''
+export VAL_DATA_ROOT=${DATA_DIR}
+export TEST_ANN_FILE=''
+export TEST_DATA_ROOT=${DATA_DIR}
+```
 
 ### 3. Change current directory to directory where the model template has been instantiated.
 
@@ -57,7 +101,7 @@ To compute mean accuracy metric run:
 
 ```bash
 python eval.py \
-   --load-weights ${WORK_DIR}/outputs/latest.pth \
+   --load-weights ${WORK_DIR}/outputs/model/model.pth.tar-150 \
    --test-ann-files ${TEST_ANN_FILE} \
    --test-data-roots ${TEST_DATA_ROOT} \
    --save-metrics-to ${WORK_DIR}/metrics.yaml
@@ -74,4 +118,4 @@ python export.py \
 ```
 
 This produces model `model.xml` and weights `model.bin` in single-precision floating-point format
-(FP32). The obtained model expects **normalized image** in planar RGB format.
+(FP32). The obtained model expects **normalized image** in planar BGR format.
