@@ -29,5 +29,5 @@ class InstanceSegmentationEvaluator(MMDetectionEvaluator):
         super(InstanceSegmentationEvaluator, self).__init__()
 
     def _get_metric_functions(self):
-        from ote.metrics.instance_segmentation.common import coco_ap_eval
-        return [coco_ap_eval]
+        from ote.metrics.detection.common import coco_ap_eval_segm
+        return [coco_ap_eval_segm]

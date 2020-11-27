@@ -47,7 +47,7 @@ class InstanceSegmentationExporter(BaseExporter):
     @staticmethod
     def _get_input_shape(cfg):
         width, height = cfg.data.test.pipeline[1].img_scale
-        size_divisor = cfg.data.train.pipeline[5]['size_divisor']
+        size_divisor = cfg.data.train.dataset.pipeline[5]['size_divisor']
         width = ceil(width / size_divisor) * size_divisor
         height = ceil(height / size_divisor) * size_divisor
         return height, width
