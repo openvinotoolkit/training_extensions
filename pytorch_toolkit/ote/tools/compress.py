@@ -22,6 +22,7 @@ from ote.modules import (build_arg_parser,
                          build_arg_converter,
                          build_trainer,
                          build_compression_arg_transformer)
+from ote.modules.compression import is_compression_enabled_in_template
 
 
 def main():
@@ -32,22 +33,25 @@ def main():
         raise RuntimeError(f'Cannot make compression for the template that'
                            f' does not have "compression" field in its modules'
                            f' file {MODULES_CONFIG_FILENAME}')
+    if not is_compression_enabled_in_template(MODEL_TEMPLATE_FILENAME):
+        raise RuntimeError(f'Cannot make compression for the template that'
+                           f' does not enable any of compression flags')
 
     arg_parser = build_arg_parser(modules['arg_parser'])
     ote_args = vars(arg_parser.get_compression_parser(MODEL_TEMPLATE_FILENAME).parse_args())
 
     arg_converter = build_arg_converter(modules['arg_converter'])
-    train_args = arg_converter.convert_compress_args(MODEL_TEMPLATE_FILENAME, ote_args)
+    compress_args = arg_converter.convert_compress_args(MODEL_TEMPLATE_FILENAME, ote_args)
 
     compression_arg_transformer = build_compression_arg_transformer(modules['compression'])
-    train_args = compression_arg_transformer.process_args(MODEL_TEMPLATE_FILENAME, train_args)
+    compress_args = compression_arg_transformer.process_args(MODEL_TEMPLATE_FILENAME, compress_args)
 
     # Note that compression in this tool will be made by the same trainer,
     # as in the tool train.py
     # The difference is only in the argparser and in the NNCFConfigTransformer used to
     # transform the configuration file.
     trainer = build_trainer(modules['trainer'])
-    trainer(**train_args)
+    trainer(**compress_args)
 
 
 if __name__ == '__main__':

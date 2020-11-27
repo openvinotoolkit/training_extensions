@@ -20,29 +20,40 @@ import json
 from mmcv import Config
 
 from ote.utils import load_config
-from .utils import merge_dicts_and_lists_b_into_a
+from .merger import merge_dicts_and_lists_b_into_a
 
 # TODO(LeonidBeynenson): implement unit tests on NNCFConfigGenerator
 
+POSSIBLE_NNCF_PARTS = {'int8', 'sparsity', 'pruning'}
+COMPRESSION_CONFIG_KEY = 'compression_config'
+
+def is_compression_enabled_in_template(template_path):
+    template = load_config(template_path)
+    compression_template = template.get('compression')
+    if not compression_template:
+        return False
+    assert isinstance(compression_template, dict), (
+            f'Error: compression part of template is not a dict: template["compression"]={compression_template}')
+    possible_keys = POSSIBLE_NNCF_PARTS | {COMPRESSION_CONFIG_KEY}
+    unknown_keys = set(compression_template.keys()) - possible_keys
+    if unknown_keys:
+        raise RuntimeError(f'Compression parameters contain unknown keys: {list(unknown_keys)}')
+    if COMPRESSION_CONFIG_KEY not in compression_template:
+        raise RuntimeError(f'Compression parameters do not contain the field "{COMPRESSION_CONFIG_KEY}"')
+    is_compression_enabled = any(compression_template.get(key) for key in POSSIBLE_NNCF_PARTS)
+    return is_compression_enabled
+
 class NNCFConfigGenerator:
-    POSSIBLE_NNCF_PARTS = {'int8', 'sparsity', 'pruning'}
-    COMPRESSION_CONFIG_KEY = 'compression_config'
 
     def __call__(self, template_path):
+        assert is_compression_enabled_in_template(template_path), (
+                'Error: compression class is called for a template that does not enable compression.'
+                ' This must not be happened in OTE.')
         template = load_config(template_path)
-        compression_template = template.get('compression')
-        if not compression_template:
-            return {}
-        assert isinstance(compression_template, dict), f'Error: compression part of template is not a dict: template["compression"]={compression_template}'
-        possible_keys = self.POSSIBLE_NNCF_PARTS | {self.COMPRESSION_CONFIG_KEY}
-        unknown_keys = set(compression_template.keys()) - possible_keys
-        if unknown_keys:
-            raise RuntimeError(f'Compression parameters contain unknown keys: {list(unknown_keys)}')
+        compression_template = template['compression']
 
         compression_template = copy(compression_template)
-        if self.COMPRESSION_CONFIG_KEY not in compression_template:
-            raise RuntimeError(f'Error: compression part of template does not contain the key {self.COMPRESSION_CONFIG_KEY}')
-        compression_config_path = compression_template.pop(self.COMPRESSION_CONFIG_KEY)
+        compression_config_path = compression_template.pop(COMPRESSION_CONFIG_KEY)
 
         compression_parts_to_choose = []
         for k, v in compression_template.items():
