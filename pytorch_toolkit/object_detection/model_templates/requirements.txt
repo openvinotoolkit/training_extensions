@@ -1,2 +1,1 @@
 ./packages/ote
-nncf==1.4.1
