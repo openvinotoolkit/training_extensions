@@ -17,7 +17,8 @@
 import argparse
 import os
 import sys
-import unittest
+
+from common.utils import run_tests_by_pattern
 
 
 def parse_args():
@@ -33,13 +34,11 @@ def main():
         return 0
 
     args = parse_args()
-    if args.verbose:
-        verbosity=2
-    else:
-        verbosity=1
 
-    testsuite = unittest.TestLoader().discover(os.path.dirname(__file__), pattern=args.pattern)
-    ret = not unittest.TextTestRunner(verbosity=verbosity).run(testsuite).wasSuccessful()
+    was_successful = run_tests_by_pattern(folder=os.path.dirname(__file__),
+                                          pattern=args.pattern,
+                                          verbose=args.verbose)
+    ret = not was_successful
     sys.exit(ret)
 
 
