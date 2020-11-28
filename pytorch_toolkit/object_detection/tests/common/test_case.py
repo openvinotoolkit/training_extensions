@@ -358,7 +358,7 @@ def create_nncf_test_case(problem_name, model_name, ann_file, img_root, template
 
         @unittest.skipUnless(torch.cuda.is_available(), 'No GPU found')
         def test_nncf_compress_on_gpu(self):
-            log_file = os.path.join(self.template_folder, 'test_nncf.log')
+            log_file = os.path.join(self.template_folder, f'log__{self.id()}.txt')
             run_through_shell(
                 f'cd {self.template_folder};'
                 f'python compress.py'
@@ -367,18 +367,17 @@ def create_nncf_test_case(problem_name, model_name, ann_file, img_root, template
                 f' --val-ann-files {self.ann_file}'
                 f' --val-data-roots {self.img_root}'
                 f' --load-weights snapshot.pth'
-                f' --save-checkpoints-to {self.template_folder}'
+                f' --save-checkpoints-to {self.template_folder}/output_{self.id()}'
                 f' --gpu-num 1'
                 f' --batch-size 1'
-                f' |& tee {log_file}')
-            # TODO(LeonidBeynenson): think about using |& for other tests
+                f' | tee {log_file}')
 
             ap = collect_ap(log_file)
             self.assertGreater(ap[-1], 0)
 
         @unittest.skipUnless(torch.cuda.is_available(), 'No GPU found')
         def test_nncf_finetune_and_compress_on_gpu(self):
-            log_file = os.path.join(self.template_folder, 'test_nncf.log')
+            log_file = os.path.join(self.template_folder, f'log__{self.id()}.txt')
             total_epochs = get_epochs(self.template_file)
             total_epochs_with_finetuning = total_epochs + 2
             run_through_shell(
@@ -389,14 +388,55 @@ def create_nncf_test_case(problem_name, model_name, ann_file, img_root, template
                 f' --val-ann-files {self.ann_file}'
                 f' --val-data-roots {self.img_root}'
                 f' --resume-from snapshot.pth'
-                f' --save-checkpoints-to {self.template_folder}'
+                f' --save-checkpoints-to {self.template_folder}/output_{self.id()}'
                 f' --gpu-num 1'
                 f' --batch-size 1'
                 f' --epochs {total_epochs_with_finetuning}'
-                f' |& tee {log_file}')
+                f' | tee {log_file}')
 
             ap = collect_ap(log_file)
             self.assertGreater(ap[-1], 0)
+
+        @unittest.skipUnless(torch.cuda.is_available(), 'No GPU found')
+        def test_nncf_compress_and_eval_on_gpu(self):
+            log_file = os.path.join(self.template_folder, f'log__{self.id()}.txt')
+            checkpoints_dir = f'{self.template_folder}/output_{self.id()}'
+            run_through_shell(
+                f'cd {self.template_folder};'
+                f'python compress.py'
+                f' --train-ann-files {self.ann_file}'
+                f' --train-data-roots {self.img_root}'
+                f' --val-ann-files {self.ann_file}'
+                f' --val-data-roots {self.img_root}'
+                f' --load-weights snapshot.pth'
+                f' --save-checkpoints-to {checkpoints_dir}'
+                f' --gpu-num 1'
+                f' --batch-size 1'
+                f' | tee {log_file}')
+            compress_ap = collect_ap(log_file)
+            last_compress_ap = compress_ap[-1]
+            logging.info(f'From training last_compress_ap={last_compress_ap}')
+
+            latest_file = f'{checkpoints_dir}/latest.pth'
+            self.assertTrue(os.path.isfile(latest_file), f'Cannot find the latest.pth in path `{latest_file}`')
+
+            metrics_path = f'{checkpoints_dir}/metrics.yaml'
+            run_through_shell(
+                f'cd {self.template_folder};'
+                f'python eval.py'
+                f' --test-ann-files {self.ann_file}'
+                f' --test-data-roots {self.img_root}'
+                f' --save-metrics-to {metrics_path}'
+                f' --load-weights {latest_file}'
+                )
+
+            with open(metrics_path) as read_file:
+                content = yaml.safe_load(read_file)
+
+            ap = [metric['value'] for metric in content['metrics'] if metric['key'] == 'ap'][0]
+
+            logging.info(f'Eval ap={ap}')
+            self.assertLess(abs(last_compress_ap - ap/100), 1e-6)
 
     return TestCaseOteApi
 

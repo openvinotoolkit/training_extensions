@@ -109,8 +109,8 @@ class BaseTrainer(metaclass=ABCMeta):
         if not self.work_dir:
             logging.warning('Cannot return final checkpoint: work_dir is not set')
             return None
-        glob_template = f'{self.work_dir}/**/{self.latest_file_name}'
-        latest_snapshots = list(glob.glob(glob_template, recursive=True))
+        glob_filter = f'{self.work_dir}/**/{self.latest_file_name}'
+        latest_snapshots = list(glob.glob(glob_filter, recursive=True))
         if not latest_snapshots:
             logging.warning(f'Cannot find the latest snapshot {self.latest_file_name} in the work_dir {self.work_dir}')
             return None
