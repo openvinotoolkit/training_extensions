@@ -50,9 +50,9 @@ def run_through_shell(cmd):
 def run_tests_by_pattern(folder, pattern, verbose):
     logging.basicConfig(level=logging.INFO)
     if verbose:
-        verbosity=2
+        verbosity = 2
     else:
-        verbosity=1
+        verbosity = 1
     testsuite = unittest.TestLoader().discover(folder, pattern=pattern)
     was_successful = unittest.TextTestRunner(verbosity=verbosity).run(testsuite).wasSuccessful()
     return was_successful

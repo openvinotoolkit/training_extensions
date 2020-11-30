@@ -43,12 +43,15 @@ def get_epochs(template_file):
 
 def skip_non_instantiated_template_if_its_allowed(template_folder, problem_name, model_name):
     # Note that this is for debug purposes only
+    # pylint: disable=no-else-raise
     should_skip_absent_templates = os.environ.get('SHOULD_SKIP_ABSENT_TEMPLATES')
     if not os.path.isdir(template_folder):
         if should_skip_absent_templates:
-            raise unittest.SkipTest(f'The template folder for {problem_name}/{model_name} is not instantiated -- SKIPPING IT')
+            raise unittest.SkipTest(f'The template folder for {problem_name}/{model_name}'
+                                    f' is not instantiated -- SKIPPING IT')
         else:
-            raise unittest.TestCase.failureException(f'The template folder for {problem_name}/{model_name} is not instantiated')
+            raise unittest.TestCase.failureException(f'The template folder for {problem_name}/{model_name}'
+                                                     f' is not instantiated')
 
 
 def skip_if_cpu_is_not_supported(template_file):
@@ -272,7 +275,12 @@ def create_export_test_case(problem_name, model_name, ann_file, img_root, alt_ss
     return ExportTestCase
 
 
-def create_nncf_test_case(problem_name, model_name, ann_file, img_root, template_update_dict, compression_cfg_update_dict=None):
+def create_nncf_test_case(problem_name, model_name, ann_file, img_root,
+                          template_update_dict,
+                          compression_cfg_update_dict=None):
+# TODO(LeonidBeynenson): try to reduce the number of arguments,
+#                        refactor it
+ # pylint: disable=too-many-arguments, too-many-statements
     """
     Note that template_update_dict will be used to update template file
     using the function mmcv.Config.merge_from_dict
@@ -296,7 +304,9 @@ def create_nncf_test_case(problem_name, model_name, ann_file, img_root, template
             cls.copy_template_folder(cls.src_template_folder, cls.template_folder)
 
             cls.template_file = os.path.join(cls.template_folder, 'template.yaml')
-            cls.apply_update_dict_params_to_template_file(cls.template_file, template_update_dict, compression_cfg_update_dict)
+            cls.apply_update_dict_params_to_template_file(cls.template_file,
+                                                          template_update_dict,
+                                                          compression_cfg_update_dict)
 
             cls.ann_file = ann_file
             cls.img_root = img_root
@@ -346,11 +356,10 @@ def create_nncf_test_case(problem_name, model_name, ann_file, img_root, template
 
             if compression_cfg_update_dict:
                 assert 'compression.compression_config' not in template_update_dict, (
-                        'Config cannot be changed from template_update_dict,'
-                        ' if we patch compression config by compression_cfg_update_dict')
+                    'Config cannot be changed from template_update_dict,'
+                    ' if we patch compression config by compression_cfg_update_dict')
 
                 compression_cfg_rel_path = template_data['compression']['compression_config']
-                compression_cfg_name = os.path.basename(compression_cfg_rel_path)
                 compression_cfg_path = os.path.join(os.path.dirname(template_file), compression_cfg_rel_path)
                 new_compression_cfg_path = compression_cfg_path + '.UPDATED_FROM_TEST.json'
                 compression_cfg = mmcv.Config.fromfile(compression_cfg_path)
@@ -477,8 +486,8 @@ def create_nncf_test_case(problem_name, model_name, ann_file, img_root, template
 
             model_bin_paths = list(glob.glob(os.path.join(checkpoints_dir, '*.bin')))
             assert len(model_bin_paths) == 1, (
-                    f'Wrong result of export.py: globbing "*.bin" in'
-                    f' {checkpoints_dir} gives {model_bin_paths}')
+                f'Wrong result of export.py: globbing "*.bin" in'
+                f' {checkpoints_dir} gives {model_bin_paths}')
             run_through_shell(
                 f'cd {os.path.dirname(self.template_file)};'
                 f'python eval.py'
@@ -498,4 +507,3 @@ def create_nncf_test_case(problem_name, model_name, ann_file, img_root, template
             self.assertGreater(ap, last_compress_ap - self.test_export_thr)
 
     return TestCaseOteApi
-
