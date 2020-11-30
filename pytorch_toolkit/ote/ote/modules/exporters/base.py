@@ -37,7 +37,6 @@ class BaseExporter(metaclass=ABCMeta):
         if args['openvino']:
             self._export_to_openvino(args, tools_dir)
 
-        # TODO(LeonidBeynenson): think if this should be 'elif'
         if args['onnx']:
             self._export_to_onnx(args, tools_dir)
 
