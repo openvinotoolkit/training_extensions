@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+import glob
 import json
 import logging
 import os
@@ -301,6 +302,12 @@ def create_nncf_test_case(problem_name, model_name, ann_file, img_root, template
             cls.img_root = img_root
             cls.dependencies = get_dependencies(cls.template_file)
 
+            # Note that such big threshold is required, since
+            # we have very small dataset for training and evaluation:
+            # if network compression causes other detections
+            # on 2-4 images, the accuracy drop will be significant.
+            cls.test_export_thr = 0.05
+
             download_snapshot_if_not_yet(cls.template_file, cls.template_folder)
 
             run_through_shell(
@@ -434,9 +441,61 @@ def create_nncf_test_case(problem_name, model_name, ann_file, img_root, template
                 content = yaml.safe_load(read_file)
 
             ap = [metric['value'] for metric in content['metrics'] if metric['key'] == 'ap'][0]
+            ap = ap/100
 
-            logging.info(f'Eval ap={ap}')
-            self.assertLess(abs(last_compress_ap - ap/100), 1e-6)
+            logging.info(f'Evaluation result ap={ap}')
+            self.assertLess(abs(last_compress_ap - ap), 1e-6)
+
+        @unittest.skipUnless(torch.cuda.is_available(), 'No GPU found')
+        def test_nncf_compress_and_export(self):
+            log_file = os.path.join(self.template_folder, f'log__{self.id()}.txt')
+            checkpoints_dir = f'{self.template_folder}/output_{self.id()}'
+            run_through_shell(
+                f'cd {self.template_folder};'
+                f'python compress.py'
+                f' --train-ann-files {self.ann_file}'
+                f' --train-data-roots {self.img_root}'
+                f' --val-ann-files {self.ann_file}'
+                f' --val-data-roots {self.img_root}'
+                f' --load-weights snapshot.pth'
+                f' --save-checkpoints-to {checkpoints_dir}'
+                f' --gpu-num 1'
+                f' --batch-size 1'
+                f' | tee {log_file}')
+            compress_ap = collect_ap(log_file)
+            last_compress_ap = compress_ap[-1]
+
+            latest_file = f'{checkpoints_dir}/latest.pth'
+            self.assertTrue(os.path.isfile(latest_file), f'Cannot find the latest.pth in path `{latest_file}`')
+
+            run_through_shell(
+                f'cd {os.path.dirname(self.template_file)};'
+                f'python export.py'
+                f' --load-weights {latest_file}'
+                f' --save-model-to {checkpoints_dir}'
+            )
+
+            model_bin_paths = list(glob.glob(os.path.join(checkpoints_dir, '*.bin')))
+            assert len(model_bin_paths) == 1, (
+                    f'Wrong result of export.py: globbing "*.bin" in'
+                    f' {checkpoints_dir} gives {model_bin_paths}')
+            run_through_shell(
+                f'cd {os.path.dirname(self.template_file)};'
+                f'python eval.py'
+                f' --test-ann-files {ann_file}'
+                f' --test-data-roots {img_root}'
+                f' --load-weights {model_bin_paths[0]}'
+                f' --save-metrics-to {os.path.join(checkpoints_dir, "metrics.yaml")}'
+            )
+
+            with open(os.path.join(checkpoints_dir, "metrics.yaml")) as read_file:
+                content = yaml.safe_load(read_file)
+                ap = [metric for metric in content['metrics'] if metric['key'] == 'ap'][0]['value']
+                ap = ap/100
+
+            logging.info(f'From training last_compress_ap={last_compress_ap}')
+            logging.info(f'From evaluation of OpenVINO(TM) model ap={ap}')
+            self.assertGreater(ap, last_compress_ap - self.test_export_thr)
 
     return TestCaseOteApi
 

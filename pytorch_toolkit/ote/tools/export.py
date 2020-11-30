@@ -14,6 +14,8 @@
  limitations under the License.
 """
 
+import logging
+
 from ote import MODEL_TEMPLATE_FILENAME, MODULES_CONFIG_FILENAME
 from ote.utils import load_config
 from ote.modules import build_arg_parser, build_exporter, build_compression_arg_transformer
@@ -21,6 +23,7 @@ from ote.modules.compression import is_compression_enabled_in_template
 
 
 def main():
+    logging.basicConfig(level=logging.INFO)
     modules = load_config(MODULES_CONFIG_FILENAME)
 
     arg_parser = build_arg_parser(modules['arg_parser'])

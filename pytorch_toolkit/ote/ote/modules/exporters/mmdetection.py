@@ -21,7 +21,7 @@ from subprocess import run
 from ote import MMDETECTION_TOOLS
 from mmcv.utils import Config
 
-from .base import BaseExporter
+from .base import BaseExporter, run_through_shell
 from ..registry import EXPORTERS
 
 
@@ -34,18 +34,20 @@ class MMDetectionExporter(BaseExporter):
         super()._export_to_openvino(args, tools_dir)
 
         # FIXME(ikrylov): remove alt_ssd_export block as soon as it becomes useless.
+        # (LeonidBeynenson): Please, note that alt_ssd_export appoach may be applied only
+        #                    to SSD models only that were not compressed by NNCF.
         config = Config.fromfile(args["config"])
-        if hasattr(config.model, 'bbox_head'):
-            if config.model.bbox_head.type == 'SSDHead':
-                run(f'python {os.path.join(tools_dir, "export.py")} '
-                    f'{args["config"]} '
-                    f'{args["load_weights"]} '
-                    f'{os.path.join(args["save_model_to"], "alt_ssd_export")} '
-                    f'openvino '
-                    f'--input_format {args["openvino_input_format"]} '
-                    f'--alt_ssd_export ',
-                    shell=True,
-                    check=True)
+        should_run_alt_ssd_export = (hasattr(config.model, 'bbox_head')
+                                     and config.model.bbox_head.type == 'SSDHead'
+                                     and not config.get('nncf_config'))
+        if should_run_alt_ssd_export:
+            run_through_shell(f'python {os.path.join(tools_dir, "export.py")} '
+                              f'{args["config"]} '
+                              f'{args["load_weights"]} '
+                              f'{os.path.join(args["save_model_to"], "alt_ssd_export")} '
+                              f'openvino '
+                              f'--input_format {args["openvino_input_format"]} '
+                              f'--alt_ssd_export ')
 
     def _get_tools_dir(self):
         return MMDETECTION_TOOLS
