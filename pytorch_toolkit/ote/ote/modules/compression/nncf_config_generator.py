@@ -107,14 +107,11 @@ class NNCFConfigGenerator:
             compression_part_dict = compression_parts[part]
             try:
                 nncf_config_part = merge_dicts_and_lists_b_into_a(nncf_config_part, compression_part_dict)
-                cur_error = None
-            except AssertionError as e:
-                cur_error = e
+            except AssertionError as cur_error:
+                err_descr = (f'Error during merging the parts of nncf configs from file "{compression_config_path}":\n'
+                    f'the current part={part}, '
+                    f'the order of merging parts into base is {compression_parts_to_choose}.\n'
+                    f'The error is:\n{cur_error}')
+                raise RuntimeError(err_descr) from None
 
-            if cur_error:
-                raise RuntimeError(
-                        f'Error during merging the parts of nncf configs from file "{compression_config_path}":\n'
-                        f'the current part={part}, '
-                        f'the order of merging parts into base is {compression_parts_to_choose}.\n'
-                        f'The error is:\n{cur_error}')
         return nncf_config_part
