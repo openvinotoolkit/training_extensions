@@ -4,11 +4,11 @@ Models that are able to instantiate segmentation.
 
 | Model Name |  Input resolution (HxW) | Complexity (GFLOPs) | Size (Mp) | Bbox AP @ [IoU=0.50:0.95] | Segm AP @ [IoU=0.50:0.95] | Links | GPU_NUM |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| instance-segmentation-0904 |  384x416 | 41.36 | 29.7471 | 32.9 | 29.1 |  [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/instance-segmentation/v2/instance-segmentation-0904-0912.pth), [model_template](./instance-segmentation-0904/template.yaml) | 2 |
-| instance-segmentation-0912 | 512x544 | 66.49 | 29.7478 | 35.6 | 31.3 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/instance-segmentation/v2/instance-segmentation-0904-0912.pth), [model_template](./instance-segmentation-0912/template.yaml) | 2 |
-| instance-segmentation-0228 | 608x608 | 147.19 | 49.4374 | 39.0 | 33.9 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/instance-segmentation/v2/instance-segmentation-0228.pth), [model_template](./instance-segmentation-0228/template.yaml) | 2 |
-| instance-segmentation-0002 | 768x1024 | 423.02 | 47.58 | 40.8 | 36.9 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/instance-segmentation/v2/instance-segmentation-0002.pth), [model_template](./instance-segmentation-0002/template.yaml) | 8 |
-| instance-segmentation-0091 | 800x1344 | 828.45 | 100.1455 | 45.8 | 39.7 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/instance-segmentation/v2/instance-segmentation-0091.pth), [model_template](./instance-segmentation-0091/template.yaml) | 8 |
+| instance-segmentation-0904 |  384x416 | 41.36 | 29.7471 | 32.9 | 29.1 |  [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/instance_segmentation/v2/instance-segmentation-0904-0912.pth), [model_template](./instance-segmentation-0904/template.yaml) | 2 |
+| instance-segmentation-0912 | 512x544 | 66.49 | 29.7478 | 35.6 | 31.3 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/instance_segmentation/v2/instance-segmentation-0904-0912.pth), [model_template](./instance-segmentation-0912/template.yaml) | 2 |
+| instance-segmentation-0228 | 608x608 | 147.19 | 49.4374 | 39.0 | 33.9 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/instance_segmentation/v2/instance-segmentation-0228.pth), [model_template](./instance-segmentation-0228/template.yaml) | 2 |
+| instance-segmentation-0002 | 768x1024 | 423.02 | 47.58 | 40.8 | 36.9 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/instance_segmentation/v2/instance-segmentation-0002.pth), [model_template](./instance-segmentation-0002/template.yaml) | 8 |
+| instance-segmentation-0091 | 800x1344 | 828.45 | 100.1455 | 45.8 | 39.7 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/instance_segmentation/v2/instance-segmentation-0091.pth), [model_template](./instance-segmentation-0091/template.yaml) | 8 |
 
 Average Precision (AP) is defined as an area under the precision/recall curve.
 
