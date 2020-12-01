@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+set -v
+set -x
 
 work_dir=$(realpath "$(dirname $0)")
 
@@ -24,7 +26,7 @@ virtualenv ${venv_dir} -p python3 --prompt="(action)"
 
 path_openvino_vars="${INTEL_OPENVINO_DIR:-/opt/intel/openvino}/bin/setupvars.sh"
 if [[ -e "${path_openvino_vars}" ]]; then
-  echo ". ${path_openvino_vars}" >> venv/bin/activate
+  echo ". ${path_openvino_vars}" >> ${venv_dir}/bin/activate
 fi
 
 . ${venv_dir}/bin/activate

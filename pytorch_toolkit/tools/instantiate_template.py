@@ -19,6 +19,9 @@ from subprocess import run
 
 import yaml
 
+import sys
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'ote'))
+
 from ote.utils.misc import download_snapshot_if_not_yet
 
 
@@ -33,7 +36,7 @@ def parse_args():
 
 def main():
     logging.basicConfig(level=logging.INFO)
-    
+
     args = parse_args()
     with open(args.template) as read_file:
         content = yaml.load(read_file, yaml.SafeLoader)

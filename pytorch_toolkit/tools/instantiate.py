@@ -15,23 +15,30 @@
 import argparse
 import logging
 import glob
+import logging
 import os
-from subprocess import run
-
 import yaml
 
+from subprocess import run
+
+def run_with_log(*args, **kwargs):
+    cmd = args[0]
+    logging.info(f'Running command\n`{cmd}`')
+    return run(*args, **kwargs)
 
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('destination')
     parser.add_argument('--do-not-load-snapshots', action='store_true')
+    parser.add_argument('--templates-filter', default='**/template.yaml')
 
     return parser.parse_args()
 
 
 def main():
+    logging.basicConfig(level=logging.INFO)
     args = parse_args()
-    template_filenames = glob.glob('**/template.yaml', recursive=True)
+    template_filenames = glob.glob(args.templates_filter, recursive=True)
     problems_filename = glob.glob('**/problems.yaml', recursive=True)
     assert len(problems_filename) == 1
     problems_filename = problems_filename[0]
@@ -60,11 +67,12 @@ def main():
         problem_folder = os.path.join(args.destination, domain_folder, problem_folder)
         instance_folder = os.path.join(problem_folder, model_folder)
 
+        logging.info(f'Instantiate {template_filename} to {instance_folder}')
         if args.do_not_load_snapshots:
-            run(f'python3 tools/instantiate_template.py {template_filename} {instance_folder}'
+            run_with_log(f'python3 tools/instantiate_template.py {template_filename} {instance_folder}'
                 f' --do-not-load-snapshot', check=True, shell=True)
         else:
-            run(f'python3 tools/instantiate_template.py {template_filename} {instance_folder}',
+            run_with_log(f'python3 tools/instantiate_template.py {template_filename} {instance_folder}',
                 check=True, shell=True)
 
         problem_dict = problems_dict.get(content['problem'], None)
@@ -78,8 +86,7 @@ def main():
                     write_file.write(problem_dict['cvat_schema'])
 
     for domain_folder in domain_folders:
-        run(f'cd {domain_folder}; ./init_venv.sh {os.path.join(args.destination, domain_folder, "venv")}', shell=True)
-
+        run_with_log(f'cd {domain_folder}; ./init_venv.sh {os.path.join(args.destination, domain_folder, "venv")}', shell=True, check=True)
 
 if __name__ == '__main__':
     main()

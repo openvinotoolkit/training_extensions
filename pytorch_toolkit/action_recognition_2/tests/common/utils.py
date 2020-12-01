@@ -13,33 +13,8 @@
 # and limitations under the License.
 
 import logging
-import os
 import unittest
 from subprocess import run
-
-
-def collect_ap(path):
-    ap = []
-    beginning = 'Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = '
-    with open(path) as read_file:
-        content = [line.strip() for line in read_file.readlines()]
-        for line in content:
-            if line.startswith(beginning):
-                ap.append(float(line.replace(beginning, '')))
-    return ap
-
-
-def download_if_not_yet(output_folder, url):
-    os.makedirs(output_folder, exist_ok=True)
-    path = os.path.join(output_folder, os.path.basename(url))
-    if not os.path.exists(path):
-        os.system(f'wget --no-verbose {url} -P {output_folder}')
-    return path
-
-
-def relative_abs_error(expected, actual):
-    return abs(expected - actual) / expected
-
 
 def run_through_shell(cmd):
     cmdstr = ' '.join(cmd) if isinstance(cmd, list) else cmd
@@ -50,9 +25,9 @@ def run_through_shell(cmd):
 def run_tests_by_pattern(folder, pattern, verbose):
     logging.basicConfig(level=logging.INFO)
     if verbose:
-        verbosity = 2
+        verbosity=2
     else:
-        verbosity = 1
+        verbosity=1
     testsuite = unittest.TestLoader().discover(folder, pattern=pattern)
     was_successful = unittest.TextTestRunner(verbosity=verbosity).run(testsuite).wasSuccessful()
     return was_successful

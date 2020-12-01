@@ -14,6 +14,7 @@
  limitations under the License.
 """
 
+import glob
 import logging
 import os
 import sys
@@ -27,14 +28,24 @@ from ote.utils import run_with_termination
 
 
 class BaseTrainer(metaclass=ABCMeta):
+    parameter_work_dir = 'work_dir'
+    latest_file_name = 'latest.pth'
+
     def __init__(self):
-        pass
+        self.work_dir = None
 
     def __call__(self, config, gpu_num, out, update_config, tensorboard_dir):
         logging.basicConfig(level=logging.INFO)
         logging.info(f'Commandline:\n{" ".join(sys.argv)}')
 
         cfg = Config.fromfile(config)
+
+        # This is required to skip the parameters that were not set in the template
+        # (e.g. base_learning_rate or epochs) -- they will have default value None in
+        # the parser
+        update_config = {k: v for k, v in update_config.items() if v is not None}
+
+        self.work_dir = update_config.get(self.parameter_work_dir)
 
         update_config = ' '.join([f'{k}={v}' for k, v in update_config.items()])
         update_config = f' --update_config {update_config}' if update_config else ''
@@ -93,3 +104,16 @@ class BaseTrainer(metaclass=ABCMeta):
     @abstractmethod
     def _get_tools_dir(self):
         pass
+
+    def get_latest_snapshot(self):
+        if not self.work_dir:
+            logging.warning('Cannot return final checkpoint: work_dir is not set')
+            return None
+        glob_filter = f'{self.work_dir}/**/{self.latest_file_name}'
+        latest_snapshots = list(glob.glob(glob_filter, recursive=True))
+        if not latest_snapshots:
+            logging.warning(f'Cannot find the latest snapshot {self.latest_file_name} in the work_dir {self.work_dir}')
+            return None
+        if len(latest_snapshots) > 1:
+            raise RuntimeError('Find more than one latest snapshots {self.latest_file_name} in the work_dir {self.work_dir}')
+        return latest_snapshots[0]

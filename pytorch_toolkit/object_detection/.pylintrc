@@ -38,7 +38,8 @@ disable=import-error,
         duplicate-code,
         no-name-in-module,
         no-member,
-        unsubscriptable-object
+        unsubscriptable-object,
+        logging-fstring-interpolation
 
 
 
@@ -125,7 +126,7 @@ no-docstring-rgx=__.*__
 [MISCELLANEOUS]
 
 # List of note tags to take in consideration, separated by a comma.
-notes=FIXME,XXX,TODO
+notes=FIXME,XXX
 
 
 [FORMAT]

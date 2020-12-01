@@ -14,7 +14,10 @@
  limitations under the License.
 """
 
-from ote.api import train_args_parser, test_args_parser, export_args_parser
+from ote.api import (train_args_parser,
+                     test_args_parser,
+                     export_args_parser,
+                     compression_args_parser)
 
 from ..registry import ARG_PARSERS
 
@@ -32,3 +35,6 @@ class DefaultArgParser:
 
     def get_export_parser(self, config_path):
         return export_args_parser(config_path)
+
+    def get_compression_parser(self, config_path):
+        return compression_args_parser(config_path)

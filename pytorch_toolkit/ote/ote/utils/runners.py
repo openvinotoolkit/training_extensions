@@ -14,6 +14,7 @@
  limitations under the License.
 """
 
+import logging
 import os
 import signal
 import subprocess
@@ -49,6 +50,7 @@ class NonBlockingStreamReader:
 
 
 def run_with_termination(cmd):
+    logging.info(f'Running with termination the command\n{cmd}')
     process = subprocess.Popen(cmd, stderr=subprocess.PIPE)
 
     nbsr_err = NonBlockingStreamReader(process.stderr)

@@ -15,8 +15,8 @@ dependencies:
   destination: eval.py
 - source: ../../../../../pytorch_toolkit/ote/tools/export.py
   destination: export.py
-- source: ../../../../../pytorch_toolkit/ote/tools/quantize.py
-  destination: quantize.py
+- source: ../../../../../pytorch_toolkit/ote/tools/compress.py
+  destination: compress.py
 - source: ../../../../../pytorch_toolkit/ote
   destination: packages/ote
 - source: ../../requirements.txt
@@ -40,7 +40,7 @@ output_format:
   openvino:
     default: true
     input_format: BGR
-quantization: TBD
+compression: null
 metrics:
 - display_name: AP @ [IoU=0.50:0.95]
   key: ap

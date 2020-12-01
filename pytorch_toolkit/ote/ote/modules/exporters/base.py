@@ -14,10 +14,18 @@
  limitations under the License.
 """
 
+import logging
 import os
 from subprocess import run
 from abc import ABCMeta, abstractmethod
 
+
+def run_through_shell(cmd):
+    # TODO: move to a common file
+    cmdstr = ' '.join(cmd) if isinstance(cmd, list) else cmd
+    cmdstr = cmdstr.replace(';', ';\n').replace(' --', ' \\\n    --')
+    logging.info(f'Running through shell cmd\n`{cmdstr}\n`')
+    run(cmd, shell=True, check=True, executable="/bin/bash")
 
 class BaseExporter(metaclass=ABCMeta):
     def __init__(self):
@@ -33,23 +41,19 @@ class BaseExporter(metaclass=ABCMeta):
             self._export_to_onnx(args, tools_dir)
 
     def _export_to_openvino(self, args, tools_dir):
-        run(f'python {os.path.join(tools_dir, "export.py")} '
-            f'{args["config"]} '
-            f'{args["load_weights"]} '
-            f'{args["save_model_to"]} '
-            f'openvino '
-            f'--input_format {args["openvino_input_format"]}',
-            shell=True,
-            check=True)
+        run_through_shell(f'python {os.path.join(tools_dir, "export.py")} '
+                          f'{args["config"]} '
+                          f'{args["load_weights"]} '
+                          f'{args["save_model_to"]} '
+                          f'openvino '
+                          f'--input_format {args["openvino_input_format"]}')
 
     def _export_to_onnx(self, args, tools_dir):
-        run(f'python {os.path.join(tools_dir, "export.py")} '
-            f'{args["config"]} '
-            f'{args["load_weights"]} '
-            f'{args["save_model_to"]} '
-            f'onnx ',
-            shell=True,
-            check=True)
+        run_through_shell(f'python {os.path.join(tools_dir, "export.py")} '
+                          f'{args["config"]} '
+                          f'{args["load_weights"]} '
+                          f'{args["save_model_to"]} '
+                          f'onnx ')
 
     @abstractmethod
     def _get_tools_dir(self):
