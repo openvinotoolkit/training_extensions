@@ -1,7 +1,7 @@
 name: instance-segmentation-0912
 domain: Instance Segmentation 2
 problem: COCO Instance Segmentation
-framework: OTEDetection
+framework: OTEDetection v2.1.1
 summary: Instance segmentation based on Mask R-CNN architecture with ResNet50.
 annotation_format: COCO
 dependencies:
@@ -26,8 +26,6 @@ training_target:
 - GPU
 inference_target:
 - CPU
-- iGPU
-- VPU
 hyper_parameters:
   basic:
     batch_size: 16
