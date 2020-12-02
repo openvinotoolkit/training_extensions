@@ -48,3 +48,14 @@ class PersonDetection0202TestCase(
         )
 ):
     """ Test case for person-detection-0202 model. """
+
+
+class PersonDetection0203TestCase(
+        create_test_case(
+            'person-detection',
+            'person-detection-0203',
+            os.path.dirname(__file__) + '/../../../data/airport/annotation_person_train.json',
+            os.path.dirname(__file__) + '/../../../data/airport/train'
+        )
+):
+    """ Test case for person-detection-0203 model. """
