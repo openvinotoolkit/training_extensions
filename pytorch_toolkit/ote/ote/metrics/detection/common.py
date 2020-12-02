@@ -39,7 +39,7 @@ def update_outputs(outputs, metric_names, ap_values):
     assert len(ap_values) == len(metric_names)
     for name, ap in zip(metric_names, ap_values):
         outputs.append(
-            {'key': 'ap', 'value': ap, 'unit': '%', 'display_name': name})
+            {'key': 'ap', 'value': ap * 100, 'unit': '%', 'display_name': name})
 
 
 def coco_ap_eval(config_path, work_dir, snapshot, update_config, show_dir='',
