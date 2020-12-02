@@ -21,7 +21,7 @@ import sys
 import tempfile
 
 from ote import MMDETECTION_TOOLS
-from ote.metrics.detection.common import coco_ap_eval
+from ote.metrics.detection.common import coco_ap_eval_det
 from ote.metrics.face_detection.custom_voc_ap_eval import custom_voc_ap_evaluation
 from ote.metrics.face_detection.wider_face.convert_annotation import convert_to_coco
 from ote.metrics.face_detection.wider_face.convert_predictions import convert_to_wider
@@ -122,7 +122,7 @@ def custom_ap_eval(config_path, work_dir, snapshot, update_config, **kwargs):
     res_pkl = os.path.join(work_dir, 'res.pkl')
     if not os.path.exists(res_pkl):
         # produces res.pkl
-        coco_ap_eval(config_path, work_dir, snapshot, update_config)
+        coco_ap_eval_det(config_path, work_dir, snapshot, update_config)
     res_custom_metrics = os.path.join(work_dir, "custom_metrics.json")
     custom_voc_ap_evaluation(config_path, res_pkl, 0.5, (1024, 1024), res_custom_metrics, update_config)
     with open(res_custom_metrics) as read_file:

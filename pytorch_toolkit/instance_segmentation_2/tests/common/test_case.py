@@ -83,8 +83,8 @@ def create_test_case(problem_name, model_name, ann_file, img_root):
             with open(f'{os.path.dirname(__file__)}/../expected_outputs/{problem_name}/{model_name}.json') as read_file:
                 content = json.load(read_file)
 
-            self.assertLess(abs(content['bbox_map'] - ap[0]), 1e-6)
-            self.assertLess(abs(content['segm_map'] - ap[1]), 1e-6)
+            self.assertLess(abs(content['bbox_map'] - ap[0] / 100), 1e-6)
+            self.assertLess(abs(content['segm_map'] - ap[1] / 100), 1e-6)
 
         def test_evaluation_on_cpu(self):
             self.skip_if_cpu_is_not_supported()
@@ -104,8 +104,8 @@ def create_test_case(problem_name, model_name, ann_file, img_root):
 
             with open(f'{os.path.dirname(__file__)}/../expected_outputs/{problem_name}/{model_name}.json') as read_file:
                 content = json.load(read_file)
-            self.assertLess(abs(content['bbox_map'] - ap[0]), 1e-6)
-            self.assertLess(abs(content['segm_map'] - ap[1]), 1e-6)
+            self.assertLess(abs(content['bbox_map'] - ap[0] / 100), 1e-6)
+            self.assertLess(abs(content['segm_map'] - ap[1] / 100), 1e-6)
 
         @unittest.skipUnless(torch.cuda.is_available(), 'No GPU found')
         def test_finetuning_on_gpu(self):
