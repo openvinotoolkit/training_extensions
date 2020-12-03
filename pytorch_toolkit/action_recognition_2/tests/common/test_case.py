@@ -22,11 +22,7 @@ from subprocess import run
 import torch
 import yaml
 
-from ote.utils.misc import download_snapshot_if_not_yet
-
-
-def run_through_shell(cmd):
-    run(cmd, shell=True, check=True, executable="/bin/bash")
+from ote.utils.misc import download_snapshot_if_not_yet, run_through_shell
 
 
 def collect_accuracy(path):

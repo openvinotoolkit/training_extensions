@@ -21,10 +21,10 @@ import yaml
 
 from subprocess import run
 
-def run_with_log(*args, **kwargs):
-    cmd = args[0]
-    logging.info(f'Running command\n`{cmd}`')
-    return run(*args, **kwargs)
+import sys
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'ote'))
+
+from ote.utils.misc import run_through_shell
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -69,11 +69,10 @@ def main():
 
         logging.info(f'Instantiate {template_filename} to {instance_folder}')
         if args.do_not_load_snapshots:
-            run_with_log(f'python3 tools/instantiate_template.py {template_filename} {instance_folder}'
-                f' --do-not-load-snapshot', check=True, shell=True)
+            run_through_shell(f'python3 tools/instantiate_template.py {template_filename} {instance_folder}'
+                    f' --do-not-load-snapshot')
         else:
-            run_with_log(f'python3 tools/instantiate_template.py {template_filename} {instance_folder}',
-                check=True, shell=True)
+            run_through_shell(f'python3 tools/instantiate_template.py {template_filename} {instance_folder}')
 
         problem_dict = problems_dict.get(content['problem'], None)
         if problem_dict is None:
@@ -86,7 +85,7 @@ def main():
                     write_file.write(problem_dict['cvat_schema'])
 
     for domain_folder in domain_folders:
-        run_with_log(f'cd {domain_folder}; ./init_venv.sh {os.path.join(args.destination, domain_folder, "venv")}', shell=True, check=True)
+        run_through_shell(f'cd {domain_folder}; ./init_venv.sh {os.path.join(args.destination, domain_folder, "venv")}')
 
 if __name__ == '__main__':
     main()

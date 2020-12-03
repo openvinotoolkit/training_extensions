@@ -22,8 +22,8 @@ import mmcv
 import torch
 import yaml
 
-from common.utils import collect_ap, run_through_shell
-from ote.utils.misc import download_snapshot_if_not_yet
+from common.utils import collect_ap
+from ote.utils.misc import download_snapshot_if_not_yet, run_through_shell
 
 
 def get_dependencies(template_file):

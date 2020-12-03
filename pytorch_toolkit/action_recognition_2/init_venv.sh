@@ -1,6 +1,4 @@
 #!/usr/bin/env bash
-set -v
-set -x
 
 work_dir=$(realpath "$(dirname $0)")
 

@@ -33,7 +33,9 @@ def _is_verbose_flag_set():
 
 def run_with_log(*args, **kwargs):
     cmd = args[0]
-    logging.info(f'Running command\n`{cmd}`')
+    cmdstr = ' '.join(cmd) if isinstance(cmd, list) else cmd
+    cmdstr = cmdstr.replace(';', ';\n').replace(' --', ' \\\n    --')
+    logging.info(f'Running command\n`{cmdstr}`')
     return run(*args, **kwargs)
 
 def create_model_template_tests_base(subfolder_name):

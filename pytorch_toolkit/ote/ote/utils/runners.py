@@ -23,6 +23,8 @@ import time
 from queue import Queue, Empty
 from threading import Thread
 
+from .misc import log_shell_cmd
+
 
 class NonBlockingStreamReader:
 
@@ -50,7 +52,7 @@ class NonBlockingStreamReader:
 
 
 def run_with_termination(cmd):
-    logging.info(f'Running with termination the command\n{cmd}')
+    log_shell_cmd(cmd, 'Running with termination the command')
     process = subprocess.Popen(cmd, stderr=subprocess.PIPE)
 
     nbsr_err = NonBlockingStreamReader(process.stderr)

@@ -22,7 +22,7 @@ import yaml
 import sys
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'ote'))
 
-from ote.utils.misc import download_snapshot_if_not_yet
+from ote.utils.misc import download_snapshot_if_not_yet, run_through_shell
 
 
 def parse_args():
@@ -42,7 +42,7 @@ def main():
         content = yaml.load(read_file, yaml.SafeLoader)
 
     os.makedirs(args.output, exist_ok=True)
-    os.system(f'cp -r {os.path.dirname(args.template)}/* {args.output}')
+    run_through_shell(f'cp -r {os.path.dirname(args.template)}/* {args.output}')
 
     for dependency in content['dependencies']:
         source = dependency['source']
@@ -50,7 +50,7 @@ def main():
         if destination != 'snapshot.pth':
             rel_source = os.path.join(os.path.dirname(args.template), source)
             os.makedirs(os.path.dirname(os.path.join(args.output, destination)), exist_ok=True)
-            run(f'cp -r {rel_source} {os.path.join(args.output, destination)}', check=True, shell=True)
+            run_through_shell(f'cp -r {rel_source} {os.path.join(args.output, destination)}')
 
     if not args.do_not_load_snapshot:
         download_snapshot_if_not_yet(args.template, args.output)

@@ -19,13 +19,7 @@ import os
 from subprocess import run
 from abc import ABCMeta, abstractmethod
 
-
-def run_through_shell(cmd):
-    # TODO: move to a common file
-    cmdstr = ' '.join(cmd) if isinstance(cmd, list) else cmd
-    cmdstr = cmdstr.replace(';', ';\n').replace(' --', ' \\\n    --')
-    logging.info(f'Running through shell cmd\n`{cmdstr}\n`')
-    run(cmd, shell=True, check=True, executable="/bin/bash")
+from ote.utils.misc import run_through_shell
 
 class BaseExporter(metaclass=ABCMeta):
     def __init__(self):
