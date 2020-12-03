@@ -6,6 +6,7 @@ venv_dir=$1
 if [ -z "$venv_dir" ]; then
   venv_dir=venv
 fi
+venv_dir=$(realpath "${venv_dir}")
 
 cd ${work_dir}
 
@@ -16,11 +17,8 @@ if [[ -e ${venv_dir} ]]; then
   exit
 fi
 
-# Download mmaction2
-git submodule update --init --recursive --recommend-shallow ../../external/mmaction2
-
 # Create virtual environment
-virtualenv ${venv_dir} -p python3 --prompt="(action)"
+virtualenv ${venv_dir} -p python3 --prompt="(ote)"
 
 path_openvino_vars="${INTEL_OPENVINO_DIR:-/opt/intel/openvino}/bin/setupvars.sh"
 if [[ -e "${path_openvino_vars}" ]]; then
@@ -37,10 +35,6 @@ if [[ -e "${mo_requirements_file}" ]]; then
 else
   echo "[WARNING] Model optimizer requirements were not installed. Please install the OpenVino toolkit to use one."
 fi
-
-pip install -e ../../external/mmaction2/
-MMACTION_DIR=`realpath ../../external/mmaction2/`
-echo "export MMACTION_DIR=${MMACTION_DIR}" >> ${venv_dir}/bin/activate
 
 # install ote
 pip install -e ../../pytorch_toolkit/ote/

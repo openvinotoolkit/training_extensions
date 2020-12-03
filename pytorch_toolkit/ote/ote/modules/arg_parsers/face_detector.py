@@ -16,8 +16,6 @@
 
 import argparse
 
-from ote.api import train_args_parser, test_args_parser, export_args_parser
-
 from .default import DefaultArgParser
 from ..registry import ARG_PARSERS
 
@@ -25,10 +23,10 @@ from ..registry import ARG_PARSERS
 @ARG_PARSERS.register_module()
 class FaceDetectorArgParser(DefaultArgParser):
     def __init__(self):
-        super(FaceDetectorArgParser, self).__init__()
+        super().__init__()
 
     def get_test_parser(self, config_path):
-        parser = argparse.ArgumentParser(parents=[test_args_parser(config_path)], add_help=False)
+        parser = super().get_test_parser(config_path)
         parser.add_argument('--wider-dir',
                             help='Location of WiderFace dataset.',
                             default='data/wider_face')

@@ -20,15 +20,18 @@ import yaml
 from tempfile import NamedTemporaryFile
 from copy import copy
 
+import mmcv
+
 from ote.utils import load_config
 from ..registry import COMPRESSION
 from .nncf_config_generator import NNCFConfigGenerator
 
-def _save_config(config, file_path):
-    # TODO(LeonidBeynenson): make it write python instead of yaml
-    #     (otherwise Config tries to write its result config as yaml file too)
-    with open(file_path, 'w') as output_stream:
-        yaml.dump(config, output_stream)
+def _save_config(config_dict, base_rel_path, file_path):
+    assert file_path.endswith('.py')
+    with open(file_path, 'w') as f:
+        f.write(f'_base_ = "{base_rel_path}"\n')
+        cfg = mmcv.Config(config_dict)
+        f.write(cfg.pretty_text)
 
 def _generate_random_suffix():
     random_suffix = os.path.basename(NamedTemporaryFile().name)
@@ -70,8 +73,8 @@ class NNCFConfigTransformer:
         #just to be on the safe side, indeed they should be in the same folder
         generated_config_dir = os.path.dirname(generated_config_path)
 
-        cfg_update_part['_base_'] = os.path.relpath(config_path, generated_config_dir)
-        _save_config(cfg_update_part, generated_config_path)
+        base_rel_path = os.path.relpath(config_path, generated_config_dir)
+        _save_config(cfg_update_part, base_rel_path, generated_config_path)
 
         assert os.path.exists(generated_config_path), f'Cannot write config file "{generated_config_path}"'
 
@@ -80,6 +83,6 @@ class NNCFConfigTransformer:
     @staticmethod
     def _generate_config_path(config_path):
         suffix = _generate_random_suffix()
-        config_ext = 'yaml'
+        config_ext = 'py'
         res = config_path + f'._.{suffix}.{config_ext}'
         return res

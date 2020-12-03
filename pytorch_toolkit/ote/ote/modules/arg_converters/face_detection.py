@@ -14,15 +14,20 @@
  limitations under the License.
 """
 
-from .mmdetection import MMDetectionArgsConverter
+from .base import BaseArgConverter
+from .mmdetection import MMDetectionArgConverterMap
 from ..registry import ARG_CONVERTERS
+
+class MMDetectionWiderArgConverterMap(MMDetectionArgConverterMap):
+    def test_out_args_map(self):
+        out_map = super().test_out_args_map()
+        out_map.update({
+            'wider_dir': 'wider_dir'
+        })
+        return out_map
 
 
 @ARG_CONVERTERS.register_module()
-class MMDetectionWiderArgsConverter(MMDetectionArgsConverter):
+class MMDetectionWiderArgsConverter(BaseArgConverter):
     def __init__(self):
-        super(MMDetectionWiderArgsConverter, self).__init__()
-
-        self.test_out_args_map.update({
-            'wider_dir': 'wider_dir'
-        })
+        super().__init__(MMDetectionWiderArgConverterMap())
