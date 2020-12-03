@@ -43,13 +43,10 @@ def update_outputs(outputs, metric_names, ap_values):
 
 
 def coco_ap_eval(config_path, work_dir, snapshot, update_config, show_dir='',
-                 metric_names=['AP @ [IoU=0.50:0.95]'], **kwargs):
+                 metric_names=['AP @ [IoU=0.50:0.95]'], metrics='bbox', **kwargs):
     """ Computes COCO AP. """
 
     outputs = []
-
-    cfg = Config.fromfile(config_path)
-    metrics = ' '.join(cfg.evaluation['metric']) if 'evaluation' in cfg.keys() else 'bbox'
     if not(update_config['data.test.ann_file'] and update_config['data.test.img_prefix']):
         logging.warning('Passed empty path to annotation file or data root folder. '
                         'Skipping AP calculation.')
@@ -92,4 +89,5 @@ def coco_ap_eval_det(config_path, work_dir, snapshot, update_config, show_dir=''
 def coco_ap_eval_segm(config_path, work_dir, snapshot, update_config, show_dir='', **kwargs):
     return coco_ap_eval(
         config_path, work_dir, snapshot, update_config, show_dir,
-        metric_names=['Bbox AP @ [IoU=0.50:0.95]', 'Segm AP @ [IoU=0.50:0.95]'])
+        metric_names=['Bbox AP @ [IoU=0.50:0.95]', 'Segm AP @ [IoU=0.50:0.95]'],
+        metrics='bbox segm')
