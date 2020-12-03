@@ -44,7 +44,7 @@ Convert downloaded and extracted annotation to MSCOCO format with `face` as the 
 * Training annotation
 
    ```bash
-   export TRAIN_ANN_FILE=${DATA_DIR}/train.json
+   export TRAIN_ANN_FILE=${DATA_DIR}/instances_train.json
    export TRAIN_IMG_ROOT=${DATA_DIR}
    python ./model_templates/face-detection/tools/wider_to_coco.py \
       ${DATA_DIR}/wider_face_split/wider_face_train_bbx_gt.txt \
@@ -55,7 +55,7 @@ Convert downloaded and extracted annotation to MSCOCO format with `face` as the 
 * Validation annotation
 
    ```bash
-   export VAL_ANN_FILE=${DATA_DIR}/val.json
+   export VAL_ANN_FILE=${DATA_DIR}/instances_val.json
    export VAL_IMG_ROOT=${DATA_DIR}
    python ./model_templates/face-detection/tools/wider_to_coco.py \
       ${DATA_DIR}/wider_face_split/wider_face_val_bbx_gt.txt \
