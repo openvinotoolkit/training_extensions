@@ -1,0 +1,60 @@
+name: instance-segmentation-0912
+domain: Instance Segmentation 2
+problem: COCO Instance Segmentation
+framework: OTEDetection v2.1.1
+summary: Instance segmentation based on Mask R-CNN architecture with ResNet50.
+annotation_format: COCO
+dependencies:
+- sha256: 81c3e6d86e61f2dce8845dd297abe495ff0c604de3a9c93c51cc1728ba87d7fa 
+  size: 231881353
+  source: https://download.01.org/opencv/openvino_training_extensions/models/instance_segmentation/v2/instance-segmentation-0904-0912.pth
+  destination: snapshot.pth
+- source: ../../../../../pytorch_toolkit/ote/tools/train.py
+  destination: train.py
+- source: ../../../../../pytorch_toolkit/ote/tools/eval.py
+  destination: eval.py
+- source: ../../../../../pytorch_toolkit/ote/tools/export.py
+  destination: export.py
+- source: ../../../../../pytorch_toolkit/ote/tools/compress.py
+  destination: compress.py
+- source: ../../../../../pytorch_toolkit/ote
+  destination: packages/ote
+- source: ../../requirements.txt
+  destination: requirements.txt
+max_nodes: 1
+training_target:
+- GPU
+inference_target:
+- CPU
+hyper_parameters:
+  basic:
+    batch_size: 16
+    base_learning_rate: 0.02
+    epochs: 36
+output_format:
+  onnx:
+    default: true
+  openvino:
+    default: true
+    input_format: BGR
+quantization: TBD
+metrics:
+- display_name: Bbox AP @ [IoU=0.50:0.95]
+  key: ap
+  unit: '%'
+  value: 35.6
+- display_name: Segm AP @ [IoU=0.50:0.95]
+  key: ap
+  unit: '%'
+  value: 31.3
+- display_name: Size
+  key: size
+  unit: Mp
+  value: 29.7478
+- display_name: Complexity
+  key: complexity
+  unit: GFLOPs
+  value: 66.49
+gpu_num: 2
+config: model.py
+estimated_batch_time: -1

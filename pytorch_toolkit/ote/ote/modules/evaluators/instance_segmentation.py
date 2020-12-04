@@ -24,12 +24,10 @@ from ..registry import EVALUATORS
 
 
 @EVALUATORS.register_module()
-class MMFaceDetectionEvaluator(MMDetectionEvaluator):
+class InstanceSegmentationEvaluator(MMDetectionEvaluator):
     def __init__(self):
-        super(MMFaceDetectionEvaluator, self).__init__()
+        super(InstanceSegmentationEvaluator, self).__init__()
 
     def _get_metric_functions(self):
-        from ote.metrics.detection.common import coco_ap_eval_det
-        from ote.metrics.face_detection.face_detection import custom_ap_eval, compute_wider_metrics
-
-        return [coco_ap_eval_det, custom_ap_eval, compute_wider_metrics]
+        from ote.metrics.detection.common import coco_ap_eval_segm
+        return [coco_ap_eval_segm]

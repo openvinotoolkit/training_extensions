@@ -32,9 +32,9 @@ class MMDetectionEvaluator(BaseEvaluator):
         return MMDETECTION_TOOLS
 
     def _get_metric_functions(self):
-        from ote.metrics.detection.common import coco_ap_eval
+        from ote.metrics.detection.common import coco_ap_eval_det
 
-        return [coco_ap_eval]
+        return [coco_ap_eval_det]
 
     def _get_image_shape(self, cfg):
         image_shape = [x['img_scale'] for x in cfg.test_pipeline if 'img_scale' in x][0][::-1]

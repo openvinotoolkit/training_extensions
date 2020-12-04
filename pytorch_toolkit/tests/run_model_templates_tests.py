@@ -19,7 +19,14 @@ ENABLE_TESTS_FOR = {
     'action_recognition_2': [
         'gesture-recognition',
     ],
+    'instance_segmentation_2': [
+        'coco-instance-segmentation',
+    ]
 }
+
+NNCF_ENABLE_FOR = [
+    'object_detection',
+]
 
 ENABLE_TRAIN_TESTS = True
 ENABLE_EXPORT_TESTS = True
@@ -170,7 +177,7 @@ class ModelTemplatesNNCFTestCase(create_model_template_tests_base('NNCF_TESTS'))
                 domain_folders.add(domain_folder)
 
         for domain_folder in domain_folders:
-            if domain_folder not in ENABLE_TESTS_FOR:
+            if domain_folder not in ENABLE_TESTS_FOR or domain_folder not in NNCF_ENABLE_FOR:
                 continue
 
             venv_activate_path = os.path.join(self.work_dir, domain_folder, 'venv', 'bin', 'activate')

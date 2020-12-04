@@ -14,22 +14,16 @@
  limitations under the License.
 """
 
-import os
-import subprocess
-
 from ote import MMDETECTION_TOOLS
 
-from .mmdetection import MMDetectionEvaluator
-from ..registry import EVALUATORS
+from .base import BaseTrainer
+from ..registry import TRAINERS
 
 
-@EVALUATORS.register_module()
-class MMFaceDetectionEvaluator(MMDetectionEvaluator):
+@TRAINERS.register_module()
+class InstanceSegmentationTrainer(BaseTrainer):
     def __init__(self):
-        super(MMFaceDetectionEvaluator, self).__init__()
+        super(InstanceSegmentationTrainer, self).__init__()
 
-    def _get_metric_functions(self):
-        from ote.metrics.detection.common import coco_ap_eval_det
-        from ote.metrics.face_detection.face_detection import custom_ap_eval, compute_wider_metrics
-
-        return [coco_ap_eval_det, custom_ap_eval, compute_wider_metrics]
+    def _get_tools_dir(self):
+        return MMDETECTION_TOOLS

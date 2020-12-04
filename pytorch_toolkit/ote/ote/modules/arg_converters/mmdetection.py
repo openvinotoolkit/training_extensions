@@ -14,6 +14,8 @@
  limitations under the License.
 """
 
+from mmcv import Config
+
 from .base import BaseArgConverter
 from ..registry import ARG_CONVERTERS
 
@@ -68,9 +70,12 @@ class MMDetectionArgsConverter(BaseArgConverter):
         out_args = {}
         if 'classes' in args and args['classes']:
             classes = '[' + ','.join(f'"{x}"' for x in args['classes'].split(',')) + ']'
+            num_classes = len(args['classes'].split(','))
             out_args['data.train.dataset.classes'] = classes
             out_args['data.val.classes'] = classes
-            out_args['model.bbox_head.num_classes'] = len(args['classes'].split(','))
+            out_args['model.bbox_head.num_classes'] = num_clusses
+            if 'mask_head' in Config.fromfile(args['config']).model.roi_head.keys():
+                update_config['model.roi_head.mask_head.num_classes'] = num_clusses
 
         return out_args
 
@@ -78,7 +83,10 @@ class MMDetectionArgsConverter(BaseArgConverter):
         out_args = {}
         if 'classes' in args and args['classes']:
             classes = '[' + ','.join(f'"{x}"' for x in args['classes'].split(',')) + ']'
+            num_classes = len(args['classes'].split(','))
             out_args['data.test.classes'] = classes
-            out_args['model.bbox_head.num_classes'] = len(args['classes'].split(','))
+            out_args['model.bbox_head.num_classes'] = num_classes
+            if 'mask_head' in Config.fromfile(args['config']).model.roi_head.keys():
+                update_config['model.roi_head.mask_head.num_classes'] = num_clusses
 
         return out_args
