@@ -18,9 +18,7 @@ import argparse
 import json
 import os
 
-from text_spotting.datasets.datasets import TextOnlyCocoAnnotation
-from text_spotting.datasets.datasets import str_to_class
-from text_spotting.datasets.factory import root_data_dir
+from ote.datasets.text_spotting import TextOnlyCocoAnnotation, str_to_class
 
 
 def parse_args():
@@ -29,9 +27,14 @@ def parse_args():
     args = argparse.ArgumentParser()
     args.add_argument('--config', help='Path to dataset configuration file (json).',
                       required=True)
+    args.add_argument('--root', help='Root data dir.',
+                      required=True)
     args.add_argument('--output', help='Path where to save annotation (json).',
                       required=True)
     args.add_argument('--visualize', action='store_true', help='Visualize annotation.')
+    args.add_argument('--shuffle', action='store_true', help='Shuffle annotation before visualization.')
+    args.add_argument('--delay', type=int, default=1)
+    args.add_argument('--remove-orientation-info', action='store_true')
     return args.parse_args()
 
 
@@ -46,17 +49,17 @@ def main():
     ann = TextOnlyCocoAnnotation()
     for dataset in config:
         assert isinstance(dataset, dict)
-        if os.path.islink(root_data_dir()):
-            dataset['kwargs']['root'] = os.readlink(root_data_dir())
+        if os.path.islink(args.root):
+            dataset['kwargs']['root'] = os.readlink(args.root)
         else:
-            dataset['kwargs']['root'] = os.path.abspath(root_data_dir())
+            dataset['kwargs']['root'] = os.path.abspath(args.root)
         ann += str_to_class[dataset['name']](**dataset['kwargs'])()
 
-    ann.write(args.output)
+    ann.write(args.output, args.remove_orientation_info)
 
     ann = TextOnlyCocoAnnotation(args.output, os.path.dirname(args.output))
     if args.visualize:
-        ann.visualize(put_text=True, imshow_delay=1)
+        ann.visualize(put_text=True, imshow_delay=args.delay, shuffle=args.shuffle)
 
 
 if __name__ == '__main__':
