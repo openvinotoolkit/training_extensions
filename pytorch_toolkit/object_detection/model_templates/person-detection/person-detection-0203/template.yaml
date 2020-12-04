@@ -7,7 +7,7 @@ annotation_format: COCO
 dependencies:
 - sha256: 2e2020ee31fc8eb7028b633b06704e7488b8dbc9f6e207557639bec13e7a4746
   size: 15854322
-  source: https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/person-detection-0203-1.pth
+  source: https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/person-detection-0203.pth
   destination: snapshot.pth
 - source: ../../../../../pytorch_toolkit/ote/tools/train.py
   destination: train.py
