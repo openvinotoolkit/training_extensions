@@ -82,28 +82,19 @@ class TextOnlyCocoAnnotation:
     def fit_box_in_image(box, image_size):
         width, height = image_size
         x, y, w, h = box
-        adjusted = False
         if x + w > width:
-            adjusted = True
             w = width - x
         if y + h > height:
-            adjusted = True
             h = height - y
         if x < 0:
-            adjusted = True
             w += x
             x = 0
         if y < 0:
-            adjusted = True
             h += y
             y = 0
         if 0 <= x < x + w <= width and 0 <= y < y + h <= height:
-            if adjusted:
-                pass
-                #logging.warn(f'Changed invalid box: from {box} to {x, y, w, h} because of image size {image_size}')
             return x, y, w, h
         else:
-            #logging.warn(f'Skip invalid box: {box} that can not be fit in {image_size}')
             return None
 
     def add_bbox(self, image_path, image_size, obj):
@@ -157,7 +148,6 @@ class TextOnlyCocoAnnotation:
 
         if remove_orientation_info:
             for image_info in tqdm(annotation['images']):
-                image_info['file_name']
                 full_path = os.path.join(os.path.dirname(path), image_info['file_name'])
                 image = cv2.imread(full_path)
                 if image.shape[:2] != (image_info['height'], image_info['width']):
@@ -290,12 +280,7 @@ class ICDAR2013DatasetConverter:
         img_format = '{}.jpg' if self.is_train else 'img_{}.jpg'
         char_gt_format = '{}_GT.txt'
 
-        ignore_indexes = [140]
-
         for i in range(begin, end):
-            if i in ignore_indexes:
-                continue
-
             image_path = os.path.join(self.images_folder, img_format.format(i))
             image_size = imagesize.get(image_path)
             annotation_path = os.path.join(self.annotations_folder, gt_format.format(i))
