@@ -147,13 +147,13 @@ class TextOnlyCocoAnnotation:
                                                       os.path.dirname(path))
 
         if remove_orientation_info:
-            for image_info in tqdm(annotation['images']):
+            for image_info in tqdm(annotation['images'], desc='checking orientation'):
                 full_path = os.path.join(os.path.dirname(path), image_info['file_name'])
                 image = cv2.imread(full_path)
                 if image.shape[:2] != (image_info['height'], image_info['width']):
                     image = cv2.imread(full_path, cv2.IMREAD_UNCHANGED)
                     cv2.imwrite(full_path, image)
-                    print(image.shape[:2], (image_info['height'], image_info['width']), path)
+                    logging.warning(f'Detected and fixed image with orientation: {full_path}')
 
         with open(path, 'w') as read_file:
             json.dump(annotation, read_file)
