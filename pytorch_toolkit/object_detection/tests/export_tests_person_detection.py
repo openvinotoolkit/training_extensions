@@ -58,3 +58,14 @@ class PersonDetection0203TestCase(
             True)
 ):
     """ Test case for person-detection-0203 model export. """
+
+
+class PersonDetection0203TestCase(
+        create_export_test_case(
+            'person-detection',
+            'person-detection-0203',
+            os.path.dirname(__file__) + '/../../../data/airport/annotation_example_train.json',
+            os.path.dirname(__file__) + '/../../../data/airport/train',
+            True)
+):
+    """ Test case for person-detection-0203 model export. """
