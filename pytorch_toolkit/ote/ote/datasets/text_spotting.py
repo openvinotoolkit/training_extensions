@@ -280,7 +280,7 @@ class ICDAR2013DatasetConverter:
         img_format = '{}.jpg' if self.is_train else 'img_{}.jpg'
         char_gt_format = '{}_GT.txt'
 
-        for i in range(begin, end):
+        for i in tqdm(range(begin, end)):
             image_path = os.path.join(self.images_folder, img_format.format(i))
             image_size = imagesize.get(image_path)
             annotation_path = os.path.join(self.annotations_folder, gt_format.format(i))
@@ -398,7 +398,7 @@ class ICDAR2015DatasetConverter:
         dataset = TextOnlyCocoAnnotation()
 
         n_images = 1000 if self.is_train else 500
-        for i in range(1, n_images + 1):
+        for i in tqdm(range(1, n_images + 1)):
             image_path = os.path.join(self.images_folder, 'img_{}.jpg'.format(i))
             annotation_path = os.path.join(self.annotations_folder, 'gt_img_{}.txt'.format(i))
 
@@ -478,7 +478,7 @@ class ICDAR2017MLTDatasetConverter:
         image_paths = []
         annotation_paths = []
         n_images = 7200
-        for i in range(1, n_images + 1):
+        for i in tqdm(range(1, n_images + 1)):
             added = False
             for extension in ['jpg', 'png']:
                 image_path = os.path.join(self.folder,
@@ -494,7 +494,7 @@ class ICDAR2017MLTDatasetConverter:
                                  f'gt_img_{i}.txt')
                 )
             else:
-                print(f'Could not find: {image_path[:-3]}*')
+                logging.warning(f'Could not find: {image_path[:-3]}*')
         return image_paths, annotation_paths
 
     def collect_val_paths(self):
@@ -503,7 +503,7 @@ class ICDAR2017MLTDatasetConverter:
         image_paths = []
         annotation_paths = []
         n_images = 1800
-        for i in range(1, n_images + 1):
+        for i in tqdm(range(1, n_images + 1)):
             added = False
             for extension in ['jpg', 'png']:
                 image_path = os.path.join(self.folder,
@@ -519,7 +519,7 @@ class ICDAR2017MLTDatasetConverter:
                                  f'gt_img_{i}.txt')
                 )
             else:
-                print(f'Could not find: {image_path[:-3]}*')
+                logging.warning(f'Could not find: {image_path[:-3]}*')
         return image_paths, annotation_paths
 
     def __call__(self, *args, **kwargs):
@@ -532,7 +532,7 @@ class ICDAR2017MLTDatasetConverter:
         elif self.subset == 'val':
             image_paths, annotation_paths = self.collect_val_paths()
 
-        for image_path, annotation_path in zip(image_paths, annotation_paths):
+        for image_path, annotation_path in tqdm(zip(image_paths, annotation_paths)):
             word_annotations = []
             with open(annotation_path, encoding='utf-8-sig') as read_file:
                 content = [line.strip() for line in read_file.readlines()]
@@ -635,7 +635,7 @@ class ICDAR2019MLTDatasetConverter:
 
         image_paths, annotation_paths = self.collect_train_paths()
 
-        for image_path, annotation_path in zip(image_paths, annotation_paths):
+        for image_path, annotation_path in tqdm(zip(image_paths, annotation_paths)):
             word_annotations = []
             with open(annotation_path, encoding='utf-8-sig') as read_file:
                 content = [line.strip() for line in read_file.readlines()]
@@ -677,6 +677,10 @@ class ICDAR2019ARTDatasetConverter:
         if exclude_totaltext_test:
             assert totaltext_test_images_dir
             assert totaltext_to_art_path
+
+            if root:
+                totaltext_test_images_dir = os.path.join(root, totaltext_test_images_dir)
+                totaltext_to_art_path = os.path.join(root, totaltext_to_art_path)
 
             exclude_totaltext_ids = set(
                 imagename.split('.')[0][3:] for imagename in os.listdir(totaltext_test_images_dir)
@@ -726,7 +730,7 @@ class ICDAR2019ARTDatasetConverter:
 
         with open(annotation_path) as f:
             annotations = json.load(f)
-            for image in annotations:
+            for image in tqdm(annotations):
                 image_path = os.path.join(self.folder, 'train_images', img_format.format(image))
                 if image in self.exclude_art19_ids:
                     continue
@@ -794,7 +798,7 @@ class MSRATD500DatasetConverter:
 
         dataset = TextOnlyCocoAnnotation()
 
-        for image_name in sorted(os.listdir(self.folder)):
+        for image_name in tqdm(sorted(os.listdir(self.folder))):
             if image_name.endswith('JPG'):
                 image_path = os.path.join(self.folder, image_name)
                 annotation_path = os.path.join(self.folder, image_name.replace('.JPG', '.gt'))
@@ -860,7 +864,7 @@ class COCOTextDatasetConverter:
 
             json_loaded = json.load(read_file)
 
-            for i, value in json_loaded['imgs'].items():
+            for i, value in tqdm(json_loaded['imgs'].items()):
                 image_path = os.path.join(os.path.dirname(self.path), 'train2014',
                                           value['file_name'])
                 dataset_type = value['set']
