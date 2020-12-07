@@ -24,8 +24,8 @@ REBOOT REQUIRED
 ### Install New for Ubuntu 16.04
 Users who failed to run command above may use an alternative way to install 440 driver and CUDA 10.2 and skip the `Install CUDA 10.2` section.
 ```sh
-wget https://developer.download.nvidia.com/compute/cuda/10.2/Prod/local_installers/cuda_10.2.89_440.33.01_linux.runsudo 
-sh cuda_10.2.89_440.33.01_linux.run
+wget https://developer.download.nvidia.com/compute/cuda/10.2/Prod/local_installers/cuda_10.2.89_440.33.01_linux.run
+sudo sh cuda_10.2.89_440.33.01_linux.run
 ```
 
 REBOOT REQUIRED
