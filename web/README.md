@@ -6,6 +6,7 @@ WEB OTE is a convenient tool to train models for specific tasks fast and easily,
 - [Person-Vehicle-Bike detection](../pytorch_toolkit/object_detection/model_templates/person-vehicle-bike-detection/readme.md#person-vehicle-bike-detector)
 - [Vehicle detection](../pytorch_toolkit/object_detection/model_templates/vehicle-detection/readme.md#vehicle-detection)
 - [Custom detection](../pytorch_toolkit/object_detection/model_templates/custom-detection/readme.md#custom-object-detector) - models for this task was trained on numerous number of classes, so they are able to detect some specific class after fine-tuning on the annotated data.
+- [COCO Instance segmentation](../pytorch_toolkit/instance_segmentation_2/model_templates/coco-instance-segmentation/readme.md#instance-segmantation)
 
 # Installation
 To start working with WEB OTE it is required to set up it locally. To do it choose the target device (CPU or GPU), install required packages and build docker containers as it showed in the instructions below.

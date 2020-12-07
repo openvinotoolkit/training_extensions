@@ -1,4 +1,4 @@
-# Person Detection
+# Instance Segmantation
 
 Models that are able to instantiate segmentation.
 

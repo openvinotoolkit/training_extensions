@@ -26,18 +26,28 @@ Please put at least 60 images for proper work.
 
 ## Data Annotation using CVAT
 When you are able to observe your data folders in the `Assets` tab, you may send it to CVAT for annotation.
-1. Press the `Push to CVAT` button at the top-right corner of each folder which you want to use in the training or evaluation. Please keep in mind that loading may take some time. 
+1. Press the `Push to CVAT` button at the top-right corner of each folder which you want to use in the training or evaluation. Please keep in mind that loading may take some time.
 2. Press the folder icon to be redirected to the CVAT page with the annotation task and related information.
 3. To start annotation press `Jobs` at the bottom of the page.
+   
+![](./doc_images/cvat_job.png)
+
 4. You may choose rectangles in the toolbar on the left to annotate bounding boxes or polygons to annotate more difficult shapes. To speed up the process use hot-keys like `N` to annotate a new shape or `F` to go to the next image. When the annotation is finished, don't forget to press the save button. 
 
 **Useful tip** You may dump annotation and reuse it later. To do it choose `Actions` -> `Dump annotations` -> `CVAT 1.1` on the CVAT task page. 
 Similarly, to upload annotation for the task choose `Action` -> `Upload annotation` and the type of annotations you have got. 
 
+![](./doc_images/dump_annotations.png)
+
 ## Dataset Creation
 1. As soon as you finished the annotation for all folders and corresponding jobs, return to the `Assets` tab and press the `Pull from CVAT` yellow button in the top-left corner of each folder icon.
+   
+![](./doc_images/pull_annotations.png)
+
 2. Then classify each folder you want to use as `train` or `val` in order to use it for training or evaluation.
-3. If every step was accomplished, the `Build` in the top-right corner of the page becomes active. Press it to create the dataset with selected images and train/val distribution. This action will create a build (dataset) with the timestamp of creation as a name. Use it for fine-tuning and evaluation, choosing it from the drop-down list of builds in the top-right corner of the Info page for every Object detection task.
+3. If every step was accomplished, the `Build` in the top-right corner of the page becomes active. Press it to create the dataset with selected images and train/val distribution.
+![](./doc_images/create_build.png)
+This action will create a build (dataset) with the timestamp of creation as a name. Use it for fine-tuning and evaluation, choosing it from the drop-down list of builds in the top-right corner of the Info page for every Object detection task.
 
 **Important** Please notice that for the proper fine-tuning both train and val parts should exist in the dataset. If you want to evaluate pre-trained models on your data, it is allowed to have only val part in the dataset.
 
@@ -45,9 +55,11 @@ Similarly, to upload annotation for the task choose `Action` -> `Upload annotati
 
 # Object detection
 In the Info page for each object detection task you may observe its short description, table of pre-trained models with public accuracy and complexity and the graph with a comparison of the models to choose the most suitable for the specific task. 
+
 ## Evaluation
 To evaluate pre-trained models on your dataset please do the following:
  1. Choose the timestamp of the needed build (dataset) in the drop-down list in the top-right corner of the page.
+    ![](./doc_images/choose_build.png)
  2. Choose the model and press `Evaluate`.
  
 ## Fine-tuning

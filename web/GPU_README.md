@@ -154,7 +154,7 @@ git submodule update --init --recursive
 IDLP_HOST=localhost docker-compose -f docker-compose.gpu.yml up --build -d
 ```
 To use the graphical interface on the different machine please define the host name of the computer where you run all these commands instead of localhost.
-Be ready that the first setup may take 30-60 minutes.
+Be ready that the first setup may take 15-20 minutes.
 
 ### Create CVAT root user
 
