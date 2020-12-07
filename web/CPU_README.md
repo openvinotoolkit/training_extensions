@@ -82,7 +82,7 @@ cd openvino_training_extensions
 git submodule update --init --recursive
 IDLP_HOST=localhost docker-compose -f docker-compose.cpu.yml up --build -d
 ```
-To use a graphical interface on the different machine please define its host name instead of localhost.
+To use the graphical interface on the different machine please define the host name of the computer where you run all these commands instead of localhost.
 Be ready that the first setup may take 30-60 minutes.
 
 ### Create CVAT root user
@@ -97,6 +97,10 @@ Password: django
 ## Open In Browser
 
 `http://localhost:8001`
+
+If you want to use the graphical interface on the different machine, define the host name of the source computer instead of localhost.
+
+`http://<host.name>:8001`
 
 Now the setup has been finished and for further using refer to [getting_started](GETTING_STARTED.md) instructions.
 
