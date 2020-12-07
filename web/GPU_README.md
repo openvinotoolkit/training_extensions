@@ -1,7 +1,7 @@
 
 # GPU Version
 
-Instructions below show how to install and set up WEB OTE for Linux. The same steps are required for other Windows and MacOS.
+Instructions below show how to install and set up WEB OTE for Linux. The same steps are required for Windows. GPU version for MacOS is not currently supported.
 
 ## GPU Requirements
 
@@ -22,7 +22,7 @@ sudo apt install nvidia-driver-440
 REBOOT REQUIRED
 
 ### Install New for Ubuntu 16.04
-Users who failed to run command above may use alternative way to install 440 driver and CUDA 10.2 and skip the `Install CUDA 10.2` section.
+Users who failed to run command above may use an alternative way to install 440 driver and CUDA 10.2 and skip the `Install CUDA 10.2` section.
 ```sh
 wget https://developer.download.nvidia.com/compute/cuda/10.2/Prod/local_installers/cuda_10.2.89_440.33.01_linux.runsudo 
 sh cuda_10.2.89_440.33.01_linux.run
@@ -148,7 +148,7 @@ EOF
 ## GPU Setup
 
 ```sh
-git clone --recursive https://github.com/openvinotoolkit/openvino_training_extensions.git
+git clone --branch develop --recursive https://github.com/openvinotoolkit/openvino_training_extensions.git
 cd openvino_training_extensions
 git submodule update --init --recursive
 IDLP_HOST=localhost docker-compose -f docker-compose.gpu.yml up --build -d
