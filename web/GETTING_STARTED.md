@@ -80,4 +80,4 @@ If you did not find a suitable trained model for your task, you may create the C
 
 # Known issues and problems 
 1. Both train and val parts should contain at least 60 images for proper work.
-2. Horizontal text detection model can not be fine-tuned on CPU.
+2. Horizontal text detection model can be fine-tuned on GPU only.
