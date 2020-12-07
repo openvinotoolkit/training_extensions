@@ -1,5 +1,14 @@
+# WEB OTE
+WEB IU is a convenient tool to train models for specific tasks fast and easily, using a graphical interface, an annotation tool for photos and videos and the scope of varied pre-trained models. Currently, WEB UI contains models for the following tasks:
+- [Face detection](../pytorch_toolkit/object_detection/model_templates/face-detection/readme.md#face-detection)
+- [Horizontal Text detection](../pytorch_toolkit/object_detection/model_templates/horizontal-text-detection/readme.md#text-detection)
+- [Person detection](../pytorch_toolkit/object_detection/model_templates/person-detection/readme.md#person-detection)
+- [Person-Vehicle-Bike detection](../pytorch_toolkit/object_detection/model_templates/person-vehicle-bike-detection/readme.md#person-vehicle-bike-detector)
+- [Vehicle detection](../pytorch_toolkit/object_detection/model_templates/vehicle-detection/readme.md#vehicle-detection)
+- [Custom detection](../pytorch_toolkit/object_detection/model_templates/custom-detection/readme.md#custom-object-detector) - models for this task was trained on numerous number of classes, so they are able to detect some specific class after fine-tuning on the annotated data.
+
 # Installation
-Choose the target device (CPU or GPU), install required packages and build docker containers as it shown in the instructions below.
+To start, choose the target device (CPU or GPU), install required packages and build docker containers as it showed in the instructions below.
 
 [CPU Version](CPU_README.md#cpu-version)
   - [CPU Requirements](CPU_README.md#cpu-requirements)
