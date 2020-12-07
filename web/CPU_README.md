@@ -1,6 +1,6 @@
-  
-# CPU Version
 
+# CPU Version
+Instructions below show how to install and set up WEB OTE for Linux. The same steps are required for other Windows and MacOS.
 ## CPU Requirements
 
 ## Install Docker
@@ -82,6 +82,9 @@ cd openvino_training_extensions
 git submodule update --init --recursive
 IDLP_HOST=localhost docker-compose -f docker-compose.cpu.yml up --build -d
 ```
+To use a graphical interface on the different machine please define its host name instead of localhost.
+Be ready that the first setup may take 30-60 minutes.
+
 ### Create CVAT root user
 
 ```sh
@@ -95,7 +98,9 @@ Password: django
 
 `http://localhost:8001`
 
-## CPU Restart
+Now the setup has been finished and for further using refer to [getting_started](GETTING_STARTED.md) instructions.
+
+## CPU Local Restart
 
 ```sh
 git pull

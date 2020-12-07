@@ -19,7 +19,7 @@ This page provides info on how to use Web OTE tool. Before following these instr
 ## Data Location
 1. First of all, you should put the folder with pictures in `<training_extensions>/web/data/assets`. 
 Please put at least 60 images for proper work.
-2. After that choose the object detection task or create your own custom detection task with needed classes (for more information refer [Custom detection section](#custom-detection)). 
+2. After that choose the object detection task or create your own custom detection task with needed classes (for more information refer to [Custom detection section](#custom-detection)). 
 3. Go to the `Assets` tab at the top of the screen there you will find your data.
 
 **Important:** To avoid useless duplication please do not rename folders in the `Assets` folder.
