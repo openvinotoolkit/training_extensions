@@ -29,7 +29,7 @@ When you are able to observe your data folders in the `Assets` tab, you may send
 1. Press the `Push to CVAT` button at the top-right corner of each folder which you want to use in the training or evaluation. Please keep in mind that loading may take some time.
 2. Press the folder icon to be redirected to the CVAT page with the annotation task and related information.
 3. To start annotation press `Jobs` at the bottom of the page.
-   
+
 ![](./doc_images/cvat_job.png)
 
 4. You may choose rectangles in the toolbar on the left to annotate bounding boxes or polygons to annotate more difficult shapes. To speed up the process use hot-keys like `N` to annotate a new shape or `F` to go to the next image. When the annotation is finished, don't forget to press the save button. 
@@ -41,7 +41,7 @@ Similarly, to upload annotation for the task choose `Action` -> `Upload annotati
 
 ## Dataset Creation
 1. As soon as you finished the annotation for all folders and corresponding jobs, return to the `Assets` tab and press the `Pull from CVAT` yellow button in the top-left corner of each folder icon.
-   
+
 ![](./doc_images/pull_annotations.png)
 
 2. Then classify each folder you want to use as `train` or `val` in order to use it for training or evaluation.
