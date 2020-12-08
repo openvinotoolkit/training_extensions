@@ -31,21 +31,34 @@ def parse_args():
     parser.add_argument('destination')
     parser.add_argument('--do-not-load-snapshots', action='store_true')
     parser.add_argument('--templates-filter', default='**/template.yaml')
+    parser.add_argument('--templates-list-file',
+                        help='A yaml file with list of paths of template files'
+                         ' to be instantiated. Overrides --template-filter.')
 
     return parser.parse_args()
 
+def _get_templates_filenames(args):
+    if args.templates_list_file:
+        with open(args.templates_list_file) as f_t_list:
+            template_filenames = yaml.safe_load(f_t_list)
+    else:
+        template_filenames = glob.glob(args.templates_filter, recursive=True)
+        template_filenames = list(template_filenames)
+    return template_filenames
 
 def main():
     logging.basicConfig(level=logging.INFO)
     args = parse_args()
-    template_filenames = glob.glob(args.templates_filter, recursive=True)
+
+    template_filenames = _get_templates_filenames(args)
+
     problems_filename = glob.glob('**/problems.yaml', recursive=True)
     assert len(problems_filename) == 1
     problems_filename = problems_filename[0]
 
     problems_dict = dict()
     with open(problems_filename) as read_file:
-        content = yaml.load(read_file, yaml.SafeLoader)
+        content = yaml.safe_load(read_file)
         for domain in content['domains']:
             for problem in domain['problems']:
                 problems_dict[problem['title']] = problem
@@ -55,7 +68,7 @@ def main():
     domain_folders = set()
     for template_filename in template_filenames:
         with open(template_filename) as read_file:
-            content = yaml.load(read_file, yaml.SafeLoader)
+            content = yaml.safe_load(read_file)
 
         # TODO(ikrylov): remain one of ('-', '_').
         domain_folder = content['domain'].replace(' ', '_').lower()
@@ -67,12 +80,13 @@ def main():
         problem_folder = os.path.join(args.destination, domain_folder, problem_folder)
         instance_folder = os.path.join(problem_folder, model_folder)
 
-        logging.info(f'Instantiate {template_filename} to {instance_folder}')
+        logging.info(f'Begin instantiating {template_filename} to {instance_folder}')
         if args.do_not_load_snapshots:
             run_through_shell(f'python3 tools/instantiate_template.py {template_filename} {instance_folder}'
                     f' --do-not-load-snapshot')
         else:
             run_through_shell(f'python3 tools/instantiate_template.py {template_filename} {instance_folder}')
+        logging.info(f'End instantiating {template_filename} to {instance_folder}')
 
         problem_dict = problems_dict.get(content['problem'], None)
         if problem_dict is None:
@@ -85,7 +99,9 @@ def main():
                     write_file.write(problem_dict['cvat_schema'])
 
     for domain_folder in domain_folders:
+        logging.info(f'Begin initializing virtual environment for {domain_folder}')
         run_through_shell(f'cd {domain_folder}; ./init_venv.sh {os.path.join(args.destination, domain_folder, "venv")}')
+        logging.info(f'End initializing virtual environment for {domain_folder}')
 
 if __name__ == '__main__':
     main()

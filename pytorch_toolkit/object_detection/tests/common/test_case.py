@@ -23,7 +23,11 @@ import torch
 import yaml
 
 from common.utils import collect_ap
-from ote.utils.misc import download_snapshot_if_not_yet, run_through_shell
+try:
+    from ote.utils.misc import download_snapshot_if_not_yet, run_through_shell
+except ModuleNotFoundError:
+    download_snapshot_if_not_yet = None
+    run_through_shell = None
 
 
 def get_dependencies(template_file):
@@ -63,9 +67,14 @@ def skip_if_cpu_is_not_supported(template_file):
 
 def create_test_case(problem_name, model_name, ann_file, img_root):
     class TestCaseOteApi(unittest.TestCase):
+        problem = problem_name
+        model = model_name
+        topic = 'train'
 
         @classmethod
         def setUpClass(cls):
+            assert download_snapshot_if_not_yet and run_through_shell, \
+                    'The test is not run from the proper virtual environment'
             cls.templates_folder = os.environ['MODEL_TEMPLATES']
             cls.template_folder = os.path.join(cls.templates_folder, 'object_detection', problem_name, model_name)
             skip_non_instantiated_template_if_its_allowed(cls.template_folder, problem_name, model_name)
@@ -173,9 +182,14 @@ def create_test_case(problem_name, model_name, ann_file, img_root):
 
 def create_export_test_case(problem_name, model_name, ann_file, img_root, alt_ssd_export=False):
     class ExportTestCase(unittest.TestCase):
+        problem = problem_name
+        model = model_name
+        topic = 'export'
 
         @classmethod
         def setUpClass(cls):
+            assert download_snapshot_if_not_yet and run_through_shell, \
+                    'The test is not run from the proper virtual environment'
             cls.templates_folder = os.environ['MODEL_TEMPLATES']
             cls.template_folder = os.path.join(cls.templates_folder, 'object_detection', problem_name, model_name)
             skip_non_instantiated_template_if_its_allowed(cls.template_folder, problem_name, model_name)
@@ -288,9 +302,14 @@ def create_nncf_test_case(problem_name, model_name, ann_file, img_root,
 
     assert template_update_dict, 'Use this function with non-trivial template_update_dict parameter only'
     class TestCaseOteApi(unittest.TestCase):
+        problem = problem_name
+        model = model_name
+        topic = 'nncf'
 
         @classmethod
         def setUpClass(cls):
+            assert download_snapshot_if_not_yet and run_through_shell, \
+                    'The test is not run from the proper virtual environment'
             cls.template_updates_description = cls.generate_template_updates_description(template_update_dict)
             logging.info(f'Begin setting up class for {problem_name}/{model_name}, {cls.template_updates_description}')
 
