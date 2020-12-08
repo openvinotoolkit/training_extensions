@@ -15,7 +15,7 @@
 
 import argparse
 
-from ote.evaluation.face_detection import wider_face_evaluation
+from ote.metrics.face_detection.wider_face.wider_face_eval import wider_face_evaluation
 
 
 def parse_args():

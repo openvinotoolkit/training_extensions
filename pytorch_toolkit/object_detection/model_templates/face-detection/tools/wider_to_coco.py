@@ -16,7 +16,7 @@
 
 import argparse
 
-from ote.evaluation.face_detection.wider_face.convert_annotation import convert_to_coco
+from ote.datasets.face_detection.wider_face.convert_annotation import convert_to_coco
 
 
 def parse_args():
