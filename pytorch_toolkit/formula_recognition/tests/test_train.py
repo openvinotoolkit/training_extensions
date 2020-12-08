@@ -18,8 +18,8 @@ import os
 import shutil
 import unittest
 
-from tools.utils.trainer import Trainer
-from tools.utils.get_config import get_config
+from im2latex.utils.trainer import Trainer
+from im2latex.utils.get_config import get_config
 
 
 def create_train_test(config_file):

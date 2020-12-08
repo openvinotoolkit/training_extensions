@@ -16,8 +16,8 @@
 
 import argparse
 
-from tools.utils.get_config import get_config
-from tools.utils.evaluator import Evaluator
+from im2latex.utils.get_config import get_config
+from im2latex.utils.evaluator import Evaluator
 
 
 def parse_args():
