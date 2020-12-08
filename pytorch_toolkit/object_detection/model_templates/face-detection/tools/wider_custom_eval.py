@@ -17,7 +17,7 @@
 from argparse import ArgumentParser
 
 from mmcv import DictAction
-from ote.evaluation.face_detection import custom_voc_ap_evaluation
+from ote.metrics.face_detection.custom_voc_ap_eval import custom_voc_ap_evaluation
 
 
 def parse_args():
