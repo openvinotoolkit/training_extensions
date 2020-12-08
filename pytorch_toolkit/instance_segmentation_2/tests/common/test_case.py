@@ -53,6 +53,14 @@ def create_test_case(problem_name, model_name, ann_file, img_root):
             cls.total_epochs = get_epochs(cls.template_file) + cls.epochs_delta
 
             download_snapshot_if_not_yet(cls.template_file, cls.template_folder)
+            coco_dir = os.path.abspath(f'{os.path.dirname(__file__)}/../../../../data/coco')
+            val_dir = os.path.join(coco_dir, 'val2017')
+            zip_file = os.path.join(coco_dir, 'val2017.zip')
+            link = 'http://images.cocodataset.org/zips/val2017.zip'
+            if not os.path.exists(val_dir):
+                if not os.path.exists(zip_file):
+                    run_through_shell(f'wget --no-verbose {link} -P {coco_dir}')
+                run_through_shell(f'unzip {zip_file} -d {coco_dir}')
 
             run_through_shell(
                 f'cd {cls.template_folder};'
@@ -168,6 +176,14 @@ def create_export_test_case(problem_name, model_name, ann_file, img_root, alt_ss
             cls.test_export_thr = 0.31
 
             download_snapshot_if_not_yet(cls.template_file, cls.template_folder)
+            coco_dir = os.path.abspath(f'{os.path.dirname(__file__)}/../../../../data/coco')
+            val_dir = os.path.join(coco_dir, 'val2017')
+            zip_file = os.path.join(coco_dir, 'val2017.zip')
+            link = 'http://images.cocodataset.org/zips/val2017.zip'
+            if not os.path.exists(val_dir):
+                if not os.path.exists(zip_file):
+                    run_through_shell(f'wget --no-verbose {link} -P {coco_dir}')
+                run_through_shell(f'unzip {zip_file} -d {coco_dir}')
 
         def skip_if_cpu_is_not_supported(self):
             with open(self.template_file) as read_file:
