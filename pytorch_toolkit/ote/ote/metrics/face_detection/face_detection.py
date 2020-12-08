@@ -21,10 +21,10 @@ import sys
 import tempfile
 
 from ote import MMDETECTION_TOOLS
+from ote.datasets.face_detection.wider_face.convert_annotation import convert_to_coco
+from ote.datasets.face_detection.wider_face.convert_predictions import convert_to_wider
 from ote.metrics.detection.common import coco_ap_eval_det
 from ote.metrics.face_detection.custom_voc_ap_eval import custom_voc_ap_evaluation
-from ote.metrics.face_detection.wider_face.convert_annotation import convert_to_coco
-from ote.metrics.face_detection.wider_face.convert_predictions import convert_to_wider
 from ote.metrics.face_detection.wider_face.wider_face_eval import wider_face_evaluation
 
 
