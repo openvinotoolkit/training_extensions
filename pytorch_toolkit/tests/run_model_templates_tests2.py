@@ -27,7 +27,7 @@ from subprocess import run
 from texttable import Texttable
 
 
-KNOWN_DOMAIN_FOLDERS = ['object_detection', 'action_recognition_2']
+KNOWN_DOMAIN_FOLDERS = ['object_detection', 'action_recognition_2', 'ote']
 TEST_FILES_PATTERN = '*_tests_*.py'
 MODEL_TEMPLATES_FOLDER_NAME = 'model_templates'
 MODEL_TEMPLATES_FILE_NAME = 'template.yaml'
@@ -40,27 +40,17 @@ def run_with_log(cmd, check):
     logging.info(f'Running command\n`{cmdstr}`')
     return run(cmd, shell=True, check=check, executable="/bin/bash")
 
-def get_problems(root_path):
-    problems_filename = glob.glob(f'{root_path}/**/problems.yaml', recursive=True)
-    assert len(problems_filename) == 1
-    problems_filename = problems_filename[0]
-
-    problems_dict = dict()
-    with open(problems_filename) as read_file:
-        content = yaml.safe_load(read_file)
-    return content
-
 def get_pytorch_toolkit_path():
     cur_file_path = os.path.abspath(__file__)
     pytorch_toolkit_path = os.path.dirname(os.path.dirname(cur_file_path))
     return pytorch_toolkit_path
 
-def collect_all_tests(test_el):
+def _collect_all_tests(test_el):
     if isinstance(test_el, unittest.TestCase):
         return [test_el]
     all_tests = []
     for tst in test_el:
-        all_tests.extend(collect_all_tests(tst))
+        all_tests.extend(_collect_all_tests(tst))
     return all_tests
 
 def discover_all_tests(root_path):
@@ -70,7 +60,7 @@ def discover_all_tests(root_path):
         logging.debug(f'discover_all_tests: cur_test_folder={cur_test_folder}, TEST_FILES_PATTERN={TEST_FILES_PATTERN}')
         testsuite = unittest.TestLoader().discover(cur_test_folder, pattern=TEST_FILES_PATTERN)
 
-        cur_tests = collect_all_tests(testsuite)
+        cur_tests = _collect_all_tests(testsuite)
 
         for tst in cur_tests:
             domain = getattr(tst, 'domain', cur_domain)
@@ -167,23 +157,13 @@ def filter_tests_by_value(all_tests, field_name, val):
     return all_tests
 
 def get_domains_from_tests_list(all_tests):
-    return sorted(set(el['domain'] for el in all_tests))
-
-def make_testsuite_from_list(all_tests):
-    testsuite = unittest.TestSuite()
-    for el in all_tests:
-        testsuite.addTest(el['test'])
-    return testsuite
-
-def run_testsuite(ts, work_dir, verbose):
-    os.environ['MODEL_TEMPLATES'] = work_dir
-    verbosity = 2 if verbose else 1
-    r = unittest.TextTestRunner(verbosity=verbosity).run(ts)
-    return r
+    return sorted(set(el['domain'] for el in all_tests if el['domain']))
 
 def write_list_template_files(root_path, all_tests, templates_list_file_path):
     template_files = []
     for el in all_tests:
+        if None in (el['domain'], el['problem'], el['model']):
+            continue
         template_path = os.path.join(root_path,
                                      el['domain'],
                                      MODEL_TEMPLATES_FOLDER_NAME,
@@ -205,9 +185,13 @@ def instantiate_work_dir(root_path, work_dir, all_tests):
 
     write_list_template_files(root_path, all_tests, tmp_f_name)
 
-    run_with_log(f'cd {root_path}; python3 {root_path}/tools/instantiate.py'
+    domains = get_domains_from_tests_list(all_tests)
+    domains_str = ','.join(domains)
+
+    run_with_log(f'cd {root_path}; python3 ./tools/instantiate.py'
                  f' --do-not-load-snapshots'
                  f' --templates-list-file {tmp_f_name}'
+                 f' --domains {domains_str}'
                  f' {work_dir}',
                  check=True)
 
@@ -234,16 +218,26 @@ def check_venvs(work_dir, all_tests):
         assert os.path.isdir(venv_for_domain), \
                 f'The venv folder {venv_for_domain} for domain {domain} is absent'
 
+def run_testsuite(ts, work_dir, verbose):
+    os.environ['MODEL_TEMPLATES'] = work_dir
+    verbosity = 2 if verbose else 1
+    r = unittest.TextTestRunner(verbosity=verbosity).run(ts)
+    return r
+
 def run_one_domain_tests_already_in_virtualenv(work_dir, all_tests, verbose):
     domains = get_domains_from_tests_list(all_tests)
     if len(domains) != 1:
-        raise RuntimeError('The option --run-one-domain-only may be used for one domain only')
+        raise RuntimeError('The option --run-one-domain-inside-virtual-env may be used for one domain only')
     if not is_in_virtual_env_in_work_dir(work_dir, domains[0]):
-        raise RuntimeError('The option --run-one-domain-only may be used only'
+        raise RuntimeError('The option --run-one-domain-inside-virtual-env may be used only'
                            ' inside the virtual environament of the domain')
 
-    ts = make_testsuite_from_list(all_tests)
-    tests_res = run_testsuite(ts, work_dir, verbose)
+    testsuite = unittest.TestSuite()
+    for el in all_tests:
+        testsuite.addTest(el['test'])
+
+    tests_res = run_testsuite(testsuite, work_dir, verbose)
+
     was_successful = tests_res.wasSuccessful()
     sys_retval = int(not was_successful)
     sys.exit(sys_retval)
@@ -259,7 +253,7 @@ def rerun_inside_virtual_envs(work_dir, all_tests, args):
         new_argv = ['python3'] + sys.argv
         if not args.domain:
             new_argv.extend(['--domain', domain])
-        new_argv.append('--run-one-domain-only')
+        new_argv.append('--run-one-domain-inside-virtual-env')
 
         cmd = ' '.join(new_argv)
         venv_path = generate_venv_path(work_dir, domain)
@@ -271,11 +265,15 @@ def rerun_inside_virtual_envs(work_dir, all_tests, args):
         results[domain] = was_successful
         logging.info(f'End running tests for domain {domain}, result={_success_to_str(was_successful)}')
         logging.info('')
+
     logging.info('~' * 70)
     logging.info('Result:')
+    total_success = True
     for domain in domains:
         was_successful = results[domain]
+        total_success = total_success and was_successful
         logging.info(f'    {domain}: {_success_to_str(was_successful)}')
+    logging.info(f'Total: {_success_to_str(total_success)}')
 
 def main():
     logging.basicConfig(level=logging.DEBUG)
@@ -293,7 +291,7 @@ def main():
     parser.add_argument('--list', '-l', action='store_true', help='List all available tests')
     parser.add_argument('--instantiate-only', action='store_true', help='If the script should instantiate the tests in the work dir only')
     parser.add_argument('--not-instantiate', action='store_true', help='If the script should NOT instantiate the tests in the work dir')
-    parser.add_argument('--run-one-domain-only', action='store_true',
+    parser.add_argument('--run-one-domain-inside-virtual-env', action='store_true',
                         help='If the script should run the tests for one domain without work dir instantiation.'
                         ' It is supposed that the script is already run in the proper virtual environment.')
 
@@ -301,7 +299,7 @@ def main():
     args = parser.parse_args()
     assert not (args.instantiate_only and args.not_instantiate), \
             'Only one of parameters --instantiate-only and --not-instantiate may be set'
-    assert not (args.instantiate_only and args.run_one_domain_only), \
+    assert not (args.instantiate_only and args.run_one_domain_inside_virtual_env), \
             'Only one of parameters --instantiate-only and --run-one-domain-only may be set'
 
     root_path = get_pytorch_toolkit_path()
@@ -326,16 +324,18 @@ def main():
     work_dir = os.path.abspath(args.workdir) if args.workdir else tempfile.mkstemp(prefix='work_dir_')
     logging.info(f'work_dir = {work_dir}')
 
-    if (not args.run_one_domain_only) and (not args.not_instantiate):
+    should_instantiate = (not args.run_one_domain_inside_virtual_env) and (not args.not_instantiate)
+    if should_instantiate:
         instantiate_work_dir(root_path, work_dir, all_tests)
         logging.info(f'The work_dir {work_dir} is instantiated')
         check_venvs(work_dir, all_tests)
+        logging.info('Instantiation checks are passed')
 
     if args.instantiate_only:
         return
 
     domains = get_domains_from_tests_list(all_tests)
-    if args.run_one_domain_only:
+    if args.run_one_domain_inside_virtual_env:
         run_one_domain_tests_already_in_virtualenv(work_dir, all_tests, args.verbose)
         return
 

@@ -25,6 +25,7 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'ote'))
 
 from ote.utils.misc import run_through_shell
+VENV_FOLDER_NAME = 'venv'
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -34,6 +35,10 @@ def parse_args():
     parser.add_argument('--templates-list-file',
                         help='A yaml file with list of paths of template files'
                          ' to be instantiated. Overrides --template-filter.')
+    parser.add_argument('--domains',
+                        help='Comma-separated list of domains that should be additionally'
+                        ' instantiated even if there are no found templates inside them'
+                        ' (should not contain spaces)')
 
     return parser.parse_args()
 
@@ -51,6 +56,10 @@ def main():
     args = parse_args()
 
     template_filenames = _get_templates_filenames(args)
+    if args.domains:
+        additional_domains = args.domains.split(',')
+    else:
+        additional_domains = []
 
     problems_filename = glob.glob('**/problems.yaml', recursive=True)
     assert len(problems_filename) == 1
@@ -98,9 +107,11 @@ def main():
                 with open(os.path.join(problem_folder, 'schema.json'), 'w') as write_file:
                     write_file.write(problem_dict['cvat_schema'])
 
+    domain_folders = domain_folders | set(additional_domains)
     for domain_folder in domain_folders:
         logging.info(f'Begin initializing virtual environment for {domain_folder}')
-        run_through_shell(f'cd {domain_folder}; ./init_venv.sh {os.path.join(args.destination, domain_folder, "venv")}')
+        run_through_shell(f'cd {domain_folder}; '
+                          f'bash ./init_venv.sh {os.path.join(args.destination, domain_folder, VENV_FOLDER_NAME)}')
         logging.info(f'End initializing virtual environment for {domain_folder}')
 
 if __name__ == '__main__':
