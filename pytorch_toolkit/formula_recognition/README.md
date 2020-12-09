@@ -25,6 +25,23 @@ sudo apt-get update &&
     ghostscript
 ```
 
+#### Known issue with imagemagick
+Evaluation process uses imagemagick to convert PDF-rendered formulas into PNG images. Sometimes there could be errors:
+```
+convert-im6.q16: not authorized `/tmp/tmpgr1m4d4_.pdf' @ error/constitute.c/ReadImage/412.
+convert-im6.q16: no images defined `/tmp/tmpgr1m4d4_.png' @ error/convert.c/ConvertImageCommand/3258.
+```
+The problem is missing required permissions.
+To fix this open file `/etc/ImageMagick-6/policy.xml`:
+
+`sudo nano /etc/ImageMagick-6/policy.xml`
+
+Find `<policy domain="coder" rights="none" pattern="PDF" />`
+
+and replace with:
+
+`<policy domain="coder" rights="read|write" pattern="PDF" />`
+
 ### Installation
 
 Create and activate virtual environment:
