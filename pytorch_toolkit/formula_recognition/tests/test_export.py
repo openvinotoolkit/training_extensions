@@ -17,7 +17,7 @@
 import os
 import unittest
 
-from im2latex.export import Exporter
+from im2latex.utils.exporter import Exporter
 from im2latex.utils.evaluator import Evaluator, RunnerType
 from im2latex.utils.get_config import get_config
 
