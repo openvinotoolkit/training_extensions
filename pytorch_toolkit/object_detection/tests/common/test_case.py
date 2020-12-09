@@ -33,7 +33,7 @@ except ModuleNotFoundError:
 def get_dependencies(template_file):
     output = {}
     with open(template_file) as read_file:
-        content = yaml.load(read_file, yaml.SafeLoader)
+        content = yaml.safe_load(read_file)
         for dependency in content['dependencies']:
             output[dependency['destination'].split('.')[0]] = dependency['source']
         return output
@@ -92,19 +92,24 @@ def create_test_case(problem_name, model_name, ann_file, img_root):
                 f'pip install -r requirements.txt;'
             )
 
+        def setUp(self):
+            self.output_folder = os.path.join(self.template_folder, f'output_{self.id()}')
+            os.makedirs(self.output_folder, exist_ok=True)
+
         @unittest.skipUnless(torch.cuda.is_available(), 'No GPU found')
         def test_evaluation_on_gpu(self):
+            metrics_file_path = os.path.join(self.output_folder, "metrics.yaml")
             run_through_shell(
                 f'cd {self.template_folder};'
                 f'python eval.py'
                 f' --test-ann-files {self.ann_file}'
                 f' --test-data-roots {self.img_root}'
-                f' --save-metrics-to metrics.yaml'
+                f' --save-metrics-to {metrics_file_path}'
                 f' --load-weights snapshot.pth'
                 )
 
-            with open(os.path.join(self.template_folder, "metrics.yaml")) as read_file:
-                content = yaml.load(read_file, yaml.SafeLoader)
+            with open(metrics_file_path) as read_file:
+                content = yaml.safe_load(read_file)
 
             ap = [metrics['value'] for metrics in content['metrics'] if metrics['key'] == 'ap'][0]
 
@@ -115,18 +120,19 @@ def create_test_case(problem_name, model_name, ann_file, img_root):
 
         def test_evaluation_on_cpu(self):
             skip_if_cpu_is_not_supported(self.template_file)
+            metrics_file_path = os.path.join(self.output_folder, "metrics.yaml")
             run_through_shell(
                 'export CUDA_VISIBLE_DEVICES=;'
                 f'cd {self.template_folder};'
                 f'python eval.py'
                 f' --test-ann-files {self.ann_file}'
                 f' --test-data-roots {self.img_root}'
-                f' --save-metrics-to metrics.yaml'
+                f' --save-metrics-to {metrics_file_path}'
                 f' --load-weights snapshot.pth'
                 )
 
-            with open(os.path.join(self.template_folder, "metrics.yaml")) as read_file:
-                content = yaml.load(read_file, yaml.SafeLoader)
+            with open(metrics_file_path) as read_file:
+                content = yaml.safe_load(read_file)
 
             ap = [metrics['value'] for metrics in content['metrics'] if metrics['key'] == 'ap'][0]
 
@@ -136,7 +142,7 @@ def create_test_case(problem_name, model_name, ann_file, img_root):
 
         @unittest.skipUnless(torch.cuda.is_available(), 'No GPU found')
         def test_finetuning_on_gpu(self):
-            log_file = os.path.join(self.template_folder, 'test_finetuning.log')
+            log_file = os.path.join(self.output_folder, 'test_finetuning.log')
             run_through_shell(
                 f'cd {self.template_folder};'
                 f'python train.py'
@@ -145,7 +151,7 @@ def create_test_case(problem_name, model_name, ann_file, img_root):
                 f' --val-ann-files {self.ann_file}'
                 f' --val-data-roots {self.img_root}'
                 f' --resume-from snapshot.pth'
-                f' --save-checkpoints-to {self.template_folder}'
+                f' --save-checkpoints-to {self.output_folder}'
                 f' --gpu-num 1'
                 f' --batch-size 1'
                 f' --epochs {self.total_epochs}'
@@ -157,7 +163,7 @@ def create_test_case(problem_name, model_name, ann_file, img_root):
 
         def test_finetuning_on_cpu(self):
             skip_if_cpu_is_not_supported(self.template_file)
-            log_file = os.path.join(self.template_folder, 'test_finetuning.log')
+            log_file = os.path.join(self.output_folder, 'test_finetuning.log')
             run_through_shell(
                 'export CUDA_VISIBLE_DEVICES=;'
                 f'cd {self.template_folder};'
@@ -167,7 +173,7 @@ def create_test_case(problem_name, model_name, ann_file, img_root):
                 f' --val-ann-files {self.ann_file}'
                 f' --val-data-roots {self.img_root}'
                 f' --resume-from snapshot.pth'
-                f' --save-checkpoints-to {self.template_folder}'
+                f' --save-checkpoints-to {self.output_folder}'
                 f' --gpu-num 1'
                 f' --batch-size 1'
                 f' --epochs {self.total_epochs}'
@@ -219,17 +225,18 @@ def create_export_test_case(problem_name, model_name, ann_file, img_root, alt_ss
             else:
                 export_dir = os.path.join(self.template_folder, export_folder)
 
+            metrics_file_path = os.path.join(export_dir, "metrics.yaml")
             run_through_shell(
                 f'cd {os.path.dirname(self.template_file)};'
                 f'python eval.py'
                 f' --test-ann-files {ann_file}'
                 f' --test-data-roots {img_root}'
                 f' --load-weights {os.path.join(export_dir, "model.bin")}'
-                f' --save-metrics-to {os.path.join(export_dir, "metrics.yaml")}'
+                f' --save-metrics-to {metrics_file_path}'
             )
 
-            with open(os.path.join(export_dir, "metrics.yaml")) as read_file:
-                content = yaml.load(read_file, yaml.SafeLoader)
+            with open(metrics_file_path) as read_file:
+                content = yaml.safe_load(read_file)
                 ap = [metric for metric in content['metrics'] if metric['key'] == 'ap'][0]['value']
 
             with open(f'{os.path.dirname(__file__)}/../expected_outputs/{problem_name}/{model_name}.json') as read_file:
@@ -257,7 +264,7 @@ def create_export_test_case(problem_name, model_name, ann_file, img_root, alt_ss
             )
 
             with open(os.path.join(export_dir, "metrics.yaml")) as read_file:
-                content = yaml.load(read_file, yaml.SafeLoader)
+                content = yaml.safe_load(read_file)
                 ap = [metric for metric in content['metrics'] if metric['key'] == 'ap'][0]['value']
 
             with open(f'{os.path.dirname(__file__)}/../expected_outputs/{problem_name}/{model_name}.json') as read_file:
@@ -345,6 +352,10 @@ def create_nncf_test_case(problem_name, model_name, ann_file, img_root,
             )
             logging.info(f'End setting up class for {problem_name}/{model_name}, {cls.template_updates_description}')
 
+        def setUp(self):
+            self.output_folder = os.path.join(self.template_folder, f'output_{self.id()}')
+            os.makedirs(self.output_folder, exist_ok=True)
+
         @staticmethod
         def generate_template_updates_description(template_update_dict):
             keys = sorted(template_update_dict.keys())
@@ -393,7 +404,7 @@ def create_nncf_test_case(problem_name, model_name, ann_file, img_root,
 
         @unittest.skipUnless(torch.cuda.is_available(), 'No GPU found')
         def test_nncf_compress_on_gpu(self):
-            log_file = os.path.join(self.template_folder, f'log__{self.id()}.txt')
+            log_file = os.path.join(self.output_folder, f'log__{self.id()}.txt')
             run_through_shell(
                 f'cd {self.template_folder};'
                 f'python compress.py'
@@ -402,7 +413,7 @@ def create_nncf_test_case(problem_name, model_name, ann_file, img_root,
                 f' --val-ann-files {self.ann_file}'
                 f' --val-data-roots {self.img_root}'
                 f' --load-weights snapshot.pth'
-                f' --save-checkpoints-to {self.template_folder}/output_{self.id()}'
+                f' --save-checkpoints-to {self.output_folder}'
                 f' --gpu-num 1'
                 f' --batch-size 1'
                 f' | tee {log_file}')
@@ -412,7 +423,12 @@ def create_nncf_test_case(problem_name, model_name, ann_file, img_root,
 
         @unittest.skipUnless(torch.cuda.is_available(), 'No GPU found')
         def test_nncf_finetune_and_compress_on_gpu(self):
-            log_file = os.path.join(self.template_folder, f'log__{self.id()}.txt')
+            """
+            Note that this training runs a usual training; but since compression flags are
+            set inside the template, after several steps of finetuning the train.py script should
+            make compression.
+            """
+            log_file = os.path.join(self.output_folder, f'log__{self.id()}.txt')
             total_epochs = get_epochs(self.template_file)
             total_epochs_with_finetuning = total_epochs + 2
             run_through_shell(
@@ -423,7 +439,7 @@ def create_nncf_test_case(problem_name, model_name, ann_file, img_root,
                 f' --val-ann-files {self.ann_file}'
                 f' --val-data-roots {self.img_root}'
                 f' --resume-from snapshot.pth'
-                f' --save-checkpoints-to {self.template_folder}/output_{self.id()}'
+                f' --save-checkpoints-to {self.output_folder}'
                 f' --gpu-num 1'
                 f' --batch-size 1'
                 f' --epochs {total_epochs_with_finetuning}'
@@ -434,8 +450,8 @@ def create_nncf_test_case(problem_name, model_name, ann_file, img_root,
 
         @unittest.skipUnless(torch.cuda.is_available(), 'No GPU found')
         def test_nncf_compress_and_eval_on_gpu(self):
-            log_file = os.path.join(self.template_folder, f'log__{self.id()}.txt')
-            checkpoints_dir = f'{self.template_folder}/output_{self.id()}'
+            log_file = os.path.join(self.output_folder, f'log__{self.id()}.txt')
+            checkpoints_dir = self.output_folder
             run_through_shell(
                 f'cd {self.template_folder};'
                 f'python compress.py'
@@ -476,8 +492,8 @@ def create_nncf_test_case(problem_name, model_name, ann_file, img_root,
 
         @unittest.skipUnless(torch.cuda.is_available(), 'No GPU found')
         def test_nncf_compress_and_export(self):
-            log_file = os.path.join(self.template_folder, f'log__{self.id()}.txt')
-            checkpoints_dir = f'{self.template_folder}/output_{self.id()}'
+            log_file = os.path.join(self.output_folder, f'log__{self.id()}.txt')
+            checkpoints_dir = self.output_folder
             run_through_shell(
                 f'cd {self.template_folder};'
                 f'python compress.py'
