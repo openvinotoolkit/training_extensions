@@ -84,7 +84,10 @@ class TextRecognitionHead(nn.Module):
         else:
             self.V_h_0 = nn.Parameter(torch.zeros(self.n_layer*2, self.encoder_hidden_size), requires_grad=False)
             self.V_c_0 = nn.Parameter(torch.zeros(self.n_layer*2, self.encoder_hidden_size), requires_grad=False)
-        self.positional_encodings = positional_encodings
+        if positional_encodings:
+            self.pe = PositionalEncodingPermute2D(channels=self.encoder_input_size)
+        else:
+            self.pe = None
         # Attention mechanism
         self.beta = nn.Parameter(torch.Tensor(self.decoder_hidden_size))
         init.uniform_(self.beta, -INIT, INIT)
@@ -100,11 +103,9 @@ class TextRecognitionHead(nn.Module):
         logits: [B, MAX_LEN, VOCAB_SIZE]
         """
         # encoding
-        if self.positional_encodings:
+        if self.pe:
             old_shape = features.shape
-            pe = PositionalEncodingPermute2D(channels=self.encoder_input_size)
-            encoded = pe(features)
-            encoded = encoded.expand(features.shape)
+            encoded = self.pe(features)
             features = features + encoded
             assert features.shape == old_shape, f"New shape: {features.shape}, old shape: {old_shape}"
 
