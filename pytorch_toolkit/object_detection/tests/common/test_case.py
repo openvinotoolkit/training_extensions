@@ -335,7 +335,7 @@ def create_nncf_test_case(problem_name, model_name, ann_file, img_root,
             # we have very small dataset for training and evaluation:
             # if network compression causes other detections
             # on 2-4 images, the accuracy drop will be significant.
-            cls.test_export_thr = 0.05
+            cls.test_export_thr = 0.075
 
             download_snapshot_if_not_yet(cls.template_file, cls.template_folder)
 
