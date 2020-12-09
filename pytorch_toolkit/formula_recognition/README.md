@@ -19,7 +19,7 @@ These packages are used for rendering images while evaluation and demo.
 
 ```bash
 sudo apt-get update &&
-  apt-get install -y --no-install-recommends \
+  sudo apt-get install -y --no-install-recommends \
     texlive \
     imagemagick \
     ghostscript
