@@ -143,6 +143,7 @@ def print_list_tests(all_tests, verbose=False):
     print(table.draw())
 
 def make_pattern_match(pattern, val):
+    # TODO(LeonidBeynenson): add possibility to use regexp
     if val is None:
         return False
     res = fnmatch.fnmatchcase(val, pattern)
@@ -180,7 +181,7 @@ def write_list_template_files(root_path, all_tests, templates_list_file_path):
 def instantiate_work_dir(root_path, work_dir, all_tests):
     os.makedirs(work_dir, exist_ok=True)
 
-    tmp_f, tmp_f_name = tempfile.mkstemp(prefix='template_list', suffix='.yaml', dir=work_dir)
+    _, tmp_f_name = tempfile.mkstemp(prefix='template_list_', suffix='.yaml', dir=work_dir)
     logging.info(f'Writing template files to temporary file {tmp_f_name}')
 
     write_list_template_files(root_path, all_tests, tmp_f_name)
