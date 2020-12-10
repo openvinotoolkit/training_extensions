@@ -42,6 +42,7 @@ from collections import namedtuple
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from positional_encodings import PositionalEncodingPermute2D
 from torch.nn import init
 
 from ...data.vocab import END_TOKEN, START_TOKEN
@@ -53,7 +54,9 @@ Candidate = namedtuple('candidate', 'score, dec_state_h, dec_state_c, output, ta
 class TextRecognitionHead(nn.Module):
     def __init__(self, out_size, emb_size=80, encoder_hidden_size=256,
                  decoder_hidden_size=512, max_len=256, n_layer=1,
-                 beam_width=0, encoder_input_size=512):
+                 beam_width=0, encoder_input_size=512,
+                 positional_encodings=False,
+                 trainable_initial_hidden=True):
         super(TextRecognitionHead, self).__init__()
         self.emb_size = emb_size
         self.encoder_hidden_size = encoder_hidden_size
@@ -201,10 +204,8 @@ class TextRecognitionHead(nn.Module):
         encoded_imgs = encoded_imgs.contiguous().view(B*H, W, out_channels)
 
         # prepare init hidden for each row
-        init_hidden_h = self.V_h_0.unsqueeze(
-            1).expand(self.V_h_0.shape[0], B*H, self.V_h_0.shape[1]).contiguous()
-        init_hidden_c = self.V_c_0.unsqueeze(
-            1).expand(self.V_h_0.shape[0], B*H, self.V_h_0.shape[1]).contiguous()
+        init_hidden_h = self.V_h_0.unsqueeze(1).expand(self.V_h_0.shape[0], B*H, self.V_h_0.shape[1]).contiguous()
+        init_hidden_c = self.V_c_0.unsqueeze(1).expand(self.V_h_0.shape[0], B*H, self.V_h_0.shape[1]).contiguous()
         init_hidden = (init_hidden_h, init_hidden_c)
 
         # Row Encoder
