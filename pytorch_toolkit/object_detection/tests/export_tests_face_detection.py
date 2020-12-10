@@ -14,70 +14,65 @@
 
 import os
 
-from common.test_case import create_export_test_case
+from common.test_case import create_object_detection_export_test_case
+
+
+kwargs = dict(
+    problem_name='face-detection',
+    ann_file=os.path.dirname(__file__) + '/../../../data/airport/annotation_faces_train.json',
+    img_root=os.path.dirname(__file__) + '/../../../data/airport/'
+)
 
 
 class FaceDetection0200TestCase(
-        create_export_test_case(
-            'face-detection',
-            'face-detection-0200',
-            os.path.dirname(__file__) + '/../../../data/airport/annotation_faces_train.json',
-            os.path.dirname(__file__) + '/../../../data/airport/',
-            True)
+        create_object_detection_export_test_case(
+            model_name='face-detection-0200',
+            alt_ssd_export=True,
+            **kwargs)
 ):
     """ Test case for face-detection-0200 model export. """
 
 
 class FaceDetection0202TestCase(
-        create_export_test_case(
-            'face-detection',
-            'face-detection-0202',
-            os.path.dirname(__file__) + '/../../../data/airport/annotation_faces_train.json',
-            os.path.dirname(__file__) + '/../../../data/airport/',
-            True)
+        create_object_detection_export_test_case(
+            model_name='face-detection-0202',
+            alt_ssd_export=True,
+            **kwargs)
 ):
     """ Test case for face-detection-0202 model export. """
 
 
 class FaceDetection0204TestCase(
-        create_export_test_case(
-            'face-detection',
-            'face-detection-0204',
-            os.path.dirname(__file__) + '/../../../data/airport/annotation_faces_train.json',
-            os.path.dirname(__file__) + '/../../../data/airport/',
-            True)
+        create_object_detection_export_test_case(
+            model_name='face-detection-0204',
+            alt_ssd_export=True,
+            **kwargs)
 ):
     """ Test case for face-detection-0204 model export. """
 
 
 class FaceDetection0205TestCase(
-        create_export_test_case(
-            'face-detection',
-            'face-detection-0205',
-            os.path.dirname(__file__) + '/../../../data/airport/annotation_faces_train.json',
-            os.path.dirname(__file__) + '/../../../data/airport/',
-            False)
+        create_object_detection_export_test_case(
+            model_name='face-detection-0205',
+            alt_ssd_export=False,
+            **kwargs)
 ):
     """ Test case for face-detection-0205 model export. """
 
 
 class FaceDetection0206TestCase(
-        create_export_test_case(
-            'face-detection',
-            'face-detection-0206',
-            os.path.dirname(__file__) + '/../../../data/airport/annotation_faces_train.json',
-            os.path.dirname(__file__) + '/../../../data/airport/',
-            False)
+        create_object_detection_export_test_case(
+            model_name='face-detection-0206',
+            alt_ssd_export=False,
+            **kwargs)
 ):
     """ Test case for face-detection-0206 model export. """
 
 
 class FaceDetection0207TestCase(
-        create_export_test_case(
-            'face-detection',
-            'face-detection-0207',
-            os.path.dirname(__file__) + '/../../../data/airport/annotation_faces_train.json',
-            os.path.dirname(__file__) + '/../../../data/airport/',
-            True)
+        create_object_detection_export_test_case(
+            model_name='face-detection-0207',
+            alt_ssd_export=False,
+            **kwargs)
 ):
     """ Test case for face-detection-0207 model export. """

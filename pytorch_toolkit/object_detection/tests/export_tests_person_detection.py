@@ -14,37 +14,36 @@
 
 import os
 
-from common.test_case import create_export_test_case
+from common.test_case import create_object_detection_export_test_case
+
+
+kwargs = dict(
+    problem_name='person-detection',
+    ann_file=os.path.dirname(__file__) + '/../../../data/airport/annotation_person_train.json',
+    img_root=os.path.dirname(__file__) + '/../../../data/airport/train',
+    alt_ssd_export=True
+)
 
 
 class PersonDetection0200TestCase(
-        create_export_test_case(
-            'person-detection',
-            'person-detection-0200',
-            os.path.dirname(__file__) + '/../../../data/airport/annotation_example_train.json',
-            os.path.dirname(__file__) + '/../../../data/airport/train',
-            True)
+        create_object_detection_export_test_case(
+            model_name='person-detection-0200',
+            **kwargs)
 ):
     """ Test case for person-detection-0200 model export. """
 
 
 class PersonDetection0201TestCase(
-        create_export_test_case(
-            'person-detection',
-            'person-detection-0201',
-            os.path.dirname(__file__) + '/../../../data/airport/annotation_example_train.json',
-            os.path.dirname(__file__) + '/../../../data/airport/train',
-            True)
+        create_object_detection_export_test_case(
+            model_name='person-detection-0201',
+            **kwargs)
 ):
     """ Test case for person-detection-0201 model export. """
 
 
 class PersonDetection0202TestCase(
-        create_export_test_case(
-            'person-detection',
-            'person-detection-0202',
-            os.path.dirname(__file__) + '/../../../data/airport/annotation_example_train.json',
-            os.path.dirname(__file__) + '/../../../data/airport/train',
-            True)
+        create_object_detection_export_test_case(
+            model_name='person-detection-0202',
+            **kwargs)
 ):
     """ Test case for person-detection-0202 model export. """

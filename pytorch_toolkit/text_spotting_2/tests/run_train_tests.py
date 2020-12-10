@@ -23,23 +23,14 @@ from ote.tests.utils import run_tests_by_pattern
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--pattern', default='export_tests_*.py')
+    parser.add_argument('--pattern', default='train_tests_*.py')
     parser.add_argument('--verbose', action='store_true')
 
     return parser.parse_args()
 
 
 def main():
-    if os.path.abspath(os.getcwd()) == os.path.abspath(os.path.join(os.path.dirname(__file__), '..')):
-        return 0
-
-    args = parse_args()
-
-    was_successful = run_tests_by_pattern(folder=os.path.dirname(__file__),
-                                          pattern=args.pattern,
-                                          verbose=args.verbose)
-    ret = not was_successful
-    sys.exit(ret)
+    pass
 
 
 if __name__ == '__main__':

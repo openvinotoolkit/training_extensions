@@ -14,59 +14,56 @@
 
 import os
 
-from common.test_case import create_export_test_case
+from common.test_case import create_object_detection_export_test_case
+
+
+kwargs = dict(
+    problem_name='vehicle-detection',
+    ann_file=os.path.dirname(__file__) + '/../../../data/vehicle_detection/annotation_val.json',
+    img_root=os.path.dirname(__file__) + '/../../../data/vehicle_detection/val'
+)
 
 
 class VehicleDetection0200TestCase(
-        create_export_test_case(
-            'vehicle-detection',
-            'vehicle-detection-0200',
-            os.path.dirname(__file__) + '/../../../data/vehicle_detection/annotation_val.json',
-            os.path.dirname(__file__) + '/../../../data/vehicle_detection/val',
-            True)
+        create_object_detection_export_test_case(
+            model_name='vehicle-detection-0200',
+            alt_ssd_export=True,
+            **kwargs)
 ):
     """ Test case for vehicle-detection-0200 model export. """
 
 
 class VehicleDetection0201TestCase(
-        create_export_test_case(
-            'vehicle-detection',
-            'vehicle-detection-0201',
-            os.path.dirname(__file__) + '/../../../data/vehicle_detection/annotation_val.json',
-            os.path.dirname(__file__) + '/../../../data/vehicle_detection/val',
-            True)
+        create_object_detection_export_test_case(
+            model_name='vehicle-detection-0201',
+            alt_ssd_export=True,
+            **kwargs)
 ):
     """ Test case for vehicle-detection-0201 model export. """
 
 
 class VehicleDetection0202TestCase(
-        create_export_test_case(
-            'vehicle-detection',
-            'vehicle-detection-0202',
-            os.path.dirname(__file__) + '/../../../data/vehicle_detection/annotation_val.json',
-            os.path.dirname(__file__) + '/../../../data/vehicle_detection/val',
-            True)
+        create_object_detection_export_test_case(
+            model_name='vehicle-detection-0202',
+            alt_ssd_export=True,
+            **kwargs)
 ):
     """ Test case for vehicle-detection-0202 model export. """
 
 
 class VehicleDetection0203TestCase(
-        create_export_test_case(
-            'vehicle-detection',
-            'vehicle-detection-0203',
-            os.path.dirname(__file__) + '/../../../data/vehicle_detection/annotation_val.json',
-            os.path.dirname(__file__) + '/../../../data/vehicle_detection/val',
-            False)
+        create_object_detection_export_test_case(
+            model_name='vehicle-detection-0203',
+            alt_ssd_export=False,
+            **kwargs)
 ):
     """ Test case for vehicle-detection-0203 model export. """
 
 
 class VehicleDetection0204TestCase(
-        create_export_test_case(
-            'vehicle-detection',
-            'vehicle-detection-0204',
-            os.path.dirname(__file__) + '/../../../data/vehicle_detection/annotation_val.json',
-            os.path.dirname(__file__) + '/../../../data/vehicle_detection/val',
-            False)
+        create_object_detection_export_test_case(
+            model_name='vehicle-detection-0204',
+            alt_ssd_export=False,
+            **kwargs)
 ):
     """ Test case for vehicle-detection-0204 model export. """

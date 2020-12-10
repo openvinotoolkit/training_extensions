@@ -12,7 +12,9 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+import logging
 import os
+import unittest
 from subprocess import run
 
 
@@ -40,4 +42,18 @@ def relative_abs_error(expected, actual):
 
 
 def run_through_shell(cmd):
+    cmdstr = ' '.join(cmd) if isinstance(cmd, list) else cmd
+    cmdstr = cmdstr.replace(';', ';\n').replace(' --', ' \\\n    --')
+    logging.info(f'Running through shell cmd\n`{cmdstr}\n`')
     run(cmd, shell=True, check=True, executable="/bin/bash")
+
+
+def run_tests_by_pattern(folder, pattern, verbose):
+    logging.basicConfig(level=logging.INFO)
+    if verbose:
+        verbosity = 2
+    else:
+        verbosity = 1
+    testsuite = unittest.TestLoader().discover(folder, pattern=pattern)
+    was_successful = unittest.TextTestRunner(verbosity=verbosity).run(testsuite).wasSuccessful()
+    return was_successful

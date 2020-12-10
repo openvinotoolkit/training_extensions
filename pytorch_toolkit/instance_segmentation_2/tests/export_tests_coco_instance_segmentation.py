@@ -14,60 +14,55 @@
 
 import os
 
-from common.test_case import create_export_test_case
+from common.test_case import create_instance_segmentation_export_test_case
 
+
+kwargs = dict(
+    problem_name='coco-instance-segmentation',
+    ann_file=os.path.dirname(__file__) + '/../../../data/coco/instances_val2017_20imgs.json',
+    img_root=os.path.dirname(__file__) + '/../../../data/coco/val2017',
+)
 
 class InstanceSegmentation0002TestCase(
-        create_export_test_case(
-            'coco-instance-segmentation',
-            'instance-segmentation-0002',
-            os.path.dirname(__file__) + '/../../../data/coco/instances_val2017_20imgs.json',
-            os.path.dirname(__file__) + '/../../../data/coco/val2017',
-            True)
+        create_instance_segmentation_export_test_case(
+            model_name='instance-segmentation-0002',
+            **kwargs
+        )
 ):
     """ Test case for instance-segmentation-0002 model export. """
 
 
 class InstanceSegmentation0091TestCase(
-        create_export_test_case(
-            'coco-instance-segmentation',
-            'instance-segmentation-0091',
-            os.path.dirname(__file__) + '/../../../data/coco/instances_val2017_20imgs.json',
-            os.path.dirname(__file__) + '/../../../data/coco/val2017',
-            True)
+        create_instance_segmentation_export_test_case(
+            model_name='instance-segmentation-0091',
+            **kwargs
+        )
 ):
     """ Test case for instance-segmentation-0091 model export. """
 
 
 class InstanceSegmentation0228TestCase(
-        create_export_test_case(
-            'coco-instance-segmentation',
-            'instance-segmentation-0228',
-            os.path.dirname(__file__) + '/../../../data/coco/instances_val2017_20imgs.json',
-            os.path.dirname(__file__) + '/../../../data/coco/val2017',
-            True)
+        create_instance_segmentation_export_test_case(
+            model_name='instance-segmentation-0228',
+            **kwargs
+        )
 ):
     """ Test case for instance-segmentation-0228 model export. """
 
 
 class InstanceSegmentation0904TestCase(
-        create_export_test_case(
-            'coco-instance-segmentation',
-            'instance-segmentation-0904',
-            os.path.dirname(__file__) + '/../../../data/coco/instances_val2017_20imgs.json',
-            os.path.dirname(__file__) + '/../../../data/coco/val2017',
-            True)
+        create_instance_segmentation_export_test_case(
+            model_name='instance-segmentation-0904',
+            **kwargs
+        )
 ):
     """ Test case for instance-segmentation-0904 model export. """
 
 
 class InstanceSegmentation0912TestCase(
-        create_export_test_case(
-            'coco-instance-segmentation',
-            'instance-segmentation-0912',
-            os.path.dirname(__file__) + '/../../../data/coco/instances_val2017_20imgs.json',
-            os.path.dirname(__file__) + '/../../../data/coco/val2017',
-            True)
+        create_instance_segmentation_export_test_case(
+            model_name='instance-segmentation-0912',
+            **kwargs
+        )
 ):
     """ Test case for instance-segmentation-0912 model export. """
-

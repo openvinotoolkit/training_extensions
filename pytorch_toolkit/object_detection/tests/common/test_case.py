@@ -23,253 +23,45 @@ import torch
 import yaml
 
 from ote.utils.misc import download_snapshot_if_not_yet
-from common.utils import collect_ap, run_through_shell
+from ote.tests.test_case import (create_export_test_case,
+                                 create_test_case,
+                                 get_dependencies,
+                                 get_epochs,
+                                 skip_if_cpu_is_not_supported,
+                                 skip_non_instantiated_template_if_its_allowed)
+from ote.tests.utils import collect_ap, run_through_shell
 
 
-def get_dependencies(template_file):
-    output = {}
-    with open(template_file) as read_file:
-        content = yaml.load(read_file, yaml.SafeLoader)
-        for dependency in content['dependencies']:
-            output[dependency['destination'].split('.')[0]] = dependency['source']
-        return output
+def create_object_detection_test_case(**kwargs):
+    expected_outputs_dir = os.path.join(os.path.dirname(__file__), '..', 'expected_outputs')
+    return create_test_case('object_detection',
+                            **kwargs,
+                            metric_keys=['bbox'],
+                            expected_outputs_dir=expected_outputs_dir)
 
 
-def get_epochs(template_file):
-    with open(template_file) as read_file:
-        content = yaml.safe_load(read_file)
-    return content['hyper_parameters']['basic']['epochs']
-
-
-def skip_non_instantiated_template_if_its_allowed(template_folder, problem_name, model_name):
-    # Note that this is for debug purposes only
-    # pylint: disable=no-else-raise
-    should_skip_absent_templates = os.environ.get('SHOULD_SKIP_ABSENT_TEMPLATES')
-    if not os.path.isdir(template_folder):
-        if should_skip_absent_templates:
-            raise unittest.SkipTest(f'The template folder for {problem_name}/{model_name}'
-                                    f' is not instantiated -- SKIPPING IT')
-        else:
-            raise unittest.TestCase.failureException(f'The template folder for {problem_name}/{model_name}'
-                                                     f' is not instantiated')
-
-
-def skip_if_cpu_is_not_supported(template_file):
-    with open(template_file) as read_file:
-        training_targets = [x.lower() for x in yaml.safe_load(read_file)['training_target']]
-    if 'cpu' not in training_targets:
-        raise unittest.SkipTest('CPU is not supported.')
-
-
-def create_test_case(problem_name, model_name, ann_file, img_root):
-    class TestCaseOteApi(unittest.TestCase):
-
-        @classmethod
-        def setUpClass(cls):
-            cls.templates_folder = os.environ['MODEL_TEMPLATES']
-            cls.template_folder = os.path.join(cls.templates_folder, 'object_detection', problem_name, model_name)
-            skip_non_instantiated_template_if_its_allowed(cls.template_folder, problem_name, model_name)
-            cls.template_file = os.path.join(cls.template_folder, 'template.yaml')
-            cls.ann_file = ann_file
-            cls.img_root = img_root
-            cls.dependencies = get_dependencies(cls.template_file)
-            cls.epochs_delta = 2
-            cls.total_epochs = get_epochs(cls.template_file) + cls.epochs_delta
-
-            download_snapshot_if_not_yet(cls.template_file, cls.template_folder)
-
-            run_through_shell(
-                f'cd {cls.template_folder};'
-                f'pip install -r requirements.txt;'
-            )
-
-        @unittest.skipUnless(torch.cuda.is_available(), 'No GPU found')
-        def test_evaluation_on_gpu(self):
-            run_through_shell(
-                f'cd {self.template_folder};'
-                f'python eval.py'
-                f' --test-ann-files {self.ann_file}'
-                f' --test-data-roots {self.img_root}'
-                f' --save-metrics-to metrics.yaml'
-                f' --load-weights snapshot.pth'
-                )
-
-            with open(os.path.join(self.template_folder, "metrics.yaml")) as read_file:
-                content = yaml.load(read_file, yaml.SafeLoader)
-
-            ap = [metrics['value'] for metrics in content['metrics'] if metrics['key'] == 'ap'][0]
-
-            with open(f'{os.path.dirname(__file__)}/../expected_outputs/{problem_name}/{model_name}.json') as read_file:
-                content = json.load(read_file)
-
-            self.assertLess(abs(content['map'] - ap / 100), 1e-6)
-
-        def test_evaluation_on_cpu(self):
-            skip_if_cpu_is_not_supported(self.template_file)
-            run_through_shell(
-                'export CUDA_VISIBLE_DEVICES=;'
-                f'cd {self.template_folder};'
-                f'python eval.py'
-                f' --test-ann-files {self.ann_file}'
-                f' --test-data-roots {self.img_root}'
-                f' --save-metrics-to metrics.yaml'
-                f' --load-weights snapshot.pth'
-                )
-
-            with open(os.path.join(self.template_folder, "metrics.yaml")) as read_file:
-                content = yaml.load(read_file, yaml.SafeLoader)
-
-            ap = [metrics['value'] for metrics in content['metrics'] if metrics['key'] == 'ap'][0]
-
-            with open(f'{os.path.dirname(__file__)}/../expected_outputs/{problem_name}/{model_name}.json') as read_file:
-                content = json.load(read_file)
-            self.assertLess(abs(content['map'] - ap / 100), 1e-6)
-
-        @unittest.skipUnless(torch.cuda.is_available(), 'No GPU found')
-        def test_finetuning_on_gpu(self):
-            log_file = os.path.join(self.template_folder, 'test_finetuning.log')
-            run_through_shell(
-                f'cd {self.template_folder};'
-                f'python train.py'
-                f' --train-ann-files {self.ann_file}'
-                f' --train-data-roots {self.img_root}'
-                f' --val-ann-files {self.ann_file}'
-                f' --val-data-roots {self.img_root}'
-                f' --resume-from snapshot.pth'
-                f' --save-checkpoints-to {self.template_folder}'
-                f' --gpu-num 1'
-                f' --batch-size 1'
-                f' --epochs {self.total_epochs}'
-                f' | tee {log_file}')
-
-            ap = collect_ap(log_file)
-            self.assertEqual(len((ap)), self.epochs_delta)
-            self.assertGreater(ap[-1], 0)
-
-        def test_finetuning_on_cpu(self):
-            skip_if_cpu_is_not_supported(self.template_file)
-            log_file = os.path.join(self.template_folder, 'test_finetuning.log')
-            run_through_shell(
-                'export CUDA_VISIBLE_DEVICES=;'
-                f'cd {self.template_folder};'
-                f'python train.py'
-                f' --train-ann-files {self.ann_file}'
-                f' --train-data-roots {self.img_root}'
-                f' --val-ann-files {self.ann_file}'
-                f' --val-data-roots {self.img_root}'
-                f' --resume-from snapshot.pth'
-                f' --save-checkpoints-to {self.template_folder}'
-                f' --gpu-num 1'
-                f' --batch-size 1'
-                f' --epochs {self.total_epochs}'
-                f' | tee {log_file}')
-
-            ap = collect_ap(log_file)
-            self.assertEqual(len((ap)), self.epochs_delta)
-            self.assertGreater(ap[-1], 0)
-
-    return TestCaseOteApi
-
-
-def create_export_test_case(problem_name, model_name, ann_file, img_root, alt_ssd_export=False):
-    class ExportTestCase(unittest.TestCase):
-
-        @classmethod
-        def setUpClass(cls):
-            cls.templates_folder = os.environ['MODEL_TEMPLATES']
-            cls.template_folder = os.path.join(cls.templates_folder, 'object_detection', problem_name, model_name)
-            skip_non_instantiated_template_if_its_allowed(cls.template_folder, problem_name, model_name)
-            cls.template_file = os.path.join(cls.template_folder, 'template.yaml')
-            cls.ann_file = ann_file
-            cls.img_root = img_root
-            cls.dependencies = get_dependencies(cls.template_file)
-            cls.test_export_thr = 0.031
-
-            download_snapshot_if_not_yet(cls.template_file, cls.template_folder)
-
-        def do_export(self, folder):
-            run_through_shell(
-                f'cd {os.path.dirname(self.template_file)};'
-                f'pip install -r requirements.txt;'
-                f'python export.py'
-                f' --load-weights snapshot.pth'
-                f' --save-model-to {folder}'
-            )
-
-        def export_test_on_gpu(self, alt_ssd_export, thr):
-            export_folder = 'gpu_export'
-            if not os.path.exists(export_folder):
-                self.do_export(export_folder)
-            if alt_ssd_export:
-                export_dir = os.path.join(self.template_folder, export_folder, 'alt_ssd_export')
-            else:
-                export_dir = os.path.join(self.template_folder, export_folder)
-
-            run_through_shell(
-                f'cd {os.path.dirname(self.template_file)};'
-                f'python eval.py'
-                f' --test-ann-files {ann_file}'
-                f' --test-data-roots {img_root}'
-                f' --load-weights {os.path.join(export_dir, "model.bin")}'
-                f' --save-metrics-to {os.path.join(export_dir, "metrics.yaml")}'
-            )
-
-            with open(os.path.join(export_dir, "metrics.yaml")) as read_file:
-                content = yaml.load(read_file, yaml.SafeLoader)
-                ap = [metric for metric in content['metrics'] if metric['key'] == 'ap'][0]['value']
-
-            with open(f'{os.path.dirname(__file__)}/../expected_outputs/{problem_name}/{model_name}.json') as read_file:
-                content = json.load(read_file)
-
-            self.assertGreater(ap, content['map'] - thr)
-
-        def export_test_on_cpu(self, alt_ssd_export, thr):
-            export_folder = 'cpu_export'
-            if not os.path.exists(export_folder):
-                self.do_export(export_folder)
-            if alt_ssd_export:
-                export_dir = os.path.join(self.template_folder, export_folder, 'alt_ssd_export')
-            else:
-                export_dir = os.path.join(self.template_folder, export_folder)
-
-            run_through_shell(
-                f'export CUDA_VISIBLE_DEVICES=;'
-                f'cd {os.path.dirname(self.template_file)};'
-                f'python eval.py'
-                f' --test-ann-files {ann_file}'
-                f' --test-data-roots {img_root}'
-                f' --load-weights {os.path.join(export_dir, "model.bin")}'
-                f' --save-metrics-to {os.path.join(export_dir, "metrics.yaml")}'
-            )
-
-            with open(os.path.join(export_dir, "metrics.yaml")) as read_file:
-                content = yaml.load(read_file, yaml.SafeLoader)
-                ap = [metric for metric in content['metrics'] if metric['key'] == 'ap'][0]['value']
-
-            with open(f'{os.path.dirname(__file__)}/../expected_outputs/{problem_name}/{model_name}.json') as read_file:
-                content = json.load(read_file)
-
-            self.assertGreater(ap, content['map'] - thr)
-
-        @unittest.skipUnless(torch.cuda.is_available(), 'No GPU found')
-        def test_export_on_gpu(self):
-            self.export_test_on_gpu(False, self.test_export_thr)
-
-        def test_export_on_cpu(self):
-            skip_if_cpu_is_not_supported(self.template_file)
-            self.export_test_on_cpu(False, self.test_export_thr)
-
-    class ExportWithAltSsdTestCase(ExportTestCase):
-
-        @unittest.skipUnless(torch.cuda.is_available(), 'No GPU found')
-        def test_alt_ssd_export_on_gpu(self):
-            self.export_test_on_gpu(True, self.test_export_thr)
-
-        def test_alt_ssd_export_on_cpu(self):
-            skip_if_cpu_is_not_supported(self.template_file)
-            self.export_test_on_cpu(True, self.test_export_thr)
-
+def create_object_detection_export_test_case(alt_ssd_export=False, **kwargs):
+    expected_outputs_dir = os.path.join(os.path.dirname(__file__), '..', 'expected_outputs')
+    ExportTestCase = create_export_test_case('object_detection',
+                                             **kwargs,
+                                             metric_keys=['bbox'],
+                                             expected_outputs_dir=expected_outputs_dir)
     if alt_ssd_export:
+        class ExportWithAltSsdTestCase(ExportTestCase):
+
+            @unittest.skipUnless(torch.cuda.is_available(), 'No GPU found')
+            def test_alt_ssd_export_on_gpu(self):
+                export_dir = os.path.join(self.template_folder, 'gpu_export')
+                self.do_export(export_dir, on_gpu=True)
+                export_dir = os.path.join(export_dir, 'alt_ssd_export')
+                self.do_evaluation(export_dir)
+
+            def test_alt_ssd_export_on_cpu(self):
+                export_dir = os.path.join(self.template_folder, 'gpu_export')
+                self.do_export(export_dir, on_gpu=True)
+                export_dir = os.path.join(export_dir, 'alt_ssd_export')
+                self.do_evaluation(export_dir)
+
         return ExportWithAltSsdTestCase
 
     return ExportTestCase

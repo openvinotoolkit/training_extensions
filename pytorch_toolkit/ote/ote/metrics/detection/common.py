@@ -35,22 +35,27 @@ def collect_ap(path):
     return average_precisions
 
 
-def update_outputs(outputs, metric_names, ap_values):
-    assert len(ap_values) == len(metric_names)
-    for name, ap in zip(metric_names, ap_values):
+def update_outputs(outputs, metric_keys, metric_names, metric_values):
+    assert len(metric_values) == len(metric_names) == len(metric_keys)
+    for key, name, value in zip(metric_keys, metric_names, metric_values):
+        assert 0 <= value <= 1.0, f'{key} = {value}'
         outputs.append(
-            {'key': 'ap', 'value': ap * 100, 'unit': '%', 'display_name': name})
+            {'key': key, 'value': value * 100, 'unit': '%', 'display_name': name})
 
 
 def coco_ap_eval(config_path, work_dir, snapshot, update_config, show_dir='',
                  metric_names=['AP @ [IoU=0.50:0.95]'], metrics='bbox', **kwargs):
     """ Computes COCO AP. """
 
+    metrics_keys = metrics.split(' ')
+    assert len(metrics_keys) == len(metric_names), f'{len(metrics_keys)} != {len(metric_names)}'
+    assert all(x.isidentifier() for x in metrics_keys)
+
     outputs = []
     if not(update_config['data.test.ann_file'] and update_config['data.test.img_prefix']):
         logging.warning('Passed empty path to annotation file or data root folder. '
                         'Skipping AP calculation.')
-        update_outputs(outputs, metric_names, [None for _ in metrics.split(' ')])
+        update_outputs(outputs, metrics_keys, metric_names, [None for _ in metrics_keys])
     else:
         res_pkl = os.path.join(work_dir, 'res.pkl')
         test_py_stdout = os.path.join(work_dir, 'test_py_stdout')
@@ -77,7 +82,7 @@ def coco_ap_eval(config_path, work_dir, snapshot, update_config, show_dir='',
         )
 
         average_precision = collect_ap(os.path.join(work_dir, 'test_py_stdout'))
-        update_outputs(outputs, metric_names, average_precision)
+        update_outputs(outputs, metrics_keys, metric_names, average_precision)
 
     return outputs
 
