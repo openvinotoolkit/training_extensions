@@ -42,6 +42,7 @@ from collections import namedtuple
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from positional_encodings import PositionalEncodingPermute2D
 from torch.nn import init
 
 from ...data.vocab import END_TOKEN, START_TOKEN
@@ -53,7 +54,9 @@ Candidate = namedtuple('candidate', 'score, dec_state_h, dec_state_c, output, ta
 class TextRecognitionHead(nn.Module):
     def __init__(self, out_size, emb_size=80, encoder_hidden_size=256,
                  decoder_hidden_size=512, max_len=256, n_layer=1,
-                 beam_width=0, encoder_input_size=512):
+                 beam_width=0, encoder_input_size=512,
+                 positional_encodings=False,
+                 trainable_initial_hidden=True):
         super(TextRecognitionHead, self).__init__()
         self.emb_size = emb_size
         self.encoder_hidden_size = encoder_hidden_size
@@ -73,11 +76,18 @@ class TextRecognitionHead(nn.Module):
         self.W_out = nn.Linear(self.encoder_hidden_size, out_size)
 
         # a trainable initial hidden state V_h_0 for each row
-        self.V_h_0 = nn.Parameter(torch.Tensor(self.n_layer*2, self.encoder_hidden_size))
-        self.V_c_0 = nn.Parameter(torch.Tensor(self.n_layer*2, self.encoder_hidden_size))
-        init.uniform_(self.V_h_0, -INIT, INIT)
-        init.uniform_(self.V_c_0, -INIT, INIT)
-
+        if trainable_initial_hidden:
+            self.V_h_0 = nn.Parameter(torch.Tensor(self.n_layer*2, self.encoder_hidden_size))
+            self.V_c_0 = nn.Parameter(torch.Tensor(self.n_layer*2, self.encoder_hidden_size))
+            init.uniform_(self.V_h_0, -INIT, INIT)
+            init.uniform_(self.V_c_0, -INIT, INIT)
+        else:
+            self.V_h_0 = nn.Parameter(torch.zeros(self.n_layer*2, self.encoder_hidden_size), requires_grad=False)
+            self.V_c_0 = nn.Parameter(torch.zeros(self.n_layer*2, self.encoder_hidden_size), requires_grad=False)
+        if positional_encodings:
+            self.pe = PositionalEncodingPermute2D(channels=self.encoder_input_size)
+        else:
+            self.pe = None
         # Attention mechanism
         self.beta = nn.Parameter(torch.Tensor(self.decoder_hidden_size))
         init.uniform_(self.beta, -INIT, INIT)
@@ -93,6 +103,12 @@ class TextRecognitionHead(nn.Module):
         logits: [B, MAX_LEN, VOCAB_SIZE]
         """
         # encoding
+        if self.pe:
+            old_shape = features.shape
+            encoded = self.pe(features)
+            features = features + encoded
+            assert features.shape == old_shape, f"New shape: {features.shape}, old shape: {old_shape}"
+
         row_enc_out, hidden, context = self.encode(features)
         # init decoder's states
         h, c, O_t = self.init_decoder(row_enc_out, hidden, context)
@@ -188,10 +204,8 @@ class TextRecognitionHead(nn.Module):
         encoded_imgs = encoded_imgs.contiguous().view(B*H, W, out_channels)
 
         # prepare init hidden for each row
-        init_hidden_h = self.V_h_0.unsqueeze(
-            1).expand(self.V_h_0.shape[0], B*H, self.V_h_0.shape[1]).contiguous()
-        init_hidden_c = self.V_c_0.unsqueeze(
-            1).expand(self.V_h_0.shape[0], B*H, self.V_h_0.shape[1]).contiguous()
+        init_hidden_h = self.V_h_0.unsqueeze(1).expand(self.V_h_0.shape[0], B*H, self.V_h_0.shape[1]).contiguous()
+        init_hidden_c = self.V_c_0.unsqueeze(1).expand(self.V_h_0.shape[0], B*H, self.V_h_0.shape[1]).contiguous()
         init_hidden = (init_hidden_h, init_hidden_c)
 
         # Row Encoder
