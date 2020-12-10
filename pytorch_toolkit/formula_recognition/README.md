@@ -7,10 +7,10 @@ Models code is designed to enable ONNX\* export and inference on CPU\GPU via Ope
 
 ### Prerequisites
 
-* Ubuntu\* 16.04
+* Ubuntu\* 18.04
 * Python\* 3.7 or newer
-* PyTorch\* (1.4.0)
-* OpenVINO™ 2020.4 with Python API
+* PyTorch\* (1.7.0)
+* OpenVINO™ 2021.1 with Python API
 
 ### Optional prerequisites
 

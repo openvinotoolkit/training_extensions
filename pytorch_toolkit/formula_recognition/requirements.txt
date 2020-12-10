@@ -4,7 +4,7 @@ onnxruntime==1.4.0
 protobuf==3.13.0
 PyYAML==5.3.1
 tensorboard==2.3.0
-torch==1.4.0
-torchvision==0.5.0
+torch==1.7.0
+torchvision==0.8.1
 tqdm==4.48.2
 opencv-python
