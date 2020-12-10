@@ -15,45 +15,136 @@
 """
 
 import os
-from abc import ABCMeta
+from abc import ABCMeta, abstractmethod
 
+def map_args(src_args, args_map):
+    return {v: src_args[k] for k, v in args_map.items()}
 
-class BaseArgConverter(metaclass=ABCMeta):
-    train_update_args_map = {}
-    test_update_args_map = {}
-    compress_update_args_map = {}
-    train_to_compress_update_args_map = {}
-    # TODO(LeonidBeynenson): replace dicts train_update_args_map, test_update_args_map,
-    #       and compress_update_args_map with call of a special function
-    #       that may be passed to constructor of the class as a
-    #       parameter.
-    #       This will allow to avoid copying between these dicts.
+class ArgConverterMaps(metaclass=ABCMeta):
+    @abstractmethod
+    def train_update_args_map(self):
+        """
+        Returns a map:
+            from: the name of cmd line arguments of the corresponding **train** argparser.parse_args
+                  (e.g. `argparser = DefaultArgParser.get_train_parser()`)
+            to:   the fields of mmdetection/mmaction/other config for its **train** script in the form
+                  compatible with mmcv.Config.merge_from_dict
+        """
+        pass
 
-    train_out_args_map = {
-        'gpu_num': 'gpu_num',
-        'tensorboard_dir': 'tensorboard_dir'
-    }
-    compress_out_args_map = {
-        'gpu_num': 'gpu_num',
-        'tensorboard_dir': 'tensorboard_dir'
-    }
-    test_out_args_map = {
-        'load_weights': 'snapshot',
-        'save_metrics_to': 'out',
-        'save_output_to': 'show_dir'
-    }
+    @abstractmethod
+    def test_update_args_map(self):
+        """
+        Returns a map:
+            from: the name of cmd line arguments of the corresponding **test** argparser.parse_args
+                  (e.g. `argparser = DefaultArgParser.get_test_parser()`)
+            to:   the fields of mmdetection/mmaction/other config for its **test** script in the form
+                  compatible with mmcv.Config.merge_from_dict
+        """
+        pass
+
+    @abstractmethod
+    def compress_update_args_map(self):
+        """
+        Returns a map:
+            from: the name of cmd line arguments of the corresponding **compress** argparser.parse_args
+                  (e.g. `argparser = DefaultArgParser.get_compression_parser()`)
+            to:   the fields of mmdetection/mmaction/other config for its **train** script in the form
+                  compatible with mmcv.Config.merge_from_dict to makes compression
+                  (note that compression makes the original train script with special tuned config;
+                   typically the parameters are the same as for training except
+                   learning rate and total_epochs parameters)
+
+        """
+        pass
+
+    @abstractmethod
+    def train_to_compress_update_args_map(self):
+        """
+        Returns a map:
+            from: the name of cmd line arguments of the corresponding **train** argparser.parse_args
+            to:   the fields of mmdetection/mmaction/other config for its **train** script in the form
+                  compatible with mmcv.Config.merge_from_dict to make **compression**
+                  -- it is used if compression should be run inside ote train.py just after
+                     finetuning
+                     (typically it is the same as `compress_update_args_map` or close to it)
+        """
+        pass
+
+    @abstractmethod
+    def train_out_args_map(self):
+        """
+        Returns a map:
+            from: the name of cmd line arguments of the corresponding **train** argparser.parse_args
+            to:   the names of additional parameters of the `__call__` method of the corresponding ote trainer class
+                  (e.g. MMDetectionTrainer) in the form suitable for `trainer_class(**kwargs)`
+        """
+        return {
+                'gpu_num': 'gpu_num',
+                'tensorboard_dir': 'tensorboard_dir'
+               }
+    @abstractmethod
+    def compress_out_args_map(self):
+        """
+        Returns a map:
+            from: the name of cmd line arguments of the corresponding **compress** argparser.parse_args
+            to:   the names of additional parameters of the `__call__` method of the corresponding
+                  ote trainer class (e.g. MMDetectionTrainer) in the form suitable
+                  for call `trainer_class(**kwargs)`
+                  (note that compression make the same trainer class as training, but with tuned
+                  config file)
+        """
+        return {
+                'gpu_num': 'gpu_num',
+                'tensorboard_dir': 'tensorboard_dir'
+               }
+    @abstractmethod
+    def test_out_args_map(self):
+        """
+        Returns a map:
+            from: the name of cmd line arguments of the corresponding **test** argparser.parse_args
+            to:   the names of additional parameters of the `__call__` method of the corresponding ote
+                  evaluator class (e.g. MMDetectionEvaluator) in the form suitable for
+                  call `evaluator_class(**kwargs)`
+        """
+        return {
+                'load_weights': 'snapshot',
+                'save_metrics_to': 'out',
+                'save_output_to': 'show_dir'
+               }
+
+    @abstractmethod
+    def get_extra_train_args(self, args):
+        """ Gets from the parsed output of the corresponding ote train argparser.parse_args
+            (e.g. `argparser = DefaultArgParser.get_train_parser()`)
+            additional changes that should be applied to mmdetection/mmation/other training config file,
+            the changes will be in the form compatible with mmcv.Config.merge_from_dict
+        """
+        return {}
+
+    @abstractmethod
+    def get_extra_test_args(self, args):
+        """ Gets from the parsed output of the corresponding ote train argparser.parse_args
+            (e.g. `argparser = DefaultArgParser.get_train_parser()`)
+            additional changes that should be applied to mmdetection/mmation/other testing config file,
+            the changes will be in the form compatible with mmcv.Config.merge_from_dict
+        """
+        return {}
+
+class BaseArgConverter:
 
     # for update_converted_args_to_load_from_snapshot
     field_load_from = 'load_from'
     field_resume_from = 'resume_from'
 
-    def __init__(self):
-        pass
+    def __init__(self, arg_converter_maps):
+        assert isinstance(arg_converter_maps, ArgConverterMaps)
+        self.maps = arg_converter_maps
 
     def convert_train_args(self, model_template_path, args):
-        update_args = self.__map_args(args, self.train_update_args_map)
+        update_args = map_args(args, self.maps.train_update_args_map())
 
-        extra_args = self._get_extra_train_args(args)
+        extra_args = self.maps.get_extra_train_args(args)
         update_args.update(extra_args)
 
         template_folder = os.path.dirname(model_template_path)
@@ -62,16 +153,14 @@ class BaseArgConverter(metaclass=ABCMeta):
             'out': os.path.join(args['save_checkpoints_to'], model_template_path),
             'update_config': update_args,
         }
-        converted_args.update(self.__map_args(args, self.train_out_args_map))
+        converted_args.update(map_args(args, self.maps.train_out_args_map()))
 
         return converted_args
 
     def convert_compress_args(self, model_template_path, args):
-        update_args = self.__map_args(args, self.compress_update_args_map)
+        update_args = map_args(args, self.maps.compress_update_args_map())
 
-        # TODO(LeonidBeynenson): think on _get_extra_compress_args
-        #       Now _get_extra_train_args is used since it's the same
-        extra_args = self._get_extra_train_args(args)
+        extra_args = self.maps.get_extra_train_args(args)
         update_args.update(extra_args)
 
         template_folder = os.path.dirname(model_template_path)
@@ -80,16 +169,14 @@ class BaseArgConverter(metaclass=ABCMeta):
             'out': os.path.join(args['save_checkpoints_to'], model_template_path),
             'update_config': update_args,
         }
-        converted_args.update(self.__map_args(args, self.compress_out_args_map))
+        converted_args.update(map_args(args, self.maps.compress_out_args_map()))
 
         return converted_args
 
     def convert_train_args_to_compress_args(self, model_template_path, args):
-        update_args = self.__map_args(args, self.train_to_compress_update_args_map)
+        update_args = map_args(args, self.maps.train_to_compress_update_args_map())
 
-        # TODO(LeonidBeynenson): think on _get_extra_compress_args
-        #       Now _get_extra_train_args is used since it's the same
-        extra_args = self._get_extra_train_args(args)
+        extra_args = self.maps.get_extra_train_args(args)
         update_args.update(extra_args)
 
         template_folder = os.path.dirname(model_template_path)
@@ -98,7 +185,7 @@ class BaseArgConverter(metaclass=ABCMeta):
             'out': os.path.join(args['save_checkpoints_to'], model_template_path),
             'update_config': update_args,
         }
-        converted_args.update(self.__map_args(args, self.compress_out_args_map))
+        converted_args.update(map_args(args, self.maps.compress_out_args_map()))
 
         return converted_args
 
@@ -107,9 +194,9 @@ class BaseArgConverter(metaclass=ABCMeta):
         converted_args['update_config'][self.field_resume_from] = ''
 
     def convert_test_args(self, model_template_path, args):
-        update_args = self.__map_args(args, self.test_update_args_map)
+        update_args = map_args(args, self.maps.test_update_args_map())
 
-        extra_args = self._get_extra_test_args(args)
+        extra_args = self.maps.get_extra_test_args(args)
         update_args.update(extra_args)
 
         template_folder = os.path.dirname(model_template_path)
@@ -117,16 +204,6 @@ class BaseArgConverter(metaclass=ABCMeta):
             'config': os.path.join(template_folder, args['config']),
             'update_config': update_args,
         }
-        converted_args.update(self.__map_args(args, self.test_out_args_map))
+        converted_args.update(map_args(args, self.maps.test_out_args_map()))
 
         return converted_args
-
-    def _get_extra_train_args(self, args):
-        return {}
-
-    def _get_extra_test_args(self, args):
-        return {}
-
-    @staticmethod
-    def __map_args(src_args, args_map):
-        return {v: src_args[k] for k, v in args_map.items()}
