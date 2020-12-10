@@ -47,7 +47,7 @@ def create_instance_segmentation_test_case(**kwargs):
             super().setUpClass()
             coco_dir = os.path.abspath(f'{os.path.dirname(__file__)}/../../../../data/coco')
             download_and_extract_coco_val2017(coco_dir)
-    
+
     return InstanceSegmenationTestCase
 
 
@@ -65,5 +65,5 @@ def create_instance_segmentation_export_test_case(**kwargs):
             super().setUpClass()
             coco_dir = os.path.abspath(f'{os.path.dirname(__file__)}/../../../../data/coco')
             download_and_extract_coco_val2017(coco_dir)
-    
+
     return InstanceSegmenationExportTestCase

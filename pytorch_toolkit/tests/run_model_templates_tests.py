@@ -20,7 +20,10 @@ ENABLE_TESTS_FOR = {
         'gesture-recognition',
     ],
     'instance_segmentation_2': [
-        'coco-instance-segmentation',
+        'coco_instance_segmentation',
+    ],
+    'text_spotting_2': [
+        'alphanumeric-text-spotting',
     ]
 }
 
@@ -164,6 +167,13 @@ class ModelTemplatesNNCFTestCase(create_model_template_tests_base('NNCF_TESTS'))
     This is the reason why we use a separate test case with a separate
     subfolder for instantiating.
     """
+
+    @classmethod
+    def setUpClass(cls):
+        if not ENABLE_NNCF_TESTS:
+            return
+        super().setUpClass()
+
     def test_nncf(self):
         # TODO(LeonidBeynenson) : move some big part of the methods to a common function
         if not ENABLE_NNCF_TESTS:

@@ -151,7 +151,6 @@ def create_export_test_case(domain_name, problem_name, model_name, ann_file, img
 
             download_snapshot_if_not_yet(cls.template_file, cls.template_folder)
 
-
         def do_evaluation(self, export_dir):
             run_through_shell(
                 f'cd {os.path.dirname(self.template_file)};'
@@ -188,6 +187,7 @@ def create_export_test_case(domain_name, problem_name, model_name, ann_file, img
             self.do_evaluation(export_dir)
 
         def test_export_on_cpu(self):
+            skip_if_cpu_is_not_supported(self.template_file)
             export_dir = os.path.join(self.template_folder, 'cpu_export')
             self.do_export(export_dir, on_gpu=False)
             self.do_evaluation(export_dir)
