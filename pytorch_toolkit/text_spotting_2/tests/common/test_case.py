@@ -12,15 +12,9 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import json
 import os
-import unittest
-
-import torch
-import yaml
 
 from ote.tests.test_case import create_export_test_case, create_test_case
-from ote.tests.utils import collect_ap, run_through_shell
 
 
 def create_text_spotting_test_case(**kwargs):

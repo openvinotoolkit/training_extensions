@@ -13,7 +13,6 @@
 # and limitations under the License.
 
 import glob
-import json
 import logging
 import os
 import unittest
@@ -27,7 +26,6 @@ from ote.tests.test_case import (create_export_test_case,
                                  create_test_case,
                                  get_dependencies,
                                  get_epochs,
-                                 skip_if_cpu_is_not_supported,
                                  skip_non_instantiated_template_if_its_allowed)
 from ote.tests.utils import collect_ap, run_through_shell
 
