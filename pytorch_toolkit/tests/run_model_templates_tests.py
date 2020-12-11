@@ -255,6 +255,8 @@ def rerun_inside_virtual_envs(work_dir, all_tests, args):
         new_argv = ['python3'] + sys.argv
         if not args.domain:
             new_argv.extend(['--domain', domain])
+        if not args.workdir:
+            new_argv.extend(['--workdir', work_dir])
         new_argv.append('--run-one-domain-inside-virtual-env')
 
         assert all('"' not in v for v in new_argv), \
@@ -286,7 +288,6 @@ def _get_pytorch_toolkit_path():
     return pytorch_toolkit_path
 
 def main():
-    logging.basicConfig(level=logging.DEBUG)
     parser = argparse.ArgumentParser()
     parser.add_argument('--workdir',
                         help='The work folder where to instantiate tests and run them. '
@@ -310,7 +311,10 @@ def main():
     assert not (args.instantiate_only and args.not_instantiate), \
             'Only one of parameters --instantiate-only and --not-instantiate may be set'
     assert not (args.instantiate_only and args.run_one_domain_inside_virtual_env), \
-            'Only one of parameters --instantiate-only and --run-one-domain-only may be set'
+            'Only one of parameters --instantiate-only and --run-one-domain-inside-virtual-env may be set'
+
+    log_level = logging.DEBUG if args.verbose else logging.INFO
+    logging.basicConfig(level=log_level)
 
     root_path = _get_pytorch_toolkit_path()
     all_tests = discover_all_tests(root_path)
@@ -334,7 +338,7 @@ def main():
         print('Start working on tests:')
         print_list_tests(all_tests, short=True)
 
-    work_dir = os.path.abspath(args.workdir) if args.workdir else tempfile.mkstemp(prefix='work_dir_')
+    work_dir = os.path.abspath(args.workdir) if args.workdir else tempfile.mkdtemp(prefix='work_dir_')
     logging.info(f'work_dir = {work_dir}')
 
     should_instantiate = (not args.run_one_domain_inside_virtual_env) and (not args.not_instantiate)
@@ -347,12 +351,12 @@ def main():
     if args.instantiate_only:
         return
 
-    domains = get_domains_from_tests_list(all_tests)
     if args.run_one_domain_inside_virtual_env:
         run_one_domain_tests_already_in_virtualenv(work_dir, all_tests, args.verbose)
         return
 
     rerun_inside_virtual_envs(work_dir, all_tests, args)
+    logging.info(f'ALL TESTS IN {work_dir} ARE DONE')
 
 
 if __name__ == '__main__':
