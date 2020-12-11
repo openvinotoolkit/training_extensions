@@ -35,6 +35,7 @@ VENV_FOLDER_NAME = 'venv'
 
 
 def run_with_log(cmd, check):
+    # TODO(LeonidBeynenson): fix displaying commands with '"'
     cmdstr = ' '.join(cmd) if isinstance(cmd, list) else cmd
     cmdstr = cmdstr.replace(';', ';\n').replace(' --', ' \\\n    --')
     logging.info(f'Running command\n`{cmdstr}`')
@@ -256,9 +257,12 @@ def rerun_inside_virtual_envs(work_dir, all_tests, args):
             new_argv.extend(['--domain', domain])
         new_argv.append('--run-one-domain-inside-virtual-env')
 
-        cmd = ' '.join(new_argv)
+        assert all('"' not in v for v in new_argv), \
+                f'Cannot work if arguments contain double quotes:\n{new_argv}'
+
+        cmd = ' '.join(f'"{v}"' for v in new_argv)
         venv_path = generate_venv_path(work_dir, domain)
-        cmd = f'source {venv_path}/bin/activate; ' + cmd
+        cmd = f'source "{venv_path}/bin/activate"; ' + cmd
 
         res = run_with_log(cmd, check=False)
 
