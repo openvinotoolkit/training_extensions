@@ -16,6 +16,7 @@ import argparse
 import fnmatch
 import logging
 import os
+import shlex
 import sys
 import tempfile
 import unittest
@@ -35,16 +36,12 @@ VENV_FOLDER_NAME = 'venv'
 
 
 def run_with_log(cmd, check):
-    # TODO(LeonidBeynenson): fix displaying commands with '"'
     cmdstr = ' '.join(cmd) if isinstance(cmd, list) else cmd
-    cmdstr = cmdstr.replace(';', ';\n').replace(' --', ' \\\n    --')
+    cmdstr = (cmdstr.replace(';', ';\n')
+              .replace(' -', ' \\\n    -')
+              .replace(' "-', ' \\\n    "-'))
     logging.info(f'Running command\n`{cmdstr}`')
     return run(cmd, shell=True, check=check, executable="/bin/bash")
-
-def get_pytorch_toolkit_path():
-    cur_file_path = os.path.abspath(__file__)
-    pytorch_toolkit_path = os.path.dirname(os.path.dirname(cur_file_path))
-    return pytorch_toolkit_path
 
 def _collect_all_tests(test_el):
     if isinstance(test_el, unittest.TestCase):
@@ -260,7 +257,7 @@ def rerun_inside_virtual_envs(work_dir, all_tests, args):
         assert all('"' not in v for v in new_argv), \
                 f'Cannot work if arguments contain double quotes:\n{new_argv}'
 
-        cmd = ' '.join(f'"{v}"' for v in new_argv)
+        cmd = ' '.join(shlex.quote(v) for v in new_argv)
         venv_path = generate_venv_path(work_dir, domain)
         cmd = f'source "{venv_path}/bin/activate"; ' + cmd
 
@@ -279,6 +276,11 @@ def rerun_inside_virtual_envs(work_dir, all_tests, args):
         total_success = total_success and was_successful
         logging.info(f'    {domain}: {_success_to_str(was_successful)}')
     logging.info(f'Total: {_success_to_str(total_success)}')
+
+def _get_pytorch_toolkit_path():
+    cur_file_path = os.path.abspath(__file__)
+    pytorch_toolkit_path = os.path.dirname(os.path.dirname(cur_file_path))
+    return pytorch_toolkit_path
 
 def main():
     logging.basicConfig(level=logging.DEBUG)
@@ -307,7 +309,7 @@ def main():
     assert not (args.instantiate_only and args.run_one_domain_inside_virtual_env), \
             'Only one of parameters --instantiate-only and --run-one-domain-only may be set'
 
-    root_path = get_pytorch_toolkit_path()
+    root_path = _get_pytorch_toolkit_path()
     all_tests = discover_all_tests(root_path)
 
     if args.domain:
