@@ -39,7 +39,7 @@ them for prediction.
 * [Segmentation of Thoracic Organs](segthor)
 * [Super Resolution](super_resolution)
 * [Formula recognition](formula_recognition)
-* [Text Spotting](text_spotting_2)
+* [Text Spotting](text_spotting3332)
 
 
 ### Tests
