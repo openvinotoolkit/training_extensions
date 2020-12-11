@@ -46,16 +46,16 @@ Convert it to format that is used internally and split to the train and test par
 
 * Training annotation
 ```bash
-python3 ./model_templates/alphanumeric-text-spotting/tools/create_dataset.py \
-    --config ./model_templates/alphanumeric-text-spotting/datasets/dataset_train.json \
+python3 ./tools/create_dataset.py \
+    --config ./model_templates/alphanumeric-text-spotting/dataset_train.json \
     --output ${DATA_DIR}/text-dataset/dataset_train.json
 export TRAIN_ANN_FILE=${DATA_DIR}/text-dataset/dataset_train.json
 export TRAIN_IMG_ROOT=${DATA_DIR}/text-dataset
 ```
 * Testing annotation
 ```bash
-python3 ./model_templates/alphanumeric-text-spotting/tools/create_dataset.py \
-    --config ./model_templates/alphanumeric-text-spotting/datasets/dataset_test.json \
+python3 ./tools/create_dataset.py \
+    --config ./model_templates/alphanumeric-text-spotting/dataset_test.json \
     --output ${DATA_DIR}/text-dataset/dataset_val.json
 export VAL_ANN_FILE=${DATA_DIR}/text-dataset/dataset_val.json
 export VAL_IMG_ROOT=${DATA_DIR}/text-dataset
