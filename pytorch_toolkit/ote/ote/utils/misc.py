@@ -152,7 +152,7 @@ def convert_bash_command_for_log(cmd):
 
 def log_shell_cmd(cmd, prefix='Running through shell cmd'):
     cmdstr = convert_bash_command_for_log(cmd)
-    logging.info(f'{prefix}\n`{cmdstr}\n`')
+    logging.debug(f'{prefix}\n`{cmdstr}\n`')
 
 def run_through_shell(cmd):
     log_shell_cmd(cmd)
