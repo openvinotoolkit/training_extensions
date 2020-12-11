@@ -89,7 +89,8 @@ def _add_counter_to_rows(rows):
 
     return new_rows
 
-def print_list_tests(all_tests, verbose=False):
+def print_list_tests(all_tests, verbose=False, short=False):
+    assert not (verbose and short)
     keys = ['domain', 'problem', 'model', 'topic']
 
     rows = []
@@ -121,7 +122,9 @@ def print_list_tests(all_tests, verbose=False):
     table_info.set_deco(Texttable.HEADER)
     table_info.add_rows(info_rows)
     print('Info')
-    print(table_info.draw())
+    print(table_info.draw(), flush=True)
+    if short:
+        return
     print()
     print('Details')
     if not verbose:
@@ -138,7 +141,7 @@ def print_list_tests(all_tests, verbose=False):
         table.set_deco(Texttable.HEADER | Texttable.HLINES)
     rows = [keys] + rows
     table.add_rows(rows)
-    print(table.draw())
+    print(table.draw(), flush=True)
 
 def make_pattern_match(pattern, val):
     # TODO(LeonidBeynenson): add possibility to use regexp
@@ -327,6 +330,9 @@ def main():
     if args.list:
         print_list_tests(all_tests, args.verbose)
         return
+    else:
+        print('Start working on tests:')
+        print_list_tests(all_tests, short=True)
 
     work_dir = os.path.abspath(args.workdir) if args.workdir else tempfile.mkstemp(prefix='work_dir_')
     logging.info(f'work_dir = {work_dir}')
