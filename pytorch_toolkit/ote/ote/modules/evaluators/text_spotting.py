@@ -29,5 +29,5 @@ class TextSpottingEvaluator(MMDetectionEvaluator):
         super(TextSpottingEvaluator, self).__init__()
 
     def _get_metric_functions(self):
-        from ote.metrics.text_spotting.text_spotting import coco_ap_eval_bbox_segm_f1_wordspotting
-        return [coco_ap_eval_bbox_segm_f1_wordspotting]
+        from ote.metrics.text_spotting.text_spotting import coco_ap_eval_f1_wordspotting
+        return [coco_ap_eval_f1_wordspotting]

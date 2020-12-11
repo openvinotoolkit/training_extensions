@@ -30,7 +30,16 @@ def parse_args():
 
 
 def main():
-    pass
+    if os.path.abspath(os.getcwd()) == os.path.abspath(os.path.join(os.path.dirname(__file__), '..')):
+        return 0
+
+    args = parse_args()
+
+    was_successful = run_tests_by_pattern(folder=os.path.dirname(__file__),
+                                          pattern=args.pattern,
+                                          verbose=args.verbose)
+    ret = not was_successful
+    sys.exit(ret)
 
 
 if __name__ == '__main__':

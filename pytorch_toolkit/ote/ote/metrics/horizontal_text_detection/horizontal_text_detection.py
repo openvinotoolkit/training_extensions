@@ -76,7 +76,7 @@ def coco_eval(config_path, work_dir, snapshot, update_config, show_dir, **kwargs
 
     average_precision = collect_ap(os.path.join(work_dir, 'test_py_stdout'))[0]
     outputs.append({
-        'key': 'ap', 'value': average_precision * 100, 'unit': '%', 'display_name': 'AP @ [IoU=0.50:0.95]'
+        'key': 'bbox', 'value': average_precision * 100, 'unit': '%', 'display_name': 'AP @ [IoU=0.50:0.95]'
     })
 
     return outputs
