@@ -16,6 +16,7 @@
 
 import os
 from abc import ABCMeta, abstractmethod
+from collections import namedtuple
 
 def map_args(src_args, args_map):
     return {v: src_args[k] for k, v in args_map.items()}
@@ -131,79 +132,84 @@ class ArgConverterMaps(metaclass=ABCMeta):
         """
         return {}
 
+HooksForAction = namedtuple('HooksForAction',
+                            ['update_args_map_hook', 'get_extra_args_hook', 'out_args_map_hook'])
+
+class GroupHooksForActions:
+    @staticmethod
+    def get_hooks_for_train(arg_conv_maps):
+        return HooksForAction(update_args_map_hook=arg_conv_maps.train_update_args_map,
+                              get_extra_args_hook=arg_conv_maps.get_extra_train_args,
+                              out_args_map_hook=arg_conv_maps.train_out_args_map)
+
+    @staticmethod
+    def get_hooks_for_test(arg_conv_maps):
+        return HooksForAction(update_args_map_hook=arg_conv_maps.test_update_args_map,
+                              get_extra_args_hook=arg_conv_maps.get_extra_test_args,
+                              out_args_map_hook=arg_conv_maps.test_out_args_map)
+
+    @staticmethod
+    def get_hooks_for_compress(arg_conv_maps):
+        return HooksForAction(update_args_map_hook=arg_conv_maps.compress_update_args_map,
+                              get_extra_args_hook=arg_conv_maps.get_extra_train_args,
+                              out_args_map_hook=arg_conv_maps.compress_out_args_map)
+
+    @staticmethod
+    def get_hooks_for_compress_after_train(arg_conv_maps):
+        return HooksForAction(update_args_map_hook=arg_conv_maps.train_to_compress_update_args_map,
+                              get_extra_args_hook=arg_conv_maps.get_extra_train_args,
+                              out_args_map_hook=arg_conv_maps.compress_out_args_map)
+
 class BaseArgConverter:
 
     # for update_converted_args_to_load_from_snapshot
     field_load_from = 'load_from'
     field_resume_from = 'resume_from'
 
-    def __init__(self, arg_converter_maps):
-        assert isinstance(arg_converter_maps, ArgConverterMaps)
-        self.maps = arg_converter_maps
+    def __init__(self, arg_conv_maps):
+        assert isinstance(arg_conv_maps, ArgConverterMaps)
+        self.arg_conv_maps = arg_conv_maps
+
+    @staticmethod
+    def _convert_args_by_hooks_for_action(hooks_for_action, model_template_path, args):
+        assert isinstance(hooks_for_action, HooksForAction)
+
+        update_args_map = hooks_for_action.update_args_map_hook()
+        update_args = map_args(args, update_args_map)
+
+        extra_args = hooks_for_action.get_extra_args_hook(args)
+        update_args.update(extra_args)
+
+        template_folder = os.path.dirname(model_template_path)
+        converted_args = {
+            'config': os.path.join(template_folder, args['config']),
+            'update_config': update_args,
+        }
+        if args.get('save_checkpoints_to'):
+            converted_args['out'] = os.path.join(args['save_checkpoints_to'], model_template_path)
+
+        additional_converted_args_map = hooks_for_action.out_args_map_hook()
+        additional_converted_args = map_args(args, additional_converted_args_map)
+        converted_args.update(additional_converted_args)
+
+        return converted_args
 
     def convert_train_args(self, model_template_path, args):
-        update_args = map_args(args, self.maps.train_update_args_map())
-
-        extra_args = self.maps.get_extra_train_args(args)
-        update_args.update(extra_args)
-
-        template_folder = os.path.dirname(model_template_path)
-        converted_args = {
-            'config': os.path.join(template_folder, args['config']),
-            'out': os.path.join(args['save_checkpoints_to'], model_template_path),
-            'update_config': update_args,
-        }
-        converted_args.update(map_args(args, self.maps.train_out_args_map()))
-
-        return converted_args
+        hooks_for_action = GroupHooksForActions.get_hooks_for_train(self.arg_conv_maps)
+        return self._convert_args_by_hooks_for_action(hooks_for_action, model_template_path, args)
 
     def convert_compress_args(self, model_template_path, args):
-        update_args = map_args(args, self.maps.compress_update_args_map())
-
-        extra_args = self.maps.get_extra_train_args(args)
-        update_args.update(extra_args)
-
-        template_folder = os.path.dirname(model_template_path)
-        converted_args = {
-            'config': os.path.join(template_folder, args['config']),
-            'out': os.path.join(args['save_checkpoints_to'], model_template_path),
-            'update_config': update_args,
-        }
-        converted_args.update(map_args(args, self.maps.compress_out_args_map()))
-
-        return converted_args
+        hooks_for_action = GroupHooksForActions.get_hooks_for_compress(self.arg_conv_maps)
+        return self._convert_args_by_hooks_for_action(hooks_for_action, model_template_path, args)
 
     def convert_train_args_to_compress_args(self, model_template_path, args):
-        update_args = map_args(args, self.maps.train_to_compress_update_args_map())
+        hooks_for_action = GroupHooksForActions.get_hooks_for_compress_after_train(self.arg_conv_maps)
+        return self._convert_args_by_hooks_for_action(hooks_for_action, model_template_path, args)
 
-        extra_args = self.maps.get_extra_train_args(args)
-        update_args.update(extra_args)
-
-        template_folder = os.path.dirname(model_template_path)
-        converted_args = {
-            'config': os.path.join(template_folder, args['config']),
-            'out': os.path.join(args['save_checkpoints_to'], model_template_path),
-            'update_config': update_args,
-        }
-        converted_args.update(map_args(args, self.maps.compress_out_args_map()))
-
-        return converted_args
+    def convert_test_args(self, model_template_path, args):
+        hooks_for_action = GroupHooksForActions.get_hooks_for_test(self.arg_conv_maps)
+        return self._convert_args_by_hooks_for_action(hooks_for_action, model_template_path, args)
 
     def update_converted_args_to_load_from_snapshot(self, converted_args, snapshot_path):
         converted_args['update_config'][self.field_load_from] = snapshot_path
         converted_args['update_config'][self.field_resume_from] = ''
-
-    def convert_test_args(self, model_template_path, args):
-        update_args = map_args(args, self.maps.test_update_args_map())
-
-        extra_args = self.maps.get_extra_test_args(args)
-        update_args.update(extra_args)
-
-        template_folder = os.path.dirname(model_template_path)
-        converted_args = {
-            'config': os.path.join(template_folder, args['config']),
-            'update_config': update_args,
-        }
-        converted_args.update(map_args(args, self.maps.test_out_args_map()))
-
-        return converted_args
