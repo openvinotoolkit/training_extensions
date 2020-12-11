@@ -100,11 +100,16 @@ data = dict(
     samples_per_gpu=14,
     workers_per_gpu=4,
     train=dict(
-        type=dataset_type,
-        classes=('person',),
-        ann_file=data_root + 'annotation_person_train.json',
-        img_prefix=data_root + 'train',
-        pipeline=train_pipeline),
+        type='RepeatDataset',
+        times=1,
+        dataset=dict(
+            type=dataset_type,
+            classes=('person',),
+            ann_file=data_root + 'annotation_person_train.json',
+            img_prefix=data_root + 'train',
+            pipeline=train_pipeline
+        )
+    ),
     val=dict(
         type=dataset_type,
         classes=('person',),
