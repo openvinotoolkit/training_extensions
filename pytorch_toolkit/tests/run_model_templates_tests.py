@@ -248,6 +248,7 @@ def run_one_domain_tests_already_in_virtualenv(work_dir, all_tests, verbose):
     sys.exit(sys_retval)
 
 def rerun_inside_virtual_envs(work_dir, all_tests, args):
+    # TODO(LeonidBeynenson): make rerun parametrers be more controllable
     def _success_to_str(was_successful):
         return 'OK' if was_successful else 'FAIL'
 
