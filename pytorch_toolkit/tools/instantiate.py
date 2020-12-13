@@ -13,7 +13,6 @@
 # and limitations under the License.
 
 import argparse
-import logging
 import glob
 import logging
 import os
@@ -39,6 +38,7 @@ def parse_args():
                         help='Comma-separated list of domains that should be additionally'
                         ' instantiated even if there are no found templates inside them'
                         ' (should not contain spaces)')
+    parser.add_argument('--verbose', '-v', action='store_true', help='If the instantiation should be run in verbose mode')
 
     return parser.parse_args()
 
@@ -52,8 +52,9 @@ def _get_templates_filenames(args):
     return template_filenames
 
 def main():
-    logging.basicConfig(level=logging.INFO)
     args = parse_args()
+    log_level = logging.DEBUG if args.verbose else logging.INFO
+    logging.basicConfig(level=log_level)
 
     template_filenames = _get_templates_filenames(args)
     if args.domains:
@@ -89,13 +90,12 @@ def main():
         problem_folder = os.path.join(args.destination, domain_folder, problem_folder)
         instance_folder = os.path.join(problem_folder, model_folder)
 
-        logging.info(f'Begin instantiating {template_filename} to {instance_folder}')
-        if args.do_not_load_snapshots:
-            run_through_shell(f'python3 tools/instantiate_template.py {template_filename} {instance_folder}'
-                    f' --do-not-load-snapshot')
-        else:
-            run_through_shell(f'python3 tools/instantiate_template.py {template_filename} {instance_folder}')
-        logging.info(f'End instantiating {template_filename} to {instance_folder}')
+        logging.debug(f'Begin instantiating {template_filename} to {instance_folder}')
+        do_not_load_snapshot_str = ' --do-not-load-snapshot' if args.do_not_load_snapshots else ''
+        run_through_shell(f'python3 tools/instantiate_template.py {template_filename} {instance_folder}'
+                          f'{do_not_load_snapshot_str}',
+                          verbose=args.verbose)
+        logging.debug(f'End instantiating {template_filename} to {instance_folder}')
 
         problem_dict = problems_dict.get(content['problem'], None)
         if problem_dict is None:
@@ -107,11 +107,14 @@ def main():
                 with open(os.path.join(problem_folder, 'schema.json'), 'w') as write_file:
                     write_file.write(problem_dict['cvat_schema'])
 
+    logging.info(f'Instantiated {len(template_filenames)} templates')
+
     domain_folders = domain_folders | set(additional_domains)
     for domain_folder in domain_folders:
         logging.info(f'Begin initializing virtual environment for {domain_folder}')
         run_through_shell(f'cd {domain_folder}; '
-                          f'bash ./init_venv.sh {os.path.join(args.destination, domain_folder, VENV_FOLDER_NAME)}')
+                          f'bash ./init_venv.sh {os.path.join(args.destination, domain_folder, VENV_FOLDER_NAME)}',
+                          verbose=args.verbose)
         logging.info(f'End initializing virtual environment for {domain_folder}')
 
 if __name__ == '__main__':

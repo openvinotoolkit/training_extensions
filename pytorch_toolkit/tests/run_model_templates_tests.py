@@ -40,7 +40,7 @@ def run_with_log(cmd, check):
     cmdstr = (cmdstr.replace(';', ';\n')
               .replace(' -', ' \\\n    -')
               .replace(' "-', ' \\\n    "-'))
-    logging.info(f'Running command\n`{cmdstr}`')
+    logging.debug(f'Running command\n`{cmdstr}`')
     return run(cmd, shell=True, check=check, executable="/bin/bash")
 
 def _collect_all_tests(test_el):
@@ -179,22 +179,25 @@ def write_list_template_files(root_path, all_tests, templates_list_file_path):
     with open(templates_list_file_path, 'w') as f:
         yaml.dump(template_files, f)
 
-def instantiate_work_dir(root_path, work_dir, all_tests):
+def instantiate_work_dir(root_path, work_dir, all_tests, verbose):
     os.makedirs(work_dir, exist_ok=True)
 
     _, tmp_f_name = tempfile.mkstemp(prefix='template_list_', suffix='.yaml', dir=work_dir)
-    logging.info(f'Writing template files to temporary file {tmp_f_name}')
+    logging.debug(f'Writing template files to temporary file {tmp_f_name}')
 
     write_list_template_files(root_path, all_tests, tmp_f_name)
 
     domains = get_domains_from_tests_list(all_tests)
     domains_str = ','.join(domains)
 
+    verbose_param = ' --verbose' if verbose else ''
+
     run_with_log(f'cd {root_path}; python3 ./tools/instantiate.py'
                  f' --do-not-load-snapshots'
                  f' --templates-list-file {tmp_f_name}'
                  f' --domains {domains_str}'
-                 f' {work_dir}',
+                 f' {work_dir}'
+                 f' {verbose_param}',
                  check=True)
 
 def is_in_virtual_env_in_work_dir(work_dir, domain):
@@ -222,7 +225,7 @@ def check_venvs(work_dir, all_tests):
 
 def run_testsuite(ts, work_dir, verbose):
     os.environ['MODEL_TEMPLATES'] = work_dir
-    verbosity = 2 if verbose else 1
+    verbosity = 2
     r = unittest.TextTestRunner(verbosity=verbosity).run(ts)
     return r
 
@@ -343,7 +346,7 @@ def main():
 
     should_instantiate = (not args.run_one_domain_inside_virtual_env) and (not args.not_instantiate)
     if should_instantiate:
-        instantiate_work_dir(root_path, work_dir, all_tests)
+        instantiate_work_dir(root_path, work_dir, all_tests, args.verbose)
         logging.info(f'The work_dir {work_dir} is instantiated')
         check_venvs(work_dir, all_tests)
         logging.info('Instantiation checks are passed')
@@ -356,7 +359,6 @@ def main():
         return
 
     rerun_inside_virtual_envs(work_dir, all_tests, args)
-    logging.info(f'ALL TESTS IN {work_dir} ARE DONE')
 
 
 if __name__ == '__main__':

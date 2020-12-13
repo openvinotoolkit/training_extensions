@@ -67,10 +67,10 @@ def download_snapshot_if_not_yet(template_file, output_folder):
             if os.path.exists(os.path.join(output_folder, destination)):
                 actual = get_file_size_and_sha256(os.path.join(output_folder, destination))
                 if expected_size == actual['size'] and expected_sha256 == actual['sha256']:
-                    logging.info(f'{source} has been already downloaded.')
+                    logging.debug(f'{source} has been already downloaded.')
                     return
 
-            logging.info(f'Downloading {source}')
+            logging.debug(f'Downloading {source}')
             destination_file = os.path.join(output_folder, destination)
             if 'google.com' in source:
                 file_id = source.split('id=')[-1]
@@ -89,7 +89,7 @@ def download_snapshot_if_not_yet(template_file, output_folder):
                     f.write(response.content)
             else:
                 subprocess.run(f'wget -q -O {destination_file} {source}', check=True, shell=True)
-            logging.info(f'Downloading {source} has been completed.')
+            logging.debug(f'Downloading {source} has been completed.')
 
             actual = get_file_size_and_sha256(os.path.join(output_folder, destination))
             assert expected_size == actual['size'], f'{template_file} actual_size {actual["size"]}'
@@ -154,6 +154,10 @@ def log_shell_cmd(cmd, prefix='Running through shell cmd'):
     cmdstr = convert_bash_command_for_log(cmd)
     logging.debug(f'{prefix}\n`{cmdstr}\n`')
 
-def run_through_shell(cmd):
+def run_through_shell(cmd, verbose=True, check=True):
     log_shell_cmd(cmd)
-    subprocess.run(cmd, shell=True, check=True, executable="/bin/bash")
+    return subprocess.run(cmd,
+                          shell=True,
+                          check=check,
+                          capture_output=not verbose,
+                          executable="/bin/bash")
