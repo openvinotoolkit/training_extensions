@@ -88,7 +88,7 @@ def create_test_case(domain_name, problem_name, model_name, ann_file, img_root, 
 
             for metric_key in metric_keys:
                 value = [metrics['value'] for metrics in content['metrics'] if metrics['key'] == metric_key][0]
-                self.assertLess(abs(self.expected_outputs[metric_key] - value / 100), 1e-6)
+                self.assertLess(abs(self.expected_outputs[metric_key] - value), 1e-4)
 
         def do_finetuning(self, on_gpu):
             log_file = os.path.join(self.template_folder, 'test_finetuning.log')
@@ -142,7 +142,7 @@ def create_export_test_case(domain_name, problem_name, model_name, ann_file, img
             cls.ann_file = ann_file
             cls.img_root = img_root
             cls.dependencies = get_dependencies(cls.template_file)
-            cls.test_export_thr = 0.031
+            cls.test_export_thr = 3.1
 
             expected_outputs_json = f'{expected_outputs_dir}/{problem_name}/{model_name}.json'
 
