@@ -142,7 +142,7 @@ def create_export_test_case(domain_name, problem_name, model_name, ann_file, img
             cls.ann_file = ann_file
             cls.img_root = img_root
             cls.dependencies = get_dependencies(cls.template_file)
-            cls.test_export_thr = 3.1
+            cls.test_export_thr = 3.5
 
             expected_outputs_json = f'{expected_outputs_dir}/{problem_name}/{model_name}.json'
 
