@@ -72,7 +72,7 @@ class Im2latexModel(nn.Module):
         checkpoint = torch.load(model_path, map_location=map_location)
         checkpoint = OrderedDict((k.replace('module.', '') if 'module.' in k else k, v) for k, v in checkpoint.items())
         try:
-            self.load_state_dict(checkpoint)
+            self.load_state_dict(checkpoint, strict=False)
         except RuntimeError as missing_keys:
             print("""
             Unexpected keys in state_dict.
