@@ -166,7 +166,7 @@ def create_export_test_case(domain_name, problem_name, model_name, ann_file, img
 
             for metric_key in metric_keys:
                 value = [metrics['value'] for metrics in content['metrics'] if metrics['key'] == metric_key][0]
-                self.assertGreater(value, self.expected_outputs[metric_key] - self.test_export_thr)
+                self.assertGreaterEqual(value, self.expected_outputs[metric_key] - self.test_export_thr)
 
         def do_export(self, export_dir, on_gpu):
             if not os.path.exists(export_dir):
