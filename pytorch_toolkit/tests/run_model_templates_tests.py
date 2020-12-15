@@ -23,7 +23,7 @@ ENABLE_TESTS_FOR = {
         'coco_instance_segmentation',
     ],
     'text_spotting_2': [
-        'alphanumeric_text_spotting',
+        # 'alphanumeric_text_spotting',
     ]
 }
 
