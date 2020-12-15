@@ -23,9 +23,9 @@ import numpy as np
 import onnxruntime
 import torch
 from openvino.inference_engine import IECore
-from tools.utils.common import (DECODER_INPUTS, DECODER_OUTPUTS,
+from im2latex.utils.common import (DECODER_INPUTS, DECODER_OUTPUTS,
                                 ENCODER_INPUTS, ENCODER_OUTPUTS, read_net)
-from tools.utils.evaluation_utils import Im2latexRenderBasedMetric
+from im2latex.utils.evaluation_utils import Im2latexRenderBasedMetric
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 

@@ -23,10 +23,10 @@ import torch
 import torch.onnx
 from im2latex.data.vocab import START_TOKEN, read_vocab
 from im2latex.models.im2latex_model import Im2latexModel
-from tools.utils.common import (DECODER_INPUTS, DECODER_OUTPUTS,
+from im2latex.utils.common import (DECODER_INPUTS, DECODER_OUTPUTS,
                                 ENCODER_INPUTS, ENCODER_OUTPUTS)
 
-OPENVINO_DIR = '/opt/intel/openvino'
+OPENVINO_DIR = '/opt/intel/openvino_2021'
 
 FEATURES_SHAPE = 1, 20, 175, 512
 HIDDEN_SHAPE = 1, 512

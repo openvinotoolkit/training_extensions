@@ -7,10 +7,10 @@ Models code is designed to enable ONNX\* export and inference on CPU\GPU via Ope
 
 ### Prerequisites
 
-* Ubuntu\* 16.04
+* Ubuntu\* 18.04
 * Python\* 3.7 or newer
-* PyTorch\* (1.4.0)
-* OpenVINO™ 2020.4 with Python API
+* PyTorch\* (1.7.0)
+* OpenVINO™ 2021.1 with Python API
 
 ### Optional prerequisites
 
@@ -19,11 +19,28 @@ These packages are used for rendering images while evaluation and demo.
 
 ```bash
 sudo apt-get update &&
-  apt-get install -y --no-install-recommends \
+  sudo apt-get install -y --no-install-recommends \
     texlive \
     imagemagick \
     ghostscript
 ```
+
+#### Known issue with imagemagick
+Evaluation process uses imagemagick to convert PDF-rendered formulas into PNG images. Sometimes there could be errors:
+```
+convert-im6.q16: not authorized `/tmp/tmpgr1m4d4_.pdf' @ error/constitute.c/ReadImage/412.
+convert-im6.q16: no images defined `/tmp/tmpgr1m4d4_.png' @ error/convert.c/ConvertImageCommand/3258.
+```
+The problem is missing required permissions.
+To fix this open file `/etc/ImageMagick-6/policy.xml`:
+
+`sudo nano /etc/ImageMagick-6/policy.xml`
+
+Find `<policy domain="coder" rights="none" pattern="PDF" />`
+
+and replace with:
+
+`<policy domain="coder" rights="read|write" pattern="PDF" />`
 
 ### Installation
 

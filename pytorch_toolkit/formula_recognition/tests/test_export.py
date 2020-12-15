@@ -17,9 +17,9 @@
 import os
 import unittest
 
-from tools.export import Exporter
-from tools.utils.evaluator import Evaluator, RunnerType
-from tools.utils.get_config import get_config
+from im2latex.utils.exporter import Exporter
+from im2latex.utils.evaluator import Evaluator, RunnerType
+from im2latex.utils.get_config import get_config
 
 
 def create_export_test_case(config_file, expected_outputs):
