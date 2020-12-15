@@ -30,7 +30,7 @@ class InstanceSegmentation0002TestCase(
             **kwargs
         )
 ):
-    """ Test case for instance-segmentation-0002 model export. """
+    """ Test case for instance-segmentation-0002 model. """
 
 
 class InstanceSegmentation0091TestCase(
@@ -39,7 +39,7 @@ class InstanceSegmentation0091TestCase(
             **kwargs
         )
 ):
-    """ Test case for instance-segmentation-0091 model export. """
+    """ Test case for instance-segmentation-0091 model. """
 
 
 class InstanceSegmentation0228TestCase(
@@ -48,7 +48,7 @@ class InstanceSegmentation0228TestCase(
             **kwargs
         )
 ):
-    """ Test case for instance-segmentation-0228 model export. """
+    """ Test case for instance-segmentation-0228 model. """
 
 
 class InstanceSegmentation0904TestCase(
@@ -57,7 +57,7 @@ class InstanceSegmentation0904TestCase(
             **kwargs
         )
 ):
-    """ Test case for instance-segmentation-0904 model export. """
+    """ Test case for instance-segmentation-0904 model. """
 
 
 class InstanceSegmentation0912TestCase(
@@ -66,4 +66,4 @@ class InstanceSegmentation0912TestCase(
             **kwargs
         )
 ):
-    """ Test case for instance-segmentation-0912 model export. """
+    """ Test case for instance-segmentation-0912 model. """

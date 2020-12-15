@@ -31,6 +31,7 @@ it's necessary to download at least one dataset from following resources.
 *  [ICDAR2017 (MLT)](https://rrc.cvc.uab.es/?ch=8)
 *  [ICDAR2019 (MLT)](https://rrc.cvc.uab.es/?ch=15)
 *  [ICDAR2019 (ART)](https://rrc.cvc.uab.es/?ch=14)
+   * To exclude TotalText test set, please visit https://github.com/cs-chan/Total-Text-Dataset and use Total_Text_ID_vs_ArT_ID.list file during conversion (see ./model_templates/alphanumeric-text-spotting/dataset_train.json file).
 *  [MSRA-TD500](http://www.iapr-tc11.org/mediawiki/index.php/MSRA_Text_Detection_500_Database_(MSRA-TD500))   
 *  [COCO-Text](https://bgshih.github.io/cocotext/)
 

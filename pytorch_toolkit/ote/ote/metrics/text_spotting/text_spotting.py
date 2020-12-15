@@ -46,7 +46,6 @@ def coco_ap_eval_f1_wordspotting(config_path, work_dir, snapshot, update_config,
                                          update_config, show_dir, ' '.join(metric_keys))
 
         hmeans = collect_hmeans(test_py_stdout)
-        logging.warning(f'############ hmeans{hmeans}')
         update_outputs(outputs, metric_keys, metric_names, hmeans)
 
     return outputs
