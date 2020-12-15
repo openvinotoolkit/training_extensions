@@ -18,7 +18,7 @@ import argparse
 import os
 import sys
 
-from common.utils import run_tests_by_pattern
+from ote.tests.utils import run_tests_by_pattern
 
 
 def parse_args():

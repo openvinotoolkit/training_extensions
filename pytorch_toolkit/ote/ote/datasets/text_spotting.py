@@ -16,6 +16,7 @@
 
 import copy
 import json
+import logging
 import os
 from collections import defaultdict
 
@@ -23,6 +24,23 @@ import cv2
 import imagesize
 import numpy as np
 from tqdm import tqdm
+
+
+def box2poly(box):
+    x, y, w, h = box
+    return [x, y, x + w, y, x + w, y + h, x, y + h]
+
+
+def poly2box(poly):
+    xs = poly[0::2]
+    ys = poly[1::2]
+    xmin = min(xs)
+    xmax = max(xs)
+
+    ymin = min(ys)
+    ymax = max(ys)
+
+    return [xmin, ymin, xmax - xmin, ymax - ymin]
 
 
 class TextOnlyCocoAnnotation:
@@ -35,14 +53,11 @@ class TextOnlyCocoAnnotation:
         self.annotation = {
             "type": "instances",
             "images": [],
-            "categories": [],
+            "categories": sorted([{"supercategory": "none", "name": key, "id": value}
+                                  for key, value in self.label_map.items()],
+                                 key=lambda x: x["id"]),
             "annotations": [],
         }
-        self.annotation['categories'] = [{"supercategory": "none", "name": key, "id": value}
-                                         for key, value in self.label_map.items()]
-
-        self.annotation['categories'] = sorted(self.annotation['categories'],
-                                               key=lambda x: x["id"])
 
         if path is not None:
             assert os.path.exists(path), path
@@ -63,6 +78,25 @@ class TextOnlyCocoAnnotation:
             assert index == img['id']
             self.img_path_2_img_id[img['file_name']] = index
 
+    @staticmethod
+    def fit_box_in_image(box, image_size):
+        width, height = image_size
+        x, y, w, h = box
+        if x + w > width:
+            w = width - x
+        if y + h > height:
+            h = height - y
+        if x < 0:
+            w += x
+            x = 0
+        if y < 0:
+            h += y
+            y = 0
+        if 0 <= x < x + w <= width and 0 <= y < y + h <= height:
+            return x, y, w, h
+        else:
+            return None
+
     def add_bbox(self, image_path, image_size, obj):
         """ Adds new text object to annotation. """
 
@@ -78,19 +112,20 @@ class TextOnlyCocoAnnotation:
 
         new_ann_id = len(self.annotation['annotations'])
         self.img_id_2_ann_id[self.img_path_2_img_id[image_path]].append(new_ann_id)
-        self.annotation['annotations'].append({
+        bbox = self.fit_box_in_image(obj['bbox'], image_size)
 
-            "bbox": obj['bbox'],  # x, y, w, h
-            "segmentation": obj['segmentation'],
-            "text": obj['text'],
-
-            "ignore": 0,
-            "id": new_ann_id,
-            "image_id": self.img_path_2_img_id[image_path],
-            "area": obj['bbox'][2] * obj['bbox'][3],
-            "iscrowd": 1 - int(obj['text']['legible']),
-            "category_id": self.label_map['text']
-        })
+        if bbox:
+            self.annotation['annotations'].append({
+                "bbox": bbox,  # x, y, w, h
+                "segmentation": obj['segmentation'],
+                "text": obj['text'],
+                "ignore": 0,
+                "id": new_ann_id,
+                "image_id": self.img_path_2_img_id[image_path],
+                "area": obj['bbox'][2] * obj['bbox'][3],
+                "iscrowd": 1 - int(obj['text']['legible']),
+                "category_id": self.label_map['text']
+            })
 
     def __iadd__(self, other):
 
@@ -102,7 +137,7 @@ class TextOnlyCocoAnnotation:
                               copy.deepcopy(ann))
         return self
 
-    def write(self, path):
+    def write(self, path, remove_orientation_info=False):
         """ Writes annotation as json file. """
 
         annotation = copy.deepcopy(self.annotation)
@@ -111,6 +146,15 @@ class TextOnlyCocoAnnotation:
             image_info['file_name'] = os.path.relpath(image_info['file_name'],
                                                       os.path.dirname(path))
 
+        if remove_orientation_info:
+            for image_info in tqdm(annotation['images'], desc='checking orientation'):
+                full_path = os.path.join(os.path.dirname(path), image_info['file_name'])
+                image = cv2.imread(full_path)
+                if image.shape[:2] != (image_info['height'], image_info['width']):
+                    image = cv2.imread(full_path, cv2.IMREAD_UNCHANGED)
+                    cv2.imwrite(full_path, image)
+                    logging.warning(f'Detected and fixed image with orientation: {full_path}')
+
         with open(path, 'w') as read_file:
             json.dump(annotation, read_file)
 
@@ -118,13 +162,28 @@ class TextOnlyCocoAnnotation:
     def _check_object_consistency(obj):
         assert obj['iscrowd'] == 1 - obj['text']['legible']
 
-    def visualize(self, put_text, imshow_delay=1):
+    def check_objects_inside(self):
+        for frame in tqdm(self.annotation['images']):
+            image_path = frame['file_name']
+            image_size = imagesize.get(image_path)
+            for ann_id in self.img_id_2_ann_id[frame['id']]:
+                obj = self.annotation['annotations'][ann_id]
+                bbox = obj['bbox']
+                assert 0 <= bbox[0] < bbox[0] + bbox[2] < image_size[0] and 0 <= bbox[1] < bbox[1] + bbox[3] < image_size[1], f'{image_path} {bbox}'
+
+    def visualize(self, put_text, imshow_delay=1, shuffle=False):
         """ Visualizes annotation using cv2.imshow from OpenCV. Press `Esc` to exit. """
 
         max_image_size = 1280, 768
 
-        for frame in tqdm(self.annotation['images']):
+        images = list(self.annotation['images'])
+        if shuffle:
+            import random
+            random.shuffle(images)
+
+        for frame in tqdm(images):
             image_path = frame['file_name']
+            assert os.path.exists(image_path), f'does not exist {image_path}'
             image = cv2.imread(image_path)
             for ann_id in self.img_id_2_ann_id[frame['id']]:
                 obj = self.annotation['annotations'][ann_id]
@@ -143,6 +202,13 @@ class TextOnlyCocoAnnotation:
                 contours = contours.reshape([contours.shape[0], contours.shape[1] // 2, 2])
 
                 cv2.drawContours(image, contours, 0, color, 1)
+
+                if 'chars' in obj['text']:
+                    for char in obj['text']['chars']:
+                        bbox = char['bbox']
+                        cv2.rectangle(image, (bbox[0], bbox[1]), (bbox[0] + bbox[2], bbox[1] + bbox[3]), color)
+                        if put_text:
+                            cv2.putText(image, char['char'], tuple(char['bbox'][0:2]), 1, 1.0, color)
             try:
                 if image.shape[1] > max_image_size[0] or image.shape[0] > max_image_size[1]:
                     print('resized')
@@ -194,14 +260,17 @@ class TextOnlyCocoAnnotation:
 class ICDAR2013DatasetConverter:
     """ Class for conversion of ICDAR2013 to TextOnlyCocoAnnotation. """
 
-    def __init__(self, images_folder, annotations_folder, is_train, root=''):
+    def __init__(self, images_folder, annotations_folder, character_annotations_folder='', is_train=True, root=''):
         self.images_folder = images_folder
         self.annotations_folder = annotations_folder
+        self.characters_annotations_folder = character_annotations_folder
         self.is_train = is_train
 
         if root:
             self.annotations_folder = os.path.join(root, self.annotations_folder)
             self.images_folder = os.path.join(root, self.images_folder)
+            if character_annotations_folder:
+                self.characters_annotations_folder = os.path.join(root, self.characters_annotations_folder)
 
     def __call__(self, *args, **kwargs):
         dataset = TextOnlyCocoAnnotation()
@@ -209,15 +278,53 @@ class ICDAR2013DatasetConverter:
         begin, end = (100, 328 + 1) if self.is_train else (1, 233 + 1)
         gt_format = 'gt_{}.txt' if self.is_train else 'gt_img_{}.txt'
         img_format = '{}.jpg' if self.is_train else 'img_{}.jpg'
+        char_gt_format = '{}_GT.txt'
 
-        for i in range(begin, end):
+        for i in tqdm(range(begin, end)):
             image_path = os.path.join(self.images_folder, img_format.format(i))
+            image_size = imagesize.get(image_path)
             annotation_path = os.path.join(self.annotations_folder, gt_format.format(i))
 
             with open(annotation_path, encoding='utf-8-sig') as read_file:
-                for line in [line.strip() for line in read_file.readlines()]:
-                    image_size = imagesize.get(image_path)
-                    dataset.add_bbox(image_path, image_size, self.parse_line(line))
+                if self.characters_annotations_folder:
+                    char_annotation_path = os.path.join(self.characters_annotations_folder, char_gt_format.format(i))
+                    with open(char_annotation_path) as f:
+                        content = f.readlines()
+                        content = ''.join(content)
+                        content = content.split('\n\n')
+                        characters = [line.split('\n') for line in content if not line.strip().startswith('#')]
+                for i, line in enumerate([line.strip() for line in read_file.readlines()]):
+                    obj = self.parse_line(line)
+
+                    if self.characters_annotations_folder:
+
+                        obj['text']['chars'] = []
+                        for chars in characters[i]:
+                            if not chars:
+                                continue
+                            chars = chars.split(' ')
+                            bbox = [int(x) for x in chars[5:9]]
+                            bbox[2] -= bbox[0]
+                            bbox[3] -= bbox[1]
+                            char = ' '.join(chars[9:])
+                            if len(char) == 3 and char[0] == char[-1] == '"':
+                                char = char[1]
+                            if char == ' ':
+                                continue
+                            assert len(char) == 1, f'char = "{char}"'
+                            obj['text']['chars'].append({
+                                'bbox': bbox,
+                                'segmentation': box2poly(bbox),
+                                'char': char
+                            })
+                        united_chars = ''.join([x['char'] for x in obj['text']['chars']])
+                        if united_chars != obj['text']['transcription']:
+                            logging.warning(f"Transcription of {obj['text']['transcription']} in {annotation_path} "
+                                            f"has been changed to {united_chars}."
+                                            f"It is known error in original annotation.")
+                            obj['text']['transcription'] = united_chars
+
+                    dataset.add_bbox(image_path, image_size, obj)
 
         return dataset
 
@@ -231,7 +338,7 @@ class ICDAR2013DatasetConverter:
         assert ymin < ymax
         transcription = (sep.join(line[4:]))[1:-1]
         word_annotation = {
-            'bbox': [xmin, ymin, xmax - xmin + 1, ymax - ymin + 1],
+            'bbox': [xmin, ymin, xmax - xmin, ymax - ymin],
             'segmentation': [[xmin, ymin, xmax, ymin, xmax, ymax, xmin, ymax]],
             'text': {
                 'transcription': transcription,
@@ -275,7 +382,7 @@ class ICDAR2015DatasetConverter:
         ymax = max(quadrilateral[1::2])
 
         word_annotation = {
-            'bbox': [xmin, ymin, xmax - xmin + 1, ymax - ymin + 1],
+            'bbox': [xmin, ymin, xmax - xmin, ymax - ymin],
             'segmentation': [quadrilateral],
             'text': {
                 'transcription': transcription,
@@ -291,7 +398,7 @@ class ICDAR2015DatasetConverter:
         dataset = TextOnlyCocoAnnotation()
 
         n_images = 1000 if self.is_train else 500
-        for i in range(1, n_images + 1):
+        for i in tqdm(range(1, n_images + 1)):
             image_path = os.path.join(self.images_folder, 'img_{}.jpg'.format(i))
             annotation_path = os.path.join(self.annotations_folder, 'gt_img_{}.txt'.format(i))
 
@@ -355,7 +462,7 @@ class ICDAR2017MLTDatasetConverter:
         ymax = max(quadrilateral[1::2])
 
         word_annotation = {
-            'bbox': [xmin, ymin, xmax - xmin + 1, ymax - ymin + 1],
+            'bbox': [xmin, ymin, xmax - xmin, ymax - ymin],
             'segmentation': [quadrilateral],
             'text': {
                 'transcription': transcription,
@@ -371,9 +478,9 @@ class ICDAR2017MLTDatasetConverter:
         image_paths = []
         annotation_paths = []
         n_images = 7200
-        for i in range(1, n_images + 1):
+        for i in tqdm(range(1, n_images + 1)):
             added = False
-            for extension in ['jpg', 'png', 'gif']:
+            for extension in ['jpg', 'png']:
                 image_path = os.path.join(self.folder,
                                           f'ch8_training_images_{(i - 1) // 1000 + 1}',
                                           f'img_{i}.{extension}')
@@ -387,7 +494,7 @@ class ICDAR2017MLTDatasetConverter:
                                  f'gt_img_{i}.txt')
                 )
             else:
-                print(f'Could not find: {image_path[:-3]}*')
+                logging.warning(f'Could not find: {image_path[:-3]}*')
         return image_paths, annotation_paths
 
     def collect_val_paths(self):
@@ -396,9 +503,9 @@ class ICDAR2017MLTDatasetConverter:
         image_paths = []
         annotation_paths = []
         n_images = 1800
-        for i in range(1, n_images + 1):
+        for i in tqdm(range(1, n_images + 1)):
             added = False
-            for extension in ['jpg', 'png', 'gif']:
+            for extension in ['jpg', 'png']:
                 image_path = os.path.join(self.folder,
                                           'ch8_validation_images',
                                           f'img_{i}.{extension}')
@@ -412,7 +519,7 @@ class ICDAR2017MLTDatasetConverter:
                                  f'gt_img_{i}.txt')
                 )
             else:
-                print(f'Could not find: {image_path[:-3]}*')
+                logging.warning(f'Could not find: {image_path[:-3]}*')
         return image_paths, annotation_paths
 
     def __call__(self, *args, **kwargs):
@@ -425,7 +532,7 @@ class ICDAR2017MLTDatasetConverter:
         elif self.subset == 'val':
             image_paths, annotation_paths = self.collect_val_paths()
 
-        for image_path, annotation_path in zip(image_paths, annotation_paths):
+        for image_path, annotation_path in tqdm(zip(image_paths, annotation_paths)):
             word_annotations = []
             with open(annotation_path, encoding='utf-8-sig') as read_file:
                 content = [line.strip() for line in read_file.readlines()]
@@ -485,7 +592,7 @@ class ICDAR2019MLTDatasetConverter:
         ymax = max(quadrilateral[1::2])
 
         word_annotation = {
-            'bbox': [xmin, ymin, xmax - xmin + 1, ymax - ymin + 1],
+            'bbox': [xmin, ymin, xmax - xmin, ymax - ymin],
             'segmentation': [quadrilateral],
             'text': {
                 'transcription': transcription,
@@ -528,7 +635,7 @@ class ICDAR2019MLTDatasetConverter:
 
         image_paths, annotation_paths = self.collect_train_paths()
 
-        for image_path, annotation_path in zip(image_paths, annotation_paths):
+        for image_path, annotation_path in tqdm(zip(image_paths, annotation_paths)):
             word_annotations = []
             with open(annotation_path, encoding='utf-8-sig') as read_file:
                 content = [line.strip() for line in read_file.readlines()]
@@ -549,7 +656,8 @@ class ICDAR2019MLTDatasetConverter:
 
 class ICDAR2019ARTDatasetConverter:
 
-    def __init__(self, folder, is_latin_required=False, root=''):
+    def __init__(self, folder, is_latin_required=False, root='',
+                 exclude_totaltext_test=False, totaltext_to_art_path='', totaltext_test_images_dir=''):
         '''
         Converts ICDAR2019 ART to TextOnlyCocoAnnotation
         :param folder: Folder with extracted zip archives containing images
@@ -564,29 +672,46 @@ class ICDAR2019ARTDatasetConverter:
         assert os.path.exists(os.path.join(self.folder, 'train_images'))
         assert os.path.exists(os.path.join(self.folder, 'train_labels.json'))
 
+        self.exclude_art19_ids = set()
+
+        if exclude_totaltext_test:
+            assert totaltext_test_images_dir
+            assert totaltext_to_art_path
+
+            if root:
+                totaltext_test_images_dir = os.path.join(root, totaltext_test_images_dir)
+                totaltext_to_art_path = os.path.join(root, totaltext_to_art_path)
+
+            exclude_totaltext_ids = set(
+                imagename.split('.')[0][3:] for imagename in os.listdir(totaltext_test_images_dir)
+            )
+
+            with open(totaltext_to_art_path) as read_file:
+                self.exclude_art19_ids = set(x.split(' ')[1].split('.')[0] for x in read_file if x.split(' ')[0].split('.')[0][11:] in exclude_totaltext_ids)
     @staticmethod
-    def parse_line(dict):
+    def parse_line(obj):
         """ Parses line of ICDAR2019ART annotation. """
         quadrilateral = []
-        for point in dict['points']:
+        for point in obj['points']:
             quadrilateral += point
         xmin = min(quadrilateral[0::2])
         xmax = max(quadrilateral[0::2])
 
         ymin = min(quadrilateral[1::2])
         ymax = max(quadrilateral[1::2])
-        assert xmin < xmax
-        assert ymin < ymax
-        language = dict['language'].lower()
-        legibility = 1 - int(dict['illegibility'])
-        transcription = dict['transcription']
+        if not (xmin < xmax and ymin < ymax):
+            logging.warn(f"skip: {obj}")
+            return None
+        language = obj['language'].lower()
+        legibility = 1 - int(obj['illegibility'])
+        transcription = obj['transcription']
         if transcription == '###':
             transcription = ''
             legibility = 0
             language = ''
 
         word_annotation = {
-            'bbox': [xmin, ymin, xmax - xmin + 1, ymax - ymin + 1],
+            'bbox': [xmin, ymin, xmax - xmin, ymax - ymin],
             'segmentation': [quadrilateral],
             'text': {
                 'transcription': transcription,
@@ -605,14 +730,18 @@ class ICDAR2019ARTDatasetConverter:
 
         with open(annotation_path) as f:
             annotations = json.load(f)
-            for image in annotations:
+            for image in tqdm(annotations):
                 image_path = os.path.join(self.folder, 'train_images', img_format.format(image))
+                if image in self.exclude_art19_ids:
+                    continue
                 if not os.path.exists(image_path):
                     print(f'Could not find: {image_path[:-3]}*')
 
                 word_annotations = []
                 for instance in annotations[image]:
-                    word_annotations.append(self.parse_line(instance))
+                    obj = self.parse_line(instance)
+                    if obj:
+                        word_annotations.append(obj)
 
                 should_add = not self.is_latin_required
                 if self.is_latin_required:
@@ -653,7 +782,7 @@ class MSRATD500DatasetConverter:
         ymax = max(quadrilateral[1::2])
 
         word_annotation = {
-            'bbox': [xmin, ymin, xmax - xmin + 1, ymax - ymin + 1],
+            'bbox': [xmin, ymin, xmax - xmin, ymax - ymin],
             'segmentation': [quadrilateral],
             'text': {
                 'transcription': '',
@@ -669,7 +798,7 @@ class MSRATD500DatasetConverter:
 
         dataset = TextOnlyCocoAnnotation()
 
-        for image_name in sorted(os.listdir(self.folder)):
+        for image_name in tqdm(sorted(os.listdir(self.folder))):
             if image_name.endswith('JPG'):
                 image_path = os.path.join(self.folder, image_name)
                 annotation_path = os.path.join(self.folder, image_name.replace('.JPG', '.gt'))
@@ -715,7 +844,7 @@ class COCOTextDatasetConverter:
         ymax = max(quadrilateral[1::2])
 
         word_annotation = {
-            'bbox': [xmin, ymin, xmax - xmin + 1, ymax - ymin + 1],
+            'bbox': [xmin, ymin, xmax - xmin, ymax - ymin],
             'segmentation': [quadrilateral],
             'text': {
                 'transcription': text,
@@ -735,7 +864,7 @@ class COCOTextDatasetConverter:
 
             json_loaded = json.load(read_file)
 
-            for i, value in json_loaded['imgs'].items():
+            for i, value in tqdm(json_loaded['imgs'].items()):
                 image_path = os.path.join(os.path.dirname(self.path), 'train2014',
                                           value['file_name'])
                 dataset_type = value['set']
@@ -752,6 +881,61 @@ class COCOTextDatasetConverter:
         return dataset
 
 
+class CvatXml11Converter:
+
+    def __init__(self, images_folder, annotation_path, root=''):
+        self.annotation_path = annotation_path
+        self.images_folder = images_folder
+    
+    def __call__(self):
+        dataset = TextOnlyCocoAnnotation()
+        import xml.etree.ElementTree as ET
+        mytree = ET.parse(self.annotation_path)
+        myroot = mytree.getroot()
+        for image_el in tqdm(myroot):
+            if image_el.tag == 'image':
+                image_name = image_el.get('name')
+                image_path = os.path.join(self.images_folder, image_name)
+                image_size = int(image_el.get('width')), int(image_el.get('height'))
+                for polygon_el in image_el:
+                    label = polygon_el.get('label')
+                    if label == 'text':
+                        points = polygon_el.get('points')
+                        attributes = {}
+                        for attribute in polygon_el:
+                            attributes[attribute.get('name').lower()] = attribute.text
+
+                        if attributes['language'].lower() != 'english':
+                            continue
+                    
+                        if attributes['legible'].lower() != 'true':
+                            attributes['text'] = ''
+
+                        if attributes['text'] is None:
+                            continue
+
+                        try:
+                            word_polygon = [int(float(x)) for x in points.replace(';', ',').split(',')]
+                        except:
+                            print('skipped')
+                            print(ET.tostring(polygon_el, encoding='unicode'))
+                            print('')
+                            continue
+                        word_annotation = {
+                                'bbox': poly2box(word_polygon),
+                                'segmentation': [word_polygon],
+                                'text': {
+                                    'transcription': attributes['text'],
+                                    'legible': attributes['legible'].lower() == 'true',
+                                    'language': attributes['language'].lower(),
+                                    'chars': []
+                                }
+                            }
+                        dataset.add_bbox(image_path, image_size, word_annotation)
+        return dataset
+
+
+
 str_to_class = {
     'ICDAR2013DatasetConverter': ICDAR2013DatasetConverter,
     'ICDAR2015DatasetConverter': ICDAR2015DatasetConverter,
@@ -759,5 +943,6 @@ str_to_class = {
     'ICDAR2019MLTDatasetConverter': ICDAR2019MLTDatasetConverter,
     'ICDAR2019ARTDatasetConverter': ICDAR2019ARTDatasetConverter,
     'MSRATD500DatasetConverter': MSRATD500DatasetConverter,
-    'COCOTextDatasetConverter': COCOTextDatasetConverter
+    'COCOTextDatasetConverter': COCOTextDatasetConverter,
+    'CvatXml11Converter': CvatXml11Converter
 }

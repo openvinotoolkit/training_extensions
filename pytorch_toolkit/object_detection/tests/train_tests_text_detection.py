@@ -14,15 +14,21 @@
 
 import os
 
-from common.test_case import create_test_case
+from common.test_case import create_object_detection_test_case
+
+
+kwargs = dict(
+    problem_name='horizontal-text-detection',
+    ann_file=os.path.dirname(__file__) + '/../../../data/horizontal_text_detection/annotation.json',
+    img_root=os.path.dirname(__file__) + '/../../../data/horizontal_text_detection/'
+)
+
 
 
 class HorizontalTextDetection0001TestCase(
-        create_test_case(
-            'horizontal-text-detection',
-            'horizontal-text-detection-0001',
-            os.path.dirname(__file__) + '/../../../data/horizontal_text_detection/annotation.json',
-            os.path.dirname(__file__) + '/../../../data/horizontal_text_detection/'
+        create_object_detection_test_case(
+            model_name='horizontal-text-detection-0001',
+            **kwargs
         )
 ):
     """ Test case for horizontal-text-detection-0001 model. """

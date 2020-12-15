@@ -1,0 +1,10 @@
+[
+    {
+        "name": "ICDAR2015DatasetConverter",
+        "kwargs": {
+            "images_folder": "icdar2015/ch4_test_images",
+            "annotations_folder": "icdar2015/ch4_test_localization_transcription_gt",
+            "is_train": false
+        }
+    }
+]

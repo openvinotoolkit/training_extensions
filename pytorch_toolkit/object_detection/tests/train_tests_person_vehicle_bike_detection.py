@@ -14,37 +14,38 @@
 
 import os
 
-from common.test_case import create_test_case
+from common.test_case import create_object_detection_test_case
+
+
+kwargs = dict(
+    problem_name='person-vehicle-bike-detection',
+    ann_file=os.path.dirname(__file__) + '/../../../data/airport/annotation_example_train.json',
+    img_root=os.path.dirname(__file__) + '/../../../data/airport/train'
+)
 
 
 class PersonVehicleBikeDetection2000TestCase(
-        create_test_case(
-            'person-vehicle-bike-detection',
-            'person-vehicle-bike-detection-2000',
-            os.path.dirname(__file__) + '/../../../data/airport/annotation_example_train.json',
-            os.path.dirname(__file__) + '/../../../data/airport/train'
+        create_object_detection_test_case(
+            model_name='person-vehicle-bike-detection-2000',
+            **kwargs
         )
 ):
     """ Test case for person-vehicle-bike-detection-2000 model. """
 
 
 class PersonVehicleBikeDetection2001TestCase(
-        create_test_case(
-            'person-vehicle-bike-detection',
-            'person-vehicle-bike-detection-2001',
-            os.path.dirname(__file__) + '/../../../data/airport/annotation_example_train.json',
-            os.path.dirname(__file__) + '/../../../data/airport/train'
+        create_object_detection_test_case(
+            model_name='person-vehicle-bike-detection-2001',
+            **kwargs
         )
 ):
     """ Test case for person-vehicle-bike-detection-2001 model. """
 
 
 class PersonVehicleBikeDetection2002TestCase(
-        create_test_case(
-            'person-vehicle-bike-detection',
-            'person-vehicle-bike-detection-2002',
-            os.path.dirname(__file__) + '/../../../data/airport/annotation_example_train.json',
-            os.path.dirname(__file__) + '/../../../data/airport/train'
+        create_object_detection_test_case(
+            model_name='person-vehicle-bike-detection-2002',
+            **kwargs
         )
 ):
     """ Test case for person-vehicle-bike-detection-2002 model. """

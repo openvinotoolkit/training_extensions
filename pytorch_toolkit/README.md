@@ -28,7 +28,7 @@ them for prediction.
   - [Person Re-Identification](object_reidentification/person_reidentification)
   - [Vehicle Re-Identification](object_reidentification/vehicle_reidentification)
 * [Human Pose Estimation](human_pose_estimation)
-* [Instance Segmentation](instance_segmentation)
+* [Instance Segmentation](instance_segmentation_2)
 * [Object Detection](object_detection)
   - [Face Detection](object_detection/model_templates/face-detection)
   - [Horizontal Text Detection](object_detection/model_templates/horizontal-text-detection)
@@ -39,7 +39,7 @@ them for prediction.
 * [Segmentation of Thoracic Organs](segthor)
 * [Super Resolution](super_resolution)
 * [Formula recognition](formula_recognition)
-* [Text Spotting](text_spotting)
+* [Text Spotting](text_spotting_2)
 
 
 ### Tests
