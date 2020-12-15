@@ -1,7 +1,7 @@
 
 # GPU Version
 
-Instructions below show how to install and set up WEB OTE for Linux. The same steps are required for Windows. GPU version for MacOS is not currently supported.
+Instructions below show how to install and set up WEB OTE for Linux.
 
 ## GPU Requirements
 

@@ -1,6 +1,6 @@
 
 # CPU Version
-Instructions below show how to install and set up WEB OTE for Linux. The same steps are required for Windows and MacOS.
+Instructions below show how to install and set up WEB OTE for Linux. 
 ## CPU Requirements
 
 ## Install Docker
