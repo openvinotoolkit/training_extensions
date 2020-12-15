@@ -1,4 +1,4 @@
-# Instance Segmantation
+# Instance Segmentation
 
 Models that are able to instantiate segmentation.
 
