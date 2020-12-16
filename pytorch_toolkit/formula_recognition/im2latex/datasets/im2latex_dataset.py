@@ -48,9 +48,6 @@ from tqdm import tqdm
 from ..data.utils import get_num_lines_in_file
 from ..data.vocab import split_number
 
-COLOR_WHITE = (255, 255, 255)
-NUMBER_SIGNS = set("0123456789.")
-
 
 class BatchRandomSampler(Sampler):
     """This is a class representing random batch sampler
@@ -144,8 +141,6 @@ class CocoTextOnlyDataset:
         self._load()
 
     def _load(self):
-        # formulas.norm.lst
-        # val_filter.lst
         with open(self.json_file) as f:
             annotation_file = json.load(f)
         images = annotation_file['images']
@@ -154,7 +149,7 @@ class CocoTextOnlyDataset:
         for image, ann in tqdm(zip(images, annotations)):
             filename = image['filename']
             filename = os.path.join(self.images_dir, os.path.split(filename)[-1])
-            image_id = image['id']
+            assert image['id'] == ann['id']
             text = ann["text"]['transcription']
             img = cv.imread(filename, cv.IMREAD_COLOR)
             el = {"img_name": filename,
