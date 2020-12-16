@@ -31,7 +31,7 @@ from tqdm import tqdm
 
 from im2latex.data.utils import collate_fn, create_list_of_transforms
 from im2latex.data.vocab import END_TOKEN, START_TOKEN, read_vocab
-from im2latex.datasets.im2latex_dataset import Im2LatexDataset
+from im2latex.datasets.im2latex_dataset import str_to_class
 from im2latex.models.im2latex_model import Im2latexModel
 
 spaces = [r'\,', r'\>', r'\;', r'\:', r'\quad', r'\qquad', '~']
@@ -241,7 +241,10 @@ class Evaluator:
         self.read_expected_outputs()
 
     def load_dataset(self):
-        val_dataset = Im2LatexDataset(self.config.get("test_path"), self.config.get("test_ann_file", "validate_filter.lst"))
+        dataset_params = self.config.get("dataset")
+        dataset_type = dataset_params.pop("type")
+
+        val_dataset = str_to_class[dataset_type](**dataset_params)
         batch_transform = create_list_of_transforms(self.config.get(
             'val_transforms_list'), ovino_ir=self.runner.openvino_transform())
         self.val_loader = DataLoader(
