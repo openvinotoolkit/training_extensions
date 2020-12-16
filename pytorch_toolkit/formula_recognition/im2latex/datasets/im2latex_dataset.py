@@ -38,6 +38,7 @@ SOFTWARE.
 
 from copy import deepcopy
 from os.path import join
+import json
 
 import cv2 as cv
 import numpy as np
@@ -123,7 +124,7 @@ class Im2LatexDataset(Dataset):
                 img = cv.imread(img_path, cv.IMREAD_COLOR)
                 formula = self.formulas[int(formula_id)]
                 el = {"img_name": img_name,
-                      "formula": formula,
+                      "text": formula,
                       "img": img,
                       }
                 pairs.append(el)
@@ -134,3 +135,39 @@ class Im2LatexDataset(Dataset):
 def img_size(pair):
     img = pair.get("img")
     return tuple(img.shape)
+
+
+class CocoTextOnlyDataset:
+    def __init__(self, json_file, images_dir):
+        self.json_file = json_file
+        self.images_dir = images_dir
+        self._load()
+
+    def _load(self):
+        # formulas.norm.lst
+        # val_filter.lst
+        with open(self.json_file) as f:
+            annotation_file = json.load(f)
+        images = annotation_file['images']
+        annotations = annotation_file['annotations']
+        pairs = []
+        for image, ann in tqdm(zip(images, annotations)):
+            filename = image['filename']
+            filename = os.path.join(self.images_dir, os.path.split(filename)[-1])
+            image_id = image['id']
+            text = ann["text"]['transcription']
+            img = cv.imread(filename, cv.IMREAD_COLOR)
+            el = {"img_name": filename,
+                  "text": text,
+                  "img": img,
+                  }
+            pairs.append(el)
+        pairs.sort(key=img_size, reverse=True)
+        return pairs
+
+    def __getitem__(self, index):
+        el = deepcopy(self.pairs[index])
+        return el
+
+    def __len__(self):
+        return len(self.pairs)

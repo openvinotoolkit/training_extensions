@@ -440,11 +440,11 @@ def collate_fn(sign2id, batch, *, batch_transform=None):
     # sort by the length of formula
     # the purpose of the sort is to put the longest formula on the first place
     # to get correct size of the tensor in the formulas2tensor function
-    batch.sort(key=lambda img_formula: len(img_formula['formula'].split()),
+    batch.sort(key=lambda img_formula: len(img_formula['text'].split()),
                reverse=True)
 
     imgs = [item['img'] for item in batch]
-    formulas = [item['formula'] for item in batch]
+    formulas = [item['text'] for item in batch]
     img_names = [item['img_name'] for item in batch]
     formulas_tensor = formulas2tensor(formulas, sign2id)
 
