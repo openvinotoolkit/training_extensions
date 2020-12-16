@@ -8,10 +8,15 @@ Model that is able to detect more or less horizontal text with high speed on CPU
 
 ## Training pipeline
 
-### 0. Change a directory in your terminal to object_detection.
+### 0. Change a directory in your terminal to object_detection and activate venv.
 
 ```bash
 cd <training_extensions>/pytorch_toolkit/object_detection
+. venv/bin/activate
+```
+or if You use conda:
+```bash
+conda activate <environment_name>
 ```
 
 ### 1. Select a model template file and instantiate it in some directory.
@@ -24,14 +29,14 @@ python ../tools/instantiate_template.py ${MODEL_TEMPLATE} ${WORK_DIR}
 
 ### 2. Download datasets
 
-To be able to train networks and/or get quality metrics for pre-trained ones,  
-it's necessary to download at least one dataset from following resources.  
+To be able to train networks and/or get quality metrics for pre-trained ones,
+it's necessary to download at least one dataset from following resources.
 *  [ICDAR2013 (Focused Scene Text)](https://rrc.cvc.uab.es/?ch=2) - test part is used to get quality metric.
 *  [ICDAR2015 (Incidental Scene Text)](https://rrc.cvc.uab.es/?ch=4)
 *  [ICDAR2017 (MLT)](https://rrc.cvc.uab.es/?ch=8)
 *  [ICDAR2019 (MLT)](https://rrc.cvc.uab.es/?ch=15)
 *  [ICDAR2019 (ART)](https://rrc.cvc.uab.es/?ch=14)
-*  [MSRA-TD500](http://www.iapr-tc11.org/mediawiki/index.php/MSRA_Text_Detection_500_Database_(MSRA-TD500))   
+*  [MSRA-TD500](http://www.iapr-tc11.org/mediawiki/index.php/MSRA_Text_Detection_500_Database_(MSRA-TD500))
 *  [COCO-Text](https://bgshih.github.io/cocotext/)
 
 ### 3. Convert datasets
@@ -46,16 +51,16 @@ Convert it to format that is used internally and split to the train and test par
 
 * Training annotation
 ```bash
-python3 ./model_templates/horizontal-text-detection/tools/create_dataset.py \
-    --config ./model_templates/horizontal-text-detection/datasets/dataset_train.json \
+python ./model_templates/horizontal-text-detection/tools/create_dataset.py \
+    --config ./model_templates/horizontal-text-detection/tools/datasets/dataset_train.json \
     --output ${DATA_DIR}/text-dataset/IC13TRAIN_IC15_IC17_IC19_MSRATD500_COCOTEXT.json
 export TRAIN_ANN_FILE=${DATA_DIR}/text-dataset/IC13TRAIN_IC15_IC17_IC19_MSRATD500_COCOTEXT.json
 export TRAIN_IMG_ROOT=${DATA_DIR}/text-dataset
 ```
 * Testing annotation
 ```bash
-python3 ./model_templates/horizontal-text-detection/tools/create_dataset.py \
-    --config ./model_templates/horizontal-text-detection/datasets/dataset_test.json \
+python ./model_templates/horizontal-text-detection/tools/create_dataset.py \
+    --config ./model_templates/horizontal-text-detection/tools/datasets/dataset_test.json \
     --output ${DATA_DIR}/text-dataset/IC13TEST.json
 export VAL_ANN_FILE=${DATA_DIR}/text-dataset/IC13TEST.json
 export VAL_IMG_ROOT=${DATA_DIR}/text-dataset
