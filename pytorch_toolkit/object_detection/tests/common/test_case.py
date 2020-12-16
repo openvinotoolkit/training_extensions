@@ -66,11 +66,8 @@ def create_object_detection_export_test_case(alt_ssd_export=False, **kwargs):
 
 
 def create_nncf_test_case(domain_name, problem_name, model_name, ann_file, img_root,
-                          test_export_threshold,
                           template_update_dict,
                           compression_cfg_update_dict=None):
-# TODO(LeonidBeynenson): try to reduce the number of arguments,
-#                        refactor it
  # pylint: disable=too-many-arguments, too-many-statements
     """
     Note that template_update_dict will be used to update template file
@@ -78,7 +75,7 @@ def create_nncf_test_case(domain_name, problem_name, model_name, ann_file, img_r
     """
 
     assert template_update_dict, 'Use this function with non-trivial template_update_dict parameter only'
-    class TestCaseOteApi(unittest.TestCase):
+    class NNCFBaseTestCase(unittest.TestCase):
 
         @classmethod
         def setUpClass(cls):
@@ -103,12 +100,6 @@ def create_nncf_test_case(domain_name, problem_name, model_name, ann_file, img_r
             cls.img_root = img_root
             cls.dependencies = get_dependencies(cls.template_file)
 
-            # Note that such big threshold is required, since
-            # we have very small dataset for training and evaluation:
-            # if network compression causes other detections
-            # on 2-4 images, the accuracy drop will be significant.
-            cls.test_export_thr = test_export_threshold
-
             download_snapshot_if_not_yet(cls.template_file, cls.template_folder)
 
             run_through_shell(
@@ -116,6 +107,10 @@ def create_nncf_test_case(domain_name, problem_name, model_name, ann_file, img_r
                 f'pip install -r requirements.txt;'
             )
             logging.info(f'End setting up class for {problem_name}/{model_name}, {cls.template_updates_description}')
+
+        def setUp(self):
+            self.output_folder = os.path.join(self.template_folder, f'output_{self.id()}')
+            os.makedirs(self.output_folder, exist_ok=True)
 
         @staticmethod
         def generate_template_updates_description(template_update_dict):
@@ -163,9 +158,8 @@ def create_nncf_test_case(domain_name, problem_name, model_name, ann_file, img_r
             template_data.merge_from_dict(template_update_dict)
             template_data.dump(template_file)
 
-        @unittest.skipUnless(torch.cuda.is_available(), 'No GPU found')
-        def test_nncf_compress_on_gpu(self):
-            log_file = os.path.join(self.template_folder, f'log__{self.id()}.txt')
+        def do_compress(self):
+            log_file = os.path.join(self.output_folder, f'log__{self.id()}.txt')
             run_through_shell(
                 f'cd {self.template_folder};'
                 f'python compress.py'
@@ -174,17 +168,32 @@ def create_nncf_test_case(domain_name, problem_name, model_name, ann_file, img_r
                 f' --val-ann-files {self.ann_file}'
                 f' --val-data-roots {self.img_root}'
                 f' --load-weights snapshot.pth'
-                f' --save-checkpoints-to {self.template_folder}/output_{self.id()}'
+                f' --save-checkpoints-to {self.output_folder}'
                 f' --gpu-num 1'
                 f' --batch-size 1'
                 f' | tee {log_file}')
+            return log_file
 
-            ap = collect_ap(log_file)
-            self.assertGreater(ap[-1], 0)
+        def do_eval(self, file_to_eval):
+            metrics_path = os.path.join(self.output_folder, 'metrics.yaml')
+            run_through_shell(
+                f'cd {self.template_folder};'
+                f'python eval.py'
+                f' --test-ann-files {self.ann_file}'
+                f' --test-data-roots {self.img_root}'
+                f' --save-metrics-to {metrics_path}'
+                f' --load-weights {file_to_eval}'
+                )
+            return metrics_path
+
+        @unittest.skipUnless(torch.cuda.is_available(), 'No GPU found')
+        def test_nncf_compress_on_gpu(self):
+            log_file = self.do_compress()
+            return log_file
 
         @unittest.skipUnless(torch.cuda.is_available(), 'No GPU found')
         def test_nncf_finetune_and_compress_on_gpu(self):
-            log_file = os.path.join(self.template_folder, f'log__{self.id()}.txt')
+            log_file = os.path.join(self.output_folder, f'log__{self.id()}.txt')
             total_epochs = get_epochs(self.template_file)
             total_epochs_with_finetuning = total_epochs + 2
             run_through_shell(
@@ -195,114 +204,115 @@ def create_nncf_test_case(domain_name, problem_name, model_name, ann_file, img_r
                 f' --val-ann-files {self.ann_file}'
                 f' --val-data-roots {self.img_root}'
                 f' --resume-from snapshot.pth'
-                f' --save-checkpoints-to {self.template_folder}/output_{self.id()}'
+                f' --save-checkpoints-to {self.output_folder}'
                 f' --gpu-num 1'
                 f' --batch-size 1'
                 f' --epochs {total_epochs_with_finetuning}'
                 f' | tee {log_file}')
-
-            ap = collect_ap(log_file)
-            self.assertGreater(ap[-1], 0)
+            return log_file
 
         @unittest.skipUnless(torch.cuda.is_available(), 'No GPU found')
         def test_nncf_compress_and_eval_on_gpu(self):
-            log_file = os.path.join(self.template_folder, f'log__{self.id()}.txt')
-            checkpoints_dir = f'{self.template_folder}/output_{self.id()}'
-            run_through_shell(
-                f'cd {self.template_folder};'
-                f'python compress.py'
-                f' --train-ann-files {self.ann_file}'
-                f' --train-data-roots {self.img_root}'
-                f' --val-ann-files {self.ann_file}'
-                f' --val-data-roots {self.img_root}'
-                f' --load-weights snapshot.pth'
-                f' --save-checkpoints-to {checkpoints_dir}'
-                f' --gpu-num 1'
-                f' --batch-size 1'
-                f' | tee {log_file}')
-            compress_ap = collect_ap(log_file)
-            last_compress_ap = compress_ap[-1]
-            logging.info(f'From training last_compress_ap={last_compress_ap}')
+            log_file = self.do_compress()
 
-            latest_file = f'{checkpoints_dir}/latest.pth'
+            latest_file = os.path.join(self.output_folder, 'latest.pth')
             self.assertTrue(os.path.isfile(latest_file), f'Cannot find the latest.pth in path `{latest_file}`')
 
-            metrics_path = f'{checkpoints_dir}/metrics.yaml'
-            run_through_shell(
-                f'cd {self.template_folder};'
-                f'python eval.py'
-                f' --test-ann-files {self.ann_file}'
-                f' --test-data-roots {self.img_root}'
-                f' --save-metrics-to {metrics_path}'
-                f' --load-weights {latest_file}'
-                )
-
-            with open(metrics_path) as read_file:
-                content = yaml.safe_load(read_file)
-
-            ap = [metric['value'] for metric in content['metrics'] if metric['key'] == 'bbox'][0]
-            ap = ap/100
-
-            logging.info(f'Evaluation result ap={ap}')
-            self.assertLess(abs(last_compress_ap - ap), 1e-6)
+            metrics_path = self.do_eval(latest_file)
+            return log_file, metrics_path
 
         @unittest.skipUnless(torch.cuda.is_available(), 'No GPU found')
         def test_nncf_compress_and_export(self):
-            log_file = os.path.join(self.template_folder, f'log__{self.id()}.txt')
-            checkpoints_dir = f'{self.template_folder}/output_{self.id()}'
-            run_through_shell(
-                f'cd {self.template_folder};'
-                f'python compress.py'
-                f' --train-ann-files {self.ann_file}'
-                f' --train-data-roots {self.img_root}'
-                f' --val-ann-files {self.ann_file}'
-                f' --val-data-roots {self.img_root}'
-                f' --load-weights snapshot.pth'
-                f' --save-checkpoints-to {checkpoints_dir}'
-                f' --gpu-num 1'
-                f' --batch-size 1'
-                f' | tee {log_file}')
-            compress_ap = collect_ap(log_file)
-            last_compress_ap = compress_ap[-1]
+            log_file = self.do_compress()
 
-            latest_file = f'{checkpoints_dir}/latest.pth'
+            latest_file = os.path.join(self.output_folder, 'latest.pth')
             self.assertTrue(os.path.isfile(latest_file), f'Cannot find the latest.pth in path `{latest_file}`')
 
             run_through_shell(
                 f'cd {os.path.dirname(self.template_file)};'
                 f'python export.py'
                 f' --load-weights {latest_file}'
-                f' --save-model-to {checkpoints_dir}'
+                f' --save-model-to {self.output_folder}'
             )
 
-            model_bin_paths = list(glob.glob(os.path.join(checkpoints_dir, '*.bin')))
+            model_bin_paths = list(glob.glob(os.path.join(self.output_folder, '*.bin')))
             assert len(model_bin_paths) == 1, (
                 f'Wrong result of export.py: globbing "*.bin" in'
-                f' {checkpoints_dir} gives {model_bin_paths}')
-            run_through_shell(
-                f'cd {os.path.dirname(self.template_file)};'
-                f'python eval.py'
-                f' --test-ann-files {ann_file}'
-                f' --test-data-roots {img_root}'
-                f' --load-weights {model_bin_paths[0]}'
-                f' --save-metrics-to {os.path.join(checkpoints_dir, "metrics.yaml")}'
-            )
+                f' {self.output_folder} gives {model_bin_paths}')
 
-            with open(os.path.join(checkpoints_dir, "metrics.yaml")) as read_file:
-                content = yaml.safe_load(read_file)
-                ap = [metric for metric in content['metrics'] if metric['key'] == 'bbox'][0]['value']
-                ap = ap/100
+            model_bin_path = model_bin_paths[0]
 
-            logging.info(f'From training last_compress_ap={last_compress_ap}')
-            logging.info(f'From evaluation of OpenVINO(TM) model ap={ap}')
-            self.assertGreater(ap, last_compress_ap - self.test_export_thr)
+            metrics_path = self.do_eval(model_bin_path)
 
-    return TestCaseOteApi
+            return log_file, metrics_path
+
+    return NNCFBaseTestCase
 
 def create_object_detection_nncf_test_case(problem_name, model_name, ann_file, img_root,
                                            template_update_dict,
-                                           compression_cfg_update_dict=None):
-    return create_nncf_test_case('object_detection', problem_name, model_name, ann_file, img_root,
-                                 test_export_threshold=0.09,
-                                 template_update_dict=template_update_dict,
-                                 compression_cfg_update_dict=compression_cfg_update_dict)
+                                           compression_cfg_update_dict=None,
+                                           test_export_threshold=0.09):
+
+    NNCFBaseTestCase = create_nncf_test_case('object_detection', problem_name, model_name, ann_file, img_root,
+                                             template_update_dict=template_update_dict,
+                                             compression_cfg_update_dict=compression_cfg_update_dict)
+
+    class NNCFObjectDetectionTestCase(NNCFBaseTestCase):
+        def setUp(self):
+            super().setUp()
+
+            # Note that such big threshold is required, since
+            # we have very small dataset for training and evaluation:
+            # if network compression causes other detections
+            # on 2-4 images, the accuracy drop will be significant.
+            self.test_export_thr = test_export_threshold
+
+        @staticmethod
+        def _get_bbox_metric(metrics_path):
+            with open(metrics_path) as read_file:
+                content = yaml.safe_load(read_file)
+
+            ap = [metric['value'] for metric in content['metrics'] if metric['key'] == 'bbox'][0]
+            ap = ap/100
+            return ap
+
+        @unittest.skipUnless(torch.cuda.is_available(), 'No GPU found')
+        def test_nncf_compress_on_gpu(self):
+            log_file = super().test_nncf_compress_on_gpu()
+            ap = collect_ap(log_file)
+            self.assertGreater(ap[-1], 0)
+
+        @unittest.skipUnless(torch.cuda.is_available(), 'No GPU found')
+        def test_nncf_finetune_and_compress_on_gpu(self):
+            log_file = super().test_nncf_finetune_and_compress_on_gpu()
+            ap = collect_ap(log_file)
+            self.assertGreater(ap[-1], 0)
+
+        @unittest.skipUnless(torch.cuda.is_available(), 'No GPU found')
+        def test_nncf_compress_and_eval_on_gpu(self):
+            log_file, metrics_path = super().test_nncf_compress_and_eval_on_gpu()
+
+            compress_ap = collect_ap(log_file)
+            last_compress_ap = compress_ap[-1]
+            logging.info(f'From training last_compress_ap={last_compress_ap}')
+
+            ap = self._get_bbox_metric(metrics_path)
+            logging.info(f'Evaluation result ap={ap}')
+            self.assertLess(abs(last_compress_ap - ap), 1e-6)
+
+            return log_file, metrics_path
+
+        @unittest.skipUnless(torch.cuda.is_available(), 'No GPU found')
+        def test_nncf_compress_and_export(self):
+            log_file, metrics_path = super().test_nncf_compress_and_export()
+
+            compress_ap = collect_ap(log_file)
+            last_compress_ap = compress_ap[-1]
+            logging.info(f'From training last_compress_ap={last_compress_ap}')
+
+            ap = self._get_bbox_metric(metrics_path)
+            logging.info(f'Evaluation after export result ap={ap}')
+
+            self.assertGreater(ap, last_compress_ap - self.test_export_thr)
+
+    return NNCFObjectDetectionTestCase
