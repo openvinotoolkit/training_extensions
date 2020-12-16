@@ -65,7 +65,8 @@ def create_object_detection_export_test_case(alt_ssd_export=False, **kwargs):
     return ExportTestCase
 
 
-def create_nncf_test_case(problem_name, model_name, ann_file, img_root,
+def create_nncf_test_case(domain_name, problem_name, model_name, ann_file, img_root,
+                          test_export_threshold,
                           template_update_dict,
                           compression_cfg_update_dict=None):
 # TODO(LeonidBeynenson): try to reduce the number of arguments,
@@ -85,7 +86,7 @@ def create_nncf_test_case(problem_name, model_name, ann_file, img_root,
             logging.info(f'Begin setting up class for {problem_name}/{model_name}, {cls.template_updates_description}')
 
             cls.templates_folder = os.environ['MODEL_TEMPLATES']
-            cls.src_template_folder = os.path.join(cls.templates_folder, 'object_detection', problem_name, model_name)
+            cls.src_template_folder = os.path.join(cls.templates_folder,domain_name, problem_name, model_name)
 
             skip_non_instantiated_template_if_its_allowed(cls.src_template_folder, problem_name, model_name)
 
@@ -106,7 +107,7 @@ def create_nncf_test_case(problem_name, model_name, ann_file, img_root,
             # we have very small dataset for training and evaluation:
             # if network compression causes other detections
             # on 2-4 images, the accuracy drop will be significant.
-            cls.test_export_thr = 0.05
+            cls.test_export_thr = test_export_threshold
 
             download_snapshot_if_not_yet(cls.template_file, cls.template_folder)
 
@@ -239,7 +240,7 @@ def create_nncf_test_case(problem_name, model_name, ann_file, img_root,
             with open(metrics_path) as read_file:
                 content = yaml.safe_load(read_file)
 
-            ap = [metric['value'] for metric in content['metrics'] if metric['key'] == 'ap'][0]
+            ap = [metric['value'] for metric in content['metrics'] if metric['key'] == 'bbox'][0]
             ap = ap/100
 
             logging.info(f'Evaluation result ap={ap}')
@@ -289,7 +290,7 @@ def create_nncf_test_case(problem_name, model_name, ann_file, img_root,
 
             with open(os.path.join(checkpoints_dir, "metrics.yaml")) as read_file:
                 content = yaml.safe_load(read_file)
-                ap = [metric for metric in content['metrics'] if metric['key'] == 'ap'][0]['value']
+                ap = [metric for metric in content['metrics'] if metric['key'] == 'bbox'][0]['value']
                 ap = ap/100
 
             logging.info(f'From training last_compress_ap={last_compress_ap}')
@@ -297,3 +298,11 @@ def create_nncf_test_case(problem_name, model_name, ann_file, img_root,
             self.assertGreater(ap, last_compress_ap - self.test_export_thr)
 
     return TestCaseOteApi
+
+def create_object_detection_nncf_test_case(problem_name, model_name, ann_file, img_root,
+                                           template_update_dict,
+                                           compression_cfg_update_dict=None):
+    return create_nncf_test_case('object_detection', problem_name, model_name, ann_file, img_root,
+                                 test_export_threshold=0.09,
+                                 template_update_dict=template_update_dict,
+                                 compression_cfg_update_dict=compression_cfg_update_dict)

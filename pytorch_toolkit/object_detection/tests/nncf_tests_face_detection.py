@@ -14,11 +14,11 @@
 
 import os
 
-from common.test_case import create_nncf_test_case
+from common.test_case import create_object_detection_nncf_test_case
 
 
 class FaceDetection0200NNCFint8(
-        create_nncf_test_case(
+        create_object_detection_nncf_test_case(
             'face-detection',
             'face-detection-0200',
             os.path.dirname(__file__) + '/../../../data/airport/annotation_faces_train.json',
@@ -29,7 +29,7 @@ class FaceDetection0200NNCFint8(
     """ Test case for face-detection-0200 model with NNCF int8 compression. """
 
 class FaceDetection0200NNCFint8sparsity(
-        create_nncf_test_case(
+        create_object_detection_nncf_test_case(
             'face-detection',
             'face-detection-0200',
             os.path.dirname(__file__) + '/../../../data/airport/annotation_faces_train.json',
