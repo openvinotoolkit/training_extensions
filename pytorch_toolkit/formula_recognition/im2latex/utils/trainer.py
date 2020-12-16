@@ -49,7 +49,7 @@ from im2latex.data.utils import (collate_fn, create_list_of_transforms,
                                  get_timestamp)
 from im2latex.data.vocab import PAD_TOKEN, read_vocab
 from im2latex.datasets.im2latex_dataset import (BatchRandomSampler,
-                                                Im2LatexDataset)
+                                                str_to_class)
 from im2latex.models.im2latex_model import Im2latexModel
 from torch.nn.utils import clip_grad_norm_
 from torch.optim.lr_scheduler import ReduceLROnPlateau
@@ -149,9 +149,20 @@ class Trainer:
         print("Created validation results folder: {}".format(self.val_results_path))
 
     def load_dataset(self):
-        train_dataset = ConcatDataset(
-            [Im2LatexDataset(train_s, self.config.get("train_ann_file")) for train_s in self.train_paths]
-        )
+        train_datasets = []
+        val_dataset = None
+        for param in self.config.get("datasets"):
+            dataset_type = param.pop("type")
+            dataset = str_to_class[dataset_type](**param)
+            if param['subset'] == 'train':
+                train_datasets.append(dataset)
+            elif param['subset'] == 'validate':
+                if val_dataset is None:
+                    val_dataset = dataset
+                else:
+                    raise ValueError("Multiple datasets are set as 'validate'. Check the config file")
+
+        train_dataset = ConcatDataset(train_datasets)
         train_sampler = BatchRandomSampler(
             dataset=train_dataset, batch_size=self.config.get('batch_size', 4))
         pprint("Creating training transforms list:\n{}".format(self.train_transforms_list), indent=4, width=120)
@@ -163,7 +174,6 @@ class Trainer:
                                batch_transform=batch_transform_train),
             num_workers=os.cpu_count())
 
-        val_dataset = Im2LatexDataset(self.val_path, self.config.get("val_ann_file"))
         val_sampler = BatchRandomSampler(dataset=val_dataset, batch_size=1)
         pprint("Creating val transforms list:\n{}".format(self.val_transforms_list), indent=4, width=120)
         batch_transform_val = create_list_of_transforms(self.val_transforms_list)

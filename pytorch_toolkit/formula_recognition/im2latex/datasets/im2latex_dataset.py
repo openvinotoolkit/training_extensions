@@ -37,6 +37,7 @@ SOFTWARE.
 """
 
 from copy import deepcopy
+import os
 from os.path import join
 import json
 
@@ -75,13 +76,13 @@ class BatchRandomSampler(Sampler):
 
 
 class Im2LatexDataset(Dataset):
-    def __init__(self, data_dir, subset):
+    def __init__(self, data_dir_path, subset):
         """args:
         data_dir: root dir storing the prepoccessed data
         subset: train, validate, test or toy
         """
-        self.data_dir = data_dir
-        self.images_dir = join(data_dir, "images_processed")
+        self.data_dir = data_dir_path
+        self.images_dir = join(data_dir_path, "images_processed")
         self.formulas = self._get_formulas()
         self.pairs = self._get_pairs(subset)
 
@@ -135,10 +136,11 @@ def img_size(pair):
 
 
 class CocoTextOnlyDataset:
-    def __init__(self, json_file, images_dir):
-        self.json_file = json_file
-        self.images_dir = images_dir
-        self._load()
+    def __init__(self, json_path, images_path, subset):
+        self.json_file = json_path
+        self.images_dir = images_path
+        self.subset = subset
+        self.pairs = self._load()
 
     def _load(self):
         with open(self.json_file) as f:
@@ -147,7 +149,7 @@ class CocoTextOnlyDataset:
         annotations = annotation_file['annotations']
         pairs = []
         for image, ann in tqdm(zip(images, annotations)):
-            filename = image['filename']
+            filename = image['file_name']
             filename = os.path.join(self.images_dir, os.path.split(filename)[-1])
             assert image['id'] == ann['id']
             text = ann["text"]['transcription']
@@ -166,3 +168,9 @@ class CocoTextOnlyDataset:
 
     def __len__(self):
         return len(self.pairs)
+
+
+str_to_class = {
+    "Im2LatexDataset": Im2LatexDataset,
+    "CocoTextOnlyDataset": CocoTextOnlyDataset
+}
