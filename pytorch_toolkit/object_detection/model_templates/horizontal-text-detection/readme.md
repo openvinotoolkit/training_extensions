@@ -53,7 +53,8 @@ Convert it to format that is used internally and split to the train and test par
 ```bash
 python ./model_templates/horizontal-text-detection/tools/create_dataset.py \
     --config ./model_templates/horizontal-text-detection/tools/datasets/dataset_train.json \
-    --output ${DATA_DIR}/text-dataset/IC13TRAIN_IC15_IC17_IC19_MSRATD500_COCOTEXT.json
+    --output ${DATA_DIR}/text-dataset/IC13TRAIN_IC15_IC17_IC19_MSRATD500_COCOTEXT.json \
+    --root ./
 export TRAIN_ANN_FILE=${DATA_DIR}/text-dataset/IC13TRAIN_IC15_IC17_IC19_MSRATD500_COCOTEXT.json
 export TRAIN_IMG_ROOT=${DATA_DIR}/text-dataset
 ```
@@ -61,7 +62,8 @@ export TRAIN_IMG_ROOT=${DATA_DIR}/text-dataset
 ```bash
 python ./model_templates/horizontal-text-detection/tools/create_dataset.py \
     --config ./model_templates/horizontal-text-detection/tools/datasets/dataset_test.json \
-    --output ${DATA_DIR}/text-dataset/IC13TEST.json
+    --output ${DATA_DIR}/text-dataset/IC13TEST.json \
+    --root ./
 export VAL_ANN_FILE=${DATA_DIR}/text-dataset/IC13TEST.json
 export VAL_IMG_ROOT=${DATA_DIR}/text-dataset
 ```
