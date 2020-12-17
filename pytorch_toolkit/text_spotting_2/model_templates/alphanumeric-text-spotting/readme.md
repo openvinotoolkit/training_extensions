@@ -54,7 +54,8 @@ Convert it to format that is used internally and split to the train and test par
 ```bash
 python3 ./tools/create_dataset.py \
     --config ./model_templates/alphanumeric-text-spotting/dataset_train.json \
-    --output ${DATA_DIR}/text-dataset/dataset_train.json
+    --output ${DATA_DIR}/text-dataset/dataset_train.json \
+    --root ${DATA_DIR}/text-dataset/
 export TRAIN_ANN_FILE=${DATA_DIR}/text-dataset/dataset_train.json
 export TRAIN_IMG_ROOT=${DATA_DIR}/text-dataset
 ```
@@ -62,7 +63,8 @@ export TRAIN_IMG_ROOT=${DATA_DIR}/text-dataset
 ```bash
 python3 ./tools/create_dataset.py \
     --config ./model_templates/alphanumeric-text-spotting/dataset_test.json \
-    --output ${DATA_DIR}/text-dataset/dataset_val.json
+    --output ${DATA_DIR}/text-dataset/dataset_val.json \
+    --root ${DATA_DIR}/text-dataset/
 export VAL_ANN_FILE=${DATA_DIR}/text-dataset/dataset_val.json
 export VAL_IMG_ROOT=${DATA_DIR}/text-dataset
 ```
