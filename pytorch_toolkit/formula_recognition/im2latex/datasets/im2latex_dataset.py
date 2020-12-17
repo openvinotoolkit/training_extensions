@@ -76,7 +76,7 @@ class BatchRandomSampler(Sampler):
 
 
 class Im2LatexDataset(Dataset):
-    def __init__(self, data_dir_path, subset):
+    def __init__(self, data_dir_path, subset, ann_file):
         """args:
         data_dir: root dir storing the prepoccessed data
         subset: train, validate, test or toy
@@ -84,7 +84,7 @@ class Im2LatexDataset(Dataset):
         self.data_dir = data_dir_path
         self.images_dir = join(data_dir_path, "images_processed")
         self.formulas = self._get_formulas()
-        self.pairs = self._get_pairs(subset)
+        self.pairs = self._get_pairs(ann_file)
 
     def __getitem__(self, index):
 
@@ -152,7 +152,8 @@ class CocoTextOnlyDataset:
             filename = image['file_name']
             filename = os.path.join(self.images_dir, os.path.split(filename)[-1])
             assert image['id'] == ann['id']
-            text = ann["text"]['transcription']
+            text = ann["text"]['transcription'].strip('"')
+            text = ' '.join(text)
             img = cv.imread(filename, cv.IMREAD_COLOR)
             el = {"img_name": filename,
                   "text": text,
@@ -170,7 +171,46 @@ class CocoTextOnlyDataset:
         return len(self.pairs)
 
 
+class ICDAR2013RECDataset:
+    def __init__(self, images_folder, annotation_file, subset='train', root=''):
+        self.images_folder = images_folder
+        self.annotation_file = annotation_file
+        self.is_train = subset == 'train'
+        if root:
+            self.annotation_file = os.path.join(root, self.annotation_file)
+            self.images_folder = os.path.join(root, self.images_folder)
+        self.pairs = self.load()
+
+    def __len__(self):
+        return len(self.pairs)
+
+    def __getitem__(self, index):
+        return deepcopy(self.pairs[index])
+
+    def load(self):
+        with open(self.annotation_file) as f:
+            annotation_file = f.readlines()
+        annotation_file = [line.strip() for line in annotation_file]
+        image_names = [line.split(", ")[0] for line in annotation_file]
+        texts = [line.split(", ")[1] for line in annotation_file]
+        pairs = []
+        for i, image_nm in tqdm(enumerate(image_names)):
+            filename = os.path.join(self.images_folder, image_nm)
+            img = cv.imread(filename, cv.IMREAD_COLOR)
+            text = texts[i].strip('"')
+            text = ' '.join(text)
+            el = {"img_name": filename,
+                  "text": text,
+                  "img": img,
+                  }
+            pairs.append(el)
+        pairs.sort(key=img_size, reverse=True)
+        return pairs
+
+
+
 str_to_class = {
     "Im2LatexDataset": Im2LatexDataset,
-    "CocoTextOnlyDataset": CocoTextOnlyDataset
+    "CocoTextOnlyDataset": CocoTextOnlyDataset,
+    "ICDAR2013RECDataset": ICDAR2013RECDataset
 }
