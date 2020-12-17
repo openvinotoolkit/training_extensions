@@ -11,7 +11,7 @@ Model that is able to detect and recognize alphanumeric text (figures and letter
 ### 0. Change a directory in your terminal to text_spotting_2.
 
 ```bash
-cd <training_extensions>/pytorch_toolkit/object_detection
+cd <training_extensions>/pytorch_toolkit/text_spotting_2
 . venv/bin/activate
 ```
 or if You use conda:
