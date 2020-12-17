@@ -29,7 +29,7 @@ from ote.utils.misc import download_snapshot_if_not_yet
 def get_dependencies(template_file):
     output = {}
     with open(template_file) as read_file:
-        content = yaml.load(read_file, yaml.SafeLoader)
+        content = yaml.safe_load(read_file)
         for dependency in content['dependencies']:
             output[dependency['destination'].split('.')[0]] = dependency['source']
         return output
@@ -63,6 +63,10 @@ def skip_if_cpu_is_not_supported(template_file):
 
 def create_test_case(domain_name, problem_name, model_name, ann_file, img_root, metric_keys, expected_outputs_dir):
     class TestCaseOteApi(unittest.TestCase):
+        domain = domain_name
+        problem = problem_name
+        model = model_name
+        topic = 'train'
 
         @classmethod
         def setUpClass(cls):
@@ -88,27 +92,32 @@ def create_test_case(domain_name, problem_name, model_name, ann_file, img_root, 
                 f'pip install -r requirements.txt;'
             )
 
+        def setUp(self):
+            self.output_folder = os.path.join(self.template_folder, f'output_{self.id()}')
+            os.makedirs(self.output_folder, exist_ok=True)
+
         def do_evaluation(self, on_gpu):
             initial_command = 'export CUDA_VISIBLE_DEVICES=;' if not on_gpu else ''
+            metrics_path = os.path.join(self.output_folder, "metrics.yaml")
             run_through_shell(
                 f'{initial_command}'
                 f'cd {self.template_folder};'
                 f'python eval.py'
                 f' --test-ann-files {self.ann_file}'
                 f' --test-data-roots {self.img_root}'
-                f' --save-metrics-to metrics.yaml'
+                f' --save-metrics-to {metrics_path}'
                 f' --load-weights snapshot.pth'
             )
 
-            with open(os.path.join(self.template_folder, "metrics.yaml")) as read_file:
-                content = yaml.load(read_file, yaml.SafeLoader)
+            with open(metrics_path) as read_file:
+                content = yaml.safe_load(read_file)
 
             for metric_key in metric_keys:
                 value = [metrics['value'] for metrics in content['metrics'] if metrics['key'] == metric_key][0]
                 self.assertLess(abs(self.expected_outputs[metric_key] - value), 1e-4)
 
         def do_finetuning(self, on_gpu):
-            log_file = os.path.join(self.template_folder, 'test_finetuning.log')
+            log_file = os.path.join(self.output_folder, 'test_finetuning.log')
             initial_command = 'export CUDA_VISIBLE_DEVICES=;' if not on_gpu else ''
             run_through_shell(
                 f'{initial_command}'
@@ -119,13 +128,13 @@ def create_test_case(domain_name, problem_name, model_name, ann_file, img_root, 
                 f' --val-ann-files {self.ann_file}'
                 f' --val-data-roots {self.img_root}'
                 f' --resume-from snapshot.pth'
-                f' --save-checkpoints-to {self.template_folder}'
+                f' --save-checkpoints-to {self.output_folder}'
                 f' --gpu-num 1'
                 f' --batch-size 1'
                 f' --epochs {self.total_epochs}'
                 f' | tee {log_file}')
 
-            self.assertTrue(os.path.exists(os.path.join(self.template_folder, 'latest.pth')))
+            self.assertTrue(os.path.exists(os.path.join(self.output_folder, 'latest.pth')))
 
         @unittest.skipUnless(torch.cuda.is_available(), 'No GPU found')
         def test_evaluation_on_gpu(self):
@@ -142,13 +151,16 @@ def create_test_case(domain_name, problem_name, model_name, ann_file, img_root, 
         def test_finetuning_on_cpu(self):
             skip_if_cpu_is_not_supported(self.template_file)
             self.do_finetuning(on_gpu=False)
-            
 
     return TestCaseOteApi
 
 
 def create_export_test_case(domain_name, problem_name, model_name, ann_file, img_root, metric_keys, expected_outputs_dir):
     class ExportTestCase(unittest.TestCase):
+        domain = domain_name
+        problem = problem_name
+        model = model_name
+        topic = 'export'
 
         @classmethod
         def setUpClass(cls):
@@ -168,18 +180,23 @@ def create_export_test_case(domain_name, problem_name, model_name, ann_file, img
 
             download_snapshot_if_not_yet(cls.template_file, cls.template_folder)
 
+        def setUp(self):
+            self.output_folder = os.path.join(self.template_folder, f'output_{self.id()}')
+            os.makedirs(self.output_folder, exist_ok=True)
+
         def do_evaluation(self, export_dir):
+            metrics_path = os.path.join(export_dir, "metrics.yaml")
             run_through_shell(
                 f'cd {os.path.dirname(self.template_file)};'
                 f'python eval.py'
                 f' --test-ann-files {ann_file}'
                 f' --test-data-roots {img_root}'
                 f' --load-weights {os.path.join(export_dir, "model.bin")}'
-                f' --save-metrics-to {os.path.join(export_dir, "metrics.yaml")}'
+                f' --save-metrics-to {metrics_path}'
             )
 
-            with open(os.path.join(export_dir, "metrics.yaml")) as read_file:
-                content = yaml.load(read_file, yaml.SafeLoader)
+            with open(metrics_path) as read_file:
+                content = yaml.safe_load(read_file)
 
             for metric_key in metric_keys:
                 value = [metrics['value'] for metrics in content['metrics'] if metrics['key'] == metric_key][0]
@@ -199,13 +216,13 @@ def create_export_test_case(domain_name, problem_name, model_name, ann_file, img
 
         @unittest.skipUnless(torch.cuda.is_available(), 'No GPU found')
         def test_export_on_gpu(self):
-            export_dir = os.path.join(self.template_folder, 'gpu_export')
+            export_dir = os.path.join(self.output_folder, 'gpu_export')
             self.do_export(export_dir, on_gpu=True)
             self.do_evaluation(export_dir)
 
         def test_export_on_cpu(self):
             skip_if_cpu_is_not_supported(self.template_file)
-            export_dir = os.path.join(self.template_folder, 'cpu_export')
+            export_dir = os.path.join(self.output_folder, 'cpu_export')
             self.do_export(export_dir, on_gpu=False)
             self.do_evaluation(export_dir)
 
@@ -222,6 +239,10 @@ def create_nncf_test_case(domain_name, problem_name, model_name, ann_file, img_r
 
     assert template_update_dict, 'Use this function with non-trivial template_update_dict parameter only'
     class NNCFBaseTestCase(unittest.TestCase):
+        domain = domain_name
+        problem = problem_name
+        model = model_name
+        topic = 'nncf'
 
         @classmethod
         def setUpClass(cls):
@@ -339,6 +360,11 @@ def create_nncf_test_case(domain_name, problem_name, model_name, ann_file, img_r
 
         @unittest.skipUnless(torch.cuda.is_available(), 'No GPU found')
         def test_nncf_finetune_and_compress_on_gpu(self):
+            """
+            Note that this training runs a usual training; but since compression flags are
+            set inside the template, after several steps of finetuning the train.py script should
+            make compression.
+            """
             log_file = os.path.join(self.output_folder, f'log__{self.id()}.txt')
             total_epochs = get_epochs(self.template_file)
             total_epochs_with_finetuning = total_epochs + 2
