@@ -11,7 +11,12 @@ Model that is able to detect and recognize alphanumeric text (figures and letter
 ### 0. Change a directory in your terminal to text_spotting_2.
 
 ```bash
-cd <training_extensions>/pytorch_toolkit/text_spotting_2
+cd <training_extensions>/pytorch_toolkit/object_detection
+. venv/bin/activate
+```
+or if You use conda:
+```bash
+conda activate <environment_name>
 ```
 
 ### 1. Select a model template file and instantiate it in some directory.
@@ -24,15 +29,15 @@ python ../tools/instantiate_template.py ${MODEL_TEMPLATE} ${WORK_DIR}
 
 ### 2. Download datasets
 
-To be able to train networks and/or get quality metrics for pre-trained ones,  
-it's necessary to download at least one dataset from following resources.  
+To be able to train networks and/or get quality metrics for pre-trained ones,
+it's necessary to download at least one dataset from following resources.
 *  [ICDAR2013 (Focused Scene Text)](https://rrc.cvc.uab.es/?ch=2) - test part is used to get quality metric.
 *  [ICDAR2015 (Incidental Scene Text)](https://rrc.cvc.uab.es/?ch=4)
 *  [ICDAR2017 (MLT)](https://rrc.cvc.uab.es/?ch=8)
 *  [ICDAR2019 (MLT)](https://rrc.cvc.uab.es/?ch=15)
 *  [ICDAR2019 (ART)](https://rrc.cvc.uab.es/?ch=14)
    * To exclude TotalText test set, please visit https://github.com/cs-chan/Total-Text-Dataset and use Total_Text_ID_vs_ArT_ID.list file during conversion (see ./model_templates/alphanumeric-text-spotting/dataset_train.json file).
-*  [MSRA-TD500](http://www.iapr-tc11.org/mediawiki/index.php/MSRA_Text_Detection_500_Database_(MSRA-TD500))   
+*  [MSRA-TD500](http://www.iapr-tc11.org/mediawiki/index.php/MSRA_Text_Detection_500_Database_(MSRA-TD500))
 *  [COCO-Text](https://bgshih.github.io/cocotext/)
 
 ### 3. Convert datasets
