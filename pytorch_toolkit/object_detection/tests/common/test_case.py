@@ -50,13 +50,13 @@ def create_object_detection_export_test_case(alt_ssd_export=False, **kwargs):
 
             @unittest.skipUnless(torch.cuda.is_available(), 'No GPU found')
             def test_alt_ssd_export_on_gpu(self):
-                export_dir = os.path.join(self.template_folder, 'gpu_export')
+                export_dir = os.path.join(self.output_folder, 'gpu_export')
                 self.do_export(export_dir, on_gpu=True)
                 export_dir = os.path.join(export_dir, 'alt_ssd_export')
                 self.do_evaluation(export_dir)
 
             def test_alt_ssd_export_on_cpu(self):
-                export_dir = os.path.join(self.template_folder, 'gpu_export')
+                export_dir = os.path.join(self.output_folder, 'gpu_export')
                 self.do_export(export_dir, on_gpu=True)
                 export_dir = os.path.join(export_dir, 'alt_ssd_export')
                 self.do_evaluation(export_dir)
@@ -91,7 +91,7 @@ def create_object_detection_nncf_test_case(problem_name, model_name, ann_file, i
                 content = yaml.safe_load(read_file)
 
             ap = [metric['value'] for metric in content['metrics'] if metric['key'] == 'bbox'][0]
-            ap = ap/100
+            ap = ap / 100
             return ap
 
         @unittest.skipUnless(torch.cuda.is_available(), 'No GPU found')
