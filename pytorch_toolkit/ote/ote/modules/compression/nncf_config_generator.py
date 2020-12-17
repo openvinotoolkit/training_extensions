@@ -15,6 +15,7 @@
 """
 
 import json
+import logging
 from copy import copy
 
 from mmcv import Config
@@ -46,9 +47,10 @@ def is_compression_enabled_in_template(template_path):
 class NNCFConfigGenerator:
 
     def __call__(self, template_path):
-        assert is_compression_enabled_in_template(template_path), (
-                'Error: compression class is called for a template that does not enable compression.'
-                ' This must not be happened in OTE.')
+        if not is_compression_enabled_in_template(template_path):
+            logging.warning('WARNING: compression class is called for a template that does not enable compression.'
+                            ' This must not be happened in OTE.')
+            return {}
         template = load_config(template_path)
         compression_template = template['compression']
 
@@ -64,7 +66,11 @@ class NNCFConfigGenerator:
         if not compression_parts_to_choose:
             return {}
 
-        nncf_config_part = self._merge_nncf_compression_parts(compression_config_path, compression_parts_to_choose)
+        try:
+            nncf_config_part = self._merge_nncf_compression_parts(compression_config_path, compression_parts_to_choose)
+        except Exception as e:
+            logging.error(f'Caught exception:\n{e}')
+            return {}
         return nncf_config_part
 
     @staticmethod
