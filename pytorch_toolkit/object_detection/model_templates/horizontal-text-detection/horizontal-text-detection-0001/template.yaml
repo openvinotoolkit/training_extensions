@@ -21,6 +21,9 @@ dependencies:
   destination: packages/ote
 - source: ../../requirements.txt
   destination: requirements.txt
+dataset_requirements:
+  classes:
+    - "text"
 max_nodes: 1
 training_target:
 - GPU
