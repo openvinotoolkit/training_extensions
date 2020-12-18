@@ -4,7 +4,6 @@ problem: Custom Object Detection
 framework: OTEDetection v2.1.1
 summary: Custom Object Detection based on MobileNetV2 (SSD).
 annotation_format: COCO
-classes: []
 dependencies:
 - sha256: b728f07bc7297f0c0606082a8e2cfabf4bebd1450f738c5eff4a10908db48b4c
   size: 8158061
@@ -35,6 +34,12 @@ hyper_parameters:
     batch_size: 64
     base_learning_rate: 0.05
     epochs: 15
+  extra:
+    custom_classes:
+      name: "Custom classes"
+      param: "--classes"
+      type: "string"
+      default: ""
 output_format:
   onnx:
     default: true

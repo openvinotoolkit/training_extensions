@@ -21,6 +21,11 @@ dependencies:
   destination: packages/ote
 - source: ../../requirements.txt
   destination: requirements.txt
+dataset_requirements:
+  classes:
+    - "vehicle"
+    - "person"
+    - "non-vehicle"
 max_nodes: 1
 training_target:
 - CPU

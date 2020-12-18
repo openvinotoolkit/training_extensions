@@ -90,11 +90,7 @@ class NNCFConfigGenerator:
         if not optimisation_parts_to_choose:
             return {}
 
-        try:
-            nncf_config_part = self._merge_nncf_optimisation_parts(optimisation_config_path, optimisation_parts_to_choose)
-        except Exception as e:
-            logging.error(f'Caught exception:\n{e}')
-            return {}
+        nncf_config_part = self._merge_nncf_optimisation_parts(optimisation_config_path, optimisation_parts_to_choose)
         return nncf_config_part
 
     @staticmethod
