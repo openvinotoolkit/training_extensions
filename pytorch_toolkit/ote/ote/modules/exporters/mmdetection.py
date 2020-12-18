@@ -24,6 +24,15 @@ from mmcv.utils import Config
 from .base import BaseExporter, run_through_shell
 from ..registry import EXPORTERS
 
+try:
+    # note that we can make this import if
+    # the script is run in the virtual environment
+    # where mmdetection is installed,
+    # but this is required to run export.py tool below
+    from mmdet.integration.nncf import is_checkpoint_nncf
+except ImportError:
+    is_checkpoint_nncf = None
+
 
 @EXPORTERS.register_module()
 class MMDetectionExporter(BaseExporter):
@@ -40,6 +49,12 @@ class MMDetectionExporter(BaseExporter):
         should_run_alt_ssd_export = (hasattr(config.model, 'bbox_head')
                                      and config.model.bbox_head.type == 'SSDHead'
                                      and not config.get('nncf_config'))
+
+        if is_checkpoint_nncf and is_checkpoint_nncf(args['load_weights']):
+            # if the config does not contain NNCF part,
+            # the NNCF config may be read from checkpoint
+            should_run_alt_ssd_export = False
+
         if should_run_alt_ssd_export:
             run_through_shell(f'python {os.path.join(tools_dir, "export.py")} '
                               f'{args["config"]} '

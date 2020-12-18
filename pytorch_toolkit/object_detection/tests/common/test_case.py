@@ -56,7 +56,7 @@ def create_object_detection_export_test_case(alt_ssd_export=False, **kwargs):
                 self.do_evaluation(export_dir)
 
             def test_alt_ssd_export_on_cpu(self):
-                export_dir = os.path.join(self.output_folder, 'gpu_export')
+                export_dir = os.path.join(self.output_folder, 'cpu_export')
                 self.do_export(export_dir, on_gpu=True)
                 export_dir = os.path.join(export_dir, 'alt_ssd_export')
                 self.do_evaluation(export_dir)
