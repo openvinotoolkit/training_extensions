@@ -35,12 +35,20 @@ class BaseArgConverter(metaclass=ABCMeta):
     }
     compress_out_args_map = {
         'gpu_num': 'gpu_num',
-        'tensorboard_dir': 'tensorboard_dir'
+        'tensorboard_dir': 'tensorboard_dir',
+        'nncf_quantization': 'nncf_quantization',
+        'nncf_pruning': 'nncf_pruning',
+        'nncf_sparsity': 'nncf_sparsity',
+        'nncf_binarization': 'nncf_binarization',
     }
     test_out_args_map = {
         'load_weights': 'snapshot',
         'save_metrics_to': 'out',
-        'save_output_to': 'show_dir'
+        'save_output_to': 'show_dir',
+        'nncf_quantization': 'nncf_quantization',
+        'nncf_pruning': 'nncf_pruning',
+        'nncf_sparsity': 'nncf_sparsity',
+        'nncf_binarization': 'nncf_binarization',
     }
 
     # for update_converted_args_to_load_from_snapshot
@@ -62,7 +70,7 @@ class BaseArgConverter(metaclass=ABCMeta):
             'out': os.path.join(args['save_checkpoints_to'], model_template_path),
             'update_config': update_args,
         }
-        converted_args.update(self.__map_args(args, self.train_out_args_map))
+        converted_args.update(self.__map_args_if_present(args, self.train_out_args_map))
 
         return converted_args
 
@@ -80,7 +88,7 @@ class BaseArgConverter(metaclass=ABCMeta):
             'out': os.path.join(args['save_checkpoints_to'], model_template_path),
             'update_config': update_args,
         }
-        converted_args.update(self.__map_args(args, self.compress_out_args_map))
+        converted_args.update(self.__map_args_if_present(args, self.compress_out_args_map))
 
         return converted_args
 
@@ -98,7 +106,7 @@ class BaseArgConverter(metaclass=ABCMeta):
             'out': os.path.join(args['save_checkpoints_to'], model_template_path),
             'update_config': update_args,
         }
-        converted_args.update(self.__map_args(args, self.compress_out_args_map))
+        converted_args.update(self.__map_args_if_present(args, self.compress_out_args_map))
 
         return converted_args
 
@@ -117,7 +125,7 @@ class BaseArgConverter(metaclass=ABCMeta):
             'config': os.path.join(template_folder, args['config']),
             'update_config': update_args,
         }
-        converted_args.update(self.__map_args(args, self.test_out_args_map))
+        converted_args.update(self.__map_args_if_present(args, self.test_out_args_map))
 
         return converted_args
 
@@ -130,3 +138,7 @@ class BaseArgConverter(metaclass=ABCMeta):
     @staticmethod
     def __map_args(src_args, args_map):
         return {v: src_args[k] for k, v in args_map.items()}
+
+    @staticmethod
+    def __map_args_if_present(src_args, args_map):
+        return {v: src_args[k] for k, v in args_map.items() if k in src_args}

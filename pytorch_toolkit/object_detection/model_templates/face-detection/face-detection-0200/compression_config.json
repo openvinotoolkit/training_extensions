@@ -9,7 +9,7 @@
             "log_dir": "."
         }
     },
-    "int8": {
+    "nncf_quantization": {
         "optimizer": {
             "lr": 0.00025
         },
@@ -30,7 +30,7 @@
             ]
         }
     },
-    "sparsity": {
+    "nncf_sparsity": {
         "optimizer": {
             "lr": 0.0025
         },
@@ -48,5 +48,5 @@
             ]
         }
     },
-    "order_of_parts": [ "int8", "sparsity", "pruning" ]
+    "order_of_parts": [ "nncf_quantization", "nncf_sparsity" ]
 }

@@ -19,7 +19,7 @@ import logging
 from ote import MODEL_TEMPLATE_FILENAME, MODULES_CONFIG_FILENAME
 from ote.utils import load_config
 from ote.modules import build_arg_parser, build_arg_converter, build_trainer, build_compression_arg_transformer
-from ote.modules.compression import is_compression_enabled_in_template
+from ote.modules.compression import is_optimisation_enabled_in_template
 
 
 def main():
@@ -39,7 +39,7 @@ def main():
     trainer = build_trainer(modules['trainer'])
     trainer(**train_args)
 
-    if modules.get('compression') and is_compression_enabled_in_template(MODEL_TEMPLATE_FILENAME):
+    if modules.get('compression') and is_optimisation_enabled_in_template(MODEL_TEMPLATE_FILENAME):
         # TODO: think on the case if compression is enabled in template.yaml, but modules does not contain 'compression'
 
         latest_snapshot = trainer.get_latest_snapshot()
@@ -50,10 +50,12 @@ def main():
         arg_converter.update_converted_args_to_load_from_snapshot(compress_args, latest_snapshot)
 
         compression_arg_transformer = build_compression_arg_transformer(modules['compression'])
-        compress_args = compression_arg_transformer.process_args(MODEL_TEMPLATE_FILENAME, compress_args)
+        compress_args, is_optimisation_enabled = \
+                compression_arg_transformer.process_args(MODEL_TEMPLATE_FILENAME, compress_args)
 
-        compress_trainer = build_trainer(modules['trainer'])
-        compress_trainer(**compress_args)
+        if is_optimisation_enabled:
+            compress_trainer = build_trainer(modules['trainer'])
+            compress_trainer(**compress_args)
 
 
 if __name__ == '__main__':

@@ -67,11 +67,13 @@ def create_object_detection_export_test_case(alt_ssd_export=False, **kwargs):
 
 
 def create_object_detection_nncf_test_case(problem_name, model_name, ann_file, img_root,
-                                           template_update_dict,
+                                           compression_cmd_line_parameters,
+                                           template_update_dict={},
                                            compression_cfg_update_dict=None,
                                            test_export_threshold=0.09):
 
     NNCFBaseTestCase = create_nncf_test_case('object_detection', problem_name, model_name, ann_file, img_root,
+                                             compression_cmd_line_parameters,
                                              template_update_dict=template_update_dict,
                                              compression_cfg_update_dict=compression_cfg_update_dict)
 

@@ -22,7 +22,7 @@ from ote.modules import (build_arg_parser,
                          build_arg_converter,
                          build_trainer,
                          build_compression_arg_transformer)
-from ote.modules.compression import is_compression_enabled_in_template
+from ote.modules.compression import is_optimisation_enabled_in_template
 
 
 def main():
@@ -36,7 +36,7 @@ def main():
         raise RuntimeError(f'Cannot make compression for the template that'
                            f' does not have "compression" field in its modules'
                            f' file {MODULES_CONFIG_FILENAME}')
-    if not is_compression_enabled_in_template(MODEL_TEMPLATE_FILENAME):
+    if not is_optimisation_enabled_in_template(MODEL_TEMPLATE_FILENAME):
         raise RuntimeError(f'Cannot make compression for the template that'
                            f' does not enable any of compression flags')
 
@@ -44,7 +44,12 @@ def main():
     compress_args = arg_converter.convert_compress_args(MODEL_TEMPLATE_FILENAME, ote_args)
 
     compression_arg_transformer = build_compression_arg_transformer(modules['compression'])
-    compress_args = compression_arg_transformer.process_args(MODEL_TEMPLATE_FILENAME, compress_args)
+    compress_args, is_optimisation_enabled = \
+            compression_arg_transformer.process_args(MODEL_TEMPLATE_FILENAME, compress_args)
+
+    if not is_optimisation_enabled:
+        logging.warning('Optimization flags are not set -- compression is not made')
+        return
 
     # Note that compression in this tool will be made by the same trainer,
     # as in the tool train.py
