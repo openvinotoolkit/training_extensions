@@ -12,6 +12,13 @@ Model that is able to detect more or less horizontal text with high speed on CPU
 
 ```bash
 cd <training_extensions>/pytorch_toolkit/object_detection
+```
+If You have not created virtual environment yet:
+```bash
+./init_venv.sh
+```
+Else:
+```bash
 . venv/bin/activate
 ```
 or if You use conda:

@@ -12,6 +12,13 @@ Model that is able to detect and recognize alphanumeric text (figures and letter
 
 ```bash
 cd <training_extensions>/pytorch_toolkit/text_spotting_2
+```
+If You have not created virtual environment yet:
+```bash
+./init_venv.sh
+```
+Else:
+```bash
 . venv/bin/activate
 ```
 or if You use conda:
