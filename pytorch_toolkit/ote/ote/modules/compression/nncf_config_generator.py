@@ -66,11 +66,7 @@ class NNCFConfigGenerator:
         if not compression_parts_to_choose:
             return {}
 
-        try:
-            nncf_config_part = self._merge_nncf_compression_parts(compression_config_path, compression_parts_to_choose)
-        except Exception as e:
-            logging.error(f'Caught exception:\n{e}')
-            return {}
+        nncf_config_part = self._merge_nncf_compression_parts(compression_config_path, compression_parts_to_choose)
         return nncf_config_part
 
     @staticmethod
