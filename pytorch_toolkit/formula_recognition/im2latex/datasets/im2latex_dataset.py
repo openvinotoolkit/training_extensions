@@ -75,24 +75,29 @@ class BatchRandomSampler(Sampler):
         return self.len
 
 
-class Im2LatexDataset(Dataset):
+class BaseDataset(Dataset):
+    def __init__(self):
+        super().__init__()
+        self.pairs = []
+
+    def __getitem__(self, index):
+        return deepcopy(self.pairs[index])
+
+    def __len__(self):
+        return len(self.pairs)
+
+
+class Im2LatexDataset(BaseDataset):
     def __init__(self, data_dir_path, subset, ann_file):
         """args:
         data_dir: root dir storing the prepoccessed data
         subset: train, validate, test or toy
         """
+        super().__init__()
         self.data_dir = data_dir_path
         self.images_dir = join(data_dir_path, "images_processed")
         self.formulas = self._get_formulas()
         self.pairs = self._get_pairs(ann_file)
-
-    def __getitem__(self, index):
-
-        el = deepcopy(self.pairs[index])
-        return el
-
-    def __len__(self):
-        return len(self.pairs)
 
     def _get_formulas(self):
         formulas_file = join(self.data_dir, "formulas.norm.lst")
@@ -135,8 +140,9 @@ def img_size(pair):
     return tuple(img.shape)
 
 
-class CocoTextOnlyDataset:
+class CocoTextOnlyDataset(BaseDataset):
     def __init__(self, json_path, images_path, subset):
+        super().__init__()
         self.json_file = json_path
         self.images_dir = images_path
         self.subset = subset
@@ -163,16 +169,10 @@ class CocoTextOnlyDataset:
         pairs.sort(key=img_size, reverse=True)
         return pairs
 
-    def __getitem__(self, index):
-        el = deepcopy(self.pairs[index])
-        return el
 
-    def __len__(self):
-        return len(self.pairs)
-
-
-class ICDAR2013RECDataset:
+class ICDAR2013RECDataset(BaseDataset):
     def __init__(self, images_folder, annotation_file, subset='train', root=''):
+        super().__init__()
         self.images_folder = images_folder
         self.annotation_file = annotation_file
         self.is_train = subset == 'train'
@@ -180,12 +180,6 @@ class ICDAR2013RECDataset:
             self.annotation_file = os.path.join(root, self.annotation_file)
             self.images_folder = os.path.join(root, self.images_folder)
         self.pairs = self.load()
-
-    def __len__(self):
-        return len(self.pairs)
-
-    def __getitem__(self, index):
-        return deepcopy(self.pairs[index])
 
     def load(self):
         with open(self.annotation_file) as f:
@@ -206,7 +200,6 @@ class ICDAR2013RECDataset:
             pairs.append(el)
         pairs.sort(key=img_size, reverse=True)
         return pairs
-
 
 
 str_to_class = {
