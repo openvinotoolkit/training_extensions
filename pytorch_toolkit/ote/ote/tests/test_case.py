@@ -379,7 +379,6 @@ def create_nncf_test_case(domain_name, problem_name, model_name, ann_file, img_r
                 f' --test-data-roots {self.img_root}'
                 f' --save-metrics-to {metrics_path}'
                 f' --load-weights {file_to_eval}'
-                + ' ' + self.compress_cmd_line_params
                 )
             return metrics_path
 
@@ -436,7 +435,6 @@ def create_nncf_test_case(domain_name, problem_name, model_name, ann_file, img_r
                 f'python export.py'
                 f' --load-weights {latest_file}'
                 f' --save-model-to {self.output_folder}'
-                + ' ' + self.compress_cmd_line_params
             )
 
             model_bin_paths = list(glob.glob(os.path.join(self.output_folder, '*.bin')))
