@@ -388,32 +388,6 @@ def create_nncf_test_case(domain_name, problem_name, model_name, ann_file, img_r
             return log_file
 
         @unittest.skipUnless(torch.cuda.is_available(), 'No GPU found')
-        def test_nncf_finetune_and_compress_on_gpu(self):
-            """
-            Note that this training runs a usual training; but since compression flags are
-            set inside the template, after several steps of finetuning the train.py script should
-            make compression.
-            """
-            log_file = os.path.join(self.output_folder, f'log__{self.id()}.txt')
-            total_epochs = get_epochs(self.template_file)
-            total_epochs_with_finetuning = total_epochs + 2
-            run_through_shell(
-                f'cd {self.template_folder};'
-                f'python train.py'
-                f' --train-ann-files {self.ann_file}'
-                f' --train-data-roots {self.img_root}'
-                f' --val-ann-files {self.ann_file}'
-                f' --val-data-roots {self.img_root}'
-                f' --resume-from snapshot.pth'
-                f' --save-checkpoints-to {self.output_folder}'
-                f' --gpu-num 1'
-                f' --batch-size 1'
-                f' --epochs {total_epochs_with_finetuning}'
-                + ' ' + self.compress_cmd_line_params
-                + f' | tee {log_file}')
-            return log_file
-
-        @unittest.skipUnless(torch.cuda.is_available(), 'No GPU found')
         def test_nncf_compress_and_eval_on_gpu(self):
             log_file = self.do_compress()
 

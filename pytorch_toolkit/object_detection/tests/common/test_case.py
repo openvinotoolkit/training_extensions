@@ -103,12 +103,6 @@ def create_object_detection_nncf_test_case(problem_name, model_name, ann_file, i
             self.assertGreater(ap[-1], 0)
 
         @unittest.skipUnless(torch.cuda.is_available(), 'No GPU found')
-        def test_nncf_finetune_and_compress_on_gpu(self):
-            log_file = super().test_nncf_finetune_and_compress_on_gpu()
-            ap = collect_ap(log_file)
-            self.assertGreater(ap[-1], 0)
-
-        @unittest.skipUnless(torch.cuda.is_available(), 'No GPU found')
         def test_nncf_compress_and_eval_on_gpu(self):
             log_file, metrics_path = super().test_nncf_compress_and_eval_on_gpu()
 
