@@ -36,10 +36,10 @@ SOFTWARE.
  limitations under the License.
 """
 
-from copy import deepcopy
-import os
-from os.path import join
 import json
+import os
+from copy import deepcopy
+from os.path import join
 
 import cv2 as cv
 import numpy as np
@@ -75,6 +75,11 @@ class BatchRandomSampler(Sampler):
         return self.len
 
 
+def img_size(pair):
+    img = pair.get("img")
+    return tuple(img.shape)
+
+
 class BaseDataset(Dataset):
     def __init__(self):
         super().__init__()
@@ -88,14 +93,15 @@ class BaseDataset(Dataset):
 
 
 class Im2LatexDataset(BaseDataset):
-    def __init__(self, data_dir_path, subset, ann_file):
+    # TODO: think of argument unification
+    def __init__(self, data_path, subset, ann_file):
         """args:
         data_dir: root dir storing the prepoccessed data
         subset: train, validate, test or toy
         """
         super().__init__()
-        self.data_dir = data_dir_path
-        self.images_dir = join(data_dir_path, "images_processed")
+        self.data_dir = data_path
+        self.images_dir = join(data_path, "images_processed")
         self.formulas = self._get_formulas()
         self.pairs = self._get_pairs(ann_file)
 
@@ -135,11 +141,6 @@ class Im2LatexDataset(BaseDataset):
         return pairs
 
 
-def img_size(pair):
-    img = pair.get("img")
-    return tuple(img.shape)
-
-
 class CocoTextOnlyDataset(BaseDataset):
     def __init__(self, json_path, images_path, subset):
         super().__init__()
@@ -153,8 +154,9 @@ class CocoTextOnlyDataset(BaseDataset):
             annotation_file = json.load(f)
         images = annotation_file['images']
         annotations = annotation_file['annotations']
+        total_len = len(annotation_file['images'])
         pairs = []
-        for image, ann in tqdm(zip(images, annotations)):
+        for image, ann in tqdm(zip(images, annotations), total=total_len):
             filename = image['file_name']
             filename = os.path.join(self.images_dir, os.path.split(filename)[-1])
             assert image['id'] == ann['id']
@@ -188,7 +190,8 @@ class ICDAR2013RECDataset(BaseDataset):
         image_names = [line.split(", ")[0] for line in annotation_file]
         texts = [line.split(", ")[1] for line in annotation_file]
         pairs = []
-        for i, image_nm in tqdm(enumerate(image_names)):
+        total_len = len(image_names)
+        for i, image_nm in tqdm(enumerate(image_names), total=total_len):
             filename = os.path.join(self.images_folder, image_nm)
             img = cv.imread(filename, cv.IMREAD_COLOR)
             text = texts[i].strip('"')
@@ -202,8 +205,45 @@ class ICDAR2013RECDataset(BaseDataset):
         return pairs
 
 
+class MJSynthDataset(BaseDataset):
+    def __init__(self, data_folder, subset):
+        super().__init__()
+        self.data_folder = data_folder
+        self.ann_file = 'annotation'
+        if subset:
+            self.ann_file = f"{self.ann_file}_{subset}"
+        self.ann_file += ".txt"
+        self.pairs = self.load()
+
+    def __getitem__(self, index):
+        el = deepcopy(self.pairs[index])
+        el['img'] = cv.imread(os.path.join(self.data_folder, el['img_path']), cv.IMREAD_COLOR)
+        return el
+
+    def load(self):
+        pairs = []
+        with open(os.path.join(self.data_folder, self.ann_file)) as input_file:
+            annotation = [line.split(" ")[0] for line in input_file]
+        for image_path in tqdm(annotation):
+            gt_text = ' '.join(image_path.split("_")[1])
+            img = cv.imread(os.path.join(self.data_folder, image_path), cv.IMREAD_COLOR)
+            if img is None:
+                continue
+            img_shape = tuple(img.shape)
+
+            el = {"img_name": os.path.split(image_path)[1],
+                  "text": gt_text,
+                  "img_path": image_path,
+                  "img_shape": img_shape
+                  }
+            pairs.append(el)
+        pairs.sort(key=lambda img: img['img_shape'], reverse=True)
+        return pairs
+
+
 str_to_class = {
     "Im2LatexDataset": Im2LatexDataset,
     "CocoTextOnlyDataset": CocoTextOnlyDataset,
-    "ICDAR2013RECDataset": ICDAR2013RECDataset
+    "ICDAR2013RECDataset": ICDAR2013RECDataset,
+    "MJSynthDataset": MJSynthDataset,
 }
