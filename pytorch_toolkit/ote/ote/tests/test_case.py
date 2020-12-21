@@ -24,8 +24,8 @@ import yaml
 
 from ote.tests.utils import collect_ap, run_through_shell
 from ote.utils.misc import download_snapshot_if_not_yet
-from ote.modules.compression import (is_optimisation_enabled_in_template,
-                                     get_optimisation_config_from_template)
+from ote.modules.compression import (get_optimisation_config_from_template,
+                                     is_optimisation_enabled_in_template)
 
 
 def get_dependencies(template_file):

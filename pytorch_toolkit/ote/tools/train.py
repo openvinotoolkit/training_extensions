@@ -18,8 +18,7 @@ import logging
 
 from ote import MODEL_TEMPLATE_FILENAME, MODULES_CONFIG_FILENAME
 from ote.utils import load_config
-from ote.modules import build_arg_parser, build_arg_converter, build_trainer, build_compression_arg_transformer
-from ote.modules.compression import is_optimisation_enabled_in_template
+from ote.modules import build_arg_parser, build_arg_converter, build_trainer
 
 
 def main():

@@ -51,8 +51,11 @@ class MMDetectionExporter(BaseExporter):
                                      and not config.get('nncf_config'))
 
         if is_checkpoint_nncf and is_checkpoint_nncf(args['load_weights']):
-            # if the config does not contain NNCF part,
-            # the NNCF config may be read from checkpoint
+            # If the config does not contain NNCF part,
+            # but the checkpoint was trained with NNCF compression,
+            # the NNCF config will be read from checkpoint.
+            # Since alt_ssd_export is incompatible with NNCF compression,
+            # alt_ssd_export should not be run in this case.
             should_run_alt_ssd_export = False
 
         if should_run_alt_ssd_export:
