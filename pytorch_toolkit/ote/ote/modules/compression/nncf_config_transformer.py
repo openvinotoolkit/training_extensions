@@ -22,7 +22,7 @@ from copy import copy
 
 from ote.utils import load_config
 from ..registry import COMPRESSION
-from .nncf_config_generator import NNCFConfigGenerator
+from .nncf_config_generator import NNCFConfigGenerator, POSSIBLE_NNCF_PARTS
 
 def _save_config(config, file_path):
     # TODO(LeonidBeynenson): make it write python instead of yaml
@@ -43,6 +43,7 @@ def _generate_random_suffix():
 @COMPRESSION.register_module()
 class NNCFConfigTransformer:
     CONFIG_ARG_TO_SUBSTITUTE = 'config'
+    NNCF_PARAMETERS = list(POSSIBLE_NNCF_PARTS)
 
     def process_args(self, template_path, kwargs):
         # NB: at the moment it is one function, using one variable self.CONFIG_ARG_TO_SUBSTITUTE,
@@ -50,20 +51,27 @@ class NNCFConfigTransformer:
         assert self.CONFIG_ARG_TO_SUBSTITUTE in kwargs, (
                 f'Error: kwargs does not contain {self.CONFIG_ARG_TO_SUBSTITUTE}, kwargs={kwargs}')
         config_path = kwargs[self.CONFIG_ARG_TO_SUBSTITUTE]
+        kwargs_nncf = {k:kwargs.get(k) for k in self.NNCF_PARAMETERS}
+        is_optimisation_enabled = any(kwargs.get(k) for k in self.NNCF_PARAMETERS)
 
-        res_config_path = self._create_derived_config_file(template_path, config_path)
+        if is_optimisation_enabled:
+            res_config_path = self._create_derived_config_file(template_path, config_path, kwargs_nncf)
+            kwargs[self.CONFIG_ARG_TO_SUBSTITUTE] = res_config_path
 
-        kwargs[self.CONFIG_ARG_TO_SUBSTITUTE] = res_config_path
-        return kwargs
+        for k in self.NNCF_PARAMETERS:
+            if k in kwargs:
+                del kwargs[k]
 
-    def _create_derived_config_file(self, template_path, config_path):
+        return kwargs, is_optimisation_enabled
+
+    def _create_derived_config_file(self, template_path, config_path, kwargs_nncf):
         assert os.path.exists(config_path), f'The initial config path {config_path} is absent'
 
         generated_config_path = self._generate_config_path(config_path)
         assert not os.path.exists(generated_config_path), f'Generated configs path {generated_config_path} exists'
 
         config_generator = NNCFConfigGenerator()
-        cfg_update_part = config_generator(template_path=template_path)
+        cfg_update_part = config_generator(template_path, kwargs_nncf)
 
         assert '_base_' not in cfg_update_part, 'Error in config generator: it returns a dict with key "_base_"'
 

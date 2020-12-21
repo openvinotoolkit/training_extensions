@@ -22,6 +22,8 @@ import mmcv
 import torch
 import yaml
 
+from ote.modules.compression import (get_optimisation_config_from_template,
+                                     is_optimisation_enabled_in_template)
 from ote.tests.utils import collect_ap, run_through_shell
 from ote.utils.misc import download_snapshot_if_not_yet
 
@@ -229,15 +231,20 @@ def create_export_test_case(domain_name, problem_name, model_name, ann_file, img
     return ExportTestCase
 
 def create_nncf_test_case(domain_name, problem_name, model_name, ann_file, img_root,
-                          template_update_dict,
+                          compress_cmd_line_params,
+                          template_update_dict={},
                           compression_cfg_update_dict=None):
  # pylint: disable=too-many-arguments, too-many-statements
     """
     Note that template_update_dict will be used to update template file
     using the function mmcv.Config.merge_from_dict
     """
+    if isinstance(compress_cmd_line_params, list):
+        compress_cmd_line_params = ' '.join(compress_cmd_line_params)
 
-    assert template_update_dict, 'Use this function with non-trivial template_update_dict parameter only'
+    assert template_update_dict or compress_cmd_line_params, \
+            'Use this function with non-trivial template_update_dict or cmd_line_params_str parameters'
+
     class NNCFBaseTestCase(unittest.TestCase):
         domain = domain_name
         problem = problem_name
@@ -246,16 +253,23 @@ def create_nncf_test_case(domain_name, problem_name, model_name, ann_file, img_r
 
         @classmethod
         def setUpClass(cls):
-            cls.template_updates_description = cls.generate_template_updates_description(template_update_dict)
-            logging.info(f'Begin setting up class for {problem_name}/{model_name}, {cls.template_updates_description}')
+            cls.compress_cmd_line_params = compress_cmd_line_params
+            cls.test_case_description = cls.generate_test_case_description(
+                    template_update_dict,
+                    compress_cmd_line_params,
+                    compression_cfg_update_dict)
+            logging.info(f'Begin setting up class for {problem_name}/{model_name}, {cls.test_case_description}')
 
             cls.templates_folder = os.environ['MODEL_TEMPLATES']
             cls.src_template_folder = os.path.join(cls.templates_folder,domain_name, problem_name, model_name)
 
+            src_template_file = os.path.join(cls.src_template_folder, 'template.yaml')
+            download_snapshot_if_not_yet(src_template_file, cls.src_template_folder)
+
             skip_non_instantiated_template_if_its_allowed(cls.src_template_folder, problem_name, model_name)
 
             cls.template_folder = cls.generate_template_folder_name(cls.src_template_folder,
-                                                                    cls.template_updates_description)
+                                                                    cls.test_case_description)
             cls.copy_template_folder(cls.src_template_folder, cls.template_folder)
 
             cls.template_file = os.path.join(cls.template_folder, 'template.yaml')
@@ -273,22 +287,36 @@ def create_nncf_test_case(domain_name, problem_name, model_name, ann_file, img_r
                 f'cd {cls.template_folder};'
                 f'pip install -r requirements.txt;'
             )
-            logging.info(f'End setting up class for {problem_name}/{model_name}, {cls.template_updates_description}')
+            logging.info(f'End setting up class for {problem_name}/{model_name}, {cls.test_case_description}')
 
         def setUp(self):
             self.output_folder = os.path.join(self.template_folder, f'output_{self.id()}')
             os.makedirs(self.output_folder, exist_ok=True)
 
         @staticmethod
-        def generate_template_updates_description(template_update_dict):
-            keys = sorted(template_update_dict.keys())
-            template_updates_description = "_".join(k+"="+str(template_update_dict[k]) for k in keys)
-            return template_updates_description
+        def generate_test_case_description(template_update_dict,
+                                                  compress_cmd_line_params,
+                                                  compression_cfg_update_dict):
+            def _dict_to_descr(d):
+                if not d:
+                    return ''
+                return '_'.join(k+'='+str(d[k]) for k in sorted(d.keys()))
+            template_updates_description = _dict_to_descr(template_update_dict)
+
+            cmd_line_params = [p.replace('--', '') for p in compress_cmd_line_params.split()]
+            cmd_line_params_str = '_'.join(cmd_line_params)
+
+            cfg_update_descr = _dict_to_descr(compression_cfg_update_dict)
+
+            res = '_'.join([template_updates_description,
+                            cmd_line_params_str,
+                            cfg_update_descr])
+            return res
 
         @staticmethod
-        def generate_template_folder_name(src_template_folder, template_updates_description):
+        def generate_template_folder_name(src_template_folder, test_case_description):
             assert not src_template_folder.endswith('/')
-            template_folder = src_template_folder + '__' +  template_updates_description
+            template_folder = src_template_folder + '__' +  test_case_description
             return template_folder
 
         @staticmethod
@@ -307,20 +335,20 @@ def create_nncf_test_case(domain_name, problem_name, model_name, ann_file, img_r
             template_data = mmcv.Config.fromfile(template_file)
             template_data.dump(template_file + '.backup.yaml')
 
+            assert is_optimisation_enabled_in_template(template_data), \
+                    f'Template {template_file} does not contain optimisation part'
+
             if compression_cfg_update_dict:
-                assert 'compression.compression_config' not in template_update_dict, (
-                    'Config cannot be changed from template_update_dict,'
-                    ' if we patch compression config by compression_cfg_update_dict')
-
-                compression_cfg_rel_path = template_data['compression']['compression_config']
+                compression_cfg_rel_path = get_optimisation_config_from_template(template_data)
                 compression_cfg_path = os.path.join(os.path.dirname(template_file), compression_cfg_rel_path)
-                new_compression_cfg_path = compression_cfg_path + '.UPDATED_FROM_TEST.json'
-                compression_cfg = mmcv.Config.fromfile(compression_cfg_path)
-                compression_cfg.merge_from_dict(compression_cfg_update_dict)
-                compression_cfg.dump(new_compression_cfg_path)
-                assert os.path.isfile(new_compression_cfg_path), f'Cannot write file {new_compression_cfg_path}'
+                backup_compression_cfg_path = compression_cfg_path + '.BACKUP_FROM_TEST.json'
 
-                template_update_dict['compression.compression_config'] = new_compression_cfg_path
+                compression_cfg = mmcv.Config.fromfile(compression_cfg_path)
+                compression_cfg.dump(backup_compression_cfg_path)
+
+                compression_cfg.merge_from_dict(compression_cfg_update_dict)
+                compression_cfg.dump(compression_cfg_path)
+
 
             template_data.merge_from_dict(template_update_dict)
             template_data.dump(template_file)
@@ -338,7 +366,8 @@ def create_nncf_test_case(domain_name, problem_name, model_name, ann_file, img_r
                 f' --save-checkpoints-to {self.output_folder}'
                 f' --gpu-num 1'
                 f' --batch-size 1'
-                f' | tee {log_file}')
+                + ' ' + self.compress_cmd_line_params
+                + f' | tee {log_file}')
             return log_file
 
         def do_eval(self, file_to_eval):
@@ -356,31 +385,6 @@ def create_nncf_test_case(domain_name, problem_name, model_name, ann_file, img_r
         @unittest.skipUnless(torch.cuda.is_available(), 'No GPU found')
         def test_nncf_compress_on_gpu(self):
             log_file = self.do_compress()
-            return log_file
-
-        @unittest.skipUnless(torch.cuda.is_available(), 'No GPU found')
-        def test_nncf_finetune_and_compress_on_gpu(self):
-            """
-            Note that this training runs a usual training; but since compression flags are
-            set inside the template, after several steps of finetuning the train.py script should
-            make compression.
-            """
-            log_file = os.path.join(self.output_folder, f'log__{self.id()}.txt')
-            total_epochs = get_epochs(self.template_file)
-            total_epochs_with_finetuning = total_epochs + 2
-            run_through_shell(
-                f'cd {self.template_folder};'
-                f'python train.py'
-                f' --train-ann-files {self.ann_file}'
-                f' --train-data-roots {self.img_root}'
-                f' --val-ann-files {self.ann_file}'
-                f' --val-data-roots {self.img_root}'
-                f' --resume-from snapshot.pth'
-                f' --save-checkpoints-to {self.output_folder}'
-                f' --gpu-num 1'
-                f' --batch-size 1'
-                f' --epochs {total_epochs_with_finetuning}'
-                f' | tee {log_file}')
             return log_file
 
         @unittest.skipUnless(torch.cuda.is_available(), 'No GPU found')

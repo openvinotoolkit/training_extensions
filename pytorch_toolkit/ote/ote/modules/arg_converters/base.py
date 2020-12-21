@@ -35,17 +35,17 @@ class BaseArgConverter(metaclass=ABCMeta):
     }
     compress_out_args_map = {
         'gpu_num': 'gpu_num',
-        'tensorboard_dir': 'tensorboard_dir'
+        'tensorboard_dir': 'tensorboard_dir',
+        'nncf_quantization': 'nncf_quantization',
+        'nncf_pruning': 'nncf_pruning',
+        'nncf_sparsity': 'nncf_sparsity',
+        'nncf_binarization': 'nncf_binarization',
     }
     test_out_args_map = {
         'load_weights': 'snapshot',
         'save_metrics_to': 'out',
-        'save_output_to': 'show_dir'
+        'save_output_to': 'show_dir',
     }
-
-    # for update_converted_args_to_load_from_snapshot
-    field_load_from = 'load_from'
-    field_resume_from = 'resume_from'
 
     def __init__(self):
         pass
@@ -83,28 +83,6 @@ class BaseArgConverter(metaclass=ABCMeta):
         converted_args.update(self.__map_args(args, self.compress_out_args_map))
 
         return converted_args
-
-    def convert_train_args_to_compress_args(self, model_template_path, args):
-        update_args = self.__map_args(args, self.train_to_compress_update_args_map)
-
-        # TODO(LeonidBeynenson): think on _get_extra_compress_args
-        #       Now _get_extra_train_args is used since it's the same
-        extra_args = self._get_extra_train_args(args)
-        update_args.update(extra_args)
-
-        template_folder = os.path.dirname(model_template_path)
-        converted_args = {
-            'config': os.path.join(template_folder, args['config']),
-            'out': os.path.join(args['save_checkpoints_to'], model_template_path),
-            'update_config': update_args,
-        }
-        converted_args.update(self.__map_args(args, self.compress_out_args_map))
-
-        return converted_args
-
-    def update_converted_args_to_load_from_snapshot(self, converted_args, snapshot_path):
-        converted_args['update_config'][self.field_load_from] = snapshot_path
-        converted_args['update_config'][self.field_resume_from] = ''
 
     def convert_test_args(self, model_template_path, args):
         update_args = self.__map_args(args, self.test_update_args_map)

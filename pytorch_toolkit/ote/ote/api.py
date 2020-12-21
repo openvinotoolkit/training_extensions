@@ -2,8 +2,7 @@ import argparse
 
 import yaml
 
-
-def compression_args_parser(template_path):
+def _compression_train_args_parsers_common_part(template_path):
     parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter)
     with open(template_path, 'r') as model_definition:
         config = yaml.safe_load(model_definition)
@@ -30,14 +29,40 @@ def compression_args_parser(template_path):
                             help='Number of GPUs that will be used in training, 0 is for CPU mode.')
         parser.add_argument('--tensorboard-dir',
                             help='Location where tensorboard logs will be stored.')
+
         parser.add_argument('--config', default=config['config'], help=argparse.SUPPRESS)
 
     return parser
 
+def compression_args_parser(template_path):
+    parser = _compression_train_args_parsers_common_part(template_path)
+
+    with open(template_path, 'r') as model_definition:
+        config = yaml.safe_load(model_definition)
+
+    def _get_def_val(nncf_section):
+        return config.get('optimisations', {}).get(nncf_section, {}).get('default')
+
+    parser.add_argument('--nncf-quantization',
+                        default=_get_def_val('nncf_quantization'),
+                        action='store_true',
+                        help='If NNCF int8 quantization should be done')
+    parser.add_argument('--nncf-sparsity',
+                        default=_get_def_val('nncf_sparsity'),
+                        action='store_true',
+                        help='If NNCF sparsity compression should be done')
+    parser.add_argument('--nncf-pruning',
+                        default=_get_def_val('nncf_pruning'),
+                        action='store_true',
+                        help='If NNCF filter pruning compression should be done')
+    parser.add_argument('--nncf-binarization',
+                        default=_get_def_val('nncf_binarization'),
+                        action='store_true',
+                        help='If NNCF binarization compression should be done')
+    return parser
+
 def train_args_parser(template_path):
-    parser = argparse.ArgumentParser(parents=[compression_args_parser(template_path)],
-                                     formatter_class=argparse.RawDescriptionHelpFormatter,
-                                     add_help=False)
+    parser = _compression_train_args_parsers_common_part(template_path)
     with open(template_path, 'r') as model_definition:
         config = yaml.safe_load(model_definition)
         parser.add_argument('--epochs', type=int,

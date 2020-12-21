@@ -56,7 +56,7 @@ def create_object_detection_export_test_case(alt_ssd_export=False, **kwargs):
                 self.do_evaluation(export_dir)
 
             def test_alt_ssd_export_on_cpu(self):
-                export_dir = os.path.join(self.output_folder, 'gpu_export')
+                export_dir = os.path.join(self.output_folder, 'cpu_export')
                 self.do_export(export_dir, on_gpu=True)
                 export_dir = os.path.join(export_dir, 'alt_ssd_export')
                 self.do_evaluation(export_dir)
@@ -67,11 +67,13 @@ def create_object_detection_export_test_case(alt_ssd_export=False, **kwargs):
 
 
 def create_object_detection_nncf_test_case(problem_name, model_name, ann_file, img_root,
-                                           template_update_dict,
+                                           compression_cmd_line_parameters,
+                                           template_update_dict={},
                                            compression_cfg_update_dict=None,
                                            test_export_threshold=0.09):
 
     NNCFBaseTestCase = create_nncf_test_case('object_detection', problem_name, model_name, ann_file, img_root,
+                                             compression_cmd_line_parameters,
                                              template_update_dict=template_update_dict,
                                              compression_cfg_update_dict=compression_cfg_update_dict)
 
@@ -97,12 +99,6 @@ def create_object_detection_nncf_test_case(problem_name, model_name, ann_file, i
         @unittest.skipUnless(torch.cuda.is_available(), 'No GPU found')
         def test_nncf_compress_on_gpu(self):
             log_file = super().test_nncf_compress_on_gpu()
-            ap = collect_ap(log_file)
-            self.assertGreater(ap[-1], 0)
-
-        @unittest.skipUnless(torch.cuda.is_available(), 'No GPU found')
-        def test_nncf_finetune_and_compress_on_gpu(self):
-            log_file = super().test_nncf_finetune_and_compress_on_gpu()
             ap = collect_ap(log_file)
             self.assertGreater(ap[-1], 0)
 

@@ -23,10 +23,22 @@ class FaceDetection0200NNCFint8(
             'face-detection-0200',
             os.path.dirname(__file__) + '/../../../data/airport/annotation_faces_train.json',
             os.path.dirname(__file__) + '/../../../data/airport/',
-            {'compression.int8': True}
+            '--nncf-quantization'
         )
 ):
     """ Test case for face-detection-0200 model with NNCF int8 compression. """
+
+class FaceDetection0200NNCFint8FromTemplate(
+        create_object_detection_nncf_test_case(
+            'face-detection',
+            'face-detection-0200',
+            os.path.dirname(__file__) + '/../../../data/airport/annotation_faces_train.json',
+            os.path.dirname(__file__) + '/../../../data/airport/',
+            '',
+            { 'optimisations.nncf_quantization.default': 1 }
+        )
+):
+    """ Test case for face-detection-0200 model with NNCF int8 compression initialized from template.yaml. """
 
 class FaceDetection0200NNCFint8sparsity(
         create_object_detection_nncf_test_case(
@@ -34,12 +46,10 @@ class FaceDetection0200NNCFint8sparsity(
             'face-detection-0200',
             os.path.dirname(__file__) + '/../../../data/airport/annotation_faces_train.json',
             os.path.dirname(__file__) + '/../../../data/airport/',
+            '--nncf-quantization --nncf-sparsity',
+            {},
             {
-                'compression.int8': True,
-                'compression.sparsity': True,
-            },
-            {
-                'sparsity.total_epochs': 4
+                'nncf_sparsity.total_epochs': 4
             }
         )
 ):
