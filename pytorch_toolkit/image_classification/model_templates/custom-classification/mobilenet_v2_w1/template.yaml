@@ -34,8 +34,8 @@ output_format:
     default: true
   openvino:
     default: true
-    input_format: RGB
-quantization: TBD
+    input_format: BGR
+compression: null
 metrics:
 - display_name: Size
   key: size

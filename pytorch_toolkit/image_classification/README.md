@@ -18,7 +18,7 @@ This repo contains scripts and tutorials for image classification models trainin
 
 ### Installation
 
-1. Create virtual environment and build deep-object-reid:
+1. Create virtual environment:
 ```bash
 bash init_venv.sh
 ```
