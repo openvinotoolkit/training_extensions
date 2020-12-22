@@ -3,3 +3,4 @@ arg_converter: MMDetectionWiderArgsConverter
 trainer: MMDetectionTrainer
 evaluator: MMFaceDetectionEvaluator
 exporter: MMDetectionExporter
+compression: NNCFConfigTransformer
