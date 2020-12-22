@@ -263,10 +263,10 @@ def create_nncf_test_case(domain_name, problem_name, model_name, ann_file, img_r
             cls.templates_folder = os.environ['MODEL_TEMPLATES']
             cls.src_template_folder = os.path.join(cls.templates_folder,domain_name, problem_name, model_name)
 
+            skip_non_instantiated_template_if_its_allowed(cls.src_template_folder, problem_name, model_name)
+
             src_template_file = os.path.join(cls.src_template_folder, 'template.yaml')
             download_snapshot_if_not_yet(src_template_file, cls.src_template_folder)
-
-            skip_non_instantiated_template_if_its_allowed(cls.src_template_folder, problem_name, model_name)
 
             cls.template_folder = cls.generate_template_folder_name(cls.src_template_folder,
                                                                     cls.test_case_description)
