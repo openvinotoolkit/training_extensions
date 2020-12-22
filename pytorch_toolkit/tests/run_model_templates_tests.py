@@ -33,7 +33,7 @@ NNCF_ENABLE_FOR = [
 
 ENABLE_TRAIN_TESTS = True
 ENABLE_EXPORT_TESTS = True
-ENABLE_NNCF_TESTS = True
+ENABLE_NNCF_TESTS = False
 
 def _is_verbose_flag_set():
     if '-v' in sys.argv or '--verbose' in sys.argv:
