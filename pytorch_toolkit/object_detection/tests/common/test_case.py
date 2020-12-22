@@ -12,23 +12,17 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import glob
 import logging
 import os
 import unittest
 
-import mmcv
 import torch
 import yaml
 
-from ote.utils.misc import download_snapshot_if_not_yet
 from ote.tests.test_case import (create_export_test_case,
                                  create_nncf_test_case,
-                                 create_test_case,
-                                 get_dependencies,
-                                 get_epochs,
-                                 skip_non_instantiated_template_if_its_allowed)
-from ote.tests.utils import collect_ap, run_through_shell
+                                 create_test_case)
+from ote.tests.utils import collect_ap
 
 
 def create_object_detection_test_case(**kwargs):
@@ -68,9 +62,12 @@ def create_object_detection_export_test_case(alt_ssd_export=False, **kwargs):
 
 def create_object_detection_nncf_test_case(problem_name, model_name, ann_file, img_root,
                                            compression_cmd_line_parameters,
-                                           template_update_dict={},
+                                           template_update_dict=None,
                                            compression_cfg_update_dict=None,
                                            test_export_threshold=0.09):
+    # pylint: disable=too-many-arguments
+    if template_update_dict is None:
+        template_update_dict = {}
 
     NNCFBaseTestCase = create_nncf_test_case('object_detection', problem_name, model_name, ann_file, img_root,
                                              compression_cmd_line_parameters,
