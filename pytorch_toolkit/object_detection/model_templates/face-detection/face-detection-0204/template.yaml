@@ -45,7 +45,7 @@ output_format:
     input_format: BGR
 optimisations:
   nncf_quantization:
-    config: "compression_config.json"
+    config: compression_config.json
     default: false
 metrics:
 - display_name: AP @ [IoU=0.50:0.95]
