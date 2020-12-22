@@ -35,7 +35,7 @@ class FaceDetection0200NNCFint8FromTemplate(
             os.path.dirname(__file__) + '/../../../data/airport/annotation_faces_train.json',
             os.path.dirname(__file__) + '/../../../data/airport/',
             '',
-            { 'optimisations.nncf_quantization.default': 1 }
+            {'optimisations.nncf_quantization.default': 1}
         )
 ):
     """ Test case for face-detection-0200 model with NNCF int8 compression initialized from template.yaml. """
