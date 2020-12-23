@@ -150,17 +150,16 @@ class Trainer:
 
     def load_dataset(self):
         train_datasets = []
-        val_dataset = None
+        val_datasets = []
         for param in self.config.get("datasets"):
             dataset_type = param.pop("type")
+            subset = param.pop('subset')
             dataset = str_to_class[dataset_type](**param)
-            if param['subset'] == 'train':
+            if subset == 'train':
                 train_datasets.append(dataset)
-            elif param['subset'] == 'validate':
-                if val_dataset is None:
-                    val_dataset = dataset
-                else:
-                    raise ValueError("Multiple datasets are set as 'validate'. Check the config file")
+            elif subset == 'validate':
+                val_datasets.append(dataset)
+
 
         train_dataset = ConcatDataset(train_datasets)
         train_sampler = BatchRandomSampler(
@@ -173,7 +172,7 @@ class Trainer:
             collate_fn=partial(collate_fn, self.vocab.sign2id,
                                batch_transform=batch_transform_train),
             num_workers=os.cpu_count())
-
+        val_dataset = ConcatDataset(val_datasets)
         val_sampler = BatchRandomSampler(dataset=val_dataset, batch_size=1)
         pprint("Creating val transforms list:\n{}".format(self.val_transforms_list), indent=4, width=120)
         batch_transform_val = create_list_of_transforms(self.val_transforms_list)
