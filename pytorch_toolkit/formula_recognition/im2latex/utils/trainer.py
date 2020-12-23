@@ -281,11 +281,11 @@ class Trainer:
                         output_file.write(img_name[j] + '\t' +
                                           pred_phrase_str + '\t' +
                                           gold_phrase_str + '\n')
-                    loss, accuracy = calculate_loss(logits, loss_computation_gt,
+                        val_total_accuracy += int(pred_phrase_str == gold_phrase_str)
+                    loss, _ = calculate_loss(logits, loss_computation_gt,
                                                     should_cut_by_min=True)
                     loss = loss.detach()
                     val_total_loss += loss
-                    val_total_accuracy += accuracy
             avg_loss = val_total_loss / len(self.val_loader)
             avg_accuracy = val_total_accuracy / len(self.val_loader)
             print("Epoch {}, validation average loss: {:.4f}".format(
