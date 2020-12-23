@@ -59,11 +59,8 @@ DATA_DIR
 After the data was arranged, export the variables required for launching training and evaluation scripts:
 
 ```bash
-export TRAIN_ANN_FILE=''
 export TRAIN_DATA_ROOT=${DATA_DIR}
-export VAL_ANN_FILE=''
 export VAL_DATA_ROOT=${DATA_DIR}
-export TEST_ANN_FILE=''
 export TEST_DATA_ROOT=${DATA_DIR}
 export NUM_CLASSES=N
 ```
@@ -84,9 +81,9 @@ Try both following variants and select the best one:
 
 ```bash
 python train.py \
-   --train-ann-files ${TRAIN_ANN_FILE} \
+   --train-ann-files '' \
    --train-data-roots ${TRAIN_DATA_ROOT} \
-   --val-ann-files ${VAL_ANN_FILE} \
+   --val-ann-files '' \
    --val-data-roots ${VAL_DATA_ROOT} \
    --save-checkpoints-to ${WORK_DIR}/outputs
 ```

@@ -4,7 +4,7 @@
 
 This repo contains scripts and tutorials for image classification models training.
 
-* [Custom image classification](model_templates/custom-classification/readme.md) - models that are trained on the ImageNet dataset and suitable for transfer learning.
+* [Custom image classification](model_templates/custom-classification/README.md) - models that are trained on the ImageNet dataset and suitable for transfer learning.
 
 ## Setup
 
