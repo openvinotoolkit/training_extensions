@@ -95,10 +95,10 @@ class BaseDataset(Dataset):
 
 class Im2LatexDataset(BaseDataset):
     # TODO: think of argument unification
-    def __init__(self, data_path, subset, ann_file):
+    def __init__(self, data_path, ann_file):
         """args:
-        data_dir: root dir storing the prepoccessed data
-        subset: train, validate, test or toy
+        data_path: root dir storing the prepoccessed data
+        ann_file: path to annotation file
         """
         super().__init__()
         self.data_dir = data_path
@@ -143,11 +143,10 @@ class Im2LatexDataset(BaseDataset):
 
 
 class CocoTextOnlyDataset(BaseDataset):
-    def __init__(self, json_path, images_path, subset):
+    def __init__(self, json_path, images_path):
         super().__init__()
         self.json_file = json_path
         self.images_dir = images_path
-        self.subset = subset
         self.pairs = self._load()
 
     def _load(self):
@@ -174,11 +173,10 @@ class CocoTextOnlyDataset(BaseDataset):
 
 
 class ICDAR2013RECDataset(BaseDataset):
-    def __init__(self, images_folder, annotation_file, subset='train', root=''):
+    def __init__(self, images_folder, annotation_file, root=''):
         super().__init__()
         self.images_folder = images_folder
         self.annotation_file = annotation_file
-        self.is_train = subset == 'train'
         if root:
             self.annotation_file = os.path.join(root, self.annotation_file)
             self.images_folder = os.path.join(root, self.images_folder)
@@ -207,13 +205,10 @@ class ICDAR2013RECDataset(BaseDataset):
 
 
 class MJSynthDataset(BaseDataset):
-    def __init__(self, data_folder, subset):
+    def __init__(self, data_folder, annotation_file):
         super().__init__()
         self.data_folder = data_folder
-        self.ann_file = 'annotation'
-        if subset:
-            self.ann_file = f"{self.ann_file}_{subset}"
-        self.ann_file += ".txt"
+        self.ann_file = annotation_file
         self.pairs = self.load()
 
     def __getitem__(self, index):
@@ -243,9 +238,8 @@ class MJSynthDataset(BaseDataset):
 
 
 class IIIT5KDataset(BaseDataset):
-    def __init__(self, data_path, subset, annotation_file):
+    def __init__(self, data_path, annotation_file):
         super().__init__()
-        self.subset = subset
         self.data_path = data_path
         self.annotation_file = annotation_file
         self.pairs = self.load()
@@ -253,7 +247,7 @@ class IIIT5KDataset(BaseDataset):
     def load(self):
         pairs = []
         annotation = scipy.io.loadmat(os.path.join(self.data_path, self.annotation_file))
-        annotation = (annotation[f'{self.subset}data']).squeeze()
+        annotation = (annotation[self.annotation_file.replace(".mat", "")]).squeeze()
         for obj in tqdm(annotation):
             img_path = obj[0][0]
             text = obj[1][0]
