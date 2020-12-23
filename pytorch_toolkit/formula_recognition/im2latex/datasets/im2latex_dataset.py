@@ -40,6 +40,7 @@ import json
 import os
 from copy import deepcopy
 from os.path import join
+import scipy.io
 
 import cv2 as cv
 import numpy as np
@@ -241,9 +242,36 @@ class MJSynthDataset(BaseDataset):
         return pairs
 
 
+class IIIT5KDataset(BaseDataset):
+    def __init__(self, data_path, subset, annotation_file):
+        super().__init__()
+        self.subset = subset
+        self.data_path = data_path
+        self.annotation_file = annotation_file
+        self.pairs = self.load()
+
+    def load(self):
+        pairs = []
+        annotation = scipy.io.loadmat(os.path.join(self.data_path, self.annotation_file))
+        annotation = (annotation[f'{self.subset}data']).squeeze()
+        for obj in tqdm(annotation):
+            img_path = obj[0][0]
+            text = obj[1][0]
+            img = cv.imread(os.path.join(self.data_path, img_path), cv.IMREAD_COLOR)
+            text = ' '.join(text)
+            el = {"img_name": img_path,
+                  "text": text,
+                  "img": img,
+                  }
+            pairs.append(el)
+        pairs.sort(key=img_size, reverse=True)
+        return pairs
+
+
 str_to_class = {
     "Im2LatexDataset": Im2LatexDataset,
     "CocoTextOnlyDataset": CocoTextOnlyDataset,
     "ICDAR2013RECDataset": ICDAR2013RECDataset,
     "MJSynthDataset": MJSynthDataset,
+    "IIIT5KDataset": IIIT5KDataset,
 }
