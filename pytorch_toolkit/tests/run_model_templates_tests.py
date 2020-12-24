@@ -25,7 +25,10 @@ ENABLE_TESTS_FOR = {
     ],
     'text_spotting': [
         'alphanumeric_text_spotting',
-    ]
+    ],
+    'image_classification': [
+        'custom-classification',
+    ],
 }
 
 NNCF_ENABLE_FOR = [
