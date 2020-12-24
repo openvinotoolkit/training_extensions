@@ -95,7 +95,7 @@ class BaseDataset(Dataset):
 
 class Im2LatexDataset(BaseDataset):
     # TODO: think of argument unification
-    def __init__(self, data_path, ann_file):
+    def __init__(self, data_path, ann_file, min_shape=(8, 8)):
         """args:
         data_path: root dir storing the prepoccessed data
         ann_file: path to annotation file
@@ -104,7 +104,7 @@ class Im2LatexDataset(BaseDataset):
         self.data_dir = data_path
         self.images_dir = join(data_path, "images_processed")
         self.formulas = self._get_formulas()
-        self.pairs = self._get_pairs(ann_file)
+        self.pairs = self._get_pairs(ann_file, min_shape)
 
     def _get_formulas(self):
         formulas_file = join(self.data_dir, "formulas.norm.lst")
@@ -120,7 +120,7 @@ class Im2LatexDataset(BaseDataset):
                 formulas.append(res_formula)
         return formulas
 
-    def _get_pairs(self, subset):
+    def _get_pairs(self, subset, min_shape):
         # the line in this file map image to formulas
         map_file = join(self.data_dir, subset)
         total_lines = get_num_lines_in_file(map_file)
@@ -132,6 +132,8 @@ class Im2LatexDataset(BaseDataset):
                 # load img and its corresponding formula
                 img_path = join(self.images_dir, img_name)
                 img = cv.imread(img_path, cv.IMREAD_COLOR)
+                if img.shape[0:2] <= tuple(min_shape):
+                    continue
                 formula = self.formulas[int(formula_id)]
                 el = {"img_name": img_name,
                       "text": formula,
@@ -143,13 +145,13 @@ class Im2LatexDataset(BaseDataset):
 
 
 class CocoTextOnlyDataset(BaseDataset):
-    def __init__(self, json_path, images_path):
+    def __init__(self, json_path, images_path, min_shape=(8, 8)):
         super().__init__()
         self.json_file = json_path
         self.images_dir = images_path
-        self.pairs = self._load()
+        self.pairs = self._load(min_shape)
 
-    def _load(self):
+    def _load(self, min_shape):
         with open(self.json_file) as f:
             annotation_file = json.load(f)
         images = annotation_file['images']
@@ -163,6 +165,8 @@ class CocoTextOnlyDataset(BaseDataset):
             text = ann["text"]['transcription'].strip('"')
             text = ' '.join(text)
             img = cv.imread(filename, cv.IMREAD_COLOR)
+            if img.shape[0:2] <= tuple(min_shape):
+                continue
             el = {"img_name": filename,
                   "text": text,
                   "img": img,
@@ -173,16 +177,16 @@ class CocoTextOnlyDataset(BaseDataset):
 
 
 class ICDAR2013RECDataset(BaseDataset):
-    def __init__(self, images_folder, annotation_file, root=''):
+    def __init__(self, images_folder, annotation_file, root='', min_shape=(8, 8)):
         super().__init__()
         self.images_folder = images_folder
         self.annotation_file = annotation_file
         if root:
             self.annotation_file = os.path.join(root, self.annotation_file)
             self.images_folder = os.path.join(root, self.images_folder)
-        self.pairs = self.load()
+        self.pairs = self._load(min_shape)
 
-    def load(self):
+    def _load(self, min_shape):
         with open(self.annotation_file) as f:
             annotation_file = f.readlines()
         annotation_file = [line.strip() for line in annotation_file]
@@ -193,6 +197,8 @@ class ICDAR2013RECDataset(BaseDataset):
         for i, image_nm in tqdm(enumerate(image_names), total=total_len):
             filename = os.path.join(self.images_folder, image_nm)
             img = cv.imread(filename, cv.IMREAD_COLOR)
+            if img.shape[0:2] <= tuple(min_shape):
+                continue
             text = texts[i].strip('"')
             text = ' '.join(text)
             el = {"img_name": filename,
@@ -205,25 +211,25 @@ class ICDAR2013RECDataset(BaseDataset):
 
 
 class MJSynthDataset(BaseDataset):
-    def __init__(self, data_folder, annotation_file):
+    def __init__(self, data_folder, annotation_file, min_shape = (8, 8)):
         super().__init__()
         self.data_folder = data_folder
         self.ann_file = annotation_file
-        self.pairs = self.load()
+        self.pairs = self._load(min_shape)
 
     def __getitem__(self, index):
         el = deepcopy(self.pairs[index])
         el['img'] = cv.imread(os.path.join(self.data_folder, el['img_path']), cv.IMREAD_COLOR)
         return el
 
-    def load(self):
+    def _load(self, min_shape):
         pairs = []
         with open(os.path.join(self.data_folder, self.ann_file)) as input_file:
             annotation = [line.split(" ")[0] for line in input_file]
         for image_path in tqdm(annotation):
             gt_text = ' '.join(image_path.split("_")[1])
             img = cv.imread(os.path.join(self.data_folder, image_path), cv.IMREAD_COLOR)
-            if img is None:
+            if img is None or img.shape[0:2] <= tuple(min_shape):
                 continue
             img_shape = tuple(img.shape)
 
@@ -238,13 +244,13 @@ class MJSynthDataset(BaseDataset):
 
 
 class IIIT5KDataset(BaseDataset):
-    def __init__(self, data_path, annotation_file):
+    def __init__(self, data_path, annotation_file, min_shape):
         super().__init__()
         self.data_path = data_path
         self.annotation_file = annotation_file
-        self.pairs = self.load()
+        self.pairs = self._load(min_shape)
 
-    def load(self):
+    def _load(self, min_shape):
         pairs = []
         annotation = scipy.io.loadmat(os.path.join(self.data_path, self.annotation_file))
         annotation = (annotation[self.annotation_file.replace(".mat", "")]).squeeze()
@@ -252,6 +258,8 @@ class IIIT5KDataset(BaseDataset):
             img_path = obj[0][0]
             text = obj[1][0]
             img = cv.imread(os.path.join(self.data_path, img_path), cv.IMREAD_COLOR)
+            if img.shape[0:2] <= tuple(min_shape):
+                continue
             text = ' '.join(text)
             el = {"img_name": img_path,
                   "text": text,
