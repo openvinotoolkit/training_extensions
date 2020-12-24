@@ -40,7 +40,7 @@ fi
 
 pip install -e ../../external/deep-object-reid/
 DEEP_OBJECT_REID_DIR=`realpath ../../external/deep-object-reid/`
-echo "export DEEP_OBJECT_REID_DIR=${DEEP_OBJECT_REID_DIR}" >> ${venv_dir}/bin/activate
+echo "export REID_DIR=${DEEP_OBJECT_REID_DIR}" >> ${venv_dir}/bin/activate
 
 # install ote
 pip install -e ../../pytorch_toolkit/ote/

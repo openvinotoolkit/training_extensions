@@ -27,7 +27,7 @@ ENABLE_TESTS_FOR = {
         'alphanumeric_text_spotting',
     ],
     'image_classification': [
-        'custom-classification',
+        'custom_classification',
     ],
 }
 

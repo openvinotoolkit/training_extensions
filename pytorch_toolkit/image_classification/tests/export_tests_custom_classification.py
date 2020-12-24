@@ -18,13 +18,15 @@ from common.test_case import create_image_classification_export_test_case
 
 
 kwargs = dict(
-    problem_name='custom-classification',
+    problem_name='imagenet-classification',
+    ann_file='',
+    img_root=''
 )
 
 
 class CustomClassificationExportTestCase(
         create_image_classification_export_test_case(
-            model_name='mobilenet_v2_w1',
+            model_name='mobilenet-v2-w1-imagenet',
             **kwargs)
 ):
     """ Test case for mobilenet_v2_w1 model export. """

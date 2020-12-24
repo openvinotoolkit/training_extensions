@@ -22,7 +22,7 @@ import yaml
 from ote.tests.test_case import (create_export_test_case,
                                  create_nncf_test_case,
                                  create_test_case)
-from ote.tests.utils import collect_ap
+from ote.tests.utils import run_through_shell
 
 
 def create_image_classification_export_test_case(**kwargs):
@@ -31,11 +31,35 @@ def create_image_classification_export_test_case(**kwargs):
                                              **kwargs,
                                              metric_keys=['accuracy'],
                                              expected_outputs_dir=expected_outputs_dir)
-    return ExportTestCase
+
+    class ClassificationExportTestCase(ExportTestCase):
+            @unittest.skipUnless(torch.cuda.is_available(), 'No GPU found')
+            def test_export_on_gpu(self):
+                export_dir = os.path.join(self.output_folder, 'gpu_export')
+                self.do_export(export_dir, on_gpu=True)
+
+            def test_export_on_cpu(self):
+                export_dir = os.path.join(self.output_folder, 'cpu_export')
+                self.do_export(export_dir, on_gpu=False)
+
+            def do_export(self, export_dir, on_gpu):
+                if True:
+                    initial_command = 'export CUDA_VISIBLE_DEVICES=;' if not on_gpu else ''
+                    run_through_shell(
+                        f'{initial_command}'
+                        f'cd {os.path.dirname(self.template_file)};'
+                        f'pip install -r requirements.txt;'
+                        f'python export.py'
+                        f' --load-weights none'
+                         ' --num-classes 1000'
+                        f' --save-model-to {export_dir}'
+                    )
+
+    return ClassificationExportTestCase
 
 def create_image_classification_test_case(**kwargs):
     expected_outputs_dir = os.path.join(os.path.dirname(__file__), '..', 'expected_outputs')
-    return create_test_case('image_classificationn',
+    return create_test_case('image_classification',
                             **kwargs,
                             metric_keys=['accuracy'],
                             expected_outputs_dir=expected_outputs_dir)
