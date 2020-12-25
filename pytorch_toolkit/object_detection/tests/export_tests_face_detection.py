@@ -33,46 +33,46 @@ class FaceDetection0200TestCase(
     """ Test case for face-detection-0200 model export. """
 
 
-class FaceDetection0202TestCase(
-        create_object_detection_export_test_case(
-            model_name='face-detection-0202',
-            alt_ssd_export=True,
-            **kwargs)
-):
-    """ Test case for face-detection-0202 model export. """
-
-
-class FaceDetection0204TestCase(
-        create_object_detection_export_test_case(
-            model_name='face-detection-0204',
-            alt_ssd_export=True,
-            **kwargs)
-):
-    """ Test case for face-detection-0204 model export. """
-
-
-class FaceDetection0205TestCase(
-        create_object_detection_export_test_case(
-            model_name='face-detection-0205',
-            alt_ssd_export=False,
-            **kwargs)
-):
-    """ Test case for face-detection-0205 model export. """
-
-
-class FaceDetection0206TestCase(
-        create_object_detection_export_test_case(
-            model_name='face-detection-0206',
-            alt_ssd_export=False,
-            **kwargs)
-):
-    """ Test case for face-detection-0206 model export. """
-
-
-class FaceDetection0207TestCase(
-        create_object_detection_export_test_case(
-            model_name='face-detection-0207',
-            alt_ssd_export=False,
-            **kwargs)
-):
-    """ Test case for face-detection-0207 model export. """
+#class FaceDetection0202TestCase(
+#        create_object_detection_export_test_case(
+#            model_name='face-detection-0202',
+#            alt_ssd_export=True,
+#            **kwargs)
+#):
+#    """ Test case for face-detection-0202 model export. """
+#
+#
+#class FaceDetection0204TestCase(
+#        create_object_detection_export_test_case(
+#            model_name='face-detection-0204',
+#            alt_ssd_export=True,
+#            **kwargs)
+#):
+#    """ Test case for face-detection-0204 model export. """
+#
+#
+#class FaceDetection0205TestCase(
+#        create_object_detection_export_test_case(
+#            model_name='face-detection-0205',
+#            alt_ssd_export=False,
+#            **kwargs)
+#):
+#    """ Test case for face-detection-0205 model export. """
+#
+#
+#class FaceDetection0206TestCase(
+#        create_object_detection_export_test_case(
+#            model_name='face-detection-0206',
+#            alt_ssd_export=False,
+#            **kwargs)
+#):
+#    """ Test case for face-detection-0206 model export. """
+#
+#
+#class FaceDetection0207TestCase(
+#        create_object_detection_export_test_case(
+#            model_name='face-detection-0207',
+#            alt_ssd_export=False,
+#            **kwargs)
+#):
+#    """ Test case for face-detection-0207 model export. """

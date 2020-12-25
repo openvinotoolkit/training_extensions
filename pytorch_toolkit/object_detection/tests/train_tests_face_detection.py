@@ -31,46 +31,46 @@ class FaceDetection0200TestCase(
     """ Test case for face-detection-0200 model. """
 
 
-class FaceDetection0202TestCase(
-        create_object_detection_test_case(
-            model_name='face-detection-0202',
-            **kwargs,
-        )
-):
-    """ Test case for face-detection-0202 model. """
-
-
-class FaceDetection0204TestCase(
-        create_object_detection_test_case(
-            model_name='face-detection-0204',
-            **kwargs,
-        )
-):
-    """ Test case for face-detection-0204 model. """
-
-
-class FaceDetection0205TestCase(
-        create_object_detection_test_case(
-            model_name='face-detection-0205',
-            **kwargs,
-        )
-):
-    """ Test case for face-detection-0205 model. """
-
-
-class FaceDetection0206TestCase(
-        create_object_detection_test_case(
-            model_name='face-detection-0206',
-            **kwargs,
-        )
-):
-    """ Test case for face-detection-0206 model. """
-
-
-class FaceDetection0207TestCase(
-        create_object_detection_test_case(
-            model_name='face-detection-0207',
-            **kwargs,
-        )
-):
-    """ Test case for face-detection-0207 model. """
+#class FaceDetection0202TestCase(
+#        create_object_detection_test_case(
+#            model_name='face-detection-0202',
+#            **kwargs,
+#        )
+#):
+#    """ Test case for face-detection-0202 model. """
+#
+#
+#class FaceDetection0204TestCase(
+#        create_object_detection_test_case(
+#            model_name='face-detection-0204',
+#            **kwargs,
+#        )
+#):
+#    """ Test case for face-detection-0204 model. """
+#
+#
+#class FaceDetection0205TestCase(
+#        create_object_detection_test_case(
+#            model_name='face-detection-0205',
+#            **kwargs,
+#        )
+#):
+#    """ Test case for face-detection-0205 model. """
+#
+#
+#class FaceDetection0206TestCase(
+#        create_object_detection_test_case(
+#            model_name='face-detection-0206',
+#            **kwargs,
+#        )
+#):
+#    """ Test case for face-detection-0206 model. """
+#
+#
+#class FaceDetection0207TestCase(
+#        create_object_detection_test_case(
+#            model_name='face-detection-0207',
+#            **kwargs,
+#        )
+#):
+#    """ Test case for face-detection-0207 model. """

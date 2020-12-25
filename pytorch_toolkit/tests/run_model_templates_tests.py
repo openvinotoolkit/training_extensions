@@ -11,20 +11,21 @@ import yaml
 ENABLE_TESTS_FOR = {
     'object_detection': [
         'face_detection',
-        'person_detection',
-        'person_vehicle_bike_detection',
-        'text_detection',
-        'vehicle_detection',
+#        'person_detection',
+#        'person_vehicle_bike_detection',
+#        'text_detection',
+#        'vehicle_detection',
     ],
-    'action_recognition_2': [
-        'gesture-recognition',
-    ],
-    'instance_segmentation_2': [
-        'coco_instance_segmentation',
-    ],
-    'text_spotting_2': [
-        # 'alphanumeric_text_spotting',
-    ]
+
+#    'action_recognition_2': [
+#        'gesture-recognition',
+#    ],
+#    'instance_segmentation_2': [
+#        'coco_instance_segmentation',
+#    ],
+#    'text_spotting_2': [
+#        # 'alphanumeric_text_spotting',
+#    ]
 }
 
 NNCF_ENABLE_FOR = [
