@@ -65,6 +65,7 @@ def create_model_template_tests_base(subfolder_name):
                 cls.work_dir = os.path.join(os.path.abspath(workdir), subfolder_name)
 
             templates_filter_environ = os.environ.get('TEMPLATES_FILTER')
+            templates_filter_environ = '**/face-detection-0200/template.yaml' # DEBUG ########################################
             if templates_filter_environ:
                 templates_filter_arg = f'--templates-filter "{templates_filter_environ}"'
             else:
