@@ -126,8 +126,8 @@ To convert the trained landmark regression model launch the script:
 python3 convert_onnx.py --snap <path to snapshot> --output_dir <output directory>
 ```
 To convert the obtained ONNX format to OpenVINO™ IR, the following steps should be done:
-* Make sure that OpenVINO enviroment is initialized
-* launch the script from Model Optimizer directory:
+* Make sure that OpenVINO environment is [initialized](../README.md).
+* Launch the script from Model Optimizer directory:
 ```bash
 python3 mo_onnx.py --input_model <path to obtained onnx> --output_dir <path to output dir> --reverse_input_channels --input_shape [1,3,128,128] --scale 255
 ``
