@@ -51,11 +51,9 @@ class PersonDetection0202TestCase(
 
 
 class PersonDetection0203TestCase(
-        create_test_case(
-            'person-detection',
-            'person-detection-0203',
-            os.path.dirname(__file__) + '/../../../data/airport/annotation_person_train.json',
-            os.path.dirname(__file__) + '/../../../data/airport/train'
+        create_object_detection_test_case(
+            model_name='person-detection-0203',
+            **kwargs,
         )
 ):
     """ Test case for person-detection-0203 model. """
