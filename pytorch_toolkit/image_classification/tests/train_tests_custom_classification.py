@@ -17,14 +17,14 @@ import os
 from common.test_case import create_image_classification_test_case
 
 kwargs = dict(
-    problem_name='custom-classification',
-    ann_file=os.path.dirname(__file__) + '/../../../data/airport/annotation_faces_train.json',
-    img_root=os.path.dirname(__file__) + '/../../../data/airport/'
+    problem_name='imagenet-classification',
+    ann_file=' \' \' ',
+    img_root=os.path.dirname(__file__) + '/../../../data/classification/'
 )
 
 class CustomClassificationTestCase(
         create_image_classification_test_case(
-            model_name='mobilenet_v2_w1',
+            model_name='mobilenet-v2-w1-imagenet',
             **kwargs,
         )
 ):

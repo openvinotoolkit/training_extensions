@@ -44,7 +44,7 @@ class ReidEvaluator(BaseEvaluator):
 
         update_config['classification.data_dir'] = Path(update_config['data.root']).name
         update_config['data.root'] = Path(update_config['data.root']).parent
-        update_config = ' '.join([f'{k} {v}' for k, v in update_config.items() if len(str(v))])
+        update_config = ' '.join([f'{k} {v}' for k, v in update_config.items() if len(str(v)) and len(str(k))])
         update_config = update_config if update_config else ''
 
         metrics = []

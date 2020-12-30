@@ -43,14 +43,14 @@ def create_image_classification_export_test_case(**kwargs):
                 self.do_export(export_dir, on_gpu=False)
 
             def do_export(self, export_dir, on_gpu):
-                if True:
+                if not os.path.exists(export_dir):
                     initial_command = 'export CUDA_VISIBLE_DEVICES=;' if not on_gpu else ''
                     run_through_shell(
                         f'{initial_command}'
                         f'cd {os.path.dirname(self.template_file)};'
                         f'pip install -r requirements.txt;'
                         f'python export.py'
-                        f' --load-weights none'
+                        f' --load-weights snapshot.pth'
                          ' --num-classes 1000'
                         f' --save-model-to {export_dir}'
                     )
