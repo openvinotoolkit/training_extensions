@@ -54,7 +54,6 @@ def create_model_template_tests_base(subfolder_name):
         def setUpClass(cls):
             logging.basicConfig(level=logging.INFO)
             verbose = _is_verbose_flag_set()
-            verbose = True # DEBUG ############################################################################################
             if verbose:
                 logging.info('Running with verbosity=True')
 
