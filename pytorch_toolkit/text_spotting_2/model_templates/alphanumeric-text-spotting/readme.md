@@ -2,7 +2,7 @@
 
 Model that is able to detect and recognize alphanumeric text (figures and letters of English alphabet).
 
-| Model Name                  | Complexity (GFLOPs) | Size (Mp) | F1-score |    precision / recall   | Links                                                                                                                                    | GPU_NUM |
+| Model Name                  | Complexity (GFLOPs) | Size (Mp) | Detection F1-score (ICDAR'15) |    Word Spotting F1-score (ICDAR'15)  | Links                                                                                                                                    | GPU_NUM |
 | --------------------------- | ------------------- | --------- | ------- | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
 | text-spotting-0003         | 190.5            |  27.76     |  86.60% |    64.71%    | [model template](./text-spotting-0003/template.yaml), [snapshot](https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/text_spotting/alphanumeric_text_spotting/text_spotting_0003/epoch_24.pth) | 1       |
 
