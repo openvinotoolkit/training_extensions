@@ -46,7 +46,6 @@ it's necessary to download at least one dataset from following resources.
 *  [MSRA-TD500](http://www.iapr-tc11.org/mediawiki/index.php/MSRA_Text_Detection_500_Database_(MSRA-TD500))
 *  [COCO-Text](https://bgshih.github.io/cocotext/)
 
-
 ### 3. Convert datasets
 
 Extract downloaded datasets in `${DATA_DIR}/text-dataset` folder.
