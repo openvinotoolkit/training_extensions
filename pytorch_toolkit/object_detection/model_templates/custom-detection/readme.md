@@ -20,6 +20,18 @@ Average Precision (AP) is defined as an area under the precision/recall curve.
 ```bash
 cd <training_extensions>/pytorch_toolkit/object_detection
 ```
+If You have not created virtual environment yet:
+```bash
+./init_venv.sh
+```
+Else:
+```bash
+. venv/bin/activate
+```
+or if You use conda:
+```bash
+conda activate <environment_name>
+```
 
 ### 1. Select a model template file and instantiate it in some directory.
 
