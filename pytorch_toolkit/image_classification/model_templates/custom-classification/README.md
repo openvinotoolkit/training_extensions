@@ -1,6 +1,6 @@
 # Image classification
 
-Models that are able to classify images on CPU.
+Models that are able to classify images.
 
 | Model Name | Complexity (GFLOPs) | Size (Mp) | Top-1 on ImageNet (%) | Links |
 | ---        | ---                 | ---       | ---                   | ---                   |
@@ -29,7 +29,7 @@ python ../tools/instantiate_template.py ${MODEL_TEMPLATE} ${WORK_DIR} --do-not-l
 ### 2. Prepare data
 
 The training script assumes the data for classification is divided by folders in such a way when
-each class has it's own folder. The script automatically computes number of subfolders in ine train
+each class has its own folder. The script automatically computes number of subfolders in the train
 dataset directory and assumes each directory to represent one class. Indexes of classes are assigned
 according to alphabetically sorted list of folders.
 
