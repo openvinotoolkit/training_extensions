@@ -30,6 +30,9 @@ kwargs = dict(
 
 def create_custom_object_detection_export_test_case(model_name):
     class ExportTestCase(create_object_detection_export_test_case(model_name=model_name, **kwargs)):
+
+        classes = 'vehicle,person,non-vehicle'
+
         def do_evaluation(self, export_dir):
             metrics_path = os.path.join(export_dir, "metrics.yaml")
             run_through_shell(
@@ -39,6 +42,7 @@ def create_custom_object_detection_export_test_case(model_name):
                 f' --test-data-roots {self.img_root}'
                 f' --load-weights {os.path.join(export_dir, "model.bin")}'
                 f' --save-metrics-to {metrics_path}'
+                f' --classes {self.classes}'
             )
 
             with open(metrics_path) as read_file:
