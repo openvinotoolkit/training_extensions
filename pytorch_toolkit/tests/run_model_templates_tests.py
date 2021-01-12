@@ -10,6 +10,7 @@ import yaml
 
 ENABLE_TESTS_FOR = {
     'object_detection': [
+        'custom_detection',
         'face_detection',
         'person_detection',
         'person_vehicle_bike_detection',
