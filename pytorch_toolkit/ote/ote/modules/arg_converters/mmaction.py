@@ -50,9 +50,9 @@ class MMActionArgsConverter(BaseArgConverter):
         'train_data_roots': 'root_dir',
         'val_ann_files': 'data.val.ann_file',
         'val_data_roots': 'root_dir',
-# the only difference w.r.t compress_update_args_map
-#        'resume_from': 'resume_from',
-#        'load_weights': 'load_from',
+        # the only difference w.r.t compress_update_args_map
+        #'resume_from': 'resume_from',
+        #'load_weights': 'load_from',
         'save_checkpoints_to': 'work_dir',
         'batch_size': 'data.videos_per_gpu',
     }
@@ -60,6 +60,3 @@ class MMActionArgsConverter(BaseArgConverter):
         'test_ann_files': 'data.test.ann_file',
         'test_data_roots': 'root_dir',
     }
-
-    def __init__(self):
-        super(MMActionArgsConverter, self).__init__()

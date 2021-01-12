@@ -24,9 +24,6 @@ from ..registry import ARG_PARSERS
 
 @ARG_PARSERS.register_module()
 class DefaultArgParser:
-    def __init__(self):
-        super(DefaultArgParser, self).__init__()
-
     def get_train_parser(self, config_path):
         return train_args_parser(config_path)
 

@@ -18,7 +18,6 @@ import argparse
 
 from ote.api import (train_args_parser,
                      test_args_parser,
-                     export_args_parser,
                      compression_args_parser)
 
 from .default import DefaultArgParser
@@ -27,9 +26,6 @@ from ..registry import ARG_PARSERS
 
 @ARG_PARSERS.register_module()
 class CustomDetectorArgParser(DefaultArgParser):
-    def __init__(self):
-        super(CustomDetectorArgParser, self).__init__()
-
     def get_train_parser(self, config_path):
         parser = argparse.ArgumentParser(parents=[train_args_parser(config_path)], add_help=False)
         parser.add_argument('--classes', required=True,

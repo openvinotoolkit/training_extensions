@@ -115,5 +115,6 @@ class BaseTrainer(metaclass=ABCMeta):
             logging.warning(f'Cannot find the latest snapshot {self.latest_file_name} in the work_dir {self.work_dir}')
             return None
         if len(latest_snapshots) > 1:
-            raise RuntimeError('Find more than one latest snapshots {self.latest_file_name} in the work_dir {self.work_dir}')
+            raise RuntimeError(f'Find more than one latest snapshots {self.latest_file_name} '
+                               f'in the work_dir {self.work_dir}')
         return latest_snapshots[0]

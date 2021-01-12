@@ -14,9 +14,6 @@
  limitations under the License.
 """
 
-import os
-import subprocess
-
 from ote import MMDETECTION_TOOLS
 
 from .base import BaseEvaluator
@@ -25,9 +22,6 @@ from ..registry import EVALUATORS
 
 @EVALUATORS.register_module()
 class MMDetectionEvaluator(BaseEvaluator):
-    def __init__(self):
-        super(MMDetectionEvaluator, self).__init__()
-
     def _get_tools_dir(self):
         return MMDETECTION_TOOLS
 

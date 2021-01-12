@@ -22,8 +22,5 @@ from ..registry import TRAINERS
 
 @TRAINERS.register_module()
 class InstanceSegmentationTrainer(BaseTrainer):
-    def __init__(self):
-        super(InstanceSegmentationTrainer, self).__init__()
-
     def _get_tools_dir(self):
         return MMDETECTION_TOOLS

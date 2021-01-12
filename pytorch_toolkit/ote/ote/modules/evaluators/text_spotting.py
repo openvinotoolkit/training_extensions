@@ -14,20 +14,12 @@
  limitations under the License.
 """
 
-import os
-import subprocess
-
-from ote import MMDETECTION_TOOLS
-
 from .mmdetection import MMDetectionEvaluator
 from ..registry import EVALUATORS
 
 
 @EVALUATORS.register_module()
 class TextSpottingEvaluator(MMDetectionEvaluator):
-    def __init__(self):
-        super(TextSpottingEvaluator, self).__init__()
-
     def _get_metric_functions(self):
         from ote.metrics.text_spotting.text_spotting import coco_ap_eval_f1_wordspotting
         return [coco_ap_eval_f1_wordspotting]

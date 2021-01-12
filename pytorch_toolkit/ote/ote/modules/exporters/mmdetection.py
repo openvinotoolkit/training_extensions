@@ -15,8 +15,6 @@
 """
 
 import os
-import yaml
-from subprocess import run
 
 from ote import MMDETECTION_TOOLS
 from mmcv.utils import Config
@@ -36,9 +34,6 @@ except ImportError:
 
 @EXPORTERS.register_module()
 class MMDetectionExporter(BaseExporter):
-    def __init__(self):
-        super(MMDetectionExporter, self).__init__()
-
     def _export_to_openvino(self, args, tools_dir):
         super()._export_to_openvino(args, tools_dir)
 

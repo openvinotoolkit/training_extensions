@@ -57,4 +57,3 @@ def build_exporter(obj_type):
 
 def build_compression_arg_transformer(obj_type):
     return build(obj_type, COMPRESSION)
-

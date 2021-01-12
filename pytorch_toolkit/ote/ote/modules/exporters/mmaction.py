@@ -22,8 +22,5 @@ from ..registry import EXPORTERS
 
 @EXPORTERS.register_module()
 class MMActionExporter(BaseExporter):
-    def __init__(self):
-        super(MMActionExporter, self).__init__()
-
     def _get_tools_dir(self):
         return MMACTION_TOOLS

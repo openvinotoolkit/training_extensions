@@ -14,13 +14,10 @@
  limitations under the License.
 """
 
-import logging
 import os
 import yaml
 from tempfile import NamedTemporaryFile
-from copy import copy
 
-from ote.utils import load_config
 from ..registry import COMPRESSION
 from .nncf_config_generator import NNCFConfigGenerator, POSSIBLE_NNCF_PARTS
 
@@ -49,7 +46,7 @@ class NNCFConfigTransformer:
         # NB: at the moment it is one function, using one variable self.CONFIG_ARG_TO_SUBSTITUTE,
         #     since all scripts (train, eval, export) use the same parameter 'config'
         assert self.CONFIG_ARG_TO_SUBSTITUTE in kwargs, (
-                f'Error: kwargs does not contain {self.CONFIG_ARG_TO_SUBSTITUTE}, kwargs={kwargs}')
+            f'Error: kwargs does not contain {self.CONFIG_ARG_TO_SUBSTITUTE}, kwargs={kwargs}')
         config_path = kwargs[self.CONFIG_ARG_TO_SUBSTITUTE]
         kwargs_nncf = {k:kwargs.get(k) for k in self.NNCF_PARAMETERS}
         is_optimisation_enabled = any(kwargs.get(k) for k in self.NNCF_PARAMETERS)

@@ -24,7 +24,7 @@ import yaml
 
 from ote.modules.compression import (get_optimisation_config_from_template,
                                      is_optimisation_enabled_in_template)
-from ote.tests.utils import collect_ap, run_through_shell
+from ote.tests.utils import run_through_shell
 from ote.utils.misc import download_snapshot_if_not_yet
 
 
@@ -157,7 +157,8 @@ def create_test_case(domain_name, problem_name, model_name, ann_file, img_root, 
     return TestCaseOteApi
 
 
-def create_export_test_case(domain_name, problem_name, model_name, ann_file, img_root, metric_keys, expected_outputs_dir):
+def create_export_test_case(domain_name, problem_name, model_name,
+                            ann_file, img_root, metric_keys, expected_outputs_dir):
     class ExportTestCase(unittest.TestCase):
         domain = domain_name
         problem = problem_name
@@ -232,13 +233,15 @@ def create_export_test_case(domain_name, problem_name, model_name, ann_file, img
 
 def create_nncf_test_case(domain_name, problem_name, model_name, ann_file, img_root,
                           compress_cmd_line_params,
-                          template_update_dict={},
+                          template_update_dict=None,
                           compression_cfg_update_dict=None):
- # pylint: disable=too-many-arguments, too-many-statements
+    # pylint: disable=too-many-arguments, too-many-statements
     """
     Note that template_update_dict will be used to update template file
     using the function mmcv.Config.merge_from_dict
     """
+    if template_update_dict is None:
+        template_update_dict = {}
     if isinstance(compress_cmd_line_params, list):
         compress_cmd_line_params = ' '.join(compress_cmd_line_params)
 
@@ -255,13 +258,13 @@ def create_nncf_test_case(domain_name, problem_name, model_name, ann_file, img_r
         def setUpClass(cls):
             cls.compress_cmd_line_params = compress_cmd_line_params
             cls.test_case_description = cls.generate_test_case_description(
-                    template_update_dict,
-                    compress_cmd_line_params,
-                    compression_cfg_update_dict)
+                template_update_dict,
+                compress_cmd_line_params,
+                compression_cfg_update_dict)
             logging.info(f'Begin setting up class for {problem_name}/{model_name}, {cls.test_case_description}')
 
             cls.templates_folder = os.environ['MODEL_TEMPLATES']
-            cls.src_template_folder = os.path.join(cls.templates_folder,domain_name, problem_name, model_name)
+            cls.src_template_folder = os.path.join(cls.templates_folder, domain_name, problem_name, model_name)
 
             skip_non_instantiated_template_if_its_allowed(cls.src_template_folder, problem_name, model_name)
 
@@ -295,8 +298,8 @@ def create_nncf_test_case(domain_name, problem_name, model_name, ann_file, img_r
 
         @staticmethod
         def generate_test_case_description(template_update_dict,
-                                                  compress_cmd_line_params,
-                                                  compression_cfg_update_dict):
+                                           compress_cmd_line_params,
+                                           compression_cfg_update_dict):
             def _dict_to_descr(d):
                 if not d:
                     return ''

@@ -73,6 +73,7 @@ def evaluate_detections(ground_truth, predictions, class_name, overlap_threshold
                         allow_multiple_matches_per_ignored=True,
                         verbose=True):
     """ Compute set of object detection quality metrics. """
+    # pylint: disable=too-many-branches,too-many-statements
 
     Detection = namedtuple('Detection', ['image', 'bbox', 'score', 'gt_match'])
     GT = namedtuple('GroundTruth', ['bbox', 'is_matched', 'is_ignored'])
@@ -291,7 +292,7 @@ def voc_eval(result_file, dataset, iou_thr, image_size):
     return out
 
 
-def custom_voc_ap_evaluation(config, input, iou_thr, imsize, out, update_config):
+def custom_voc_ap_evaluation(config, input_file, iou_thr, imsize, out, update_config):
     """ Main function. """
 
     cfg = mmcv.Config.fromfile(config)
@@ -303,7 +304,7 @@ def custom_voc_ap_evaluation(config, input, iou_thr, imsize, out, update_config)
         assert len(cfg.data.test.ann_file) == len(cfg.data.test.img_prefix)
 
     test_dataset = datasets.builder.build_dataset(cfg.data.test)
-    output = voc_eval(input, test_dataset, iou_thr, imsize)
+    output = voc_eval(input_file, test_dataset, iou_thr, imsize)
 
     if out:
         with open(out, 'w') as write_file:

@@ -18,8 +18,6 @@ import json
 import logging
 from copy import copy
 
-from mmcv import Config
-
 from ote.utils import load_config
 from .merger import merge_dicts_and_lists_b_into_a
 
@@ -57,7 +55,7 @@ def is_optimisation_enabled_in_template(template):
     if not optimisation_template:
         return False
     assert isinstance(optimisation_template, dict), (
-            f'Error: optimisation part of template is not a dict: template["optimisation"]={optimisation_template}')
+        f'Error: optimisation part of template is not a dict: template["optimisation"]={optimisation_template}')
     unknown_keys = set(optimisation_template.keys()) - POSSIBLE_NNCF_PARTS
     if unknown_keys:
         raise RuntimeError(f'Optimisation parameters contain unknown keys: {list(unknown_keys)}')
@@ -65,7 +63,8 @@ def is_optimisation_enabled_in_template(template):
     if not optimisation_configs:
         raise RuntimeError(f'Optimisation parameters do not contain the field "{COMPRESSION_CONFIG_KEY}"')
     if len(optimisation_configs) > 1:
-        raise RuntimeError(f'Wrong config: the optimisation config contains different config files: {optimisation_configs}')
+        raise RuntimeError(f'Wrong config: the optimisation config contains different config files:'
+                           f' {optimisation_configs}')
     return True
 
 class NNCFConfigGenerator:
@@ -96,10 +95,10 @@ class NNCFConfigGenerator:
     @staticmethod
     def _load_optimisation_config(optimisation_config_path, nostrict=False):
         assert optimisation_config_path.endswith('.json'), (
-                f'Only json files are allowed as optimisation configs,'
-                f' optimisation_config_path={optimisation_config_path}')
+            f'Only json files are allowed as optimisation configs,'
+            f' optimisation_config_path={optimisation_config_path}')
         with open(optimisation_config_path) as f_src:
-            optimisation_parts  = json.load(f_src)
+            optimisation_parts = json.load(f_src)
         return optimisation_parts
 
     @staticmethod
@@ -114,12 +113,13 @@ class NNCFConfigGenerator:
             # So, user can define `order_of_parts` in the optimisation_config
             # to specify the order of applying the parts.
             order_of_parts = optimisation_parts['order_of_parts']
-            assert isinstance(order_of_parts, list), 'The field "order_of_parts" in optimisation config should be a list'
+            assert isinstance(order_of_parts, list), (
+                'The field "order_of_parts" in optimisation config should be a list')
 
             for part in optimisation_parts_to_choose:
                 assert part in order_of_parts, (
-                        f'The part {part} is selected, but it is absent in order_of_parts={order_of_parts},'
-                        f' see the optimisation config file {optimisation_config_path}')
+                    f'The part {part} is selected, but it is absent in order_of_parts={order_of_parts},'
+                    f' see the optimisation config file {optimisation_config_path}')
 
             optimisation_parts_to_choose = [part for part in order_of_parts if part in optimisation_parts_to_choose]
 
@@ -128,16 +128,16 @@ class NNCFConfigGenerator:
 
         for part in optimisation_parts_to_choose:
             assert part in optimisation_parts, (
-                    f'Error: the optimisation config does not contain the part "{part}", '
-                    f'whereas it was selected; see the optimisation config file "{optimisation_config_path}"')
+                f'Error: the optimisation config does not contain the part "{part}", '
+                f'whereas it was selected; see the optimisation config file "{optimisation_config_path}"')
             optimisation_part_dict = optimisation_parts[part]
             try:
                 nncf_config_part = merge_dicts_and_lists_b_into_a(nncf_config_part, optimisation_part_dict)
             except AssertionError as cur_error:
                 err_descr = (f'Error during merging the parts of nncf configs from file "{optimisation_config_path}":\n'
-                    f'the current part={part}, '
-                    f'the order of merging parts into base is {optimisation_parts_to_choose}.\n'
-                    f'The error is:\n{cur_error}')
+                             f'the current part={part}, '
+                             f'the order of merging parts into base is {optimisation_parts_to_choose}.\n'
+                             f'The error is:\n{cur_error}')
                 raise RuntimeError(err_descr) from None
 
         return nncf_config_part

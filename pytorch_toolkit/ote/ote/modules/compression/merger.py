@@ -49,6 +49,7 @@ SHOULD_DEBUG_MERGING_DICTS_AND_LISTS = False
 if __name__ == '__main__' and SHOULD_DEBUG_MERGING_DICTS_AND_LISTS:
     import unittest
     class TestCaseMergeDictsAndLists(unittest.TestCase):
+        # pylint: disable=line-too-long
         def test_case_01(self):
             a = {"a": 1, "b": 2, "c": {"c1": "x", "c2":"y"}}
             b = {"a": 2, "c": {"c2": "z"}}
@@ -58,12 +59,12 @@ if __name__ == '__main__' and SHOULD_DEBUG_MERGING_DICTS_AND_LISTS:
             a = {"a": 1, "b": 2, "c": {"c1": "x", "c2":"y"}}
             b = {"a": 2, "c": {"c2": {'p':'q'}}}
             with self.assertRaises(AssertionError):
-                res = merge_dicts_and_lists_b_into_a(a, b)
+                merge_dicts_and_lists_b_into_a(a, b)
         def test_case_03(self):
             a = {"a": 1, "b": 2, "c": {"c1": "x", "c2":"y"}}
             b = {"a": 2, "c": {"c2": [1, 2]}}
             with self.assertRaises(AssertionError):
-                res = merge_dicts_and_lists_b_into_a(a, b)
+                merge_dicts_and_lists_b_into_a(a, b)
         def test_case_04(self):
             a = {"a": 1, "b": 2, "c": {"c1": "x", "c2":['aa', 'bb', 'cc']}}
             b = {"a": 2, "c": {"c2": ['dd']}}
