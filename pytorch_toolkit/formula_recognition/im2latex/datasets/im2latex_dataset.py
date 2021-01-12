@@ -211,7 +211,7 @@ class ICDAR2013RECDataset(BaseDataset):
 
 
 class MJSynthDataset(BaseDataset):
-    def __init__(self, data_folder, annotation_file, min_shape = (8, 8)):
+    def __init__(self, data_folder, annotation_file, min_shape=(8, 8)):
         super().__init__()
         self.data_folder = data_folder
         self.ann_file = annotation_file
@@ -244,7 +244,7 @@ class MJSynthDataset(BaseDataset):
 
 
 class IIIT5KDataset(BaseDataset):
-    def __init__(self, data_path, annotation_file, min_shape):
+    def __init__(self, data_path, annotation_file, min_shape=(8, 8)):
         super().__init__()
         self.data_path = data_path
         self.annotation_file = annotation_file
