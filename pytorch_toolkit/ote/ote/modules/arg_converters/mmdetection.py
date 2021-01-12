@@ -52,9 +52,9 @@ class MMDetectionArgsConverter(BaseArgConverter):
         'train_data_roots': 'data.train.dataset.img_prefix',
         'val_ann_files': 'data.val.ann_file',
         'val_data_roots': 'data.val.img_prefix',
-# the only difference w.r.t compress_update_args_map
-#        'resume_from': 'resume_from',
-#        'load_weights': 'load_from',
+        # the only difference w.r.t compress_update_args_map
+        # 'resume_from': 'resume_from',
+        # 'load_weights': 'load_from',
         'save_checkpoints_to': 'work_dir',
         'batch_size': 'data.samples_per_gpu',
     }
@@ -62,9 +62,6 @@ class MMDetectionArgsConverter(BaseArgConverter):
         'test_ann_files': 'data.test.ann_file',
         'test_data_roots': 'data.test.img_prefix',
     }
-
-    def __init__(self):
-        super(MMDetectionArgsConverter, self).__init__()
 
     def _get_extra_train_args(self, args):
         out_args = {}
@@ -75,7 +72,7 @@ class MMDetectionArgsConverter(BaseArgConverter):
             out_args['data.val.classes'] = classes
             out_args['model.bbox_head.num_classes'] = num_classes
             if 'mask_head' in Config.fromfile(args['config']).model.roi_head.keys():
-                update_config['model.roi_head.mask_head.num_classes'] = num_classes
+                out_args['model.roi_head.mask_head.num_classes'] = num_classes
 
         return out_args
 
@@ -87,6 +84,6 @@ class MMDetectionArgsConverter(BaseArgConverter):
             out_args['data.test.classes'] = classes
             out_args['model.bbox_head.num_classes'] = num_classes
             if 'mask_head' in Config.fromfile(args['config']).model.roi_head.keys():
-                update_config['model.roi_head.mask_head.num_classes'] = num_classes
+                out_args['model.roi_head.mask_head.num_classes'] = num_classes
 
         return out_args
