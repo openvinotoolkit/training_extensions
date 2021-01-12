@@ -4,6 +4,7 @@ problem: Alphanumeric Text Spotting
 framework: OTEDetection v2.1.2
 summary: Text spotting model based on Mask-RCNN with text recognition head.
 annotation_format: COCO with text
+initial_weights: snapshot.pth
 dependencies:
 - sha256: 2fb616a251461809a92502255247978c6e7f51df7d87e5be90c0ac81b48d0e32
   size: 223291172

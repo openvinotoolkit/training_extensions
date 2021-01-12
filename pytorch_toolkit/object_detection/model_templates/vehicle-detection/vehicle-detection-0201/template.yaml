@@ -4,6 +4,7 @@ problem: Vehicle Detection
 framework: OTEDetection v2.1.1
 summary: Vehicle Detection based on MobileNetV2 (SSD).
 annotation_format: COCO
+initial_weights: snapshot.pth
 dependencies:
 - sha256: 3b7ab624089bad9d99592051dc009c1966e6d2f8653b5bb224554956ea37881d
   size: 14905218
@@ -23,7 +24,7 @@ dependencies:
   destination: requirements.txt
 dataset_requirements:
   classes:
-    - "vehicle"
+  - vehicle
 max_nodes: 1
 training_target:
 - CPU

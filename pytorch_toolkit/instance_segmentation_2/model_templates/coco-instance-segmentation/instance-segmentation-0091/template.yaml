@@ -4,8 +4,9 @@ problem: COCO Instance Segmentation
 framework: OTEDetection v2.1.1
 summary: Instance segmentation based on Cascade R-CNN architecture with ResNet101.
 annotation_format: COCO
+initial_weights: snapshot.pth
 dependencies:
-- sha256: df0c5f1057341d07d7346644aa1671ca735183b4abc3f62ee72942c398b8af32 
+- sha256: df0c5f1057341d07d7346644aa1671ca735183b4abc3f62ee72942c398b8af32
   size: 390967586
   source: https://download.01.org/opencv/openvino_training_extensions/models/instance_segmentation/v2/instance-segmentation-0091.pth
   destination: snapshot.pth

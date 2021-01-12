@@ -4,6 +4,7 @@ problem: Horizontal Text Detection
 framework: OTEDetection v2.1.1
 summary: Text Detection based on MobileNetV2 (FCOS).
 annotation_format: COCO
+initial_weights: snapshot.pth
 dependencies:
 - sha256: ac879a21e3558b5d516f04e76444e697553309873908e45a6fa67fc5dda397f9
   size: 15825821
@@ -23,7 +24,7 @@ dependencies:
   destination: requirements.txt
 dataset_requirements:
   classes:
-    - "text"
+  - text
 max_nodes: 1
 training_target:
 - GPU

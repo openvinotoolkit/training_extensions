@@ -4,6 +4,7 @@ problem: Gesture Recognition
 framework: OTEAction v0.6.0
 summary: ASL Recognition based on S3D-MobileNet-V3.
 annotation_format: CustomAction
+initial_weights: snapshot.pth
 dependencies:
 - sha256: 3bb05087cb405f83479a5ae83ec6a8ad49163047569e0309f78f81e9a337708c
   size: 43195590
