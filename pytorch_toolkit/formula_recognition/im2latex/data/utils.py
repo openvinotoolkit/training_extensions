@@ -19,7 +19,7 @@ import datetime
 import cv2 as cv
 import numpy as np
 import torch
-from torchvision.transforms import Compose, ToTensor, RandomApply, RandomChoice
+from torchvision.transforms import Compose, ToTensor, RandomApply, RandomChoice, ColorJitter
 
 from .vocab import END_TOKEN, PAD_TOKEN, START_TOKEN, UNK_TOKEN
 
@@ -417,6 +417,8 @@ TRANSFORMS = {
     'TransformResize': TransformResize,
     'TransformShift': TransformShift,
     'TransformRandomBolding': TransformRandomBolding,
+    'ColorJitter': ColorJitter,
+
 }
 
 
