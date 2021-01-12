@@ -4,6 +4,7 @@ problem: Person Detection
 framework: OTEDetection v2.1.1
 summary: Person Detection based on MobileNetV2 (SSD).
 annotation_format: COCO
+initial_weights: snapshot.pth
 dependencies:
 - sha256: 2e2020ee31fc8eb7028b633b06704e7488b8dbc9f6e207557639bec13e7a4746
   size: 15854322
@@ -23,7 +24,7 @@ dependencies:
   destination: requirements.txt
 dataset_requirements:
   classes:
-    - "person"
+    - person
 max_nodes: 1
 training_target:
 - GPU

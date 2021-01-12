@@ -132,6 +132,17 @@ class PersonDetection0202NNCFint8(
 ):
     """ Test case for person-detection-0202 model with NNCF int8 compression. """
 
+class PersonDetection0203NNCFint8(
+        create_object_detection_nncf_test_case(
+            'person-detection',
+            'person-detection-0203',
+            os.path.dirname(__file__) + '/../../../data/airport/annotation_person_train.json',
+            os.path.dirname(__file__) + '/../../../data/airport/train',
+            '--nncf-quantization'
+        )
+):
+    """ Test case for person-detection-0203 model with NNCF int8 compression. """
+
 class PersonVehicleBikeDetection2000NNCFint8(
         create_object_detection_nncf_test_case(
             'person-vehicle-bike-detection',
