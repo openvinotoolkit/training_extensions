@@ -38,7 +38,7 @@ output_format:
   openvino:
     default: true
     input_format: BGR
-quantization: TBD
+optimisations: ~
 metrics:
 - display_name: Bbox AP @ [IoU=0.50:0.95]
   key: ap
@@ -58,4 +58,5 @@ metrics:
   value: 66.49
 gpu_num: 2
 config: model.py
+tensorboard: true
 estimated_batch_time: -1

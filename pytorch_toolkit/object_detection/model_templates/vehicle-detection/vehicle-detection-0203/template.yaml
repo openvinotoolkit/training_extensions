@@ -43,7 +43,7 @@ output_format:
   openvino:
     default: true
     input_format: BGR
-compression: null
+optimisations: ~
 metrics:
 - display_name: Size
   key: size
