@@ -95,4 +95,6 @@ def download_snapshot_if_not_yet(template_file, output_folder):
             assert expected_size == actual['size'], f'{template_file} actual_size {actual["size"]}'
             assert expected_sha256 == actual['sha256'], f'{template_file} actual_sha256 {actual["sha256"]}'
 
+            return
+
     raise RuntimeError('Failed to find snapshot.pth')

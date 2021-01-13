@@ -3,11 +3,11 @@ domain: Image classification
 problem: ImageNet classification
 framework: OTEReidentification v1.2.3
 summary: Imagenet classification based on MobileNet-V2.
-annotation_format: CustomImages
+annotation_format: ImageNet
 dependencies:
-- sha256: 447d0b5cf0aee0d901c270925b8448099c4f69149b4f04f80231188a6b4c8e10
-  size: 14214917
-  source: https://drive.google.com/uc?export=download&id=1PrLdWkgxwMuf5JT9pZMEIqwco0qbcDBP
+- sha256: 3914dbd3534dabcbcc5b782ba0d02403402fa0540c2fa9cba4161d2d1cba9d3a
+  size: 14271020
+  source: https://drive.google.com/uc?export=download&id=1Feg4ksg40y97ndz1Wy1APP6iRQk66Liz
   destination: snapshot.pth
 - source: ../../../../../pytorch_toolkit/ote/tools/train.py
   destination: train.py
