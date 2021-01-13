@@ -116,7 +116,7 @@ class ModelTemplatesTestCase(create_model_template_tests_base('TESTS')):
         template_files = self._get_template_files()
         for template in template_files:
             with open(template) as read_file:
-                template_fields = list(yaml.load(read_file, yaml.SafeLoader).keys())
+                template_fields = list(yaml.safe_load(read_file).keys())
             max_pos = -1
             for field in mandatory_fields:
                 try:
