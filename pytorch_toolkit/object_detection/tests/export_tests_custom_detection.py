@@ -52,18 +52,6 @@ def create_custom_object_detection_export_test_case(model_name):
                 value = [metrics['value'] for metrics in content['metrics'] if metrics['key'] == metric_key][0]
                 self.assertGreaterEqual(value, self.expected_outputs[metric_key] - self.test_export_thr)
 
-        def do_export(self, export_dir, on_gpu):
-            if not os.path.exists(export_dir):
-                initial_command = 'export CUDA_VISIBLE_DEVICES=;' if not on_gpu else ''
-                run_through_shell(
-                    f'{initial_command}'
-                    f'cd {os.path.dirname(self.template_file)};'
-                    f'pip install -r requirements.txt;'
-                    f'python export.py'
-                    f' --load-weights snapshot.pth'
-                    f' --save-model-to {export_dir}'
-                )
-
     return ExportTestCase
 
 
