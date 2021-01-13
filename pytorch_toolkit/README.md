@@ -47,6 +47,5 @@ them for prediction.
 In order to run tests please execute following commands:
 
 ```bash
-pip3 install -e ote
 python3 tests/run_model_templates_tests.py
 ```
