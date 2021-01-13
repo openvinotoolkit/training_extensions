@@ -74,8 +74,9 @@ class MMDetectionArgsConverter(BaseArgConverter):
             out_args['data.train.dataset.classes'] = classes
             out_args['data.val.classes'] = classes
             out_args['model.bbox_head.num_classes'] = num_classes
-            if hasattr(Config.fromfile(args['config']).model, 'roi_head'):
-                if 'mask_head' in Config.fromfile(args['config']).model.roi_head.keys():
+            model_config = Config.fromfile(args['config']).model
+            if hasattr(model_config, 'roi_head'):
+                if 'mask_head' in model_config.roi_head.keys():
                     out_args['model.roi_head.mask_head.num_classes'] = num_classes
 
         return out_args
