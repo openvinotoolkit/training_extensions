@@ -1,4 +1,4 @@
-from .arg_parsers import DefaultArgParser, CustomDetectorArgParser, FaceDetectorArgParser, ReidArgParser
+from .arg_parsers import DefaultArgParser, CustomDetectorArgParser, FaceDetectorArgParser
 from .arg_converters import (BaseArgConverter, MMActionArgsConverter, MMDetectionArgsConverter,
                              MMDetectionWiderArgsConverter)
 from .compression import NNCFConfigTransformer
@@ -25,7 +25,6 @@ __all__ = [
     'DefaultArgParser',
     'CustomDetectorArgParser',
     'FaceDetectorArgParser',
-    'ReidArgParser',
     'BaseArgConverter',
     'MMActionArgsConverter',
     'MMDetectionArgsConverter',
