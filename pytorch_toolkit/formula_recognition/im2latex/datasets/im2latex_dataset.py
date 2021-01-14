@@ -50,6 +50,8 @@ from tqdm import tqdm
 from ..data.utils import get_num_lines_in_file
 from ..data.vocab import split_number
 
+ALPHANUMERIC_VOCAB = set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
+
 
 class BatchRandomSampler(Sampler):
     """This is a class representing random batch sampler
@@ -177,16 +179,16 @@ class CocoTextOnlyDataset(BaseDataset):
 
 
 class ICDAR2013RECDataset(BaseDataset):
-    def __init__(self, images_folder, annotation_file, root='', min_shape=(8, 8)):
+    def __init__(self, images_folder, annotation_file, root='', min_shape=(8, 8), grayscale=False, fixed_img_shape=None):
         super().__init__()
         self.images_folder = images_folder
         self.annotation_file = annotation_file
         if root:
             self.annotation_file = os.path.join(root, self.annotation_file)
             self.images_folder = os.path.join(root, self.images_folder)
-        self.pairs = self._load(min_shape)
+        self.pairs = self._load(min_shape, grayscale, fixed_img_shape)
 
-    def _load(self, min_shape):
+    def _load(self, min_shape, grayscale, fixed_img_shape):
         with open(self.annotation_file) as f:
             annotation_file = f.readlines()
         annotation_file = [line.strip() for line in annotation_file]
@@ -197,9 +199,16 @@ class ICDAR2013RECDataset(BaseDataset):
         for i, image_nm in tqdm(enumerate(image_names), total=total_len):
             filename = os.path.join(self.images_folder, image_nm)
             img = cv.imread(filename, cv.IMREAD_COLOR)
+            if grayscale:
+                img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+                img = cv.cvtColor(img, cv.COLOR_GRAY2BGR)
+            if fixed_img_shape is not None:
+                img = cv.resize(img, tuple(fixed_img_shape[::-1]))
             if img.shape[0:2] <= tuple(min_shape):
                 continue
             text = texts[i].strip('"')
+            if not set(text) <= ALPHANUMERIC_VOCAB:
+                continue
             text = ' '.join(text)
             el = {"img_name": filename,
                   "text": text,
@@ -211,25 +220,30 @@ class ICDAR2013RECDataset(BaseDataset):
 
 
 class MJSynthDataset(BaseDataset):
-    def __init__(self, data_folder, annotation_file, min_shape=(8, 8)):
+    def __init__(self, data_folder, annotation_file, min_shape=(8, 8), fixed_img_shape=None):
         super().__init__()
         self.data_folder = data_folder
         self.ann_file = annotation_file
-        self.pairs = self._load(min_shape)
+        self.pairs = self._load(min_shape, fixed_img_shape)
 
     def __getitem__(self, index):
         el = deepcopy(self.pairs[index])
         el['img'] = cv.imread(os.path.join(self.data_folder, el['img_path']), cv.IMREAD_COLOR)
         return el
 
-    def _load(self, min_shape):
+    def _load(self, min_shape, fixed_img_shape):
         pairs = []
         with open(os.path.join(self.data_folder, self.ann_file)) as input_file:
             annotation = [line.split(" ")[0] for line in input_file]
         for image_path in tqdm(annotation):
             gt_text = ' '.join(image_path.split("_")[1])
             img = cv.imread(os.path.join(self.data_folder, image_path), cv.IMREAD_COLOR)
-            if img is None or img.shape[0:2] <= tuple(min_shape):
+
+            if img is None:
+                continue
+            if fixed_img_shape is not None:
+                img = cv.resize(img, tuple(fixed_img_shape[::-1]))
+            elif img.shape[0:2] <= tuple(min_shape):
                 continue
             img_shape = tuple(img.shape)
 
@@ -244,13 +258,13 @@ class MJSynthDataset(BaseDataset):
 
 
 class IIIT5KDataset(BaseDataset):
-    def __init__(self, data_path, annotation_file, min_shape=(8, 8)):
+    def __init__(self, data_path, annotation_file, min_shape=(8, 8), grayscale=False, fixed_img_shape=None):
         super().__init__()
         self.data_path = data_path
         self.annotation_file = annotation_file
-        self.pairs = self._load(min_shape)
+        self.pairs = self._load(min_shape, fixed_img_shape)
 
-    def _load(self, min_shape):
+    def _load(self, min_shape, fixed_img_shape):
         pairs = []
         annotation = scipy.io.loadmat(os.path.join(self.data_path, self.annotation_file))
         annotation = (annotation[self.annotation_file.replace(".mat", "")]).squeeze()
@@ -258,7 +272,9 @@ class IIIT5KDataset(BaseDataset):
             img_path = obj[0][0]
             text = obj[1][0]
             img = cv.imread(os.path.join(self.data_path, img_path), cv.IMREAD_COLOR)
-            if img.shape[0:2] <= tuple(min_shape):
+            if fixed_img_shape is not None:
+                img = cv.resize(img, tuple(fixed_img_shape[::-1]))
+            elif img.shape[0:2] <= tuple(min_shape):
                 continue
             text = ' '.join(text)
             el = {"img_name": img_path,
