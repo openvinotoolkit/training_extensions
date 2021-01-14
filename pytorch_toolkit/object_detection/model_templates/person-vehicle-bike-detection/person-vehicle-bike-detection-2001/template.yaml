@@ -4,6 +4,7 @@ problem: Person Vehicle Bike Detection
 framework: OTEDetection v2.1.1
 summary: Person Vehicle Bike Detection based on MobileNetV2 (SSD).
 annotation_format: COCO
+initial_weights: snapshot.pth
 dependencies:
 - sha256: 9c4190208d9ff7b7b860821c48264a50ee529e84f23d0d2f6947eceb64c2346a
   size: 14937205
@@ -23,9 +24,9 @@ dependencies:
   destination: requirements.txt
 dataset_requirements:
   classes:
-    - "vehicle"
-    - "person"
-    - "non-vehicle"
+  - vehicle
+  - person
+  - non-vehicle
 max_nodes: 1
 training_target:
 - CPU

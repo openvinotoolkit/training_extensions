@@ -94,6 +94,39 @@ class ModelTemplatesTestCase(create_model_template_tests_base('TESTS')):
             self.assertTrue(os.path.exists(os.path.join(template_dirname, 'requirements.txt')))
             self.assertTrue(os.path.exists(os.path.join(template_dirname, 'modules.yaml')))
 
+    def test_existence_of_mandatory_fields_in_template(self):
+        mandatory_fields = [
+            'name',
+            'domain',
+            'problem',
+            'framework',
+            'summary',
+            'annotation_format',
+            'initial_weights',
+            'dependencies',
+            'max_nodes',
+            'training_target',
+            'inference_target',
+            'hyper_parameters',
+            'output_format',
+            'optimisations',
+            'metrics',
+            'tensorboard',
+        ]
+        template_files = self._get_template_files()
+        for template in template_files:
+            with open(template) as read_file:
+                template_fields = list(yaml.safe_load(read_file).keys())
+            max_pos = -1
+            for field in mandatory_fields:
+                try:
+                    pos = template_fields.index(field)
+                except ValueError as e:
+                    logging.error(f'Failed to find "{field}" in {template}')
+                    raise e
+                assert pos > max_pos, f'Unsorted fields in template file: {template}'
+                max_pos = pos
+
     def test_train_and_eval(self):
         if not ENABLE_TRAIN_TESTS:
             return

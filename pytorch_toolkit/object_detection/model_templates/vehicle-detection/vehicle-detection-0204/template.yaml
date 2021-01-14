@@ -4,6 +4,7 @@ problem: Vehicle Detection
 framework: OTEDetection v2.1.1
 summary: Vehicle Detection based on ResNet32+fpn+CascadeRCNN.
 annotation_format: COCO
+initial_weights: snapshot.pth
 dependencies:
 - sha256: c2d012f2f56a1a6f8db73ebd0a564b46df4f2bebc6cd1fd04c595ea4f0e2bcb3
   size: 274231556
@@ -23,7 +24,7 @@ dependencies:
   destination: requirements.txt
 dataset_requirements:
   classes:
-    - "vehicle"
+  - vehicle
 max_nodes: 1
 training_target:
 - GPU
@@ -42,7 +43,7 @@ output_format:
   openvino:
     default: true
     input_format: BGR
-compression: null
+optimisations: ~
 metrics:
 - display_name: Size
   key: size

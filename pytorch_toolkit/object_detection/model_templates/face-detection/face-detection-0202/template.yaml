@@ -4,6 +4,7 @@ problem: Face Detection
 framework: OTEDetection v2.1.1
 summary: Face Detection based on MobileNetV2 (SSD).
 annotation_format: COCO
+initial_weights: snapshot.pth
 dependencies:
 - sha256: 774ad73bd1529c4f54867f35d18db00ddc896e6586be89b0b1ed4b0c5161051e
   size: 14904301
@@ -23,7 +24,7 @@ dependencies:
   destination: requirements.txt
 dataset_requirements:
   classes:
-    - "face"
+  - face
 max_nodes: 1
 training_target:
 - CPU
