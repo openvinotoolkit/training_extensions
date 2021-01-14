@@ -262,9 +262,9 @@ class IIIT5KDataset(BaseDataset):
         super().__init__()
         self.data_path = data_path
         self.annotation_file = annotation_file
-        self.pairs = self._load(min_shape, fixed_img_shape)
+        self.pairs = self._load(min_shape, fixed_img_shape, grayscale)
 
-    def _load(self, min_shape, fixed_img_shape):
+    def _load(self, min_shape, fixed_img_shape, grayscale):
         pairs = []
         annotation = scipy.io.loadmat(os.path.join(self.data_path, self.annotation_file))
         annotation = (annotation[self.annotation_file.replace(".mat", "")]).squeeze()
@@ -272,6 +272,9 @@ class IIIT5KDataset(BaseDataset):
             img_path = obj[0][0]
             text = obj[1][0]
             img = cv.imread(os.path.join(self.data_path, img_path), cv.IMREAD_COLOR)
+            if grayscale:
+                img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+                img = cv.cvtColor(img, cv.COLOR_GRAY2BGR)
             if fixed_img_shape is not None:
                 img = cv.resize(img, tuple(fixed_img_shape[::-1]))
             elif img.shape[0:2] <= tuple(min_shape):
