@@ -36,7 +36,8 @@ def collect_ap(path):
 
 
 def update_outputs(outputs, metric_keys, metric_names, metric_values):
-    assert len(metric_values) == len(metric_names) == len(metric_keys)
+    assert len(metric_values) == len(metric_names) == len(metric_keys), \
+        f'{metric_values} vs {metric_names} vs {metric_keys}'
     for key, name, value in zip(metric_keys, metric_names, metric_values):
         assert 0 <= value <= 1.0, f'{key} = {value}'
         outputs.append(

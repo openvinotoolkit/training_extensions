@@ -33,6 +33,19 @@ def create_custom_object_detection_export_test_case(model_name):
 
         classes = 'vehicle,person,non-vehicle'
 
+        def do_export(self, export_dir, on_gpu):
+            if not os.path.exists(export_dir):
+                initial_command = 'export CUDA_VISIBLE_DEVICES=;' if not on_gpu else ''
+                run_through_shell(
+                    f'{initial_command}'
+                    f'cd {os.path.dirname(self.template_file)};'
+                    f'pip install -r requirements.txt;'
+                    f'python export.py'
+                    f' --load-weights snapshot.pth'
+                    f' --save-model-to {export_dir}'
+                    f' --classes {self.classes}'
+                )
+        
         def do_evaluation(self, export_dir):
             metrics_path = os.path.join(export_dir, "metrics.yaml")
             run_through_shell(
