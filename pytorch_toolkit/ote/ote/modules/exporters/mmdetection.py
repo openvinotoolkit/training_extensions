@@ -16,12 +16,12 @@
 
 import os
 import yaml
-from subprocess import run
 
 from ote import MMDETECTION_TOOLS
+from ote.utils.misc import run_through_shell
 from mmcv.utils import Config
 
-from .base import BaseExporter, run_through_shell
+from .base import BaseExporter
 from ..arg_converters import MMDetectionArgsConverter
 from ..registry import EXPORTERS
 

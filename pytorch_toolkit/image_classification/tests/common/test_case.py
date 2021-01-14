@@ -22,7 +22,7 @@ import yaml
 from ote.tests.test_case import (create_export_test_case,
                                  create_nncf_test_case,
                                  create_test_case)
-from ote.tests.utils import run_through_shell
+from ote.utils.misc import run_through_shell
 
 
 def create_image_classification_export_test_case(**kwargs):

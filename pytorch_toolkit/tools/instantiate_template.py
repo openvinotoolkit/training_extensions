@@ -15,14 +15,13 @@
 import argparse
 import logging
 import os
-from subprocess import run
 
 import yaml
 
 import sys
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'ote'))
 
-from ote.utils.misc import download_snapshot_if_not_yet
+from ote.utils.misc import download_snapshot_if_not_yet, run_through_shell
 
 
 def parse_args():
@@ -30,19 +29,22 @@ def parse_args():
     parser.add_argument('template', help='Location of model template file (template.yaml).')
     parser.add_argument('output', help='Location of output directory where template will be instantiated.')
     parser.add_argument('--do-not-load-snapshot', action='store_true')
+    parser.add_argument('--verbose', '-v', action='store_true', help='If the instantiation should be run in verbose mode')
 
     return parser.parse_args()
 
 
 def main():
-    logging.basicConfig(level=logging.INFO)
-
     args = parse_args()
+    log_level = logging.DEBUG if args.verbose else logging.INFO
+    logging.basicConfig(level=log_level)
+
     with open(args.template) as read_file:
         content = yaml.load(read_file, yaml.SafeLoader)
 
     os.makedirs(args.output, exist_ok=True)
-    os.system(f'cp -r {os.path.dirname(args.template)}/* {args.output}')
+    run_through_shell(f'cp -r {os.path.dirname(args.template)}/* {args.output}',
+                      verbose=args.verbose)
 
     for dependency in content['dependencies']:
         source = dependency['source']
@@ -50,7 +52,8 @@ def main():
         if destination != 'snapshot.pth':
             rel_source = os.path.join(os.path.dirname(args.template), source)
             os.makedirs(os.path.dirname(os.path.join(args.output, destination)), exist_ok=True)
-            run(f'cp -r {rel_source} {os.path.join(args.output, destination)}', check=True, shell=True)
+            run_through_shell(f'cp -r {rel_source} {os.path.join(args.output, destination)}', check=True,
+                              verbose=args.verbose)
 
     if not args.do_not_load_snapshot:
         download_snapshot_if_not_yet(args.template, args.output)

@@ -16,10 +16,10 @@
 
 import json
 import logging
-import subprocess
 import tempfile
 
 from ote import MMDETECTION_TOOLS
+from ote.utils.misc import run_through_shell
 
 from .base import BaseTrainer
 from ..registry import TRAINERS
@@ -76,13 +76,17 @@ class MMDetectionTrainer(BaseTrainer):
 
         img_shape = f' --image_size_wh {img_shape[0]} {img_shape[1]}'
 
-        subprocess.run(f'python {MMDETECTION_TOOLS}/cluster_boxes.py'
-                       f'{config}'
-                       f'{n_clust}'
-                       f'{group_as}'
-                       f'{update_config}'
-                       f'{img_shape}'
-                       f'{out}'.split(' '), check=True)
+        # This is required for some command line parameters that should be passed through
+        # mmdetection's parser (that uses ExtendedDictAction) as a list of strings
+        update_config_for_run = update_config.replace('"', '\\"')
+
+        run_through_shell(f'python {MMDETECTION_TOOLS}/cluster_boxes.py'
+                          f'{config}'
+                          f'{n_clust}'
+                          f'{group_as}'
+                          f'{update_config_for_run}'
+                          f'{img_shape}'
+                          f'{out}')
 
         with open(tmp_file.name) as src_file:
             content = json.load(src_file)

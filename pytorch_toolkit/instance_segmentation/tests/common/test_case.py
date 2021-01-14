@@ -20,7 +20,8 @@ import torch
 import yaml
 
 from ote.tests.test_case import create_export_test_case, create_test_case
-from ote.tests.utils import collect_ap, run_through_shell
+from ote.tests.utils import collect_ap
+from ote.utils.misc import run_through_shell
 
 
 def download_and_extract_coco_val2017(coco_dir):
