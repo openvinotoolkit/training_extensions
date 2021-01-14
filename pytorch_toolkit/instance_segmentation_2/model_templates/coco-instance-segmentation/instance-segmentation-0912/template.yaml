@@ -4,8 +4,9 @@ problem: COCO Instance Segmentation
 framework: OTEDetection v2.1.1
 summary: Instance segmentation based on Mask R-CNN architecture with ResNet50.
 annotation_format: COCO
+initial_weights: snapshot.pth
 dependencies:
-- sha256: 81c3e6d86e61f2dce8845dd297abe495ff0c604de3a9c93c51cc1728ba87d7fa 
+- sha256: 81c3e6d86e61f2dce8845dd297abe495ff0c604de3a9c93c51cc1728ba87d7fa
   size: 231881353
   source: https://download.01.org/opencv/openvino_training_extensions/models/instance_segmentation/v2/instance-segmentation-0904-0912.pth
   destination: snapshot.pth
@@ -21,6 +22,16 @@ dependencies:
   destination: packages/ote
 - source: ../../requirements.txt
   destination: requirements.txt
+dataset_requirements:
+  classes: [person, bicycle, car, motorcycle, airplane, bus, train, truck, boat,
+    traffic light, fire hydrant, stop sign, parking meter, bench, bird, cat, dog, horse,
+    sheep, cow, elephant, bear, zebra, giraffe, backpack, umbrella, handbag, tie,
+    suitcase, frisbee, skis, snowboard, sports ball, kite, baseball bat, baseball glove,
+    skateboard, surfboard, tennis racket, bottle, wine glass, cup, fork,
+    knife, spoon, bowl, banana, apple, sandwich, orange, broccoli, carrot, hot dog,
+    pizza, donut, cake, chair, couch, potted plant, bed, dining table, toilet, tv,
+    laptop, mouse, remote, keyboard, cell phone, microwave, oven, toaster, sink, refrigerator,
+    book, clock, vase, scissors, teddy bear, hair drier, toothbrush]
 max_nodes: 1
 training_target:
 - GPU
@@ -37,7 +48,7 @@ output_format:
   openvino:
     default: true
     input_format: BGR
-quantization: TBD
+optimisations: ~
 metrics:
 - display_name: Bbox AP @ [IoU=0.50:0.95]
   key: ap
@@ -57,4 +68,5 @@ metrics:
   value: 66.49
 gpu_num: 2
 config: model.py
+tensorboard: true
 estimated_batch_time: -1
