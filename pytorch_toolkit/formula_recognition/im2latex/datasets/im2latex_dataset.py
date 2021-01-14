@@ -224,14 +224,18 @@ class MJSynthDataset(BaseDataset):
         super().__init__()
         self.data_folder = data_folder
         self.ann_file = annotation_file
-        self.pairs = self._load(min_shape, fixed_img_shape)
+        self.fixed_img_shape = fixed_img_shape
+        self.pairs = self._load(min_shape)
 
     def __getitem__(self, index):
         el = deepcopy(self.pairs[index])
-        el['img'] = cv.imread(os.path.join(self.data_folder, el['img_path']), cv.IMREAD_COLOR)
+        img = cv.imread(os.path.join(self.data_folder, el['img_path']), cv.IMREAD_COLOR)
+        if self.fixed_img_shape is not None:
+            img = cv.resize(img, tuple(self.fixed_img_shape[::-1]))
+        el['img'] = img
         return el
 
-    def _load(self, min_shape, fixed_img_shape):
+    def _load(self, min_shape):
         pairs = []
         with open(os.path.join(self.data_folder, self.ann_file)) as input_file:
             annotation = [line.split(" ")[0] for line in input_file]
@@ -241,8 +245,6 @@ class MJSynthDataset(BaseDataset):
 
             if img is None:
                 continue
-            if fixed_img_shape is not None:
-                img = cv.resize(img, tuple(fixed_img_shape[::-1]))
             elif img.shape[0:2] <= tuple(min_shape):
                 continue
             img_shape = tuple(img.shape)
