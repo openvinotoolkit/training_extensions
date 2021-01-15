@@ -179,16 +179,17 @@ class CocoTextOnlyDataset(BaseDataset):
 
 
 class ICDAR2013RECDataset(BaseDataset):
-    def __init__(self, images_folder, annotation_file, root='', min_shape=(8, 8), grayscale=False, fixed_img_shape=None):
+    def __init__(self, images_folder, annotation_file, root='', min_shape=(8, 8), grayscale=False,
+                 fixed_img_shape=None, case_sensitive=True):
         super().__init__()
         self.images_folder = images_folder
         self.annotation_file = annotation_file
         if root:
             self.annotation_file = os.path.join(root, self.annotation_file)
             self.images_folder = os.path.join(root, self.images_folder)
-        self.pairs = self._load(min_shape, grayscale, fixed_img_shape)
+        self.pairs = self._load(min_shape, grayscale, fixed_img_shape, case_sensitive)
 
-    def _load(self, min_shape, grayscale, fixed_img_shape):
+    def _load(self, min_shape, grayscale, fixed_img_shape, case_sensitive):
         with open(self.annotation_file) as f:
             annotation_file = f.readlines()
         annotation_file = [line.strip() for line in annotation_file]
@@ -209,6 +210,8 @@ class ICDAR2013RECDataset(BaseDataset):
             text = texts[i].strip('"')
             if not set(text) <= ALPHANUMERIC_VOCAB:
                 continue
+            if not case_sensitive:
+                text = text.lower()
             text = ' '.join(text)
             el = {"img_name": filename,
                   "text": text,
@@ -220,12 +223,13 @@ class ICDAR2013RECDataset(BaseDataset):
 
 
 class MJSynthDataset(BaseDataset):
-    def __init__(self, data_folder, annotation_file, min_shape=(8, 8), fixed_img_shape=None):
+    def __init__(self, data_folder, annotation_file, min_shape=(8, 8),
+                 fixed_img_shape=None, case_sensitive=True):
         super().__init__()
         self.data_folder = data_folder
         self.ann_file = annotation_file
         self.fixed_img_shape = fixed_img_shape
-        self.pairs = self._load(min_shape)
+        self.pairs = self._load(min_shape, case_sensitive)
 
     def __getitem__(self, index):
         el = deepcopy(self.pairs[index])
@@ -235,7 +239,7 @@ class MJSynthDataset(BaseDataset):
         el['img'] = img
         return el
 
-    def _load(self, min_shape):
+    def _load(self, min_shape, case_sensitive):
         pairs = []
         with open(os.path.join(self.data_folder, self.ann_file)) as input_file:
             annotation = [line.split(" ")[0] for line in input_file]
@@ -248,7 +252,8 @@ class MJSynthDataset(BaseDataset):
             elif img.shape[0:2] <= tuple(min_shape):
                 continue
             img_shape = tuple(img.shape)
-
+            if not case_sensitive:
+                text = text.lower()
             el = {"img_name": os.path.split(image_path)[1],
                   "text": gt_text,
                   "img_path": image_path,
@@ -260,13 +265,14 @@ class MJSynthDataset(BaseDataset):
 
 
 class IIIT5KDataset(BaseDataset):
-    def __init__(self, data_path, annotation_file, min_shape=(8, 8), grayscale=False, fixed_img_shape=None):
+    def __init__(self, data_path, annotation_file, min_shape=(8, 8), grayscale=False,
+                 fixed_img_shape=None, case_sensitive=True):
         super().__init__()
         self.data_path = data_path
         self.annotation_file = annotation_file
-        self.pairs = self._load(min_shape, fixed_img_shape, grayscale)
+        self.pairs = self._load(min_shape, fixed_img_shape, grayscale, case_sensitive)
 
-    def _load(self, min_shape, fixed_img_shape, grayscale):
+    def _load(self, min_shape, fixed_img_shape, grayscale, case_sensitive):
         pairs = []
         annotation = scipy.io.loadmat(os.path.join(self.data_path, self.annotation_file))
         annotation = (annotation[self.annotation_file.replace(".mat", "")]).squeeze()
@@ -282,6 +288,8 @@ class IIIT5KDataset(BaseDataset):
             elif img.shape[0:2] <= tuple(min_shape):
                 continue
             text = ' '.join(text)
+            if not case_sensitive:
+                text = text.lower()
             el = {"img_name": img_path,
                   "text": text,
                   "img": img,
