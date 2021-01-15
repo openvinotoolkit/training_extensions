@@ -1,3 +1,16 @@
+Main Page:
+![main](.images/main.png)
+
+Face Detection Page:
+![face-detection](.images/face-detection.png)
+
+Fine Tune Dialog:
+![fine-tube](.images/fine-tune.png)
+
+Assets Page:
+![assets](.images/assets.png)
+
+
 # WEB OTE
 WEB OTE is a convenient tool to train models for specific tasks fast and easily, using a graphical interface, an annotation tool for photos and videos and the scope of varied pre-trained models. Currently, WEB UI contains models for the following tasks:
 - [Face detection](../pytorch_toolkit/object_detection/model_templates/face-detection/readme.md#face-detection)
