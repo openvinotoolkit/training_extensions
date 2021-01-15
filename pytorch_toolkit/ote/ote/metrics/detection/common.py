@@ -50,7 +50,6 @@ def run_test_script(config_path, work_dir, snapshot, update_config, show_dir, me
 
     update_config = ' '.join([f'{k}={v}' for k, v in update_config.items()])
     update_config = f' --update_config {update_config}' if update_config else ''
-    update_config = update_config.replace('"', '\\"')
     show_dir = f' --show-dir {show_dir}' if show_dir else ''
 
     if snapshot.split('.')[-1] in {'xml', 'bin', 'onnx'}:

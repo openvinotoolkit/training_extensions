@@ -50,7 +50,6 @@ def mean_accuracy_eval(config_path, work_dir, snapshot, update_config, **kwargs)
 
         update_config = ' '.join([f'{k}={v}' for k, v in update_config.items()])
         update_config = f' --update_config {update_config}' if update_config else ''
-        update_config = update_config.replace('"', '\\"')
 
         if snapshot.split('.')[-1] in {'xml', 'bin', 'onnx'}:
             if snapshot.split('.')[-1] == 'bin':
