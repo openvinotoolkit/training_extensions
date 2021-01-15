@@ -68,6 +68,7 @@ def create_test_case(domain_name, problem_name, model_name, ann_file, img_root, 
         domain = domain_name
         problem = problem_name
         model = model_name
+        metrics = metric_keys
         topic = 'train'
 
         @classmethod
@@ -162,6 +163,7 @@ def create_export_test_case(domain_name, problem_name, model_name, ann_file, img
         domain = domain_name
         problem = problem_name
         model = model_name
+        metrics = metric_keys
         topic = 'export'
 
         @classmethod

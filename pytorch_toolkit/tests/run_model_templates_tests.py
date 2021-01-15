@@ -10,6 +10,7 @@ import yaml
 
 ENABLE_TESTS_FOR = {
     'object_detection': [
+        'custom_detection',
         'face_detection',
         'person_detection',
         'person_vehicle_bike_detection',
@@ -23,7 +24,7 @@ ENABLE_TESTS_FOR = {
         'coco_instance_segmentation',
     ],
     'text_spotting_2': [
-        # 'alphanumeric_text_spotting',
+        'alphanumeric_text_spotting',
     ]
 }
 

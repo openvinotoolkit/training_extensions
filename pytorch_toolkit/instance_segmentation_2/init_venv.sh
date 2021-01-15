@@ -21,7 +21,7 @@ fi
 git submodule update --init ../../external/mmdetection
 
 # Create virtual environment
-virtualenv ${venv_dir} -p python3.7 --prompt="(instance_segmentation)"
+virtualenv ${venv_dir} -p python3 --prompt="(instance_segmentation)"
 
 path_openvino_vars="${INTEL_OPENVINO_DIR:-/opt/intel/openvino}/bin/setupvars.sh"
 if [[ -e "${path_openvino_vars}" ]]; then
