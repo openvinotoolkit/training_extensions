@@ -46,7 +46,6 @@ class MMDetectionExporter(BaseExporter):
         update_config = MMDetectionArgsConverter.get_classes_extra_args(args)
         update_config = ' '.join([f'{k}={v}' for k, v in update_config.items()])
         update_config = f' --update_config {update_config}' if update_config else ''
-        update_config = update_config.replace('"', '\\"')
         return update_config
 
     def _export_to_onnx(self, args, tools_dir):

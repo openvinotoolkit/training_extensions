@@ -14,6 +14,8 @@
  limitations under the License.
 """
 
+import shlex
+
 from mmcv import Config
 
 from .base import BaseArgConverter
@@ -72,6 +74,7 @@ class MMDetectionArgsConverter(BaseArgConverter):
         if 'classes' in args and args['classes']:
             classes = '[' + ','.join(f'"{x}"' for x in args['classes'].split(',')) + ']'
             num_classes = len(args['classes'].split(','))
+            classes = shlex.quote(classes)
             out_args['data.train.dataset.classes'] = classes
             out_args['data.val.classes'] = classes
             out_args['data.test.classes'] = classes
