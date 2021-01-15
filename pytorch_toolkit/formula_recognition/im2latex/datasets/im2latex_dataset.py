@@ -253,7 +253,7 @@ class MJSynthDataset(BaseDataset):
                 continue
             img_shape = tuple(img.shape)
             if not case_sensitive:
-                text = text.lower()
+                gt_text = gt_text.lower()
             el = {"img_name": os.path.split(image_path)[1],
                   "text": gt_text,
                   "img_path": image_path,
