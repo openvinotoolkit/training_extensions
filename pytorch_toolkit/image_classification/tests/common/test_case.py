@@ -51,7 +51,6 @@ def create_image_classification_export_test_case(**kwargs):
                         f'pip install -r requirements.txt;'
                         f'python export.py'
                         f' --load-weights snapshot.pth'
-                         ' --num-classes 1000'
                         f' --save-model-to {export_dir}'
                     )
 
