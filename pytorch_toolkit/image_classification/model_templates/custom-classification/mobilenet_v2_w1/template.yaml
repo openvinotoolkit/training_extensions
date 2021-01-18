@@ -4,6 +4,7 @@ problem: ImageNet classification
 framework: OTEReidentification v1.2.3
 summary: Imagenet classification based on MobileNet-V2.
 annotation_format: ImageNet
+initial_weights: snapshot.pth
 dependencies:
 - sha256: 3914dbd3534dabcbcc5b782ba0d02403402fa0540c2fa9cba4161d2d1cba9d3a
   size: 14271020
