@@ -21,13 +21,13 @@ kwargs = dict(
     problem_name='person-detection',
     ann_file=os.path.dirname(__file__) + '/../../../data/airport/annotation_person_train.json',
     img_root=os.path.dirname(__file__) + '/../../../data/airport/train',
-    alt_ssd_export=True
 )
 
 
 class PersonDetection0200TestCase(
         create_object_detection_export_test_case(
             model_name='person-detection-0200',
+            alt_ssd_export=True,
             **kwargs)
 ):
     """ Test case for person-detection-0200 model export. """
@@ -36,6 +36,7 @@ class PersonDetection0200TestCase(
 class PersonDetection0201TestCase(
         create_object_detection_export_test_case(
             model_name='person-detection-0201',
+            alt_ssd_export=True,
             **kwargs)
 ):
     """ Test case for person-detection-0201 model export. """
@@ -44,6 +45,17 @@ class PersonDetection0201TestCase(
 class PersonDetection0202TestCase(
         create_object_detection_export_test_case(
             model_name='person-detection-0202',
+            alt_ssd_export=True,
             **kwargs)
 ):
     """ Test case for person-detection-0202 model export. """
+
+
+class PersonDetection0203TestCase(
+        create_object_detection_export_test_case(
+            model_name='person-detection-0203',
+            alt_ssd_export=False,
+            **kwargs)
+):
+    """ Test case for person-detection-0203 model export. """
+

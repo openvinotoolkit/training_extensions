@@ -48,3 +48,13 @@ class PersonDetection0202TestCase(
         )
 ):
     """ Test case for person-detection-0202 model. """
+
+
+class PersonDetection0203TestCase(
+        create_object_detection_test_case(
+            model_name='person-detection-0203',
+            **kwargs,
+        )
+):
+    """ Test case for person-detection-0203 model. """
+
