@@ -18,13 +18,14 @@ import json
 import os.path
 from enum import Enum
 from functools import partial
+from pprint import pprint
 
 import numpy as np
 import onnxruntime
 import torch
 from openvino.inference_engine import IECore
 from im2latex.utils.common import (DECODER_INPUTS, DECODER_OUTPUTS,
-                                ENCODER_INPUTS, ENCODER_OUTPUTS, read_net)
+                                   ENCODER_INPUTS, ENCODER_OUTPUTS, read_net)
 from im2latex.utils.evaluation_utils import Im2latexRenderBasedMetric
 from torch.utils.data import DataLoader
 from tqdm import tqdm
@@ -236,6 +237,7 @@ class Evaluator:
         self.config = config
         self.runner = create_runner(self.config, runner_type)
         self.vocab = read_vocab(self.config.get("vocab_path"))
+        self.render = self.config.get("render")
         self.load_dataset()
         self.runner.load_model()
         self.read_expected_outputs()
@@ -247,6 +249,7 @@ class Evaluator:
         val_dataset = str_to_class[dataset_type](**dataset_params)
         batch_transform = create_list_of_transforms(self.config.get(
             'val_transforms_list'), ovino_ir=self.runner.openvino_transform())
+        pprint("Creating eval transforms list: {}".format(self.config.get('val_transforms_list')), indent=4, width=120)
         self.val_loader = DataLoader(
             val_dataset,
             collate_fn=partial(collate_fn, self.vocab.sign2id,
@@ -263,11 +266,18 @@ class Evaluator:
         predictions = []
         print("Starting inference")
         metric = Im2latexRenderBasedMetric()
+        text_acc = 0
         for img_name, imgs, _, loss_computation_gt in tqdm(self.val_loader):
-            targets = self.runner.run_model(imgs)
-            gold_phrase_str = self.vocab.construct_phrase(loss_computation_gt[0])
-            pred_phrase_str = postprocess_prediction(self.vocab.construct_phrase(targets))
-            annotations.append((gold_phrase_str, img_name[0]))
-            predictions.append((pred_phrase_str, img_name[0]))
+            with torch.no_grad():
+                targets = self.runner.run_model(imgs)
+                gold_phrase_str = self.vocab.construct_phrase(loss_computation_gt[0])
+                pred_phrase_str = postprocess_prediction(self.vocab.construct_phrase(targets))
+                annotations.append((gold_phrase_str, img_name[0]))
+                predictions.append((pred_phrase_str, img_name[0]))
+                text_acc += int(pred_phrase_str == gold_phrase_str)
+        text_acc /= len(self.val_loader)
+        print("Text accuracy is: ", text_acc)
+        if not self.render:
+            return text_acc
         res = metric.evaluate(annotations, predictions)
         return res
