@@ -69,6 +69,7 @@ class Im2latexModel(nn.Module):
     def load_weights(self, model_path, map_location='cpu'):
         if model_path is None:
             return
+        print(f"Loading model from {model_path}")
         checkpoint = torch.load(model_path, map_location=map_location)
         checkpoint = OrderedDict((k.replace('module.', '') if 'module.' in k else k, v) for k, v in checkpoint.items())
         try:
