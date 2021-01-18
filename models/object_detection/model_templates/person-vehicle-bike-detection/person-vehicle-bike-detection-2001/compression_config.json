@@ -17,11 +17,11 @@
     "nncf_quantization": {
         "optimizer": {
             "type": "SGD",
-            "lr": 0.0001,
+            "lr": 0.00005,
             "momentum": 0.9,
             "weight_decay": 0.0005
         },
-        "total_epochs": 3,
+        "total_epochs": 2,
         "nncf_config": {
             "compression": [
                 {
