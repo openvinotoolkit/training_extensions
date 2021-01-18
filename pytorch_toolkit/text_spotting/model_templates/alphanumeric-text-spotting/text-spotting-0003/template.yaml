@@ -1,5 +1,5 @@
 name: text-spotting-0003
-domain: Text Spotting 2
+domain: Text Spotting
 problem: Alphanumeric Text Spotting
 framework: OTEDetection v2.1.2
 summary: Text spotting model based on Mask-RCNN with text recognition head.

@@ -1,5 +1,5 @@
 name: instance-segmentation-0912
-domain: Instance Segmentation 2
+domain: Instance Segmentation
 problem: COCO Instance Segmentation
 framework: OTEDetection v2.1.1
 summary: Instance segmentation based on Mask R-CNN architecture with ResNet50.
