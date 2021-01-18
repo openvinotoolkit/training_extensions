@@ -35,7 +35,7 @@ inference.
     - [Person Re-Identification](pytorch_toolkit/object_reidentification/person_reidentification)
     - [Vehicle Re-Identification](pytorch_toolkit/object_reidentification/vehicle_reidentification)
   * [Human Pose Estimation](pytorch_toolkit/human_pose_estimation)
-  * [Instance Segmentation](pytorch_toolkit/instance_segmentation)
+  * [Instance Segmentation](pytorch_toolkit/instance_segmentation_2)
   * [Machine Translation](pytorch_toolkit/machine_translation)
   * [Object Detection](pytorch_toolkit/object_detection)
     - [Face Detection](pytorch_toolkit/object_detection/model_templates/face-detection)
@@ -46,7 +46,7 @@ inference.
   * [Eye State Classification](pytorch_toolkit/open_closed_eye)
   * [Segmentation of Thoracic Organs](pytorch_toolkit/segthor)
   * [Super Resolution](pytorch_toolkit/super_resolution)
-  * [Text Spotting](pytorch_toolkit/text_spotting)
+  * [Text Spotting](pytorch_toolkit/text_spotting_2)
   * [Question Answering](pytorch_toolkit/question_answering)
 
 * [TensorFlow\*](tensorflow_toolkit)
