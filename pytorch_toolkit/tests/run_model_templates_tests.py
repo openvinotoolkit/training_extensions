@@ -20,10 +20,10 @@ ENABLE_TESTS_FOR = {
     'action_recognition_2': [
         'gesture-recognition',
     ],
-    'instance_segmentation_2': [
+    'instance_segmentation': [
         'coco_instance_segmentation',
     ],
-    'text_spotting_2': [
+    'text_spotting': [
         'alphanumeric_text_spotting',
     ]
 }

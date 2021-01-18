@@ -14,10 +14,10 @@ Average Precision (AP) is defined as an area under the precision/recall curve.
 
 ## Training pipeline
 
-### 0. Change a directory in your terminal to instance_segmentation_2 and activate venv.
+### 0. Change a directory in your terminal to instance_segmentation and activate venv.
 
 ```bash
-cd <training_extensions>/pytorch_toolkit/instance_segmentation_2
+cd <training_extensions>/pytorch_toolkit/instance_segmentation
 ```
 If You have not created virtual environment yet:
 ```bash

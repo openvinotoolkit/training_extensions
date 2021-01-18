@@ -35,7 +35,7 @@ def download_and_extract_coco_val2017(coco_dir):
 
 def create_instance_segmentation_test_case(**kwargs):
     expected_outputs_dir = os.path.join(os.path.dirname(__file__), '..', 'expected_outputs')
-    TestCase = create_test_case('instance_segmentation_2',
+    TestCase = create_test_case('instance_segmentation',
                                 **kwargs,
                                 metric_keys=['bbox', 'segm'],
                                 expected_outputs_dir=expected_outputs_dir)
@@ -53,7 +53,7 @@ def create_instance_segmentation_test_case(**kwargs):
 
 def create_instance_segmentation_export_test_case(**kwargs):
     expected_outputs_dir = os.path.join(os.path.dirname(__file__), '..', 'expected_outputs')
-    ExportTestCase = create_export_test_case('instance_segmentation_2',
+    ExportTestCase = create_export_test_case('instance_segmentation',
                                              **kwargs,
                                              metric_keys=['bbox', 'segm'],
                                              expected_outputs_dir=expected_outputs_dir)

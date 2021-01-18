@@ -8,10 +8,10 @@ Model that is able to detect and recognize alphanumeric text (figures and letter
 
 ## Training pipeline
 
-### 0. Change a directory in your terminal to text_spotting_2.
+### 0. Change a directory in your terminal to text_spotting.
 
 ```bash
-cd <training_extensions>/pytorch_toolkit/text_spotting_2
+cd <training_extensions>/pytorch_toolkit/text_spotting
 ```
 If You have not created virtual environment yet:
 ```bash

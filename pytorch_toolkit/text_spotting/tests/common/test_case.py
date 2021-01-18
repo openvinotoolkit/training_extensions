@@ -19,7 +19,7 @@ from ote.tests.test_case import create_export_test_case, create_test_case
 
 def create_text_spotting_test_case(**kwargs):
     expected_outputs_dir = os.path.join(os.path.dirname(__file__), '..', 'expected_outputs')
-    TestCase = create_test_case('text_spotting_2',
+    TestCase = create_test_case('text_spotting',
                                 **kwargs,
                                 metric_keys=['f1', 'word_spotting'],
                                 expected_outputs_dir=expected_outputs_dir)
@@ -29,7 +29,7 @@ def create_text_spotting_test_case(**kwargs):
 
 def create_text_spotting_export_test_case(**kwargs):
     expected_outputs_dir = os.path.join(os.path.dirname(__file__), '..', 'expected_outputs')
-    ExportTestCase = create_export_test_case('text_spotting_2',
+    ExportTestCase = create_export_test_case('text_spotting',
                                              **kwargs,
                                              metric_keys=['f1', 'word_spotting'],
                                              expected_outputs_dir=expected_outputs_dir)
