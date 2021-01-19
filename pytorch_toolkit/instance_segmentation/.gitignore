@@ -1,4 +1,6 @@
-build/*
-data/*
-segmentoly.egg-info/*
-*.so
+__pycache__/
+models/
+IR/
+checkpoint/
+venv/
+*.onnx

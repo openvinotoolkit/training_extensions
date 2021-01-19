@@ -67,4 +67,4 @@ inference.
 
 # Web UI
 
-OpenVINO™ Training Extensions provide [Web UI](web) for training models and annotating data in a convenient way using a graphical interface. 
+OpenVINO™ Training Extensions provide [Web UI](web) for training models and annotating data in a convenient way using a graphical interface.

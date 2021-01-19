@@ -66,7 +66,7 @@ domains:
 #      that carry outs video stream classification.
 #    subtitle: Recognizing gestures in live video streams
 #    cvat_schema: '[{}]'
-- title: Instance Segmentation 2
+- title: Instance Segmentation
   problems:
   - title: COCO Instance Segmentation
     description:  >-
