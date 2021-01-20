@@ -29,24 +29,44 @@ def parse_args():
     parser.add_argument('destination')
     parser.add_argument('--do-not-load-snapshots', action='store_true')
     parser.add_argument('--templates-filter', default='**/template.yaml')
+    parser.add_argument('--templates-list-file',
+                        help='A yaml file with list of paths of template files'
+                         ' to be instantiated. Overrides --template-filter.')
+    parser.add_argument('--domains',
+                        help='Comma-separated list of domains that should be additionally'
+                        ' instantiated even if there are no found templates inside them'
+                        ' (should not contain spaces)')
     parser.add_argument('--verbose', '-v', action='store_true', help='If the instantiation should be run in verbose mode')
 
     return parser.parse_args()
 
+def _get_templates_filenames(args):
+    if args.templates_list_file:
+        with open(args.templates_list_file) as f_t_list:
+            template_filenames = yaml.safe_load(f_t_list)
+    else:
+        template_filenames = glob.glob(args.templates_filter, recursive=True)
+        template_filenames = list(template_filenames)
+    return template_filenames
 
 def main():
     args = parse_args()
     log_level = logging.DEBUG if args.verbose else logging.INFO
     logging.basicConfig(level=log_level)
 
-    template_filenames = glob.glob(args.templates_filter, recursive=True)
+    template_filenames = _get_templates_filenames(args)
+    if args.domains:
+        additional_domains = args.domains.split(',')
+    else:
+        additional_domains = []
+
     problems_filename = glob.glob('**/problems.yaml', recursive=True)
     assert len(problems_filename) == 1
     problems_filename = problems_filename[0]
 
     problems_dict = dict()
     with open(problems_filename) as read_file:
-        content = yaml.load(read_file, yaml.SafeLoader)
+        content = yaml.safe_load(read_file)
         for domain in content['domains']:
             for problem in domain['problems']:
                 problems_dict[problem['title']] = problem
@@ -56,7 +76,7 @@ def main():
     domain_folders = set()
     for template_filename in template_filenames:
         with open(template_filename) as read_file:
-            content = yaml.load(read_file, yaml.SafeLoader)
+            content = yaml.safe_load(read_file)
 
         # TODO(ikrylov): remain one of ('-', '_').
         domain_folder = content['domain'].replace(' ', '_').lower()
@@ -87,6 +107,7 @@ def main():
 
     logging.info(f'Instantiated {len(template_filenames)} templates')
 
+    domain_folders = domain_folders | set(additional_domains)
     for domain_folder in domain_folders:
         logging.info(f'Begin initializing virtual environment for {domain_folder}')
         run_through_shell(f'cd {domain_folder}; '
