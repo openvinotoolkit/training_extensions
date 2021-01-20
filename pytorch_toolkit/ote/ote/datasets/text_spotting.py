@@ -118,12 +118,12 @@ class TextOnlyCocoAnnotation:
             self.annotation['annotations'].append({
                 "bbox": bbox,  # x, y, w, h
                 "segmentation": obj['segmentation'],
-                "text": obj['text'],
+                "attributes": obj['attributes'],
                 "ignore": 0,
                 "id": new_ann_id,
                 "image_id": self.img_path_2_img_id[image_path],
                 "area": obj['bbox'][2] * obj['bbox'][3],
-                "iscrowd": 1 - int(obj['text']['legible']),
+                "iscrowd": 1 - int(obj['attributes']['legible']),
                 "category_id": self.label_map['text']
             })
 
@@ -158,10 +158,6 @@ class TextOnlyCocoAnnotation:
         with open(path, 'w') as read_file:
             json.dump(annotation, read_file)
 
-    @staticmethod
-    def _check_object_consistency(obj):
-        assert obj['iscrowd'] == 1 - obj['text']['legible']
-
     def check_objects_inside(self):
         for frame in tqdm(self.annotation['images']):
             image_path = frame['file_name']
@@ -193,7 +189,7 @@ class TextOnlyCocoAnnotation:
                     color = (128, 128, 128)
                 bbox = obj['bbox']
                 if put_text:
-                    cv2.putText(image, obj['text']['transcription'], tuple(bbox[0:2]), 1, 1.0,
+                    cv2.putText(image, obj['attributes']['transcription'], tuple(bbox[0:2]), 1, 1.0,
                                 color)
                 cv2.rectangle(image, (bbox[0], bbox[1]), (bbox[0] + bbox[2], bbox[1] + bbox[3]),
                               color, lwd)
@@ -203,8 +199,8 @@ class TextOnlyCocoAnnotation:
 
                 cv2.drawContours(image, contours, 0, color, 1)
 
-                if 'chars' in obj['text']:
-                    for char in obj['text']['chars']:
+                if 'chars' in obj['attributes']:
+                    for char in obj['attributes']['chars']:
                         bbox = char['bbox']
                         cv2.rectangle(image, (bbox[0], bbox[1]), (bbox[0] + bbox[2], bbox[1] + bbox[3]), color)
                         if put_text:
@@ -232,10 +228,10 @@ class TextOnlyCocoAnnotation:
             image = cv2.imread(frame['file_name'], cv2.IMREAD_IGNORE_ORIENTATION | cv2.IMREAD_COLOR)
             for ann_id in self.img_id_2_ann_id[frame['id']]:
                 obj = self.annotation['annotations'][ann_id]
-                if obj['text']['legible']:
+                if obj['attributes']['legible']:
                     bbox = obj['bbox']
                     try:
-                        transcription = obj['text']['transcription']
+                        transcription = obj['attributes']['transcription']
                         if transcription.isalnum():
                             coord_x1, coord_y1, coord_x2, coord_y2 = bbox[0], bbox[1], bbox[0] + \
                                                                      bbox[2], bbox[1] + bbox[3]
@@ -298,7 +294,7 @@ class ICDAR2013DatasetConverter:
 
                     if self.characters_annotations_folder:
 
-                        obj['text']['chars'] = []
+                        obj['attributes']['chars'] = []
                         for chars in characters[i]:
                             if not chars:
                                 continue
@@ -312,17 +308,17 @@ class ICDAR2013DatasetConverter:
                             if char == ' ':
                                 continue
                             assert len(char) == 1, f'char = "{char}"'
-                            obj['text']['chars'].append({
+                            obj['attributes']['chars'].append({
                                 'bbox': bbox,
                                 'segmentation': box2poly(bbox),
                                 'char': char
                             })
-                        united_chars = ''.join([x['char'] for x in obj['text']['chars']])
-                        if united_chars != obj['text']['transcription']:
-                            logging.warning(f"Transcription of {obj['text']['transcription']} in {annotation_path} "
+                        united_chars = ''.join([x['char'] for x in obj['attributes']['chars']])
+                        if united_chars != obj['attributes']['transcription']:
+                            logging.warning(f"Transcription of {obj['attributes']['transcription']} in {annotation_path} "
                                             f"has been changed to {united_chars}."
                                             f"It is known error in original annotation.")
-                            obj['text']['transcription'] = united_chars
+                            obj['attributes']['transcription'] = united_chars
 
                     dataset.add_bbox(image_path, image_size, obj)
 
@@ -340,7 +336,7 @@ class ICDAR2013DatasetConverter:
         word_annotation = {
             'bbox': [xmin, ymin, xmax - xmin, ymax - ymin],
             'segmentation': [[xmin, ymin, xmax, ymin, xmax, ymax, xmin, ymax]],
-            'text': {
+            'attributes': {
                 'transcription': transcription,
                 'legible': 1,
                 'language': 'english',
@@ -384,7 +380,7 @@ class ICDAR2015DatasetConverter:
         word_annotation = {
             'bbox': [xmin, ymin, xmax - xmin, ymax - ymin],
             'segmentation': [quadrilateral],
-            'text': {
+            'attributes': {
                 'transcription': transcription,
                 'legible': legible,
                 'language': language,
@@ -464,7 +460,7 @@ class ICDAR2017MLTDatasetConverter:
         word_annotation = {
             'bbox': [xmin, ymin, xmax - xmin, ymax - ymin],
             'segmentation': [quadrilateral],
-            'text': {
+            'attributes': {
                 'transcription': transcription,
                 'legible': legible,
                 'language': language,
@@ -541,7 +537,7 @@ class ICDAR2017MLTDatasetConverter:
             should_add = not self.is_latin_required
             if self.is_latin_required:
                 for word_annotation in word_annotations:
-                    if word_annotation['text']['language'].lower() == 'latin':
+                    if word_annotation['attributes']['language'].lower() == 'latin':
                         should_add = True
                         break
             if should_add:
@@ -594,7 +590,7 @@ class ICDAR2019MLTDatasetConverter:
         word_annotation = {
             'bbox': [xmin, ymin, xmax - xmin, ymax - ymin],
             'segmentation': [quadrilateral],
-            'text': {
+            'attributes': {
                 'transcription': transcription,
                 'legible': legible,
                 'language': language,
@@ -644,7 +640,7 @@ class ICDAR2019MLTDatasetConverter:
             should_add = not self.is_latin_required
             if self.is_latin_required:
                 for word_annotation in word_annotations:
-                    if word_annotation['text']['language'].lower() == 'latin':
+                    if word_annotation['attributes']['language'].lower() == 'latin':
                         should_add = True
                         break
             if should_add:
@@ -713,7 +709,7 @@ class ICDAR2019ARTDatasetConverter:
         word_annotation = {
             'bbox': [xmin, ymin, xmax - xmin, ymax - ymin],
             'segmentation': [quadrilateral],
-            'text': {
+            'attributes': {
                 'transcription': transcription,
                 'legible': legibility,
                 'language': language,
@@ -746,7 +742,7 @@ class ICDAR2019ARTDatasetConverter:
                 should_add = not self.is_latin_required
                 if self.is_latin_required:
                     for word_annotation in word_annotations:
-                        if word_annotation['text']['language'].lower() == 'latin':
+                        if word_annotation['attributes']['language'].lower() == 'latin':
                             should_add = True
                             break
 
@@ -784,7 +780,7 @@ class MSRATD500DatasetConverter:
         word_annotation = {
             'bbox': [xmin, ymin, xmax - xmin, ymax - ymin],
             'segmentation': [quadrilateral],
-            'text': {
+            'attributes': {
                 'transcription': '',
                 'legible': 1,
                 'language': '',
@@ -846,7 +842,7 @@ class COCOTextDatasetConverter:
         word_annotation = {
             'bbox': [xmin, ymin, xmax - xmin, ymax - ymin],
             'segmentation': [quadrilateral],
-            'text': {
+            'attributes': {
                 'transcription': text,
                 'legible': legible,
                 'language': language,
@@ -886,7 +882,7 @@ class CvatXml11Converter:
     def __init__(self, images_folder, annotation_path, root=''):
         self.annotation_path = annotation_path
         self.images_folder = images_folder
-    
+
     def __call__(self):
         dataset = TextOnlyCocoAnnotation()
         import xml.etree.ElementTree as ET
@@ -907,7 +903,7 @@ class CvatXml11Converter:
 
                         if attributes['language'].lower() != 'english':
                             continue
-                    
+
                         if attributes['legible'].lower() != 'true':
                             attributes['text'] = ''
 
@@ -924,7 +920,7 @@ class CvatXml11Converter:
                         word_annotation = {
                                 'bbox': poly2box(word_polygon),
                                 'segmentation': [word_polygon],
-                                'text': {
+                                'attributes': {
                                     'transcription': attributes['text'],
                                     'legible': attributes['legible'].lower() == 'true',
                                     'language': attributes['language'].lower(),
