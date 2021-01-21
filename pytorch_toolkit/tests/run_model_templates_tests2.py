@@ -28,7 +28,17 @@ from subprocess import run
 from texttable import Texttable
 
 
-KNOWN_DOMAIN_FOLDERS = ['object_detection', 'action_recognition_2', 'ote']
+# this is required for import ote in tests during tests discover
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'ote'))
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
+
+KNOWN_DOMAIN_FOLDERS = [
+        'object_detection',
+        'action_recognition_2',
+        'instance_segmentation',
+        'text_spotting',
+        'ote',
+        ]
 TEST_FILES_PATTERN = '*_tests_*.py'
 MODEL_TEMPLATES_FOLDER_NAME = 'model_templates'
 MODEL_TEMPLATES_FILE_NAME = 'template.yaml'
@@ -55,21 +65,31 @@ def discover_all_tests(root_path):
     all_tests = []
     for cur_domain in KNOWN_DOMAIN_FOLDERS:
         cur_test_folder = os.path.join(root_path, cur_domain, 'tests')
-        logging.debug(f'discover_all_tests: cur_test_folder={cur_test_folder}, TEST_FILES_PATTERN={TEST_FILES_PATTERN}')
+        #logging.debug(f'discover_all_tests: cur_test_folder={cur_test_folder}, TEST_FILES_PATTERN={TEST_FILES_PATTERN}')
         testsuite = unittest.TestLoader().discover(cur_test_folder, pattern=TEST_FILES_PATTERN)
 
         cur_tests = _collect_all_tests(testsuite)
 
         for tst in cur_tests:
             domain = getattr(tst, 'domain', cur_domain)
+            problem = getattr(tst, 'problem', None)
             el = {
                 'test': tst,
                 'domain': domain,
-                'problem': getattr(tst, 'problem', None),
+                'problem': problem,
                 'model': getattr(tst, 'model', None),
                 'id': tst.id(),
                 'topic': getattr(tst, 'topic', None),
             }
+            if isinstance(tst, unittest.loader._FailedTest):
+                logging.warning(f'Failed to load test {el}:\n{tst._exception}')
+#            else:
+#                from pprint import pformat
+#                import inspect
+#                print(f'======== loaded el={el}', flush=True)
+#                print(f'======== type(tst)={type(tst)}', flush=True)
+#                print(f'======== file(tst)={inspect.getfile(type(tst))}', flush=True)
+#                print(f'======== tst={pformat(tst.__dict__)}', flush=True)
             all_tests.append(el)
 
     return all_tests
@@ -173,9 +193,10 @@ def write_list_template_files(root_path, all_tests, templates_list_file_path):
                                      el['model'],
                                      MODEL_TEMPLATES_FILE_NAME)
         if not os.path.isfile(template_path):
-            logger.warning(f'ATTENTION: cannot find template path {template_path}')
+            logging.warning(f'ATTENTION: cannot find template path {template_path}')
             continue
         template_files.append(template_path)
+    template_files = sorted(set(template_files))
     with open(templates_list_file_path, 'w') as f:
         yaml.dump(template_files, f)
 

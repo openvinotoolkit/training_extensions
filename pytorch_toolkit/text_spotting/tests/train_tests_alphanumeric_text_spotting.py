@@ -14,7 +14,7 @@
 
 import os
 
-from common.test_case import create_text_spotting_test_case
+from text_spotting.tests.common.test_case import create_text_spotting_test_case
 
 
 kwargs = dict(

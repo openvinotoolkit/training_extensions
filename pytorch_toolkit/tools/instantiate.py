@@ -49,6 +49,21 @@ def _get_templates_filenames(args):
         template_filenames = list(template_filenames)
     return template_filenames
 
+def _find_init_venv(domain_folder):
+    domain_realpath = os.path.realpath(domain_folder)
+
+    # the second candidate is used if virtual environment is used for internal tests only
+    candidate_init_venv_1 = os.path.join(domain_realpath, 'init_venv.sh')
+    candidate_init_venv_2 = os.path.join(domain_realpath, 'tests', 'init_venv.sh')
+
+    if os.path.isfile(candidate_init_venv_1):
+        return candidate_init_venv_1
+    if os.path.isfile(candidate_init_venv_2):
+        return candidate_init_venv_2
+
+    raise RuntimeError(f'Cannot find init_venv.sh script in domain {domain_folder} in'
+                       f' {candidate_init_venv_1} or {candidate_init_venv_2}')
+
 def main():
     args = parse_args()
     log_level = logging.DEBUG if args.verbose else logging.INFO
@@ -110,8 +125,9 @@ def main():
     domain_folders = domain_folders | set(additional_domains)
     for domain_folder in domain_folders:
         logging.info(f'Begin initializing virtual environment for {domain_folder}')
+        init_venv_path = _find_init_venv(domain_folder)
         run_through_shell(f'cd {domain_folder}; '
-                          f'bash ./init_venv.sh {os.path.join(args.destination, domain_folder, "venv")}',
+                          f'bash {init_venv_path} {os.path.join(args.destination, domain_folder, "venv")}',
                           verbose=args.verbose)
         logging.info(f'End initializing virtual environment for {domain_folder}')
 

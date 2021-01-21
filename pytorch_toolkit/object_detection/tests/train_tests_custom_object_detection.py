@@ -18,7 +18,7 @@ import yaml
 from ote.tests.utils import collect_ap
 from ote.utils.misc import run_through_shell
 
-from common.test_case import create_object_detection_test_case
+from object_detection.tests.common.test_case import create_object_detection_test_case
 
 
 kwargs = dict(

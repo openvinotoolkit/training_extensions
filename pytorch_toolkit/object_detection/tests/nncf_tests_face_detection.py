@@ -14,7 +14,7 @@
 
 import os
 
-from common.test_case import create_object_detection_nncf_test_case
+from object_detection.tests.common.test_case import create_object_detection_nncf_test_case
 
 
 class FaceDetection0200NNCFint8(
