@@ -12,7 +12,7 @@ The model was initially trained on [ImageNet](http://image-net.org/challenges/LS
 
 ## Training pipeline
 
-### 0. Change a directory in your terminal to action_recognition_2.
+### 0. Change a directory in your terminal to image_classification.
 
 ```bash
 cd <training_extensions>/pytorch_toolkit/image_classification
