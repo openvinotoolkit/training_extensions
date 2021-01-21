@@ -77,7 +77,7 @@ def create_model_template_tests_base(subfolder_name):
             else:
                 cls.verbosity_flag = ''
 
-            run_with_log(f'python3 tools/instantiate.py {templates_filter_arg} --do-not-load-snapshots {cls.work_dir}', shell=True, check=True)
+            run_with_log(f'python3 tools/instantiate.py {templates_filter_arg} --do-not-load-snapshots {cls.verbosity_flag} {cls.work_dir}', shell=True, check=True)
 
         def _get_template_files(self):
             template_filenames = glob.glob(f'{self.work_dir}/**/template.yaml', recursive=True)
