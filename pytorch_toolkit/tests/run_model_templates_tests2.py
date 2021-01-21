@@ -61,9 +61,18 @@ def _collect_all_tests(test_el):
         all_tests.extend(_collect_all_tests(tst))
     return all_tests
 
-def discover_all_tests(root_path):
+def discover_all_tests(root_path, restrict_to_domain=None):
+    logging.debug('Begin running discovery of tests')
+    if restrict_to_domain:
+        assert restrict_to_domain in KNOWN_DOMAIN_FOLDERS, (
+                f'Error: unknown domain "{restrict_to_domain}",'
+                f' known domains are {KNOWN_DOMAIN_FOLDERS}')
+        all_domains = [restrict_to_domain]
+    else:
+        all_domains = KNOWN_DOMAIN_FOLDERS
+
     all_tests = []
-    for cur_domain in KNOWN_DOMAIN_FOLDERS:
+    for cur_domain in all_domains:
         cur_test_folder = os.path.join(root_path, cur_domain, 'tests')
         #logging.debug(f'discover_all_tests: cur_test_folder={cur_test_folder}, TEST_FILES_PATTERN={TEST_FILES_PATTERN}')
         testsuite = unittest.TestLoader().discover(cur_test_folder, pattern=TEST_FILES_PATTERN)
@@ -83,15 +92,9 @@ def discover_all_tests(root_path):
             }
             if isinstance(tst, unittest.loader._FailedTest):
                 logging.warning(f'Failed to load test {el}:\n{tst._exception}')
-#            else:
-#                from pprint import pformat
-#                import inspect
-#                print(f'======== loaded el={el}', flush=True)
-#                print(f'======== type(tst)={type(tst)}', flush=True)
-#                print(f'======== file(tst)={inspect.getfile(type(tst))}', flush=True)
-#                print(f'======== tst={pformat(tst.__dict__)}', flush=True)
             all_tests.append(el)
 
+    logging.debug('End running discovery of tests')
     return all_tests
 
 def _format_id_str(val):
@@ -339,10 +342,10 @@ def main():
             'Only one of parameters --instantiate-only and --run-one-domain-inside-virtual-env may be set'
 
     log_level = logging.DEBUG if args.verbose else logging.INFO
-    logging.basicConfig(level=log_level)
+    logging.basicConfig(level=log_level, format='%(asctime)s:%(levelname)s:%(message)s')
 
     root_path = _get_pytorch_toolkit_path()
-    all_tests = discover_all_tests(root_path)
+    all_tests = discover_all_tests(root_path, args.domain)
 
     if args.domain:
         all_tests = filter_tests_by_value(all_tests, 'domain', args.domain)
