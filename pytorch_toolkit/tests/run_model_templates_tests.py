@@ -64,6 +64,8 @@ def create_model_template_tests_base(subfolder_name):
             if not workdir:
                 cls.work_dir = os.path.join(tempfile.mkdtemp(), subfolder_name)
             else:
+                if not os.path.isabs(workdir):
+                    raise RuntimeError(f'Received non-absolute path as WORKDIR="{workdir}" -- it is not reliable')
                 cls.work_dir = os.path.join(os.path.abspath(workdir), subfolder_name)
 
             templates_filter_environ = os.environ.get('TEMPLATES_FILTER')
