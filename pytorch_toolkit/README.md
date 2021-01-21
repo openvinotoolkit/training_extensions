@@ -23,6 +23,7 @@ them for prediction.
 * [Action Recognition](action_recognition)
 * [Action Recognition 2](action_recognition_2)
   - [Gesture Recognition](action_recognition_2/model_templates/gesture-recognition)
+* [Image classification](image_classification)
 * [Object Re-Identification](object_reidentification)
   - [Face Recognition](object_reidentification/face_recognition)
   - [Person Re-Identification](object_reidentification/person_reidentification)

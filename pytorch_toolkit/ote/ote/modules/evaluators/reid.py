@@ -14,45 +14,41 @@
  limitations under the License.
 """
 
-import copy
-import logging
+from pathlib import Path
+import json
 import os
-import sys
 import subprocess
 import tempfile
-import json
 import yaml
-from abc import ABCMeta, abstractmethod
 
-import torch
-from mmcv.utils import Config
-
+from ote import REID_TOOLS
 from ote.utils import get_file_size_and_sha256
+from ote.metrics.classification.reid import mean_accuracy_eval
+
+from .base import BaseEvaluator
+from ..registry import EVALUATORS
 
 
-class BaseEvaluator(metaclass=ABCMeta):
+@EVALUATORS.register_module()
+class ReidEvaluator(BaseEvaluator):
     def __init__(self):
-        pass
-
-    def __call__(self, config, snapshot, out, update_config, **kwargs):
-        logging.basicConfig(level=logging.INFO)
-
-        metrics_functions = self._get_metric_functions()
-        self._evaluate_internal(config, snapshot, out, update_config, metrics_functions, **kwargs)
+        super(ReidEvaluator, self).__init__()
 
     def _evaluate_internal(self, config_path, snapshot, out, update_config, metrics_functions, **kwargs):
         assert isinstance(update_config, dict)
-
-        cfg = Config.fromfile(config_path)
-
         work_dir = tempfile.mkdtemp()
         print('results are stored in:', work_dir)
 
         if os.path.islink(snapshot):
             snapshot = os.path.join(os.path.dirname(snapshot), os.readlink(snapshot))
 
+        update_config['classification.data_dir'] = Path(update_config['data.root']).name
+        update_config['data.root'] = Path(update_config['data.root']).parent
+        update_config = ' '.join([f'{k} {v}' for k, v in update_config.items() if len(str(v)) and len(str(k))])
+        update_config = update_config if update_config else ''
+
         metrics = []
-        metrics.extend(self._get_complexity_and_size(cfg, config_path, work_dir, update_config))
+        metrics.extend(self._get_complexity_and_size(config_path, work_dir, update_config))
 
         metric_args = {
             'config_path': config_path,
@@ -78,40 +74,28 @@ class BaseEvaluator(metaclass=ABCMeta):
         with open(out, 'w') as write_file:
             yaml.dump(outputs, write_file)
 
-    def _get_complexity_and_size(self, cfg, config_path, work_dir, update_config):
-        image_shape = self._get_image_shape(cfg)
+    def _get_complexity_and_size(self, config_path, work_dir, update_config):
         tools_dir = self._get_tools_dir()
 
         res_complexity = os.path.join(work_dir, "complexity.json")
-        update_config = ' '.join([f'{k}={v}' for k, v in update_config.items()])
-        update_config = f' --update_config {update_config}' if update_config else ''
+
         subprocess.run(
             f'python {tools_dir}/get_flops.py'
-            f' {config_path}'
-            f' --shape {image_shape}'
+            f' --config-file {config_path}'
             f' --out {res_complexity}'
-            f'{update_config}'.split(' '), check=True)
+            f' {update_config}'.split(' '), check=True)
 
         with open(res_complexity) as read_file:
             content = json.load(read_file)
 
         return content
 
-    @staticmethod
-    def _round_metrics(metrics, num_digits=3):
-        for metric in metrics:
-            metric['value'] = round(metric['value'], num_digits) if metric['value'] else metric['value']
 
-        return metrics
-
-    @abstractmethod
     def _get_tools_dir(self):
-        pass
+        return REID_TOOLS
 
-    @abstractmethod
     def _get_metric_functions(self):
-        pass
+        return [mean_accuracy_eval]
 
-    @abstractmethod
     def _get_image_shape(self, cfg):
         pass

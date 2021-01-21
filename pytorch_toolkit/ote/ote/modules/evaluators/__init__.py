@@ -5,6 +5,7 @@ from .mmdetection import MMDetectionEvaluator
 from .face_detection import MMFaceDetectionEvaluator
 from .horizontal_text_detection import MMHorizontalTextDetectionEvaluator
 from .text_spotting import TextSpottingEvaluator
+from .reid import ReidEvaluator
 
 __all__ = [
     'BaseEvaluator',
@@ -14,4 +15,5 @@ __all__ = [
     'MMHorizontalTextDetectionEvaluator',
     'InstanceSegmentationEvaluator',
     'TextSpottingEvaluator'
+    'ReidEvaluator',
 ]

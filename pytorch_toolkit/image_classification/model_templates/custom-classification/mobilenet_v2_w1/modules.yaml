@@ -1,0 +1,5 @@
+arg_parser: DefaultArgParser
+arg_converter: ReidArgsConverter
+trainer: ReidTrainer
+evaluator: ReidEvaluator
+exporter: ReidExporter

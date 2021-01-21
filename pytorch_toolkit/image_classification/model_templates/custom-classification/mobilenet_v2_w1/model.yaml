@@ -1,0 +1,59 @@
+model:
+  name: 'ptcv_mobilenetv2_w1'
+  classification: True
+  pretrained: True
+
+classification:
+  data_dir: 'imagenet'
+
+data:
+  root: './'
+  type: 'image'
+  sources: ['classification_image_folder']
+  targets: ['classification_image_folder']
+  height: 224
+  width: 224
+  norm_mean: [0.485, 0.456, 0.406]
+  norm_std: [0.229, 0.224, 0.225]
+  save_dir: 'log_dir'
+  transforms:
+    center_crop:
+      enable: True
+      margin: 16
+    random_flip:
+      enable: True
+      p: 0.5
+    random_crop:
+      enable: True
+      p: 0.5
+      scale: 0.1
+    test:
+      resize_first: True
+      resize_scale: 1.143
+
+loss:
+  name: 'softmax'
+  softmax:
+    s: 1.
+
+sampler:
+  train_sampler: 'RandomSampler'
+
+metric_losses:
+  enable: False
+
+train:
+  optim: 'sgd'
+  lr: 0.1
+  max_epoch: 150
+  batch_size: 256
+  fixbase_epoch: 0
+  open_layers: ['classifier']
+  lr_scheduler: 'cosine'
+  warmup: 0
+  warmup_factor_base: 0.01
+
+test:
+  batch_size: 64
+  evaluate: False
+  eval_freq: 1

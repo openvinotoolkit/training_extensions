@@ -23,9 +23,12 @@ ENABLE_TESTS_FOR = {
     'instance_segmentation': [
         'coco_instance_segmentation',
     ],
-    'text_spotting': [
-        'alphanumeric_text_spotting',
-    ]
+    'text_spotting_2': [
+        # 'alphanumeric_text_spotting',
+    ],
+    'image_classification': [
+        'custom_classification',
+    ],
 }
 
 NNCF_ENABLE_FOR = [

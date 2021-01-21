@@ -1,0 +1,1 @@
+-r ../../external/deep-object-reid/requirements.txt
