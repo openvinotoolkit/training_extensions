@@ -1,13 +1,17 @@
 #!/usr/bin/env bash
 
-cur_dir=$(realpath "$(dirname $0)")
-work_dir=$(realpath "${cur_dir}/..")
+work_dir=$(realpath "$(dirname $0)")
 
 venv_dir=$1
 if [ -z "$venv_dir" ]; then
   venv_dir=venv
 else
   venv_dir=$(realpath "${venv_dir}")
+fi
+
+if [ -z "$venv_dir" ]; then
+  echo "Cannot use venv_dir='$venv_dir'. Most probably the parent folder does not exist"
+  exit 1
 fi
 
 cd ${work_dir}
@@ -39,7 +43,7 @@ else
 fi
 
 # install ote
-pip install -e ../../pytorch_toolkit/ote/
+pip install -e ../
 
 deactivate
 

@@ -23,7 +23,6 @@ import json
 import yaml
 from abc import ABCMeta, abstractmethod
 
-import torch
 from mmcv.utils import Config
 
 from ote.utils import get_file_size_and_sha256

@@ -20,12 +20,17 @@ import os
 import sys
 from abc import ABCMeta, abstractmethod
 
-import torch
 import yaml
 from mmcv.utils import Config
 
 from ote.utils import run_with_termination
 
+def _get_cuda_device_count():
+    # move `import torch` inside this function to use the code in ote venv
+    import torch
+    if torch.cuda.is_available():
+        return torch.cuda.device_count()
+    return 0
 
 class BaseTrainer(metaclass=ABCMeta):
     parameter_work_dir = 'work_dir'
@@ -73,9 +78,9 @@ class BaseTrainer(metaclass=ABCMeta):
                                  f'{tensorboard_dir}'
                                  f'{update_config}'.split(' '))
             logging.info('... distributed training completed.')
-        elif torch.cuda.is_available():
+        elif _get_cuda_device_count() > 0:
             logging.info('Training on GPUs started ...')
-            available_gpu_num = torch.cuda.device_count()
+            available_gpu_num = _get_cuda_device_count()
             if available_gpu_num < gpu_num:
                 logging.warning(f'available_gpu_num < args.gpu_num: {available_gpu_num} < {gpu_num}')
                 logging.warning(f'decreased number of gpu to: {available_gpu_num}')

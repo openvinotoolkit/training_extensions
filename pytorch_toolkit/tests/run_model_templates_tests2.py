@@ -259,7 +259,7 @@ def run_one_domain_tests_already_in_virtualenv(work_dir, all_tests, verbose):
         raise RuntimeError('The option --run-one-domain-inside-virtual-env may be used for one domain only')
     if not is_in_virtual_env_in_work_dir(work_dir, domains[0]):
         raise RuntimeError('The option --run-one-domain-inside-virtual-env may be used only'
-                           ' inside the virtual environament of the domain')
+                           ' inside the virtual environment of the domain')
 
     testsuite = unittest.TestSuite()
     for el in all_tests:

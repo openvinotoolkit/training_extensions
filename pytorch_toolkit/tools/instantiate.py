@@ -125,9 +125,13 @@ def main():
     domain_folders = domain_folders | set(additional_domains)
     for domain_folder in domain_folders:
         logging.info(f'Begin initializing virtual environment for {domain_folder}')
+        dst_domain_path = os.path.join(args.destination, domain_folder)
+        os.makedirs(dst_domain_path, exist_ok=True)
+
         init_venv_path = _find_init_venv(domain_folder)
+        dst_venv_path = os.path.join(dst_domain_path, 'venv')
         run_through_shell(f'cd {domain_folder}; '
-                          f'bash {init_venv_path} {os.path.join(args.destination, domain_folder, "venv")}',
+                          f'bash {init_venv_path} {dst_venv_path}',
                           verbose=args.verbose)
         logging.info(f'End initializing virtual environment for {domain_folder}')
 
