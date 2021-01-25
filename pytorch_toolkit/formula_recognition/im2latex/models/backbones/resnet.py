@@ -29,7 +29,7 @@ architectures = {
 
 
 class ResNetLikeBackbone(nn.Module):
-    def __init__(self, arch, disable_layer_3, disable_layer_4, output_channels=512, enable_last_conv=False):
+    def __init__(self, arch, disable_layer_3, disable_layer_4, output_channels=512, enable_last_conv=False, one_ch_first_conv=False):
         super(ResNetLikeBackbone, self).__init__()
         self.output_channels = output_channels
         self.arch = arch
@@ -39,7 +39,9 @@ class ResNetLikeBackbone(nn.Module):
         _resnet = _resnet(pretrained=True, progress=True)
         self.groups = _resnet.groups
         self.base_width = _resnet.base_width
-        self.conv1 = _resnet.conv1
+        conv_1 = _resnet.conv1
+        self.conv1 = nn.Conv2d(1, conv_1.out_channels, conv_1.kernel_size,
+                               conv_1.stride, conv_1.padding, bias=conv_1.bias) if one_ch_first_conv else conv_1
         self.bn1 = _resnet.bn1
         self.relu = _resnet.relu
         self.maxpool = _resnet.maxpool
