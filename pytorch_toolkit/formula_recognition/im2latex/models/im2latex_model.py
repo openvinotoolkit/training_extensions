@@ -21,7 +21,20 @@ import torch.nn as nn
 
 from .backbones.original_harvard_bb import Im2LatexBackbone
 from .backbones.resnet import ResNetLikeBackbone
-from .text_recognition_heads.attention_based import TextRecognitionHead
+from .backbones.vgg16 import VGG16Backbone
+from .text_recognition_heads.attention_based import AttentionBasedLSTM
+from .text_recognition_heads.ctc_lstm_based import LSTMEncoderDecoder
+
+TEXT_REC_HEADS = {
+    "AttentionBasedLSTM": AttentionBasedLSTM,
+    "LSTMEncoderDecoder": LSTMEncoderDecoder,
+}
+
+BACKBONES = {
+    'resnet': ResNetLikeBackbone,
+    "im2latex": Im2LatexBackbone,
+    "VGG": VGG16Backbone
+}
 
 
 class Im2latexModel(nn.Module):
@@ -46,7 +59,7 @@ class Im2latexModel(nn.Module):
             return self.model.head.step_decoding(
                 hidden, context, output, row_enc_out, tgt)
 
-    def __init__(self, backbone_type, backbone, out_size, head):
+    def __init__(self, backbone, out_size, head):
         super().__init__()
         bb_out_channels = backbone.get("output_channels", 512)
         head_in_channels = head.get("encoder_input_size", 512)
@@ -55,12 +68,10 @@ class Im2latexModel(nn.Module):
         to the number of input channels in the head ({head_in_channels}) in case last conv
         is disabled
         """
-        self.head = TextRecognitionHead(out_size, **head)
-        self.backbone_type = backbone_type
-        if self.backbone_type == 'resnet':
-            self.backbone = ResNetLikeBackbone(**backbone)
-        else:
-            self.backbone = Im2LatexBackbone()
+        head_type = head.pop('type', "AttentionBasedLSTM")
+        backbone_type = backbone.pop('type', "resnet")
+        self.head = TEXT_REC_HEADS[head_type](out_size, **head)
+        self.backbone = BACKBONES[backbone_type](**backbone)
 
     def forward(self, input_images, formulas=None):
         features = self.backbone(input_images)
