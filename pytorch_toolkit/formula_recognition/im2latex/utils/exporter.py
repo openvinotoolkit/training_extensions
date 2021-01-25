@@ -39,7 +39,7 @@ class Exporter:
         self.config = config
         self.model_path = config.get('model_path')
         self.vocab = read_vocab(config.get('vocab_path'))
-        self.model = Im2latexModel(config.get('backbone_type', 'resnet'), config.get(
+        self.model = Im2latexModel(config.get(
             'backbone_config'), len(self.vocab), config.get('head', {}))
         self.model.eval()
         if self.model_path is not None:

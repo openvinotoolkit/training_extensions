@@ -112,8 +112,7 @@ class BaseRunner:
 class PyTorchRunner(BaseRunner):
     def load_model(self):
         vocab_len = len(read_vocab(self.config.get('vocab_path')))
-        self.model = Im2latexModel(self.config.get('backbone_type', 'resnet'), self.config.get(
-            'backbone_config'), vocab_len, self.config.get('head', {}))
+        self.model = Im2latexModel(self.config.get('backbone_config'), vocab_len, self.config.get('head', {}))
         self.device = self.config.get('device', 'cpu')
         self.model.load_weights(self.config.get("model_path"), map_location=self.device)
         self.model = self.model.to(self.device)

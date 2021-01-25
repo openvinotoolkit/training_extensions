@@ -31,8 +31,7 @@ class Im2latexDemo:
         self.model_path = config.get('model_path')
         self.vocab = read_vocab(config.get('vocab_path'))
         self.transform = create_list_of_transforms(config.get('transforms_list'))
-        self.model = Im2latexModel(config.get('backbone_type', 'resnet'), config.get(
-            'backbone_config'), len(self.vocab), config.get('head', {}))
+        self.model = Im2latexModel(config.get('backbone_config'), len(self.vocab), config.get('head', {}))
         if self.model_path is not None:
             self.model.load_weights(self.model_path, map_location=config.get('map_location', 'cpu'))
         self.model.eval()
