@@ -14,6 +14,7 @@
 
 import argparse
 import fnmatch
+import glob
 import logging
 import os
 import shlex
@@ -61,15 +62,45 @@ def _collect_all_tests(test_el):
         all_tests.extend(_collect_all_tests(tst))
     return all_tests
 
-def discover_all_tests(root_path, restrict_to_domain=None):
-    logging.debug('Begin running discovery of tests')
+def _get_domains(restrict_to_domain=None):
     if restrict_to_domain:
         assert restrict_to_domain in KNOWN_DOMAIN_FOLDERS, (
                 f'Error: unknown domain "{restrict_to_domain}",'
                 f' known domains are {KNOWN_DOMAIN_FOLDERS}')
-        all_domains = [restrict_to_domain]
-    else:
-        all_domains = KNOWN_DOMAIN_FOLDERS
+        return [restrict_to_domain]
+
+    return KNOWN_DOMAIN_FOLDERS
+
+def _find_all_templates(root_path, restrict_to_domain=None):
+    logging.debug('Begin running discovery of templates')
+    all_domains = _get_domains(restrict_to_domain)
+    all_templates = []
+    for cur_domain in all_domains:
+        domain_path = os.path.join(root_path, cur_domain)
+        all_templates += list(glob.glob(f'{domain_path}/**/{MODEL_TEMPLATES_FILE_NAME}', recursive=True))
+    logging.info(f'Loaded {len(all_templates)} templates from {len(all_domains)} domains')
+    logging.debug('End running discovery of templates')
+    return all_templates
+
+def find_all_model_templates(root_path, restrict_to_domain=None):
+    logging.debug('Begin building map model_name to folder')
+    all_templates = _find_all_templates(root_path, restrict_to_domain)
+    model_name_to_template = {}
+    for tmpl_path in all_templates:
+        with open(tmpl_path) as f:
+            content = yaml.safe_load(f)
+            name = content['name']
+            if name in model_name_to_template:
+                raise RuntimeError(f'Error: duplication of model name {name}:'
+                                   f' {model_name_to_template[name]} and {tmpl_path}')
+            model_name_to_template[name] = tmpl_path
+    logging.info(f'Loaded {len(model_name_to_template)} models')
+    logging.debug('End building map model_name to folder')
+    return model_name_to_template
+
+def discover_all_tests(root_path, restrict_to_domain=None):
+    logging.debug('Begin running discovery of tests')
+    all_domains = _get_domains(restrict_to_domain)
 
     all_tests = []
     for cur_domain in all_domains:
@@ -96,6 +127,16 @@ def discover_all_tests(root_path, restrict_to_domain=None):
 
     logging.debug('End running discovery of tests')
     return all_tests
+
+def fill_template_paths_in_test_elements(all_tests, model_name_to_template):
+    for el in all_tests:
+        model_name = el['model']
+        if model_name is None:
+            el['template_path'] = None
+            continue
+        if model_name not in model_name_to_template:
+            raise RuntimeError(f'Error: model name {model_name} not present in templates')
+        el['template_path'] = model_name_to_template[model_name]
 
 def _format_id_str(val):
     return '.\n'.join(val.split('.'))
@@ -187,19 +228,16 @@ def get_domains_from_tests_list(all_tests):
 def write_list_template_files(root_path, all_tests, templates_list_file_path):
     template_files = []
     for el in all_tests:
-        if None in (el['domain'], el['problem'], el['model']):
+        template_path = el['template_path']
+        if template_path is None:
             continue
-        template_path = os.path.join(root_path,
-                                     el['domain'],
-                                     MODEL_TEMPLATES_FOLDER_NAME,
-                                     el['problem'],
-                                     el['model'],
-                                     MODEL_TEMPLATES_FILE_NAME)
         if not os.path.isfile(template_path):
-            logging.warning(f'ATTENTION: cannot find template path {template_path}')
-            continue
+            raise RuntimeError(f'Cannot find template path {template_path}')
         template_files.append(template_path)
+
+    # usually there are many tests for one template
     template_files = sorted(set(template_files))
+
     with open(templates_list_file_path, 'w') as f:
         yaml.dump(template_files, f)
 
@@ -346,6 +384,8 @@ def main():
 
     root_path = _get_pytorch_toolkit_path()
     all_tests = discover_all_tests(root_path, args.domain)
+    model_name_to_template = find_all_model_templates(root_path, args.domain)
+    fill_template_paths_in_test_elements(all_tests, model_name_to_template)
 
     if args.domain:
         all_tests = filter_tests_by_value(all_tests, 'domain', args.domain)
