@@ -193,8 +193,9 @@ class ICDAR2013RECDataset(BaseDataset):
         with open(self.annotation_file) as f:
             annotation_file = f.readlines()
         annotation_file = [line.strip() for line in annotation_file]
-        image_names = [line.split(", ")[0] for line in annotation_file]
-        texts = [line.split(", ")[1] for line in annotation_file]
+        delimiter = ", " if ',' in annotation_file[0] else ' '
+        image_names = [line.split(delimiter)[0] for line in annotation_file]
+        texts = [line.split(delimiter)[1] for line in annotation_file]
         pairs = []
         total_len = len(image_names)
         for i, image_nm in tqdm(enumerate(image_names), total=total_len):
