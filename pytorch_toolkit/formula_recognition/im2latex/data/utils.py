@@ -19,7 +19,7 @@ import datetime
 import cv2 as cv
 import numpy as np
 import torch
-from torchvision.transforms import Compose, ToTensor, RandomApply, RandomChoice, ColorJitter
+from torchvision.transforms import Compose, ToTensor, RandomApply, RandomChoice, ColorJitter, Grayscale, ToPILImage
 
 from .vocab import END_TOKEN, PAD_TOKEN, START_TOKEN, UNK_TOKEN
 
@@ -402,6 +402,20 @@ class TransformRotate:
         return rotated
 
 
+class TransformGrayscale:
+    def __init__(self, out_channels=1):
+        self.out_channels = out_channels
+        self.transform = Grayscale(self.out_channels)
+
+    def __repr__(self):
+        return "TransformGrayscale(out_channels={})".format(self.out_channels)
+
+    def __call__(self, imgs):
+        if not isinstance(imgs, list):
+            imgs = [imgs]
+        return [np.array(self.transform(ToPILImage()(im))) for im in imgs]
+
+
 TRANSFORMS = {
     'TransformResizePad': TransformResizePad,
     'TransformCropPad': TransformCropPad,
@@ -418,6 +432,7 @@ TRANSFORMS = {
     'TransformShift': TransformShift,
     'TransformRandomBolding': TransformRandomBolding,
     'ColorJitter': ColorJitter,
+    'TransformGrayscale': TransformGrayscale,
 
 }
 
