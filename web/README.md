@@ -1,15 +1,4 @@
-Main Page:
 ![main](.images/main.png)
-
-Face Detection Page:
-![face-detection](.images/face-detection.png)
-
-Fine Tune Dialog:
-![fine-tube](.images/fine-tune.png)
-
-Assets Page:
-![assets](.images/assets.png)
-
 
 # WEB OTE
 WEB OTE is a convenient tool to train models for specific tasks fast and easily, using a graphical interface, an annotation tool for photos and videos and the scope of varied pre-trained models. Currently, WEB UI contains models for the following tasks:
@@ -34,4 +23,14 @@ To start working with WEB OTE it is required to set up it locally. To do it choo
   
 # Get Started
 Please refer [Getting Started](GETTING_STARTED.md) page for the basic usage. 
+
+# UI Examples
+Face Detection Page:
+![face-detection](.images/face-detection.png)
+
+Fine Tune Dialog:
+![fine-tube](.images/fine-tune.png)
+
+Assets Page:
+![assets](.images/assets.png)
 
