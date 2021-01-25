@@ -51,13 +51,13 @@ INIT = 1e-2
 Candidate = namedtuple('candidate', 'score, dec_state_h, dec_state_c, output, targets, logits')
 
 
-class TextRecognitionHead(nn.Module):
+class AttentionBasedLSTM(nn.Module):
     def __init__(self, out_size, emb_size=80, encoder_hidden_size=256,
                  decoder_hidden_size=512, max_len=256, n_layer=1,
                  beam_width=0, encoder_input_size=512,
                  positional_encodings=False,
                  trainable_initial_hidden=True):
-        super(TextRecognitionHead, self).__init__()
+        super(AttentionBasedLSTM, self).__init__()
         self.emb_size = emb_size
         self.encoder_hidden_size = encoder_hidden_size
         self.decoder_hidden_size = decoder_hidden_size
