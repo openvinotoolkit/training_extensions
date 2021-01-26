@@ -38,6 +38,7 @@ KNOWN_DOMAIN_FOLDERS = [
         'action_recognition_2',
         'instance_segmentation',
         'text_spotting',
+        'image_classification',
         'ote',
         ]
 TEST_FILES_PATTERN = '*_tests_*.py'
