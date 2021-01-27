@@ -4,16 +4,16 @@ import torch.nn as nn
 class VGG16Backbone(nn.Module):
     """ VGG16-like backbone. """
 
-    def __init__(self, backbone_dropout=0.0):
+    def __init__(self, backbone_dropout=0.0, in_channels=3):
         super().__init__()
         self.backbone_dropout = backbone_dropout
 
         self.cnn_encoder = nn.Sequential(
             # bn0
-            nn.BatchNorm2d(momentum=0.1, num_features=1),
+            nn.BatchNorm2d(momentum=0.1, num_features=in_channels),
             # dropout1, conv1, bn1, pool1
             nn.Dropout(self.backbone_dropout, inplace=True),
-            nn.Conv2d(in_channels=1, out_channels=64, kernel_size=3, padding=1),
+            nn.Conv2d(in_channels=in_channels, out_channels=64, kernel_size=3, padding=1),
             nn.BatchNorm2d(momentum=0.1, num_features=64),
             nn.ReLU(inplace=True),
             nn.MaxPool2d(kernel_size=2, stride=2),
