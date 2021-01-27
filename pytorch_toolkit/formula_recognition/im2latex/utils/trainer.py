@@ -55,10 +55,24 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.data import ConcatDataset, DataLoader
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
-from itertools import groupby
 
 
-def calculate_loss(logits, targets, should_cut_by_min=False, loss_type="NLL", blank_token=None):
+def ctc_greedy_search(logits, blank_token, b_size):
+    max_index = torch.max(logits, dim=2)[1]
+    predictions = []
+    for i in range(b_size):
+        raw_prediction = list(max_index[:, i].detach().cpu().numpy())
+        new_prediction = [raw_prediction[0]]
+        # filter repeating symbols, according to the procedure of CTC decoding
+        for elem in raw_prediction[1:]:
+            if new_prediction[-1] != elem or elem == blank_token:
+                new_prediction.append(elem)
+        # delete blank tokens
+        predictions.append(torch.IntTensor([c for c in new_prediction if c != blank_token]))
+    return predictions
+
+
+def calculate_loss(logits, targets, target_lengths, should_cut_by_min=False, ctc_loss=None):
     """args:
         logits: probability distribution return by model
                 [B, MAX_LEN, voc_size]
@@ -66,7 +80,7 @@ def calculate_loss(logits, targets, should_cut_by_min=False, loss_type="NLL", bl
                 [B, MAX_LEN]
     """
 
-    if loss_type == 'NLL':
+    if ctc_loss is None:
         if should_cut_by_min:
             required_len = min(logits.size(1), targets.size(1))
             logits = logits.narrow(1, 0, required_len)
@@ -79,7 +93,7 @@ def calculate_loss(logits, targets, should_cut_by_min=False, loss_type="NLL", bl
 
         padding = torch.ones_like(targets) * PAD_TOKEN
         mask_for_tgt = (targets != padding)
-        B, L, vocab_size = logits.shape  # batch size, length of the formula, vocab size
+        b_size, max_len, vocab_size = logits.shape  # batch size, length of the formula, vocab size
         targets = targets.masked_select(mask_for_tgt)
         mask_for_logits = mask_for_tgt.unsqueeze(2).expand(-1, -1, vocab_size)
         logits = logits.masked_select(mask_for_logits).contiguous().view(-1, vocab_size)
@@ -90,32 +104,23 @@ def calculate_loss(logits, targets, should_cut_by_min=False, loss_type="NLL", bl
         accuracy = (pred == targets)
         accuracy = accuracy.cpu().numpy().astype(np.uint32)
         accuracy = np.sum(accuracy) / len(accuracy)
+        accuracy = accuracy.item()
         loss = torch.nn.functional.nll_loss(logits, targets)
-    elif loss_type == 'CTC':
-        ctc_loss = torch.nn.CTCLoss(blank=blank_token)
-        B, L, vocab_size = logits.shape  # batch size, length of the formula, vocab size
-        targets_list = targets.tolist()
-        target_lengths = torch.zeros(size=(B,), dtype=torch.long)
-        for i, target in enumerate(targets):
-            if PAD_TOKEN not in target:
-                target_lengths[i] = len(target) - 1
-            else:
-                target_lengths[i] = min((target == PAD_TOKEN).nonzero())
-
-            targets_list[i] = targets_list[i][:target_lengths[i]]
-        targets_list = torch.hstack(tuple(torch.tensor(a) for a in targets_list))
-        max_index = torch.max(logits, dim=2)[1]
-        for i in range(B):
-            raw_prediction = list(max_index[:, i].detach().cpu().numpy())  # len(raw_prediction) == 32
-            prediction = torch.IntTensor([c for c, _ in groupby(raw_prediction) if c != blank_token])
-            
-        B, L, vocab_size = logits.shape  # batch size, length of the formula, vocab size
-        logits = logits.permute(1, 0, 2)
-        input_lengths = torch.full(size=(B,), fill_value=L, dtype=torch.long)
-        loss = ctc_loss(logits, targets_list, input_lengths=input_lengths, target_lengths=target_lengths)
     else:
-        raise ValueError("Wrong loss type")
-    return loss  # , accuracy.item()
+        logits = torch.log(logits)
+        b_size, max_len, vocab_size = logits.shape  # batch size, length of the formula, vocab size
+        logits = logits.permute(1, 0, 2)
+        input_lengths = torch.full(size=(b_size,), fill_value=max_len, dtype=torch.long)
+        loss = ctc_loss(logits, targets, input_lengths=input_lengths, target_lengths=target_lengths)
+
+        predictions = ctc_greedy_search(logits, ctc_loss.blank, b_size)
+        accuracy = 0
+        for i in range(b_size):
+            gt = torch.IntTensor([c for c in targets[i] if c != PAD_TOKEN])
+            if len(predictions[i]) == len(gt) and torch.all(predictions[i].eq(gt)):
+                accuracy += 1
+        accuracy /= b_size
+    return loss, accuracy
 
 
 class Trainer:
@@ -130,7 +135,6 @@ class Trainer:
         self.total_epochs = config.get('epochs', 30)
         self.learing_rate = config.get('learning_rate', 1e-3)
         self.clip = config.get('clip_grad', 5.0)
-        self.loss_type = config.get("loss_type", 'NLL')
         self.work_dir = os.path.abspath(work_dir)
         self.save_dir = os.path.join(self.work_dir, config.get("save_dir", "model_checkpoints"))
         self.val_results_path = os.path.join(self.work_dir, "val_results")
@@ -151,6 +155,8 @@ class Trainer:
         self.writer.add_text("General info", pformat(config))
         self.create_dirs()
         self.load_dataset()
+        self.loss_type = config.get("loss_type", 'NLL')
+        self.loss = torch.nn.CTCLoss(blank=len(self.vocab)) if self.loss_type == "CTC" else None
         self.out_size = len(self.vocab) + 1 if self.loss_type == 'CTC' else len(self.vocab)
         self.model = Im2latexModel(config.get('backbone_config'), self.out_size, config.get('head', {}))
         if self.model_path is not None:
@@ -187,7 +193,7 @@ class Trainer:
         train_dataset = ConcatDataset(train_datasets)
         train_sampler = BatchRandomSampler(
             dataset=train_dataset, batch_size=self.config.get('batch_size', 4))
-        pprint("Creating training transforms list:\n{}".format(self.train_transforms_list), indent=4, width=120)
+        pprint("Creating training transforms list: {}".format(self.train_transforms_list), indent=4, width=120)
         batch_transform_train = create_list_of_transforms(self.train_transforms_list)
         self.train_loader = DataLoader(
             train_dataset,
@@ -197,7 +203,7 @@ class Trainer:
             num_workers=os.cpu_count())
         val_dataset = ConcatDataset(val_datasets)
         val_sampler = BatchRandomSampler(dataset=val_dataset, batch_size=1)
-        pprint("Creating val transforms list:\n{}".format(self.val_transforms_list), indent=4, width=120)
+        pprint("Creating val transforms list: {}".format(self.val_transforms_list), indent=4, width=120)
         batch_transform_val = create_list_of_transforms(self.val_transforms_list)
         self.val_loader = DataLoader(
             val_dataset,
@@ -207,24 +213,26 @@ class Trainer:
             num_workers=os.cpu_count())
 
     def train(self):
-
         while self.epoch <= self.total_epochs:
             losses = 0.0
-            for _, imgs, training_gt, loss_computation_gt in self.train_loader:
-                step_loss = self.train_step(imgs, training_gt, loss_computation_gt)
+            accuracies = 0.0
+            for _, target_lengths, imgs, training_gt, loss_computation_gt in self.train_loader:
+                step_loss, step_accuracy = self.train_step(imgs, target_lengths, training_gt, loss_computation_gt)
                 losses += step_loss
+                accuracies += step_accuracy
                 self.writer.add_scalar('Train loss', step_loss, self.global_step)
-                # self.writer.add_scalar('Train accuracy', step_accuracy, self.global_step)
+                self.writer.add_scalar('Train accuracy', step_accuracy, self.global_step)
 
                 # log message
                 if self.global_step % self.print_freq == 0:
                     total_step = len(self.train_loader)
-                    print("Epoch {}, step:{}/{} {:.2f}%, Loss:{:.4f}".format(
+                    print("Epoch {}, step:{}/{} {:.2f}%, Loss:{:.4f}, accuracy: {:.4f}".format(
                         self.epoch, self.step, total_step,
                         100 * self.step / total_step,
-                        losses / self.print_freq
+                        losses / self.print_freq, accuracies / self.print_freq
                     ))
                     losses = 0.0
+                    accuracies = 0.0
                 if self.global_step % self.save_freq == 0:
                     self.save_model("model_epoch_{}_step_{}_{}.pth".format(
                         self.epoch,
@@ -262,21 +270,21 @@ class Trainer:
             self.epoch += 1
             self.step = 0
 
-    def train_step(self, imgs, training_gt, loss_computation_gt):
+    def train_step(self, imgs, target_lengths, training_gt, loss_computation_gt):
         self.optimizer.zero_grad()
         imgs = imgs.to(self.device)
         training_gt = training_gt.to(self.device)
         loss_computation_gt = loss_computation_gt.to(self.device)
         logits, _ = self.model(imgs, training_gt)
         cut = False if self.loss_type == 'CTC' else True
-        loss = calculate_loss(logits, loss_computation_gt, should_cut_by_min=cut,
-                              loss_type=self.loss_type, blank_token=self.out_size-1)
+        loss, accuracy = calculate_loss(logits, loss_computation_gt, target_lengths, should_cut_by_min=cut,
+                                        ctc_loss=self.loss)
         self.step += 1
         self.global_step += 1
         loss.backward()
         clip_grad_norm_(self.model.parameters(), self.clip)
         self.optimizer.step()
-        return loss.item()
+        return loss.item(), accuracy
 
     def validate(self, use_gt_token=True):
         self.model.eval()
@@ -288,13 +296,14 @@ class Trainer:
                                                                   self.epoch, self.step, self.time)
             with open(filename, 'w') as output_file:
 
-                for img_name, imgs, training_gt, loss_computation_gt in tqdm(self.val_loader):
+                for img_name, target_lengths, imgs, training_gt, loss_computation_gt in tqdm(self.val_loader):
 
                     imgs = imgs.to(self.device)
                     training_gt = training_gt.to(self.device)
                     loss_computation_gt = loss_computation_gt.to(self.device)
                     logits, pred = self.model(imgs, training_gt if use_gt_token else None)
-
+                    if self.loss_type == 'CTC':
+                        pred = ctc_greedy_search(logits, blank_token=len(self.vocab), b_size=logits.shape[0])
                     for j, phrase in enumerate(pred):
                         gold_phrase_str = self.vocab.construct_phrase(
                             loss_computation_gt[j])
@@ -307,8 +316,8 @@ class Trainer:
                                           gold_phrase_str + '\n')
                         val_total_accuracy += int(pred_phrase_str == gold_phrase_str)
                     cut = False if self.loss_type == 'CTC' else True
-                    loss = calculate_loss(logits, loss_computation_gt,
-                                          should_cut_by_min=cut, loss_type=self.loss_type, blank_token=self.out_size-1)
+                    loss, _ = calculate_loss(logits, loss_computation_gt, target_lengths,
+                                             should_cut_by_min=cut, ctc_loss=self.loss)
                     loss = loss.detach()
                     val_total_loss += loss
             avg_loss = val_total_loss / len(self.val_loader)

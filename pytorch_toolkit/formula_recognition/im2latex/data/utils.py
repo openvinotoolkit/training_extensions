@@ -463,7 +463,7 @@ def collate_fn(sign2id, batch, *, batch_transform=None):
     imgs = [item['img'] for item in batch]
     formulas = [item['text'] for item in batch]
     img_names = [item['img_name'] for item in batch]
-    formulas_tensor = formulas2tensor(formulas, sign2id)
+    formulas_tensor, lens = formulas2tensor(formulas, sign2id)
 
     if batch_transform:
         imgs = batch_transform(imgs)
@@ -474,7 +474,7 @@ def collate_fn(sign2id, batch, *, batch_transform=None):
     training_gt = torch.cat([torch.ones(bsize, 1).long()*START_TOKEN, formulas_tensor], dim=1)
     # Ground truth values for the outputs of decoder. Used for loss computation.
     loss_computation_gt = torch.cat([formulas_tensor, torch.ones(bsize, 1).long()*END_TOKEN], dim=1)
-    return img_names, imgs, training_gt, loss_computation_gt
+    return img_names, lens, imgs, training_gt, loss_computation_gt
 
 
 def create_list_of_transforms(transforms_list, ovino_ir=False):
@@ -496,8 +496,11 @@ def formulas2tensor(formulas, sign2id):
     formulas = [formula.split() for formula in formulas]
     batch_size = len(formulas)
     max_len = len(formulas[0])
+    lens = []
     tensors = torch.ones(batch_size, max_len, dtype=torch.long) * PAD_TOKEN
     for i, formula in enumerate(formulas):
         for j, sign in enumerate(formula):
             tensors[i][j] = sign2id.get(sign, UNK_TOKEN)
-    return tensors
+        lens.append(j + 1)
+    lens = torch.tensor(lens)
+    return tensors, lens
