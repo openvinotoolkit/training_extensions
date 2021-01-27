@@ -89,7 +89,10 @@ class Vocab:
             indices_to_convert = indices
 
         for token in indices_to_convert:
-            val = token.item()
+            try:
+                val = token.item()
+            except AttributeError:
+                val = token
             if val == END_TOKEN:
                 break
             phrase_converted.append(
