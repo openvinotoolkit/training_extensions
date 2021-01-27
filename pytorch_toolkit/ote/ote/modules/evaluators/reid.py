@@ -85,8 +85,7 @@ class ReidEvaluator(BaseEvaluator):
             f'python {tools_dir}/get_flops.py'
             f' --config-file {config_path}'
             f' --out {res_complexity}'
-            f' {update_config}'.split(' ')
-            , check=True)
+            f' {update_config}'.split(' '), check=True)
 
         with open(res_complexity) as read_file:
             content = json.load(read_file)
