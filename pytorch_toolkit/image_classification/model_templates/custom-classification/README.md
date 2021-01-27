@@ -59,12 +59,10 @@ DATA_DIR
 After the data was arranged, export the variables required for launching training and evaluation scripts:
 
 ```bash
-export TRAIN_DATA_ROOT=${DATA_DIR}
-export VAL_DATA_ROOT=${DATA_DIR}
-export TEST_DATA_ROOT=${DATA_DIR}
-export NUM_CLASSES=N
+export TRAIN_DATA_ROOT=${DATA_DIR}/train
+export VAL_DATA_ROOT=${DATA_DIR}/val
+export TEST_DATA_ROOT=${DATA_DIR}/val
 ```
-where `N` is the number of classes in the training dataset.
 
 ### 3. Change current directory to directory where the model template has been instantiated.
 
@@ -113,8 +111,7 @@ To convert PyTorch\* model to the OpenVINO™ IR format run the `export.py` scri
 ```bash
 python export.py \
    --load-weights ${WORK_DIR}/outputs/latest.pth \
-   --save-model-to ${WORK_DIR}/export \
-   --num-classes ${NUM_CLASSES}
+   --save-model-to ${WORK_DIR}/export
 ```
 
 This produces model `model.xml` and weights `model.bin` in single-precision floating-point format

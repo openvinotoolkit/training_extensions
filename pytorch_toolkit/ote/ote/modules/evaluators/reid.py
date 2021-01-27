@@ -31,6 +31,8 @@ from ..registry import EVALUATORS
 
 @EVALUATORS.register_module()
 class ReidEvaluator(BaseEvaluator):
+    parameter_test_dir = 'test_data_roots'
+
     def __init__(self):
         super(ReidEvaluator, self).__init__()
 
@@ -42,9 +44,9 @@ class ReidEvaluator(BaseEvaluator):
         if os.path.islink(snapshot):
             snapshot = os.path.join(os.path.dirname(snapshot), os.readlink(snapshot))
 
-        update_config['classification.data_dir'] = Path(update_config['data.root']).name
-        update_config['data.root'] = Path(update_config['data.root']).parent
-        update_config = ' '.join([f'{k} {v}' for k, v in update_config.items() if len(str(v)) and len(str(k))])
+        data_path_args = f'--custom-roots {update_config[self.parameter_test_dir]} {update_config[self.parameter_test_dir]} --root _ '
+        del update_config[self.parameter_test_dir]
+        update_config = data_path_args + ' '.join([f'{k} {v}' for k, v in update_config.items() if len(str(v)) and len(str(k))])
         update_config = update_config if update_config else ''
 
         metrics = []
@@ -83,7 +85,8 @@ class ReidEvaluator(BaseEvaluator):
             f'python {tools_dir}/get_flops.py'
             f' --config-file {config_path}'
             f' --out {res_complexity}'
-            f' {update_config}'.split(' '), check=True)
+            f' {update_config}'.split(' ')
+            , check=True)
 
         with open(res_complexity) as read_file:
             content = json.load(read_file)

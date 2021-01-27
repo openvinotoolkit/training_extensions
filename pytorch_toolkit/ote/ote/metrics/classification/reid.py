@@ -16,6 +16,7 @@
 
 import os
 import subprocess
+import logging
 
 from ote import REID_TOOLS
 
@@ -50,7 +51,7 @@ def mean_accuracy_eval(config_path, work_dir, snapshot, update_config, **kwargs)
         }
     outputs = []
 
-    if 'data.root' not in update_config:
+    if '--custom-roots' not in update_config:
         logging.warning('Passed empty path to data root folder. '
                         'Skipping accuracy calculation.')
         outputs.append(get_topk_dict(None, 1))
@@ -61,8 +62,8 @@ def mean_accuracy_eval(config_path, work_dir, snapshot, update_config, **kwargs)
         subprocess.run(
             f'python {REID_TOOLS}/main.py'
             f' --config-file {config_path}'
-            f' test.evaluate True'
             f' {update_config}'
+            f' test.evaluate True'
             f' | tee {test_py_stdout}',
             check=True, shell=True
         )

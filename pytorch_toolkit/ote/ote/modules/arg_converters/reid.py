@@ -21,8 +21,10 @@ from ..registry import ARG_CONVERTERS
 @ARG_CONVERTERS.register_module()
 class ReidArgsConverter(BaseArgConverter):
     train_update_args_map = {
-        'train_data_roots': 'data.root',
+        'train_data_roots': 'train_data_roots',
+        'val_data_roots': 'val_data_roots',
         'train_ann_files': '',
+        'val_ann_files': '',
         'resume_from': 'model.resume',
         'load_weights': 'model.load_weights',
         'save_checkpoints_to': 'data.save_dir',
@@ -32,7 +34,7 @@ class ReidArgsConverter(BaseArgConverter):
     }
     test_update_args_map = {
         'test_ann_files': '',
-        'test_data_roots': 'data.root',
+        'test_data_roots': 'test_data_roots',
         'load_weights': 'model.load_weights',
     }
 
