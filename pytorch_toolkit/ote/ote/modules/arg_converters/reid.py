@@ -14,27 +14,55 @@
  limitations under the License.
 """
 
-from .base import BaseArgConverter
+from .base import BaseArgConverter, ArgConverterMaps
 from ..registry import ARG_CONVERTERS
 
 
+class ReidArgConverterMap(ArgConverterMaps):
+    @staticmethod
+    def _train_compression_base_args_map():
+        return {
+            'train_data_roots': 'data.root',
+            'train_ann_files': '',
+            'resume_from': 'model.resume',
+            'load_weights': 'model.load_weights',
+            'save_checkpoints_to': 'data.save_dir',
+            'batch_size': 'train.batch_size',
+        }
+    def train_update_args_map(self):
+        cur_map = self._train_compression_base_args_map()
+        cur_map.update({
+            'base_learning_rate': 'train.lr',
+            'epochs': 'train.max_epoch',
+        })
+        return cur_map
+
+    def test_update_args_map(self):
+        return {
+            'test_ann_files': '',
+            'test_data_roots': 'data.root',
+            'load_weights': 'model.load_weights',
+        }
+
+    def compress_update_args_map(self):
+        return self._train_compression_base_args_map()
+
+    def train_out_args_map(self):
+        return super().train_out_args_map()
+
+    def compress_out_args_map(self):
+        return super().compress_out_args_map()
+
+    def test_out_args_map(self):
+        return super().test_out_args_map()
+
+    def get_extra_train_args(self, args):
+        return {}
+
+    def get_extra_test_args(self, args):
+        return {}
+
 @ARG_CONVERTERS.register_module()
 class ReidArgsConverter(BaseArgConverter):
-    train_update_args_map = {
-        'train_data_roots': 'data.root',
-        'train_ann_files': '',
-        'resume_from': 'model.resume',
-        'load_weights': 'model.load_weights',
-        'save_checkpoints_to': 'data.save_dir',
-        'batch_size': 'train.batch_size',
-        'base_learning_rate': 'train.lr',
-        'epochs': 'train.max_epoch',
-    }
-    test_update_args_map = {
-        'test_ann_files': '',
-        'test_data_roots': 'data.root',
-        'load_weights': 'model.load_weights',
-    }
-
     def __init__(self):
-        super(ReidArgsConverter, self).__init__()
+        super().__init__(ReidArgConverterMap())
