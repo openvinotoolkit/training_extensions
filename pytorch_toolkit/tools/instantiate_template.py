@@ -52,7 +52,7 @@ def main():
         if destination != 'snapshot.pth':
             rel_source = os.path.join(os.path.dirname(args.template), source)
             os.makedirs(os.path.dirname(os.path.join(args.output, destination)), exist_ok=True)
-            run_through_shell(f'cp -r {rel_source} {os.path.join(args.output, destination)}', check=True,
+            run_through_shell(f'cp -rT {rel_source} {os.path.join(args.output, destination)}', check=True,
                               verbose=args.verbose)
 
     if not args.do_not_load_snapshot:
