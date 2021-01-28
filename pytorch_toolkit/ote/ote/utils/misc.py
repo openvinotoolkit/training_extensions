@@ -162,3 +162,10 @@ def run_through_shell(cmd, verbose=True, check=True):
                           check=check,
                           capture_output=not verbose,
                           executable="/bin/bash")
+
+def get_cuda_device_count():
+    # move `import torch` inside this function to import the function in ote venv
+    import torch
+    if torch.cuda.is_available():
+        return torch.cuda.device_count()
+    return 0

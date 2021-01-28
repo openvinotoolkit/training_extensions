@@ -106,7 +106,6 @@ def discover_all_tests(root_path, restrict_to_domain=None):
     all_tests = []
     for cur_domain in all_domains:
         cur_test_folder = os.path.join(root_path, cur_domain, 'tests')
-        #logging.debug(f'discover_all_tests: cur_test_folder={cur_test_folder}, TEST_FILES_PATTERN={TEST_FILES_PATTERN}')
         testsuite = unittest.TestLoader().discover(cur_test_folder, pattern=TEST_FILES_PATTERN)
 
         cur_tests = _collect_all_tests(testsuite)
