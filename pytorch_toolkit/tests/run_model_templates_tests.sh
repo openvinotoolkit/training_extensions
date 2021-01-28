@@ -2,6 +2,9 @@
 # with one parameter -- work directory that will be used
 # for instantiating model templates and running tests
 
+set -v
+set -x
+
 export WORKDIR=$1
 python3 tests/run_model_templates_tests.py --verbose
 
