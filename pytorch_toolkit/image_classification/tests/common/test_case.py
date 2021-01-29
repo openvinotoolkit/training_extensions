@@ -14,6 +14,7 @@
 
 import logging
 import os
+import pathlib
 import unittest
 
 import torch
@@ -49,10 +50,12 @@ def create_image_classification_export_test_case(**kwargs):
                         f'{initial_command}'
                         f'cd {os.path.dirname(self.template_file)};'
                         f'pip install -r requirements.txt;'
-                        f'python export.py'
+                        f'python export.py --openvino'
                         f' --load-weights snapshot.pth'
                         f' --save-model-to {export_dir}'
                     )
+                    self.assertTrue(len(list(pathlib.Path(export_dir).rglob('*.onnx'))) > 0, 'Export to onnx failed')
+                    self.assertTrue(len(list(pathlib.Path(export_dir).rglob('*.bin'))) > 0, 'Export to openvino failed')
 
     return ClassificationExportTestCase
 

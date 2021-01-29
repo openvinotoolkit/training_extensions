@@ -46,7 +46,7 @@ class ReidEvaluator(BaseEvaluator):
 
         data_path_args = f'--custom-roots {update_config[self.parameter_test_dir]} {update_config[self.parameter_test_dir]} --root _ '
         del update_config[self.parameter_test_dir]
-        update_config = data_path_args + ' '.join([f'{k} {v}' for k, v in update_config.items() if len(str(v)) and len(str(k))])
+        update_config = data_path_args + ' '.join([f'{k} {v}' for k, v in update_config.items() if str(v) and str(k)])
         update_config = update_config if update_config else ''
 
         metrics = []
