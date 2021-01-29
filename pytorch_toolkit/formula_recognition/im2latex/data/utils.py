@@ -26,6 +26,12 @@ from .vocab import END_TOKEN, PAD_TOKEN, START_TOKEN, UNK_TOKEN
 COLOR_WHITE = (255, 255, 255)
 
 
+def to_list(imgs):
+    if not isinstance(imgs, list):
+        imgs = [imgs]
+    return imgs
+
+
 class TransformResizePad:
     """This class helps to resize image to fit the target shape
     and save original aspect ratio and pad
@@ -39,8 +45,7 @@ class TransformResizePad:
         return "ResizePad(target_shape={})".format(self.target_shape)
 
     def __call__(self, imgs):
-        if not isinstance(imgs, list):
-            imgs = [imgs]
+        imgs = to_list(imgs)
         res = []
         target_height, target_width = self.target_shape
         for image_raw in imgs:
@@ -69,8 +74,8 @@ class TransformCropPad:
         return "CropPad(target_shape={})".format(self.target_shape)
 
     def __call__(self, imgs):
-        if not isinstance(imgs, list):
-            imgs = [imgs]
+        imgs = to_list(imgs)
+
         res = []
         target_height, target_width = self.target_shape
         for image_raw in imgs:
@@ -117,8 +122,8 @@ class TransformPad:
             top_p = np.random.randint(0, self.pad_t)
         else:
             top_p = None
-        if not isinstance(imgs, list):
-            imgs = [imgs]
+        imgs = to_list(imgs)
+
         padded_imgs = [cv.copyMakeBorder(img, top_p, bottom_p, left_p, right_p,
                                          borderType=cv.BORDER_CONSTANT, value=COLOR_WHITE)
                        for img in imgs]
@@ -127,8 +132,8 @@ class TransformPad:
 
 class TransformToTensor:
     def __call__(self, imgs):
-        if not isinstance(imgs, list):
-            imgs = [imgs]
+        imgs = to_list(imgs)
+
         return [ToTensor()(img) for img in imgs]
 
 
@@ -138,8 +143,8 @@ class TransformOvinoIR:
     """
 
     def __call__(self, imgs):
-        if not isinstance(imgs, list):
-            imgs = [imgs]
+        imgs = to_list(imgs)
+
         imgs = [np.transpose(img, [2, 0, 1]) for img in imgs]
         return [torch.Tensor(img) for img in imgs]
 
@@ -152,8 +157,8 @@ class TransformBlur:
         return "TransformBlur(sigmaX={})".format(self.sigmaX)
 
     def __call__(self, imgs):
-        if not isinstance(imgs, list):
-            imgs = [imgs]
+        imgs = to_list(imgs)
+
         return [cv.GaussianBlur(img, (3, 3), self.sigmaX) for img in imgs]
 
 
@@ -169,8 +174,8 @@ class TransformShift:
         return "TransformShift(shift_x={}, shift_y={})".format(self.shift_x, self.shift_y)
 
     def __call__(self, imgs):
-        if not isinstance(imgs, list):
-            imgs = [imgs]
+        imgs = to_list(imgs)
+
         tx = np.random.randint(0, self.shift_x)
         ty = np.random.randint(0, self.shift_y)
         shift_matrix = np.array([[1, 0, tx], [0, 1, ty]], dtype=np.float32)
@@ -190,8 +195,8 @@ class TransformRandomNoise:
         return "TransformRandomNoise(intensity={})".format(self.intensity)
 
     def __call__(self, imgs):
-        if not isinstance(imgs, list):
-            imgs = [imgs]
+        imgs = to_list(imgs)
+
         res = []
         for img in imgs:
             mean = np.mean(img)
@@ -364,8 +369,8 @@ class TransformRescale:
     def __call__(self, imgs):
         fx = np.random.uniform(self.scale_min, self.scale_max)
         fy = fx
-        if not isinstance(imgs, list):
-            imgs = [imgs]
+        imgs = to_list(imgs)
+
         imgs = [cv.resize(img, dsize=None, fx=fx, fy=fy) for img in imgs]
         return imgs
 
@@ -380,8 +385,7 @@ class TransformRotate:
     def __call__(self, imgs):
         bound = self.angle
         angle = np.random.uniform(low=0 - bound, high=bound)
-        if not isinstance(imgs, list):
-            imgs = [imgs]
+        imgs = to_list(imgs)
 
         img = imgs[0]
         h, w = img.shape[0:2]
@@ -411,8 +415,23 @@ class TransformGrayscale:
         return "TransformGrayscale(out_channels={})".format(self.out_channels)
 
     def __call__(self, imgs):
-        if not isinstance(imgs, list):
-            imgs = [imgs]
+        imgs = to_list(imgs)
+
+        return [np.array(self.transform(ToPILImage()(im))) for im in imgs]
+
+
+class TransformColorJitter:
+    def __init__(self, brightness, contrast, saturation):
+        self.transform = ColorJitter(brightness, contrast, saturation)
+        self.brightness = brightness
+        self.contrast = contrast
+        self.saturation = saturation
+
+    def __repr__(self):
+        return "TransformSaturation(brightness={}, contrast={}, saturation={}".format(self.brightness, self.contrast, self.saturation)
+
+    def __call__(self, imgs):
+        imgs = to_list(imgs)
         return [np.array(self.transform(ToPILImage()(im))) for im in imgs]
 
 
@@ -431,7 +450,7 @@ TRANSFORMS = {
     'TransformResize': TransformResize,
     'TransformShift': TransformShift,
     'TransformRandomBolding': TransformRandomBolding,
-    'ColorJitter': ColorJitter,
+    'TransformColorJitter': TransformColorJitter,
     'TransformGrayscale': TransformGrayscale,
 
 }
