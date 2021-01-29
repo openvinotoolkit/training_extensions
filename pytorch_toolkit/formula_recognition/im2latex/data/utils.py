@@ -521,5 +521,5 @@ def formulas2tensor(formulas, sign2id):
         for j, sign in enumerate(formula):
             tensors[i][j] = sign2id.get(sign, UNK_TOKEN)
         lens.append(j + 1)
-    lens = torch.tensor(lens)
+    lens = torch.tensor(lens, dtype=torch.long)
     return tensors, lens
