@@ -46,7 +46,7 @@ import torch.nn
 import torch.optim as optim
 from im2latex.data.utils import (collate_fn, create_list_of_transforms,
                                  get_timestamp)
-from im2latex.data.vocab import PAD_TOKEN, read_vocab
+from im2latex.data.vocab import END_TOKEN, PAD_TOKEN, read_vocab
 from im2latex.datasets.im2latex_dataset import (BatchRandomSampler,
                                                 str_to_class)
 from im2latex.models.im2latex_model import Im2latexModel
@@ -113,10 +113,10 @@ def calculate_loss(logits, targets, target_lengths, should_cut_by_min=False, ctc
         input_lengths = torch.full(size=(b_size,), fill_value=max_len, dtype=torch.long)
         loss = ctc_loss(logits, targets, input_lengths=input_lengths, target_lengths=target_lengths)
 
-        predictions = ctc_greedy_search(logits, ctc_loss.blank, b_size)
+        predictions = ctc_greedy_search(logits.detach(), ctc_loss.blank, b_size)
         accuracy = 0
         for i in range(b_size):
-            gt = torch.IntTensor([c for c in targets[i] if c != PAD_TOKEN])
+            gt = torch.IntTensor([c for c in targets[i] if c not in (PAD_TOKEN, END_TOKEN)])
             if len(predictions[i]) == len(gt) and torch.all(predictions[i].eq(gt)):
                 accuracy += 1
         accuracy /= b_size
@@ -156,7 +156,7 @@ class Trainer:
         self.create_dirs()
         self.load_dataset()
         self.loss_type = config.get("loss_type", 'NLL')
-        self.loss = torch.nn.CTCLoss(blank=len(self.vocab)) if self.loss_type == "CTC" else None
+        self.loss = torch.nn.CTCLoss(blank=len(self.vocab), zero_infinity=self.config.get("CTCLossZeroInf", False)) if self.loss_type == "CTC" else None
         self.out_size = len(self.vocab) + 1 if self.loss_type == 'CTC' else len(self.vocab)
         self.model = Im2latexModel(config.get('backbone_config'), self.out_size, config.get('head', {}))
         if self.model_path is not None:
@@ -213,9 +213,9 @@ class Trainer:
             num_workers=os.cpu_count())
 
     def train(self):
+        losses = 0.0
+        accuracies = 0.0
         while self.epoch <= self.total_epochs:
-            losses = 0.0
-            accuracies = 0.0
             for _, target_lengths, imgs, training_gt, loss_computation_gt in self.train_loader:
                 step_loss, step_accuracy = self.train_step(imgs, target_lengths, training_gt, loss_computation_gt)
                 losses += step_loss
