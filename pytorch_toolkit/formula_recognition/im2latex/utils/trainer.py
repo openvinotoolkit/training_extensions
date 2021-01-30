@@ -56,6 +56,8 @@ from torch.utils.data import ConcatDataset, DataLoader
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
+import torch.multiprocessing
+torch.multiprocessing.set_sharing_strategy('file_system')
 
 def ctc_greedy_search(logits, blank_token, b_size):
     max_index = torch.max(logits, dim=2)[1]
