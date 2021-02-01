@@ -180,16 +180,16 @@ class CocoTextOnlyDataset(BaseDataset):
 
 class ICDAR2013RECDataset(BaseDataset):
     def __init__(self, images_folder, annotation_file, root='', min_shape=(8, 8), grayscale=False,
-                 fixed_img_shape=None, case_sensitive=True):
+                 fixed_img_shape=None, case_sensitive=True, min_txt_len=0):
         super().__init__()
         self.images_folder = images_folder
         self.annotation_file = annotation_file
         if root:
             self.annotation_file = os.path.join(root, self.annotation_file)
             self.images_folder = os.path.join(root, self.images_folder)
-        self.pairs = self._load(min_shape, grayscale, fixed_img_shape, case_sensitive)
+        self.pairs = self._load(min_shape, grayscale, fixed_img_shape, case_sensitive, min_txt_len)
 
-    def _load(self, min_shape, grayscale, fixed_img_shape, case_sensitive):
+    def _load(self, min_shape, grayscale, fixed_img_shape, case_sensitive, min_txt_len):
         with open(self.annotation_file) as f:
             annotation_file = f.readlines()
         annotation_file = [line.strip() for line in annotation_file]
@@ -209,6 +209,8 @@ class ICDAR2013RECDataset(BaseDataset):
             if img.shape[0:2] <= tuple(min_shape):
                 continue
             text = texts[i].strip('"')
+            if len(text) < min_txt_len:
+                continue
             if not set(text) <= ALPHANUMERIC_VOCAB:
                 continue
             if not case_sensitive:
@@ -225,12 +227,12 @@ class ICDAR2013RECDataset(BaseDataset):
 
 class MJSynthDataset(BaseDataset):
     def __init__(self, data_folder, annotation_file, min_shape=(8, 8),
-                 fixed_img_shape=None, case_sensitive=True):
+                 fixed_img_shape=None, case_sensitive=True, min_txt_len=0):
         super().__init__()
         self.data_folder = data_folder
         self.ann_file = annotation_file
         self.fixed_img_shape = fixed_img_shape
-        self.pairs = self._load(min_shape, case_sensitive)
+        self.pairs = self._load(min_shape, case_sensitive, min_txt_len)
 
     def __getitem__(self, index):
         el = deepcopy(self.pairs[index])
@@ -240,7 +242,7 @@ class MJSynthDataset(BaseDataset):
         el['img'] = img
         return el
 
-    def _load(self, min_shape, case_sensitive):
+    def _load(self, min_shape, case_sensitive, min_txt_len):
         pairs = []
         with open(os.path.join(self.data_folder, self.ann_file)) as input_file:
             annotation = [line.split(" ")[0] for line in input_file]
@@ -255,6 +257,8 @@ class MJSynthDataset(BaseDataset):
             img_shape = tuple(img.shape)
             if not case_sensitive:
                 gt_text = gt_text.lower()
+            if len(gt_text) < min_txt_len:
+                continue
             el = {"img_name": os.path.split(image_path)[1],
                   "text": gt_text,
                   "img_path": image_path,
