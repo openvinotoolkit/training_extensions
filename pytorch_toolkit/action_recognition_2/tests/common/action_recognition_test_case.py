@@ -45,7 +45,7 @@ def get_dependencies(template_file):
         return output
 
 
-def create_test_case(problem_name, model_name, ann_file, img_root):
+def create_action_recognition_test_case(problem_name, model_name, ann_file, img_root):
     class TestCaseOteApi(unittest.TestCase):
 
         @classmethod
@@ -161,7 +161,7 @@ def create_test_case(problem_name, model_name, ann_file, img_root):
     return TestCaseOteApi
 
 
-def create_export_test_case(problem_name, model_name, ann_file, img_root):
+def create_action_recognition_export_test_case(problem_name, model_name, ann_file, img_root):
     class ExportTestCase(unittest.TestCase):
 
         @classmethod

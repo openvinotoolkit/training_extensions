@@ -19,9 +19,6 @@ import logging
 import os
 import yaml
 
-import sys
-sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'ote'))
-
 from ote.utils.misc import run_through_shell
 
 def parse_args():

@@ -18,9 +18,6 @@ import os
 
 import yaml
 
-import sys
-sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'ote'))
-
 from ote.utils.misc import download_snapshot_if_not_yet, run_through_shell
 
 

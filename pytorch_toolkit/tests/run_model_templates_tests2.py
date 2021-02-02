@@ -29,10 +29,6 @@ from subprocess import run
 from texttable import Texttable
 
 
-# this is required for import ote in tests during tests discover
-sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'ote'))
-sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
-
 KNOWN_DOMAIN_FOLDERS = [
         'object_detection',
         'action_recognition_2',
@@ -293,7 +289,10 @@ def run_testsuite(ts, work_dir, verbose):
 
 def run_one_domain_tests_already_in_virtualenv(work_dir, all_tests, verbose):
     domains = get_domains_from_tests_list(all_tests)
-    if len(domains) != 1:
+    if not domains:
+        logging.warning('Did not find any tests for the domain')
+        return
+    if len(domains) > 1:
         raise RuntimeError('The option --run-one-domain-inside-virtual-env may be used for one domain only')
     if not is_in_virtual_env_in_work_dir(work_dir, domains[0]):
         raise RuntimeError('The option --run-one-domain-inside-virtual-env may be used only'

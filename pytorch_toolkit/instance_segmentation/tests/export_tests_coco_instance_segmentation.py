@@ -14,7 +14,7 @@
 
 import os
 
-from instance_segmentation.tests.common.test_case import create_instance_segmentation_export_test_case
+from common.instance_segmentation_test_case import create_instance_segmentation_export_test_case
 
 
 kwargs = dict(

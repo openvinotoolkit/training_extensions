@@ -68,3 +68,6 @@ class TestCaseMergeDictsAndLists(unittest.TestCase):
         except AssertionError as e:
             err_args = e.args
         self.assertIn('key=`c.c1.p`', err_args[0])
+
+    def test_smoke_test(self):
+        pass

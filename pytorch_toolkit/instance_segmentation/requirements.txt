@@ -1,3 +1,4 @@
 -r ../../external/mmdetection/requirements/build.txt
 -r ../../external/mmdetection/requirements.txt
+-r ../ote/requirements.txt
 opencv-python
