@@ -191,4 +191,4 @@ mo.py --input_model resnet34_vtn.onnx --input_shape '[1,16,3,224,224]'
 
 ## Demo
 
-You can try your models after converting them to the OpenVINO™ format or a [pretrained model from OpenVINO™](https://docs.openvinotoolkit.org/latest/usergroup10.html) using the [demo application from OpenVINO™ toolkit](https://docs.openvinotoolkit.org/latest/_demos_python_demos_action_recognition_README.html)
+You can try your models after converting them to the OpenVINO™ format or a [pretrained model from OpenVINO™](https://docs.openvinotoolkit.org/2020.4/usergroup13.html) using the [demo application from OpenVINO™ toolkit](https://docs.openvinotoolkit.org/2020.4/_demos_python_demos_action_recognition_README.html)
