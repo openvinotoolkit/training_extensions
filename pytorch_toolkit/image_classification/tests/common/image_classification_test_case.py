@@ -16,12 +16,12 @@ import logging
 import os
 import unittest
 
-import torch
 import yaml
 
 from ote.tests.test_case import (create_export_test_case,
                                  create_nncf_test_case,
-                                 create_test_case)
+                                 create_test_case,
+                                 skip_if_cuda_not_available)
 from ote.utils.misc import run_through_shell
 
 
@@ -33,8 +33,8 @@ def create_image_classification_export_test_case(**kwargs):
                                              expected_outputs_dir=expected_outputs_dir)
 
     class ClassificationExportTestCase(ExportTestCase):
-            @unittest.skipUnless(torch.cuda.is_available(), 'No GPU found')
             def test_export_on_gpu(self):
+                skip_if_cuda_not_available()
                 export_dir = os.path.join(self.output_folder, 'gpu_export')
                 self.do_export(export_dir, on_gpu=True)
 

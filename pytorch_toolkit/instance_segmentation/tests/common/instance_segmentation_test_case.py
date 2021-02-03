@@ -16,7 +16,6 @@ import json
 import os
 import unittest
 
-import torch
 import yaml
 
 from ote.tests.test_case import create_export_test_case, create_test_case
