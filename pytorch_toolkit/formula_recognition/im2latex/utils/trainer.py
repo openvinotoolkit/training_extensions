@@ -60,6 +60,7 @@ import cv2 as cv
 import torch.multiprocessing
 torch.multiprocessing.set_sharing_strategy('file_system')
 torch.autograd.set_detect_anomaly(True)
+torch.set_printoptions(profile="full")
 
 def ctc_greedy_search(logits, blank_token, b_size):
     max_index = torch.max(logits, dim=2)[1]
@@ -310,7 +311,6 @@ class Trainer:
         for param in self.model.parameters():
             # print(type(param.grad))
             if torch.any(torch.isnan(param.grad)):
-                torch.set_printoptions(profile="full")
                 with open("loss_nan_debug.txt", "w") as file:
 
                     file.write(str(param.grad))
