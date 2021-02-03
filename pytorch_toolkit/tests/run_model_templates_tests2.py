@@ -339,6 +339,8 @@ def rerun_inside_virtual_envs(work_dir, all_tests, args):
         total_success = total_success and was_successful
         logging.info(f'    {domain}: {_success_to_str(was_successful)}')
     logging.info(f'Total: {_success_to_str(total_success)}')
+    sys_retval = int(not total_success)
+    sys.exit(sys_retval)
 
 def _get_pytorch_toolkit_path():
     cur_file_path = os.path.abspath(__file__)
