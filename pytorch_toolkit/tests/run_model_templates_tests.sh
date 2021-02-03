@@ -14,6 +14,9 @@ cd $PYTORCH_TOOLKIT_DIR
 
 pip3 install -e ote/ || exit 1
 
+path_openvino_vars="${INTEL_OPENVINO_DIR:-/opt/intel/openvino}/bin/setupvars.sh"
+source "${path_openvino_vars}" || exit 1
+
 #export WORKDIR=$WORKDIR
 #python3 tests/run_model_templates_tests.py --verbose
 
