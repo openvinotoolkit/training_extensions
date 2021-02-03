@@ -59,8 +59,6 @@ from tqdm import tqdm
 import cv2 as cv
 import torch.multiprocessing
 torch.multiprocessing.set_sharing_strategy('file_system')
-torch.autograd.set_detect_anomaly(True)
-torch.set_printoptions(profile="full")
 
 def ctc_greedy_search(logits, blank_token, b_size):
     max_index = torch.max(logits, dim=2)[1]
@@ -112,7 +110,7 @@ def calculate_loss(logits, targets, target_lengths, should_cut_by_min=False, ctc
         accuracy = accuracy.item()
         loss = torch.nn.functional.nll_loss(logits, targets)
     else:
-        logits = torch.log(logits)
+        logits = torch.nn.functional.log_softmax(logits, dim=2)
         b_size, max_len, vocab_size = logits.shape  # batch size, length of the formula, vocab size
         logits = logits.permute(1, 0, 2)
         input_lengths = torch.full(size=(b_size,), fill_value=max_len, dtype=torch.long)
@@ -161,7 +159,7 @@ class Trainer:
         self.create_dirs()
         self.load_dataset()
         self.loss_type = config.get("loss_type", 'NLL')
-        self.loss = torch.nn.CTCLoss(blank=len(self.vocab), zero_infinity=self.config.get(
+        self.loss = torch.nn.CTCLoss(blank=0, zero_infinity=self.config.get(
             "CTCLossZeroInf", False)) if self.loss_type == "CTC" else None
         self.out_size = len(self.vocab) + 1 if self.loss_type == 'CTC' else len(self.vocab)
         self.model = Im2latexModel(config.get('backbone_config'), self.out_size, config.get('head', {}))
@@ -284,59 +282,11 @@ class Trainer:
         logits, _ = self.model(imgs, training_gt)
         cut = False if self.loss_type == 'CTC' else True
         loss, accuracy = calculate_loss(logits, loss_computation_gt, target_lengths, should_cut_by_min=cut,
-                             ctc_loss=self.loss)
+                                        ctc_loss=self.loss)
         self.step += 1
         self.global_step += 1
-        try:
-            loss.backward()
-        except RuntimeError as e:
-            with open("loss_nan_debug_set_anomaly_detection.txt", "w") as file:
-
-                file.write(str(logits))
-                file.write('\n')
-                file.write("*" * 100)
-                file.write('\n')
-                file.write(str(list(self.model.parameters())))
-                file.write('\n')
-                file.write("*" * 100)
-                file.write('\n')
-                file.write(str(loss_computation_gt))
-                file.write('\n')
-                file.write("*" * 100)
-                file.write(str(loss.item()))
-
-                self.save_model("model_before_nan.pth")
-            raise RuntimeError from e
+        loss.backward()
         clip_grad_norm_(self.model.parameters(), self.clip)
-        for param in self.model.parameters():
-            # print(type(param.grad))
-            if torch.any(torch.isnan(param.grad)):
-                with open("loss_nan_debug.txt", "w") as file:
-
-                    file.write(str(param.grad))
-                    file.write('\n')
-                    file.write("*" * 100)
-                    file.write('\n')
-                    file.write(str(param))
-                    file.write('\n')
-                    file.write("*" * 100)
-                    file.write('\n')
-                    file.write(str(logits))
-                    file.write('\n')
-                    file.write("*" * 100)
-                    file.write('\n')
-                    file.write(str(list(self.model.parameters())))
-                    file.write('\n')
-                    file.write("*" * 100)
-                    file.write('\n')
-                    file.write(str(loss_computation_gt))
-                    file.write('\n')
-                    file.write("*" * 100)
-                    file.write(str(loss.item()))
-
-                self.save_model("model_before_nan.pth")
-
-                assert False, "gradient is nan"
         self.optimizer.step()
         return loss.item(), accuracy
 
