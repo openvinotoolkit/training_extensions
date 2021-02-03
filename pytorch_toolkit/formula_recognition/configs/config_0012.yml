@@ -6,7 +6,7 @@ head:
 val_transforms_list:
   - name: TransformGrayscale
 device: "cuda"
-model_path: 0012/model_checkpoints/model_epoch_1_step_600000_2021-02-01_13-32-02.pth
+model_path: /media/cluster_fs/user/vloginov/im2latex_project/0012/model_ctc_nan.pth
 vocab_path: /media/cluster_fs/user/vloginov/im2latex_project/vocabs/vocab_alphanumeric.json
 train:
   batch_size: 4
@@ -23,7 +23,7 @@ train:
   save_dir: model_checkpoints
   datasets:
     - type: MJSynthDataset
-      data_folder: /home/vloginov/work/90kDICT32px
+      data_folder: /media/cluster_fs/user/vloginov/im2latex_project/90kDICT32px
       annotation_file: annotation_toy.txt
       case_sensitive: false
       fixed_img_shape:
@@ -34,7 +34,7 @@ train:
       case_sensitive: false
       images_folder: Challenge2_Training_Task3_Images
       annotation_file: Challenge2_Training_Task3_Images/gt.txt
-      root: /home/vloginov/work/
+      root: /media/cluster_fs/user/vloginov/im2latex_project
       fixed_img_shape:
         - 32
         - 120
@@ -42,35 +42,3 @@ train:
       subset: validate
   train_transforms_list:
     - name: TransformGrayscale
-    # - name: TransformRescale
-    #   scale_min: 0.8
-    #   scale_max: 2
-    # # - name: ColorJitter
-    # - name: TransformResize
-    #   target_shape:
-    #     - 32
-    #     - 120
-eval:
-  dataset:
-    type: ICDAR2013RECDataset
-    case_sensitive: false
-    images_folder: /home/vloginov/work/omz_validation_datasets/ICDAR13_REC/Challenge2_Test_Task3_Images
-    annotation_file: /home/vloginov/work/omz_validation_datasets/ICDAR13_REC/gt/gt.txt.fixed.alfanumeric.greater3
-    grayscale: true
-    fixed_img_shape:
-      - 32
-      - 120
-  render: false
-  use_ctc: true
-demo:
-  transforms_list: []
-export:
-  res_encoder_name: medium_v2_encoder.onnx
-  res_decoder_name: medium_v2_decoder.onnx
-  export_ir: true
-  verbose_export: false
-  input_shape_decoder:
-    - 1
-    - 3
-    - 65
-    - 1450
