@@ -71,6 +71,10 @@ def skip_if_cpu_is_not_supported(template_file):
     if 'cpu' not in training_targets:
         raise unittest.SkipTest('CPU is not supported.')
 
+def skip_if_cuda_not_available():
+    if not _is_cuda_available():
+        raise unittest.SkipTest('No GPU found')
+
 
 def create_test_case(domain_name, problem_name, model_name, ann_file, img_root, metric_keys, expected_outputs_dir):
     class TestCaseOteApi(unittest.TestCase):
@@ -148,16 +152,16 @@ def create_test_case(domain_name, problem_name, model_name, ann_file, img_root, 
 
             self.assertTrue(os.path.exists(os.path.join(self.output_folder, 'latest.pth')))
 
-        @unittest.skipUnless(_is_cuda_available(), 'No GPU found')
         def test_evaluation_on_gpu(self):
+            skip_if_cuda_not_available()
             self.do_evaluation(on_gpu=True)
 
         def test_evaluation_on_cpu(self):
             skip_if_cpu_is_not_supported(self.template_file)
             self.do_evaluation(on_gpu=False)
 
-        @unittest.skipUnless(_is_cuda_available(), 'No GPU found')
         def test_finetuning_on_gpu(self):
+            skip_if_cuda_not_available()
             self.do_finetuning(on_gpu=True)
 
         def test_finetuning_on_cpu(self):
@@ -230,8 +234,8 @@ def create_export_test_case(domain_name, problem_name, model_name, ann_file, img
                     f' --save-model-to {export_dir}'
                 )
 
-        @unittest.skipUnless(_is_cuda_available(), 'No GPU found')
         def test_export_on_gpu(self):
+            skip_if_cuda_not_available()
             export_dir = os.path.join(self.output_folder, 'gpu_export')
             self.do_export(export_dir, on_gpu=True)
             self.do_evaluation(export_dir)
@@ -399,13 +403,13 @@ def create_nncf_test_case(domain_name, problem_name, model_name, ann_file, img_r
                 )
             return metrics_path
 
-        @unittest.skipUnless(_is_cuda_available(), 'No GPU found')
         def test_nncf_compress_on_gpu(self):
+            skip_if_cuda_not_available()
             log_file = self.do_compress()
             return log_file
 
-        @unittest.skipUnless(_is_cuda_available(), 'No GPU found')
         def test_nncf_compress_and_eval_on_gpu(self):
+            skip_if_cuda_not_available()
             log_file = self.do_compress()
 
             latest_file = os.path.join(self.output_folder, 'latest.pth')
@@ -414,8 +418,8 @@ def create_nncf_test_case(domain_name, problem_name, model_name, ann_file, img_r
             metrics_path = self.do_eval(latest_file)
             return log_file, metrics_path
 
-        @unittest.skipUnless(_is_cuda_available(), 'No GPU found')
         def test_nncf_compress_and_export(self):
+            skip_if_cuda_not_available()
             log_file = self.do_compress()
 
             latest_file = os.path.join(self.output_folder, 'latest.pth')
