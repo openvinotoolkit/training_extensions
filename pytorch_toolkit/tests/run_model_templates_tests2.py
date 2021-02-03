@@ -101,6 +101,7 @@ def discover_all_tests(root_path, restrict_to_domain=None):
     all_domains = _get_domains(restrict_to_domain)
 
     all_tests = []
+    failed_modules = []
     for cur_domain in all_domains:
         cur_test_folder = os.path.join(root_path, cur_domain, 'tests')
         testsuite = unittest.TestLoader().discover(cur_test_folder, pattern=TEST_FILES_PATTERN)
@@ -120,10 +121,15 @@ def discover_all_tests(root_path, restrict_to_domain=None):
             }
             if isinstance(tst, unittest.loader._FailedTest):
                 logging.warning(f'Failed to load test {el}:\n{tst._exception}')
+                cur_id = tst.id()
+                failed_prefix = 'unittest.loader._FailedTest.'
+                if cur_id.startswith(failed_prefix):
+                    cur_id = cur_id[len(failed_prefix):]
+                failed_modules.append(cur_id)
             all_tests.append(el)
 
     logging.debug('End running discovery of tests')
-    return all_tests
+    return all_tests, failed_modules
 
 def fill_template_paths_in_test_elements(all_tests, model_name_to_template):
     for el in all_tests:
@@ -300,11 +306,11 @@ def run_one_domain_tests_already_in_virtualenv(work_dir, all_tests, verbose):
     sys_retval = int(not was_successful)
     sys.exit(sys_retval)
 
+def _success_to_str(was_successful):
+    return 'OK' if was_successful else 'FAIL'
+
 def rerun_inside_virtual_envs(work_dir, all_tests, args):
     # TODO(LeonidBeynenson): make rerun parametrers be more controllable
-    def _success_to_str(was_successful):
-        return 'OK' if was_successful else 'FAIL'
-
     domains = get_domains_from_tests_list(all_tests)
     results = {}
     for domain in domains:
@@ -339,8 +345,7 @@ def rerun_inside_virtual_envs(work_dir, all_tests, args):
         total_success = total_success and was_successful
         logging.info(f'    {domain}: {_success_to_str(was_successful)}')
     logging.info(f'Total: {_success_to_str(total_success)}')
-    sys_retval = int(not total_success)
-    sys.exit(sys_retval)
+    return total_success
 
 def _get_pytorch_toolkit_path():
     cur_file_path = os.path.abspath(__file__)
@@ -377,7 +382,7 @@ def main():
     logging.basicConfig(level=log_level, format='%(asctime)s:%(levelname)s:%(message)s')
 
     root_path = _get_pytorch_toolkit_path()
-    all_tests = discover_all_tests(root_path, args.domain)
+    all_tests, failed_modules = discover_all_tests(root_path, args.domain)
     model_name_to_template = find_all_model_templates(root_path, args.domain)
     fill_template_paths_in_test_elements(all_tests, model_name_to_template)
 
@@ -415,7 +420,16 @@ def main():
         run_one_domain_tests_already_in_virtualenv(work_dir, all_tests, args.verbose)
         return
 
-    rerun_inside_virtual_envs(work_dir, all_tests, args)
+    total_success = rerun_inside_virtual_envs(work_dir, all_tests, args)
+    if failed_modules:
+        failed_modules_str = "  " + "\n  ".join(failed_modules)
+        logging.error(f'Loading of the following modules is FAILED:\n'
+                      f'{failed_modules_str}')
+        total_success = False
+
+    logging.info(f'Total result: {_success_to_str(total_success)}')
+    sys_retval = int(not total_success)
+    sys.exit(sys_retval)
 
 
 if __name__ == '__main__':
