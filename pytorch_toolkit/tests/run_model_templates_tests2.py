@@ -37,6 +37,7 @@ KNOWN_DOMAIN_FOLDERS = [
         'image_classification',
         'ote',
         ]
+DOMAINS_WITHOUT_VENV = ['ote']
 TEST_FILES_PATTERN = '*_tests_*.py'
 MODEL_TEMPLATES_FOLDER_NAME = 'model_templates'
 MODEL_TEMPLATES_FILE_NAME = 'template.yaml'
@@ -245,15 +246,11 @@ def instantiate_work_dir(root_path, work_dir, all_tests, verbose):
 
     write_list_template_files(root_path, all_tests, tmp_f_name)
 
-    domains = get_domains_from_tests_list(all_tests)
-    domains_str = ','.join(domains)
-
     verbose_param = ' --verbose' if verbose else ''
 
     run_with_log(f'cd {root_path}; python3 ./tools/instantiate.py'
                  f' --do-not-load-snapshots'
                  f' --templates-list-file {tmp_f_name}'
-                 f' --domains {domains_str}'
                  f' {work_dir}'
                  f' {verbose_param}',
                  check=True)
@@ -274,13 +271,6 @@ def is_in_virtual_env_in_work_dir(work_dir, domain):
 def generate_venv_path(work_dir, domain):
     return os.path.join(work_dir, domain, VENV_FOLDER_NAME)
 
-def check_venvs(work_dir, all_tests):
-    domains = get_domains_from_tests_list(all_tests)
-    for domain in domains:
-        venv_for_domain = generate_venv_path(work_dir, domain)
-        assert os.path.isdir(venv_for_domain), \
-                f'The venv folder {venv_for_domain} for domain {domain} is absent'
-
 def run_testsuite(ts, work_dir, verbose):
     os.environ['MODEL_TEMPLATES'] = work_dir
     verbosity = 2
@@ -294,9 +284,11 @@ def run_one_domain_tests_already_in_virtualenv(work_dir, all_tests, verbose):
         return
     if len(domains) > 1:
         raise RuntimeError('The option --run-one-domain-inside-virtual-env may be used for one domain only')
-    if not is_in_virtual_env_in_work_dir(work_dir, domains[0]):
-        raise RuntimeError('The option --run-one-domain-inside-virtual-env may be used only'
-                           ' inside the virtual environment of the domain')
+    domain = domains[0]
+    if not is_in_virtual_env_in_work_dir(work_dir, domain) and domain not in DOMAINS_WITHOUT_VENV:
+        raise RuntimeError(f'The option --run-one-domain-inside-virtual-env may be used only'
+                           f' inside the virtual environment of the domain,'
+                           f' or for the following domains: {DOMAINS_WITHOUT_VENV}')
 
     testsuite = unittest.TestSuite()
     for el in all_tests:
@@ -329,7 +321,8 @@ def rerun_inside_virtual_envs(work_dir, all_tests, args):
 
         cmd = ' '.join(shlex.quote(v) for v in new_argv)
         venv_path = generate_venv_path(work_dir, domain)
-        cmd = f'source "{venv_path}/bin/activate"; ' + cmd
+        if os.path.isdir(venv_path):
+            cmd = f'source "{venv_path}/bin/activate"; ' + cmd
 
         res = run_with_log(cmd, check=False)
 
@@ -412,8 +405,6 @@ def main():
     if should_instantiate:
         instantiate_work_dir(root_path, work_dir, all_tests, args.verbose)
         logging.info(f'The work_dir {work_dir} is instantiated')
-        check_venvs(work_dir, all_tests)
-        logging.info('Instantiation checks are passed')
 
     if args.instantiate_only:
         return
