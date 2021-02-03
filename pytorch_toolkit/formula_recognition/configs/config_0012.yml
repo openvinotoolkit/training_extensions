@@ -6,25 +6,25 @@ head:
 val_transforms_list:
   - name: TransformGrayscale
 device: "cuda"
-model_path: 0012/model_checkpoints/loss_test_best_model_2021-01-27_16-38-32.pth
+model_path: 0012/model_checkpoints/model_epoch_1_step_600000_2021-02-01_13-32-02.pth
 vocab_path: /media/cluster_fs/user/vloginov/im2latex_project/vocabs/vocab_alphanumeric.json
 train:
   batch_size: 4
   learning_rate: 0.0001
   log_path: 0012/logs
-  clip_grad: 2.5
+  clip_grad: 1.0
   epochs: 10
   loss_type: CTC
   CTCLossZeroInf: true
   save_freq: 100000
   val_freq: 50000
-  print_freq: 64
+  print_freq: 128
   optimizer: Adam
   save_dir: model_checkpoints
   datasets:
     - type: MJSynthDataset
       data_folder: /home/vloginov/work/90kDICT32px
-      annotation_file: annotation_train.txt
+      annotation_file: annotation_toy.txt
       case_sensitive: false
       fixed_img_shape:
         - 32
