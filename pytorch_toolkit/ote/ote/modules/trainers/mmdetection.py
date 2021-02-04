@@ -19,6 +19,8 @@ import logging
 import subprocess
 import tempfile
 
+from mmcv.utils import Config
+
 from ote import MMDETECTION_TOOLS
 
 from .base import BaseTrainer
@@ -27,71 +29,46 @@ from ..registry import TRAINERS
 
 @TRAINERS.register_module()
 class MMDetectionTrainer(BaseTrainer):
-    def __init__(self):
-        super(MMDetectionTrainer, self).__init__()
 
     def _get_tools_dir(self):
         return MMDETECTION_TOOLS
 
-    def _add_extra_args(self, cfg, config_path, update_config):
-        if self.__is_clustering_needed(cfg):
-            update_config = self.__cluster(cfg, config_path, update_config)
 
-        return update_config
+@TRAINERS.register_module()
+class MMDetectionCustomClassesTrainer(MMDetectionTrainer):
 
     @staticmethod
-    def __is_clustering_needed(cfg):
-        if cfg.total_epochs > 0:
-            return False
-        if not hasattr(cfg.model, 'bbox_head') or not cfg.model.bbox_head.type == 'SSDHead':
-            return False
-        if not cfg.model.bbox_head.anchor_generator.type == 'SSDAnchorGeneratorClustered':
-            return False
-        return True
+    def classes_list_to_update_config_dict(cfg, classes):
+        num_classes = len(classes)
+        update_config_dict = {
+            'data.train.dataset.classes': classes,
+            'data.val.classes': classes,
+            'data.test.classes': classes,
+            'model.bbox_head.num_classes': num_classes
+        }
+        if hasattr(cfg.model, 'roi_head'):
+            if 'mask_head' in cfg.model.roi_head.keys():
+                update_config_dict['model.roi_head.mask_head.num_classes'] = num_classes
+        return update_config_dict
 
-    @staticmethod
-    def __cluster(cfg, config_path, update_config):
-        logging.info('Clustering started...')
-        widths = cfg.model.bbox_head.anchor_generator.widths
-        n_clust = 0
-        for w in widths:
-            n_clust += len(w) if isinstance(w, (list, tuple)) else 1
-        n_clust = ' --n_clust ' + str(n_clust)
-
-        group_as = ''
-        if isinstance(widths[0], (list, tuple)):
-            group_as = ' --group_as ' + ' '.join([str(len(w)) for w in widths])
-
-        config = ' --config ' + config_path
-
-        tmp_file = tempfile.NamedTemporaryFile(delete=False)
-        out = f' --out {tmp_file.name}'
-
-        if 'pipeline' in cfg.data.train:
-            img_shape = [t for t in cfg.data.train.pipeline if t['type'] == 'Resize'][0][
-                'img_scale']
+    def _update_configuration_file(self, config_path, update_config):
+        cfg = Config.fromfile(config_path)
+        if 'classes' in update_config:
+            classes = update_config['classes']
+            update_config.pop('classes')
         else:
-            img_shape = [t for t in cfg.data.train.dataset.pipeline if t['type'] == 'Resize'][0][
-                'img_scale']
-
-        img_shape = f' --image_size_wh {img_shape[0]} {img_shape[1]}'
-
-        subprocess.run(f'python {MMDETECTION_TOOLS}/cluster_boxes.py'
-                       f'{config}'
-                       f'{n_clust}'
-                       f'{group_as}'
-                       f'{update_config}'
-                       f'{img_shape}'
-                       f'{out}'.split(' '), check=True)
-
-        with open(tmp_file.name) as src_file:
-            content = json.load(src_file)
-            widths, heights = content['widths'], content['heights']
-
-        if not update_config:
-            update_config = ' --update_config'
-        update_config += f' model.bbox_head.anchor_generator.widths={str(widths).replace(" ", "")}'
-        update_config += f' model.bbox_head.anchor_generator.heights={str(heights).replace(" ", "")}'
-        logging.info('... clustering completed.')
+            annotation_file = cfg.data.train.dataset.ann_file
+            ann_file_key = 'data.train.dataset.ann_file'
+            if ann_file_key in update_config:
+                annotation_file = update_config[ann_file_key]
+                annotation_file = annotation_file.split(',')
+            if isinstance(annotation_file, (list, tuple)):
+                annotation_file = annotation_file[0]
+            with open(annotation_file) as read_file:
+                categories = sorted(json.load(read_file)['categories'], key=lambda x: x['id'])
+            classes = [category_dict['name'] for category_dict in categories]
+        update_config_dict = self.classes_list_to_update_config_dict(cfg, classes)
+        cfg.merge_from_dict(update_config_dict)
+        cfg.dump(config_path)
 
         return update_config

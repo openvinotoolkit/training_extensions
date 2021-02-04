@@ -63,28 +63,8 @@ class MMDetectionArgsConverter(BaseArgConverter):
         'test_data_roots': 'data.test.img_prefix',
     }
 
-    def __init__(self):
-        super(MMDetectionArgsConverter, self).__init__()
-
-    @staticmethod
-    def get_classes_extra_args(args):
+    def _get_extra_train_args(self, args):
         out_args = {}
         if 'classes' in args and args['classes']:
-            classes = '[' + ','.join(f'"{x}"' for x in args['classes'].split(',')) + ']'
-            num_classes = len(args['classes'].split(','))
-            out_args['data.train.dataset.classes'] = classes
-            out_args['data.val.classes'] = classes
-            out_args['data.test.classes'] = classes
-            out_args['model.bbox_head.num_classes'] = num_classes
-            model_config = Config.fromfile(args['config']).model
-            if hasattr(model_config, 'roi_head'):
-                if 'mask_head' in model_config.roi_head.keys():
-                    out_args['model.roi_head.mask_head.num_classes'] = num_classes
-
+            out_args['classes'] = args['classes'].split(',')
         return out_args
-
-    def _get_extra_train_args(self, args):
-        return self.get_classes_extra_args(args)
-
-    def _get_extra_test_args(self, args):
-        return self.get_classes_extra_args(args)
