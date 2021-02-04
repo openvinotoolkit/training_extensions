@@ -307,7 +307,7 @@ class Trainer:
                     loss_computation_gt = loss_computation_gt.to(self.device)
                     logits, pred = self.model(imgs, training_gt if use_gt_token else None)
                     if self.loss_type == 'CTC':
-                        pred = ctc_greedy_search(logits, blank_token=len(self.vocab), b_size=logits.shape[0])
+                        pred = ctc_greedy_search(logits, blank_token=self.loss.blank, b_size=logits.shape[0])
                     for j, phrase in enumerate(pred):
                         gold_phrase_str = self.vocab.construct_phrase(
                             loss_computation_gt[j])
