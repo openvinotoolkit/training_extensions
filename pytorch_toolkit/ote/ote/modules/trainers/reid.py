@@ -28,6 +28,9 @@ from ..registry import TRAINERS
 
 @TRAINERS.register_module()
 class ReidTrainer(BaseTrainer):
+    parameter_train_dir = 'train_data_roots'
+    parameter_val_dir = 'val_data_roots'
+
     def __init__(self):
         super(ReidTrainer, self).__init__()
 
@@ -38,10 +41,10 @@ class ReidTrainer(BaseTrainer):
         logging.basicConfig(level=logging.INFO)
         logging.info(f'Commandline:\n{" ".join(sys.argv)}')
 
-        update_config['classification.data_dir'] = Path(update_config['data.root']).name
-        update_config['data.root'] = Path(update_config['data.root']).parent
-        update_config = ' '.join([f'{k} {v}' for k, v in update_config.items() if len(str(v)) and len(str(k))])
-
+        data_path_args = f'--custom-roots {update_config[self.parameter_train_dir]} {update_config[self.parameter_val_dir]} --root _ '
+        del update_config[self.parameter_train_dir]
+        del update_config[self.parameter_val_dir]
+        update_config = data_path_args + ' '.join([f'{k} {v}' for k, v in update_config.items() if str(v) and str(k)])
         logging.info('Training started ...')
         training_info = self._train_internal(config, gpu_num, update_config, tensorboard_dir)
         logging.info('... training completed.')

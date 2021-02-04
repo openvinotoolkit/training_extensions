@@ -3,14 +3,15 @@ model:
   classification: True
   pretrained: True
 
-classification:
-  data_dir: 'imagenet'
+custom_datasets:
+  types: ['classification_image_folder', 'classification_image_folder']
+  names: ['train', 'val']
 
 data:
   root: './'
   type: 'image'
-  sources: ['classification_image_folder']
-  targets: ['classification_image_folder']
+  sources: ['train']
+  targets: ['val']
   height: 224
   width: 224
   norm_mean: [0.485, 0.456, 0.406]
