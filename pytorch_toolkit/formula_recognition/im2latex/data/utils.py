@@ -527,7 +527,7 @@ def formulas2tensor(formulas, sign2id):
 
 def ctc_greedy_search(logits, blank_token):
     max_index = torch.max(logits, dim=2)[1]
-    b_size = logits.shape[0]
+    b_size = logits.shape[1]
     predictions = []
     for i in range(b_size):
         raw_prediction = list(max_index[:, i].detach().cpu().numpy())
