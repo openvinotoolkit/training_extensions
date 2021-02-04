@@ -27,6 +27,6 @@ class LSTMEncoderDecoder(torch.nn.Module):
         rnn_out, state = self.rnn_decoder(rnn_out, state)  # [B*H, W, LSTM_INP_CHANNELS]
         rnn_out = rnn_out.reshape(B, H, W, LSTM_INP_CHANNELS)
         rnn_out = rnn_out.mean(dim=[1])
-        logits = torch.nn.functional.softmax(self.fc(rnn_out), dim=2)
+        logits = self.fc(rnn_out)
         targets = torch.max(logits, dim=2)[1]
         return logits, targets
