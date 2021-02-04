@@ -22,8 +22,6 @@ import sys
 from ote.tests.utils import run_tests_by_pattern
 
 
-sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..'))
-
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--pattern', default='nncf_tests_*.py')

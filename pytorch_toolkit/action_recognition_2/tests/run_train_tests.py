@@ -18,10 +18,8 @@ import argparse
 import os
 import sys
 
-from common.utils import run_tests_by_pattern
+from ote.tests.utils import run_tests_by_pattern
 
-
-sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..'))
 
 def parse_args():
     parser = argparse.ArgumentParser()
