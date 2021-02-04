@@ -523,3 +523,19 @@ def formulas2tensor(formulas, sign2id):
         lens.append(j + 1)
     lens = torch.tensor(lens, dtype=torch.long)
     return tensors, lens
+
+
+def ctc_greedy_search(logits, blank_token):
+    max_index = torch.max(logits, dim=2)[1]
+    b_size = logits.shape[0]
+    predictions = []
+    for i in range(b_size):
+        raw_prediction = list(max_index[:, i].detach().cpu().numpy())
+        new_prediction = [raw_prediction[0]]
+        # filter repeating symbols, according to the procedure of CTC decoding
+        for elem in raw_prediction[1:]:
+            if new_prediction[-1] != elem or elem == blank_token:
+                new_prediction.append(elem)
+        # delete blank tokens
+        predictions.append(torch.IntTensor([c for c in new_prediction if c != blank_token]))
+    return predictions

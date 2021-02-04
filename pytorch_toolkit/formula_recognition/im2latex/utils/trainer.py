@@ -40,39 +40,24 @@ import os
 from functools import partial
 from pprint import pformat, pprint
 from warnings import warn
+
 import numpy as np
 import torch
+import torch.multiprocessing
 import torch.nn
 import torch.optim as optim
-from torchvision import transforms
 from im2latex.data.utils import (collate_fn, create_list_of_transforms,
-                                 get_timestamp)
+                                 ctc_greedy_search, get_timestamp)
 from im2latex.data.vocab import END_TOKEN, PAD_TOKEN, read_vocab
-from im2latex.datasets.im2latex_dataset import (BatchRandomSampler,
-                                                str_to_class)
+from im2latex.datasets.im2latex_dataset import BatchRandomSampler, str_to_class
 from im2latex.models.im2latex_model import Im2latexModel
 from torch.nn.utils import clip_grad_norm_
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.data import ConcatDataset, DataLoader
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
-import cv2 as cv
-import torch.multiprocessing
-torch.multiprocessing.set_sharing_strategy('file_system')
 
-def ctc_greedy_search(logits, blank_token, b_size):
-    max_index = torch.max(logits, dim=2)[1]
-    predictions = []
-    for i in range(b_size):
-        raw_prediction = list(max_index[:, i].detach().cpu().numpy())
-        new_prediction = [raw_prediction[0]]
-        # filter repeating symbols, according to the procedure of CTC decoding
-        for elem in raw_prediction[1:]:
-            if new_prediction[-1] != elem or elem == blank_token:
-                new_prediction.append(elem)
-        # delete blank tokens
-        predictions.append(torch.IntTensor([c for c in new_prediction if c != blank_token]))
-    return predictions
+torch.multiprocessing.set_sharing_strategy('file_system')
 
 
 def calculate_loss(logits, targets, target_lengths, should_cut_by_min=False, ctc_loss=None):

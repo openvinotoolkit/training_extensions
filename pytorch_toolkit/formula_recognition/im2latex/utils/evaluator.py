@@ -24,16 +24,17 @@ import numpy as np
 import onnxruntime
 import torch
 from openvino.inference_engine import IECore
-from im2latex.utils.common import (DECODER_INPUTS, DECODER_OUTPUTS,
-                                   ENCODER_INPUTS, ENCODER_OUTPUTS, read_net)
-from im2latex.utils.evaluation_utils import Im2latexRenderBasedMetric
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from im2latex.data.utils import collate_fn, create_list_of_transforms
+from im2latex.data.utils import (collate_fn, create_list_of_transforms,
+                                 ctc_greedy_search)
 from im2latex.data.vocab import END_TOKEN, START_TOKEN, read_vocab
 from im2latex.datasets.im2latex_dataset import str_to_class
 from im2latex.models.im2latex_model import Im2latexModel
+from im2latex.utils.common import (DECODER_INPUTS, DECODER_OUTPUTS,
+                                   ENCODER_INPUTS, ENCODER_OUTPUTS, read_net)
+from im2latex.utils.evaluation_utils import Im2latexRenderBasedMetric
 
 spaces = [r'\,', r'\>', r'\;', r'\:', r'\quad', r'\qquad', '~']
 
@@ -111,8 +112,10 @@ class BaseRunner:
 
 class PyTorchRunner(BaseRunner):
     def load_model(self):
-        vocab_len = len(read_vocab(self.config.get('vocab_path')))
-        self.model = Im2latexModel(self.config.get('backbone_config'), vocab_len, self.config.get('head', {}))
+        self.vocab_len = len(read_vocab(self.config.get('vocab_path')))
+        self.use_ctc = self.config.get("use_ctc")
+        out_size = self.vocab_len + 1 if self.use_ctc else self.vocab_len
+        self.model = Im2latexModel(self.config.get('backbone_config'), out_size, self.config.get('head', {}))
         self.device = self.config.get('device', 'cpu')
         self.model.load_weights(self.config.get("model_path"), map_location=self.device)
         self.model = self.model.to(self.device)
@@ -120,7 +123,9 @@ class PyTorchRunner(BaseRunner):
 
     def run_model(self, img):
         img = img.to(self.device)
-        _, pred = self.model(img)
+        logits, pred = self.model(img)
+        if self.use_ctc:
+            pred = ctc_greedy_search(logits, self.vocab_len, logits.shape[0])
         return pred[0]
 
     def openvino_transform(self):
@@ -266,7 +271,7 @@ class Evaluator:
         print("Starting inference")
         metric = Im2latexRenderBasedMetric()
         text_acc = 0
-        for img_name, imgs, _, loss_computation_gt in tqdm(self.val_loader):
+        for img_name, _, imgs, _, loss_computation_gt in tqdm(self.val_loader):
             with torch.no_grad():
                 targets = self.runner.run_model(imgs)
                 gold_phrase_str = self.vocab.construct_phrase(loss_computation_gt[0])
