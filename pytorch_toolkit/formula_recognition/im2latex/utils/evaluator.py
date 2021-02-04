@@ -125,7 +125,9 @@ class PyTorchRunner(BaseRunner):
         img = img.to(self.device)
         logits, pred = self.model(img)
         if self.use_ctc:
-            pred = ctc_greedy_search(logits, self.vocab_len, logits.shape[0])
+            pred = torch.nn.functional.log_softmax(logits.detach(), dim=2)
+            pred = pred.permute(1, 0, 2)
+            pred = ctc_greedy_search(pred, 0)
         return pred[0]
 
     def openvino_transform(self):
