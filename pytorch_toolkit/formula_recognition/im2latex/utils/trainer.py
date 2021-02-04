@@ -101,7 +101,7 @@ def calculate_loss(logits, targets, target_lengths, should_cut_by_min=False, ctc
         input_lengths = torch.full(size=(b_size,), fill_value=max_len, dtype=torch.long)
         loss = ctc_loss(logits, targets, input_lengths=input_lengths, target_lengths=target_lengths)
 
-        predictions = ctc_greedy_search(logits.detach(), ctc_loss.blank, b_size)
+        predictions = ctc_greedy_search(logits.detach(), ctc_loss.blank)
         accuracy = 0
         for i in range(b_size):
             gt = torch.IntTensor([c for c in targets[i] if c not in (PAD_TOKEN, END_TOKEN)])
@@ -292,7 +292,9 @@ class Trainer:
                     loss_computation_gt = loss_computation_gt.to(self.device)
                     logits, pred = self.model(imgs, training_gt if use_gt_token else None)
                     if self.loss_type == 'CTC':
-                        pred = ctc_greedy_search(logits, blank_token=self.loss.blank, b_size=logits.shape[0])
+                        pred = torch.nn.functional.log_softmax(logits.detach(), dim=2)
+                        pred = pred.permute(1, 0, 2)
+                        pred = ctc_greedy_search(pred, blank_token=self.loss.blank)
                     for j, phrase in enumerate(pred):
                         gold_phrase_str = self.vocab.construct_phrase(
                             loss_computation_gt[j])
