@@ -32,28 +32,7 @@ class CustomDetectorArgParser(DefaultArgParser):
 
     def get_train_parser(self, config_path):
         parser = argparse.ArgumentParser(parents=[train_args_parser(config_path)], add_help=False)
-        parser.add_argument('--classes', required=True,
-                            help='Comma-separated list of classes (e.g. "cat,dog,mouse").')
-
-        return parser
-
-    def get_test_parser(self, config_path):
-        parser = argparse.ArgumentParser(parents=[test_args_parser(config_path)], add_help=False)
-        parser.add_argument('--classes', required=True,
-                            help='Comma-separated list of classes (e.g. "cat,dog,mouse").')
-
-        return parser
-
-    def get_export_parser(self, config_path):
-        parser = argparse.ArgumentParser(parents=[export_args_parser(config_path)], add_help=False)
-        parser.add_argument('--classes', required=True,
-                            help='Comma-separated list of classes (e.g. "cat,dog,mouse").')
-
-        return parser
-
-    def get_compression_parser(self, config_path):
-        parser = argparse.ArgumentParser(parents=[compression_args_parser(config_path)], add_help=False)
-        parser.add_argument('--classes', required=True,
+        parser.add_argument('--classes', required=False,
                             help='Comma-separated list of classes (e.g. "cat,dog,mouse").')
 
         return parser
