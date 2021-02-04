@@ -47,7 +47,8 @@ class VGG16Backbone(nn.Module):
             nn.MaxPool2d(kernel_size=(2, 1), stride=(2, 1)),
             # dropout7, conv7, bn7
             nn.Dropout(p=self.backbone_dropout, inplace=True),
-            nn.Conv2d(in_channels=512, out_channels=512, kernel_size=2, stride=(2, 1), padding=(0, 1)),
+            nn.ZeroPad2d((0, 1, 0, 0)),
+            nn.Conv2d(in_channels=512, out_channels=512, kernel_size=2, stride=(2, 1), padding=0),
             nn.BatchNorm2d(momentum=0.1, num_features=512),
             nn.ReLU(inplace=True)
         )
