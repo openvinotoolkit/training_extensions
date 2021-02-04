@@ -15,14 +15,12 @@
 """
 
 import os
-import yaml
 
 from ote import MMDETECTION_TOOLS
 from ote.utils.misc import run_through_shell
 from mmcv.utils import Config
 
 from .base import BaseExporter
-from ..arg_converters import MMDetectionArgsConverter
 from ..registry import EXPORTERS
 
 try:
@@ -37,36 +35,12 @@ except ImportError:
 
 @EXPORTERS.register_module()
 class MMDetectionExporter(BaseExporter):
-    def __init__(self):
-        super(MMDetectionExporter, self).__init__()
-        self.opset = 10
-
-    @staticmethod
-    def _get_update_config_str(args):
-        update_config = MMDetectionArgsConverter.get_classes_extra_args(args)
-        update_config = ' '.join([f'{k}={v}' for k, v in update_config.items()])
-        update_config = f' --update_config {update_config}' if update_config else ''
-        update_config = update_config.replace('"', '\\"')
-        return update_config
-
-    def _export_to_onnx(self, args, tools_dir):
-        update_config = self._get_update_config_str(args)
-        run_through_shell(f'python {os.path.join(tools_dir, "export.py")} '
-                          f'{args["config"]} '
-                          f'{args["load_weights"]} '
-                          f'{args["save_model_to"]} '
-                          f'{update_config} '
-                          f'--opset {self.opset} '
-                          f'onnx ')
 
     def _export_to_openvino(self, args, tools_dir):
-        update_config = self._get_update_config_str(args)
         run_through_shell(f'python {os.path.join(tools_dir, "export.py")} '
                           f'{args["config"]} '
                           f'{args["load_weights"]} '
                           f'{args["save_model_to"]} '
-                          f'{update_config} '
-                          f'--opset {self.opset} '
                           f'openvino '
                           f'--input_format {args["openvino_input_format"]}')
 
@@ -91,8 +65,6 @@ class MMDetectionExporter(BaseExporter):
                               f'{args["config"]} '
                               f'{args["load_weights"]} '
                               f'{os.path.join(args["save_model_to"], "alt_ssd_export")} '
-                              f'{update_config} '
-                              f'--opset {self.opset} '
                               f'openvino '
                               f'--input_format {args["openvino_input_format"]} '
                               f'--alt_ssd_export ')

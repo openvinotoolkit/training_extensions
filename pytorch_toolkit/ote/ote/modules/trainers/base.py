@@ -36,20 +36,17 @@ class BaseTrainer(metaclass=ABCMeta):
         logging.basicConfig(level=logging.INFO)
         logging.info(f'Commandline:\n{" ".join(sys.argv)}')
 
-        cfg = Config.fromfile(config)
-
         # This is required to skip the parameters that were not set in the template
         # (e.g. base_learning_rate or epochs) -- they will have default value None in
         # the parser
         update_config = {k: v for k, v in update_config.items() if v is not None}
+        update_config = self._update_configuration_file(config, update_config)
 
         self.work_dir = update_config.get(self.parameter_work_dir)
 
         update_config = ' '.join([f'{k}={v}' for k, v in update_config.items()])
         update_config = f' --update_config {update_config}' if update_config else ''
-
-        update_config = self._add_extra_args(cfg, config, update_config)
-
+        
         logging.info('Training started ...')
         training_info = self._train_internal(config, gpu_num, update_config, tensorboard_dir)
         logging.info('... training completed.')
@@ -96,7 +93,7 @@ class BaseTrainer(metaclass=ABCMeta):
 
         return training_info
 
-    def _add_extra_args(self, cfg, config_path, update_config):
+    def _update_configuration_file(self, config_path, update_config):
         return update_config
 
     @abstractmethod

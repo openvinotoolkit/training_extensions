@@ -12,24 +12,61 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+import json
 import os
+import unittest
 
 import yaml
+
+from ote.tests.test_case import (
+    skip_if_cpu_is_not_supported,
+    skip_if_cuda_not_available,
+    skip_non_instantiated_template_if_its_allowed, 
+    get_dependencies,
+    download_snapshot_if_not_yet
+)
+
 from ote.tests.utils import collect_ap
 from ote.utils.misc import run_through_shell
 
-from common.object_detection_test_case import create_object_detection_test_case
-
-
-kwargs = dict(
-    problem_name='custom-object-detection',
-    ann_file=os.path.dirname(__file__) + '/../../../data/airport/annotation_example_train.json',
-    img_root=os.path.dirname(__file__) + '/../../../data/airport/train'
-)
-
 def create_custom_object_detection_test_case(model_name):
-    class TestCase(create_object_detection_test_case(model_name=model_name, **kwargs)):
-        classes = 'vehicle,person,non-vehicle'
+
+    problem_name = 'custom-object-detection'
+    domain_name = 'object_detection'
+    metric_keys = ['bbox']
+
+    ann_file=os.path.dirname(__file__) + '/../../../data/airport/annotation_example_train.json'
+    img_root=os.path.dirname(__file__) + '/../../../data/airport/train'
+
+    class TestCase(unittest.TestCase):
+
+        domain = domain_name
+        problem = problem_name
+        model = model_name
+        metrics = metric_keys
+        topic = 'train'
+
+        @classmethod
+        def setUpClass(cls):
+            cls.templates_folder = os.environ['MODEL_TEMPLATES']
+            cls.template_folder = os.path.join(cls.templates_folder, domain_name, problem_name, model_name)
+            skip_non_instantiated_template_if_its_allowed(cls.template_folder, problem_name, model_name)
+            cls.template_file = os.path.join(cls.template_folder, 'template.yaml')
+            cls.ann_file = ann_file
+            cls.img_root = img_root
+            cls.dependencies = get_dependencies(cls.template_file)
+            cls.total_epochs = 1
+
+            download_snapshot_if_not_yet(cls.template_file, cls.template_folder)
+
+            run_through_shell(
+                f'cd {cls.template_folder};'
+                f'pip install -r requirements.txt;'
+            )
+
+        def setUp(self):
+            self.output_folder = os.path.join(self.template_folder, f'output_{self.id()}')
+            os.makedirs(self.output_folder, exist_ok=True)
 
         def do_evaluation(self, on_gpu):
             initial_command = 'export CUDA_VISIBLE_DEVICES=;' if not on_gpu else ''
@@ -41,16 +78,15 @@ def create_custom_object_detection_test_case(model_name):
                 f' --test-ann-files {self.ann_file}'
                 f' --test-data-roots {self.img_root}'
                 f' --save-metrics-to {metrics_path}'
-                f' --load-weights snapshot.pth'
-                f' --classes {self.classes}'
+                f' --load-weights {os.path.join(self.output_folder, "latest.pth")}'
             )
 
             with open(metrics_path) as read_file:
                 content = yaml.safe_load(read_file)
 
-            for metric_key in self.metrics:
+            for metric_key in metric_keys:
                 value = [metrics['value'] for metrics in content['metrics'] if metrics['key'] == metric_key][0]
-                self.assertGreaterEqual(value, self.expected_outputs[metric_key])
+                self.assertGreaterEqual(value, 0.0)
 
         def do_finetuning(self, on_gpu):
             log_file = os.path.join(self.output_folder, 'test_finetuning.log')
@@ -67,11 +103,82 @@ def create_custom_object_detection_test_case(model_name):
                 f' --save-checkpoints-to {self.output_folder}'
                 f' --gpu-num 1'
                 f' --batch-size 1'
-                f' --epochs 1'
-                f' --classes {self.classes}'
+                f' --epochs {self.total_epochs}'
                 f' | tee {log_file}')
 
             self.assertTrue(os.path.exists(os.path.join(self.output_folder, 'latest.pth')))
+
+        def do_finetuning_with_classes(self, on_gpu):
+            log_file = os.path.join(self.output_folder, 'test_finetuning.log')
+            initial_command = 'export CUDA_VISIBLE_DEVICES=;' if not on_gpu else ''
+            run_through_shell(
+                f'{initial_command}'
+                f'cd {self.template_folder};'
+                f'python train.py'
+                f' --train-ann-files {self.ann_file}'
+                f' --train-data-roots {self.img_root}'
+                f' --val-ann-files {self.ann_file}'
+                f' --val-data-roots {self.img_root}'
+                f' --resume-from snapshot.pth'
+                f' --save-checkpoints-to {self.output_folder}'
+                f' --gpu-num 1'
+                f' --batch-size 1'
+                f' --epochs {self.total_epochs}'
+                f' --classes vehicle,person,non-vehicle'
+                f' | tee {log_file}')
+
+            self.assertTrue(os.path.exists(os.path.join(self.output_folder, 'latest.pth')))
+
+        def do_export(self, on_gpu):
+            initial_command = 'export CUDA_VISIBLE_DEVICES=;' if not on_gpu else ''
+            run_through_shell(
+                f'{initial_command}'
+                f'cd {os.path.dirname(self.template_file)};'
+                f'pip install -r requirements.txt;'
+                f'python export.py'
+                f' --load-weights {os.path.join(self.output_folder, "latest.pth")}'
+                f' --save-model-to {self.output_folder}'
+            )
+
+        def do_evaluation_of_exported_model(self):
+            metrics_path = os.path.join(self.output_folder, "metrics_exported.yaml")
+            run_through_shell(
+                f'cd {os.path.dirname(self.template_file)};'
+                f'python eval.py'
+                f' --test-ann-files {self.ann_file}'
+                f' --test-data-roots {self.img_root}'
+                f' --load-weights {os.path.join(self.output_folder, "model.bin")}'
+                f' --save-metrics-to {metrics_path}'
+            )
+
+            with open(metrics_path) as read_file:
+                content = yaml.safe_load(read_file)
+
+            for metric_key in self.metrics:
+                value = [metrics['value'] for metrics in content['metrics'] if metrics['key'] == metric_key][0]
+                self.assertGreaterEqual(value, 0.0)
+
+        def test_e2e_on_gpu(self):
+            skip_if_cuda_not_available()
+            self.do_finetuning(on_gpu=True)
+            self.do_evaluation(on_gpu=True)
+            self.do_export(on_gpu=True)
+            self.do_evaluation_of_exported_model()
+
+        def test_e2e_on_cpu(self):
+            skip_if_cpu_is_not_supported(self.template_file)
+            self.do_finetuning(on_gpu=False)
+            self.do_evaluation(on_gpu=False)
+            self.do_export(on_gpu=False)
+            self.do_evaluation_of_exported_model()
+
+        def test_finetuning_with_classes_on_gpu(self):
+            skip_if_cuda_not_available()
+            self.do_finetuning_with_classes(on_gpu=True)
+
+        def test_finetuning_with_classes_on_cpu(self):
+            skip_if_cpu_is_not_supported(self.template_file)
+            self.do_finetuning_with_classes(on_gpu=False)
 
     return TestCase
 
