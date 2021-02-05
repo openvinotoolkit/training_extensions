@@ -34,6 +34,12 @@ hyper_parameters:
     batch_size: 256
     base_learning_rate: 0.1
     epochs: 150
+  extra:
+    custom_classes:
+      name: Custom classes
+      param: --classes
+      type: string
+      default: ''
 output_format:
   onnx:
     default: true
