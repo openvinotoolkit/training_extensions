@@ -21,7 +21,6 @@ import tempfile
 from mmcv.utils import Config
 
 from ote import MMDETECTION_TOOLS
-from ote.utils.misc import run_through_shell
 
 from .base import BaseTrainer
 from ..registry import TRAINERS
