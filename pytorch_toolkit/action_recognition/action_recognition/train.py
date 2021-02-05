@@ -43,6 +43,7 @@ def train_epoch(args, epoch, data_loader, model, criterion, optimizer, logger):
 
 
 def train(args, model, train_loader, val_loader, criterion, optimizer, scheduler, logger):
+    val_acc = 0.0
     for epoch in range(args.begin_epoch, args.n_epochs + 1):
         with logger.scope(epoch):
             for i, group in enumerate(optimizer.param_groups):
