@@ -1,2 +1,4 @@
+requests
 pyyaml
 mmcv
+texttable

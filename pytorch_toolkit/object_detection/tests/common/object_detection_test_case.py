@@ -16,12 +16,12 @@ import logging
 import os
 import unittest
 
-import torch
 import yaml
 
 from ote.tests.test_case import (create_export_test_case,
                                  create_nncf_test_case,
-                                 create_test_case)
+                                 create_test_case,
+                                 skip_if_cuda_not_available)
 from ote.tests.utils import collect_ap
 
 
@@ -42,8 +42,8 @@ def create_object_detection_export_test_case(alt_ssd_export=False, **kwargs):
     if alt_ssd_export:
         class ExportWithAltSsdTestCase(ExportTestCase):
 
-            @unittest.skipUnless(torch.cuda.is_available(), 'No GPU found')
             def test_alt_ssd_export_on_gpu(self):
+                skip_if_cuda_not_available()
                 export_dir = os.path.join(self.output_folder, 'gpu_export')
                 self.do_export(export_dir, on_gpu=True)
                 export_dir = os.path.join(export_dir, 'alt_ssd_export')
@@ -93,14 +93,14 @@ def create_object_detection_nncf_test_case(problem_name, model_name, ann_file, i
             ap = ap / 100
             return ap
 
-        @unittest.skipUnless(torch.cuda.is_available(), 'No GPU found')
         def test_nncf_compress_on_gpu(self):
+            skip_if_cuda_not_available()
             log_file = super().test_nncf_compress_on_gpu()
             ap = collect_ap(log_file)
             self.assertGreater(ap[-1], 0)
 
-        @unittest.skipUnless(torch.cuda.is_available(), 'No GPU found')
         def test_nncf_compress_and_eval_on_gpu(self):
+            skip_if_cuda_not_available()
             log_file, metrics_path = super().test_nncf_compress_and_eval_on_gpu()
 
             compress_ap = collect_ap(log_file)
@@ -113,8 +113,8 @@ def create_object_detection_nncf_test_case(problem_name, model_name, ann_file, i
 
             return log_file, metrics_path
 
-        @unittest.skipUnless(torch.cuda.is_available(), 'No GPU found')
         def test_nncf_compress_and_export(self):
+            skip_if_cuda_not_available()
             log_file, metrics_path = super().test_nncf_compress_and_export()
 
             compress_ap = collect_ap(log_file)

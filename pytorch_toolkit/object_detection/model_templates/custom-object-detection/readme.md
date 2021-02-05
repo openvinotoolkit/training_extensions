@@ -36,7 +36,7 @@ conda activate <environment_name>
 ### 1. Select a model template file and instantiate it in some directory.
 
 ```bash
-export MODEL_TEMPLATE=`realpath ./model_templates/custom-detection/mobilenet_v2-2s_ssd-256x256/template.yaml`
+export MODEL_TEMPLATE=`realpath ./model_templates/custom-object-detection/mobilenet_v2-2s_ssd-256x256/template.yaml`
 export WORK_DIR=/tmp/my_model
 python ../tools/instantiate_template.py ${MODEL_TEMPLATE} ${WORK_DIR}
 ```

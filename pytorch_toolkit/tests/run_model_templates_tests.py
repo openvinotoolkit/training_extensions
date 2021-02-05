@@ -10,7 +10,7 @@ import yaml
 
 ENABLE_TESTS_FOR = {
     'object_detection': [
-        'custom_detection',
+        'custom_object_detection',
         'face_detection',
         'person_detection',
         'person_vehicle_bike_detection',
@@ -37,7 +37,7 @@ NNCF_ENABLE_FOR = [
 
 ENABLE_TRAIN_TESTS = True
 ENABLE_EXPORT_TESTS = True
-ENABLE_NNCF_TESTS = False
+ENABLE_NNCF_TESTS = True
 
 def _is_verbose_flag_set():
     if '-v' in sys.argv or '--verbose' in sys.argv:
@@ -64,6 +64,8 @@ def create_model_template_tests_base(subfolder_name):
             if not workdir:
                 cls.work_dir = os.path.join(tempfile.mkdtemp(), subfolder_name)
             else:
+                if not os.path.isabs(workdir):
+                    raise RuntimeError(f'Received non-absolute path as WORKDIR="{workdir}" -- it is not reliable')
                 cls.work_dir = os.path.join(os.path.abspath(workdir), subfolder_name)
 
             templates_filter_environ = os.environ.get('TEMPLATES_FILTER')
@@ -77,7 +79,7 @@ def create_model_template_tests_base(subfolder_name):
             else:
                 cls.verbosity_flag = ''
 
-            run_with_log(f'python3 tools/instantiate.py {templates_filter_arg} --do-not-load-snapshots {cls.work_dir}', shell=True, check=True)
+            run_with_log(f'python3 tools/instantiate.py {templates_filter_arg} --do-not-load-snapshots {cls.verbosity_flag} {cls.work_dir}', shell=True, check=True)
 
         def _get_template_files(self):
             template_filenames = glob.glob(f'{self.work_dir}/**/template.yaml', recursive=True)

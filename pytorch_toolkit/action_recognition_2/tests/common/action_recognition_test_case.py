@@ -17,16 +17,11 @@
 import json
 import os
 import unittest
-from subprocess import run
 
 import torch
 import yaml
 
-from ote.utils.misc import download_snapshot_if_not_yet
-
-
-def run_through_shell(cmd):
-    run(cmd, shell=True, check=True, executable="/bin/bash")
+from ote.utils.misc import download_snapshot_if_not_yet, run_through_shell
 
 
 def collect_accuracy(path):
@@ -50,7 +45,7 @@ def get_dependencies(template_file):
         return output
 
 
-def create_test_case(problem_name, model_name, ann_file, img_root):
+def create_action_recognition_test_case(problem_name, model_name, ann_file, img_root):
     class TestCaseOteApi(unittest.TestCase):
 
         @classmethod
@@ -166,7 +161,7 @@ def create_test_case(problem_name, model_name, ann_file, img_root):
     return TestCaseOteApi
 
 
-def create_export_test_case(problem_name, model_name, ann_file, img_root):
+def create_action_recognition_export_test_case(problem_name, model_name, ann_file, img_root):
     class ExportTestCase(unittest.TestCase):
 
         @classmethod

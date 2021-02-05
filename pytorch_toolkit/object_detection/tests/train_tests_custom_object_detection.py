@@ -16,20 +16,18 @@ import json
 import os
 import unittest
 
-import torch
 import yaml
 
 from ote.tests.test_case import (
     skip_if_cpu_is_not_supported,
+    skip_if_cuda_not_available,
     skip_non_instantiated_template_if_its_allowed, 
     get_dependencies,
     download_snapshot_if_not_yet
 )
 
-from ote.tests.utils import (
-    collect_ap,
-    run_through_shell
-)
+from ote.tests.utils import collect_ap
+from ote.utils.misc import run_through_shell
 
 def create_custom_object_detection_test_case(model_name):
 
@@ -160,8 +158,8 @@ def create_custom_object_detection_test_case(model_name):
                 value = [metrics['value'] for metrics in content['metrics'] if metrics['key'] == metric_key][0]
                 self.assertGreaterEqual(value, 0.0)
 
-        @unittest.skipUnless(torch.cuda.is_available(), 'No GPU found')
         def test_e2e_on_gpu(self):
+            skip_if_cuda_not_available()
             self.do_finetuning(on_gpu=True)
             self.do_evaluation(on_gpu=True)
             self.do_export(on_gpu=True)
@@ -174,8 +172,8 @@ def create_custom_object_detection_test_case(model_name):
             self.do_export(on_gpu=False)
             self.do_evaluation_of_exported_model()
 
-        @unittest.skipUnless(torch.cuda.is_available(), 'No GPU found')
         def test_finetuning_with_classes_on_gpu(self):
+            skip_if_cuda_not_available()
             self.do_finetuning_with_classes(on_gpu=True)
 
         def test_finetuning_with_classes_on_cpu(self):

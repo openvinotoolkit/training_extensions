@@ -15,7 +15,6 @@
 import logging
 import os
 import unittest
-from subprocess import run
 
 
 def collect_ap(path):
@@ -40,16 +39,9 @@ def download_if_not_yet(output_folder, url):
 def relative_abs_error(expected, actual):
     return abs(expected - actual) / expected
 
-
-def run_through_shell(cmd):
-    cmdstr = ' '.join(cmd) if isinstance(cmd, list) else cmd
-    cmdstr = cmdstr.replace(';', ';\n').replace(' --', ' \\\n    --')
-    logging.info(f'Running through shell cmd\n`{cmdstr}\n`')
-    run(cmd, shell=True, check=True, executable="/bin/bash")
-
-
 def run_tests_by_pattern(folder, pattern, verbose):
-    logging.basicConfig(level=logging.INFO)
+    log_level = logging.DEBUG if verbose else logging.INFO
+    logging.basicConfig(level=log_level)
     if verbose:
         verbosity = 2
     else:

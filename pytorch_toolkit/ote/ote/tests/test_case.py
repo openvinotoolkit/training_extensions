@@ -19,14 +19,23 @@ import os
 import unittest
 
 import mmcv
-import torch
 import yaml
 
-from ote.modules.compression import (get_optimisation_config_from_template,
-                                     is_optimisation_enabled_in_template)
-from ote.tests.utils import collect_ap, run_through_shell
-from ote.utils.misc import download_snapshot_if_not_yet
+from ote.tests.utils import collect_ap
+from ote.utils.misc import download_snapshot_if_not_yet, run_through_shell
 
+# these functions contain import-s inside -- this is required for tests discover
+def _is_cuda_available():
+    import torch
+    return torch.cuda.is_available()
+
+def _get_optimisation_config_from_template(*args, **kwargs):
+    from ote.modules.compression import get_optimisation_config_from_template
+    return get_optimisation_config_from_template(*args, **kwargs)
+
+def _is_optimisation_enabled_in_template(*args, **kwargs):
+    from ote.modules.compression import is_optimisation_enabled_in_template
+    return is_optimisation_enabled_in_template(*args, **kwargs)
 
 def get_dependencies(template_file):
     output = {}
@@ -61,6 +70,10 @@ def skip_if_cpu_is_not_supported(template_file):
         training_targets = [x.lower() for x in yaml.safe_load(read_file)['training_target']]
     if 'cpu' not in training_targets:
         raise unittest.SkipTest('CPU is not supported.')
+
+def skip_if_cuda_not_available():
+    if not _is_cuda_available():
+        raise unittest.SkipTest('No GPU found')
 
 
 def create_test_case(domain_name, problem_name, model_name, ann_file, img_root, metric_keys, expected_outputs_dir):
@@ -139,21 +152,24 @@ def create_test_case(domain_name, problem_name, model_name, ann_file, img_root, 
 
             self.assertTrue(os.path.exists(os.path.join(self.output_folder, 'latest.pth')))
 
-        @unittest.skipUnless(torch.cuda.is_available(), 'No GPU found')
         def test_evaluation_on_gpu(self):
+            skip_if_cuda_not_available()
             self.do_evaluation(on_gpu=True)
 
         def test_evaluation_on_cpu(self):
             skip_if_cpu_is_not_supported(self.template_file)
             self.do_evaluation(on_gpu=False)
 
-        @unittest.skipUnless(torch.cuda.is_available(), 'No GPU found')
         def test_finetuning_on_gpu(self):
+            skip_if_cuda_not_available()
             self.do_finetuning(on_gpu=True)
 
         def test_finetuning_on_cpu(self):
             skip_if_cpu_is_not_supported(self.template_file)
             self.do_finetuning(on_gpu=False)
+
+        def test_smoke_test(self):
+            pass
 
     return TestCaseOteApi
 
@@ -218,8 +234,8 @@ def create_export_test_case(domain_name, problem_name, model_name, ann_file, img
                     f' --save-model-to {export_dir}'
                 )
 
-        @unittest.skipUnless(torch.cuda.is_available(), 'No GPU found')
         def test_export_on_gpu(self):
+            skip_if_cuda_not_available()
             export_dir = os.path.join(self.output_folder, 'gpu_export')
             self.do_export(export_dir, on_gpu=True)
             self.do_evaluation(export_dir)
@@ -229,6 +245,9 @@ def create_export_test_case(domain_name, problem_name, model_name, ann_file, img
             export_dir = os.path.join(self.output_folder, 'cpu_export')
             self.do_export(export_dir, on_gpu=False)
             self.do_evaluation(export_dir)
+
+        def test_smoke_test(self):
+            pass
 
     return ExportTestCase
 
@@ -337,11 +356,11 @@ def create_nncf_test_case(domain_name, problem_name, model_name, ann_file, img_r
             template_data = mmcv.Config.fromfile(template_file)
             template_data.dump(template_file + '.backup.yaml')
 
-            assert is_optimisation_enabled_in_template(template_data), \
+            assert _is_optimisation_enabled_in_template(template_data), \
                     f'Template {template_file} does not contain optimisation part'
 
             if compression_cfg_update_dict:
-                compression_cfg_rel_path = get_optimisation_config_from_template(template_data)
+                compression_cfg_rel_path = _get_optimisation_config_from_template(template_data)
                 compression_cfg_path = os.path.join(os.path.dirname(template_file), compression_cfg_rel_path)
                 backup_compression_cfg_path = compression_cfg_path + '.BACKUP_FROM_TEST.json'
 
@@ -384,13 +403,13 @@ def create_nncf_test_case(domain_name, problem_name, model_name, ann_file, img_r
                 )
             return metrics_path
 
-        @unittest.skipUnless(torch.cuda.is_available(), 'No GPU found')
         def test_nncf_compress_on_gpu(self):
+            skip_if_cuda_not_available()
             log_file = self.do_compress()
             return log_file
 
-        @unittest.skipUnless(torch.cuda.is_available(), 'No GPU found')
         def test_nncf_compress_and_eval_on_gpu(self):
+            skip_if_cuda_not_available()
             log_file = self.do_compress()
 
             latest_file = os.path.join(self.output_folder, 'latest.pth')
@@ -399,8 +418,8 @@ def create_nncf_test_case(domain_name, problem_name, model_name, ann_file, img_r
             metrics_path = self.do_eval(latest_file)
             return log_file, metrics_path
 
-        @unittest.skipUnless(torch.cuda.is_available(), 'No GPU found')
         def test_nncf_compress_and_export(self):
+            skip_if_cuda_not_available()
             log_file = self.do_compress()
 
             latest_file = os.path.join(self.output_folder, 'latest.pth')
@@ -423,5 +442,8 @@ def create_nncf_test_case(domain_name, problem_name, model_name, ann_file, img_r
             metrics_path = self.do_eval(model_bin_path)
 
             return log_file, metrics_path
+
+        def test_smoke_test(self):
+            pass
 
     return NNCFBaseTestCase

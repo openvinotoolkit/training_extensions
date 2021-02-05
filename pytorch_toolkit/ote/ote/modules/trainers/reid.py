@@ -20,14 +20,11 @@ import os
 import yaml
 import sys
 
-import torch
-
 from ote import REID_TOOLS
-from ote.utils import run_with_termination
+from ote.utils import get_cuda_device_count, run_with_termination
 
 from .base import BaseTrainer
 from ..registry import TRAINERS
-
 
 @TRAINERS.register_module()
 class ReidTrainer(BaseTrainer):
@@ -61,9 +58,9 @@ class ReidTrainer(BaseTrainer):
             update_config += f' data.tb_log_dir {tensorboard_dir}'
 
         training_info = {'training_gpu_num': 0}
-        if torch.cuda.is_available():
+        if get_cuda_device_count() > 0:
             logging.info('Training on GPUs started ...')
-            available_gpu_num = torch.cuda.device_count()
+            available_gpu_num = get_cuda_device_count()
             if available_gpu_num < gpu_num:
                 logging.warning(f'available_gpu_num < args.gpu_num: {available_gpu_num} < {gpu_num}')
                 logging.warning(f'decreased number of gpu to: {available_gpu_num}')
@@ -80,7 +77,7 @@ class ReidTrainer(BaseTrainer):
                              f' --gpu-num {gpu_num}'
                              f' {update_config}'.split(' '))
 
-        if torch.cuda.is_available():
+        if get_cuda_device_count() > 0:
             logging.info('... training on GPUs completed.')
         else:
             logging.info('... training on CPU completed.')

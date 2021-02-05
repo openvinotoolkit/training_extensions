@@ -2,3 +2,4 @@
 joblib
 opencv-python==4.1.0.25
 youtube-dl==2020.1.24
+-r ../ote/requirements.txt

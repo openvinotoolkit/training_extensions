@@ -14,7 +14,7 @@
 
 import os
 
-from common.test_case import create_object_detection_test_case
+from common.object_detection_test_case import create_object_detection_test_case
 
 kwargs = dict(
     problem_name='person-detection',

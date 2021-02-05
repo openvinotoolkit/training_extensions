@@ -16,7 +16,6 @@
 
 import json
 import logging
-import subprocess
 import tempfile
 
 from mmcv.utils import Config
@@ -69,6 +68,6 @@ class MMDetectionCustomClassesTrainer(MMDetectionTrainer):
             classes = [category_dict['name'] for category_dict in categories]
         update_config_dict = self.classes_list_to_update_config_dict(cfg, classes)
         cfg.merge_from_dict(update_config_dict)
-        cfg.dump(config_path)
+        cfg.dump(config_path) # TODO(lbeynens): check this, it may be dangerous
 
         return update_config

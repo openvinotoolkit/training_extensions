@@ -14,7 +14,7 @@
 
 import os
 
-from common.test_case import create_image_classification_test_case
+from common.image_classification_test_case import create_image_classification_test_case
 
 kwargs = dict(
     problem_name='imagenet-classification',

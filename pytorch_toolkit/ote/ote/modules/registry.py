@@ -14,7 +14,7 @@
  limitations under the License.
 """
 
-from mmcv.utils import Registry
+from mmcv.utils.registry import Registry
 
 
 ARG_PARSERS = Registry('arg_parser')

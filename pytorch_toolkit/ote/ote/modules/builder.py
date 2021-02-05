@@ -14,7 +14,7 @@
  limitations under the License.
 """
 
-from mmcv.utils import Registry
+from mmcv.utils.registry import Registry
 
 from .registry import ARG_PARSERS, ARG_CONVERTERS, TRAINERS, EVALUATORS, EXPORTERS, COMPRESSION
 
