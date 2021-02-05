@@ -39,11 +39,12 @@ SOFTWARE.
 import json
 import os
 from copy import deepcopy
+from multiprocessing.pool import ThreadPool
 from os.path import join
-import scipy.io
 
 import cv2 as cv
 import numpy as np
+import scipy.io
 from torch.utils.data import Dataset, Sampler
 from tqdm import tqdm
 
@@ -227,45 +228,56 @@ class ICDAR2013RECDataset(BaseDataset):
 
 class MJSynthDataset(BaseDataset):
     def __init__(self, data_folder, annotation_file, min_shape=(8, 8),
-                 fixed_img_shape=None, case_sensitive=True, min_txt_len=0):
+                 fixed_img_shape=None, case_sensitive=True, min_txt_len=0, num_workers=4):
         super().__init__()
         self.data_folder = data_folder
         self.ann_file = annotation_file
         self.fixed_img_shape = fixed_img_shape
-        self.pairs = self._load(min_shape, case_sensitive, min_txt_len)
+        self.pairs = self._load(min_shape, case_sensitive, min_txt_len, num_workers)
 
     def __getitem__(self, index):
-        el = deepcopy(self.pairs[index])
+
+        el = self.pairs[index]
         img = cv.imread(os.path.join(self.data_folder, el['img_path']), cv.IMREAD_COLOR)
         if self.fixed_img_shape is not None:
             img = cv.resize(img, tuple(self.fixed_img_shape[::-1]))
         el['img'] = img
         return el
 
-    def _load(self, min_shape, case_sensitive, min_txt_len):
+    def _load(self, min_shape, case_sensitive, min_txt_len, num_workers):
         pairs = []
-        with open(os.path.join(self.data_folder, self.ann_file)) as input_file:
-            annotation = [line.split(" ")[0] for line in input_file]
-        for image_path in tqdm(annotation):
+
+        def read_img(image_path):
             gt_text = ' '.join(image_path.split("_")[1])
             img = cv.imread(os.path.join(self.data_folder, image_path), cv.IMREAD_COLOR)
 
             if img is None:
-                continue
+                return
             elif img.shape[0:2] <= tuple(min_shape):
-                continue
+                return
             img_shape = tuple(img.shape)
+            del img
             if not case_sensitive:
                 gt_text = gt_text.lower()
             if len(gt_text) < min_txt_len:
-                continue
+                return
             el = {"img_name": os.path.split(image_path)[1],
                   "text": gt_text,
                   "img_path": image_path,
                   "img_shape": img_shape
                   }
-            pairs.append(el)
-        pairs.sort(key=lambda img: img['img_shape'], reverse=True)
+
+            return el
+
+        with open(os.path.join(self.data_folder, self.ann_file)) as input_file:
+            annotation = [line.split(" ")[0] for line in input_file]
+        pool = ThreadPool(num_workers)
+
+        for elem in tqdm(pool.imap_unordered(read_img, annotation), total=len(annotation)):
+            if elem is not None:
+                pairs.append(elem)
+        if self.fixed_img_shape is None:
+            pairs.sort(key=lambda img: img['img_shape'], reverse=True)
         return pairs
 
 
