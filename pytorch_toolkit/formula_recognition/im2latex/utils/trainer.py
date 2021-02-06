@@ -281,7 +281,7 @@ class Trainer:
         val_total_accuracy = 0.0
         print("Validation started")
         with torch.no_grad():
-            filename = "{}/results_epoch_{}_step{}_{}.txt".format(self.val_results_path,
+            filename = "{}/results_epoch_{}_step_{}_{}.txt".format(self.val_results_path,
                                                                   self.epoch, self.step, self.time)
             with open(filename, 'w') as output_file:
 
@@ -319,7 +319,7 @@ class Trainer:
             print("Epoch {}, validation average accuracy: {:.4f}".format(
                 self.epoch, avg_accuracy
             ))
-
+        self.save_model("validation_epoch_{}_step_{}_{}.pth".format(self.epoch, self.step, self.time))
         self.model.train()
         return avg_loss, avg_accuracy
 
