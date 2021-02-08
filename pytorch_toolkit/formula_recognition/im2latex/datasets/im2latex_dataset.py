@@ -249,14 +249,18 @@ class MJSynthDataset(BaseDataset):
 
         def read_img(image_path):
             gt_text = ' '.join(image_path.split("_")[1])
-            img = cv.imread(os.path.join(self.data_folder, image_path), cv.IMREAD_COLOR)
+            if not self.fixed_img_shape:
 
-            if img is None:
-                return
-            elif img.shape[0:2] <= tuple(min_shape):
-                return
-            img_shape = tuple(img.shape)
-            del img
+                img = cv.imread(os.path.join(self.data_folder, image_path), cv.IMREAD_COLOR)
+
+                if img is None:
+                    return
+                elif img.shape[0:2] <= tuple(min_shape):
+                    return
+                img_shape = tuple(img.shape)
+                del img
+            else:
+                img_shape = self.fixed_img_shape
             if not case_sensitive:
                 gt_text = gt_text.lower()
             if len(gt_text) < min_txt_len:
