@@ -31,6 +31,7 @@ class ReidArgsConverter(BaseArgConverter):
         'batch_size': 'train.batch_size',
         'base_learning_rate': 'train.lr',
         'epochs': 'train.max_epoch',
+        'classes': 'classes',
     }
     test_update_args_map = {
         'test_ann_files': '',

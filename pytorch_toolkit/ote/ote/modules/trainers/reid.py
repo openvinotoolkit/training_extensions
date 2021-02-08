@@ -30,6 +30,7 @@ from ..registry import TRAINERS
 class ReidTrainer(BaseTrainer):
     parameter_train_dir = 'train_data_roots'
     parameter_val_dir = 'val_data_roots'
+    parameter_classes_list = 'classes'
 
     def __init__(self):
         super(ReidTrainer, self).__init__()
@@ -41,10 +42,17 @@ class ReidTrainer(BaseTrainer):
         logging.basicConfig(level=logging.INFO)
         logging.info(f'Commandline:\n{" ".join(sys.argv)}')
 
+        if update_config[self.parameter_classes_list]:
+            update_config[self.parameter_classes_list] = update_config[self.parameter_classes_list].replace(',', ' ')
+            classes_arg = f'--classes {update_config[self.parameter_classes_list]} '
+        else:
+            classes_arg = ''
+        del update_config[self.parameter_classes_list]
+
         data_path_args = f'--custom-roots {update_config[self.parameter_train_dir]} {update_config[self.parameter_val_dir]} --root _ '
         del update_config[self.parameter_train_dir]
         del update_config[self.parameter_val_dir]
-        update_config = data_path_args + ' '.join([f'{k} {v}' for k, v in update_config.items() if str(v) and str(k)])
+        update_config = classes_arg + data_path_args + ' '.join([f'{k} {v}' for k, v in update_config.items() if str(v) and str(k)])
         logging.info('Training started ...')
         training_info = self._train_internal(config, gpu_num, update_config, tensorboard_dir)
         logging.info('... training completed.')

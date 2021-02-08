@@ -1,4 +1,4 @@
-arg_parser: DefaultArgParser
+arg_parser: ReidArgParser
 arg_converter: ReidArgsConverter
 trainer: ReidTrainer
 evaluator: ReidEvaluator
