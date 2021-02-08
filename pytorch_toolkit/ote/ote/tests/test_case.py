@@ -348,7 +348,7 @@ def create_nncf_test_case(domain_name, problem_name, model_name, ann_file, img_r
                 logging.warning(f'ATTENTION: the folder that should be created for this test case exists!')
                 logging.warning(f'           It may cause side effects between tests!')
                 logging.warning(f'The folder is `{template_folder}`.\n')
-            run_through_shell(f'cp -a "{src_template_folder}" "{template_folder}"')
+            run_through_shell(f'cp -a --no-target-directory "{src_template_folder}" "{template_folder}"')
             assert os.path.isdir(template_folder), f'Cannot create {template_folder}'
 
         @staticmethod

@@ -40,7 +40,7 @@ def main():
         content = yaml.load(read_file, yaml.SafeLoader)
 
     os.makedirs(args.output, exist_ok=True)
-    run_through_shell(f'cp -r {os.path.dirname(args.template)}/* {args.output}',
+    run_through_shell(f'cp -r {os.path.dirname(args.template)}/* --target-directory={args.output}',
                       verbose=args.verbose)
 
     for dependency in content['dependencies']:
@@ -48,8 +48,9 @@ def main():
         destination = dependency['destination']
         if destination != 'snapshot.pth':
             rel_source = os.path.join(os.path.dirname(args.template), source)
-            os.makedirs(os.path.dirname(os.path.join(args.output, destination)), exist_ok=True)
-            run_through_shell(f'cp -r {rel_source} {os.path.join(args.output, destination)}', check=True,
+            cur_dst = os.path.join(args.output, destination)
+            os.makedirs(os.path.dirname(cur_dst), exist_ok=True)
+            run_through_shell(f'cp -r --no-target-directory {rel_source} {cur_dst}', check=True,
                               verbose=args.verbose)
 
     if not args.do_not_load_snapshot:
