@@ -96,8 +96,7 @@ def calculate_loss(logits, targets, target_lengths, should_cut_by_min=False, ctc
         loss = torch.nn.functional.nll_loss(logits, targets)
     else:
         logits = torch.nn.functional.log_softmax(logits, dim=2)
-        b_size, max_len, vocab_size = logits.shape  # batch size, length of the formula, vocab size
-        logits = logits.permute(1, 0, 2)
+        max_len, b_size, vocab_size = logits.shape  # batch size, length of the formula, vocab size
         input_lengths = torch.full(size=(b_size,), fill_value=max_len, dtype=torch.long)
         loss = ctc_loss(logits, targets, input_lengths=input_lengths, target_lengths=target_lengths)
 
@@ -293,7 +292,6 @@ class Trainer:
                     logits, pred = self.model(imgs, training_gt if use_gt_token else None)
                     if self.loss_type == 'CTC':
                         pred = torch.nn.functional.log_softmax(logits.detach(), dim=2)
-                        pred = pred.permute(1, 0, 2)
                         pred = ctc_greedy_search(pred, blank_token=self.loss.blank)
                     for j, phrase in enumerate(pred):
                         gold_phrase_str = self.vocab.construct_phrase(
