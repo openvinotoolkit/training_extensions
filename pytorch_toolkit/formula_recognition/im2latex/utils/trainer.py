@@ -119,6 +119,7 @@ class Trainer:
         self.vocab = read_vocab(config.get('vocab_path'))
         self.train_transforms_list = config.get('train_transforms_list')
         self.val_transforms_list = config.get('val_transforms_list')
+        self.loss_type = config.get("loss_type", 'NLL')
         self.total_epochs = config.get('epochs', 30)
         self.learing_rate = config.get('learning_rate', 1e-3)
         self.clip = config.get('clip_grad', 5.0)
@@ -142,7 +143,6 @@ class Trainer:
         self.writer.add_text("General info", pformat(config))
         self.create_dirs()
         self.load_dataset()
-        self.loss_type = config.get("loss_type", 'NLL')
         self.loss = torch.nn.CTCLoss(blank=0, zero_infinity=self.config.get(
             "CTCLossZeroInf", False)) if self.loss_type == "CTC" else None
         self.out_size = len(self.vocab) + 1 if self.loss_type == 'CTC' else len(self.vocab)
