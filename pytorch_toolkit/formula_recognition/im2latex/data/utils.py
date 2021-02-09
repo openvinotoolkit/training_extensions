@@ -144,8 +144,10 @@ class TransformOvinoIR:
 
     def __call__(self, imgs):
         imgs = to_list(imgs)
-
-        imgs = [np.transpose(img, [2, 0, 1]) for img in imgs]
+        if len(imgs[0].shape) < 3:
+            imgs = [np.expand_dims(img, axis=0) for img in imgs]
+        else:
+            imgs = [np.transpose(img, [2, 0, 1]) for img in imgs]
         return [torch.Tensor(img) for img in imgs]
 
 
@@ -468,7 +470,7 @@ def get_num_lines_in_file(path):
     return total
 
 
-def collate_fn(sign2id, batch, *, batch_transform=None):
+def collate_fn(sign2id, batch, *, batch_transform=None, use_ctc=False):
     # filter the pictures that have different width or height
     size = batch[0]['img'].shape
     batch = [img_formula for img_formula in batch
@@ -492,7 +494,10 @@ def collate_fn(sign2id, batch, *, batch_transform=None):
     # Ground truth symbols that are used as a decoding step input for the next symbol prediction during training.
     training_gt = torch.cat([torch.ones(bsize, 1).long()*START_TOKEN, formulas_tensor], dim=1)
     # Ground truth values for the outputs of decoder. Used for loss computation.
-    loss_computation_gt = torch.cat([formulas_tensor, torch.ones(bsize, 1).long()*END_TOKEN], dim=1)
+    if use_ctc:
+        loss_computation_gt = formulas_tensor
+    else:
+        loss_computation_gt = torch.cat([formulas_tensor, torch.ones(bsize, 1).long()*END_TOKEN], dim=1)
     return img_names, lens, imgs, training_gt, loss_computation_gt
 
 
@@ -526,15 +531,17 @@ def formulas2tensor(formulas, sign2id):
 
 
 def ctc_greedy_search(logits, blank_token):
-    max_index = torch.max(logits, dim=2)[1]
+    if torch.is_tensor(logits):
+        logits = logits.detach().cpu().numpy()
+    max_index = np.argmax(logits, 2)
     b_size = logits.shape[1]
     predictions = []
     for i in range(b_size):
-        raw_prediction = list(max_index[:, i].detach().cpu().numpy())
+        raw_prediction = max_index[:, i]
         new_prediction = [raw_prediction[0]]
         # filter repeating symbols, according to the procedure of CTC decoding
         for elem in raw_prediction[1:]:
-            if new_prediction[-1] != elem or elem == blank_token:
+            if new_prediction[-1] != elem:
                 new_prediction.append(elem)
         # delete blank tokens
         predictions.append(torch.IntTensor([c for c in new_prediction if c != blank_token]))

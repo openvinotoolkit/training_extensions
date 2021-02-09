@@ -187,7 +187,8 @@ class Trainer:
             train_dataset,
             batch_sampler=train_sampler,
             collate_fn=partial(collate_fn, self.vocab.sign2id,
-                               batch_transform=batch_transform_train),
+                               batch_transform=batch_transform_train,
+                               use_ctc=(self.loss_type == "CTC")),
             num_workers=os.cpu_count())
         val_dataset = ConcatDataset(val_datasets)
         val_sampler = BatchRandomSampler(dataset=val_dataset, batch_size=1)
@@ -197,7 +198,7 @@ class Trainer:
             val_dataset,
             batch_sampler=val_sampler,
             collate_fn=partial(collate_fn, self.vocab.sign2id,
-                               batch_transform=batch_transform_val),
+                               batch_transform=batch_transform_val, use_ctc=(self.loss_type == "CTC")),
             num_workers=os.cpu_count())
 
     def train(self):
