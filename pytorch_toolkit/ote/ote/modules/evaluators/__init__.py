@@ -14,6 +14,6 @@ __all__ = [
     'MMFaceDetectionEvaluator',
     'MMHorizontalTextDetectionEvaluator',
     'InstanceSegmentationEvaluator',
-    'TextSpottingEvaluator'
+    'TextSpottingEvaluator',
     'ReidEvaluator',
 ]
