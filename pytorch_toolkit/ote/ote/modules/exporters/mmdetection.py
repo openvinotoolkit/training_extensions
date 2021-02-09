@@ -15,6 +15,7 @@
 """
 
 import os
+import os.path as osp
 
 from ote import MMDETECTION_TOOLS
 from ote.utils.misc import run_through_shell
@@ -22,6 +23,7 @@ from mmcv.utils import Config
 
 from .base import BaseExporter
 from ..registry import EXPORTERS
+from ..arg_converters.mmdetection import classes_list_to_update_config_dict, load_classes_from_snapshot
 
 try:
     # note that we can make this import if
@@ -36,11 +38,31 @@ except ImportError:
 @EXPORTERS.register_module()
 class MMDetectionExporter(BaseExporter):
 
-    def _export_to_openvino(self, args, tools_dir):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.opset = 10
+
+    def get_update_config(self, args):
+        return ''
+
+    def _export_to_onnx(self, args, tools_dir):
+        update_config = self.get_update_config(args)
         run_through_shell(f'python {os.path.join(tools_dir, "export.py")} '
                           f'{args["config"]} '
                           f'{args["load_weights"]} '
                           f'{args["save_model_to"]} '
+                          f'{update_config} '
+                          f'--opset={self.opset} '
+                          f'onnx ')
+
+    def _export_to_openvino(self, args, tools_dir):
+        update_config = self.get_update_config(args)
+        run_through_shell(f'python {os.path.join(tools_dir, "export.py")} '
+                          f'{args["config"]} '
+                          f'{args["load_weights"]} '
+                          f'{args["save_model_to"]} '
+                          f'{update_config} '
+                          f'--opset={self.opset} '
                           f'openvino '
                           f'--input_format {args["openvino_input_format"]}')
 
@@ -65,9 +87,26 @@ class MMDetectionExporter(BaseExporter):
                               f'{args["config"]} '
                               f'{args["load_weights"]} '
                               f'{os.path.join(args["save_model_to"], "alt_ssd_export")} '
+                              f'{update_config} '
+                              f'--opset={self.opset} '
                               f'openvino '
                               f'--input_format {args["openvino_input_format"]} '
                               f'--alt_ssd_export ')
 
     def _get_tools_dir(self):
         return MMDETECTION_TOOLS
+
+
+@EXPORTERS.register_module()
+class MMDetectionCustomClassesExporter(MMDetectionExporter):
+
+    def get_update_config(self, args):
+        classes = load_classes_from_snapshot(args['load_weights'])
+        if not classes:
+            raise RuntimeError(f'There are no CLASSES in meta information of snapshot: {args["load_weights"]}')
+
+        update_config_dict = classes_list_to_update_config_dict(args['config'], classes)
+        update_config = '--update_config ' + ' '.join(f'{k}={v}' for k,v in update_config_dict.items())
+        update_config = update_config.replace('"', '\\"')
+
+        return update_config

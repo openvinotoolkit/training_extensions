@@ -14,7 +14,7 @@
  limitations under the License.
 """
 
-from mmcv import Config
+import json
 
 from .base import BaseArgConverter
 from ..registry import ARG_CONVERTERS
@@ -63,8 +63,79 @@ class MMDetectionArgsConverter(BaseArgConverter):
         'test_data_roots': 'data.test.img_prefix',
     }
 
+
+def load_classes_from_snapshot(snapshot):
+    import torch
+    return torch.load(snapshot)['meta'].get('CLASSES', [])
+
+def classes_list_to_update_config_dict(cfg, classes):
+    if isinstance(cfg, str):
+        from mmcv import Config
+        cfg = Config.fromfile(cfg)
+    num_classes = len(classes)
+    classes = '[' + ','.join(f'"{x}"' for x in classes) + ']'
+    update_config_dict = {
+        'data.train.dataset.classes': classes,
+        'data.val.classes': classes,
+        'data.test.classes': classes,
+        'model.bbox_head.num_classes': num_classes
+    }
+    if hasattr(cfg.model, 'roi_head'):
+        if 'mask_head' in cfg.model.roi_head.keys():
+            update_config_dict['model.roi_head.mask_head.num_classes'] = num_classes
+    return update_config_dict
+
+
+@ARG_CONVERTERS.register_module()
+class MMDetectionCustomClassesArgsConverter(MMDetectionArgsConverter):
+
+    @staticmethod
+    def _get_classes_from_annotation(annotation_file):
+        with open(annotation_file) as read_file:
+            categories = sorted(json.load(read_file)['categories'], key=lambda x: x['id'])
+        classes_from_annotation = [category_dict['name'] for category_dict in categories]
+        return classes_from_annotation
+
     def _get_extra_train_args(self, args):
-        out_args = {}
+        classes_from_args = None
         if 'classes' in args and args['classes']:
-            out_args['classes'] = args['classes'].split(',')
-        return out_args
+            classes_from_args = args['classes'].split(',')
+
+        classes_from_annotation = self._get_classes_from_annotation(args['train_ann_files'].split(',')[0])
+
+        if classes_from_args:
+            if not set(classes_from_args).issubset(set(classes_from_annotation)):
+                raise RuntimeError('Set of classes passed through CLI is not subset of classes in training dataset: '
+                                   f'{classes_from_args} vs {classes_from_annotation}')
+            classes = classes_from_args
+        else:
+            classes = classes_from_annotation
+
+        return classes_list_to_update_config_dict(args['config'], classes)
+
+    def _get_extra_test_args(self, args):
+        classes_from_args = None
+        if 'classes' in args and args['classes']:
+            classes_from_args = args['classes'].split(',')
+
+        classes_from_snapshot = None
+        if args['load_weights'].endswith('.pth'):
+            classes_from_snapshot = load_classes_from_snapshot(args['load_weights'])
+
+        classes_from_annotation = self._get_classes_from_annotation(args['test_ann_files'].split(',')[0])
+
+        if classes_from_args:
+            if not set(classes_from_args).issubset(set(classes_from_annotation)):
+                raise RuntimeError('Set of classes passed through CLI is not subset of classes in test dataset: '
+                                   f'{classes_from_args} vs {classes_from_annotation}')
+            if classes_from_snapshot and classes_from_args != classes_from_snapshot:
+                raise RuntimeError('Set of classes passed through CLI does not equal classes stored in snapshot: '
+                                   f'{classes_from_args} vs {classes_from_snapshot}')
+            classes = classes_from_args
+        else:
+            if classes_from_snapshot and classes_from_annotation != classes_from_snapshot:
+                raise RuntimeError('Set of classes obtained from test dataset does not equal classes stored in snapshot: '
+                                   f'{classes_from_annotation} vs {classes_from_snapshot}')
+            classes = classes_from_annotation
+
+        return classes_list_to_update_config_dict(args['config'], classes)

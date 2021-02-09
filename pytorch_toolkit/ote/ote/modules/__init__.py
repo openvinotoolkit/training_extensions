@@ -1,11 +1,15 @@
-from .arg_parsers import DefaultArgParser, CustomDetectorArgParser, FaceDetectorArgParser
+from .arg_parsers import DefaultArgParser, CustomClassesArgParser, FaceDetectorArgParser
 from .arg_converters import (BaseArgConverter, MMActionArgsConverter, MMDetectionArgsConverter,
                              MMDetectionWiderArgsConverter)
 from .compression import NNCFConfigTransformer
 from .evaluators import (BaseEvaluator, MMActionEvaluator, MMDetectionEvaluator,
                          MMFaceDetectionEvaluator, MMHorizontalTextDetectionEvaluator,
                          InstanceSegmentationEvaluator)
-from .exporters import BaseExporter, MMActionExporter, MMDetectionExporter, InstanceSegmentationExporter
+from .exporters import (BaseExporter,
+                        MMActionExporter,
+                        MMDetectionCustomClassesExporter,
+                        MMDetectionExporter,
+                        InstanceSegmentationExporter)
 from .trainers import BaseTrainer, MMActionTrainer, MMDetectionTrainer, InstanceSegmentationTrainer
 from .registry import ARG_PARSERS, ARG_CONVERTERS, TRAINERS, EVALUATORS, EXPORTERS, COMPRESSION
 from .builder import (build_arg_parser,
@@ -23,7 +27,7 @@ __all__ = [
     'EXPORTERS',
     'TRAINERS',
     'DefaultArgParser',
-    'CustomDetectorArgParser',
+    'CustomClassesArgParser',
     'FaceDetectorArgParser',
     'BaseArgConverter',
     'MMActionArgsConverter',
@@ -41,6 +45,7 @@ __all__ = [
     'InstanceSegmentationEvaluator',
     'BaseExporter',
     'MMActionExporter',
+    'MMDetectionCustomClassesExporter',
     'MMDetectionExporter',
     'InstanceSegmentationExporter',
     'build_arg_parser',
