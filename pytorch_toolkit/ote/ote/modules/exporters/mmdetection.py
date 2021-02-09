@@ -42,11 +42,11 @@ class MMDetectionExporter(BaseExporter):
         super().__init__(*args, **kwargs)
         self.opset = 10
 
-    def get_update_config(self, args):
+    def _get_update_config(self, args):
         return ''
 
     def _export_to_onnx(self, args, tools_dir):
-        update_config = self.get_update_config(args)
+        update_config = self._get_update_config(args)
         run_through_shell(f'python {os.path.join(tools_dir, "export.py")} '
                           f'{args["config"]} '
                           f'{args["load_weights"]} '
@@ -56,7 +56,7 @@ class MMDetectionExporter(BaseExporter):
                           f'onnx ')
 
     def _export_to_openvino(self, args, tools_dir):
-        update_config = self.get_update_config(args)
+        update_config = self._get_update_config(args)
         run_through_shell(f'python {os.path.join(tools_dir, "export.py")} '
                           f'{args["config"]} '
                           f'{args["load_weights"]} '
@@ -100,7 +100,7 @@ class MMDetectionExporter(BaseExporter):
 @EXPORTERS.register_module()
 class MMDetectionCustomClassesExporter(MMDetectionExporter):
 
-    def get_update_config(self, args):
+    def _get_update_config(self, args):
         classes_from_snapshot = load_classes_from_snapshot(args['load_weights'])
         if not classes_from_snapshot:
             raise RuntimeError(f'There are no CLASSES in meta information of snapshot: {args["load_weights"]}')
@@ -108,7 +108,7 @@ class MMDetectionCustomClassesExporter(MMDetectionExporter):
         if 'classes' in args and args['classes']:
             classes_from_args = args['classes'].split(',')
             if classes_from_args != classes_from_snapshot:
-                raise RuntimeError('Set of classes passed through CLI does not equal classes stored in snapshot: '
+                raise RuntimeError('Set of classes passed through CLI does not equal to classes stored in snapshot: '
                                    f'{classes_from_args} vs {classes_from_snapshot}')
 
         update_config_dict = classes_list_to_update_config_dict(args['config'], classes_from_snapshot)
@@ -116,3 +116,19 @@ class MMDetectionCustomClassesExporter(MMDetectionExporter):
         update_config = update_config.replace('"', '\\"')
 
         return update_config
+
+    def _dump_classes(self, args):
+        classes = load_classes_from_snapshot(args['load_weights'])
+        out_folder = args['save_model_to']
+        out_basename = os.path.splitext(args['config'])[0] + '.extra_params'
+        import yaml
+        with open(os.path.join(out_folder, out_basename), 'w') as write_file:
+            yaml.dump({'classes': classes}, write_file)
+
+    def _export_to_onnx(self, args, tools_dir):
+        super()._export_to_onnx(args, tools_dir)
+        self._dump_classes(args)
+
+    def _export_to_openvino(self, args, tools_dir):
+        super()._export_to_openvino(args, tools_dir)
+        self._dump_classes(args)
