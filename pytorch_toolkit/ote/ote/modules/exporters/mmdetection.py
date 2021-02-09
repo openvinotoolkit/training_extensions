@@ -101,11 +101,17 @@ class MMDetectionExporter(BaseExporter):
 class MMDetectionCustomClassesExporter(MMDetectionExporter):
 
     def get_update_config(self, args):
-        classes = load_classes_from_snapshot(args['load_weights'])
-        if not classes:
+        classes_from_snapshot = load_classes_from_snapshot(args['load_weights'])
+        if not classes_from_snapshot:
             raise RuntimeError(f'There are no CLASSES in meta information of snapshot: {args["load_weights"]}')
 
-        update_config_dict = classes_list_to_update_config_dict(args['config'], classes)
+        if 'classes' in args and args['classes']:
+            classes_from_args = args['classes'].split(',')
+            if classes_from_args != classes_from_snapshot:
+                raise RuntimeError('Set of classes passed through CLI does not equal classes stored in snapshot: '
+                                   f'{classes_from_args} vs {classes_from_snapshot}')
+
+        update_config_dict = classes_list_to_update_config_dict(args['config'], classes_from_snapshot)
         update_config = '--update_config ' + ' '.join(f'{k}={v}' for k,v in update_config_dict.items())
         update_config = update_config.replace('"', '\\"')
 
