@@ -1,5 +1,5 @@
-arg_parser: CustomDetectorArgParser
-arg_converter: MMDetectionArgsConverter
-trainer: MMDetectionCustomClassesTrainer
+arg_parser: CustomClassesArgParser
+arg_converter: MMDetectionCustomClassesArgsConverter
+trainer: MMDetectionTrainer
 evaluator: MMDetectionEvaluator
-exporter: MMDetectionExporter
+exporter: MMDetectionCustomClassesExporter
