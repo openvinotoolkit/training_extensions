@@ -23,17 +23,21 @@ from im2latex.utils.get_config import get_config
 
 
 def create_export_test_case(config_file, expected_outputs):
+    use_ctc = get_config(config_file, section='eval').get('use_ctc')
+
     class TestExport(unittest.TestCase):
         @classmethod
         def setUpClass(cls):
             export_config = get_config(config_file, section='export')
             val_config = get_config(config_file, section='eval')
+
             export_config['dataset'] = val_config['dataset']
             cls.config = export_config
             cls.config.update({"expected_outputs": expected_outputs})
             cls.exporter = Exporter(cls.config)
             print("test case for config {} created".format(config_file))
 
+        @unittest.skipIf(use_ctc, "Complete model is not divided to encoder & decoder")
         def test_1_encoder_export(self):
             encoder_res_name = self.config.get("res_encoder_name")
             result_model_exists = os.path.exists(encoder_res_name)
@@ -43,6 +47,7 @@ def create_export_test_case(config_file, expected_outputs):
             result_model_exists = os.path.exists(encoder_res_name)
             self.assertEqual(True, result_model_exists)
 
+        @unittest.skipIf(use_ctc, "Complete model is not divided to encoder & decoder")
         def test_2_decoder_export(self):
             decoder_res_name = self.config.get("res_decoder_name")
             result_model_exists = os.path.exists(decoder_res_name)
@@ -52,15 +57,29 @@ def create_export_test_case(config_file, expected_outputs):
             result_model_exists = os.path.exists(decoder_res_name)
             self.assertEqual(True, result_model_exists)
 
+        @unittest.skipIf(not use_ctc, "Encoder-decoder model is divided into two parts")
+        def test_1_complete_model_export(self):
+            model_name = self.config.get("res_model_name")
+            result_model_exists = os.path.exists(model_name)
+            if result_model_exists:
+                os.remove(model_name)
+            self.exporter.export_complete_model()
+            result_model_exists = os.path.exists(model_name)
+            self.assertEqual(True, result_model_exists)
+
         def test_3_onnx(self):
-            for model_type in ('encoder', 'decoder'):
-                self.exporter.export_to_onnx_model_if_not_yet(model=self.config.get(
-                    f"res_{model_type}_name"), model_type=model_type)
+            if use_ctc:
+                self.exporter.export_complete_model()
+            else:
+                for model_type in ('encoder', 'decoder'):
+                    self.exporter.export_to_onnx_model_if_not_yet(model=self.config.get(
+                        f"res_{model_type}_name"), model_type=model_type)
             evaluator = Evaluator(self.config, RunnerType.ONNX)
             metric_onnx = evaluator.validate()
             target_metric = evaluator.expected_outputs.get("target_metric")
             self.assertGreaterEqual(metric_onnx, target_metric)
 
+        @unittest.skipIf(use_ctc, "Complete model is not divided to encoder & decoder")
         def test_4_encoder_ir_export(self):
             if not self.config.get("export_ir"):
                 return
@@ -83,6 +102,7 @@ def create_export_test_case(config_file, expected_outputs):
             result_model_exists = os.path.exists(encoder_res_name)
             self.assertEqual(True, result_model_exists)
 
+        @unittest.skipIf(use_ctc, "Complete model is not divided to encoder & decoder")
         def test_5_decoder_ir_export(self):
             if not self.config.get("export_ir"):
                 return
@@ -105,16 +125,47 @@ def create_export_test_case(config_file, expected_outputs):
             result_model_exists = os.path.exists(decoder_res_name)
             self.assertEqual(True, result_model_exists)
 
+        @unittest.skipIf(not use_ctc, "Encoder-decoder model is divided into two parts")
+        def test_4_complete_model_ir_export(self):
+            if not self.config.get("export_ir"):
+                return
+            self.exporter.export_to_onnx_model_if_not_yet(model=self.config.get(
+                "res_model_name"), model_type=None)
+            res_model_name = self.config.get("res_model_name").replace('onnx', 'xml')
+            result_model_exists = os.path.exists(res_model_name)
+            if result_model_exists:
+                os.remove(res_model_name)
+            res_model_name = self.config.get("res_model_name").replace('onnx', 'bin')
+            result_model_exists = os.path.exists(res_model_name)
+            if result_model_exists:
+                os.remove(res_model_name)
+
+            self.exporter.export_complete_model_ir()
+            res_model_name = self.config.get("res_model_name").replace('onnx', 'bin')
+            result_model_exists = os.path.exists(res_model_name)
+            self.assertEqual(True, result_model_exists)
+            res_model_name = self.config.get("res_model_name").replace('onnx', 'xml')
+            result_model_exists = os.path.exists(res_model_name)
+            self.assertEqual(True, result_model_exists)
+
         def test_6_run_ir_model(self):
             if not self.config.get("export_ir"):
                 return
-            for model_type in ('encoder', 'decoder'):
+            if use_ctc:
                 self.exporter.export_to_ir_model_if_not_yet(model=self.config.get(
-                    f"res_{model_type}_name"), model_type=model_type)
-            evaluator = Evaluator(self.config, RunnerType.OpenVINO)
-            ir_metric = evaluator.validate()
-            target_metric = evaluator.expected_outputs.get("target_metric")
-            self.assertGreaterEqual(ir_metric, target_metric)
+                    "res_model_name"), model_type=None)
+                evaluator = Evaluator(self.config, RunnerType.OpenVINO)
+                ir_metric = evaluator.validate()
+                target_metric = evaluator.expected_outputs.get("target_metric")
+                self.assertGreaterEqual(ir_metric, target_metric)
+            else:
+                for model_type in ('encoder', 'decoder'):
+                    self.exporter.export_to_ir_model_if_not_yet(model=self.config.get(
+                        f"res_{model_type}_name"), model_type=model_type)
+                evaluator = Evaluator(self.config, RunnerType.OpenVINO)
+                ir_metric = evaluator.validate()
+                target_metric = evaluator.expected_outputs.get("target_metric")
+                self.assertGreaterEqual(ir_metric, target_metric)
     return TestExport
 
 
@@ -129,6 +180,13 @@ class TestHandwrittenPolynomialsExport(
         create_export_test_case(
             'configs/polynomials_handwritten_config.yml',
             expected_outputs='tests/expected_outputs/formula_recognition/polynomials_handwritten_0166.json')):
+    "Test case for handwritten polynomials config"
+
+
+class TestAlphanumeric0012Evaluation(
+        create_export_test_case(
+            'configs/config_0012.yml',
+            expected_outputs='tests/expected_outputs/alphanumeric/icdar13_greater3_0012.json')):
     "Test case for handwritten polynomials config"
 
 

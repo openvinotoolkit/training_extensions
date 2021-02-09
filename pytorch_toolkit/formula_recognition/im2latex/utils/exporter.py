@@ -24,7 +24,7 @@ import torch.onnx
 from im2latex.data.vocab import START_TOKEN, read_vocab
 from im2latex.models.im2latex_model import Im2latexModel
 from im2latex.utils.common import (DECODER_INPUTS, DECODER_OUTPUTS,
-                                ENCODER_INPUTS, ENCODER_OUTPUTS)
+                                   ENCODER_INPUTS, ENCODER_OUTPUTS)
 
 OPENVINO_DIR = '/opt/intel/openvino_2021'
 
@@ -33,28 +33,44 @@ HIDDEN_SHAPE = 1, 512
 CONTEXT_SHAPE = 1, 512
 OUTPUT_SHAPE = 1, 256
 
+OPSET_VERSION = 11
+LOG_LEVEL='ERROR'
+
 
 class Exporter:
     def __init__(self, config):
         self.config = config
         self.model_path = config.get('model_path')
         self.vocab = read_vocab(config.get('vocab_path'))
-        self.model = Im2latexModel(config.get(
-            'backbone_config'), len(self.vocab), config.get('head', {}))
+        self.use_ctc = self.config.get("use_ctc")
+        self.out_size = len(self.vocab) + 1 if self.use_ctc else len(self.vocab)
+        self.model = Im2latexModel(config.get('backbone_config'), self.out_size, config.get('head', {}))
         self.model.eval()
         if self.model_path is not None:
             self.model.load_weights(self.model_path)
-        self.img_for_export = torch.rand(self.config.get("input_shape_decoder"))
-        self.encoder = self.model.get_encoder_wrapper(self.model)
-        self.encoder.eval()
-        self.decoder = self.model.get_decoder_wrapper(self.model)
-        self.decoder.eval()
+        self.img_for_export = torch.rand(self.config.get("input_shape_decoder", self.config.get("input_shape")))
+        if not self.use_ctc:
+
+            self.encoder = self.model.get_encoder_wrapper(self.model)
+            self.encoder.eval()
+            self.decoder = self.model.get_decoder_wrapper(self.model)
+            self.decoder.eval()
+
+    def export_complete_model(self):
+        model_inputs = [self.config.get("model_input_names")]
+        model_outputs = self.config.get("model_output_names").split(",")
+        print(f"Saving model to {self.config.get('res_model_name')}")
+        torch.onnx.export(self.model, self.img_for_export, self.config.get("res_model_name"),
+                          opset_version=11, input_names=model_inputs, output_names=model_outputs,
+                          dynamic_axes={model_inputs[0]: {0: 'batch', 1: "channels", 2: "height", 3: "width"},
+                                        model_outputs[0]: {0: 'batch', 1: 'max_len', 2: 'vocab_len'},
+                                        })
 
     def export_encoder(self):
         encoder_inputs = self.config.get("encoder_input_names", ENCODER_INPUTS).split(',')
         encoder_outputs = self.config.get("encoder_output_names", ENCODER_OUTPUTS).split(',')
         torch.onnx.export(self.encoder, self.img_for_export, self.config.get("res_encoder_name"),
-                          opset_version=11,
+                          opset_version=OPSET_VERSION,
                           input_names=encoder_inputs,
                           output_names=encoder_outputs,
                           dynamic_axes={encoder_inputs[0]:
@@ -79,12 +95,28 @@ class Exporter:
                            row_enc_out,
                            torch.tensor(tgt, dtype=torch.long)),
                           self.config.get("res_decoder_name"),
-                          opset_version=11,
+                          opset_version=OPSET_VERSION,
                           input_names=decoder_inputs,
                           output_names=decoder_outputs,
                           dynamic_axes={decoder_inputs[3]: {  # row_enc_out name should be here
                               0: 'batch', 1: 'H', 2: 'W'}}
                           )
+
+    def export_complete_model_ir(self):
+        input_model = self.config.get("res_model_name")
+        input_shape = self.config.get("input_shape")
+        output_names = self.config.get("model_output_names")
+        export_command = f"""{OPENVINO_DIR}/bin/setupvars.sh && \
+        python {OPENVINO_DIR}/deployment_tools/model_optimizer/mo.py \
+        --framework onnx \
+        --input_model {input_model} \
+        --input_shape "{input_shape}" \
+        --output "{output_names}" \
+        --log_level={LOG_LEVEL} \
+        --scale_values 'imgs[255]'"""
+        if self.config.get('verbose_export'):
+            print(export_command)
+        subprocess.run(export_command, shell=True, check=True)
 
     def export_encoder_ir(self):
         input_model = self.config.get("res_encoder_name")
@@ -97,12 +129,11 @@ class Exporter:
         --input_shape "{input_shape}" \
         --output "{output_names}" \
         --reverse_input_channels \
+        --log_level={LOG_LEVEL} \
         --scale_values 'imgs[255,255,255]'"""
         if self.config.get('verbose_export'):
             print(export_command)
-        subprocess.run(export_command,
-                       shell=True, check=True
-                       )
+        subprocess.run(export_command, shell=True, check=True)
 
     def export_decoder_ir(self):
         input_shape_decoder = self.config.get("input_shape_decoder")
@@ -126,6 +157,7 @@ class Exporter:
         --input_model {input_model} \
         --input {input_names} \
         --input_shape '{input_shape}' \
+        --log_level={LOG_LEVEL} \
         --output {output_names}"""
         if self.config.get('verbose_export'):
             print(export_command)
@@ -160,7 +192,11 @@ class Exporter:
             model_type (str): encoder or decoder
             ir (bool, optional): Export to OpenVINO IR. Defaults to False.
         """
-        assert model_type in ('encoder', 'decoder')
+
+        export_function_template = "export_{}{}"
+        if not self.use_ctc:
+            assert model_type in ('encoder', 'decoder')
+
         result_model_exists = os.path.exists(model)
         if ir:
             model_xml = model.replace(".onnx", '.xml')
@@ -169,5 +205,8 @@ class Exporter:
         if not result_model_exists:
             print(f"Model {model} does not exists, exporting it...")
             ir_suffix = "_ir" if ir else ""
-            export_function_name = f"export_{model_type}{ir_suffix}"
+            if not self.use_ctc:
+                export_function_name = export_function_template.format(model_type, ir_suffix)
+            else:
+                export_function_name = export_function_template.format("complete_model", ir_suffix)
             getattr(self, export_function_name)()

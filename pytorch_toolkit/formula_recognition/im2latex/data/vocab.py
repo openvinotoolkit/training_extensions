@@ -81,7 +81,7 @@ class Vocab:
     def __len__(self):
         return self.length
 
-    def construct_phrase(self, indices, max_len=None):
+    def construct_phrase(self, indices, max_len=None, ignore_end_token=False):
         phrase_converted = []
         if max_len is not None:
             indices_to_convert = indices[:max_len]
@@ -93,7 +93,7 @@ class Vocab:
                 val = token.item()
             except AttributeError:
                 val = token
-            if val == END_TOKEN:
+            if val == PAD_TOKEN and not ignore_end_token:
                 break
             phrase_converted.append(
                 self.id2sign.get(val, "?"))

@@ -282,7 +282,7 @@ class Trainer:
         print("Validation started")
         with torch.no_grad():
             filename = "{}/results_epoch_{}_step_{}_{}.txt".format(self.val_results_path,
-                                                                  self.epoch, self.step, self.time)
+                                                                   self.epoch, self.step, self.time)
             with open(filename, 'w') as output_file:
 
                 for img_name, target_lengths, imgs, training_gt, loss_computation_gt in tqdm(self.val_loader):
@@ -296,11 +296,11 @@ class Trainer:
                         pred = ctc_greedy_search(pred, blank_token=self.loss.blank)
                     for j, phrase in enumerate(pred):
                         gold_phrase_str = self.vocab.construct_phrase(
-                            loss_computation_gt[j])
+                            loss_computation_gt[j], ignore_end_token=self.config.get("use_ctc"))
                         pred_phrase_str = self.vocab.construct_phrase(phrase,
-                                                                      max_len=1 +
-                                                                      len(gold_phrase_str.split(
-                                                                      )))
+                                                                      max_len=1 + len(gold_phrase_str.split()),
+                                                                      ignore_end_token=self.config.get("use_ctc")
+                                                                      )
                         output_file.write(img_name[j] + '\t' +
                                           pred_phrase_str + '\t' +
                                           gold_phrase_str + '\n')
