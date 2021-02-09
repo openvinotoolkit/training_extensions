@@ -1,10 +1,11 @@
+from positional_encodings.positional_encodings import PositionalEncodingPermute2D
 import torch
 
 
 class LSTMEncoderDecoder(torch.nn.Module):
     """ LSTM-based encoder-decoder module. """
 
-    def __init__(self, out_size, encoder_hidden_size=256, encoder_input_size=512):
+    def __init__(self, out_size, encoder_hidden_size=256, encoder_input_size=512, positional_encodings=False):
         super().__init__()
         self.out_size = out_size
         self.encoder_hidden_size = encoder_hidden_size
@@ -19,8 +20,15 @@ class LSTMEncoderDecoder(torch.nn.Module):
                                          bidirectional=True, num_layers=self.num_layers,
                                          batch_first=True)
         self.fc = torch.nn.Linear(self.encoder_hidden_size * self.num_directions, out_features=self.out_size)
+        if positional_encodings:
+            self.pe = PositionalEncodingPermute2D(channels=self.encoder_input_size)
+        else:
+            self.pe = None
 
     def forward(self, encoded_features, formulas=None):
+        if self.pe:
+            encoded = self.pe(encoded_features)
+            encoded_features = encoded_features + encoded
         encoded_features = encoded_features.permute(0, 2, 3, 1)  # [B, H, W, LSTM_INP_CHANNELS]
         B, H, W, LSTM_INP_CHANNELS = encoded_features.size()
         encoded_features = encoded_features.reshape(B*H, W, LSTM_INP_CHANNELS)
