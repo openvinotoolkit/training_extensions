@@ -15,11 +15,11 @@
 """
 
 import os
-import os.path as osp
 
 from ote import MMDETECTION_TOOLS
 from ote.utils.misc import run_through_shell
 from mmcv.utils import Config
+import yaml
 
 from .base import BaseExporter
 from ..registry import EXPORTERS
@@ -121,7 +121,6 @@ class MMDetectionCustomClassesExporter(MMDetectionExporter):
         classes = load_classes_from_snapshot(args['load_weights'])
         out_folder = args['save_model_to']
         out_basename = os.path.splitext(args['config'])[0] + '.extra_params'
-        import yaml
         with open(os.path.join(out_folder, out_basename), 'w') as write_file:
             yaml.dump({'classes': classes}, write_file)
 
