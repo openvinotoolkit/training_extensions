@@ -17,6 +17,9 @@
 import json
 import os
 
+from mmcv import Config
+import yaml
+
 from .base import BaseArgConverter
 from ..registry import ARG_CONVERTERS
 
@@ -71,7 +74,6 @@ def load_classes_from_snapshot(snapshot):
 
 def classes_list_to_update_config_dict(cfg, classes):
     if isinstance(cfg, str):
-        from mmcv import Config
         cfg = Config.fromfile(cfg)
     num_classes = len(classes)
     classes = '[' + ','.join(f'"{x}"' for x in classes) + ']'
@@ -123,7 +125,6 @@ class MMDetectionCustomClassesArgsConverter(MMDetectionArgsConverter):
         if args['load_weights'].endswith('.pth'):
             classes_from_snapshot = load_classes_from_snapshot(args['load_weights'])
         else:
-            import yaml
             with open(os.path.splitext(args['load_weights'])[0] + '.extra_params') as read_file:
                 classes_from_snapshot = yaml.safe_load(read_file)['classes']
 
