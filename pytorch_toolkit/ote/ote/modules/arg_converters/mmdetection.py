@@ -125,7 +125,7 @@ class MMDetectionCustomClassesArgsConverter(MMDetectionArgsConverter):
         if args['load_weights'].endswith('.pth'):
             classes_from_snapshot = load_classes_from_snapshot(args['load_weights'])
         else:
-            with open(os.path.splitext(args['load_weights'])[0] + '.extra_params') as read_file:
+            with open(os.path.splitext(args['load_weights'])[0] + '.extra_params.yml') as read_file:
                 classes_from_snapshot = yaml.safe_load(read_file)['classes']
 
         classes_from_annotation = self._get_classes_from_annotation(args['test_ann_files'].split(',')[0])
@@ -134,12 +134,12 @@ class MMDetectionCustomClassesArgsConverter(MMDetectionArgsConverter):
             if not set(classes_from_args).issubset(set(classes_from_annotation)):
                 raise RuntimeError('Set of classes passed through CLI is not subset of classes in test dataset: '
                                    f'{classes_from_args} vs {classes_from_annotation}')
-            if classes_from_snapshot and classes_from_args != classes_from_snapshot:
+            if classes_from_args != classes_from_snapshot:
                 raise RuntimeError('Set of classes passed through CLI does not equal to classes stored in snapshot: '
                                    f'{classes_from_args} vs {classes_from_snapshot}')
             classes = classes_from_args
         else:
-            if classes_from_snapshot and classes_from_annotation != classes_from_snapshot:
+            if classes_from_annotation != classes_from_snapshot:
                 raise RuntimeError('Set of classes obtained from test dataset does not equal to classes stored in snapshot: '
                                    f'{classes_from_annotation} vs {classes_from_snapshot}')
             classes = classes_from_annotation

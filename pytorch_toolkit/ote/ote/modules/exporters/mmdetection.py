@@ -120,7 +120,7 @@ class MMDetectionCustomClassesExporter(MMDetectionExporter):
     def _dump_classes(self, args):
         classes = load_classes_from_snapshot(args['load_weights'])
         out_folder = args['save_model_to']
-        out_basename = os.path.splitext(args['config'])[0] + '.extra_params'
+        out_basename = os.path.splitext(args['config'])[0] + '.extra_params.yml'
         with open(os.path.join(out_folder, out_basename), 'w') as write_file:
             yaml.dump({'classes': classes}, write_file)
 
