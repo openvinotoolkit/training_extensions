@@ -1,5 +1,5 @@
 models:
-  - name: person-detection-0202-mmdet
+  - name: person-detection-0202
 
     launchers:
       - framework: dlsdk

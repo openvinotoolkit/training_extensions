@@ -1,5 +1,5 @@
 models:
-  - name: face-detection-0204-mmdet
+  - name: face-detection-0204
     launchers:
       - framework: dlsdk
         adapter:
@@ -8,13 +8,13 @@ models:
           labels_out: labels
     datasets:
       - name: wider_without_bkgr
-        data_source: /mnt/omz-validation-datasets/WiderFace/
+        data_source: WiderFace/
         annotation_conversion:
           converter: mscoco_detection
-          annotation_file: /mnt/omz-validation-datasets/WiderFace/val.json
+          annotation_file: WiderFace/val.json
           has_background: False
           sort_annotations: True
-          use_full_label_map: False        
+          use_full_label_map: False
         preprocessing:
           - type: resize
             size: 448

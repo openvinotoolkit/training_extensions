@@ -1,5 +1,5 @@
 models:
-  - name: vehicle-detection-0200-mmdet
+  - name: vehicle-detection-0200
 
     launchers:
       - framework: dlsdk
