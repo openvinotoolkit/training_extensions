@@ -145,3 +145,6 @@ class MMDetectionCustomClassesArgsConverter(MMDetectionArgsConverter):
             classes = classes_from_annotation
 
         return classes_list_to_update_config_dict(args['config'], classes)
+
+    def _get_extra_compress_args(self, args):
+        return self._get_extra_test_args(args)
