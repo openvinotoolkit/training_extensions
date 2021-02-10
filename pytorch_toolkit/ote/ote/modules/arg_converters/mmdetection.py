@@ -15,6 +15,7 @@
 """
 
 import json
+import logging
 import os
 
 from mmcv import Config
@@ -113,6 +114,11 @@ class MMDetectionCustomClassesArgsConverter(MMDetectionArgsConverter):
             classes = classes_from_args
         else:
             classes = classes_from_annotation
+
+        classes_from_snapshot = load_classes_from_snapshot(args['load_weights'])
+        if classes != classes_from_snapshot:
+            logging.warning('Set of classes that will be used in current training does not equal to classes stored in snapshot: '
+                            f'{classes} vs {classes_from_snapshot}')
 
         return classes_list_to_update_config_dict(args['config'], classes)
 
