@@ -115,10 +115,16 @@ class MMDetectionCustomClassesArgsConverter(MMDetectionArgsConverter):
         else:
             classes = classes_from_annotation
 
-        classes_from_snapshot = load_classes_from_snapshot(args['load_weights'])
-        if classes != classes_from_snapshot:
-            logging.warning('Set of classes that will be used in current training does not equal to classes stored in snapshot: '
-                            f'{classes} vs {classes_from_snapshot}')
+        snapshot_path = None
+        if args['load_weights']:
+            snapshot_path = args['load_weights']
+        elif args['resume_from']:
+            snapshot_path = args['resume_from']
+        if snapshot_path:
+            classes_from_snapshot = load_classes_from_snapshot(snapshot_path)
+            if classes != classes_from_snapshot:
+                logging.warning('Set of classes that will be used in current training does not equal to classes stored in snapshot: '
+                                f'{classes} vs {classes_from_snapshot}')
 
         return classes_list_to_update_config_dict(args['config'], classes)
 

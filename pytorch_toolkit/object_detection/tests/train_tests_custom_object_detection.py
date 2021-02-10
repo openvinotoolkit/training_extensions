@@ -143,23 +143,51 @@ def create_custom_object_detection_test_case(model_name):
 
         def test_e2e_on_gpu(self):
             skip_if_cuda_not_available()
-            classes_variants = ['', 'vehicle,non-vehicle', 'vehicle']
-            for classes in classes_variants:
-                with self.subTest():
-                    self.do_finetuning(classes, on_gpu=True)
-                    self.do_evaluation(classes, on_gpu=True)
-                    self.do_export(classes, on_gpu=True)
-                    self.do_evaluation_of_exported_model(classes)
+            classes = ''
+            self.do_finetuning(classes, on_gpu=True)
+            self.do_evaluation(classes, on_gpu=True)
+            self.do_export(classes, on_gpu=True)
+            self.do_evaluation_of_exported_model(classes)
 
-        def test_e2e_on_cpu_with_classes(self):
+        def test_e2e_on_gpu_vehicle_person_non_vehicle(self):
+            skip_if_cuda_not_available()
+            classes = 'vehicle,person,non-vehicle'
+            self.do_finetuning(classes, on_gpu=True)
+            self.do_evaluation(classes, on_gpu=True)
+            self.do_export(classes, on_gpu=True)
+            self.do_evaluation_of_exported_model(classes)
+
+        def test_e2e_on_gpu_person(self):
+            skip_if_cuda_not_available()
+            classes = 'person'
+            self.do_finetuning(classes, on_gpu=True)
+            self.do_evaluation(classes, on_gpu=True)
+            self.do_export(classes, on_gpu=True)
+            self.do_evaluation_of_exported_model(classes)
+
+        def test_e2e_on_cpu(self):
             skip_if_cpu_is_not_supported(self.template_file)
-            classes_variants = ['', 'vehicle,non-vehicle', 'vehicle']
-            for classes in classes_variants:
-                with self.subTest():
-                    self.do_finetuning(classes, on_gpu=False)
-                    self.do_evaluation(classes, on_gpu=False)
-                    self.do_export(classes, on_gpu=False)
-                    self.do_evaluation_of_exported_model(classes)
+            classes = ''
+            self.do_finetuning(classes, on_gpu=False)
+            self.do_evaluation(classes, on_gpu=False)
+            self.do_export(classes, on_gpu=False)
+            self.do_evaluation_of_exported_model(classes)
+
+        def test_e2e_on_cpu_vehicle_person_non_vehicle(self):
+            skip_if_cpu_is_not_supported(self.template_file)
+            classes = 'vehicle,person,non-vehicle'
+            self.do_finetuning(classes, on_gpu=False)
+            self.do_evaluation(classes, on_gpu=False)
+            self.do_export(classes, on_gpu=False)
+            self.do_evaluation_of_exported_model(classes)
+
+        def test_e2e_on_cpu_person(self):
+            skip_if_cpu_is_not_supported(self.template_file)
+            classes = 'person'
+            self.do_finetuning(classes, on_gpu=False)
+            self.do_evaluation(classes, on_gpu=False)
+            self.do_export(classes, on_gpu=False)
+            self.do_evaluation_of_exported_model(classes)
 
     return TestCase
 
