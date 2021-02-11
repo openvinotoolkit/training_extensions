@@ -37,6 +37,7 @@ class ReidArgsConverter(BaseArgConverter):
         'test_ann_files': '',
         'test_data_roots': 'test_data_roots',
         'load_weights': 'model.load_weights',
+        'classes': 'classes',
     }
 
     def __init__(self):

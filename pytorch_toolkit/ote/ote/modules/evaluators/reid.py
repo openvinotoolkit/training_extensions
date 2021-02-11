@@ -32,6 +32,7 @@ from ..registry import EVALUATORS
 @EVALUATORS.register_module()
 class ReidEvaluator(BaseEvaluator):
     parameter_test_dir = 'test_data_roots'
+    parameter_classes_list = 'classes'
 
     def __init__(self):
         super(ReidEvaluator, self).__init__()
@@ -44,9 +45,16 @@ class ReidEvaluator(BaseEvaluator):
         if os.path.islink(snapshot):
             snapshot = os.path.join(os.path.dirname(snapshot), os.readlink(snapshot))
 
+        if update_config[self.parameter_classes_list]:
+            update_config[self.parameter_classes_list] = update_config[self.parameter_classes_list].replace(',', ' ')
+            classes_arg = f'--classes {update_config[self.parameter_classes_list]} '
+        else:
+            classes_arg = ''
+        del update_config[self.parameter_classes_list]
+
         data_path_args = f'--custom-roots {update_config[self.parameter_test_dir]} {update_config[self.parameter_test_dir]} --root _ '
         del update_config[self.parameter_test_dir]
-        update_config = data_path_args + ' '.join([f'{k} {v}' for k, v in update_config.items() if str(v) and str(k)])
+        update_config = classes_arg + data_path_args + ' '.join([f'{k} {v}' for k, v in update_config.items() if str(v) and str(k)])
         update_config = update_config if update_config else ''
 
         metrics = []
@@ -56,7 +64,7 @@ class ReidEvaluator(BaseEvaluator):
             'config_path': config_path,
             'work_dir': work_dir,
             'snapshot': snapshot,
-            'update_config': update_config
+            'update_config': update_config,
         }
         metric_args.update(kwargs)
         for func in metrics_functions:

@@ -32,6 +32,14 @@ class ReidArgParser(DefaultArgParser):
 
     def get_train_parser(self, config_path):
         parser = argparse.ArgumentParser(parents=[train_args_parser(config_path)], add_help=False)
+        return self._add_custom_params(parser)
+
+    def get_test_parser(self, config_path):
+        parser = argparse.ArgumentParser(parents=[test_args_parser(config_path)], add_help=False)
+        return self._add_custom_params(parser)
+
+
+    def _add_custom_params(self, parser):
         parser.add_argument('--classes', required=False,
                             help='Comma-separated list of classes (e.g. "cat,dog,mouse").')
 
