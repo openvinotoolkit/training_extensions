@@ -38,7 +38,6 @@ SOFTWARE.
 
 import json
 import os
-from copy import deepcopy
 from multiprocessing.pool import ThreadPool
 from os.path import join
 
@@ -90,7 +89,7 @@ class BaseDataset(Dataset):
         self.pairs = []
 
     def __getitem__(self, index):
-        return deepcopy(self.pairs[index])
+        return self.pairs[index]
 
     def __len__(self):
         return len(self.pairs)
