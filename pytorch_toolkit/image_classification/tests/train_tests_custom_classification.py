@@ -29,4 +29,4 @@ class CustomClassificationTestCase(
             **kwargs,
         )
 ):
-    """ Test cases for mobilenet_v3 and efficientnet models. """
+    """ Test cases for mobilenet_v3. """
