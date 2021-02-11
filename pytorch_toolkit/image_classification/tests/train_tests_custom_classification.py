@@ -23,9 +23,10 @@ kwargs = dict(
 )
 
 class CustomClassificationTestCase(
+
         create_image_classification_test_case(
-            model_name='mobilenet-v2-w1-imagenet',
+            model_name='mobilenet-v3-small',
             **kwargs,
         )
 ):
-    """ Test case for mobilenet_v2_w1 model. """
+    """ Test cases for mobilenet_v3 and efficientnet models. """

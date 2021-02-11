@@ -9,23 +9,7 @@ import unittest
 import yaml
 
 ENABLE_TESTS_FOR = {
-    'object_detection': [
-        'custom_object_detection',
-        'face_detection',
-        'person_detection',
-        'person_vehicle_bike_detection',
-        'text_detection',
-        'vehicle_detection',
-    ],
-    'action_recognition_2': [
-        'gesture-recognition',
-    ],
-    'instance_segmentation': [
-        'coco_instance_segmentation',
-    ],
-    'text_spotting': [
-        'alphanumeric_text_spotting',
-    ],
+
     'image_classification': [
         'custom_classification',
     ],

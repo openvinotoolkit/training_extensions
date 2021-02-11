@@ -26,7 +26,23 @@ kwargs = dict(
 
 class CustomClassificationExportTestCase(
         create_image_classification_export_test_case(
-            model_name='mobilenet-v2-w1-imagenet',
-            **kwargs)
+            model_name='mobilenet-v3-large-1',
+            **kwargs,
+        )
+
+        create_image_classification_export_test_case(
+            model_name='mobilenet-v3-large-075',
+            **kwargs,
+        )
+
+        create_image_classification_export_test_case(
+            model_name='mobilenet-v3-small',
+            **kwargs,
+        )
+
+        create_image_classification_export_test_case(
+            model_name='efficientnet-b0',
+            **kwargs,
+        )
 ):
-    """ Test case for mobilenet_v2_w1 model export. """
+    """ Test cases for mobilenet_v3 and efficientnet models export. """
