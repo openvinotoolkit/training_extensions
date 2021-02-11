@@ -68,7 +68,28 @@ def create_custom_object_detection_test_case(model_name):
             self.output_folder = os.path.join(self.template_folder, f'output_{self.id()}')
             os.makedirs(self.output_folder, exist_ok=True)
 
-        def do_evaluation(self, on_gpu):
+        def do_finetuning(self, classes, on_gpu):
+            log_file = os.path.join(self.output_folder, 'test_finetuning.log')
+            initial_command = 'export CUDA_VISIBLE_DEVICES=;' if not on_gpu else ''
+            run_through_shell(
+                f'{initial_command}'
+                f'cd {self.template_folder};'
+                f'python train.py'
+                f' --train-ann-files {self.ann_file}'
+                f' --train-data-roots {self.img_root}'
+                f' --val-ann-files {self.ann_file}'
+                f' --val-data-roots {self.img_root}'
+                f' --resume-from snapshot.pth'
+                f' --save-checkpoints-to {self.output_folder}'
+                f' --gpu-num 1'
+                f' --batch-size 1'
+                f' --classes "{classes}"'
+                f' --epochs {self.total_epochs}'
+                f' | tee {log_file}')
+
+            self.assertTrue(os.path.exists(os.path.join(self.output_folder, 'latest.pth')))
+
+        def do_evaluation(self, classes, on_gpu):
             initial_command = 'export CUDA_VISIBLE_DEVICES=;' if not on_gpu else ''
             metrics_path = os.path.join(self.output_folder, "metrics.yaml")
             run_through_shell(
@@ -78,6 +99,7 @@ def create_custom_object_detection_test_case(model_name):
                 f' --test-ann-files {self.ann_file}'
                 f' --test-data-roots {self.img_root}'
                 f' --save-metrics-to {metrics_path}'
+                f' --classes "{classes}"'
                 f' --load-weights {os.path.join(self.output_folder, "latest.pth")}'
             )
 
@@ -88,48 +110,7 @@ def create_custom_object_detection_test_case(model_name):
                 value = [metrics['value'] for metrics in content['metrics'] if metrics['key'] == metric_key][0]
                 self.assertGreaterEqual(value, 0.0)
 
-        def do_finetuning(self, on_gpu):
-            log_file = os.path.join(self.output_folder, 'test_finetuning.log')
-            initial_command = 'export CUDA_VISIBLE_DEVICES=;' if not on_gpu else ''
-            run_through_shell(
-                f'{initial_command}'
-                f'cd {self.template_folder};'
-                f'python train.py'
-                f' --train-ann-files {self.ann_file}'
-                f' --train-data-roots {self.img_root}'
-                f' --val-ann-files {self.ann_file}'
-                f' --val-data-roots {self.img_root}'
-                f' --resume-from snapshot.pth'
-                f' --save-checkpoints-to {self.output_folder}'
-                f' --gpu-num 1'
-                f' --batch-size 1'
-                f' --epochs {self.total_epochs}'
-                f' | tee {log_file}')
-
-            self.assertTrue(os.path.exists(os.path.join(self.output_folder, 'latest.pth')))
-
-        def do_finetuning_with_classes(self, on_gpu):
-            log_file = os.path.join(self.output_folder, 'test_finetuning.log')
-            initial_command = 'export CUDA_VISIBLE_DEVICES=;' if not on_gpu else ''
-            run_through_shell(
-                f'{initial_command}'
-                f'cd {self.template_folder};'
-                f'python train.py'
-                f' --train-ann-files {self.ann_file}'
-                f' --train-data-roots {self.img_root}'
-                f' --val-ann-files {self.ann_file}'
-                f' --val-data-roots {self.img_root}'
-                f' --resume-from snapshot.pth'
-                f' --save-checkpoints-to {self.output_folder}'
-                f' --gpu-num 1'
-                f' --batch-size 1'
-                f' --epochs {self.total_epochs}'
-                f' --classes vehicle,person,non-vehicle'
-                f' | tee {log_file}')
-
-            self.assertTrue(os.path.exists(os.path.join(self.output_folder, 'latest.pth')))
-
-        def do_export(self, on_gpu):
+        def do_export(self, classes, on_gpu):
             initial_command = 'export CUDA_VISIBLE_DEVICES=;' if not on_gpu else ''
             run_through_shell(
                 f'{initial_command}'
@@ -137,10 +118,11 @@ def create_custom_object_detection_test_case(model_name):
                 f'pip install -r requirements.txt;'
                 f'python export.py'
                 f' --load-weights {os.path.join(self.output_folder, "latest.pth")}'
+                f' --classes "{classes}"'
                 f' --save-model-to {self.output_folder}'
             )
 
-        def do_evaluation_of_exported_model(self):
+        def do_evaluation_of_exported_model(self, classes):
             metrics_path = os.path.join(self.output_folder, "metrics_exported.yaml")
             run_through_shell(
                 f'cd {os.path.dirname(self.template_file)};'
@@ -148,6 +130,7 @@ def create_custom_object_detection_test_case(model_name):
                 f' --test-ann-files {self.ann_file}'
                 f' --test-data-roots {self.img_root}'
                 f' --load-weights {os.path.join(self.output_folder, "model.bin")}'
+                f' --classes "{classes}"'
                 f' --save-metrics-to {metrics_path}'
             )
 
@@ -160,25 +143,51 @@ def create_custom_object_detection_test_case(model_name):
 
         def test_e2e_on_gpu(self):
             skip_if_cuda_not_available()
-            self.do_finetuning(on_gpu=True)
-            self.do_evaluation(on_gpu=True)
-            self.do_export(on_gpu=True)
-            self.do_evaluation_of_exported_model()
+            classes = ''
+            self.do_finetuning(classes, on_gpu=True)
+            self.do_evaluation(classes, on_gpu=True)
+            self.do_export(classes, on_gpu=True)
+            self.do_evaluation_of_exported_model(classes)
+
+        def test_e2e_on_gpu_vehicle_person_non_vehicle(self):
+            skip_if_cuda_not_available()
+            classes = 'vehicle,person,non-vehicle'
+            self.do_finetuning(classes, on_gpu=True)
+            self.do_evaluation(classes, on_gpu=True)
+            self.do_export(classes, on_gpu=True)
+            self.do_evaluation_of_exported_model(classes)
+
+        def test_e2e_on_gpu_person(self):
+            skip_if_cuda_not_available()
+            classes = 'person'
+            self.do_finetuning(classes, on_gpu=True)
+            self.do_evaluation(classes, on_gpu=True)
+            self.do_export(classes, on_gpu=True)
+            self.do_evaluation_of_exported_model(classes)
 
         def test_e2e_on_cpu(self):
             skip_if_cpu_is_not_supported(self.template_file)
-            self.do_finetuning(on_gpu=False)
-            self.do_evaluation(on_gpu=False)
-            self.do_export(on_gpu=False)
-            self.do_evaluation_of_exported_model()
+            classes = ''
+            self.do_finetuning(classes, on_gpu=False)
+            self.do_evaluation(classes, on_gpu=False)
+            self.do_export(classes, on_gpu=False)
+            self.do_evaluation_of_exported_model(classes)
 
-        def test_finetuning_with_classes_on_gpu(self):
-            skip_if_cuda_not_available()
-            self.do_finetuning_with_classes(on_gpu=True)
-
-        def test_finetuning_with_classes_on_cpu(self):
+        def test_e2e_on_cpu_vehicle_person_non_vehicle(self):
             skip_if_cpu_is_not_supported(self.template_file)
-            self.do_finetuning_with_classes(on_gpu=False)
+            classes = 'vehicle,person,non-vehicle'
+            self.do_finetuning(classes, on_gpu=False)
+            self.do_evaluation(classes, on_gpu=False)
+            self.do_export(classes, on_gpu=False)
+            self.do_evaluation_of_exported_model(classes)
+
+        def test_e2e_on_cpu_person(self):
+            skip_if_cpu_is_not_supported(self.template_file)
+            classes = 'person'
+            self.do_finetuning(classes, on_gpu=False)
+            self.do_evaluation(classes, on_gpu=False)
+            self.do_export(classes, on_gpu=False)
+            self.do_evaluation_of_exported_model(classes)
 
     return TestCase
 

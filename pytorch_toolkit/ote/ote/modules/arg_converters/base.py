@@ -69,9 +69,7 @@ class BaseArgConverter(metaclass=ABCMeta):
     def convert_compress_args(self, model_template_path, args):
         update_args = self.__map_args(args, self.compress_update_args_map)
 
-        # TODO(LeonidBeynenson): think on _get_extra_compress_args
-        #       Now _get_extra_train_args is used since it's the same
-        extra_args = self._get_extra_train_args(args)
+        extra_args = self._get_extra_compress_args(args)
         update_args.update(extra_args)
 
         template_folder = os.path.dirname(model_template_path)
@@ -103,6 +101,9 @@ class BaseArgConverter(metaclass=ABCMeta):
         return {}
 
     def _get_extra_test_args(self, args):
+        return {}
+
+    def _get_extra_compress_args(self, args):
         return {}
 
     @staticmethod

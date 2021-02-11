@@ -1,11 +1,11 @@
 from .default import DefaultArgParser
-from .custom_detector import CustomDetectorArgParser
+from .custom_classes import CustomClassesArgParser
 from .face_detector import FaceDetectorArgParser
 from .reid import ReidArgParser
 
 __all__ = [
     'DefaultArgParser',
-    'CustomDetectorArgParser',
+    'CustomClassesArgParser',
     'FaceDetectorArgParser',
     'ReidArgParser',
 ]

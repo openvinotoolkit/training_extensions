@@ -40,7 +40,6 @@ class BaseTrainer(metaclass=ABCMeta):
         # (e.g. base_learning_rate or epochs) -- they will have default value None in
         # the parser
         update_config = {k: v for k, v in update_config.items() if v is not None}
-        update_config = self._update_configuration_file(config, update_config)
 
         self.work_dir = update_config.get(self.parameter_work_dir)
 
@@ -92,9 +91,6 @@ class BaseTrainer(metaclass=ABCMeta):
             logging.info('... training on CPU completed.')
 
         return training_info
-
-    def _update_configuration_file(self, config_path, update_config):
-        return update_config
 
     @abstractmethod
     def _get_tools_dir(self):
