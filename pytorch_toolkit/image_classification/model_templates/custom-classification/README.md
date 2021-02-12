@@ -2,18 +2,15 @@
 ## Description of the models
 ### Performance results pivot table
 
-| Model Name | Complexity (GFLOPs) | Size (Mp) | Top-1 on ImageNet (%) | Links |
-| ---        | ---                 | ---       | ---                   | ---                   |
-| MobilenetV2 1.0 | 0.66           | 3.50      | 73.0                  | [model template](./mobilenet_v2_w1/template.yaml)
 
 | Model Name | Complexity (GFLOPs) | Size (Mp) | Latency (ms) | FPS | AVG mAP (%) | AVG Top-1 (%) | AVG Top-5 (%) | Links |
 | ---        | ---        | ---        | ---        | ---        | ---        | ---        | ---        | ---        |
 | EfficientNet b0 | 0.76 | 4.14 | 9.7 | 447.51 | 92.267 | 90.156 | 98.283 | [model template](./efficient_b0/template.yaml) |
-| MobilenetV3 large x1.0 | 0.44 | 4.33 | 5.58 | 792.22 | 83.46	| 87.06 | 96.42 | [model template](./mobilenet_v3_large_1/template.yaml) |
+| MobilenetV3 large x1.0 | 0.44 | 4.33 | 5.58 | 792.22 | 92.04	| 89.019 | 97.807 | [model template](./mobilenet_v3_large_1/template.yaml) |
 | MobilenetV3 large x0.75 | 0.308 | 2.84 | 4.48 | 985.4 | 87.59 |	87.59	| 97.17 | [model template](./mobilenet_v3_large_075/template.yaml) |
 | MobilenetV3 small x1.0 | 0.112 | 1.56 | 2.79 | 1599.39 | 82.84 | 84.47 | 95.88 | [model template](./mobilenet_v3_small/template.yaml) |
 
-All of the above metrics were obtained on eleven different datasets, on which an extensive number of research had been made.
+All of the above metrics were obtained on eleven different datasets, on which an extensive number of researches has been made.
 
 Performance mesured on CPU: Intel(R) Core(TM) i9-9820X CPU @ 3.30GHz,  OpenVINO 2021.2​, batch size=1, input resolution is 224 × 224, inference precision is FP32
 ### Datasets and information about metrics
@@ -31,9 +28,9 @@ The following datasets were used for experiments:
 * [Birdsnap](http://thomasberg.org/)<sup>1</sup>
 * [Cars Dataset](https://ai.stanford.edu/~jkrause/cars/car_dataset.html)
 
-<sup>1</sup> these dataset have custom splits (random split 80% - train, 20% - val) and cannot be compared straightforward with other research results
+<sup>1</sup> these datasets have custom splits (random stratified split: 80% - train, 20% - val) and cannot be compared straightforward with other research results
 
-For additional information about perfomance on each dataset in comparison with baseline you can refer to this [spreadsheet]().
+For additional information about performance on each dataset in comparison with baseline, you can refer to this [spreadsheet](https://docs.google.com/spreadsheets/d/1CV3be-VydEHvWS6GMPduBQBjl46uLq80_GtkeUhsuVg/edit#gid=0).
 ### Training recipe
 
 Baselines:
@@ -47,14 +44,14 @@ MobilenetV3:
 * Mutual learning approach
 * Softmax loss for the main model, AM_softmax for the auxiliary model
 * Learning rate found by LR Finder
-* Reduce on platue scheduler which allow to get rid of epochs search
+* Reduce on plateau scheduler which allows getting rid of epochs search
 * Augmix pipeline for augmentations
 * Sharpness aware minimization optimizer
 
 EfficientNet_b0:
 * Softmax loss
 * Learning rate found by LR Finder
-* Reduce on platue scheduler which allow to get rid of epochs search
+* Reduce on plateau scheduler which allows getting rid of epochs search
 * Augmix pipeline for augmentations + FMIX augmentation
 * Sharpness aware minimization optimizer
 
