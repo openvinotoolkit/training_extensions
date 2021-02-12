@@ -20,14 +20,14 @@ from common.object_detection_test_case import create_object_detection_export_tes
 kwargs = dict(
     problem_name='person-vehicle-bike-detection',
     ann_file=os.path.dirname(__file__) + '/../../../data/airport/annotation_example_train.json',
-    img_root=os.path.dirname(__file__) + '/../../../data/airport/train',
-    alt_ssd_export=True
+    img_root=os.path.dirname(__file__) + '/../../../data/airport/train'
 )
 
 
 class PersonVehicleBikeDetection2000TestCase(
         create_object_detection_export_test_case(
             model_name='person-vehicle-bike-detection-2000',
+            alt_ssd_export=True,
             **kwargs)
 ):
     """ Test case for person-vehicle-bike-detection-2000 model export. """
@@ -36,6 +36,7 @@ class PersonVehicleBikeDetection2000TestCase(
 class PersonVehicleBikeDetection2001TestCase(
         create_object_detection_export_test_case(
             model_name='person-vehicle-bike-detection-2001',
+            alt_ssd_export=True,
             **kwargs)
 ):
     """ Test case for person-vehicle-bike-detection-2001 model export. """
@@ -44,6 +45,25 @@ class PersonVehicleBikeDetection2001TestCase(
 class PersonVehicleBikeDetection2002TestCase(
         create_object_detection_export_test_case(
             model_name='person-vehicle-bike-detection-2002',
+            alt_ssd_export=True,
             **kwargs)
 ):
     """ Test case for person-vehicle-bike-detection-2002 model export. """
+
+
+class PersonVehicleBikeDetection2003TestCase(
+        create_object_detection_export_test_case(
+            model_name='person-vehicle-bike-detection-2003',
+            alt_ssd_export=False,
+            **kwargs)
+):
+    """ Test case for person-vehicle-bike-detection-2003 model export. """
+
+
+class PersonVehicleBikeDetection2004TestCase(
+        create_object_detection_export_test_case(
+            model_name='person-vehicle-bike-detection-2004',
+            alt_ssd_export=False,
+            **kwargs)
+):
+    """ Test case for person-vehicle-bike-detection-2004 model export. """

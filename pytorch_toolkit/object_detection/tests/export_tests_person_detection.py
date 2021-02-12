@@ -58,4 +58,3 @@ class PersonDetection0203TestCase(
             **kwargs)
 ):
     """ Test case for person-detection-0203 model export. """
-

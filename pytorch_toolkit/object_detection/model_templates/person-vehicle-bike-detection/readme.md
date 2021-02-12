@@ -6,9 +6,13 @@ The crossroad-detection network model provides detection of three class objects:
 | --- | --- | --- | --- | --- | --- |
 | person-vehicle-bike-detection-2000 | 0.82 | 1.84 | 16.5 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/vehicle-person-bike-detection-2000-1.pth), [model template](./person-vehicle-bike-detection-2000/template.yaml) | 4 |
 | person-vehicle-bike-detection-2001 | 1.86 | 1.84 | 22.6 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/vehicle-person-bike-detection-2001-1.pth), [model template](./person-vehicle-bike-detection-2001/template.yaml) | 4 |
-| person-vehicle-bike-detection-2002 | 3.3 | 1.84 | 24.8 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/vehicle-person-bike-detection-2002-1.pth), [model template](./person-vehicle-bike-detection-2002/template.yaml) | 4 |
+| person-vehicle-bike-detection-2002 | 3.30 | 1.84 | 24.8 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/vehicle-person-bike-detection-2002-1.pth), [model template](./person-vehicle-bike-detection-2002/template.yaml) | 4 |
+| person-vehicle-bike-detection-2003 | 6.78 | 1.95 | 33.6 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/vehicle-person-bike-detection-2003.pth), [model template](./person-vehicle-bike-detection-2003/template.yaml) | 2 |
+| person-vehicle-bike-detection-2004 | 1.88 | 1.95 | 27.4 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/vehicle-person-bike-detection-2004.pth), [model template](./person-vehicle-bike-detection-2004/template.yaml) | 2 |
 
 Average Precision (AP) is defined as an area under the precision/recall curve.
+
+Please note that despite the comparable complexity of 2001 and 2004 models the first one is well optimized in the IR format. It shows great inference speed that compensate the accuracy difference between these two models. So, if you are focused on the inference speed, do not neglect the 2001 model.
 
 ## Training pipeline
 

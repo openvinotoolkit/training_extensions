@@ -1,0 +1,63 @@
+name: person-vehicle-bike-detection-2003
+domain: Object Detection
+problem: Person Vehicle Bike Detection
+framework: OTEDetection v2.1.1
+summary: Person Vehicle Bike Detection based on MobileNetV2 (SSD).
+annotation_format: COCO
+initial_weights: snapshot.pth
+dependencies:
+- sha256: aaca200a9f22733144a1bdaa42c3efc9c8a127f2c9b19c2e22a806d4bbe69841
+  size: 15863668
+  source: https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/vehicle-person-bike-detection-2003.pth
+  destination: snapshot.pth
+- source: ../../../../../pytorch_toolkit/ote/tools/train.py
+  destination: train.py
+- source: ../../../../../pytorch_toolkit/ote/tools/eval.py
+  destination: eval.py
+- source: ../../../../../pytorch_toolkit/ote/tools/export.py
+  destination: export.py
+- source: ../../../../../pytorch_toolkit/ote/tools/compress.py
+  destination: compress.py
+- source: ../../../../../pytorch_toolkit/ote
+  destination: packages/ote
+- source: ../../requirements.txt
+  destination: requirements.txt
+dataset_requirements:
+  classes:
+  - vehicle
+  - person
+  - non-vehicle
+max_nodes: 1
+training_target:
+- GPU
+inference_target:
+- CPU
+- iGPU
+hyper_parameters:
+  basic:
+    batch_size: 54
+    base_learning_rate: 0.2
+    epochs: 20
+output_format:
+  onnx:
+    default: true
+  openvino:
+    default: true
+    input_format: BGR
+optimisations: ~
+metrics:
+- display_name: Size
+  key: size
+  unit: Mp
+  value: 1.95
+- display_name: Complexity
+  key: complexity
+  unit: GFLOPs
+  value: 1.88
+- display_name: mAP @ [IoU=0.50:0.95]
+  key: map
+  unit: '%'
+  value: 27.4
+gpu_num: 2
+tensorboard: true
+config: model.py
