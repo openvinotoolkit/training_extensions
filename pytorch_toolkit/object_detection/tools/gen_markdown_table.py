@@ -14,8 +14,6 @@
 
 """ This script builds markdown table with information about models. """
 
-#TEST
-
 import argparse
 from collections import OrderedDict
 import glob
