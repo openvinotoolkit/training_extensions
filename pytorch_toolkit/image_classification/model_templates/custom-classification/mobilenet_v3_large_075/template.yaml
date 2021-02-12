@@ -53,11 +53,11 @@ metrics:
 - display_name: Size
   key: size
   unit: Mp
-  value: 3.504
+  value: 2.84
 - display_name: Complexity
   key: complexity
   unit: GFLOPs
-  value: 0.659
+  value: 0.308
 - display_name: Top-1 accuracy
   key: accuracy
   unit: '%'
