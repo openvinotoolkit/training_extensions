@@ -59,6 +59,7 @@ data:
 loss:
   name: 'am_softmax'
   softmax:
+    conf_penalty: 0.0085
     s: 5.0
     m: 0.35
 

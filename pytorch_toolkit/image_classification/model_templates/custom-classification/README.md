@@ -1,21 +1,17 @@
 # Image classification
-## Description of the models
-### Performance results pivot table
 
+Performance results pivot table:
 
-| Model Name | Complexity (GFLOPs) | Size (Mp) | Latency (ms) | FPS | AVG mAP (%) | AVG Top-1 (%) | AVG Top-5 (%) | Links |
-| ---        | ---        | ---        | ---        | ---        | ---        | ---        | ---        | ---        |
-| EfficientNet b0 | 0.76 | 4.14 | 9.7 | 447.51 | 92.267 | 90.156 | 98.283 | [model template](./efficient_b0/template.yaml) |
-| MobilenetV3 large x1.0 | 0.44 | 4.33 | 5.58 | 792.22 | 92.04	| 89.019 | 97.807 | [model template](./mobilenet_v3_large_1/template.yaml) |
-| MobilenetV3 large x0.75 | 0.308 | 2.84 | 4.48 | 985.4 | 87.59 |	87.59	| 97.17 | [model template](./mobilenet_v3_large_075/template.yaml) |
-| MobilenetV3 small x1.0 | 0.112 | 1.56 | 2.79 | 1599.39 | 82.84 | 84.47 | 95.88 | [model template](./mobilenet_v3_small/template.yaml) |
+| Model Name | Complexity (GFLOPs) | Size (Mp) | AVG mAP (%) | AVG Top-1 (%) | AVG Top-5 (%) | Links |
+| ---        | ---        | ---        | ---        | ---        | ---        | ---        |
+| EfficientNet b0 | 0.76 | 4.14 | 92.267 | 90.156 | 98.283 | [model template](./efficient_b0/template.yaml) |
+| MobilenetV3 large x1.0 | 0.44 | 4.33 | 92.04	| 89.019 | 97.807 | [model template](./mobilenet_v3_large_1/template.yaml) |
+| MobilenetV3 large x0.75 | 0.308 | 2.84 | 87.59 |	87.59	| 97.17 | [model template](./mobilenet_v3_large_075/template.yaml) |
+| MobilenetV3 small x1.0 | 0.112 | 1.56 | 82.84 | 84.47 | 95.88 | [model template](./mobilenet_v3_small/template.yaml) |
 
 All of the above metrics were obtained on eleven different datasets, on which an extensive number of researches has been made.
 
-Performance mesured on CPU: Intel(R) Core(TM) i9-9820X CPU @ 3.30GHz,  OpenVINO 2021.2​, batch size=1, input resolution is 224 × 224, inference precision is FP32
-### Datasets and information about metrics
-
-The following datasets were used for experiments:
+The following datasets were used in experiments:
 * [Describable Textures (DTD)](https://www.robots.ox.ac.uk/~vgg/data/dtd/)<sup>1</sup>
 * [Caltech 101](http://www.vision.caltech.edu/Image_Datasets/Caltech101/)<sup>1</sup>
 * [Oxford 102 Flowers](http://www.robots.ox.ac.uk/~vgg/data/flowers/102/)
@@ -31,7 +27,8 @@ The following datasets were used for experiments:
 <sup>1</sup> these datasets have custom splits (random stratified split: 80% - train, 20% - val) and cannot be compared straightforward with other research results
 
 For additional information about performance on each dataset in comparison with baseline, you can refer to this [spreadsheet](https://docs.google.com/spreadsheets/d/1CV3be-VydEHvWS6GMPduBQBjl46uLq80_GtkeUhsuVg/edit#gid=0).
-### Training recipe
+
+Training recipes:
 
 Baselines:
 * softmax loss
@@ -41,21 +38,41 @@ Baselines:
 * SGD with momentum optimizer
 
 MobilenetV3:
-* Mutual learning approach
-* Softmax loss for the main model, AM_softmax for the auxiliary model
+* [Mutual learning](https://arxiv.org/abs/1706.00384) approach
+* Softmax loss for the main model, [Additive Margin softmax](https://arxiv.org/abs/1801.05599) for the auxiliary model
 * Learning rate found by LR Finder
 * Reduce on plateau scheduler which allows getting rid of epochs search
 * Augmix pipeline for augmentations
-* Sharpness aware minimization optimizer
+* [Sharpness aware minimization optimizer](https://arxiv.org/abs/2010.01412)
 
 EfficientNet_b0:
 * Softmax loss
 * Learning rate found by LR Finder
 * Reduce on plateau scheduler which allows getting rid of epochs search
-* Augmix pipeline for augmentations + FMIX augmentation
-* Sharpness aware minimization optimizer
+* [Augmix](https://arxiv.org/abs/1912.02781) pipeline for augmentations + FMIX augmentation
+* [Sharpness aware minimization optimizer](https://arxiv.org/abs/2010.01412)
 
 All of the models were initially trained on [ImageNet](http://image-net.org/challenges/LSVRC/2012/), but can be trained from scratch or fine tuned to classify arbitrary images.
+
+Information about LR Finder:
+
+There are two options for learning rate finder avalaible: smart brute force (more accurate, but long) and by fast.ai approach imported from [torch-lr-finder](https://github.com/davidtvs/pytorch-lr-finder/blob/master/torch_lr_finder/lr_finder.py) with some modifications.
+
+Recommended parameters for the automatic mode in case of fine-tuning:
+
+Mobilenet_v3 backbones:
+* min_lr = 0.004
+* max_lr = 0.035
+* warmup = 1
+
+efficientnet_b0:
+* min_lr = 0.001
+* max_lr = 0.01
+* warmup = 1
+
+The decision will be made automatically by the steepest gradient of the loss function changing.
+
+Also, you can stop after searching learning rate (`stop_after=True`), build a graphic of the loss function (`path_to_savefig: 'some/path/to/figure'`), and make your own decision about choosing learning rate.
 ## Training pipeline
 
 ### 0. Change a directory in your terminal to image_classification.

@@ -10,7 +10,7 @@ lr_finder:
   min_lr: 0.005
 
 model:
-  name: 'mobilenetv3_large'
+  name: 'mobilenetv3_large_075'
   classification: True
   pretrained: True
   save_chkpt: True
