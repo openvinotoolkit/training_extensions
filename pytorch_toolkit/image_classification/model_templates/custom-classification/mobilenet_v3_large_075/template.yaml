@@ -61,7 +61,7 @@ metrics:
 - display_name: Top-1 accuracy
   key: accuracy
   unit: '%'
-  value: 73.03
+  value: 72.84
 gpu_num: 2
 tensorboard: true
 config: main_model.yaml
