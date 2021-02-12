@@ -38,6 +38,13 @@ class ReidArgParser(DefaultArgParser):
         parser = argparse.ArgumentParser(parents=[test_args_parser(config_path)], add_help=False)
         return self._add_custom_params(parser)
 
+    def get_export_parser(self, config_path):
+        parser = argparse.ArgumentParser(parents=[export_args_parser(config_path)], add_help=False)
+        return self._add_custom_params(parser)
+
+    def get_compression_parser(self, config_path):
+        parser = argparse.ArgumentParser(parents=[compression_args_parser(config_path)], add_help=False)
+        return self._add_custom_params(parser)
 
     def _add_custom_params(self, parser):
         parser.add_argument('--classes', required=False,
