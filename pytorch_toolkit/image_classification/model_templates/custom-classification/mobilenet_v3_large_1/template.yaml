@@ -33,9 +33,9 @@ inference_target:
 - iGPU
 hyper_parameters:
   basic:
-    batch_size: 256
-    base_learning_rate: 0.1
-    epochs: 150
+    batch_size: 64
+    base_learning_rate: 0.015
+    epochs: 200
   extra:
     custom_classes:
       name: Custom classes
