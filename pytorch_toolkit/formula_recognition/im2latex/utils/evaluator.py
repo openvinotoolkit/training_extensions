@@ -20,7 +20,6 @@ from enum import Enum
 from functools import partial
 
 import numpy as np
-from numpy.testing._private.utils import IgnoreException
 from scipy.special import log_softmax
 import onnxruntime
 import torch
