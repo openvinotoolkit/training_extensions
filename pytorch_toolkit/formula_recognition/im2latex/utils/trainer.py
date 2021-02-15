@@ -189,7 +189,7 @@ class Trainer:
             collate_fn=partial(collate_fn, self.vocab.sign2id,
                                batch_transform=batch_transform_train,
                                use_ctc=(self.loss_type == "CTC")),
-            num_workers=os.cpu_count())
+            num_workers=self.config.get("num_workers", 4))
         val_dataset = ConcatDataset(val_datasets)
         val_sampler = BatchRandomSampler(dataset=val_dataset, batch_size=1)
         pprint("Creating val transforms list: {}".format(self.val_transforms_list), indent=4, width=120)
@@ -199,7 +199,8 @@ class Trainer:
             batch_sampler=val_sampler,
             collate_fn=partial(collate_fn, self.vocab.sign2id,
                                batch_transform=batch_transform_val, use_ctc=(self.loss_type == "CTC")),
-            num_workers=os.cpu_count())
+            num_workers=self.config.get("num_workers", 4))
+        print("num workers: ", self.config.get("num_workers"))
 
     def train(self):
         losses = 0.0
