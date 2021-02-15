@@ -20,4 +20,3 @@ data/*
 
 *.tar.gz
 *.zip
-pytorch_toolkit/formula_recognition/debug_scripts
