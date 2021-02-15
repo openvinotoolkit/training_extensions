@@ -5,11 +5,19 @@ import torch
 class LSTMEncoderDecoder(torch.nn.Module):
     """ LSTM-based encoder-decoder module. """
 
-    def __init__(self, out_size, encoder_hidden_size=256, encoder_input_size=512, positional_encodings=False):
+    def __init__(self, out_size, cnn_encoder_height=1, encoder_hidden_size=256, encoder_input_size=512, positional_encodings=False, reduction='mean'):
         super().__init__()
         self.out_size = out_size
         self.encoder_hidden_size = encoder_hidden_size
         self.encoder_input_size = encoder_input_size
+        self.cnn_encoder_height = cnn_encoder_height
+        self.reduction_type = reduction
+        if self.reduction_type == 'mean':
+            self.reduction = None
+        elif self.reduction_type == 'weighted':
+            self.reduction = torch.nn.Linear(self.cnn_encoder_height, 1)
+        else:
+            raise ValueError(f"Reduction type should be 'mean' or 'weighted', got {self.reduction_type}")
         self.num_layers = 2
         self.bidirectional = True
         self.num_directions = 2 if self.bidirectional else 1
@@ -29,14 +37,18 @@ class LSTMEncoderDecoder(torch.nn.Module):
         if self.pe:
             encoded = self.pe(encoded_features)
             encoded_features = encoded_features + encoded
-        encoded_features = encoded_features.permute(0, 2, 3, 1)  # [B, H, W, LSTM_INP_CHANNELS]
-        B, H, W, LSTM_INP_CHANNELS = encoded_features.size()
-        encoded_features = encoded_features.reshape(B*H, W, LSTM_INP_CHANNELS)
+        if self.reduction_type == 'mean':
+            encoded_features = torch.mean(encoded_features, 2, True)
+        else:
+            encoded_features = encoded_features.permute(0, 1, 3, 2)
+            encoded_features = self.reduction(encoded_features)
+            encoded_features = encoded_features.permute(0, 1, 3, 2)
+
+        encoded_features = encoded_features.squeeze(2)
+        encoded_features = encoded_features.permute(0, 2, 1)
 
         rnn_out, state = self.rnn_encoder(encoded_features)
         rnn_out, state = self.rnn_decoder(rnn_out, state)  # [B*H, W, LSTM_INP_CHANNELS]
-        rnn_out = rnn_out.reshape(B, H, W, self.encoder_hidden_size * self.num_directions)
-        rnn_out = rnn_out.mean(dim=1)
         logits = self.fc(rnn_out).permute(1, 0, 2)
         targets = torch.max(logits, dim=2)[1]
         return logits, targets
