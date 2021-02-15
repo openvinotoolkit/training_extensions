@@ -18,7 +18,6 @@ fi
 
 # Download deep-object-reid
 git submodule update --init --recursive --recommend-shallow ../../external/deep-object-reid
-git submodule update --remote --merge ../../external/deep-object-reid
 # Create virtual environment
 python3 -m virtualenv ${venv_dir} -p python3 --prompt="(classification)"
 
