@@ -3,7 +3,18 @@ import torch
 
 
 class LSTMEncoderDecoder(torch.nn.Module):
-    """ LSTM-based encoder-decoder module. """
+    """This class is LSTM-based encoder-decoder text recognition head.
+    It is considered this head is used with CTC-loss
+
+    Args:
+        out_size (int): number of classes (length of the vocabulary)
+        cnn_encoder_height (int): height of the output features after cnn encoder.
+        used for dimension reduction
+        encoder_hidden_size (int): hidden size of the LSTM encoder
+        encoder_input_size (int): size of the input to LSTM encoder (i.e. number of the output channels of the CNN backbone)
+        positional_encodings (bool): use or not positional encodings from the transformer paper
+        reduction (str): type of the dimension reduction
+    """
 
     def __init__(self, out_size, cnn_encoder_height=1, encoder_hidden_size=256, encoder_input_size=512, positional_encodings=False, reduction='mean'):
         super().__init__()
@@ -48,7 +59,7 @@ class LSTMEncoderDecoder(torch.nn.Module):
         encoded_features = encoded_features.permute(0, 2, 1)
 
         rnn_out, state = self.rnn_encoder(encoded_features)
-        rnn_out, state = self.rnn_decoder(rnn_out, state)  # [B*H, W, LSTM_INP_CHANNELS]
+        rnn_out, state = self.rnn_decoder(rnn_out, state)
         logits = self.fc(rnn_out).permute(1, 0, 2)
         targets = torch.max(logits, dim=2)[1]
         return logits, targets
