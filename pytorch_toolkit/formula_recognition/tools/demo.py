@@ -18,11 +18,12 @@ import argparse
 import os.path
 
 import cv2 as cv
-from im2latex.data.utils import create_list_of_transforms
+from im2latex.data.utils import create_list_of_transforms, ctc_greedy_search
 from im2latex.data.vocab import read_vocab
 from im2latex.models.im2latex_model import Im2latexModel
 from im2latex.utils.evaluation_utils import render_routine, check_environment
 from im2latex.utils.get_config import get_config
+import torch
 
 
 class Im2latexDemo:
@@ -31,6 +32,7 @@ class Im2latexDemo:
         self.model_path = config.get('model_path')
         self.vocab = read_vocab(config.get('vocab_path'))
         self.transform = create_list_of_transforms(config.get('transforms_list'))
+        self.use_ctc = self.config.get("use_ctc")
         self.model = Im2latexModel(config.get('backbone_config'), len(self.vocab), config.get('head', {}))
         if self.model_path is not None:
             self.model.load_weights(self.model_path, map_location=config.get('map_location', 'cpu'))
@@ -42,8 +44,12 @@ class Im2latexDemo:
         img = self.transform(img)
         img = img[0].unsqueeze(0)
         img = img.to(self.device)
-        _, targets = self.model(img)
-        return self.vocab.construct_phrase(targets[0])
+        logits, pred = self.model(img)
+        if self.use_ctc:
+            pred = torch.nn.functional.log_softmax(logits.detach(), dim=2)
+            pred = ctc_greedy_search(pred, 0)
+
+        return self.vocab.construct_phrase(pred[0], ignore_end_token=self.use_ctc)
 
 
 def parse_args():
