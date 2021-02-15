@@ -23,7 +23,7 @@ class LSTMEncoderDecoder(torch.nn.Module):
         self.encoder_input_size = encoder_input_size
         self.cnn_encoder_height = cnn_encoder_height
         self.reduction_type = reduction
-        if self.reduction_type == 'mean':
+        if self.reduction_type in ('mean', 'flatten'):
             self.reduction = None
         elif self.reduction_type == 'weighted':
             self.reduction = torch.nn.Linear(self.cnn_encoder_height, 1)
@@ -49,13 +49,15 @@ class LSTMEncoderDecoder(torch.nn.Module):
             encoded = self.pe(encoded_features)
             encoded_features = encoded_features + encoded
         if self.reduction_type == 'mean':
-            encoded_features = torch.mean(encoded_features, 2, True)
+            encoded_features = torch.mean(encoded_features, 2)
+        elif self.reduction_type == 'flatten':
+            encoded_features = torch.flatten(encoded_features, start_dim=2)
         else:
             encoded_features = encoded_features.permute(0, 1, 3, 2)
             encoded_features = self.reduction(encoded_features)
             encoded_features = encoded_features.permute(0, 1, 3, 2)
+            encoded_features = encoded_features.squeeze(2)
 
-        encoded_features = encoded_features.squeeze(2)
         encoded_features = encoded_features.permute(0, 2, 1)
 
         rnn_out, state = self.rnn_encoder(encoded_features)
