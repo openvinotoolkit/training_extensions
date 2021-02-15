@@ -132,5 +132,17 @@ class TestHandwrittenPolynomialsExport(
     "Test case for handwritten polynomials config"
 
 
+# class TestAlphanumeric0013Export(
+#         create_export_test_case(
+#             'configs/config_0012.yml',
+#             expected_outputs='tests/expected_outputs/alphanumeric/icdar13_greater3_0012.json')):
+#     "Test case for alphanumeric 0013 config"
+
+class TestAlphanumeric0229Export(
+        create_export_test_case(
+            'configs/config.yml',
+            expected_outputs='tests/expected_outputs/alphanumeric/icdar13_greater3_0012.json')):
+    "Test case for alphanumeric 0229 config"
+
 if __name__ == "__main__":
     unittest.main()

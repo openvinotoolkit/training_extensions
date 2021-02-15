@@ -19,14 +19,21 @@ train:
   log_path: logs
   optimizer: Adam
   save_dir: model_checkpoints
-  train_paths:
-    - ../../data/formula_recognition/sample_handwritten_polynomials
-  train_ann_file: train_filter.lst
-  val_path: ../../data/formula_recognition/sample_handwritten_polynomials
-  val_ann_file: validate_filter.lst
+  datasets:
+    - type: Im2LatexDataset
+      data_path: ../../data/formula_recognition/sample_handwritten_polynomials
+      ann_file: train_filter.lst
+      subset: train
+    - type: Im2LatexDataset
+      data_path: ../../data/formula_recognition/sample_handwritten_polynomials
+      ann_file: validate_filter.lst
+      subset: validate
 eval:
-  test_path: ../../data/formula_recognition/sample_handwritten_polynomials
-  test_ann_file: validate_filter.lst
+  dataset:
+    type: Im2LatexDataset
+    data_path: ../../data/formula_recognition/sample_handwritten_polynomials
+    ann_file: validate_filter.lst
+  render: true
 demo:
   transforms_list: []
 export:
