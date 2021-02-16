@@ -2,7 +2,7 @@ lr_finder:
   enable: True
   mode: brute_force
   stop_after: False
-  num_epochs: 4
+  num_epochs: 5
   num_iter: 8
   epochs_warmup: 1
   path_to_savefig: 'lr_finder.jpg'
@@ -91,7 +91,7 @@ train:
   lr_scheduler: 'reduce_on_plateau'
   early_stoping: True
   train_patience: 5
-  patience: 5
+  patience: 4
   gamma: 0.1
 
 sam:

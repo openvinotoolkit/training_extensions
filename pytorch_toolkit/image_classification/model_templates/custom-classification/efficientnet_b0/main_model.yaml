@@ -90,7 +90,7 @@ train:
   lr_scheduler: 'reduce_on_plateau'
   early_stoping: True
   train_patience: 5
-  patience: 5
+  patience: 4
   gamma: 0.1
 
 sam:
