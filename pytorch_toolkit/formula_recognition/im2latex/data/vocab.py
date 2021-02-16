@@ -93,7 +93,7 @@ class Vocab:
                 val = token.item()
             except AttributeError:
                 val = token
-            if val == PAD_TOKEN and not ignore_end_token:
+            if val in (PAD_TOKEN, END_TOKEN) and not ignore_end_token:
                 break
             phrase_converted.append(
                 self.id2sign.get(val, "?"))
