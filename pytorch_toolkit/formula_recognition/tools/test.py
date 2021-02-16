@@ -15,6 +15,7 @@
 """
 
 import argparse
+import os
 
 from im2latex.utils.get_config import get_config
 from im2latex.utils.evaluator import Evaluator
@@ -30,5 +31,17 @@ if __name__ == "__main__":
     args = parse_args()
     test_config = get_config(args.config, section='eval')
     validator = Evaluator(test_config)
-    result = validator.validate()
+    if "model_folder" in test_config.keys():
+        model_folder = test_config.get("model_folder")
+        best_model, best_result = None, 0
+        for model in os.listdir(model_folder):
+            validator.runner.reload_model(os.path.join(model_folder, model))
+            result = validator.validate()
+            if result > best_result:
+                best_result = result
+                best_model = os.path.join(model_folder, model)
+        print("model = {}".format(best_model))
+        result = best_result
+    else:
+        result = validator.validate()
     print("Im2latex metric is: {}".format(result))
