@@ -149,10 +149,10 @@ class Trainer:
         self.model = Im2latexModel(config.get('backbone_config'), self.out_size, config.get('head', {}))
         if self.model_path is not None:
             self.model.load_weights(self.model_path, map_location=self.device)
+        self.model = self.model.to(self.device)
 
         self.optimizer = getattr(optim, config.get('optimizer', "Adam"))(self.model.parameters(), self.learing_rate)
         self.lr_scheduler = ReduceLROnPlateau(self.optimizer)
-        self.model = self.model.to(self.device)
         self.time = get_timestamp()
 
     def create_dirs(self):
