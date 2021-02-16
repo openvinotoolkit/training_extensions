@@ -534,11 +534,11 @@ def ctc_greedy_search(logits, blank_token):
     """Greedy CTC search
 
     Args:
-        logits (Tensor): [max_len, bsize, vocab_size] - predicted class probabilities for every token
+        logits (Tensor or np.array): [max_len, bsize, vocab_size] - predicted class probabilities for every token
         blank_token (int): index of the blank token in CTC algorithm
 
     Returns:
-        [type]: [description]
+        list of Tensors: [b_size, max_len] - filtered predictions as class indices
     """
     if torch.is_tensor(logits):
         logits = logits.detach().cpu().numpy()
