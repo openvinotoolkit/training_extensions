@@ -48,11 +48,7 @@ train:
   lr: 0.1
   max_epoch: 150
   batch_size: 256
-  fixbase_epoch: 0
-  open_layers: ['classifier']
   lr_scheduler: 'cosine'
-  warmup: 0
-  warmup_factor_base: 0.01
 
 test:
   batch_size: 64
