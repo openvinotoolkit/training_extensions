@@ -150,9 +150,9 @@ class Trainer:
         if self.model_path is not None:
             self.model.load_weights(self.model_path, map_location=self.device)
         self.model = self.model.to(self.device)
-
         self.optimizer = getattr(optim, config.get('optimizer', "Adam"))(self.model.parameters(), self.learing_rate)
-        self.lr_scheduler = ReduceLROnPlateau(self.optimizer)
+        self.lr_scheduler = getattr(optim.lr_scheduler, self.config.get("scheduler", "ReduceLROnPlateau"))(
+            self.optimizer, **self.config.get("scheduler_params", {}))
         self.time = get_timestamp()
 
     def create_dirs(self):
