@@ -221,7 +221,7 @@ class OpenVINORunner(BaseRunner):
             img = img.clone().detach().numpy()
         if self.use_ctc:
             logits = self.exec_net.infer(inputs={self.config.get("model_input_names"): img})[
-                self.config.get("model_output_names")]
+                self.config.get("model_output_names").split(",")[0]]
             pred = log_softmax(logits, axis=2)
             pred = ctc_greedy_search(pred, 0)
             return pred[0]
