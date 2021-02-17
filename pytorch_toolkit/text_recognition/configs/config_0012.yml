@@ -1,3 +1,4 @@
+# TODO: fix local paths
 backbone_config:
   type: VGG
   in_channels: 1
@@ -6,8 +7,10 @@ head:
 val_transforms_list:
   - name: TransformGrayscale
 device: "cuda"
-model_path: /media/cluster_fs/user/vloginov/im2latex_project/0012/model_ctc_nan.pth
-vocab_path: /media/cluster_fs/user/vloginov/im2latex_project/vocabs/vocab_alphanumeric.json
+model_path: /media/cluster_fs/user/vloginov/im2latex_project/0012_finetune/model_checkpoints/validation_epoch_2_step_159232_2021-02-08_15-52-02.pth
+
+vocab_path: /media/cluster_fs/user/vloginov/im2latex_project/vocabs/vocab_alphanumeric_ctc.json
+use_ctc: true
 train:
   batch_size: 4
   learning_rate: 0.0001
@@ -42,3 +45,27 @@ train:
       subset: validate
   train_transforms_list:
     - name: TransformGrayscale
+eval:
+  dataset:
+    type: ICDAR2013RECDataset
+    case_sensitive: false
+    images_folder: /home/vloginov/work/omz_validation_datasets/ICDAR13_REC/Challenge2_Test_Task3_Images
+    annotation_file: /home/vloginov/work/omz_validation_datasets/ICDAR13_REC/gt/gt.txt.fixed.alfanumeric
+    grayscale: true
+    fixed_img_shape:
+      - 32
+      - 120
+  render: false
+demo:
+  transforms_list: []
+export:
+  res_model_name: model_0013.onnx
+  model_input_names: imgs
+  model_output_names: logits,targets
+  export_ir: true
+  verbose_export: false
+  input_shape:
+    - 1
+    - 1
+    - 32
+    - 120
