@@ -1,7 +1,17 @@
 # This script should be run from the `pytorch_toolkit` folder
 # with one parameter -- work directory that will be used
 # for instantiating model templates and running tests
+# If it is run with more than one parameter, the remaining parameters
+# will be passed to tests/run_model_templates_tests2.py as is.
 WORKDIR=$(readlink -m $1)
+
+# this is required to pass all remaining arguments to
+# the script tests/run_model_templates_tests2.py
+shift 1
+ARGLIST="$@"
+
+# this is required to clear $@ before OpenVINO's setupvars.sh
+set --
 
 path_openvino_vars="${INTEL_OPENVINO_DIR:-/opt/intel/openvino}/bin/setupvars.sh"
 source "${path_openvino_vars}" || exit 1
@@ -25,4 +35,4 @@ pip3 install -e ote/ || exit 1
 #export WORKDIR=$WORKDIR
 #python3 tests/run_model_templates_tests.py --verbose
 
-python3 tests/run_model_templates_tests2.py --verbose --workdir $WORKDIR
+python3 tests/run_model_templates_tests2.py --verbose --workdir $WORKDIR $ARGLIST
