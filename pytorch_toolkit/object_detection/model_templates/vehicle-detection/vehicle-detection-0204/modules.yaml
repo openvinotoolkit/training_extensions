@@ -1,5 +1,5 @@
 arg_parser: DefaultArgParser
-arg_converter: MMDetectionArgsConverter
+arg_converter_map: MMDetectionArgConverterMap
 trainer: MMDetectionTrainer
 evaluator: MMDetectionEvaluator
 exporter: MMDetectionExporter

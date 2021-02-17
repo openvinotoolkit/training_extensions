@@ -18,7 +18,10 @@ import logging
 
 from ote import MODEL_TEMPLATE_FILENAME, MODULES_CONFIG_FILENAME
 from ote.utils import load_config
-from ote.modules import build_arg_parser, build_arg_converter, build_trainer
+from ote.modules import (build_arg_parser,
+                         build_arg_converter_map,
+                         build_trainer,
+                         ArgConverter)
 
 
 def main():
@@ -28,7 +31,8 @@ def main():
     arg_parser = build_arg_parser(modules['arg_parser'])
     ote_args = vars(arg_parser.get_train_parser(MODEL_TEMPLATE_FILENAME).parse_args())
 
-    arg_converter = build_arg_converter(modules['arg_converter'])
+    arg_converter_map = build_arg_converter_map(modules['arg_converter_map'])
+    arg_converter = ArgConverter(arg_converter_map)
     train_args = arg_converter.convert_train_args(MODEL_TEMPLATE_FILENAME, ote_args)
 
     # Note that compression args transformer is not applied here,

@@ -21,8 +21,8 @@ import os
 from mmcv import Config
 import yaml
 
-from .base import BaseArgConverter, ArgConverterMaps
-from ..registry import ARG_CONVERTERS
+from .base import ArgConverterMaps
+from ..registry import ARG_CONVERTER_MAPS
 
 
 def load_classes_from_snapshot(snapshot):
@@ -46,6 +46,7 @@ def classes_list_to_update_config_dict(cfg, classes):
     return update_config_dict
 
 
+@ARG_CONVERTER_MAPS.register_module()
 class MMDetectionArgConverterMap(ArgConverterMaps):
     @staticmethod
     def _train_compression_base_args_map():
@@ -83,12 +84,7 @@ class MMDetectionArgConverterMap(ArgConverterMaps):
     def compress_update_args_map(self):
         return self._train_compression_base_args_map_with_resume_load()
 
-@ARG_CONVERTERS.register_module()
-class MMDetectionArgsConverter(BaseArgConverter):
-    def __init__(self):
-        super().__init__(MMDetectionArgConverterMap())
-
-
+@ARG_CONVERTER_MAPS.register_module()
 class MMDetectionCustomClassesArgConverterMap(MMDetectionArgConverterMap):
     @staticmethod
     def _get_classes_from_annotation(annotation_file):
@@ -157,8 +153,3 @@ class MMDetectionCustomClassesArgConverterMap(MMDetectionArgConverterMap):
 
     def get_extra_compress_args(self, args):
         return self.get_extra_test_args(args)
-
-@ARG_CONVERTERS.register_module()
-class MMDetectionCustomClassesArgsConverter(BaseArgConverter):
-    def __init__(self):
-        super().__init__(MMDetectionCustomClassesArgConverterMap())

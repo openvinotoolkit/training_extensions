@@ -155,7 +155,7 @@ class GroupHooksForActions:
                               out_args_map_hook=arg_conv_maps.compress_out_args_map)
 
 
-class BaseArgConverter:
+class ArgConverter:
     def __init__(self, arg_conv_maps):
         assert isinstance(arg_conv_maps, ArgConverterMaps)
         self.arg_conv_maps = arg_conv_maps

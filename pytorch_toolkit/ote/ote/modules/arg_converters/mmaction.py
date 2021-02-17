@@ -14,10 +14,11 @@
  limitations under the License.
 """
 
-from .base import BaseArgConverter, ArgConverterMaps
-from ..registry import ARG_CONVERTERS
+from .base import ArgConverterMaps
+from ..registry import ARG_CONVERTER_MAPS
 
 
+@ARG_CONVERTER_MAPS.register_module()
 class MMActionArgConverterMap(ArgConverterMaps):
     @staticmethod
     def _train_compression_base_args_map():
@@ -55,8 +56,3 @@ class MMActionArgConverterMap(ArgConverterMaps):
 
     def compress_update_args_map(self):
         return self._train_compression_base_args_map_with_resume_load()
-
-@ARG_CONVERTERS.register_module()
-class MMActionArgsConverter(BaseArgConverter):
-    def __init__(self):
-        super().__init__(MMActionArgConverterMap())

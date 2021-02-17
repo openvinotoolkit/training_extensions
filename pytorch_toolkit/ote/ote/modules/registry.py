@@ -18,7 +18,7 @@ from mmcv.utils.registry import Registry
 
 
 ARG_PARSERS = Registry('arg_parser')
-ARG_CONVERTERS = Registry('arg_converter')
+ARG_CONVERTER_MAPS = Registry('arg_converter_map')
 TRAINERS = Registry('trainer')
 EVALUATORS = Registry('evaluator')
 EXPORTERS = Registry('exporter')
