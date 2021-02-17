@@ -173,21 +173,21 @@ class TestMediumRenderedExport(
         create_export_test_case(
             "configs/medium_config.yml",
             expected_outputs="tests/expected_outputs/formula_recognition/medium_photographed_0185.json")):
-    "Test case for medium config"
+    "Test case for medium formula recognition config"
 
 
 class TestHandwrittenPolynomialsExport(
         create_export_test_case(
             'configs/polynomials_handwritten_config.yml',
             expected_outputs='tests/expected_outputs/formula_recognition/polynomials_handwritten_0166.json')):
-    "Test case for handwritten polynomials config"
+    "Test case for handwritten polynomials formula recogntion config"
 
 
 class TestAlphanumeric0012Evaluation(
         create_export_test_case(
             'configs/config_0012.yml',
             expected_outputs='tests/expected_outputs/alphanumeric/icdar13_greater3_0012.json')):
-    "Test case for handwritten polynomials config"
+    "Test case for alphanumeric text recognition config"
 
 
 if __name__ == "__main__":
