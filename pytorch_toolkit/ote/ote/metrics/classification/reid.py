@@ -16,9 +16,9 @@
 
 import logging
 import os
-import subprocess
 
 from ote import REID_TOOLS
+from ote.utils.misc import run_through_shell
 
 
 def collect_accuracy(path):
@@ -59,13 +59,12 @@ def mean_accuracy_eval(config_path, work_dir, snapshot, update_config, **kwargs)
     else:
         test_py_stdout = os.path.join(work_dir, 'test_py_stdout')
 
-        subprocess.run(
+        run_through_shell(
             f'python {REID_TOOLS}/main.py'
             f' --config-file {config_path}'
             f' {update_config}'
             f' test.evaluate True'
-            f' | tee {test_py_stdout}',
-            check=True, shell=True
+            f' | tee {test_py_stdout}'
         )
 
         r1, r5, _ = collect_accuracy(os.path.join(work_dir, 'test_py_stdout'))

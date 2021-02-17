@@ -27,7 +27,7 @@ from ote.modules.compression import is_optimisation_enabled_in_template
 
 
 def main():
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=logging.DEBUG)
     modules = load_config(MODULES_CONFIG_FILENAME)
 
     arg_parser = build_arg_parser(modules['arg_parser'])
