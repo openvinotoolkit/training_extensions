@@ -4,7 +4,7 @@ Performance results pivot table:
 
 | Model Name | Complexity (GFLOPs) | Size (Mp) | AVG mAP (%) | AVG Top-1 (%) | AVG Top-5 (%) | Links |
 | ---        | ---        | ---        | ---        | ---        | ---        | ---        |
-| EfficientNet b0 | 0.76 | 4.14 | 92.267 | 90.156 | 98.283 | [model template](./efficient_b0/template.yaml) |
+| EfficientNet b0 | 0.76 | 4.14 | 92.267 | 90.156 | 98.283 | [model template](./efficientnet_b0/template.yaml) |
 | MobilenetV3 large x1.0 | 0.44 | 4.33 | 92.04	| 89.019 | 97.807 | [model template](./mobilenet_v3_large_1/template.yaml) |
 | MobilenetV3 large x0.75 | 0.308 | 2.84 | 87.59 |	87.59	| 97.17 | [model template](./mobilenet_v3_large_075/template.yaml) |
 | MobilenetV3 small x1.0 | 0.112 | 1.56 | 82.84 | 84.47 | 95.88 | [model template](./mobilenet_v3_small/template.yaml) |

@@ -13,7 +13,7 @@ model:
   name: 'mobilenetv3_large'
   classification: True
   pretrained: True
-  save_chkpt: False
+  save_chkpt: True
   feature_dim: 1280
   dropout_cls:
     p: 0.1

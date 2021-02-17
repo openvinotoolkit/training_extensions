@@ -1,6 +1,6 @@
 lr_finder:
   enable: True
-  mode: automatic
+  mode: brute_force
   stop_after: False
   num_epochs: 4
   num_iter: 8
