@@ -60,7 +60,6 @@ class ArgConverterMaps(metaclass=ABCMeta):
         """
         pass
 
-    @abstractmethod
     def train_out_args_map(self):
         """
         Returns a map:
@@ -72,7 +71,7 @@ class ArgConverterMaps(metaclass=ABCMeta):
                 'gpu_num': 'gpu_num',
                 'tensorboard_dir': 'tensorboard_dir'
                }
-    @abstractmethod
+
     def compress_out_args_map(self):
         """
         Returns a map:
@@ -91,7 +90,7 @@ class ArgConverterMaps(metaclass=ABCMeta):
                 'nncf_sparsity': 'nncf_sparsity',
                 'nncf_binarization': 'nncf_binarization',
                }
-    @abstractmethod
+
     def test_out_args_map(self):
         """
         Returns a map:
@@ -106,7 +105,7 @@ class ArgConverterMaps(metaclass=ABCMeta):
                 'save_output_to': 'show_dir'
                }
 
-    @abstractmethod
+
     def get_extra_train_args(self, args):
         """ Gets from the parsed output of the corresponding ote train argparser.parse_args
             (e.g. `argparser = DefaultArgParser.get_train_parser()`)
@@ -115,7 +114,7 @@ class ArgConverterMaps(metaclass=ABCMeta):
         """
         return {}
 
-    @abstractmethod
+
     def get_extra_test_args(self, args):
         """ Gets from the parsed output of the corresponding ote test argparser.parse_args
             (e.g. `argparser = DefaultArgParser.get_test_parser()`)
@@ -124,7 +123,7 @@ class ArgConverterMaps(metaclass=ABCMeta):
         """
         return {}
 
-    @abstractmethod
+
     def get_extra_compress_args(self, args):
         """ Gets from the parsed output of the corresponding ote compress argparser.parse_args
             (e.g. `argparser = DefaultArgParser.get_compression_parser()`)

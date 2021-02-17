@@ -83,25 +83,6 @@ class MMDetectionArgConverterMap(ArgConverterMaps):
     def compress_update_args_map(self):
         return self._train_compression_base_args_map_with_resume_load()
 
-    def train_out_args_map(self):
-        return super().train_out_args_map()
-
-    def compress_out_args_map(self):
-        return super().compress_out_args_map()
-
-    def test_out_args_map(self):
-        return super().test_out_args_map()
-
-
-    def get_extra_train_args(self, args):
-        return {}
-
-    def get_extra_test_args(self, args):
-        return {}
-
-    def get_extra_compress_args(self, args):
-        return {}
-
 @ARG_CONVERTERS.register_module()
 class MMDetectionArgsConverter(BaseArgConverter):
     def __init__(self):
