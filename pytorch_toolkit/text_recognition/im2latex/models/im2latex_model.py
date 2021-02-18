@@ -70,6 +70,7 @@ class Im2latexModel(nn.Module):
         """
         head_type = head.pop('type', "AttentionBasedLSTM")
         backbone_type = backbone.pop('type', "resnet")
+        self.freeze_backbone = backbone.pop("freeze_backbone")
         self.head = TEXT_REC_HEADS[head_type](out_size, **head)
         self.backbone = BACKBONES[backbone_type](**backbone)
 
@@ -92,6 +93,10 @@ class Im2latexModel(nn.Module):
             Please, check the config file.
             """)
             raise RuntimeError from missing_keys
+        if self.freeze_backbone:
+            print("Freeze backbone layers")
+            for layer in self.backbone.parameters():
+                layer.requires_grad = False
 
     def get_encoder_wrapper(self, im2latex_model):
         return Im2latexModel.EncoderWrapper(im2latex_model)
