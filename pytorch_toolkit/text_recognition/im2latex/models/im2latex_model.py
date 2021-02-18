@@ -70,7 +70,7 @@ class Im2latexModel(nn.Module):
         """
         head_type = head.pop('type', "AttentionBasedLSTM")
         backbone_type = backbone.pop('type', "resnet")
-        self.freeze_backbone = backbone.pop("freeze_backbone")
+        self.freeze_backbone = backbone.pop("freeze_backbone", False)
         self.head = TEXT_REC_HEADS[head_type](out_size, **head)
         self.backbone = BACKBONES[backbone_type](**backbone)
         if self.freeze_backbone:
