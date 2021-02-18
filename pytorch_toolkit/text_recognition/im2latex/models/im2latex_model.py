@@ -77,7 +77,9 @@ class Im2latexModel(nn.Module):
             print("Freeze backbone layers")
             for layer in self.backbone.parameters():
                 layer.requires_grad = False
-
+            if backbone.get("one_ch_first_conv"):
+                for layer in self.backbone.conv1:
+                    layer.requires_grad = True
 
     def forward(self, input_images, formulas=None):
         features = self.backbone(input_images)
