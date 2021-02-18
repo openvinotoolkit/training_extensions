@@ -183,9 +183,15 @@ class TestHandwrittenPolynomialsExport(
     "Test case for handwritten polynomials formula recogntion config"
 
 
-class TestAlphanumeric0012Evaluation(
+class TestAlphanumeric0012Export(
         create_export_test_case(
             'configs/config_0012.yml',
+            expected_outputs='tests/expected_outputs/alphanumeric/icdar13_greater3_0012.json')):
+    "Test case for alphanumeric text recognition config"
+
+class TestAlphanumeric0013Export(
+        create_export_test_case(
+            'configs/config_0013.yml',
             expected_outputs='tests/expected_outputs/alphanumeric/icdar13_greater3_0012.json')):
     "Test case for alphanumeric text recognition config"
 
