@@ -53,7 +53,6 @@ train:
   lr_scheduler: 'multi_step'
   stepsize: [3, 6, 9, 13]
   warmup: 0
-  warmup_factor_base: 0.01
 
 test:
   batch_size: 64
