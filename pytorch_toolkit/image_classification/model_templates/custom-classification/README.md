@@ -38,19 +38,19 @@ Baselines:
 * SGD with momentum optimizer
 
 MobilenetV3:
-* [Mutual learning](https://arxiv.org/abs/1706.00384) approach
-* Softmax loss for the main model, [Additive Margin softmax](https://arxiv.org/abs/1801.05599) for the auxiliary model
+* [Mutual learning](https://arxiv.org/pdf/1706.00384.pdf) approach
+* Softmax loss for the main model, [Additive Margin softmax](https://arxiv.org/pdf/1801.05599.pdf) for the auxiliary model
 * Learning rate found by LR Finder
 * Reduce on plateau scheduler which allows getting rid of epochs search
 * Augmix pipeline for augmentations
-* [Sharpness aware minimization optimizer](https://arxiv.org/abs/2010.01412)
+* [Sharpness aware minimization optimizer](https://arxiv.org/pdf/2010.01412.pdf)
 
 EfficientNet_b0:
 * Softmax loss
 * Learning rate found by LR Finder
 * Reduce on plateau scheduler which allows getting rid of epochs search
-* [Augmix](https://arxiv.org/abs/1912.02781) pipeline for augmentations + FMIX augmentation
-* [Sharpness aware minimization optimizer](https://arxiv.org/abs/2010.01412)
+* [Augmix](https://arxiv.org/pdf/1912.02781.pdf) pipeline for augmentations + FMIX augmentation
+* [Sharpness aware minimization optimizer](https://arxiv.org/pdf/2010.01412.pdf)
 
 All of the models were initially trained on [ImageNet](http://image-net.org/challenges/LSVRC/2012/), but can be trained from scratch or fine tuned to classify arbitrary images.
 
