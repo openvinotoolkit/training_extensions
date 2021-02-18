@@ -73,6 +73,11 @@ class Im2latexModel(nn.Module):
         self.freeze_backbone = backbone.pop("freeze_backbone")
         self.head = TEXT_REC_HEADS[head_type](out_size, **head)
         self.backbone = BACKBONES[backbone_type](**backbone)
+        if self.freeze_backbone:
+            print("Freeze backbone layers")
+            for layer in self.backbone.parameters():
+                layer.requires_grad = False
+
 
     def forward(self, input_images, formulas=None):
         features = self.backbone(input_images)
@@ -93,10 +98,6 @@ class Im2latexModel(nn.Module):
             Please, check the config file.
             """)
             raise RuntimeError from missing_keys
-        if self.freeze_backbone:
-            print("Freeze backbone layers")
-            for layer in self.backbone.parameters():
-                layer.requires_grad = False
 
     def get_encoder_wrapper(self, im2latex_model):
         return Im2latexModel.EncoderWrapper(im2latex_model)
