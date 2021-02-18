@@ -78,7 +78,7 @@ class Im2latexModel(nn.Module):
             for layer in self.backbone.parameters():
                 layer.requires_grad = False
             if backbone.get("one_ch_first_conv"):
-                for layer in self.backbone.conv1:
+                for layer in self.backbone.conv1.parameters():
                     layer.requires_grad = True
 
     def forward(self, input_images, formulas=None):
