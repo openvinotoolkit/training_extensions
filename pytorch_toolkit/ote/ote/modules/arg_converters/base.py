@@ -31,6 +31,13 @@ class ArgConverterMaps(metaclass=ABCMeta):
                   (e.g. `argparser = DefaultArgParser.get_train_parser()`)
             to:   the fields of mmdetection/mmaction/other config for its **train** script in the form
                   compatible with mmcv.Config.merge_from_dict
+                  (i.e. they should have the same form as the keys of a dict passed to mmcv.Config.merge_from_dict)
+
+        The map is used to update the script config file by the data from cmd line arguments of ote/tools/train.py
+
+        Note that the pairs {key:value} (updating the script config) may be converted during
+        calling of the script to another appropriate format compatible with the script itself
+        (e.g. to the format compatible with yacs.config.CfgNode.merge_from_list, etc)
         """
         pass
 
@@ -42,6 +49,13 @@ class ArgConverterMaps(metaclass=ABCMeta):
                   (e.g. `argparser = DefaultArgParser.get_test_parser()`)
             to:   the fields of mmdetection/mmaction/other config for its **test** script in the form
                   compatible with mmcv.Config.merge_from_dict
+                  (i.e. they should have the same form as the keys of a dict passed to mmcv.Config.merge_from_dict)
+
+        The map is used to update the script config file by the data from cmd line arguments of ote/tools/eval.py
+
+        Note that the pairs {key:value} (updating the script config) may be converted just before
+        calling of the script to another appropriate format compatible with the script itself
+        (e.g. to the format compatible with yacs.config.CfgNode.merge_from_list, etc)
         """
         pass
 
@@ -52,11 +66,17 @@ class ArgConverterMaps(metaclass=ABCMeta):
             from: the name of cmd line arguments of the corresponding **compress** argparser.parse_args
                   (e.g. `argparser = DefaultArgParser.get_compression_parser()`)
             to:   the fields of mmdetection/mmaction/other config for its **train** script in the form
-                  compatible with mmcv.Config.merge_from_dict to makes compression
-                  (note that compression makes the original train script with special tuned config;
-                   typically the parameters are the same as for training except
-                   learning rate and total_epochs parameters)
+                  compatible with mmcv.Config.merge_from_dict
+                  (i.e. they should have the same form as the keys of a dict passed to mmcv.Config.merge_from_dict)
 
+        The map is used to update the script config file by the data from cmd line arguments of ote/tools/compress.py
+
+        Note that the pairs {key:value} (updating the script config) may be converted just before
+        calling of the script to another appropriate format compatible with the script itself
+        (e.g. to the format compatible with yacs.config.CfgNode.merge_from_list, etc)
+
+        Also note that compression runs the original train script with special tuned config;
+        typically the parameters are the same as for training except learning rate and total_epochs parameters.
         """
         pass
 
@@ -79,7 +99,7 @@ class ArgConverterMaps(metaclass=ABCMeta):
             to:   the names of additional parameters of the `__call__` method of the corresponding
                   ote trainer class (e.g. MMDetectionTrainer) in the form suitable
                   for call `trainer_class(**kwargs)`
-                  (note that compression make the same trainer class as training, but with tuned
+                  (note that compression runs the same trainer class as training, but with tuned
                   config file)
         """
         return {
@@ -110,7 +130,11 @@ class ArgConverterMaps(metaclass=ABCMeta):
         """ Gets from the parsed output of the corresponding ote train argparser.parse_args
             (e.g. `argparser = DefaultArgParser.get_train_parser()`)
             additional changes that should be applied to mmdetection/mmaction/other config file,
-            the changes will be in the form compatible with mmcv.Config.merge_from_dict
+            the changes will be returned in the form compatible with mmcv.Config.merge_from_dict
+
+            Note that the format may be converted just before calling of the train script to another
+            appropriate format depending on the script itself, e.g. to the format compatible with
+            yacs.config.CfgNode.merge_from_list, etc.
         """
         return {}
 
@@ -119,7 +143,11 @@ class ArgConverterMaps(metaclass=ABCMeta):
         """ Gets from the parsed output of the corresponding ote test argparser.parse_args
             (e.g. `argparser = DefaultArgParser.get_test_parser()`)
             additional changes that should be applied to mmdetection/mmaction/other config file,
-            the changes will be in the form compatible with mmcv.Config.merge_from_dict
+            the changes will be returned in the form compatible with mmcv.Config.merge_from_dict
+
+            Note that the format may be converted just before calling of the test script to another
+            appropriate format depending on the script itself, e.g. to the format compatible with
+            yacs.config.CfgNode.merge_from_list, etc.
         """
         return {}
 
@@ -128,7 +156,11 @@ class ArgConverterMaps(metaclass=ABCMeta):
         """ Gets from the parsed output of the corresponding ote compress argparser.parse_args
             (e.g. `argparser = DefaultArgParser.get_compression_parser()`)
             additional changes that should be applied to mmdetection/mmaction/other config file,
-            the changes will be in the form compatible with mmcv.Config.merge_from_dict
+            the changes will be returned in the form compatible with mmcv.Config.merge_from_dict
+
+            Note that the format may be converted just before calling of the train script to another
+            appropriate format depending on the script itself, e.g. to the format compatible with
+            yacs.config.CfgNode.merge_from_list, etc.
         """
         return {}
 
