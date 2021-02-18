@@ -16,7 +16,7 @@ This repo contains scripts and tutorials for object detection models training.
 
 * Ubuntu\* 16.04
 * Python\* >=3.6
-* PyTorch\* 1.4.0
+* PyTorch\* 1.5.1
 * OpenVINO™ 2020.4 with Python API
 * mmdetection (../../external/mmdetection)
 
