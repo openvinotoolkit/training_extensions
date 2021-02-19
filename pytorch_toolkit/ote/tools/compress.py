@@ -19,9 +19,10 @@ import logging
 from ote import MODEL_TEMPLATE_FILENAME, MODULES_CONFIG_FILENAME
 from ote.utils import load_config
 from ote.modules import (build_arg_parser,
-                         build_arg_converter,
+                         build_arg_converter_map,
                          build_trainer,
-                         build_compression_arg_transformer)
+                         build_compression_arg_transformer,
+                         ArgConverter)
 from ote.modules.compression import is_optimisation_enabled_in_template
 
 
@@ -40,7 +41,8 @@ def main():
         raise RuntimeError(f'Cannot make compression for the template that'
                            f' does not enable any of compression flags')
 
-    arg_converter = build_arg_converter(modules['arg_converter'])
+    arg_converter_map = build_arg_converter_map(modules['arg_converter_map'])
+    arg_converter = ArgConverter(arg_converter_map)
     compress_args = arg_converter.convert_compress_args(MODEL_TEMPLATE_FILENAME, ote_args)
 
     compression_arg_transformer = build_compression_arg_transformer(modules['compression'])

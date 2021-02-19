@@ -1,14 +1,14 @@
-from .base import BaseArgConverter
-from .mmaction import MMActionArgsConverter
-from .mmdetection import MMDetectionArgsConverter, MMDetectionCustomClassesArgsConverter
-from .face_detection import MMDetectionWiderArgsConverter
-from .reid import ReidArgsConverter
+from .base import ArgConverter
+from .mmaction import MMActionArgConverterMap
+from .mmdetection import MMDetectionArgConverterMap, MMDetectionCustomClassesArgConverterMap
+from .face_detection import MMDetectionWiderArgConverterMap
+from .reid import ReidArgConverterMap
 
 __all__ = [
-    'BaseArgConverter',
-    'MMActionArgsConverter',
-    'MMDetectionArgsConverter',
-    'MMDetectionCustomClassesArgsConverter',
-    'MMDetectionWiderArgsConverter',
-    'ReidArgsConverter',
+    'ArgConverter',
+    'MMActionArgConverterMap',
+    'MMDetectionArgConverterMap',
+    'MMDetectionCustomClassesArgConverterMap',
+    'MMDetectionWiderArgConverterMap',
+    'ReidArgConverterMap',
 ]
