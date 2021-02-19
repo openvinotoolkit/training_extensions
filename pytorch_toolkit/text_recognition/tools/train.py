@@ -16,6 +16,7 @@
 
 import argparse
 import sys
+import torch
 
 from im2latex.utils.get_config import get_config
 from im2latex.utils.trainer import Trainer
@@ -29,6 +30,8 @@ def parse_args():
 
 
 if __name__ == "__main__":
+    torch.multiprocessing.set_sharing_strategy('file_system')
+    torch.multiprocessing.set_start_method("spawn")
     assert sys.version_info[0] == 3
     args = parse_args()
 

@@ -57,8 +57,6 @@ from torch.utils.data import ConcatDataset, DataLoader
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
-torch.multiprocessing.set_sharing_strategy('file_system')
-
 
 def calculate_loss(logits, targets, target_lengths, should_cut_by_min=False, ctc_loss=None):
     """args:
