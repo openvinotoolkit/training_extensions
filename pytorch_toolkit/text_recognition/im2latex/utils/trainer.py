@@ -58,7 +58,6 @@ from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
 torch.multiprocessing.set_sharing_strategy('file_system')
-torch.multiprocessing.set_start_method('spawn')
 
 
 def calculate_loss(logits, targets, target_lengths, should_cut_by_min=False, ctc_loss=None):
