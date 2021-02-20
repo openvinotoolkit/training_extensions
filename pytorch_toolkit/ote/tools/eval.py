@@ -17,10 +17,9 @@
 from ote import MODEL_TEMPLATE_FILENAME, MODULES_CONFIG_FILENAME
 from ote.utils import load_config
 from ote.modules import (build_arg_parser,
-                         build_arg_converter_map,
+                         build_arg_converter,
                          build_evaluator,
-                         build_compression_arg_transformer,
-                         ArgConverter)
+                         build_compression_arg_transformer)
 from ote.modules.compression import is_optimisation_enabled_in_template
 
 
@@ -30,9 +29,8 @@ def main():
     arg_parser = build_arg_parser(modules['arg_parser'])
     ote_args = vars(arg_parser.get_test_parser(MODEL_TEMPLATE_FILENAME).parse_args())
 
-    arg_converter_map = build_arg_converter_map(modules['arg_converter_map'])
-    arg_converter = ArgConverter(arg_converter_map)
-    eval_args = arg_converter.convert_test_args(MODEL_TEMPLATE_FILENAME, ote_args)
+    arg_converter = build_arg_converter(modules['arg_converter_map'])
+    eval_args = arg_converter.convert_test_args(ote_args)
 
     if modules.get('compression') and is_optimisation_enabled_in_template(MODEL_TEMPLATE_FILENAME):
         compression_arg_transformer = build_compression_arg_transformer(modules['compression'])

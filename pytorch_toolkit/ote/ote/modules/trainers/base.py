@@ -32,7 +32,7 @@ class BaseTrainer(metaclass=ABCMeta):
     def __init__(self):
         self.work_dir = None
 
-    def __call__(self, config, gpu_num, out, update_config, tensorboard_dir):
+    def __call__(self, config, gpu_num, update_config, tensorboard_dir):
         logging.basicConfig(level=logging.INFO)
         logging.info(f'Commandline:\n{" ".join(sys.argv)}')
 
@@ -45,13 +45,10 @@ class BaseTrainer(metaclass=ABCMeta):
 
         update_config = ' '.join([f'{k}={v}' for k, v in update_config.items()])
         update_config = f' --update_config {update_config}' if update_config else ''
-        
+
         logging.info('Training started ...')
         training_info = self._train_internal(config, gpu_num, update_config, tensorboard_dir)
         logging.info('... training completed.')
-
-        with open(out, 'a+') as dst_file:
-            yaml.dump(training_info, dst_file)
 
     def _train_internal(self, config, gpu_num, update_config, tensorboard_dir):
         tools_dir = self._get_tools_dir()

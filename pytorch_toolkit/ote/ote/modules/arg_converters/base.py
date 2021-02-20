@@ -125,7 +125,6 @@ class ArgConverterMaps(metaclass=ABCMeta):
                 'save_output_to': 'show_dir'
                }
 
-
     def get_extra_train_args(self, args):
         """ Gets from the parsed output of the corresponding ote train argparser.parse_args
             (e.g. `argparser = DefaultArgParser.get_train_parser()`)
@@ -137,7 +136,6 @@ class ArgConverterMaps(metaclass=ABCMeta):
             yacs.config.CfgNode.merge_from_list, etc.
         """
         return {}
-
 
     def get_extra_test_args(self, args):
         """ Gets from the parsed output of the corresponding ote test argparser.parse_args
@@ -193,7 +191,7 @@ class ArgConverter:
         self.arg_conv_maps = arg_conv_maps
 
     @staticmethod
-    def _convert_args_by_hooks_for_action(hooks_for_action, model_template_path, args):
+    def _convert_args_by_hooks_for_action(hooks_for_action, args):
         assert isinstance(hooks_for_action, HooksForAction)
 
         update_args_map = hooks_for_action.update_args_map_hook()
@@ -202,13 +200,10 @@ class ArgConverter:
         extra_args = hooks_for_action.get_extra_args_hook(args)
         update_args.update(extra_args)
 
-        template_folder = os.path.dirname(model_template_path)
         converted_args = {
-            'config': os.path.join(template_folder, args['config']),
+            'config': args['config'],
             'update_config': update_args,
         }
-        if args.get('save_checkpoints_to'):
-            converted_args['out'] = os.path.join(args['save_checkpoints_to'], model_template_path)
 
         additional_converted_args_map = hooks_for_action.out_args_map_hook()
         additional_converted_args = map_args(args, additional_converted_args_map)
@@ -216,14 +211,14 @@ class ArgConverter:
 
         return converted_args
 
-    def convert_train_args(self, model_template_path, args):
+    def convert_train_args(self, args):
         hooks_for_action = GroupHooksForActions.get_hooks_for_train(self.arg_conv_maps)
-        return self._convert_args_by_hooks_for_action(hooks_for_action, model_template_path, args)
+        return self._convert_args_by_hooks_for_action(hooks_for_action, args)
 
-    def convert_compress_args(self, model_template_path, args):
+    def convert_compress_args(self, args):
         hooks_for_action = GroupHooksForActions.get_hooks_for_compress(self.arg_conv_maps)
-        return self._convert_args_by_hooks_for_action(hooks_for_action, model_template_path, args)
+        return self._convert_args_by_hooks_for_action(hooks_for_action, args)
 
-    def convert_test_args(self, model_template_path, args):
+    def convert_test_args(self, args):
         hooks_for_action = GroupHooksForActions.get_hooks_for_test(self.arg_conv_maps)
-        return self._convert_args_by_hooks_for_action(hooks_for_action, model_template_path, args)
+        return self._convert_args_by_hooks_for_action(hooks_for_action, args)
