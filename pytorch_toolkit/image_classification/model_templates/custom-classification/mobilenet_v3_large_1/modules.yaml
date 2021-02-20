@@ -1,5 +1,5 @@
 arg_parser: ReidArgParser
-arg_converter: ReidArgsConverterMap
+arg_converter_map: ReidArgsConverterMap
 trainer: ReidTrainer
 evaluator: ReidEvaluator
 exporter: ReidExporter

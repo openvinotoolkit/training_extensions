@@ -9,7 +9,7 @@ Performance results pivot table:
 | MobilenetV3 large x0.75 | 0.308 | 2.84 | 87.59 |	87.59	| 97.17 | [model template](./mobilenet_v3_large_075/template.yaml) |
 | MobilenetV3 small x1.0 | 0.112 | 1.56 | 82.84 | 84.47 | 95.88 | [model template](./mobilenet_v3_small/template.yaml) |
 
-All of the above metrics were obtained on eleven different datasets, on which an extensive number of researches has been made.
+All of the above metrics were obtained on eleven different datasets, on which an extensive number of researches has been made. To provide a generalized performance metric, we averaged the metrics across all datasets. For additional information about performance on each dataset in comparison with baseline, you can refer to this [spreadsheet](https://docs.google.com/spreadsheets/d/1CV3be-VydEHvWS6GMPduBQBjl46uLq80_GtkeUhsuVg/edit#gid=0).
 
 The following datasets were used in experiments:
 * [Describable Textures (DTD)](https://www.robots.ox.ac.uk/~vgg/data/dtd/)<sup>1</sup>
@@ -26,9 +26,11 @@ The following datasets were used in experiments:
 
 <sup>1</sup> these datasets have custom splits (random stratified split: 80% - train, 20% - val) and cannot be compared straightforwardly with other research results
 
-For additional information about performance on each dataset in comparison with baseline, you can refer to this [spreadsheet](https://docs.google.com/spreadsheets/d/1CV3be-VydEHvWS6GMPduBQBjl46uLq80_GtkeUhsuVg/edit#gid=0).
-
 Training recipes:
+
+We pretrained all models with imagenet weights and fine-tuned on concrete tasks without freezing any layers.
+
+The following parameters and techniques were used for training:
 
 Baselines:
 * softmax loss
