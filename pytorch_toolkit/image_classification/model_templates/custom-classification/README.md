@@ -24,7 +24,7 @@ The following datasets were used in experiments:
 * [Birdsnap](http://thomasberg.org/)<sup>1</sup>
 * [Cars Dataset](https://ai.stanford.edu/~jkrause/cars/car_dataset.html)
 
-<sup>1</sup> these datasets have custom splits (random stratified split: 80% - train, 20% - val) and cannot be compared straightforward with other research results
+<sup>1</sup> these datasets have custom splits (random stratified split: 80% - train, 20% - val) and cannot be compared straightforwardly with other research results
 
 For additional information about performance on each dataset in comparison with baseline, you can refer to this [spreadsheet](https://docs.google.com/spreadsheets/d/1CV3be-VydEHvWS6GMPduBQBjl46uLq80_GtkeUhsuVg/edit#gid=0).
 
@@ -38,19 +38,19 @@ Baselines:
 * SGD with momentum optimizer
 
 MobilenetV3:
-* [Mutual learning](https://arxiv.org/pdf/1706.00384.pdf) approach
-* Softmax loss for the main model, [Additive Margin softmax](https://arxiv.org/pdf/1801.05599.pdf) for the auxiliary model
+* [Mutual learning](https://www.semanticscholar.org/paper/Deep-Mutual-Learning-Zhang-Xiang/f06a12928307e17b1aff2b9f4a6c11791f19b6a7) approach
+* Softmax loss for the main model, [Additive Margin softmax](https://www.semanticscholar.org/paper/Additive-Margin-Softmax-for-Face-Verification-Wang-Cheng/9fc17fa5708584fa848164461f82a69e97f6ed69) for the auxiliary model
 * Learning rate found by LR Finder
 * Reduce on plateau scheduler which allows getting rid of epochs search
 * Augmix pipeline for augmentations
-* [Sharpness aware minimization optimizer](https://arxiv.org/pdf/2010.01412.pdf)
+* [Sharpness aware minimization optimizer](https://www.semanticscholar.org/paper/Sharpness-Aware-Minimization-for-Efficiently-For%C3%AAt-Kleiner/bc52ab18399aaaf6b88c22ebc6e4a3caa99a2323)
 
 EfficientNet_b0:
 * Softmax loss
 * Learning rate found by LR Finder
 * Reduce on plateau scheduler which allows getting rid of epochs search
-* [Augmix](https://arxiv.org/pdf/1912.02781.pdf) pipeline for augmentations + FMIX augmentation
-* [Sharpness aware minimization optimizer](https://arxiv.org/pdf/2010.01412.pdf)
+* [Augmix](https://www.semanticscholar.org/paper/AugMix%3A-A-Simple-Data-Processing-Method-to-Improve-Hendrycks-Mu/f3a93e20a12532b5493825b921a0f0132736f4ec) pipeline for augmentations + [FMix](https://www.semanticscholar.org/paper/FMix%3A-Enhancing-Mixed-Sample-Data-Augmentation-Harris-Marcu/7c15624f2fdc980ec3cd2666b563e07324f5d8e4) augmentation
+* [Sharpness aware minimization optimizer](https://www.semanticscholar.org/paper/Sharpness-Aware-Minimization-for-Efficiently-For%C3%AAt-Kleiner/bc52ab18399aaaf6b88c22ebc6e4a3caa99a2323)
 
 All of the models were initially trained on [ImageNet](http://image-net.org/challenges/LSVRC/2012/), but can be trained from scratch or fine tuned to classify arbitrary images.
 
