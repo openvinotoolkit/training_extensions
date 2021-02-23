@@ -158,9 +158,9 @@ def run_through_shell(cmd, verbose=True, check=True):
     assert isinstance(cmd, str)
     log_shell_cmd(cmd)
     return subprocess.run(cmd,
+                          verbose,
                           shell=True,
                           check=check,
-                          capture_output=not verbose,
                           executable="/bin/bash")
 
 def get_cuda_device_count():
