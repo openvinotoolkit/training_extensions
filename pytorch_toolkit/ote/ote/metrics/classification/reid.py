@@ -64,6 +64,7 @@ def mean_accuracy_eval(config_path, work_dir, snapshot, update_config, **kwargs)
             f' --config-file {config_path}'
             f' {update_config}'
             f' test.evaluate True'
+            f' mutual_learning.aux_configs []'
             f' | tee {test_py_stdout}',
             check=True, shell=True
         )
