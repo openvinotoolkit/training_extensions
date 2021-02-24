@@ -4,12 +4,12 @@ Performance results pivot table:
 
 | Model Name | Complexity (GFLOPs) | Size (Mp) | AVG mAP (%) | AVG Top-1 (%) | AVG Top-5 (%) | Links |
 | ---        | ---        | ---        | ---        | ---        | ---        | ---        |
-| EfficientNet b0 | 0.76 | 4.14 | 92.267 | 90.156 | 98.283 | [model template](./efficientnet_b0/template.yaml) |
-| MobilenetV3 large x1.0 | 0.44 | 4.33 | 92.04	| 89.019 | 97.807 | [model template](./mobilenet_v3_large_1/template.yaml) |
-| MobilenetV3 large x0.75 | 0.308 | 2.84 | 87.59 |	87.59	| 97.17 | [model template](./mobilenet_v3_large_075/template.yaml) |
-| MobilenetV3 small x1.0 | 0.112 | 1.56 | 82.84 | 84.47 | 95.88 | [model template](./mobilenet_v3_small/template.yaml) |
+| EfficientNet b0 | 0.76 | 4.14 | 92.267 | 90.156 | 98.283 | [imagenet snapshot](https://drive.google.com/uc?export=download&id=1AyOTxxuJPrX9H3whcgaQ_BRRDiZmbqt0)[model template](./efficientnet_b0/template.yaml) |
+| MobilenetV3 large x1.0 | 0.44 | 4.33 | 92.04	| 89.019 | 97.807 | [imagenet snapshot](https://drive.google.com/uc?export=download&id=1pJ86SPmRrmnGhrNGyXV8FMKSu550OnV1)[model template](./mobilenet_v3_large_1/template.yaml) |
+| MobilenetV3 large x0.75 | 0.308 | 2.84 | 87.59 |	87.59	| 97.17 | [imagenet snapshot](https://drive.google.com/uc?export=download&id=1s9Z43yyL281QnDMRmBRbBiizzAqVvM_0)[model template](./mobilenet_v3_large_075/template.yaml) |
+| MobilenetV3 small x1.0 | 0.112 | 1.56 | 82.84 | 84.47 | 95.88 | [imagenet snapshot](https://drive.google.com/uc?export=download&id=1q3xgROzhFWCiQHPvKldV4S7HR3N2Fne1)[model template](./mobilenet_v3_small/template.yaml) |
 
-All of the above metrics were obtained on eleven different datasets, on which an extensive number of researches has been made. To provide a generalized performance metric, we averaged the metrics across all datasets. For additional information about performance on each dataset in comparison with baseline, you can refer to this [spreadsheet](https://docs.google.com/spreadsheets/d/1CV3be-VydEHvWS6GMPduBQBjl46uLq80_GtkeUhsuVg/edit#gid=0).
+All of the above metrics were obtained on eleven different datasets, on which an extensive amount of research has been made. To provide a generalized performance metric, we averaged the metrics across all datasets. For additional information about performance on each dataset in comparison with baseline, you can refer to this [spreadsheet](https://docs.google.com/spreadsheets/d/1CV3be-VydEHvWS6GMPduBQBjl46uLq80_GtkeUhsuVg/edit#gid=0).
 
 The following datasets were used in experiments:
 * [Describable Textures (DTD)](https://www.robots.ox.ac.uk/~vgg/data/dtd/)<sup>1</sup>
@@ -28,7 +28,7 @@ The following datasets were used in experiments:
 
 Training recipes:
 
-We pretrained all models with imagenet weights and fine-tuned on concrete tasks without freezing any layers.
+We pretrained all models with imagenet weights and fine-tuned on specific tasks without freezing any layers.
 
 The following parameters and techniques were used for training:
 
