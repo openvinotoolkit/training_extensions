@@ -30,28 +30,22 @@ class CustomClassesArgParser(DefaultArgParser):
 
     def get_train_parser(self, config_path):
         parser = argparse.ArgumentParser(parents=[train_args_parser(config_path)], add_help=False)
-        parser.add_argument('--classes', required=False,
-                            help='Comma-separated list of classes (e.g. "cat,dog,mouse").')
-
-        return parser
+        return self._add_classes_arg(parser)
 
     def get_test_parser(self, config_path):
         parser = argparse.ArgumentParser(parents=[test_args_parser(config_path)], add_help=False)
-        parser.add_argument('--classes', required=False,
-                            help='Comma-separated list of classes (e.g. "cat,dog,mouse").')
-
-        return parser
+        return self._add_classes_arg(parser)
 
     def get_export_parser(self, config_path):
         parser = argparse.ArgumentParser(parents=[export_args_parser(config_path)], add_help=False)
-        parser.add_argument('--classes', required=False,
-                            help='Comma-separated list of classes (e.g. "cat,dog,mouse").')
-
-        return parser
+        return self._add_classes_arg(parser)
 
     def get_compression_parser(self, config_path):
         parser = argparse.ArgumentParser(parents=[compression_args_parser(config_path)], add_help=False)
+        return self._add_classes_arg(parser)
+
+    @staticmethod
+    def _add_classes_arg(parser):
         parser.add_argument('--classes', required=False,
                             help='Comma-separated list of classes (e.g. "cat,dog,mouse").')
-
         return parser
