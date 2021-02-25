@@ -38,7 +38,7 @@ class ReidTrainer(BaseTrainer):
     def _get_tools_dir(self):
         return REID_TOOLS
 
-    def __call__(self, config, gpu_num, out, update_config, tensorboard_dir):
+    def __call__(self, config, gpu_num, update_config, tensorboard_dir):
         logging.basicConfig(level=logging.INFO)
         logging.info(f'Commandline:\n{" ".join(sys.argv)}')
 
@@ -54,18 +54,14 @@ class ReidTrainer(BaseTrainer):
         del update_config[self.parameter_val_dir]
         update_config = classes_arg + data_path_args + ' '.join([f'{k} {v}' for k, v in update_config.items() if str(v) and str(k)])
         logging.info('Training started ...')
-        training_info = self._train_internal(config, gpu_num, update_config, tensorboard_dir)
+        self._train_internal(config, gpu_num, update_config, tensorboard_dir)
         logging.info('... training completed.')
-
-        with open(out, 'a+') as dst_file:
-            yaml.dump(training_info, dst_file)
 
     def _train_internal(self, config, gpu_num, update_config, tensorboard_dir):
         tools_dir = self._get_tools_dir()
         if tensorboard_dir is not None:
             update_config += f' data.tb_log_dir {tensorboard_dir}'
 
-        training_info = {'training_gpu_num': 0}
         if get_cuda_device_count() > 0:
             logging.info('Training on GPUs started ...')
             available_gpu_num = get_cuda_device_count()
@@ -74,7 +70,6 @@ class ReidTrainer(BaseTrainer):
                 logging.warning(f'decreased number of gpu to: {available_gpu_num}')
                 gpu_num = available_gpu_num
                 sys.stdout.flush()
-            training_info['training_gpu_num'] = gpu_num
             logging.info('... training on GPUs completed.')
         else:
             gpu_num = 0
@@ -89,5 +84,3 @@ class ReidTrainer(BaseTrainer):
             logging.info('... training on GPUs completed.')
         else:
             logging.info('... training on CPU completed.')
-
-        return training_info

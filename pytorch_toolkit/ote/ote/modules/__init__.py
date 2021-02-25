@@ -13,7 +13,7 @@ from .exporters import (BaseExporter,
 from .trainers import BaseTrainer, MMActionTrainer, MMDetectionTrainer, InstanceSegmentationTrainer
 from .registry import ARG_PARSERS, ARG_CONVERTER_MAPS, TRAINERS, EVALUATORS, EXPORTERS, COMPRESSION
 from .builder import (build_arg_parser,
-                      build_arg_converter_map,
+                      build_arg_converter,
                       build_trainer,
                       build_evaluator,
                       build_exporter,
@@ -49,7 +49,7 @@ __all__ = [
     'MMDetectionExporter',
     'InstanceSegmentationExporter',
     'build_arg_parser',
-    'build_arg_converter_map',
+    'build_arg_converter',
     'build_trainer',
     'build_evaluator',
     'build_exporter',

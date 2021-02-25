@@ -16,6 +16,7 @@
 
 from mmcv.utils.registry import Registry
 
+from .arg_converters import ArgConverter
 from .registry import ARG_PARSERS, ARG_CONVERTER_MAPS, TRAINERS, EVALUATORS, EXPORTERS, COMPRESSION
 
 
@@ -40,8 +41,8 @@ def build_arg_parser(obj_type):
     return build(obj_type, ARG_PARSERS)
 
 
-def build_arg_converter_map(obj_type):
-    return build(obj_type, ARG_CONVERTER_MAPS)
+def build_arg_converter(obj_type):
+    return ArgConverter(build(obj_type, ARG_CONVERTER_MAPS))
 
 
 def build_trainer(obj_type):
