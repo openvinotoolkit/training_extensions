@@ -8,7 +8,7 @@ initial_weights: snapshot.pth
 dependencies:
 - sha256: d2d53b376229c002d7204c1f8ad10fbae5f065fbabb7e4ef7a67a1905168f2f6
   size: 15863668
-  source: https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/vehicle-person-bike-detection-2003.pth
+  source: https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/object_detection/v2/vehicle-person-bike-detection-2003.pth
   destination: snapshot.pth
 - source: ../../../../../pytorch_toolkit/ote/tools/train.py
   destination: train.py
