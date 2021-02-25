@@ -76,7 +76,7 @@ def skip_if_cuda_not_available():
         raise unittest.SkipTest('No GPU found')
 
 
-def create_test_case(domain_name, problem_name, model_name, ann_file, img_root, metric_keys, expected_outputs_dir):
+def create_test_case(domain_name, problem_name, model_name, ann_file, img_root, metric_keys, expected_outputs_dir, batch_size=1):
     class TestCaseOteApi(unittest.TestCase):
         domain = domain_name
         problem = problem_name
@@ -92,6 +92,7 @@ def create_test_case(domain_name, problem_name, model_name, ann_file, img_root, 
             cls.template_file = os.path.join(cls.template_folder, 'template.yaml')
             cls.ann_file = ann_file
             cls.img_root = img_root
+            cls.batch_size = batch_size
             cls.dependencies = get_dependencies(cls.template_file)
             cls.epochs_delta = 1
             cls.total_epochs = get_epochs(cls.template_file) + cls.epochs_delta
@@ -146,7 +147,7 @@ def create_test_case(domain_name, problem_name, model_name, ann_file, img_root, 
                 f' --resume-from snapshot.pth'
                 f' --save-checkpoints-to {self.output_folder}'
                 f' --gpu-num 1'
-                f' --batch-size 1'
+                f' --batch-size {self.batch_size}'
                 f' --epochs {self.total_epochs}'
                 f' | tee {log_file}')
 

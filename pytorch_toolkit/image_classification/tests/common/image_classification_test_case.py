@@ -64,4 +64,5 @@ def create_image_classification_test_case(**kwargs):
     return create_test_case('image_classification',
                             **kwargs,
                             metric_keys=['accuracy'],
-                            expected_outputs_dir=expected_outputs_dir)
+                            expected_outputs_dir=expected_outputs_dir,
+                            batch_size=2)

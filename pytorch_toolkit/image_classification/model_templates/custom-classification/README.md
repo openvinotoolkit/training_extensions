@@ -1,15 +1,80 @@
 # Image classification
 
-Models that are able to classify images.
+Performance results pivot table:
 
-| Model Name | Complexity (GFLOPs) | Size (Mp) | Top-1 on ImageNet (%) | Links |
-| ---        | ---                 | ---       | ---                   | ---                   |
-| MobilenetV2 1.0 | 0.66           | 3.50      | 73.0                  | [model template](./mobilenet_v2_w1/template.yaml)
+| Model Name | Complexity (GFLOPs) | Size (Mp) | AVG mAP (%) | AVG Top-1 (%) | AVG Top-5 (%) | Links |
+| ---        | ---        | ---        | ---        | ---        | ---        | ---        |
+| EfficientNet b0 | 0.76 | 4.14 | 92.267 | 90.156 | 98.283 | [imagenet snapshot](https://drive.google.com/uc?export=download&id=1AyOTxxuJPrX9H3whcgaQ_BRRDiZmbqt0), [model template](./efficientnet_b0/template.yaml) |
+| MobilenetV3 large x1.0 | 0.44 | 4.33 | 92.04	| 89.019 | 97.807 | [imagenet snapshot](https://drive.google.com/uc?export=download&id=1pJ86SPmRrmnGhrNGyXV8FMKSu550OnV1), [model template](./mobilenet_v3_large_1/template.yaml) |
+| MobilenetV3 large x0.75 | 0.308 | 2.84 | 87.59 |	87.59	| 97.17 | [imagenet snapshot](https://drive.google.com/uc?export=download&id=1s9Z43yyL281QnDMRmBRbBiizzAqVvM_0), [model template](./mobilenet_v3_large_075/template.yaml) |
+| MobilenetV3 small x1.0 | 0.112 | 1.56 | 82.84 | 84.47 | 95.88 | [imagenet snapshot](https://drive.google.com/uc?export=download&id=1q3xgROzhFWCiQHPvKldV4S7HR3N2Fne1), [model template](./mobilenet_v3_small/template.yaml) |
 
-## Datasets
+All of the above metrics were obtained on eleven different datasets, on which an extensive amount of research has been made. To provide a generalized performance metric, we averaged the metrics across all datasets. For additional information about performance on each dataset in comparison with baseline, you can refer to this [spreadsheet](https://docs.google.com/spreadsheets/d/1CV3be-VydEHvWS6GMPduBQBjl46uLq80_GtkeUhsuVg/edit#gid=0).
 
-The model was initially trained on [ImageNet](http://image-net.org/challenges/LSVRC/2012/), but can be trained from scratch or fine tuned to classify arbitrary images.
+The following datasets were used in experiments:
+* [Describable Textures (DTD)](https://www.robots.ox.ac.uk/~vgg/data/dtd/)<sup>1</sup>
+* [Caltech 101](http://www.vision.caltech.edu/Image_Datasets/Caltech101/)<sup>1</sup>
+* [Oxford 102 Flowers](http://www.robots.ox.ac.uk/~vgg/data/flowers/102/)
+* [Oxford-IIIT Pets](https://www.robots.ox.ac.uk/~vgg/data/pets/)
+* [CIFAR100](https://www.cs.toronto.edu/~kriz/cifar.html)
+* [SVHN (w/o additional data)](http://ufldl.stanford.edu/housenumbers/)
+* [Fashion MNIST](https://github.com/zalandoresearch/fashion-mnist)
+* [FOOD101](https://www.kaggle.com/dansbecker/food-101)<sup>1</sup>
+* [SUN397](https://vision.princeton.edu/projects/2010/SUN/)<sup>1</sup>
+* [Birdsnap](http://thomasberg.org/)<sup>1</sup>
+* [Cars Dataset](https://ai.stanford.edu/~jkrause/cars/car_dataset.html)
 
+<sup>1</sup> these datasets have custom splits (random stratified split: 80% - train, 20% - val) and cannot be compared straightforwardly with other research results
+
+Training recipes:
+
+We pretrained all models with imagenet weights and fine-tuned on specific tasks without freezing any layers.
+
+The following parameters and techniques were used for training:
+
+Baselines:
+* softmax loss
+* most appropriate average learning rate for all datasets (0.016)
+* cosine scheduler
+* basic augmentations
+* SGD with momentum optimizer
+
+MobilenetV3:
+* [Mutual learning](https://www.semanticscholar.org/paper/Deep-Mutual-Learning-Zhang-Xiang/f06a12928307e17b1aff2b9f4a6c11791f19b6a7) approach
+* Softmax loss for the main model, [Additive Margin softmax](https://www.semanticscholar.org/paper/Additive-Margin-Softmax-for-Face-Verification-Wang-Cheng/9fc17fa5708584fa848164461f82a69e97f6ed69) for the auxiliary model
+* Learning rate found by LR Finder
+* Reduce on plateau scheduler which allows getting rid of epochs search
+* Augmix pipeline for augmentations
+* [Sharpness aware minimization optimizer](https://www.semanticscholar.org/paper/Sharpness-Aware-Minimization-for-Efficiently-For%C3%AAt-Kleiner/bc52ab18399aaaf6b88c22ebc6e4a3caa99a2323)
+
+EfficientNet_b0:
+* Softmax loss
+* Learning rate found by LR Finder
+* Reduce on plateau scheduler which allows getting rid of epochs search
+* [Augmix](https://www.semanticscholar.org/paper/AugMix%3A-A-Simple-Data-Processing-Method-to-Improve-Hendrycks-Mu/f3a93e20a12532b5493825b921a0f0132736f4ec) pipeline for augmentations + [FMix](https://www.semanticscholar.org/paper/FMix%3A-Enhancing-Mixed-Sample-Data-Augmentation-Harris-Marcu/7c15624f2fdc980ec3cd2666b563e07324f5d8e4) augmentation
+* [Sharpness aware minimization optimizer](https://www.semanticscholar.org/paper/Sharpness-Aware-Minimization-for-Efficiently-For%C3%AAt-Kleiner/bc52ab18399aaaf6b88c22ebc6e4a3caa99a2323)
+
+All of the models were initially trained on [ImageNet](http://image-net.org/challenges/LSVRC/2012/), but can be trained from scratch or fine tuned to classify arbitrary images.
+
+Information about LR Finder:
+
+There are two options for learning rate finder avalaible: smart brute force (more accurate, but long) and by fast.ai approach imported from [torch-lr-finder](https://github.com/davidtvs/pytorch-lr-finder/blob/master/torch_lr_finder/lr_finder.py) with some modifications.
+
+Recommended parameters for the automatic mode in case of fine-tuning:
+
+Mobilenet_v3 backbones:
+* min_lr = 0.004
+* max_lr = 0.035
+* warmup = 1
+
+efficientnet_b0:
+* min_lr = 0.001
+* max_lr = 0.01
+* warmup = 1
+
+The decision will be made automatically by the steepest gradient of the loss function changing.
+
+Also, you can stop after searching learning rate (`stop_after=True`), build a graphic of the loss function (`path_to_savefig: 'some/path/to/figure'`), and make your own decision about choosing learning rate.
 ## Training pipeline
 
 ### 0. Change a directory in your terminal to image_classification.
@@ -21,7 +86,7 @@ cd <training_extensions>/pytorch_toolkit/image_classification
 ### 1. Select a model template file and instantiate it in some directory.
 
 ```bash
-export MODEL_TEMPLATE=`realpath ./model_templates/custom-classification/mobilenet_v2_w1/template.yaml`
+export MODEL_TEMPLATE=`realpath ./model_templates/custom-classification/mobilenet_v3_large_1/template.yaml`
 export WORK_DIR=/tmp/my_model
 python ../tools/instantiate_template.py ${MODEL_TEMPLATE} ${WORK_DIR} --do-not-load-snapshot
 ```
