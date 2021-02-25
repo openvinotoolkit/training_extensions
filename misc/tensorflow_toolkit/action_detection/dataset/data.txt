@@ -1,0 +1,10 @@
+images/frame_000000.jpg annotation/sample_000000.json
+images/frame_000001.jpg annotation/sample_000001.json
+images/frame_000002.jpg annotation/sample_000002.json
+images/frame_000003.jpg annotation/sample_000003.json
+images/frame_000004.jpg annotation/sample_000004.json
+images/frame_000005.jpg annotation/sample_000005.json
+images/frame_000006.jpg annotation/sample_000006.json
+images/frame_000007.jpg annotation/sample_000007.json
+images/frame_000008.jpg annotation/sample_000008.json
+images/frame_000009.jpg annotation/sample_000009.json

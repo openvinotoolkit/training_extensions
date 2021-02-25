@@ -1,0 +1,10 @@
+wheel
+Cython==0.29.21
+torch==1.6.0
+transformers==3.0.2
+tokenizers==0.8.1rc1
+tqdm==4.50.2
+lmdb==1.0.0
+addict==2.3.0
+pytorch-lightning==1.0.3
+sacrebleu==1.4.12

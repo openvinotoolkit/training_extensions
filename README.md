@@ -12,8 +12,8 @@ inference.
 1. Clone repository in the working directory by running the following:
 
     ```
-    git clone https://github.com/opencv/openvino_training_extensions.git
-    cd openvino_training_extensions
+    git clone https://github.com/openvinotoolkit/training_extensions.git
+    cd training_extensions
     ```
 
 2. Install prerequisites by running the following:
@@ -21,46 +21,35 @@ inference.
     ```
     sudo apt-get install libturbojpeg python3-tk python3-pip virtualenv
     ```
-
+3. Download and install [OpenVINO™](https://software.intel.com/en-us/openvino-toolkit) to export and efficiently run trained models.
+4. Install `ote` package:
+    ```
+    pip3 install -e .
+    ```
 
 # Models
 
-* [PyTorch\*](pytorch_toolkit)
+After installation, you are ready to train your own models, evaluate and use
+them for prediction.
 
-  * [Action Recognition](pytorch_toolkit/action_recognition)
-  * [Action Recognition 2](pytorch_toolkit/action_recognition_2)
-    - [Gesture Recognition](pytorch_toolkit/action_recognition_2/model_templates/gesture-recognition)
-  * [Object Re-Identification](pytorch_toolkit/object_reidentification)
-    - [Face Recognition](pytorch_toolkit/object_reidentification/face_recognition)
-    - [Person Re-Identification](pytorch_toolkit/object_reidentification/person_reidentification)
-    - [Vehicle Re-Identification](pytorch_toolkit/object_reidentification/vehicle_reidentification)
-  * [Human Pose Estimation](pytorch_toolkit/human_pose_estimation)
-  * [Instance Segmentation](pytorch_toolkit/instance_segmentation)
-  * [Machine Translation](pytorch_toolkit/machine_translation)
-  * [Object Detection](pytorch_toolkit/object_detection)
-    - [Face Detection](pytorch_toolkit/object_detection/model_templates/face-detection)
-    - [Horizontal Text Detection](pytorch_toolkit/object_detection/model_templates/horizontal-text-detection/)
-    - [Person Detection](pytorch_toolkit/object_detection/model_templates/person-detection/)
-    - [Person Vehicle Bike Detection](pytorch_toolkit/object_detection/model_templates/person-vehicle-bike-detection)
-    - [Vehicle Detection](pytorch_toolkit/object_detection/model_templates/vehicle-detection)
-  * [Eye State Classification](pytorch_toolkit/open_closed_eye)
-  * [Segmentation of Thoracic Organs](pytorch_toolkit/segthor)
-  * [Super Resolution](pytorch_toolkit/super_resolution)
-  * [Text Spotting](pytorch_toolkit/text_spotting)
-  * [Question Answering](pytorch_toolkit/question_answering)
+* [Action Recognition](models/action_recognition_2)
+  - [Gesture Recognition](models/action_recognition_2/model_templates/gesture-recognition)
+* [Instance Segmentation](models/instance_segmentation)
+  - [COCO instance segmentation](models/instance_segmentation/model_templates/coco-instance-segmentation/readme.md)
+* [Image classification](models/image_classification)
+  - [Custom image classification](models/image_classification/model_templates/custom-classification/README.md)
+* [Object Detection](models/object_detection)
+  - [Face Detection](models/object_detection/model_templates/face-detection)
+  - [Horizontal Text Detection](models/object_detection/model_templates/horizontal-text-detection/)
+  - [Person Detection](models/object_detection/model_templates/person-detection/)
+  - [Person Vehicle Bike Detection](models/object_detection/model_templates/person-vehicle-bike-detection)
+  - [Vehicle Detection](models/object_detection/model_templates/vehicle-detection)
+* [Text Spotting](models/text_spotting)
+  - [Alphanumeric Text Spotting](models/text_spotting/model_templates/alphanumeric-text-spotting/readme.md)
 
-* [TensorFlow\*](tensorflow_toolkit)
+# Misc
 
-  * [Action Detection](tensorflow_toolkit/action_detection)
-  * [Image Retrieval](tensorflow_toolkit/image_retrieval)
-  * [License Plate Recognition](tensorflow_toolkit/lpr)
-  * [Text Detection](tensorflow_toolkit/text_detection)
-  * [Text Recognition](tensorflow_toolkit/text_recognition)
-  * [Vehicle Attributes](tensorflow_toolkit/vehicle_attributes)
-  * [Bert](tensorflow_toolkit/bert)
-
----
-\* Other names and brands may be claimed as the property of others.
+Models that were previously developed can be found [here](misc/README.md).
 
 # Web UI
 
