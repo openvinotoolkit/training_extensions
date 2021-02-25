@@ -1,2 +1,0 @@
--r ../../external/deep-object-reid/requirements.txt
--r ../ote/requirements.txt

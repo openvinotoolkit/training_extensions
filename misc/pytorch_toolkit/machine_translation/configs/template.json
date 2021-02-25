@@ -1,0 +1,66 @@
+{
+    "tokenizer": {
+        "src": {
+            "type": "spbpe",
+            "params": {
+                "path": "<path_to_src_tokenizer_folder>",
+                "max_length": 150,
+                "enable_truncation": true,
+                "enable_padding": true
+            }
+        },
+        "tgt": {
+            "type": "spbpe",
+            "params": {
+                "path": "<path_to_tgt_tokenizer_folder>",
+                "max_length": 150,
+                "enable_truncation": true,
+                "enable_padding": true
+            }
+        }
+    },
+    "model": {
+        "type": "lanmt",
+        "params": {
+            "embed_size": 512,
+            "hidden_size": 512,
+            "n_att_heads": 8,
+            "prior_layers": 6,
+            "latent_dim": 8,
+            "q_layers": 6,
+            "max_delta": 50,
+            "decoder_layers": 6,
+            "kl_budget": 1.0,
+            "budget_annealing": false,
+            "max_steps": 1,
+
+        }
+    },
+    "trainset": {
+        "src": {
+            "type": "txt",
+            "corpus": "<path_to_train_src_corpus>"
+        },
+        "tgt": {
+            "type": "txt",
+            "corpus": "<path_to_train_tgt_corpus>"
+        }
+    },
+    "valset": {
+        "src": {
+            "type": "txt",
+            "corpus": "<path_to_val_src_corpus>"
+        },
+        "tgt": {
+            "type": "txt",
+            "corpus": "<path_to_val_tgt_corpus>"
+        }
+    },
+    "trainer": {
+        "lr": 0.0003,
+        "milestones": "20,40",
+        "batch_size": 15,
+        "num_workers": 8,
+        "max_epochs": 80
+    }
+}

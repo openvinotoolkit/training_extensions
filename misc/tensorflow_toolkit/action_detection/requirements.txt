@@ -1,0 +1,12 @@
+tensorboard==1.12.1
+tensorflow==1.12.0
+tensorflow-gpu==1.12.0
+tensorflow-estimator==1.10.12
+numpy==1.15.4
+opencv-python==4.0.0.21
+pyyaml>=5.4.0
+simplejson==3.16.0
+matplotlib==2.2.2
+tqdm==4.23.4
+lxml==4.2.2
+networkx==2.3

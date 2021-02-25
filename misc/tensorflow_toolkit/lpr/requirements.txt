@@ -1,0 +1,5 @@
+numpy==1.14.6
+tensorboard==1.13.1
+tensorflow-gpu==1.13.1
+opencv-python==3.4.2.17
+cython==0.28.4

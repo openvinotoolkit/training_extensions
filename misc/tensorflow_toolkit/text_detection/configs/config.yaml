@@ -1,0 +1,26 @@
+area_range: [0.1, 1]
+background_label: 0
+batch_size: 10
+bbox_crop_overlap: 0.2
+crop_aspect_ratio_range: !!python/tuple [0.5, 2.0]
+distort_color: true
+ignore_label: -1
+imagenet_preprocessing: false
+max_neg_pos_ratio: 3
+max_shorter_side: .inf
+min_area: 300
+min_height: 10
+min_object_covered: 0.1
+min_shorter_side: 10
+num_classes: 2
+num_neighbours: 8
+random_crop: true
+rotate: true
+rotation_prob: 0.5
+score_map_shape: [128, 128]
+text_label: 1
+train_image_shape: [512, 512]
+using_shorter_side_filtering: true
+weights_decay: 0.0001
+model_type: ka_mobilenet_v2_1_4
+imagenet_preprocessing: true

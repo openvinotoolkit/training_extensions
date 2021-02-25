@@ -1,0 +1,5 @@
+{
+  "n_classes": 51,
+  "video_path": "hmdb/jpeg2",
+  "annotation_path": "hmdb/hmdb51_1.json"
+}

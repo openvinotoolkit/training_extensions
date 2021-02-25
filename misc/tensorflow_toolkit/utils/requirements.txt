@@ -1,0 +1,3 @@
+opencv-python>=3.4.2.17
+numpy>=1.14.5
+networkx==2.3

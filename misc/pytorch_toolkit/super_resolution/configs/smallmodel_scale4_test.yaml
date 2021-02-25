@@ -1,0 +1,29 @@
+# Model description
+scale: 4             # Upsampling factor for SR
+model: "SmallModel"  # Type of model: "SRResNetLight", "SmallModel"
+
+patch_size: [192, 192]   # Patch size used for training (None - whole image)
+batch_size: 16           # Training batch size
+num_of_epochs: 10        # Number of epochs to train for
+learning_rate: 0.0001    # Learing rate on start
+milestones: [8, 12, 16]  # List of epoch indices, where learning rate decay is applie
+
+train_path: "./data/train"     # Path to train data
+validation_path: "./data/val"  # Path to folder with val images
+models_path: "./models"        # Path to models folder
+resume: False                  # Resume training from the latest state
+exp_name: "scale4_test"        # Experiment name
+
+# Augmentation
+num_of_data_loader_threads: 0         # Number of threads for data loader to use
+border: 4                             # Ignored border in loss and metric functions
+aug_resize_factor_range: [0.75, 1.1]  # Range of resize factor for training patch, used for augmentation
+num_of_patches_per_image : 10         # Number of patches from one image
+seed: 1337                            # Seed for random generators
+
+# Path to init checkpoint
+init_checkpoint: "init_weights/smallmodel_scale4/smallmodel_scale4_best.pth"
+
+# For debug
+num_of_train_images: null   # Number of training images (null - use all images)
+num_of_val_images: null     # Number of val images (null - use all images)

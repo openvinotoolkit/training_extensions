@@ -1,0 +1,112 @@
+model:
+  name: 'osnet_ain2_x1_0'
+  pretrained: True
+  download_weights: True
+  feature_dim: 256
+  bn_eval: False
+  bn_frozen: False
+  enable_attentions: False
+  lct_gate: False
+
+data:
+  type: 'image'
+  sources: [['veri', 'veriwild'], ['universemodels']]
+  targets: ['veri']
+  height: 208
+  width: 208
+  combineall: False
+  enable_masks: False
+  transforms:
+    random_flip:
+      enable: True
+      p: 0.5
+    random_erase:
+      enable: True
+      p: 0.5
+      sl: 0.2
+      sh: 0.4
+      rl: 0.3
+      rh: 3.3
+      fill_color: (123.675, 116.28, 103.53)
+      norm_image: False
+    random_padding:
+      enable: True
+      p: 0.25
+    random_crop:
+      enable: True
+      p: 0.25
+      scale: 0.92
+    random_rotate:
+      enable: True
+      p: 0.33
+    random_grid:
+      enable: True
+      p: 0.15
+      before_resize: False
+    random_figures:
+      enable: True
+      p: 0.33
+      before_resize: False
+  save_dir: 'log/osnet_ain_x1_0_general'
+
+sampler:
+  train_sampler: 'RandomIdentitySamplerV2'
+  batch_num_instances: 4
+  epoch_num_instances: -1
+  fill_instances: True
+
+loss:
+  name: 'am_softmax'
+  softmax:
+    conf_penalty: 0.085
+    label_smooth: True
+    pr_product: False
+    m: 0.9
+    s: 15.0
+    base_num_classes: 1001
+    adaptive_margins: True
+
+metric_losses:
+  enable: True
+  center_coeff: 1.0
+  triplet_coeff: 1.0
+  local_push_coeff: 0.0
+
+attr_loss:
+  names: ['attr_color', 'attr_type']
+  num_classes: [-1, -1]
+  conf_penalty: 0.085
+  label_smooth: True
+  pr_product: False
+  m: 0.35
+  s: 15.0
+
+reg:
+  nw: False
+  nw_max_ratio: 10.0
+  nw_scale: 1.0
+  hd: False
+  hd_max_score: 0.5
+  hd_scale: 10.0
+
+train:
+  optim: 'sgd'
+  lr: 0.01
+  max_epoch: 80
+  batch_size: 112
+  fixbase_epoch: 5
+  open_layers: ['conv5', 'fc', 'classifier']
+  lr_scheduler: 'multi_step_warmup'
+  stepsize: [40, 60]
+  warmup: 5
+  warmup_factor_base: 0.005
+  frozen_factor_base: 1.0
+
+test:
+  batch_size: 300
+  dist_metric: 'cosine'
+  normalize_feature: False
+  evaluate: False
+  eval_freq: 1
+  rerank: False
+  visactmap: False

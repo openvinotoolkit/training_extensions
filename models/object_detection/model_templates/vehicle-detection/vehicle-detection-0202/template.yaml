@@ -1,0 +1,66 @@
+name: vehicle-detection-0202
+domain: Object Detection
+problem: Vehicle Detection
+framework: OTEDetection v2.1.1
+summary: Vehicle Detection based on MobileNetV2 (SSD).
+annotation_format: COCO
+initial_weights: snapshot.pth
+dependencies:
+- sha256: c38b047192da36facef717dc8cffd4ff832daf690e9f7ccb7b93410c3a5766b0
+  size: 14905219
+  source: https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/vehicle-detection-0202-1.pth
+  destination: snapshot.pth
+- source: ../../../../../pytorch_toolkit/ote/tools/train.py
+  destination: train.py
+- source: ../../../../../pytorch_toolkit/ote/tools/eval.py
+  destination: eval.py
+- source: ../../../../../pytorch_toolkit/ote/tools/export.py
+  destination: export.py
+- source: ../../../../../pytorch_toolkit/ote/tools/compress.py
+  destination: compress.py
+- source: ../../../../../pytorch_toolkit/ote
+  destination: packages/ote
+- source: ../../requirements.txt
+  destination: requirements.txt
+dataset_requirements:
+  classes:
+  - vehicle
+max_nodes: 1
+training_target:
+- CPU
+- GPU
+inference_target:
+- CPU
+- iGPU
+- VPU
+hyper_parameters:
+  basic:
+    batch_size: 30
+    base_learning_rate: 0.05
+    epochs: 20
+output_format:
+  onnx:
+    default: true
+  openvino:
+    default: true
+    input_format: BGR
+optimisations:
+  nncf_quantization:
+    config: compression_config.json
+    default: false
+metrics:
+- display_name: Size
+  key: size
+  unit: Mp
+  value: 1.83
+- display_name: Complexity
+  key: complexity
+  unit: GFLOPs
+  value: 3.28
+- display_name: AP @ [IoU=0.50:0.95]
+  key: ap
+  unit: '%'
+  value: 36.9
+gpu_num: 4
+tensorboard: true
+config: model.py

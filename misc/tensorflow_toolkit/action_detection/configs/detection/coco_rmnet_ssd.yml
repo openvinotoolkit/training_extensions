@@ -1,0 +1,72 @@
+"NETWORK_TYPE": "detection"
+"NETWORK_BACKBONE": "rmnet"
+"NETWORK_VERSION": ""
+"NETWORK_NAME": "SSD"
+
+"USE_NESTEROV": true
+"NORMALIZE_KERNELS": false
+
+"IMAGE_SIZE": [320, 320, 3]
+
+"TRAIN_DATA_SIZE": 117266
+"VAL_DATA_SIZE": 4952
+"MAX_NUM_DETECTIONS_PER_IMAGE": 93
+"USE_CLASS_BALANCING": false
+
+"MAX_NUM_TRAIN_EPOCHS": 90
+"LR_EPOCH_DROPS": [21, 42, 63]
+"LR_EPOCH_VALUES": [0.04, 0.004, 0.0004, 0.00004]
+
+# Target probabilities like in original Caffe SSD
+"FREE_PROB": 0.07142857142857142
+"EXPAND_PROB": 0.5
+"CROP_PROB": 0.8571428571428571
+
+"MAX_EXPAND_RATIO": 4.0
+"CROP_SCALE_DELTA": 0.3
+"CROP_SCALE_LIMITS": [0.4, 1.5]
+"CROP_SHIFT_DELTA": 0.6
+"BRIGHTNESS_DELTA": 0.12549019607843137  # 32.0 / 255.0
+"SATURATION_LIMITS": [0.5, 1.5]
+
+"MBOX_THRESHOLD": 0.5
+"MBOX_NEG_FACTOR": 3.0
+"MBOX_CL_WEIGHTS": 1.0
+"MBOX_ENTROPY_WEIGHT": null
+"MBOX_MAX_NUM_MATCHES_PER_GT": 3
+"MBOX_MATCHES_DROP_RATIO": null
+"MBOX_DO_INSTANCE_NORMALIZATION": null
+"MBOX_COMPACTNESS_LOSS_MAX_NUM_SAMPLES": 5
+"MBOX_REPULSION_LOSS_WEIGHT": -1.0
+"MBOX_FOCAL_ALPHA": 0.25
+"MBOX_FOCAL_GAMMA": 2.0
+"MBOX_GRADIENT_HARMONIZED_LOSS_NUM_BINS": null
+
+"NUM_CLASSES": 81
+"BG_CLASS_ID": 0
+
+"NORMALIZED_ANCHORS": {8:  [[0.015836924, 0.0105781555],
+                            [0.029275715, 0.035265625],
+                            [0.036608085, 0.016874969],
+                            [0.05129847, 0.061507843],
+                            [0.06517756, 0.026749969],
+                            [0.08731252, 0.0947119],
+                            [0.10224825, 0.042984396],
+                            [0.115128815, 0.17468747]],
+                       16: [[0.16370864, 0.06413999],
+                            [0.1699298, 0.11956918],
+                            [0.19209903, 0.28574818],
+                            [0.25402087, 0.17525],
+                            [0.2844773, 0.09628123],
+                            [0.35578373, 0.26517972],
+                            [0.3712917, 0.44731253],
+                            [0.46896714, 0.16092187],
+                            [0.51685935, 0.775125],
+                            [0.6479813, 0.29195315],
+                            [0.7820156, 0.50198436],
+                            [0.9116985, 0.9499843]]}
+"VARIANCE": [0.1, 0.1, 0.2, 0.2]
+
+"INTERNAL_HEAD_SIZES": {8: 512, 16: 1024}
+
+"LABELS_MAP": null
