@@ -18,7 +18,7 @@ fi
 
 # Download mmdetection and nncf submodules
 git submodule update --init ../../external/mmdetection
-git submodule update --init ../../external/nncf_pytorch
+git submodule update --init ../../external/nncf
 
 # Create virtual environment
 virtualenv ${venv_dir} -p python3 --prompt="(detection)"
