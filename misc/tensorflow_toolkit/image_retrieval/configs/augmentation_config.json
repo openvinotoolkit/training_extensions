@@ -1,0 +1,17 @@
+{
+	"duplicate_n_times":2,
+	"sample_original_prob": 0.0,
+	"weighted_sampling": true,
+	"apply_gray_noise": true,
+	"fit_to_max_size": 0,
+	"max_tiling": 8,
+	"vertical_flip": true,
+	"blur": true,
+	"add_rot_angle": 0.1,
+	"rot90": true,
+	"horizontal_flip": true,
+	"repeat": true,
+	"shuffle": true,
+	"preload": true,
+	"pretile": true
+}

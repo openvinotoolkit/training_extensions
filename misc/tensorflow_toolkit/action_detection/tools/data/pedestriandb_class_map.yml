@@ -1,0 +1,11 @@
+"sitting": 0
+"standing": 1
+"raising_hand": 2
+"listening": 3
+"reading": 4
+"writing": 5
+"lie_on_the_desk": 6
+"busy": 7
+"in_group_discussions": 8
+"turned_around": 9
+"__undefined__": 10

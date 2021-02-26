@@ -1,0 +1,5 @@
+numpy
+torch==1.6
+torchvision
+transformers==3.5
+nncf

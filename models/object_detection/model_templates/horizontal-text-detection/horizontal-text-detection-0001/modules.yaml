@@ -1,0 +1,5 @@
+arg_parser: DefaultArgParser
+arg_converter_map: MMDetectionArgConverterMap
+trainer: MMDetectionTrainer
+evaluator: MMHorizontalTextDetectionEvaluator
+exporter: MMDetectionExporter

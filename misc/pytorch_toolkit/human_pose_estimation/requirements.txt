@@ -1,0 +1,9 @@
+torch==0.4.1
+opencv-python==3.4.0.14
+numpy==1.16.0
+torchvision==0.2.1
+matplotlib==3.0.2
+networkx==2.3
+Pillow==6.2.2
+Cython==0.28.2
+pycocotools==2.0.0

@@ -1,0 +1,71 @@
+[
+  {
+    "name": "ICDAR2013DatasetConverter",
+    "kwargs": {
+        "images_folder": "icdar2013/Challenge2_Training_Task12_Images",
+        "annotations_folder": "icdar2013/Challenge2_Training_Task1_GT",
+        "character_annotations_folder": "icdar2013/Challenge2_Training_Task2_GT",
+        "is_train": true
+    }
+  },
+  {
+    "name": "ICDAR2015DatasetConverter",
+    "kwargs": {
+      "images_folder": "icdar2015/ch4_training_images",
+      "annotations_folder": "icdar2015/ch4_training_localization_transcription_gt",
+      "is_train": true
+    }
+  },
+  {
+    "name": "ICDAR2017MLTDatasetConverter",
+    "kwargs": {
+      "folder": "icdar2017_mlt",
+      "subset": "train",
+      "is_latin_required": true
+    }
+  },
+   {
+    "name": "ICDAR2017MLTDatasetConverter",
+    "kwargs": {
+      "folder": "icdar2017_mlt",
+      "subset": "val",
+      "is_latin_required": true
+    }
+  },
+  {
+    "name": "ICDAR2019MLTDatasetConverter",
+    "kwargs": {
+      "folder": "icdar2019_mlt",
+      "is_latin_required": true
+    }
+  },
+  {
+    "name": "ICDAR2019ARTDatasetConverter",
+    "kwargs": {
+      "folder": "icdar2019_art",
+      "is_latin_required": true,
+      "exclude_totaltext_test": true,
+      "totaltext_to_art_path": "icdar2019_art/Total_Text_ID_vs_ArT_ID.list",
+      "totaltext_test_images_dir": "totaltext/Images/Test"
+    }
+  },
+  {
+    "name": "MSRATD500DatasetConverter",
+    "kwargs": {
+      "folder": "MSRA-TD500/train"
+    }
+  },
+  {
+    "name": "MSRATD500DatasetConverter",
+    "kwargs": {
+      "folder": "MSRA-TD500/test"
+    }
+  },
+  {
+    "name": "COCOTextDatasetConverter",
+    "kwargs": {
+      "path": "coco-text/cocotext.v2.json",
+      "sets": ["train", "val"]
+    }
+  }
+]

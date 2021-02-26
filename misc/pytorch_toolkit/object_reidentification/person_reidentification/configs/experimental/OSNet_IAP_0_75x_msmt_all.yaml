@@ -1,0 +1,83 @@
+model:
+  name: 'fpn_osnet_x0_75'
+  pretrained: True
+  feature_dim: 256
+  IN_first: True
+  pooling_type: 'conv'
+  fpn:
+    enable: False
+
+data:
+  root: './'
+  type: 'image'
+  sources: ['msmt17']
+  targets: ['market1501']
+  height: 256
+  width: 128
+  combineall: True
+  save_dir: 'outputs/reid-exp'
+  transforms:
+    random_flip:
+      enable: True
+      p: 0.5
+    random_erase:
+      enable: True
+      p: 0.5
+    random_figures:
+      enable: True
+      p: 0.33
+    random_padding:
+      enable: True
+      p: 0.25
+    color_jitter:
+      enable: True
+      p: 0.8
+      saturation: 0.1
+      hue: 0.1
+      brightness: 0.15
+      contrast: 0.15
+    random_rotate:
+      enable: True
+      p: 0.33
+    random_gray_scale:
+      enable: True
+      p: 0.1
+    random_grid:
+      enable: True
+      p: 0.15
+
+loss:
+  name: 'am_softmax'
+  softmax:
+    label_smooth: False
+    conf_penalty: 0.3
+    m: 0.35
+    s: 30.0
+    pr_product: True
+
+sampler:
+  train_sampler: 'RandomIdentitySamplerV2'
+
+metric_losses:
+  enable: False
+
+train:
+  optim: 'amsgrad'
+  lr: 0.0015
+  max_epoch: 65
+  batch_size: 64
+  fixbase_epoch: 5
+  open_layers: ['classifier', 'fc', 'global_avgpool']
+  lr_scheduler: 'multi_step'
+  stepsize: [40, 50]
+  warmup: 0
+  warmup_factor_base: 0.01
+
+test:
+  batch_size: 300
+  dist_metric: 'cosine'
+  normalize_feature: True
+  evaluate: False
+  eval_freq: 5
+  rerank: False
+  visactmap: False

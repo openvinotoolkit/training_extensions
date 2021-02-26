@@ -1,0 +1,65 @@
+name: mobilenet-v3-large-075
+domain: Image classification
+problem: ImageNet classification
+framework: OTEReidentification v1.2.3
+summary: Imagenet classification based on MobileNet-V3.
+annotation_format: ImageNet
+initial_weights: snapshot.pth
+dependencies:
+- sha256: d3024fc1d6bcea515854d50a1c2c8d2be9c5a4fd27c66d5ac798724cc72b21e0
+  size: 16149223
+  source: https://drive.google.com/uc?export=download&id=1s9Z43yyL281QnDMRmBRbBiizzAqVvM_0
+  destination: snapshot.pth
+- source: ../../../../../pytorch_toolkit/ote/tools/train.py
+  destination: train.py
+- source: ../../../../../pytorch_toolkit/ote/tools/eval.py
+  destination: eval.py
+- source: ../../../../../pytorch_toolkit/ote/tools/export.py
+  destination: export.py
+- source: ../../../../../pytorch_toolkit/ote/tools/compress.py
+  destination: compress.py
+- source: ../../../../../pytorch_toolkit/ote
+  destination: packages/ote
+- source: ../../requirements.txt
+  destination: requirements.txt
+max_nodes: 1
+training_target:
+- GPU
+- CPU
+inference_target:
+- CPU
+- iGPU
+hyper_parameters:
+  basic:
+    batch_size: 64
+    base_learning_rate: 0.015
+    epochs: 200
+  extra:
+    custom_classes:
+      name: Custom classes
+      param: --classes
+      type: string
+      default: ''
+output_format:
+  onnx:
+    default: true
+  openvino:
+    default: true
+    input_format: BGR
+optimisations: ~
+metrics:
+- display_name: Size
+  key: size
+  unit: Mp
+  value: 2.84
+- display_name: Complexity
+  key: complexity
+  unit: GFLOPs
+  value: 0.308
+- display_name: Top-1 accuracy
+  key: accuracy
+  unit: '%'
+  value: 72.84
+gpu_num: 2
+tensorboard: true
+config: main_model.yaml

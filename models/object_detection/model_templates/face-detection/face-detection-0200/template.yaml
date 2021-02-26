@@ -1,0 +1,85 @@
+name: face-detection-0200
+domain: Object Detection
+problem: Face Detection
+framework: OTEDetection v2.1.1
+summary: Face Detection based on MobileNetV2 (SSD).
+annotation_format: COCO
+initial_weights: snapshot.pth
+dependencies:
+- sha256: 122e194b95ef631f578fac0dc88ba2be7b2ef9d06263ff6e7a69c846990a85f7
+  size: 14904296
+  source: https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/face-detection-0200.pth
+  destination: snapshot.pth
+- source: ../../../../../pytorch_toolkit/ote/tools/train.py
+  destination: train.py
+- source: ../../../../../pytorch_toolkit/ote/tools/eval.py
+  destination: eval.py
+- source: ../../../../../pytorch_toolkit/ote/tools/export.py
+  destination: export.py
+- source: ../../../../../pytorch_toolkit/ote/tools/compress.py
+  destination: compress.py
+- source: ../../../../../pytorch_toolkit/ote
+  destination: packages/ote
+- source: ../../requirements.txt
+  destination: requirements.txt
+dataset_requirements:
+  classes:
+  - face
+max_nodes: 1
+training_target:
+- CPU
+- GPU
+inference_target:
+- CPU
+- iGPU
+- VPU
+hyper_parameters:
+  basic:
+    batch_size: 65
+    base_learning_rate: 0.05
+    epochs: 70
+output_format:
+  onnx:
+    default: true
+  openvino:
+    default: true
+    input_format: BGR
+optimisations:
+  nncf_quantization:
+    config: compression_config.json
+    default: false
+  nncf_sparsity:
+    config: compression_config.json
+    default: false
+metrics:
+- display_name: AP @ [IoU=0.50:0.95]
+  key: ap
+  unit: '%'
+  value: 16.0
+- display_name: AP for faces > 64x64
+  key: ap_64x64
+  unit: '%'
+  value: 86.743
+- display_name: WiderFace Easy
+  key: widerface_e
+  unit: '%'
+  value: 82.917
+- display_name: WiderFace Medium
+  key: widerface_m
+  unit: '%'
+  value: 76.198
+- display_name: WiderFace Hard
+  key: widerface_h
+  unit: '%'
+  value: 41.443
+- display_name: Size
+  key: size
+  unit: Mp
+  value: 1.83
+- display_name: Complexity
+  key: complexity
+  unit: GFLOPs
+  value: 0.82
+gpu_num: 2
+tensorboard: true
+config: model.py
