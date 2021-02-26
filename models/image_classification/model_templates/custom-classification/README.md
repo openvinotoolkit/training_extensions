@@ -80,7 +80,15 @@ Also, you can stop after searching learning rate (`stop_after=True`), build a gr
 ### 0. Change a directory in your terminal to image_classification.
 
 ```bash
-cd <training_extensions>/pytorch_toolkit/image_classification
+cd models/image_classification
+```
+If You have not created virtual environment yet:
+```bash
+./init_venv.sh
+```
+Activate virtual environment:
+```bash
+. venv/bin/activate
 ```
 
 ### 1. Select a model template file and instantiate it in some directory.
@@ -88,7 +96,7 @@ cd <training_extensions>/pytorch_toolkit/image_classification
 ```bash
 export MODEL_TEMPLATE=`realpath ./model_templates/custom-classification/mobilenet_v3_large_1/template.yaml`
 export WORK_DIR=/tmp/my_model
-python ../tools/instantiate_template.py ${MODEL_TEMPLATE} ${WORK_DIR} --do-not-load-snapshot
+python ../../tools/instantiate_template.py ${MODEL_TEMPLATE} ${WORK_DIR} --do-not-load-snapshot
 ```
 
 ### 2. Prepare data

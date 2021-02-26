@@ -19,19 +19,15 @@ Please note that despite the comparable complexity of 2001 and 2004 models the f
 ### 0. Change a directory in your terminal to object_detection.
 
 ```bash
-cd <training_extensions>/pytorch_toolkit/object_detection
+cd models/object_detection
 ```
 If You have not created virtual environment yet:
 ```bash
 ./init_venv.sh
 ```
-Else:
+Activate virtual environment:
 ```bash
 . venv/bin/activate
-```
-or if You use conda:
-```bash
-conda activate <environment_name>
 ```
 
 ### 1. Select a model template file and instantiate it in some directory.
@@ -39,7 +35,7 @@ conda activate <environment_name>
 ```bash
 export MODEL_TEMPLATE=`realpath ./model_templates/person-vehicle-bike-detection/person-vehicle-bike-detection-2000/template.yaml`
 export WORK_DIR=/tmp/my_model
-python ../tools/instantiate_template.py ${MODEL_TEMPLATE} ${WORK_DIR}
+python ../../tools/instantiate_template.py ${MODEL_TEMPLATE} ${WORK_DIR}
 ```
 
 ### 2. Collect dataset

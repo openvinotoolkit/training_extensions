@@ -25,19 +25,15 @@ Target datasets:
 ### 0. Change a directory in your terminal to action_recognition_2.
 
 ```bash
-cd <training_extensions>/pytorch_toolkit/action_recognition_2
+cd models/action_recognition_2
 ```
 If You have not created virtual environment yet:
 ```bash
 ./init_venv.sh
 ```
-Else:
+Activate virtual environment:
 ```bash
 . venv/bin/activate
-```
-or if You use conda:
-```bash
-conda activate <environment_name>
 ```
 
 ### 1. Select a model template file and instantiate it in some directory.
@@ -45,7 +41,7 @@ conda activate <environment_name>
 ```bash
 export MODEL_TEMPLATE=`realpath ./model_templates/gesture_recognition/s3d-rgb-mobilenet-v3-stream-msasl/template.yaml`
 export WORK_DIR=/tmp/my_model
-python ../tools/instantiate_template.py ${MODEL_TEMPLATE} ${WORK_DIR}
+python ../../tools/instantiate_template.py ${MODEL_TEMPLATE} ${WORK_DIR}
 ```
 
 ### 2. Prepare data

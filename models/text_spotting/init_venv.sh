@@ -43,7 +43,7 @@ MMDETECTION_DIR=`realpath ../../external/mmdetection/`
 echo "export MMDETECTION_DIR=${MMDETECTION_DIR}" >> ${venv_dir}/bin/activate
 
 # install ote
-pip install -e ../../pytorch_toolkit/ote/
+pip install -e ../../ote/
 
 deactivate
 

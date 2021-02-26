@@ -1,4 +1,4 @@
-# Super Resolution
+# Super Resolution (PROVIDED AS IS WITHOUT SUPPORT)
 
 This code is intended for training Super Resolution (SR) algorithms in Pytorch.
 

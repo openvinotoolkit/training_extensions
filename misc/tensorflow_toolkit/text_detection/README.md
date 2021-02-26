@@ -1,4 +1,4 @@
-# Text Detection in TensorFlow*
+# Text Detection in TensorFlow* (PROVIDED AS IS WITHOUT SUPPORT)
 
 This repository contains inference and training code for [PixelLink](https://arxiv.org/abs/1801.01315)-like model
 networks. Models code is designed to enable export to a frozen graph and inference on CPU via OpenVINO™.

@@ -10,15 +10,15 @@ dependencies:
   size: 14937195
   source: https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/vehicle-person-bike-detection-2000-1.pth
   destination: snapshot.pth
-- source: ../../../../../pytorch_toolkit/ote/tools/train.py
+- source: ../../../../../ote/tools/train.py
   destination: train.py
-- source: ../../../../../pytorch_toolkit/ote/tools/eval.py
+- source: ../../../../../ote/tools/eval.py
   destination: eval.py
-- source: ../../../../../pytorch_toolkit/ote/tools/export.py
+- source: ../../../../../ote/tools/export.py
   destination: export.py
-- source: ../../../../../pytorch_toolkit/ote/tools/compress.py
+- source: ../../../../../ote/tools/compress.py
   destination: compress.py
-- source: ../../../../../pytorch_toolkit/ote
+- source: ../../../../../ote
   destination: packages/ote
 - source: ../../requirements.txt
   destination: requirements.txt

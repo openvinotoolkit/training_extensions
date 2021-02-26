@@ -25,4 +25,5 @@ pip3 install -e ote/ || exit 1
 #export WORKDIR=$WORKDIR
 #python3 tests/run_model_templates_tests.py --verbose
 
+pytest ote/tests/* || exit 1
 python3 tests/run_model_templates_tests2.py --verbose --workdir $WORKDIR
