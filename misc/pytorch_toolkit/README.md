@@ -10,8 +10,7 @@ inference.
 - Ubuntu\* 16.04 / 18.04
 - Python\* 3.6+
 - [libturbojpeg](https://github.com/ajkxyz/jpeg4py)
-- For Python prerequisites, refer to `requirements.txt`
-- *(Optional)* [OpenVINO™ R3](https://software.intel.com/en-us/openvino-toolkit)
+- *(Optional)* [OpenVINO™](https://software.intel.com/en-us/openvino-toolkit)
   to export trained models
 
 
@@ -20,22 +19,16 @@ inference.
 After installation, you are ready to train your own models, evaluate and use
 them for prediction.
 
-* [Action Recognition](action_recognition)
+* [Action Recognition (PROVIDED AS IS WITHOUT SUPPORT)](action_recognition)
+* [Eye State Classification](open_closed_eye)
+* [Face Antispoofing](face_antispoofing)
+* [Formula recognition](formula_recognition)
+* [Human Pose Estimation (PROVIDED AS IS WITHOUT SUPPORT)](human_pose_estimation)
+* [Machine Translation](machine_translation)
 * [Object Re-Identification](object_reidentification)
   - [Face Recognition](object_reidentification/face_recognition)
   - [Person Re-Identification](object_reidentification/person_reidentification)
   - [Vehicle Re-Identification](object_reidentification/vehicle_reidentification)
-* [Human Pose Estimation](human_pose_estimation)
-* [Eye State Classification](open_closed_eye)
-* [Segmentation of Thoracic Organs](segthor)
-* [Super Resolution](super_resolution)
-* [Formula recognition](formula_recognition)
-
-
-### Tests
-
-In order to run tests please execute following commands:
-
-```bash
-python3 tests/run_model_templates_tests.py
-```
+* [Segmentation of Thoracic Organs (PROVIDED AS IS WITHOUT SUPPORT)](segthor)
+* [Super Resolution (PROVIDED AS IS WITHOUT SUPPORT)](super_resolution)
+* [Question Answering](question_answering)

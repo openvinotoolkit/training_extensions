@@ -35,9 +35,7 @@ KNOWN_DOMAIN_FOLDERS = [
         'instance_segmentation',
         'text_spotting',
         'image_classification',
-        'ote',
         ]
-DOMAINS_WITHOUT_VENV = ['ote']
 TEST_FILES_PATTERN = '*_tests_*.py'
 MODEL_TEMPLATES_FOLDER_NAME = 'model_templates'
 MODEL_TEMPLATES_FILE_NAME = 'template.yaml'
@@ -254,7 +252,7 @@ def instantiate_work_dir(root_path, work_dir, all_tests, verbose):
 
     verbose_param = ' --verbose' if verbose else ''
 
-    run_with_log(f'cd {root_path}; python3 ./tools/instantiate.py'
+    run_with_log(f'python3 ./tools/instantiate.py'
                  f' --do-not-load-snapshots'
                  f' --templates-list-file {tmp_f_name}'
                  f' {work_dir}'
@@ -291,10 +289,9 @@ def run_one_domain_tests_already_in_virtualenv(work_dir, all_tests, verbose):
     if len(domains) > 1:
         raise RuntimeError('The option --run-one-domain-inside-virtual-env may be used for one domain only')
     domain = domains[0]
-    if not is_in_virtual_env_in_work_dir(work_dir, domain) and domain not in DOMAINS_WITHOUT_VENV:
+    if not is_in_virtual_env_in_work_dir(work_dir, domain):
         raise RuntimeError(f'The option --run-one-domain-inside-virtual-env may be used only'
-                           f' inside the virtual environment of the domain,'
-                           f' or for the following domains: {DOMAINS_WITHOUT_VENV}')
+                           f' inside the virtual environment of the domain')
 
     testsuite = unittest.TestSuite()
     for el in all_tests:
@@ -347,10 +344,11 @@ def rerun_inside_virtual_envs(work_dir, all_tests, args):
     logging.info(f'Total: {_success_to_str(total_success)}')
     return total_success
 
-def _get_pytorch_toolkit_path():
+def _get_models_path():
     cur_file_path = os.path.abspath(__file__)
-    pytorch_toolkit_path = os.path.dirname(os.path.dirname(cur_file_path))
-    return pytorch_toolkit_path
+    models_path = os.path.join(os.path.dirname(os.path.dirname(cur_file_path)), 'models')
+
+    return models_path
 
 def main():
     parser = argparse.ArgumentParser()
@@ -381,7 +379,7 @@ def main():
     log_level = logging.DEBUG if args.verbose else logging.INFO
     logging.basicConfig(level=log_level, format='%(asctime)s:%(levelname)s:%(message)s')
 
-    root_path = _get_pytorch_toolkit_path()
+    root_path = _get_models_path()
     all_tests, failed_modules = discover_all_tests(root_path, args.domain)
     model_name_to_template = find_all_model_templates(root_path, args.domain)
     fill_template_paths_in_test_elements(all_tests, model_name_to_template)

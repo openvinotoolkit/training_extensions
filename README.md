@@ -9,6 +9,8 @@ inference.
 
 ## Setup OpenVINO™ Training Extensions
 
+0. Download and install [OpenVINO™](https://software.intel.com/en-us/openvino-toolkit).
+
 1. Clone repository in the working directory by running the following:
 
     ```
@@ -19,12 +21,18 @@ inference.
 2. Install prerequisites by running the following:
 
     ```
-    sudo apt-get install libturbojpeg python3-tk python3-pip virtualenv
+    sudo apt-get install python3-pip virtualenv
     ```
-3. Download and install [OpenVINO™](https://software.intel.com/en-us/openvino-toolkit) to export and efficiently run trained models.
+
+3. Create and activate virtual environment:
+    ```
+    virtualenv venv
+    . venv/bin/activate
+    ```
+
 4. Install `ote` package:
     ```
-    pip3 install -e .
+    pip3 install -e ote/
     ```
 
 # Models

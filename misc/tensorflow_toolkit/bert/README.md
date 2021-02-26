@@ -1,4 +1,4 @@
-# Bert base XNLI and Squad 1.1
+# Bert base XNLI and Squad 1.1 (PROVIDED AS IS WITHOUT SUPPORT)
 
 BERT (Bidirectional Encoder Representations from Transformers) is a new method of pre-training language representations which obtains state-of-the-art results on a wide array of Natural Language Processing (NLP) tasks.
 XNLI is the Bert-base Chinese simplified and traditional sentence classification task with 12-layer, 768-hidden, 12 heads, 110M parameters.
@@ -19,7 +19,7 @@ Here we provided the steps for fine-tuning XNLI and Squad1.1 NLP tasks from the 
 
 1. Download bert repository
     ```bash
-    git submodule update --init --depth 1 $(git rev-parse --show-toplevel)/external/bert 
+    git submodule update --init --depth 1 $(git rev-parse --show-toplevel)/external/bert
     ```
 
 2. Create virtual environment
@@ -86,7 +86,7 @@ python $(git rev-parse --show-toplevel)/external/bert/run_classifier.py \
   --output_dir=/tmp/xnli_output/
 ```
 
-### Results 
+### Results
 
 ```Bash
 Accuracy = 0.774116
@@ -147,7 +147,7 @@ First download the Standford Question Answering Dataset(SQuAD1.1) to some direct
 ```bash
 wget https://storage.googleapis.com/bert_models/2018_10_18/uncased_L-12_H-768_A-12.zip
 ```
-   
+
 2. Fine-tune the model
 
 ```Bash

@@ -1,5 +1,4 @@
 -r ../../external/mmdetection/requirements/build.txt
 -r ../../external/mmdetection/requirements.txt
 -r ../../external/mmdetection/requirements/nncf_compression.txt
--r ../ote/requirements.txt
 opencv-python
