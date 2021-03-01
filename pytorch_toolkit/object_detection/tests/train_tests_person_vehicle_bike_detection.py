@@ -49,3 +49,21 @@ class PersonVehicleBikeDetection2002TestCase(
         )
 ):
     """ Test case for person-vehicle-bike-detection-2002 model. """
+
+
+class PersonVehicleBikeDetection2003TestCase(
+        create_object_detection_test_case(
+            model_name='person-vehicle-bike-detection-2003',
+            **kwargs
+        )
+):
+    """ Test case for person-vehicle-bike-detection-2003 model. """
+
+
+class PersonVehicleBikeDetection2004TestCase(
+        create_object_detection_test_case(
+            model_name='person-vehicle-bike-detection-2004',
+            **kwargs
+        )
+):
+    """ Test case for person-vehicle-bike-detection-2004 model. """
