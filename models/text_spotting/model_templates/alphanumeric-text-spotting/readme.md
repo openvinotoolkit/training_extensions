@@ -135,3 +135,13 @@ python eval.py \
    --test-data-roots ${VAL_IMG_ROOT} \
    --save-metrics-to ${WORK_DIR}/metrics.yaml
 ```
+
+### 10. Visualize inference of IR
+
+You need to pass a path to `model.bin` and index of your web cam.
+
+```bash
+python visualize.py \
+   --load-weights ${WORK_DIR}/export/model.bin \
+   --video 0
+```
