@@ -43,13 +43,13 @@ export VAL_ANN_FILE=${TRAIN_ANN_FILE}
 export VAL_IMG_ROOT=${TRAIN_IMG_ROOT}
 ```
 
-### 5. Change current directory to directory where the model template has been instantiated.
+### 4. Change current directory to directory where the model template has been instantiated.
 
 ```bash
 cd ${WORK_DIR}
 ```
 
-### 6. Training and Fine-tuning
+### 5. Training and Fine-tuning
 
 Try both following variants and select the best one:
 
@@ -86,7 +86,7 @@ Try both following variants and select the best one:
          --epochs ${EPOCHS_NUM}
       ```
 
-### 7. Evaluation
+### 6. Evaluation
 
 Evaluation procedure allows us to get quality metrics values and complexity numbers such as number of parameters and FLOPs.
 
@@ -111,7 +111,7 @@ python eval.py \
    --save-output-to ${WORK_DIR}/output_images
 ```
 
-### 8. Export PyTorch\* model to the OpenVINO™ format
+### 7. Export PyTorch\* model to the OpenVINO™ format
 
 To convert PyTorch\* model to the OpenVINO™ IR format run the `export.py` script:
 
@@ -124,7 +124,7 @@ python export.py \
 This produces model `model.xml` and weights `model.bin` in single-precision floating-point format
 (FP32). The obtained model expects **normalized image** in planar BGR format.
 
-### 9. Validation of IR
+### 8. Validation of IR
 
 Instead of passing `snapshot.pth` you need to pass path to `model.bin`.
 
@@ -136,7 +136,7 @@ python eval.py \
    --save-metrics-to ${WORK_DIR}/metrics.yaml
 ```
 
-### 10. Visualize inference of IR
+### 9. Visualize inference of IR
 
 You need to pass a path to `model.bin` and index of your web cam.
 
