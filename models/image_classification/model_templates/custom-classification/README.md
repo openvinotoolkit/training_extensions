@@ -77,7 +77,7 @@ The decision will be made automatically by the steepest gradient of the loss fun
 Also, you can stop after searching learning rate (`stop_after=True`), build a graphic of the loss function (`path_to_savefig: 'some/path/to/figure'`), and make your own decision about choosing learning rate.
 ## Training pipeline
 
-### 0. Change a directory in your terminal to image_classification.
+### 1. Change a directory in your terminal to image_classification.
 
 ```bash
 cd models/image_classification
@@ -88,10 +88,10 @@ If You have not created virtual environment yet:
 ```
 Activate virtual environment:
 ```bash
-. venv/bin/activate
+source venv/bin/activate
 ```
 
-### 1. Select a model template file and instantiate it in some directory.
+### 2. Select a model template file and instantiate it in some directory.
 
 ```bash
 export MODEL_TEMPLATE=`realpath ./model_templates/custom-classification/mobilenet_v3_large_1/template.yaml`
@@ -99,7 +99,7 @@ export WORK_DIR=/tmp/my_model
 python ../../tools/instantiate_template.py ${MODEL_TEMPLATE} ${WORK_DIR} --do-not-load-snapshot
 ```
 
-### 2. Prepare data
+### 3. Prepare data
 
 The training script assumes the data for classification is divided by folders in such a way when
 each class has its own folder. The script automatically computes number of subfolders in the train
@@ -137,13 +137,13 @@ export VAL_DATA_ROOT=${DATA_DIR}/val
 export TEST_DATA_ROOT=${DATA_DIR}/val
 ```
 
-### 3. Change current directory to directory where the model template has been instantiated.
+### 4. Change current directory to directory where the model template has been instantiated.
 
 ```bash
 cd ${WORK_DIR}
 ```
 
-### 4. Training and Fine-tuning
+### 5. Training and Fine-tuning
 
 Try both following variants and select the best one:
 
@@ -163,7 +163,7 @@ python train.py \
 
 Also you can use parameters such as `--epochs`, `--batch-size`, `--gpu-num`, `--base-learning-rate`, otherwise default values will be loaded from `${MODEL_TEMPLATE}`.
 
-### 5. Evaluation
+### 6. Evaluation
 
 Evaluation procedure allows us to get quality metrics values and complexity numbers such as number of parameters and FLOPs.
 
@@ -177,7 +177,7 @@ python eval.py \
    --save-metrics-to ${WORK_DIR}/metrics.yaml
 ```
 
-### 6. Export PyTorch\* model to the OpenVINO™ format
+### 7. Export PyTorch\* model to the OpenVINO™ format
 
 To convert PyTorch\* model to the OpenVINO™ IR format run the `export.py` script:
 

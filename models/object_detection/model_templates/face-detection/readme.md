@@ -15,7 +15,7 @@ Average Precision (AP) is defined as an area under the precision/recall curve.
 
 ## Training pipeline
 
-### 0. Change a directory in your terminal to object_detection.
+### 1. Change a directory in your terminal to object_detection.
 
 ```bash
 cd models/object_detection
@@ -26,10 +26,10 @@ If You have not created virtual environment yet:
 ```
 Activate virtual environment:
 ```bash
-. venv/bin/activate
+source venv/bin/activate
 ```
 
-### 1. Select a model template file and instantiate it in some directory.
+### 2. Select a model template file and instantiate it in some directory.
 
 ```bash
 export MODEL_TEMPLATE=`realpath ./model_templates/face-detection/face-detection-0200/template.yaml`
@@ -37,7 +37,7 @@ export WORK_DIR=/tmp/my_model
 python ../../tools/instantiate_template.py ${MODEL_TEMPLATE} ${WORK_DIR}
 ```
 
-### 2. Collect dataset
+### 3. Collect dataset
 
 Download the [WIDER Face Training Images, WIDER Face Validation Images, Face annotations](http://shuoyang1213.me/WIDERFACE/) and unpack it to the `${DATA_DIR}` folder.
 
@@ -45,7 +45,7 @@ Download the [WIDER Face Training Images, WIDER Face Validation Images, Face ann
 export DATA_DIR=${WORK_DIR}/data
 ```
 
-### 3. Prepare annotation
+### 4. Prepare annotation
 
 Convert downloaded and extracted annotation to MSCOCO format with `face` as the only one class.
 
@@ -71,13 +71,13 @@ Convert downloaded and extracted annotation to MSCOCO format with `face` as the 
       ${VAL_ANN_FILE}
    ```
 
-### 4. Change current directory to directory where the model template has been instantiated.
+### 5. Change current directory to directory where the model template has been instantiated.
 
 ```bash
 cd ${WORK_DIR}
 ```
 
-### 5. Training and Fine-tuning
+### 6. Training and Fine-tuning
 
 Try both following variants and select the best one:
 
@@ -115,7 +115,7 @@ Try both following variants and select the best one:
       ```
 
 
-### 6. Compression
+### 7. Compression
 
 One can apply compression algorightms that are intented to optimize inference even more.
 This can be done by runnning `compress.py` script with `--nncf-quantization` or `--nncf-sparsity` or both:
@@ -131,7 +131,7 @@ python compress.py \
    --nncf-quantization
 ```
 
-### 7. Evaluation
+### 8. Evaluation
 
 Evaluation procedure allows us to get quality metrics values and complexity numbers such as number of parameters and FLOPs.
 
@@ -167,7 +167,7 @@ python eval.py \
    --wider-dir ${DATA_DIR}
 ```
 
-### 8. Export PyTorch\* model to the OpenVINO™ format
+### 9. Export PyTorch\* model to the OpenVINO™ format
 
 To convert PyTorch\* model to the OpenVINO™ IR format run the `export.py` script:
 
@@ -184,9 +184,9 @@ For SSD networks an alternative OpenVINO™ representation is saved automaticall
 SSD model exported in such way will produce a bit different results (non-significant in most cases),
 but it also might be faster than the default one. As a rule SSD models in [Open Model Zoo](https://github.com/opencv/open_model_zoo/) are exported using this option.
 
-### 9. Validation of IR
+### 10. Validation of IR
 
-Instead of passing `snapshot.pth` you need to pass path to `model.bin` (or `model.xml`).
+Instead of passing `snapshot.pth` you need to pass path to `model.bin`.
 
 ```bash
 python eval.py \
@@ -196,5 +196,5 @@ python eval.py \
    --save-metrics-to ${WORK_DIR}/metrics.yaml
 ```
 
-### 10. Demos that can run model
+### 11. Demos that can run model
 * https://github.com/openvinotoolkit/open_model_zoo/tree/develop/demos/object_detection_demo/python
