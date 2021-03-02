@@ -58,7 +58,3 @@ them for prediction.
 # Misc
 
 Models that were previously developed can be found [here](misc/README.md).
-
-# Web UI
-
-OpenVINO™ Training Extensions provide [Web UI](web) for training models and annotating data in a convenient way using a graphical interface.
