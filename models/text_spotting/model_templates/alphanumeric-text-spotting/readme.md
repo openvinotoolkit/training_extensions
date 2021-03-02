@@ -29,6 +29,7 @@ source venv/bin/activate
 ```bash
 export MODEL_TEMPLATE=`realpath ./model_templates/alphanumeric-text-spotting/text-spotting-0003-lite/template.yaml`
 export WORK_DIR=/tmp/my_model
+export SNAPSHOT=${WORK_DIR}/snapshot.pth
 python ../../tools/instantiate_template.py ${MODEL_TEMPLATE} ${WORK_DIR}
 ```
 
@@ -49,7 +50,7 @@ export VAL_IMG_ROOT=${TRAIN_IMG_ROOT}
 cd ${WORK_DIR}
 ```
 
-### 5. Training and Fine-tuning
+### 5. Training and Fine-tuning (can be skipped)
 
 Try both following variants and select the best one:
 
@@ -60,12 +61,14 @@ Try both following variants and select the best one:
 
       ```bash
       python train.py \
-         --load-weights ${WORK_DIR}/snapshot.pth \
+         --load-weights ${SNAPSHOT} \
          --train-ann-files ${TRAIN_ANN_FILE} \
          --train-data-roots ${TRAIN_IMG_ROOT} \
          --val-ann-files ${VAL_ANN_FILE} \
          --val-data-roots ${VAL_IMG_ROOT} \
-         --save-checkpoints-to ${WORK_DIR}/outputs
+         --save-checkpoints-to ${WORK_DIR}/outputs \
+      && export SNAPSHOT=${WORK_DIR}/outputs/latest.pth
+
       ```
 
       Also you can use parameters such as `--epochs`, `--batch-size`, `--gpu-num`, `--base-learning-rate`, otherwise default values will be loaded from `${MODEL_TEMPLATE}`.
@@ -77,13 +80,14 @@ Try both following variants and select the best one:
       export EPOCHS_NUM=$((`cat ${MODEL_TEMPLATE} | grep epochs | tr -dc '0-9'` + ${ADD_EPOCHS}))
 
       python train.py \
-         --resume-from ${WORK_DIR}/snapshot.pth \
+         --resume-from ${SNAPSHOT} \
          --train-ann-files ${TRAIN_ANN_FILE} \
          --train-data-roots ${TRAIN_IMG_ROOT} \
          --val-ann-files ${VAL_ANN_FILE} \
          --val-data-roots ${VAL_IMG_ROOT} \
          --save-checkpoints-to ${WORK_DIR}/outputs \
-         --epochs ${EPOCHS_NUM}
+         --epochs ${EPOCHS_NUM} \
+      && export SNAPSHOT=${WORK_DIR}/outputs/latest.pth
       ```
 
 ### 6. Evaluation
@@ -94,7 +98,7 @@ To compute MS-COCO metrics and save computed values to `${WORK_DIR}/metrics.yaml
 
 ```bash
 python eval.py \
-   --load-weights ${WORK_DIR}/outputs/latest.pth \
+   --load-weights ${SNAPSHOT} \
    --test-ann-files ${VAL_ANN_FILE} \
    --test-data-roots ${VAL_IMG_ROOT} \
    --save-metrics-to ${WORK_DIR}/metrics.yaml
@@ -104,7 +108,7 @@ You can also save images with predicted bounding boxes using `--save-output-to` 
 
 ```bash
 python eval.py \
-   --load-weights ${WORK_DIR}/outputs/latest.pth \
+   --load-weights ${SNAPSHOT} \
    --test-ann-files ${VAL_ANN_FILE} \
    --test-data-roots ${VAL_IMG_ROOT} \
    --save-metrics-to ${WORK_DIR}/metrics.yaml \
@@ -117,7 +121,7 @@ To convert PyTorch\* model to the OpenVINO™ IR format run the `export.py` scri
 
 ```bash
 python export.py \
-   --load-weights ${WORK_DIR}/outputs/latest.pth \
+   --load-weights ${SNAPSHOT} \
    --save-model-to ${WORK_DIR}/export
 ```
 
