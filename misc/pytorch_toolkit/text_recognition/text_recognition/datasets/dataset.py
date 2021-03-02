@@ -147,38 +147,6 @@ class Im2LatexDataset(BaseDataset):
         return pairs
 
 
-class CocoTextOnlyDataset(BaseDataset):
-    def __init__(self, json_path, images_path, min_shape=(8, 8)):
-        super().__init__()
-        self.json_file = json_path
-        self.images_dir = images_path
-        self.pairs = self._load(min_shape)
-
-    def _load(self, min_shape):
-        with open(self.json_file) as f:
-            annotation_file = json.load(f)
-        images = annotation_file['images']
-        annotations = annotation_file['annotations']
-        total_len = len(annotation_file['images'])
-        pairs = []
-        for image, ann in tqdm(zip(images, annotations), total=total_len):
-            filename = image['file_name']
-            filename = os.path.join(self.images_dir, os.path.split(filename)[-1])
-            assert image['id'] == ann['id']
-            text = ann["text"]['transcription'].strip('"')
-            text = ' '.join(text)
-            img = cv.imread(filename, cv.IMREAD_COLOR)
-            if img.shape[0:2] <= tuple(min_shape):
-                continue
-            el = {"img_name": filename,
-                  "text": text,
-                  "img": img,
-                  }
-            pairs.append(el)
-        pairs.sort(key=img_size, reverse=True)
-        return pairs
-
-
 class ICDAR2013RECDataset(BaseDataset):
     def __init__(self, images_folder, annotation_file, root='', min_shape=(8, 8), grayscale=False,
                  fixed_img_shape=None, case_sensitive=True, min_txt_len=0):
@@ -321,7 +289,6 @@ class IIIT5KDataset(BaseDataset):
 
 str_to_class = {
     "Im2LatexDataset": Im2LatexDataset,
-    "CocoTextOnlyDataset": CocoTextOnlyDataset,
     "ICDAR2013RECDataset": ICDAR2013RECDataset,
     "MJSynthDataset": MJSynthDataset,
     "IIIT5KDataset": IIIT5KDataset,
