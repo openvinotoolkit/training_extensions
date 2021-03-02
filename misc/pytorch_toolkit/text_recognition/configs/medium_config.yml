@@ -1,0 +1,51 @@
+backbone_config:
+  arch: resnext50_32x4d
+  disable_layer_3: true
+  disable_layer_4: true
+model_path: model_checkpoints/medium_photographed_0185.pth
+device: cuda
+vocab_path: vocabs/vocab_medium.json
+val_transforms_list:
+  - name: "TransformRescale"
+    scale_min: 1.5
+    scale_max: 1.5
+  - name: TransformCropPad
+    target_shape:
+      - 65
+      - 1450
+train:
+  batch_size: 4
+  learning_rate: 0.000001
+  log_path: logs
+  optimizer: Adam
+  save_dir: model_checkpoints
+  datasets:
+    - type: Im2LatexDataset
+      data_path: ../../data/formula_recognition/sample_medium_dataset
+      ann_file: validate_filter.lst
+      subset: validate
+    - type: Im2LatexDataset
+      data_path: ../../data/formula_recognition/sample_medium_dataset
+      ann_file: train_filter.lst
+      subset: train
+  train_transforms_list:
+  - name: "TransformRescale"
+    scale_min: 1.5
+    scale_max: 1.5
+eval:
+  dataset:
+    type: Im2LatexDataset
+    data_path: ../../data/formula_recognition/sample_medium_dataset
+    ann_file: validate_filter.lst
+demo:
+  transforms_list: []
+export:
+  res_encoder_name: medium_v2_encoder.onnx
+  res_decoder_name: medium_v2_decoder.onnx
+  export_ir: true
+  verbose_export: false
+  input_shape_decoder:
+    - 1
+    - 3
+    - 65
+    - 1450
