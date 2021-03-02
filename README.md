@@ -14,7 +14,7 @@ inference.
 1. Clone repository in the working directory by running the following:
 
     ```
-    git clone https://github.com/openvinotoolkit/training_extensions.git
+    git clone https://github.com/openvinotoolkit/training_extensions.git --branch refactor --single-branch
     cd training_extensions
     ```
 
@@ -27,7 +27,7 @@ inference.
 3. Create and activate virtual environment:
     ```
     virtualenv venv
-    . venv/bin/activate
+    source venv/bin/activate
     ```
 
 4. Install `ote` package:
