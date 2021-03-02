@@ -43,7 +43,7 @@ def _get_templates_filenames(args):
     return template_filenames
 
 def _get_init_venv_path(domain_folder):
-    domain_realpath = os.path.realpath(domain_folder)
+    domain_realpath = os.path.realpath(os.path.join('models', domain_folder))
     init_venv_path = os.path.join(domain_realpath, 'init_venv.sh')
     if os.path.isfile(init_venv_path):
         return init_venv_path
@@ -113,8 +113,7 @@ def main():
             logging.info(f'    No virtual environment for {domain_folder}')
             continue
         dst_venv_path = os.path.join(dst_domain_path, 'venv')
-        run_through_shell(f'cd {domain_folder}; '
-                          f'bash {init_venv_path} {dst_venv_path}',
+        run_through_shell(f'bash {init_venv_path} {dst_venv_path}',
                           verbose=args.verbose)
         logging.info(f'End initializing virtual environment for {domain_folder}')
 

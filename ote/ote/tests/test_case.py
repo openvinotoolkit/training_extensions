@@ -131,7 +131,7 @@ def create_test_case(domain_name, problem_name, model_name, ann_file, img_root, 
 
             for metric_key in metric_keys:
                 value = [metrics['value'] for metrics in content['metrics'] if metrics['key'] == metric_key][0]
-                self.assertLess(abs(self.expected_outputs[metric_key] - value), 1e-4)
+                self.assertLess(abs(self.expected_outputs[metric_key] - value), 1e-3)
 
         def do_finetuning(self, on_gpu):
             log_file = os.path.join(self.output_folder, 'test_finetuning.log')

@@ -45,7 +45,7 @@ MMACTION_DIR=`realpath ../../external/mmaction2/`
 echo "export MMACTION_DIR=${MMACTION_DIR}" >> ${venv_dir}/bin/activate
 
 # install ote
-pip install -e ../../pytorch_toolkit/ote/
+pip install -e ../../ote/
 
 deactivate
 

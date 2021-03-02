@@ -1,4 +1,4 @@
-# License Plate Recognition
+# License Plate Recognition (PROVIDED AS IS WITHOUT SUPPORT)
 
 [LPRNet](https://arxiv.org/abs/1806.10447) is an end-to-end method for Automatic License Plate Recognition without preliminary character segmentation.
 
