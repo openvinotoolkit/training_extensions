@@ -44,6 +44,7 @@ them for prediction.
   - [Gesture Recognition](models/action_recognition_2/model_templates/gesture-recognition)
 * [Instance Segmentation](models/instance_segmentation)
   - [COCO instance segmentation](models/instance_segmentation/model_templates/coco-instance-segmentation/readme.md)
+  - [Custom instance segmentation](models/instance_segmentation/model_templates/custom-instance-segmentation/readme.md)
 * [Image classification](models/image_classification)
   - [Custom image classification](models/image_classification/model_templates/custom-classification/README.md)
 * [Object Detection](models/object_detection)
