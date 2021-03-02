@@ -33,7 +33,7 @@ hyper_parameters:
   basic:
     batch_size: 4
     base_learning_rate: 0.01
-    epochs: 25
+    epochs: 24
 output_format:
   onnx:
     default: true

@@ -49,34 +49,53 @@ export VAL_IMG_ROOT=${TRAIN_IMG_ROOT}
 ```bash
 cd ${WORK_DIR}
 ```
+### 5. Export pretrained PyTorch\* model to the OpenVINO™ format
 
-### 5. Training and Fine-tuning (can be skipped)
+To convert PyTorch\* model to the OpenVINO™ IR format run the `export.py` script:
+
+```bash
+python export.py \
+   --load-weights ${SNAPSHOT} \
+   --save-model-to ${WORK_DIR}/export
+```
+
+This produces model `model.xml` and weights `model.bin` in single-precision floating-point format
+(FP32). The obtained model expects **normalized image** in planar BGR format.
+
+### 6. Visualize inference of IR
+
+You need to pass a path to `model.bin` and index of your web cam.
+
+```bash
+python visualize.py \
+   --load-weights ${WORK_DIR}/export/model.bin \
+   --video 0
+```
+
+### 7. Validation of IR
+
+Instead of passing `snapshot.pth` you need to pass path to `model.bin`.
+
+```bash
+python eval.py \
+   --load-weights ${WORK_DIR}/export/model.bin \
+   --test-ann-files ${VAL_ANN_FILE} \
+   --test-data-roots ${VAL_IMG_ROOT} \
+   --save-metrics-to ${WORK_DIR}/metrics.yaml
+```
+
+### 8. Training and Fine-tuning
 
 Try both following variants and select the best one:
 
-   * **Training** from scratch or pre-trained weights. Only if you have a lot of data, let's say tens of thousands or even more images. This variant assumes long training process starting from big values of learning rate and eventually decreasing it according to a training schedule.
    * **Fine-tuning** from pre-trained weights. If the dataset is not big enough, then the model tends to overfit quickly, forgetting about the data that was used for pre-training and reducing the generalization ability of the final model. Hence, small starting learning rate and short training schedule are recommended.
+   * **Training** from scratch or pre-trained weights. Only if you have a lot of data, let's say tens of thousands or even more images. This variant assumes long training process starting from big values of learning rate and eventually decreasing it according to a training schedule.
 
-   * If you would like to start **training** from pre-trained weights use `--load-weights` pararmeter.
 
-      ```bash
-      python train.py \
-         --load-weights ${SNAPSHOT} \
-         --train-ann-files ${TRAIN_ANN_FILE} \
-         --train-data-roots ${TRAIN_IMG_ROOT} \
-         --val-ann-files ${VAL_ANN_FILE} \
-         --val-data-roots ${VAL_IMG_ROOT} \
-         --save-checkpoints-to ${WORK_DIR}/outputs \
-      && export SNAPSHOT=${WORK_DIR}/outputs/latest.pth
-
-      ```
-
-      Also you can use parameters such as `--epochs`, `--batch-size`, `--gpu-num`, `--base-learning-rate`, otherwise default values will be loaded from `${MODEL_TEMPLATE}`.
-
-   * If you would like to start **fine-tuning** from pre-trained weights use `--resume-from` parameter and value of `--epochs` have to exceed the value stored inside `${MODEL_TEMPLATE}` file, otherwise training will be ended immediately. Here we add `5` additional epochs.
+   * If you would like to start **fine-tuning** from pre-trained weights use `--resume-from` parameter and value of `--epochs` have to exceed the value stored inside `${MODEL_TEMPLATE}` file, otherwise training will be ended immediately. Here we add `2` additional epochs.
 
       ```bash
-      export ADD_EPOCHS=5
+      export ADD_EPOCHS=2
       export EPOCHS_NUM=$((`cat ${MODEL_TEMPLATE} | grep epochs | tr -dc '0-9'` + ${ADD_EPOCHS}))
 
       python train.py \
@@ -90,62 +109,5 @@ Try both following variants and select the best one:
       && export SNAPSHOT=${WORK_DIR}/outputs/latest.pth
       ```
 
-### 6. Evaluation
+   * If you would like to start **training** from pre-trained weights use `--load-weights` pararmeter instead of `--resume-from`. Also you can use parameters such as `--epochs`, `--batch-size`, `--gpu-num`, `--base-learning-rate`, otherwise default values will be loaded from `${MODEL_TEMPLATE}`.
 
-Evaluation procedure allows us to get quality metrics values and complexity numbers such as number of parameters and FLOPs.
-
-To compute MS-COCO metrics and save computed values to `${WORK_DIR}/metrics.yaml` run:
-
-```bash
-python eval.py \
-   --load-weights ${SNAPSHOT} \
-   --test-ann-files ${VAL_ANN_FILE} \
-   --test-data-roots ${VAL_IMG_ROOT} \
-   --save-metrics-to ${WORK_DIR}/metrics.yaml
-```
-
-You can also save images with predicted bounding boxes using `--save-output-to` parameter.
-
-```bash
-python eval.py \
-   --load-weights ${SNAPSHOT} \
-   --test-ann-files ${VAL_ANN_FILE} \
-   --test-data-roots ${VAL_IMG_ROOT} \
-   --save-metrics-to ${WORK_DIR}/metrics.yaml \
-   --save-output-to ${WORK_DIR}/output_images
-```
-
-### 7. Export PyTorch\* model to the OpenVINO™ format
-
-To convert PyTorch\* model to the OpenVINO™ IR format run the `export.py` script:
-
-```bash
-python export.py \
-   --load-weights ${SNAPSHOT} \
-   --save-model-to ${WORK_DIR}/export
-```
-
-This produces model `model.xml` and weights `model.bin` in single-precision floating-point format
-(FP32). The obtained model expects **normalized image** in planar BGR format.
-
-### 8. Validation of IR
-
-Instead of passing `snapshot.pth` you need to pass path to `model.bin`.
-
-```bash
-python eval.py \
-   --load-weights ${WORK_DIR}/export/model.bin \
-   --test-ann-files ${VAL_ANN_FILE} \
-   --test-data-roots ${VAL_IMG_ROOT} \
-   --save-metrics-to ${WORK_DIR}/metrics.yaml
-```
-
-### 9. Visualize inference of IR
-
-You need to pass a path to `model.bin` and index of your web cam.
-
-```bash
-python visualize.py \
-   --load-weights ${WORK_DIR}/export/model.bin \
-   --video 0
-```
