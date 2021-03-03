@@ -174,7 +174,7 @@ The model can be used for recognizing both rendered and scanned formulas (e.g. f
 The model can be used for recognizing handwritten polynomial equations.
 
 * alphanumeric model
-  * [checkpoint]
+  * [checkpoint](https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/text_recognition/text_recognition_0013.pth)
   * number from 0 to 9 and latin letters in lower case are supported
    * to use this model, please, change model path in the corresponding config file:
     ```
