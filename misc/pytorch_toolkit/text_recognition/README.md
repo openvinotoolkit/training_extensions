@@ -123,19 +123,29 @@ The config file is divided into 4 sections: train, eval, export, demo. Common pa
 > **Note**: All values in the config file which have 'path' in their name will be treated as paths and the script which reads configuration will try to resolve all relative paths. By default all relative paths are resolved relatively to the folder where this README.md file is placed. Keep this in mind or use full paths.
 #### Common parameters:
 - `backbone_config`:
-    * `arch`: type of the architecture (if backbone_type is resnet). For more details, please, refer to [ResnetLikeBackBone](im2latex/models/backbones/resnet.py)
-    * `disable_layer_3` and `disable_layer_4` - disables layer 3 and 4 in resnet-like backbone. ResNet backbone from the torchvision module consists of 4 block of layers, each of them increase the number of channels and decrease the spatial dimensionality. These parameters allow to switch off the 3rd and the 4th of such layers, respectively.
-    * `enable_last_conv` - enables additional convolution layer to adjust number of output channels to the number of input channels in the LSTM. Optional. Default: false.
-    * `output_channels` - number of output channels channels. If `enable_last_conv` is `true`, this parameter should be equal to `head.encoder_input_size`, otherwise it should be equal to actual number of output channels of the backbone.
-- `backbone_type`: `resnet` for resnet-like backbone or anything else for original backbone from [im2markup](https://arxiv.org/pdf/1609.04938.pdf) paper. Optional. Default is `resnet`
-- `head` - configuration of the text recognition head. All of the following parameters have default values, you can check them in [text reconition head](im2latex/models/text_recognition_heads/attention_based.py)
+    - `type`: `resnet` for resnet-like backbone, `im2latex` for original backbone from [im2markup](https://arxiv.org/pdf/1609.04938.pdf) paper and `VGG` for VGG-like backbone. Optional. Default is `resnet`.
+    `resnet`-specific parameters:
+      * `arch`: type of the architecture (if backbone_type is resnet). For more details, please, refer to [ResnetLikeBackBone](im2latex/models/backbones/resnet.py)
+      * `disable_layer_3` and `disable_layer_4` - disables layer 3 and 4 in resnet-like backbone. ResNet backbone from the torchvision module consists of 4 block of layers, each of them increase the number of channels and decrease the spatial dimensionality. These parameters allow to switch off the 3rd and the 4th of such layers, respectively.
+      * `enable_last_conv` - enables additional convolution layer to adjust number of output channels to the number of input channels in the LSTM. Optional. Default: false.
+      * `output_channels` - number of output channels channels. If `enable_last_conv` is `true`, this parameter should be equal to `head.encoder_input_size`, otherwise it should be equal to actual number of output channels of the backbone.
+    - `VGG`-specific parameters:
+      - `backbone_dropout` - probability for dropout
+      - `in_channels` - number of input channels (3 for color or 1 for grayscale images)
+- `head` - configuration of the text recognition head.
+  - Now two text recognition heads are supported: Attention-based [text reconition head](text_recognition/models/text_recognition_heads/attention_based.py) and [CTC-based LSTM-encoder-decoder head](text_recognition/models/text_recognition_heads/ctc_lstm_based.py)
+  - `positional_encodings` - if true, use positional encodings like in transformer
+  * `encoder_hidden_size ` - number of channels in encoder
+  * `encoder_input_size ` - number of channels in the lstm input, should be equal to `backbone_config.output_channels`
+  - Attention-based head specific parameters:
+    - `trainable_initial_hidden` - if true, inital states of the LSTM cells will be trainable, else it will be zero tensor.
     * `beam_width` - width used in beam search. 0 - do not use beam search, 1 and more - use beam search with corresponding number of possible tracks.
-    * `dec_rnn_h` - number of channels in decoding
     * `emb_size` - dimension of the embedding
-    * `encoder_hidden_size ` - number of channels in encoding
-    * `encoder_input_size ` - number of channels in the lstm input, should be equal to `backbone_config.output_channels`
     * `max_len` - maximum possible length of the predicted formula
     * `n_layer` - number of layers in the trainable initial hidden state for each row
+  * CTC head specific parameters:
+    * `cnn_encoder_height` - height dimension size after backbone. Default is 1. Used for dimension reductiomn
+    * `reduction` - the way of reducing dimensionality. LSTM takes as input 3-dimensional tensor, and backbone produces 4-dimensional. Height dimension is reduced. Options: `mean` - apply Average Pooling, `flatten` - Flatten tensor, `weighted` - apply convolution with kernel `cnn_encoder_height x 1`.
 - `model_path` - path to the pretrained model checkpoint (you can find the links to the checkpoints below in this document).
 - `vocab_path` - path where vocabulary file is stored.
 - `val_transforms_list` - here you can describe set of desirable transformations for validation datasets respectively. An example is given in the config file, for other options, please, refer to [constructor of transforms (section `create_list_of_transforms`)](im2latex/data/utils.py)
@@ -145,7 +155,10 @@ In addition to common parameters you can specify the following arguments:
 - `batch_size` - batch size used for training
 - `learning_rate` - learining rate
 - `log_path` - path to store training logs
-- `optimizer` - Adam or SGD
+- `optimizer` - any possible type of the optimizer supported by pytorch (like Adam or SGD)
+- `scheduler` - any possible type of the scheduler supported by pytorch (like ReduceLROnPlateau)
+- `scheduler_params` - dict describing scheduler params in accordance with pytorch documentation
+- `loss_type` - type of loss: `NLL` for Attention-based head and `CTC` for CTC-based head
 - `save_dir` - dir to save checkpoints
 - `datasets` - list of datasets which will be used in training. Common parameters are:
   - `type` - name of the dataset, for details see [here](./text_recognition/datasets/dataset.py). Dataset names are described in the `str_to_class` section
@@ -209,7 +222,8 @@ These parameters are used for model export to ONNX & OpenVINO™ IR:
 - `export_ir` - Set this flag to `true` to export model to the OpenVINO IR. For details refer to [convert to IR section](#convert-to-ir)
 - `verbose_export` - Set this flag to `true` to perform verbose export (i.e. print model optimizer commands to terminal)
 - `input_shape_decoder` for composite (encoder-decoder) or `input_shape` for monolithic model  - list of dimensions describing input shape for encoder for OpenVINO IR conversion.
-
+- `model_input_names` and `model_output_names` - comma-separated names of input and output tensors respectively. Used for export of monolithic model. Optional
+- `encoder_input_names`, `decoder_input_names`, `encoder_output_names`, `decoder_output_names` - the same as above for composite models. Optional. Change it only if default values for these parameters are note acceptable, for details see [here](text_recognition/utils/exporter.py)
 
 
 ## Evaluation
@@ -226,7 +240,7 @@ Evaluation process is the following:
 1. Run the model and get predictions
 1. (optionally) Render predictions from the first step into images of the formulas
 2. Compare images if `render` flag is true, else just compare predicted and GT text.
-> The third step is very important because in LaTeX language one can write different formulas that are looking the same. Example:
+> The third step is important for LaTeX models because in LaTeX language one can write different formulas that are looking the same. Example:
 `s^{12}_{i}` and `s_{i}^{12}` looking the same: both of them are rendered as ![equation](https://latex.codecogs.com/gif.latex?%5Cbg_white%20s%5E%7Bi%7D_%7B12%7D)
 That is why we cannot just compare text predictions one-by-one, we have to render images and compare them.
 
