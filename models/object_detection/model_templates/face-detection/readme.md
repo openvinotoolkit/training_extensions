@@ -46,7 +46,7 @@ If you would like to work with bigger datasets please refer to this [section](da
 
 ```bash
 export TRAIN_ANN_FILE=`pwd`/../../data/airport/annotation_faces_train.json
-export TRAIN_IMG_ROOT=`pwd`/../../data/airport/train
+export TRAIN_IMG_ROOT=`pwd`/../../data/airport/
 export VAL_ANN_FILE=${TRAIN_ANN_FILE}
 export VAL_IMG_ROOT=${TRAIN_IMG_ROOT}
 ```
@@ -69,7 +69,7 @@ python export.py \
 This produces model `model.xml` and weights `model.bin` in single-precision floating-point format
 (FP32). The obtained model expects **normalized image** in planar BGR format.
 
-### 6. Visualize inference of exported model.
+### 6. Run demo with exported model.
 
 You need to pass a path to `model.bin` and index of your web cam.
 

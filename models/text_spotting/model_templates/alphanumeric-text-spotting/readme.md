@@ -64,7 +64,7 @@ python export.py \
 This produces model `model.xml` and weights `model.bin` in single-precision floating-point format
 (FP32). The obtained model expects **normalized image** in planar BGR format.
 
-### 6. Visualize inference of exported model.
+### 6. Run demo with exported model.
 
 You need to pass a path to `model.bin` and index of your web cam.
 
