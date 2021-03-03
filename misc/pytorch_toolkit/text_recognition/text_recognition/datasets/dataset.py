@@ -36,7 +36,6 @@ SOFTWARE.
  limitations under the License.
 """
 
-import json
 import os
 from copy import deepcopy
 from multiprocessing.pool import ThreadPool
@@ -98,7 +97,7 @@ class BaseDataset(Dataset):
 
 class Im2LatexDataset(BaseDataset):
     # TODO: think of argument unification
-    def __init__(self, data_path, ann_file, min_shape=(8, 8)):
+    def __init__(self, data_path, annotation_file, min_shape=(8, 8)):
         """args:
         data_path: root dir storing the prepoccessed data
         ann_file: path to annotation file
@@ -107,7 +106,7 @@ class Im2LatexDataset(BaseDataset):
         self.data_dir = data_path
         self.images_dir = join(data_path, "images_processed")
         self.formulas = self._get_formulas()
-        self.pairs = self._get_pairs(ann_file, min_shape)
+        self.pairs = self._get_pairs(annotation_file, min_shape)
 
     def _get_formulas(self):
         formulas_file = join(self.data_dir, "formulas.norm.lst")
@@ -148,10 +147,10 @@ class Im2LatexDataset(BaseDataset):
 
 
 class ICDAR2013RECDataset(BaseDataset):
-    def __init__(self, images_folder, annotation_file, root='', min_shape=(8, 8), grayscale=False,
+    def __init__(self, data_path, annotation_file, root='', min_shape=(8, 8), grayscale=False,
                  fixed_img_shape=None, case_sensitive=True, min_txt_len=0):
         super().__init__()
-        self.images_folder = images_folder
+        self.images_folder = data_path
         self.annotation_file = annotation_file
         if root:
             self.annotation_file = os.path.join(root, self.annotation_file)
@@ -194,10 +193,10 @@ class ICDAR2013RECDataset(BaseDataset):
 
 
 class MJSynthDataset(BaseDataset):
-    def __init__(self, data_folder, annotation_file, min_shape=(8, 8),
+    def __init__(self, data_path, annotation_file, min_shape=(8, 8),
                  fixed_img_shape=None, case_sensitive=True, min_txt_len=0, num_workers=4):
         super().__init__()
-        self.data_folder = data_folder
+        self.data_folder = data_path
         self.ann_file = annotation_file
         self.fixed_img_shape = fixed_img_shape
         self.pairs = self._load(min_shape, case_sensitive, min_txt_len, num_workers)

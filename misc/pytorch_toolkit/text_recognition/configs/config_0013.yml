@@ -31,8 +31,8 @@ train:
   datasets:
     - type: ICDAR2013RECDataset
       case_sensitive: false
-      images_folder: ../../data/text_recognition/
-      annotation_file: ../../data/text_recognition/annotation.txt
+      data_path: ../../../data/text_recognition/
+      annotation_file: ../../../data/text_recognition/annotation.txt
       grayscale: true
       fixed_img_shape:
         - 32
@@ -40,8 +40,8 @@ train:
       subset: train
     - type: ICDAR2013RECDataset
       case_sensitive: false
-      images_folder: ../../data/text_recognition/
-      annotation_file: ../../data/text_recognition/annotation.txt
+      data_path: ../../../data/text_recognition/
+      annotation_file: ../../../data/text_recognition/annotation.txt
       grayscale: true
       fixed_img_shape:
         - 32
@@ -53,8 +53,8 @@ eval:
   dataset:
     type: ICDAR2013RECDataset
     case_sensitive: false
-    images_folder: ../../data/text_recognition/
-    annotation_file: ../../data/text_recognition/annotation.txt
+    data_path: ../../../data/text_recognition/
+    annotation_file: ../../../data/text_recognition/annotation.txt
     grayscale: true
     fixed_img_shape:
       - 32
