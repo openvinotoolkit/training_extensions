@@ -120,7 +120,7 @@ Try both following variants and select the best one:
 
 ### 9. Compression
 
-One can apply compression algorightms that are intented to optimize inference even more.
+One can apply compression algorithms that are intented to optimize inference even more.
 This can be done by runnning `compress.py` script with `--nncf-quantization` or `--nncf-sparsity` or both:
 
 ```bash
