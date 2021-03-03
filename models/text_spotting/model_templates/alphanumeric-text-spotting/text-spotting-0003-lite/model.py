@@ -85,7 +85,7 @@ model = dict(
             decoder_rnn_type = "GRU",
             dropout_ratio = 0.5
         ),
-        text_thr=0.5))
+        text_thr=0.25))
 # model training and testing settings
 train_cfg = dict(
     rpn=dict(
@@ -146,15 +146,15 @@ train_cfg = dict(
 test_cfg = dict(
     rpn=dict(
         nms_across_levels=False,
-        nms_pre=300,
-        nms_post=300,
-        max_num=300,
+        nms_pre=50,
+        nms_post=50,
+        max_num=50,
         nms_thr=0.7,
         min_bbox_size=0),
     rcnn=dict(
         score_thr=0.5,
         nms=dict(type='nms', iou_thr=0.5),
-        max_per_img=100,
+        max_per_img=25,
         mask_thr_binary=0.5),
     score_thr=0.5)
 

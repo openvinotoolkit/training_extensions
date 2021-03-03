@@ -125,15 +125,17 @@ def main(args):
             result,
             data['img_metas'][0].data[0],
             num_classes=classes_num,
-            rescale=False)
+            rescale=True)
 
         img_meta = data['img_metas'][0].data[0][0]
+        orig_height, orig_width = img_meta['ori_shape'][:2]
         norm_cfg = img_meta['img_norm_cfg']
         mean = np.array(norm_cfg['mean'], dtype=np.float32)
         std = np.array(norm_cfg['std'], dtype=np.float32)
         display_image = im_data[0].transpose(1, 2, 0)
         display_image = mmcv.imdenormalize(display_image, mean, std, to_bgr=norm_cfg['to_rgb']).astype(np.uint8)
         display_image = np.ascontiguousarray(display_image)
+        display_image = cv2.resize(display_image, (orig_width, orig_height))
         boxes, masks, texts = result
         if boxes:
             for box, mask, text in zip(boxes[0], masks[0], texts):

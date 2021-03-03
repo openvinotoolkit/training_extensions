@@ -35,7 +35,9 @@ python ../../tools/instantiate_template.py ${MODEL_TEMPLATE} ${WORK_DIR}
 
 ### 3. Prepare datasets
 
-In this particular toy example we would like to demonstrate an ability of training code to impove quality of a model on particular dataset during fine-tuning. That's why training and validation datasets will be represented by the same set of images. If you would like to work with bigger datasets please refer to this [section](datasets.md), if not:
+In this particular toy example we would like to demonstrate an ability of training code to improve quality of a model on particular dataset during fine-tuning. That's why training and validation datasets are be represented by the same set of images. Training images are stored in ${TRAIN_IMG_ROOT} together with ${TRAIN_ANN_FILE} annotation file. The annotation file has been created manually using [CVAT](https://github.com/openvinotoolkit/cvat).
+
+If you would like to work with bigger datasets please refer to this [section](datasets.md), if not:
 
 ```bash
 export TRAIN_ANN_FILE=`pwd`/../../data/horizontal_text_detection/annotation.json
@@ -62,7 +64,7 @@ python export.py \
 This produces model `model.xml` and weights `model.bin` in single-precision floating-point format
 (FP32). The obtained model expects **normalized image** in planar BGR format.
 
-### 6. Visualize inference of IR
+### 6. Visualize inference of exported model.
 
 You need to pass a path to `model.bin` and index of your web cam.
 
@@ -72,7 +74,7 @@ python visualize.py \
    --video 0
 ```
 
-### 7. Validation of IR
+### 7. Evaluation of exported model.
 
 Instead of passing `snapshot.pth` you need to pass path to `model.bin`.
 
