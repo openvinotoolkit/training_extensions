@@ -31,6 +31,8 @@ export MODEL_TEMPLATE=`realpath ./model_templates/alphanumeric-text-spotting/tex
 export WORK_DIR=/tmp/my_model
 export SNAPSHOT=${WORK_DIR}/snapshot.pth
 python ../../tools/instantiate_template.py ${MODEL_TEMPLATE} ${WORK_DIR}
+export ADD_EPOCHS=2
+export EPOCHS_NUM=$((`cat ${MODEL_TEMPLATE} | grep epochs | tr -dc '0-9'` + ${ADD_EPOCHS}))
 ```
 
 ### 3. Prepare datasets
@@ -97,8 +99,7 @@ Try both following variants and select the best one:
    * If you would like to start **fine-tuning** from pre-trained weights use `--resume-from` parameter and value of `--epochs` have to exceed the value stored inside `${MODEL_TEMPLATE}` file, otherwise training will be ended immediately. Here we add `2` additional epochs.
 
       ```bash
-      export ADD_EPOCHS=2
-      export EPOCHS_NUM=$((`cat ${MODEL_TEMPLATE} | grep epochs | tr -dc '0-9'` + ${ADD_EPOCHS}))
+
 
       python train.py \
          --resume-from ${SNAPSHOT} \
@@ -108,7 +109,8 @@ Try both following variants and select the best one:
          --val-data-roots ${VAL_IMG_ROOT} \
          --save-checkpoints-to ${WORK_DIR}/outputs \
          --epochs ${EPOCHS_NUM} \
-      && export SNAPSHOT=${WORK_DIR}/outputs/latest.pth
+      && export SNAPSHOT=${WORK_DIR}/outputs/latest.pth \
+      && export EPOCHS_NUM=$((${EPOCHS_NUM} + ${ADD_EPOCHS}))
       ```
 
    * If you would like to start **training** from pre-trained weights use `--load-weights` pararmeter instead of `--resume-from`. Also you can use parameters such as `--epochs`, `--batch-size`, `--gpu-num`, `--base-learning-rate`, otherwise default values will be loaded from `${MODEL_TEMPLATE}`.
