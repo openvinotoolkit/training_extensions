@@ -30,8 +30,6 @@ from mmdet.datasets.pipelines import Compose
 def postprocess(result, img_meta, num_classes=80, rescale=True):
     det_bboxes = result['boxes']
     det_labels = result['labels']
-    det_masks = result.get('masks', None)
-    det_texts = result.get('texts', None)
 
     if rescale:
         img_h, img_w = img_meta[0]['ori_shape'][:2]
@@ -44,17 +42,7 @@ def postprocess(result, img_meta, num_classes=80, rescale=True):
     det_bboxes[:, 1:4:2] = np.clip(det_bboxes[:, 1:4:2], 0, img_h - 1)
 
     bbox_results = bbox2result(det_bboxes, det_labels, num_classes)
-    segm_results = mask2result(
-        det_bboxes,
-        det_labels,
-        det_masks,
-        num_classes,
-        mask_thr_binary=0.5,
-        img_size=(img_h, img_w))
-    if det_texts is not None:
-        return bbox_results, segm_results, det_texts
-    else:
-        return bbox_results, segm_results
+    return bbox_results
 
 class VideoDataset:
     def __init__(self, path, cfg, device='cpu'):
@@ -104,14 +92,13 @@ def main(args):
     classes_num = 2
 
     extra_args = {}
-    from mmdet.utils.deployment.openvino_backend import MaskTextSpotterOpenVINO as Model
-    extra_args['text_recognition_thr'] = cfg['model'].get('roi_head', {}).get('text_thr', 0.0)
+    from mmdet.utils.deployment.openvino_backend import DetectorOpenVINO as Model
     assert args.load_weights.endswith('.xml') or args.load_weights.endswith('.bin')
     model = Model(args.load_weights[:-3] + 'xml',
                   args.load_weights[:-3] + 'bin',
                   mapping_file_path=args.load_weights[:-3] + 'mapping',
                   cfg=cfg,
-                  classes=('text', ),
+                  classes=('face', ),
                   **extra_args)
 
     GREEN_COLOR = (0, 255, 0)
@@ -126,26 +113,21 @@ def main(args):
             num_classes=classes_num,
             rescale=True)
 
-        boxes, masks, texts = result
-        if boxes:
-            for box, mask, text in zip(boxes[0], masks[0], texts):
+        for box in result[0]:
+            if box[-1] > 0.3:
                 p0, p1 = (int(box[0]), int(box[1])), (int(box[2]), int(box[3]))
                 cv2.rectangle(display_image, p0, p1, GREEN_COLOR, 1)
-                contours = cv2.findContours(mask.astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)[-2]
-                if contours:
-                    cv2.drawContours(display_image, contours, -1, GREEN_COLOR, 1)
-                if text:
-                    cv2.putText(display_image, text, p0, 1, 2, BLUE_COLOR, 2)
+                cv2.putText(display_image, 'face', p0, 1, 2, BLUE_COLOR, 2)
         cv2.imshow('image', display_image)
         if cv2.waitKey(1) == 27:
             break
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='Test model deployed to ONNX or OpenVINO')
+    parser = argparse.ArgumentParser(description='Test model deployed to OpenVINO')
+    parser.add_argument('--load-weights', help='Path to OpenVINO model.')
+    parser.add_argument('--video', help='Web camera index.')
     parser.add_argument('--config', help=argparse.SUPPRESS, default='model.py')
-    parser.add_argument('--load-weights', help='path to model file OpenVINO.')
-    parser.add_argument('--video', default=None, help='run model on the video rather than the dataset')
     args = parser.parse_args()
     return args
 

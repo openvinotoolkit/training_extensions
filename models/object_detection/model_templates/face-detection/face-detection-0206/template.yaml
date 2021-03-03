@@ -18,6 +18,8 @@ dependencies:
   destination: export.py
 - source: ../../../../../ote/tools/compress.py
   destination: compress.py
+- source: ../../../tools/visualize.py
+  destination: visualize.py
 - source: ../../../../../ote
   destination: packages/ote
 - source: ../../requirements.txt
