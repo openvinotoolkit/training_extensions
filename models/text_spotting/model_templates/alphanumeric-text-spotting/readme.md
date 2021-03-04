@@ -30,9 +30,9 @@ source venv/bin/activate
 export MODEL_TEMPLATE=`realpath ./model_templates/alphanumeric-text-spotting/text-spotting-0003-lite/template.yaml`
 export WORK_DIR=/tmp/my_model
 export SNAPSHOT=${WORK_DIR}/snapshot.pth
-python ../../tools/instantiate_template.py ${MODEL_TEMPLATE} ${WORK_DIR}
-export ADD_EPOCHS=2
+export ADD_EPOCHS=1
 export EPOCHS_NUM=$((`cat ${MODEL_TEMPLATE} | grep epochs | tr -dc '0-9'` + ${ADD_EPOCHS}))
+python ../../tools/instantiate_template.py ${MODEL_TEMPLATE} ${WORK_DIR}
 ```
 
 ### 3. Prepare datasets
