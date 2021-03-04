@@ -65,7 +65,7 @@ Dataset format is similar to [im2latex-100k](https://zenodo.org/record/56198#.X2
     There should be at least two such files: `train_filter.lst` and `validate_filter.lst`
 
 You can prepare your own dataset in the same format as above.
-Samples of the dataset can be found [here](../../data/formula_recognition).
+Samples of the dataset can be found [here](../../../data/formula_recognition).
 
 > **NOTE**:
 > By default the following structure of the dataset is assumed:
@@ -195,7 +195,7 @@ That is why we cannot just compare text predictions one-by-one, we have to rende
 
 ## Demo
 
-In order to see how trained model works using OpenVINO™ please refer to [Formula recognition Python\* Demo](https://github.com/opencv/open_model_zoo/tree/develop/demos/python_demos/formula_recognition_demo/). Before running the demo you have to export trained model to IR. Please, see below how to do that.
+In order to see how trained model works using OpenVINO™ please refer to [Formula recognition Python\* Demo](https://github.com/openvinotoolkit/open_model_zoo/tree/develop/demos/formula_recognition_demo/python). Before running the demo you have to export trained model to IR. Please, see below how to do that.
 
 If you want to see how trained PyTorch model is working, you can run `tools/demo.py` script with correct `config` file. Fill in the `input_images` variable with the paths to desired images. For every image in this list, model will predict the formula and print it into the terminal.
 

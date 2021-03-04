@@ -131,7 +131,7 @@ This produces the `model.xml` model and weights `model.bin` in single-precision 
 
 ## OpenVINO™ Demo
 
-OpenVINO™ provides the multi-camera-multi-person tracking demo, which is able to use these models as person re-identification networks. See details in the [demo](https://github.com/opencv/open_model_zoo/tree/develop/demos/python_demos/multi_camera_multi_target_tracking).
+OpenVINO™ provides the multi-camera-multi-person tracking demo, which is able to use these models as person re-identification networks. See details in the [demo](https://github.com/openvinotoolkit/open_model_zoo/tree/develop/demos/multi_camera_multi_target_tracking_demo/python).
 
 ## Citation
 If this training code helped your research, please cite the paper:

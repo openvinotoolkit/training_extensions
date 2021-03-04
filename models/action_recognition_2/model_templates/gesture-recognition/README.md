@@ -110,4 +110,4 @@ This produces model `model.xml` and weights `model.bin` in single-precision floa
 
 ### 8. Demo
 
-OpenVINO™ provides the Gesture Recognition demo, which is able to use the converted model. See details in the [demo](https://github.com/openvinotoolkit/open_model_zoo/tree/develop/demos/python_demos/gesture_recognition_demo).
+OpenVINO™ provides the Gesture Recognition demo, which is able to use the converted model. See details in the [demo](https://github.com/openvinotoolkit/open_model_zoo/tree/develop/demos/gesture_recognition_demo/python).

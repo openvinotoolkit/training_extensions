@@ -155,7 +155,7 @@ You should observe about 68% mAP on the validation set.
 
 ## OpenVINO™ demo <a name="openvino-demo"/>
 
-OpenVINO™ provides multi-person pose estimation demo, which is able to use these models as pose estimation networks. See details in the [demo](https://github.com/opencv/open_model_zoo/tree/develop/demos/python_demos/single_human_pose_estimation_demo).
+OpenVINO™ provides multi-person pose estimation demo, which is able to use these models as pose estimation networks. See details in the [demo](https://github.com/openvinotoolkit/open_model_zoo/tree/develop/demos/single_human_pose_estimation_demo/python).
 
 ## Citation
 
