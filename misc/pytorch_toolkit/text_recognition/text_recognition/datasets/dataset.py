@@ -96,7 +96,6 @@ class BaseDataset(Dataset):
 
 
 class Im2LatexDataset(BaseDataset):
-    # TODO: think of argument unification
     def __init__(self, data_path, annotation_file, min_shape=(8, 8)):
         """args:
         data_path: root dir storing the prepoccessed data
