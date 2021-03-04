@@ -15,7 +15,7 @@ Average Precision (AP) is defined as an area under the precision/recall curve.
 
 ## Training pipeline
 
-### 0. Change a directory in your terminal to object_detection.
+### 1. Change a directory in your terminal to object_detection.
 
 ```bash
 cd models/object_detection
@@ -26,10 +26,10 @@ If You have not created virtual environment yet:
 ```
 Activate virtual environment:
 ```bash
-. venv/bin/activate
+source venv/bin/activate
 ```
 
-### 1. Select a model template file and instantiate it in some directory.
+### 2. Select a model template file and instantiate it in some directory.
 
 ```bash
 export MODEL_TEMPLATE=`realpath ./model_templates/custom-object-detection/mobilenet_v2-2s_ssd-256x256/template.yaml`
@@ -37,11 +37,11 @@ export WORK_DIR=/tmp/my_model
 python ../../tools/instantiate_template.py ${MODEL_TEMPLATE} ${WORK_DIR}
 ```
 
-### 2. Collect dataset
+### 3. Collect dataset
 
 You can train a model on existing toy dataset `training_extensions/data/airport`. Obviously such dataset is not sufficient for training good enough model.
 
-### 3. Prepare annotation
+### 4. Prepare annotation
 
 The existing toy dataset has annotation in the Common Objects in Context (COCO) format so it is enough to get started.
 
@@ -53,13 +53,13 @@ export VAL_ANN_FILE="${OBJ_DET_DIR}/../../data/airport/annotation_example_val.js
 export VAL_IMG_ROOT="${OBJ_DET_DIR}/../../data/airport/val"
 ```
 
-### 4. Change current directory to directory where the model template has been instantiated.
+### 5. Change current directory to directory where the model template has been instantiated.
 
 ```bash
 cd ${WORK_DIR}
 ```
 
-### 5. Training
+### 6. Training
 
 Since custom detection model templates rather than ready-to-use models (though technically one can use them as they are) are provided it is needed to define `classes`.
 
@@ -67,7 +67,7 @@ Since custom detection model templates rather than ready-to-use models (though t
 export CLASSES="vehicle,person,non-vehicle"
 ```
 
-### 6. Training
+### 7. Training
 
 To start training from pre-trained weights use `--load-weights` pararmeter.
 
@@ -84,7 +84,7 @@ python train.py \
 
 Also you can use parameters such as `--epochs`, `--batch-size`, `--gpu-num`, `--base-learning-rate`, otherwise default values will be loaded from `${MODEL_TEMPLATE}`.
 
-### 7. Evaluation
+### 8. Evaluation
 
 Evaluation procedure allows us to get quality metrics values and complexity numbers such as number of parameters and FLOPs.
 
@@ -111,7 +111,7 @@ python eval.py \
    --classes ${CLASSES}
 ```
 
-### 8. Export PyTorch\* model to the OpenVINO™ format
+### 9. Export PyTorch\* model to the OpenVINO™ format
 
 To convert PyTorch\* model to the OpenVINO™ IR format run the `export.py` script:
 
@@ -128,9 +128,9 @@ For SSD networks an alternative OpenVINO™ representation is saved automaticall
 SSD model exported in such way will produce a bit different results (non-significant in most cases),
 but it also might be faster than the default one. As a rule SSD models in [Open Model Zoo](https://github.com/opencv/open_model_zoo/) are exported using this option.
 
-### 9. Validation of IR
+### 10. Validation of IR
 
-Instead of passing `snapshot.pth` you need to pass path to `model.bin` (or `model.xml`).
+Instead of passing `snapshot.pth` you need to pass path to `model.bin`.
 
 ```bash
 python eval.py \
