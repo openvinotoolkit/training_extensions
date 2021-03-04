@@ -14,7 +14,7 @@ Average Precision (AP) is defined as an area under the precision/recall curve.
 
 ## Training pipeline
 
-### 0. Change a directory in your terminal to object_detection.
+### 1. Change a directory in your terminal to object_detection.
 
 ```bash
 cd models/object_detection
@@ -25,10 +25,10 @@ If You have not created virtual environment yet:
 ```
 Activate virtual environment:
 ```bash
-. venv/bin/activate
+source venv/bin/activate
 ```
 
-### 1. Select a model template file and instantiate it in some directory.
+### 2. Select a model template file and instantiate it in some directory.
 
 ```bash
 export MODEL_TEMPLATE=`realpath ./model_templates/vehicle-detection/vehicle-detection-0200/template.yaml`
@@ -36,7 +36,7 @@ export WORK_DIR=/tmp/my_model
 python ../../tools/instantiate_template.py ${MODEL_TEMPLATE} ${WORK_DIR}
 ```
 
-### 2. Collect dataset
+### 3. Collect dataset
 
 Collect or download images with vehicles presented on them. One can download MS-COCO dataset and remain images with cars only.
 ```bash
@@ -53,17 +53,17 @@ sed -i "s/car/vehicle/g" ${DATA_DIR}/annotations/instances_val2017car.json
 sed -i "s/car/vehicle/g" ${DATA_DIR}/annotations/instances_train2017car.json
 ```
 
-### 3. Prepare annotation
+### 4. Prepare annotation
 
 Annotate dataset and save annotation to MSCOCO format with `vehicle` as the only one class.
 
-### 4. Change current directory to directory where the model template has been instantiated.
+### 5. Change current directory to directory where the model template has been instantiated.
 
 ```bash
 cd ${WORK_DIR}
 ```
 
-### 5. Training and Fine-tuning
+### 6. Training and Fine-tuning
 
 Try both following variants and select the best one:
 
@@ -100,7 +100,7 @@ Try both following variants and select the best one:
          --epochs ${EPOCHS_NUM}
       ```
 
-### 6. Evaluation
+### 7. Evaluation
 
 Evaluation procedure allows us to get quality metrics values and complexity numbers such as number of parameters and FLOPs.
 
@@ -125,7 +125,7 @@ python eval.py \
    --save-output-to ${WORK_DIR}/output_images
 ```
 
-### 7. Export PyTorch\* model to the OpenVINO™ format
+### 8. Export PyTorch\* model to the OpenVINO™ format
 
 To convert PyTorch\* model to the OpenVINO™ IR format run the `export.py` script:
 
@@ -142,9 +142,9 @@ For SSD networks an alternative OpenVINO™ representation is saved automaticall
 SSD model exported in such way will produce a bit different results (non-significant in most cases),
 but it also might be faster than the default one. As a rule SSD models in [Open Model Zoo](https://github.com/opencv/open_model_zoo/) are exported using this option.
 
-### 8. Validation of IR
+### 9. Validation of IR
 
-Instead of passing `snapshot.pth` you need to pass path to `model.bin` (or `model.xml`).
+Instead of passing `snapshot.pth` you need to pass path to `model.bin`.
 
 ```bash
 python eval.py \

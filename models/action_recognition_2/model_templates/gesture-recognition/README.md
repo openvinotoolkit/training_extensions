@@ -22,7 +22,7 @@ Target datasets:
 
 ## Training pipeline
 
-### 0. Change a directory in your terminal to action_recognition_2.
+### 1. Change a directory in your terminal to action_recognition_2.
 
 ```bash
 cd models/action_recognition_2
@@ -33,10 +33,10 @@ If You have not created virtual environment yet:
 ```
 Activate virtual environment:
 ```bash
-. venv/bin/activate
+source venv/bin/activate
 ```
 
-### 1. Select a model template file and instantiate it in some directory.
+### 2. Select a model template file and instantiate it in some directory.
 
 ```bash
 export MODEL_TEMPLATE=`realpath ./model_templates/gesture_recognition/s3d-rgb-mobilenet-v3-stream-msasl/template.yaml`
@@ -44,19 +44,19 @@ export WORK_DIR=/tmp/my_model
 python ../../tools/instantiate_template.py ${MODEL_TEMPLATE} ${WORK_DIR}
 ```
 
-### 2. Prepare data
+### 3. Prepare data
 
 Target datasets:
 * To prepare MS-ASL data follow instructions: [DATA_MSASL.md](./DATA_MSASL.md).
 * To prepare JESTER data follow instructions: [DATA_JESTER.md](./DATA_JESTER.md).
 
-### 3. Change current directory to directory where the model template has been instantiated.
+### 4. Change current directory to directory where the model template has been instantiated.
 
 ```bash
 cd ${WORK_DIR}
 ```
 
-### 4. Training and Fine-tuning
+### 5. Training and Fine-tuning
 
 Try both following variants and select the best one:
 
@@ -81,7 +81,7 @@ python train.py \
 
 Also you can use parameters such as `--epochs`, `--batch-size`, `--gpu-num`, `--base-learning-rate`, otherwise default values will be loaded from `${MODEL_TEMPLATE}`.
 
-### 5. Evaluation
+### 6. Evaluation
 
 Evaluation procedure allows us to get quality metrics values and complexity numbers such as number of parameters and FLOPs.
 
@@ -95,7 +95,7 @@ python eval.py \
    --save-metrics-to ${WORK_DIR}/metrics.yaml
 ```
 
-### 6. Export PyTorch\* model to the OpenVINO™ format
+### 7. Export PyTorch\* model to the OpenVINO™ format
 
 To convert PyTorch\* model to the OpenVINO™ IR format run the `export.py` script:
 
@@ -108,6 +108,6 @@ python export.py \
 This produces model `model.xml` and weights `model.bin` in single-precision floating-point format
 (FP32). The obtained model expects **normalized image** in planar RGB format.
 
-### 7. Demo
+### 8. Demo
 
 OpenVINO™ provides the Gesture Recognition demo, which is able to use the converted model. See details in the [demo](https://github.com/openvinotoolkit/open_model_zoo/tree/develop/demos/python_demos/gesture_recognition_demo).

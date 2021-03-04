@@ -9,28 +9,28 @@ inference.
 
 ## Setup OpenVINO™ Training Extensions
 
-0. Download and install [OpenVINO™](https://software.intel.com/en-us/openvino-toolkit).
+1. Download and install [OpenVINO™](https://software.intel.com/en-us/openvino-toolkit).
 
-1. Clone repository in the working directory by running the following:
+2. Clone repository in the working directory by running the following:
 
     ```
-    git clone https://github.com/openvinotoolkit/training_extensions.git
+    git clone https://github.com/openvinotoolkit/training_extensions.git --branch refactor --single-branch
     cd training_extensions
     ```
 
-2. Install prerequisites by running the following:
+3. Install prerequisites by running the following:
 
     ```
     sudo apt-get install python3-pip virtualenv
     ```
 
-3. Create and activate virtual environment:
+4. Create and activate virtual environment:
     ```
     virtualenv venv
-    . venv/bin/activate
+    source venv/bin/activate
     ```
 
-4. Install `ote` package:
+5. Install `ote` package:
     ```
     pip3 install -e ote/
     ```
@@ -58,7 +58,3 @@ them for prediction.
 # Misc
 
 Models that were previously developed can be found [here](misc/README.md).
-
-# Web UI
-
-OpenVINO™ Training Extensions provide [Web UI](web) for training models and annotating data in a convenient way using a graphical interface.
