@@ -50,7 +50,7 @@ def create_image_classification_export_test_case(**kwargs):
                     f'{initial_command}'
                     f'cd {os.path.dirname(self.template_file)};'
                     f'pip install -r requirements.txt;'
-                    f'python export.py --openvino'
+                    f'python3 export.py --openvino'
                     f' --load-weights snapshot.pth'
                     f' --save-model-to {export_dir}'
                 )
@@ -75,7 +75,7 @@ def create_image_classification_test_case(**kwargs):
             run_through_shell(
                 f'{initial_command}'
                 f'cd {self.template_folder};'
-                f'python train.py'
+                f'python3 train.py'
                 f' --train-ann-files {self.ann_file}'
                 f' --train-data-roots {os.path.join(self.img_root, "train")}'
                 f' --val-ann-files {self.ann_file}'

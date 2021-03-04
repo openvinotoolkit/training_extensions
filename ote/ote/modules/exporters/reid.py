@@ -71,7 +71,7 @@ class ReidExporter(BaseExporter):
 
         onnx_model_path = self._get_onnx_model_path(args["save_model_to"], args["config"])
 
-        run(f'python {os.path.join(tools_dir, "convert_to_onnx.py")} '
+        run(f'python3 {os.path.join(tools_dir, "convert_to_onnx.py")} '
             f' --config-file {args["config"]}'
             f' --output-name {onnx_model_path}'
              ' --disable-dyn-axes'

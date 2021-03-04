@@ -47,7 +47,7 @@ class MMDetectionExporter(BaseExporter):
 
     def _export_to_onnx(self, args, tools_dir):
         update_config = self._get_update_config(args)
-        run_through_shell(f'python {os.path.join(tools_dir, "export.py")} '
+        run_through_shell(f'python3 {os.path.join(tools_dir, "export.py")} '
                           f'{args["config"]} '
                           f'{args["load_weights"]} '
                           f'{args["save_model_to"]} '
@@ -57,7 +57,7 @@ class MMDetectionExporter(BaseExporter):
 
     def _export_to_openvino(self, args, tools_dir):
         update_config = self._get_update_config(args)
-        run_through_shell(f'python {os.path.join(tools_dir, "export.py")} '
+        run_through_shell(f'python3 {os.path.join(tools_dir, "export.py")} '
                           f'{args["config"]} '
                           f'{args["load_weights"]} '
                           f'{args["save_model_to"]} '
@@ -83,7 +83,7 @@ class MMDetectionExporter(BaseExporter):
             should_run_alt_ssd_export = False
 
         if should_run_alt_ssd_export:
-            run_through_shell(f'python {os.path.join(tools_dir, "export.py")} '
+            run_through_shell(f'python3 {os.path.join(tools_dir, "export.py")} '
                               f'{args["config"]} '
                               f'{args["load_weights"]} '
                               f'{os.path.join(args["save_model_to"], "alt_ssd_export")} '

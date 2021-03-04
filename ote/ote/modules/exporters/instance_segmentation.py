@@ -34,7 +34,7 @@ class InstanceSegmentationExporter(BaseExporter):
     def _export_to_openvino(self, args, tools_dir):
         config = Config.fromfile(args["config"])
         height, width = self._get_input_shape(config)
-        run(f'python {os.path.join(tools_dir, "export.py")} '
+        run(f'python3 {os.path.join(tools_dir, "export.py")} '
             f'{args["config"]} '
             f'{args["load_weights"]} '
             f'{args["save_model_to"]} '

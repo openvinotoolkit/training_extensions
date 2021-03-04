@@ -119,7 +119,7 @@ def create_test_case(domain_name, problem_name, model_name, ann_file, img_root, 
             run_through_shell(
                 f'{initial_command}'
                 f'cd {self.template_folder};'
-                f'python eval.py'
+                f'python3 eval.py'
                 f' --test-ann-files {self.ann_file}'
                 f' --test-data-roots {self.img_root}'
                 f' --save-metrics-to {metrics_path}'
@@ -139,7 +139,7 @@ def create_test_case(domain_name, problem_name, model_name, ann_file, img_root, 
             run_through_shell(
                 f'{initial_command}'
                 f'cd {self.template_folder};'
-                f'python train.py'
+                f'python3 train.py'
                 f' --train-ann-files {self.ann_file}'
                 f' --train-data-roots {self.img_root}'
                 f' --val-ann-files {self.ann_file}'
@@ -209,7 +209,7 @@ def create_export_test_case(domain_name, problem_name, model_name, ann_file, img
             metrics_path = os.path.join(export_dir, "metrics.yaml")
             run_through_shell(
                 f'cd {os.path.dirname(self.template_file)};'
-                f'python eval.py'
+                f'python3 eval.py'
                 f' --test-ann-files {ann_file}'
                 f' --test-data-roots {img_root}'
                 f' --load-weights {os.path.join(export_dir, "model.bin")}'
@@ -230,7 +230,7 @@ def create_export_test_case(domain_name, problem_name, model_name, ann_file, img
                     f'{initial_command}'
                     f'cd {os.path.dirname(self.template_file)};'
                     f'pip install -r requirements.txt;'
-                    f'python export.py'
+                    f'python3 export.py'
                     f' --load-weights snapshot.pth'
                     f' --save-model-to {export_dir}'
                 )
@@ -379,7 +379,7 @@ def create_nncf_test_case(domain_name, problem_name, model_name, ann_file, img_r
             log_file = os.path.join(self.output_folder, f'log__{self.id()}.txt')
             run_through_shell(
                 f'cd {self.template_folder};'
-                f'python compress.py'
+                f'python3 compress.py'
                 f' --train-ann-files {self.ann_file}'
                 f' --train-data-roots {self.img_root}'
                 f' --val-ann-files {self.ann_file}'
@@ -396,7 +396,7 @@ def create_nncf_test_case(domain_name, problem_name, model_name, ann_file, img_r
             metrics_path = os.path.join(self.output_folder, 'metrics.yaml')
             run_through_shell(
                 f'cd {self.template_folder};'
-                f'python eval.py'
+                f'python3 eval.py'
                 f' --test-ann-files {self.ann_file}'
                 f' --test-data-roots {self.img_root}'
                 f' --save-metrics-to {metrics_path}'
@@ -428,7 +428,7 @@ def create_nncf_test_case(domain_name, problem_name, model_name, ann_file, img_r
 
             run_through_shell(
                 f'cd {os.path.dirname(self.template_file)};'
-                f'python export.py'
+                f'python3 export.py'
                 f' --load-weights {latest_file}'
                 f' --save-model-to {self.output_folder}'
             )

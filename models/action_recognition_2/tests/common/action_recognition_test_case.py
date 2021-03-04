@@ -74,7 +74,7 @@ def create_action_recognition_test_case(problem_name, model_name, ann_file, img_
         def test_evaluation_on_gpu(self):
             run_through_shell(
                 f'cd {self.template_folder};'
-                f'python eval.py'
+                f'python3 eval.py'
                 f' --test-ann-files {self.ann_file}'
                 f' --test-data-roots {self.img_root}'
                 f' --save-metrics-to metrics.yaml'
@@ -98,7 +98,7 @@ def create_action_recognition_test_case(problem_name, model_name, ann_file, img_
             run_through_shell(
                 'export CUDA_VISIBLE_DEVICES=;'
                 f'cd {self.template_folder};'
-                f'python eval.py'
+                f'python3 eval.py'
                 f' --test-ann-files {self.ann_file}'
                 f' --test-data-roots {self.img_root}'
                 f' --save-metrics-to metrics.yaml'
@@ -121,7 +121,7 @@ def create_action_recognition_test_case(problem_name, model_name, ann_file, img_
             log_file = os.path.join(self.template_folder, 'test_finetuning.log')
             run_through_shell(
                 f'cd {self.template_folder};'
-                f'python train.py'
+                f'python3 train.py'
                 f' --train-ann-files {self.ann_file}'
                 f' --train-data-roots {self.img_root}'
                 f' --val-ann-files {self.ann_file}'
@@ -143,7 +143,7 @@ def create_action_recognition_test_case(problem_name, model_name, ann_file, img_
             run_through_shell(
                 'export CUDA_VISIBLE_DEVICES=;'
                 f'cd {self.template_folder};'
-                f'python train.py'
+                f'python3 train.py'
                 f' --train-ann-files {self.ann_file}'
                 f' --train-data-roots {self.img_root}'
                 f' --val-ann-files {self.ann_file}'
@@ -191,7 +191,7 @@ def create_action_recognition_export_test_case(problem_name, model_name, ann_fil
             run_through_shell(
                 f'cd {os.path.dirname(self.template_file)};'
                 f'pip install -r requirements.txt;'
-                f'python export.py'
+                f'python3 export.py'
                 f' --load-weights snapshot.pth'
                 f' --save-model-to {folder}'
             )
@@ -205,7 +205,7 @@ def create_action_recognition_export_test_case(problem_name, model_name, ann_fil
 
             run_through_shell(
                 f'cd {os.path.dirname(self.template_file)};'
-                f'python eval.py'
+                f'python3 eval.py'
                 f' --test-ann-files {ann_file}'
                 f' --test-data-roots {img_root}'
                 f' --load-weights {os.path.join(export_dir, "model.bin")}'
@@ -232,7 +232,7 @@ def create_action_recognition_export_test_case(problem_name, model_name, ann_fil
             run_through_shell(
                 f'export CUDA_VISIBLE_DEVICES=;'
                 f'cd {os.path.dirname(self.template_file)};'
-                f'python eval.py'
+                f'python3 eval.py'
                 f' --test-ann-files {ann_file}'
                 f' --test-data-roots {img_root}'
                 f' --load-weights {os.path.join(export_dir, "model.bin")}'

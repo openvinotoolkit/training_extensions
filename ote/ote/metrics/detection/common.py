@@ -61,7 +61,7 @@ def run_test_script(config_path, work_dir, snapshot, update_config, show_dir, me
         tool = 'test.py'
 
     subprocess.run(
-        f'python {MMDETECTION_TOOLS}/{tool}'
+        f'python3 {MMDETECTION_TOOLS}/{tool}'
         f' {config_path} {snapshot}'
         f' --out {res_pkl} --eval {metrics}'
         f'{show_dir}{update_config}'

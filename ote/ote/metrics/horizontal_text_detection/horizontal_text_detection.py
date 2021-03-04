@@ -55,7 +55,7 @@ def coco_eval(config_path, work_dir, snapshot, update_config, show_dir, **kwargs
         tool = 'test.py'
 
     subprocess.run(
-        f'python {MMDETECTION_TOOLS}/{tool}'
+        f'python3 {MMDETECTION_TOOLS}/{tool}'
         f' {config_path} {snapshot}'
         f' --out {res_pkl} --eval f1 bbox'
         f'{show_dir}{update_config}'

@@ -87,7 +87,7 @@ def compute_wider_metrics(config_path, work_dir, snapshot, wider_dir, **kwargs):
     else:
         tool = 'test.py'
     subprocess.run(
-        f'python {MMDETECTION_TOOLS}/{tool}'
+        f'python3 {MMDETECTION_TOOLS}/{tool}'
         f' {config_path} {snapshot}'
         f' --out {res_pkl}'
         f' --update_config data.test.ann_file={wider_coco_annotation} data.test.img_prefix={wider_dir}'

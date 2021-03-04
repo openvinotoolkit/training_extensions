@@ -60,7 +60,7 @@ def mean_accuracy_eval(config_path, work_dir, snapshot, update_config, **kwargs)
             tool = 'test.py'
 
         subprocess.run(
-            f'python {MMACTION_TOOLS}/{tool}'
+            f'python3 {MMACTION_TOOLS}/{tool}'
             f' {config_path} {snapshot}'
             f' --eval mean_top_k_accuracy'
             f'{update_config}'

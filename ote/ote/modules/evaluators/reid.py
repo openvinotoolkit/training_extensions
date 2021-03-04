@@ -90,7 +90,7 @@ class ReidEvaluator(BaseEvaluator):
         res_complexity = os.path.join(work_dir, "complexity.json")
 
         subprocess.run(
-            f'python {tools_dir}/get_flops.py'
+            f'python3 {tools_dir}/get_flops.py'
             f' --config-file {config_path}'
             f' --out {res_complexity}'
             f' {update_config}'.split(' '), check=True)

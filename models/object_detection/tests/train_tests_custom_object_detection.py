@@ -74,7 +74,7 @@ def create_custom_object_detection_test_case(model_name):
             run_through_shell(
                 f'{initial_command}'
                 f'cd {self.template_folder};'
-                f'python train.py'
+                f'python3 train.py'
                 f' --train-ann-files {self.ann_file}'
                 f' --train-data-roots {self.img_root}'
                 f' --val-ann-files {self.ann_file}'
@@ -95,7 +95,7 @@ def create_custom_object_detection_test_case(model_name):
             run_through_shell(
                 f'{initial_command}'
                 f'cd {self.template_folder};'
-                f'python eval.py'
+                f'python3 eval.py'
                 f' --test-ann-files {self.ann_file}'
                 f' --test-data-roots {self.img_root}'
                 f' --save-metrics-to {metrics_path}'
@@ -116,7 +116,7 @@ def create_custom_object_detection_test_case(model_name):
                 f'{initial_command}'
                 f'cd {os.path.dirname(self.template_file)};'
                 f'pip install -r requirements.txt;'
-                f'python export.py'
+                f'python3 export.py'
                 f' --load-weights {os.path.join(self.output_folder, "latest.pth")}'
                 f' --classes "{classes}"'
                 f' --save-model-to {self.output_folder}'
@@ -126,7 +126,7 @@ def create_custom_object_detection_test_case(model_name):
             metrics_path = os.path.join(self.output_folder, "metrics_exported.yaml")
             run_through_shell(
                 f'cd {os.path.dirname(self.template_file)};'
-                f'python eval.py'
+                f'python3 eval.py'
                 f' --test-ann-files {self.ann_file}'
                 f' --test-data-roots {self.img_root}'
                 f' --load-weights {os.path.join(self.output_folder, "model.bin")}'

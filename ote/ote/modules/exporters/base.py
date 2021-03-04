@@ -35,7 +35,7 @@ class BaseExporter(metaclass=ABCMeta):
             self._export_to_onnx(args, tools_dir)
 
     def _export_to_openvino(self, args, tools_dir):
-        run_through_shell(f'python {os.path.join(tools_dir, "export.py")} '
+        run_through_shell(f'python3 {os.path.join(tools_dir, "export.py")} '
                           f'{args["config"]} '
                           f'{args["load_weights"]} '
                           f'{args["save_model_to"]} '
@@ -43,7 +43,7 @@ class BaseExporter(metaclass=ABCMeta):
                           f'--input_format {args["openvino_input_format"]}')
 
     def _export_to_onnx(self, args, tools_dir):
-        run_through_shell(f'python {os.path.join(tools_dir, "export.py")} '
+        run_through_shell(f'python3 {os.path.join(tools_dir, "export.py")} '
                           f'{args["config"]} '
                           f'{args["load_weights"]} '
                           f'{args["save_model_to"]} '

@@ -75,7 +75,7 @@ class ReidTrainer(BaseTrainer):
             gpu_num = 0
             logging.info('Training on CPU started ...')
 
-        run_with_termination(f'python {tools_dir}/main.py'
+        run_with_termination(f'python3 {tools_dir}/main.py'
                              f' --config-file {config}'
                              f' --gpu-num {gpu_num}'
                              f' {update_config}'.split(' '))

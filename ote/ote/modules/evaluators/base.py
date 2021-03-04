@@ -86,7 +86,7 @@ class BaseEvaluator(metaclass=ABCMeta):
         update_config = f' --update_config {update_config}' if update_config else ''
         update_config = update_config.replace('"', '\\"')
         run_through_shell(
-            f'python {tools_dir}/get_flops.py'
+            f'python3 {tools_dir}/get_flops.py'
             f' {config_path}'
             f' --shape {image_shape}'
             f' --out {res_complexity}'

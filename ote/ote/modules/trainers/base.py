@@ -58,7 +58,7 @@ class BaseTrainer(metaclass=ABCMeta):
         if os.getenv('MASTER_ADDR') is not None and os.getenv('MASTER_PORT') is not None:
             # Distributed training is handled by Kubeflow’s PyTorchJob at a higher level.
             logging.info('Distributed training started ...')
-            run_with_termination(f'python {tools_dir}/train.py'
+            run_with_termination(f'python3 {tools_dir}/train.py'
                                  f' --launcher=pytorch'
                                  f' {config}'
                                  f'{tensorboard_dir}'
@@ -81,7 +81,7 @@ class BaseTrainer(metaclass=ABCMeta):
             logging.info('... training on GPUs completed.')
         else:
             logging.info('Training on CPU started ...')
-            run_with_termination(f'python {tools_dir}/train.py'
+            run_with_termination(f'python3 {tools_dir}/train.py'
                                  f' {config}'
                                  f'{tensorboard_dir}'
                                  f'{update_config}'.split(' '))
