@@ -40,7 +40,6 @@ class MMDetectionExporter(BaseExporter):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.opset = 10
 
     def _get_update_config(self, args):
         return ''
@@ -52,7 +51,7 @@ class MMDetectionExporter(BaseExporter):
                           f'{args["load_weights"]} '
                           f'{args["save_model_to"]} '
                           f'{update_config} '
-                          f'--opset={self.opset} '
+                          f'--opset={args["opset"]} '
                           f'onnx ')
 
     def _export_to_openvino(self, args, tools_dir):
@@ -62,7 +61,7 @@ class MMDetectionExporter(BaseExporter):
                           f'{args["load_weights"]} '
                           f'{args["save_model_to"]} '
                           f'{update_config} '
-                          f'--opset={self.opset} '
+                          f'--opset={args["opset"]} '
                           f'openvino '
                           f'--input_format {args["openvino_input_format"]}')
 
@@ -88,7 +87,7 @@ class MMDetectionExporter(BaseExporter):
                               f'{args["load_weights"]} '
                               f'{os.path.join(args["save_model_to"], "alt_ssd_export")} '
                               f'{update_config} '
-                              f'--opset={self.opset} '
+                              f'--opset={args["opset"]} '
                               f'openvino '
                               f'--input_format {args["openvino_input_format"]} '
                               f'--alt_ssd_export ')
