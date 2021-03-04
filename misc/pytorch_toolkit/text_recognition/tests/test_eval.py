@@ -53,7 +53,7 @@ class TestAlphanumeric0013Evaluation(
         create_evaluation_test_case(
             'configs/config_0013.yml',
             expected_outputs='tests/expected_outputs/alphanumeric/icdar13_greater3_0013.json')):
-    "Test case for handwritten polynomials config"
+    "Test case for alphanumeric config"
 
 
 if __name__ == "__main__":
