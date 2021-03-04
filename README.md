@@ -14,7 +14,7 @@ inference.
 2. Clone repository in the working directory by running the following:
 
     ```
-    git clone https://github.com/openvinotoolkit/training_extensions.git --branch refactor --single-branch
+    git clone https://github.com/openvinotoolkit/training_extensions.git --single-branch
     cd training_extensions
     ```
 
