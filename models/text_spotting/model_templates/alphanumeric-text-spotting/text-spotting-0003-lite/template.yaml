@@ -31,7 +31,7 @@ inference_target:
 - CPU
 hyper_parameters:
   basic:
-    batch_size: 4
+    batch_size: 3
     base_learning_rate: 0.01
     epochs: 24
 output_format:
