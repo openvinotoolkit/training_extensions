@@ -99,8 +99,6 @@ Try both following variants and select the best one:
    * If you would like to start **fine-tuning** from pre-trained weights use `--resume-from` parameter and value of `--epochs` have to exceed the value stored inside `${MODEL_TEMPLATE}` file, otherwise training will be ended immediately. Here we add `2` additional epochs.
 
       ```bash
-
-
       python train.py \
          --resume-from ${SNAPSHOT} \
          --train-ann-files ${TRAIN_ANN_FILE} \
