@@ -44,6 +44,8 @@ def classes_list_to_update_config_dict(cfg, classes):
     if hasattr(cfg.model, 'roi_head'):
         if 'mask_head' in cfg.model.roi_head.keys():
             update_config_dict['model.roi_head.mask_head.num_classes'] = num_classes
+        if 'bbox_head' in cfg.model.roi_head.keys():
+            update_config_dict['model.roi_head.bbox_head.num_classes'] = num_classes
     return update_config_dict
 
 
