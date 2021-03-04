@@ -121,6 +121,7 @@ def create_custom_instance_segmentation_test_case(model_name, problem_name):
                 f'python export.py'
                 f' --load-weights {os.path.join(self.output_folder, "latest.pth")}'
                 f' --classes "{classes}"'
+                f' --opset 11'
                 f' --save-model-to {self.output_folder}'
             )
 
@@ -151,12 +152,12 @@ def create_custom_instance_segmentation_test_case(model_name, problem_name):
         #     self.do_export(classes, on_gpu=True)
         #     self.do_evaluation_of_exported_model(classes)
 
-        def test_e2e_on_gpu_person(self):
+        def test_e2e_on_gpu_person_car(self):
             skip_if_cuda_not_available()
-            classes = 'person'
+            classes = 'person,car'
             self.do_finetuning(classes, on_gpu=True)
             self.do_evaluation(classes, on_gpu=True)
-            # self.do_export(classes, on_gpu=True)
-            # self.do_evaluation_of_exported_model(classes)
+            self.do_export(classes, on_gpu=True)
+            self.do_evaluation_of_exported_model(classes)
 
     return TestCase
