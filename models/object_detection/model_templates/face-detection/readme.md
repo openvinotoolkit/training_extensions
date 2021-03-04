@@ -79,6 +79,8 @@ python visualize.py \
    --video 0
 ```
 
+See also [Object Detection Demo](https://github.com/openvinotoolkit/open_model_zoo/tree/develop/demos/object_detection_demo/python) in OpenModelZoo.
+
 ### 7. Evaluation of exported model.
 
 Instead of passing `snapshot.pth` you need to pass path to `model.bin`.

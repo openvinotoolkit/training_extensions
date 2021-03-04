@@ -76,6 +76,8 @@ python visualize.py \
    --video 0
 ```
 
+See also [Text Spotting Demo](https://github.com/openvinotoolkit/open_model_zoo/blob/develop/demos/text_spotting_demo/python/) in OpenModelZoo.
+
 ### 7. Evaluation of exported model.
 
 Instead of passing `snapshot.pth` you need to pass path to `model.bin`.
