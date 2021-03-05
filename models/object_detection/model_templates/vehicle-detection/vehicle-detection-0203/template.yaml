@@ -1,0 +1,62 @@
+name: vehicle-detection-0203
+domain: Object Detection
+problem: Vehicle Detection
+framework: OTEDetection v2.1.1
+summary: Vehicle Detection based on ResNet18+fpn+CascadeRCNN.
+annotation_format: COCO
+initial_weights: snapshot.pth
+dependencies:
+- sha256: e3c4d572aba8c4a13caa404a508ed931555a6a7138981d7e65c31b12b9be7389
+  size: 193611032
+  source: https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/vehicle-detection-0203.pth
+  destination: snapshot.pth
+- source: ../../../../../ote/tools/train.py
+  destination: train.py
+- source: ../../../../../ote/tools/eval.py
+  destination: eval.py
+- source: ../../../../../ote/tools/export.py
+  destination: export.py
+- source: ../../../../../ote/tools/compress.py
+  destination: compress.py
+- source: ../../../../../ote
+  destination: packages/ote
+- source: ../../requirements.txt
+  destination: requirements.txt
+dataset_requirements:
+  classes:
+  - vehicle
+max_nodes: 1
+training_target:
+- GPU
+inference_target:
+- CPU
+- iGPU
+- VPU
+hyper_parameters:
+  basic:
+    batch_size: 4
+    base_learning_rate: 0.02
+    epochs: 16
+output_format:
+  onnx:
+    default: true
+  openvino:
+    default: true
+    input_format: BGR
+optimisations: ~
+metrics:
+- display_name: Size
+  key: size
+  unit: Mp
+  value: 24.11
+- display_name: Complexity
+  key: complexity
+  unit: GFLOPs
+  value: 112.34
+- display_name: AP @ [IoU=0.50:0.95]
+  key: ap
+  unit: '%'
+  value: 43.8
+gpu_num: 1
+tensorboard: true
+config: model.py

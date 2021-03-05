@@ -1,0 +1,77 @@
+name: face-detection-0206
+domain: Object Detection
+problem: Face Detection
+framework: OTEDetection v2.1.1
+summary: Face Detection based on ResNet-152 (ATSS).
+annotation_format: COCO
+initial_weights: snapshot.pth
+dependencies:
+- sha256: 677a04f317d0250193ded307d8ec89e06436e5110f6a61bdef5fe10a17e282ea
+  size: 511179725
+  source: https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/face-detection-0206.pth
+  destination: snapshot.pth
+- source: ../../../../../ote/tools/train.py
+  destination: train.py
+- source: ../../../../../ote/tools/eval.py
+  destination: eval.py
+- source: ../../../../../ote/tools/export.py
+  destination: export.py
+- source: ../../../../../ote/tools/compress.py
+  destination: compress.py
+- source: ../../../../../ote
+  destination: packages/ote
+- source: ../../requirements.txt
+  destination: requirements.txt
+dataset_requirements:
+  classes:
+  - face
+max_nodes: 1
+training_target:
+- GPU
+inference_target:
+- CPU
+- iGPU
+hyper_parameters:
+  basic:
+    batch_size: 5
+    base_learning_rate: 0.05
+    epochs: 70
+output_format:
+  onnx:
+    default: true
+  openvino:
+    default: true
+    input_format: BGR
+optimisations: ~
+metrics:
+- display_name: AP @ [IoU=0.50:0.95]
+  key: ap
+  unit: '%'
+  value: 34.2
+- display_name: AP for faces > 64x64
+  key: ap_64x64
+  unit: '%'
+  value: 94.274
+- display_name: WiderFace Easy
+  key: widerface_e
+  unit: '%'
+  value: 94.281
+- display_name: WiderFace Medium
+  key: widerface_m
+  unit: '%'
+  value: 93.207
+- display_name: WiderFace Hard
+  key: widerface_h
+  unit: '%'
+  value: 84.439
+- display_name: Size
+  key: size
+  unit: Mp
+  value: 63.79
+- display_name: Complexity
+  key: complexity
+  unit: GFLOPs
+  value: 340.06
+gpu_num: 8
+tensorboard: true
+config: model.py

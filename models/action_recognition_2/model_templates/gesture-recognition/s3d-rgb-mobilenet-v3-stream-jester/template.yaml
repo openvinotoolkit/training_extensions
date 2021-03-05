@@ -1,0 +1,58 @@
+name: s3d-rgb-mobilenet-v3-stream-jester
+domain: Action Recognition 2
+problem: Gesture Recognition
+framework: OTEAction v0.6.0
+summary: ASL Recognition based on S3D-MobileNet-V3.
+annotation_format: CustomAction
+initial_weights: snapshot.pth
+dependencies:
+- sha256: 387f42e4a71ca0955e174d4661f795989b35056993f0049f45df4c56f83273d4
+  size: 33272762
+  source: https://docs.google.com/uc?export=download&id=1lDm2qOxMRyXZW6y7owlQBv8SGvGIKpcX
+  destination: snapshot.pth
+- source: ../../../../../ote/tools/train.py
+  destination: train.py
+- source: ../../../../../ote/tools/eval.py
+  destination: eval.py
+- source: ../../../../../ote/tools/export.py
+  destination: export.py
+- source: ../../../../../ote/tools/compress.py
+  destination: compress.py
+- source: ../../../../../ote
+  destination: packages/ote
+- source: ../../requirements.txt
+  destination: requirements.txt
+max_nodes: 1
+training_target:
+- GPU
+inference_target:
+- CPU
+- iGPU
+hyper_parameters:
+  basic:
+    batch_size: 14
+    base_learning_rate: 0.01
+    epochs: 65
+output_format:
+  onnx:
+    default: true
+  openvino:
+    default: true
+    input_format: RGB
+optimisations: ~
+metrics:
+- display_name: Size
+  key: size
+  unit: Mp
+  value: 4.133
+- display_name: Complexity
+  key: complexity
+  unit: GFLOPs
+  value: 6.66
+- display_name: Top-1 accuracy
+  key: accuracy
+  unit: '%'
+  value: 84.7
+gpu_num: 2
+tensorboard: true
+config: model.py
