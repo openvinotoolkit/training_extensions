@@ -2,13 +2,13 @@
 
 # WEB OTE
 WEB OTE is a convenient tool to train models for specific tasks fast and easily, using a graphical interface, an annotation tool for photos and videos and the scope of varied pre-trained models. Currently, WEB UI contains models for the following tasks:
-- [Face detection](../pytorch_toolkit/object_detection/model_templates/face-detection/readme.md#face-detection)
-- [Horizontal Text detection](../pytorch_toolkit/object_detection/model_templates/horizontal-text-detection/readme.md#text-detection)
-- [Person detection](../pytorch_toolkit/object_detection/model_templates/person-detection/readme.md#person-detection)
-- [Person-Vehicle-Bike detection](../pytorch_toolkit/object_detection/model_templates/person-vehicle-bike-detection/readme.md#person-vehicle-bike-detector)
-- [Vehicle detection](../pytorch_toolkit/object_detection/model_templates/vehicle-detection/readme.md#vehicle-detection)
-- [Custom detection](../pytorch_toolkit/object_detection/model_templates/custom-object-detection/readme.md#custom-object-detector) - models for this task were trained on numerous number of classes, so they are able to detect some specific class after fine-tuning on the annotated data.
-- [COCO Instance segmentation](../pytorch_toolkit/instance_segmentation/model_templates/coco-instance-segmentation/readme.md#instance-segmentation)
+- [Face detection](../models/object_detection/model_templates/face-detection/readme.md#face-detection)
+- [Horizontal Text detection](../models/object_detection/model_templates/horizontal-text-detection/readme.md#text-detection)
+- [Person detection](../models/object_detection/model_templates/person-detection/readme.md#person-detection)
+- [Person-Vehicle-Bike detection](../models/object_detection/model_templates/person-vehicle-bike-detection/readme.md#person-vehicle-bike-detector)
+- [Vehicle detection](../models/object_detection/model_templates/vehicle-detection/readme.md#vehicle-detection)
+- [Custom detection](../models/object_detection/model_templates/custom-object-detection/readme.md#custom-object-detector) - models for this task were trained on numerous number of classes, so they are able to detect some specific class after fine-tuning on the annotated data.
+- [COCO Instance segmentation](../models/instance_segmentation/model_templates/coco-instance-segmentation/readme.md#instance-segmentation)
 
 # Installation
 To start working with WEB OTE it is required to set up it locally. To do it choose the target device (CPU or GPU), install required packages and build docker containers as it showed in the instructions below.
