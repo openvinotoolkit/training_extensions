@@ -6,9 +6,9 @@ summary: Face Detection based on MobileNetV2 (FCOS).
 annotation_format: COCO
 initial_weights: snapshot.pth
 dependencies:
-- sha256: d5ab87ce04f3145a43eaddd2f87c59a85a07ec59f97a86c48d8bdcff9dd6c6b2
-  size: 16414233
-  source: https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/face-detection-0205.pth
+- sha256: 9bba40206d0839993dbdee2a41d8622a717da7f3168a6d2d19ec1e9f15c63fa1
+  size: 16413291
+  source: https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/object_detection/v2/face-detection-0205-retrained.pth
   destination: snapshot.pth
 - source: ../../../../../ote/tools/train.py
   destination: train.py
@@ -51,25 +51,25 @@ optimisations:
     default: false
 metrics:
 - display_name: AP @ [IoU=0.50:0.95]
-  key: ap
+  key: bbox
   unit: '%'
-  value: 21.6
+  value: 22.7
 - display_name: AP for faces > 64x64
   key: ap_64x64
   unit: '%'
-  value: 93.566
+  value: 93.995
 - display_name: WiderFace Easy
   key: widerface_e
   unit: '%'
-  value: 92.032
+  value: 92.606
 - display_name: WiderFace Medium
   key: widerface_m
   unit: '%'
-  value: 86.717
+  value: 87.556
 - display_name: WiderFace Hard
   key: widerface_h
   unit: '%'
-  value: 54.055
+  value: 56.221
 - display_name: Size
   key: size
   unit: Mp
