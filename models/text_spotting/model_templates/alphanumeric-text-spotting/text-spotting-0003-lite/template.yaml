@@ -1,4 +1,4 @@
-name: text-spotting-0003
+name: text-spotting-0003-lite
 domain: Text Spotting
 problem: Alphanumeric Text Spotting
 framework: OTEDetection v2.1.2
