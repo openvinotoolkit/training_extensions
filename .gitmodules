@@ -17,9 +17,6 @@
 [submodule "external/bert"]
 	path = external/bert
 	url = https://github.com/google-research/bert
-[submodule "external/cvat"]
-	path = external/cvat
-	url = ../../openvinotoolkit/cvat
 [submodule "external/nncf"]
 	path = external/nncf
 	url = ../../openvinotoolkit/nncf

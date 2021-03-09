@@ -1,9 +1,0 @@
-matplotlib
-mmcv==0.6.2
-onnx==1.6.0
-onnxruntime==1.1.2
-Polygon3==3.0.8
-pytorchcv==0.0.55
-terminaltables
-Pillow==6.2.2
-pycocotools@git+https://github.com/open-mmlab/cocoapi.git#subdirectory=pycocotools

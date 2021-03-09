@@ -8,7 +8,7 @@ Model that is able to detect and recognize alphanumeric text (figures and letter
 
 ## Training pipeline
 
-### 0. Change a directory in your terminal to text_spotting.
+### 1. Change a directory in your terminal to text_spotting.
 
 ```bash
 cd models/text_spotting
@@ -19,10 +19,10 @@ If You have not created virtual environment yet:
 ```
 Activate virtual environment:
 ```bash
-. venv/bin/activate
+source venv/bin/activate
 ```
 
-### 1. Select a model template file and instantiate it in some directory.
+### 2. Select a model template file and instantiate it in some directory.
 
 ```bash
 export MODEL_TEMPLATE=`realpath ./model_templates/alphanumeric-text-spotting/text-spotting-0003/template.yaml`
@@ -30,7 +30,7 @@ export WORK_DIR=/tmp/my_model
 python ../../tools/instantiate_template.py ${MODEL_TEMPLATE} ${WORK_DIR}
 ```
 
-### 2. Download datasets
+### 3. Download datasets
 
 To be able to train networks and/or get quality metrics for pre-trained ones,
 it's necessary to download at least one dataset from following resources.
@@ -43,7 +43,7 @@ it's necessary to download at least one dataset from following resources.
 *  [MSRA-TD500](http://www.iapr-tc11.org/mediawiki/index.php/MSRA_Text_Detection_500_Database_(MSRA-TD500))
 *  [COCO-Text](https://bgshih.github.io/cocotext/)
 
-### 3. Convert datasets
+### 4. Collect datasets
 
 Extract downloaded datasets in `${DATA_DIR}/text-dataset` folder.
 
@@ -89,13 +89,13 @@ ${DATA_DIR}/text-dataset
     └── IC13TEST.json
 ```
 
-### 4. Change current directory to directory where the model template has been instantiated.
+### 5. Change current directory to directory where the model template has been instantiated.
 
 ```bash
 cd ${WORK_DIR}
 ```
 
-### 5. Training and Fine-tuning
+### 6. Training and Fine-tuning
 
 Try both following variants and select the best one:
 
@@ -132,7 +132,7 @@ Try both following variants and select the best one:
          --epochs ${EPOCHS_NUM}
       ```
 
-### 6. Evaluation
+### 7. Evaluation
 
 Evaluation procedure allows us to get quality metrics values and complexity numbers such as number of parameters and FLOPs.
 
@@ -157,7 +157,7 @@ python eval.py \
    --save-output-to ${WORK_DIR}/output_images
 ```
 
-### 7. Export PyTorch\* model to the OpenVINO™ format
+### 8. Export PyTorch\* model to the OpenVINO™ format
 
 To convert PyTorch\* model to the OpenVINO™ IR format run the `export.py` script:
 
@@ -170,9 +170,9 @@ python export.py \
 This produces model `model.xml` and weights `model.bin` in single-precision floating-point format
 (FP32). The obtained model expects **normalized image** in planar BGR format.
 
-### 8. Validation of IR
+### 9. Validation of IR
 
-Instead of passing `snapshot.pth` you need to pass path to `model.bin` (or `model.xml`).
+Instead of passing `snapshot.pth` you need to pass path to `model.bin`.
 
 ```bash
 python eval.py \

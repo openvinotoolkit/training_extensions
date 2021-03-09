@@ -38,7 +38,46 @@
             ]
         }
     },
+    "nncf_pruning": {
+        "optimizer": {
+            "lr": 0.05
+        },
+        "lr_config": {
+            "policy": "step",
+            "warmup": "linear",
+            "warmup_iters": 500,
+            "warmup_ratio": 0.1,
+            "step": [50, 80]
+        },
+        "total_epochs": 100,
+        "nncf_config": {
+            "compression": [
+                {
+                    "algorithm": "filter_pruning",
+                    "pruning_init": 0.05,
+                    "params": {
+                        "schedule": "exponential",
+                        "pruning_init": 0.10,
+                        "pruning_steps": 25,
+                        "pruning_target": 0.30,
+                        "weight_importance": "geometric_median"
+                    },
+                    "ignored_scopes": [
+                        "SingleStageDetector/SSDHead[bbox_head]/ModuleList[cls_convs]/Sequential[0]/NNCFConv2d[0]",
+                        "SingleStageDetector/SSDHead[bbox_head]/ModuleList[cls_convs]/Sequential[0]/NNCFConv2d[0]",
+                        "SingleStageDetector/SSDHead[bbox_head]/ModuleList[reg_convs]/Sequential[0]/NNCFConv2d[0]",
+                        "SingleStageDetector/SSDHead[bbox_head]/ModuleList[reg_convs]/Sequential[0]/NNCFConv2d[0]",
+                        "SingleStageDetector/SSDHead[bbox_head]/ModuleList[reg_convs]/Sequential[1]/NNCFConv2d[0]",
+                        "SingleStageDetector/SSDHead[bbox_head]/ModuleList[reg_convs]/Sequential[1]/NNCFConv2d[0]",
+                        "SingleStageDetector/SSDHead[bbox_head]/ModuleList[cls_convs]/Sequential[1]/NNCFConv2d[0]",
+                        "SingleStageDetector/SSDHead[bbox_head]/ModuleList[cls_convs]/Sequential[1]/NNCFConv2d[0]"
+                     ]
+                }
+            ]
+        }
+    },
     "order_of_parts": [
-        "nncf_quantization"
+        "nncf_quantization",
+        "nncf_pruning"
     ]
 }
