@@ -38,14 +38,3 @@ def download_if_not_yet(output_folder, url):
 
 def relative_abs_error(expected, actual):
     return abs(expected - actual) / expected
-
-def run_tests_by_pattern(folder, pattern, verbose):
-    log_level = logging.DEBUG if verbose else logging.INFO
-    logging.basicConfig(level=log_level)
-    if verbose:
-        verbosity = 2
-    else:
-        verbosity = 1
-    testsuite = unittest.TestLoader().discover(folder, pattern=pattern)
-    was_successful = unittest.TextTestRunner(verbosity=verbosity).run(testsuite).wasSuccessful()
-    return was_successful
