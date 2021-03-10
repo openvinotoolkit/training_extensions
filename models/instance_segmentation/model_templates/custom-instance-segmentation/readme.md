@@ -14,7 +14,7 @@ Average Precision (AP) is defined as an area under the precision/recall curve.
 
 ## Training pipeline
 
-### 0. Change a directory in your terminal to instance_segmentation and activate venv.
+### 1. Change a directory in your terminal to instance_segmentation and activate venv.
 
 ```bash
 cd <training_extensions>/pytorch_toolkit/instance_segmentation
@@ -27,12 +27,8 @@ Else:
 ```bash
 . venv/bin/activate
 ```
-or if You use conda:
-```bash
-conda activate <environment_name>
-```
 
-### 1. Select a model template file and instantiate it in some directory.
+### 2. Select a model template file and instantiate it in some directory.
 
 ```bash
 export MODEL_TEMPLATE=`realpath ./model_templates/coco-instance-segmentation/instance-segmentation-0904/template.yaml`
@@ -40,7 +36,7 @@ export WORK_DIR=/tmp/my_model
 python ../tools/instantiate_template.py ${MODEL_TEMPLATE} ${WORK_DIR}
 ```
 
-### 2. Collect dataset
+### 3. Collect dataset
 
 Download the [COCO](https://cocodataset.org/#home) dataset and make the following
 structure of the `../../data` directory:
@@ -54,7 +50,7 @@ data
     ├── test2017
 ```
 
-### 3. Prepare annotation
+### 4. Prepare annotation
 
 ```bash
 export INST_SEGM_DIR=`pwd`
@@ -64,13 +60,13 @@ export VAL_ANN_FILE="${INST_SEGM_DIR}/../../data/coco/annotations/instances_val2
 export VAL_IMG_ROOT="${INST_SEGM_DIR}/../../data/coco/val2017"
 ```
 
-### 4. Change a current directory to directory where the model template has been instantiated.
+### 5. Change a current directory to directory where the model template has been instantiated.
 
 ```bash
 cd ${WORK_DIR}
 ```
 
-### 5. Training
+### 6. Training
 
 Since custom instance segmentation model templates rather than ready-to-use models (though technically one can use them as they are) are provided it is needed to define `classes`.
 
@@ -78,7 +74,7 @@ Since custom instance segmentation model templates rather than ready-to-use mode
 export CLASSES="person,car"
 ```
 
-### 6. Training
+### 7. Training
 
 To start training from pre-trained weights use `--load-weights` pararmeter.
 
@@ -95,7 +91,7 @@ python train.py \
 
 Also you can use parameters such as `--epochs`, `--batch-size`, `--gpu-num`, `--base-learning-rate`, otherwise default values will be loaded from `${MODEL_TEMPLATE}`.
 
-### 7. Evaluation
+### 8 Evaluation
 
 Evaluation procedure allows us to get quality metrics values and complexity numbers such as number of parameters and FLOPs.
 
@@ -122,7 +118,7 @@ python eval.py \
    --classes ${CLASSES}
 ```
 
-### 8. Export PyTorch\* model to the OpenVINO™ format
+### 9. Export PyTorch\* model to the OpenVINO™ format
 
 To convert PyTorch\* model to the OpenVINO™ IR format run the `export.py` script:
 
@@ -135,9 +131,9 @@ python export.py \
 This produces model `model.xml` and weights `model.bin` in single-precision floating-point format
 (FP32). The obtained model expects **normalized image** in planar BGR format.
 
-### 9. Validation of IR
+### 10. Validation of IR
 
-Instead of passing `snapshot.pth` you need to pass path to `model.bin` (or `model.xml`).
+Instead of passing `snapshot.pth` you need to pass path to `model.bin`.
 
 ```bash
 python eval.py \
