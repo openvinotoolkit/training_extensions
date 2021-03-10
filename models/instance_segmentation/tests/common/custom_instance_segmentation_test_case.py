@@ -121,7 +121,6 @@ def create_custom_instance_segmentation_test_case(model_name, problem_name):
                 f'python export.py'
                 f' --load-weights {os.path.join(self.output_folder, "latest.pth")}'
                 f' --classes "{classes}"'
-                f' --opset 11'
                 f' --save-model-to {self.output_folder}'
             )
 

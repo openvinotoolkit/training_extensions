@@ -105,7 +105,6 @@ def export_args_parser(template_path):
                             help='Location where exported model will be stored.')
         parser.add_argument('--onnx', action='store_true', default=config['output_format']['onnx']['default'],
                             help='Enable onnx export.')
-        parser.add_argument('--opset', type=int, default=10, help='ONNX opset')
         parser.add_argument('--openvino', action='store_true',
                             default=config['output_format']['openvino']['default'],
                             help='Enable OpenVINO export.')
