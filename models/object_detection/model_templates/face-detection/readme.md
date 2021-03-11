@@ -17,7 +17,7 @@ Average Precision (AP) is defined as an area under the precision/recall curve.
 
 Steps `1`-`2` help to setup working environment and download a pre-trained model.
 Steps `3.a`-`3.c` demonstrate how the pre-trained model can be exported to OpenVINO compatible format and run as a live-demo.
-If you are unsatisfied by the model quality, steps `4.a`-`4.c` help you to prepare datasets, evaluate pre-trained model and run finetuning.
+If you are unsatisfied by the model quality, steps `4.a`-`4.c` help you to prepare datasets, evaluate pre-trained model and run fine-tuning.
 You can repeat steps `4.b` - `4.c` until you get acceptable quality metrics values on your data, then you can re-export model and run demo again (Steps `3.a`-`3.c`).
 
 ### 1. Change a directory in your terminal to domain directory
@@ -43,14 +43,14 @@ export SNAPSHOT=snapshot.pth
 python ../../tools/instantiate_template.py ${MODEL_TEMPLATE} ${WORK_DIR}
 ```
 
-### 3. Try a pretrained model
+### 3. Try a pre-trained model
 
 #### a. Change current directory to directory where the model template has been instantiated
 
 ```bash
 cd ${WORK_DIR}
 ```
-#### b. Export pretrained PyTorch\* model to the OpenVINO™ format
+#### b. Export pre-trained PyTorch\* model to the OpenVINO™ format
 
 To convert PyTorch\* model to the OpenVINO™ IR format run the `export.py` script:
 
