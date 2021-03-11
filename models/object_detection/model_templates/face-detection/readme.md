@@ -101,7 +101,7 @@ python eval.py \
    --save-metrics-to metrics.yaml
 ```
 
-If you would like to evaluated exported model, you need to pass `export/model.bin` instead of passing `${SNAPSHOT}` .
+If you would like to evaluate exported model, you need to pass `export/model.bin` instead of passing `${SNAPSHOT}` .
 
 #### c. Fine-tune or train from scratch
 
