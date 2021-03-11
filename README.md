@@ -43,9 +43,9 @@ them for prediction.
 * [Action Recognition](models/action_recognition_2)
   - [Gesture Recognition](models/action_recognition_2/model_templates/gesture-recognition)
 * [Instance Segmentation](models/instance_segmentation)
-  - [COCO instance segmentation](models/instance_segmentation/model_templates/coco-instance-segmentation/readme.md)
+  - [COCO instance segmentation](models/instance_segmentation/model_templates/coco-instance-segmentation)
 * [Image classification](models/image_classification)
-  - [Custom image classification](models/image_classification/model_templates/custom-classification/README.md)
+  - [Custom image classification](models/image_classification/model_templates/custom-classification)
 * [Object Detection](models/object_detection)
   - [Face Detection](models/object_detection/model_templates/face-detection)
   - [Horizontal Text Detection](models/object_detection/model_templates/horizontal-text-detection/)
@@ -53,7 +53,7 @@ them for prediction.
   - [Person Vehicle Bike Detection](models/object_detection/model_templates/person-vehicle-bike-detection)
   - [Vehicle Detection](models/object_detection/model_templates/vehicle-detection)
 * [Text Spotting](models/text_spotting)
-  - [Alphanumeric Text Spotting](models/text_spotting/model_templates/alphanumeric-text-spotting/readme.md)
+  - [Alphanumeric Text Spotting](models/text_spotting/model_templates/alphanumeric-text-spotting)
 
 # Misc
 
