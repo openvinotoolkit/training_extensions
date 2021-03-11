@@ -12,25 +12,28 @@ inference.
 1. Download and install [OpenVINO™](https://software.intel.com/en-us/openvino-toolkit).
 
 2. Clone repository in the working directory by running the following:
+    ```
+    git clone https://github.com/openvinotoolkit/training_extensions.git
 
     ```
-    git clone https://github.com/openvinotoolkit/training_extensions.git --single-branch
-    cd training_extensions
+3. (Optional) Clone OpenModelZoo repository to run demos:
     ```
-
-3. Install prerequisites by running the following:
-
+    git clone https://github.com/openvinotoolkit/open_model_zoo --branch develop
+    export OPEN_MODEL_ZOO_DIR=`pwd`/open_model_zoo
+    ```
+4. Install prerequisites by running the following:
     ```
     sudo apt-get install python3-pip virtualenv
     ```
 
-4. Create and activate virtual environment:
+5. Create and activate virtual environment:
     ```
+    cd training_extensions
     virtualenv venv
     source venv/bin/activate
     ```
 
-5. Install `ote` package:
+6. Install `ote` package:
     ```
     pip3 install -e ote/
     ```
