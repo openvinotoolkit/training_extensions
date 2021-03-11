@@ -14,13 +14,15 @@ inference.
 2. Clone repository in the working directory by running the following:
     ```
     git clone https://github.com/openvinotoolkit/training_extensions.git
-
+    export OTE_DIR=`pwd`/training_extensions
     ```
+
 3. (Optional) Clone OpenModelZoo repository to run demos:
     ```
     git clone https://github.com/openvinotoolkit/open_model_zoo --branch develop
-    export OPEN_MODEL_ZOO_DIR=`pwd`/open_model_zoo
+    export OMZ_DIR=`pwd`/open_model_zoo
     ```
+
 4. Install prerequisites by running the following:
     ```
     sudo apt-get install python3-pip virtualenv
