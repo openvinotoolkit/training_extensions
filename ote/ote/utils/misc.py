@@ -157,11 +157,12 @@ def log_shell_cmd(cmd, prefix='Running through shell cmd'):
 def run_through_shell(cmd, verbose=True, check=True):
     assert isinstance(cmd, str)
     log_shell_cmd(cmd)
+    std_streams_args = {} if verbose else {'stdout': subprocess.DEVNULL, 'stderr': subprocess.DEVNULL}
     return subprocess.run(cmd,
                           shell=True,
                           check=check,
-                          capture_output=not verbose,
-                          executable="/bin/bash")
+                          executable="/bin/bash",
+                          **std_streams_args)
 
 def get_cuda_device_count():
     # move `import torch` inside this function to import the function in ote venv
