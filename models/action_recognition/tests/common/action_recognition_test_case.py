@@ -42,7 +42,7 @@ def create_action_recognition_test_case(**kwargs):
             run_through_shell(
                 f'{initial_command}'
                 f'cd {self.template_folder};'
-                f'python train.py'
+                f'python3 train.py'
                 f' --train-ann-files {self.ann_file}'
                 f' --train-data-roots {self.img_root}'
                 f' --val-ann-files {self.ann_file}'
