@@ -78,9 +78,9 @@ python ${OMZ_DIR}/demos/object_detection_demo/python/object_detection_demo.py \
 
 #### a. Prepare dataset
 
-In this toy example we use same images as training and validation subsets, but we strictly recommend not to use the same data for both training and validation. This particular example is for demonstration of model quality growth on particular dataset during fine-tuning only. See more about dataset split [here](https://en.wikipedia.org/wiki/Training,_validation,_and_test_sets). If you would like to work with bigger datasets please refer to this [section](datasets.md).
+In this toy example we use same images as training and validation subsets, but we strictly recommend not to use the same data for both training and validation. This particular example is for demonstration of model quality growth on particular dataset during fine-tuning only. See more about dataset split [here](https://en.wikipedia.org/wiki/Training,_validation,_and_test_sets). In order to train a model that would be quite similar in terms of quality to exising pre-trained model one can use this [section](datasets.md) to prepare publicly-available datasets for training. One can also use its own preliminary annotated dataset. Annotation can be created using [CVAT](https://github.com/openvinotoolkit/cvat) as we did in this toy example.
 
-Training images are stored in `${TRAIN_IMG_ROOT}` together with `${TRAIN_ANN_FILE}` annotation file. The annotation file has been created manually using [CVAT](https://github.com/openvinotoolkit/cvat).
+Training images are stored in `${TRAIN_IMG_ROOT}` together with `${TRAIN_ANN_FILE}` annotation file and validation images are stored in `${VAL_IMG_ROOT}` together with `${VAL_ANN_FILE}` annotation file.
 
 ```bash
 export ADD_EPOCHS=1
