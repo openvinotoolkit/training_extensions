@@ -3,7 +3,7 @@ lr_finder:
   mode: brute_force
   stop_after: False
   num_epochs: 5
-  num_iter: 8
+  num_iter: 7
   epochs_warmup: 1
   path_to_savefig: 'lr_finder.jpg'
   max_lr: 0.035
@@ -83,7 +83,7 @@ metric_losses:
 
 train:
   optim: 'sam'
-  lr: 0.016
+  lr: 0.013
   max_epoch: 200
   weight_decay: 5e-4
   batch_size: 64

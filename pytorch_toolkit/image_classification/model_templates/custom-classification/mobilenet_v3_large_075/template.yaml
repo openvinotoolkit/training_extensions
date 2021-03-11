@@ -32,7 +32,7 @@ inference_target:
 hyper_parameters:
   basic:
     batch_size: 64
-    base_learning_rate: 0.015
+    base_learning_rate: 0.013
     epochs: 200
   extra:
     custom_classes:
