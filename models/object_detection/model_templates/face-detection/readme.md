@@ -20,7 +20,7 @@ Steps `3.a`-`3.c` demonstrate how the pre-trained model can be exported to OpenV
 If you are unsatisfied by the model quality, steps `4.a`-`4.c` help you to prepare datasets, evaluate pre-trained model and run finetuning.
 You can repeat steps `4.b` - `4.c` until you get acceptable quality metrics values on your data, then you can re-export model and run demo again (Steps `3.a`-`3.c`).
 
-### 1. Change a directory in your terminal to domain directory.
+### 1. Change a directory in your terminal to domain directory
 
 ```bash
 cd models/object_detection
@@ -34,7 +34,7 @@ Activate virtual environment:
 source venv/bin/activate
 ```
 
-### 2. Select a model template file and instantiate it in some directory.
+### 2. Select a model template file and instantiate it in some directory
 
 ```bash
 export MODEL_TEMPLATE=`realpath ./model_templates/face-detection/face-detection-0200/template.yaml`
@@ -43,9 +43,9 @@ export SNAPSHOT=snapshot.pth
 python ../../tools/instantiate_template.py ${MODEL_TEMPLATE} ${WORK_DIR}
 ```
 
-### 3. Try a pretrained model.
+### 3. Try a pretrained model
 
-#### a. Change current directory to directory where the model template has been instantiated.
+#### a. Change current directory to directory where the model template has been instantiated
 
 ```bash
 cd ${WORK_DIR}
@@ -63,7 +63,7 @@ python export.py \
 This produces model `model.xml` and weights `model.bin` in single-precision floating-point format
 (FP32). The obtained model expects **normalized image** in planar BGR format.
 
-#### c. Run demo with exported model.
+#### c. Run demo with exported model
 
 You need to pass a path to `model.xml` file and video device node (e.g. /dev/video0) of your web cam.
 
@@ -74,7 +74,7 @@ python ${OMZ_DIR}/demos/object_detection_demo/python/object_detection_demo.py \
    -i /dev/video0
 ```
 
-### 4. Fine-tune if pre-trained model is not good enough on your data.
+### 4. Fine-tune
 
 #### a. Prepare dataset
 
@@ -91,7 +91,7 @@ export VAL_ANN_FILE=${TRAIN_ANN_FILE}
 export VAL_IMG_ROOT=${TRAIN_IMG_ROOT}
 ```
 
-#### b. Evaluation
+#### b. Evaluate
 
 ```bash
 python eval.py \
@@ -103,14 +103,14 @@ python eval.py \
 
 If you would like to evaluated exported model, you need to pass `export/model.bin` instead of passing `${SNAPSHOT}` .
 
-#### c. Training and Fine-tuning
+#### c. Fine-tune or train from scratch
 
 Try both following variants and select the best one:
 
    * **Fine-tuning** from pre-trained weights. If the dataset is not big enough, then the model tends to overfit quickly, forgetting about the data that was used for pre-training and reducing the generalization ability of the final model. Hence, small starting learning rate and short training schedule are recommended.
    * **Training** from scratch or pre-trained weights. Only if you have a lot of data, let's say tens of thousands or even more images. This variant assumes long training process starting from big values of learning rate and eventually decreasing it according to a training schedule.
 
-   * If you would like to start **fine-tuning** from pre-trained weights use `--resume-from` parameter and value of `--epochs` have to exceed the value stored inside `${MODEL_TEMPLATE}` file, otherwise training will be ended immediately. Here we add `2` additional epochs.
+   * If you would like to start **fine-tuning** from pre-trained weights use `--resume-from` parameter and value of `--epochs` have to exceed the value stored inside `${MODEL_TEMPLATE}` file, otherwise training will be ended immediately. Here we add `1` additional epoch.
 
       ```bash
       python train.py \
