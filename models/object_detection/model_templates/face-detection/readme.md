@@ -95,7 +95,7 @@ export VAL_IMG_ROOT=${TRAIN_IMG_ROOT}
 
 ```bash
 python eval.py \
-   --load-weights export/model.bin \
+   --load-weights ${SNAPSHOT} \
    --test-ann-files ${VAL_ANN_FILE} \
    --test-data-roots ${VAL_IMG_ROOT} \
    --save-metrics-to metrics.yaml
