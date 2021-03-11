@@ -78,7 +78,7 @@ python ${OMZ_DIR}/demos/object_detection_demo/python/object_detection_demo.py \
 
 #### a. Prepare dataset
 
-In this toy example we use same images as training and validation subsets, but we strictly recommend not to use the same data for both training and validation. This particular example is for demonstration of model quality growth on particlural dataset during fine-tuning only. See more about dataset split [here](https://en.wikipedia.org/wiki/Training,_validation,_and_test_sets). If you would like to work with bigger datasets please refer to this [section](datasets.md).
+In this toy example we use same images as training and validation subsets, but we strictly recommend not to use the same data for both training and validation. This particular example is for demonstration of model quality growth on particular dataset during fine-tuning only. See more about dataset split [here](https://en.wikipedia.org/wiki/Training,_validation,_and_test_sets). If you would like to work with bigger datasets please refer to this [section](datasets.md).
 
 Training images are stored in `${TRAIN_IMG_ROOT}` together with `${TRAIN_ANN_FILE}` annotation file. The annotation file has been created manually using [CVAT](https://github.com/openvinotoolkit/cvat).
 
