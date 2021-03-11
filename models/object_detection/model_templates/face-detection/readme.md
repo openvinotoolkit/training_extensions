@@ -40,8 +40,6 @@ source venv/bin/activate
 export MODEL_TEMPLATE=`realpath ./model_templates/face-detection/face-detection-0200/template.yaml`
 export WORK_DIR=/tmp/my-$(basename $(dirname $MODEL_TEMPLATE))
 export SNAPSHOT=snapshot.pth
-export ADD_EPOCHS=1
-export EPOCHS_NUM=$((`cat ${MODEL_TEMPLATE} | grep epochs | tr -dc '0-9'` + ${ADD_EPOCHS}))
 python ../../tools/instantiate_template.py ${MODEL_TEMPLATE} ${WORK_DIR}
 ```
 
@@ -85,6 +83,8 @@ In this toy example we use same images as training and validation subsets, but w
 Training images are stored in `${TRAIN_IMG_ROOT}` together with `${TRAIN_ANN_FILE}` annotation file. The annotation file has been created manually using [CVAT](https://github.com/openvinotoolkit/cvat).
 
 ```bash
+export ADD_EPOCHS=1
+export EPOCHS_NUM=$((`cat ${MODEL_TEMPLATE} | grep epochs | tr -dc '0-9'` + ${ADD_EPOCHS}))
 export TRAIN_ANN_FILE=${OTE_DIR}/data/airport/annotation_faces_train.json
 export TRAIN_IMG_ROOT=${OTE_DIR}/data/airport/
 export VAL_ANN_FILE=${TRAIN_ANN_FILE}
