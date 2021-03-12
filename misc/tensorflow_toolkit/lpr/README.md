@@ -27,7 +27,7 @@
 
     ```bash
     cd $(git rev-parse --show-toplevel)/misc/tensorflow_toolkit/lpr
-    virtualenv venv -p python3 --prompt="(lpr)"
+    virtualenv venv -p python3.6 --prompt="(lpr)"
     echo ". /opt/intel/openvino/bin/setupvars.sh" >> venv/bin/activate
     . venv/bin/activate
     ```
