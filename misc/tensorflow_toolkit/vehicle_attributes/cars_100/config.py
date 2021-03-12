@@ -28,7 +28,7 @@ class train:
   num_parallel_calls = 4
   prefetch_size = 4
 
-  annotation_path = '../../data/cars_100/cars_100_train.json'
+  annotation_path = '../../../data/cars_100/cars_100_train.json'
   use_pretrained_weights = True
   pretrained_ckpt = 'vehicle-attributes-barrier-0103/model.ckpt-2000000'
 
@@ -45,7 +45,7 @@ class train:
 class eval:
   batch_size = 32
 
-  annotation_path = '../../data/cars_100/cars_100_test.json'
+  annotation_path = '../../../data/cars_100/cars_100_test.json'
 
   class execution:
     CUDA_VISIBLE_DEVICES = "0"
@@ -58,7 +58,7 @@ class eval:
     transformer_prefetch_size = 8   # Number of batches to prefetch
 
 class infer:
-  annotation_path = '../../data/cars_100/cars_100_test.json'
+  annotation_path = '../../../data/cars_100/cars_100_test.json'
 
   class execution:
     CUDA_VISIBLE_DEVICES = "0"
