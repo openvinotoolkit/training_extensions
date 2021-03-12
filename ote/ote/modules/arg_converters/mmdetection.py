@@ -37,12 +37,15 @@ def classes_list_to_update_config_dict(cfg, classes):
     update_config_dict = {
         'data.train.dataset.classes': classes,
         'data.val.classes': classes,
-        'data.test.classes': classes,
-        'model.bbox_head.num_classes': num_classes
+        'data.test.classes': classes
     }
+    if hasattr(cfg.model, 'bbox_head'):
+        update_config_dict['model.bbox_head.num_classes'] = num_classes
     if hasattr(cfg.model, 'roi_head'):
         if 'mask_head' in cfg.model.roi_head.keys():
             update_config_dict['model.roi_head.mask_head.num_classes'] = num_classes
+        if 'bbox_head' in cfg.model.roi_head.keys():
+            update_config_dict['model.roi_head.bbox_head.num_classes'] = num_classes
     return update_config_dict
 
 
