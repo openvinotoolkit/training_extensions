@@ -174,9 +174,11 @@ def test_eval(data_dir, model_, test_id_, sample_type_, model_name_, expected_, 
     if alt_export_:
         workdir = str(workdir).replace('-alt-ssd-export', '')
         config_dir = str(config_dir).replace('-alt-ssd-export', '')
-        ir_dir = Path(config_dir) / test_folder / 'gpu_export' / 'alt_ssd_export'
+        ir_dir = ir_dir / 'alt_ssd_export'
         config_name += "_alt-ssd-export"
     if not os.path.isdir(ir_dir):
+        if alt_export_:
+            ir_dir = Path(config_dir) / test_folder / 'gpu_export' / 'alt_ssd_export'
         ote_cmd_string = f"{sys.executable} tests/run_model_templates_tests.py" \
                          f" --verbose" \
                          f"  --topic export" \
@@ -188,13 +190,6 @@ def test_eval(data_dir, model_, test_id_, sample_type_, model_name_, expected_, 
     if exit_code == 0:
         if alt_export_ is None:
             make_archive(model_, 'zip', ir_dir)
-
-        #Debug
-        print()
-        subprocess.run("ls -lF", cwd=config_dir, shell=True, check=True)
-        print()
-        subprocess.run("ls -lF", cwd=ir_dir, shell=True, check=True)
-        
         ac_cmd_string = f"accuracy_check" \
                         f" -c {config_dir}/{config_name}.yml" \
                         f" -s {data_dir}" \
