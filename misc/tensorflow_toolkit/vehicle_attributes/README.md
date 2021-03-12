@@ -23,7 +23,7 @@
 
 2. Create virtual environment:
     ```bash
-    virtualenv venv -p python3 --prompt="(veh_attr)"
+    virtualenv venv -p python3.6 --prompt="(veh_attr)"
     ```
 
 3. Activate virtual environment and setup OpenVINO™ variables:
