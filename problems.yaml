@@ -80,3 +80,10 @@ domains:
       applications that identifies objects including its contours in digital images.
     subtitle: Instance segmentation in digital images
     cvat_schema: '[]'
+  - title: Custom Instance Segmentation
+    description:  >-
+      Custom instance segmentation is a computer technology being used in a variety of
+      applications that identifies every pixel of custom objects in digital images.
+      You need to define your set of classes to detect.
+    subtitle: Instance segmentation of custom objects in digital images
+    type: generic

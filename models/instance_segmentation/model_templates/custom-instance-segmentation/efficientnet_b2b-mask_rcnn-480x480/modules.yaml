@@ -1,0 +1,5 @@
+arg_parser: CustomClassesArgParser
+arg_converter_map: MMDetectionCustomClassesArgConverterMap
+trainer: InstanceSegmentationTrainer
+evaluator: InstanceSegmentationEvaluator
+exporter: MMDetectionCustomClassesExporter

@@ -40,7 +40,7 @@ class MMDetectionExporter(BaseExporter):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.opset = 10
+        self.opset = 11
 
     def _get_update_config(self, args):
         return ''
