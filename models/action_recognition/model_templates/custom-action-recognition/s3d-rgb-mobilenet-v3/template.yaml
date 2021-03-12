@@ -1,0 +1,58 @@
+name: s3d-rgb-mobilenet-v3
+domain: Action Recognition
+problem: Custom Action Recognition
+framework: OTEAction v0.6.0
+summary: Custom Action Recognition based on S3D-MobileNet-V3.
+annotation_format: CustomAction
+initial_weights: snapshot.pth
+dependencies:
+- sha256: 8f0b5af89a5b61c2e5fd9390bbad1ce8f9ea31bcfcceaa631eb8ee4ccb6e875d
+  size: 34524111
+  source: https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/custom_action_recognition/s3d-mobilenetv3-large-kinetics700.pth
+  destination: snapshot.pth
+- source: ../../../../../ote/tools/train.py
+  destination: train.py
+- source: ../../../../../ote/tools/eval.py
+  destination: eval.py
+- source: ../../../../../ote/tools/export.py
+  destination: export.py
+- source: ../../../../../ote/tools/compress.py
+  destination: compress.py
+- source: ../../../../../ote
+  destination: packages/ote
+- source: ../../requirements.txt
+  destination: requirements.txt
+max_nodes: 1
+training_target:
+- GPU
+inference_target:
+- CPU
+- iGPU
+hyper_parameters:
+  basic:
+    batch_size: 14
+    base_learning_rate: 0.01
+    epochs: 110
+output_format:
+  onnx:
+    default: true
+  openvino:
+    default: true
+    input_format: RGB
+optimisations: ~
+metrics:
+- display_name: Size
+  key: size
+  unit: Mp
+  value: 4.133
+- display_name: Complexity
+  key: complexity
+  unit: GFLOPs
+  value: 6.66
+- display_name: Mean Top-1 accuracy
+  key: accuracy
+  unit: '%'
+  value: 46.51
+gpu_num: 8
+tensorboard: true
+config: model.py

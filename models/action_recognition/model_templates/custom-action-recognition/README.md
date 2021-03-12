@@ -1,0 +1,130 @@
+# Custom Action Recognition
+
+Models that are trained on the Kinetics-700 dataset and able to recognize actions from live video stream on CPU.
+
+Performance results table:
+
+| Model Name           | Complexity (GFLOPs) | Size (Mp) | UCF-101 Top-1 accuracy | Jester-27 Top-1 accuracy | MS-ASL-1000 Top-1 accuracy | Kinetics-700 Top-1 accuracy | Links                                                                                                                                                                                                                               |
+| -------------------- | ------------------- | --------- | ---------------------- | ------------------------ | -------------------------- | --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| s3d-rgb-mobilenet-v3 | 6.66	               | 4.133     | 94.21%                 | 94.94%                   | 41.20%                     | 46.51%                      | [model template](s3d-rgb-mobilenet-v3/template.yaml), [kinetics-700 snapshot](https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/custom_action_recognition/s3d-mobilenetv3-large-kinetics700.pth) |
+
+## Datasets
+
+The following datasets were used in experiments:
+* [UCF-101](https://arxiv.org/abs/1212.0402)
+* [MS-ASL](https://www.microsoft.com/en-us/research/project/ms-asl/#!downloads)
+* [Jester](https://20bn.com/datasets/jester)
+* [Kinetics-700](https://deepmind.com/research/open-source/kinetics)
+
+## Training pipeline
+
+### 1. Change a directory in your terminal to action_recognition.
+
+```bash
+cd models/action_recognition
+```
+If You have not created virtual environment yet:
+```bash
+./init_venv.sh
+```
+Activate virtual environment:
+```bash
+source venv/bin/activate
+```
+
+### 2. Select a model template file and instantiate it in some directory.
+
+```bash
+export MODEL_TEMPLATE=`realpath ./model_templates/custom-action-recognition/s3d-rgb-mobilenet-v3/template.yaml`
+export WORK_DIR=/tmp/my_model
+python ../../tools/instantiate_template.py ${MODEL_TEMPLATE} ${WORK_DIR}
+```
+
+### 3. Prepare data
+
+The training script assumes the data for action recognition is provided as list of videos splitted on train/val subsets.
+The annotation file consists of lines where each line represents single video source in the following format:
+```
+<rel_path_to_video> <label_id>
+```
+
+> **NOTE**: Training/validation scripts expects action class IDs instead of class labels. So, action labels should be manually sorted and converted in the appropriate class IDs.
+
+Finally, the `${DATA_DIR}` directory should be like this:
+
+```
+${DATA_DIR}
+└── custom_dataset
+    ├── videos
+    │   ├── video_1.avi
+    │   ├── video_2.mkv
+    |   └── ...
+    ├── val.txt
+    └── train.txt
+```
+
+After the data was arranged, export the variables required for launching training and evaluation scripts:
+
+```bash
+export DATA_DIR=${WORK_DIR}/data
+export TRAIN_ANN_FILE=train.txt
+export TRAIN_DATA_ROOT=${DATA_DIR}
+export VAL_ANN_FILE=val.txt
+export VAL_DATA_ROOT=${DATA_DIR}
+export TEST_ANN_FILE=val.txt
+export TEST_DATA_ROOT=${DATA_DIR}
+```
+
+### 4. Change current directory to directory where the model template has been instantiated.
+
+```bash
+cd ${WORK_DIR}
+```
+
+### 5. Training and Fine-tuning
+
+Try both following variants and select the best one:
+
+* **Training** from scratch or pre-trained weights. Only if you have a lot of data, let's say tens of thousands or even more images. This variant assumes long training process starting from big values of learning rate and eventually decreasing it according to a training schedule.
+* **Fine-tuning** from pre-trained weights. If the dataset is not big enough, then the model tends to overfit quickly, forgetting about the data that was used for pre-training and reducing the generalization ability of the final model. Hence, small starting learning rate and short training schedule are recommended.
+
+```bash
+python train.py \
+   --load-weights ${WORK_DIR}/snapshot.pth \
+   --train-ann-files ${TRAIN_ANN_FILE} \
+   --train-data-roots ${TRAIN_DATA_ROOT} \
+   --val-ann-files ${VAL_ANN_FILE} \
+   --val-data-roots ${VAL_DATA_ROOT} \
+   --save-checkpoints-to ${WORK_DIR}/outputs
+```
+
+> **NOTE**: It's recommended during fine-tuning to decrease the `--base-learning-rate` parameter compared with default value (see `${MODEL_TEMPLATE}`) to prevent from forgetting during the first iterations.
+
+Also you can use parameters such as `--epochs`, `--batch-size`, `--gpu-num`, `--base-learning-rate`, otherwise default values will be loaded from `${MODEL_TEMPLATE}`.
+
+### 6. Evaluation
+
+Evaluation procedure allows us to get quality metrics values and complexity numbers such as number of parameters and FLOPs.
+
+To compute mean accuracy metric run:
+
+```bash
+python eval.py \
+   --load-weights ${WORK_DIR}/outputs/latest.pth \
+   --test-ann-files ${TEST_ANN_FILE} \
+   --test-data-roots ${TEST_DATA_ROOT} \
+   --save-metrics-to ${WORK_DIR}/metrics.yaml
+```
+
+### 7. Export PyTorch\* model to the OpenVINO™ format
+
+To convert PyTorch\* model to the OpenVINO™ IR format run the `export.py` script:
+
+```bash
+python export.py \
+   --load-weights ${WORK_DIR}/outputs/latest.pth \
+   --save-model-to ${WORK_DIR}/export
+```
+
+This produces model `model.xml` and weights `model.bin` in single-precision floating-point format
+(FP32). The obtained model expects **normalized image** in planar RGB format.

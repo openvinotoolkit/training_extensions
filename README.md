@@ -40,8 +40,9 @@ inference.
 After installation, you are ready to train your own models, evaluate and use
 them for prediction.
 
-* [Action Recognition](models/action_recognition_2)
-  - [Gesture Recognition](models/action_recognition_2/model_templates/gesture-recognition)
+* [Action Recognition](models/action_recognition)
+  - [Custom Action Recognition](models/action_recognition/model_templates/custom-action-recognition)
+  - [Gesture Recognition](models/action_recognition/model_templates/gesture-recognition)
 * [Instance Segmentation](models/instance_segmentation)
   - [COCO instance segmentation](models/instance_segmentation/model_templates/coco-instance-segmentation/readme.md)
 * [Image classification](models/image_classification)
