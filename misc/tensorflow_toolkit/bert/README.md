@@ -19,13 +19,16 @@ Here we provided the steps for fine-tuning XNLI and Squad1.1 NLP tasks from the 
 
 1. Download bert repository
     ```bash
-    git submodule update --init --depth 1 $(git rev-parse --show-toplevel)/external/bert
+    git clone https://github.com/google-research/bert.git $(git rev-parse --show-toplevel)/external/bert
+    cd $(git rev-parse --show-toplevel)/external/bert
+    git checkout eedf5716ce1268e56f0a50264a88cafad334ac61
+    cd -
     ```
 
 2. Create virtual environment
     ```bash
-    cd $(git rev-parse --show-toplevel)/tensorflow_toolkit/bert
-    virtualenv venv -p python3 --prompt="(bert)"
+    cd $(git rev-parse --show-toplevel)/misc/tensorflow_toolkit/bert
+    virtualenv venv -p python3.6 --prompt="(bert)"
     ```
 
 3. Activate virtual environment and set up OpenVINO™ variables:

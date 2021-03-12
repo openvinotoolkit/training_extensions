@@ -13,12 +13,20 @@
 
 ### Installation
 
-1. Create virtual environment:
+1. Clone and checkout state of `tensorflow/models`:
     ```bash
-    virtualenv venv -p python3 --prompt="(veh_attr)"
+    git clone https://github.com/tensorflow/models.git $(git rev-parse --show-toplevel)/external/models
+    cd $(git rev-parse --show-toplevel)/external/models
+    git checkout f0899f18e178afb4b57c50ec32a7e8952e6f6a99
+    cd -
     ```
 
-2. Activate virtual environment and setup OpenVINO™ variables:
+2. Create virtual environment:
+    ```bash
+    virtualenv venv -p python3.6 --prompt="(veh_attr)"
+    ```
+
+3. Activate virtual environment and setup OpenVINO™ variables:
     ```bash
     . venv/bin/activate
     . /opt/intel/openvino/bin/setupvars.sh
@@ -28,7 +36,7 @@
     echo ". /opt/intel/openvino/bin/setupvars.sh" >> venv/bin/activate
     ```
 
-3. Install the modules:
+4. Install the modules:
     ```bash
     pip3 install -e .
     pip3 install -e ../utils

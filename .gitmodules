@@ -1,6 +1,3 @@
-[submodule "models"]
-	path = external/models
-	url = https://github.com/tensorflow/models.git
 [submodule "external/mmdetection"]
 	path = external/mmdetection
 	url = ../../openvinotoolkit/mmdetection
@@ -10,9 +7,6 @@
 [submodule "external/deep-object-reid"]
 	path = external/deep-object-reid
 	url = ../../openvinotoolkit/deep-object-reid
-[submodule "external/bert"]
-	path = external/bert
-	url = https://github.com/google-research/bert
 [submodule "external/nncf"]
 	path = external/nncf
 	url = ../../openvinotoolkit/nncf

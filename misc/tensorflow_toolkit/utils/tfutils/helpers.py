@@ -24,13 +24,16 @@ import cv2
 
 
 def import_research_models():
-  research_dir = path.realpath(path.join(path.dirname(__file__), '../../../external/models/research/'))
+  research_dir = path.realpath(path.join(path.dirname(__file__), '../../../../external/models/research/'))
+  assert path.exists(research_dir), f'Does not exist: {research_dir}'
   sys.path.append(research_dir)
+  assert path.exists(path.join(research_dir, 'slim')), f'Does not exist: {path.join(research_dir, "slim")}'
   sys.path.append(path.join(research_dir, 'slim'))
 
 
 def import_transformer():
-  transformer_dir = path.realpath(path.join(path.dirname(__file__), '../../../external/models/research/transformer'))
+  transformer_dir = path.realpath(path.join(path.dirname(__file__), '../../../../external/models/research/transformer'))
+  assert path.exists(transformer_dir), f'Does not exist: {transformer_dir}'
   sys.path.append(transformer_dir)
 
 
