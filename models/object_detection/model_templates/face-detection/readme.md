@@ -25,7 +25,7 @@ You can repeat steps `4.b` - `4.c` until you get acceptable quality metrics valu
 ```bash
 cd models/object_detection
 ```
-If You have not created virtual environment yet:
+If you have not created virtual environment yet:
 ```bash
 ./init_venv.sh
 ```
