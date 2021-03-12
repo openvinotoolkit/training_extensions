@@ -172,6 +172,7 @@ def test_eval(data_dir, model_, test_id_, sample_type_, model_name_, expected_, 
     config_dir = workdir / sample_type_ / model_name_ / model_
     ir_dir = config_dir / test_folder / 'gpu_export'
     if alt_export_:
+        workdir = str(workdir).replace('-alt-ssd-export', '')
         config_dir = str(config_dir).replace('-alt-ssd-export', '')
         ir_dir = Path(config_dir) / test_folder / 'gpu_export' / 'alt_ssd_export'
         config_name += "_alt-ssd-export"
@@ -187,13 +188,6 @@ def test_eval(data_dir, model_, test_id_, sample_type_, model_name_, expected_, 
     if exit_code == 0:
         if alt_export_ is None:
             make_archive(model_, 'zip', ir_dir)
-            
-        #Debug strings for investigating
-        subprocess.run("ls -lF", cwd=config_dir, check=True, shell=True)
-        print()
-        subprocess.run("ls -lF", cwd=ir_dir, check=True, shell=True)
-        print()
-
         ac_cmd_string = f"accuracy_check" \
                         f" -c {config_dir}/{config_name}.yml" \
                         f" -s {data_dir}" \
