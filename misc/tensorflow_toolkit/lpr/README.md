@@ -15,16 +15,24 @@
 
 ### Installation
 
-1. Create and activate virtual environment:
+1. Clone and checkout state of `tensorflow/models`:
+    ```bash
+    git clone https://github.com/tensorflow/models.git $(git rev-parse --show-toplevel)/external/models
+    cd $(git rev-parse --show-toplevel)/external/models
+    git checkout f0899f18e178afb4b57c50ec32a7e8952e6f6a99
+    cd -
+    ```
+
+2. Create and activate virtual environment:
 
     ```bash
-    cd $(git rev-parse --show-toplevel)/tensorflow_toolkit/lpr
+    cd $(git rev-parse --show-toplevel)/misc/tensorflow_toolkit/lpr
     virtualenv venv -p python3 --prompt="(lpr)"
     echo ". /opt/intel/openvino/bin/setupvars.sh" >> venv/bin/activate
     . venv/bin/activate
     ```
 
-2. Install the modules:
+3. Install the modules:
 
     ```bash
     pip3 install -e .
@@ -38,17 +46,11 @@
     pip3 install -e ../utils
     ```
 
-3. Download and prepare required submodules:
-
-    ```bash
-    bash ../prepare_modules.sh
-    ```
-
 ## Train an LPRNet Model
 
 Predefined configuration for Chinese license plates recognition:
 
-* Configuration file: [tensorflow_toolkit/lpr/chinese_lp/config.py](chinese_lp/config.py).
+* Configuration file: [misc/tensorflow_toolkit/lpr/chinese_lp/config.py](chinese_lp/config.py).
 * Trained model: [LPRNet 94x24](https://download.01.org/opencv/openvino_training_extensions/models/license_plate_recognition/license-plate-recognition-barrier-0007.tar.gz).
 
 Training dataset: [Synthetic Chinese License Plates](https://download.01.org/opencv/openvino_training_extensions/datasets/license_plate_recognition/Synthetic_Chinese_License_Plates.tar.gz)
@@ -97,7 +99,7 @@ To train a model, go through the steps described in the following sections.
 1. To start the training process, use the command below:
 
     ```bash
-    cd $(git rev-parse --show-toplevel)/tensorflow_toolkit/lpr
+    cd $(git rev-parse --show-toplevel)/misc/tensorflow_toolkit/lpr
     python3 tools/train.py chinese_lp/config.py
     ```
 
@@ -148,7 +150,7 @@ python3 tools/export.py --data_type FP32 --output_dir model/export chinese_lp/co
 ### For the Latest Checkpoint
 
 > **NOTE**: Input data for inference should be set via the `infer.file_list_path` parameter in
-`tensorflow_toolkit/lpr/chinese_lp/config.py` and must look like a text file
+`misc/tensorflow_toolkit/lpr/chinese_lp/config.py` and must look like a text file
 with a list of paths to license plates images in the following format:
 
 ```
@@ -158,7 +160,7 @@ path_to_lp_image2
 ```
 
 When the training is complete, the model from the checkpoint can be inferred on the
-input data by running `tensorflow_toolkit/lpr/chinese_lp/infer.py`:
+input data by running `misc/tensorflow_toolkit/lpr/chinese_lp/infer.py`:
 
 ```Bash
 python3 tools/infer_checkpoint.py chinese_lp/config.py

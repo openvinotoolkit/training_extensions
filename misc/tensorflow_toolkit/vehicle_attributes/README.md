@@ -13,10 +13,10 @@
 
 ### Installation
 
-1. Assuming you are in `misc/tensorflow_toolkit/vehicle_attributes`, clone and checkout state of `tensorflow/models`:
+1. Clone and checkout state of `tensorflow/models`:
     ```bash
-    git clone https://github.com/tensorflow/models.git ../../../external/models
-    cd ../../../external/models
+    git clone https://github.com/tensorflow/models.git $(git rev-parse --show-toplevel)/external/models
+    cd $(git rev-parse --show-toplevel)/external/models
     git checkout f0899f18e178afb4b57c50ec32a7e8952e6f6a99
     cd -
     ```
