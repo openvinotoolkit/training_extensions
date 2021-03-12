@@ -59,11 +59,6 @@ def setup_ac():
                    cwd=ACC_CHECK_DIR, check=True, shell=True, executable="/bin/bash")
 
 
-@pytest.fixture(scope="session")
-def temp_folder(tmp_path_factory):
-    return Path(tmp_path_factory.mktemp("workdir", False))
-
-
 def run_cmd(comm: str, cwd: str, venv=None) -> Tuple[int, str]:
     print()
     print(comm)
@@ -164,14 +159,14 @@ for sample_type in eval_config:
 
 @pytest.mark.parametrize("model_, test_id_, sample_type_, model_name_, expected_, alt_export_", param_list,
                          ids=ids_list)
-def test_eval(temp_folder, data_dir, model_, test_id_, sample_type_, model_name_, expected_, alt_export_):
+def test_eval(data_dir, model_, test_id_, sample_type_, model_name_, expected_, alt_export_):
     os.environ["INTEL_OPENVINO_DIR"] = str(OPENVINO_DIR)
     config_name = "accuracy-check"
     metric_value = None
     diff_target = None
     err_str = None
     exit_code = 0
-    workdir = temp_folder / model_
+    workdir = PROJECT_ROOT / model_
     sub_folder = model_name_.replace("-", "_")
     test_folder = str(f"output_export_tests_{sub_folder}.{test_id_}")
     config_dir = workdir / sample_type_ / model_name_ / model_
@@ -192,6 +187,13 @@ def test_eval(temp_folder, data_dir, model_, test_id_, sample_type_, model_name_
     if exit_code == 0:
         if alt_export_ is None:
             make_archive(model_, 'zip', ir_dir)
+            
+        #Debug strings for investigating
+        subprocess.run("ls -lF", cwd=config_dir, check=True, shell=True)
+        print()
+        subprocess.run("ls -lF", cwd=ir_dir, check=True, shell=True)
+        print()
+
         ac_cmd_string = f"accuracy_check" \
                         f" -c {config_dir}/{config_name}.yml" \
                         f" -s {data_dir}" \
