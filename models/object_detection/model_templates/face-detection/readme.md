@@ -78,7 +78,7 @@ python ${OMZ_DIR}/demos/object_detection_demo/python/object_detection_demo.py \
 
 #### a. Prepare dataset
 
-In this toy example we use same images as training and validation subsets, but we strictly recommend not to use the same data for both training and validation. This particular example is for demonstration of model quality growth on particular dataset during fine-tuning only. See more about dataset split [here](https://en.wikipedia.org/wiki/Training,_validation,_and_test_sets). In order to train a model that would be quite similar in terms of quality to exising pre-trained model one can use this [section](datasets.md) to prepare publicly-available datasets for training. One can also use its own preliminary annotated dataset. Annotation can be created using [CVAT](https://github.com/openvinotoolkit/cvat) as we did in this toy example.
+In this toy example we use same images as training, validation and test subsets, but we strictly recommend not to use the same data for training, validation and test. This particular example is for demonstration of model quality growth on particular dataset during fine-tuning only. See more about dataset split [here](https://en.wikipedia.org/wiki/Training,_validation,_and_test_sets). In order to train a model that would be quite similar in terms of quality to exising pre-trained model one can use this [section](datasets.md) to prepare publicly-available datasets for training. One can also use its own preliminary annotated dataset. Annotation can be created using [CVAT](https://github.com/openvinotoolkit/cvat) as we did in this toy example.
 
 Training images are stored in `${TRAIN_IMG_ROOT}` together with `${TRAIN_ANN_FILE}` annotation file and validation images are stored in `${VAL_IMG_ROOT}` together with `${VAL_ANN_FILE}` annotation file.
 
@@ -89,6 +89,8 @@ export TRAIN_ANN_FILE=${OTE_DIR}/data/airport/annotation_faces_train.json
 export TRAIN_IMG_ROOT=${OTE_DIR}/data/airport/
 export VAL_ANN_FILE=${TRAIN_ANN_FILE}
 export VAL_IMG_ROOT=${TRAIN_IMG_ROOT}
+export TEST_ANN_FILE=${TRAIN_ANN_FILE}
+export TEST_IMG_ROOT=${TRAIN_IMG_ROOT}
 ```
 
 #### b. Evaluate
@@ -96,8 +98,8 @@ export VAL_IMG_ROOT=${TRAIN_IMG_ROOT}
 ```bash
 python eval.py \
    --load-weights ${SNAPSHOT} \
-   --test-ann-files ${VAL_ANN_FILE} \
-   --test-data-roots ${VAL_IMG_ROOT} \
+   --test-ann-files ${TEST_ANN_FILE} \
+   --test-data-roots ${TEST_IMG_ROOT} \
    --save-metrics-to metrics.yaml
 ```
 
@@ -126,3 +128,5 @@ Try both following variants and select the best one:
       ```
 
    * If you would like to start **training** from pre-trained weights use `--load-weights` pararmeter instead of `--resume-from`. Also you can use parameters such as `--epochs`, `--batch-size`, `--gpu-num`, `--base-learning-rate`, otherwise default values will be loaded from `${MODEL_TEMPLATE}`.
+
+As soon as training is completed, it is worth to re-evaluate trained model on test set (see Step 4.b).
