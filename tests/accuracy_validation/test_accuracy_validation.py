@@ -188,6 +188,13 @@ def test_eval(data_dir, model_, test_id_, sample_type_, model_name_, expected_, 
     if exit_code == 0:
         if alt_export_ is None:
             make_archive(model_, 'zip', ir_dir)
+
+        #Debug
+        print()
+        subprocess.run("ls -lF", cwd=config_dir, shell=True, check=True)
+        print()
+        subprocess.run("ls -lF", cwd=ir_dir, shell=True, check=True)
+        
         ac_cmd_string = f"accuracy_check" \
                         f" -c {config_dir}/{config_name}.yml" \
                         f" -s {data_dir}" \
