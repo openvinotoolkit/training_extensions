@@ -1,6 +1,3 @@
-[submodule "models"]
-	path = external/models
-	url = https://github.com/tensorflow/models.git
 [submodule "external/mmdetection"]
 	path = external/mmdetection
 	url = ../../openvinotoolkit/mmdetection
