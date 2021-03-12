@@ -78,6 +78,6 @@ metrics:
   key: complexity
   unit: GFLOPs
   value: 2.94
-gpu_num: 4
+gpu_num: 3
 tensorboard: true
 config: model.py
