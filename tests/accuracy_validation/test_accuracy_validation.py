@@ -123,7 +123,7 @@ def get_export_test_params(model, model_name, test_id, sample_type, type=None) -
     if type:
         workdir = PROJECT_ROOT / model.replace('-alt-ssd-export', '')
         sub_folder = model_name.replace("-", "_")
-        if os.path.isdir(ir_dir):
+        if os.path.isdir(workdir):
             test_id = str(test_id).replace('_alt_ssd', '')
         test_folder = str(f"output_export_tests_{sub_folder}.{test_id}")
         config_dir = workdir / sample_type / model_name / model.replace('-alt-ssd-export', '')
