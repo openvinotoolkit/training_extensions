@@ -197,7 +197,11 @@ def test_eval(data_dir, model_, test_id_, sample_type_, model_name_, expected_, 
                          f" --workdir {workdir}"
         exit_code, err_str = run_cmd(ote_cmd_string, PROJECT_ROOT)
     if exit_code == 0:
-        if alt_export_ is None:
+        if alt_export_:
+            config_name += '_alt-ssd-export'
+            if not os.path.isfile(f"{model_.replace('-alt-ssd-export', '')}.zip"):
+                make_archive(model_, 'zip', ir_dir)
+        else:
             make_archive(model_, 'zip', ir_dir)
         ac_cmd_string = f"accuracy_check" \
                         f" -c {config_dir}/{config_name}.yml" \
