@@ -114,7 +114,7 @@ def make_table_row(expected_, key, error_message, metric, diff_target):
     return row
 
 
-def get_test_paths(model, model_name, test_id, sample_type, type=None) -> Tuple[str, str, str]:
+def get_export_test_params(model, model_name, test_id, sample_type, type=None) -> Tuple[str, str, str, str]:
     workdir = PROJECT_ROOT / model
     sub_folder = model_name.replace("-", "_")
     test_folder = str(f"output_export_tests_{sub_folder}.{test_id}")
@@ -123,10 +123,11 @@ def get_test_paths(model, model_name, test_id, sample_type, type=None) -> Tuple[
     if type:
         workdir = PROJECT_ROOT / model.replace('-alt-ssd-export', '')
         sub_folder = model_name.replace("-", "_")
-        test_folder = str(f"output_export_tests_{sub_folder}.{str(test_id).replace('_alt_ssd', '')}")
+        test_id = str(test_id).replace('_alt_ssd', '')
+        test_folder = str(f"output_export_tests_{sub_folder}.{test_id}")
         config_dir = workdir / sample_type / model_name / model.replace('-alt-ssd-export', '')
         ir_dir = config_dir / test_folder / 'gpu_export' / 'alt_ssd_export'
-    return workdir, config_dir, ir_dir
+    return workdir, config_dir, ir_dir, test_id
 
 
 def write_results_table(init_table_string):
@@ -181,7 +182,11 @@ def test_eval(data_dir, model_, test_id_, sample_type_, model_name_, expected_, 
     diff_target = None
     err_str = None
     exit_code = 0
-    workdir, config_dir, ir_dir = get_test_paths(model_, model_name_, test_id_, sample_type_, alt_export_)
+    workdir, config_dir, ir_dir, test_id_ = get_export_test_params(model_,
+                                                                   model_name_,
+                                                                   test_id_,
+                                                                   sample_type_,
+                                                                   alt_export_)
     if not os.path.isdir(ir_dir):
         ote_cmd_string = f"{sys.executable} tests/run_model_templates_tests.py" \
                          f" --verbose" \
