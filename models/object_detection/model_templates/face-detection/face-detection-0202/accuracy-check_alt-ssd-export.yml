@@ -8,6 +8,12 @@ models:
     datasets:
       - name: wider_without_bkgr
         data_source: WiderFace/
+        annotation_conversion:
+          converter: mscoco_detection
+          annotation_file: WiderFace/val.json
+          has_background: False
+          sort_annotations: True
+          use_full_label_map: False
 
         preprocessing:
           - type: resize
