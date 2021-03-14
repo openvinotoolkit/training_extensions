@@ -114,6 +114,21 @@ def make_table_row(expected_, key, error_message, metric, diff_target):
     return row
 
 
+def get_test_paths(model, model_name, test_id, sample_type, type=None) -> Tuple[str, str, str]:
+    workdir = PROJECT_ROOT / model
+    sub_folder = model_name.replace("-", "_")
+    test_folder = str(f"output_export_tests_{sub_folder}.{test_id}")
+    config_dir = workdir / sample_type / model_name / model
+    ir_dir = config_dir / test_folder / 'gpu_export'
+    if type:
+        workdir = PROJECT_ROOT / model.replace('-alt-ssd-export', '')
+        sub_folder = model_name.replace("-", "_")
+        test_folder = str(f"output_export_tests_{sub_folder}.{str(test_id).replace('_alt_ssd', '')}")
+        config_dir = workdir / sample_type / model_name / model.replace('-alt-ssd-export', '')
+        ir_dir = config_dir / test_folder / 'gpu_export' / 'alt_ssd_export'
+    return workdir, config_dir, ir_dir
+
+
 def write_results_table(init_table_string):
     doc, tag, text = Doc().tagtext()
     doc.asis('<!DOCTYPE html>')
@@ -166,19 +181,8 @@ def test_eval(data_dir, model_, test_id_, sample_type_, model_name_, expected_, 
     diff_target = None
     err_str = None
     exit_code = 0
-    workdir = PROJECT_ROOT / model_
-    sub_folder = model_name_.replace("-", "_")
-    test_folder = str(f"output_export_tests_{sub_folder}.{test_id_}")
-    config_dir = workdir / sample_type_ / model_name_ / model_
-    ir_dir = config_dir / test_folder / 'gpu_export'
-    if alt_export_:
-        workdir = str(workdir).replace('-alt-ssd-export', '')
-        config_dir = str(config_dir).replace('-alt-ssd-export', '')
-        ir_dir = ir_dir / 'alt_ssd_export'
-        config_name += "_alt-ssd-export"
+    workdir, config_dir, ir_dir = get_test_paths(model_, model_name_, test_id_, sample_type_, alt_export_)
     if not os.path.isdir(ir_dir):
-        if alt_export_:
-            ir_dir = Path(config_dir) / test_folder / 'gpu_export' / 'alt_ssd_export'
         ote_cmd_string = f"{sys.executable} tests/run_model_templates_tests.py" \
                          f" --verbose" \
                          f"  --topic export" \
