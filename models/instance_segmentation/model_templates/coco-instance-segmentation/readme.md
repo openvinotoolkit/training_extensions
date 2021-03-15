@@ -12,14 +12,19 @@ Models that are able to instantiate segmentation.
 
 Average Precision (AP) is defined as an area under the precision/recall curve.
 
-## Training pipeline
+## Usage
 
-### 1. Change a directory in your terminal to instance_segmentation and activate venv.
+Steps `1`-`2` help to setup working environment and download a pre-trained model.
+Steps `3.a`-`3.c` demonstrate how the pre-trained model can be exported to OpenVINO compatible format and run as a live-demo.
+If you are unsatisfied by the model quality, steps `4.a`-`4.c` help you to prepare datasets, evaluate pre-trained model and run fine-tuning.
+You can repeat steps `4.b` - `4.c` until you get acceptable quality metrics values on your data, then you can re-export model and run demo again (Steps `3.a`-`3.c`).
+
+### 1. Change a directory in your terminal to domain directory
 
 ```bash
 cd models/instance_segmentation
 ```
-If You have not created virtual environment yet:
+If you have not created virtual environment yet:
 ```bash
 ./init_venv.sh
 ```
@@ -28,15 +33,53 @@ Activate virtual environment:
 source venv/bin/activate
 ```
 
-### 2. Select a model template file and instantiate it in some directory.
+### 2. Select a model template file and instantiate it in some directory
 
 ```bash
 export MODEL_TEMPLATE=`realpath ./model_templates/coco-instance-segmentation/instance-segmentation-0904/template.yaml`
-export WORK_DIR=/tmp/my_model
+export WORK_DIR=/tmp/my-$(basename $(dirname $MODEL_TEMPLATE))
+export SNAPSHOT=snapshot.pth
 python ../../tools/instantiate_template.py ${MODEL_TEMPLATE} ${WORK_DIR}
 ```
 
-### 3. Collect dataset
+### 3. Try a pre-trained model
+
+#### a. Change current directory to directory where the model template has been instantiated
+
+```bash
+cd ${WORK_DIR}
+```
+#### b. Export pre-trained PyTorch\* model to the OpenVINO™ format
+
+To convert PyTorch\* model to the OpenVINO™ IR format run the `export.py` script:
+
+```bash
+python export.py \
+   --load-weights ${SNAPSHOT} \
+   --save-model-to export
+```
+
+This produces model `model.xml` and weights `model.bin` in single-precision floating-point format
+(FP32). The obtained model expects **normalized image** in planar BGR format.
+
+#### c. Run demo with exported model
+
+You need to pass a path to `model.xml` file and video device node (e.g. /dev/video0) of your web cam.
+
+```bash
+python ${OMZ_DIR}/demos/object_detection_demo/python/object_detection_demo.py \
+   -m export/model.xml \
+   -at ssd \
+   -i /dev/video0
+```
+
+### 4. Fine-tune
+
+#### a. Prepare dataset
+
+In order to train a model that would be quite similar in terms of quality to exising pre-trained model one can use this the [COCO](https://cocodataset.org/#home) dataset. One also use its own preliminary annotated dataset. Annotation can be created using [CVAT](https://github.com/openvinotoolkit/cvat).
+
+Training images are stored in `${TRAIN_IMG_ROOT}` together with `${TRAIN_ANN_FILE}` annotation file and validation images are stored in `${VAL_IMG_ROOT}` together with `${VAL_ANN_FILE}` annotation file.
 
 Download the [COCO](https://cocodataset.org/#home) dataset and make the following
 structure of the `../../data` directory:
@@ -50,105 +93,54 @@ data
     ├── test2017
 ```
 
-### 4. Prepare annotation
+Set some environment variables:
 
 ```bash
+export ADD_EPOCHS=1
+export EPOCHS_NUM=$((`cat ${MODEL_TEMPLATE} | grep epochs | tr -dc '0-9'` + ${ADD_EPOCHS}))
 export INST_SEGM_DIR=`pwd`
 export TRAIN_ANN_FILE="${INST_SEGM_DIR}/../../data/coco/annotations/instances_train2017.json"
 export TRAIN_IMG_ROOT="${INST_SEGM_DIR}/../../data/coco/train2017"
 export VAL_ANN_FILE="${INST_SEGM_DIR}/../../data/coco/annotations/instances_val2017.json"
 export VAL_IMG_ROOT="${INST_SEGM_DIR}/../../data/coco/val2017"
+export TEST_ANN_FILE=${VAL_ANN_FILE}
+export TEST_IMG_ROOT=${VAL_IMG_ROOT}
 ```
 
-### 5. Change current directory to directory where the model template has been instantiated.
+#### b. Evaluate
 
 ```bash
-cd ${WORK_DIR}
+python eval.py \
+   --load-weights ${SNAPSHOT} \
+   --test-ann-files ${TEST_ANN_FILE} \
+   --test-data-roots ${TEST_IMG_ROOT} \
+   --save-metrics-to metrics.yaml
 ```
 
-### 6. Training and Fine-tuning
+If you would like to evaluate exported model, you need to pass `export/model.bin` instead of passing `${SNAPSHOT}` .
+
+#### c. Fine-tune or train from scratch
 
 Try both following variants and select the best one:
 
-   * **Training** from scratch or pre-trained weights. Only if you have a lot of data, let's say tens of thousands or even more images. This variant assumes long training process starting from big values of learning rate and eventually decreasing it according to a training schedule.
    * **Fine-tuning** from pre-trained weights. If the dataset is not big enough, then the model tends to overfit quickly, forgetting about the data that was used for pre-training and reducing the generalization ability of the final model. Hence, small starting learning rate and short training schedule are recommended.
+   * **Training** from scratch or pre-trained weights. Only if you have a lot of data, let's say tens of thousands or even more images. This variant assumes long training process starting from big values of learning rate and eventually decreasing it according to a training schedule.
 
-   * If you would like to start **training** from pre-trained weights use `--load-weights` pararmeter.
+   * If you would like to start **fine-tuning** from pre-trained weights use `--resume-from` parameter and value of `--epochs` have to exceed the value stored inside `${MODEL_TEMPLATE}` file, otherwise training will be ended immediately. Here we add `1` additional epoch.
 
       ```bash
       python train.py \
-         --load-weights ${WORK_DIR}/snapshot.pth \
+         --resume-from ${SNAPSHOT} \
          --train-ann-files ${TRAIN_ANN_FILE} \
          --train-data-roots ${TRAIN_IMG_ROOT} \
          --val-ann-files ${VAL_ANN_FILE} \
          --val-data-roots ${VAL_IMG_ROOT} \
-         --save-checkpoints-to ${WORK_DIR}/outputs
+         --save-checkpoints-to outputs \
+         --epochs ${EPOCHS_NUM} \
+      && export SNAPSHOT=outputs/latest.pth \
+      && export EPOCHS_NUM=$((${EPOCHS_NUM} + ${ADD_EPOCHS}))
       ```
 
-      Also you can use parameters such as `--epochs`, `--batch-size`, `--gpu-num`, `--base-learning-rate`, otherwise default values will be loaded from `${MODEL_TEMPLATE}`.
+   * If you would like to start **training** from pre-trained weights use `--load-weights` pararmeter instead of `--resume-from`. Also you can use parameters such as `--epochs`, `--batch-size`, `--gpu-num`, `--base-learning-rate`, otherwise default values will be loaded from `${MODEL_TEMPLATE}`.
 
-   * If you would like to start **fine-tuning** from pre-trained weights use `--resume-from` parameter and value of `--epochs` have to exceed the value stored inside `${MODEL_TEMPLATE}` file, otherwise training will be ended immediately. Here we add `5` additional epochs.
-
-      ```bash
-      export ADD_EPOCHS=5
-      export EPOCHS_NUM=$((`cat ${MODEL_TEMPLATE} | grep epochs | tr -dc '0-9'` + ${ADD_EPOCHS}))
-
-      python train.py \
-         --resume-from ${WORK_DIR}/snapshot.pth \
-         --train-ann-files ${TRAIN_ANN_FILE} \
-         --train-data-roots ${TRAIN_IMG_ROOT} \
-         --val-ann-files ${VAL_ANN_FILE} \
-         --val-data-roots ${VAL_IMG_ROOT} \
-         --save-checkpoints-to ${WORK_DIR}/outputs \
-         --epochs ${EPOCHS_NUM}
-      ```
-
-### 7. Evaluation
-
-Evaluation procedure allows us to get quality metrics values and complexity numbers such as number of parameters and FLOPs.
-
-To compute MS-COCO metrics and save computed values to `${WORK_DIR}/metrics.yaml` run:
-
-```bash
-python eval.py \
-   --load-weights ${WORK_DIR}/outputs/latest.pth \
-   --test-ann-files ${VAL_ANN_FILE} \
-   --test-data-roots ${VAL_IMG_ROOT} \
-   --save-metrics-to ${WORK_DIR}/metrics.yaml
-```
-
-You can also save images with predicted bounding boxes using `--save-output-to` parameter.
-
-```bash
-python eval.py \
-   --load-weights ${WORK_DIR}/outputs/latest.pth \
-   --test-ann-files ${VAL_ANN_FILE} \
-   --test-data-roots ${VAL_IMG_ROOT} \
-   --save-metrics-to ${WORK_DIR}/metrics.yaml \
-   --save-output-to ${WORK_DIR}/output_images
-```
-
-### 8. Export PyTorch\* model to the OpenVINO™ format
-
-To convert PyTorch\* model to the OpenVINO™ IR format run the `export.py` script:
-
-```bash
-python export.py \
-   --load-weights ${WORK_DIR}/outputs/latest.pth \
-   --save-model-to ${WORK_DIR}/export
-```
-
-This produces model `model.xml` and weights `model.bin` in single-precision floating-point format
-(FP32). The obtained model expects **normalized image** in planar BGR format.
-
-### 9. Validation of IR
-
-Instead of passing `snapshot.pth` you need to pass path to `model.bin`.
-
-```bash
-python eval.py \
-   --load-weights ${WORK_DIR}/export/model.bin \
-   --test-ann-files ${VAL_ANN_FILE} \
-   --test-data-roots ${VAL_IMG_ROOT} \
-   --save-metrics-to ${WORK_DIR}/metrics.yaml
-```
+As soon as training is completed, it is worth to re-evaluate trained model on test set (see Step 4.b).
