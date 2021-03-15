@@ -66,13 +66,15 @@ This produces model `model.xml` and weights `model.bin` in single-precision floa
 
 #### c. Run demo with exported model
 
-You need to pass a path to `model.xml` file and video device node (e.g. /dev/video0) of your web cam.
+You need to pass a path to `model.xml` file and the index of your web cam.
 
 ```bash
-python ${OMZ_DIR}/demos/object_detection_demo/python/object_detection_demo.py \
-   -m export/model.xml \
-   -at ssd \
-   -i /dev/video0
+python ${OMZ_DIR}/tools/downloader/downloader.py --name person-detection-asl-0001
+python ${OMZ_DIR}/demos/gesture_recognition_demo/python/gesture_recognition_demo.py \
+  -m_a export/model.xml \
+  -m_d intel/person-detection-asl-0001/FP32/person-detection-asl-0001.xml \
+  -i 0 \
+  -c ${OMZ_DIR}/data/dataset_classes/msasl100.json
 ```
 
 ### 4. Fine-tune
