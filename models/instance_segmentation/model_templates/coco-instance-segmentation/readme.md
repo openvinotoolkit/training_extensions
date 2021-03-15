@@ -67,10 +67,10 @@ This produces model `model.xml` and weights `model.bin` in single-precision floa
 You need to pass a path to `model.xml` file and video device node (e.g. /dev/video0) of your web cam.
 
 ```bash
-python ${OMZ_DIR}/demos/object_detection_demo/python/object_detection_demo.py \
+python ${OMZ_DIR}/demos/instance_segmentation_demo/python/instance_segmentation_demo.py \
    -m export/model.xml \
-   -at ssd \
-   -i /dev/video0
+   -i /dev/video0 \
+   --labels ${OMZ_DIR}/data/dataset_classes/coco_80cl_bkgr.txt
 ```
 
 ### 4. Fine-tune
