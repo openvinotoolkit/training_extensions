@@ -10,8 +10,8 @@ inference.
 ## Prerequisites
 * Ubuntu 18.04 / 20.04
 * Python 3.6+
-* [OpenVINO™](https://software.intel.com/en-us/openvino-toolkit) - for exporting and running models.
-* CUDA 10.2  - for training on GPU
+* [OpenVINO™](https://software.intel.com/en-us/openvino-toolkit) - for exporting and running models
+* [CUDA Toolkit 10.2](https://developer.nvidia.com/cuda-10.2-download-archive) - for training on GPU
 
 ## Setup OpenVINO™ Training Extensions
 
