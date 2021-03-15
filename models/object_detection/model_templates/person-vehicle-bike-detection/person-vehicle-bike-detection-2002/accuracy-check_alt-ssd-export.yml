@@ -9,8 +9,8 @@ models:
       - name: crossroad_extra_untagged
         preprocessing:
           - type: resize
-            dst_width: 256
-            dst_height: 256
+            dst_width: 512
+            dst_height: 512
         postprocessing:
           - type: resize_prediction_boxes
           - type: clip_boxes
