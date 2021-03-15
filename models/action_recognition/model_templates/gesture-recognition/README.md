@@ -79,12 +79,11 @@ python ${OMZ_DIR}/demos/object_detection_demo/python/object_detection_demo.py \
 
 #### a. Prepare dataset
 
-Target datasets:
+Prepare one of the listed below datasets for training or collect and annotate your own:
 * To prepare MS-ASL data follow instructions: [DATA_MSASL.md](./DATA_MSASL.md).
 * To prepare JESTER data follow instructions: [DATA_JESTER.md](./DATA_JESTER.md).
 
 Set some environment variables:
-
 ```bash
 export ADD_EPOCHS=1
 export EPOCHS_NUM=$((`cat ${MODEL_TEMPLATE} | grep epochs | tr -dc '0-9'` + ${ADD_EPOCHS}))
