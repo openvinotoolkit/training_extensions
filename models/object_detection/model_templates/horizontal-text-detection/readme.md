@@ -1,19 +1,24 @@
-# Text Detection
+# Horizontal Text Detection
 
-Model that is able to detect more or less horizontal text with high speed on CPU.
+A model that is able to detect more or less horizontal text with high speed on CPU.
 
 | Model Name                  | Complexity (GFLOPs) | Size (Mp) | F1-score |    precision / recall   | Links                                                                                                                                    | GPU_NUM |
 | --------------------------- | ------------------- | --------- | ------- | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
 | horizontal-text-detection-0001         | 7.72	            |  2.26     |  88.45% |    90.61% / 86.39%    | [model template](./horizontal-text-detection-0001/template.yaml), [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/horizontal-text-detection-0001.pth) | 2       |
 
-## Training pipeline
+## Usage
 
-### 1. Change a directory in your terminal to object_detection and activate venv.
+Steps `1`-`2` help to setup working environment and download a pre-trained model.
+Steps `3.a`-`3.c` demonstrate how the pre-trained model can be exported to OpenVINO compatible format and run as a live-demo.
+If you are unsatisfied by the model quality, steps `4.a`-`4.c` help you to prepare datasets, evaluate pre-trained model and run fine-tuning.
+You can repeat steps `4.b` - `4.c` until you get acceptable quality metrics values on your data, then you can re-export model and run demo again (Steps `3.a`-`3.c`).
+
+### 1. Change a directory in your terminal to domain directory
 
 ```bash
 cd models/object_detection
 ```
-If You have not created virtual environment yet:
+If you have not created virtual environment yet:
 ```bash
 ./init_venv.sh
 ```
@@ -22,165 +27,99 @@ Activate virtual environment:
 source venv/bin/activate
 ```
 
-### 2. Select a model template file and instantiate it in some directory.
+### 2. Select a model template file and instantiate it in some directory
 
 ```bash
 export MODEL_TEMPLATE=`realpath ./model_templates/horizontal-text-detection/horizontal-text-detection-0001/template.yaml`
-export WORK_DIR=/tmp/my_model
+export WORK_DIR=/tmp/my-$(basename $(dirname $MODEL_TEMPLATE))
+export SNAPSHOT=snapshot.pth
 python ../../tools/instantiate_template.py ${MODEL_TEMPLATE} ${WORK_DIR}
 ```
 
-### 3. Download datasets
+### 3. Try a pre-trained model
 
-To be able to train networks and/or get quality metrics for pre-trained ones,
-it's necessary to download at least one dataset from following resources.
-*  [ICDAR2013 (Focused Scene Text)](https://rrc.cvc.uab.es/?ch=2) - test part is used to get quality metric.
-*  [ICDAR2015 (Incidental Scene Text)](https://rrc.cvc.uab.es/?ch=4)
-*  [ICDAR2017 (MLT)](https://rrc.cvc.uab.es/?ch=8)
-*  [ICDAR2019 (MLT)](https://rrc.cvc.uab.es/?ch=15)
-*  [ICDAR2019 (ART)](https://rrc.cvc.uab.es/?ch=14)
-*  [MSRA-TD500](http://www.iapr-tc11.org/mediawiki/index.php/MSRA_Text_Detection_500_Database_(MSRA-TD500))
-*  [COCO-Text](https://bgshih.github.io/cocotext/)
-
-### 4. Convert datasets
-
-Extract downloaded datasets in `${DATA_DIR}/text-dataset` folder.
-
-```bash
-export DATA_DIR=${WORK_DIR}/data
-```
-
-Convert it to format that is used internally and split to the train and test part.
-
-* Training annotation
-```bash
-python ./model_templates/horizontal-text-detection/tools/create_dataset.py \
-    --config ./model_templates/horizontal-text-detection/tools/datasets/dataset_train.json \
-    --output ${DATA_DIR}/text-dataset/IC13TRAIN_IC15_IC17_IC19_MSRATD500_COCOTEXT.json \
-    --root ${DATA_DIR}/text-dataset/
-export TRAIN_ANN_FILE=${DATA_DIR}/text-dataset/IC13TRAIN_IC15_IC17_IC19_MSRATD500_COCOTEXT.json
-export TRAIN_IMG_ROOT=${DATA_DIR}/text-dataset
-```
-* Testing annotation
-```bash
-python ./model_templates/horizontal-text-detection/tools/create_dataset.py \
-    --config ./model_templates/horizontal-text-detection/tools/datasets/dataset_test.json \
-    --output ${DATA_DIR}/text-dataset/IC13TEST.json \
-    --root ${DATA_DIR}/text-dataset/
-export VAL_ANN_FILE=${DATA_DIR}/text-dataset/IC13TEST.json
-export VAL_IMG_ROOT=${DATA_DIR}/text-dataset
-```
-
-Examples of json file for train and test dataset configuration can be found in `horizontal-text-detection/datasets`.
-So, if you would like not to use all datasets above, please change its content.
-
-The structure of the folder with datasets:
-```
-${DATA_DIR}/text-dataset
-    ├── coco-text
-    ├── icdar2013
-    ├── icdar2015
-    ├── icdar2017
-    ├── icdar2019_art
-    ├── icdar2019_mlt
-    ├── MSRA-TD500
-    ├── IC13TRAIN_IC15_IC17_IC19_MSRATD500_COCOTEXT.json
-    └── IC13TEST.json
-```
-
-### 5. Change current directory to directory where the model template has been instantiated.
+#### a. Change current directory to directory where the model template has been instantiated
 
 ```bash
 cd ${WORK_DIR}
 ```
-
-### 6. Training and Fine-tuning
-
-Try both following variants and select the best one:
-
-   * **Training** from scratch or pre-trained weights. Only if you have a lot of data, let's say tens of thousands or even more images. This variant assumes long training process starting from big values of learning rate and eventually decreasing it according to a training schedule.
-   * **Fine-tuning** from pre-trained weights. If the dataset is not big enough, then the model tends to overfit quickly, forgetting about the data that was used for pre-training and reducing the generalization ability of the final model. Hence, small starting learning rate and short training schedule are recommended.
-
-   * If you would like to start **training** from pre-trained weights use `--load-weights` pararmeter.
-
-      ```bash
-      python train.py \
-         --load-weights ${WORK_DIR}/snapshot.pth \
-         --train-ann-files ${TRAIN_ANN_FILE} \
-         --train-data-roots ${TRAIN_IMG_ROOT} \
-         --val-ann-files ${VAL_ANN_FILE} \
-         --val-data-roots ${VAL_IMG_ROOT} \
-         --save-checkpoints-to ${WORK_DIR}/outputs
-      ```
-
-      Also you can use parameters such as `--epochs`, `--batch-size`, `--gpu-num`, `--base-learning-rate`, otherwise default values will be loaded from `${MODEL_TEMPLATE}`.
-
-   * If you would like to start **fine-tuning** from pre-trained weights use `--resume-from` parameter and value of `--epochs` have to exceed the value stored inside `${MODEL_TEMPLATE}` file, otherwise training will be ended immediately. Here we add `5` additional epochs.
-
-      ```bash
-      export ADD_EPOCHS=5
-      export EPOCHS_NUM=$((`cat ${MODEL_TEMPLATE} | grep epochs | tr -dc '0-9'` + ${ADD_EPOCHS}))
-
-      python train.py \
-         --resume-from ${WORK_DIR}/snapshot.pth \
-         --train-ann-files ${TRAIN_ANN_FILE} \
-         --train-data-roots ${TRAIN_IMG_ROOT} \
-         --val-ann-files ${VAL_ANN_FILE} \
-         --val-data-roots ${VAL_IMG_ROOT} \
-         --save-checkpoints-to ${WORK_DIR}/outputs \
-         --epochs ${EPOCHS_NUM}
-      ```
-
-### 7. Evaluation
-
-Evaluation procedure allows us to get quality metrics values and complexity numbers such as number of parameters and FLOPs.
-
-To compute MS-COCO metrics and save computed values to `${WORK_DIR}/metrics.yaml` run:
-
-```bash
-python eval.py \
-   --load-weights ${WORK_DIR}/outputs/latest.pth \
-   --test-ann-files ${VAL_ANN_FILE} \
-   --test-data-roots ${VAL_IMG_ROOT} \
-   --save-metrics-to ${WORK_DIR}/metrics.yaml
-```
-
-You can also save images with predicted bounding boxes using `--save-output-to` parameter.
-
-```bash
-python eval.py \
-   --load-weights ${WORK_DIR}/outputs/latest.pth \
-   --test-ann-files ${VAL_ANN_FILE} \
-   --test-data-roots ${VAL_IMG_ROOT} \
-   --save-metrics-to ${WORK_DIR}/metrics.yaml \
-   --save-output-to ${WORK_DIR}/output_images
-```
-
-### 8. Export PyTorch\* model to the OpenVINO™ format
+#### b. Export pre-trained PyTorch\* model to the OpenVINO™ format
 
 To convert PyTorch\* model to the OpenVINO™ IR format run the `export.py` script:
 
 ```bash
 python export.py \
-   --load-weights ${WORK_DIR}/outputs/latest.pth \
-   --save-model-to ${WORK_DIR}/export
+   --load-weights ${SNAPSHOT} \
+   --save-model-to export
 ```
 
 This produces model `model.xml` and weights `model.bin` in single-precision floating-point format
 (FP32). The obtained model expects **normalized image** in planar BGR format.
 
-For SSD networks an alternative OpenVINO™ representation is saved automatically to `${WORK_DIR}/export/alt_ssd_export` folder.
-SSD model exported in such way will produce a bit different results (non-significant in most cases),
-but it also might be faster than the default one. As a rule SSD models in [Open Model Zoo](https://github.com/opencv/open_model_zoo/) are exported using this option.
+#### c. Run demo with exported model
 
-### 9. Validation of IR
+You need to pass a path to `model.xml` file and video device node (e.g. /dev/video0) of your web cam.
 
-Instead of passing `snapshot.pth` you need to pass path to `model.bin`.
+```bash
+python ${OMZ_DIR}/demos/object_detection_demo/python/object_detection_demo.py \
+   -m export/model.xml \
+   -at ssd \
+   -i /dev/video0
+```
+
+### 4. Fine-tune
+
+#### a. Prepare dataset
+
+In this toy example we use same images as training, validation and test subsets, but we strictly recommend not to use the same data for training, validation and test. This particular example is for demonstration of model quality growth on particular dataset during fine-tuning only. See more about dataset split [here](https://en.wikipedia.org/wiki/Training,_validation,_and_test_sets). In order to train a model that would be quite similar in terms of quality to exising pre-trained model one can use this [section](datasets.md) to prepare publicly-available datasets for training. One can also use its own preliminary annotated dataset. Annotation can be created using [CVAT](https://github.com/openvinotoolkit/cvat) as we did in this toy example.
+
+Training images are stored in `${TRAIN_IMG_ROOT}` together with `${TRAIN_ANN_FILE}` annotation file and validation images are stored in `${VAL_IMG_ROOT}` together with `${VAL_ANN_FILE}` annotation file.
+
+```bash
+export ADD_EPOCHS=1
+export EPOCHS_NUM=$((`cat ${MODEL_TEMPLATE} | grep epochs | tr -dc '0-9'` + ${ADD_EPOCHS}))
+export TRAIN_ANN_FILE=${OTE_DIR}/data/horizontal_text_detection/annotation.json
+export TRAIN_IMG_ROOT=${OTE_DIR}/data/horizontal_text_detection/
+export VAL_ANN_FILE=${TRAIN_ANN_FILE}
+export VAL_IMG_ROOT=${TRAIN_IMG_ROOT}
+export TEST_ANN_FILE=${TRAIN_ANN_FILE}
+export TEST_IMG_ROOT=${TRAIN_IMG_ROOT}
+```
+
+#### b. Evaluate
 
 ```bash
 python eval.py \
-   --load-weights ${WORK_DIR}/export/model.bin \
-   --test-ann-files ${VAL_ANN_FILE} \
-   --test-data-roots ${VAL_IMG_ROOT} \
-   --save-metrics-to ${WORK_DIR}/metrics.yaml
+   --load-weights ${SNAPSHOT} \
+   --test-ann-files ${TEST_ANN_FILE} \
+   --test-data-roots ${TEST_IMG_ROOT} \
+   --save-metrics-to metrics.yaml
 ```
+
+If you would like to evaluate exported model, you need to pass `export/model.bin` instead of passing `${SNAPSHOT}` .
+
+#### c. Fine-tune or train from scratch
+
+Try both following variants and select the best one:
+
+   * **Fine-tuning** from pre-trained weights. If the dataset is not big enough, then the model tends to overfit quickly, forgetting about the data that was used for pre-training and reducing the generalization ability of the final model. Hence, small starting learning rate and short training schedule are recommended.
+   * **Training** from scratch or pre-trained weights. Only if you have a lot of data, let's say tens of thousands or even more images. This variant assumes long training process starting from big values of learning rate and eventually decreasing it according to a training schedule.
+
+   * If you would like to start **fine-tuning** from pre-trained weights use `--resume-from` parameter and value of `--epochs` have to exceed the value stored inside `${MODEL_TEMPLATE}` file, otherwise training will be ended immediately. Here we add `1` additional epoch.
+
+      ```bash
+      python train.py \
+         --resume-from ${SNAPSHOT} \
+         --train-ann-files ${TRAIN_ANN_FILE} \
+         --train-data-roots ${TRAIN_IMG_ROOT} \
+         --val-ann-files ${VAL_ANN_FILE} \
+         --val-data-roots ${VAL_IMG_ROOT} \
+         --save-checkpoints-to outputs \
+         --epochs ${EPOCHS_NUM} \
+      && export SNAPSHOT=outputs/latest.pth \
+      && export EPOCHS_NUM=$((${EPOCHS_NUM} + ${ADD_EPOCHS}))
+      ```
+
+   * If you would like to start **training** from pre-trained weights use `--load-weights` pararmeter instead of `--resume-from`. Also you can use parameters such as `--epochs`, `--batch-size`, `--gpu-num`, `--base-learning-rate`, otherwise default values will be loaded from `${MODEL_TEMPLATE}`.
+
+As soon as training is completed, it is worth to re-evaluate trained model on test set (see Step 4.b).
