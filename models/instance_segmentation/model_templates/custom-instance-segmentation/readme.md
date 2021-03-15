@@ -1,16 +1,28 @@
 # Custom Instance Segmentation
 
 Custom instance segmentation models are lightweight models that have been pre-trained on MS COCO instance segmentation dataset.
-It is assumed that one will use these pre-trained models as starting points in order to train specific instance segmentation models (e.g. 'cat' and 'dog' detection).
+It is assumed that these pre-trained models will used as starting points in order to train specific instance segmentation models (e.g. for 'cat' and 'dog' segmentation).
+
 *NOTE* There was no goal to train top-scoring lightweight 80 class (MS COCO classes) detectors here,
-but rather provide pre-trained checkpoints and a good training config for further fine-tuning on a target dataset.
+but rather provide pre-trained checkpoints and good training configs for further fine-tuning on a target dataset.
 
-| Model Name | Complexity (GFLOPs) | Size (Mp) | Bbox AP @ [IoU=0.50:0.95] | Segm AP @ [IoU=0.50:0.95] | Links | GPU_NUM |
-| --- | --- | --- | --- | --- | --- | --- |
-| efficientnet_b2b-mask_rcnn-480x480 | 14.8 | 10.27 | 34.1 | 29.4 | [snapshot](https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/instance_segmentation/v2/efficientnet_b2b-mask_rcnn-480x480.pth), [model template](efficientnet_b2b-mask_rcnn-480x480/template.yaml) | 1 |
-| efficientnet_b2b-mask_rcnn-576x576 | 26.92 | 13.27 | 35.2 | 31.0 | [snapshot](https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/instance_segmentation/v2/efficientnet_b2b-mask_rcnn-576x576.pth), [model template](efficientnet_b2b-mask_rcnn-576x576/template.yaml) | 1 |
+| Model Name | Complexity (GFLOPs) | Size (Mp) | Bbox AP @ [IoU=0.50:0.95] | Segm AP @ [IoU=0.50:0.95] | Average segm mAP | Links | GPU_NUM |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| efficientnet_b2b-mask_rcnn-480x480 | 14.8 | 10.27 | 34.1 | 29.4 | 44.1 | [snapshot](https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/instance_segmentation/v2/efficientnet_b2b-mask_rcnn-480x480.pth), [model template](efficientnet_b2b-mask_rcnn-480x480/template.yaml) | 1 |
+| efficientnet_b2b-mask_rcnn-576x576 | 26.92 | 13.27 | 35.2 | 31.0 | 46.5 | [snapshot](https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/instance_segmentation/v2/efficientnet_b2b-mask_rcnn-576x576.pth), [model template](efficientnet_b2b-mask_rcnn-576x576/template.yaml) | 1 |
 
-Average Precision (AP) is defined as an area under the precision/recall curve.
+Average Precision (AP) is defined as an area under the precision/recall curve. 
+
+*NOTE* The Bbox AP and Segm AP metrics were calculated on the MS COCO dataset. The Average segm mAP was obtained as an average metric across 5 various datasets, which were chosen to test the generalization ability of provided training configs. To get metric information, which is achievable on each dataset, refer to this [spreadsheet](https://docs.google.com/spreadsheets/d/1wv3RzGu4Iwa0G_wCjBC5xMUMDr2JXEIm-2MeRwWCt7E/edit?usp=sharing). Datasets differ in size, the number of classes, train/val proportions, and the number of objects in the image. 
+
+The following source datasets were used in the experiments:
+* [Cityscapes](https://www.cityscapes-dataset.com/) - large dataset with dense object representation which includes 8 classes that are commonly encountered on the road (e.g. person, car, train, bicycle)   
+* [Oxford-IIIT Pets](https://www.robots.ox.ac.uk/~vgg/data/pets/) - another large dataset with cats and dogs. Also, A subset of data twice as small was used as a separate dataset in order to diversify the training base by size.
+* [WGISD](https://github.com/thsant/wgisd) - small dataset with grape segmentation. For one training dataset, the annotation for grapes was used, so it includes one class. For the other, more complicated one, annotation for each grape species was used, so it includes 5 classes. 
+
+In the conducted experiments we got pre-trained on the MS COCO weights and then started the same fine-tuning on each dataset described above without freezing any layers. 
+Then, we calculated the metric on each dataset and got an average value to compare trainings with each other. 
+Taking into account the average metric and the segmentation mAP on each dataset at each epoch, the best training config was chosen.
 
 ## Training pipeline
 
