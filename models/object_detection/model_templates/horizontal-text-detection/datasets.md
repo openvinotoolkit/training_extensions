@@ -39,6 +39,8 @@ python ./model_templates/horizontal-text-detection/tools/create_dataset.py \
     --root ${DATA_DIR}/text-dataset/
 export VAL_ANN_FILE=${DATA_DIR}/text-dataset/IC13TEST.json
 export VAL_IMG_ROOT=${DATA_DIR}/text-dataset
+export TEST_ANN_FILE=${VAL_ANN_FILE}
+export TEST_IMG_ROOT=${VAL_IMG_ROOT}
 ```
 
 Examples of json file for train and test dataset configuration can be found in `horizontal-text-detection/datasets`.
