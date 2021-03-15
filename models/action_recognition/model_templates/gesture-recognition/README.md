@@ -69,7 +69,9 @@ This produces model `model.xml` and weights `model.bin` in single-precision floa
 You need to pass a path to `model.xml` file and the index of your web cam.
 
 ```bash
-python ${OMZ_DIR}/tools/downloader/downloader.py --name person-detection-asl-0001
+python ${OMZ_DIR}/tools/downloader/downloader.py \
+  --name person-detection-asl-0001 \
+  --precisions FP32
 python ${OMZ_DIR}/demos/gesture_recognition_demo/python/gesture_recognition_demo.py \
   -m_a export/model.xml \
   -m_d intel/person-detection-asl-0001/FP32/person-detection-asl-0001.xml \
