@@ -454,7 +454,6 @@ TRANSFORMS = {
     'TransformRandomBolding': TransformRandomBolding,
     'TransformColorJitter': TransformColorJitter,
     'TransformGrayscale': TransformGrayscale,
-
 }
 
 
