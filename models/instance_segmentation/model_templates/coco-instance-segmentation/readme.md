@@ -64,7 +64,7 @@ This produces model `model.xml` and weights `model.bin` in single-precision floa
 
 #### c. Run demo with exported model
 
-You need to pass a path to `model.xml` file and video device node (e.g. /dev/video0) of your web cam.
+You need to pass a path to `model.xml` file and video device node (e.g. /dev/video0) of your web cam. Also an image or a video file probably can be used as an input (-i) for the demo, please refer to documentation in [Open Model Zoo](https://github.com/openvinotoolkit/open_model_zoo) repo.
 
 ```bash
 python ${OMZ_DIR}/demos/instance_segmentation_demo/python/instance_segmentation_demo.py \
