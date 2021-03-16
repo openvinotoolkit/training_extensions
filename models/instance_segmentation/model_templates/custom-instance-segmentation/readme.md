@@ -24,6 +24,8 @@ In the conducted experiments we got pre-trained on the MS COCO weights and then 
 Then, we calculated the metric on each dataset and got an average value to compare trainings with each other. 
 Taking into account the average metric and the segmentation mAP on each dataset at each epoch, the best training config was chosen.
 
+Please note that we do not share snapshots trained on the datasets above, as we only use them to obtain validation metrics. The provided materials are limited to pre-trained MS COCO snapshots, training configs, and metric values that can be achieved on different datasets.
+
 ## Training pipeline
 
 ### 1. Change a directory in your terminal to instance_segmentation and activate venv.
