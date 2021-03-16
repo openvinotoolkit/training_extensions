@@ -37,7 +37,7 @@ DIFF_TARGET_MAX_GLOBAL = 0.1
 TEST_ROOT = Path(__file__).parent
 PROJECT_ROOT = TEST_ROOT.parent.parent
 env = os.environ.copy()
-if 'INTEL_OPENVINO_DIR' in env:
+if env['INTEL_OPENVINO_DIR']:
     OPENVINO_DIR = env['INTEL_OPENVINO_DIR']
 else:
     OPENVINO_DIR = PROJECT_ROOT.parent / 'intel' / 'openvino'
