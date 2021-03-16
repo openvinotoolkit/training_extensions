@@ -45,7 +45,6 @@ else:
         OPENVINO_DIR = PROJECT_ROOT.parent / 'intel' / 'openvino_2021'
         if not OPENVINO_DIR.is_dir():
             raise Exception("OpenVino path not found!")
-print("OPENVINO_DIR: ", OPENVINO_DIR)
 ACC_CHECK_DIR = OPENVINO_DIR / 'deployment_tools' / 'open_model_zoo' / 'tools' / 'accuracy_checker'
 MO_DIR = OPENVINO_DIR / 'deployment_tools' / 'model_optimizer'
 ACC_CHECK_VENV_DIR = PROJECT_ROOT / 'acc_check'
@@ -73,11 +72,12 @@ def run_cmd(comm: str, cwd: str, venv=None) -> Tuple[int, str]:
     print()
     com_line = shlex.split(comm)
     print(com_line)
+    cmd_env = os.environ.copy()
     if venv:
-        env['VIRTUAL_ENV'] = str(venv)
-        env['PATH'] = str(f'{venv}/bin') + ':' + env['PATH']
+        cmd_env['VIRTUAL_ENV'] = str(venv)
+        cmd_env['PATH'] = str(f'{venv}/bin') + ':' + cmd_env['PATH']
     result = subprocess.Popen(com_line, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                              cwd=cwd, env=env)
+                              cwd=cwd, env=cmd_env)
     exit_code = result.poll()
 
     def process_line(decoded_line: str, error_lines: List):
