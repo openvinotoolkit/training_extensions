@@ -123,15 +123,10 @@ The config file is divided into 4 sections: train, eval, export, demo. Common pa
 > **Note**: All values in the config file which have 'path' in their name will be treated as paths and the script which reads configuration will try to resolve all relative paths. By default all relative paths are resolved relatively to the folder where this README.md file is placed. Keep this in mind or use full paths.
 #### Common parameters:
 - `backbone_config`:
-    - `type`: `resnet` for resnet-like backbone, `im2latex` for original backbone from [im2markup](https://arxiv.org/pdf/1609.04938.pdf) paper and `VGG` for VGG-like backbone. Optional. Default is `resnet`.
-    `resnet`-specific parameters:
-      * `arch`: type of the architecture (if backbone_type is resnet). For more details, please, refer to [ResnetLikeBackBone](im2latex/models/backbones/resnet.py)
+      * `arch`: type of the architecture. For more details, please, refer to [ResnetLikeBackBone](im2latex/models/backbones/resnet.py)
       * `disable_layer_3` and `disable_layer_4` - disables layer 3 and 4 in resnet-like backbone. ResNet backbone from the torchvision module consists of 4 block of layers, each of them increase the number of channels and decrease the spatial dimensionality. These parameters allow to switch off the 3rd and the 4th of such layers, respectively.
       * `enable_last_conv` - enables additional convolution layer to adjust number of output channels to the number of input channels in the LSTM. Optional. Default: false.
       * `output_channels` - number of output channels channels. If `enable_last_conv` is `true`, this parameter should be equal to `head.encoder_input_size`, otherwise it should be equal to actual number of output channels of the backbone.
-    - `VGG`-specific parameters:
-      - `backbone_dropout` - probability for dropout
-      - `in_channels` - number of input channels (3 for color or 1 for grayscale images)
 - `head` - configuration of the text recognition head.
   - Now two text recognition heads are supported: Attention-based [text reconition head](text_recognition/models/text_recognition_heads/attention_based.py) and [CTC-based LSTM-encoder-decoder head](text_recognition/models/text_recognition_heads/ctc_lstm_based.py)
   - `positional_encodings` - if true, use positional encodings like in transformer
