@@ -215,9 +215,7 @@ class MJSynthDataset(BaseDataset):
         def read_img(image_path):
             gt_text = ' '.join(image_path.split('_')[1])
             if not self.fixed_img_shape:
-
                 img = cv.imread(os.path.join(self.data_folder, image_path), cv.IMREAD_COLOR)
-
                 if img is None:
                     return
                 elif img.shape[0:2] <= tuple(min_shape):
@@ -235,7 +233,6 @@ class MJSynthDataset(BaseDataset):
                   'img_path': image_path,
                   'img_shape': img_shape
                   }
-
             return el
 
         with open(os.path.join(self.data_folder, self.ann_file)) as input_file:
