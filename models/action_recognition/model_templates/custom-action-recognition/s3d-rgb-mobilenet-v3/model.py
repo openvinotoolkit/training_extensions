@@ -1,5 +1,5 @@
 # global parameters
-num_videos_per_gpu = 10
+num_videos_per_gpu = 12
 num_workers_per_gpu = 3
 train_sources = 'custom_dataset',
 test_sources = 'custom_dataset',
@@ -73,8 +73,11 @@ model = dict(
             type='AMSoftmaxLoss',
             target_loss='ce',
             scale_cfg=dict(
-                type='ConstantScalarScheduler',
-                scale=15.0,
+                type='PolyScalarScheduler',
+                start_scale=30.0,
+                end_scale=5.0,
+                power=1.2,
+                num_epochs=40.0,
             ),
             pr_product=False,
             margin_type='cos',
@@ -177,7 +180,7 @@ data = dict(
 # optimizer
 optimizer = dict(
     type='SGD',
-    lr=1e-2,
+    lr=1e-3,
     momentum=0.9,
     weight_decay=1e-4
 )
@@ -191,20 +194,23 @@ optimizer_config = dict(
 # parameter manager
 params_config = dict(
     type='FreezeLayers',
-    epochs=0,
+    epochs=5,
     open_layers=['cls_head']
 )
 
 # learning policy
 lr_config = dict(
     policy='customstep',
-    step=[50, 80],
+    step=[30, 50],
     gamma=0.1,
+    fixed='constant',
+    fixed_epochs=5,
+    fixed_ratio=10.0,
     warmup='cos',
-    warmup_epochs=10,
-    warmup_ratio=1e-3,
+    warmup_epochs=5,
+    warmup_ratio=1e-2,
 )
-total_epochs = 110
+total_epochs = 65
 
 # workflow
 workflow = [('train', 1)]
@@ -219,7 +225,7 @@ evaluation = dict(
 
 log_level = 'INFO'
 log_config = dict(
-    interval=100,
+    interval=10,
     hooks=[
         dict(type='TextLoggerHook'),
         dict(type='TensorboardLoggerHook'),
@@ -231,4 +237,3 @@ dist_params = dict(
     backend='nccl'
 )
 find_unused_parameters = True
-seed = 1957
