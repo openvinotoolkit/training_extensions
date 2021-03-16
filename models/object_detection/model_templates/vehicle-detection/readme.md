@@ -7,19 +7,24 @@ Models that are able to detect vehicles.
 | vehicle-detection-0200 | 0.82 | 1.83 | 25.4 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/vehicle-detection-0200-1.pth), [model template](./vehicle-detection-0200/template.yaml) | 4 |
 | vehicle-detection-0201 | 1.84 | 1.83 | 32.3 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/vehicle-detection-0201-1.pth), [model template](./vehicle-detection-0201/template.yaml) | 4 |
 | vehicle-detection-0202 | 3.28 | 1.83 | 36.9 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/vehicle-detection-0202-1.pth), [model template](./vehicle-detection-0202/template.yaml) | 4 |
-| vehicle-detection-0203 | 112.34 | 24.11 | 43.8 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/vehicle-detection-0203.pth), [model template](./vehicle-detection-0203/template.yaml)) | 4 |
-| vehicle-detection-0204 | 190.32 | 34.15 | 47.3 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/vehicle-detection-0204.pth), [model template](./vehicle-detection-0204/template.yaml)) | 4 |
+| vehicle-detection-0203 | 112.34 | 24.11 | 43.8 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/vehicle-detection-0203.pth), [model template](./vehicle-detection-0203/template.yaml) | 4 |
+| vehicle-detection-0204 | 190.32 | 34.15 | 47.3 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/vehicle-detection-0204.pth), [model template](./vehicle-detection-0204/template.yaml) | 4 |
 
 Average Precision (AP) is defined as an area under the precision/recall curve.
 
-## Training pipeline
+## Usage
 
-### 1. Change a directory in your terminal to object_detection.
+Steps `1`-`2` help to setup working environment and download a pre-trained model.
+Steps `3.a`-`3.c` demonstrate how the pre-trained model can be exported to OpenVINO compatible format and run as a live-demo.
+If you are unsatisfied by the model quality, steps `4.a`-`4.c` help you to prepare datasets, evaluate pre-trained model and run fine-tuning.
+You can repeat steps `4.b` - `4.c` until you get acceptable quality metrics values on your data, then you can re-export model and run demo again (Steps `3.a`-`3.c`).
+
+### 1. Change a directory in your terminal to domain directory
 
 ```bash
 cd models/object_detection
 ```
-If You have not created virtual environment yet:
+If you have not created virtual environment yet:
 ```bash
 ./init_venv.sh
 ```
@@ -28,128 +33,99 @@ Activate virtual environment:
 source venv/bin/activate
 ```
 
-### 2. Select a model template file and instantiate it in some directory.
+### 2. Select a model template file and instantiate it in some directory
 
 ```bash
 export MODEL_TEMPLATE=`realpath ./model_templates/vehicle-detection/vehicle-detection-0200/template.yaml`
-export WORK_DIR=/tmp/my_model
+export WORK_DIR=/tmp/my-$(basename $(dirname $MODEL_TEMPLATE))
+export SNAPSHOT=snapshot.pth
 python ../../tools/instantiate_template.py ${MODEL_TEMPLATE} ${WORK_DIR}
 ```
 
-### 3. Collect dataset
+### 3. Try a pre-trained model
 
-Collect or download images with vehicles presented on them. One can download MS-COCO dataset and remain images with cars only.
-```bash
-export DATA_DIR=${WORK_DIR}/data
-wget http://images.cocodataset.org/zips/val2017.zip -P ${DATA_DIR}/
-wget http://images.cocodataset.org/zips/train2017.zip -P ${DATA_DIR}/
-wget http://images.cocodataset.org/annotations/annotations_trainval2017.zip -P ${DATA_DIR}/
-unzip ${DATA_DIR}/val2017.zip -d ${DATA_DIR}/
-unzip ${DATA_DIR}/train2017.zip -d ${DATA_DIR}/
-unzip ${DATA_DIR}/annotations_trainval2017.zip -d ${DATA_DIR}/
-python ../../../external/mmdetection/tools/coco_filter.py ${DATA_DIR}/annotations/instances_train2017.json ${DATA_DIR}/annotations/instances_train2017car.json --filter car --remap
-python ../../../external/mmdetection/tools/coco_filter.py ${DATA_DIR}/annotations/instances_val2017.json ${DATA_DIR}/annotations/instances_val2017car.json --filter car --remap
-sed -i "s/car/vehicle/g" ${DATA_DIR}/annotations/instances_val2017car.json
-sed -i "s/car/vehicle/g" ${DATA_DIR}/annotations/instances_train2017car.json
-```
-
-### 4. Prepare annotation
-
-Annotate dataset and save annotation to MSCOCO format with `vehicle` as the only one class.
-
-### 5. Change current directory to directory where the model template has been instantiated.
+#### a. Change current directory to directory where the model template has been instantiated
 
 ```bash
 cd ${WORK_DIR}
 ```
-
-### 6. Training and Fine-tuning
-
-Try both following variants and select the best one:
-
-   * **Training** from scratch or pre-trained weights. Only if you have a lot of data, let's say tens of thousands or even more images. This variant assumes long training process starting from big values of learning rate and eventually decreasing it according to a training schedule.
-   * **Fine-tuning** from pre-trained weights. If the dataset is not big enough, then the model tends to overfit quickly, forgetting about the data that was used for pre-training and reducing the generalization ability of the final model. Hence, small starting learning rate and short training schedule are recommended.
-
-   * If you would like to start **training** from pre-trained weights use `--load-weights` pararmeter.
-
-      ```bash
-      python train.py \
-         --load-weights ${WORK_DIR}/snapshot.pth \
-         --train-ann-files ${TRAIN_ANN_FILE} \
-         --train-data-roots ${TRAIN_IMG_ROOT} \
-         --val-ann-files ${VAL_ANN_FILE} \
-         --val-data-roots ${VAL_IMG_ROOT} \
-         --save-checkpoints-to ${WORK_DIR}/outputs
-      ```
-
-      Also you can use parameters such as `--epochs`, `--batch-size`, `--gpu-num`, `--base-learning-rate`, otherwise default values will be loaded from `${MODEL_TEMPLATE}`.
-
-   * If you would like to start **fine-tuning** from pre-trained weights use `--resume-from` parameter and value of `--epochs` have to exceed the value stored inside `${MODEL_TEMPLATE}` file, otherwise training will be ended immediately. Here we add `5` additional epochs.
-
-      ```bash
-      export ADD_EPOCHS=5
-      export EPOCHS_NUM=$((`cat ${MODEL_TEMPLATE} | grep epochs | tr -dc '0-9'` + ${ADD_EPOCHS}))
-
-      python train.py \
-         --resume-from ${WORK_DIR}/snapshot.pth \
-         --train-ann-files ${TRAIN_ANN_FILE} \
-         --train-data-roots ${TRAIN_IMG_ROOT} \
-         --val-ann-files ${VAL_ANN_FILE} \
-         --val-data-roots ${VAL_IMG_ROOT} \
-         --save-checkpoints-to ${WORK_DIR}/outputs \
-         --epochs ${EPOCHS_NUM}
-      ```
-
-### 7. Evaluation
-
-Evaluation procedure allows us to get quality metrics values and complexity numbers such as number of parameters and FLOPs.
-
-To compute MS-COCO metrics and save computed values to `${WORK_DIR}/metrics.yaml` run:
-
-```bash
-python eval.py \
-   --load-weights ${WORK_DIR}/outputs/latest.pth \
-   --test-ann-files ${VAL_ANN_FILE} \
-   --test-data-roots ${VAL_IMG_ROOT} \
-   --save-metrics-to ${WORK_DIR}/metrics.yaml
-```
-
-You can also save images with predicted bounding boxes using `--save-output-to` parameter.
-
-```bash
-python eval.py \
-   --load-weights ${WORK_DIR}/outputs/latest.pth \
-   --test-ann-files ${VAL_ANN_FILE} \
-   --test-data-roots ${VAL_IMG_ROOT} \
-   --save-metrics-to ${WORK_DIR}/metrics.yaml \
-   --save-output-to ${WORK_DIR}/output_images
-```
-
-### 8. Export PyTorch\* model to the OpenVINO™ format
+#### b. Export pre-trained PyTorch\* model to the OpenVINO™ format
 
 To convert PyTorch\* model to the OpenVINO™ IR format run the `export.py` script:
 
 ```bash
 python export.py \
-   --load-weights ${WORK_DIR}/outputs/latest.pth \
-   --save-model-to ${WORK_DIR}/export
+   --load-weights ${SNAPSHOT} \
+   --save-model-to export
 ```
 
 This produces model `model.xml` and weights `model.bin` in single-precision floating-point format
 (FP32). The obtained model expects **normalized image** in planar BGR format.
 
-For SSD networks an alternative OpenVINO™ representation is saved automatically to `${WORK_DIR}/export/alt_ssd_export` folder.
-SSD model exported in such way will produce a bit different results (non-significant in most cases),
-but it also might be faster than the default one. As a rule SSD models in [Open Model Zoo](https://github.com/opencv/open_model_zoo/) are exported using this option.
+#### c. Run demo with exported model
 
-### 9. Validation of IR
+You need to pass a path to `model.xml` file and video device node (e.g. /dev/video0) of your web cam. Also an image or a video file probably can be used as an input (-i) for the demo, please refer to documentation in [Open Model Zoo](https://github.com/openvinotoolkit/open_model_zoo) repo.
 
-Instead of passing `snapshot.pth` you need to pass path to `model.bin`.
+```bash
+python ${OMZ_DIR}/demos/object_detection_demo/python/object_detection_demo.py \
+   -m export/model.xml \
+   -at ssd \
+   -i /dev/video0
+```
+
+### 4. Fine-tune
+
+#### a. Prepare dataset
+
+In this toy example we use same images as training, validation and test subsets, but we strictly recommend not to use the same data for training, validation and test. This particular example is for demonstration of model quality growth on particular dataset during fine-tuning only. See more about dataset split [here](https://en.wikipedia.org/wiki/Training,_validation,_and_test_sets). In order to train a model one can prepare [publicly-available datasets](datasets.md) for training. One can also use its own preliminary annotated dataset. Annotation can be created using [CVAT](https://github.com/openvinotoolkit/cvat) as we did in this toy example.
+
+Training images are stored in `${TRAIN_IMG_ROOT}` together with `${TRAIN_ANN_FILE}` annotation file and validation images are stored in `${VAL_IMG_ROOT}` together with `${VAL_ANN_FILE}` annotation file.
+
+```bash
+export ADD_EPOCHS=1
+export EPOCHS_NUM=$((`cat ${MODEL_TEMPLATE} | grep epochs | tr -dc '0-9'` + ${ADD_EPOCHS}))
+export TRAIN_ANN_FILE=${OTE_DIR}/data/vehicle_detection/annotation_train.json
+export TRAIN_IMG_ROOT=${OTE_DIR}/data/vehicle_detection/train
+export VAL_ANN_FILE=${TRAIN_ANN_FILE}
+export VAL_IMG_ROOT=${TRAIN_IMG_ROOT}
+export TEST_ANN_FILE=${TRAIN_ANN_FILE}
+export TEST_IMG_ROOT=${TRAIN_IMG_ROOT}
+```
+
+#### b. Evaluate
 
 ```bash
 python eval.py \
-   --load-weights ${WORK_DIR}/export/model.bin \
-   --test-ann-files ${VAL_ANN_FILE} \
-   --test-data-roots ${VAL_IMG_ROOT} \
-   --save-metrics-to ${WORK_DIR}/metrics.yaml
+   --load-weights ${SNAPSHOT} \
+   --test-ann-files ${TEST_ANN_FILE} \
+   --test-data-roots ${TEST_IMG_ROOT} \
+   --save-metrics-to metrics.yaml
 ```
+
+If you would like to evaluate exported model, you need to pass `export/model.bin` instead of passing `${SNAPSHOT}` .
+
+#### c. Fine-tune or train from scratch
+
+Try both following variants and select the best one:
+
+   * **Fine-tuning** from pre-trained weights. If the dataset is not big enough, then the model tends to overfit quickly, forgetting about the data that was used for pre-training and reducing the generalization ability of the final model. Hence, small starting learning rate and short training schedule are recommended.
+   * **Training** from scratch or pre-trained weights. Only if you have a lot of data, let's say tens of thousands or even more images. This variant assumes long training process starting from big values of learning rate and eventually decreasing it according to a training schedule.
+
+   * If you would like to start **fine-tuning** from pre-trained weights use `--resume-from` parameter and value of `--epochs` have to exceed the value stored inside `${MODEL_TEMPLATE}` file, otherwise training will be ended immediately. Here we add `1` additional epoch.
+
+      ```bash
+      python train.py \
+         --resume-from ${SNAPSHOT} \
+         --train-ann-files ${TRAIN_ANN_FILE} \
+         --train-data-roots ${TRAIN_IMG_ROOT} \
+         --val-ann-files ${VAL_ANN_FILE} \
+         --val-data-roots ${VAL_IMG_ROOT} \
+         --save-checkpoints-to outputs \
+         --epochs ${EPOCHS_NUM} \
+      && export SNAPSHOT=outputs/latest.pth \
+      && export EPOCHS_NUM=$((${EPOCHS_NUM} + ${ADD_EPOCHS}))
+      ```
+
+   * If you would like to start **training** from pre-trained weights use `--load-weights` pararmeter instead of `--resume-from`. Also you can use parameters such as `--epochs`, `--batch-size`, `--gpu-num`, `--base-learning-rate`, otherwise default values will be loaded from `${MODEL_TEMPLATE}`.
+
+As soon as training is completed, it is worth to re-evaluate trained model on test set (see Step 4.b).
