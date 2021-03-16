@@ -24,8 +24,8 @@ from .text_recognition_heads.attention_based import AttentionBasedLSTM
 from .text_recognition_heads.ctc_lstm_based import LSTMEncoderDecoder
 
 TEXT_REC_HEADS = {
-    "AttentionBasedLSTM": AttentionBasedLSTM,
-    "LSTMEncoderDecoder": LSTMEncoderDecoder,
+    'AttentionBasedLSTM': AttentionBasedLSTM,
+    'LSTMEncoderDecoder': LSTMEncoderDecoder,
 }
 
 BACKBONES = {
@@ -57,23 +57,23 @@ class TextRecognitionModel(nn.Module):
 
     def __init__(self, backbone, out_size, head):
         super().__init__()
-        bb_out_channels = backbone.get("output_channels", 512)
-        head_in_channels = head.get("encoder_input_size", 512)
+        bb_out_channels = backbone.get('output_channels', 512)
+        head_in_channels = head.get('encoder_input_size', 512)
         assert bb_out_channels == head_in_channels, f"""
         Number of output channels in the backbone ({bb_out_channels}) must be equal
         to the number of input channels in the head ({head_in_channels}) in case last conv
         is disabled
         """
-        head_type = head.pop('type', "AttentionBasedLSTM")
-        backbone_type = backbone.pop('type', "resnet")
-        self.freeze_backbone = backbone.pop("freeze_backbone", False)
+        head_type = head.pop('type', 'AttentionBasedLSTM')
+        backbone_type = backbone.pop('type', 'resnet')
+        self.freeze_backbone = backbone.pop('freeze_backbone', False)
         self.head = TEXT_REC_HEADS[head_type](out_size, **head)
         self.backbone = BACKBONES[backbone_type](**backbone)
         if self.freeze_backbone:
-            print("Freeze backbone layers")
+            print('Freeze backbone layers')
             for layer in self.backbone.parameters():
                 layer.requires_grad = False
-            if backbone.get("one_ch_first_conv"):
+            if backbone.get('one_ch_first_conv'):
                 for layer in self.backbone.conv1.parameters():
                     layer.requires_grad = True
 
@@ -84,7 +84,7 @@ class TextRecognitionModel(nn.Module):
     def load_weights(self, model_path, map_location='cpu'):
         if model_path is None:
             return
-        print(f"Loading model from {model_path}")
+        print(f'Loading model from {model_path}')
         checkpoint = torch.load(model_path, map_location=map_location)
         checkpoint = OrderedDict((k.replace('module.', '') if 'module.' in k else k, v) for k, v in checkpoint.items())
         try:

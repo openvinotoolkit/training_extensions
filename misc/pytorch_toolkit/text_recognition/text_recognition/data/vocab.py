@@ -44,7 +44,7 @@ START_TOKEN = 0
 PAD_TOKEN = 1
 END_TOKEN = 2
 UNK_TOKEN = 3
-NUMBER_SIGNS = set("0123456789.")
+NUMBER_SIGNS = set('0123456789.')
 
 
 def split_number(sign):
@@ -56,8 +56,8 @@ def split_number(sign):
 class Vocab:
     def __init__(self, loaded_sign2id=None, loaded_id2sign=None):
         if loaded_id2sign is None and loaded_sign2id is None:
-            self.sign2id = {"<s>": START_TOKEN, "</s>": END_TOKEN,
-                            "<pad>": PAD_TOKEN, "<unk>": UNK_TOKEN}
+            self.sign2id = {'<s>': START_TOKEN, '</s>': END_TOKEN,
+                            '<pad>': PAD_TOKEN, '<unk>': UNK_TOKEN}
             self.id2sign = dict((idx, token)
                                 for token, idx in self.sign2id.items())
             self.length = 4
@@ -96,12 +96,12 @@ class Vocab:
             if val in (PAD_TOKEN, END_TOKEN) and not ignore_end_token:
                 break
             phrase_converted.append(
-                self.id2sign.get(val, "?"))
+                self.id2sign.get(val, '?'))
 
-        return " ".join(phrase_converted)
+        return ' '.join(phrase_converted)
 
 
-def write_vocab(data_dir, as_json=True, annotation_file = 'formulas.norm.lst'):
+def write_vocab(data_dir, as_json=True, annotation_file='formulas.norm.lst'):
     """
     traverse training phrases to make vocab
     and store the vocab in the file
@@ -124,12 +124,12 @@ def write_vocab(data_dir, as_json=True, annotation_file = 'formulas.norm.lst'):
 
             vocab.add_phrase(text_splitted_numbers)
 
-    vocab_file = join(data_dir, 'vocab.{}'.format("json" if as_json else 'pkl'))
-    print("Writing Vocab File in ", vocab_file)
+    vocab_file = join(data_dir, 'vocab.{}'.format('json' if as_json else 'pkl'))
+    print('Writing Vocab File in ', vocab_file)
 
     dict_to_store = {
-        "id2sign": vocab.id2sign,
-        "sign2id": vocab.sign2id,
+        'id2sign': vocab.id2sign,
+        'sign2id': vocab.sign2id,
     }
     if as_json:
         with open(vocab_file, 'w') as w:
@@ -141,25 +141,25 @@ def write_vocab(data_dir, as_json=True, annotation_file = 'formulas.norm.lst'):
 
 def read_vocab(vocab_path):
     if vocab_path.endswith('.pkl'):
-        with open(vocab_path, "rb") as f:
+        with open(vocab_path, 'rb') as f:
             vocab_dict = pkl.load(f)
     elif vocab_path.endswith('.json'):
-        with open(vocab_path, "r") as f:
+        with open(vocab_path, 'r') as f:
             vocab_dict = json.load(f)
             vocab_dict['id2sign'] = {int(k): v for k, v in vocab_dict['id2sign'].items()}
     else:
-        raise ValueError("Wrong extension of the vocab file")
-    vocab = Vocab(loaded_id2sign=vocab_dict["id2sign"], loaded_sign2id=vocab_dict["sign2id"])
+        raise ValueError('Wrong extension of the vocab file')
+    vocab = Vocab(loaded_id2sign=vocab_dict['id2sign'], loaded_sign2id=vocab_dict['sign2id'])
     return vocab
 
 
 def pkl_to_json(vocab_path):
-    with open(vocab_path, "rb") as f:
+    with open(vocab_path, 'rb') as f:
         vocab_dict = pkl.load(f)
         dict_to_store = {
-            "id2sign": vocab_dict["id2sign"],
-            "sign2id": vocab_dict["sign2id"],
+            'id2sign': vocab_dict['id2sign'],
+            'sign2id': vocab_dict['sign2id'],
         }
-        json_path = vocab_path.replace(".pkl", ".json")
+        json_path = vocab_path.replace('.pkl', '.json')
         with open(json_path, 'w') as dest:
             json.dump(dict_to_store, dest, indent=4, sort_keys=True)

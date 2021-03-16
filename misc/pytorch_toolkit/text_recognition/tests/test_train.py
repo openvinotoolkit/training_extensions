@@ -43,15 +43,17 @@ def create_train_test(config_file):
     return TestTrain
 
 
-class TestMediumRenderedTrain(create_train_test("configs/medium_config.yml")):
-    "Test case for medium config"
+class TestMediumRenderedTrain(create_train_test('configs/medium_config.yml')):
+    'Test case for medium config'
 
 
 class TestHandwrittenPolynomialsTrain(create_train_test('configs/polynomials_handwritten_config.yml')):
-    "Test case for handwritten polynomials config"
+    'Test case for handwritten polynomials config'
 
-class TestAlphanumericTrain(create_train_test("configs/config_0013.yml")):
-    "Test case for alphanumeric config"
 
-if __name__ == "__main__":
+class TestAlphanumericTrain(create_train_test('configs/config_0013.yml')):
+    'Test case for alphanumeric config'
+
+
+if __name__ == '__main__':
     unittest.main()

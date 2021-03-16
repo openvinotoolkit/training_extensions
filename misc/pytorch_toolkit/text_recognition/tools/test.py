@@ -27,12 +27,12 @@ def parse_args():
     return args.parse_args()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     args = parse_args()
     test_config = get_config(args.config, section='eval')
     validator = Evaluator(test_config)
-    if "model_folder" in test_config.keys():
-        model_folder = test_config.get("model_folder")
+    if 'model_folder' in test_config.keys():
+        model_folder = test_config.get('model_folder')
         best_model, best_result = None, 0
         for model in os.listdir(model_folder):
             validator.runner.reload_model(os.path.join(model_folder, model))
@@ -40,8 +40,8 @@ if __name__ == "__main__":
             if result > best_result:
                 best_result = result
                 best_model = os.path.join(model_folder, model)
-        print("model = {}".format(best_model))
+        print('model = {}'.format(best_model))
         result = best_result
     else:
         result = validator.validate()
-    print("Result metric is: {}".format(result))
+    print('Result metric is: {}'.format(result))

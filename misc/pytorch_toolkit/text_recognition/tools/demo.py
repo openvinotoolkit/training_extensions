@@ -32,7 +32,7 @@ class TextRecognitionDemo:
         self.model_path = config.get('model_path')
         self.vocab = read_vocab(config.get('vocab_path'))
         self.transform = create_list_of_transforms(config.get('transforms_list'))
-        self.use_ctc = self.config.get("use_ctc")
+        self.use_ctc = self.config.get('use_ctc')
         self.model = TextRecognitionModel(config.get('backbone_config'), len(self.vocab), config.get('head', {}))
         if self.model_path is not None:
             self.model.load_weights(self.model_path, map_location=config.get('map_location', 'cpu'))
@@ -55,20 +55,20 @@ class TextRecognitionDemo:
 def parse_args():
     args = argparse.ArgumentParser()
     args.add_argument('--config')
-    args.add_argument("-i", "--input", help="Path to a folder with images or path to an image files", required=True)
+    args.add_argument('-i', '--input', help='Path to a folder with images or path to an image files', required=True)
     return args.parse_args()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     args = parse_args()
     demo_config = get_config(args.config, section='demo')
     demo = TextRecognitionDemo(demo_config)
     try:
         check_environment()
     except EnvironmentError:
-        print("Warning: cannot render image because some render tools are not installed")
-        print("Check that pdflatex, ghostscript and imagemagick are installed")
-        print("For details, please, refer to README.md")
+        print('Warning: cannot render image because some render tools are not installed')
+        print('Check that pdflatex, ghostscript and imagemagick are installed')
+        print('For details, please, refer to README.md')
         render_images = False
     else:
         render_images = True
@@ -79,15 +79,15 @@ if __name__ == "__main__":
         inputs = [args.input]
     for inp in inputs:
         input_image = cv.imread(inp, cv.IMREAD_COLOR)
-        assert input_image is not None, "Error reading image {}, please, check input path".format(inp)
+        assert input_image is not None, 'Error reading image {}, please, check input path'.format(inp)
         recognized_formula = demo(input_image)
-        cv.imshow("Input image", input_image)
+        cv.imshow('Input image', input_image)
         print(recognized_formula)
-        line_for_render = (recognized_formula, "output.png", "./")
+        line_for_render = (recognized_formula, 'output.png', './')
         if render_images:
             render_routine(line_for_render)
-            rendered_formula = cv.imread("output.png", cv.IMREAD_UNCHANGED)
-            cv.imshow("Predicted formula", rendered_formula)
+            rendered_formula = cv.imread('output.png', cv.IMREAD_UNCHANGED)
+            cv.imshow('Predicted formula', rendered_formula)
             cv.waitKey(0)
-            if os.path.exists("output.png"):
-                os.remove("output.png")
+            if os.path.exists('output.png'):
+                os.remove('output.png')

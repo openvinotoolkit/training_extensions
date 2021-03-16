@@ -18,13 +18,13 @@ import torch.nn as nn
 import torchvision.models
 
 architectures = {
-    "resnet18": torchvision.models.resnet18,
-    "resnet34": torchvision.models.resnet34,
-    "resnet50": torchvision.models.resnet50,
-    "resnet101": torchvision.models.resnet101,
-    "resnet152": torchvision.models.resnet152,
-    "resnext50_32x4d": torchvision.models.resnext50_32x4d,
-    "resnext101_32x8d": torchvision.models.resnext101_32x8d,
+    'resnet18': torchvision.models.resnet18,
+    'resnet34': torchvision.models.resnet34,
+    'resnet50': torchvision.models.resnet50,
+    'resnet101': torchvision.models.resnet101,
+    'resnet152': torchvision.models.resnet152,
+    'resnext50_32x4d': torchvision.models.resnext50_32x4d,
+    'resnext101_32x8d': torchvision.models.resnext101_32x8d,
 }
 
 
@@ -35,7 +35,7 @@ class ResNetLikeBackbone(nn.Module):
         self.arch = arch
         _resnet = architectures.get(arch, None)
         if _resnet is None:
-            raise ValueError("Unkown backbone, please, check the field 'arch' in the backbone_config")
+            raise ValueError('Unkown backbone, please, check the field 'arch' in the backbone_config')
         _resnet = _resnet(pretrained=True, progress=True)
         self.groups = _resnet.groups
         self.base_width = _resnet.base_width
@@ -54,7 +54,7 @@ class ResNetLikeBackbone(nn.Module):
         else:
             out_ch = 512
         if enable_layer_4:
-            assert enable_layer_3, "Cannot enable layer4 w/out enabling layer 3"
+            assert enable_layer_3, 'Cannot enable layer4 w/out enabling layer 3'
 
         if enable_layer_3 and disable_layer_4:
             self.layer3 = _resnet.layer3
@@ -73,9 +73,9 @@ class ResNetLikeBackbone(nn.Module):
         else:
             self.layer3 = None
             self.layer4 = None
-        print("Initialized cnn encoder {}".format(arch))
+        print('Initialized cnn encoder {}'.format(arch))
         if enable_last_conv:
-            print("Last conv enabled")
+            print('Last conv enabled')
             self.last_conv = nn.Conv2d(out_ch, self.output_channels, 1)
         else:
             self.last_conv = None

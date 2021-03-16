@@ -28,7 +28,7 @@ def parse_args():
     return args.parse_args()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     assert sys.version_info[0] == 3
     args = parse_args()
 
