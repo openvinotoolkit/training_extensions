@@ -55,6 +55,8 @@ from torch.utils.data import ConcatDataset, DataLoader
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
+VAL_FILE_NAME_TEMPLATE = '{}/results_epoch_{}_step_{}_{}.txt'
+
 
 def calculate_loss(logits, targets, target_lengths, should_cut_by_min=False, ctc_loss=None):
     """args:
@@ -175,8 +177,7 @@ class Trainer:
                 val_datasets.append(dataset)
 
         train_dataset = ConcatDataset(train_datasets)
-        train_sampler = BatchRandomSampler(
-            dataset=train_dataset, batch_size=self.config.get('batch_size', 4))
+        train_sampler = BatchRandomSampler(dataset=train_dataset, batch_size=self.config.get('batch_size', 4))
         pprint('Creating training transforms list: {}'.format(self.train_transforms_list), indent=4, width=120)
         batch_transform_train = create_list_of_transforms(self.train_transforms_list)
         self.train_loader = DataLoader(
@@ -278,10 +279,8 @@ class Trainer:
         val_total_accuracy = 0.0
         print('Validation started')
         with torch.no_grad():
-            filename = '{}/results_epoch_{}_step_{}_{}.txt'.format(self.val_results_path,
-                                                                   self.epoch, self.step, self.time)
+            filename = VAL_FILE_NAME_TEMPLATE.format(self.val_results_path, self.epoch, self.step, self.time)
             with open(filename, 'w') as output_file:
-
                 for img_name, target_lengths, imgs, training_gt, loss_computation_gt in tqdm(self.val_loader):
 
                     imgs = imgs.to(self.device)
@@ -298,9 +297,7 @@ class Trainer:
                                                                       max_len=1 + len(gold_phrase_str.split()),
                                                                       ignore_end_token=self.config.get('use_ctc')
                                                                       )
-                        output_file.write(img_name[j] + '\t' +
-                                          pred_phrase_str + '\t' +
-                                          gold_phrase_str + '\n')
+                        output_file.write(img_name[j] + '\t' + pred_phrase_str + '\t' + gold_phrase_str + '\n')
                         val_total_accuracy += int(pred_phrase_str == gold_phrase_str)
                     cut = False if self.loss_type == 'CTC' else True
                     loss, _ = calculate_loss(logits, loss_computation_gt, target_lengths,
@@ -321,7 +318,4 @@ class Trainer:
 
     def save_model(self, name):
         print('Saving model as name ', name)
-        torch.save(
-            self.model.state_dict(),
-            os.path.join(self.save_dir, name)
-        )
+        torch.save(self.model.state_dict(), os.path.join(self.save_dir, name))
