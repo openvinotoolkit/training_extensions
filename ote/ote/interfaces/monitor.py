@@ -18,7 +18,7 @@
 import abc
 
 
-class IMonitor:
+class IMonitor(metaclass=abc.ABCMeta):
     """
     Interface for providing Tensorboard-style logging and performance logging
     """

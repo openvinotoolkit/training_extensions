@@ -19,13 +19,13 @@ import abc
 from ote.interfaces.dataset import IDataset
 from ote.interfaces.parameters import BaseTaskParameters
 
-class ITask:
+class ITask(metaclass=abc.ABCMeta):
     """
     This is a common interface for objects representing a taraining extensions task
     """
 
     @abc.abstractclassmethod
-    def train(self, train_dataset: IDataset, val_dataset: IDataset, parameters: BaseTaskParameters.BaseTrainingParameters):
+    def train(self, train_dataset: IDataset, val_dataset: IDataset, parameters: BaseTaskParameters.BaseTrainingParameters=None):
         """
         This method launches training of a new model starting from currently loaded pre-trained weights.
         After training the internal model state is updated and can be retrieved using the get_model_bytes() method.
@@ -76,14 +76,14 @@ class ITask:
         """
         pass
 
-    @abc.abstractclassmethodauto
+    @abc.abstractclassmethod
     def load_model_from_bytes(self, binary_model: bytes):
         """
         Loads model from a binary representation
         """
         pass
 
-    @abc.abstractclassmethodauto
+    @abc.abstractclassmethod
     def get_model_bytes(self) -> bytes:
         """
         Returns the current model in binary format

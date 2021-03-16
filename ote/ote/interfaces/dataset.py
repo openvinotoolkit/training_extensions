@@ -18,7 +18,7 @@ import abc
 from typing import List
 
 
-class IDataset:
+class IDataset(metaclass=abc.ABCMeta):
     """
     This is a common interface for objects representing a dataset.
     """
