@@ -7,28 +7,32 @@ inference.
 
 # Quick Start Guide
 
+## Prerequisites
+* Ubuntu 18.04 / 20.04
+* Python 3.6+
+* [OpenVINO™](https://software.intel.com/en-us/openvino-toolkit) - for exporting and running models
+* [CUDA Toolkit 10.2](https://developer.nvidia.com/cuda-10.2-download-archive) - for training on GPU
+
 ## Setup OpenVINO™ Training Extensions
 
-1. Download and install [OpenVINO™](https://software.intel.com/en-us/openvino-toolkit).
-
-2. Clone repository in the working directory by running the following:
+1. Clone repository in the working directory by running the following:
     ```
     git clone https://github.com/openvinotoolkit/training_extensions.git
     export OTE_DIR=`pwd`/training_extensions
     ```
 
-3. (Optional) Clone OpenModelZoo repository to run demos:
+2. Clone Open Model Zoo repository to run demos:
     ```
     git clone https://github.com/openvinotoolkit/open_model_zoo --branch develop
     export OMZ_DIR=`pwd`/open_model_zoo
     ```
 
-4. Install prerequisites by running the following:
+3. Install prerequisites by running the following:
     ```
     sudo apt-get install python3-pip virtualenv
     ```
 
-5. Create and activate virtual environment:
+4. Create and activate virtual environment:
     ```
     cd training_extensions
     virtualenv venv
