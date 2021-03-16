@@ -16,6 +16,12 @@ if [[ -e ${venv_dir} ]]; then
   exit
 fi
 
+CUDA_HOME_CANDIDATE=/usr/local/cuda
+if [ -z "${CUDA_HOME}" ] && [ -d ${CUDA_HOME_CANDIDATE} ]; then
+  echo "Exporting CUDA_HOME as ${CUDA_HOME_CANDIDATE}"
+  export CUDA_HOME=${CUDA_HOME_CANDIDATE}
+fi
+
 # Download deep-object-reid
 git submodule update --init --recursive --recommend-shallow ../../external/deep-object-reid
 # Create virtual environment
