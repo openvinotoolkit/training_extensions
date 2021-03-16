@@ -473,8 +473,7 @@ def get_num_lines_in_file(path):
 def collate_fn(sign2id, batch, *, batch_transform=None, use_ctc=False):
     # filter the pictures that have different width or height
     size = batch[0]['img'].shape
-    batch = [img_text for img_text in batch
-             if img_text['img'].shape == size]
+    batch = [img_text for img_text in batch if img_text['img'].shape == size]
     # sort by the length of text
     # the purpose of the sort is to put the longest text on the first place
     # to get correct size of the tensor in the texts2tensor function
@@ -491,12 +490,12 @@ def collate_fn(sign2id, batch, *, batch_transform=None, use_ctc=False):
 
     bsize = len(batch)
     # Ground truth symbols that are used as a decoding step input for the next symbol prediction during training.
-    training_gt = torch.cat([torch.ones(bsize, 1).long()*START_TOKEN, texts_tensor], dim=1)
+    training_gt = torch.cat([torch.ones(bsize, 1).long() * START_TOKEN, texts_tensor], dim=1)
     # Ground truth values for the outputs of decoder. Used for loss computation.
     if use_ctc:
         loss_computation_gt = texts_tensor
     else:
-        loss_computation_gt = torch.cat([texts_tensor, torch.ones(bsize, 1).long()*END_TOKEN], dim=1)
+        loss_computation_gt = torch.cat([texts_tensor, torch.ones(bsize, 1).long() * END_TOKEN], dim=1)
     return img_names, lens, imgs, training_gt, loss_computation_gt
 
 
