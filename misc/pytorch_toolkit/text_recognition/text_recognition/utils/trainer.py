@@ -229,16 +229,6 @@ class Trainer:
                     self.writer.add_scalar('Learning rate', self.learing_rate, self.global_step)
                 if self.global_step % self.val_freq == 0:
 
-                    step_loss, step_accuracy = self.validate()
-                    self.writer.add_scalar('Loss/validation', step_loss, self.global_step)
-                    self.writer.add_scalar('Accuracy/validation', step_accuracy, self.global_step)
-                    if step_loss < self.best_val_loss:
-                        self.best_val_loss = step_loss
-                        self.save_model('loss_best_model_{}.pth'.format(self.time))
-                    if step_accuracy > self.best_val_accuracy:
-                        self.best_val_accuracy = step_accuracy
-                        self.save_model('accuracy_best_model_{}.pth'.format(self.time))
-
                     step_loss, step_accuracy = self.validate(use_gt_token=False)
                     self.writer.add_scalar('Loss/test_mode_validation', step_loss, self.global_step)
                     self.writer.add_scalar('Accuracy/test_mode_validation', step_accuracy, self.global_step)
