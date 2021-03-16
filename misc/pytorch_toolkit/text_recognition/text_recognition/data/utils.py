@@ -478,8 +478,7 @@ def collate_fn(sign2id, batch, *, batch_transform=None, use_ctc=False):
     # sort by the length of text
     # the purpose of the sort is to put the longest text on the first place
     # to get correct size of the tensor in the texts2tensor function
-    batch.sort(key=lambda img_text: len(img_text['text'].split()),
-               reverse=True)
+    batch.sort(key=lambda img_text: len(img_text['text'].split()), reverse=True)
 
     imgs = [item['img'] for item in batch]
     texts = [item['text'] for item in batch]
