@@ -16,26 +16,25 @@
 
 import json
 import os.path
+from copy import deepcopy
 from enum import Enum
 from functools import partial
 
 import numpy as np
-from scipy.special import log_softmax
 import onnxruntime
 import torch
 from openvino.inference_engine import IECore
+from scipy.special import log_softmax
 from torch.utils.data import DataLoader
 from tqdm import tqdm
-from copy import deepcopy
-
-from text_recognition.data.utils import (collate_fn, create_list_of_transforms,
-                                         ctc_greedy_search)
+from text_recognition.data.utils import collate_fn, create_list_of_transforms, ctc_greedy_search
 from text_recognition.data.vocab import END_TOKEN, START_TOKEN, read_vocab
 from text_recognition.datasets.dataset import str_to_class
 from text_recognition.models.model import TextRecognitionModel
-from text_recognition.utils.common import (DECODER_INPUTS, DECODER_OUTPUTS,
-                                           ENCODER_INPUTS, ENCODER_OUTPUTS, read_net)
+from text_recognition.utils.common import DECODER_INPUTS, DECODER_OUTPUTS, ENCODER_INPUTS, ENCODER_OUTPUTS, read_net
 from text_recognition.utils.evaluation_utils import Im2latexRenderBasedMetric
+
+MAX_SEQ_LEN = 256
 
 spaces = [r'\,', r'\>', r'\;', r'\:', r'\quad', r'\qquad', '~']
 
@@ -154,7 +153,7 @@ class ONNXRunner(BaseRunner):
         decoder_outputs = get_onnx_outputs(self.decoder_onnx)
         logits = []
         logit = None
-        for _ in range(256):
+        for _ in range(MAX_SEQ_LEN):
             if logit is not None:
                 tgt = np.reshape(np.argmax(logit, axis=1), (1, 1)).astype(np.long)
             else:
@@ -237,7 +236,7 @@ class OpenVINORunner(BaseRunner):
             dec_out_names = self.config.get('decoder_output_names', DECODER_OUTPUTS).split(',')
             tgt = np.array([[START_TOKEN]] * 1)
             logits = []
-            for _ in range(256):
+            for _ in range(MAX_SEQ_LEN):
                 dec_res = self.exec_net_decoder.infer(inputs={
                     dec_in_names[0]: dec_states_h,
                     dec_in_names[1]: dec_states_c,
