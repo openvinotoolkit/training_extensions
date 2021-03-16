@@ -201,7 +201,6 @@ class MJSynthDataset(BaseDataset):
         self.pairs = self._load(min_shape, case_sensitive, min_txt_len, num_workers)
 
     def __getitem__(self, index):
-
         el = deepcopy(self.pairs[index])
         img = cv.imread(os.path.join(self.data_folder, el['img_path']), cv.IMREAD_COLOR)
         if self.fixed_img_shape is not None:
