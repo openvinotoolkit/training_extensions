@@ -45,7 +45,7 @@ else:
         OPENVINO_DIR = PROJECT_ROOT.parent / 'intel' / 'openvino_2021'
         if not OPENVINO_DIR.is_dir():
             raise Exception("OpenVino path not found!")
-
+print("OPENVINO_DIR: ", OPENVINO_DIR)
 ACC_CHECK_DIR = OPENVINO_DIR / 'deployment_tools' / 'open_model_zoo' / 'tools' / 'accuracy_checker'
 MO_DIR = OPENVINO_DIR / 'deployment_tools' / 'model_optimizer'
 ACC_CHECK_VENV_DIR = PROJECT_ROOT / 'acc_check'
