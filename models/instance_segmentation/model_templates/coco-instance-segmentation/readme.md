@@ -77,7 +77,7 @@ python ${OMZ_DIR}/demos/instance_segmentation_demo/python/instance_segmentation_
 
 #### a. Prepare dataset
 
-In order to train a model that would be quite similar in terms of quality to exising pre-trained model one can use this the [COCO](https://cocodataset.org/#home) dataset. One also use its own preliminary annotated dataset. Annotation can be created using [CVAT](https://github.com/openvinotoolkit/cvat).
+In order to train a model that would be quite similar in terms of quality to existing pre-trained model one can use this the [COCO](https://cocodataset.org/#home) dataset. One also use its own preliminary annotated dataset. Annotation can be created using [CVAT](https://github.com/openvinotoolkit/cvat).
 
 Training images are stored in `${TRAIN_IMG_ROOT}` together with `${TRAIN_ANN_FILE}` annotation file and validation images are stored in `${VAL_IMG_ROOT}` together with `${VAL_ANN_FILE}` annotation file.
 
