@@ -38,11 +38,14 @@ TEST_ROOT = Path(__file__).parent
 PROJECT_ROOT = TEST_ROOT.parent.parent
 env = os.environ.copy()
 if 'INTEL_OPENVINO_DIR' in env:
-    OPENVINO_DIR = env['INTEL_OPENVINO_DIR']
+    OPENVINO_DIR = Path(env['INTEL_OPENVINO_DIR'])
 else:
     OPENVINO_DIR = PROJECT_ROOT.parent / 'intel' / 'openvino'
-if not os.path.exists(OPENVINO_DIR):
-    OPENVINO_DIR = PROJECT_ROOT.parent / 'intel' / 'openvino_2021'
+    if not OPENVINO_DIR.is_dir():
+        OPENVINO_DIR = PROJECT_ROOT.parent / 'intel' / 'openvino_2021'
+        if not OPENVINO_DIR.is_dir():
+            raise Exception("OpenVino path not found!")
+
 ACC_CHECK_DIR = OPENVINO_DIR / 'deployment_tools' / 'open_model_zoo' / 'tools' / 'accuracy_checker'
 MO_DIR = OPENVINO_DIR / 'deployment_tools' / 'model_optimizer'
 ACC_CHECK_VENV_DIR = PROJECT_ROOT / 'acc_check'
@@ -118,7 +121,7 @@ def make_table_row(expected_, key, error_message, metric, diff_target):
     return row
 
 
-def get_export_test_params(model, problem_name, test_id, domain_name, is_alt_ssd_export=None) -> Tuple[str, str, str, str]:
+def get_export_test_params(model, problem_name, test_id, domain_name, is_alt_ssd_export=None):
     workdir = PROJECT_ROOT / model
     sub_folder = problem_name.replace('-', '_')
     test_folder = str(f'output_export_tests_{sub_folder}.{test_id}')
@@ -165,21 +168,27 @@ def write_results_table(init_table_string):
     f.close()
 
 
-eval_config = json.load(open(TEST_ROOT / 'ote_accuracy_validation.json'), object_pairs_hook=OrderedDict)
-for domain_name in eval_config:
-    model_type = eval_config[domain_name]
-    for problem_name in model_type:
-        model_dict = model_type[problem_name]
-        for model in model_dict:
-            test_id = model_dict[model].get('test_id', {})
-            expected = model_dict[model].get('target', {})
-            alt_export = model_dict[model].get('subfolder')
-            param_list.append([model, test_id, domain_name, problem_name, expected, alt_export])
-            ids_list.append(model)
+def get_test_params():
+    global param_list
+    global ids_list
+    if param_list or ids_list:
+        return param_list, ids_list
+    eval_config = json.load(open(TEST_ROOT / 'ote_accuracy_validation.json'), object_pairs_hook=OrderedDict)
+    for domain_name in eval_config:
+        model_type = eval_config[domain_name]
+        for problem_name in model_type:
+            model_dict = model_type[problem_name]
+            for model in model_dict:
+                test_id = model_dict[model].get('test_id', {})
+                expected = model_dict[model].get('target', {})
+                alt_export = model_dict[model].get('subfolder')
+                param_list.append([model, test_id, domain_name, problem_name, expected, alt_export])
+                ids_list.append(model)
+    return param_list, ids_list
 
 
-@pytest.mark.parametrize('model_, test_id_, domain_name_, problem_name_, expected_, alt_export_', param_list,
-                         ids=ids_list)
+@pytest.mark.parametrize('model_, test_id_, domain_name_, problem_name_, expected_, alt_export_', get_test_params()[0],
+                         ids=get_test_params()[1])
 def test_eval(data_dir, model_, test_id_, domain_name_, problem_name_, expected_, alt_export_):
     os.environ['INTEL_OPENVINO_DIR'] = str(OPENVINO_DIR)
     config_name = 'accuracy-check'
