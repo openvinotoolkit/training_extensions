@@ -109,13 +109,27 @@ If you would like to evaluate exported model, you need to pass `export/model.bin
 
 Try both following variants and select the best one:
 
-   * **Fine-tuning** from pre-trained weights. If the dataset is not big enough, then the model tends to overfit quickly, forgetting about the data that was used for pre-training and reducing the generalization ability of the final model. Hence, small starting learning rate and short training schedule are recommended.
    * **Training** from scratch or pre-trained weights. Only if you have a lot of data, let's say tens of thousands or even more images. This variant assumes long training process starting from big values of learning rate and eventually decreasing it according to a training schedule.
+   * **Fine-tuning** from pre-trained weights. If the dataset is not big enough, then the model tends to overfit quickly, forgetting about the data that was used for pre-training and reducing the generalization ability of the final model. Hence, small starting learning rate and short training schedule are recommended.
 
-   * If you would like to start **fine-tuning** from pre-trained weights use `--resume-from` parameter and value of `--epochs` have to exceed the value stored inside `${MODEL_TEMPLATE}` file, otherwise training will be ended immediately. Here we add `1` additional epoch.
+   * If you would like to start **training** from pre-trained weights use `--load-weights` pararmeter. Also you can use parameters such as `--epochs`, `--batch-size`, `--gpu-num`, `--base-learning-rate`, otherwise default values will be loaded from `${MODEL_TEMPLATE}`.
 
       ```bash
-      python train.py \
+         python train.py \
+         --load-weights ${SNAPSHOT} \
+         --train-ann-files ${TRAIN_ANN_FILE} \
+         --train-data-roots ${TRAIN_DATA_ROOT} \
+         --val-ann-files ${VAL_ANN_FILE} \
+         --val-data-roots ${VAL_DATA_ROOT} \
+         --save-checkpoints-to outputs \
+      && export SNAPSHOT=outputs/latest.pth
+
+   * If you would like to start **fine-tuning** from your pre-trained weights use `--resume-from` parameter and value of `--epochs` have to exceed the value stored inside `${MODEL_TEMPLATE}` file, otherwise training will be ended immediately. Here we add `1` additional epoch.
+
+     Important: the `--resume-from` does not work with provided pre-trained weights, but one can resume its own training.
+
+      ```bash
+         python train.py \
          --resume-from ${SNAPSHOT} \
          --train-ann-files ${TRAIN_ANN_FILE} \
          --train-data-roots ${TRAIN_DATA_ROOT} \
@@ -126,7 +140,5 @@ Try both following variants and select the best one:
       && export SNAPSHOT=outputs/latest.pth \
       && export EPOCHS_NUM=$((${EPOCHS_NUM} + ${ADD_EPOCHS}))
       ```
-
-   * If you would like to start **training** from pre-trained weights use `--load-weights` pararmeter instead of `--resume-from`. Also you can use parameters such as `--epochs`, `--batch-size`, `--gpu-num`, `--base-learning-rate`, otherwise default values will be loaded from `${MODEL_TEMPLATE}`.
 
 As soon as training is completed, it is worth to re-evaluate trained model on test set (see Step 4.b).
