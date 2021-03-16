@@ -42,7 +42,7 @@ class TransformResizePad:
         self.target_shape = target_shape
 
     def __repr__(self):
-        return "ResizePad(target_shape={})".format(self.target_shape)
+        return 'ResizePad(target_shape={})'.format(self.target_shape)
 
     def __call__(self, imgs):
         imgs = to_list(imgs)
@@ -57,7 +57,7 @@ class TransformResizePad:
                                           0, target_width - img_w, cv.BORDER_CONSTANT,
                                           None, COLOR_WHITE)
             assert tuple(image_raw.shape[0:2]) == tuple(self.target_shape[0:2]
-                                                        ), f"image_raw shape {image_raw.shape[0:2]}, tgt_shape: {self.target_shape[0:2]}"
+                                                        ), f'image_raw shape {image_raw.shape[0:2]}, tgt_shape: {self.target_shape[0:2]}'
             res.append(image_raw)
         return res
 
@@ -71,7 +71,7 @@ class TransformCropPad:
         self.target_shape = target_shape
 
     def __repr__(self):
-        return "CropPad(target_shape={})".format(self.target_shape)
+        return 'CropPad(target_shape={})'.format(self.target_shape)
 
     def __call__(self, imgs):
         imgs = to_list(imgs)
@@ -102,7 +102,7 @@ class TransformPad:
         self.pad_t = pad_t
 
     def __repr__(self):
-        return "TransformPad(pad_l={}, pad_r={}, pad_b={}, pad_t={})".format(
+        return 'TransformPad(pad_l={}, pad_r={}, pad_b={}, pad_t={})'.format(
             self.pad_l, self.pad_r, self.pad_b, self.pad_t)
 
     def __call__(self, imgs):
@@ -173,7 +173,7 @@ class TransformShift:
         self.shift_y = shift_y
 
     def __repr__(self):
-        return "TransformShift(shift_x={}, shift_y={})".format(self.shift_x, self.shift_y)
+        return 'TransformShift(shift_x={}, shift_y={})'.format(self.shift_x, self.shift_y)
 
     def __call__(self, imgs):
         imgs = to_list(imgs)
@@ -194,7 +194,7 @@ class TransformRandomNoise:
         self.intensity = intensity
 
     def __repr__(self):
-        return "TransformRandomNoise(intensity={})".format(self.intensity)
+        return 'TransformRandomNoise(intensity={})'.format(self.intensity)
 
     def __call__(self, imgs):
         imgs = to_list(imgs)
@@ -214,7 +214,7 @@ class TransformResize:
         self.target_shape = target_shape
 
     def __repr__(self):
-        return "TransformResize(target_shape={})".format(self.target_shape)
+        return 'TransformResize(target_shape={})'.format(self.target_shape)
 
     def __call__(self, img):
         if not isinstance(img, list):
@@ -232,7 +232,7 @@ class TransformErosion:
         self.kernel = np.ones((kernel_size, kernel_size), np.uint8)
 
     def __repr__(self):
-        return "TransformErosion(iterations={}, kernel_size={})".format(self.iterations, self.kernel.shape[0])
+        return 'TransformErosion(iterations={}, kernel_size={})'.format(self.iterations, self.kernel.shape[0])
 
     def __call__(self, img):
         if not isinstance(img, list):
@@ -315,7 +315,7 @@ class TransformDilation:
         self.kernel = np.ones((kernel_size, kernel_size), np.uint8)
 
     def __repr__(self):
-        return "TransformDilation(iterations={}, kernel={})".format(self.iterations, self.kernel)
+        return 'TransformDilation(iterations={}, kernel={})'.format(self.iterations, self.kernel)
 
     def __call__(self, img):
         if not isinstance(img, list):
@@ -331,7 +331,7 @@ class TransformBin:
         self.max_val = 255
 
     def __repr__(self):
-        return "TransformBin(threshold={})".format(self.threshold)
+        return 'TransformBin(threshold={})'.format(self.threshold)
 
     def __call__(self, img):
         if not isinstance(img, list):
@@ -349,7 +349,7 @@ class TransformAdaptiveBin:
         self.max_val = 255
 
     def __repr__(self):
-        return "TransfromAdaptiveBin(threshold={}, block_size={})".format(self.threshold, self.block_size)
+        return 'TransfromAdaptiveBin(threshold={}, block_size={})'.format(self.threshold, self.block_size)
 
     def __call__(self, img):
         if not isinstance(img, list):
@@ -366,7 +366,7 @@ class TransformRescale:
         self.scale_max = scale_max
 
     def __repr__(self):
-        return "TransformRescale(scale_min={}, scale_max={})".format(self.scale_min, self.scale_max)
+        return 'TransformRescale(scale_min={}, scale_max={})'.format(self.scale_min, self.scale_max)
 
     def __call__(self, imgs):
         fx = np.random.uniform(self.scale_min, self.scale_max)
@@ -382,7 +382,7 @@ class TransformRotate:
         self.angle = angle
 
     def __repr__(self):
-        return "TransformRotate(angle={})".format(self.angle)
+        return 'TransformRotate(angle={})'.format(self.angle)
 
     def __call__(self, imgs):
         bound = self.angle
@@ -414,7 +414,7 @@ class TransformGrayscale:
         self.transform = Grayscale(self.out_channels)
 
     def __repr__(self):
-        return "TransformGrayscale(out_channels={})".format(self.out_channels)
+        return 'TransformGrayscale(out_channels={})'.format(self.out_channels)
 
     def __call__(self, imgs):
         imgs = to_list(imgs)
@@ -430,7 +430,7 @@ class TransformColorJitter:
         self.saturation = saturation
 
     def __repr__(self):
-        return "TransformSaturation(brightness={}, contrast={}, saturation={}".format(self.brightness, self.contrast, self.saturation)
+        return 'TransformSaturation(brightness={}, contrast={}, saturation={}'.format(self.brightness, self.contrast, self.saturation)
 
     def __call__(self, imgs):
         imgs = to_list(imgs)

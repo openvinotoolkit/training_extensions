@@ -50,7 +50,7 @@ from tqdm import tqdm
 from ..data.utils import get_num_lines_in_file
 from ..data.vocab import split_number
 
-ALPHANUMERIC_VOCAB = set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
+ALPHANUMERIC_VOCAB = set('abcdefghijklmnopqrstuvwxyz0123456789')
 
 
 class BatchRandomSampler(Sampler):
@@ -79,7 +79,7 @@ class BatchRandomSampler(Sampler):
 
 
 def img_size(pair):
-    img = pair.get("img")
+    img = pair.get('img')
     return tuple(img.shape)
 
 
@@ -103,12 +103,12 @@ class Im2LatexDataset(BaseDataset):
         """
         super().__init__()
         self.data_dir = data_path
-        self.images_dir = join(data_path, "images_processed")
+        self.images_dir = join(data_path, 'images_processed')
         self.formulas = self._get_formulas()
         self.pairs = self._get_pairs(annotation_file, min_shape)
 
     def _get_formulas(self):
-        formulas_file = join(self.data_dir, "formulas.norm.lst")
+        formulas_file = join(self.data_dir, 'formulas.norm.lst')
         with open(formulas_file, 'r') as f:
             formulas = []
             for line in f:
@@ -136,9 +136,9 @@ class Im2LatexDataset(BaseDataset):
                 if img.shape[0:2] <= tuple(min_shape):
                     continue
                 formula = self.formulas[int(formula_id)]
-                el = {"img_name": img_name,
-                      "text": formula,
-                      "img": img,
+                el = {'img_name': img_name,
+                      'text': formula,
+                      'img': img,
                       }
                 pairs.append(el)
         pairs.sort(key=img_size, reverse=True)
@@ -160,7 +160,7 @@ class ICDAR2013RECDataset(BaseDataset):
         with open(self.annotation_file) as f:
             annotation_file = f.readlines()
         annotation_file = [line.strip() for line in annotation_file]
-        delimiter = ", " if ',' in annotation_file[0] else ' '
+        delimiter = ', ' if ',' in annotation_file[0] else ' '
         image_names, texts = zip(*[line.split(delimiter) for line in annotation_file])
         pairs = []
         total_len = len(image_names)
@@ -177,14 +177,14 @@ class ICDAR2013RECDataset(BaseDataset):
             text = texts[i].strip('"')
             if len(text) < min_txt_len:
                 continue
-            if not set(text) <= ALPHANUMERIC_VOCAB:
+            if not set(text.lower()) <= ALPHANUMERIC_VOCAB:
                 continue
             if not case_sensitive:
                 text = text.lower()
             text = ' '.join(text)
-            el = {"img_name": filename,
-                  "text": text,
-                  "img": img,
+            el = {'img_name': filename,
+                  'text': text,
+                  'img': img,
                   }
             pairs.append(el)
         pairs.sort(key=img_size, reverse=True)
@@ -213,7 +213,7 @@ class MJSynthDataset(BaseDataset):
         pairs = []
 
         def read_img(image_path):
-            gt_text = ' '.join(image_path.split("_")[1])
+            gt_text = ' '.join(image_path.split('_')[1])
             if not self.fixed_img_shape:
 
                 img = cv.imread(os.path.join(self.data_folder, image_path), cv.IMREAD_COLOR)
@@ -230,16 +230,16 @@ class MJSynthDataset(BaseDataset):
                 gt_text = gt_text.lower()
             if len(gt_text) < min_txt_len:
                 return
-            el = {"img_name": os.path.split(image_path)[1],
-                  "text": gt_text,
-                  "img_path": image_path,
-                  "img_shape": img_shape
+            el = {'img_name': os.path.split(image_path)[1],
+                  'text': gt_text,
+                  'img_path': image_path,
+                  'img_shape': img_shape
                   }
 
             return el
 
         with open(os.path.join(self.data_folder, self.ann_file)) as input_file:
-            annotation = [line.split(" ")[0] for line in input_file]
+            annotation = [line.split(' ')[0] for line in input_file]
         pool = ThreadPool(num_workers)
 
         for elem in tqdm(pool.imap_unordered(read_img, annotation), total=len(annotation)):
@@ -261,7 +261,7 @@ class IIIT5KDataset(BaseDataset):
     def _load(self, min_shape, fixed_img_shape, grayscale, case_sensitive):
         pairs = []
         annotation = scipy.io.loadmat(os.path.join(self.data_path, self.annotation_file))
-        annotation = (annotation[self.annotation_file.replace(".mat", "")]).squeeze()
+        annotation = (annotation[self.annotation_file.replace('.mat', '')]).squeeze()
         for obj in tqdm(annotation):
             img_path = obj[0][0]
             text = obj[1][0]
@@ -276,9 +276,9 @@ class IIIT5KDataset(BaseDataset):
             text = ' '.join(text)
             if not case_sensitive:
                 text = text.lower()
-            el = {"img_name": img_path,
-                  "text": text,
-                  "img": img,
+            el = {'img_name': img_path,
+                  'text': text,
+                  'img': img,
                   }
             pairs.append(el)
         pairs.sort(key=img_size, reverse=True)
@@ -286,8 +286,8 @@ class IIIT5KDataset(BaseDataset):
 
 
 str_to_class = {
-    "Im2LatexDataset": Im2LatexDataset,
-    "ICDAR2013RECDataset": ICDAR2013RECDataset,
-    "MJSynthDataset": MJSynthDataset,
-    "IIIT5KDataset": IIIT5KDataset,
+    'Im2LatexDataset': Im2LatexDataset,
+    'ICDAR2013RECDataset': ICDAR2013RECDataset,
+    'MJSynthDataset': MJSynthDataset,
+    'IIIT5KDataset': IIIT5KDataset,
 }

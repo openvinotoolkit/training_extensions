@@ -67,15 +67,15 @@ template = r"""
 
 
 def check_environment():
-    command = subprocess.run(["pdflatex", "--version"], stdout=PIPE, stderr=PIPE, check=True)
+    command = subprocess.run(['pdflatex', '--version'], stdout=PIPE, stderr=PIPE, check=True)
     if command.stderr:
-        raise EnvironmentError("pdflatex not installed, please install it")
-    command = subprocess.run(["gs", "--version"], stdout=PIPE, stderr=PIPE, check=True)
+        raise EnvironmentError('pdflatex not installed, please install it')
+    command = subprocess.run(['gs', '--version'], stdout=PIPE, stderr=PIPE, check=True)
     if command.stderr:
-        raise EnvironmentError("ghostscript not installed, please install it")
-    command = subprocess.run(["convert", "--version"], stdout=PIPE, stderr=PIPE, check=True)
+        raise EnvironmentError('ghostscript not installed, please install it')
+    command = subprocess.run(['convert', '--version'], stdout=PIPE, stderr=PIPE, check=True)
     if command.stderr:
-        raise EnvironmentError("imagemagick not installed, please install it")
+        raise EnvironmentError('imagemagick not installed, please install it')
 
 
 def crop_image(img, output_path, default_size=None):
@@ -131,13 +131,13 @@ def preprocess_formula(l):
     if len(l) == 0:
         l = '\\hspace{1cm}'
     # \hspace {1 . 5 cm} -> \hspace {1.5cm}
-    for space in ["hspace", "vspace"]:
-        match = re.finditer(space + " {(.*?)}", l)
+    for space in ['hspace', 'vspace']:
+        match = re.finditer(space + ' {(.*?)}', l)
         if match:
-            new_l = ""
+            new_l = ''
             last = 0
             for m in match:
-                new_l = new_l + l[last:m.start(1)] + m.group(1).replace(" ", "")
+                new_l = new_l + l[last:m.start(1)] + m.group(1).replace(' ', '')
                 last = m.end(1)
             new_l = new_l + l[last:]
             l = new_l
@@ -159,9 +159,9 @@ def render_routine(line):
         tex_filename = pre_name + '.tex'
         log_filename = pre_name + '.log'
         aux_filename = pre_name + '.aux'
-        with open(tex_filename, "w") as w:
+        with open(tex_filename, 'w') as w:
             w.write(template % formula)
-        run("cd {} && pdflatex -interaction=nonstopmode {}".format(pre_dir, tex_filename), TIMEOUT)
+        run('cd {} && pdflatex -interaction=nonstopmode {}'.format(pre_dir, tex_filename), TIMEOUT)
         for fname in (tex_filename, log_filename, aux_filename):
             if os.path.exists(fname):
                 os.remove(fname)
@@ -325,9 +325,9 @@ class Im2latexRenderBasedMetric:
         results = []
         for num, elem in enumerate(pool.imap_unordered(match_images, lines)):
             if num % PRINT_FREQ == 0 and num != 0:
-                print("{} / {} images compared".format(len(results), len(lines)))
+                print('{} / {} images compared'.format(len(results), len(lines)))
             results.append(elem)
-        print("All images compared")
+        print('All images compared')
         assert len(results) == len(lines)
         for element in results:
 
@@ -372,8 +372,8 @@ class Im2latexRenderBasedMetric:
             if num % (PRINT_FREQ * 2) == 0 and num != 0:
                 pairs_images_rendered += PRINT_FREQ
                 # 2x PRINT_FREQ because images are rendered by pairs (original + predicted)
-                print("{} / {} images rendered".format(pairs_images_rendered, len(lines) // 2))
-        print("All images rendered")
+                print('{} / {} images rendered'.format(pairs_images_rendered, len(lines) // 2))
+        print('All images rendered')
         pool.close()
         pool.join()
         return out_path_gold, out_path_pred

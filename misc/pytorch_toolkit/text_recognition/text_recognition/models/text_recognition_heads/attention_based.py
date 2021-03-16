@@ -107,7 +107,7 @@ class AttentionBasedLSTM(nn.Module):
             old_shape = features.shape
             encoded = self.pe(features)
             features = features + encoded
-            assert features.shape == old_shape, f"New shape: {features.shape}, old shape: {old_shape}"
+            assert features.shape == old_shape, f'New shape: {features.shape}, old shape: {old_shape}'
 
         row_enc_out, hidden, context = self.encode(features)
         # init decoder's states
@@ -122,8 +122,7 @@ class AttentionBasedLSTM(nn.Module):
             logits, targets = self.decode_without_formulas(
                 h, c, O_t, row_enc_out, b_size, device)
         else:
-            assert features.size(
-                0) == 1, "Using beam search, batch size must be equal to one"
+            assert features.size(0) == 1, 'Using beam search, batch size must be equal to one'
             device = features.device
             b_size = features.size(0)
             logits, targets = self.decode_with_bs(

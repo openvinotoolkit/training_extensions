@@ -26,35 +26,36 @@ def create_evaluation_test_case(config_file, expected_outputs):
         def setUpClass(cls):
             test_config = get_config(config_file, section='eval')
             cls.config = test_config
-            cls.config.update({"expected_outputs": expected_outputs})
+            cls.config.update({'expected_outputs': expected_outputs})
             cls.validator = Evaluator(config=cls.config)
 
         def test_validate(self):
             metric = self.validator.validate()
-            target_metric = self.validator.expected_outputs.get("target_metric")
+            target_metric = self.validator.expected_outputs.get('target_metric')
             self.assertGreaterEqual(metric, target_metric)
     return TestEval
 
 
 class TestMediumRenderedEvaluation(
         create_evaluation_test_case(
-            "configs/medium_config.yml",
-            expected_outputs="tests/expected_outputs/formula_recognition/medium_photographed_0185.json")):
-    "Test case for medium config"
+            'configs/medium_config.yml',
+            expected_outputs='tests/expected_outputs/formula_recognition/medium_photographed_0185.json')):
+    'Test case for medium config'
 
 
 class TestHandwrittenPolynomialsEvaluation(
         create_evaluation_test_case(
             'configs/polynomials_handwritten_config.yml',
             expected_outputs='tests/expected_outputs/formula_recognition/polynomials_handwritten_0166.json')):
-    "Test case for handwritten polynomials config"
+    'Test case for handwritten polynomials config'
+
 
 class TestAlphanumeric0013Evaluation(
         create_evaluation_test_case(
             'configs/config_0013.yml',
             expected_outputs='tests/expected_outputs/alphanumeric/icdar13_greater3_0013.json')):
-    "Test case for alphanumeric config"
+    'Test case for alphanumeric config'
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     unittest.main()
