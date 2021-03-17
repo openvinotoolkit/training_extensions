@@ -32,17 +32,20 @@ def to_list(imgs):
     return imgs
 
 
-class TransformResizePad:
+class BaseTransform:
+    def __repr__(self):
+        return __class__.__name__ + "(" + str(self.__dict__) + ")"
+
+
+class TransformResizePad(BaseTransform):
     """This class helps to resize image to fit the target shape
     and save original aspect ratio and pad
     (if resized image's shape is not equal to target shape)
     """
 
     def __init__(self, target_shape):
+        super().__init__()
         self.target_shape = target_shape
-
-    def __repr__(self):
-        return 'ResizePad(target_shape={})'.format(self.target_shape)
 
     def __call__(self, imgs):
         imgs = to_list(imgs)
@@ -62,16 +65,14 @@ class TransformResizePad:
         return res
 
 
-class TransformCropPad:
+class TransformCropPad(BaseTransform):
     """This class helps to make top-left crop of the image to fit the target shape
     and save original aspect ratio and pad (if resized image's shape is not equal to target shape)
     """
 
     def __init__(self, target_shape):
+        super().__init__()
         self.target_shape = target_shape
-
-    def __repr__(self):
-        return 'CropPad(target_shape={})'.format(self.target_shape)
 
     def __call__(self, imgs):
         imgs = to_list(imgs)
@@ -91,19 +92,16 @@ class TransformCropPad:
         return res
 
 
-class TransformPad:
+class TransformPad(BaseTransform):
     """Random pad batch of images
     """
 
     def __init__(self, pad_l=50, pad_r=50, pad_b=20, pad_t=20):
+        super().__init__()
         self.pad_l = pad_l
         self.pad_r = pad_r
         self.pad_b = pad_b
         self.pad_t = pad_t
-
-    def __repr__(self):
-        return 'TransformPad(pad_l={}, pad_r={}, pad_b={}, pad_t={})'.format(
-            self.pad_l, self.pad_r, self.pad_b, self.pad_t)
 
     def __call__(self, imgs):
         if self.pad_l > 0:
@@ -151,12 +149,10 @@ class TransformOvinoIR:
         return [torch.Tensor(img) for img in imgs]
 
 
-class TransformBlur:
+class TransformBlur(BaseTransform):
     def __init__(self, sigmaX=1.15):
+        super().__init__()
         self.sigmaX = sigmaX
-
-    def __repr__(self):
-        return "TransformBlur(sigmaX={})".format(self.sigmaX)
 
     def __call__(self, imgs):
         imgs = to_list(imgs)
@@ -164,16 +160,14 @@ class TransformBlur:
         return [cv.GaussianBlur(img, (3, 3), self.sigmaX) for img in imgs]
 
 
-class TransformShift:
+class TransformShift(BaseTransform):
     """Shift image randomly on x and y from a set range
     """
 
     def __init__(self, shift_x, shift_y):
+        super().__init__()
         self.shift_x = shift_x
         self.shift_y = shift_y
-
-    def __repr__(self):
-        return 'TransformShift(shift_x={}, shift_y={})'.format(self.shift_x, self.shift_y)
 
     def __call__(self, imgs):
         imgs = to_list(imgs)
@@ -186,15 +180,13 @@ class TransformShift:
         return res
 
 
-class TransformRandomNoise:
+class TransformRandomNoise(BaseTransform):
     """Add random noise to batch of images
     """
 
     def __init__(self, intensity):
+        super().__init__()
         self.intensity = intensity
-
-    def __repr__(self):
-        return 'TransformRandomNoise(intensity={})'.format(self.intensity)
 
     def __call__(self, imgs):
         imgs = to_list(imgs)
@@ -209,12 +201,10 @@ class TransformRandomNoise:
         return res
 
 
-class TransformResize:
+class TransformResize(BaseTransform):
     def __init__(self, target_shape):
+        super().__init__()
         self.target_shape = target_shape
-
-    def __repr__(self):
-        return 'TransformResize(target_shape={})'.format(self.target_shape)
 
     def __call__(self, img):
         if not isinstance(img, list):
@@ -223,16 +213,14 @@ class TransformResize:
         return res
 
 
-class TransformErosion:
+class TransformErosion(BaseTransform):
     """Morphologic erosion
     """
 
     def __init__(self, kernel_size=3, iterations=1):
+        super().__init__()
         self.iterations = iterations
         self.kernel = np.ones((kernel_size, kernel_size), np.uint8)
-
-    def __repr__(self):
-        return 'TransformErosion(iterations={}, kernel_size={})'.format(self.iterations, self.kernel.shape[0])
 
     def __call__(self, img):
         if not isinstance(img, list):
@@ -240,24 +228,20 @@ class TransformErosion:
         return [cv.erode(image, self.kernel, iterations=self.iterations) for image in img]
 
 
-class TransformRandomBolding:
+class TransformRandomBolding(BaseTransform):
     """
     This class helps to imitate images from scaner \ camera
     after applying binarization on them
     """
-    class SingleBoldingTransform:
+    class SingleBoldingTransform(BaseTransform):
         def __init__(self, kernel_size=3, iterations=1, threshold=160, res_threshold=190, sigmaX=0.8, distr=0.7):
+            super().__init__()
             self.iterations = iterations
             self.threshold = threshold
             self.res_threshold = res_threshold
             self.sigmaX = sigmaX
             self.kernel = (kernel_size, kernel_size)
             self.distr = distr
-
-        def __repr__(self):
-            return """TransformRandomBolding(iterations={}, threshold={}, res_threshold={},
-                sigmaX={}, kernel_size={}, distr={})""".format(
-                self.iterations, self.threshold, self.res_threshold, self.sigmaX, self.kernel[0], self.distr)
 
         def __call__(self, img):
             if not isinstance(img, list):
@@ -291,6 +275,7 @@ class TransformRandomBolding:
             return res
 
     def __init__(self, params):
+        super().__init__()
         assert isinstance(params, (tuple, list))
         self.list_of_transforms = []
         for param in params:
@@ -306,16 +291,14 @@ class TransformRandomBolding:
         return self.list_of_transforms.__repr__()
 
 
-class TransformDilation:
+class TransformDilation(BaseTransform):
     """Morphologic dilation
     """
 
     def __init__(self, kernel_size=3, iterations=3):
+        super().__init__()
         self.iterations = iterations
         self.kernel = np.ones((kernel_size, kernel_size), np.uint8)
-
-    def __repr__(self):
-        return 'TransformDilation(iterations={}, kernel={})'.format(self.iterations, self.kernel)
 
     def __call__(self, img):
         if not isinstance(img, list):
@@ -323,15 +306,13 @@ class TransformDilation:
         return [cv.dilate(image, self.kernel, iterations=self.iterations) for image in img]
 
 
-class TransformBin:
+class TransformBin(BaseTransform):
     def __init__(self, threshold):
+        super().__init__()
         self.transform = cv.threshold
         self.thresh_type = cv.THRESH_BINARY
         self.threshold = threshold
         self.max_val = 255
-
-    def __repr__(self):
-        return 'TransformBin(threshold={})'.format(self.threshold)
 
     def __call__(self, img):
         if not isinstance(img, list):
@@ -339,17 +320,15 @@ class TransformBin:
         return [cv.threshold(im, self.threshold, self.max_val, self.thresh_type)[1] for im in img]
 
 
-class TransformAdaptiveBin:
+class TransformAdaptiveBin(BaseTransform):
     def __init__(self, threshold, block_size, method=cv.ADAPTIVE_THRESH_MEAN_C, mean_c=10):
+        super().__init__()
         self.method = method
         self.block_size = block_size
         self.C = mean_c
         self.thresh_type = cv.THRESH_BINARY
         self.threshold = threshold
         self.max_val = 255
-
-    def __repr__(self):
-        return 'TransfromAdaptiveBin(threshold={}, block_size={})'.format(self.threshold, self.block_size)
 
     def __call__(self, img):
         if not isinstance(img, list):
@@ -360,13 +339,11 @@ class TransformAdaptiveBin:
             self.block_size, self.C) for im in img]
 
 
-class TransformRescale:
+class TransformRescale(BaseTransform):
     def __init__(self, scale_min, scale_max):
+        super().__init__()
         self.scale_min = scale_min
         self.scale_max = scale_max
-
-    def __repr__(self):
-        return 'TransformRescale(scale_min={}, scale_max={})'.format(self.scale_min, self.scale_max)
 
     def __call__(self, imgs):
         fx = np.random.uniform(self.scale_min, self.scale_max)
@@ -377,12 +354,10 @@ class TransformRescale:
         return imgs
 
 
-class TransformRotate:
+class TransformRotate(BaseTransform):
     def __init__(self, angle):
+        super().__init__()
         self.angle = angle
-
-    def __repr__(self):
-        return 'TransformRotate(angle={})'.format(self.angle)
 
     def __call__(self, imgs):
         bound = self.angle
@@ -408,13 +383,11 @@ class TransformRotate:
         return rotated
 
 
-class TransformGrayscale:
+class TransformGrayscale(BaseTransform):
     def __init__(self, out_channels=1):
+        super().__init__()
         self.out_channels = out_channels
         self.transform = Grayscale(self.out_channels)
-
-    def __repr__(self):
-        return 'TransformGrayscale(out_channels={})'.format(self.out_channels)
 
     def __call__(self, imgs):
         imgs = to_list(imgs)
@@ -422,15 +395,13 @@ class TransformGrayscale:
         return [np.array(self.transform(ToPILImage()(im))) for im in imgs]
 
 
-class TransformColorJitter:
+class TransformColorJitter(BaseTransform):
     def __init__(self, brightness, contrast, saturation):
+        super().__init__()
         self.transform = ColorJitter(brightness, contrast, saturation)
         self.brightness = brightness
         self.contrast = contrast
         self.saturation = saturation
-
-    def __repr__(self):
-        return 'TransformSaturation(brightness={}, contrast={}, saturation={}'.format(self.brightness, self.contrast, self.saturation)
 
     def __call__(self, imgs):
         imgs = to_list(imgs)
