@@ -278,3 +278,22 @@ export_ir: true
 ```
 
 If this flag is set, full pipeline (PyTorch -> ONNX -> Openvino™ IR) is running, else model is exported to ONNX only.
+
+### Tests
+
+There are 3 group of tests for every supported configuration:
+* Train test
+* Evaluation test
+* Export test
+
+To run tests:
+```bash
+# cd to the dir where this README.md is placed (text_recognition)
+# if you are in the root of the training_extensions repo:
+cd misc/pytorch_toolkit_text_recognition
+# activate venv and run tests:
+python tests/test_train.py
+python tests/test_eval.py
+python tests/test_export.py
+
+```
