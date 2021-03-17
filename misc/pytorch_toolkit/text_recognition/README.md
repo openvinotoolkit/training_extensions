@@ -76,7 +76,7 @@ Several dataset formats are supported:
        There should be at least two such files: `train_filter.lst` and `validate_filter.lst`
 
     You can prepare your own dataset in the same format as above.
-    Samples of the dataset can be found [here](../../data/formula_recognition).
+    Samples of the dataset can be found [here](../../../data/formula_recognition).
 
     > **NOTE**:
     > By default the following structure of the dataset is assumed:
@@ -123,7 +123,7 @@ The config file is divided into 4 sections: train, eval, export, demo. Common pa
 > **Note**: All values in the config file which have 'path' in their name will be treated as paths and the script which reads configuration will try to resolve all relative paths. By default all relative paths are resolved relatively to the folder where this README.md file is placed. Keep this in mind or use full paths.
 #### Common parameters:
 - `backbone_config`:
-      * `arch`: type of the architecture. For more details, please, refer to [ResnetLikeBackBone](im2latex/models/backbones/resnet.py)
+      * `arch`: type of the architecture. For more details, please, refer to [ResnetLikeBackBone](text_recognition/models/backbones/resnet.py)
       * `disable_layer_3` and `disable_layer_4` - disables layer 3 and 4 in resnet-like backbone. ResNet backbone from the torchvision module consists of 4 block of layers, each of them increase the number of channels and decrease the spatial dimensionality. These parameters allow to switch off the 3rd and the 4th of such layers, respectively.
       * `enable_last_conv` - enables additional convolution layer to adjust number of output channels to the number of input channels in the LSTM. Optional. Default: false.
       * `output_channels` - number of output channels channels. If `enable_last_conv` is `true`, this parameter should be equal to `head.encoder_input_size`, otherwise it should be equal to actual number of output channels of the backbone.
@@ -143,7 +143,7 @@ The config file is divided into 4 sections: train, eval, export, demo. Common pa
     * `reduction` - the way of reducing dimensionality. LSTM takes as input 3-dimensional tensor, and backbone produces 4-dimensional. Height dimension is reduced. Options: `mean` - apply Average Pooling, `flatten` - Flatten tensor, `weighted` - apply convolution with kernel `cnn_encoder_height x 1`.
 - `model_path` - path to the pretrained model checkpoint (you can find the links to the checkpoints below in this document).
 - `vocab_path` - path where vocabulary file is stored.
-- `val_transforms_list` - here you can describe set of desirable transformations for validation datasets respectively. An example is given in the config file, for other options, please, refer to [constructor of transforms (section `create_list_of_transforms`)](im2latex/data/utils.py)
+- `val_transforms_list` - here you can describe set of desirable transformations for validation datasets respectively. An example is given in the config file, for other options, please, refer to [constructor of transforms (section `create_list_of_transforms`)](text_recognition/data/utils.py)
 - `device` - device for training, used in PyTorch .to() method. Possible options: 'cuda', 'cpu'. `cpu` is used by default.
 #### Training-specific parameters
 In addition to common parameters you can specify the following arguments:
@@ -195,8 +195,8 @@ val_transform_list:
     - name: TransformBin
       threshold: 100
 ```
-You can find other prepocessing at [this file](im2latex/data/utils.py).
-Some of sample images in the [data](../../data) section of this repo are already preprocessed, you can look at the examples.
+You can find other prepocessing at [this file](text_recognition/data/utils.py).
+Some of sample images in the [data](../../../data) section of this repo are already preprocessed, you can look at the examples.
 
 
 #### Evaluation-specific parameters
