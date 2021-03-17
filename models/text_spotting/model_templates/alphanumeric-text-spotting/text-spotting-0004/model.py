@@ -1,4 +1,6 @@
 # model settings
+det_thr = 0.8
+rec_thr = 0.3
 model = dict(
     type='MaskTextSpotter',
     pretrained='torchvision://resnet50',
@@ -85,7 +87,7 @@ model = dict(
             decoder_rnn_type='GRU',
             dropout_ratio=0.5
         ),
-        text_thr=0.5),
+        text_thr=rec_thr),
     # model training and testing settings
     train_cfg=dict(
         rpn=dict(
@@ -152,11 +154,11 @@ model = dict(
             nms_thr=0.7,
             min_bbox_size=0),
         rcnn=dict(
-            score_thr=0.5,
+            score_thr=det_thr,
             nms=dict(type='nms', iou_threshold=0.5),
             max_per_img=100,
             mask_thr_binary=0.5),
-        score_thr=0.5))
+        score_thr=det_thr))
 
 dataset_type = 'CocoWithTextDataset'
 data_root = 'data'
@@ -246,17 +248,18 @@ test_pipeline = [
         ])
 ]
 data = dict(
-    samples_per_gpu=4,
-    workers_per_gpu=2,
+    samples_per_gpu=2,
+    workers_per_gpu=3,
     train=dict(
         type='RepeatDataset',
-        times=3,
+        times=6,
         dataset=dict(
             type=dataset_type,
-            ann_file=data_root + 'dataset_train_wo_tests_ic13_ic15_tt.json',
-            img_prefix=data_root,
+            ann_file=[data_root + 'openimages_v5_train_1_2_f.json', data_root + 'dataset_train_wo_tests_ic13_ic15_tt.json'],
+            img_prefix=[data_root, data_root],
             classes=('text', ),
             min_size=0,
+            max_texts_num=150,
             pipeline=train_pipeline)
         ),
     val=dict(
@@ -276,20 +279,20 @@ evaluation = dict(metric=['bbox', 'segm', 'f1', 'word_spotting'])
 # optimizer
 optimizer = dict(
     type='SGD',
-    lr=0.01,
+    lr=0.02,
     momentum=0.9,
     weight_decay=0.0001)
 optimizer_config = dict()
 # learning policy
 lr_config = dict(
-    policy='step',
-    warmup='constant',
+    policy='CosineAnealing',
+    warmup='linear',
     warmup_iters=500,
     warmup_ratio=1.0 / 3,
-    step=[14, 22])
+    min_lr=0.00001)
 # yapf:disable
 log_config = dict(
-    interval=10,
+    interval=100,
     hooks=[
         dict(type='TextLoggerHook'),
         dict(type='TensorboardLoggerHook')
@@ -303,3 +306,5 @@ resume_from = None
 workflow = [('train', 1)]
 total_epochs = 25
 device_ids = range(4)
+lexicon_mapping = 'lexicons/ic15/GenericVocabulary_pair_list.txt'
+lexicon = 'lexicons/ic15/GenericVocabulary_new.txt'
