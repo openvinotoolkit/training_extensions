@@ -15,6 +15,7 @@ device: "cuda"
 num_workers: 0
 use_ctc: true
 model_path: model_checkpoints/alphanumeric_0013.pth
+model_url: https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/text_recognition/text_recognition_0013.pth
 vocab_path: vocabs/vocab_alphanumeric_ctc.json
 train:
   batch_size: 64

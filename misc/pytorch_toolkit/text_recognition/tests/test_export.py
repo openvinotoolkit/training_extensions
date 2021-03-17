@@ -17,10 +17,12 @@
 import os
 import unittest
 from copy import deepcopy
+import os.path
 
 from text_recognition.utils.exporter import Exporter
 from text_recognition.utils.evaluator import Evaluator, RunnerType
 from text_recognition.utils.get_config import get_config
+from text_recognition.utils.common import download_checkpoint
 
 
 def create_export_test_case(config_file, expected_outputs):
@@ -35,6 +37,8 @@ def create_export_test_case(config_file, expected_outputs):
             export_config['dataset'] = val_config['dataset']
             cls.config = export_config
             cls.config.update({'expected_outputs': expected_outputs})
+            if not os.path.exists(cls.config.get("model_path")):
+                download_checkpoint(cls.config.get("model_path"), cls.config.get("model_url"))
             cls.exporter = Exporter(cls.config)
             print('test case for config {} created'.format(config_file))
 

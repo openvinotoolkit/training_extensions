@@ -6,6 +6,7 @@ backbone_config:
 head:
   encoder_input_size: 1024
 model_path: model_checkpoints/polynomials_handwritten_0166.pth
+model_url: https://download.01.org/opencv/openvino_training_extensions/models/formula_recognition/polynomials_handwritten_0166.pth
 device: cuda
 vocab_path: vocabs/vocab_handwritten_polynomials.json
 val_transforms_list:

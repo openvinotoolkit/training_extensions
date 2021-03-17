@@ -14,9 +14,11 @@
  limitations under the License.
 """
 import unittest
+import os.path
 
 from text_recognition.utils.evaluator import Evaluator
 from text_recognition.utils.get_config import get_config
+from text_recognition.utils.common import download_checkpoint
 
 
 def create_evaluation_test_case(config_file, expected_outputs):
@@ -27,6 +29,8 @@ def create_evaluation_test_case(config_file, expected_outputs):
             test_config = get_config(config_file, section='eval')
             cls.config = test_config
             cls.config.update({'expected_outputs': expected_outputs})
+            if not os.path.exists(cls.config.get("model_path")):
+                download_checkpoint(cls.config.get("model_path"), cls.config.get("model_url"))
             cls.validator = Evaluator(config=cls.config)
 
         def test_validate(self):

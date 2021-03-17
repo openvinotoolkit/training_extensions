@@ -3,6 +3,7 @@ backbone_config:
   disable_layer_3: true
   disable_layer_4: true
 model_path: model_checkpoints/medium_photographed_0185.pth
+model_url: https://download.01.org/opencv/openvino_training_extensions/models/formula_recognition/medium_photograped_0185.pth
 device: cuda
 vocab_path: vocabs/vocab_medium.json
 val_transforms_list:
