@@ -1,7 +1,8 @@
 from .base import ArgConverter
+from .face_detection import MMDetectionWiderArgConverterMap
 from .mmaction import MMActionArgConverterMap
 from .mmdetection import MMDetectionArgConverterMap, MMDetectionCustomClassesArgConverterMap
-from .face_detection import MMDetectionWiderArgConverterMap
+from .mmpose import MMPoseArgConverterMap
 from .reid import ReidArgConverterMap
 
 __all__ = [
@@ -10,5 +11,6 @@ __all__ = [
     'MMDetectionArgConverterMap',
     'MMDetectionCustomClassesArgConverterMap',
     'MMDetectionWiderArgConverterMap',
+    'MMPoseArgConverterMap',
     'ReidArgConverterMap',
 ]
