@@ -1,8 +1,8 @@
 # Contributing to the OpenVINO\* Training Extensions
 
-Welcome to the Training Extensions and thank you for your interest to it! Training Extensions is licensed under the Apache* License, Version 2.0. By contributing to the project, you agree to the license and copyright terms therein and release your contribution under these terms.
+Welcome to the Training Extensions and thank you for your interest in it! Training Extensions is licensed under the Apache* License, Version 2.0. By contributing to the project, you agree to the license and copyright terms therein and release your contribution under these terms.
 
-If you want to help developing this project, you can do it several ways:
+If you want to help developing this project, you can do it in several ways:
 
 ## Asking questions
 
