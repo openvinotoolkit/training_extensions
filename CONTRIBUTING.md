@@ -17,7 +17,7 @@ You can suggest the feature by creating a new issue with `enhancement` label, bu
 If you observe any errors or incorrect work of any parts of this repository, you can create a bug report. First, check if bug report about this problem was not created before [here](https://github.com/openvinotoolkit/training_extensions/issues?q=is%3Aissue+label%3Abug). If you don't find a related bug report, submit your own via creating new issue with `bug` label.
 When creating a new bug report, make sure:
 1. You are on the last version of `develop` branch.
-2. Your provide enough information (Python version, OS version, libraries and other environment info) for others to easily reproduce this bug\issue.
+2. You provide enough information (Python version, OS version, libraries and other environment info) for others to easily reproduce this bug\issue.
 3. You provide necessary and sufficient code snippet to reproduce the bug (if the bug cannot be reproduced in the already existing code).
 4. You describe expected and actual behavior.
 
@@ -31,7 +31,10 @@ If you want to add training code of your model to this repository, make sure:
 1. Your model code is licensed under the Apache-2.0 or MIT license (GPL-like licenses are not acceptable).
 2. Your model is trained on a dataset which is acceptable for commercial use.
 3. Source framework of the model is PyTorch\*.
-4. Your model code is structured like this:
+4. You provide the code to:
+   1. Successfully convert your model to the ONNX\* and OpenVINO\* IR format
+   2. Check the converted model's accuracy.
+5. Your model code is structured like this:
    1. Option A. Your model supports model-templates interface. See examples [here](https://github.com/openvinotoolkit/training_extensions/tree/develop/models). In this case, place your model's code to the `models` folder, make changes in `ote` folder (if needed).
    2. Option B. Your model has classical interface:
       1. Train, Evaluate, Export scripts for training model, evaluating and exporting to the ONNX\*  and OpenVINO\* IR format trained checkpoint.
@@ -39,6 +42,7 @@ If you want to add training code of your model to this repository, make sure:
       In this case, your model should be in a corresponding subfolder of the [misc/pytorch_toolkit](https://github.com/openvinotoolkit/training_extensions/tree/develop/misc/pytorch_toolkit) folder.
    3. All models should provide a detailed documentation (README.md file), containing information about how to train, evaluate and export to ONNX\* and OpenVINO\* IR your model, which datasets are supported, etc.
    4. All models should have unittests for main functionality (train, test, export).
+6. You create a PR to the `develop` branch.
 
 ## Legal Information
 
