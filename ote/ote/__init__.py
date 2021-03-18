@@ -1,5 +1,6 @@
 import os
 
+
 MODEL_TEMPLATE_FILENAME = 'template.yaml'
 MODULES_CONFIG_FILENAME = 'modules.yaml'
 
