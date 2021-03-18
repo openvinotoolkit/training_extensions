@@ -1,5 +1,6 @@
 # OpenVINO™ Training Extensions
 
+
 OpenVINO™ Training Extensions provide a convenient environment to train
 Deep Learning models and convert them using the [OpenVINO™
 toolkit](https://software.intel.com/en-us/openvino-toolkit) for optimized
