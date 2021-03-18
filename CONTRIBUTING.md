@@ -32,7 +32,7 @@ If you want to add training code of your model to this repository, make sure:
 2. Your model is trained on a dataset which is acceptable for commercial use.
 3. Source framework of the model is PyTorch\*.
 4. You provide the code to:
-   1. Successfully convert your model to the ONNX\* and OpenVINO\* IR format
+   1. Successfully convert your model to the ONNX\* and OpenVINO\* IR format. See details [here](https://docs.openvinotoolkit.org/latest/openvino_docs_MO_DG_Deep_Learning_Model_Optimizer_DevGuide.html)
    2. Check the converted model's accuracy.
 5. Your model code is structured like this:
    1. Option A. Your model supports model-templates interface. See examples [here](https://github.com/openvinotoolkit/training_extensions/tree/develop/models). In this case, place your model's code to the `models` folder, make changes in `ote` folder (if needed).
@@ -43,6 +43,7 @@ If you want to add training code of your model to this repository, make sure:
    3. All models should provide a detailed documentation (README.md file), containing information about how to train, evaluate and export to ONNX\* and OpenVINO\* IR your model, which datasets are supported, etc.
    4. All models should have unittests for main functionality (train, test, export).
 6. You create a PR to the `develop` branch.
+7. You provide `requirements.txt` file and a bash script for creating virtual environment.
 
 ## Legal Information
 
