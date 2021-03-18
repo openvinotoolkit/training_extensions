@@ -36,9 +36,11 @@ SOFTWARE.
  limitations under the License.
 """
 
-import pickle as pkl
 import json
+import pickle as pkl
 from os.path import join
+
+import torch
 
 START_TOKEN = 0
 PAD_TOKEN = 1
@@ -89,14 +91,13 @@ class Vocab:
             indices_to_convert = indices
 
         for token in indices_to_convert:
-            try:
+            if isinstance(token, torch.Tensor):
                 val = token.item()
-            except AttributeError:
+            else:
                 val = token
             if val in (PAD_TOKEN, END_TOKEN) and not ignore_end_token:
                 break
-            phrase_converted.append(
-                self.id2sign.get(val, '?'))
+            phrase_converted.append(self.id2sign.get(val, '?'))
 
         return ' '.join(phrase_converted)
 
