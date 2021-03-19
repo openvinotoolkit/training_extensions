@@ -1,5 +1,5 @@
 arg_parser: DefaultArgParser
-arg_converter_map: MMDetectionArgConverterMap
-trainer: InstanceSegmentationTrainer
-evaluator: InstanceSegmentationEvaluator
-exporter: InstanceSegmentationExporter
+arg_converter_map: MMPoseArgConverterMap
+trainer: MMPoseTrainer
+evaluator: MMPoseEvaluator
+exporter: MMPoseExporter

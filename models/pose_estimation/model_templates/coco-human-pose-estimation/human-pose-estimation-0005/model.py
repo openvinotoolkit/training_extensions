@@ -36,12 +36,25 @@ channel_cfg = dict(
         0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16
     ])
 
-image_size = 288
+image_size = 448
 data_cfg = dict(
     image_size=image_size,
     base_size=image_size // 2,
     base_sigma=2,
     heatmap_size=[image_size // 4, image_size // 2],
+    num_joints=channel_cfg['dataset_joints'],
+    dataset_channel=channel_cfg['dataset_channel'],
+    inference_channel=channel_cfg['inference_channel'],
+    num_scales=2,
+    scale_aware_sigma=False,
+)
+
+test_image_size = 288
+test_data_cfg = dict(
+    image_size=test_image_size,
+    base_size=test_image_size // 2,
+    base_sigma=2,
+    heatmap_size=[test_image_size // 4, test_image_size // 2],
     num_joints=channel_cfg['dataset_joints'],
     dataset_channel=channel_cfg['dataset_channel'],
     inference_channel=channel_cfg['inference_channel'],
@@ -194,7 +207,7 @@ val_pipeline = [
 
 test_pipeline = val_pipeline
 
-data_root = '../../../data/coco/'
+data_root = '../../../data/coco'
 data = dict(
     samples_per_gpu=14,
     workers_per_gpu=2,
@@ -208,12 +221,12 @@ data = dict(
         type='BottomUpCocoDataset',
         ann_file=f'{data_root}/annotations/person_keypoints_val2017.json',
         img_prefix=f'{data_root}/images/val2017/',
-        data_cfg=data_cfg,
+        data_cfg=test_data_cfg,
         pipeline=val_pipeline),
     test=dict(
         type='BottomUpCocoDataset',
         ann_file=f'{data_root}/annotations/person_keypoints_val2017.json',
         img_prefix=f'{data_root}/images/val2017/',
-        data_cfg=data_cfg,
+        data_cfg=test_data_cfg,
         pipeline=val_pipeline),
 )

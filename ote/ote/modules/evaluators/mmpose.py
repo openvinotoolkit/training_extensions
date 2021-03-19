@@ -14,7 +14,11 @@
  limitations under the License.
 """
 
+import json
+import os
+
 from ote import MMPOSE_TOOLS
+from ote.utils.misc import run_through_shell
 
 from .base import BaseEvaluator
 from ..registry import EVALUATORS
@@ -32,5 +36,28 @@ class MMPoseEvaluator(BaseEvaluator):
         return [coco_ap_eval]
 
     def _get_image_shape(self, cfg):
-        image_size = cfg['image_size']
+        try:
+            image_size = cfg['data']['test']['data_cfg']['image_size']
+        except KeyError:
+            image_size = cfg['image_size']
         return f'{image_size} {image_size}'
+
+    def _get_complexity_and_size(self, cfg, config_path, work_dir, update_config):
+        image_shape = self._get_image_shape(cfg)
+        tools_dir = self._get_tools_dir()
+
+        res_complexity = os.path.join(work_dir, 'complexity.json')
+        update_config = ' '.join([f'{k}={v}' for k, v in update_config.items()])
+        update_config = f' --update_config {update_config}' if update_config else ''
+        update_config = update_config.replace('"', '\\"')
+        run_through_shell(
+            f'python3 {tools_dir}/analysis/get_flops.py'
+            f' {config_path}'
+            f' --shape {image_shape}'
+            f' --out {res_complexity}'
+            f'{update_config}')
+
+        with open(res_complexity) as read_file:
+            content = json.load(read_file)
+
+        return content

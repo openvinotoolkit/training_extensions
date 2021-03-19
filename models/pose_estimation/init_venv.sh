@@ -47,7 +47,7 @@ else
   echo "[WARNING] Model optimizer requirements were not installed. Please install the OpenVino toolkit to use one."
 fi
 
-pip install -e ../../external/mmdetection/
+pip install -e ../../external/mmpose/
 MMPOSE_DIR=`realpath ../../external/mmpose/`
 echo "export MMPOSE_DIR=${MMPOSE_DIR}" >> ${venv_dir}/bin/activate
 

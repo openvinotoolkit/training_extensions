@@ -20,4 +20,14 @@ from ..registry import ARG_CONVERTER_MAPS
 # FIXME. Remove?
 @ARG_CONVERTER_MAPS.register_module()
 class MMPoseArgConverterMap(MMDetectionArgConverterMap):
-    pass
+
+    @staticmethod
+    def _train_compression_base_args_map():
+        return {
+            'train_ann_files': 'data.train.ann_file',
+            'train_data_roots': 'data.train.img_prefix',
+            'val_ann_files': 'data.val.ann_file',
+            'val_data_roots': 'data.val.img_prefix',
+            'save_checkpoints_to': 'work_dir',
+            'batch_size': 'data.samples_per_gpu',
+        }
