@@ -127,16 +127,24 @@ class TextOnlyCocoAnnotation:
             })
 
     def __iadd__(self, other):
+        ignored = []
 
-        for image_info in other.annotation['images']:
+        for image_info in tqdm(other.annotation['images']):
             ann_ids = other.img_id_2_ann_id[image_info['id']]
+            
+            image = cv2.imread(image_info['file_name'])
+            if image.shape[:2] != (image_info['height'], image_info['width']):
+                ignored.append(image_info['file_name'])
+                continue
             for ann_id in ann_ids:
                 ann = other.annotation['annotations'][ann_id]
                 self.add_bbox(image_info['file_name'], (image_info['width'], image_info['height']),
                               copy.deepcopy(ann))
+        for i, item in enumerate(ignored):
+            logging.warning(f'Shapes mismatch (annotation vs image), skipped: {i}, {item}')
         return self
 
-    def write(self, path, remove_orientation_info=False):
+    def write(self, path):
         """ Writes annotation as json file. """
 
         annotation = copy.deepcopy(self.annotation)
@@ -144,15 +152,6 @@ class TextOnlyCocoAnnotation:
         for image_info in annotation['images']:
             image_info['file_name'] = os.path.relpath(image_info['file_name'],
                                                       os.path.dirname(path))
-
-        if remove_orientation_info:
-            for image_info in tqdm(annotation['images'], desc='checking orientation'):
-                full_path = os.path.join(os.path.dirname(path), image_info['file_name'])
-                image = cv2.imread(full_path)
-                if image.shape[:2] != (image_info['height'], image_info['width']):
-                    image = cv2.imread(full_path, cv2.IMREAD_UNCHANGED)
-                    cv2.imwrite(full_path, image)
-                    logging.warning(f'Detected and fixed image with orientation: {full_path}')
 
         with open(path, 'w') as read_file:
             json.dump(annotation, read_file)
