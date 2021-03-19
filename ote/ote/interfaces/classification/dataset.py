@@ -45,3 +45,11 @@ class IClassificationDataset(IDataset):
         Element of the list on position i corresponds to the sample returned by __getitem__(i).
         """
         pass
+
+    @abc.abstractclassmethod
+    def get_classes(self) -> List[str]:
+        """
+        Returns a list of object categories in the dataset
+        :return: List of classes
+        """
+        pass

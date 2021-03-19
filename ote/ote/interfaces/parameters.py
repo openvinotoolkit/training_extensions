@@ -16,16 +16,21 @@
 
 
 class BaseTaskParameters:
+    class BaseEnvironmentParameters:
+        config_path = ''
+        gpus_num = 1
+        snapshot_path = ''
+
     class BaseTrainingParameters:
-        batch_size = 1
-        num_epochs = 1
+        batch_size = 32
+        num_epochs = 10
         learning_rate = 0.1
 
     class BaseEvaluationParameters:
         batch_size = 1
 
     class BaseExportParameters:
-        export_format = "onnx"
+        output_folder = ''
 
     class BaseCompressParameters:
         pass

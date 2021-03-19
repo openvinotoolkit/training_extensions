@@ -41,14 +41,6 @@ class IDataset(metaclass=abc.ABCMeta):
         pass
 
     @abc.abstractclassmethod
-    def get_classes(self) -> List[str]:
-        """
-        Returns a list of object categories in the dataset (if applicable)
-        :return: List of classes
-        """
-        pass
-
-    @abc.abstractclassmethod
     def get_annotation(self) -> list:
         """
         Returns a list containing all annotation items

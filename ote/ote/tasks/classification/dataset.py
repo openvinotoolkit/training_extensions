@@ -49,7 +49,7 @@ class ClassificationImageFolder(IClassificationDataset):
             for root, _, fnames in sorted(os.walk(target_dir, followlinks=True)):
                 for fname in sorted(fnames):
                     path = osp.join(root, fname)
-                    if is_valid(path):
+                    if is_valid(fname):
                         self.annotation.append({'label': class_index, 'path': path})
 
         if not len(self.annotation):

@@ -79,7 +79,7 @@ class ClassificationTask(ITask):
         #train_steps = math.ceil(len(train_dataset) / self.cfg.train.batch_size)
         #validation_steps = math.ceil((len(val_dataset) / self.cfg.test.batch_size))
 
-        set_random_seed(cfg.train.seed)
+        set_random_seed(self.cfg.train.seed)
         self.cfg.custom_datasets.roots = [train_dataset, val_dataset]
         self.model.train()
         datamanager = torchreid.data.ImageDataManager(**imagedata_kwargs(self.cfg))
