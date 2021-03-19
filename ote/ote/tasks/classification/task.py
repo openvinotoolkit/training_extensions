@@ -60,6 +60,7 @@ class ClassificationTask(ITask):
         self.cfg.custom_datasets.roots = ['']*2
         self.cfg.data.sources = ['train']
         self.cfg.data.targets = ['val']
+        self.cfg.data.save_dir = self.env_parameters.work_dir
 
         self.device = torch.device("cuda:0") if self.cfg.use_gpu else torch.device("cpu")
         self.model = self.create_model().to(self.device)

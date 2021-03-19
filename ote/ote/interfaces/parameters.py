@@ -20,6 +20,7 @@ class BaseTaskParameters:
         config_path = ''
         gpus_num = 1
         snapshot_path = ''
+        work_dir = ''
 
     class BaseTrainingParameters:
         batch_size = 32
