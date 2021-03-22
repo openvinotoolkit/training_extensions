@@ -22,8 +22,6 @@ from ..registry import TRAINERS
 
 @TRAINERS.register_module()
 class MMActionTrainer(BaseTrainer):
-    def __init__(self):
-        super(MMActionTrainer, self).__init__()
 
     def _get_tools_dir(self):
         return MMACTION_TOOLS

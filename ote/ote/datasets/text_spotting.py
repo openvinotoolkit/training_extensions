@@ -94,8 +94,7 @@ class TextOnlyCocoAnnotation:
             y = 0
         if 0 <= x < x + w <= width and 0 <= y < y + h <= height:
             return x, y, w, h
-        else:
-            return None
+        return None
 
     def add_bbox(self, image_path, image_size, obj):
         """ Adds new text object to annotation. """
@@ -165,7 +164,9 @@ class TextOnlyCocoAnnotation:
             for ann_id in self.img_id_2_ann_id[frame['id']]:
                 obj = self.annotation['annotations'][ann_id]
                 bbox = obj['bbox']
-                assert 0 <= bbox[0] < bbox[0] + bbox[2] < image_size[0] and 0 <= bbox[1] < bbox[1] + bbox[3] < image_size[1], f'{image_path} {bbox}'
+                is_xmax_ok = 0 <= bbox[0] < bbox[0] + bbox[2] < image_size[0]
+                is_ymax_ok = 0 <= bbox[1] < bbox[1] + bbox[3] < image_size[1]
+                assert is_xmax_ok and is_ymax_ok, f'{image_path} {bbox}'
 
     def visualize(self, put_text, imshow_delay=1, shuffle=False):
         """ Visualizes annotation using cv2.imshow from OpenCV. Press `Esc` to exit. """
@@ -289,13 +290,13 @@ class ICDAR2013DatasetConverter:
                         content = ''.join(content)
                         content = content.split('\n\n')
                         characters = [line.split('\n') for line in content if not line.strip().startswith('#')]
-                for i, line in enumerate([line.strip() for line in read_file.readlines()]):
+                for j, line in enumerate([line.strip() for line in read_file.readlines()]):
                     obj = self.parse_line(line)
 
                     if self.characters_annotations_folder:
 
                         obj['attributes']['chars'] = []
-                        for chars in characters[i]:
+                        for chars in characters[j]:
                             if not chars:
                                 continue
                             chars = chars.split(' ')
@@ -315,7 +316,8 @@ class ICDAR2013DatasetConverter:
                             })
                         united_chars = ''.join([x['char'] for x in obj['attributes']['chars']])
                         if united_chars != obj['attributes']['transcription']:
-                            logging.warning(f"Transcription of {obj['attributes']['transcription']} in {annotation_path} "
+                            logging.warning(f"Transcription of {obj['attributes']['transcription']} in "
+                                            f"{annotation_path} "
                                             f"has been changed to {united_chars}."
                                             f"It is known error in original annotation.")
                             obj['attributes']['transcription'] = united_chars
@@ -683,7 +685,8 @@ class ICDAR2019ARTDatasetConverter:
             )
 
             with open(totaltext_to_art_path) as read_file:
-                self.exclude_art19_ids = set(x.split(' ')[1].split('.')[0] for x in read_file if x.split(' ')[0].split('.')[0][11:] in exclude_totaltext_ids)
+                self.exclude_art19_ids = set(x.split(' ')[1].split('.')[0] for x in read_file
+                                             if x.split(' ')[0].split('.')[0][11:] in exclude_totaltext_ids)
     @staticmethod
     def parse_line(obj):
         """ Parses line of ICDAR2019ART annotation. """
@@ -696,7 +699,7 @@ class ICDAR2019ARTDatasetConverter:
         ymin = min(quadrilateral[1::2])
         ymax = max(quadrilateral[1::2])
         if not (xmin < xmax and ymin < ymax):
-            logging.warn(f"skip: {obj}")
+            logging.warning(f"skip: {obj}")
             return None
         language = obj['language'].lower()
         legibility = 1 - int(obj['illegibility'])
@@ -912,7 +915,7 @@ class CvatXml11Converter:
 
                         try:
                             word_polygon = [int(float(x)) for x in points.replace(';', ',').split(',')]
-                        except:
+                        except Exception: # pylint: disable=broad-except
                             print('skipped')
                             print(ET.tostring(polygon_el, encoding='unicode'))
                             print('')

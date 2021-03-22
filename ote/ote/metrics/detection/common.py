@@ -18,7 +18,6 @@ import logging
 import os
 import subprocess
 
-from mmcv import Config
 from ote import MMDETECTION_TOOLS
 
 
@@ -73,13 +72,13 @@ def run_test_script(config_path, work_dir, snapshot, update_config, show_dir, me
 
 
 def coco_ap_eval(config_path, work_dir, snapshot, update_config, show_dir='',
-                 metric_names=['AP @ [IoU=0.50:0.95]'], metrics='bbox', **kwargs):
+                 metric_names=('AP @ [IoU=0.50:0.95]', ), metrics='bbox', **kwargs):
     """ Computes COCO AP. """
 
     metric_keys = metrics.split(' ')
     assert len(metric_keys) == len(metric_names), f'{len(metric_keys)} != {len(metric_names)}'
     allowed_metric_keys = {'bbox', 'segm'}
-    assert all([x in allowed_metric_keys for x in metric_keys])
+    assert all(x in allowed_metric_keys for x in metric_keys)
     outputs = []
     if not(update_config['data.test.ann_file'] and update_config['data.test.img_prefix']):
         logging.warning('Passed empty path to annotation file or data root folder. '

@@ -14,9 +14,6 @@
  limitations under the License.
 """
 
-import os
-import subprocess
-
 from ote import MMACTION_TOOLS
 
 from .base import BaseEvaluator
@@ -25,8 +22,6 @@ from ..registry import EVALUATORS
 
 @EVALUATORS.register_module()
 class MMActionEvaluator(BaseEvaluator):
-    def __init__(self):
-        super(MMActionEvaluator, self).__init__()
 
     def _get_tools_dir(self):
         return MMACTION_TOOLS
