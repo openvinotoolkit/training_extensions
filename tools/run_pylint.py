@@ -1,6 +1,8 @@
 import logging
 import os
-from subprocess import run, CalledProcessError
+import sys
+
+from pylint.lint import Run
 
 if __name__ == '__main__':
     ignored_patters = [
@@ -31,7 +33,7 @@ if __name__ == '__main__':
                 if all(not rel_path.startswith(pattern) for pattern in ignored_patters):
                     to_pylint.append(rel_path)
 
-    try:
-        run(['pylint'] + to_pylint, check=True)
-    except CalledProcessError:
-        logging.error('pylint check failed.')
+    msg_status = Run(to_pylint, exit=False).linter.msg_status
+    if msg_status:
+        logging.error(f'pylint failed with code {msg_status}')
+        sys.exit(msg_status)
