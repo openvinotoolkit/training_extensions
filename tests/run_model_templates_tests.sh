@@ -21,4 +21,4 @@ cd $PYTORCH_TOOLKIT_DIR
 
 pip3 install -e ote/ || exit 1
 pytest ote/tests/* || exit 1
-#python3 tests/run_model_templates_tests.py --verbose --workdir $WORKDIR
+python3 tests/run_model_templates_tests.py --verbose --workdir $WORKDIR
