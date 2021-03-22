@@ -27,12 +27,14 @@ class LSTMEncoderDecoder(torch.nn.Module):
         cnn_encoder_height (int): height of the output features after cnn encoder.
         used for dimension reduction
         encoder_hidden_size (int): hidden size of the LSTM encoder
-        encoder_input_size (int): size of the input to LSTM encoder (i.e. number of the output channels of the CNN backbone)
+        encoder_input_size (int): size of the input to LSTM encoder
+        i.e. number of the output channels of the CNN backbone
         positional_encodings (bool): use or not positional encodings from the transformer paper
         reduction (str): type of the dimension reduction
     """
 
-    def __init__(self, out_size, cnn_encoder_height=1, encoder_hidden_size=256, encoder_input_size=512, positional_encodings=False, reduction='mean'):
+    def __init__(self, out_size, cnn_encoder_height=1, encoder_hidden_size=256,
+                 encoder_input_size=512, positional_encodings=False, reduction='mean'):
         super().__init__()
         self.out_size = out_size
         self.encoder_hidden_size = encoder_hidden_size

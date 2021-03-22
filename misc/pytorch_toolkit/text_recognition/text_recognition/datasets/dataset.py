@@ -60,7 +60,6 @@ class BatchRandomSampler(Sampler):
     """
 
     def __init__(self, batch_size, dataset):
-
         self.batch_size = batch_size
         self.len = len(dataset) // self.batch_size
         self.indices = np.array(range(self.len * self.batch_size))[::self.batch_size]
@@ -216,9 +215,9 @@ class MJSynthDataset(BaseDataset):
             if not self.fixed_img_shape:
                 img = cv.imread(os.path.join(self.data_folder, image_path), cv.IMREAD_COLOR)
                 if img is None:
-                    return
-                elif img.shape[0:2] <= tuple(min_shape):
-                    return
+                    return None
+                if img.shape[0:2] <= tuple(min_shape):
+                    return None
                 img_shape = tuple(img.shape)
                 del img
             else:
@@ -226,7 +225,7 @@ class MJSynthDataset(BaseDataset):
             if not case_sensitive:
                 gt_text = gt_text.lower()
             if len(gt_text) < min_txt_len:
-                return
+                return None
             el = {'img_name': os.path.split(image_path)[1],
                   'text': gt_text,
                   'img_path': image_path,
