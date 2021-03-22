@@ -25,7 +25,7 @@ import mmcv
 import numpy as np
 from tqdm import tqdm
 
-from mmdet import datasets
+from mmdet import datasets # pylint: disable=import-error
 
 
 def voc_ap(recall, precision, use_07_metric=False):

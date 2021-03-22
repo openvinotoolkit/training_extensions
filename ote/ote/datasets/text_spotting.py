@@ -21,7 +21,7 @@ import os
 from collections import defaultdict
 
 import cv2
-import imagesize
+import imagesize # pylint: disable=import-error
 import numpy as np
 from tqdm import tqdm
 
