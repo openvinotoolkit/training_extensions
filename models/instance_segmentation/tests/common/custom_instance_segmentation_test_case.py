@@ -26,7 +26,7 @@ from ote.tests.test_case import (
 
 from ote.utils.misc import run_through_shell
 
-from instance_segmentation_test_case import download_and_extract_coco_val2017 # pylint: disable=import-error
+from common.instance_segmentation_test_case import download_and_extract_coco_val2017 # pylint: disable=import-error
 
 
 def create_custom_instance_segmentation_test_case(model_name, problem_name):
