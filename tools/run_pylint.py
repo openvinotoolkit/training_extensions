@@ -25,7 +25,7 @@ if __name__ == '__main__':
     wd = os.path.abspath('.')
     for root, dirnames, filenames in os.walk(wd):
         for filename in filenames:
-            if filename.endswith('py'):
+            if filename.endswith('.py'):
                 full_path = os.path.join(root, filename)
                 rel_path = os.path.relpath(full_path, wd)
                 if all(not rel_path.startswith(pattern) for pattern in ignored_patters):
