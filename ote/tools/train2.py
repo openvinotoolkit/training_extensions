@@ -15,78 +15,63 @@
 """
 
 import argparse
+from importlib import import_module
 import logging
 import os
+import shutil
+import sys
 
-from ote.interfaces.parameters import BaseTaskParameters
-from ote.tasks.classification.dataset import ClassificationImageFolder
-from ote.tasks.classification.task import ClassificationTask
+from ote.api import template_filename_parser
 from ote.utils import load_config
-from ote.utils.misc import download_snapshot_if_not_yet, run_through_shell
+from ote.utils.misc import download_snapshot_if_not_yet
 
 
-def build_train_arg_parser():
-    parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument('--train-ann-files', required=True,
-                        help='Comma-separated paths to training annotation files.')
-    parser.add_argument('--train-data-roots', required=True,
-                        help='Comma-separated paths to training data folders.')
-    parser.add_argument('--val-ann-files', required=True,
-                        help='Comma-separated paths to validation annotation files.')
-    parser.add_argument('--val-data-roots', required=True,
-                        help='Comma-separated paths to validation data folders.')
-    parser.add_argument('--resume-from', default='',
-                        help='Resume training from previously saved checkpoint')
-    parser.add_argument('--load-weights', default='',
-                        help='Load only weights from previously saved checkpoint')
-    parser.add_argument('--save-checkpoints-to', default='/tmp/checkpoints',
-                        help='Location where checkpoints will be stored')
-    parser.add_argument('--batch-size', type=int,
-                        default=10,
-                        help='Size of a single batch during training per GPU.')
-    parser.add_argument('--gpu-num', type=int,
-                        default=1,
-                        help='Number of GPUs that will be used in training, 0 is for CPU mode.')
-    parser.add_argument('--tensorboard-dir',
-                        help='Location where tensorboard logs will be stored.')
-    parser.add_argument('--epochs', type=int,
-                        default=1,
-                        help='Number of epochs during training')
-    parser.add_argument('--base-learning-rate', type=float,
-                        default=0.01,
-                        help='Starting value of learning rate that might be changed during '
-                                'training according to learning rate schedule that is usually '
-                                'defined in detailed training configuration.')
-    parser.add_argument('--template', default='', help=argparse.SUPPRESS)
-    parser.add_argument('--work-dir', default='./logs', help=argparse.SUPPRESS)
-
-    return parser
+from ote.modules import (build_arg_parser,
+                         build_arg_converter)
 
 
 def main():
+
     logging.basicConfig(level=logging.INFO)
-    arg_parser = build_train_arg_parser()
-    args = arg_parser.parse_args()
+    template_name_parser = template_filename_parser()
+    args, extra_args = template_name_parser.parse_known_args()
 
-
+    template_path = args.template
     template_config = load_config(args.template)
-    os.makedirs(args.work_dir, exist_ok=True)
-    download_snapshot_if_not_yet(args.template, args.work_dir)
 
-    train_dataset = ClassificationImageFolder(args.train_data_roots)
-    val_dataset = ClassificationImageFolder(args.val_data_roots)
+    arg_parser = build_arg_parser(template_config['modules']['arg_parser'])
+    ote_args = arg_parser.get_train_parser(template_path).parse_args(extra_args)
 
-    env_params = BaseTaskParameters.BaseEnvironmentParameters()
-    env_params.snapshot_path = args.load_weights
-    env_params.config_path = os.path.join(os.path.dirname(args.template), template_config['config'])
-    env_params.gpus_num = args.gpu_num
-    env_params.work_dir = args.work_dir
+    shutil.copytree(os.path.dirname(template_path), ote_args.work_dir, dirs_exist_ok=True)
 
-    train_params = BaseTaskParameters.BaseTrainingParameters()
-    train_params.batch_size = args.batch_size
-    train_params.learning_rate = args.base_learning_rate
+    if not ote_args.do_not_load_snapshot:
+        download_snapshot_if_not_yet(template_path, ote_args.work_dir)
 
-    task = ClassificationTask(env_params)
+    for dependency in template_config['dependencies']:
+        source = dependency['source']
+        destination = dependency['destination']
+        if destination != 'snapshot.pth':
+            rel_source = os.path.join(os.path.dirname(template_path), source)
+            cur_dst = os.path.join(ote_args.work_dir, destination)
+            os.makedirs(os.path.dirname(cur_dst), exist_ok=True)
+            if os.path.isdir(rel_source):
+                shutil.copytree(rel_source, cur_dst, dirs_exist_ok=True)
+            else:
+                shutil.copy(rel_source, destination)
+
+    module_path = os.path.abspath(os.path.join(ote_args.work_dir, 'packages/ote/ote/tasks'))
+    if module_path not in sys.path:
+        sys.path.append(module_path)
+    task_module = import_module(template_config['modules']['task'])
+
+    train_dataset = task_module.Dataset(ote_args.train_data_roots, ote_args.train_ann_files)
+    val_dataset = task_module.Dataset(ote_args.val_data_roots, ote_args.val_ann_files)
+
+    args_converter = build_arg_converter(template_config['modules']['arg_converter_map'])
+    env_params, train_params = task_module.build_train_parameters(
+                    args_converter.convert_train_args(vars(ote_args)), ote_args.work_dir)
+
+    task = task_module.Task(env_params)
     task.train(train_dataset, val_dataset, train_params)
 
 

@@ -51,3 +51,40 @@ class ReidArgConverterMap(ArgConverterMaps):
 
     def compress_update_args_map(self):
         return self._train_compression_base_args_map()
+
+
+@ARG_CONVERTER_MAPS.register_module()
+class ReidTaskArgConverterMap(ArgConverterMaps):
+    @staticmethod
+    def _train_compression_base_args_map():
+        return {
+            'train_data_roots': '',
+            'val_data_roots': '',
+            'train_ann_files': '',
+            'val_ann_files': '',
+            'resume_from': 'resume_from',
+            'load_weights': 'snapshot_path',
+            'save_checkpoints_to': 'work_dir',
+            'batch_size': 'batch_size',
+            'classes': 'classes',
+            'work_dir': 'work_dir',
+            'gpu_num': 'gpu_num'
+        }
+    def train_update_args_map(self):
+        cur_map = self._train_compression_base_args_map()
+        cur_map.update({
+            'base_learning_rate': 'base_learning_rate',
+            'epochs': 'max_num_epochs',
+        })
+        return cur_map
+
+    def test_update_args_map(self):
+        return {
+            'test_ann_files': '',
+            'test_data_roots': 'test_data_roots',
+            'load_weights': 'model.load_weights',
+            'classes': 'classes',
+        }
+
+    def compress_update_args_map(self):
+        return self._train_compression_base_args_map()

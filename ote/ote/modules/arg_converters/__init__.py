@@ -2,7 +2,7 @@ from .base import ArgConverter
 from .mmaction import MMActionArgConverterMap
 from .mmdetection import MMDetectionArgConverterMap, MMDetectionCustomClassesArgConverterMap
 from .face_detection import MMDetectionWiderArgConverterMap
-from .reid import ReidArgConverterMap
+from .reid import ReidArgConverterMap, ReidTaskArgConverterMap
 
 __all__ = [
     'ArgConverter',
@@ -11,4 +11,5 @@ __all__ = [
     'MMDetectionCustomClassesArgConverterMap',
     'MMDetectionWiderArgConverterMap',
     'ReidArgConverterMap',
+    'ReidTaskArgConverterMap',
 ]

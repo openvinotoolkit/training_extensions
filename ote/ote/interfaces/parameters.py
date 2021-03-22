@@ -14,24 +14,31 @@
  limitations under the License.
 """
 
+from dataclasses import dataclass
 
 class BaseTaskParameters:
+    @dataclass
     class BaseEnvironmentParameters:
-        config_path = ''
-        gpus_num = 1
-        snapshot_path = ''
-        work_dir = ''
+        config_path: str = ''
+        gpu_num: int = 1
+        snapshot_path: str = ''
+        work_dir: str = ''
 
+    @dataclass
     class BaseTrainingParameters:
-        batch_size = 32
-        num_epochs = 10
-        learning_rate = 0.1
+        batch_size: int = 32
+        max_num_epochs: int = 10
+        base_learning_rate: int = 0.1
+        resume_from: str = ''
 
+    @dataclass
     class BaseEvaluationParameters:
-        batch_size = 1
+        batch_size: int = 1
 
+    @dataclass
     class BaseExportParameters:
-        output_folder = ''
+        output_folder: str = ''
 
+    @dataclass
     class BaseCompressParameters:
         pass

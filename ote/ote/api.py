@@ -29,6 +29,9 @@ def _compression_train_args_parsers_common_part(template_path):
                             help='Number of GPUs that will be used in training, 0 is for CPU mode.')
         parser.add_argument('--tensorboard-dir',
                             help='Location where tensorboard logs will be stored.')
+        parser.add_argument('--work-dir', required=False,
+                            help='Path to store training or compression artifacts')
+        parser.add_argument('--do-not-load-snapshot', action='store_true')
 
         parser.add_argument('--config', default=config['config'], help=argparse.SUPPRESS)
 
@@ -90,6 +93,8 @@ def test_args_parser(template_path):
                             help='Location where evaluated metrics values will be stored (yaml file).')
         parser.add_argument('--save-output-to', default='',
                             help='Location where output images (with displayed result of model work) will be stored.')
+        parser.add_argument('--work-dir', required=False,
+                            help='Path to store testing artifacts')
         parser.add_argument('--config', default=config['config'], help=argparse.SUPPRESS)
 
     return parser
@@ -115,4 +120,11 @@ def export_args_parser(template_path):
                             help='Additional args to OpenVINO Model Optimizer.')
         parser.add_argument('--config', default=config['config'], help=argparse.SUPPRESS)
 
+    return parser
+
+
+def template_filename_parser():
+    parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument('--template', required=True,
+                        help='Path to the model')
     return parser

@@ -53,7 +53,7 @@ class ClassificationTask(ITask):
 
         self.cfg = get_default_config()
         self.cfg.merge_from_file(self.env_parameters.config_path)
-        self.cfg.use_gpu = parameters.gpus_num > 0
+        self.cfg.use_gpu = parameters.gpu_num > 0
         self.cfg.model.classification = True
         self.cfg.custom_datasets.types = ['external_classification_wrapper', 'external_classification_wrapper']
         self.cfg.custom_datasets.names = ['train', 'val']
@@ -74,8 +74,8 @@ class ClassificationTask(ITask):
               parameters: BaseTaskParameters.BaseTrainingParameters=BaseTaskParameters.BaseTrainingParameters()):
 
         self.cfg.train.batch_size = parameters.batch_size
-        self.cfg.train.lr = parameters.learning_rate
-        self.cfg.train.max_epoch = parameters.num_epochs
+        self.cfg.train.lr = parameters.base_learning_rate
+        self.cfg.train.max_epoch = parameters.max_num_epochs
 
         #train_steps = math.ceil(len(train_dataset) / self.cfg.train.batch_size)
         #validation_steps = math.ceil((len(val_dataset) / self.cfg.test.batch_size))
