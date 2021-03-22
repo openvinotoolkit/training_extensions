@@ -14,7 +14,7 @@
 
 import os
 
-from common.object_detection_test_case import create_object_detection_export_test_case
+from common.object_detection_test_case import create_object_detection_export_test_case # pylint: disable=import-error
 
 
 kwargs = dict(

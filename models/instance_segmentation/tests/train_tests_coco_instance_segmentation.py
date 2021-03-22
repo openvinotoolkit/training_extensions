@@ -14,7 +14,7 @@
 
 import os
 
-from common.instance_segmentation_test_case import create_instance_segmentation_test_case
+from common.instance_segmentation_test_case import create_instance_segmentation_test_case # pylint: disable=import-error
 
 
 kwargs = dict(

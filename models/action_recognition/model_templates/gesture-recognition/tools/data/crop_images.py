@@ -14,6 +14,8 @@
  limitations under the License.
 """
 
+# pylint: disable=too-many-statements
+
 import re
 import argparse
 from os.path import exists, join, abspath, isfile, dirname, basename
@@ -25,7 +27,8 @@ import numpy as np
 import mmcv
 from tqdm import tqdm
 
-from openvino.inference_engine import IECore
+# TODO(eizutov): to fix importing non-existing module
+from openvino.inference_engine import IECore # pylint: disable=no-name-in-module
 
 
 DETECTOR_OUTPUT_SHAPE = -1, 5
@@ -115,12 +118,13 @@ class PersonDetector(IEModel):
     def _process_output(self, result, initial_h, initial_w, scale_h, scale_w, ):
         if result.shape[-1] == 5:  # format: [xmin, ymin, xmax, ymax, conf]
             return np.array([[scale_w, scale_h, scale_w, scale_h, 1.0]]) * result
-        else:  # format: [image_id, label, conf, xmin, ymin, xmax, ymax]
-            scale_w *= self.input_width
-            scale_h *= self.input_height
-            out = np.array([[1.0, scale_w, scale_h, scale_w, scale_h]]) * result[0, 0, :, 2:]
 
-            return np.concatenate((out[:, 1:], out[:, 0].reshape([-1, 1])), axis=1)
+        # format: [image_id, label, conf, xmin, ymin, xmax, ymax]
+        scale_w *= self.input_width
+        scale_h *= self.input_height
+        out = np.array([[1.0, scale_w, scale_h, scale_w, scale_h]]) * result[0, 0, :, 2:]
+
+        return np.concatenate((out[:, 1:], out[:, 0].reshape([-1, 1])), axis=1)
 
     def __call__(self, frame):
         in_frame, initial_h, initial_w, scale_h, scale_w = self._prepare_frame(frame)

@@ -1,8 +1,8 @@
 # global parameters
 num_videos_per_gpu = 12
 num_workers_per_gpu = 3
-train_sources = 'custom_dataset',
-test_sources = 'custom_dataset',
+train_sources = ('custom_dataset', )
+test_sources = ('custom_dataset', )
 
 root_dir = 'data'
 work_dir = None

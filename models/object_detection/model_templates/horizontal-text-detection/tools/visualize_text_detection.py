@@ -22,7 +22,8 @@ from pycocotools.coco import COCO
 from pycocotools.cocoeval import COCOeval
 
 from mmdet.datasets import build_dataset
-from mmdet.core.evaluation.coco_utils import results2json
+# TODO(GalyaZalesskaya): fix issue on next line
+from mmdet.core.evaluation.coco_utils import results2json # pylint: disable=import-error, no-name-in-module
 from mmdet.core.evaluation.text_evaluation import text_eval
 
 
