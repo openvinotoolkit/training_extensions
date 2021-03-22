@@ -19,7 +19,8 @@ disable = arguments-differ,
           wrong-import-order,
           attribute-defined-outside-init,
           import-outside-toplevel,
-          duplicate-code
+          duplicate-code,
+          logging-fstring-interpolation
 
 max-line-length = 120
 ignore-docstrings = yes
