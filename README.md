@@ -69,3 +69,8 @@ them for prediction.
 # Misc
 
 Models that were previously developed can be found [here](misc).
+
+# Contributing
+
+Please read the [contribution guidelines](CONTRIBUTING.md) before starting work on a pull request.
+
