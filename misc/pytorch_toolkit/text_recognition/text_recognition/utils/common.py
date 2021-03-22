@@ -24,7 +24,6 @@ DECODER_OUTPUTS = "dec_st_h_t,dec_st_c_t,output,logit"
 def read_net(model_xml, ie):
     model_bin = os.path.splitext(model_xml)[0] + ".bin"
     model = ie.read_network(model_xml, model_bin)
-
     return model
 
 
