@@ -193,9 +193,8 @@ class ONNXRunner(BaseRunner):
         img = img.clone().detach().numpy()
         if self.use_ctc:
             return self.run_complete_model(img)
-        else:
-            row_enc_out, h, c, O_t = self.run_encoder(img)
-            pred = self.run_decoder(h, c, O_t, row_enc_out).astype(np.int32)
+        row_enc_out, h, c, O_t = self.run_encoder(img)
+        pred = self.run_decoder(h, c, O_t, row_enc_out).astype(np.int32)
         return pred
 
     def openvino_transform(self):
@@ -224,38 +223,38 @@ class OpenVINORunner(BaseRunner):
             pred = log_softmax(logits, axis=2)
             pred = ctc_greedy_search(pred, 0)
             return pred[0]
-        else:
-            enc_res = self.exec_net_encoder.infer(inputs={self.config.get(
-                'encoder_input_names', ENCODER_INPUTS).split(',')[0]: img})
-            enc_out_names = self.config.get('encoder_output_names', ENCODER_OUTPUTS).split(',')
-            ir_row_enc_out = enc_res[enc_out_names[0]]
-            dec_states_h = enc_res[enc_out_names[1]]
-            dec_states_c = enc_res[enc_out_names[2]]
-            output = enc_res[enc_out_names[3]]
-            dec_in_names = self.config.get('decoder_input_names', DECODER_INPUTS).split(',')
-            dec_out_names = self.config.get('decoder_output_names', DECODER_OUTPUTS).split(',')
-            tgt = np.array([[START_TOKEN]] * 1)
-            logits = []
-            for _ in range(MAX_SEQ_LEN):
-                dec_res = self.exec_net_decoder.infer(inputs={
-                    dec_in_names[0]: dec_states_h,
-                    dec_in_names[1]: dec_states_c,
-                    dec_in_names[2]: output,
-                    dec_in_names[3]: ir_row_enc_out,
-                    dec_in_names[4]: tgt
-                }
-                )
 
-                dec_states_h = dec_res[dec_out_names[0]]
-                dec_states_c = dec_res[dec_out_names[1]]
-                output = dec_res[dec_out_names[2]]
-                logit = dec_res[dec_out_names[3]]
-                logits.append(logit)
+        enc_res = self.exec_net_encoder.infer(inputs={self.config.get(
+            'encoder_input_names', ENCODER_INPUTS).split(',')[0]: img})
+        enc_out_names = self.config.get('encoder_output_names', ENCODER_OUTPUTS).split(',')
+        ir_row_enc_out = enc_res[enc_out_names[0]]
+        dec_states_h = enc_res[enc_out_names[1]]
+        dec_states_c = enc_res[enc_out_names[2]]
+        output = enc_res[enc_out_names[3]]
+        dec_in_names = self.config.get('decoder_input_names', DECODER_INPUTS).split(',')
+        dec_out_names = self.config.get('decoder_output_names', DECODER_OUTPUTS).split(',')
+        tgt = np.array([[START_TOKEN]] * 1)
+        logits = []
+        for _ in range(MAX_SEQ_LEN):
+            dec_res = self.exec_net_decoder.infer(inputs={
+                dec_in_names[0]: dec_states_h,
+                dec_in_names[1]: dec_states_c,
+                dec_in_names[2]: output,
+                dec_in_names[3]: ir_row_enc_out,
+                dec_in_names[4]: tgt
+            }
+            )
 
-                tgt = np.reshape(np.argmax(logit, axis=1), (1, 1)).astype(np.long)
-                if tgt[0][0] == END_TOKEN:
-                    break
-            return np.argmax(np.array(logits).squeeze(1), axis=1)
+            dec_states_h = dec_res[dec_out_names[0]]
+            dec_states_c = dec_res[dec_out_names[1]]
+            output = dec_res[dec_out_names[2]]
+            logit = dec_res[dec_out_names[3]]
+            logits.append(logit)
+
+            tgt = np.reshape(np.argmax(logit, axis=1), (1, 1)).astype(np.long)
+            if tgt[0][0] == END_TOKEN:
+                break
+        return np.argmax(np.array(logits).squeeze(1), axis=1)
 
     def openvino_transform(self):
         return True

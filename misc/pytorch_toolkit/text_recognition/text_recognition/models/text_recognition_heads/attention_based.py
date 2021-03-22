@@ -57,7 +57,7 @@ class AttentionBasedLSTM(nn.Module):
                  beam_width=0, encoder_input_size=512,
                  positional_encodings=False,
                  trainable_initial_hidden=True):
-        super(AttentionBasedLSTM, self).__init__()
+        super().__init__()
         self.emb_size = emb_size
         self.encoder_hidden_size = encoder_hidden_size
         self.decoder_hidden_size = decoder_hidden_size
@@ -224,7 +224,7 @@ class AttentionBasedLSTM(nn.Module):
         inp = torch.cat([prev_y, output], dim=1)  # [B, emb_size+encoder_hidden_size]
         h_t, c_t = self.rnn_decoder(inp, (h, c))
 
-        context_t, attn_scores = self._get_attn(enc_out, h)
+        context_t, _ = self._get_attn(enc_out, h)
         # [B, encoder_hidden_size]
         output = self.W_c(torch.cat([h_t, context_t], dim=1)).tanh()
 

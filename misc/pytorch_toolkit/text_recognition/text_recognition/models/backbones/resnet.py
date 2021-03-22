@@ -29,8 +29,9 @@ architectures = {
 
 
 class ResNetLikeBackbone(nn.Module):
-    def __init__(self, arch, disable_layer_3, disable_layer_4, output_channels=512, enable_last_conv=False, one_ch_first_conv=False):
-        super(ResNetLikeBackbone, self).__init__()
+    def __init__(self, arch, disable_layer_3, disable_layer_4, output_channels=512,
+                 enable_last_conv=False, one_ch_first_conv=False):
+        super().__init__()
         self.output_channels = output_channels
         self.arch = arch
         _resnet = architectures.get(arch, None)

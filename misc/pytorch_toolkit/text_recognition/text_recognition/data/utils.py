@@ -59,8 +59,8 @@ class TransformResizePad(BaseTransform):
             image_raw = cv.copyMakeBorder(image_raw, 0, target_height - img_h,
                                           0, target_width - img_w, cv.BORDER_CONSTANT,
                                           None, COLOR_WHITE)
-            assert tuple(image_raw.shape[0:2]) == tuple(self.target_shape[0:2]
-                                                        ), f'image_raw shape {image_raw.shape[0:2]}, tgt_shape: {self.target_shape[0:2]}'
+            asert_msg = f'image_raw shape {image_raw.shape[0:2]}, tgt_shape: {self.target_shape[0:2]}'
+            assert tuple(image_raw.shape[0:2]) == tuple(self.target_shape[0:2]), asert_msg
             res.append(image_raw)
         return res
 
@@ -230,7 +230,7 @@ class TransformErosion(BaseTransform):
 
 class TransformRandomBolding(BaseTransform):
     """
-    This class helps to imitate images from scaner \ camera
+    This class helps to imitate images from scaner or camera
     after applying binarization on them
     """
     class SingleBoldingTransform(BaseTransform):
@@ -435,7 +435,7 @@ def get_timestamp():
 def get_num_lines_in_file(path):
     total = 0
     with open(path) as f:
-        for line in f:
+        for _ in f:
             total += 1
     return total
 
