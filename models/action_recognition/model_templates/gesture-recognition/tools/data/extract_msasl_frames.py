@@ -216,7 +216,7 @@ def extract_frames(records, videos_dir, video_name_template, out_dir, image_name
         num_frames = int(video_capture.get(cv2.CAP_PROP_FRAME_COUNT))
 
         frame_ids_map = dict()
-        for record_id in range(len(video_records)):
+        for record_id, _ in enumerate(video_records):
             record = video_records[record_id]
 
             left_limit = video_records[record_id - 1]['end'] if record_id > 0 else 0

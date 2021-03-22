@@ -14,7 +14,7 @@
 
 import os
 
-from common.image_classification_test_case import create_image_classification_test_case
+from common.image_classification_test_case import create_image_classification_test_case # pylint: disable=import-error
 
 kwargs = dict(
     problem_name='imagenet-classification',
