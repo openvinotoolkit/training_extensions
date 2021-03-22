@@ -27,7 +27,6 @@ import numpy as np
 import mmcv
 from tqdm import tqdm
 
-# TODO(eizutov): to fix importing non-existing module
 from openvino.inference_engine import IECore # pylint: disable=no-name-in-module
 
 
