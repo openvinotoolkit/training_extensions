@@ -22,7 +22,7 @@ them for prediction.
 * [Action Recognition](action_recognition)
 * [Eye State Classification](open_closed_eye)
 * [Face Antispoofing](face_antispoofing)
-* [Formula recognition](formula_recognition)
+* [Text recognition](text_recognition)
 * [Human Pose Estimation](human_pose_estimation)
 * [Machine Translation](machine_translation)
 * [Object Re-Identification](object_reidentification)
