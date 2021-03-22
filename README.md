@@ -53,23 +53,24 @@ them for prediction.
   - [Custom Action Recognition](models/action_recognition/model_templates/custom-action-recognition)
   - [Gesture Recognition](models/action_recognition/model_templates/gesture-recognition)
 * [Instance Segmentation](models/instance_segmentation)
-  - [COCO instance segmentation](models/instance_segmentation/model_templates/coco-instance-segmentation/readme.md)
-  - [Custom instance segmentation](models/instance_segmentation/model_templates/custom-instance-segmentation/readme.md)
+  - [COCO instance segmentation](models/instance_segmentation/model_templates/coco-instance-segmentation)
+  - [Custom instance segmentation](models/instance_segmentation/model_templates/custom-instance-segmentation)
 * [Image classification](models/image_classification)
-  - [Custom image classification](models/image_classification/model_templates/custom-classification/README.md)
+  - [Custom image classification](models/image_classification/model_templates/custom-classification)
 * [Object Detection](models/object_detection)
   - [Face Detection](models/object_detection/model_templates/face-detection)
-  - [Horizontal Text Detection](models/object_detection/model_templates/horizontal-text-detection/)
-  - [Person Detection](models/object_detection/model_templates/person-detection/)
+  - [Horizontal Text Detection](models/object_detection/model_templates/horizontal-text-detection)
+  - [Person Detection](models/object_detection/model_templates/person-detection)
   - [Person Vehicle Bike Detection](models/object_detection/model_templates/person-vehicle-bike-detection)
   - [Vehicle Detection](models/object_detection/model_templates/vehicle-detection)
 * [Text Spotting](models/text_spotting)
-  - [Alphanumeric Text Spotting](models/text_spotting/model_templates/alphanumeric-text-spotting/readme.md)
+  - [Alphanumeric Text Spotting](models/text_spotting/model_templates/alphanumeric-text-spotting)
 
 # Misc
 
-Models that were previously developed can be found [here](misc/README.md).
+Models that were previously developed can be found [here](misc).
 
 # Contributing
 
 Please read the [contribution guidelines](CONTRIBUTING.md) before starting work on a pull request.
+
