@@ -21,7 +21,7 @@ from os import makedirs, listdir
 from os.path import exists, join, isfile
 from argparse import ArgumentParser
 
-from joblib import delayed, Parallel
+from joblib import delayed, Parallel # pylint: disable=import-error
 import cv2
 
 

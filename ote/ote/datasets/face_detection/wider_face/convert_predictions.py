@@ -3,7 +3,7 @@ import os
 import mmcv
 from tqdm import tqdm
 
-from mmdet.datasets import build_dataset
+from mmdet.datasets import build_dataset # pylint: disable=import-error
 
 
 def convert_to_wider(config, results_file, out_folder, update_config):

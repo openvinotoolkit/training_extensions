@@ -1,5 +1,6 @@
-requests
-pyyaml
 mmcv
-texttable
 pytest
+pyyaml
+requests
+texttable
+tqdm
