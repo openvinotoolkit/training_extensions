@@ -14,7 +14,6 @@
  limitations under the License.
 """
 
-import logging
 import os
 from abc import ABCMeta, abstractmethod
 

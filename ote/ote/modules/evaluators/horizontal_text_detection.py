@@ -14,19 +14,12 @@
  limitations under the License.
 """
 
-import os
-import subprocess
-
-from ote import MMDETECTION_TOOLS
-
 from .mmdetection import MMDetectionEvaluator
 from ..registry import EVALUATORS
 
 
 @EVALUATORS.register_module()
 class MMHorizontalTextDetectionEvaluator(MMDetectionEvaluator):
-    def __init__(self):
-        super(MMHorizontalTextDetectionEvaluator, self).__init__()
 
     def _get_metric_functions(self):
         from ote.metrics.horizontal_text_detection.horizontal_text_detection import coco_eval

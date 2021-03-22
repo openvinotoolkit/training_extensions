@@ -48,7 +48,7 @@ def compute_wider_metrics(config_path, work_dir, snapshot, wider_dir, **kwargs):
               file=sys.stderr)
         print('Save downloaded data as:', file=sys.stderr)
         print(f'    {os.path.abspath(wider_data_zip)}', file=sys.stderr)
-        print(f'#########################################################################',
+        print('#########################################################################',
               file=sys.stderr)
 
         return outputs

@@ -21,7 +21,6 @@ import unittest
 import mmcv
 import yaml
 
-from ote.tests.utils import collect_ap
 from ote.utils.misc import download_snapshot_if_not_yet, run_through_shell
 
 # these functions contain import-s inside -- this is required for tests discover
@@ -76,7 +75,8 @@ def skip_if_cuda_not_available():
         raise unittest.SkipTest('No GPU found')
 
 
-def create_test_case(domain_name, problem_name, model_name, ann_file, img_root, metric_keys, expected_outputs_dir, batch_size=1):
+def create_test_case(domain_name, problem_name, model_name, ann_file, img_root, metric_keys,
+                     expected_outputs_dir, batch_size=1):
     class TestCaseOteApi(unittest.TestCase):
         domain = domain_name
         problem = problem_name
@@ -175,7 +175,8 @@ def create_test_case(domain_name, problem_name, model_name, ann_file, img_root, 
     return TestCaseOteApi
 
 
-def create_export_test_case(domain_name, problem_name, model_name, ann_file, img_root, metric_keys, expected_outputs_dir):
+def create_export_test_case(domain_name, problem_name, model_name, ann_file,
+                            img_root, metric_keys, expected_outputs_dir):
     class ExportTestCase(unittest.TestCase):
         domain = domain_name
         problem = problem_name
@@ -254,7 +255,7 @@ def create_export_test_case(domain_name, problem_name, model_name, ann_file, img
 
 def create_nncf_test_case(domain_name, problem_name, model_name, ann_file, img_root,
                           compress_cmd_line_params,
-                          template_update_dict={},
+                          template_update_dict=None,
                           compression_cfg_update_dict=None):
  # pylint: disable=too-many-arguments, too-many-statements
     """
@@ -317,8 +318,8 @@ def create_nncf_test_case(domain_name, problem_name, model_name, ann_file, img_r
 
         @staticmethod
         def generate_test_case_description(template_update_dict,
-                                                  compress_cmd_line_params,
-                                                  compression_cfg_update_dict):
+                                           compress_cmd_line_params,
+                                           compression_cfg_update_dict):
             def _dict_to_descr(d):
                 if not d:
                     return ''
@@ -346,8 +347,8 @@ def create_nncf_test_case(domain_name, problem_name, model_name, ann_file, img_r
             logging.info(f'Copying {src_template_folder} to {template_folder}')
             if os.path.isdir(template_folder):
                 logging.warning('')
-                logging.warning(f'ATTENTION: the folder that should be created for this test case exists!')
-                logging.warning(f'           It may cause side effects between tests!')
+                logging.warning('ATTENTION: the folder that should be created for this test case exists!')
+                logging.warning('           It may cause side effects between tests!')
                 logging.warning(f'The folder is `{template_folder}`.\n')
             run_through_shell(f'cp -a --no-target-directory "{src_template_folder}" "{template_folder}"')
             assert os.path.isdir(template_folder), f'Cannot create {template_folder}'

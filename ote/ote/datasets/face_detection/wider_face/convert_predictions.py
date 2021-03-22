@@ -6,10 +6,10 @@ from tqdm import tqdm
 from mmdet.datasets import build_dataset
 
 
-def convert_to_wider(config, input, out_folder, update_config):
+def convert_to_wider(config, results_file, out_folder, update_config):
     """ Main function. """
 
-    if input is not None and not input.endswith(('.pkl', '.pickle')):
+    if results_file is not None and not results_file.endswith(('.pkl', '.pickle')):
         raise ValueError('The input file must be a pkl file.')
 
     cfg = mmcv.Config.fromfile(config)
@@ -17,7 +17,7 @@ def convert_to_wider(config, input, out_folder, update_config):
         cfg.merge_from_dict(update_config)
     dataset = build_dataset(cfg.data.test)
 
-    results = mmcv.load(input)
+    results = mmcv.load(results_file)
 
     wider_friendly_results = []
     for i, sample in enumerate(tqdm(dataset)):
