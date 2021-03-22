@@ -6,23 +6,30 @@ It is assumed that these pre-trained models will used as starting points in orde
 *NOTE* There was no goal to train top-scoring lightweight 80 class (MS COCO classes) detectors here,
 but rather provide pre-trained checkpoints and good training configs for further fine-tuning on a target dataset.
 
-| Model Name | Complexity (GFLOPs) | Size (Mp) | Bbox AP @ [IoU=0.50:0.95] | Segm AP @ [IoU=0.50:0.95] | Average segm mAP | Links | GPU_NUM |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| efficientnet_b2b-mask_rcnn-480x480 | 14.8 | 10.27 | 34.1 | 29.4 | 44.1 | [snapshot](https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/instance_segmentation/v2/efficientnet_b2b-mask_rcnn-480x480.pth), [model template](efficientnet_b2b-mask_rcnn-480x480/template.yaml) | 1 |
-| efficientnet_b2b-mask_rcnn-576x576 | 26.92 | 13.27 | 35.2 | 31.0 | 46.5 | [snapshot](https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/instance_segmentation/v2/efficientnet_b2b-mask_rcnn-576x576.pth), [model template](efficientnet_b2b-mask_rcnn-576x576/template.yaml) | 1 |
+| Model Name | Complexity (GFLOPs) | Size (Mp) | Bbox AP @ [IoU=0.50:0.95] | Segm AP @ [IoU=0.50:0.95] | Links | GPU_NUM |
+| --- | --- | --- | --- | --- | --- | --- |
+| efficientnet_b2b-mask_rcnn-480x480 | 14.8 | 10.27 | 34.1 | 29.4 | [snapshot](https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/instance_segmentation/v2/efficientnet_b2b-mask_rcnn-480x480.pth), [model template](efficientnet_b2b-mask_rcnn-480x480/template.yaml) | 1 |
+| efficientnet_b2b-mask_rcnn-576x576 | 26.92 | 13.27 | 35.2 | 31.0 | [snapshot](https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/instance_segmentation/v2/efficientnet_b2b-mask_rcnn-576x576.pth), [model template](efficientnet_b2b-mask_rcnn-576x576/template.yaml) | 1 |
 
+The Bbox AP and Segm AP metrics were calculated on the MS COCO dataset. 
 Average Precision (AP) is defined as an area under the precision/recall curve. 
 
-*NOTE* The Bbox AP and Segm AP metrics were calculated on the MS COCO dataset. The Average segm mAP was obtained as an average metric across 5 various datasets, which were chosen to test the generalization ability of provided training configs. To get metric information, which is achievable on each dataset, refer to this [spreadsheet](https://docs.google.com/spreadsheets/d/1wv3RzGu4Iwa0G_wCjBC5xMUMDr2JXEIm-2MeRwWCt7E/edit?usp=sharing). Datasets differ in size, the number of classes, train/val proportions, and the number of objects in the image. 
-
-The following source datasets were used in the experiments:
-* [Cityscapes](https://www.cityscapes-dataset.com/) - large dataset with dense object representation which includes 8 classes that are commonly encountered on the road (e.g. person, car, train, bicycle)   
-* [Oxford-IIIT Pets](https://www.robots.ox.ac.uk/~vgg/data/pets/) - another large dataset with cats and dogs. Also, A subset of data twice as small was used as a separate dataset in order to diversify the training base by size.
-* [WGISD](https://github.com/thsant/wgisd) - small dataset with grape segmentation. For one training dataset, the annotation for grapes was used, so it includes one class. For the other, more complicated one, annotation for each grape species was used, so it includes 5 classes. 
-
-In the conducted experiments we got pre-trained on the MS COCO weights and then started the same fine-tuning on each dataset described above without freezing any layers. 
+In the conducted experiments we got pre-trained on the MS COCO weights and then started the same fine-tuning on the 5 various datasets without freezing any layers.
+Datasets differed in size, the number of classes, train/val proportions, and the number of objects in the image that allowed us to test the generalization ability of provided training configs.
 Then, we calculated the metric on each dataset and got an average value to compare trainings with each other. 
 Taking into account the average metric and the segmentation mAP on each dataset at each epoch, the best training config was chosen.
+
+The following source datasets were used in the experiments (some of them were modified and reused to increase the number and diversity of training datasets):
+* [Cityscapes](https://www.cityscapes-dataset.com/) - large dataset with dense object representation which includes 8 classes that are commonly encountered on the road (e.g. person, car, train, bicycle)   
+* [Oxford-IIIT Pets](https://www.robots.ox.ac.uk/~vgg/data/pets/) - another large dataset with cats and dogs. Also, a subset of data twice as small was used as a separate dataset in order to diversify the training base by size.
+* [WGISD](https://github.com/thsant/wgisd) - small dataset with grape segmentation. For one training dataset, the annotation for grapes was used, so it included one class. For the other, more complicated one, annotation for each grape species was used, so it included 5 classes. 
+
+To get information about metric, which is achievable on each dataset, refer to table below. 
+
+| Model Name | Average segm mAP - % | Cityscapes | Oxford Pets (original) | Oxford Pets (half-size) | WGISD (1 class) | WGISD (5 classes) |
+| --- | --- | --- | --- | --- | --- | --- |
+| efficientnet_b2b-mask_rcnn-480x480 | 44.1	| 22.0 | 72.1 | 70.4 | 45.7 | 10.3 |
+| efficientnet_b2b-mask_rcnn-576x576 | 46.5 | 24.1 | 74.4 | 72.9 | 49.4 | 11.6 |
 
 Please note that we do not share snapshots trained on the datasets above, as we only use them to obtain validation metrics. The provided materials are limited to pre-trained MS COCO snapshots, training configs, and metric values that can be achieved on different datasets.
 
