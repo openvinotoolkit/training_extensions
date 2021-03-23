@@ -47,10 +47,10 @@ class ReidTrainer(BaseTrainer):
         data_path_args += f'{update_config[self.parameter_val_dir]} --root _ '
         del update_config[self.parameter_train_dir]
         del update_config[self.parameter_val_dir]
-        update_config = classes_arg + data_path_args
-        update_config += ' '.join([f'{k} {v}' for k, v in update_config.items() if str(v) and str(k)])
+        update_config_str = classes_arg + data_path_args
+        update_config_str += ' '.join([f'{k} {v}' for k, v in update_config.items() if str(v) and str(k)])
         logging.info('Training started ...')
-        self._train_internal(config, gpu_num, update_config, tensorboard_dir)
+        self._train_internal(config, gpu_num, update_config_str, tensorboard_dir)
         logging.info('... training completed.')
 
     def _train_internal(self, config, gpu_num, update_config, tensorboard_dir):
