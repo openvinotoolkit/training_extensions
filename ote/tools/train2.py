@@ -23,7 +23,7 @@ import sys
 
 from ote.api import template_filename_parser
 from ote.utils import load_config
-from ote.utils.misc import download_snapshot_if_not_yet
+from ote.utils import download_snapshot_if_not_yet, copy_config_dependencies
 
 
 from ote.modules import (build_arg_parser,
@@ -47,17 +47,7 @@ def main():
     if not ote_args.do_not_load_snapshot:
         download_snapshot_if_not_yet(template_path, ote_args.work_dir)
 
-    for dependency in template_config['dependencies']:
-        source = dependency['source']
-        destination = dependency['destination']
-        if destination != 'snapshot.pth':
-            rel_source = os.path.join(os.path.dirname(template_path), source)
-            cur_dst = os.path.join(ote_args.work_dir, destination)
-            os.makedirs(os.path.dirname(cur_dst), exist_ok=True)
-            if os.path.isdir(rel_source):
-                shutil.copytree(rel_source, cur_dst, dirs_exist_ok=True)
-            else:
-                shutil.copy(rel_source, destination)
+    copy_config_dependencies(template_config, template_path, ote_args.work_dir)
 
     module_path = os.path.abspath(os.path.join(ote_args.work_dir, 'packages/ote/ote/tasks'))
     if module_path not in sys.path:

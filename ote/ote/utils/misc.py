@@ -19,6 +19,7 @@ import json
 import logging
 import os
 import requests
+import shutil
 import subprocess
 
 import yaml
@@ -170,3 +171,16 @@ def get_cuda_device_count():
     if torch.cuda.is_available():
         return torch.cuda.device_count()
     return 0
+
+def copy_config_dependencies(template_config, template_path, work_dir):
+    for dependency in template_config['dependencies']:
+        source = dependency['source']
+        destination = dependency['destination']
+        if destination != 'snapshot.pth':
+            rel_source = os.path.join(os.path.dirname(template_path), source)
+            cur_dst = os.path.join(work_dir, destination)
+            os.makedirs(os.path.dirname(cur_dst), exist_ok=True)
+            if os.path.isdir(rel_source):
+                shutil.copytree(rel_source, cur_dst, dirs_exist_ok=True)
+            else:
+                shutil.copy(rel_source, destination)
