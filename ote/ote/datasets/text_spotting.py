@@ -131,7 +131,7 @@ class TextOnlyCocoAnnotation:
 
         for image_info in tqdm(other.annotation['images']):
             ann_ids = other.img_id_2_ann_id[image_info['id']]
-            
+
             image = cv2.imread(image_info['file_name'])
             if image.shape[:2] != (image_info['height'], image_info['width']):
                 ignored.append(image_info['file_name'])

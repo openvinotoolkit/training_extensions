@@ -255,7 +255,8 @@ data = dict(
         times=6,
         dataset=dict(
             type=dataset_type,
-            ann_file=[data_root + 'openimages_v5_train_1_2_f.json', data_root + 'dataset_train_wo_tests_ic13_ic15_tt.json'],
+            ann_file=[data_root + 'openimages_v5_train_1_2_f.json',
+                      data_root + 'dataset_train_wo_tests_ic13_ic15_tt.json'],
             img_prefix=[data_root, data_root],
             classes=('text', ),
             min_size=0,
