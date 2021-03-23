@@ -59,7 +59,8 @@ class Exporter:
         model_inputs = [self.config.get('model_input_names')]
         model_outputs = self.config.get('model_output_names').split(',')
         print(f"Saving model to {self.config.get('res_model_name')}")
-        torch.onnx.export(self.model, self.img_for_export, self.config.get('res_model_name'),
+        res_path = os.path.join(os.path.split(self.model_path)[0], self.config.get('res_model_name'))
+        torch.onnx.export(self.model, self.img_for_export, res_path,
                           opset_version=11, input_names=model_inputs, output_names=model_outputs,
                           dynamic_axes={model_inputs[0]: {0: 'batch', 1: 'channels', 2: 'height', 3: 'width'},
                                         model_outputs[0]: {0: 'batch', 1: 'max_len', 2: 'vocab_len'},
@@ -68,7 +69,8 @@ class Exporter:
     def export_encoder(self):
         encoder_inputs = self.config.get('encoder_input_names', ENCODER_INPUTS).split(',')
         encoder_outputs = self.config.get('encoder_output_names', ENCODER_OUTPUTS).split(',')
-        torch.onnx.export(self.encoder, self.img_for_export, self.config.get('res_encoder_name'),
+        res_encoder_path = os.path.join(os.path.split(self.model_path)[0], self.config.get('res_encoder_name'))
+        torch.onnx.export(self.encoder, self.img_for_export, res_encoder_path,
                           opset_version=OPSET_VERSION,
                           input_names=encoder_inputs,
                           output_names=encoder_outputs,
@@ -86,14 +88,14 @@ class Exporter:
         hidden = torch.randn(HIDDEN_SHAPE)
         context = torch.rand(CONTEXT_SHAPE)
         output = torch.rand(OUTPUT_SHAPE)
-
+        res_decoder_path = os.path.join(os.path.split(self.model_path)[0], self.config.get('res_decoder_name'))
         torch.onnx.export(self.decoder,
                           (hidden,
                            context,
                            output,
                            row_enc_out,
                            torch.tensor(tgt, dtype=torch.long)),
-                          self.config.get('res_decoder_name'),
+                          res_decoder_path,
                           opset_version=OPSET_VERSION,
                           input_names=decoder_inputs,
                           output_names=decoder_outputs,
@@ -102,9 +104,10 @@ class Exporter:
                           )
 
     def export_complete_model_ir(self):
-        input_model = self.config.get('res_model_name')
+        input_model = os.path.join(os.path.split(self.model_path)[0], self.config.get('res_model_name'))
         input_shape = self.config.get('input_shape')
         output_names = self.config.get('model_output_names')
+        output_dir = os.path.split(self.model_path)[0]
         export_command = f"""{OPENVINO_DIR}/bin/setupvars.sh && \
         python {OPENVINO_DIR}/deployment_tools/model_optimizer/mo.py \
         --framework onnx \
@@ -112,15 +115,17 @@ class Exporter:
         --input_shape "{input_shape}" \
         --output "{output_names}" \
         --log_level={LOG_LEVEL} \
+        --output_dir {output_dir} \
         --scale_values 'imgs[255]'"""
         if self.config.get('verbose_export'):
             print(export_command)
         subprocess.run(export_command, shell=True, check=True)
 
     def export_encoder_ir(self):
-        input_model = self.config.get('res_encoder_name')
+        input_model = os.path.join(os.path.split(self.model_path)[0], self.config.get('res_encoder_name'))
         input_shape = self.config.get('input_shape_decoder')
         output_names = self.config.get('encoder_output_names', ENCODER_OUTPUTS)
+        output_dir = os.path.split(self.model_path)[0]
         export_command = f"""{OPENVINO_DIR}/bin/setupvars.sh && \
         python {OPENVINO_DIR}/deployment_tools/model_optimizer/mo.py \
         --framework onnx \
@@ -129,6 +134,7 @@ class Exporter:
         --output "{output_names}" \
         --reverse_input_channels \
         --log_level={LOG_LEVEL} \
+        --output_dir {output_dir} \
         --scale_values 'imgs[255,255,255]'"""
         if self.config.get('verbose_export'):
             print(export_command)
@@ -147,9 +153,10 @@ class Exporter:
                        [1, self.config.get('head', {}).get('encoder_hidden_size', 256)],
                        [1, output_h, output_w, self.config.get('head', {}).get('decoder_hidden_size', 512)], [1, 1]]
         input_shape = '{}, {}, {}, {}, {}'.format(*input_shape)
-        input_model = self.config.get('res_decoder_name')
+        input_model = os.path.join(os.path.split(self.model_path)[0], self.config.get('res_decoder_name'))
         input_names = self.config.get('decoder_input_names', DECODER_INPUTS)
         output_names = self.config.get('decoder_output_names', DECODER_OUTPUTS)
+        output_dir = os.path.split(self.model_path)[0]
         export_command = f"""{OPENVINO_DIR}/bin/setupvars.sh &&
         python {OPENVINO_DIR}/deployment_tools/model_optimizer/mo.py \
         --framework onnx \
@@ -157,6 +164,7 @@ class Exporter:
         --input {input_names} \
         --input_shape '{input_shape}' \
         --log_level={LOG_LEVEL} \
+        --output_dir {output_dir} \
         --output {output_names}"""
         if self.config.get('verbose_export'):
             print(export_command)
