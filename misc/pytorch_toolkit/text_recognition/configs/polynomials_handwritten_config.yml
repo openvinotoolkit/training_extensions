@@ -4,6 +4,7 @@ backbone_config:
   disable_layer_4: true
   output_channels: 1024
 head:
+  type: AttentionBasedLSTM
   encoder_input_size: 1024
 model_path: model_checkpoints/polynomials_handwritten_0166.pth
 model_url: https://download.01.org/opencv/openvino_training_extensions/models/formula_recognition/polynomials_handwritten_0166.pth

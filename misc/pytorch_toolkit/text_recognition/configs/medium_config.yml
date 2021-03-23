@@ -2,6 +2,8 @@ backbone_config:
   arch: resnext50_32x4d
   disable_layer_3: true
   disable_layer_4: true
+head:
+  type: AttentionBasedLSTM
 model_path: model_checkpoints/medium_photographed_0185.pth
 model_url: https://download.01.org/opencv/openvino_training_extensions/models/formula_recognition/medium_photograped_0185.pth
 device: cuda
