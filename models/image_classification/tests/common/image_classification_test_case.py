@@ -12,15 +12,10 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import logging
 import os
 import pathlib
-import unittest
-
-import yaml
 
 from ote.tests.test_case import (create_export_test_case,
-                                 create_nncf_test_case,
                                  create_test_case,
                                  skip_if_cuda_not_available)
 from ote.utils.misc import run_through_shell

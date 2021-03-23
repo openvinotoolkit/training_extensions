@@ -14,6 +14,8 @@
  limitations under the License.
 """
 
+# pylint: disable=too-many-branches, too-many-statements
+
 import json
 from bisect import bisect
 from collections import namedtuple
@@ -23,7 +25,7 @@ import mmcv
 import numpy as np
 from tqdm import tqdm
 
-from mmdet import datasets
+from mmdet import datasets # pylint: disable=import-error
 
 
 def voc_ap(recall, precision, use_07_metric=False):
@@ -291,7 +293,7 @@ def voc_eval(result_file, dataset, iou_thr, image_size):
     return out
 
 
-def custom_voc_ap_evaluation(config, input, iou_thr, imsize, out, update_config):
+def custom_voc_ap_evaluation(config, result_file, iou_thr, imsize, out, update_config):
     """ Main function. """
 
     cfg = mmcv.Config.fromfile(config)
@@ -303,7 +305,7 @@ def custom_voc_ap_evaluation(config, input, iou_thr, imsize, out, update_config)
         assert len(cfg.data.test.ann_file) == len(cfg.data.test.img_prefix)
 
     test_dataset = datasets.builder.build_dataset(cfg.data.test)
-    output = voc_eval(input, test_dataset, iou_thr, imsize)
+    output = voc_eval(result_file, test_dataset, iou_thr, imsize)
 
     if out:
         with open(out, 'w') as write_file:

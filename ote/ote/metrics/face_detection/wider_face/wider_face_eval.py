@@ -13,7 +13,7 @@ import os
 import pickle
 
 import numpy as np
-from scipy.io import loadmat
+from scipy.io import loadmat # pylint: disable=import-error
 from tqdm import tqdm
 
 from ote.metrics.face_detection.wider_face.box_overlaps import bbox_overlaps

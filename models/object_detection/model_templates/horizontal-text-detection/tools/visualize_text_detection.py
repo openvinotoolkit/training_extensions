@@ -18,12 +18,13 @@
 import argparse
 
 import mmcv
-from pycocotools.coco import COCO
-from pycocotools.cocoeval import COCOeval
+from pycocotools.coco import COCO # pylint: disable=import-error
+from pycocotools.cocoeval import COCOeval # pylint: disable=import-error
 
-from mmdet.datasets import build_dataset
-from mmdet.core.evaluation.coco_utils import results2json
-from mmdet.core.evaluation.text_evaluation import text_eval
+from mmdet.datasets import build_dataset # pylint: disable=import-error
+# TODO(GalyaZalesskaya): fix issue on next line
+from mmdet.core.evaluation.coco_utils import results2json # pylint: disable=import-error, no-name-in-module
+from mmdet.core.evaluation.text_evaluation import text_eval # pylint: disable=import-error
 
 
 def parse_args():

@@ -14,10 +14,8 @@
  limitations under the License.
 """
 
-import copy
 import logging
 import os
-import sys
 import tempfile
 import json
 import yaml

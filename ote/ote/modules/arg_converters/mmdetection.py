@@ -119,8 +119,8 @@ class MMDetectionCustomClassesArgConverterMap(MMDetectionArgConverterMap):
         if snapshot_path:
             classes_from_snapshot = load_classes_from_snapshot(snapshot_path)
             if classes != classes_from_snapshot:
-                logging.warning('Set of classes that will be used in current training does not equal to classes stored in snapshot: '
-                                f'{classes} vs {classes_from_snapshot}')
+                logging.warning('Set of classes that will be used in current training does not equal to '
+                                f'classes stored in snapshot: {classes} vs {classes_from_snapshot}')
 
         return classes_list_to_update_config_dict(args['config'], classes)
 
@@ -148,8 +148,8 @@ class MMDetectionCustomClassesArgConverterMap(MMDetectionArgConverterMap):
             classes = classes_from_args
         else:
             if classes_from_annotation != classes_from_snapshot:
-                raise RuntimeError('Set of classes obtained from test dataset does not equal to classes stored in snapshot: '
-                                   f'{classes_from_annotation} vs {classes_from_snapshot}')
+                raise RuntimeError('Set of classes obtained from test dataset does not equal to '
+                                   f'classes stored in snapshot: {classes_from_annotation} vs {classes_from_snapshot}')
             classes = classes_from_annotation
 
         return classes_list_to_update_config_dict(args['config'], classes)
