@@ -10,10 +10,6 @@ dependencies:
   size: 10296643
   source: https://drive.google.com/uc?export=download&id=1q3xgROzhFWCiQHPvKldV4S7HR3N2Fne1
   destination: snapshot.pth
-- source: ../../../../../ote
-  destination: packages/ote
-- source: ../../requirements.txt
-  destination: requirements.txt
 max_nodes: 1
 training_target:
 - GPU

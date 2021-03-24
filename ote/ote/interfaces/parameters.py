@@ -33,7 +33,7 @@ class BaseTaskParameters:
 
     @dataclass
     class BaseEvaluationParameters:
-        batch_size: int = 1
+        batch_size: int = 32
 
     @dataclass
     class BaseExportParameters:

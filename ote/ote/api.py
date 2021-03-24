@@ -32,6 +32,7 @@ def _compression_train_args_parsers_common_part(template_path):
         parser.add_argument('--work-dir', required=False,
                             help='Path to store training or compression artifacts')
         parser.add_argument('--do-not-load-snapshot', action='store_true')
+        parser.add_argument('--local_rank', type=int, default=0) # for distributed training launcher
 
         parser.add_argument('--config', default=config['config'], help=argparse.SUPPRESS)
 

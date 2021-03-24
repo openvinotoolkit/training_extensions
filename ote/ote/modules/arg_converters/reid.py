@@ -81,9 +81,10 @@ class ReidTaskArgConverterMap(ArgConverterMaps):
     def test_update_args_map(self):
         return {
             'test_ann_files': '',
-            'test_data_roots': 'test_data_roots',
-            'load_weights': 'model.load_weights',
+            'test_data_roots': '',
+            'load_weights': 'snapshot_path',
             'classes': 'classes',
+            'work_dir': 'work_dir',
         }
 
     def compress_update_args_map(self):
