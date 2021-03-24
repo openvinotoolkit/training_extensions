@@ -77,7 +77,7 @@ Please read the [contribution guidelines](CONTRIBUTING.md) before starting work 
 
 ## Known Limitations
 
-Currently, training, exporting, evaluation scripts for TensorFlow\*-based models and the most of PyTorch\*-based models from [Misc](#-misc) section are exploratory and are not validated.
+Currently, training, exporting, evaluation scripts for TensorFlow\*-based models and the most of PyTorch\*-based models from [Misc](#misc) section are exploratory and are not validated.
 
 ---
 \* Other names and brands may be claimed as the property of others.
