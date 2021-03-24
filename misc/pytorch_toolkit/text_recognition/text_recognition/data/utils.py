@@ -493,7 +493,7 @@ def texts2tensor(texts, sign2id):
     for i, phrase in enumerate(texts):
         for j, sign in enumerate(phrase):
             tensors[i][j] = sign2id.get(sign, UNK_TOKEN)
-        lens.append(j + 1)
+        lens.append(len(phrase))
     lens = torch.tensor(lens, dtype=torch.long)
     return tensors, lens
 
