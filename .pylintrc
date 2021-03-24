@@ -20,7 +20,8 @@ disable = arguments-differ,
           attribute-defined-outside-init,
           import-outside-toplevel,
           duplicate-code,
-          logging-fstring-interpolation
+          logging-fstring-interpolation,
+          import-error
 
 max-line-length = 120
 ignore-docstrings = yes
