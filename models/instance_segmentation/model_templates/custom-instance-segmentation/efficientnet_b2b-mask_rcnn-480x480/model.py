@@ -194,8 +194,8 @@ lr_config = dict(
     policy='CosineAnealingUntilEpoch',
     last_epoch=12,
     warmup='linear',
-    warmup_iters=500,
-    warmup_ratio=0.001,
+    warmup_iters=250,
+    warmup_ratio=0.02,
     min_lr=0.00025)
 total_epochs = 0
 checkpoint_config = dict(interval=1)
