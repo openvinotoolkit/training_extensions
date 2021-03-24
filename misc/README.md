@@ -8,7 +8,7 @@ inference.
 # Models
 
 * [PyTorch\*](pytorch_toolkit)
-* [TensorFlow\* (PROVIDED AS IS WITHOUT SUPPORT)](tensorflow_toolkit)
+* [TensorFlow\*](tensorflow_toolkit)
 
 ---
 \* Other names and brands may be claimed as the property of others.
