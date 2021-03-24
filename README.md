@@ -5,15 +5,15 @@ Deep Learning models and convert them using the [OpenVINO™
 toolkit](https://software.intel.com/en-us/openvino-toolkit) for optimized
 inference.
 
-# Quick Start Guide
+## Quick Start Guide
 
-## Prerequisites
+### Prerequisites
 * Ubuntu 18.04 / 20.04
 * Python 3.6+
 * [OpenVINO™](https://software.intel.com/en-us/openvino-toolkit) - for exporting and running models
 * [CUDA Toolkit 10.2](https://developer.nvidia.com/cuda-10.2-download-archive) - for training on GPU
 
-## Setup OpenVINO™ Training Extensions
+### Setup OpenVINO™ Training Extensions
 
 1. Clone repository in the working directory by running the following:
     ```
@@ -44,7 +44,7 @@ inference.
     pip3 install -e ote/
     ```
 
-# Models
+## Models
 
 After installation, you are ready to train your own models, evaluate and use
 them for prediction.
@@ -66,10 +66,19 @@ them for prediction.
 * [Text Spotting](models/text_spotting)
   - [Alphanumeric Text Spotting](models/text_spotting/model_templates/alphanumeric-text-spotting)
 
-# Misc
+
+## Misc
 
 Models that were previously developed can be found [here](misc/README.md).
 
-# Contributing
+## Contributing
 
 Please read the [contribution guidelines](CONTRIBUTING.md) before starting work on a pull request.
+
+
+## Known Limitations
+
+Currently, training, exporting, evaluation scripts for TensorFlow\*-based models and the most of PyTorch\*-based models from [Misc](#-misc) section are exploratory and are not validated.
+
+---
+\* Other names and brands may be claimed as the property of others.
