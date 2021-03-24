@@ -66,7 +66,6 @@ them for prediction.
 * [Text Spotting](models/text_spotting)
   - [Alphanumeric Text Spotting](models/text_spotting/model_templates/alphanumeric-text-spotting)
 
-
 ## Misc
 
 Models that were previously developed can be found [here](misc/README.md).
