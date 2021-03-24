@@ -177,7 +177,7 @@ class MobileNet(nn.Module):
     """parent class for mobilenets"""
     def __init__(self, width_mult, prob_dropout, type_dropout,
                  prob_dropout_linear, embeding_dim, mu, sigma,
-                 theta, multi_heads):
+                 theta, scaling, multi_heads):
         super().__init__()
         self.prob_dropout = prob_dropout
         self.type_dropout = type_dropout
@@ -187,6 +187,7 @@ class MobileNet(nn.Module):
         self.mu = mu
         self.sigma = sigma
         self.theta = theta
+        self.scaling = scaling
         self.multi_heads = multi_heads
         self.features = nn.Identity
 
@@ -217,7 +218,9 @@ class MobileNet(nn.Module):
         return spoof_out
 
     def forward_to_onnx(self,x):
-        x = self.forward(x)
+        x = self.features(x)
+        x = self.conv_last(x)
+        x = self.avgpool(x)
         x = x.view(x.size(0), -1)
         spoof_out = self.spoofer(x)
         if isinstance(spoof_out, tuple):
