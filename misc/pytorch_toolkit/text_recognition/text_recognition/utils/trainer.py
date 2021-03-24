@@ -240,7 +240,7 @@ class Trainer:
                         self.save_model('accuracy_test_best_model_{}.pth'.format(self.time))
 
                     self.lr_scheduler.step(step_loss)
-                self._current_loss = losses
+                self.current_loss = losses
                 if self.global_step >= self._test_steps:
                     return
 
@@ -253,7 +253,7 @@ class Trainer:
         training_gt = training_gt.to(self.device)
         loss_computation_gt = loss_computation_gt.to(self.device)
         logits, _ = self.model(imgs, training_gt)
-        cut = False if self.loss_type == 'CTC' else True
+        cut = self.loss_type != 'CTC'
         loss, accuracy = calculate_loss(logits, loss_computation_gt, target_lengths, should_cut_by_min=cut,
                                         ctc_loss=self.loss)
         self.step += 1
@@ -289,7 +289,7 @@ class Trainer:
                                                                       )
                         output_file.write(img_name[j] + '\t' + pred_phrase_str + '\t' + gold_phrase_str + '\n')
                         val_total_accuracy += int(pred_phrase_str == gold_phrase_str)
-                    cut = False if self.loss_type == 'CTC' else True
+                    cut = self.loss_type != 'CTC'
                     loss, _ = calculate_loss(logits, loss_computation_gt, target_lengths,
                                              should_cut_by_min=cut, ctc_loss=self.loss)
                     loss = loss.detach()

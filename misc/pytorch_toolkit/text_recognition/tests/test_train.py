@@ -35,9 +35,9 @@ def create_train_test(config_file):
 
         def test_train(self):
             self.trainer.train()
-            cur_loss = self.trainer._current_loss
+            cur_loss = self.trainer.current_loss
             self.trainer.train()
-            self.assertLessEqual(self.trainer._current_loss, cur_loss)
+            self.assertLessEqual(self.trainer.current_loss, cur_loss)
             if os.path.exists(self.trainer.logs_path):
                 shutil.rmtree(self.trainer.logs_path, ignore_errors=True)
     return TestTrain
