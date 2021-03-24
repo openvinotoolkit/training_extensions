@@ -1,7 +1,7 @@
 # Custom Instance Segmentation
 
 Custom instance segmentation models are lightweight models that have been pre-trained on MS COCO instance segmentation dataset.
-It is assumed that these pre-trained models will used as starting points in order to train specific instance segmentation models (e.g. for 'cat' and 'dog' segmentation).
+It is assumed that these pre-trained models will be used as starting points in order to train specific instance segmentation models (e.g. for 'cat' and 'dog' segmentation).
 
 *NOTE* There was no goal to train top-scoring lightweight 80 class (MS COCO classes) detectors here,
 but rather provide pre-trained checkpoints and good training configs for further fine-tuning on a target dataset.
@@ -14,12 +14,12 @@ but rather provide pre-trained checkpoints and good training configs for further
 The Bbox AP and Segm AP metrics were calculated on the MS COCO dataset. 
 Average Precision (AP) is defined as an area under the precision/recall curve. 
 
-In the conducted experiments we got pre-trained on the MS COCO weights and then started the same fine-tuning on the 5 various datasets without freezing any layers.
-Datasets differed in size, the number of classes, train/val proportions, and the number of objects in the image that allowed us to test the generalization ability of provided training configs.
+In the conducted experiments we got weights pre-trained on the MS COCO and then started the same fine-tuning on the 5 various datasets without freezing any layers.
+Datasets differ in size, the number of classes, train/val proportions, and the number of objects in the image that allowed us to test the generalization ability of provided training configs.
 Then, we calculated the metric on each dataset and got an average value to compare trainings with each other. 
 Taking into account the average metric and the segmentation mAP on each dataset at each epoch, the best training config was chosen.
 
-The following source datasets were used in the experiments (some of them were modified and reused to increase the number and diversity of training datasets):
+The following datasets were used in the experiments as a source, but some of them were modified and reused to increase the number and diversity of training datasets:
 * [Cityscapes](https://www.cityscapes-dataset.com/) - large dataset with dense object representation which includes 8 classes that are commonly encountered on the road (e.g. person, car, train, bicycle)   
 * [Oxford-IIIT Pets](https://www.robots.ox.ac.uk/~vgg/data/pets/) - another large dataset with cats and dogs. Also, a subset of data twice as small was used as a separate dataset in order to diversify the training base by size.
 * [WGISD](https://github.com/thsant/wgisd) - small dataset with grape segmentation. For one training dataset, the annotation for grapes was used, so it included one class. For the other, more complicated one, annotation for each grape species was used, so it included 5 classes. 
