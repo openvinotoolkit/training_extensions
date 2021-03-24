@@ -28,7 +28,7 @@ To get information about metric, which is achievable on each dataset, refer to t
 
 | Model Name | Average segm mAP - % | Cityscapes | Oxford Pets (original) | Oxford Pets (half-size) | WGISD (1 class) | WGISD (5 classes) |
 | --- | --- | --- | --- | --- | --- | --- |
-| efficientnet_b2b-mask_rcnn-480x480 | 44.1	| 22.0 | 72.1 | 70.4 | 45.7 | 10.3 |
+| efficientnet_b2b-mask_rcnn-480x480 | 44.5 | 22.2 | 71.9 | 69.8 | 48.1 | 10.4 |
 | efficientnet_b2b-mask_rcnn-576x576 | 46.5 | 24.1 | 74.4 | 72.9 | 49.4 | 11.6 |
 
 Please note that we do not share snapshots trained on the datasets above, as we only use them to obtain validation metrics. The provided materials are limited to pre-trained MS COCO snapshots, training configs, and metric values that can be achieved on different datasets.
