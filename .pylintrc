@@ -21,7 +21,8 @@ disable = arguments-differ,
           import-outside-toplevel,
           duplicate-code,
           logging-fstring-interpolation,
-          import-error
+          import-error,
+          no-name-in-module
 
 max-line-length = 120
 ignore-docstrings = yes
