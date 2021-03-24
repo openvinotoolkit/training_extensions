@@ -23,7 +23,7 @@ if [ -z "${CUDA_HOME}" ] && [ -d ${CUDA_HOME_CANDIDATE} ]; then
   export CUDA_HOME=${CUDA_HOME_CANDIDATE}
 fi
 
-# Download mmdetection
+# Download mmpose
 git submodule update --init ../../external/mmpose
 
 # Create virtual environment
