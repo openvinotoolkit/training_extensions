@@ -1,4 +1,4 @@
-# Bert base XNLI and Squad 1.1 (PROVIDED AS IS WITHOUT SUPPORT)
+# Bert base XNLI and Squad 1.1
 
 BERT (Bidirectional Encoder Representations from Transformers) is a new method of pre-training language representations which obtains state-of-the-art results on a wide array of Natural Language Processing (NLP) tasks.
 XNLI is the Bert-base Chinese simplified and traditional sentence classification task with 12-layer, 768-hidden, 12 heads, 110M parameters.

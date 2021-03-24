@@ -1,4 +1,4 @@
-# Smart Classroom Scenario (PROVIDED AS IS WITHOUT SUPPORT)
+# Smart Classroom Scenario
 
 This repository contains the TensorFlow\* code for deployment of person detection (PD) and action recognition (AR) models for the smart classroom use case. You can define your own list of possible actions (see annotation file [format](./README_DATA.md) and steps for model training to change the list of actions), but this repository shows example for 6 action classes: stand, sit, raise a hand, write, turn around, and lay on the desk.
 
