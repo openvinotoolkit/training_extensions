@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+# pylint:disable=import-error
 import os
 import json
 import sys
@@ -52,7 +53,6 @@ acc_check_activate_string = f'source {ACC_CHECK_VENV_DIR}/bin/activate && source
 
 param_list = []
 ids_list = []
-model_dict = []
 row_dict = OrderedDict()
 color_dict = OrderedDict()
 
