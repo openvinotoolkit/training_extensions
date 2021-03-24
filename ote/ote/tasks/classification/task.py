@@ -91,12 +91,13 @@ class ClassificationTask(ITask):
 
     def test(self, dataset: IDataset, parameters: BaseTaskParameters.BaseEvaluationParameters) -> (list, dict):
         self.model.eval()
-        self.model.to(device)
+        self.model.to(self.device)
         self.cfg.custom_datasets.roots = [dataset, dataset]
         datamanager = torchreid.data.ImageDataManager(**imagedata_kwargs(self.cfg))
-        cmc, mAP, norm_cm = metrics.evaluate_classification(datamanager.test_loader[dataset_name]['query'],
-                                                             model, self.cfg.use_gpu, (1, 5))
+        cmc, mAP, norm_cm = metrics.evaluate_classification(datamanager.test_loader['val']['query'],
+                                                             self.model, self.cfg.use_gpu, (1, 5))
         result_metrics = {'Top-1': cmc[0], 'Top-5': cmc[1], 'mAP': mAP}
+
         return [], result_metrics
 
     def cancel(self):
@@ -161,7 +162,7 @@ class ClassificationTask(ITask):
 
     def load_model_from_bytes(self, binary_model: bytes):
         torch_model = self.create_model()
-        state_dict = torch.load(weights)
+        state_dict = torch.load(io.BytesIO(binary_model))
         load_pretrained_weights(torch_model, pretrained_dict=state_dict)
         self.model = torch_model.to(self.device)
 
