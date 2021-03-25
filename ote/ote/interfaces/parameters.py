@@ -37,7 +37,11 @@ class BaseTaskParameters:
 
     @dataclass
     class BaseExportParameters:
-        output_folder: str = ''
+        save_model_to: str = ''
+        onnx: bool = True
+        openvino: bool = True
+        openvino_input_format: str = 'BGR'
+        openvino_mo_args: str = ''
 
     @dataclass
     class BaseCompressParameters:

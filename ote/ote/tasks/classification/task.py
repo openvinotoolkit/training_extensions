@@ -110,22 +110,22 @@ class ClassificationTask(ITask):
         pass
 
     def export(self, parameters: BaseTaskParameters.BaseExportParameters):
-        transform = build_inference_transform(
-            cfg.data.height,
-            cfg.data.width,
-            norm_mean=cfg.data.norm_mean,
-            norm_std=cfg.data.norm_std,
-        )
-        input_img = random_image(cfg.data.height, cfg.data.width)
-        input_blob = transform(input_img).unsqueeze(0)
+        if parameters.onnx or parameters.openvino:
+            transform = build_inference_transform(
+                self.cfg.data.height,
+                self.cfg.data.width,
+                norm_mean=self.cfg.data.norm_mean,
+                norm_std=self.cfg.data.norm_std,
+            )
+            input_img = random_image(self.cfg.data.height, self.cfg.data.width)
+            input_blob = transform(input_img).unsqueeze(0).to(self.device)
 
-        input_names = ['data']
-        output_names = ['reid_embedding']
-        dynamic_axes = {}
-        register_op("group_norm", group_norm_symbolic, "", 9)
+            input_names = ['data']
+            output_names = ['reid_embedding']
+            register_op("group_norm", group_norm_symbolic, "", 9)
 
-        with tempfile.TemporaryDirectory() as tmpdirname:
-            onnx_model_path = os.path.join(tmpdirname, 'classification_model.onnx')
+            onnx_model_path = os.path.join(parameters.save_model_to,
+                                           os.path.splitext(os.path.basename(self.env_parameters.config_path))[0] + '.onnx')
             with torch.no_grad():
                 self.model.eval()
                 torch.onnx.export(
@@ -136,11 +136,10 @@ class ClassificationTask(ITask):
                     export_params=True,
                     input_names=input_names,
                     output_names=output_names,
-                    dynamic_axes=dynamic_axes,
                     opset_version=9,
                     operator_export_type=torch.onnx.OperatorExportTypes.ONNX
                 )
-
+        if parameters.openvino:
             mean_values = str([s*255 for s in self.cfg.data.norm_mean])
             scale_values = str([s*255 for s in self.cfg.data.norm_std])
 
@@ -148,8 +147,11 @@ class ClassificationTask(ITask):
             command_line = f'mo.py --input_model="{onnx_model_path}" ' \
                            f'--mean_values="{mean_values}" ' \
                            f'--scale_values="{scale_values}" ' \
-                           f'--output_dir="{parameters.output_folder}" ' \
-                               '--reverse_input_channels'
+                           f'--output_dir="{parameters.save_model_to}" '
+            if parameters.openvino_input_format == 'BGR':
+                command_line += '--reverse_input_channels '
+
+            command_line += parameters.openvino_mo_args
 
             try:
                 run('mo.py -h', stdout=DEVNULL, stderr=DEVNULL, shell=True, check=True)
