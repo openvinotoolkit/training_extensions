@@ -28,8 +28,8 @@ def parse_args():
 
 
 if __name__ == '__main__':
-    args = parse_args()
-    test_config = get_config(args.config, section='eval')
+    arguments = parse_args()
+    test_config = get_config(arguments.config, section='eval')
     validator = Evaluator(test_config)
     if 'model_folder' in test_config.keys():
         model_folder = test_config.get('model_folder')
