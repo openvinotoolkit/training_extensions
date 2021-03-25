@@ -23,7 +23,7 @@ import os.path
 from text_recognition.utils.exporter import Exporter
 from text_recognition.utils.evaluator import Evaluator, RunnerType
 from text_recognition.utils.get_config import get_config
-from text_recognition.utils.common import download_checkpoint
+from text_recognition.utils.common import download_checkpoint, delete_model_if_exists
 
 unittest.TestLoader.sortTestMethodsUsing = None
 
@@ -45,7 +45,7 @@ def create_export_test_case_for_monolithic(config_file, expected_outputs):
             cls.exporter = Exporter(cls.config)
 
         def test_complete_model_export(self):
-            self.delete_model(self.res_model_name)
+            delete_model_if_exists(self.res_model_name)
             self.exporter.export_complete_model()
             result_model_exists = os.path.exists(self.res_model_name)
             self.assertEqual(True, result_model_exists)
@@ -63,16 +63,11 @@ def create_export_test_case_for_monolithic(config_file, expected_outputs):
             self.exporter.export_to_onnx_model_if_not_yet(model=self.res_model_name, model_type=None)
             res_model_name_bin = self.res_model_name.replace('onnx', 'bin')
             res_model_name_xml = self.res_model_name.replace('onnx', 'xml')
-            self.delete_model(res_model_name_xml)
-            self.delete_model(res_model_name_bin)
+            delete_model_if_exists(res_model_name_xml)
+            delete_model_if_exists(res_model_name_bin)
             self.exporter.export_complete_model_ir()
             result_model_exists = all([os.path.exists(res_model_name_bin), os.path.exists(res_model_name_xml)])
             self.assertEqual(True, result_model_exists)
-
-        def delete_model(self, res_model_name):
-            result_model_exists = os.path.exists(res_model_name)
-            if result_model_exists:
-                os.remove(res_model_name)
 
         def test_run_ir_model(self):
             if not self.config.get('export_ir'):
@@ -106,13 +101,13 @@ def create_export_test_case_for_composite(config_file, expected_outputs):
             cls.exporter = Exporter(cls.config)
 
         def test_encoder_export(self):
-            self.delete_model_if_exists(self.encoder_name)
+            delete_model_if_exists(self.encoder_name)
             self.exporter.export_encoder()
             result_model_exists = os.path.exists(self.encoder_name)
             self.assertEqual(True, result_model_exists)
 
         def test_decoder_export(self):
-            self.delete_model_if_exists(self.decoder_name)
+            delete_model_if_exists(self.decoder_name)
             self.exporter.export_decoder()
             result_model_exists = os.path.exists(self.decoder_name)
             self.assertEqual(True, result_model_exists)
@@ -131,27 +126,27 @@ def create_export_test_case_for_composite(config_file, expected_outputs):
             self.exporter.export_to_onnx_model_if_not_yet(model=self.encoder_name, model_type='encoder')
             encoder_res_name_bin = self.encoder_name.replace('onnx', 'bin')
             encoder_res_name_xml = self.encoder_name.replace('onnx', 'xml')
-            self.delete_model_if_exists(encoder_res_name_bin)
-            self.delete_model_if_exists(encoder_res_name_xml)
+            delete_model_if_exists(encoder_res_name_bin)
+            delete_model_if_exists(encoder_res_name_xml)
 
             self.exporter.export_encoder_ir()
             result_model_exists = all([os.path.exists(encoder_res_name_bin), os.path.exists(encoder_res_name_xml)])
             self.assertEqual(True, result_model_exists)
 
-        def test_5_decoder_ir_export(self):
+        def test_decoder_ir_export(self):
             if not self.config.get('export_ir'):
                 return
             self.exporter.export_to_onnx_model_if_not_yet(model=self.decoder_name, model_type='decoder')
             decoder_res_name_xml = self.decoder_name.replace('onnx', 'xml')
             decoder_res_name_bin = self.decoder_name.replace('onnx', 'bin')
-            self.delete_model_if_exists(decoder_res_name_xml)
-            self.delete_model_if_exists(decoder_res_name_bin)
+            delete_model_if_exists(decoder_res_name_xml)
+            delete_model_if_exists(decoder_res_name_bin)
 
             self.exporter.export_decoder_ir()
             result_model_exists = all([os.path.exists(decoder_res_name_xml), os.path.exists(decoder_res_name_bin)])
             self.assertEqual(True, result_model_exists)
 
-        def test_6_run_ir_model(self):
+        def test_run_ir_model(self):
             if not self.config.get('export_ir'):
                 return
             self.exporter.export_to_ir_model_if_not_yet(model=self.encoder_name, model_type='encoder')
@@ -160,11 +155,6 @@ def create_export_test_case_for_composite(config_file, expected_outputs):
             ir_metric = evaluator.validate()
             target_metric = evaluator.expected_outputs.get('target_metric')
             self.assertGreaterEqual(ir_metric, target_metric)
-
-        def delete_model_if_exists(self, model_name):
-            result_model_exists = os.path.exists(model_name)
-            if result_model_exists:
-                os.remove(model_name)
 
     return TestExport
 
