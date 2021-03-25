@@ -30,9 +30,7 @@ from mmdet.core.evaluation.text_evaluation import text_eval # pylint: disable=im
 def parse_args():
     """ Parses input arguments. """
     parser = argparse.ArgumentParser(
-        description='This script uses output of test.py (mmdetection) to '
-                    'calculate precision, recall and f-mean of predictions.'
-                    'This script draws a histogram of the detected words '
+        description='This script draws a histogram of the detected words '
                     'number (recall) depending on their width. It helps to '
                     'see the detection quality of the small, normal or large '
                     'inscriptions. Also for your convenience you may '
