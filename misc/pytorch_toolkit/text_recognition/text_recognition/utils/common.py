@@ -31,8 +31,3 @@ def download_checkpoint(model_path, url):
     os.makedirs(os.path.dirname(model_path), exist_ok=True)
     if not os.path.exists(model_path):
         os.system(f'wget -nv {url} -O {model_path}')
-
-def delete_model_if_exists(model_name):
-    result_model_exists = os.path.exists(model_name)
-    if result_model_exists:
-        os.remove(model_name)
