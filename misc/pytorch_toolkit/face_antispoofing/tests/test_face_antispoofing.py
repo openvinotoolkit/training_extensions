@@ -13,6 +13,7 @@
 
 import unittest
 import torch
+import sys
 
 from utils import read_py_config, build_model, check_file_exist
 
@@ -29,16 +30,12 @@ class TestONNXExport(unittest.TestCase):
         self.img_size = tuple(map(int, config.resize.values()))
 
     def test_export(self):
-        return
-
-        # try:
-        #     # input to inference model
-        #     dummy_input = torch.rand(size=(1, 3, *(self.img_size)), device='cpu')
-        #     self.model.eval()
-        #     torch.onnx.export(self.model, dummy_input, './mobilenetv3.onnx', verbose=False)
-        #     check_file_exist('./mobilenetv3.onnx')
-        # except ExportError:
-        #     self.fail("Exception raised while exporting to ONNX")
+        # input to inference model
+        dummy_input = torch.rand(size=(1, 3, *(self.img_size)), device='cpu')
+        self.model.eval()
+        onnx_model_path = './mobilenetv3.onnx'
+        torch.onnx.export(self.model, dummy_input, onnx_model_path, verbose=False)
+        check_file_exist(onnx_model_path)
 
 if __name__ == '__main__':
     unittest.main()
