@@ -304,7 +304,6 @@ class Evaluator:
         annotations = []
         predictions = []
         print('Starting inference')
-        metric = Im2latexRenderBasedMetric()
         text_acc = 0
         for img_name, _, imgs, _, loss_computation_gt in tqdm(self.val_loader):
             with torch.no_grad():
@@ -320,5 +319,6 @@ class Evaluator:
         print('Text accuracy is: ', text_acc)
         if not self.render:
             return text_acc
+        metric = Im2latexRenderBasedMetric()
         res = metric.evaluate(annotations, predictions)
         return res
