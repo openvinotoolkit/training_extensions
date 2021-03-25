@@ -27,8 +27,8 @@ def parse_args():
 
 
 if __name__ == '__main__':
-    args = parse_args()
-    export_config = get_config(args.config, section='export')
+    arguments = parse_args()
+    export_config = get_config(arguments.config, section='export')
     head_type = export_config.get('head').get('type')
     exporter = Exporter(export_config)
     if head_type == 'AttentionBasedLSTM':

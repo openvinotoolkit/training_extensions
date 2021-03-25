@@ -30,9 +30,9 @@ def parse_args():
 
 if __name__ == '__main__':
     assert sys.version_info[0] == 3
-    args = parse_args()
+    arguments = parse_args()
 
-    train_config = get_config(args.config, section='train')
+    train_config = get_config(arguments.config, section='train')
 
-    experiment = Trainer(work_dir=args.work_dir, config=train_config)
+    experiment = Trainer(work_dir=arguments.work_dir, config=train_config)
     experiment.train()

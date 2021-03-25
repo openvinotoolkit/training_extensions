@@ -60,8 +60,8 @@ def parse_args():
 
 
 if __name__ == '__main__':
-    args = parse_args()
-    demo_config = get_config(args.config, section='demo')
+    arguments = parse_args()
+    demo_config = get_config(arguments.config, section='demo')
     demo = TextRecognitionDemo(demo_config)
     try:
         check_environment()
@@ -72,11 +72,11 @@ if __name__ == '__main__':
         render_images = False
     else:
         render_images = True
-    if os.path.isdir(args.input):
-        inputs = sorted(os.path.join(args.input, inp)
-                        for inp in os.listdir(args.input))
+    if os.path.isdir(arguments.input):
+        inputs = sorted(os.path.join(arguments.input, inp)
+                        for inp in os.listdir(arguments.input))
     else:
-        inputs = [args.input]
+        inputs = [arguments.input]
     for inp in inputs:
         input_image = cv.imread(inp, cv.IMREAD_COLOR)
         assert input_image is not None, 'Error reading image {}, please, check input path'.format(inp)
