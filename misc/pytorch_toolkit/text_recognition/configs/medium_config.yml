@@ -40,6 +40,7 @@ eval:
     type: Im2LatexDataset
     data_path: ../../../data/formula_recognition/sample_medium_dataset
     annotation_file: validate_filter.lst
+  render: false
 demo:
   transforms_list: []
 export:

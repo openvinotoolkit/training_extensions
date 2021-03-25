@@ -35,6 +35,7 @@ eval:
     type: Im2LatexDataset
     data_path: ../../../data/formula_recognition/sample_handwritten_polynomials
     annotation_file: validate_filter.lst
+  render: false
 demo:
   transforms_list: []
 export:
