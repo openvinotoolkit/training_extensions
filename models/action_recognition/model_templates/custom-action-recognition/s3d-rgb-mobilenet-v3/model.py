@@ -111,7 +111,7 @@ train_pipeline = [
     dict(type='StreamSampleFrames',
          clip_len=input_clip_length,
          trg_fps=15,
-         num_clips=2,
+         num_clips=1,
          temporal_jitter=True,
          min_intersection=1.0),
     dict(type='RawFrameDecode'),
@@ -156,7 +156,7 @@ data = dict(
     ),
     shared=dict(
         type='StreamDataset',
-        data_subdir='global_crops',
+        data_subdir='rawframes',
         filename_tmpl='{:05d}.jpg'
     ),
     train=dict(
