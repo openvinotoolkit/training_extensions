@@ -113,7 +113,8 @@ To convert the obtained face recognition model, the following:
 python ../../../external/deep-object-reid/tools/convert_to_onnx.py \
     --config /path/to/config/file.yaml \
     --output-name /path/to/output/model \
-    --verbose
+    --verbose \
+    --disable-dyn-axes
 ```
 
 Name of the output model ends with `.onnx` automatically.
