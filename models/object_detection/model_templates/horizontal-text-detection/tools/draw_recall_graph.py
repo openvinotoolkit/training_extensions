@@ -12,28 +12,31 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-""" This script uses output of test.py (mmdetection) to
-    calculate precision, recall and f-mean of predictions."""
+""" This script draws a graph of the detected words number (recall)
+    depending on their width. It helps to see the detection quality of the
+    small, normal or large inscriptions. Also for your convenience you may
+    visualize the detections straight away."""
 
 import argparse
+from os.path import exists
+import subprocess
 
 import mmcv
-from pycocotools.coco import COCO # pylint: disable=import-error
-from pycocotools.cocoeval import COCOeval # pylint: disable=import-error
 
 from mmdet.datasets import build_dataset # pylint: disable=import-error
-# TODO(GalyaZalesskaya): fix issue on next line
-from mmdet.core.evaluation.coco_utils import results2json # pylint: disable=import-error, no-name-in-module
 from mmdet.core.evaluation.text_evaluation import text_eval # pylint: disable=import-error
 
 
 def parse_args():
     """ Parses input arguments. """
     parser = argparse.ArgumentParser(
-        description='This script uses output of test.py (mmdetection) to '
-                    'calculate precision, recall and f-mean of predictions.')
+        description='This script draws a histogram of the detected words '
+                    'number (recall) depending on their width. It helps to '
+                    'see the detection quality of the small, normal or large '
+                    'inscriptions. Also for your convenience you may '
+                    'visualize the detections straight away.')
     parser.add_argument('config', help='test config file path')
-    parser.add_argument('input', help='output result file from test.py')
+    parser.add_argument('snapshot', help='path to snapshot to be tested')
     parser.add_argument('--draw_graph', action='store_true', help='draw histogram of recall')
     parser.add_argument('--visualize', action='store_true', help='show detection result on images')
     args = parser.parse_args()
@@ -42,33 +45,26 @@ def parse_args():
 
 def main():
     """ Main function. """
-
     args = parse_args()
-    if args.input is not None and not args.input.endswith(('.pkl', '.pickle')):
-        raise ValueError('The input file must be a pkl file.')
+
+    detection_file = 'horizontal_text_detection'
+    if not exists(f'{detection_file}.bbox.json'):
+        subprocess.run(
+            f'python ../../../../../external/mmdetection/tools/test.py'
+            f' {args.config} {args.snapshot}'
+            f' --options jsonfile_prefix={detection_file}'
+            f' --format-only',
+            check=True, shell=True
+        )
 
     cfg = mmcv.Config.fromfile(args.config)
     dataset = build_dataset(cfg.data.test)
 
-    results = mmcv.load(args.input)
-    result_file = results2json(dataset, results, args.input)
-
+    results = mmcv.load(f'{detection_file}.bbox.json')
     coco = dataset.coco
-    if mmcv.is_str(coco):
-        coco = COCO(coco)
-    assert isinstance(coco, COCO)
-
-    eval_type = 'bbox'
-    result_file = result_file[eval_type]
-
-    coco_dets = coco.loadRes(result_file)
-    img_ids = coco.getImgIds()
-    iou_type = 'bbox'
-    cocoEval = COCOeval(coco, coco_dets, iou_type)
-    cocoEval.params.imgIds = img_ids
-
-    predictions = cocoEval.cocoDt.imgToAnns
-    gt_annotations = cocoEval.cocoGt.imgToAnns
+    coco_dets = coco.loadRes(results)
+    predictions = coco_dets.imgToAnns
+    gt_annotations = coco.imgToAnns
 
     if args.visualize:
         img_paths = [dataset.img_prefix + image['file_name']
