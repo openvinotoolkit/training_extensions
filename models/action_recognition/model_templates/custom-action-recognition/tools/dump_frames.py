@@ -138,7 +138,7 @@ def load_annotation(input_files):
     for input_file in input_files:
         assert exists(input_file), f'File "{input_file}" does not exist'
 
-        annot_file_name = basename(input_file).split('.')[0]
+        annot_file_name = basename(input_file)
         with open(input_file) as input_stream:
             for line in input_stream:
                 line_parts = line.split(' ')
