@@ -58,8 +58,8 @@ where:
 
 > **NOTE**: Training/validation scripts expects action class IDs instead of class labels. So, action labels should be manually sorted and converted in the appropriate class IDs.
 
-If have the data in the video format (videos instead of dumped frames) you may use the following script to dump frames and generate the annotation file in the proper format.
-It assumes you have videos in `${DATA_DIR}/videos` directory and the appropriate annotation file with video anmes and class IDs.
+If you have the data in the video format (videos instead of dumped frames) you may use the following script to dump frames and generate the annotation file in the proper format.
+It assumes you have videos in `${DATA_DIR}/videos` directory and the appropriate annotation file with video names and class IDs.
 To dump frames and convert annotation run the following script:
 
 ```bash
