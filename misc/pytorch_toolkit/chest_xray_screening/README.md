@@ -5,7 +5,8 @@ In this code, we performed experiments to fine-tune the DenseNet-121 [1] CNN arc
 A systematic search was performed over a set of CNN architectures by scaling the width and depth of DenseNet using the EfficientNet method [2]. The optimal architecture was achieved with the scaling parameters of. The details of our experiments based on EfficientNet is summarized in the slides available at: [https://drive.google.com/file/d/1BQsCIeYFHZlMGmUS5GYIYQmgiMqPwPc4/view?usp=sharing](https://drive.google.com/file/d/1BQsCIeYFHZlMGmUS5GYIYQmgiMqPwPc4/view?usp=sharing)
 
 ### Model
-Download checkpoint with the following [link]()
+Download checkpoint with the following [link]() 
+The OpenvinoIR can be found at [link]()
 
 
 ## Setup
