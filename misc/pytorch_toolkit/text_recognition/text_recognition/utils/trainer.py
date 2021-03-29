@@ -101,7 +101,7 @@ def calculate_loss(logits, targets, target_lengths, should_cut_by_min=False, ctc
         predictions = ctc_greedy_search(logits.detach(), ctc_loss.blank)
         accuracy = 0
         for i in range(b_size):
-            gt = torch.IntTensor([c for c in targets[i] if c not in (PAD_TOKEN, END_TOKEN)])
+            gt = targets[i][:target_lengths[i]].cpu()
             if len(predictions[i]) == len(gt) and torch.all(predictions[i].eq(gt)):
                 accuracy += 1
         accuracy /= b_size
