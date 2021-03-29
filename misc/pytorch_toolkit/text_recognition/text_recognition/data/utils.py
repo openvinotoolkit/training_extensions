@@ -441,21 +441,26 @@ def get_num_lines_in_file(path):
 
 
 def collate_fn(sign2id, batch, *, batch_transform=None, use_ctc=False):
-    # filter the pictures that have different width or height
-    size = batch[0]['img'].shape
-    batch = [img_text for img_text in batch if img_text['img'].shape == size]
     # sort by the length of text
     # the purpose of the sort is to put the longest text on the first place
     # to get correct size of the tensor in the texts2tensor function
     batch.sort(key=lambda img_text: len(img_text['text'].split()), reverse=True)
 
     imgs = [item['img'] for item in batch]
+    if batch_transform:
+        imgs = batch_transform(imgs)
+    for i, item in enumerate(batch):
+        item['img'] = imgs[i]
+
+    # filter the pictures that have different width or height
+    size = batch[0]['img'].shape
+    batch = [img_text for img_text in batch if img_text['img'].shape == size]
+
+    imgs = [item['img'] for item in batch]
     texts = [item['text'] for item in batch]
     img_names = [item['img_name'] for item in batch]
     texts_tensor, lens = texts2tensor(texts, sign2id)
 
-    if batch_transform:
-        imgs = batch_transform(imgs)
     imgs = torch.stack(imgs, dim=0)
 
     bsize = len(batch)
