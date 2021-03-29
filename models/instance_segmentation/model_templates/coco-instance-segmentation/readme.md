@@ -4,8 +4,8 @@ Models that are able to instantiate segmentation.
 
 | Model Name |  Input resolution (HxW) | Complexity (GFLOPs) | Size (Mp) | Bbox AP @ [IoU=0.50:0.95] | Segm AP @ [IoU=0.50:0.95] | Links | GPU_NUM |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| instance-segmentation-0904 |  384x416 | 41.36 | 29.7471 | 32.9 | 29.1 |  [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/instance_segmentation/v2/instance-segmentation-0904-0912.pth), [model_template](./instance-segmentation-0904/template.yaml) | 2 |
-| instance-segmentation-0912 | 512x544 | 66.49 | 29.7478 | 35.6 | 31.3 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/instance_segmentation/v2/instance-segmentation-0904-0912.pth), [model_template](./instance-segmentation-0912/template.yaml) | 2 |
+| instance-segmentation-1039 |  480x480 | 13.9672 | 10.5674 | 33.1 | 28.7 |  [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/instance_segmentation/v2/instance-segmentation-1039.pth), [model_template](./instance-segmentation-1039/template.yaml) | 2 |
+| instance-segmentation-1040 | 608x608 | 29.334 | 13.5673 | 35.3 | 31.3 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/instance_segmentation/v2/instance-segmentation-1040.pth), [model_template](./instance-segmentation-1040/template.yaml) | 2 |
 | instance-segmentation-0228 | 608x608 | 147.19 | 49.4374 | 39.0 | 33.9 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/instance_segmentation/v2/instance-segmentation-0228.pth), [model_template](./instance-segmentation-0228/template.yaml) | 2 |
 | instance-segmentation-0002 | 768x1024 | 423.02 | 47.58 | 40.8 | 36.9 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/instance_segmentation/v2/instance-segmentation-0002.pth), [model_template](./instance-segmentation-0002/template.yaml) | 8 |
 | instance-segmentation-0091 | 800x1344 | 828.45 | 100.1455 | 45.8 | 39.7 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/instance_segmentation/v2/instance-segmentation-0091.pth), [model_template](./instance-segmentation-0091/template.yaml) | 8 |
@@ -36,7 +36,7 @@ source venv/bin/activate
 ### 2. Select a model template file and instantiate it in some directory
 
 ```bash
-export MODEL_TEMPLATE=`realpath ./model_templates/coco-instance-segmentation/instance-segmentation-0904/template.yaml`
+export MODEL_TEMPLATE=`realpath ./model_templates/coco-instance-segmentation/instance-segmentation-1039/template.yaml`
 export WORK_DIR=/tmp/my-$(basename $(dirname $MODEL_TEMPLATE))
 export SNAPSHOT=snapshot.pth
 python ../../tools/instantiate_template.py ${MODEL_TEMPLATE} ${WORK_DIR}

@@ -1,14 +1,14 @@
-name: instance-segmentation-0904
+name: instance-segmentation-1040
 domain: Instance Segmentation
 problem: COCO Instance Segmentation
 framework: OTEDetection v2.1.1
-summary: Instance segmentation based on Mask R-CNN architecture with ResNet50.
+summary: Instance segmentation based on Mask R-CNN architecture with EfficientNet-B2.
 annotation_format: COCO
 initial_weights: snapshot.pth
 dependencies:
-- sha256: 81c3e6d86e61f2dce8845dd297abe495ff0c604de3a9c93c51cc1728ba87d7fa
-  size: 231881353
-  source: https://download.01.org/opencv/openvino_training_extensions/models/instance_segmentation/v2/instance-segmentation-0904-0912.pth
+- sha256: d87986c1f5ca481fc22e967fac7e02ae2058d0f453031e7257d1cb52c54c0f75
+  size: 106609665
+  source: https://download.01.org/opencv/openvino_training_extensions/models/instance_segmentation/v2/instance-segmentation-1040.pth
   destination: snapshot.pth
 - source: ../../../../../ote/tools/train.py
   destination: train.py
@@ -41,7 +41,7 @@ hyper_parameters:
   basic:
     batch_size: 16
     base_learning_rate: 0.02
-    epochs: 36
+    epochs: 16
 output_format:
   onnx:
     default: true
@@ -53,19 +53,19 @@ metrics:
 - display_name: Bbox AP @ [IoU=0.50:0.95]
   key: ap
   unit: '%'
-  value: 32.9
+  value: 35.3
 - display_name: Segm AP @ [IoU=0.50:0.95]
   key: ap
   unit: '%'
-  value: 29.1
+  value: 31.3
 - display_name: Size
   key: size
   unit: Mp
-  value: 29.7471
+  value: 13.5673
 - display_name: Complexity
   key: complexity
   unit: GFLOPs
-  value: 41.36
+  value: 29.334
 gpu_num: 2
 config: model.py
 tensorboard: true

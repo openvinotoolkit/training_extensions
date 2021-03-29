@@ -1,24 +1,19 @@
 model = dict(
     type='MaskRCNN',
-    pretrained='open-mmlab://detectron2/resnet50_caffe',
     backbone=dict(
-        type='ResNet',
-        depth=50,
-        num_stages=4,
-        out_indices=(0, 1, 2, 3),
-        frozen_stages=1,
-        norm_cfg=dict(type='BN', requires_grad=False),
-        norm_eval=True,
-        style='caffe'),
+        type='efficientnet_b2b',
+        out_indices=(2, 3, 4, 5),
+        frozen_stages=-1,
+        pretrained=True),
     neck=dict(
         type='FPN',
-        in_channels=[256, 512, 1024, 2048],
-        out_channels=128,
+        in_channels=[24, 48, 120, 352],
+        out_channels=80,
         num_outs=5),
     rpn_head=dict(
         type='RPNHead',
-        in_channels=128,
-        feat_channels=128,
+        in_channels=80,
+        feat_channels=80,
         anchor_generator=dict(
             type='AnchorGenerator',
             scales=[8],
@@ -36,11 +31,11 @@ model = dict(
         bbox_roi_extractor=dict(
             type='SingleRoIExtractor',
             roi_layer=dict(type='RoIAlign', out_size=7, sample_num=0),
-            out_channels=128,
+            out_channels=80,
             featmap_strides=[4, 8, 16, 32]),
         bbox_head=dict(
             type='Shared2FCBBoxHead',
-            in_channels=128,
+            in_channels=80,
             fc_out_channels=512,
             roi_feat_size=7,
             num_classes=80,
@@ -55,13 +50,13 @@ model = dict(
         mask_roi_extractor=dict(
             type='SingleRoIExtractor',
             roi_layer=dict(type='RoIAlign', out_size=7, sample_num=0),
-            out_channels=128,
+            out_channels=80,
             featmap_strides=[4, 8, 16, 32]),
         mask_head=dict(
             type='FCNMaskHead',
             num_convs=4,
-            in_channels=128,
-            conv_out_channels=128,
+            in_channels=80,
+            conv_out_channels=80,
             num_classes=80,
             loss_mask=dict(
                 type='CrossEntropyLoss', use_mask=True, loss_weight=1.0))))
@@ -138,8 +133,6 @@ train_pipeline = [
                    (448, 480), (480, 448), (480, 480), (480, 512), (512, 480),
                    (512, 512), (512, 544), (544, 512), (544, 544), (544, 576),
                    (576, 544), (576, 576), (576, 608), (608, 576), (608, 608),
-                   (608, 640), (640, 608), (640, 640), (640, 672), (672, 640),
-                   (672, 672)],
         multiscale_mode='value',
         keep_ratio=False),
     dict(type='RandomFlip', flip_ratio=0.5),
@@ -156,7 +149,7 @@ test_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(
         type='MultiScaleFlipAug',
-        img_scale=(416, 384),
+        img_scale=(480, 480),
         flip=False,
         transforms=[
             dict(type='Resize', keep_ratio=False),
@@ -173,7 +166,7 @@ test_pipeline = [
 ]
 data = dict(
     samples_per_gpu=8,
-    workers_per_gpu=2,
+    workers_per_gpu=4,
     train=dict(
         type='RepeatDataset',
         times=1,
@@ -196,12 +189,12 @@ evaluation = dict(interval=1, metric=['bbox', 'segm'])
 optimizer = dict(type='SGD', lr=0.02, momentum=0.9, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=None)
 lr_config = dict(
-    policy='step',
+    policy='CosineAnealing',
     warmup='linear',
     warmup_iters=500,
     warmup_ratio=0.001,
-    step=[28, 34])
-total_epochs = 36
+    min_lr=0.0002)
+total_epochs = 16
 checkpoint_config = dict(interval=1)
 log_config = dict(interval=50, hooks=[dict(type='TextLoggerHook')])
 dist_params = dict(backend='nccl')
