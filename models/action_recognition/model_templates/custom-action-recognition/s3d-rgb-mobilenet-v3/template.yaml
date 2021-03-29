@@ -22,7 +22,7 @@ dependencies:
   destination: packages/ote
 - source: ../../requirements.txt
   destination: requirements.txt
-- source: ./tools
+- source: ../tools
   destination: tools
 max_nodes: 1
 training_target:
