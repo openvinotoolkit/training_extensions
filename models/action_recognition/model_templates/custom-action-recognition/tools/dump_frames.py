@@ -8,7 +8,7 @@ from shutil import rmtree
 from tqdm import tqdm
 
 
-VIDEO_EXTENSIONS = 'avi', 'mp4', 'mov', 'webm'
+VIDEO_EXTENSIONS = 'avi', 'mp4', 'mov', 'webm', 'mkv'
 
 
 def create_dirs(dir_path, override=False):
