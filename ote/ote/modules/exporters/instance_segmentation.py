@@ -15,7 +15,6 @@
 """
 
 import os
-import yaml
 from math import ceil
 from subprocess import run
 
@@ -28,8 +27,6 @@ from ..registry import EXPORTERS
 
 @EXPORTERS.register_module()
 class InstanceSegmentationExporter(BaseExporter):
-    def __init__(self):
-        super(InstanceSegmentationExporter, self).__init__()
 
     def _export_to_openvino(self, args, tools_dir):
         config = Config.fromfile(args["config"])

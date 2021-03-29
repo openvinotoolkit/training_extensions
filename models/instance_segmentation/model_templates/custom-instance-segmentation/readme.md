@@ -1,16 +1,37 @@
 # Custom Instance Segmentation
 
 Custom instance segmentation models are lightweight models that have been pre-trained on MS COCO instance segmentation dataset.
-It is assumed that one will use these pre-trained models as starting points in order to train specific instance segmentation models (e.g. 'cat' and 'dog' detection).
+It is assumed that these pre-trained models will be used as starting points in order to train specific instance segmentation models (e.g. for 'cat' and 'dog' segmentation).
+
 *NOTE* There was no goal to train top-scoring lightweight 80 class (MS COCO classes) detectors here,
-but rather provide pre-trained checkpoints and a good training config for further fine-tuning on a target dataset.
+but rather provide pre-trained checkpoints and good training configs for further fine-tuning on a target dataset.
 
 | Model Name | Complexity (GFLOPs) | Size (Mp) | Bbox AP @ [IoU=0.50:0.95] | Segm AP @ [IoU=0.50:0.95] | Links | GPU_NUM |
 | --- | --- | --- | --- | --- | --- | --- |
 | efficientnet_b2b-mask_rcnn-480x480 | 14.8 | 10.27 | 34.1 | 29.4 | [snapshot](https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/instance_segmentation/v2/efficientnet_b2b-mask_rcnn-480x480.pth), [model template](efficientnet_b2b-mask_rcnn-480x480/template.yaml) | 1 |
 | efficientnet_b2b-mask_rcnn-576x576 | 26.92 | 13.27 | 35.2 | 31.0 | [snapshot](https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/instance_segmentation/v2/efficientnet_b2b-mask_rcnn-576x576.pth), [model template](efficientnet_b2b-mask_rcnn-576x576/template.yaml) | 1 |
 
-Average Precision (AP) is defined as an area under the precision/recall curve.
+The Bbox AP and Segm AP metrics were calculated on the MS COCO dataset. 
+Average Precision (AP) is defined as an area under the precision/recall curve. 
+
+In the conducted experiments we got weights pre-trained on the MS COCO and then started the same fine-tuning on the 5 various datasets without freezing any layers.
+Datasets differ in size, the number of classes, train/val proportions, and the number of objects in the image that allowed us to test the generalization ability of provided training configs.
+Then, we calculated the metric on each dataset and got an average value to compare trainings with each other. 
+Taking into account the average metric and the segmentation mAP on each dataset at each epoch, the best training config was chosen.
+
+The following datasets were used in the experiments as a source, but some of them were modified and reused to increase the number and diversity of training datasets:
+* [Cityscapes](https://www.cityscapes-dataset.com/) - large dataset with dense object representation which includes 8 classes that are commonly encountered on the road (e.g. person, car, train, bicycle)   
+* [Oxford-IIIT Pets](https://www.robots.ox.ac.uk/~vgg/data/pets/) - another large dataset with cats and dogs. Also, a subset of data twice as small was used as a separate dataset in order to diversify the training base by size.
+* [WGISD](https://github.com/thsant/wgisd) - small dataset with grape segmentation. For one training dataset, the annotation for grapes was used, so it included one class. For the other, more complicated one, annotation for each grape species was used, so it included 5 classes. 
+
+To get information about metric, which is achievable on each dataset, refer to table below. 
+
+| Model Name | Average segm mAP - % | Cityscapes | Oxford Pets (original) | Oxford Pets (half-size) | WGISD (1 class) | WGISD (5 classes) |
+| --- | --- | --- | --- | --- | --- | --- |
+| efficientnet_b2b-mask_rcnn-480x480 | 44.5 | 22.2 | 71.9 | 69.8 | 48.1 | 10.4 |
+| efficientnet_b2b-mask_rcnn-576x576 | 46.5 | 24.1 | 74.4 | 72.9 | 49.4 | 11.6 |
+
+Please note that we do not share snapshots trained on the datasets above, as we only use them to obtain validation metrics. The provided materials are limited to pre-trained MS COCO snapshots, training configs, and metric values that can be achieved on different datasets.
 
 ## Training pipeline
 

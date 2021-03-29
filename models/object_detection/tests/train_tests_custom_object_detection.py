@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import json
+# pylint: disable=too-many-statements
+
 import os
 import unittest
 
@@ -21,12 +22,11 @@ import yaml
 from ote.tests.test_case import (
     skip_if_cpu_is_not_supported,
     skip_if_cuda_not_available,
-    skip_non_instantiated_template_if_its_allowed, 
+    skip_non_instantiated_template_if_its_allowed,
     get_dependencies,
     download_snapshot_if_not_yet
 )
 
-from ote.tests.utils import collect_ap
 from ote.utils.misc import run_through_shell
 
 def create_custom_object_detection_test_case(model_name):

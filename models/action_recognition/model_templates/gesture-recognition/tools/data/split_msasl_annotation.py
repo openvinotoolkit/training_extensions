@@ -14,11 +14,11 @@
  limitations under the License.
 """
 
-from os.path import exists, abspath
+from os.path import exists
 from argparse import ArgumentParser
 
 
-class RawFramesSegmentedRecord(object):
+class RawFramesSegmentedRecord:
     def __init__(self, row):
         self._data = row
 

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from common.custom_instance_segmentation_test_case import create_custom_instance_segmentation_test_case
+from common.custom_instance_segmentation_test_case import create_custom_instance_segmentation_test_case # pylint: disable=import-error
 
 
 kwargs = dict(

@@ -1,4 +1,4 @@
-# Training Toolbox for TensorFlow* (PROVIDED AS IS WITHOUT SUPPORT)
+# Training Toolbox for TensorFlow*
 
 Training Toolbox for TensorFlow\* provides a convenient environment to train
 Deep Learning models and convert them using [OpenVINO™
@@ -26,7 +26,7 @@ Install requirements:
 ## Models
 
 After installation, you are ready to train your own models, evaluate them, and use
-them for predictions. All models are **PROVIDED WITHOUT SUPPORT**.
+them for predictions.
 
 * [Action Detection](action_detection)
 * [Bert](bert)

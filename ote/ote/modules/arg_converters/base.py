@@ -14,7 +14,6 @@
  limitations under the License.
 """
 
-import os
 from abc import ABCMeta, abstractmethod
 from collections import namedtuple
 
@@ -39,7 +38,6 @@ class ArgConverterMaps(metaclass=ABCMeta):
         calling of the script to another appropriate format compatible with the script itself
         (e.g. to the format compatible with yacs.config.CfgNode.merge_from_list, etc)
         """
-        pass
 
     @abstractmethod
     def test_update_args_map(self):
@@ -57,7 +55,6 @@ class ArgConverterMaps(metaclass=ABCMeta):
         calling of the script to another appropriate format compatible with the script itself
         (e.g. to the format compatible with yacs.config.CfgNode.merge_from_list, etc)
         """
-        pass
 
     @abstractmethod
     def compress_update_args_map(self):
@@ -78,7 +75,6 @@ class ArgConverterMaps(metaclass=ABCMeta):
         Also note that compression runs the original train script with special tuned config;
         typically the parameters are the same as for training except learning rate and total_epochs parameters.
         """
-        pass
 
     def train_out_args_map(self):
         """
