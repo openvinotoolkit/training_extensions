@@ -17,6 +17,7 @@
 import abc
 
 from ote.interfaces.dataset import IDataset
+from ote.interfaces.monitor import IPerformanceMonitor
 from ote.interfaces.parameters import BaseTaskParameters
 
 class ITask(metaclass=abc.ABCMeta):
@@ -25,7 +26,8 @@ class ITask(metaclass=abc.ABCMeta):
     """
 
     @abc.abstractclassmethod
-    def train(self, train_dataset: IDataset, val_dataset: IDataset, parameters: BaseTaskParameters.BaseTrainingParameters=None):
+    def train(self, train_dataset: IDataset, val_dataset: IDataset, parameters: BaseTaskParameters.BaseTrainingParameters=None,
+              performance_monitor: IPerformanceMonitor=None):
         """
         This method launches training of a new model starting from currently loaded pre-trained weights.
         After training the internal model state is updated and can be retrieved using the get_model_bytes() method.
@@ -33,6 +35,7 @@ class ITask(metaclass=abc.ABCMeta):
         :param training_dataset: Dataset containing the training data
         :param val_dataset: Dataset containing the validation data
         :param parameters: Training parameters
+        :param performance_monitor: Performance monitor object that collects training performance
         """
         pass
 

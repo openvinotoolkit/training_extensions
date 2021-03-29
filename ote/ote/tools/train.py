@@ -22,10 +22,9 @@ import shutil
 import sys
 
 from ote.api import template_filename_parser
+from ote.monitors.base_monitors import MetricsMonitor, PerformanceMonitor
 from ote.utils import load_config
 from ote.utils import download_snapshot_if_not_yet, copy_config_dependencies
-
-
 from ote.modules import (build_arg_parser,
                          build_arg_converter)
 
@@ -57,8 +56,10 @@ def main():
     env_params, train_params = task_module.build_train_parameters(
                     args_converter.convert_train_args(vars(ote_args)), ote_args.work_dir)
 
-    task = task_module.Task(env_params)
-    task.train(train_dataset, val_dataset, train_params)
+    metrics_monitor = MetricsMonitor(env_params.work_dir)
+    perf_monitor = PerformanceMonitor()
+    task = task_module.Task(env_params, metrics_monitor)
+    task.train(train_dataset, val_dataset, train_params, perf_monitor)
 
 
 if __name__ == '__main__':

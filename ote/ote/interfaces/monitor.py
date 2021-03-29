@@ -18,70 +18,118 @@
 import abc
 
 
-class IMonitor(metaclass=abc.ABCMeta):
+class IMetricsMonitor(metaclass=abc.ABCMeta):
     """
-    Interface for providing Tensorboard-style logging and performance logging
+    Interface for providing Tensorboard-style logging
     """
 
     @abc.abstractclassmethod
     def add_scalar(self, capture: str, value: float, timestamp: int):
         """
-        Similar to Tensorboard method that allows to log information about named scalar variables
+        Similar to Tensorboard method that allows to log values of named scalar variables
         """
-        pass
+
+    @abc.abstractclassmethod
+    def close(self):
+        """
+        Flushes the collected scalar values to log, closes corresponding file,
+        then resets the monitor to default state
+        """
+
+
+class IPerformanceMonitor(metaclass=abc.ABCMeta):
+    """
+    Interface for collecting training performance numbers
+    """
+    @abc.abstractclassmethod
+    def init(self, total_epochs: int, num_train_steps: int, num_validation_steps: int):
+        """
+        """
 
     @abc.abstractclassmethod
     def on_train_batch_begin(self):
         """
         Method starts timer that measures batch forward-backward time during training
         """
-        pass
 
     @abc.abstractclassmethod
     def on_train_batch_end(self):
         """
         Method stops timer that measures batch forward-backward time during training
         """
-        pass
 
     @abc.abstractclassmethod
     def on_test_batch_begin(self):
         """
         Method starts timer that measures batch forward-backward time during evaluation
         """
-        pass
 
     @abc.abstractclassmethod
     def on_test_batch_end(self):
         """
         Method stops timer that measures batch forward-backward time during evaluation
         """
-        pass
 
     @abc.abstractclassmethod
     def on_train_begin(self):
         """
         Method notifies the monitor that training has begun
         """
-        pass
 
     @abc.abstractclassmethod
     def on_train_end(self):
         """
         Method notifies the monitor that training has finished
         """
-        pass
 
     @abc.abstractclassmethod
-    def on_train_epoch_begin(self, epoch: int):
+    def on_train_epoch_begin(self):
         """
         Method notifies the monitor that the next training epoch has begun
         """
-        pass
 
     @abc.abstractclassmethod
-    def on_train_epoch_end(self, epoch: int):
+    def on_train_epoch_end(self):
         """
         Method notifies the monitor that training epoch has finished
         """
-        pass
+
+    @abc.abstractclassmethod
+    def get_training_progress(self) -> int:
+        """
+        """
+
+    @abc.abstractclassmethod
+    def get_test_progress(self) -> int:
+        """
+        """
+
+    @abc.abstractclassmethod
+    def get_test_eta(self) -> int:
+        """
+        """
+
+    @abc.abstractclassmethod
+    def get_training_eta(self) -> int:
+        """
+        """
+
+
+class IStopCallback(metaclass=abc.ABCMeta):
+    """
+    Interface for wrapping a stop signal.
+    By default an object implementing this interface should be in permissive state
+    """
+
+    @abc.abstractclassmethod
+    def check_stop(self) -> bool:
+        """
+        Method returns True if the object of this class is in stopping state,
+        otherwise it returns False
+        """
+
+    @abc.abstractclassmethod
+    def reset(self):
+        """
+        Method resets the internal state of the object to permissive
+        """

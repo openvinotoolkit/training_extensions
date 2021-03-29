@@ -16,6 +16,7 @@
 
 
 import io
+import math
 import os
 from subprocess import run, DEVNULL, CalledProcessError
 import tempfile
@@ -30,6 +31,8 @@ from torch.onnx.symbolic_registry import register_op
 from ote.interfaces.parameters import BaseTaskParameters
 from ote.interfaces.task import ITask
 from ote.interfaces.dataset import IDataset
+from ote.monitors.base_monitors import DefaultPerformanceMonitor, StopCallback
+from ote.interfaces.monitor import IMetricsMonitor, IPerformanceMonitor
 
 import torchreid
 from torchreid import metrics
@@ -48,10 +51,12 @@ from scripts.script_utils import build_auxiliary_model
 
 
 class ClassificationTask(ITask):
-    def __init__(self, parameters: BaseTaskParameters.BaseEnvironmentParameters, num_classes: int= 2):
+    def __init__(self, parameters: BaseTaskParameters.BaseEnvironmentParameters, metrics_monitor: IMetricsMonitor = None,
+                 num_classes: int = 2):
         self.env_parameters = parameters
         self.num_classes = num_classes
-        self.monitor = None
+        self.stop_callback = StopCallback()
+        self.metrics_monitor = metrics_monitor
 
         self.cfg = get_default_config()
         self.cfg.merge_from_file(self.env_parameters.config_path)
@@ -81,14 +86,17 @@ class ClassificationTask(ITask):
                 self.load_model_from_bytes(model_bytes)
 
     def train(self, train_dataset: IDataset, val_dataset: IDataset,
-              parameters: BaseTaskParameters.BaseTrainingParameters=BaseTaskParameters.BaseTrainingParameters()):
+              parameters: BaseTaskParameters.BaseTrainingParameters=BaseTaskParameters.BaseTrainingParameters(),
+              performance_monitor: IPerformanceMonitor = DefaultPerformanceMonitor()):
 
         self.cfg.train.batch_size = parameters.batch_size
         self.cfg.train.lr = parameters.base_learning_rate
         self.cfg.train.max_epoch = parameters.max_num_epochs
+        self.perf_monitor = performance_monitor
 
-        #train_steps = math.ceil(len(train_dataset) / self.cfg.train.batch_size)
-        #validation_steps = math.ceil((len(val_dataset) / self.cfg.test.batch_size))
+        train_steps = math.ceil(len(train_dataset) / self.cfg.train.batch_size)
+        validation_steps = math.ceil((len(val_dataset) / self.cfg.test.batch_size))
+        performance_monitor.init(parameters.max_num_epochs, train_steps, validation_steps)
 
         set_random_seed(self.cfg.train.seed)
         self.cfg.custom_datasets.roots = [train_dataset, val_dataset]
@@ -99,7 +107,6 @@ class ClassificationTask(ITask):
         self.__load_snap_if_exists()
 
         num_aux_models = len(self.cfg.mutual_learning.aux_configs)
-        print(self.cfg.mutual_learning.aux_configs)
 
         if self.cfg.use_gpu:
             main_device_ids = list(range(self.num_devices))
@@ -158,10 +165,13 @@ class ClassificationTask(ITask):
             models, optimizers, schedulers = model, optimizer, scheduler
 
         print('Building {}-engine for {}-reid'.format(self.cfg.loss.name, self.cfg.data.type))
+        self.stop_callback.reset()
         engine = build_engine(self.cfg, datamanager, models, optimizers, schedulers)
-        engine.run(**engine_run_kwargs(self.cfg))
+        engine.run(**engine_run_kwargs(self.cfg), tb_writer=self.metrics_monitor, perf_monitor=performance_monitor,
+                   stop_callback=self.stop_callback)
 
         self.model = self.model.module
+        self.metrics_monitor.close()
 
     def test(self, dataset: IDataset, parameters: BaseTaskParameters.BaseEvaluationParameters) -> (list, dict):
         self.model.eval()
@@ -175,10 +185,10 @@ class ClassificationTask(ITask):
         return [], result_metrics
 
     def cancel(self):
-        pass
+        self.stop_callback.stop()
 
     def get_training_progress(self) -> int:
-        return 0
+        return self.perf_monitor.get_training_progress()
 
     def compress(self, parameters: BaseTaskParameters.BaseCompressParameters):
         pass
