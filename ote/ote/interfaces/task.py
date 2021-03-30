@@ -26,7 +26,8 @@ class ITask(metaclass=abc.ABCMeta):
     """
 
     @abc.abstractmethod
-    def train(self, train_dataset: IDataset, val_dataset: IDataset, parameters: BaseTaskParameters.BaseTrainingParameters=None,
+    def train(self, train_dataset: IDataset, val_dataset: IDataset,
+              parameters: BaseTaskParameters.BaseTrainingParameters=None,
               performance_monitor: IPerformanceMonitor=None):
         """
         This method launches training of a new model starting from currently loaded pre-trained weights.
@@ -37,7 +38,6 @@ class ITask(metaclass=abc.ABCMeta):
         :param parameters: Training parameters
         :param performance_monitor: Performance monitor object that collects training performance
         """
-        pass
 
     @abc.abstractmethod
     def test(self, dataset: IDataset, parameters: BaseTaskParameters.BaseEvaluationParameters) -> (list, dict):
@@ -49,46 +49,39 @@ class ITask(metaclass=abc.ABCMeta):
         :return: Analysis results: a list of task-specific inference artifacts corresponding to items of the dataset
         and a dict containing computed evaluation metrics.
         """
-        pass
 
     @abc.abstractmethod
     def cancel(self):
         """
         Cancels the running training process
         """
-        pass
 
     @abc.abstractmethod
     def get_training_progress(self) -> int:
         """
         Returns progress of the training process in range of 0 to 100
         """
-        pass
 
     @abc.abstractmethod
     def compress(self, parameters: BaseTaskParameters.BaseCompressParameters):
         """
         Performs model compression
         """
-        pass
 
     @abc.abstractmethod
     def export(self, parameters: BaseTaskParameters.BaseExportParameters):
         """
         Performs export to OpenVINO
         """
-        pass
 
     @abc.abstractmethod
     def load_model_from_bytes(self, binary_model: bytes):
         """
         Loads model from a binary representation
         """
-        pass
 
     @abc.abstractmethod
     def get_model_bytes(self) -> bytes:
         """
         Returns the current model in binary format
         """
-        pass

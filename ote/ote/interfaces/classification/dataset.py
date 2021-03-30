@@ -34,7 +34,6 @@ class IClassificationDataset(IDataset):
 
         :return: dict with representing classification dataset item
         """
-        pass
 
     @abc.abstractmethod
     def get_annotation(self) -> List[dict]:
@@ -44,7 +43,6 @@ class IClassificationDataset(IDataset):
         containing object label and other implementation-specific optionall information.
         Element of the list on position i corresponds to the sample returned by __getitem__(i).
         """
-        pass
 
     @abc.abstractmethod
     def get_classes(self) -> List[str]:
@@ -52,4 +50,3 @@ class IClassificationDataset(IDataset):
         Returns a list of object categories in the dataset
         :return: List of classes
         """
-        pass

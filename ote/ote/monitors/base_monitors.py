@@ -24,16 +24,16 @@ from ote.interfaces.monitoring import (IMetricsMonitor,
 
 class StopCallback(IStopCallback):
     def __init__(self):
-        self.stop = False
+        self.stop_flag = False
 
     def stop(self):
-        self.stop = True
+        self.stop_flag = True
 
     def check_stop(self):
-        return self.stop
+        return self.stop_flag
 
     def reset(self):
-        self.stop = False
+        self.stop_flag = False
 
 
 class MetricsMonitor(IMetricsMonitor):
@@ -75,7 +75,8 @@ class PerformanceMonitor(IPerformanceMonitor):
     def on_train_batch_end(self):
         self.train_steps_passed += 1
         batch_time = time.time() - self.start_batch_time
-        self.avg_batch_time = (self.avg_batch_time * (self.train_steps_passed - 1) + batch_time) / self.train_steps_passed
+        self.avg_batch_time = (self.avg_batch_time * \
+            (self.train_steps_passed - 1) + batch_time) / self.train_steps_passed
 
     def on_test_batch_begin(self):
         self.start_batch_time = time.time()
@@ -83,7 +84,8 @@ class PerformanceMonitor(IPerformanceMonitor):
     def on_test_batch_end(self):
         self.val_steps_passed += 1
         batch_time = time.time() - self.start_batch_time
-        self.avg_test_batch_time = (self.avg_test_batch_time * (self.val_steps_passed - 1) + batch_time) / self.val_steps_passed
+        self.avg_test_batch_time = (self.avg_test_batch_time * \
+            (self.val_steps_passed - 1) + batch_time) / self.val_steps_passed
 
     def on_train_begin(self):
         self.train_steps_passed = 0
@@ -99,7 +101,8 @@ class PerformanceMonitor(IPerformanceMonitor):
         self.val_steps_passed = 0
         self.train_epochs_passed += 1
         epoch_time = time.time() - self.start_epoch_time
-        self.avg_epoch_time = (self.avg_epoch_time * (self.train_epochs_passed - 1) + epoch_time) / self.train_epochs_passed
+        self.avg_epoch_time = (self.avg_epoch_time * \
+            (self.train_epochs_passed - 1) + epoch_time) / self.train_epochs_passed
 
     def get_training_progress(self) -> int:
         return int(self.train_epochs_passed / self.total_epochs * 100) + \
@@ -122,7 +125,7 @@ class PerformanceMonitor(IPerformanceMonitor):
         remaining_epoch_time = remaining_epochs * self.avg_epoch_time
 
         if remaining_epoch_time == 0:
-            remaining_time = remaining_step_time * 1.5
+            remaining_time = remaining_batch_time * 1.5
         else:
             remaining_time = remaining_epoch_time
             epoch_completion = (self.train_steps_passed % self.num_train_steps) / self.num_train_steps
@@ -137,7 +140,6 @@ class DefaultStopCallback(IStopCallback):
 
     def check_stop(self):
         pass
-        return self.stop
 
     def reset(self):
         pass

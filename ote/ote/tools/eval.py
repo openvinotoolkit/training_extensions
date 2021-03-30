@@ -14,16 +14,14 @@
  limitations under the License.
 """
 
-import argparse
 from importlib import import_module
 import logging
 import os
 import shutil
-import sys
 
 from ote.api import template_filename_parser
 from ote.utils import load_config
-from ote.utils import download_snapshot_if_not_yet, copy_config_dependencies
+from ote.utils import copy_config_dependencies
 
 
 from ote.modules import (build_arg_parser,
@@ -31,7 +29,6 @@ from ote.modules import (build_arg_parser,
 
 
 def main():
-
     logging.basicConfig(level=logging.INFO)
     template_name_parser = template_filename_parser()
     args, extra_args = template_name_parser.parse_known_args()

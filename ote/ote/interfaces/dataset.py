@@ -15,7 +15,6 @@
 """
 
 import abc
-from typing import List
 
 
 class IDataset(metaclass=abc.ABCMeta):
@@ -32,13 +31,11 @@ class IDataset(metaclass=abc.ABCMeta):
 
         :return: dict containing a training sample and annotation in a task-specific format
         """
-        pass
 
     def __len__(self) -> int:
         """
         :return: Length of the dataset
         """
-        pass
 
     @abc.abstractmethod
     def get_annotation(self) -> list:
@@ -46,4 +43,3 @@ class IDataset(metaclass=abc.ABCMeta):
         Returns a list containing all annotation items
         :return: List of annotations
         """
-        pass

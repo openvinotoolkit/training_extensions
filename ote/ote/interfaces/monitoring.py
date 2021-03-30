@@ -44,6 +44,7 @@ class IPerformanceMonitor(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def init(self, total_epochs: int, num_train_steps: int, num_validation_steps: int):
         """
+        Initializes the monitor with the training parameters
         """
 
     @abc.abstractmethod
@@ -97,21 +98,25 @@ class IPerformanceMonitor(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def get_training_progress(self) -> int:
         """
+        Returns progress of the training process in range of 0 to 100
         """
 
     @abc.abstractmethod
     def get_test_progress(self) -> int:
         """
+        Returns progress of the testing process in range of 0 to 100
         """
 
     @abc.abstractmethod
     def get_test_eta(self) -> int:
         """
+        Returns ETA of the testing process in seconds
         """
 
     @abc.abstractmethod
     def get_training_eta(self) -> int:
         """
+        Returns ETA of the training process in seconds
         """
 
 

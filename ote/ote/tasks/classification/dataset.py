@@ -24,16 +24,17 @@ from ote.interfaces.classification.dataset import IClassificationDataset
 
 class ClassificationImageFolder(IClassificationDataset):
     def __init__(self, data_dir, filter_classes=None):
+        super().__init__()
 
         ALLOWED_EXTS = ('.jpg', '.jpeg', '.png', '.gif')
         def is_valid(filename):
             return not filename.startswith('.') and filename.lower().endswith(ALLOWED_EXTS)
 
-        def find_classes(dir, filter_names=None):
+        def find_classes(folder, filter_names=None):
             if filter_names:
-                classes = [d.name for d in os.scandir(dir) if d.is_dir() and d.name in filter_names]
+                classes = [d.name for d in os.scandir(folder) if d.is_dir() and d.name in filter_names]
             else:
-                classes = [d.name for d in os.scandir(dir) if d.is_dir()]
+                classes = [d.name for d in os.scandir(folder) if d.is_dir()]
             classes.sort()
             class_to_idx = {classes[i]: i for i in range(len(classes))}
             return class_to_idx
@@ -52,8 +53,9 @@ class ClassificationImageFolder(IClassificationDataset):
                     if is_valid(fname):
                         self.annotation.append({'label': class_index, 'path': path})
 
-        if not len(self.annotation):
-            print('Failed to locate images in folder ' + data_dir + f' with extensions {ALLOWED_EXTS}')
+        if not self.annotation:
+            print('Failed to locate images in folder ' + data_dir + \
+                  f' with extensions {ALLOWED_EXTS}')
 
 
     def __getitem__(self, idx):

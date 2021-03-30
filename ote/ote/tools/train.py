@@ -14,12 +14,10 @@
  limitations under the License.
 """
 
-import argparse
 from importlib import import_module
 import logging
 import os
 import shutil
-import sys
 
 from ote.api import template_filename_parser
 from ote.monitors.base_monitors import MetricsMonitor, PerformanceMonitor
@@ -30,7 +28,6 @@ from ote.modules import (build_arg_parser,
 
 
 def main():
-
     logging.basicConfig(level=logging.INFO)
     template_name_parser = template_filename_parser()
     args, extra_args = template_name_parser.parse_known_args()
