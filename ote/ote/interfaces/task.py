@@ -17,7 +17,7 @@
 import abc
 
 from ote.interfaces.dataset import IDataset
-from ote.interfaces.monitor import IPerformanceMonitor
+from ote.interfaces.monitoring import IPerformanceMonitor
 from ote.interfaces.parameters import BaseTaskParameters
 
 class ITask(metaclass=abc.ABCMeta):

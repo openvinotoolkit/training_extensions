@@ -32,7 +32,7 @@ from ote.interfaces.parameters import BaseTaskParameters
 from ote.interfaces.task import ITask
 from ote.interfaces.dataset import IDataset
 from ote.monitors.base_monitors import DefaultPerformanceMonitor, StopCallback
-from ote.interfaces.monitor import IMetricsMonitor, IPerformanceMonitor
+from ote.interfaces.monitoring import IMetricsMonitor, IPerformanceMonitor
 
 import torchreid
 from torchreid import metrics
