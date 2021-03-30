@@ -12,7 +12,6 @@ resume_from = None
 # model settings
 input_clip_length = 16
 input_img_size = 224
-input_frame_interval = 2
 reset_layer_prefixes = ['cls_head']
 reset_layer_suffixes = None
 
@@ -109,13 +108,13 @@ img_norm_cfg = dict(
     to_bgr=False
 )
 train_pipeline = [
-    dict(type='DecordInit'),
-    dict(type='SampleFrames',
+    dict(type='StreamSampleFrames',
          clip_len=input_clip_length,
-         frame_interval=input_frame_interval,
+         trg_fps=15,
          num_clips=1,
-         temporal_jitter=True),
-    dict(type='DecordDecode'),
+         temporal_jitter=True,
+         min_intersection=1.0),
+    dict(type='RawFrameDecode'),
     dict(type='Resize', scale=(-1, 256)),
     dict(type='RandomRotate', delta=10, prob=0.5),
     dict(type='MultiScaleCrop',
@@ -136,13 +135,12 @@ train_pipeline = [
     dict(type='ToTensor', keys=['imgs', 'label', 'dataset_id'])
 ]
 val_pipeline = [
-    dict(type='DecordInit'),
-    dict(type='SampleFrames',
+    dict(type='StreamSampleFrames',
          clip_len=input_clip_length,
-         frame_interval=input_frame_interval,
+         trg_fps=15,
          num_clips=1,
          test_mode=True),
-    dict(type='DecordDecode'),
+    dict(type='RawFrameDecode'),
     dict(type='Resize', scale=(-1, 256)),
     dict(type='CenterCrop', crop_size=(input_img_size, input_img_size)),
     dict(type='Normalize', **img_norm_cfg),
@@ -157,8 +155,9 @@ data = dict(
         drop_last=True
     ),
     shared=dict(
-        type='VideoDataset',
-        data_subdir='videos',
+        type='StreamDataset',
+        data_subdir='rawframes',
+        filename_tmpl='{:05d}.jpg'
     ),
     train=dict(
         source=train_sources,

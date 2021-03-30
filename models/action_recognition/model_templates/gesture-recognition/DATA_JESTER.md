@@ -24,7 +24,7 @@ Download [person-detection-asl-0001](https://github.com/openvinotoolkit/open_mod
 Crop frames by running the following command:
 
 ```bash
-python3 ./model_templates/gesture_recognition/tools/data/crop_images.py \
+python3 ./tools/data/crop_images.py \
   -m ${WORK_DIR}/person-detection-asl-0001.xml \
   -i ${DATA_DIR}/jester_data/rawframes \
   -o ${DATA_DIR}/jester/global_crops
@@ -33,7 +33,7 @@ python3 ./model_templates/gesture_recognition/tools/data/crop_images.py \
 Convert annotation files by running the following commands:
 
 ```bash
-python3 ./model_templates/gesture_recognition/tools/data/prepare_jester_annot.py \
+python3 ./tools/data/prepare_jester_annot.py \
   -lm ${DATA_DIR}/jester_data/jester-v1-labels.csv \
   -im ${DATA_DIR}/jester/global_crops \
   -ia ${DATA_DIR}/jester_data/jester-v1-train.csv \
@@ -60,7 +60,7 @@ In this repo we use ImageNet dataset but it's possible to use similar dataset wi
 If you have downloaded ImageNet dataset place it in `${DATA_DIR}/imagenet` folder and dump image paths by running command:
 
 ```bash
-python3 ./model_templates/gesture_recognition/tools/data/get_imagenet_paths.py \
+python3 ./tools/data/get_imagenet_paths.py \
   ${DATA_DIR}/train \
   ${DATA_DIR}/imagenet_train_list.txt
 ```
