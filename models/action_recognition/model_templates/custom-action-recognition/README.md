@@ -13,7 +13,7 @@ Performance results table:
 The following datasets were used in experiments:
 * [UCF-101](https://arxiv.org/abs/1212.0402)
 * [MS-ASL](https://www.microsoft.com/en-us/research/project/ms-asl/#!downloads)
-* [Jester](https://20bn.com/datasets/jester) 
+* [Jester](https://20bn.com/datasets/jester)
 * [Kinetics-700](https://deepmind.com/research/open-source/kinetics)
 
 ## Training pipeline
@@ -43,7 +43,7 @@ python ../../tools/instantiate_template.py ${MODEL_TEMPLATE} ${WORK_DIR}
 ### 3. Prepare data
 
 The training script assumes the data for the action recognition is provided as raw frames stored in directories where each directory represents a single video source.
-Additionally we assume that the data is splitted on train/val subsets.
+Additionally we assume that the data is split on train/val subsets.
 The annotation file consists of lines where each line represents single video source in the following format:
 ```
 <rel_path_to_video_dir> <label_id> <start_video_frame_id> <end_video_frame_id> <start_clip_frame_id> <end_clip_frame_id> <video_fps>
