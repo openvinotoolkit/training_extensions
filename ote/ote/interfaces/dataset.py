@@ -40,7 +40,7 @@ class IDataset(metaclass=abc.ABCMeta):
         """
         pass
 
-    @abc.abstractclassmethod
+    @abc.abstractmethod
     def get_annotation(self) -> list:
         """
         Returns a list containing all annotation items

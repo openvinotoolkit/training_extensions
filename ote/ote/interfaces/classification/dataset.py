@@ -36,7 +36,7 @@ class IClassificationDataset(IDataset):
         """
         pass
 
-    @abc.abstractclassmethod
+    @abc.abstractmethod
     def get_annotation(self) -> List[dict]:
         """
         Returns a list containing all annotation of classification dataset.
@@ -46,7 +46,7 @@ class IClassificationDataset(IDataset):
         """
         pass
 
-    @abc.abstractclassmethod
+    @abc.abstractmethod
     def get_classes(self) -> List[str]:
         """
         Returns a list of object categories in the dataset

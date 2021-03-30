@@ -25,7 +25,7 @@ class ITask(metaclass=abc.ABCMeta):
     This is a common interface for objects representing a taraining extensions task
     """
 
-    @abc.abstractclassmethod
+    @abc.abstractmethod
     def train(self, train_dataset: IDataset, val_dataset: IDataset, parameters: BaseTaskParameters.BaseTrainingParameters=None,
               performance_monitor: IPerformanceMonitor=None):
         """
@@ -39,7 +39,7 @@ class ITask(metaclass=abc.ABCMeta):
         """
         pass
 
-    @abc.abstractclassmethod
+    @abc.abstractmethod
     def test(self, dataset: IDataset, parameters: BaseTaskParameters.BaseEvaluationParameters) -> (list, dict):
         """
         This method launches inference of current version of model on the given dataset.
@@ -51,42 +51,42 @@ class ITask(metaclass=abc.ABCMeta):
         """
         pass
 
-    @abc.abstractclassmethod
+    @abc.abstractmethod
     def cancel(self):
         """
         Cancels the running training process
         """
         pass
 
-    @abc.abstractclassmethod
+    @abc.abstractmethod
     def get_training_progress(self) -> int:
         """
         Returns progress of the training process in range of 0 to 100
         """
         pass
 
-    @abc.abstractclassmethod
+    @abc.abstractmethod
     def compress(self, parameters: BaseTaskParameters.BaseCompressParameters):
         """
         Performs model compression
         """
         pass
 
-    @abc.abstractclassmethod
+    @abc.abstractmethod
     def export(self, parameters: BaseTaskParameters.BaseExportParameters):
         """
         Performs export to OpenVINO
         """
         pass
 
-    @abc.abstractclassmethod
+    @abc.abstractmethod
     def load_model_from_bytes(self, binary_model: bytes):
         """
         Loads model from a binary representation
         """
         pass
 
-    @abc.abstractclassmethod
+    @abc.abstractmethod
     def get_model_bytes(self) -> bytes:
         """
         Returns the current model in binary format
