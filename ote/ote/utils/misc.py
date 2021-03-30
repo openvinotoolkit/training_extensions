@@ -171,6 +171,15 @@ def get_cuda_device_count():
         return torch.cuda.device_count()
     return 0
 
+def copytree(src, dst, symlinks=False, ignore=None):
+    for item in os.listdir(src):
+        s = os.path.join(src, item)
+        d = os.path.join(dst, item)
+        if os.path.isdir(s):
+            shutil.copytree(s, d, symlinks, ignore)
+        else:
+            shutil.copy2(s, d)
+
 def copy_config_dependencies(template_config, template_path, work_dir):
     for dependency in template_config['dependencies']:
         source = dependency['source']
@@ -180,6 +189,6 @@ def copy_config_dependencies(template_config, template_path, work_dir):
             cur_dst = os.path.join(work_dir, destination)
             os.makedirs(os.path.dirname(cur_dst), exist_ok=True)
             if os.path.isdir(rel_source):
-                shutil.copytree(rel_source, cur_dst, dirs_exist_ok=True)
+                copytree(rel_source, cur_dst)
             else:
                 shutil.copy(rel_source, destination)

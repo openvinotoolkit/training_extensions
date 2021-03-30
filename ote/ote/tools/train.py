@@ -17,12 +17,12 @@
 from importlib import import_module
 import logging
 import os
-import shutil
 
 from ote.api import template_filename_parser
 from ote.monitors.base_monitors import MetricsMonitor, PerformanceMonitor
 from ote.utils import load_config
-from ote.utils import download_snapshot_if_not_yet, copy_config_dependencies
+from ote.utils import (download_snapshot_if_not_yet, copy_config_dependencies,
+                       copytree)
 from ote.modules import (build_arg_parser,
                          build_arg_converter)
 
@@ -38,7 +38,7 @@ def main():
     arg_parser = build_arg_parser(template_config['modules']['arg_parser'])
     ote_args = arg_parser.get_train_parser(template_path).parse_args(extra_args)
 
-    shutil.copytree(os.path.dirname(template_path), ote_args.work_dir, dirs_exist_ok=True)
+    copytree(os.path.dirname(template_path), ote_args.work_dir)
 
     if not ote_args.do_not_load_snapshot:
         download_snapshot_if_not_yet(template_path, ote_args.work_dir)

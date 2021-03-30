@@ -17,11 +17,10 @@
 from importlib import import_module
 import logging
 import os
-import shutil
 
 from ote.api import template_filename_parser
 from ote.utils import load_config
-from ote.utils import copy_config_dependencies
+from ote.utils import copy_config_dependencies, copytree
 
 
 from ote.modules import (build_arg_parser,
@@ -39,7 +38,7 @@ def main():
     arg_parser = build_arg_parser(template_config['modules']['arg_parser'])
     ote_args = arg_parser.get_test_parser(template_path).parse_args(extra_args)
 
-    shutil.copytree(os.path.dirname(template_path), ote_args.work_dir, dirs_exist_ok=True)
+    copytree(os.path.dirname(template_path), ote_args.work_dir)
 
     copy_config_dependencies(template_config, template_path, ote_args.work_dir)
     task_module = import_module('ote.tasks.' + template_config['modules']['task'])
