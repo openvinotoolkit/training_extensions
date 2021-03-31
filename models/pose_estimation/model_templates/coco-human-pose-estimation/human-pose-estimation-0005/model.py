@@ -71,7 +71,7 @@ model = dict(
         norm_eval=False
     ),
     keypoint_head=dict(
-        type='BottomUpHigherResolutionHead',
+        type='BottomUpHigherResolutionHeadDecoupled',
         in_channels=21,
         num_joints=17,
         tag_per_joint=True,
@@ -81,7 +81,17 @@ model = dict(
         num_deconv_kernels=[4],
         num_basic_blocks=1,
         cat_output=[True],
-        with_ae_loss=[True, False]),
+        with_ae_loss=[True, False],
+        loss_keypoint=dict(
+            type='MultiLossDecoupledFactory',
+            num_joints=17,
+            num_stages=2,
+            ae_loss_type='exp',
+            with_ae_loss=[True, False],
+            push_loss_factor=[0.001, 0.001],
+            pull_loss_factor=[0.001, 0.001],
+            with_heatmaps_loss=[True, True],
+            heatmaps_loss_factor=[1.0, 1.0])),
     train_cfg=dict(
         num_joints=channel_cfg['dataset_joints'],
         img_size=data_cfg['image_size']),
@@ -101,67 +111,22 @@ model = dict(
         ignore_too_much=False,
         adjust=True,
         refine=True,
+        delta=0.0,
         dist_reweight=True,
         flip_test=False,
         flip_offset=1,
-        use_udp=False),
-    loss_pose=dict(
-        type='MultiLossFactory',
-        num_joints=17,
-        num_stages=2,
-        ae_loss_type='exp',
-        with_ae_loss=[True, False],
-        push_loss_factor=[0.001, 0.001],
-        pull_loss_factor=[0.001, 0.001],
-        with_heatmaps_loss=[True, True],
-        heatmaps_loss_factor=[1.0, 1.0],
-    ),
+        use_udp=False)
 )
 
-albu_train_transforms = [
-    dict(type='SmallestMaxSize',
-         max_size=image_size,
-         always_apply=True),
-    dict(
-        type='ShiftScaleRotate',
-        shift_limit=0.0625,
-        scale_limit=(-0.25, 0.5),
-        rotate_limit=30,
-        interpolation=1,
-        border_mode=0,
-        value=0,
-        mask_value=0,
-        p=0.5),
-    dict(type='PadIfNeeded',
-         min_height=image_size,
-         min_width=image_size,
-         border_mode=0,
-         value=0,
-         mask_value=0,
-         always_apply=True),
-    dict(type='RandomCrop',
-         height=image_size,
-         width=image_size,
-         always_apply=True)
-]
 train_pipeline = [
     dict(type='LoadImageFromFile'),
-    dict(type='Albu',
-         transforms=albu_train_transforms,
-         bbox_params=None,
-         kp_params=dict(
-             type='KeypointParams',
-             format='xy',
-             label_fields=[],
-             remove_invisible=True,
-             filter_lost_elements=True),
-         keymap={
-             'img': 'image',
-             'mask': 'masks',
-             'joints': 'keypoints'
-         },
-         update_pad_shape=False,
-         skip_img_without_anno=True),
+    dict(
+        type='BottomUpRandomAffine',
+        rot_factor=30,
+        scale_factor=[0.75, 1.5],
+        scale_type='short',
+        trans_factor=40,
+        use_udp=False),
     dict(type='BottomUpRandomFlip', flip_prob=0.5),
     dict(type='ToTensor'),
     dict(
@@ -172,7 +137,7 @@ train_pipeline = [
         type='BottomUpGenerateTarget',
         sigma=2,
         max_num_people=30,
-        use_udp=False  # Not used in the current code patch
+        use_udp=False
     ),
     dict(
         type='Collect',
