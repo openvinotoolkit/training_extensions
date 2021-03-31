@@ -11,7 +11,7 @@
     },
     "nncf_quantization": {
         "optimizer": {
-            "type": "SGD,
+            "type": "SGD",
             "lr": 0.0008,
             "momentum": 0.9,
             "weight_decay": 0.0005,
