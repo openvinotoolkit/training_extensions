@@ -42,7 +42,7 @@ from scripts.default_config import (engine_run_kwargs, get_default_config,
                                     lr_scheduler_kwargs, model_kwargs,
                                     optimizer_kwargs)
 from torchreid.ops import DataParallel
-from scripts.script_utils import build_auxiliary_model
+from scripts.script_utils import build_auxiliary_model, random_image, group_norm_symbolic
 
 
 class ClassificationTask(ITask):
@@ -63,6 +63,7 @@ class ClassificationTask(ITask):
         self.cfg.data.sources = ['train']
         self.cfg.data.targets = ['val']
         self.cfg.data.save_dir = self.env_parameters.work_dir
+        self.cfg.model.pretrained = not parameters.snapshot_path
 
         for i, conf in enumerate(self.cfg.mutual_learning.aux_configs):
             if self.env_parameters.work_dir not in conf:
@@ -265,36 +266,3 @@ class ClassificationTask(ITask):
     def create_model(self):
         model = torchreid.models.build_model(**model_kwargs(self.cfg, self.num_classes))
         return model
-
-
-def random_image(height, width):
-    input_size = (height, width, 3)
-    img = np.random.rand(*input_size).astype(np.float32)
-    img = np.uint8(img * 255)
-
-    out_img = Image.fromarray(img)
-
-    return out_img
-
-
-@parse_args('v', 'i', 'v', 'v', 'f', 'i')
-def group_norm_symbolic(g, input_blob, num_groups, weight, bias, eps, cudnn_enabled):
-    from torch.onnx.symbolic_opset9 import reshape, mul, add, reshape_as
-
-    channels_num = input_blob.type().sizes()[1]
-
-    if num_groups == channels_num:
-        output = g.op('InstanceNormalization', input_blob, weight, bias, epsilon_f=eps)
-    else:
-        # Reshape from [n, g * cg, h, w] to [1, n * g, cg * h, w].
-        x = reshape(g, input_blob, [0, num_groups, -1, 0])
-        x = reshape(g, x, [1, -1, 0, 0])
-        # Normalize channel-wise.
-        x = g.op('MeanVarianceNormalization', x, axes_i=[2, 3])
-        # Reshape back.
-        x = reshape_as(g, x, input_blob)
-        # Apply affine transform.
-        x = mul(g, x, reshape(g, weight, [1, channels_num, 1, 1]))
-        output = add(g, x, reshape(g, bias, [1, channels_num, 1, 1]))
-
-    return output
