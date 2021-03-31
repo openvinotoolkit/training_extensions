@@ -13,10 +13,10 @@
         "optimizer": {
             "lr": 0.00025
         },
-		"lr_config": {
-			"_delete_": true,
-			"policy": "fixed"
-		},
+        "lr_config": {
+            "_delete_": true,
+            "policy": "fixed"
+        },
         "total_epochs": 2,
         "nncf_config": {
             "compression": [

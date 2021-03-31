@@ -21,10 +21,10 @@
             "momentum": 0.9,
             "weight_decay": 0.0005
         },
-		"lr_config": {
-			"_delete_": true,
-			"policy": "fixed"
-		},
+        "lr_config": {
+            "_delete_": true,
+            "policy": "fixed"
+        },
         "total_epochs": 5,
         "nncf_config": {
             "compression": [
