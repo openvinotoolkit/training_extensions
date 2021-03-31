@@ -56,7 +56,7 @@ train_cfg = dict(
     pos_weight=-1,
     debug=False)
 test_cfg = dict(
-    nms=dict(type='nms', iou_thr=0.5),
+    nms=dict(type='nms', iou_threshold=0.5),
     min_bbox_size=0,
     score_thr=0.02,
     max_per_img=750)
