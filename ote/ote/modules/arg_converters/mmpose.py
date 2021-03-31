@@ -17,7 +17,6 @@
 from .mmdetection import MMDetectionArgConverterMap
 from ..registry import ARG_CONVERTER_MAPS
 
-# FIXME. Remove?
 @ARG_CONVERTER_MAPS.register_module()
 class MMPoseArgConverterMap(MMDetectionArgConverterMap):
 

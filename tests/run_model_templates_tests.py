@@ -35,7 +35,7 @@ KNOWN_DOMAIN_FOLDERS = [
         'instance_segmentation',
         'text_spotting',
         'image_classification',
-        'pose_estimation'
+        'pose_estimation',
         ]
 TEST_FILES_PATTERN = '*_tests_*.py'
 MODEL_TEMPLATES_FOLDER_NAME = 'model_templates'
