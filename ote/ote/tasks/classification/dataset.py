@@ -60,6 +60,7 @@ class ClassificationImageFolder(IClassificationDataset):
 
     def __getitem__(self, idx):
         sample = cv.imread(self.annotation[idx]['path'], cv.IMREAD_COLOR)
+        sample = cv.cvtColor(sample, cv.COLOR_BGR2RGB)
         label = self.annotation[idx]['label']
         return {'img': sample, 'label': label}
 
