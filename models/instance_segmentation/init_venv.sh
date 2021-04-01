@@ -34,10 +34,10 @@ if [[ -e "${path_openvino_vars}" ]]; then
   echo ". ${path_openvino_vars}" >> ${venv_dir}/bin/activate
 fi
 
-
 . ${venv_dir}/bin/activate
 
-
+pip install torch==1.7.1 torchvision==0.8.2 -f https://download.pytorch.org/whl/torch_stable.html
+pip install --no-cache-dir mmcv-full==1.2.7 -f https://download.openmmlab.com/mmcv/dist/cu102/torch1.7.1/index.html
 cat requirements.txt | xargs -n 1 -L 1 pip3 install
 
 mo_requirements_file="${INTEL_OPENVINO_DIR:-/opt/intel/openvino}/deployment_tools/model_optimizer/requirements_onnx.txt"
