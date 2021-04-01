@@ -47,7 +47,7 @@ import torch.nn
 import torch.optim as optim
 from text_recognition.data.utils import (collate_fn, create_list_of_transforms,
                                          ctc_greedy_search, get_timestamp)
-from text_recognition.data.vocab import END_TOKEN, PAD_TOKEN, read_vocab
+from text_recognition.data.vocab import PAD_TOKEN, read_vocab
 from text_recognition.datasets.dataset import BatchRandomSampler, str_to_class
 from text_recognition.models.model import TextRecognitionModel
 from torch.nn.utils import clip_grad_norm_
@@ -145,6 +145,7 @@ class Trainer:
             'CTCLossZeroInf', False)) if self.loss_type == 'CTC' else None
         self.out_size = len(self.vocab) + 1 if self.loss_type == 'CTC' else len(self.vocab)
         self.model = TextRecognitionModel(config.get('backbone_config'), self.out_size, config.get('head', {}))
+        print(self.model)
         if self.model_path is not None:
             self.model.load_weights(self.model_path, map_location=self.device)
         self.model = self.model.to(self.device)
