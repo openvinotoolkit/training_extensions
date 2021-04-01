@@ -49,6 +49,7 @@ class ClassificationTask(ITask):
         self.num_classes = num_classes
         self.stop_callback = StopCallback()
         self.metrics_monitor = metrics_monitor
+        self.perf_monitor = DefaultPerformanceMonitor()
 
         self.cfg = get_default_config()
         self.cfg.merge_from_file(self.env_parameters.config_path)
@@ -90,6 +91,7 @@ class ClassificationTask(ITask):
         train_steps = math.ceil(len(train_dataset) / self.cfg.train.batch_size)
         validation_steps = math.ceil((len(val_dataset) / self.cfg.test.batch_size))
         performance_monitor.init(parameters.max_num_epochs, train_steps, validation_steps)
+        self.stop_callback.reset()
 
         set_random_seed(self.cfg.train.seed)
         self.cfg.custom_datasets.roots = [train_dataset, val_dataset]
@@ -126,7 +128,7 @@ class ClassificationTask(ITask):
 
             # build new engine
             engine = build_engine(self.cfg, datamanager, self.model, optimizer, scheduler)
-            lr = engine.find_lr(**lr_finder_run_kwargs(self.cfg))
+            lr = engine.find_lr(**lr_finder_run_kwargs(self.cfg), stop_callback=self.stop_callback)
 
             print(f"Estimated learning rate: {lr}")
             if self.cfg.lr_finder.stop_after:
@@ -159,13 +161,14 @@ class ClassificationTask(ITask):
             models, optimizers, schedulers = self.model, optimizer, scheduler
 
         print('Building {}-engine for {}-reid'.format(self.cfg.loss.name, self.cfg.data.type))
-        self.stop_callback.reset()
         engine = build_engine(self.cfg, datamanager, models, optimizers, schedulers)
         engine.run(**engine_run_kwargs(self.cfg), tb_writer=self.metrics_monitor, perf_monitor=performance_monitor,
                    stop_callback=self.stop_callback)
 
         self.model = self.model.module
         self.metrics_monitor.close()
+        if self.stop_callback.check_stop():
+            print('Training has been canceled')
 
     def test(self, dataset: IDataset, parameters: BaseTaskParameters.BaseEvaluationParameters) -> (list, dict):
         self.model.eval()
