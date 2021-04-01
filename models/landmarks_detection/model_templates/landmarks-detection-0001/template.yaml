@@ -1,0 +1,60 @@
+name: landmarks-detection-0001
+domain: Face Landmarks Detection
+problem: COCO Human Pose Estimation
+framework: OTEPose v0.12.0
+summary: Face Landmarks Detection based on HRNet architecture.
+annotation_format: COCO
+initial_weights: snapshot.pth
+dependencies:
+# TODO.
+- sha256: TODO
+  size: TODO
+  source: /tmp/weights.pth
+  destination: snapshot.pth
+- source: ../../../../../ote/tools/train.py
+  destination: train.py
+- source: ../../../../../ote/tools/eval.py
+  destination: eval.py
+- source: ../../../../../ote/tools/export.py
+  destination: export.py
+- source: ../../../../../ote/tools/compress.py
+  destination: compress.py
+- source: ../../../../../ote
+  destination: packages/ote
+- source: ../../requirements.txt
+  destination: requirements.txt
+dataset_requirements: ~
+max_nodes: 1
+training_target:
+- GPU
+inference_target:
+- CPU
+hyper_parameters:
+  basic:
+    batch_size: 32
+    base_learning_rate: 0.0005
+    epochs: 60
+output_format:
+  onnx:
+    default: true
+  openvino:
+    default: true
+    input_format: BGR
+optimisations: ~
+metrics:
+- display_name: Size
+  key: size
+  unit: Mp
+  value: TODO
+- display_name: Complexity
+  key: complexity
+  unit: GFLOPs
+  value: TODO
+- display_name: NME
+  key: NME
+  unit: 'value'
+  value: 0.07466096141581632
+gpu_num: 2
+config: model.py
+tensorboard: true
+estimated_batch_time: -1

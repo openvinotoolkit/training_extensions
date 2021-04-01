@@ -34,7 +34,11 @@ KNOWN_DOMAIN_FOLDERS = [
         'instance_segmentation',
         'text_spotting',
         'image_classification',
+<<<<<<< HEAD
         'pose_estimation'
+=======
+        'landmarks_detection',
+>>>>>>> add face landmarks detection
         ]
 TEST_FILES_PATTERN = '*_tests_*.py'
 MODEL_TEMPLATES_FOLDER_NAME = 'model_templates'
