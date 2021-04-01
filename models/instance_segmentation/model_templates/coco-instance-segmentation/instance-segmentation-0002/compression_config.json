@@ -11,11 +11,10 @@
     },
     "nncf_quantization": {
         "optimizer": {
-		    "type": "SGD,
-			"lr": 0.0002,
-			"momentum": 0.9,
-			"weight_decay": 0.0001,
-			"nesterov": true
+            "type": "SGD",
+            "lr": 0.0002,
+            "momentum": 0.9,
+            "weight_decay": 0.0001
         },
         "lr_config": {
             "_delete_": true,
