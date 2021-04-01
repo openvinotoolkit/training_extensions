@@ -172,6 +172,8 @@ def get_cuda_device_count():
     return 0
 
 def copytree(src, dst, symlinks=False, ignore=None):
+    if not os.path.isdir(dst):
+        os.makedirs(dst, exist_ok=True)
     for item in os.listdir(src):
         s = os.path.join(src, item)
         d = os.path.join(dst, item)
