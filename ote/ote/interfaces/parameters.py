@@ -21,7 +21,7 @@ class BaseTaskParameters:
     class BaseEnvironmentParameters:
         config_path: str = ''
         gpu_num: int = 1
-        snapshot_path: str = ''
+        load_weights: str = ''
         work_dir: str = ''
 
     @dataclass

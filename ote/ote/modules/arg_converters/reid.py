@@ -63,7 +63,7 @@ class ReidTaskArgConverterMap(ArgConverterMaps):
             'train_ann_files': '',
             'val_ann_files': '',
             'resume_from': 'resume_from',
-            'load_weights': 'snapshot_path',
+            'load_weights': 'load_weights',
             'save_checkpoints_to': 'work_dir',
             'batch_size': 'batch_size',
             'classes': 'classes',

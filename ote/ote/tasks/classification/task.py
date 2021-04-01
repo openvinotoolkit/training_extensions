@@ -20,10 +20,7 @@ import math
 import os
 from subprocess import run, DEVNULL, CalledProcessError
 
-import numpy as np
-from PIL import Image
 import torch
-from torch.onnx.symbolic_helper import parse_args
 from torch.onnx.symbolic_registry import register_op
 
 from ote.interfaces.parameters import BaseTaskParameters
@@ -63,7 +60,7 @@ class ClassificationTask(ITask):
         self.cfg.data.sources = ['train']
         self.cfg.data.targets = ['val']
         self.cfg.data.save_dir = self.env_parameters.work_dir
-        self.cfg.model.pretrained = not parameters.snapshot_path
+        self.cfg.model.pretrained = not parameters.load_weights
 
         for i, conf in enumerate(self.cfg.mutual_learning.aux_configs):
             if self.env_parameters.work_dir not in conf:
@@ -76,8 +73,8 @@ class ClassificationTask(ITask):
         self.__load_snap_if_exists()
 
     def __load_snap_if_exists(self, omit_classes=False):
-        if self.env_parameters.snapshot_path:
-            with open(self.env_parameters.snapshot_path, "rb") as f:
+        if self.env_parameters.load_weights:
+            with open(self.env_parameters.load_weights, "rb") as f:
                 model_bytes = f.read()
                 self.load_model_from_bytes(model_bytes, omit_classes)
 
@@ -253,8 +250,9 @@ class ClassificationTask(ITask):
     def load_model_from_bytes(self, binary_model: bytes, omit_classes: bool = False):
         model_state = torch.load(io.BytesIO(binary_model))
         if not omit_classes:
-            self.num_classes = model_state['num_classes'][0]
-            torch_model = self.create_model()
+            self.num_classes = model_state['num_classes'] if isinstance(model_state['num_classes'], int) \
+                    else model_state['num_classes'][0]
+        torch_model = self.create_model()
         load_pretrained_weights(torch_model, pretrained_dict=model_state)
         self.model = torch_model.to(self.device)
 
