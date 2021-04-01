@@ -16,6 +16,9 @@
 
 from abc import ABCMeta, abstractmethod
 from collections import namedtuple
+import os
+
+from ote.interfaces.parameters import BaseTaskParameters
 
 
 def map_args(src_args, args_map):
@@ -218,3 +221,37 @@ class ArgConverter:
     def convert_test_args(self, args):
         hooks_for_action = GroupHooksForActions.get_hooks_for_test(self.arg_conv_maps)
         return self._convert_args_by_hooks_for_action(hooks_for_action, args)
+
+
+def convert_args_to_parameters(kwargs_dict, configs_root, env_type=BaseTaskParameters.BaseEnvironmentParameters,
+                               target_type=BaseTaskParameters.BaseTrainingParameters, use_update_conf=True):
+    def split_parameters(source_params, type1, type2):
+        def is_field(name, t):
+            if hasattr(t, name):
+                return True
+            return False
+
+        params_group1, params_group2 = {}, {}
+        for k, v in source_params.items():
+            if v:
+                if is_field(k, type1):
+                    params_group1[k] = v
+                elif is_field(k, type2):
+                    params_group2[k] = v
+
+        return params_group1, params_group2
+    config_path = kwargs_dict['config']
+
+    source_kwargs_dict = kwargs_dict
+    if use_update_conf:
+        source_kwargs_dict = kwargs_dict['update_config']
+
+    env_params_kwargs, target_params_kwargs = split_parameters(source_kwargs_dict,
+                                                               env_type, target_type)
+
+    env_params_kwargs['config_path'] = os.path.join(configs_root, config_path)
+
+    env_params = env_type(**env_params_kwargs)
+    target_params = target_type(**target_params_kwargs)
+
+    return env_params, target_params
