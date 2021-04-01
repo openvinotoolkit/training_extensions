@@ -14,7 +14,11 @@
  limitations under the License.
 """
 
+import json
+import os
+
 from ote import MMACTION_TOOLS
+from ote.utils.misc import run_through_shell
 
 from .base import BaseEvaluator
 from ..registry import EVALUATORS
@@ -36,6 +40,26 @@ class MMActionEvaluator(BaseEvaluator):
         assert len(image_size) == 2
 
         image_shape = [cfg.input_clip_length, image_size[0], image_size[1]]
-        image_shape = " ".join([str(x) for x in image_shape])
+        image_shape = ' '.join([str(x) for x in image_shape])
 
         return image_shape
+
+    def _get_complexity_and_size(self, cfg, config_path, work_dir, update_config):
+        image_shape = self._get_image_shape(cfg)
+        tools_dir = self._get_tools_dir()
+
+        res_complexity = os.path.join(work_dir, 'complexity.json')
+        update_config = ' '.join([f'{k}={v}' for k, v in update_config.items()])
+        update_config = f' --update_config {update_config}' if update_config else ''
+        update_config = update_config.replace('"', '\\"')
+        run_through_shell(
+            f'python3 {tools_dir}/get_flops.py'
+            f' {config_path}'
+            f' --shape {image_shape}'
+            f' --out {res_complexity}'
+            f'{update_config}')
+
+        with open(res_complexity) as read_file:
+            content = json.load(read_file)
+
+        return content
