@@ -24,7 +24,6 @@ import unittest
 import yaml
 
 from collections import Counter
-from copy import copy
 from subprocess import run
 from texttable import Texttable
 
@@ -118,8 +117,8 @@ def discover_all_tests(root_path, restrict_to_domain=None):
                 'id': tst.id(),
                 'topic': getattr(tst, 'topic', None),
             }
-            if isinstance(tst, unittest.loader._FailedTest):
-                logging.warning(f'Failed to load test {el}:\n{tst._exception}')
+            if isinstance(tst, unittest.loader._FailedTest): # pylint: disable=protected-access
+                logging.warning(f'Failed to load test {el}:\n{tst._exception}') # pylint: disable=protected-access
                 cur_id = tst.id()
                 failed_prefix = 'unittest.loader._FailedTest.'
                 if cur_id.startswith(failed_prefix):
@@ -291,8 +290,8 @@ def run_one_domain_tests_already_in_virtualenv(work_dir, all_tests, verbose):
         raise RuntimeError('The option --run-one-domain-inside-virtual-env may be used for one domain only')
     domain = domains[0]
     if not is_in_virtual_env_in_work_dir(work_dir, domain):
-        raise RuntimeError(f'The option --run-one-domain-inside-virtual-env may be used only'
-                           f' inside the virtual environment of the domain')
+        raise RuntimeError('The option --run-one-domain-inside-virtual-env may be used only'
+                           ' inside the virtual environment of the domain')
 
     testsuite = unittest.TestSuite()
     for el in all_tests:
@@ -359,13 +358,16 @@ def main():
     parser.add_argument('--domain', choices=KNOWN_DOMAIN_FOLDERS, help='Domain name to be tested.  Optional.')
     parser.add_argument('--problem', help='Problem name to be tested. Optional.')
     parser.add_argument('--problem-filter', help='Filter on problem name to be tested. Optional.')
-    parser.add_argument('--topic', choices=['train', 'export', 'nncf', 'internal'], help='Topic of tests to be tested. Optional')
+    parser.add_argument('--topic', choices=['train', 'export', 'nncf', 'internal'],
+                        help='Topic of tests to be tested. Optional')
     parser.add_argument('--test-id-filter', action='append',
                         help='Filter on test id-s. Optional. Several filters are applied using logical AND')
     parser.add_argument('--verbose', '-v', action='store_true', help='If the tests should be run in verbose mode')
     parser.add_argument('--list', '-l', action='store_true', help='List all available tests')
-    parser.add_argument('--instantiate-only', action='store_true', help='If the script should instantiate the tests in the work dir only')
-    parser.add_argument('--not-instantiate', action='store_true', help='If the script should NOT instantiate the tests in the work dir')
+    parser.add_argument('--instantiate-only', action='store_true',
+                        help='If the script should instantiate the tests in the work dir only')
+    parser.add_argument('--not-instantiate', action='store_true',
+                        help='If the script should NOT instantiate the tests in the work dir')
     parser.add_argument('--run-one-domain-inside-virtual-env', action='store_true',
                         help='If the script should run the tests for one domain without work dir instantiation.'
                         ' It is supposed that the script is already run in the proper virtual environment.')
@@ -400,9 +402,9 @@ def main():
     if args.list:
         print_list_tests(all_tests, args.verbose)
         return
-    else:
-        print('Start working on tests:')
-        print_list_tests(all_tests, short=True)
+
+    print('Start working on tests:')
+    print_list_tests(all_tests, short=True)
 
     work_dir = os.path.abspath(args.workdir) if args.workdir else tempfile.mkdtemp(prefix='work_dir_')
     logging.info(f'work_dir = {work_dir}')

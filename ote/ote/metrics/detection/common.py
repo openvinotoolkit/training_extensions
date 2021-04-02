@@ -18,7 +18,6 @@ import logging
 import os
 import subprocess
 
-from mmcv import Config
 from ote import MMDETECTION_TOOLS
 
 
@@ -73,7 +72,7 @@ def run_test_script(config_path, work_dir, snapshot, update_config, show_dir, me
 
 
 def coco_ap_eval(config_path, work_dir, snapshot, update_config, show_dir='',
-                 metric_names=['AP @ [IoU=0.50:0.95]'], metrics='bbox', **kwargs):
+                 metric_names=('AP @ [IoU=0.50:0.95]', ), metrics='bbox', **kwargs):
     """ Computes COCO AP. """
 
     metric_keys = metrics.split(' ')

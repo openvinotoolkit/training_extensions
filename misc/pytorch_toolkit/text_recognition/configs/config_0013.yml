@@ -1,0 +1,75 @@
+backbone_config:
+  arch: resnext50_32x4d
+  disable_layer_3: true
+  disable_layer_4: true
+  one_ch_first_conv: true
+  output_channels: 512
+head:
+  type: LSTMEncoderDecoder
+  encoder_input_size: 512
+  cnn_encoder_height: 4
+  reduction: weighted
+val_transforms_list:
+  - name: TransformGrayscale
+device: "cuda"
+num_workers: 0
+use_ctc: true
+model_path: model_checkpoints/alphanumeric_0013.pth
+model_url: https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/text_recognition/text_recognition_0013.pth
+vocab_path: vocabs/vocab_alphanumeric_ctc.json
+train:
+  batch_size: 64
+  learning_rate: 0.0001
+  clip_grad: 5.0
+  epochs: 20
+  loss_type: CTC
+  save_freq: 10000
+  val_freq: 5000
+  print_freq: 8
+  optimizer: Adam
+  save_dir: model_checkpoints
+  datasets:
+    - type: ICDAR2013RECDataset
+      case_sensitive: false
+      data_path: ../../../data/text_recognition/
+      annotation_file: ../../../data/text_recognition/annotation.txt
+      grayscale: true
+      fixed_img_shape:
+        - 32
+        - 120
+      subset: train
+    - type: ICDAR2013RECDataset
+      case_sensitive: false
+      data_path: ../../../data/text_recognition/
+      annotation_file: ../../../data/text_recognition/annotation.txt
+      grayscale: true
+      fixed_img_shape:
+        - 32
+        - 120
+      subset: validate
+  train_transforms_list:
+    - name: TransformGrayscale
+eval:
+  dataset:
+    type: ICDAR2013RECDataset
+    case_sensitive: false
+    data_path: ../../../data/text_recognition/
+    annotation_file: ../../../data/text_recognition/annotation.txt
+    grayscale: true
+    fixed_img_shape:
+      - 32
+      - 120
+  render: false
+demo:
+  transforms_list: []
+export:
+  model_input_names: "imgs"
+  model_output_names: "logits"
+  res_model_name: model_0013.onnx
+  export_ir: true
+  verbose_export: false
+  input_shape:
+    - 1
+    - 1
+    - 32
+    - 120

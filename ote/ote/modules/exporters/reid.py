@@ -29,8 +29,6 @@ from ..registry import EXPORTERS
 
 @EXPORTERS.register_module()
 class ReidExporter(BaseExporter):
-    def __init__(self):
-        super(ReidExporter, self).__init__()
 
     def _export_to_openvino(self, args, tools_dir):
         onnx_model_path = self._get_onnx_model_path(args["save_model_to"], args["config"])
@@ -53,9 +51,9 @@ class ReidExporter(BaseExporter):
 
         try:
             run('mo.py -h', stdout=DEVNULL, stderr=DEVNULL, shell=True, check=True)
-        except CalledProcessError as ex:
+        except CalledProcessError:
             print('OpenVINO Model Optimizer not found, please source '
-                'openvino/bin/setupvars.sh before running this script.')
+                  'openvino/bin/setupvars.sh before running this script.')
             return
 
         run(command_line, shell=True, check=True)

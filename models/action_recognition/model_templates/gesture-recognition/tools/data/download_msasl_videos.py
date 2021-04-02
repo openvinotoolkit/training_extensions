@@ -21,11 +21,11 @@ from os import makedirs, listdir
 from os.path import exists, join, isfile
 from argparse import ArgumentParser
 
-from joblib import delayed, Parallel
+from joblib import delayed, Parallel # pylint: disable=import-error
 import cv2
 
 
-class VideoDownloader(object):
+class VideoDownloader:
     def __init__(self, num_jobs, num_attempts=5):
         self.num_jobs = num_jobs
         assert self.num_jobs > 0

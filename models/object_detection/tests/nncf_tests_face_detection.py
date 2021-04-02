@@ -14,7 +14,7 @@
 
 import os
 
-from common.object_detection_test_case import create_object_detection_nncf_test_case
+from common.object_detection_test_case import create_object_detection_nncf_test_case # pylint: disable=import-error
 
 
 class FaceDetection0200NNCFint8(

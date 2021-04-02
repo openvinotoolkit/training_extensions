@@ -14,7 +14,7 @@
 
 import os
 
-from common.text_spotting_test_case import create_text_spotting_export_test_case
+from common.text_spotting_test_case import create_text_spotting_export_test_case # pylint: disable=import-error
 
 
 kwargs = dict(

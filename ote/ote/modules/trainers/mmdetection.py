@@ -14,12 +14,6 @@
  limitations under the License.
 """
 
-import json
-import logging
-import tempfile
-
-from mmcv.utils import Config
-
 from ote import MMDETECTION_TOOLS
 
 from .base import BaseTrainer

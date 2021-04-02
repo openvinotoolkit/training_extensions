@@ -1,4 +1,4 @@
-# Text Recognition in TensorFlow* (PROVIDED AS IS WITHOUT SUPPORT)
+# Text Recognition in TensorFlow*
 
 This repository contains inference and training code for LSTM-based text recognition networks.
 Models code is designed to enable export to frozen graph and inference on CPU via OpenVINO™.

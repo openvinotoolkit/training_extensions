@@ -14,7 +14,7 @@
 
 import os
 
-from common.action_recognition_test_case import create_action_recognition_export_test_case
+from common.action_recognition_test_case import create_action_recognition_export_test_case  # pylint: disable=import-error
 
 
 kwargs = dict(

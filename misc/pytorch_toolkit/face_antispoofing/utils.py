@@ -213,6 +213,7 @@ def build_model(config, device, strict=True, mode='train'):
                     embeding_dim=config.model.embeding_dim,
                     prob_dropout_linear = config.dropout.classifier,
                     theta=config.conv_cd.theta,
+                    scaling=config.loss.amsoftmax.s,
                     multi_heads = config.multi_task_learning)
 
     if config.model.model_type == 'Mobilenet2':

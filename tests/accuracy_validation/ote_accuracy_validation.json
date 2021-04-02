@@ -1,0 +1,190 @@
+{	
+	"object_detection": {
+		"face-detection": {
+			"face-detection-0200": {
+				"test_id": "FaceDetection0200TestCase.test_export_on_gpu",
+				"target": 16.00
+			},
+			"face-detection-0200-alt-ssd-export": {
+				"test_id": "FaceDetection0200TestCase.test_alt_ssd_export_on_gpu",
+				"subfolder": "alt_ssd_export",
+				"target": 16.0
+			},
+			"face-detection-0202": {
+				"test_id": "FaceDetection0202TestCase.test_export_on_gpu",
+				"target": 20.3
+			},
+			"face-detection-0202-alt-ssd-export": {
+				"test_id": "FaceDetection0202TestCase.test_alt_ssd_export_on_gpu",
+				"subfolder": "alt_ssd_export",
+				"target": 20.3
+			},
+			"face-detection-0204": {
+				"test_id": "FaceDetection0204TestCase.test_export_on_gpu",
+				"target": 21.4
+			},
+			"face-detection-0204-alt-ssd-export": {
+				"test_id": "FaceDetection0204TestCase.test_alt_ssd_export_on_gpu",
+				"subfolder": "alt_ssd_export",
+				"target": 21.4
+			},
+			"face-detection-0205": {
+				"test_id": "FaceDetection0205TestCase.test_export_on_gpu",
+				"target": 21.6
+			},
+			"face-detection-0206": {
+				"test_id": "FaceDetection0206TestCase.test_export_on_gpu",
+				"target": 34.2
+			},
+			"face-detection-0207": {
+				"test_id": "FaceDetection0207TestCase.test_export_on_gpu",
+				"target": 17.2
+			}
+		},
+		"person-detection": {
+			"person-detection-0200": {
+				"test_id": "PersonDetection0200TestCase.test_export_on_gpu",
+				"target": 24.4
+			},
+			"person-detection-0200-alt-ssd-export": {
+				"test_id": "PersonDetection0200TestCase.test_alt_ssd_export_on_gpu",
+				"subfolder": "alt_ssd_export",
+				"target": 24.4
+			},
+			"person-detection-0201": {
+				"test_id": "PersonDetection0201TestCase.test_export_on_gpu",
+				"target": 29.9
+			},
+			"person-detection-0201-alt-ssd-export": {
+				"test_id": "PersonDetection0201TestCase.test_alt_ssd_export_on_gpu",
+				"subfolder": "alt_ssd_export",
+				"target": 29.9
+			},
+			"person-detection-0202": {
+				"test_id": "PersonDetection0202TestCase.test_export_on_gpu",
+				"target": 32.8
+			},
+			"person-detection-0202-alt-ssd-export": {
+				"test_id": "PersonDetection0202TestCase.test_alt_ssd_export_on_gpu",
+				"subfolder": "alt_ssd_export",
+				"target": 32.8
+			},
+			"person-detection-0203": {
+				"test_id": "PersonDetection0203TestCase.test_export_on_gpu",
+				"target": 40.8
+			}
+		},
+		"person-vehicle-bike-detection": {
+			"person-vehicle-bike-detection-2000": {
+				"test_id": "PersonVehicleBikeDetection2000TestCase.test_export_on_gpu",
+				"target": 16.5
+			},
+			"person-vehicle-bike-detection-2000-alt-ssd-export": {
+				"test_id": "PersonVehicleBikeDetection2000TestCase.test_alt_ssd_export_on_gpu",
+				"subfolder": "alt_ssd_export",
+				"target": 16.5
+			},
+			"person-vehicle-bike-detection-2001": {
+				"test_id": "PersonVehicleBikeDetection2001TestCase.test_export_on_gpu",
+				"target": 22.6
+			},
+			"person-vehicle-bike-detection-2001-alt-ssd-export": {
+				"test_id": "PersonVehicleBikeDetection2001TestCase.test_alt_ssd_export_on_gpu",
+				"subfolder": "alt_ssd_export",
+				"target": 22.6
+			},
+			"person-vehicle-bike-detection-2002": {
+				"test_id": "PersonVehicleBikeDetection2002TestCase.test_export_on_gpu",
+				"target": 24.8
+			},
+			"person-vehicle-bike-detection-2002-alt-ssd-export": {
+				"test_id": "PersonVehicleBikeDetection2002TestCase.test_alt_ssd_export_on_gpu",
+				"subfolder": "alt_ssd_export",
+				"target": 24.8
+			}
+		},
+		"horizontal-text-detection": {
+			"horizontal-text-detection-0001": {
+				"test_id": "HorizontalTextDetection0001TestCase.test_export_on_gpu",
+				"target": 88.45
+			}
+		},
+		"vehicle-detection": {
+			"vehicle-detection-0200": {
+				"test_id": "VehicleDetection0200TestCase.test_export_on_gpu",
+				"target": 25.4
+			},
+			"vehicle-detection-0200-alt-ssd-export": {
+				"test_id": "VehicleDetection0200TestCase.test_alt_ssd_export_on_gpu",
+				"subfolder": "alt_ssd_export",
+				"target": 25.4
+			},
+			"vehicle-detection-0201": {
+				"test_id": "VehicleDetection0201TestCase.test_export_on_gpu",
+				"target": 32.2
+			},
+			"vehicle-detection-0201-alt-ssd-export": {
+				"test_id": "VehicleDetection0201TestCase.test_alt_ssd_export_on_gpu",
+				"subfolder": "alt_ssd_export",
+				"target": 32.2
+			},
+			"vehicle-detection-0202": {
+				"test_id": "VehicleDetection0201TestCase.test_export_on_gpu",
+				"target": 36.9
+			},
+			"vehicle-detection-0202-alt-ssd-export": {
+				"test_id": "VehicleDetection0201TestCase.test_alt_ssd_export_on_gpu",
+				"subfolder": "alt_ssd_export",
+				"target": 36.9
+			},
+			"vehicle-detection-0203": {
+				"test_id": "VehicleDetection0201TestCase.test_export_on_gpu",
+				"target": 43.8
+			},
+			"vehicle-detection-0204": {
+				"test_id": "VehicleDetection0201TestCase.test_export_on_gpu",
+				"target": 47.3
+			}
+		}
+	},
+	"instance_segmentation": {
+		"coco-instance-segmentation": {
+			"instance-segmentation-0002": {
+				"test_id": "InstanceSegmentation0002TestCase.test_export_on_gpu",
+				"target": 40.8
+			},
+			"instance-segmentation-0091": {
+				"test_id": "InstanceSegmentation0091TestCase.test_export_on_gpu",
+				"target": 45.8
+			},
+			"instance-segmentation-0228": {
+				"test_id": "InstanceSegmentation0228TestCase.test_export_on_gpu",
+				"target": 39.0
+			},
+			"instance-segmentation-0904": {
+				"test_id": "InstanceSegmentation0904TestCase.test_export_on_gpu",
+				"target": 32.9
+				},
+			"instance-segmentation-0912": {
+				"test_id": "InstanceSegmentation0912TestCase.test_export_on_gpu",
+				"target": 35.6
+			}
+		}
+	},
+	"text_spotting": {
+		"alphanumeric-text-spotting": {
+			"text-spotting-0003": {
+				"test_id": "TextSpotting0003ExportTestCase.test_export_on_gpu",
+				"target": 86.6
+			}
+		}
+	},
+	"image_classification": {
+		"imagenet-classification": {
+			"mobilenet-v2-w1-imagenet": {
+				"test_id": "CustomClassificationExportTestCase.test_export_on_gpu",
+				"target": 82.84
+			}
+		}
+	}
+}

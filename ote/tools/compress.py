@@ -37,8 +37,8 @@ def main():
                            f' does not have "compression" field in its modules'
                            f' file {MODULES_CONFIG_FILENAME}')
     if not is_optimisation_enabled_in_template(MODEL_TEMPLATE_FILENAME):
-        raise RuntimeError(f'Cannot make compression for the template that'
-                           f' does not enable any of compression flags')
+        raise RuntimeError('Cannot make compression for the template that'
+                           ' does not enable any of compression flags')
 
     arg_converter = build_arg_converter(modules['arg_converter_map'])
     compress_args = arg_converter.convert_compress_args(ote_args)

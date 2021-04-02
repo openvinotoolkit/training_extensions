@@ -1,4 +1,4 @@
-# Vehicle Attributes Recognition: Type and Color (PROVIDED AS IS WITHOUT SUPPORT)
+# Vehicle Attributes Recognition: Type and Color
 
 ![](./veh_attr.jpg)
 
