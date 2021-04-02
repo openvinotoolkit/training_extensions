@@ -22,7 +22,8 @@ disable = arguments-differ,
           duplicate-code,
           logging-fstring-interpolation,
           import-error,
-          no-name-in-module
+          no-name-in-module,
+          no-member
 
 max-line-length = 120
 ignore-docstrings = yes

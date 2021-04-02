@@ -59,7 +59,7 @@ class BatchRandomSampler(Sampler):
     (e.g. on the shape) the original order is saved
     """
 
-    def __init__(self, batch_size, dataset):
+    def __init__(self, batch_size, dataset): # pylint: disable=super-init-not-called
         self.batch_size = batch_size
         self.len = len(dataset) // self.batch_size
         self.indices = np.array(range(self.len * self.batch_size))[::self.batch_size]

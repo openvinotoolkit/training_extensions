@@ -5,3 +5,4 @@ requests
 texttable
 tqdm
 tensorboard
+pylint==2.7.2
