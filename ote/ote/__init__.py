@@ -14,3 +14,7 @@ MMACTION_TOOLS = os.path.join(MMACTION_DIR, 'tools')
 DEFAULT_REID_DIR = os.path.abspath(f'{os.path.dirname(__file__)}/../../../external/deep-object-reid')
 REID_DIR = os.getenv('REID_DIR', DEFAULT_REID_DIR)
 REID_TOOLS = os.path.join(REID_DIR, 'tools')
+
+DEFAULT_MMPOSE_DIR = os.path.abspath(f'{os.path.dirname(__file__)}/../../../external/mmpose')
+MMPOSE_DIR = os.getenv('MMPOSE_DIR', DEFAULT_MMPOSE_DIR)
+MMPOSE_TOOLS = os.path.join(MMPOSE_DIR, 'tools')
