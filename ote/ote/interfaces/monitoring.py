@@ -60,13 +60,13 @@ class IPerformanceMonitor(metaclass=abc.ABCMeta):
         """
 
     @abc.abstractmethod
-    def on_test_batch_begin(self):
+    def on_val_batch_begin(self):
         """
         Method starts timer that measures batch forward-backward time during evaluation
         """
 
     @abc.abstractmethod
-    def on_test_batch_end(self):
+    def on_val_batch_end(self):
         """
         Method stops timer that measures batch forward-backward time during evaluation
         """
@@ -102,15 +102,15 @@ class IPerformanceMonitor(metaclass=abc.ABCMeta):
         """
 
     @abc.abstractmethod
-    def get_test_progress(self) -> int:
+    def get_val_progress(self) -> int:
         """
-        Returns progress of the testing process in range of 0 to 100
+        Returns progress of the evaluation process in range of 0 to 100
         """
 
     @abc.abstractmethod
-    def get_test_eta(self) -> int:
+    def get_val_eta(self) -> int:
         """
-        Returns ETA of the testing process in seconds
+        Returns ETA of the evaluation process in seconds
         """
 
     @abc.abstractmethod

@@ -19,7 +19,7 @@ import time
 from torch.utils.tensorboard import SummaryWriter
 
 from ote.interfaces.monitoring import (IMetricsMonitor,
-                                    IPerformanceMonitor, IStopCallback)
+                                       IPerformanceMonitor, IStopCallback)
 
 
 class StopCallback(IStopCallback):
@@ -67,7 +67,7 @@ class PerformanceMonitor(IPerformanceMonitor):
         self.start_batch_time = 0
         self.avg_epoch_time = 0
         self.avg_batch_time = 0
-        self.avg_test_batch_time = 0
+        self.avg_val_batch_time = 0
 
     def on_train_batch_begin(self):
         self.start_batch_time = time.time()
@@ -78,13 +78,13 @@ class PerformanceMonitor(IPerformanceMonitor):
         self.avg_batch_time = (self.avg_batch_time * \
             (self.train_steps_passed - 1) + batch_time) / self.train_steps_passed
 
-    def on_test_batch_begin(self):
+    def on_val_batch_begin(self):
         self.start_batch_time = time.time()
 
-    def on_test_batch_end(self):
+    def on_val_batch_end(self):
         self.val_steps_passed += 1
         batch_time = time.time() - self.start_batch_time
-        self.avg_test_batch_time = (self.avg_test_batch_time * \
+        self.avg_val_batch_time = (self.avg_val_batch_time * \
             (self.val_steps_passed - 1) + batch_time) / self.val_steps_passed
 
     def on_train_begin(self):
@@ -108,11 +108,11 @@ class PerformanceMonitor(IPerformanceMonitor):
         return int(self.train_epochs_passed / self.total_epochs * 100) + \
                int(self.granularity * (self.train_steps_passed % self.num_train_steps) / self.num_train_steps * 100)
 
-    def get_test_progress(self) -> int:
+    def get_val_progress(self) -> int:
         print(self.val_steps_passed, self.num_validation_steps)
         return int(self.val_steps_passed / self.num_validation_steps * 100)
 
-    def get_test_eta(self) -> int:
+    def get_val_eta(self) -> int:
         remaining_steps = self.num_validation_steps - self.val_steps_passed
         remaining_batch_time = remaining_steps * self.avg_batch_time
         return int(remaining_batch_time)
@@ -163,10 +163,10 @@ class DefaultPerformanceMonitor(IPerformanceMonitor):
     def on_train_batch_end(self):
         pass
 
-    def on_test_batch_begin(self):
+    def on_val_batch_begin(self):
         pass
 
-    def on_test_batch_end(self):
+    def on_val_batch_end(self):
         pass
 
     def on_train_begin(self):
@@ -184,10 +184,10 @@ class DefaultPerformanceMonitor(IPerformanceMonitor):
     def get_training_progress(self) -> int:
         return 0
 
-    def get_test_progress(self) -> int:
+    def get_val_progress(self) -> int:
         return 0
 
-    def get_test_eta(self) -> int:
+    def get_val_eta(self) -> int:
         return 0
 
     def get_training_eta(self) -> int:
