@@ -6,10 +6,9 @@ summary: Multi person pose estimation based on EfficientHRNet architecture.
 annotation_format: COCO
 initial_weights: snapshot.pth
 dependencies:
-# TODO.
-- sha256: a1f839ac6def3168025ad2638f670850857fe1c825f17d8b045f17a70afa8472
-  size: 101353681
-  source: /tmp/weights.pth
+- sha256: 27eb00d4f1fd972ffbc0afa21a8c4b3b2aa2ebe5c19a7ac2e1186bfafcad1260
+  size: 101348142
+  source: https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/human_pose_estimation/human-pose-estimation-0005-final.pth
   destination: snapshot.pth
 - source: ../../../../../ote/tools/train.py
   destination: train.py
