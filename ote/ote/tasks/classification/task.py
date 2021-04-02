@@ -181,9 +181,11 @@ class ClassificationTask(ITask):
 
         cmc, mAP, _ = metrics.evaluate_classification(datamanager.test_loader['val']['query'],
                                                       self.model, self.cfg.use_gpu, (1, 5))
-        result_metrics = {'Top-1': cmc[0], 'Top-5': cmc[1], 'mAP': mAP}
-        for k in result_metrics:
-            result_metrics[k] = round(result_metrics[k] * 100, 2)
+
+        result_metrics = [{'key': 'accuracy',
+                           'value': str(round(cmc[0] * 100, 3)),
+                           'unit': '%',
+                           'display_name': 'Top-1 accuracy'}]
 
         return [], result_metrics
 
@@ -264,6 +266,8 @@ class ClassificationTask(ITask):
         torch.save(self.model.state_dict(), buffer)
         return buffer.getvalue()
 
-    def create_model(self):
+    def create_model(self, num_classes=None):
+        if num_classes:
+            self.num_classes = num_classes
         model = torchreid.models.build_model(**model_kwargs(self.cfg, self.num_classes))
         return model

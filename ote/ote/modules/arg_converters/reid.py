@@ -82,7 +82,7 @@ class ReidTaskArgConverterMap(ArgConverterMaps):
         return {
             'test_ann_files': '',
             'test_data_roots': '',
-            'load_weights': 'snapshot_path',
+            'load_weights': 'load_weights',
             'classes': 'classes',
             'work_dir': 'work_dir',
         }

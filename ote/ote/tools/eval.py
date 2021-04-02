@@ -17,10 +17,11 @@
 from importlib import import_module
 import logging
 import os
+import yaml
 
 from ote.api import template_filename_parser
 from ote.utils import load_config
-from ote.utils import copy_config_dependencies, copytree
+from ote.utils import copy_config_dependencies, copytree, get_file_size_and_sha256
 
 
 from ote.modules import (build_arg_parser,
@@ -51,8 +52,24 @@ def main():
 
     task = task_module.Task(env_params)
     _, result_metrics = task.test(test_dataset, test_params)
-    for name in result_metrics:
-        print(f'{name} : {result_metrics[name]}')
+
+    for item in result_metrics:
+        print(f'{item["display_name"]} : {item["value"]} {item["unit"]}')
+
+    if ote_args.save_metrics_to:
+        outputs = {
+                'files': [get_file_size_and_sha256(ote_args.load_weights)],
+                'metrics': result_metrics
+            }
+
+        if os.path.exists(ote_args.save_metrics_to):
+            with open(ote_args.save_metrics_to) as read_file:
+                content = yaml.load(read_file, Loader=yaml.SafeLoader)
+                content.update(outputs)
+                outputs = content
+
+        with open(ote_args.save_metrics_to, 'w') as write_file:
+            yaml.dump(outputs, write_file)
 
 
 if __name__ == '__main__':
