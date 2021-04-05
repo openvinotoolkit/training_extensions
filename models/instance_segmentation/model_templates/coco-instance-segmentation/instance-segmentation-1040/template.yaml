@@ -8,7 +8,7 @@ initial_weights: snapshot.pth
 dependencies:
 - sha256: d87986c1f5ca481fc22e967fac7e02ae2058d0f453031e7257d1cb52c54c0f75
   size: 106609665
-  source: https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/instance_segmentation/v2/instance-segmentation-1039.pth
+  source: https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/instance_segmentation/v2/instance-segmentation-1040.pth
   destination: snapshot.pth
 - source: ../../../../../ote/tools/train.py
   destination: train.py
