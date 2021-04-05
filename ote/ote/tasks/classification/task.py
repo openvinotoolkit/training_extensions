@@ -122,6 +122,7 @@ class ClassificationTask(ITask):
                 parameters.resume_from, self.model, optimizer=optimizer, scheduler=scheduler
             )
 
+        lr = None # placeholder, needed for aux models
         if self.cfg.lr_finder.enable and not parameters.resume_from:
             if num_aux_models:
                 print("Mutual learning is enabled. Learning rate will be estimated for the main model only.")
@@ -145,13 +146,11 @@ class ClassificationTask(ITask):
 
         if num_aux_models:
             print('Enabled mutual learning between {} models.'.format(num_aux_models + 1))
-            weights = [None] * num_aux_models
 
             models, optimizers, schedulers = [self.model], [optimizer], [scheduler]
-            for config_file, model_weights, device_ids in \
-                    zip(self.cfg.mutual_learning.aux_configs, weights, extra_device_ids):
+            for config_file, device_ids in zip(self.cfg.mutual_learning.aux_configs, extra_device_ids):
                 aux_model, aux_optimizer, aux_scheduler = build_auxiliary_model(
-                    config_file, self.num_classes, self.cfg.use_gpu, device_ids, model_weights
+                    config_file, self.num_classes, self.cfg.use_gpu, device_ids, lr
                 )
 
                 models.append(aux_model)
@@ -179,7 +178,7 @@ class ClassificationTask(ITask):
         self.cfg.custom_datasets.roots = [dataset, dataset]
         datamanager = torchreid.data.ImageDataManager(**imagedata_kwargs(self.cfg))
 
-        cmc, mAP, _ = metrics.evaluate_classification(datamanager.test_loader['val']['query'],
+        cmc, _, _ = metrics.evaluate_classification(datamanager.test_loader['val']['query'],
                                                       self.model, self.cfg.use_gpu, (1, 5))
 
         result_metrics = [{'key': 'accuracy',
