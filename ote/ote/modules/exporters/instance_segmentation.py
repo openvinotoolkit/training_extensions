@@ -28,6 +28,10 @@ from ..registry import EXPORTERS
 @EXPORTERS.register_module()
 class InstanceSegmentationExporter(BaseExporter):
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.opset = 11
+
     def _export_to_openvino(self, args, tools_dir):
         config = Config.fromfile(args["config"])
         height, width = self._get_input_shape(config)
@@ -35,6 +39,7 @@ class InstanceSegmentationExporter(BaseExporter):
             f'{args["config"]} '
             f'{args["load_weights"]} '
             f'{args["save_model_to"]} '
+            f'--opset={self.opset} '
             f'openvino '
             f'--input_format {args["openvino_input_format"]} '
             f'--input_shape {height} {width}',
