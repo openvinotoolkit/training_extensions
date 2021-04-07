@@ -1,6 +1,11 @@
 # Pose Estimation
 
-TBD
+Models that are able to estimate 2D poses of multiple people.
+
+| Model Name | Complexity (GFLOPs) | Size (Mp) | AP @ [IoU=0.50:0.95] (%) | Links | GPU_NUM |
+| --- | --- | --- | --- | --- | --- |
+| human-pose-estimation-0005 | 6.04 | 8.84 | 45.5 | [snapshot](https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/human_pose_estimation/human-pose-estimation-0005-final.pth), [configuration file](./human-pose-estimation-0005/model.py) | 2 |
+
 
 ## Usage
 
@@ -12,7 +17,7 @@ You can repeat steps `4.b` - `4.c` until you get acceptable quality metrics valu
 ### 1. Change a directory in your terminal to domain directory
 
 ```bash
-cd models/object_detection
+cd models/pose_estimation
 ```
 If you have not created virtual environment yet:
 ```bash
@@ -26,7 +31,7 @@ source venv/bin/activate
 ### 2. Select a model template file and instantiate it in some directory
 
 ```bash
-export MODEL_TEMPLATE=`realpath ./model_templates/person-detection/person-detection-0200/template.yaml`
+export MODEL_TEMPLATE=`realpath ./model_templates/coco-human-pose-estimation/human-pose-estimation-0005/template.yaml`
 export WORK_DIR=/tmp/my-$(basename $(dirname $MODEL_TEMPLATE))
 export SNAPSHOT=snapshot.pth
 python ../../tools/instantiate_template.py ${MODEL_TEMPLATE} ${WORK_DIR}
@@ -57,9 +62,9 @@ This produces model `model.xml` and weights `model.bin` in single-precision floa
 You need to pass a path to `model.xml` file and video device node (e.g. /dev/video0) of your web cam. Also an image or a video file probably can be used as an input (-i) for the demo, please refer to documentation in [Open Model Zoo](https://github.com/openvinotoolkit/open_model_zoo) repo.
 
 ```bash
-python ${OMZ_DIR}/demos/object_detection_demo/python/object_detection_demo.py \
+python ${OMZ_DIR}/demos/human_pose_estimation_demo/python/human_pose_estimation_demo.py \
    -m export/model.xml \
-   -at ssd \
+   -at ae \
    -i /dev/video0
 ```
 
@@ -74,7 +79,7 @@ Training images are stored in `${TRAIN_IMG_ROOT}` together with `${TRAIN_ANN_FIL
 ```bash
 export ADD_EPOCHS=1
 export EPOCHS_NUM=$((`cat ${MODEL_TEMPLATE} | grep epochs | tr -dc '0-9'` + ${ADD_EPOCHS}))
-export TRAIN_ANN_FILE=${OTE_DIR}/data/airport/annotation_person_train.json
+export TRAIN_ANN_FILE=${OTE_DIR}/data/airport/annotation_pose_train.json
 export TRAIN_IMG_ROOT=${OTE_DIR}/data/airport/train
 export VAL_ANN_FILE=${TRAIN_ANN_FILE}
 export VAL_IMG_ROOT=${TRAIN_IMG_ROOT}
