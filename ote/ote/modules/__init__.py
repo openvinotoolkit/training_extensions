@@ -1,16 +1,17 @@
 from .arg_parsers import DefaultArgParser, CustomClassesArgParser, FaceDetectorArgParser
 from .arg_converters import (ArgConverter, MMActionArgConverterMap, MMDetectionArgConverterMap,
-                             MMDetectionWiderArgConverterMap)
+                             MMDetectionWiderArgConverterMap, MMPoseArgConverterMap)
 from .compression import NNCFConfigTransformer
 from .evaluators import (BaseEvaluator, MMActionEvaluator, MMDetectionEvaluator,
                          MMFaceDetectionEvaluator, MMHorizontalTextDetectionEvaluator,
-                         InstanceSegmentationEvaluator)
+                         MMPoseEvaluator, InstanceSegmentationEvaluator)
 from .exporters import (BaseExporter,
                         MMActionExporter,
                         MMDetectionCustomClassesExporter,
                         MMDetectionExporter,
+                        MMPoseExporter,
                         InstanceSegmentationExporter)
-from .trainers import BaseTrainer, MMActionTrainer, MMDetectionTrainer, InstanceSegmentationTrainer
+from .trainers import BaseTrainer, MMActionTrainer, MMDetectionTrainer, MMPoseTrainer, InstanceSegmentationTrainer
 from .registry import ARG_PARSERS, ARG_CONVERTER_MAPS, TRAINERS, EVALUATORS, EXPORTERS, COMPRESSION
 from .builder import (build_arg_parser,
                       build_arg_converter,
@@ -33,20 +34,24 @@ __all__ = [
     'MMActionArgConverterMap',
     'MMDetectionArgConverterMap',
     'MMDetectionWiderArgConverterMap',
+    'MMPoseArgConverterMap',
     'BaseTrainer',
     'MMActionTrainer',
     'MMDetectionTrainer',
+    'MMPoseTrainer',
     'InstanceSegmentationTrainer',
     'BaseEvaluator',
     'MMActionEvaluator',
     'MMDetectionEvaluator',
     'MMFaceDetectionEvaluator',
     'MMHorizontalTextDetectionEvaluator',
+    'MMPoseEvaluator',
     'InstanceSegmentationEvaluator',
     'BaseExporter',
     'MMActionExporter',
     'MMDetectionCustomClassesExporter',
     'MMDetectionExporter',
+    'MMPoseExporter',
     'InstanceSegmentationExporter',
     'build_arg_parser',
     'build_arg_converter',

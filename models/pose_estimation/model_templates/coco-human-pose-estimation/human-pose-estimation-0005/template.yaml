@@ -1,0 +1,60 @@
+name: human-pose-estimation-0005
+domain: Pose Estimation
+problem: COCO Human Pose Estimation
+framework: OTEPose v0.12.0
+summary: Multi person pose estimation based on EfficientHRNet architecture.
+annotation_format: COCO
+initial_weights: snapshot.pth
+dependencies:
+- sha256: 27eb00d4f1fd972ffbc0afa21a8c4b3b2aa2ebe5c19a7ac2e1186bfafcad1260
+  size: 101348142
+  source: https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/human_pose_estimation/human-pose-estimation-0005-final.pth
+  destination: snapshot.pth
+- source: ../../../../../ote/tools/train.py
+  destination: train.py
+- source: ../../../../../ote/tools/eval.py
+  destination: eval.py
+- source: ../../../../../ote/tools/export.py
+  destination: export.py
+- source: ../../../../../ote/tools/compress.py
+  destination: compress.py
+- source: ../../../../../ote
+  destination: packages/ote
+- source: ../../requirements.txt
+  destination: requirements.txt
+dataset_requirements: ~
+max_nodes: 1
+training_target:
+- CPU
+- GPU
+inference_target:
+- CPU
+hyper_parameters:
+  basic:
+    batch_size: 14
+    base_learning_rate: 0.001
+    epochs: 300
+output_format:
+  onnx:
+    default: true
+  openvino:
+    default: true
+    input_format: BGR
+optimisations: ~
+metrics:
+- display_name: Size
+  key: size
+  unit: Mp
+  value: 8.84
+- display_name: Complexity
+  key: complexity
+  unit: GFLOPs
+  value: 6.04
+- display_name: AP @ [IoU=0.50:0.95]
+  key: mAP
+  unit: '%'
+  value: 45.5
+gpu_num: 2
+config: model.py
+tensorboard: true
+estimated_batch_time: -1

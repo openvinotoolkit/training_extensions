@@ -10,3 +10,6 @@
 [submodule "external/nncf"]
 	path = external/nncf
 	url = ../../openvinotoolkit/nncf
+[submodule "external/mmpose"]
+	path = external/mmpose
+	url = https://github.com/druzhkov-paul/mmpose.git
