@@ -25,6 +25,7 @@ dependencies:
 dataset_requirements: ~
 max_nodes: 1
 training_target:
+- CPU
 - GPU
 inference_target:
 - CPU
