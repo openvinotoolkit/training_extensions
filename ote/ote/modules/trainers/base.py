@@ -61,7 +61,7 @@ class BaseTrainer(metaclass=ABCMeta):
                                  f'{tensorboard_dir}'
                                  f'{update_config}'.split(' '))
             logging.info('... distributed training completed.')
-        elif get_cuda_device_count() > 0:
+        elif get_cuda_device_count() > 0 and gpu_num:
             logging.info('Training on GPUs started ...')
             available_gpu_num = get_cuda_device_count()
             if available_gpu_num < gpu_num:
