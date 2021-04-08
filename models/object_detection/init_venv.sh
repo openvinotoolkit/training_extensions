@@ -56,8 +56,8 @@ CUDA_VERSION_CODE=$(echo ${CUDA_VERSION} | sed -e "s/\.//" -e "s/\(...\).*/\1/")
 pip install -e ../../ote/
 
 # install PyTorch and MMCV.
-export TORCH_VERSION=1.5.1
-export TORCHVISION_VERSION=0.6.1
+export TORCH_VERSION=1.7.1
+export TORCHVISION_VERSION=0.8.2
 
 if [[ $CUDA_VERSION_CODE == "102" ]]; then
   pip install torch==${TORCH_VERSION} torchvision==${TORCHVISION_VERSION}
