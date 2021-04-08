@@ -446,11 +446,10 @@ def collate_fn(sign2id, batch, *, batch_transform=None, use_ctc=False):
     # to get correct size of the tensor in the texts2tensor function
     batch.sort(key=lambda img_text: len(img_text['text'].split()), reverse=True)
 
-    imgs = [item['img'] for item in batch]
     if batch_transform:
-        imgs = batch_transform(imgs)
-    for i, item in enumerate(batch):
-        item['img'] = imgs[i]
+        imgs = batch_transform([item['img'] for item in batch])
+        for i, item in enumerate(batch):
+            item['img'] = imgs[i]
 
     # filter the pictures that have different width or height
     size = batch[0]['img'].shape
