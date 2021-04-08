@@ -106,7 +106,7 @@ def create_test_case(domain_name, problem_name, model_name, ann_file, img_root, 
 
             run_through_shell(
                 f'cd {cls.template_folder};'
-                f'pip install -r requirements.txt;'
+                # f'pip install -r requirements.txt;'
             )
 
         def setUp(self):
@@ -230,7 +230,7 @@ def create_export_test_case(domain_name, problem_name, model_name, ann_file,
                 run_through_shell(
                     f'{initial_command}'
                     f'cd {os.path.dirname(self.template_file)};'
-                    f'pip install -r requirements.txt;'
+                    # f'pip install -r requirements.txt;'
                     f'python3 export.py'
                     f' --load-weights snapshot.pth'
                     f' --save-model-to {export_dir}'
@@ -308,7 +308,7 @@ def create_nncf_test_case(domain_name, problem_name, model_name, ann_file, img_r
 
             run_through_shell(
                 f'cd {cls.template_folder};'
-                f'pip install -r requirements.txt;'
+                # f'pip install -r requirements.txt;'
             )
             logging.info(f'End setting up class for {problem_name}/{model_name}, {cls.test_case_description}')
 
