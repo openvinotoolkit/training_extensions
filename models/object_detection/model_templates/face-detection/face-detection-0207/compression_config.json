@@ -21,6 +21,10 @@
             "momentum": 0.9,
             "weight_decay": 0.0005
         },
+        "lr_config": {
+            "_delete_": true,
+            "policy": "fixed"
+        },
         "total_epochs": 2,
         "nncf_config": {
             "compression": [
@@ -28,10 +32,10 @@
                     "algorithm": "quantization",
                     "initializer": {
                         "range": {
-                            "num_init_steps": 10
+                            "num_init_samples": 10
                         },
                         "batchnorm_adaptation": {
-                            "num_bn_adaptation_steps": 30
+                            "num_bn_adaptation_samples": 30
                         }
                     }
                 }

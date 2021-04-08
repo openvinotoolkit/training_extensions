@@ -3,12 +3,7 @@
         "find_unused_parameters": true,
         "nncf_config": {
             "input_info": {
-                "sample_size": [
-                    1,
-                    3,
-                    256,
-                    256
-                ]
+                "sample_size": [1, 3, 640, 640]
             },
             "compression": [],
             "log_dir": "."
@@ -17,32 +12,32 @@
     "nncf_quantization": {
         "optimizer": {
             "type": "SGD",
-            "lr": 0.00005,
+            "lr": 0.0008,
             "momentum": 0.9,
-            "weight_decay": 0.0005
+            "weight_decay": 0.0001
         },
         "lr_config": {
             "_delete_": true,
             "policy": "fixed"
         },
-        "total_epochs": 2,
+        "total_epochs": 1,
         "nncf_config": {
             "compression": [
                 {
                     "algorithm": "quantization",
                     "initializer": {
                         "range": {
-                            "num_init_samples": 10
+                            "num_init_samples": 1025
                         },
                         "batchnorm_adaptation": {
-                            "num_bn_adaptation_samples": 30
+                            "num_bn_adaptation_samples": 512
                         }
                     }
                 }
             ]
         }
     },
-    "order_of_parts": [
-        "nncf_quantization"
+	"order_of_parts": [
+		"nncf_quantization"
     ]
 }
