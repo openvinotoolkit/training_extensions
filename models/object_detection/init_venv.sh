@@ -60,7 +60,7 @@ export TORCH_VERSION=1.5.1
 export TORCHVISION_VERSION=0.6.1
 
 if [[ $CUDA_VERSION_CODE == "102" ]]; then
-  pip install torch==${TORCH_VERSION} torchvision==${TORCHVISION_VERSION} -f https://download.pytorch.org/whl/torch_stable.html
+  pip install torch==${TORCH_VERSION} torchvision==${TORCHVISION_VERSION}
 else
   pip install torch==${TORCH_VERSION}+cu${CUDA_VERSION_CODE} torchvision==${TORCHVISION_VERSION}+cu${CUDA_VERSION_CODE} -f https://download.pytorch.org/whl/torch_stable.html
 fi
