@@ -61,7 +61,7 @@ def create_custom_object_detection_test_case(model_name):
 
             run_through_shell(
                 f'cd {cls.template_folder};'
-                f'pip install -r requirements.txt;'
+                # f'pip install -r requirements.txt;'
             )
 
         def setUp(self):
@@ -115,7 +115,7 @@ def create_custom_object_detection_test_case(model_name):
             run_through_shell(
                 f'{initial_command}'
                 f'cd {os.path.dirname(self.template_file)};'
-                f'pip install -r requirements.txt;'
+                # f'pip install -r requirements.txt;'
                 f'python3 export.py'
                 f' --load-weights {os.path.join(self.output_folder, "latest.pth")}'
                 f' --classes "{classes}"'
