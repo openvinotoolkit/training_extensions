@@ -1,25 +1,25 @@
 name: landmarks-detection-0001
-domain: Face Landmarks Detection
-problem: COCO Human Pose Estimation
+domain: Landmarks Detection
+problem: Landmarks Detection
 framework: OTEPose v0.12.0
 summary: Face Landmarks Detection based on HRNet architecture.
 annotation_format: COCO
 initial_weights: snapshot.pth
 dependencies:
 # TODO.
-- sha256: TODO
-  size: TODO
-  source: /tmp/weights.pth
+- sha256: a29789a856e4d6230e3fa3e17c91188a592f3288240993416f2f7f78fed4aa48
+  size: 116669484
+  source: https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/landmarks-detection-0001.pth
   destination: snapshot.pth
-- source: ../../../../../ote/tools/train.py
+- source: ../../../../ote/tools/train.py
   destination: train.py
-- source: ../../../../../ote/tools/eval.py
+- source: ../../../../ote/tools/eval.py
   destination: eval.py
-- source: ../../../../../ote/tools/export.py
+- source: ../../../../ote/tools/export.py
   destination: export.py
-- source: ../../../../../ote/tools/compress.py
+- source: ../../../../ote/tools/compress.py
   destination: compress.py
-- source: ../../../../../ote
+- source: ../../../../ote
   destination: packages/ote
 - source: ../../requirements.txt
   destination: requirements.txt

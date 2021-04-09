@@ -1,3 +1,3 @@
--r ../../external/mmpose/requirements/build.txt
--r ../../external/mmpose/requirements.txt
+-r ../../../../external/mmpose/requirements/build.txt
+-r ../../../../external/mmpose/requirements.txt
 opencv-python

@@ -77,6 +77,8 @@ class BaseEvaluator(metaclass=ABCMeta):
 
     def _get_complexity_and_size(self, cfg, config_path, work_dir, update_config):
         image_shape = self._get_image_shape(cfg)
+        print ("!!!!" + image_shape)
+
         tools_dir = self._get_tools_dir()
 
         res_complexity = os.path.join(work_dir, "complexity.json")

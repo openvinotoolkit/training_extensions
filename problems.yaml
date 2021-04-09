@@ -87,3 +87,12 @@ domains:
       You need to define your set of classes to detect.
     subtitle: Instance segmentation of custom objects in digital images
     type: generic
+- title: Landmarks Detection
+  problems:
+  - title: Landmarks Detection 0001
+    description:  >-
+        Custom instance segmentation is a computer technology being used in a variety of
+        applications that identifies every pixel of custom objects in digital images.
+        You need to define your set of classes to detect.
+    subtitle: Instance segmentation of custom objects in digital images
+    type: generic
