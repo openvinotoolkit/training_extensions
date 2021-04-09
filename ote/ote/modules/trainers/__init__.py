@@ -11,5 +11,6 @@ __all__ = [
     'MMActionTrainer',
     'MMDetectionTrainer',
     'MMPoseTrainer',
+    'InstanceSegmentationTrainer',
     'ReidTrainer',
 ]

@@ -17,9 +17,9 @@ import os
 from common.landmarks_detection_test_case import create_landmarks_detection_test_case
 
 kwargs = dict(
-    problem_name='landmarks-detection-0001',
+    problem_name='landmarks-detection',
     ann_file=os.path.dirname(__file__) + '/../../../data/wider_face_lms/wider_lms_test.json',
-    img_root=os.path.dirname(__file__) + '/../../../data/wider_face_lms/test',
+    img_root=os.path.dirname(__file__) + '/../../../data/wider_face_lms',
 )
 
 class LandmarksDetection0001TestCase(

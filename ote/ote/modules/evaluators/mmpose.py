@@ -31,16 +31,17 @@ class MMPoseEvaluator(BaseEvaluator):
         return MMPOSE_TOOLS
 
     def _get_metric_functions(self):
-        from ote.metrics.pose_estimation.common import coco_ap_eval
+        from ote.metrics.landmarks_detection.common import coco_nme_eval
 
-        return [coco_ap_eval]
+        return [coco_nme_eval]
 
     def _get_image_shape(self, cfg):
         try:
             image_size = cfg['data']['test']['data_cfg']['image_size']
         except KeyError:
             image_size = cfg['image_size']
-        return f'{image_size} {image_size}'
+
+        return f'{image_size[0]} {image_size[1]}'
 
     def _get_complexity_and_size(self, cfg, config_path, work_dir, update_config):
         image_shape = self._get_image_shape(cfg)
@@ -50,6 +51,7 @@ class MMPoseEvaluator(BaseEvaluator):
         update_config = ' '.join([f'{k}={v}' for k, v in update_config.items()])
         update_config = f' --update_config {update_config}' if update_config else ''
         update_config = update_config.replace('"', '\\"')
+
         run_through_shell(
             f'python3 {tools_dir}/analysis/get_flops.py'
             f' {config_path}'

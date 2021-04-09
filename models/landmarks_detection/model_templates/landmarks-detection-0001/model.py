@@ -81,7 +81,7 @@ model = dict(
     loss_pose=dict(type='JointsMSELoss', use_target_weight=True))
 
 data_cfg = dict(
-    image_size=[64, 64],
+    image_size=[64,64],
     heatmap_size=[16, 16],
     num_output_channels=channel_cfg['num_output_channels'],
     num_joints=channel_cfg['dataset_joints'],
@@ -132,7 +132,7 @@ data = dict(
     workers_per_gpu=2,
     train=dict(
         type='FaceWFLWDataset',
-        ann_file=f'{data_root}/'
+        ann_file=f'{data_root}/',
         img_prefix=f'{data_root}/',
         data_cfg=data_cfg,
         pipeline=train_pipeline),

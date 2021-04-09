@@ -23,7 +23,7 @@ from ote.utils.misc import run_through_shell
 
 def create_landmarks_detection_test_case(**kwargs):
     expected_outputs_dir = os.path.join(os.path.dirname(__file__), '..', 'expected_outputs')
-    TestCase = create_test_case('landmarks-detection',
+    TestCase = create_test_case('landmarks_detection',
                                 **kwargs,
                                 metric_keys=['NME'],
                                 expected_outputs_dir=expected_outputs_dir)
@@ -42,7 +42,7 @@ def create_landmarks_detection_export_test_case(**kwargs):
     expected_outputs_dir = os.path.join(os.path.dirname(__file__), '..', 'expected_outputs')
     ExportTestCase = create_export_test_case('landmarks_detection',
                                              **kwargs,
-                                             metric_keys=['mAP'],
+                                             metric_keys=['NME'],
                                              expected_outputs_dir=expected_outputs_dir)
 
     class LandmarksDetectionExportTestCase(ExportTestCase):

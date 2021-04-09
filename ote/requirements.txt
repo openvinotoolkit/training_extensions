@@ -1,4 +1,4 @@
-mmcv
+mmcv==1.2.7
 pytest
 pyyaml
 requests
