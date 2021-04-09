@@ -42,7 +42,10 @@ output_format:
   openvino:
     default: true
     input_format: BGR
-optimisations: ~
+optimisations:
+  nncf_quantization:
+    config: compression_config.json
+    default: false
 metrics:
 - display_name: AP @ [IoU=0.50:0.95]
   key: ap
