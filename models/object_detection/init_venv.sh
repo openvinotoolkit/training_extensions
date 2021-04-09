@@ -56,8 +56,9 @@ CUDA_VERSION_CODE=$(echo ${CUDA_VERSION} | sed -e "s/\.//" -e "s/\(...\).*/\1/")
 pip install -e ../../ote/
 
 # install PyTorch and MMCV.
-export TORCH_VERSION=1.7.1
-export TORCHVISION_VERSION=0.8.2
+export TORCH_VERSION=1.8.1
+export TORCHVISION_VERSION=0.9.1
+export MMCV_VERSION=1.3.0
 
 if [[ $CUDA_VERSION_CODE == "102" ]]; then
   pip install torch==${TORCH_VERSION} torchvision==${TORCHVISION_VERSION}
@@ -66,7 +67,7 @@ else
 fi
 
 pip uninstall -y mmcv
-pip install --no-cache-dir mmcv-full==1.2.7 -f https://download.openmmlab.com/mmcv/dist/cu${CUDA_VERSION_CODE}/torch${TORCH_VERSION}/index.html
+pip install --no-cache-dir mmcv-full==${MMCV_VERSION} -f https://download.openmmlab.com/mmcv/dist/cu${CUDA_VERSION_CODE}/torch${TORCH_VERSION}/index.html
 
 # Install other requirements.
 cat requirements.txt | xargs -n 1 -L 1 pip3 install
