@@ -57,4 +57,3 @@ class VehicleDetection0203TestCase(
         )
 ):
     """ Test case for vehicle-detection-0203 model. """
-

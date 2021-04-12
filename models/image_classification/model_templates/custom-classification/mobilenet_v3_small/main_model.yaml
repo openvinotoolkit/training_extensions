@@ -2,12 +2,12 @@ lr_finder:
   enable: True
   mode: brute_force
   stop_after: False
-  num_epochs: 4
-  num_iter: 8
+  num_epochs: 5
+  num_iter: 6
   epochs_warmup: 1
   path_to_savefig: 'lr_finder.jpg'
   max_lr: 0.035
-  min_lr: 0.005
+  min_lr: 0.01
 
 model:
   name: 'mobilenetv3_small'

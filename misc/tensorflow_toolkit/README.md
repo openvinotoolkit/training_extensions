@@ -33,5 +33,4 @@ them for predictions.
 * [Image Retrieval](image_retrieval)
 * [License Plate Recognition](lpr)
 * [Text Detection](text_detection)
-* [Text Recognition](text_recognition)
 * [Vehicle Attributes](vehicle_attributes)
