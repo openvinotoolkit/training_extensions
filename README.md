@@ -58,6 +58,7 @@ them for prediction.
 * [Image classification](models/image_classification)
   - [Custom image classification](models/image_classification/model_templates/custom-classification)
 * [Object Detection](models/object_detection)
+  - [Custom Object Detection](models/object_detection/model_templates/custom-object-detection)
   - [Face Detection](models/object_detection/model_templates/face-detection)
   - [Horizontal Text Detection](models/object_detection/model_templates/horizontal-text-detection)
   - [Person Detection](models/object_detection/model_templates/person-detection)

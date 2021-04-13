@@ -58,4 +58,3 @@ class VehicleDetection0203TestCase(
             **kwargs)
 ):
     """ Test case for vehicle-detection-0203 model export. """
-
