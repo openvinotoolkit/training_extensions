@@ -16,8 +16,7 @@
 import os
 import json
 import sys
-import csv
-from shutil import make_archive
+from shutil import copy, make_archive, unpack_archive
 from typing import Tuple, List
 
 import pytest
@@ -26,7 +25,6 @@ import re
 import shlex
 from collections import OrderedDict
 from pathlib import Path
-from yattag import Doc
 
 BG_COLOR_GREEN_HEX = 'ccffcc'
 BG_COLOR_RED_HEX = 'ffcccc'
@@ -57,7 +55,7 @@ row_dict = OrderedDict()
 color_dict = OrderedDict()
 
 
-@pytest.fixture(autouse=True, scope="module")
+@pytest.fixture()
 def setup_ac():
     subprocess.run('virtualenv -ppython3.8 acc_check', cwd=PROJECT_ROOT, check=True, shell=True)
     subprocess.run(f'{acc_check_activate_string} && {ACC_CHECK_VENV_DIR}/bin/python setup.py install',
@@ -67,11 +65,8 @@ def setup_ac():
 
 
 def run_cmd(comm: str, cwd: str, venv=None) -> Tuple[int, str]:
-    print()
-    print(comm)
-    print()
     com_line = shlex.split(comm)
-    print(com_line)
+    print(com_line, '\n')
     cmd_env = os.environ.copy()
     if venv:
         cmd_env['VIRTUAL_ENV'] = str(venv)
@@ -104,70 +99,6 @@ def run_cmd(comm: str, cwd: str, venv=None) -> Tuple[int, str]:
     return exit_code, err_string
 
 
-def read_metric(metric_file):
-    metric = 0
-    if os.path.exists(metric_file):
-        input_csv_file = csv.DictReader(open(metric_file))
-        for row in input_csv_file:
-            metric = round(float(row['metric_value']) * 100, 2)
-    return metric
-
-
-def make_table_row(expected_, key, error_message, metric, diff_target):
-    if metric is not None:
-        row = [str(key), str(expected_), str(metric), str(diff_target), str('-')]
-    else:
-        row = [str(key), str(expected_), str('Not executed'), str('-'), str(error_message)]
-    return row
-
-
-def get_export_test_params(model, problem_name, test_id, domain_name, is_alt_ssd_export=None):
-    workdir = PROJECT_ROOT / model
-    sub_folder = problem_name.replace('-', '_')
-    test_folder = str(f'output_export_tests_{sub_folder}.{test_id}')
-    config_dir = workdir / domain_name / problem_name / model
-    ir_dir = config_dir / test_folder / 'gpu_export'
-    if is_alt_ssd_export:
-        workdir = PROJECT_ROOT / model.replace('-alt-ssd-export', '')
-        sub_folder = problem_name.replace('-', '_')
-        if os.path.isdir(workdir):
-            test_id = str(test_id).replace('_alt_ssd', '')
-        test_folder = str(f'output_export_tests_{sub_folder}.{test_id}')
-        config_dir = workdir / domain_name / problem_name / model.replace('-alt-ssd-export', '')
-        ir_dir = config_dir / test_folder / 'gpu_export' / 'alt_ssd_export'
-    return workdir, config_dir, ir_dir, test_id
-
-
-def write_results_table(init_table_string):
-    doc, tag, text = Doc().tagtext()
-    doc.asis('<!DOCTYPE html>')
-    with tag('p'):
-        text('legend: ')
-    with tag('p'):
-        with tag('span', style='Background-color: #{}'.format(BG_COLOR_GREEN_HEX)):
-            text('Thresholds Expected are passed')
-    with tag('p'):
-        with tag('span', style='Background-color: #{}'.format(BG_COLOR_RED_HEX)):
-            text('Thresholds for Expected are failed, or model was not evaluate')
-    with tag('p'):
-        text('If Reference FP32 value in parentheses, it takes from "target" field of .json file')
-    with tag('table', border='1', cellpadding='5', style='border-collapse: collapse; border: 1px solid;'):
-        with tag('tr'):
-            for i in init_table_string:
-                with tag('td'):
-                    text(i)
-        for key in row_dict:
-            with tag('tr', bgcolor='{}'.format(color_dict[key])):
-                for i in row_dict[key]:
-                    if i is None:
-                        i = '-'
-                    with tag('td'):
-                        text(i)
-    f = open(PROJECT_ROOT / 'results.html', 'w')
-    f.write(doc.getvalue())
-    f.close()
-
-
 def get_test_params():
     global param_list
     global ids_list
@@ -189,19 +120,16 @@ def get_test_params():
 
 @pytest.mark.parametrize('model_, test_id_, domain_name_, problem_name_, expected_, alt_export_', get_test_params()[0],
                          ids=get_test_params()[1])
-def test_eval(data_dir, model_, test_id_, domain_name_, problem_name_, expected_, alt_export_):
+def test_export(data_dir, model_, test_id_, domain_name_, problem_name_, expected_, alt_export_):
     os.environ['INTEL_OPENVINO_DIR'] = str(OPENVINO_DIR)
-    config_name = 'accuracy-check'
-    metric_value = None
-    diff_target = None
-    err_str = None
     exit_code = 0
-    workdir, config_dir, ir_dir, test_id_ = get_export_test_params(model_,
-                                                                   problem_name_,
-                                                                   test_id_,
-                                                                   domain_name_,
-                                                                   alt_export_)
-    if not os.path.isdir(ir_dir):
+    err_str = None
+    workdir = PROJECT_ROOT / model_
+    sub_folder = problem_name_.replace('-', '_')
+    test_folder = str(f'output_export_tests_{sub_folder}.{test_id_}')
+    config_dir = workdir / domain_name_ / problem_name_ / model_
+    ir_dir = config_dir / test_folder / 'gpu_export'
+    if not alt_export_:
         ote_cmd_string = f'{sys.executable} tests/run_model_templates_tests.py' \
                          f' --verbose' \
                          f'  --topic export' \
@@ -210,39 +138,41 @@ def test_eval(data_dir, model_, test_id_, domain_name_, problem_name_, expected_
                          f' --test-id-filter \"*{test_id_}*\" ' \
                          f' --workdir {workdir}'
         exit_code, err_str = run_cmd(ote_cmd_string, PROJECT_ROOT)
-    if exit_code == 0:
-        if alt_export_:
-            config_name += '_alt-ssd-export'
-            if not os.path.isfile(f"{model_.replace('-alt-ssd-export', '')}.zip"):
-                make_archive(model_, 'zip', ir_dir)
-        else:
-            make_archive(model_, 'zip', ir_dir)
-        ac_cmd_string = f'accuracy_check' \
-                        f' -c {config_dir}/{config_name}.yml' \
-                        f' -s {data_dir}' \
-                        f' -d dataset_definitions.yml' \
-                        f' -td CPU' \
-                        f' -m {ir_dir}' \
-                        f' --csv_result {PROJECT_ROOT}/{model_}.csv'
-        exit_code, err_str = run_cmd(ac_cmd_string, ACC_CHECK_DIR, ACC_CHECK_VENV_DIR)
-        if exit_code == 0:
-            metric_value = read_metric(f'{PROJECT_ROOT}/{model_}.csv')
-            diff_target = round((metric_value - expected_), 2)
-    row_dict[model_] = make_table_row(expected_,
-                                      model_,
-                                      err_str,
-                                      metric_value,
-                                      diff_target)
-    if diff_target is None or diff_target > DIFF_TARGET_MAX_GLOBAL or diff_target < DIFF_TARGET_MIN_GLOBAL:
-        color_dict[model_] = BG_COLOR_RED_HEX
-        pytest.fail(err_str)
     else:
-        color_dict[model_] = BG_COLOR_GREEN_HEX
+        pytest.skip()
+    # Copy AC configs to IR folder
+    src_files = os.listdir(config_dir)
+    for file_name in src_files:
+        if re.search('accuracy-check', file_name):
+            copy((config_dir / file_name), ir_dir)
+    # Archive IR folder
+    if ir_dir.is_dir():
+        make_archive(model_, 'zip', ir_dir)
+    if exit_code != 0:
+        pytest.fail(err_str)
+    assert Path(f'{model_}.zip').is_file()
 
 
-@pytest.fixture(autouse=True, scope='module')
-def results(data_dir):
-    yield
-    if data_dir:
-        header = ['Model', 'Expected', 'Measured', 'Diff Expected', 'Error']
-        write_results_table(header)
+# pylint:disable=redefined-outer-name
+@pytest.mark.parametrize('model_, test_id_, domain_name_, problem_name_, expected_, alt_export_', get_test_params()[0],
+                         ids=get_test_params()[1])
+def test_eval(setup_ac, data_dir, model_, test_id_, domain_name_, problem_name_, expected_, alt_export_):
+    config_name = 'accuracy-check'
+    model_folder = model_
+    model_archive = f'{model_}.zip'
+    if (TEST_ROOT / model_archive).is_file():
+        unpack_archive(model_archive, model_, 'zip')
+    if alt_export_:
+        model_folder = model_ / 'alt_ssd_export'
+        config_name = 'accuracy-check_alt-ssd-export'
+    ac_cmd_string = 'accuracy_check' \
+                    f' -c {model_}/{config_name}.yml' \
+                    f' -s {data_dir}' \
+                    f' -d dataset_definitions.yml' \
+                    f' -td CPU' \
+                    f' -m {model_folder}' \
+                    f' --csv_result {PROJECT_ROOT}/{model_}.csv'
+    exit_code, err_str = run_cmd(ac_cmd_string, ACC_CHECK_DIR, ACC_CHECK_VENV_DIR)
+    if exit_code != 0:
+        pytest.fail(err_str)
+    assert ('PROJECT_ROOT' / Path(f'{model_}.csv')).is_file()
