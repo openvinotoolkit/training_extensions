@@ -286,7 +286,7 @@ optimizer = dict(
 optimizer_config = dict()
 # learning policy
 lr_config = dict(
-    policy='CosineAnealing',
+    policy='CosineAnnealing',
     warmup='linear',
     warmup_iters=500,
     warmup_ratio=1.0 / 3,
