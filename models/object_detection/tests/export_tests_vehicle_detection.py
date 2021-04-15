@@ -51,19 +51,10 @@ class VehicleDetection0202TestCase(
     """ Test case for vehicle-detection-0202 model export. """
 
 
-# class VehicleDetection0203TestCase(
-#         create_object_detection_export_test_case(
-#             model_name='vehicle-detection-0203',
-#             alt_ssd_export=False,
-#             **kwargs)
-# ):
-#     """ Test case for vehicle-detection-0203 model export. """
-
-
-# class VehicleDetection0204TestCase(
-#         create_object_detection_export_test_case(
-#             model_name='vehicle-detection-0204',
-#             alt_ssd_export=False,
-#             **kwargs)
-# ):
-#     """ Test case for vehicle-detection-0204 model export. """
+class VehicleDetection0203TestCase(
+        create_object_detection_export_test_case(
+            model_name='vehicle-detection-0203',
+            alt_ssd_export=False,
+            **kwargs)
+):
+    """ Test case for vehicle-detection-0203 model export. """
