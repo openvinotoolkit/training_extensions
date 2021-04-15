@@ -188,16 +188,18 @@ class Trainer:
                                batch_transform=batch_transform_train,
                                use_ctc=(self.loss_type == 'CTC')),
             num_workers=self.config.get('num_workers', 4))
-        val_dataset = ConcatDataset(val_datasets)
-        val_sampler = BatchRandomSampler(dataset=val_dataset, batch_size=1)
+        val_samplers = [BatchRandomSampler(dataset=ds, batch_size=1) for ds in val_datasets]
         pprint('Creating val transforms list: {}'.format(self.val_transforms_list), indent=4, width=120)
         batch_transform_val = create_list_of_transforms(self.val_transforms_list)
-        self.val_loader = DataLoader(
-            val_dataset,
-            batch_sampler=val_sampler,
-            collate_fn=partial(collate_fn, self.vocab.sign2id,
-                               batch_transform=batch_transform_val, use_ctc=(self.loss_type == 'CTC')),
-            num_workers=self.config.get('num_workers', 4))
+        self.val_loaders = [
+            DataLoader(
+                ds,
+                batch_sampler=sampler,
+                collate_fn=partial(collate_fn, self.vocab.sign2id,
+                                   batch_transform=batch_transform_val, use_ctc=(self.loss_type == 'CTC')),
+                num_workers=self.config.get('num_workers', 4))
+            for ds, sampler in zip(val_datasets, val_samplers)
+        ]
         print('num workers: ', self.config.get('num_workers'))
 
     def train(self):
@@ -266,46 +268,58 @@ class Trainer:
 
     def validate(self, use_gt_token=True):
         self.model.eval()
-        val_total_loss = 0.0
-        val_total_accuracy = 0.0
+        val_avg_loss = 0.0
+        val_avg_accuracy = 0.0
         print('Validation started')
         with torch.no_grad():
             filename = VAL_FILE_NAME_TEMPLATE.format(self.val_results_path, self.epoch, self.step, self.time)
             with open(filename, 'w') as output_file:
-                for img_name, target_lengths, imgs, training_gt, loss_computation_gt in tqdm(self.val_loader):
+                for loader in self.val_loaders:
+                    val_loss, val_acc = 0, 0
+                    for img_name, target_lengths, imgs, training_gt, loss_computation_gt in tqdm(loader):
 
-                    imgs = imgs.to(self.device)
-                    training_gt = training_gt.to(self.device)
-                    loss_computation_gt = loss_computation_gt.to(self.device)
-                    logits, pred = self.model(imgs, training_gt if use_gt_token else None)
-                    if self.loss_type == 'CTC':
-                        pred = torch.nn.functional.log_softmax(logits.detach(), dim=2)
-                        pred = ctc_greedy_search(pred, blank_token=self.loss.blank)
-                    for j, phrase in enumerate(pred):
-                        gold_phrase_str = self.vocab.construct_phrase(
-                            loss_computation_gt[j], ignore_end_token=self.config.get('use_ctc'))
-                        pred_phrase_str = self.vocab.construct_phrase(phrase,
-                                                                      max_len=1 + len(gold_phrase_str.split()),
-                                                                      ignore_end_token=self.config.get('use_ctc')
-                                                                      )
-                        output_file.write(img_name[j] + '\t' + pred_phrase_str + '\t' + gold_phrase_str + '\n')
-                        val_total_accuracy += int(pred_phrase_str == gold_phrase_str)
-                    cut = self.loss_type != 'CTC'
-                    loss, _ = calculate_loss(logits, loss_computation_gt, target_lengths,
-                                             should_cut_by_min=cut, ctc_loss=self.loss)
-                    loss = loss.detach()
-                    val_total_loss += loss
-            avg_loss = val_total_loss / len(self.val_loader)
-            avg_accuracy = val_total_accuracy / len(self.val_loader)
-            print('Epoch {}, validation average loss: {:.4f}'.format(
-                self.epoch, avg_loss
-            ))
-            print('Epoch {}, validation average accuracy: {:.4f}'.format(
-                self.epoch, avg_accuracy
-            ))
+                        imgs = imgs.to(self.device)
+                        training_gt = training_gt.to(self.device)
+                        loss_computation_gt = loss_computation_gt.to(self.device)
+                        logits, pred = self.model(imgs, training_gt if use_gt_token else None)
+                        if self.loss_type == 'CTC':
+                            pred = torch.nn.functional.log_softmax(logits.detach(), dim=2)
+                            pred = ctc_greedy_search(pred, blank_token=self.loss.blank)
+                        for j, phrase in enumerate(pred):
+                            gold_phrase_str = self.vocab.construct_phrase(
+                                loss_computation_gt[j], ignore_end_token=self.config.get('use_ctc'))
+                            pred_phrase_str = self.vocab.construct_phrase(phrase,
+                                                                          max_len=1 + len(gold_phrase_str.split()),
+                                                                          ignore_end_token=self.config.get('use_ctc')
+                                                                          )
+                            output_file.write(img_name[j] + '\t' + pred_phrase_str + '\t' + gold_phrase_str + '\n')
+                            val_acc += int(pred_phrase_str == gold_phrase_str)
+                        cut = self.loss_type != 'CTC'
+                        loss, _ = calculate_loss(logits, loss_computation_gt, target_lengths,
+                                                 should_cut_by_min=cut, ctc_loss=self.loss)
+                        loss = loss.detach()
+                        val_loss += loss
+                    val_loss = val_loss / len(loader)
+                    val_acc = val_acc / len(loader)
+                    dataset_name = os.path.split(loader.dataset.data_path)[-1]
+                    print('Epoch {}, dataset {} loss: {:.4f}'.format(
+                        self.epoch, dataset_name, val_loss
+                    ))
+                    print('Epoch {}, dataset {} accuracy: {:.4f}'.format(
+                        self.epoch, dataset_name, val_acc
+                    ))
+                    weight = len(loader) / sum(map(len, self.val_loaders))
+                    val_avg_loss += val_loss * weight
+                    val_avg_accuracy += val_acc * weight
+        print('Epoch {}, validation average loss: {:.4f}'.format(
+            self.epoch, val_avg_loss
+        ))
+        print('Epoch {}, validation average accuracy: {:.4f}'.format(
+            self.epoch, val_avg_accuracy
+        ))
         self.save_model('validation_epoch_{}_step_{}_{}.pth'.format(self.epoch, self.step, self.time))
         self.model.train()
-        return avg_loss, avg_accuracy
+        return val_avg_loss, val_avg_accuracy
 
     def save_model(self, name):
         print('Saving model as name ', name)
