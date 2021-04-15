@@ -6,7 +6,6 @@ venv_dir=$1
 if [ -z "$venv_dir" ]; then
   venv_dir=venv
 fi
-echo ${venv_dir}
 
 cd ${work_dir}
 
@@ -23,8 +22,9 @@ if [ -z "${CUDA_HOME}" ] && [ -d ${CUDA_HOME_CANDIDATE} ]; then
   export CUDA_HOME=${CUDA_HOME_CANDIDATE}
 fi
 
-# Download mmdetection
+# Download mmdetection and nncf submodules
 git submodule update --init ../../external/mmdetection
+git submodule update --init ../../external/nncf
 
 # Create virtual environment
 virtualenv ${venv_dir} -p python3 --prompt="(instance_segmentation)"
@@ -34,10 +34,42 @@ if [[ -e "${path_openvino_vars}" ]]; then
   echo ". ${path_openvino_vars}" >> ${venv_dir}/bin/activate
 fi
 
-
 . ${venv_dir}/bin/activate
 
 
+if [ -z ${CUDA_VERSION} ] && [ -e "$CUDA_HOME/version.txt" ]; then
+  # Get CUDA version from version.txt file.
+  CUDA_VERSION=$(cat $CUDA_HOME/version.txt | sed -e "s/^.*CUDA Version *//" -e "s/ .*//")
+fi
+
+if [[ -z ${CUDA_VERSION} ]]; then
+  # Get CUDA version from nvidia-smi output.
+  CUDA_VERSION=$(nvidia-smi | grep "CUDA Version" | sed -e "s/^.*CUDA Version: *//" -e "s/ .*//")
+fi
+
+echo "Using CUDA_VERSION as ${CUDA_VERSION}"
+# Remove dots from CUDA version string, if any.
+CUDA_VERSION_CODE=$(echo ${CUDA_VERSION} | sed -e "s/\.//" -e "s/\(...\).*/\1/")
+
+
+# install ote.
+pip install -e ../../ote/
+
+# install PyTorch and MMCV.
+export TORCH_VERSION=1.8.1
+export TORCHVISION_VERSION=0.9.1
+export MMCV_VERSION=1.3.0
+
+if [[ $CUDA_VERSION_CODE == "102" ]]; then
+  pip install torch==${TORCH_VERSION} torchvision==${TORCHVISION_VERSION}
+else
+  pip install torch==${TORCH_VERSION}+cu${CUDA_VERSION_CODE} torchvision==${TORCHVISION_VERSION}+cu${CUDA_VERSION_CODE} -f https://download.pytorch.org/whl/torch_stable.html
+fi
+
+pip uninstall -y mmcv
+pip install --no-cache-dir mmcv-full==${MMCV_VERSION} -f https://download.openmmlab.com/mmcv/dist/cu${CUDA_VERSION_CODE}/torch${TORCH_VERSION}/index.html
+
+# Install other requirements.
 cat requirements.txt | xargs -n 1 -L 1 pip3 install
 
 mo_requirements_file="${INTEL_OPENVINO_DIR:-/opt/intel/openvino}/deployment_tools/model_optimizer/requirements_onnx.txt"
@@ -50,8 +82,6 @@ fi
 pip install -e ../../external/mmdetection/
 MMDETECTION_DIR=`realpath ../../external/mmdetection/`
 echo "export MMDETECTION_DIR=${MMDETECTION_DIR}" >> ${venv_dir}/bin/activate
-
-pip install -e ../../ote/
 
 deactivate
 
