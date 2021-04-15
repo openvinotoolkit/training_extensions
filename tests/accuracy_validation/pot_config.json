@@ -1,0 +1,21 @@
+{
+    "model": {
+        "model_name": "",
+        "model": "",
+        "weights": ""
+    },
+    "engine": {
+        "config": ""
+    },
+    "compression": {
+        "algorithms": [
+            {
+                "name": "DefaultQuantization",
+                "params": {
+                    "preset": "mixed",
+                    "stat_subset_size": 300
+                }
+            }
+        ]
+    }
+}

@@ -16,8 +16,7 @@
 import os
 import json
 import sys
-import csv
-from shutil import make_archive
+from shutil import copy, make_archive, unpack_archive
 from typing import Tuple, List
 
 import pytest
@@ -26,7 +25,6 @@ import re
 import shlex
 from collections import OrderedDict
 from pathlib import Path
-from yattag import Doc
 
 BG_COLOR_GREEN_HEX = 'ccffcc'
 BG_COLOR_RED_HEX = 'ffcccc'
@@ -46,10 +44,9 @@ else:
         OPENVINO_DIR = PROJECT_ROOT.parent / 'intel' / 'openvino_2021'
         if not OPENVINO_DIR.is_dir():
             raise Exception("OpenVino path not found!")
-ACC_CHECK_DIR = OPENVINO_DIR / 'deployment_tools' / 'open_model_zoo' / 'tools' / 'accuracy_checker'
-MO_DIR = OPENVINO_DIR / 'deployment_tools' / 'model_optimizer'
-ACC_CHECK_VENV_DIR = PROJECT_ROOT / 'acc_check'
-acc_check_activate_string = f'source {ACC_CHECK_VENV_DIR}/bin/activate && source {OPENVINO_DIR}/bin/setupvars.sh'
+ACC_CHECK_DIR = OPENVINO_DIR / 'deployment_tools' / \
+    'open_model_zoo' / 'tools' / 'accuracy_checker'
+POT_DIR = PROJECT_ROOT / 'compression-tool'
 
 param_list = []
 ids_list = []
@@ -57,21 +54,23 @@ row_dict = OrderedDict()
 color_dict = OrderedDict()
 
 
-@pytest.fixture(autouse=True, scope="module")
+@pytest.fixture(scope="module")
 def setup_ac():
-    subprocess.run('virtualenv -ppython3.8 acc_check', cwd=PROJECT_ROOT, check=True, shell=True)
-    subprocess.run(f'{acc_check_activate_string} && {ACC_CHECK_VENV_DIR}/bin/python setup.py install',
-                   cwd=ACC_CHECK_DIR, check=True, shell=True, executable='/bin/bash')
-    subprocess.run(f'{acc_check_activate_string} && {ACC_CHECK_VENV_DIR}/bin/pip install pycocotools',
-                   cwd=ACC_CHECK_DIR, check=True, shell=True, executable='/bin/bash')
+    subprocess.run("pip install opencv-python-headless", check=True, shell=True)
+    subprocess.run("pip install scikit-image==0.17.2", check=True, shell=True)
+    subprocess.run(f'{sys.executable} setup.py install', cwd=ACC_CHECK_DIR, check=True, shell=True)
+    subprocess.run('pip install pycocotools', check=True, shell=True)
+
+
+@pytest.fixture(scope="module")
+def setup_pot():
+    subprocess.run(f'{sys.executable} setup.py install',
+                   cwd=POT_DIR, check=True, shell=True)
 
 
 def run_cmd(comm: str, cwd: str, venv=None) -> Tuple[int, str]:
-    print()
-    print(comm)
-    print()
     com_line = shlex.split(comm)
-    print(com_line)
+    print(com_line, '\n')
     cmd_env = os.environ.copy()
     if venv:
         cmd_env['VIRTUAL_ENV'] = str(venv)
@@ -104,68 +103,14 @@ def run_cmd(comm: str, cwd: str, venv=None) -> Tuple[int, str]:
     return exit_code, err_string
 
 
-def read_metric(metric_file):
-    metric = 0
-    if os.path.exists(metric_file):
-        input_csv_file = csv.DictReader(open(metric_file))
-        for row in input_csv_file:
-            metric = round(float(row['metric_value']) * 100, 2)
-    return metric
-
-
-def make_table_row(expected_, key, error_message, metric, diff_target):
-    if metric is not None:
-        row = [str(key), str(expected_), str(metric), str(diff_target), str('-')]
-    else:
-        row = [str(key), str(expected_), str('Not executed'), str('-'), str(error_message)]
-    return row
-
-
-def get_export_test_params(model, problem_name, test_id, domain_name, is_alt_ssd_export=None):
-    workdir = PROJECT_ROOT / model
-    sub_folder = problem_name.replace('-', '_')
-    test_folder = str(f'output_export_tests_{sub_folder}.{test_id}')
-    config_dir = workdir / domain_name / problem_name / model
-    ir_dir = config_dir / test_folder / 'gpu_export'
-    if is_alt_ssd_export:
-        workdir = PROJECT_ROOT / model.replace('-alt-ssd-export', '')
-        sub_folder = problem_name.replace('-', '_')
-        if os.path.isdir(workdir):
-            test_id = str(test_id).replace('_alt_ssd', '')
-        test_folder = str(f'output_export_tests_{sub_folder}.{test_id}')
-        config_dir = workdir / domain_name / problem_name / model.replace('-alt-ssd-export', '')
-        ir_dir = config_dir / test_folder / 'gpu_export' / 'alt_ssd_export'
-    return workdir, config_dir, ir_dir, test_id
-
-
-def write_results_table(init_table_string):
-    doc, tag, text = Doc().tagtext()
-    doc.asis('<!DOCTYPE html>')
-    with tag('p'):
-        text('legend: ')
-    with tag('p'):
-        with tag('span', style='Background-color: #{}'.format(BG_COLOR_GREEN_HEX)):
-            text('Thresholds Expected are passed')
-    with tag('p'):
-        with tag('span', style='Background-color: #{}'.format(BG_COLOR_RED_HEX)):
-            text('Thresholds for Expected are failed, or model was not evaluate')
-    with tag('p'):
-        text('If Reference FP32 value in parentheses, it takes from "target" field of .json file')
-    with tag('table', border='1', cellpadding='5', style='border-collapse: collapse; border: 1px solid;'):
-        with tag('tr'):
-            for i in init_table_string:
-                with tag('td'):
-                    text(i)
-        for key in row_dict:
-            with tag('tr', bgcolor='{}'.format(color_dict[key])):
-                for i in row_dict[key]:
-                    if i is None:
-                        i = '-'
-                    with tag('td'):
-                        text(i)
-    f = open(PROJECT_ROOT / 'results.html', 'w')
-    f.write(doc.getvalue())
-    f.close()
+def create_pot_config(model_name, ac_config):
+    pot_config = json.load(
+        open(TEST_ROOT / 'pot_config.json'), object_pairs_hook=OrderedDict)
+    pot_config["model"]["model_name"] = model_name
+    pot_config["model"]["model"] = pot_config["model"]["weights"] = str((PROJECT_ROOT / 'ir_model').absolute())
+    pot_config["engine"]["config"] = str((PROJECT_ROOT / 'ir_model' / Path(ac_config)).absolute())
+    with open(f'{model_name}.json', 'w') as outfile:
+        json.dump(pot_config, outfile, indent=4)
 
 
 def get_test_params():
@@ -173,7 +118,8 @@ def get_test_params():
     global ids_list
     if param_list or ids_list:
         return param_list, ids_list
-    eval_config = json.load(open(TEST_ROOT / 'ote_accuracy_validation.json'), object_pairs_hook=OrderedDict)
+    eval_config = json.load(
+        open(TEST_ROOT / 'ote_accuracy_validation.json'), object_pairs_hook=OrderedDict)
     for domain_name in eval_config:
         model_type = eval_config[domain_name]
         for problem_name in model_type:
@@ -182,26 +128,24 @@ def get_test_params():
                 test_id = model_dict[model].get('test_id', {})
                 expected = model_dict[model].get('target', {})
                 alt_export = model_dict[model].get('subfolder')
-                param_list.append([model, test_id, domain_name, problem_name, expected, alt_export])
+                param_list.append(
+                    [model, test_id, domain_name, problem_name, expected, alt_export])
                 ids_list.append(model)
     return param_list, ids_list
 
 
 @pytest.mark.parametrize('model_, test_id_, domain_name_, problem_name_, expected_, alt_export_', get_test_params()[0],
                          ids=get_test_params()[1])
-def test_eval(data_dir, model_, test_id_, domain_name_, problem_name_, expected_, alt_export_):
+def test_export(data_dir, model_, test_id_, domain_name_, problem_name_, expected_, alt_export_):
     os.environ['INTEL_OPENVINO_DIR'] = str(OPENVINO_DIR)
-    config_name = 'accuracy-check'
-    metric_value = None
-    diff_target = None
-    err_str = None
     exit_code = 0
-    workdir, config_dir, ir_dir, test_id_ = get_export_test_params(model_,
-                                                                   problem_name_,
-                                                                   test_id_,
-                                                                   domain_name_,
-                                                                   alt_export_)
-    if not os.path.isdir(ir_dir):
+    err_str = None
+    workdir = PROJECT_ROOT / model_
+    sub_folder = problem_name_.replace('-', '_')
+    test_folder = str(f'output_export_tests_{sub_folder}.{test_id_}')
+    config_dir = workdir / domain_name_ / problem_name_ / model_
+    ir_dir = config_dir / test_folder / 'gpu_export'
+    if not alt_export_:
         ote_cmd_string = f'{sys.executable} tests/run_model_templates_tests.py' \
                          f' --verbose' \
                          f'  --topic export' \
@@ -210,39 +154,52 @@ def test_eval(data_dir, model_, test_id_, domain_name_, problem_name_, expected_
                          f' --test-id-filter \"*{test_id_}*\" ' \
                          f' --workdir {workdir}'
         exit_code, err_str = run_cmd(ote_cmd_string, PROJECT_ROOT)
-    if exit_code == 0:
-        if alt_export_:
-            config_name += '_alt-ssd-export'
-            if not os.path.isfile(f"{model_.replace('-alt-ssd-export', '')}.zip"):
-                make_archive(model_, 'zip', ir_dir)
-        else:
-            make_archive(model_, 'zip', ir_dir)
-        ac_cmd_string = f'accuracy_check' \
-                        f' -c {config_dir}/{config_name}.yml' \
-                        f' -s {data_dir}' \
-                        f' -d dataset_definitions.yml' \
-                        f' -td CPU' \
-                        f' -m {ir_dir}' \
-                        f' --csv_result {PROJECT_ROOT}/{model_}.csv'
-        exit_code, err_str = run_cmd(ac_cmd_string, ACC_CHECK_DIR, ACC_CHECK_VENV_DIR)
-        if exit_code == 0:
-            metric_value = read_metric(f'{PROJECT_ROOT}/{model_}.csv')
-            diff_target = round((metric_value - expected_), 2)
-    row_dict[model_] = make_table_row(expected_,
-                                      model_,
-                                      err_str,
-                                      metric_value,
-                                      diff_target)
-    if diff_target is None or diff_target > DIFF_TARGET_MAX_GLOBAL or diff_target < DIFF_TARGET_MIN_GLOBAL:
-        color_dict[model_] = BG_COLOR_RED_HEX
-        pytest.fail(err_str)
     else:
-        color_dict[model_] = BG_COLOR_GREEN_HEX
+        pytest.skip()
+    # Copy AC configs to IR folder
+    src_files = os.listdir(config_dir)
+    for file_name in src_files:
+        if re.search('accuracy-check', file_name):
+            copy((config_dir / file_name), ir_dir)
+    # Archive IR folder
+    if ir_dir.is_dir():
+        make_archive(model_, 'zip', ir_dir)
+    if exit_code != 0:
+        pytest.fail(err_str)
+    assert Path(f'{model_}.zip').is_file()
 
 
-@pytest.fixture(autouse=True, scope='module')
-def results(data_dir):
-    yield
-    if data_dir:
-        header = ['Model', 'Expected', 'Measured', 'Diff Expected', 'Error']
-        write_results_table(header)
+# pylint:disable=redefined-outer-name
+@pytest.mark.parametrize('model_, test_id_, domain_name_, problem_name_, expected_, alt_export_', get_test_params()[0],
+                         ids=get_test_params()[1])
+def test_eval(setup_ac, data_dir, model_, test_id_, domain_name_, problem_name_, expected_, alt_export_):
+    base_model = model_
+    config_name = 'accuracy-check.yml'
+    model_folder = config_folder = PROJECT_ROOT / 'ir_model'
+    if alt_export_:
+        base_model = model_.replace('-alt-ssd-export', '')
+        config_name = 'accuracy-check_alt-ssd-export.yml'
+    model_archive = f'{base_model}.zip'
+    if (PROJECT_ROOT / model_archive).is_file():
+        unpack_archive(model_archive, 'ir_model', 'zip')
+    create_pot_config(model_, config_name)
+
+    ac_cmd_string = 'accuracy_check' \
+                    f' -c {config_folder}/{config_name}' \
+                    f' -s {data_dir}' \
+                    f' -d dataset_definitions.yml' \
+                    f' -td CPU' \
+                    f' -m {model_folder}' \
+                    f' --csv_result {PROJECT_ROOT}/report.csv'
+    exit_code, err_str = run_cmd(ac_cmd_string, ACC_CHECK_DIR)
+    if exit_code != 0:
+        pytest.fail(err_str)
+    assert (PROJECT_ROOT / 'report.csv').is_file()
+
+
+# pylint:disable=redefined-outer-name
+@pytest.mark.parametrize('model_, test_id_, domain_name_, problem_name_, expected_, alt_export_', get_test_params()[0],
+                         ids=get_test_params()[1])
+def test_quantize(setup_pot, data_dir, model_, test_id_, domain_name_, problem_name_, expected_, alt_export_):
+    subprocess.run('ls -lF', check=True, shell=True)
+    subprocess.run('ls -lF', cwd='ir_model', check=True, shell=True)
