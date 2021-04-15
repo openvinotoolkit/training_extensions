@@ -1,0 +1,80 @@
+backbone_config:
+  arch: resnext101_32x8d
+  disable_layer_3: true
+  disable_layer_4: true
+  one_ch_first_conv: true
+  output_channels: 512
+head:
+  # type: AttentionBasedLSTM
+  type: TextRecognitionHeadAttention
+  encoder_dim_input: 512
+  encoder_dim_internal: 256
+  encoder_num_layers: 3
+  decoder_input_feature_size: [4, 15]
+  decoder_max_seq_len: 28
+  decoder_dim_hidden: 256
+  decoder_sos_index: 0
+  decoder_rnn_type: "GRU"
+  dropout_ratio: 0.3
+val_transforms_list:
+  - name: TransformGrayscale
+device: "cuda"
+num_workers: 0
+# model_path: try_attn_2d_head/model_checkpoints/validation_epoch_57_step_4_2021-04-14_13-20-09.pth
+vocab_path: /media/cluster_fs/user/vloginov/text_recognition/vocabs/vocab_alphanumeric.json
+train:
+  batch_size: 64
+  learning_rate: 0.001
+  clip_grad: 5.0
+  epochs: 500
+  loss_type: NLL
+  save_freq: 10000
+  val_freq: 5000
+  print_freq: 500
+  optimizer: Adam
+  save_dir: model_checkpoints
+  datasets:
+    - type: MJSynthDataset
+      data_path: /home/vloginov/work/90kDICT32px
+      annotation_file: annotation_train_fixed.txt
+      case_sensitive: false
+      fixed_img_shape:
+        - 32
+        - 120
+      subset: train
+    - type: ICDAR2013RECDataset
+      case_sensitive: false
+      data_path: /home/vloginov/work/omz_validation_datasets/ICDAR13_REC/Challenge2_Test_Task3_Images
+      annotation_file: /home/vloginov/work/omz_validation_datasets/ICDAR13_REC/gt/gt.txt.fixed.alfanumeric
+      grayscale: true
+      fixed_img_shape:
+        - 32
+        - 120
+      subset: validate
+  train_transforms_list:
+    - name: TransformGrayscale
+eval:
+  dataset:
+    type: ICDAR2013RECDataset
+    case_sensitive: false
+    images_folder: /home/vloginov/work/omz_validation_datasets/ICDAR13_REC/Challenge2_Test_Task3_Images
+    annotation_file: /home/vloginov/work/omz_validation_datasets/ICDAR13_REC/gt/gt.txt.fixed.alfanumeric
+    grayscale: true
+    fixed_img_shape:
+      - 32
+      - 120
+  render: false
+  use_ctc: true
+demo:
+  transforms_list: []
+export:
+  model_input_names: "imgs"
+  model_output_names: "logits"
+  res_model_name: model_0254_resnext101.onnx
+  export_ir: true
+  verbose_export: false
+  input_shape:
+    - 1
+    - 1
+    - 32
+    - 120

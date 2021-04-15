@@ -22,10 +22,12 @@ import torch.nn as nn
 from .backbones.resnet import ResNetLikeBackbone
 from .text_recognition_heads.attention_based import AttentionBasedLSTM
 from .text_recognition_heads.ctc_lstm_based import LSTMEncoderDecoder
+from .text_recognition_heads.attention_based_2d import TextRecognitionHeadAttention
 
 TEXT_REC_HEADS = {
     'AttentionBasedLSTM': AttentionBasedLSTM,
     'LSTMEncoderDecoder': LSTMEncoderDecoder,
+    'TextRecognitionHeadAttention': TextRecognitionHeadAttention,
 }
 
 BACKBONES = {
