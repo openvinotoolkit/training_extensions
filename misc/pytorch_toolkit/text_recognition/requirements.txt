@@ -10,3 +10,4 @@ tqdm==4.48.2
 opencv-python
 scipy
 positional-encodings
+lmdb
