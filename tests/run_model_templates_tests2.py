@@ -2,7 +2,8 @@ import argparse
 import logging
 import os
 import tempfile
-from subprocess import run
+import sys
+from subprocess import run, CalledProcessError
 
 
 ALL_DOMAINS = os.listdir('models')
@@ -49,10 +50,23 @@ if __name__ == '__main__':
             logging.warning(f'You are running tests inside previously created virtual environments. '
                             f'They might be outdated! {venv_path}')
 
+    domain_tests_passed = {}
     for domain in domains:
         if args.test is None:
             to_test = f'models/{domain}/tests/*'
-        run(f'source {destination}/{domain}/venv/bin/activate && '
-            f'export MODEL_TEMPLATES={destination} && '
-            f'pytest {to_test} -v',
-            check=True, shell=True, executable='/bin/bash')
+        try:
+            run(f'source {destination}/{domain}/venv/bin/activate && '
+                f'export MODEL_TEMPLATES={destination} && '
+                f'pytest {to_test} -v',
+                check=True, shell=True, executable='/bin/bash')
+            domain_tests_passed[domain] = True
+        except CalledProcessError as e:
+            domain_tests_passed[domain] = False
+            logging.error(e)
+
+    all_passed = all(v for k, v in domain_tests_passed.items())
+
+    for k, v in domain_tests_passed.items():
+        logging.warning(f'tests for {k} domain passed: {v}')
+
+    sys.exit(not all_passed)
