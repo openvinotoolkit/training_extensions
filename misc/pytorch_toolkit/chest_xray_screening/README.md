@@ -11,16 +11,15 @@ This code is to perform architecture search for models trained to detect multipl
 
 Few example images from the dataset
 
-<img src="https://lh6.googleusercontent.com/4T5-Oc1pyJxXEmXsujHYvNdC6cK_Behf7S5FPT-B6UJgpyAqRcli1_lVgepup0VMpjRyPtvAZdXv5FVRCOhKsJVJCOy1iQWs-F_XroXktc25fSf6ZqqrUBXWR1A62WWHN_qpdVL9" width="400" height="790">
 
-<!-- **![](https://lh6.googleusercontent.com/4T5-Oc1pyJxXEmXsujHYvNdC6cK_Behf7S5FPT-B6UJgpyAqRcli1_lVgepup0VMpjRyPtvAZdXv5FVRCOhKsJVJCOy1iQWs-F_XroXktc25fSf6ZqqrUBXWR1A62WWHN_qpdVL9)
-Class = 0**
- -->
-**![](https://lh5.googleusercontent.com/Gen7YqQBLbOl4adwqc449f-0RBt9f3d1Vdlob5c5miYV4UMpEAmCTSzlOU0JCOGxz5aCM-lLihnh5-BIAGUrThWzpJdsR3n94QAfwbHsv4CgGFbXBTwYYOGpP35IYaelLUty4EGD)
-Class = 1**
+<img src="https://lh6.googleusercontent.com/4T5-Oc1pyJxXEmXsujHYvNdC6cK_Behf7S5FPT-B6UJgpyAqRcli1_lVgepup0VMpjRyPtvAZdXv5FVRCOhKsJVJCOy1iQWs-F_XroXktc25fSf6ZqqrUBXWR1A62WWHN_qpdVL9" width="250" height="250">
+**Class = 0 **
 
-**![](https://lh3.googleusercontent.com/UUPBhjzjRc01fJBuQfyGkWQ5RbtnwVOHggVj06GB70ltNL1K0G4R63rVbOWZNnZwR6n1-xS4h2eUzCzUo0ocHEo4fI9ZO6KqUi4RDlQfJEyAqBBWx-c1ze6R-Ph098rcd7OnHLxo)
-Class = 2**
+<img src="https://lh5.googleusercontent.com/Gen7YqQBLbOl4adwqc449f-0RBt9f3d1Vdlob5c5miYV4UMpEAmCTSzlOU0JCOGxz5aCM-lLihnh5-BIAGUrThWzpJdsR3n94QAfwbHsv4CgGFbXBTwYYOGpP35IYaelLUty4EGD" width="250" height="250">
+**Class = 1 **
+
+<img src="https://lh3.googleusercontent.com/UUPBhjzjRc01fJBuQfyGkWQ5RbtnwVOHggVj06GB70ltNL1K0G4R63rVbOWZNnZwR6n1-xS4h2eUzCzUo0ocHEo4fI9ZO6KqUi4RDlQfJEyAqBBWx-c1ze6R-Ph098rcd7OnHLxo" width="250" height="250">
+**Class = 2 **
 
 A systematic search was performed over a set of CNN architectures by scaling the width and depth of the standard DenseNet using the EfficientNet approach [link](http://proceedings.mlr.press/v97/tan19a/tan19a.pdf). The details of our experiments based on EfficientNet is summarized in the image below
 
