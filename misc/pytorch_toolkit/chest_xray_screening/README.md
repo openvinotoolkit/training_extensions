@@ -1,29 +1,32 @@
-# EfficientNet based Deep Neural Architecture Search for Chest X-Ray Screening
+# EfficientNet based Deep Neural Architecture Search for Chest X-Ray Screening 
 
+<div id="abs">
 
 Chest radiographs are primarily employed for the screening of pulmonary and cardio-/thoracic conditions. Being undertaken at primary healthcare centers, they require the presence of an on-premise reporting Radiologist, which is a challenge in low and middle income countries. This has inspired the development of machine learning based automation of the screening process. While recent efforts demonstrate a performance benchmark using an ensemble of deep convolutional neural networks (CNN), our systematic search over multiple standard CNN architectures identified single candidate CNN models whose classification performances were found to be at par with ensembles.
 
   
 
-This code is to perform architecture search for models trained to detect multiple comorbid chest diseases in chest X-rays. In this code, we performed experiments to fine-tune the DenseNet-121 ([paper](https://arxiv.org/pdf/1608.06993.pdf))CNN architecture for this task ([link](https://arxiv.org/pdf/2004.11693.pdf)). The method in this repository differs from the paper in a few aspects; In the paper, the authors classify an X-ray image into one or more of the 14 classes following a multi-hot encoding on account of co-morbidity of diseases, while in this repository we present the approach to classify a Chest X-ray image into any of the applicable 3 classes. This modified DenseNet-121 is retrained using the publicly available 2018 RSNA Pneumonia Detection Challenge dataset ([link](https://www.rsna.org/education/ai-resources-and-training/ai-image-challenge/rsna-pneumonia-detection-challenge-2018)).
+This code is to perform architecture search for models trained to detect multiple comorbid chest diseases in chest X-rays. In this code, we performed experiments to fine-tune the DenseNet-121[[1](#densenet)] CNN architecture for this task [[2](#embc)]. The method in this repository differs from the paper in a few aspects; In the paper, the authors classify an X-ray image into one or more of the 14 classes following a multi-hot encoding on account of co-morbidity of diseases, while in this repository we present the approach to classify a Chest X-ray image into any of the applicable 3 classes. This modified DenseNet-121 is retrained using the publicly available 2018 RSNA Pneumonia Detection Challenge dataset ([link](https://www.rsna.org/education/ai-resources-and-training/ai-image-challenge/rsna-pneumonia-detection-challenge-2018)).
+</div>
 
-  
 
 Few example images from the dataset
+<table >
+<tr>
+<td align='center'> Class 0 (Lung Opacity)</td>
+<td align='center'> Class 1 (Normal)</td>
+<td align='center'> Class 2 (No Lung Opacity/ Not Normal)</td>
+</tr>
+<tr>
+<td align='center'><img src="./media/class0.jpg" width="250" height="200"></td>
+<td align='center'> <img src="./media/class1.jpg" width="250" height="200"></td>
+<td align='center'> <img src="./media/class2.jpg" width="250" height="200"> </td>
+</tr>
+</table>
 
+A systematic search was performed over a set of CNN architectures by scaling the width and depth of the standard DenseNet using the EfficientNet approach[[3](efficientnet)]. The details of our experiments based on EfficientNet is summarized in the image below.
 
-<img src="https://lh6.googleusercontent.com/4T5-Oc1pyJxXEmXsujHYvNdC6cK_Behf7S5FPT-B6UJgpyAqRcli1_lVgepup0VMpjRyPtvAZdXv5FVRCOhKsJVJCOy1iQWs-F_XroXktc25fSf6ZqqrUBXWR1A62WWHN_qpdVL9" width="250" height="250">
-**Class = 0**
-
-<img src="https://lh5.googleusercontent.com/Gen7YqQBLbOl4adwqc449f-0RBt9f3d1Vdlob5c5miYV4UMpEAmCTSzlOU0JCOGxz5aCM-lLihnh5-BIAGUrThWzpJdsR3n94QAfwbHsv4CgGFbXBTwYYOGpP35IYaelLUty4EGD" width="250" height="250">
-**Class = 1**
-
-<img src="https://lh3.googleusercontent.com/UUPBhjzjRc01fJBuQfyGkWQ5RbtnwVOHggVj06GB70ltNL1K0G4R63rVbOWZNnZwR6n1-xS4h2eUzCzUo0ocHEo4fI9ZO6KqUi4RDlQfJEyAqBBWx-c1ze6R-Ph098rcd7OnHLxo" width="250" height="250">
-**Class = 2**
-
-A systematic search was performed over a set of CNN architectures by scaling the width and depth of the standard DenseNet using the EfficientNet approach [link](http://proceedings.mlr.press/v97/tan19a/tan19a.pdf). The details of our experiments based on EfficientNet is summarized in the image below
-
-![](https://lh5.googleusercontent.com/gzodIpXuS8SAsvhNJkFKrztuzTF77B_pipyhkCy3LrVENcQUe5z4s6Lk62A9iM3MICCrOaM5EnzvrgN-MR2QGvnTUS1xwBuq6DzlHQlC2m8bbOcngyMf1LmomPRq_EA-fSWIM-aY)
+<img src = "./media/efficientnet.png" width=650>
 
 ## Network Architecture:
 
@@ -46,7 +49,7 @@ Mean AUROC score: 0.5138
 
   
 
-AUROC Score for the base network, when trained and evaluated using the CheXpert dataset provided by Stanford University [link](https://stanfordmlgroup.github.io/competitions/chexpert/), is given below.
+AUROC Score for the base network, when trained and evaluated using the CheXpert dataset provided by Stanford University ([link](https://stanfordmlgroup.github.io/competitions/chexpert/)), is given below.
 
 | Class | AUROC Score  |
 |--|--|
@@ -63,14 +66,12 @@ AUROC Score for the base network, when trained and evaluated using the CheXpert 
 | Pleural Other | 0.04 |
 
 
-  
-
-### Model
+## **Model**
 Download checkpoint with the following [link]()
 
 The OpenVINO IR can be found at [link]()
 
-## Setup
+## **Setup**
 
 ### Prerequisites
 
@@ -79,7 +80,7 @@ The OpenVINO IR can be found at [link]()
 * NVidia\* GPU for training
 * 16GB RAM for inference
 
-## Train
+## **Train**
 
 1. Download the [RSNA Dataset](https://www.kaggle.com/c/rsna-pneumonia-detection-challenge/data)
 2. Create the directory tree
@@ -143,20 +144,45 @@ python3 test.py \
   --imgpath \
 
 ```
-## Acknowledgement
-This work is undertaken as part of Intel India Grand Challenge 2016 Project MIRIAD: Many Incarnations of Screening of Radiology for High Throughput Disease Screening via Multiple Instance Reinforcement Learning with Adversarial Deep Neural Networks, sponsored by Intel Technology India Pvt. Ltd., Bangalore, India 
+## **Acknowledgement**
+This work is undertaken as part of Intel India Grand Challenge 2016 Project MIRIAD: Many Incarnations of Screening of Radiology for High Throughput Disease Screening via Multiple Instance Reinforcement Learning with Adversarial Deep Neural Networks, sponsored by Intel Technology India Pvt. Ltd., Bangalore, India.
+
+**Contributor**
+
+The codes/model was contributed to the OpenVINO project by
+
+Rakshith Sathish, </br>
+Advanced Technology Development Centre, </br>
+Indian Institute of Technology Kharagpur</br>
+email: rakshith.sathish@kgpian.iitkgp.ac.in</br>
+Github username: Rakshith2597
+
 
 **Principal Investigators**
-Dr Debdoot Sheet, Dr Nirmalya Ghosh
-Department of Electrical Engineering, Indian Institute of Technology Kharagpur
-Dr Ramanathan Sethuraman, Intel Technology India Pvt. Ltd.
 
-## References
+Dr Debdoot Sheet, Dr Nirmalya Ghosh,</br>
+Department of Electrical Engineering,</br>
+Indian Institute of Technology Kharagpur</br>
 
-[1] Huang, Gao, Zhuang Liu, Laurens Van Der Maaten, and Kilian Q. Weinberger. &quot;Densely connected convolutional networks.&quot; In _Proceedings of the IEEE conference on computer vision and pattern recognition_, pp. 4700-4708. 2017.
+Dr Ramanathan Sethuraman,</br>
+Intel Technology India Pvt. Ltd.
 
-[2] Tan, Mingxing, and Quoc V. Le. &quot;EfficientNet: Rethinking model scaling for convolutional neural networks.&quot; , ICML, pp. 6105-6114. 2019.
+## **References**
 
-[3] Mitra, Arka, Arunava Chakravarty, Nirmalya Ghosh, Tandra Sarkar, Ramanathan Sethuraman, and Debdoot Sheet. &quot;A Systematic Search over Deep Convolutional Neural Network Architectures for Screening Chest Radiographs.&quot; _arXiv preprint arXiv:2004.11693_ (2020).
+<div id="densenet">
+<a href="#abs">[1]</a> Huang, Gao, Zhuang Liu, Laurens Van Der Maaten, and Kilian Q. Weinberger. Densely connected convolutional networks. In Proceedings of the IEEE conference on computer vision and pattern recognition_, pp. 4700-4708. 2017. <a href="https://arxiv.org/pdf/1608.06993.pdf"> (link) </a> 
+</div>
 
-[4] Irvin, Jeremy, Pranav Rajpurkar, Michael Ko, Yifan Yu, Silviana Ciurea-Ilcus, Chris Chute, Henrik Marklund et al. &quot;Chexpert: A large chest radiograph dataset with uncertainty labels and expert comparison.&quot; In _Proceedings of the AAAI Conference on Artificial Intelligence_, vol. 33, pp. 590-597. 2019.
+<div id="embc">
+<a href="#abs">[2]</a> A. Mitra, A. Chakravarty, N. Ghosh, T. Sarkar, R. Sethuraman and D. Sheet, "A Systematic Search over Deep Convolutional Neural Network Architectures for Screening Chest Radiographs," 2020 42nd Annual International Conference of the IEEE Engineering in Medicine & Biology Society (EMBC), Montreal, QC, Canada, 2020, pp. 1225-1228, doi: 10.1109/EMBC44109.2020.9175246. <a href="https://ieeexplore.ieee.org/document/9175246"> (link) </a>
+
+</div>
+
+<div id="efficientnet">
+<a href="#abs">[3]</a>  Tan, Mingxing, and Quoc V. Le. &quot;EfficientNet: Rethinking model scaling for convolutional neural networks.&quot; , ICML, pp. 6105-6114. 2019. <a href="http://proceedings.mlr.press/v97/tan19a/tan19a.pdf"> (link) </a>
+
+</div>
+
+<div id="chexpert">
+<a href="#abs">[4]</a>  Irvin, Jeremy, Pranav Rajpurkar, Michael Ko, Yifan Yu, Silviana Ciurea-Ilcus, Chris Chute, Henrik Marklund et al. &quot;Chexpert: A large chest radiograph dataset with uncertainty labels and expert comparison.&quot; In _Proceedings of the AAAI Conference on Artificial Intelligence_, vol. 33, pp. 590-597. 2019. <a href="https://arxiv.org/abs/1901.07031"> (link) </a>
+</div>
