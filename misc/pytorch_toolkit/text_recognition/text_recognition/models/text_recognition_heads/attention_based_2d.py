@@ -150,7 +150,7 @@ class TextRecognitionHeadAttention(nn.Module):
 
     def __init__(self,
                  decoder_vocab_size,
-                 encoder_dim_input,
+                 encoder_input_size,
                  encoder_dim_internal,
                  encoder_num_layers,
                  decoder_input_feature_size,
@@ -161,10 +161,9 @@ class TextRecognitionHeadAttention(nn.Module):
                  dropout_ratio=0.0):
         super().__init__()
 
-        self.encoder_dim_input = encoder_dim_input
 
         self.encoder = Encoder(
-            encoder_dim_input, encoder_dim_internal, encoder_num_layers)
+            encoder_input_size, encoder_dim_internal, encoder_num_layers)
         self.dropout = nn.Dropout(dropout_ratio)
         self.decoder = DecoderAttention2d(hidden_size=decoder_dim_hidden,
                                           vocab_size=decoder_vocab_size,

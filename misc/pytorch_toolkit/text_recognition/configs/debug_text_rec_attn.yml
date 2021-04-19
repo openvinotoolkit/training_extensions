@@ -1,16 +1,16 @@
 backbone_config:
   arch: resnext101_32x8d
-  disable_layer_3: true
-  disable_layer_4: true
+  disable_layer_3: false
+  disable_layer_4: false
   one_ch_first_conv: true
-  output_channels: 512
+  output_channels: 2048
 head:
   # type: AttentionBasedLSTM
   type: TextRecognitionHeadAttention
-  encoder_dim_input: 512
+  encoder_input_size: 2048
   encoder_dim_internal: 256
   encoder_num_layers: 3
-  decoder_input_feature_size: [4, 15]
+  decoder_input_feature_size: [2,8]
   decoder_max_seq_len: 28
   decoder_dim_hidden: 256
   decoder_sos_index: 0
@@ -20,7 +20,7 @@ val_transforms_list:
   - name: TransformGrayscale
 device: "cuda"
 num_workers: 0
-# model_path: try_attn_2d_head/model_checkpoints/validation_epoch_57_step_4_2021-04-14_13-20-09.pth
+# model_path: try_attn_2d_head/model_checkpoints/accuracy_test_best_model_2021-04-15_11-13-39.pth
 vocab_path: /media/cluster_fs/user/vloginov/text_recognition/vocabs/vocab_alphanumeric.json
 train:
   batch_size: 64
@@ -39,8 +39,8 @@ train:
       annotation_file: annotation_train_fixed.txt
       case_sensitive: false
       fixed_img_shape:
-        - 32
-        - 120
+        - 64
+        - 256
       subset: train
     - type: ICDAR2013RECDataset
       case_sensitive: false
@@ -48,8 +48,8 @@ train:
       annotation_file: /home/vloginov/work/omz_validation_datasets/ICDAR13_REC/gt/gt.txt.fixed.alfanumeric
       grayscale: true
       fixed_img_shape:
-        - 32
-        - 120
+        - 64
+        - 256
       subset: validate
   train_transforms_list:
     - name: TransformGrayscale
