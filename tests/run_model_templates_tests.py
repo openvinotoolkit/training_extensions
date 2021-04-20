@@ -15,6 +15,7 @@
 import argparse
 import fnmatch
 import glob
+import inspect
 import logging
 import os
 import shlex
@@ -27,6 +28,8 @@ from collections import Counter
 from subprocess import run
 from texttable import Texttable
 
+
+SHOULD_USE_PYTEST_FOR_TEST_RUNNING = True
 
 KNOWN_DOMAIN_FOLDERS = [
         'object_detection',
@@ -274,6 +277,27 @@ def is_in_virtual_env_in_work_dir(work_dir, domain):
 def generate_venv_path(work_dir, domain):
     return os.path.join(work_dir, domain, VENV_FOLDER_NAME)
 
+def pytest_run_tests(all_tests, work_dir, verbose):
+    pytest_ids = []
+    for el in all_tests:
+        curfile = inspect.getfile(type(el['test']))
+        curfile = os.path.relpath(curfile)
+        classname = type(el['test']).__name__
+        cur_id = el['id']
+        cur_id = cur_id[cur_id.rfind('.')+1:]
+        cur_pytest_id = f'{curfile}::{classname}::{cur_id}'
+        pytest_ids.append(cur_pytest_id)
+
+    pytest_ids = ' '.join(pytest_ids)
+    verb_flag = '-v' if verbose else ''
+    cmd = f'pytest {verb_flag} {pytest_ids}'
+
+    os.environ['MODEL_TEMPLATES'] = work_dir
+    # Note that just subprocess.run is used instead of run_with_log,
+    # since the list of test ids will be printed by pytest
+    res = run(cmd, shell=True, check=True, executable="/bin/bash")
+    return res
+
 def run_testsuite(ts, work_dir, verbose):
     os.environ['MODEL_TEMPLATES'] = work_dir
     verbosity = 2
@@ -292,13 +316,18 @@ def run_one_domain_tests_already_in_virtualenv(work_dir, all_tests, verbose):
         raise RuntimeError('The option --run-one-domain-inside-virtual-env may be used only'
                            ' inside the virtual environment of the domain')
 
-    testsuite = unittest.TestSuite()
-    for el in all_tests:
-        testsuite.addTest(el['test'])
+    if not SHOULD_USE_PYTEST_FOR_TEST_RUNNING:
+        testsuite = unittest.TestSuite()
+        for el in all_tests:
+            testsuite.addTest(el['test'])
+        tests_res = run_testsuite(testsuite, work_dir, verbose)
+        was_successful = tests_res.wasSuccessful()
+    else:
+        print(f'Begin running pytest for domain {domain}', flush=True)
+        res = pytest_run_tests(all_tests, work_dir, verbose)
+        was_successful = (res.returncode == 0)
+        print(f'End running pytest for domain {domain}, was_successful={was_successful}')
 
-    tests_res = run_testsuite(testsuite, work_dir, verbose)
-
-    was_successful = tests_res.wasSuccessful()
     sys_retval = int(not was_successful)
     sys.exit(sys_retval)
 
