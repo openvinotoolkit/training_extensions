@@ -1,13 +1,12 @@
-
 import os
 import os.path
 import numpy as np
 import time
 import sys
 import csv
-import argparse
+import cv2
+import matplotlib.pyplot as plt
 import torch
-from torchvision import models
 import torch.nn as nn
 import torch.backends.cudnn as cudnn
 import torchvision
@@ -20,17 +19,20 @@ from torch.utils.data import DataLoader
 from torch.optim.lr_scheduler import ReduceLROnPlateau,StepLR
 from PIL import Image
 import torch.nn.functional as func
-import random
+from generate import *
 from sklearn.metrics.ranking import roc_auc_score
 import sklearn.metrics as metrics
-import json
+import random
 from pathlib import Path
-from dataloader import RSNADataSet
+import argparse
+from math import sqrt
+import torchvision.models.densenet as modelzoo
+from dataloader import *
 
 
-class RSNATrainer():
+class CheXpertTrainer():
 
-    def train (model, dataLoaderTrain, dataLoaderVal,dataLoaderTest, nnClassCount, trMaxEpoch, launchTimestamp, checkpoint,lr, device, class_names):
+    def train (model, dataLoaderTrain, dataLoaderVal, nnClassCount, trMaxEpoch, launchTimestamp, checkpoint,lr, device, class_names):
 
         ############Define Loss ########
         loss1 = torch.nn.BCELoss()
@@ -57,7 +59,7 @@ class RSNATrainer():
             timestampSTART = timestampDate + '-' + timestampTime
             global gepochID
             gepochID=epochID
-            batchs, losst, losse, aurocMax = RSNATrainer.epochTrain(model, dataLoaderTrain, dataLoaderVal,dataLoaderTest, optimizer,
+            batchs, losst, losse, aurocMax = CheXpertTrainer.epochTrain(model, dataLoaderTrain, dataLoaderVal, optimizer,
                                                               trMaxEpoch, nnClassCount,loss1,device,
                                                                         class_names, aurocMax)
 
@@ -66,10 +68,10 @@ class RSNATrainer():
             timestampEND = timestampDate + '-' + timestampTime
             
             torch.save({'epoch': epochID + 1, 'state_dict': model.state_dict(), 'best_loss': lossMIN, 
-                        'optimizer' : optimizer.state_dict()},'models/m-epoch'+str(epochID)+'-' + launchTimestamp + '.pth.tar')
+                        'optimizer' : optimizer.state_dict()},'m-epoch'+str(epochID)+'-' + launchTimestamp + '.pth.tar')
             
-            outGT1, outPRED1,accuracy = RSNATrainer.test(model, dataLoaderVal, nnClassCount, 
-                                                             'models/m-epoch'+str(epochID)+'-' + launchTimestamp + '.pth.tar', 
+            outGT1, outPRED1,accuracy = CheXpertTrainer.test(model, dataLoaderVal, nnClassCount, 
+                                                             'm-epoch'+str(epochID)+'-' + launchTimestamp + '.pth.tar', 
                                                              class_names,device)
             
             print ('\nEpoch [' + str(epochID + 1) + '] [-----] [' + timestampEND + '] loss= ' + str(lossVal))
@@ -77,7 +79,7 @@ class RSNATrainer():
         return batchs, losst, losse        
     #-------------------------------------------------------------------------------- 
        
-    def epochTrain(model, dataLoaderTrain, dataLoaderVal,dataLoaderTest, optimizer, epochMax, classCount,loss1,device,
+    def epochTrain(model, dataLoaderTrain, dataLoaderVal, optimizer, epochMax, classCount,loss1,device,
                    class_names, aurocMax):
         
         batch = []
@@ -93,6 +95,8 @@ class RSNATrainer():
             varTarget = target.to(device)
             varInput = varInput.to(device)         
             varOutput=model(varInput)
+#             print(varOutput.dtype,varTarget.dtype)
+#             print(torch.argmax(varOutput,dim=1).shape,target.shape)
                 
             lossvalue = loss1(varOutput,tfunc.one_hot(varTarget.squeeze(1).long(),num_classes=3).float())
             optimizer.zero_grad()
@@ -105,7 +109,7 @@ class RSNATrainer():
                 print(f"Batch::{batchID};Loss::{l}")
             if batchID%2500==0 and batchID!=0:
                 print("\nbatchID:"+str(batchID))
-                outGd,out,aurocMean=RSNATrainer.test(model, dataLoaderTest, classCount,None,class_names,device)
+                outGd,out,aurocMean=CheXpertTrainer.test(model, dataLoaderVal, classCount,None,class_names,device)
                 print("\n")
                 
                 if aurocMean>aurocMax:
@@ -114,7 +118,7 @@ class RSNATrainer():
                     global model_val
                     model_val='m-epoch'+str(epochID)+'-batchId'+str(batchID)+'-aurocMean-'+str(aurocMean) + '.pth.tar'
                     torch.save({'batch': batchID + 1, 'state_dict': model.state_dict(), 'aucmean_loss': aurocMean, 'optimizer' : optimizer.state_dict()},
-                               'models/m-epoch-'+str(epochID)+'-batchId-'+str(batchID) +'-aurocMean-'+str(aurocMean)+ '.pth.tar')
+                               'm-epoch-'+str(epochID)+'-batchId-'+str(batchID) +'-aurocMean-'+str(aurocMean)+ '.pth.tar')
                 scheduler.step()
                 
         return batch, losstrain, losseval, aurocMax
@@ -155,8 +159,8 @@ class RSNATrainer():
         
         datanpGT = dataGT.cpu().numpy()
         datanpPRED = dataPRED.cpu().numpy()
-        #print(datanpGT.shape)
-        #print(datanpPRED.shape)
+        print(datanpGT.shape)
+        print(datanpPRED.shape)
         
         for i in range(classCount):
             try:
@@ -190,7 +194,7 @@ class RSNATrainer():
             
                 out = model(varInput.to(device))
                 outPRED = torch.cat((outPRED, out), 0)
-        aurocIndividual = RSNATrainer.computeAUROC(tfunc.one_hot(outGT.squeeze(1).long()).float(), outPRED, nnClassCount)
+        aurocIndividual = CheXpertTrainer.computeAUROC(tfunc.one_hot(outGT.squeeze(1).long()).float(), outPRED, nnClassCount)
         aurocMean = np.array(aurocIndividual).mean()
         
         print ('\nAUROC mean ', aurocMean)
@@ -200,59 +204,81 @@ class RSNATrainer():
         
         return outGT, outPRED,aurocMean
 
+
+
 def main(args):
 
-    lr= args.lr
-    checkpoint= args.checkpoint
+    alpha = args.alpha
+    lr = args.lr
+    phi = args.phi
+    beta = args.beta
+    checkpoint = args.checkpoint
+
+    if beta == None:
+        beta = round(sqrt(2/alpha),3)
+        
+    
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")# use gpu if available
+    
+
+    class_names = ['Lung Opacity','Normal','No Lung Opacity / Not Normal']
+    
     trBatchSize = args.bs
     trMaxEpoch = args.epochs
-
     nnClassCount = 3
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu") # use gpu if available
-    class_names = ['Lung Opacity','Normal','No Lung Opacity / Not Normal']
-
+    
+    
+    
     ############# Data Loader ####################
-    img_pth='/home/rakshith/RSNA_pneumonia/dataset/rsna-pneumonia-detection-challenge/train_data/'
-    tr_list = np.load('/tools/train_list.npy').tolist()
-    tr_labels = np.load('/tools/train_labels.npy').tolist()
-    val_list = np.load('/tools/valid_list.npy').tolist()
-    val_labels = np.load('/tools/val_labels.npy').tolist()
-    test_list = np.load('/tools/test_list.npy').tolist()
-    test_labels = np.load('/tools/test_labels.npy').tolist()
-
-    datasetTrain = RSNADataSet(tr_list,tr_labels,img_pth,transform_type='train')
-    datasetValid = RSNADataSet(val_list,val_labels,img_pth, transform_type='train')            
+    img_pth = args.imgpath
+    pathFileTrain = 'rsna_annotation.json'
+    pathFileValid = 'rsna_annotation.json'   
+    
+    
+    datasetTrain = CheXpertDataSet(pathFileTrain,img_pth,transform_type='train')
+    datasetValid = CheXpertDataSet(pathFileValid,img_pth, transform_type='test')            
     dataLoaderTrain = DataLoader(dataset=datasetTrain, batch_size=trBatchSize, shuffle=True,  num_workers=4, pin_memory=False)
     dataLoaderVal = DataLoader(dataset=datasetValid, batch_size=trBatchSize, shuffle=False, num_workers=4, pin_memory=False)
-
-    datasetTest = RSNADataSet(test_list,test_labels,img_pth,transform_type='test')
-    dataLoaderTest = DataLoader(dataset=datasetTest, batch_size=trBatchSize, shuffle=True,  num_workers=4, pin_memory=False)
-
+   
     ########### Construct Model ##############
-
-    model=models.densenet121(pretrained=True)
-    for param in model.parameters():
-         param.requires_grad = False
-    model.classifier=nn.Sequential(nn.Linear(1024, nnClassCount), nn.Sigmoid())
+    alpha = alpha ** phi
+    beta = beta ** phi
+    
+    model, total_macs = give_model(alpha,beta,nnClassCount)
+    print(f"{total_macs} is the number of macs.")
+    model = nn.Sequential(model, nn.Sigmoid())
     model = model.to(device)
-
+    
     ############## Train the  Model #################
     timestampTime = time.strftime("%H%M%S")
     timestampDate = time.strftime("%d%m%Y")
     timestampLaunch = timestampDate + '-' + timestampTime
-    batch, losst, losse = RSNATrainer.train(model, dataLoaderTrain, dataLoaderVal,dataLoaderTest, nnClassCount, trMaxEpoch, timestampLaunch, checkpoint,lr ,device, class_names)
+    batch, losst, losse = CheXpertTrainer.train(model, dataLoaderTrain, dataLoaderVal, nnClassCount, trMaxEpoch, timestampLaunch, checkpoint,lr ,device, class_names)
     print("Model trained !")
+    
+    
 
 
-if __name__=="__main__":
 
+
+
+if __name__ == "__main__":
+    # execute only if run as a script
+        ######## Argument Parser ###########
     parser = argparse.ArgumentParser()
+    parser.add_argument("--alpha",required=False, help="alpha for the model",default= (11/6) ,type = float)
     parser.add_argument("--lr",required=False, help="The learning rate of the model",default=1e-4,type = float)
+    parser.add_argument("--phi",required=False, help="Phi for the model.",default= 1.0 ,type = float)
+    parser.add_argument("--beta",required=False, help="Beta for the model.",default= None ,type = float)
     parser.add_argument("--checkpoint",required=False, help="start training from a checkpoint model weight",default= None ,type = str)
     parser.add_argument("--bs",required=False, help="Batchsize")
     parser.add_argument("--imgpath",required=True, help="Path containing train and test images", type =str)
-    parser.add_argument("--epochs",required=False,default=15, help="Number of epochs", type=int)
+    parser.add_argument("--epochs",required=False,default=6, help="Number of epochs", type=int)
     
     args = parser.parse_args()
-
     main(args)
+
+
+
+
+

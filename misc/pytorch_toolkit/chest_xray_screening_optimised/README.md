@@ -1,4 +1,4 @@
-# Deep Neural Network for Chest X-Ray Screening 
+# EfficientNet based Deep Neural Architecture Search for Chest X-Ray Screening 
 
 <div id="abs">
 
@@ -22,6 +22,10 @@ Few example images from the dataset
 </tr>
 </table>
 
+A systematic search was performed over a set of CNN architectures by scaling the width and depth of the standard DenseNet using the EfficientNet approach[[3](efficientnet)]. The details of our experiments based on EfficientNet is summarized in the image below.
+
+<img src = "./media/efficientnet.png" width=650>
+
 ## Network Architecture:
 
 We have used a DenseNet-121 as the base architecture.
@@ -35,29 +39,29 @@ We have used a DenseNet-121 as the base architecture.
 AUROC scores for each class and Mean AUROC score is reported for Pneumonia detection.
 | Class | AUROC Score  |
 |--|--|
-| Lung Opacity | 0.722 |
-| Normal | 0.777 |
-| No Lung Opacity/ Not Normal | 0.592 |
+| Lung Opacity | 0.553 |
+| Normal | 0.4699 |
+| No Lung Opacity/ Not Normal | 0.5185 |
 
-Mean AUROC score: 0.7228
+Mean AUROC score: 0.5138
 
-Note: The newtork was trained for 15 epochs only. 
+  
 
-AUROC Score for the base network, when trained and evaluated using the CheXpert dataset provided by Stanford University [[3](#chexpert)], is given below.
+AUROC Score for the base network, when trained and evaluated using the CheXpert dataset provided by Stanford University ([link](https://stanfordmlgroup.github.io/competitions/chexpert/)), is given below.
 
 | Class | AUROC Score  |
 |--|--|
-| Lung Opacity | 0.916 |
-| Atelectasis | 0.807 |
-| Enlarged Cardiomediastinum | 0.714 |
-| Cardiomegaly | 0.800 |
-| Pleural Effusion | 0.924 |
-| Edema | 0.917 |
-| Consolidation | 0.924 |
-| Pneumonia | 0.723 |
-| Pneumothorax | 0.777 |
-| Lung lesion | 0.584 |
-| Pleural Other | 0.918 |
+| Lung Opacity | 0.55 |
+| Atelectasis | 0.55 |
+| Enlarged Cardiomediastinum | 0.15 |
+| Cardiomegaly | 0.45 |
+| Pleural Effusion | 0.79 |
+| Edema | 0.69 |
+| Consolidation | 0.83 |
+| Pneumonia | 0.11 |
+| Pneumothorax | 0.63 |
+| Lung lesion | 0.79 |
+| Pleural Other | 0.04 |
 
 
 ## **Model**
@@ -175,6 +179,11 @@ Intel Technology India Pvt. Ltd.
 
 </div>
 
+<div id="efficientnet">
+<a href="#abs">[3]</a>  Tan, Mingxing, and Quoc V. Le. &quot;EfficientNet: Rethinking model scaling for convolutional neural networks.&quot; , ICML, pp. 6105-6114. 2019. <a href="http://proceedings.mlr.press/v97/tan19a/tan19a.pdf"> (link) </a>
+
+</div>
+
 <div id="chexpert">
-<a href="#results">[3]</a>  Irvin, Jeremy, Pranav Rajpurkar, Michael Ko, Yifan Yu, Silviana Ciurea-Ilcus, Chris Chute, Henrik Marklund et al. &quot;Chexpert: A large chest radiograph dataset with uncertainty labels and expert comparison.&quot; In _Proceedings of the AAAI Conference on Artificial Intelligence_, vol. 33, pp. 590-597. 2019. <a href="https://arxiv.org/abs/1901.07031"> (link) </a>
+<a href="#abs">[4]</a>  Irvin, Jeremy, Pranav Rajpurkar, Michael Ko, Yifan Yu, Silviana Ciurea-Ilcus, Chris Chute, Henrik Marklund et al. &quot;Chexpert: A large chest radiograph dataset with uncertainty labels and expert comparison.&quot; In _Proceedings of the AAAI Conference on Artificial Intelligence_, vol. 33, pp. 590-597. 2019. <a href="https://arxiv.org/abs/1901.07031"> (link) </a>
 </div>
