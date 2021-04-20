@@ -26,7 +26,7 @@ Few example images from the dataset
 
 We have used a DenseNet-121 as the base architecture.
 
-![6: A schematic illustration of the DenseNet-121 ...](https://lh6.googleusercontent.com/ziwy55LfUqzzErhcy0Cw418LbeCWpfH_liD3dXNrae8yVnV91rnCWsokLUVO0NVUuUeNHIG6bnkV3J7jNNT5U6DDr2Y78Z60NW-2ACUEuY53k6B7C6x1Q9HFrJ-1yJZNM1vyMPdg)
+![](https://lh6.googleusercontent.com/ziwy55LfUqzzErhcy0Cw418LbeCWpfH_liD3dXNrae8yVnV91rnCWsokLUVO0NVUuUeNHIG6bnkV3J7jNNT5U6DDr2Y78Z60NW-2ACUEuY53k6B7C6x1Q9HFrJ-1yJZNM1vyMPdg)
 
   
 
@@ -35,15 +35,15 @@ We have used a DenseNet-121 as the base architecture.
 AUROC scores for each class and Mean AUROC score is reported for Pneumonia detection.
 | Class | AUROC Score  |
 |--|--|
-| Lung Opacity | 0.722 |
-| Normal | 0.777 |
-| No Lung Opacity/ Not Normal | 0.592 |
+| Lung Opacity | 0.7586 |
+| Normal | 0.80753 |
+| No Lung Opacity/ Not Normal | 0.63076 |
 
-Mean AUROC score: 0.7228
+**Mean AUROC score**: 0.7323
 
-Note: The newtork was trained for 15 epochs only. 
+Note: The newtork was trained for 25 epochs. 
 
-AUROC Score for the base network, when trained and evaluated using the CheXpert dataset provided by Stanford University [[3](#chexpert)], is given below.
+AUROC Score for the same network, when trained and evaluated using the CheXpert dataset provided by Stanford University [[3](#chexpert)], is given below.
 
 | Class | AUROC Score  |
 |--|--|
@@ -59,7 +59,7 @@ AUROC Score for the base network, when trained and evaluated using the CheXpert 
 | Lung lesion | 0.584 |
 | Pleural Other | 0.918 |
 
-
+**Mean AUROC score**: 0.87
 ## **Model**
 Download checkpoint with the following [link]()
 
@@ -148,7 +148,7 @@ This work is undertaken as part of Intel India Grand Challenge 2016 Project MIRI
 
 The codes/model was contributed to the OpenVINO project by
 
-Rakshith Sathish, </br>
+<a href="https://www.linkedin.com/in/rakshith-sathish/">Rakshith Sathish</a>, </br>
 Advanced Technology Development Centre, </br>
 Indian Institute of Technology Kharagpur</br>
 email: rakshith.sathish@kgpian.iitkgp.ac.in</br>
@@ -157,12 +157,14 @@ Github username: Rakshith2597
 
 **Principal Investigators**
 
-Dr Debdoot Sheet, Dr Nirmalya Ghosh,</br>
+<a href="https://www.linkedin.com/in/debdoot/">Dr Debdoot Sheet</a>, <a href="">Dr Nirmalya Ghosh</a>,</br>
 Department of Electrical Engineering,</br>
 Indian Institute of Technology Kharagpur</br>
+email: debdoot@ee.iitkgp.ac.in, nirmalya@ee.iitkgp.ac.in
 
-Dr Ramanathan Sethuraman,</br>
+<a href="https://www.linkedin.com/in/ramanathan-sethuraman-27a12aba/">Dr Ramanathan Sethuraman</a>,</br>
 Intel Technology India Pvt. Ltd.
+email: ramanathan.sethuraman@intel.com
 
 ## **References**
 

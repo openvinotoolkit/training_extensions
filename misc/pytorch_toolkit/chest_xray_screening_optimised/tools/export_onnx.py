@@ -27,7 +27,7 @@ def main(args):
 
 	device= args.device
 
-	# model, total_macs = give_model(alpha,beta,nnClassCount)
+	model, total_macs = give_model(alpha,beta,nnClassCount)
 	# print(f"{total_macs} is the number of macs.")
 	model = nn.Sequential(model, nn.Sigmoid())
 	model.to(device)

@@ -39,38 +39,45 @@ We have used a DenseNet-121 as the base architecture.
 AUROC scores for each class and Mean AUROC score is reported for Pneumonia detection.
 | Class | AUROC Score  |
 |--|--|
-| Lung Opacity | 0.553 |
-| Normal | 0.4699 |
-| No Lung Opacity/ Not Normal | 0.5185 |
+| Lung Opacity | 0.578 |
+| Normal | 0.569 |
+| No Lung Opacity/ Not Normal | 0.511 |
 
-Mean AUROC score: 0.5138
+**Mean AUROC score:** 0.5531
 
-  
+The network when trained and evaluated using the CheXpert dataset with same alpha, beta, and phi values (given below) was able to classify with a **Mean AUROC score of 0.7877**
+| Variable | Value |
+| -- | -- |
+| α | 1.833 |
+| β | 1.044 |
+| ϕ | -0.10 | 
 
-AUROC Score for the base network, when trained and evaluated using the CheXpert dataset provided by Stanford University ([link](https://stanfordmlgroup.github.io/competitions/chexpert/)), is given below.
+AUROC Score for the base network(not optimised), when trained and evaluated using the CheXpert dataset provided by Stanford University ([link](https://stanfordmlgroup.github.io/competitions/chexpert/)), is given below.
+
 
 | Class | AUROC Score  |
 |--|--|
-| Lung Opacity | 0.55 |
-| Atelectasis | 0.55 |
-| Enlarged Cardiomediastinum | 0.15 |
-| Cardiomegaly | 0.45 |
-| Pleural Effusion | 0.79 |
-| Edema | 0.69 |
-| Consolidation | 0.83 |
-| Pneumonia | 0.11 |
-| Pneumothorax | 0.63 |
-| Lung lesion | 0.79 |
-| Pleural Other | 0.04 |
+| Lung Opacity | 0.916 |
+| Atelectasis | 0.807 |
+| Enlarged Cardiomediastinum | 0.714 |
+| Cardiomegaly | 0.800 |
+| Pleural Effusion | 0.924 |
+| Edema | 0.917 |
+| Consolidation | 0.924 |
+| Pneumonia | 0.723 |
+| Pneumothorax | 0.777 |
+| Lung lesion | 0.584 |
+| Pleural Other | 0.918 |
 
+**Mean AUROC score**: 0.87
 
 ## **Model**
-Download checkpoint with the following [link]()
+Download checkpoint with the following [link](https://drive.google.com/file/d/1q9OYgK1y-eWeBljTH5G4NlJUuF4sB6bU/view?usp=sharing)
 
-The OpenVINO IR can be found [here]().
+The OpenVINO IR can be found [here](https://drive.google.com/file/d/1SoSWLbitdh0AfpUeUyI9-0vr_-dUvuHq/view?usp=sharing).
 
 ## **Demo**
-An example for using the ONNX models for inference can be found [here]().
+An example for using the ONNX models for inference can be found [here](https://drive.google.com/drive/folders/1cUAbfbRvbSmb4fXiQwHyUaNch8w4ExXl?usp=sharing).
 
 ## **Setup**
 
@@ -152,7 +159,7 @@ This work is undertaken as part of Intel India Grand Challenge 2016 Project MIRI
 
 The codes/model was contributed to the OpenVINO project by
 
-Rakshith Sathish, </br>
+<a href="https://www.linkedin.com/in/rakshith-sathish/">Rakshith Sathish</a>, </br>
 Advanced Technology Development Centre, </br>
 Indian Institute of Technology Kharagpur</br>
 email: rakshith.sathish@kgpian.iitkgp.ac.in</br>
@@ -161,12 +168,14 @@ Github username: Rakshith2597
 
 **Principal Investigators**
 
-Dr Debdoot Sheet, Dr Nirmalya Ghosh,</br>
+<a href="https://www.linkedin.com/in/debdoot/">Dr Debdoot Sheet</a>, <a href="">Dr Nirmalya Ghosh</a>,</br>
 Department of Electrical Engineering,</br>
 Indian Institute of Technology Kharagpur</br>
+email: debdoot@ee.iitkgp.ac.in, nirmalya@ee.iitkgp.ac.in
 
-Dr Ramanathan Sethuraman,</br>
+<a href="https://www.linkedin.com/in/ramanathan-sethuraman-27a12aba/">Dr Ramanathan Sethuraman</a>,</br>
 Intel Technology India Pvt. Ltd.
+email: ramanathan.sethuraman@intel.com
 
 ## **References**
 
