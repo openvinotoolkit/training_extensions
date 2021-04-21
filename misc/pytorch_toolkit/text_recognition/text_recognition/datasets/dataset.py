@@ -296,7 +296,7 @@ class LMDBDataset(BaseDataset):
         pairs = []
         with database.begin(write=False) as txn:
             num_iterations = int(txn.get('num-samples'.encode()))
-            for index in range(1, num_iterations + 1):  # in lmdb indexation starts with one
+            for index in tqdm(range(1, num_iterations + 1)):  # in lmdb indexation starts with one
                 img_key = f'image-{index:09d}'.encode()
                 image_bytes = txn.get(img_key)
                 img = cv.imdecode(np.frombuffer(image_bytes, np.uint8), cv.IMREAD_UNCHANGED)
