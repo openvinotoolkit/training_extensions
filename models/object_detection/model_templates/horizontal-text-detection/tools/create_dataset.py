@@ -35,7 +35,6 @@ def parse_args():
     args.add_argument('--visualize', action='store_true', help='Visualize annotation.')
     args.add_argument('--shuffle', action='store_true', help='Shuffle annotation before visualization.')
     args.add_argument('--delay', type=int, default=1)
-    args.add_argument('--remove-orientation-info', action='store_true')
     return args.parse_args()
 
 
@@ -60,7 +59,7 @@ def main():
         logging.info(f'Parsing {dataset["name"]} has been completed.')
 
     logging.info(f'Writing annotation to {args.output}...')
-    ann.write(args.output, args.remove_orientation_info)
+    ann.write(args.output)
     logging.info(f'Writing annotation to {args.output} has been completed.')
 
     ann = TextOnlyCocoAnnotation(args.output, os.path.dirname(args.output))
