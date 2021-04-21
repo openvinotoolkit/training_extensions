@@ -323,9 +323,11 @@ class Trainer:
                     print('Epoch {}, dataset {} loss: {:.4f}'.format(
                         self.epoch, dataset_name, val_loss
                     ))
+                    self.writer.add_scalar(f'Loss {dataset_name}', val_loss, self.global_step)
                     print('Epoch {}, dataset {} accuracy: {:.4f}'.format(
                         self.epoch, dataset_name, val_acc
                     ))
+                    self.writer.add_scalar(f'Accuracy {dataset_name}', val_acc, self.global_step)
                     weight = len(loader) / sum(map(len, self.val_loaders))
                     val_avg_loss += val_loss * weight
                     val_avg_accuracy += val_acc * weight
