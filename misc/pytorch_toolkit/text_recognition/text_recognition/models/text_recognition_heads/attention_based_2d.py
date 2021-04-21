@@ -12,9 +12,12 @@
 """
 
 
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+
+FASTTEXT_EMB_DIM = 300
 
 
 class Encoder(nn.Module):
@@ -159,14 +162,16 @@ class TextRecognitionHeadAttention(nn.Module):
                  decoder_sos_index,
                  decoder_rnn_type,
                  dropout_ratio=0.0,
-                 convolve_height=False):
+                 convolve_height=False,
+                 use_semantics=False,
+                 ):
         super().__init__()
-
 
         self.encoder = Encoder(
             encoder_input_size, encoder_dim_internal, encoder_num_layers)
         if convolve_height:
-            self.convolve_height = nn.Conv2d(encoder_dim_internal, encoder_dim_internal, (decoder_input_feature_size[0], 1))
+            self.convolve_height = nn.Conv2d(encoder_dim_internal, encoder_dim_internal,
+                                             (decoder_input_feature_size[0], 1))
             decoder_input_feature_size[0] = 1
         self.dropout = nn.Dropout(dropout_ratio)
         self.decoder = DecoderAttention2d(hidden_size=decoder_dim_hidden,
@@ -178,6 +183,14 @@ class TextRecognitionHeadAttention(nn.Module):
         self.decoder_max_seq_len = decoder_max_seq_len
         self.decoder_sos_int = decoder_sos_index
         self.decoder_dim_hidden = decoder_dim_hidden
+        if use_semantics:
+            dim = np.prod([decoder_dim_hidden, *decoder_input_feature_size])
+            self.semantics = nn.Sequential(
+                nn.Linear(dim, dim, bias=True),
+                nn.ReLU(),
+                nn.Linear(dim, FASTTEXT_EMB_DIM, bias=True),
+            )
+            self.semantic_transform = nn.Linear(FASTTEXT_EMB_DIM, decoder_dim_hidden)
 
     def __forward_train(self, features, targets):
         decoder_max_seq_len = max(len(target) for target in targets)
@@ -202,8 +215,7 @@ class TextRecognitionHeadAttention(nn.Module):
         features = features.permute(0, 2, 1)  # BxH*WxC or BxTxC
         features = self.dropout(features)
 
-        decoder_hidden = torch.zeros([1, batch_size, self.decoder_dim_hidden], device=features.device)
-        decoder_cell = torch.zeros([1, batch_size, self.decoder_dim_hidden], device=features.device)
+        decoder_hidden, decoder_cell = self._zero_initialize_hiddens(batch_size, features, decoder_hidden)
         decoder_input = torch.ones([batch_size], device=features.device, dtype=torch.long) * self.decoder_sos_int
 
         for di in range(decoder_max_seq_len):
@@ -224,8 +236,7 @@ class TextRecognitionHeadAttention(nn.Module):
         batch_size = features.shape[0]
         features = features.view(features.shape[0], features.shape[1], -1)
         features = features.permute(0, 2, 1)
-        decoder_hidden = torch.zeros([1, batch_size, self.decoder_dim_hidden], device=features.device)
-        decoder_cell = torch.zeros([1, batch_size, self.decoder_dim_hidden], device=features.device)
+        decoder_hidden, decoder_cell = self._zero_initialize_hiddens(batch_size, features, decoder_hidden)
         decoder_input = torch.ones([batch_size], device=features.device, dtype=torch.long) * self.decoder_sos_int
         decoder_outputs = []
         for _ in range(self.decoder_max_seq_len):
@@ -257,7 +268,6 @@ class TextRecognitionHeadAttention(nn.Module):
         decoder_outputs = []
         batch_size = features.shape[0]
 
-        # features = features[valid_targets_indexes]
         if hasattr(self, "convolve_height"):
             features = self.convolve_height(features)
             features = features.squeeze_(-2)
@@ -266,18 +276,24 @@ class TextRecognitionHeadAttention(nn.Module):
         features = features.permute(0, 2, 1)  # BxH*WxC or BxTxC
         features = self.dropout(features)
 
-        decoder_hidden = torch.zeros([1, batch_size, self.decoder_dim_hidden], device=features.device)
-        decoder_cell = torch.zeros([1, batch_size, self.decoder_dim_hidden], device=features.device)
-        # decoder_input = torch.ones([batch_size], device=features.device, dtype=torch.long) * self.decoder_sos_int
+        if hasattr(self, 'semantics'):
+            assert isinstance(self.decoder.decoder, nn.GRU), "sematic module could only be applied with GRU RNN"
+            old_shape = features.shape
+            if not self.training:
+                features = features.reshape(features.shape[0], -1)  # B C*H*W
+            else:
+                features = features.view(features.shape[0], -1)  # B C*H*W
+            semantic_info = self.semantics(features)
+            decoder_hidden = self.semantic_transform(semantic_info.unsqueeze(0))
+            features = features.view(old_shape)
+        else:
+            decoder_hidden, decoder_cell = self._zero_initialize_hiddens(batch_size, features.device)
+
         for di in range(decoder_max_seq_len):
             if targets is not None:
                 decoder_input = targets[:, di]
             else:
-                if decoder_outputs:
-                    topi = torch.argmax(decoder_output, dim=1)
-                    decoder_input = topi.detach().view(batch_size)
-                else:
-                    decoder_input = torch.ones([batch_size], device=features.device, dtype=torch.long) * self.decoder_sos_int
+                decoder_input = self._extract_next_input(decoder_outputs, batch_size, features.device)
             if isinstance(self.decoder.decoder, nn.GRU):
                 decoder_output, decoder_hidden, _ = self.decoder(
                     decoder_input, decoder_hidden, features)
@@ -287,16 +303,23 @@ class TextRecognitionHeadAttention(nn.Module):
             decoder_outputs.append(decoder_output)
         decoder_outputs = torch.stack(decoder_outputs, dim=1)
         classes = torch.max(decoder_outputs, dim=2)[1]
+        if hasattr(self, 'semantics') and self.training:
+            return decoder_outputs, classes, semantic_info
         return decoder_outputs, classes
 
-        # if masks is not None:
-        #     masks = masks.expand(-1, features.shape[1], -1, -1)
-        #     features = features * masks
+    def _extract_next_input(self, decoder_outputs, batch_size, device):
+        if decoder_outputs:
+            topi = torch.argmax(decoder_outputs[-1], dim=1)
+            decoder_input = topi.detach().view(batch_size)
+        else:
+            decoder_input = torch.ones([batch_size], device=device,
+                                       dtype=torch.long) * self.decoder_sos_int
+        return decoder_input
 
-        # if self.training:
-        #     return self.__forward_train(features, target)
-        # else:
-        #     return self.__forward_test(features)
+    def _zero_initialize_hiddens(self, batch_size, device):
+        decoder_hidden = torch.zeros([1, batch_size, self.decoder_dim_hidden], device=device)
+        decoder_cell = torch.zeros([1, batch_size, self.decoder_dim_hidden], device=device)
+        return decoder_hidden, decoder_cell
 
     def dummy_forward(self):
         return torch.zeros((1, self.decoder_max_seq_len, self.decoder.vocab_size),
