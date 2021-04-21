@@ -157,7 +157,7 @@ Github username: Rakshith2597
 
 **Principal Investigators**
 
-<a href="https://www.linkedin.com/in/debdoot/">Dr Debdoot Sheet</a>, <a href="">Dr Nirmalya Ghosh</a>,</br>
+<a href="https://www.linkedin.com/in/debdoot/">Dr Debdoot Sheet</a>, <a href="http://www.iitkgp.ac.in/department/EE/faculty/ee-nirmalya">Dr Nirmalya Ghosh</a>,</br>
 Department of Electrical Engineering,</br>
 Indian Institute of Technology Kharagpur</br>
 email: debdoot@ee.iitkgp.ac.in, nirmalya@ee.iitkgp.ac.in
