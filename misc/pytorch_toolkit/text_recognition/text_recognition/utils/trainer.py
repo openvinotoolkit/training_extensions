@@ -268,7 +268,7 @@ class Trainer:
             lm_embs = torch.Tensor([self.fasttext_model[s] for s in gt_strs])
             # since semantic info should be as close to the language model embedding
             # as possible, target should be 1
-            semantic_loss = 1 - torch.nn.CosineEmbeddingLoss()(semantic_info.cpu(), lm_embs, target=torch.ones(lm_embs.shape[0]))
+            semantic_loss = torch.nn.CosineEmbeddingLoss()(semantic_info.cpu(), lm_embs, target=torch.ones(lm_embs.shape[0]))
             semantic_loss = semantic_loss.to(imgs.device)
         else:
             logits, _ = self.model(imgs, training_gt)
