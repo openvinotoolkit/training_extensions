@@ -41,6 +41,7 @@ from functools import partial
 from pprint import pformat, pprint
 from warnings import warn
 
+import fasttext
 import numpy as np
 import torch
 import torch.nn
@@ -155,6 +156,9 @@ class Trainer:
         self.lr_scheduler = getattr(optim.lr_scheduler, self.config.get('scheduler', 'ReduceLROnPlateau'))(
             self.optimizer, **self.config.get('scheduler_params', {}))
         self.time = get_timestamp()
+        self.use_lang_model = self.config.get("head").get("use_semantics")
+        if self.use_lang_model:
+            self.fasttext_model = fasttext.load_model(self.config.get("language_model_path"))
 
     def create_dirs(self):
         if not os.path.exists(self.logs_path):
@@ -257,12 +261,24 @@ class Trainer:
         imgs = imgs.to(self.device)
         training_gt = training_gt.to(self.device)
         loss_computation_gt = loss_computation_gt.to(self.device)
-        logits, _ = self.model(imgs, training_gt)
+        semantic_loss = None
+        if self.use_lang_model:
+            logits, _, semantic_info = self.model(imgs, training_gt)
+            gt_strs = [self.vocab.construct_phrase(gt).replace(' ', '') for gt in loss_computation_gt]
+            lm_embs = torch.Tensor([self.fasttext_model[s] for s in gt_strs])
+            # since semantic info should be as close to the language model embedding
+            # as possible, target should be 1
+            semantic_loss = 1 - torch.nn.CosineEmbeddingLoss()(semantic_info.cpu(), lm_embs, target=torch.ones(lm_embs.shape[0]))
+            semantic_loss = semantic_loss.to(imgs.device)
+        else:
+            logits, _ = self.model(imgs, training_gt)
         cut = self.loss_type != 'CTC'
         loss, accuracy = calculate_loss(logits, loss_computation_gt, target_lengths, should_cut_by_min=cut,
                                         ctc_loss=self.loss)
         self.step += 1
         self.global_step += 1
+        if semantic_loss:
+            loss += semantic_loss
         loss.backward()
         clip_grad_norm_(self.model.parameters(), self.clip)
         self.optimizer.step()
