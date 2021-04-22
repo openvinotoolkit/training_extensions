@@ -96,13 +96,13 @@ class TransformPad(BaseTransform):
     """Random pad batch of images
     """
 
-    def __init__(self, pad_l=50, pad_r=50, pad_b=20, pad_t=20):
+    def __init__(self, pad_l=50, pad_r=50, pad_b=20, pad_t=20, pad_value=COLOR_WHITE):
         super().__init__()
         self.pad_l = pad_l
         self.pad_r = pad_r
         self.pad_b = pad_b
         self.pad_t = pad_t
-
+        self.pad_value = pad_value
     def __call__(self, imgs):
         if self.pad_l > 0:
             left_p = np.random.randint(0, self.pad_l)
@@ -123,7 +123,7 @@ class TransformPad(BaseTransform):
         imgs = to_list(imgs)
 
         padded_imgs = [cv.copyMakeBorder(img, top_p, bottom_p, left_p, right_p,
-                                         borderType=cv.BORDER_CONSTANT, value=COLOR_WHITE)
+                                         borderType=cv.BORDER_CONSTANT, value=self.pad_value)
                        for img in imgs]
         return padded_imgs
 
@@ -196,8 +196,8 @@ class TransformRandomNoise(BaseTransform):
             mean = np.mean(img)
             variance = np.std(img)
             noise = np.array(np.random.normal(
-                mean, variance, img.shape), dtype=np.uint8)
-            res.append(img + noise * self.intensity)
+                mean, variance, img.shape) * self.intensity, dtype=np.uint8)
+            res.append(img + noise)
         return res
 
 
@@ -355,9 +355,10 @@ class TransformRescale(BaseTransform):
 
 
 class TransformRotate(BaseTransform):
-    def __init__(self, angle):
+    def __init__(self, angle, pad_value=COLOR_WHITE):
         super().__init__()
         self.angle = angle
+        self.pad_value = pad_value
 
     def __call__(self, imgs):
         bound = self.angle
@@ -378,7 +379,7 @@ class TransformRotate(BaseTransform):
         shift_matrix = np.array([[0, 0, 0-bb[0]], [0, 0, 0 - bb[1]]])
         M = M + shift_matrix
         rotated = [cv.warpAffine(
-            img, M, empty_img_shape[::-1], borderMode=cv.BORDER_CONSTANT, borderValue=COLOR_WHITE) for img in imgs]
+            img, M, empty_img_shape[::-1], borderMode=cv.BORDER_CONSTANT, borderValue=self.pad_value) for img in imgs]
 
         return rotated
 
@@ -399,9 +400,6 @@ class TransformColorJitter(BaseTransform):
     def __init__(self, brightness, contrast, saturation):
         super().__init__()
         self.transform = ColorJitter(brightness, contrast, saturation)
-        self.brightness = brightness
-        self.contrast = contrast
-        self.saturation = saturation
 
     def __call__(self, imgs):
         imgs = to_list(imgs)
