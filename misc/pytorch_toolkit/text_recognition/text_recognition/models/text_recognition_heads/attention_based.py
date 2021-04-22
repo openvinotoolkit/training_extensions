@@ -229,7 +229,7 @@ class AttentionBasedLSTM(nn.Module):
         output = self.W_c(torch.cat([h_t, context_t], dim=1)).tanh()
 
         # calculate logit
-        logit = F.softmax(self.W_out(output), dim=1)  # [B, out_size]
+        logit = F.log_softmax(self.W_out(output), dim=1)  # [B, out_size]
 
         return h_t, c_t, output, logit
 

@@ -138,10 +138,7 @@ class DecoderAttention2d(nn.Module):
         hidden = torch.reshape(hidden, hidden.shape)
 
         output = self.out(output[0])
-        # if self.training:
-        #     output = F.log_softmax(output, dim=1)
-        # else:
-        output = F.softmax(output, dim=1)
+        output = F.log_softmax(output, dim=1)
 
         if isinstance(self.decoder, nn.LSTM):
             return output, hidden, cell, attn_weights
@@ -279,10 +276,10 @@ class TextRecognitionHeadAttention(nn.Module):
         if hasattr(self, 'semantics'):
             assert isinstance(self.decoder.decoder, nn.GRU), "sematic module could only be applied with GRU RNN"
             old_shape = features.shape
-            if not self.training:
-                features = features.reshape(features.shape[0], -1)  # B C*H*W
-            else:
-                features = features.view(features.shape[0], -1)  # B C*H*W
+            # if not self.training:
+            features = features.reshape(features.shape[0], -1)  # B C*H*W
+            # else:
+                # features = features.view(features.shape[0], -1)  # B C*H*W
             semantic_info = self.semantics(features)
             decoder_hidden = self.semantic_transform(semantic_info.unsqueeze(0))
             features = features.view(old_shape)

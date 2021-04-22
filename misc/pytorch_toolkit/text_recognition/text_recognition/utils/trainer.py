@@ -83,7 +83,7 @@ def calculate_loss(logits, targets, target_lengths, should_cut_by_min=False, ctc
         # targets = targets.masked_select(mask_for_tgt)
         # mask_for_logits = mask_for_tgt.unsqueeze(2).expand(-1, -1, vocab_size)
         # logits = logits.masked_select(mask_for_logits).contiguous().view(-1, vocab_size)
-        logits = torch.log(logits)
+        # logits = torch.log(logits)
         logits = logits.permute(0, 2, 1)
         loss = torch.nn.functional.nll_loss(logits, targets)
 
@@ -265,11 +265,14 @@ class Trainer:
         if self.use_lang_model:
             logits, _, semantic_info = self.model(imgs, training_gt)
             gt_strs = [self.vocab.construct_phrase(gt).replace(' ', '') for gt in loss_computation_gt]
-            lm_embs = torch.Tensor([self.fasttext_model[s] for s in gt_strs])
+            device = imgs.device
+            lm_embs = torch.Tensor([self.fasttext_model[s] for s in gt_strs]).to(device)
             # since semantic info should be as close to the language model embedding
             # as possible, target should be 1
-            semantic_loss = torch.nn.CosineEmbeddingLoss()(semantic_info.cpu(), lm_embs, target=torch.ones(lm_embs.shape[0]))
-            semantic_loss = semantic_loss.to(imgs.device)
+            semantic_loss = torch.nn.CosineEmbeddingLoss()(semantic_info, lm_embs, target=torch.ones(lm_embs.shape[0], device=device))
+            # semantic_loss = semantic_loss.to(device)
+            # if self.global_step % self.print_freq == 0:
+            #     print(f'semantic loss {semantic_loss}')
         else:
             logits, _ = self.model(imgs, training_gt)
         cut = self.loss_type != 'CTC'
@@ -310,6 +313,8 @@ class Trainer:
                                                                           max_len=1 + len(gold_phrase_str.split()),
                                                                           ignore_end_token=self.config.get('use_ctc')
                                                                           )
+                            gold_phrase_str = gold_phrase_str.lower()
+                            pred_phrase_str = pred_phrase_str.lower()
                             output_file.write(img_name[j] + '\t' + pred_phrase_str + '\t' + gold_phrase_str + '\n')
                             val_acc += int(pred_phrase_str == gold_phrase_str)
                         cut = self.loss_type != 'CTC'
