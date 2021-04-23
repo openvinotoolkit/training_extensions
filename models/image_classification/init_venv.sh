@@ -25,7 +25,7 @@ fi
 # Download deep-object-reid
 git submodule update --init --recursive --recommend-shallow ../../external/deep-object-reid
 # Create virtual environment
-python3 -m virtualenv ${venv_dir} -p python3 --prompt="(classification)"
+virtualenv ${venv_dir} -p python3 --prompt="(classification)"
 
 path_openvino_vars="${INTEL_OPENVINO_DIR:-/opt/intel/openvino_2021}/bin/setupvars.sh"
 if [[ -e "${path_openvino_vars}" ]]; then
