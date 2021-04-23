@@ -71,7 +71,7 @@ metric_losses:
 
 train:
   optim: 'sam'
-  lr: 0.016
+  lr: 0.013
   max_epoch: 200
   weight_decay: 5e-4
   batch_size: 128

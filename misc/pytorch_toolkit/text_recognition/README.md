@@ -92,6 +92,20 @@ Several dataset formats are supported:
 4. IIIT5k
    See details [here](https://cvit.iiit.ac.in/projects/SceneTextUnderstanding/IIIT5K.html)
 
+5. LMDB dataset.
+   Dataset in form of LMDB database is supported. You can download prepared data from [deep text recognition benchmark](https://github.com/clovaai/deep-text-recognition-benchmark).
+   Example of usage:
+   ```yaml
+   type: LMDBDataset
+   case_sensitive: false
+   data_path: evaluation/IC13_1015
+   grayscale: true
+   fixed_img_shape:
+     - 32
+     - 120
+   subset: validate
+   ```
+
 Every dataset class has its own constructor with specific parameters. You can see costructors [here](./text_recognition/datasets/dataset.py). Examples of use of different datasets can be seen in the config files:
 * [example](./configs/config_0013.yml)
 * [example](./configs/medium_config.yml)

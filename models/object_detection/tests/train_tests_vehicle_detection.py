@@ -50,6 +50,7 @@ class VehicleDetection0202TestCase(
 ):
     """ Test case for vehicle-detection-0202 model. """
 
+
 class VehicleDetection0203TestCase(
         create_object_detection_test_case(
             model_name='vehicle-detection-0203',
@@ -57,12 +58,3 @@ class VehicleDetection0203TestCase(
         )
 ):
     """ Test case for vehicle-detection-0203 model. """
-
-
-class VehicleDetection0204TestCase(
-        create_object_detection_test_case(
-            model_name='vehicle-detection-0204',
-            **kwargs
-        )
-):
-    """ Test case for vehicle-detection-0204 model. """

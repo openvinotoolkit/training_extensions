@@ -47,20 +47,19 @@ model = dict(
             loss_weight=1.0),
         loss_bbox=dict(type='GIoULoss', loss_weight=2.0),
         loss_centerness=dict(
-            type='CrossEntropyLoss', use_sigmoid=True, loss_weight=1.0)))
-# training and testing settings
+            type='CrossEntropyLoss', use_sigmoid=True, loss_weight=1.0)),
+    # model training and testing settings
+    train_cfg=dict(
+        assigner=dict(type='ATSSAssigner', topk=9),
+        allowed_border=-1,
+        pos_weight=-1,
+        debug=False),
+    test_cfg=dict(
+        nms=dict(type='nms', iou_threshold=0.5),
+        min_bbox_size=0,
+        score_thr=0.02,
+        max_per_img=750))
 cudnn_benchmark = True
-train_cfg = dict(
-    assigner=dict(type='ATSSAssigner', topk=9),
-    allowed_border=-1,
-    pos_weight=-1,
-    debug=False)
-test_cfg = dict(
-    nms=dict(type='nms', iou_thr=0.5),
-    min_bbox_size=0,
-    score_thr=0.02,
-    max_per_img=750)
-# model training and testing settings
 # dataset settings
 dataset_type = 'CocoDataset'
 data_root = 'data/WIDERFace/'

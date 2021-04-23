@@ -42,6 +42,7 @@ from multiprocessing.pool import ThreadPool
 from os.path import join
 
 import cv2 as cv
+import lmdb
 import numpy as np
 import scipy.io
 from torch.utils.data import Dataset, Sampler
@@ -101,13 +102,13 @@ class Im2LatexDataset(BaseDataset):
         ann_file: path to annotation file
         """
         super().__init__()
-        self.data_dir = data_path
+        self.data_path = data_path
         self.images_dir = join(data_path, 'images_processed')
         self.formulas = self._get_formulas()
         self.pairs = self._get_pairs(annotation_file, min_shape)
 
     def _get_formulas(self):
-        formulas_file = join(self.data_dir, 'formulas.norm.lst')
+        formulas_file = join(self.data_path, 'formulas.norm.lst')
         with open(formulas_file, 'r') as f:
             formulas = []
             for line in f:
@@ -122,7 +123,7 @@ class Im2LatexDataset(BaseDataset):
 
     def _get_pairs(self, subset, min_shape):
         # the line in this file map image to formulas
-        map_file = join(self.data_dir, subset)
+        map_file = join(self.data_path, subset)
         total_lines = get_num_lines_in_file(map_file)
         # get image-formulas pairs
         pairs = []
@@ -148,11 +149,11 @@ class ICDAR2013RECDataset(BaseDataset):
     def __init__(self, data_path, annotation_file, root='', min_shape=(8, 8), grayscale=False,
                  fixed_img_shape=None, case_sensitive=True, min_txt_len=0):
         super().__init__()
-        self.images_folder = data_path
+        self.data_path = data_path
         self.annotation_file = annotation_file
         if root:
             self.annotation_file = os.path.join(root, self.annotation_file)
-            self.images_folder = os.path.join(root, self.images_folder)
+            self.data_path = os.path.join(root, self.data_path)
         self.pairs = self._load(min_shape, grayscale, fixed_img_shape, case_sensitive, min_txt_len)
 
     def _load(self, min_shape, grayscale, fixed_img_shape, case_sensitive, min_txt_len):
@@ -164,7 +165,7 @@ class ICDAR2013RECDataset(BaseDataset):
         pairs = []
         total_len = len(image_names)
         for i, image_nm in tqdm(enumerate(image_names), total=total_len):
-            filename = os.path.join(self.images_folder, image_nm)
+            filename = os.path.join(self.data_path, image_nm)
             img = cv.imread(filename, cv.IMREAD_COLOR)
             if grayscale:
                 img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
@@ -194,14 +195,14 @@ class MJSynthDataset(BaseDataset):
     def __init__(self, data_path, annotation_file, min_shape=(8, 8),
                  fixed_img_shape=None, case_sensitive=True, min_txt_len=0, num_workers=4):
         super().__init__()
-        self.data_folder = data_path
+        self.data_path = data_path
         self.ann_file = annotation_file
         self.fixed_img_shape = fixed_img_shape
         self.pairs = self._load(min_shape, case_sensitive, min_txt_len, num_workers)
 
     def __getitem__(self, index):
         el = deepcopy(self.pairs[index])
-        img = cv.imread(os.path.join(self.data_folder, el['img_path']), cv.IMREAD_COLOR)
+        img = cv.imread(os.path.join(self.data_path, el['img_path']), cv.IMREAD_COLOR)
         if self.fixed_img_shape is not None:
             img = cv.resize(img, tuple(self.fixed_img_shape[::-1]))
         el['img'] = img
@@ -213,7 +214,7 @@ class MJSynthDataset(BaseDataset):
         def read_img(image_path):
             gt_text = ' '.join(image_path.split('_')[1])
             if not self.fixed_img_shape:
-                img = cv.imread(os.path.join(self.data_folder, image_path), cv.IMREAD_COLOR)
+                img = cv.imread(os.path.join(self.data_path, image_path), cv.IMREAD_COLOR)
                 if img is None:
                     return None
                 if img.shape[0:2] <= tuple(min_shape):
@@ -233,7 +234,7 @@ class MJSynthDataset(BaseDataset):
                   }
             return el
 
-        with open(os.path.join(self.data_folder, self.ann_file)) as input_file:
+        with open(os.path.join(self.data_path, self.ann_file)) as input_file:
             annotation = [line.split(' ')[0] for line in input_file]
         pool = ThreadPool(num_workers)
 
@@ -280,9 +281,48 @@ class IIIT5KDataset(BaseDataset):
         return pairs
 
 
+class LMDBDataset(BaseDataset):
+    def __init__(self, data_path, fixed_img_shape=None, case_sensitive=False, grayscale=False):
+        super().__init__()
+        self.data_path = data_path
+        self.fixed_img_shape = fixed_img_shape
+        self.case_sensitive = case_sensitive
+        self.grayscale = grayscale
+        self.pairs = self._load()
+
+    def _load(self):
+        database = lmdb.open(bytes(self.data_path, encoding='utf-8'), readonly=True)
+        pairs = []
+        with database.begin(write=False) as txn:
+            num_iterations = int(txn.get('num-samples'.encode()))
+            for index in range(1, num_iterations + 1):  # in lmdb indexation starts with one
+                img_key = f'image-{index:09d}'.encode()
+                image_bytes = txn.get(img_key)
+                img = cv.imdecode(np.frombuffer(image_bytes, np.uint8), cv.IMREAD_UNCHANGED)
+                if len(img.shape) < 3:
+                    img = np.stack((img,) * 3, axis=-1)
+                if self.grayscale:
+                    img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+                    img = cv.cvtColor(img, cv.COLOR_GRAY2BGR)
+                if self.fixed_img_shape is not None:
+                    img = cv.resize(img, tuple(self.fixed_img_shape[::-1]))
+                text = txn.get(f'label-{index:09d}'.encode()).decode('utf-8')
+                text = ' '.join(text)
+                if not self.case_sensitive:
+                    text = text.lower()
+                assert img.shape[-1] == 3
+                el = {'img_name': f'image-{index:09d}',
+                      'text': text,
+                      'img': img,
+                      }
+                pairs.append(el)
+        return pairs
+
+
 str_to_class = {
     'Im2LatexDataset': Im2LatexDataset,
     'ICDAR2013RECDataset': ICDAR2013RECDataset,
     'MJSynthDataset': MJSynthDataset,
     'IIIT5KDataset': IIIT5KDataset,
+    'LMDBDataset': LMDBDataset,
 }

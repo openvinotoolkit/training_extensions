@@ -1,4 +1,5 @@
 mmcv
+pylint==2.7.2
 pytest
 pyyaml
 requests
