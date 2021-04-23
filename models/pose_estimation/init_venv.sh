@@ -6,7 +6,6 @@ venv_dir=$1
 if [ -z "$venv_dir" ]; then
   venv_dir=venv
 fi
-echo ${venv_dir}
 
 cd ${work_dir}
 
@@ -29,18 +28,45 @@ git submodule update --init ../../external/mmpose
 # Create virtual environment
 virtualenv ${venv_dir} -p python3 --prompt="(pose)"
 
-path_openvino_vars="${INTEL_OPENVINO_DIR:-/opt/intel/openvino}/bin/setupvars.sh"
+path_openvino_vars="${INTEL_OPENVINO_DIR:-/opt/intel/openvino_2021}/bin/setupvars.sh"
 if [[ -e "${path_openvino_vars}" ]]; then
   echo ". ${path_openvino_vars}" >> ${venv_dir}/bin/activate
 fi
 
-
 . ${venv_dir}/bin/activate
 
+if [ -z ${CUDA_VERSION} ] && [ -e "$CUDA_HOME/version.txt" ]; then
+  # Get CUDA version from version.txt file.
+  CUDA_VERSION=$(cat $CUDA_HOME/version.txt | sed -e "s/^.*CUDA Version *//" -e "s/ .*//")
+fi
 
+if [[ -z ${CUDA_VERSION} ]]; then
+  # Get CUDA version from nvidia-smi output.
+  CUDA_VERSION=$(nvidia-smi | grep "CUDA Version" | sed -e "s/^.*CUDA Version: *//" -e "s/ .*//")
+fi
+
+echo "Using CUDA_VERSION as ${CUDA_VERSION}"
+# Remove dots from CUDA version string, if any.
+CUDA_VERSION_CODE=$(echo ${CUDA_VERSION} | sed -e "s/\.//" -e "s/\(...\).*/\1/")
+
+
+# install ote.
+pip install -e ../../ote/
+
+# install PyTorch and MMCV.
+export TORCH_VERSION=1.8.1
+export TORCHVISION_VERSION=0.9.1
+
+if [[ $CUDA_VERSION_CODE == "102" ]]; then
+  pip install torch==${TORCH_VERSION} torchvision==${TORCHVISION_VERSION}
+else
+  pip install torch==${TORCH_VERSION}+cu${CUDA_VERSION_CODE} torchvision==${TORCHVISION_VERSION}+cu${CUDA_VERSION_CODE} -f https://download.pytorch.org/whl/torch_stable.html
+fi
+
+# Install other requirements.
 cat requirements.txt | xargs -n 1 -L 1 pip3 install
 
-mo_requirements_file="${INTEL_OPENVINO_DIR:-/opt/intel/openvino}/deployment_tools/model_optimizer/requirements_onnx.txt"
+mo_requirements_file="${INTEL_OPENVINO_DIR:-/opt/intel/openvino_2021}/deployment_tools/model_optimizer/requirements_onnx.txt"
 if [[ -e "${mo_requirements_file}" ]]; then
   pip install -qr ${mo_requirements_file}
 else
@@ -50,8 +76,6 @@ fi
 pip install -e ../../external/mmpose/
 MMPOSE_DIR=`realpath ../../external/mmpose/`
 echo "export MMPOSE_DIR=${MMPOSE_DIR}" >> ${venv_dir}/bin/activate
-
-pip install -e ../../ote/
 
 deactivate
 
