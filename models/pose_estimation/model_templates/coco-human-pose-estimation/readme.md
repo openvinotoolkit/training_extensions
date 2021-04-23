@@ -79,7 +79,7 @@ Training images are stored in `${TRAIN_IMG_ROOT}` together with `${TRAIN_ANN_FIL
 ```bash
 export ADD_EPOCHS=1
 export EPOCHS_NUM=$((`cat ${MODEL_TEMPLATE} | grep epochs | tr -dc '0-9'` + ${ADD_EPOCHS}))
-export TRAIN_ANN_FILE=${OTE_DIR}/data/airport/annotation_pose_train.json
+export TRAIN_ANN_FILE=${OTE_DIR}/data/airport/annotation_person_train.json
 export TRAIN_IMG_ROOT=${OTE_DIR}/data/airport/train
 export VAL_ANN_FILE=${TRAIN_ANN_FILE}
 export VAL_IMG_ROOT=${TRAIN_IMG_ROOT}
