@@ -18,13 +18,19 @@ if [[ -e ${venv_dir} ]]; then
   exit
 fi
 
+CUDA_HOME_CANDIDATE=/usr/local/cuda
+if [ -z "${CUDA_HOME}" ] && [ -d ${CUDA_HOME_CANDIDATE} ]; then
+  echo "Exporting CUDA_HOME as ${CUDA_HOME_CANDIDATE}"
+  export CUDA_HOME=${CUDA_HOME_CANDIDATE}
+fi
+
 # Download mmaction2
 git submodule update --init --recursive --recommend-shallow ../../external/mmaction2
 
 # Create virtual environment
 virtualenv ${venv_dir} -p python3 --prompt="(action)"
 
-path_openvino_vars="${INTEL_OPENVINO_DIR:-/opt/intel/openvino}/bin/setupvars.sh"
+path_openvino_vars="${INTEL_OPENVINO_DIR:-/opt/intel/openvino_2021}/bin/setupvars.sh"
 if [[ -e "${path_openvino_vars}" ]]; then
   echo ". ${path_openvino_vars}" >> ${venv_dir}/bin/activate
 fi
@@ -33,7 +39,7 @@ fi
 
 cat requirements.txt | xargs -n 1 -L 1 pip3 install
 
-mo_requirements_file="${INTEL_OPENVINO_DIR:-/opt/intel/openvino}/deployment_tools/model_optimizer/requirements_onnx.txt"
+mo_requirements_file="${INTEL_OPENVINO_DIR:-/opt/intel/openvino_2021}/deployment_tools/model_optimizer/requirements_onnx.txt"
 if [[ -e "${mo_requirements_file}" ]]; then
   pip install -qr ${mo_requirements_file}
 else

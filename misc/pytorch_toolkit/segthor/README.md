@@ -1,4 +1,4 @@
-# Segmentation of Thoracic Organs Using Pixel Shuffle (PROVIDED AS IS WITHOUT SUPPORT)
+# Segmentation of Thoracic Organs Using Pixel Shuffle
 
 This code was written for participation in the [SegTHOR: Segmentation of THoracic Organs at Risk in CT images](https://competitions.codalab.org/competitions/21145).
 The code is based on [the corresponding paper](http://ceur-ws.org/Vol-2349/SegTHOR2019_paper_10.pdf), where we employ deep learning approach and explore two concepts: attention mechanism and pixel shuffle as an upsampling operator. The method in this repository differs from the one described in the paper by a few aspects: we have changed the backbone from ResNet to ResNeXt and added a postprocessing step.

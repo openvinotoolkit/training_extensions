@@ -20,8 +20,6 @@ import os
 import sys
 from abc import ABCMeta, abstractmethod
 
-import yaml
-from mmcv.utils import Config
 
 from ote.utils import get_cuda_device_count, run_with_termination
 
@@ -47,14 +45,13 @@ class BaseTrainer(metaclass=ABCMeta):
         update_config = f' --update_config {update_config}' if update_config else ''
 
         logging.info('Training started ...')
-        training_info = self._train_internal(config, gpu_num, update_config, tensorboard_dir)
+        self._train_internal(config, gpu_num, update_config, tensorboard_dir)
         logging.info('... training completed.')
 
     def _train_internal(self, config, gpu_num, update_config, tensorboard_dir):
         tools_dir = self._get_tools_dir()
         tensorboard_dir = f' --tensorboard-dir {tensorboard_dir}' if tensorboard_dir is not None else ''
 
-        training_info = {'training_gpu_num': 0}
         if os.getenv('MASTER_ADDR') is not None and os.getenv('MASTER_PORT') is not None:
             # Distributed training is handled by Kubeflow’s PyTorchJob at a higher level.
             logging.info('Distributed training started ...')
@@ -64,7 +61,7 @@ class BaseTrainer(metaclass=ABCMeta):
                                  f'{tensorboard_dir}'
                                  f'{update_config}'.split(' '))
             logging.info('... distributed training completed.')
-        elif get_cuda_device_count() > 0:
+        elif get_cuda_device_count() > 0 and gpu_num:
             logging.info('Training on GPUs started ...')
             available_gpu_num = get_cuda_device_count()
             if available_gpu_num < gpu_num:
@@ -77,7 +74,6 @@ class BaseTrainer(metaclass=ABCMeta):
                                  f' {gpu_num}'
                                  f'{tensorboard_dir}'
                                  f'{update_config}'.split(' '))
-            training_info['training_gpu_num'] = gpu_num
             logging.info('... training on GPUs completed.')
         else:
             logging.info('Training on CPU started ...')
@@ -86,8 +82,6 @@ class BaseTrainer(metaclass=ABCMeta):
                                  f'{tensorboard_dir}'
                                  f'{update_config}'.split(' '))
             logging.info('... training on CPU completed.')
-
-        return training_info
 
     @abstractmethod
     def _get_tools_dir(self):
@@ -103,5 +97,6 @@ class BaseTrainer(metaclass=ABCMeta):
             logging.warning(f'Cannot find the latest snapshot {self.latest_file_name} in the work_dir {self.work_dir}')
             return None
         if len(latest_snapshots) > 1:
-            raise RuntimeError('Find more than one latest snapshots {self.latest_file_name} in the work_dir {self.work_dir}')
+            raise RuntimeError(f'Find more than one latest snapshots {self.latest_file_name} '
+                               f'in the work_dir {self.work_dir}')
         return latest_snapshots[0]

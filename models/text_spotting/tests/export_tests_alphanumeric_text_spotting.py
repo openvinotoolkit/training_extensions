@@ -14,7 +14,7 @@
 
 import os
 
-from common.text_spotting_test_case import create_text_spotting_export_test_case
+from common.text_spotting_test_case import create_text_spotting_export_test_case # pylint: disable=import-error
 
 
 kwargs = dict(
@@ -24,9 +24,9 @@ kwargs = dict(
 )
 
 
-class TextSpotting0003ExportTestCase(
+class TextSpotting0004ExportTestCase(
         create_text_spotting_export_test_case(
-            model_name='text-spotting-0003',
+            model_name='text-spotting-0004',
             **kwargs)
 ):
-    """ Test case for text-spotting-0003 model export. """
+    """ Test case for text-spotting-0004 model export. """

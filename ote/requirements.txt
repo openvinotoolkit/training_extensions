@@ -1,5 +1,7 @@
-requests
-pyyaml
 mmcv
-texttable
+pylint==2.7.2
 pytest
+pyyaml
+requests
+texttable
+tqdm

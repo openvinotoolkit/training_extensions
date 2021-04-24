@@ -14,7 +14,6 @@
  limitations under the License.
 """
 
-from pathlib import Path
 import json
 import os
 import subprocess
@@ -31,11 +30,9 @@ from ..registry import EVALUATORS
 
 @EVALUATORS.register_module()
 class ReidEvaluator(BaseEvaluator):
+
     parameter_test_dir = 'test_data_roots'
     parameter_classes_list = 'classes'
-
-    def __init__(self):
-        super(ReidEvaluator, self).__init__()
 
     def _evaluate_internal(self, config_path, snapshot, out, update_config, metrics_functions, **kwargs):
         assert isinstance(update_config, dict)
@@ -52,19 +49,21 @@ class ReidEvaluator(BaseEvaluator):
             classes_arg = ''
         del update_config[self.parameter_classes_list]
 
-        data_path_args = f'--custom-roots {update_config[self.parameter_test_dir]} {update_config[self.parameter_test_dir]} --root _ '
+        data_path_args = f'--custom-roots {update_config[self.parameter_test_dir]} '
+        data_path_args += f'{update_config[self.parameter_test_dir]} --root _ '
         del update_config[self.parameter_test_dir]
-        update_config = classes_arg + data_path_args + ' '.join([f'{k} {v}' for k, v in update_config.items() if str(v) and str(k)])
-        update_config = update_config if update_config else ''
+        update_config_str = classes_arg + data_path_args
+        update_config_str += ' '.join([f'{k} {v}' for k, v in update_config.items() if str(v) and str(k)])
+        update_config_str = update_config_str if update_config_str else ''
 
         metrics = []
-        metrics.extend(self._get_complexity_and_size(config_path, work_dir, update_config))
+        metrics.extend(self._get_complexity_and_size(config_path, work_dir, update_config_str))
 
         metric_args = {
             'config_path': config_path,
             'work_dir': work_dir,
             'snapshot': snapshot,
-            'update_config': update_config,
+            'update_config': update_config_str,
         }
         metric_args.update(kwargs)
         for func in metrics_functions:

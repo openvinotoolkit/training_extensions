@@ -1,0 +1,65 @@
+name: text-spotting-0004
+domain: Text Spotting
+problem: Alphanumeric Text Spotting
+framework: OTEDetection v2.1.2
+summary: Text spotting model based on Mask-RCNN with text recognition head.
+annotation_format: COCO with text
+initial_weights: snapshot.pth
+dependencies:
+- sha256: f1102e61e1b9ad79fb26f86da047c056458726508f65556c4416c08a43a6d612
+  size: 223291472
+  source: https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/text_spotting/alphanumeric_text_spotting/text_spotting_0004/epoch_25.pth
+  destination: snapshot.pth
+- source: ../../../../../ote/tools/train.py
+  destination: train.py
+- source: ../../../../../ote/tools/eval.py
+  destination: eval.py
+- source: ../../../../../ote/tools/export.py
+  destination: export.py
+- source: ../../../../../ote/tools/compress.py
+  destination: compress.py
+- source: ../../../../../ote
+  destination: packages/ote
+- source: ../../requirements.txt
+  destination: requirements.txt
+max_nodes: 1
+training_target:
+- GPU
+inference_target:
+- CPU
+hyper_parameters:
+  basic:
+    batch_size: 2
+    base_learning_rate: 0.02
+    epochs: 25
+output_format:
+  onnx:
+    default: true
+  openvino:
+    default: true
+    input_format: BGR
+optimisations: ~
+metrics:
+- display_name: Size
+  key: size
+  unit: Mp
+  value: 27.76
+- display_name: Complexity
+  key: complexity
+  unit: GFLOPs
+  value: 190.5
+- display_name: F1-score
+  key: f1
+  unit: '%'
+  value: 88.27
+- display_name: Word Spotting (N)
+  key: word_spotting
+  unit: '%'
+  value: 70.337
+- display_name: End-to-End recognition (N)
+  key: e2e_recognition
+  unit: '%'
+  value: 67.776
+gpu_num: 4
+tensorboard: true
+config: model.py

@@ -14,7 +14,7 @@
 
 import os
 
-from common.action_recognition_test_case import create_action_recognition_test_case
+from common.action_recognition_test_case import create_action_recognition_test_case # pylint: disable=import-error
 
 
 kwargs = dict(
@@ -24,10 +24,11 @@ kwargs = dict(
 )
 
 
-# class CustomRecognitionTestCaseKinetics(
-#         create_action_recognition_test_case(
-#             model_name='s3d-rgb-mobilenet-v3',
-#             **kwargs,
-#         )
-# ):
-#     """ Train/eval test case for s3d-rgb-mobilenet-v3 model. """
+class CustomRecognitionTestCaseKinetics(
+        create_action_recognition_test_case(
+            model_name='s3d-rgb-mobilenet-v3',
+            enable_metrics_eval=False,
+            **kwargs,
+        )
+):
+    """ Train/eval test case for s3d-rgb-mobilenet-v3 model. """

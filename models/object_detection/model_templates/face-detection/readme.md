@@ -65,7 +65,7 @@ This produces model `model.xml` and weights `model.bin` in single-precision floa
 
 #### c. Run demo with exported model
 
-You need to pass a path to `model.xml` file and video device node (e.g. /dev/video0) of your web cam.
+You need to pass a path to `model.xml` file and video device node (e.g. /dev/video0) of your web cam. Also an image or a video file probably can be used as an input (-i) for the demo, please refer to documentation in [Open Model Zoo](https://github.com/openvinotoolkit/open_model_zoo) repo.
 
 ```bash
 python ${OMZ_DIR}/demos/object_detection_demo/python/object_detection_demo.py \
@@ -78,7 +78,9 @@ python ${OMZ_DIR}/demos/object_detection_demo/python/object_detection_demo.py \
 
 #### a. Prepare dataset
 
-In this toy example we use same images as training, validation and test subsets, but we strictly recommend not to use the same data for training, validation and test. This particular example is for demonstration of model quality growth on particular dataset during fine-tuning only. See more about dataset split [here](https://en.wikipedia.org/wiki/Training,_validation,_and_test_sets). In order to train a model that would be quite similar in terms of quality to exising pre-trained model one can use this [section](datasets.md) to prepare publicly-available datasets for training. One can also use its own preliminary annotated dataset. Annotation can be created using [CVAT](https://github.com/openvinotoolkit/cvat) as we did in this toy example.
+In this toy example we use same images as training, validation and test subsets, but we strictly recommend not to use the same data for training, validation and test. This particular example is for demonstration of model quality growth on particular dataset during fine-tuning only. See more about dataset split [here](https://en.wikipedia.org/wiki/Training,_validation,_and_test_sets).
+
+In order to train a model that would be quite similar in terms of quality to existing pre-trained model one can prepare [publicly-available datasets](datasets.md) for training. One can also use its own preliminary annotated dataset. Annotation can be created using [CVAT](https://github.com/openvinotoolkit/cvat) as we did in this toy example.
 
 Training images are stored in `${TRAIN_IMG_ROOT}` together with `${TRAIN_ANN_FILE}` annotation file and validation images are stored in `${VAL_IMG_ROOT}` together with `${VAL_ANN_FILE}` annotation file.
 

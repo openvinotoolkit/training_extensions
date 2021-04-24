@@ -69,13 +69,12 @@ class FaceDetector:
 
 class VectorCNN:
     """Wrapper class for a nework returning a vector"""
-    def __init__(self, model_path, device='CPU'):
-        self.net = load_ie_model(model_path, device, None)
+    def __init__(self, model_path, device='CPU', switch_rb=False):
+        self.net = load_ie_model(model_path, device, None, '', switch_rb=switch_rb)
 
     def forward(self, batch):
         """Performs forward of the underlying network on a given batch"""
-        _, _, h, w = self.net.get_input_shape().shape
-        outputs = [self.net.forward(cv.resize(frame, (w, h))) for frame in batch]
+        outputs = [self.net.forward(frame) for frame in batch]
         return outputs
 
 class TorchCNN:

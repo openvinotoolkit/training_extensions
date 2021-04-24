@@ -19,16 +19,16 @@ inference.
 After installation, you are ready to train your own models, evaluate and use
 them for prediction.
 
-* [Action Recognition (PROVIDED AS IS WITHOUT SUPPORT)](action_recognition)
+* [Action Recognition](action_recognition)
 * [Eye State Classification](open_closed_eye)
 * [Face Antispoofing](face_antispoofing)
-* [Formula recognition](formula_recognition)
-* [Human Pose Estimation (PROVIDED AS IS WITHOUT SUPPORT)](human_pose_estimation)
+* [Text recognition](text_recognition)
+* [Human Pose Estimation](human_pose_estimation)
 * [Machine Translation](machine_translation)
 * [Object Re-Identification](object_reidentification)
   - [Face Recognition](object_reidentification/face_recognition)
   - [Person Re-Identification](object_reidentification/person_reidentification)
   - [Vehicle Re-Identification](object_reidentification/vehicle_reidentification)
-* [Segmentation of Thoracic Organs (PROVIDED AS IS WITHOUT SUPPORT)](segthor)
-* [Super Resolution (PROVIDED AS IS WITHOUT SUPPORT)](super_resolution)
+* [Segmentation of Thoracic Organs](segthor)
+* [Super Resolution](super_resolution)
 * [Question Answering](question_answering)

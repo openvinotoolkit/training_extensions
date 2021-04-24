@@ -14,7 +14,7 @@
 
 import os
 
-from common.object_detection_test_case import create_object_detection_export_test_case
+from common.object_detection_test_case import create_object_detection_export_test_case # pylint: disable=import-error
 
 
 kwargs = dict(
@@ -58,12 +58,3 @@ class VehicleDetection0203TestCase(
             **kwargs)
 ):
     """ Test case for vehicle-detection-0203 model export. """
-
-
-class VehicleDetection0204TestCase(
-        create_object_detection_export_test_case(
-            model_name='vehicle-detection-0204',
-            alt_ssd_export=False,
-            **kwargs)
-):
-    """ Test case for vehicle-detection-0204 model export. """

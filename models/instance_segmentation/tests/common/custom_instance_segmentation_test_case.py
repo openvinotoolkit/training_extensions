@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import json
 import os
 import unittest
 
@@ -26,7 +25,8 @@ from ote.tests.test_case import (
 )
 
 from ote.utils.misc import run_through_shell
-from .instance_segmentation_test_case import download_and_extract_coco_val2017
+
+from common.instance_segmentation_test_case import download_and_extract_coco_val2017 # pylint: disable=import-error
 
 
 def create_custom_instance_segmentation_test_case(model_name, problem_name):
@@ -60,7 +60,6 @@ def create_custom_instance_segmentation_test_case(model_name, problem_name):
 
             run_through_shell(
                 f'cd {cls.template_folder};'
-                f'pip install -r requirements.txt;'
             )
 
             coco_dir = os.path.abspath(f'{os.path.dirname(__file__)}/../../../../data/coco')
@@ -117,7 +116,6 @@ def create_custom_instance_segmentation_test_case(model_name, problem_name):
             run_through_shell(
                 f'{initial_command}'
                 f'cd {os.path.dirname(self.template_file)};'
-                f'pip install -r requirements.txt;'
                 f'python export.py'
                 f' --load-weights {os.path.join(self.output_folder, "latest.pth")}'
                 f' --classes "{classes}"'

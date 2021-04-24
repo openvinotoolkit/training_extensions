@@ -1,4 +1,4 @@
-# Action Recognition (PROVIDED AS IS WITHOUT SUPPORT)
+# Action Recognition
 
 This is the implementation of the **Video Transformer Network** approach for Action Recognition in PyTorch\*. The repository also contains training code for other action-recognition models, such as 3D CNNs, LSTMs, I3D, R(2+1)D, and two-stream networks.
 

@@ -14,10 +14,8 @@
  limitations under the License.
 """
 
-import copy
 import logging
 import os
-import sys
 import tempfile
 import json
 import yaml
@@ -81,12 +79,12 @@ class BaseEvaluator(metaclass=ABCMeta):
         image_shape = self._get_image_shape(cfg)
         tools_dir = self._get_tools_dir()
 
-        res_complexity = os.path.join(work_dir, "complexity.json")
+        res_complexity = os.path.join(work_dir, 'complexity.json')
         update_config = ' '.join([f'{k}={v}' for k, v in update_config.items()])
         update_config = f' --update_config {update_config}' if update_config else ''
         update_config = update_config.replace('"', '\\"')
         run_through_shell(
-            f'python3 {tools_dir}/get_flops.py'
+            f'python3 {tools_dir}/analysis_tools/get_flops.py'
             f' {config_path}'
             f' --shape {image_shape}'
             f' --out {res_complexity}'

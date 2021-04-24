@@ -18,8 +18,6 @@ import json
 import logging
 from copy import copy
 
-from mmcv import Config
-
 from ote.utils import load_config
 from .merger import merge_dicts_and_lists_b_into_a
 
@@ -65,7 +63,8 @@ def is_optimisation_enabled_in_template(template):
     if not optimisation_configs:
         raise RuntimeError(f'Optimisation parameters do not contain the field "{COMPRESSION_CONFIG_KEY}"')
     if len(optimisation_configs) > 1:
-        raise RuntimeError(f'Wrong config: the optimisation config contains different config files: {optimisation_configs}')
+        raise RuntimeError('Wrong config: the optimisation config contains different config files: '
+                           f'{optimisation_configs}')
     return True
 
 class NNCFConfigGenerator:
@@ -114,7 +113,8 @@ class NNCFConfigGenerator:
             # So, user can define `order_of_parts` in the optimisation_config
             # to specify the order of applying the parts.
             order_of_parts = optimisation_parts['order_of_parts']
-            assert isinstance(order_of_parts, list), 'The field "order_of_parts" in optimisation config should be a list'
+            assert isinstance(order_of_parts, list), \
+                'The field "order_of_parts" in optimisation config should be a list'
 
             for part in optimisation_parts_to_choose:
                 assert part in order_of_parts, (
@@ -123,7 +123,7 @@ class NNCFConfigGenerator:
 
             optimisation_parts_to_choose = [part for part in order_of_parts if part in optimisation_parts_to_choose]
 
-        assert 'base' in optimisation_parts, f'Error: the optimisation config does not contain the "base" part'
+        assert 'base' in optimisation_parts, 'Error: the optimisation config does not contain the "base" part'
         nncf_config_part = optimisation_parts['base']
 
         for part in optimisation_parts_to_choose:

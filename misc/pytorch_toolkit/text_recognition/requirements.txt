@@ -1,0 +1,13 @@
+decorator==4.4.2
+numpy==1.19.1
+onnxruntime==1.4.0
+protobuf==3.13.0
+pyyaml>=5.4.0
+tensorboard==2.3.0
+torch==1.5.1
+torchvision==0.6.1
+tqdm==4.48.2
+opencv-python
+scipy
+positional-encodings
+lmdb

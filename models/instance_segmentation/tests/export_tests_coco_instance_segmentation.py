@@ -14,7 +14,7 @@
 
 import os
 
-from common.instance_segmentation_test_case import create_instance_segmentation_export_test_case
+from common.instance_segmentation_test_case import create_instance_segmentation_export_test_case # pylint: disable=import-error
 
 
 kwargs = dict(
@@ -50,19 +50,19 @@ class InstanceSegmentation0228TestCase(
     """ Test case for instance-segmentation-0228 model export. """
 
 
-class InstanceSegmentation0904TestCase(
+class InstanceSegmentation1039TestCase(
         create_instance_segmentation_export_test_case(
-            model_name='instance-segmentation-0904',
+            model_name='instance-segmentation-1039',
             **kwargs
         )
 ):
-    """ Test case for instance-segmentation-0904 model export. """
+    """ Test case for instance-segmentation-1039 model export. """
 
 
-class InstanceSegmentation0912TestCase(
+class InstanceSegmentation1040TestCase(
         create_instance_segmentation_export_test_case(
-            model_name='instance-segmentation-0912',
+            model_name='instance-segmentation-1040',
             **kwargs
         )
 ):
-    """ Test case for instance-segmentation-0912 model export. """
+    """ Test case for instance-segmentation-1040 model export. """

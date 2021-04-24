@@ -1,8 +1,8 @@
 # global parameters
-num_videos_per_gpu = 10
+num_videos_per_gpu = 12
 num_workers_per_gpu = 3
-train_sources = 'custom_dataset',
-test_sources = 'custom_dataset',
+train_sources = ('custom_dataset', )
+test_sources = ('custom_dataset', )
 
 root_dir = 'data'
 work_dir = None
@@ -12,7 +12,6 @@ resume_from = None
 # model settings
 input_clip_length = 16
 input_img_size = 224
-input_frame_interval = 2
 reset_layer_prefixes = ['cls_head']
 reset_layer_suffixes = None
 
@@ -73,8 +72,11 @@ model = dict(
             type='AMSoftmaxLoss',
             target_loss='ce',
             scale_cfg=dict(
-                type='ConstantScalarScheduler',
-                scale=15.0,
+                type='PolyScalarScheduler',
+                start_scale=30.0,
+                end_scale=5.0,
+                power=1.2,
+                num_epochs=40.0,
             ),
             pr_product=False,
             margin_type='cos',
@@ -106,13 +108,13 @@ img_norm_cfg = dict(
     to_bgr=False
 )
 train_pipeline = [
-    dict(type='DecordInit'),
-    dict(type='SampleFrames',
+    dict(type='StreamSampleFrames',
          clip_len=input_clip_length,
-         frame_interval=input_frame_interval,
+         trg_fps=15,
          num_clips=1,
-         temporal_jitter=True),
-    dict(type='DecordDecode'),
+         temporal_jitter=True,
+         min_intersection=1.0),
+    dict(type='RawFrameDecode'),
     dict(type='Resize', scale=(-1, 256)),
     dict(type='RandomRotate', delta=10, prob=0.5),
     dict(type='MultiScaleCrop',
@@ -133,13 +135,12 @@ train_pipeline = [
     dict(type='ToTensor', keys=['imgs', 'label', 'dataset_id'])
 ]
 val_pipeline = [
-    dict(type='DecordInit'),
-    dict(type='SampleFrames',
+    dict(type='StreamSampleFrames',
          clip_len=input_clip_length,
-         frame_interval=input_frame_interval,
+         trg_fps=15,
          num_clips=1,
          test_mode=True),
-    dict(type='DecordDecode'),
+    dict(type='RawFrameDecode'),
     dict(type='Resize', scale=(-1, 256)),
     dict(type='CenterCrop', crop_size=(input_img_size, input_img_size)),
     dict(type='Normalize', **img_norm_cfg),
@@ -154,8 +155,9 @@ data = dict(
         drop_last=True
     ),
     shared=dict(
-        type='VideoDataset',
-        data_subdir='videos',
+        type='StreamDataset',
+        data_subdir='rawframes',
+        filename_tmpl='{:05d}.jpg'
     ),
     train=dict(
         source=train_sources,
@@ -177,7 +179,7 @@ data = dict(
 # optimizer
 optimizer = dict(
     type='SGD',
-    lr=1e-2,
+    lr=1e-3,
     momentum=0.9,
     weight_decay=1e-4
 )
@@ -191,20 +193,23 @@ optimizer_config = dict(
 # parameter manager
 params_config = dict(
     type='FreezeLayers',
-    epochs=0,
+    epochs=5,
     open_layers=['cls_head']
 )
 
 # learning policy
 lr_config = dict(
     policy='customstep',
-    step=[50, 80],
+    step=[30, 50],
     gamma=0.1,
+    fixed='constant',
+    fixed_epochs=5,
+    fixed_ratio=10.0,
     warmup='cos',
-    warmup_epochs=10,
-    warmup_ratio=1e-3,
+    warmup_epochs=5,
+    warmup_ratio=1e-2,
 )
-total_epochs = 110
+total_epochs = 65
 
 # workflow
 workflow = [('train', 1)]
@@ -219,7 +224,7 @@ evaluation = dict(
 
 log_level = 'INFO'
 log_config = dict(
-    interval=100,
+    interval=10,
     hooks=[
         dict(type='TextLoggerHook'),
         dict(type='TensorboardLoggerHook'),
@@ -231,4 +236,3 @@ dist_params = dict(
     backend='nccl'
 )
 find_unused_parameters = True
-seed = 1957

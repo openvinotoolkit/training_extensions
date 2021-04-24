@@ -13,10 +13,10 @@
 # and limitations under the License.
 
 import argparse
-import logging
 import glob
 import logging
 import os
+
 import yaml
 
 from ote.utils.misc import run_through_shell
@@ -29,7 +29,8 @@ def parse_args():
     parser.add_argument('--templates-list-file',
                         help='A yaml file with list of paths of template files'
                          ' to be instantiated. Overrides --template-filter.')
-    parser.add_argument('--verbose', '-v', action='store_true', help='If the instantiation should be run in verbose mode')
+    parser.add_argument('--verbose', '-v', action='store_true',
+                        help='If the instantiation should be run in verbose mode')
 
     return parser.parse_args()
 

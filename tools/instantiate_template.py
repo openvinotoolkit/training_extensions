@@ -26,7 +26,8 @@ def parse_args():
     parser.add_argument('template', help='Location of model template file (template.yaml).')
     parser.add_argument('output', help='Location of output directory where template will be instantiated.')
     parser.add_argument('--do-not-load-snapshot', action='store_true')
-    parser.add_argument('--verbose', '-v', action='store_true', help='If the instantiation should be run in verbose mode')
+    parser.add_argument('--verbose', '-v', action='store_true',
+                        help='If the instantiation should be run in verbose mode')
 
     return parser.parse_args()
 

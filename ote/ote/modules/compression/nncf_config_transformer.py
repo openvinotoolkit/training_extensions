@@ -14,13 +14,10 @@
  limitations under the License.
 """
 
-import logging
 import os
 import yaml
 from tempfile import NamedTemporaryFile
-from copy import copy
 
-from ote.utils import load_config
 from ..registry import COMPRESSION
 from .nncf_config_generator import NNCFConfigGenerator, POSSIBLE_NNCF_PARTS
 

@@ -40,7 +40,8 @@ def main():
 
     args = parser.parse_args()
     config = utils.read_py_config(args.config)
-    assert args.spf_model_openvino.endswith('.xml') and args.spf_model_torch.endswith('.pth.tar')
+    assert args.spf_model_openvino.endswith('.xml') and (args.spf_model_torch.endswith('.pth.tar')
+                                                            or args.spf_model_torch.endswith('.pth'))
     spoof_model_torch = utils.build_model(config, args.device.lower(), strict=True, mode='eval')
     spoof_model_torch = TorchCNN(spoof_model_torch, args.spf_model_torch, config, device=args.device.lower())
     spoof_model_openvino = VectorCNN(args.spf_model_openvino)
@@ -58,7 +59,7 @@ def pred_spoof(batch, spoof_model_torch, spoof_model_openvino):
     return output1, output2
 
 def check_accuracy(torch_pred, openvino_pred):
-    diff = np.abs(openvino_pred - torch_pred)
+    diff = np.abs(np.array(openvino_pred) - np.array(torch_pred))
     avg = diff.mean(axis=0)
     return avg
 

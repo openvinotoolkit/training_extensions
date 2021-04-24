@@ -1,0 +1,72 @@
+name: instance-segmentation-1039
+domain: Instance Segmentation
+problem: COCO Instance Segmentation
+framework: OTEDetection v2.1.1
+summary: Instance segmentation based on Mask R-CNN architecture with EfficientNet-B2.
+annotation_format: COCO
+initial_weights: snapshot.pth
+dependencies:
+- sha256: ce84f5384307c93c2c07c333fa3295e00e877306ab639e857fbdc1d518698469
+  size: 82611565
+  source: https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/instance_segmentation/v2/instance-segmentation-1039.pth
+  destination: snapshot.pth
+- source: ../../../../../ote/tools/train.py
+  destination: train.py
+- source: ../../../../../ote/tools/eval.py
+  destination: eval.py
+- source: ../../../../../ote/tools/export.py
+  destination: export.py
+- source: ../../../../../ote/tools/compress.py
+  destination: compress.py
+- source: ../../../../../ote
+  destination: packages/ote
+- source: ../../requirements.txt
+  destination: requirements.txt
+dataset_requirements:
+  classes: [person, bicycle, car, motorcycle, airplane, bus, train, truck, boat,
+    traffic light, fire hydrant, stop sign, parking meter, bench, bird, cat, dog, horse,
+    sheep, cow, elephant, bear, zebra, giraffe, backpack, umbrella, handbag, tie,
+    suitcase, frisbee, skis, snowboard, sports ball, kite, baseball bat, baseball glove,
+    skateboard, surfboard, tennis racket, bottle, wine glass, cup, fork,
+    knife, spoon, bowl, banana, apple, sandwich, orange, broccoli, carrot, hot dog,
+    pizza, donut, cake, chair, couch, potted plant, bed, dining table, toilet, tv,
+    laptop, mouse, remote, keyboard, cell phone, microwave, oven, toaster, sink, refrigerator,
+    book, clock, vase, scissors, teddy bear, hair drier, toothbrush]
+max_nodes: 1
+training_target:
+- GPU
+inference_target:
+- CPU
+hyper_parameters:
+  basic:
+    batch_size: 16
+    base_learning_rate: 0.02
+    epochs: 16
+output_format:
+  onnx:
+    default: true
+  openvino:
+    default: true
+    input_format: BGR
+optimisations: ~
+metrics:
+- display_name: Bbox AP @ [IoU=0.50:0.95]
+  key: ap
+  unit: '%'
+  value: 33.1
+- display_name: Segm AP @ [IoU=0.50:0.95]
+  key: ap
+  unit: '%'
+  value: 28.7
+- display_name: Size
+  key: size
+  unit: Mp
+  value: 10.5674
+- display_name: Complexity
+  key: complexity
+  unit: GFLOPs
+  value: 13.9672
+gpu_num: 2
+config: model.py
+tensorboard: true
+estimated_batch_time: -1

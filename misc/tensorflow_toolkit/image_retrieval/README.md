@@ -1,4 +1,4 @@
-# Image Retrieval (PROVIDED AS IS WITHOUT SUPPORT)
+# Image Retrieval
 
 ## Description
 

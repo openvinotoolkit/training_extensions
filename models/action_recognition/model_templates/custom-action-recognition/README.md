@@ -6,7 +6,7 @@ Performance results table:
 
 | Model Name           | Complexity (GFLOPs) | Size (Mp) | UCF-101 Top-1 accuracy | Jester-27 Top-1 accuracy | MS-ASL-1000 Top-1 accuracy | Kinetics-700 Top-1 accuracy | Links                                                                                                                                                                                                                               |
 | -------------------- | ------------------- | --------- | ---------------------- | ------------------------ | -------------------------- | --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| s3d-rgb-mobilenet-v3 | 6.66	               | 4.133     | 94.21%                 | 94.94%                   | 41.20%                     | 46.51%                      | [model template](s3d-rgb-mobilenet-v3/template.yaml), [kinetics-700 snapshot](https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/custom_action_recognition/s3d-mobilenetv3-large-kinetics700.pth) |
+| s3d-rgb-mobilenet-v3 | 6.66                | 4.133     | 94.21%                 | 94.94%                   | 41.20%                     | 46.51%                      | [model template](s3d-rgb-mobilenet-v3/template.yaml), [kinetics-700 snapshot](https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/custom_action_recognition/s3d-mobilenetv3-large-kinetics700.pth) |
 
 ## Datasets
 
@@ -42,22 +42,48 @@ python ../../tools/instantiate_template.py ${MODEL_TEMPLATE} ${WORK_DIR}
 
 ### 3. Prepare data
 
-The training script assumes the data for action recognition is provided as list of videos splitted on train/val subsets.
+The training script assumes the data for the action recognition is provided as raw frames stored in directories where each directory represents a single video source.
+Additionally we assume that the data is split on train/val subsets.
 The annotation file consists of lines where each line represents single video source in the following format:
 ```
-<rel_path_to_video> <label_id>
+<rel_path_to_video_dir> <label_id> <start_video_frame_id> <end_video_frame_id> <start_clip_frame_id> <end_clip_frame_id> <video_fps>
 ```
 
+where:
+* `<rel_path_to_video_dir>` - relative path to the directory with dumped video frames.
+* `<label_id>` - ID of ground-truth class.
+* `<start_video_frame_id>`/`<end_video_frame_id>` - start/end frame IDs of the whole video.
+* `<start_clip_frame_id>`/`<end_clip_frame_id>` - start/end frame IDS of the action inside the video.
+* `<video_fps>` - the video frame-rate (frames-per-second).
+
 > **NOTE**: Training/validation scripts expects action class IDs instead of class labels. So, action labels should be manually sorted and converted in the appropriate class IDs.
+
+If you have the data in the video format (videos instead of dumped frames) you may use the following script to dump frames and generate the annotation file in the proper format.
+It assumes you have videos in `${DATA_DIR}/videos` directory and the appropriate annotation file with video names and class IDs.
+To dump frames and convert annotation run the following script:
+
+```bash
+python ./tools/dump_frames.py \
+   --videos_dir ${DATA_DIR}/videos \
+   --annotation ${DATA_DIR}/train.txt ${DATA_DIR}/val.txt \
+   --output_dir ${DATA_DIR}
+```
+
+where `${DATA_DIR}/train.txt` and `${DATA_DIR}/val.txt` - annotation files where each line represents single video source in the following format:
+
+```
+<rel_path_to_video_file> <label_id>
+```
 
 Finally, the `${DATA_DIR}` directory should be like this:
 
 ```
 ${DATA_DIR}
 └── custom_dataset
-    ├── videos
-    │   ├── video_1.avi
-    │   ├── video_2.mkv
+    ├── rawframes
+    │   ├── video_name_0
+    |   |   ├── 00001.jpg
+    |   |   └── ...
     |   └── ...
     ├── val.txt
     └── train.txt

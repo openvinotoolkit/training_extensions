@@ -3,7 +3,7 @@
 import json
 import os
 
-import imagesize
+import imagesize # pylint: disable=import-error
 from tqdm import tqdm
 
 
