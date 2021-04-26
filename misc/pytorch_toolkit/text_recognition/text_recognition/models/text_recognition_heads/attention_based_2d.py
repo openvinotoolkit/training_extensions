@@ -306,7 +306,7 @@ class TextRecognitionHeadAttention(nn.Module):
 
     def _extract_next_input(self, decoder_outputs, batch_size, device):
         if decoder_outputs:
-            topi = torch.argmax(decoder_outputs[-1], dim=1)
+            topi = torch.argmax(torch.exp(decoder_outputs[-1]), dim=1)
             decoder_input = topi.detach().view(batch_size)
         else:
             decoder_input = torch.ones([batch_size], device=device,
