@@ -282,18 +282,39 @@ class Evaluator:
 
     def load_dataset(self):
         dataset_params = self.config.get('dataset')
-        dataset_type = dataset_params.pop('type')
+        if isinstance(dataset_params, list):
+            self.val_loader = []
+            batch_transform = create_list_of_transforms(self.config.get(
+                    'val_transforms_list'), ovino_ir=self.runner.openvino_transform())
+            for params in dataset_params:
 
-        val_dataset = str_to_class[dataset_type](**dataset_params)
-        batch_transform = create_list_of_transforms(self.config.get(
-            'val_transforms_list'), ovino_ir=self.runner.openvino_transform())
-        print('Creating eval transforms list: {}'.format(batch_transform))
-        self.val_loader = DataLoader(
-            val_dataset,
-            collate_fn=partial(collate_fn, self.vocab.sign2id,
-                               batch_transform=batch_transform,
-                               use_ctc=(self.config.get('use_ctc'))),
-            num_workers=os.cpu_count())
+                dataset_type = params.pop('type')
+
+                val_dataset = str_to_class[dataset_type](**params)
+                print('Creating eval transforms list: {}'.format(batch_transform))
+                self.val_loader.append(
+                    DataLoader(
+                        val_dataset,
+                        collate_fn=partial(collate_fn, self.vocab.sign2id,
+                                           batch_transform=batch_transform,
+                                           use_ctc=(self.config.get('use_ctc'))),
+                        num_workers=os.cpu_count()
+                    )
+                )
+        else:
+
+            dataset_type = dataset_params.pop('type')
+
+            val_dataset = str_to_class[dataset_type](**dataset_params)
+            batch_transform = create_list_of_transforms(self.config.get(
+                'val_transforms_list'), ovino_ir=self.runner.openvino_transform())
+            print('Creating eval transforms list: {}'.format(batch_transform))
+            self.val_loader = DataLoader(
+                val_dataset,
+                collate_fn=partial(collate_fn, self.vocab.sign2id,
+                                   batch_transform=batch_transform,
+                                   use_ctc=(self.config.get('use_ctc'))),
+                num_workers=os.cpu_count())
 
     def read_expected_outputs(self):
         if self.config.get('expected_outputs'):
@@ -304,21 +325,43 @@ class Evaluator:
         annotations = []
         predictions = []
         print('Starting inference')
-        text_acc = 0
-        for img_name, _, imgs, _, loss_computation_gt in tqdm(self.val_loader):
-            with torch.no_grad():
-                targets = self.runner.run_model(imgs)
-                gold_phrase_str = self.vocab.construct_phrase(
-                    loss_computation_gt[0], ignore_end_token=self.config.get('use_ctc'))
-                pred_phrase_str = postprocess_prediction(self.vocab.construct_phrase(
-                    targets, ignore_end_token=self.config.get('use_ctc')))
-                annotations.append((gold_phrase_str, img_name[0]))
-                predictions.append((pred_phrase_str, img_name[0]))
-                text_acc += int(pred_phrase_str == gold_phrase_str)
-        text_acc /= len(self.val_loader)
-        print('Text accuracy is: ', text_acc)
-        if not self.render:
-            return text_acc
-        metric = Im2latexRenderBasedMetric()
-        res = metric.evaluate(annotations, predictions)
-        return res
+        if not isinstance(self.val_loader, list):
+            text_acc = 0
+            for img_name, _, imgs, _, loss_computation_gt in tqdm(self.val_loader):
+                with torch.no_grad():
+                    targets = self.runner.run_model(imgs)
+                    gold_phrase_str = self.vocab.construct_phrase(
+                        loss_computation_gt[0], ignore_end_token=self.config.get('use_ctc'))
+                    pred_phrase_str = postprocess_prediction(self.vocab.construct_phrase(
+                        targets, ignore_end_token=self.config.get('use_ctc')))
+                    annotations.append((gold_phrase_str, img_name[0]))
+                    predictions.append((pred_phrase_str, img_name[0]))
+                    text_acc += int(pred_phrase_str == gold_phrase_str)
+            text_acc /= len(self.val_loader)
+            print('Text accuracy is: ', text_acc)
+            if not self.render:
+                return text_acc
+            metric = Im2latexRenderBasedMetric()
+            res = metric.evaluate(annotations, predictions)
+            return res
+        else:
+            val_avg_accuracy = 0
+            for loader in self.val_loader:
+                val_acc = 0
+                for img_name, _, imgs, _, loss_computation_gt in tqdm(loader):
+                    with torch.no_grad():
+                        targets = self.runner.run_model(imgs)
+                        gold_phrase_str = self.vocab.construct_phrase(
+                            loss_computation_gt[0], ignore_end_token=self.config.get('use_ctc'))
+                        pred_phrase_str = postprocess_prediction(self.vocab.construct_phrase(
+                            targets, ignore_end_token=self.config.get('use_ctc')))
+                        annotations.append((gold_phrase_str, img_name[0]))
+                        predictions.append((pred_phrase_str, img_name[0]))
+                        val_acc += int(pred_phrase_str == gold_phrase_str)
+                val_acc /= len(loader)
+
+                dataset_name = os.path.split(loader.dataset.data_path)[-1]
+                print('dataset {} accuracy: {:.4f}'.format(dataset_name, val_acc))
+                weight = len(loader) / sum(map(len, self.val_loader))
+                val_avg_accuracy += val_acc * weight
+            return val_avg_accuracy
