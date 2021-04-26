@@ -84,8 +84,10 @@ def calculate_loss(logits, targets, target_lengths, should_cut_by_min=False, ctc
         # mask_for_logits = mask_for_tgt.unsqueeze(2).expand(-1, -1, vocab_size)
         # logits = logits.masked_select(mask_for_logits).contiguous().view(-1, vocab_size)
         # logits = torch.log(logits)
+        logits = logits.narrow(1, 0, targets.size(1)-1)
+        targets = targets.narrow(1, 0, targets.size(1)-1)
         logits = logits.permute(0, 2, 1)
-        loss = torch.nn.functional.nll_loss(logits, targets)
+        loss = torch.nn.functional.nll_loss(logits, targets, ignore_index=PAD_TOKEN)
 
         assert logits.size(0) == targets.size(0)
         pred = torch.max(logits.data, 1)[1]
@@ -269,10 +271,8 @@ class Trainer:
             lm_embs = torch.Tensor([self.fasttext_model[s] for s in gt_strs]).to(device)
             # since semantic info should be as close to the language model embedding
             # as possible, target should be 1
-            semantic_loss = torch.nn.CosineEmbeddingLoss()(semantic_info, lm_embs, target=torch.ones(lm_embs.shape[0], device=device))
-            # semantic_loss = semantic_loss.to(device)
-            # if self.global_step % self.print_freq == 0:
-            #     print(f'semantic loss {semantic_loss}')
+            semantic_loss = torch.nn.CosineEmbeddingLoss()(
+                semantic_info, lm_embs, target=torch.ones(lm_embs.shape[0], device=device))
         else:
             logits, _ = self.model(imgs, training_gt)
         cut = self.loss_type != 'CTC'
