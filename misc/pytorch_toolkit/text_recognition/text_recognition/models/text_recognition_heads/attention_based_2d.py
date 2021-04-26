@@ -16,6 +16,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from positional_encodings import PositionalEncodingPermute2D
 
 FASTTEXT_EMB_DIM = 300
 
@@ -160,6 +161,7 @@ class TextRecognitionHeadAttention(nn.Module):
                  decoder_rnn_type,
                  dropout_ratio=0.0,
                  use_semantics=False,
+                 positional_encodings=False,
                  ):
         super().__init__()
 
@@ -175,6 +177,8 @@ class TextRecognitionHeadAttention(nn.Module):
         self.decoder_max_seq_len = decoder_max_seq_len
         self.decoder_sos_int = decoder_sos_index
         self.decoder_dim_hidden = decoder_dim_hidden
+        if positional_encodings:
+            self.pe = PositionalEncodingPermute2D(channels=encoder_input_size)
         if use_semantics:
             dim = np.prod([decoder_dim_hidden, *decoder_input_feature_size])
             self.semantics = nn.Sequential(
@@ -259,6 +263,8 @@ class TextRecognitionHeadAttention(nn.Module):
             decoder_max_seq_len = self.decoder_max_seq_len
         decoder_outputs = []
         batch_size = features.shape[0]
+        if hasattr(self, 'pe'):
+            features = features + self.pe(features)
 
         features = features.view(features.shape[0], features.shape[1], -1)  # B C H*W
         features = features.permute(0, 2, 1)  # BxH*WxC or BxTxC
