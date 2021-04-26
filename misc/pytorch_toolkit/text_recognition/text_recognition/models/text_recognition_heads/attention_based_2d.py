@@ -159,17 +159,12 @@ class TextRecognitionHeadAttention(nn.Module):
                  decoder_sos_index,
                  decoder_rnn_type,
                  dropout_ratio=0.0,
-                 convolve_height=False,
                  use_semantics=False,
                  ):
         super().__init__()
 
         self.encoder = Encoder(
             encoder_input_size, encoder_dim_internal, encoder_num_layers)
-        if convolve_height:
-            self.convolve_height = nn.Conv2d(encoder_dim_internal, encoder_dim_internal,
-                                             (decoder_input_feature_size[0], 1))
-            decoder_input_feature_size[0] = 1
         self.dropout = nn.Dropout(dropout_ratio)
         self.decoder = DecoderAttention2d(hidden_size=decoder_dim_hidden,
                                           vocab_size=decoder_vocab_size,
@@ -265,11 +260,7 @@ class TextRecognitionHeadAttention(nn.Module):
         decoder_outputs = []
         batch_size = features.shape[0]
 
-        if hasattr(self, "convolve_height"):
-            features = self.convolve_height(features)
-            features = features.squeeze_(-2)
-        else:
-            features = features.view(features.shape[0], features.shape[1], -1)  # B C H*W
+        features = features.view(features.shape[0], features.shape[1], -1)  # B C H*W
         features = features.permute(0, 2, 1)  # BxH*WxC or BxTxC
         features = self.dropout(features)
 
