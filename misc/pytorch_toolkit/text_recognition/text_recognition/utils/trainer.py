@@ -92,6 +92,7 @@ def calculate_loss(logits, targets, target_lengths, should_cut_by_min=False, ctc
 
         accuracy = (pred == targets)
         accuracy = accuracy.cpu().numpy().astype(np.uint32)
+        accuracy = np.hstack([accuracy[i][:l] for i, l in enumerate(target_lengths)])
         accuracy = np.sum(accuracy) / np.prod(accuracy.shape)
         accuracy = accuracy.item()
 
