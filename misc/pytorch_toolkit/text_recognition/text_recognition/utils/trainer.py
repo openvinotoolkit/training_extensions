@@ -84,10 +84,10 @@ def calculate_loss(logits, targets, target_lengths, should_cut_by_min=False, ctc
         # mask_for_logits = mask_for_tgt.unsqueeze(2).expand(-1, -1, vocab_size)
         # logits = logits.masked_select(mask_for_logits).contiguous().view(-1, vocab_size)
         # logits = torch.log(logits)
-        logits = logits.narrow(1, 0, targets.size(1)-1)
-        targets = targets.narrow(1, 0, targets.size(1)-1)
+        # logits = logits.narrow(1, 0, targets.size(1)-1)
+        # targets = targets.narrow(1, 0, targets.size(1)-1)
         logits = logits.permute(0, 2, 1)
-        loss = torch.nn.functional.nll_loss(logits, targets, ignore_index=PAD_TOKEN)
+        loss = torch.nn.functional.nll_loss(logits, targets) #, ignore_index=PAD_TOKEN)
 
         assert logits.size(0) == targets.size(0)
         pred = torch.max(logits.data, 1)[1]
@@ -275,6 +275,15 @@ class Trainer:
                 semantic_info, lm_embs, target=torch.ones(lm_embs.shape[0], device=device))
         else:
             logits, _ = self.model(imgs, training_gt)
+        # if self.global_step % self.print_freq == 0:
+        #     for j, phrase in enumerate(_):
+        #         gold_phrase_str = loss_computation_gt[j]
+        #         pred_phrase_str = phrase
+        #         # gold_phrase_str = gold_phrase_str.lower()
+        #         # pred_phrase_str = pred_phrase_str.lower()
+        #         print(gold_phrase_str)
+        #         print(pred_phrase_str)
+        #         print('*' * 100)
         cut = self.loss_type != 'CTC'
         loss, accuracy = calculate_loss(logits, loss_computation_gt, target_lengths, should_cut_by_min=cut,
                                         ctc_loss=self.loss)
