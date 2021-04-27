@@ -467,7 +467,9 @@ def collate_fn(sign2id, batch, *, batch_transform=None, use_ctc=False):
     if use_ctc:
         loss_computation_gt = texts_tensor
     else:
-        loss_computation_gt = torch.cat([texts_tensor, torch.ones(bsize, 1).long() * END_TOKEN], dim=1)
+        loss_computation_gt = torch.cat([texts_tensor, torch.ones(bsize, 1).long() * PAD_TOKEN], dim=1)
+        for i, l in enumerate(lens):
+            loss_computation_gt[i, l] = END_TOKEN
     return img_names, lens, imgs, training_gt, loss_computation_gt
 
 
