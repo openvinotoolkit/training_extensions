@@ -30,7 +30,7 @@ architectures = {
 
 class ResNetLikeBackbone(nn.Module):
     def __init__(self, arch, disable_layer_3, disable_layer_4, output_channels=512,
-                 enable_last_conv=False, one_ch_first_conv=False):
+                 enable_last_conv=False, one_ch_first_conv=False, check_num_out_channels=True):
         super().__init__()
         self.output_channels = output_channels
         self.arch = arch
@@ -80,10 +80,11 @@ class ResNetLikeBackbone(nn.Module):
             self.last_conv = nn.Conv2d(out_ch, self.output_channels, 1)
         else:
             self.last_conv = None
-            assert out_ch == self.output_channels, f"""
-            Number of the output channels ({out_ch}) of the backbone from the config should be equal
-            to actual number of the output channels ({self.output_channels})
-            """
+            if check_num_out_channels:
+                assert out_ch == self.output_channels, f"""
+                Number of the output channels ({out_ch}) of the backbone from the config should be equal
+                to actual number of the output channels ({self.output_channels})
+                """
 
     def forward(self, x):
         x = self.conv1(x)
@@ -105,7 +106,8 @@ class ResNetLikeBackbone(nn.Module):
 class CustomResNetLikeBackbone(ResNetLikeBackbone):
     def __init__(self, arch, disable_layer_3, disable_layer_4, output_channels, enable_last_conv, one_ch_first_conv, custom_parameters):
         super().__init__(arch, disable_layer_3, disable_layer_4, output_channels=output_channels,
-                         enable_last_conv=enable_last_conv, one_ch_first_conv=one_ch_first_conv)
+                         enable_last_conv=enable_last_conv, one_ch_first_conv=one_ch_first_conv,
+                         check_num_out_channels=False)
         self.inplanes = custom_parameters['inplanes']
         self.bn1 = nn.BatchNorm2d(self.inplanes)
         conv1_params = custom_parameters['conv1']
