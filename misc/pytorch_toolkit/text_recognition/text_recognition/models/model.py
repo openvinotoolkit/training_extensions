@@ -19,7 +19,7 @@ from collections import OrderedDict
 import torch
 import torch.nn as nn
 
-from .backbones.resnet import ResNetLikeBackbone, CustomResNetLikeBackbone
+from .backbones.resnet import ResNetLikeBackbone, CustomResNetLikeBackbone, ResNetLikeWithSkipsBetweenLayers
 from .text_recognition_heads.attention_based import AttentionBasedLSTM
 from .text_recognition_heads.ctc_lstm_based import LSTMEncoderDecoder
 from .text_recognition_heads.attention_based_2d import TextRecognitionHeadAttention
@@ -33,6 +33,7 @@ TEXT_REC_HEADS = {
 BACKBONES = {
     'resnet': ResNetLikeBackbone,
     'custom_resnet': CustomResNetLikeBackbone,
+    'custom_resnet_with_skips': ResNetLikeWithSkipsBetweenLayers
 }
 
 
