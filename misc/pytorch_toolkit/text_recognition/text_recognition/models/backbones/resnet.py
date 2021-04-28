@@ -100,3 +100,79 @@ class ResNetLikeBackbone(nn.Module):
         if self.last_conv is not None:
             x = self.last_conv(x)
         return x
+
+
+class CustomResNetLikeBackbone(ResNetLikeBackbone):
+    def __init__(self, arch, disable_layer_3, disable_layer_4, output_channels, enable_last_conv, one_ch_first_conv, custom_parameters):
+        super().__init__(arch, disable_layer_3, disable_layer_4, output_channels=output_channels,
+                         enable_last_conv=enable_last_conv, one_ch_first_conv=one_ch_first_conv)
+        self.inplanes = custom_parameters['inplanes']
+        self.bn1 = nn.BatchNorm2d(self.inplanes)
+        conv1_params = custom_parameters['conv1']
+        _resnet = architectures.get(arch, None)(pretrained=False, progress=True)
+        _resnet.inplanes = self.inplanes
+        self.conv1 = nn.Conv2d(1 if one_ch_first_conv else 3,
+                               conv1_params['out_channels'],
+                               conv1_params['kernel'],
+                               conv1_params['stride'],
+                               conv1_params['padding'],
+                               bias=self.conv1.bias
+                               )
+        layers = custom_parameters['layers']
+        layer_strides = custom_parameters['layer_strides']
+        planes = custom_parameters['planes']
+        block = torchvision.models.resnet.Bottleneck
+        self.use_maxpool = custom_parameters['use_maxpool']
+        self.layer1 = _resnet._make_layer(block, planes[0], layers[0], stride=layer_strides[0])
+        self.layer2 = _resnet._make_layer(block, planes[1], layers[1], stride=layer_strides[1])
+        self.layer3 = _resnet._make_layer(block, planes[2], layers[2], stride=layer_strides[2])
+        self.layer4 = _resnet._make_layer(block, planes[3], layers[3], stride=layer_strides[3])
+
+    def forward(self, x):
+        x = self.conv1(x)
+        x = self.bn1(x)
+        x = self.relu(x)
+        if self.use_maxpool:
+            x = self.maxpool(x)
+
+        x = self.layer1(x)
+
+        x = self.layer2(x)
+        if self.layer3 is not None:
+            x = self.layer3(x)
+        if self.layer4 is not None:
+            x = self.layer4(x)
+        return x
+
+
+# class ResNetLikeWithSkipsBetweenLayers(nn.Module):
+#     def __init__(self, arch, disable_layer_3, disable_layer_4, output_channels, enable_last_conv, one_ch_first_conv, custom_resnet_params):
+#         super().__init__()
+#         self.resnet = CustomResNetLikeBackbone(arch, disable_layer_3, disable_layer_4,
+#                                                output_channels, enable_last_conv, one_ch_first_conv, custom_resnet_params)
+#         layer_strides = custom_resnet_params['layer_strides']
+#         planes = custom_resnet_params['planes']
+#         self.connect_1_3 = nn.Conv2d()
+#         self.connect_2_4 = nn.Conv2d()
+
+#     def forward(self, x):
+#         x = self.conv1(x)
+#         x = self.bn1(x)
+#         x = self.relu(x)
+#         if self.use_maxpool:
+#             x = self.maxpool(x)
+
+#         x1 = self.layer1(x)
+
+#         x2 = self.layer2(x1)
+
+#         if self.layer3 is None:
+#             return x2
+
+#         x3 = self.layer3(x2) + self.connect_1_3(x1)
+
+#         if self.layer4 is None:
+#             return x3
+
+#         x4 = self.layer4(x3) + self.connect_2_4(x2)
+#         return x4
