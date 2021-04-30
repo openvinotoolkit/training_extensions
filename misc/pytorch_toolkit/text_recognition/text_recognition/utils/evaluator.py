@@ -322,10 +322,10 @@ class Evaluator:
                 self.expected_outputs = json.load(outputs_file)
 
     def validate(self):
-        annotations = []
-        predictions = []
         print('Starting inference')
         if not isinstance(self.val_loader, list):
+            annotations = []
+            predictions = []
             text_acc = 0
             for img_name, _, imgs, _, loss_computation_gt in tqdm(self.val_loader):
                 with torch.no_grad():
@@ -355,8 +355,8 @@ class Evaluator:
                             loss_computation_gt[0], ignore_end_token=self.config.get('use_ctc'))
                         pred_phrase_str = postprocess_prediction(self.vocab.construct_phrase(
                             targets, ignore_end_token=self.config.get('use_ctc')))
-                        annotations.append((gold_phrase_str, img_name[0]))
-                        predictions.append((pred_phrase_str, img_name[0]))
+                        gold_phrase_str = gold_phrase_str.lower()
+                        pred_phrase_str = pred_phrase_str.lower()
                         val_acc += int(pred_phrase_str == gold_phrase_str)
                 val_acc /= len(loader)
 
