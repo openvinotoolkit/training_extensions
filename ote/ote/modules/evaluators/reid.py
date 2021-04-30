@@ -33,6 +33,7 @@ class ReidEvaluator(BaseEvaluator):
 
     parameter_test_dir = 'test_data_roots'
     parameter_classes_list = 'classes'
+    parameter_aux_weight = 'load_aux_weights'
 
     def _evaluate_internal(self, config_path, snapshot, out, update_config, metrics_functions, **kwargs):
         assert isinstance(update_config, dict)
@@ -41,6 +42,12 @@ class ReidEvaluator(BaseEvaluator):
 
         if os.path.islink(snapshot):
             snapshot = os.path.join(os.path.dirname(snapshot), os.readlink(snapshot))
+
+        if update_config[self.parameter_aux_weight]:
+            aux_config_arg = f'--aux-config-opts model.load_weights {update_config[self.parameter_aux_weight]} '
+        else:
+            aux_config_arg = ''
+        del update_config[self.parameter_aux_weight]
 
         if update_config[self.parameter_classes_list]:
             update_config[self.parameter_classes_list] = update_config[self.parameter_classes_list].replace(',', ' ')
@@ -52,7 +59,8 @@ class ReidEvaluator(BaseEvaluator):
         data_path_args = f'--custom-roots {update_config[self.parameter_test_dir]} '
         data_path_args += f'{update_config[self.parameter_test_dir]} --root _ '
         del update_config[self.parameter_test_dir]
-        update_config_str = classes_arg + data_path_args
+
+        update_config_str = aux_config_arg + classes_arg + data_path_args
         update_config_str += ' '.join([f'{k} {v}' for k, v in update_config.items() if str(v) and str(k)])
         update_config_str = update_config_str if update_config_str else ''
 

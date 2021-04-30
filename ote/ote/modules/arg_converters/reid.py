@@ -32,6 +32,7 @@ class ReidArgConverterMap(ArgConverterMaps):
             'save_checkpoints_to': 'data.save_dir',
             'batch_size': 'train.batch_size',
             'classes': 'classes',
+            'load_aux_weights': 'load_aux_weights',
         }
     def train_update_args_map(self):
         cur_map = self._train_compression_base_args_map()
@@ -47,6 +48,7 @@ class ReidArgConverterMap(ArgConverterMaps):
             'test_data_roots': 'test_data_roots',
             'load_weights': 'model.load_weights',
             'classes': 'classes',
+            'load_aux_weights': 'load_aux_weights',
         }
 
     def compress_update_args_map(self):
