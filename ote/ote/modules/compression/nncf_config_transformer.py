@@ -14,6 +14,7 @@
  limitations under the License.
 """
 
+import json
 import os
 import yaml
 from tempfile import NamedTemporaryFile
@@ -21,19 +22,33 @@ from tempfile import NamedTemporaryFile
 from ..registry import COMPRESSION
 from .nncf_config_generator import NNCFConfigGenerator, POSSIBLE_NNCF_PARTS
 
-def _save_config(config, file_path):
-    # TODO(LeonidBeynenson): make it write python instead of yaml
-    #     (otherwise Config tries to write its result config as yaml file too)
-    with open(file_path, 'w') as output_stream:
-        yaml.dump(config, output_stream)
+def save_config(config, file_path):
+    # TODO(LeonidBeynenson): add possibility to write python instead of yaml
+    #     (otherwise mmcv.Config tries to write its result config as yaml file too)
 
-def _generate_random_suffix():
+    assert '.' in file_path
+    ext = file_path[file_path.rindex('.') + 1:]
+    if ext in ('yaml', 'yml'):
+        backend = yaml
+    elif ext in ('json', 'jsn'):
+        backend = json
+    else:
+        raise RuntimeError(f'Unknown extension {ext} of path {file_path}')
+
+    with open(file_path, 'w') as output_stream:
+        backend.dump(config, output_stream)
+
+def generate_random_suffix():
     random_suffix = os.path.basename(NamedTemporaryFile().name)
     prefix = 'tmp'
     if random_suffix.startswith(prefix):
         random_suffix = random_suffix[len(prefix):]
     return random_suffix
 
+def generate_config_path(config_path, config_ext='yaml'):
+    suffix = generate_random_suffix()
+    res = config_path + f'._.{suffix}.{config_ext}'
+    return res
 
 # TODO(LeonidBeynenson): implement unit tests on NNCFConfigTransformer
 
@@ -64,7 +79,7 @@ class NNCFConfigTransformer:
     def _create_derived_config_file(self, template_path, config_path, kwargs_nncf):
         assert os.path.exists(config_path), f'The initial config path {config_path} is absent'
 
-        generated_config_path = self._generate_config_path(config_path)
+        generated_config_path = generate_config_path(config_path)
         assert not os.path.exists(generated_config_path), f'Generated configs path {generated_config_path} exists'
 
         config_generator = NNCFConfigGenerator()
@@ -76,15 +91,8 @@ class NNCFConfigTransformer:
         generated_config_dir = os.path.dirname(generated_config_path)
 
         cfg_update_part['_base_'] = os.path.relpath(config_path, generated_config_dir)
-        _save_config(cfg_update_part, generated_config_path)
+        save_config(cfg_update_part, generated_config_path)
 
         assert os.path.exists(generated_config_path), f'Cannot write config file "{generated_config_path}"'
 
         return generated_config_path
-
-    @staticmethod
-    def _generate_config_path(config_path):
-        suffix = _generate_random_suffix()
-        config_ext = 'yaml'
-        res = config_path + f'._.{suffix}.{config_ext}'
-        return res

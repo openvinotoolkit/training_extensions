@@ -97,3 +97,6 @@ test:
   batch_size: 128
   evaluate: False
   eval_freq: 1
+
+nncf:
+  coeff_decrease_lr_for_nncf: 0.035

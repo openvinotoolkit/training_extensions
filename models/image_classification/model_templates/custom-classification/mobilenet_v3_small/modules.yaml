@@ -3,3 +3,4 @@ arg_converter_map: ReidArgConverterMap
 trainer: ReidTrainer
 evaluator: ReidEvaluator
 exporter: ReidExporter
+compression: NNCFReidConfigTransformer
