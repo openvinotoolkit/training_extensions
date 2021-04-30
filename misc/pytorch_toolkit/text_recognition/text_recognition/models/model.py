@@ -47,9 +47,7 @@ class TextRecognitionModel(nn.Module):
 
         def forward(self, input_images):
             encoded = self.model.backbone(input_images)
-            row_enc_out, hidden, context = self.model.head.encode(encoded)
-            hidden, context, init_0 = self.model.head.init_decoder(row_enc_out, hidden, context)
-            return row_enc_out, hidden, context, init_0
+            return self.model.head.encoder_wrapper(encoded)
 
     class DecoderWrapper(nn.Module):
 
@@ -57,9 +55,8 @@ class TextRecognitionModel(nn.Module):
             super().__init__()
             self.model = model
 
-        def forward(self, hidden, context, output, row_enc_out, tgt):
-            return self.model.head.step_decoding(
-                hidden, context, output, row_enc_out, tgt)
+        def forward(self, *args):
+            return self.model.head.decoder_wrapper(*args)
 
     def __init__(self, backbone, out_size, head):
         super().__init__()
