@@ -98,8 +98,6 @@ class ResNetLikeBackbone(nn.Module):
             x = self.layer3(x)
         if self.layer4 is not None:
             x = self.layer4(x)
-        if self.last_conv is not None:
-            x = self.last_conv(x)
         return x
 
 
@@ -114,12 +112,13 @@ class CustomResNetLikeBackbone(ResNetLikeBackbone):
         _resnet = architectures.get(arch, None)(pretrained=False, progress=True)
         _resnet.inplanes = self.inplanes
         self.conv1 = nn.Conv2d(1 if one_ch_first_conv else 3,
-                               conv1_params['out_channels'],
+                               self.inplanes,
                                conv1_params['kernel'],
                                conv1_params['stride'],
                                conv1_params['padding'],
                                bias=self.conv1.bias
                                )
+        self.return_layers = custom_parameters['return_layers']
         layers = custom_parameters['layers']
         layer_strides = custom_parameters['layer_strides']
         planes = custom_parameters['planes']
@@ -137,15 +136,25 @@ class CustomResNetLikeBackbone(ResNetLikeBackbone):
         if self.use_maxpool:
             x = self.maxpool(x)
 
-        x = self.layer1(x)
+        x1 = self.layer1(x)
+        x2 = self.layer2(x1)
+        if self.layer3 is None:
+            return x2
+        x3 = self.layer3(x2)
+        if self.layer4 is None:
+            return x3
+        x4 = self.layer4(x3)
 
-        x = self.layer2(x)
-        if self.layer3 is not None:
-            x = self.layer3(x)
-        if self.layer4 is not None:
-            x = self.layer4(x)
-        return x
-
+        if not self.return_layers:
+            return x4
+        out = []
+        if 2 in self.return_layers:
+            out.append(x2)
+        if 3 in self.return_layers:
+            out.append(x3)
+        if 4 in self.return_layers:
+            out.append(x4)
+        return out
 
 class ResNetLikeWithSkipsBetweenLayers(CustomResNetLikeBackbone):
     def __init__(self, arch, disable_layer_3, disable_layer_4, output_channels, enable_last_conv, one_ch_first_conv, custom_parameters):
