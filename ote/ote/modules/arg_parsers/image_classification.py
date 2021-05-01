@@ -45,7 +45,12 @@ class ImageClassificationArgParser(DefaultArgParser):
         return self._add_classes_arg(parser)
 
     def get_compression_parser(self, config_path):
-        parser = argparse.ArgumentParser(parents=[compression_args_parser(config_path)], add_help=False)
+        # Please, note that for image classification compression
+        # batch_size should be set from the compression config file,
+        # not from the command line arguments
+        # (smaller batch size often gives better results with "regularization by noise")
+        parser = argparse.ArgumentParser(parents=[compression_args_parser(config_path, with_batch_size=False)],
+                                         add_help=False)
         parser = self._add_aux_weights_load_arg(parser)
         parser = self._add_classes_arg(parser)
         return parser

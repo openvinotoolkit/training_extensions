@@ -32,7 +32,8 @@
         },
         "changes_aux_config": {
 		"train": {
-		    "batch_size": 64
+		    "batch_size": 64,
+		    "optim": "sgd"
 		},
 		"test": {
 		    "batch_size": 64
