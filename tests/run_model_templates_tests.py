@@ -287,7 +287,14 @@ def pytest_run_tests(all_tests, work_dir, verbose, should_capture_output=True):
         pytest_ids.append(cur_pytest_id)
 
     pytest_ids = ' '.join(pytest_ids)
-    verb_flag = '-v' if verbose else ''
+
+    if verbose and not should_capture_output:
+        verb_flag = '-v -o log_cli=true -o log_cli_level=DEBUG'
+    elif verbose:
+        verb_flag = '-v'
+    else:
+        verb_flag = ''
+
     capture_flag = '' if should_capture_output else '-s'
     cmd = f'pytest {capture_flag} {verb_flag} {pytest_ids}'
 

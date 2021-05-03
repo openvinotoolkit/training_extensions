@@ -254,7 +254,8 @@ def create_export_test_case(domain_name, problem_name, model_name, ann_file,
 def create_nncf_test_case(domain_name, problem_name, model_name, ann_file, img_root,
                           compress_cmd_line_params,
                           template_update_dict=None,
-                          compression_cfg_update_dict=None):
+                          compression_cfg_update_dict=None,
+                          should_compression_set_batch_size=True):
  # pylint: disable=too-many-arguments, too-many-statements
     """
     Note that template_update_dict will be used to update template file
@@ -274,6 +275,7 @@ def create_nncf_test_case(domain_name, problem_name, model_name, ann_file, img_r
 
         @classmethod
         def setUpClass(cls):
+            cls.should_compression_set_batch_size = should_compression_set_batch_size
             cls.compress_cmd_line_params = compress_cmd_line_params
             cls.test_case_description = cls.generate_test_case_description(
                     template_update_dict,
@@ -373,8 +375,14 @@ def create_nncf_test_case(domain_name, problem_name, model_name, ann_file, img_r
             template_data.merge_from_dict(template_update_dict)
             template_data.dump(template_file)
 
-        def do_compress(self):
+        def do_compress(self, special_load_weights_arg=None):
             log_file = os.path.join(self.output_folder, f'log__{self.id()}.txt')
+            batch_size_arg = ' --batch-size 1' if self.should_compression_set_batch_size else ''
+            if special_load_weights_arg:
+                load_weights_arg = special_load_weights_arg
+            else:
+                load_weights_arg = ' --load-weights snapshot.pth'
+
             run_through_shell(
                 f'cd {self.template_folder};'
                 f'python3 compress.py'
@@ -382,10 +390,10 @@ def create_nncf_test_case(domain_name, problem_name, model_name, ann_file, img_r
                 f' --train-data-roots {self.img_root}'
                 f' --val-ann-files {self.ann_file}'
                 f' --val-data-roots {self.img_root}'
-                f' --load-weights snapshot.pth'
                 f' --save-checkpoints-to {self.output_folder}'
                 f' --gpu-num 1'
-                f' --batch-size 1'
+                + load_weights_arg
+                + batch_size_arg
                 + ' ' + self.compress_cmd_line_params
                 + f' | tee {log_file}')
             return log_file

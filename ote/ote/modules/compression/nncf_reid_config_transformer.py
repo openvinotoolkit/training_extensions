@@ -50,7 +50,7 @@ class NNCFReidConfigTransformer:
              (self.NAME_FIELD_TO_EXTRACT_TO_AUX_CONFIG_CHANGE not in cur_config) ):
             raise RuntimeError(f'The fields {self.NAME_FIELD_TO_EXTRACT_TO_NNCF_CONFIG} '
                                f'and {self.NAME_FIELD_TO_EXTRACT_TO_AUX_CONFIG_CHANGE} may be absent '
-                               f'in generated config file {cur_config_path} -- it is required for '
+                               f'in generated config file {cur_config_path} -- but they are required for '
                                f'{type(self).__name__} -- check the original config file '
                                f'and nncf config')
         nncf_part_to_extract = cur_config[self.NAME_FIELD_TO_EXTRACT_TO_NNCF_CONFIG]
