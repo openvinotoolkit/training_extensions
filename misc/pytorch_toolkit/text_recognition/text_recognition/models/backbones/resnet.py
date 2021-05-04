@@ -16,6 +16,8 @@
 
 import torch.nn as nn
 import torchvision.models
+import functools
+import operator
 
 architectures = {
     'resnet18': torchvision.models.resnet18,
@@ -129,15 +131,32 @@ class CustomResNetLikeBackbone(ResNetLikeBackbone):
         self.layer2 = _resnet._make_layer(block, planes[1], layers[1], stride=layer_strides[1])
         self.layer3 = _resnet._make_layer(block, planes[2], layers[2], stride=layer_strides[2])
         self.layer4 = _resnet._make_layer(block, planes[3], layers[3], stride=layer_strides[3])
-        self._init_weights()
+        init_w = custom_parameters.get('init_weights'):
+        if init_w == 'kaiming':
+            self._init_weights_()
+        elif init_w == 'from_resnet':
+            self._load_weights_from_resnet(_resnet)
 
-    def _init_weights(self):
+    def _init_weights_(self):
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
                 nn.init.kaiming_normal_(
                     m.weight, mode='fan_out', nonlinearity='relu')
                 if m.bias is not None:
                     nn.init.constant_(m.bias, 0)
+
+    def _load_weights_from_resnet(self, resnet):
+        for name, _ in self.named_parameters():
+            if 'layer' in name:
+                resnet_layer = operator.attrgetter(name)(resnet)
+                # inspired by https://stackoverflow.com/a/31174427
+
+                def rgetattr(obj, attr, *args):
+                    def _getattr(obj, attr):
+                        return getattr(obj, attr, *args)
+                    return functools.reduce(_getattr, [obj] + attr.split('.'))
+                pre, _, post = name.rpartition('.')
+                setattr(rgetattr(self, pre) if pre else self, post, resnet_layer)
 
     def forward(self, x):
         x = self.conv1(x)
@@ -184,7 +203,7 @@ class ResNetLikeWithSkipsBetweenLayers(CustomResNetLikeBackbone):
             kernel_size=1,
             stride=(layer_strides[2]-1)*2 + (layer_strides[3]-1)*2,
             padding=0)
-        super()._init_weights()
+        super()._init_weights_()
 
     def forward(self, x):
         x = self.conv1(x)
