@@ -12,3 +12,4 @@ scipy
 positional-encodings
 lmdb
 fasttext
+efficientnet_pytorch
