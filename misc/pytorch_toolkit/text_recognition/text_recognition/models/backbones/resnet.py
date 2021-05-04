@@ -118,7 +118,7 @@ class CustomResNetLikeBackbone(ResNetLikeBackbone):
                                conv1_params['padding'],
                                bias=self.conv1.bias
                                )
-        self.return_layers = custom_parameters['return_layers']
+        self.return_layers = custom_parameters.get('return_layers', [4])
         layers = custom_parameters['layers']
         layer_strides = custom_parameters['layer_strides']
         planes = custom_parameters['planes']
