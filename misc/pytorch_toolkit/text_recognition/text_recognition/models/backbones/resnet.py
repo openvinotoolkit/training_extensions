@@ -30,14 +30,15 @@ architectures = {
 
 class ResNetLikeBackbone(nn.Module):
     def __init__(self, arch, disable_layer_3, disable_layer_4, output_channels=512,
-                 enable_last_conv=False, one_ch_first_conv=False, check_num_out_channels=True):
+                 enable_last_conv=False, one_ch_first_conv=False, check_num_out_channels=True,
+                 pretrained=True):
         super().__init__()
         self.output_channels = output_channels
         self.arch = arch
         _resnet = architectures.get(arch, None)
         if _resnet is None:
             raise ValueError("Unkown backbone, please, check the field 'arch' in the backbone_config")
-        _resnet = _resnet(pretrained=True, progress=True)
+        _resnet = _resnet(pretrained=pretrained, progress=True)
         self.groups = _resnet.groups
         self.base_width = _resnet.base_width
         conv_1 = _resnet.conv1
