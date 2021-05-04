@@ -37,7 +37,7 @@ class RSNATrainer():
         aurocMax=0.0
         
         ######### LOAD CHECKPOINT  ##########
-        optimizer = optim.Adam (model.parameters(), lr=lr, betas=(0.9, 0.999), eps=1e-08, weight_decay=1e-5)
+        optimizer = optim.Adam(model.parameters(), lr=lr, weight_decay=1e-5)
         if checkpoint != None:
             modelCheckpoint = torch.load(checkpoint)
             model.load_state_dict(modelCheckpoint['state_dict'])
