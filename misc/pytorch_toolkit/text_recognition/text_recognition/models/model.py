@@ -19,11 +19,15 @@ from collections import OrderedDict
 import torch
 import torch.nn as nn
 
-from .backbones.resnet import ResNetLikeBackbone, CustomResNetLikeBackbone, ResNetLikeWithSkipsBetweenLayers
+from .backbones.efficientnet import EfficientNetLikeBackbone
+from .backbones.resnet import (CustomResNetLikeBackbone, ResNetLikeBackbone,
+                               ResNetLikeWithSkipsBetweenLayers)
 from .text_recognition_heads.attention_based import AttentionBasedLSTM
+from .text_recognition_heads.attention_based_2d import \
+    TextRecognitionHeadAttention
 from .text_recognition_heads.ctc_lstm_based import LSTMEncoderDecoder
-from .text_recognition_heads.attention_based_2d import TextRecognitionHeadAttention
-from .text_recognition_heads.ensemble_attention_head import EnsembleAttentionHead
+from .text_recognition_heads.ensemble_attention_head import \
+    EnsembleAttentionHead
 
 TEXT_REC_HEADS = {
     'AttentionBasedLSTM': AttentionBasedLSTM,
@@ -35,7 +39,8 @@ TEXT_REC_HEADS = {
 BACKBONES = {
     'resnet': ResNetLikeBackbone,
     'custom_resnet': CustomResNetLikeBackbone,
-    'custom_resnet_with_skips': ResNetLikeWithSkipsBetweenLayers
+    'custom_resnet_with_skips': ResNetLikeWithSkipsBetweenLayers,
+    'EfficientNet': EfficientNetLikeBackbone,
 }
 
 
