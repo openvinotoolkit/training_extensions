@@ -1,5 +1,3 @@
-import os
-import os.path
 from PIL import Image
 import torch
 import torchvision
