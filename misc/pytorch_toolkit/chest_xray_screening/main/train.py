@@ -38,7 +38,7 @@ class RSNATrainer():
         
         ######### LOAD CHECKPOINT  ##########
         optimizer = optim.Adam(model.parameters(), lr=lr, weight_decay=1e-5)
-        if checkpoint != None:
+        if checkpoint is not None:
             modelCheckpoint = torch.load(checkpoint)
             model.load_state_dict(modelCheckpoint['state_dict'])
             optimizer.load_state_dict(modelCheckpoint['optimizer'])
