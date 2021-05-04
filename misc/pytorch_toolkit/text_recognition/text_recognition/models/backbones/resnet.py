@@ -131,7 +131,7 @@ class CustomResNetLikeBackbone(ResNetLikeBackbone):
         self.layer2 = _resnet._make_layer(block, planes[1], layers[1], stride=layer_strides[1])
         self.layer3 = _resnet._make_layer(block, planes[2], layers[2], stride=layer_strides[2])
         self.layer4 = _resnet._make_layer(block, planes[3], layers[3], stride=layer_strides[3])
-        init_w = custom_parameters.get('init_weights'):
+        init_w = custom_parameters.get('init_weights')
         if init_w == 'kaiming':
             self._init_weights_()
         elif init_w == 'from_resnet':
