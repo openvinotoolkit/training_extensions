@@ -149,7 +149,7 @@ class RSNATrainer():
     #---- dataPRED - predicted data
     #---- classCount - number of classes
     
-    def computeAUROC (dataGT, dataPRED, classCount):
+    def computeAUROC(dataGT, dataPRED, classCount):
         
         outAUROC = []
         
