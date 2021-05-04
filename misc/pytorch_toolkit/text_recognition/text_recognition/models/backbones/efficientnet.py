@@ -4,7 +4,7 @@ import torch.nn as nn
 
 
 class EfficientNetLikeBackbone(nn.Module):
-    def __init__(self, model_name):
+    def __init__(self, model_name, **kwargs):
         super().__init__()
         self.model = EfficientNet.from_pretrained(model_name)
         # Final linear layer
