@@ -1,7 +1,7 @@
 name: efficientnet_b2b-mask_rcnn-576x576
 domain: Instance Segmentation
 problem: Custom Instance Segmentation
-framework: OTEDetection v2.1.1
+framework: OTEDetection v2.9.1
 summary: Custom instance segmentation based on Mask R-CNN architecture with EfficientNet-b2.
 annotation_format: COCO
 initial_weights: snapshot.pth

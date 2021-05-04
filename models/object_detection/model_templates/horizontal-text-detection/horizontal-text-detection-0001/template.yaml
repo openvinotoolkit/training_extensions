@@ -1,7 +1,7 @@
 name: horizontal-text-detection-0001
 domain: Object Detection
 problem: Horizontal Text Detection
-framework: OTEDetection v2.1.1
+framework: OTEDetection v2.9.1
 summary: Text Detection based on MobileNetV2 (FCOS).
 annotation_format: COCO
 initial_weights: snapshot.pth
