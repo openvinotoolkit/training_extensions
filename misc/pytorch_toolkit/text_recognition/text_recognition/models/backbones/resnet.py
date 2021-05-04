@@ -128,6 +128,14 @@ class CustomResNetLikeBackbone(ResNetLikeBackbone):
         self.layer2 = _resnet._make_layer(block, planes[1], layers[1], stride=layer_strides[1])
         self.layer3 = _resnet._make_layer(block, planes[2], layers[2], stride=layer_strides[2])
         self.layer4 = _resnet._make_layer(block, planes[3], layers[3], stride=layer_strides[3])
+        self._init_weights()
+
+    def _init_weights(self):
+        for m in self.modules():
+            if isinstance(m, nn.Conv2d):
+                nn.init.kaiming_normal_(
+                    m.weight, mode='fan_out', nonlinearity='relu')
+                nn.init.constant_(m.bias, 0)
 
     def forward(self, x):
         x = self.conv1(x)
@@ -156,9 +164,11 @@ class CustomResNetLikeBackbone(ResNetLikeBackbone):
             out.append(x4)
         return out
 
+
 class ResNetLikeWithSkipsBetweenLayers(CustomResNetLikeBackbone):
     def __init__(self, arch, disable_layer_3, disable_layer_4, output_channels, enable_last_conv, one_ch_first_conv, custom_parameters):
-        super().__init__(arch, disable_layer_3, disable_layer_4, output_channels, enable_last_conv, one_ch_first_conv, custom_parameters)
+        super().__init__(arch, disable_layer_3, disable_layer_4, output_channels,
+                         enable_last_conv, one_ch_first_conv, custom_parameters)
         layer_strides = custom_parameters['layer_strides']
         self.connect_1_3 = nn.Conv2d(
             in_channels=self.layer1[-1].conv1.out_channels,
@@ -172,6 +182,7 @@ class ResNetLikeWithSkipsBetweenLayers(CustomResNetLikeBackbone):
             kernel_size=1,
             stride=(layer_strides[2]-1)*2 + (layer_strides[3]-1)*2,
             padding=0)
+        super()._init_weights()
 
     def forward(self, x):
         x = self.conv1(x)
