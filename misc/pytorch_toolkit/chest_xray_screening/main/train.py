@@ -52,9 +52,7 @@ class RSNATrainer():
         for epochID in range(0, trMaxEpoch):
             # update_lr(optimizer,0.0001)
             print("Epoch "+ str(epochID+1)+"/"+str(trMaxEpoch))    
-            timestampTime = time.strftime("%H%M%S")
-            timestampDate = time.strftime("%d%m%Y")
-            timestampSTART = timestampDate + '-' + timestampTime
+            timestampSTART = time.strftime("%H%M%S-%d%m%Y")
             global gepochID
             gepochID=epochID
             batchs, losst, losse, aurocMax = RSNATrainer.epochTrain(model, dataLoaderTrain, dataLoaderVal,dataLoaderTest, optimizer,
