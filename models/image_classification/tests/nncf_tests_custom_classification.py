@@ -29,10 +29,14 @@ class CustomClassificationNNCFTestCaseSmall(
             compression_cmd_line_parameters='--nncf-quantization',
             **kwargs,
             compression_cfg_update_dict={
-                "nncf_quantization.train.batch_size": 2,
-                "nncf_quantization.test.batch_size": 2,
-                "nncf_quantization.changes_aux_config.train.batch_size": 2,
-                "nncf_quantization.changes_aux_config.test.batch_size": 2,
+                'nncf_quantization.train.batch_size': 2,
+                'nncf_quantization.test.batch_size': 2,
+                'nncf_quantization.changes_aux_config.train.batch_size': 2,
+                'nncf_quantization.changes_aux_config.test.batch_size': 2,
+            },
+            field_value_changes_in_nncf_config={
+                'num_init_samples': 8,
+                'num_bn_adaptation_samples': 8
             }
         )
 ):

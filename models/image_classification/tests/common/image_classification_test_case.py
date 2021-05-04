@@ -17,6 +17,8 @@ import logging
 import os
 import pathlib
 
+from pprint import pformat
+
 from ote.tests.test_case import (create_export_test_case,
                                  create_test_case,
                                  create_nncf_test_case,
@@ -88,10 +90,44 @@ def create_image_classification_test_case(**kwargs):
             self.assertTrue(os.path.exists(os.path.join(self.output_folder, 'latest.pth')))
     return ClassificationTrainTestCase
 
+def make_field_value_change_in_struct_recursively(struct, field_name, new_field_value):
+    logging.debug(f'Making recursive change in struct: {field_name}: {new_field_value}')
+    def _make_change(cur_struct, field_name, new_field_value, set_ids=None):
+        if set_ids is None:
+            set_ids = set()
+        if id(cur_struct) in set_ids:
+            return
+        set_ids.add(id(cur_struct))
+        if isinstance(cur_struct, dict):
+            for k in sorted(cur_struct.keys()):
+                _make_change(cur_struct[k], field_name, new_field_value, set_ids)
+            if field_name in cur_struct:
+                cur_struct[field_name] = new_field_value
+            return
+        if isinstance(cur_struct, list):
+            for i in range(len(cur_struct)):
+                _make_change(cur_struct[i], field_name, new_field_value, set_ids)
+            return
+        # if neither dict nor list -- nothing to do
+        return
+
+    _make_change(struct, field_name, new_field_value)
+
+def make_field_value_changes_in_struct_recursively(struct, field_value_changes_in_struct):
+    logging.debug(f'Before recursive changes in struct:\n{pformat(struct)}')
+    for field_name, new_field_value in sorted(field_value_changes_in_struct.items()):
+        make_field_value_change_in_struct_recursively(struct, field_name, new_field_value)
+    logging.debug(f'After recursive changes in struct:\n{pformat(struct)}')
+
 def create_image_classification_nncf_test_case(problem_name, model_name, ann_file, img_root,
                                                compression_cmd_line_parameters,
                                                template_update_dict=None,
-                                               compression_cfg_update_dict=None):
+                                               compression_cfg_update_dict=None,
+                                               field_value_changes_in_nncf_config=None):
+    """
+    Note the field_value_changes_in_nncf_config should be a dict
+    value that should be applied to make_field_value_changes_in_struct_recursively
+    """
     # pylint: disable=too-many-arguments, too-many-statements
     if template_update_dict is None:
         template_update_dict = {}
@@ -103,6 +139,32 @@ def create_image_classification_nncf_test_case(problem_name, model_name, ann_fil
                                              should_compression_set_batch_size=False)
 
     class ClassificationNNCFTestCase(NNCFBaseTestCase):
+        @classmethod
+        def setUpClass(cls):
+            super(ClassificationNNCFTestCase, cls).setUpClass()
+            if field_value_changes_in_nncf_config:
+                cls._apply_field_value_changes_in_nncf_config_recursively(cls.template_file,
+                                                                          field_value_changes_in_nncf_config)
+
+        @staticmethod
+        def _apply_field_value_changes_in_nncf_config_recursively(template_file, field_value_changes_in_nncf_config):
+            import mmcv
+            from ote.modules.compression import get_optimisation_config_from_template
+
+            assert isinstance(field_value_changes_in_nncf_config, dict)
+
+            template_data = mmcv.Config.fromfile(template_file)
+            compression_cfg_rel_path = get_optimisation_config_from_template(template_data)
+            compression_cfg_path = os.path.join(os.path.dirname(template_file), compression_cfg_rel_path)
+
+            compression_cfg = mmcv.Config.fromfile(compression_cfg_path)
+            compression_cfg = dict(compression_cfg)
+
+            make_field_value_changes_in_struct_recursively(compression_cfg, field_value_changes_in_nncf_config)
+
+            mmcv.dump(compression_cfg, compression_cfg_path, file_format='json')
+            logging.debug(f'Made new compression config file:\n{pformat(mmcv.load(compression_cfg_path))}')
+
         def setUp(self):
             super().setUp()
             self.preliminary_training_folder = os.path.join(self.template_folder, f'preliminary_training')
@@ -170,7 +232,25 @@ def create_image_classification_nncf_test_case(problem_name, model_name, ann_fil
             return log_file
 
         def test_nncf_compress_and_eval_on_gpu(self):
-            pass
+            return
+            skip_if_cuda_not_available()
+            logging.info('Begin test_nncf_compress_on_gpu')
+            best_models = self.do_preliminary_finetuning(True)
+            self.assertEqual(len(best_models), 2)
+            self.assertIn('model_0', best_models[0])
+            self.assertIn('model_1', best_models[1])
+
+            special_load_weights_arg = f' --load-weights {best_models[0]} --load-aux-weights {best_models[1]}'
+            log_file = self.do_compress(special_load_weights_arg)
+            logging.debug('Compression is finished')
+            best_compressed_models = self._find_best_models(self.output_folder)
+            logging.debug(f'Found best compressed models: {best_compressed_models}')
+            self.assertEqual(len(best_compressed_models), 2)
+            self.assertIn('model_0', best_compressed_models[0])
+            self.assertIn('model_1', best_compressed_models[1])
+
+            metrics_path = self.do_eval(best_compressed_models[0])
+            return log_file, metrics_path
 
         def test_nncf_compress_and_export(self):
             pass
