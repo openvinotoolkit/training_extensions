@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import glob
 import logging
 import os
+import re
 import pathlib
+import yaml
 
 from pprint import pformat
 
@@ -23,6 +24,7 @@ from ote.tests.test_case import (create_export_test_case,
                                  create_test_case,
                                  create_nncf_test_case,
                                  skip_if_cuda_not_available)
+from ote.tests.utils import find_files_by_pattern, extract_last_lines_by_pattern
 from ote.utils.misc import run_through_shell
 
 
@@ -91,6 +93,11 @@ def create_image_classification_test_case(**kwargs):
     return ClassificationTrainTestCase
 
 def make_field_value_change_in_struct_recursively(struct, field_name, new_field_value):
+    """
+    This function makes recursive walk in the structure `struct` and for each dict
+    if the dict has key `field_name`, the function sets its value
+    to `new_field_value` (may be any python structure)
+    """
     logging.debug(f'Making recursive change in struct: {field_name}: {new_field_value}')
     def _make_change(cur_struct, field_name, new_field_value, set_ids=None):
         if set_ids is None:
@@ -173,9 +180,13 @@ def create_image_classification_nncf_test_case(problem_name, model_name, ann_fil
 
         @staticmethod
         def _find_best_models(folder_path):
-            best_models = glob.glob(os.path.join(folder_path, '**', '*best*.pth*.tar*'), recursive=True)
-            best_models = sorted(best_models)
+            best_models = find_files_by_pattern(folder_path, '*best*.pth*.tar*')
             return best_models
+
+        def _find_latest_model(self, folder_path):
+            latest_models = find_files_by_pattern(folder_path, 'latest.*pth*')
+            self.assertEqual(len(latest_models), 1)
+            return latest_models[0]
 
         def do_preliminary_finetuning(self, on_gpu):
             logging.info(f'Looking for best models in {self.preliminary_training_folder}')
@@ -231,8 +242,31 @@ def create_image_classification_nncf_test_case(problem_name, model_name, ann_fil
             logging.info('End test_nncf_compress_on_gpu')
             return log_file
 
+        def _extract_last_rank1_from_log(self, log_path):
+            re_rank1 = re.compile('^.*Rank-1 *: *')
+            two_last_rank1 = extract_last_lines_by_pattern(log_path, re_rank1, 2)
+            self.assertEqual(len(two_last_rank1), 2)
+            main_rank1_line = two_last_rank1[0]
+            last_rank1 = re.sub(re_rank1, '', main_rank1_line).strip()
+            self.assertEqual(last_rank1[-1], '%', msg=f'Wrong Rank-1 line {main_rank1_line}')
+            last_rank1 = last_rank1.strip('%')
+            logging.debug(f'Found last rank1 in log: rank1 = "{last_rank1}" %')
+            return float(last_rank1) / 100.0
+
+        def _extract_accuracy_from_metrics_file(self, metrics_path):
+            with open(metrics_path) as f:
+                metrics = yaml.safe_load(f)
+            metrics = metrics['metrics']
+            accuracy_metric = [m for m in metrics if isinstance(m, dict) and m.get('key') == 'accuracy']
+            self.assertEqual(len(accuracy_metric), 1, msg=f'Wrong file {metrics_path}')
+            accuracy_metric = accuracy_metric[0]
+            accuracy = accuracy_metric['value']
+            if accuracy_metric.get('unit') == '%':
+                accuracy = accuracy / 100.0
+
+            return accuracy
+
         def test_nncf_compress_and_eval_on_gpu(self):
-            return
             skip_if_cuda_not_available()
             logging.info('Begin test_nncf_compress_on_gpu')
             best_models = self.do_preliminary_finetuning(True)
@@ -243,13 +277,21 @@ def create_image_classification_nncf_test_case(problem_name, model_name, ann_fil
             special_load_weights_arg = f' --load-weights {best_models[0]} --load-aux-weights {best_models[1]}'
             log_file = self.do_compress(special_load_weights_arg)
             logging.debug('Compression is finished')
-            best_compressed_models = self._find_best_models(self.output_folder)
-            logging.debug(f'Found best compressed models: {best_compressed_models}')
-            self.assertEqual(len(best_compressed_models), 2)
-            self.assertIn('model_0', best_compressed_models[0])
-            self.assertIn('model_1', best_compressed_models[1])
+            latest_compressed_model = self._find_latest_model(self.output_folder)
+            logging.debug(f'Found latest compressed models: {latest_compressed_model}')
 
-            metrics_path = self.do_eval(best_compressed_models[0])
+            last_training_rank1 = self._extract_last_rank1_from_log(log_file)
+
+            logging.debug(f'Before making evaluation of {latest_compressed_model}')
+            metrics_path = self.do_eval(latest_compressed_model)
+            logging.debug(f'After making evaluation of {latest_compressed_model}')
+            logging.debug(f'Metrics are stored in {metrics_path}')
+
+            accuracy = self._extract_accuracy_from_metrics_file(metrics_path)
+            self.assertAlmostEqual(last_training_rank1, accuracy, delta=0.001,
+                                   msg=f'Difference between accuracy from log file {log_file} '
+                                       f'and the accuracy from evaluation metrics file {metrics_path}')
+
             return log_file, metrics_path
 
         def test_nncf_compress_and_export(self):

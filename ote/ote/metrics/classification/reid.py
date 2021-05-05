@@ -46,8 +46,9 @@ def collect_accuracy(path):
 def mean_accuracy_eval(config_path, work_dir, snapshot, update_config, **kwargs):
     """ Computes mean accuracy. """
     def get_topk_dict(value, k=1):
+        key_name = 'accuracy' if k == 1 else f'top_{k}_accuracy'
         return {
-            'key': 'accuracy', 'value': value, 'unit': '%', 'display_name': f'Top-{k} accuracy'
+            'key': key_name, 'value': value, 'unit': '%', 'display_name': f'Top-{k} accuracy'
         }
     outputs = []
 
