@@ -25,7 +25,7 @@ from .backbones.resnet import (CustomResNetLikeBackbone, ResNetLikeBackbone,
 from .text_recognition_heads.attention_based import AttentionBasedLSTM
 from .text_recognition_heads.attention_based_2d import \
     TextRecognitionHeadAttention
-from .text_recognition_heads.classification_head import ClassificationHead
+from .text_recognition_heads.classification_head import ClassificationEncoderDecoderHead
 from .text_recognition_heads.ctc_lstm_based import LSTMEncoderDecoder
 from .text_recognition_heads.ensemble_attention_head import \
     EnsembleAttentionHead
@@ -35,7 +35,7 @@ TEXT_REC_HEADS = {
     'LSTMEncoderDecoder': LSTMEncoderDecoder,
     'TextRecognitionHeadAttention': TextRecognitionHeadAttention,
     'EnsembleAttentionHead': EnsembleAttentionHead,
-    'ClassificationHead': ClassificationHead,
+    'ClassificationHead': ClassificationEncoderDecoderHead,
 }
 
 BACKBONES = {
