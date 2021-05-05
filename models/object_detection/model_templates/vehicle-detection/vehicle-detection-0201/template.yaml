@@ -1,7 +1,7 @@
 name: vehicle-detection-0201
 domain: Object Detection
 problem: Vehicle Detection
-framework: OTEDetection v2.1.1
+framework: OTEDetection v2.9.1
 summary: Vehicle Detection based on MobileNetV2 (SSD).
 annotation_format: COCO
 initial_weights: snapshot.pth
