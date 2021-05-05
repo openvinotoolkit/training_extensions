@@ -57,7 +57,7 @@ pip install -e ../../ote/
 # install PyTorch and MMCV.
 export TORCH_VERSION=1.8.1
 export TORCHVISION_VERSION=0.9.1
-export MMCV_VERSION=1.3.0
+export MMCV_VERSION=1.3.3
 
 if [[ $CUDA_VERSION_CODE == "102" ]]; then
   pip install torch==${TORCH_VERSION} torchvision==${TORCHVISION_VERSION}
