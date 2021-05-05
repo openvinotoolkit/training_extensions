@@ -4,14 +4,14 @@ MAX_LEN = 28
 
 
 class ClassificationEncoderDecoderHead(torch.nn.Module):
-    def __init__(self, decoder_vocab_size, dim_input, dim_internal, num_layers, max_len=MAX_LEN):
+    def __init__(self, decoder_vocab_size, encoder_dim_input, encoder_dim_internal, encoder_num_layers, max_len=MAX_LEN):
         super().__init__()
-        self.encoder = Encoder(dim_input, dim_internal, num_layers=num_layers)
+        self.encoder = Encoder(encoder_dim_input, encoder_dim_internal, num_layers=encoder_num_layers)
         self.vocab_size = decoder_vocab_size
         self.pool = torch.nn.AdaptiveAvgPool2d(1)
         self.max_len = max_len
         self.convs = torch.nn.ModuleList([
-            torch.nn.Conv2d(dim_internal, self.vocab_size, 1) for _ in range(self.max_len)
+            torch.nn.Conv2d(encoder_dim_internal, self.vocab_size, 1) for _ in range(self.max_len)
         ])
 
     def forward(self, features, texts=None):
