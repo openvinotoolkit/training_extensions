@@ -35,10 +35,9 @@ class ResNetLikeBackbone(nn.Module):
                  pretrained=True):
         super().__init__()
         self.output_channels = output_channels
+        assert arch in architectures.keys(), "Unkown backbone, please, check the field 'arch' in the backbone_config"
         self.arch = arch
         _resnet = architectures.get(arch, None)
-        if _resnet is None:
-            raise ValueError("Unkown backbone, please, check the field 'arch' in the backbone_config")
         _resnet = _resnet(pretrained=pretrained, progress=True)
         self.groups = _resnet.groups
         self.base_width = _resnet.base_width
