@@ -14,10 +14,9 @@
  limitations under the License.
 """
 
+
 import torch.nn as nn
 import torchvision.models
-import functools
-import operator
 
 architectures = {
     'resnet18': torchvision.models.resnet18,
@@ -105,13 +104,16 @@ class ResNetLikeBackbone(nn.Module):
 
 
 class CustomResNetLikeBackbone(ResNetLikeBackbone):
-    def __init__(self, arch, disable_layer_3, disable_layer_4, output_channels, enable_last_conv, one_ch_first_conv, custom_parameters):
+    def __init__(self, arch, disable_layer_3, disable_layer_4, output_channels,
+                 enable_last_conv, one_ch_first_conv, custom_parameters):
         super().__init__(arch, disable_layer_3, disable_layer_4, output_channels=output_channels,
                          enable_last_conv=enable_last_conv, one_ch_first_conv=one_ch_first_conv,
                          check_num_out_channels=False)
+        self.one_ch_first_conv = one_ch_first_conv
         self.inplanes = custom_parameters['inplanes']
         self.bn1 = nn.BatchNorm2d(self.inplanes)
         conv1_params = custom_parameters['conv1']
+        use_cbam = custom_parameters.get('use_cbam', False)
         _resnet = architectures.get(arch, None)(pretrained=False, progress=True)
         _resnet.inplanes = self.inplanes
         self.conv1 = nn.Conv2d(1 if one_ch_first_conv else 3,
@@ -125,7 +127,7 @@ class CustomResNetLikeBackbone(ResNetLikeBackbone):
         layers = custom_parameters['layers']
         layer_strides = custom_parameters['layer_strides']
         planes = custom_parameters['planes']
-        block = torchvision.models.resnet.Bottleneck
+        block = torchvision.models.resnet.Bottleneck if not use_cbam else BottleNeckWithCBAM
         self.use_maxpool = custom_parameters['use_maxpool']
         self.layer1 = _resnet._make_layer(block, planes[0], layers[0], stride=layer_strides[0])
         self.layer2 = _resnet._make_layer(block, planes[1], layers[1], stride=layer_strides[1])
@@ -146,17 +148,11 @@ class CustomResNetLikeBackbone(ResNetLikeBackbone):
                     nn.init.constant_(m.bias, 0)
 
     def _load_weights_from_resnet(self, resnet):
-        for name, _ in self.named_parameters():
-            if 'layer' in name:
-                resnet_layer = operator.attrgetter(name)(resnet)
-                # inspired by https://stackoverflow.com/a/31174427
-
-                def rgetattr(obj, attr, *args):
-                    def _getattr(obj, attr):
-                        return getattr(obj, attr, *args)
-                    return functools.reduce(_getattr, [obj] + attr.split('.'))
-                pre, _, post = name.rpartition('.')
-                setattr(rgetattr(self, pre) if pre else self, post, resnet_layer)
+        resnet_st_dict = resnet.state_dict()
+        if self.one_ch_first_conv:
+            del resnet_st_dict['conv1.weight']
+        new_state_dict = dict(self.state_dict(), **resnet_st_dict)
+        self.load_state_dict(new_state_dict, strict=False)
 
     def forward(self, x):
         x = self.conv1(x)
@@ -187,7 +183,8 @@ class CustomResNetLikeBackbone(ResNetLikeBackbone):
 
 
 class ResNetLikeWithSkipsBetweenLayers(CustomResNetLikeBackbone):
-    def __init__(self, arch, disable_layer_3, disable_layer_4, output_channels, enable_last_conv, one_ch_first_conv, custom_parameters):
+    def __init__(self, arch, disable_layer_3, disable_layer_4, output_channels,
+                 enable_last_conv, one_ch_first_conv, custom_parameters):
         super().__init__(arch, disable_layer_3, disable_layer_4, output_channels,
                          enable_last_conv, one_ch_first_conv, custom_parameters)
         layer_strides = custom_parameters['layer_strides']
@@ -226,3 +223,84 @@ class ResNetLikeWithSkipsBetweenLayers(CustomResNetLikeBackbone):
         x4 = self.layer4(x3) + self.connect_2_4(x2)
 
         return x4
+
+
+class ChannelAttention(nn.Module):
+    def __init__(self, reduction_ratio, in_channels):
+        super().__init__()
+        self.mlp = nn.Sequential(
+            nn.Linear(in_channels, in_channels // reduction_ratio),
+            nn.ReLU(inplace=True),
+            nn.Linear(in_channels // reduction_ratio, in_channels),
+        )
+        self.avgpool = nn.AdaptiveAvgPool2d(1)
+        self.maxpool = nn.AdaptiveMaxPool2d(1)
+        self.activation = nn.Sigmoid()
+
+    def forward(self, x):
+        avgpool = self.avgpool(x).permute(0, 2, 3, 1)
+        maxpool = self.maxpool(x).permute(0, 2, 3, 1)
+        avgpool = self.mlp(avgpool)
+        maxpool = self.mlp(maxpool)
+        out = self.activation(maxpool + avgpool).permute(0, 3, 1, 2)
+        return out
+
+
+class SpatialAttention(nn.Module):
+    def __init__(self, in_channels):
+        super().__init__()
+        self.activation = nn.Sigmoid()
+        self.maxpool = nn.MaxPool2d((1, in_channels))
+        self.avgpool = nn.AvgPool2d((1, in_channels))
+        self.conv = nn.Conv2d(in_channels=1, out_channels=1, kernel_size=7, padding=3)
+
+    def forward(self, x):
+        maxpool = self.maxpool(x.permute(0, 2, 3, 1)).permute(0, 3, 1, 2)
+        avgpool = self.avgpool(x.permute(0, 2, 3, 1)).permute(0, 3, 1, 2)
+        convolved = self.conv(maxpool + avgpool)
+        out = self.activation(convolved)
+        return out
+
+
+class CBAM(nn.Module):
+    def __init__(self, in_channels, reduction_ratio):
+        super().__init__()
+        self.spatial = SpatialAttention(in_channels)
+        self.channel = ChannelAttention(reduction_ratio, in_channels)
+
+    def forward(self, x):
+        x_ = self.channel(x).expand_as(x) * x
+        return self.spatial(x).expand_as(x_) * x_
+
+
+class BottleNeckWithCBAM(torchvision.models.resnet.Bottleneck):
+
+    def __init__(self, inplanes, planes, stride=1, downsample=None, groups=1,
+                 base_width=64, dilation=1, norm_layer=None, reduction_ratio=4):
+        super().__init__(inplanes, planes, stride, downsample, groups,
+                         base_width, dilation, norm_layer)
+        self.cbam = CBAM(planes * self.expansion, reduction_ratio)
+
+    def forward(self, x):
+        identity = x
+
+        out = self.conv1(x)
+        out = self.bn1(out)
+        out = self.relu(out)
+
+        out = self.conv2(out)
+        out = self.bn2(out)
+        out = self.relu(out)
+
+        out = self.conv3(out)
+        out = self.bn3(out)
+
+        if self.downsample is not None:
+            identity = self.downsample(x)
+
+        out = self.cbam(out)
+
+        out += identity
+        out = self.relu(out)
+
+        return out
