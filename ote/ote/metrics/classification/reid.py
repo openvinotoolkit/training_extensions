@@ -61,7 +61,7 @@ def mean_accuracy_eval(config_path, work_dir, snapshot, update_config, **kwargs)
         test_py_stdout = os.path.join(work_dir, 'test_py_stdout')
 
         subprocess.run(
-            f'python3 {REID_TOOLS}/main.py'
+            f'python3 {REID_TOOLS}/eval.py'
             f' --config-file {config_path}'
             f' {update_config}'
             f' test.evaluate True'

@@ -268,7 +268,7 @@ def create_image_classification_nncf_test_case(problem_name, model_name, ann_fil
 
         def test_nncf_compress_and_eval_on_gpu(self):
             skip_if_cuda_not_available()
-            logging.info('Begin test_nncf_compress_on_gpu')
+            logging.info('Begin test_nncf_compress_and_eval_on_gpu')
             best_models = self.do_preliminary_finetuning(True)
             self.assertEqual(len(best_models), 2)
             self.assertIn('model_0', best_models[0])
@@ -291,10 +291,45 @@ def create_image_classification_nncf_test_case(problem_name, model_name, ann_fil
             self.assertAlmostEqual(last_training_rank1, accuracy, delta=0.001,
                                    msg=f'Difference between accuracy from log file {log_file} '
                                        f'and the accuracy from evaluation metrics file {metrics_path}')
+            logging.info('End test_nncf_compress_and_eval_on_gpu')
 
             return log_file, metrics_path
 
         def test_nncf_compress_and_export(self):
-            pass
+            skip_if_cuda_not_available()
+            logging.info('Begin test_nncf_compress_and_export')
+            best_models = self.do_preliminary_finetuning(True)
+            self.assertEqual(len(best_models), 2)
+            self.assertIn('model_0', best_models[0])
+            self.assertIn('model_1', best_models[1])
+
+            special_load_weights_arg = f' --load-weights {best_models[0]} --load-aux-weights {best_models[1]}'
+            log_file = self.do_compress(special_load_weights_arg)
+            logging.debug('Compression is finished')
+            latest_compressed_model = self._find_latest_model(self.output_folder)
+            logging.debug(f'Found latest compressed models: {latest_compressed_model}')
+
+            export_dir = self.output_folder
+            run_through_shell(
+                f'cd {os.path.dirname(self.template_file)};'
+                f'python3 export.py --openvino'
+                f' --load-weights snapshot.pth'
+                f' --save-model-to {export_dir}'
+            )
+            onnx_res_files = find_files_by_pattern(export_dir, '*.onnx')
+            xml_res_files = find_files_by_pattern(export_dir, '*.xml')
+            bin_res_files = find_files_by_pattern(export_dir, '*.bin')
+            self.assertTrue(len(onnx_res_files) == 1, 'Export to onnx failed')
+            self.assertTrue(len(xml_res_files) == 1, 'Export to openvino failed')
+            self.assertTrue(len(bin_res_files) == 1, 'Export to openvino failed')
+
+            xml_res_file = xml_res_files[0]
+            logging.debug(f'Before making evaluation of {xml_res_file}')
+            metrics_path = self.do_eval(xml_res_file)
+            logging.debug(f'After making evaluation of {xml_res_file}')
+
+            logging.info('End test_nncf_compress_and_export')
+
+            return log_file, metrics_path
 
     return ClassificationNNCFTestCase
