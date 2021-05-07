@@ -31,6 +31,7 @@ class CustomClassificationNNCFTestCaseSmall(
             compression_cfg_update_dict={
                 'nncf_quantization.train.batch_size': 2,
                 'nncf_quantization.test.batch_size': 2,
+                'nncf_quantization.train.max_epoch': 11,
                 'nncf_quantization.changes_aux_config.train.batch_size': 2,
                 'nncf_quantization.changes_aux_config.test.batch_size': 2,
             },
