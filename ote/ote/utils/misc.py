@@ -22,6 +22,7 @@ import subprocess
 
 import yaml
 
+from tempfile import NamedTemporaryFile
 
 def sha256sum(filename):
     """ Computes sha256sum. """
@@ -169,3 +170,10 @@ def get_cuda_device_count():
     if torch.cuda.is_available():
         return torch.cuda.device_count()
     return 0
+
+def generate_random_suffix():
+    random_suffix = os.path.basename(NamedTemporaryFile().name)
+    prefix = 'tmp'
+    if random_suffix.startswith(prefix):
+        random_suffix = random_suffix[len(prefix):]
+    return random_suffix

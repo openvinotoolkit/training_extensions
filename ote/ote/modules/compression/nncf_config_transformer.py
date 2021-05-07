@@ -17,7 +17,8 @@
 import json
 import os
 import yaml
-from tempfile import NamedTemporaryFile
+
+from ote.utils.misc import generate_random_suffix
 
 from ..registry import COMPRESSION
 from .nncf_config_generator import NNCFConfigGenerator, POSSIBLE_NNCF_PARTS
@@ -37,13 +38,6 @@ def save_config(config, file_path):
 
     with open(file_path, 'w') as output_stream:
         backend.dump(config, output_stream)
-
-def generate_random_suffix():
-    random_suffix = os.path.basename(NamedTemporaryFile().name)
-    prefix = 'tmp'
-    if random_suffix.startswith(prefix):
-        random_suffix = random_suffix[len(prefix):]
-    return random_suffix
 
 def generate_config_path(config_path, config_ext='yaml'):
     suffix = generate_random_suffix()
