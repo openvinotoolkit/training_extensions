@@ -142,8 +142,7 @@ def create_image_classification_nncf_test_case(problem_name, model_name, ann_fil
     NNCFBaseTestCase = create_nncf_test_case('image_classification', problem_name, model_name, ann_file, img_root,
                                              compression_cmd_line_parameters,
                                              template_update_dict=template_update_dict,
-                                             compression_cfg_update_dict=compression_cfg_update_dict,
-                                             should_compression_set_batch_size=False)
+                                             compression_cfg_update_dict=compression_cfg_update_dict)
 
     class ClassificationNNCFTestCase(NNCFBaseTestCase):
         @classmethod
@@ -222,6 +221,34 @@ def create_image_classification_nncf_test_case(problem_name, model_name, ann_fil
             logging.info(f'Generated best_models = {best_models}')
             return best_models
 
+        def do_compress(self, main_weights_path, aux_weights_path):
+            log_file = os.path.join(self.output_folder, f'log__{self.id()}.txt')
+            run_through_shell(
+                f'cd {self.template_folder};'
+                f'python3 compress.py'
+                f' --train-ann-files {self.ann_file}'
+                f' --train-data-roots {os.path.join(self.img_root, "train")}'
+                f' --val-ann-files {self.ann_file}'
+                f' --val-data-roots {os.path.join(self.img_root, "val")}'
+                f' --save-checkpoints-to {self.output_folder}'
+                f' --gpu-num 1'
+                f' --load-weights {main_weights_path} --load-aux-weights {aux_weights_path}'
+                + ' ' + self.compress_cmd_line_params
+                + f' | tee {log_file}')
+            return log_file
+
+        def do_eval(self, file_to_eval):
+            metrics_path = os.path.join(self.output_folder, 'metrics.yaml')
+            run_through_shell(
+                f'cd {self.template_folder};'
+                f'python3 eval.py'
+                f' --test-ann-files {self.ann_file}'
+                f' --test-data-roots {os.path.join(self.img_root, "val")}'
+                f' --save-metrics-to {metrics_path}'
+                f' --load-weights {file_to_eval}'
+                )
+            return metrics_path
+
         def test_nncf_compress_on_gpu(self):
             skip_if_cuda_not_available()
             logging.info('Begin test_nncf_compress_on_gpu')
@@ -230,8 +257,8 @@ def create_image_classification_nncf_test_case(problem_name, model_name, ann_fil
             self.assertIn('model_0', best_models[0])
             self.assertIn('model_1', best_models[1])
 
-            special_load_weights_arg = f' --load-weights {best_models[0]} --load-aux-weights {best_models[1]}'
-            log_file = self.do_compress(special_load_weights_arg)
+            log_file = self.do_compress(main_weights_path=best_models[0],
+                                        aux_weights_path=best_models[1])
             logging.debug('Compression is finished')
             best_compressed_models = self._find_best_models(self.output_folder)
             logging.debug(f'Found best compressed models: {best_compressed_models}')
@@ -274,8 +301,8 @@ def create_image_classification_nncf_test_case(problem_name, model_name, ann_fil
             self.assertIn('model_0', best_models[0])
             self.assertIn('model_1', best_models[1])
 
-            special_load_weights_arg = f' --load-weights {best_models[0]} --load-aux-weights {best_models[1]}'
-            log_file = self.do_compress(special_load_weights_arg)
+            log_file = self.do_compress(main_weights_path=best_models[0],
+                                        aux_weights_path=best_models[1])
             logging.debug('Compression is finished')
             latest_compressed_model = self._find_latest_model(self.output_folder)
             logging.debug(f'Found latest compressed models: {latest_compressed_model}')
@@ -303,8 +330,8 @@ def create_image_classification_nncf_test_case(problem_name, model_name, ann_fil
             self.assertIn('model_0', best_models[0])
             self.assertIn('model_1', best_models[1])
 
-            special_load_weights_arg = f' --load-weights {best_models[0]} --load-aux-weights {best_models[1]}'
-            log_file = self.do_compress(special_load_weights_arg)
+            log_file = self.do_compress(main_weights_path=best_models[0],
+                                        aux_weights_path=best_models[1])
             logging.debug('Compression is finished')
             latest_compressed_model = self._find_latest_model(self.output_folder)
             logging.debug(f'Found latest compressed models: {latest_compressed_model}')
@@ -327,6 +354,7 @@ def create_image_classification_nncf_test_case(problem_name, model_name, ann_fil
             logging.debug(f'Before making evaluation of {xml_res_file}')
             metrics_path = self.do_eval(xml_res_file)
             logging.debug(f'After making evaluation of {xml_res_file}')
+            logging.debug(f'    metrics are stored to the file {metrics_path}')
 
             logging.info('End test_nncf_compress_and_export')
 
