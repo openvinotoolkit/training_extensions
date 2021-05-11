@@ -23,6 +23,7 @@ import yaml
 
 from ote.utils.misc import download_snapshot_if_not_yet, run_through_shell, generate_random_suffix
 
+
 # these functions contain import-s inside -- this is required for tests discover
 def _is_cuda_available():
     import torch
@@ -152,6 +153,27 @@ def create_test_case(domain_name, problem_name, model_name, ann_file, img_root, 
 
             self.assertTrue(os.path.exists(os.path.join(self.output_folder, 'latest.pth')))
 
+        def do_training(self, on_gpu):
+            log_file = os.path.join(self.output_folder, 'test_training.log')
+            initial_command = 'export CUDA_VISIBLE_DEVICES=;' if not on_gpu else ''
+            run_through_shell(
+                f'{initial_command}'
+                f'cd {self.template_folder};'
+                f'python3 train.py'
+                f' --train-ann-files {self.ann_file}'
+                f' --train-data-roots {self.img_root}'
+                f' --val-ann-files {self.ann_file}'
+                f' --val-data-roots {self.img_root}'
+                f' --load-weights snapshot.pth'
+                f' --save-checkpoints-to {self.output_folder}'
+                f' --gpu-num 1'
+                f' --batch-size {self.batch_size}'
+                f' --epochs 1'
+                f' | tee {log_file}')
+
+            self.assertTrue(os.path.exists(os.path.join(self.output_folder, 'latest.pth')))
+
+
         def test_evaluation_on_gpu(self):
             skip_if_cuda_not_available()
             self.do_evaluation(on_gpu=True)
@@ -167,6 +189,10 @@ def create_test_case(domain_name, problem_name, model_name, ann_file, img_root, 
         def test_finetuning_on_cpu(self):
             skip_if_cpu_is_not_supported(self.template_file)
             self.do_finetuning(on_gpu=False)
+
+        def test_training_on_cpu(self):
+            skip_if_cpu_is_not_supported(self.template_file)
+            self.do_training(on_gpu=False)
 
         def test_smoke_test(self):
             pass

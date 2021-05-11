@@ -1,7 +1,7 @@
 name: instance-segmentation-0091
 domain: Instance Segmentation
 problem: COCO Instance Segmentation
-framework: OTEDetection v2.1.1
+framework: OTEDetection v2.9.1
 summary: Instance segmentation based on Cascade R-CNN architecture with ResNet101.
 annotation_format: COCO
 initial_weights: snapshot.pth

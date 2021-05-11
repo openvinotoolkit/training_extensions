@@ -1,7 +1,7 @@
 name: mobilenet_v2-2s_ssd-256x256
 domain: Object Detection
 problem: Custom Object Detection
-framework: OTEDetection v2.1.1
+framework: OTEDetection v2.9.1
 summary: Custom Object Detection based on MobileNetV2 (SSD).
 annotation_format: COCO
 initial_weights: snapshot.pth
