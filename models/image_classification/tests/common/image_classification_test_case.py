@@ -336,11 +336,12 @@ def create_image_classification_nncf_test_case(problem_name, model_name, ann_fil
             latest_compressed_model = self._find_latest_model(self.output_folder)
             logging.debug(f'Found latest compressed models: {latest_compressed_model}')
 
+            logging.info(f'Exporting the latest compressed model')
             export_dir = self.output_folder
             run_through_shell(
                 f'cd {os.path.dirname(self.template_file)};'
                 f'python3 export.py --openvino'
-                f' --load-weights snapshot.pth'
+                f' --load-weights {latest_compressed_model}'
                 f' --save-model-to {export_dir}'
             )
             onnx_res_files = find_files_by_pattern(export_dir, '*.onnx')
