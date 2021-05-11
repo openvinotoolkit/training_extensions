@@ -28,7 +28,7 @@ class SpectralConv2d(nn.Module):
         # do y x first follwed by the other spectal decompsed filters!
 
         op = self.ydim(x)
-        #print(op.shape, x.shape)
+        # print(op.shape, x.shape)
         op = self.xdim(op)
         op = self.bias(op)
 
@@ -87,8 +87,6 @@ class SpectralConv3dInter(nn.Module):
         self.pad = pad
         p = int((pad == 2))
 
-        
-        #self.ydim = nn.Conv3d(ch, ch, (1, k,1), padding=(0,p,0), stride = (1,1,1),bias = False)
         self.ydim = nn.Conv3d(
             ch, ch, (1, self.kernel, 1), padding=(
                 0, pad, 0), stride=(
@@ -108,10 +106,14 @@ class SpectralConv3dInter(nn.Module):
 
         """if(wts_list is not None):
             print("In asssss")
-            self.xdim3d.weight = torch.nn.Parameter(torch.unsqueeze(wts_list.xdim.weight, 2))
-            self.zdim3d.weight = torch.nn.Parameter(torch.unsqueeze(wts_list.xdim.weight, 2).permute(0,1,4,3,2))
-            self.bias3d.weight = torch.nn.Parameter(torch.unsqueeze(wts_list.bias.weight, 2))
-            self.bias3d.bias = torch.nn.Parameter(wts_list.bias.bias)"""
+            self.xdim3d.weight = torch.nn.Parameter(
+                torch.unsqueeze(wts_list.xdim.weight, 2))
+            self.zdim3d.weight = torch.nn.Parameter(
+                torch.unsqueeze(wts_list.xdim.weight, 2).permute(0,1,4,3,2))
+            self.bias3d.weight = torch.nn.Parameter(
+                torch.unsqueeze(wts_list.bias.weight, 2))
+            self.bias3d.bias = torch.nn.Parameter(
+                wts_list.bias.bias)"""
 
     def forward(self, x):
 
@@ -122,8 +124,6 @@ class SpectralConv3dInter(nn.Module):
 
         opx = self.xdim(op)
         opz = self.zdim(op)
-        #print(select_x, op.shape)
-        # print(select_z)
         for i in range(op.shape[1]):
             op[:, i, :, :] = select_x[i] * opx[:, i, :, :] + \
                 select_z[i] * opz[:, i, :, :]
@@ -288,7 +288,7 @@ class GeneratorInter(nn.Module):
             nn.LeakyReLU(inplace=True),
             # 3x3 spectral conv
             SpectralConv2dInter(32, k=3, pad=2, dil=2,
-                                 wts_list=model.down1[-3], a=a),
+                                wts_list=model.down1[-3], a=a),
             nn.BatchNorm2d(32),
             nn.LeakyReLU(inplace=True)
         )

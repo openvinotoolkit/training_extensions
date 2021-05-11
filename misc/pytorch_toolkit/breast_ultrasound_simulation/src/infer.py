@@ -7,7 +7,10 @@ from solve import solver_inter2d, solver_inter3d
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--name', required=True, help='experiment name')
-parser.add_argument('--model_name', default=None, help='model that needs to be loaded')
+parser.add_argument(
+    '--model_name',
+    default=None,
+    help='model that needs to be loaded')
 parser.add_argument(
     '--stage0_data',
     default='../data/stage0',

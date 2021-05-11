@@ -4,7 +4,6 @@ import torch.optim as optim
 from torch.utils.tensorboard import SummaryWriter
 import torchvision
 import os
-import shutil
 import numpy as np
 import time
 from model import GeneratorModel, DiscriminatorModel, GeneratorInter, Generator3dInter
@@ -157,11 +156,16 @@ class solver():
                 # print(time.time())
                 # Python Logging
                 print('\rStep [{}/{}], L1: {:.4f}, AccD: {:.4f}, AdvD: {:.4f}, AdvG: {:.4f} Time: {:.1f}sec'.format((i_batch + 1),
-                                                                                                                    len(self.train_data),
-                                                                                                                    L1_epoch / (i_batch + 1),
-                                                                                                                    DisAcc_epoch / (i_batch + 1),
-                                                                                                                    AdvD_epoch / (i_batch + 1),
-                                                                                                                    AdvG_epoch / (i_batch + 1),
+                                                                                                                    len(
+                                                                                                                        self.train_data),
+                                                                                                                    L1_epoch /
+                                                                                                                    (i_batch + 1),
+                                                                                                                    DisAcc_epoch /
+                                                                                                                    (i_batch + 1),
+                                                                                                                    AdvD_epoch /
+                                                                                                                    (i_batch + 1),
+                                                                                                                    AdvG_epoch /
+                                                                                                                    (i_batch + 1),
                                                                                                                     time.time() - start_time),
                       end=" ")
 
@@ -249,7 +253,7 @@ class solver_inter2d(solver):
                         "../checkpoints",
                         args.model_name))
                 self.gen_old.load_state_dict(state_dict["generator1_weights"])
-                
+
             self.gen = GeneratorInter(
                 1, self.gen_old.cpu(), a=args.dilation_factor)
             if(args.model_name):
@@ -280,7 +284,7 @@ class solver_inter3d(solver):
                         "../checkpoints",
                         args.model_name))
                 self.gen_old.load_state_dict(state_dict["generator1_weights"])
-                
+
             self.gen = Generator3dInter(1)
             self.gen2d = GeneratorInter(
                 1, self.gen_old.cpu(), a=args.dilation_factor)
