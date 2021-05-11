@@ -10,11 +10,11 @@ parser.add_argument('--name', required=True, help='experiment name')
 parser.add_argument('--model_name', help='model that needs to be loaded')
 parser.add_argument(
     '--stage0_data',
-    default='/data/vidit/dataset/IVUS/Gt_processed',
+    default='../data/stage0',
     help='path to stage 0 output')
 parser.add_argument(
     '--realUS_data',
-    default='"/data/vidit/dataset/IVUS/Images_processed"',
+    default='../data/real_images',
     help='path to real ultrasound images')
 parser.add_argument('--batch_size', type=int, default=64)
 parser.add_argument('--epochs', type=int, default=50)
