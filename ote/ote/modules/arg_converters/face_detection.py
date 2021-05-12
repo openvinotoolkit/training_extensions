@@ -14,8 +14,8 @@
  limitations under the License.
 """
 
-from .mmdetection import MMDetectionArgConverterMap
 from ..registry import ARG_CONVERTER_MAPS
+from .mmdetection import MMDetectionArgConverterMap
 
 
 @ARG_CONVERTER_MAPS.register_module()

@@ -1,0 +1,47 @@
+name: TBD
+domain: Object Detection
+problem: Custom Object Detection
+summary: TBD
+annotation_format: COCO
+initial_weights: snapshot.pth
+dependencies:
+- source: ../../../../../ote/tools/train.py
+  destination: train.py
+- source: ../../../../../ote/tools/eval.py
+  destination: eval.py
+- source: ../../../../../ote/tools/export.py
+  destination: export.py
+- source: ../../../../../ote/tools/compress.py
+  destination: compress.py
+- source: ../../../../../ote
+  destination: packages/ote
+- source: ../../requirements.txt
+  destination: requirements.txt
+max_nodes: 1
+training_target:
+- CPU
+- GPU
+inference_target:
+- CPU
+- iGPU
+- VPU
+hyper_parameters:
+  extra:
+    custom_classes:
+      name: Custom classes
+      param: --classes
+      type: string
+      default: ''
+output_format:
+  onnx:
+    default: true
+  openvino:
+    default: true
+    input_format: BGR
+optimisations:
+  nncf_quantization:
+    config: compression_config.json
+    default: false
+gpu_num: 1
+tensorboard: true
+config: model.py

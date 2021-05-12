@@ -18,11 +18,11 @@ import json
 import logging
 import os
 
-from mmcv import Config
 import yaml
+from mmcv import Config
 
-from .base import ArgConverterMaps
 from ..registry import ARG_CONVERTER_MAPS
+from .base import ArgConverterMaps
 
 
 def load_classes_from_snapshot(snapshot):
@@ -59,7 +59,7 @@ class MMDetectionArgConverterMap(ArgConverterMaps):
                 'val_ann_files': 'data.val.ann_file',
                 'val_data_roots': 'data.val.img_prefix',
                 'save_checkpoints_to': 'work_dir',
-                'batch_size': 'data.samples_per_gpu',
+                #'batch_size': 'data.samples_per_gpu',
                }
     @classmethod
     def _train_compression_base_args_map_with_resume_load(cls):
@@ -73,8 +73,8 @@ class MMDetectionArgConverterMap(ArgConverterMaps):
     def train_update_args_map(self):
         cur_map = self._train_compression_base_args_map_with_resume_load()
         cur_map.update({
-            'base_learning_rate': 'optimizer.lr',
-            'epochs': 'total_epochs',
+            #'base_learning_rate': 'optimizer.lr',
+            #'epochs': 'total_epochs',
             })
         return cur_map
 

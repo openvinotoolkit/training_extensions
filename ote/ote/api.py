@@ -21,9 +21,9 @@ def _compression_train_args_parsers_common_part(template_path):
                             help='Load only weights from previously saved checkpoint')
         parser.add_argument('--save-checkpoints-to', default='/tmp/checkpoints',
                             help='Location where checkpoints will be stored')
-        parser.add_argument('--batch-size', type=int,
-                            default=config['hyper_parameters']['basic']['batch_size'],
-                            help='Size of a single batch during training per GPU.')
+        # parser.add_argument('--batch-size', type=int,
+        #                     default=config['hyper_parameters']['basic']['batch_size'],
+        #                     help='Size of a single batch during training per GPU.')
         parser.add_argument('--gpu-num', type=int,
                             default=config['gpu_num'],
                             help='Number of GPUs that will be used in training, 0 is for CPU mode.')
@@ -65,14 +65,14 @@ def train_args_parser(template_path):
     parser = _compression_train_args_parsers_common_part(template_path)
     with open(template_path, 'r') as model_definition:
         config = yaml.safe_load(model_definition)
-        parser.add_argument('--epochs', type=int,
-                            default=config['hyper_parameters']['basic']['epochs'],
-                            help='Number of epochs during training')
-        parser.add_argument('--base-learning-rate', type=float,
-                            default=config['hyper_parameters']['basic']['base_learning_rate'],
-                            help='Starting value of learning rate that might be changed during '
-                                 'training according to learning rate schedule that is usually '
-                                 'defined in detailed training configuration.')
+        # parser.add_argument('--epochs', type=int,
+        #                     default=config['hyper_parameters']['basic']['epochs'],
+        #                     help='Number of epochs during training')
+        # parser.add_argument('--base-learning-rate', type=float,
+        #                     default=config['hyper_parameters']['basic']['base_learning_rate'],
+        #                     help='Starting value of learning rate that might be changed during '
+        #                          'training according to learning rate schedule that is usually '
+        #                          'defined in detailed training configuration.')
     return parser
 
 def test_args_parser(template_path):
