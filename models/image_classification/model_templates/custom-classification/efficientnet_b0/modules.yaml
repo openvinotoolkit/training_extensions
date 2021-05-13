@@ -1,4 +1,4 @@
-arg_parser: CustomClassesArgParser
+arg_parser: ImageClassificationArgParser
 arg_converter_map: ReidArgConverterMap
 trainer: ReidTrainer
 evaluator: ReidEvaluator
