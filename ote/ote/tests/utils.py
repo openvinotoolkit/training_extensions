@@ -53,4 +53,3 @@ def extract_last_lines_by_pattern(file_path, regex, num=1):
                 res.append(line)
     res = res[-num:]
     return res
-

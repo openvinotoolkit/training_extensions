@@ -112,6 +112,7 @@ def make_field_value_change_in_struct_recursively(struct, field_name, new_field_
                 cur_struct[field_name] = new_field_value
             return
         if isinstance(cur_struct, list):
+            # pylint: disable=consider-using-enumerate
             for i in range(len(cur_struct)):
                 _make_change(cur_struct[i], field_name, new_field_value, set_ids)
             return
@@ -173,7 +174,7 @@ def create_image_classification_nncf_test_case(problem_name, model_name, ann_fil
 
         def setUp(self):
             super().setUp()
-            self.preliminary_training_folder = os.path.join(self.template_folder, f'preliminary_training')
+            self.preliminary_training_folder = os.path.join(self.template_folder, 'preliminary_training')
             os.makedirs(self.preliminary_training_folder, exist_ok=True)
             self.batch_size = 2
 
@@ -336,7 +337,7 @@ def create_image_classification_nncf_test_case(problem_name, model_name, ann_fil
             latest_compressed_model = self._find_latest_model(self.output_folder)
             logging.debug(f'Found latest compressed models: {latest_compressed_model}')
 
-            logging.info(f'Exporting the latest compressed model')
+            logging.info('Exporting the latest compressed model')
             export_dir = self.output_folder
             run_through_shell(
                 f'cd {os.path.dirname(self.template_file)};'

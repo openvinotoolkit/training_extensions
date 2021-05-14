@@ -17,7 +17,7 @@ import logging
 import yaml
 
 from ..registry import COMPRESSION
-from .nncf_config_transformer import (save_config, generate_random_suffix,
+from .nncf_config_transformer import (save_config,
                                       generate_config_path,
                                       NNCFConfigTransformer)
 
@@ -41,7 +41,8 @@ class NNCFReidConfigTransformer:
             return kwargs, is_optimisation_enabled
 
         assert self.CONFIG_ARG_TO_SUBSTITUTE in kwargs, (
-                f'Error: kwargs after NNCFConfigTransformer does not contain {self.CONFIG_ARG_TO_SUBSTITUTE}, kwargs={kwargs}')
+                f'Error: kwargs after NNCFConfigTransformer does not contain {self.CONFIG_ARG_TO_SUBSTITUTE}, '
+                f'kwargs={kwargs}')
 
         cur_config_path = kwargs[self.CONFIG_ARG_TO_SUBSTITUTE]
         with open(cur_config_path) as f:

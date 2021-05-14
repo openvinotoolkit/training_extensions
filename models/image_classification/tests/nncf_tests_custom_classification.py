@@ -42,5 +42,3 @@ class CustomClassificationNNCFTestCaseSmall(
         )
 ):
     """ NNCF test case for mobilenet v3 small model. """
-
-
