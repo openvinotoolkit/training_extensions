@@ -26,9 +26,7 @@ from ..registry import ARG_PARSERS
 
 
 @ARG_PARSERS.register_module()
-class ImageClassificationArgParser(DefaultArgParser):
-    # TODO(lbeynens): Rename to ReidArgParser
-
+class ReidArgParser(DefaultArgParser):
     def get_train_parser(self, config_path):
         parser = argparse.ArgumentParser(parents=[train_args_parser(config_path)], add_help=False)
         parser = self._add_aux_weights_load_arg(parser)
