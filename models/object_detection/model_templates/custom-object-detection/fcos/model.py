@@ -120,10 +120,10 @@ train_pipeline = [
     #                (1216, 704), (1216 - 64, 704), (1216, 704 - 64), (1216-64, 704 - 64)],
     #     multiscale_mode='value',
     #     keep_ratio=False),
-    dict(
-        type='MinIoURandomCrop',
-        min_ious=(0.1, 0.3, 0.5, 0.7, 0.9),
-        min_crop_size=0.3),
+    # dict(
+    #     type='MinIoURandomCrop',
+    #     min_ious=(0.1, 0.3, 0.5, 0.7, 0.9),
+    #     min_crop_size=0.3),
     dict(
         type='Resize',
         img_scale=(992, 736),
@@ -202,7 +202,7 @@ log_config = dict(
 
 runner = dict(
     type='IterBasedRunner',
-    max_iters = 5000,
+    max_iters = 10000,
     # max_epochs = 100,
 )
 
