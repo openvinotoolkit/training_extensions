@@ -1,0 +1,100 @@
+backbone_config:
+  arch: resnext101_32x8d
+  disable_layer_3: true
+  disable_layer_4: true
+  one_ch_first_conv: true
+  output_channels: 512
+head:
+  type: LSTMEncoderDecoder
+  encoder_input_size: 512
+  cnn_encoder_height: 4
+  reduction: weighted
+val_transforms_list:
+  - name: TransformGrayscale
+device: "cuda"
+num_workers: 0
+use_ctc: true
+model_path: model_checkpoints/model_0014.pth
+vocab_path: vocabs/vocab_alphanumeric_ctc.json
+train:
+  batch_size: 2
+  learning_rate: 0.001
+  clip_grad: 5.0
+  epochs: 20
+  loss_type: CTC
+  CTCLossZeroInf: true
+  save_freq: 10000
+  val_freq: 5000
+  print_freq: 8
+  optimizer: Adam
+  save_dir: model_checkpoints
+  datasets:
+    - type: MJSynthDataset
+      data_path: /media/cluster_fs/user/vloginov/text_recognition/90kDICT32px
+      annotation_file: annotation_nano.txt
+      case_sensitive: false
+      fixed_img_shape:
+        - 32
+        - 128
+      subset: train
+    - type: LMDBDataset
+      case_sensitive: false
+      data_path: /home/vloginov/work/vedastr/data/data_lmdb_release/evaluation/IC13_1015
+      grayscale: true
+      fixed_img_shape:
+        - 32
+        - 128
+      subset: validate
+  train_transforms_list:
+    - name: TransformGrayscale
+eval:
+  dataset:
+    - type: LMDBDataset
+      case_sensitive: false
+      data_path: /home/vloginov/work/vedastr/data/data_lmdb_release/evaluation/IC13_1015
+      grayscale: true
+      fixed_img_shape:
+        - 32
+        - 128
+    - type: LMDBDataset
+      case_sensitive: false
+      data_path: /home/vloginov/work/vedastr/data/data_lmdb_release/evaluation/IC15_1811
+      grayscale: true
+      fixed_img_shape:
+        - 32
+        - 128
+    - type: LMDBDataset
+      case_sensitive: false
+      data_path: /home/vloginov/work/vedastr/data/data_lmdb_release/evaluation/SVT
+      grayscale: true
+      fixed_img_shape:
+        - 32
+        - 128
+    - type: LMDBDataset
+      case_sensitive: false
+      data_path: /home/vloginov/work/vedastr/data/data_lmdb_release/evaluation/IC03_867
+      grayscale: true
+      fixed_img_shape:
+        - 32
+        - 128
+    - type: LMDBDataset
+      case_sensitive: false
+      data_path: /home/vloginov/work/vedastr/data/data_lmdb_release/evaluation/IIIT5k_3000
+      grayscale: true
+      fixed_img_shape:
+        - 32
+        - 128
+  render: false
+demo:
+  transforms_list: []
+export:
+  model_input_names: "imgs"
+  model_output_names: "logits"
+  res_model_name: model_0014.onnx
+  export_ir: true
+  verbose_export: false
+  input_shape:
+    - 1
+    - 1
+    - 32
+    - 128
