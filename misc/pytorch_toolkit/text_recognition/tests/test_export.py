@@ -171,6 +171,12 @@ class TestAlphanumeric0013Export(
             expected_outputs='tests/expected_outputs/alphanumeric/icdar13_greater3_0013.json')):
     'Test case for alphanumeric text recognition config'
 
+class TestAlphanumeric0014Export(
+        create_export_test_case_for_monolithic(
+            'configs/config_0014.yml',
+            expected_outputs='tests/expected_outputs/alphanumeric/icdar13_greater3_0013.json')):
+    'Test case for alphanumeric text recognition config'
+
 class TestAlphanumeric0015Export(
         create_export_test_case_for_composite(
             'configs/config_0015.yml',

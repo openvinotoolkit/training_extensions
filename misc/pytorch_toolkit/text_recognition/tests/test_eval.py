@@ -60,6 +60,12 @@ class TestAlphanumeric0013Evaluation(
             expected_outputs='tests/expected_outputs/alphanumeric/icdar13_greater3_0013.json')):
     'Test case for alphanumeric config'
 
+class TestAlphanumeric0014Evaluation(
+        create_evaluation_test_case(
+            'configs/config_0014.yml',
+            expected_outputs='tests/expected_outputs/alphanumeric/icdar13_greater3_0013.json')):
+    'Test case for alphanumeric config'
+
 class TestAlphanumeric0015Evaluation(
         create_evaluation_test_case(
             'configs/config_0015.yml',
