@@ -71,5 +71,5 @@ If you want to train/test network on your own dataset there are 3 ways to arrang
    [create_dataset.py](tools/create_dataset.py) script for conversion as it was explained above. 
    In that way please check that: 
    - `bbox` field has values in xywh format 
-   - `segmentation` field contains at least 4 corner points 
+   - `segmentation` field contains at least 4 2d corner points (resulting in vector with 8 coordinates)
    - `transcription` field is not empty (if you don't intend to use transcription, put there every nonempty value like '0').
