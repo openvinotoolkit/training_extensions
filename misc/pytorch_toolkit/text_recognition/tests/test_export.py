@@ -88,6 +88,7 @@ def create_export_test_case_for_composite(config_file, expected_outputs):
             cls.config = export_config
             cls.config.update({'expected_outputs': expected_outputs})
             cls.model_path = os.path.join(mkdtemp(), os.path.split(cls.config.get('model_path'))[1])
+            # cls.model_path = cls.config.get('model_path')
             cls.encoder_name = os.path.join(os.path.dirname(cls.model_path), cls.config.get('res_encoder_name'))
             cls.decoder_name = os.path.join(os.path.dirname(cls.model_path), cls.config.get('res_decoder_name'))
             cls.config['res_encoder_name'] = cls.encoder_name
@@ -95,7 +96,7 @@ def create_export_test_case_for_composite(config_file, expected_outputs):
             cls.config['model_path'] = cls.model_path
             if not os.path.exists(cls.model_path):
                 download_checkpoint(cls.model_path, cls.config.get('model_url'))
-            cls.exporter = Exporter(cls.config)
+            cls.exporter = Exporter(deepcopy(cls.config))
 
         def test_encoder_export(self):
             self.exporter.export_encoder()
@@ -142,7 +143,7 @@ def create_export_test_case_for_composite(config_file, expected_outputs):
                 return
             self.exporter.export_to_ir_model_if_not_yet(model=self.encoder_name, model_type='encoder')
             self.exporter.export_to_ir_model_if_not_yet(model=self.decoder_name, model_type='decoder')
-            evaluator = Evaluator(self.config, RunnerType.OpenVINO)
+            evaluator = Evaluator(deepcopy(self.config), RunnerType.OpenVINO)
             ir_metric = evaluator.validate()
             target_metric = evaluator.expected_outputs.get('target_metric')
             self.assertGreaterEqual(ir_metric, target_metric)
@@ -170,6 +171,11 @@ class TestAlphanumeric0013Export(
             expected_outputs='tests/expected_outputs/alphanumeric/icdar13_greater3_0013.json')):
     'Test case for alphanumeric text recognition config'
 
+class TestAlphanumeric0014Export(
+        create_export_test_case_for_composite(
+            'configs/config_0014.yml',
+            expected_outputs='tests/expected_outputs/alphanumeric/icdar13_greater3_0013.json')):
+    'Test case for alphanumeric text recognition config'
 
 if __name__ == '__main__':
     unittest.main()

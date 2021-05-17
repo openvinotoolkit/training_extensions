@@ -219,7 +219,7 @@ class AttentionBasedLSTM(nn.Module):
 
     def step_decoding(self, h, c, output, enc_out, tgt):
         """Runing one step decoding"""
-
+        tgt = tgt.long()
         prev_y = self.embedding(tgt).squeeze(1)  # [B, emb_size]
         inp = torch.cat([prev_y, output], dim=1)  # [B, emb_size+encoder_hidden_size]
         h_t, c_t = self.rnn_decoder(inp, (h, c))

@@ -48,8 +48,15 @@ export:
   res_decoder_name: medium_v2_decoder.onnx
   export_ir: true
   verbose_export: false
-  input_shape_decoder:
+  input_shape_encoder:
     - 1
     - 3
     - 65
     - 1450
+  decoder_input_shapes:
+    - [1, 512]
+    - [1, 512]
+    - [1, 256]
+    - [1, 9, 182, 512]
+    - [1, 1]
+

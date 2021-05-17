@@ -62,7 +62,7 @@ class TextRecognitionModel(nn.Module):
             super().__init__()
             self.model = model
 
-        def forward(self, *args):
+        def forward(self, args):
             return self.model.head.decoder_wrapper(*args)
 
     def __init__(self, backbone, out_size, head):

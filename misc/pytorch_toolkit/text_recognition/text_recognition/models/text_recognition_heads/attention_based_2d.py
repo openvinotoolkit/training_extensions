@@ -86,9 +86,9 @@ class DecoderAttention2d(nn.Module):
 
         nn.init.normal_(self.v, 0, 0.1)
 
-    def forward(self, input, hidden, encoder_outputs, cell=None):
+    def forward(self, prev_symbol, hidden, encoder_outputs, cell=None):
         '''
-        :param input: Shape is [1, BATCH_SIZE]
+        :param prev_symbol: Shape is [1, BATCH_SIZE]
         :param hidden: Shape is [1, BATCH_SIZE, HIDDEN_DIM]
         :param cell: Shape is [1, BATCH_SIZE, HIDDEN_DIM], it is used in case of LSTM
         :param encoder_outputs: [BATCH_SIZE, T, HIDDEN_DIM]
@@ -97,13 +97,13 @@ class DecoderAttention2d(nn.Module):
 
         BATCH_SIZE = hidden.shape[1]
         assert tuple(hidden.shape) == (1, BATCH_SIZE, self.hidden_size), f'{hidden.shape}'
-        assert tuple(input.shape) == (BATCH_SIZE,), f'{input.shape} {input}'
+        assert tuple(prev_symbol.shape) == (BATCH_SIZE,), f'{prev_symbol.shape} {prev_symbol}'
         assert tuple(encoder_outputs.shape) == (
             BATCH_SIZE, self.flatten_feature_size, self.hidden_size), f'{encoder_outputs.shape}'
 
-        # input = input.long()
+        prev_symbol = prev_symbol.long()
 
-        input = self.embedding(input)
+        prev_symbol = self.embedding(prev_symbol)
 
         encoder_outputs_w = self.encoder_outputs_w(encoder_outputs)
         hidden_state_w = self.hidden_state_w(hidden[0]).unsqueeze(1)
@@ -127,7 +127,7 @@ class DecoderAttention2d(nn.Module):
         attn_applied = attn_applied.permute(1, 0, 2)
         attn_applied = attn_applied.squeeze(0)
 
-        output = torch.cat((input, attn_applied), 1)
+        output = torch.cat((prev_symbol, attn_applied), 1)
 
         output = self.attn_combine(output).unsqueeze(0)
         output = F.relu(output)
@@ -145,6 +145,7 @@ class DecoderAttention2d(nn.Module):
             return output, hidden, cell, attn_weights
         if isinstance(self.decoder, nn.GRU):
             return output, hidden, attn_weights
+        raise ValueError(f'Unsupported decoder type {self.decoder}')
 
 
 class TextRecognitionHeadAttention(nn.Module):
@@ -188,71 +189,7 @@ class TextRecognitionHeadAttention(nn.Module):
             )
             self.semantic_transform = nn.Linear(FASTTEXT_EMB_DIM, decoder_dim_hidden)
 
-    def __forward_train(self, features, targets):
-        decoder_max_seq_len = max(len(target) for target in targets)
-        decoder_max_seq_len = max(decoder_max_seq_len, 1)
-
-        # valid_targets_indexes = torch.tensor([ind for ind, target in enumerate(targets) if len(target)], device=features.device)
-
-        # do_single_iteration_to_avoid_hanging = False
-        # if len(valid_targets_indexes) == 0:
-        #     logging.warning('if len(valid_targets_indexes) == 0')
-        #     valid_targets_indexes = torch.tensor([0])
-        #     do_single_iteration_to_avoid_hanging = True
-
-        # targets = [np.array(targets[i]) for i in valid_targets_indexes]
-        # targets = [np.pad(target, (0, decoder_max_seq_len - len(target))) for target in targets]
-        # targets = np.array(targets)
-        decoder_outputs = []
-        batch_size = targets.shape[0]
-
-        # features = features[valid_targets_indexes]
-        features = features.view(features.shape[0], features.shape[1], -1)  # B C H*W
-        features = features.permute(0, 2, 1)  # BxH*WxC or BxTxC
-        features = self.dropout(features)
-
-        decoder_hidden, decoder_cell = self._zero_initialize_hiddens(batch_size, features, decoder_hidden)
-        decoder_input = torch.ones([batch_size], device=features.device, dtype=torch.long) * self.decoder_sos_int
-
-        for di in range(decoder_max_seq_len):
-            if isinstance(self.decoder.decoder, nn.GRU):
-                decoder_output, decoder_hidden, _ = self.decoder(
-                    decoder_input, decoder_hidden, features)
-            elif isinstance(self.decoder.decoder, nn.LSTM):
-                decoder_output, decoder_hidden, decoder_cell, _ = self.decoder(
-                    decoder_input, decoder_hidden, features, decoder_cell)
-            decoder_outputs.append(decoder_output)
-
-            decoder_input = targets[:, di]
-        decoder_outputs = torch.stack(decoder_outputs, dim=1)
-        classes = torch.max(decoder_outputs, dim=2)[1]
-        return decoder_outputs, classes
-
-    def __forward_test(self, features):
-        batch_size = features.shape[0]
-        features = features.view(features.shape[0], features.shape[1], -1)
-        features = features.permute(0, 2, 1)
-        decoder_hidden, decoder_cell = self._zero_initialize_hiddens(batch_size, features, decoder_hidden)
-        decoder_input = torch.ones([batch_size], device=features.device, dtype=torch.long) * self.decoder_sos_int
-        decoder_outputs = []
-        for _ in range(self.decoder_max_seq_len):
-            if isinstance(self.decoder.decoder, nn.GRU):
-                decoder_output, decoder_hidden, _ = self.decoder(
-                    decoder_input, decoder_hidden, features)
-            elif isinstance(self.decoder.decoder, nn.LSTM):
-                decoder_output, decoder_hidden, decoder_cell, _ = self.decoder(
-                    decoder_input, decoder_hidden, features, decoder_cell)
-            _, topi = decoder_output.topk(1)
-
-            decoder_outputs.append(decoder_output)
-            decoder_input = topi.detach().view(batch_size)
-        decoder_outputs = torch.stack(decoder_outputs, dim=1)
-        classes = torch.max(decoder_outputs, dim=2)[1]
-        return decoder_outputs, classes
-
     def forward(self, features, targets=None, masks=None):
-        if torch.onnx.is_in_onnx_export():
-            return features
 
         features = self.encoder(features)
 
@@ -273,16 +210,12 @@ class TextRecognitionHeadAttention(nn.Module):
         if hasattr(self, 'semantics'):
             assert isinstance(self.decoder.decoder, nn.GRU), "sematic module could only be applied with GRU RNN"
             old_shape = features.shape
-            # if not self.training:
             features = features.reshape(features.shape[0], -1)  # B C*H*W
-            # else:
-                # features = features.view(features.shape[0], -1)  # B C*H*W
             semantic_info = self.semantics(features)
             decoder_hidden = self.semantic_transform(semantic_info.unsqueeze(0))
             features = features.view(old_shape)
         else:
             decoder_hidden, decoder_cell = self._zero_initialize_hiddens(batch_size, features.device)
-
         for di in range(decoder_max_seq_len):
             if targets is not None:
                 decoder_input = targets[:, di]
@@ -318,3 +251,38 @@ class TextRecognitionHeadAttention(nn.Module):
     def dummy_forward(self):
         return torch.zeros((1, self.decoder_max_seq_len, self.decoder.vocab_size),
                            dtype=torch.float32)
+
+    def encoder_wrapper(self, features):
+        features = self.encoder(features)
+        batch_size = features.shape[0]
+        if hasattr(self, 'pe'):
+            features = features + self.pe(features)
+
+        features = features.view(features.shape[0], features.shape[1], -1)  # B C H*W
+        features = features.permute(0, 2, 1)  # BxH*WxC or BxTxC
+        features = self.dropout(features)
+
+        if hasattr(self, 'semantics'):
+            assert isinstance(self.decoder.decoder, nn.GRU), "sematic module could only be applied with GRU RNN"
+            old_shape = features.shape
+            features = features.reshape(features.shape[0], -1)  # B C*H*W
+            semantic_info = self.semantics(features)
+            decoder_hidden = self.semantic_transform(semantic_info.unsqueeze(0))
+            features = features.view(old_shape)
+            return features, decoder_hidden
+
+        decoder_hidden, decoder_cell = self._zero_initialize_hiddens(batch_size, features.device)
+        return features, decoder_hidden, decoder_cell
+
+    def decoder_wrapper(self, recurrent_state, features, decoder_input):
+        if isinstance(self.decoder.decoder, nn.GRU):
+            hidden = recurrent_state
+            decoder_output, decoder_hidden, _ = self.decoder(
+                decoder_input, hidden, features)
+            return decoder_hidden, decoder_output
+        if isinstance(self.decoder.decoder, nn.LSTM):
+            hidden, context = recurrent_state
+            decoder_output, decoder_hidden, decoder_cell, _ = self.decoder(
+                decoder_input, hidden, features, context)
+            return decoder_hidden, decoder_cell, decoder_output
+        raise ValueError(f'Unsupported decoder type {self.decoder.decoder}')
