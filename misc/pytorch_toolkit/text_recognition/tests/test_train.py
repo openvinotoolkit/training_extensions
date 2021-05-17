@@ -49,9 +49,11 @@ class TestHandwrittenPolynomialsTrain(create_train_test('configs/polynomials_han
     'Test case for handwritten polynomials config'
 
 
-class TestAlphanumericTrain(create_train_test('configs/config_0013.yml')):
+class TestAlphanumericTrain0013(create_train_test('configs/config_0013.yml')):
     'Test case for alphanumeric config'
 
+class TestAlphanumericTrain0014(create_train_test('configs/config_0014.yml')):
+    'Test case for alphanumeric config'
 
 if __name__ == '__main__':
     unittest.main()
