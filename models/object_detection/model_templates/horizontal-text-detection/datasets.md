@@ -63,7 +63,7 @@ ${DATA_DIR}/text-dataset
 ### 3. Using custom datasets
 
 If you want to train/test network on your own dataset there are 3 ways to arrange the dataset preparing process:
-1. If your dataset in COCO style, you may use its annotation right away.
+1. If your dataset has COCO format, you may use its annotation right away.
 2. You may convert your dataset to COCO format using [Datumaro](https://github.com/openvinotoolkit/datumaro) 
    or other tool.
 3. The least preferable way is to modify converters already prepared in 
