@@ -98,7 +98,7 @@ def calculate_loss(logits, targets, target_lengths, should_cut_by_min=False, ctc
 
     else:
         logits = torch.nn.functional.log_softmax(logits, dim=2)
-        max_len, b_size, vocab_size = logits.shape  # batch size, length of the formula, vocab size
+        max_len, b_size, _ = logits.shape  # batch size, length of the formula, vocab size
         input_lengths = torch.full(size=(b_size,), fill_value=max_len, dtype=torch.long)
         loss = ctc_loss(logits, targets, input_lengths=input_lengths, target_lengths=target_lengths)
 
