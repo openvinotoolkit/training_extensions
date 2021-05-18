@@ -16,6 +16,7 @@ import argparse
 import fnmatch
 import glob
 import inspect
+import json
 import logging
 import os
 import shlex
@@ -25,6 +26,7 @@ import unittest
 import yaml
 
 from collections import Counter
+from copy import deepcopy
 from subprocess import run
 from texttable import Texttable
 
@@ -154,6 +156,24 @@ def _add_counter_to_rows(rows):
 
     return new_rows
 
+def save_list_to_path(all_tests, path):
+    if not path:
+        raise RuntimeError('Try to write the list of tests to an empty path')
+
+    all_tests = deepcopy(all_tests)
+    for el in all_tests:
+        del el['test']
+
+    ext = os.path.splitext(path)[1]
+    with open(path, 'w') as f:
+        if ext in ('.yaml', '.yml'):
+            yaml.dump(all_tests, f)
+            return
+        if ext in ('.json', '.jsn'):
+            json.dump(all_tests, f, indent=4)
+            return
+    raise RuntimeError(f'Unknown extension of path {path}')
+
 def print_list_tests(all_tests, verbose=False, short=False):
     assert not (verbose and short)
     keys = ['domain', 'problem', 'model', 'topic']
@@ -217,6 +237,15 @@ def make_pattern_match(pattern, val):
 
 def filter_tests_by_pattern(all_tests, field_name, pattern):
     all_tests = [el for el in all_tests if make_pattern_match(pattern, el.get(field_name))]
+    return all_tests
+
+def filter_tests_by_many_patterns(all_tests, field_name, patterns):
+    new_tests_ids = set()
+    for pattern in patterns:
+        filtered_tests = filter_tests_by_pattern(all_tests, field_name, pattern)
+        filtered_tests_ids = {el['id'] for el in filtered_tests}
+        new_tests_ids.update(filtered_tests_ids)
+    all_tests = [el for el in all_tests if el['id'] in new_tests_ids]
     return all_tests
 
 def filter_tests_by_value(all_tests, field_name, val):
@@ -377,7 +406,9 @@ def main():
     parser.add_argument('--test-id-filter', action='append',
                         help='Filter on test id-s. Optional. Several filters are applied using logical AND')
     parser.add_argument('--verbose', '-v', action='store_true', help='If the tests should be run in verbose mode')
-    parser.add_argument('--list', '-l', action='store_true', help='List all available tests')
+    parser.add_argument('--list', '-l', action='store_true',
+                        help='List all available tests after applying all filters '
+                        '(filters like --problem, --topic, --test-id-filter, --test-ids-list-path')
     parser.add_argument('--instantiate-only', action='store_true',
                         help='If the script should instantiate the tests in the work dir only')
     parser.add_argument('--not-instantiate', action='store_true',
@@ -385,7 +416,13 @@ def main():
     parser.add_argument('--run-one-domain-inside-virtual-env', action='store_true',
                         help='If the script should run the tests for one domain without work dir instantiation.'
                         ' It is supposed that the script is already run in the proper virtual environment.')
-
+    parser.add_argument('--test-ids-list-path',
+                         help='Path to a YAML file with list of test ids that should be executed; '
+                         'is applied as a separate filter together with "--domain", "--topic", etc')
+    parser.add_argument('--save-list-to-path',
+                        help='If --list is used, then save the list of test ids as a JSON struct to the pointed file'
+                        '(the struct will be a list, each element of the list will be a dict with fields '
+                        '"domain", "problem", "model", "id", "topic"')
 
     args = parser.parse_args()
     assert not (args.instantiate_only and args.not_instantiate), \
@@ -412,10 +449,23 @@ def main():
     if args.test_id_filter:
         for test_filter in args.test_id_filter:
             all_tests = filter_tests_by_pattern(all_tests, 'id', test_filter)
+    if args.test_ids_list_path:
+        with open(args.test_ids_list_path) as f_t_ids:
+            test_ids_list = yaml.safe_load(f_t_ids)
+        all_tests = filter_tests_by_many_patterns(all_tests, 'id', test_ids_list)
+
+    logging.info(f'After filtering {len(all_tests)} tests found')
 
     if args.list:
-        print_list_tests(all_tests, args.verbose)
+        if args.save_list_to_path is None:
+            print_list_tests(all_tests, args.verbose)
+        else:
+            save_list_to_path(all_tests, args.save_list_to_path)
+            logging.info(f'The list of tests is written to the file {args.save_list_to_path}')
         return
+    else:
+        if args.save_list_to_path is not None:
+            raise RuntimeError('Command line parameter --save-list-to-path is allowed only if --list parameter is set')
 
     print('Start working on tests:')
     print_list_tests(all_tests, short=True)
