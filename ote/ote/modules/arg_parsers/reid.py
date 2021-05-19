@@ -41,7 +41,9 @@ class ReidArgParser(DefaultArgParser):
 
     def get_export_parser(self, config_path):
         parser = argparse.ArgumentParser(parents=[export_args_parser(config_path)], add_help=False)
-        return self._add_classes_arg(parser)
+        parser = self._add_aux_weights_load_arg(parser)
+        parser = self._add_classes_arg(parser)
+        return parser
 
     def get_compression_parser(self, config_path):
         # Please, note that for image classification compression
