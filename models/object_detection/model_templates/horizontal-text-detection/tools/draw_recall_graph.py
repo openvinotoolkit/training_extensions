@@ -74,7 +74,7 @@ def main():
 
     recall, precision, hmean, _ = text_eval(
         predictions, gt_annotations,
-        cfg.test_cfg.score_thr,
+        cfg.model.test_cfg.score_thr,
         images=img_paths,
         show_recall_graph=args.draw_graph)
     print('Text detection recall={:.4f} precision={:.4f} hmean={:.4f}'.

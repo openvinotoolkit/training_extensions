@@ -59,3 +59,17 @@ ${DATA_DIR}/text-dataset
     ├── IC13TRAIN_IC15_IC17_IC19_MSRATD500_COCOTEXT.json
     └── IC13TEST.json
 ```
+
+### 3. Using custom datasets
+
+If you want to train/test network on your own dataset there are 3 ways to arrange the dataset preparing process:
+1. If your dataset has COCO format, you may use its annotation right away.
+2. You may convert your dataset to COCO format using [Datumaro](https://github.com/openvinotoolkit/datumaro) 
+   or other tool.
+3. The least preferable way is to modify converters already prepared in 
+   [text_spotting.py](../../../../ote/ote/datasets/text_spotting.py) and use 
+   [create_dataset.py](tools/create_dataset.py) script for conversion as it was explained above. 
+   In that way please check that: 
+   - `bbox` field has values in xywh format 
+   - `segmentation` field contains at least 4 2d corner points (resulting in vector with 8 coordinates)
+   - `transcription` field is not empty (if you don't intend to use transcription, put there every nonempty value like '0').
