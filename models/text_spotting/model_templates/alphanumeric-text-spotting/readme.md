@@ -4,8 +4,7 @@ Models that are able to detect and recognize alphanumeric text (numbers and lett
 
 | Model Name                    | Complexity (GFLOPs) | Size (Mp) | Detection F1-score (ICDAR'15) | Word Spotting (ICDAR'15, N*) | E2E Recognition (ICDAR'15, N*) |  Word Spotting (ICDAR'15, G**) | E2E Recognition (ICDAR'15, G**) | Links                                                                                                                                                                                                                           | GPU_NUM |
 | ----------------------------- | ------------------- | --------- | ----------------------------- | ---------------------------- | ------------------------------ | ------------------------------ | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
-| text-spotting-0004 @ 1280x768 | 190.5               |  27.76    |  88.27% @ 0.8,0.3             | 70.34% @ 0.8,0.3             | 67.78% @ 0.8,0.3               | 76.30% @ 0.8,0.15              | 73.87% @ 0.8,0.15               | [model template](./text-spotting-0004/template.yaml), [snapshot](https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/text_spotting/alphanumeric_text_spotting/text_spotting_0004/epoch_25.pth) | 4       |
-| text-spotting-0004 @ 1600x960 | 283.0               |  27.76    |  89.05% @ 0.75,0.45           | 72.20% @ 0.75,0.45           | 69.44% @ 0.75,0.45             | 78.35% @ 0.8,0.1               | 75.41% @ 0.8,0.1                | [model template](./text-spotting-0004/template.yaml), [snapshot](https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/text_spotting/alphanumeric_text_spotting/text_spotting_0004/epoch_25.pth) | 4       |
+| text-spotting-0005 @ 1280x768 | 190.5               |  27.76    |  88.87% @ 0.65,0.45             | 71.29% @ 0.65,0.45             | 68.55% @ 0.8,0.3               | 76.63% @ 0.65,0.15              | 74.12% @ 0.65,0.15               | [model template](./text-spotting-0005/template.yaml), [snapshot](https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/text_spotting/alphanumeric_text_spotting/text_spotting_0005/epoch_25.pth) | 4       |
 
 Metric value has following format: <metric_value> @ <detection_threshold>,<recognition_threshold>.
 
@@ -37,7 +36,7 @@ source venv/bin/activate
 ### 2. Select a model template file and instantiate it in some directory
 
 ```bash
-export MODEL_TEMPLATE=`realpath ./model_templates/alphanumeric-text-spotting/text-spotting-0004/template.yaml`
+export MODEL_TEMPLATE=`realpath ./model_templates/alphanumeric-text-spotting/text-spotting-0005/template.yaml`
 export WORK_DIR=/tmp/my-$(basename $(dirname $MODEL_TEMPLATE))
 export SNAPSHOT=snapshot.pth
 python ../../tools/instantiate_template.py ${MODEL_TEMPLATE} ${WORK_DIR}
