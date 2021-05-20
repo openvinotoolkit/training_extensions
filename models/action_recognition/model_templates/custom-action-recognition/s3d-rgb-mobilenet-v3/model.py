@@ -8,12 +8,17 @@ root_dir = 'data'
 work_dir = None
 load_from = None
 resume_from = None
-
-# model settings
-input_clip_length = 16
-input_img_size = 224
 reset_layer_prefixes = ['cls_head']
 reset_layer_suffixes = None
+
+# model settings
+input_img_size = 224
+input_clip_length = 16
+input_frame_interval = 2
+
+# training settings
+enable_clip_mixing = False
+num_train_clips = 2 if enable_clip_mixing else 1
 
 # model definition
 model = dict(
@@ -95,7 +100,10 @@ model = dict(
 # model training and testing settings
 train_cfg = dict(
     self_challenging=dict(enable=False, drop_p=0.33),
-    clip_mixing=dict(enable=False, mode='logits', weight=0.2)
+    clip_mixing=dict(enable=enable_clip_mixing, mode='logits', num_clips=num_train_clips,
+                     scale=10.0, weight=0.2),
+    loss_norm=dict(enable=False, gamma=0.9),
+    sample_filtering=dict(enable=False, warmup_epochs=1),
 )
 test_cfg = dict(
     average_clips=None
@@ -108,12 +116,12 @@ img_norm_cfg = dict(
     to_bgr=False
 )
 train_pipeline = [
-    dict(type='StreamSampleFrames',
+    dict(type='SampleFrames',
          clip_len=input_clip_length,
-         trg_fps=15,
-         num_clips=1,
+         frame_interval=input_frame_interval,
+         num_clips=num_train_clips,
          temporal_jitter=True,
-         min_intersection=1.0),
+         enable_negatives=False),
     dict(type='RawFrameDecode'),
     dict(type='Resize', scale=(-1, 256)),
     dict(type='RandomRotate', delta=10, prob=0.5),
@@ -135,9 +143,9 @@ train_pipeline = [
     dict(type='ToTensor', keys=['imgs', 'label', 'dataset_id'])
 ]
 val_pipeline = [
-    dict(type='StreamSampleFrames',
+    dict(type='SampleFrames',
          clip_len=input_clip_length,
-         trg_fps=15,
+         frame_interval=input_frame_interval,
          num_clips=1,
          test_mode=True),
     dict(type='RawFrameDecode'),
@@ -152,10 +160,11 @@ data = dict(
     videos_per_gpu=num_videos_per_gpu,
     workers_per_gpu=num_workers_per_gpu,
     train_dataloader=dict(
-        drop_last=True
+        drop_last=True,
+        num_instances_per_batch=None,
     ),
     shared=dict(
-        type='StreamDataset',
+        type='RawframeDataset',
         data_subdir='rawframes',
         filename_tmpl='{:05d}.jpg'
     ),
