@@ -1,5 +1,5 @@
 """
- Copyright (c) 2020 Intel Corporation
+ Copyright (c) 2020-2021 Intel Corporation
 
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ class ReidTrainer(BaseTrainer):
     parameter_train_dir = 'train_data_roots'
     parameter_val_dir = 'val_data_roots'
     parameter_classes_list = 'classes'
+    parameter_aux_weight = 'load_aux_weights'
 
     def _get_tools_dir(self):
         return REID_TOOLS
@@ -35,6 +36,12 @@ class ReidTrainer(BaseTrainer):
     def __call__(self, config, gpu_num, update_config, tensorboard_dir):
         logging.basicConfig(level=logging.INFO)
         logging.info(f'Commandline:\n{" ".join(sys.argv)}')
+
+        if update_config[self.parameter_aux_weight]:
+            aux_config_arg = f'--aux-config-opts model.load_weights {update_config[self.parameter_aux_weight]} '
+        else:
+            aux_config_arg = ''
+        del update_config[self.parameter_aux_weight]
 
         if update_config[self.parameter_classes_list]:
             update_config[self.parameter_classes_list] = update_config[self.parameter_classes_list].replace(',', ' ')
@@ -47,8 +54,10 @@ class ReidTrainer(BaseTrainer):
         data_path_args += f'{update_config[self.parameter_val_dir]} --root _ '
         del update_config[self.parameter_train_dir]
         del update_config[self.parameter_val_dir]
-        update_config_str = classes_arg + data_path_args
+
+        update_config_str = aux_config_arg + classes_arg + data_path_args
         update_config_str += ' '.join([f'{k} {v}' for k, v in update_config.items() if str(v) and str(k)])
+
         logging.info('Training started ...')
         self._train_internal(config, gpu_num, update_config_str, tensorboard_dir)
         logging.info('... training completed.')

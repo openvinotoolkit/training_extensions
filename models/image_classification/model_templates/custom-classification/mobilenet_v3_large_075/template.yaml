@@ -40,6 +40,11 @@ hyper_parameters:
       param: --classes
       type: string
       default: ''
+    aux_model_weights:
+      name: Loading auxiliary model weights for mutual learning
+      param: --load-aux-weights
+      type: string
+      default: ''
 output_format:
   onnx:
     default: true
