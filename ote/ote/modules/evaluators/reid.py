@@ -43,11 +43,8 @@ class ReidEvaluator(BaseEvaluator):
         if os.path.islink(snapshot):
             snapshot = os.path.join(os.path.dirname(snapshot), os.readlink(snapshot))
 
-        if update_config[self.parameter_aux_weight]:
-            aux_config_arg = f'--aux-config-opts model.load_weights {update_config[self.parameter_aux_weight]} '
-        else:
-            aux_config_arg = ''
-        del update_config[self.parameter_aux_weight]
+        assert self.parameter_aux_weight not in update_config, \
+                'The parameter {self.parameter_aux_weight} should be ignored in arg converter for reid'
 
         if update_config[self.parameter_classes_list]:
             update_config[self.parameter_classes_list] = update_config[self.parameter_classes_list].replace(',', ' ')
@@ -60,7 +57,7 @@ class ReidEvaluator(BaseEvaluator):
         data_path_args += f'{update_config[self.parameter_test_dir]} --root _ '
         del update_config[self.parameter_test_dir]
 
-        update_config_str = aux_config_arg + classes_arg + data_path_args
+        update_config_str = classes_arg + data_path_args
         update_config_str += ' '.join([f'{k} {v}' for k, v in update_config.items() if str(v) and str(k)])
         update_config_str = update_config_str if update_config_str else ''
 

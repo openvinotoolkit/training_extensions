@@ -48,7 +48,7 @@ class ReidArgConverterMap(ArgConverterMaps):
             'test_data_roots': 'test_data_roots',
             'load_weights': 'model.load_weights',
             'classes': 'classes',
-            'load_aux_weights': 'load_aux_weights',
+            'load_aux_weights': '',
         }
 
     def compress_update_args_map(self):
