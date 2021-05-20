@@ -156,21 +156,21 @@ def _add_counter_to_rows(rows):
 
     return new_rows
 
-def save_list_to_path(all_tests, path):
+def save_tests_list(list_of_tests, path):
     if not path:
         raise RuntimeError('Try to write the list of tests to an empty path')
 
-    all_tests = deepcopy(all_tests)
-    for el in all_tests:
+    list_of_tests = deepcopy(list_of_tests)
+    for el in list_of_tests:
         del el['test']
 
     ext = os.path.splitext(path)[1]
     with open(path, 'w') as f:
         if ext in ('.yaml', '.yml'):
-            yaml.dump(all_tests, f)
+            yaml.dump(list_of_tests, f)
             return
         if ext in ('.json', '.jsn'):
-            json.dump(all_tests, f, indent=4)
+            json.dump(list_of_tests, f, indent=4)
             return
     raise RuntimeError(f'Unknown extension of path {path}')
 
@@ -460,7 +460,7 @@ def main():
         if args.save_list_to_path is None:
             print_list_tests(all_tests, args.verbose)
         else:
-            save_list_to_path(all_tests, args.save_list_to_path)
+            save_tests_list(all_tests, args.save_list_to_path)
             logging.info(f'The list of tests is written to the file {args.save_list_to_path}')
         return
     else:
