@@ -16,8 +16,8 @@ Given a  CNN trained on a  2D ultrasound dataset acquired using a transducer of 
 ## Setup
 ### Prerequisites
  * python 3.7.3
- * torch                  1.5.0+cu101
- * torchvision            0.6.0+cu101
+ * torch                  1.5.0
+ * torchvision            0.6.0
  * numpy                  1.19.2
  * opencv-python          4.5.1.48
  * Pillow                 7.2.0
