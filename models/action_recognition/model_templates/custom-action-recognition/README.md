@@ -4,9 +4,12 @@ Models that are trained on the Kinetics-700 dataset and able to recognize action
 
 Performance results table:
 
-| Model Name           | Complexity (GFLOPs) | Size (Mp) | UCF-101 Top-1 accuracy | Jester-27 Top-1 accuracy | MS-ASL-1000 Top-1 accuracy | Kinetics-700 Top-1 accuracy | Links                                                                                                                                                                                                                               |
-| -------------------- | ------------------- | --------- | ---------------------- | ------------------------ | -------------------------- | --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| s3d-rgb-mobilenet-v3 | 6.66                | 4.133     | 94.21%                 | 94.94%                   | 41.20%                     | 46.51%                      | [model template](s3d-rgb-mobilenet-v3/template.yaml), [kinetics-700 snapshot](https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/custom_action_recognition/s3d-mobilenetv3-large-kinetics700.pth) |
+| Model Name                  | Complexity (GFLOPs) | Size (Mp) | UCF-101 Top-1 accuracy | ActivityNet V1.3 Top-1 Accuracy | Jester-27 Top-1 accuracy | MS-ASL-1000 Top-1 accuracy | Links                                                                                                                                                                                                                               |
+| --------------------------- | ------------------- | --------- | ---------------------- | ------------------------------- | ------------------------ | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| s3d-rgb-mobilenet-v3        | 6.65                | 4.116     | 93.79%                 | 64.09%                          | 93.79%                   | 41.20%                     | [model template](s3d-rgb-mobilenet-v3/template.yaml), [kinetics-700 snapshot](https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/custom_action_recognition/s3d-mobilenetv3-large-kinetics700.pth) |
+| x3d-rgb-mobilenet-v3-lgd-gc | 4.74                | 4.472     | 93.63%                 | 64.19%                          | TBD                      | TBD                        | [model template](x3d-rgb-mobilenet-v3-lgd-gc/template.yaml), [kinetics-700 snapshot]() |
+
+> **NOTE**: The top-1 accuracy metric is calculated as a single clip/crop per video to demostrate the real model performance on the reported model complexity.
 
 ## Datasets
 

@@ -40,3 +40,11 @@ class GestureRecognitionTestCaseMSASL(
         )
 ):
     """ Train/eval test case for s3d-rgb-mobilenet-v3-stream-msasl model. """
+
+class GestureRecognitionTestCaseCSL(
+        create_action_recognition_test_case(
+            model_name='s3d-rgb-mobilenet-v3-stream-csl',
+            **kwargs,
+        )
+):
+    """ Train/eval test case for s3d-rgb-mobilenet-v3-stream-csl model. """

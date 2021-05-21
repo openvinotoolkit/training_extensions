@@ -1,14 +1,14 @@
-name: s3d-rgb-mobilenet-v3
+name: s3d-rgb-mobilenet-v3-stream-csl
 domain: Action Recognition
-problem: Custom Action Recognition
+problem: Gesture Recognition
 framework: OTEAction v0.6.0
-summary: Custom Action Recognition based on S3D-MobileNet-V3.
+summary: Common Sign Language (CSL) Recognition based on S3D-MobileNet-V3.
 annotation_format: CustomAction
 initial_weights: snapshot.pth
 dependencies:
-- sha256: 8f0b5af89a5b61c2e5fd9390bbad1ce8f9ea31bcfcceaa631eb8ee4ccb6e875d
-  size: 34524111
-  source: https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/custom_action_recognition/s3d-mobilenetv3-large-kinetics700.pth
+- sha256: 9b7523592f0993065cb251bb159f3528b619a6f7906773a1f2a43a4b74b55b7b
+  size: 33203577
+  source: tbd
   destination: snapshot.pth
 - source: ../../../../../ote/tools/train.py
   destination: train.py
@@ -33,7 +33,7 @@ inference_target:
 hyper_parameters:
   basic:
     batch_size: 12
-    base_learning_rate: 0.001
+    base_learning_rate: 0.002
     epochs: 65
 output_format:
   onnx:
@@ -46,15 +46,15 @@ metrics:
 - display_name: Size
   key: size
   unit: Mp
-  value: 4.133
+  value: 4.113
 - display_name: Complexity
   key: complexity
   unit: GFLOPs
-  value: 6.66
-- display_name: Mean Top-1 accuracy
+  value: 4.227
+- display_name: Top-1 accuracy
   key: accuracy
   unit: '%'
-  value: 46.51
+  value: 98.0
 gpu_num: 2
 tensorboard: true
 config: model.py

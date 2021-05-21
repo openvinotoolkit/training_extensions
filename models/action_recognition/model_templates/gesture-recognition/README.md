@@ -14,6 +14,12 @@ Models that are able to recognize gestures from live video stream on CPU.
   | ---------------------------------- | ------------------- | --------- | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
   | s3d-rgb-mobilenet-v3-stream-jester | 4.23	               | 4.133     | 93.58%         | [model template](s3d-rgb-mobilenet-v3-stream-jester/template.yaml), [snapshot](https://docs.google.com/uc?export=download&id=1lDm2qOxMRyXZW6y7owlQBv8SGvGIKpcX)                                | 4       |
 
+* Common-Sign-Language-12 gesture set (continuous scenario)
+
+  | Model Name                         | Complexity (GFLOPs) | Size (Mp) | Top-1 accuracy | Links                                                                                                                                                                                          | GPU_NUM |
+  | ---------------------------------- | ------------------- | --------- | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+  | s3d-rgb-mobilenet-v3-stream-csl    | 4.23                | 4.113     | 98.00%         | [model template](s3d-rgb-mobilenet-v3-stream-csl/template.yaml), [snapshot]()                                | 2       |
+
 ## Usage
 
 Steps `1`-`2` help to setup working environment and download a pre-trained model.

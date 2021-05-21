@@ -1,14 +1,14 @@
-name: s3d-rgb-mobilenet-v3
+name: x3d-rgb-mobilenet-v3-lgd-gc
 domain: Action Recognition
 problem: Custom Action Recognition
 framework: OTEAction v0.6.0
-summary: Custom Action Recognition based on S3D-MobileNet-V3.
+summary: Custom Action Recognition based on X3D-MobileNet-V3-LGD-GC.
 annotation_format: CustomAction
 initial_weights: snapshot.pth
 dependencies:
-- sha256: 8f0b5af89a5b61c2e5fd9390bbad1ce8f9ea31bcfcceaa631eb8ee4ccb6e875d
-  size: 34524111
-  source: https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/custom_action_recognition/s3d-mobilenetv3-large-kinetics700.pth
+- sha256: 37ff91f3658d0c4489e9a3043d872bd4b19dec67e2fda453e73ac2d200726e5d
+  size: 47881016
+  source: tbd
   destination: snapshot.pth
 - source: ../../../../../ote/tools/train.py
   destination: train.py
@@ -50,11 +50,11 @@ metrics:
 - display_name: Complexity
   key: complexity
   unit: GFLOPs
-  value: 6.66
+  value: 2.23
 - display_name: Mean Top-1 accuracy
   key: accuracy
   unit: '%'
-  value: 46.51
+  value: 42.01
 gpu_num: 2
 tensorboard: true
 config: model.py
