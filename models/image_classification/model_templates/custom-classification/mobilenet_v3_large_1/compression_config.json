@@ -1,0 +1,46 @@
+{
+    "base": {
+        "nncf_config": {
+            "compression": [],
+            "log_dir": "."
+        }
+    },
+    "nncf_quantization": {
+	"nncf": {
+	    "enable": true
+	},
+	"train": {
+	    "batch_size": 64
+	},
+	"test": {
+	    "batch_size": 64
+	},
+        "nncf_config": {
+            "compression": [
+                {
+                    "algorithm": "quantization",
+                    "initializer": {
+                        "range": {
+                            "num_init_samples": 8192
+                        },
+                        "batchnorm_adaptation": {
+                            "num_bn_adaptation_samples": 8192
+                        }
+                    }
+                }
+            ]
+        },
+        "changes_aux_config": {
+		"train": {
+		    "batch_size": 64,
+		    "optim": "sgd"
+		},
+		"test": {
+		    "batch_size": 64
+		}
+	}
+    },
+    "order_of_parts": [
+        "nncf_quantization"
+    ]
+}

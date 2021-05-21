@@ -1,4 +1,4 @@
-# Copyright (C) 2020 Intel Corporation
+# Copyright (C) 2020-2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+import glob
+import re
 import os
 
 
@@ -36,3 +38,18 @@ def download_if_not_yet(output_folder, url):
 
 def relative_abs_error(expected, actual):
     return abs(expected - actual) / expected
+
+def find_files_by_pattern(folder_path, pattern):
+    found_files = glob.glob(os.path.join(folder_path, '**', pattern), recursive=True)
+    found_files = sorted(found_files)
+    return found_files
+
+def extract_last_lines_by_pattern(file_path, regex, num=1):
+    res = []
+    with open(file_path) as f:
+        for line in f:
+            line = line.strip()
+            if re.search(regex, line):
+                res.append(line)
+    res = res[-num:]
+    return res

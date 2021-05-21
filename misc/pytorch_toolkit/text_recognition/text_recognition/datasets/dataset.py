@@ -61,6 +61,7 @@ class BatchRandomSampler(Sampler):
     """
 
     def __init__(self, batch_size, dataset):
+        super().__init__(dataset)
         self.batch_size = batch_size
         self.len = len(dataset) // self.batch_size
         self.indices = np.array(range(self.len * self.batch_size))[::self.batch_size]

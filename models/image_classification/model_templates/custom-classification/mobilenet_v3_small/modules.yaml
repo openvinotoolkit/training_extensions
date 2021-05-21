@@ -1,5 +1,6 @@
-arg_parser: CustomClassesArgParser
+arg_parser: ReidArgParser
 arg_converter_map: ReidArgConverterMap
 trainer: ReidTrainer
 evaluator: ReidEvaluator
 exporter: ReidExporter
+compression: NNCFReidConfigTransformer
