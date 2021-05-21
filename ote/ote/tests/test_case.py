@@ -1,4 +1,4 @@
-# Copyright (C) 2020 Intel Corporation
+# Copyright (C) 2020-2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,7 +20,8 @@ import unittest
 
 import mmcv
 import yaml
-from ote.utils.misc import download_snapshot_if_not_yet, run_through_shell
+
+from ote.utils.misc import download_snapshot_if_not_yet, run_through_shell, generate_random_suffix
 
 
 # these functions contain import-s inside -- this is required for tests discover
@@ -361,7 +362,21 @@ def create_nncf_test_case(domain_name, problem_name, model_name, ann_file, img_r
         @staticmethod
         def generate_template_folder_name(src_template_folder, test_case_description):
             assert not src_template_folder.endswith('/')
-            template_folder = src_template_folder + '__' +  test_case_description
+
+            src_folder_name = os.path.basename(src_template_folder)
+            src_parent_dir = os.path.dirname(src_template_folder)
+
+            random_suffix = generate_random_suffix()
+            template_folder_name = src_folder_name + '__' +  random_suffix
+            assert len(template_folder_name) < 250
+            template_folder_name += '__' + test_case_description
+
+            if len(template_folder_name) > 250:
+                # to prevent too long names, may cause *nix error
+                template_folder_name = template_folder_name[:250]
+                template_folder_name += '---'
+
+            template_folder = os.path.join(src_parent_dir, template_folder_name)
             return template_folder
 
         @staticmethod

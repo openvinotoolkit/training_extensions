@@ -1,0 +1,10 @@
+torch
+pytorch-lightning==1.0.2
+numpy
+pandas
+scikit-learn
+tqdm
+pyunpack
+wget
+addict
+matplotlib

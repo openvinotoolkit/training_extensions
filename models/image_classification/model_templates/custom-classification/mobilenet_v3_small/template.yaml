@@ -40,13 +40,21 @@ hyper_parameters:
       param: --classes
       type: string
       default: ''
+    aux_model_weights:
+      name: Loading auxiliary model weights for mutual learning
+      param: --load-aux-weights
+      type: string
+      default: ''
 output_format:
   onnx:
     default: true
   openvino:
     default: true
     input_format: BGR
-optimisations: ~
+optimisations:
+  nncf_quantization:
+    config: compression_config.json
+    default: false
 metrics:
 - display_name: Size
   key: size

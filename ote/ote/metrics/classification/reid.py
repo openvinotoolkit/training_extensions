@@ -1,5 +1,5 @@
 """
- Copyright (c) 2020 Intel Corporation
+ Copyright (c) 2020-2021 Intel Corporation
 
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
@@ -46,8 +46,9 @@ def collect_accuracy(path):
 def mean_accuracy_eval(config_path, work_dir, snapshot, update_config, **kwargs):
     """ Computes mean accuracy. """
     def get_topk_dict(value, k=1):
+        key_name = 'accuracy' if k == 1 else f'top_{k}_accuracy'
         return {
-            'key': 'accuracy', 'value': value, 'unit': '%', 'display_name': f'Top-{k} accuracy'
+            'key': key_name, 'value': value, 'unit': '%', 'display_name': f'Top-{k} accuracy'
         }
     outputs = []
 
@@ -60,7 +61,7 @@ def mean_accuracy_eval(config_path, work_dir, snapshot, update_config, **kwargs)
         test_py_stdout = os.path.join(work_dir, 'test_py_stdout')
 
         subprocess.run(
-            f'python3 {REID_TOOLS}/main.py'
+            f'python3 {REID_TOOLS}/eval.py'
             f' --config-file {config_path}'
             f' {update_config}'
             f' test.evaluate True'

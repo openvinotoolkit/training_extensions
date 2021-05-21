@@ -1,8 +1,22 @@
+# Copyright (C) 2020-2021 Intel Corporation
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+
 import argparse
 
 import yaml
 
-def _compression_train_args_parsers_common_part(template_path):
+def _compression_train_args_parsers_common_part(template_path, with_batch_size=True):
     parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter)
     with open(template_path, 'r') as model_definition:
         config = yaml.safe_load(model_definition)
@@ -21,21 +35,23 @@ def _compression_train_args_parsers_common_part(template_path):
                             help='Load only weights from previously saved checkpoint')
         parser.add_argument('--save-checkpoints-to', default='/tmp/checkpoints',
                             help='Location where checkpoints will be stored')
-        parser.add_argument('--batch-size', type=int,
-                            default=config['hyper_parameters']['basic']['batch_size'],
-                            help='Size of a single batch during training per GPU.')
         parser.add_argument('--gpu-num', type=int,
                             default=config['gpu_num'],
                             help='Number of GPUs that will be used in training, 0 is for CPU mode.')
         parser.add_argument('--tensorboard-dir',
                             help='Location where tensorboard logs will be stored.')
 
+        if with_batch_size:
+            parser.add_argument('--batch-size', type=int,
+                                default=config['hyper_parameters']['basic']['batch_size'],
+                                help='Size of a single batch during training per GPU.')
+
         parser.add_argument('--config', default=config['config'], help=argparse.SUPPRESS)
 
     return parser
 
-def compression_args_parser(template_path):
-    parser = _compression_train_args_parsers_common_part(template_path)
+def compression_args_parser(template_path, with_batch_size=True):
+    parser = _compression_train_args_parsers_common_part(template_path, with_batch_size)
 
     with open(template_path, 'r') as model_definition:
         config = yaml.safe_load(model_definition)
