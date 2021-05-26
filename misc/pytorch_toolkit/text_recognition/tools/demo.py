@@ -79,6 +79,10 @@ if __name__ == '__main__':
         inputs = [arguments.input]
     for inp in inputs:
         input_image = cv.imread(inp, cv.IMREAD_COLOR)
+        if demo_config.get('backbone_config').get('one_ch_first_conv'):
+            input_image = cv.cvtColor(input_image, cv.COLOR_BGR2GRAY)
+        if demo_config.get('model_resolution'):
+            input_image = cv.resize(input_image, demo_config.get('model_resolution')[::-1])
         assert input_image is not None, 'Error reading image {}, please, check input path'.format(inp)
         recognized_formula = demo(input_image)
         cv.imshow('Input image', input_image)
