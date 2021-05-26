@@ -236,7 +236,8 @@ class MJSynthDataset(BaseDataset):
             return el
 
         with open(os.path.join(self.data_path, self.ann_file)) as input_file:
-            annotation = [line.split(' ')[0] for line in input_file]
+            annotation = [line.split()[0] for line in input_file]
+            annotation = [os.path.join(self.data_path, line) for line in annotation]
         pool = ThreadPool(num_workers)
 
         for elem in tqdm(pool.imap_unordered(read_img, annotation), total=len(annotation)):
@@ -289,35 +290,39 @@ class LMDBDataset(BaseDataset):
         self.fixed_img_shape = fixed_img_shape
         self.case_sensitive = case_sensitive
         self.grayscale = grayscale
+        self.database = lmdb.open(bytes(self.data_path, encoding='utf-8'), readonly=True)
         self.pairs = self._load()
 
     def _load(self):
-        database = lmdb.open(bytes(self.data_path, encoding='utf-8'), readonly=True)
         pairs = []
-        with database.begin(write=False) as txn:
+        with self.database.begin(write=False) as txn:
             num_iterations = int(txn.get('num-samples'.encode()))
             for index in tqdm(range(1, num_iterations + 1)):  # in lmdb indexation starts with one
-                img_key = f'image-{index:09d}'.encode()
-                image_bytes = txn.get(img_key)
-                img = cv.imdecode(np.frombuffer(image_bytes, np.uint8), cv.IMREAD_UNCHANGED)
-                if len(img.shape) < 3:
-                    img = np.stack((img,) * 3, axis=-1)
-                if self.grayscale:
-                    img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-                    img = cv.cvtColor(img, cv.COLOR_GRAY2BGR)
-                if self.fixed_img_shape is not None:
-                    img = cv.resize(img, tuple(self.fixed_img_shape[::-1]))
                 text = txn.get(f'label-{index:09d}'.encode()).decode('utf-8')
                 text = ' '.join(text)
                 if not self.case_sensitive:
                     text = text.lower()
-                assert img.shape[-1] == 3
                 el = {'img_name': f'image-{index:09d}',
                       'text': text,
-                      'img': img,
                       }
                 pairs.append(el)
         return pairs
+
+    def __getitem__(self, index):
+        el = deepcopy(self.pairs[index])
+        with self.database.begin(write=False) as txn:
+            img_key = el['img_name'].encode()
+            image_bytes = txn.get(img_key)
+            img = cv.imdecode(np.frombuffer(image_bytes, np.uint8), cv.IMREAD_UNCHANGED)
+            if len(img.shape) < 3:
+                img = np.stack((img,) * 3, axis=-1)
+            if self.grayscale:
+                img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+                img = cv.cvtColor(img, cv.COLOR_GRAY2BGR)
+            if self.fixed_img_shape is not None:
+                img = cv.resize(img, tuple(self.fixed_img_shape[::-1]))
+            el['img'] = img
+        return el
 
 
 str_to_class = {
