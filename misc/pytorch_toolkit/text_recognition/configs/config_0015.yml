@@ -77,13 +77,14 @@ eval:
   use_ctc: false
 demo:
   transforms_list: []
+  model_resolution: [64, 256]
 export:
   res_encoder_name: model_0293_encoder.onnx
   res_decoder_name: model_0293_decoder.onnx
   encoder_input_names: 'imgs'
-  encoder_output_names: 'features, decoder_hidden'
-  decoder_input_names: 'hidden, features, decoder_input'
-  decoder_output_names: 'decoder_hidden, decoder_output'
+  encoder_output_names: 'features,decoder_hidden'
+  decoder_input_names: 'hidden,features,decoder_input'
+  decoder_output_names: 'decoder_hidden,decoder_output'
   decoder_input_shapes:
     - # recurrent_state
       - 1
