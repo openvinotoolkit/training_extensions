@@ -77,13 +77,6 @@ def calculate_loss(logits, targets, target_lengths, should_cut_by_min=False, ctc
         else:
             # narrows on 1st dim from 'start_pos' 'length' symbols
             logits = logits.narrow(1, 0, targets.size(1))
-        # padding = torch.ones_like(targets) * PAD_TOKEN
-        # mask_for_tgt = (targets != padding)
-        # b_size, max_len, vocab_size = logits.shape  # batch size, length of the formula, vocab size
-        # targets = targets.masked_select(mask_for_tgt)
-        # mask_for_logits = mask_for_tgt.unsqueeze(2).expand(-1, -1, vocab_size)
-        # logits = logits.masked_select(mask_for_logits).contiguous().view(-1, vocab_size)
-        # logits = torch.log(logits)
         logits = logits.permute(0, 2, 1)
         loss = torch.nn.functional.nll_loss(logits, targets, ignore_index=PAD_TOKEN)
 
