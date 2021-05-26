@@ -4,7 +4,8 @@ MAX_LEN = 28
 
 
 class ClassificationEncoderDecoderHead(torch.nn.Module):
-    def __init__(self, decoder_vocab_size, encoder_input_size, encoder_dim_internal, encoder_num_layers, max_len=MAX_LEN):
+    def __init__(self, decoder_vocab_size, encoder_input_size,
+                 encoder_dim_internal, encoder_num_layers, max_len=MAX_LEN):
         super().__init__()
         self.encoder = Encoder(encoder_input_size, encoder_dim_internal, num_layers=encoder_num_layers)
         self.vocab_size = decoder_vocab_size
