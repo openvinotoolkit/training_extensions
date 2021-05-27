@@ -135,6 +135,7 @@ class Trainer:
         self.logs_path = os.path.join(self.work_dir, config.get('log_path', 'logs'))
         self.writer = SummaryWriter(self.logs_path)
         self.device = config.get('device', 'cpu')
+        self.gpu_num = config.get('gpu_num')
         self.writer.add_text('General info', pformat(config))
         self.create_dirs()
         self.load_dataset()
@@ -146,6 +147,9 @@ class Trainer:
         if self.model_path is not None:
             self.model.load_weights(self.model_path, map_location=self.device)
         self.model = self.model.to(self.device)
+        if self.gpu_num:
+            if torch.cuda.device_count() > 1:
+                self.model = torch.nn.DataParallel(self.model)
         self.optimizer = getattr(optim, config.get('optimizer', 'Adam'))(self.model.parameters(), self.learing_rate)
         self.lr_scheduler = getattr(optim.lr_scheduler, self.config.get('scheduler', 'ReduceLROnPlateau'))(
             self.optimizer, **self.config.get('scheduler_params', {}))
