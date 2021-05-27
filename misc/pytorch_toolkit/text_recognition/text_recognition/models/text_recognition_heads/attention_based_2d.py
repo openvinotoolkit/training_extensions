@@ -131,6 +131,7 @@ class DecoderAttention2d(nn.Module):
 
         output = self.attn_combine(output).unsqueeze(0)
         output = F.relu(output)
+        self.decoder.flatten_parameters()
         if isinstance(self.decoder, nn.GRU):
             output, hidden = self.decoder(output, hidden)
         elif isinstance(self.decoder, nn.LSTM):
