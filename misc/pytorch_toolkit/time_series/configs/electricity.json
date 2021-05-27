@@ -1,0 +1,30 @@
+{
+    "dataset": {
+        "name": "electricity",
+        "params": {
+            "data_folder": "./"
+        }
+    },
+    "pipeline": {
+        "batch_size": 64,
+        "num_workers": 8,
+        "lr": 0.001,
+        "milestones": [50],
+        "epochs": 100
+    },
+    "model": {
+        "num_categorical_variables": 1,
+        "num_regular_variables": 4,
+        "category_counts": [369],
+        "hidden_size": 160,
+        "dropout": 0.1,
+        "num_heads": 4,
+        "output_size": 1,
+        "quantiles": [0.1, 0.5, 0.9],
+        "num_encoder_steps": 168,
+        "input_obs_idx": [0],
+        "static_input_idx": [4],
+        "known_categorical_input_idx": [0],
+        "known_regular_input_idx": [1, 2, 3]
+    }
+}

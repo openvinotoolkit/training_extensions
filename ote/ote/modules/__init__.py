@@ -1,7 +1,7 @@
-from .arg_parsers import DefaultArgParser, CustomClassesArgParser, FaceDetectorArgParser
+from .arg_parsers import DefaultArgParser, CustomClassesArgParser, FaceDetectorArgParser, ReidArgParser
 from .arg_converters import (ArgConverter, MMActionArgConverterMap, MMDetectionArgConverterMap,
                              MMDetectionWiderArgConverterMap)
-from .compression import NNCFConfigTransformer
+from .compression import NNCFConfigTransformer, NNCFReidConfigTransformer
 from .evaluators import (BaseEvaluator, MMActionEvaluator, MMDetectionEvaluator,
                          MMFaceDetectionEvaluator, MMHorizontalTextDetectionEvaluator,
                          InstanceSegmentationEvaluator)
@@ -29,6 +29,7 @@ __all__ = [
     'DefaultArgParser',
     'CustomClassesArgParser',
     'FaceDetectorArgParser',
+    'ReidArgParser',
     'ArgConverter',
     'MMActionArgConverterMap',
     'MMDetectionArgConverterMap',

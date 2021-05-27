@@ -1,1 +1,2 @@
 -r ../../external/deep-object-reid/requirements.txt
+-r ../../external/deep-object-reid/compression_requirements.txt

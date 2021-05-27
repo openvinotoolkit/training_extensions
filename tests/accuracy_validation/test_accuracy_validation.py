@@ -35,7 +35,7 @@ ids_list = []
 DIFF_TARGET_MIN_GLOBAL = -0.1
 DIFF_TARGET_MAX_GLOBAL = 0.1
 
-TEST_ROOT = Path(__file__).parent
+TEST_ROOT = Path(__file__).parent.resolve()
 PROJECT_ROOT = TEST_ROOT.parent.parent
 env = os.environ.copy()
 if 'INTEL_OPENVINO_DIR' in env:
@@ -59,11 +59,17 @@ color_dict = OrderedDict()
 
 @pytest.fixture(autouse=True, scope="module")
 def setup_ac():
-    subprocess.run('virtualenv -ppython3.8 acc_check', cwd=PROJECT_ROOT, check=True, shell=True)
-    subprocess.run(f'{acc_check_activate_string} && {ACC_CHECK_VENV_DIR}/bin/python setup.py install',
+    subprocess.run(f'virtualenv -ppython3.7 {ACC_CHECK_VENV_DIR}', cwd=PROJECT_ROOT, check=True, shell=True)
+
+    #WAD to avoid Accuracy Checker install error
+    subprocess.run(f'{acc_check_activate_string} && {ACC_CHECK_VENV_DIR}/bin/pip install scikit-image!=0.18.2rc1',
                    cwd=ACC_CHECK_DIR, check=True, shell=True, executable='/bin/bash')
+
     subprocess.run(f'{acc_check_activate_string} && {ACC_CHECK_VENV_DIR}/bin/pip install pycocotools',
                    cwd=ACC_CHECK_DIR, check=True, shell=True, executable='/bin/bash')
+    subprocess.run(f'{acc_check_activate_string} && {ACC_CHECK_VENV_DIR}/bin/python setup.py install',
+                   cwd=ACC_CHECK_DIR, check=True, shell=True, executable='/bin/bash')
+
 
 
 def run_cmd(comm: str, cwd: str, venv=None) -> Tuple[int, str]:

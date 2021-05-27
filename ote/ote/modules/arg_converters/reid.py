@@ -1,5 +1,5 @@
 """
- Copyright (c) 2020 Intel Corporation
+ Copyright (c) 2020-2021 Intel Corporation
 
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
@@ -30,12 +30,13 @@ class ReidArgConverterMap(ArgConverterMaps):
             'resume_from': 'model.resume',
             'load_weights': 'model.load_weights',
             'save_checkpoints_to': 'data.save_dir',
-            'batch_size': 'train.batch_size',
             'classes': 'classes',
+            'load_aux_weights': 'load_aux_weights',
         }
     def train_update_args_map(self):
         cur_map = self._train_compression_base_args_map()
         cur_map.update({
+            'batch_size': 'train.batch_size',
             'base_learning_rate': 'train.lr',
             'epochs': 'train.max_epoch',
         })
@@ -47,6 +48,7 @@ class ReidArgConverterMap(ArgConverterMaps):
             'test_data_roots': 'test_data_roots',
             'load_weights': 'model.load_weights',
             'classes': 'classes',
+            'load_aux_weights': 'load_aux_weights',
         }
 
     def compress_update_args_map(self):
