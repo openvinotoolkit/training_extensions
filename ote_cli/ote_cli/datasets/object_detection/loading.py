@@ -1,3 +1,6 @@
+# implementation based on https://github.com/openvinotoolkit/mmdetection/,
+# which is fork of https://github.com/open-mmlab/mmdetection/
+
 import os.path as osp
 
 import cv2
