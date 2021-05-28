@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-
 import argparse
 
 from ote_cli.common import (MODEL_TEMPLATE_FILENAME,
@@ -47,15 +46,13 @@ def parse_args(config):
 def main():
     config = load_config(MODEL_TEMPLATE_FILENAME)
     args = parse_args(config)
-    hyper_parameters = config['hyper_parameters']
     updated_hyper_parameters = gen_params_dict_from_args(args)
     if updated_hyper_parameters:
-        hyper_parameters['params'] = updated_hyper_parameters['params']
+        config['hyper_parameters']['params'] = updated_hyper_parameters['params']
 
     print(updated_hyper_parameters)
 
     Task = get_task_impl_class(config)
-
     Dataset = get_dataset_class(config['domain'])
 
     dataset = Dataset(test_ann_file=args.test_ann_files,
@@ -72,11 +69,14 @@ def main():
                   train_dataset=NullDataset())
     environment.model = model
 
+    params = Task.get_configurable_parameters(environment)
+    Task.apply_template_configurable_parameters(params, config)
+    params.algo_backend.template.value = MODEL_TEMPLATE_FILENAME
+    environment.set_configurable_parameters(params)
     task = Task(task_environment=environment)
 
     dataset.set_project_labels(project.get_labels())
 
-    # Evaluate on TESTING subset
     validation_dataset = dataset.get_subset(Subset.TESTING)
     predicted_validation_dataset = task.analyse(
         validation_dataset.with_empty_annotations(),

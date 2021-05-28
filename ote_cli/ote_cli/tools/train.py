@@ -13,13 +13,12 @@
 # and limitations under the License.
 
 import argparse
-from os import pardir
 
 from ote_cli.common import (MODEL_TEMPLATE_FILENAME,
                             add_hyper_parameters_sub_parser, create_project,
-                            gen_params_dict_from_args,
-                            get_fsb_dataset_impl_class, get_task_impl_class,
+                            gen_params_dict_from_args, get_task_impl_class,
                             load_config, load_model_weights)
+from ote_cli.datasets import get_dataset_class
 from sc_sdk.entities.analyse_parameters import AnalyseParameters
 from sc_sdk.entities.datasets import NullDataset, Subset
 from sc_sdk.entities.model import Model
@@ -51,18 +50,16 @@ def parse_args(config):
 
 
 def main():
-    # 1. Parse command line arguments
     config = load_config(MODEL_TEMPLATE_FILENAME)
     args = parse_args(config)
-    # 2. Udpate values of hyper parameters stored in template.yaml files
     updated_hyper_parameters = gen_params_dict_from_args(args)
     if updated_hyper_parameters:
         config['hyper_parameters']['params'] = updated_hyper_parameters['params']
 
+    print(updated_hyper_parameters)
 
     Task = get_task_impl_class(config)
-    Dataset = get_fsb_dataset_impl_class(config)
-
+    Dataset = get_dataset_class(config['domain'])
 
     dataset = Dataset(train_ann_file=args.train_ann_files,
                       train_data_root=args.train_data_roots,
@@ -94,7 +91,6 @@ def main():
     with open(args.save_weights, 'wb') as f:
         f.write(task._get_model_bytes())
 
-    # Evaluate on VALIDATION subset
     validation_dataset = dataset.get_subset(Subset.VALIDATION)
     predicted_validation_dataset = task.analyse(
         validation_dataset.with_empty_annotations(),

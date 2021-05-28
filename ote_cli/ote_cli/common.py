@@ -21,12 +21,12 @@ from sc_sdk.utils.project_factory import ProjectFactory
 MODEL_TEMPLATE_FILENAME = 'template.yaml'
 
 def load_config(path):
-    with open(path) as f:
-        return yaml.load(f)
+    with open(path) as read_file:
+        return yaml.safe_load(read_file)
 
 def load_model_weights(path):
-    with open(path, 'rb') as f:
-        return f.read()
+    with open(path, 'rb') as read_file:
+        return read_file.read()
 
 def create_project(classes):
     project_name = 'My project name'
