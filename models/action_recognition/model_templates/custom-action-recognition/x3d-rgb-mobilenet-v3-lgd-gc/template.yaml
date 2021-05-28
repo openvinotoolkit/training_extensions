@@ -8,7 +8,7 @@ initial_weights: snapshot.pth
 dependencies:
 - sha256: 37ff91f3658d0c4489e9a3043d872bd4b19dec67e2fda453e73ac2d200726e5d
   size: 47881016
-  source: tbd
+  source: https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/custom_action_recognition/x3d-mobilenetv3-large-kinetics700-youtube8msegments-fixed.pth
   destination: snapshot.pth
 - source: ../../../../../ote/tools/train.py
   destination: train.py
@@ -46,15 +46,15 @@ metrics:
 - display_name: Size
   key: size
   unit: Mp
-  value: 4.133
+  value: 4.472
 - display_name: Complexity
   key: complexity
   unit: GFLOPs
-  value: 2.23
-- display_name: Mean Top-1 accuracy
+  value: 4.74
+- display_name: UCF-101 Mean Top-1 accuracy
   key: accuracy
   unit: '%'
-  value: 42.01
+  value: 93.63
 gpu_num: 2
 tensorboard: true
 config: model.py

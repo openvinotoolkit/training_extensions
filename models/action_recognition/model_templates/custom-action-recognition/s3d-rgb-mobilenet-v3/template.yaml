@@ -51,10 +51,10 @@ metrics:
   key: complexity
   unit: GFLOPs
   value: 6.66
-- display_name: Mean Top-1 accuracy
+- display_name: UCF-101 Mean Top-1 accuracy
   key: accuracy
   unit: '%'
-  value: 46.51
+  value: 93.79
 gpu_num: 2
 tensorboard: true
 config: model.py

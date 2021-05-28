@@ -8,7 +8,7 @@ initial_weights: snapshot.pth
 dependencies:
 - sha256: 9b7523592f0993065cb251bb159f3528b619a6f7906773a1f2a43a4b74b55b7b
   size: 33203577
-  source: tbd
+  source: https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/common_sign_language/s3d-mobilenetv3-large-common_sign_language.pth
   destination: snapshot.pth
 - source: ../../../../../ote/tools/train.py
   destination: train.py
