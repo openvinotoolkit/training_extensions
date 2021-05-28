@@ -17,9 +17,9 @@ import argparse
 
 from ote_cli.common import (MODEL_TEMPLATE_FILENAME,
                             add_hyper_parameters_sub_parser, create_project,
-                            gen_params_dict_from_args,
-                            get_fsb_dataset_impl_class, get_task_impl_class,
+                            gen_params_dict_from_args, get_task_impl_class,
                             load_config, load_model_weights)
+from ote_cli.datasets import get_dataset_class
 from sc_sdk.entities.analyse_parameters import AnalyseParameters
 from sc_sdk.entities.datasets import NullDataset, Subset
 from sc_sdk.entities.model import Model
@@ -55,7 +55,8 @@ def main():
     print(updated_hyper_parameters)
 
     Task = get_task_impl_class(config)
-    Dataset = get_fsb_dataset_impl_class(config)
+
+    Dataset = get_dataset_class(config['domain'])
 
     dataset = Dataset(test_ann_file=args.test_ann_files,
                       test_data_root=args.test_data_roots)
