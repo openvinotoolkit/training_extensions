@@ -80,18 +80,21 @@ where `${DATA_DIR}/train.txt` and `${DATA_DIR}/val.txt` - annotation files where
 <rel_path_to_video_file> <label_id>
 ```
 
+Additionally to enable the CrossNorm augmentation please download the [file](https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/custom_action_recognition/mean_std_list.txt) with dumped mean and variance pairs and place it the `${DATA_DIR}`.
+
 Finally, the `${DATA_DIR}` directory should be like this:
 
 ```
 ${DATA_DIR}
-└── custom_dataset
-    ├── rawframes
-    │   ├── video_name_0
-    |   |   ├── 00001.jpg
-    |   |   └── ...
-    |   └── ...
-    ├── val.txt
-    └── train.txt
+├── custom_dataset
+│   ├── rawframes
+│   │   ├── video_name_0
+│   |   |   ├── 00001.jpg
+│   |   |   └── ...
+│   |   └── ...
+│   ├── val.txt
+│   └── train.txt
+└── mean_std_list.txt
 ```
 
 After the data was arranged, export the variables required for launching training and evaluation scripts:
