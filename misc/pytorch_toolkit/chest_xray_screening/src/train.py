@@ -10,7 +10,7 @@ import torch.nn.functional as tfunc
 from torch.utils.data import DataLoader
 from torch.optim.lr_scheduler import StepLR
 from sklearn.metrics.ranking import roc_auc_score
-from tools.dataloader import RSNADataSet
+from chest_xray_screening.tools.dataloader import RSNADataSet
 
 
 def compute_auroc(data_gt, data_pred, class_count):
@@ -239,25 +239,25 @@ def main(args):
     class_names = ['Lung Opacity','Normal','No Lung Opacity / Not Normal']
 
     # Data Loader 
-    img_pth='./train_data/'
+    img_pth='../train_data/'
 
     # Place numpy file containing train-valid-test split on tools folder
 
-    tr_list = np.load('/tools/train_list.npy').tolist()
-    tr_labels = np.load('/tools/train_labels.npy').tolist()
-    val_list = np.load('/tools/valid_list.npy').tolist()
-    val_labels = np.load('/tools/val_labels.npy').tolist()
-    test_list = np.load('/tools/test_list.npy').tolist()
-    test_labels = np.load('/tools/test_labels.npy').tolist()
+    tr_list = np.load('../tools/train_list.npy').tolist()
+    tr_labels = np.load('../tools/train_labels.npy').tolist()
+    val_list = np.load('../tools/valid_list.npy').tolist()
+    val_labels = np.load('../tools/val_labels.npy').tolist()
+    test_list = np.load('../tools/test_list.npy').tolist()
+    test_labels = np.load('../tools/test_labels.npy').tolist()
 
-    dataset_train = RSNADataSet(tr_list,tr_labels,img_pth,transform_type='train')
-    dataset_valid = RSNADataSet(val_list,val_labels,img_pth, transform_type='train') 
+    dataset_train = RSNADataSet(tr_list, tr_labels, img_pth, transform=True)
+    dataset_valid = RSNADataSet(val_list, val_labels, img_pth, transform=True) 
 
     data_loader_train = DataLoader(dataset=dataset_train, batch_size=batch_size, shuffle=True,  num_workers=4, pin_memory=False)
     data_loader_valid = DataLoader(dataset=dataset_valid, batch_size=batch_size, shuffle=False, num_workers=4, pin_memory=False)
 
-    dataset_test = RSNADataSet(test_list,test_labels,img_pth,transform_type='test')
-    data_loader_test = DataLoader(dataset=dataset_test, batch_size=batch_size, shuffle=True,  num_workers=4, pin_memory=False)
+    dataset_test = RSNADataSet(test_list, test_labels, img_pth, transform=True)
+    data_loader_test = DataLoader(dataset=dataset_test, batch_size=1, shuffle=False,  num_workers=4, pin_memory=False)
 
     # Construct Model 
 
