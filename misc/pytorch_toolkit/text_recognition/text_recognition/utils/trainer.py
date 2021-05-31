@@ -44,6 +44,7 @@ from warnings import warn
 import fasttext
 import numpy as np
 import torch
+from torch.cuda.random import seed
 import torch.nn
 import torch.optim as optim
 from text_recognition.data.utils import (collate_fn, create_list_of_transforms,
@@ -52,7 +53,7 @@ from text_recognition.data.vocab import PAD_TOKEN, read_vocab
 from text_recognition.datasets.dataset import BatchRandomSampler, str_to_class
 from text_recognition.models.model import TextRecognitionModel
 from torch.nn.utils import clip_grad_norm_
-from torch.utils.data import ConcatDataset, DataLoader
+from torch.utils.data import ConcatDataset, DataLoader, DistributedSampler
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
@@ -106,7 +107,7 @@ def calculate_loss(logits, targets, target_lengths, should_cut_by_min=False, ctc
 
 
 class Trainer:
-    def __init__(self, work_dir, config):
+    def __init__(self, work_dir, config, rank=0):
         self.config = config
         self.model_path = config.get('model_path')
         self.train_paths = config.get('train_paths')
@@ -135,8 +136,12 @@ class Trainer:
         self.logs_path = os.path.join(self.work_dir, config.get('log_path', 'logs'))
         self.writer = SummaryWriter(self.logs_path)
         self.device = config.get('device', 'cpu')
-        self.gpu_num = config.get('gpu_num')
+        self.multi_gpu = config.get('multi_gpu')
         self.writer.add_text('General info', pformat(config))
+        if self.multi_gpu:
+            self.rank = rank
+            torch.distributed.init_process_group("nccl", rank=rank, world_size=torch.cuda.device_count())
+            self.device = torch.device(f'cuda:{self.rank}')
         self.create_dirs()
         self.load_dataset()
         self.loss = torch.nn.CTCLoss(blank=0, zero_infinity=self.config.get(
@@ -147,9 +152,10 @@ class Trainer:
         if self.model_path is not None:
             self.model.load_weights(self.model_path, map_location=self.device)
         self.model = self.model.to(self.device)
-        if self.gpu_num:
+        if self.multi_gpu:
             if torch.cuda.device_count() > 1:
-                self.model = torch.nn.DataParallel(self.model)
+                self.model = torch.nn.parallel.DistributedDataParallel(
+                    self.model, device_ids=[self.rank], output_device=self.rank)
         self.optimizer = getattr(optim, config.get('optimizer', 'Adam'))(self.model.parameters(), self.learing_rate)
         self.lr_scheduler = getattr(optim.lr_scheduler, self.config.get('scheduler', 'ReduceLROnPlateau'))(
             self.optimizer, **self.config.get('scheduler_params', {}))
@@ -181,17 +187,39 @@ class Trainer:
             elif subset == 'validate':
                 val_datasets.append(dataset)
 
-        train_dataset = ConcatDataset(train_datasets)
-        train_sampler = BatchRandomSampler(dataset=train_dataset, batch_size=self.config.get('batch_size', 4))
         pprint('Creating training transforms list: {}'.format(self.train_transforms_list), indent=4, width=120)
         batch_transform_train = create_list_of_transforms(self.train_transforms_list)
-        self.train_loader = DataLoader(
-            train_dataset,
-            batch_sampler=train_sampler,
-            collate_fn=partial(collate_fn, self.vocab.sign2id,
-                               batch_transform=batch_transform_train,
-                               use_ctc=(self.loss_type == 'CTC')),
-            num_workers=self.config.get('num_workers', 4))
+
+        train_dataset = ConcatDataset(train_datasets)
+        if self.multi_gpu:
+            train_sampler = DistributedSampler(dataset=train_dataset,
+                                               shuffle=True,
+                                               rank=self.rank,
+                                               seed=42,
+                                               num_replicas=torch.cuda.device_count())
+            self.train_loader = DataLoader(
+                train_dataset,
+                sampler=train_sampler,
+                collate_fn=partial(collate_fn, self.vocab.sign2id,
+                                   batch_transform=batch_transform_train,
+                                   use_ctc=(self.loss_type == 'CTC')),
+                num_workers=self.config.get('num_workers', 4),
+                batch_size=self.config.get('batch_size', 4),
+                # shuffle=False,
+                pin_memory=True)
+        else:
+            train_sampler = BatchRandomSampler(dataset=train_dataset, batch_size=self.config.get('batch_size', 4))
+
+            self.train_loader = DataLoader(
+                train_dataset,
+                batch_sampler=train_sampler,
+                collate_fn=partial(collate_fn, self.vocab.sign2id,
+                                batch_transform=batch_transform_train,
+                                use_ctc=(self.loss_type == 'CTC')),
+                num_workers=self.config.get('num_workers', 4),
+                # batch_size=self.config.get('batch_size', 4),
+                # shuffle=False,
+                pin_memory=True)
         val_samplers = [BatchRandomSampler(dataset=ds, batch_size=1) for ds in val_datasets]
         pprint('Creating val transforms list: {}'.format(self.val_transforms_list), indent=4, width=120)
         batch_transform_val = create_list_of_transforms(self.val_transforms_list)
@@ -210,6 +238,7 @@ class Trainer:
         losses = 0.0
         accuracies = 0.0
         while self.epoch <= self.total_epochs:
+            #             self.train_loader.sampler.set_epoch(self.epoch)
             for _, target_lengths, imgs, training_gt, loss_computation_gt in self.train_loader:
                 step_loss, step_accuracy = self.train_step(imgs, target_lengths, training_gt, loss_computation_gt)
                 losses += step_loss
@@ -227,7 +256,7 @@ class Trainer:
                     ))
                     losses = 0.0
                     accuracies = 0.0
-                if self.global_step % self.save_freq == 0:
+                if self.global_step % self.save_freq == 0 and self.rank == 0:
                     self.save_model('model_epoch_{}_step_{}_{}.pth'.format(
                         self.epoch,
                         self.step,
@@ -239,10 +268,10 @@ class Trainer:
                     step_loss, step_accuracy = self.validate(use_gt_token=False)
                     self.writer.add_scalar('Loss/test_mode_validation', step_loss, self.global_step)
                     self.writer.add_scalar('Accuracy/test_mode_validation', step_accuracy, self.global_step)
-                    if step_loss < self.best_val_loss_test:
+                    if step_loss < self.best_val_loss_test and self.rank == 0:
                         self.best_val_loss_test = step_loss
                         self.save_model('loss_test_best_model_{}.pth'.format(self.time))
-                    if step_accuracy > self.best_val_accuracy_test:
+                    if step_accuracy > self.best_val_accuracy_test and self.rank == 0:
                         self.best_val_accuracy_test = step_accuracy
                         self.save_model('accuracy_test_best_model_{}.pth'.format(self.time))
 
