@@ -6,21 +6,22 @@ from pathlib import Path
 
 
 class RSNADataSet(Dataset):
-    def __init__(self, image_list,label_list,image_directory, transform=True):
+    def __init__(self, image_list, label_list,
+                 image_directory, transform=True):
 
         image_directory = Path(image_directory)
-        image_names = [Path.joinpath(image_directory , x) for x in image_list]
+        image_names = [Path.joinpath(image_directory, x) for x in image_list]
         self.image_names = image_names
         self.labels = label_list
-        
+
         if transform is not None:
-            transform=transforms.Compose([
-                                            transforms.ToTensor(),
-                                            transforms.Normalize([124.978,124.978,124.978], [10.868,10.868,10.868])
-                                        ])
+            transform = transforms.Compose([
+                transforms.ToTensor(),
+                transforms.Normalize([124.978, 124.978, 124.978], [
+                                     10.868, 10.868, 10.868])
+            ])
 
         self.transform = transform
-
 
     def __getitem__(self, index):
 
