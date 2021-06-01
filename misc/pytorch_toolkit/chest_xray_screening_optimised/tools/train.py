@@ -7,33 +7,12 @@ import torch.optim as optim
 import torch.nn.functional as tfunc
 from torch.utils.data import DataLoader
 from torch.optim.lr_scheduler import StepLR
-from sklearn.metrics.ranking import roc_auc_score
 import argparse
 from math import sqrt
-from chest_xray_screening_optimised.tools.dataloader import RSNADataSet
-from chest_xray_screening_optimised.tools.generate import *
+from utils.dataloader import RSNADataSet
+from utils.generate import *
+from utils.score import compute_auroc
 
-
-def compute_auroc(data_gt, data_pred, class_count):
-    """ Computes the area under ROC Curve
-    data_gt: ground truth data
-    data_pred: predicted data
-    class_count: Number of classes
-
-    """
-
-    out_auroc_list = []
-
-    data_np_gt = data_gt.cpu().numpy()
-    data_np_pred = data_pred.cpu().numpy()
-
-    for i in range(class_count):
-        try:
-            out_auroc_list.append(roc_auc_score(
-                data_np_gt[:, i], data_np_pred[:, i]))
-        except ValueError:
-            out_auroc_list.append(0)
-    return out_auroc_list
 
 
 class RSNATrainer():
@@ -261,11 +240,13 @@ def main(args):
     alpha = args.alpha
     phi = args.phi
     beta = args.beta
-    alpha = alpha ** phi
-    beta = beta ** phi
+    
 
     if beta is None:
         beta = round(sqrt(2 / alpha), 3)
+
+    alpha = alpha ** phi
+    beta = beta ** phi
 
     device = torch.device("cuda" if torch.cuda.is_available()
                           else "cpu")  # use gpu if available
@@ -280,12 +261,16 @@ def main(args):
     # Dataset
     img_pth = args.imgpath
 
-    tr_list = np.load('../tools/train_list.npy').tolist()
-    tr_labels = np.load('../tools/train_labels.npy').tolist()
-    val_list = np.load('../tools/valid_list.npy').tolist()
-    val_labels = np.load('../tools/val_labels.npy').tolist()
-    test_list = np.load('../tools/test_list.npy').tolist()
-    test_labels = np.load('../tools/test_labels.npy').tolist()
+    numpy_path = args.npypath
+
+    # Place numpy file containing train-valid-test split on tools folder
+
+    tr_list = np.load(numpy_path+'train_list.npy').tolist()
+    tr_labels = np.load(numpy_path+'train_labels.npy').tolist()
+    val_list = np.load(numpy_path+'valid_list.npy').tolist()
+    val_labels = np.load(numpy_path+'valid_labels.npy').tolist()
+    test_list = np.load(numpy_path+'test_list.npy').tolist()
+    test_labels = np.load(numpy_path+'test_labels.npy').tolist()
 
     dataset_train = RSNADataSet(
         tr_list,
@@ -387,6 +372,11 @@ if __name__ == "__main__":
         default=6,
         help="Number of epochs",
         type=int)
+    parser.add_argument(
+        "--npypath",
+        required=True, 
+        help="Path containing label list in npy format", 
+        type =str)
 
     args = parser.parse_args()
     main(args)
