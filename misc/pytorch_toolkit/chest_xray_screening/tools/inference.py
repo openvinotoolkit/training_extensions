@@ -1,36 +1,13 @@
 import numpy as np
-import time
 import argparse
-from numpy.core.numeric import False_
 import torch
 from torchvision import models
 import torch.nn as nn
 import torch.backends.cudnn as cudnn
 import torch.nn.functional as tfunc
 from torch.utils.data import DataLoader
-from sklearn.metrics.ranking import roc_auc_score
-from dataloader import RSNADataSet
-
-
-def compute_auroc(data_gt, data_pred, class_count):
-    """ Computes the area under ROC Curve
-    data_gt: ground truth data
-    data_pred: predicted data
-    class_count: Number of classes
-
-    """
-        
-    out_auroc_list = []
-    
-    data_np_gt = data_gt.cpu().numpy()
-    data_np_pred = data_pred.cpu().numpy()
-    
-    for i in range(class_count):
-        try:
-            out_auroc_list.append(roc_auc_score(data_np_gt[:, i], data_np_pred[:, i]))
-        except ValueError:
-            out_auroc_list.append(0)
-    return out_auroc_list
+from utils.dataloader import RSNADataSet
+from utils.score import compute_auroc
 
 
 class RSNAInference():
@@ -79,8 +56,8 @@ def main(args):
     class_names = ['Lung Opacity','Normal','No Lung Opacity / Not Normal']
 
     img_pth= args.imgpath
-    test_list = np.load('../tools/test_list.npy').tolist()
-    test_labels = np.load('../tools/test_labels.npy').tolist()
+    test_list = np.load('../utils/test_list.npy').tolist()
+    test_labels = np.load('../utils/test_labels.npy').tolist()
 
     datasetTest = RSNADataSet(test_list,test_labels,img_pth,transform=True)
     data_loader_test = DataLoader(dataset=datasetTest, batch_size=1, shuffle=False,  num_workers=4, pin_memory=False)
