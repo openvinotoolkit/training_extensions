@@ -165,14 +165,11 @@ class Trainer:
             self.fasttext_model = fasttext.load_model(self.config.get("language_model_path"))
 
     def create_dirs(self):
-        if not os.path.exists(self.logs_path):
-            os.makedirs(self.logs_path)
+        os.makedirs(self.logs_path, exist_ok=True)
         print('Created logs folder: {}'.format(self.logs_path))
-        if not os.path.exists(self.save_dir):
-            os.makedirs(self.save_dir)
+        os.makedirs(self.save_dir, exist_ok=True)
         print('Created save folder: {}'.format(self.save_dir))
-        if not os.path.exists(self.val_results_path):
-            os.makedirs(self.val_results_path)
+        os.makedirs(self.val_results_path, exist_ok=True)
         print('Created validation results folder: {}'.format(self.val_results_path))
 
     def load_dataset(self):
