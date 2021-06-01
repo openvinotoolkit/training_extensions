@@ -181,49 +181,6 @@ class CustomResNetLikeBackbone(ResNetLikeBackbone):
         return out
 
 
-class ResNetLikeWithSkipsBetweenLayers(CustomResNetLikeBackbone):
-    def __init__(self, arch, disable_layer_3, disable_layer_4, output_channels,
-                 enable_last_conv, one_ch_first_conv, custom_parameters):
-        super().__init__(arch, disable_layer_3, disable_layer_4, output_channels,
-                         enable_last_conv, one_ch_first_conv, custom_parameters)
-        layer_strides = custom_parameters['layer_strides']
-        self.connect_1_3 = nn.Conv2d(
-            in_channels=self.layer1[-1].conv1.out_channels,
-            out_channels=self.layer3[-1].conv1.out_channels,
-            kernel_size=1,
-            stride=(layer_strides[1]-1)*2 + (layer_strides[2]-1)*2,
-            padding=0)
-        self.connect_2_4 = nn.Conv2d(
-            in_channels=self.layer2[-1].conv1.out_channels,
-            out_channels=self.layer4[-1].conv1.out_channels,
-            kernel_size=1,
-            stride=(layer_strides[2]-1)*2 + (layer_strides[3]-1)*2,
-            padding=0)
-        super()._init_weights_()
-
-    def forward(self, x):
-        x = self.conv1(x)
-        x = self.bn1(x)
-        x = self.relu(x)
-        if self.use_maxpool:
-            x = self.maxpool(x)
-
-        x1 = self.layer1(x)
-        x2 = self.layer2(x1)
-
-        if self.layer3 is None:
-            return x2
-
-        x3 = self.layer3(x2) + self.connect_1_3(x1)
-
-        if self.layer4 is None:
-            return x3
-
-        x4 = self.layer4(x3) + self.connect_2_4(x2)
-
-        return x4
-
-
 class ChannelAttention(nn.Module):
     def __init__(self, reduction_ratio, in_channels):
         super().__init__()

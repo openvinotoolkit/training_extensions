@@ -20,28 +20,21 @@ import torch
 import torch.nn as nn
 
 from .backbones.efficientnet import EfficientNetLikeBackbone
-from .backbones.resnet import (CustomResNetLikeBackbone, ResNetLikeBackbone,
-                               ResNetLikeWithSkipsBetweenLayers)
+from .backbones.resnet import (CustomResNetLikeBackbone, ResNetLikeBackbone)
 from .text_recognition_heads.attention_based import AttentionBasedLSTM
 from .text_recognition_heads.attention_based_2d import \
     TextRecognitionHeadAttention
-from .text_recognition_heads.classification_head import ClassificationEncoderDecoderHead
 from .text_recognition_heads.ctc_lstm_based import LSTMEncoderDecoder
-from .text_recognition_heads.ensemble_attention_head import \
-    EnsembleAttentionHead
 
 TEXT_REC_HEADS = {
     'AttentionBasedLSTM': AttentionBasedLSTM,
     'LSTMEncoderDecoder': LSTMEncoderDecoder,
     'TextRecognitionHeadAttention': TextRecognitionHeadAttention,
-    'EnsembleAttentionHead': EnsembleAttentionHead,
-    'ClassificationHead': ClassificationEncoderDecoderHead,
 }
 
 BACKBONES = {
     'resnet': ResNetLikeBackbone,
     'custom_resnet': CustomResNetLikeBackbone,
-    'custom_resnet_with_skips': ResNetLikeWithSkipsBetweenLayers,
     'EfficientNet': EfficientNetLikeBackbone,
 }
 
