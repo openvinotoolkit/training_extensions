@@ -134,16 +134,9 @@ class Exporter:
 
     def export_decoder_ir(self):
         input_shape_encoder = self.config.get('input_shape_encoder')
-        output_h, output_w = input_shape_encoder[2] / 32, input_shape_encoder[3] / 32
-        if self.config['backbone_config']['disable_layer_4']:
-            output_h, output_w = output_h * 2, output_w * 2
-        if self.config['backbone_config']['disable_layer_3']:
-            output_h, output_w = output_h * 2, output_w * 2
-        output_h, output_w = math.ceil(output_h), math.ceil(output_w)
-        # TODO: think of output_h & output_w usage
-        input_shape = self.config.get('decoder_input_shapes', [
+        input_shape_decoder = self.config.get('decoder_input_shapes', [
             HIDDEN_SHAPE, CONTEXT_SHAPE, OUTPUT_SHAPE, FEATURES_SHAPE, TGT_SHAPE])
-        input_shape = ', '.join(str(shape) for shape in input_shape)
+        input_shape_decoder = ', '.join(str(shape) for shape in input_shape_decoder)
         input_model = os.path.join(os.path.split(self.model_path)[0], self.config.get('res_decoder_name'))
         input_names = self.config.get('decoder_input_names', DECODER_INPUTS)
         output_names = self.config.get('decoder_output_names', DECODER_OUTPUTS)
@@ -153,7 +146,7 @@ class Exporter:
         --framework onnx \
         --input_model {input_model} \
         --input '{input_names}' \
-        --input_shape '{input_shape}' \
+        --input_shape '{input_shape_decoder}' \
         --log_level={LOG_LEVEL} \
         --output_dir {output_dir} \
         --output '{output_names}'"""
