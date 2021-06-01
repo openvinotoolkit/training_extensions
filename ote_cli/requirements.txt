@@ -1,0 +1,3 @@
+pyyaml
+opencv-python
+numpy

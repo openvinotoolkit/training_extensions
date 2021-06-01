@@ -17,15 +17,13 @@ import logging
 import os
 
 import yaml
-
-from ote.utils.misc import download_snapshot_if_not_yet, run_through_shell
+from ote_cli.utils.misc import run_through_shell
 
 
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('template', help='Location of model template file (template.yaml).')
     parser.add_argument('output', help='Location of output directory where template will be instantiated.')
-    parser.add_argument('--do-not-load-snapshot', action='store_true')
     parser.add_argument('--verbose', '-v', action='store_true',
                         help='If the instantiation should be run in verbose mode')
 
@@ -44,7 +42,7 @@ def main():
     run_through_shell(f'cp -r {os.path.dirname(args.template)}/* --target-directory={args.output}',
                       verbose=args.verbose)
 
-    for dependency in content['dependencies']:
+    for dependency in content.get('dependencies', []):
         source = dependency['source']
         destination = dependency['destination']
         if destination != 'snapshot.pth':
@@ -53,9 +51,6 @@ def main():
             os.makedirs(os.path.dirname(cur_dst), exist_ok=True)
             run_through_shell(f'cp -r --no-target-directory {rel_source} {cur_dst}', check=True,
                               verbose=args.verbose)
-
-    if not args.do_not_load_snapshot:
-        download_snapshot_if_not_yet(args.template, args.output)
 
 
 if __name__ == '__main__':
