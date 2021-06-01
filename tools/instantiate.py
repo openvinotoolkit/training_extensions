@@ -96,11 +96,13 @@ def main():
                             verbose=args.verbose)
 
             venv_activate_path = os.path.join(dst_venv_path, 'bin', 'activate')
-            run_through_shell(f'source {venv_activate_path}; pip install -e ote_cli/',
+            run_through_shell(f'source {venv_activate_path};'
+                            'pip install -e ote_cli/;'
+                            'pip install notebook;'
+                            f'cd $SC_SDK_REPO/src; python sc_sdk/setup.py develop',
                             verbose=args.verbose)
-            logging.info(f'End initializing virtual environment for {algo_repo_name}')
-
-
+            logging.info(f'End initializing virtual environment for {algo_repo_name}.\n'
+                         f'To activate run: \'source {venv_activate_path}\'')
 
 if __name__ == '__main__':
     main()
