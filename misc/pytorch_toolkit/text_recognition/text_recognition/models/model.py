@@ -19,7 +19,6 @@ from collections import OrderedDict
 import torch
 import torch.nn as nn
 
-from .backbones.efficientnet import EfficientNetLikeBackbone
 from .backbones.resnet import (CustomResNetLikeBackbone, ResNetLikeBackbone)
 from .text_recognition_heads.attention_based import AttentionBasedLSTM
 from .text_recognition_heads.attention_based_2d import \
@@ -35,7 +34,6 @@ TEXT_REC_HEADS = {
 BACKBONES = {
     'resnet': ResNetLikeBackbone,
     'custom_resnet': CustomResNetLikeBackbone,
-    'EfficientNet': EfficientNetLikeBackbone,
 }
 
 
