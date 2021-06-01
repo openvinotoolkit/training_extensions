@@ -43,6 +43,21 @@ inference.
     ```
     pip3 install -e ote_cli/
     ```
+    
+7. Instantiate templates and create virtual environments:
+   ```
+   python3 tools/instantiate.py --init-venv
+   ```
+8. Activate algo-backend related virtual environment:
+   ```
+   source model_templates/OTEDetection_v2.9.1/venv/bin/activate
+   ```
+9. Use Jupiter notebooks or OTE CLI tools to start working with models:
+   * To run notebook:
+     ```
+     cd ote_cli/notebooks/; jupyter notebook
+     ```
+   * OTE CLI TBD
 
 ## Misc
 
