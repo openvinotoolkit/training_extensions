@@ -138,8 +138,8 @@ class Trainer:
         self.device = config.get('device', 'cpu')
         self.multi_gpu = config.get('multi_gpu')
         self.writer.add_text('General info', pformat(config))
+        self.rank = rank
         if self.multi_gpu:
-            self.rank = rank
             torch.distributed.init_process_group("nccl", rank=rank, world_size=torch.cuda.device_count())
             self.device = torch.device(f'cuda:{self.rank}')
         self.create_dirs()
@@ -260,15 +260,15 @@ class Trainer:
                         self.time,
                     ))
                     self.writer.add_scalar('Learning rate', self.learing_rate, self.global_step)
-                if self.global_step % self.val_freq == 0:
+                if self.global_step % self.val_freq == 0 and self.rank == 0:
 
                     step_loss, step_accuracy = self.validate(use_gt_token=False)
                     self.writer.add_scalar('Loss/test_mode_validation', step_loss, self.global_step)
                     self.writer.add_scalar('Accuracy/test_mode_validation', step_accuracy, self.global_step)
-                    if step_loss < self.best_val_loss_test and self.rank == 0:
+                    if step_loss < self.best_val_loss_test:
                         self.best_val_loss_test = step_loss
                         self.save_model('loss_test_best_model_{}.pth'.format(self.time))
-                    if step_accuracy > self.best_val_accuracy_test and self.rank == 0:
+                    if step_accuracy > self.best_val_accuracy_test:
                         self.best_val_accuracy_test = step_accuracy
                         self.save_model('accuracy_test_best_model_{}.pth'.format(self.time))
 
