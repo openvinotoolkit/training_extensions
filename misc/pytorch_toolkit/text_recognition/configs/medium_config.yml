@@ -14,8 +14,8 @@ val_transforms_list:
     scale_max: 1.5
   - name: TransformCropPad
     target_shape:
-      - 65
-      - 1450
+      - 160
+      - 1400
 train:
   batch_size: 4
   learning_rate: 0.000001
