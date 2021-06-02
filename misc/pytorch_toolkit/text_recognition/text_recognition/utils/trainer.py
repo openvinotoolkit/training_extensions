@@ -216,7 +216,7 @@ class Trainer:
                 # batch_size=self.config.get('batch_size', 4),
                 # shuffle=False,
                 pin_memory=True)
-        val_samplers = [BatchRandomSampler(dataset=ds, batch_size=1) for ds in val_datasets]
+        val_samplers = [BatchRandomSampler(dataset=ds, batch_size=self.config.get('batch_size', 4)) for ds in val_datasets]
         pprint('Creating val transforms list: {}'.format(self.val_transforms_list), indent=4, width=120)
         batch_transform_val = create_list_of_transforms(self.val_transforms_list)
         self.val_loaders = [
