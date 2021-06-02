@@ -15,7 +15,7 @@ head:
   decoder_sos_index: 0
   decoder_rnn_type: "GRU"
   dropout_ratio: 0.5
-  use_semantics: false # set this true to use semantic enhanced module
+  use_semantics: true
 val_transforms_list:
   - name: TransformGrayscale
 device: "cuda"
