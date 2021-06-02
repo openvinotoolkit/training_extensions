@@ -44,7 +44,6 @@ from warnings import warn
 import fasttext
 import numpy as np
 import torch
-from torch.cuda.random import seed
 import torch.nn
 import torch.optim as optim
 from text_recognition.data.utils import (collate_fn, create_list_of_transforms,
@@ -193,7 +192,6 @@ class Trainer:
             train_sampler = DistributedSampler(dataset=train_dataset,
                                                shuffle=True,
                                                rank=self.rank,
-                                               seed=42,
                                                num_replicas=torch.cuda.device_count())
             self.train_loader = DataLoader(
                 train_dataset,
