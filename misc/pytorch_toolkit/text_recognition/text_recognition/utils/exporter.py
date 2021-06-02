@@ -14,7 +14,6 @@
  limitations under the License.
 """
 
-import math
 import os
 import subprocess
 
@@ -133,7 +132,6 @@ class Exporter:
         subprocess.run(export_command, shell=True, check=True)
 
     def export_decoder_ir(self):
-        input_shape_encoder = self.config.get('input_shape_encoder')
         input_shape_decoder = self.config.get('decoder_input_shapes', [
             HIDDEN_SHAPE, CONTEXT_SHAPE, OUTPUT_SHAPE, FEATURES_SHAPE, TGT_SHAPE])
         input_shape_decoder = ', '.join(str(shape) for shape in input_shape_decoder)
