@@ -1,3 +1,4 @@
+import os
 from copy import deepcopy
 
 import numpy as np
@@ -33,6 +34,14 @@ class ObjectDetectionDataset(Dataset):
         self.ann_files[Subset.TESTING] = test_ann_file
         self.data_roots[Subset.TESTING] = test_data_root
         self.coco_dataset = None
+
+        for k, v in self.ann_files.items():
+            if v:
+                self.ann_files[k] = os.path.abspath(v)
+
+        for k, v in self.data_roots.items():
+            if v:
+                self.data_roots[k] = os.path.abspath(v)
 
         self.set_labels_obtained_from_annotation()
 

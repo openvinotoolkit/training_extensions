@@ -44,11 +44,6 @@ def get_task_impl_class(config):
 
     return task_impl_class
 
-def get_fsb_dataset_impl_class(config):
-    task_impl_module_name, _  = config['task']['impl'].rsplit('.', 1)
-    task_impl_module = importlib.import_module(task_impl_module_name)
-    fsb_dataset_impl_class = getattr(task_impl_module, 'FSBDataset')
-    return fsb_dataset_impl_class
 
 def gen_param_help(hyper_parameters):
     def _gen_param_help(prefix, d):

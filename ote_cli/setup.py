@@ -11,8 +11,10 @@ setup(
     packages=find_packages(exclude=('tools',)),
     install_requires=requirements,
         entry_points={
-        "console_scripts": [
-            "ote_train=ote_cli.tools.train:main",
-            "ote_eval=ote_cli.tools.eval:main",
-    ]},
+            "console_scripts": [
+                "ote_train=ote_cli.tools.train:main",
+                "ote_eval=ote_cli.tools.eval:main",
+                "ote_export=ote_cli.tools.export:main",
+            ]
+        },
 )
