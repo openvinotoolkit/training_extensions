@@ -67,20 +67,9 @@ class MMDetectionExporter(BaseExporter):
                           f'--input_format {args["openvino_input_format"]}')
 
         # FIXME(ikrylov): remove alt_ssd_export block as soon as it becomes useless.
-        # (LeonidBeynenson): Please, note that alt_ssd_export appoach may be applied only
-        #                    to SSD models only that were not compressed by NNCF.
         config = Config.fromfile(args["config"])
         should_run_alt_ssd_export = (hasattr(config.model, 'bbox_head')
-                                     and config.model.bbox_head.type == 'SSDHead'
-                                     and not config.get('nncf_config'))
-
-        if is_checkpoint_nncf and is_checkpoint_nncf(args['load_weights']):
-            # If the config does not contain NNCF part,
-            # but the checkpoint was trained with NNCF compression,
-            # the NNCF config will be read from checkpoint.
-            # Since alt_ssd_export is incompatible with NNCF compression,
-            # alt_ssd_export should not be run in this case.
-            should_run_alt_ssd_export = False
+                                     and config.model.bbox_head.type == 'SSDHead')
 
         if should_run_alt_ssd_export:
             run_through_shell(f'python3 {os.path.join(tools_dir, "export.py")} '
