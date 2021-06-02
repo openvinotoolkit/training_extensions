@@ -15,13 +15,14 @@ head:
   decoder_sos_index: 0
   decoder_rnn_type: "GRU"
   dropout_ratio: 0.5
-  use_semantics: true
+  use_semantics: false # set this true to use semantic enhanced module
 val_transforms_list:
   - name: TransformGrayscale
 device: "cuda"
 num_workers: 0
 # language_model_path: <path to ptretrained fasttext language model>/cc.en.300.bin
 model_path: model_checkpoints/model_0293.pth
+model_url: https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/text_recognition/text_recognition_0015.pth
 vocab_path: vocabs/vocab_alphanumeric_case-sensitive.json
 train:
   batch_size: 64
