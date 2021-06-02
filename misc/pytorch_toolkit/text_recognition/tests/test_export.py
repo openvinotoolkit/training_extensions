@@ -88,7 +88,6 @@ def create_export_test_case_for_composite(config_file, expected_outputs):
             cls.config = export_config
             cls.config.update({'expected_outputs': expected_outputs})
             cls.model_path = os.path.join(mkdtemp(), os.path.split(cls.config.get('model_path'))[1])
-            # cls.model_path = cls.config.get('model_path')
             cls.encoder_name = os.path.join(os.path.dirname(cls.model_path), cls.config.get('res_encoder_name'))
             cls.decoder_name = os.path.join(os.path.dirname(cls.model_path), cls.config.get('res_decoder_name'))
             cls.config['res_encoder_name'] = cls.encoder_name
