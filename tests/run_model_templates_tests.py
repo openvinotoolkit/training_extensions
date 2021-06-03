@@ -394,6 +394,7 @@ def _get_models_path():
     return models_path
 
 def main():
+    # pylint: disable=too-many-branches,too-many-statements
     parser = argparse.ArgumentParser()
     parser.add_argument('--workdir',
                         help='The work folder where to instantiate tests and run them. '
@@ -463,9 +464,9 @@ def main():
             save_tests_list(all_tests, args.save_list_to_path)
             logging.info(f'The list of tests is written to the file {args.save_list_to_path}')
         return
-    else:
-        if args.save_list_to_path is not None:
-            raise RuntimeError('Command line parameter --save-list-to-path is allowed only if --list parameter is set')
+
+    if args.save_list_to_path is not None:
+        raise RuntimeError('Command line parameter --save-list-to-path is allowed only if --list parameter is set')
 
     print('Start working on tests:')
     print_list_tests(all_tests, short=True)
