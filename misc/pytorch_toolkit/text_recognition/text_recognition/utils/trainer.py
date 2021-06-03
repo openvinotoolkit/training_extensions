@@ -132,12 +132,13 @@ class Trainer:
         self.print_freq = config.get('print_freq', 16)
         self.save_freq = config.get('save_freq', 2000)
         self.val_freq = config.get('val_freq', 5000)
+        self.rank = rank
         self.logs_path = os.path.join(self.work_dir, config.get('log_path', 'logs'))
-        self.writer = SummaryWriter(self.logs_path)
+        if self.rank == 0:
+            self.writer = SummaryWriter(self.logs_path)
         self.device = config.get('device', 'cpu')
         self.multi_gpu = config.get('multi_gpu')
         self.writer.add_text('General info', pformat(config))
-        self.rank = rank
         if self.multi_gpu:
             torch.distributed.init_process_group("nccl", rank=rank, world_size=torch.cuda.device_count())
             self.device = torch.device(f'cuda:{self.rank}')
