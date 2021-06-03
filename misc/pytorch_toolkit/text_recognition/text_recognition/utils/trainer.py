@@ -136,9 +136,9 @@ class Trainer:
         self.logs_path = os.path.join(self.work_dir, config.get('log_path', 'logs'))
         if self.rank == 0:
             self.writer = SummaryWriter(self.logs_path)
+            self.writer.add_text('General info', pformat(config))
         self.device = config.get('device', 'cpu')
         self.multi_gpu = config.get('multi_gpu')
-        self.writer.add_text('General info', pformat(config))
         if self.multi_gpu:
             torch.distributed.init_process_group("nccl", rank=rank, world_size=torch.cuda.device_count())
             self.device = torch.device(f'cuda:{self.rank}')
@@ -165,13 +165,12 @@ class Trainer:
             self.fasttext_model = fasttext.load_model(self.config.get("language_model_path"))
 
     def create_dirs(self):
-        if self.rank == 0:
-            os.makedirs(self.logs_path, exist_ok=True)
-            print('Created logs folder: {}'.format(self.logs_path))
-            os.makedirs(self.save_dir, exist_ok=True)
-            print('Created save folder: {}'.format(self.save_dir))
-            os.makedirs(self.val_results_path, exist_ok=True)
-            print('Created validation results folder: {}'.format(self.val_results_path))
+        os.makedirs(self.logs_path, exist_ok=True)
+        print('Created logs folder: {}'.format(self.logs_path))
+        os.makedirs(self.save_dir, exist_ok=True)
+        print('Created save folder: {}'.format(self.save_dir))
+        os.makedirs(self.val_results_path, exist_ok=True)
+        print('Created validation results folder: {}'.format(self.val_results_path))
 
     def load_dataset(self):
         train_datasets = []
@@ -240,8 +239,9 @@ class Trainer:
                 step_loss, step_accuracy = self.train_step(imgs, target_lengths, training_gt, loss_computation_gt)
                 losses += step_loss
                 accuracies += step_accuracy
-                self.writer.add_scalar('Train loss', step_loss, self.global_step)
-                self.writer.add_scalar('Train accuracy', step_accuracy, self.global_step)
+                if self.rank == 0:
+                    self.writer.add_scalar('Train loss', step_loss, self.global_step)
+                    self.writer.add_scalar('Train accuracy', step_accuracy, self.global_step)
 
                 # log message
                 if self.global_step % self.print_freq == 0:
