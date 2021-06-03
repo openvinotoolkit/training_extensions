@@ -25,7 +25,7 @@ model_path: model_checkpoints/model_0293.pth
 model_url: https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/text_recognition/text_recognition_0015.pth
 vocab_path: vocabs/vocab_alphanumeric_case-sensitive.json
 train:
-  batch_size: 64
+  batch_size: 32
   learning_rate: 0.0001
   clip_grad: 5.0
   epochs: 500
