@@ -8,6 +8,7 @@ import torch.nn.functional as tfunc
 from torch.utils.data import DataLoader
 from torch.optim.lr_scheduler import StepLR
 import argparse
+import os
 from math import sqrt
 from utils.dataloader import RSNADataSet
 from utils.generate import *
@@ -75,7 +76,7 @@ class RSNATrainer():
                                           class_names, device)
 
             print(
-                f" Epoch:{epoch_id + 1}| EndTime:{timestamp_end}| TestAUROC: {test_auroc}| ValidAUROC: {auroc_max}")
+                f"Epoch:{epoch_id + 1}| EndTime:{timestamp_end}| TestAUROC: {test_auroc}| ValidAUROC: {auroc_max}")
 
     def valid(model, data_loader_valid, loss_fn, class_count, device):
 
@@ -223,10 +224,10 @@ class RSNATrainer():
             class_count)
         auroc_mean = np.array(auroc_individual).mean()
 
-        print('\nAUROC mean ', auroc_mean)
+        print(f'AUROC mean:{auroc_mean}')
 
         for i in range(0, len(auroc_individual)):
-            print(f" {class_names[i]}:{auroc_individual[i]}")
+            print(f"{class_names[i]}:{auroc_individual[i]}")
 
         return auroc_mean
 
@@ -265,12 +266,12 @@ def main(args):
 
     # Place numpy file containing train-valid-test split on tools folder
 
-    tr_list = np.load(numpy_path+'train_list.npy').tolist()
-    tr_labels = np.load(numpy_path+'train_labels.npy').tolist()
-    val_list = np.load(numpy_path+'valid_list.npy').tolist()
-    val_labels = np.load(numpy_path+'valid_labels.npy').tolist()
-    test_list = np.load(numpy_path+'test_list.npy').tolist()
-    test_labels = np.load(numpy_path+'test_labels.npy').tolist()
+    tr_list = np.load(os.path.join(numpy_path,'train_list.npy')).tolist()
+    tr_labels = np.load(os.path.join(numpy_path,'train_labels.npy')).tolist()
+    val_list = np.load(os.path.join(numpy_path,'valid_list.npy')).tolist()
+    val_labels = np.load(os.path.join(numpy_path,'valid_labels.npy')).tolist()
+    test_list = np.load(os.path.join(numpy_path,'test_list.npy')).tolist()
+    test_labels = np.load(os.path.join(numpy_path,'test_labels.npy')).tolist()
 
     dataset_train = RSNADataSet(
         tr_list,

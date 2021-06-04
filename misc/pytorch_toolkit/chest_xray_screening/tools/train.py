@@ -1,5 +1,6 @@
 import numpy as np
 import time
+import os
 import argparse
 import torch
 from torchvision import models
@@ -69,7 +70,7 @@ class RSNATrainer():
                                                              'models/m-epoch'+str(epoch_id)+'-' + timestamp_launch + '.pth.tar', 
                                                              class_names,device)
             
-            print (f" Epoch:{epoch_id + 1}| EndTime:{timestamp_end}| TestAUROC: {test_auroc}| ValidAUROC: {auroc_max}")
+            print (f"Epoch:{epoch_id + 1}| EndTime:{timestamp_end}| TestAUROC: {test_auroc}| ValidAUROC: {auroc_max}")
    
 
     def valid(model,data_loader_valid, loss_fn,class_count,device):
@@ -137,11 +138,8 @@ class RSNATrainer():
             train_loss_value = trainloss_value.item()
             loss_train_list.append(trainloss_value)
 
-            if batch_id%140==1:
-                print(f"Batch No::{batch_id};Loss::{train_loss_value}")
-
             # Evaluate the performance of the model on validation_set
-            # every 2500th iteration
+            # every 2500th iteration. 2500 is a random choice, this could be changed.
 
             if batch_id%2500==0 and batch_id!=0:                   
                 print(f"batch_id::{batch_id}")
@@ -199,10 +197,10 @@ class RSNATrainer():
         auroc_individual = compute_auroc(tfunc.one_hot(out_gt.squeeze(1).long()).float(), out_pred, class_count)
         auroc_mean = np.array(auroc_individual).mean()
         
-        print ('\nAUROC mean ', auroc_mean)
+        print(f'AUROC mean:{auroc_mean}')
         
         for i in range (0, len(auroc_individual)):
-            print(f" {class_names[i]}:{auroc_individual[i]}")
+            print(f"{class_names[i]}:{auroc_individual[i]}")
         
         return auroc_mean
 
@@ -223,12 +221,12 @@ def main(args):
 
     # Place numpy file containing train-valid-test split on tools folder
 
-    tr_list = np.load(numpy_path+'train_list.npy').tolist()
-    tr_labels = np.load(numpy_path+'train_labels.npy').tolist()
-    val_list = np.load(numpy_path+'valid_list.npy').tolist()
-    val_labels = np.load(numpy_path+'valid_labels.npy').tolist()
-    test_list = np.load(numpy_path+'test_list.npy').tolist()
-    test_labels = np.load(numpy_path+'test_labels.npy').tolist()
+    tr_list = np.load(os.path.join(numpy_path,'train_list.npy')).tolist()
+    tr_labels = np.load(os.path.join(numpy_path,'train_labels.npy')).tolist()
+    val_list = np.load(os.path.join(numpy_path,'valid_list.npy')).tolist()
+    val_labels = np.load(os.path.join(numpy_path,'valid_labels.npy')).tolist()
+    test_list = np.load(os.path.join(numpy_path,'test_list.npy')).tolist()
+    test_labels = np.load(os.path.join(numpy_path,'test_labels.npy')).tolist()
 
     dataset_train = RSNADataSet(tr_list, tr_labels, img_pth, transform=True)
     dataset_valid = RSNADataSet(val_list, val_labels, img_pth, transform=True) 
@@ -255,7 +253,7 @@ def main(args):
         class_count, max_epoch, timestamp_launch, checkpoint,
         lr, device, class_names)
 
-    print("Model trained !")
+    print(f"Model trained !")
 
 
 if __name__=="__main__":
