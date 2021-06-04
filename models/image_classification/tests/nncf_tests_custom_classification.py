@@ -34,6 +34,7 @@ class CustomClassificationNNCFTestCaseSmall(
                 'nncf_quantization.train.max_epoch': 11,
                 'nncf_quantization.changes_aux_config.train.batch_size': 2,
                 'nncf_quantization.changes_aux_config.test.batch_size': 2,
+                'nncf_quantization.train.seed': 259,
             },
             field_value_changes_in_nncf_config={
                 'num_init_samples': 8,
