@@ -290,8 +290,9 @@ class LMDBDataset(BaseDataset):
         self.fixed_img_shape = fixed_img_shape
         self.case_sensitive = case_sensitive
         self.grayscale = grayscale
-        self.database = lmdb.open(bytes(self.data_path, encoding='utf-8'), readonly=True)
+        self.database = lmdb.open(bytes(self.data_path, encoding='utf-8'), readonly=True, lock=False)
         self.pairs = self._load()
+        self.txn = self.database.begin(write=False)
 
     def _load(self):
         pairs = []
@@ -310,18 +311,17 @@ class LMDBDataset(BaseDataset):
 
     def __getitem__(self, index):
         el = deepcopy(self.pairs[index])
-        with self.database.begin(write=False) as txn:
-            img_key = el['img_name'].encode()
-            image_bytes = txn.get(img_key)
-            img = cv.imdecode(np.frombuffer(image_bytes, np.uint8), cv.IMREAD_UNCHANGED)
-            if len(img.shape) < 3:
-                img = np.stack((img,) * 3, axis=-1)
-            if self.grayscale:
-                img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-                img = cv.cvtColor(img, cv.COLOR_GRAY2BGR)
-            if self.fixed_img_shape is not None:
-                img = cv.resize(img, tuple(self.fixed_img_shape[::-1]))
-            el['img'] = img
+        img_key = el['img_name'].encode()
+        image_bytes = self.txn.get(img_key)
+        img = cv.imdecode(np.frombuffer(image_bytes, np.uint8), cv.IMREAD_UNCHANGED)
+        if len(img.shape) < 3:
+            img = np.stack((img,) * 3, axis=-1)
+        if self.grayscale:
+            img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+            img = cv.cvtColor(img, cv.COLOR_GRAY2BGR)
+        if self.fixed_img_shape is not None:
+            img = cv.resize(img, tuple(self.fixed_img_shape[::-1]))
+        el['img'] = img
         return el
 
 
