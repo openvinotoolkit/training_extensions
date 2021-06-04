@@ -25,7 +25,7 @@
             "_delete_": true,
             "policy": "fixed"
         },
-        "total_epochs": 2,
+        "total_epochs": 0,
         "nncf_config": {
             "compression": [
                 {

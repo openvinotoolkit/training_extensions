@@ -1,6 +1,6 @@
 # model settings
-det_thr = 0.8
-rec_thr = 0.3
+det_thr = 0.65
+rec_thr = 0.45
 model = dict(
     type='MaskTextSpotter',
     pretrained='torchvision://resnet50',
@@ -166,8 +166,9 @@ img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 albu_train_transforms = [
     dict(
-        type='RandomRotate90and270',
-        p=0.5),
+        type='RandomRotate',
+        p=0.5,
+        border_mode=0),
     dict(
         type='RandomBrightnessContrast',
         brightness_limit=[0.1, 0.3],
@@ -223,7 +224,7 @@ train_pipeline = [
     dict(
         type='Resize',
         img_scale=[(1280, 768), (1280, 768 + 64), (1280, 768 - 64), (1280 + 64, 768), (1280 - 64, 768),
-                   (1216, 704), (1216 - 64, 704), (1216, 704 - 64), (1216-64, 704 - 64)],
+        	    (1216, 704), (1216 - 64, 704), (1216, 704 - 64), (1216 - 64, 704 - 64)],
         multiscale_mode='value',
         keep_ratio=False),
     dict(type='RandomFlip', flip_ratio=0.0),
@@ -255,7 +256,7 @@ data = dict(
         times=6,
         dataset=dict(
             type=dataset_type,
-            ann_file=[data_root + 'openimages_v5_train_1_2_f.json',
+            ann_file=[data_root + 'dataset_oiv5_train125f.json',
                       data_root + 'dataset_train_wo_tests_ic13_ic15_tt.json'],
             img_prefix=[data_root, data_root],
             classes=('text', ),
