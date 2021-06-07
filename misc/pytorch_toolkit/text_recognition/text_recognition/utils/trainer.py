@@ -344,8 +344,8 @@ class Trainer:
                                                  should_cut_by_min=cut, ctc_loss=self.loss)
                         loss = loss.detach()
                         val_loss += loss
-                    val_loss = val_loss / len(loader)
-                    val_acc = val_acc / len(loader)
+                    val_loss = val_loss / len(loader.dataset)
+                    val_acc = val_acc / len(loader.dataset)
                     dataset_name = os.path.split(loader.dataset.data_path)[-1]
                     print('Epoch {}, dataset {} loss: {:.4f}'.format(
                         self.epoch, dataset_name, val_loss
@@ -355,7 +355,7 @@ class Trainer:
                         self.epoch, dataset_name, val_acc
                     ))
                     self.writer.add_scalar(f'Accuracy {dataset_name}', val_acc, self.global_step)
-                    weight = len(loader) / sum(map(len, self.val_loaders))
+                    weight = len(loader.dataset) / sum(map(lambda ld: len(ld.dataset), self.val_loaders))
                     val_avg_loss += val_loss * weight
                     val_avg_accuracy += val_acc * weight
         print('Epoch {}, validation average loss: {:.4f}'.format(
