@@ -11,3 +11,4 @@ opencv-python
 scipy
 positional-encodings
 lmdb
+fasttext
