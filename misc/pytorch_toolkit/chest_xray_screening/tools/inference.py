@@ -27,7 +27,7 @@ class RSNAInference():
         model.eval()
         
         with torch.no_grad():
-            for i, (var_input, var_target) in enumerate(data_loader_test):
+            for var_input, var_target in data_loader_test:
 
                 var_target = var_target.to(device)
                 out_gt = torch.cat((out_gt, var_target), 0).to(device)
