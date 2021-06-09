@@ -140,7 +140,7 @@ class Trainer:
         self.device = config.get('device', 'cpu')
         self.multi_gpu = config.get('multi_gpu')
         if self.multi_gpu:
-            torch.distributed.init_process_group("nccl", rank=rank, world_size=torch.cuda.device_count())
+            torch.distributed.init_process_group("nccl", init_method="env://")
             self.device = torch.device(f'cuda:{self.rank}')
         self.create_dirs()
         self.load_dataset()
