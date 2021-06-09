@@ -43,7 +43,7 @@ class RSNAInference():
         
         print ('\nAUROC mean ', auroc_mean)
         
-        for i in range (0, len(auroc_individual)):
+        for i in range(len(auroc_individual)):
             print(f" {class_names[i]}:{auroc_individual[i]}")
         
         return auroc_mean
