@@ -244,7 +244,7 @@ class Trainer:
                     self.writer.add_scalar('Train accuracy', step_accuracy, self.global_step)
 
                 # log message
-                if self.global_step % self.print_freq == 0:
+                if self.global_step % self.print_freq == 0 and self.rank == 0:
                     total_step = len(self.train_loader)
                     print('Epoch {}, step:{}/{} {:.2f}%, Loss:{:.4f}, accuracy: {:.4f}'.format(
                         self.epoch, self.step, total_step,
