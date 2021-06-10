@@ -426,7 +426,7 @@ class CocoLikeDataset(BaseDataset):
             pairs.append(
                 {'img_name': os.path.split(img_name)[-1],
                  'img_path': os.path.join(self.data_path, img_name),
-                 'bbox': ann['bbox'],
+                 'bbox': [int(x) for x in ann['bbox']],
                  'text': text,
                  }
             )
