@@ -37,7 +37,9 @@ SOFTWARE.
 """
 
 import json
+import math
 import os
+import re
 from copy import deepcopy
 from multiprocessing.pool import ThreadPool
 from os.path import join
@@ -53,6 +55,14 @@ from ..data.utils import get_num_lines_in_file
 from ..data.vocab import split_number
 
 ALPHANUMERIC_VOCAB = set('abcdefghijklmnopqrstuvwxyz0123456789')
+
+
+def rotate_point(xy_vector, angle):
+    rho = math.sqrt(xy_vector[0] ** 2 + xy_vector[1] ** 2)
+    theta = math.degrees(math.atan2(xy_vector[1], xy_vector[0]))
+    theta = theta - angle
+    x, y = rho * math.cos(math.radians(theta)), rho * math.sin(math.radians(theta))
+    return x, y
 
 
 class BatchRandomSampler(Sampler):
@@ -179,8 +189,11 @@ class ICDAR2013RECDataset(BaseDataset):
             text = texts[i].strip('"')
             if len(text) < min_txt_len:
                 continue
-            if not set(text.lower()) <= ALPHANUMERIC_VOCAB:
-                continue
+            # replace those character not in self.character with ''
+            # see here https://github.com/Media-Smart/vedastr/blob/1364526fc770ea99e6d8a8ea1cb972b269983a5f/vedastr/datasets/base.py#L64
+            character = "".join(sorted(ALPHANUMERIC_VOCAB, key=lambda x: ord(x)))
+            out_of_char = f'[^{character}]'
+            text = re.sub(out_of_char, '', text.lower())
             if not case_sensitive:
                 text = text.lower()
             text = ' '.join(text)
@@ -301,9 +314,13 @@ class LMDBDataset(BaseDataset):
             num_iterations = int(txn.get('num-samples'.encode()))
             for index in tqdm(range(1, num_iterations + 1)):  # in lmdb indexation starts with one
                 text = txn.get(f'label-{index:09d}'.encode()).decode('utf-8')
-                text = ' '.join(text)
                 if not self.case_sensitive:
                     text = text.lower()
+                character = "".join(sorted(ALPHANUMERIC_VOCAB, key=lambda x: ord(x)))
+                out_of_char = f'[^{character}]'
+                # replace those character not in self.character with ''
+                text = re.sub(out_of_char, '', text.lower())
+                text = ' '.join(text)
                 el = {'img_name': f'image-{index:09d}',
                       'text': text,
                       }
@@ -399,7 +416,7 @@ class UnrealTextDataset(BaseDataset):
 
 class CocoLikeDataset(BaseDataset):
     def __init__(self, data_path, annotation_file, min_shape=(8, 8), grayscale=False,
-                 fixed_img_shape=None, case_sensitive=True):
+                 fixed_img_shape=None, case_sensitive=True, rotation_angle=0):
         super().__init__()
         self.data_path = data_path
         self.annotation_file = annotation_file
@@ -408,6 +425,7 @@ class CocoLikeDataset(BaseDataset):
         self.fixed_img_shape = fixed_img_shape
         self.case_sensitive = case_sensitive
         self.pairs = self._load()
+        self.rotation_angle = rotation_angle
 
     def _load(self):
         pairs = []
@@ -443,18 +461,37 @@ class CocoLikeDataset(BaseDataset):
             img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
             img = cv.cvtColor(img, cv.COLOR_GRAY2BGR)
         x, y, w, h = box
-        orig_shape = img.shape
-        img = img[y:y+h, x:x+w, :]
-        if img.shape[0] < 0 or img.shape[1] < 0:
-            print('box', box)
-            print('shape', orig_shape)
+
+        if self.rotation_angle != 0:
+            old_x, old_y = x, y
+            angle = np.random.uniform(-self.rotation_angle, self.rotation_angle)
+            center = tuple(np.array((x + w / 2, y + h / 2)))
+            rot_mat = cv.getRotationMatrix2D(center, angle, 1.0)
+            img = cv.warpAffine(img, rot_mat, img.shape[1::-1], flags=cv.INTER_LINEAR)
+
+            xy_vector = -w / 2, -h / 2 # vector from center to TL
+            rotated = rotate_point(xy_vector, angle)
+            new_x, new_y = int(center[0] + rotated[0]), int(center[1] + rotated[1])
+            new_w, new_h = int(center[0] - rotated[0] - x), int(center[1] - rotated[1] - y)
+            x,y,w,h = cv.boundingRect(np.array([
+                [x, y],
+                [x+w, y],
+                [x, y+h],
+                [x+w, y+h],
+                [new_x, new_y],
+                [new_x + new_w, new_y],
+                [new_x, new_y + new_h],
+                [new_x + new_w, new_y + new_h]
+            ]))
+
+        img= img[y:y+h, x:x+w, :]
         if self.fixed_img_shape is not None:
-            img = cv.resize(img, tuple(self.fixed_img_shape[::-1]))
-        el['img'] = img
+            img= cv.resize(img, tuple(self.fixed_img_shape[::-1]))
+        el['img']= img
         return el
 
 
-str_to_class = {
+str_to_class= {
     'Im2LatexDataset': Im2LatexDataset,
     'ICDAR2013RECDataset': ICDAR2013RECDataset,
     'MJSynthDataset': MJSynthDataset,
