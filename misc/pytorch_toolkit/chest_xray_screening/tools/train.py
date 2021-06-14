@@ -10,7 +10,8 @@ from torch.utils.data import DataLoader
 from torch.optim.lr_scheduler import StepLR
 from utils.dataloader import RSNADataSet
 from utils.score import compute_auroc
-from utils.model import DenseNet121
+from utils.model import DenseNet121,DenseNet121Eff
+from utils.generate import *
 
 
 class RSNATrainer():
@@ -205,17 +206,18 @@ class RSNATrainer():
 
 def main(args):
 
-    lr= args.lr
-    checkpoint= args.checkpoint
+    lr = args.lr
+    checkpoint = args.checkpoint
     batch_size = args.bs
     max_epoch = args.epochs
+
 
     class_count = args.clscount  #The objective is to classify the image into 3 classes
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu") # use gpu if available
     class_names = ['Lung Opacity','Normal','No Lung Opacity / Not Normal']
 
     # Data Loader 
-    img_pth=args.imgpath
+    img_pth = args.imgpath
     numpy_path = args.npypath
 
     # Place numpy file containing train-valid-test split on tools folder
@@ -238,8 +240,23 @@ def main(args):
 
     # Construct Model 
 
-    model = DenseNet121(class_count)
-    model = model.to(device)
+    if args.optimised is not None:
+        alpha = args.alpha
+        phi = args.phi
+        beta = args.beta
+        
+
+        if beta is None:
+            beta = round(sqrt(2 / alpha), 3)
+
+        alpha = alpha ** phi
+        beta = beta ** phi
+
+        model = DenseNet121Eff(alpha,beta,class_count)
+        model = model.to(device)
+    else: 
+        model = DenseNet121(class_count)
+        model = model.to(device)
 
     # Train the  Model 
     timestamp_launch = time.strftime("%d%m%Y - %H%M%S")
@@ -263,6 +280,21 @@ if __name__=="__main__":
     parser.add_argument("--npypath",required=True, help="Path containing label list in npy format", type =str)
     parser.add_argument("--epochs",required=False,default=15, help="Number of epochs", type=int)
     parser.add_argument("--clscount",required=False,default=3, help="Number of classes", type=int)
+    parser.add_argument("--alpha",
+        required=False,
+        help="alpha for the model",
+        default=(11 / 6),
+        type=float)
+    parser.add_argument("--phi",
+        required=False,
+        help="Phi for the model.",
+        default=1.0,
+        type=float)
+    parser.add_argument("--beta",
+        required=False,
+        help="Beta for the model.",
+        default=None,
+        type=float)
     
     args = parser.parse_args()
 

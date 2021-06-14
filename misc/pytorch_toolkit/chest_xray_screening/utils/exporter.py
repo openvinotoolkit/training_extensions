@@ -3,7 +3,7 @@ import argparse
 import torch.nn as nn
 import os
 import subprocess
-from model import DenseNet121
+from model import DenseNet121,DenseNet121Eff
 
 
 OPENVINO_DIR = '/opt/intel/openvino_2021'
@@ -12,7 +12,11 @@ class Exporter:
     def __init__(self, config):
 
         self.config = config
-        self.model = DenseNet121(class_count=3)
+        if self.config['optimised'] == True:
+            self.model = DenseNet121Eff(self.config["alpha"], self.config["beta"], self.config["class_count"])
+        else:
+            self.model = DenseNet121(class_count=3)
+
         self.model.eval()
         self.model_path = config.get('checkpoint')
         if self.model_path is not None:

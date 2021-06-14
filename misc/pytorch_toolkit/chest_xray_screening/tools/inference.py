@@ -6,7 +6,8 @@ import torch.nn.functional as tfunc
 from torch.utils.data import DataLoader
 from utils.dataloader import RSNADataSet
 from utils.score import compute_auroc
-from utils.model import DenseNet121
+from utils.model import DenseNet121,DenseNet121Eff
+from utils.generate import *
 
 
 class RSNAInference():
@@ -61,8 +62,22 @@ def main(args):
     datasetTest = RSNADataSet(test_list,test_labels,img_pth,transform=True)
     data_loader_test = DataLoader(dataset=datasetTest, batch_size=1, shuffle=False,  num_workers=4, pin_memory=False)
 
-    model = DenseNet121(class_count)
-    model = model.to(device)
+    if args.optimised is not None:
+        alpha = args.alpha
+        phi = args.phi
+        beta = args.beta
+        
+
+        if beta is None:
+            beta = round(sqrt(2 / alpha), 3)
+
+        alpha = alpha ** phi
+        beta = beta ** phi
+        model = DenseNet121Eff(alpha,beta,class_count)
+        model = model.to(device)
+    else: 
+        model = DenseNet121(class_count)
+        model = model.to(device)
 
     test_auroc = RSNAInference.test(model, data_loader_test, class_count, checkpoint, class_names, device)
 
@@ -75,6 +90,22 @@ if __name__=="__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--checkpoint",required=False, help="start training from a checkpoint model weight",default= None ,type = str)
     parser.add_argument("--imgpath",required=True, help="Path containing train and test images", type =str)
+    parser.add_argument("--alpha",
+        required=False,
+        help="alpha for the model",
+        default=(
+            11 / 6),
+        type=float)
+    parser.add_argument("--phi",
+        required=False,
+        help="Phi for the model.",
+        default=1.0,
+        type=float)
+    parser.add_argument("--beta",
+        required=False,
+        help="Beta for the model.",
+        default=None,
+        type=float)
     
     args = parser.parse_args()
 

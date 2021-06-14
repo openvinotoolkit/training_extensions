@@ -22,6 +22,10 @@ Few example images from the dataset
 </tr>
 </table>
 
+A systematic search was performed over a set of CNN architectures by scaling the width and depth of the standard DenseNet using the EfficientNet approach[[3](efficientnet)]. The details of our experiments based on EfficientNet is summarized in the image below.
+
+<img src = "./media/efficientnet.png" width=650>
+
 ## Network Architecture:
 
 We have used a DenseNet-121 as the base architecture.
@@ -40,6 +44,7 @@ AUROC scores for each class and Mean AUROC score is reported for Pneumonia detec
 | No Lung Opacity/ Not Normal | 0.63076 |
 
 **Mean AUROC score**: 0.7323
+
 
 Note: The newtork was trained for 25 epochs. 
 
@@ -60,13 +65,36 @@ AUROC Score for the same network, when trained and evaluated using the CheXpert 
 | Pleural Other | 0.918 |
 
 **Mean AUROC score**: 0.87
+
+AUROC scores of the efficient-net based model for each class and Mean AUROC score is reported for Pneumonia detection.
+| Class | AUROC Score  |
+|--|--|
+| Lung Opacity | 0.578 |
+| Normal | 0.569 |
+| No Lung Opacity/ Not Normal | 0.511 |
+
+**Mean AUROC score:** 0.5531
+The network when trained and evaluated using the CheXpert dataset with same alpha, beta, and phi values (given below) was able to classify with a **Mean AUROC score of 0.7877**
+| Variable | Value |
+| -- | -- |
+| α | 1.833 |
+| β | 1.044 |
+| ϕ | -0.10 | 
+
+
 ## **Model**
 Download checkpoint with the following [link]()
 
 The OpenVINO IR can be found [here]().
 
+Download checkpoint for optimised model with the following [link](https://drive.google.com/file/d/1q9OYgK1y-eWeBljTH5G4NlJUuF4sB6bU/view?usp=sharing)
+
+The OpenVINO IR can be found [here](https://drive.google.com/file/d/1SoSWLbitdh0AfpUeUyI9-0vr_-dUvuHq/view?usp=sharing).
+
 ## **Demo**
 An example for using the ONNX models for inference can be found [here]().
+
+An example for using the ONNX model of optimised network for inference can be found [here](https://drive.google.com/drive/folders/1cUAbfbRvbSmb4fXiQwHyUaNch8w4ExXl?usp=sharing).
 
 ## **Setup**
 
