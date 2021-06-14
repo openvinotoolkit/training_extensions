@@ -1,13 +1,12 @@
 import numpy as np
 import argparse
 import torch
-from torchvision import models
-import torch.nn as nn
 import torch.backends.cudnn as cudnn
 import torch.nn.functional as tfunc
 from torch.utils.data import DataLoader
 from utils.dataloader import RSNADataSet
 from utils.score import compute_auroc
+from utils.model import DenseNet121
 
 
 class RSNAInference():
@@ -62,10 +61,7 @@ def main(args):
     datasetTest = RSNADataSet(test_list,test_labels,img_pth,transform=True)
     data_loader_test = DataLoader(dataset=datasetTest, batch_size=1, shuffle=False,  num_workers=4, pin_memory=False)
 
-    model=models.densenet121(pretrained=True)
-    for param in model.parameters():
-         param.requires_grad = False
-    model.classifier=nn.Sequential(nn.Linear(1024, class_count), nn.Sigmoid())
+    model = DenseNet121(class_count)
     model = model.to(device)
 
     test_auroc = RSNAInference.test(model, data_loader_test, class_count, checkpoint, class_names, device)
@@ -83,3 +79,4 @@ if __name__=="__main__":
     args = parser.parse_args()
 
     main(args)
+

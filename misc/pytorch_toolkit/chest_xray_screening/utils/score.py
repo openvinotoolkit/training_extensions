@@ -19,3 +19,5 @@ def compute_auroc(data_gt, data_pred, class_count):
         except ValueError:
             out_auroc_list.append(0)
     return out_auroc_list
+    
+    

@@ -1,9 +1,9 @@
 import torch
 import argparse
-from torchvision import models
 import torch.nn as nn
 import os
 import subprocess
+from model import DenseNet121
 
 
 OPENVINO_DIR = '/opt/intel/openvino_2021'
@@ -12,9 +12,7 @@ class Exporter:
     def __init__(self, config):
 
         self.config = config
-        self.model = models.densenet121()
-        self.model.classifier=nn.Sequential(nn.Linear(1024, 3), nn.Sigmoid())
-        self.model = nn.Sequential(self.model, nn.Sigmoid())
+        self.model = DenseNet121(class_count=3)
         self.model.eval()
         self.model_path = config.get('checkpoint')
         if self.model_path is not None:

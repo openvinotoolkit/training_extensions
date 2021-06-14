@@ -3,8 +3,6 @@ import time
 import os
 import argparse
 import torch
-from torchvision import models
-import torch.nn as nn
 import torch.backends.cudnn as cudnn
 import torch.optim as optim
 import torch.nn.functional as tfunc
@@ -12,32 +10,41 @@ from torch.utils.data import DataLoader
 from torch.optim.lr_scheduler import StepLR
 from utils.dataloader import RSNADataSet
 from utils.score import compute_auroc
+from utils.model import DenseNet121
 
 
 class RSNATrainer():
 
-    def __init__(self) -> None:
+    def __init__(
+        self, model, 
+        data_loader_train, data_loader_valid, data_loader_test,
+        class_count, checkpoint, device, class_names):
+
         self.gepoch_id = 0
         self.model_val = ''
-        # pass
+        self.model = model
+        self.data_loader_train = data_loader_train
+        self.data_loader_valid = data_loader_valid
+        self.data_loader_test = data_loader_test
+        self.class_names = class_names
+        self.class_count = class_count
+        self.checkpoint = checkpoint
+        self.device = device
+
 
     def train(
-        self, model, data_loader_train, data_loader_valid, data_loader_test,
-        class_count, max_epoch, timestamp_launch, checkpoint, lr, 
-        device, class_names):
-
-       
+        self, max_epoch, timestamp_launch,lr):
 
         loss_fn = torch.nn.BCELoss()
         # Setting maximum AUROC value as zero
         auroc_max = 0.0                 
-        optimizer = optim.Adam(model.parameters(), lr=lr, weight_decay=1e-5)
+        optimizer = optim.Adam(self.model.parameters(), lr=lr, weight_decay=1e-5)
 
-        if checkpoint is not None:
-            model_checkpoint = torch.load(checkpoint)
-            model.load_state_dict(model_checkpoint['state_dict'])
+        if self.checkpoint is not None:
+            model_checkpoint = torch.load(self.checkpoint)
+            self.model.load_state_dict(model_checkpoint['state_dict'])
             optimizer.load_state_dict(model_checkpoint['optimizer'])
-            for param in model.parameters():
+            for param in self.model.parameters():
                 param.requires_grad = True
             print(f"Model loaded")
 
@@ -51,8 +58,7 @@ class RSNATrainer():
 
 
             train_loss, valid_loss, auroc_max = RSNATrainer.epoch_train(
-                model, data_loader_train, data_loader_valid,
-                optimizer,class_count,loss_fn,device,auroc_max)
+                optimizer,loss_fn,auroc_max)
 
             timestamp_end = time.strftime("%H%M%S-%d%m%Y")
 
@@ -66,70 +72,65 @@ class RSNATrainer():
             torch.save({'epoch': epoch_id + 1, 'state_dict': model.state_dict(), 'best_loss': valid_loss_min, 
                         'optimizer' : optimizer.state_dict()},'models/m-epoch'+str(epoch_id)+'-' + timestamp_launch + '.pth.tar')
 
-            test_auroc = RSNATrainer.test(model, data_loader_test, class_count, 
-                                                             'models/m-epoch'+str(epoch_id)+'-' + timestamp_launch + '.pth.tar', 
-                                                             class_names,device)
+            test_auroc = RSNATrainer.test('models/m-epoch'+str(epoch_id)+'-' + timestamp_launch + '.pth.tar')
             
             print (f"Epoch:{epoch_id + 1}| EndTime:{timestamp_end}| TestAUROC: {test_auroc}| ValidAUROC: {auroc_max}")
    
 
-    def valid(model,data_loader_valid, loss_fn,class_count,device):
+    def valid(loss_fn):
         
-        model.eval()
+        self.model.eval()
         loss_valid_r = 0
         valid_batches = 0      # Counter for valid batches
 
-        out_gt = torch.FloatTensor().to(device)
-        out_pred = torch.FloatTensor().to(device)
+        out_gt = torch.FloatTensor().to(self.device)
+        out_pred = torch.FloatTensor().to(self.device)
 
         with torch.no_grad():
-            for i, (var_input, var_target) in enumerate(data_loader_valid):
+            for i, (var_input, var_target) in enumerate(self.data_loader_valid):
                 print(f"Batch {i} in Val")
 
-                var_target = var_target.to(device)
-                out_gt = torch.cat((out_gt, var_target), 0).to(device)
+                var_target = var_target.to(self.device)
+                out_gt = torch.cat((out_gt, var_target), 0).to(self.device)
 
                 _, c, h, w = var_input.size()
                 var_input = var_input.view(-1, c, h, w)
 
-                var_output = model(var_input.to(device))
+                var_output = model(var_input.to(self.device))
                 out_pred = torch.cat((out_pred, var_output), 0)
                 
                 lossvalue = loss_fn(
-                    var_output,tfunc.one_hot(var_target.squeeze(1).long(),
-                    num_classes=class_count).float())
+                    var_output,tfunc.one_hot(var_target.squeeze(1).long(),num_classes =self.class_count).float())
 
                 loss_valid_r += lossvalue.item()
                 valid_batches += 1
                 
             valid_loss = loss_valid_r / valid_batches
 
-            auroc_individual = compute_auroc(tfunc.one_hot(out_gt.squeeze(1).long()).float(), out_pred, class_count)
+            auroc_individual = compute_auroc(tfunc.one_hot(out_gt.squeeze(1).long()).float(), out_pred, self.class_count)
             auroc_mean = np.array(auroc_individual).mean()
 
         return valid_loss,auroc_mean
 
        
-    def epoch_train(
-        self,model, data_loader_train, data_loader_valid,
-        optimizer, class_count,loss_fn,device, auroc_max):
+    def epoch_train(optimizer, loss_fn, auroc_max):
         
         
         loss_train_list = []
         loss_valid_list = []
         
-        model.train()
+        self.model.train()
         scheduler = StepLR(optimizer, step_size=6, gamma=0.002)
 
-        for batch_id, (var_input, var_target) in enumerate(data_loader_train):
+        for batch_id, (var_input, var_target) in enumerate(self.data_loader_train):
 
             epoch_id = self.gepoch_id
             
-            var_target = var_target.to(device)
-            var_input = var_input.to(device)         
-            var_output= model(var_input)
+            var_target = var_target.to(self.device)
+            var_input = var_input.to(self.device)         
+            var_output= self.model(var_input)
                 
-            trainloss_value = loss_fn(var_output,tfunc.one_hot(var_target.squeeze(1).long(),num_classes=class_count).float())
+            trainloss_value = loss_fn(var_output,tfunc.one_hot(var_target.squeeze(1).long(),num_classes=self.class_count).float())
             
             optimizer.zero_grad()
             trainloss_value.backward()
@@ -144,9 +145,7 @@ class RSNATrainer():
             if batch_id%2500==0 and batch_id!=0:                   
                 print(f"batch_id::{batch_id}")
 
-                validloss_value,auroc_mean = RSNATrainer.valid(
-                    model, data_loader_valid, loss_valid_list,
-                    loss_fn, class_count, device)
+                validloss_value,auroc_mean = RSNATrainer.valid(loss_valid_list,loss_fn)
 
                 loss_valid_list.append(validloss_value)
                 
@@ -168,39 +167,39 @@ class RSNATrainer():
                 
         return train_loss_mean, valid_loss_mean, auroc_max
     
-    def test(model, data_loader_test, class_count, checkpoint, class_names,device): 
+    def test(): 
 
         cudnn.benchmark = True
-        if checkpoint != None:
-            model_checkpoint = torch.load(checkpoint)
-            model.load_state_dict(model_checkpoint['state_dict'])
+        if self.checkpoint != None:
+            model_checkpoint = torch.load(self.checkpoint)
+            self.model.load_state_dict(model_checkpoint['state_dict'])
         else:
-            model.state_dict()
+            self.model.state_dict()
 
-        out_gt = torch.FloatTensor().to(device)
-        out_pred = torch.FloatTensor().to(device)
+        out_gt = torch.FloatTensor().to(self.device)
+        out_pred = torch.FloatTensor().to(self.device)
         
-        model.eval()
+        self.model.eval()
         
         with torch.no_grad():
-            for i, (var_input, var_target) in enumerate(data_loader_test):
+            for i, (var_input, var_target) in enumerate(self.data_loader_test):
 
-                var_target = var_target.to(device)
-                out_gt = torch.cat((out_gt, var_target), 0).to(device)
+                var_target = var_target.to(self.device)
+                out_gt = torch.cat((out_gt, var_target), 0).to(self.device)
 
                 _, c, h, w = input.size()
                 var_input = input.view(-1, c, h, w)
             
-                out = model(var_input.to(device))
+                out = model(var_input.to(self.device))
                 out_pred = torch.cat((out_pred, out), 0)
 
-        auroc_individual = compute_auroc(tfunc.one_hot(out_gt.squeeze(1).long()).float(), out_pred, class_count)
+        auroc_individual = compute_auroc(tfunc.one_hot(out_gt.squeeze(1).long()).float(), out_pred, self.class_count)
         auroc_mean = np.array(auroc_individual).mean()
         
         print(f'AUROC mean:{auroc_mean}')
         
         for i in range (0, len(auroc_individual)):
-            print(f"{class_names[i]}:{auroc_individual[i]}")
+            print(f"{self.class_names[i]}:{auroc_individual[i]}")
         
         return auroc_mean
 
@@ -239,19 +238,17 @@ def main(args):
 
     # Construct Model 
 
-    model=models.densenet121(pretrained=True)
-    for param in model.parameters():
-         param.requires_grad = False
-    model.classifier=nn.Sequential(nn.Linear(1024, class_count), nn.Sigmoid())
+    model = DenseNet121(class_count)
     model = model.to(device)
 
     # Train the  Model 
     timestamp_launch = time.strftime("%d%m%Y - %H%M%S")
 
-    RSNATrainer.train(
+    rsna_trainer = RSNATrainer(
         model, data_loader_train, data_loader_valid, data_loader_test, 
-        class_count, max_epoch, timestamp_launch, checkpoint,
-        lr, device, class_names)
+        class_count,checkpoint, device, class_names)
+
+    RSNATrainer.train(max_epoch, timestamp_launch, lr)
 
     print(f"Model trained !")
 
@@ -270,3 +267,4 @@ if __name__=="__main__":
     args = parser.parse_args()
 
     main(args)
+
