@@ -1,7 +1,8 @@
 import unittest
 import os
 import json
-
+from utils.dataloader import RSNADataSet
+from utils.model import DenseNet121
 
 def get_config(optimised=False):
     path = os.path.dirname(os.path.realpath(__file__))

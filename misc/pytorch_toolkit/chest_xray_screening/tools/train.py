@@ -31,15 +31,10 @@ class RSNATrainer():
         self.class_count = class_count
         self.checkpoint = checkpoint
         self.device = device
+        self.loss_fn = torch.nn.BCELoss()
 
 
-    def train(
-        self, max_epoch, timestamp_launch,lr):
-
-        loss_fn = torch.nn.BCELoss()
-        # Setting maximum AUROC value as zero
-        auroc_max = 0.0                 
-        optimizer = optim.Adam(self.model.parameters(), lr=lr, weight_decay=1e-5)
+    def train(self, max_epoch, timestamp_launch,lr):
 
         if self.checkpoint is not None:
             model_checkpoint = torch.load(self.checkpoint)
@@ -58,8 +53,9 @@ class RSNATrainer():
             self.gepoch_id = epoch_id
 
 
-            train_loss, valid_loss, auroc_max = RSNATrainer.epoch_train(
-                optimizer,loss_fn,auroc_max)
+            train_loss, valid_loss, auroc_max = RSNATrainer.epoch_train(lr)
+            self.current_train_loss = train_loss
+            self.current_valid_loss = train_loss
 
             timestamp_end = time.strftime("%H%M%S-%d%m%Y")
 
@@ -78,7 +74,7 @@ class RSNATrainer():
             print (f"Epoch:{epoch_id + 1}| EndTime:{timestamp_end}| TestAUROC: {test_auroc}| ValidAUROC: {auroc_max}")
    
 
-    def valid(loss_fn):
+    def valid():
         
         self.model.eval()
         loss_valid_r = 0
@@ -100,7 +96,7 @@ class RSNATrainer():
                 var_output = model(var_input.to(self.device))
                 out_pred = torch.cat((out_pred, var_output), 0)
                 
-                lossvalue = loss_fn(
+                lossvalue = self.loss_fn(
                     var_output,tfunc.one_hot(var_target.squeeze(1).long(),num_classes =self.class_count).float())
 
                 loss_valid_r += lossvalue.item()
@@ -114,9 +110,11 @@ class RSNATrainer():
         return valid_loss,auroc_mean
 
        
-    def epoch_train(optimizer, loss_fn, auroc_max):
+    def epoch_train():
         
-        
+        # Setting maximum AUROC value as zero
+        auroc_max = 0.0                 
+        optimizer = optim.Adam(self.model.parameters(), lr=lr, weight_decay=1e-5)
         loss_train_list = []
         loss_valid_list = []
         
