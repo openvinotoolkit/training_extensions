@@ -27,7 +27,7 @@ class RSNAInference():
         model.eval()
         
         with torch.no_grad():
-            for i, (var_input, var_target) in enumerate(data_loader_test):
+            for var_input, var_target in data_loader_test:
 
                 var_target = var_target.to(device)
                 out_gt = torch.cat((out_gt, var_target), 0).to(device)
@@ -43,7 +43,7 @@ class RSNAInference():
         
         print ('\nAUROC mean ', auroc_mean)
         
-        for i in range (0, len(auroc_individual)):
+        for i in range(len(auroc_individual)):
             print(f" {class_names[i]}:{auroc_individual[i]}")
         
         return auroc_mean
