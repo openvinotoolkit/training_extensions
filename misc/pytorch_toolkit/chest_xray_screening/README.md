@@ -1,4 +1,4 @@
-# Deep Neural Network for Chest X-Ray Screening 
+# Deep Neural Network for Chest X-Ray Screening
 
 <div id="abs">
 
@@ -36,7 +36,7 @@ We have used a DenseNet-121 as the base architecture.
 
 ## Results
 
-AUROC scores for each class and Mean AUROC score is reported for Pneumonia detection.
+AUROC scores for each class and Mean AUROC score
 | Class | AUROC Score  |
 |--|--|
 | Lung Opacity | 0.7586 |
@@ -48,7 +48,7 @@ AUROC scores for each class and Mean AUROC score is reported for Pneumonia detec
 
 Note: The newtork was trained for 25 epochs. 
 
-AUROC Score for the same network, when trained and evaluated using the CheXpert dataset provided by Stanford University [[3](#chexpert)], is given below.
+AUROC Score for the same network, when trained and evaluated using the CheXpert dataset provided by Stanford University [[4](#chexpert)], is given below.
 
 | Class | AUROC Score  |
 |--|--|
@@ -74,6 +74,7 @@ AUROC scores of the efficient-net based model for each class and Mean AUROC scor
 | No Lung Opacity/ Not Normal | 0.511 |
 
 **Mean AUROC score:** 0.5531
+
 The network when trained and evaluated using the CheXpert dataset with same alpha, beta, and phi values (given below) was able to classify with a **Mean AUROC score of 0.7877**
 | Variable | Value |
 | -- | -- |
@@ -83,16 +84,20 @@ The network when trained and evaluated using the CheXpert dataset with same alph
 
 
 ## **Model**
-Download checkpoint with the following [link]()
+Download checkpoint with the following [link](https://drive.google.com/file/d/1q9OYgK1y-eWeBljTH5G4NlJUuF4sB6bU/view?usp=sharing).
 
-The OpenVINO IR can be found [here]().
-
-Download checkpoint for optimised model with the following [link](https://drive.google.com/file/d/1q9OYgK1y-eWeBljTH5G4NlJUuF4sB6bU/view?usp=sharing)
+Download ONNX checkpoint with the following [link](https://drive.google.com/file/d/1J2IXVzXrzxZlc0Rcgf7da7PNGM2nnBde/view?usp=sharing).
 
 The OpenVINO IR can be found [here](https://drive.google.com/file/d/1SoSWLbitdh0AfpUeUyI9-0vr_-dUvuHq/view?usp=sharing).
 
+Download checkpoint for optimised model with the following [link](https://drive.google.com/file/d/1HUmG-wKRoKYxBdwu0_LX1ascBRmA-z5e/view?usp=sharing)
+
+Download ONNX checkpoint with the following [link](https://drive.google.com/file/d/1U5zVPxseY56_N1ZY9NqkGsOaF1R-MJPq/view?usp=sharing).
+
+The OpenVINO IR of optimised model can be found [here](https://drive.google.com/file/d/1ALZwLBs3lkZ8fGTvFHCNXSscOnjNKMHY/view?usp=sharing).
+
 ## **Demo**
-An example for using the ONNX models for inference can be found [here]().
+An example for using the ONNX models for inference can be found [here](https://drive.google.com/drive/folders/1EdgO3ZLZejoPojGXZxElOYnSOUM7zHkn?usp=sharing).
 
 An example for using the ONNX model of optimised network for inference can be found [here](https://drive.google.com/drive/folders/1cUAbfbRvbSmb4fXiQwHyUaNch8w4ExXl?usp=sharing).
 
@@ -110,38 +115,57 @@ An example for using the ONNX model of optimised network for inference can be fo
 1. Download the [RSNA Dataset](https://www.kaggle.com/c/rsna-pneumonia-detection-challenge/data)
 2. Create the directory tree
 3. Prepare the training dataset
-4. Run the training
+4. Run the training script
 
-## **Code Structure**
+## **Code and Directory Organisation**
 
-1. `train.py` in main directory contains the code for training the model
+```
++-- chest_xray_screening
+|   +--dataset
+|   |  +--original
+|   |  +--processed_data
+|   |  +--data_splits
+|   +--media 
+|   +--tests  
+|   +--tools
+|   +--utils
+init_venv.sh
+README.md
+requirements.txt 
+```
+<!-- `train.py` 
+
+
+`train.py` `train.py` `train.py` `train.py` `train.py`  -->
+<!-- ## **Code Structure**
+
+1. `train.py` in main script contains the code for training the model
 3. `generate.py` CNN model defenition is defined in this file. Additionally it also computes and returns the FLOPs for the CNN model.
-4. Inside tools directory, `test.py` and `export_onnx.py` file is provided which can be used for testing the model and generating the onnx representation of the trained model.
+4. Inside tools directory, `test.py` and `export_onnx.py` file is provided which can be used for testing the model and generating the onnx representation of the trained model. -->
 
 ### Creating the Directory Tree
 
-The data directory should contain two subdirectories: preprocessed data for training and original
-[data](https://www.kaggle.com/c/rsna-pneumonia-detection-challenge).
+Create a folder in the root directory and name it 'dataset'. Create a directoy tree as shown below.
 
 ```
-+-- data
++-- dataset
 |   +-- original
-|   +-- preprocessed
-  | +-- train_data
-  | +-- test_data
+  | +-- processed_data
+  | +-- data_splits
 ```
-Model weights will be stored in your current/parent directory.
+Download the dataset from [link](https://www.kaggle.com/c/rsna-pneumonia-detection-challenge) and place it in the dataset/original directory.
+
 ### Prepare the Training Dataset
+
 ```
-python tools/prepare_training_dataset.py \
-  --input_path data/original \
-  --output_path data/preprocessed \
+python utils/data_prep.py --dpath Absolute/path/to/dataset/directory 
 ```
-You should get a set of folders in the `output_path` with preprocessed data. 
+
+On completion processed data will be stored in the 'processed_data' subfolder. Download the dataset split from [link](https://drive.google.com/drive/folders/17owTvg51wo2MORecTLiEopOf3D3YZV_k?usp=sharing) and place the numpy files in dataset/data_splits directory.
 
 ### Run Training
 
-Run the `main.py` script:
+Run the `train.py` script:
 ```
 python3 train.py \
   --alpha \
@@ -158,9 +182,9 @@ python3 train.py \
 
 Ensure that the test directory contains a series of X-ray samples in the JPEG format with the `.jpg` extension.
 
-### Run Test
+### Run Inference
 ```
-python3 test.py \
+python3 inference.py \
   --alpha \
   --beta \
   --phi \
@@ -169,6 +193,11 @@ python3 test.py \
   --imgpath \
 
 ```
+
+### Run Tests
+
+Necessary unit tests has been provided in the tests directory. The sample dataset to be used in the tests can be downloaded from [here](https://drive.google.com/drive/folders/1aAZvdST531WUQIbKxSedifv8WfM3Wbqm?usp=sharing).
+
 ## **Acknowledgement**
 This work is undertaken as part of Intel India Grand Challenge 2016 Project MIRIAD: Many Incarnations of Screening of Radiology for High Throughput Disease Screening via Multiple Instance Reinforcement Learning with Adversarial Deep Neural Networks, sponsored by Intel Technology India Pvt. Ltd., Bangalore, India.
 
@@ -204,7 +233,10 @@ email: ramanathan.sethuraman@intel.com
 <a href="#abs">[2]</a> A. Mitra, A. Chakravarty, N. Ghosh, T. Sarkar, R. Sethuraman and D. Sheet, "A Systematic Search over Deep Convolutional Neural Network Architectures for Screening Chest Radiographs," 2020 42nd Annual International Conference of the IEEE Engineering in Medicine & Biology Society (EMBC), Montreal, QC, Canada, 2020, pp. 1225-1228, doi: 10.1109/EMBC44109.2020.9175246. <a href="https://ieeexplore.ieee.org/document/9175246"> (link) </a>
 
 </div>
+<div id="efficientnet">
+<a href="#abs">[3]</a>  Tan, Mingxing, and Quoc V. Le. &quot;EfficientNet: Rethinking model scaling for convolutional neural networks.&quot; , ICML, pp. 6105-6114. 2019. <a href="http://proceedings.mlr.press/v97/tan19a/tan19a.pdf"> (link) </a>
 
+</div>
 <div id="chexpert">
-<a href="#results">[3]</a>  Irvin, Jeremy, Pranav Rajpurkar, Michael Ko, Yifan Yu, Silviana Ciurea-Ilcus, Chris Chute, Henrik Marklund et al. &quot;Chexpert: A large chest radiograph dataset with uncertainty labels and expert comparison.&quot; In _Proceedings of the AAAI Conference on Artificial Intelligence_, vol. 33, pp. 590-597. 2019. <a href="https://arxiv.org/abs/1901.07031"> (link) </a>
+<a href="#results">[4]</a>  Irvin, Jeremy, Pranav Rajpurkar, Michael Ko, Yifan Yu, Silviana Ciurea-Ilcus, Chris Chute, Henrik Marklund et al. &quot;Chexpert: A large chest radiograph dataset with uncertainty labels and expert comparison.&quot; In _Proceedings of the AAAI Conference on Artificial Intelligence_, vol. 33, pp. 590-597. 2019. <a href="https://arxiv.org/abs/1901.07031"> (link) </a>
 </div>
