@@ -219,7 +219,7 @@ class AttentionBasedLSTM(nn.Module):
 
     def step_decoding(self, h, c, output, enc_out, tgt):
         """Runing one step decoding"""
-
+        tgt = tgt.long()
         prev_y = self.embedding(tgt).squeeze(1)  # [B, emb_size]
         inp = torch.cat([prev_y, output], dim=1)  # [B, emb_size+encoder_hidden_size]
         h_t, c_t = self.rnn_decoder(inp, (h, c))
@@ -229,7 +229,10 @@ class AttentionBasedLSTM(nn.Module):
         output = self.W_c(torch.cat([h_t, context_t], dim=1)).tanh()
 
         # calculate logit
-        logit = F.softmax(self.W_out(output), dim=1)  # [B, out_size]
+        if self.training:
+            logit = F.log_softmax(self.W_out(output), dim=1)  # [B, out_size]
+        else:
+            logit = F.softmax(self.W_out(output), dim=1)  # [B, out_size]
 
         return h_t, c_t, output, logit
 
@@ -310,3 +313,11 @@ class AttentionBasedLSTM(nn.Module):
         hidden = hidden.mean(dim=1)  # [B, dec_rnn_h]
 
         return hidden
+
+    def encoder_wrapper(self, features):
+        row_enc_out, hidden, context = self.encode(features)
+        hidden, context, init_0 = self.init_decoder(row_enc_out, hidden, context)
+        return row_enc_out, hidden, context, init_0
+
+    def decoder_wrapper(self, hidden, context, output, row_enc_out, tgt):
+        return self.step_decoding(hidden, context, output, row_enc_out, tgt)

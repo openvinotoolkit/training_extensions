@@ -29,6 +29,9 @@ def create_train_test(config_file):
             train_config = get_config(config_file, section='train')
             cls.config = train_config
             cls.config['epochs'] = 1
+            # workaround for training test without downloading language model (~4 Gb)
+            if cls.config['head'].get('use_semantics'):
+                cls.config['head']['use_semantics'] = False
             cls.config['_test_steps'] = 40
             cls.work_dir = mkdtemp()
             cls.trainer = Trainer(work_dir=cls.work_dir, config=cls.config)
@@ -49,9 +52,14 @@ class TestHandwrittenPolynomialsTrain(create_train_test('configs/polynomials_han
     'Test case for handwritten polynomials config'
 
 
-class TestAlphanumericTrain(create_train_test('configs/config_0013.yml')):
+class TestAlphanumericTrain0013(create_train_test('configs/config_0013.yml')):
     'Test case for alphanumeric config'
 
+class TestAlphanumericTrain0014(create_train_test('configs/config_0014.yml')):
+    'Test case for alphanumeric config'
+
+class TestAlphanumericTrain0015(create_train_test('configs/config_0015.yml')):
+    'Test case for alphanumeric config'
 
 if __name__ == '__main__':
     unittest.main()
