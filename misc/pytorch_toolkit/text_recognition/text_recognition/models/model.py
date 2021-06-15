@@ -71,7 +71,7 @@ class TextRecognitionModel(nn.Module):
         """
         head_type = head.pop('type', 'AttentionBasedLSTM')
         backbone_type = backbone.pop('type', 'resnet')
-        transformation_type = transformation.pop('type')
+        transformation_type = transformation.pop('type', None)
         if transformation_type:
             self.transformation = TRANSFORMATIONS[transformation_type](**transformation)
         self.freeze_backbone = backbone.pop('freeze_backbone', False)
