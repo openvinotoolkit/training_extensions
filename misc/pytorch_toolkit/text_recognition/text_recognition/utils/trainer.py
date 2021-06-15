@@ -147,7 +147,7 @@ class Trainer:
         self.loss = torch.nn.CTCLoss(blank=0, zero_infinity=self.config.get(
             'CTCLossZeroInf', False)) if self.loss_type == 'CTC' else None
         self.out_size = len(self.vocab) + 1 if self.loss_type == 'CTC' else len(self.vocab)
-        self.model = TextRecognitionModel(config.get('backbone_config'), self.out_size, config.get('head', {}))
+        self.model = TextRecognitionModel(config.get('backbone_config'), self.out_size, config.get('head', {}), config.get('transformation', {}))
         print(self.model)
         if self.model_path is not None:
             self.model.load_weights(self.model_path, map_location=self.device)

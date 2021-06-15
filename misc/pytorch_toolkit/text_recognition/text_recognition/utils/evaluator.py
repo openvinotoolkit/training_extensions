@@ -115,7 +115,7 @@ class PyTorchRunner(BaseRunner):
         self.vocab_len = len(read_vocab(self.config.get('vocab_path')))
         self.use_ctc = self.config.get('use_ctc')
         out_size = self.vocab_len + 1 if self.use_ctc else self.vocab_len
-        self.model = TextRecognitionModel(self.config.get('backbone_config'), out_size, self.config.get('head', {}))
+        self.model = TextRecognitionModel(self.config.get('backbone_config'), out_size, self.config.get('head', {}), self.config.get('transformation', {}))
         self.device = self.config.get('device', 'cpu')
         self.model.load_weights(self.config.get('model_path'), map_location=self.device)
         self.model = self.model.to(self.device)
