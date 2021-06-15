@@ -15,7 +15,7 @@ def printlog(*args):
     logger.info(' '.join([str(v) for v in args]))
 
 def get_shape(x):
-    return x.shape
+    return list(x.shape)
     #this is to get more compact and human readable but unresizable onnx model
     #return [int(s) for s in x.shape]
 
