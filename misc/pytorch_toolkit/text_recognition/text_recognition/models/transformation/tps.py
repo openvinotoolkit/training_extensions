@@ -9,12 +9,12 @@ import torch.nn.functional as F
 class TPS_SpatialTransformerNetwork(nn.Module):
     """ Rectification Network of RARE, namely TPS based STN """
 
-    def __init__(self, fiducial_num, input_size, input_rect_size, i_channel_num=1):
+    def __init__(self, fiducial_num, input_size, output_size, i_channel_num=1):
         """ Based on RARE TPS
         input:
             batch_I: Batch Input Image [batch_size x i_channel_num x I_height x I_width]
             input_size : (height, width) of the input image I
-            input_rect_size : (height, width) of the rectified image I_r
+            output_size : (height, width) of the rectified image I_r
             i_channel_num : the number of channels of the input image I
         output:
             batch_I_r: rectified image [batch_size x i_channel_num x I_r_height x I_r_width]
@@ -22,15 +22,15 @@ class TPS_SpatialTransformerNetwork(nn.Module):
         super(TPS_SpatialTransformerNetwork, self).__init__()
         self.fiducial_num = fiducial_num
         self.input_size = input_size
-        self.input_rect_size = input_rect_size  # = (I_r_height, I_r_width)
+        self.output_size = output_size  # = (I_r_height, I_r_width)
         self.i_channel_num = i_channel_num
         self.LocalizationNetwork = LocalizationNetwork(self.fiducial_num, self.i_channel_num)
-        self.GridGenerator = GridGenerator(self.fiducial_num, self.input_rect_size)
+        self.GridGenerator = GridGenerator(self.fiducial_num, self.output_size)
 
     def forward(self, batch_I):
         batch_C_prime = self.LocalizationNetwork(batch_I)  # batch_size x K x 2
         build_P_prime = self.GridGenerator.build_P_prime(batch_C_prime)  # batch_size x n (= I_r_width x I_r_height) x 2
-        build_P_prime_reshape = build_P_prime.reshape([build_P_prime.size(0), self.input_rect_size[0], self.input_rect_size[1], 2])
+        build_P_prime_reshape = build_P_prime.reshape([build_P_prime.size(0), self.output_size[0], self.output_size[1], 2])
 
         if torch.__version__ > "1.2.0":
             batch_I_r = F.grid_sample(batch_I, build_P_prime_reshape, padding_mode='border', align_corners=True)
@@ -87,11 +87,11 @@ class LocalizationNetwork(nn.Module):
 class GridGenerator(nn.Module):
     """ Grid Generator of RARE, which produces P_prime by multipling T with P """
 
-    def __init__(self, fiducial_num, input_rect_size):
+    def __init__(self, fiducial_num, output_size):
         """ Generate P_hat and inv_delta_C for later """
         super(GridGenerator, self).__init__()
         self.eps = 1e-6
-        self.I_r_height, self.I_r_width = input_rect_size
+        self.I_r_height, self.I_r_width = output_size
         self.fiducial_num = fiducial_num
         self.C = self._build_C(self.fiducial_num)  # fiducial_num x 2
         self.P = self._build_P(self.I_r_width, self.I_r_height)
