@@ -27,6 +27,7 @@ from openvino.inference_engine import IECore
 from scipy.special import log_softmax
 from torch.utils.data import DataLoader
 from tqdm import tqdm
+
 from text_recognition.data.utils import collate_fn, create_list_of_transforms, ctc_greedy_search
 from text_recognition.data.vocab import END_TOKEN, START_TOKEN, read_vocab
 from text_recognition.datasets.dataset import str_to_class
@@ -115,7 +116,8 @@ class PyTorchRunner(BaseRunner):
         self.vocab_len = len(read_vocab(self.config.get('vocab_path')))
         self.use_ctc = self.config.get('use_ctc')
         out_size = self.vocab_len + 1 if self.use_ctc else self.vocab_len
-        self.model = TextRecognitionModel(self.config.get('backbone_config'), out_size, self.config.get('head', {}), self.config.get('transformation', {}))
+        self.model = TextRecognitionModel(self.config.get('backbone_config'), out_size,
+                                          self.config.get('head', {}), self.config.get('transformation', {}))
         self.device = self.config.get('device', 'cpu')
         self.model.load_weights(self.config.get('model_path'), map_location=self.device)
         self.model = self.model.to(self.device)
@@ -127,7 +129,7 @@ class PyTorchRunner(BaseRunner):
         if self.use_ctc:
             pred = torch.nn.functional.log_softmax(logits.detach(), dim=2)
             pred = ctc_greedy_search(pred, 0)
-        return pred[0]
+        return pred
 
     def openvino_transform(self):
         return False
@@ -171,7 +173,7 @@ class ONNXRunner(BaseRunner):
                     decoder_inputs[4]: tgt
                 })
             logits.append(logit)
-        return np.argmax(np.array(logits).squeeze(1), axis=1)
+        return np.expand_dims(np.argmax(np.array(logits).squeeze(1), axis=1), 0)
 
     def run_decoder_2d(self, features, hidden):
         # TODO: unify functions
@@ -194,7 +196,7 @@ class ONNXRunner(BaseRunner):
                     decoder_inputs[2]: tgt[0]
                 })
             logits.append(logit)
-        return np.argmax(np.array(logits).squeeze(1), axis=1)
+        return np.expand_dims(np.argmax(np.array(logits).squeeze(1), axis=1), 0)
 
     def run_encoder(self, img):
         encoder_outputs = get_onnx_outputs(self.encoder_onnx)
@@ -211,7 +213,7 @@ class ONNXRunner(BaseRunner):
         })
         pred = log_softmax(logits, axis=2)
         pred = ctc_greedy_search(pred, 0)
-        return pred[0]
+        return pred
 
     def run_model(self, img):
         img = img.clone().detach().numpy()
@@ -247,7 +249,7 @@ class OpenVINORunner(BaseRunner):
             self.config.get('model_output_names').split(',')[0]]
         pred = log_softmax(logits, axis=2)
         pred = ctc_greedy_search(pred, 0)
-        return pred[0]
+        return pred
 
     def _run_2d_attn(self, enc_res):
         enc_out_names = self.config.get('encoder_output_names', ENCODER_OUTPUTS).split(',')
@@ -276,7 +278,7 @@ class OpenVINORunner(BaseRunner):
             tgt = np.reshape(np.argmax(logit, axis=1), (1, 1)).astype(np.long)
             if tgt[0][0] == END_TOKEN:
                 break
-        return np.argmax(np.array(logits).squeeze(1), axis=1)
+        return np.expand_dims(np.argmax(np.array(logits).squeeze(1), axis=1), 0)
 
     def _run_1d_attn(self, enc_res):
         enc_out_names = self.config.get('encoder_output_names', ENCODER_OUTPUTS).split(',')
@@ -307,7 +309,7 @@ class OpenVINORunner(BaseRunner):
             tgt = np.reshape(np.argmax(logit, axis=1), (1, 1)).astype(np.long)
             if tgt[0][0] == END_TOKEN:
                 break
-        return np.argmax(np.array(logits).squeeze(1), axis=1)
+        return np.expand_dims(np.argmax(np.array(logits).squeeze(1), axis=1), 0)
 
     def _run_encoder(self, img):
         enc_res = self.exec_net_encoder.infer(inputs={self.config.get(
@@ -354,87 +356,65 @@ class Evaluator:
 
     def load_dataset(self):
         dataset_params = self.config.get('dataset')
-        if isinstance(dataset_params, list):
-            self.val_loader = []
-            batch_transform = create_list_of_transforms(self.config.get(
-                'val_transforms_list'), ovino_ir=self.runner.openvino_transform())
-            for params in dataset_params:
-
-                dataset_type = params.pop('type')
-
-                val_dataset = str_to_class[dataset_type](**params)
-                print('Creating eval transforms list: {}'.format(batch_transform))
-                self.val_loader.append(
-                    DataLoader(
-                        val_dataset,
-                        collate_fn=partial(collate_fn, self.vocab.sign2id,
-                                           batch_transform=batch_transform,
-                                           use_ctc=(self.config.get('use_ctc'))),
-                        num_workers=os.cpu_count(),
-                        batch_size=self.config.get('val_batch_size', 1)
-                    )
-                )
-        else:
-
-            dataset_type = dataset_params.pop('type')
-
-            val_dataset = str_to_class[dataset_type](**dataset_params)
-            batch_transform = create_list_of_transforms(self.config.get(
-                'val_transforms_list'), ovino_ir=self.runner.openvino_transform())
+        if not isinstance(dataset_params, list):
+            dataset_params = [dataset_params]
+        self.val_loader = []
+        batch_transform = create_list_of_transforms(self.config.get(
+            'val_transforms_list'), ovino_ir=self.runner.openvino_transform())
+        for params in dataset_params:
+            dataset_type = params.pop('type')
+            val_dataset = str_to_class[dataset_type](**params)
             print('Creating eval transforms list: {}'.format(batch_transform))
-            self.val_loader = DataLoader(
-                val_dataset,
-                collate_fn=partial(collate_fn, self.vocab.sign2id,
-                                   batch_transform=batch_transform,
-                                   use_ctc=(self.config.get('use_ctc'))),
-                num_workers=os.cpu_count())
+            self.val_loader.append(
+                DataLoader(
+                    val_dataset,
+                    collate_fn=partial(collate_fn, self.vocab.sign2id,
+                                       batch_transform=batch_transform,
+                                       use_ctc=(self.config.get('use_ctc'))),
+                    num_workers=os.cpu_count(),
+                    batch_size=self.config.get('val_batch_size', 1) if isinstance(self.runner, PyTorchRunner) else 1
+                )
+            )
 
     def read_expected_outputs(self):
         if self.config.get('expected_outputs'):
             with open(self.config.get('expected_outputs')) as outputs_file:
                 self.expected_outputs = json.load(outputs_file)
 
+    def _extract_predictions(self, gt, prediction):
+        gt_string = self.vocab.construct_phrase(
+            gt, ignore_end_token=self.config.get('use_ctc'))
+        predicted_string = postprocess_prediction(self.vocab.construct_phrase(
+            prediction, ignore_end_token=self.config.get('use_ctc')))
+        return gt_string, predicted_string
+
     def validate(self):
         print('Starting inference')
-        if not isinstance(self.val_loader, list):
-            annotations = []
-            predictions = []
-            text_acc = 0
-            for img_name, _, imgs, _, loss_computation_gt in tqdm(self.val_loader):
-                with torch.no_grad():
-                    targets = self.runner.run_model(imgs)
-                    gold_phrase_str = self.vocab.construct_phrase(
-                        loss_computation_gt[0], ignore_end_token=self.config.get('use_ctc'))
-                    pred_phrase_str = postprocess_prediction(self.vocab.construct_phrase(
-                        targets, ignore_end_token=self.config.get('use_ctc')))
-                    annotations.append((gold_phrase_str, img_name[0]))
-                    predictions.append((pred_phrase_str, img_name[0]))
-                    text_acc += int(pred_phrase_str == gold_phrase_str)
-            text_acc /= len(self.val_loader)
-            print('Text accuracy is: ', text_acc)
-            if not self.render:
-                return text_acc
-            metric = Im2latexRenderBasedMetric()
-            res = metric.evaluate(annotations, predictions)
-            return res
-
         val_avg_accuracy = 0
+        annotations = []
+        predictions = []
         for loader in self.val_loader:
             val_acc = 0
             for img_name, _, imgs, _, loss_computation_gt in tqdm(loader):
                 with torch.no_grad():
                     targets = self.runner.run_model(imgs)
-                    gold_phrase_str = self.vocab.construct_phrase(
-                        loss_computation_gt[0], ignore_end_token=self.config.get('use_ctc'))
-                    pred_phrase_str = postprocess_prediction(self.vocab.construct_phrase(
-                        targets, ignore_end_token=self.config.get('use_ctc')))
-                    gold_phrase_str = gold_phrase_str.lower()
-                    pred_phrase_str = pred_phrase_str.lower()
-                    val_acc += int(pred_phrase_str == gold_phrase_str)
-            val_acc /= len(loader)
+                    for i, target in enumerate(targets):
+                        gold_phrase_str, pred_phrase_str = self._extract_predictions(loss_computation_gt[i], target)
+                        if not self.render:
+                            # alphanumeric task
+                            gold_phrase_str = gold_phrase_str.lower()
+                            pred_phrase_str = pred_phrase_str.lower()
+                        val_acc += int(pred_phrase_str == gold_phrase_str)
+                        annotations.append((gold_phrase_str, img_name[i]))
+                        predictions.append((pred_phrase_str, img_name[i]))
+            val_acc /= len(loader.dataset)
 
             dataset_name = os.path.split(loader.dataset.data_path)[-1]
             print('dataset {} accuracy: {:.4f}'.format(dataset_name, val_acc))
             weight = len(loader) / sum(map(len, self.val_loader))
             val_avg_accuracy += val_acc * weight
+            if self.render:
+                metric = Im2latexRenderBasedMetric()
+                res = metric.evaluate(annotations, predictions)
+                return res
         return val_avg_accuracy
