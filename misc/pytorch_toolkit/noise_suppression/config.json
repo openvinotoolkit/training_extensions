@@ -1,0 +1,1 @@
+{"class_name": "PoCoNetLikeModel", "init_kwargs": {"model_desc": "PoCoNetLikeModel", "wnd_length": 256, "hop_length": 128, "ahead": 4, "back_time_flag": true, "mha_ranges": [32, 22, 16, 11, 8]}}
