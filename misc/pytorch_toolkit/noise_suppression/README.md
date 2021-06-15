@@ -1,7 +1,8 @@
 # Noise Suppression
 
 This is implementation of the train script in PyTorch\*.
-The script allows to train noise suppression model like [PoCoNet](https://arxiv.org/abs/2008.04470) on [DNS-Challenge dataset](https://github.com/microsoft/DNS-Challenge).
+The script allows to train noise suppression model on [DNS-Challenge dataset](https://github.com/microsoft/DNS-Challenge).
+The model architecture was inspired by [PoCoNet](https://arxiv.org/abs/2008.04470) model
 
 
 ## Table of Contents
@@ -27,7 +28,7 @@ The [DNS-Challenge dataset](https://github.com/microsoft/DNS-Challenge) is used 
 You can get the data by clone repository
 ```git clone https://github.com/microsoft/DNS-Challenge.git <dns-challenge-dir>```
 
-The train script also allows to evaluate model on ICASSP_dev_test_set. The 'icassp2021-final' branch of DNS-Challenge repo has to be checkout to enable this option
+The train script also allows to evaluate model on synthetic ICASSP_dev_test_set. The 'icassp2021-final' branch of DNS-Challenge repo has to be checkout to enable this option
 
 
 ## Train Model
