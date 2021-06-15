@@ -99,7 +99,8 @@ class DecoderAttention2d(nn.Module):
         assert tuple(hidden.shape) == (1, BATCH_SIZE, self.hidden_size), f'{hidden.shape}'
         assert tuple(prev_symbol.shape) == (BATCH_SIZE,), f'{prev_symbol.shape} {prev_symbol}'
         assert tuple(encoder_outputs.shape) == (
-            BATCH_SIZE, self.flatten_feature_size, self.hidden_size), f'{encoder_outputs.shape}'
+            BATCH_SIZE, self.flatten_feature_size, self.hidden_size), f'Got {encoder_outputs.shape} | ' \
+                f'Expected batch {BATCH_SIZE}, feature size {self.flatten_feature_size}, hidden {self.hidden_size}'
 
         prev_symbol = prev_symbol.long()
 
