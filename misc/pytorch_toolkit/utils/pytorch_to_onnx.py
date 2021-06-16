@@ -16,7 +16,9 @@ PUBLIC_PYTORCH_MODELS = [
 SUPPORTED_MODELS = TORCHVISION_MODELS + PUBLIC_PYTORCH_MODELS
 
 def positive_int_arg(value):
-    """Check positive integer type for input argument"""
+    """
+        Check positive integer type for input argument
+    """
     try:
         ivalue = int(value)
         if ivalue > 0:
@@ -27,7 +29,9 @@ def positive_int_arg(value):
         sys.exit('Invalid value for input argument: {!r}, a positive integer is expected'.format(value))
 
 def parse_args():
-    """Parse input arguments"""
+    """
+        Parse input arguments
+    """
 
     parser = argparse.ArgumentParser(description='Conversion script for pretrained models from PyTorch to ONNX')
     parser.add_argument('--model-name', type=str, required=True,
@@ -50,7 +54,9 @@ def parse_args():
     return parser.parse_args()
 
 def load_model(model_name, weights, model_path=None):
-    """Import model and load pretrained weights"""
+    """
+        Import model and load pretrained weights
+    """
 
     if model_name not in SUPPORTED_MODELS:
         sys.exit('Only ' + ', '.join(SUPPORTED_MODELS) + ' are available for conversion')
@@ -82,7 +88,9 @@ def load_model(model_name, weights, model_path=None):
     return model
 
 def convert_to_onnx(pytorch_model, input_shape, output_file, input_names, output_names):
-    """Convert PyTorch model to ONNX and check the resulting onnx model"""
+    """
+        Convert PyTorch model to ONNX and check the resulting onnx model
+    """
 
     pytorch_model.eval()
     onnx_input_shape = torch.randn(input_shape)
