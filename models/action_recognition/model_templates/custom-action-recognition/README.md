@@ -14,7 +14,7 @@ Performance results table:
 ## Datasets
 
 The following datasets were used in experiments:
-* [UCF-101](https://arxiv.org/abs/1212.0402)
+* [UCF-101](https://export.arxiv.org/abs/1212.0402)
 * [ActivityNet v1.3](http://activity-net.org/download.html)
 * [MS-ASL](https://www.microsoft.com/en-us/research/project/ms-asl/#!downloads)
 * [Jester](https://20bn.com/datasets/jester)
