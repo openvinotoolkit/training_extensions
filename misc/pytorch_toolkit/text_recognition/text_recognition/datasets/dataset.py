@@ -463,7 +463,6 @@ class CocoLikeDataset(BaseDataset):
         x, y, w, h = box
 
         if self.rotation_angle != 0:
-            old_x, old_y = x, y
             angle = np.random.uniform(-self.rotation_angle, self.rotation_angle)
             center = tuple(np.array((x + w / 2, y + h / 2)))
             rot_mat = cv.getRotationMatrix2D(center, angle, 1.0)
@@ -483,7 +482,7 @@ class CocoLikeDataset(BaseDataset):
                 [new_x, new_y + new_h],
                 [new_x + new_w, new_y + new_h]
             ]))
-
+            x, y, h, w = [max(s, 0) for s in [x, y, h, w]]
         img= img[y:y+h, x:x+w, :]
         if self.fixed_img_shape is not None:
             img= cv.resize(img, tuple(self.fixed_img_shape[::-1]))
