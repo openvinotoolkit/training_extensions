@@ -32,8 +32,8 @@ class MMPoseExporter(BaseExporter):
     def _get_common_cmd(self, args, tools_dir):
         cmd = f'python {os.path.join(tools_dir, "export.py")} '\
               f'{args["config"]} '\
-              f'{args["save_model_to"]} '\
-              f'-ckpt {args["load_weights"]} '
+              f'{args["load_weights"]} ' \
+              f'{args["save_model_to"]} '
         update_config = self._get_update_config(args)
         if update_config:
             cmd += update_config

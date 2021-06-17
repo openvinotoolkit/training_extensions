@@ -14,7 +14,7 @@
 
 import os
 
-from common.landmarks_detection_test_case import create_landmarks_detection_test_case
+from common.landmarks_detection_test_case import create_landmarks_detection_export_test_case # pylint: disable=import-error
 
 kwargs = dict(
     problem_name='landmarks-detection',
@@ -23,7 +23,7 @@ kwargs = dict(
 )
 
 class LandmarksDetection0001TestCase(
-        create_landmarks_detection_test_case(
+        create_landmarks_detection_export_test_case(
             model_name='landmarks-detection-0001',
             **kwargs
         )

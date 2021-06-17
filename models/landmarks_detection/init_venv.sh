@@ -27,7 +27,7 @@ fi
 git submodule update --init ../../external/mmpose
 
 # Create virtual environment
-virtualenv ${venv_dir} -p python3 --prompt="(pose)"
+virtualenv ${venv_dir} -p python3 --prompt="(lms)"
 
 path_openvino_vars="${INTEL_OPENVINO_DIR:-/opt/intel/openvino}/bin/setupvars.sh"
 if [[ -e "${path_openvino_vars}" ]]; then

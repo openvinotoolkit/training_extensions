@@ -7,9 +7,9 @@ annotation_format: COCO
 initial_weights: snapshot.pth
 dependencies:
 # TODO.
-- sha256: a29789a856e4d6230e3fa3e17c91188a592f3288240993416f2f7f78fed4aa48
-  size: 116669484
-  source: https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/landmarks-detection-0001.pth
+- sha256: 11e48d5ea62d50f6365574b0aa7e8554470b12bfdaaf47afa6a07b600928eeae
+  size: 116668280
+  source: https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v4/face-98-landmarks-detection-0001.pth
   destination: snapshot.pth
 - source: ../../../../ote/tools/train.py
   destination: train.py
@@ -26,9 +26,11 @@ dependencies:
 dataset_requirements: ~
 max_nodes: 1
 training_target:
+- CPU
 - GPU
 inference_target:
 - CPU
+- GPU
 hyper_parameters:
   basic:
     batch_size: 32
