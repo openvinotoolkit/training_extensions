@@ -147,7 +147,8 @@ class Trainer:
         self.loss = torch.nn.CTCLoss(blank=0, zero_infinity=self.config.get(
             'CTCLossZeroInf', False)) if self.loss_type == 'CTC' else None
         self.out_size = len(self.vocab) + 1 if self.loss_type == 'CTC' else len(self.vocab)
-        self.model = TextRecognitionModel(config.get('backbone_config'), self.out_size, config.get('head', {}), config.get('transformation', {}))
+        self.model = TextRecognitionModel(config.get('backbone_config'), self.out_size,
+                                          config.get('head', {}), config.get('transformation', {}))
         print(self.model)
         if self.model_path is not None:
             self.model.load_weights(self.model_path, map_location=self.device)
@@ -210,23 +211,23 @@ class Trainer:
                 train_dataset,
                 batch_sampler=train_sampler,
                 collate_fn=partial(collate_fn, self.vocab.sign2id,
-                                batch_transform=batch_transform_train,
-                                use_ctc=(self.loss_type == 'CTC')),
+                                   batch_transform=batch_transform_train,
+                                   use_ctc=(self.loss_type == 'CTC')),
                 num_workers=self.config.get('num_workers', 4),
                 # batch_size=self.config.get('batch_size', 4),
                 # shuffle=False,
                 pin_memory=True)
-        val_samplers = [BatchRandomSampler(dataset=ds, batch_size=self.config.get('batch_size', 4)) for ds in val_datasets]
         pprint('Creating val transforms list: {}'.format(self.val_transforms_list), indent=4, width=120)
         batch_transform_val = create_list_of_transforms(self.val_transforms_list)
         self.val_loaders = [
             DataLoader(
                 ds,
-                batch_sampler=sampler,
                 collate_fn=partial(collate_fn, self.vocab.sign2id,
                                    batch_transform=batch_transform_val, use_ctc=(self.loss_type == 'CTC')),
-                num_workers=self.config.get('num_workers', 4))
-            for ds, sampler in zip(val_datasets, val_samplers)
+                batch_size=self.config.get('val_batch_size', 1),
+                num_workers=self.config.get('num_workers', 4)
+            )
+            for ds in val_datasets
         ]
         print('num workers: ', self.config.get('num_workers'))
 
