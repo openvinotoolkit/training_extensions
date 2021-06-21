@@ -189,11 +189,6 @@ class ICDAR2013RECDataset(BaseDataset):
             text = texts[i].strip('"')
             if len(text) < min_txt_len:
                 continue
-            # replace those character not in self.character with ''
-            # see here https://github.com/Media-Smart/vedastr/blob/1364526fc770ea99e6d8a8ea1cb972b269983a5f/vedastr/datasets/base.py#L64
-            character = "".join(sorted(ALPHANUMERIC_VOCAB, key=lambda x: ord(x)))
-            out_of_char = f'[^{character}]'
-            text = re.sub(out_of_char, '', text.lower())
             if not case_sensitive:
                 text = text.lower()
             text = ' '.join(text)
@@ -316,10 +311,6 @@ class LMDBDataset(BaseDataset):
                 text = txn.get(f'label-{index:09d}'.encode()).decode('utf-8')
                 if not self.case_sensitive:
                     text = text.lower()
-                character = "".join(sorted(ALPHANUMERIC_VOCAB, key=lambda x: ord(x)))
-                out_of_char = f'[^{character}]'
-                # replace those character not in self.character with ''
-                text = re.sub(out_of_char, '', text.lower())
                 text = ' '.join(text)
                 el = {'img_name': f'image-{index:09d}',
                       'text': text,
