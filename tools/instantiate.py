@@ -45,7 +45,6 @@ def _get_templates_filenames(args):
 
 def _get_init_venv_path(domain_folder):
     domain_realpath = os.path.realpath(os.path.join('models', domain_folder))
-    print (domain_realpath)
     init_venv_path = os.path.join(domain_realpath, 'init_venv.sh')
     if os.path.isfile(init_venv_path):
         return init_venv_path
@@ -63,7 +62,6 @@ def main():
     problems_filename = problems_filename[0]
 
     problems_dict = dict()
-    print (problems_filename)
     with open(problems_filename) as read_file:
         content = yaml.safe_load(read_file)
         for domain in content['domains']:
@@ -73,14 +71,12 @@ def main():
     os.makedirs(args.destination, exist_ok=True)
 
     domain_folders = set()
-    print (template_filenames)
     for template_filename in template_filenames:
         with open(template_filename) as read_file:
             content = yaml.safe_load(read_file)
 
         # TODO(ikrylov): remain one of ('-', '_').
         domain_folder = content['domain'].replace(' ', '_').lower()
-        # print ("!!!!!!!!!!!" +domain_folders)
 
         problem_folder = content['problem'].replace(' ', '-').lower()
         model_folder = content['name']
