@@ -40,3 +40,11 @@ class GestureRecognitionExportTestCaseMSASL(
         )
 ):
     """ Test case for s3d-rgb-mobilenet-v3-stream-msasl model export. """
+
+class GestureRecognitionExportTestCaseCSL(
+        create_action_recognition_export_test_case(
+            model_name='s3d-rgb-mobilenet-v3-stream-csl',
+            **kwargs,
+        )
+):
+    """ Test case for s3d-rgb-mobilenet-v3-stream-csl model export. """
