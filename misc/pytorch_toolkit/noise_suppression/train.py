@@ -373,7 +373,7 @@ def process(rank, args, port):
     if rank > -1:
         torch.distributed.barrier()
 
-def main():
+def main(args=None):
     parser = argparse.ArgumentParser()
 
     parser.add_argument("--model_desc", default="PoCoNetLikeModel", type=str, required=False,help="model directory or model json or model desc string")
@@ -397,7 +397,7 @@ def main():
     parser.add_argument("--target_max", default=-5, type=float,help="Maximal (dBFS) for input mixed signal")
     parser.add_argument("--clip_prob", default=0.1, type=float,help="Probability to clip input mixed signal")
 
-    args = parser.parse_args()
+    args = parser.parse_args(args)
 
     if torch.cuda.is_available() and not args.no_cuda:
         args.n_gpu = torch.cuda.device_count()
