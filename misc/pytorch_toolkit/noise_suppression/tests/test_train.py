@@ -25,36 +25,37 @@ from train import main as main_train
 class TestTrain(unittest.TestCase):
     def test_train(self):
 
-        with self.assertRaises(Exception):
+        with self.assertRaises(RuntimeError):
             output_dir = mkdtemp()
 
-            #CMD line from README.txt
-            args = "--model_desc=config.json \
-            --output_dir={} \
-            --num_train_epochs=1 \
-            --size_to_read=1 \
-            --per_gpu_train_batch_size=1 \
-            --total_train_batch_size=8 \
-            --dns_datasets=../../../data/noise_suppression/datasets".format(output_dir).split()
-
+            #CMD line as in README.txt
+            args = [
+                "--model_desc=config.json",
+                "--output_dir="+output_dir,
+                "--num_train_epochs=1",
+                "--size_to_read=1",
+                "--per_gpu_train_batch_size=1",
+                "--total_train_batch_size=8",
+                "--dns_datasets=../../../data/noise_suppression/datasets"
+            ]
             main_train(args)
 
             model_onnx = os.path.join(output_dir,"model.onnx")
-            self.assertEqual(True, os.path.exists(model_onnx))
+            self.assertEqual(True, os.path.exists(model_onnx), model_onnx + " was not created by train script")
 
-            #run convereter to IR
+            #run convereter to IR as in README.txt
             INTEL_OPENVINO_DIR = os.getenv("INTEL_OPENVINO_DIR")
-            export_command = "{}/bin/setupvars.sh && \
-            python {}/deployment_tools/model_optimizer/mo.py \
-            --input_model {} \
-            --output_dir {}".format(INTEL_OPENVINO_DIR, INTEL_OPENVINO_DIR, model_onnx, output_dir)
-            subprocess.run(export_command,shell=True, check=True)
+            export_command = "python {}/deployment_tools/model_optimizer/mo.py".format(INTEL_OPENVINO_DIR)
+            export_command += " --input_model " + model_onnx
+            export_command += " --output_dir " + output_dir
+            res = subprocess.run(export_command, shell=True, check=False)
+            self.assertEqual(0, res.returncode, "fail to run "+export_command)
 
             model_xml = os.path.join(output_dir,"model.xml")
-            self.assertEqual(True, os.path.exists(model_xml))
+            self.assertEqual(True, os.path.exists(model_xml), model_xml + " was not created by Model Optimizer")
 
             model_bin = os.path.join(output_dir,"model.bin")
-            self.assertEqual(True, os.path.exists(model_bin))
+            self.assertEqual(True, os.path.exists(model_bin), model_xml + " was not created by Model Optimizer")
 
 if __name__ == '__main__':
     unittest.main()

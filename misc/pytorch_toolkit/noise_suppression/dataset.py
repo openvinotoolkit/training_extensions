@@ -126,22 +126,25 @@ class DNSDataset(torch.utils.data.Dataset):
         self.size_to_read = size_to_read
 
 
-        #self.files_clean = scan_files(os.path.join(dns_datasets, "clean"))
-        clean_dirs = [
-            "clean/read_speech",
-            "clean/singing_voice/VocalSet11",
-            "clean/emotional_speech/crema_d",
-            "clean/italian_speech/M-AILABS_Speech_Dataset",
-            "clean/german_speech/M-AILABS_Speech_Dataset",
-            "clean/spanish_speech/M-AILABS_Speech_Dataset",
-            "clean/french_data/M-AILABS_Speech_Dataset",
-            "clean/russian_speech/M-AILABS_Speech_Dataset"
-        ]
+        if True:
+            self.files_clean = scan_files(os.path.join(dns_datasets, "clean"))
+        else:
+            #some subsets of clean
+            clean_dirs = [
+                "clean/read_speech",
+                "clean/singing_voice/VocalSet11",
+                "clean/emotional_speech/crema_d",
+                "clean/italian_speech/M-AILABS_Speech_Dataset",
+                "clean/german_speech/M-AILABS_Speech_Dataset",
+                "clean/spanish_speech/M-AILABS_Speech_Dataset",
+                "clean/french_data/M-AILABS_Speech_Dataset",
+                "clean/russian_speech/M-AILABS_Speech_Dataset"
+            ]
 
-        self.files_clean = []
-        for subdir in clean_dirs:
-            files_clean = scan_files(os.path.join(dns_datasets, subdir))
-            self.files_clean.extend(files_clean)
+            self.files_clean = []
+            for subdir in clean_dirs:
+                files_clean = scan_files(os.path.join(dns_datasets, subdir))
+                self.files_clean.extend(files_clean)
 
         total = sum(f.size / f.freq for f in self.files_clean)
         printlog("{:.1f} clean data hours scanned from {}".format(total / 60 / 60, dns_datasets))

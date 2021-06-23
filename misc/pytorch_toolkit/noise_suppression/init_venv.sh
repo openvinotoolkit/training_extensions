@@ -17,7 +17,7 @@ if [[ -e ${venv_dir} ]]; then
 fi
 
 # Create virtual environment
-virtualenv ${venv_dir} -p python --prompt="(text_recognition)"
+virtualenv ${venv_dir} -p python --prompt="(noise_suppression)"
 
 path_openvino_vars="${INTEL_OPENVINO_DIR:-/opt/intel/openvino}/bin/setupvars.sh"
 if [[ -e "${path_openvino_vars}" ]]; then
