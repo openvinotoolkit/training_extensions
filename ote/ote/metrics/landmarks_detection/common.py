@@ -25,7 +25,7 @@ def collect_NME(path):
     """ Collects NME values in log file. """
 
     NME = []
-    beginning = 'OrderedDict([(\'NME\', '
+    beginning = "OrderedDict([('NME', "
     with open(path) as read_file:
         content = [line.strip() for line in read_file]
         for line in content:
