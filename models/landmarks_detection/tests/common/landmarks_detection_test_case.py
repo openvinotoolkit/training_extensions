@@ -14,12 +14,7 @@
 
 import os
 
-
 from ote.tests.test_case import create_export_test_case, create_test_case
-from ote.tests.utils import collect_ap
-from ote.utils.misc import run_through_shell
-
-
 
 def create_landmarks_detection_test_case(**kwargs):
     expected_outputs_dir = os.path.join(os.path.dirname(__file__), '..', 'expected_outputs')

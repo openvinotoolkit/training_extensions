@@ -6,7 +6,6 @@ summary: Face Landmarks Detection based on HRNet architecture.
 annotation_format: COCO
 initial_weights: snapshot.pth
 dependencies:
-# TODO.
 - sha256: 11e48d5ea62d50f6365574b0aa7e8554470b12bfdaaf47afa6a07b600928eeae
   size: 116668280
   source: https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v4/face-98-landmarks-detection-0001.pth
