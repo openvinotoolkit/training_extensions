@@ -89,10 +89,9 @@ domains:
     type: generic
 - title: Landmarks Detection
   problems:
-  - title: Landmarks Detection 0001
+  - title: Landmarks Detection
     description:  >-
-        Custom instance segmentation is a computer technology being used in a variety of
-        applications that identifies every pixel of custom objects in digital images.
-        You need to define your set of classes to detect.
-    subtitle: Instance segmentation of custom objects in digital images
+        Landmarks Detection is a computer technology being used in a variety of applictions
+        that identifies specific face keypoints in digital images. You need to specify bbox of face.
+    subtitle: Face landmarks detection in digital images
     type: generic
