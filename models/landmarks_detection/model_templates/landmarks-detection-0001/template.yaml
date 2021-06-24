@@ -46,11 +46,11 @@ metrics:
 - display_name: Size
   key: size
   unit: Mp
-  value: TODO
+  value: 9.66
 - display_name: Complexity
   key: complexity
   unit: GFLOPs
-  value: TODO
+  value: 0.3
 - display_name: NME
   key: NME
   unit: 'value'
