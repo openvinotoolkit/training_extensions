@@ -37,9 +37,7 @@ SOFTWARE.
 """
 
 import json
-import math
 import os
-import re
 from copy import deepcopy
 from multiprocessing.pool import ThreadPool
 from os.path import join
@@ -55,15 +53,6 @@ from ..data.utils import get_num_lines_in_file
 from ..data.vocab import split_number
 
 ALPHANUMERIC_VOCAB = set('abcdefghijklmnopqrstuvwxyz0123456789')
-
-
-def rotate_point(xy_vector, angle):
-    rho = math.sqrt(xy_vector[0] ** 2 + xy_vector[1] ** 2)
-    theta = math.degrees(math.atan2(xy_vector[1], xy_vector[0]))
-    theta = theta - angle
-    x, y = rho * math.cos(math.radians(theta)), rho * math.sin(math.radians(theta))
-    return x, y
-
 
 class BatchRandomSampler(Sampler):
     """This is a class representing random batch sampler
@@ -407,7 +396,7 @@ class UnrealTextDataset(BaseDataset):
 
 class CocoLikeDataset(BaseDataset):
     def __init__(self, data_path, annotation_file, min_shape=(8, 8), grayscale=False,
-                 fixed_img_shape=None, case_sensitive=True, rotation_angle=0):
+                 fixed_img_shape=None, case_sensitive=True):
         super().__init__()
         self.data_path = data_path
         self.annotation_file = annotation_file
@@ -416,7 +405,6 @@ class CocoLikeDataset(BaseDataset):
         self.fixed_img_shape = fixed_img_shape
         self.case_sensitive = case_sensitive
         self.pairs = self._load()
-        self.rotation_angle = rotation_angle
 
     def _load(self):
         pairs = []
@@ -452,28 +440,6 @@ class CocoLikeDataset(BaseDataset):
             img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
             img = cv.cvtColor(img, cv.COLOR_GRAY2BGR)
         x, y, w, h = box
-
-        if self.rotation_angle != 0:
-            angle = np.random.uniform(-self.rotation_angle, self.rotation_angle)
-            center = tuple(np.array((x + w / 2, y + h / 2)))
-            rot_mat = cv.getRotationMatrix2D(center, angle, 1.0)
-            img = cv.warpAffine(img, rot_mat, img.shape[1::-1], flags=cv.INTER_LINEAR)
-
-            xy_vector = -w / 2, -h / 2 # vector from center to TL
-            rotated = rotate_point(xy_vector, angle)
-            new_x, new_y = int(center[0] + rotated[0]), int(center[1] + rotated[1])
-            new_w, new_h = int(center[0] - rotated[0] - x), int(center[1] - rotated[1] - y)
-            x,y,w,h = cv.boundingRect(np.array([
-                [x, y],
-                [x+w, y],
-                [x, y+h],
-                [x+w, y+h],
-                [new_x, new_y],
-                [new_x + new_w, new_y],
-                [new_x, new_y + new_h],
-                [new_x + new_w, new_y + new_h]
-            ]))
-            x, y, h, w = [max(s, 0) for s in [x, y, h, w]]
         img= img[y:y+h, x:x+w, :]
         if self.fixed_img_shape is not None:
             img= cv.resize(img, tuple(self.fixed_img_shape[::-1]))
