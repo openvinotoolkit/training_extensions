@@ -55,13 +55,47 @@ python train.py --name <EXP_NAME> --stage0_data <STAGE0_DATA_PATH> --realUS_data
 
 Intermediate models will be stored in ```checkpoints``` directory and logs in ```logs``` directory.
 
-## Testing
+## Inference
 
 ```
 cd src
 python infer.py --name <EXP_NAME> --model_name <NAME OF MODEL TO RESTORE> --infer_data <CHOOSE FROM IVUS2D, IVUS3D, BUS>  --dilation_factor 0 --stage0_data <STAGE0_DATA_PATH> --realUS_data <REAL_IMAGE_DATA_PATH>
 ```
 The results will be stored in ```infer_results```. In order to simulate images corresponding to different frequency set ```dilation_factor```  between 0 and 1.
+
+A demo code has also been provided which does not require any data to be downloaded. The expected output is shown below.
+
+```
+python demo.py --dilation_factor 0
+```
+<p align="center"><img src="./media/output.png" alt="drawing" width="200"/></p>
+
+## Metric
+
+In order to measure the change in resolution of image we used Fourier transform. The experiments are conducted for the simulated 2D IVUS images. First we calculate N point DFT of the image and it is filtered using band pass filter H. The power(P) of the resulting signal after normalizing it, is used as a metric. For further details please refer to the paper[1]. The formulation for the same is given below.
+<p align="center"><img src=https://user-images.githubusercontent.com/22493755/120058143-75c56500-c066-11eb-8153-ac8d93ea83c8.png alt="fourier transform" width="350"/></p>
+<p align="center"><img src=https://user-images.githubusercontent.com/22493755/123139050-6540b880-d473-11eb-94cd-6d742240de1c.png alt="fourier transform" width="350"/></p>
+
+
+ where u is the mean of the value of the image and is used to normalize P. The normalized power captures the power of signal in high frequency band, hence it should decrease with increasing dilation factor. The value of P for different dilation factor are given below
+ 
+ <div align="center">
+    
+ Dilation factor| 0           |    0.25       |     0.50       |     0.75       |       1       |
+| :---          |    :----:   |      :----:   |    :----:      |      :----:    |         :----:   |
+| Normalized Power x1000| 2694.16       | 2304.32    |    2105.62     |      2012.28  |       1755.84    |
+
+
+</div>
+
+In order to reproduce the above values generate the simulated images using ```infer.py``` and then use ```metric.py``` to compute the metric. An example for dilation factor 0 is given below.
+
+```
+cd src
+python infer.py --name dil_0 --model_name <NAME OF MODEL TO RESTORE> --infer_data IVUS2D  --dilation_factor 0 --stage0_data <STAGE0_DATA_PATH> --realUS_data <REAL_IMAGE_DATA_PATH>
+python metric.py --dir ../infer_results/dil_0 
+```
+
 
 ## Acknowledgement
 
