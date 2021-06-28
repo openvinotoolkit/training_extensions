@@ -113,9 +113,9 @@ def calculate_loss(logits, targets, target_lengths, should_cut_by_min=False, ctc
 class Trainer:
     def __init__(self, work_dir, config, rank=0):
         self.rank = rank
+        self.config = config
         if self.rank == 0:
-            self.config = config
-        seed_worker(self.config.get('seed'))
+            seed_worker(self.config.get('seed'))
         self.model_path = config.get('model_path')
         self.train_paths = config.get('train_paths')
         self.val_path = config.get('val_path')
