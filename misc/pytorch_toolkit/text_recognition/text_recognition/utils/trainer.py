@@ -112,6 +112,7 @@ def calculate_loss(logits, targets, target_lengths, should_cut_by_min=False, ctc
 
 class Trainer:
     def __init__(self, work_dir, config, rank=0):
+        self.rank = rank
         if self.rank == 0:
             self.config = config
         seed_worker(self.config.get('seed'))
@@ -139,7 +140,6 @@ class Trainer:
         self.print_freq = config.get('print_freq', 16)
         self.save_freq = config.get('save_freq', 2000)
         self.val_freq = config.get('val_freq', 5000)
-        self.rank = rank
         self.logs_path = os.path.join(self.work_dir, config.get('log_path', 'logs'))
         if self.rank == 0:
             self.writer = SummaryWriter(self.logs_path)
