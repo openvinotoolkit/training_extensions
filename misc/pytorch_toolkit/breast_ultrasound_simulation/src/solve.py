@@ -9,7 +9,7 @@ import numpy as np
 import time
 from model import GeneratorModel, DiscriminatorModel, GeneratorInter, Generator3dInter
 
-device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print(torch.cuda.is_available())
 
 
@@ -27,18 +27,14 @@ class solver():
 
         self.g_opt = optim.Adam(self.gen.parameters(), lr=args.lr)
         self.d_opt = optim.Adam(self.dis.parameters(), lr=args.lr)
-        self.g_scheduler = optim.lr_scheduler.StepLR(
-            self.g_opt, step_size=70, gamma=0.5)
-        self.d_scheduler = optim.lr_scheduler.StepLR(
-            self.d_opt, step_size=70, gamma=0.5)
 
         self.output_dir = os.path.join('../infer_results', args.name)
-        if(not os.path.isdir(self.output_dir)):
+        if not os.path.isdir(self.output_dir):
             os.mkdir(self.output_dir)
 
         self.log_dir = '../logs/' + args.name
         self.writer = SummaryWriter(self.log_dir)
-        if(not os.path.isdir("../checkpoints/" + args.name)):
+        if not os.path.isdir("../checkpoints/" + args.name):
             os.mkdir("../checkpoints/" + args.name)
 
         self.log = args.log_step != -1
@@ -166,8 +162,8 @@ class solver():
                       end=" ")
 
                 # tensorboard logging
-                if(self.log):
-                    if(i_batch % args.log_step == 0):
+                if self.log:
+                    if i_batch % args.log_step == 0:
                         self.writer.add_scalar('Loss/Discriminator',
                                                self.adversarial_loss.item(),
                                                i_batch + len(self.train_data) * epoch)
@@ -180,7 +176,7 @@ class solver():
                         self.writer.add_scalar('LR', get_lr(
                             self.g_opt), i_batch + len(self.train_data) * epoch)
 
-                    if(i_batch == 0 and epoch % self.args.vis_step == 0):
+                    if i_batch == 0 and epoch % self.args.vis_step == 0:
                         self.writer.add_image('Fake', torchvision.utils.make_grid(self.fake[:16].detach(
                         ).cpu(), scale_each=True), i_batch + len(self.train_data) * epoch)
                         self.writer.add_image('Real', torchvision.utils.make_grid(self.real[:16].detach(
@@ -195,7 +191,7 @@ class solver():
                 "epoch": epoch,
                 "generator1_optimizer": self.g_opt.state_dict(),
                 "discriminator1_optimizer": self.d_opt.state_dict()}
-            if(epoch % 2 == 0):
+            if epoch % 2 == 0:
                 torch.save(state_dict, os.path.join("../checkpoints/",
                            args.name + "/" + str(epoch % 20) + ".pt"))
             torch.save(
@@ -231,19 +227,11 @@ class solver():
 
 
 class solver_inter2d(solver):
-    def __init__(self, args, train_data=None, test_data=None, restore=1):
-        self.args = args
-        self.train_data = train_data
-        self.test_data = test_data
-
-        self.gen_old = GeneratorModel(1).to(device)
-
-        self.output_dir = os.path.join('../infer_results', args.name)
-        if(not os.path.isdir(self.output_dir)):
-            os.makedirs(self.output_dir)
+    def __init__(self):
+        super().__init__(args, train_data=None, test_data=None, restore=1)
 
         if restore or args.test:
-            if(args.model_name):
+            if args.model_name:
                 state_dict = torch.load(
                     os.path.join(
                         "../checkpoints",
@@ -252,7 +240,7 @@ class solver_inter2d(solver):
                 
             self.gen = GeneratorInter(
                 1, self.gen_old.cpu(), a=args.dilation_factor)
-            if(args.model_name):
+            if args.model_name:
                 self.gen.load_state_dict(
                     state_dict["generator1_weights"], strict=False)
 
@@ -262,19 +250,11 @@ class solver_inter2d(solver):
 
 
 class solver_inter3d(solver):
-    def __init__(self, args, train_data=None, test_data=None, restore=1):
-        self.args = args
-        self.train_data = train_data
-        self.test_data = test_data
-
-        self.output_dir = os.path.join('../infer_results', args.name)
-        if(not os.path.isdir(self.output_dir)):
-            os.mkdir(self.output_dir)
-
-        self.gen_old = GeneratorModel(1).to(device)
+    def __init__(self):
+        super().__init__(args, train_data=None, test_data=None, restore=1)
 
         if restore or args.test:
-            if(args.model_name):
+            if args.model_name:
                 state_dict = torch.load(
                     os.path.join(
                         "../checkpoints",
@@ -284,7 +264,7 @@ class solver_inter3d(solver):
             self.gen = Generator3dInter(1)
             self.gen2d = GeneratorInter(
                 1, self.gen_old.cpu(), a=args.dilation_factor)
-            if(args.model_name):
+            if args.model_name:
                 self.gen2d.load_state_dict(
                     state_dict["generator1_weights"], strict=False)
 
@@ -303,7 +283,7 @@ class solver_inter3d(solver):
                     else:
                         state_dict_3d[key] = wt2D
                         c += 1
-                elif(key.split(".")[-2] == 'ydim'):
+                elif key.split(".")[-2] == 'ydim':
                     key_w = key.replace("ydim.weight", "wts")
                     wt2D = state_dict_2d[key_w]
                     if len(wt2D.size()) > 1:
@@ -352,3 +332,4 @@ class solver_inter3d(solver):
 def get_lr(optimizer):
     for param_group in optimizer.param_groups:
         return param_group['lr']
+

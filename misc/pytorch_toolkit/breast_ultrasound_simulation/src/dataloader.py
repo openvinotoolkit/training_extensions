@@ -7,9 +7,6 @@ from torch.utils import data
 import torch
 
 
-device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-
-
 class IVUS_Dataset(data.Dataset):
     def __init__(
             self,
@@ -163,3 +160,4 @@ class IVUS3D_Dataset(data.Dataset):
         y = torch.from_numpy(y[np.newaxis, :, :, :] / 256).type(torch.float32)
 
         return X, y
+

@@ -1,8 +1,9 @@
-# Multi-frequncy Ultrasound Simulation
+# Multi-frequency Ultrasound Simulation
 
-Ultrasound simulators are used by clinicians and by the scientific community of practitioners and educators. Ultrasound image formation depends on factors like frequency and size of the transducer, tissue characteristics, nonlinear attenuation, diffraction, and scattering due to the medium. Prior approaches try to incorporate various factors by modelling their physics and solving wave equations, leading to computationally expensive solutions. In this work, we propose a fast simulation approach using Convolutional Neural Network (CNN) to model the non-linearity of signal interaction with ultrasound image formation. The network is trained in an adversarial manner using a Turing test discriminator. The simulation process consists of two stages; Stage 0 is a pseudo-B-mode simulator that provides an initial estimate of the speckle map, Stage 1 is a multi-linear separable CNN which further refines the speckle map to give the final output. 
-We further derive the relationship between the frequency of the transducer and the resolution of the ultrasound image to be able to simulate and form images at frequencies other than at which the model is trained. This is achieved by interpolation between dilated kernels in a multi-linear separable CNN used to control the resolution of the generated image allowing for zero-shot adaptation. Using the multi-linear separable design,, we can simulate entire 3D volumes by training the model only on 2D ultrasound images. 
-Given a  CNN trained on a  2D ultrasound dataset acquired using a transducer of a particular frequency, we can simulate ultrasound images and 3D volumes corresponding to various transducer frequencies without the need for availability of additional training data in 3D and at a different frequency. We also demonstrate the ability to simulate ultrasound images of breast tumour using a model trained on IVUS dataset. We have performed an extensive validation of our approach using both real and simulated ultrasound images. Using regression analysis, we have concluded that there exists a linear relationship between the proposed kernel interpolation factor and the transducer frequency, thereby laying the foundation of a multi-frequency full 3D ultrasound volume simulator.
+Ultrasound simulators are used by clinicians and by the scientific community of practitioners and educators. Ultrasound image formation depends on factors like frequency and size of the transducer, tissue characteristics, nonlinear attenuation, diffraction, and scattering due to the medium. Prior approaches try to incorporate various factors by modelling their physics and solving wave equations, leading to computationally expensive solutions. In this work, we propose a fast simulation approach using Convolutional Neural Network (CNN) to model the non-linearity of signal interaction with ultrasound image formation. The network is trained in an adversarial manner using a Turing test discriminator. The simulation process consists of two stages; Stage 0 is a pseudo-B-mode simulator that provides an initial estimate of the speckle map. Stage 1 is a multi-linear separable CNN that further refines the speckle map of the final output. 
+We further derive the relationship between the frequency of the transducer and the resolution of the ultrasound image to simulate and form images at frequencies other than at which the model is trained. This is achieved by interpolation between dilated kernels in a multi-linear separable CNN used to control the resolution of the generated image allowing for zero-shot adaptation. Using the multi-linear separable design, we can simulate entire 3D volumes by training the model only on 2D ultrasound images. 
+Given a  CNN trained on a  2D ultrasound dataset acquired using a transducer of a particular frequency, we can simulate ultrasound images and 3D volumes corresponding to various transducer frequencies without the need for additional training data in 3D and at a different frequency. We also demonstrate the ability to simulate ultrasound images of breast tumour using a model trained on the IVUS dataset. We have performed an extensive validation of our approach using both real and simulated ultrasound images. Using regression analysis, we have concluded that there exists a linear relationship between the proposed kernel interpolation factor and the transducer frequency, thereby laying the foundation of a multi-frequency full 3D ultrasound volume simulator.
+
 
 
 ## Proposed Approach
@@ -40,7 +41,7 @@ The network is trained on [IVUS](http://www.cvc.uab.es/IVUSchallenge2011/dataset
                         .
                         .
 ```
-Segmentation masks from [INbreast](http://medicalresearch.inescporto.pt/breastresearch/index.php/Get_INbreast_Database) dataset is used to generate stage 0 simulation results for breast ultrasound.
+Segmentation masks from [INbreast](http://medicalresearch.inescporto.pt/breastresearch/index.php/Get_INbreast_Database) dataset is used to generate stage 0 simulation results for breast ultrasound. Alternate source for INbreast dataset [link](https://www.kaggle.com/ramanathansp20/inbreast-dataset). Note that, we have not used INbreast dataset to train these models. We demonstrate the ability to simulate breast ultrasound images using a model trained on IVUS dataset.
 
 ## Pre-trained models
 
@@ -104,6 +105,7 @@ This work is undertaken as part of Intel India Grand Challenge 2016 Project MIRI
 
 
 **Contributor**
+
 The codes/model was contributed to the OpenVINO project by
 
 [Vidit Goel](https://vidit98.github.io/)</br>
@@ -111,7 +113,7 @@ Department of Electrical Engineering,</br>
 Indian Institute of Technology Kharagpur</br>
 email: vidit.goel9816@gmail.com 
 
-[Rakshith Sathish]((https://www.rakshithsathish.me/))</br>
+[Rakshith Sathish](https://www.rakshithsathish.me/)</br>
 Advanced Technology Development Center, </br>
 Indian Institute of Technology Kharagpur</br>
 email: rakshith.sathish@gmail.com
