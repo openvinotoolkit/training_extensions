@@ -41,6 +41,7 @@ from functools import partial
 from pprint import pformat, pprint
 from warnings import warn
 
+import fasttext
 import numpy as np
 import torch
 import torch.nn
@@ -76,25 +77,21 @@ def calculate_loss(logits, targets, target_lengths, should_cut_by_min=False, ctc
         else:
             # narrows on 1st dim from 'start_pos' 'length' symbols
             logits = logits.narrow(1, 0, targets.size(1))
+        logits = logits.permute(0, 2, 1)
+        loss = torch.nn.functional.nll_loss(logits, targets, ignore_index=PAD_TOKEN)
 
-        padding = torch.ones_like(targets) * PAD_TOKEN
-        mask_for_tgt = (targets != padding)
-        b_size, max_len, vocab_size = logits.shape  # batch size, length of the formula, vocab size
-        targets = targets.masked_select(mask_for_tgt)
-        mask_for_logits = mask_for_tgt.unsqueeze(2).expand(-1, -1, vocab_size)
-        logits = logits.masked_select(mask_for_logits).contiguous().view(-1, vocab_size)
-        logits = torch.log(logits)
         assert logits.size(0) == targets.size(0)
         pred = torch.max(logits.data, 1)[1]
 
         accuracy = (pred == targets)
         accuracy = accuracy.cpu().numpy().astype(np.uint32)
-        accuracy = np.sum(accuracy) / len(accuracy)
+        accuracy = np.hstack([accuracy[i][:l] for i, l in enumerate(target_lengths)])
+        accuracy = np.sum(accuracy) / np.prod(accuracy.shape)
         accuracy = accuracy.item()
-        loss = torch.nn.functional.nll_loss(logits, targets)
+
     else:
         logits = torch.nn.functional.log_softmax(logits, dim=2)
-        max_len, b_size, vocab_size = logits.shape  # batch size, length of the formula, vocab size
+        max_len, b_size, _ = logits.shape  # batch size, length of the formula, vocab size
         input_lengths = torch.full(size=(b_size,), fill_value=max_len, dtype=torch.long)
         loss = ctc_loss(logits, targets, input_lengths=input_lengths, target_lengths=target_lengths)
 
@@ -153,6 +150,9 @@ class Trainer:
         self.lr_scheduler = getattr(optim.lr_scheduler, self.config.get('scheduler', 'ReduceLROnPlateau'))(
             self.optimizer, **self.config.get('scheduler_params', {}))
         self.time = get_timestamp()
+        self.use_lang_model = self.config.get("head").get("use_semantics")
+        if self.use_lang_model:
+            self.fasttext_model = fasttext.load_model(self.config.get("language_model_path"))
 
     def create_dirs(self):
         if not os.path.exists(self.logs_path):
@@ -255,12 +255,25 @@ class Trainer:
         imgs = imgs.to(self.device)
         training_gt = training_gt.to(self.device)
         loss_computation_gt = loss_computation_gt.to(self.device)
-        logits, _ = self.model(imgs, training_gt)
+        semantic_loss = None
+        if self.use_lang_model:
+            logits, _, semantic_info = self.model(imgs, training_gt)
+            gt_strs = [self.vocab.construct_phrase(gt).replace(' ', '') for gt in loss_computation_gt]
+            device = imgs.device
+            lm_embs = torch.Tensor([self.fasttext_model[s] for s in gt_strs]).to(device)
+            # since semantic info should be as close to the language model embedding
+            # as possible, target should be 1
+            semantic_loss = torch.nn.CosineEmbeddingLoss()(
+                semantic_info, lm_embs, target=torch.ones(lm_embs.shape[0], device=device))
+        else:
+            logits, _ = self.model(imgs, training_gt)
         cut = self.loss_type != 'CTC'
         loss, accuracy = calculate_loss(logits, loss_computation_gt, target_lengths, should_cut_by_min=cut,
                                         ctc_loss=self.loss)
         self.step += 1
         self.global_step += 1
+        if semantic_loss:
+            loss += semantic_loss
         loss.backward()
         clip_grad_norm_(self.model.parameters(), self.clip)
         self.optimizer.step()
@@ -292,6 +305,8 @@ class Trainer:
                                                                           max_len=1 + len(gold_phrase_str.split()),
                                                                           ignore_end_token=self.config.get('use_ctc')
                                                                           )
+                            gold_phrase_str = gold_phrase_str.lower()
+                            pred_phrase_str = pred_phrase_str.lower()
                             output_file.write(img_name[j] + '\t' + pred_phrase_str + '\t' + gold_phrase_str + '\n')
                             val_acc += int(pred_phrase_str == gold_phrase_str)
                         cut = self.loss_type != 'CTC'
@@ -305,9 +320,11 @@ class Trainer:
                     print('Epoch {}, dataset {} loss: {:.4f}'.format(
                         self.epoch, dataset_name, val_loss
                     ))
+                    self.writer.add_scalar(f'Loss {dataset_name}', val_loss, self.global_step)
                     print('Epoch {}, dataset {} accuracy: {:.4f}'.format(
                         self.epoch, dataset_name, val_acc
                     ))
+                    self.writer.add_scalar(f'Accuracy {dataset_name}', val_acc, self.global_step)
                     weight = len(loader) / sum(map(len, self.val_loaders))
                     val_avg_loss += val_loss * weight
                     val_avg_accuracy += val_acc * weight

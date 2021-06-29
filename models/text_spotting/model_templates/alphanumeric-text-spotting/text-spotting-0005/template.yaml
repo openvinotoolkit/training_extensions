@@ -1,4 +1,4 @@
-name: text-spotting-0004
+name: text-spotting-0005
 domain: Text Spotting
 problem: Alphanumeric Text Spotting
 framework: OTEDetection v2.9.1
@@ -6,9 +6,9 @@ summary: Text spotting model based on Mask-RCNN with text recognition head.
 annotation_format: COCO with text
 initial_weights: snapshot.pth
 dependencies:
-- sha256: f1102e61e1b9ad79fb26f86da047c056458726508f65556c4416c08a43a6d612
-  size: 223291472
-  source: https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/text_spotting/alphanumeric_text_spotting/text_spotting_0004/epoch_25.pth
+- sha256: 30e6918e8402c23bb89300807c83870e913581ffdc5102a3399b6bbe80c92e7e
+  size: 223291625
+  source: https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/text_spotting/alphanumeric_text_spotting/text_spotting_0005/epoch_25.pth
   destination: snapshot.pth
 - source: ../../../../../ote/tools/train.py
   destination: train.py
@@ -51,15 +51,15 @@ metrics:
 - display_name: F1-score
   key: f1
   unit: '%'
-  value: 88.27
+  value: 88.87
 - display_name: Word Spotting (N)
   key: word_spotting
   unit: '%'
-  value: 70.337
+  value: 71.29
 - display_name: End-to-End recognition (N)
   key: e2e_recognition
   unit: '%'
-  value: 67.776
+  value: 68.55
 gpu_num: 4
 tensorboard: true
 config: model.py

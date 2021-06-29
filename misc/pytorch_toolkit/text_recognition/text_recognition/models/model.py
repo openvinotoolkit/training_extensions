@@ -19,17 +19,21 @@ from collections import OrderedDict
 import torch
 import torch.nn as nn
 
-from .backbones.resnet import ResNetLikeBackbone
+from .backbones.resnet import (CustomResNetLikeBackbone, ResNetLikeBackbone)
 from .text_recognition_heads.attention_based import AttentionBasedLSTM
+from .text_recognition_heads.attention_based_2d import \
+    TextRecognitionHeadAttention
 from .text_recognition_heads.ctc_lstm_based import LSTMEncoderDecoder
 
 TEXT_REC_HEADS = {
     'AttentionBasedLSTM': AttentionBasedLSTM,
     'LSTMEncoderDecoder': LSTMEncoderDecoder,
+    'TextRecognitionHeadAttention': TextRecognitionHeadAttention,
 }
 
 BACKBONES = {
     'resnet': ResNetLikeBackbone,
+    'custom_resnet': CustomResNetLikeBackbone,
 }
 
 
@@ -41,9 +45,7 @@ class TextRecognitionModel(nn.Module):
 
         def forward(self, input_images):
             encoded = self.model.backbone(input_images)
-            row_enc_out, hidden, context = self.model.head.encode(encoded)
-            hidden, context, init_0 = self.model.head.init_decoder(row_enc_out, hidden, context)
-            return row_enc_out, hidden, context, init_0
+            return self.model.head.encoder_wrapper(encoded)
 
     class DecoderWrapper(nn.Module):
 
@@ -51,9 +53,8 @@ class TextRecognitionModel(nn.Module):
             super().__init__()
             self.model = model
 
-        def forward(self, hidden, context, output, row_enc_out, tgt):
-            return self.model.head.step_decoding(
-                hidden, context, output, row_enc_out, tgt)
+        def forward(self, args):
+            return self.model.head.decoder_wrapper(*args)
 
     def __init__(self, backbone, out_size, head):
         super().__init__()

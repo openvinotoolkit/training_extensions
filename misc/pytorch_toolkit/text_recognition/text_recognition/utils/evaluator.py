@@ -141,23 +141,24 @@ class PyTorchRunner(BaseRunner):
 class ONNXRunner(BaseRunner):
     def load_model(self):
         self.use_ctc = self.config.get('use_ctc')
+        self.head_type = self.config.get('head').get('type')
         if self.use_ctc:
             self.model = onnxruntime.InferenceSession(self.config.get('res_model_name'))
         else:
             self.decoder_onnx = onnxruntime.InferenceSession(self.config.get('res_decoder_name'))
             self.encoder_onnx = onnxruntime.InferenceSession(self.config.get('res_encoder_name'))
 
-    def run_decoder(self, hidden, context, output, row_enc_out):
-
+    def run_decoder_1d(self, row_enc_out, hidden, context, output):
+        # TODO: unify functions
         decoder_inputs = get_onnx_inputs(self.decoder_onnx)
         decoder_outputs = get_onnx_outputs(self.decoder_onnx)
         logits = []
         logit = None
         for _ in range(MAX_SEQ_LEN):
             if logit is not None:
-                tgt = np.reshape(np.argmax(logit, axis=1), (1, 1)).astype(np.long)
+                tgt = np.reshape(np.argmax(logit, axis=1), (1, 1)).astype(np.float32)
             else:
-                tgt = np.array([[START_TOKEN]] * 1)
+                tgt = np.array([[START_TOKEN]] * 1).astype(np.float32)
             if tgt[0][0] == END_TOKEN:
                 break
             hidden, context, output, logit = self.decoder_onnx.run(
@@ -168,6 +169,29 @@ class ONNXRunner(BaseRunner):
                     decoder_inputs[2]: output,
                     decoder_inputs[3]: row_enc_out,
                     decoder_inputs[4]: tgt
+                })
+            logits.append(logit)
+        return np.argmax(np.array(logits).squeeze(1), axis=1)
+
+    def run_decoder_2d(self, features, hidden):
+        # TODO: unify functions
+        decoder_inputs = get_onnx_inputs(self.decoder_onnx)
+        decoder_outputs = get_onnx_outputs(self.decoder_onnx)
+        logits = []
+        logit = None
+        for _ in range(MAX_SEQ_LEN):
+            if logit is not None:
+                tgt = np.reshape(np.argmax(logit, axis=1), (1, 1)).astype(np.float32)
+            else:
+                tgt = np.array([[START_TOKEN]] * 1).astype(np.float32)
+            if tgt[0][0] == END_TOKEN:
+                break
+            hidden, logit = self.decoder_onnx.run(
+                decoder_outputs,
+                {
+                    decoder_inputs[0]: hidden,
+                    decoder_inputs[1]: features,
+                    decoder_inputs[2]: tgt[0]
                 })
             logits.append(logit)
         return np.argmax(np.array(logits).squeeze(1), axis=1)
@@ -193,9 +217,12 @@ class ONNXRunner(BaseRunner):
         img = img.clone().detach().numpy()
         if self.use_ctc:
             return self.run_complete_model(img)
-        row_enc_out, h, c, O_t = self.run_encoder(img)
-        pred = self.run_decoder(h, c, O_t, row_enc_out).astype(np.int32)
-        return pred
+        encoder_out = self.run_encoder(img)
+        if self.head_type == 'AttentionBasedLSTM':
+            return self.run_decoder_1d(*encoder_out).astype(np.int32)
+        if self.head_type == 'TextRecognitionHeadAttention':
+            return self.run_decoder_2d(*encoder_out).astype(np.int32)
+        raise ValueError(f'Unsupported head type {self.head_type}')
 
     def openvino_transform(self):
         return False
@@ -205,6 +232,7 @@ class OpenVINORunner(BaseRunner):
     def load_model(self):
         ie = IECore()
         self.use_ctc = self.config.get('use_ctc')
+        self.head_type = self.config.get('head').get('type')
         if self.use_ctc:
             model = read_net(self.config.get('res_model_name').replace('.onnx', '.xml'), ie)
             self.exec_net = ie.load_network(network=model, device_name='CPU')
@@ -214,18 +242,43 @@ class OpenVINORunner(BaseRunner):
             self.exec_net_encoder = ie.load_network(network=encoder, device_name='CPU')
             self.exec_net_decoder = ie.load_network(network=dec_step, device_name='CPU')
 
-    def run_model(self, img):
-        if torch.is_tensor(img):
-            img = img.clone().detach().numpy()
-        if self.use_ctc:
-            logits = self.exec_net.infer(inputs={self.config.get('model_input_names'): img})[
-                self.config.get('model_output_names').split(',')[0]]
-            pred = log_softmax(logits, axis=2)
-            pred = ctc_greedy_search(pred, 0)
-            return pred[0]
+    def _run_ctc_head(self, img):
+        logits = self.exec_net.infer(inputs={self.config.get('model_input_names'): img})[
+            self.config.get('model_output_names').split(',')[0]]
+        pred = log_softmax(logits, axis=2)
+        pred = ctc_greedy_search(pred, 0)
+        return pred[0]
 
-        enc_res = self.exec_net_encoder.infer(inputs={self.config.get(
-            'encoder_input_names', ENCODER_INPUTS).split(',')[0]: img})
+    def _run_2d_attn(self, enc_res):
+        enc_out_names = self.config.get('encoder_output_names', ENCODER_OUTPUTS).split(',')
+        features = enc_res[enc_out_names[0]]
+        if len(enc_out_names) == 3:  # LSTM decoder with 2 hiddens:
+            dec_state = enc_res[enc_out_names[1]], enc_res[enc_out_names[2]]
+        else:  # GRU decoder with 1 hidden:
+            dec_state = enc_res[enc_out_names[1]]
+        dec_in_names = self.config.get('decoder_input_names', DECODER_INPUTS).split(',')
+        dec_out_names = self.config.get('decoder_output_names', DECODER_OUTPUTS).split(',')
+        tgt = np.array([[START_TOKEN]] * 1)
+        logits = []
+        for _ in range(MAX_SEQ_LEN):
+            dec_res = self.exec_net_decoder.infer(inputs={
+                dec_in_names[0]: dec_state,
+                dec_in_names[1]: features,
+                dec_in_names[2]: tgt,
+            }
+            )
+            if len(dec_res) == 3:  # LSTM
+                dec_state = dec_res[dec_out_names[0]], dec_res[dec_out_names[1]]
+            else:  # GRU
+                dec_state = dec_res[dec_out_names[0]]
+            logit = dec_res[dec_out_names[-1]]
+            logits.append(logit)
+            tgt = np.reshape(np.argmax(logit, axis=1), (1, 1)).astype(np.long)
+            if tgt[0][0] == END_TOKEN:
+                break
+        return np.argmax(np.array(logits).squeeze(1), axis=1)
+
+    def _run_1d_attn(self, enc_res):
         enc_out_names = self.config.get('encoder_output_names', ENCODER_OUTPUTS).split(',')
         ir_row_enc_out = enc_res[enc_out_names[0]]
         dec_states_h = enc_res[enc_out_names[1]]
@@ -256,6 +309,25 @@ class OpenVINORunner(BaseRunner):
                 break
         return np.argmax(np.array(logits).squeeze(1), axis=1)
 
+    def _run_encoder(self, img):
+        enc_res = self.exec_net_encoder.infer(inputs={self.config.get(
+            'encoder_input_names', ENCODER_INPUTS).split(',')[0]: img})
+        return enc_res
+
+    def run_model(self, img):
+        if torch.is_tensor(img):
+            img = img.clone().detach().numpy()
+        if self.use_ctc:
+            return self._run_ctc_head(img)
+
+        enc_res = self._run_encoder(img)
+        if self.head_type == 'AttentionBasedLSTM':
+            return self._run_1d_attn(enc_res)
+
+        if self.head_type == 'TextRecognitionHeadAttention':
+            return self._run_2d_attn(enc_res)
+        raise ValueError(f'Unsupported head type {self.head_type}')
+
     def openvino_transform(self):
         return True
 
@@ -282,18 +354,40 @@ class Evaluator:
 
     def load_dataset(self):
         dataset_params = self.config.get('dataset')
-        dataset_type = dataset_params.pop('type')
+        if isinstance(dataset_params, list):
+            self.val_loader = []
+            batch_transform = create_list_of_transforms(self.config.get(
+                'val_transforms_list'), ovino_ir=self.runner.openvino_transform())
+            for params in dataset_params:
 
-        val_dataset = str_to_class[dataset_type](**dataset_params)
-        batch_transform = create_list_of_transforms(self.config.get(
-            'val_transforms_list'), ovino_ir=self.runner.openvino_transform())
-        print('Creating eval transforms list: {}'.format(batch_transform))
-        self.val_loader = DataLoader(
-            val_dataset,
-            collate_fn=partial(collate_fn, self.vocab.sign2id,
-                               batch_transform=batch_transform,
-                               use_ctc=(self.config.get('use_ctc'))),
-            num_workers=os.cpu_count())
+                dataset_type = params.pop('type')
+
+                val_dataset = str_to_class[dataset_type](**params)
+                print('Creating eval transforms list: {}'.format(batch_transform))
+                self.val_loader.append(
+                    DataLoader(
+                        val_dataset,
+                        collate_fn=partial(collate_fn, self.vocab.sign2id,
+                                           batch_transform=batch_transform,
+                                           use_ctc=(self.config.get('use_ctc'))),
+                        num_workers=os.cpu_count(),
+                        batch_size=self.config.get('val_batch_size', 1)
+                    )
+                )
+        else:
+
+            dataset_type = dataset_params.pop('type')
+
+            val_dataset = str_to_class[dataset_type](**dataset_params)
+            batch_transform = create_list_of_transforms(self.config.get(
+                'val_transforms_list'), ovino_ir=self.runner.openvino_transform())
+            print('Creating eval transforms list: {}'.format(batch_transform))
+            self.val_loader = DataLoader(
+                val_dataset,
+                collate_fn=partial(collate_fn, self.vocab.sign2id,
+                                   batch_transform=batch_transform,
+                                   use_ctc=(self.config.get('use_ctc'))),
+                num_workers=os.cpu_count())
 
     def read_expected_outputs(self):
         if self.config.get('expected_outputs'):
@@ -301,24 +395,46 @@ class Evaluator:
                 self.expected_outputs = json.load(outputs_file)
 
     def validate(self):
-        annotations = []
-        predictions = []
         print('Starting inference')
-        text_acc = 0
-        for img_name, _, imgs, _, loss_computation_gt in tqdm(self.val_loader):
-            with torch.no_grad():
-                targets = self.runner.run_model(imgs)
-                gold_phrase_str = self.vocab.construct_phrase(
-                    loss_computation_gt[0], ignore_end_token=self.config.get('use_ctc'))
-                pred_phrase_str = postprocess_prediction(self.vocab.construct_phrase(
-                    targets, ignore_end_token=self.config.get('use_ctc')))
-                annotations.append((gold_phrase_str, img_name[0]))
-                predictions.append((pred_phrase_str, img_name[0]))
-                text_acc += int(pred_phrase_str == gold_phrase_str)
-        text_acc /= len(self.val_loader)
-        print('Text accuracy is: ', text_acc)
-        if not self.render:
-            return text_acc
-        metric = Im2latexRenderBasedMetric()
-        res = metric.evaluate(annotations, predictions)
-        return res
+        if not isinstance(self.val_loader, list):
+            annotations = []
+            predictions = []
+            text_acc = 0
+            for img_name, _, imgs, _, loss_computation_gt in tqdm(self.val_loader):
+                with torch.no_grad():
+                    targets = self.runner.run_model(imgs)
+                    gold_phrase_str = self.vocab.construct_phrase(
+                        loss_computation_gt[0], ignore_end_token=self.config.get('use_ctc'))
+                    pred_phrase_str = postprocess_prediction(self.vocab.construct_phrase(
+                        targets, ignore_end_token=self.config.get('use_ctc')))
+                    annotations.append((gold_phrase_str, img_name[0]))
+                    predictions.append((pred_phrase_str, img_name[0]))
+                    text_acc += int(pred_phrase_str == gold_phrase_str)
+            text_acc /= len(self.val_loader)
+            print('Text accuracy is: ', text_acc)
+            if not self.render:
+                return text_acc
+            metric = Im2latexRenderBasedMetric()
+            res = metric.evaluate(annotations, predictions)
+            return res
+
+        val_avg_accuracy = 0
+        for loader in self.val_loader:
+            val_acc = 0
+            for img_name, _, imgs, _, loss_computation_gt in tqdm(loader):
+                with torch.no_grad():
+                    targets = self.runner.run_model(imgs)
+                    gold_phrase_str = self.vocab.construct_phrase(
+                        loss_computation_gt[0], ignore_end_token=self.config.get('use_ctc'))
+                    pred_phrase_str = postprocess_prediction(self.vocab.construct_phrase(
+                        targets, ignore_end_token=self.config.get('use_ctc')))
+                    gold_phrase_str = gold_phrase_str.lower()
+                    pred_phrase_str = pred_phrase_str.lower()
+                    val_acc += int(pred_phrase_str == gold_phrase_str)
+            val_acc /= len(loader)
+
+            dataset_name = os.path.split(loader.dataset.data_path)[-1]
+            print('dataset {} accuracy: {:.4f}'.format(dataset_name, val_acc))
+            weight = len(loader) / sum(map(len, self.val_loader))
+            val_avg_accuracy += val_acc * weight
+        return val_avg_accuracy

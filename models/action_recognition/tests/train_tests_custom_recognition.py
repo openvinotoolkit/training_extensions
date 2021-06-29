@@ -24,7 +24,7 @@ kwargs = dict(
 )
 
 
-class CustomRecognitionTestCaseKinetics(
+class CustomRecognitionTestCaseS3DKinetics(
         create_action_recognition_test_case(
             model_name='s3d-rgb-mobilenet-v3',
             enable_metrics_eval=False,
@@ -32,3 +32,12 @@ class CustomRecognitionTestCaseKinetics(
         )
 ):
     """ Train/eval test case for s3d-rgb-mobilenet-v3 model. """
+
+class CustomRecognitionTestCaseX3dKinetics(
+        create_action_recognition_test_case(
+            model_name='x3d-rgb-mobilenet-v3-lgd-gc',
+            enable_metrics_eval=False,
+            **kwargs,
+        )
+):
+    """ Train/eval test case for x3d-rgb-mobilenet-v3-lgd-gc model. """

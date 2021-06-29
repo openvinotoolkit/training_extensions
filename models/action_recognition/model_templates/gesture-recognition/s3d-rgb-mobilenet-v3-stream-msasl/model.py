@@ -1,4 +1,9 @@
 # global parameters
+num_videos_per_gpu = 12
+num_workers_per_gpu = 3
+train_sources = ('msasl',)
+test_sources = ('msasl',)
+
 root_dir = 'data'
 work_dir = None
 load_from = None
@@ -9,6 +14,10 @@ input_clip_length = 16
 input_img_size = 224
 reset_layer_prefixes = ['cls_head']
 reset_layer_suffixes = None
+
+# training settings
+enable_mutual_learning = False
+num_train_clips = 2 if enable_mutual_learning else 1
 
 # model definition
 model = dict(
@@ -40,6 +49,7 @@ model = dict(
         out_attention=False,
         weight_norm='none',
         center_conv_weight=None,
+        internal_dropout=True,
         dropout_cfg=dict(
             dist='gaussian',
             p=0.1,
@@ -68,11 +78,6 @@ model = dict(
         st_scale=10.0,
         reg_weight=1.0,
         reg_threshold=0.1,
-        enable_sampling=False,
-        adaptive_sampling=False,
-        sampling_angle_std=3.14 / 2 / 5,
-        enable_class_mixing=False,
-        class_mixing_alpha=0.2,
         loss_cls=dict(
             type='AMSoftmaxLoss',
             target_loss='ce',
@@ -107,8 +112,12 @@ model = dict(
 
 # model training and testing settings
 train_cfg = dict(
-    self_challenging=dict(enable=True, drop_p=0.33),
-    clip_mixing=dict(enable=False, mode='logits', weight=0.2)
+    self_challenging=dict(enable=True,
+                          drop_p=0.33),
+    clip_mixing=dict(enable=enable_mutual_learning,
+                     mode='logits',
+                     num_clips=num_train_clips,
+                     weight=0.2),
 )
 test_cfg = dict(
     average_clips=None
@@ -121,8 +130,14 @@ img_norm_cfg = dict(
     to_bgr=False
 )
 train_pipeline = [
-    dict(type='StreamSampleFrames', clip_len=input_clip_length, trg_fps=15, num_clips=1,
-         temporal_jitter=True, min_intersection=1.0),
+    dict(type='StreamSampleFrames',
+         clip_len=input_clip_length,
+         trg_fps=15,
+         num_clips=num_train_clips,
+         temporal_jitter=True,
+         min_intersection=dict(static=1.0, dynamic=1.0),
+         neg_prob=-1),
+    # dict(type='LoadKpts', out_name='kpts'),
     dict(type='RawFrameDecode'),
     dict(type='Resize', scale=(-1, 256)),
     dict(type='RandomRotate', delta=10, prob=0.5),
@@ -142,7 +157,11 @@ train_pipeline = [
     dict(type='ToTensor', keys=['imgs', 'label', 'dataset_id'])
 ]
 val_pipeline = [
-    dict(type='StreamSampleFrames', clip_len=input_clip_length, trg_fps=15, num_clips=1, test_mode=True),
+    dict(type='StreamSampleFrames',
+         clip_len=input_clip_length,
+         trg_fps=15,
+         num_clips=1,
+         test_mode=True),
     dict(type='RawFrameDecode'),
     dict(type='Resize', scale=(-1, 256)),
     dict(type='CenterCrop', crop_size=input_img_size),
@@ -152,28 +171,28 @@ val_pipeline = [
     dict(type='ToTensor', keys=['imgs'])
 ]
 data = dict(
-    videos_per_gpu=14,
-    workers_per_gpu=2,
+    videos_per_gpu=num_videos_per_gpu,
+    workers_per_gpu=num_workers_per_gpu,
     train_dataloader=dict(
-        drop_last=True
+        drop_last=True,
     ),
     shared=dict(
-        type='StreamDataset',
+        type='RawframeDataset',
         data_subdir='global_crops',
         filename_tmpl='img_{:05d}.jpg'
     ),
     train=dict(
-        source=['msasl'],
+        source=train_sources,
         ann_file='train.txt',
         pipeline=train_pipeline,
     ),
     val=dict(
-        source=['msasl'],
+        source=test_sources,
         ann_file='val.txt',
         pipeline=val_pipeline
     ),
     test=dict(
-        source=['msasl'],
+        source=test_sources,
         ann_file='test.txt',
         pipeline=val_pipeline
     )

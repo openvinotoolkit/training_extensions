@@ -26,7 +26,7 @@ kwargs = dict(
 
 class TextSpotting0004ExportTestCase(
         create_text_spotting_export_test_case(
-            model_name='text-spotting-0004',
+            model_name='text-spotting-0005',
             **kwargs)
 ):
-    """ Test case for text-spotting-0004 model export. """
+    """ Test case for text-spotting-0005 model export. """
