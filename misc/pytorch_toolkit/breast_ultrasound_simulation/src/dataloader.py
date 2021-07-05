@@ -15,7 +15,7 @@ class IVUS_Dataset(data.Dataset):
             Images_DIR,
             resize=True,
             test=0):
-        "Initiliaztion"
+        # Initiliaztion
         self.file_names = file_names
         self.Stage0_DIR = Stage0_DIR
         self.Images_DIR = Images_DIR
@@ -25,7 +25,7 @@ class IVUS_Dataset(data.Dataset):
         self.test = test
 
     def __len__(self):
-        "Return total number of samples in data set"
+        # Return total number of samples in data set
         return len(self.file_names)
 
     def __getitem__(self, index):
@@ -54,7 +54,7 @@ class BUS_dataset(data.Dataset):
             label_dir=None,
             resize=True,
             test=0):
-        "Initiliaztion"
+        # Initiliaztion
         self.file_names = file_names
         self.bmode_dir = bmode_dir
         self.label_dir = label_dir
@@ -64,7 +64,7 @@ class BUS_dataset(data.Dataset):
         self.test = test
 
     def __len__(self):
-        "Return total number of samples in data set"
+        # Return total number of samples in data set
         return len(self.file_names)
 
     def __getitem__(self, index):
@@ -74,27 +74,27 @@ class BUS_dataset(data.Dataset):
         # stage 0 is input,x
         X = Image.open(os.path.join(self.bmode_dir, file_name))
         y = 0
-        if(self.label_dir is not None):
+        if self.label_dir is not None:
             y = Image.open(os.path.join(
                 self.label_dir, file_name[:-10] + ".png"))
             y = y.convert('1')
             y = y.resize((128, 128))
             y = self.ten_trans(y)
-        if(self.test):
+        if self.test:
             X = self.ten_trans(X)
-            return X, y, file_name
+        return X, y, file_name
 
 
 class IVUS3D_Dataset(data.Dataset):
     def __init__(self, folder_names, Stage0_DIR, Images_DIR):
-        "Initiliaztion"
+        # Initiliaztion
         self.folder_names = folder_names
         self.Images_DIR = Images_DIR
         self.Stage0_DIR = Stage0_DIR
         self.ten_trans = transforms.ToTensor()
 
     def __len__(self):
-        "Return total number of samples in data set"
+        # Return total number of samples in data set
         return len(self.folder_names)
 
     def __getitem__(self, index):
@@ -115,7 +115,7 @@ class IVUS3D_Dataset(data.Dataset):
                 c1 = 1
                 continue
 
-            if c1 > 1 and c1 < 5:
+            if 1 < c1 < 5:
                 # stage 0 is input,x
                 X = cv2.imread(
                     os.path.join(
@@ -160,4 +160,3 @@ class IVUS3D_Dataset(data.Dataset):
         y = torch.from_numpy(y[np.newaxis, :, :, :] / 256).type(torch.float32)
 
         return X, y
-

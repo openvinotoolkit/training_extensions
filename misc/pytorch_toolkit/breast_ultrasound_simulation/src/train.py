@@ -71,5 +71,5 @@ training_gen = data.DataLoader(training_set, **params)
 testing_gen = data.DataLoader(testing_set, **params_test)
 
 
-solver_ins = solver(args, training_gen, testing_gen, restore=args.restore)
+solver_ins = Solver(args, training_gen, testing_gen, restore=args.restore)
 solver_ins.train()

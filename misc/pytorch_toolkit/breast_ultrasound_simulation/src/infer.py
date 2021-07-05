@@ -42,14 +42,14 @@ params_test = {'batch_size': 1,
 STAGE0_DIR = args.stage0_data
 IMAGES_DIR = args.realUS_data
 
-if(args.infer_data == 'IVUS2D'):
+if args.infer_data == 'IVUS2D':
     print("Preparing dataset for inferecing on 2D IVUS dataset")
 
     all_files = os.listdir(STAGE0_DIR)
     test_ids = [temp for temp in all_files if temp[6:8] == "09"]
     testing_set = IVUS_Dataset(test_ids, STAGE0_DIR, IMAGES_DIR)
 
-elif(args.infer_data == 'IVUS3D'):
+elif args.infer_data == 'IVUS3D':
     print("Preparing dataset for inferecing on 3D IVUS dataset")
 
     all_files = os.listdir(STAGE0_DIR)
@@ -57,11 +57,11 @@ elif(args.infer_data == 'IVUS3D'):
     testing_set = IVUS3D_Dataset(test_ids, STAGE0_DIR, IMAGES_DIR)
 
 
-elif(args.infer_data == 'BUS'):
+elif args.infer_data == 'BUS':
     print("Preparing dataset for inferecing on Breast ultrasound dataset dataset")
 
     inb_te = os.listdir(STAGE0_DIR)
-    file_inb_te = [temp for temp in inb_te]
+    file_inb_te = list(inb_te)
     testing_set = BUS_dataset(file_inb_te, STAGE0_DIR, resize=True, test=1)
 
 
@@ -69,11 +69,11 @@ testing_gen = data.DataLoader(testing_set, **params_test)
 
 print("Loaded Dataset")
 
-if(args.infer_data == 'IVUS3D'):
-    solver_ins = solver_inter3d(args, test_data=testing_gen, restore=1)
+if args.infer_data == 'IVUS3D':
+    solver_ins = Solver_inter3d(args, test_data=testing_gen, restore=1)
     solver_ins.test()
 else:
-    if(args.infer_data == 'BUS'):
+    if args.infer_data == 'BUS':
         args.dilation_factor = 0
-    solver_ins = solver_inter2d(args, test_data=testing_gen, restore=1)
+    solver_ins = Solver_inter2d(args, test_data=testing_gen, restore=1)
     solver_ins.test()

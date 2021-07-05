@@ -1,5 +1,5 @@
 import torch
-import torch.nn as nn
+from torch import nn
 import torch.nn.functional as F
 import numpy as np
 
@@ -7,7 +7,7 @@ import numpy as np
 class SpectralConv2d(nn.Module):
     def __init__(self, ch, k, p, py, s, dil):
         # 3x3  =>    ch=, k=3, p=1, s=1
-        super(SpectralConv2d, self).__init__()
+        super().__init__()
         self.ch = ch
 
         self.ydim = nn.Conv2d(
@@ -37,14 +37,13 @@ class SpectralConv2d(nn.Module):
 
 class SpectralConv2dInter(nn.Module):
     def __init__(self, ch, k, pad, dil, wts_list=None, a=1):
-        super(SpectralConv2dInter, self).__init__()
+        super().__init__()
         self.kernel = k + (k - 1) * (dil - 1)  # default dil = 1(no dilation)
         self.pad = pad
-        index = torch.Tensor(
-            [i for i in range(0, self.kernel, dil)]).to(torch.int64)
+        index = torch.Tensor(list(range(0, self.kernel, dil))).to(torch.int64)
         z = torch.zeros(ch, ch, self.kernel, 1)
-        if(wts_list is None):
-            """initialize the wts for training"""
+        if wts_list is None:
+            # initialize the wts for training
             print("Not implemented")
         ydim_wt = wts_list.ydim.weight.data
 
@@ -64,7 +63,7 @@ class SpectralConv2dInter(nn.Module):
                 0, 0), stride=(
                 1, 1), groups=ch, bias=True)
 
-        if(wts_list is not None):
+        if wts_list is not None:
             self.xdim.load_state_dict(wts_list.xdim.state_dict())
             self.bias.load_state_dict(wts_list.bias.state_dict())
 
@@ -82,7 +81,7 @@ class SpectralConv2dInter(nn.Module):
 
 class SpectralConv3dInter(nn.Module):
     def __init__(self, ch, k, pad, dil):
-        super(SpectralConv3dInter, self).__init__()
+        super().__init__()
         self.kernel = k + (k - 1) * (dil - 1)  # default dil = 1(no dilation)
         self.pad = pad
         p = int((pad == 2))
@@ -123,7 +122,7 @@ class SpectralConv3dInter(nn.Module):
 
 class ResidualBlock(nn.Module):
     def __init__(self, ch, py, dil):
-        super(ResidualBlock, self).__init__()
+        super().__init__()
         self.conv = nn.Sequential(
             SpectralConv2d(ch=ch, k=3, p=1, py=py, s=1, dil=dil),
             nn.BatchNorm2d(ch),
@@ -143,7 +142,7 @@ class ResidualBlock(nn.Module):
 
 class ResidualBlockInter(nn.Module):
     def __init__(self, ch, py, dil, wts_list=None, a=1):
-        super(ResidualBlockInter, self).__init__()
+        super().__init__()
         self.conv = nn.Sequential(
             SpectralConv2dInter(
                 ch=ch,
@@ -175,7 +174,7 @@ class ResidualBlockInter(nn.Module):
 
 class ResidualBlock3dInter(nn.Module):
     def __init__(self, ch, py, dil):
-        super(ResidualBlock3dInter, self).__init__()
+        super().__init__()
         self.conv = nn.Sequential(
             SpectralConv3dInter(
                 ch=ch,
@@ -203,7 +202,7 @@ class ResidualBlock3dInter(nn.Module):
 
 class GeneratorModel(nn.Module):
     def __init__(self, in_ch):
-        super(GeneratorModel, self).__init__()
+        super().__init__()
         self.down1 = nn.Sequential(
             # 1x1 for channel change
             nn.Conv2d(in_ch, 16, 1, padding=0, stride=1, bias=True),
@@ -259,7 +258,7 @@ class GeneratorModel(nn.Module):
 
 class GeneratorInter(nn.Module):
     def __init__(self, in_ch, model=None, a=1):
-        super(GeneratorInter, self).__init__()
+        super().__init__()
 
         self.down1 = nn.Sequential(
             # 1x1 for channel change
@@ -323,7 +322,7 @@ class GeneratorInter(nn.Module):
 
 class Generator3dInter(nn.Module):
     def __init__(self, in_ch):
-        super(Generator3dInter, self).__init__()
+        super().__init__()
 
         self.down1 = nn.Sequential(
             # 1x1 for channel change
@@ -382,7 +381,7 @@ class Generator3dInter(nn.Module):
 
 class DiscriminatorModel(nn.Module):
     def __init__(self, in_ch):
-        super(DiscriminatorModel, self).__init__()
+        super().__init__()
         self.conv = nn.Sequential(
             nn.Conv2d(in_ch, 96, 3, padding=1, stride=2),
             nn.BatchNorm2d(96),

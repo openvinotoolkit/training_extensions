@@ -1,10 +1,9 @@
 import torch
-import torch.nn as nn
-import torch.optim as optim
+from torch import nn
+from torch import optim
 from torch.utils.tensorboard import SummaryWriter
 import torchvision
 import os
-import shutil
 import numpy as np
 import time
 from model import GeneratorModel, DiscriminatorModel, GeneratorInter, Generator3dInter
@@ -34,7 +33,7 @@ class Solver():
 
         self.log_dir = '../logs/' + args.name
         if not os.path.isdir(self.log_dir):
-            os.mkdir(self.log_dirr)
+            os.mkdir(self.log_dir)
         self.writer = SummaryWriter(self.log_dir)
         if not os.path.isdir("../checkpoints/" + args.name):
             os.mkdir("../checkpoints/" + args.name)
@@ -148,12 +147,12 @@ class Solver():
                 AdvD_epoch += self.adversarial_loss.item()
 
                 # Python Logging
-                print(f'Step[{i_batch + 1} / {len(self.train_data)}],
+                print(f'''Step[{i_batch + 1} / {len(self.train_data)}],
                 L1: {L1_epoch / (i_batch + 1)},
                 AccD: {DisAcc_epoch / (i_batch + 1)},
                 AdvD: {AdvD_epoch / (i_batch + 1)},
                 AdvG: {AdvG_epoch / (i_batch + 1)},
-                Time: {time.time() - start_time)}sec')
+                Time: {time.time() - start_time}sec''')
 
 
                 # tensorboard logging
@@ -234,10 +233,11 @@ class Solver():
             print('Step:{}'.format(i_batch))
 
 
-class Solver_inter2d(solver):
-    def __init__(self):
-        super().__init__(args, train_data = None, test_data = None, restore = 1)
+class Solver_inter2d(Solver):
+    def __init__(self,args, train_data = None, test_data = None, restore = 1):
+        super().__init__()
 
+        self.gen_old = GeneratorModel(1).to(device)
         if restore or args.test:
             if args.model_name:
                 state_dict=torch.load(
@@ -257,21 +257,21 @@ class Solver_inter2d(solver):
             print("Loaded Model for inferencing IVUS2D")
 
 
-class Solver_inter3d(solver):
-    def __init__(self):
-        super().__init__(args, train_data = None, test_data = None, restore = 1)
+class Solver_inter3d(Solver):
+    def __init__(self,args, train_data = None, test_data = None, restore = 1):
+        super().__init__()
+        self.gen_old = GeneratorModel(1).to(device)
 
         if restore or args.test:
+
+            self.gen=Generator3dInter(1)
+            self.gen2d=GeneratorInter(1, self.gen_old.cpu(), a = args.dilation_factor)
             if args.model_name:
                 state_dict=torch.load(
                 os.path.join(
                 "../checkpoints",
                 args.model_name))
                 self.gen_old.load_state_dict(state_dict["generator1_weights"])
-
-            self.gen=Generator3dInter(1)
-            self.gen2d=GeneratorInter(1, self.gen_old.cpu(), a = args.dilation_factor)
-            if args.model_name:
                 self.gen2d.load_state_dict(
                 state_dict["generator1_weights"], strict = False)
 
@@ -322,8 +322,8 @@ class Solver_inter3d(solver):
         print("Starting Testing")
 
         for i_batch, sample in enumerate(self.test_data):
-            X, n=sample
-            X=X.to(device)
+            X, _ =sample
+            X= X.to(device)
 
             # generating fake images
             with torch.no_grad():

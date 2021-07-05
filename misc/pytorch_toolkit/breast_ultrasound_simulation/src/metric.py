@@ -2,7 +2,6 @@ import cv2
 import numpy as np
 import os
 from tqdm import tqdm
-import math
 import argparse
 
 parser = argparse.ArgumentParser()
@@ -11,28 +10,27 @@ args = parser.parse_args()
 
 
 
-def filter(s, lf, hf):
-    mask = np.zeros((s, s))
-    c = np.array([s/2, s/2])
-    
-    for i in range(s):
-        for j in range(s):
-            n = np.linalg.norm(c - np.array([i, j]))
-            if(n <hf and n>lf):
-                mask[i][j] = 1
+def filter_custom(req_shape, low_freq, high_freq):
+    filtered_mask = np.zeros((req_shape, req_shape))
+    c = np.array([req_shape/2, req_shape/2])
+    for i_val in range(req_shape):
+        for j_val in range(req_shape):
+            n = np.linalg.norm(c - np.array([i_val, j_val]))
+            if low_freq<n<high_freq:
+                filtered_mask[i_val][j_val] = 1
 
-    return mask
+    return filtered_mask
 
-def fft(img, mask, v):
+def fft(img, filt_mask, v):
     img = img/255
-    m = np.mean(img)
-    img = (img - m)
-    f = np.fft.fft2(img)
-    f = np.fft.fftshift(f)
-    f = mask*f
-    s = np.sum(np.abs(f)**2)
+    mean = np.mean(img)
+    img = (img - mean)
+    f_img = np.fft.fft2(img)
+    f_img = np.fft.fftshift(f_img)
+    f_img = filt_mask*f_img
+    sq_sum = np.sum(np.abs(f_img)**2)
 
-    return s/m,f
+    return sq_sum/mean,f_img
 
 
 DIR = [args.dir]
@@ -43,23 +41,18 @@ print(DIR)
 
 sam_avg = [0]*len(DIR)
 fft_avg = [0]*len(DIR)
-s = 128
-lf = s/8
-hf = s/4
-mask = filter(s, lf, hf)
+SHAPE = 128
+LOW_FREQ = SHAPE/8
+HIGH_FREQ = SHAPE/4
+mask = filter_custom(SHAPE, LOW_FREQ, HIGH_FREQ)
 for j, D in enumerate(tqdm(DIR)):
-    images = [f for f in os.listdir(DIR[j])]
+    images = list(os.listdir(DIR[j]))
     for i, im in enumerate(images):
-        
         a = cv2.imread(os.path.join(D, im),0)
-        fa = fft(a, mask, hf - lf)
+        fa = fft(a, mask, HIGH_FREQ - LOW_FREQ)
         sam_avg[j] += fa[0]
-        
         fft_avg[j] = (fft_avg[j]*i + fa[1])/(i+1)
 
 si =len(images)
-
-
 sam_avg  = np.array(sam_avg)/si
 print(sam_avg)
-
