@@ -48,8 +48,8 @@ class TextRecognitionModel(nn.Module):
             self.model = model
 
         def forward(self, input_images):
-            if hasattr(self, 'transformation'):
-                input_images = self.transformation(input_images)
+            if hasattr(self.model, 'transformation'):
+                input_images = self.model.transformation(input_images)
             encoded = self.model.backbone(input_images)
             return self.model.head.encoder_wrapper(encoded)
 
