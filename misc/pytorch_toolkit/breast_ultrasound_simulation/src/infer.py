@@ -2,7 +2,7 @@ import os
 import argparse
 from torch.utils import data
 from dataloader import IVUS_Dataset, BUS_dataset, IVUS3D_Dataset
-from solve import solver_inter2d, solver_inter3d
+from solve import Solver_inter2d, Solver_inter3d
 
 
 parser = argparse.ArgumentParser()

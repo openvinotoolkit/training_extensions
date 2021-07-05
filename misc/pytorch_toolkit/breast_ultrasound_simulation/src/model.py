@@ -104,17 +104,6 @@ class SpectralConv3dInter(nn.Module):
                 0, 0, 0), stride=(
                 1, 1, 1), groups=ch, bias=True)
 
-        """if(wts_list is not None):
-            print("In asssss")
-            self.xdim3d.weight = torch.nn.Parameter(
-                torch.unsqueeze(wts_list.xdim.weight, 2))
-            self.zdim3d.weight = torch.nn.Parameter(
-                torch.unsqueeze(wts_list.xdim.weight, 2).permute(0,1,4,3,2))
-            self.bias3d.weight = torch.nn.Parameter(
-                torch.unsqueeze(wts_list.bias.weight, 2))
-            self.bias3d.bias = torch.nn.Parameter(
-                wts_list.bias.bias)"""
-
     def forward(self, x):
 
         # F.conv3d(x, self.wts_norm, padding=(0, self.pad, 0), stride=1)

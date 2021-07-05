@@ -41,7 +41,7 @@ The network is trained on [IVUS](http://www.cvc.uab.es/IVUSchallenge2011/dataset
                         .
                         .
 ```
-Segmentation masks from [INbreast](http://medicalresearch.inescporto.pt/breastresearch/index.php/Get_INbreast_Database) dataset is used to generate stage 0 simulation results for breast ultrasound. Alternate source for INbreast dataset [link](https://www.kaggle.com/ramanathansp20/inbreast-dataset). Note that, we have not used INbreast dataset to train these models. We demonstrate the ability to simulate breast ultrasound images using a model trained on IVUS dataset.
+Segmentation masks from [INbreast](https://www.kaggle.com/ramanathansp20/inbreast-dataset) dataset is used to generate stage 0 simulation results for breast ultrasound. Note that, we have not used INbreast dataset to train these models. We demonstrate the ability to simulate breast ultrasound images using a model trained on IVUS dataset.
 
 ## Pre-trained models
 
@@ -96,6 +96,9 @@ cd src
 python infer.py --name dil_0 --model_name <NAME OF MODEL TO RESTORE> --infer_data IVUS2D  --dilation_factor 0 --stage0_data <STAGE0_DATA_PATH> --realUS_data <REAL_IMAGE_DATA_PATH>
 python metric.py --dir ../infer_results/dil_0 
 ```
+
+## Tests
+The folder contains unit tests for training and inferencing. Sample images are stored in ```../data``` folder. Simply run the files for testing inferencing and training codes.
 
 
 ## Acknowledgement

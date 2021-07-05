@@ -2,7 +2,7 @@ import argparse
 import os
 from torch.utils import data
 from dataloader import IVUS_Dataset
-from solve import solver
+from solve import Solver
 
 
 parser = argparse.ArgumentParser()
