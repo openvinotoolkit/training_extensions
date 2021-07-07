@@ -125,3 +125,29 @@ Try both following variants and select the best one:
    * If you would like to start **training** from pre-trained weights use `--load-weights` pararmeter instead of `--resume-from`. Also you can use parameters such as `--epochs`, `--batch-size`, `--gpu-num`, `--base-learning-rate`, otherwise default values will be loaded from `${MODEL_TEMPLATE}`.
 
 As soon as training is completed, it is worth to re-evaluate trained model on test set (see Step 4.b).
+
+
+### 5. Optimize
+
+The models can be optimized -- compressed by [NNCF](https://github.com/openvinotoolkit/nncf) framework.
+
+At the moment, only one compression methods is supported for horizontal text detection models: int8 quantization.
+
+Please, note that NNCF framework requires a dataset for compression, since it makes several steps of fine-tuning after
+compression to restore the quality of the model, so the command line parameters of the compression script are closer
+to the command line parameter of the training script for fine-tuning scenario 4.c stated above, but the number of epochs
+required for NNCF compression should not be set by command line parameter, since it is calculated by the script
+`compress.py` itself:
+```
+      python compress.py \
+         --load-weights ${SNAPSHOT} \
+         --train-ann-files ${TRAIN_ANN_FILE} \
+         --train-data-roots ${TRAIN_IMG_ROOT} \
+         --val-ann-files ${VAL_ANN_FILE} \
+         --val-data-roots ${VAL_IMG_ROOT} \
+         --save-checkpoints-to outputs \
+         --nncf-quantization
+```
+
+The compressed model can be evaluated and exported to the OpenVINO™ format by the same commands as non-compressed model,
+see the items 4.b and 3.b above.
