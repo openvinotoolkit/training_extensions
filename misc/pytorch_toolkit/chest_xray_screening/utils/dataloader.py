@@ -1,6 +1,6 @@
 from PIL import Image
 import torch
-import torchvision.transforms as transforms
+from torchvision import transforms
 from torch.utils.data import Dataset
 from pathlib import Path
 
@@ -12,7 +12,7 @@ class RSNADataSet(Dataset):
         image_names = [Path.joinpath(image_directory , x) for x in image_list]
         self.image_names = image_names
         self.labels = label_list
-        
+
         if transform is not None:
             transform=transforms.Compose([
                                             transforms.ToTensor(),

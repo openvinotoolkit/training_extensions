@@ -37,9 +37,8 @@ def new_channels(block_new, alpha, beta, growth_rate=32,
         init_chan = 2
     width_temp = gw * l4 + (gw * l3 + (gw * l2 + (gw * l1) // 2) // 2) // 2
     init_chan = int(8 * (1024 * beta - width_temp))
-    while(init_chan < 32):
-        print(
-            f"The initial number of channels{init_chan} needs to be greater than 32. Changing growth_rate.")
+    while init_chan < 32:
+        print(f"The initial number of channels{init_chan} needs to be greater than 32. Changing growth_rate.")
         growth_rate -= 1
         gw = growth_rate
         width_temp = gw * l4 + (gw * l3 + (gw * l2 + (gw * l1) // 2) // 2) // 2
@@ -52,9 +51,8 @@ def get_best_values(alpha, beta):
     """
         Alpha changes the depth while beta changes the width
     """
-    depth, block_new = new_lengths(alpha)
-    width, growth_rate, init_chan, bn_size = new_channels(
-        block_new, alpha, beta)
+    _, block_new = new_lengths(alpha)
+    _, growth_rate, init_chan, bn_size = new_channels(block_new, alpha, beta)
     return block_new, growth_rate, init_chan, bn_size
 
 
@@ -69,11 +67,3 @@ def give_model(alpha, beta, num_class=14, input_shape=(320, 320), verbose=1):
         num_classes=num_class)
 
     return model
-
-
-
-
-
-
-
-

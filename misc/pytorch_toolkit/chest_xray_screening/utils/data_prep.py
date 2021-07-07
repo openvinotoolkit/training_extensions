@@ -1,6 +1,5 @@
 import os
 import json
-import csv
 from pydicom import dcmread
 from tqdm import tqdm as tq
 import numpy as np
@@ -20,7 +19,7 @@ def dcm_to_jpg(args):
         name = fpath.split('.dcm')[0]
         im.save(savepath+name+".jpg")
 
-    print(f'Completed')
+    print('Completed')
 
 
 def mean_sd_calculator(args):
@@ -58,7 +57,7 @@ def create_annotation(args):
     with open(args.dpath+'/rsna_annotation.json','w') as f:
         json.dump(dict_annotation,f)
 
-    print(f'Created and saved rsna_annotation.json file.')
+    print('Created and saved rsna_annotation.json file.')
 
 
 def main(args):
@@ -73,12 +72,31 @@ def main(args):
 
 if __name__=="__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--jpg",required=False,help="Convert DCM files to jpg",default=False,type=bool)
-    parser.add_argument("--msd",required=False,help="Calculate the mean-sd of the dataset",default=False,type=bool)
-    parser.add_argument("--ann",required=False,help="Create rsna_annotation.json file",default=False,type=bool)
-    parser.add_argument("--dpath",required=True, help="Absolute path to folder containing the dataset",default= None ,type = str)
+    parser.add_argument(
+        "--jpg",
+        required=False,
+        help="Convert DCM files to jpg",
+        default=False,
+        type=bool)
+    parser.add_argument(
+        "--msd",
+        required=False,
+        help="Calculate the mean-sd of the dataset",
+        default=False,
+        type=bool)
+    parser.add_argument(
+        "--ann",
+        required=False,
+        help="Create rsna_annotation.json file",
+        default=False,
+        type=bool)
+    parser.add_argument(
+        "--dpath",
+        required=True,
+        help="Absolute path to folder containing the dataset",
+        default= None,
+        type = str)
 
-    args = parser.parse_args()
+    custom_args = parser.parse_args()
 
-    main(args)
-
+    main(custom_args)
