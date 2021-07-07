@@ -143,9 +143,9 @@ python eval.py \
 
 ### 11. Optimization
 
-The trained models may be optimized -- compressed by [NNCF](https://github.com/openvinotoolkit/nncf) framework.
+The trained models can be optimized -- compressed by [NNCF](https://github.com/openvinotoolkit/nncf) framework.
 
-At the moment the following compression methods are supported:
+At the moment, the following compression methods are supported:
 * int8 quantization
 * sparsity
 * filter pruning
@@ -174,5 +174,5 @@ You can use the following command line flags to turn on compression methods:
 
 The combinations of several compression methods are also possible, but were not tested thoroughly.
 
-The compressed model may be evaluated and exported to the OpenVINO™ format by the same commands as non-compressed model,
+The compressed model can be evaluated and exported to the OpenVINO™ format by the same commands as non-compressed model,
 see the sections 8 and 9 above.

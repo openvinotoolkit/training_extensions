@@ -194,9 +194,9 @@ This produces model `model.xml` and weights `model.bin` in single-precision floa
 
 ### 8. Optimization
 
-The models may be optimized -- compressed by [NNCF](https://github.com/openvinotoolkit/nncf) framework.
+The models can be optimized -- compressed by [NNCF](https://github.com/openvinotoolkit/nncf) framework.
 
-At the moment the only one compression methods is supported for image classification models: int8 quantization.
+At the moment, only one compression methods is supported for image classification models: int8 quantization.
 
 Please, note that NNCF framework requires a dataset for compression, since it makes several steps of fine-tuning after
 compression to restore the quality of the model, so the command line parameters of the compression script are closer
@@ -214,5 +214,5 @@ python compress.py \
    --nncf-quantization
 ```
 
-The compressed model may be evaluated and exported to the OpenVINO™ format by the same commands as non-compressed model,
+The compressed model can be evaluated and exported to the OpenVINO™ format by the same commands as non-compressed model,
 see the sections 6 and 7 above.

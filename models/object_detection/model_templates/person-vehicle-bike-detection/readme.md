@@ -133,9 +133,9 @@ As soon as training is completed, it is worth to re-evaluate trained model on te
 
 ### 5. Optimize
 
-The models may be optimized -- compressed by [NNCF](https://github.com/openvinotoolkit/nncf) framework.
+The models can be optimized -- compressed by [NNCF](https://github.com/openvinotoolkit/nncf) framework.
 
-At the moment the following compression methods are supported:
+At the moment, the following compression methods are supported:
 * int8 quantization
 * sparsity
 * filter pruning
@@ -164,5 +164,5 @@ You can use the following command line flags to turn on compression methods:
 
 The combinations of several compression methods are also possible, but were not tested thoroughly.
 
-The compressed model may be evaluated and exported to the OpenVINO™ format by the same commands as non-compressed model,
+The compressed model can be evaluated and exported to the OpenVINO™ format by the same commands as non-compressed model,
 see the items 4.b and 3.b above.
