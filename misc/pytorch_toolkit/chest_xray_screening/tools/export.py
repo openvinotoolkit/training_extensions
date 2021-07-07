@@ -23,10 +23,17 @@ def export(args):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--onnx",required=False, help="Set to True, if you wish to export onnx model",default=True,type = bool)
-    parser.add_argument("--ir",required=False, help="Set to True, if you wish to export IR",default=True,type = bool)
+    parser.add_argument("--onnx",
+    required=False,
+    help="Set to True, if you wish to export onnx model",
+    default=True,
+    type = bool)
+    parser.add_argument("--ir",
+    required=False,
+    help="Set to True, if you wish to export IR",
+    default=True,
+    type = bool)
 
-    args = parser.parse_args()
+    custom_args = parser.parse_args()
 
-    export(args)
-
+    export(custom_args)
