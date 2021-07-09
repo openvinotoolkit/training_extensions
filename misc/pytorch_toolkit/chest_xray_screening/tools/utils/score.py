@@ -1,4 +1,4 @@
-from sklearn.metrics.ranking import roc_auc_score
+from sklearn.metrics import roc_auc_score
 
 def compute_auroc(data_gt, data_pred, class_count):
     """ Computes the area under ROC Curve

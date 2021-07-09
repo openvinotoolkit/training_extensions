@@ -1,3 +1,5 @@
-pytorch=1.5.1
-torchvision=0.6.1
+torch==1.5.1
+torchvision==0.6.1
 pydicom
+scikit-learn
+tqdm

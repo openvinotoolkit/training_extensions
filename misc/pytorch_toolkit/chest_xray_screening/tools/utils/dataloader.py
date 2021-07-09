@@ -6,12 +6,12 @@ from pathlib import Path
 
 
 class RSNADataSet(Dataset):
-    def __init__(self, image_list,label_list,image_directory, transform=True):
+    def __init__(self, image_list,label_json,image_directory, transform=True):
 
         image_directory = Path(image_directory)
         image_names = [Path.joinpath(image_directory , x) for x in image_list]
         self.image_names = image_names
-        self.labels = label_list
+        self.labels = label_json
 
         if transform is not None:
             transform=transforms.Compose([
@@ -26,7 +26,7 @@ class RSNADataSet(Dataset):
 
         image_name = self.image_names[index]
         image = Image.open(image_name).convert('RGB')
-        label = self.labels[index]
+        label = self.labels[image_name]
 
         if self.transform is not None:
             image = self.transform(image)

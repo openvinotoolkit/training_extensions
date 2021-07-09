@@ -12,6 +12,7 @@ from utils.dataloader import RSNADataSet
 from utils.score import compute_auroc
 from utils.model import DenseNet121,DenseNet121Eff
 from math import sqrt
+import json
 
 
 class RSNATrainer():
@@ -29,10 +30,14 @@ class RSNATrainer():
         self.data_loader_test = data_loader_test
         self.class_names = class_names
         self.class_count = class_count
-        self.checkpoint = checkpoint
+        if checkpoint is not None:
+            self.checkpoint = checkpoint
+            self.model_checkpoint = torch.load(checkpoint)
+        else:
+            self.checkpoint = None
+            self.model_checkpoint = None
         self.device = device
         self.loss_fn = torch.nn.BCELoss()
-        self.model_checkpoint = torch.load(checkpoint)
         self.lr = lr
         self.optimizer = optim.Adam(self.model.parameters(),lr=self.lr)
 
@@ -104,7 +109,8 @@ class RSNATrainer():
 
     def epoch_train(self):
         auroc_max = 0.0 # Setting maximum AUROC value as zero
-        self.optimizer.load_state_dict(self.model_checkpoint['optimizer'])
+        if self.model_checkpoint is not None:
+            self.optimizer.load_state_dict(self.model_checkpoint['optimizer'])
         loss_train_list = []
         loss_valid_list = []
         self.model.train()
@@ -189,20 +195,20 @@ def main(args):
     class_names = ['Lung Opacity','Normal','No Lung Opacity / Not Normal']
 
     # Data Loader
-    img_pth = args.imgpath
-    numpy_path = args.npypath
+    dpath = args.dpath
+    img_pth = args.dpath+'/processed_data/'
+    numpy_path = args.dpath+'/data_split/'
+    with open(dpath+'rsna_annotation.json') as lab_file:
+        labels = json.load(lab_file)
 
     # Place numpy file containing train-valid-test split on tools folder
 
     tr_list = np.load(os.path.join(numpy_path,'train_list.npy')).tolist()
-    tr_labels = np.load(os.path.join(numpy_path,'train_labels.npy')).tolist()
     val_list = np.load(os.path.join(numpy_path,'valid_list.npy')).tolist()
-    val_labels = np.load(os.path.join(numpy_path,'valid_labels.npy')).tolist()
     test_list = np.load(os.path.join(numpy_path,'test_list.npy')).tolist()
-    test_labels = np.load(os.path.join(numpy_path,'test_labels.npy')).tolist()
 
-    dataset_train = RSNADataSet(tr_list, tr_labels, img_pth, transform=True)
-    dataset_valid = RSNADataSet(val_list, val_labels, img_pth, transform=True)
+    dataset_train = RSNADataSet(tr_list, labels, img_pth, transform=True)
+    dataset_valid = RSNADataSet(val_list, labels, img_pth, transform=True)
 
     data_loader_train = DataLoader(
         dataset=dataset_train,
@@ -217,11 +223,7 @@ def main(args):
         num_workers=4,
         pin_memory=False)
 
-    dataset_test = RSNADataSet(
-        test_list,
-        test_labels,
-        img_pth,
-        transform=True)
+    dataset_test = RSNADataSet(test_list,labels,img_pth,transform=True)
     data_loader_test = DataLoader(
         dataset=dataset_test,
         batch_size=1,
@@ -231,7 +233,7 @@ def main(args):
 
     # Construct Model
 
-    if args.optimised is not None:
+    if args.optimised:
         alpha = args.alpha
         phi = args.phi
         beta = args.beta
@@ -262,10 +264,10 @@ if __name__=="__main__":
     parser.add_argument("--lr",required=False, help="Learning rate",default=1e-4,type = float)
     parser.add_argument("--checkpoint",required=False, help="Checkpoint model weight",default= None ,type = str)
     parser.add_argument("--bs",required=False, help="Batchsize", type=int)
-    parser.add_argument("--imgpath",required=True, help="Path containing train and test images", type =str)
-    parser.add_argument("--npypath",required=True, help="Path containing label list in npy format", type =str)
+    parser.add_argument("--dpath",required=True, help="Path to folder containing all data", type =str)
     parser.add_argument("--epochs",required=False,default=15, help="Number of epochs", type=int)
     parser.add_argument("--clscount",required=False,default=3, help="Number of classes", type=int)
+    parser.add_argument("--optimised",required=False, default=False,help="enable flag for eff model", action='store_true')
     parser.add_argument("--alpha",required=False,help="alpha for the model",default=(11 / 6),type=float)
     parser.add_argument("--phi",required=False,help="Phi for the model.",default=1.0,type=float)
     parser.add_argument("--beta",required=False,help="Beta for the model.",default=None,type=float)

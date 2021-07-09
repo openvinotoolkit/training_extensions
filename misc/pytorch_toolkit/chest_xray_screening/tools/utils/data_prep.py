@@ -9,8 +9,10 @@ import pandas as pd
 
 def dcm_to_jpg(args):
 
-    dirpath = args.dpath + '/original'
-    savepath = args.dpath +'/processed_data'
+    dirpath = args.dpath + '/original/'
+    savepath = args.dpath +'/processed_data/'
+    if not os.path.isdir(savepath):
+        os.makedirs(savepath)
     file_list = os.listdir(dirpath)
     for fpath in tq(file_list):
         ds = dcmread(dirpath+fpath)
@@ -23,7 +25,7 @@ def dcm_to_jpg(args):
 
 
 def mean_sd_calculator(args):
-    dirpath = args.dpath + '/original'
+    dirpath = args.dpath + '/original/'
     file_list = os.listdir(dirpath)
     mean_list = []
     sd_list = []
@@ -40,8 +42,8 @@ def mean_sd_calculator(args):
 
 def create_annotation(args):
 
-    file_list = os.listdir(args.dpath+'/processed_data')
-    df_class=pd.read_csv(args.dpath+'stage_2_detailed_class_info.csv')
+    file_list = os.listdir(args.dpath+'/processed_data/')
+    df_class=pd.read_csv(args.dpath+'/stage_2_detailed_class_info.csv')
     labels=["Lung Opacity","Normal","No Lung Opacity / Not Normal"]
     image_name = []
     image_label = []
@@ -77,25 +79,25 @@ if __name__=="__main__":
         required=False,
         help="Convert DCM files to jpg",
         default=False,
-        type=bool)
+        action='store_true')
     parser.add_argument(
         "--msd",
         required=False,
         help="Calculate the mean-sd of the dataset",
         default=False,
-        type=bool)
+        action='store_true')
     parser.add_argument(
         "--ann",
         required=False,
         help="Create rsna_annotation.json file",
         default=False,
-        type=bool)
+        action='store_true')
     parser.add_argument(
         "--dpath",
         required=True,
         help="Absolute path to folder containing the dataset",
         default= None,
-        type = str)
+        action='store_true')
 
     custom_args = parser.parse_args()
 
