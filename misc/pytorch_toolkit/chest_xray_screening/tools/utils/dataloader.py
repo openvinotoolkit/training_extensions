@@ -26,7 +26,8 @@ class RSNADataSet(Dataset):
 
         image_name = self.image_names[index]
         image = Image.open(image_name).convert('RGB')
-        label = self.labels[image_name]
+        image_id = str(image_name).split('/')[-1]
+        label = self.labels[image_id]
 
         if self.transform is not None:
             image = self.transform(image)

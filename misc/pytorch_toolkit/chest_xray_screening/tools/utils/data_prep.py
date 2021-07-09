@@ -45,16 +45,18 @@ def create_annotation(args):
     file_list = os.listdir(args.dpath+'/processed_data/')
     df_class=pd.read_csv(args.dpath+'/stage_2_detailed_class_info.csv')
     labels=["Lung Opacity","Normal","No Lung Opacity / Not Normal"]
-    image_name = []
-    image_label = []
+    # image_name = []
+    # image_label = []
+    dict_annotation = {}
     for file in tq(file_list):
         patient_id = file.split('.jpg')[0]
         tmp=df_class[df_class["patientId"]==patient_id]["class"].values[0]
         idx=labels.index(tmp)
-        image_name.append(file)
-        image_label.append(idx)
+        # image_name.append(file)
+        # image_label.append(idx)
+        dict_annotation[str(file)] = idx
 
-    dict_annotation = {'names':image_name,'labels':image_label}
+    # dict_annotation = {'names':image_name,'labels':image_label}
 
     with open(args.dpath+'/rsna_annotation.json','w') as f:
         json.dump(dict_annotation,f)
@@ -97,7 +99,7 @@ if __name__=="__main__":
         required=True,
         help="Absolute path to folder containing the dataset",
         default= None,
-        action='store_true')
+        type = str)
 
     custom_args = parser.parse_args()
 
