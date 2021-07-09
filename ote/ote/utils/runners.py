@@ -53,6 +53,7 @@ class NonBlockingStreamReader:
 def run_with_termination(cmd):
     log_shell_cmd(cmd, 'Running with termination the command')
     process = subprocess.Popen(cmd, stderr=subprocess.PIPE)
+    print(process.pid)
 
     nbsr_err = NonBlockingStreamReader(process.stderr)
 
@@ -79,3 +80,9 @@ def run_with_termination(cmd):
         stderr = stderr.decode('utf-8')
         print(stderr, end='')
         sys.stdout.flush()
+
+    with open('/var/log/syslog') as f:
+        for line in f:
+            e = f'Out of memory: Killed process {process.pid}'
+            if e in line:
+                raise RuntimeError(e)
