@@ -53,7 +53,6 @@ class NonBlockingStreamReader:
 def run_with_termination(cmd):
     log_shell_cmd(cmd, 'Running with termination the command')
     process = subprocess.Popen(cmd, stderr=subprocess.PIPE)
-    print(process.pid)
 
     nbsr_err = NonBlockingStreamReader(process.stderr)
 
