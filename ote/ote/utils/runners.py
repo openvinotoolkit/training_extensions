@@ -19,7 +19,7 @@ import signal
 import subprocess
 import sys
 import time
-from queue import Queue, Empty
+from queue import Empty, Queue
 from threading import Thread
 
 from .misc import log_shell_cmd
@@ -80,6 +80,7 @@ def run_with_termination(cmd):
         print(stderr, end='')
         sys.stdout.flush()
 
+    time.sleep(1)
     with open('/var/log/syslog') as f:
         for line in f:
             e = f'Out of memory: Killed process {process.pid}'
