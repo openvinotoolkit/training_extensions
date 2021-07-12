@@ -1,13 +1,14 @@
 lr_finder:
   enable: True
-  mode: brute_force
+  mode: TPE
   stop_after: False
-  num_epochs: 5
-  num_iter: 6
+  num_epochs: 6
+  step: 0.001
   epochs_warmup: 1
   path_to_savefig: 'lr_finder.jpg'
-  max_lr: 0.035
-  min_lr: 0.01
+  max_lr: 0.029
+  min_lr: 0.005
+  n_trials: 15
 
 model:
   name: 'mobilenetv3_large_075'
@@ -15,11 +16,6 @@ model:
   pretrained: True
   save_chkpt: True
   feature_dim: 1280
-  dropout_cls:
-    p: 0.1
-    dist: 'gaussian'
-    mu: 0.5
-    sigma: 0.3
 
 mutual_learning:
   aux_configs: ['aux_model.yaml']
@@ -31,7 +27,6 @@ custom_datasets:
 
 data:
   root: './'
-  type: 'image'
   sources: ['data_train']
   targets: ['data_val']
   height: 224
@@ -39,41 +34,24 @@ data:
   norm_mean: [0.485, 0.456, 0.406]
   norm_std: [0.229, 0.224, 0.225]
   save_dir: 'path/to/output_dir'
-  min_samples_per_id: 1
+  workers: 6
   transforms:
     random_flip:
       enable: True
       p: 0.5
     random_crop:
       enable: True
-      scale: 0.8
-      p: 0.5
-    random_rotate:
-      enable: True
-      angle: (-10,10)
-      p: 1.
-    color_jitter:
-      enable: True
-      p: 1.
-    posterize:
-      enable: True
-      p: 1.
-    equalize:
-      enable: True
-      p: 1.
-    random_noise:
-      enable: True
-      p: 1.
-    random_blur:
-      enable: True
-      p: 1.
+      p: 0.3
+      scale: 0.9
     augmix:
       enable: True
+      cfg_str: "augmix-m5-w3"
 
 loss:
   name: 'softmax'
   softmax:
     s: 1.0
+    compute_s: False
 
 sampler:
   train_sampler: 'RandomSampler'
@@ -83,15 +61,19 @@ metric_losses:
 
 train:
   optim: 'sam'
-  lr: 0.013
+  lr: 0.009
+  nbd: True
   max_epoch: 200
   weight_decay: 5e-4
-  batch_size: 64
-  fixbase_epoch: 0
-  lr_scheduler: 'reduce_on_plateau'
+  batch_size: 84
+  lr_scheduler: 'warmup'
+  warmup: 5
+  base_scheduler: 'reduce_on_plateau'
   early_stoping: True
   train_patience: 5
-  patience: 4
+  lr_decay_factor: 200
+  deterministic: True
+  patience: 5
   gamma: 0.1
 
 sam:
