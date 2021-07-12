@@ -81,8 +81,9 @@ def run_with_termination(cmd):
         sys.stdout.flush()
 
     time.sleep(1)
-    with open('/var/log/syslog') as f:
-        for line in f:
-            e = f'Out of memory: Killed process {process.pid}'
-            if e in line:
-                raise RuntimeError(e)
+    err = f'Out of memory: Killed process {process.pid}'
+    proc = subprocess.Popen(['dmesg', '-l', 'err'], stdout=subprocess.PIPE)
+    out = proc.communicate()[0].decode().split('\n')
+    for line in out:
+        if err in line:
+            raise RuntimeError(line)
