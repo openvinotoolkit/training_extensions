@@ -97,7 +97,7 @@ class BaseDataset(Dataset):
 
 
 class Im2LatexDataset(BaseDataset):
-    def __init__(self, data_path, annotation_file, min_shape=(8, 8)):
+    def __init__(self, data_path, annotation_file):
         """args:
         data_path: root dir storing the prepoccessed data
         ann_file: path to annotation file
@@ -106,7 +106,7 @@ class Im2LatexDataset(BaseDataset):
         self.data_path = data_path
         self.images_dir = join(data_path, 'images_processed')
         self.formulas = self._get_formulas()
-        self.pairs = self._get_pairs(annotation_file, min_shape)
+        self.pairs = self._get_pairs(annotation_file)
 
     def _get_formulas(self):
         formulas_file = join(self.data_path, 'formulas.norm.lst')
@@ -122,7 +122,7 @@ class Im2LatexDataset(BaseDataset):
                 formulas.append(res_formula)
         return formulas
 
-    def _get_pairs(self, subset, min_shape):
+    def _get_pairs(self, subset):
         # the line in this file map image to formulas
         map_file = join(self.data_path, subset)
         total_lines = get_num_lines_in_file(map_file)
@@ -131,19 +131,19 @@ class Im2LatexDataset(BaseDataset):
         with open(map_file, 'r') as f:
             for line in tqdm(f, total=total_lines):
                 img_name, formula_id = line.strip('\n').split()
-                # load img and its corresponding formula
                 img_path = join(self.images_dir, img_name)
-                img = cv.imread(img_path, cv.IMREAD_COLOR)
-                if img.shape[0:2] <= tuple(min_shape):
-                    continue
                 formula = self.formulas[int(formula_id)]
                 el = {'img_name': img_name,
                       'text': formula,
-                      'img': img,
+                      'img_path': img_path,
                       }
                 pairs.append(el)
-        pairs.sort(key=img_size, reverse=True)
         return pairs
+
+    def __getitem__(self, index):
+        el = deepcopy(self.pairs[index])
+        el['img'] = cv.imread(el['img_path'], cv.IMREAD_COLOR)
+        return el
 
 
 class ICDAR2013RECDataset(BaseDataset):
