@@ -135,10 +135,7 @@ As soon as training is completed, it is worth to re-evaluate trained model on te
 
 The models can be optimized -- compressed by [NNCF](https://github.com/openvinotoolkit/nncf) framework.
 
-At the moment, the following compression methods are supported:
-* int8 quantization
-* sparsity
-* filter pruning
+At the moment, only one compression methods is supported: int8 quantization.
 
 Please, note that NNCF framework requires a dataset for compression, since it makes several steps of fine-tuning after
 compression to restore the quality of the model, so the command line parameters of the compression script are closer
@@ -155,14 +152,6 @@ required for NNCF compression should not be set by command line parameter, since
          --save-checkpoints-to outputs \
          --nncf-quantization
 ```
-
-Note that in the command above the parameter `--nncf-quantization` is used to make int8 quantization of the model.
-You can use the following command line flags to turn on compression methods:
-* `--nncf-quantization` -- int8 compression
-* `--nncf-sparsity` -- sparsity
-* `--nncf-pruning` -- filter pruning
-
-The combinations of several compression methods are also possible, but were not tested thoroughly.
 
 The compressed model can be evaluated and exported to the OpenVINO™ format by the same commands as non-compressed model,
 see the items 4.b and 3.b above.
