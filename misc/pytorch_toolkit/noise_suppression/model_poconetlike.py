@@ -338,7 +338,10 @@ class PoCoNetLikeModel(BaseDNSModel):
         out_ch = self.blocks_up[0].inp_ch
         mha_heads_num = self.blocks_down[-1].mha_heads_num
 
-        self.block_bottom = BlockDenseMHA(inp_ch, out_ch, inp_ch // 2, mha_heads_num, self.mha_ranges[4], back_time_flag=self.back_time_flag)
+        self.block_bottom = BlockDenseMHA(inp_ch, out_ch, inp_ch // 2,
+                                          mha_heads_num,
+                                          self.mha_ranges[4],
+                                          back_time_flag=self.back_time_flag)
 
     def get_sample_ahead(self):
         return (self.ahead + self.ahead_ifft) * self.hop_length
