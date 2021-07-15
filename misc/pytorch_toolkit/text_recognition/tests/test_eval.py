@@ -72,6 +72,12 @@ class TestAlphanumeric0015Evaluation(
             expected_outputs='tests/expected_outputs/alphanumeric/icdar13_greater3_0015.json')):
     'Test case for alphanumeric text recognition config'
 
+class TestAlphanumeric0016Evaluation(
+        create_evaluation_test_case(
+            'configs/config_0016.yml',
+            expected_outputs='tests/expected_outputs/alphanumeric/icdar13_greater3_0016.json')):
+    'Test case for alphanumeric text recognition config'
+
 
 if __name__ == '__main__':
     unittest.main()

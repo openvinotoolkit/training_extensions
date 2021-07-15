@@ -61,5 +61,8 @@ class TestAlphanumericTrain0014(create_train_test('configs/config_0014.yml')):
 class TestAlphanumericTrain0015(create_train_test('configs/config_0015.yml')):
     'Test case for alphanumeric config'
 
+class TestAlphanumericTrain0016(create_train_test('configs/config_0016.yml')):
+    'Test case for alphanumeric config'
+
 if __name__ == '__main__':
     unittest.main()
