@@ -2,8 +2,8 @@ import unittest
 import os
 import json
 import torch
-from utils.dataloader import RSNADataSet
-from utils.model import DenseNet121
+from tools.utils.dataloader import RSNADataSet
+from tools.utils.model import DenseNet121
 from torch.utils.data import DataLoader
 from tools.inference import RSNAInference
 
@@ -28,18 +28,14 @@ class InferenceTest(unittest.TestCase):
     test_labels = config['dummy_test_labels']
     test_list = config['dummy_test_list']
     image_path = config["imgpath"]
-    dataset_test = RSNADataSet(test_list, test_labels, image_path, transform=True)
-    data_loader_test = DataLoader(dataset=dataset_test, batch_size=1, shuffle=False,  num_workers=4, pin_memory=False)
-
-    def test_paths(self):
-        self.config = get_config()
-        image_path = self.config["imgpath"]
-        np_path = self.config["npypath"]
-        checkpoint = self.config["checkpoint"]
-        self.assertTrue(os.path.exists(image_path))
-        self.assertTrue(os.path.exists(checkpoint))
-        self.assertTrue(os.path.exists(np_path+'test_list.npy'))
-        self.assertTrue(os.path.exists(np_path+'test_labels.npy'))
+    labels = config["labels"]
+    dataset_test = RSNADataSet(test_list, labels, image_path, transform=True)
+    data_loader_test = DataLoader(
+        dataset=dataset_test,
+        batch_size=1,
+        shuffle=False,
+        num_workers=4,
+        pin_memory=False)
 
     def test_scores(self):
         self.model = DenseNet121(self.class_count)

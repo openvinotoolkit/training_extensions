@@ -2,9 +2,9 @@ import unittest
 import os
 import json
 from tools.train import RSNATrainer
-from utils.dataloader import RSNADataSet
+from tools.utils.dataloader import RSNADataSet
 from torch.utils.data import DataLoader
-from utils.model import DenseNet121
+from tools.utils.model import DenseNet121
 
 def get_config(optimised=False):
     path = os.path.dirname(os.path.realpath(__file__))
@@ -23,28 +23,32 @@ class TrainerTest(unittest.TestCase):
     np_path = config["npypath"]
     learn_rate = config["lr"]
     tr_list = config["dummy_train_list"]
-    tr_labels = config["dummy_train_labels"]
     val_list = config["dummy_valid_list"]
-    val_labels = config["dummy_valid_labels"]
     test_list = config["dummy_test_list"]
-    test_labels = config["dummy_test_labels"]
+    labels = config["dummy_labels"]
 
-    dataset_train = RSNADataSet(tr_list, tr_labels, image_path, transform=True)
-    dataset_valid = RSNADataSet(val_list, val_labels, image_path, transform=True)
-    dataset_test = RSNADataSet(test_list, test_labels, image_path, transform=True)
-    data_loader_train = DataLoader(dataset=dataset_train, batch_size=2, shuffle=True,  num_workers=4, pin_memory=False)
-    data_loader_valid = DataLoader(dataset=dataset_valid, batch_size=2, shuffle=False, num_workers=4, pin_memory=False)
-    data_loader_test = DataLoader(dataset=dataset_test, batch_size=1, shuffle=False,  num_workers=4, pin_memory=False)
+    dataset_train = RSNADataSet(tr_list, labels, image_path, transform=True)
+    dataset_valid = RSNADataSet(val_list, labels, image_path, transform=True)
+    dataset_test = RSNADataSet(test_list, labels, image_path, transform=True)
+    data_loader_train = DataLoader(
+        dataset=dataset_train,
+        batch_size=2,
+        shuffle=True,
+        num_workers=4,
+        pin_memory=False)
+    data_loader_valid = DataLoader(
+        dataset=dataset_valid,
+        batch_size=2,
+        shuffle=False,
+        num_workers=4,
+        pin_memory=False)
+    data_loader_test = DataLoader(
+        dataset=dataset_test,
+        batch_size=1,
+        shuffle=False,
+        num_workers=4,
+        pin_memory=False)
 
-
-    def test_paths(self):
-        self.assertTrue(os.path.exists(self.image_path))
-        self.assertTrue(os.path.exists(self.np_path+'train_list.npy'))
-        self.assertTrue(os.path.exists(self.np_path+'train_labels.npy'))
-        self.assertTrue(os.path.exists(self.np_path+'valid_list.npy'))
-        self.assertTrue(os.path.exists(self.np_path+'valid_labels.npy'))
-        self.assertTrue(os.path.exists(self.np_path+'test_list.npy'))
-        self.assertTrue(os.path.exists(self.np_path+'test_labels.npy'))
 
     def test_config(self):
         self.assertGreaterEqual(self.learn_rate,1e-8)
@@ -60,10 +64,10 @@ class TrainerTest(unittest.TestCase):
             self.data_loader_valid, self.data_loader_test,
             self.class_count,self.checkpoint,
             self.device, self.class_names,self.learn_rate)
-        self.trainer.train(self.config["max_epoch"], self.config["timestamp_launch"])
+        self.trainer.train(self.config["max_epoch"], self.config["timestamp_launch"],self.config["savepath"])
         cur_train_loss = self.trainer.current_train_loss
         cur_valid_loss = self.trainer.current_valid_loss
-        self.trainer.train(self.config["max_epoch"], self.config["timestamp_launch"])
+        self.trainer.train(self.config["max_epoch"], self.config["timestamp_launch"],self.config["savepath"])
         self.assertLessEqual(self.trainer.current_train_loss, cur_train_loss)
         self.assertLessEqual(self.trainer.current_valid_loss, cur_valid_loss)
 
