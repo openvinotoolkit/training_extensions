@@ -41,6 +41,7 @@ TRANSFORMATIONS = {
     'tps': TPS_SpatialTransformerNetwork,
 }
 
+
 class TextRecognitionModel(nn.Module):
     class EncoderWrapper(nn.Module):
         def __init__(self, model):

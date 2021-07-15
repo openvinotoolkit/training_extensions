@@ -47,7 +47,8 @@ class TPS_SpatialTransformerNetwork(nn.Module):
     def forward(self, batch_I):
         batch_C_prime = self.LocalizationNetwork(batch_I)  # batch_size x K x 2
         build_P_prime = self.GridGenerator.build_P_prime(batch_C_prime)  # batch_size x n (= I_r_width x I_r_height) x 2
-        build_P_prime_reshape = build_P_prime.reshape([build_P_prime.size(0), self.output_size[0], self.output_size[1], 2]) # batch x grid_h x grid_w x 2
+        build_P_prime_reshape = build_P_prime.reshape(
+            [build_P_prime.size(0), self.output_size[0], self.output_size[1], 2])  # batch x grid_h x grid_w x 2
 
         if torch.__version__ > "1.2.0":
             if not torch.onnx.is_in_onnx_export():
