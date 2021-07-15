@@ -10,7 +10,6 @@ logger = logging.getLogger('{} models'.format(os.getpid()))
 def printlog(*args):
     logger.info(' '.join([str(v) for v in args]))
 
-#MODELS = {cls.__name__:cls for cls in globals().values() if isinstance(cls, type) and issubclass(cls, BaseDNSModel)}
 MODELS = {
     'PoCoNetLikeModel': PoCoNetLikeModel
 }
