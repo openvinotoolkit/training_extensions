@@ -2,7 +2,6 @@ import numpy as np
 import time
 import os
 import argparse
-from numpy.lib.npyio import save
 import torch
 from torch.backends import cudnn
 from torch import optim
@@ -84,7 +83,7 @@ class RSNATrainer():
         out_gt = torch.FloatTensor().to(self.device)
         out_pred = torch.FloatTensor().to(self.device)
         with torch.no_grad():
-            for i, (var_input, var_target) in tq(enumerate(self.data_loader_valid)):
+            for (var_input, var_target) in tq(self.data_loader_valid):
                 # print(f"Batch {i} in Val")
                 var_target = var_target.to(self.device)
                 out_gt = torch.cat((out_gt, var_target), 0).to(self.device)
@@ -273,7 +272,7 @@ if __name__=="__main__":
     parser.add_argument("--epochs",required=False,default=15, help="Number of epochs", type=int)
     parser.add_argument("--clscount",required=False,default=3, help="Number of classes", type=int)
     parser.add_argument("--spath",required=True, help="Path to folder in which models should be saved", type =str)
-    parser.add_argument("--optimised",required=False, default=False,help="enable flag for eff model", action='store_true')
+    parser.add_argument("--optimised",required=False,default=False,help="enable flag->eff model",action='store_true')
     parser.add_argument("--alpha",required=False,help="alpha for the model",default=(11 / 6),type=float)
     parser.add_argument("--phi",required=False,help="Phi for the model.",default=1.0,type=float)
     parser.add_argument("--beta",required=False,help="Beta for the model.",default=None,type=float)

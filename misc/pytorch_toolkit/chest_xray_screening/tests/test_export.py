@@ -15,7 +15,7 @@ class ExportTest(unittest.TestCase):
 
     def test_export_onnx(self):
         self.config = _get_config_()
-        self.exporter = Exporter(self.config)
+        self.exporter = Exporter(self.config,optimised=False)
         self.exporter.export_model_onnx()
         self.model_path = self.config['checkpoint']
         self.assertTrue(os.path.join(os.path.split(self.model_path)[0], self.config.get('model_name')))
@@ -24,7 +24,7 @@ class ExportTest(unittest.TestCase):
 
         self.assertTrue(os.path.isdir('/opt/intel/openvino_2021'))
         self.config = _get_config_()
-        self.exporter = Exporter(self.config)
+        self.exporter = Exporter(self.config,optimised=False)
         self.exporter.export_model_ir()
         self.model_path = self.config['checkpoint']
         self.assertTrue(os.path.join(os.path.split(self.model_path)[0], self.config.get('model_name')))
