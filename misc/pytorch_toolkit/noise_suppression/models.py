@@ -57,7 +57,7 @@ def model_create(model_desc):
         assert "\\" not in model_desc, "probably model description is bad dir or bad file"
         assert "/" not in model_desc, "probably model description is bad dir or bad file"
         #model from description. from class name for example
-        names = [n for n in MODELS.keys() if n in model_desc]
+        names = [n for n,v in MODELS.items() if n in model_desc]
         if names:
             names.sort(key=len, reverse=True) #take the longest match
             printlog("Create not initialized model {} from list of similar models {}".format(names[0], names))
