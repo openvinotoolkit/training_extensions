@@ -58,5 +58,5 @@ The script also saves the ONNX\* model into the same output folder together with
 mo.py --input_model result_model/model.onnx
 ```
 
-After conversion them to the OpenVINO™ format you can try model using
+After conversion to the OpenVINO™ format you can try model using
 the [demo for noise suppresion models](https://github.com/openvinotoolkit/open_model_zoo/tree/develop/demos/noise_suppression_demo/python)
