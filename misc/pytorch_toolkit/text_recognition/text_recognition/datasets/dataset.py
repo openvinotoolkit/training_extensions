@@ -54,6 +54,7 @@ from ..data.vocab import split_number
 
 ALPHANUMERIC_VOCAB = set('abcdefghijklmnopqrstuvwxyz0123456789')
 
+
 class BatchRandomSampler(Sampler):
     """This is a class representing random batch sampler
     Only the indices of the dataset are shuffled so if dataset is sorted
@@ -323,77 +324,6 @@ class LMDBDataset(BaseDataset):
         return el
 
 
-class UnrealTextDataset(BaseDataset):
-    def __init__(self, data_path, fixed_img_shape=None, case_sensitive=False, grayscale=False, crop_prob=1.0):
-        super().__init__()
-        self.data_path = data_path
-        self.fixed_img_shape = fixed_img_shape
-        self.case_sensitive = case_sensitive
-        self.grayscale = grayscale
-        self.pairs = self._load()
-        self.crop_prob = crop_prob
-        self.generator = np.random.default_rng(seed=42)
-
-    def _load(self):
-        pairs = []
-        for folder in tqdm(os.listdir(self.data_path)):
-            if 'sub_0' in folder:
-                folder_path = os.path.join(self.data_path, folder)
-                labels = os.path.join(folder_path, 'labels')
-                for label in os.listdir(labels):
-                    with open(os.path.join(labels, label)) as label_set:
-                        content = json.load(label_set)
-                    img_name = content.get('imgfile')
-                    for i in range(len(content.get('bbox'))):
-                        text = content.get('text')[i]
-                        if not set(text.lower()) <= ALPHANUMERIC_VOCAB:
-                            continue
-                        if not self.case_sensitive:
-                            text = text.lower()
-                        ymin = min(content.get('bbox')[i][1::2])
-                        ymax = max(content.get('bbox')[i][1::2])
-                        if any(x < 0 for x in content.get('bbox')[i]) or ymax - ymin < 10:
-                            continue
-                        text = ' '.join(text)
-                        elem = {'img_name': img_name,
-                                'img_path': os.path.join(folder_path, img_name),
-                                'box': content.get('bbox')[i],
-                                'text': text,
-                                }
-                        pairs.append(elem)
-        return pairs
-
-    def __getitem__(self, index):
-        el = deepcopy(self.pairs[index])
-        img = cv.imread(el['img_path'])
-        if len(img.shape) < 3:
-            img = np.stack((img,) * 3, axis=-1)
-        if self.grayscale:
-            img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-            img = cv.cvtColor(img, cv.COLOR_GRAY2BGR)
-        box = el['box']
-        prob = self.generator.random()
-        if prob < self.crop_prob:
-            # crop image
-            xmin = min(box[::2])
-            xmax = max(box[::2])
-            ymin = min(box[1::2])
-            ymax = max(box[1::2])
-            img = img[ymin:ymax, xmin:xmax, :]
-        else:
-            # perspective transform
-            src = np.array([box[0:2], box[2:4], box[4:6], box[6:8]], dtype=np.float32)
-            dst = np.array([[0, 0], [img.shape[1], 0], [img.shape[1], img.shape[0]],
-                           [0, img.shape[0]]], dtype=np.float32)
-            matrix = cv.getPerspectiveTransform(src, dst)
-            img = cv.warpPerspective(img, matrix, (img.shape[1], img.shape[0]))
-        assert img.shape[0] > 0 and img.shape[1] > 0, box
-        if self.fixed_img_shape is not None:
-            img = cv.resize(img, tuple(self.fixed_img_shape[::-1]))
-        el['img'] = img
-        return el
-
-
 class CocoLikeDataset(BaseDataset):
     def __init__(self, data_path, annotation_file, min_shape=(8, 8), grayscale=False,
                  fixed_img_shape=None, case_sensitive=True):
@@ -440,19 +370,18 @@ class CocoLikeDataset(BaseDataset):
             img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
             img = cv.cvtColor(img, cv.COLOR_GRAY2BGR)
         x, y, w, h = box
-        img= img[y:y+h, x:x+w, :]
+        img = img[y:y+h, x:x+w, :]
         if self.fixed_img_shape is not None:
-            img= cv.resize(img, tuple(self.fixed_img_shape[::-1]))
-        el['img']= img
+            img = cv.resize(img, tuple(self.fixed_img_shape[::-1]))
+        el['img'] = img
         return el
 
 
-str_to_class= {
+str_to_class = {
     'Im2LatexDataset': Im2LatexDataset,
     'ICDAR2013RECDataset': ICDAR2013RECDataset,
     'MJSynthDataset': MJSynthDataset,
     'IIIT5KDataset': IIIT5KDataset,
     'LMDBDataset': LMDBDataset,
-    'UnrealTextDataset': UnrealTextDataset,
     'CocoLikeDataset': CocoLikeDataset,
 }
