@@ -1,9 +1,12 @@
 """
- Copyright (c) 2020 Intel Corporation
+ Copyright (c) 2021 Intel Corporation
+
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
  You may obtain a copy of the License at
+
       http://www.apache.org/licenses/LICENSE-2.0
+
  Unless required by applicable law or agreed to in writing, software
  distributed under the License is distributed on an "AS IS" BASIS,
  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,6 +25,11 @@ logging.basicConfig(format='%(asctime)s %(levelname)s %(name)s %(message)s',
 logger = logging.getLogger('{} utils'.format(os.getpid()))
 def printlog(*args):
     logger.info(' '.join([str(v) for v in args]))
+
+def get_shape(x):
+    return list(x.shape)
+    #this is to get more compact and human readable but unresizable onnx model
+    #return [int(s) for s in x.shape]
 
 sync_model_count = -1
 def sync_models(rank, model):
