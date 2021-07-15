@@ -2,6 +2,7 @@ import numpy as np
 import time
 import os
 import argparse
+from numpy.lib.npyio import save
 import torch
 from torch.backends import cudnn
 from torch import optim
@@ -25,7 +26,9 @@ class RSNATrainer():
 
         self.gepoch_id = 0
         self.model_val = ''
-        self.model = model
+        self.device = device
+        # if self.device is 'cuda':
+        self.model = model.to(self.device)
         self.data_loader_train = data_loader_train
         self.data_loader_valid = data_loader_valid
         self.data_loader_test = data_loader_test
@@ -37,13 +40,12 @@ class RSNATrainer():
         else:
             self.checkpoint = None
             self.model_checkpoint = None
-        self.device = device
         self.loss_fn = torch.nn.BCELoss()
         self.lr = lr
         self.optimizer = optim.Adam(self.model.parameters(),lr=self.lr)
 
 
-    def train(self, max_epoch, timestamp_launch):
+    def train(self, max_epoch, timestamp_launch,savepath):
         if self.checkpoint is not None:
             self.model.load_state_dict(self.model_checkpoint['state_dict'])
             for param in self.model.parameters():
@@ -56,7 +58,7 @@ class RSNATrainer():
         for epoch_id in range(max_epoch):
             print(f"Epoch {epoch_id+1}/{max_epoch}")
             self.gepoch_id = epoch_id
-            train_loss, valid_loss, auroc_max = RSNATrainer.epoch_train(self)
+            train_loss, valid_loss, auroc_max = RSNATrainer.epoch_train(self,savepath)
             self.current_train_loss = train_loss
             self.current_valid_loss = train_loss
             timestamp_end = time.strftime("%H%M%S-%d%m%Y")
@@ -71,8 +73,8 @@ class RSNATrainer():
             'state_dict': self.model.state_dict(),
             'best_loss': valid_loss_min,
             'optimizer' : self.optimizer.state_dict()},
-            'models/m-epoch'+str(epoch_id)+'-' + timestamp_launch + '.pth.tar')
-            test_auroc = RSNATrainer.test('models/m-epoch'+str(epoch_id)+'-' + timestamp_launch + '.pth.tar')
+            savepath+'/m-epoch'+str(epoch_id)+'-' + timestamp_launch + '.pth.tar')
+            test_auroc = RSNATrainer.test(self)
             print(f"Epoch:{epoch_id + 1}| EndTime:{timestamp_end}| TestAUROC: {test_auroc}| ValidAUROC: {auroc_max}")
 
     def valid(self):
@@ -83,7 +85,7 @@ class RSNATrainer():
         out_pred = torch.FloatTensor().to(self.device)
         with torch.no_grad():
             for i, (var_input, var_target) in tq(enumerate(self.data_loader_valid)):
-                print(f"Batch {i} in Val")
+                # print(f"Batch {i} in Val")
                 var_target = var_target.to(self.device)
                 out_gt = torch.cat((out_gt, var_target), 0).to(self.device)
 
@@ -108,7 +110,7 @@ class RSNATrainer():
         return valid_loss,auroc_mean
 
 
-    def epoch_train(self):
+    def epoch_train(self,savepath):
         auroc_max = 0.0 # Setting maximum AUROC value as zero
         if self.model_checkpoint is not None:
             self.optimizer.load_state_dict(self.model_checkpoint['optimizer'])
@@ -136,10 +138,10 @@ class RSNATrainer():
             # every 2500th iteration. 2500 is a random choice, this could be changed.
 
             if batch_id%2500==0 and batch_id!=0:
-                print(f"batch_id::{batch_id}")
-                validloss_value,auroc_mean = RSNATrainer.valid(self.model)
+                # print(f"batch_id::{batch_id}")
+                validloss_value,auroc_mean = RSNATrainer.valid(self)
                 loss_valid_list.append(validloss_value)
-                print("\n")
+                # print("\n")
                 if auroc_mean>auroc_max:
                     print('Better auroc obtained')
                     auroc_max = auroc_mean
@@ -151,7 +153,7 @@ class RSNATrainer():
                     'state_dict': self.model.state_dict(),
                     'aucmean_loss': auroc_mean,
                     'optimizer' : self.optimizer.state_dict()},
-                    'models/m-epoch-'+str(epoch_id)+'-batch_id-'+str(batch_id)+'-aurocMean-'+str(auroc_mean)+'.pth.tar')
+                    savepath+'/m-epoch-'+str(epoch_id)+'-batch_id-'+str(batch_id)+'-aurocMean-'+str(auroc_mean)+'.pth.tar')
                 scheduler.step()
 
         train_loss_mean = np.mean(loss_train_list)
@@ -162,19 +164,20 @@ class RSNATrainer():
         cudnn.benchmark = True
         if self.checkpoint is not None:
             model_checkpoint = torch.load(self.checkpoint)
-            self.model.load_state_dict(model_checkpoint['state_dict']).to(self.device)
+            self.model.load_state_dict(model_checkpoint['state_dict'])
         else:
-            self.model.state_dict().to(self.device)
+            self.model.state_dict()
         out_gt = torch.FloatTensor().to(self.device)
         out_pred = torch.FloatTensor().to(self.device)
         self.model.eval()
         with torch.no_grad():
             for i, (var_input, var_target) in enumerate(self.data_loader_test):
                 var_target = var_target.to(self.device)
+                var_input = var_input.to(self.device)
                 out_gt = torch.cat((out_gt, var_target), 0).to(self.device)
-                _, c, h, w = input.size()
-                var_input = input.view(-1, c, h, w)
-                out = self.model(var_input.to(self.device))
+                _, c, h, w = var_input.size()
+                var_input = var_input.view(-1, c, h, w)
+                out = self.model(var_input)
                 out_pred = torch.cat((out_pred, out), 0)
 
         auroc_individual = compute_auroc(tfunc.one_hot(out_gt.squeeze(1).long()).float(), out_pred, self.class_count)
@@ -252,11 +255,12 @@ def main(args):
 
     # Train the  Model
     timestamp_launch = time.strftime("%d%m%Y - %H%M%S")
+    savepath = args.spath
 
     rsna_trainer = RSNATrainer(
         model, data_loader_train, data_loader_valid, data_loader_test,
         class_count,checkpoint, device, class_names, lr)
-    rsna_trainer.train(max_epoch, timestamp_launch)
+    rsna_trainer.train(max_epoch, timestamp_launch,savepath)
     print("Model trained !")
 
 
@@ -268,6 +272,7 @@ if __name__=="__main__":
     parser.add_argument("--dpath",required=True, help="Path to folder containing all data", type =str)
     parser.add_argument("--epochs",required=False,default=15, help="Number of epochs", type=int)
     parser.add_argument("--clscount",required=False,default=3, help="Number of classes", type=int)
+    parser.add_argument("--spath",required=True, help="Path to folder in which models should be saved", type =str)
     parser.add_argument("--optimised",required=False, default=False,help="enable flag for eff model", action='store_true')
     parser.add_argument("--alpha",required=False,help="alpha for the model",default=(11 / 6),type=float)
     parser.add_argument("--phi",required=False,help="Phi for the model.",default=1.0,type=float)
