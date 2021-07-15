@@ -171,7 +171,7 @@ def train(rank, args, model, dataset_train, epoch_start):
             x_clean, x_noise, x = mix_signals(args, x_clean, x_noise)
 
             #forward pass
-            y_clean, Y_clean, state = model(x)
+            y_clean, Y_clean, _ = model(x)
 
             #calc specter for clean input signal
             tail_size = model.wnd_length - model.hop_length
