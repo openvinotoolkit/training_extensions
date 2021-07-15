@@ -199,7 +199,7 @@ class ONNXRunner(BaseRunner):
         return np.expand_dims(np.argmax(np.array(logits).squeeze(1), axis=1), 0)
 
     def run_encoder(self, img):
-        encoder_outputs = [name for name in self.config.get('export').get('encoder_output_names').split(',')]
+        encoder_outputs = self.config.get('export').get('encoder_output_names').split(',')
         encoder_input = self.config.get('export').get('encoder_input_names')
         return self.encoder_onnx.run(encoder_outputs, {
             encoder_input: np.array(img, dtype=np.float32)

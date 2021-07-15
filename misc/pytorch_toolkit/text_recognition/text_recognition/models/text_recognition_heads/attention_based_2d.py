@@ -69,7 +69,7 @@ class DecoderAttention2d(nn.Module):
             decoder_input_feature_size[1]
 
         self.embedding = nn.Embedding(vocab_size, self.hidden_size)
-        assert rnn_type in self.str_to_class.keys(), f'Unsupported decoder type {self.decoder}'
+        assert rnn_type in self.str_to_class.keys(), f'Unsupported decoder type {rnn_type}'
         self.decoder = self.str_to_class[rnn_type](
             input_size=self.hidden_size,
             hidden_size=self.hidden_size,
@@ -144,8 +144,7 @@ class DecoderAttention2d(nn.Module):
 
         if isinstance(self.decoder, nn.LSTM):
             return output, hidden, cell, attn_weights
-        if isinstance(self.decoder, nn.GRU):
-            return output, hidden, attn_weights
+        return output, hidden, attn_weights
 
 
 class TextRecognitionHeadAttention(nn.Module):
@@ -280,8 +279,8 @@ class TextRecognitionHeadAttention(nn.Module):
             decoder_output, decoder_hidden, _ = self.decoder(
                 decoder_input, hidden, features)
             return decoder_hidden, decoder_output
-        if isinstance(self.decoder.decoder, nn.LSTM):
-            hidden, context = recurrent_state
-            decoder_output, decoder_hidden, decoder_cell, _ = self.decoder(
-                decoder_input, hidden, features, context)
-            return decoder_hidden, decoder_cell, decoder_output
+
+        hidden, context = recurrent_state
+        decoder_output, decoder_hidden, decoder_cell, _ = self.decoder(
+            decoder_input, hidden, features, context)
+        return decoder_hidden, decoder_cell, decoder_output

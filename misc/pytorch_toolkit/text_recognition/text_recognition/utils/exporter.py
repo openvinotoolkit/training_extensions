@@ -43,7 +43,8 @@ class Exporter:
         self.vocab = read_vocab(config.get('vocab_path'))
         self.use_ctc = self.config.get('use_ctc')
         self.out_size = len(self.vocab) + 1 if self.use_ctc else len(self.vocab)
-        self.model = TextRecognitionModel(config.get('backbone_config'), self.out_size, config.get('head', {}), config.get('transformation', {}))
+        self.model = TextRecognitionModel(config.get('backbone_config'), self.out_size,
+                                          config.get('head', {}), config.get('transformation', {}))
         self.model.eval()
         if self.model_path is not None:
             self.model.load_weights(self.model_path)

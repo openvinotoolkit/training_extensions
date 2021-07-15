@@ -345,7 +345,8 @@ class CocoLikeDataset(BaseDataset):
         for ann in tqdm(annotations):
             img_name = image_names[ann['image_id']]['file_name']
             text = ann['attributes']['transcription']
-            if not(all(x > 0 for x in ann['bbox']) and set(text.lower()) <= ALPHANUMERIC_VOCAB and ann['attributes']['legible']):
+            if not(all(x > 0 for x in ann['bbox']) and
+                   set(text.lower()) <= ALPHANUMERIC_VOCAB and ann['attributes']['legible']):
                 continue
             if not self.case_sensitive:
                 text = text.lower()
