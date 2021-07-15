@@ -16,7 +16,8 @@ import dataset
 from metrics import sisdr
 from evaluate import evaluate_dir
 
-logging.basicConfig(format='%(asctime)s %(levelname)s %(name)s %(message)s',datefmt='%Y-%m-%d %H:%M:%S',level=logging.INFO)
+logging.basicConfig(format='%(asctime)s %(levelname)s %(name)s %(message)s',
+                    datefmt='%Y-%m-%d %H:%M:%S',level=logging.INFO)
 logger = logging.getLogger('{} train_poconetlike'.format(os.getpid()))
 def printlog(*args):
     logger.info(' '.join([str(v) for v in args]))
@@ -35,14 +36,14 @@ def mix_signals(args, x_clean, x_noise):
     target_db = rand_range(args.target_min, args.target_max)
 
     def db_to_scale(db):
-        return (10 ** (db / 20))
+        return 10 ** (db / 20)
 
     # scale noise to get given SNR
     scale_noise = db_to_scale(-snr_db) * rms_clean / (rms_noise + EPS)
-    if False:
-        # do not scale noise if noise only rms_clean < -80dB
-        noise_only_w = (rms_clean < db_to_scale(-80)).float()
-        scale_noise = 1 * noise_only_w + scale_noise * (1 - noise_only_w)
+
+    # do not scale noise if noise only rms_clean < -80dB
+    #noise_only_w = (rms_clean < db_to_scale(-80)).float()
+    #scale_noise = 1 * noise_only_w + scale_noise * (1 - noise_only_w)
 
     x = x_clean + x_noise * scale_noise
     rms_x = x.pow(2).mean(-1, keepdim=True).sqrt()
@@ -58,7 +59,7 @@ def mix_signals(args, x_clean, x_noise):
 
     t = torch.rand(target_scale.shape, dtype=target_scale.dtype, device=target_scale.device)
     max_val = x.abs()
-    max_val, max_idx = max_val.max(-1, keepdim=True)
+    max_val, _ = max_val.max(-1, keepdim=True)
     clamp_val = max_val * (1 - clamp_mask * t * 0.5)
     x = torch.max(x, 0 - clamp_val)
     x = torch.min(x, clamp_val)
@@ -82,11 +83,23 @@ def train(rank, args, model, dataset_train, epoch_start):
     if rank < 0:
         #single process take all samples
         sampler = torch.utils.data.RandomSampler(dataset_train)
-        dataloader = torch.utils.data.DataLoader(dataset_train, sampler=sampler, batch_size=train_batch_size, num_workers=3)
+        dataloader = torch.utils.data.DataLoader(
+            dataset_train,
+            sampler=sampler,
+            batch_size=train_batch_size,
+            num_workers=3)
     else:
         #special sampler that divide samples between processes
-        sampler = torch.utils.data.distributed.DistributedSampler(dataset_train, rank=rank, drop_last=True, shuffle=True)
-        dataloader = torch.utils.data.DataLoader(dataset_train, sampler=sampler, batch_size=per_gpu_train_batch_size, num_workers=3)
+        sampler = torch.utils.data.distributed.DistributedSampler(
+            dataset_train,
+            rank=rank,
+            drop_last=True,
+            shuffle=True)
+        dataloader = torch.utils.data.DataLoader(
+            dataset_train,
+            sampler=sampler,
+            batch_size=per_gpu_train_batch_size,
+            num_workers=3)
 
     steps_total = int((len(dataloader) // gradient_accumulation_steps) * num_train_epochs)
 
@@ -95,9 +108,8 @@ def train(rank, args, model, dataset_train, epoch_start):
         p = float(current_step) / (float(steps_total) + EPS)
         if p <= const_time:
             return 1
-        else:
-            p = (p - const_time) / (1 - const_time)
-            return max(0, math.cos(math.pi * 0.5 * p))
+        p = (p - const_time) / (1 - const_time)
+        return max(0, math.cos(math.pi * 0.5 * p))
 
     named_params = list(model.named_parameters())
     optimizer = torch.optim.AdamW([p for n,p in named_params], lr=args.learning_rate, weight_decay=args.weight_decay)
@@ -189,78 +201,86 @@ def train(rank, args, model, dataset_train, epoch_start):
             loss.backward()
             grad_count += 1
 
-            if (step + 1) % gradient_accumulation_steps == 0:
-                global_step += 1
+            if (step + 1) % gradient_accumulation_steps != 0:
+                continue
 
-                assert grad_count>0
-                utils.sync_grads(rank, named_params, global_step==1, grad_count)
+            #make step
+            global_step += 1
 
-                optimizer.step()  # make optimization step
-                scheduler.step()  # Update learning rate schedule
+            assert grad_count>0
+            utils.sync_grads(rank, named_params, global_step==1, grad_count)
 
-                model.zero_grad()
-                grad_count = 0
+            optimizer.step()  # make optimization step
+            scheduler.step()  # Update learning rate schedule
 
-                if global_step % args.logacc == 0:
-                    # Log metrics
-                    lr = scheduler.get_last_lr()
-                    lrp = " ".join(['{:.2f}'.format(math.log10(t+EPS)) for t in lr])
-                    str_out = "ep {:.3f} lrp {}".format(epoch_fp, lrp)
+            model.zero_grad()
+            grad_count = 0
 
-                    indicators_mean = {}
-                    for k, v in indicators.items():
-                        v = np.array(v)
-                        if len(v.shape) == 1:
-                            v = v[:, None]
+            if global_step % args.logacc != 0:
+                continue
 
-                        if rank > -1:
-                            # sync indicators
-                            vt = torch.tensor(v).to(args.device)
-                            torch.distributed.all_reduce(vt, op=torch.distributed.ReduceOp.SUM)
-                            v = vt.cpu().numpy() / float(world_size)
+            # Log metrics
+            lr = scheduler.get_last_lr()
+            lrp = " ".join(['{:.2f}'.format(math.log10(t+EPS)) for t in lr])
+            str_out = "ep {:.3f} lrp {}".format(epoch_fp, lrp)
 
-                        str_out += " {} {}".format(k, " ".join(["{:.3f}".format(t) for t in v.mean(0)]))
-                        indicators_mean[k] = v.mean(0)
+            indicators_mean = {}
+            for k, v in indicators.items():
+                v = np.array(v)
+                if len(v.shape) == 1:
+                    v = v[:, None]
 
-                    #check that negsisdr suddenly raise
-                    if "negsisdr" in indicators_mean:
-                        negsisdr = indicators_mean["negsisdr"]
-                        if "negsisdr_mean" not in locals():
-                            negsisdr_mean = negsisdr
-                            negsisdr_dev = 0
-                            negsisdr_count = 0
-                            reset_count = 0
-                        else:
-                            #check 3 sigma
-                            if negsisdr_count>10 and (negsisdr-negsisdr_mean) > 3*negsisdr_dev**0.5 :
-                                #reset params and optimizer
-                                reset_count += 1
-                                logger.info("{} > 3*{} RESET PARAMS {}".format(negsisdr-negsisdr_mean, negsisdr_dev**0.5, reset_count))
-                                for (n,p),(nb,pb) in zip(named_params,named_params_backup):
-                                    assert n == nb
-                                    p.data.copy_(pb.data)
-                                optimizer.state = collections.defaultdict(dict)
-                            else:
-                                named_params_backup = [(n,p.detach().cpu()) for n,p in named_params]
+                if rank > -1:
+                    # sync indicators
+                    vt = torch.tensor(v).to(args.device)
+                    torch.distributed.all_reduce(vt, op=torch.distributed.ReduceOp.SUM)
+                    v = vt.cpu().numpy() / float(world_size)
 
-                            negsisdr_mean += 0.1*(negsisdr-negsisdr_mean)
-                            negsisdr_dev += 0.1*((negsisdr-negsisdr_mean)**2-negsisdr_dev)
-                            negsisdr_count += 1
+                str_out += " {} {}".format(k, " ".join(["{:.3f}".format(t) for t in v.mean(0)]))
+                indicators_mean[k] = v.mean(0)
 
-                        str_out += " RC {}".format(reset_count)
+            #check that negsisdr suddenly raise
+            if "negsisdr" in indicators_mean:
+                negsisdr = indicators_mean["negsisdr"]
+                if "negsisdr_mean" not in locals():
+                    negsisdr_mean = negsisdr
+                    negsisdr_dev = 0
+                    negsisdr_count = 0
+                    reset_count = 0
+                else:
+                    #check 3 sigma
+                    if negsisdr_count>10 and (negsisdr-negsisdr_mean) > 3*negsisdr_dev**0.5 :
+                        #reset params and optimizer
+                        reset_count += 1
+                        logger.info("{} > 3*{} RESET PARAMS {}".format(
+                            negsisdr-negsisdr_mean,
+                            negsisdr_dev**0.5,
+                            reset_count))
+                        for (n,p),(nb,pb) in zip(named_params,named_params_backup):
+                            assert n == nb
+                            p.data.copy_(pb.data)
+                        optimizer.state = collections.defaultdict(dict)
+                    else:
+                        named_params_backup = [(n,p.detach().cpu()) for n,p in named_params]
 
-                    if 'time_last' in locals():
-                        # estimate processing times
-                        dt_iter = (time.time() - time_last) / len(indicators['loss'])
-                        dt_ep = dt_iter * len(dataloader)
-                        str_out += " it {:.1f}s".format(dt_iter)
-                        str_out += " ep {:.1f}m".format(dt_ep / (60))
-                        str_out += " eta {:.1f}h".format(dt_ep * (num_train_epochs - epoch_fp) / (60 * 60))
-                    time_last = time.time()
+                    negsisdr_mean += 0.1*(negsisdr-negsisdr_mean)
+                    negsisdr_dev += 0.1*((negsisdr-negsisdr_mean)**2-negsisdr_dev)
+                    negsisdr_count += 1
 
-                    indicators = collections.defaultdict(list)
-                    if rank in [-1, 0]:
-                        logger.info(str_out)
+                str_out += " RC {}".format(reset_count)
+
+            if 'time_last' in locals():
+                # estimate processing times
+                dt_iter = (time.time() - time_last) / len(indicators['loss'])
+                dt_ep = dt_iter * len(dataloader)
+                str_out += " it {:.1f}s".format(dt_iter)
+                str_out += " ep {:.1f}m".format(dt_ep / (60))
+                str_out += " eta {:.1f}h".format(dt_ep * (num_train_epochs - epoch_fp) / (60 * 60))
+            time_last = time.time()
+
+            indicators = collections.defaultdict(list)
+            if rank in [-1, 0]:
+                logger.info(str_out)
 
         if rank in [-1, 0]:
             check_point_name = 'checkpoint-{:02}'.format(epoch + 1)
@@ -290,7 +310,7 @@ def process(rank, args, port):
     random.seed(args.seed+rank)
     torch.manual_seed(args.seed+rank)
 
-    m = re.match(".*checkpoint-(\d+)", args.model_desc)
+    m = re.match(r'.*checkpoint-(\d+)', args.model_desc)
     epoch_start = int(m.group(1)) if m else 0
 
     model = models.model_create(args.model_desc)
@@ -326,12 +346,12 @@ def process(rank, args, port):
         with torch.no_grad():
             #get the smallest size
             size = model.get_sample_length_ceil(1)
-            input = torch.zeros((1,size), dtype=torch.float, device=args.device)
+            input_tensor = torch.zeros((1,size), dtype=torch.float, device=args.device)
 
-            outputs = model(input)
+            outputs = model(input_tensor)
             state = outputs[2]
             printlog("state size",sum(t.numel() for t in state),"float params")
-            inputs = (input, state)
+            inputs = (input_tensor, state)
             input_names = ['input'] + ["inp_state_{:03}".format(i) for i in range(len(state))]
             output_names = ['output', 'Y']+ ["out_state_{:03}".format(i) for i in range(len(state))]
 
@@ -349,7 +369,7 @@ def process(rank, args, port):
 
             with open(os.path.join(args.output_dir, "input.yml"), 'wt') as out:
                 out.write("inputs:\n")
-                for n, t in zip(input_names, [input] + state):
+                for n, t in zip(input_names, [input_tensor] + state):
                     for s in rec(n, t):
                         out.write("  "+ s + "\n")
                 out.write("outputs:\n")
@@ -376,26 +396,101 @@ def process(rank, args, port):
 def main(args=None):
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--model_desc", default="PoCoNetLikeModel", type=str, required=False,help="model directory or model json or model desc string")
-    parser.add_argument("--dns_datasets", type=str, default=None, required=True, help="DNS-Chalange datasets directory")
-    parser.add_argument("--eval_data", default=None, type=str, required=False,help="synthetic dataset to validate <dns-datasets>/ICASSP_dev_test_set/track_1/synthetic")
-    parser.add_argument("--output_dir", default=None, type=str, required=True,help="The output directory for model")
-    parser.add_argument("--total_train_batch_size", default=128, type=int,help="Batch size to make one optimization step.")
-    parser.add_argument("--per_gpu_train_batch_size", default=6, type=int,help="Batch size per GPU for training.")
-    parser.add_argument("--learning_rate", default=1e-4, type=float, help="The initial learning rates for optimizer.")
-    parser.add_argument("--weight_decay", default=1e-2, type=float, help="The weight decay for optimizer")
-    parser.add_argument("--num_train_epochs", default=10.0, type=float,help="Number of epochs to train")
-    parser.add_argument("--no_cuda", action='store_true',help="Disable GPU calculation")
-    parser.add_argument("--seed", default=42, type=int, help="Seed for different inittializations")
-    parser.add_argument("--logacc", default=50, type=int, help="Number of optimization steps before log")
+    parser.add_argument(
+        "--model_desc",
+        default="PoCoNetLikeModel",
+        type=str,
+        required=False,
+        help="model directory or model json or model desc string")
+    parser.add_argument(
+        "--dns_datasets",
+        type=str,
+        default=None,
+        required=True,
+        help="DNS-Chalange datasets directory")
+    parser.add_argument(
+        "--eval_data",
+        default=None,
+        type=str,
+        required=False,
+        help="synthetic dataset to validate <dns-datasets>/ICASSP_dev_test_set/track_1/synthetic")
+    parser.add_argument(
+        "--output_dir",
+        default=None,
+        type=str,
+        required=True,
+        help="The output directory for model")
+    parser.add_argument(
+        "--total_train_batch_size",
+        default=128,
+        type=int,
+        help="Batch size to make one optimization step.")
+    parser.add_argument(
+        "--per_gpu_train_batch_size",
+        default=6,
+        type=int,
+        help="Batch size per GPU for training.")
+    parser.add_argument(
+        "--learning_rate",
+        default=1e-4,
+        type=float,
+        help="The initial learning rates for optimizer.")
+    parser.add_argument(
+        "--weight_decay",
+        default=1e-2,
+        type=float,
+        help="The weight decay for optimizer")
+    parser.add_argument(
+        "--num_train_epochs",
+        default=10.0,
+        type=float,
+        help="Number of epochs to train")
+    parser.add_argument(
+        "--no_cuda",
+        action='store_true',
+        help="Disable GPU calculation")
+    parser.add_argument(
+        "--seed",
+        default=42,
+        type=int,
+        help="Seed for different inittializations")
+    parser.add_argument(
+        "--logacc",
+        default=50,
+        type=int,
+        help="Number of optimization steps before log")
 
-    parser.add_argument("--size_to_read", default=4.0, type=float,help="number of second in batch to train infer")
+    parser.add_argument(
+        "--size_to_read",
+        default=4.0,
+        type=float,
+        help="number of second in batch to train infer")
 
-    parser.add_argument("--snr_min", default=-20, type=float,help="Minimal SNR value (dB) for mixing clean signal and noise")
-    parser.add_argument("--snr_max", default=+10, type=float,help="Maximal SNR value (dB) for mixing clean signal and noise")
-    parser.add_argument("--target_min", default=-30, type=float,help="Minimal (dBFS) for input mixed signal")
-    parser.add_argument("--target_max", default=-5, type=float,help="Maximal (dBFS) for input mixed signal")
-    parser.add_argument("--clip_prob", default=0.1, type=float,help="Probability to clip input mixed signal")
+    parser.add_argument(
+        "--snr_min",
+        default=-20,
+        type=float,
+        help="Minimal SNR value (dB) for mixing clean signal and noise")
+    parser.add_argument(
+        "--snr_max",
+        default=+10,
+        type=float,
+        help="Maximal SNR value (dB) for mixing clean signal and noise")
+    parser.add_argument(
+        "--target_min",
+        default=-30,
+        type=float,
+        help="Minimal (dBFS) for input mixed signal")
+    parser.add_argument(
+        "--target_max",
+        default=-5,
+        type=float,
+        help="Maximal (dBFS) for input mixed signal")
+    parser.add_argument(
+        "--clip_prob",
+        default=0.1,
+        type=float,
+        help="Probability to clip input mixed signal")
 
     args = parser.parse_args(args)
 

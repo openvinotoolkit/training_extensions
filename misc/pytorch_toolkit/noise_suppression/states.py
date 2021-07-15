@@ -33,8 +33,4 @@ class States():
 
         self.update(x_splited[-1:])
 
-        if shift_right:
-            return x_splited[0]
-        else:
-            return x_padded
-
+        return x_splited[0] if shift_right else x_padded

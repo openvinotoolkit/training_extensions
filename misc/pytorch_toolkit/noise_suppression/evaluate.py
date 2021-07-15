@@ -9,7 +9,8 @@ import models
 from metrics import sisdr
 from dataset import AudioFile
 
-logging.basicConfig(format='%(asctime)s %(levelname)s %(name)s %(message)s',datefmt='%Y-%m-%d %H:%M:%S',level=logging.INFO)
+logging.basicConfig(format='%(asctime)s %(levelname)s %(name)s %(message)s',
+                    datefmt='%Y-%m-%d %H:%M:%S',level=logging.INFO)
 logger = logging.getLogger('{} evaluate'.format(os.getpid()))
 def printlog(*args):
     logger.info(' '.join([str(v) for v in args]))
@@ -20,7 +21,7 @@ def evaluate_dir(eval_data_dir, model_dir):
 
     if not eval_data_dir or not os.path.isdir(eval_data_dir):
         printlog("{} is not folder with evaluation data! Evaluation for {} is skipped".format(eval_data_dir, model_dir))
-        return {}
+        return
 
     #create model from dir
     model = models.model_from_dir(model_dir)
@@ -28,27 +29,27 @@ def evaluate_dir(eval_data_dir, model_dir):
 
     #create dataset
     file_names = {"clean":{},"noisy":{}}
-    for r, d, files in os.walk(eval_data_dir):
+    for r, _, files in os.walk(eval_data_dir):
         for f in files:
             if f.split('.')[-1] not in ['wav']:
                 continue
-            m = re.match(".*fileid_(\d+)\..*", f)
+            m = re.match(r'.*fileid_(\d+)\..*', f)
             if m is None:
                 printlog("file {}/{} skipped because of missed id".format(r,f))
                 continue
             t = os.path.split(r)[-1]
-            id = m.group(1)
+            index = m.group(1)
             if f.startswith("synthetic_singing"):
-                id = "singing_" + id
+                index = "singing_" + index
             elif f.startswith("synthetic_emotion"):
-                id = "emotion_" + id
+                index = "emotion_" + index
             else:
-                id = "speech_" + id
+                index = "speech_" + index
 
-            if id in file_names[t]:
-                printlog("duplicate id", file_names[t][id], os.path.join(r, f))
+            if index in file_names[t]:
+                printlog("duplicate id", file_names[t][index], os.path.join(r, f))
             else:
-                file_names[t][id] = os.path.join(r, f)
+                file_names[t][index] = os.path.join(r, f)
 
     file_ids = [set(v.keys()) for v in file_names.values()]
     file_ids = list(sorted(set.intersection(*file_ids)))
@@ -93,15 +94,18 @@ def evaluate_dir(eval_data_dir, model_dir):
 
         sample_len = input_size/16000
         sample_time = t1-t0
-        printlog("{}/{} {:0.2f}s is evaluated by {:0.2f}s x{:0.2f} sisdr_inp,out,diff {:0.2f} {:0.2f} {:0.2f} for {}".format(
+        msg1 = "{}/{} {:0.2f}s is evaluated by {:0.2f}s x{:0.2f}".format(
             len(sisdr_inps_all), len(file_ids), sample_len,
             sample_time,
             sample_time / sample_len,
+        )
+        msg2 = " sisdr_inp,out,diff {:0.2f} {:0.2f} {:0.2f} for {}".format(
             sisdr_inps_all[-1],
             sisdr_outs_all[-1],
             sisdr_outs_all[-1] - sisdr_inps_all[-1],
             fi
-        ))
+        )
+        printlog(msg1 + msg2)
 
     result = {}
     for t in ["speech", "singing", "emotion", "all"]:

@@ -17,7 +17,8 @@ import socket
 import os
 import pickle
 
-logging.basicConfig(format='%(asctime)s %(levelname)s %(name)s %(message)s',datefmt='%Y-%m-%d %H:%M:%S',level=logging.INFO)
+logging.basicConfig(format='%(asctime)s %(levelname)s %(name)s %(message)s',
+                    datefmt='%Y-%m-%d %H:%M:%S',level=logging.INFO)
 logger = logging.getLogger('{} utils'.format(os.getpid()))
 def printlog(*args):
     logger.info(' '.join([str(v) for v in args]))
@@ -62,8 +63,7 @@ def get_free_port():
         if res != 0:
             printlog("port {} is free".format(port))
             return port
-        else:
-            printlog("port {} is used".format(port))
+        printlog("port {} is used".format(port))
     return None
 
 
@@ -98,4 +98,3 @@ def brodcast_data(rank, data, rank_src=0):
     torch.distributed.barrier()
 
     return data
-

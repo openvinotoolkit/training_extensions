@@ -4,12 +4,18 @@ import json
 from model_base import BaseDNSModel
 from model_poconetlike import PoCoNetLikeModel
 
-logging.basicConfig(format='%(asctime)s %(levelname)s %(name)s %(message)s',datefmt='%Y-%m-%d %H:%M:%S',level=logging.INFO)
+logging.basicConfig(format='%(asctime)s %(levelname)s %(name)s %(message)s',
+                    datefmt='%Y-%m-%d %H:%M:%S',level=logging.INFO)
 logger = logging.getLogger('{} models'.format(os.getpid()))
 def printlog(*args):
     logger.info(' '.join([str(v) for v in args]))
 
-MODELS = {cls.__name__:cls for cls in globals().values() if isinstance(cls, type) and issubclass(cls, BaseDNSModel)}
+#MODELS = {cls.__name__:cls for cls in globals().values() if isinstance(cls, type) and issubclass(cls, BaseDNSModel)}
+MODELS = {
+    'PoCoNetLikeModel': PoCoNetLikeModel
+}
+#check that model class based on  BaseDNSModel
+assert all(issubclass(cls, BaseDNSModel) for cls in MODELS.values())
 
 def model_from_dir(model_dir):
 
@@ -42,6 +48,7 @@ def model_create(model_desc):
             printlog("Create not initialized model {} from list of similar models {}".format(names[0], names))
             model = MODELS[names[0]](model_desc=model_desc)
         else:
-            raise RuntimeError("{} model description does not match with any class in {}".format(model_desc, list(MODELS.keys())))
+            msg = "{} model description does not match with any class in {}".format(model_desc, list(MODELS.keys()))
+            raise RuntimeError(msg)
 
     return model

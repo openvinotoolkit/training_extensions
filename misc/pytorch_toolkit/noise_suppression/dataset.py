@@ -6,8 +6,10 @@ import multiprocessing
 
 import torch
 import numpy as np
+import wave
 
-logging.basicConfig(format='%(asctime)s %(levelname)s %(name)s %(message)s',datefmt='%Y-%m-%d %H:%M:%S',level=logging.INFO)
+logging.basicConfig(format='%(asctime)s %(levelname)s %(name)s %(message)s',
+                    datefmt='%Y-%m-%d %H:%M:%S',level=logging.INFO)
 logger = logging.getLogger('{} dataset'.format(os.getpid()))
 def printlog(*args):
     logger.info(' '.join([str(v) for v in args]))
@@ -17,7 +19,6 @@ EPS = torch.finfo(torch.float32).tiny
 
 DUMP_FILE_INFO_FLAG = False
 
-import wave
 
 class AudioFile:
     DUMP_VER = "v3"
@@ -51,7 +52,7 @@ class AudioFile:
                     sample = sample.reshape(-1, wav.getnchannels())
                     sample = sample.mean(1)
             else:
-                raise RuntimeError("file {} has unsupported sample size {}".format(self.file_name, sample_width))
+                raise RuntimeError("file {} has unsupported sample size {}".format(self.file_name, wav.getsampwidth()))
         return torch.Tensor(sample)
 
     def read_random_segment(self, size_to_read):
@@ -71,10 +72,10 @@ class AudioFile:
 def create_file_info_task(fn):
     try:
         fi = AudioFile(file_name=fn)
-    except RuntimeError as exc:
+    except RuntimeError:
         printlog("fail to read file", fn)
         fi = None
-    except wave.Error as exc:
+    except wave.Error:
         printlog("fail to read file", fn)
         fi = None
     return fi
@@ -92,7 +93,7 @@ def scan_files(dataset_dir):
     else:
         file_names = []
         printlog("scan dir {} to find audio files".format(dataset_dir))
-        for r, d, files in os.walk(dataset_dir):
+        for r, _, files in os.walk(dataset_dir):
             for f in files:
                 if f.split('.')[-1] in ['wav']:
                     file_names.append(os.path.join(r, f))
@@ -119,36 +120,18 @@ def scan_files(dataset_dir):
 
 
 class DNSDataset(torch.utils.data.Dataset):
-    def __init__(self, dns_datasets, size_to_read, zero_signal_iter=5, zero_signal_level=-40, non_stationary_noise_iter=5):
+    def __init__(self,
+                 dns_datasets,
+                 size_to_read,
+                 zero_signal_iter=5,
+                 zero_signal_level=-40,
+                 non_stationary_noise_iter=5):
         self.non_stationary_noise_iter = non_stationary_noise_iter
         self.zero_signal_iter = zero_signal_iter
         self.zero_signal_level = zero_signal_level
         self.size_to_read = size_to_read
 
-
-        if True:
-            self.files_clean = scan_files(os.path.join(dns_datasets, "clean"))
-        else:
-            #some subsets of clean
-            clean_dirs = [
-                "clean/read_speech",
-                "clean/singing_voice/VocalSet11",
-                "clean/emotional_speech/crema_d",
-                "clean/italian_speech/M-AILABS_Speech_Dataset",
-                "clean/german_speech/M-AILABS_Speech_Dataset",
-                "clean/spanish_speech/M-AILABS_Speech_Dataset",
-                "clean/french_data/M-AILABS_Speech_Dataset",
-                "clean/russian_speech/M-AILABS_Speech_Dataset"
-            ]
-
-            self.files_clean = []
-            for subdir in clean_dirs:
-                files_clean = scan_files(os.path.join(dns_datasets, subdir))
-                self.files_clean.extend(files_clean)
-
-        total = sum(f.size / f.freq for f in self.files_clean)
-        printlog("{:.1f} clean data hours scanned from {}".format(total / 60 / 60, dns_datasets))
-
+        self.files_clean = scan_files(os.path.join(dns_datasets, "clean"))
         self.files_noise = scan_files(os.path.join(dns_datasets, "noise"))
 
         def make_idx(files):

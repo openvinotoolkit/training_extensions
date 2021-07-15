@@ -4,7 +4,8 @@ import json
 
 
 import torch
-logging.basicConfig(format='%(asctime)s %(levelname)s %(name)s %(message)s',datefmt='%Y-%m-%d %H:%M:%S',level=logging.INFO)
+logging.basicConfig(format='%(asctime)s %(levelname)s %(name)s %(message)s',
+                    datefmt='%Y-%m-%d %H:%M:%S',level=logging.INFO)
 logger = logging.getLogger('{} model_base'.format(os.getpid()))
 def printlog(*args):
     logger.info(' '.join([str(v) for v in args]))
@@ -61,4 +62,3 @@ class BaseDNSModel(torch.nn.Module):
         state_dict = torch.load(weights_name, map_location="cpu")
         model.load_state_dict(state_dict)
         return model
-

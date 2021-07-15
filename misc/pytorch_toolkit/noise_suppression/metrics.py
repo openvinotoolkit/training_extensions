@@ -2,7 +2,14 @@ import torch
 
 EPS = torch.finfo(torch.float32).tiny
 
-def sisdr(y, target, db_flag = True, reg_pow_db = None, inv_flag=False, mean_flag=False, onelog_flag=False, beta_flag=False):
+def sisdr(y,
+          target,
+          db_flag = True,
+          reg_pow_db = None,
+          inv_flag=False,
+          mean_flag=False,
+          onelog_flag=False,
+          beta_flag=False):
 
     dim_agregate = -1
 
@@ -44,5 +51,3 @@ def sisdr(y, target, db_flag = True, reg_pow_db = None, inv_flag=False, mean_fla
         else:
             l = (target_pow + reg_pow) / (noise_pow + reg_pow)
     return l
-
-

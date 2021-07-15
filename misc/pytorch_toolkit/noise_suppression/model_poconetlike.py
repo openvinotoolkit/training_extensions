@@ -9,7 +9,8 @@ import torch
 from model_base import BaseDNSModel
 from states import States
 
-logging.basicConfig(format='%(asctime)s %(levelname)s %(name)s %(message)s',datefmt='%Y-%m-%d %H:%M:%S',level=logging.INFO)
+logging.basicConfig(format='%(asctime)s %(levelname)s %(name)s %(message)s',
+                    datefmt='%Y-%m-%d %H:%M:%S',level=logging.INFO)
 logger = logging.getLogger('{} model_poconetlike'.format(os.getpid()))
 def printlog(*args):
     logger.info(' '.join([str(v) for v in args]))
@@ -39,7 +40,7 @@ class MHA(torch.nn.Module):
 
     def forward(self, x, state_old=None):
 
-        B, C, F, T = get_shape(x)
+        B, C, F, _ = get_shape(x)
 
         # [B,C,F,T] -> [B,3C,F,T]
         qkv = self.linear_qkv(x)
@@ -187,8 +188,6 @@ class BlockDenseMHA(torch.nn.Module):
 
             self.sa_out = BlockX((1, 1), None, out_ch*2, out_ch)
 
-
-
     def forward(self, x, state_old):
         states = States(state_old)
 
@@ -199,34 +198,33 @@ class BlockDenseMHA(torch.nn.Module):
         x, state = self.bd_out(x, states.state_old)
         states.update(state)
 
-        if self.sa:
-            #[B,C,F,T]
-            x_add,state = self.sa(x, state_old=states.state_old)
-            states.update(state)
-
-            x = torch.cat([x,x_add],1)
-
-            x,state = self.sa_out(x,states.state_old)
-            states.update(state)
-
-            return x, states.state
-        else:
+        if self.sa is None:
             return x, states.state
 
+        #apply multihead self attension module
+        #[B,C,F,T]
+        x_add,state = self.sa(x, state_old=states.state_old)
+        states.update(state)
 
+        x = torch.cat([x,x_add],1)
+
+        x,state = self.sa_out(x,states.state_old)
+        states.update(state)
+
+        return x, states.state
 
 class PoCoNetLikeModel(BaseDNSModel):
     def __init__(self, **kwargs):
 
         kwargs = kwargs.copy()
 
-        def kwargs_from_desc(name, name_desc, type, default_val):
+        def kwargs_from_desc(name, name_desc, type_conv, default_val):
             if name not in kwargs:
                 val = [default_val]
                 if 'model_desc' in kwargs:
-                    m = re.match(".*{}([\d\.\:]+).*".format(name_desc), kwargs['model_desc'])
+                    m = re.match(r'.*{}([\d\.\:]+).*'.format(name_desc), kwargs['model_desc'])
                     if m:
-                        val = [type(v) for v in m.group(1).split(":")]
+                        val = [type_conv(v) for v in m.group(1).split(":")]
                 kwargs[name] = val if len(val)>1 else val[0]
 
         kwargs_from_desc('wnd_length',     'wnd',  int, 256)
@@ -270,17 +268,41 @@ class PoCoNetLikeModel(BaseDNSModel):
         self.pool = torch.nn.AvgPool2d(kernel_size=2, stride=2)
 
         self.blocks_down = torch.nn.ModuleList([
-            BlockDenseMHA(2, 32, 16, mha_heads_num=1, mha_range=self.mha_ranges[0], back_time_flag=self.back_time_flag),
-            BlockDenseMHA(32, 64, 16, mha_heads_num=2, mha_range=self.mha_ranges[1], back_time_flag=self.back_time_flag),
-            BlockDenseMHA(64, 128, 32, mha_heads_num=4, mha_range=self.mha_ranges[2], back_time_flag=self.back_time_flag),
-            BlockDenseMHA(128, 256, 64, mha_heads_num=8, mha_range=self.mha_ranges[3], back_time_flag=self.back_time_flag),
+            BlockDenseMHA(2, 32, 16,
+                          mha_heads_num=1,
+                          mha_range=self.mha_ranges[0],
+                          back_time_flag=self.back_time_flag),
+            BlockDenseMHA(32, 64, 16,
+                          mha_heads_num=2,
+                          mha_range=self.mha_ranges[1],
+                          back_time_flag=self.back_time_flag),
+            BlockDenseMHA(64, 128, 32,
+                          mha_heads_num=4,
+                          mha_range=self.mha_ranges[2],
+                          back_time_flag=self.back_time_flag),
+            BlockDenseMHA(128, 256, 64,
+                          mha_heads_num=8,
+                          mha_range=self.mha_ranges[3],
+                          back_time_flag=self.back_time_flag),
         ])
 
         self.blocks_up = torch.nn.ModuleList([
-            BlockDenseMHA(256, 128, 128, mha_heads_num=4, mha_range=self.mha_ranges[3], back_time_flag=self.back_time_flag),
-            BlockDenseMHA(128, 64, 64, mha_heads_num=2, mha_range=self.mha_ranges[2], back_time_flag=self.back_time_flag),
-            BlockDenseMHA(64, 32, 32, mha_heads_num=1, mha_range=self.mha_ranges[1], back_time_flag=self.back_time_flag),
-            BlockDenseMHA(32, 2, 16, mha_heads_num=0, mha_range=0, back_time_flag=self.back_time_flag),
+            BlockDenseMHA(256, 128, 128,
+                          mha_heads_num=4,
+                          mha_range=self.mha_ranges[3],
+                          back_time_flag=self.back_time_flag),
+            BlockDenseMHA(128, 64, 64,
+                          mha_heads_num=2,
+                          mha_range=self.mha_ranges[2],
+                          back_time_flag=self.back_time_flag),
+            BlockDenseMHA(64, 32, 32,
+                          mha_heads_num=1,
+                          mha_range=self.mha_ranges[1],
+                          back_time_flag=self.back_time_flag),
+            BlockDenseMHA(32, 2, 16,
+                          mha_heads_num=0,
+                          mha_range=0,
+                          back_time_flag=self.back_time_flag),
         ])
 
         ks = (3,3)
@@ -326,7 +348,6 @@ class PoCoNetLikeModel(BaseDNSModel):
         B, F2, _, T = get_shape(X)
         return X.reshape(B,2,F2//2,T)
 
-
     def decode(self, X):
         B, _, F, T = get_shape(X)
 
@@ -354,7 +375,7 @@ class PoCoNetLikeModel(BaseDNSModel):
 
         #DOWN
         skips = []
-        for i,b in enumerate(self.blocks_down):
+        for b in self.blocks_down:
 
             z,state = b(z, states.state_old)
             states.update(state)
