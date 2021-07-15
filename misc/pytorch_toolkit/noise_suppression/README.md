@@ -1,6 +1,6 @@
 # Noise Suppression
 
-This is implementation of the train script in PyTorch\*.
+This is an implementation of the train script in PyTorch\*.
 The script allows to train noise suppression model on [DNS-Challenge dataset](https://github.com/microsoft/DNS-Challenge).
 The model architecture was inspired by [PoCoNet](https://arxiv.org/abs/2008.04470) model
 
