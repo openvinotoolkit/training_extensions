@@ -52,7 +52,7 @@ As a result the trained model has to be located in newly created folder 'result_
 
 ## Convert a Models to OpenVINO™ format for Demo
 
-The script together with pytorch model also save ONNX\* model into the same output folder. This ONNX\* model can be converted to OpenVINO™ format
+The script also saves the ONNX\* model into the same output folder together with the PyTorch\* model . This ONNX\* model can be converted to OpenVINO™ format
 
 ```bash
 mo.py --input_model result_model/model.onnx
@@ -60,4 +60,3 @@ mo.py --input_model result_model/model.onnx
 
 After conversion them to the OpenVINO™ format you can try model using
 the [demo for noise suppresion models](https://github.com/openvinotoolkit/open_model_zoo/tree/develop/demos/noise_suppression_demo/python)
-
