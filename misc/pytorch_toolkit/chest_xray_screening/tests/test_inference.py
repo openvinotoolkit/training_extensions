@@ -25,9 +25,8 @@ class InferenceTest(unittest.TestCase):
     config = get_config()
     checkpoint = config['checkpoint']
     class_count = config["clscount"]
-    test_labels = config['dummy_test_labels']
     test_list = config['dummy_test_list']
-    image_path = config["imgpath"]
+    image_path = './data/'
     labels = config["labels"]
     dataset_test = RSNADataSet(test_list, labels, image_path, transform=True)
     data_loader_test = DataLoader(
@@ -40,7 +39,7 @@ class InferenceTest(unittest.TestCase):
     def test_scores(self):
         self.model = DenseNet121(self.class_count)
         self.class_names = self.config["class_names"]
-        target_metric = self.config['traget_metric']
+        target_metric = self.config["target_metric"]
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         inference = RSNAInference(
             self.model,self.data_loader_test,
