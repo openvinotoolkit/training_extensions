@@ -15,7 +15,7 @@ The model architecture was inspired by [PoCoNet](https://arxiv.org/abs/2008.0447
 
 ## Requirements
 
-To run scrips the Python\* 3.6 has to be installed on machine.
+To run the script Python\* 3.6 has to be installed on the machine.
 To install the required packages, run the following:
 
 ```bash
