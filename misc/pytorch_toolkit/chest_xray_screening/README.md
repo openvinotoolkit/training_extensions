@@ -124,11 +124,10 @@ An example for using the ONNX model of optimised network for inference can be fo
 |   +--dataset
 |   |  +--original
 |   |  +--processed_data
-|   |  +--data_splits
 |   +--media 
 |   +--tests  
 |   +--tools
-|   +--utils
+|   |  +--utils
 init_venv.sh
 README.md
 requirements.txt 
@@ -137,13 +136,15 @@ requirements.txt
 
 
 `train.py` `train.py` `train.py` `train.py` `train.py`  -->
-<!-- ## **Code Structure**
+## **Code Structure**
 
-1. `train.py` in main script contains the code for training the model
-3. `generate.py` CNN model defenition is defined in this file. Additionally it also computes and returns the FLOPs for the CNN model.
-4. Inside tools directory, `test.py` and `export_onnx.py` file is provided which can be used for testing the model and generating the onnx representation of the trained model. -->
+1. `train.py` in tools diectory contains the code for training the model.
+2. `inference.py` in tools diectory contains the code for evaluating the model in test set.
+3. `generate.py` optimised model is defined in this file. 
+4. `export.py` generating the onnx representation and Openvino IR of the trained model.
+5. `tests` directory contains minimal unittests and a configuration file.
 
-### Creating the Directory Tree
+## **Creating the Directory Tree**
 
 Create a folder in the root directory and name it 'dataset'. Create a directoy tree as shown below.
 
@@ -151,14 +152,13 @@ Create a folder in the root directory and name it 'dataset'. Create a directoy t
 +-- dataset
 |   +-- original
   | +-- processed_data
-  | +-- data_splits
 ```
 Download the dataset from [link](https://www.kaggle.com/c/rsna-pneumonia-detection-challenge) and place it in the dataset/original directory.
 
 ### Prepare the Training Dataset
 
 ```
-python utils/data_prep.py --dpath Absolute/path/to/dataset/directory 
+python utils/data_prep.py --dpath absolute/path/to/dataset/directory 
 ```
 
 On completion processed data will be stored in the 'processed_data' subfolder. Download the dataset split from [link](https://drive.google.com/drive/folders/17owTvg51wo2MORecTLiEopOf3D3YZV_k?usp=sharing) and place the numpy files in dataset/data_splits directory.
@@ -196,7 +196,7 @@ python3 inference.py \
 
 ### Run Tests
 
-Necessary unit tests has been provided in the tests directory. The sample dataset to be used in the tests can be downloaded from [here](https://drive.google.com/drive/folders/1aAZvdST531WUQIbKxSedifv8WfM3Wbqm?usp=sharing).
+Necessary unit tests has been provided in the tests directory. The sample dataset to be used in the tests is provided in the folder 'data'. It can also be downloaded from [here](https://drive.google.com/drive/folders/1aAZvdST531WUQIbKxSedifv8WfM3Wbqm?usp=sharing).
 
 ## **Acknowledgement**
 This work is undertaken as part of Intel India Grand Challenge 2016 Project MIRIAD: Many Incarnations of Screening of Radiology for High Throughput Disease Screening via Multiple Instance Reinforcement Learning with Adversarial Deep Neural Networks, sponsored by Intel Technology India Pvt. Ltd., Bangalore, India.
