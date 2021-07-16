@@ -246,7 +246,6 @@ def main(args):
         beta = beta ** phi
 
         model = DenseNet121Eff(alpha,beta,class_count)
-        # model = model.to(device)
     else:
         model = DenseNet121(class_count)
 
