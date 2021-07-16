@@ -18,10 +18,9 @@ from tqdm import tqdm as tq
 
 class RSNATrainer():
 
-    def __init__(
-        self, model,
-        data_loader_train, data_loader_valid, data_loader_test,
-        class_count, checkpoint, device, class_names,lr):
+    def __init__(self, model,
+                      data_loader_train, data_loader_valid, data_loader_test,
+                      class_count, checkpoint, device, class_names, lr):
 
         self.gepoch_id = 0
         self.model_val = ''
