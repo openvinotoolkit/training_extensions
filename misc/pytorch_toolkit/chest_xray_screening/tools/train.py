@@ -40,7 +40,7 @@ class RSNATrainer():
             self.model_checkpoint = None
         self.loss_fn = torch.nn.BCELoss()
         self.lr = lr
-        self.optimizer = optim.Adam(self.model.parameters(),lr=self.lr)
+        self.optimizer = optim.Adam(self.model.parameters(), lr=self.lr)
 
 
     def train(self, max_epoch, timestamp_launch,savepath):
