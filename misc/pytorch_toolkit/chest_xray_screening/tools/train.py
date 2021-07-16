@@ -249,7 +249,6 @@ def main(args):
         # model = model.to(device)
     else:
         model = DenseNet121(class_count)
-        # model = model.to(device)
 
     # Train the  Model
     timestamp_launch = time.strftime("%d%m%Y - %H%M%S")
