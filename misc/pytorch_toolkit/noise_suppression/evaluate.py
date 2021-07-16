@@ -32,16 +32,11 @@ def printlog(*args):
     logger.info(' '.join([str(v) for v in args]))
 
 
-#load model on cpu and evaluate on long file dataset
-def evaluate_dir(eval_data_dir, model_dir):
-
+#scan DNS evaluation data directory to forms clean-noisy pair
+def scan_data_dir(eval_data_dir):
     if not eval_data_dir or not os.path.isdir(eval_data_dir):
         printlog("{} is not folder with evaluation data! Evaluation for {} is skipped".format(eval_data_dir, model_dir))
-        return
-
-    #create model from dir
-    model = models.model_from_dir(model_dir)
-    model.eval()
+        return []
 
     #create dataset
     file_names = {"clean":{},"noisy":{}}
@@ -75,15 +70,30 @@ def evaluate_dir(eval_data_dir, model_dir):
                  file_names["clean"][fi].replace(eval_data_dir, ""),
                  file_names["noisy"][fi].replace(eval_data_dir, "") )
 
+    return [(fi, file_names["clean"][fi], file_names["noisy"][fi]) for fi in file_ids]
 
-    #iterate over dataset
+#load model on cpu and evaluate on long file dataset
+def evaluate_dir(eval_data_dir, model_dir):
+
+    #create model from dir
+    model = models.model_from_dir(model_dir)
+    model.eval()
+
+    #get files to evaluate
+    files = scan_data_dir(eval_data_dir)
+    if not files:
+        return
+
     sisdr_inps_all = []
     sisdr_outs_all = []
-    for fi in file_ids:
+    file_ids = []
+
+    #iterate over dataset
+    for fi, file_name_clean, file_name_noisy in files:
 
         #read clean and noisy signals
-        x_clean = AudioFile(file_names["clean"][fi]).read_all()
-        x_noisy = AudioFile(file_names["noisy"][fi]).read_all()
+        x_clean = AudioFile(file_name_clean).read_all()
+        x_noisy = AudioFile(file_name_noisy).read_all()
         assert x_clean.shape[0] == x_noisy.shape[0]
 
         input_size = model.get_sample_length_ceil(x_clean.shape[0])
@@ -98,13 +108,14 @@ def evaluate_dir(eval_data_dir, model_dir):
         y_clean = model_outputs[0][0]
         t1 = time.perf_counter()
 
-        #shift output by delay to align with input
+        #shift output and input by delay to be aligned
         delay = model.get_sample_ahead()
         y_clean = y_clean[delay:]
         x_clean = x_clean[:-delay]
         x_noisy = x_noisy[:-delay]
 
         #calc metrics for input and output
+        file_ids.append(fi)
         sisdr_inps_all.append(sisdr(x_noisy, x_clean).item())
         sisdr_outs_all.append(sisdr(y_clean, x_clean).item())
 

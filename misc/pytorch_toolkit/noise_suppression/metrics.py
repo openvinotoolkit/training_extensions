@@ -67,4 +67,4 @@ def sisdr(y,
         else:
             l = (target_pow + reg_pow) / (noise_pow + reg_pow)
     return l
-   
+
