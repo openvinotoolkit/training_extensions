@@ -211,6 +211,9 @@ Indian Institute of Technology Kharagpur</br>
 email: rakshith.sathish@kgpian.iitkgp.ac.in</br>
 Github username: Rakshith2597
 
+<a href="https://www.linkedin.com/in/thearkamitra/">Arka Mitra</a>, </br>
+
+<a href="https://github.com/arunava555"> Arunava Chakravarty</a>, </br>
 
 **Principal Investigators**
 
