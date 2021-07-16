@@ -33,7 +33,8 @@ def new_channels(block_new, alpha, beta, growth_rate=32,
     gw = growth_rate
     bn_size = round(alpha * bn_size)
     if bn_size < 2:
-        print(f"The initial bn_size{bn_size} needs to be greater than 2.")
+        print(f"The initial bn_size {bn_size} needs to be greater than 2.")
+
         init_chan = 2
     width_temp = gw * l4 + (gw * l3 + (gw * l2 + (gw * l1) // 2) // 2) // 2
     init_chan = int(8 * (1024 * beta - width_temp))
