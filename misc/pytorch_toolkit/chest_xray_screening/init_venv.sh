@@ -18,7 +18,12 @@ fi
 virtualenv ${venv_dir} -p python --prompt="(chest_x-ray_screening)"
 
 
-. venv/bin/activate
+path_openvino_vars="${INTEL_OPENVINO_DIR:-/opt/intel/openvino}/bin/setupvars.sh"
+if [[ -e "${path_openvino_vars}" ]]; then
+  echo ". ${path_openvino_vars}" >>${venv_dir}/bin/activate
+fi
+
+. ${venv_dir}/bin/activate
 
 
 cat requirements.txt | xargs -n 1 -L 1 pip3 install
