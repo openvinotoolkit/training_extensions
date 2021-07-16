@@ -1,7 +1,7 @@
 import unittest
 import os
 import json
-from tools.utils.exporter import Exporter
+from chest_xray_screening.utils.exporter import Exporter
 
 OPENVINO_DIR = '/opt/intel/openvino_2021'
 

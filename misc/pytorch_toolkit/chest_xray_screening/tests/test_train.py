@@ -1,10 +1,10 @@
 import unittest
 import os
 import json
-from tools.train import RSNATrainer
-from tools.utils.dataloader import RSNADataSet
-from torch.utils.data import DataLoader
-from tools.utils.model import DenseNet121
+from chest_xray_screening.train import RSNATrainer
+from chest_xray_screening.utils.dataloader import RSNADataSet
+from chest_xray_screening.utils.data import DataLoader
+from chest_xray_screening.utils.model import DenseNet121
 
 def get_config(optimised=False):
     path = os.path.dirname(os.path.realpath(__file__))
