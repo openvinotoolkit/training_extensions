@@ -91,19 +91,19 @@ def main(args):
 if __name__=="__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--checkpoint",
-    required=False,
-    help="start training from a checkpoint model weight",
-    default= None,
-    type = str)
+        required=False,
+        help="start training from a checkpoint model weight",
+        default= None,
+        type = str)
     parser.add_argument("--dpath",
-    required=True,
-    help="Path to dataset",
-    type =str)
+        required=True,
+        help="Path to dataset",
+        type =str)
     parser.add_argument("--optimised",
-    required=False,
-    default=False,
-    help="enable flag for eff model",
-    action='store_true')
+        required=False,
+        default=False,
+        help="enable flag for eff model",
+        action='store_true')
     parser.add_argument("--alpha",
         required=False,
         help="alpha for the model",
