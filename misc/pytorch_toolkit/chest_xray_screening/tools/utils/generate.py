@@ -38,7 +38,8 @@ def new_channels(block_new, alpha, beta, growth_rate=32,
     width_temp = gw * l4 + (gw * l3 + (gw * l2 + (gw * l1) // 2) // 2) // 2
     init_chan = int(8 * (1024 * beta - width_temp))
     while init_chan < 32:
-        print(f"The initial number of channels{init_chan} needs to be greater than 32. Changing growth_rate.")
+        print(f"The initial number of channels {init_chan} needs to be greater than 32. Changing growth_rate.")
+
         growth_rate -= 1
         gw = growth_rate
         width_temp = gw * l4 + (gw * l3 + (gw * l2 + (gw * l1) // 2) // 2) // 2
