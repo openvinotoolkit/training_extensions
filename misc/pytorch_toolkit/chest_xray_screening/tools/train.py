@@ -15,7 +15,7 @@ from math import sqrt
 import json
 from tqdm import tqdm as tq
 
-ITERATION_NUM=2500             
+ITERATION_NUM=2500
 # Evaluate the performance of the model on validation_set
 # every 2500th (ITERATION_NUM) iteration. 2500 is a random choice, this could be changed.
 
@@ -141,14 +141,15 @@ class RSNATrainer():
                     print('Better auroc obtained')
                     auroc_max = auroc_mean
                     self.model_val=f'''m-epoch {str(epoch_id)}-
-                    batch_id {str(batch_id)}-
-                    aurocMean-{str(auroc_mean)}.pth.tar'''
+                                    batch_id {str(batch_id)}-
+                                    aurocMean-{str(auroc_mean)}.pth.tar'''
 
                     torch.save({'batch': batch_id + 1,
-                    'state_dict': self.model.state_dict(),
-                    'aucmean_loss': auroc_mean,
-                    'optimizer' : self.optimizer.state_dict()},
-                    savepath+'/m-epoch-'+str(epoch_id)+'-batch_id-'+str(batch_id)+'-aurocMean-'+str(auroc_mean)+'.pth.tar')
+                                'state_dict': self.model.state_dict(),
+                                'aucmean_loss': auroc_mean,
+                                'optimizer' : self.optimizer.state_dict()},
+                                savepath+'/m-epoch-'+str(epoch_id)+'-batch_id-'+str(batch_id)+
+                                '-aurocMean-'+str(auroc_mean)+'.pth.tar')
                 scheduler.step()
 
         train_loss_mean = np.mean(loss_train_list)
