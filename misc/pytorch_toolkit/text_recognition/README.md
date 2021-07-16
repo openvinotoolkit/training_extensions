@@ -157,8 +157,8 @@ The config file is divided into 4 sections: train, eval, export, demo. Common pa
     * `enable_last_conv` - enables additional convolution layer to adjust number of output channels to the number of input channels in the LSTM. Optional. Default: false.
     * `output_channels` - number of output channels. If `enable_last_conv` is `true`, this parameter should be equal to `head.encoder_input_size`, otherwise it should be equal to actual number of output channels of the backbone.
 - `head` - configuration of the text recognition head.
-  - Now three text recognition heads are supported: Attention-based-1d [text reconition head](text_recognition/models/text_recognition_heads/attention_based.py),
-  Attention-based-2d [text reconition head](text_recognition/models/text_recognition_heads/attention_based_2d.py.py)
+  - Now three text recognition heads are supported: Attention-based-1d [text recognition head](text_recognition/models/text_recognition_heads/attention_based.py),
+  Attention-based-2d [text recognition head](text_recognition/models/text_recognition_heads/attention_based_2d.py)
    and [CTC-based LSTM-encoder-decoder head](text_recognition/models/text_recognition_heads/ctc_lstm_based.py)
   - `positional_encodings` - if true, use positional encodings like in transformer
   * `encoder_hidden_size ` - number of channels in encoder
@@ -201,7 +201,7 @@ In addition to common parameters you can specify the following arguments:
 - `datasets` - list of datasets which will be used in training. Common parameters are:
   - `type` - name of the dataset, for details see [here](./text_recognition/datasets/dataset.py). Dataset names are described in the `str_to_class` section
   - `subset` - how to use this subset. Options: `train` or `validate`
-    Any other parameters are dataset specific and should be set in correspondance with its constructor.
+    Any other parameters are dataset specific and should be set in correspondence with its constructor.
 - `train_transforms_list` - similar to `val_transforms_list`
 - `epochs` - number of epochs to train
 - `multi_gpu` - if this is `true`, pytorch's [distributed data parallel](https://pytorch.org/tutorials/intermediate/ddp_tutorial.html) is used to train the model on multiple GPUs.
