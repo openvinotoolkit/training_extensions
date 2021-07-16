@@ -27,6 +27,7 @@ device: "cuda"
 val_batch_size: 48
 num_workers: 4
 model_path: model_checkpoints/model_0016.pth
+model_url: https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/text_recognition/text_recognition_0016.pth
 vocab_path: vocabs/vocab_alphanumeric.json
 train:
   batch_size: 48
