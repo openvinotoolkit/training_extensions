@@ -52,7 +52,6 @@ def create_annotation(args):
         idx=labels.index(tmp)
         dict_annotation[str(file)] = idx
 
-    # dict_annotation = {'names':image_name,'labels':image_label}
 
     with open(args.dpath+'/rsna_annotation.json','w') as f:
         json.dump(dict_annotation,f)
