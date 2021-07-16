@@ -49,8 +49,8 @@ class RSNATrainer():
                 param.requires_grad = True
             print("Model loaded")
 
-        train_loss_min = 100000  # A random very high number
-        valid_loss_min = 100000
+        train_loss_min = 1e+5  # A random very high number
+        valid_loss_min = 1e+5
 
         for epoch_id in range(max_epoch):
             print(f"Epoch {epoch_id+1}/{max_epoch}")
