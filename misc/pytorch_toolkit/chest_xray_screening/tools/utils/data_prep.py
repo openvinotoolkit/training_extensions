@@ -45,8 +45,6 @@ def create_annotation(args):
     file_list = os.listdir(args.dpath+'/processed_data/')
     df_class=pd.read_csv(args.dpath+'/stage_2_detailed_class_info.csv')
     labels=["Lung Opacity","Normal","No Lung Opacity / Not Normal"]
-    # image_name = []
-    # image_label = []
     dict_annotation = {}
     for file in tq(file_list):
         patient_id = file.split('.jpg')[0]
