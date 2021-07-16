@@ -36,7 +36,7 @@ class TPS_SpatialTransformerNetwork(nn.Module):
         output:
             batch_I_r: rectified image [batch_size x i_channel_num x I_r_height x I_r_width]
         """
-        super(TPS_SpatialTransformerNetwork, self).__init__()
+        super().__init__()
         self.fiducial_num = fiducial_num
         self.input_size = input_size
         self.output_size = output_size  # = (I_r_height, I_r_width)
@@ -120,7 +120,7 @@ class LocalizationNetwork(nn.Module):
     """ Localization Network of RARE, which predicts C' (K x 2) from I (I_width x I_height) """
 
     def __init__(self, fiducial_num, i_channel_num):
-        super(LocalizationNetwork, self).__init__()
+        super().__init__()
         self.fiducial_num = fiducial_num
         self.i_channel_num = i_channel_num
         self.conv = nn.Sequential(
@@ -140,7 +140,7 @@ class LocalizationNetwork(nn.Module):
 
         # Init fc2 in LocalizationNetwork
         self.localization_fc2.weight.data.fill_(0)
-        """ see RARE paper Fig. 6 (a) """
+        # see RARE paper Fig. 6 (a)
         ctrl_pts_x = np.linspace(-1.0, 1.0, int(fiducial_num / 2))
         ctrl_pts_y_top = np.linspace(0.0, -1.0, num=int(fiducial_num / 2))
         ctrl_pts_y_bottom = np.linspace(1.0, 0.0, num=int(fiducial_num / 2))
@@ -152,7 +152,8 @@ class LocalizationNetwork(nn.Module):
     def forward(self, batch_I):
         """
         input:     batch_I : Batch Input Image [batch_size x i_channel_num x I_height x I_width]
-        output:    batch_C_prime : Predicted coordinates of fiducial points for input batch [batch_size x fiducial_num x 2]
+        output:    batch_C_prime : Predicted coordinates of fiducial points
+                    for input batch [batch_size x fiducial_num x 2]
         """
         batch_size = batch_I.size(0)
         features = self.conv(batch_I).view(batch_size, -1)
@@ -165,7 +166,7 @@ class GridGenerator(nn.Module):
 
     def __init__(self, fiducial_num, output_size):
         """ Generate P_hat and inv_delta_C for later """
-        super(GridGenerator, self).__init__()
+        super().__init__()
         self.eps = 1e-6
         self.I_r_height, self.I_r_width = output_size
         self.fiducial_num = fiducial_num
@@ -177,8 +178,10 @@ class GridGenerator(nn.Module):
         self.register_buffer("P_hat", torch.tensor(self._build_P_hat(
             self.fiducial_num, self.C, self.P)).float())  # n x fiducial_num+3
         # for fine-tuning with different image width, you may use below instead of self.register_buffer
-        # self.inv_delta_C = torch.tensor(self._build_inv_delta_C(self.fiducial_num, self.C)).float().cuda()  # fiducial_num+3 x fiducial_num+3
-        # self.P_hat = torch.tensor(self._build_P_hat(self.fiducial_num, self.C, self.P)).float().cuda()  # n x fiducial_num+3
+        # fiducial_num+3 x fiducial_num+3
+        # self.inv_delta_C = torch.tensor(self._build_inv_delta_C(self.fiducial_num, self.C)).float().cuda()
+        # n x fiducial_num+3
+        # self.P_hat = torch.tensor(self._build_P_hat(self.fiducial_num, self.C, self.P)).float().cuda()
 
     def _build_C(self, fiducial_num):
         """ Return coordinates of fiducial points in I_r; C """
