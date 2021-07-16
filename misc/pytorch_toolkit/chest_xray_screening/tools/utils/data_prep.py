@@ -50,8 +50,6 @@ def create_annotation(args):
         patient_id = file.split('.jpg')[0]
         tmp=df_class[df_class["patientId"]==patient_id]["class"].values[0]
         idx=labels.index(tmp)
-        # image_name.append(file)
-        # image_label.append(idx)
         dict_annotation[str(file)] = idx
 
     # dict_annotation = {'names':image_name,'labels':image_label}
