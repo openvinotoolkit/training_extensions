@@ -25,7 +25,6 @@ class RSNATrainer():
         self.gepoch_id = 0
         self.model_val = ''
         self.device = device
-        # if self.device is 'cuda':
         self.model = model.to(self.device)
         self.data_loader_train = data_loader_train
         self.data_loader_valid = data_loader_valid
