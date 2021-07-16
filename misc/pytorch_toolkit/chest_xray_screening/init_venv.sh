@@ -31,4 +31,4 @@ cat requirements.txt | xargs -n 1 -L 1 pip3 install
 
 echo
 echo "Activate a virtual environment to start working:"
-echo "$ . venv/bin/activate"
+echo "$ . ${venv_dir}/bin/activate"
