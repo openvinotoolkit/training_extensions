@@ -122,7 +122,7 @@ Several dataset formats are supported:
 
 
 Every dataset class has its own constructor with specific parameters. You can see costructors [here](./text_recognition/datasets/dataset.py). Examples of use of different datasets can be seen in the config files:
-* [example](./configs/config_0013.yml)
+* [example](./configs/config_0014.yml)
 * [example](./configs/medium_config.yml)
 
 
