@@ -68,10 +68,10 @@ class RSNATrainer():
                 valid_loss_min = valid_loss
 
             torch.save({'epoch': epoch_id + 1,
-            'state_dict': self.model.state_dict(),
-            'best_loss': valid_loss_min,
-            'optimizer' : self.optimizer.state_dict()},
-            savepath+'/m-epoch'+str(epoch_id)+'-' + timestamp_launch + '.pth.tar')
+                             'state_dict': self.model.state_dict(),
+                             'best_loss': valid_loss_min,
+                             'optimizer' : self.optimizer.state_dict()},
+                             savepath+'/m-epoch'+str(epoch_id)+'-' + timestamp_launch + '.pth.tar')
             test_auroc = RSNATrainer.test(self)
             print(f"Epoch:{epoch_id + 1}| EndTime:{timestamp_end}| TestAUROC: {test_auroc}| ValidAUROC: {auroc_max}")
 
