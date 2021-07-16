@@ -40,6 +40,57 @@ def printlog(*args):
 
 EPS = torch.finfo(torch.float32).tiny
 
+
+class CheckLossRaise():
+    def __init__(self):
+        self.loss_mean = 0
+        self.loss_dev = 0
+        self.loss_count = 0
+        self.reset_count = 0
+
+    def check(self, loss_val, named_params, optimizer):
+        # check 3 sigma
+        loss_sigma = self.loss_dev ** 0.5
+        loss_raise = loss_val - self.loss_mean
+        if self.loss_count < 10 or loss_raise < 3 * loss_sigma:
+            #save params for future backup
+            self.named_params_backup = [(n, p.detach().cpu()) for n, p in named_params]
+        else:
+
+            # reset params and optimizer
+            self.reset_count += 1
+            logger.info("{} > 3*{} RESET PARAMS {}".format(loss_raise,loss_sigma,self.reset_count))
+            #restore params from backup
+            for (n, p), (nb, pb) in zip(named_params, self.named_params_backup):
+                assert n == nb
+                p.data.copy_(pb.data)
+            #reset optimizer
+            optimizer.state = collections.defaultdict(dict)
+
+        self.loss_mean += (0.1 if self.loss_count>0 else 1) * loss_raise
+        self.loss_dev +=  (0.1 if self.loss_count>1 else 1) * (loss_raise ** 2 - self.loss_dev)
+        self.loss_count += 1
+
+
+
+def aver_indicators(rank, device, indicators):
+    indicators_mean = {}
+    for k, v in indicators.items():
+        v = np.array(v)
+        if len(v.shape) == 1:
+            v = v[:, None]
+
+        if rank > -1:
+            # sync indicators
+            world_size = torch.distributed.get_world_size()
+            vt = torch.tensor(v).to(device)
+            torch.distributed.all_reduce(vt, op=torch.distributed.ReduceOp.SUM)
+            v = vt.cpu().numpy() / float(world_size)
+
+        indicators_mean[k] = v.mean(0)
+    return indicators_mean
+
+
 def mix_signals(args, x_clean, x_noise):
     # mix clean and noise signals on GPU
     rms_noise = x_noise.pow(2).mean(-1, keepdim=True).sqrt()
@@ -143,7 +194,9 @@ def train(rank, args, model, dataset_train, epoch_start):
         printlog("total train batch size", total_train_batch_size )
         printlog("steps_total",steps_total )
 
+    time_last = time.time()
     global_step = 0
+    check_loss_raise = CheckLossRaise()
     for epoch in range(epoch_start, math.ceil(num_train_epochs)):
         indicators = collections.defaultdict(list)
 
@@ -177,17 +230,16 @@ def train(rank, args, model, dataset_train, epoch_start):
             tail_size = model.wnd_length - model.hop_length
             X_clean = model.encode(torch.nn.functional.pad(x_clean, (tail_size, 0)))
 
-            #crop target and result to align to each other
+            #crop target and model output to align to each other
             sample_ahead = model.get_sample_ahead()
             spectre_ahead = model.ahead
-
             if sample_ahead > 0:
                 x = x[:, :-sample_ahead]
                 x_clean = x_clean[:, :-sample_ahead]
                 y_clean = y_clean[:, sample_ahead:]
-                if spectre_ahead>0:
-                    Y_clean = Y_clean[:,:, :, spectre_ahead:]
-                    X_clean = X_clean[:,:, :, :-spectre_ahead]
+            if spectre_ahead:
+                Y_clean = Y_clean[:,:, :, spectre_ahead:]
+                X_clean = X_clean[:,:, :, :-spectre_ahead]
 
             #calc losses
             losses = []
@@ -236,67 +288,37 @@ def train(rank, args, model, dataset_train, epoch_start):
                 continue
 
             # Log metrics
+            str_out = ["ep {:.3f}".format(epoch_fp)]
+
             lr = scheduler.get_last_lr()
-            lrp = " ".join(['{:.2f}'.format(math.log10(t+EPS)) for t in lr])
-            str_out = "ep {:.3f} lrp {}".format(epoch_fp, lrp)
+            str_out.append("lrp " + " ".join(['{:.2f}'.format(math.log10(t+EPS)) for t in lr]))
 
-            indicators_mean = {}
-            for k, v in indicators.items():
-                v = np.array(v)
-                if len(v.shape) == 1:
-                    v = v[:, None]
+            indicators_mean = aver_indicators(rank, args.device, indicators)
 
-                if rank > -1:
-                    # sync indicators
-                    vt = torch.tensor(v).to(args.device)
-                    torch.distributed.all_reduce(vt, op=torch.distributed.ReduceOp.SUM)
-                    v = vt.cpu().numpy() / float(world_size)
-
-                str_out += " {} {}".format(k, " ".join(["{:.3f}".format(t) for t in v.mean(0)]))
-                indicators_mean[k] = v.mean(0)
+            #add all indicators into log string
+            def tostr(v):
+                return " ".join(["{:.3f}".format(t) for t in v])
+            str_out.extend(["{} {}".format(k, tostr(v)) for k,v in indicators_mean.items()])
 
             #check that negsisdr suddenly raise
-            if "negsisdr" in indicators_mean:
-                negsisdr = indicators_mean["negsisdr"]
-                if "negsisdr_mean" not in locals():
-                    negsisdr_mean = negsisdr
-                    negsisdr_dev = 0
-                    negsisdr_count = 0
-                    reset_count = 0
-                else:
-                    #check 3 sigma
-                    if negsisdr_count>10 and (negsisdr-negsisdr_mean) > 3*negsisdr_dev**0.5 :
-                        #reset params and optimizer
-                        reset_count += 1
-                        logger.info("{} > 3*{} RESET PARAMS {}".format(
-                            negsisdr-negsisdr_mean,
-                            negsisdr_dev**0.5,
-                            reset_count))
-                        for (n,p),(nb,pb) in zip(named_params,named_params_backup):
-                            assert n == nb
-                            p.data.copy_(pb.data)
-                        optimizer.state = collections.defaultdict(dict)
-                    else:
-                        named_params_backup = [(n,p.detach().cpu()) for n,p in named_params]
+            check_loss_raise.check(
+                indicators_mean["negsisdr"],
+                named_params,
+                optimizer
+            )
+            str_out.append("RC {}".format(check_loss_raise.reset_count))
 
-                    negsisdr_mean += 0.1*(negsisdr-negsisdr_mean)
-                    negsisdr_dev += 0.1*((negsisdr-negsisdr_mean)**2-negsisdr_dev)
-                    negsisdr_count += 1
-
-                str_out += " RC {}".format(reset_count)
-
-            if 'time_last' in locals():
-                # estimate processing times
-                dt_iter = (time.time() - time_last) / len(indicators['loss'])
-                dt_ep = dt_iter * len(dataloader)
-                str_out += " it {:.1f}s".format(dt_iter)
-                str_out += " ep {:.1f}m".format(dt_ep / (60))
-                str_out += " eta {:.1f}h".format(dt_ep * (num_train_epochs - epoch_fp) / (60 * 60))
+            # estimate processing times
+            dt_iter = (time.time() - time_last) / len(indicators['loss'])
+            dt_ep = dt_iter * len(dataloader)
+            str_out.append("it {:.1f}s".format(dt_iter))
+            str_out.append("ep {:.1f}m".format(dt_ep / (60)))
+            str_out.append("eta {:.1f}h".format(dt_ep * (num_train_epochs - epoch_fp) / (60 * 60)))
             time_last = time.time()
 
             indicators = collections.defaultdict(list)
             if rank in [-1, 0]:
-                logger.info(str_out)
+                logger.info(" ".join(str_out))
 
         if rank in [-1, 0]:
             check_point_name = 'checkpoint-{:02}'.format(epoch + 1)
@@ -342,11 +364,11 @@ def process(rank, args, port):
     if rank in [-1, 0]:
         printlog("create train dataset from", args.dns_datasets)
         dataset_train = dataset.DNSDataset(args.dns_datasets, size_to_read=size_to_read )
-    dataset_train = utils.brodcast_data(rank, dataset_train)
 
     if rank>-1:
-        #lets sync after data and model creation
+        #lets sync after data creation
         torch.distributed.barrier()
+        dataset_train = utils.brodcast_data(rank, dataset_train)
 
     #tune params
     train(rank, args, model, dataset_train, epoch_start )

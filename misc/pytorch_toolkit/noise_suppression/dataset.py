@@ -33,8 +33,8 @@ def printlog(*args):
 
 EPS = torch.finfo(torch.float32).tiny
 
+#set True to speedup (cache) dataset scaning
 DUMP_FILE_INFO_FLAG = False
-
 
 class AudioFile:
     DUMP_VER = "v3"

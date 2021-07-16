@@ -35,7 +35,8 @@ class TestTrain(unittest.TestCase):
             "--size_to_read=1",
             "--per_gpu_train_batch_size=1",
             "--total_train_batch_size=8",
-            "--dns_datasets=../../../data/noise_suppression/datasets"
+            "--dns_datasets=../../../data/noise_suppression/datasets",
+            "--logacc=1"
         ]
         main_train(args)
 
