@@ -3,6 +3,8 @@ import os
 import json
 from tools.utils.exporter import Exporter
 
+OPENVINO_DIR = '/opt/intel/openvino_2021'
+
 def _get_config_():
     path = os.path.dirname(os.path.realpath(__file__))
     with open(path+'/test_config.json','r') as f1:
@@ -22,7 +24,7 @@ class ExportTest(unittest.TestCase):
 
     def test_export_ir(self):
 
-        self.assertTrue(os.path.isdir('/opt/intel/openvino_2021'))
+        self.assertTrue(os.path.isdir(OPENVINO_DIR))
         self.config = _get_config_()
         self.exporter = Exporter(self.config,optimised=False)
         self.exporter.export_model_ir()

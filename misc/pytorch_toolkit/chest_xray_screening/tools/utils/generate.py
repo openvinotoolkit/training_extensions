@@ -1,9 +1,12 @@
 import torchvision.models.densenet as modelzoo
 
-
+MIN_CHANNELS = 32 # The minimum number of channels
+CHANNEL_FACTOR = 8 # Factor at which the number of channels should be changed.
 def get_size(blocks, growth_rate, initial_channels):
 
     depth = 5 + 2 * sum(blocks)
+    # Here 5 is the minimum depth of CNN and 2 is the factor at which the depth should be changed.
+    # Choice of value 5 and 2 is arbitrary, can be modifed.
     l1, l2, l3, l4 = blocks
     width = growth_rate * l4 + (
         growth_rate * l3 + (
@@ -19,9 +22,12 @@ def new_lengths(alpha, l1=6, l2=12, l3=24, l4=16):
     l3 = int(alpha * l3)
     l4 = int(alpha * l4)
 
-    depth = 5 + 2 * (l1 + l2 + l3 + l4)
-#     l1 += int((121*alpha - depth)/2) #Uncomment for more accurate depth
-#     depth = 5+2*(l1+l2+l3+l4) #Uncomment with the previous line
+    depth = 5 + 2 * (l1 + l2 + l3 + l4) 
+    # Here 5 is the minimum depth of CNN and 2 is the factor at which the depth should be changed.
+    # Choice of value 5 and 2 is arbitrary, can be modifed.
+
+#     l1 += int((121*alpha - depth)/2) # Uncomment for more accurate depth
+#     depth = 5+2*(l1+l2+l3+l4) # Uncomment with the previous line
 
     return depth, [l1, l2, l3, l4]
 
@@ -35,17 +41,16 @@ def new_channels(block_new, alpha, beta, growth_rate=32,
     if bn_size < 2:
         print(f"The initial bn_size {bn_size} needs to be greater than 2.")
 
-        init_chan = 2
     width_temp = gw * l4 + (gw * l3 + (gw * l2 + (gw * l1) // 2) // 2) // 2
-    init_chan = int(8 * (1024 * beta - width_temp))
-    while init_chan < 32:
+    init_chan = int(CHANNEL_FACTOR * (1024 * beta - width_temp))
+    while init_chan < MIN_CHANNELS:
         print(f"The initial number of channels {init_chan} needs to be greater than 32. Changing growth_rate.")
 
         growth_rate -= 1
         gw = growth_rate
         width_temp = gw * l4 + (gw * l3 + (gw * l2 + (gw * l1) // 2) // 2) // 2
-        init_chan = int(8 * (1024 * beta - width_temp))
-    width = int(width_temp + init_chan / 8)
+        init_chan = int(CHANNEL_FACTOR * (1024 * beta - width_temp))
+    width = int(width_temp + init_chan / CHANNEL_FACTOR)
     return width, growth_rate, init_chan, bn_size
 
 
@@ -58,7 +63,7 @@ def get_best_values(alpha, beta):
     return block_new, growth_rate, init_chan, bn_size
 
 
-def give_model(alpha, beta, num_class=14, input_shape=(320, 320), verbose=1):
+def give_model(alpha, beta, num_class=3, input_shape=(320, 320), verbose=1):
     blocks, gw, b, bn_size = get_best_values(alpha, beta)
     print(blocks, gw, b, bn_size)
     model = modelzoo.DenseNet(

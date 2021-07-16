@@ -15,6 +15,10 @@ from math import sqrt
 import json
 from tqdm import tqdm as tq
 
+ITERATION_NUM=2500             
+# Evaluate the performance of the model on validation_set
+# every 2500th (ITERATION_NUM) iteration. 2500 is a random choice, this could be changed.
+
 
 class RSNATrainer():
 
@@ -82,7 +86,6 @@ class RSNATrainer():
         out_pred = torch.FloatTensor().to(self.device)
         with torch.no_grad():
             for (var_input, var_target) in tq(self.data_loader_valid):
-                # print(f"Batch {i} in Val")
                 var_target = var_target.to(self.device)
                 out_gt = torch.cat((out_gt, var_target), 0).to(self.device)
 
@@ -131,14 +134,9 @@ class RSNATrainer():
             train_loss_value = trainloss_value.item()
             loss_train_list.append(train_loss_value)
 
-            # Evaluate the performance of the model on validation_set
-            # every 2500th iteration. 2500 is a random choice, this could be changed.
-
-            if batch_id%2500==0 and batch_id!=0:
-                # print(f"batch_id::{batch_id}")
+            if batch_id%ITERATION_NUM==0 and batch_id!=0:
                 validloss_value,auroc_mean = RSNATrainer.valid(self)
                 loss_valid_list.append(validloss_value)
-                # print("\n")
                 if auroc_mean>auroc_max:
                     print('Better auroc obtained')
                     auroc_max = auroc_mean
