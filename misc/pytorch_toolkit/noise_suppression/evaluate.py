@@ -34,9 +34,8 @@ def printlog(*args):
 
 #scan DNS evaluation data directory to forms clean-noisy pair
 def scan_data_dir(eval_data_dir):
-    if not eval_data_dir or not os.path.isdir(eval_data_dir):
-        printlog("{} is not folder with evaluation data! Evaluation for {} is skipped".format(eval_data_dir, model_dir))
-        return []
+
+    assert os.path.isdir(eval_data_dir), "{} is not folder with evaluation data!".format(eval_data_dir)
 
     #create dataset
     file_names = {"clean":{},"noisy":{}}
@@ -74,6 +73,10 @@ def scan_data_dir(eval_data_dir):
 
 #load model on cpu and evaluate on long file dataset
 def evaluate_dir(eval_data_dir, model_dir):
+
+    if not eval_data_dir:
+        printlog("eval_data_dir is not provided. the evaluation is skipped!")
+        return
 
     #create model from dir
     model = models.model_from_dir(model_dir)

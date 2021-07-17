@@ -40,7 +40,6 @@ def printlog(*args):
 
 EPS = torch.finfo(torch.float32).tiny
 
-
 class CheckLossRaise():
     def __init__(self):
         self.loss_mean = 0
@@ -71,8 +70,6 @@ class CheckLossRaise():
         self.loss_dev +=  (0.1 if self.loss_count>1 else 1) * (loss_raise ** 2 - self.loss_dev)
         self.loss_count += 1
 
-
-
 def aver_indicators(rank, device, indicators):
     indicators_mean = {}
     for k, v in indicators.items():
@@ -89,7 +86,6 @@ def aver_indicators(rank, device, indicators):
 
         indicators_mean[k] = v.mean(0)
     return indicators_mean
-
 
 def mix_signals(args, x_clean, x_noise):
     # mix clean and noise signals on GPU
@@ -132,29 +128,10 @@ def mix_signals(args, x_clean, x_noise):
     x = torch.min(x, clamp_val)
     return x_clean, x_noise, x
 
-
-def train(rank, args, model, dataset_train, epoch_start):
-    world_size = 1 if rank < 0 else torch.distributed.get_world_size()
-
-    if rank in [-1, 0]:
-        printlog("Train model")
-        printlog(model)
-
-    per_gpu_train_batch_size = args.per_gpu_train_batch_size
-    train_batch_size = per_gpu_train_batch_size * world_size
-    gradient_accumulation_steps = max(1, args.total_train_batch_size // train_batch_size)
-    total_train_batch_size = train_batch_size * gradient_accumulation_steps
-    num_train_epochs = args.num_train_epochs
-
-
+def create_dataloader(rank, args, dataset_train):
     if rank < 0:
         #single process take all samples
         sampler = torch.utils.data.RandomSampler(dataset_train)
-        dataloader = torch.utils.data.DataLoader(
-            dataset_train,
-            sampler=sampler,
-            batch_size=train_batch_size,
-            num_workers=3)
     else:
         #special sampler that divide samples between processes
         sampler = torch.utils.data.distributed.DistributedSampler(
@@ -162,14 +139,14 @@ def train(rank, args, model, dataset_train, epoch_start):
             rank=rank,
             drop_last=True,
             shuffle=True)
-        dataloader = torch.utils.data.DataLoader(
-            dataset_train,
-            sampler=sampler,
-            batch_size=per_gpu_train_batch_size,
-            num_workers=3)
 
-    steps_total = int((len(dataloader) // gradient_accumulation_steps) * num_train_epochs)
+    return torch.utils.data.DataLoader(
+        dataset_train,
+        sampler=sampler,
+        batch_size=args.per_gpu_train_batch_size,
+        num_workers=3)
 
+def create_scheduler(optimizer, steps_total):
     def lr_lambda(current_step):
         const_time = 0.5
         p = float(current_step) / (float(steps_total) + EPS)
@@ -178,16 +155,52 @@ def train(rank, args, model, dataset_train, epoch_start):
         p = (p - const_time) / (1 - const_time)
         return max(0, math.cos(math.pi * 0.5 * p))
 
+    return torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda)
+
+def cosph(X,Y):
+    # [B,2,F,T] -> [2,B,F,T]
+    Y = Y.transpose(0, 1)
+    X = X.transpose(0, 1)
+    norm_x = (X[0] * X[0] + X[1] * X[1] + EPS).sqrt().sum()
+    norm_y = (Y[0] * Y[0] + Y[1] * Y[1] + EPS).sqrt()
+    scale_x = (norm_x + EPS).reciprocal()
+    scale_y = (norm_y + EPS).reciprocal()
+    #[B, F, T]
+    return ((Y[0] * X[0] + Y[1] * X[1]) * scale_y).sum() * scale_x
+
+def save_and_eval_checkpoint(rank, args, model, epoch):
+    if rank in [-1, 0]:
+        check_point_name = 'checkpoint-{:02}'.format(epoch)
+        output_dir = os.path.join(args.output_dir, check_point_name)
+        os.makedirs(output_dir, exist_ok=True)
+        model.save_pretrained(output_dir)
+        evaluate_dir(args.eval_data, output_dir)
+
+    if rank > -1:
+        torch.distributed.barrier()
+
+def train(rank, args, model, dataset_train, epoch_start):
+    world_size = 1 if rank < 0 else torch.distributed.get_world_size()
+
+    dataloader = create_dataloader(rank, args, dataset_train)
+
+    train_batch_size = args.per_gpu_train_batch_size * world_size
+    gradient_accumulation_steps = max(1, args.total_train_batch_size // train_batch_size)
+    total_train_batch_size = train_batch_size * gradient_accumulation_steps
+    steps_total = int((len(dataloader) // gradient_accumulation_steps) * args.num_train_epochs)
+
     named_params = list(model.named_parameters())
     optimizer = torch.optim.AdamW([p for n,p in named_params], lr=args.learning_rate, weight_decay=args.weight_decay)
-    scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda)
+    scheduler = create_scheduler(optimizer, steps_total)
 
     if rank in [-1, 0]:
+        printlog("Train model")
+        printlog(model)
         for n,p in named_params:
             printlog('param for tune',n, list(p.shape))
         printlog("dataset_train size", len(dataset_train))
-        printlog("epoches", num_train_epochs )
-        printlog("per_gpu_train_batch_size", per_gpu_train_batch_size )
+        printlog("epoches", args.num_train_epochs )
+        printlog("per_gpu_train_batch_size", args.per_gpu_train_batch_size )
         printlog("n_gpu", args.n_gpu )
         printlog("world_size", world_size )
         printlog("gradient_accumulation_steps", gradient_accumulation_steps )
@@ -197,7 +210,7 @@ def train(rank, args, model, dataset_train, epoch_start):
     time_last = time.time()
     global_step = 0
     check_loss_raise = CheckLossRaise()
-    for epoch in range(epoch_start, math.ceil(num_train_epochs)):
+    for epoch in range(epoch_start, math.ceil(args.num_train_epochs)):
         indicators = collections.defaultdict(list)
 
         utils.sync_models(rank, model)
@@ -213,14 +226,12 @@ def train(rank, args, model, dataset_train, epoch_start):
 
         for step, batch in enumerate(dataloader):
             epoch_fp = epoch + step/len(dataloader)
-            if epoch_fp > num_train_epochs:
+            if epoch_fp > args.num_train_epochs:
                 break
 
-            x_noise, x_clean = batch
+            x_noise, x_clean = [t.to(args.device) for t in batch]
 
-            x_noise = x_noise.to(args.device)
-            x_clean = x_clean.to(args.device)
-
+            #augment and mix signals
             x_clean, x_noise, x = mix_signals(args, x_clean, x_noise)
 
             #forward pass
@@ -237,53 +248,44 @@ def train(rank, args, model, dataset_train, epoch_start):
                 x = x[:, :-sample_ahead]
                 x_clean = x_clean[:, :-sample_ahead]
                 y_clean = y_clean[:, sample_ahead:]
-            if spectre_ahead:
+            if spectre_ahead > 0:
                 Y_clean = Y_clean[:,:, :, spectre_ahead:]
                 X_clean = X_clean[:,:, :, :-spectre_ahead]
 
             #calc losses
             losses = []
-
             def add_loss(name, val):
                 indicators[name].append(val.item())
                 losses.append(val)
 
             add_loss("Lri", 100 * torch.nn.functional.l1_loss(Y_clean, X_clean))
             add_loss("negsisdr", -sisdr(y_clean, x_clean).mean())
-
             if epoch_fp < 1:
-                #Yr_clean [B,F,T]
-                #[B,2,F,T] -> [2,B,F,T]
-                Y = Y_clean.transpose(0,1)
-                X = X_clean.transpose(0,1)
-                norm_x = (X[0] * X[0] + X[1] * X[1] + EPS).sqrt().sum()
-                norm_y = (Y[0] * Y[0] + Y[1] * Y[1] + EPS).sqrt()
-                scale_x = (norm_x + EPS).reciprocal()
-                scale_y = (norm_y + EPS).reciprocal()
-                cosph = ((Y[0] * X[0] + Y[1] * X[1]) * scale_y).sum() * scale_x
-                add_loss("cosph", -100*cosph.mean())
+                add_loss("cosph", -100*cosph(X_clean, Y_clean).mean())
 
             loss =  sum(losses)
             indicators['loss'].append(loss.item())
 
+            #calculate and accumulate gradients
             loss.backward()
             grad_count += 1
 
-            if (step + 1) % gradient_accumulation_steps != 0:
+            #continue if number of gradients is small
+            if grad_count < gradient_accumulation_steps:
                 continue
 
-            #make step
-            global_step += 1
-
-            assert grad_count>0
-            utils.sync_grads(rank, named_params, global_step==1, grad_count)
+            #make optimizationstep
+            utils.sync_grads(rank, named_params, global_step==0, grad_count)
 
             optimizer.step()  # make optimization step
             scheduler.step()  # Update learning rate schedule
+            global_step += 1
+
 
             model.zero_grad()
             grad_count = 0
 
+            #make logs only after several steps
             if global_step % args.logacc != 0:
                 continue
 
@@ -293,6 +295,7 @@ def train(rank, args, model, dataset_train, epoch_start):
             lr = scheduler.get_last_lr()
             str_out.append("lrp " + " ".join(['{:.2f}'.format(math.log10(t+EPS)) for t in lr]))
 
+            #average indicator over GPUs and iterations
             indicators_mean = aver_indicators(rank, args.device, indicators)
 
             #add all indicators into log string
@@ -301,6 +304,7 @@ def train(rank, args, model, dataset_train, epoch_start):
             str_out.extend(["{} {}".format(k, tostr(v)) for k,v in indicators_mean.items()])
 
             #check that negsisdr suddenly raise
+            #if high raise detected then model parameters are restored and optimizer is reset
             check_loss_raise.check(
                 indicators_mean["negsisdr"],
                 named_params,
@@ -313,23 +317,15 @@ def train(rank, args, model, dataset_train, epoch_start):
             dt_ep = dt_iter * len(dataloader)
             str_out.append("it {:.1f}s".format(dt_iter))
             str_out.append("ep {:.1f}m".format(dt_ep / (60)))
-            str_out.append("eta {:.1f}h".format(dt_ep * (num_train_epochs - epoch_fp) / (60 * 60)))
+            str_out.append("eta {:.1f}h".format(dt_ep * (args.num_train_epochs - epoch_fp) / (60 * 60)))
             time_last = time.time()
 
-            indicators = collections.defaultdict(list)
             if rank in [-1, 0]:
                 logger.info(" ".join(str_out))
 
-        if rank in [-1, 0]:
-            check_point_name = 'checkpoint-{:02}'.format(epoch + 1)
-            output_dir = os.path.join(args.output_dir, check_point_name)
-            os.makedirs(output_dir, exist_ok=True)
-            model.save_pretrained(output_dir)
-            if args.eval_data:
-                evaluate_dir(args.eval_data, output_dir)
+            indicators = collections.defaultdict(list)
 
-        if rank>-1:
-            torch.distributed.barrier()
+        save_and_eval_checkpoint(rank, args, model, epoch+1)
 
 def process(rank, args, port):
     #init multiprocess
@@ -425,8 +421,7 @@ def process(rank, args, port):
                 input_names=input_names,
                 output_names=output_names)
 
-        if args.eval_data:
-            evaluate_dir(args.eval_data, args.output_dir)
+        evaluate_dir(args.eval_data, args.output_dir)
 
     if rank > -1:
         torch.distributed.barrier()
