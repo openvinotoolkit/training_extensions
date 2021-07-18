@@ -70,262 +70,275 @@ class CheckLossRaise():
         self.loss_dev +=  (0.1 if self.loss_count>1 else 1) * (loss_raise ** 2 - self.loss_dev)
         self.loss_count += 1
 
-def aver_indicators(rank, device, indicators):
-    indicators_mean = {}
-    for k, v in indicators.items():
-        v = np.array(v)
-        if len(v.shape) == 1:
-            v = v[:, None]
 
-        if rank > -1:
-            # sync indicators
-            world_size = torch.distributed.get_world_size()
-            vt = torch.tensor(v).to(device)
-            torch.distributed.all_reduce(vt, op=torch.distributed.ReduceOp.SUM)
-            v = vt.cpu().numpy() / float(world_size)
+class Train():
+    def __init__(self, rank, args):
+        self.rank = rank
+        self.args = args
+        self.world_size = 1 if self.rank < 0 else torch.distributed.get_world_size()
 
-        indicators_mean[k] = v.mean(0)
-    return indicators_mean
+    def aver_indicators(self):
+        self.indicators_mean = {}
+        for k, v in self.indicators.items():
+            v = np.array(v)
+            if len(v.shape) == 1:
+                v = v[:, None]
 
-def mix_signals(args, x_clean, x_noise):
-    # mix clean and noise signals on GPU
-    rms_noise = x_noise.pow(2).mean(-1, keepdim=True).sqrt()
-    rms_clean = x_clean.pow(2).mean(-1, keepdim=True).sqrt()
+            if self.rank > -1:
+                # sync indicators
+                world_size = torch.distributed.get_world_size()
+                vt = torch.tensor(v).to(self.args.device)
+                torch.distributed.all_reduce(vt, op=torch.distributed.ReduceOp.SUM)
+                v = vt.cpu().numpy() / float(world_size)
 
-    def rand_range(a, b):
-        return a + (b - a) * torch.rand(rms_clean.shape, dtype=rms_clean.dtype, device=rms_clean.device)
+            self.indicators_mean[k] = v.mean(0)
 
-    snr_db = rand_range(args.snr_min, args.snr_max)
-    target_db = rand_range(args.target_min, args.target_max)
+    def log_indicators(self, epoch_fp):
+        # Log metrics
+        str_out = ["ep {:.3f}".format(epoch_fp)]
 
-    def db_to_scale(db):
-        return 10 ** (db / 20)
+        lr = self.scheduler.get_last_lr()
+        str_out.append("lrp " + " ".join(['{:.2f}'.format(math.log10(t + EPS)) for t in lr]))
 
-    # scale noise to get given SNR
-    scale_noise = db_to_scale(-snr_db) * rms_clean / (rms_noise + EPS)
+        # add all indicators into log string
+        def tostr(v):
+            return " ".join(["{:.3f}".format(t) for t in v])
+        str_out.extend(["{} {}".format(k, tostr(v)) for k, v in self.indicators_mean.items()])
 
-    # do not scale noise if noise only rms_clean < -80dB
-    #noise_only_w = (rms_clean < db_to_scale(-80)).float()
-    #scale_noise = 1 * noise_only_w + scale_noise * (1 - noise_only_w)
+        str_out.append("RC {}".format(self.check_loss_raise.reset_count))
 
-    x = x_clean + x_noise * scale_noise
-    rms_x = x.pow(2).mean(-1, keepdim=True).sqrt()
+        # estimate processing times
+        dt_iter = (time.time() - self.time_last) / len(self.indicators['loss'])
+        dt_ep = dt_iter * len(self.dataloader)
+        str_out.append("it {:.1f}s".format(dt_iter))
+        str_out.append("ep {:.1f}m".format(dt_ep / (60)))
+        str_out.append("eta {:.1f}h".format(dt_ep * (self.args.num_train_epochs - epoch_fp) / (60 * 60)))
+        self.time_last = time.time()
 
-    target_scale = db_to_scale(target_db) / (rms_x + EPS)
-    x = x * target_scale
-    x_clean = x_clean * target_scale
+        if self.rank in [-1, 0]:
+            logger.info(" ".join(str_out))
 
-    # randomply clip signal
-    t = torch.rand(target_scale.shape, dtype=target_scale.dtype, device=target_scale.device)
-    clamp_mask = (t < args.clip_prob).float()
-    # clamp_mask = clamp_mask.float()
+    def create_dataloader(self, dataset_train):
+        if self.rank < 0:
+            #single process take all samples
+            sampler = torch.utils.data.RandomSampler(dataset_train)
+        else:
+            #special sampler that divide samples between processes
+            sampler = torch.utils.data.distributed.DistributedSampler(
+                dataset_train,
+                rank=self.rank,
+                drop_last=True,
+                shuffle=True)
 
-    t = torch.rand(target_scale.shape, dtype=target_scale.dtype, device=target_scale.device)
-    max_val = x.abs()
-    max_val, _ = max_val.max(-1, keepdim=True)
-    clamp_val = max_val * (1 - clamp_mask * t * 0.5)
-    x = torch.max(x, 0 - clamp_val)
-    x = torch.min(x, clamp_val)
-    return x_clean, x_noise, x
-
-def create_dataloader(rank, args, dataset_train):
-    if rank < 0:
-        #single process take all samples
-        sampler = torch.utils.data.RandomSampler(dataset_train)
-    else:
-        #special sampler that divide samples between processes
-        sampler = torch.utils.data.distributed.DistributedSampler(
+        self.dataloader = torch.utils.data.DataLoader(
             dataset_train,
-            rank=rank,
-            drop_last=True,
-            shuffle=True)
+            sampler=sampler,
+            batch_size=self.args.per_gpu_train_batch_size,
+            num_workers=3)
 
-    return torch.utils.data.DataLoader(
-        dataset_train,
-        sampler=sampler,
-        batch_size=args.per_gpu_train_batch_size,
-        num_workers=3)
+    def create_optimizer_and_scheduler(self):
 
-def create_scheduler(optimizer, steps_total):
-    def lr_lambda(current_step):
-        const_time = 0.5
-        p = float(current_step) / (float(steps_total) + EPS)
-        if p <= const_time:
-            return 1
-        p = (p - const_time) / (1 - const_time)
-        return max(0, math.cos(math.pi * 0.5 * p))
+        params = [p for n,p in self.named_params]
+        self.optimizer = torch.optim.AdamW(
+            params,
+            lr=self.args.learning_rate,
+            weight_decay=self.args.weight_decay)
 
-    return torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda)
+        def lr_lambda(current_step):
+            const_time = 0.5
+            p = float(current_step) / (float(self.steps_total) + EPS)
+            if p <= const_time:
+                return 1
+            p = (p - const_time) / (1 - const_time)
+            return max(0, math.cos(math.pi * 0.5 * p))
 
-def cosph(X,Y):
-    # [B,2,F,T] -> [2,B,F,T]
-    Y = Y.transpose(0, 1)
-    X = X.transpose(0, 1)
-    norm_x = (X[0] * X[0] + X[1] * X[1] + EPS).sqrt().sum()
-    norm_y = (Y[0] * Y[0] + Y[1] * Y[1] + EPS).sqrt()
-    scale_x = (norm_x + EPS).reciprocal()
-    scale_y = (norm_y + EPS).reciprocal()
-    #[B, F, T]
-    return ((Y[0] * X[0] + Y[1] * X[1]) * scale_y).sum() * scale_x
+        self.scheduler = torch.optim.lr_scheduler.LambdaLR(self.optimizer, lr_lambda)
 
-def save_and_eval_checkpoint(rank, args, model, epoch):
-    if rank in [-1, 0]:
-        check_point_name = 'checkpoint-{:02}'.format(epoch)
-        output_dir = os.path.join(args.output_dir, check_point_name)
-        os.makedirs(output_dir, exist_ok=True)
-        model.save_pretrained(output_dir)
-        evaluate_dir(args.eval_data, output_dir)
+    def save_and_eval_checkpoint(self, model, epoch):
+        if self.rank in [-1, 0]:
+            check_point_name = 'checkpoint-{:02}'.format(epoch)
+            output_dir = os.path.join(self.args.output_dir, check_point_name)
+            os.makedirs(output_dir, exist_ok=True)
+            model.save_pretrained(output_dir)
+            evaluate_dir(self.args.eval_data, output_dir)
 
-    if rank > -1:
-        torch.distributed.barrier()
+        if self.rank > -1:
+            torch.distributed.barrier()
 
-def train(rank, args, model, dataset_train, epoch_start):
-    world_size = 1 if rank < 0 else torch.distributed.get_world_size()
+    def print_info(self, model, dataset_train):
+        if self.rank in [-1, 0]:
+            printlog("Train model")
+            printlog(model)
+            for n, p in self.named_params:
+                printlog('param for tune', n, list(p.shape))
+            printlog("dataset_train size", len(dataset_train))
+            printlog("epoches", self.args.num_train_epochs)
+            printlog("per_gpu_train_batch_size", self.args.per_gpu_train_batch_size)
+            printlog("n_gpu", self.args.n_gpu)
+            printlog("world_size", self.world_size)
+            printlog("gradient_accumulation_steps", self.gradient_accumulation_steps)
+            printlog("total train batch size", self.total_train_batch_size)
+            printlog("steps_total", self.steps_total)
 
-    dataloader = create_dataloader(rank, args, dataset_train)
+    def mix_signals(self, x_clean, x_noise):
+        # mix clean and noise signals on GPU
+        rms_noise = x_noise.pow(2).mean(-1, keepdim=True).sqrt()
+        rms_clean = x_clean.pow(2).mean(-1, keepdim=True).sqrt()
 
-    train_batch_size = args.per_gpu_train_batch_size * world_size
-    gradient_accumulation_steps = max(1, args.total_train_batch_size // train_batch_size)
-    total_train_batch_size = train_batch_size * gradient_accumulation_steps
-    steps_total = int((len(dataloader) // gradient_accumulation_steps) * args.num_train_epochs)
+        def rand_range(a, b):
+            return a + (b - a) * torch.rand(rms_clean.shape, dtype=rms_clean.dtype, device=rms_clean.device)
 
-    named_params = list(model.named_parameters())
-    optimizer = torch.optim.AdamW([p for n,p in named_params], lr=args.learning_rate, weight_decay=args.weight_decay)
-    scheduler = create_scheduler(optimizer, steps_total)
+        snr_db = rand_range(self.args.snr_min, self.args.snr_max)
+        target_db = rand_range(self.args.target_min, self.args.target_max)
 
-    if rank in [-1, 0]:
-        printlog("Train model")
-        printlog(model)
-        for n,p in named_params:
-            printlog('param for tune',n, list(p.shape))
-        printlog("dataset_train size", len(dataset_train))
-        printlog("epoches", args.num_train_epochs )
-        printlog("per_gpu_train_batch_size", args.per_gpu_train_batch_size )
-        printlog("n_gpu", args.n_gpu )
-        printlog("world_size", world_size )
-        printlog("gradient_accumulation_steps", gradient_accumulation_steps )
-        printlog("total train batch size", total_train_batch_size )
-        printlog("steps_total",steps_total )
+        def db_to_scale(db):
+            return 10 ** (db / 20)
 
-    time_last = time.time()
-    global_step = 0
-    check_loss_raise = CheckLossRaise()
-    for epoch in range(epoch_start, math.ceil(args.num_train_epochs)):
-        indicators = collections.defaultdict(list)
+        # scale noise to get given SNR
+        scale_noise = db_to_scale(-snr_db) * rms_clean / (rms_noise + EPS)
 
-        utils.sync_models(rank, model)
+        # do not scale noise if noise only rms_clean < -80dB
+        #noise_only_w = (rms_clean < db_to_scale(-80)).float()
+        #scale_noise = 1 * noise_only_w + scale_noise * (1 - noise_only_w)
 
-        model.train()
+        x = x_clean + x_noise * scale_noise
+        rms_x = x.pow(2).mean(-1, keepdim=True).sqrt()
 
-        model.zero_grad()
-        grad_count = 0
+        target_scale = db_to_scale(target_db) / (rms_x + EPS)
+        x = x * target_scale
+        x_clean = x_clean * target_scale
 
-        if rank > -1:
-            #set epoch to make different samples division betwen proceses for different epoches
-            dataloader.sampler.set_epoch(epoch)
+        # randomply clip signal
+        t = torch.rand(target_scale.shape, dtype=target_scale.dtype, device=target_scale.device)
+        clamp_mask = (t < self.args.clip_prob).float()
+        # clamp_mask = clamp_mask.float()
 
-        for step, batch in enumerate(dataloader):
-            epoch_fp = epoch + step/len(dataloader)
-            if epoch_fp > args.num_train_epochs:
-                break
+        t = torch.rand(target_scale.shape, dtype=target_scale.dtype, device=target_scale.device)
+        max_val = x.abs()
+        max_val, _ = max_val.max(-1, keepdim=True)
+        clamp_val = max_val * (1 - clamp_mask * t * 0.5)
+        x = torch.max(x, 0 - clamp_val)
+        x = torch.min(x, clamp_val)
+        return x_clean, x_noise, x
 
-            x_noise, x_clean = [t.to(args.device) for t in batch]
+    def train(self, model, dataset_train, epoch_start):
+        self.create_dataloader(dataset_train)
 
-            #augment and mix signals
-            x_clean, x_noise, x = mix_signals(args, x_clean, x_noise)
+        self.train_batch_size = self.args.per_gpu_train_batch_size * self.world_size
+        self.gradient_accumulation_steps = max(1, self.args.total_train_batch_size // self.train_batch_size)
+        self.total_train_batch_size = self.train_batch_size * self.gradient_accumulation_steps
+        self.steps_total = int((len(self.dataloader) // self.gradient_accumulation_steps) * self.args.num_train_epochs)
 
-            #forward pass
-            y_clean, Y_clean, _ = model(x)
+        self.named_params = list(model.named_parameters())
+        self.create_optimizer_and_scheduler()
 
-            #calc specter for clean input signal
-            tail_size = model.wnd_length - model.hop_length
-            X_clean = model.encode(torch.nn.functional.pad(x_clean, (tail_size, 0)))
+        self.print_info(model, dataset_train)
 
-            #crop target and model output to align to each other
-            sample_ahead = model.get_sample_ahead()
-            spectre_ahead = model.ahead
-            if sample_ahead > 0:
-                x = x[:, :-sample_ahead]
-                x_clean = x_clean[:, :-sample_ahead]
-                y_clean = y_clean[:, sample_ahead:]
-            if spectre_ahead > 0:
-                Y_clean = Y_clean[:,:, :, spectre_ahead:]
-                X_clean = X_clean[:,:, :, :-spectre_ahead]
+        self.time_last = time.time()
+        global_step = 0
+        self.check_loss_raise = CheckLossRaise()
+        for epoch in range(epoch_start, math.ceil(self.args.num_train_epochs)):
+            self.indicators = collections.defaultdict(list)
 
-            #calc losses
-            losses = []
-            def add_loss(name, val):
-                indicators[name].append(val.item())
-                losses.append(val)
+            utils.sync_models(self.rank, model)
 
-            add_loss("Lri", 100 * torch.nn.functional.l1_loss(Y_clean, X_clean))
-            add_loss("negsisdr", -sisdr(y_clean, x_clean).mean())
-            if epoch_fp < 1:
-                add_loss("cosph", -100*cosph(X_clean, Y_clean).mean())
-
-            loss =  sum(losses)
-            indicators['loss'].append(loss.item())
-
-            #calculate and accumulate gradients
-            loss.backward()
-            grad_count += 1
-
-            #continue if number of gradients is small
-            if grad_count < gradient_accumulation_steps:
-                continue
-
-            #make optimizationstep
-            utils.sync_grads(rank, named_params, global_step==0, grad_count)
-
-            optimizer.step()  # make optimization step
-            scheduler.step()  # Update learning rate schedule
-            global_step += 1
-
+            model.train()
 
             model.zero_grad()
             grad_count = 0
 
-            #make logs only after several steps
-            if global_step % args.logacc != 0:
-                continue
+            if self.rank > -1:
+                #set epoch to make different samples division betwen proceses for different epoches
+                self.dataloader.sampler.set_epoch(epoch)
 
-            # Log metrics
-            str_out = ["ep {:.3f}".format(epoch_fp)]
+            for step, batch in enumerate(self.dataloader):
+                epoch_fp = epoch + step/len(self.dataloader)
+                if epoch_fp > self.args.num_train_epochs:
+                    break
 
-            lr = scheduler.get_last_lr()
-            str_out.append("lrp " + " ".join(['{:.2f}'.format(math.log10(t+EPS)) for t in lr]))
+                x_noise, x_clean = [t.to(self.args.device) for t in batch]
 
-            #average indicator over GPUs and iterations
-            indicators_mean = aver_indicators(rank, args.device, indicators)
+                #augment and mix signals
+                x_clean, x_noise, x = self.mix_signals(x_clean, x_noise)
 
-            #add all indicators into log string
-            def tostr(v):
-                return " ".join(["{:.3f}".format(t) for t in v])
-            str_out.extend(["{} {}".format(k, tostr(v)) for k,v in indicators_mean.items()])
+                #forward pass
+                y_clean, Y_clean, _ = model(x)
 
-            #check that negsisdr suddenly raise
-            #if high raise detected then model parameters are restored and optimizer is reset
-            check_loss_raise.check(
-                indicators_mean["negsisdr"],
-                named_params,
-                optimizer
-            )
-            str_out.append("RC {}".format(check_loss_raise.reset_count))
+                #calc specter for clean input signal
+                tail_size = model.wnd_length - model.hop_length
+                X_clean = model.encode(torch.nn.functional.pad(x_clean, (tail_size, 0)))
 
-            # estimate processing times
-            dt_iter = (time.time() - time_last) / len(indicators['loss'])
-            dt_ep = dt_iter * len(dataloader)
-            str_out.append("it {:.1f}s".format(dt_iter))
-            str_out.append("ep {:.1f}m".format(dt_ep / (60)))
-            str_out.append("eta {:.1f}h".format(dt_ep * (args.num_train_epochs - epoch_fp) / (60 * 60)))
-            time_last = time.time()
+                #crop target and model output to align to each other
+                sample_ahead = model.get_sample_ahead()
+                spectre_ahead = model.ahead
+                if sample_ahead > 0:
+                    x = x[:, :-sample_ahead]
+                    x_clean = x_clean[:, :-sample_ahead]
+                    y_clean = y_clean[:, sample_ahead:]
+                if spectre_ahead > 0:
+                    Y_clean = Y_clean[:,:, :, spectre_ahead:]
+                    X_clean = X_clean[:,:, :, :-spectre_ahead]
 
-            if rank in [-1, 0]:
-                logger.info(" ".join(str_out))
+                #calc losses
+                losses = []
+                def add_loss(name, val):
+                    self.indicators[name].append(val.item())
+                    losses.append(val)
 
-            indicators = collections.defaultdict(list)
+                add_loss("Lri", 100 * torch.nn.functional.l1_loss(Y_clean, X_clean))
+                add_loss("negsisdr", -sisdr(y_clean, x_clean).mean())
+                if epoch_fp < 1:
+                    # [B,2,F,T] -> [2,B,F,T]
+                    Y = Y_clean.transpose(0, 1)
+                    X = X_clean.transpose(0, 1)
+                    norm_x = (X[0] * X[0] + X[1] * X[1] + EPS).sqrt().sum()
+                    norm_y = (Y[0] * Y[0] + Y[1] * Y[1] + EPS).sqrt()
+                    scale_x = (norm_x + EPS).reciprocal()
+                    scale_y = (norm_y + EPS).reciprocal()
+                    # [B, F, T]
+                    cosph = ((Y[0] * X[0] + Y[1] * X[1]) * scale_y).sum() * scale_x
+                    add_loss("cosph", -100*cosph.mean())
 
-        save_and_eval_checkpoint(rank, args, model, epoch+1)
+                loss =  sum(losses)
+                self.indicators['loss'].append(loss.item())
+
+                #calculate and accumulate gradients
+                loss.backward()
+                grad_count += 1
+
+                #continue if not all gradients were accumulated
+                if grad_count < self.gradient_accumulation_steps:
+                    continue
+
+                #make optimization step
+                utils.sync_grads(self.rank, self.named_params, global_step==0, grad_count)
+                self.optimizer.step()  # make optimization step
+                self.scheduler.step()  # Update learning rate schedule
+                global_step += 1
+
+                model.zero_grad()
+                grad_count = 0
+
+                #make logs only after several steps
+                if global_step % self.args.logacc != 0:
+                    continue
+
+                #average indicator over GPUs and iterations
+                self.aver_indicators()
+
+                #check that negsisdr suddenly raise
+                #if high raise detected then model parameters are restored and optimizer is reset
+                self.check_loss_raise.check(
+                    self.indicators_mean["negsisdr"],
+                    self.named_params,
+                    self.optimizer
+                )
+
+                self.log_indicators(epoch_fp)
+
+                self.indicators = collections.defaultdict(list)
+
+            self.save_and_eval_checkpoint(model, epoch+1)
 
 def process(rank, args, port):
     #init multiprocess
@@ -367,7 +380,8 @@ def process(rank, args, port):
         dataset_train = utils.brodcast_data(rank, dataset_train)
 
     #tune params
-    train(rank, args, model, dataset_train, epoch_start )
+    train = Train(rank, args)
+    train.train(model, dataset_train, epoch_start )
 
     if rank in [-1, 0]:
         #save model, eval model
