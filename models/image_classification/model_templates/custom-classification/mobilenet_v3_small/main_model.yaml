@@ -39,10 +39,6 @@ data:
     random_flip:
       enable: True
       p: 0.5
-    random_crop:
-      enable: True
-      p: 0.3
-      scale: 0.9
     augmix:
       enable: True
       cfg_str: "augmix-m5-w3"

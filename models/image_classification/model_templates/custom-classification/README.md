@@ -4,10 +4,10 @@ Performance results pivot table:
 
 | Model Name | Complexity (GFLOPs) | Size (Mp) | AVG mAP (%) | AVG Top-1 (%) | AVG Top-5 (%) | Links |
 | ---        | ---        | ---        | ---        | ---        | ---        | ---        |
-| EfficientNet b0 | 0.76 | 4.14 | 90.54 | 88.46 | 97.89 | [imagenet snapshot](https://drive.google.com/uc?export=download&id=1AyOTxxuJPrX9H3whcgaQ_BRRDiZmbqt0), [model template](./efficientnet_b0/template.yaml) |
-| MobilenetV3 large x1.0 | 0.44 | 4.33 | 90.30	| 86.95 | 97.20 | [imagenet snapshot](https://drive.google.com/uc?export=download&id=1pJ86SPmRrmnGhrNGyXV8FMKSu550OnV1), [model template](./mobilenet_v3_large_1/template.yaml) |
-| MobilenetV3 large x0.75 | 0.308 | 2.84 | 89.27 |	85.98	| 96.92 | [imagenet snapshot](https://drive.google.com/uc?export=download&id=1s9Z43yyL281QnDMRmBRbBiizzAqVvM_0), [model template](./mobilenet_v3_large_075/template.yaml) |
-| MobilenetV3 small x1.0 | 0.112 | 1.56 | 85.97 | 83.70 | 95.93 | [imagenet snapshot](https://drive.google.com/uc?export=download&id=1q3xgROzhFWCiQHPvKldV4S7HR3N2Fne1), [model template](./mobilenet_v3_small/template.yaml) |
+| EfficientNet b0 | 0.76 | 4.14 | 92.57 | 88.77	| 97.62 | [imagenet snapshot](https://drive.google.com/uc?export=download&id=1AyOTxxuJPrX9H3whcgaQ_BRRDiZmbqt0), [model template](./efficientnet_b0/template.yaml) |
+| MobilenetV3 large x1.0 | 0.44 | 4.33 | 91.98 | 88.30 | 97.35 | [imagenet snapshot](https://drive.google.com/uc?export=download&id=1pJ86SPmRrmnGhrNGyXV8FMKSu550OnV1), [model template](./mobilenet_v3_large_1/template.yaml) |
+| MobilenetV3 large x0.75 | 0.308 | 2.84 | 91.14 | 87.60	| 96.97 | [imagenet snapshot](https://drive.google.com/uc?export=download&id=1s9Z43yyL281QnDMRmBRbBiizzAqVvM_0), [model template](./mobilenet_v3_large_075/template.yaml) |
+| MobilenetV3 small x1.0 | 0.112 | 1.56 | 91.14	| 87.60	| 96.97 | [imagenet snapshot](https://drive.google.com/uc?export=download&id=1q3xgROzhFWCiQHPvKldV4S7HR3N2Fne1), [model template](./mobilenet_v3_small/template.yaml) |
 
 
 All of the above metrics were obtained on eleven different datasets, on which an extensive amount of research has been made. To provide a generalized performance metric, we averaged the metrics across all datasets. For additional information about performance on each dataset in comparison with baseline, you can refer to this [spreadsheet](https://docs.google.com/spreadsheets/d/1CV3be-VydEHvWS6GMPduBQBjl46uLq80_GtkeUhsuVg/edit#gid=0).
@@ -49,23 +49,23 @@ MobilenetV3:
 * [Sharpness aware minimization optimizer](https://www.semanticscholar.org/paper/Sharpness-Aware-Minimization-for-Efficiently-For%C3%AAt-Kleiner/bc52ab18399aaaf6b88c22ebc6e4a3caa99a2323)
 
 EfficientNet_b0:
-* Softmax loss
+* [Additive Margin softmax] loss (https://www.semanticscholar.org/paper/Additive-Margin-Softmax-for-Face-Verification-Wang-Cheng/9fc17fa5708584fa848164461f82a69e97f6ed69)
 * Learning rate found by LR Finder
 * Reduce on plateau scheduler which allows getting rid of epochs search
-* [Augmix](https://www.semanticscholar.org/paper/AugMix%3A-A-Simple-Data-Processing-Method-to-Improve-Hendrycks-Mu/f3a93e20a12532b5493825b921a0f0132736f4ec) pipeline for augmentations + [FMix](https://www.semanticscholar.org/paper/FMix%3A-Enhancing-Mixed-Sample-Data-Augmentation-Harris-Marcu/7c15624f2fdc980ec3cd2666b563e07324f5d8e4) augmentation
+* [Augmix](https://www.semanticscholar.org/paper/AugMix%3A-A-Simple-Data-Processing-Method-to-Improve-Hendrycks-Mu/f3a93e20a12532b5493825b921a0f0132736f4ec) pipeline for augmentations
 * [Sharpness aware minimization optimizer](https://www.semanticscholar.org/paper/Sharpness-Aware-Minimization-for-Efficiently-For%C3%AAt-Kleiner/bc52ab18399aaaf6b88c22ebc6e4a3caa99a2323)
 
 All of the models were initially trained on [ImageNet](http://image-net.org/challenges/LSVRC/2012/), but can be trained from scratch or fine tuned to classify arbitrary images.
 
 Information about LR Finder:
 
-There are two options for learning rate finder avalaible: smart brute force (more accurate, but long) and by fast.ai approach imported from [torch-lr-finder](https://github.com/davidtvs/pytorch-lr-finder/blob/master/torch_lr_finder/lr_finder.py) with some modifications.
+There are three options for learning rate finder avalaible: [Optuna's](https://arxiv.org/abs/1907.10902) grid search, TPE and by fast.ai approach imported from [torch-lr-finder](https://github.com/davidtvs/pytorch-lr-finder/blob/master/torch_lr_finder/lr_finder.py) with some modifications.
 
 Recommended parameters for the automatic mode in case of fine-tuning:
 
 Mobilenet_v3 backbones:
-* min_lr = 0.004
-* max_lr = 0.035
+* min_lr = 0.005
+* max_lr = 0.03
 * warmup = 1
 
 efficientnet_b0:
