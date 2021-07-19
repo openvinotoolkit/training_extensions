@@ -23,14 +23,14 @@ train:
   optimizer: Adam
   save_dir: model_checkpoints
   datasets:
-    - type: Im2LatexDataset
-      data_path: ../../../data/formula_recognition/sample_medium_dataset
-      annotation_file: validate_filter.lst
-      subset: validate
-    - type: Im2LatexDataset
-      data_path: ../../../data/formula_recognition/sample_medium_dataset
-      annotation_file: train_filter.lst
-      subset: train
+    train:
+      - type: Im2LatexDataset
+        data_path: ../../../data/formula_recognition/sample_medium_dataset
+        annotation_file: train_filter.lst
+    validate:
+      - type: Im2LatexDataset
+        data_path: ../../../data/formula_recognition/sample_medium_dataset
+        annotation_file: validate_filter.lst
   train_transforms_list:
   - name: "TransformRescale"
     scale_min: 1.5

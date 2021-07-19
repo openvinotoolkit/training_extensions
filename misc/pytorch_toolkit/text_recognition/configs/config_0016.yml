@@ -42,24 +42,24 @@ train:
   optimizer: Adam
   save_dir: model_checkpoints
   datasets:
-    - type: ICDAR2013RECDataset
-      case_sensitive: false
-      data_path: ../../../data/text_recognition/
-      annotation_file: ../../../data/text_recognition/annotation.txt
-      grayscale: true
-      fixed_img_shape:
-        - 64
-        - 256
-      subset: train
-    - type: ICDAR2013RECDataset
-      case_sensitive: false
-      data_path: ../../../data/text_recognition/
-      annotation_file: ../../../data/text_recognition/annotation.txt
-      grayscale: true
-      fixed_img_shape:
-        - 64
-        - 256
-      subset: validate
+    train:
+      - type: ICDAR2013RECDataset
+        case_sensitive: false
+        data_path: ../../../data/text_recognition/
+        annotation_file: ../../../data/text_recognition/annotation.txt
+        grayscale: true
+        fixed_img_shape:
+          - 64
+          - 256
+    validate:
+      - type: ICDAR2013RECDataset
+        case_sensitive: false
+        data_path: ../../../data/text_recognition/
+        annotation_file: ../../../data/text_recognition/annotation.txt
+        grayscale: true
+        fixed_img_shape:
+          - 64
+          - 256
   train_transforms_list:
     - name: TransformGrayscale
 eval:

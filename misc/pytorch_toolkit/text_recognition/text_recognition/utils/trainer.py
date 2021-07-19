@@ -181,16 +181,14 @@ class Trainer:
         print('Created validation results folder: {}'.format(self.val_results_path))
 
     def load_dataset(self):
-        train_datasets = []
-        val_datasets = []
-        for param in self.config.get('datasets'):
-            dataset_type = param.pop('type')
-            subset = param.pop('subset')
-            dataset = str_to_class[dataset_type](**param)
-            if subset == 'train':
-                train_datasets.append(dataset)
-            elif subset == 'validate':
-                val_datasets.append(dataset)
+        for section in self.config.get('datasets').keys():
+            if section == 'train':
+                train_datasets = self._load_section(section)
+            elif section == 'validate':
+                val_datasets = self._load_section(section)
+            else:
+                raise ValueError(f'Wrong section name {section}')
+
 
         pprint('Creating training transforms list: {}'.format(self.train_transforms_list), indent=4, width=120)
         batch_transform_train = create_list_of_transforms(self.train_transforms_list)
@@ -234,6 +232,14 @@ class Trainer:
             for ds in val_datasets
         ]
         print('num workers: ', self.config.get('num_workers'))
+
+    def _load_section(self, section):
+        datasets = []
+        for param in self.config.get('datasets')[section]:
+            dataset_type = param.pop('type')
+            dataset = str_to_class[dataset_type](**param)
+            datasets.append(dataset)
+        return datasets
 
     def train(self):
         losses = 0.0
