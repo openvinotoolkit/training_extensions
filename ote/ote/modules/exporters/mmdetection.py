@@ -25,15 +25,6 @@ from .base import BaseExporter
 from ..registry import EXPORTERS
 from ..arg_converters.mmdetection import classes_list_to_update_config_dict, load_classes_from_snapshot
 
-try:
-    # note that we can make this import if
-    # the script is run in the virtual environment
-    # where mmdetection is installed,
-    # but this is required to run export.py tool below
-    from mmdet.integration.nncf import is_checkpoint_nncf
-except ImportError:
-    is_checkpoint_nncf = None
-
 
 @EXPORTERS.register_module()
 class MMDetectionExporter(BaseExporter):
@@ -67,20 +58,9 @@ class MMDetectionExporter(BaseExporter):
                           f'--input_format {args["openvino_input_format"]}')
 
         # FIXME(ikrylov): remove alt_ssd_export block as soon as it becomes useless.
-        # (LeonidBeynenson): Please, note that alt_ssd_export appoach may be applied only
-        #                    to SSD models only that were not compressed by NNCF.
         config = Config.fromfile(args["config"])
         should_run_alt_ssd_export = (hasattr(config.model, 'bbox_head')
-                                     and config.model.bbox_head.type == 'SSDHead'
-                                     and not config.get('nncf_config'))
-
-        if is_checkpoint_nncf and is_checkpoint_nncf(args['load_weights']):
-            # If the config does not contain NNCF part,
-            # but the checkpoint was trained with NNCF compression,
-            # the NNCF config will be read from checkpoint.
-            # Since alt_ssd_export is incompatible with NNCF compression,
-            # alt_ssd_export should not be run in this case.
-            should_run_alt_ssd_export = False
+                                     and config.model.bbox_head.type == 'SSDHead')
 
         if should_run_alt_ssd_export:
             run_through_shell(f'python3 {os.path.join(tools_dir, "export.py")} '
@@ -112,7 +92,7 @@ class MMDetectionCustomClassesExporter(MMDetectionExporter):
                                    f'{classes_from_args} vs {classes_from_snapshot}')
 
         update_config_dict = classes_list_to_update_config_dict(args['config'], classes_from_snapshot)
-        update_config = '--update_config ' + ' '.join(f'{k}={v}' for k,v in update_config_dict.items())
+        update_config = '--update_config ' + ' '.join(f'{k}={v}' for k, v in update_config_dict.items())
         update_config = update_config.replace('"', '\\"')
 
         return update_config

@@ -1,20 +1,25 @@
 # Custom Action Recognition
 
-Models that are trained on the Kinetics-700 dataset and able to recognize actions from live video stream on CPU.
+Models that are trained on the Kinetics-700 and YouTube-8M-Segments datasets simultaneously and able to recognize actions from live video stream on CPU.
 
 Performance results table:
 
-| Model Name           | Complexity (GFLOPs) | Size (Mp) | UCF-101 Top-1 accuracy | Jester-27 Top-1 accuracy | MS-ASL-1000 Top-1 accuracy | Kinetics-700 Top-1 accuracy | Links                                                                                                                                                                                                                               |
-| -------------------- | ------------------- | --------- | ---------------------- | ------------------------ | -------------------------- | --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| s3d-rgb-mobilenet-v3 | 6.66                | 4.133     | 94.21%                 | 94.94%                   | 41.20%                     | 46.51%                      | [model template](s3d-rgb-mobilenet-v3/template.yaml), [kinetics-700 snapshot](https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/custom_action_recognition/s3d-mobilenetv3-large-kinetics700.pth) |
+| Model Name                  | Complexity (GFLOPs) | Size (Mp) | UCF-101 Top-1 accuracy | ActivityNet v1.3 Top-1 Accuracy | Jester-27 Top-1 accuracy | MS-ASL-1000 Top-1 accuracy | Links                                                                                                                                                                                                                                                              |
+| --------------------------- | ------------------- | --------- | ---------------------- | ------------------------------- | ------------------------ | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| s3d-rgb-mobilenet-v3        | 6.65                | 4.116     | 93.79%                 | 64.09%                          | 93.79%                   | 41.20%                     | [model template](s3d-rgb-mobilenet-v3/template.yaml), [kinetics-700 snapshot](https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/custom_action_recognition/s3d-mobilenetv3-large-kinetics700.pth)                                |
+| x3d-rgb-mobilenet-v3-lgd-gc | 4.74                | 4.472     | 93.63%                 | 64.19%                          | 95.36%                   | 20.60%                     | [model template](x3d-rgb-mobilenet-v3-lgd-gc/template.yaml), [kinetics-700 snapshot](https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/custom_action_recognition/x3d-mobilenetv3-large-kinetics700-youtube8msegments-fixed.pth) |
+
+> **NOTE**: The top-1 accuracy metric is calculated as a single clip/crop per video to demonstrate the real model performance on the reported model complexity.
 
 ## Datasets
 
 The following datasets were used in experiments:
-* [UCF-101](https://arxiv.org/abs/1212.0402)
+* [UCF-101](https://export.arxiv.org/abs/1212.0402)
+* [ActivityNet v1.3](http://activity-net.org/download.html)
 * [MS-ASL](https://www.microsoft.com/en-us/research/project/ms-asl/#!downloads)
 * [Jester](https://20bn.com/datasets/jester)
 * [Kinetics-700](https://deepmind.com/research/open-source/kinetics)
+* [YouTube-8M-Segments](https://research.google.com/youtube8m)
 
 ## Training pipeline
 
@@ -75,18 +80,21 @@ where `${DATA_DIR}/train.txt` and `${DATA_DIR}/val.txt` - annotation files where
 <rel_path_to_video_file> <label_id>
 ```
 
+Additionally to enable the CrossNorm augmentation please download the [file](https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/custom_action_recognition/mean_std_list.txt) with dumped mean and variance pairs and place it into the `${DATA_DIR}`.
+
 Finally, the `${DATA_DIR}` directory should be like this:
 
 ```
 ${DATA_DIR}
-└── custom_dataset
-    ├── rawframes
-    │   ├── video_name_0
-    |   |   ├── 00001.jpg
-    |   |   └── ...
-    |   └── ...
-    ├── val.txt
-    └── train.txt
+├── custom_dataset
+│   ├── rawframes
+│   │   ├── video_name_0
+│   |   |   ├── 00001.jpg
+│   |   |   └── ...
+│   |   └── ...
+│   ├── val.txt
+│   └── train.txt
+└── mean_std_list.txt
 ```
 
 After the data was arranged, export the variables required for launching training and evaluation scripts:

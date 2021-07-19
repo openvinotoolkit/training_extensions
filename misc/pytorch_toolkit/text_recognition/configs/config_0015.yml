@@ -1,0 +1,107 @@
+backbone_config:
+  arch: resnext101_32x8d
+  disable_layer_3: false
+  disable_layer_4: false
+  one_ch_first_conv: true
+  output_channels: 2048
+head:
+  type: TextRecognitionHeadAttention
+  encoder_input_size: 2048
+  encoder_dim_internal: 1024
+  encoder_num_layers: 3
+  decoder_input_feature_size: [2,8]
+  decoder_max_seq_len: 28
+  decoder_dim_hidden: 1024
+  decoder_sos_index: 0
+  decoder_rnn_type: "GRU"
+  dropout_ratio: 0.5
+  use_semantics: true
+val_transforms_list:
+  - name: TransformGrayscale
+device: "cuda"
+num_workers: 0
+# language_model_path: <path to ptretrained fasttext language model>/cc.en.300.bin
+model_path: model_checkpoints/model_0293.pth
+model_url: https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/text_recognition/text_recognition_0015.pth
+vocab_path: vocabs/vocab_alphanumeric_case-sensitive.json
+train:
+  batch_size: 32
+  learning_rate: 0.0001
+  clip_grad: 5.0
+  epochs: 500
+  loss_type: NLL
+  save_freq: 10000
+  val_freq: 5000
+  print_freq: 500
+  optimizer: Adam
+  save_dir: model_checkpoints
+  datasets:
+    - type: ICDAR2013RECDataset
+      case_sensitive: true
+      data_path: ../../../data/text_recognition/
+      annotation_file: ../../../data/text_recognition/annotation.txt
+      grayscale: true
+      fixed_img_shape:
+        - 64
+        - 256
+      subset: train
+    - type: ICDAR2013RECDataset
+      case_sensitive: true
+      data_path: ../../../data/text_recognition/
+      annotation_file: ../../../data/text_recognition/annotation.txt
+      grayscale: true
+      fixed_img_shape:
+        - 64
+        - 256
+      subset: validate
+  train_transforms_list:
+    - name: TransformGrayscale
+    - name: TransformColorJitter
+      prob: 0.35
+      brightness: 2
+      contrast: 2
+      saturation: 2
+    - name: TransformBlur
+      sigmaX: 1.5
+      prob: 0.35
+eval:
+  dataset:
+    - type: ICDAR2013RECDataset
+      case_sensitive: true
+      data_path: ../../../data/text_recognition/
+      annotation_file: ../../../data/text_recognition/annotation.txt
+      grayscale: true
+      fixed_img_shape:
+        - 64
+        - 256
+  render: false
+  use_ctc: false
+demo:
+  transforms_list: []
+  model_resolution: [64, 256]
+export:
+  res_encoder_name: model_0293_encoder.onnx
+  res_decoder_name: model_0293_decoder.onnx
+  encoder_input_names: 'imgs'
+  encoder_output_names: 'features,decoder_hidden'
+  decoder_input_names: 'hidden,features,decoder_input'
+  decoder_output_names: 'decoder_hidden,decoder_output'
+  decoder_input_shapes:
+    - # recurrent_state
+      - 1
+      - 1
+      - 1024
+    - # features
+      - 1
+      - 16
+      - 1024
+    - #  decoder_input
+      - 1
+  attn_type: 2d
+  export_ir: true
+  verbose_export: true
+  input_shape_encoder:
+    - 1
+    - 1
+    - 64
+    - 256

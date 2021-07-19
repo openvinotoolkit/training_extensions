@@ -26,7 +26,7 @@ kwargs = dict(
 
 class TextSpotting0004TestCase(
         create_text_spotting_test_case(
-            model_name='text-spotting-0004',
+            model_name='text-spotting-0005',
             **kwargs)
 ):
-    """ Test case for text-spotting-0004 model. """
+    """ Test case for text-spotting-0005 model. """
