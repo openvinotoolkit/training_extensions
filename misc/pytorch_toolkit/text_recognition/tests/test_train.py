@@ -32,7 +32,11 @@ def create_train_test(config_file):
             # workaround for training test without downloading language model (~4 Gb)
             if cls.config['head'].get('use_semantics'):
                 cls.config['head']['use_semantics'] = False
+            # workaround for training test without running it via `python -m torch.distributed.launch`
+            if cls.config.get('multi_gpu'):
+                cls.config['multi_gpu'] = False
             cls.config['_test_steps'] = 40
+            cls.config['batch_size'] = 4 # only for this test
             cls.work_dir = mkdtemp()
             cls.trainer = Trainer(work_dir=cls.work_dir, config=cls.config)
 
