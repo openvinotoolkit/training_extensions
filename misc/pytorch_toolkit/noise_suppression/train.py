@@ -76,6 +76,8 @@ class Train():
         self.rank = rank
         self.args = args
         self.world_size = 1 if self.rank < 0 else torch.distributed.get_world_size()
+        self.time_last = None
+
 
     def aver_indicators(self):
         self.indicators_mean = {}
@@ -108,7 +110,7 @@ class Train():
         str_out.append("RC {}".format(self.check_loss_raise.reset_count))
 
         # estimate processing times
-        if hasattr(self, "time_last"):
+        if self.time_last is not None:
             dt_iter = (time.time() - self.time_last) / len(self.indicators['loss'])
             dt_ep = dt_iter * len(self.dataloader)
             str_out.append("it {:.1f}s".format(dt_iter))
