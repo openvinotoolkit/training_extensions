@@ -108,11 +108,12 @@ class Train():
         str_out.append("RC {}".format(self.check_loss_raise.reset_count))
 
         # estimate processing times
-        dt_iter = (time.time() - self.time_last) / len(self.indicators['loss'])
-        dt_ep = dt_iter * len(self.dataloader)
-        str_out.append("it {:.1f}s".format(dt_iter))
-        str_out.append("ep {:.1f}m".format(dt_ep / (60)))
-        str_out.append("eta {:.1f}h".format(dt_ep * (self.args.num_train_epochs - epoch_fp) / (60 * 60)))
+        if hasattr(self, "time_last"):
+            dt_iter = (time.time() - self.time_last) / len(self.indicators['loss'])
+            dt_ep = dt_iter * len(self.dataloader)
+            str_out.append("it {:.1f}s".format(dt_iter))
+            str_out.append("ep {:.1f}m".format(dt_ep / (60)))
+            str_out.append("eta {:.1f}h".format(dt_ep * (self.args.num_train_epochs - epoch_fp) / (60 * 60)))
         self.time_last = time.time()
 
         if self.rank in [-1, 0]:
@@ -221,6 +222,32 @@ class Train():
         x = torch.min(x, clamp_val)
         return x_clean, x_noise, x
 
+    def loss(self, epoch_fp, y_clean, Y_clean, x_clean, X_clean):
+        # calc losses
+        losses = []
+
+        def add_loss(name, val):
+            self.indicators[name].append(val.item())
+            losses.append(val)
+
+        add_loss("Lri", 100 * torch.nn.functional.l1_loss(Y_clean, X_clean))
+
+        add_loss("negsisdr", -sisdr(y_clean, x_clean).mean())
+
+        if epoch_fp < 1:
+            # [B,2,F,T] -> [2,B,F,T]
+            Y = Y_clean.transpose(0, 1)
+            X = X_clean.transpose(0, 1)
+            norm_x = (X[0] * X[0] + X[1] * X[1] + EPS).sqrt().sum()
+            norm_y = (Y[0] * Y[0] + Y[1] * Y[1] + EPS).sqrt()
+            scale_x = (norm_x + EPS).reciprocal()
+            scale_y = (norm_y + EPS).reciprocal()
+            # [B, F, T]
+            cosph = ((Y[0] * X[0] + Y[1] * X[1]) * scale_y).sum() * scale_x
+            add_loss("cosph", -100 * cosph.mean())
+
+        return sum(losses)
+
     def train(self, model, dataset_train, epoch_start):
         self.create_dataloader(dataset_train)
 
@@ -234,7 +261,6 @@ class Train():
 
         self.print_info(model, dataset_train)
 
-        self.time_last = time.time()
         global_step = 0
         self.check_loss_raise = CheckLossRaise()
         for epoch in range(epoch_start, math.ceil(self.args.num_train_epochs)):
@@ -268,7 +294,7 @@ class Train():
                 tail_size = model.wnd_length - model.hop_length
                 X_clean = model.encode(torch.nn.functional.pad(x_clean, (tail_size, 0)))
 
-                #crop target and model output to align to each other
+                # crop target and model output to align to each other
                 sample_ahead = model.get_sample_ahead()
                 spectre_ahead = model.ahead
                 if sample_ahead > 0:
@@ -276,30 +302,10 @@ class Train():
                     x_clean = x_clean[:, :-sample_ahead]
                     y_clean = y_clean[:, sample_ahead:]
                 if spectre_ahead > 0:
-                    Y_clean = Y_clean[:,:, :, spectre_ahead:]
-                    X_clean = X_clean[:,:, :, :-spectre_ahead]
+                    Y_clean = Y_clean[:, :, :, spectre_ahead:]
+                    X_clean = X_clean[:, :, :, :-spectre_ahead]
 
-                #calc losses
-                losses = []
-                def add_loss(name, val):
-                    self.indicators[name].append(val.item())
-                    losses.append(val)
-
-                add_loss("Lri", 100 * torch.nn.functional.l1_loss(Y_clean, X_clean))
-                add_loss("negsisdr", -sisdr(y_clean, x_clean).mean())
-                if epoch_fp < 1:
-                    # [B,2,F,T] -> [2,B,F,T]
-                    Y = Y_clean.transpose(0, 1)
-                    X = X_clean.transpose(0, 1)
-                    norm_x = (X[0] * X[0] + X[1] * X[1] + EPS).sqrt().sum()
-                    norm_y = (Y[0] * Y[0] + Y[1] * Y[1] + EPS).sqrt()
-                    scale_x = (norm_x + EPS).reciprocal()
-                    scale_y = (norm_y + EPS).reciprocal()
-                    # [B, F, T]
-                    cosph = ((Y[0] * X[0] + Y[1] * X[1]) * scale_y).sum() * scale_x
-                    add_loss("cosph", -100*cosph.mean())
-
-                loss =  sum(losses)
+                loss = self.loss(epoch_fp, y_clean, Y_clean, x_clean, X_clean)
                 self.indicators['loss'].append(loss.item())
 
                 #calculate and accumulate gradients
