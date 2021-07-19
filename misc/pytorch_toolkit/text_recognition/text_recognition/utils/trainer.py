@@ -209,7 +209,6 @@ class Trainer:
                                    use_ctc=(self.loss_type == 'CTC')),
                 num_workers=self.config.get('num_workers', 4),
                 batch_size=self.config.get('batch_size', 4),
-                # shuffle=False,
                 pin_memory=True)
         else:
             train_sampler = BatchRandomSampler(dataset=train_dataset, batch_size=self.config.get('batch_size', 4))
@@ -221,8 +220,6 @@ class Trainer:
                                    batch_transform=batch_transform_train,
                                    use_ctc=(self.loss_type == 'CTC')),
                 num_workers=self.config.get('num_workers', 4),
-                # batch_size=self.config.get('batch_size', 4),
-                # shuffle=False,
                 pin_memory=True)
         pprint('Creating val transforms list: {}'.format(self.val_transforms_list), indent=4, width=120)
         batch_transform_val = create_list_of_transforms(self.val_transforms_list)
@@ -242,7 +239,6 @@ class Trainer:
         losses = 0.0
         accuracies = 0.0
         while self.epoch <= self.total_epochs:
-            #             self.train_loader.sampler.set_epoch(self.epoch)
             for _, target_lengths, imgs, training_gt, loss_computation_gt in self.train_loader:
                 step_loss, step_accuracy = self.train_step(imgs, target_lengths, training_gt, loss_computation_gt)
                 losses += step_loss
