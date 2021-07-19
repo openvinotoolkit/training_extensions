@@ -41,6 +41,10 @@ demo:
 export:
   res_encoder_name: handwritten_polynoms_encoder.onnx
   res_decoder_name: handwritten_polynoms_decoder.onnx
+  encoder_input_names: 'imgs'
+  encoder_output_names: 'row_enc_out,hidden,context,init_0'
+  decoder_input_names: 'dec_st_h,dec_st_c,output_prev,row_enc_out,tgt'
+  decoder_output_names: 'dec_st_h_t,dec_st_c_t,output,logit'
   export_ir: true
   verbose_export: false
   input_shape_encoder:
