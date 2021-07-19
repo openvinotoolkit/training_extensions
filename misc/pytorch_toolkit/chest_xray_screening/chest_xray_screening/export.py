@@ -1,6 +1,6 @@
 import os
 import json
-from utils.exporter import Exporter
+from chest_xray_screening.utils.exporter import Exporter
 import argparse
 
 def _get_config_():

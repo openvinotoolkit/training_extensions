@@ -26,7 +26,7 @@ class InferenceTest(unittest.TestCase):
     checkpoint = config['checkpoint']
     class_count = config["clscount"]
     test_list = config['dummy_test_list']
-    image_path = './data/'
+    image_path = '../../../data/chest_xray_screening/'
     labels = config["labels"]
     dataset_test = RSNADataSet(test_list, labels, image_path, transform=True)
     data_loader_test = DataLoader(

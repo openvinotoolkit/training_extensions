@@ -19,7 +19,7 @@ def get_config(optimised=False):
 class TrainerTest(unittest.TestCase):
     config = get_config()
     class_count = config["clscount"]
-    image_path = './data/'
+    image_path = '../../../data/chest_xray_screening/'
     learn_rate = config["lr"]
     tr_list = config["dummy_train_list"]
     val_list = config["dummy_valid_list"]

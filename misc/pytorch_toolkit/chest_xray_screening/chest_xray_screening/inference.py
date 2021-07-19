@@ -4,9 +4,9 @@ import torch
 from torch.backends import cudnn
 import torch.nn.functional as tfunc
 from torch.utils.data import DataLoader
-from utils.dataloader import RSNADataSet
-from utils.score import compute_auroc
-from utils.model import DenseNet121,DenseNet121Eff
+from chest_xray_screening.utils.dataloader import RSNADataSet
+from chest_xray_screening.utils.score import compute_auroc
+from chest_xray_screening.utils.model import DenseNet121,DenseNet121Eff
 from math import sqrt
 import json
 import os
