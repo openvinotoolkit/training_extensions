@@ -34,7 +34,7 @@ The train script also allows to evaluate model on synthetic ICASSP_dev_test_set.
 ## Train Model
 
 After you get the data, you can train the model.
-To do this you may use the followed command line:
+To do this you may use the following command line:
 
 ```bash
 python3 train.py \
