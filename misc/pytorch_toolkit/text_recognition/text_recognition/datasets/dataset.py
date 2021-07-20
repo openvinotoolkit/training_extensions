@@ -361,10 +361,8 @@ class CocoLikeDataset(BaseDataset):
     def __getitem__(self, index):
         el = deepcopy(self.pairs[index])
         box = el['bbox']
-        img = cv.imread(el['img_path'])
+        img = cv.imread(el['img_path'], cv.IMREAD_COLOR)
         assert img is not None, el['img_path']
-        if len(img.shape) < 3:
-            img = np.stack((img,) * 3, axis=-1)
         if self.grayscale:
             img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
             img = cv.cvtColor(img, cv.COLOR_GRAY2BGR)
