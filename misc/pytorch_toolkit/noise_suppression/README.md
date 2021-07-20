@@ -28,7 +28,7 @@ The [DNS-Challenge dataset](https://github.com/microsoft/DNS-Challenge) is used 
 You can get the data by cloning the repository
 ```git clone https://github.com/microsoft/DNS-Challenge.git <dns-challenge-dir>```
 
-The train script also allows to evaluate model on synthetic ICASSP_dev_test_set. The 'icassp2021-final' branch of DNS-Challenge repo has to be checkout to enable this option
+The train script also allows to evaluate model on synthetic ICASSP_dev_test_set. The 'icassp2021-final' branch of the DNS-Challenge repo has to be checked-out to enable this option
 
 
 ## Train Model
