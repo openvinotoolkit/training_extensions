@@ -172,7 +172,7 @@ class DNSDataset(torch.utils.data.Dataset):
         zsi = self.zero_signal_iter
         ms_threshold = 10 ** (self.zero_signal_level / 10)# signal less than -40 db is empty
         while zsi>0:
-            #estimate power of signal if if it less than -40dB then try to get another part
+            #estimate power of signal if it is less than -40dB then try to get another part
             if x_clean.pow(2).mean() < ms_threshold:
                 zsi = zsi - 1
                 x_clean = f_clean.read_random_segment(self.size_to_read)
