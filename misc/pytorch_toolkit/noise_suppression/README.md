@@ -25,7 +25,7 @@ pip install -r requirements.txt
 ## Preparation
 
 The [DNS-Challenge dataset](https://github.com/microsoft/DNS-Challenge) is used to train the model.
-You can get the data by clone repository
+You can get the data by cloning the repository
 ```git clone https://github.com/microsoft/DNS-Challenge.git <dns-challenge-dir>```
 
 The train script also allows to evaluate model on synthetic ICASSP_dev_test_set. The 'icassp2021-final' branch of DNS-Challenge repo has to be checkout to enable this option
