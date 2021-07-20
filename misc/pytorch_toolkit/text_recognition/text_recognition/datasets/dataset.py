@@ -312,9 +312,7 @@ class LMDBDataset(BaseDataset):
         el = deepcopy(self.pairs[index])
         img_key = el['img_name'].encode()
         image_bytes = self.txn.get(img_key)
-        img = cv.imdecode(np.frombuffer(image_bytes, np.uint8), cv.IMREAD_UNCHANGED)
-        if len(img.shape) < 3:
-            img = np.stack((img,) * 3, axis=-1)
+        img = cv.imdecode(np.frombuffer(image_bytes, np.uint8), cv.IMREAD_COLOR)
         if self.grayscale:
             img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
             img = cv.cvtColor(img, cv.COLOR_GRAY2BGR)
