@@ -33,6 +33,9 @@ def printlog(*args):
 
 EPS = torch.finfo(torch.float32).tiny
 
+#it is supposed that all data has 16kHz
+FREQ = 16000
+
 #set True to speedup (cache) dataset scaning
 DUMP_FILE_INFO_FLAG = False
 
@@ -55,6 +58,11 @@ class AudioFile:
             self.file_name = dump_list[2]
         else:
             raise RuntimeError("One of AudioFile args (file_name or dump_str) has to be no None")
+
+        if self.freq != FREQ:
+            msg = "freq {}!={} for file {}".format(self.freq, FREQ, file_name if file_name else dump_str)
+            printlog(msg)
+            raise RuntimeError(msg)
 
     def read_segment(self, start, stop):
         with wave.open(self.file_name, "rb") as wav:
@@ -190,7 +198,7 @@ class DNSDataset(torch.utils.data.Dataset):
         nsni = self.non_stationary_noise_iter
         # iterate to find nonstantionary noise
         while nsni>0:
-            rms_wnd_size = int(0.050 * 16000) #50ms
+            rms_wnd_size = int(0.050 * FREQ) #50ms window
             rms2 = torch.nn.functional.avg_pool1d(
                 x_noise.pow(2)[None,None,:],
                 rms_wnd_size,

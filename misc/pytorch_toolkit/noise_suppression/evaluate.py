@@ -23,7 +23,7 @@ import torch
 
 import models
 from metrics import sisdr
-from dataset import AudioFile
+from dataset import AudioFile, FREQ
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(name)s %(message)s',
                     datefmt='%Y-%m-%d %H:%M:%S',level=logging.INFO)
@@ -122,7 +122,7 @@ def evaluate_dir(eval_data_dir, model_dir):
         sisdr_inps_all.append(sisdr(x_noisy, x_clean).item())
         sisdr_outs_all.append(sisdr(y_clean, x_clean).item())
 
-        sample_len = input_size/16000
+        sample_len = input_size/FREQ
         sample_time = t1-t0
         msg1 = "{}/{} {:0.2f}s is evaluated by {:0.2f}s x{:0.2f}".format(
             len(sisdr_inps_all), len(file_ids), sample_len,

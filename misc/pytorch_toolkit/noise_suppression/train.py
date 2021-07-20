@@ -72,12 +72,72 @@ class CheckLossRaise():
 
 
 class Train():
-    def __init__(self, rank, args):
+    def __init__(self, rank, args, model, dataset_train):
         self.rank = rank
         self.args = args
         self.world_size = 1 if self.rank < 0 else torch.distributed.get_world_size()
         self.time_last = None
+        self.model = model
 
+        #create datasetloader
+        if self.rank < 0:
+            # single process take all samples
+            sampler = torch.utils.data.RandomSampler(dataset_train)
+        else:
+            # special sampler that divide samples between processes
+            sampler = torch.utils.data.distributed.DistributedSampler(
+                dataset_train,
+                rank=self.rank,
+                drop_last=True,
+                shuffle=True)
+
+        self.dataloader = torch.utils.data.DataLoader(
+            dataset_train,
+            sampler=sampler,
+            batch_size=self.args.per_gpu_train_batch_size,
+            num_workers=3)
+
+        #calc some batch related parameters
+        self.train_batch_size = self.args.per_gpu_train_batch_size * self.world_size
+        self.gradient_accumulation_steps = max(1, self.args.total_train_batch_size // self.train_batch_size)
+        self.total_train_batch_size = self.train_batch_size * self.gradient_accumulation_steps
+        self.steps_total = int((len(self.dataloader) // self.gradient_accumulation_steps) * self.args.num_train_epochs)
+
+        #get list of parameters from model
+        self.named_params = list(model.named_parameters())
+
+        #create optimizer
+        params = [p for n, p in self.named_params]
+        self.optimizer = torch.optim.AdamW(
+            params,
+            lr=self.args.learning_rate,
+            weight_decay=self.args.weight_decay)
+
+        #create scheduler
+        def lr_lambda(current_step):
+            const_time = 0.5
+            p = float(current_step) / (float(self.steps_total) + EPS)
+            if p <= const_time:
+                return 1
+            p = (p - const_time) / (1 - const_time)
+            return max(0, math.cos(math.pi * 0.5 * p))
+
+        self.scheduler = torch.optim.lr_scheduler.LambdaLR(self.optimizer, lr_lambda)
+
+        #print some train information
+        if self.rank in [-1, 0]:
+            printlog("Train model")
+            printlog(model)
+            for n, p in self.named_params:
+                printlog('param for tune', n, list(p.shape))
+            printlog("dataset_train size", len(dataset_train))
+            printlog("epoches", self.args.num_train_epochs)
+            printlog("per_gpu_train_batch_size", self.args.per_gpu_train_batch_size)
+            printlog("n_gpu", self.args.n_gpu)
+            printlog("world_size", self.world_size)
+            printlog("gradient_accumulation_steps", self.gradient_accumulation_steps)
+            printlog("total train batch size", self.total_train_batch_size)
+            printlog("steps_total", self.steps_total)
 
     def aver_indicators(self):
         self.indicators_mean = {}
@@ -121,67 +181,16 @@ class Train():
         if self.rank in [-1, 0]:
             logger.info(" ".join(str_out))
 
-    def create_dataloader(self, dataset_train):
-        if self.rank < 0:
-            #single process take all samples
-            sampler = torch.utils.data.RandomSampler(dataset_train)
-        else:
-            #special sampler that divide samples between processes
-            sampler = torch.utils.data.distributed.DistributedSampler(
-                dataset_train,
-                rank=self.rank,
-                drop_last=True,
-                shuffle=True)
-
-        self.dataloader = torch.utils.data.DataLoader(
-            dataset_train,
-            sampler=sampler,
-            batch_size=self.args.per_gpu_train_batch_size,
-            num_workers=3)
-
-    def create_optimizer_and_scheduler(self):
-
-        params = [p for n,p in self.named_params]
-        self.optimizer = torch.optim.AdamW(
-            params,
-            lr=self.args.learning_rate,
-            weight_decay=self.args.weight_decay)
-
-        def lr_lambda(current_step):
-            const_time = 0.5
-            p = float(current_step) / (float(self.steps_total) + EPS)
-            if p <= const_time:
-                return 1
-            p = (p - const_time) / (1 - const_time)
-            return max(0, math.cos(math.pi * 0.5 * p))
-
-        self.scheduler = torch.optim.lr_scheduler.LambdaLR(self.optimizer, lr_lambda)
-
-    def save_and_eval_checkpoint(self, model, epoch):
+    def save_and_eval_checkpoint(self, epoch):
         if self.rank in [-1, 0]:
             check_point_name = 'checkpoint-{:02}'.format(epoch)
             output_dir = os.path.join(self.args.output_dir, check_point_name)
             os.makedirs(output_dir, exist_ok=True)
-            model.save_pretrained(output_dir)
+            self.model.save_pretrained(output_dir)
             evaluate_dir(self.args.eval_data, output_dir)
 
         if self.rank > -1:
             torch.distributed.barrier()
-
-    def print_info(self, model, dataset_train):
-        if self.rank in [-1, 0]:
-            printlog("Train model")
-            printlog(model)
-            for n, p in self.named_params:
-                printlog('param for tune', n, list(p.shape))
-            printlog("dataset_train size", len(dataset_train))
-            printlog("epoches", self.args.num_train_epochs)
-            printlog("per_gpu_train_batch_size", self.args.per_gpu_train_batch_size)
-            printlog("n_gpu", self.args.n_gpu)
-            printlog("world_size", self.world_size)
-            printlog("gradient_accumulation_steps", self.gradient_accumulation_steps)
-            printlog("total train batch size", self.total_train_batch_size)
-            printlog("steps_total", self.steps_total)
 
     def mix_signals(self, x_clean, x_noise):
         # mix clean and noise signals on GPU
@@ -250,29 +259,18 @@ class Train():
 
         return sum(losses)
 
-    def train(self, model, dataset_train, epoch_start):
-        self.create_dataloader(dataset_train)
-
-        self.train_batch_size = self.args.per_gpu_train_batch_size * self.world_size
-        self.gradient_accumulation_steps = max(1, self.args.total_train_batch_size // self.train_batch_size)
-        self.total_train_batch_size = self.train_batch_size * self.gradient_accumulation_steps
-        self.steps_total = int((len(self.dataloader) // self.gradient_accumulation_steps) * self.args.num_train_epochs)
-
-        self.named_params = list(model.named_parameters())
-        self.create_optimizer_and_scheduler()
-
-        self.print_info(model, dataset_train)
+    def train(self, epoch_start):
 
         global_step = 0
         self.check_loss_raise = CheckLossRaise()
         for epoch in range(epoch_start, math.ceil(self.args.num_train_epochs)):
             self.indicators = collections.defaultdict(list)
 
-            utils.sync_models(self.rank, model)
+            utils.sync_models(self.rank, self.model)
 
-            model.train()
+            self.model.train()
 
-            model.zero_grad()
+            self.model.zero_grad()
             grad_count = 0
 
             if self.rank > -1:
@@ -290,15 +288,15 @@ class Train():
                 x_clean, x_noise, x = self.mix_signals(x_clean, x_noise)
 
                 #forward pass
-                y_clean, Y_clean, _ = model(x)
+                y_clean, Y_clean, _ = self.model(x)
 
                 #calc specter for clean input signal
-                tail_size = model.wnd_length - model.hop_length
-                X_clean = model.encode(torch.nn.functional.pad(x_clean, (tail_size, 0)))
+                tail_size = self.model.wnd_length - self.model.hop_length
+                X_clean = self.model.encode(torch.nn.functional.pad(x_clean, (tail_size, 0)))
 
                 # crop target and model output to align to each other
-                sample_ahead = model.get_sample_ahead()
-                spectre_ahead = model.ahead
+                sample_ahead = self.model.get_sample_ahead()
+                spectre_ahead = self.model.ahead
                 if sample_ahead > 0:
                     x = x[:, :-sample_ahead]
                     x_clean = x_clean[:, :-sample_ahead]
@@ -324,7 +322,7 @@ class Train():
                 self.scheduler.step()  # Update learning rate schedule
                 global_step += 1
 
-                model.zero_grad()
+                self.model.zero_grad()
                 grad_count = 0
 
                 #make logs only after several steps
@@ -346,7 +344,7 @@ class Train():
 
                 self.indicators = collections.defaultdict(list)
 
-            self.save_and_eval_checkpoint(model, epoch+1)
+            self.save_and_eval_checkpoint(epoch+1)
 
 def process(rank, args, port):
     #init multiprocess
@@ -365,16 +363,11 @@ def process(rank, args, port):
     random.seed(args.seed+rank)
     torch.manual_seed(args.seed+rank)
 
-    m = re.match(r'.*checkpoint-(\d+)', args.model_desc)
-    epoch_start = int(m.group(1)) if m else 0
-
     model = models.model_create(args.model_desc)
-
-    size_to_read = model.get_sample_length_ceil(16000 * args.size_to_read)
-
-    printlog("size_to_read {} ".format(size_to_read))
-
     model = model.to(args.device)
+
+    size_to_read = model.get_sample_length_ceil(dataset.FREQ * args.size_to_read)
+    printlog("size_to_read {} ".format(size_to_read))
 
     dataset_train = None
     # only one process scan folders then share info to other
@@ -388,8 +381,11 @@ def process(rank, args, port):
         dataset_train = utils.brodcast_data(rank, dataset_train)
 
     #tune params
-    train = Train(rank, args)
-    train.train(model, dataset_train, epoch_start )
+    m = re.match(r'.*checkpoint-(\d+)', args.model_desc)
+    epoch_start = int(m.group(1)) if m else 0
+
+    train = Train(rank, args, model, dataset_train)
+    train.train(epoch_start)
 
     if rank in [-1, 0]:
         #save model, eval model
