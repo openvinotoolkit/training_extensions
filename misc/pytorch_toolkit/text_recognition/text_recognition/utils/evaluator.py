@@ -253,9 +253,6 @@ class OpenVINORunner(BaseRunner):
 
     def _run_2d_attn(self, enc_res):
         enc_out_names = self.config.get('encoder_output_names', ENCODER_OUTPUTS).split(',')
-        print(enc_out_names)
-        print("*" * 100)
-        print(enc_res.keys())
         features = enc_res[enc_out_names[0]]
         if len(enc_out_names) == 3:  # LSTM decoder with 2 hiddens:
             dec_state = enc_res[enc_out_names[1]], enc_res[enc_out_names[2]]
