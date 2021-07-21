@@ -99,7 +99,7 @@ def main():
             run_through_shell(f'source {venv_activate_path};'
                               'pip install -e ote_cli/;'
                               'pip install notebook;'
-                              f'cd $SC_SDK_REPO/src; python sc_sdk/setup.py develop',
+                              'cd $SC_SDK_REPO/src/sc_sdk; pip install -e .',
                               verbose=args.verbose)
             logging.info(f'End initializing virtual environment for {algo_repo_name}.\n'
                          f'To activate run: \'source {venv_activate_path}\'')

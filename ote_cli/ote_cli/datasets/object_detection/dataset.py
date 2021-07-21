@@ -3,8 +3,7 @@ from copy import deepcopy
 
 import numpy as np
 from numpy.lib.function_base import select
-from sc_sdk.entities.annotation import (Annotation, AnnotationKind,
-                                        NullMediaIdentifier)
+from sc_sdk.entities.annotation import Annotation, NullMediaIdentifier
 from sc_sdk.entities.datasets import Dataset, DatasetItem, NullDataset, Subset
 from sc_sdk.entities.image import Image
 from sc_sdk.entities.label import Label, ScoredLabel
@@ -87,8 +86,7 @@ class ObjectDetectionDataset(Dataset):
         shapes = [create_gt_box(*coords, self.labels[label_id]) for coords, label_id in zip(bboxes, labels)]
 
         image = Image(name=None, project=None, numpy=item['img'])
-        annotation = Annotation(kind=AnnotationKind.ANNOTATION,
-                                media_identifier=NullMediaIdentifier(),
+        annotation = Annotation(media_identifier=NullMediaIdentifier(),
                                 shapes=shapes)
         datset_item = DatasetItem(image, annotation)
         return datset_item
