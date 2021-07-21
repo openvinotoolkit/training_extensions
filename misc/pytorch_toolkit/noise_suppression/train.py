@@ -209,10 +209,6 @@ class Train():
         # scale noise to get given SNR
         scale_noise = db_to_scale(-snr_db) * rms_clean / (rms_noise + EPS)
 
-        # do not scale noise if noise only rms_clean < -80dB
-        #noise_only_w = (rms_clean < db_to_scale(-80)).float()
-        #scale_noise = 1 * noise_only_w + scale_noise * (1 - noise_only_w)
-
         x = x_clean + x_noise * scale_noise
         rms_x = x.pow(2).mean(-1, keepdim=True).sqrt()
 
