@@ -3,7 +3,7 @@ import glob
 import os
 
 import yaml
-from ote_cli.common import load_config
+from ote_cli.utils.loading import load_config
 
 
 class Registry:
