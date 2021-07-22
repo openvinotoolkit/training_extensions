@@ -191,97 +191,6 @@ class ICDAR2013RECDataset(BaseDataset):
         return pairs
 
 
-class MJSynthDataset(BaseDataset):
-    def __init__(self, data_path, annotation_file, min_shape=(8, 8),
-                 fixed_img_shape=None, case_sensitive=True, min_txt_len=0, num_workers=4):
-        super().__init__()
-        self.data_path = data_path
-        self.ann_file = annotation_file
-        self.fixed_img_shape = fixed_img_shape
-        self.pairs = self._load(min_shape, case_sensitive, min_txt_len, num_workers)
-
-    def __getitem__(self, index):
-        el = deepcopy(self.pairs[index])
-        img = cv.imread(os.path.join(self.data_path, el['img_path']), cv.IMREAD_COLOR)
-        if self.fixed_img_shape is not None:
-            img = cv.resize(img, tuple(self.fixed_img_shape[::-1]))
-        el['img'] = img
-        return el
-
-    def _load(self, min_shape, case_sensitive, min_txt_len, num_workers):
-        pairs = []
-
-        def read_img(image_path):
-            gt_text = ' '.join(image_path.split('_')[1])
-            if not self.fixed_img_shape:
-                img = cv.imread(os.path.join(self.data_path, image_path), cv.IMREAD_COLOR)
-                if img is None:
-                    return None
-                if img.shape[0:2] <= tuple(min_shape):
-                    return None
-                img_shape = tuple(img.shape)
-                del img
-            else:
-                img_shape = self.fixed_img_shape
-            if not case_sensitive:
-                gt_text = gt_text.lower()
-            if len(gt_text) < min_txt_len:
-                return None
-            el = {'img_name': os.path.split(image_path)[1],
-                  'text': gt_text,
-                  'img_path': image_path,
-                  'img_shape': img_shape
-                  }
-            return el
-
-        with open(os.path.join(self.data_path, self.ann_file)) as input_file:
-            annotation = [line.split()[0] for line in input_file]
-            annotation = [os.path.join(self.data_path, line) for line in annotation]
-        pool = ThreadPool(num_workers)
-
-        for elem in tqdm(pool.imap_unordered(read_img, annotation), total=len(annotation)):
-            if elem is not None:
-                pairs.append(elem)
-        if self.fixed_img_shape is None:
-            pairs.sort(key=lambda img: img['img_shape'], reverse=True)
-        return pairs
-
-
-class IIIT5KDataset(BaseDataset):
-    def __init__(self, data_path, annotation_file, min_shape=(8, 8), grayscale=False,
-                 fixed_img_shape=None, case_sensitive=True):
-        super().__init__()
-        self.data_path = data_path
-        self.annotation_file = annotation_file
-        self.pairs = self._load(min_shape, fixed_img_shape, grayscale, case_sensitive)
-
-    def _load(self, min_shape, fixed_img_shape, grayscale, case_sensitive):
-        pairs = []
-        annotation = scipy.io.loadmat(os.path.join(self.data_path, self.annotation_file))
-        annotation = (annotation[self.annotation_file.replace('.mat', '')]).squeeze()
-        for obj in tqdm(annotation):
-            img_path = obj[0][0]
-            text = obj[1][0]
-            img = cv.imread(os.path.join(self.data_path, img_path), cv.IMREAD_COLOR)
-            if grayscale:
-                img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-                img = cv.cvtColor(img, cv.COLOR_GRAY2BGR)
-            if fixed_img_shape is not None:
-                img = cv.resize(img, tuple(fixed_img_shape[::-1]))
-            elif img.shape[0:2] <= tuple(min_shape):
-                continue
-            text = ' '.join(text)
-            if not case_sensitive:
-                text = text.lower()
-            el = {'img_name': img_path,
-                  'text': text,
-                  'img': img,
-                  }
-            pairs.append(el)
-        pairs.sort(key=img_size, reverse=True)
-        return pairs
-
-
 class LMDBDataset(BaseDataset):
     def __init__(self, data_path, fixed_img_shape=None, case_sensitive=False, grayscale=False):
         super().__init__()
@@ -377,8 +286,6 @@ class CocoLikeDataset(BaseDataset):
 str_to_class = {
     'Im2LatexDataset': Im2LatexDataset,
     'ICDAR2013RECDataset': ICDAR2013RECDataset,
-    'MJSynthDataset': MJSynthDataset,
-    'IIIT5KDataset': IIIT5KDataset,
     'LMDBDataset': LMDBDataset,
     'CocoLikeDataset': CocoLikeDataset,
 }

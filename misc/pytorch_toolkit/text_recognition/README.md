@@ -63,7 +63,21 @@ bash init_venv.sh
 
 Several dataset formats are supported:
 
-1. Im2latex format.
+1. LMDB dataset.
+   Dataset in form of LMDB database is supported. This is the preferred dataset format (for alphanumeric scene text recognition). You can download prepared data from [deep text recognition benchmark](https://github.com/clovaai/deep-text-recognition-benchmark).
+   Example of usage:
+   ```yaml
+   type: LMDBDataset
+   case_sensitive: false
+   data_path: evaluation/IC13_1015
+   grayscale: true
+   fixed_img_shape:
+     - 32
+     - 120
+   subset: validate
+   ```
+2. Im2latex format.
+   This dataset is used to train formula recognition models.
    Dataset format is similar to [im2latex-100k](https://zenodo.org/record/56198#.X2NDQ2gzaUl). Main structure of the dataset is following:
    * `formulas.norm.lst` - file with one formula per line.
    * `imaged_processed` - folder containing input images.
@@ -83,29 +97,10 @@ Several dataset formats are supported:
     > `images_processed` - folder with images
     > `formulas.norm.lst` - file with preprocessed formulas. If you want to use your own dataset, formulas should be preprocessed. For details, refer to [this script](https://github.com/harvardnlp/im2markup/blob/master/scripts/preprocessing/preprocess_formulas.py).
     > `validate_filter.lst` and `train_filter.lst` - corresponding splits of the data.
-2. ICDAR13 recognition dataset.
+3. ICDAR13 recognition dataset.
    See details [here](http://dagdata.cvc.uab.es/icdar2013competition/?ch=2&com=downloads)
 
-3. Synth90k dataset (MJSynth)
-   See details [here](https://www.robots.ox.ac.uk/~vgg/data/text/)
-
-4. IIIT5k
-   See details [here](https://cvit.iiit.ac.in/projects/SceneTextUnderstanding/IIIT5K.html)
-
-5. LMDB dataset.
-   Dataset in form of LMDB database is supported. You can download prepared data from [deep text recognition benchmark](https://github.com/clovaai/deep-text-recognition-benchmark).
-   Example of usage:
-   ```yaml
-   type: LMDBDataset
-   case_sensitive: false
-   data_path: evaluation/IC13_1015
-   grayscale: true
-   fixed_img_shape:
-     - 32
-     - 120
-   subset: validate
-   ```
-6. CocoLike dataset.
+4. CocoLike dataset.
    СocoLike annotation is supported. See [here](https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/datasets/open_images_v5_text) for details.
     Example of usage:
    ```yaml
@@ -121,7 +116,7 @@ Several dataset formats are supported:
    ```
 
 
-Every dataset class has its own constructor with specific parameters. You can see costructors [here](./text_recognition/datasets/dataset.py). Examples of use of different datasets can be seen in the config files:
+Every dataset class has its own constructor with specific parameters. You can see constructors [here](./text_recognition/datasets/dataset.py). Examples of use of different datasets can be seen in the config files:
 * [example](./configs/config_0014.yml)
 * [example](./configs/medium_config.yml)
 
@@ -134,7 +129,7 @@ Like letters and digits in the natural language, tokens here are atomic units of
 You can find an example in the [vocabs folder](./vocabs/) of this project.
 Use [this script](./tools/make_vocab.py) to create vocab file from your own formulas file.
 The script will read the formulas and create the vocabulary from the formulas used in train split of the dataset.
-> If you use one of the general text recognition datasets (such as ICDAR13 or synth90k), vocab file is already prepared. You can find it [here](./vocabs/vocab_alphanumeric_ctc.json)
+> If you use one of the general text recognition datasets (such as ICDAR13 or synth90k), vocab file is already prepared. You can find it in the `vocabs` folder.
 
 
 
