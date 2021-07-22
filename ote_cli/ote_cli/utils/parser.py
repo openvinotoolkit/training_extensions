@@ -12,39 +12,6 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-
-import importlib
-
-import yaml
-from sc_sdk.utils.project_factory import ProjectFactory
-
-MODEL_TEMPLATE_FILENAME = 'template.yaml'
-
-def load_config(path):
-    with open(path) as read_file:
-        return yaml.safe_load(read_file)
-
-def load_model_weights(path):
-    with open(path, 'rb') as read_file:
-        return read_file.read()
-
-def create_project(classes):
-    project_name = 'My project name'
-    task_name = 'My task name'
-
-    project = ProjectFactory().create_project_single_task(name=project_name, description="",
-        label_names=classes, task_name=task_name)
-    return project
-
-
-def get_task_impl_class(config):
-    task_impl_module_name, task_impl_class_name  = config['task']['impl'].rsplit('.', 1)
-    task_impl_module = importlib.import_module(task_impl_module_name)
-    task_impl_class = getattr(task_impl_module, task_impl_class_name)
-
-    return task_impl_class
-
-
 def gen_param_help(hyper_parameters):
     def _gen_param_help(prefix, d):
         xx = {}
@@ -60,6 +27,7 @@ def gen_param_help(hyper_parameters):
                 xx.update({prefix + f'{k}': {'default': v, 'help': ''}})
         return xx
     return _gen_param_help('', hyper_parameters['params'])
+
 
 def gen_params_dict_from_args(args):
     params_dict = {}
@@ -85,6 +53,6 @@ def add_hyper_parameters_sub_parser(parser, config):
     params = gen_param_help(config['hyper_parameters'])
 
     subparsers = parser.add_subparsers(help='sub-command help')
-    parser_a = subparsers.add_parser('params', help=f'Hyper parameters defined in {MODEL_TEMPLATE_FILENAME}.')
+    parser_a = subparsers.add_parser('params', help=f'Hyper parameters defined in template file.')
     for k, v in params.items():
         parser_a.add_argument(f'--{k}', default=v['default'], help=v['help'], dest=f'params.{k}')

@@ -14,14 +14,20 @@
 
 import argparse
 
-from ote_cli.common import (MODEL_TEMPLATE_FILENAME,
-                            add_hyper_parameters_sub_parser, create_project,
-                            gen_params_dict_from_args, get_task_impl_class,
-                            load_config, load_model_weights)
 from ote_cli.datasets import get_dataset_class
-from sc_sdk.entities.analyse_parameters import AnalyseParameters
+from ote_cli.utils.config import apply_template_configurable_parameters
+from ote_cli.utils.importing import get_task_impl_class
+from ote_cli.utils.labels import generate_label_schema
+from ote_cli.utils.loading import load_config, load_model_weights
+from ote_cli.utils.parser import (add_hyper_parameters_sub_parser,
+                                  gen_params_dict_from_args)
+from sc_sdk.entities.dataset_storage import NullDatasetStorage
 from sc_sdk.entities.datasets import NullDataset, Subset
-from sc_sdk.entities.model import Model
+from sc_sdk.entities.id import ID
+from sc_sdk.entities.inference_parameters import InferenceParameters
+from sc_sdk.entities.model import Model, ModelStatus, NullModel
+from sc_sdk.entities.model_storage import NullModelStorage
+from sc_sdk.entities.project import NullProject
 from sc_sdk.entities.resultset import ResultSet
 from sc_sdk.entities.task_environment import TaskEnvironment
 from sc_sdk.logging import logger_factory
@@ -50,56 +56,69 @@ def parse_args(config):
 
 
 def main():
-    config = load_config(MODEL_TEMPLATE_FILENAME)
-    args = parse_args(config)
+    # Load template.yaml file.
+    template = load_config()
+
+    # Dynamically create an argument parser based on loaded template.yaml file.
+    args = parse_args(template)
     updated_hyper_parameters = gen_params_dict_from_args(args)
     if updated_hyper_parameters:
-        config['hyper_parameters']['params'] = updated_hyper_parameters['params']
+        template['hyper_parameters']['params'] = updated_hyper_parameters['params']
 
-    print(updated_hyper_parameters)
+    # Get classes for Task, ConfigurableParameters and Dataset.
+    Task = get_task_impl_class(template['task']['impl'])
+    ConfigurableParameters = get_task_impl_class(template['hyper_parameters']['impl'])
+    Dataset = get_dataset_class(template['domain'])
 
-    Task = get_task_impl_class(config)
-    Dataset = get_dataset_class(config['domain'])
-
+    # Create instances of Task, ConfigurableParameters and Dataset.
     dataset = Dataset(train_ann_file=args.train_ann_files,
                       train_data_root=args.train_data_roots,
                       val_ann_file=args.val_ann_files,
-                      val_data_root=args.val_data_roots)
+                      val_data_root=args.val_data_roots,
+                      dataset_storage=NullDatasetStorage())
 
-    project = create_project(dataset.get_labels())
-    environment = TaskEnvironment(project=project, task_node=project.tasks[-1])
+    params = ConfigurableParameters(workspace_id=ID(), project_id=ID(), task_id=ID())
+    apply_template_configurable_parameters(params, template)
+
+    labels_schema = generate_label_schema(dataset.get_labels(), template['domain'])
+    labels_list = labels_schema.get_labels(False)
+    dataset.set_project_labels(labels_list)
+
+    environment = TaskEnvironment(model=NullModel(), configurable_parameters=params, label_schema=labels_schema)
 
     if args.load_weights:
         model_bytes = load_model_weights(args.load_weights)
-        model = Model(project=environment.project,
-                      task_node=environment.task_node,
+        model = Model(project=NullProject(),
+                      model_storage=NullModelStorage(),
                       configuration=environment.get_model_configuration(),
-                      data=model_bytes,
+                      data_source_dict={'weights.pth': model_bytes},
                       train_dataset=NullDataset())
         environment.model = model
 
-    params = Task.get_configurable_parameters(environment)
-    Task.apply_template_configurable_parameters(params, config)
-    params.algo_backend.template.value = MODEL_TEMPLATE_FILENAME
-    environment.set_configurable_parameters(params)
     task = Task(task_environment=environment)
 
-    dataset.set_project_labels(project.get_labels())
+    output_model = Model(
+        NullProject(),
+        NullModelStorage(),
+        dataset,
+        environment.get_model_configuration(),
+        model_status=ModelStatus.NOT_READY)
 
-    model = task.train(dataset)
+    task.train(dataset, output_model)
 
-    with open(args.save_weights, 'wb') as f:
-        f.write(task._get_model_bytes())
+    if output_model.model_status != ModelStatus.NOT_READY:
+        with open(args.save_weights, 'wb') as f:
+            f.write(output_model.get_data("weights.pth"))
 
     validation_dataset = dataset.get_subset(Subset.VALIDATION)
-    predicted_validation_dataset = task.analyse(
+    predicted_validation_dataset = task.infer(
         validation_dataset.with_empty_annotations(),
-        AnalyseParameters(is_evaluation=True))
+        InferenceParameters(is_evaluation=True))
 
     resultset = ResultSet(
-        model=model,
+        model=output_model,
         ground_truth_dataset=validation_dataset,
         prediction_dataset=predicted_validation_dataset,
     )
-    performance = task.compute_performance(resultset)
-    resultset.performance = performance
+    performance = task.evaluate(resultset)
+    print(performance)

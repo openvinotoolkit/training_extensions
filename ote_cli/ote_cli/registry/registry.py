@@ -3,8 +3,6 @@ import glob
 import os
 
 import yaml
-from numpy.lib.function_base import select
-from numpy.testing._private.utils import assert_equal
 from ote_cli.common import load_config
 
 

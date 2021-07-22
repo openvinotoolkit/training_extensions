@@ -15,21 +15,27 @@
 import argparse
 import os
 
-from ote_cli.common import (MODEL_TEMPLATE_FILENAME, create_project,
-                            get_task_impl_class, load_config,
-                            load_model_weights)
 from ote_cli.datasets import get_dataset_class
+from ote_cli.utils.config import apply_template_configurable_parameters
+from ote_cli.utils.importing import get_task_impl_class
+from ote_cli.utils.labels import generate_label_schema
+from ote_cli.utils.loading import load_config, load_model_weights
 from sc_sdk.entities.datasets import NullDataset
-from sc_sdk.entities.model import Model
+from sc_sdk.entities.id import ID
+from sc_sdk.entities.model import Model, ModelStatus, NullModel
+from sc_sdk.entities.model_storage import NullModelStorage
+from sc_sdk.entities.optimized_model import (ModelOptimizationType,
+                                             ModelPrecision, OptimizedModel,
+                                             TargetDevice)
+from sc_sdk.entities.project import NullProject
 from sc_sdk.entities.task_environment import TaskEnvironment
 from sc_sdk.logging import logger_factory
-from sc_sdk.usecases.adapters.binary_interpreters import RAWBinaryInterpreter
-from sc_sdk.usecases.repos import BinaryRepo
+from sc_sdk.usecases.tasks.interfaces.export_interface import ExportType
 
 logger = logger_factory.get_logger("Sample")
 
 
-def parse_args(config):
+def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--load-weights', required=True,
                         help='Load only weights from previously saved checkpoint')
@@ -42,51 +48,63 @@ def parse_args(config):
 
 
 def main():
-    config = load_config(MODEL_TEMPLATE_FILENAME)
-    args = parse_args(config)
+    # Load template.yaml file.
+    template = load_config()
+
+    args = parse_args()
+
+    # Get classes for Task, ConfigurableParameters and Dataset.
+    Task = get_task_impl_class(template['task']['impl'])
+    ConfigurableParameters = get_task_impl_class(template['hyper_parameters']['impl'])
+    Dataset = get_dataset_class(template['domain'])
 
     assert args.labels is not None or args.ann_files is not None
-
-    Task = get_task_impl_class(config)
 
     if args.labels:
         labels = args.labels
     else:
-        Dataset = get_dataset_class(config['domain'])
+        Dataset = get_dataset_class(template['domain'])
         dataset = Dataset(args.ann_files)
         labels = dataset.get_labels()
 
-    project = create_project(labels)
+    params = ConfigurableParameters(workspace_id=ID(), project_id=ID(), task_id=ID())
+    apply_template_configurable_parameters(params, template)
 
-    environment = TaskEnvironment(project=project, task_node=project.tasks[-1])
+    labels_schema = generate_label_schema(labels, template['domain'])
+
+    environment = TaskEnvironment(model=NullModel(), configurable_parameters=params, label_schema=labels_schema)
 
     model_bytes = load_model_weights(args.load_weights)
-    model = Model(project=environment.project,
-                  task_node=environment.task_node,
+    model = Model(project=NullProject(),
+                  model_storage=NullModelStorage(),
                   configuration=environment.get_model_configuration(),
-                  data=model_bytes,
+                  data_source_dict={'weights.pth': model_bytes},
                   train_dataset=NullDataset())
     environment.model = model
 
-    params = Task.get_configurable_parameters(environment)
-    Task.apply_template_configurable_parameters(params, config)
-    params.algo_backend.template.value = MODEL_TEMPLATE_FILENAME
-    environment.set_configurable_parameters(params)
     task = Task(task_environment=environment)
 
-    optimized_model = task.optimize_loaded_model()[0]
+    exported_model = OptimizedModel(
+        NullProject(),
+        NullModelStorage(),
+        NullDataset(),
+        environment.get_model_configuration(),
+        ModelOptimizationType.MO,
+        [ModelPrecision.FP16],
+        optimization_methods=[],
+        optimization_level={},
+        target_device=TargetDevice.UNSPECIFIED,
+        performance_improvement={},
+        model_size_reduction=1.,
+        model_status=ModelStatus.NOT_READY)
 
-    binary_interpreter = RAWBinaryInterpreter()
-    openvino_xml_data = BinaryRepo(project).get_by_url(optimized_model.openvino_xml_url,
-                                                       binary_interpreter=binary_interpreter)
-    openvino_bin_data = BinaryRepo(project).get_by_url(optimized_model.openvino_bin_url,
-                                                       binary_interpreter=binary_interpreter)
+    task.export(ExportType.OPENVINO, exported_model)
 
     os.makedirs(args.save_model_to, exist_ok=True)
 
     with open(os.path.join(args.save_model_to, 'model.bin'), 'wb') as write_file:
-        write_file.write(openvino_bin_data)
+        write_file.write(exported_model.get_data('openvino.bin'))
 
     with open(os.path.join(args.save_model_to, 'model.xml'), 'w') as write_file:
-        write_file.write(openvino_xml_data.decode())
+        write_file.write(exported_model.get_data('openvino.xml').decode())
 

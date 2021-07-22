@@ -2,11 +2,12 @@ import os
 from copy import deepcopy
 
 import numpy as np
-from numpy.lib.function_base import select
-from sc_sdk.entities.annotation import Annotation, NullMediaIdentifier
+from sc_sdk.entities.annotation import (Annotation, AnnotationScene,
+                                        AnnotationSceneKind,
+                                        NullMediaIdentifier)
 from sc_sdk.entities.datasets import Dataset, DatasetItem, NullDataset, Subset
 from sc_sdk.entities.image import Image
-from sc_sdk.entities.label import Label, ScoredLabel
+from sc_sdk.entities.label import ScoredLabel
 from sc_sdk.entities.shapes.box import Box
 
 from .coco import CocoDataset, get_classes_from_annotation
@@ -76,7 +77,8 @@ class ObjectDetectionDataset(Dataset):
             return ScoredLabel(label=self.label_name_to_project_label(label_name))
 
         def create_gt_box(x1, y1, x2, y2, label):
-            return Box(x1=x1, y1=y1, x2=x2, y2=y2, labels=[create_gt_scored_label(label)])
+            return Annotation(Box(x1=x1, y1=y1, x2=x2, y2=y2),
+                              labels=[create_gt_scored_label(label)])
 
         item = self.coco_dataset[indx]
         divisor = np.tile([item['ori_shape'][:2][::-1]], 2)
@@ -86,9 +88,10 @@ class ObjectDetectionDataset(Dataset):
         shapes = [create_gt_box(*coords, self.labels[label_id]) for coords, label_id in zip(bboxes, labels)]
 
         image = Image(name=None, project=None, numpy=item['img'])
-        annotation = Annotation(media_identifier=NullMediaIdentifier(),
-                                shapes=shapes)
-        datset_item = DatasetItem(image, annotation)
+        annotation_scene = AnnotationScene(kind=AnnotationSceneKind.ANNOTATION,
+                                           media_identifier=NullMediaIdentifier(),
+                                           annotations=shapes)
+        datset_item = DatasetItem(image, annotation_scene)
         return datset_item
 
     def __len__(self) -> int:
