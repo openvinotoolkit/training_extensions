@@ -1,14 +1,28 @@
 # PyTorch Text Recognition
 
-This folder contains code related to PyTorch text recognition.
-There are three subtasks supported by this code:
-* general alphanumeric text recognition
-* two specific formula-recognition tasks:
-  * recognition of the handwritten polynomial equations
-  * recognition of the rendered and scanned printed formulas
-    This code is based on a [PyTorch realization](https://github.com/luopeixiang/im2latex/) of the code from the original [repository](https://github.com/harvardnlp/im2markup/).
+This is PyTorch implementation of some text recognition models.
+
+This code is based on this [repo](https://github.com/luopeixiang/im2latex/).
 
 Models code is designed to enable ONNX\* export and inference on CPU\GPU via OpenVINO™.
+
+## Supported Tasks
+Two tasks are supported:
+1. LaTeX formula recognition.
+2. Alphanumeric scene text recognition.
+
+## Model Architecture
+
+We follow similar to [deep-text-recognition-benchmark](https://github.com/clovaai/deep-text-recognition-benchmark) approach of defining model architecture, but we do not divide the last two steps. Thus, every model consists of three steps:
+1. Image rectification. We use Thin-Plate-Spline from [deep-text-recognition-benchmark](https://github.com/clovaai/deep-text-recognition-benchmark).
+2. Convolutional backbone:
+   1. ResNet-like backbone
+   2. Custom ResNet-like backbone (configurable number of channels and spatial dimension in every stage)
+    > [Convolutional Block Attention Module](https://arxiv.org/abs/1807.06521) is implemented for the resnet-like backbone, but currently it is not used by any of the models.
+3. Text Recognition Head
+   1. CTC lstm encoder-decoder head.
+   2. 1d attention based head from [im2markup](https://arxiv.org/pdf/1609.04938.pdf)
+   3. 2d attention based head from [YAMTS](https://arxiv.org/abs/2106.12326)
 
 ## Setup
 
@@ -32,8 +46,10 @@ sudo apt-get update &&
     ghostscript
 ```
 
-#### Known issue with imagemagick
+<details>
+ <summary> Known issue with imagemagick  </summary>
 Evaluation process uses imagemagick to convert PDF-rendered formulas into PNG images. Sometimes there could be errors:
+
 ```
 convert-im6.q16: not authorized `/tmp/tmpgr1m4d4_.pdf' @ error/constitute.c/ReadImage/412.
 convert-im6.q16: no images defined `/tmp/tmpgr1m4d4_.png' @ error/convert.c/ConvertImageCommand/3258.
@@ -49,6 +65,7 @@ and replace with:
 
 `<policy domain="coder" rights="read|write" pattern="PDF" />`
 
+</details>
 ### Installation
 
 Create and activate virtual environment:
@@ -74,7 +91,6 @@ Several dataset formats are supported:
    fixed_img_shape:
      - 32
      - 120
-   subset: validate
    ```
 2. Im2latex format.
    This dataset is used to train formula recognition models.
@@ -112,11 +128,10 @@ Several dataset formats are supported:
    fixed_img_shape:
      - 32
      - 120
-   subset: validate
    ```
 
 
-Every dataset class has its own constructor with specific parameters. You can see constructors [here](./text_recognition/datasets/dataset.py). Examples of use of different datasets can be seen in the config files:
+Every dataset class has its own constructor with specific parameters. You can see **constructors** [here](./text_recognition/datasets/dataset.py). Examples of use of different datasets can be seen in the config files:
 * [example](./configs/config_0014.yml)
 * [example](./configs/medium_config.yml)
 
@@ -142,148 +157,21 @@ python tools/train.py --config <path to config> --work_dir <path to work dir>
 ```
 Work dir is used to store information about learning: saved model checkpoints, logs.
 
-### Description of possible options in config:
-The config file is divided into 4 sections: train, eval, export, demo. Common parameters (like path to the model) are stored on the same level as train and other sections. Unique parameters (like learning rate) are stored in specific sections. Unique parameters and common parameters are mutually exclusive.
-> **Note**: All values in the config file which have 'path' in their name will be treated as paths and the script which reads configuration will try to resolve all relative paths. By default all relative paths are resolved relatively to the folder where this README.md file is placed. Keep this in mind or use full paths.
-#### Common parameters:
-- `backbone_config`:
-    * `arch`: type of the architecture. For more details, please, refer to [ResnetLikeBackBone](text_recognition/models/backbones/resnet.py)
-    * `disable_layer_3` and `disable_layer_4` - disables layer 3 and 4 in resnet-like backbone. ResNet backbone from the torchvision module consists of 4 block of layers, each of them increase the number of channels and decrease the spatial dimensionality. These parameters allow switching off the 3rd and the 4th of such layers, respectively.
-    * `enable_last_conv` - enables additional convolution layer to adjust number of output channels to the number of input channels in the LSTM. Optional. Default: false.
-    * `output_channels` - number of output channels. If `enable_last_conv` is `true`, this parameter should be equal to `head.encoder_input_size`, otherwise it should be equal to actual number of output channels of the backbone.
-- `head` - configuration of the text recognition head.
-  - Now three text recognition heads are supported: Attention-based-1d [text recognition head](text_recognition/models/text_recognition_heads/attention_based.py),
-  Attention-based-2d [text recognition head](text_recognition/models/text_recognition_heads/attention_based_2d.py)
-   and [CTC-based LSTM-encoder-decoder head](text_recognition/models/text_recognition_heads/ctc_lstm_based.py)
-  - `positional_encodings` - if true, use positional encodings like in transformer
-  * `encoder_hidden_size ` - number of channels in encoder
-  * `encoder_input_size ` - number of channels in the lstm input, should be equal to `backbone_config.output_channels`
-  - Attention-based-1d head specific parameters:
-    - `trainable_initial_hidden` - if true, initial states of the LSTM cells will be trainable, else it will be zero tensor.
-    * `beam_width` - width used in beam search. 0 - do not use beam search, 1 and more - use beam search with corresponding number of possible tracks.
-    * `emb_size` - dimension of the embedding
-    * `max_len` - maximum possible length of the predicted text
-    * `n_layer` - number of layers in the trainable initial hidden state for each row
-  - Attention-based-2d head specific parameters:
-    - `encoder_dim_internal` - number of the output channels of the backbone
-    - `encoder_num_layers` - depth of the head's encoder
-    - `decoder_input_feature_size` - size of the feature map after the backbone
-    - `decoder_max_seq_len` - maximum possible length of the predicted text
-    - `decoder_dim_hidden` - number of the output channels after the head's encoder
-    - `decoder_sos_index` - index of the end-of-sequence token in the vocabulary
-    - `decoder_rnn_type` - `LSTM` or `GRU` decoder
-    - `dropout_ratio=0.0` - dropout
-    - `use_semantics=False` - use semantic enhanced module. See details [here](https://arxiv.org/abs/2005.10977)
-  * CTC head specific parameters:
-    * `cnn_encoder_height` - height dimension size after backbone. Default is 1. Used for dimension reduction
-    * `reduction` - the way of reducing dimensionality. LSTM takes as input 3-dimensional tensor, and backbone produces 4-dimensional. Height dimension is reduced. Options: `mean` - apply Average Pooling, `flatten` - Flatten tensor, `weighted` - apply convolution with kernel `cnn_encoder_height x 1`.
-- `model_path` - path to the pretrained model checkpoint (you can find the links to the checkpoints below in this document).
-- `vocab_path` - path where vocabulary file is stored.
-- `val_transforms_list` - here you can describe set of desirable transformations for validation datasets respectively. An example is given in the config file, for other options, please, refer to [constructor of transforms (section `create_list_of_transforms`)](text_recognition/data/utils.py)
-- `device` - device for training, used in PyTorch .to() method. Possible options: 'cuda', 'cpu'. `cpu` is used by default.
-- `language_model_path` - path to the pretrained language model used by the semantic enhanced module
-- `val_batch_size` - validation batch size (used in both `train.py` and `test.py`)
-#### Training-specific parameters
-In addition to common parameters you can specify the following arguments:
-- `batch_size` - batch size used for training
-- `learning_rate` - learning rate
-- `log_path` - path to store training logs
-- `optimizer` - any possible type of the optimizer supported by pytorch (like Adam or SGD)
-- `scheduler` - any possible type of the scheduler supported by pytorch (like ReduceLROnPlateau)
-- `scheduler_params` - dict describing scheduler params in accordance with pytorch documentation
-- `loss_type` - type of loss: `NLL` for Attention-based head and `CTC` for CTC-based head
-- `save_dir` - dir to save checkpoints
-- `datasets` - list of datasets which will be used in training. Common parameters are:
-  - `type` - name of the dataset, for details see [here](./text_recognition/datasets/dataset.py). Dataset names are described in the `str_to_class` section
-  - `subset` - how to use this subset. Options: `train` or `validate`
-    Any other parameters are dataset specific and should be set in correspondence with its constructor.
-- `train_transforms_list` - similar to `val_transforms_list`
-- `epochs` - number of epochs to train
-- `multi_gpu` - if this is `true`, pytorch's [distributed data parallel](https://pytorch.org/tutorials/intermediate/ddp_tutorial.html) is used to train the model on multiple GPUs.
-
-One can use some pretrained models. Right now three models are available:
-* medium model:
-  * [checkpoint link](https://download.01.org/opencv/openvino_training_extensions/models/formula_recognition/medium_photograped_0185.pth)
-  * digits, letters, some Greek letters, fractions, trigonometric operations are supported; for more details, please, look at [corresponding vocab file](vocabs/vocab_medium.json).
-  * to use this model, just set the correct value to the `model_path` field in the corresponding config file:
-    ```
-    model_path: <path to the model>
-    ```
-The model can be used for recognizing both rendered and scanned formulas (e.g. from a scanner or from a phone camera)
-
-* handwritten polynomials model:
-  * [checkpoint](https://download.01.org/opencv/openvino_training_extensions/models/formula_recognition/polynomials_handwritten_0166.pth)
-  * digits, letters, upper indices are supported
-  * to use this model, please, change model path in the corresponding config file:
-    ```
-    model_path: <path to the model>
-    ```
-The model can be used for recognizing handwritten polynomial equations.
-
-* alphanumeric-0014 model
-  * [checkpoint](https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/text_recognition/text_recognition_0014.pth)
-  * numbers from 0 to 9 and Latin letters in lower case are supported
-  * to use this model, please, change model path in the corresponding config file:
-    ```
-    model_path: <path to the model>
-    ```
-
-* alphanumeric-0015 model
-  * [checkpoint](https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/text_recognition/text_recognition_0015.pth)
-  * numbers from 0 to 9 and Latin letters in lower and upper cases are supported
-  * to use this model, please, change model path in the corresponding config file:
-    ```
-    model_path: <path to the model>
-    ```
-* alphanumeric-0016 model
-  * [checkpoint](https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/text_recognition/text_recognition_0016.pth)
-  * numbers from 0 to 9 and Latin letters in lower case are supported
-  * to use this model, please, change model path in the corresponding config file:
-    ```
-    model_path: <path to the model>
-    ```
-
-
-All the above models can be used for aftertuning or as ready for inference models. To provide maximum quality at recognizing text, it is highly recommended preprocessing the image - simply binarize it:
-```
-val_transform_list:
-    - name: TransformBin
-      threshold: 100
-```
-You can find other preprocessing at [this file](text_recognition/data/utils.py).
-Some sample images in the [data](../../../data) section of this repo are already preprocessed, you can look at the examples.
-
-
-#### Evaluation-specific parameters
-- `dataset` - the same as in `train` section, but here it is just one dataset, so it does not have `subset` section.
-- `render` - render images to compare them or just compare predicted and ground-truth text. By default, it is `true`. Used only for formula recognition. See Evaluation section for details.
-
-#### Demo-specific parameters
-- `transforms_list` - list of image transformations (optional)
-
-#### Export-specific parameters
-These parameters are used for model export to ONNX & OpenVINO™ IR:
-- In case model is divided into encoder and decoder (for models with attention head, like formula recognition models):
-  - `res_encoder_name` - filename to save the converted encoder model (with `.onnx` postfix)
-  - `res_decoder_name` - filename to save the converted decoder model (with `.onnx` postfix)
-  - `encoder_input_names` - list of input names (or one name) for the encoder part
-  - `encoder_output_names` - comma-separated names of the output tensors of the encoder
-  - `decoder_input_names` and `decoder_output_names` - comma-separated string with tensor names for the decoder
-  - `decoder_input_shapes` - list of lists describing input shapes in the same order as `decoder_input_names`
-- Else if model is monolithic (for models with CTC-head, like alphanumeric recognition):
-  - `res_model_name` - filename to save the converted model (with `.onnx` postfix)
-
-- `export_ir` - Set this flag to `true` to export model to the OpenVINO IR. For details refer to [convert to IR section](#convert-to-ir)
-- `verbose_export` - Set this flag to `true` to perform verbose export (i.e. print model optimizer commands to terminal)
-- `input_shape_encoder` for composite (encoder-decoder) or `input_shape` for monolithic model  - list of dimensions describing input shape for encoder for OpenVINO IR conversion.
-- `model_input_names` and `model_output_names` - comma-separated names of input and output tensors respectively. Used for export of monolithic model. Optional
-- `encoder_input_names`, `decoder_input_names`, `encoder_output_names`, `decoder_output_names` - the same as above for composite models. Optional. Change it only if default values for these parameters are note acceptable, for details see [here](text_recognition/utils/exporter.py)
-
-
 ## Evaluation
 
 `tools/test.py` script is designed for quality evaluation of the text-recognition models.
 
+### Model Zoo
+Here you can find which models are currently supported. For accuracy metrics and converted to OpenVINO IR model complexity info, please, refer to OMZ page of the specific model.
+| Model Name                   | Task                                | Transformation | Backbone         | Head                     | Link to OMZ                                                                                                                         | Checkpoint link                                                                                                                         | Config File                                        |
+| ---------------------------- | ----------------------------------- | -------------- | ---------------- | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
+| medium-rendered-0001         | Formula Recognition                 | None           | ResNeXt-50 st 2  | 1d attention             | [link](https://github.com/openvinotoolkit/open_model_zoo/tree/master/models/intel/formula-recognition-medium-scan-0001)             | [link](https://download.01.org/opencv/openvino_training_extensions/models/formula_recognition/medium_photograped_0185.pth)              | [link](configs/medium_config.yml)                  |
+| polynomials-handwritten-0001 | Formula Recognition                 | None           | ResNeXt-50 st 3  | 1d attention             | [link](https://github.com/openvinotoolkit/open_model_zoo/tree/master/models/intel/formula-recognition-polynomials-handwritten-0001) | [link](https://download.01.org/opencv/openvino_training_extensions/models/formula_recognition/polynomials_handwritten_0166.pth)         | [link](configs/polynomials_handwritten_config.yml) |
+| text-recognition-0014        | Alphanumeric Scene Text Recognition | None           | ResNeXt-50 st 2  | CTC LSTM Encoder-Decoder | [link](https://github.com/openvinotoolkit/open_model_zoo/tree/master/models/intel/text-recognition-0014)                            | [link](https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/text_recognition/text_recognition_0014.pth) | [link](configs/config_0014.yml)                    |
+| text-recognition-0015        | Alphanumeric Scene Text Recognition | None           | ResNeXt-101      | 2d attention             | [link](https://github.com/openvinotoolkit/open_model_zoo/tree/master/models/intel/text-recognition-0015)                            | [link](https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/text_recognition/text_recognition_0015.pth) | [link](configs/config_0015.yml)                    |
+| text-recognition-0016        | Alphanumeric Scene Text Recognition | TPS            | ResNeXt-101 st 3 | 2d attention             | tbd                                                                                                                                 | [link](https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/text_recognition/text_recognition_0016.pth) | [link](configs/config_0016.yml)                    |
+
+> Note: st* for ResNeXt models stands for stage. This means that only first several stages of the ResNeXt like backbone are used.
 ### PyTorch
 
 For example, one can run evaluation process using config for `medium` model.
