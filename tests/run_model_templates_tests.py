@@ -446,6 +446,13 @@ def main():
     model_name_to_template = find_all_model_templates(root_path, args.domain)
     fill_template_paths_in_test_elements(all_tests, model_name_to_template)
 
+
+    if True:
+        print('RUDE HACK on domains')
+        all_tests = filter_tests_by_value(all_tests, 'domain', 'object_detection')
+        all_tests = filter_tests_by_pattern(all_tests, 'problem', '*face*')
+
+
     if args.domain:
         all_tests = filter_tests_by_value(all_tests, 'domain', args.domain)
     if args.topic:
