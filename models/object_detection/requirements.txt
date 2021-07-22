@@ -1,5 +1,5 @@
 -r ../../external/mmdetection/requirements/build.txt
---no-cache-dir mmpycocotools==12.0.3
+--no-cache-dir  mmpycocotools==12.0.3 --no-binary :all:
 -r ../../external/mmdetection/requirements.txt
 -r ../../external/mmdetection/requirements/nncf_compression.txt
 opencv-python
