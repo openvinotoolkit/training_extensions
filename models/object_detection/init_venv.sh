@@ -55,7 +55,7 @@ CUDA_VERSION_CODE=$(echo ${CUDA_VERSION} | sed -e "s/\.//" -e "s/\(...\).*/\1/")
 
 
 # install ote.
-pip install -e ../../ote/
+pip install -e ../../ote/ -c constraints.txt
 
 # install PyTorch and MMCV.
 export TORCH_VERSION=1.8.1
@@ -63,25 +63,25 @@ export TORCHVISION_VERSION=0.9.1
 export MMCV_VERSION=1.3.0
 
 if [[ $CUDA_VERSION_CODE == "102" ]]; then
-  pip install torch==${TORCH_VERSION} torchvision==${TORCHVISION_VERSION}
+  pip install torch==${TORCH_VERSION} torchvision==${TORCHVISION_VERSION} -c constraints.txt
 else
-  pip install torch==${TORCH_VERSION}+cu${CUDA_VERSION_CODE} torchvision==${TORCHVISION_VERSION}+cu${CUDA_VERSION_CODE} -f https://download.pytorch.org/whl/torch_stable.html
+  pip install torch==${TORCH_VERSION}+cu${CUDA_VERSION_CODE} torchvision==${TORCHVISION_VERSION}+cu${CUDA_VERSION_CODE} -f https://download.pytorch.org/whl/torch_stable.html -c constraints.txt
 fi
 
-pip uninstall -y mmcv
-pip install --no-cache-dir mmcv-full==${MMCV_VERSION} -f https://download.openmmlab.com/mmcv/dist/cu${CUDA_VERSION_CODE}/torch${TORCH_VERSION}/index.html
+pip uninstall -y mmcv 
+pip install --no-cache-dir mmcv-full==${MMCV_VERSION} -f https://download.openmmlab.com/mmcv/dist/cu${CUDA_VERSION_CODE}/torch${TORCH_VERSION}/index.html -c constraints.txt
 
 # Install other requirements.
-cat requirements.txt | xargs -n 1 -L 1 pip3 install
+cat requirements.txt | xargs -n 1 -L 1 pip3 install -c constraints.txt
 
 mo_requirements_file="${INTEL_OPENVINO_DIR:-/opt/intel/openvino_2021}/deployment_tools/model_optimizer/requirements_onnx.txt"
 if [[ -e "${mo_requirements_file}" ]]; then
-  pip install -qr ${mo_requirements_file}
+  pip install -qr ${mo_requirements_file} -c constraints.txt
 else
   echo "[WARNING] Model optimizer requirements were not installed. Please install the OpenVino toolkit to use one."
 fi
 
-pip install -e ../../external/mmdetection/
+pip install -e ../../external/mmdetection/ -c constraints.txt
 MMDETECTION_DIR=`realpath ../../external/mmdetection/`
 echo "export MMDETECTION_DIR=${MMDETECTION_DIR}" >> ${venv_dir}/bin/activate
 
