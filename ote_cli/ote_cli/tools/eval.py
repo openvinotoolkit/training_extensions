@@ -16,7 +16,7 @@ import argparse
 
 from ote_cli.datasets import get_dataset_class
 from ote_cli.utils.config import apply_template_configurable_parameters
-from ote_cli.utils.importing import get_task_impl_class
+from ote_cli.utils.importing import get_impl_class
 from ote_cli.utils.labels import generate_label_schema
 from ote_cli.utils.loading import load_config, load_model_weights
 from ote_cli.utils.parser import (add_hyper_parameters_sub_parser,
@@ -60,8 +60,8 @@ def main():
         template['hyper_parameters']['params'] = updated_hyper_parameters['params']
 
     # Get classes for Task, ConfigurableParameters and Dataset.
-    Task = get_task_impl_class(template['task']['base'])
-    ConfigurableParameters = get_task_impl_class(template['hyper_parameters']['impl'])
+    Task = get_impl_class(template['task']['base'])
+    ConfigurableParameters = get_impl_class(template['hyper_parameters']['impl'])
     Dataset = get_dataset_class(template['domain'])
 
     dataset = Dataset(test_ann_file=args.test_ann_files,

@@ -17,7 +17,7 @@ import os
 
 from ote_cli.datasets import get_dataset_class
 from ote_cli.utils.config import apply_template_configurable_parameters
-from ote_cli.utils.importing import get_task_impl_class
+from ote_cli.utils.importing import get_impl_class
 from ote_cli.utils.labels import generate_label_schema
 from ote_cli.utils.loading import load_config, load_model_weights
 from sc_sdk.entities.datasets import NullDataset
@@ -54,8 +54,8 @@ def main():
     args = parse_args()
 
     # Get classes for Task, ConfigurableParameters and Dataset.
-    Task = get_task_impl_class(template['task']['base'])
-    ConfigurableParameters = get_task_impl_class(template['hyper_parameters']['impl'])
+    Task = get_impl_class(template['task']['base'])
+    ConfigurableParameters = get_impl_class(template['hyper_parameters']['impl'])
     Dataset = get_dataset_class(template['domain'])
 
     assert args.labels is not None or args.ann_files is not None
