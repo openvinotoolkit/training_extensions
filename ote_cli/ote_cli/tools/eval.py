@@ -60,7 +60,7 @@ def main():
         template['hyper_parameters']['params'] = updated_hyper_parameters['params']
 
     # Get classes for Task, ConfigurableParameters and Dataset.
-    Task = get_task_impl_class(template['task']['impl'])
+    Task = get_task_impl_class(template['task']['base'])
     ConfigurableParameters = get_task_impl_class(template['hyper_parameters']['impl'])
     Dataset = get_dataset_class(template['domain'])
 
