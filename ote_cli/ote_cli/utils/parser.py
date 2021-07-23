@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+import argparse
+
+
 def gen_param_help(hyper_parameters):
     def _gen_param_help(prefix, d):
         xx = {}
@@ -49,10 +52,18 @@ def gen_params_dict_from_args(args):
     return None
 
 
+class ShortDefaultsHelpFormatter(argparse.HelpFormatter):
+
+    def _get_default_metavar_for_optional(self, action):
+        return action.dest.split('.')[-1].upper()
+
+
 def add_hyper_parameters_sub_parser(parser, config):
     params = gen_param_help(config['hyper_parameters'])
 
     subparsers = parser.add_subparsers(help='sub-command help')
-    parser_a = subparsers.add_parser('params', help=f'Hyper parameters defined in template file.')
+    parser_a = subparsers.add_parser('params',
+                                     help=f'Hyper parameters defined in template file.',
+                                     formatter_class=ShortDefaultsHelpFormatter)
     for k, v in params.items():
         parser_a.add_argument(f'--{k}', default=v['default'], help=v['help'], dest=f'params.{k}')
