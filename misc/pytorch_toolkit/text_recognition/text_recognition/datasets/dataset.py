@@ -39,13 +39,11 @@ SOFTWARE.
 import json
 import os
 from copy import deepcopy
-from multiprocessing.pool import ThreadPool
 from os.path import join
 
 import cv2 as cv
 import lmdb
 import numpy as np
-import scipy.io
 from torch.utils.data import Dataset, Sampler
 from tqdm import tqdm
 
