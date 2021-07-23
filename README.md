@@ -18,41 +18,36 @@ inference.
 1. Clone repository in the working directory by running the following:
     ```
     git clone https://github.com/openvinotoolkit/training_extensions.git
-    export OTE_DIR=`pwd`/training_extensions
+    cd training_extensions
+    git checkout -b brave_new_world origin/brave_new_world
+    git submodule update --init --recursive
     ```
 
-2. Clone Open Model Zoo repository to run demos:
-    ```
-    git clone https://github.com/openvinotoolkit/open_model_zoo --branch develop
-    export OMZ_DIR=`pwd`/open_model_zoo
-    ```
-
-3. Install prerequisites by running the following:
+2. Install prerequisites by running the following:
     ```
     sudo apt-get install python3-pip virtualenv
     ```
 
-4. Create and activate virtual environment:
+3. Create and activate virtual environment:
     ```
-    cd training_extensions
     virtualenv venv
     source venv/bin/activate
     ```
 
-6. Install `ote` package:
+4. Install `ote_cli` package:
     ```
     pip3 install -e ote_cli/
     ```
     
-7. Instantiate templates and create virtual environments:
+5. Instantiate templates and create virtual environments:
    ```
-   python3 tools/instantiate.py --init-venv
+   python3 tools/instantiate.py --destination model_templates --verbose --init-venv
    ```
-8. Activate algo-backend related virtual environment:
+6. Activate algo-backend related virtual environment:
    ```
    source model_templates/OTEDetection_v2.9.1/venv/bin/activate
    ```
-9. Use Jupiter notebooks or OTE CLI tools to start working with models:
+7. Use Jupiter notebooks or OTE CLI tools to start working with models:
    * To run notebook:
      ```
      cd ote_cli/notebooks/; jupyter notebook
