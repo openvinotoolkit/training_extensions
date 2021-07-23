@@ -1,2 +1,3 @@
 -r ../../external/deep-object-reid/requirements.txt
+--no-cache https://files.pythonhosted.org/packages/99/51/1bc1d79f296347eeb2d1a2e0606885ab1e4682833bf275fd39c189952e26/mmpycocotools-12.0.3.tar.gz
 -r ../../external/deep-object-reid/compression_requirements.txt

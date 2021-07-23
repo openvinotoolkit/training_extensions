@@ -55,7 +55,7 @@ CUDA_VERSION_CODE=$(echo ${CUDA_VERSION} | sed -e "s/\.//" -e "s/\(...\).*/\1/")
 
 
 # install ote.
-pip install --no-cache  -e ../../ote/ -c constraints.txt
+pip install -e ../../ote/ -c constraints.txt
 
 # install PyTorch and MMCV.
 export TORCH_VERSION=1.8.1
@@ -63,9 +63,9 @@ export TORCHVISION_VERSION=0.9.1
 export MMCV_VERSION=1.3.0
 
 if [[ $CUDA_VERSION_CODE == "102" ]]; then
-  pip install --no-cache torch==${TORCH_VERSION} torchvision==${TORCHVISION_VERSION} -c constraints.txt
+  pip install  torch==${TORCH_VERSION} torchvision==${TORCHVISION_VERSION} -c constraints.txt
 else
-  pip install --no-cache torch==${TORCH_VERSION}+cu${CUDA_VERSION_CODE} torchvision==${TORCHVISION_VERSION}+cu${CUDA_VERSION_CODE} -f https://download.pytorch.org/whl/torch_stable.html -c constraints.txt
+  pip install torch==${TORCH_VERSION}+cu${CUDA_VERSION_CODE} torchvision==${TORCHVISION_VERSION}+cu${CUDA_VERSION_CODE} -f https://download.pytorch.org/whl/torch_stable.html -c constraints.txt
 fi
 
 pip uninstall -y mmcv 
@@ -81,7 +81,7 @@ else
   echo "[WARNING] Model optimizer requirements were not installed. Please install the OpenVino toolkit to use one."
 fi
 
-pip install --no-cache -e ../../external/mmdetection/ -c constraints.txt
+pip install -e ../../external/mmdetection/ -c constraints.txt
 MMDETECTION_DIR=`realpath ../../external/mmdetection/`
 echo "export MMDETECTION_DIR=${MMDETECTION_DIR}" >> ${venv_dir}/bin/activate
 

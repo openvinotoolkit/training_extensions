@@ -1,4 +1,5 @@
 -r ../../external/mmdetection/requirements/build.txt
+--no-cache https://files.pythonhosted.org/packages/99/51/1bc1d79f296347eeb2d1a2e0606885ab1e4682833bf275fd39c189952e26/mmpycocotools-12.0.3.tar.gz
 -r ../../external/mmdetection/requirements.txt
 -r ../../external/mmdetection/requirements/nncf_compression.txt
 opencv-python

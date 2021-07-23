@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+set -v
+set -x
 
 work_dir=$(realpath "$(dirname $0)")
 
@@ -34,21 +36,21 @@ fi
 
 . ${venv_dir}/bin/activate
 
-cat requirements.txt | xargs -n 1 -L 1 pip3 install
+cat requirements.txt | xargs -n 1 -L 1 pip3 install -c constraints.txt
 
 mo_requirements_file="${INTEL_OPENVINO_DIR:-/opt/intel/openvino_2021}/deployment_tools/model_optimizer/requirements_onnx.txt"
 if [[ -e "${mo_requirements_file}" ]]; then
-  pip install -qr ${mo_requirements_file}
+  pip install -qr ${mo_requirements_file} -c constraints.txt
 else
   echo "[WARNING] Model optimizer requirements were not installed. Please install the OpenVino toolkit to use one."
 fi
 
-pip install -e ../../external/deep-object-reid/
+pip install -e ../../external/deep-object-reid/ -c constraints.txt
 DEEP_OBJECT_REID_DIR=`realpath ../../external/deep-object-reid/`
 echo "export REID_DIR=${DEEP_OBJECT_REID_DIR}" >> ${venv_dir}/bin/activate
 
 # install ote
-pip install -e ../../ote/
+pip install -e ../../ote/ -c constraints.txt
 
 deactivate
 
