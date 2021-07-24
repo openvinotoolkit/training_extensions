@@ -76,7 +76,7 @@ cat requirements.txt | xargs -n 1 -L 1 pip3 install -c constraints.txt
 
 mo_requirements_file="${INTEL_OPENVINO_DIR:-/opt/intel/openvino_2021}/deployment_tools/model_optimizer/requirements_onnx.txt"
 if [[ -e "${mo_requirements_file}" ]]; then
-  pip install -qr ${mo_requirements_file} -c constraints.txt
+  pip install -r ${mo_requirements_file} -c constraints.txt
 else
   echo "[WARNING] Model optimizer requirements were not installed. Please install the OpenVino toolkit to use one."
 fi
