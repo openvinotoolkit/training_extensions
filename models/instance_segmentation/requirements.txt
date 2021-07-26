@@ -1,6 +1,6 @@
---no-cache https://files.pythonhosted.org/packages/73/a0/d07a4f3e80ed7020a33f3111db217f54ac44a485ff45da3c21ce49f65041/Polygon3-3.0.8.tar.gz
+--no-cache-dir --no-binary=Polygon3 Polygon3==3.0.8
 -r ../../external/mmdetection/requirements/build.txt
---no-cache https://files.pythonhosted.org/packages/99/51/1bc1d79f296347eeb2d1a2e0606885ab1e4682833bf275fd39c189952e26/mmpycocotools-12.0.3.tar.gz
+--no-cache-dir --no-binary=mmpycocotools mmpycocotools==12.0.3
 -r ../../external/mmdetection/requirements.txt
 opencv-python
 
