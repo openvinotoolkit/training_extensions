@@ -138,7 +138,9 @@ As soon as training is completed, it is worth to re-evaluate trained model on te
 
 The models can be optimized -- compressed by [NNCF](https://github.com/openvinotoolkit/nncf) framework.
 
-At the moment, only one compression methods is supported for face detection models: int8 quantization.
+At the moment, only one compression methods is supported for all face detection models: int8 quantization.
+Also the models face-detection-0200, face-detection-0202, face-detection-0204, and face-detection-0205
+support such NNCF compression method as filter pruning.
 
 Please, note that NNCF framework requires a dataset for compression, since it makes several steps of fine-tuning after
 compression to restore the quality of the model, so the command line parameters of the compression script are closer
@@ -155,6 +157,10 @@ required for NNCF compression should not be set by command line parameter, since
          --save-checkpoints-to outputs \
          --nncf-quantization
 ```
+Note that in the command above the parameter `--nncf-quantization` is used to make int8 quantization of the model.
+If the model supports filter pruning, you can use the command line flag `--nncf-pruning` to turn on this compression method.
+
+(The combinations of two compression methods is also possible, but was not tested thoroughly.)
 
 The compressed model can be evaluated and exported to the OpenVINO™ format by the same commands as non-compressed model,
 see the items 4.b and 3.b above.
