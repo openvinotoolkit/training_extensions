@@ -145,7 +145,8 @@ python eval.py \
 
 The trained models can be optimized -- compressed by [NNCF](https://github.com/openvinotoolkit/nncf) framework.
 
-At the moment, only one compression methods is supported for custom object detection models: int8 quantization.
+At the moment, only one compression method is supported for custom object detection models:
+[int8 quantization](https://github.com/openvinotoolkit/nncf/blob/develop/docs/compression_algorithms/Quantization.md).
 
 Please, note that NNCF framework requires a dataset for compression, since it makes several steps of fine-tuning after
 compression to restore the quality of the model, so the command line parameters of the compression script are closer

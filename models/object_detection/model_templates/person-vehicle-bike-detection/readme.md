@@ -131,11 +131,12 @@ Try both following variants and select the best one:
 As soon as training is completed, it is worth to re-evaluate trained model on test set (see Step 4.b).
 
 
-### 5. Optimize
+### 5. Optimization
 
 The models can be optimized -- compressed by [NNCF](https://github.com/openvinotoolkit/nncf) framework.
 
-At the moment, only one compression methods is supported: int8 quantization.
+At the moment, only one compression method is supported:
+[int8 quantization](https://github.com/openvinotoolkit/nncf/blob/develop/docs/compression_algorithms/Quantization.md).
 
 Please, note that NNCF framework requires a dataset for compression, since it makes several steps of fine-tuning after
 compression to restore the quality of the model, so the command line parameters of the compression script are closer

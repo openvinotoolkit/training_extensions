@@ -134,13 +134,15 @@ Try both following variants and select the best one:
 As soon as training is completed, it is worth to re-evaluate trained model on test set (see Step 4.b).
 
 
-### 5. Optimize
+### 5. Optimization
 
 The models can be optimized -- compressed by [NNCF](https://github.com/openvinotoolkit/nncf) framework.
 
-At the moment, only one compression methods is supported for all face detection models: int8 quantization.
+At the moment, only one compression method is supported for all face detection models:
+[int8 quantization](https://github.com/openvinotoolkit/nncf/blob/develop/docs/compression_algorithms/Quantization.md).
 Also the models face-detection-0200, face-detection-0202, face-detection-0204, and face-detection-0205
-support such NNCF compression method as filter pruning.
+support such NNCF compression method as
+[filter pruning](https://github.com/openvinotoolkit/nncf/blob/develop/docs/compression_algorithms/Pruning.md).
 
 Please, note that NNCF framework requires a dataset for compression, since it makes several steps of fine-tuning after
 compression to restore the quality of the model, so the command line parameters of the compression script are closer
@@ -157,8 +159,12 @@ required for NNCF compression should not be set by command line parameter, since
          --save-checkpoints-to outputs \
          --nncf-quantization
 ```
-Note that in the command above the parameter `--nncf-quantization` is used to make int8 quantization of the model.
-If the model supports filter pruning, you can use the command line flag `--nncf-pruning` to turn on this compression method.
+Note that in the command above the parameter `--nncf-quantization` is used to make
+[int8 quantization](https://github.com/openvinotoolkit/nncf/blob/develop/docs/compression_algorithms/Quantization.md)
+of the model.
+If the model supports
+[filter pruning](https://github.com/openvinotoolkit/nncf/blob/develop/docs/compression_algorithms/Pruning.md),
+you can use the command line flag `--nncf-pruning` to turn on this compression method.
 
 (The combinations of two compression methods is also possible, but was not tested thoroughly.)
 
