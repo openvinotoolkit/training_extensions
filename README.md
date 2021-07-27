@@ -25,7 +25,7 @@ inference.
 
 2. Install prerequisites by running the following:
     ```
-    sudo apt-get install python3-pip virtualenv
+    sudo apt-get install python3-pip python3-venv virtualenv
     ```
 
 3. Create and activate virtual environment:
