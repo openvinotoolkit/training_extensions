@@ -12,3 +12,4 @@ scipy
 positional-encodings
 lmdb
 fasttext
+openvino-dev==2021.4

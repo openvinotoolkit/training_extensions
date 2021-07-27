@@ -24,7 +24,6 @@ from text_recognition.models.model import TextRecognitionModel
 from text_recognition.utils.common import (DECODER_INPUTS, DECODER_OUTPUTS,
                                            ENCODER_INPUTS, ENCODER_OUTPUTS)
 
-OPENVINO_DIR = '/opt/intel/openvino_2021'
 
 FEATURES_SHAPE = 1, 20, 175, 512
 HIDDEN_SHAPE = 1, 512
@@ -96,8 +95,7 @@ class Exporter:
         input_shape = self.config.get('input_shape')
         output_names = self.config.get('model_output_names')
         output_dir = os.path.split(self.model_path)[0]
-        export_command = f"""{OPENVINO_DIR}/bin/setupvars.sh && \
-        python {OPENVINO_DIR}/deployment_tools/model_optimizer/mo.py \
+        export_command = f"""mo \
         --framework onnx \
         --input_model {input_model} \
         --input_shape "{input_shape}" \
@@ -118,8 +116,7 @@ class Exporter:
         input_names = self.config.get("encoder_input_names", ENCODER_INPUTS)
         output_names = self.config.get('encoder_output_names', ENCODER_OUTPUTS)
         output_dir = os.path.split(self.model_path)[0]
-        export_command = f"""{OPENVINO_DIR}/bin/setupvars.sh && \
-        python {OPENVINO_DIR}/deployment_tools/model_optimizer/mo.py \
+        export_command = f"""mo \
         --framework onnx \
         --input_model {input_model} \
         --input_shape "{input_shape}" \
@@ -140,8 +137,7 @@ class Exporter:
         input_names = self.config.get('decoder_input_names', DECODER_INPUTS)
         output_names = self.config.get('decoder_output_names', DECODER_OUTPUTS)
         output_dir = os.path.split(self.model_path)[0]
-        export_command = f"""{OPENVINO_DIR}/bin/setupvars.sh &&
-        python {OPENVINO_DIR}/deployment_tools/model_optimizer/mo.py \
+        export_command = f"""mo \
         --framework onnx \
         --input_model {input_model} \
         --input '{input_names}' \
