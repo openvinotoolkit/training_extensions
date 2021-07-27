@@ -138,14 +138,22 @@ As soon as training is completed, it is worth to re-evaluate trained model on te
 
 The models can be optimized -- compressed by [NNCF](https://github.com/openvinotoolkit/nncf) framework.
 
+To use NNCF to compress a face detection model, you should go to the root folder of this git repository
+and install compression requirements in your virtual environment by the command
+```bash
+pip install -r external/mmdetection/requirements/nncf_compression.txt
+```
+
 At the moment, only one compression method is supported for all face detection models:
 [int8 quantization](https://github.com/openvinotoolkit/nncf/blob/develop/docs/compression_algorithms/Quantization.md).
 Also the models face-detection-0200, face-detection-0202, face-detection-0204, and face-detection-0205
 support such NNCF compression method as
 [filter pruning](https://github.com/openvinotoolkit/nncf/blob/develop/docs/compression_algorithms/Pruning.md).
 
+To compress the model, 'compress.py' script should be used.
+
 Please, note that NNCF framework requires a dataset for compression, since it makes several steps of fine-tuning after
-compression to restore the quality of the model, so the command line parameters of the compression script are closer
+compression to restore the quality of the model, so the command line parameters of the script `compress.py` are closer
 to the command line parameter of the training script for fine-tuning scenario 4.c stated above, but the number of epochs
 required for NNCF compression should not be set by command line parameter, since it is calculated by the script
 `compress.py` itself:

@@ -196,11 +196,19 @@ This produces model `model.xml` and weights `model.bin` in single-precision floa
 
 The models can be optimized -- compressed by [NNCF](https://github.com/openvinotoolkit/nncf) framework.
 
+To use NNCF to compress an image classification model, you should go to the root folder of this git repository
+and install compression requirements in your virtual environment by the command
+```bash
+pip install -r external/deep-object-reid/compression_requirements.txt
+```
+
 At the moment, only one compression method is supported for image classification models:
 [int8 quantization](https://github.com/openvinotoolkit/nncf/blob/develop/docs/compression_algorithms/Quantization.md).
 
+To compress the model, 'compress.py' script should be used.
+
 Please, note that NNCF framework requires a dataset for compression, since it makes several steps of fine-tuning after
-compression to restore the quality of the model, so the command line parameters of the compression script are closer
+compression to restore the quality of the model, so the command line parameters of the script `compress.py` are closer
 to the command line parameter of the training script for fine-tuning scenario from the section 5 stated above, but the
 number of epochs required for NNCF compression should not be set by command line parameter, since it is calculated by
 the script `compress.py` itself:
