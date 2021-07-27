@@ -30,6 +30,8 @@ pip install --upgrade pip
 
 cat requirements.txt | xargs -n 1 -L 1 pip install
 
+pip install -e .
+
 # mo_requirements_file="${INTEL_OPENVINO_DIR:-/opt/intel/openvino}/deployment_tools/model_optimizer/requirements_onnx.txt"
 # if [[ -e "${mo_requirements_file}" ]]; then
 #   pip install -qr ${mo_requirements_file}
