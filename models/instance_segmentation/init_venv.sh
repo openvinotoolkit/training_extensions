@@ -65,7 +65,7 @@ export MMCV_VERSION=1.3.0
 if [[ $CUDA_VERSION_CODE == "102" ]]; then
   pip install torch==${TORCH_VERSION} torchvision==${TORCHVISION_VERSION} -c constraints.txt
 else
- pip install torch==${TORCH_VERSION}+cu${CUDA_VERSION_CODE} torchvision==${TORCHVISION_VERSION}+cu${CUDA_VERSION_CODE} -f https://download.pytorch.org/whl/torch_stable.html -c constraints.txt
+  pip install torch==${TORCH_VERSION}+cu${CUDA_VERSION_CODE} torchvision==${TORCHVISION_VERSION}+cu${CUDA_VERSION_CODE} -f https://download.pytorch.org/whl/torch_stable.html -c constraints.txt
 fi
 
 pip uninstall -y mmcv
