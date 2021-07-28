@@ -24,6 +24,7 @@ from .text_recognition_heads.attention_based import AttentionBasedLSTM
 from .text_recognition_heads.attention_based_2d import \
     TextRecognitionHeadAttention
 from .text_recognition_heads.ctc_lstm_based import LSTMEncoderDecoder
+from .transformation.tps import TPS_SpatialTransformerNetwork
 
 TEXT_REC_HEADS = {
     'AttentionBasedLSTM': AttentionBasedLSTM,
@@ -36,6 +37,10 @@ BACKBONES = {
     'custom_resnet': CustomResNetLikeBackbone,
 }
 
+TRANSFORMATIONS = {
+    'tps': TPS_SpatialTransformerNetwork,
+}
+
 
 class TextRecognitionModel(nn.Module):
     class EncoderWrapper(nn.Module):
@@ -44,6 +49,8 @@ class TextRecognitionModel(nn.Module):
             self.model = model
 
         def forward(self, input_images):
+            if hasattr(self.model, 'transformation'):
+                input_images = self.model.transformation(input_images)
             encoded = self.model.backbone(input_images)
             return self.model.head.encoder_wrapper(encoded)
 
@@ -56,7 +63,7 @@ class TextRecognitionModel(nn.Module):
         def forward(self, args):
             return self.model.head.decoder_wrapper(*args)
 
-    def __init__(self, backbone, out_size, head):
+    def __init__(self, backbone, out_size, head, transformation):
         super().__init__()
         bb_out_channels = backbone.get('output_channels', 512)
         head_in_channels = head.get('encoder_input_size', 512)
@@ -67,6 +74,9 @@ class TextRecognitionModel(nn.Module):
         """
         head_type = head.pop('type', 'AttentionBasedLSTM')
         backbone_type = backbone.pop('type', 'resnet')
+        transformation_type = transformation.pop('type', None)
+        if transformation_type:
+            self.transformation = TRANSFORMATIONS[transformation_type](**transformation)
         self.freeze_backbone = backbone.pop('freeze_backbone', False)
         self.head = TEXT_REC_HEADS[head_type](out_size, **head)
         self.backbone = BACKBONES[backbone_type](**backbone)
@@ -79,6 +89,8 @@ class TextRecognitionModel(nn.Module):
                     layer.requires_grad = True
 
     def forward(self, input_images, formulas=None):
+        if hasattr(self, 'transformation'):
+            input_images = self.transformation(input_images)
         features = self.backbone(input_images)
         return self.head(features, formulas)
 

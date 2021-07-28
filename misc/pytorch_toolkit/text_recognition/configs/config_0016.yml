@@ -1,38 +1,44 @@
 backbone_config:
   arch: resnext101_32x8d
   disable_layer_3: false
-  disable_layer_4: false
+  disable_layer_4: true
   one_ch_first_conv: true
-  output_channels: 2048
+  output_channels: 1024
 head:
   type: TextRecognitionHeadAttention
-  encoder_input_size: 2048
+  encoder_input_size: 1024
   encoder_dim_internal: 1024
   encoder_num_layers: 3
-  decoder_input_feature_size: [2,8]
+  decoder_input_feature_size: [3,12]
   decoder_max_seq_len: 28
   decoder_dim_hidden: 1024
   decoder_sos_index: 0
   decoder_rnn_type: "GRU"
-  dropout_ratio: 0.5
-  use_semantics: true
+  dropout_ratio: 0.3
+transformation:
+  type: tps
+  fiducial_num: 20
+  input_size: [64, 256]
+  output_size: [48, 192]
+  i_channel_num: 1
 val_transforms_list:
   - name: TransformGrayscale
 device: "cuda"
-num_workers: 0
-# language_model_path: <path to ptretrained fasttext language model>/cc.en.300.bin
-model_path: model_checkpoints/model_0293.pth
-model_url: https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/text_recognition/text_recognition_0015.pth
-vocab_path: vocabs/vocab_alphanumeric_case-sensitive.json
+val_batch_size: 48
+num_workers: 4
+model_path: model_checkpoints/model_0016.pth
+model_url: https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/text_recognition/text_recognition_0016.pth
+vocab_path: vocabs/vocab_alphanumeric.json
 train:
-  batch_size: 32
+  batch_size: 48
+  multi_gpu: true
   learning_rate: 0.0001
   clip_grad: 5.0
-  epochs: 500
+  epochs: 15
   loss_type: NLL
-  save_freq: 10000
-  val_freq: 5000
-  print_freq: 500
+  save_freq: 100000
+  val_freq: 10000
+  print_freq: 1000
   optimizer: Adam
   save_dir: model_checkpoints
   datasets:
@@ -56,18 +62,10 @@ train:
           - 256
   train_transforms_list:
     - name: TransformGrayscale
-    - name: TransformColorJitter
-      prob: 0.35
-      brightness: 2
-      contrast: 2
-      saturation: 2
-    - name: TransformBlur
-      sigmaX: 1.5
-      prob: 0.35
 eval:
   dataset:
     - type: ICDAR2013RECDataset
-      case_sensitive: true
+      case_sensitive: false
       data_path: ../../../data/text_recognition/
       annotation_file: ../../../data/text_recognition/annotation.txt
       grayscale: true
@@ -78,10 +76,9 @@ eval:
   use_ctc: false
 demo:
   transforms_list: []
-  model_resolution: [64, 256]
 export:
-  res_encoder_name: model_0293_encoder.onnx
-  res_decoder_name: model_0293_decoder.onnx
+  res_encoder_name: model_0016_encoder.onnx
+  res_decoder_name: model_0016_decoder.onnx
   encoder_input_names: 'imgs'
   encoder_output_names: 'features,decoder_hidden'
   decoder_input_names: 'hidden,features,decoder_input'
@@ -93,7 +90,7 @@ export:
       - 1024
     - # features
       - 1
-      - 16
+      - 36
       - 1024
     - #  decoder_input
       - 1

@@ -36,15 +36,14 @@ SOFTWARE.
  limitations under the License.
 """
 
+import json
 import os
 from copy import deepcopy
-from multiprocessing.pool import ThreadPool
 from os.path import join
 
 import cv2 as cv
 import lmdb
 import numpy as np
-import scipy.io
 from torch.utils.data import Dataset, Sampler
 from tqdm import tqdm
 
@@ -97,7 +96,7 @@ class BaseDataset(Dataset):
 
 
 class Im2LatexDataset(BaseDataset):
-    def __init__(self, data_path, annotation_file, min_shape=(8, 8)):
+    def __init__(self, data_path, annotation_file):
         """args:
         data_path: root dir storing the prepoccessed data
         ann_file: path to annotation file
@@ -106,7 +105,7 @@ class Im2LatexDataset(BaseDataset):
         self.data_path = data_path
         self.images_dir = join(data_path, 'images_processed')
         self.formulas = self._get_formulas()
-        self.pairs = self._get_pairs(annotation_file, min_shape)
+        self.pairs = self._get_pairs(annotation_file)
 
     def _get_formulas(self):
         formulas_file = join(self.data_path, 'formulas.norm.lst')
@@ -122,7 +121,7 @@ class Im2LatexDataset(BaseDataset):
                 formulas.append(res_formula)
         return formulas
 
-    def _get_pairs(self, subset, min_shape):
+    def _get_pairs(self, subset):
         # the line in this file map image to formulas
         map_file = join(self.data_path, subset)
         total_lines = get_num_lines_in_file(map_file)
@@ -131,19 +130,19 @@ class Im2LatexDataset(BaseDataset):
         with open(map_file, 'r') as f:
             for line in tqdm(f, total=total_lines):
                 img_name, formula_id = line.strip('\n').split()
-                # load img and its corresponding formula
                 img_path = join(self.images_dir, img_name)
-                img = cv.imread(img_path, cv.IMREAD_COLOR)
-                if img.shape[0:2] <= tuple(min_shape):
-                    continue
                 formula = self.formulas[int(formula_id)]
                 el = {'img_name': img_name,
                       'text': formula,
-                      'img': img,
+                      'img_path': img_path,
                       }
                 pairs.append(el)
-        pairs.sort(key=img_size, reverse=True)
         return pairs
+
+    def __getitem__(self, index):
+        el = deepcopy(self.pairs[index])
+        el['img'] = cv.imread(el['img_path'], cv.IMREAD_COLOR)
+        return el
 
 
 class ICDAR2013RECDataset(BaseDataset):
@@ -158,7 +157,7 @@ class ICDAR2013RECDataset(BaseDataset):
         self.pairs = self._load(min_shape, grayscale, fixed_img_shape, case_sensitive, min_txt_len)
 
     def _load(self, min_shape, grayscale, fixed_img_shape, case_sensitive, min_txt_len):
-        with open(self.annotation_file) as f:
+        with open(self.annotation_file, encoding='utf-8-sig') as f:
             annotation_file = f.readlines()
         annotation_file = [line.strip() for line in annotation_file]
         delimiter = ', ' if ',' in annotation_file[0] else ' '
@@ -178,103 +177,10 @@ class ICDAR2013RECDataset(BaseDataset):
             text = texts[i].strip('"')
             if len(text) < min_txt_len:
                 continue
-            if not set(text.lower()) <= ALPHANUMERIC_VOCAB:
-                continue
             if not case_sensitive:
                 text = text.lower()
             text = ' '.join(text)
             el = {'img_name': filename,
-                  'text': text,
-                  'img': img,
-                  }
-            pairs.append(el)
-        pairs.sort(key=img_size, reverse=True)
-        return pairs
-
-
-class MJSynthDataset(BaseDataset):
-    def __init__(self, data_path, annotation_file, min_shape=(8, 8),
-                 fixed_img_shape=None, case_sensitive=True, min_txt_len=0, num_workers=4):
-        super().__init__()
-        self.data_path = data_path
-        self.ann_file = annotation_file
-        self.fixed_img_shape = fixed_img_shape
-        self.pairs = self._load(min_shape, case_sensitive, min_txt_len, num_workers)
-
-    def __getitem__(self, index):
-        el = deepcopy(self.pairs[index])
-        img = cv.imread(os.path.join(self.data_path, el['img_path']), cv.IMREAD_COLOR)
-        if self.fixed_img_shape is not None:
-            img = cv.resize(img, tuple(self.fixed_img_shape[::-1]))
-        el['img'] = img
-        return el
-
-    def _load(self, min_shape, case_sensitive, min_txt_len, num_workers):
-        pairs = []
-
-        def read_img(image_path):
-            gt_text = ' '.join(image_path.split('_')[1])
-            if not self.fixed_img_shape:
-                img = cv.imread(os.path.join(self.data_path, image_path), cv.IMREAD_COLOR)
-                if img is None:
-                    return None
-                if img.shape[0:2] <= tuple(min_shape):
-                    return None
-                img_shape = tuple(img.shape)
-                del img
-            else:
-                img_shape = self.fixed_img_shape
-            if not case_sensitive:
-                gt_text = gt_text.lower()
-            if len(gt_text) < min_txt_len:
-                return None
-            el = {'img_name': os.path.split(image_path)[1],
-                  'text': gt_text,
-                  'img_path': image_path,
-                  'img_shape': img_shape
-                  }
-            return el
-
-        with open(os.path.join(self.data_path, self.ann_file)) as input_file:
-            annotation = [line.split()[0] for line in input_file]
-            annotation = [os.path.join(self.data_path, line) for line in annotation]
-        pool = ThreadPool(num_workers)
-
-        for elem in tqdm(pool.imap_unordered(read_img, annotation), total=len(annotation)):
-            if elem is not None:
-                pairs.append(elem)
-        if self.fixed_img_shape is None:
-            pairs.sort(key=lambda img: img['img_shape'], reverse=True)
-        return pairs
-
-
-class IIIT5KDataset(BaseDataset):
-    def __init__(self, data_path, annotation_file, min_shape=(8, 8), grayscale=False,
-                 fixed_img_shape=None, case_sensitive=True):
-        super().__init__()
-        self.data_path = data_path
-        self.annotation_file = annotation_file
-        self.pairs = self._load(min_shape, fixed_img_shape, grayscale, case_sensitive)
-
-    def _load(self, min_shape, fixed_img_shape, grayscale, case_sensitive):
-        pairs = []
-        annotation = scipy.io.loadmat(os.path.join(self.data_path, self.annotation_file))
-        annotation = (annotation[self.annotation_file.replace('.mat', '')]).squeeze()
-        for obj in tqdm(annotation):
-            img_path = obj[0][0]
-            text = obj[1][0]
-            img = cv.imread(os.path.join(self.data_path, img_path), cv.IMREAD_COLOR)
-            if grayscale:
-                img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-                img = cv.cvtColor(img, cv.COLOR_GRAY2BGR)
-            if fixed_img_shape is not None:
-                img = cv.resize(img, tuple(fixed_img_shape[::-1]))
-            elif img.shape[0:2] <= tuple(min_shape):
-                continue
-            text = ' '.join(text)
-            if not case_sensitive:
-                text = text.lower()
-            el = {'img_name': img_path,
                   'text': text,
                   'img': img,
                   }
@@ -290,8 +196,9 @@ class LMDBDataset(BaseDataset):
         self.fixed_img_shape = fixed_img_shape
         self.case_sensitive = case_sensitive
         self.grayscale = grayscale
-        self.database = lmdb.open(bytes(self.data_path, encoding='utf-8'), readonly=True)
+        self.database = lmdb.open(bytes(self.data_path, encoding='utf-8'), readonly=True, lock=False)
         self.pairs = self._load()
+        self.txn = self.database.begin(write=False)
 
     def _load(self):
         pairs = []
@@ -299,9 +206,9 @@ class LMDBDataset(BaseDataset):
             num_iterations = int(txn.get('num-samples'.encode()))
             for index in tqdm(range(1, num_iterations + 1)):  # in lmdb indexation starts with one
                 text = txn.get(f'label-{index:09d}'.encode()).decode('utf-8')
-                text = ' '.join(text)
                 if not self.case_sensitive:
                     text = text.lower()
+                text = ' '.join(text)
                 el = {'img_name': f'image-{index:09d}',
                       'text': text,
                       }
@@ -310,25 +217,73 @@ class LMDBDataset(BaseDataset):
 
     def __getitem__(self, index):
         el = deepcopy(self.pairs[index])
-        with self.database.begin(write=False) as txn:
-            img_key = el['img_name'].encode()
-            image_bytes = txn.get(img_key)
-            img = cv.imdecode(np.frombuffer(image_bytes, np.uint8), cv.IMREAD_UNCHANGED)
-            if len(img.shape) < 3:
-                img = np.stack((img,) * 3, axis=-1)
-            if self.grayscale:
-                img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-                img = cv.cvtColor(img, cv.COLOR_GRAY2BGR)
-            if self.fixed_img_shape is not None:
-                img = cv.resize(img, tuple(self.fixed_img_shape[::-1]))
-            el['img'] = img
+        img_key = el['img_name'].encode()
+        image_bytes = self.txn.get(img_key)
+        img = cv.imdecode(np.frombuffer(image_bytes, np.uint8), cv.IMREAD_COLOR)
+        if self.grayscale:
+            img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+            img = cv.cvtColor(img, cv.COLOR_GRAY2BGR)
+        if self.fixed_img_shape is not None:
+            img = cv.resize(img, tuple(self.fixed_img_shape[::-1]))
+        el['img'] = img
+        return el
+
+
+class CocoLikeDataset(BaseDataset):
+    def __init__(self, data_path, annotation_file, min_shape=(8, 8), grayscale=False,
+                 fixed_img_shape=None, case_sensitive=True):
+        super().__init__()
+        self.data_path = data_path
+        self.annotation_file = annotation_file
+        self.min_shape = min_shape
+        self.grayscale = grayscale
+        self.fixed_img_shape = fixed_img_shape
+        self.case_sensitive = case_sensitive
+        self.pairs = self._load()
+
+    def _load(self):
+        pairs = []
+        with open(self.annotation_file) as ann:
+            annotation = json.load(ann)
+        annotations = annotation['annotations']
+        image_names = annotation['images']
+        for ann in tqdm(annotations):
+            img_name = image_names[ann['image_id']]['file_name']
+            text = ann['attributes']['transcription']
+            if not(all(x > 0 for x in ann['bbox']) and
+                   set(text.lower()) <= ALPHANUMERIC_VOCAB and ann['attributes']['legible']):
+                continue
+            if not self.case_sensitive:
+                text = text.lower()
+            text = ' '.join(text)
+            pairs.append(
+                {'img_name': os.path.split(img_name)[-1],
+                 'img_path': os.path.join(self.data_path, img_name),
+                 'bbox': [int(x) for x in ann['bbox']],
+                 'text': text,
+                 }
+            )
+        return pairs
+
+    def __getitem__(self, index):
+        el = deepcopy(self.pairs[index])
+        box = el['bbox']
+        img = cv.imread(el['img_path'], cv.IMREAD_COLOR)
+        assert img is not None, el['img_path']
+        if self.grayscale:
+            img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+            img = cv.cvtColor(img, cv.COLOR_GRAY2BGR)
+        x, y, w, h = box
+        img = img[y:y+h, x:x+w, :]
+        if self.fixed_img_shape is not None:
+            img = cv.resize(img, tuple(self.fixed_img_shape[::-1]))
+        el['img'] = img
         return el
 
 
 str_to_class = {
     'Im2LatexDataset': Im2LatexDataset,
     'ICDAR2013RECDataset': ICDAR2013RECDataset,
-    'MJSynthDataset': MJSynthDataset,
-    'IIIT5KDataset': IIIT5KDataset,
     'LMDBDataset': LMDBDataset,
+    'CocoLikeDataset': CocoLikeDataset,
 }
