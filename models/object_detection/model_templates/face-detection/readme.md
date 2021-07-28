@@ -154,9 +154,7 @@ To compress the model, 'compress.py' script should be used.
 
 Please, note that NNCF framework requires a dataset for compression, since it makes several steps of fine-tuning after
 compression to restore the quality of the model, so the command line parameters of the script `compress.py` are closer
-to the command line parameter of the training script for fine-tuning scenario 4.c stated above, but the number of epochs
-required for NNCF compression should not be set by command line parameter, since it is calculated by the script
-`compress.py` itself:
+to the command line parameter of the training script for fine-tuning scenario 4.c stated above:
 ```
       python compress.py \
          --load-weights ${SNAPSHOT} \
@@ -167,7 +165,10 @@ required for NNCF compression should not be set by command line parameter, since
          --save-checkpoints-to outputs \
          --nncf-quantization
 ```
-Note that in the command above the parameter `--nncf-quantization` is used to make
+Note that the number of epochs required for NNCF compression should not be set by command line parameter, since it is
+calculated by the script `compress.py` itself.
+
+Also note that in the command above the parameter `--nncf-quantization` is used to make
 [int8 quantization](https://github.com/openvinotoolkit/nncf/blob/develop/docs/compression_algorithms/Quantization.md)
 of the model.
 If the model supports
