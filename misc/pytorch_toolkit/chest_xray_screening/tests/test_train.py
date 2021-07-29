@@ -1,8 +1,10 @@
 import unittest
 import os
 import json
+import time
 import sys
 from torch.utils.data import DataLoader
+from google_drive_downloader import GoogleDriveDownloader as gdd
 sys.path.append(os.path.abspath('../chest_xray_screening'))
 sys.path.append(os.path.abspath('../utils'))
 from train import RSNATrainer
@@ -18,6 +20,15 @@ def get_config(optimised=False):
     else:
         config = config_file['train']
     return config
+
+def download_checkpoint():
+    os.makedirs('model_weights')
+    gdd.download_file_from_google_drive(file_id='1z4HuSVXyD59BHhw93j-BVbx6In1HZQn2',
+                                    dest_path='model_weights/chest_xray_screening.pth.tar',
+                                    unzip=False)
+    gdd.download_file_from_google_drive(file_id='1HUmG-wKRoKYxBdwu0_LX1ascBRmA-z5e',
+                                    dest_path='model_weights/chest_xray_screening_eff.pth.tar',
+                                    unzip=False)
 
 class TrainerTest(unittest.TestCase):
     config = get_config()
@@ -60,16 +71,19 @@ class TrainerTest(unittest.TestCase):
         self.model = DenseNet121(self.class_count)
         self.class_names = self.config["class_names"]
         self.checkpoint = self.config["checkpoint"]
+        if not os.path.isdir('model_weights'):
+            download_checkpoint()
         self.device = self.config["device"]
         self.trainer = RSNATrainer(
             self.model, self.data_loader_train,
             self.data_loader_valid, self.data_loader_test,
-            self.class_count,self.checkpoint,
+            self.class_count, self.checkpoint,
             self.device, self.class_names,self.learn_rate)
-        self.trainer.train(self.config["max_epoch"], self.config["timestamp_launch"],self.config["savepath"])
+        timestamp_launch = time.strftime("%d%m%Y - %H%M%S")
+        self.trainer.train(self.config["max_epoch"], timestamp_launch, self.config["savepath"])
         cur_train_loss = self.trainer.current_train_loss
         cur_valid_loss = self.trainer.current_valid_loss
-        self.trainer.train(self.config["max_epoch"], self.config["timestamp_launch"],self.config["savepath"])
+        self.trainer.train(self.config["max_epoch"], timestamp_launch, self.config["savepath"])
         self.assertLessEqual(self.trainer.current_train_loss, cur_train_loss)
         self.assertLessEqual(self.trainer.current_valid_loss, cur_valid_loss)
 

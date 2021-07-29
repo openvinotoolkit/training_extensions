@@ -3,12 +3,14 @@ import os
 import json
 import torch
 from torch.utils.data import DataLoader
+from google_drive_downloader import GoogleDriveDownloader as gdd
 import sys
 sys.path.append(os.path.abspath('../chest_xray_screening'))
 sys.path.append(os.path.abspath('../utils'))
 from dataloader import RSNADataSet
 from model import DenseNet121
 from inference import RSNAInference
+
 
 
 def get_config(optimised=False):
@@ -23,13 +25,24 @@ def get_config(optimised=False):
 
     return config
 
+def download_checkpoint():
+    os.makedirs('model_weights')
+    gdd.download_file_from_google_drive(file_id='1z4HuSVXyD59BHhw93j-BVbx6In1HZQn2',
+                                    dest_path='model_weights/chest_xray_screening.pth.tar',
+                                    unzip=False)
+    gdd.download_file_from_google_drive(file_id='1HUmG-wKRoKYxBdwu0_LX1ascBRmA-z5e',
+                                    dest_path='model_weights/chest_xray_screening_eff.pth.tar',
+                                    unzip=False)
+
 
 class InferenceTest(unittest.TestCase):
     config = get_config()
     checkpoint = config['checkpoint']
+    if not os.path.isdir('model_weights'):
+        download_checkpoint()
     class_count = config["clscount"]
     test_list = config['dummy_test_list']
-    image_path = '../../../data/chest_xray_screening/'
+    image_path = '../../../../data/chest_xray_screening/'
     labels = config["labels"]
     dataset_test = RSNADataSet(test_list, labels, image_path, transform=True)
     data_loader_test = DataLoader(

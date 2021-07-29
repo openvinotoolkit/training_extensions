@@ -2,6 +2,7 @@ import unittest
 import os
 import json
 import sys
+from google_drive_downloader import GoogleDriveDownloader as gdd
 sys.path.append(os.path.abspath('../utils'))
 from exporter import Exporter
 
@@ -14,15 +15,25 @@ def _get_config_():
 
     return config_file['export']
 
+def download_checkpoint():
+    os.makedirs('model_weights')
+    gdd.download_file_from_google_drive(file_id='1z4HuSVXyD59BHhw93j-BVbx6In1HZQn2',
+                                    dest_path='model_weights/chest_xray_screening.pth.tar',
+                                    unzip=False)
+    gdd.download_file_from_google_drive(file_id='1HUmG-wKRoKYxBdwu0_LX1ascBRmA-z5e',
+                                    dest_path='model_weights/chest_xray_screening_eff.pth.tar',
+                                    unzip=False)
 
 class ExportTest(unittest.TestCase):
 
     def test_export_onnx(self):
         self.config = _get_config_()
+        if not os.path.isdir('model_weights'):
+            download_checkpoint()
         self.exporter = Exporter(self.config,optimised=False)
         self.exporter.export_model_onnx()
         self.model_path = self.config['checkpoint']
-        self.assertTrue(os.path.join(os.path.split(self.model_path)[0], self.config.get('model_name')))
+        self.assertTrue(os.path.join(os.path.split(self.model_path)[0], self.config.get('model_name_onnx')))
 
     def test_export_ir(self):
 
