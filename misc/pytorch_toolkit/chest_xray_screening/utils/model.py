@@ -1,6 +1,6 @@
 from torchvision import models
 from torch import nn
-from .generate import give_model
+from generate import give_model
 
 class DenseNet121(nn.Module):
     def __init__(self,class_count):

@@ -1,7 +1,7 @@
 import torch
 import os
 import subprocess
-from .model import DenseNet121,DenseNet121Eff
+from model import DenseNet121,DenseNet121Eff
 
 
 OPENVINO_DIR = '/opt/intel/openvino_2021'

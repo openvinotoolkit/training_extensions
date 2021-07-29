@@ -4,12 +4,15 @@ import torch
 from torch.backends import cudnn
 import torch.nn.functional as tfunc
 from torch.utils.data import DataLoader
-from chest_xray_screening.utils.dataloader import RSNADataSet
-from chest_xray_screening.utils.score import compute_auroc
-from chest_xray_screening.utils.model import DenseNet121,DenseNet121Eff
 from math import sqrt
 import json
 import os
+import sys
+sys.path.append(os.path.abspath('../utils'))
+from dataloader import RSNADataSet
+from score import compute_auroc
+from model import DenseNet121,DenseNet121Eff
+
 
 
 class RSNAInference():

@@ -2,10 +2,13 @@ import unittest
 import os
 import json
 import torch
-from chest_xray_screening.utils.dataloader import RSNADataSet
-from chest_xray_screening.utils.model import DenseNet121
-from chest_xray_screening.utils.data import DataLoader
-from chest_xray_screening.inference import RSNAInference
+from torch.utils.data import DataLoader
+import sys
+sys.path.append(os.path.abspath('../chest_xray_screening'))
+sys.path.append(os.path.abspath('../utils'))
+from dataloader import RSNADataSet
+from model import DenseNet121
+from inference import RSNAInference
 
 
 def get_config(optimised=False):

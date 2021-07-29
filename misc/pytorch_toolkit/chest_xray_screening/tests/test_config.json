@@ -23,7 +23,7 @@
         "device":"cuda",
         "max_epoch":3,
         "alpha":0.1,
-        "phi":1.1
+        "phi":1
     },
     "test":{
         "checkpoint": "./model_weights/chest_xray_screening.pt",
@@ -42,7 +42,7 @@
         "class_names":["Lung Opacity","Normal","No Lung Opacity / Not Normal"],
         "target_metric":0.7,
         "alpha":0.1,
-        "phi":1.1
+        "phi":1
 
     },
     "export":{
