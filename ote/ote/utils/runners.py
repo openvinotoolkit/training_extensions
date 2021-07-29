@@ -19,7 +19,7 @@ import signal
 import subprocess
 import sys
 import time
-from queue import Queue, Empty
+from queue import Empty, Queue
 from threading import Thread
 
 from .misc import log_shell_cmd
@@ -79,3 +79,11 @@ def run_with_termination(cmd):
         stderr = stderr.decode('utf-8')
         print(stderr, end='')
         sys.stdout.flush()
+
+    time.sleep(1)
+    err = f'Out of memory: Killed process {process.pid}'
+    proc = subprocess.Popen(['dmesg', '-l', 'err'], stdout=subprocess.PIPE)
+    out = proc.communicate()[0].decode().split('\n')
+    for line in out:
+        if err in line:
+            raise RuntimeError(line)
