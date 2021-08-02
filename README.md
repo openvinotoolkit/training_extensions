@@ -67,6 +67,13 @@ them for prediction.
 * [Text Spotting](models/text_spotting)
   - [Alphanumeric Text Spotting](models/text_spotting/model_templates/alphanumeric-text-spotting)
 
+## Optimization
+
+The image classification and object detection models can be compressed
+by [NNCF](https://github.com/openvinotoolkit/nncf) framework.
+
+See details in the corresponding readme files of the models.
+
 ## Misc
 
 Models that were previously developed can be found [here](misc).

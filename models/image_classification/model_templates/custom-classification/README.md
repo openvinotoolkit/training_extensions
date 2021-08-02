@@ -190,3 +190,38 @@ python export.py \
 
 This produces model `model.xml` and weights `model.bin` in single-precision floating-point format
 (FP32). The obtained model expects **normalized image** in planar BGR format.
+
+
+### 8. Optimization
+
+The models can be optimized -- compressed by [NNCF](https://github.com/openvinotoolkit/nncf) framework.
+
+To use NNCF to compress an image classification model, you should go to the root folder of this git repository
+and install compression requirements in your virtual environment by the command
+```bash
+pip install -r external/deep-object-reid/compression_requirements.txt
+```
+
+At the moment, only one compression method is supported for image classification models:
+[int8 quantization](https://github.com/openvinotoolkit/nncf/blob/develop/docs/compression_algorithms/Quantization.md).
+
+To compress the model, 'compress.py' script should be used.
+
+Please, note that NNCF framework requires a dataset for compression, since it makes several steps of fine-tuning after
+compression to restore the quality of the model, so the command line parameters of the script `compress.py` are closer
+to the command line parameter of the training script for fine-tuning scenario from the section 5 stated above:
+```
+python compress.py \
+   --load-weights ${SNAPSHOT} \
+   --train-ann-files '' \
+   --train-data-roots ${TRAIN_DATA_ROOT} \
+   --val-ann-files '' \
+   --val-data-roots ${VAL_DATA_ROOT} \
+   --save-checkpoints-to outputs \
+   --nncf-quantization
+```
+Note that the number of epochs required for NNCF compression should not be set by command line parameter, since it is
+calculated by the script `compress.py` itself.
+
+The compressed model can be evaluated and exported to the OpenVINO™ format by the same commands as non-compressed model,
+see the sections 6 and 7 above.

@@ -132,3 +132,50 @@ Try both following variants and select the best one:
    * If you would like to start **training** from pre-trained weights use `--load-weights` pararmeter instead of `--resume-from`. Also you can use parameters such as `--epochs`, `--batch-size`, `--gpu-num`, `--base-learning-rate`, otherwise default values will be loaded from `${MODEL_TEMPLATE}`.
 
 As soon as training is completed, it is worth to re-evaluate trained model on test set (see Step 4.b).
+
+
+### 5. Optimization
+
+The models can be optimized -- compressed by [NNCF](https://github.com/openvinotoolkit/nncf) framework.
+
+To use NNCF to compress a face detection model, you should go to the root folder of this git repository
+and install compression requirements in your virtual environment by the command
+```bash
+pip install -r external/mmdetection/requirements/nncf_compression.txt
+```
+
+At the moment, only one compression method is supported for all face detection models:
+[int8 quantization](https://github.com/openvinotoolkit/nncf/blob/develop/docs/compression_algorithms/Quantization.md).
+Also the models face-detection-0200, face-detection-0202, face-detection-0204, and face-detection-0205
+support such NNCF compression method as
+[filter pruning](https://github.com/openvinotoolkit/nncf/blob/develop/docs/compression_algorithms/Pruning.md).
+
+To compress the model, 'compress.py' script should be used.
+
+Please, note that NNCF framework requires a dataset for compression, since it makes several steps of fine-tuning after
+compression to restore the quality of the model, so the command line parameters of the script `compress.py` are closer
+to the command line parameter of the training script for fine-tuning scenario 4.c stated above:
+```
+      python compress.py \
+         --load-weights ${SNAPSHOT} \
+         --train-ann-files ${TRAIN_ANN_FILE} \
+         --train-data-roots ${TRAIN_IMG_ROOT} \
+         --val-ann-files ${VAL_ANN_FILE} \
+         --val-data-roots ${VAL_IMG_ROOT} \
+         --save-checkpoints-to outputs \
+         --nncf-quantization
+```
+Note that the number of epochs required for NNCF compression should not be set by command line parameter, since it is
+calculated by the script `compress.py` itself.
+
+Also note that in the command above the parameter `--nncf-quantization` is used to make
+[int8 quantization](https://github.com/openvinotoolkit/nncf/blob/develop/docs/compression_algorithms/Quantization.md)
+of the model.
+If the model supports
+[filter pruning](https://github.com/openvinotoolkit/nncf/blob/develop/docs/compression_algorithms/Pruning.md),
+you can use the command line flag `--nncf-pruning` to turn on this compression method.
+
+(The combinations of two compression methods is also possible, but was not tested thoroughly.)
+
+The compressed model can be evaluated and exported to the OpenVINO™ format by the same commands as non-compressed model,
+see the items 4.b and 3.b above.
