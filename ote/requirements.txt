@@ -1,5 +1,5 @@
 numpy==1.19.5
-mmcv
+mmcv==1.3.9
 pylint==2.7.2
 pytest
 pyyaml
