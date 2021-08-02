@@ -91,3 +91,4 @@ deactivate
 echo
 echo "Activate a virtual environment to start working:"
 echo "$ . ${venv_dir}/bin/activate"
+
