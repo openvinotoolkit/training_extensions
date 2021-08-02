@@ -84,6 +84,7 @@ fi
 pip install -e ../../external/mmdetection/ -c constraints.txt
 MMDETECTION_DIR=`realpath ../../external/mmdetection/`
 echo "export MMDETECTION_DIR=${MMDETECTION_DIR}" >> ${venv_dir}/bin/activate
+echo "export CUDA_HOME=${CUDA_HOME}" >> ${venv_dir}/bin/activate
 
 deactivate
 

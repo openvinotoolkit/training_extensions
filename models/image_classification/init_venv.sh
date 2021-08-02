@@ -48,6 +48,7 @@ fi
 pip install -e ../../external/deep-object-reid/ -c constraints.txt
 DEEP_OBJECT_REID_DIR=`realpath ../../external/deep-object-reid/`
 echo "export REID_DIR=${DEEP_OBJECT_REID_DIR}" >> ${venv_dir}/bin/activate
+echo "export CUDA_HOME=${CUDA_HOME}" >> ${venv_dir}/bin/activate
 
 # install ote
 pip install -e ../../ote/ -c constraints.txt
