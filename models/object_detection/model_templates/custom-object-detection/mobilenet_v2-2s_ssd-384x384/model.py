@@ -135,11 +135,11 @@ optimizer = dict(type='SGD', lr=0.05, momentum=0.9, weight_decay=0.0005)
 optimizer_config = dict()
 # learning policy
 lr_config = dict(
-    policy='step',
+    policy='CosineAnnealing',
+    min_lr=0.00001,
     warmup='linear',
-    warmup_iters=1200,
-    warmup_ratio=1.0 / 3,
-    step=[8, 11, 13])
+    warmup_iters=100,
+    warmup_ratio=0.1)
 checkpoint_config = dict(interval=1)
 # yapf:disable
 log_config = dict(
