@@ -61,7 +61,7 @@ All of the models were initially trained on [ImageNet](http://image-net.org/chal
 
 Information about LR Finder:
 
-There are three options for learning rate finder avalaible: [Optuna's](https://arxiv.org/abs/1907.10902) grid search, TPE and by fast.ai approach imported from [torch-lr-finder](https://github.com/davidtvs/pytorch-lr-finder/blob/master/torch_lr_finder/lr_finder.py) with some modifications.
+There are three algorithms for estimating an optimal learning rate available: [Optuna's](https://arxiv.org/abs/1907.10902) grid search, TPE and by fast.ai approach imported from [torch-lr-finder](https://github.com/davidtvs/pytorch-lr-finder/blob/master/torch_lr_finder/lr_finder.py) with some modifications.
 
 Recommended parameters for the automatic mode in case of fine-tuning:
 
