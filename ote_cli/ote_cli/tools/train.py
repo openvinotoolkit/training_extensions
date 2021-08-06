@@ -77,14 +77,14 @@ def main():
                       val_data_root=args.val_data_roots,
                       dataset_storage=NullDatasetStorage())
 
-    params = ConfigurableParameters(workspace_id=ID(), project_id=ID(), task_id=ID())
+    params = ConfigurableParameters(workspace_id=ID(), model_storage_id=ID())
     apply_template_configurable_parameters(params, template)
 
     labels_schema = generate_label_schema(dataset.get_labels(), template['domain'])
     labels_list = labels_schema.get_labels(False)
     dataset.set_project_labels(labels_list)
 
-    environment = TaskEnvironment(model=NullModel(), configurable_parameters=params, label_schema=labels_schema)
+    environment = TaskEnvironment(model=NullModel(), hyper_parameters=params, label_schema=labels_schema)
 
     if args.load_weights:
         model_bytes = load_model_weights(args.load_weights)

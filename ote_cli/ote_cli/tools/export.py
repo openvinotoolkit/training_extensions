@@ -20,6 +20,7 @@ from ote_cli.utils.config import apply_template_configurable_parameters
 from ote_cli.utils.importing import get_impl_class
 from ote_cli.utils.labels import generate_label_schema
 from ote_cli.utils.loading import load_config, load_model_weights
+from sc_sdk.entities.dataset_storage import NullDatasetStorage
 from sc_sdk.entities.datasets import NullDataset
 from sc_sdk.entities.id import ID
 from sc_sdk.entities.model import Model, ModelStatus, NullModel
@@ -64,15 +65,15 @@ def main():
         labels = args.labels
     else:
         Dataset = get_dataset_class(template['domain'])
-        dataset = Dataset(args.ann_files)
+        dataset = Dataset(args.ann_files, dataset_storage=NullDatasetStorage())
         labels = dataset.get_labels()
 
-    params = ConfigurableParameters(workspace_id=ID(), project_id=ID(), task_id=ID())
+    params = ConfigurableParameters(workspace_id=ID(), model_storage_id=ID())
     apply_template_configurable_parameters(params, template)
 
     labels_schema = generate_label_schema(labels, template['domain'])
 
-    environment = TaskEnvironment(model=NullModel(), configurable_parameters=params, label_schema=labels_schema)
+    environment = TaskEnvironment(model=NullModel(), hyper_parameters=params, label_schema=labels_schema)
 
     model_bytes = load_model_weights(args.load_weights)
     model = Model(project=NullProject(),
@@ -90,7 +91,7 @@ def main():
         NullDataset(),
         environment.get_model_configuration(),
         ModelOptimizationType.MO,
-        [ModelPrecision.FP16],
+        precision=[ModelPrecision.FP16],
         optimization_methods=[],
         optimization_level={},
         target_device=TargetDevice.UNSPECIFIED,
@@ -107,4 +108,3 @@ def main():
 
     with open(os.path.join(args.save_model_to, 'model.xml'), 'w') as write_file:
         write_file.write(exported_model.get_data('openvino.xml').decode())
-
