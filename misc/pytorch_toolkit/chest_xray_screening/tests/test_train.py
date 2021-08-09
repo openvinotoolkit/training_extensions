@@ -23,7 +23,7 @@ def get_config(optimised=False):
 
 def download_checkpoint():
     os.makedirs('model_weights')
-    gdd.download_file_from_google_drive(file_id='1Qa88btQeeBszcCtQOYp8X7C051fdOOm9',
+    gdd.download_file_from_google_drive(file_id='1z4HuSVXyD59BHhw93j-BVbx6In1HZQn2',
                                     dest_path='model_weights/chest_xray_screening.pth',
                                     unzip=False)
     gdd.download_file_from_google_drive(file_id='1HUmG-wKRoKYxBdwu0_LX1ascBRmA-z5e',
