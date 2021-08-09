@@ -38,6 +38,9 @@ fi
 
 . ${venv_dir}/bin/activate
 
+CUDA_HOME_DIR=`readlink -f $CUDA_HOME`
+CUDA_VERSION=`echo $CUDA_HOME_DIR | cut -d "-" -f 2`
+CUDA_VERSION=${CUDA_VERSION/./}
 
 if [ -z ${CUDA_VERSION} ] && [ -e "$CUDA_HOME/version.txt" ]; then
   # Get CUDA version from version.txt file.
@@ -68,20 +71,26 @@ else
   pip install torch==${TORCH_VERSION}+cu${CUDA_VERSION_CODE} torchvision==${TORCHVISION_VERSION}+cu${CUDA_VERSION_CODE} -f https://download.pytorch.org/whl/torch_stable.html -c constraints.txt
 fi
 
+CONSTRAINTS_FILE=$(tempfile)
+cat constraints.txt > ${CONSTRAINTS_FILE}
+echo torch==${TORCH_VERSION}+cu${CUDA_VERSION_CODE} >> ${CONSTRAINTS_FILE}
+echo torchvision==${TORCHVISION_VERSION}+cu${CUDA_VERSION_CODE} >> ${CONSTRAINTS_FILE}
+echo ${CONSTRAINTS_FILE}
+
 pip uninstall -y mmcv
-pip install --no-cache-dir mmcv-full==${MMCV_VERSION} -f https://download.openmmlab.com/mmcv/dist/cu${CUDA_VERSION_CODE}/torch${TORCH_VERSION}/index.html -c constraints.txt
+pip install --no-cache-dir mmcv-full==${MMCV_VERSION} -f https://download.openmmlab.com/mmcv/dist/cu${CUDA_VERSION_CODE}/torch${TORCH_VERSION}/index.html -c ${CONSTRAINTS_FILE}
 
 # Install other requirements.
-cat requirements.txt | xargs -n 1 -L 1 pip3 install --no-cache -c constraints.txt
+cat requirements.txt | xargs -n 1 -L 1 pip3 install --no-cache -c ${CONSTRAINTS_FILE}
 
 mo_requirements_file="${INTEL_OPENVINO_DIR:-/opt/intel/openvino_2021}/deployment_tools/model_optimizer/requirements_onnx.txt"
 if [[ -e "${mo_requirements_file}" ]]; then
-  pip install -r ${mo_requirements_file} -c constraints.txt
+  pip install -r ${mo_requirements_file} -c ${CONSTRAINTS_FILE}
 else
   echo "[WARNING] Model optimizer requirements were not installed. Please install the OpenVino toolkit to use one."
 fi
 
-pip install -e ../../external/mmdetection/ -c constraints.txt
+pip install -e ../../external/mmdetection/ -c ${CONSTRAINTS_FILE}
 MMDETECTION_DIR=`realpath ../../external/mmdetection/`
 echo "export MMDETECTION_DIR=${MMDETECTION_DIR}" >> ${venv_dir}/bin/activate
 echo "export CUDA_HOME=${CUDA_HOME}" >> ${venv_dir}/bin/activate
