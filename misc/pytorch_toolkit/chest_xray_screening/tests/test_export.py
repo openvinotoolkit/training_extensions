@@ -17,11 +17,11 @@ def _get_config_():
 
 def download_checkpoint():
     os.makedirs('model_weights')
-    gdd.download_file_from_google_drive(file_id='1z4HuSVXyD59BHhw93j-BVbx6In1HZQn2',
-                                    dest_path='model_weights/chest_xray_screening.pth.tar',
+    gdd.download_file_from_google_drive(file_id='13KtMdL-RJoTXGRZ8WIdcHkf0XuX9bMMN',
+                                    dest_path='model_weights/chest_xray_screening.pth',
                                     unzip=False)
     gdd.download_file_from_google_drive(file_id='1HUmG-wKRoKYxBdwu0_LX1ascBRmA-z5e',
-                                    dest_path='model_weights/chest_xray_screening_eff.pth.tar',
+                                    dest_path='model_weights/chest_xray_screening_eff.pth',
                                     unzip=False)
 
 class ExportTest(unittest.TestCase):

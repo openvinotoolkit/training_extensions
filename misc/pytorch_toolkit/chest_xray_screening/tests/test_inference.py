@@ -41,9 +41,9 @@ class InferenceTest(unittest.TestCase):
     if not os.path.isdir('model_weights'):
         download_checkpoint()
     class_count = config["clscount"]
-    test_list = config['dummy_test_list']
+    test_list = config['dummy_valid_list']
     image_path = '../../../../data/chest_xray_screening/'
-    labels = config["labels"]
+    labels = config["valid_labels"]
     dataset_test = RSNADataSet(test_list, labels, image_path, transform=True)
     data_loader_test = DataLoader(
         dataset=dataset_test,
