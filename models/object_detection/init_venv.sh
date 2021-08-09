@@ -19,6 +19,7 @@ if [[ -e ${venv_dir} ]]; then
   exit
 fi
 
+# Get CUDA version.
 CUDA_HOME_CANDIDATE=/usr/local/cuda
 if [ -z "${CUDA_HOME}" ] && [ -d ${CUDA_HOME_CANDIDATE} ]; then
   echo "Exporting CUDA_HOME as ${CUDA_HOME_CANDIDATE}"
@@ -38,24 +39,21 @@ fi
 
 . ${venv_dir}/bin/activate
 
-CUDA_HOME_DIR=`readlink -f $CUDA_HOME`
-CUDA_VERSION=`echo $CUDA_HOME_DIR | cut -d "-" -f 2`
-CUDA_VERSION=${CUDA_VERSION/./}
-
-if [ -z ${CUDA_VERSION} ] && [ -e "$CUDA_HOME/version.txt" ]; then
-  # Get CUDA version from version.txt file.
-  CUDA_VERSION=$(cat $CUDA_HOME/version.txt | sed -e "s/^.*CUDA Version *//" -e "s/ .*//")
-fi
-
-if [[ -z ${CUDA_VERSION} ]]; then
-  # Get CUDA version from nvidia-smi output.
-  CUDA_VERSION=$(nvidia-smi | grep "CUDA Version" | sed -e "s/^.*CUDA Version: *//" -e "s/ .*//")
+if [ -e "$CUDA_HOME" ]; then
+  if [ -e "$CUDA_HOME/version.txt" ]; then
+    # Get CUDA version from version.txt file.
+    CUDA_VERSION=$(cat $CUDA_HOME/version.txt | sed -e "s/^.*CUDA Version *//" -e "s/ .*//")
+  else
+    # Get CUDA version from directory name.
+    CUDA_HOME_DIR=`readlink -f $CUDA_HOME`
+    CUDA_HOME_DIR=`basename $CUDA_HOME_DIR`
+    CUDA_VERSION=`echo $CUDA_HOME_DIR | cut -d "-" -f 2`
+  fi
 fi
 
 echo "Using CUDA_VERSION as ${CUDA_VERSION}"
 # Remove dots from CUDA version string, if any.
 CUDA_VERSION_CODE=$(echo ${CUDA_VERSION} | sed -e "s/\.//" -e "s/\(...\).*/\1/")
-
 
 # install ote.
 pip install -e ../../ote/ -c constraints.txt
