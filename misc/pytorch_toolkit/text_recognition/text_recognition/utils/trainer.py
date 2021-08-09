@@ -52,12 +52,17 @@ from text_recognition.data.vocab import PAD_TOKEN, read_vocab
 from text_recognition.datasets.dataset import BatchRandomSampler, str_to_class
 from text_recognition.models.model import TextRecognitionModel
 from torch.nn.utils import clip_grad_norm_
-from torch.utils.data import ConcatDataset, DataLoader
+from torch.utils.data import ConcatDataset, DataLoader, DistributedSampler
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
 VAL_FILE_NAME_TEMPLATE = '{}/results_epoch_{}_step_{}_{}.txt'
 
+def seed_worker(worker_seed=None):
+    seed = worker_seed or torch.initial_seed() % 2**32
+    print(f'Initialized experiment with seed {seed}')
+    torch.manual_seed(seed)
+    np.random.seed(seed)
 
 def calculate_loss(logits, targets, target_lengths, should_cut_by_min=False, ctc_loss=None):
     """args:
@@ -106,8 +111,11 @@ def calculate_loss(logits, targets, target_lengths, should_cut_by_min=False, ctc
 
 
 class Trainer:
-    def __init__(self, work_dir, config):
+    def __init__(self, work_dir, config, rank=0):
+        self.rank = rank
         self.config = config
+        if self.rank == 0:
+            seed_worker(self.config.get('seed'))
         self.model_path = config.get('model_path')
         self.train_paths = config.get('train_paths')
         self.val_path = config.get('val_path')
@@ -133,19 +141,29 @@ class Trainer:
         self.save_freq = config.get('save_freq', 2000)
         self.val_freq = config.get('val_freq', 5000)
         self.logs_path = os.path.join(self.work_dir, config.get('log_path', 'logs'))
-        self.writer = SummaryWriter(self.logs_path)
+        if self.rank == 0:
+            self.writer = SummaryWriter(self.logs_path)
+            self.writer.add_text('General info', pformat(config))
         self.device = config.get('device', 'cpu')
-        self.writer.add_text('General info', pformat(config))
+        self.multi_gpu = config.get('multi_gpu')
+        if self.multi_gpu:
+            torch.distributed.init_process_group("nccl", init_method="env://")
+            self.device = torch.device(f'cuda:{self.rank}')
         self.create_dirs()
         self.load_dataset()
         self.loss = torch.nn.CTCLoss(blank=0, zero_infinity=self.config.get(
             'CTCLossZeroInf', False)) if self.loss_type == 'CTC' else None
         self.out_size = len(self.vocab) + 1 if self.loss_type == 'CTC' else len(self.vocab)
-        self.model = TextRecognitionModel(config.get('backbone_config'), self.out_size, config.get('head', {}))
+        self.model = TextRecognitionModel(config.get('backbone_config'), self.out_size,
+                                          config.get('head', {}), config.get('transformation', {}))
         print(self.model)
         if self.model_path is not None:
             self.model.load_weights(self.model_path, map_location=self.device)
         self.model = self.model.to(self.device)
+        if self.multi_gpu:
+            if torch.cuda.device_count() > 1:
+                self.model = torch.nn.parallel.DistributedDataParallel(
+                    self.model, device_ids=[self.rank], output_device=self.rank)
         self.optimizer = getattr(optim, config.get('optimizer', 'Adam'))(self.model.parameters(), self.learing_rate)
         self.lr_scheduler = getattr(optim.lr_scheduler, self.config.get('scheduler', 'ReduceLROnPlateau'))(
             self.optimizer, **self.config.get('scheduler_params', {}))
@@ -155,52 +173,73 @@ class Trainer:
             self.fasttext_model = fasttext.load_model(self.config.get("language_model_path"))
 
     def create_dirs(self):
-        if not os.path.exists(self.logs_path):
-            os.makedirs(self.logs_path)
+        os.makedirs(self.logs_path, exist_ok=True)
         print('Created logs folder: {}'.format(self.logs_path))
-        if not os.path.exists(self.save_dir):
-            os.makedirs(self.save_dir)
+        os.makedirs(self.save_dir, exist_ok=True)
         print('Created save folder: {}'.format(self.save_dir))
-        if not os.path.exists(self.val_results_path):
-            os.makedirs(self.val_results_path)
+        os.makedirs(self.val_results_path, exist_ok=True)
         print('Created validation results folder: {}'.format(self.val_results_path))
 
     def load_dataset(self):
-        train_datasets = []
-        val_datasets = []
-        for param in self.config.get('datasets'):
-            dataset_type = param.pop('type')
-            subset = param.pop('subset')
-            dataset = str_to_class[dataset_type](**param)
-            if subset == 'train':
-                train_datasets.append(dataset)
-            elif subset == 'validate':
-                val_datasets.append(dataset)
+        for section in self.config.get('datasets').keys():
+            if section == 'train':
+                train_datasets = self._load_section(section)
+            elif section == 'validate':
+                val_datasets = self._load_section(section)
+            else:
+                raise ValueError(f'Wrong section name {section}')
 
-        train_dataset = ConcatDataset(train_datasets)
-        train_sampler = BatchRandomSampler(dataset=train_dataset, batch_size=self.config.get('batch_size', 4))
+
         pprint('Creating training transforms list: {}'.format(self.train_transforms_list), indent=4, width=120)
         batch_transform_train = create_list_of_transforms(self.train_transforms_list)
-        self.train_loader = DataLoader(
-            train_dataset,
-            batch_sampler=train_sampler,
-            collate_fn=partial(collate_fn, self.vocab.sign2id,
-                               batch_transform=batch_transform_train,
-                               use_ctc=(self.loss_type == 'CTC')),
-            num_workers=self.config.get('num_workers', 4))
-        val_samplers = [BatchRandomSampler(dataset=ds, batch_size=1) for ds in val_datasets]
+
+        train_dataset = ConcatDataset(train_datasets)
+        if self.multi_gpu:
+            train_sampler = DistributedSampler(dataset=train_dataset,
+                                               shuffle=True,
+                                               rank=self.rank,
+                                               num_replicas=torch.cuda.device_count())
+            self.train_loader = DataLoader(
+                train_dataset,
+                sampler=train_sampler,
+                collate_fn=partial(collate_fn, self.vocab.sign2id,
+                                   batch_transform=batch_transform_train,
+                                   use_ctc=(self.loss_type == 'CTC')),
+                num_workers=self.config.get('num_workers', 4),
+                batch_size=self.config.get('batch_size', 4),
+                pin_memory=True)
+        else:
+            train_sampler = BatchRandomSampler(dataset=train_dataset, batch_size=self.config.get('batch_size', 4))
+
+            self.train_loader = DataLoader(
+                train_dataset,
+                batch_sampler=train_sampler,
+                collate_fn=partial(collate_fn, self.vocab.sign2id,
+                                   batch_transform=batch_transform_train,
+                                   use_ctc=(self.loss_type == 'CTC')),
+                num_workers=self.config.get('num_workers', 4),
+                pin_memory=True)
         pprint('Creating val transforms list: {}'.format(self.val_transforms_list), indent=4, width=120)
         batch_transform_val = create_list_of_transforms(self.val_transforms_list)
         self.val_loaders = [
             DataLoader(
                 ds,
-                batch_sampler=sampler,
                 collate_fn=partial(collate_fn, self.vocab.sign2id,
                                    batch_transform=batch_transform_val, use_ctc=(self.loss_type == 'CTC')),
-                num_workers=self.config.get('num_workers', 4))
-            for ds, sampler in zip(val_datasets, val_samplers)
+                batch_size=self.config.get('val_batch_size', 1),
+                num_workers=self.config.get('num_workers', 4)
+            )
+            for ds in val_datasets
         ]
         print('num workers: ', self.config.get('num_workers'))
+
+    def _load_section(self, section):
+        datasets = []
+        for param in self.config.get('datasets')[section]:
+            dataset_type = param.pop('type')
+            dataset = str_to_class[dataset_type](**param)
+            datasets.append(dataset)
+        return datasets
 
     def train(self):
         losses = 0.0
@@ -210,11 +249,12 @@ class Trainer:
                 step_loss, step_accuracy = self.train_step(imgs, target_lengths, training_gt, loss_computation_gt)
                 losses += step_loss
                 accuracies += step_accuracy
-                self.writer.add_scalar('Train loss', step_loss, self.global_step)
-                self.writer.add_scalar('Train accuracy', step_accuracy, self.global_step)
+                if self.rank == 0:
+                    self.writer.add_scalar('Train loss', step_loss, self.global_step)
+                    self.writer.add_scalar('Train accuracy', step_accuracy, self.global_step)
 
                 # log message
-                if self.global_step % self.print_freq == 0:
+                if self.global_step % self.print_freq == 0 and self.rank == 0:
                     total_step = len(self.train_loader)
                     print('Epoch {}, step:{}/{} {:.2f}%, Loss:{:.4f}, accuracy: {:.4f}'.format(
                         self.epoch, self.step, total_step,
@@ -223,14 +263,14 @@ class Trainer:
                     ))
                     losses = 0.0
                     accuracies = 0.0
-                if self.global_step % self.save_freq == 0:
+                if self.global_step % self.save_freq == 0 and self.rank == 0:
                     self.save_model('model_epoch_{}_step_{}_{}.pth'.format(
                         self.epoch,
                         self.step,
                         self.time,
                     ))
                     self.writer.add_scalar('Learning rate', self.learing_rate, self.global_step)
-                if self.global_step % self.val_freq == 0:
+                if self.global_step % self.val_freq == 0 and self.rank == 0:
 
                     step_loss, step_accuracy = self.validate(use_gt_token=False)
                     self.writer.add_scalar('Loss/test_mode_validation', step_loss, self.global_step)
@@ -314,8 +354,8 @@ class Trainer:
                                                  should_cut_by_min=cut, ctc_loss=self.loss)
                         loss = loss.detach()
                         val_loss += loss
-                    val_loss = val_loss / len(loader)
-                    val_acc = val_acc / len(loader)
+                    val_loss = val_loss / len(loader.dataset)
+                    val_acc = val_acc / len(loader.dataset)
                     dataset_name = os.path.split(loader.dataset.data_path)[-1]
                     print('Epoch {}, dataset {} loss: {:.4f}'.format(
                         self.epoch, dataset_name, val_loss
@@ -325,7 +365,7 @@ class Trainer:
                         self.epoch, dataset_name, val_acc
                     ))
                     self.writer.add_scalar(f'Accuracy {dataset_name}', val_acc, self.global_step)
-                    weight = len(loader) / sum(map(len, self.val_loaders))
+                    weight = len(loader.dataset) / sum(map(lambda ld: len(ld.dataset), self.val_loaders))
                     val_avg_loss += val_loss * weight
                     val_avg_accuracy += val_acc * weight
         print('Epoch {}, validation average loss: {:.4f}'.format(

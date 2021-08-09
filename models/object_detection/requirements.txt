@@ -1,4 +1,6 @@
+--no-cache-dir --no-binary=Polygon3 Polygon3==3.0.8
 -r ../../external/mmdetection/requirements/build.txt
+--no-cache-dir --no-binary=mmpycocotools mmpycocotools==12.0.3
 -r ../../external/mmdetection/requirements.txt
 -r ../../external/mmdetection/requirements/nncf_compression.txt
 opencv-python

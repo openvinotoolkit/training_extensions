@@ -20,7 +20,7 @@ Average Precision (AP) is defined as an area under the precision/recall curve.
 ```bash
 cd models/object_detection
 ```
-If You have not created virtual environment yet:
+If you have not created virtual environment yet:
 ```bash
 ./init_venv.sh
 ```
@@ -140,3 +140,37 @@ python eval.py \
    --save-metrics-to ${WORK_DIR}/metrics.yaml \
    --classes ${CLASSES}
 ```
+
+### 11. Optimization
+
+The trained models can be optimized -- compressed by [NNCF](https://github.com/openvinotoolkit/nncf) framework.
+
+To use NNCF to compress a custom object detection model, you should go to the root folder of this git repository
+and install compression requirements in your virtual environment by the command
+```bash
+pip install -r external/mmdetection/requirements/nncf_compression.txt
+```
+
+At the moment, only one compression method is supported for custom object detection models:
+[int8 quantization](https://github.com/openvinotoolkit/nncf/blob/develop/docs/compression_algorithms/Quantization.md).
+
+To compress the model, 'compress.py' script should be used.
+
+Please, note that NNCF framework requires a dataset for compression, since it makes several steps of fine-tuning after
+compression to restore the quality of the model, so the command line parameters of the script `compress.py` are closer
+to the command line parameter of the training script (see the section "7. Training" stated above):
+```
+      python compress.py \
+         --load-weights ${SNAPSHOT} \
+         --train-ann-files ${TRAIN_ANN_FILE} \
+         --train-data-roots ${TRAIN_IMG_ROOT} \
+         --val-ann-files ${VAL_ANN_FILE} \
+         --val-data-roots ${VAL_IMG_ROOT} \
+         --save-checkpoints-to outputs \
+         --nncf-quantization
+```
+Note that the number of epochs required for NNCF compression should not be set by command line parameter, since it is
+calculated by the script `compress.py` itself.
+
+The compressed model can be evaluated and exported to the OpenVINO™ format by the same commands as non-compressed model,
+see the sections 8 and 9 above.
