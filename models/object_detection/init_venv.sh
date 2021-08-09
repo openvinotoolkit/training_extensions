@@ -19,7 +19,6 @@ if [[ -e ${venv_dir} ]]; then
   exit
 fi
 
-# Get CUDA version.
 CUDA_HOME_CANDIDATE=/usr/local/cuda
 if [ -z "${CUDA_HOME}" ] && [ -d ${CUDA_HOME_CANDIDATE} ]; then
   echo "Exporting CUDA_HOME as ${CUDA_HOME_CANDIDATE}"

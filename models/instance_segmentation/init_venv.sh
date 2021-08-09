@@ -38,21 +38,21 @@ fi
 
 . ${venv_dir}/bin/activate
 
-
-if [ -z ${CUDA_VERSION} ] && [ -e "$CUDA_HOME/version.txt" ]; then
-  # Get CUDA version from version.txt file.
-  CUDA_VERSION=$(cat $CUDA_HOME/version.txt | sed -e "s/^.*CUDA Version *//" -e "s/ .*//")
-fi
-
-if [[ -z ${CUDA_VERSION} ]]; then
-  # Get CUDA version from nvidia-smi output.
-  CUDA_VERSION=$(nvidia-smi | grep "CUDA Version" | sed -e "s/^.*CUDA Version: *//" -e "s/ .*//")
+if [ -e "$CUDA_HOME" ]; then
+  if [ -e "$CUDA_HOME/version.txt" ]; then
+    # Get CUDA version from version.txt file.
+    CUDA_VERSION=$(cat $CUDA_HOME/version.txt | sed -e "s/^.*CUDA Version *//" -e "s/ .*//")
+  else
+    # Get CUDA version from directory name.
+    CUDA_HOME_DIR=`readlink -f $CUDA_HOME`
+    CUDA_HOME_DIR=`basename $CUDA_HOME_DIR`
+    CUDA_VERSION=`echo $CUDA_HOME_DIR | cut -d "-" -f 2`
+  fi
 fi
 
 echo "Using CUDA_VERSION as ${CUDA_VERSION}"
 # Remove dots from CUDA version string, if any.
 CUDA_VERSION_CODE=$(echo ${CUDA_VERSION} | sed -e "s/\.//" -e "s/\(...\).*/\1/")
-
 
 # install ote.
 pip install -e ../../ote/ -c constraints.txt
@@ -68,20 +68,26 @@ else
   pip install torch==${TORCH_VERSION}+cu${CUDA_VERSION_CODE} torchvision==${TORCHVISION_VERSION}+cu${CUDA_VERSION_CODE} -f https://download.pytorch.org/whl/torch_stable.html -c constraints.txt
 fi
 
+CONSTRAINTS_FILE=$(tempfile)
+cat constraints.txt > ${CONSTRAINTS_FILE}
+echo torch==${TORCH_VERSION}+cu${CUDA_VERSION_CODE} >> ${CONSTRAINTS_FILE}
+echo torchvision==${TORCHVISION_VERSION}+cu${CUDA_VERSION_CODE} >> ${CONSTRAINTS_FILE}
+echo ${CONSTRAINTS_FILE}
+
 pip uninstall -y mmcv
-pip install --no-cache-dir mmcv-full==${MMCV_VERSION} -f https://download.openmmlab.com/mmcv/dist/cu${CUDA_VERSION_CODE}/torch${TORCH_VERSION}/index.html -c constraints.txt
+pip install --no-cache-dir mmcv-full==${MMCV_VERSION} -f https://download.openmmlab.com/mmcv/dist/cu${CUDA_VERSION_CODE}/torch${TORCH_VERSION}/index.html -c ${CONSTRAINTS_FILE}
 
 # Install other requirements.
-cat requirements.txt | xargs -n 1 -L 1 pip3 install -c constraints.txt
+cat requirements.txt | xargs -n 1 -L 1 pip3 install --no-cache -c ${CONSTRAINTS_FILE}
 
 mo_requirements_file="${INTEL_OPENVINO_DIR:-/opt/intel/openvino_2021}/deployment_tools/model_optimizer/requirements_onnx.txt"
 if [[ -e "${mo_requirements_file}" ]]; then
-  pip install -r ${mo_requirements_file} -c constraints.txt
+  pip install -r ${mo_requirements_file} -c ${CONSTRAINTS_FILE}
 else
   echo "[WARNING] Model optimizer requirements were not installed. Please install the OpenVino toolkit to use one."
 fi
 
-pip install -e ../../external/mmdetection/ -c constraints.txt
+pip install -e ../../external/mmdetection/ -c ${CONSTRAINTS_FILE}
 MMDETECTION_DIR=`realpath ../../external/mmdetection/`
 echo "export MMDETECTION_DIR=${MMDETECTION_DIR}" >> ${venv_dir}/bin/activate
 echo "export CUDA_HOME=${CUDA_HOME}" >> ${venv_dir}/bin/activate
