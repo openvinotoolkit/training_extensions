@@ -62,17 +62,18 @@ export TORCH_VERSION=1.8.1
 export TORCHVISION_VERSION=0.9.1
 export MMCV_VERSION=1.3.0
 
-if [[ $CUDA_VERSION_CODE == "102" ]]; then
-  pip install torch==${TORCH_VERSION} torchvision==${TORCHVISION_VERSION} -c constraints.txt
-else
-  pip install torch==${TORCH_VERSION}+cu${CUDA_VERSION_CODE} torchvision==${TORCHVISION_VERSION}+cu${CUDA_VERSION_CODE} -f https://download.pytorch.org/whl/torch_stable.html -c constraints.txt
-fi
-
 CONSTRAINTS_FILE=$(tempfile)
 cat constraints.txt > ${CONSTRAINTS_FILE}
-echo torch==${TORCH_VERSION}+cu${CUDA_VERSION_CODE} >> ${CONSTRAINTS_FILE}
-echo torchvision==${TORCHVISION_VERSION}+cu${CUDA_VERSION_CODE} >> ${CONSTRAINTS_FILE}
-echo ${CONSTRAINTS_FILE}
+
+if [[ $CUDA_VERSION_CODE == "102" ]]; then
+  pip install torch==${TORCH_VERSION} torchvision==${TORCHVISION_VERSION} -c constraints.txt
+  echo torch==${TORCH_VERSION} >> ${CONSTRAINTS_FILE}
+  echo torchvision==${TORCHVISION_VERSION} >> ${CONSTRAINTS_FILE}
+else
+  pip install torch==${TORCH_VERSION}+cu${CUDA_VERSION_CODE} torchvision==${TORCHVISION_VERSION}+cu${CUDA_VERSION_CODE} -f https://download.pytorch.org/whl/torch_stable.html -c constraints.txt
+  echo torch==${TORCH_VERSION}+cu${CUDA_VERSION_CODE} >> ${CONSTRAINTS_FILE}
+  echo torchvision==${TORCHVISION_VERSION}+cu${CUDA_VERSION_CODE} >> ${CONSTRAINTS_FILE}
+fi
 
 pip uninstall -y mmcv
 pip install --no-cache-dir mmcv-full==${MMCV_VERSION} -f https://download.openmmlab.com/mmcv/dist/cu${CUDA_VERSION_CODE}/torch${TORCH_VERSION}/index.html -c ${CONSTRAINTS_FILE}
