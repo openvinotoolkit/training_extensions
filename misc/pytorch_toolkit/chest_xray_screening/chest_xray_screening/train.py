@@ -29,7 +29,6 @@ class RSNATrainer():
                       class_count, checkpoint, device, class_names, lr):
 
         self.gepoch_id = 0
-        self.model_val = ''
         self.device = device
         self.model = model.to(self.device)
         self.data_loader_train = data_loader_train
@@ -76,7 +75,7 @@ class RSNATrainer():
                              'state_dict': self.model.state_dict(),
                              'best_loss': valid_loss_min,
                              'optimizer' : self.optimizer.state_dict()},
-                             savepath+'/m-epoch'+str(epoch_id)+'-' + timestamp_launch + '.pth.tar')
+                             savepath+'/m-epoch'+str(epoch_id)+'.pth')
             test_auroc = RSNATrainer.test(self)
             print(f"Epoch:{epoch_id + 1}| EndTime:{timestamp_end}| TestAUROC: {test_auroc}| ValidAUROC: {auroc_max}")
 
@@ -122,7 +121,6 @@ class RSNATrainer():
         scheduler = StepLR(self.optimizer, step_size=6, gamma=0.002)
 
         for batch_id, (var_input, var_target) in tq(enumerate(self.data_loader_train)):
-            epoch_id = self.gepoch_id
             var_target = var_target.to(self.device)
             var_input = var_input.to(self.device)
             var_output= self.model(var_input)
@@ -136,22 +134,13 @@ class RSNATrainer():
             train_loss_value = trainloss_value.item()
             loss_train_list.append(train_loss_value)
 
-            if batch_id%ITERATION_NUM==0 and batch_id!=0:
+            if batch_id%len(self.data_loader_train)==0 and batch_id!=0:
                 validloss_value,auroc_mean = RSNATrainer.valid(self)
                 loss_valid_list.append(validloss_value)
                 if auroc_mean>auroc_max:
                     print('Better auroc obtained')
                     auroc_max = auroc_mean
-                    self.model_val=f'''m-epoch {str(epoch_id)}-
-                                    batch_id {str(batch_id)}-
-                                    aurocMean-{str(auroc_mean)}.pth.tar'''
 
-                    torch.save({'batch': batch_id + 1,
-                                'state_dict': self.model.state_dict(),
-                                'aucmean_loss': auroc_mean,
-                                'optimizer' : self.optimizer.state_dict()},
-                                savepath+'/m-epoch-'+str(epoch_id)+'-batch_id-'+str(batch_id)+
-                                '-aurocMean-'+str(auroc_mean)+'.pth.tar')
                 scheduler.step()
 
         train_loss_mean = np.mean(loss_train_list)
@@ -264,7 +253,7 @@ if __name__=="__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--lr",required=False, help="Learning rate",default=1e-4,type = float)
     parser.add_argument("--checkpoint",required=False, help="Checkpoint model weight",default= None ,type = str)
-    parser.add_argument("--bs",required=False, help="Batchsize", type=int)
+    parser.add_argument("--bs",required=False, default=16, help="Batchsize", type=int)
     parser.add_argument("--dpath",required=True, help="Path to folder containing all data", type =str)
     parser.add_argument("--epochs",required=False,default=15, help="Number of epochs", type=int)
     parser.add_argument("--clscount",required=False,default=3, help="Number of classes", type=int)

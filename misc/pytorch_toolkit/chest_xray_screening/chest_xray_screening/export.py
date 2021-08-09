@@ -1,6 +1,8 @@
 import os
 import json
-from .utils.exporter import Exporter
+import sys
+sys.path.append(os.path.abspath('../utils'))
+from exporter import Exporter
 import argparse
 
 def _get_config_():
@@ -11,7 +13,6 @@ def _get_config_():
     return config_file
 
 def export(args):
-
     export_config = _get_config_()
     exporter = Exporter(export_config,args.optimised)
 

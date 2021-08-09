@@ -37,7 +37,7 @@ class Exporter:
         subprocess.run(export_command, shell=True, check=True)
 
     def export_model_onnx(self):
-        print(f"Saving model to {self.config.get('model_name')}")
+        print(f"Saving model to {self.config.get('model_name_onnx')}")
         res_path = os.path.join(os.path.split(self.checkpoint)[0], self.config.get('model_name'))
         dummy_input = torch.randn(1, 3, 1024, 1024)
         torch.onnx.export(self.model, dummy_input, res_path,
