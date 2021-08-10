@@ -5,3 +5,4 @@ scikit-learn
 tqdm
 pandas
 googledrivedownloader
+requests==2.26.0
