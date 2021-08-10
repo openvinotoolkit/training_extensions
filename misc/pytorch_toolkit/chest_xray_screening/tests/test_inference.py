@@ -4,12 +4,9 @@ import json
 import torch
 from torch.utils.data import DataLoader
 from google_drive_downloader import GoogleDriveDownloader as gdd
-import sys
-sys.path.append(os.path.abspath('../chest_xray_screening'))
-sys.path.append(os.path.abspath('../utils'))
-from dataloader import RSNADataSet
-from model import DenseNet121
-from inference import RSNAInference
+from ..utils.dataloader import RSNADataSet
+from ..utils.model import DenseNet121
+from ..chest_xray_screening.inference import RSNAInference
 
 
 
@@ -42,7 +39,7 @@ class InferenceTest(unittest.TestCase):
         download_checkpoint()
     class_count = config["clscount"]
     test_list = config['dummy_valid_list']
-    image_path = '../../../../data/chest_xray_screening/'
+    image_path = '../../data/chest_xray_screening/'
     labels = config["dummy_labels"]
     dataset_test = RSNADataSet(test_list, labels, image_path, transform=True)
     data_loader_test = DataLoader(

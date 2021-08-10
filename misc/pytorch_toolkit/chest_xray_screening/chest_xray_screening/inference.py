@@ -7,11 +7,9 @@ from torch.utils.data import DataLoader
 from math import sqrt
 import json
 import os
-import sys
-sys.path.append(os.path.abspath('../utils'))
-from dataloader import RSNADataSet
-from score import compute_auroc
-from model import DenseNet121,DenseNet121Eff
+from ..utils.dataloader import RSNADataSet
+from ..utils.score import compute_auroc
+from ..utils.model import DenseNet121,DenseNet121Eff
 
 
 

@@ -8,18 +8,12 @@ from torch import optim
 import torch.nn.functional as tfunc
 from torch.utils.data import DataLoader
 from torch.optim.lr_scheduler import StepLR
-import sys
-sys.path.append(os.path.abspath('../utils'))
-from dataloader import RSNADataSet
-from score import compute_auroc
-from model import DenseNet121,DenseNet121Eff
+from ..utils.dataloader import RSNADataSet
+from ..utils.score import compute_auroc
+from ..utils.model import DenseNet121,DenseNet121Eff
 from math import sqrt
 import json
 from tqdm import tqdm as tq
-
-ITERATION_NUM=2500
-# Evaluate the performance of the model on validation_set
-# every 2500th (ITERATION_NUM) iteration. 2500 is a random choice, this could be changed.
 
 
 class RSNATrainer():

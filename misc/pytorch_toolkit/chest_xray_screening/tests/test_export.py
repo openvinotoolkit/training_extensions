@@ -1,10 +1,8 @@
 import unittest
 import os
 import json
-import sys
 from google_drive_downloader import GoogleDriveDownloader as gdd
-sys.path.append(os.path.abspath('../utils'))
-from exporter import Exporter
+from ..utils.exporter import Exporter
 
 OPENVINO_DIR = '/opt/intel/openvino_2021'
 

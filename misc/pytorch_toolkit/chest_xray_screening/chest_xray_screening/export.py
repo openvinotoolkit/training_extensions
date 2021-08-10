@@ -1,8 +1,6 @@
 import os
 import json
-import sys
-sys.path.append(os.path.abspath('../utils'))
-from exporter import Exporter
+from ..utils.exporter import Exporter
 import argparse
 
 def _get_config_():

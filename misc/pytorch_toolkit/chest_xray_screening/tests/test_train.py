@@ -2,14 +2,11 @@ import unittest
 import os
 import json
 import time
-import sys
 from torch.utils.data import DataLoader
 from google_drive_downloader import GoogleDriveDownloader as gdd
-sys.path.append(os.path.abspath('../chest_xray_screening'))
-sys.path.append(os.path.abspath('../utils'))
-from train import RSNATrainer
-from dataloader import RSNADataSet
-from model import DenseNet121
+from ..chest_xray_screening.train import RSNATrainer
+from ..utils.dataloader import RSNADataSet
+from ..utils.model import DenseNet121
 
 def get_config(optimised=False):
     path = os.path.dirname(os.path.realpath(__file__))
@@ -33,7 +30,7 @@ def download_checkpoint():
 class TrainerTest(unittest.TestCase):
     config = get_config()
     class_count = config["clscount"]
-    image_path = '../../../../data/chest_xray_screening/'
+    image_path = '../../data/chest_xray_screening/'
     learn_rate = config["lr"]
     tr_list = config["dummy_train_list"]
     val_list = config["dummy_valid_list"]
