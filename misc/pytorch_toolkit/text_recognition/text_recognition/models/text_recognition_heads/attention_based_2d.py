@@ -69,7 +69,7 @@ class DecoderAttention2d(nn.Module):
             decoder_input_feature_size[1]
 
         self.embedding = nn.Embedding(vocab_size, self.hidden_size)
-
+        assert rnn_type in self.str_to_class.keys(), f'Unsupported decoder type {rnn_type}'
         self.decoder = self.str_to_class[rnn_type](
             input_size=self.hidden_size,
             hidden_size=self.hidden_size,
@@ -77,8 +77,7 @@ class DecoderAttention2d(nn.Module):
 
         self.encoder_outputs_w = nn.Linear(self.hidden_size, self.hidden_size)
         self.hidden_state_w = nn.Linear(self.hidden_size, self.hidden_size)
-        self.v = nn.Parameter(torch.Tensor(
-            self.hidden_size, 1))  # context vector
+        self.v = nn.Parameter(torch.Tensor(self.hidden_size, 1))  # context vector
 
         self.attn_combine = nn.Linear(self.hidden_size * 2, self.hidden_size)
 
@@ -99,7 +98,8 @@ class DecoderAttention2d(nn.Module):
         assert tuple(hidden.shape) == (1, BATCH_SIZE, self.hidden_size), f'{hidden.shape}'
         assert tuple(prev_symbol.shape) == (BATCH_SIZE,), f'{prev_symbol.shape} {prev_symbol}'
         assert tuple(encoder_outputs.shape) == (
-            BATCH_SIZE, self.flatten_feature_size, self.hidden_size), f'{encoder_outputs.shape}'
+            BATCH_SIZE, self.flatten_feature_size, self.hidden_size), f'Got {encoder_outputs.shape} | ' \
+            f'Expected batch {BATCH_SIZE}, feature size {self.flatten_feature_size}, hidden {self.hidden_size}'
 
         prev_symbol = prev_symbol.long()
 
@@ -131,6 +131,7 @@ class DecoderAttention2d(nn.Module):
 
         output = self.attn_combine(output).unsqueeze(0)
         output = F.relu(output)
+        self.decoder.flatten_parameters()
         if isinstance(self.decoder, nn.GRU):
             output, hidden = self.decoder(output, hidden)
         elif isinstance(self.decoder, nn.LSTM):
@@ -143,9 +144,7 @@ class DecoderAttention2d(nn.Module):
 
         if isinstance(self.decoder, nn.LSTM):
             return output, hidden, cell, attn_weights
-        if isinstance(self.decoder, nn.GRU):
-            return output, hidden, attn_weights
-        raise ValueError(f'Unsupported decoder type {self.decoder}')
+        return output, hidden, attn_weights
 
 
 class TextRecognitionHeadAttention(nn.Module):
@@ -280,9 +279,8 @@ class TextRecognitionHeadAttention(nn.Module):
             decoder_output, decoder_hidden, _ = self.decoder(
                 decoder_input, hidden, features)
             return decoder_hidden, decoder_output
-        if isinstance(self.decoder.decoder, nn.LSTM):
-            hidden, context = recurrent_state
-            decoder_output, decoder_hidden, decoder_cell, _ = self.decoder(
-                decoder_input, hidden, features, context)
-            return decoder_hidden, decoder_cell, decoder_output
-        raise ValueError(f'Unsupported decoder type {self.decoder.decoder}')
+
+        hidden, context = recurrent_state
+        decoder_output, decoder_hidden, decoder_cell, _ = self.decoder(
+            decoder_input, hidden, features, context)
+        return decoder_hidden, decoder_cell, decoder_output

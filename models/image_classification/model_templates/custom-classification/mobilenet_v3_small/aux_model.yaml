@@ -1,3 +1,6 @@
+lr_finder:
+  enable: False
+
 model:
   name: 'mobilenetv3_large'
   classification: True
@@ -5,63 +8,14 @@ model:
   save_chkpt: False
   feature_dim: 1280
   dropout_cls:
-    p: 0.1
-    dist: 'gaussian'
-    mu: 0.5
-    sigma: 0.3
-
-custom_datasets:
-  roots: ['path/to/train_folder', 'path/to/val_folder']
-  types: ['classification_image_folder', 'classification_image_folder']
-  names: ['data_train', 'data_val']
-
-data:
-  root: './'
-  type: 'image'
-  sources: ['data_train']
-  targets: ['data_val']
-  height: 224
-  width: 224
-  norm_mean: [0.485, 0.456, 0.406]
-  norm_std: [0.229, 0.224, 0.225]
-  save_dir: 'path/to/output_dir'
-  min_samples_per_id: 1
-  transforms:
-    random_flip:
-      enable: True
-      p: 0.5
-    random_crop:
-      enable: True
-      scale: 0.8
-      p: 0.5
-    random_rotate:
-      enable: True
-      angle: (-10,10)
-      p: 1.
-    color_jitter:
-      enable: True
-      p: 1.
-    posterize:
-      enable: True
-      p: 1.
-    equalize:
-      enable: True
-      p: 1.
-    random_noise:
-      enable: True
-      p: 1.
-    random_blur:
-      enable: True
-      p: 1.
-    augmix:
-      enable: True
+    p: 0.2
+    dist: 'bernoulli'
 
 loss:
   name: 'am_softmax'
   softmax:
-    conf_penalty: 0.0085
-    s: 5.0
-    m: 0.35
+    s: 1.0
+    compute_s: False
 
 sampler:
   train_sampler: 'RandomSampler'
@@ -71,15 +25,19 @@ metric_losses:
 
 train:
   optim: 'sam'
-  lr: 0.013
+  lr: 0.016
+  nbd: True
   max_epoch: 200
   weight_decay: 5e-4
-  batch_size: 128
-  fixbase_epoch: 0
-  lr_scheduler: 'reduce_on_plateau'
+  batch_size: 84
+  lr_scheduler: 'warmup'
+  warmup: 5
+  base_scheduler: 'reduce_on_plateau'
   early_stoping: True
   train_patience: 5
-  patience: 4
+  lr_decay_factor: 200
+  deterministic: True
+  patience: 5
   gamma: 0.1
 
 sam:
