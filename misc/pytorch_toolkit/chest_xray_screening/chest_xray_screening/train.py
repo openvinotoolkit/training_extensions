@@ -183,7 +183,7 @@ def main(args):
     dpath = args.dpath
     img_pth = args.dpath+'/processed_data/'
     numpy_path = args.dpath+'/data_split/'
-    with open(dpath+'/rsna_annotation.json') as lab_file:
+    with open(os.path,join(dpath, 'rsna_annotation.json')) as lab_file:
         labels = json.load(lab_file)
 
     # Place numpy file containing train-valid-test split on tools folder
