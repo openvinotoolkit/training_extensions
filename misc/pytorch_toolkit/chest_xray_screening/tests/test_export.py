@@ -2,9 +2,8 @@ import unittest
 import os
 import json
 from google_drive_downloader import GoogleDriveDownloader as gdd
-from chest_xray_screening.utils.exporter import Exporter
+from chest_xray_screening.utils.exporter import Exporter, OPENVINO_DIR 
 
-OPENVINO_DIR = '/opt/intel/openvino_2021'
 
 def _get_config_():
     path = os.path.dirname(os.path.realpath(__file__))
