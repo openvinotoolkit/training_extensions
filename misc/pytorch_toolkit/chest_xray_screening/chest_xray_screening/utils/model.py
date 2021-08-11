@@ -10,7 +10,7 @@ class DenseNet121(nn.Module):
             param.requires_grad = False
         self.model.classifier=nn.Sequential(nn.Linear(1024, class_count), nn.Sigmoid())
     def forward(self, x):
-        x= self.model(x)
+        x = self.model(x)
         return x
 
 
