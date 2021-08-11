@@ -62,7 +62,7 @@ def main(args):
         labels = json.load(lab_file)
     test_list = np.load(os.path.join(numpy_path, 'test_list.npy')).tolist()
 
-    dataset_test = RSNADataSet(test_list,labels,img_pth,transform=True)
+    dataset_test = RSNADataSet(test_list, labels, img_pth, transform=True)
     data_loader_test = DataLoader(
         dataset=dataset_test,
         batch_size=1,
