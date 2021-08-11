@@ -91,7 +91,7 @@ class RSNATrainer():
                 out_pred = torch.cat((out_pred, var_output), 0)
 
                 lossvalue = self.loss_fn(
-                    var_output,tfunc.one_hot(var_target.squeeze(1).long(),num_classes =self.class_count).float())
+                    var_output, tfunc.one_hot(var_target.squeeze(1).long(), num_classes=self.class_count).float())
 
                 loss_valid_r += lossvalue.item()
                 valid_batches += 1
