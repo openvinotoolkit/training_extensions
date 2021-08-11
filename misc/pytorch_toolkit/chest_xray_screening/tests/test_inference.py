@@ -55,9 +55,9 @@ class InferenceTest(unittest.TestCase):
         target_metric = self.config["target_metric"]
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         inference = RSNAInference(
-            self.model,self.data_loader_test,
-            self.class_count,self.checkpoint,
-            self.class_names,device)
+            self.model, self.data_loader_test,
+            self.class_count, self.checkpoint,
+            self.class_names, device)
         metric = inference.test()
         self.assertGreaterEqual(metric, target_metric)
 
