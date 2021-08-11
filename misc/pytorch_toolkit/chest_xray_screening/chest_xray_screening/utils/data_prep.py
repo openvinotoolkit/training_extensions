@@ -53,7 +53,7 @@ def create_annotation(args):
         dict_annotation[str(file)] = idx
 
 
-    with open(args.dpath+'/rsna_annotation.json','w') as f:
+    with open(os.path.join(args.dpath, 'rsna_annotation.json'), 'w') as f:
         json.dump(dict_annotation,f)
 
     print('Created and saved rsna_annotation.json file.')
