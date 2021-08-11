@@ -54,7 +54,7 @@ class RSNATrainer():
         for epoch_id in range(max_epoch):
             print(f"Epoch {epoch_id+1}/{max_epoch}")
             self.gepoch_id = epoch_id
-            train_loss, valid_loss, auroc_max = RSNATrainer.epoch_train(self,savepath)
+            train_loss, valid_loss, auroc_max = self.epoch_train(savepath)
             self.current_train_loss = train_loss
             self.current_valid_loss = train_loss
             timestamp_end = time.strftime("%H%M%S-%d%m%Y")
