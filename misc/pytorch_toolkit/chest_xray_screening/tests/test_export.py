@@ -7,7 +7,7 @@ from chest_xray_screening.utils.exporter import Exporter, OPENVINO_DIR
 
 def _get_config_():
     path = os.path.dirname(os.path.realpath(__file__))
-    with open(path+'/test_config.json','r') as f1:
+    with open(os.path.join(path, 'test_config.json'), ) as f1:
         config_file = json.load(f1)
 
     return config_file['export']
