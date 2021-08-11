@@ -4,9 +4,9 @@ import json
 import torch
 from torch.utils.data import DataLoader
 from google_drive_downloader import GoogleDriveDownloader as gdd
-from ..utils.dataloader import RSNADataSet
-from ..utils.model import DenseNet121
-from ..chest_xray_screening.inference import RSNAInference
+from chest_xray_screening.utils.dataloader import RSNADataSet
+from chest_xray_screening.utils.model import DenseNet121
+from chest_xray_screening.chest_xray_screening.inference import RSNAInference
 
 
 

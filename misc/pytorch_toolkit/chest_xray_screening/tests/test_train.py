@@ -4,9 +4,9 @@ import json
 import time
 from torch.utils.data import DataLoader
 from google_drive_downloader import GoogleDriveDownloader as gdd
-from ..chest_xray_screening.train import RSNATrainer
-from ..utils.dataloader import RSNADataSet
-from ..utils.model import DenseNet121
+from chest_xray_screening.train import RSNATrainer
+from chest_xray_screening.utils.dataloader import RSNADataSet
+from chest_xray_screening.utils.model import DenseNet121
 
 def get_config(optimised=False):
     path = os.path.dirname(os.path.realpath(__file__))
