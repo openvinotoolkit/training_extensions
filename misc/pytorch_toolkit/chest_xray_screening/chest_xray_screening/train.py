@@ -69,7 +69,7 @@ class RSNATrainer():
                              'state_dict': self.model.state_dict(),
                              'best_loss': valid_loss_min,
                              'optimizer' : self.optimizer.state_dict()},
-                             savepath+'/m-epoch'+str(epoch_id)+'.pth')
+                             os.path.join(savepath, f'm-epoch-{epoch_id}.pth'))
             test_auroc = RSNATrainer.test(self)
             print(f"Epoch:{epoch_id + 1}| EndTime:{timestamp_end}| TestAUROC: {test_auroc}| ValidAUROC: {auroc_max}")
 
