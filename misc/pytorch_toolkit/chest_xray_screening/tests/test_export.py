@@ -45,7 +45,7 @@ class ExportTest(unittest.TestCase):
     def test_config(self):
         self.config = _get_config_()
         self.model_path = self.config['checkpoint']
-        self.input_shape = self.config["input_shape"]
+        self.input_shape = self.config['input_shape']
         self.output_dir = os.path.split(self.model_path)[0]
         self.assertTrue(self.output_dir)
         self.assertTrue(self.model_path)
