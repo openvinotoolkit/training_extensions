@@ -228,7 +228,7 @@ def main(args):
         alpha = alpha ** phi
         beta = beta ** phi
 
-        model = DenseNet121Eff(alpha,beta,class_count)
+        model = DenseNet121Eff(alpha, beta, class_count)
     else:
         model = DenseNet121(class_count)
 
