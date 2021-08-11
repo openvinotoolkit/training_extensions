@@ -20,5 +20,5 @@ class DenseNet121Eff(nn.Module):
         self.model = give_model(alpha, beta, class_count)
         self.model = nn.Sequential(self.model, nn.Sigmoid())
     def forward(self, x):
-        x= self.model(x)
+        x = self.model(x)
         return x
