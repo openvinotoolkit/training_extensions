@@ -56,9 +56,9 @@ def main(args):
 
     class_names = ['Lung Opacity','Normal','No Lung Opacity / Not Normal']
     dpath = args.dpath
-    img_pth = args.dpath+'/processed_data/'
-    numpy_path = args.dpath+'/data_split/'
-    with open(dpath+'/rsna_annotation.json') as lab_file:
+    img_pth = os.path.join(args.dpath, 'processed_data/')
+    numpy_path = os.path.join(args.dpath, 'data_split/')
+    with open(os.path.join(dpath, 'rsna_annotation.json')) as lab_file:
         labels = json.load(lab_file)
     test_list = np.load(os.path.join(numpy_path,'test_list.npy')).tolist()
 
