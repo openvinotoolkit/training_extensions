@@ -15,7 +15,7 @@ def dcm_to_jpg(args):
         os.makedirs(savepath)
     file_list = os.listdir(dirpath)
     for fpath in tq(file_list):
-        ds = dcmread(dirpath+fpath)
+        ds = dcmread(os.path.join(dirpath, fpath)
         np_array = ds.pixel_array
         im = Image.fromarray(np_array)
         name = fpath.split('.dcm')[0]
