@@ -60,7 +60,7 @@ def main(args):
     numpy_path = os.path.join(args.dpath, 'data_split/')
     with open(os.path.join(dpath, 'rsna_annotation.json')) as lab_file:
         labels = json.load(lab_file)
-    test_list = np.load(os.path.join(numpy_path,'test_list.npy')).tolist()
+    test_list = np.load(os.path.join(numpy_path, 'test_list.npy')).tolist()
 
     dataset_test = RSNADataSet(test_list,labels,img_pth,transform=True)
     data_loader_test = DataLoader(
