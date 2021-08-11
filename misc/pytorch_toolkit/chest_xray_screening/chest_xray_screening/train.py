@@ -128,7 +128,7 @@ class RSNATrainer():
             train_loss_value = trainloss_value.item()
             loss_train_list.append(train_loss_value)
 
-            if batch_id%len(self.data_loader_train)==0 and batch_id!=0:
+            if batch_id % len(self.data_loader_train) == 0 and batch_id != 0:
                 validloss_value,auroc_mean = RSNATrainer.valid(self)
                 loss_valid_list.append(validloss_value)
                 if auroc_mean>auroc_max:
