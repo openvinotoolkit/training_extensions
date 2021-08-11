@@ -25,7 +25,7 @@ def dcm_to_jpg(args):
 
 
 def mean_sd_calculator(args):
-    dirpath = args.dpath + '/original/'
+    dirpath = os.path.join(args.dpath, 'original/')
     file_list = os.listdir(dirpath)
     mean_list = []
     sd_list = []
