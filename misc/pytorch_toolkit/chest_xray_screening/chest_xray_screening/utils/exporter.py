@@ -7,7 +7,7 @@ from .model import DenseNet121,DenseNet121Eff
 OPENVINO_DIR = '/opt/intel/openvino_2021'
 
 class Exporter:
-    def __init__(self, config,optimised):
+    def __init__(self, config, optimised):
 
         self.config = config
         if optimised:
