@@ -120,7 +120,7 @@ class RSNATrainer():
             var_output= self.model(var_input)
             trainloss_value = self.loss_fn(
                 var_output,
-                tfunc.one_hot(var_target.squeeze(1).long(),num_classes=self.class_count).float())
+                tfunc.one_hot(var_target.squeeze(1).long(), num_classes=self.class_count).float())
 
             self.optimizer.zero_grad()
             trainloss_value.backward()
