@@ -208,7 +208,7 @@ def main(args):
         num_workers=4,
         pin_memory=False)
 
-    dataset_test = RSNADataSet(test_list,labels,img_pth,transform=True)
+    dataset_test = RSNADataSet(test_list, labels, img_pth, transform=True)
     data_loader_test = DataLoader(
         dataset=dataset_test,
         batch_size=1,
