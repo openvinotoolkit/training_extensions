@@ -78,7 +78,7 @@ def main(args):
             beta = round(sqrt(2 / alpha), 3)
         alpha = alpha ** phi
         beta = beta ** phi
-        model = DenseNet121Eff(alpha,beta,class_count)
+        model = DenseNet121Eff(alpha, beta, class_count)
     else:
         model = DenseNet121(class_count)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu") # use gpu if available
