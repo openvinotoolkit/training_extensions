@@ -49,7 +49,7 @@ def create_annotation(args):
     for file in tq(file_list):
         patient_id = file.split('.jpg')[0]
         tmp = df_class[df_class["patientId"] == patient_id]["class"].values[0]
-        idx=labels.index(tmp)
+        idx = labels.index(tmp)
         dict_annotation[str(file)] = idx
 
 
