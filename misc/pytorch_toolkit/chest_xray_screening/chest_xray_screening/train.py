@@ -10,7 +10,7 @@ from torch.utils.data import DataLoader
 from torch.optim.lr_scheduler import StepLR
 from .utils.dataloader import RSNADataSet
 from .utils.score import compute_auroc
-from .utils.model import DenseNet121,DenseNet121Eff
+from .utils.model import DenseNet121, DenseNet121Eff
 from math import sqrt
 import json
 from tqdm import tqdm as tq
