@@ -9,8 +9,8 @@ import pandas as pd
 
 def dcm_to_jpg(args):
 
-    dirpath = args.dpath + '/original/'
-    savepath = args.dpath +'/processed_data/'
+    dirpath = os.path.join(args.dpath, 'original/')
+    savepath = os.path.join(args.dpath, 'processed_data/')
     if not os.path.isdir(savepath):
         os.makedirs(savepath)
     file_list = os.listdir(dirpath)
