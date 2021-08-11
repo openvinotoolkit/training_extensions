@@ -44,7 +44,8 @@ def new_channels(block_new, alpha, beta, growth_rate=32,
     growth_rate = round(beta / alpha * growth_rate)
     gw = growth_rate
     bn_size = round(alpha * bn_size)
-    if bn_size < 2: # The bn_size should be atleast 1
+    if bn_size <= 1: # The bn_size should be atleast 1
+
         print(f"The initial bn_size {bn_size} needs to be greater than 2.")
 
     width_temp = gw * l4 + (gw * l3 + (gw * l2 + (gw * l1) // 2) // 2) // 2
