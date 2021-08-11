@@ -105,7 +105,7 @@ class RSNATrainer():
         return valid_loss,auroc_mean
 
 
-    def epoch_train(self,savepath):
+    def epoch_train(self, savepath):
         auroc_max = 0.0 # Setting maximum AUROC value as zero
         if self.model_checkpoint is not None:
             self.optimizer.load_state_dict(self.model_checkpoint['optimizer'])
