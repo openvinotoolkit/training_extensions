@@ -2,8 +2,8 @@ import torchvision.models.densenet as modelzoo
 
 MIN_CHANNELS = 32 # The minimum number of channels at the first convolution
 CHANNEL_FACTOR = 8
-def get_size(blocks, growth_rate, initial_channels):
 
+def get_size(blocks, growth_rate, initial_channels):
     depth = 5 + 2 * sum(blocks)
     # DenseNet architecture (irrespective of its size 121 or 169 etc) has 5 layers
     # (an input conv layer+final classification layer+3 1X1 conv in the transition layers)
