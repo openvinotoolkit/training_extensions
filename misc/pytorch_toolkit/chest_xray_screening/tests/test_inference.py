@@ -11,7 +11,7 @@ from chest_xray_screening.utils.download_weights import download_checkpoint
 
 def get_config(optimised=False):
     path = os.path.dirname(os.path.realpath(__file__))
-    with open(path+'/test_config.json','r') as f1:
+    with open(path+'/test_config.json', 'r') as f1:
         config_file = json.load(f1)
 
     if optimised:
@@ -30,7 +30,10 @@ class InferenceTest(unittest.TestCase):
         if not os.path.isdir('model_weights'):
             download_checkpoint()
         image_path = '../../../data/chest_xray_screening/'
-        dataset_test = RSNADataSet(cls.config['dummy_valid_list'], cls.config['dummy_labels'], image_path, transform=True)
+        dataset_test = RSNADataSet(
+            cls.config['dummy_valid_list'],
+            cls.config['dummy_labels'],
+            image_path, transform=True)
         cls.data_loader_test = DataLoader(
             dataset=dataset_test,
             batch_size=1,
@@ -53,15 +56,15 @@ class InferenceTest(unittest.TestCase):
 
     def test_config(self):
         self.config = get_config()
-        self.assertEqual(self.config['clscount'],3)
+        self.assertEqual(self.config['clscount'], 3)
 
     def test_config_eff(self):
         self.config = get_config(optimised=True)
-        self.assertEqual(self.config['clscount'],3)
-        self.assertGreaterEqual(self.config['alpha'],0)
-        self.assertGreaterEqual(self.config['phi'],0)
-        self.assertLessEqual(self.config['alpha'],2)
-        self.assertLessEqual(self.config['phi'],1)
+        self.assertEqual(self.config['clscount'], 3)
+        self.assertGreaterEqual(self.config['alpha'], 0)
+        self.assertGreaterEqual(self.config['phi'], 0)
+        self.assertLessEqual(self.config['alpha'], 2)
+        self.assertLessEqual(self.config['phi'], 1)
 
 
 

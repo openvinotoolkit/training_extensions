@@ -24,7 +24,7 @@ class DenseNet121(nn.Module):
 
 
 class DenseNet121Eff(nn.Module):
-    def __init__(self,alpha, beta, class_count):
+    def __init__(self, alpha, beta, class_count):
         super().__init__()
         self.model = give_model(alpha, beta, class_count)
         self.model = nn.Sequential(self.model, nn.Sigmoid())

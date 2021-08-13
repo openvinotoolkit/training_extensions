@@ -1,7 +1,6 @@
 import unittest
 import os
 import json
-import time
 from torch.utils.data import DataLoader
 from chest_xray_screening.train import RSNATrainer
 from chest_xray_screening.utils.dataloader import RSNADataSet
@@ -10,7 +9,7 @@ from chest_xray_screening.utils.download_weights import download_checkpoint
 
 def get_config(optimised=False):
     path = os.path.dirname(os.path.realpath(__file__))
-    with open(path+'/test_config.json','r') as f1:
+    with open(path+'/test_config.json', 'r') as f1:
         config_file = json.load(f1)
     if optimised:
         config = config_file['train_eff']
@@ -26,16 +25,16 @@ class TrainerTest(unittest.TestCase):
         image_path = '../../../data/chest_xray_screening/'
 
         dataset_train = RSNADataSet(
-            cls.config['dummy_train_list'], 
-            cls.config['dummy_labels'], 
+            cls.config['dummy_train_list'],
+            cls.config['dummy_labels'],
             image_path, transform=True)
         dataset_valid = RSNADataSet(
-            cls.config['dummy_valid_list'], 
-            cls.config['dummy_labels'], 
+            cls.config['dummy_valid_list'],
+            cls.config['dummy_labels'],
             image_path, transform=True)
         dataset_test = RSNADataSet(
-            cls.config['dummy_test_list'], 
-            cls.config['dummy_labels'], 
+            cls.config['dummy_test_list'],
+            cls.config['dummy_labels'],
             image_path, transform=True)
         cls.data_loader_train = DataLoader(
             dataset=dataset_train,
@@ -71,7 +70,6 @@ class TrainerTest(unittest.TestCase):
             self.data_loader_valid, self.data_loader_test,
             self.config["clscount"], self.config["checkpoint"],
             self.device, self.config["class_names"], self.config["lr"])
-        timestamp_launch = time.strftime("%d%m%Y - %H%M%S")
         self.trainer.train(self.config["max_epoch"], self.config["savepath"])
         cur_train_loss = self.trainer.current_train_loss
         cur_valid_loss = self.trainer.current_valid_loss

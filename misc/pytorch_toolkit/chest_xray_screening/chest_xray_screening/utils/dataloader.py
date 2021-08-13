@@ -6,17 +6,17 @@ from pathlib import Path
 
 
 class RSNADataSet(Dataset):
-    def __init__(self, image_list,label_json,image_directory, transform=True):
+    def __init__(self, image_list, label_json, image_directory, transform=True):
 
         image_directory = Path(image_directory)
-        image_names = [Path.joinpath(image_directory , x) for x in image_list]
+        image_names = [Path.joinpath(image_directory, x) for x in image_list]
         self.image_names = image_names
         self.labels = label_json
 
         if transform is not None:
             transform=transforms.Compose([
                                             transforms.ToTensor(),
-                                            transforms.Normalize([124.978,124.978,124.978], [10.868,10.868,10.868])
+                                            transforms.Normalize([124.978, 124.978, 124.978], [10.868, 10.868, 10.868])
                                         ])
 
         self.transform = transform

@@ -5,14 +5,14 @@ import argparse
 
 def _get_config_():
     path = os.path.dirname(os.path.realpath(__file__))
-    with open(path+'/export_config.json','r') as f1:
+    with open(path+'/export_config.json', 'r') as f1:
         config_file = json.load(f1)
 
     return config_file
 
 def export(args):
     export_config = _get_config_()
-    exporter = Exporter(export_config,args.optimised)
+    exporter = Exporter(export_config, args.optimised)
 
     if args.onnx:
         exporter.export_model_onnx()

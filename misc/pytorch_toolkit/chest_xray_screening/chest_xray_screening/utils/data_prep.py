@@ -19,7 +19,7 @@ def dcm_to_jpg(args):
         np_array = ds.pixel_array
         im = Image.fromarray(np_array)
         name = fpath.split('.dcm')[0]
-        im.save(os.path.join(savepath, name+".jpg"))
+        im.save(os.path.join(savepath, name + ".jpg"))
 
     print('Completed')
 

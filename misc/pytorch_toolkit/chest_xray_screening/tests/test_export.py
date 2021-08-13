@@ -2,7 +2,7 @@ import unittest
 import os
 import json
 from chest_xray_screening.utils.download_weights import download_checkpoint
-from chest_xray_screening.utils.exporter import Exporter, OPENVINO_DIR 
+from chest_xray_screening.utils.exporter import Exporter, OPENVINO_DIR
 
 
 def _get_config_():
@@ -40,7 +40,7 @@ class ExportTest(unittest.TestCase):
         self.output_dir = os.path.split(self.model_path)[0]
         self.assertTrue(self.output_dir)
         self.assertTrue(self.model_path)
-        self.assertListEqual(self.input_shape,[1,3,1024,1024])
+        self.assertListEqual(self.input_shape, [1, 3, 1024, 1024])
 
 if __name__ == '__main__':
     unittest.main()

@@ -3,7 +3,6 @@ import os
 import subprocess
 from .model import DenseNet121, DenseNet121Eff, load_checkpoint
 
-
 OPENVINO_DIR = '/opt/intel/openvino_2021'
 
 class Exporter:

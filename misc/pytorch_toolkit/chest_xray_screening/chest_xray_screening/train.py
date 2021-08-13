@@ -10,7 +10,7 @@ from torch.utils.data import DataLoader
 from torch.optim.lr_scheduler import StepLR
 from .utils.dataloader import RSNADataSet
 from .utils.score import compute_auroc
-from .utils.model import DenseNet121, DenseNet121Eff, load_checkpoint
+from .utils.model import DenseNet121, DenseNet121Eff
 from math import sqrt
 import json
 from tqdm import tqdm as tq
@@ -162,7 +162,7 @@ def main(args):
     max_epoch = args.epochs
     class_count = args.clscount  #The objective is to classify the image into 3 classes
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu") # use gpu if available
-    class_names = ['Lung Opacity','Normal','No Lung Opacity / Not Normal']
+    class_names = ['Lung Opacity', 'Normal', 'No Lung Opacity / Not Normal']
 
     # Data Loader
     dpath = args.dpath

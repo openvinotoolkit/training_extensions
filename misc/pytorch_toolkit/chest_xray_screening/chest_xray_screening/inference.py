@@ -9,12 +9,12 @@ import json
 import os
 from .utils.dataloader import RSNADataSet
 from .utils.score import compute_auroc
-from .utils.model import DenseNet121,DenseNet121Eff,load_checkpoint
+from .utils.model import DenseNet121, DenseNet121Eff, load_checkpoint
 
 
 
 class RSNAInference():
-    def __init__(self,model, data_loader_test, class_count, checkpoint, class_names, device):
+    def __init__(self, model, data_loader_test, class_count, checkpoint, class_names, device):
         self.device = device
         self.model = model.to(self.device)
         load_checkpoint(self.model, checkpoint)
@@ -48,7 +48,7 @@ def main(args):
     checkpoint= args.checkpoint
     class_count = 3
 
-    class_names = ['Lung Opacity','Normal','No Lung Opacity / Not Normal']
+    class_names = ['Lung Opacity', 'Normal', 'No Lung Opacity / Not Normal']
     dpath = args.dpath
     img_pth = os.path.join(args.dpath, 'processed_data/')
     numpy_path = os.path.join(args.dpath, 'data_split/')
