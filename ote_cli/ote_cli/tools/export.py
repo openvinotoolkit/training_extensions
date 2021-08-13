@@ -15,6 +15,8 @@
 import argparse
 import os
 
+from ote_sdk.entities.id import ID
+
 from ote_cli.datasets import get_dataset_class
 from ote_cli.utils.config import apply_template_configurable_parameters
 from ote_cli.utils.importing import get_impl_class
@@ -22,7 +24,6 @@ from ote_cli.utils.labels import generate_label_schema
 from ote_cli.utils.loading import load_config, load_model_weights
 from sc_sdk.entities.dataset_storage import NullDatasetStorage
 from sc_sdk.entities.datasets import NullDataset
-from sc_sdk.entities.id import ID
 from sc_sdk.entities.model import Model, ModelStatus, NullModel
 from sc_sdk.entities.model_storage import NullModelStorage
 from sc_sdk.entities.optimized_model import (ModelOptimizationType,

@@ -99,9 +99,7 @@ def main():
             run_through_shell(f'source {venv_activate_path};'
                               'pip install -e ote_cli/;'
                               'pip install notebook;'
-                              'pip install ipywidgets;'
-                              'cd $SC_SDK_REPO/src/sc_sdk; pip install -e .;'
-                              'cd $SC_SDK_REPO/src/common/users_handler; pip install -e .',
+                              'pip install ipywidgets;',
                               verbose=args.verbose)
             logging.info(f'End initializing virtual environment for {algo_repo_name}.\n'
                          f'To activate run: \'source {venv_activate_path}\'')

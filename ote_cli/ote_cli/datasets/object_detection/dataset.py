@@ -2,14 +2,16 @@ import os
 from copy import deepcopy
 
 import numpy as np
+
+from ote_sdk.entities.label import ScoredLabel
+from ote_sdk.entities.shapes.box import Box
+
 from sc_sdk.entities.annotation import (Annotation, AnnotationScene,
                                         AnnotationSceneKind,
                                         NullMediaIdentifier)
 from sc_sdk.entities.dataset_storage import NullDatasetStorage
 from sc_sdk.entities.datasets import Dataset, DatasetItem, NullDataset, Subset
 from sc_sdk.entities.image import Image
-from sc_sdk.entities.label import ScoredLabel
-from sc_sdk.entities.shapes.box import Box
 
 from .coco import CocoDataset, get_classes_from_annotation
 

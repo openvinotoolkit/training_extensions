@@ -21,10 +21,12 @@ from ote_cli.utils.labels import generate_label_schema
 from ote_cli.utils.loading import load_config, load_model_weights
 from ote_cli.utils.parser import (add_hyper_parameters_sub_parser,
                                   gen_params_dict_from_args)
+
+from ote_sdk.entities.id import ID
+from ote_sdk.entities.inference_parameters import InferenceParameters
+
 from sc_sdk.entities.dataset_storage import NullDatasetStorage
 from sc_sdk.entities.datasets import NullDataset, Subset
-from sc_sdk.entities.id import ID
-from sc_sdk.entities.inference_parameters import InferenceParameters
 from sc_sdk.entities.model import Model, NullModel
 from sc_sdk.entities.model_storage import NullModelStorage
 from sc_sdk.entities.project import NullProject

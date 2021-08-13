@@ -14,6 +14,9 @@
 
 import argparse
 
+from ote_sdk.entities.id import ID
+from ote_sdk.entities.inference_parameters import InferenceParameters
+
 from ote_cli.datasets import get_dataset_class
 from ote_cli.utils.config import apply_template_configurable_parameters
 from ote_cli.utils.importing import get_impl_class
@@ -23,8 +26,6 @@ from ote_cli.utils.parser import (add_hyper_parameters_sub_parser,
                                   gen_params_dict_from_args)
 from sc_sdk.entities.dataset_storage import NullDatasetStorage
 from sc_sdk.entities.datasets import NullDataset, Subset
-from sc_sdk.entities.id import ID
-from sc_sdk.entities.inference_parameters import InferenceParameters
 from sc_sdk.entities.model import Model, ModelStatus, NullModel
 from sc_sdk.entities.model_storage import NullModelStorage
 from sc_sdk.entities.project import NullProject
