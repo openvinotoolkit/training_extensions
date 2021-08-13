@@ -1,7 +1,7 @@
 import unittest
 import os
 import json
-from google_drive_downloader import GoogleDriveDownloader as gdd
+from chest_xray_screening.utils.download_weights import download_checkpoint
 from chest_xray_screening.utils.exporter import Exporter, OPENVINO_DIR 
 
 
@@ -11,15 +11,6 @@ def _get_config_():
         config_file = json.load(f1)
 
     return config_file['export']
-
-def download_checkpoint():
-    os.makedirs('model_weights')
-    gdd.download_file_from_google_drive(file_id='13KtMdL-RJoTXGRZ8WIdcHkf0XuX9bMMN',
-                                    dest_path='model_weights/chest_xray_screening.pth',
-                                    unzip=False)
-    gdd.download_file_from_google_drive(file_id='1HUmG-wKRoKYxBdwu0_LX1ascBRmA-z5e',
-                                    dest_path='model_weights/chest_xray_screening_eff.pth',
-                                    unzip=False)
 
 class ExportTest(unittest.TestCase):
 

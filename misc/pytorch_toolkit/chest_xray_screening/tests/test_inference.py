@@ -3,11 +3,10 @@ import os
 import json
 import torch
 from torch.utils.data import DataLoader
-from google_drive_downloader import GoogleDriveDownloader as gdd
 from chest_xray_screening.utils.dataloader import RSNADataSet
 from chest_xray_screening.utils.model import DenseNet121
 from chest_xray_screening.chest_xray_screening.inference import RSNAInference
-
+from chest_xray_screening.utils.download_weights import download_checkpoint
 
 
 def get_config(optimised=False):
@@ -21,15 +20,6 @@ def get_config(optimised=False):
         config = config_file['test']
 
     return config
-
-def download_checkpoint():
-    os.makedirs('model_weights')
-    gdd.download_file_from_google_drive(file_id='1z4HuSVXyD59BHhw93j-BVbx6In1HZQn2',
-                                    dest_path='model_weights/chest_xray_screening.pth.tar',
-                                    unzip=False)
-    gdd.download_file_from_google_drive(file_id='1HUmG-wKRoKYxBdwu0_LX1ascBRmA-z5e',
-                                    dest_path='model_weights/chest_xray_screening_eff.pth.tar',
-                                    unzip=False)
 
 
 class InferenceTest(unittest.TestCase):

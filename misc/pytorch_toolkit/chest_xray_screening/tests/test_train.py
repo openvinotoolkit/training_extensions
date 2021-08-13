@@ -3,10 +3,10 @@ import os
 import json
 import time
 from torch.utils.data import DataLoader
-from google_drive_downloader import GoogleDriveDownloader as gdd
 from chest_xray_screening.train import RSNATrainer
 from chest_xray_screening.utils.dataloader import RSNADataSet
 from chest_xray_screening.utils.model import DenseNet121
+from chest_xray_screening.utils.download_weights import download_checkpoint
 
 def get_config(optimised=False):
     path = os.path.dirname(os.path.realpath(__file__))
@@ -17,15 +17,6 @@ def get_config(optimised=False):
     else:
         config = config_file['train']
     return config
-
-def download_checkpoint():
-    os.makedirs('model_weights')
-    gdd.download_file_from_google_drive(file_id='1z4HuSVXyD59BHhw93j-BVbx6In1HZQn2',
-                                    dest_path='model_weights/chest_xray_screening.pth',
-                                    unzip=False)
-    gdd.download_file_from_google_drive(file_id='1HUmG-wKRoKYxBdwu0_LX1ascBRmA-z5e',
-                                    dest_path='model_weights/chest_xray_screening_eff.pth',
-                                    unzip=False)
 
 class TrainerTest(unittest.TestCase):
     config = get_config()
