@@ -77,7 +77,7 @@ def get_best_values(alpha, beta):
 def give_model(alpha, beta, num_class=3, input_shape=(320, 320), verbose=1):
     blocks, gw, b, bn_size = get_best_values(alpha, beta)
     # b: is the number of output feature channels in the first layer with the 7X7 conv
-    print(blocks, gw, b, bn_size)
+    print(f"DenseNet model created with block_config:{blocks}, growth_rate:{gw}, o/p channels:{b}, bn_size:{bn_size}")
     model = modelzoo.DenseNet(
         growth_rate=gw,
         block_config=blocks,

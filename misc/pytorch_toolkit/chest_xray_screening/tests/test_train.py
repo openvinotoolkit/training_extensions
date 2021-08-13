@@ -72,10 +72,10 @@ class TrainerTest(unittest.TestCase):
             self.config["clscount"], self.config["checkpoint"],
             self.device, self.config["class_names"], self.config["lr"])
         timestamp_launch = time.strftime("%d%m%Y - %H%M%S")
-        self.trainer.train(self.config["max_epoch"], timestamp_launch, self.config["savepath"])
+        self.trainer.train(self.config["max_epoch"], self.config["savepath"])
         cur_train_loss = self.trainer.current_train_loss
         cur_valid_loss = self.trainer.current_valid_loss
-        self.trainer.train(self.config["max_epoch"], timestamp_launch, self.config["savepath"])
+        self.trainer.train(self.config["max_epoch"], self.config["savepath"])
         self.assertLessEqual(self.trainer.current_train_loss, cur_train_loss)
         self.assertLessEqual(self.trainer.current_valid_loss, cur_valid_loss)
 

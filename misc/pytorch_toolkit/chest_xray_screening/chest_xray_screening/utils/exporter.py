@@ -1,7 +1,7 @@
 import torch
 import os
 import subprocess
-from .model import DenseNet121,DenseNet121Eff
+from .model import DenseNet121, DenseNet121Eff, load_checkpoint
 
 
 OPENVINO_DIR = '/opt/intel/openvino_2021'
@@ -10,16 +10,14 @@ class Exporter:
     def __init__(self, config, optimised):
 
         self.config = config
+        self.checkpoint = config.get('checkpoint')
         if optimised:
             self.model = DenseNet121Eff(self.config["alpha"], self.config["beta"], self.config["class_count"])
         else:
             self.model = DenseNet121(class_count=3)
 
         self.model.eval()
-        self.checkpoint = config.get('checkpoint')
-        model_checkpoint = torch.load(self.checkpoint)
-        if model_checkpoint is not None:
-            self.model.load_state_dict(model_checkpoint['state_dict'])
+        load_checkpoint(self.model, self.checkpoint)
 
     def export_model_ir(self):
         input_model = os.path.join(os.path.split(self.checkpoint)[0], self.config.get('model_name'))

@@ -10,7 +10,7 @@ from torch.utils.data import DataLoader
 from torch.optim.lr_scheduler import StepLR
 from .utils.dataloader import RSNADataSet
 from .utils.score import compute_auroc
-from .utils.model import DenseNet121, DenseNet121Eff
+from .utils.model import DenseNet121, DenseNet121Eff, load_checkpoint
 from math import sqrt
 import json
 from tqdm import tqdm as tq
@@ -30,24 +30,16 @@ class RSNATrainer():
         self.data_loader_test = data_loader_test
         self.class_names = class_names
         self.class_count = class_count
+        self.optimizer = optim.Adam(self.model.parameters(), lr=lr)
         if checkpoint is not None:
-            self.checkpoint = checkpoint
-            self.model_checkpoint = torch.load(checkpoint)
+            model_checkpoint = torch.load(checkpoint)
+            self.optimizer.load_state_dict(model_checkpoint['optimizer'])
         else:
-            self.checkpoint = None
-            self.model_checkpoint = None
+            model_checkpoint = None
+
         self.loss_fn = torch.nn.BCELoss()
-        self.lr = lr
-        self.optimizer = optim.Adam(self.model.parameters(), lr=self.lr)
 
-
-    def train(self, max_epoch, timestamp_launch,savepath):
-        if self.checkpoint is not None:
-            self.model.load_state_dict(self.model_checkpoint['state_dict'])
-            for param in self.model.parameters():
-                param.requires_grad = True
-            print("Model loaded")
-
+    def train(self, max_epoch,savepath):
         train_loss_min = 1e+5  # A random very high number
         valid_loss_min = 1e+5
 
@@ -107,8 +99,6 @@ class RSNATrainer():
 
     def epoch_train(self, savepath):
         auroc_max = 0.0 # Setting maximum AUROC value as zero
-        if self.model_checkpoint is not None:
-            self.optimizer.load_state_dict(self.model_checkpoint['optimizer'])
         loss_train_list = []
         loss_valid_list = []
         self.model.train()
@@ -143,11 +133,6 @@ class RSNATrainer():
 
     def test(self):
         cudnn.benchmark = True
-        if self.checkpoint is not None:
-            model_checkpoint = torch.load(self.checkpoint)
-            self.model.load_state_dict(model_checkpoint['state_dict'])
-        else:
-            self.model.state_dict()
         out_gt = torch.FloatTensor().to(self.device)
         out_pred = torch.FloatTensor().to(self.device)
         self.model.eval()
@@ -183,7 +168,7 @@ def main(args):
     dpath = args.dpath
     img_pth = os.path.join(args.dpath, 'processed_data/')
     numpy_path = os.path.join(args.dpath, 'data_split/')
-    with open(os.path,join(dpath, 'rsna_annotation.json')) as lab_file:
+    with open(os.path.join(dpath, 'rsna_annotation.json')) as lab_file:
         labels = json.load(lab_file)
 
     # Place numpy file containing train-valid-test split on tools folder
@@ -233,13 +218,12 @@ def main(args):
         model = DenseNet121(class_count)
 
     # Train the  Model
-    timestamp_launch = time.strftime("%d%m%Y - %H%M%S")
     savepath = args.spath
 
     rsna_trainer = RSNATrainer(
         model, data_loader_train, data_loader_valid, data_loader_test,
         class_count,checkpoint, device, class_names, lr)
-    rsna_trainer.train(max_epoch, timestamp_launch,savepath)
+    rsna_trainer.train(max_epoch, savepath)
     print("Model trained !")
 
 

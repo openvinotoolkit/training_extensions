@@ -9,7 +9,7 @@ import json
 import os
 from .utils.dataloader import RSNADataSet
 from .utils.score import compute_auroc
-from .utils.model import DenseNet121,DenseNet121Eff
+from .utils.model import DenseNet121,DenseNet121Eff,load_checkpoint
 
 
 
@@ -17,19 +17,13 @@ class RSNAInference():
     def __init__(self,model, data_loader_test, class_count, checkpoint, class_names, device):
         self.device = device
         self.model = model.to(self.device)
+        load_checkpoint(self.model, checkpoint)
         self.data_loader_test = data_loader_test
         self.class_count = class_count
-        self.checkpoint = checkpoint
         self.class_names = class_names
 
     def test(self):
         cudnn.benchmark = True
-        if self.checkpoint is not None:
-            model_checkpoint = torch.load(self.checkpoint)
-            self.model.load_state_dict(model_checkpoint['state_dict'])
-        else:
-            self.model.state_dict()
-
         out_gt = torch.FloatTensor().to(self.device)
         out_pred = torch.FloatTensor().to(self.device)
         self.model.eval()
