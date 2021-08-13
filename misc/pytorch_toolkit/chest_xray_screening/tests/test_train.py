@@ -19,54 +19,58 @@ def get_config(optimised=False):
     return config
 
 class TrainerTest(unittest.TestCase):
-    config = get_config()
-    class_count = config["clscount"]
-    image_path = '../../data/chest_xray_screening/'
-    learn_rate = config["lr"]
-    tr_list = config["dummy_train_list"]
-    val_list = config["dummy_valid_list"]
-    test_list = config["dummy_test_list"]
-    labels = config["dummy_labels"]
+    @classmethod
+    def setUpClass(cls):
+        config = get_config()
+        cls.config = config
+        image_path = '../../../data/chest_xray_screening/'
 
-    dataset_train = RSNADataSet(tr_list, labels, image_path, transform=True)
-    dataset_valid = RSNADataSet(val_list, labels, image_path, transform=True)
-    dataset_test = RSNADataSet(test_list, labels, image_path, transform=True)
-    data_loader_train = DataLoader(
-        dataset=dataset_train,
-        batch_size=2,
-        shuffle=True,
-        num_workers=4,
-        pin_memory=False)
-    data_loader_valid = DataLoader(
-        dataset=dataset_valid,
-        batch_size=2,
-        shuffle=False,
-        num_workers=4,
-        pin_memory=False)
-    data_loader_test = DataLoader(
-        dataset=dataset_test,
-        batch_size=1,
-        shuffle=False,
-        num_workers=4,
-        pin_memory=False)
+        dataset_train = RSNADataSet(
+            cls.config['dummy_train_list'], 
+            cls.config['dummy_labels'], 
+            image_path, transform=True)
+        dataset_valid = RSNADataSet(
+            cls.config['dummy_valid_list'], 
+            cls.config['dummy_labels'], 
+            image_path, transform=True)
+        dataset_test = RSNADataSet(
+            cls.config['dummy_test_list'], 
+            cls.config['dummy_labels'], 
+            image_path, transform=True)
+        cls.data_loader_train = DataLoader(
+            dataset=dataset_train,
+            batch_size=2,
+            shuffle=True,
+            num_workers=4,
+            pin_memory=False)
+        cls.data_loader_valid = DataLoader(
+            dataset=dataset_valid,
+            batch_size=2,
+            shuffle=False,
+            num_workers=4,
+            pin_memory=False)
+        cls.data_loader_test = DataLoader(
+            dataset=dataset_test,
+            batch_size=1,
+            shuffle=False,
+            num_workers=4,
+            pin_memory=False)
 
 
     def test_config(self):
-        self.assertGreaterEqual(self.learn_rate,1e-8)
-        self.assertEqual(self.class_count,3)
+        self.assertGreaterEqual(self.config["lr"], 1e-8)
+        self.assertEqual(self.config["clscount"], 3)
 
     def test_trainer(self):
-        self.model = DenseNet121(self.class_count)
-        self.class_names = self.config["class_names"]
-        self.checkpoint = self.config["checkpoint"]
+        self.model = DenseNet121(self.config["clscount"])
         if not os.path.isdir('model_weights'):
             download_checkpoint()
         self.device = self.config["device"]
         self.trainer = RSNATrainer(
             self.model, self.data_loader_train,
             self.data_loader_valid, self.data_loader_test,
-            self.class_count, self.checkpoint,
-            self.device, self.class_names,self.learn_rate)
+            self.config["clscount"], self.config["checkpoint"],
+            self.device, self.config["class_names"], self.config["lr"])
         timestamp_launch = time.strftime("%d%m%Y - %H%M%S")
         self.trainer.train(self.config["max_epoch"], timestamp_launch, self.config["savepath"])
         cur_train_loss = self.trainer.current_train_loss
@@ -79,12 +83,12 @@ class TrainerTest(unittest.TestCase):
         self.config = get_config(optimised=True)
         self.learn_rate = self.config["lr"]
         self.class_count = self.config["clscount"]
-        self.assertGreaterEqual(self.learn_rate,1e-8)
-        self.assertEqual(self.class_count,3)
-        self.assertGreaterEqual(self.config['alpha'],0)
-        self.assertGreaterEqual(self.config['phi'],0)
-        self.assertLessEqual(self.config['alpha'],2)
-        self.assertLessEqual(self.config['phi'],1)
+        self.assertGreaterEqual(self.learn_rate, 1e-8)
+        self.assertEqual(self.class_count, 3)
+        self.assertGreaterEqual(self.config['alpha'], 0)
+        self.assertGreaterEqual(self.config['phi'], 0)
+        self.assertLessEqual(self.config['alpha'], 2)
+        self.assertLessEqual(self.config['phi'], 1)
 
 
 if __name__ == '__main__':
