@@ -15,7 +15,7 @@ def dcm_to_jpg(args):
         os.makedirs(savepath)
     file_list = os.listdir(dirpath)
     for fpath in tq(file_list):
-        ds = dcmread(os.path.join(dirpath, fpath)
+        ds = dcmread(os.path.join(dirpath, fpath))
         np_array = ds.pixel_array
         im = Image.fromarray(np_array)
         name = fpath.split('.dcm')[0]
@@ -43,7 +43,7 @@ def mean_sd_calculator(args):
 def create_annotation(args):
 
     file_list = os.listdir(os.path.join(args.dpath, 'processed_data/'))
-    df_class=pd.read_csv(os.path.join(args.dpath, 'stage_2_detailed_class_info.csv')
+    df_class=pd.read_csv(os.path.join(args.dpath, 'stage_2_detailed_class_info.csv'))
     labels=["Lung Opacity","Normal","No Lung Opacity / Not Normal"]
     dict_annotation = {}
     for file in tq(file_list):
