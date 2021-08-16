@@ -39,7 +39,7 @@ class RSNAInference():
                 out_pred = torch.cat((out_pred, out), 0)
         auroc_individual = compute_auroc(tfunc.one_hot(out_gt.squeeze(1).long()).float(), out_pred, self.class_count)
         auroc_mean = np.array(auroc_individual).mean()
-        print (f'AUROC mean: {auroc_mean}')
+        print(f'AUROC mean: {auroc_mean}')
         for i, auroc_val in enumerate(auroc_individual):
             print(f"{self.class_names[i]}:{auroc_val}")
         return auroc_mean
