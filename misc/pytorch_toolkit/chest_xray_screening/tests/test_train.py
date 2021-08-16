@@ -1,26 +1,17 @@
 import unittest
 import os
-import json
 from torch.utils.data import DataLoader
 from chest_xray_screening.train import RSNATrainer
 from chest_xray_screening.utils.dataloader import RSNADataSet
 from chest_xray_screening.utils.model import DenseNet121
 from chest_xray_screening.utils.download_weights import download_checkpoint
+from chest_xray_screening.utils.get_config import get_config
 
-def get_config(optimised=False):
-    path = os.path.dirname(os.path.realpath(__file__))
-    with open(path+'/test_config.json', 'r') as f1:
-        config_file = json.load(f1)
-    if optimised:
-        config = config_file['train_eff']
-    else:
-        config = config_file['train']
-    return config
 
 class TrainerTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        config = get_config()
+        config = get_config(action = 'train')
         cls.config = config
         image_path = '../../../data/chest_xray_screening/'
 
@@ -78,7 +69,7 @@ class TrainerTest(unittest.TestCase):
         self.assertLessEqual(self.trainer.current_valid_loss, cur_valid_loss)
 
     def test_config_eff(self):
-        self.config = get_config(optimised=True)
+        self.config = get_config(action = 'train', optimised = True)
         self.learn_rate = self.config["lr"]
         self.class_count = self.config["clscount"]
         self.assertGreaterEqual(self.learn_rate, 1e-8)

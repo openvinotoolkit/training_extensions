@@ -1,31 +1,18 @@
 import unittest
 import os
-import json
 import torch
 from torch.utils.data import DataLoader
 from chest_xray_screening.utils.dataloader import RSNADataSet
 from chest_xray_screening.utils.model import DenseNet121
 from chest_xray_screening.inference import RSNAInference
 from chest_xray_screening.utils.download_weights import download_checkpoint
-
-
-def get_config(optimised=False):
-    path = os.path.dirname(os.path.realpath(__file__))
-    with open(path+'/test_config.json', 'r') as f1:
-        config_file = json.load(f1)
-
-    if optimised:
-        config = config_file['test_eff']
-    else:
-        config = config_file['test']
-
-    return config
+from chest_xray_screening.utils.get_config import get_config
 
 
 class InferenceTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        export_config = get_config()
+        export_config = get_config(action = 'test')
         cls.config = export_config
         if not os.path.isdir('model_weights'):
             download_checkpoint()
@@ -33,7 +20,7 @@ class InferenceTest(unittest.TestCase):
         dataset_test = RSNADataSet(
             cls.config['dummy_valid_list'],
             cls.config['dummy_labels'],
-            image_path, transform=True)
+            image_path, transform = True)
         cls.data_loader_test = DataLoader(
             dataset=dataset_test,
             batch_size=1,
@@ -55,11 +42,11 @@ class InferenceTest(unittest.TestCase):
 
 
     def test_config(self):
-        self.config = get_config()
+        self.config = get_config(action = 'test')
         self.assertEqual(self.config['clscount'], 3)
 
     def test_config_eff(self):
-        self.config = get_config(optimised=True)
+        self.config = get_config(action = 'test', optimised = True)
         self.assertEqual(self.config['clscount'], 3)
         self.assertGreaterEqual(self.config['alpha'], 0)
         self.assertGreaterEqual(self.config['phi'], 0)

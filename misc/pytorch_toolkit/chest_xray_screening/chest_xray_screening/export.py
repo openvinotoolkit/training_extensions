@@ -2,16 +2,12 @@ import os
 import json
 from .utils.exporter import Exporter
 import argparse
+from chest_xray_screening.utils.get_config import get_config
 
-def _get_config_():
-    path = os.path.dirname(os.path.realpath(__file__))
-    with open(os.path.join(path, 'export_config.json')) as f1:
-        config_file = json.load(f1)
 
-    return config_file
 
 def export(args):
-    export_config = _get_config_()
+    export_config = get_config(action = 'export', optimised = args.optimised)
     exporter = Exporter(export_config, args.optimised)
 
     if args.onnx:

@@ -1,21 +1,14 @@
 import unittest
 import os
-import json
 from chest_xray_screening.utils.download_weights import download_checkpoint
 from chest_xray_screening.utils.exporter import Exporter, OPENVINO_DIR
+from chest_xray_screening.utils.get_config import get_config
 
-
-def _get_config_():
-    path = os.path.dirname(os.path.realpath(__file__))
-    with open(os.path.join(path, 'test_config.json'), ) as f1:
-        config_file = json.load(f1)
-
-    return config_file['export']
 
 class ExportTest(unittest.TestCase):
 
     def test_export_onnx(self):
-        self.config = _get_config_()
+        self.config = get_config(action = 'export')
         if not os.path.isdir('model_weights'):
             download_checkpoint()
         self.exporter = Exporter(self.config, optimised=False)
@@ -26,15 +19,15 @@ class ExportTest(unittest.TestCase):
     def test_export_ir(self):
 
         self.assertTrue(os.path.isdir(OPENVINO_DIR))
-        self.config = _get_config_()
-        self.exporter = Exporter(self.config,optimised=False)
+        self.config = get_config(action = 'export')
+        self.exporter = Exporter(self.config, optimised=False)
         self.exporter.export_model_ir()
         self.model_path = self.config['checkpoint']
         self.assertTrue(os.path.join(os.path.split(self.model_path)[0], self.config.get('model_name')))
 
 
     def test_config(self):
-        self.config = _get_config_()
+        self.config = get_config(action = 'export')
         self.model_path = self.config['checkpoint']
         self.input_shape = self.config['input_shape']
         self.output_dir = os.path.split(self.model_path)[0]
