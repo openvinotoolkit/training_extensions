@@ -25,7 +25,7 @@ class Registry:
                 config = load_config(template_file)
                 self.templates.append({
                     'framework': config['framework'].replace(' ', '_'),
-                    'domain': config['domain'].replace(' ', '_'),
+                    'task_type': config['task_type'].replace(' ', '_'),
                     'name': config['name'].replace(' ', '_'),
                     'path': template_file
                 })
@@ -38,7 +38,7 @@ class Registry:
         if framework is not None:
             templates = [template for template in templates if template['framework'] == framework]
         if domain is not None:
-            templates = [template for template in templates if template['domain'] == domain]
+            templates = [template for template in templates if template['task_type'] == domain]
         return Registry(templates=templates)
 
     def get(self, name):

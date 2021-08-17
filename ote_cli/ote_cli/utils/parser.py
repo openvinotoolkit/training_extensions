@@ -13,23 +13,35 @@
 # and limitations under the License.
 
 import argparse
+import sys
+
+import yaml
+
+from .config import override_parameters
 
 
 def gen_param_help(hyper_parameters):
+    type_map = {
+        'FLOAT': float,
+        'INTEGER': int,
+        'BOOLEAN': bool
+    }
+
+    help_keys = ('header', 'type', 'default_value', 'max_value', 'min_value')
     def _gen_param_help(prefix, d):
         xx = {}
         for k, v in d.items():
             if isinstance(v, dict) and 'value' not in v.keys():
-                x = _gen_param_help(prefix + f'{k}.', v)
-                xx.update(x)
+                if 'visible_in_ui' in v and v['visible_in_ui']:
+                    x = _gen_param_help(prefix + f'{k}.', v)
+                    xx.update(x)
             elif isinstance(v, dict) and 'value' in v.keys():
                 assert isinstance(v['value'], (int, float, str))
-                help_str = ', '.join([f'{kk} = {vv}' for kk,vv in v.items() if kk != 'value'])
-                xx.update({prefix + f'{k}': {'default': v['value'], 'help': help_str}})
-            else:
-                xx.update({prefix + f'{k}': {'default': v, 'help': ''}})
+                help_str = '\n'.join([f'{kk}: {v[kk]}' for kk in help_keys if kk in v.keys()])
+                assert '.' not in k
+                xx.update({prefix + f'{k}': {'default': v['default_value'], 'help': help_str, 'type': type_map[v['type']]}})
         return xx
-    return _gen_param_help('', hyper_parameters['params'])
+    return _gen_param_help('', hyper_parameters)
 
 
 def gen_params_dict_from_args(args):
@@ -44,26 +56,23 @@ def gen_params_dict_from_args(args):
                 if i < len(split_param_name) - 1:
                     d = d[k]
                 else:
-                    d[k] = getattr(args, param_name)
+                    d[k] = {'value': getattr(args, param_name)}
 
-    if params_dict:
-        return {'params': params_dict}
-
-    return None
+    return params_dict
 
 
-class ShortDefaultsHelpFormatter(argparse.HelpFormatter):
+class ShortDefaultsHelpFormatter(argparse.RawTextHelpFormatter):
 
     def _get_default_metavar_for_optional(self, action):
         return action.dest.split('.')[-1].upper()
 
 
 def add_hyper_parameters_sub_parser(parser, config):
-    params = gen_param_help(config['hyper_parameters'])
+    params = gen_param_help(config)
 
     subparsers = parser.add_subparsers(help='sub-command help')
     parser_a = subparsers.add_parser('params',
                                      help=f'Hyper parameters defined in template file.',
                                      formatter_class=ShortDefaultsHelpFormatter)
     for k, v in params.items():
-        parser_a.add_argument(f'--{k}', default=v['default'], help=v['help'], dest=f'params.{k}')
+        parser_a.add_argument(f'--{k}', default=v['default'], help=v['help'], dest=f'params.{k}', type=v['type'])

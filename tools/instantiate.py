@@ -68,7 +68,7 @@ def main():
         algo_repo_name = template_filename.split(os.sep)[1]
 
         framework_folder = content['framework'].replace(' ', '_')
-        domain_folder = content['domain'].replace(' ', '_')
+        domain_folder = content['task_type'].replace(' ', '_')
         model_folder = content['name'].replace(' ', '_')
 
         repo_name_to_framework_folder[algo_repo_name] = framework_folder
