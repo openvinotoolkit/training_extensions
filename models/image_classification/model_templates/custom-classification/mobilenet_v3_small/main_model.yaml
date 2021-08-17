@@ -13,9 +13,9 @@ lr_finder:
 model:
   name: 'mobilenetv3_small'
   classification: True
-  pretrained: True
+  pretrained: False
   save_chkpt: True
-  feature_dim: 1024
+  feature_dim: 128
 
 mutual_learning:
   aux_configs: ['aux_model.yaml']
@@ -29,8 +29,8 @@ data:
   root: './'
   sources: ['data_train']
   targets: ['data_val']
-  height: 224
-  width: 224
+  height: 112
+  width: 112
   norm_mean: [0.485, 0.456, 0.406]
   norm_std: [0.229, 0.224, 0.225]
   save_dir: 'path/to/output_dir'
