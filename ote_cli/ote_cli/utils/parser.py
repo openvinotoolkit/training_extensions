@@ -13,11 +13,6 @@
 # and limitations under the License.
 
 import argparse
-import sys
-
-import yaml
-
-from .config import override_parameters
 
 
 def gen_param_help(hyper_parameters):
@@ -68,6 +63,15 @@ class ShortDefaultsHelpFormatter(argparse.RawTextHelpFormatter):
 
 
 def add_hyper_parameters_sub_parser(parser, config):
+    def str2bool(v):
+        if isinstance(v, bool):
+            return v
+        if v.lower() in ('true', '1'):
+            return True
+        if v.lower() in ('false', '0'):
+            return False
+        raise argparse.ArgumentTypeError('Boolean value expected.')
+
     params = gen_param_help(config)
 
     subparsers = parser.add_subparsers(help='sub-command help')
@@ -75,4 +79,7 @@ def add_hyper_parameters_sub_parser(parser, config):
                                      help=f'Hyper parameters defined in template file.',
                                      formatter_class=ShortDefaultsHelpFormatter)
     for k, v in params.items():
-        parser_a.add_argument(f'--{k}', default=v['default'], help=v['help'], dest=f'params.{k}', type=v['type'])
+        param_type = v['type']
+        if param_type == bool:
+            param_type = str2bool
+        parser_a.add_argument(f'--{k}', default=v['default'], help=v['help'], dest=f'params.{k}', type=param_type)
