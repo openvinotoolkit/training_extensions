@@ -34,7 +34,10 @@ def gen_param_help(hyper_parameters):
                 assert isinstance(v['value'], (int, float, str))
                 help_str = '\n'.join([f'{kk}: {v[kk]}' for kk in help_keys if kk in v.keys()])
                 assert '.' not in k
-                xx.update({prefix + f'{k}': {'default': v['default_value'], 'help': help_str, 'type': type_map[v['type']]}})
+                xx.update({prefix + f'{k}': {'default': v['default_value'],
+                                             'help': help_str,
+                                             'type': type_map[v['type']],
+                                             'affects_outcome_of': v['affects_outcome_of']}})
         return xx
     return _gen_param_help('', hyper_parameters)
 
@@ -62,7 +65,13 @@ class ShortDefaultsHelpFormatter(argparse.RawTextHelpFormatter):
         return action.dest.split('.')[-1].upper()
 
 
-def add_hyper_parameters_sub_parser(parser, config):
+def add_hyper_parameters_sub_parser(parser, config, modes=None):
+    default_modes = ('TRAINING', 'INFERENCE')
+    if modes is None:
+        modes = default_modes
+    assert isinstance(modes, tuple)
+    for mode in modes:
+        assert mode in default_modes
     def str2bool(v):
         if isinstance(v, bool):
             return v
@@ -80,6 +89,8 @@ def add_hyper_parameters_sub_parser(parser, config):
                                      formatter_class=ShortDefaultsHelpFormatter)
     for k, v in params.items():
         param_type = v['type']
+        if v['affects_outcome_of'] not in modes:
+            continue
         if param_type == bool:
             param_type = str2bool
         parser_a.add_argument(f'--{k}', default=v['default'], help=v['help'], dest=f'params.{k}', type=param_type)

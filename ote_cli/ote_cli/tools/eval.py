@@ -44,7 +44,7 @@ def parse_args(config):
     parser.add_argument('--load-weights', required=True,
                         help='Load only weights from previously saved checkpoint')
 
-    add_hyper_parameters_sub_parser(parser, config)
+    add_hyper_parameters_sub_parser(parser, config, modes=('INFERENCE', ))
 
     return parser.parse_args()
 
