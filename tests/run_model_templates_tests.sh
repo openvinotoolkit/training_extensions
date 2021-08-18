@@ -8,13 +8,16 @@ python3 tools/instantiate.py --destination ${OTE_CLI_WD}/model_templates --verbo
 source ${OTE_CLI_WD}/model_templates/OTEDetection_v2.9.1/venv/bin/activate
 pytest --nbmake ote_cli/notebooks/train.ipynb -s || exit 1
 
-cd ${OTE_CLI_WD}/model_templates/OTEDetection_v2.9.1/Object_Detection/Custom_Object_Detection_256x256
+cd ${OTE_CLI_WD}/model_templates/OTEDetection_v2.9.1/DETECTION/Custom_Object_Detection_256x256
 ote_train \
   --train-ann-file ${OTE_REPO_DIR}/data/airport/annotation_example_train.json \
   --train-data-roots ${OTE_REPO_DIR}/data/airport/train \
   --val-ann-file ${OTE_REPO_DIR}/data/airport/annotation_example_train.json \
   --val-data-roots ${OTE_REPO_DIR}/data/airport/train \
-  --save-weights trained.pth || exit 1
+  --save-weights trained.pth \
+  params \
+  --learning_parameters.num_iters 100 \
+  --learning_parameters.batch_size 10 || exit 1
 ote_eval \
   --test-ann-files ${OTE_REPO_DIR}/data/airport/annotation_example_train.json \
   --test-data-roots ${OTE_REPO_DIR}/data/airport/train \

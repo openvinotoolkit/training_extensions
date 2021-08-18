@@ -15,20 +15,18 @@
 import argparse
 
 from ote_cli.datasets import get_dataset_class
-from ote_cli.utils.config import apply_template_configurable_parameters
+from ote_cli.utils.config import override_parameters, set_values_as_default
 from ote_cli.utils.importing import get_impl_class
 from ote_cli.utils.labels import generate_label_schema
-from ote_cli.utils.loading import load_config, load_model_weights
+from ote_cli.utils.loading import load_model_weights
 from ote_cli.utils.parser import (add_hyper_parameters_sub_parser,
                                   gen_params_dict_from_args)
-
-from ote_sdk.entities.id import ID
 from ote_sdk.entities.inference_parameters import InferenceParameters
-
 from sc_sdk.entities.dataset_storage import NullDatasetStorage
 from sc_sdk.entities.datasets import NullDataset, Subset
 from sc_sdk.entities.model import Model, NullModel
 from sc_sdk.entities.model_storage import NullModelStorage
+from sc_sdk.entities.model_template import parse_model_template
 from sc_sdk.entities.project import NullProject
 from sc_sdk.entities.resultset import ResultSet
 from sc_sdk.entities.task_environment import TaskEnvironment
@@ -53,31 +51,36 @@ def parse_args(config):
 
 def main():
     # Load template.yaml file.
-    template = load_config()
-
-    # Dynamically create an argument parser based on loaded template.yaml file.
-    args = parse_args(template)
+    template = parse_model_template('template.yaml', '1')
+    # Get hyper parameters schema.
+    hyper_parameters = template.hyper_parameters.data
+    assert hyper_parameters
+    # Sync values with default values.
+    set_values_as_default(hyper_parameters)
+    # Dynamically create an argument parser based on override parameters.
+    args = parse_args(hyper_parameters)
+    # Get new values from user's input.
     updated_hyper_parameters = gen_params_dict_from_args(args)
-    if updated_hyper_parameters:
-        template['hyper_parameters']['params'] = updated_hyper_parameters['params']
+    # Override overridden parameters by user's values.
+    override_parameters(updated_hyper_parameters, hyper_parameters, allow_value=True)
 
     # Get classes for Task, ConfigurableParameters and Dataset.
-    Task = get_impl_class(template['task']['base'])
-    ConfigurableParameters = get_impl_class(template['hyper_parameters']['impl'])
-    Dataset = get_dataset_class(template['domain'])
+    Task = get_impl_class(template.entrypoints.base)
+    Dataset = get_dataset_class(template.task_type)
 
     dataset = Dataset(test_ann_file=args.test_ann_files,
                       test_data_root=args.test_data_roots,
                       dataset_storage=NullDatasetStorage())
 
-    params = ConfigurableParameters(workspace_id=ID(), model_storage_id=ID())
-    apply_template_configurable_parameters(params, template)
-
-    labels_schema = generate_label_schema(dataset.get_labels(), template['domain'])
+    labels_schema = generate_label_schema(dataset.get_labels(), template.task_type)
     labels_list = labels_schema.get_labels(False)
     dataset.set_project_labels(labels_list)
 
-    environment = TaskEnvironment(model=NullModel(), hyper_parameters=params, label_schema=labels_schema)
+    environment = TaskEnvironment(
+        model=NullModel(),
+        hyper_parameters=hyper_parameters,
+        label_schema=labels_schema,
+        model_template=template)
 
     model_bytes = load_model_weights(args.load_weights)
     model = Model(project=NullProject(),

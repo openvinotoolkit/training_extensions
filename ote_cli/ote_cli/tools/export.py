@@ -15,17 +15,16 @@
 import argparse
 import os
 
-from ote_sdk.entities.id import ID
-
 from ote_cli.datasets import get_dataset_class
-from ote_cli.utils.config import apply_template_configurable_parameters
+from ote_cli.utils.config import set_values_as_default
 from ote_cli.utils.importing import get_impl_class
 from ote_cli.utils.labels import generate_label_schema
-from ote_cli.utils.loading import load_config, load_model_weights
+from ote_cli.utils.loading import load_model_weights
 from sc_sdk.entities.dataset_storage import NullDatasetStorage
 from sc_sdk.entities.datasets import NullDataset
 from sc_sdk.entities.model import Model, ModelStatus, NullModel
 from sc_sdk.entities.model_storage import NullModelStorage
+from sc_sdk.entities.model_template import parse_model_template
 from sc_sdk.entities.optimized_model import (ModelOptimizationType,
                                              ModelPrecision, OptimizedModel,
                                              TargetDevice)
@@ -51,30 +50,36 @@ def parse_args():
 
 def main():
     # Load template.yaml file.
-    template = load_config()
+    template = parse_model_template('template.yaml', '1')
 
     args = parse_args()
 
     # Get classes for Task, ConfigurableParameters and Dataset.
-    Task = get_impl_class(template['task']['base'])
-    ConfigurableParameters = get_impl_class(template['hyper_parameters']['impl'])
-    Dataset = get_dataset_class(template['domain'])
+    Task = get_impl_class(template.entrypoints.base)
+    Dataset = get_dataset_class(template.task_type)
 
     assert args.labels is not None or args.ann_files is not None
 
     if args.labels:
         labels = args.labels
     else:
-        Dataset = get_dataset_class(template['domain'])
+        Dataset = get_dataset_class(template.task_type)
         dataset = Dataset(args.ann_files, dataset_storage=NullDatasetStorage())
         labels = dataset.get_labels()
 
-    params = ConfigurableParameters(workspace_id=ID(), model_storage_id=ID())
-    apply_template_configurable_parameters(params, template)
+    labels_schema = generate_label_schema(labels, template.task_type)
 
-    labels_schema = generate_label_schema(labels, template['domain'])
+    # Get hyper parameters schema.
+    hyper_parameters = template.hyper_parameters.data
+    assert hyper_parameters
+    # Sync values with default values.
+    set_values_as_default(hyper_parameters)
 
-    environment = TaskEnvironment(model=NullModel(), hyper_parameters=params, label_schema=labels_schema)
+    environment = TaskEnvironment(
+        model=NullModel(),
+        hyper_parameters=hyper_parameters,
+        label_schema=labels_schema,
+        model_template=template)
 
     model_bytes = load_model_weights(args.load_weights)
     model = Model(project=NullProject(),

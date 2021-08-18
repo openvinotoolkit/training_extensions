@@ -6,7 +6,7 @@ def get_dataset_class(name):
         'detection': ObjectDetectionDataset
     }
 
-    return registry[name.lower()]
+    return registry[str(name).lower()]
 
 __all__ = [
     'ObjectDetectionDataset',
