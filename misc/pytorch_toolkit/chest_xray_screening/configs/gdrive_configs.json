@@ -5,7 +5,7 @@
 
     },
     "densenet_eff":{
-        "file_id":"",
-        "dest_path":""
+        "file_id":"119nttgoJkHee6imXca_ocF2DItkA3ybv",
+        "dest_path":"model_weights/chest_xray_screening_eff.pth"
     }
 }

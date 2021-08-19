@@ -11,7 +11,9 @@ class Exporter:
         self.config = config
         self.checkpoint = config.get('checkpoint')
         if optimised:
-            self.model = DenseNet121Eff(self.config["alpha"], self.config["beta"], self.config["class_count"])
+            alpha =  self.config['alpha'] ** self.config['phi']
+            beta = self.config['beta'] ** self.config['phi']
+            self.model = DenseNet121Eff(alpha, beta, self.config["class_count"])
         else:
             self.model = DenseNet121(class_count=3)
 
@@ -35,7 +37,7 @@ class Exporter:
 
     def export_model_onnx(self):
         print(f"Saving model to {self.config.get('model_name_onnx')}")
-        res_path = os.path.join(os.path.split(self.checkpoint)[0], self.config.get('model_name'))
+        res_path = os.path.join(os.path.split(self.checkpoint)[0], self.config.get('model_name_onnx'))
         dummy_input = torch.randn(1, 3, 1024, 1024)
         torch.onnx.export(self.model, dummy_input, res_path,
                         opset_version=11, verbose=False)
