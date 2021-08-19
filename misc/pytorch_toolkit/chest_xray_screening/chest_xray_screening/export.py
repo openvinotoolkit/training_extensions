@@ -1,5 +1,3 @@
-import os
-import json
 from .utils.exporter import Exporter
 import argparse
 from chest_xray_screening.utils.get_config import get_config

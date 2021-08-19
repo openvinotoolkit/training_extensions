@@ -64,10 +64,9 @@ def create_train_test_for_densenet121():
                 self.device, self.config["class_names"], self.config["lr"])
             self.trainer.train(self.config["max_epoch"], self.config["savepath"])
             cur_train_loss = self.trainer.current_train_loss
-            cur_valid_loss = self.trainer.current_valid_loss
             self.trainer.train(self.config["max_epoch"], self.config["savepath"])
             self.assertLessEqual(self.trainer.current_train_loss, cur_train_loss)
-            self.assertLessEqual(self.trainer.current_valid_loss, cur_valid_loss)
+
 
     return TrainerTest
 
@@ -124,10 +123,9 @@ def create_train_test_for_densenet121eff():
                 self.device, self.config["class_names"], self.config["lr"])
             self.trainer.train(self.config["max_epoch"], self.config["savepath"])
             cur_train_loss = self.trainer.current_train_loss
-            cur_valid_loss = self.trainer.current_valid_loss
             self.trainer.train(self.config["max_epoch"], self.config["savepath"])
             self.assertLessEqual(self.trainer.current_train_loss, cur_train_loss)
-            self.assertLessEqual(self.trainer.current_valid_loss, cur_valid_loss)
+
 
         def test_config(self):
             self.config = get_config(action = 'train', optimised = True)

@@ -1,4 +1,3 @@
-import os
 from google_drive_downloader import GoogleDriveDownloader as gdd
 from .get_config import get_config
 

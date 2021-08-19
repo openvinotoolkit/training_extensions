@@ -4,7 +4,7 @@ import json
 
 def get_config(action, optimised = False):
     """ action: train, test, export or gdrive
-        optimised: False --> DenseNet121 
+        optimised: False --> DenseNet121
                    True --> DenseNet121Eff
     """
     root_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
