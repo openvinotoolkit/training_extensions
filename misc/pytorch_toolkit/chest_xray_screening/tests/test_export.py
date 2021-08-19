@@ -17,9 +17,10 @@ class ExportTest(unittest.TestCase):
         self.assertTrue(os.path.join(os.path.split(self.model_path)[0], self.config.get('model_name_onnx')))
 
     def test_export_ir(self):
-
         self.assertTrue(os.path.isdir(OPENVINO_DIR))
         self.config = get_config(action = 'export')
+        if not os.path.isdir('model_weights'):
+            download_checkpoint()
         self.exporter = Exporter(self.config, optimised=False)
         self.exporter.export_model_ir()
         self.model_path = self.config['checkpoint']

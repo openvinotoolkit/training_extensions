@@ -9,11 +9,13 @@ def get_config(action, optimised = False):
     """
     root_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
     config_path = os.path.join(root_path, 'configs')
-    with open(os.path.join(config_path, 'test_config.json')) as f1:
-        config_file = json.load(f1)
     if optimised:
-        config = config_file[action + '_eff']
+        with open(os.path.join(config_path, 'densenet121eff_config.json')) as f1:
+            config_file = json.load(f1)
+        config = config_file[action]
     else:
+        with open(os.path.join(config_path, 'densenet121_config.json')) as f1:
+            config_file = json.load(f1)
         config = config_file[action]
 
     return config
