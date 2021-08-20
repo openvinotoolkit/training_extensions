@@ -23,6 +23,7 @@ def create_export_test_for_densenet121():
             if not os.path.isdir('model_weights'):
                 download_checkpoint()
             self.exporter = Exporter(self.config, optimised=False)
+            self.model_path = self.config['checkpoint']
             if not os.path.exists(os.path.join(self.model_path, self.config.get('model_name_onnx'))):
                 self.exporter.export_model_onnx()
             self.exporter.export_model_ir()
@@ -63,6 +64,7 @@ def create_export_test_for_densenet121eff():
             if not os.path.isdir('model_weights'):
                 download_checkpoint()
             self.exporter = Exporter(self.config, optimised=True)
+            self.model_path = self.config['checkpoint']
             if not os.path.exists(os.path.join(self.model_path, self.config.get('model_name_onnx'))):
                 self.exporter.export_model_onnx()
             self.exporter.export_model_ir()
