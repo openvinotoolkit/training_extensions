@@ -84,17 +84,10 @@ The network when trained and evaluated using the CheXpert dataset with same alph
 
 
 ## **Model**
-Download checkpoint with the following [link](https://drive.google.com/file/d/1q9OYgK1y-eWeBljTH5G4NlJUuF4sB6bU/view?usp=sharing).
+Download checkpoint for densenet, ONNX checkpoint, and OpenVINO IR with the following [link](https://drive.google.com/drive/folders/1Qa88btQeeBszcCtQOYp8X7C051fdOOm9?usp=sharing).
 
-Download ONNX checkpoint with the following [link](https://drive.google.com/file/d/1J2IXVzXrzxZlc0Rcgf7da7PNGM2nnBde/view?usp=sharing).
+Download checkpoint for optimised model, ONNX checkpoint, and OpenVINO IR with the following [link](https://drive.google.com/drive/folders/1qJGDHDXSrJ8WyhXOnJB49MJHBtfzQQcB?usp=sharing)
 
-The OpenVINO IR can be found [here](https://drive.google.com/file/d/1SoSWLbitdh0AfpUeUyI9-0vr_-dUvuHq/view?usp=sharing).
-
-Download checkpoint for optimised model with the following [link](https://drive.google.com/file/d/1HUmG-wKRoKYxBdwu0_LX1ascBRmA-z5e/view?usp=sharing)
-
-Download ONNX checkpoint with the following [link](https://drive.google.com/file/d/1U5zVPxseY56_N1ZY9NqkGsOaF1R-MJPq/view?usp=sharing).
-
-The OpenVINO IR of optimised model can be found [here](https://drive.google.com/file/d/1ALZwLBs3lkZ8fGTvFHCNXSscOnjNKMHY/view?usp=sharing).
 
 ## **Demo**
 An example for using the ONNX models for inference can be found [here](https://drive.google.com/drive/folders/1EdgO3ZLZejoPojGXZxElOYnSOUM7zHkn?usp=sharing).
@@ -200,31 +193,6 @@ Necessary unit tests has been provided in the tests directory. The sample datase
 
 ## **Acknowledgement**
 This work is undertaken as part of Intel India Grand Challenge 2016 Project MIRIAD: Many Incarnations of Screening of Radiology for High Throughput Disease Screening via Multiple Instance Reinforcement Learning with Adversarial Deep Neural Networks, sponsored by Intel Technology India Pvt. Ltd., Bangalore, India.
-
-**Contributor**
-
-The codes/model was contributed to the OpenVINO project by
-
-<a href="https://www.linkedin.com/in/rakshith-sathish/">Rakshith Sathish</a>, </br>
-Advanced Technology Development Centre, </br>
-Indian Institute of Technology Kharagpur</br>
-email: rakshith.sathish@kgpian.iitkgp.ac.in</br>
-Github username: Rakshith2597
-
-<a href="https://www.linkedin.com/in/thearkamitra/">Arka Mitra</a>, </br>
-
-<a href="https://github.com/arunava555"> Arunava Chakravarty</a>, </br>
-
-**Principal Investigators**
-
-<a href="https://www.linkedin.com/in/debdoot/">Dr Debdoot Sheet</a>, <a href="http://www.iitkgp.ac.in/department/EE/faculty/ee-nirmalya">Dr Nirmalya Ghosh</a>,</br>
-Department of Electrical Engineering,</br>
-Indian Institute of Technology Kharagpur</br>
-email: debdoot@ee.iitkgp.ac.in, nirmalya@ee.iitkgp.ac.in
-
-<a href="https://www.linkedin.com/in/ramanathan-sethuraman-27a12aba/">Dr Ramanathan Sethuraman</a>,</br>
-Intel Technology India Pvt. Ltd.
-email: ramanathan.sethuraman@intel.com
 
 ## **References**
 
