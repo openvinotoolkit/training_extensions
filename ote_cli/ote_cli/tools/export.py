@@ -20,16 +20,16 @@ from ote_cli.utils.config import set_values_as_default
 from ote_cli.utils.importing import get_impl_class
 from ote_cli.utils.labels import generate_label_schema
 from ote_cli.utils.loading import load_model_weights
+from ote_sdk.entities.model_template import parse_model_template
+from ote_sdk.entities.task_environment import TaskEnvironment
 from sc_sdk.entities.dataset_storage import NullDatasetStorage
 from sc_sdk.entities.datasets import NullDataset
-from sc_sdk.entities.model import Model, ModelStatus, NullModel
+from sc_sdk.entities.model import Model, ModelStatus
 from sc_sdk.entities.model_storage import NullModelStorage
-from sc_sdk.entities.model_template import parse_model_template
 from sc_sdk.entities.optimized_model import (ModelOptimizationType,
                                              ModelPrecision, OptimizedModel,
                                              TargetDevice)
 from sc_sdk.entities.project import NullProject
-from sc_sdk.entities.task_environment import TaskEnvironment
 from sc_sdk.logging import logger_factory
 from sc_sdk.usecases.tasks.interfaces.export_interface import ExportType
 
@@ -76,7 +76,7 @@ def main():
     set_values_as_default(hyper_parameters)
 
     environment = TaskEnvironment(
-        model=NullModel(),
+        model=None,
         hyper_parameters=hyper_parameters,
         label_schema=labels_schema,
         model_template=template)

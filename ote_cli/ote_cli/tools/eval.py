@@ -22,14 +22,14 @@ from ote_cli.utils.loading import load_model_weights
 from ote_cli.utils.parser import (add_hyper_parameters_sub_parser,
                                   gen_params_dict_from_args)
 from ote_sdk.entities.inference_parameters import InferenceParameters
+from ote_sdk.entities.model_template import parse_model_template
+from ote_sdk.entities.task_environment import TaskEnvironment
 from sc_sdk.entities.dataset_storage import NullDatasetStorage
 from sc_sdk.entities.datasets import NullDataset, Subset
-from sc_sdk.entities.model import Model, NullModel
+from sc_sdk.entities.model import Model
 from sc_sdk.entities.model_storage import NullModelStorage
-from sc_sdk.entities.model_template import parse_model_template
 from sc_sdk.entities.project import NullProject
 from sc_sdk.entities.resultset import ResultSet
-from sc_sdk.entities.task_environment import TaskEnvironment
 from sc_sdk.logging import logger_factory
 
 logger = logger_factory.get_logger("Sample")
@@ -77,7 +77,7 @@ def main():
     dataset.set_project_labels(labels_list)
 
     environment = TaskEnvironment(
-        model=NullModel(),
+        model=None,
         hyper_parameters=hyper_parameters,
         label_schema=labels_schema,
         model_template=template)
