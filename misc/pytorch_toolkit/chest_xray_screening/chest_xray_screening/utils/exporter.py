@@ -24,13 +24,13 @@ class Exporter:
         input_model = os.path.join(os.path.split(self.checkpoint)[0], self.config.get('model_name'))
         input_shape = self.config.get('input_shape')
         output_dir = os.path.split(self.checkpoint)[0]
-        export_command = f"""{OPENVINO_DIR}/bin/setupvars.sh && \
-        python {OPENVINO_DIR}/deployment_tools/model_optimizer/mo.py \
+        export_command = f"""mo \
         --framework onnx \
         --input_model {input_model} \
         --input_shape "{input_shape}" \
         --output_dir {output_dir} \
         --scale_values 'imgs[255]'"""
+
         if self.config.get('verbose_export'):
             print(export_command)
         subprocess.run(export_command, shell=True, check=True)
