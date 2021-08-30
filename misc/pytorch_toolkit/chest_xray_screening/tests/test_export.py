@@ -22,15 +22,14 @@ def create_export_test_for_densenet121():
             if not os.path.isdir('model_weights'):
                 download_checkpoint()
             self.exporter = Exporter(self.config, optimised=False)
-            self.model_path = self.config['checkpoint']
+            self.model_path = os.path.split(self.config['checkpoint'])[0]
             if not os.path.exists(os.path.join(self.model_path, self.config.get('model_name_onnx'))):
                 self.exporter.export_model_onnx()
             self.exporter.export_model_ir()
-            self.model_path = self.config['checkpoint']
             name_xml = self.config['model_name'] + '.xml'
             name_bin = self.config['model_name'] + '.bin'
             xml_status = os.path.exists(os.path.join(self.model_path, name_xml))
-            bin_status = os.path.exists(os.path.join(self.model_path, name_bin))
+            bin_status = os.path.exists(os.path.join(self.model_path, name_xml))
             self.assertTrue(xml_status)
             self.assertTrue(bin_status)
 
@@ -52,22 +51,19 @@ def create_export_test_for_densenet121eff():
             self.config = get_config(action = 'export', optimised = True)
             if not os.path.isdir('model_weights'):
                 download_checkpoint()
-            self.exporter = Exporter(self.config, optimised=True)
+            self.exporter = Exporter(self.config, optimised = True)
             self.exporter.export_model_onnx()
-            self.model_path = self.config['checkpoint']
-            self.assertTrue(os.path.join(os.path.split(self.model_path)[0], self.config.get('model_name_onnx')))
+            self.assertTrue(os.path.join(os.path.split(self.config['checkpoint'])[0], self.config.get('model_name_onnx')))
 
         def test_export_ir(self):
-            self.assertTrue(os.path.isdir(OPENVINO_DIR))
             self.config = get_config(action = 'export', optimised = True)
             if not os.path.isdir('model_weights'):
                 download_checkpoint()
-            self.exporter = Exporter(self.config, optimised=True)
-            self.model_path = self.config['checkpoint']
+            self.exporter = Exporter(self.config, optimised = True)
+            self.model_path = os.path.split(self.config['checkpoint'])[0]
             if not os.path.exists(os.path.join(self.model_path, self.config.get('model_name_onnx'))):
                 self.exporter.export_model_onnx()
             self.exporter.export_model_ir()
-            self.model_path = self.config['checkpoint']
             name_xml = self.config.get('model_name') + '.xml'
             name_bin = self.config.get('model_name') + '.bin'
             xml_status = os.path.exists(os.path.join(self.model_path, name_xml))
