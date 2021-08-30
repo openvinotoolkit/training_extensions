@@ -1,7 +1,7 @@
 import unittest
 import os
 from chest_xray_screening.utils.download_weights import download_checkpoint
-from chest_xray_screening.utils.exporter import Exporter, OPENVINO_DIR
+from chest_xray_screening.utils.exporter import Exporter
 from chest_xray_screening.utils.get_config import get_config
 
 
@@ -18,7 +18,6 @@ def create_export_test_for_densenet121():
             self.assertTrue(os.path.join(os.path.split(self.model_path)[0], self.config.get('model_name_onnx')))
 
         def test_export_ir(self):
-            self.assertTrue(os.path.isdir(OPENVINO_DIR))
             self.config = get_config(action = 'export')
             if not os.path.isdir('model_weights'):
                 download_checkpoint()
@@ -28,8 +27,8 @@ def create_export_test_for_densenet121():
                 self.exporter.export_model_onnx()
             self.exporter.export_model_ir()
             self.model_path = self.config['checkpoint']
-            name_xml = self.config.get('model_name') + '.xml'
-            name_bin = self.config.get('model_name') + '.bin'
+            name_xml = self.config['model_name'] + '.xml'
+            name_bin = self.config['model_name'] + '.bin'
             xml_status = os.path.exists(os.path.join(self.model_path, name_xml))
             bin_status = os.path.exists(os.path.join(self.model_path, name_bin))
             self.assertTrue(xml_status)
