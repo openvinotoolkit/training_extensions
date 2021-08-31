@@ -25,7 +25,7 @@ def collect_ap(path):
     """ Collects average precision values in log file. """
 
     average_precisions = []
-    beginning = 'Average Precision  (AP) @[ IoU=0.50:0.95 | type=   all | maxDets= 20 ] = '
+    beginning = 'Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets= 20 ] =  '
     with open(path) as read_file:
         content = [line.strip() for line in read_file]
         for line in content:
