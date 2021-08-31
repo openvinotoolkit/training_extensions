@@ -33,6 +33,9 @@ from sc_sdk.entities.task_environment import TaskEnvironment
 from sc_sdk.logging import logger_factory
 from sc_sdk.usecases.tasks.interfaces.export_interface import ExportType
 
+from mmdet.integration.nncf import is_checkpoint_nncf
+
+
 logger = logger_factory.get_logger("Sample")
 
 
@@ -43,7 +46,6 @@ def parse_args():
     parser.add_argument('--save-model-to', required='True',
                         help='Location where exported model will be stored.')
     parser.add_argument('--ann-files')
-    parser.add_argument('--nncf', default=False, action='store_true')
     parser.add_argument('--labels', nargs='+')
 
     return parser.parse_args()
@@ -55,8 +57,10 @@ def main():
 
     args = parse_args()
 
+
+    is_nncf = is_checkpoint_nncf(args.load_weights)
     # Get classes for Task, ConfigurableParameters and Dataset.
-    Task = get_impl_class(template.entrypoints.nncf if args.nncf else template.entrypoints.base)
+    Task = get_impl_class(template.entrypoints.nncf if is_nncf else template.entrypoints.base)
     Dataset = get_dataset_class(template.task_type)
 
     assert args.labels is not None or args.ann_files is not None
