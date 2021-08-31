@@ -29,7 +29,7 @@ def create_export_test_for_densenet121():
             name_xml = self.config['model_name'] + '.xml'
             name_bin = self.config['model_name'] + '.bin'
             xml_status = os.path.exists(os.path.join(self.model_path, name_xml))
-            bin_status = os.path.exists(os.path.join(self.model_path, name_xml))
+            bin_status = os.path.exists(os.path.join(self.model_path, name_bin))
             self.assertTrue(xml_status)
             self.assertTrue(bin_status)
 
@@ -53,7 +53,8 @@ def create_export_test_for_densenet121eff():
                 download_checkpoint()
             self.exporter = Exporter(self.config, optimised = True)
             self.exporter.export_model_onnx()
-            self.assertTrue(os.path.join(os.path.split(self.config['checkpoint'])[0], self.config.get('model_name_onnx')))
+            checkpoint = os.path.split(self.config['checkpoint'])[0]
+            self.assertTrue(os.path.join(checkpoint, self.config.get('model_name_onnx')))
 
         def test_export_ir(self):
             self.config = get_config(action = 'export', optimised = True)
