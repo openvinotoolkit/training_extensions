@@ -43,6 +43,7 @@ def parse_args():
     parser.add_argument('--save-model-to', required='True',
                         help='Location where exported model will be stored.')
     parser.add_argument('--ann-files')
+    parser.add_argument('--nncf', default=False, action='store_true')
     parser.add_argument('--labels', nargs='+')
 
     return parser.parse_args()
@@ -55,7 +56,7 @@ def main():
     args = parse_args()
 
     # Get classes for Task, ConfigurableParameters and Dataset.
-    Task = get_impl_class(template.entrypoints.base)
+    Task = get_impl_class(template.entrypoints.nncf if args.nncf else template.entrypoints.base)
     Dataset = get_dataset_class(template.task_type)
 
     assert args.labels is not None or args.ann_files is not None

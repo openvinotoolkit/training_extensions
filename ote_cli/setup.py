@@ -15,6 +15,7 @@ setup(
                 "ote_train=ote_cli.tools.train:main",
                 "ote_eval=ote_cli.tools.eval:main",
                 "ote_export=ote_cli.tools.export:main",
+                "ote_optimize=ote_cli.tools.optimize:main",
             ]
         },
 )

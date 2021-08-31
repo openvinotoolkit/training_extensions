@@ -45,7 +45,7 @@ def _get_templates_filenames(args):
 
 def _get_init_venv_path(algo_repo_name):
     algo_repo_name = os.path.realpath(os.path.join('external', algo_repo_name))
-    init_venv_path = os.path.join(algo_repo_name, 'init_venv.sh')
+    init_venv_path = os.path.join(algo_repo_name, '_get_init_venv_path')
     if os.path.isfile(init_venv_path):
         return init_venv_path
     return None
