@@ -2,7 +2,6 @@ import unittest
 import os
 from chest_xray_screening.utils.download_weights import download_checkpoint
 from chest_xray_screening.utils.exporter import Exporter
-from chest_xray_screening.inference import RSNAInference
 from chest_xray_screening.utils.get_config import get_config
 
 

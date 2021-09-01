@@ -7,7 +7,7 @@ from chest_xray_screening.utils.model import DenseNet121, DenseNet121Eff
 from chest_xray_screening.inference import RSNAInference
 from chest_xray_screening.utils.download_weights import download_checkpoint
 from chest_xray_screening.utils.get_config import get_config
-
+from chest_xray_screening.utils.exporter import Exporter
 
 def create_inference_test_for_densenet121():
     class InferenceTest(unittest.TestCase):
@@ -34,6 +34,8 @@ def create_inference_test_for_densenet121():
                 cls.model, cls.data_loader_test,
                 cls.config['clscount'], cls.config['checkpoint'],
                 cls.config['class_names'], cls.device)
+            cls.exporter = Exporter(cls.config, optimised=False)
+
 
         def test_scores(self):
             metric = self.inference.test()
@@ -46,9 +48,7 @@ def create_inference_test_for_densenet121():
                 self.exporter.export_model_onnx()
             sample_image_name = self.config['dummy_valid_list'][0]
             sample_image_path = os.path.join(self.image_path, sample_image_name)
-            model_check, np_assert = self.inference.test_onnx(sample_image_path, onnx_checkpoint)
-            self.assertIsNone(model_check)
-            self.assertIsNone(np_assert)
+            self.inference.test_onnx(sample_image_path, onnx_checkpoint)
             metric = self.inference.test_onnx_score(onnx_checkpoint)
             self.assertGreaterEqual(metric, self.config['target_metric'])
 
@@ -67,11 +67,11 @@ def create_inference_test_for_densenet121eff():
             cls.config = export_config
             if not os.path.isdir('model_weights'):
                 download_checkpoint()
-            image_path = '../../../data/chest_xray_screening/'
+            cls.image_path = '../../../data/chest_xray_screening/'
             dataset_test = RSNADataSet(
                 cls.config['dummy_valid_list'],
                 cls.config['dummy_labels'],
-                image_path, transform = True)
+                cls.image_path, transform = True)
             cls.data_loader_test = DataLoader(
                 dataset=dataset_test,
                 batch_size=1,
@@ -79,19 +79,29 @@ def create_inference_test_for_densenet121eff():
                 num_workers=4,
                 pin_memory=False)
 
+            alpha =  cls.config['alpha'] ** cls.config['phi']
+            beta = cls.config['beta'] ** cls.config['phi']
+            cls.model = DenseNet121Eff(alpha, beta, cls.config['class_count'])
+            cls.class_names = cls.config['class_names']
+            cls.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+            cls.inference = RSNAInference(
+                cls.model, cls.data_loader_test,
+                cls.config['class_count'], cls.config['checkpoint'],
+                cls.config['class_names'], cls.device)
+
         def test_scores(self):
-            alpha =  self.config['alpha'] ** self.config['phi']
-            beta = self.config['beta'] ** self.config['phi']
-            self.model = DenseNet121Eff(alpha, beta, self.config['class_count'])
-            self.class_names = self.config['class_names']
             target_metric = self.config['target_metric']
-            device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-            inference = RSNAInference(
-                self.model, self.data_loader_test,
-                self.config['class_count'], self.config['checkpoint'],
-                self.config['class_names'], device)
-            metric = inference.test()
+            metric = self.inference.test()
             self.assertGreaterEqual(metric, target_metric)
+
+        def test_onnx_inference(self):
+            self.exporter = Exporter(self.config, optimised = True)
+            model_dir = os.path.split(self.config['checkpoint'])[0]
+            onnx_checkpoint = os.path.join(model_dir, self.config.get('model_name_onnx'))
+            if not onnx_checkpoint:
+                self.exporter.export_model_onnx()
+            metric = self.inference.test_onnx_score(onnx_checkpoint)
+            self.assertGreaterEqual(metric, self.config['target_metric'])
 
         def test_config_eff(self):
             self.assertEqual(self.config['class_count'], 3)

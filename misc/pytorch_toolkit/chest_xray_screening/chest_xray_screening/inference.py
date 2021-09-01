@@ -13,7 +13,7 @@ from .utils.model import DenseNet121, DenseNet121Eff, load_checkpoint
 import onnx
 import onnxruntime
 from PIL import Image
-import torchvision.transforms as transforms
+from torchvision import transforms
 
 
 class RSNAInference():
@@ -50,8 +50,8 @@ class RSNAInference():
 
     def test_onnx(self, img_path, onnx_checkpoint):
         onnx_model = onnx.load(onnx_checkpoint)
-        check_model = onnx.checker.check_model(onnx_model) 
-        # The validity of the ONNX graph is verified by checking the model’s version, 
+        onnx.checker.check_model(onnx_model)
+        # The validity of the ONNX graph is verified by checking the model’s version,
         # the graph’s structure, as well as the nodes and their inputs and outputs.
         ort_session = onnxruntime.InferenceSession(onnx_checkpoint)
         sample_image = Image.open(img_path).convert('RGB')
@@ -61,13 +61,10 @@ class RSNAInference():
         ort_inputs = {ort_session.get_inputs()[0].name: to_numpy(sample_image)}
         ort_outs = ort_session.run(None, ort_inputs)
         torch_out = self.model(sample_image.cuda())
-        np_assert = np.testing.assert_allclose(to_numpy(torch_out), ort_outs[0], rtol=1e-03, atol=1e-05)
+        np.testing.assert_allclose(to_numpy(torch_out), ort_outs[0], rtol=1e-03, atol=1e-05)
 
-
-        return check_model, np_assert
 
     def test_onnx_score(self, onnx_checkpoint):
-        onnx_model = onnx.load(onnx_checkpoint)
         ort_session = onnxruntime.InferenceSession(onnx_checkpoint)
         out_gt = torch.FloatTensor().to(self.device)
         out_pred = torch.FloatTensor().to(self.device)
@@ -76,7 +73,6 @@ class RSNAInference():
                 var_target = var_target.to(self.device)
                 var_input = var_input.to(self.device)
                 out_gt = torch.cat((out_gt, var_target), 0).to(self.device)
-
                 _, c, h, w = var_input.size()
                 var_input = var_input.view(-1, c, h, w)
                 ort_inputs = {ort_session.get_inputs()[0].name: to_numpy(var_input)}
@@ -85,16 +81,16 @@ class RSNAInference():
                 to_tensor = transforms.ToTensor()
                 ort_outs = to_tensor(ort_outs).squeeze(1).transpose(dim0=1, dim1=0)
                 out_pred = torch.cat((out_pred, ort_outs.to(self.device)), 0)
-                print(out_pred.shape)
-                print(tfunc.one_hot(out_gt.squeeze(1).long()).shape)
-                auroc_individual = compute_auroc(tfunc.one_hot(out_gt.squeeze(1).long()).float(), out_pred, self.class_count)
+                one_hot_gt = tfunc.one_hot(out_gt.squeeze(1).long()).float()
+                auroc_individual = compute_auroc(one_hot_gt, out_pred, self.class_count)
         auroc_mean = np.array(auroc_individual).mean()
         return auroc_mean
-    
+
+
 
 
 def to_numpy(tensor):
-        return tensor.detach().cpu().numpy() if tensor.requires_grad else tensor.cpu().numpy()
+    return tensor.detach().cpu().numpy() if tensor.requires_grad else tensor.cpu().numpy()
 
 
 
