@@ -17,29 +17,39 @@ def create_inference_test_for_densenet121():
             cls.config = export_config
             if not os.path.isdir('model_weights'):
                 download_checkpoint()
-            image_path = '../../../data/chest_xray_screening/'
+            cls.image_path = '../../../data/chest_xray_screening/'
+            cls.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
             dataset_test = RSNADataSet(
                 cls.config['dummy_valid_list'],
                 cls.config['dummy_labels'],
-                image_path, transform = True)
+                cls.image_path, transform = True)
             cls.data_loader_test = DataLoader(
                 dataset=dataset_test,
                 batch_size=1,
                 shuffle=False,
                 num_workers=4,
                 pin_memory=False)
+            cls.model = DenseNet121(cls.config['clscount'])
+            cls.inference = RSNAInference(
+                cls.model, cls.data_loader_test,
+                cls.config['clscount'], cls.config['checkpoint'],
+                cls.config['class_names'], cls.device)
 
         def test_scores(self):
-            self.model = DenseNet121(self.config['clscount'])
-            self.class_names = self.config['class_names']
             target_metric = self.config['target_metric']
-            device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-            inference = RSNAInference(
-                self.model, self.data_loader_test,
-                self.config['clscount'], self.config['checkpoint'],
-                self.config['class_names'], device)
-            metric = inference.test()
+            metric = self.inference.test()
             self.assertGreaterEqual(metric, target_metric)
+
+        def test_onnx_inference(self):
+            model_dir = os.path.split(self.config['checkpoint'])[0]
+            onnx_checkpoint = os.path.join(model_dir, self.config.get('model_name_onnx'))
+            if not onnx_checkpoint:
+                self.exporter.export_model_onnx()
+            sample_image_name = self.config['dummy_valid_list'][0]
+            sample_image_path = os.path.join(self.image_path, sample_image_name)
+            model_check, np_assert = self.inference.test_onnx(sample_image_path, onnx_checkpoint)
+            self.assertIsNone(model_check)
+            self.assertIsNone(np_assert)
 
 
         def test_config(self):

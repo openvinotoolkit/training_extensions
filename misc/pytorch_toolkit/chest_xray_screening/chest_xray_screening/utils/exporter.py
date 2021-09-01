@@ -39,4 +39,7 @@ class Exporter:
         res_path = os.path.join(os.path.split(self.checkpoint)[0], self.config.get('model_name_onnx'))
         dummy_input = torch.randn(1, 3, 1024, 1024)
         torch.onnx.export(self.model, dummy_input, res_path,
-                        opset_version = 11, verbose = False)
+                        opset_version = 11, do_constant_folding=True,
+                        input_names = ['input'], output_names=['output'],
+                        dynamic_axes={'input' : {0 : 'batch_size'}, 'output' : {0 : 'batch_size'}},
+                        verbose = False)

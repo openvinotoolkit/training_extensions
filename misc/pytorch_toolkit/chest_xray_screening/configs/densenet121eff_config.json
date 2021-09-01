@@ -25,7 +25,8 @@
         "target_metric":0.3,
         "alpha":1.833,
         "beta":1.044,
-        "phi":-0.1
+        "phi":-0.1,
+        "model_name_onnx": "chest_xray_screening.onnx"
 
     },
     "export":{

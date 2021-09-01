@@ -10,23 +10,27 @@ import os
 from .utils.dataloader import RSNADataSet
 from .utils.score import compute_auroc
 from .utils.model import DenseNet121, DenseNet121Eff, load_checkpoint
-
+import onnx
+import onnxruntime
+from PIL import Image
+import torchvision.transforms as transforms
 
 
 class RSNAInference():
     def __init__(self, model, data_loader_test, class_count, checkpoint, class_names, device):
         self.device = device
         self.model = model.to(self.device)
-        load_checkpoint(self.model, checkpoint)
+        self.checkpoint = checkpoint
+        load_checkpoint(self.model, self.checkpoint)
         self.data_loader_test = data_loader_test
         self.class_count = class_count
         self.class_names = class_names
+        self.model.eval()
 
     def test(self):
         cudnn.benchmark = True
         out_gt = torch.FloatTensor().to(self.device)
         out_pred = torch.FloatTensor().to(self.device)
-        self.model.eval()
         with torch.no_grad():
             for var_input, var_target in self.data_loader_test:
                 var_target = var_target.to(self.device)
@@ -43,6 +47,31 @@ class RSNAInference():
         for i, auroc_val in enumerate(auroc_individual):
             print(f"{self.class_names[i]}:{auroc_val}")
         return auroc_mean
+
+    def test_onnx(self, img_path, onnx_checkpoint):
+        onnx_model = onnx.load(onnx_checkpoint)
+        check_model = onnx.checker.check_model(onnx_model) 
+        # The validity of the ONNX graph is verified by checking the model’s version, 
+        # the graph’s structure, as well as the nodes and their inputs and outputs.
+        ort_session = onnxruntime.InferenceSession(onnx_checkpoint)
+        sample_image = Image.open(img_path).convert('RGB')
+        to_tensor = transforms.ToTensor()
+        sample_image = to_tensor(sample_image)
+        sample_image.unsqueeze_(0)
+        ort_inputs = {ort_session.get_inputs()[0].name: to_numpy(sample_image)}
+        ort_outs = ort_session.run(None, ort_inputs)
+        torch_out = self.model(sample_image.cuda())
+        np_assert = np.testing.assert_allclose(to_numpy(torch_out), ort_outs[0], rtol=1e-03, atol=1e-05)
+
+
+        return check_model, np_assert
+    
+
+
+def to_numpy(tensor):
+        return tensor.detach().cpu().numpy() if tensor.requires_grad else tensor.cpu().numpy()
+
+
 
 def main(args):
     checkpoint= args.checkpoint
