@@ -65,6 +65,31 @@ class RSNAInference():
 
 
         return check_model, np_assert
+
+    def test_onnx_score(self, onnx_checkpoint):
+        onnx_model = onnx.load(onnx_checkpoint)
+        ort_session = onnxruntime.InferenceSession(onnx_checkpoint)
+        out_gt = torch.FloatTensor().to(self.device)
+        out_pred = torch.FloatTensor().to(self.device)
+        with torch.no_grad():
+            for var_input, var_target in self.data_loader_test:
+                var_target = var_target.to(self.device)
+                var_input = var_input.to(self.device)
+                out_gt = torch.cat((out_gt, var_target), 0).to(self.device)
+
+                _, c, h, w = var_input.size()
+                var_input = var_input.view(-1, c, h, w)
+                ort_inputs = {ort_session.get_inputs()[0].name: to_numpy(var_input)}
+                ort_outs = ort_session.run(None, ort_inputs)
+                ort_outs = np.array(ort_outs)
+                to_tensor = transforms.ToTensor()
+                ort_outs = to_tensor(ort_outs).squeeze(1).transpose(dim0=1, dim1=0)
+                out_pred = torch.cat((out_pred, ort_outs.to(self.device)), 0)
+                print(out_pred.shape)
+                print(tfunc.one_hot(out_gt.squeeze(1).long()).shape)
+                auroc_individual = compute_auroc(tfunc.one_hot(out_gt.squeeze(1).long()).float(), out_pred, self.class_count)
+        auroc_mean = np.array(auroc_individual).mean()
+        return auroc_mean
     
 
 

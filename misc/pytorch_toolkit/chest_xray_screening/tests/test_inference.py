@@ -36,9 +36,8 @@ def create_inference_test_for_densenet121():
                 cls.config['class_names'], cls.device)
 
         def test_scores(self):
-            target_metric = self.config['target_metric']
             metric = self.inference.test()
-            self.assertGreaterEqual(metric, target_metric)
+            self.assertGreaterEqual(metric, self.config['target_metric'])
 
         def test_onnx_inference(self):
             model_dir = os.path.split(self.config['checkpoint'])[0]
@@ -50,6 +49,8 @@ def create_inference_test_for_densenet121():
             model_check, np_assert = self.inference.test_onnx(sample_image_path, onnx_checkpoint)
             self.assertIsNone(model_check)
             self.assertIsNone(np_assert)
+            metric = self.inference.test_onnx_score(onnx_checkpoint)
+            self.assertGreaterEqual(metric, self.config['target_metric'])
 
 
         def test_config(self):
