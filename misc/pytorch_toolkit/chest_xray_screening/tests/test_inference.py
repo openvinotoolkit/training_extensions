@@ -37,8 +37,8 @@ def create_inference_test_for_densenet121():
             cls.exporter = Exporter(cls.config, optimised=False)
 
 
-        def test_scores(self):
-            metric = self.inference.test()
+        def test_pytorch_inference(self):
+            metric = self.inference.validate_models(run_type='pytorch')
             self.assertGreaterEqual(metric, self.config['target_metric'])
 
         def test_onnx_inference(self):
@@ -49,16 +49,15 @@ def create_inference_test_for_densenet121():
             sample_image_name = self.config['dummy_valid_list'][0]
             sample_image_path = os.path.join(self.image_path, sample_image_name)
             self.inference.test_onnx(sample_image_path, onnx_checkpoint)
-            metric = self.inference.test_onnx_score(onnx_checkpoint)
+            metric = self.inference.validate_models(run_type='onnx', onnx_checkpoint=onnx_checkpoint)
             self.assertGreaterEqual(metric, self.config['target_metric'])
 
         def test_ir_inference(self):
             model_dir = os.path.split(self.config['checkpoint'])[0]
             onnx_checkpoint = os.path.join(model_dir, self.config.get('model_name_onnx'))
-            in_shape = self.config['input_shape']
             if not os.path.exists(onnx_checkpoint):
                 self.exporter.export_model_onnx()
-            metric = self.inference.test_ir_score(onnx_checkpoint, in_shape)
+            metric = self.inference.validate_models(run_type='openvino', onnx_checkpoint=onnx_checkpoint)
             self.assertGreaterEqual(metric, self.config['target_metric'])
 
         def test_config(self):
@@ -96,19 +95,27 @@ def create_inference_test_for_densenet121eff():
                 cls.model, cls.data_loader_test,
                 cls.config['class_count'], cls.config['checkpoint'],
                 cls.config['class_names'], cls.device)
+            cls.exporter = Exporter(cls.config, optimised=True)
 
-        def test_scores(self):
+        def test_pytorch_inference(self):
             target_metric = self.config['target_metric']
-            metric = self.inference.test()
+            metric = self.inference.validate_models(run_type='pytorch')
             self.assertGreaterEqual(metric, target_metric)
 
         def test_onnx_inference(self):
-            self.exporter = Exporter(self.config, optimised = True)
             model_dir = os.path.split(self.config['checkpoint'])[0]
             onnx_checkpoint = os.path.join(model_dir, self.config.get('model_name_onnx'))
             if not os.path.exists(onnx_checkpoint):
                 self.exporter.export_model_onnx()
-            metric = self.inference.test_onnx_score(onnx_checkpoint)
+            metric = self.inference.validate_models(run_type='onnx', onnx_checkpoint=onnx_checkpoint)
+            self.assertGreaterEqual(metric, self.config['target_metric'])
+
+        def test_ir_inference(self):
+            model_dir = os.path.split(self.config['checkpoint'])[0]
+            onnx_checkpoint = os.path.join(model_dir, self.config.get('model_name_onnx'))
+            if not os.path.exists(onnx_checkpoint):
+                self.exporter.export_model_onnx()
+            metric = self.inference.validate_models(run_type='openvino', onnx_checkpoint=onnx_checkpoint)
             self.assertGreaterEqual(metric, self.config['target_metric'])
 
         def test_config_eff(self):
