@@ -27,27 +27,6 @@ class RSNAInference():
         self.class_names = class_names
         self.model.eval()
 
-    def test(self):
-        cudnn.benchmark = True
-        out_gt = torch.FloatTensor().to(self.device)
-        out_pred = torch.FloatTensor().to(self.device)
-        with torch.no_grad():
-            for var_input, var_target in self.data_loader_test:
-                var_target = var_target.to(self.device)
-                var_input = var_input.to(self.device)
-                out_gt = torch.cat((out_gt, var_target), 0).to(self.device)
-
-                _, c, h, w = var_input.size()
-                var_input = var_input.view(-1, c, h, w)
-                out = self.model(var_input.to(self.device))
-                out_pred = torch.cat((out_pred, out), 0)
-        auroc_individual = compute_auroc(tfunc.one_hot(out_gt.squeeze(1).long()).float(), out_pred, self.class_count)
-        auroc_mean = np.array(auroc_individual).mean()
-        print(f'AUROC mean: {auroc_mean}')
-        for i, auroc_val in enumerate(auroc_individual):
-            print(f"{self.class_names[i]}:{auroc_val}")
-        return auroc_mean
-
     def test_onnx(self, img_path, onnx_checkpoint):
         onnx_model = onnx.load(onnx_checkpoint)
         onnx.checker.check_model(onnx_model)
@@ -63,10 +42,25 @@ class RSNAInference():
         torch_out = self.model(sample_image.cuda())
         np.testing.assert_allclose(to_numpy(torch_out), ort_outs[0], rtol=1e-03, atol=1e-05)
 
+    def load_inference_model(self, run_type, onnx_checkpoint):
+        if run_type == 'pytorch':
+            model = self.model
+        elif run_type == 'onnx':
+            model = onnxruntime.InferenceSession(onnx_checkpoint)
+        else:
+            ie = IECore()
+            model_xml = os.path.splitext(onnx_checkpoint)[0] + ".xml"
+            model_bin = os.path.splitext(model_xml)[0] + ".bin"
+            model_temp = ie.read_network(model_xml, model_bin)
+            model = ie.load_network(network=model_temp, device_name='CPU')
+        return model
+
     def validate_models(self, run_type, onnx_checkpoint =''):
         cudnn.benchmark = True
         out_gt = torch.FloatTensor()
         out_pred = torch.FloatTensor()
+        model = self.load_inference_model(run_type, onnx_checkpoint)
+
         with torch.no_grad():
             for var_input, var_target in self.data_loader_test:
                 if run_type in ('pytorch', 'onnx'):
@@ -81,21 +75,14 @@ class RSNAInference():
                 var_input = var_input.view(-1, c, h, w)
                 to_tensor = transforms.ToTensor()
                 if run_type == 'pytorch':
-                    out = self.model(var_input)
+                    out = model(var_input)
                 elif run_type == 'onnx':
-                    ort_session = onnxruntime.InferenceSession(onnx_checkpoint)
-                    ort_inputs = {ort_session.get_inputs()[0].name: to_numpy(var_input)}
-                    out = ort_session.run(None, ort_inputs)
+                    ort_inputs = {model.get_inputs()[0].name: to_numpy(var_input)}
+                    out = model.run(None, ort_inputs)
                     out = np.array(out)
                     out = to_tensor(out).squeeze(1).transpose(dim0=1, dim1=0).to(self.device)
-
                 else:
-                    ie = IECore()
-                    model_xml = os.path.splitext(onnx_checkpoint)[0] + ".xml"
-                    model_bin = os.path.splitext(model_xml)[0] + ".bin"
-                    model = ie.read_network(model_xml, model_bin)
-                    self.exec_net = ie.load_network(network=model, device_name='CPU')
-                    out = self.exec_net.infer(inputs={'input': var_input})['output']
+                    out = model.infer(inputs={'input': var_input})['output']
                     out = to_tensor(out).squeeze(1)
 
                 out_pred = torch.cat((out_pred, out), 0)
@@ -145,7 +132,7 @@ def main(args):
 
     rsna_inference = RSNAInference(model, data_loader_test, class_count, checkpoint, class_names, device)
 
-    test_auroc = rsna_inference.test()
+    test_auroc = rsna_inference.validate_models(run_type='pytorch')
     print(f"Test AUROC is {test_auroc}")
 
 
