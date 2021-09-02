@@ -26,7 +26,8 @@
         "alpha":1.833,
         "beta":1.044,
         "phi":-0.1,
-        "model_name_onnx": "chest_xray_screening.onnx"
+        "model_name_onnx": "chest_xray_screening.onnx",
+        "input_shape":[1, 3, 1024, 1024]
 
     },
     "export":{

@@ -15,7 +15,7 @@ if [[ -e venv ]]; then
   echo "$ . venv/bin/activate"
 fi
 
-virtualenv ${venv_dir} -p python --prompt="(chest_x-ray_screening)"
+virtualenv ${venv_dir} -p python3.7 --prompt="(chest_x-ray_screening)"
 
 
 path_openvino_vars="${INTEL_OPENVINO_DIR:-/opt/intel/openvino}/bin/setupvars.sh"

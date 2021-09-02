@@ -44,7 +44,7 @@ def create_inference_test_for_densenet121():
         def test_onnx_inference(self):
             model_dir = os.path.split(self.config['checkpoint'])[0]
             onnx_checkpoint = os.path.join(model_dir, self.config.get('model_name_onnx'))
-            if not onnx_checkpoint:
+            if not os.path.exists(onnx_checkpoint):
                 self.exporter.export_model_onnx()
             sample_image_name = self.config['dummy_valid_list'][0]
             sample_image_path = os.path.join(self.image_path, sample_image_name)
@@ -52,6 +52,14 @@ def create_inference_test_for_densenet121():
             metric = self.inference.test_onnx_score(onnx_checkpoint)
             self.assertGreaterEqual(metric, self.config['target_metric'])
 
+        def test_ir_inference(self):
+            model_dir = os.path.split(self.config['checkpoint'])[0]
+            onnx_checkpoint = os.path.join(model_dir, self.config.get('model_name_onnx'))
+            in_shape = self.config['input_shape']
+            if not os.path.exists(onnx_checkpoint):
+                self.exporter.export_model_onnx()
+            metric = self.inference.test_ir_score(onnx_checkpoint, in_shape)
+            self.assertGreaterEqual(metric, self.config['target_metric'])
 
         def test_config(self):
             self.config = get_config(action = 'test')
@@ -98,7 +106,7 @@ def create_inference_test_for_densenet121eff():
             self.exporter = Exporter(self.config, optimised = True)
             model_dir = os.path.split(self.config['checkpoint'])[0]
             onnx_checkpoint = os.path.join(model_dir, self.config.get('model_name_onnx'))
-            if not onnx_checkpoint:
+            if not os.path.exists(onnx_checkpoint):
                 self.exporter.export_model_onnx()
             metric = self.inference.test_onnx_score(onnx_checkpoint)
             self.assertGreaterEqual(metric, self.config['target_metric'])

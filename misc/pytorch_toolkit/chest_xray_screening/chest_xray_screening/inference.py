@@ -14,7 +14,8 @@ import onnx
 import onnxruntime
 from PIL import Image
 from torchvision import transforms
-
+from openvino.inference_engine import IECore
+import subprocess
 
 class RSNAInference():
     def __init__(self, model, data_loader_test, class_count, checkpoint, class_names, device):
@@ -63,7 +64,6 @@ class RSNAInference():
         torch_out = self.model(sample_image.cuda())
         np.testing.assert_allclose(to_numpy(torch_out), ort_outs[0], rtol=1e-03, atol=1e-05)
 
-
     def test_onnx_score(self, onnx_checkpoint):
         ort_session = onnxruntime.InferenceSession(onnx_checkpoint)
         out_gt = torch.FloatTensor().to(self.device)
@@ -86,8 +86,35 @@ class RSNAInference():
         auroc_mean = np.array(auroc_individual).mean()
         return auroc_mean
 
-
-
+    def test_ir_score(self, onnx_checkpoint, in_shape):
+        ie = IECore()
+        model_xml = os.path.splitext(onnx_checkpoint)[0] + ".xml"
+        model_bin = os.path.splitext(model_xml)[0] + ".bin"
+        if not os.path.exists(model_xml):
+            output_dir = os.path.split(self.checkpoint)[0]
+            export_command = f"""mo \
+            --framework onnx \
+            --input_model {onnx_checkpoint} \
+            --input_shape "{in_shape}" \
+            --output_dir {output_dir}"""
+            subprocess.run(export_command, shell = True, check = True)
+        model = ie.read_network(model_xml, model_bin)
+        self.exec_net = ie.load_network(network=model, device_name='CPU')
+        out_gt = torch.FloatTensor()
+        out_pred = torch.FloatTensor()
+        with torch.no_grad():
+            for var_input, var_target in self.data_loader_test:
+                out_gt = torch.cat((out_gt, var_target), 0)
+                _, c, h, w = var_input.size()
+                var_input = var_input.view(-1, c, h, w)
+                logits = self.exec_net.infer(inputs={'input': var_input})['output']
+                to_tensor = transforms.ToTensor()
+                logits = to_tensor(logits).squeeze(1)
+                out_pred = torch.cat((out_pred, logits), 0)
+                one_hot_gt = tfunc.one_hot(out_gt.squeeze(1).long()).float()
+                auroc_individual = compute_auroc(one_hot_gt, out_pred, self.class_count)
+        auroc_mean = np.array(auroc_individual).mean()
+        return auroc_mean
 
 def to_numpy(tensor):
     return tensor.detach().cpu().numpy() if tensor.requires_grad else tensor.cpu().numpy()
