@@ -144,9 +144,9 @@ chest_xray_screening/
 
 ## **Code Structure**
 
-1. `train.py` in chest_xray_screening diectory contains the code for training the model.
-2. `inference.py` in chest_xray_screening diectory contains the code for evaluating the model with test set.
-3. `export.py` in chest_xray_screening diectory generating the ONNX and Openvino IR of the trained model.
+1. `train.py` in chest_xray_screening directory contains the code for training the model.
+2. `inference.py` in chest_xray_screening directory contains the code for evaluating the model with test set.
+3. `export.py` in chest_xray_screening directory generating the ONNX and Openvino IR of the trained model.
 4. All dependencies are provided in **utils** folder.
 
 5. **tests** directory contains  unittests.
