@@ -75,7 +75,7 @@ AUROC scores of the efficient-net based model for each class and Mean AUROC scor
 
 **Mean AUROC score:** 0.5531
 
-The network when trained and evaluated using the CheXpert dataset with same alpha, beta, and phi values (given below) was able to classify with a **Mean AUROC score of 0.7877**
+The network when trained and evaluated using the CheXpert dataset with same alpha, beta, and phi values (given below) was able to classify with a **Mean AUROC score:** 0.7877
 | Variable | Value |
 | -- | -- |
 | α | 1.833 |
@@ -113,17 +113,33 @@ An example for using the ONNX model of optimised network for inference can be fo
 ## **Code and Directory Organisation**
 
 ```
-+-- chest_xray_screening
-|   +--dataset
-|   |  +--original
-|   |  +--processed_data
-|   +--media 
-|   +--tests  
-|   +--tools
-|   |  +--utils
-init_venv.sh
-README.md
-requirements.txt 
+chest_xray_screening/
+	chest_xray_screening/
+      utils/
+        data_prep.py
+        downloader.py
+        download_weights.py
+        exporter.py
+        generate.py
+        get_config.py
+        model.py
+        score.py
+      export.py
+      inference.py
+      train.py
+	configs/
+      densenet121_config.json
+      densenet121eff_config.json
+      gdrive_config.json
+	media/
+	tests/
+      test_export.py
+      test_inference.py
+      test_train.py
+	init_venv.sh
+	README.md
+	requirements.txt
+	setup.py
 ```
 <!-- `train.py` 
 
