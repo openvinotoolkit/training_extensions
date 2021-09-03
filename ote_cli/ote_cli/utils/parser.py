@@ -34,6 +34,11 @@ def gen_param_help(hyper_parameters):
                 assert isinstance(v['value'], (int, float, str))
                 help_str = '\n'.join([f'{kk}: {v[kk]}' for kk in help_keys if kk in v.keys()])
                 assert '.' not in k
+
+                # TODO(ikrylov): fix this
+                if v['type'] == 'SELECTABLE':
+                    continue
+
                 xx.update({prefix + f'{k}': {'default': v['default_value'],
                                              'help': help_str,
                                              'type': type_map[v['type']],

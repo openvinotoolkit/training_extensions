@@ -22,16 +22,14 @@ from ote_cli.utils.labels import generate_label_schema
 from ote_cli.utils.loading import load_model_weights
 from ote_sdk.entities.model_template import parse_model_template
 from ote_sdk.entities.task_environment import TaskEnvironment
+from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType
 from sc_sdk.entities.dataset_storage import NullDatasetStorage
 from sc_sdk.entities.datasets import NullDataset
-from sc_sdk.entities.model import Model, ModelStatus
+from sc_sdk.entities.model import Model, ModelOptimizationType, ModelPrecision, ModelStatus, TargetDevice
 from sc_sdk.entities.model_storage import NullModelStorage
-from sc_sdk.entities.optimized_model import (ModelOptimizationType,
-                                             ModelPrecision, OptimizedModel,
-                                             TargetDevice)
 from sc_sdk.entities.project import NullProject
 from sc_sdk.logging import logger_factory
-from sc_sdk.usecases.tasks.interfaces.export_interface import ExportType
+
 
 logger = logger_factory.get_logger("Sample")
 
@@ -50,7 +48,7 @@ def parse_args():
 
 def main():
     # Load template.yaml file.
-    template = parse_model_template('template.yaml', '1')
+    template = parse_model_template('template.yaml')
 
     args = parse_args()
 
@@ -91,15 +89,15 @@ def main():
 
     task = Task(task_environment=environment)
 
-    exported_model = OptimizedModel(
+    exported_model = Model(
         NullProject(),
         NullModelStorage(),
         NullDataset(),
         environment.get_model_configuration(),
-        ModelOptimizationType.MO,
+        optimization_type=ModelOptimizationType.MO,
         precision=[ModelPrecision.FP16],
         optimization_methods=[],
-        optimization_level={},
+        optimization_objectives={},
         target_device=TargetDevice.UNSPECIFIED,
         performance_improvement={},
         model_size_reduction=1.,
