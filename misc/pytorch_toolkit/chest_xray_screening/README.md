@@ -207,9 +207,9 @@ python inference.py \
 Necessary unit tests have been provided in the tests directory. The sample/toy dataset to be used in the tests is provided in the folder 'data' (at root of this directory). It can also be downloaded from [here](https://drive.google.com/drive/folders/1aAZvdST531WUQIbKxSedifv8WfM3Wbqm?usp=sharing).
 
 ## **Acknowledgement**
-```
+
 This work is undertaken as part of Intel India Grand Challenge 2016 Project MIRIAD: Many Incarnations of Screening of Radiology for High Throughput Disease Screening via Multiple Instance Reinforcement Learning with Adversarial Deep Neural Networks, sponsored by Intel Technology India Pvt. Ltd., Bangalore, India.
-```
+
 ## **References**
 
 <div id="densenet">
