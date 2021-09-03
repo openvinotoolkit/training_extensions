@@ -27,7 +27,6 @@ from ote.tests.test_case import (create_export_test_case,
 from ote.tests.utils import find_files_by_pattern, extract_last_lines_by_pattern
 from ote.utils.misc import run_through_shell
 
-
 def create_image_classification_export_test_case(**kwargs):
     expected_outputs_dir = os.path.join(os.path.dirname(__file__), '..', 'expected_outputs')
     ExportTestCase = create_export_test_case('image_classification',
@@ -255,8 +254,8 @@ def create_image_classification_nncf_test_case(problem_name, model_name, ann_fil
             logging.info('Begin test_nncf_compress_on_gpu')
             best_models = self.do_preliminary_finetuning(True)
             self.assertEqual(len(best_models), 2)
-            self.assertIn('model_0', best_models[0])
-            self.assertIn('model_1', best_models[1])
+            self.assertIn('main_model', best_models[1])
+            self.assertIn('aux_model_1', best_models[0])
 
             log_file = self.do_compress(main_weights_path=best_models[0],
                                         aux_weights_path=best_models[1])
@@ -264,8 +263,8 @@ def create_image_classification_nncf_test_case(problem_name, model_name, ann_fil
             best_compressed_models = self._find_best_models(self.output_folder)
             logging.debug(f'Found best compressed models: {best_compressed_models}')
             self.assertEqual(len(best_compressed_models), 2)
-            self.assertIn('model_0', best_compressed_models[0])
-            self.assertIn('model_1', best_compressed_models[1])
+            self.assertIn('main_model', best_compressed_models[1])
+            self.assertIn('aux_model_1', best_compressed_models[0])
 
             logging.info('End test_nncf_compress_on_gpu')
             return log_file
@@ -299,8 +298,8 @@ def create_image_classification_nncf_test_case(problem_name, model_name, ann_fil
             logging.info('Begin test_nncf_compress_and_eval_on_gpu')
             best_models = self.do_preliminary_finetuning(True)
             self.assertEqual(len(best_models), 2)
-            self.assertIn('model_0', best_models[0])
-            self.assertIn('model_1', best_models[1])
+            self.assertIn('main_model', best_models[1])
+            self.assertIn('aux_model_1', best_models[0])
 
             log_file = self.do_compress(main_weights_path=best_models[0],
                                         aux_weights_path=best_models[1])
@@ -328,8 +327,8 @@ def create_image_classification_nncf_test_case(problem_name, model_name, ann_fil
             logging.info('Begin test_nncf_compress_and_export')
             best_models = self.do_preliminary_finetuning(True)
             self.assertEqual(len(best_models), 2)
-            self.assertIn('model_0', best_models[0])
-            self.assertIn('model_1', best_models[1])
+            self.assertIn('main_model', best_models[1])
+            self.assertIn('aux_model_1', best_models[0])
 
             log_file = self.do_compress(main_weights_path=best_models[0],
                                         aux_weights_path=best_models[1])

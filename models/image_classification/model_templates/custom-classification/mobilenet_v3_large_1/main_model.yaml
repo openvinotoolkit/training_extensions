@@ -18,7 +18,7 @@ model:
   feature_dim: 1280
 
 mutual_learning:
-  aux_configs: ['aux_model.yml']
+  aux_configs: ['aux_model.yaml']
 
 custom_datasets:
   roots: ['path/to/train_folder', 'path/to/val_folder']
