@@ -141,26 +141,25 @@ chest_xray_screening/
 	requirements.txt
 	setup.py
 ```
-<!-- `train.py` 
 
-
-`train.py` `train.py` `train.py` `train.py` `train.py`  -->
 ## **Code Structure**
 
-1. `train.py` in tools diectory contains the code for training the model.
-2. `inference.py` in tools diectory contains the code for evaluating the model in test set.
-3. `generate.py` optimised model is defined in this file. 
-4. `export.py` generating the onnx representation and Openvino IR of the trained model.
-5. `tests` directory contains minimal unittests and a configuration file.
+1. `train.py` in chest_xray_screening diectory contains the code for training the model.
+2. `inference.py` in chest_xray_screening diectory contains the code for evaluating the model with test set.
+3. `export.py` in chest_xray_screening diectory generating the ONNX and Openvino IR of the trained model.
+4. All dependencies are provided in **utils** folder.
 
-## **Creating the Directory Tree**
+5. **tests** directory contains  unittests.
+6. **config** directory contains model configs.
+
+## **Creating the Dataset Directory Tree**
 
 Create a folder in the root directory and name it 'dataset'. Create a directoy tree as shown below.
 
 ```
 +-- dataset
 |   +-- original
-  | +-- processed_data
+|   +-- processed_data
 ```
 Download the dataset from [link](https://www.kaggle.com/c/rsna-pneumonia-detection-challenge) and place it in the dataset/original directory.
 
@@ -176,7 +175,7 @@ On completion processed data will be stored in the 'processed_data' subfolder. D
 
 Run the `train.py` script:
 ```
-python3 train.py \
+python train.py \
   --alpha \
   --beta \
   --phi \
@@ -193,7 +192,7 @@ Ensure that the test directory contains a series of X-ray samples in the JPEG fo
 
 ### Run Inference
 ```
-python3 inference.py \
+python inference.py \
   --alpha \
   --beta \
   --phi \
@@ -205,11 +204,12 @@ python3 inference.py \
 
 ### Run Tests
 
-Necessary unit tests has been provided in the tests directory. The sample dataset to be used in the tests is provided in the folder 'data'. It can also be downloaded from [here](https://drive.google.com/drive/folders/1aAZvdST531WUQIbKxSedifv8WfM3Wbqm?usp=sharing).
+Necessary unit tests have been provided in the tests directory. The sample/toy dataset to be used in the tests is provided in the folder 'data' (at root of this directory). It can also be downloaded from [here](https://drive.google.com/drive/folders/1aAZvdST531WUQIbKxSedifv8WfM3Wbqm?usp=sharing).
 
 ## **Acknowledgement**
+```
 This work is undertaken as part of Intel India Grand Challenge 2016 Project MIRIAD: Many Incarnations of Screening of Radiology for High Throughput Disease Screening via Multiple Instance Reinforcement Learning with Adversarial Deep Neural Networks, sponsored by Intel Technology India Pvt. Ltd., Bangalore, India.
-
+```
 ## **References**
 
 <div id="densenet">
