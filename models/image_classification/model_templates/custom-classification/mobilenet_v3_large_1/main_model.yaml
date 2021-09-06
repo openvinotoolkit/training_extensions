@@ -43,6 +43,10 @@ data:
       enable: True
       p: 0.35
       angle: (-10,10)
+    cutout:
+      enable: True
+      cutout_factor: 0.3
+      p: 0.35
     augmix:
       enable: True
       cfg_str: "augmix-m4-w2"
