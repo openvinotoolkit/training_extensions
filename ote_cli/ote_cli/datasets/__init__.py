@@ -4,6 +4,7 @@ try:
     from .object_detection.dataset import ObjectDetectionDataset
 except ImportError as e:
     print(e)
+    ObjectDetectionDataset = None
 
 try:
     from torchreid.integration.sc.utils import ClassificationDatasetAdapter
