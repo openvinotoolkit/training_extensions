@@ -32,13 +32,18 @@ class Registry:
         else:
             self.templates = copy.deepcopy(templates)
 
+        self.task_types = self.__collect_task_types(self.templates)
 
-    def filter(self, framework=None, domain=None):
+    @staticmethod
+    def __collect_task_types(templates):
+        return {template['task_type'] for template in templates}
+
+    def filter(self, framework=None, task_type=None):
         templates = copy.deepcopy(self.templates)
         if framework is not None:
             templates = [template for template in templates if template['framework'] == framework]
-        if domain is not None:
-            templates = [template for template in templates if template['task_type'] == domain]
+        if task_type is not None:
+            templates = [template for template in templates if template['task_type'] == task_type]
         return Registry(templates=templates)
 
     def get(self, name):
