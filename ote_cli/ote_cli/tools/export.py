@@ -20,18 +20,16 @@ from ote_cli.utils.config import set_values_as_default
 from ote_cli.utils.importing import get_impl_class
 from ote_cli.utils.labels import generate_label_schema
 from ote_cli.utils.loading import load_model_weights
+from ote_sdk.entities.model_template import parse_model_template
+from ote_sdk.entities.task_environment import TaskEnvironment
+from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType
 from sc_sdk.entities.dataset_storage import NullDatasetStorage
 from sc_sdk.entities.datasets import NullDataset
-from sc_sdk.entities.model import Model, ModelStatus, NullModel
+from sc_sdk.entities.model import Model, ModelOptimizationType, ModelPrecision, ModelStatus, TargetDevice
 from sc_sdk.entities.model_storage import NullModelStorage
-from sc_sdk.entities.model_template import parse_model_template
-from sc_sdk.entities.optimized_model import (ModelOptimizationType,
-                                             ModelPrecision, OptimizedModel,
-                                             TargetDevice)
 from sc_sdk.entities.project import NullProject
-from sc_sdk.entities.task_environment import TaskEnvironment
 from sc_sdk.logging import logger_factory
-from sc_sdk.usecases.tasks.interfaces.export_interface import ExportType
+
 
 from mmdet.integration.nncf import is_checkpoint_nncf
 
@@ -53,7 +51,7 @@ def parse_args():
 
 def main():
     # Load template.yaml file.
-    template = parse_model_template('template.yaml', '1')
+    template = parse_model_template('template.yaml')
 
     args = parse_args()
 
@@ -81,7 +79,7 @@ def main():
     set_values_as_default(hyper_parameters)
 
     environment = TaskEnvironment(
-        model=NullModel(),
+        model=None,
         hyper_parameters=hyper_parameters,
         label_schema=labels_schema,
         model_template=template)
@@ -96,15 +94,15 @@ def main():
 
     task = Task(task_environment=environment)
 
-    exported_model = OptimizedModel(
+    exported_model = Model(
         NullProject(),
         NullModelStorage(),
         NullDataset(),
         environment.get_model_configuration(),
-        ModelOptimizationType.MO,
+        optimization_type=ModelOptimizationType.MO,
         precision=[ModelPrecision.FP16],
         optimization_methods=[],
-        optimization_level={},
+        optimization_objectives={},
         target_device=TargetDevice.UNSPECIFIED,
         performance_improvement={},
         model_size_reduction=1.,

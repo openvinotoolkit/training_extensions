@@ -2,3 +2,5 @@ pyyaml
 opencv-python
 numpy
 nbmake
+pytest
+pytest-ordering

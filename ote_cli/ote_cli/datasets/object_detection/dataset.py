@@ -4,7 +4,7 @@ from copy import deepcopy
 import numpy as np
 
 from ote_sdk.entities.label import ScoredLabel
-from ote_sdk.entities.shapes.box import Box
+from ote_sdk.entities.shapes.rectangle import Rectangle
 
 from sc_sdk.entities.annotation import (Annotation, AnnotationScene,
                                         AnnotationSceneKind,
@@ -80,7 +80,7 @@ class ObjectDetectionDataset(Dataset):
             return ScoredLabel(label=self.label_name_to_project_label(label_name))
 
         def create_gt_box(x1, y1, x2, y2, label):
-            return Annotation(Box(x1=x1, y1=y1, x2=x2, y2=y2),
+            return Annotation(Rectangle(x1=x1, y1=y1, x2=x2, y2=y2),
                               labels=[create_gt_scored_label(label)])
 
         item = self.coco_dataset[indx]

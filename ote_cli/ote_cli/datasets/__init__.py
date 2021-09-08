@@ -1,4 +1,9 @@
-from .object_detection.dataset import ObjectDetectionDataset
+# TODO(ikrylov): re-do
+
+try:
+    from .object_detection.dataset import ObjectDetectionDataset
+except ImportError as e:
+    print(e)
 
 
 def get_dataset_class(name):
