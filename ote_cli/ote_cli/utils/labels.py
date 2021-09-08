@@ -12,19 +12,17 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from sc_sdk.entities.label import Color, Label, distinct_colors
-from sc_sdk.entities.label_schema import (LabelGroup, LabelGroupType,
-                                          LabelSchema)
+from ote_sdk.entities.label import Color, LabelEntity
+from ote_sdk.entities.label_schema import (LabelGroup, LabelGroupType, LabelSchemaEntity)
 
 
 def generate_label_schema(label_names, label_domain):
-    colors = distinct_colors(len(label_names)) if len(label_names) > 0 else []
-    not_empty_labels = [Label(name=name, color=colors[i], domain=label_domain, id=i) for i, name in
+    not_empty_labels = [LabelEntity(name=name, color=Color.random(), domain=label_domain, id=i) for i, name in
                         enumerate(label_names)]
-    emptylabel = Label(name=f"Empty label", color=Color(42, 43, 46),
+    emptylabel = LabelEntity(name=f"Empty label", color=Color(42, 43, 46),
                        is_empty=True, domain=label_domain, id=len(not_empty_labels))
 
-    label_schema = LabelSchema()
+    label_schema = LabelSchemaEntity()
     exclusive_group = LabelGroup(name="labels", labels=not_empty_labels, group_type=LabelGroupType.EXCLUSIVE)
     empty_group = LabelGroup(name="empty", labels=[emptylabel], group_type=LabelGroupType.EMPTY_LABEL)
     label_schema.add_group(exclusive_group)
