@@ -30,7 +30,6 @@ from sc_sdk.entities.model_storage import NullModelStorage
 from sc_sdk.entities.project import NullProject
 from sc_sdk.logging import logger_factory
 
-
 from mmdet.integration.nncf import is_checkpoint_nncf
 
 

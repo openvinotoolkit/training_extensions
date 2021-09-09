@@ -28,13 +28,13 @@ from sc_sdk.entities.dataset_storage import NullDatasetStorage
 from sc_sdk.entities.datasets import NullDataset, Subset
 from sc_sdk.entities.model import Model, ModelStatus, NullModel
 from sc_sdk.entities.model_storage import NullModelStorage
-from sc_sdk.entities.model_template import parse_model_template
+from ote_sdk.entities.model_template import parse_model_template
 from sc_sdk.entities.project import NullProject
 from sc_sdk.entities.resultset import ResultSet
-from sc_sdk.entities.task_environment import TaskEnvironment
+from ote_sdk.entities.task_environment import TaskEnvironment
 from sc_sdk.logging import logger_factory
 
-from sc_sdk.usecases.tasks.interfaces.optimization_interface import OptimizationType
+from ote_sdk.usecases.tasks.interfaces.optimization_interface import OptimizationType
 
 logger = logger_factory.get_logger("Sample")
 
@@ -62,7 +62,7 @@ def parse_args(config):
 
 def main():
     # Load template.yaml file.
-    template = parse_model_template('template.yaml', '1')
+    template = parse_model_template('template.yaml')
     # Get hyper parameters schema.
     hyper_parameters = template.hyper_parameters.data
     assert hyper_parameters
@@ -114,32 +114,23 @@ def main():
         model_status=ModelStatus.NOT_READY)
 
     optimize_parameters = OptimizationParameters()
-    # resume: bool = False
-    # update_progress: Callable[[int], None] = default_progress_callback
-    # save_model: Callable[[], None] = default_save_model_callback
-    print("optimize")
     task.optimize(OptimizationType.NNCF, dataset, output_model, optimize_parameters)
 
-    print("save_model")
     task.save_model(output_model)
 
-    print("write: ", output_model.model_status != ModelStatus.NOT_READY)
     if output_model.model_status != ModelStatus.NOT_READY:
-        print("write_2")
         with open(args.save_weights, 'wb') as f:
-            print(f"Saved to {args.save_weights}")
             f.write(output_model.get_data("weights.pth"))
 
-    #
-    # validation_dataset = dataset.get_subset(Subset.VALIDATION)
-    # predicted_validation_dataset = task.infer(
-    #     validation_dataset.with_empty_annotations(),
-    #     InferenceParameters(is_evaluation=True))
-    #
-    # resultset = ResultSet(
-    #     model=output_model,
-    #     ground_truth_dataset=validation_dataset,
-    #     prediction_dataset=predicted_validation_dataset,
-    # )
-    # performance = task.evaluate(resultset)
-    # print(performance)
+    validation_dataset = dataset.get_subset(Subset.VALIDATION)
+    predicted_validation_dataset = task.infer(
+        validation_dataset.with_empty_annotations(),
+        InferenceParameters(is_evaluation=True))
+
+    resultset = ResultSet(
+        model=output_model,
+        ground_truth_dataset=validation_dataset,
+        prediction_dataset=predicted_validation_dataset,
+    )
+    performance = task.evaluate(resultset)
+    print(performance)
