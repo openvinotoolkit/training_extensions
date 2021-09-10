@@ -29,6 +29,7 @@ from sc_sdk.entities.datasets import NullDataset, Subset
 from sc_sdk.entities.model import Model, ModelStatus, NullModel
 from sc_sdk.entities.model_storage import NullModelStorage
 from ote_sdk.entities.model_template import parse_model_template
+from ote_sdk.entities.model import ModelOptimizationType
 from sc_sdk.entities.project import NullProject
 from sc_sdk.entities.resultset import ResultSet
 from ote_sdk.entities.task_environment import TaskEnvironment
@@ -52,11 +53,9 @@ def parse_args(config):
     parser.add_argument('--load-weights', required=False,
                         help='Load only weights from previously saved checkpoint')
     parser.add_argument('--save-weights', required=True,
-                        help='Location to store wiehgts.')
+                        help='Location to store weights.')
 
-    print(parser.parse_args())
     add_hyper_parameters_sub_parser(parser, config)
-    print(parser)
     return parser.parse_args()
 
 
@@ -111,6 +110,7 @@ def main():
         NullModelStorage(),
         dataset,
         environment.get_model_configuration(),
+        optimization_type=ModelOptimizationType.NNCF,
         model_status=ModelStatus.NOT_READY)
 
     optimize_parameters = OptimizationParameters()

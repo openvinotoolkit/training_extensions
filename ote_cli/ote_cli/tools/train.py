@@ -48,7 +48,7 @@ def parse_args(config):
     parser.add_argument('--load-weights', required=False,
                         help='Load only weights from previously saved checkpoint')
     parser.add_argument('--save-weights', required=True,
-                        help='Location to store wiehgts.')
+                        help='Location to store weights.')
 
     add_hyper_parameters_sub_parser(parser, config)
 
