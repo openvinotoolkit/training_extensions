@@ -86,8 +86,8 @@ def main():
     model = Model(project=NullProject(),
                   model_storage=NullModelStorage(),
                   configuration=environment.get_model_configuration(),
-                  data_source_dict={'weights.pth': model_bytes},
                   train_dataset=NullDataset())
+    model.set_data('weights.pth', model_bytes)
     environment.model = model
 
     task = Task(task_environment=environment)

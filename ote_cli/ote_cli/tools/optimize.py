@@ -50,7 +50,7 @@ def parse_args(config):
                         help='Comma-separated paths to validation annotation files.')
     parser.add_argument('--val-data-roots', required=True,
                         help='Comma-separated paths to validation data folders.')
-    parser.add_argument('--load-weights', required=False,
+    parser.add_argument('--load-weights', required=True,
                         help='Load only weights from previously saved checkpoint')
     parser.add_argument('--save-weights', required=True,
                         help='Location to store weights.')
@@ -94,14 +94,14 @@ def main():
         label_schema=labels_schema,
         model_template=template)
 
-    if args.load_weights:
-        model_bytes = load_model_weights(args.load_weights)
-        model = Model(project=NullProject(),
-                      model_storage=NullModelStorage(),
-                      configuration=environment.get_model_configuration(),
-                      data_source_dict={'weights.pth': model_bytes},
-                      train_dataset=NullDataset())
-        environment.model = model
+    model_bytes = load_model_weights(args.load_weights)
+    model = Model(project=NullProject(),
+                  model_storage=NullModelStorage(),
+                  configuration=environment.get_model_configuration(),
+                  data_source_dict={'weights.pth': model_bytes},
+                  train_dataset=NullDataset())
+    model.set_data('weights.pth', model_bytes)
+    environment.model = model
 
     task = Task(task_environment=environment)
 
@@ -115,8 +115,6 @@ def main():
 
     optimize_parameters = OptimizationParameters()
     task.optimize(OptimizationType.NNCF, dataset, output_model, optimize_parameters)
-
-    task.save_model(output_model)
 
     if output_model.model_status != ModelStatus.NOT_READY:
         with open(args.save_weights, 'wb') as f:
