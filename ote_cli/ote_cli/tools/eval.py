@@ -102,5 +102,6 @@ def main():
         ground_truth_dataset=validation_dataset,
         prediction_dataset=predicted_validation_dataset,
     )
-    performance = task.evaluate(resultset)
-    print(performance)
+    task.evaluate(resultset)
+    assert resultset.performance is not None
+    print(resultset.performance)
