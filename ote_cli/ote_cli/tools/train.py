@@ -22,17 +22,13 @@ from ote_cli.utils.loading import load_model_weights
 from ote_cli.utils.parser import (add_hyper_parameters_sub_parser,
                                   gen_params_dict_from_args)
 from ote_sdk.entities.inference_parameters import InferenceParameters
+from ote_sdk.entities.model import ModelEntity, ModelStatus
 from ote_sdk.entities.model_template import parse_model_template
 from ote_sdk.entities.resultset import ResultSetEntity
+from ote_sdk.entities.subset import Subset
 from ote_sdk.entities.task_environment import TaskEnvironment
 from sc_sdk.entities.dataset_storage import NullDatasetStorage
-from sc_sdk.entities.datasets import NullDataset, Subset
-from sc_sdk.entities.model import Model, ModelStatus
-from sc_sdk.entities.model_storage import NullModelStorage
-from sc_sdk.entities.project import NullProject
-from sc_sdk.logging import logger_factory
-
-logger = logger_factory.get_logger("Sample")
+from sc_sdk.entities.datasets import NullDataset
 
 
 def parse_args(config):
@@ -93,18 +89,14 @@ def main():
 
     if args.load_weights:
         model_bytes = load_model_weights(args.load_weights)
-        model = Model(project=NullProject(),
-                      model_storage=NullModelStorage(),
-                      configuration=environment.get_model_configuration(),
-                      data_source_dict={'weights.pth': model_bytes},
-                      train_dataset=NullDataset())
+        model = ModelEntity(configuration=environment.get_model_configuration(),
+                            data_source_dict={'weights.pth': model_bytes},
+                            train_dataset=NullDataset())
         environment.model = model
 
     task = Task(task_environment=environment)
 
-    output_model = Model(
-        NullProject(),
-        NullModelStorage(),
+    output_model = ModelEntity(
         dataset,
         environment.get_model_configuration(),
         model_status=ModelStatus.NOT_READY)
