@@ -1,7 +1,7 @@
 # TODO(ikrylov): re-do
 
 try:
-    from .object_detection.dataset import ObjectDetectionDataset
+    from mmdet.apis.ote.extension.datasets.mmdataset import MMDatasetAdapter as ObjectDetectionDataset 
 except ImportError as e:
     print(e)
     ObjectDetectionDataset = None
