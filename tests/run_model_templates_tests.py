@@ -33,10 +33,10 @@ from texttable import Texttable
 
 KNOWN_DOMAIN_FOLDERS = [
         'object_detection',
-        'action_recognition',
-        'instance_segmentation',
-        'text_spotting',
-        'image_classification',
+        #'action_recognition',
+        #'instance_segmentation',
+        #'text_spotting',
+        #'image_classification',
         ]
 TEST_FILES_PATTERN = '*_tests_*.py'
 MODEL_TEMPLATES_FOLDER_NAME = 'model_templates'
