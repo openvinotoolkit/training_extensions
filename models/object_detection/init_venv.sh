@@ -31,9 +31,9 @@ git submodule update --init ${work_dir}/../../external/mmdetection
 
 CONSTRAINTS_FILE=$(tempfile)
 # install ote.
-cat {work_dir}/constraints.txt > ${CONSTRAINTS_FILE} 
+cat ${work_dir}/constraints.txt > ${CONSTRAINTS_FILE} 
 pip install --upgrade pip || exit 1
-pip install -e {work_dir}/../../ote/ -c ${CONSTRAINTS_FILE}
+pip install -e ${work_dir}/../../ote/ -c ${CONSTRAINTS_FILE}
 
 cd ${work_dir}/../../external/mmdetection
 
