@@ -77,7 +77,7 @@ inference.
             --load-weights LOAD_WEIGHTS
                                   Load only weights from previously saved checkpoint
             --save-weights SAVE_WEIGHTS
-                                  Location to store wiehgts.
+                                  Location to store weihgts.
           ```
           ```
           ote_train params --help

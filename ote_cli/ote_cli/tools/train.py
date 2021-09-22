@@ -27,6 +27,7 @@ from ote_sdk.entities.model_template import parse_model_template
 from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.subset import Subset
 from ote_sdk.entities.task_environment import TaskEnvironment
+from ote_sdk.usecases.adapters.model_adapter import ModelAdapter
 from sc_sdk.entities.dataset_storage import NullDatasetStorage
 from sc_sdk.entities.datasets import NullDataset
 
@@ -90,7 +91,7 @@ def main():
     if args.load_weights:
         model_bytes = load_model_weights(args.load_weights)
         model = ModelEntity(configuration=environment.get_model_configuration(),
-                            data_source_dict={'weights.pth': model_bytes},
+                            model_adapters={'weights.pth': ModelAdapter(model_bytes)},
                             train_dataset=NullDataset())
         environment.model = model
 

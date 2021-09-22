@@ -49,9 +49,8 @@ def main():
 
     args = parse_args()
 
-
-    is_nncf = is_checkpoint_nncf(args.load_weights)
     # Get classes for Task, ConfigurableParameters and Dataset.
+    is_nncf = is_checkpoint_nncf(args.load_weights)
     Task = get_impl_class(template.entrypoints.nncf if is_nncf else template.entrypoints.base)
     Dataset = get_dataset_class(template.task_type)
 

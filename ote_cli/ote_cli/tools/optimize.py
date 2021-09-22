@@ -19,25 +19,20 @@ from ote_cli.utils.config import override_parameters, set_values_as_default
 from ote_cli.utils.importing import get_impl_class
 from ote_cli.utils.labels import generate_label_schema
 from ote_cli.utils.loading import load_model_weights
-from ote_cli.utils.parser import (add_hyper_parameters_sub_parser,
-                                  gen_params_dict_from_args)
+from ote_cli.utils.parser import add_hyper_parameters_sub_parser
+from ote_cli.utils.parser import gen_params_dict_from_args
 from ote_sdk.entities.inference_parameters import InferenceParameters
-from ote_sdk.entities.optimization_parameters import OptimizationParameters
-
-from sc_sdk.entities.dataset_storage import NullDatasetStorage
-from sc_sdk.entities.datasets import NullDataset, Subset
-from sc_sdk.entities.model import Model, ModelStatus, NullModel
-from sc_sdk.entities.model_storage import NullModelStorage
-from ote_sdk.entities.model_template import parse_model_template
+from ote_sdk.entities.model import ModelEntity, ModelStatus
 from ote_sdk.entities.model import ModelOptimizationType
-from sc_sdk.entities.project import NullProject
-from sc_sdk.entities.resultset import ResultSet
+from ote_sdk.entities.model_template import parse_model_template
+from ote_sdk.entities.optimization_parameters import OptimizationParameters
+from ote_sdk.entities.resultset import ResultSetEntity
+from ote_sdk.entities.subset import Subset
 from ote_sdk.entities.task_environment import TaskEnvironment
-from sc_sdk.logging import logger_factory
-
+from ote_sdk.usecases.adapters.model_adapter import ModelAdapter
 from ote_sdk.usecases.tasks.interfaces.optimization_interface import OptimizationType
-
-logger = logger_factory.get_logger("Sample")
+from sc_sdk.entities.dataset_storage import NullDatasetStorage
+from sc_sdk.entities.datasets import NullDataset
 
 
 def parse_args(config):
@@ -89,25 +84,22 @@ def main():
     dataset.set_project_labels(labels_list)
 
     environment = TaskEnvironment(
-        model=NullModel(),
+        model=None,
         hyper_parameters=hyper_parameters,
         label_schema=labels_schema,
         model_template=template)
 
     model_bytes = load_model_weights(args.load_weights)
-    model = Model(project=NullProject(),
-                  model_storage=NullModelStorage(),
-                  configuration=environment.get_model_configuration(),
-                  data_source_dict={'weights.pth': model_bytes},
-                  train_dataset=NullDataset())
-    model.set_data('weights.pth', model_bytes)
+
+    model = ModelEntity(configuration=environment.get_model_configuration(),
+                        model_adapters={'weights.pth': ModelAdapter(model_bytes)},
+                        train_dataset=NullDataset())
+
     environment.model = model
 
     task = Task(task_environment=environment)
 
-    output_model = Model(
-        NullProject(),
-        NullModelStorage(),
+    output_model = ModelEntity(
         dataset,
         environment.get_model_configuration(),
         optimization_type=ModelOptimizationType.NNCF,
@@ -125,10 +117,11 @@ def main():
         validation_dataset.with_empty_annotations(),
         InferenceParameters(is_evaluation=True))
 
-    resultset = ResultSet(
+    resultset = ResultSetEntity(
         model=output_model,
         ground_truth_dataset=validation_dataset,
         prediction_dataset=predicted_validation_dataset,
     )
-    performance = task.evaluate(resultset)
-    print(performance)
+    task.evaluate(resultset)
+    assert resultset.performance is not None
+    print(resultset.performance)

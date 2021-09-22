@@ -31,6 +31,8 @@ from ote_sdk.usecases.adapters.model_adapter import ModelAdapter
 from sc_sdk.entities.dataset_storage import NullDatasetStorage
 from sc_sdk.entities.datasets import NullDataset
 
+from mmdet.integration.nncf import is_checkpoint_nncf
+
 
 def parse_args(config):
     parser = argparse.ArgumentParser()
@@ -62,7 +64,8 @@ def main():
     override_parameters(updated_hyper_parameters, hyper_parameters, allow_value=True)
 
     # Get classes for Task, ConfigurableParameters and Dataset.
-    Task = get_impl_class(template.entrypoints.base)
+    is_nncf = is_checkpoint_nncf(args.load_weights)
+    Task = get_impl_class(template.entrypoints.nncf if is_nncf else template.entrypoints.base)
     Dataset = get_dataset_class(template.task_type)
 
     dataset = Dataset(test_ann_file=args.test_ann_files,
