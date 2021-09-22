@@ -27,10 +27,14 @@ if [[ $PYTHON_VERSION != "3.7" && $PYTHON_VERSION != "3.8" && $PYTHON_VERSION !=
 fi
 
 # Download mmdetection submodule
-ls -la ${work_dir}
-ls -la ${work_dir}/..
-ls -la ${work_dir}/../../
 git submodule update --init ${work_dir}/../../external/mmdetection
+
+CONSTRAINTS_FILE=$(tempfile)
+# install ote.
+cat constraints.txt > ${CONSTRAINTS_FILE} 
+pip install --upgrade pip || exit 1
+pip install -e ../../ote/ -c constraints.txt
+
 cd ${work_dir}/../../external/mmdetection
 
 if [[ -e ${venv_dir} ]]; then
@@ -92,9 +96,7 @@ else
   fi
 fi
 
-CONSTRAINTS_FILE=$(tempfile)
 
-pip install --upgrade pip || exit 1
 pip install wheel -c ${CONSTRAINTS_FILE} || exit 1
 pip install --upgrade setuptools -c ${CONSTRAINTS_FILE} || exit 1
 
