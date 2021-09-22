@@ -20,20 +20,15 @@ from ote_cli.utils.config import set_values_as_default
 from ote_cli.utils.importing import get_impl_class
 from ote_cli.utils.labels import generate_label_schema
 from ote_cli.utils.loading import load_model_weights
-from ote_sdk.entities.model_template import parse_model_template
+from ote_sdk.entities.model import ModelEntity, ModelOptimizationType, ModelPrecision, ModelStatus
+from ote_sdk.entities.model_template import parse_model_template, TargetDevice
 from ote_sdk.entities.task_environment import TaskEnvironment
+from ote_sdk.usecases.adapters.model_adapter import ModelAdapter
 from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType
 from sc_sdk.entities.dataset_storage import NullDatasetStorage
 from sc_sdk.entities.datasets import NullDataset
-from sc_sdk.entities.model import Model, ModelOptimizationType, ModelPrecision, ModelStatus, TargetDevice
-from sc_sdk.entities.model_storage import NullModelStorage
-from sc_sdk.entities.project import NullProject
-from sc_sdk.logging import logger_factory
 
 from mmdet.integration.nncf import is_checkpoint_nncf
-
-
-logger = logger_factory.get_logger("Sample")
 
 
 def parse_args():
@@ -84,18 +79,17 @@ def main():
         model_template=template)
 
     model_bytes = load_model_weights(args.load_weights)
-    model = Model(project=NullProject(),
-                  model_storage=NullModelStorage(),
-                  configuration=environment.get_model_configuration(),
-                  data_source_dict={'weights.pth': model_bytes},
-                  train_dataset=NullDataset())
+    model_adapters = {
+        key: ModelAdapter(val) for key, val in {'weights.pth': model_bytes}.items()
+    }
+    model = ModelEntity(configuration=environment.get_model_configuration(),
+                        model_adapters=model_adapters,
+                        train_dataset=NullDataset())
     environment.model = model
 
     task = Task(task_environment=environment)
 
-    exported_model = Model(
-        NullProject(),
-        NullModelStorage(),
+    exported_model = ModelEntity(
         NullDataset(),
         environment.get_model_configuration(),
         optimization_type=ModelOptimizationType.MO,

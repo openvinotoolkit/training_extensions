@@ -22,17 +22,14 @@ from ote_cli.utils.loading import load_model_weights
 from ote_cli.utils.parser import (add_hyper_parameters_sub_parser,
                                   gen_params_dict_from_args)
 from ote_sdk.entities.inference_parameters import InferenceParameters
+from ote_sdk.entities.model import ModelEntity
 from ote_sdk.entities.model_template import parse_model_template
 from ote_sdk.entities.resultset import ResultSetEntity
+from ote_sdk.entities.subset import Subset
 from ote_sdk.entities.task_environment import TaskEnvironment
+from ote_sdk.usecases.adapters.model_adapter import ModelAdapter
 from sc_sdk.entities.dataset_storage import NullDatasetStorage
-from sc_sdk.entities.datasets import NullDataset, Subset
-from sc_sdk.entities.model import Model
-from sc_sdk.entities.model_storage import NullModelStorage
-from sc_sdk.entities.project import NullProject
-from sc_sdk.logging import logger_factory
-
-logger = logger_factory.get_logger("Sample")
+from sc_sdk.entities.datasets import NullDataset
 
 
 def parse_args(config):
@@ -83,11 +80,14 @@ def main():
         model_template=template)
 
     model_bytes = load_model_weights(args.load_weights)
-    model = Model(project=NullProject(),
-                  model_storage=NullModelStorage(),
-                  configuration=environment.get_model_configuration(),
-                  train_dataset=NullDataset())
-    model.set_data('weights.pth', model_bytes)
+
+    model_adapters = {
+        key: ModelAdapter(val) for key, val in {'weights.pth': model_bytes}.items()
+    }
+
+    model = ModelEntity(configuration=environment.get_model_configuration(),
+                        model_adapters=model_adapters,
+                        train_dataset=NullDataset())
     environment.model = model
 
     task = Task(task_environment=environment)
@@ -102,5 +102,6 @@ def main():
         ground_truth_dataset=validation_dataset,
         prediction_dataset=predicted_validation_dataset,
     )
-    performance = task.evaluate(resultset)
-    print(performance)
+    task.evaluate(resultset)
+    assert resultset.performance is not None
+    print(resultset.performance)

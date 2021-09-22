@@ -95,6 +95,13 @@ def gen_parse_model_template_tests(task_type):
         setattr(MyTests, 'test_ote_export_' + template['task_type'] + '__' + get_template_rel_dir(template), test_ote_export)
         test_id +=1
 
+
+    @pytest.mark.run(order=test_id)
+    def test_notebook(self):
+        assert run(f'. {root}/{task_type}/venv/bin/activate && pytest --nbmake ote_cli/notebooks/*.ipynb -v', shell=True, check=True).returncode == 0
+    test_id +=1
+    setattr(MyTests, 'test_notebook', test_notebook)
+
     return MyTests
 
 
