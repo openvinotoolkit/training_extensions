@@ -26,17 +26,6 @@ if [[ $PYTHON_VERSION != "3.7" && $PYTHON_VERSION != "3.8" && $PYTHON_VERSION !=
   exit 1
 fi
 
-# Download mmdetection submodule
-git submodule update --init ${work_dir}/../../external/mmdetection
-
-CONSTRAINTS_FILE=$(tempfile)
-# install ote.
-cat ${work_dir}/constraints.txt > ${CONSTRAINTS_FILE} 
-pip install --upgrade pip || exit 1
-pip install -e ${work_dir}/../../ote/ -c ${CONSTRAINTS_FILE}
-
-cd ${work_dir}/../../external/mmdetection
-
 if [[ -e ${venv_dir} ]]; then
   echo
   echo "Virtualenv already exists. Use command to start working:"
@@ -48,6 +37,17 @@ fi
 virtualenv ${venv_dir} -p ${PYTHON_NAME} --prompt="detection"
 
 . ${venv_dir}/bin/activate
+
+# Download mmdetection submodule
+git submodule update --init ${work_dir}/../../external/mmdetection
+
+CONSTRAINTS_FILE=$(tempfile)
+# install ote.
+cat ${work_dir}/constraints.txt > ${CONSTRAINTS_FILE} 
+pip install --upgrade pip || exit 1
+pip install -e ${work_dir}/../../ote/ -c ${CONSTRAINTS_FILE}
+
+cd ${work_dir}/../../external/mmdetection
 
 # Get CUDA version.
 CUDA_HOME_CANDIDATE=/usr/local/cuda
