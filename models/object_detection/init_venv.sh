@@ -41,7 +41,7 @@ if [[ -e ${venv_dir} ]]; then
 fi
 
 # Create virtual environment
-virtualenv ${venv_dir} -p=${PYTHON_NAME} --prompt="detection"
+virtualenv ${venv_dir} -p ${PYTHON_NAME} --prompt="detection"
 
 . ${venv_dir}/bin/activate
 
