@@ -2,13 +2,13 @@
 set -v
 set -x
 
-work_dir=$(realpath "$(dirname $0)/../../external/mmdetection")
+work_dir=$(realpath "$(dirname $0)")
 
 venv_dir=$1
 PYTHON_NAME=$2
 
 if [ -z "$venv_dir" ]; then
-  venv_dir=$(realpath -m venv)
+  venv_dir=$(realpath -m ${work_dir}/venv)
 else
   venv_dir=$(realpath -m "$venv_dir")
 fi
@@ -26,7 +26,9 @@ if [[ $PYTHON_VERSION != "3.7" && $PYTHON_VERSION != "3.8" && $PYTHON_VERSION !=
   exit 1
 fi
 
-cd ${work_dir}
+# Download mmdetection submodule
+git submodule update --init ../../external/mmdetection
+cd ../../external/mmdetection
 
 if [[ -e ${venv_dir} ]]; then
   echo
