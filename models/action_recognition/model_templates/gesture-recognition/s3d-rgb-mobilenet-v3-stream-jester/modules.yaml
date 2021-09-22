@@ -1,5 +1,0 @@
-arg_parser: CustomClassesArgParser
-arg_converter_map: MMActionArgConverterMap
-trainer: MMActionTrainer
-evaluator: MMActionEvaluator
-exporter: MMActionExporter
