@@ -2,13 +2,13 @@
 set -v
 set -x
 
-work_dir=$(realpath "$(dirname $0)")
+work_dir=$(realpath "$(dirname $0)/../../external/mmdetection")
 
 venv_dir=$1
 PYTHON_NAME=$2
 
 if [ -z "$venv_dir" ]; then
-  venv_dir=$(realpath -m ${work_dir}/venv)
+  venv_dir=$(realpath -m venv)
 else
   venv_dir=$(realpath -m "$venv_dir")
 fi
@@ -131,6 +131,7 @@ pip check
 pip freeze
 
 deactivate
+cd -
 
 echo
 echo "Activate a virtual environment to start working:"
