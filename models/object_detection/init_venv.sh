@@ -41,7 +41,7 @@ if [[ -e ${venv_dir} ]]; then
 fi
 
 # Create virtual environment
-virtualenv ${venv_dir} --prompt="detection"
+virtualenv ${venv_dir} -p=${PYTHON_NAME} --prompt="detection"
 
 . ${venv_dir}/bin/activate
 
@@ -93,7 +93,6 @@ else
 fi
 
 CONSTRAINTS_FILE=$(tempfile)
-cat constraints.txt >> ${CONSTRAINTS_FILE}
 
 pip install --upgrade pip || exit 1
 pip install wheel -c ${CONSTRAINTS_FILE} || exit 1
