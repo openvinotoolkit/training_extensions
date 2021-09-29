@@ -27,12 +27,12 @@ def gen_parse_model_template_tests(task_type):
         pass
 
     args = {
-        '--train-ann-file': '',
-        '--train-data-roots': 'data/airport/train',
-        '--val-ann-file': '',
-        '--val-data-roots': 'data/airport/train',
-        '--test-ann-files': '',
-        '--test-data-roots': 'data/airport/train',
+        '--train-ann-file': 'data/custom/annotations/training',
+        '--train-data-roots': 'data/custom/images/training',
+        '--val-ann-file': 'data/custom/annotations/training',
+        '--val-data-roots': 'data/custom/images/training',
+        '--test-ann-files': 'data/custom/annotations/training',
+        '--test-data-roots': 'data/custom/images/training',
     }
 
     root = '/tmp/ote_cli/'
@@ -63,7 +63,7 @@ def gen_parse_model_template_tests(task_type):
                        f'cd {template_dir} && {command_line}', check=True, shell=True).returncode == 0
         setattr(MyTests, 'test_ote_train_' + template['task_type'] + '__' + get_template_rel_dir(template),
                 test_ote_train)
-        test_id +=1
+        test_id += 1
 
         @pytest.mark.run(order=test_id)
         def test_ote_eval(self, template=template):
@@ -78,12 +78,11 @@ def gen_parse_model_template_tests(task_type):
                            f'--test-data-roots {os.path.join(ote_dir, args["--test-data-roots"])} ' \
                            f'--load-weights {template_work_dir}/trained.pth '
 
-
             assert run(f'. {work_dir}/venv/bin/activate && pip install -e ote_cli && '
                        f'cd {template_dir} && {command_line}', check=True, shell=True).returncode == 0
         setattr(MyTests, 'test_ote_eval_' + template['task_type'] + '__' + get_template_rel_dir(template),
                 test_ote_eval)
-        test_id +=1
+        test_id += 1
 
         @pytest.mark.run(order=test_id)
         def test_ote_export(self, template=template):
@@ -94,7 +93,7 @@ def gen_parse_model_template_tests(task_type):
             print(f'{template_work_dir=}')
 
             command_line = f'ote_export ' \
-                           f'--labels vehilce person non-vehicle ' \
+                           f'--labels none ' \
                            f'--load-weights {template_work_dir}/trained.pth ' \
                            f'--save-model-to {template_work_dir}/exported'
 
@@ -102,15 +101,7 @@ def gen_parse_model_template_tests(task_type):
                        f'cd {template_dir} && {command_line}', check=True, shell=True).returncode == 0
         setattr(MyTests, 'test_ote_export_' + template['task_type'] + '__' + get_template_rel_dir(template),
                 test_ote_export)
-        test_id +=1
-
-
-    @pytest.mark.run(order=test_id)
-    def test_notebook(self):
-        assert run(f'. {root}/{task_type}/venv/bin/activate && pytest --nbmake ote_cli/notebooks/*.ipynb -v',
-                   shell=True, check=True).returncode == 0
-    test_id +=1
-    setattr(MyTests, 'test_notebook', test_notebook)
+        test_id += 1
 
     return MyTests
 

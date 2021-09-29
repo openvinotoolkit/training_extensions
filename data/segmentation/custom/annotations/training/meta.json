@@ -1,0 +1,6 @@
+{
+  "labels_map": [
+    {"name": "background", "id": 0},
+    {"name": "target", "id": 1}
+  ]
+}
