@@ -27,12 +27,12 @@ def gen_parse_model_template_tests(task_type):
         pass
 
     args = {
-        '--train-ann-file': 'data/custom/annotations/training',
-        '--train-data-roots': 'data/custom/images/training',
-        '--val-ann-file': 'data/custom/annotations/training',
-        '--val-data-roots': 'data/custom/images/training',
-        '--test-ann-files': 'data/custom/annotations/training',
-        '--test-data-roots': 'data/custom/images/training',
+        '--train-ann-file': 'data/segmentation/custom/annotations/training',
+        '--train-data-roots': 'data/segmentation/custom/images/training',
+        '--val-ann-file': 'data/segmentation/custom/annotations/training',
+        '--val-data-roots': 'data/segmentation/custom/images/training',
+        '--test-ann-files': 'data/segmentation/custom/annotations/training',
+        '--test-data-roots': 'data/segmentation/custom/images/training',
     }
 
     root = '/tmp/ote_cli/'
@@ -93,7 +93,7 @@ def gen_parse_model_template_tests(task_type):
             print(f'{template_work_dir=}')
 
             command_line = f'ote_export ' \
-                           f'--labels none ' \
+                           f'--labels Background, Target ' \
                            f'--load-weights {template_work_dir}/trained.pth ' \
                            f'--save-model-to {template_work_dir}/exported'
 

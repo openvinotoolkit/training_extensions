@@ -13,17 +13,27 @@ except ImportError as e:
     print(e)
     ClassificationDataset = None
 
+try:
+    from mmseg.apis.ote.extension.datasets import MMDatasetAdapter
+    SemanticSegmentationDataset = MMDatasetAdapter
+except ImportError as e:
+    print(e)
+    SemanticSegmentationDataset = None
+
 
 def get_dataset_class(name):
     registry = {
         'detection': ObjectDetectionDataset,
-        'classification': ClassificationDataset
+        'classification': ClassificationDataset,
+        'segmentation': SemanticSegmentationDataset
     }
 
     return registry[str(name).lower()]
 
+
 __all__ = [
     'ObjectDetectionDataset',
     'ClassificationDataset',
+    'SemanticSegmentationDataset',
     'get_dataset_class',
 ]
