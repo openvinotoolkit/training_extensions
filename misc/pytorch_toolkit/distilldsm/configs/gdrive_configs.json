@@ -1,0 +1,7 @@
+{
+    "distill":{
+        "file_id":"1hG0Cosiq044imWana3xYuQJ5r0AO4NXK",
+        "dest_path":"model_weights/distill_dsm.h5"
+    }
+
+}

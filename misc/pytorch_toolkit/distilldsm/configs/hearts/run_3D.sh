@@ -1,0 +1,1 @@
+python ../../src/scripts/train.py --config_filename heart_config.json --model_filename /storage/harsh/datasets/Task02_Heart/Model/fold1/3DUnet.h5 --training_log_filename /storage/harsh/datasets/Task02_Heart/Model/fold1/brats_3DUnet_training_log.csv --subjects_filename examples/hearts/heart_subjects.json  --model_name Unet

@@ -1,0 +1,8 @@
+torch==1.7.0
+nilearn
+pandas==1.2.4
+nibabel
+matplotlib
+keras
+tensorflow
+googledrivedownloader
