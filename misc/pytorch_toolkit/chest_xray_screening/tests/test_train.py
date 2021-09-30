@@ -4,7 +4,7 @@ from torch.utils.data import DataLoader
 from chest_xray_screening.train import RSNATrainer
 from chest_xray_screening.utils.dataloader import RSNADataSet
 from chest_xray_screening.utils.model import DenseNet121, DenseNet121Eff
-from chest_xray_screening.utils.download_weights import download_checkpoint
+from chest_xray_screening.utils.download_weights import download_checkpoint, download_data
 from chest_xray_screening.utils.get_config import get_config
 
 
@@ -14,7 +14,12 @@ def create_train_test_for_densenet121():
         def setUpClass(cls):
             config = get_config(action = 'train')
             cls.config = config
-            image_path = '../../../data/chest_xray_screening/'
+            if os.path.isdir('/mnt/external_test_data/chest_xray_screening'):
+                image_path = '/mnt/external_test_data/chest_xray_screening/'
+            else:
+                if not os.path.isdir('test_data/chest_xray_data'):
+                    download_data()
+                image_path = 'test_data/chest_xray_data/'
 
             dataset_train = RSNADataSet(
                 cls.config['dummy_train_list'],
@@ -76,7 +81,12 @@ def create_train_test_for_densenet121eff():
         def setUpClass(cls):
             config = get_config(action = 'train', optimised = True)
             cls.config = config
-            image_path = '../../../data/chest_xray_screening/'
+            if os.path.isdir('/mnt/external_test_data/chest_xray_screening'):
+                image_path = '/mnt/external_test_data/chest_xray_screening/'
+            else:
+                if not os.path.isdir('test_data/chest_xray_data'):
+                    download_data()
+                image_path = 'test_data/chest_xray_data/'
 
             dataset_train = RSNADataSet(
                 cls.config['dummy_train_list'],

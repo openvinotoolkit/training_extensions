@@ -5,7 +5,7 @@ from torch.utils.data import DataLoader
 from chest_xray_screening.utils.dataloader import RSNADataSet
 from chest_xray_screening.utils.model import DenseNet121, DenseNet121Eff
 from chest_xray_screening.inference import RSNAInference
-from chest_xray_screening.utils.download_weights import download_checkpoint
+from chest_xray_screening.utils.download_weights import download_checkpoint, download_data
 from chest_xray_screening.utils.get_config import get_config
 from chest_xray_screening.utils.exporter import Exporter
 
@@ -17,7 +17,13 @@ def create_inference_test_for_densenet121():
             cls.config = export_config
             if not os.path.isdir('model_weights'):
                 download_checkpoint()
-            cls.image_path = '../../../data/chest_xray_screening/'
+            if os.path.isdir('/mnt/external_test_data/chest_xray_screening'):
+                cls.image_path = '/mnt/external_test_data/chest_xray_screening/'
+            else:
+                if not os.path.isdir('test_data/chest_xray_data'):
+                    download_data()
+                cls.image_path = 'test_data/chest_xray_data/'
+
             cls.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
             dataset_test = RSNADataSet(
                 cls.config['dummy_valid_list'],
@@ -74,7 +80,12 @@ def create_inference_test_for_densenet121eff():
             cls.config = export_config
             if not os.path.isdir('model_weights'):
                 download_checkpoint()
-            cls.image_path = '../../../data/chest_xray_screening/'
+            if os.path.isdir('/mnt/external_test_data/chest_xray_screening'):
+                cls.image_path = '/mnt/external_test_data/chest_xray_screening/'
+            else:
+                if not os.path.isdir('test_data/chest_xray_data'):
+                    download_data()
+                cls.image_path = 'test_data/chest_xray_data/'
             dataset_test = RSNADataSet(
                 cls.config['dummy_valid_list'],
                 cls.config['dummy_labels'],
