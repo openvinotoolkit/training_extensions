@@ -9,4 +9,4 @@
 	url = ../../openvinotoolkit/deep-object-reid
 [submodule "external/mmsegmentation"]
 	path = external/mmsegmentation
-	url = git@github.com:evgeny-izutov/mmsegmentation.git
+	url = https://github.com/evgeny-izutov/mmsegmentation.git
