@@ -14,12 +14,12 @@ def create_train_test_for_densenet121():
         def setUpClass(cls):
             config = get_config(action = 'train')
             cls.config = config
-            if os.path.isdir('/mnt/external_test_data/chest_xray_screening'):
-                image_path = '/mnt/external_test_data/chest_xray_screening/'
+            if os.path.exists(config["default_image_path"]):
+                image_path = config["default_image_path"]
             else:
-                if not os.path.isdir('test_data/chest_xray_data'):
+                if not os.path.exists(config["image_path"]):
                     download_data()
-                image_path = 'test_data/chest_xray_data/'
+                image_path = config["image_path"]
 
             dataset_train = RSNADataSet(
                 cls.config['dummy_train_list'],
@@ -59,7 +59,7 @@ def create_train_test_for_densenet121():
 
         def test_trainer(self):
             self.model = DenseNet121(self.config["clscount"])
-            if not os.path.isdir('model_weights'):
+            if not os.path.exists(self.config["checkpoint"]):
                 download_checkpoint()
             self.device = self.config["device"]
             self.trainer = RSNATrainer(
@@ -81,12 +81,12 @@ def create_train_test_for_densenet121eff():
         def setUpClass(cls):
             config = get_config(action = 'train', optimised = True)
             cls.config = config
-            if os.path.isdir('/mnt/external_test_data/chest_xray_screening'):
-                image_path = '/mnt/external_test_data/chest_xray_screening/'
+            if os.path.exists(config["default_image_path"]):
+                image_path = config["default_image_path"]
             else:
-                if not os.path.isdir('test_data/chest_xray_data'):
+                if not os.path.exists(config["image_path"]):
                     download_data()
-                image_path = 'test_data/chest_xray_data/'
+                image_path = config["image_path"]
 
             dataset_train = RSNADataSet(
                 cls.config['dummy_train_list'],
@@ -123,7 +123,7 @@ def create_train_test_for_densenet121eff():
             alpha =  self.config['alpha'] ** self.config['phi']
             beta = self.config['beta'] ** self.config['phi']
             self.model = DenseNet121Eff(alpha, beta, self.config['class_count'])
-            if not os.path.isdir('model_weights'):
+            if not os.path.exists(self.config["checkpoint"]):
                 download_checkpoint()
             self.device = self.config["device"]
             self.trainer = RSNATrainer(

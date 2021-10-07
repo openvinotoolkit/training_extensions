@@ -11,7 +11,7 @@ def create_export_test_for_densenet121():
         @classmethod
         def setUpClass(cls):
             cls.config = get_config(action = 'export')
-            if not os.path.isdir('model_weights'):
+            if not os.path.exists(cls.config['checkpoint']):
                 download_checkpoint()
             cls.model_path = cls.config['checkpoint']
 
@@ -49,7 +49,7 @@ def create_export_test_for_densenet121eff():
     class ExportTestEff(unittest.TestCase):
         def test_export_onnx(self):
             self.config = get_config(action = 'export', optimised = True)
-            if not os.path.isdir('model_weights'):
+            if not os.path.exists(self.config['checkpoint']):
                 download_checkpoint()
             self.exporter = Exporter(self.config, optimised = True)
             self.exporter.export_model_onnx()
@@ -58,7 +58,7 @@ def create_export_test_for_densenet121eff():
 
         def test_export_ir(self):
             self.config = get_config(action = 'export', optimised = True)
-            if not os.path.isdir('model_weights'):
+            if not os.path.exists(self.config['checkpoint']):
                 download_checkpoint()
             self.exporter = Exporter(self.config, optimised = True)
             self.model_path = os.path.split(self.config['checkpoint'])[0]

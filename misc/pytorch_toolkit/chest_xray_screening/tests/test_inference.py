@@ -15,14 +15,14 @@ def create_inference_test_for_densenet121():
         def setUpClass(cls):
             export_config = get_config(action = 'test')
             cls.config = export_config
-            if not os.path.isdir('model_weights'):
+            if not os.path.exists(cls.config['checkpoint']):
                 download_checkpoint()
-            if os.path.isdir('/mnt/external_test_data/chest_xray_screening'):
-                cls.image_path = '/mnt/external_test_data/chest_xray_screening/'
+            if os.path.exists(export_config["default_image_path"]):
+                cls.image_path = export_config["default_image_path"]
             else:
-                if not os.path.isdir('test_data/chest_xray_data'):
+                if not os.path.exists(export_config["image_path"]):
                     download_data()
-                cls.image_path = 'test_data/chest_xray_data/'
+                cls.image_path = export_config["image_path"]
 
             cls.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
             dataset_test = RSNADataSet(
@@ -78,14 +78,14 @@ def create_inference_test_for_densenet121eff():
         def setUpClass(cls):
             export_config = get_config(action = 'test', optimised = True)
             cls.config = export_config
-            if not os.path.isdir('model_weights'):
+            if not os.path.exists(cls.config['checkpoint']):
                 download_checkpoint()
-            if os.path.isdir('/mnt/external_test_data/chest_xray_screening'):
-                cls.image_path = '/mnt/external_test_data/chest_xray_screening/'
+            if os.path.exists(export_config["default_image_path"]):
+                cls.image_path = export_config["default_image_path"]
             else:
-                if not os.path.isdir('test_data/chest_xray_data'):
+                if not os.path.exists(export_config["image_path"]):
                     download_data()
-                cls.image_path = 'test_data/chest_xray_data/'
+                cls.image_path = export_config["image_path"]
             dataset_test = RSNADataSet(
                 cls.config['dummy_valid_list'],
                 cls.config['dummy_labels'],

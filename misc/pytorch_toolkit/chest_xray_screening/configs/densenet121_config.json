@@ -10,7 +10,9 @@
         "checkpoint":"model_weights/chest_xray_screening.pth",
         "device":"cuda",
         "max_epoch":3,
-        "savepath":"model_weights"
+        "savepath":"model_weights",
+        "default_image_path":"/mnt/external_test_data/chest_xray_screening",
+        "image_path":"test_data/chest_xray_data"
     },
     "test":{
         "checkpoint": "model_weights/chest_xray_screening.pth",
@@ -20,7 +22,9 @@
         "class_names":["Lung Opacity","Normal","No Lung Opacity / Not Normal"],
         "target_metric":0.55,
         "model_name_onnx": "chest_xray_screening.onnx",
-        "input_shape":[1, 3, 1024, 1024]
+        "input_shape":[1, 3, 1024, 1024],
+        "default_image_path":"/mnt/external_test_data/chest_xray_screening",
+        "image_path":"test_data/chest_xray_data"
 
     },
     "export":{
