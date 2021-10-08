@@ -1,0 +1,10 @@
+torch==1.5.1
+torchvision==0.6.1
+pydicom
+scikit-learn
+tqdm
+pandas
+googledrivedownloader
+requests==2.26.0
+openvino-dev[onnx]
+onnxruntime

@@ -1,0 +1,15 @@
+{
+    "densenet":{
+        "file_id":"13KtMdL-RJoTXGRZ8WIdcHkf0XuX9bMMN",
+        "dest_path":"model_weights/chest_xray_screening.pth"
+
+    },
+    "densenet_eff":{
+        "file_id":"119nttgoJkHee6imXca_ocF2DItkA3ybv",
+        "dest_path":"model_weights/chest_xray_screening_eff.pth"
+    },
+    "test_data":{
+        "file_id":"19Tql0Dr055cyG9QsFzaimXZXLpeK4lau",
+        "dest_path":"test_data/chest_xray_data.zip"
+    }
+}

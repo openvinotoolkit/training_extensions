@@ -1,0 +1,36 @@
+{
+    "train":{
+        "lr":1e-4,
+        "clscount":3,
+        "dummy_train_list":["0a0f91dc-6015-4342-b809-d19610854a21.jpg","0a0f6755-610d-4b7c-a460-5f5a8f5c0743.jpg","0a2c130c-c536-4651-836d-95d07e9a89cf.jpg","0a2f6cf6-1f45-44c8-bcf0-98a3b466b597.jpg","0a03a65b-9e45-4e3d-ae6c-b8a37112ab31.jpg","0a03fbf6-3c9a-4e2e-89ce-c7629ae43a27.jpg"],
+        "dummy_valid_list":["0a5b4860-e6ab-4737-a389-9d0cf7300770.jpg","0a5c4dcb-33ac-4466-9dbf-42ed5c8ec1f0.jpg"],
+        "dummy_test_list":["0a6a5956-58cf-4f17-9e39-7e0d17310f67.jpg","0a7b0cc8-af04-4d2c-9267-6fdfb05f48f2.jpg"],
+        "dummy_labels":{"0a0f91dc-6015-4342-b809-d19610854a21.jpg": 0,"0a0f6755-610d-4b7c-a460-5f5a8f5c0743.jpg": 2,"0a2c130c-c536-4651-836d-95d07e9a89cf.jpg": 0,"0a2f6cf6-1f45-44c8-bcf0-98a3b466b597.jpg": 0,"0a03a65b-9e45-4e3d-ae6c-b8a37112ab31.jpg": 1,"0a03fbf6-3c9a-4e2e-89ce-c7629ae43a27.jpg": 0,"0a5b4860-e6ab-4737-a389-9d0cf7300770.jpg": 2,"0a5c4dcb-33ac-4466-9dbf-42ed5c8ec1f0.jpg": 1,"0a6a5956-58cf-4f17-9e39-7e0d17310f67.jpg": 0,"0a7b0cc8-af04-4d2c-9267-6fdfb05f48f2.jpg": 2},
+        "class_names":["Lung Opacity","Normal","No Lung Opacity / Not Normal"],
+        "checkpoint":"model_weights/chest_xray_screening.pth",
+        "device":"cuda",
+        "max_epoch":3,
+        "savepath":"model_weights",
+        "default_image_path":"/mnt/external_test_data/chest_xray_screening",
+        "image_path":"test_data/chest_xray_data"
+    },
+    "test":{
+        "checkpoint": "model_weights/chest_xray_screening.pth",
+        "clscount": 3,
+        "dummy_valid_list":["0a5b4860-e6ab-4737-a389-9d0cf7300770.jpg","0a5c4dcb-33ac-4466-9dbf-42ed5c8ec1f0.jpg"],
+        "dummy_labels":{"0a0f91dc-6015-4342-b809-d19610854a21.jpg": 0,"0a0f6755-610d-4b7c-a460-5f5a8f5c0743.jpg": 2,"0a2c130c-c536-4651-836d-95d07e9a89cf.jpg": 0,"0a2f6cf6-1f45-44c8-bcf0-98a3b466b597.jpg": 0,"0a03a65b-9e45-4e3d-ae6c-b8a37112ab31.jpg": 1,"0a03fbf6-3c9a-4e2e-89ce-c7629ae43a27.jpg": 0,"0a5b4860-e6ab-4737-a389-9d0cf7300770.jpg": 2,"0a5c4dcb-33ac-4466-9dbf-42ed5c8ec1f0.jpg": 1,"0a6a5956-58cf-4f17-9e39-7e0d17310f67.jpg": 0,"0a7b0cc8-af04-4d2c-9267-6fdfb05f48f2.jpg": 2},
+        "class_names":["Lung Opacity","Normal","No Lung Opacity / Not Normal"],
+        "target_metric":0.55,
+        "model_name_onnx": "chest_xray_screening.onnx",
+        "input_shape":[1, 3, 1024, 1024],
+        "default_image_path":"/mnt/external_test_data/chest_xray_screening",
+        "image_path":"test_data/chest_xray_data"
+
+    },
+    "export":{
+        "checkpoint": "model_weights/chest_xray_screening.pth",
+        "input_shape":[1, 3, 1024, 1024],
+        "model_name_onnx": "chest_xray_screening.onnx",
+        "model_name":"chest_xray_screening"
+    }
+}
