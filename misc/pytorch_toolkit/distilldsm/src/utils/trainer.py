@@ -99,7 +99,6 @@ def run_pytorch_training(config, model_filename, training_log_filename, verbose=
                                       window=window,
                                       spacing=spacing,
                                       points_per_subject=in_config('points_per_subject', config, 1),
-                                      surface_names=in_config('surface_names', config, None),
                                       metric_names=in_config('metric_names', config, None),
                                       base_directory=directory,
                                       subject_ids=config["training"],
@@ -144,7 +143,6 @@ def run_pytorch_training(config, model_filename, training_log_filename, verbose=
                                             window=window,
                                             spacing=spacing,
                                             points_per_subject=in_config('validation_points_per_subject', config, 1),
-                                            surface_names=in_config('surface_names', config, None),
                                             metric_names=in_config('metric_names', config, None),
                                             **sequence_kwargs,
                                             **in_config("additional_validation_args", config, dict()))

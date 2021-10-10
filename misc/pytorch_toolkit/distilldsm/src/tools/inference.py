@@ -5,7 +5,8 @@ from src.utils.predict_utils import volumetric_predictions
 from src.utils.filenames import generate_filenames, load_subject_ids, load_sequence
 from src.utils.segment import format_parser as format_segmentation_parser
 from src.utils.script_utils import get_machine_config, add_machine_config_to_parser
-
+import onnxruntime
+import onnx
 
 def format_parser(parser=argparse.ArgumentParser(), sub_command=False):
     parser.add_argument("--output_directory", required=True)
@@ -45,9 +46,24 @@ def format_parser(parser=argparse.ArgumentParser(), sub_command=False):
     format_segmentation_parser(parser, sub_command=True)
     return parser
 
+#TO-DO inference for ONNX and OpenVINO IR
+
+# def test_onnx(self, img_path, onnx_checkpoint):
+#         onnx_model = onnx.load(onnx_checkpoint)
+#         onnx.checker.check_model(onnx_model)
+#         # The validity of the ONNX graph is verified by checking the model’s version,
+#         # the graph’s structure, as well as the nodes and their inputs and outputs.
+#         ort_session = onnxruntime.InferenceSession(onnx_checkpoint)
+#         ort_inputs = {ort_session.get_inputs()[0].name: to_numpy(var_input)}
+#         out = model.run(None, ort_inputs)
+#         out = np.array(out)
+#         out = to_tensor(out).squeeze(1).transpose(dim0=1, dim1=0).to(self.device)
 
 def parse_args():
     return format_parser().parse_args()
+
+# def to_numpy(tensor):
+#     return tensor.detach().cpu().numpy() if tensor.requires_grad else tensor.cpu().numpy()
 
 
 def main():
@@ -179,7 +195,7 @@ def run_inference(namespace):
     else:
         func = volumetric_predictions
 
-    return func(model_filename=namespace.model_filename,
+    loss, dice = func(model_filename=namespace.model_filename,
                 filenames=filenames,
                 prediction_dir=namespace.output_directory,
                 model_name=config["model_name"],
@@ -205,6 +221,9 @@ def run_inference(namespace):
                 sum_then_threshold=namespace.sum,
                 label_hierarchy=label_hierarchy,
                 write_input_images=namespace.write_input_images)
+
+    print(f'Dice: {dice} | Loss:{loss}')
+    return loss, dice
 
 
 if __name__ == '__main__':

@@ -35,7 +35,7 @@
   "validation_batch_size": 1,
   "model_name": "Distill",
   "model_filename":"",
-  "model_onnx_filename":"",
+  "model_onnx_filename":"distill_dsm.onnx",
   "model_kwargs": {
     "base_width":  8,
     "encoder_blocks": [2, 2, 2, 2, 2],
@@ -52,8 +52,7 @@
     "crop": true,
     "interpolation": "linear",
     "labels": [1],
-    "add_contours": false,
-    "use_label_hierarchy": true
+    "add_contours": false
   },
   "additional_training_args": {
     "augment_scale_std": 0.1,

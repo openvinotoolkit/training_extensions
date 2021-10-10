@@ -5,8 +5,8 @@ import torch
 from nilearn.image import resample_to_img, new_img_like
 from .utils import (get_nibabel_data, one_hot_image_to_label_map)
 from torch.utils.data import DataLoader
-from .trainer import load_criterion, epoch_validatation
-from .training_utils import batch_loss_eval
+from .trainer import load_criterion
+from .training_utils import batch_loss_eval, epoch_validatation
 from ..utils.utils import in_config
 
 def predict_data_loader(model, data_loader):
@@ -23,7 +23,7 @@ def predict_generator(model, generator, n_workers=1, verbose=1, batch_size=1):
     return predict_data_loader(model, loader)
 
 def volumetric_predictions(model_filename, filenames, prediction_dir, model_name, n_features, window,
-                           criterion_name, package="keras", n_gpus=1, n_workers=1, batch_size=1,
+                           criterion_name, package="pytorch", n_gpus=1, n_workers=1, batch_size=1,
                            model_kwargs=None, n_outputs=None, sequence_kwargs=None, sequence=None,
                            metric_names=None, evaluate_predictions=False, interpolation="linear",
                            resample_predictions=True, output_template=None, segmentation=False,
@@ -194,7 +194,6 @@ def predict_volumetric_batch(model, batch, batch_references, batch_subjects, bat
                                            basename=basename,
                                            verbose=verbose)
 
-
 def pytorch_volumetric_predictions(model_filename, model_name, n_features, filenames, window,
                                    criterion_name, prediction_dir=None, output_csv=None, reference=None,
                                    n_gpus=1, n_workers=1, batch_size=1, model_kwargs=None, n_outputs=None,
@@ -245,10 +244,7 @@ def pytorch_volumetric_predictions(model_filename, model_name, n_features, filen
         from torch.utils.data.dataloader import default_collate
         collate_fn = default_collate
 
-        filename_list = [filenames[i][0][0] for i in range(len(filenames))] 
-        print(filename_list)
-
-        validation_dataset = sequence(filenames=filename_list,
+        validation_dataset = sequence(filenames=filenames,
                                             flip=False,
                                             window=window,
                                             spacing=spacing,
@@ -261,5 +257,8 @@ def pytorch_volumetric_predictions(model_filename, model_name, n_features, filen
                                        num_workers=n_workers,
                                        collate_fn=collate_fn,
                                        pin_memory=False)
+        print(validation_loader)
+        for i in validation_loader:
+            print(i)
         loss, dice = epoch_validatation(val_loader=validation_loader, model=model, criterion=criterion, n_gpus=n_gpus, print_freq=1, regularized=False, vae=False)
     return loss, dice
