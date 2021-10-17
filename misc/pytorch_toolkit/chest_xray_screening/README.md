@@ -210,6 +210,37 @@ Necessary unit tests have been provided in the tests directory. The sample/toy d
 
 This work is undertaken as part of Intel India Grand Challenge 2016 Project MIRIAD: Many Incarnations of Screening of Radiology for High Throughput Disease Screening via Multiple Instance Reinforcement Learning with Adversarial Deep Neural Networks, sponsored by Intel Technology India Pvt. Ltd., Bangalore, India.
 
+**Contributor**
+
+The codes/model was contributed to the OpenVINO project by
+
+<a href="https://www.linkedin.com/in/arunava-chakravarty-b1736b158/">Arunava Chakravarty</a>, </br>
+Department of Electrical Engineering, </br>
+Indian Institute of Technology Kharagpur</br>
+email: arunavachakravarty1206@gmail.com </br>
+
+<a href="https://www.linkedin.com/in/thearkamitra/"> Arka Mitra</a>,</br>
+Electronics and Electrical Communication Engineering,</br>
+Indian Institute of Technology Kharagpur</br>
+
+<a href="https://github.com/Rakshith2597"> Rakshith Sathish</a>,</br>
+Advanced Technology Development Center,</br>
+Indian Institute of Technology Kharagpur</br>
+email: rakshith.sathish@kgpian.iitkgp.ac.in</br>
+Github username: Rakshith2597
+
+
+**Principal Investigators**
+
+<a href="https://www.linkedin.com/in/debdoot/">Dr Debdoot Sheet</a>,<a href="http://www.iitkgp.ac.in/department/EE/faculty/ee-nirmalya"> Dr Nirmalya Ghosh (Co-PI) </a></br>
+Department of Electrical Engineering,</br>
+Indian Institute of Technology Kharagpur</br>
+email: debdoot@ee.iitkgp.ac.in
+
+<a href="https://www.linkedin.com/in/ramanathan-sethuraman-27a12aba/">Dr Ramanathan Sethuraman</a>,</br>
+Intel Technology India Pvt. Ltd.</br>
+email: ramanathan.sethuraman@intel.com
+
 ## **References**
 
 <div id="densenet">
