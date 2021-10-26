@@ -87,7 +87,7 @@ def gen_parse_model_template_tests(task_type):
             print(f'{template_work_dir=}')
 
             command_line = f'ote_export ' \
-                           f'--labels vehilce person non-vehicle ' \
+                           f'--labels person ' \
                            f'--load-weights {template_work_dir}/trained.pth ' \
                            f'--save-model-to {template_work_dir}/exported'
 

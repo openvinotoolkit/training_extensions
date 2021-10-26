@@ -26,12 +26,12 @@ def gen_param_help(hyper_parameters):
     def _gen_param_help(prefix, d):
         xx = {}
         for k, v in d.items():
-            if isinstance(v, dict) and 'value' not in v.keys():
+            if isinstance(v, dict) and 'default_value' not in v.keys():
                 if 'visible_in_ui' in v and v['visible_in_ui']:
                     x = _gen_param_help(prefix + f'{k}.', v)
                     xx.update(x)
-            elif isinstance(v, dict) and 'value' in v.keys():
-                assert isinstance(v['value'], (int, float, str))
+            elif isinstance(v, dict) and 'default_value' in v.keys():
+                assert isinstance(v['default_value'], (int, float, str))
                 help_str = '\n'.join([f'{kk}: {v[kk]}' for kk in help_keys if kk in v.keys()])
                 assert '.' not in k
 
