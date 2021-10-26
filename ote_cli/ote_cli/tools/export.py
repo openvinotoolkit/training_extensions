@@ -16,17 +16,16 @@ import argparse
 import os
 
 from ote_cli.datasets import get_dataset_class
-from ote_cli.utils.config import set_values_as_default
 from ote_cli.utils.importing import get_impl_class
-from ote_cli.utils.labels import generate_label_schema
 from ote_cli.utils.loading import load_model_weights
+from ote_sdk.configuration.helper import create
+from ote_sdk.entities.label import LabelEntity
+from ote_sdk.entities.label_schema import LabelSchemaEntity
 from ote_sdk.entities.model import ModelEntity, ModelOptimizationType, ModelPrecision, ModelStatus
 from ote_sdk.entities.model_template import parse_model_template, TargetDevice
 from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.usecases.adapters.model_adapter import ModelAdapter
 from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType
-from sc_sdk.entities.dataset_storage import NullDatasetStorage
-from sc_sdk.entities.datasets import NullDataset
 
 
 def parse_args():
@@ -54,19 +53,17 @@ def main():
     assert args.labels is not None or args.ann_files is not None
 
     if args.labels:
-        labels = args.labels
+        labels = [LabelEntity(l, template.task_type) for l in args.labels]
     else:
         Dataset = get_dataset_class(template.task_type)
-        dataset = Dataset(args.ann_files, dataset_storage=NullDatasetStorage())
+        dataset = Dataset(args.ann_files)
         labels = dataset.get_labels()
 
-    labels_schema = generate_label_schema(labels, template.task_type)
+    labels_schema = LabelSchemaEntity.from_labels(labels)
 
     # Get hyper parameters schema.
-    hyper_parameters = template.hyper_parameters.data
+    hyper_parameters = create(template.hyper_parameters.data)
     assert hyper_parameters
-    # Sync values with default values.
-    set_values_as_default(hyper_parameters)
 
     environment = TaskEnvironment(
         model=None,
@@ -75,18 +72,15 @@ def main():
         model_template=template)
 
     model_bytes = load_model_weights(args.load_weights)
-    model_adapters = {
-        key: ModelAdapter(val) for key, val in {'weights.pth': model_bytes}.items()
-    }
+    model_adapters = {'weights.pth': ModelAdapter(model_bytes)}
     model = ModelEntity(configuration=environment.get_model_configuration(),
-                        model_adapters=model_adapters,
-                        train_dataset=NullDataset())
+                        model_adapters=model_adapters, train_dataset=None)
     environment.model = model
 
     task = Task(task_environment=environment)
 
     exported_model = ModelEntity(
-        NullDataset(),
+        None,
         environment.get_model_configuration(),
         optimization_type=ModelOptimizationType.MO,
         precision=[ModelPrecision.FP16],
