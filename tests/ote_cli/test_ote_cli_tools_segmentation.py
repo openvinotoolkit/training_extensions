@@ -38,7 +38,7 @@ def gen_parse_model_template_tests(task_type):
     root = '/tmp/ote_cli/'
     ote_dir = os.getcwd()
 
-    test_id = 0
+    test_id = 2000
 
     for template in registry.filter(task_type=task_type).templates:
         @pytest.mark.run(order=test_id)
