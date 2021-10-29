@@ -1,0 +1,9 @@
+# IDE
+.idea/
+.vscode/
+
+# Python
+__pycache__/
+
+# Models
+*.onnx
