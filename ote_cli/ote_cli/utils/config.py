@@ -28,11 +28,3 @@ def override_parameters(overrides, parameters, allow_value=False):
                 parameters[k] = v
             else:
                 raise ValueError(f'The "{k}" is not in allowed_keys: {allowed_keys}')
-
-def set_values_as_default(parameters):
-    for v in parameters.values():
-        if isinstance(v, dict) and 'value' not in v:
-          set_values_as_default(v)
-        elif isinstance(v, dict) and 'value' in v:
-            if v['value'] != v['default_value']:
-                v['value'] = v['default_value']

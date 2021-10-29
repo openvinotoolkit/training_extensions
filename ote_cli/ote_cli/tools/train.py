@@ -15,20 +15,20 @@
 import argparse
 
 from ote_cli.datasets import get_dataset_class
-from ote_cli.utils.config import override_parameters, set_values_as_default
+from ote_cli.utils.config import override_parameters
 from ote_cli.utils.importing import get_impl_class
-from ote_cli.utils.labels import generate_label_schema
 from ote_cli.utils.loading import load_model_weights
 from ote_cli.utils.parser import (add_hyper_parameters_sub_parser,
                                   gen_params_dict_from_args)
+from ote_sdk.configuration.helper import create
 from ote_sdk.entities.inference_parameters import InferenceParameters
+from ote_sdk.entities.label_schema import LabelSchemaEntity
 from ote_sdk.entities.model import ModelEntity, ModelStatus
 from ote_sdk.entities.model_template import parse_model_template
 from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.subset import Subset
 from ote_sdk.entities.task_environment import TaskEnvironment
-from sc_sdk.entities.dataset_storage import NullDatasetStorage
-from sc_sdk.entities.datasets import NullDataset
+from ote_sdk.usecases.adapters.model_adapter import ModelAdapter
 
 
 def parse_args(config):
@@ -57,14 +57,14 @@ def main():
     # Get hyper parameters schema.
     hyper_parameters = template.hyper_parameters.data
     assert hyper_parameters
-    # Sync values with default values.
-    set_values_as_default(hyper_parameters)
     # Dynamically create an argument parser based on override parameters.
     args = parse_args(hyper_parameters)
     # Get new values from user's input.
     updated_hyper_parameters = gen_params_dict_from_args(args)
     # Override overridden parameters by user's values.
     override_parameters(updated_hyper_parameters, hyper_parameters, allow_value=True)
+
+    hyper_parameters = create(hyper_parameters)
 
     # Get classes for Task, ConfigurableParameters and Dataset.
     Task = get_impl_class(template.entrypoints.base)
@@ -74,12 +74,9 @@ def main():
     dataset = Dataset(train_ann_file=args.train_ann_files,
                       train_data_root=args.train_data_roots,
                       val_ann_file=args.val_ann_files,
-                      val_data_root=args.val_data_roots,
-                      dataset_storage=NullDatasetStorage())
+                      val_data_root=args.val_data_roots)
 
-    labels_schema = generate_label_schema(dataset.get_labels(), template.task_type)
-    labels_list = labels_schema.get_labels(False)
-    dataset.set_project_labels(labels_list)
+    labels_schema = LabelSchemaEntity.from_labels(dataset.get_labels())
 
     environment = TaskEnvironment(
         model=None,
@@ -89,9 +86,9 @@ def main():
 
     if args.load_weights:
         model_bytes = load_model_weights(args.load_weights)
-        model = ModelEntity(configuration=environment.get_model_configuration(),
-                            data_source_dict={'weights.pth': model_bytes},
-                            train_dataset=NullDataset())
+        model = ModelEntity(train_dataset=dataset,
+                            configuration=environment.get_model_configuration(),
+                            model_adapters={'weights.pth': ModelAdapter(model_bytes)})
         environment.model = model
 
     task = Task(task_environment=environment)
