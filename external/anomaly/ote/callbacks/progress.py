@@ -66,10 +66,16 @@ class ProgressCallback(ProgressBar):
         self._update_progress(stage="train")
 
     def on_validation_batch_end(self, trainer, pl_module, outputs, batch, batch_idx, dataloader_idx):
+        """
+        Adds validation completion percentage to the progress bar
+        """
         super().on_validation_batch_end(trainer, pl_module, outputs, batch, batch_idx, dataloader_idx)
         self._update_progress(stage="val")
 
     def on_predict_batch_end(self, trainer, pl_module, outputs, batch, batch_idx, dataloader_idx):
+        """
+        Adds prediction completion percentage to the progress bar
+        """
         super().on_predict_batch_end(trainer, pl_module, outputs, batch, batch_idx, dataloader_idx)
         self._update_progress(stage="predict")
 
