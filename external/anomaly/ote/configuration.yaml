@@ -17,7 +17,6 @@ model:
     enum_name: AnomalyModel
     options:
       PADIM: padim
-      STFPM: stfpm
     type: SELECTABLE
     ui_rules:
       action: DISABLE_EDITING
@@ -59,7 +58,6 @@ dataset:
     enum_name: AnomalyModel
     options:
       CLASSIFICATION: classification
-      SEGMENTATION: segmentation
     type: SELECTABLE
     ui_rules:
       action: DISABLE_EDITING
