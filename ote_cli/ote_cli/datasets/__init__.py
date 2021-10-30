@@ -13,12 +13,9 @@ except ImportError as e:
     print(e)
     ClassificationDataset = None
 
-try:
-    from mmseg.apis.ote.extension.datasets import MMDatasetAdapter
-    SemanticSegmentationDataset = MMDatasetAdapter
-except ImportError as e:
-    print(e)
-    SemanticSegmentationDataset = None
+from mmseg.apis.ote.extension.datasets import MMDatasetAdapter
+SemanticSegmentationDataset = MMDatasetAdapter
+
 
 
 def get_dataset_class(name):
