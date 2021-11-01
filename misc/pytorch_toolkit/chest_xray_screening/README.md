@@ -84,15 +84,15 @@ The network when trained and evaluated using the CheXpert dataset with same alph
 
 
 ## **Model**
-Download checkpoint for densenet, ONNX checkpoint, and OpenVINO IR with the following [link](https://drive.google.com/drive/folders/1Qa88btQeeBszcCtQOYp8X7C051fdOOm9?usp=sharing).
+Download `.pth`checkpoint for densenet with the following [link](http://miriad.digital-health.one/models/bmi1/densenet.zip).
 
-Download checkpoint for optimised model, ONNX checkpoint, and OpenVINO IR with the following [link](https://drive.google.com/drive/folders/1qJGDHDXSrJ8WyhXOnJB49MJHBtfzQQcB?usp=sharing)
+Download `.pth` checkpoint for optimised model with the following [link](http://miriad.digital-health.one/models/bmi1/densenet_eff.zip)
 
 
 ## **Demo**
-An example for using the ONNX models for inference can be found [here](https://drive.google.com/drive/folders/1EdgO3ZLZejoPojGXZxElOYnSOUM7zHkn?usp=sharing).
+An example for using the ONNX models for inference can be found [here](http://miriad.digital-health.one/demo/bmi1/demo_bmi1.zip).
 
-An example for using the ONNX model of optimised network for inference can be found [here](https://drive.google.com/drive/folders/1cUAbfbRvbSmb4fXiQwHyUaNch8w4ExXl?usp=sharing).
+An example for using the ONNX model of optimised network for inference can be found [here](http://miriad.digital-health.one/demo/bmi2/demo_bmi2.zip).
 
 ## **Setup**
 
@@ -169,7 +169,7 @@ Download the dataset from [link](https://www.kaggle.com/c/rsna-pneumonia-detecti
 python utils/data_prep.py --dpath absolute/path/to/dataset/directory 
 ```
 
-On completion processed data will be stored in the 'processed_data' subfolder. Download the dataset split from [link](https://drive.google.com/drive/folders/17owTvg51wo2MORecTLiEopOf3D3YZV_k?usp=sharing) and place the numpy files in dataset/data_splits directory.
+On completion processed data will be stored in the 'processed_data' subfolder. Download the dataset split from [link](http://miriad.digital-health.one/extra_data/data_split_bmi1_2.zip) and place the numpy files in dataset/data_splits directory.
 
 ### Run Training
 
@@ -204,11 +204,23 @@ python inference.py \
 
 ### Run Tests
 
-Necessary unit tests have been provided in the tests directory. The sample/toy dataset to be used in the tests is provided in the folder 'data' (at root of this directory). It can also be downloaded from [here](https://drive.google.com/drive/folders/1aAZvdST531WUQIbKxSedifv8WfM3Wbqm?usp=sharing).
+Necessary unit tests have been provided in the tests directory. The sample/toy dataset to be used in the tests can also be downloaded from [here](http://miriad.digital-health.one/sample_data/bmi1-2/sample_data.zip).
 
 ## **Acknowledgement**
 
 This work is undertaken as part of Intel India Grand Challenge 2016 Project MIRIAD: Many Incarnations of Screening of Radiology for High Throughput Disease Screening via Multiple Instance Reinforcement Learning with Adversarial Deep Neural Networks, sponsored by Intel Technology India Pvt. Ltd., Bangalore, India.
+
+
+**Principal Investigators**
+
+<a href="https://www.linkedin.com/in/debdoot/">Dr Debdoot Sheet</a>,<a href="http://www.iitkgp.ac.in/department/EE/faculty/ee-nirmalya"> Dr Nirmalya Ghosh (Co-PI) </a></br>
+Department of Electrical Engineering,</br>
+Indian Institute of Technology Kharagpur</br>
+email: debdoot@ee.iitkgp.ac.in
+
+<a href="https://www.linkedin.com/in/ramanathan-sethuraman-27a12aba/">Dr Ramanathan Sethuraman</a>,</br>
+Intel Technology India Pvt. Ltd.</br>
+email: ramanathan.sethuraman@intel.com
 
 **Contributor**
 
@@ -228,18 +240,6 @@ Advanced Technology Development Center,</br>
 Indian Institute of Technology Kharagpur</br>
 email: rakshith.sathish@kgpian.iitkgp.ac.in</br>
 Github username: Rakshith2597
-
-
-**Principal Investigators**
-
-<a href="https://www.linkedin.com/in/debdoot/">Dr Debdoot Sheet</a>,<a href="http://www.iitkgp.ac.in/department/EE/faculty/ee-nirmalya"> Dr Nirmalya Ghosh (Co-PI) </a></br>
-Department of Electrical Engineering,</br>
-Indian Institute of Technology Kharagpur</br>
-email: debdoot@ee.iitkgp.ac.in
-
-<a href="https://www.linkedin.com/in/ramanathan-sethuraman-27a12aba/">Dr Ramanathan Sethuraman</a>,</br>
-Intel Technology India Pvt. Ltd.</br>
-email: ramanathan.sethuraman@intel.com
 
 ## **References**
 

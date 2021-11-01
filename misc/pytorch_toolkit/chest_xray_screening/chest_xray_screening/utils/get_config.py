@@ -10,8 +10,8 @@ def get_config(action, optimised = False):
     root_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
     config_path = os.path.join(root_path, 'configs')
 
-    if action == 'gdrive':
-        with open(os.path.join(config_path, 'gdrive_configs.json')) as f1:
+    if action == 'download':
+        with open(os.path.join(config_path, 'download_configs.json')) as f1:
             config = json.load(f1)
     else:
         if optimised:
