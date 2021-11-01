@@ -16,11 +16,13 @@ Configurable parameter conversion between OTE and Anomalib.
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+from pathlib import Path
 from typing import Union
 
 from omegaconf import DictConfig, ListConfig
 from ote_sdk.configuration.configurable_parameters import ConfigurableParameters
 
+import anomalib
 from anomalib.config.config import get_configurable_parameters
 
 
@@ -33,7 +35,9 @@ def get_anomalib_config(ote_config: ConfigurableParameters) -> Union[DictConfig,
     Returns:
         Anomalib config object for the specified model type with overwritten default values.
     """
-    anomalib_config = get_configurable_parameters(getattr(ote_config, "model").name.value)
+    model_name = getattr(ote_config, "model").name.value
+    model_config_path = Path(anomalib.__file__).parent / "models" / model_name / "config.yaml"
+    anomalib_config = get_configurable_parameters(model_name=model_name, model_config_path=model_config_path)
     update_anomalib_config(anomalib_config, ote_config)
     return anomalib_config
 
