@@ -19,10 +19,11 @@ from ote_cli.datasets import get_dataset_class
 from ote_cli.utils.importing import get_impl_class
 from ote_cli.utils.loading import load_model_weights
 from ote_sdk.configuration.helper import create
+from ote_sdk.entities.id import ID
 from ote_sdk.entities.label import LabelEntity
 from ote_sdk.entities.label_schema import LabelSchemaEntity
-from ote_sdk.entities.model import ModelEntity, ModelOptimizationType, ModelPrecision, ModelStatus
-from ote_sdk.entities.model_template import parse_model_template, TargetDevice
+from ote_sdk.entities.model import ModelEntity, ModelStatus
+from ote_sdk.entities.model_template import parse_model_template
 from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.usecases.adapters.model_adapter import ModelAdapter
 from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType
@@ -53,7 +54,7 @@ def main():
     assert args.labels is not None or args.ann_files is not None
 
     if args.labels:
-        labels = [LabelEntity(l, template.task_type) for l in args.labels]
+        labels = [LabelEntity(l, template.task_type, id=ID(f'{i}')) for i, l in enumerate(args.labels)]
     else:
         Dataset = get_dataset_class(template.task_type)
         dataset = Dataset(args.ann_files)
@@ -82,13 +83,6 @@ def main():
     exported_model = ModelEntity(
         None,
         environment.get_model_configuration(),
-        optimization_type=ModelOptimizationType.MO,
-        precision=[ModelPrecision.FP16],
-        optimization_methods=[],
-        optimization_objectives={},
-        target_device=TargetDevice.UNSPECIFIED,
-        performance_improvement={},
-        model_size_reduction=1.,
         model_status=ModelStatus.NOT_READY)
 
     task.export(ExportType.OPENVINO, exported_model)

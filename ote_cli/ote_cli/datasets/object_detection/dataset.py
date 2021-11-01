@@ -17,21 +17,21 @@ class ObjectDetectionDataset(DatasetEntity):
         labels_list = []
         items = []
 
-        if train_ann_file is not None or train_data_root is not None:
+        if train_ann_file is not None and train_data_root is not None:
             items.extend(load_dataset_items_coco_format(
                 ann_file_path=train_ann_file,
                 data_root_dir=train_data_root,
                 subset=Subset.TRAINING,
                 labels_list=labels_list))
 
-        if val_ann_file is not None or val_data_root is not None:
+        if val_ann_file is not None and val_data_root is not None:
             items.extend(load_dataset_items_coco_format(
                 ann_file_path=val_ann_file,
                 data_root_dir=val_data_root,
                 subset=Subset.VALIDATION,
                 labels_list=labels_list))
 
-        if test_ann_file is not None or test_data_root is not None:
+        if test_ann_file is not None and test_data_root is not None:
             items.extend(load_dataset_items_coco_format(
                 ann_file_path=test_ann_file,
                 data_root_dir=test_data_root,
@@ -39,4 +39,3 @@ class ObjectDetectionDataset(DatasetEntity):
                 labels_list=labels_list))
 
         super().__init__(items=items)
-
