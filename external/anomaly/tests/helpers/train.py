@@ -59,7 +59,7 @@ class OTEAnomalyTrainer:
     """
 
     def __init__(self, model_template_path: str = "./ote/configs/template.yaml"):
-        dataset_path = os.path.join("./datasets/MVTec/bottle", "bottle")
+        dataset_path = os.path.join("./datasets/MVTec", "bottle")
         self.dataset_generator = OTEAnomalyDatasetGenerator(path=dataset_path)
         self.dataset = self.dataset_generator.generate()
 

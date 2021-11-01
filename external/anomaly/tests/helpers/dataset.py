@@ -59,7 +59,7 @@ class OTEAnomalyDatasetGenerator:
 
     def __init__(
         self,
-        path: Union[str, Path] = "./datasets/MVTec/bottle",
+        path: Union[str, Path] = "./datasets/MVTec",
         split_ratio: float = 0.5,
         seed: int = 0,
         create_validation_set: bool = True,
