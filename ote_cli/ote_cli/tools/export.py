@@ -54,7 +54,7 @@ def main():
     assert args.labels is not None or args.ann_files is not None
 
     if args.labels:
-        labels = [LabelEntity(l, template.task_type, id=ID(f'{i}')) for i, l in enumerate(args.labels)]
+        labels = [LabelEntity(l, template.task_type, id=ID(i)) for i, l in enumerate(args.labels)]
     else:
         Dataset = get_dataset_class(template.task_type)
         dataset = Dataset(args.ann_files)
