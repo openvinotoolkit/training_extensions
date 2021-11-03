@@ -1,4 +1,4 @@
-name: Anomaly Classification STFPM
+name: ote anomaly classification stfpm
 task_type: ANOMALY_CLASSIFICATION
 task_family: VISION
 instantiation: "CLASS"
@@ -15,7 +15,7 @@ entrypoints:
 
 # Hyperparameters.
 hyper_parameters:
-  base_path: ../configuration.yaml
+  base_path: ../../configuration.yaml
   parameter_overrides:
     model:
       name:

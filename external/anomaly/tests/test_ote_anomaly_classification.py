@@ -28,7 +28,7 @@ from tests.helpers.train import OTEAnomalyTrainer
 logger = logging.getLogger(__name__)
 
 
-@pytest.mark.parametrize("template_path", [("ote_anomaly_classification_padim"), ("ote_anomaly_classification_stfpm")])
+@pytest.mark.parametrize("template_path", [("padim"), ("stfpm")])
 class TestAnomalyClassification:
     """
     Anomaly Classification Task Tests.
@@ -44,7 +44,7 @@ class TestAnomalyClassification:
         """
         train_batch_size = 16
 
-        ote_config = get_config(f"ote/configs/{template_path}.yaml")
+        ote_config = get_config(f"ote/configs/{template_path}/template.yaml")
 
         # change parameter value in OTE config
         ote_config.dataset.train_batch_size = train_batch_size
@@ -57,7 +57,7 @@ class TestAnomalyClassification:
         """
         Training should stop when `cancel_training` is called
         """
-        self._trainer = OTEAnomalyTrainer(model_template_path=f"ote/configs/{template_path}.yaml")
+        self._trainer = OTEAnomalyTrainer(model_template_path=f"ote/configs/{template_path}/template.yaml")
         thread = Thread(target=self._trainer.train)
         thread.start()
         self._trainer.cancel_training()
@@ -68,7 +68,7 @@ class TestAnomalyClassification:
         E2E Train-Export Should Yield Similar Inference Results
         """
         # Train the model
-        self._trainer = OTEAnomalyTrainer(model_template_path=f"ote/configs/{template_path}.yaml")
+        self._trainer = OTEAnomalyTrainer(model_template_path=f"ote/configs/{template_path}/template.yaml")
         self._trainer.train()
         base_results = self._trainer.validate(task=self._trainer.base_task)
 
