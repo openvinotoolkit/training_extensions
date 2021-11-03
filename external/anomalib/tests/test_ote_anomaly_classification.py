@@ -57,7 +57,7 @@ class TestAnomalyClassification:
         """
         Training should stop when `cancel_training` is called
         """
-        self._trainer = OTEAnomalyTrainer(model_template_path=f"ote/configs/{template_path}/template.yaml")
+        self._trainer = OTEAnomalyTrainer(model_template_path=f"configs/{template_path}/template.yaml")
         thread = Thread(target=self._trainer.train)
         thread.start()
         self._trainer.cancel_training()
@@ -68,7 +68,7 @@ class TestAnomalyClassification:
         E2E Train-Export Should Yield Similar Inference Results
         """
         # Train the model
-        self._trainer = OTEAnomalyTrainer(model_template_path=f"ote/configs/{template_path}/template.yaml")
+        self._trainer = OTEAnomalyTrainer(model_template_path=f"configs/{template_path}/template.yaml")
         self._trainer.train()
         base_results = self._trainer.validate(task=self._trainer.base_task)
 
