@@ -131,9 +131,6 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
         model_monitor = ModelMonitorCallback(output_model, self.save_model)
         callbacks = [progress, model_monitor]
 
-        if hasattr(self.model, "callbacks"):
-            callbacks.append(self.model.callbacks)
-
         self.trainer = Trainer(**config.trainer, logger=False, callbacks=callbacks)
         self.trainer.fit(model=self.model, datamodule=datamodule)
 
