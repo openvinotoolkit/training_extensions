@@ -7,3 +7,10 @@ __pycache__/
 
 # Models
 *.onnx
+
+# Tests
+datasets/MVTec
+.coverage
+
+# Outputs
+results/
