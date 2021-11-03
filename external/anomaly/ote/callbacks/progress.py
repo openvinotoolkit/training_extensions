@@ -89,7 +89,7 @@ class ProgressCallback(ProgressBar):
     def _reset_progress(self):
         self._progress = 0.0
 
-    def _get_progress(self, stage: str = "train"):
+    def _get_progress(self, stage: str = "train") -> float:
         """
         Get progress for train and test stages.
 
@@ -106,13 +106,13 @@ class ProgressCallback(ProgressBar):
             ) * 100
 
         elif stage == "val":
-            self._progress = (self.val_batch_idx / self.total_val_batches) * 100
+            self._progress = (self.val_batch_idx / (self.total_val_batches + 1e-10)) * 100
 
         elif stage == "predict":
-            self._progress = (self.predict_batch_idx / self.total_predict_batches) * 100
+            self._progress = (self.predict_batch_idx / (self.total_predict_batches + 1e-10)) * 100
 
         elif stage == "test":
-            self._progress = (self.test_batch_idx / self.total_test_batches) * 100
+            self._progress = (self.test_batch_idx / (self.total_test_batches + 1e-10)) * 100
         else:
             raise ValueError(f"Unknown stage {stage}. Available: train, val, predict and test")
 
