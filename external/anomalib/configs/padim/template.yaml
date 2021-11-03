@@ -1,4 +1,5 @@
-name: ote anomaly classification stfpm
+# Description.
+name: ote anomaly classification padim
 task_type: ANOMALY_CLASSIFICATION
 task_family: VISION
 instantiation: "CLASS"
@@ -15,11 +16,11 @@ entrypoints:
 
 # Hyperparameters.
 hyper_parameters:
-  base_path: ../../configuration.yaml
+  base_path: ../../anomaly_classification/src/configuration.yaml
   parameter_overrides:
     model:
       name:
-        default_value: stfpm
+        default_value: padim
     dataset:
       train_batch_size:
         default_value: 32
