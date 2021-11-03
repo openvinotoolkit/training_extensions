@@ -15,7 +15,11 @@ entrypoints:
 
 # Hyperparameters.
 hyper_parameters:
+<<<<<<< HEAD:external/anomalib/configs/stfpm/template.yaml
   base_path: ../../anomaly_classification/src/configuration.yaml
+=======
+  base_path: ../../configuration.yaml
+>>>>>>> anomalib/anomaly_classification:external/anomaly/ote/configs/stfpm/template.yaml
   parameter_overrides:
     model:
       name:

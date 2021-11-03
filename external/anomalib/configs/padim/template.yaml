@@ -16,7 +16,11 @@ entrypoints:
 
 # Hyperparameters.
 hyper_parameters:
+<<<<<<< HEAD:external/anomalib/configs/padim/template.yaml
   base_path: ../../anomaly_classification/src/configuration.yaml
+=======
+  base_path: ../../configuration.yaml
+>>>>>>> anomalib/anomaly_classification:external/anomaly/ote/configs/padim/template.yaml
   parameter_overrides:
     model:
       name:
