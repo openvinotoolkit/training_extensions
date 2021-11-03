@@ -43,9 +43,9 @@ from pytorch_lightning import Trainer
 
 from anomalib.core.model import AnomalyModule
 from anomalib.models import get_model
-from ote.callbacks import InferenceCallback, ModelMonitorCallback, ProgressCallback
-from ote.utils.config import get_anomalib_config
-from ote.utils.data import OTEAnomalyDataModule
+from anomaly_classification.src.callbacks import InferenceCallback, ModelMonitorCallback, ProgressCallback
+from anomaly_classification.src.utils.config import get_anomalib_config
+from anomaly_classification.src.utils.data import OTEAnomalyDataModule
 
 logger = logging.getLogger(__name__)
 

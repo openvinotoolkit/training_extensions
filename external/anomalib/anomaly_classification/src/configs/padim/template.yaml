@@ -11,8 +11,8 @@ framework: Anomalib
 
 # Task implementations.
 entrypoints:
-  base: ote.AnomalyClassificationTask
-  openvino: ote.OpenVINOAnomalyClassificationTask
+  base: anomaly_classification.src.AnomalyClassificationTask
+  openvino: anomaly_classification.src.OpenVINOAnomalyClassificationTask
 
 # Hyperparameters.
 hyper_parameters:
