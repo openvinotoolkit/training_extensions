@@ -15,7 +15,7 @@ entrypoints:
 
 # Hyperparameters.
 hyper_parameters:
-  base_path: ../configuration.yaml
+  base_path: ../../configuration.yaml
   parameter_overrides:
     model:
       name:
