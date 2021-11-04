@@ -16,7 +16,6 @@ model:
     header: Model Name
     enum_name: AnomalyModel
     options:
-      PADIM: padim
       STFPM: stfpm
     type: SELECTABLE
     ui_rules:
