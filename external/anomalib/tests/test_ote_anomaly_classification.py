@@ -21,7 +21,7 @@ from threading import Thread
 
 import numpy as np
 import pytest
-from shared.config import get_anomalib_config
+from core.config import get_anomalib_config
 
 from tests.helpers.config import get_config
 from tests.helpers.dummy_dataset import TestDataset

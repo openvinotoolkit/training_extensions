@@ -6,7 +6,7 @@ import anomalib
 setup(
     name="anomaly_classification",
     version=anomalib.__version__,
-    packages=find_packages(include=["anomaly_classification", "anomaly_classification.*", "shared", "shared.*"]),
+    packages=find_packages(include=["anomaly_classification", "anomaly_classification.*", "core", "core.*"]),
     url="",
     license="license='Apache License 2.0'",
     install_requires="anomalib",

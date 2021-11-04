@@ -16,7 +16,7 @@ model:
     header: Model Name
     enum_name: AnomalyModel
     options:
-      PADIM: padim
+      STFPM: stfpm
     type: SELECTABLE
     ui_rules:
       action: DISABLE_EDITING
@@ -45,6 +45,30 @@ model:
     value: resnet18
     visible_in_ui: True
     warning: null
+  early_stopping:
+    description: Early Stopping Parameters
+    header: Early Stopping Parameters
+    type: PARAMETER_GROUP
+    visible_in_ui: true
+    metric:
+      affects_outcome_of: TRAINING
+      default_value: image_roc_auc
+      description: The metric used for early stopping.
+      editable: True
+      header: Early Stopping Metric
+      enum_name: EarlyStoppingMetric
+      options:
+        PIXEL_ROC_AUC: pixel_roc_auc
+        IMAGE_ROC_AUC: image_roc_auc
+      type: SELECTABLE
+      ui_rules:
+        action: DISABLE_EDITING
+        operator: AND
+        rules: [ ]
+        type: UI_RULES
+      value: image_roc_auc
+      visible_in_ui: True
+      warning: null
 
 dataset:
   description: Dataset Parameters
