@@ -36,7 +36,7 @@ def generate_random_anomaly_image(
     shapes: List[str] = ["triangle", "rectangle"],
     max_shapes: Optional[int] = 5,
     generate_mask: Optional[bool] = False,
-) -> Dict:
+) -> Dict[str, np.ndarray]:
     """Generate a random image with the corresponding shape entities.
 
     Args:
@@ -49,7 +49,7 @@ def generate_random_anomaly_image(
                     Also generates the mask for the image. Defaults to False.
 
     Returns:
-        Tuple: image if `train` is False. Else return image, mask
+        Dict[str, np.ndarray]: image if `train` is False. Else return image, mask
     """
 
     image: np.ndarray = np.full((image_height, image_width, 3), 255, dtype=np.uint8)
