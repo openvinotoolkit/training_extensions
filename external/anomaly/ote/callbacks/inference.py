@@ -63,6 +63,6 @@ class InferenceCallback(Callback):
 
             heatmap = anomaly_map_to_color_map(anomaly_map.squeeze())
             heatmap_media = ResultMediaEntity(
-                name="Anomaly map", type="anomaly_map", annotation_scene=dataset_item.annotation_scene, numpy=heatmap
+                name="Anomaly Map", type="anomaly_map", annotation_scene=dataset_item.annotation_scene, numpy=heatmap
             )
             dataset_item.append_metadata_item(heatmap_media)
