@@ -18,17 +18,20 @@ Test Anomaly Classification Task
 
 import logging
 from threading import Thread
-import pytest
-import numpy as np
 
-from shared.config import get_anomalib_config
+import numpy as np
+import pytest
+from core.config import get_anomalib_config
+
 from tests.helpers.config import get_config
 from tests.helpers.train import OTEAnomalyTrainer
 
 logger = logging.getLogger(__name__)
 
 
-@pytest.mark.parametrize(["task_path", "template_path"], [("anomaly_classification", "padim"), ("anomaly_classification", "stfpm")])
+@pytest.mark.parametrize(
+    ["task_path", "template_path"], [("anomaly_classification", "padim"), ("anomaly_classification", "stfpm")]
+)
 class TestAnomalyClassification:
     """
     Anomaly Classification Task Tests.
