@@ -47,6 +47,7 @@ def generate_random_anomaly_image(
         max_size (Optional[int], optional): Maximum size of the test shapes. Defaults to 10.
         generate_mask (bool): Toggle between train/test split. Train images are restricted to first quadrant.
                     Also generates the mask for the image. Defaults to False.
+
     Returns:
         Tuple: image if `train` is False. Else return image, mask
     """
@@ -146,18 +147,19 @@ class TestDataset:
 
 class GeneratedDummyDataset(ContextDecorator):
     """Context for generating dummy shapes dataset.
+
     Example:
         >>> with GeneratedDummyDataset(num_train=1000,num_test=100) as dataset_path:
         >>>     some_function()
 
-        Args:
-            num_train (int, optional): Number of training images to generate. Defaults to 1000.
-            num_test (int, optional): Number of testing images to generate per category. Defaults to 100.
-            img_height (int, optional): Height of the image. Defaults to 128.
-            img_width (int, optional): Width of the image. Defaults to 128.
-            max_size (Optional[int], optional): Maximum size of the test shapes. Defaults to 10.
-            train_shapes (List[str], optional): List of good shapes. Defaults to ["circle", "rectangle"].
-            test_shapes (List[str], optional): List of anomalous shapes. Defaults to ["triangle", "ellipse"].
+    Args:
+        num_train (int, optional): Number of training images to generate. Defaults to 1000.
+        num_test (int, optional): Number of testing images to generate per category. Defaults to 100.
+        img_height (int, optional): Height of the image. Defaults to 128.
+        img_width (int, optional): Width of the image. Defaults to 128.
+        max_size (Optional[int], optional): Maximum size of the test shapes. Defaults to 10.
+        train_shapes (List[str], optional): List of good shapes. Defaults to ["circle", "rectangle"].
+        test_shapes (List[str], optional): List of anomalous shapes. Defaults to ["triangle", "ellipse"].
     """
 
     def __init__(

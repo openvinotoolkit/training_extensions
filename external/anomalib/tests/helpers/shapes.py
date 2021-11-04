@@ -10,6 +10,7 @@ def random_square_patch(input_region: List[int], min_width: int = 10) -> List[in
     Args:
         input_region (List[int]): Coordinates of the input region. [x1, y1, x2, y2]
         min_width (int): Minimum width of the returned patch.
+
     Example:
     >>> image = np.zeros((200,200,3))
     >>> x1, y1, x2, y2 = random_square_patch([100,100,200,200])
@@ -51,6 +52,7 @@ def triangle(input_region: List[int]) -> Tuple[List[int], List[int]]:
 
     Args:
         input_region (List[int]): Region in which to draw the triangle. [x1, y1, x2, y2]
+
     Example:
     >>> image = np.full((200,200,3),fill_value=255, dtype=np.uint8)
     >>> patch_region = random_square_patch([100, 100, 200, 200])
@@ -58,6 +60,7 @@ def triangle(input_region: List[int]) -> Tuple[List[int], List[int]]:
     >>> patched = image.copy()
     >>> patched[yy, xx, :] = 1
     >>> plt.imshow(patched)
+
     Returns:
         Tuple[List[int], List[int]]: Array of cols and rows which denote the mask.
     """
@@ -75,6 +78,7 @@ def rectangle(input_region: List[int], min_side: int = 10) -> Tuple[List[int], L
     Args:
         input_region (List[int]): Region in which to draw the rectangle. [x1, y1, x2, y2]
         min_side (int, optional): Minimum side of the rectangle. Defaults to 10.
+
     Example:
     >>> image = np.full((200,200,3),fill_value=255, dtype=np.uint8)
     >>> patch_region = random_square_patch([100, 100, 200, 200])
@@ -82,6 +86,7 @@ def rectangle(input_region: List[int], min_side: int = 10) -> Tuple[List[int], L
     >>> patched = image.copy()
     >>> patched[y1:y2, x1:x2, :] = 1
     >>> plt.imshow(patched)
+
     Returns:
         Tuple[List[int], List[int]]: Random rectangle region. [x1, y1, x2, y2]
     """
@@ -107,6 +112,7 @@ def hexagon(input_region: List[int]) -> Tuple[List[int], List[int]]:
 
     Args:
         input_region (List[int]): Region in which to draw the hexagon. [x1, y1, x2, y2]
+
     Example:
     >>> image = np.full((200,200,3),fill_value=255, dtype=np.uint8)
     >>> patch_region = random_square_patch([100, 100, 200, 200])
@@ -114,6 +120,7 @@ def hexagon(input_region: List[int]) -> Tuple[List[int], List[int]]:
     >>> patched = image.copy()
     >>> patched[yy, xx, :] = 1
     >>> plt.imshow(patched)
+
     Returns:
         Tuple[List[int], List[int]]: Array of cols and rows which denote the mask.
     """
@@ -136,6 +143,7 @@ def star(input_region: List[int]) -> Tuple[List[int], List[int]]:
 
     Args:
         input_region (List[int]): Region in which to draw the star. [x1, y1, x2, y2]
+
     Example:
     >>> image = np.full((200,200,3),fill_value=255, dtype=np.uint8)
     >>> patch_region = random_square_patch([100, 100, 200, 200])
@@ -143,6 +151,7 @@ def star(input_region: List[int]) -> Tuple[List[int], List[int]]:
     >>> patched = image.copy()
     >>> patched[yy, xx, :] = 1
     >>> plt.imshow(patched)
+
     Returns:
         Tuple[List[int], List[int]]: Array of cols and rows which denote the mask.
     """
@@ -182,6 +191,7 @@ def random_shapes(
         size (Tuple[int, int]): Size of the input image
         max_shapes (int): Maximum number of shapes of a certain kind to draw
         shape (str): Name of the shape. Defaults to rectangle
+
     Returns:
         np.ndarray: Image containing the shape
     """

@@ -47,12 +47,12 @@ class OTEAnomalyTrainer:
 
     Args:
         model_template_path (str, optional): path to model template.
-            Defaults to "./ote/configs/template.yaml".
+            Defaults to "../../anomaly_classification/configs/padim/template.yaml".
     """
 
     def __init__(
         self,
-        model_template_path: str = "./ote/configs/template.yaml",
+        model_template_path: str = "../../anomaly_classification/configs/padim/template.yaml",
         dataset_path: str = "./datasets/MVTec",
         category: str = "bottle",
     ):

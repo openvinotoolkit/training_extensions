@@ -45,9 +45,6 @@ from ote_sdk.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from ote_sdk.usecases.tasks.interfaces.training_interface import ITrainingTask
 from ote_sdk.usecases.tasks.interfaces.unload_interface import IUnload
 from pytorch_lightning import Trainer
-from shared.callbacks import InferenceCallback, ModelMonitorCallback, ProgressCallback
-from shared.config import get_anomalib_config
-from shared.data import OTEAnomalyDataModule
 
 logger = logging.getLogger(__name__)
 
