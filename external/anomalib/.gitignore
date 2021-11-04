@@ -9,7 +9,7 @@ __pycache__/
 *.onnx
 
 # Tests
-datasets/MVTec
+datasets
 .coverage
 
 # Outputs

@@ -1,4 +1,5 @@
-name: ote anomaly classification stfpm
+# Description.
+name: ote anomaly classification padim
 task_type: ANOMALY_CLASSIFICATION
 task_family: VISION
 instantiation: "CLASS"
@@ -10,16 +11,16 @@ framework: Anomalib
 
 # Task implementations.
 entrypoints:
-  base: anomaly_classification.src.AnomalyClassificationTask
-  openvino: anomaly_classification.src.OpenVINOAnomalyClassificationTask
+  base: anomaly_classification.AnomalyClassificationTask
+  openvino: anomaly_classification.OpenVINOAnomalyClassificationTask
 
 # Hyperparameters.
 hyper_parameters:
-  base_path: ../../anomaly_classification/src/configuration.yaml
+  base_path: ../../configuration.yaml
   parameter_overrides:
     model:
       name:
-        default_value: stfpm
+        default_value: padim
     dataset:
       train_batch_size:
         default_value: 32

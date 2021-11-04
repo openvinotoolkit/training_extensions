@@ -41,8 +41,7 @@ from ote_sdk.entities.train_parameters import TrainParameters
 from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType
 from ote_sdk.usecases.tasks.interfaces.optimization_interface import OptimizationType
 
-from anomaly_classification.src import AnomalyClassificationTask
-from anomaly_classification.src.openvino import OpenVINOAnomalyClassificationTask
+from anomaly_classification import AnomalyClassificationTask, OpenVINOAnomalyClassificationTask
 from tests.helpers.dataset import OTEAnomalyDatasetGenerator
 
 logger = logging.getLogger(__name__)

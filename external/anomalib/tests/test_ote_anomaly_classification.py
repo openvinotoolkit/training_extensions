@@ -21,14 +21,14 @@ from threading import Thread
 import pytest
 import numpy as np
 
-from utils.config import get_anomalib_config
+from ote_anomalib.config import get_anomalib_config
 from tests.helpers.config import get_config
 from tests.helpers.train import OTEAnomalyTrainer
 
 logger = logging.getLogger(__name__)
 
 
-@pytest.mark.parametrize("template_path", [("padim"), ("stfpm")])
+@pytest.mark.parametrize(["task_path", "template_path"], [("anomaly_classification", "padim"), ("anomaly_classification", "stfpm")])
 class TestAnomalyClassification:
     """
     Anomaly Classification Task Tests.
@@ -37,14 +37,14 @@ class TestAnomalyClassification:
     _trainer: OTEAnomalyTrainer
 
     @staticmethod
-    def test_ote_config(template_path):
+    def test_ote_config(task_path, template_path):
         """
         Test generation of OTE config object from model template and conversion to Anomalib format. Also checks if
         default values are overwritten in Anomalib config.
         """
         train_batch_size = 16
 
-        ote_config = get_config(f"configs/{template_path}/template.yaml")
+        ote_config = get_config(f"{task_path}/configs/{template_path}/template.yaml")
 
         # change parameter value in OTE config
         ote_config.dataset.train_batch_size = train_batch_size
@@ -53,22 +53,22 @@ class TestAnomalyClassification:
         # check if default parameter was overwritten
         assert anomalib_config.dataset.train_batch_size == train_batch_size
 
-    def test_cancel_training(self, template_path):
+    def test_cancel_training(self, task_path, template_path):
         """
         Training should stop when `cancel_training` is called
         """
-        self._trainer = OTEAnomalyTrainer(model_template_path=f"configs/{template_path}/template.yaml")
+        self._trainer = OTEAnomalyTrainer(model_template_path=f"{task_path}/configs/{template_path}/template.yaml")
         thread = Thread(target=self._trainer.train)
         thread.start()
         self._trainer.cancel_training()
         assert self._trainer.base_task.model.results.performance == {}
 
-    def test_ote_train_export_and_optimize(self, template_path):
+    def test_ote_train_export_and_optimize(self, task_path, template_path):
         """
         E2E Train-Export Should Yield Similar Inference Results
         """
         # Train the model
-        self._trainer = OTEAnomalyTrainer(model_template_path=f"configs/{template_path}/template.yaml")
+        self._trainer = OTEAnomalyTrainer(model_template_path=f"{task_path}/configs/{template_path}/template.yaml")
         self._trainer.train()
         base_results = self._trainer.validate(task=self._trainer.base_task)
 
