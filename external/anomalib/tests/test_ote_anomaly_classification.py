@@ -21,7 +21,7 @@ from threading import Thread
 import pytest
 import numpy as np
 
-from ote_anomalib.config import get_anomalib_config
+from shared.config import get_anomalib_config
 from tests.helpers.config import get_config
 from tests.helpers.train import OTEAnomalyTrainer
 
