@@ -22,16 +22,11 @@ import os
 import time
 from typing import Union
 
+from anomaly_classification import AnomalyClassificationTask, OpenVINOAnomalyClassificationTask
 from ote_sdk.configuration.helper import create
 from ote_sdk.entities.inference_parameters import InferenceParameters
 from ote_sdk.entities.label_schema import LabelSchemaEntity
-from ote_sdk.entities.model import (
-    ModelEntity,
-    ModelOptimizationType,
-    ModelPrecision,
-    ModelStatus,
-    OptimizationMethod,
-)
+from ote_sdk.entities.model import ModelEntity, ModelOptimizationType, ModelPrecision, ModelStatus, OptimizationMethod
 from ote_sdk.entities.model_template import TargetDevice, parse_model_template
 from ote_sdk.entities.optimization_parameters import OptimizationParameters
 from ote_sdk.entities.resultset import ResultSetEntity
@@ -40,8 +35,6 @@ from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.entities.train_parameters import TrainParameters
 from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType
 from ote_sdk.usecases.tasks.interfaces.optimization_interface import OptimizationType
-
-from anomaly_classification import AnomalyClassificationTask, OpenVINOAnomalyClassificationTask
 from tests.helpers.dataset import OTEAnomalyDatasetGenerator
 
 logger = logging.getLogger(__name__)
@@ -57,8 +50,13 @@ class OTEAnomalyTrainer:
             Defaults to "./ote/configs/template.yaml".
     """
 
-    def __init__(self, model_template_path: str = "./ote/configs/template.yaml"):
-        dataset_path = os.path.join("./datasets/MVTec", "bottle")
+    def __init__(
+        self,
+        model_template_path: str = "./ote/configs/template.yaml",
+        dataset_path: str = "./datasets/MVTec",
+        category: str = "bottle",
+    ):
+        dataset_path = os.path.join(dataset_path, category)
         self.dataset_generator = OTEAnomalyDatasetGenerator(path=dataset_path)
         self.dataset = self.dataset_generator.generate()
 

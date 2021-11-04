@@ -18,17 +18,21 @@ Test Anomaly Classification Task
 
 import logging
 from threading import Thread
-import pytest
-import numpy as np
 
+import numpy as np
+import pytest
 from shared.config import get_anomalib_config
+
 from tests.helpers.config import get_config
+from tests.helpers.dummy_dataset import TestDataset
 from tests.helpers.train import OTEAnomalyTrainer
 
 logger = logging.getLogger(__name__)
 
 
-@pytest.mark.parametrize(["task_path", "template_path"], [("anomaly_classification", "padim"), ("anomaly_classification", "stfpm")])
+@pytest.mark.parametrize(
+    ["task_path", "template_path"], [("anomaly_classification", "padim"), ("anomaly_classification", "stfpm")]
+)
 class TestAnomalyClassification:
     """
     Anomaly Classification Task Tests.
@@ -53,22 +57,34 @@ class TestAnomalyClassification:
         # check if default parameter was overwritten
         assert anomalib_config.dataset.train_batch_size == train_batch_size
 
-    def test_cancel_training(self, task_path, template_path):
+    @TestDataset(num_train=200, num_test=50, dataset_path="./datasets/MVTec", use_mvtec=False)
+    def test_cancel_training(self, task_path, template_path, dataset_path="./datasets/MVTec", category="bottle"):
         """
         Training should stop when `cancel_training` is called
         """
-        self._trainer = OTEAnomalyTrainer(model_template_path=f"{task_path}/configs/{template_path}/template.yaml")
+        self._trainer = OTEAnomalyTrainer(
+            model_template_path=f"{task_path}/configs/{template_path}/template.yaml",
+            dataset_path=dataset_path,
+            category=category,
+        )
         thread = Thread(target=self._trainer.train)
         thread.start()
         self._trainer.cancel_training()
         assert self._trainer.base_task.model.results.performance == {}
 
-    def test_ote_train_export_and_optimize(self, task_path, template_path):
+    @TestDataset(num_train=200, num_test=10, dataset_path="./datasets/MVTec", use_mvtec=False)
+    def test_ote_train_export_and_optimize(
+        self, task_path, template_path, dataset_path="./datasets/MVTec", category="bottle"
+    ):
         """
         E2E Train-Export Should Yield Similar Inference Results
         """
         # Train the model
-        self._trainer = OTEAnomalyTrainer(model_template_path=f"{task_path}/configs/{template_path}/template.yaml")
+        self._trainer = OTEAnomalyTrainer(
+            model_template_path=f"{task_path}/configs/{template_path}/template.yaml",
+            dataset_path=dataset_path,
+            category=category,
+        )
         self._trainer.train()
         base_results = self._trainer.validate(task=self._trainer.base_task)
 
