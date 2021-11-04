@@ -121,17 +121,17 @@ else
 fi
 
 # Install Anomalib
-pip install -e $ANOMALIB_REPO
+pip install -e $ANOMALIB_REPO || exit 1
 
 # Install requirements.
-cat $ANOMALIB_REPO/requirements/requirements.txt | xargs -n 1 -L 1 pip install --no-cache -c ${CONSTRAINTS_FILE} || exit 1
+pip install -r $ANOMALIB_REPO/requirements/requirements.txt -c ${CONSTRAINTS_FILE} || exit 1
 
 pip install -e . -c ${CONSTRAINTS_FILE} || exit 1
 ANOMALIB_OTE_DIR=`realpath .`
 echo "export ANOMALIB_OTE_DIR=${ANOMALIB_OTE_DIR}" >> ${venv_dir}/bin/activate
 
 # Install OpenVINO requirements
-pip install -r $ANOMALIB_REPO/requirements_openvino_mo.txt -c ${CONSTRAINTS_FILE} || exit 1
+pip install -r $ANOMALIB_REPO/requirements/requirements_openvino_mo.txt -c ${CONSTRAINTS_FILE} || exit 1
 
 pip install -e $SC_SDK_REPO/src/ote_sdk -c ${CONSTRAINTS_FILE} || exit 1
 
