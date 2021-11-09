@@ -52,13 +52,13 @@ def test_ote_train(template):
                     '--val-data-roots',
                     f'{os.path.join(ote_dir, args["--val-data-roots"])}',
                     '--save-weights',
-                    f'{template_work_dir}/trained.pth',
+                    f'{template_work_dir}/trained_{template["name"]}.pth',
                     'params',
                     '--learning_parameters.max_num_epochs',
                     '2',
                     '--learning_parameters.batch_size',
                     '2']
-    assert run(command_line, cwd=f'{template_dir}', env={'PATH':f'{work_dir}/venv/bin'}).returncode == 0
+    assert run(command_line, cwd=f'{template_dir}', env={'PATH':os.environ['PATH'] + f':{work_dir}/venv/bin'}).returncode == 0
 
 
 @pytest.mark.parametrize("template", templates, ids=templates_names)
@@ -68,10 +68,10 @@ def test_ote_export(template):
                     '--labels',
                     'none',
                     '--load-weights',
-                    f'{template_work_dir}/trained.pth',
+                    f'{template_work_dir}/trained_{template["name"]}.pth',
                     f'--save-model-to',
-                    f'{template_work_dir}/exported']
-    assert run(command_line, cwd=f'{template_dir}', env={'PATH':f'{work_dir}/venv/bin'}).returncode == 0
+                    f'{template_work_dir}/exported_{template["name"]}']
+    assert run(command_line, cwd=f'{template_dir}', env={'PATH':os.environ['PATH'] + f':{work_dir}/venv/bin'}).returncode == 0
 
 
 @pytest.mark.parametrize("template", templates, ids=templates_names)
@@ -83,5 +83,5 @@ def test_ote_eval(template):
                     '--test-data-roots',
                     f'{os.path.join(ote_dir, args["--test-data-roots"])}',
                     '--load-weights',
-                    f'{template_work_dir}/trained.pth']
-    assert run(command_line, cwd=f'{template_dir}', env={'PATH':f'{work_dir}/venv/bin'}).returncode == 0
+                    f'{template_work_dir}/trained_{template["name"]}.pth']
+    assert run(command_line, cwd=f'{template_dir}', env={'PATH':os.environ['PATH'] + f':{work_dir}/venv/bin'}).returncode == 0
