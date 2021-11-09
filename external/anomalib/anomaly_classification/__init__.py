@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .task import AnomalyClassificationTask
 from .openvino import OpenVINOAnomalyClassificationTask
+from .task import AnomalyClassificationTask
 
 __all__ = ["AnomalyClassificationTask", "OpenVINOAnomalyClassificationTask"]

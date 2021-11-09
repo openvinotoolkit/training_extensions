@@ -1,5 +1,5 @@
 """
-Openvino Anomaly Task
+OpenVINO Anomaly Task
 """
 
 # Copyright (C) 2021 Intel Corporation
@@ -53,11 +53,11 @@ logger = logging.getLogger(__name__)
 
 class OTEOpenVINOAnomalyDataloader(DataLoader):
     """
-    Dataloader for loading SC dataset into OTE OpenVINO Inferencer
+    Dataloader for loading OTE dataset into OTE OpenVINO Inferencer
 
     Args:
-        dataset (DatasetEntity): SC dataset entity
-        inferencer (OpenVinoInferencer): Openvino Inferencer
+        dataset (DatasetEntity): OTE dataset entity
+        inferencer (OpenVINOInferencer): Openvino Inferencer
     """
 
     def __init__(self, config: Union[DictConfig, ListConfig], dataset: DatasetEntity, inferencer: OpenVinoInferencer):
@@ -122,7 +122,7 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
         optimization_parameters: Optional[OptimizationParameters],
     ):
         if optimization_type is not OptimizationType.POT:
-            raise ValueError("POT is the only supported optimization type for OpenVino models")
+            raise ValueError("POT is the only supported optimization type for OpenVINO models")
 
         data_loader = OTEOpenVINOAnomalyDataloader(config=self.config, dataset=dataset, inferencer=self.inferencer)
 

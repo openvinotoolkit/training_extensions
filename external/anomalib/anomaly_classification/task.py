@@ -26,11 +26,6 @@ from glob import glob
 from typing import Optional, Union
 
 import torch
-from anomalib.core.model import AnomalyModule
-from anomalib.models import get_model
-from core.callbacks import InferenceCallback, ModelMonitorCallback, ProgressCallback
-from core.config import get_anomalib_config
-from core.data import OTEAnomalyDataModule
 from omegaconf import DictConfig, ListConfig
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.inference_parameters import InferenceParameters
@@ -45,6 +40,12 @@ from ote_sdk.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from ote_sdk.usecases.tasks.interfaces.training_interface import ITrainingTask
 from ote_sdk.usecases.tasks.interfaces.unload_interface import IUnload
 from pytorch_lightning import Trainer
+
+from anomalib.core.model import AnomalyModule
+from anomalib.models import get_model
+from core.callbacks import InferenceCallback, ModelMonitorCallback, ProgressCallback
+from core.config import get_anomalib_config
+from core.data import OTEAnomalyDataModule
 
 logger = logging.getLogger(__name__)
 
@@ -129,9 +130,6 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
         progress = ProgressCallback(parameters=train_parameters)
         model_monitor = ModelMonitorCallback(output_model, self.save_model)
         callbacks = [progress, model_monitor]
-
-        if hasattr(self.model, "callbacks"):
-            callbacks.append(self.model.callbacks)
 
         self.trainer = Trainer(**config.trainer, logger=False, callbacks=callbacks)
         self.trainer.fit(model=self.model, datamodule=datamodule)
