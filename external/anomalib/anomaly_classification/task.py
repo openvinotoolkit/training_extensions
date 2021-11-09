@@ -28,7 +28,8 @@ from typing import Optional, Union
 import torch
 from anomalib.core.model import AnomalyModule
 from anomalib.models import get_model
-from core.callbacks import InferenceCallback, ModelMonitorCallback, ProgressCallback
+from core.callbacks import (InferenceCallback, ModelMonitorCallback,
+                            ProgressCallback)
 from core.config import get_anomalib_config
 from core.data import OTEAnomalyDataModule
 from omegaconf import DictConfig, ListConfig
@@ -39,9 +40,12 @@ from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.entities.train_parameters import TrainParameters
 from ote_sdk.usecases.evaluation.metrics_helper import MetricsHelper
-from ote_sdk.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
-from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType, IExportTask
-from ote_sdk.usecases.tasks.interfaces.inference_interface import IInferenceTask
+from ote_sdk.usecases.tasks.interfaces.evaluate_interface import \
+    IEvaluationTask
+from ote_sdk.usecases.tasks.interfaces.export_interface import (ExportType,
+                                                                IExportTask)
+from ote_sdk.usecases.tasks.interfaces.inference_interface import \
+    IInferenceTask
 from ote_sdk.usecases.tasks.interfaces.training_interface import ITrainingTask
 from ote_sdk.usecases.tasks.interfaces.unload_interface import IUnload
 from pytorch_lightning import Trainer
@@ -129,9 +133,6 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
         progress = ProgressCallback(parameters=train_parameters)
         model_monitor = ModelMonitorCallback(output_model, self.save_model)
         callbacks = [progress, model_monitor]
-
-        if hasattr(self.model, "callbacks"):
-            callbacks.append(self.model.callbacks)
 
         self.trainer = Trainer(**config.trainer, logger=False, callbacks=callbacks)
         self.trainer.fit(model=self.model, datamodule=datamodule)
