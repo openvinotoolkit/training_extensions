@@ -28,7 +28,7 @@ from typing import Optional, Union
 import torch
 from anomalib.core.model import AnomalyModule
 from anomalib.models import get_model
-from core.callbacks import InferenceCallback, ProgressCallback
+from core.callbacks import InferenceCallback, ModelMonitorCallback, ProgressCallback
 from core.config import get_anomalib_config
 from core.data import OTEAnomalyDataModule
 from omegaconf import DictConfig, ListConfig
