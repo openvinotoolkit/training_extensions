@@ -85,3 +85,8 @@ def test_ote_eval(template):
                     '--load-weights',
                     f'{template_work_dir}/trained.pth']
     assert run(command_line, cwd=f'{template_dir}', env={'PATH':f'{work_dir}/venv/bin'}).returncode == 0
+
+
+def test_notebook(self):
+    work_dir = os.path.join(root, 'DETECTION')
+    assert run([f'{work_dir}/venv/bin/pytest', '--nbmake', 'ote_cli/notebooks/*.ipynb', '-v']).returncode == 0
