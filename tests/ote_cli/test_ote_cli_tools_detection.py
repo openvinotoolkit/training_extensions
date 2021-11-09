@@ -34,7 +34,7 @@ args = {
 root = '/tmp/ote_cli/'
 ote_dir = os.getcwd()
 
-templates = Registry('external').filter(task_type='CLASSIFICATION').templates
+templates = Registry('external').filter(task_type='DETECTION').templates
 templates_names = [template['name'] for template in templates]
 
 
