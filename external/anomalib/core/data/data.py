@@ -77,7 +77,7 @@ class OTEAnomalyDataModule(LightningDataModule):
 
     Args:
         config (Union[DictConfig, ListConfig]): Anomalib config
-        dataset (DatasetEntity): [description]: OTE SDK Dataset
+        dataset (DatasetEntity): OTE SDK Dataset
         is_train (bool, optional): Train or Test mode. Defaults to True.
 
     Example:
