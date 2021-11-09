@@ -181,7 +181,7 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
 
     def load_inferencer(self) -> OpenVinoInferencer:
         """
-        Create the OpenVINO inverencer object
+        Create the OpenVINO inferencer object
 
         Returns:
             OpenVinoInferencer object
