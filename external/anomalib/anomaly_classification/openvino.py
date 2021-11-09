@@ -22,6 +22,7 @@ import tempfile
 from typing import Optional, Union
 
 from addict import Dict as ADDict
+from anomalib.core.model.inference import OpenVinoInferencer
 from compression.api import DataLoader
 from compression.engines.ie_engine import IEEngine
 from compression.graph import load_model, save_model
@@ -41,12 +42,7 @@ from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.usecases.evaluation.metrics_helper import MetricsHelper
 from ote_sdk.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from ote_sdk.usecases.tasks.interfaces.inference_interface import IInferenceTask
-from ote_sdk.usecases.tasks.interfaces.optimization_interface import (
-    IOptimizationTask,
-    OptimizationType,
-)
-
-from anomalib.core.model.inference import OpenVinoInferencer
+from ote_sdk.usecases.tasks.interfaces.optimization_interface import IOptimizationTask, OptimizationType
 
 logger = logging.getLogger(__name__)
 
@@ -57,7 +53,7 @@ class OTEOpenVINOAnomalyDataloader(DataLoader):
 
     Args:
         dataset (DatasetEntity): OTE dataset entity
-        inferencer (OpenVINOInferencer): Openvino Inferencer
+        inferencer (OpenVinoInferencer): OpenVINO Inferencer
     """
 
     def __init__(self, config: Union[DictConfig, ListConfig], dataset: DatasetEntity, inferencer: OpenVinoInferencer):
