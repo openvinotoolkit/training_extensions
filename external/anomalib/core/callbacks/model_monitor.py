@@ -22,7 +22,7 @@ from typing import Callable, Optional
 
 import pytorch_lightning as pl
 from ote_sdk.entities.metrics import NullPerformance, Performance, ScoreMetric
-from ote_sdk.entities.model import ModelEntity
+from ote_sdk.entities.model import ModelEntity, ModelStatus, ModelPrecision
 from pytorch_lightning.callbacks import Callback
 
 logger = logging.getLogger(__name__)
@@ -59,7 +59,7 @@ class ModelMonitorCallback(Callback):
         """
         new_performance = pl_module.results.performance["image_f1_score"]
         is_improved = self.old_performance < new_performance
-        is_first_training = self.output_model.performance == NullPerformance()
+        is_first_training = self.output_model.model_status == ModelStatus.NOT_READY
         if is_improved or is_first_training:
             if is_first_training:
                 logger.info("First training round, saving the model.")
@@ -68,6 +68,9 @@ class ModelMonitorCallback(Callback):
             performance = Performance(score=ScoreMetric(name="F1 Score", value=new_performance))
             self.save_model_fn(self.output_model)
             self.output_model.performance = performance
+            self.output_model.precision = ModelPrecision.FP32
+            self.output_model.model_status = ModelStatus.SUCCESS
         else:
             logger.info("Model performance has not improved while training. No new model has been saved.")
             trainer.model = self.old_model
+            self.output_model.model_status = ModelStatus.NOT_IMPROVED
