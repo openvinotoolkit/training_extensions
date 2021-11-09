@@ -35,7 +35,6 @@ model:
     enum_name: Backbone
     options:
       RESNET18: resnet18
-      WIDE_RESNET50: wide_resnet50
     type: SELECTABLE
     ui_rules:
       action: DISABLE_EDITING
