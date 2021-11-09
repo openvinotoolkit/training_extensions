@@ -179,7 +179,7 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
 
     def evaluate(self, output_resultset: ResultSetEntity, _evaluation_metric: Optional[str] = None):
         """
-        Evaluate the performance on a rsultset.
+        Evaluate the performance on a result set.
         """
         f_measure_metrics = MetricsHelper.compute_f_measure(output_resultset)
         output_resultset.performance = f_measure_metrics.get_performance()
