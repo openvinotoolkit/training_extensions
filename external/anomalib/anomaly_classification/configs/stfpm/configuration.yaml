@@ -27,7 +27,7 @@ model:
     visible_in_ui: True
     warning: null
   early_stopping:
-    description: Early Stopping Parameters
+    description: Terminate the training when the performance converges.
     header: Early Stopping Parameters
     type: PARAMETER_GROUP
     visible_in_ui: true
@@ -45,7 +45,7 @@ model:
       ui_rules:
         action: DISABLE_EDITING
         operator: AND
-        rules: [ ]
+        rules: []
         type: UI_RULES
       value: image_roc_auc
       visible_in_ui: True

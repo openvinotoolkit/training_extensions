@@ -14,17 +14,6 @@ entrypoints:
   base: anomaly_classification.AnomalyClassificationTask
   openvino: anomaly_classification.OpenVINOAnomalyClassificationTask
 
-# Hyperparameters.
-hyper_parameters:
-  base_path: ./configuration.yaml
-  parameter_overrides:
-    model:
-      name:
-        default_value: padim
-    dataset:
-      train_batch_size:
-        default_value: 32
-
 # Training resources.
 max_nodes: 1
 training_targets:
