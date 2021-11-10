@@ -1,0 +1,220 @@
+"""This module implements the Polygon Shape entity"""
+
+# INTEL CONFIDENTIAL
+#
+# Copyright (C) 2021 Intel Corporation
+#
+# This software and the related documents are Intel copyrighted materials, and
+# your use of them is governed by the express license under which they were provided to
+# you ("License"). Unless the License provides otherwise, you may not use, modify, copy,
+# publish, distribute, disclose or transmit this software or the related documents
+# without Intel's prior written permission.
+#
+# This software and the related documents are provided as is,
+# with no express or implied warranties, other than those that are expressly stated
+# in the License.
+
+# Conflict with Isort
+# pylint: disable=wrong-import-order
+
+import datetime
+from operator import attrgetter
+from typing import List, Optional
+
+from shapely.geometry import Polygon as shapely_polygon
+
+from ote_sdk.entities.scored_label import ScoredLabel
+from ote_sdk.entities.shapes.rectangle import Rectangle
+from ote_sdk.entities.shapes.shape import Shape, ShapeType
+from ote_sdk.utils.time_utils import now
+
+
+class Point:
+    """This class defines a Point with an X and Y coordinate. Multiple points can be used to
+    represent a Polygon"""
+
+    __slots__ = ["x", "y"]
+
+    def __init__(self, x: float, y: float):
+        self.x = x
+        self.y = y
+
+    def __repr__(self):
+        return f"Point({self.x}, {self.y})"
+
+    def __eq__(self, other):
+        if isinstance(other, Point):
+            return self.x == other.x and self.y == other.y
+        return False
+
+    def normalize_wrt_roi(self, roi_shape: Rectangle) -> "Point":
+        """
+        The inverse of denormalize_wrt_roi_shape.
+        Transforming Polygon from the `roi` coordinate system to the normalized coordinate system.
+        This is used when the tasks want to save the analysis results.
+
+        For example in Detection -> Segmentation pipeline, the analysis results of segmentation
+        needs to be normalized to the roi (bounding boxes) coming from the detection.
+
+        :param roi_shape:
+        """
+        roi_shape = roi_shape.clip_to_visible_region()
+        width = roi_shape.width
+        height = roi_shape.height
+        x1 = roi_shape.x1
+        y1 = roi_shape.y1
+        return Point(x=self.x * width + x1, y=self.y * height + y1)
+
+    def denormalize_wrt_roi_shape(self, roi_shape: Rectangle):
+        """
+        The inverse of normalize_wrt_roi_shape.
+        Transforming Polygon from the normalized coordinate system to the `roi` coordinate system.
+        This is used to pull ground truth during training process of the tasks.
+        Examples given in the Shape implementations.
+
+        :param roi_shape:
+        """
+        roi_shape = roi_shape.clip_to_visible_region()
+
+        return Point(
+            x=(self.x - roi_shape.x1) / roi_shape.width,
+            y=(self.y - roi_shape.y1) / roi_shape.height,
+        )
+
+
+class Polygon(Shape):
+    """
+    Represents a polygon formed by a list of coordinates.
+
+    NB Freehand drawings are also stored as polygons.
+
+    :param points: list of Point's forming the polygon
+    :param labels: list of the ScoredLabel's for the Polygon
+    :param modification_date: last modified date
+    """
+
+    # pylint: disable=too-many-arguments; Requires refactor
+    def __init__(
+        self,
+        points: List[Point],
+        labels: Optional[List[ScoredLabel]] = None,
+        modification_date: Optional[datetime.datetime] = None,
+    ):
+        labels = [] if labels is None else labels
+        modification_date = now() if modification_date is None else modification_date
+        super().__init__(
+            type=ShapeType.POLYGON,
+            labels=labels,
+            modification_date=modification_date,
+        )
+
+        if len(points) == 0:
+            raise ValueError("Cannot create polygon with no points")
+
+        self.points = points
+
+        self.min_x = min(points, key=attrgetter("x")).x
+        self.max_x = max(points, key=attrgetter("x")).x
+        self.min_y = min(points, key=attrgetter("y")).y
+        self.max_y = max(points, key=attrgetter("y")).y
+
+        for (x, y) in [(self.min_x, self.min_y), (self.max_x, self.max_y)]:
+            self._validate_coordinates(x, y)
+
+    def __repr__(self):
+        return (
+            f"Polygon(len(points)={len(self.points)},"
+            f" min_x={self.min_x}, max_x={self.max_x}, min_y={self.min_y}, max_y={self.max_y})"
+        )
+
+    def __eq__(self, other):
+        if isinstance(other, Polygon):
+            return (
+                self.points == other.points
+                and self.modification_date == other.modification_date
+            )
+        return False
+
+    def __hash__(self):
+        return hash(str(self))
+
+    def normalize_wrt_roi_shape(self, roi_shape: Rectangle) -> "Polygon":
+        """
+        Transforms from the `roi` coordinate system to the normalized coordinate system.
+        This function is the inverse of ``denormalize_wrt_roi_shape``.
+
+        :example: Assume we have Polygon `p1` which lives in the top-right quarter of a 2D space.
+            The 2D space where `p1` lives in is an `roi` living in the top-left quarter of the normalized coordinate
+            space. This function returns Polygon `p1` expressed in the normalized coordinate space.
+
+            >>> from ote_sdk.entities.annotation import Annotation
+            >>> from ote_sdk.entities.shapes.rectangle import Rectangle
+            >>> p1 = Polygon(points=[Point(x=0.5, y=0.0), Point(x=0.75, y=0.2), Point(x=0.6, y=0.1)])
+            >>> roi = Rectangle(x1=0.0, x2=0.5, y1=0.0, y2=0.5)
+            >>> normalized = p1.normalize_wrt_roi_shape(roi_shape)
+            >>> normalized
+            Polygon(, len(points)=3, scored_labels=[])
+
+        :param roi_shape: Region of Interest
+        :return: New polygon in the image coordinate system
+        """
+        if not isinstance(roi_shape, Rectangle):
+            raise ValueError("roi_shape has to be a Rectangle.")
+
+        roi_shape = roi_shape.clip_to_visible_region()
+
+        points = [p.normalize_wrt_roi(roi_shape) for p in self.points]
+        return Polygon(points=points)
+
+    def denormalize_wrt_roi_shape(self, roi_shape: Rectangle) -> "Polygon":
+        """
+        Transforming shape from the normalized coordinate system to the `roi` coordinate system.
+        This function is the inverse of ``normalize_wrt_roi_shape``
+
+        :example: Assume we have Polygon `p1` which lives in the top-right quarter of the normalized coordinate space.
+            The `roi` is a rectangle living in the half right of the normalized coordinate space.
+            This function returns Polygon `p1` expressed in the coordinate space of `roi`. (should return top-half)
+
+            Polygon denormalized to a rectangle as ROI
+
+            >>> from ote_sdk.entities.shapes.rectangle import Rectangle
+            >>> from ote_sdk.entities.annotation import Annotation
+            >>> p1 = Polygon(points=[Point(x=0.5, y=0.0), Point(x=0.75, y=0.2), Point(x=0.6, y=0.1)])
+            >>> roi = Rectangle(x1=0.5, x2=1.0, y1=0.0, y2=1.0)  # the half-right
+            >>> normalized = p1.denormalize_wrt_roi_shape(roi_shape)
+            >>> normalized
+            Polygon(, len(points)=3, scored_labels=[])
+
+        :param roi_shape: Region of Interest
+        :return: New polygon in the ROI coordinate system
+        """
+        if not isinstance(roi_shape, Rectangle):
+            raise ValueError("roi_shape has to be a Rectangle.")
+
+        roi_shape = roi_shape.clip_to_visible_region()
+
+        points = [p.denormalize_wrt_roi_shape(roi_shape) for p in self.points]
+        return Polygon(points=points)
+
+    def _as_shapely_polygon(self) -> shapely_polygon:
+        """
+        Returns the Polygon object as a shapely polygon which is used for calculating intersection between shapes.
+        """
+        return shapely_polygon([(point.x, point.y) for point in self.points])
+
+    def get_area(self) -> float:
+        """
+        Returns the approximate area of the shape. Area is a value between 0 and 1, computed by converting the Polygon
+        to a shapely polygon and reading the `.area` property.
+
+        NOTE: This method should not be relied on for exact area computation. The area is approximate, because shapes
+        are continuous, but pixels are discrete.
+
+        :example:
+
+            >>> Polygon(points=[Point(x=0.0, y=0.5), Point(x=0.5, y=0.5), Point(x=0.75, y=0.75)]).get_area()
+            0.0625
+
+        :return: area of the shape
+        """
+        return self._as_shapely_polygon().area
