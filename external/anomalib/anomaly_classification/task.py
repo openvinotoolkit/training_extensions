@@ -28,11 +28,14 @@ from typing import Optional, Union
 import torch
 from anomalib.core.model import AnomalyModule
 from anomalib.models import get_model
+from core.callbacks import InferenceCallback, ProgressCallback
+from core.config import get_anomalib_config
+from core.data import OTEAnomalyDataModule
 from omegaconf import DictConfig, ListConfig
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.inference_parameters import InferenceParameters
 from ote_sdk.entities.metrics import Performance, ScoreMetric
-from ote_sdk.entities.model import ModelEntity, ModelStatus, ModelPrecision
+from ote_sdk.entities.model import ModelEntity, ModelPrecision, ModelStatus
 from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.entities.train_parameters import TrainParameters
@@ -43,10 +46,6 @@ from ote_sdk.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from ote_sdk.usecases.tasks.interfaces.training_interface import ITrainingTask
 from ote_sdk.usecases.tasks.interfaces.unload_interface import IUnload
 from pytorch_lightning import Trainer
-
-from core.callbacks import InferenceCallback, ProgressCallback
-from core.config import get_anomalib_config
-from core.data import OTEAnomalyDataModule
 
 logger = logging.getLogger(__name__)
 
@@ -99,7 +98,10 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
         """
         if ote_model is None:
             model = get_model(config=self.config)
-            logger.info("No trained model in project yet. Created new model with '%s'", self.model_name)
+            logger.info(
+                "No trained model in project yet. Created new model with '%s'",
+                self.model_name,
+            )
         else:
             model = get_model(config=self.config)
 
@@ -126,8 +128,6 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
         """
         config = self.get_config()
         datamodule = OTEAnomalyDataModule(config=config, dataset=dataset)
-
-        # Callbacks.
         callbacks = [ProgressCallback(parameters=train_parameters)]
 
         self.trainer = Trainer(**config.trainer, logger=False, callbacks=callbacks)
@@ -141,7 +141,12 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
         """
         config = self.get_config()
         labels = {label.name: label.color.rgb_tuple for label in self.labels}
-        model_info = {"model": self.model.state_dict(), "config": config, "labels": labels, "VERSION": 1}
+        model_info = {
+            "model": self.model.state_dict(),
+            "config": config,
+            "labels": labels,
+            "VERSION": 1,
+        }
         buffer = io.BytesIO()
         torch.save(model_info, buffer)
         output_model.set_data("weights.pth", buffer.getvalue())
@@ -150,8 +155,6 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
         output_model.performance = Performance(score=ScoreMetric(name="F1 Score", value=f1_score))
         output_model.precision = [ModelPrecision.FP32]
         output_model.model_status = ModelStatus.SUCCESS
-
-        self.task_environment.model = output_model
 
     def cancel_training(self):
         """
@@ -182,7 +185,11 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
         self.trainer.predict(model=self.model, datamodule=datamodule)
         return dataset
 
-    def evaluate(self, output_resultset: ResultSetEntity, _evaluation_metric: Optional[str] = None):
+    def evaluate(
+        self,
+        output_resultset: ResultSetEntity,
+        _evaluation_metric: Optional[str] = None,
+    ):
         """
         Evaluate the performance on a result set.
         """
@@ -251,5 +258,6 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
             logger.warning("Got unload request, but not on Docker. Only clearing CUDA cache")
             torch.cuda.empty_cache()
             logger.warning(
-                "Done unloading. Torch is still occupying %f bytes of GPU memory", torch.cuda.memory_allocated()
+                "Done unloading. Torch is still occupying %f bytes of GPU memory",
+                torch.cuda.memory_allocated(),
             )
