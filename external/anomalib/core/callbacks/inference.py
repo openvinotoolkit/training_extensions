@@ -20,8 +20,6 @@ from typing import Any, List
 
 import numpy as np
 import pytorch_lightning as pl
-from anomalib.core.model.anomaly_module import AnomalyModule
-from anomalib.utils.post_process import anomaly_map_to_color_map
 from ote_sdk.entities.annotation import Annotation
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.label import LabelEntity
@@ -29,6 +27,9 @@ from ote_sdk.entities.result_media import ResultMediaEntity
 from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.entities.shapes.rectangle import Rectangle
 from pytorch_lightning.callbacks import Callback
+
+from anomalib.core.model.anomaly_module import AnomalyModule
+from anomalib.utils.post_process import anomaly_map_to_color_map
 
 
 class InferenceCallback(Callback):
