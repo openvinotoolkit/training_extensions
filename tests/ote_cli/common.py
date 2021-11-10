@@ -35,3 +35,22 @@ def create_venv(algo_backend_dir, work_dir, template_work_dir):
         assert run([f'./{algo_backend_dir}/init_venv.sh', venv_dir]).returncode == 0
         assert run([f'{work_dir}/venv/bin/python', '-m', 'pip', 'install', '-e', 'ote_cli']).returncode == 0
     os.makedirs(template_work_dir, exist_ok=True)
+
+
+def extract_export_vars(path):
+    vars = {}
+    with open(path) as f:
+        for line in f:
+            line = line.strip()
+            if line.startswith('export ') and '=' in line:
+                line = line.replace('export ', '').split('=')
+                assert len(line) == 2
+                vars[line[0].strip()] = line[1].strip()
+    return vars
+
+
+def collect_env_vars(work_dir):
+    vars = extract_export_vars(f'{work_dir}/venv/bin/activate')
+    vars.update({'PATH':f'{work_dir}/venv/bin/:' + os.environ['PATH']})
+    print(f'{vars=}')
+    return vars

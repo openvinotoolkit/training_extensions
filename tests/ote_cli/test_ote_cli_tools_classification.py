@@ -19,7 +19,7 @@ import pytest
 
 from ote_cli.registry import Registry
 
-from tests.ote_cli.common import get_some_vars, create_venv
+from tests.ote_cli.common import collect_env_vars, get_some_vars, create_venv
 
 
 args = {
@@ -58,7 +58,7 @@ def test_ote_train(template):
                     '2',
                     '--learning_parameters.batch_size',
                     '2']
-    assert run(command_line, cwd=f'{template_dir}', env={'PATH':f'{work_dir}/venv/bin/:' + os.environ['PATH'], 'CUDA_HOME':os.environ['CUDA_HOME']}).returncode == 0
+    assert run(command_line, cwd=f'{template_dir}', env=collect_env_vars(work_dir)).returncode == 0
 
 
 @pytest.mark.parametrize("template", templates, ids=templates_names)
@@ -71,7 +71,7 @@ def test_ote_export(template):
                     f'{template_work_dir}/trained_{template["name"]}.pth',
                     f'--save-model-to',
                     f'{template_work_dir}/exported_{template["name"]}']
-    assert run(command_line, cwd=f'{template_dir}', env={'PATH':f'{work_dir}/venv/bin/:' + os.environ['PATH'], 'CUDA_HOME':os.environ['CUDA_HOME']}).returncode == 0
+    assert run(command_line, cwd=f'{template_dir}', env=collect_env_vars(work_dir)).returncode == 0
 
 
 @pytest.mark.parametrize("template", templates, ids=templates_names)
@@ -84,4 +84,4 @@ def test_ote_eval(template):
                     f'{os.path.join(ote_dir, args["--test-data-roots"])}',
                     '--load-weights',
                     f'{template_work_dir}/trained_{template["name"]}.pth']
-    assert run(command_line, cwd=f'{template_dir}', env={'PATH':f'{work_dir}/venv/bin/:' + os.environ['PATH'], 'CUDA_HOME':os.environ['CUDA_HOME']}).returncode == 0
+    assert run(command_line, cwd=f'{template_dir}', env=collect_env_vars(work_dir)).returncode == 0
