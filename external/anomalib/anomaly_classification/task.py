@@ -27,6 +27,8 @@ from glob import glob
 from typing import Optional, Union
 
 import torch
+from anomalib.core.model import AnomalyModule
+from anomalib.models import get_model
 from core.callbacks import InferenceCallback, ModelMonitorCallback, ProgressCallback
 from core.config import get_anomalib_config
 from core.data import OTEAnomalyDataModule
@@ -44,9 +46,6 @@ from ote_sdk.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from ote_sdk.usecases.tasks.interfaces.training_interface import ITrainingTask
 from ote_sdk.usecases.tasks.interfaces.unload_interface import IUnload
 from pytorch_lightning import Trainer
-
-from anomalib.core.model import AnomalyModule
-from anomalib.models import get_model
 
 logger = logging.getLogger(__name__)
 
@@ -102,7 +101,10 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
         """
         if ote_model is None:
             model = get_model(config=self.config)
-            logger.info("No trained model in project yet. Created new model with '%s'", self.model_name)
+            logger.info(
+                "No trained model in project yet. Created new model with '%s'",
+                self.model_name,
+            )
         else:
             model = get_model(config=self.config)
 
@@ -144,11 +146,15 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
         """
         config = self.get_config()
         labels = {label.name: label.color.rgb_tuple for label in self.labels}
-        model_info = {"model": self.model.state_dict(), "config": config, "labels": labels, "VERSION": 1}
+        model_info = {
+            "model": self.model.state_dict(),
+            "config": config,
+            "labels": labels,
+            "VERSION": 1,
+        }
         buffer = io.BytesIO()
         torch.save(model_info, buffer)
         output_model.set_data("weights.pth", buffer.getvalue())
-        self.task_environment.model = output_model
 
     def cancel_training(self):
         """
@@ -248,5 +254,6 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
             logger.warning("Got unload request, but not on Docker. Only clearing CUDA cache")
             torch.cuda.empty_cache()
             logger.warning(
-                "Done unloading. Torch is still occupying %f bytes of GPU memory", torch.cuda.memory_allocated()
+                "Done unloading. Torch is still occupying %f bytes of GPU memory",
+                torch.cuda.memory_allocated(),
             )
