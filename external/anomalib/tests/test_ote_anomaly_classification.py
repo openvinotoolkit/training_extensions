@@ -16,18 +16,14 @@ Test Anomaly Classification Task
 # See the License for the specific language governing permissions
 # and limitations under the License.
 import logging
-import os
 from threading import Thread
 
 import numpy as np
 import pytest
-from core.config import get_anomalib_config
-from ote_sdk.entities.model import ModelEntity, ModelStatus
-from ote_sdk.entities.train_parameters import TrainParameters
 
+from core.config import get_anomalib_config
 from tests.helpers.config import get_config
-from tests.helpers.dataset import OTEAnomalyDatasetGenerator
-from tests.helpers.dummy_dataset import GeneratedDummyDataset, TestDataset
+from tests.helpers.dummy_dataset import TestDataset
 from tests.helpers.train import OTEAnomalyTrainer
 
 logger = logging.getLogger(__name__)
@@ -104,54 +100,3 @@ class TestAnomalyClassification:
         # Performance should be almost the same
         assert np.allclose(base_results.performance.score.value, openvino_results.performance.score.value)
         assert np.allclose(openvino_results.performance.score.value, optimized_openvino_results.performance.score.value)
-
-
-class TestModelMonitor:
-
-    _trainer: OTEAnomalyTrainer
-
-    def test_model_monitor(self, dataset_path="./datasets/MVTec", category="bottle"):
-        """
-        Test if model monitor callback produces the correct model status
-        """
-        # Create task and task environment
-        trainer = OTEAnomalyTrainer(
-            model_template_path=f"anomaly_classification/configs/padim/template.yaml",
-            dataset_path=dataset_path,
-            category=category,
-        )
-        task = trainer.base_task
-        task_environment = task.task_environment
-
-        # create output model
-        output_model = ModelEntity(
-            train_dataset=trainer.dataset,
-            configuration=task_environment.get_model_configuration(),
-            model_status=ModelStatus.NOT_READY,
-        )
-
-        # create dataset
-        with GeneratedDummyDataset(
-            num_train=200, num_test=10, train_shapes=["triangle"], test_shapes=["star"]
-        ) as dataset_path:
-            dataset_generator = OTEAnomalyDatasetGenerator(path=os.path.join(dataset_path, "shapes"))
-            dataset = dataset_generator.generate()
-
-            # initial training should return a trained model
-            task.train(dataset=dataset, output_model=output_model, train_parameters=TrainParameters())
-            assert task.task_environment.model.model_status == ModelStatus.SUCCESS
-
-        # switch normal and abnormal categories
-        with GeneratedDummyDataset(
-            num_train=200, num_test=10, train_shapes=["star"], test_shapes=["triangle"]
-        ) as dataset_path:
-            dataset_generator = OTEAnomalyDatasetGenerator(path=os.path.join(dataset_path, "shapes"))
-            dataset = dataset_generator.generate()
-
-            # training should improve on the swapped dataset
-            task.train(dataset=dataset, output_model=output_model, train_parameters=TrainParameters())
-            assert task.task_environment.model.model_status == ModelStatus.SUCCESS
-
-            # training again on the same dataset should not return a new model
-            task.train(dataset=dataset, output_model=output_model, train_parameters=TrainParameters())
-            assert task.task_environment.model.model_status == ModelStatus.NOT_IMPROVED
