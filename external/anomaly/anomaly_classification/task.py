@@ -29,10 +29,14 @@ from typing import Optional, Union
 import torch
 from anomalib.core.model import AnomalyModule
 from anomalib.models import get_model
-from core.callbacks import InferenceCallback, ModelMonitorCallback, ProgressCallback
-from core.config import get_anomalib_config
-from core.data import OTEAnomalyDataModule
 from omegaconf import DictConfig, ListConfig
+from ote_anomalib.callbacks import (
+    InferenceCallback,
+    ModelMonitorCallback,
+    ProgressCallback,
+)
+from ote_anomalib.config import get_anomalib_config
+from ote_anomalib.data import OTEAnomalyDataModule
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.inference_parameters import InferenceParameters
 from ote_sdk.entities.model import ModelEntity
