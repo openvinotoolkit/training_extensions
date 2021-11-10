@@ -30,7 +30,11 @@ import torch
 from anomalib.core.model import AnomalyModule
 from anomalib.models import get_model
 from omegaconf import DictConfig, ListConfig
-from ote_anomalib.callbacks import InferenceCallback, ModelMonitorCallback, ProgressCallback
+from ote_anomalib.callbacks import (
+    InferenceCallback,
+    ModelMonitorCallback,
+    ProgressCallback,
+)
 from ote_anomalib.config import get_anomalib_config
 from ote_anomalib.data import OTEAnomalyDataModule
 from ote_sdk.entities.datasets import DatasetEntity
