@@ -1,4 +1,5 @@
-name: ote anomaly classification stfpm
+# Description.
+name: ote anomaly classification padim
 task_type: ANOMALY_CLASSIFICATION
 task_family: VISION
 instantiation: "CLASS"
@@ -18,6 +19,3 @@ max_nodes: 1
 training_targets:
   - GPU
   - CPU
-
-hyper_parameters:
-  base_path: ./configuration.yaml
