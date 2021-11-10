@@ -10,7 +10,7 @@ model:
   visible_in_ui: true
   name:
     affects_outcome_of: TRAINING
-    default_value: padim
+    default_value: stfpm
     description: The name of the anomaly classification algorithm.
     editable: True
     header: Model Name
@@ -23,7 +23,7 @@ model:
       operator: AND
       rules: []
       type: UI_RULES
-    value: padim
+    value: stfpm
     visible_in_ui: True
     warning: null
   early_stopping:

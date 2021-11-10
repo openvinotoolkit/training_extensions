@@ -213,6 +213,8 @@ class OTEAnomalyTrainer:
         Export the OpenVino Model
         """
         self.base_task.export(ExportType.OPENVINO, self.output_model)
+        # assign the converted OpenVINO model to the current task environment model
+        self.task_environment.model = self.output_model
         self.openvino_task = OpenVINOAnomalyClassificationTask(
             config=self.base_task.config, task_environment=self.task_environment
         )
