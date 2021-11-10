@@ -59,7 +59,7 @@ class ModelMonitorCallback(Callback):
         """
         new_performance = pl_module.results.performance["image_f1_score"]
         is_improved = self.old_performance < new_performance
-        is_first_training = self.output_model.model_status == ModelStatus.NOT_READY
+        is_first_training = self.output_model.performance == NullPerformance()
         if is_improved or is_first_training:
             if is_first_training:
                 logger.info("First training round, saving the model.")
