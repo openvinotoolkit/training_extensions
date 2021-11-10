@@ -68,7 +68,7 @@ class ModelMonitorCallback(Callback):
             performance = Performance(score=ScoreMetric(name="F1 Score", value=new_performance))
             self.save_model_fn(self.output_model)
             self.output_model.performance = performance
-            self.output_model.precision = ModelPrecision.FP32
+            self.output_model.precision = [ModelPrecision.FP32]
             self.output_model.model_status = ModelStatus.SUCCESS
         else:
             logger.info("Model performance has not improved while training. No new model has been saved.")
