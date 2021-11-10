@@ -21,15 +21,13 @@ from threading import Thread
 
 import numpy as np
 import pytest
-from ote_sdk.entities.model import ModelEntity
-from ote_sdk.entities.model import ModelStatus
+from core.config import get_anomalib_config
+from ote_sdk.entities.model import ModelEntity, ModelStatus
 from ote_sdk.entities.train_parameters import TrainParameters
 
-from core.config import get_anomalib_config
 from tests.helpers.config import get_config
 from tests.helpers.dataset import OTEAnomalyDatasetGenerator
-from tests.helpers.dummy_dataset import GeneratedDummyDataset
-from tests.helpers.dummy_dataset import TestDataset
+from tests.helpers.dummy_dataset import GeneratedDummyDataset, TestDataset
 from tests.helpers.train import OTEAnomalyTrainer
 
 logger = logging.getLogger(__name__)
@@ -133,10 +131,9 @@ class TestModelMonitor:
         )
 
         # create dataset
-        with GeneratedDummyDataset(num_train=200,
-                                   num_test=10,
-                                   train_shapes=["triangle"],
-                                   test_shapes=["star"]) as dataset_path:
+        with GeneratedDummyDataset(
+            num_train=200, num_test=10, train_shapes=["triangle"], test_shapes=["star"]
+        ) as dataset_path:
             dataset_generator = OTEAnomalyDatasetGenerator(path=os.path.join(dataset_path, "shapes"))
             dataset = dataset_generator.generate()
 
@@ -145,10 +142,9 @@ class TestModelMonitor:
             assert task.task_environment.model.model_status == ModelStatus.SUCCESS
 
         # switch normal and abnormal categories
-        with GeneratedDummyDataset(num_train=200,
-                                   num_test=10,
-                                   train_shapes=["star"],
-                                   test_shapes=["triangle"]) as dataset_path:
+        with GeneratedDummyDataset(
+            num_train=200, num_test=10, train_shapes=["star"], test_shapes=["triangle"]
+        ) as dataset_path:
             dataset_generator = OTEAnomalyDatasetGenerator(path=os.path.join(dataset_path, "shapes"))
             dataset = dataset_generator.generate()
 
