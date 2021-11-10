@@ -19,11 +19,10 @@ Configurable parameter conversion between OTE and Anomalib.
 from pathlib import Path
 from typing import Union
 
-from omegaconf import DictConfig, ListConfig
-from ote_sdk.configuration.configurable_parameters import ConfigurableParameters
-
 import anomalib
 from anomalib.config.config import get_configurable_parameters
+from omegaconf import DictConfig, ListConfig
+from ote_sdk.configuration.configurable_parameters import ConfigurableParameters
 
 
 def get_anomalib_config(ote_config: ConfigurableParameters) -> Union[DictConfig, ListConfig]:

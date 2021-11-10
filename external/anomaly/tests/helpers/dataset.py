@@ -19,6 +19,7 @@ Dataset Helpers for OTE Training
 from pathlib import Path
 from typing import List, Union
 
+from anomalib.datasets.anomaly_dataset import make_dataset
 from ote_sdk.entities.annotation import (
     Annotation,
     AnnotationSceneEntity,
@@ -33,8 +34,6 @@ from ote_sdk.entities.shapes.rectangle import Rectangle
 from ote_sdk.entities.subset import Subset
 from pandas.core.frame import DataFrame
 from tqdm import tqdm
-
-from anomalib.datasets.anomaly_dataset import make_dataset
 
 
 class OTEAnomalyDatasetGenerator:
