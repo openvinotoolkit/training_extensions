@@ -22,20 +22,11 @@ import os
 import time
 from typing import Union
 
-from anomaly_classification import (
-    AnomalyClassificationTask,
-    OpenVINOAnomalyClassificationTask,
-)
+from anomaly_classification import AnomalyClassificationTask, OpenVINOAnomalyClassificationTask
 from ote_sdk.configuration.helper import create
 from ote_sdk.entities.inference_parameters import InferenceParameters
 from ote_sdk.entities.label_schema import LabelSchemaEntity
-from ote_sdk.entities.model import (
-    ModelEntity,
-    ModelOptimizationType,
-    ModelPrecision,
-    ModelStatus,
-    OptimizationMethod,
-)
+from ote_sdk.entities.model import ModelEntity, ModelOptimizationType, ModelPrecision, ModelStatus, OptimizationMethod
 from ote_sdk.entities.model_template import TargetDevice, parse_model_template
 from ote_sdk.entities.optimization_parameters import OptimizationParameters
 from ote_sdk.entities.resultset import ResultSetEntity
@@ -222,8 +213,6 @@ class OTEAnomalyTrainer:
         Export the OpenVino Model
         """
         self.base_task.export(ExportType.OPENVINO, self.output_model)
-        # assign the converted OpenVINO model to the current task environment model
-        self.task_environment.model = self.output_model
         self.openvino_task = OpenVINOAnomalyClassificationTask(
             config=self.base_task.config, task_environment=self.task_environment
         )
