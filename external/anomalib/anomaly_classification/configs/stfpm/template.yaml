@@ -29,9 +29,3 @@ max_nodes: 1
 training_targets:
   - GPU
   - CPU
-
-# Inference options. Defined by OpenVINO capabilities, not Algo Backend or Platform.
-inference_targets:
-  - CPU
-  - GPU
-  - VPU
