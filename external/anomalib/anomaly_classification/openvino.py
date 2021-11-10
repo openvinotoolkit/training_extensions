@@ -22,7 +22,7 @@ import tempfile
 from typing import Optional, Union
 
 from addict import Dict as ADDict
-from anomalib.core.model.inference import OpenVinoInferencer
+from anomalib.core.model.inference import OpenVINOInferencer
 from compression.api import DataLoader
 from compression.engines.ie_engine import IEEngine
 from compression.graph import load_model, save_model
@@ -53,10 +53,10 @@ class OTEOpenVINOAnomalyDataloader(DataLoader):
 
     Args:
         dataset (DatasetEntity): OTE dataset entity
-        inferencer (OpenVinoInferencer): OpenVINO Inferencer
+        inferencer (OpenVINOInferencer): OpenVINO Inferencer
     """
 
-    def __init__(self, config: Union[DictConfig, ListConfig], dataset: DatasetEntity, inferencer: OpenVinoInferencer):
+    def __init__(self, config: Union[DictConfig, ListConfig], dataset: DatasetEntity, inferencer: OpenVINOInferencer):
         super().__init__(config=config)
         self.dataset = dataset
         self.inferencer = inferencer
@@ -175,14 +175,14 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
         self.task_environment.model = output_model
         self.inferencer = self.load_inferencer()
 
-    def load_inferencer(self) -> OpenVinoInferencer:
+    def load_inferencer(self) -> OpenVINOInferencer:
         """
         Create the OpenVINO inverencer object
 
         Returns:
-            OpenVinoInferencer object
+            OpenVINOInferencer object
         """
-        return OpenVinoInferencer(
+        return OpenVINOInferencer(
             config=self.config,
             path=(
                 self.task_environment.model.get_data("openvino.xml"),
