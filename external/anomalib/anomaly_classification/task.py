@@ -79,7 +79,9 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
             Union[DictConfig, ListConfig]: Anomalib config
         """
         hyper_parameters = self.task_environment.get_hyper_parameters()
-        return get_anomalib_config(ote_config=hyper_parameters)
+        config = get_anomalib_config(ote_config=hyper_parameters)
+        config.dataset.task = "classification"
+        return config
 
     def load_model(self, ote_model: Optional[ModelEntity]) -> AnomalyModule:
         """
