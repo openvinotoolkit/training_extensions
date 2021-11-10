@@ -38,7 +38,6 @@ class OTEAnomalyDataset(Dataset):
     Args:
         config (Union[DictConfig, ListConfig]): Anomalib config
         dataset (DatasetEntity): [description]: OTE SDK Dataset
-        is_train (bool, optional): Train or Test mode. Defaults to True.
 
     Example:
         >>> from tests.helpers.dataset import OTEAnomalyDatasetGenerator
