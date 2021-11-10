@@ -1,0 +1,6 @@
+{
+    "comment": "This file is used in CI test process. CI will skip tests if no changes found listed in <paths>",
+    "paths": [
+        "src/ote_sdk"
+    ]
+}
