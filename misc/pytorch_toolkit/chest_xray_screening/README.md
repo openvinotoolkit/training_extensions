@@ -84,10 +84,12 @@ The network when trained and evaluated using the CheXpert dataset with same alph
 
 
 ## **Model**
-Download `.pth`checkpoint for densenet with the following [link](http://miriad.digital-health.one/models/bmi1/densenet.zip).
 
-Download `.pth` checkpoint for optimised model with the following [link](http://miriad.digital-health.one/models/bmi1/densenet_eff.zip)
+Download `.pth`checkpoint for densenet with the following [link](http://miriad.digital-health.one/models/densenet.zip).
 
+Download `.pth` checkpoint for optimised model with the following [link](http://miriad.digital-health.one/models/densenet_eff.zip)
+
+Inference models will be made available in the [open_model_zoo](https://github.com/openvinotoolkit/open_model_zoo/tree/master/models/public).
 
 ## **Demo**
 An example for using the ONNX models for inference can be found [here](http://miriad.digital-health.one/demo/bmi1/demo_bmi1.zip).
@@ -216,7 +218,7 @@ This work is undertaken as part of Intel India Grand Challenge 2016 Project MIRI
 <a href="https://www.linkedin.com/in/debdoot/">Dr Debdoot Sheet</a>,<a href="http://www.iitkgp.ac.in/department/EE/faculty/ee-nirmalya"> Dr Nirmalya Ghosh (Co-PI) </a></br>
 Department of Electrical Engineering,</br>
 Indian Institute of Technology Kharagpur</br>
-email: debdoot@ee.iitkgp.ac.in
+email: debdoot@ee.iitkgp.ac.in, nirmalya@ee.iitkgp.ac.in
 
 <a href="https://www.linkedin.com/in/ramanathan-sethuraman-27a12aba/">Dr Ramanathan Sethuraman</a>,</br>
 Intel Technology India Pvt. Ltd.</br>
