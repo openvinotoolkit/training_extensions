@@ -22,20 +22,11 @@ import os
 import time
 from typing import Union
 
-from anomaly_classification import (
-    AnomalyClassificationTask,
-    OpenVINOAnomalyClassificationTask,
-)
+from anomaly_classification import AnomalyClassificationTask, OpenVINOAnomalyClassificationTask
 from ote_sdk.configuration.helper import create
 from ote_sdk.entities.inference_parameters import InferenceParameters
 from ote_sdk.entities.label_schema import LabelSchemaEntity
-from ote_sdk.entities.model import (
-    ModelEntity,
-    ModelOptimizationType,
-    ModelPrecision,
-    ModelStatus,
-    OptimizationMethod,
-)
+from ote_sdk.entities.model import ModelEntity, ModelOptimizationType, ModelPrecision, ModelStatus, OptimizationMethod
 from ote_sdk.entities.model_template import TargetDevice, parse_model_template
 from ote_sdk.entities.optimization_parameters import OptimizationParameters
 from ote_sdk.entities.resultset import ResultSetEntity
@@ -137,7 +128,7 @@ class OTEAnomalyTrainer:
                 )
                 # Update task environment threshold based on the computed value during training
                 hyper_parameters = self.task_environment.get_hyper_parameters()
-                hyper_parameters.model.threhold = self.base_task.model.threshold.item()
+                hyper_parameters.model.threshold = self.base_task.model.threshold.item()
                 self.task_environment.set_hyper_parameters(hyper_parameters=hyper_parameters)
 
             except Exception as exception:
