@@ -22,3 +22,4 @@ training_targets:
 
 hyper_parameters:
   base_path: ./configuration.yaml
+  
