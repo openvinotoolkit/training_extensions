@@ -27,8 +27,6 @@ from glob import glob
 from typing import Optional, Union
 
 import torch
-from anomalib.core.model import AnomalyModule
-from anomalib.models import get_model
 from core.callbacks import InferenceCallback, ModelMonitorCallback, ProgressCallback
 from core.config import get_anomalib_config
 from core.data import OTEAnomalyDataModule
@@ -47,6 +45,9 @@ from ote_sdk.usecases.tasks.interfaces.training_interface import ITrainingTask
 from ote_sdk.usecases.tasks.interfaces.unload_interface import IUnload
 from pytorch_lightning import Trainer
 
+from anomalib.core.model import AnomalyModule
+from anomalib.models import get_model
+
 logger = logging.getLogger(__name__)
 
 
@@ -63,8 +64,8 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
         self.labels = task_environment.get_labels()
 
         # Hyperparameters.
+        self.project_path: str = tempfile.mkdtemp(prefix="ote-anomalib")
         self.config = self.get_config()
-        self.config.project.path = tempfile.mkdtemp(prefix="ote-anomalib")
 
         self.model_name = task_environment.model_template.name
         self.model = self.load_model(ote_model=task_environment.model)
@@ -81,6 +82,7 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
         hyper_parameters = self.task_environment.get_hyper_parameters()
         config = get_anomalib_config(ote_config=hyper_parameters)
         config.dataset.task = "classification"
+        config.project.path = self.project_path
         return config
 
     def load_model(self, ote_model: Optional[ModelEntity]) -> AnomalyModule:
