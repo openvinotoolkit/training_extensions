@@ -1,6 +1,7 @@
 #!/usr/bin/env python
-import anomalib
 from setuptools import find_packages, setup
+
+import anomalib
 
 setup(
     name="anomaly_classification",
