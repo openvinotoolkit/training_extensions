@@ -120,4 +120,4 @@ class ProgressCallback(ProgressBar):
 
     def _update_progress(self, stage: str):
         progress = self._get_progress(stage)
-        self.update_progress_callback(progress)
+        self.update_progress_callback(int(progress))
