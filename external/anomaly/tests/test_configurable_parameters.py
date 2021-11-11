@@ -17,6 +17,7 @@ Test configurable parameters for the anomaly classification task
 # and limitations under the License.
 
 import logging
+import os
 
 import pytest
 from ote_sdk.configuration.helper import convert, create
@@ -39,3 +40,7 @@ def test_configuration_yaml(configurable_parameters):
     configuration_yaml_converted = create(configuration_yaml_str)
     # assert that we generate an anomalib config from the
     get_anomalib_config(configuration_yaml_converted)
+    # assert that the python class and the yaml file result in the same configurable parameters object
+    model_name = configuration_yaml_converted.model.name.value
+    configuration_yaml_loaded = create(os.path.join('anomaly_classification', 'configs', model_name, 'configuration.yaml'))
+    assert configuration_yaml_converted == configuration_yaml_loaded
