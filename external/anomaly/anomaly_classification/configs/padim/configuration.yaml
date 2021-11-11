@@ -1,40 +1,29 @@
-description: Configuration for an anomaly classification task
-header: Configuration for an anomaly classification task
-type: CONFIGURABLE_PARAMETERS
-visible_in_ui: true
-
-model:
-  description: Model Parameters
-  header: Model Parameters
-  type: PARAMETER_GROUP
-  visible_in_ui: true
-  name:
-    affects_outcome_of: TRAINING
-    default_value: padim
-    description: The name of the anomaly classification algorithm.
-    editable: True
-    header: Model Name
-    enum_name: AnomalyModel
-    options:
-      PADIM: padim
-    type: SELECTABLE
+dataset:
+  description: Dataset Parameters
+  header: Dataset Parameters
+  num_workers:
+    affects_outcome_of: NONE
+    default_value: 8
+    description: Increasing this value might improve training speed however it might
+      cause out of memory errors. If the number of workers is set to zero, data loading
+      will happen in the main training thread.
+    editable: true
+    header: Number of workers
+    max_value: 8
+    min_value: 0
+    type: INTEGER
     ui_rules:
       action: DISABLE_EDITING
       operator: AND
       rules: []
       type: UI_RULES
-    value: padim
-    visible_in_ui: True
+    value: 8
+    visible_in_ui: true
     warning: null
-
-dataset:
-  description: Dataset Parameters
-  header: Dataset Parameters
   train_batch_size:
     affects_outcome_of: TRAINING
-    default_value: 32
-    description:
-      The number of training samples seen in each iteration of training.
+    default_value: 5
+    description: The number of training samples seen in each iteration of training.
       Increasing this value improves training time and may make the training more
       stable. A larger batch size has higher memory requirements.
     editable: true
@@ -49,32 +38,37 @@ dataset:
       type: UI_RULES
     value: 5
     visible_in_ui: true
-    warning:
-      Increasing this value may cause the system to use more memory than available,
+    warning: Increasing this value may cause the system to use more memory than available,
       potentially causing out of memory errors, please update with caution.
-  num_workers:
+  type: PARAMETER_GROUP
+  visible_in_ui: true
+description: Configuration for Padim
+header: Configuration for Padim
+id: ''
+model:
+  description: Model Parameters
+  header: Model Parameters
+  name:
     affects_outcome_of: NONE
-    default_value: 0
-    description:
-      Increasing this value might improve training speed however it might
-      cause out of memory errors. If the number of workers is set to zero, data loading
-      will happen in the main training thread.
-    editable: true
-    header: Number of cpu threads to use during batch generation
-    max_value: 8
-    min_value: 0
-    type: INTEGER
+    default_value: padim
+    description: Name of the model that should be used for training.
+    editable: false
+    enum_name: ModelName
+    header: Model Name
+    options:
+      PADIM: padim
+      STFPM: stfpm
+    type: SELECTABLE
     ui_rules:
       action: DISABLE_EDITING
       operator: AND
       rules: []
       type: UI_RULES
-    value: 0
-    visible_in_ui: true
+    value: padim
+    visible_in_ui: false
     warning: null
   type: PARAMETER_GROUP
   visible_in_ui: true
-
 pot_parameters:
   description: POT Parameters
   header: POT Parameters
@@ -82,7 +76,7 @@ pot_parameters:
     affects_outcome_of: NONE
     default_value: Performance
     description: Quantization preset that defines quantization scheme
-    editable: False
+    editable: true
     enum_name: POTQuantizationPreset
     header: Preset
     options:
@@ -95,13 +89,13 @@ pot_parameters:
       rules: []
       type: UI_RULES
     value: Performance
-    visible_in_ui: False
+    visible_in_ui: true
     warning: null
   stat_subset_size:
     affects_outcome_of: NONE
     default_value: 300
     description: Number of data samples used for post-training optimization
-    editable: True
+    editable: true
     header: Number of data samples
     max_value: 9223372036854775807
     min_value: 1
@@ -112,7 +106,9 @@ pot_parameters:
       rules: []
       type: UI_RULES
     value: 300
-    visible_in_ui: True
+    visible_in_ui: true
     warning: null
   type: PARAMETER_GROUP
   visible_in_ui: true
+type: CONFIGURABLE_PARAMETERS
+visible_in_ui: true
