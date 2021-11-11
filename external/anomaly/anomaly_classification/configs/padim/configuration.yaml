@@ -76,31 +76,6 @@ dataset:
   type: PARAMETER_GROUP
   visible_in_ui: true
 
-trainer:
-  description: Parameters for the PyTorch Lightning Trainer
-  header: Trainer Parameters
-  type: PARAMETER_GROUP
-  visible_in_ui: false
-  num_sanity_val_steps:
-    affects_outcome_of: NONE
-    default_value: -1
-    description:
-      This is needed to ensure that the pytorch lightning trainer starts a
-      validation run on the full validation set before training.
-    editable: false
-    header: Number of validation steps in the sanity check
-    max_value: -1
-    min_value: -1
-    type: INTEGER
-    ui_rules:
-      action: DISABLE_EDITING
-      operator: AND
-      rules: []
-      type: UI_RULES
-    value: -1
-    visible_in_ui: false
-    warning: null
-
 pot_parameters:
   description: POT Parameters
   header: POT Parameters
