@@ -40,7 +40,7 @@ class AnomalyClassificationConfig(ConfigurableParameters):
         description = header
 
         train_batch_size = configurable_integer(
-            default_value=5,
+            default_value=32,
             min_value=1,
             max_value=512,
             header="Batch size",
@@ -55,7 +55,7 @@ class AnomalyClassificationConfig(ConfigurableParameters):
         num_workers = configurable_integer(
             default_value=8,
             min_value=0,
-            max_value=8,
+            max_value=36,
             header="Number of workers",
             description="Increasing this value might improve training speed however it might cause out of memory "
             "errors. If the number of workers is set to zero, data loading will happen in the main "
