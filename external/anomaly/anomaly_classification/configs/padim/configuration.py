@@ -27,7 +27,7 @@ class PadimConfig(AnomalyClassificationConfig):
     """
     Configurable parameters for PADIM anomaly classification task.
     """
-    header = string_attribute("Configuration for padim")
+    header = string_attribute("Configuration for Padim")
     description = header
 
     @attrs
