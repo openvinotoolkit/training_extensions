@@ -29,9 +29,7 @@ from ote_anomalib.config import get_anomalib_config
 logger = logging.getLogger(__name__)
 
 
-@pytest.mark.parametrize(
-    ["configurable_parameters"], [(PadimConfig, ), (STFPMConfig, )]
-)
+@pytest.mark.parametrize(["configurable_parameters"], [(PadimConfig,), (STFPMConfig,)])
 def test_configuration_yaml(configurable_parameters):
     configuration = configurable_parameters()
     # assert that we can convert our config object to yaml format
@@ -42,5 +40,7 @@ def test_configuration_yaml(configurable_parameters):
     get_anomalib_config(configuration_yaml_converted)
     # assert that the python class and the yaml file result in the same configurable parameters object
     model_name = configuration_yaml_converted.model.name.value
-    configuration_yaml_loaded = create(os.path.join('anomaly_classification', 'configs', model_name, 'configuration.yaml'))
+    configuration_yaml_loaded = create(
+        os.path.join("anomaly_classification", "configs", model_name, "configuration.yaml")
+    )
     assert configuration_yaml_converted == configuration_yaml_loaded

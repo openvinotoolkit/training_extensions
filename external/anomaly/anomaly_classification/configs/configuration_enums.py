@@ -19,14 +19,16 @@ class POTQuantizationPreset(ConfigurableEnum):
     """
     This Enum represents the quantization preset for post training optimization
     """
-    PERFORMANCE = 'Performance'
-    MIXED = 'Mixed'
+
+    PERFORMANCE = "Performance"
+    MIXED = "Mixed"
 
 
 class EarlyStoppingMetrics(ConfigurableEnum):
     """
     This enum represents the different metrics that can be used for early stopping
     """
+
     IMAGE_ROC_AUC = "image_roc_auc"
     IMAGE_F1 = "image-f1-score"
 
@@ -35,5 +37,6 @@ class ModelName(ConfigurableEnum):
     """
     This enum represents the different model architectures for anomaly classification
     """
+
     STFPM = "stfpm"
     PADIM = "padim"
