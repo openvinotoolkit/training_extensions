@@ -29,13 +29,14 @@ from typing import Optional, Union
 import torch
 from anomalib.core.model import AnomalyModule
 from anomalib.models import get_model
-from core.callbacks import InferenceCallback, ModelMonitorCallback, ProgressCallback
+from core.callbacks import InferenceCallback, ProgressCallback
 from core.config import get_anomalib_config
 from core.data import OTEAnomalyDataModule
 from omegaconf import DictConfig, ListConfig
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.inference_parameters import InferenceParameters
-from ote_sdk.entities.model import ModelEntity
+from ote_sdk.entities.metrics import Performance, ScoreMetric
+from ote_sdk.entities.model import ModelEntity, ModelPrecision, ModelStatus
 from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.entities.train_parameters import TrainParameters
@@ -131,14 +132,12 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
         """
         config = self.get_config()
         datamodule = OTEAnomalyDataModule(config=config, dataset=dataset)
-
-        # Callbacks.
-        progress = ProgressCallback(parameters=train_parameters)
-        model_monitor = ModelMonitorCallback(output_model, self.save_model)
-        callbacks = [progress, model_monitor]
+        callbacks = [ProgressCallback(parameters=train_parameters)]
 
         self.trainer = Trainer(**config.trainer, logger=False, callbacks=callbacks)
         self.trainer.fit(model=self.model, datamodule=datamodule)
+
+        self.save_model(output_model)
 
     def save_model(self, output_model: ModelEntity):
         """
@@ -155,6 +154,11 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
         buffer = io.BytesIO()
         torch.save(model_info, buffer)
         output_model.set_data("weights.pth", buffer.getvalue())
+
+        f1_score = self.model.results.performance["image_f1_score"]
+        output_model.performance = Performance(score=ScoreMetric(name="F1 Score", value=f1_score))
+        output_model.precision = [ModelPrecision.FP32]
+        output_model.model_status = ModelStatus.SUCCESS
 
     def cancel_training(self):
         """

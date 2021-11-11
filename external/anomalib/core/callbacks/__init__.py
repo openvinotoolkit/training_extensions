@@ -17,7 +17,6 @@ Callbacks for OTE inference
 # and limitations under the License.
 
 from .inference import InferenceCallback
-from .model_monitor import ModelMonitorCallback
 from .progress import ProgressCallback
 
-__all__ = ["InferenceCallback", "ModelMonitorCallback", "ProgressCallback"]
+__all__ = ["InferenceCallback", "ProgressCallback"]

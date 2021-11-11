@@ -15,12 +15,12 @@ Test Anomaly Classification Task
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions
 # and limitations under the License.
-
 import logging
 from threading import Thread
 
 import numpy as np
 import pytest
+
 from core.config import get_anomalib_config
 from tests.helpers.config import get_config
 from tests.helpers.dummy_dataset import TestDataset
