@@ -31,7 +31,7 @@ from ote_sdk.configuration.model_lifecycle import ModelLifecycle
 
 
 @attrs
-class AnomalyClassificationConfig(ConfigurableParameters):
+class BaseAnomalyClassificationConfig(ConfigurableParameters):
     """
     Base OTE configurable parameters for anomaly classification task.
     """
