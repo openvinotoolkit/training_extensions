@@ -25,8 +25,10 @@ from ote_sdk.configuration.configurable_parameters import ConfigurableParameters
 import anomalib
 from anomalib.config.config import get_configurable_parameters
 
+model_names = {"ote anomaly classification padim": "padim", "ote anomaly classification stfpm": "stfpm"}
 
-def get_anomalib_config(ote_config: ConfigurableParameters) -> Union[DictConfig, ListConfig]:
+
+def get_anomalib_config(task_name: str, ote_config: ConfigurableParameters) -> Union[DictConfig, ListConfig]:
     """
     Create an anomalib config object that matches the values specified in the OTE config.
 
@@ -35,7 +37,7 @@ def get_anomalib_config(ote_config: ConfigurableParameters) -> Union[DictConfig,
     Returns:
         Anomalib config object for the specified model type with overwritten default values.
     """
-    model_name = getattr(ote_config, "model").name.value
+    model_name = model_names[task_name]
     model_config_path = Path(anomalib.__file__).parent / "models" / model_name / "config.yaml"
     anomalib_config = get_configurable_parameters(model_name=model_name, model_config_path=model_config_path)
     update_anomalib_config(anomalib_config, ote_config)

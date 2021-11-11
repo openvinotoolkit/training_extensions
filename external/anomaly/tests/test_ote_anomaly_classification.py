@@ -22,7 +22,7 @@ import numpy as np
 import pytest
 from ote_anomalib.config import get_anomalib_config
 
-from tests.helpers.config import get_config
+from tests.helpers.config import get_config_and_task_name
 from tests.helpers.dummy_dataset import TestDataset
 from tests.helpers.train import OTEAnomalyTrainer
 
@@ -47,12 +47,12 @@ class TestAnomalyClassification:
         """
         train_batch_size = 16
 
-        ote_config = get_config(f"{task_path}/configs/{template_path}/template.yaml")
+        ote_config, task_name = get_config_and_task_name(f"{task_path}/configs/{template_path}/template.yaml")
 
         # change parameter value in OTE config
         ote_config.dataset.train_batch_size = train_batch_size
         # convert OTE -> Anomalib
-        anomalib_config = get_anomalib_config(ote_config)
+        anomalib_config = get_anomalib_config(task_name, ote_config)
         # check if default parameter was overwritten
         assert anomalib_config.dataset.train_batch_size == train_batch_size
 
