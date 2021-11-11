@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 
 
 @pytest.mark.parametrize(
-    ["configurable_parameters"], [PadimConfig, STFPMConfig]
+    ["configurable_parameters"], [(PadimConfig, ), (STFPMConfig, )]
 )
 def test_configuration_yaml(configurable_parameters):
     configuration = configurable_parameters()
