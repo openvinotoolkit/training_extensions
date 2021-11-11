@@ -52,30 +52,6 @@ model:
 description: Configuration for Padim
 header: Configuration for Padim
 id: ''
-model:
-  description: Model Parameters
-  header: Model Parameters
-  name:
-    affects_outcome_of: NONE
-    default_value: padim
-    description: Name of the model that should be used for training.
-    editable: false
-    enum_name: ModelName
-    header: Model Name
-    options:
-      PADIM: padim
-      STFPM: stfpm
-    type: SELECTABLE
-    ui_rules:
-      action: DISABLE_EDITING
-      operator: AND
-      rules: []
-      type: UI_RULES
-    value: padim
-    visible_in_ui: false
-    warning: null
-  type: PARAMETER_GROUP
-  visible_in_ui: true
 pot_parameters:
   description: POT Parameters
   header: POT Parameters

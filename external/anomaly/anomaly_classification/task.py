@@ -61,13 +61,13 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
 
     def __init__(self, task_environment: TaskEnvironment):
         self.task_environment = task_environment
+        self.model_name = task_environment.model_template.name
         self.labels = task_environment.get_labels()
 
         # Hyperparameters.
         self.project_path: str = tempfile.mkdtemp(prefix="ote-anomalib")
         self.config = self.get_config()
 
-        self.model_name = task_environment.model_template.name
         self.model = self.load_model(ote_model=task_environment.model)
 
         self.trainer: Trainer
@@ -80,7 +80,7 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
             Union[DictConfig, ListConfig]: Anomalib config
         """
         hyper_parameters = self.task_environment.get_hyper_parameters()
-        config = get_anomalib_config(ote_config=hyper_parameters)
+        config = get_anomalib_config(task_name=self.model_name, ote_config=hyper_parameters)
         config.dataset.task = "classification"
         config.project.path = self.project_path
         return config

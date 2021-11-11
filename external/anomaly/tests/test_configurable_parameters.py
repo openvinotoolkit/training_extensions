@@ -20,26 +20,29 @@ import logging
 import os
 
 import pytest
+from ote_sdk.configuration.helper import convert, create
+from ote_sdk.entities.model_template import parse_model_template
+
+from tests.helpers.config import get_config_and_task_name
 from anomaly_classification.configs.padim import PadimConfig
 from anomaly_classification.configs.stfpm import STFPMConfig
 from ote_anomalib.config import get_anomalib_config
-from ote_sdk.configuration.helper import convert, create
 
 logger = logging.getLogger(__name__)
 
 
-@pytest.mark.parametrize(["configurable_parameters"], [(PadimConfig,), (STFPMConfig,)])
-def test_configuration_yaml(configurable_parameters):
+@pytest.mark.parametrize(["model_name", "configurable_parameters"], [("padim", PadimConfig), ("stfpm", STFPMConfig)])
+def test_configuration_yaml(configurable_parameters, model_name):
+    # assert that we can parse the template.yaml
+    template_file_path = os.path.join("anomaly_classification", "configs", model_name, "template.yaml")
+    configuration_yaml_loaded, task_name = get_config_and_task_name(template_file_path)
+
     configuration = configurable_parameters()
     # assert that we can convert our config object to yaml format
     configuration_yaml_str = convert(configuration, str)
-    # assert that we can create a SC config object from the yaml string
+    # assert that we can create configurable parameters from the yaml string
     configuration_yaml_converted = create(configuration_yaml_str)
     # assert that we generate an anomalib config from the
-    get_anomalib_config(configuration_yaml_converted)
+    get_anomalib_config(task_name, configuration_yaml_converted)
     # assert that the python class and the yaml file result in the same configurable parameters object
-    model_name = configuration_yaml_converted.model.name.value
-    configuration_yaml_loaded = create(
-        os.path.join("anomaly_classification", "configs", model_name, "configuration.yaml")
-    )
     assert configuration_yaml_converted == configuration_yaml_loaded
