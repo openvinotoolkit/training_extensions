@@ -1,3 +1,6 @@
+"""
+Enums needed to define the options of selectable parameters in the configurable parameter classes
+"""
 # Copyright (C) 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
