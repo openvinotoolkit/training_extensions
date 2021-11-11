@@ -13,10 +13,7 @@
 # and limitations under the License.
 
 from attr import attrs
-from ote_sdk.configuration.elements import (ParameterGroup,
-                                            add_parameter_group,
-                                            string_attribute,
-                                            selectable)
+from ote_sdk.configuration.elements import ParameterGroup, add_parameter_group, string_attribute, selectable
 
 from anomaly_classification.configs.configuration import AnomalyClassificationConfig
 from anomaly_classification.configs.configuration_enums import ModelName
@@ -27,6 +24,7 @@ class PadimConfig(AnomalyClassificationConfig):
     """
     Configurable parameters for PADIM anomaly classification task.
     """
+
     header = string_attribute("Configuration for Padim")
     description = header
 
@@ -40,7 +38,7 @@ class PadimConfig(AnomalyClassificationConfig):
             header="Model Name",
             description="Name of the model that should be used for training.",
             editable=False,
-            visible_in_ui=False
+            visible_in_ui=False,
         )
 
     model = add_parameter_group(ModelParameters)

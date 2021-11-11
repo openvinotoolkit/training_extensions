@@ -16,11 +16,13 @@ from sys import maxsize
 
 from attr import attrs
 from ote_sdk.configuration import ConfigurableParameters
-from ote_sdk.configuration.elements import (ParameterGroup,
-                                            add_parameter_group,
-                                            configurable_integer,
-                                            selectable,
-                                            string_attribute)
+from ote_sdk.configuration.elements import (
+    ParameterGroup,
+    add_parameter_group,
+    configurable_integer,
+    selectable,
+    string_attribute,
+)
 from ote_sdk.configuration.model_lifecycle import ModelLifecycle
 
 from anomaly_classification.configs.configuration_enums import POTQuantizationPreset
@@ -31,6 +33,7 @@ class AnomalyClassificationConfig(ConfigurableParameters):
     """
     Base OTE configurable parameters for anomaly classification task.
     """
+
     header = string_attribute("Configuration for an anomaly classification task")
     description = header
 
@@ -49,7 +52,7 @@ class AnomalyClassificationConfig(ConfigurableParameters):
             "memory requirements.",
             warning="Increasing this value may cause the system to use more memory than available, "
             "potentially causing out of memory errors, please update with caution.",
-            affects_outcome_of=ModelLifecycle.TRAINING
+            affects_outcome_of=ModelLifecycle.TRAINING,
         )
 
         num_workers = configurable_integer(
@@ -58,8 +61,8 @@ class AnomalyClassificationConfig(ConfigurableParameters):
             max_value=8,
             header="Number of workers",
             description="Increasing this value might improve training speed however it might cause out of memory "
-                        "errors. If the number of workers is set to zero, data loading will happen in the main "
-                        "training thread.",
+            "errors. If the number of workers is set to zero, data loading will happen in the main "
+            "training thread.",
         )
 
     @attrs
@@ -70,7 +73,7 @@ class AnomalyClassificationConfig(ConfigurableParameters):
         preset = selectable(
             default_value=POTQuantizationPreset.PERFORMANCE,
             header="Preset",
-            description="Quantization preset that defines quantization scheme"
+            description="Quantization preset that defines quantization scheme",
         )
 
         stat_subset_size = configurable_integer(
@@ -78,7 +81,7 @@ class AnomalyClassificationConfig(ConfigurableParameters):
             description="Number of data samples used for post-training optimization",
             default_value=300,
             min_value=1,
-            max_value=maxsize
+            max_value=maxsize,
         )
 
     dataset = add_parameter_group(DatasetParameters)
