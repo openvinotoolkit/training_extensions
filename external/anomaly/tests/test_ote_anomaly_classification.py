@@ -16,6 +16,7 @@ Test Anomaly Classification Task
 # See the License for the specific language governing permissions
 # and limitations under the License.
 import logging
+import time
 from threading import Thread
 
 import numpy as np
@@ -67,9 +68,12 @@ class TestAnomalyClassification:
             category=category,
         )
         thread = Thread(target=self._trainer.train)
+        start_time = time.time()
         thread.start()
         self._trainer.cancel_training()
-        assert self._trainer.base_task.model.results.performance == {}
+        thread.join()
+        # stopping process has to happen in less than 10 seconds
+        assert time.time() - start_time < 10
 
     @TestDataset(num_train=200, num_test=10, dataset_path="./datasets/MVTec", use_mvtec=False)
     def test_ote_train_export_and_optimize(

@@ -19,11 +19,11 @@ Configurable parameter conversion between OTE and Anomalib.
 from pathlib import Path
 from typing import Union
 
+from anomalib.config.config import get_configurable_parameters
 from omegaconf import DictConfig, ListConfig
 from ote_sdk.configuration.configurable_parameters import ConfigurableParameters
 
 import anomalib
-from anomalib.config.config import get_configurable_parameters
 
 model_names = {"ote anomaly classification padim": "padim", "ote anomaly classification stfpm": "stfpm"}
 
