@@ -20,13 +20,12 @@ import logging
 import os
 
 import pytest
-from ote_sdk.configuration.helper import convert, create
-from ote_sdk.entities.model_template import parse_model_template
-
-from tests.helpers.config import get_config_and_task_name
 from anomaly_classification.configs.padim import PadimConfig
 from anomaly_classification.configs.stfpm import STFPMConfig
 from ote_anomalib.config import get_anomalib_config
+from ote_sdk.configuration.helper import convert, create
+from ote_sdk.entities.model_template import parse_model_template
+from tests.helpers.config import get_config_and_task_name
 
 logger = logging.getLogger(__name__)
 
