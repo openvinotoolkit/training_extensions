@@ -12,11 +12,13 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from attr import attrs
-from ote_sdk.configuration.elements import ParameterGroup, add_parameter_group, string_attribute, selectable
-
-from anomaly_classification.configs.configuration import AnomalyClassificationConfig
+from anomaly_classification.configs.configuration import \
+    AnomalyClassificationConfig
 from anomaly_classification.configs.configuration_enums import ModelName
+from attr import attrs
+from ote_sdk.configuration.elements import (ParameterGroup,
+                                            add_parameter_group, selectable,
+                                            string_attribute)
 
 
 @attrs

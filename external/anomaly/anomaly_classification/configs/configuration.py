@@ -14,18 +14,15 @@
 
 from sys import maxsize
 
+from anomaly_classification.configs.configuration_enums import \
+    POTQuantizationPreset
 from attr import attrs
 from ote_sdk.configuration import ConfigurableParameters
-from ote_sdk.configuration.elements import (
-    ParameterGroup,
-    add_parameter_group,
-    configurable_integer,
-    selectable,
-    string_attribute,
-)
+from ote_sdk.configuration.elements import (ParameterGroup,
+                                            add_parameter_group,
+                                            configurable_integer, selectable,
+                                            string_attribute)
 from ote_sdk.configuration.model_lifecycle import ModelLifecycle
-
-from anomaly_classification.configs.configuration_enums import POTQuantizationPreset
 
 
 @attrs
