@@ -26,27 +26,8 @@ model:
     value: padim
     visible_in_ui: True
     warning: null
-  backbone:
-    affects_outcome_of: TRAINING
-    default_value: resnet18
-    description: The backbone of the feature extractor.
-    editable: True
-    header: Backbone
-    enum_name: Backbone
-    options:
-      RESNET18: resnet18
-      WIDE_RESNET50: wide_resnet50
-    type: SELECTABLE
-    ui_rules:
-      action: DISABLE_EDITING
-      operator: AND
-      rules: []
-      type: UI_RULES
-    value: resnet18
-    visible_in_ui: True
-    warning: null
   early_stopping:
-    description: Early Stopping Parameters
+    description: Terminate the training when the performance converges.
     header: Early Stopping Parameters
     type: PARAMETER_GROUP
     visible_in_ui: true
@@ -64,7 +45,7 @@ model:
       ui_rules:
         action: DISABLE_EDITING
         operator: AND
-        rules: [ ]
+        rules: []
         type: UI_RULES
       value: image_roc_auc
       visible_in_ui: True
@@ -73,24 +54,6 @@ model:
 dataset:
   description: Dataset Parameters
   header: Dataset Parameters
-  task:
-    affects_outcome_of: INFERENCE
-    default_value: classification
-    description: The type of analysis that should be done on the dataset.
-    editable: True
-    header: Model Name
-    enum_name: AnomalyModel
-    options:
-      CLASSIFICATION: classification
-    type: SELECTABLE
-    ui_rules:
-      action: DISABLE_EDITING
-      operator: AND
-      rules: []
-      type: UI_RULES
-    value: classification
-    visible_in_ui: False
-    warning: null
   train_batch_size:
     affects_outcome_of: TRAINING
     default_value: 32

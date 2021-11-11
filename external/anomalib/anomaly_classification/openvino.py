@@ -1,5 +1,5 @@
 """
-Openvino Anomaly Task
+OpenVINO Anomaly Task
 """
 
 # Copyright (C) 2021 Intel Corporation
@@ -22,6 +22,7 @@ import tempfile
 from typing import Optional, Union
 
 from addict import Dict as ADDict
+from anomalib.core.model.inference import OpenVINOInferencer
 from compression.api import DataLoader
 from compression.engines.ie_engine import IEEngine
 from compression.graph import load_model, save_model
@@ -41,26 +42,21 @@ from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.usecases.evaluation.metrics_helper import MetricsHelper
 from ote_sdk.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from ote_sdk.usecases.tasks.interfaces.inference_interface import IInferenceTask
-from ote_sdk.usecases.tasks.interfaces.optimization_interface import (
-    IOptimizationTask,
-    OptimizationType,
-)
-
-from anomalib.core.model.inference import OpenVinoInferencer
+from ote_sdk.usecases.tasks.interfaces.optimization_interface import IOptimizationTask, OptimizationType
 
 logger = logging.getLogger(__name__)
 
 
 class OTEOpenVINOAnomalyDataloader(DataLoader):
     """
-    Dataloader for loading SC dataset into OTE OpenVINO Inferencer
+    Dataloader for loading OTE dataset into OTE OpenVINO Inferencer
 
     Args:
-        dataset (DatasetEntity): SC dataset entity
-        inferencer (OpenVinoInferencer): Openvino Inferencer
+        dataset (DatasetEntity): OTE dataset entity
+        inferencer (OpenVINOInferencer): OpenVINO Inferencer
     """
 
-    def __init__(self, config: Union[DictConfig, ListConfig], dataset: DatasetEntity, inferencer: OpenVinoInferencer):
+    def __init__(self, config: Union[DictConfig, ListConfig], dataset: DatasetEntity, inferencer: OpenVINOInferencer):
         super().__init__(config=config)
         self.dataset = dataset
         self.inferencer = inferencer
@@ -102,7 +98,7 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
             anomaly_map = self.inferencer.predict(dataset_item.numpy, superimpose=False)
             pred_score = anomaly_map.reshape(-1).max()
             # This always assumes that threshold is available in the task environment
-            pred_label = pred_score >= self.task_environment.get_hyper_parameters().model.threhold
+            pred_label = pred_score >= self.task_environment.get_hyper_parameters().model.threshold
             assigned_label = self.anomalous_label if pred_label else self.normal_label
             shape = Annotation(
                 Rectangle(x1=0, y1=0, x2=1, y2=1), labels=[ScoredLabel(assigned_label, probability=pred_score)]
@@ -122,7 +118,7 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
         optimization_parameters: Optional[OptimizationParameters],
     ):
         if optimization_type is not OptimizationType.POT:
-            raise ValueError("POT is the only supported optimization type for OpenVino models")
+            raise ValueError("POT is the only supported optimization type for OpenVINO models")
 
         data_loader = OTEOpenVINOAnomalyDataloader(config=self.config, dataset=dataset, inferencer=self.inferencer)
 
@@ -179,14 +175,14 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
         self.task_environment.model = output_model
         self.inferencer = self.load_inferencer()
 
-    def load_inferencer(self) -> OpenVinoInferencer:
+    def load_inferencer(self) -> OpenVINOInferencer:
         """
-        Create the OpenVINO inverencer object
+        Create the OpenVINO inferencer object
 
         Returns:
-            OpenVinoInferencer object
+            OpenVINOInferencer object
         """
-        return OpenVinoInferencer(
+        return OpenVINOInferencer(
             config=self.config,
             path=(
                 self.task_environment.model.get_data("openvino.xml"),

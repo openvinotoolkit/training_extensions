@@ -21,6 +21,7 @@ import io
 import logging
 import os
 import shutil
+import subprocess
 import tempfile
 from glob import glob
 from typing import Optional, Union
@@ -63,8 +64,8 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
         self.labels = task_environment.get_labels()
 
         # Hyperparameters.
+        self.project_path: str = tempfile.mkdtemp(prefix="ote-anomalib")
         self.config = self.get_config()
-        self.config.project.path = tempfile.mkdtemp(prefix="ote-anomalib")
 
         self.model_name = task_environment.model_template.name
         self.model = self.load_model(ote_model=task_environment.model)
@@ -79,7 +80,10 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
             Union[DictConfig, ListConfig]: Anomalib config
         """
         hyper_parameters = self.task_environment.get_hyper_parameters()
-        return get_anomalib_config(ote_config=hyper_parameters)
+        config = get_anomalib_config(ote_config=hyper_parameters)
+        config.dataset.task = "classification"
+        config.project.path = self.project_path
+        return config
 
     def load_model(self, ote_model: Optional[ModelEntity]) -> AnomalyModule:
         """
@@ -185,11 +189,7 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
         self.trainer.predict(model=self.model, datamodule=datamodule)
         return dataset
 
-    def evaluate(
-        self,
-        output_resultset: ResultSetEntity,
-        _evaluation_metric: Optional[str] = None,
-    ):
+    def evaluate(self, output_resultset: ResultSetEntity, evaluation_metric: Optional[str] = None):
         """
         Evaluate the performance on a result set.
         """
@@ -211,7 +211,7 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
 
         # pylint: disable=no-member; need to refactor this
         height, width = self.config.model.input_size
-        onnx_path = os.path.join(self.config.project.path, "compressed_model.onnx")
+        onnx_path = os.path.join(self.config.project.path, "onnx_model.onnx")
         torch.onnx.export(
             model=self.model.model,
             args=torch.zeros((1, 3, height, width)).to(self.model.device),
@@ -219,7 +219,7 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
             opset_version=11,
         )
         optimize_command = "mo --input_model " + onnx_path + " --output_dir " + self.config.project.path
-        os.system(optimize_command)
+        subprocess.call(optimize_command, shell=True)
         bin_file = glob(os.path.join(self.config.project.path, "*.bin"))[0]
         xml_file = glob(os.path.join(self.config.project.path, "*.xml"))[0]
         with open(bin_file, "rb") as file:

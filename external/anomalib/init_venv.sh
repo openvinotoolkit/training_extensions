@@ -15,13 +15,13 @@ fi
 
 if [[ -z $PYTHON_NAME ]]; then
   # the default option -- note that the minimal version of
-  # python that is suitable for this repo is python3.7,
+  # python that is suitable for this repo is python3.8,
   # whereas the default python3 may point to python3.6
   PYTHON_NAME=python3
 fi
 
 PYTHON_VERSION=$($PYTHON_NAME --version | sed -e "s/^Python \([0-9]\.[0-9]\)\..*/\1/") || exit 1
-if [[ $PYTHON_VERSION != "3.7" && $PYTHON_VERSION != "3.8" && $PYTHON_VERSION != "3.9" ]]; then
+if [[ $PYTHON_VERSION != "3.8" && $PYTHON_VERSION != "3.9" ]]; then
   echo "Wrong version of python: '$PYTHON_VERSION'"
   exit 1
 fi

@@ -128,7 +128,7 @@ class OTEAnomalyTrainer:
                 )
                 # Update task environment threshold based on the computed value during training
                 hyper_parameters = self.task_environment.get_hyper_parameters()
-                hyper_parameters.model.threhold = self.base_task.model.threshold.item()
+                hyper_parameters.model.threshold = self.base_task.model.threshold.item()
                 self.task_environment.set_hyper_parameters(hyper_parameters=hyper_parameters)
 
             except Exception as exception:
