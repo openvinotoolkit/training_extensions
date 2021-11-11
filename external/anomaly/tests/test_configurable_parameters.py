@@ -20,11 +20,10 @@ import logging
 import os
 
 import pytest
-from ote_sdk.configuration.helper import convert, create
-
 from anomaly_classification.configs.padim import PadimConfig
 from anomaly_classification.configs.stfpm import STFPMConfig
 from ote_anomalib.config import get_anomalib_config
+from ote_sdk.configuration.helper import convert, create
 
 logger = logging.getLogger(__name__)
 
