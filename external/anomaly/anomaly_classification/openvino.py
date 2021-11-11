@@ -18,6 +18,7 @@ OpenVINO Anomaly Task
 
 import logging
 import os
+import struct
 import tempfile
 from typing import Optional, Union
 
@@ -42,7 +43,10 @@ from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.usecases.evaluation.metrics_helper import MetricsHelper
 from ote_sdk.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from ote_sdk.usecases.tasks.interfaces.inference_interface import IInferenceTask
-from ote_sdk.usecases.tasks.interfaces.optimization_interface import IOptimizationTask, OptimizationType
+from ote_sdk.usecases.tasks.interfaces.optimization_interface import (
+    IOptimizationTask,
+    OptimizationType,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -97,8 +101,9 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
         for dataset_item in dataset:
             anomaly_map = self.inferencer.predict(dataset_item.numpy, superimpose=False)
             pred_score = anomaly_map.reshape(-1).max()
-            # This always assumes that threshold is available in the task environment
-            pred_label = pred_score >= self.task_environment.get_hyper_parameters().model.threshold
+            # This always assumes that threshold is available in the task environment's model
+            threshold = struct.unpack("f", (self.task_environment.model.get_data("threshold")))
+            pred_label = pred_score >= threshold
             assigned_label = self.anomalous_label if pred_label else self.normal_label
             shape = Annotation(
                 Rectangle(x1=0, y1=0, x2=1, y2=1), labels=[ScoredLabel(assigned_label, probability=pred_score)]

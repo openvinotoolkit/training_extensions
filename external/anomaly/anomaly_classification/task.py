@@ -21,6 +21,7 @@ import io
 import logging
 import os
 import shutil
+import struct
 import subprocess
 import tempfile
 from glob import glob
@@ -154,6 +155,8 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
         buffer = io.BytesIO()
         torch.save(model_info, buffer)
         output_model.set_data("weights.pth", buffer.getvalue())
+        # store computed threshold
+        output_model.set_data("threshold", bytes(struct.pack("f", self.model.threshold.item())))
 
         f1_score = self.model.results.performance["image_f1_score"]
         output_model.performance = Performance(score=ScoreMetric(name="F1 Score", value=f1_score))
