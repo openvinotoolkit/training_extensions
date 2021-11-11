@@ -20,11 +20,7 @@ from pathlib import Path
 from typing import List, Union
 
 from anomalib.datasets.anomaly_dataset import make_dataset
-from ote_sdk.entities.annotation import (
-    Annotation,
-    AnnotationSceneEntity,
-    AnnotationSceneKind,
-)
+from ote_sdk.entities.annotation import Annotation, AnnotationSceneEntity, AnnotationSceneKind
 from ote_sdk.entities.dataset_item import DatasetItemEntity
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.image import Image
