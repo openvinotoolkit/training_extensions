@@ -44,6 +44,7 @@ from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.entities.train_parameters import TrainParameters
 from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType
 from ote_sdk.usecases.tasks.interfaces.optimization_interface import OptimizationType
+
 from tests.helpers.dataset import OTEAnomalyDatasetGenerator
 
 logger = logging.getLogger(__name__)
@@ -135,10 +136,6 @@ class OTEAnomalyTrainer:
                 self.base_task.train(
                     dataset=self.dataset, output_model=self.output_model, train_parameters=TrainParameters()
                 )
-                # Update task environment threshold based on the computed value during training
-                hyper_parameters = self.task_environment.get_hyper_parameters()
-                hyper_parameters.model.threshold = self.base_task.model.threshold.item()
-                self.task_environment.set_hyper_parameters(hyper_parameters=hyper_parameters)
 
             except Exception as exception:
                 self.stored_exception_training = exception

@@ -102,6 +102,5 @@ class TestAnomalyClassification:
         assert base_results.performance.score.value > 0.6
 
         # Performance should be almost the same
-        # TODO https://jira.devtools.intel.com/browse/IAAALD-210
-        # assert np.allclose(base_results.performance.score.value, openvino_results.performance.score.value)
-        # assert np.allclose(openvino_results.performance.score.value, optimized_openvino_results.performance.score.value)
+        assert np.allclose(base_results.performance.score.value, openvino_results.performance.score.value)
+        assert np.allclose(openvino_results.performance.score.value, optimized_openvino_results.performance.score.value)
