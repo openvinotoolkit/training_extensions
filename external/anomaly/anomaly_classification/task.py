@@ -101,15 +101,13 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
             AnomalyModule: Anomalib
                 classification or segmentation model with/without weights.
         """
+        model = get_model(config=self.config)
         if ote_model is None:
-            model = get_model(config=self.config)
             logger.info(
                 "No trained model in project yet. Created new model with '%s'",
                 self.model_name,
             )
         else:
-            model = get_model(config=self.config)
-
             buffer = io.BytesIO(ote_model.get_data("weights.pth"))
             model_data = torch.load(buffer, map_location=torch.device("cpu"))
 
