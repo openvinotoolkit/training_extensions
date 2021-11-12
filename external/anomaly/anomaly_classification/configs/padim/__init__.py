@@ -1,3 +1,8 @@
+"""
+Initialization of Configurable Parameters for PADIM
+Anomaly Classification Task
+"""
+
 # Copyright (C) 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
