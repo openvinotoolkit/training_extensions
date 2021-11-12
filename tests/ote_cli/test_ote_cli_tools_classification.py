@@ -43,6 +43,7 @@ def test_ote_train(template):
     template_dir, work_dir, template_work_dir, algo_backend_dir = get_some_vars(template, root)
     create_venv(algo_backend_dir, work_dir, template_work_dir)
     command_line = ['ote_train',
+                    'template.yaml',
                     '--train-ann-file',
                     f'{os.path.join(ote_dir, args["--train-ann-file"])}',
                     '--train-data-roots',
@@ -65,6 +66,7 @@ def test_ote_train(template):
 def test_ote_export(template):
     template_dir, work_dir, template_work_dir, _ = get_some_vars(template, root)
     command_line = ['ote_export',
+                    'template.yaml',
                     '--labels',
                     'none',
                     '--load-weights',
@@ -78,6 +80,7 @@ def test_ote_export(template):
 def test_ote_eval(template):
     template_dir, work_dir, template_work_dir, _ = get_some_vars(template, root)
     command_line = ['ote_eval',
+                    'template.yaml',
                     '--test-ann-file',
                     f'{os.path.join(ote_dir, args["--test-ann-files"])}',
                     '--test-data-roots',
