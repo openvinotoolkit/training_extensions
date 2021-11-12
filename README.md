@@ -104,7 +104,7 @@ inference.
                            Location to store wiehgts.
    ```
                         
-3. Let's have a look at `ote_train` hyper parameters help. These parameters are specific all model templates.
+3. Let's have a look at `ote_train` hyper parameters help. These parameters are model template specific.
    ```
    ote_train ./external/mmdetection/configs/ote/custom-object-detection/gen3_mobilenetV2_ATSS/template.yaml params --help
    ```
