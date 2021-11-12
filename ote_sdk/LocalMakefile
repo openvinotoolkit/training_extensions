@@ -1,0 +1,52 @@
+include ../../Makefile.variable
+
+# INTEL CONFIDENTIAL
+#
+# Copyright (C) 2021 Intel Corporation
+#
+# This software and the related documents are Intel copyrighted materials, and your use of them is governed by
+# the express license under which they were provided to you ("License"). Unless the License provides otherwise,
+# you may not use, modify, copy, publish, distribute, disclose or transmit this software or the related documents
+# without Intel's prior written permission.
+#
+# This software and the related documents are provided as is, with no express or implied warranties,
+# other than those that are expressly stated in the License.
+
+# Redefine MyPy Config location because ote_sdk has some custom configurations
+MYPY_CONFIG = .mypy.ini
+PYLINT_CONFIG= .pylintrc
+
+OTE_SDK = ./ote_sdk
+
+.PHONY: pipeline
+
+pipeline: mypy pylint test
+
+style: mypy pylint flake bandit
+
+flake:
+	@echo $(ECHO_FLAKE_START)
+	@cd .. && flake8 $(OTE_SDK) --exclude $(OTE_SDK)/tests,$(OTE_SDK)/.venv -v --config=$(OTE_SDK)/$(FLAKE_CONFIG)
+	@echo $(ECHO_FLAKE_STOP)
+
+mypy:
+	@echo $(ECHO_MYPY_START)
+	@cd .. && mypy $(OTE_SDK) --exclude \\$(OTE_SDK)/tests/.*,\\$(OTE_SDK)/\.venv/.* --config-file=$(OTE_SDK)/$(MYPY_CONFIG)
+	@echo $(ECHO_MYPY_STOP)
+
+bandit:
+	@echo $(ECHO_BANDIT_START)
+	@cd .. && bandit -r $(OTE_SDK) --exclude $(OTE_SDK)/tests,$(OTE_SDK)/.venv
+	@echo $(ECHO_BANDIT_STOP)
+
+pylint:
+	@echo $(ECHO_PYLINT_START)
+	@cd .. && pylint $(OTE_SDK) --ignore=tests,.venv,protobuf,configuration,reporting,exportable_code,augmentations,logging --rcfile=$(OTE_SDK)/$(PYLINT_CONFIG)
+	@echo $(ECHO_PYLINT_STOP)
+
+test: test-component
+
+test-component:
+	@echo $(ECHO_COMPONENT_START)
+	@cd .. && $(PYTEST) $(OTE_SDK)/tests
+	@echo $(ECHO_COMPONENT_STOP)

@@ -1,110 +1,87 @@
-import pytest
+# Copyright (C) 2021 Intel Corporation
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions
+# and limitations under the License.
 
 import os
 from subprocess import run
 
+import pytest
+
 from ote_cli.registry import Registry
 
-registry = Registry('external')
+from tests.ote_cli.common import collect_env_vars, get_some_vars, create_venv
 
 
-def get_template_rel_dir(template):
-    return os.path.dirname(os.path.relpath(template['path']))
+args = {
+    '--train-ann-file': 'data/segmentation/custom/annotations/training',
+    '--train-data-roots': 'data/segmentation/custom/images/training',
+    '--val-ann-file': 'data/segmentation/custom/annotations/training',
+    '--val-data-roots': 'data/segmentation/custom/images/training',
+    '--test-ann-files': 'data/segmentation/custom/annotations/training',
+    '--test-data-roots': 'data/segmentation/custom/images/training',
+}
+
+root = '/tmp/ote_cli/'
+ote_dir = os.getcwd()
+
+templates = Registry('external').filter(task_type='SEGMENTATION').templates
+templates_names = [template['name'] for template in templates]
 
 
-def get_some_vars(template, root):
-    template_dir = get_template_rel_dir(template)
-    task_type = template['task_type']
-    work_dir = os.path.join(root, task_type)
-    template_work_dir = os.path.join(work_dir, template_dir)
-    algo_backend_dir = '/'.join(template_dir.split('/')[:2])
-
-    return template_dir, work_dir, template_work_dir, algo_backend_dir
-
-
-def gen_parse_model_template_tests(task_type):
-    class MyTests:
-        pass
-
-    args = {
-        '--train-ann-file': 'data/segmentation/custom/annotations/training',
-        '--train-data-roots': 'data/segmentation/custom/images/training',
-        '--val-ann-file': 'data/segmentation/custom/annotations/training',
-        '--val-data-roots': 'data/segmentation/custom/images/training',
-        '--test-ann-files': 'data/segmentation/custom/annotations/training',
-        '--test-data-roots': 'data/segmentation/custom/images/training',
-    }
-
-    root = '/tmp/ote_cli/'
-    ote_dir = os.getcwd()
-
-    test_id = 2000
-
-    for template in registry.filter(task_type=task_type).templates:
-        @pytest.mark.run(order=test_id)
-        def test_ote_train(self, template=template):
-            template_dir, work_dir, template_work_dir, algo_backend_dir = get_some_vars(template, root)
-            assert run(f'./{algo_backend_dir}/init_venv.sh {work_dir}/venv', check=True, shell=True).returncode == 0
-
-            os.makedirs(template_work_dir, exist_ok=True)
-            print(f'{template_work_dir=}')
-
-            command_line = f'ote_train ' \
-                           f'--train-ann-file {os.path.join(ote_dir, args["--train-ann-file"])} ' \
-                           f'--train-data-roots {os.path.join(ote_dir, args["--train-data-roots"])} ' \
-                           f'--val-ann-file {os.path.join(ote_dir, args["--val-ann-file"])} ' \
-                           f'--val-data-roots {os.path.join(ote_dir, args["--val-data-roots"])} ' \
-                           f'--save-weights {template_work_dir}/trained.pth ' \
-                           f'  params ' \
-                           f'  --learning_parameters.num_iters 10 ' \
-                           f'  --learning_parameters.batch_size 2 '
-
-            assert run(f'. {work_dir}/venv/bin/activate && pip install -e ote_cli && '
-                       f'cd {template_dir} && {command_line}', check=True, shell=True).returncode == 0
-        setattr(MyTests, 'test_ote_train_' + template['task_type'] + '__' + get_template_rel_dir(template),
-                test_ote_train)
-        test_id += 1
-
-        @pytest.mark.run(order=test_id)
-        def test_ote_eval(self, template=template):
-            template_dir, work_dir, template_work_dir, algo_backend_dir = get_some_vars(template, root)
-            assert run(f'./{algo_backend_dir}/init_venv.sh {work_dir}/venv', check=True, shell=True).returncode == 0
-
-            os.makedirs(template_work_dir, exist_ok=True)
-            print(f'{template_work_dir=}')
-
-            command_line = f'ote_eval ' \
-                           f'--test-ann-file {os.path.join(ote_dir, args["--test-ann-files"])} ' \
-                           f'--test-data-roots {os.path.join(ote_dir, args["--test-data-roots"])} ' \
-                           f'--load-weights {template_work_dir}/trained.pth '
-
-            assert run(f'. {work_dir}/venv/bin/activate && pip install -e ote_cli && '
-                       f'cd {template_dir} && {command_line}', check=True, shell=True).returncode == 0
-        setattr(MyTests, 'test_ote_eval_' + template['task_type'] + '__' + get_template_rel_dir(template),
-                test_ote_eval)
-        test_id += 1
-
-        @pytest.mark.run(order=test_id)
-        def test_ote_export(self, template=template):
-            template_dir, work_dir, template_work_dir, algo_backend_dir = get_some_vars(template, root)
-            assert run(f'./{algo_backend_dir}/init_venv.sh {work_dir}/venv', check=True, shell=True).returncode == 0
-
-            os.makedirs(template_work_dir, exist_ok=True)
-            print(f'{template_work_dir=}')
-
-            command_line = f'ote_export ' \
-                           f'--labels Background, Target ' \
-                           f'--load-weights {template_work_dir}/trained.pth ' \
-                           f'--save-model-to {template_work_dir}/exported'
-
-            assert run(f'. {work_dir}/venv/bin/activate && pip install -e ote_cli && '
-                       f'cd {template_dir} && {command_line}', check=True, shell=True).returncode == 0
-        setattr(MyTests, 'test_ote_export_' + template['task_type'] + '__' + get_template_rel_dir(template),
-                test_ote_export)
-        test_id += 1
-
-    return MyTests
+@pytest.mark.parametrize("template", templates, ids=templates_names)
+def test_ote_train(template):
+    template_dir, work_dir, template_work_dir, algo_backend_dir = get_some_vars(template, root)
+    create_venv(algo_backend_dir, work_dir, template_work_dir)
+    command_line = ['ote_train',
+                    '--train-ann-file',
+                    f'{os.path.join(ote_dir, args["--train-ann-file"])}',
+                    '--train-data-roots',
+                    f'{os.path.join(ote_dir, args["--train-data-roots"])}',
+                    '--val-ann-file',
+                    f'{os.path.join(ote_dir, args["--val-ann-file"])}',
+                    '--val-data-roots',
+                    f'{os.path.join(ote_dir, args["--val-data-roots"])}',
+                    '--save-weights',
+                    f'{template_work_dir}/trained_{template["name"]}.pth',
+                    'params',
+                    '--learning_parameters.num_iters',
+                    '2',
+                    '--learning_parameters.batch_size',
+                    '2']
+    assert run(command_line, cwd=f'{template_dir}', env=collect_env_vars(work_dir)).returncode == 0
 
 
-class TestOteCliWithSEGMENTATION(gen_parse_model_template_tests(task_type='SEGMENTATION')):
-    pass
+@pytest.mark.parametrize("template", templates, ids=templates_names)
+def test_ote_export(template):
+    template_dir, work_dir, template_work_dir, _ = get_some_vars(template, root)
+    command_line = ['ote_export',
+                    '--labels',
+                    'none',
+                    '--load-weights',
+                    f'{template_work_dir}/trained_{template["name"]}.pth',
+                    f'--save-model-to',
+                    f'{template_work_dir}/exported_{template["name"]}']
+    assert run(command_line, cwd=f'{template_dir}', env=collect_env_vars(work_dir)).returncode == 0
+
+
+@pytest.mark.parametrize("template", templates, ids=templates_names)
+def test_ote_eval(template):
+    template_dir, work_dir, template_work_dir, _ = get_some_vars(template, root)
+    command_line = ['ote_eval',
+                    '--test-ann-file',
+                    f'{os.path.join(ote_dir, args["--test-ann-files"])}',
+                    '--test-data-roots',
+                    f'{os.path.join(ote_dir, args["--test-data-roots"])}',
+                    '--load-weights',
+                    f'{template_work_dir}/trained_{template["name"]}.pth']
+    assert run(command_line, cwd=f'{template_dir}', env=collect_env_vars(work_dir)).returncode == 0

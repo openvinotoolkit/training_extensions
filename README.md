@@ -9,7 +9,7 @@ inference.
 
 ### Prerequisites
 * Ubuntu 18.04 / 20.04
-* Python 3.6+
+* Python 3.8+
 * [OpenVINO™](https://software.intel.com/en-us/openvino-toolkit) - for exporting and running models
 * [CUDA Toolkit 10.2](https://developer.nvidia.com/cuda-10.2-download-archive) - for training on GPU
 
@@ -25,12 +25,12 @@ inference.
 
 2. Install prerequisites by running the following:
     ```
-    sudo apt-get install python3-pip python3-venv virtualenv
+    sudo apt-get install python3-pip python3-venv
     ```
 
 3. Create and activate virtual environment:
     ```
-    virtualenv venv
+    python3 -m venv venv
     source venv/bin/activate
     ```
 
@@ -38,7 +38,7 @@ inference.
     ```
     pip3 install -e ote_cli/
     ```
-    
+
 5. Instantiate templates and create virtual environments:
    ```
    python3 tools/instantiate.py --destination model_templates --verbose --init-venv

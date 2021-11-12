@@ -1,0 +1,325 @@
+"""This module define the annotation entity."""
+# INTEL CONFIDENTIAL
+#
+# Copyright (C) 2021 Intel Corporation
+#
+# This software and the related documents are Intel copyrighted materials, and
+# your use of them is governed by the express license under which they were provided to
+# you ("License"). Unless the License provides otherwise, you may not use, modify, copy,
+# publish, distribute, disclose or transmit this software or the related documents
+# without Intel's prior written permission.
+#
+# This software and the related documents are provided as is,
+# with no express or implied warranties, other than those that are expressly stated
+# in the License.
+
+import abc
+import datetime
+from enum import Enum
+from typing import Dict, List, Optional, Set
+
+from bson import ObjectId
+
+from ote_sdk.entities.id import ID
+from ote_sdk.entities.label import LabelEntity
+from ote_sdk.entities.scored_label import ScoredLabel
+from ote_sdk.entities.shapes.shape import ShapeEntity
+from ote_sdk.utils.time_utils import now
+
+
+class Annotation(metaclass=abc.ABCMeta):
+    """
+    Base class for annotation objects.
+    """
+
+    # pylint: disable=redefined-builtin;
+    def __init__(
+        self, shape: ShapeEntity, labels: List[ScoredLabel], id: Optional[ID] = None
+    ):
+        self.__id = ID(ObjectId()) if id is None else id
+        self.__shape = shape
+        self.__labels = labels
+
+    def __repr__(self):
+        return (
+            f"{self.__class__.__name__}("
+            f"shape={self.shape}, "
+            f"labels={self.get_labels(True)}, "
+            f"id={self.id})"
+        )
+
+    @property
+    def id(self):
+        """
+        Returns the id for the annotation
+        """
+        return self.__id
+
+    @id.setter
+    def id(self, value):
+        self.__id = value
+
+    @property
+    def shape(self):
+        """
+        Returns the shape that is in the annotation
+        """
+        return self.__shape
+
+    @shape.setter
+    def shape(self, value):
+        self.__shape = value
+
+    def get_labels(self, include_empty: bool = False) -> List[ScoredLabel]:
+        """
+        Get scored labels that are assigned to this annotation
+
+        :param include_empty: set to True to include empty label (if exists) in the output.
+        :return: List of labels in annotation
+        """
+        return [
+            label for label in self.__labels if include_empty or (not label.is_empty)
+        ]
+
+    def get_label_ids(self, include_empty: bool = False) -> Set[ID]:
+        """
+        Get a set of ID's of labels that are assigned to this annotation
+
+        :param include_empty: set to True to include empty label (if exists) in the output.
+        :return: Set of label id's in annotation
+        """
+        return {
+            label.id for label in self.__labels if include_empty or (not label.is_empty)
+        }
+
+    def append_label(self, label: ScoredLabel):
+        """
+        Appends the scored label to the annotation.
+
+        :param label: the scored label to be appended to the annotation
+        """
+        self.__labels.append(label)
+
+    def set_labels(self, labels: List[ScoredLabel]):
+        """
+        Sets the labels of the annotation to be the input of the function.
+
+        :param labels: the scored labels to be set as annotation labels
+        """
+        self.__labels = labels
+
+    def __eq__(self, other):
+        if isinstance(other, Annotation):
+            return (
+                self.id == other.id
+                and self.get_labels(True) == other.get_labels(True)
+                and self.shape == other.shape
+            )
+        return False
+
+
+class AnnotationSceneKind(Enum):
+    """AnnotationSceneKinds for an Annotation object"""
+
+    #:  NONE represents NULLAnnotationScene's (See :class:`NullAnnotationScene`)
+    NONE = 0
+    #:  ANNOTATION represents user annotation
+    ANNOTATION = 1
+    #:  PREDICTION represents analysis result, which will be shown to the user
+    PREDICTION = 2
+    #:  EVALUATION represents analysis result for evaluation purposes, which will NOT be shown to the user
+    EVALUATION = 3
+    #:  INTERMEDIATE represents intermediary state.
+    #:  This is used when the analysis is being transferred from one task to another.
+    #:  This will not be shown to the user.
+    #:  This state will be changed to either PREDICTION or EVALUATION at the end of analysis process.
+    INTERMEDIATE = 4
+    #:  TASK_PREDICTION represents analysis results for a single task
+    TASK_PREDICTION = 5
+
+    def __str__(self):
+        return str(self.name)
+
+
+class AnnotationSceneEntity(metaclass=abc.ABCMeta):
+    """
+    This class represents a user annotation or a result (prediction).
+    It serves as a collection of shapes, with a relation to the media entity.
+
+    :example: Creating an annotation:
+
+    >>> from ote_sdk.entities.annotation import Annotation, AnnotationSceneEntity, AnnotationSceneKind
+    >>> from ote_sdk.entities.shapes.rectangle import Rectangle
+    >>> box = Rectangle(x1=0.0, y1=0.0, x2=0.5, y2=0.5)  # Box covering top-left quart of image
+    >>> AnnotationSceneEntity(annotations=[Annotation(shape=box, labels=[])], kind=AnnotationSceneKind.ANNOTATION)
+
+    :param annotations: List of Annotations.
+    :param kind: Kind of annotation scene `AnnotationSceneKind`. E.g. `AnnotationSceneKind.ANNOTATION`.
+    :param editor: The user that made this annotation scene object
+    :param creation_date: Creation date of annotation scene entity.
+    :param id: ID of AnnotationSceneEntity.
+    """
+
+    # pylint: disable=too-many-arguments, redefined-builtin
+    def __init__(
+        self,
+        annotations: List[Annotation],
+        kind: AnnotationSceneKind,
+        editor: str = "",
+        creation_date: Optional[datetime.datetime] = None,
+        id: Optional[ID] = None,
+    ):
+        self.__annotations = annotations
+        self.__kind = kind
+        self.__editor = editor
+        self.__creation_date = now() if creation_date is None else creation_date
+        self.__id = ID() if id is None else id
+
+    def __repr__(self):
+        return (
+            f"{self.__class__.__name__}("
+            f"annotations={self.annotations}, "
+            f"kind={self.kind}, "
+            f"editor={self.editor_name}, "
+            f"creation_date={self.creation_date}, "
+            f"id={self.id})"
+        )
+
+    @property
+    def id(self):
+        """
+        Returns the ID of the AnnotationSceneEntity.
+        """
+        return self.__id
+
+    @id.setter
+    def id(self, value):
+        self.__id = value
+
+    @property
+    def kind(self):
+        """
+        Returns the AnnotationSceneKind of the AnnotationSceneEntity.
+        """
+        return self.__kind
+
+    @kind.setter
+    def kind(self, value):
+        self.__kind = value
+
+    @property
+    def editor_name(self):
+        """
+        Returns the editor's name that made the AnnotationSceneEntity object.
+        """
+        return self.__editor
+
+    @editor_name.setter
+    def editor_name(self, value):
+        self.__editor = value
+
+    @property
+    def creation_date(self):
+        """
+        Returns the creation date of the AnnotationSceneEntity object.
+        """
+        return self.__creation_date
+
+    @creation_date.setter
+    def creation_date(self, value):
+        self.__creation_date = value
+
+    @property
+    def annotations(self) -> List[Annotation]:
+        """
+        Return the Annotations that are present in the AnnotationSceneEntity.
+        """
+        return self.__annotations
+
+    @annotations.setter
+    def annotations(self, value: List[Annotation]):
+        self.__annotations = value
+
+    @property
+    def shapes(self) -> List[ShapeEntity]:
+        """
+        Returns all shapes that are inside the annotations of the AnnotationSceneEntity.
+        """
+        return [annotation.shape for annotation in self.annotations]
+
+    def contains_any(self, labels: List[LabelEntity]):
+        """
+        Checks whether the annotation contains any labels in the input parameter.
+
+        :param labels: list or set of labels to compare to.
+
+        :return: True if there is any intersection between self.get_labels(include_empty=True) with labels.
+        """
+        label_names = {label.name for label in labels}
+        return (
+            len(
+                {
+                    label.name for label in self.get_labels(include_empty=True)
+                }.intersection(label_names)
+            )
+            != 0
+        )
+
+    def append_annotation(self, annotation: Annotation):
+        """
+        Appends the passed annotation to the list of annotations present in the AnnotationSceneEntity object.
+        """
+        self.annotations.append(annotation)
+
+    def append_annotations(self, annotations: List[Annotation]):
+        """
+        Adds a list of annotations to the annotation scene.
+        """
+        self.annotations.extend(annotations)
+
+    def get_labels(self, include_empty: bool = False) -> List[LabelEntity]:
+        """
+        Returns a list of unique labels which appear in this annotation scene.
+
+        :param include_empty: set to True to include empty label (if exists) in the
+                              output.
+        :return: a list of labels which appear in this annotation.
+        """
+
+        labels: Dict[str, LabelEntity] = {}
+        for annotation in self.annotations:
+            for label in annotation.get_labels(include_empty):
+                id_ = label.id
+                if id_ not in labels:
+                    labels[id_] = label.get_label()
+        return list(labels.values())
+
+    def get_label_ids(self, include_empty: bool = False) -> Set[ID]:
+        """
+        Returns a set of the ID's of unique labels which appear in this annotation scene.
+
+        :param include_empty: set to True to include empty label (if exists) in the
+                              output.
+        :return: a list of labels which appear in this annotation.
+        """
+
+        output: Set[ID] = set()
+        for annotation in self.annotations:
+            output.update(set(annotation.get_label_ids(include_empty=include_empty)))
+        return output
+
+
+class NullAnnotationSceneEntity(AnnotationSceneEntity):
+    """Represents 'AnnotationSceneEntity not found'"""
+
+    def __init__(self) -> None:
+        super().__init__(
+            id=ID(),
+            kind=AnnotationSceneKind.NONE,
+            editor="",
+            creation_date=datetime.datetime.now(),
+            annotations=[],
+        )
+
+    def __repr__(self):
+        return "NullAnnotationSceneEntity()"
