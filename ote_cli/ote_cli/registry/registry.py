@@ -41,15 +41,14 @@ class Registry:
     def filter(self, framework=None, task_type=None):
         templates = copy.deepcopy(self.templates)
         if framework is not None:
-            templates = [template for template in templates if template['framework'] == framework]
+            templates = [template for template in templates if template['framework'].lower() == framework.lower()]
         if task_type is not None:
-            templates = [template for template in templates if template['task_type'] == task_type]
+            templates = [template for template in templates if template['task_type'].lower() == task_type.lower()]
         return Registry(templates=templates)
 
     def get(self, name):
-        templates = [template for template in self.templates if template['name'] == name]
+        templates = [template for template in self.templates if template['name'].lower() == name.lower()]
         return templates[0]
-
 
     def __repr__(self):
         return yaml.dump(self.templates)

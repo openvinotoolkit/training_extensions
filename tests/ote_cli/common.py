@@ -26,7 +26,7 @@ def get_some_vars(template, root):
     template_work_dir = os.path.join(work_dir, template_dir)
     algo_backend_dir = '/'.join(template_dir.split('/')[:2])
 
-    return template_dir, work_dir, template_work_dir, algo_backend_dir
+    return work_dir, template_work_dir, algo_backend_dir
 
 
 def create_venv(algo_backend_dir, work_dir, template_work_dir):
