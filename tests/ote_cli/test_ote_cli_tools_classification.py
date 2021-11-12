@@ -40,10 +40,10 @@ templates_names = [template['name'] for template in templates]
 
 @pytest.mark.parametrize("template", templates, ids=templates_names)
 def test_ote_train(template):
-    template_dir, work_dir, template_work_dir, algo_backend_dir = get_some_vars(template, root)
+    work_dir, template_work_dir, algo_backend_dir = get_some_vars(template, root)
     create_venv(algo_backend_dir, work_dir, template_work_dir)
     command_line = ['ote_train',
-                    'template.yaml',
+                    template['path'],
                     '--train-ann-file',
                     f'{os.path.join(ote_dir, args["--train-ann-file"])}',
                     '--train-data-roots',
@@ -59,32 +59,32 @@ def test_ote_train(template):
                     '2',
                     '--learning_parameters.batch_size',
                     '2']
-    assert run(command_line, cwd=f'{template_dir}', env=collect_env_vars(work_dir)).returncode == 0
+    assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
 
 
 @pytest.mark.parametrize("template", templates, ids=templates_names)
 def test_ote_export(template):
-    template_dir, work_dir, template_work_dir, _ = get_some_vars(template, root)
+    work_dir, template_work_dir, _ = get_some_vars(template, root)
     command_line = ['ote_export',
-                    'template.yaml',
+                    template['path'],
                     '--labels',
                     'none',
                     '--load-weights',
                     f'{template_work_dir}/trained_{template["name"]}.pth',
                     f'--save-model-to',
                     f'{template_work_dir}/exported_{template["name"]}']
-    assert run(command_line, cwd=f'{template_dir}', env=collect_env_vars(work_dir)).returncode == 0
+    assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
 
 
 @pytest.mark.parametrize("template", templates, ids=templates_names)
 def test_ote_eval(template):
-    template_dir, work_dir, template_work_dir, _ = get_some_vars(template, root)
+    work_dir, template_work_dir, _ = get_some_vars(template, root)
     command_line = ['ote_eval',
-                    'template.yaml',
+                    template['path'],
                     '--test-ann-file',
                     f'{os.path.join(ote_dir, args["--test-ann-files"])}',
                     '--test-data-roots',
                     f'{os.path.join(ote_dir, args["--test-data-roots"])}',
                     '--load-weights',
                     f'{template_work_dir}/trained_{template["name"]}.pth']
-    assert run(command_line, cwd=f'{template_dir}', env=collect_env_vars(work_dir)).returncode == 0
+    assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
