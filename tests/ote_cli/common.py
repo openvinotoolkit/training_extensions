@@ -52,5 +52,4 @@ def extract_export_vars(path):
 def collect_env_vars(work_dir):
     vars = extract_export_vars(f'{work_dir}/venv/bin/activate')
     vars.update({'PATH':f'{work_dir}/venv/bin/:' + os.environ['PATH']})
-    print(f'{vars=}')
     return vars
