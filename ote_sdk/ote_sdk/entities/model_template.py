@@ -457,6 +457,17 @@ ANOMALY_TASK_TYPES: Sequence[TaskType] = (
 )
 
 
+TRAINABLE_TASK_TYPES: Sequence[TaskType] = (
+    TaskType.CLASSIFICATION,
+    TaskType.DETECTION,
+    TaskType.SEGMENTATION,
+    TaskType.COUNTING,
+    TaskType.ANOMALY_DETECTION,
+    TaskType.ANOMALY_CLASSIFICATION,
+    TaskType.ANOMALY_SEGMENTATION,
+)
+
+
 def _parse_model_template_from_omegaconf(
     config: Union[DictConfig, ListConfig]
 ) -> ModelTemplate:
