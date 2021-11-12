@@ -1,4 +1,6 @@
-"""Helper to generate random shapes"""
+"""
+Helper to generate random shapes
+"""
 
 # Copyright (C) 2021 Intel Corporation
 #

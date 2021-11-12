@@ -1,6 +1,7 @@
 """
 Configurable parameters for Padim anomaly classification task
 """
+
 # Copyright (C) 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,7 +16,8 @@ Configurable parameters for Padim anomaly classification task
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from anomaly_classification.configs.configuration import BaseAnomalyClassificationConfig
+from anomaly_classification.configs.configuration import \
+    BaseAnomalyClassificationConfig
 from attr import attrs
 from ote_sdk.configuration.elements import string_attribute
 
