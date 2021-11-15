@@ -16,6 +16,7 @@ import argparse
 import os
 
 from ote_cli.datasets import get_dataset_class
+from ote_cli.registry import find_and_parse_model_template
 from ote_cli.utils.importing import get_impl_class
 from ote_cli.utils.loading import load_model_weights
 from ote_sdk.configuration.helper import create
@@ -46,7 +47,7 @@ def main():
     args = parse_args()
 
     # Load template.yaml file.
-    template = parse_model_template(args.template)
+    template = find_and_parse_model_template(args.template)
 
     # Get classes for Task, ConfigurableParameters and Dataset.
     Task = get_impl_class(template.entrypoints.base)

@@ -1,8 +1,12 @@
 import copy
 import glob
+import logging
 import os
 
 import yaml
+
+from ote_sdk.entities.model_template import parse_model_template 
+
 from ote_cli.utils.loading import load_config
 
 
@@ -52,3 +56,14 @@ class Registry:
 
     def __repr__(self):
         return yaml.dump(self.templates)
+
+
+def find_and_parse_model_template(path_or_name):
+    if os.path.exists(path_or_name):
+        return parse_model_template(path_or_name)
+    template = [template for template in Registry('.').templates if template['name'] == path_or_name]
+    if template:
+        path = template[0]['path']
+        logging.warning(f'Parsing model template {path_or_name}: {path}')
+        return parse_model_template(path)
+    raise ValueError(f'Could not find {path_or_name} in registry.')

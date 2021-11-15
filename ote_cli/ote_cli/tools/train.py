@@ -15,6 +15,7 @@
 import argparse
 
 from ote_cli.datasets import get_dataset_class
+from ote_cli.registry import find_and_parse_model_template
 from ote_cli.utils.config import override_parameters
 from ote_cli.utils.importing import get_impl_class
 from ote_cli.utils.loading import load_model_weights
@@ -36,7 +37,7 @@ def parse_args():
     pre_parser.add_argument('template')
     parsed, _ = pre_parser.parse_known_args()
     # Load template.yaml file.
-    template = parse_model_template(parsed.template)
+    template = find_and_parse_model_template(parsed.template)
     # Get hyper parameters schema.
     hyper_parameters = template.hyper_parameters.data
     assert hyper_parameters
