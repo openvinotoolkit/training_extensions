@@ -1,0 +1,9 @@
+numpy>=1.16.4
+scikit-learn==0.24.*
+Shapely==1.7.*
+networkx==2.5.1
+opencv-python==4.5.3.*
+pymongo>=3.9
+omegaconf==2.1.*
+natsort>=6.0.0
+attrs==21.2.*

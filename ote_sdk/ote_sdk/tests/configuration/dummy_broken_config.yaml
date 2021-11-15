@@ -1,0 +1,28 @@
+type: CONFIGURABLE_PARAMETERS
+description: Configurable parameters for Task X
+header: Task X configuration -- TEST ONLY
+learning_parameters:
+  type: PARAMETER_GROUP
+  header: Learning parameters
+  batch_size:
+    type: INTEGER
+    min_value: 1
+    max_value: 255
+    default_value: 42
+    header: Batch_size
+    affects_outcome_of: TRAINING
+  learning_rate:
+    type: FLOAT
+    min_value: 1.0e-6
+    max_value: 1.0e+6
+    default_value: 1.0e-3
+    header: Learning rate
+    affects_outcome_of: TRAINING
+  epochs:
+    type: INTEGER
+    min_value: 1
+    max_value: 1000
+    default_value: 25
+    header: Number of epochs
+    value: -5
+    affects_outcome_of: TRAINING
