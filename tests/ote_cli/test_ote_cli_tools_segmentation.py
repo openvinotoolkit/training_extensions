@@ -42,7 +42,8 @@ templates_names = [template['name'] for template in templates]
 def test_ote_train(template):
     work_dir, template_work_dir, algo_backend_dir = get_some_vars(template, root)
     create_venv(algo_backend_dir, work_dir, template_work_dir)
-    command_line = ['ote_train',
+    command_line = ['ote',
+                    'train',
                     template['path'],
                     '--train-ann-file',
                     f'{os.path.join(ote_dir, args["--train-ann-file"])}',
@@ -65,7 +66,8 @@ def test_ote_train(template):
 @pytest.mark.parametrize("template", templates, ids=templates_names)
 def test_ote_export(template):
     work_dir, template_work_dir, _ = get_some_vars(template, root)
-    command_line = ['ote_export',
+    command_line = ['ote',
+                    'export',
                     template['path'],
                     '--labels',
                     'none',
@@ -79,7 +81,8 @@ def test_ote_export(template):
 @pytest.mark.parametrize("template", templates, ids=templates_names)
 def test_ote_eval(template):
     work_dir, template_work_dir, _ = get_some_vars(template, root)
-    command_line = ['ote_eval',
+    command_line = ['ote',
+                    'eval',
                     template['path'],
                     '--test-ann-file',
                     f'{os.path.join(ote_dir, args["--test-ann-files"])}',
