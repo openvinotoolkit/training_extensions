@@ -1,9 +1,11 @@
 import copy
 import glob
+import logging
 import os
 
 import yaml
-from ote_cli.utils.loading import load_config
+
+from ote_sdk.entities.model_template import parse_model_template
 
 
 class Registry:
@@ -22,13 +24,7 @@ class Registry:
             self.templates = []
 
             for template_file in template_filenames:
-                config = load_config(template_file)
-                self.templates.append({
-                    'framework': config['framework'].replace(' ', '_'),
-                    'task_type': config['task_type'].replace(' ', '_'),
-                    'name': config['name'].replace(' ', '_'),
-                    'path': template_file
-                })
+                self.templates.append(parse_model_template(template_file))
         else:
             self.templates = copy.deepcopy(templates)
 
@@ -36,19 +32,32 @@ class Registry:
 
     @staticmethod
     def __collect_task_types(templates):
-        return {template['task_type'] for template in templates}
+        return {template.task_type for template in templates}
 
     def filter(self, framework=None, task_type=None):
         templates = copy.deepcopy(self.templates)
         if framework is not None:
-            templates = [template for template in templates if template['framework'].lower() == framework.lower()]
+            templates = [template for template in templates if template.framework.lower() == framework.lower()]
         if task_type is not None:
-            templates = [template for template in templates if template['task_type'].lower() == task_type.lower()]
+            templates = [template for template in templates if str(template.task_type).lower() == task_type.lower()]
         return Registry(templates=templates)
 
-    def get(self, name):
-        templates = [template for template in self.templates if template['name'].lower() == name.lower()]
+    def get(self, template_id):
+        templates = [template for template in self.templates if template.model_template_id == template_id]
+        if not templates:
+            raise ValueError(f'Could not find a template with {template_id} in registry.')
         return templates[0]
 
-    def __repr__(self):
-        return yaml.dump(self.templates)
+    def __str__(self):
+        templates_infos = [
+            {'name': t.name,
+             'id': t.model_template_id,
+             'path': t.model_template_path,
+             'task_type': str(t.task_type)} for t in self.templates]
+        return yaml.dump(templates_infos)
+
+
+def find_and_parse_model_template(path_or_id):
+    if os.path.exists(path_or_id):
+        return parse_model_template(path_or_id)
+    return Registry('.').get(path_or_id)

@@ -35,15 +35,16 @@ root = '/tmp/ote_cli/'
 ote_dir = os.getcwd()
 
 templates = Registry('external').filter(task_type='CLASSIFICATION').templates
-templates_names = [template['name'] for template in templates]
+templates_ids = [template.model_template_id for template in templates]
 
 
-@pytest.mark.parametrize("template", templates, ids=templates_names)
+@pytest.mark.parametrize("template", templates, ids=templates_ids)
 def test_ote_train(template):
     work_dir, template_work_dir, algo_backend_dir = get_some_vars(template, root)
     create_venv(algo_backend_dir, work_dir, template_work_dir)
-    command_line = ['ote_train',
-                    template['path'],
+    command_line = ['ote',
+                    'train',
+                    template.model_template_id,
                     '--train-ann-file',
                     f'{os.path.join(ote_dir, args["--train-ann-file"])}',
                     '--train-data-roots',
@@ -53,7 +54,7 @@ def test_ote_train(template):
                     '--val-data-roots',
                     f'{os.path.join(ote_dir, args["--val-data-roots"])}',
                     '--save-weights',
-                    f'{template_work_dir}/trained_{template["name"]}.pth',
+                    f'{template_work_dir}/trained_{template.model_template_id}.pth',
                     'params',
                     '--learning_parameters.max_num_epochs',
                     '2',
@@ -62,29 +63,31 @@ def test_ote_train(template):
     assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
 
 
-@pytest.mark.parametrize("template", templates, ids=templates_names)
+@pytest.mark.parametrize("template", templates, ids=templates_ids)
 def test_ote_export(template):
     work_dir, template_work_dir, _ = get_some_vars(template, root)
-    command_line = ['ote_export',
-                    template['path'],
+    command_line = ['ote',
+                    'export',
+                    template.model_template_id,
                     '--labels',
                     'none',
                     '--load-weights',
-                    f'{template_work_dir}/trained_{template["name"]}.pth',
+                    f'{template_work_dir}/trained_{template.model_template_id}.pth',
                     f'--save-model-to',
-                    f'{template_work_dir}/exported_{template["name"]}']
+                    f'{template_work_dir}/exported_{template.model_template_id}']
     assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
 
 
-@pytest.mark.parametrize("template", templates, ids=templates_names)
+@pytest.mark.parametrize("template", templates, ids=templates_ids)
 def test_ote_eval(template):
     work_dir, template_work_dir, _ = get_some_vars(template, root)
-    command_line = ['ote_eval',
-                    template['path'],
+    command_line = ['ote',
+                    'eval',
+                    template.model_template_id,
                     '--test-ann-file',
                     f'{os.path.join(ote_dir, args["--test-ann-files"])}',
                     '--test-data-roots',
                     f'{os.path.join(ote_dir, args["--test-data-roots"])}',
                     '--load-weights',
-                    f'{template_work_dir}/trained_{template["name"]}.pth']
+                    f'{template_work_dir}/trained_{template.model_template_id}.pth']
     assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0

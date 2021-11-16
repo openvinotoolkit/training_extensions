@@ -16,13 +16,13 @@ import os
 from subprocess import run
 
 def get_template_rel_dir(template):
-    return os.path.dirname(os.path.relpath(template['path']))
+    return os.path.dirname(os.path.relpath(template.model_template_path))
 
 
 def get_some_vars(template, root):
     template_dir = get_template_rel_dir(template)
-    task_type = template['task_type']
-    work_dir = os.path.join(root, task_type)
+    task_type = template.task_type
+    work_dir = os.path.join(root, str(task_type))
     template_work_dir = os.path.join(work_dir, template_dir)
     algo_backend_dir = '/'.join(template_dir.split('/')[:2])
 
