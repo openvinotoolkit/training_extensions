@@ -1,8 +1,10 @@
-name: ote anomaly classification stfpm
+# Description.
+model_template_id: ote_anomaly_classification_stfpm
+name: STFPM
 task_type: ANOMALY_CLASSIFICATION
 task_family: VISION
 instantiation: "CLASS"
-summary: Anomaly Classification Model
+summary: STFPM with ResNet-18 backbone
 application: ~
 
 # Algo backend.
@@ -13,11 +15,16 @@ entrypoints:
   base: anomaly_classification.AnomalyClassificationTask
   openvino: anomaly_classification.OpenVINOAnomalyClassificationTask
 
+# Hyper Parameters
+hyper_parameters:
+  base_path: ./configuration.yaml
+
 # Training resources.
 max_nodes: 1
 training_targets:
   - GPU
   - CPU
 
-hyper_parameters:
-  base_path: ./configuration.yaml
+# Computational Complexity
+gigaflops: 5.6
+size: 21.1

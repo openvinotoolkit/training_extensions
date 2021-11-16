@@ -1,9 +1,10 @@
 # Description.
-name: ote anomaly classification padim
+model_template_id: ote_anomaly_classification_padim
+name: PADIM
 task_type: ANOMALY_CLASSIFICATION
 task_family: VISION
 instantiation: "CLASS"
-summary: Anomaly Classification Model
+summary: PADIM with ResNet-18 backbone
 application: ~
 
 # Algo backend.
@@ -14,11 +15,16 @@ entrypoints:
   base: anomaly_classification.AnomalyClassificationTask
   openvino: anomaly_classification.OpenVINOAnomalyClassificationTask
 
+# Hyper Parameters
+hyper_parameters:
+  base_path: ./configuration.yaml
+
 # Training resources.
 max_nodes: 1
 training_targets:
   - GPU
   - CPU
 
-hyper_parameters:
-  base_path: ./configuration.yaml
+# Computational Complexity
+gigaflops: 3.9
+size: 168.4
