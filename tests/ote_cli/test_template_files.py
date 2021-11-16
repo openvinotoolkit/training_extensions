@@ -21,10 +21,10 @@ from ote_sdk.entities.model_template import parse_model_template
 from ote_cli.registry import Registry
 
 templates = Registry('external').templates
-paths = [os.path.relpath(template['path']) for template in templates]
-names = [os.path.relpath(template['name']) for template in templates]
+paths = [os.path.relpath(template.model_template_path) for template in templates]
+ids = [os.path.relpath(template.model_template_id) for template in templates]
 
-@pytest.mark.parametrize("path", paths, ids=names)
+@pytest.mark.parametrize("path", paths, ids=ids)
 def test_template(path):
     template = parse_model_template(path)
     assert template.hyper_parameters.data

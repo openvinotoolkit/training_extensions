@@ -12,15 +12,6 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import yaml
-
-MODEL_TEMPLATE_FILENAME = 'template.yaml'
-
-def load_config(path=MODEL_TEMPLATE_FILENAME):
-    with open(path) as read_file:
-        return yaml.safe_load(read_file)
-
-
 def load_model_weights(path):
     with open(path, 'rb') as read_file:
         return read_file.read()
