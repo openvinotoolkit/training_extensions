@@ -34,11 +34,11 @@ repos:
         args: ["--config-file=ote_sdk/.mypy.ini"]
         additional_dependencies: [numpy==1.19.5, types-PyYAML, attrs==21.2.*, types-requests, types-Deprecated, types-docutils, types_futures, types-python-dateutil]
 
--   repo: local
-    hooks:
-    -   id: pylint
-        name: 'pylint'
-        files: '^ote_sdk/.*\.py'
-        entry: tox --quiet --
-        language: system
-        types: [python]
+# -   repo: local
+#     hooks:
+#     -   id: pylint
+#         name: 'pylint'
+#         files: '^ote_sdk/.*\.py'
+#         entry: tox --quiet --
+#         language: system
+#         types: [python]
