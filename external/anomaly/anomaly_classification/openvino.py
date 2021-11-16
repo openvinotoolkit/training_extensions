@@ -95,11 +95,13 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
         self.anomalous_label = [label for label in labels if label.name == "anomalous"][0]
 
     def infer(self, dataset: DatasetEntity, inference_parameters: InferenceParameters) -> DatasetEntity:
+        if self.task_environment.model is None:
+            raise Exception("task_environment.model is None. Cannot access threshold to calculate labels.")
+        # This always assumes that threshold is available in the task environment's model
+        threshold = struct.unpack("f", (self.task_environment.model.get_data("threshold")))
         for dataset_item in dataset:
             anomaly_map = self.inferencer.predict(dataset_item.numpy, superimpose=False)
             pred_score = anomaly_map.reshape(-1).max()
-            # This always assumes that threshold is available in the task environment's model
-            threshold = struct.unpack("f", (self.task_environment.model.get_data("threshold")))
             pred_label = pred_score >= threshold
             assigned_label = self.anomalous_label if pred_label else self.normal_label
             shape = Annotation(
