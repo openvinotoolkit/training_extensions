@@ -1,18 +1,18 @@
 try:
     from .object_detection.dataset import ObjectDetectionDataset
-except ImportError as e:
+except ImportError:
     ObjectDetectionDataset = None
 
 try:
     from torchreid.integration.sc.utils import ClassificationDatasetAdapter
 
     ClassificationDataset = ClassificationDatasetAdapter
-except ImportError as e:
+except ImportError:
     ClassificationDataset = None
 
 try:
     from .semantic_segmentation.dataset import SemanticSegmentationDataset
-except ImportError as e:
+except ImportError:
     SemanticSegmentationDataset = None
 
 assert any((ObjectDetectionDataset, ClassificationDataset, SemanticSegmentationDataset))

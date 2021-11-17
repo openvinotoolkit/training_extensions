@@ -98,7 +98,7 @@ def add_hyper_parameters_sub_parser(parser, config, modes=None):
     subparsers = parser.add_subparsers(help="sub-command help")
     parser_a = subparsers.add_parser(
         "params",
-        help=f"Hyper parameters defined in template file.",
+        help="Hyper parameters defined in template file.",
         formatter_class=ShortDefaultsHelpFormatter,
     )
     for k, v in params.items():

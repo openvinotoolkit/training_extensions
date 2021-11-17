@@ -22,7 +22,7 @@ def generate_label_schema(label_names, label_domain):
         for i, name in enumerate(label_names)
     ]
     emptylabel = LabelEntity(
-        name=f"Empty label",
+        name="Empty label",
         color=Color(42, 43, 46),
         is_empty=True,
         domain=label_domain,
