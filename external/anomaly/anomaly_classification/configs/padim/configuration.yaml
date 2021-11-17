@@ -1,24 +1,17 @@
-description: Configuration for an anomaly classification task
-header: Configuration for an anomaly classification task
-type: CONFIGURABLE_PARAMETERS
-visible_in_ui: true
-
-model:
-  description: Model Parameters
-  header: Model Parameters
-  type: PARAMETER_GROUP
-  visible_in_ui: true
-  name:
-    affects_outcome_of: TRAINING
-    default_value: padim
-    description: The name of the anomaly classification algorithm.
-    editable: True
-    header: Model Name
-    enum_name: AnomalyModel
-    options:
-      PADIM: padim
-      STFPM: stfpm
-    type: SELECTABLE
+dataset:
+  description: Dataset Parameters
+  header: Dataset Parameters
+  num_workers:
+    affects_outcome_of: NONE
+    default_value: 8
+    description: Increasing this value might improve training speed however it might
+      cause out of memory errors. If the number of workers is set to zero, data loading
+      will happen in the main training thread.
+    editable: true
+    header: Number of workers
+    max_value: 36
+    min_value: 0
+    type: INTEGER
     ui_rules:
       action: DISABLE_EDITING
       operator: AND
