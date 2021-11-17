@@ -3,4 +3,3 @@ extend-ignore = E203
 exclude = .venv
 max-complexity = 6
 max-line-length = 120
-
