@@ -1,3 +1,7 @@
+"""
+Utils for dynamically importing stuff
+"""
+
 # Copyright (C) 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,5 +18,12 @@
 
 
 def load_model_weights(path):
+    """
+    Loads binary weights of a model.
+
+        Args:
+            path: A path where to load model from.
+    """
+
     with open(path, "rb") as read_file:
         return read_file.read()
