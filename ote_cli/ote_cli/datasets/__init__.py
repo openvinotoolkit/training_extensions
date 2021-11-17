@@ -1,6 +1,6 @@
 from typing import Optional, Type
 
-from ote_sdk.ote_sdk.entities.datasets import DatasetEntity
+from ote_sdk.entities.datasets import DatasetEntity
 
 try:
     ObjectDetectionDataset: Optional[Type[DatasetEntity]]
