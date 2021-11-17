@@ -17,14 +17,25 @@ from ote_sdk.entities.label_schema import LabelGroup, LabelGroupType, LabelSchem
 
 
 def generate_label_schema(label_names, label_domain):
-    not_empty_labels = [LabelEntity(name=name, color=Color.random(), domain=label_domain, id=i) for i, name in
-                        enumerate(label_names)]
-    emptylabel = LabelEntity(name=f"Empty label", color=Color(42, 43, 46),
-                       is_empty=True, domain=label_domain, id=len(not_empty_labels))
+    not_empty_labels = [
+        LabelEntity(name=name, color=Color.random(), domain=label_domain, id=i)
+        for i, name in enumerate(label_names)
+    ]
+    emptylabel = LabelEntity(
+        name=f"Empty label",
+        color=Color(42, 43, 46),
+        is_empty=True,
+        domain=label_domain,
+        id=len(not_empty_labels),
+    )
 
     label_schema = LabelSchemaEntity()
-    exclusive_group = LabelGroup(name="labels", labels=not_empty_labels, group_type=LabelGroupType.EXCLUSIVE)
-    empty_group = LabelGroup(name="empty", labels=[emptylabel], group_type=LabelGroupType.EMPTY_LABEL)
+    exclusive_group = LabelGroup(
+        name="labels", labels=not_empty_labels, group_type=LabelGroupType.EXCLUSIVE
+    )
+    empty_group = LabelGroup(
+        name="empty", labels=[emptylabel], group_type=LabelGroupType.EMPTY_LABEL
+    )
     label_schema.add_group(exclusive_group)
     label_schema.add_group(empty_group, exclusive_with=[exclusive_group])
     return label_schema

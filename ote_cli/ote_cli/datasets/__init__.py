@@ -5,6 +5,7 @@ except ImportError as e:
 
 try:
     from torchreid.integration.sc.utils import ClassificationDatasetAdapter
+
     ClassificationDataset = ClassificationDatasetAdapter
 except ImportError as e:
     ClassificationDataset = None
@@ -19,17 +20,17 @@ assert any((ObjectDetectionDataset, ClassificationDataset, SemanticSegmentationD
 
 def get_dataset_class(name):
     registry = {
-        'detection': ObjectDetectionDataset,
-        'classification': ClassificationDataset,
-        'segmentation': SemanticSegmentationDataset
+        "detection": ObjectDetectionDataset,
+        "classification": ClassificationDataset,
+        "segmentation": SemanticSegmentationDataset,
     }
 
     return registry[str(name).lower()]
 
 
 __all__ = [
-    'ObjectDetectionDataset',
-    'ClassificationDataset',
-    'SemanticSegmentationDataset',
-    'get_dataset_class',
+    "ObjectDetectionDataset",
+    "ClassificationDataset",
+    "SemanticSegmentationDataset",
+    "get_dataset_class",
 ]

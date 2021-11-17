@@ -9,16 +9,17 @@ from ote_sdk.entities.model_template import parse_model_template
 
 
 class Registry:
-
     def __init__(self, templates_dir=None, templates=None):
         if templates is None:
             if templates_dir is None:
-                templates_dir = os.getenv('TEMPLATES_DIR')
+                templates_dir = os.getenv("TEMPLATES_DIR")
 
             if templates_dir is None:
-                raise RuntimeError('The templates_dir is not set.')
+                raise RuntimeError("The templates_dir is not set.")
 
-            template_filenames = glob.glob(os.path.join(templates_dir, '**', 'template.yaml'), recursive=True)
+            template_filenames = glob.glob(
+                os.path.join(templates_dir, "**", "template.yaml"), recursive=True
+            )
             template_filenames = [os.path.abspath(p) for p in template_filenames]
 
             self.templates = []

@@ -13,5 +13,5 @@
 # and limitations under the License.
 
 def load_model_weights(path):
-    with open(path, 'rb') as read_file:
+    with open(path, "rb") as read_file:
         return read_file.read()

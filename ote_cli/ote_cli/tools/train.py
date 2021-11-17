@@ -36,7 +36,7 @@ from ote_sdk.usecases.adapters.model_adapter import ModelAdapter
 
 def parse_args():
     pre_parser = argparse.ArgumentParser(add_help=False)
-    pre_parser.add_argument('template')
+    pre_parser.add_argument("template")
     parsed, _ = pre_parser.parse_known_args()
     # Load template.yaml file.
     template = find_and_parse_model_template(parsed.template)
@@ -45,19 +45,35 @@ def parse_args():
     assert hyper_parameters
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('template')
-    parser.add_argument('--train-ann-files', required=True,
-                        help='Comma-separated paths to training annotation files.')
-    parser.add_argument('--train-data-roots', required=True,
-                        help='Comma-separated paths to training data folders.')
-    parser.add_argument('--val-ann-files', required=True,
-                        help='Comma-separated paths to validation annotation files.')
-    parser.add_argument('--val-data-roots', required=True,
-                        help='Comma-separated paths to validation data folders.')
-    parser.add_argument('--load-weights', required=False,
-                        help='Load only weights from previously saved checkpoint')
-    parser.add_argument('--save-weights', required=True,
-                        help='Location to store wiehgts.')
+    parser.add_argument("template")
+    parser.add_argument(
+        "--train-ann-files",
+        required=True,
+        help="Comma-separated paths to training annotation files.",
+    )
+    parser.add_argument(
+        "--train-data-roots",
+        required=True,
+        help="Comma-separated paths to training data folders.",
+    )
+    parser.add_argument(
+        "--val-ann-files",
+        required=True,
+        help="Comma-separated paths to validation annotation files.",
+    )
+    parser.add_argument(
+        "--val-data-roots",
+        required=True,
+        help="Comma-separated paths to validation data folders.",
+    )
+    parser.add_argument(
+        "--load-weights",
+        required=False,
+        help="Load only weights from previously saved checkpoint",
+    )
+    parser.add_argument(
+        "--save-weights", required=True, help="Location to store wiehgts."
+    )
 
     add_hyper_parameters_sub_parser(parser, hyper_parameters)
 
@@ -79,10 +95,12 @@ def main():
     Dataset = get_dataset_class(template.task_type)
 
     # Create instances of Task, ConfigurableParameters and Dataset.
-    dataset = Dataset(train_ann_file=args.train_ann_files,
-                      train_data_root=args.train_data_roots,
-                      val_ann_file=args.val_ann_files,
-                      val_data_root=args.val_data_roots)
+    dataset = Dataset(
+        train_ann_file=args.train_ann_files,
+        train_data_root=args.train_data_roots,
+        val_ann_file=args.val_ann_files,
+        val_data_root=args.val_data_roots,
+    )
 
     labels_schema = LabelSchemaEntity.from_labels(dataset.get_labels())
 
@@ -90,13 +108,16 @@ def main():
         model=None,
         hyper_parameters=hyper_parameters,
         label_schema=labels_schema,
-        model_template=template)
+        model_template=template,
+    )
 
     if args.load_weights:
         model_bytes = load_model_weights(args.load_weights)
-        model = ModelEntity(train_dataset=dataset,
-                            configuration=environment.get_model_configuration(),
-                            model_adapters={'weights.pth': ModelAdapter(model_bytes)})
+        model = ModelEntity(
+            train_dataset=dataset,
+            configuration=environment.get_model_configuration(),
+            model_adapters={"weights.pth": ModelAdapter(model_bytes)},
+        )
         environment.model = model
 
     task = Task(task_environment=environment)
@@ -104,18 +125,20 @@ def main():
     output_model = ModelEntity(
         dataset,
         environment.get_model_configuration(),
-        model_status=ModelStatus.NOT_READY)
+        model_status=ModelStatus.NOT_READY,
+    )
 
     task.train(dataset, output_model)
 
     if output_model.model_status != ModelStatus.NOT_READY:
-        with open(args.save_weights, 'wb') as f:
+        with open(args.save_weights, "wb") as f:
             f.write(output_model.get_data("weights.pth"))
 
     validation_dataset = dataset.get_subset(Subset.VALIDATION)
     predicted_validation_dataset = task.infer(
         validation_dataset.with_empty_annotations(),
-        InferenceParameters(is_evaluation=True))
+        InferenceParameters(is_evaluation=True),
+    )
 
     resultset = ResultSetEntity(
         model=output_model,

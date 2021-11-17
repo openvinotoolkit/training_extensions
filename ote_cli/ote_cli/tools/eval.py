@@ -36,7 +36,7 @@ from ote_sdk.usecases.adapters.model_adapter import ModelAdapter
 
 def parse_args():
     pre_parser = argparse.ArgumentParser(add_help=False)
-    pre_parser.add_argument('template')
+    pre_parser.add_argument("template")
     parsed, _ = pre_parser.parse_known_args()
     # Load template.yaml file.
     template = find_and_parse_model_template(parsed.template)
@@ -45,15 +45,24 @@ def parse_args():
     assert hyper_parameters
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('template')
-    parser.add_argument('--test-ann-files', required=True,
-                        help='Comma-separated paths to test annotation files.')
-    parser.add_argument('--test-data-roots', required=True,
-                        help='Comma-separated paths to test data folders.')
-    parser.add_argument('--load-weights', required=True,
-                        help='Load only weights from previously saved checkpoint')
+    parser.add_argument("template")
+    parser.add_argument(
+        "--test-ann-files",
+        required=True,
+        help="Comma-separated paths to test annotation files.",
+    )
+    parser.add_argument(
+        "--test-data-roots",
+        required=True,
+        help="Comma-separated paths to test data folders.",
+    )
+    parser.add_argument(
+        "--load-weights",
+        required=True,
+        help="Load only weights from previously saved checkpoint",
+    )
 
-    add_hyper_parameters_sub_parser(parser, hyper_parameters, modes=('INFERENCE', ))
+    add_hyper_parameters_sub_parser(parser, hyper_parameters, modes=("INFERENCE",))
 
     return parser.parse_args(), template, hyper_parameters
 
@@ -72,8 +81,9 @@ def main():
     Task = get_impl_class(template.entrypoints.base)
     Dataset = get_dataset_class(template.task_type)
 
-    dataset = Dataset(test_ann_file=args.test_ann_files,
-                      test_data_root=args.test_data_roots)
+    dataset = Dataset(
+        test_ann_file=args.test_ann_files, test_data_root=args.test_data_roots
+    )
 
     labels_schema = LabelSchemaEntity.from_labels(dataset.get_labels())
 
@@ -81,14 +91,17 @@ def main():
         model=None,
         hyper_parameters=hyper_parameters,
         label_schema=labels_schema,
-        model_template=template)
+        model_template=template,
+    )
 
     model_bytes = load_model_weights(args.load_weights)
 
-    model_adapters = {'weights.pth': ModelAdapter(model_bytes)}
-    model = ModelEntity(configuration=environment.get_model_configuration(),
-                        model_adapters=model_adapters,
-                        train_dataset=None)
+    model_adapters = {"weights.pth": ModelAdapter(model_bytes)}
+    model = ModelEntity(
+        configuration=environment.get_model_configuration(),
+        model_adapters=model_adapters,
+        train_dataset=None,
+    )
     environment.model = model
 
     task = Task(task_environment=environment)
@@ -96,7 +109,8 @@ def main():
     validation_dataset = dataset.get_subset(Subset.TESTING)
     predicted_validation_dataset = task.infer(
         validation_dataset.with_empty_annotations(),
-        InferenceParameters(is_evaluation=True))
+        InferenceParameters(is_evaluation=True),
+    )
 
     resultset = ResultSetEntity(
         model=model,

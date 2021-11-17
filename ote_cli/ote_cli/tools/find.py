@@ -19,10 +19,13 @@ from ote_cli.registry import Registry
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--root', help='A root dir where templates should be searched.', default='.')
-    parser.add_argument('--task_type')
+    parser.add_argument(
+        "--root", help="A root dir where templates should be searched.", default="."
+    )
+    parser.add_argument("--task_type")
 
     return parser.parse_args()
+
 
 def main():
     args = parse_args()
@@ -33,5 +36,6 @@ def main():
 
     print(registry)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

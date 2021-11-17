@@ -14,9 +14,9 @@
 
 
 def override_parameters(overrides, parameters, allow_value=False):
-    allowed_keys = {'default_value'}
+    allowed_keys = {"default_value"}
     if allow_value:
-        allowed_keys.add('value')
+        allowed_keys.add("value")
     for k, v in overrides.items():
         if isinstance(v, dict):
             if k in parameters.keys():
