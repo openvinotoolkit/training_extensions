@@ -34,9 +34,8 @@ def get_anomalib_config(task_name: str, ote_config: ConfigurableParameters) -> U
     Returns:
         Anomalib config object for the specified model type with overwritten default values.
     """
-    model_name = model_names[task_name]
-    model_config_path = Path(anomalib.__file__).parent / "models" / model_name / "config.yaml"
-    anomalib_config = get_configurable_parameters(model_name=model_name, model_config_path=model_config_path)
+    model_config_path = Path(anomalib.__file__).parent / "models" / task_name.lower() / "config.yaml"
+    anomalib_config = get_configurable_parameters(model_name=task_name.lower(), model_config_path=model_config_path)
     update_anomalib_config(anomalib_config, ote_config)
     return anomalib_config
 
