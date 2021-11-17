@@ -15,6 +15,7 @@
 import argparse
 
 from ote_cli.datasets import get_dataset_class
+from ote_cli.registry import find_and_parse_model_template
 from ote_cli.utils.config import override_parameters
 from ote_cli.utils.importing import get_impl_class
 from ote_cli.utils.loading import load_model_weights
@@ -31,8 +32,18 @@ from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.usecases.adapters.model_adapter import ModelAdapter
 
 
-def parse_args(config):
+def parse_args():
+    pre_parser = argparse.ArgumentParser(add_help=False)
+    pre_parser.add_argument('template')
+    parsed, _ = pre_parser.parse_known_args()
+    # Load template.yaml file.
+    template = find_and_parse_model_template(parsed.template)
+    # Get hyper parameters schema.
+    hyper_parameters = template.hyper_parameters.data
+    assert hyper_parameters
+
     parser = argparse.ArgumentParser()
+    parser.add_argument('template')
     parser.add_argument('--train-ann-files', required=True,
                         help='Comma-separated paths to training annotation files.')
     parser.add_argument('--train-data-roots', required=True,
@@ -46,19 +57,14 @@ def parse_args(config):
     parser.add_argument('--save-weights', required=True,
                         help='Location to store wiehgts.')
 
-    add_hyper_parameters_sub_parser(parser, config)
+    add_hyper_parameters_sub_parser(parser, hyper_parameters)
 
-    return parser.parse_args()
+    return parser.parse_args(), template, hyper_parameters
 
 
 def main():
-    # Load template.yaml file.
-    template = parse_model_template('template.yaml')
-    # Get hyper parameters schema.
-    hyper_parameters = template.hyper_parameters.data
-    assert hyper_parameters
     # Dynamically create an argument parser based on override parameters.
-    args = parse_args(hyper_parameters)
+    args, template, hyper_parameters = parse_args()
     # Get new values from user's input.
     updated_hyper_parameters = gen_params_dict_from_args(args)
     # Override overridden parameters by user's values.

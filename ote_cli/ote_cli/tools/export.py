@@ -16,6 +16,7 @@ import argparse
 import os
 
 from ote_cli.datasets import get_dataset_class
+from ote_cli.registry import find_and_parse_model_template
 from ote_cli.utils.importing import get_impl_class
 from ote_cli.utils.loading import load_model_weights
 from ote_sdk.configuration.helper import create
@@ -31,6 +32,7 @@ from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType
 
 def parse_args():
     parser = argparse.ArgumentParser()
+    parser.add_argument('template')
     parser.add_argument('--load-weights', required=True,
                         help='Load only weights from previously saved checkpoint')
     parser.add_argument('--save-model-to', required='True',
@@ -42,10 +44,10 @@ def parse_args():
 
 
 def main():
-    # Load template.yaml file.
-    template = parse_model_template('template.yaml')
-
     args = parse_args()
+
+    # Load template.yaml file.
+    template = find_and_parse_model_template(args.template)
 
     # Get classes for Task, ConfigurableParameters and Dataset.
     Task = get_impl_class(template.entrypoints.base)
