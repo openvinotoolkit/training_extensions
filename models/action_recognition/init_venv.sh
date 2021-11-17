@@ -37,6 +37,9 @@ fi
 
 . ${venv_dir}/bin/activate
 
+# upgrade pip to the latest version
+pip install -U pip
+
 cat requirements.txt | xargs -n 1 -L 1 pip3 install
 
 mo_requirements_file="${INTEL_OPENVINO_DIR:-/opt/intel/openvino_2021}/deployment_tools/model_optimizer/requirements_onnx.txt"
@@ -52,6 +55,10 @@ echo "export MMACTION_DIR=${MMACTION_DIR}" >> ${venv_dir}/bin/activate
 
 # install ote
 pip install -e ../../ote/
+
+# check PyPI conflicts and print installed python packages
+pip check
+pip freeze
 
 deactivate
 

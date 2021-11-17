@@ -1,11 +1,7 @@
-lr_finder:
-  enable: False
-
 model:
   name: 'mobilenetv3_large'
-  classification: True
+  type: 'classification'
   pretrained: True
-  save_chkpt: False
   feature_dim: 1280
   dropout_cls:
     p: 0.2
@@ -20,16 +16,11 @@ loss:
 sampler:
   train_sampler: 'RandomSampler'
 
-metric_losses:
-  enable: False
-
 train:
   optim: 'sam'
-  lr: 0.016
+  lr: 0.013
   nbd: True
-  max_epoch: 200
   weight_decay: 5e-4
-  batch_size: 84
   lr_scheduler: 'warmup'
   warmup: 5
   base_scheduler: 'reduce_on_plateau'

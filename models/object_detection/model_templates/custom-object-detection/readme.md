@@ -9,7 +9,7 @@ but rather provide pre-trained checkpoints for further fine-tuning on a target d
 | --- | --- | --- | --- | --- | --- |
 | mobilenet_v2-2s_ssd-256x256 | 0.86 | 1.99 | 11.3 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/mobilenet_v2-2s_ssd-256x256.pth), [model template](./mobilenet_v2-2s_ssd-256x256/template.yaml) | 3 |
 | mobilenet_v2-2s_ssd-384x384 | 1.92 | 1.99 | 13.3 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/mobilenet_v2-2s_ssd-384x384.pth), [model template](./mobilenet_v2-2s_ssd-384x384/template.yaml) | 3 |
-| mobilenet_v2-2s_ssd-512x512 | 3.42 | 1.99 | 12.7 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/mobilenet_v2-2s_ssd-512x512.pth), [model template](./mobilenet_v2-2s_ssd-512x512/template.yaml) | 3 |
+| mobilenet_v2-2s_ssd-512x512 | 3.42 | 1.99 | 12.6 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/mobilenet_v2-2s_ssd-512x512.pth), [model template](./mobilenet_v2-2s_ssd-512x512/template.yaml) | 3 |
 
 Average Precision (AP) is defined as an area under the precision/recall curve.
 
