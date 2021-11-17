@@ -1,7 +1,7 @@
-from ote_sdk.entities.subset import Subset
-from ote_sdk.entities.datasets import DatasetEntity
-
 from mmseg.apis.ote.extension.datasets import load_dataset_items
+
+from ote_sdk.entities.datasets import DatasetEntity
+from ote_sdk.entities.subset import Subset
 
 
 class SemanticSegmentationDataset(DatasetEntity):

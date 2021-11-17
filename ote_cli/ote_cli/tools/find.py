@@ -16,6 +16,7 @@ import argparse
 
 from ote_cli.registry import Registry
 
+
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--root', help='A root dir where templates should be searched.', default='.')

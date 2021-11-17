@@ -13,7 +13,7 @@
 # and limitations under the License.
 
 from ote_sdk.entities.label import Color, LabelEntity
-from ote_sdk.entities.label_schema import (LabelGroup, LabelGroupType, LabelSchemaEntity)
+from ote_sdk.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
 
 
 def generate_label_schema(label_names, label_domain):

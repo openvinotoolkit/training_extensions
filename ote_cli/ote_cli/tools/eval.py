@@ -19,8 +19,10 @@ from ote_cli.registry import find_and_parse_model_template
 from ote_cli.utils.config import override_parameters
 from ote_cli.utils.importing import get_impl_class
 from ote_cli.utils.loading import load_model_weights
-from ote_cli.utils.parser import (add_hyper_parameters_sub_parser,
-                                  gen_params_dict_from_args)
+from ote_cli.utils.parser import (
+    add_hyper_parameters_sub_parser,
+    gen_params_dict_from_args,
+)
 from ote_sdk.configuration.helper import create
 from ote_sdk.entities.inference_parameters import InferenceParameters
 from ote_sdk.entities.label_schema import LabelSchemaEntity

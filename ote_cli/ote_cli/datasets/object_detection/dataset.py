@@ -1,7 +1,7 @@
-from ote_sdk.entities.subset import Subset
-from ote_sdk.entities.datasets import DatasetEntity
-
 from mmdet.apis.ote.extension.datasets.data_utils import load_dataset_items_coco_format
+
+from ote_sdk.entities.datasets import DatasetEntity
+from ote_sdk.entities.subset import Subset
 
 
 class ObjectDetectionDataset(DatasetEntity):
