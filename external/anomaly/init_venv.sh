@@ -133,7 +133,7 @@ echo "export ANOMALIB_OTE_DIR=${ANOMALIB_OTE_DIR}" >> ${venv_dir}/bin/activate
 # Install OpenVINO requirements
 pip install -r $ANOMALIB_REPO/requirements/requirements_openvino_mo.txt -c ${CONSTRAINTS_FILE} || exit 1
 
-pip install -e $SC_SDK_REPO/src/ote_sdk -c ${CONSTRAINTS_FILE} || exit 1
+pip install -e $OTE_SDK_PATH -c ${CONSTRAINTS_FILE} || exit 1
 
 deactivate
 
