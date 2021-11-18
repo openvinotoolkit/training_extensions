@@ -115,7 +115,7 @@ Several dataset formats are supported:
     > `formulas.norm.lst` - file with preprocessed formulas. If you want to use your own dataset, formulas should be preprocessed. For details, refer to [this script](https://github.com/harvardnlp/im2markup/blob/master/scripts/preprocessing/preprocess_formulas.py).
     > `validate_filter.lst` and `train_filter.lst` - corresponding splits of the data.
 3. ICDAR13 recognition dataset.
-   See details [here](http://dagdata.cvc.uab.es/icdar2013competition/?ch=2&com=downloads)
+   See details [here](https://rrc.cvc.uab.es/?ch=2)
 
 4. CocoLike dataset.
    СocoLike annotation is supported. See [here](https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/datasets/open_images_v5_text) for details.
