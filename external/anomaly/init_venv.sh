@@ -36,6 +36,11 @@ if [[ -z $ANOMALIB_REPO ]]; then
   exit 1
 fi
 
+if [[ -z $OTE_SDK_PATH ]]; then
+  echo "The environment variable OTE_SDK_PATH is not set -- it is required for creating virtual environment"
+  exit 1
+fi
+
 cd ${work_dir}
 
 if [[ -e ${venv_dir} ]]; then
