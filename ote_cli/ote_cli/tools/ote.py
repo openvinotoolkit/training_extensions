@@ -17,18 +17,21 @@ import sys
 
 from .eval import main as ote_eval
 from .export import main as ote_export
-from .train import main as ote_train
 from .find import main as ote_find
+from .train import main as ote_train
+
+__all__ = ["ote_eval", "ote_export", "ote_find", "ote_train"]
 
 
 def parse_args():
     parser = argparse.ArgumentParser(add_help=False)
-    parser.add_argument('operation', choices=['find', 'train', 'eval', 'export'])
+    parser.add_argument("operation", choices=["find", "train", "eval", "export"])
 
     return parser.parse_known_args()[0]
 
+
 def main():
     name = parse_args().operation
-    sys.argv[0] = f'ote {name}'
+    sys.argv[0] = f"ote {name}"
     del sys.argv[1]
-    globals()[f'ote_{name}']()
+    globals()[f"ote_{name}"]()

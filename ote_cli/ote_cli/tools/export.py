@@ -24,7 +24,6 @@ from ote_sdk.entities.id import ID
 from ote_sdk.entities.label import LabelEntity
 from ote_sdk.entities.label_schema import LabelSchemaEntity
 from ote_sdk.entities.model import ModelEntity, ModelStatus
-from ote_sdk.entities.model_template import parse_model_template
 from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.usecases.adapters.model_adapter import ModelAdapter
 from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType
@@ -32,13 +31,19 @@ from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('template')
-    parser.add_argument('--load-weights', required=True,
-                        help='Load only weights from previously saved checkpoint')
-    parser.add_argument('--save-model-to', required='True',
-                        help='Location where exported model will be stored.')
-    parser.add_argument('--ann-files')
-    parser.add_argument('--labels', nargs='+')
+    parser.add_argument("template")
+    parser.add_argument(
+        "--load-weights",
+        required=True,
+        help="Load only weights from previously saved checkpoint",
+    )
+    parser.add_argument(
+        "--save-model-to",
+        required="True",
+        help="Location where exported model will be stored.",
+    )
+    parser.add_argument("--ann-files")
+    parser.add_argument("--labels", nargs="+")
 
     return parser.parse_args()
 
@@ -56,7 +61,10 @@ def main():
     assert args.labels is not None or args.ann_files is not None
 
     if args.labels:
-        labels = [LabelEntity(l, template.task_type, id=ID(i)) for i, l in enumerate(args.labels)]
+        labels = [
+            LabelEntity(l, template.task_type, id=ID(i))
+            for i, l in enumerate(args.labels)
+        ]
     else:
         Dataset = get_dataset_class(template.task_type)
         dataset = Dataset(args.ann_files)
@@ -72,27 +80,30 @@ def main():
         model=None,
         hyper_parameters=hyper_parameters,
         label_schema=labels_schema,
-        model_template=template)
+        model_template=template,
+    )
 
     model_bytes = load_model_weights(args.load_weights)
-    model_adapters = {'weights.pth': ModelAdapter(model_bytes)}
-    model = ModelEntity(configuration=environment.get_model_configuration(),
-                        model_adapters=model_adapters, train_dataset=None)
+    model_adapters = {"weights.pth": ModelAdapter(model_bytes)}
+    model = ModelEntity(
+        configuration=environment.get_model_configuration(),
+        model_adapters=model_adapters,
+        train_dataset=None,
+    )
     environment.model = model
 
     task = Task(task_environment=environment)
 
     exported_model = ModelEntity(
-        None,
-        environment.get_model_configuration(),
-        model_status=ModelStatus.NOT_READY)
+        None, environment.get_model_configuration(), model_status=ModelStatus.NOT_READY
+    )
 
     task.export(ExportType.OPENVINO, exported_model)
 
     os.makedirs(args.save_model_to, exist_ok=True)
 
-    with open(os.path.join(args.save_model_to, 'model.bin'), 'wb') as write_file:
-        write_file.write(exported_model.get_data('openvino.bin'))
+    with open(os.path.join(args.save_model_to, "model.bin"), "wb") as write_file:
+        write_file.write(exported_model.get_data("openvino.bin"))
 
-    with open(os.path.join(args.save_model_to, 'model.xml'), 'w') as write_file:
-        write_file.write(exported_model.get_data('openvino.xml').decode())
+    with open(os.path.join(args.save_model_to, "model.xml"), "w") as write_file:
+        write_file.write(exported_model.get_data("openvino.xml").decode())

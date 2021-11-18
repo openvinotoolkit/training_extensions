@@ -1,3 +1,7 @@
+"""
+Utils for working with Configurable parameters
+"""
+
 # Copyright (C) 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,14 +17,12 @@
 # and limitations under the License.
 
 
-def override_parameters(overrides, parameters, allow_value=False):
-    allowed_keys = {'default_value'}
-    if allow_value:
-        allowed_keys.add('value')
+def override_parameters(overrides, parameters):
+    allowed_keys = {"default_value", "value"}
     for k, v in overrides.items():
         if isinstance(v, dict):
             if k in parameters.keys():
-                override_parameters(v, parameters[k], allow_value)
+                override_parameters(v, parameters[k])
             else:
                 raise ValueError(f'The "{k}" is not in original parameters.')
         else:
