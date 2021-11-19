@@ -32,6 +32,14 @@ from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.entities.shapes.ellipse import Ellipse
 from ote_sdk.entities.shapes.polygon import Point, Polygon
 from ote_sdk.entities.shapes.rectangle import Rectangle
+from ote_sdk.configuration.elements import (ParameterGroup,
+                                            add_parameter_group,
+                                            configurable_boolean,
+                                            configurable_float,
+                                            configurable_integer,
+                                            string_attribute)
+from ote_sdk.configuration import ConfigurableParameters
+from ote_sdk.configuration.model_lifecycle import ModelLifecycle
 
 logger = logging.getLogger(__name__)
 
@@ -336,3 +344,82 @@ def _write_random_video(width: int, height: int, number_of_frames: int, filename
         videowriter.write(img)
 
     videowriter.release()
+
+class ConfigExample(ConfigurableParameters):
+    header = string_attribute("Test configuration for an object detection task")
+    description = header
+
+    class __LearningParameters(ParameterGroup):
+        header = string_attribute("Test Learning Parameters")
+        description = header
+
+        batch_size = configurable_integer(
+            default_value=5,
+            min_value=1,
+            max_value=512,
+            header="Test batch size",
+            description="The number of training samples seen in each iteration of training. Increasing this value "
+            "improves training time and may make the training more stable. A larger batch size has higher "
+            "memory requirements.",
+            warning="Increasing this value may cause the system to use more memory than available, "
+            "potentially causing out of memory errors, please update with caution.",
+            affects_outcome_of=ModelLifecycle.TRAINING,
+        )
+
+        num_iters = configurable_integer(
+            default_value=1,
+            min_value=1,
+            max_value=100000,
+            header="Number of training iterations",
+            description="Increasing this value causes the results to be more robust but training time will be longer.",
+            affects_outcome_of=ModelLifecycle.TRAINING
+        )
+
+        learning_rate = configurable_float(
+            default_value=0.01,
+            min_value=1e-07,
+            max_value=1e-01,
+            header="Learning rate",
+            description="Increasing this value will speed up training convergence but might make it unstable.",
+            affects_outcome_of=ModelLifecycle.TRAINING
+        )
+
+        learning_rate_warmup_iters = configurable_integer(
+            default_value=100,
+            min_value=1,
+            max_value=10000,
+            header="Number of iterations for learning rate warmup",
+            description="Test learning rate warmup",
+            affects_outcome_of=ModelLifecycle.TRAINING
+        )
+
+        num_workers = configurable_integer(
+            default_value=4,
+            min_value=2,
+            max_value=10,
+            header="num_workers test header",
+            description="num_workers test description",
+            affects_outcome_of=ModelLifecycle.NONE
+        )
+
+    class __Postprocessing(ParameterGroup):
+        header = string_attribute("Test Postprocessing")
+        description = header
+
+        result_based_confidence_threshold = configurable_boolean(
+            default_value=True,
+            header="Test Result based confidence threshold",
+            description="Test confidence threshold is derived from the results",
+            affects_outcome_of=ModelLifecycle.INFERENCE
+        )
+
+        confidence_threshold = configurable_float(
+            default_value=0.25,
+            min_value=0,
+            max_value=1,
+            header="Test Confidence threshold",
+            description="This threshold only takes effect if the threshold is not set based on the result. -- Only test",
+            affects_outcome_of=ModelLifecycle.INFERENCE
+        )
+    learning_parameters = add_parameter_group(__LearningParameters)
+    postprocessing = add_parameter_group(__Postprocessing)
