@@ -8,7 +8,7 @@ summary: PADIM with ResNet-18 backbone
 application: ~
 
 # Algo backend.
-framework: Anomalib
+framework: OTEAnomalyClassification v0.1.0
 
 # Task implementations.
 entrypoints:
