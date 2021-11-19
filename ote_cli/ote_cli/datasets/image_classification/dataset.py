@@ -1,5 +1,5 @@
 """
-Module contains ObjectDetectionDataset
+Module contains ImageClassificationDataset
 """
 
 # Copyright (C) 2021 Intel Corporation
