@@ -37,19 +37,19 @@ def create_train_test_for_densenet121():
                 dataset=dataset_train,
                 batch_size=2,
                 shuffle=True,
-                num_workers=4,
+                # num_workers=4,
                 pin_memory=False)
             cls.data_loader_valid = DataLoader(
                 dataset=dataset_valid,
                 batch_size=2,
                 shuffle=False,
-                num_workers=4,
+                # num_workers=4,
                 pin_memory=False)
             cls.data_loader_test = DataLoader(
                 dataset=dataset_test,
                 batch_size=1,
                 shuffle=False,
-                num_workers=4,
+                # num_workers=4,
                 pin_memory=False)
 
 
@@ -104,19 +104,19 @@ def create_train_test_for_densenet121eff():
                 dataset=dataset_train,
                 batch_size=2,
                 shuffle=True,
-                num_workers=4,
+                # num_workers=4,
                 pin_memory=False)
             cls.data_loader_valid = DataLoader(
                 dataset=dataset_valid,
                 batch_size=2,
                 shuffle=False,
-                num_workers=4,
+                # num_workers=4,
                 pin_memory=False)
             cls.data_loader_test = DataLoader(
                 dataset=dataset_test,
                 batch_size=1,
                 shuffle=False,
-                num_workers=4,
+                # num_workers=4,
                 pin_memory=False)
 
         def test_trainer(self):
