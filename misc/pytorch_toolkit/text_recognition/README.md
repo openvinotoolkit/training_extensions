@@ -95,7 +95,7 @@ Several dataset formats are supported:
    ```
 2. Im2latex format.
    This dataset is used to train formula recognition models.
-   Dataset format is similar to [im2latex-100k](https://zenodo.org/record/56198#.X2NDQ2gzaUl). Main structure of the dataset is following:
+   Dataset format is similar to [im2latex-100k](http://lstm.seas.harvard.edu/latex/data/). Main structure of the dataset is following:
    * `formulas.norm.lst` - file with one formula per line.
    * `imaged_processed` - folder containing input images.
    * `split_file` - this file contains `image_name` (tab symbol) `formula_idx` per line connecting corresponding index of the formula in the file with formulas and particular image with `image_name`. Example:
