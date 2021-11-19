@@ -29,15 +29,18 @@ repos:
     rev: 'v0.812'
     hooks:
     -   id: mypy
+        alias: mypy_ote_sdk
         name: 'mypy (ote_sdk)'
         files: '^ote_sdk/.*\.py'
         args: ["--config-file=ote_sdk/.mypy.ini"]
         additional_dependencies: [numpy==1.19.5, types-PyYAML, attrs==21.2.*, types-requests, types-Deprecated, types-docutils, types_futures, types-python-dateutil]
     -   id: mypy
+        alias: mypy_ote_cli
         name: 'mypy (ote_cli)'
         files: '^ote_cli/.*\.py'
         args: ["--config-file=ote_sdk/.mypy.ini"]
     -   id: mypy
+        alias: mypy_rest
         name: 'mypy (external)'
         files: '^external/.*\.py'
         args: ["--config-file=ote_sdk/.mypy.ini"]
