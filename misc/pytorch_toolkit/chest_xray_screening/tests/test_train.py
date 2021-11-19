@@ -35,21 +35,21 @@ def create_train_test_for_densenet121():
                 image_path, transform=True)
             cls.data_loader_train = DataLoader(
                 dataset=dataset_train,
-                batch_size=2,
+                batch_size=1,
                 shuffle=True,
-                num_workers=4,
+                num_workers=1,
                 pin_memory=False)
             cls.data_loader_valid = DataLoader(
                 dataset=dataset_valid,
-                batch_size=2,
+                batch_size=1,
                 shuffle=False,
-                num_workers=4,
+                num_workers=1,
                 pin_memory=False)
             cls.data_loader_test = DataLoader(
                 dataset=dataset_test,
                 batch_size=1,
                 shuffle=False,
-                num_workers=4,
+                num_workers=1,
                 pin_memory=False)
 
 
