@@ -1,3 +1,7 @@
+"""
+Model exporting tool.
+"""
+
 # Copyright (C) 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,6 +34,10 @@ from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType
 
 
 def parse_args():
+    """
+    Parses command line arguments.
+    """
+
     parser = argparse.ArgumentParser()
     parser.add_argument("template")
     parser.add_argument(
@@ -49,14 +57,17 @@ def parse_args():
 
 
 def main():
+    """
+    Main function that is used for model exporting.
+    """
+
     args = parse_args()
 
     # Load template.yaml file.
     template = find_and_parse_model_template(args.template)
 
-    # Get classes for Task, ConfigurableParameters and Dataset.
-    Task = get_impl_class(template.entrypoints.base)
-    Dataset = get_dataset_class(template.task_type)
+    # Get class for Task.
+    task_class = get_impl_class(template.entrypoints.base)
 
     assert args.labels is not None or args.ann_files is not None
 
@@ -66,8 +77,8 @@ def main():
             for i, l in enumerate(args.labels)
         ]
     else:
-        Dataset = get_dataset_class(template.task_type)
-        dataset = Dataset(args.ann_files)
+        dataset_class = get_dataset_class(template.task_type)
+        dataset = dataset_class({"ann_file": args.ann_files})
         labels = dataset.get_labels()
 
     labels_schema = LabelSchemaEntity.from_labels(labels)
@@ -92,7 +103,7 @@ def main():
     )
     environment.model = model
 
-    task = Task(task_environment=environment)
+    task = task_class(task_environment=environment)
 
     exported_model = ModelEntity(
         None, environment.get_model_configuration(), model_status=ModelStatus.NOT_READY
@@ -105,5 +116,7 @@ def main():
     with open(os.path.join(args.save_model_to, "model.bin"), "wb") as write_file:
         write_file.write(exported_model.get_data("openvino.bin"))
 
-    with open(os.path.join(args.save_model_to, "model.xml"), "w") as write_file:
+    with open(
+        os.path.join(args.save_model_to, "model.xml"), "w", encoding="UTF-8"
+    ) as write_file:
         write_file.write(exported_model.get_data("openvino.xml").decode())
