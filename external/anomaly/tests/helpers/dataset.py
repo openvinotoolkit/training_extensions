@@ -20,7 +20,14 @@ from pathlib import Path
 from typing import List, Union
 
 from anomalib.datasets.anomaly_dataset import make_dataset
-from ote_sdk.entities.annotation import Annotation, AnnotationSceneEntity, AnnotationSceneKind
+from pandas.core.frame import DataFrame
+from tqdm import tqdm
+
+from ote_sdk.entities.annotation import (
+    Annotation,
+    AnnotationSceneEntity,
+    AnnotationSceneKind,
+)
 from ote_sdk.entities.dataset_item import DatasetItemEntity
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.image import Image
@@ -28,8 +35,6 @@ from ote_sdk.entities.label import Domain, LabelEntity
 from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.entities.shapes.rectangle import Rectangle
 from ote_sdk.entities.subset import Subset
-from pandas.core.frame import DataFrame
-from tqdm import tqdm
 
 
 class OTEAnomalyDatasetGenerator:
