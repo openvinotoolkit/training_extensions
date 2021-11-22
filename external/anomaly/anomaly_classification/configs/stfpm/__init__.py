@@ -18,3 +18,5 @@ Anomaly Classification Task
 # and limitations under the License.
 
 from .configuration import STFPMConfig
+
+__all__ = ["STFPMConfig"]

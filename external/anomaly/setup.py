@@ -1,4 +1,7 @@
-#!/usr/bin/env python
+"""
+Install anomalib wrapper for OTE
+"""
+
 import anomalib
 from setuptools import find_packages, setup
 
@@ -12,5 +15,6 @@ setup(
     license="license='Apache License 2.0'",
     install_requires="anomalib",
     author="Intel",
-    description="anomaly classification - OpenVINO Training Extension for Anomaly Classification using anomalib library",
+    description="anomaly classification - "
+    "OpenVINO Training Extension for Anomaly Classification using anomalib library",
 )

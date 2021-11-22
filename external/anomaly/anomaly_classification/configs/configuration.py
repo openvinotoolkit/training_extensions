@@ -43,6 +43,10 @@ class BaseAnomalyClassificationConfig(ConfigurableParameters):
 
     @attrs
     class DatasetParameters(ParameterGroup):
+        """
+        Parameters related to dataloader
+        """
+
         header = string_attribute("Dataset Parameters")
         description = header
 
@@ -71,6 +75,10 @@ class BaseAnomalyClassificationConfig(ConfigurableParameters):
 
     @attrs
     class POTParameters(ParameterGroup):
+        """
+        Training parameters for post-training optimization
+        """
+
         header = string_attribute("POT Parameters")
         description = header
 

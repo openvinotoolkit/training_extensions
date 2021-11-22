@@ -133,51 +133,42 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
         with tempfile.TemporaryDirectory() as tempdir:
             xml_path = os.path.join(tempdir, "model.xml")
             bin_path = os.path.join(tempdir, "model.bin")
-            with open(xml_path, "wb") as xml_file:
-                xml_file.write(self.task_environment.model.get_data("openvino.xml"))
-            with open(bin_path, "wb") as bin_file:
-                bin_file.write(self.task_environment.model.get_data("openvino.bin"))
+            with open(xml_path, "wb") as weight_file:
+                weight_file.write(self.task_environment.model.get_data("openvino.xml"))
+            with open(bin_path, "wb") as weight_file:
+                weight_file.write(self.task_environment.model.get_data("openvino.bin"))
 
-            model_config = ADDict({"model_name": "openvino_model", "model": xml_path, "weights": bin_path})
-
-            model = load_model(model_config)
+            model = load_model(ADDict({"model_name": "openvino_model", "model": xml_path, "weights": bin_path}))
 
             if get_nodes_by_type(model, ["FakeQuantize"]):
                 logger.warning("Model is already optimized by POT")
                 output_model.model_status = ModelStatus.FAILED
                 return
 
-        engine_config = ADDict({"device": "CPU"})
-
         hparams = self.task_environment.get_hyper_parameters()
-        stat_subset_size = hparams.pot_parameters.stat_subset_size
-        preset = hparams.pot_parameters.preset.name.lower()
 
         algorithms = [
             {
                 "name": "DefaultQuantization",
                 "params": {
                     "target_device": "ANY",
-                    "preset": preset,
-                    "stat_subset_size": min(stat_subset_size, len(data_loader)),
+                    "preset": hparams.pot_parameters.preset.name.lower(),
+                    "stat_subset_size": min(hparams.pot_parameters.stat_subset_size, len(data_loader)),
                 },
             }
         ]
 
-        engine = IEEngine(config=engine_config, data_loader=data_loader, metric=None)
+        engine = IEEngine(config=ADDict({"device": "CPU"}), data_loader=data_loader, metric=None)
 
-        pipeline = create_pipeline(algorithms, engine)
-
-        compressed_model = pipeline.run(model)
-
+        compressed_model = create_pipeline(algorithms, engine).run(model)
         compress_model_weights(compressed_model)
 
         with tempfile.TemporaryDirectory() as tempdir:
             save_model(compressed_model, tempdir, model_name="model")
-            with open(os.path.join(tempdir, "model.xml"), "rb") as xml_file:
-                output_model.set_data("openvino.xml", xml_file.read())
-            with open(os.path.join(tempdir, "model.bin"), "rb") as bin_file:
-                output_model.set_data("openvino.bin", bin_file.read())
+            with open(os.path.join(tempdir, "model.xml"), "rb") as weight_file:
+                output_model.set_data("openvino.xml", weight_file.read())
+            with open(os.path.join(tempdir, "model.bin"), "rb") as weight_file:
+                output_model.set_data("openvino.bin", weight_file.read())
         output_model.model_status = ModelStatus.SUCCESS
 
         self.task_environment.model = output_model

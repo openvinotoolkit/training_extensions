@@ -39,11 +39,19 @@ class STFPMConfig(BaseAnomalyClassificationConfig):
 
     @attrs
     class ModelParameters(ParameterGroup):
+        """
+        Parameter Group for training model
+        """
+
         header = string_attribute("Model Parameters")
         description = header
 
         @attrs
         class EarlyStoppingParameters(ParameterGroup):
+            """
+            Early stopping parameters
+            """
+
             header = string_attribute("Early Stopping Parameters")
             description = header
 
