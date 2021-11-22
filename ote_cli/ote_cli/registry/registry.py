@@ -21,7 +21,6 @@ import glob
 import os
 
 import yaml
-
 from ote_sdk.entities.model_template import parse_model_template
 
 

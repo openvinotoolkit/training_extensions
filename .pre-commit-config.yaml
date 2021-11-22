@@ -6,8 +6,15 @@ repos:
     rev: '5.9.2'
     hooks:
     -   id: isort
+        alias: isort_ote_sdk
+        name: 'isort (ote_sdk)'
+        args: ["--settings", "ote_sdk/.isort.cfg"]
+        files: '^ote_sdk/.*\.py'
+    -   id: isort
+        alias: isort_rest
+        name: 'isort (ote_cli|external)'
         args: ["--settings", ".isort.cfg"]
-        files: '^(ote_sdk|ote_cli|external)/.*\.py'
+        files: '^(ote_cli|external)/.*\.py'
 
 -   repo: https://github.com/psf/black
     rev: 21.7b0
