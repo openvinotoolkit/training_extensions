@@ -25,7 +25,7 @@ from setuptools import find_packages, setup
 
 install_requires = []
 
-with open("requirements.txt", "r") as f:
+with open("requirements.txt", "r", encoding="UTF-8") as f:
     for line in f:
         line = line.strip()
         if line and not line.startswith("#"):

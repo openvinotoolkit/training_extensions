@@ -61,3 +61,5 @@ repos:
         language: system
         types: [python]
         args: ["--score=no", "--rcfile=.pylintrc"]
+        exclude: "\
+          usecases/exportable_code"

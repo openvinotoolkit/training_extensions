@@ -32,11 +32,12 @@ setup(
     install_requires=requirements,
     entry_points={
         "console_scripts": [
-            "ote_train=ote_cli.tools.train:main",
+            "ote=ote_cli.tools.ote:main",
+            "ote_demo=ote_cli.tools.demo:main",
             "ote_eval=ote_cli.tools.eval:main",
             "ote_export=ote_cli.tools.export:main",
             "ote_find=ote_cli.tools.find:main",
-            "ote=ote_cli.tools.ote:main",
+            "ote_train=ote_cli.tools.train:main",
         ]
     },
 )
