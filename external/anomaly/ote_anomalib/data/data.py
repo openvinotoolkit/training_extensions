@@ -16,16 +16,17 @@ Anomaly Dataset Utils
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-
+import logging
 from typing import Dict, List, Optional, Union
 
 from anomalib.datasets.transforms import PreProcessor
 from omegaconf import DictConfig, ListConfig
-from ote_sdk.entities.datasets import DatasetEntity
-from ote_sdk.entities.subset import Subset
 from pytorch_lightning.core.datamodule import LightningDataModule
 from torch import Tensor
 from torch.utils.data import DataLoader, Dataset
+
+from ote_sdk.entities.datasets import DatasetEntity
+from ote_sdk.entities.subset import Subset
 
 
 class OTEAnomalyDataset(Dataset):
@@ -108,6 +109,9 @@ class OTEAnomalyDataModule(LightningDataModule):
             stage (Optional[str], optional): train/val/test stages.
                 Defaults to None.
         """
+        if not stage == "predict":
+            self.summary()
+
         if stage == "fit" or stage is None:
             self.train_ote_dataset = self.dataset.get_subset(Subset.TRAINING)
             self.val_ote_dataset = self.dataset.get_subset(Subset.VALIDATION)
@@ -120,6 +124,17 @@ class OTEAnomalyDataModule(LightningDataModule):
 
         if stage == "predict":
             self.predict_ote_dataset = self.dataset
+
+    def summary(self):
+        for subset in [Subset.TRAINING, Subset.VALIDATION, Subset.TESTING]:
+            dataset = self.dataset.get_subset(subset)
+            num_items = len(dataset)
+            num_normal = len([item for item in dataset if item.get_shapes_labels()[0].name == "normal"])
+            num_anomalous = len([item for item in dataset if item.get_shapes_labels()[0].name == "anomalous"])
+            logging.info(
+                f"{subset} subset size: Total: {num_items} images. "
+                f"Normal: {num_normal} images. Anomalous: {num_anomalous} images"
+            )
 
     def train_dataloader(self) -> Union[DataLoader, List[DataLoader], Dict[str, DataLoader]]:
         """
