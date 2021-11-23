@@ -463,8 +463,8 @@ class TestRectangle:
         2. Check crop_numpy_array method for Rectangle with parameters range from 0 to 1
         3. Check crop_numpy_array method for Rectangle with parameters more than 1
         """
-        image_height = 128
-        numpy_image_array = np.ndarray(shape=(image_height, image_height, 3), dtype=float)
+        image_height = image_width = 128
+        numpy_image_array = np.zeros(shape=(image_height, image_width, 3), dtype=float)
         scenarios = [{"input_params": {"x1": -0.2, "x2": -0.1, "y1": -0.3, "y2": -0.2},
                       "cropped_expected": {"x1": 0, "y1": 0, "x2": 0, "y2": 0}},
                      {"input_params": {"x1": 0.2, "x2": 0.3, "y1": 0.4, "y2": 0.8},
