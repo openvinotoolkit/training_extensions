@@ -40,20 +40,32 @@ class ProgressCallback(ProgressBar):
             self.update_progress_callback = default_progress_callback
 
     def on_train_start(self, trainer, pl_module):
+        """
+        Store max epochs and current epoch from trainer
+        """
         super().on_train_start(trainer, pl_module)
         self.current_epoch = trainer.current_epoch
         self.max_epochs = trainer.max_epochs
         self._reset_progress()
 
     def on_validation_start(self, trainer, pl_module):
+        """
+        Reset progress bar when validation starts.
+        """
         super().on_validation_start(trainer, pl_module)
         self._reset_progress()
 
     def on_predict_start(self, trainer, pl_module):
+        """
+        Reset progress bar when prediction starts.
+        """
         super().on_predict_start(trainer, pl_module)
         self._reset_progress()
 
     def on_test_start(self, trainer, pl_module):
+        """
+        Reset progress bar when testing starts.
+        """
         super().on_test_start(trainer, pl_module)
         self._reset_progress()
 
