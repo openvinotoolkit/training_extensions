@@ -1,3 +1,7 @@
+"""
+Fixtures.
+"""
+
 # INTEL CONFIDENTIAL
 #
 # Copyright (C) 2021 Intel Corporation
@@ -12,4 +16,6 @@
 # with no express or implied warranties, other than those that are expressly stated
 # in the License.
 
-from ote_sdk.tests.fixtures.general import label_schema_example  # noqa
+from ote_sdk.tests.fixtures.general import (  # noqa #pylint: disable=unused-import
+    label_schema_example,
+)

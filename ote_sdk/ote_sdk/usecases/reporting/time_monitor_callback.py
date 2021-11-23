@@ -1,3 +1,7 @@
+"""
+Time monitor callback module.
+"""
+
 # INTEL CONFIDENTIAL
 #
 # Copyright (C) 2021 Intel Corporation
@@ -11,6 +15,8 @@
 # This software and the related documents are provided as is,
 # with no express or implied warranties, other than those that are expressly stated
 # in the License.
+
+# pylint: disable=too-many-instance-attributes,too-many-arguments
 
 import logging
 import math
@@ -141,4 +147,7 @@ class TimeMonitorCallback(Callback):
         )
 
     def get_progress(self):
+        """
+        Returns current progress as a percentage.
+        """
         return (self.current_step / self.total_steps) * 100

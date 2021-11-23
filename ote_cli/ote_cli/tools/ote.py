@@ -1,3 +1,7 @@
+"""
+OTE CLI entry point.
+"""
+
 # Copyright (C) 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,17 +24,34 @@ from .export import main as ote_export
 from .find import main as ote_find
 from .train import main as ote_train
 
-__all__ = ["ote_eval", "ote_export", "ote_find", "ote_train"]
+__all__ = [
+    "ote_eval",
+    "ote_export",
+    "ote_find",
+    "ote_train",
+]
 
 
 def parse_args():
+    """
+    Parses command line arguments.
+    """
+
     parser = argparse.ArgumentParser(add_help=False)
-    parser.add_argument("operation", choices=["find", "train", "eval", "export"])
+    parser.add_argument("operation", choices=[x[4:] for x in __all__])
 
     return parser.parse_known_args()[0]
 
 
 def main():
+    """
+    This function is a single entry point for all OTE CLI related operations:
+      - eval
+      - export
+      - find
+      - train
+    """
+
     name = parse_args().operation
     sys.argv[0] = f"ote {name}"
     del sys.argv[1]
