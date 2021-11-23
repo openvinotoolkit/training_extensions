@@ -156,7 +156,7 @@ class Helpers:
         if show_confidence and isinstance(label, ScoredLabel):
             if len(text) > 0:
                 text += " "
-            text += "{:.0%}".format(label.probability)
+            text += f"{label.probability:.0%}"
         return text
 
     def generate_draw_command_for_labels(

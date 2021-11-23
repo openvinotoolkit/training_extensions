@@ -129,10 +129,12 @@ def create_default_configurable_enum_from_dict(
 
     # Create the enum using the functional Enum API. Unfortunately this doesn't play nice with mypy, so ignoring the
     # type error for now
+    # pylint: disable=unexpected-keyword-arg
     configurable_enum = ConfigurableEnum(
         parameter_dict.pop(metadata_keys.ENUM_NAME),
         names=parameter_dict.pop(metadata_keys.OPTIONS),
     )  # type: ignore
+    # pylint: enable=unexpected-keyword-arg
     serialized_default_value = parameter_dict.pop(metadata_keys.DEFAULT_VALUE)
 
     if isinstance(serialized_default_value, ConfigurableEnum):

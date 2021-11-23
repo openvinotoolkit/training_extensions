@@ -28,9 +28,9 @@ def gen_param_help(hyper_parameters):
 
     help_keys = ("header", "type", "default_value", "max_value", "min_value")
 
-    def _gen_param_help(prefix, d):
+    def _gen_param_help(prefix, cur_params):
         cur_help = {}
-        for k, val in d.items():
+        for k, val in cur_params.items():
             if isinstance(val, dict) and "default_value" not in val.keys():
                 if "visible_in_ui" in val and val["visible_in_ui"]:
                     x = _gen_param_help(prefix + f"{k}.", val)

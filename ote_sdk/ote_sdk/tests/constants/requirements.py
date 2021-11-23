@@ -1,3 +1,7 @@
+"""
+Requirements module.
+"""
+
 # INTEL CONFIDENTIAL
 #
 # Copyright (C) 2021 Intel Corporation
@@ -14,6 +18,8 @@
 
 
 class Requirements:
+    """
+    Dummy requirement.
+    """
 
-    # Dummy requirement
     REQ_1 = "Dummy requirement"
