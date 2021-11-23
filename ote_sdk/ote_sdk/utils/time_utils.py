@@ -51,11 +51,7 @@ def timeit(func):
         start_time = time.time()
         res = func(*args, **kwargs)
         elapsed_time = time.time() - start_time
-        print(
-            "function [{}] finished in {} ms".format(
-                func.__name__, float(elapsed_time * 1000)
-            )
-        )
+        print(f"function [{func.__name__}] finished in {float(elapsed_time * 1000)} ms")
         return res
 
     return new_func
@@ -114,15 +110,8 @@ class TimeEstimator:
 
         :return: Estimated remaining time in seconds (float)
         """
-        new_estimation = (
-            self.estimated_end_time - time.time()
-            if self.estimated_end_time is not None
-            else -1.0
-        )
-        if (
-            self.estimated_remaining_time is None
-            or not 0.0 < new_estimation - self.estimated_remaining_time < 2.0
-        ):
+        new_estimation = self.estimated_end_time - time.time() if self.estimated_end_time is not None else -1.0
+        if self.estimated_remaining_time is None or not 0.0 < new_estimation - self.estimated_remaining_time < 2.0:
             self.estimated_remaining_time = new_estimation
         return self.estimated_remaining_time
 
@@ -138,10 +127,7 @@ class TimeEstimator:
             self.last_update_progress = progress
             self.first_update_time = time.time()
 
-        if (
-            self.last_update_progress is not None
-            and progress - self.last_update_progress >= self.update_window
-        ):
+        if self.last_update_progress is not None and progress - self.last_update_progress >= self.update_window:
 
             if self.first_update_time is None or self.first_update_progress is None:
                 raise AssertionError(
@@ -151,9 +137,7 @@ class TimeEstimator:
 
             self.last_update_progress = progress
             # normalized progress since starting point for estimation
-            normalized_progress = (progress - self.first_update_progress) / (
-                100 - self.first_update_progress
-            )
+            normalized_progress = (progress - self.first_update_progress) / (100 - self.first_update_progress)
             time_elapsed = time.time() - self.first_update_time
             estimated_total = time_elapsed / normalized_progress
             if self.estimated_total_time is None:
@@ -161,7 +145,6 @@ class TimeEstimator:
                 self.estimated_total_time = estimated_total * self.inflation_factor
             else:
                 self.estimated_total_time = (
-                    self.smoothing_factor * self.estimated_total_time
-                    + (1 - self.smoothing_factor) * estimated_total
+                    self.smoothing_factor * self.estimated_total_time + (1 - self.smoothing_factor) * estimated_total
                 )
             self.estimated_end_time = self.first_update_time + self.estimated_total_time

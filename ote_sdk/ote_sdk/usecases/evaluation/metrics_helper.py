@@ -47,9 +47,7 @@ class MetricsHelper:
         :param cross_class_nms: Whether non-max suppression should be applied cross-class
         :return: FMeasure object
         """
-        return FMeasure(
-            resultset, vary_confidence_threshold, vary_nms_threshold, cross_class_nms
-        )
+        return FMeasure(resultset, vary_confidence_threshold, vary_nms_threshold, cross_class_nms)
 
     @staticmethod
     def compute_dice_averaged_over_pixels(

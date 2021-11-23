@@ -24,7 +24,12 @@ from .export import main as ote_export
 from .find import main as ote_find
 from .train import main as ote_train
 
-__all__ = ["ote_eval", "ote_export", "ote_find", "ote_train"]
+__all__ = [
+    "ote_eval",
+    "ote_export",
+    "ote_find",
+    "ote_train",
+]
 
 
 def parse_args():
@@ -33,7 +38,7 @@ def parse_args():
     """
 
     parser = argparse.ArgumentParser(add_help=False)
-    parser.add_argument("operation", choices=["find", "train", "eval", "export"])
+    parser.add_argument("operation", choices=[x[4:] for x in __all__])
 
     return parser.parse_known_args()[0]
 
@@ -41,10 +46,10 @@ def parse_args():
 def main():
     """
     This function is a single entry point for all OTE CLI related operations:
-      - train
       - eval
       - export
       - find
+      - train
     """
 
     name = parse_args().operation

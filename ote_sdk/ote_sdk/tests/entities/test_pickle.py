@@ -47,7 +47,5 @@ class TestPickle:
         original_id = ID(ObjectId())
         pickled_id = pickle.dumps(original_id)
         unpickled_id = pickle.loads(pickled_id)
-        assert id(original_id) != id(
-            pickled_id
-        ), "Expected two different memory instanced"
+        assert id(original_id) != id(pickled_id), "Expected two different memory instanced"
         assert original_id == unpickled_id, "Expected content of entities to be equal"

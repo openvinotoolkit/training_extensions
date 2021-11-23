@@ -114,9 +114,7 @@ class Color(ColorEntity):
         """
         Returns the color in a Hex representation
         """
-        return "#{:02x}{:02x}{:02x}{:02x}".format(
-            self.red, self.green, self.blue, self.alpha
-        )
+        return f"#{self.red:02x}{self.green:02x}{self.blue:02x}{self.alpha:02x}"
 
     @classmethod
     def from_hex_str(cls, string: str):
@@ -143,9 +141,7 @@ class Color(ColorEntity):
         if len(string) < 8:
             # If alpha channel misses, add it
             string += (8 - len(string)) * "f"
-        red, green, blue, alpha = tuple(
-            int(string[i : i + 2], 16) for i in (0, 2, 4, 6)
-        )
+        red, green, blue, alpha = tuple(int(string[i : i + 2], 16) for i in (0, 2, 4, 6))
         return cls(red=red, green=green, blue=blue, alpha=alpha)
 
     @classmethod

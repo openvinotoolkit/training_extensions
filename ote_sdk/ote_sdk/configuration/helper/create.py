@@ -64,16 +64,12 @@ def construct_attrib_from_dict(dict_object: Union[dict, DictConfig]) -> Exposure
     if object_type in get_enum_names(RuleElementMapping):
         mapping = RuleElementMapping
     else:
-        raise ValueError(
-            f"Invalid type found in configuration dictionary: {object_type}"
-        )
+        raise ValueError(f"Invalid type found in configuration dictionary: {object_type}")
     cls_constructor = mapping[object_type].value
     return cls_constructor(**value_dict)
 
 
-def construct_ui_rules_from_dict(
-    ui_exposure_settings: Union[dict, DictConfig]
-) -> UIRules:
+def construct_ui_rules_from_dict(ui_exposure_settings: Union[dict, DictConfig]) -> UIRules:
     """
     Takes a dictionary representation of ui exposure logic and constructs an UIRules element out of this.
 
@@ -106,9 +102,7 @@ def construct_ui_rules_from_dict(
     return ui_rules
 
 
-def create_default_configurable_enum_from_dict(
-    parameter_dict: Union[dict, DictConfig]
-) -> dict:
+def create_default_configurable_enum_from_dict(parameter_dict: Union[dict, DictConfig]) -> dict:
     """
     Takes a parameter_dict representing a configurable Enum and consumes the ENUM_NAME, OPTIONS and DEFAULT_VALUE
     metadata. From this, a new subclass of ConfigurableEnum is constructed. The DEFAULT_VALUE of the parameter_dict is
@@ -123,16 +117,16 @@ def create_default_configurable_enum_from_dict(
         if isinstance(param_dict, dict):
             parameter_dict = param_dict
         else:
-            raise TypeError(
-                f"Invalid input parameter_dict of type {type(parameter_dict)}"
-            )
+            raise TypeError(f"Invalid input parameter_dict of type {type(parameter_dict)}")
 
     # Create the enum using the functional Enum API. Unfortunately this doesn't play nice with mypy, so ignoring the
     # type error for now
+    # pylint: disable=unexpected-keyword-arg
     configurable_enum = ConfigurableEnum(
         parameter_dict.pop(metadata_keys.ENUM_NAME),
         names=parameter_dict.pop(metadata_keys.OPTIONS),
     )  # type: ignore
+    # pylint: enable=unexpected-keyword-arg
     serialized_default_value = parameter_dict.pop(metadata_keys.DEFAULT_VALUE)
 
     if isinstance(serialized_default_value, ConfigurableEnum):
@@ -145,9 +139,7 @@ def create_default_configurable_enum_from_dict(
     return parameter_dict
 
 
-def gather_parameter_arguments_and_values_from_dict(
-    config_dict_section: Union[dict, DictConfig]
-) -> dict:
+def gather_parameter_arguments_and_values_from_dict(config_dict_section: Union[dict, DictConfig]) -> dict:
     """
     Collect the arguments needed to construct an attrs class out of a config dict section representing a parameter
     group. Parameters living in the group are constructed in this function as well.
@@ -172,21 +164,14 @@ def gather_parameter_arguments_and_values_from_dict(
             parameter_dict = copy.deepcopy(value)
             parameter_type = str(parameter_dict.pop(metadata_keys.TYPE, None))
             if parameter_type == str(ConfigElementType.SELECTABLE):
-                parameter_dict = create_default_configurable_enum_from_dict(
-                    parameter_dict
-                )
+                parameter_dict = create_default_configurable_enum_from_dict(parameter_dict)
             elif parameter_type == str(None):
                 raise ValueError(
-                    f"No type was specified for the configurable "
-                    f"parameter or parameter group named '{key}'"
+                    f"No type was specified for the configurable " f"parameter or parameter group named '{key}'"
                 )
             parameter_value = parameter_dict.pop("value", None)
-            parameter_affects = parameter_dict.pop(
-                metadata_keys.AFFECTS_OUTCOME_OF, ModelLifecycle.NONE
-            )
-            parameter_affects = deserialize_enum_value(
-                parameter_affects, ModelLifecycle
-            )
+            parameter_affects = parameter_dict.pop(metadata_keys.AFFECTS_OUTCOME_OF, ModelLifecycle.NONE)
+            parameter_affects = deserialize_enum_value(parameter_affects, ModelLifecycle)
             parameter_ui_rules_dict = parameter_dict.pop(metadata_keys.UI_RULES, None)
             parameter_constructor = PrimitiveElementMapping[parameter_type].value
             parameter_ui_rules = construct_ui_rules_from_dict(parameter_ui_rules_dict)
@@ -212,9 +197,7 @@ def gather_parameter_arguments_and_values_from_dict(
     }
 
 
-def create_parameter_group(
-    config_dict_section: Union[dict, DictConfig]
-) -> ParameterGroupTypeVar:
+def create_parameter_group(config_dict_section: Union[dict, DictConfig]) -> ParameterGroupTypeVar:
     """
     Creates a parameter group object out of a config_dict_section, which is a dictionary or DictConfig representing a
     parameter group. This method should only be used for simple groups, i.e. parameter groups not containing any other
@@ -223,9 +206,7 @@ def create_parameter_group(
     :param config_dict_section: Dictionary representation of the parameter group to construct
     :return: ParameterGroup or ConfigurableParameters object constructed according to config_dict_section
     """
-    params_and_values = gather_parameter_arguments_and_values_from_dict(
-        config_dict_section
-    )
+    params_and_values = gather_parameter_arguments_and_values_from_dict(config_dict_section)
     make_arguments = params_and_values["make_arguments"]
     call_arguments = params_and_values["call_arguments"]
     all_parameter_values = params_and_values["values"]
@@ -249,9 +230,7 @@ def create_parameter_group(
     return parameter_group
 
 
-def create_nested_parameter_group(
-    config_dict_section: Union[dict, DictConfig]
-) -> ParameterGroup:
+def create_nested_parameter_group(config_dict_section: Union[dict, DictConfig]) -> ParameterGroup:
     """
     Creates a parameter group object out of a config_dict_section, which is a dictionary or DictConfig representing a
     parameter group. This method should be used for nested groups, and uses recursion to reconstruct those.
@@ -267,15 +246,11 @@ def create_nested_parameter_group(
         group_config_section = config_dict_section.pop(group_name)
 
         if not contains_parameter_groups(group_config_section):
-            childless_parameter_group: ParameterGroup = create_parameter_group(
-                group_config_section
-            )
+            childless_parameter_group: ParameterGroup = create_parameter_group(group_config_section)
             groups.update({group_name: childless_parameter_group})
 
         else:
-            parameter_group_with_children: ParameterGroup = (
-                create_nested_parameter_group(group_config_section)
-            )
+            parameter_group_with_children: ParameterGroup = create_nested_parameter_group(group_config_section)
             groups.update({group_name: parameter_group_with_children})
 
         main_config.pop(group_name, None)
@@ -306,9 +281,7 @@ def contains_parameter_groups(config_dict: Union[dict, DictConfig]) -> List[str]
         input_dict = config_dict
 
     groups: List[str] = []
-    group_category_types: List[str] = [
-        str(x) for x in ConfigElementType if x.category == ElementCategory.GROUPS
-    ]
+    group_category_types: List[str] = [str(x) for x in ConfigElementType if x.category == ElementCategory.GROUPS]
 
     for field_name, field_value in input_dict.items():
         if isinstance(field_value, dict):
@@ -340,13 +313,9 @@ def from_dict_attr(config_dict: Union[dict, DictConfig]) -> ConfigurableParamete
         # If the group itself contains groups, it is nested. If not, it's flat. Initialization for nested and flat
         # groups is different, hence we check this.
         if contains_parameter_groups(group_config_section):
-            config_groups.update(
-                {group_name: create_nested_parameter_group(group_config_section)}
-            )
+            config_groups.update({group_name: create_nested_parameter_group(group_config_section)})
         else:
-            config_groups.update(
-                {group_name: create_parameter_group(group_config_section)}
-            )
+            config_groups.update({group_name: create_parameter_group(group_config_section)})
 
     # Collect parameters for the high level config from the config_dict and create the config constructor, using the
     # type defined in the dict

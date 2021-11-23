@@ -125,9 +125,7 @@ def task_type_to_label_domain(task_type: TaskType) -> Domain:
     try:
         return mapping[task_type]
     except KeyError as exc:
-        raise ValueError(
-            f"Task type {task_type} does not have any associated label domain."
-        ) from exc
+        raise ValueError(f"Task type {task_type} does not have any associated label domain.") from exc
 
 
 @dataclass
@@ -208,9 +206,7 @@ class HyperParameterData:
         """
         self.__substitute_parameter_overrides(self.parameter_overrides, self.__data)
 
-    def __substitute_parameter_overrides(
-        self, override_dict: Dict, parameter_dict: Dict
-    ):
+    def __substitute_parameter_overrides(self, override_dict: Dict, parameter_dict: Dict):
         """
         Recursively substitutes overridden parameter values specified in `override_dict` into the base set of
         hyper parameters passed in as `parameter_dict`
@@ -220,9 +216,7 @@ class HyperParameterData:
             values are substituted
         """
         for key, value in override_dict.items():
-            if isinstance(value, dict) and not metadata_keys.allows_dictionary_values(
-                key
-            ):
+            if isinstance(value, dict) and not metadata_keys.allows_dictionary_values(key):
                 if key in parameter_dict.keys():
                     self.__substitute_parameter_overrides(value, parameter_dict[key])
                 else:
@@ -234,9 +228,7 @@ class HyperParameterData:
                 if metadata_keys.allows_model_template_override(key):
                     parameter_dict[key] = value
                 else:
-                    raise KeyError(
-                        f"{key} is not a valid keyword for hyper parameter overrides"
-                    )
+                    raise KeyError(f"{key} is not a valid keyword for hyper parameter overrides")
 
     @classmethod
     def __remove_parameter_values_from_data(cls, data: dict):
@@ -365,47 +357,27 @@ class ModelTemplate:
     initial_weights: Optional[str] = None
     training_targets: List[TargetDevice] = field(default_factory=list)
     inference_targets: List[TargetDevice] = field(default_factory=list)
-    dataset_requirements: DatasetRequirements = field(
-        default_factory=DatasetRequirements
-    )
-    model_optimization_methods: List[ModelOptimizationMethod] = field(
-        default_factory=list
-    )
+    dataset_requirements: DatasetRequirements = field(default_factory=DatasetRequirements)
+    model_optimization_methods: List[ModelOptimizationMethod] = field(default_factory=list)
     hyper_parameters: HyperParameterData = field(default_factory=HyperParameterData)
     is_trainable: bool = True
     capabilities: List[str] = field(default_factory=list)
     grpc_address: Optional[str] = None
     entrypoints: Optional[EntryPoints] = None
-    exportable_code_paths: ExportableCodePaths = field(
-        default_factory=ExportableCodePaths
-    )
+    exportable_code_paths: ExportableCodePaths = field(default_factory=ExportableCodePaths)
     task_type_sort_priority: int = -1
     gigaflops: float = 0
     size: float = 0
 
     def __post_init__(self):
         if self.instantiation == InstantiationType.GRPC and self.grpc_address == "":
-            raise ValueError(
-                "Task is registered as gRPC, but no gRPC address is specified"
-            )
+            raise ValueError("Task is registered as gRPC, but no gRPC address is specified")
         if self.instantiation == InstantiationType.CLASS and self.entrypoints is None:
-            raise ValueError(
-                "Task is registered as CLASS, but entrypoints were not specified"
-            )
-        if (
-            self.task_family == TaskFamily.VISION
-            and self.hyper_parameters.base_path is None
-        ):
-            raise ValueError(
-                "Task is registered as a VISION task but no hyper parameters were defined."
-            )
-        if (
-            self.task_family != TaskFamily.VISION
-            and self.hyper_parameters.base_path is not None
-        ):
-            raise ValueError(
-                "Hyper parameters are currently not supported for non-VISION tasks."
-            )
+            raise ValueError("Task is registered as CLASS, but entrypoints were not specified")
+        if self.task_family == TaskFamily.VISION and self.hyper_parameters.base_path is None:
+            raise ValueError("Task is registered as a VISION task but no hyper parameters were defined.")
+        if self.task_family != TaskFamily.VISION and self.hyper_parameters.base_path is not None:
+            raise ValueError("Hyper parameters are currently not supported for non-VISION tasks.")
 
         # Load the full hyper parameters
         self.hyper_parameters.load_parameters(self.model_template_path)
@@ -468,9 +440,7 @@ TRAINABLE_TASK_TYPES: Sequence[TaskType] = (
 )
 
 
-def _parse_model_template_from_omegaconf(
-    config: Union[DictConfig, ListConfig]
-) -> ModelTemplate:
+def _parse_model_template_from_omegaconf(config: Union[DictConfig, ListConfig]) -> ModelTemplate:
     """
     Parse an OmegaConf configuration into a model template.
     """
@@ -487,9 +457,7 @@ def parse_model_template(model_template_path: str) -> ModelTemplate:
     """
     config = OmegaConf.load(model_template_path)
     if not isinstance(config, DictConfig):
-        raise ValueError(
-            "Expected the configuration file to contain a dictionary, not a list"
-        )
+        raise ValueError("Expected the configuration file to contain a dictionary, not a list")
 
     if "model_template_id" not in config:
         config["model_template_id"] = config["name"].replace(" ", "_")

@@ -42,9 +42,7 @@ class DefaultModelParameters(ConfigurableParameters):
     """
 
     header: str = attrib(default="Default model hyper parameters")
-    description: str = attrib(
-        default="Default model hyper parameter section description", kw_only=True
-    )
+    description: str = attrib(default="Default model hyper parameter section description", kw_only=True)
 
     @attrs
     class _LearningParameters(ParameterGroup):
@@ -85,8 +83,7 @@ class DefaultModelParameters(ConfigurableParameters):
             default_value=1e-3,
             min_value=1e-30,
             max_value=1e10,
-            description="Increasing this value will speed up training "
-            "convergence but might make it unstable.",
+            description="Increasing this value will speed up training " "convergence but might make it unstable.",
             affects_outcome_of=ModelLifecycle.TRAINING,
         )
 

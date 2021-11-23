@@ -76,15 +76,11 @@ class Rectangle(Shape):
         self.y2 = y2
         if self.width <= 0 or self.height <= 0:
             raise ValueError(
-                f"Invalid rectangle with coordinates: x1={self.x1}, y1={self.y1}, "
-                f"x2={self.x2}, y2={self.y2}"
+                f"Invalid rectangle with coordinates: x1={self.x1}, y1={self.y1}, " f"x2={self.x2}, y2={self.y2}"
             )
 
     def __repr__(self):
-        return (
-            f"Rectangle(x={self.x1}, y={self.y1}, width={self.width}, "
-            f"height={self.height})"
-        )
+        return f"Rectangle(x={self.x1}, y={self.y1}, width={self.width}, " f"height={self.height})"
 
     def __eq__(self, other):
         if isinstance(other, Rectangle):
@@ -196,9 +192,7 @@ class Rectangle(Shape):
         return shapely_polygon(points)
 
     @classmethod
-    def generate_full_box(
-        cls, labels: Optional[List[ScoredLabel]] = None
-    ) -> "Rectangle":
+    def generate_full_box(cls, labels: Optional[List[ScoredLabel]] = None) -> "Rectangle":
         """
         Returns a rectangle that fully encapsulates the normalized coordinate space,
         with `labels`

@@ -68,14 +68,12 @@ class Accuracy(IPerformanceProvider):
         resultset: ResultSetEntity,
         average: MetricAverageMethod = MetricAverageMethod.MICRO,
     ):
-        self._unnormalized_matrices: List[
-            MatrixMetric
-        ] = compute_unnormalized_confusion_matrices_from_resultset(resultset)
+        self._unnormalized_matrices: List[MatrixMetric] = compute_unnormalized_confusion_matrices_from_resultset(
+            resultset
+        )
 
         # accuracy computation
-        mean_accuracy = self._compute_accuracy(
-            average=average, confusion_matrices=self._unnormalized_matrices
-        )
+        mean_accuracy = self._compute_accuracy(average=average, confusion_matrices=self._unnormalized_matrices)
         self._accuracy = ScoreMetric(value=mean_accuracy, name="Accuracy")
 
     @property
@@ -89,9 +87,7 @@ class Accuracy(IPerformanceProvider):
         confusion_matrix_dashboard_metrics: List[MetricsGroup] = []
 
         # Use normalized matrix for UI
-        normalized_matrices: List[MatrixMetric] = copy.deepcopy(
-            self._unnormalized_matrices
-        )
+        normalized_matrices: List[MatrixMetric] = copy.deepcopy(self._unnormalized_matrices)
         for unnormalized_matrix in normalized_matrices:
             unnormalized_matrix.normalize()
 
@@ -102,27 +98,17 @@ class Accuracy(IPerformanceProvider):
             column_header="True label",
         )
         confusion_matrix_dashboard_metrics.append(
-            MatrixMetricsGroup(
-                metrics=normalized_matrices, visualization_info=confusion_matrix_info
-            )
+            MatrixMetricsGroup(metrics=normalized_matrices, visualization_info=confusion_matrix_info)
         )
         #  Compute precision and recall MetricGroups and append them to the dashboard metrics
         for _confusion_matrix in self._unnormalized_matrices:
-            confusion_matrix_dashboard_metrics.append(
-                precision_metrics_group(_confusion_matrix)
-            )
-            confusion_matrix_dashboard_metrics.append(
-                recall_metrics_group(_confusion_matrix)
-            )
+            confusion_matrix_dashboard_metrics.append(precision_metrics_group(_confusion_matrix))
+            confusion_matrix_dashboard_metrics.append(recall_metrics_group(_confusion_matrix))
 
-        return Performance(
-            score=self.accuracy, dashboard_metrics=confusion_matrix_dashboard_metrics
-        )
+        return Performance(score=self.accuracy, dashboard_metrics=confusion_matrix_dashboard_metrics)
 
     @staticmethod
-    def _compute_accuracy(
-        average: MetricAverageMethod, confusion_matrices: List[MatrixMetric]
-    ) -> float:
+    def _compute_accuracy(average: MetricAverageMethod, confusion_matrices: List[MatrixMetric]) -> float:
         """
         Compute accuracy using the confusion matrices
 
@@ -135,12 +121,8 @@ class Accuracy(IPerformanceProvider):
         :raises: RuntimeError, when the averaging methods is not known
         """
         # count correct predictions and total annotations
-        correct_per_label_group = [
-            np.trace(mat.matrix_values) for mat in confusion_matrices
-        ]
-        total_per_label_group = [
-            np.sum(mat.matrix_values) for mat in confusion_matrices
-        ]
+        correct_per_label_group = [np.trace(mat.matrix_values) for mat in confusion_matrices]
+        total_per_label_group = [np.sum(mat.matrix_values) for mat in confusion_matrices]
         # check if all label groups have annotations
         if not np.any(total_per_label_group):
             raise ValueError("The ground truth dataset must contain annotations.")
@@ -173,9 +155,7 @@ def precision_metrics_group(confusion_matrix: MatrixMetric) -> MetricsGroup:
 
     per_class_precision = [
         ScoreMetric(class_, value=precision)
-        for (class_, precision) in zip(
-            labels, precision_per_class(confusion_matrix.matrix_values)
-        )
+        for (class_, precision) in zip(labels, precision_per_class(confusion_matrix.matrix_values))
     ]
 
     return BarMetricsGroup(
@@ -205,9 +185,7 @@ def recall_metrics_group(confusion_matrix: MatrixMetric) -> MetricsGroup:
 
     per_class_recall = [
         ScoreMetric(class_, value=recall)
-        for (class_, recall) in zip(
-            labels, recall_per_class(confusion_matrix.matrix_values)
-        )
+        for (class_, recall) in zip(labels, recall_per_class(confusion_matrix.matrix_values))
     ]
 
     return BarMetricsGroup(
@@ -239,25 +217,11 @@ def __get_gt_and_predicted_label_indices_from_resultset(
     pred_dataset.sort_items()
 
     # Iterate over each dataset item, and collect the labels for this item (pred and gt)
-    task_labels = resultset.model.configuration.label_schema.get_labels(
-        include_empty=True
-    )
+    task_labels = resultset.model.configuration.label_schema.get_labels(include_empty=True)
     for gt_item, pred_item in zip(gt_dataset, pred_dataset):
-        if isinstance(gt_item, DatasetItemEntity) and isinstance(
-            pred_item, DatasetItemEntity
-        ):
-            true_label_idx.append(
-                {
-                    task_labels.index(label)
-                    for label in gt_item.get_roi_labels(task_labels)
-                }
-            )
-            predicted_label_idx.append(
-                {
-                    task_labels.index(label)
-                    for label in pred_item.get_roi_labels(task_labels)
-                }
-            )
+        if isinstance(gt_item, DatasetItemEntity) and isinstance(pred_item, DatasetItemEntity):
+            true_label_idx.append({task_labels.index(label) for label in gt_item.get_roi_labels(task_labels)})
+            predicted_label_idx.append({task_labels.index(label) for label in pred_item.get_roi_labels(task_labels)})
 
     return true_label_idx, predicted_label_idx
 
@@ -277,25 +241,16 @@ def __compute_unnormalized_confusion_matrices_for_label_group(
     :param task_labels:
     """
     map_task_labels_idx_to_group_idx = {
-        task_labels.index(label): i_group
-        for i_group, label in enumerate(label_group.labels)
+        task_labels.index(label): i_group for i_group, label in enumerate(label_group.labels)
     }
     set_group_labels_idx = set(map_task_labels_idx_to_group_idx.keys())
-    group_label_names = [
-        task_labels[label_idx].name for label_idx in set_group_labels_idx
-    ]
+    group_label_names = [task_labels[label_idx].name for label_idx in set_group_labels_idx]
 
     if len(group_label_names) == 1:
         # Single-class
         # we use "not" to make presence of a class to be at index 0, while the absence of it at index 1
-        y_true = [
-            int(not set_group_labels_idx.issubset(true_labels))
-            for true_labels in true_label_idx
-        ]
-        y_pred = [
-            int(not set_group_labels_idx.issubset(pred_labels))
-            for pred_labels in predicted_label_idx
-        ]
+        y_true = [int(not set_group_labels_idx.issubset(true_labels)) for true_labels in true_label_idx]
+        y_pred = [int(not set_group_labels_idx.issubset(pred_labels)) for pred_labels in predicted_label_idx]
         group_label_names += [f"~ {group_label_names[0]}"]
         column_labels = group_label_names.copy()
         remove_last_row = False
@@ -304,14 +259,8 @@ def __compute_unnormalized_confusion_matrices_for_label_group(
         undefined_idx = len(group_label_names)  # to define missing value
 
         # find the intersections between GT and task labels, and Prediction and task labels
-        true_intersections = [
-            true_labels.intersection(set_group_labels_idx)
-            for true_labels in true_label_idx
-        ]
-        pred_intersections = [
-            pred_labels.intersection(set_group_labels_idx)
-            for pred_labels in predicted_label_idx
-        ]
+        true_intersections = [true_labels.intersection(set_group_labels_idx) for true_labels in true_label_idx]
+        pred_intersections = [pred_labels.intersection(set_group_labels_idx) for pred_labels in predicted_label_idx]
 
         # map the intersection to 0-index value
         y_true = [
@@ -331,9 +280,7 @@ def __compute_unnormalized_confusion_matrices_for_label_group(
         column_labels.append("Other")
         remove_last_row = True
 
-    matrix_data = sklearn_confusion_matrix(
-        y_true, y_pred, labels=list(range(len(column_labels)))
-    )
+    matrix_data = sklearn_confusion_matrix(y_true, y_pred, labels=list(range(len(column_labels))))
     if remove_last_row:
         # matrix clean up
         matrix_data = np.delete(matrix_data, -1, 0)
@@ -363,10 +310,7 @@ def compute_unnormalized_confusion_matrices_from_resultset(
     :raises: ValueError, when either the predicted or ground truth dataset is empty
     """
 
-    if (
-        len(resultset.ground_truth_dataset) == 0
-        or len(resultset.prediction_dataset) == 0
-    ):
+    if len(resultset.ground_truth_dataset) == 0 or len(resultset.prediction_dataset) == 0:
         raise ValueError("Cannot compute the confusion matrix of an empty result set.")
 
     unnormalized_confusion_matrices: List[MatrixMetric] = []
@@ -374,9 +318,7 @@ def compute_unnormalized_confusion_matrices_from_resultset(
         true_label_idx,
         predicted_label_idx,
     ) = __get_gt_and_predicted_label_indices_from_resultset(resultset)
-    task_labels = resultset.model.configuration.label_schema.get_labels(
-        include_empty=False
-    )
+    task_labels = resultset.model.configuration.label_schema.get_labels(include_empty=False)
 
     # Confusion matrix computation
     for label_group in resultset.model.configuration.label_schema.get_groups():

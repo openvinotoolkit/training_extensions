@@ -18,6 +18,15 @@ Model training tool.
 
 import argparse
 
+from ote_sdk.configuration.helper import create
+from ote_sdk.entities.inference_parameters import InferenceParameters
+from ote_sdk.entities.label_schema import LabelSchemaEntity
+from ote_sdk.entities.model import ModelEntity, ModelStatus
+from ote_sdk.entities.resultset import ResultSetEntity
+from ote_sdk.entities.subset import Subset
+from ote_sdk.entities.task_environment import TaskEnvironment
+from ote_sdk.usecases.adapters.model_adapter import ModelAdapter
+
 from ote_cli.datasets import get_dataset_class
 from ote_cli.registry import find_and_parse_model_template
 from ote_cli.utils.config import override_parameters
@@ -27,14 +36,6 @@ from ote_cli.utils.parser import (
     add_hyper_parameters_sub_parser,
     gen_params_dict_from_args,
 )
-from ote_sdk.configuration.helper import create
-from ote_sdk.entities.inference_parameters import InferenceParameters
-from ote_sdk.entities.label_schema import LabelSchemaEntity
-from ote_sdk.entities.model import ModelEntity, ModelStatus
-from ote_sdk.entities.resultset import ResultSetEntity
-from ote_sdk.entities.subset import Subset
-from ote_sdk.entities.task_environment import TaskEnvironment
-from ote_sdk.usecases.adapters.model_adapter import ModelAdapter
 
 
 def parse_args():
@@ -79,9 +80,7 @@ def parse_args():
         required=False,
         help="Load only weights from previously saved checkpoint",
     )
-    parser.add_argument(
-        "--save-weights", required=True, help="Location to store wiehgts."
-    )
+    parser.add_argument("--save-weights", required=True, help="Location to store wiehgts.")
 
     add_hyper_parameters_sub_parser(parser, hyper_parameters)
 
@@ -126,9 +125,7 @@ def main():
         model = ModelEntity(
             train_dataset=dataset,
             configuration=environment.get_model_configuration(),
-            model_adapters={
-                "weights.pth": ModelAdapter(load_model_weights(args.load_weights))
-            },
+            model_adapters={"weights.pth": ModelAdapter(load_model_weights(args.load_weights))},
         )
         environment.model = model
 

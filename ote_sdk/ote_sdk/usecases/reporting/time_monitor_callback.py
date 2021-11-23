@@ -1,3 +1,7 @@
+"""
+Time monitor callback module.
+"""
+
 # INTEL CONFIDENTIAL
 #
 # Copyright (C) 2021 Intel Corporation
@@ -11,6 +15,8 @@
 # This software and the related documents are provided as is,
 # with no express or implied warranties, other than those that are expressly stated
 # in the License.
+
+# pylint: disable=too-many-instance-attributes,too-many-arguments
 
 import logging
 import math
@@ -51,9 +57,7 @@ class TimeMonitorCallback(Callback):
         self.val_steps = num_val_steps
         self.test_steps = num_test_steps
         self.steps_per_epoch = self.train_steps + self.val_steps
-        self.total_steps = math.ceil(
-            self.steps_per_epoch * self.total_epochs + num_test_steps
-        )
+        self.total_steps = math.ceil(self.steps_per_epoch * self.total_epochs + num_test_steps)
         self.current_step = 0
         self.current_epoch = 0
 
@@ -90,10 +94,7 @@ class TimeMonitorCallback(Callback):
         min_abs_threshold = 30  # seconds
         if self.is_training and self.current_step > 2:
             step_duration = time.time() - self.start_step_time
-            if (
-                step_duration > min_abs_threshold
-                and step_duration > factor * self.average_step
-            ):
+            if step_duration > min_abs_threshold and step_duration > factor * self.average_step:
                 logger.error(
                     f"Step {self.current_step} has taken {step_duration}s which is "
                     f">{min_abs_threshold}s and  {factor} times "
@@ -136,9 +137,10 @@ class TimeMonitorCallback(Callback):
     def _calculate_average_epoch(self):
         if len(self.past_epoch_duration) > self.epoch_history:
             del self.past_epoch_duration[0]
-        self.average_epoch = sum(self.past_epoch_duration) / len(
-            self.past_epoch_duration
-        )
+        self.average_epoch = sum(self.past_epoch_duration) / len(self.past_epoch_duration)
 
     def get_progress(self):
+        """
+        Returns current progress as a percentage.
+        """
         return (self.current_step / self.total_steps) * 100

@@ -30,11 +30,11 @@ from ote_sdk.configuration.enums.config_element_type import ConfigElementType
 from .types import Action, Operator
 from .utils import attr_convert_action, attr_convert_operator
 
-ALLOWED_RULE_VALUE_TYPES = Union[int, str, float, bool]
+ALLOWED_RULE_VALUE_TYPES = Union[int, str, float, bool]  # pylint: disable=invalid-name
 
 
 @attrs(auto_attribs=True)
-class Rule(object):
+class Rule:
     """
     This class represents a `operator` applied to the `value` of the configurable parameter `parameter`. The parameter
     for which the rule should be evaluated is identified by name, or by a list of names representing the attribute path
@@ -43,12 +43,8 @@ class Rule(object):
 
     parameter: Union[str, List[str]]
     value: ALLOWED_RULE_VALUE_TYPES
-    operator: Operator = attrib(
-        default=Operator.EQUAL_TO, converter=attr_convert_operator
-    )
-    type: ConfigElementType = attrib(
-        default=ConfigElementType.RULE, on_setattr=setters.frozen
-    )
+    operator: Operator = attrib(default=Operator.EQUAL_TO, converter=attr_convert_operator)
+    type: ConfigElementType = attrib(default=ConfigElementType.RULE, on_setattr=setters.frozen)
 
     def to_dict(self, enum_to_str: bool = True) -> dict:
         """
@@ -65,7 +61,7 @@ class Rule(object):
 
 
 @attrs(auto_attribs=True)
-class UIRules(object):
+class UIRules:
     """
     This class allows the combination of ExposureRules using boolean logic. The class can be set as an attribute of a
     configurable parameter. If the `rules` (combined according to the `operator`) evaluate to True, the corresponding
@@ -76,14 +72,11 @@ class UIRules(object):
 
     rules: List[Union[Rule, UIRules]] = attrib(kw_only=True)
     operator: Operator = attrib(default=Operator.AND, converter=attr_convert_operator)
-    action: Action = attrib(
-        default=Action.DISABLE_EDITING, converter=attr_convert_action
-    )
-    type: ConfigElementType = attrib(
-        default=ConfigElementType.UI_RULES, on_setattr=setters.frozen
-    )
+    action: Action = attrib(default=Action.DISABLE_EDITING, converter=attr_convert_action)
+    type: ConfigElementType = attrib(default=ConfigElementType.UI_RULES, on_setattr=setters.frozen)
 
     def add_rule(self, rule: Union[Rule, UIRules]):
+        """Adds rule."""
         self.rules.append(rule)
 
     def to_dict(self, enum_to_str: bool = True) -> dict:

@@ -24,8 +24,8 @@ nested_parameter_group:
       ui_rules:
         rules:
           - parameter:
-             - nested_parameter_group
-             - show_subgroup_one
+              - nested_parameter_group
+              - show_subgroup_one
             type: RULE
             value: false
         action: HIDE
@@ -114,10 +114,10 @@ dummy_float_selectable:
   default_value: 2.0
   header: Test float selectable
   options:
-  - 1.0
-  - 2.0
-  - 3.0
-  - 4.0
+    - 1.0
+    - 2.0
+    - 3.0
+    - 4.0
   type: FLOAT_SELECTABLE
 dummy_selectable:
   default_value: bogus

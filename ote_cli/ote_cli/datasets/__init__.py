@@ -16,31 +16,7 @@ File system based datasets registry.
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from typing import Optional, Type
-
-from ote_sdk.entities.datasets import DatasetEntity
-
-try:
-    ObjectDetectionDataset: Optional[Type[DatasetEntity]]
-    from .object_detection.dataset import ObjectDetectionDataset
-except ImportError:
-    ObjectDetectionDataset = None
-
-try:
-    ImageClassificationDataset: Optional[Type[DatasetEntity]]
-    from .image_classification.dataset import ImageClassificationDataset
-except ImportError:
-    ImageClassificationDataset = None
-
-try:
-    SemanticSegmentationDataset: Optional[Type[DatasetEntity]]
-    from .semantic_segmentation.dataset import SemanticSegmentationDataset
-except ImportError:
-    SemanticSegmentationDataset = None
-
-assert any(
-    (ObjectDetectionDataset, ImageClassificationDataset, SemanticSegmentationDataset)
-)
+from ote_sdk.entities.model_template import TaskType
 
 
 def get_dataset_class(task_type):
@@ -48,20 +24,20 @@ def get_dataset_class(task_type):
     Returns a dataset class by task type.
 
     Args:
-        task_type: A task type such as detection, classification, segmentation.
+        task_type: A task type such as DETECTION, CLASSIFICATION, SEGMENTATION.
     """
-    registry = {
-        "detection": ObjectDetectionDataset,
-        "classification": ImageClassificationDataset,
-        "segmentation": SemanticSegmentationDataset,
-    }
 
-    return registry[str(task_type).lower()]
+    if task_type == TaskType.DETECTION:
+        from .object_detection.dataset import ObjectDetectionDataset
 
+        return ObjectDetectionDataset
+    if task_type == TaskType.CLASSIFICATION:
+        from .image_classification.dataset import ImageClassificationDataset
 
-__all__ = [
-    "ObjectDetectionDataset",
-    "ImageClassificationDataset",
-    "SemanticSegmentationDataset",
-    "get_dataset_class",
-]
+        return ImageClassificationDataset
+    if task_type == TaskType.SEGMENTATION:
+        from .semantic_segmentation.dataset import SemanticSegmentationDataset
+
+        return SemanticSegmentationDataset
+
+    raise ValueError(f"Invalid task type: {task_type}")

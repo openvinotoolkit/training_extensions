@@ -41,10 +41,7 @@ class ConfigurableEnum(Enum):
         Checks whether one ConfigurableEnum instance (or instance of a subclass thereof) is equal to the `other`
         object. Comparison is made based on class name, instance value and instance name.
         """
-        if (
-            isinstance(other, ConfigurableEnum)
-            and self.__class__.__name__ == other.__class__.__name__
-        ):
+        if isinstance(other, ConfigurableEnum) and self.__class__.__name__ == other.__class__.__name__:
             return self.value == other.value and self.name == other.name
         return False
 
@@ -60,9 +57,7 @@ class ConfigurableEnum(Enum):
         Creates a dictionary representation of the ConfigurableEnum, including the name of the enum and the
         (name, value) pairs representing its members.
         """
-        options_dict = {
-            name: instance.value for name, instance in cls.__members__.items()
-        }
+        options_dict = {name: instance.value for name, instance in cls.__members__.items()}
 
         return {ENUM_NAME: cls.__name__, OPTIONS: options_dict}
 

@@ -21,12 +21,11 @@ from typing import Dict, List, Optional, Union
 
 from anomalib.datasets.transforms import PreProcessor
 from omegaconf import DictConfig, ListConfig
+from ote_sdk.entities.datasets import DatasetEntity
+from ote_sdk.entities.subset import Subset
 from pytorch_lightning.core.datamodule import LightningDataModule
 from torch import Tensor
 from torch.utils.data import DataLoader, Dataset
-
-from ote_sdk.entities.datasets import DatasetEntity
-from ote_sdk.entities.subset import Subset
 
 
 class OTEAnomalyDataset(Dataset):

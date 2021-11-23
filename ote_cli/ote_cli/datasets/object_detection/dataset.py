@@ -17,7 +17,6 @@ Module contains ObjectDetectionDataset
 # and limitations under the License.
 
 from mmdet.apis.ote.extension.datasets.data_utils import load_dataset_items_coco_format
-
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.subset import Subset
 

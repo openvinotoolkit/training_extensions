@@ -28,18 +28,16 @@ def gen_param_help(hyper_parameters):
 
     help_keys = ("header", "type", "default_value", "max_value", "min_value")
 
-    def _gen_param_help(prefix, d):
+    def _gen_param_help(prefix, cur_params):
         cur_help = {}
-        for k, val in d.items():
+        for k, val in cur_params.items():
             if isinstance(val, dict) and "default_value" not in val.keys():
                 if "visible_in_ui" in val and val["visible_in_ui"]:
                     x = _gen_param_help(prefix + f"{k}.", val)
                     cur_help.update(x)
             elif isinstance(val, dict) and "default_value" in val.keys():
                 assert isinstance(val["default_value"], (int, float, str))
-                help_str = "\n".join(
-                    [f"{kk}: {val[kk]}" for kk in help_keys if kk in val.keys()]
-                )
+                help_str = "\n".join([f"{kk}: {val[kk]}" for kk in help_keys if kk in val.keys()])
                 assert "." not in k
 
                 if val["type"] == "SELECTABLE":

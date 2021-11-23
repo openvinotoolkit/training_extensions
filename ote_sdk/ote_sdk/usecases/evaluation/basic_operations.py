@@ -47,9 +47,7 @@ def get_intersections_and_cardinalities(
     for reference, prediction in zip(references, predictions):
         intersection = np.where(reference == prediction, reference, 0)
         all_intersections[None] += np.count_nonzero(intersection)
-        all_cardinalities[None] += np.count_nonzero(reference) + np.count_nonzero(
-            prediction
-        )
+        all_cardinalities[None] += np.count_nonzero(reference) + np.count_nonzero(prediction)
         for i, label in enumerate(labels):
             label_num = i + 1
             all_intersections[label] += np.count_nonzero(intersection == label_num)
@@ -77,9 +75,7 @@ def intersection_box(box1: Rectangle, box2: Rectangle) -> Optional[List[float]]:
     return [x_left, y_top, x_right, y_bottom]
 
 
-def intersection_over_union(
-    box1: Rectangle, box2: Rectangle, intersection: Optional[List[float]] = None
-) -> float:
+def intersection_over_union(box1: Rectangle, box2: Rectangle, intersection: Optional[List[float]] = None) -> float:
     """
     Calculate the Intersection over Union (IoU) of two bounding boxes.
 
@@ -93,18 +89,14 @@ def intersection_over_union(
     if intersection is None:
         intersection = intersection_box(box1, box2)
     if intersection is not None:
-        intersection_area = (intersection[2] - intersection[0]) * (
-            intersection[3] - intersection[1]
-        )
+        intersection_area = (intersection[2] - intersection[0]) * (intersection[3] - intersection[1])
         box1_area = (box1.x2 - box1.x1) * (box1.y2 - box1.y1)
         box2_area = (box2.x2 - box2.x1) * (box2.y2 - box2.y1)
         union_area = float(box1_area + box2_area - intersection_area)
         if union_area != 0:
             iou = intersection_area / union_area
     if iou < 0.0 or iou > 1.0:
-        raise ValueError(
-            f"intersection over union should be in range [0,1], instead got iou={iou}"
-        )
+        raise ValueError(f"intersection over union should be in range [0,1], instead got iou={iou}")
     return iou
 
 
@@ -137,9 +129,7 @@ def recall_per_class(matrix: np.ndarray) -> np.ndarray:
     return divide_arrays_with_possible_zeros(tp_per_class, sum_tp_fn_per_class)
 
 
-def divide_arrays_with_possible_zeros(
-    array1: np.ndarray, array2: np.ndarray
-) -> np.ndarray:
+def divide_arrays_with_possible_zeros(array1: np.ndarray, array2: np.ndarray) -> np.ndarray:
     """
     Sometimes the denominator in the precision or recall computation can contain a zero. In that case, a zero is
     returned for that element (https://stackoverflow.com/a/32106804).
@@ -150,10 +140,6 @@ def divide_arrays_with_possible_zeros(
     """
     with np.errstate(divide="ignore", invalid="ignore"):
         result = np.true_divide(array1, array2)
-        result[
-            result == np.inf
-        ] = 0  # If the denominator is a float, np.inf is returned
-        result = np.nan_to_num(
-            result
-        )  # If the denominator is an int, np.nan is returned
+        result[result == np.inf] = 0  # If the denominator is a float, np.inf is returned
+        result = np.nan_to_num(result)  # If the denominator is an int, np.nan is returned
     return result

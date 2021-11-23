@@ -19,10 +19,6 @@ Model exporting tool.
 import argparse
 import os
 
-from ote_cli.datasets import get_dataset_class
-from ote_cli.registry import find_and_parse_model_template
-from ote_cli.utils.importing import get_impl_class
-from ote_cli.utils.loading import load_model_weights
 from ote_sdk.configuration.helper import create
 from ote_sdk.entities.id import ID
 from ote_sdk.entities.label import LabelEntity
@@ -31,6 +27,11 @@ from ote_sdk.entities.model import ModelEntity, ModelStatus
 from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.usecases.adapters.model_adapter import ModelAdapter
 from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType
+
+from ote_cli.datasets import get_dataset_class
+from ote_cli.registry import find_and_parse_model_template
+from ote_cli.utils.importing import get_impl_class
+from ote_cli.utils.loading import load_model_weights
 
 
 def parse_args():
@@ -72,10 +73,7 @@ def main():
     assert args.labels is not None or args.ann_files is not None
 
     if args.labels:
-        labels = [
-            LabelEntity(l, template.task_type, id=ID(i))
-            for i, l in enumerate(args.labels)
-        ]
+        labels = [LabelEntity(l, template.task_type, id=ID(i)) for i, l in enumerate(args.labels)]
     else:
         dataset_class = get_dataset_class(template.task_type)
         dataset = dataset_class({"ann_file": args.ann_files})
@@ -105,9 +103,7 @@ def main():
 
     task = task_class(task_environment=environment)
 
-    exported_model = ModelEntity(
-        None, environment.get_model_configuration(), model_status=ModelStatus.NOT_READY
-    )
+    exported_model = ModelEntity(None, environment.get_model_configuration(), model_status=ModelStatus.NOT_READY)
 
     task.export(ExportType.OPENVINO, exported_model)
 
@@ -116,7 +112,5 @@ def main():
     with open(os.path.join(args.save_model_to, "model.bin"), "wb") as write_file:
         write_file.write(exported_model.get_data("openvino.bin"))
 
-    with open(
-        os.path.join(args.save_model_to, "model.xml"), "w", encoding="UTF-8"
-    ) as write_file:
+    with open(os.path.join(args.save_model_to, "model.xml"), "w", encoding="UTF-8") as write_file:
         write_file.write(exported_model.get_data("openvino.xml").decode())

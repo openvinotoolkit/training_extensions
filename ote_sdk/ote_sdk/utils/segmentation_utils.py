@@ -33,9 +33,7 @@ from ote_sdk.utils.shape_factory import ShapeFactory
 from ote_sdk.utils.time_utils import timeit
 
 
-def mask_from_dataset_item(
-    dataset_item: DatasetItemEntity, labels: List[LabelEntity]
-) -> np.ndarray:
+def mask_from_dataset_item(dataset_item: DatasetItemEntity, labels: List[LabelEntity]) -> np.ndarray:
     """
     Creates a mask from dataset item. The mask will be two dimensional,
     and the value of each pixel matches the class index with offset 1. The background
@@ -84,9 +82,7 @@ def mask_from_annotation(
         if not isinstance(shape, Polygon):
             shape = ShapeFactory.shape_as_polygon(annotation.shape)
         known_labels = [
-            label
-            for label in annotation.get_labels()
-            if isinstance(label, ScoredLabel) and label.get_label() in labels
+            label for label in annotation.get_labels() if isinstance(label, ScoredLabel) and label.get_label() in labels
         ]
         if len(known_labels) == 0:
             # Skip unknown shapes
@@ -99,9 +95,7 @@ def mask_from_annotation(
         for point in shape.points:
             contour.append([int(point.x * width), int(point.y * height)])
 
-        mask = cv2.drawContours(
-            mask, np.asarray([contour]), 0, (class_idx, class_idx, class_idx), -1
-        )
+        mask = cv2.drawContours(mask, np.asarray([contour]), 0, (class_idx, class_idx, class_idx), -1)
 
     mask = np.expand_dims(mask, axis=2)
 
@@ -136,8 +130,7 @@ def create_hard_prediction_from_soft_prediction(
         hard_prediction = soft_prediction_blurred > soft_threshold
     else:
         raise ValueError(
-            f"Invalid prediction input of shape {soft_prediction.shape}. "
-            f"Expected either a 2D or 3D array."
+            f"Invalid prediction input of shape {soft_prediction.shape}. " f"Expected either a 2D or 3D array."
         )
     return hard_prediction
 
@@ -182,24 +175,17 @@ def create_annotation_from_segmentation_map(
 
         # Contour retrieval mode CCOMP (Connected components) creates a two-level
         # hierarchy of contours
-        contours, hierarchies = cv2.findContours(
-            label_index_map, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE
-        )
+        contours, hierarchies = cv2.findContours(label_index_map, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
 
         if hierarchies is not None:
             for contour, hierarchy in zip(contours, hierarchies[0]):
                 if hierarchy[3] == -1:
                     # In this case a contour does not represent a hole
-                    points = [
-                        Point(x=point[0][0] / width, y=point[0][1] / height)
-                        for point in contour
-                    ]
+                    points = [Point(x=point[0][0] / width, y=point[0][1] / height) for point in contour]
 
                     # compute probability of the shape
                     mask = np.zeros(hard_prediction.shape, dtype=np.uint8)
-                    cv2.drawContours(
-                        mask, contour, contourIdx=-1, color=1, thickness=-1
-                    )
+                    cv2.drawContours(mask, contour, contourIdx=-1, color=1, thickness=-1)
                     probability = cv2.mean(current_label_soft_prediction, mask)[0]
 
                     if len(list(contour)) > 2:

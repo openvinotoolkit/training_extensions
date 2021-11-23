@@ -257,9 +257,7 @@ class CurveMetric(MetricEntity):
         self.__ys = ys
         if xs is not None:
             if len(xs) != len(self.__ys):
-                raise ValueError(
-                    f"Curve error must contain the same length for x and y: ({len(xs)} vs {len(self.ys)})"
-                )
+                raise ValueError(f"Curve error must contain the same length for x and y: ({len(xs)} vs {len(self.ys)})")
             self.__xs = xs
         else:
             # if x values are not provided, set them to the 1-index of the y values
@@ -368,9 +366,7 @@ class MatrixMetric(MetricEntity):
         """
         Normalizes the confusion matrix by dividing by the sum of the rows.
         """
-        self.__matrix_values = self.__matrix_values.astype(
-            np.float32
-        ) / self.__matrix_values.astype(np.float32).sum(
+        self.__matrix_values = self.__matrix_values.astype(np.float32) / self.__matrix_values.astype(np.float32).sum(
             axis=1, keepdims=True
         )  # Divide all values by the sum of its row
 
@@ -378,9 +374,7 @@ class MatrixMetric(MetricEntity):
             self.__matrix_values = np.nan_to_num(self.__matrix_values)
 
             logger = logging.getLogger(__name__)
-            logger.warning(
-                "Replacing NaN in the matrix with zeroes since the sum of one (or more) row(s) was zero."
-            )
+            logger.warning("Replacing NaN in the matrix with zeroes since the sum of one (or more) row(s) was zero.")
 
     def __repr__(self):
         return (
@@ -526,9 +520,7 @@ class BarChartInfo(VisualizationInfo):
             VisualizationType.BAR,
             VisualizationType.RADIAL_BAR,
         ):
-            raise ValueError(
-                "Visualization type for BarChartInfo must be BAR or RADIAL_BAR"
-            )
+            raise ValueError("Visualization type for BarChartInfo must be BAR or RADIAL_BAR")
         super().__init__(name, visualization_type, palette)
 
     def __repr__(self):
@@ -592,9 +584,7 @@ class MetricsGroup(Generic[MetricType, VisualizationInfoType]):
     >>> metrics_group = LineMetricsGroup([train_loss, val_loss], visual_info)
     """
 
-    def __init__(
-        self, metrics: Sequence[MetricType], visualization_info: VisualizationInfoType
-    ):
+    def __init__(self, metrics: Sequence[MetricType], visualization_info: VisualizationInfoType):
         if metrics is None or len(metrics) == 0:
             raise ValueError("Metrics cannot be None or empty")
         if visualization_info is None:
@@ -609,9 +599,7 @@ class MatrixMetricsGroup(MetricsGroup[MatrixMetric, MatrixChartInfo]):
     in the same chart.
     """
 
-    def __init__(
-        self, metrics: Sequence[MatrixMetric], visualization_info: MatrixChartInfo
-    ):
+    def __init__(self, metrics: Sequence[MatrixMetric], visualization_info: MatrixChartInfo):
         super().__init__(metrics=metrics, visualization_info=visualization_info)
 
 
@@ -621,9 +609,7 @@ class LineMetricsGroup(MetricsGroup[CurveMetric, LineChartInfo]):
     single chart.
     """
 
-    def __init__(
-        self, metrics: Sequence[CurveMetric], visualization_info: LineChartInfo
-    ):
+    def __init__(self, metrics: Sequence[CurveMetric], visualization_info: LineChartInfo):
         super().__init__(metrics=metrics, visualization_info=visualization_info)
 
 
@@ -655,9 +641,7 @@ class TextMetricsGroup(
 
     def __init__(
         self,
-        metrics: Sequence[
-            Union[ScoreMetric, CountMetric, InfoMetric, DateMetric, DurationMetric]
-        ],
+        metrics: Sequence[Union[ScoreMetric, CountMetric, InfoMetric, DateMetric, DurationMetric]],
         visualization_info: TextChartInfo,
     ):
         if not len(metrics) == 1:
@@ -678,17 +662,11 @@ class Performance:
     :param dashboard_metrics: (optional) additional statistics, containing charts, curves, and other additional info.
     """
 
-    def __init__(
-        self, score: ScoreMetric, dashboard_metrics: Optional[List[MetricsGroup]] = None
-    ):
+    def __init__(self, score: ScoreMetric, dashboard_metrics: Optional[List[MetricsGroup]] = None):
         if not isinstance(score, ScoreMetric):
-            raise ValueError(
-                f"Expected score to be of type `ScoreMetric`, got type `{type(score)}` instead."
-            )
+            raise ValueError(f"Expected score to be of type `ScoreMetric`, got type `{type(score)}` instead.")
         self.score: ScoreMetric = score
-        self.dashboard_metrics: List[MetricsGroup] = (
-            [] if dashboard_metrics is None else dashboard_metrics
-        )
+        self.dashboard_metrics: List[MetricsGroup] = [] if dashboard_metrics is None else dashboard_metrics
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Performance):

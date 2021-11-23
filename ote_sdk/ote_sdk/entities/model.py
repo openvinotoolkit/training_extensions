@@ -70,9 +70,7 @@ class ModelStatus(IntEnum):
     NOT_READY = auto()  # Model is not ready to be trained
     WEIGHTS_INITIALIZED = auto()  # Model is untrained but weights are initialized
     SUCCESS = auto()  # Model trained successfully and improved
-    FAILED = (
-        auto()
-    )  # Model failed during training, e.g. an error occurred or user cancelled training
+    FAILED = auto()  # Model failed during training, e.g. an error occurred or user cancelled training
     NOT_IMPROVED = auto()  # Model trained successfully but didn't improve
 
 
@@ -137,15 +135,9 @@ class ModelEntity:
         performance = NullPerformance() if performance is None else performance
         creation_date = now() if creation_date is None else creation_date
 
-        optimization_methods = (
-            [] if optimization_methods is None else optimization_methods
-        )
-        optimization_objectives = (
-            {} if optimization_objectives is None else optimization_objectives
-        )
-        performance_improvement = (
-            {} if performance_improvement is None else performance_improvement
-        )
+        optimization_methods = [] if optimization_methods is None else optimization_methods
+        optimization_objectives = {} if optimization_objectives is None else optimization_objectives
+        performance_improvement = {} if performance_improvement is None else performance_improvement
 
         tags = [] if tags is None else tags
         precision = [ModelPrecision.FP32] if precision is None else precision

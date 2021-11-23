@@ -134,9 +134,7 @@ def _get_filenames(path: Union[str, Path], media_type: MediaType) -> List[str]:
     filenames: List[str] = []
 
     if media_type == MediaType.camera:
-        raise ValueError(
-            "Cannot get filenames for camera. Only image and video files are supported."
-        )
+        raise ValueError("Cannot get filenames for camera. Only image and video files are supported.")
 
     if isinstance(path, str):
         path = Path(path)
@@ -238,9 +236,7 @@ class ThreadedStreamer(BaseStreamer):
 
     def __iter__(self) -> Iterator[np.ndarray]:
         buffer: multiprocessing.Queue = multiprocessing.Queue(maxsize=self.buffer_size)
-        process = multiprocessing.Process(
-            target=_process_run, args=(self.get_stream(), buffer)
-        )
+        process = multiprocessing.Process(target=_process_run, args=(self.get_stream(), buffer))
         # Make thread a daemon so that it will exit when the main program exits as well
         process.daemon = True
         process.start()
@@ -352,9 +348,7 @@ def get_streamer(
     :param threaded: Threaded streaming option
     """
     if path is not None and camera_device is not None:
-        raise ValueError(
-            "Both path and camera device is provided. Choose either camera or path to a image/video file."
-        )
+        raise ValueError("Both path and camera device is provided. Choose either camera or path to a image/video file.")
 
     media_type = _get_media_type(path)
 

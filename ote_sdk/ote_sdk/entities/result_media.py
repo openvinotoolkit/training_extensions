@@ -57,9 +57,7 @@ class ResultMediaEntity(IMetadata):
         self.name = name
         self.type = type
         self.annotation_scene = annotation_scene
-        self.roi = (
-            Annotation(Rectangle.generate_full_box(), labels=[]) if roi is None else roi
-        )
+        self.roi = Annotation(Rectangle.generate_full_box(), labels=[]) if roi is None else roi
         self.label = label
         self.numpy = numpy
 
@@ -101,8 +99,5 @@ class ResultMediaEntity(IMetadata):
 
     def __eq__(self, other):
         if isinstance(other, ResultMediaEntity):
-            return (
-                self.annotation_scene == other.annotation_scene
-                and self.roi == other.roi
-            )
+            return self.annotation_scene == other.annotation_scene and self.roi == other.roi
         return False

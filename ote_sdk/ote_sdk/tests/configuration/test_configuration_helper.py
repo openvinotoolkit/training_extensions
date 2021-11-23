@@ -105,9 +105,7 @@ class TestConfigurationHelper:
             header="Dataset Manager configuration -- TEST ONLY",
         )
 
-        cfg_from_yaml = ote_config_helper.create(
-            self.__get_path_to_file("./dummy_config.yaml")
-        )
+        cfg_from_yaml = ote_config_helper.create(self.__get_path_to_file("./dummy_config.yaml"))
 
         # Compare the config dictionaries. Order of some parameters may change in the conversion, so dictionary
         # comparison will work while comparing objects or yaml strings directly likely does not result in equality.
@@ -308,34 +306,19 @@ class TestConfigurationHelper:
 
         # Assert that the values are set according to what is specified in the yaml
         assert config.subset_parameters.test_proportion == 0.15
-        assert (
-            config.subset_parameters.get_metadata("test_proportion")[
-                "affects_outcome_of"
-            ]
-            == ModelLifecycle.TRAINING
-        )
+        assert config.subset_parameters.get_metadata("test_proportion")["affects_outcome_of"] == ModelLifecycle.TRAINING
         assert config.dummy_float_selectable == 2
-        assert (
-            config.get_metadata("dummy_float_selectable")["affects_outcome_of"]
-            == ModelLifecycle.NONE
-        )
+        assert config.get_metadata("dummy_float_selectable")["affects_outcome_of"] == ModelLifecycle.NONE
         assert config.dummy_selectable == SomeEnumSelectable.BOGUS_NAME
-        assert (
-            config.get_metadata("dummy_selectable")["affects_outcome_of"]
-            == ModelLifecycle.INFERENCE
-        )
+        assert config.get_metadata("dummy_selectable")["affects_outcome_of"] == ModelLifecycle.INFERENCE
 
         # Load the config again from the yaml and change some of the values
-        config_2 = ote_config_helper.create(
-            self.__get_path_to_file("dummy_config.yaml")
-        )
+        config_2 = ote_config_helper.create(self.__get_path_to_file("dummy_config.yaml"))
         config_2.subset_parameters.test_proportion = 0.05
         config_2.dummy_float_selectable = 4.0
         config_2.dummy_selectable = SomeEnumSelectable.TEST_NAME1
 
-        ote_config_helper.substitute_values_for_lifecycle(
-            config, config_2, model_lifecycle=ModelLifecycle.INFERENCE
-        )
+        ote_config_helper.substitute_values_for_lifecycle(config, config_2, model_lifecycle=ModelLifecycle.INFERENCE)
 
         assert config.subset_parameters.test_proportion == 0.15
         assert config.dummy_selectable == SomeEnumSelectable.TEST_NAME1
@@ -372,27 +355,14 @@ class TestConfigurationHelper:
 
         # Assert that the values are set according to what is specified in the yaml
         assert config.subset_parameters.test_proportion == 0.15
-        assert (
-            config.subset_parameters.get_metadata("test_proportion")[
-                "affects_outcome_of"
-            ]
-            == ModelLifecycle.TRAINING
-        )
+        assert config.subset_parameters.get_metadata("test_proportion")["affects_outcome_of"] == ModelLifecycle.TRAINING
         assert config.dummy_float_selectable == 2
-        assert (
-            config.get_metadata("dummy_float_selectable")["affects_outcome_of"]
-            == ModelLifecycle.NONE
-        )
+        assert config.get_metadata("dummy_float_selectable")["affects_outcome_of"] == ModelLifecycle.NONE
         assert config.dummy_selectable == SomeEnumSelectable.BOGUS_NAME
-        assert (
-            config.get_metadata("dummy_selectable")["affects_outcome_of"]
-            == ModelLifecycle.INFERENCE
-        )
+        assert config.get_metadata("dummy_selectable")["affects_outcome_of"] == ModelLifecycle.INFERENCE
 
         # Load the config again from the yaml and change some of the values
-        config_2 = ote_config_helper.create(
-            self.__get_path_to_file("dummy_config.yaml")
-        )
+        config_2 = ote_config_helper.create(self.__get_path_to_file("dummy_config.yaml"))
         config_2.subset_parameters.test_proportion = 0.05
         config_2.dummy_float_selectable = 4.0
         config_2.dummy_selectable = SomeEnumSelectable.TEST_NAME1
@@ -440,7 +410,4 @@ class TestConfigurationHelper:
         assert config_dict["subset_parameters"]["test_proportion"] == 0.3
         assert config_dict["dummy_selectable"] == SomeEnumSelectable.OPTION_C
         assert config_dict["number_of_samples_for_auto_train"] == 5
-        assert (
-            config_dict["nested_parameter_group"]["subgroup_one"]["bogus_parameter_one"]
-            == 42
-        )
+        assert config_dict["nested_parameter_group"]["subgroup_one"]["bogus_parameter_one"] == 42

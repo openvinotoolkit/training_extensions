@@ -98,16 +98,10 @@ class LabelGroup:
     def __eq__(self, other: object):
         if not isinstance(other, LabelGroup):
             return False
-        return self.id == other.id and (
-            set(self.labels) == set(other.labels)
-            and self.group_type == other.group_type
-        )
+        return self.id == other.id and (set(self.labels) == set(other.labels) and self.group_type == other.group_type)
 
     def __repr__(self) -> str:
-        return (
-            f"LabelGroup(id={self.id}, name={self.name}, group_type={self.group_type},"
-            f" labels={self.labels})"
-        )
+        return f"LabelGroup(id={self.id}, name={self.name}, group_type={self.group_type}," f" labels={self.labels})"
 
 
 class LabelGraph(Graph):
@@ -209,9 +203,7 @@ class LabelTree(MultiDiGraph):
         if self.__topological_order_cache is None:
             # TODO: It seems that we are storing the edges the wrong way around.
             #       To work around this issue, we have to reverse the sorted list.
-            self.__topological_order_cache = list(
-                reversed(list(self.topological_sort()))
-            )
+            self.__topological_order_cache = list(reversed(list(self.topological_sort())))
 
         return self.__topological_order_cache
 
@@ -254,11 +246,7 @@ class LabelTree(MultiDiGraph):
         if parent is None:
             siblings = []
         else:
-            siblings = [
-                u
-                for u, v in self._graph.in_edges(parent)  # pylint: disable=no-member
-                if u != label
-            ]
+            siblings = [u for u, v in self._graph.in_edges(parent) if u != label]  # pylint: disable=no-member
         return siblings
 
     def get_ancestors(self, label: LabelEntity) -> List[LabelEntity]:
@@ -311,9 +299,7 @@ class LabelSchemaEntity:
         label_groups: List[LabelGroup] = None,
     ):
         if exclusivity_graph is None:
-            exclusivity_graph = LabelGraph(
-                False
-            )  # exclusivity is transitive, hence undirected
+            exclusivity_graph = LabelGraph(False)  # exclusivity is transitive, hence undirected
         self.exclusivity_graph = exclusivity_graph
 
         if label_tree is None:
@@ -331,12 +317,7 @@ class LabelSchemaEntity:
         :param include_empty: flag determining whether to include empty labels
         :return: list of all labels in the label schema
         """
-        labels = {
-            label
-            for group in self._groups
-            for label in group.labels
-            if include_empty or not label.is_empty
-        }
+        labels = {label for group in self._groups for label in group.labels if include_empty or not label.is_empty}
         return sorted(list(labels), key=lambda x: x.id)
 
     def get_groups(self, include_empty: bool = False) -> List[LabelGroup]:
@@ -349,15 +330,9 @@ class LabelSchemaEntity:
         if include_empty:
             return self._groups
 
-        return [
-            group
-            for group in self._groups
-            if group.group_type != LabelGroupType.EMPTY_LABEL
-        ]
+        return [group for group in self._groups if group.group_type != LabelGroupType.EMPTY_LABEL]
 
-    def add_group(
-        self, label_group: LabelGroup, exclusive_with: Optional[List[LabelGroup]] = None
-    ):
+    def add_group(self, label_group: LabelGroup, exclusive_with: Optional[List[LabelGroup]] = None):
         """
         Adding a group to label schema. This also maintains the exclusivity edges.
 
@@ -368,16 +343,13 @@ class LabelSchemaEntity:
         labels = label_group.labels
         if label_group.name in [group.name for group in self._groups]:
             raise LabelGroupExistsException(
-                f"group with '{label_group.name}' exists, "
-                f"use add_to_group_by_group_name instead"
+                f"group with '{label_group.name}' exists, " f"use add_to_group_by_group_name instead"
             )
         if label_group.group_type is LabelGroupType.EXCLUSIVE:
             for label in labels:
                 self.exclusivity_graph.add_node(label)
             if len(labels) > 1:
-                self.exclusivity_graph.add_edges(
-                    list(itertools.combinations(labels, 2))
-                )
+                self.exclusivity_graph.add_edges(list(itertools.combinations(labels, 2)))
         self.__append_group(label_group)
         if exclusive_with is not None:
             self.__add_inter_group_exclusivity(label_group, exclusive_with)
@@ -407,10 +379,7 @@ class LabelSchemaEntity:
         :param include_empty: Include empty label id or not
         """
         label_ids = {
-            label.id
-            for group in self._groups
-            for label in group.labels
-            if include_empty or not label.is_empty
+            label.id for group in self._groups for label in group.labels if include_empty or not label.is_empty
         }
         return sorted(list(label_ids))
 
@@ -430,15 +399,9 @@ class LabelSchemaEntity:
         Returns exclusive groups in the LabelSchema
         """
 
-        return [
-            group
-            for group in self._groups
-            if group.group_type == LabelGroupType.EXCLUSIVE
-        ]
+        return [group for group in self._groups if group.group_type == LabelGroupType.EXCLUSIVE]
 
-    def __add_exclusivity_edges(
-        self, new_labels: Sequence[LabelEntity], existing_labels: Sequence[LabelEntity]
-    ):
+    def __add_exclusivity_edges(self, new_labels: Sequence[LabelEntity], existing_labels: Sequence[LabelEntity]):
         """
         Adding exclusivity edges:
         - among new labels
@@ -460,9 +423,7 @@ class LabelSchemaEntity:
 
         self.exclusivity_graph.add_edges(edges)
 
-    def add_labels_to_group_by_group_name(
-        self, group_name: str, labels: Sequence[LabelEntity]
-    ):
+    def add_labels_to_group_by_group_name(self, group_name: str, labels: Sequence[LabelEntity]):
         """
         Adds `labels` to group named `group_name`
 
@@ -476,19 +437,13 @@ class LabelSchemaEntity:
 
         if group is not None:
             if group.group_type is LabelGroupType.EXCLUSIVE:
-                self.__add_exclusivity_edges(
-                    new_labels=labels, existing_labels=group.labels
-                )
+                self.__add_exclusivity_edges(new_labels=labels, existing_labels=group.labels)
 
             group.labels.extend(labels)
         else:
-            raise LabelGroupDoesNotExistException(
-                f"group with name '{group_name}' does not exist, cannot add"
-            )
+            raise LabelGroupDoesNotExistException(f"group with name '{group_name}' does not exist, cannot add")
 
-    def __add_inter_group_exclusivity(
-        self, label_group: LabelGroup, exclusive_with: List[LabelGroup]
-    ):
+    def __add_inter_group_exclusivity(self, label_group: LabelGroup, exclusive_with: List[LabelGroup]):
         """
         Appends exclusivity information from the input group to the existing groups of
         the same task.
@@ -579,8 +534,7 @@ class LabelSchemaEntity:
             return (
                 self.exclusivity_graph == other.exclusivity_graph
                 and self.label_tree == other.label_tree
-                and self.get_groups(include_empty=True)
-                == other.get_groups(include_empty=True)
+                and self.get_groups(include_empty=True) == other.get_groups(include_empty=True)
             )
         return False
 

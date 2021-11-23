@@ -129,10 +129,7 @@ class Polygon(Shape):
 
     def __eq__(self, other):
         if isinstance(other, Polygon):
-            return (
-                self.points == other.points
-                and self.modification_date == other.modification_date
-            )
+            return self.points == other.points and self.modification_date == other.modification_date
         return False
 
     def __hash__(self):

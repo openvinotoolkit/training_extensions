@@ -22,9 +22,7 @@ from ote_sdk.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from ote_sdk.usecases.tasks.interfaces.training_interface import ITrainingTask
 
 
-class ImageDeepLearningTask(
-    IInferenceTask, ITrainingTask, IEvaluationTask, metaclass=abc.ABCMeta
-):
+class ImageDeepLearningTask(IInferenceTask, ITrainingTask, IEvaluationTask, metaclass=abc.ABCMeta):
     """
     A base class for a deep learning image-based tasks.
     This class inherits from ITask, ITraining, IComputesPerformance and IReporting.

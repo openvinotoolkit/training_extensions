@@ -41,9 +41,7 @@ class TestURL:
         3. Check path of URL
         """
         test_url = URL("binaryrepo:/images/file_%20_whatever.jpg")
-        test_url2 = URL(
-            "binaryrepo://intel.com/images/file_%20_whatever.jpg?blaat=none"
-        )
+        test_url2 = URL("binaryrepo://intel.com/images/file_%20_whatever.jpg?blaat=none")
 
         assert test_url.scheme == "binaryrepo"
         assert test_url2.scheme == "binaryrepo"
