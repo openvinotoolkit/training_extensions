@@ -96,7 +96,8 @@ class DetectionToAnnotationConverter(IPredictionToAnnotationConverter):
         annotations = list()
         if predictions.shape[1:] < (6,) or predictions.shape[1:] > (7,):
             raise ValueError(
-                f"Shape of prediction is not expected, expected (n, 7) or (n, 6) " f"got {predictions.shape}"
+                f"Shape of prediction is not expected, expected (n, 7) or (n, 6) "
+                f"got {predictions.shape}"
             )
 
         for prediction in predictions:
@@ -111,7 +112,12 @@ class DetectionToAnnotationConverter(IPredictionToAnnotationConverter):
             scored_label = ScoredLabel(self.label_map[label], confidence)
             annotations.append(
                 Annotation(
-                    Rectangle(prediction[2], prediction[3], prediction[4], prediction[5]),
+                    Rectangle(
+                        prediction[2],
+                        prediction[3],
+                        prediction[4],
+                        prediction[5],
+                    ),
                     labels=[scored_label],
                 )
             )

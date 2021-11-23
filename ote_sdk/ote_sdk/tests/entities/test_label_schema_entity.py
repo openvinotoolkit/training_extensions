@@ -138,7 +138,9 @@ class TestLabelSchema:
         label_schema = LabelSchemaEntity()
         label_schema_example.add_hierarchy(label_schema)
 
-        bee = label_schema_example.new_label_by_name("bee")  # indicates presence/absence of bee
+        bee = label_schema_example.new_label_by_name(
+            "bee"
+        )  # indicates presence/absence of bee
         label_schema.add_group(LabelGroup("bee_state", [bee], LabelGroupType.EXCLUSIVE))
 
         pollen_visible = label_schema_example.new_label_by_name("pollen_visible")
@@ -171,7 +173,9 @@ class TestLabelSchema:
         4. Add label to group by group name
         """
         label_schema = LabelSchemaEntity()
-        bee = label_schema_example.new_label_by_name("bee")  # indicates presence/absence of bee
+        bee = label_schema_example.new_label_by_name(
+            "bee"
+        )  # indicates presence/absence of bee
         bee_state = LabelGroup("bee_state", [bee], LabelGroupType.EXCLUSIVE)
         label_schema.add_group(bee_state)
 
@@ -179,7 +183,9 @@ class TestLabelSchema:
         # as an already existing label group
         flying = label_schema_example.new_label_by_name("flying")
         with pytest.raises(ValueError):
-            label_schema.add_group(LabelGroup("bee_state", [flying], LabelGroupType.EXCLUSIVE))
+            label_schema.add_group(
+                LabelGroup("bee_state", [flying], LabelGroupType.EXCLUSIVE)
+            )
 
         label_schema.add_labels_to_group_by_group_name("bee_state", [flying])
 
@@ -222,15 +228,25 @@ class TestLabelSchema:
             )
         )
 
-        label_schema.add_labels_to_group_by_group_name(label_group_name, [label_schema_example.no_plant])
-        exclusive_to_no_plants = label_schema.get_labels_exclusive_to(label_schema_example.no_plant)
+        label_schema.add_labels_to_group_by_group_name(
+            label_group_name, [label_schema_example.no_plant]
+        )
+        exclusive_to_no_plants = label_schema.get_labels_exclusive_to(
+            label_schema_example.no_plant
+        )
         assert label_schema_example.flowering in exclusive_to_no_plants
 
-        label_schema.add_labels_to_group_by_group_name(label_group_name, [label_schema_example.vegetative])
-        exclusive_to_no_plants = label_schema.get_labels_exclusive_to(label_schema_example.no_plant)
+        label_schema.add_labels_to_group_by_group_name(
+            label_group_name, [label_schema_example.vegetative]
+        )
+        exclusive_to_no_plants = label_schema.get_labels_exclusive_to(
+            label_schema_example.no_plant
+        )
         assert label_schema_example.vegetative in exclusive_to_no_plants
 
-        exclusive_to_flowering = label_schema.get_labels_exclusive_to(label_schema_example.flowering)
+        exclusive_to_flowering = label_schema.get_labels_exclusive_to(
+            label_schema_example.flowering
+        )
         assert label_schema_example.no_plant in exclusive_to_flowering
         assert label_schema_example.vegetative in exclusive_to_flowering
 
@@ -249,11 +265,15 @@ class TestLabelSchema:
             [label_schema_example.no_plant, label_schema_example.vegetative],
         )
 
-        exclusive_to_no_plants = label_schema.get_labels_exclusive_to(label_schema_example.no_plant)
+        exclusive_to_no_plants = label_schema.get_labels_exclusive_to(
+            label_schema_example.no_plant
+        )
         assert label_schema_example.flowering in exclusive_to_no_plants
         assert label_schema_example.vegetative in exclusive_to_no_plants
 
-        exclusive_to_flowering = label_schema.get_labels_exclusive_to(label_schema_example.flowering)
+        exclusive_to_flowering = label_schema.get_labels_exclusive_to(
+            label_schema_example.flowering
+        )
         assert label_schema_example.no_plant in exclusive_to_flowering
         assert label_schema_example.vegetative in exclusive_to_flowering
 
@@ -285,7 +305,9 @@ class TestLabelSchema:
             )
         )
 
-        label_schema.add_labels_to_group_by_group_name(label_group_name, [label_schema_example.no_plant])
+        label_schema.add_labels_to_group_by_group_name(
+            label_group_name, [label_schema_example.no_plant]
+        )
 
         copy_schema = label_schema
         assert label_schema == copy_schema
@@ -301,6 +323,8 @@ class TestLabelSchema:
             )
         )
 
-        new_schema.add_labels_to_group_by_group_name(label_group_name, [label_schema_example.vegetative])
+        new_schema.add_labels_to_group_by_group_name(
+            label_group_name, [label_schema_example.vegetative]
+        )
 
         assert new_schema != label_schema

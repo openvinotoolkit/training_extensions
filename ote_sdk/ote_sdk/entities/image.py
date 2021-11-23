@@ -43,7 +43,9 @@ class Image(IMedia2DEntity):
         file_path: Optional[str] = None,
     ):
         if (data is None) == (file_path is None):
-            raise ValueError("Either path to image file or image data should be provided.")
+            raise ValueError(
+                "Either path to image file or image data should be provided."
+            )
         self.__data: Optional[np.ndarray] = data
         self.__file_path: Optional[str] = file_path
         self.__height: Optional[int] = None
@@ -103,7 +105,9 @@ class Image(IMedia2DEntity):
             raise ValueError("Numpy array is None, and thus cannot be cropped")
 
         if len(data.shape) < 2:
-            raise ValueError("This image is one dimensional, and thus cannot be cropped")
+            raise ValueError(
+                "This image is one dimensional, and thus cannot be cropped"
+            )
 
         return roi.shape.crop_numpy_array(data)
 

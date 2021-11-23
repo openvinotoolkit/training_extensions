@@ -55,7 +55,9 @@ class DatasetManagerConfig(ConfigurableParameters):
 
     # Component and header are required, description is optional.
     header = string_attribute("Dataset Manager configuration -- TEST ONLY")
-    description = string_attribute("Configurable parameters for the DatasetManager -- TEST ONLY")
+    description = string_attribute(
+        "Configurable parameters for the DatasetManager -- TEST ONLY"
+    )
 
     # Add some parameters
     number_of_samples_for_auto_train = configurable_integer(
@@ -64,7 +66,9 @@ class DatasetManagerConfig(ConfigurableParameters):
         max_value=1000,
         header="Samples required for new training round",
     )
-    label_constraints = configurable_boolean(default_value=True, header="Apply label constraints")
+    label_constraints = configurable_boolean(
+        default_value=True, header="Apply label constraints"
+    )
 
     @attr.s
     class _NestedParameterGroup(ParameterGroup):
@@ -80,7 +84,10 @@ class DatasetManagerConfig(ConfigurableParameters):
             __ui_rules = UIRules(
                 rules=[
                     Rule(
-                        parameter=["nested_parameter_group", "show_subgroup_one"],
+                        parameter=[
+                            "nested_parameter_group",
+                            "show_subgroup_one",
+                        ],
                         operator=Operator.EQUAL_TO,
                         value=False,
                     )
@@ -101,7 +108,9 @@ class DatasetManagerConfig(ConfigurableParameters):
 
         subgroup_one = add_parameter_group(_SubgroupOne)
 
-        show_subgroup_one = configurable_boolean(default_value=True, header="Show the parameters in subgroup one?")
+        show_subgroup_one = configurable_boolean(
+            default_value=True, header="Show the parameters in subgroup one?"
+        )
 
         @attr.s
         class _SubgroupTwo(ParameterGroup):
@@ -173,7 +182,9 @@ class DatasetManagerConfig(ConfigurableParameters):
 
     # Add a selectable and float selectable parameter
     dummy_float_selectable = float_selectable(
-        options=[1.0, 2.0, 3.0, 4.0], default_value=2.0, header="Test float selectable"
+        options=[1.0, 2.0, 3.0, 4.0],
+        default_value=2.0,
+        header="Test float selectable",
     )
 
     dummy_selectable = selectable(

@@ -48,11 +48,21 @@ class TestShapeFactory:
         4. Convert to Rectangle
         """
         rectangle = Rectangle(x1=0.25, y1=0.1, x2=0.5, y2=0.3)
-        rectangle_coords = (rectangle.x1, rectangle.y1, rectangle.x2, rectangle.y2)
+        rectangle_coords = (
+            rectangle.x1,
+            rectangle.y1,
+            rectangle.x2,
+            rectangle.y2,
+        )
 
         ellipse = ShapeFactory.shape_as_ellipse(rectangle)
         assert isinstance(ellipse, Ellipse)
-        assert (ellipse.x1, ellipse.y1, ellipse.x2, ellipse.y2) == rectangle_coords
+        assert (
+            ellipse.x1,
+            ellipse.y1,
+            ellipse.x2,
+            ellipse.y2,
+        ) == rectangle_coords
 
         polygon = ShapeFactory.shape_as_polygon(rectangle)
         assert isinstance(polygon, Polygon)
@@ -134,11 +144,21 @@ class TestShapeFactory:
         point2 = Point(x=0.35, y=0.2)
         point3 = Point(x=0.35, y=0.4)
         polygon = Polygon(points=[point1, point2, point3])
-        polygon_coords = (polygon.min_x, polygon.min_y, polygon.max_x, polygon.max_y)
+        polygon_coords = (
+            polygon.min_x,
+            polygon.min_y,
+            polygon.max_x,
+            polygon.max_y,
+        )
 
         ellipse = ShapeFactory.shape_as_ellipse(polygon)
         assert isinstance(ellipse, Ellipse)
-        assert (ellipse.x1, ellipse.y1, ellipse.x2, ellipse.y2) == polygon_coords
+        assert (
+            ellipse.x1,
+            ellipse.y1,
+            ellipse.x2,
+            ellipse.y2,
+        ) == polygon_coords
 
         polygon2 = ShapeFactory.shape_as_polygon(polygon)
         assert isinstance(polygon2, Polygon)

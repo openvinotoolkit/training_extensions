@@ -57,7 +57,9 @@ class ConfigElementType(Enum):
     RULE = 7, ElementCategory.RULES
     UI_RULES = 8, ElementCategory.RULES
 
-    def __new__(cls, value: int, category: ElementCategory):  # pylint: disable=unused-argument
+    def __new__(
+        cls, value: int, category: ElementCategory
+    ):  # pylint: disable=unused-argument
         """
         Creates a new instance of the Enum. The ConfigElementType Enum holds both a value and a category. In this method
         the `value` argument is parsed and assigned.
@@ -67,7 +69,9 @@ class ConfigElementType(Enum):
         obj._value_ = value
         return obj
 
-    def __init__(self, value: int, category: ElementCategory):  # pylint: disable=unused-argument
+    def __init__(
+        self, value: int, category: ElementCategory
+    ):  # pylint: disable=unused-argument
         """
         Upon initialization, the Enum category is assigned.
         """

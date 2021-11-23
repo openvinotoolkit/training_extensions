@@ -37,7 +37,9 @@ def gen_param_help(hyper_parameters):
                     cur_help.update(x)
             elif isinstance(val, dict) and "default_value" in val.keys():
                 assert isinstance(val["default_value"], (int, float, str))
-                help_str = "\n".join([f"{kk}: {val[kk]}" for kk in help_keys if kk in val.keys()])
+                help_str = "\n".join(
+                    [f"{kk}: {val[kk]}" for kk in help_keys if kk in val.keys()]
+                )
                 assert "." not in k
 
                 if val["type"] == "SELECTABLE":

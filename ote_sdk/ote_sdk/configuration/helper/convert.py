@@ -66,7 +66,9 @@ def parameter_group_to_dict(
     attribute_names = [attribute.name for attribute in parameter_group.__attrs_attrs__]  # type: ignore
     # The __attrs_attrs__ attribute is added through the attrs package, mypy doesn't recognize it so we can ignore the
     # type error
-    attribute_values = [getattr(parameter_group, attribute_name) for attribute_name in attribute_names]
+    attribute_values = [
+        getattr(parameter_group, attribute_name) for attribute_name in attribute_names
+    ]
 
     dictionary_representation = {}
     for name, value in zip(attribute_names, attribute_values):
@@ -77,7 +79,9 @@ def parameter_group_to_dict(
     for group_name in parameter_group.groups:
         # Then, recursively add all parameter groups to the dictionary representation
         group = getattr(parameter_group, group_name)
-        dictionary_representation.update({group_name: parameter_group_to_dict(group, enum_to_str, values_only)})
+        dictionary_representation.update(
+            {group_name: parameter_group_to_dict(group, enum_to_str, values_only)}
+        )
     for parameter_name in parameter_group.parameters:
         # Then, add all parameters for this group to the dictionary representation
         # For each parameter, construct a dict with its value and then update it with the metadata
@@ -88,7 +92,11 @@ def parameter_group_to_dict(
             parameter_dictionary = value
         else:
             parameter_dictionary = {"value": value}
-            parameter_dictionary.update(serialize_metadata(parameter_group.get_metadata(parameter_name), enum_to_str))
+            parameter_dictionary.update(
+                serialize_metadata(
+                    parameter_group.get_metadata(parameter_name), enum_to_str
+                )
+            )
         # Finally, add the parameter to the dictionary representation of the group
         dictionary_representation.update({parameter_name: parameter_dictionary})
     return dictionary_representation
@@ -121,7 +129,9 @@ def convert(
     if target == str:
         enum_to_str = True
 
-    config_dict = parameter_group_to_dict(config, enum_to_str=enum_to_str, values_only=values_only)
+    config_dict = parameter_group_to_dict(
+        config, enum_to_str=enum_to_str, values_only=values_only
+    )
 
     if id_to_str or target == str or target == DictConfig:
         config_id = config_dict.get("id", None)
@@ -134,5 +144,8 @@ def convert(
     elif target == DictConfig:
         result = OmegaConf.create(config_dict)
     else:
-        raise ValueError("Unsupported conversion target! Supported target types are " "[str, dict, DictConfig]")
+        raise ValueError(
+            "Unsupported conversion target! Supported target types are "
+            "[str, dict, DictConfig]"
+        )
     return result

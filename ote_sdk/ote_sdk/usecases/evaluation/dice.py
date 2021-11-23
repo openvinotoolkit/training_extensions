@@ -118,13 +118,19 @@ class DiceAverage(IPerformanceProvider):
                 f"Ground truth dataset has {len(resultset.ground_truth_dataset)} items, "
                 f"prediction dataset has {len(resultset.prediction_dataset)} items"
             )
-        resultset_labels = set(resultset.prediction_dataset.get_labels() + resultset.ground_truth_dataset.get_labels())
-        model_labels = set(resultset.model.configuration.label_schema.get_labels(include_empty=False))
+        resultset_labels = set(
+            resultset.prediction_dataset.get_labels()
+            + resultset.ground_truth_dataset.get_labels()
+        )
+        model_labels = set(
+            resultset.model.configuration.label_schema.get_labels(include_empty=False)
+        )
         labels = sorted(resultset_labels.intersection(model_labels))
         hard_predictions = []
         hard_references = []
         for prediction_item, reference_item in zip(
-            list(resultset.prediction_dataset), list(resultset.ground_truth_dataset)
+            list(resultset.prediction_dataset),
+            list(resultset.ground_truth_dataset),
         ):
             hard_predictions.append(mask_from_dataset_item(prediction_item, labels))
             hard_references.append(mask_from_dataset_item(reference_item, labels))
@@ -133,7 +139,9 @@ class DiceAverage(IPerformanceProvider):
             hard_references, hard_predictions, labels
         )
 
-        return cls.compute_dice_using_intersection_and_cardinality(all_intersection, all_cardinality, average)
+        return cls.compute_dice_using_intersection_and_cardinality(
+            all_intersection, all_cardinality, average
+        )
 
     @classmethod
     def compute_dice_using_intersection_and_cardinality(
@@ -159,7 +167,11 @@ class DiceAverage(IPerformanceProvider):
 
         for label, intersection in all_intersection.items():
             cardinality = all_cardinality[label]
-            dice_score = cls.__compute_single_dice_score_using_intersection_and_cardinality(intersection, cardinality)
+            dice_score = (
+                cls.__compute_single_dice_score_using_intersection_and_cardinality(
+                    intersection, cardinality
+                )
+            )
 
             # If label is None, then the dice score corresponds to the overall dice score
             # rather than a per-label dice score.
@@ -174,8 +186,10 @@ class DiceAverage(IPerformanceProvider):
         elif average == MetricAverageMethod.MICRO:
             overall_cardinality = all_cardinality[None]
             overall_intersection = all_intersection[None]
-            dice_score = cls.__compute_single_dice_score_using_intersection_and_cardinality(
-                overall_intersection, overall_cardinality
+            dice_score = (
+                cls.__compute_single_dice_score_using_intersection_and_cardinality(
+                    overall_intersection, overall_cardinality
+                )
             )
             overall_dice = ScoreMetric(value=dice_score, name="Dice Average")
         elif average == MetricAverageMethod.MACRO:
@@ -186,7 +200,9 @@ class DiceAverage(IPerformanceProvider):
         return overall_dice, dice_per_label
 
     @staticmethod
-    def __compute_single_dice_score_using_intersection_and_cardinality(intersection: int, cardinality: int):
+    def __compute_single_dice_score_using_intersection_and_cardinality(
+        intersection: int, cardinality: int
+    ):
         """
         Computes a single dice score using intersection and cardinality.
         Dice score is computed by: 2 * intersection / cardinality

@@ -80,7 +80,9 @@ def parse_args():
         required=False,
         help="Load only weights from previously saved checkpoint",
     )
-    parser.add_argument("--save-weights", required=True, help="Location to store wiehgts.")
+    parser.add_argument(
+        "--save-weights", required=True, help="Location to store wiehgts."
+    )
 
     add_hyper_parameters_sub_parser(parser, hyper_parameters)
 
@@ -111,7 +113,10 @@ def main():
             "ann_file": args.train_ann_files,
             "data_root": args.train_data_roots,
         },
-        val_subset={"ann_file": args.val_ann_files, "data_root": args.val_data_roots},
+        val_subset={
+            "ann_file": args.val_ann_files,
+            "data_root": args.val_data_roots,
+        },
     )
 
     environment = TaskEnvironment(
@@ -125,7 +130,9 @@ def main():
         model = ModelEntity(
             train_dataset=dataset,
             configuration=environment.get_model_configuration(),
-            model_adapters={"weights.pth": ModelAdapter(load_model_weights(args.load_weights))},
+            model_adapters={
+                "weights.pth": ModelAdapter(load_model_weights(args.load_weights))
+            },
         )
         environment.model = model
 

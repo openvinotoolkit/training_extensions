@@ -37,7 +37,10 @@ class Registry:
             if templates_dir is None:
                 raise RuntimeError("The templates_dir is not set.")
 
-            template_filenames = glob.glob(os.path.join(templates_dir, "**", "template.yaml"), recursive=True)
+            template_filenames = glob.glob(
+                os.path.join(templates_dir, "**", "template.yaml"),
+                recursive=True,
+            )
             template_filenames = [os.path.abspath(p) for p in template_filenames]
 
             self.templates = []
@@ -60,9 +63,17 @@ class Registry:
 
         templates = copy.deepcopy(self.templates)
         if framework is not None:
-            templates = [template for template in templates if template.framework.lower() == framework.lower()]
+            templates = [
+                template
+                for template in templates
+                if template.framework.lower() == framework.lower()
+            ]
         if task_type is not None:
-            templates = [template for template in templates if str(template.task_type).lower() == task_type.lower()]
+            templates = [
+                template
+                for template in templates
+                if str(template.task_type).lower() == task_type.lower()
+            ]
         return Registry(templates=templates)
 
     def get(self, template_id):
@@ -70,9 +81,15 @@ class Registry:
         Returns a model template with specified template_id.
         """
 
-        templates = [template for template in self.templates if template.model_template_id == template_id]
+        templates = [
+            template
+            for template in self.templates
+            if template.model_template_id == template_id
+        ]
         if not templates:
-            raise ValueError(f"Could not find a template with {template_id} in registry.")
+            raise ValueError(
+                f"Could not find a template with {template_id} in registry."
+            )
         return templates[0]
 
     def __str__(self):

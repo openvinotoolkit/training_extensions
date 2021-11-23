@@ -93,7 +93,12 @@ def main():
     taks_class = get_impl_class(template.entrypoints.base)
     dataset_class = get_dataset_class(template.task_type)
 
-    dataset = dataset_class(test_subset={"ann_file": args.test_ann_files, "data_root": args.test_data_roots})
+    dataset = dataset_class(
+        test_subset={
+            "ann_file": args.test_ann_files,
+            "data_root": args.test_data_roots,
+        }
+    )
 
     environment = TaskEnvironment(
         model=None,
@@ -102,7 +107,9 @@ def main():
         model_template=template,
     )
 
-    model_adapters = {"weights.pth": ModelAdapter(load_model_weights(args.load_weights))}
+    model_adapters = {
+        "weights.pth": ModelAdapter(load_model_weights(args.load_weights))
+    }
     model = ModelEntity(
         configuration=environment.get_model_configuration(),
         model_adapters=model_adapters,

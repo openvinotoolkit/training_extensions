@@ -45,7 +45,9 @@ class TestMetrics:
         minute = 1
         second = 15.5
         seconds = (hour * 3600) + (minute * 60) + second
-        duration_metric = DurationMetric.from_seconds(name="Training duration", seconds=seconds)
+        duration_metric = DurationMetric.from_seconds(
+            name="Training duration", seconds=seconds
+        )
         assert duration_metric.hour == hour
         assert duration_metric.minute == minute
         assert duration_metric.second == second
@@ -70,17 +72,27 @@ class TestMetrics:
         2. Check normalized matrices against pre-computed matrices
         """
         matrix_data = np.array([[0, 1, 1], [0, 1, 1], [1, 0, 0]])
-        matrix_metric = MatrixMetric(name="test matrix", matrix_values=matrix_data, normalize=True)
+        matrix_metric = MatrixMetric(
+            name="test matrix", matrix_values=matrix_data, normalize=True
+        )
 
-        required_normalised_matrix_data = np.array([[0, 0.5, 0.5], [0, 0.5, 0.5], [1, 0, 0]])
-        assert np.array_equal(required_normalised_matrix_data, matrix_metric.matrix_values)
+        required_normalised_matrix_data = np.array(
+            [[0, 0.5, 0.5], [0, 0.5, 0.5], [1, 0, 0]]
+        )
+        assert np.array_equal(
+            required_normalised_matrix_data, matrix_metric.matrix_values
+        )
 
         matrix_data_with_zero_sum = np.array([[0, 0, 0], [0, 1, 1], [1, 0, 0]])
         matrix_metric_with_zero_sum = MatrixMetric(
-            name="test matrix", matrix_values=matrix_data_with_zero_sum, normalize=True
+            name="test matrix",
+            matrix_values=matrix_data_with_zero_sum,
+            normalize=True,
         )
 
-        required_normalised_matrix_data_with_zero_sum = np.array([[0, 0, 0], [0, 0.5, 0.5], [1, 0, 0]])
+        required_normalised_matrix_data_with_zero_sum = np.array(
+            [[0, 0, 0], [0, 0.5, 0.5], [1, 0, 0]]
+        )
         assert np.array_equal(
             required_normalised_matrix_data_with_zero_sum,
             matrix_metric_with_zero_sum.matrix_values,

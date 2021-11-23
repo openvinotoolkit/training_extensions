@@ -59,7 +59,10 @@ def _search_in_config_dict_inner(
         dict_to_search_in = dict(zip(range(len(config_dict)), config_dict))
     else:
         dict_to_search_in = config_dict
-    if not (issubclass(type(dict_to_search_in), dict) or isinstance(dict_to_search_in, DictConfig)):
+    if not (
+        issubclass(type(dict_to_search_in), dict)
+        or isinstance(dict_to_search_in, DictConfig)
+    ):
         return results
     for key, value in dict_to_search_in.items():
         current_key_path = prior_keys + [key]
@@ -69,7 +72,9 @@ def _search_in_config_dict_inner(
     return results
 
 
-def search_in_config_dict(config_dict: dict, key_to_search: str) -> List[Tuple[Any, List[str]]]:
+def search_in_config_dict(
+    config_dict: dict, key_to_search: str
+) -> List[Tuple[Any, List[str]]]:
     """
     Recursively searches a config_dict for all instances of key_to_search and returns the key path to them
 
@@ -82,7 +87,9 @@ def search_in_config_dict(config_dict: dict, key_to_search: str) -> List[Tuple[A
     return _search_in_config_dict_inner(config_dict, key_to_search=key_to_search)
 
 
-def input_to_config_dict(input_config: Union[str, DictConfig, dict], check_config_type: bool = True) -> dict:
+def input_to_config_dict(
+    input_config: Union[str, DictConfig, dict], check_config_type: bool = True
+) -> dict:
     """
     Takes an input_config which can be a string, filepath, dict or DictConfig and
     performs basic validation that it can be converted into a configuration.
@@ -111,7 +118,9 @@ def input_to_config_dict(input_config: Union[str, DictConfig, dict], check_confi
     elif isinstance(input_config, DictConfig):
         result = OmegaConf.to_container(input_config)
     else:
-        raise ValueError('Invalid input_config type! Valid types are "str", "DictConfig", "dict".')
+        raise ValueError(
+            'Invalid input_config type! Valid types are "str", "DictConfig", "dict".'
+        )
 
     if check_config_type:
         config_type = str(result.get("type", None))
@@ -146,7 +155,8 @@ def deserialize_enum_value(value: Union[str, Enum], enum_type: Type[Enum]):
         instance = enum_type[value.upper()]
     else:
         raise ValueError(
-            f"Invalid input data type, {type(value)} cannot be converted to an instance " f"of {enum_type}."
+            f"Invalid input data type, {type(value)} cannot be converted to an instance "
+            f"of {enum_type}."
         )
     return instance
 

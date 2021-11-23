@@ -175,7 +175,8 @@ class Shape(ShapeEntity):
             return polygon_roi.intersects(polygon_shape)
         except (PredicateError, TopologicalError) as exception:
             raise GeometryException(
-                f"The intersection between the shapes {self} and {other} could not be computed: " f"{exception}."
+                f"The intersection between the shapes {self} and {other} could not be computed: "
+                f"{exception}."
             ) from exception
 
     # pylint: disable=protected-access
@@ -186,11 +187,14 @@ class Shape(ShapeEntity):
             return polygon_roi.intersection(polygon_shape).area / polygon_shape.area
         except (PredicateError, TopologicalError) as exception:
             raise GeometryException(
-                f"The intersection between the shapes {self} and {other} could not be computed: " f"{exception}."
+                f"The intersection between the shapes {self} and {other} could not be computed: "
+                f"{exception}."
             ) from exception
 
     def get_labels(self, include_empty: bool = False) -> List[ScoredLabel]:
-        return [label for label in self._labels if include_empty or (not label.is_empty)]
+        return [
+            label for label in self._labels if include_empty or (not label.is_empty)
+        ]
 
     def append_label(self, label: ScoredLabel):
         self._labels.append(label)

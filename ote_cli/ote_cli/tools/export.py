@@ -73,7 +73,10 @@ def main():
     assert args.labels is not None or args.ann_files is not None
 
     if args.labels:
-        labels = [LabelEntity(l, template.task_type, id=ID(i)) for i, l in enumerate(args.labels)]
+        labels = [
+            LabelEntity(l, template.task_type, id=ID(i))
+            for i, l in enumerate(args.labels)
+        ]
     else:
         dataset_class = get_dataset_class(template.task_type)
         dataset = dataset_class({"ann_file": args.ann_files})
@@ -103,7 +106,11 @@ def main():
 
     task = task_class(task_environment=environment)
 
-    exported_model = ModelEntity(None, environment.get_model_configuration(), model_status=ModelStatus.NOT_READY)
+    exported_model = ModelEntity(
+        None,
+        environment.get_model_configuration(),
+        model_status=ModelStatus.NOT_READY,
+    )
 
     task.export(ExportType.OPENVINO, exported_model)
 
@@ -112,5 +119,7 @@ def main():
     with open(os.path.join(args.save_model_to, "model.bin"), "wb") as write_file:
         write_file.write(exported_model.get_data("openvino.bin"))
 
-    with open(os.path.join(args.save_model_to, "model.xml"), "w", encoding="UTF-8") as write_file:
+    with open(
+        os.path.join(args.save_model_to, "model.xml"), "w", encoding="UTF-8"
+    ) as write_file:
         write_file.write(exported_model.get_data("openvino.xml").decode())

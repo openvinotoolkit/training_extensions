@@ -29,7 +29,9 @@ class TestModelConfiguration:
         assert hasattr(mc, "learning_parameters")
 
         epoch_default = mc.learning_parameters.get_metadata("epochs")["default_value"]
-        batch_size_default = mc.learning_parameters.get_metadata("batch_size")["default_value"]
+        batch_size_default = mc.learning_parameters.get_metadata("batch_size")[
+            "default_value"
+        ]
 
         assert mc.learning_parameters.epochs == epoch_default
         assert mc.learning_parameters.batch_size == batch_size_default

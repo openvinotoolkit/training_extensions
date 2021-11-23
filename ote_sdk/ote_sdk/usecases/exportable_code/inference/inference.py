@@ -176,11 +176,19 @@ class BaseOpenVINOInferencer(BaseInferencer, abc.ABC):
                 raise ValueError(f"Unsupported file extension: {path.suffix}")
 
         init_from_buffer = isinstance(model_file, bytes)
-        self.net = self.ie.read_network(model=model_file, weights=weights_file, init_from_buffer=init_from_buffer)
+        self.net = self.ie.read_network(
+            model=model_file,
+            weights=weights_file,
+            init_from_buffer=init_from_buffer,
+        )
         self.input_keys = list(self.net.input_info.keys())
         self.output_keys = list(self.net.outputs.keys())
 
-    def load_model(self, model_file: Union[str, bytes], weights_file: Union[str, bytes, None]):
+    def load_model(
+        self,
+        model_file: Union[str, bytes],
+        weights_file: Union[str, bytes, None],
+    ):
         """
         Loads an OpenVINO or ONNX model, overwrite this function if you need to reshape
         the network.Or retrieve additional information from the network after loading
@@ -193,7 +201,11 @@ class BaseOpenVINOInferencer(BaseInferencer, abc.ABC):
         if self.net is None:
             self.read_model(model_file, weights_file)
 
-        self.model = self.ie.load_network(network=self.net, device_name=self.device, num_requests=self.num_requests)
+        self.model = self.ie.load_network(
+            network=self.net,
+            device_name=self.device,
+            num_requests=self.num_requests,
+        )
 
 
 class AsyncOpenVINOTask:
@@ -274,7 +286,9 @@ class AsyncOpenVINOTask:
         """
         return self.inferencer.model.get_idle_request_id() >= 0
 
-    def __wait_for_request(self, num_requests: Optional[int] = None, timeout: Optional[int] = None) -> bool:
+    def __wait_for_request(
+        self, num_requests: Optional[int] = None, timeout: Optional[int] = None
+    ) -> bool:
         """
         Wait for num_requests to become available.
 
@@ -289,7 +303,10 @@ class AsyncOpenVINOTask:
         :returns: bool -- Returns True if no requests are available,
                           False if num_requests are available
         """
-        return self.inferencer.model.wait(num_requests=num_requests, timeout=timeout) == RESULT_NOT_READY
+        return (
+            self.inferencer.model.wait(num_requests=num_requests, timeout=timeout)
+            == RESULT_NOT_READY
+        )
 
     def __make_request(self, image: np.ndarray, completed_requests: queue.Queue):
         """
@@ -316,7 +333,9 @@ class AsyncOpenVINOTask:
 
 def _async_callback(
     status,
-    callback_args: Tuple[AsyncOpenVINOTask, InferRequest, np.ndarray, Any, multiprocessing.Queue],
+    callback_args: Tuple[
+        AsyncOpenVINOTask, InferRequest, np.ndarray, Any, multiprocessing.Queue
+    ],
 ):
     """
     Callback for Async Infer. Adds the used image and output Dictionary to the
@@ -333,7 +352,9 @@ def _async_callback(
             raise RuntimeError(f"Infer request has returned status code {status}")
 
         output_blobs = request.output_blobs
-        output_blobs = {k: output_blob.buffer for (k, output_blob) in output_blobs.items()}
+        output_blobs = {
+            k: output_blob.buffer for (k, output_blob) in output_blobs.items()
+        }
         output = self.inferencer.post_process(output_blobs, metadata)
 
         try:

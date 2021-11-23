@@ -190,7 +190,11 @@ class DatasetEntity:
         :param other: the dataset operand to the equal operator
         :return: True if the datasets are equal
         """
-        if isinstance(other, DatasetEntity) and len(self) == len(other) and self.purpose == other.purpose:
+        if (
+            isinstance(other, DatasetEntity)
+            and len(self) == len(other)
+            and self.purpose == other.purpose
+        ):
             return all(self[i] == other[i] for i in range(len(self)))
         return False
 
@@ -251,7 +255,8 @@ class DatasetEntity:
         return DatasetIterator(self)
 
     def with_empty_annotations(
-        self, annotation_kind: AnnotationSceneKind = AnnotationSceneKind.PREDICTION
+        self,
+        annotation_kind: AnnotationSceneKind = AnnotationSceneKind.PREDICTION,
     ) -> "DatasetEntity":
         """
         Produces a new dataset with empty annotation objects (no shapes or labels).
@@ -277,7 +282,9 @@ class DatasetEntity:
         new_dataset = DatasetEntity(purpose=self.purpose)
         for dataset_item in self:
             if isinstance(dataset_item, DatasetItemEntity):
-                empty_annotation = AnnotationSceneEntity(annotations=[], kind=annotation_kind)
+                empty_annotation = AnnotationSceneEntity(
+                    annotations=[], kind=annotation_kind
+                )
 
                 # reset ROI
                 roi = copy.copy(dataset_item.roi)
@@ -372,5 +379,9 @@ class DatasetEntity:
         :param include_empty: set to True to include empty label (if exists) in the output.
         :return: list of labels that appear in the dataset
         """
-        label_set = set(itertools.chain(*[item.annotation_scene.get_labels(include_empty) for item in self]))
+        label_set = set(
+            itertools.chain(
+                *[item.annotation_scene.get_labels(include_empty) for item in self]
+            )
+        )
         return list(label_set)

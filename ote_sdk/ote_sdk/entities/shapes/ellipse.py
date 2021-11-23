@@ -74,7 +74,8 @@ class Ellipse(Shape):
         self.y2 = y2
         if self.width <= 0 or self.height <= 0:
             raise ValueError(
-                f"Invalid Ellipse with coordinates: x1={self.x1}, y1={self.y1}, x2={self.x2}," f" y2={self.y2}"
+                f"Invalid Ellipse with coordinates: x1={self.x1}, y1={self.y1}, x2={self.x2},"
+                f" y2={self.y2}"
             )
 
     def __repr__(self):
@@ -241,7 +242,9 @@ class Ellipse(Shape):
         return Ellipse(x1=x1, y1=y1, x2=x2, y2=y2)
 
     # pylint: disable=no-member; PyLint cannot find scipy.special.ellipeinc()
-    def get_evenly_distributed_ellipse_coordinates(self, number_of_coordinates: int = 50) -> List[Tuple[float, float]]:
+    def get_evenly_distributed_ellipse_coordinates(
+        self, number_of_coordinates: int = 50
+    ) -> List[Tuple[float, float]]:
         """
         Makes use of scipy.special.ellipeinc() which provides the numerical integral along the perimeter of the ellipse,
         and scipy.optimize.root() for solving the equal-arcs length equation for the angles.
@@ -263,7 +266,8 @@ class Ellipse(Shape):
             x_points = list(self.minor_axis * np.cos(angles))
             y_points = list(self.major_axis * np.sin(angles))
         coordinates = [
-            (point_x + self.x_center, point_y + self.y_center) for point_x, point_y in zip(x_points, y_points)
+            (point_x + self.x_center, point_y + self.y_center)
+            for point_x, point_y in zip(x_points, y_points)
         ]
         return coordinates
 

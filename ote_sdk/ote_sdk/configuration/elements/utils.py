@@ -80,7 +80,9 @@ def construct_attr_enum_selectable_converter(
     """
     enum_class = type(default_value)
 
-    def attr_convert_enum_selectable_value(value: Union[str, ConfigurableEnumTypeVar]) -> ConfigurableEnumTypeVar:
+    def attr_convert_enum_selectable_value(
+        value: Union[str, ConfigurableEnumTypeVar]
+    ) -> ConfigurableEnumTypeVar:
         """
         Function that converts an input value to an instance of the appropriate ConfigurableEnum. Can be used as a
         `converter` for attrs.Attributes of type ConfigurableEnum
@@ -94,7 +96,10 @@ def construct_attr_enum_selectable_converter(
 
 def construct_attr_enum_selectable_onsetattr(
     default_value: ConfigurableEnumTypeVar,
-) -> Callable[[ParameterGroup, Attribute, Union[str, ConfigurableEnumTypeVar]], ConfigurableEnumTypeVar]:
+) -> Callable[
+    [ParameterGroup, Attribute, Union[str, ConfigurableEnumTypeVar]],
+    ConfigurableEnumTypeVar,
+]:
     """
     This function converts an input value to the correct instance of the ConfigurableEnum. It is used when
     setting a value for a selectable parameter.
@@ -131,7 +136,9 @@ def construct_attr_value_validator(
         This function is used to validate values for numeric ConfigurableParameters
         """
         if not min_value <= value <= max_value:
-            raise ValueError(f"Invalid value set for {attribute.name}: {value} is out of bounds.")
+            raise ValueError(
+                f"Invalid value set for {attribute.name}: {value} is out of bounds."
+            )
 
     return attr_validate_value
 
@@ -151,7 +158,8 @@ def construct_attr_selectable_validator(
         """
         if value not in options:
             raise ValueError(
-                f"Invalid value set for {attribute.name}: {value} is not a valid option for this " f"parameter."
+                f"Invalid value set for {attribute.name}: {value} is not a valid option for this "
+                f"parameter."
             )
 
     return attr_validate_selectable

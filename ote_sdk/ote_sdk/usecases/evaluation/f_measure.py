@@ -86,7 +86,9 @@ def bounding_box_intersection_over_union(box1: List[int], box2: List[int]) -> fl
         else:
             iou = intersection_area / union_area
     if iou < 0.0 or iou > 1.0:
-        raise ValueError(f"intersection over union should be in range [0,1], actual={iou}")
+        raise ValueError(
+            f"intersection over union should be in range [0,1], actual={iou}"
+        )
     return iou
 
 
@@ -105,7 +107,12 @@ def get_iou_matrix(boxes1: List, boxes2: List) -> np.ndarray:
             boxes2: [boxes_per_image_1, boxes_per_image_2, boxes_per_image_3, …]
     :return: the iou matrix
     """
-    matrix = np.array([[bounding_box_intersection_over_union(box1, box2) for box2 in boxes2] for box1 in boxes1])
+    matrix = np.array(
+        [
+            [bounding_box_intersection_over_union(box1, box2) for box2 in boxes2]
+            for box1 in boxes1
+        ]
+    )
     return matrix
 
 
@@ -175,7 +182,9 @@ class _ResultCounters:
             precision = n_true_positives / self.n_predicted
             recall = n_true_positives / self.n_true
 
-        f_measure = (2 * precision * recall) / (precision + recall + np.finfo(float).eps)
+        f_measure = (2 * precision * recall) / (
+            precision + recall + np.finfo(float).eps
+        )
         return _Metrics(f_measure, precision, recall)
 
 
@@ -194,9 +203,15 @@ class _AggregatedResults:
     """
 
     def __init__(self, classes: List[str]):
-        self.f_measure_curve: Dict[str, List[float]] = {class_name: [] for class_name in classes}
-        self.precision_curve: Dict[str, List[float]] = {class_name: [] for class_name in classes}
-        self.recall_curve: Dict[str, List[float]] = {class_name: [] for class_name in classes}
+        self.f_measure_curve: Dict[str, List[float]] = {
+            class_name: [] for class_name in classes
+        }
+        self.precision_curve: Dict[str, List[float]] = {
+            class_name: [] for class_name in classes
+        }
+        self.recall_curve: Dict[str, List[float]] = {
+            class_name: [] for class_name in classes
+        }
         self.all_classes_f_measure_curve: List[float] = []
         self.best_f_measure: float = 0.0
         self.best_threshold: float = 0.0
@@ -284,7 +299,9 @@ class _FMeasureCalculator:
         best_f_measure = results_per_confidence.best_f_measure
 
         for class_name in classes:
-            best_f_measure_per_class[class_name] = max(results_per_confidence.f_measure_curve[class_name])
+            best_f_measure_per_class[class_name] = max(
+                results_per_confidence.f_measure_curve[class_name]
+            )
 
         results_per_nms: Optional[_AggregatedResults] = None
 
@@ -297,7 +314,9 @@ class _FMeasureCalculator:
             )
 
             for class_name in classes:
-                best_f_measure_per_class[class_name] = max(results_per_nms.f_measure_curve[class_name])
+                best_f_measure_per_class[class_name] = max(
+                    results_per_nms.f_measure_curve[class_name]
+                )
 
         result = _OverallResults(
             results_per_confidence,
@@ -309,7 +328,10 @@ class _FMeasureCalculator:
         return result
 
     def get_results_per_confidence(
-        self, classes: List[str], confidence_range: List[float], iou_threshold: float
+        self,
+        classes: List[str],
+        confidence_range: List[float],
+        iou_threshold: float,
     ) -> _AggregatedResults:
         """
         Varies confidence based on confidence_range, the results are appended in a dictionary and returned, it also
@@ -333,8 +355,12 @@ class _FMeasureCalculator:
             result.all_classes_f_measure_curve.append(all_classes_f_measure)
 
             for class_name in classes:
-                result.f_measure_curve[class_name].append(result_point[class_name].f_measure)
-                result.precision_curve[class_name].append(result_point[class_name].precision)
+                result.f_measure_curve[class_name].append(
+                    result_point[class_name].f_measure
+                )
+                result.precision_curve[class_name].append(
+                    result_point[class_name].precision
+                )
                 result.recall_curve[class_name].append(result_point[class_name].recall)
             if all_classes_f_measure > result.best_f_measure:
                 result.best_f_measure = all_classes_f_measure
@@ -364,14 +390,19 @@ class _FMeasureCalculator:
         result.best_f_measure = min_f_measure
         result.best_threshold = 0.5
 
-        critical_nms_per_image = self.__get_critical_nms(self.prediction_boxes_per_image, cross_class_nms)
+        critical_nms_per_image = self.__get_critical_nms(
+            self.prediction_boxes_per_image, cross_class_nms
+        )
 
         for nms_threshold in np.arange(*self.nms_range):
             predicted_boxes_per_image_per_nms = self.__filter_nms(
-                self.prediction_boxes_per_image, critical_nms_per_image, nms_threshold
+                self.prediction_boxes_per_image,
+                critical_nms_per_image,
+                nms_threshold,
             )
             boxes_pair_for_nms = _FMeasureCalculator(
-                self.ground_truth_boxes_per_image, predicted_boxes_per_image_per_nms
+                self.ground_truth_boxes_per_image,
+                predicted_boxes_per_image_per_nms,
             )
             result_point = boxes_pair_for_nms.evaluate_classes(
                 classes=classes.copy(),
@@ -382,8 +413,12 @@ class _FMeasureCalculator:
             result.all_classes_f_measure_curve.append(all_classes_f_measure)
 
             for class_name in classes:
-                result.f_measure_curve[class_name].append(result_point[class_name].f_measure)
-                result.precision_curve[class_name].append(result_point[class_name].precision)
+                result.f_measure_curve[class_name].append(
+                    result_point[class_name].f_measure
+                )
+                result.precision_curve[class_name].append(
+                    result_point[class_name].precision
+                )
                 result.recall_curve[class_name].append(result_point[class_name].recall)
 
             if all_classes_f_measure >= result.best_f_measure:
@@ -392,7 +427,10 @@ class _FMeasureCalculator:
         return result
 
     def evaluate_classes(
-        self, classes: List[str], iou_threshold: float, confidence_threshold: float
+        self,
+        classes: List[str],
+        iou_threshold: float,
+        confidence_threshold: float,
     ) -> Dict[str, _Metrics]:
         """
         Returns Dict of f_measure, precision and recall for each class.
@@ -437,17 +475,23 @@ class _FMeasureCalculator:
         :return: a structure containing the statistics (e.g. f_measure)
             and a structure containing the intermediated counters used to derive the stats (e.g. num. false positives)
         """
-        class_ground_truth_boxes_per_image = self.__filter_class(self.ground_truth_boxes_per_image, class_name)
+        class_ground_truth_boxes_per_image = self.__filter_class(
+            self.ground_truth_boxes_per_image, class_name
+        )
         confidence_predicted_boxes_per_image = self.__filter_confidence(
             self.prediction_boxes_per_image, confidence_threshold
         )
-        class_predicted_boxes_per_image = self.__filter_class(confidence_predicted_boxes_per_image, class_name)
+        class_predicted_boxes_per_image = self.__filter_class(
+            confidence_predicted_boxes_per_image, class_name
+        )
         if len(class_ground_truth_boxes_per_image) > 0:
             boxes_pair_per_class = _FMeasureCalculator(
                 ground_truth_boxes_per_image=class_ground_truth_boxes_per_image,
                 prediction_boxes_per_image=class_predicted_boxes_per_image,
             )
-            result_counters = boxes_pair_per_class.get_counters(iou_threshold=iou_threshold)
+            result_counters = boxes_pair_per_class.get_counters(
+                iou_threshold=iou_threshold
+            )
             result_metrics = result_counters.calculate_f_measure()
             results = (result_metrics, result_counters)
         else:
@@ -457,7 +501,9 @@ class _FMeasureCalculator:
         return results
 
     @staticmethod
-    def __get_critical_nms(boxes_per_image: List, cross_class_nms: bool = False) -> List:
+    def __get_critical_nms(
+        boxes_per_image: List, cross_class_nms: bool = False
+    ) -> List:
         """
         Maps each predicted box to the highest nms-threshold which would suppress that box, aka the smallest
         nms_threshold before the box disappears
@@ -478,8 +524,13 @@ class _FMeasureCalculator:
                 for box2 in boxes:
                     iou = bounding_box_intersection_over_union(box1, box2)
                     if (
-                        (cross_class_nms or box1[FMeasure.box_class_index] == box2[FMeasure.box_class_index])
-                        and box1[FMeasure.box_score_index] < box2[FMeasure.box_score_index]
+                        (
+                            cross_class_nms
+                            or box1[FMeasure.box_class_index]
+                            == box2[FMeasure.box_class_index]
+                        )
+                        and box1[FMeasure.box_score_index]
+                        < box2[FMeasure.box_score_index]
                         and iou > highest_losing_iou
                     ):
                         highest_losing_iou = iou
@@ -488,7 +539,9 @@ class _FMeasureCalculator:
         return critical_nms_per_image
 
     @staticmethod
-    def __filter_nms(boxes_per_image: List, critical_nms: List, nms_threshold: float) -> List:
+    def __filter_nms(
+        boxes_per_image: List, critical_nms: List, nms_threshold: float
+    ) -> List:
         """
         Filters out predicted boxes whose critical nms is higher than the given nms_threshold
 
@@ -565,7 +618,9 @@ class _FMeasureCalculator:
             if len(predicted_boxes) > 0:
                 if len(ground_truth_boxes) > 0:
                     iou_matrix = get_iou_matrix(ground_truth_boxes, predicted_boxes)
-                    n_false_negatives += get_n_false_negatives(iou_matrix, iou_threshold)
+                    n_false_negatives += get_n_false_negatives(
+                        iou_matrix, iou_threshold
+                    )
             else:
                 n_false_negatives += len(ground_truth_boxes)
         return _ResultCounters(n_false_negatives, n_true, n_predicted)
@@ -613,7 +668,9 @@ class FMeasure(IPerformanceProvider):
         ground_truth_dataset.sort_items()
         prediction_dataset.sort_items()
 
-        labels = resultset.model.configuration.label_schema.get_labels(include_empty=False)
+        labels = resultset.model.configuration.label_schema.get_labels(
+            include_empty=False
+        )
         classes = [label.name for label in labels]
         boxes_pair = _FMeasureCalculator(
             FMeasure.__get_boxes_from_dataset_as_list(ground_truth_dataset, labels),
@@ -628,7 +685,8 @@ class FMeasure(IPerformanceProvider):
         self._f_measure_per_label: Dict[LabelEntity, ScoreMetric] = {}
         for label in labels:
             self.f_measure_per_label[label] = ScoreMetric(
-                name=label.name, value=result.best_f_measure_per_class[label.name]
+                name=label.name,
+                value=result.best_f_measure_per_class[label.name],
             )
 
         self._f_measure_per_confidence: Optional[CurveMetric] = None
@@ -654,7 +712,10 @@ class FMeasure(IPerformanceProvider):
                 xs=list(np.arange(*boxes_pair.nms_range)),
                 ys=result.per_nms.all_classes_f_measure_curve,
             )
-            self._best_nms_threshold = ScoreMetric(name="Optimal nms threshold", value=result.per_nms.best_threshold)
+            self._best_nms_threshold = ScoreMetric(
+                name="Optimal nms threshold",
+                value=result.per_nms.best_threshold,
+            )
 
     box_class_index = 4
     box_score_index = 5
@@ -756,7 +817,9 @@ class FMeasure(IPerformanceProvider):
         return Performance(score=score, dashboard_metrics=dashboard_metrics)
 
     @staticmethod
-    def __get_boxes_from_dataset_as_list(dataset: DatasetEntity, labels: List[LabelEntity]) -> List:
+    def __get_boxes_from_dataset_as_list(
+        dataset: DatasetEntity, labels: List[LabelEntity]
+    ) -> List:
         """
         Explanation of output shape:
             a box: [x1: float, y1, x2, y2, class: str, score: float]
@@ -772,19 +835,31 @@ class FMeasure(IPerformanceProvider):
         label_names = {label.name for label in labels}
         for item in dataset:
             boxes: List[List[Union[float, str]]] = []
-            roi_as_box = Annotation(ShapeFactory.shape_as_rectangle(item.roi.shape), labels=[])
+            roi_as_box = Annotation(
+                ShapeFactory.shape_as_rectangle(item.roi.shape), labels=[]
+            )
             for annotation in item.annotation_scene.annotations:
                 shape_as_box = ShapeFactory.shape_as_rectangle(annotation.shape)
                 box = shape_as_box.normalize_wrt_roi_shape(roi_as_box.shape)
                 n_boxes_before = len(boxes)
                 boxes.extend(
                     [
-                        [box.x1, box.y1, box.x2, box.y2, label.name, label.probability]
+                        [
+                            box.x1,
+                            box.y1,
+                            box.x2,
+                            box.y2,
+                            label.name,
+                            label.probability,
+                        ]
                         for label in annotation.get_labels()
                         if label.name in label_names
                     ]
                 )
-                if not isinstance(annotation.shape, Rectangle) and len(boxes) > n_boxes_before:
+                if (
+                    not isinstance(annotation.shape, Rectangle)
+                    and len(boxes) > n_boxes_before
+                ):
                     converted_types_to_box.add(annotation.shape.__class__.__name__)
             boxes_per_image.append(boxes)
         if len(converted_types_to_box) > 0:

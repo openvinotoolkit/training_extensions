@@ -28,7 +28,9 @@ class Graph(IGraph):
     """
 
     def __init__(self, directed: bool = False):
-        self._graph: Union[nx.Graph, nx.MultiDiGraph] = nx.Graph() if not directed else nx.MultiDiGraph()
+        self._graph: Union[nx.Graph, nx.MultiDiGraph] = (
+            nx.Graph() if not directed else nx.MultiDiGraph()
+        )
         self.directed = directed
 
     def get_graph(self) -> Union[nx.Graph, nx.MultiDiGraph]:

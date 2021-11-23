@@ -141,7 +141,9 @@ class Color(ColorEntity):
         if len(string) < 8:
             # If alpha channel misses, add it
             string += (8 - len(string)) * "f"
-        red, green, blue, alpha = tuple(int(string[i : i + 2], 16) for i in (0, 2, 4, 6))
+        red, green, blue, alpha = tuple(
+            int(string[i : i + 2], 16) for i in (0, 2, 4, 6)
+        )
         return cls(red=red, green=green, blue=blue, alpha=alpha)
 
     @classmethod

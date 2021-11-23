@@ -55,7 +55,9 @@ class ModelAdapter(metaclass=abc.ABCMeta):
             return self.__data_source.data
         if isinstance(self.__data_source, bytes):
             return self.__data_source
-        raise ValueError("This model adapter is not properly initialized with a source of data")
+        raise ValueError(
+            "This model adapter is not properly initialized with a source of data"
+        )
 
     @property
     def from_file_storage(self) -> bool:

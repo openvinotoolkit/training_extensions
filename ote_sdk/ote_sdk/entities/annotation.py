@@ -33,14 +33,22 @@ class Annotation(metaclass=abc.ABCMeta):
     """
 
     # pylint: disable=redefined-builtin;
-    def __init__(self, shape: ShapeEntity, labels: List[ScoredLabel], id: Optional[ID] = None):
+    def __init__(
+        self,
+        shape: ShapeEntity,
+        labels: List[ScoredLabel],
+        id: Optional[ID] = None,
+    ):
         self.__id = ID(ObjectId()) if id is None else id
         self.__shape = shape
         self.__labels = labels
 
     def __repr__(self):
         return (
-            f"{self.__class__.__name__}(" f"shape={self.shape}, " f"labels={self.get_labels(True)}, " f"id={self.id})"
+            f"{self.__class__.__name__}("
+            f"shape={self.shape}, "
+            f"labels={self.get_labels(True)}, "
+            f"id={self.id})"
         )
 
     @property
@@ -72,7 +80,9 @@ class Annotation(metaclass=abc.ABCMeta):
         :param include_empty: set to True to include empty label (if exists) in the output.
         :return: List of labels in annotation
         """
-        return [label for label in self.__labels if include_empty or (not label.is_empty)]
+        return [
+            label for label in self.__labels if include_empty or (not label.is_empty)
+        ]
 
     def get_label_ids(self, include_empty: bool = False) -> Set[ID]:
         """
@@ -81,7 +91,9 @@ class Annotation(metaclass=abc.ABCMeta):
         :param include_empty: set to True to include empty label (if exists) in the output.
         :return: Set of label id's in annotation
         """
-        return {label.id for label in self.__labels if include_empty or (not label.is_empty)}
+        return {
+            label.id for label in self.__labels if include_empty or (not label.is_empty)
+        }
 
     def append_label(self, label: ScoredLabel):
         """
@@ -101,7 +113,11 @@ class Annotation(metaclass=abc.ABCMeta):
 
     def __eq__(self, other):
         if isinstance(other, Annotation):
-            return self.id == other.id and self.get_labels(True) == other.get_labels(True) and self.shape == other.shape
+            return (
+                self.id == other.id
+                and self.get_labels(True) == other.get_labels(True)
+                and self.shape == other.shape
+            )
         return False
 
 
@@ -243,7 +259,14 @@ class AnnotationSceneEntity(metaclass=abc.ABCMeta):
         :return: True if there is any intersection between self.get_labels(include_empty=True) with labels.
         """
         label_names = {label.name for label in labels}
-        return len({label.name for label in self.get_labels(include_empty=True)}.intersection(label_names)) != 0
+        return (
+            len(
+                {
+                    label.name for label in self.get_labels(include_empty=True)
+                }.intersection(label_names)
+            )
+            != 0
+        )
 
     def append_annotation(self, annotation: Annotation):
         """

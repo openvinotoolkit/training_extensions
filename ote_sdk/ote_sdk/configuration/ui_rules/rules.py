@@ -43,8 +43,12 @@ class Rule:
 
     parameter: Union[str, List[str]]
     value: ALLOWED_RULE_VALUE_TYPES
-    operator: Operator = attrib(default=Operator.EQUAL_TO, converter=attr_convert_operator)
-    type: ConfigElementType = attrib(default=ConfigElementType.RULE, on_setattr=setters.frozen)
+    operator: Operator = attrib(
+        default=Operator.EQUAL_TO, converter=attr_convert_operator
+    )
+    type: ConfigElementType = attrib(
+        default=ConfigElementType.RULE, on_setattr=setters.frozen
+    )
 
     def to_dict(self, enum_to_str: bool = True) -> dict:
         """
@@ -72,8 +76,12 @@ class UIRules:
 
     rules: List[Union[Rule, UIRules]] = attrib(kw_only=True)
     operator: Operator = attrib(default=Operator.AND, converter=attr_convert_operator)
-    action: Action = attrib(default=Action.DISABLE_EDITING, converter=attr_convert_action)
-    type: ConfigElementType = attrib(default=ConfigElementType.UI_RULES, on_setattr=setters.frozen)
+    action: Action = attrib(
+        default=Action.DISABLE_EDITING, converter=attr_convert_action
+    )
+    type: ConfigElementType = attrib(
+        default=ConfigElementType.UI_RULES, on_setattr=setters.frozen
+    )
 
     def add_rule(self, rule: Union[Rule, UIRules]):
         """Adds rule."""
