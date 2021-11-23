@@ -17,8 +17,10 @@ Model inference demostration tool.
 # and limitations under the License.
 
 import argparse
+import time
 
 import cv2
+import numpy as np
 from ote_sdk.configuration.helper import create
 from ote_sdk.entities.annotation import AnnotationSceneEntity, AnnotationSceneKind
 from ote_sdk.entities.datasets import DatasetEntity, DatasetItemEntity
@@ -33,7 +35,7 @@ from ote_sdk.usecases.adapters.model_adapter import ModelAdapter
 
 from ote_cli.registry import find_and_parse_model_template
 from ote_cli.tools.utils.demo.images_capture import open_images_capture
-from ote_cli.tools.utils.demo.visualization import draw_predictions
+from ote_cli.tools.utils.demo.visualization import draw_predictions, put_text_on_rect_bg
 from ote_cli.utils.config import override_parameters
 from ote_cli.utils.importing import get_impl_class
 from ote_cli.utils.loading import load_model_weights
@@ -76,11 +78,26 @@ def parse_args():
         "--fit-to-size",
         nargs=2,
         type=int,
-        help="Fit displayed images to window with specified Width and height. It is about visualization only.",
+        help="Width and Height space-separated values. "
+        "Fits displayed images to window with specified Width and Height. "
+        "This options applies to result visualisation only.",
     )
-    parser.add_argument("--loop", action="store_true")
-    parser.add_argument("--delay", type=int, default=3)
-    parser.add_argument("--labels", nargs="+")
+    parser.add_argument(
+        "--loop", action="store_true", help="Enable reading the input in a loop."
+    )
+    parser.add_argument(
+        "--delay", type=int, default=3, help="Frame visualization time in ms."
+    )
+    parser.add_argument(
+        "--labels", nargs="+", required=True, help="A space-separated labels list."
+    )
+    parser.add_argument(
+        "--display-perf",
+        action="store_true",
+        help="This option enables writing performance metrics on displayed frame. "
+        "These metrics take into account not only model inference time, but also "
+        "frame reading, pre-processing and post-processing.",
+    )
 
     add_hyper_parameters_sub_parser(parser, hyper_parameters, modes=("INFERENCE",))
 
@@ -88,6 +105,10 @@ def parse_args():
 
 
 def get_predictions(task, frame):
+    """
+    Returns list of predictions made by task on frame and time spent on doing prediction.
+    """
+
     empty_annotation = AnnotationSceneEntity(
         annotations=[], kind=AnnotationSceneKind.PREDICTION
     )
@@ -99,12 +120,14 @@ def get_predictions(task, frame):
 
     dataset = DatasetEntity(items=[item])
 
+    start_time = time.perf_counter()
     predicted_validation_dataset = task.infer(
         dataset,
         InferenceParameters(is_evaluation=True),
     )
+    elapsed_time = time.perf_counter() - start_time
     item = predicted_validation_dataset[0]
-    return item.annotation_scene.annotations
+    return item.annotation_scene.annotations, elapsed_time
 
 
 def main():
@@ -134,12 +157,11 @@ def main():
         model_template=template,
     )
 
-    model_adapters = {
-        "weights.pth": ModelAdapter(load_model_weights(args.load_weights))
-    }
     model = ModelEntity(
         configuration=environment.get_model_configuration(),
-        model_adapters=model_adapters,
+        model_adapters={
+            "weights.pth": ModelAdapter(load_model_weights(args.load_weights))
+        },
         train_dataset=None,
     )
     environment.model = model
@@ -148,16 +170,33 @@ def main():
 
     capture = open_images_capture(args.input, args.loop)
 
+    elapsed_times = []
+    frame_index = 0
     while True:
         frame = capture.read()
         if frame is None:
             break
 
-        predictions = get_predictions(task, frame)
+        predictions, elapsed_time = get_predictions(task, frame)
+        elapsed_times.append(elapsed_time)
+        if len(elapsed_times) > 10:
+            elapsed_times = elapsed_times[1:]
+        elapsed_time = np.mean(elapsed_times)
+
         frame = draw_predictions(
             template.task_type, predictions, frame, args.fit_to_size
         )
 
-        cv2.imshow("frame", frame)
-        if cv2.waitKey(args.delay) == ESC_BUTTON:
-            break
+        if args.delay >= 0:
+            if args.display_perf:
+                put_text_on_rect_bg(
+                    frame,
+                    f"time: {elapsed_time:.4f} sec.",
+                    (0, frame.shape[0] - 30),
+                    color=(255, 255, 255),
+                )
+            cv2.imshow("frame", frame)
+            if cv2.waitKey(args.delay) == ESC_BUTTON:
+                break
+        else:
+            print(f"{frame_index=}, {elapsed_time=}, {len(predictions)=}")
