@@ -41,10 +41,7 @@ class URL:
                     delimiter = min(
                         delimiter, position
                     )  # use earliest delimiter position
-            return (
-                url[start:delimiter],
-                url[delimiter:],
-            )  # return (domain, rest)
+            return url[start:delimiter], url[delimiter:]  # return (domain, rest)
 
         if url is None:
             raise ValueError("Cannot build an URL from None")

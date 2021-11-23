@@ -593,9 +593,7 @@ class MetricsGroup(Generic[MetricType, VisualizationInfoType]):
     """
 
     def __init__(
-        self,
-        metrics: Sequence[MetricType],
-        visualization_info: VisualizationInfoType,
+        self, metrics: Sequence[MetricType], visualization_info: VisualizationInfoType
     ):
         if metrics is None or len(metrics) == 0:
             raise ValueError("Metrics cannot be None or empty")
@@ -612,9 +610,7 @@ class MatrixMetricsGroup(MetricsGroup[MatrixMetric, MatrixChartInfo]):
     """
 
     def __init__(
-        self,
-        metrics: Sequence[MatrixMetric],
-        visualization_info: MatrixChartInfo,
+        self, metrics: Sequence[MatrixMetric], visualization_info: MatrixChartInfo
     ):
         super().__init__(metrics=metrics, visualization_info=visualization_info)
 
@@ -683,9 +679,7 @@ class Performance:
     """
 
     def __init__(
-        self,
-        score: ScoreMetric,
-        dashboard_metrics: Optional[List[MetricsGroup]] = None,
+        self, score: ScoreMetric, dashboard_metrics: Optional[List[MetricsGroup]] = None
     ):
         if not isinstance(score, ScoreMetric):
             raise ValueError(

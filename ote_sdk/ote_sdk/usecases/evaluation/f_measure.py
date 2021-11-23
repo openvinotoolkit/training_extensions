@@ -328,10 +328,7 @@ class _FMeasureCalculator:
         return result
 
     def get_results_per_confidence(
-        self,
-        classes: List[str],
-        confidence_range: List[float],
-        iou_threshold: float,
+        self, classes: List[str], confidence_range: List[float], iou_threshold: float
     ) -> _AggregatedResults:
         """
         Varies confidence based on confidence_range, the results are appended in a dictionary and returned, it also
@@ -396,13 +393,10 @@ class _FMeasureCalculator:
 
         for nms_threshold in np.arange(*self.nms_range):
             predicted_boxes_per_image_per_nms = self.__filter_nms(
-                self.prediction_boxes_per_image,
-                critical_nms_per_image,
-                nms_threshold,
+                self.prediction_boxes_per_image, critical_nms_per_image, nms_threshold
             )
             boxes_pair_for_nms = _FMeasureCalculator(
-                self.ground_truth_boxes_per_image,
-                predicted_boxes_per_image_per_nms,
+                self.ground_truth_boxes_per_image, predicted_boxes_per_image_per_nms
             )
             result_point = boxes_pair_for_nms.evaluate_classes(
                 classes=classes.copy(),
@@ -427,10 +421,7 @@ class _FMeasureCalculator:
         return result
 
     def evaluate_classes(
-        self,
-        classes: List[str],
-        iou_threshold: float,
-        confidence_threshold: float,
+        self, classes: List[str], iou_threshold: float, confidence_threshold: float
     ) -> Dict[str, _Metrics]:
         """
         Returns Dict of f_measure, precision and recall for each class.
@@ -685,8 +676,7 @@ class FMeasure(IPerformanceProvider):
         self._f_measure_per_label: Dict[LabelEntity, ScoreMetric] = {}
         for label in labels:
             self.f_measure_per_label[label] = ScoreMetric(
-                name=label.name,
-                value=result.best_f_measure_per_class[label.name],
+                name=label.name, value=result.best_f_measure_per_class[label.name]
             )
 
         self._f_measure_per_confidence: Optional[CurveMetric] = None
@@ -713,8 +703,7 @@ class FMeasure(IPerformanceProvider):
                 ys=result.per_nms.all_classes_f_measure_curve,
             )
             self._best_nms_threshold = ScoreMetric(
-                name="Optimal nms threshold",
-                value=result.per_nms.best_threshold,
+                name="Optimal nms threshold", value=result.per_nms.best_threshold
             )
 
     box_class_index = 4
@@ -844,14 +833,7 @@ class FMeasure(IPerformanceProvider):
                 n_boxes_before = len(boxes)
                 boxes.extend(
                     [
-                        [
-                            box.x1,
-                            box.y1,
-                            box.x2,
-                            box.y2,
-                            label.name,
-                            label.probability,
-                        ]
+                        [box.x1, box.y1, box.x2, box.y2, label.name, label.probability]
                         for label in annotation.get_labels()
                         if label.name in label_names
                     ]

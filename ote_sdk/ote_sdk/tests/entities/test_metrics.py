@@ -85,9 +85,7 @@ class TestMetrics:
 
         matrix_data_with_zero_sum = np.array([[0, 0, 0], [0, 1, 1], [1, 0, 0]])
         matrix_metric_with_zero_sum = MatrixMetric(
-            name="test matrix",
-            matrix_values=matrix_data_with_zero_sum,
-            normalize=True,
+            name="test matrix", matrix_values=matrix_data_with_zero_sum, normalize=True
         )
 
         required_normalised_matrix_data_with_zero_sum = np.array(

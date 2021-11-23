@@ -255,8 +255,7 @@ class DatasetEntity:
         return DatasetIterator(self)
 
     def with_empty_annotations(
-        self,
-        annotation_kind: AnnotationSceneKind = AnnotationSceneKind.PREDICTION,
+        self, annotation_kind: AnnotationSceneKind = AnnotationSceneKind.PREDICTION
     ) -> "DatasetEntity":
         """
         Produces a new dataset with empty annotation objects (no shapes or labels).

@@ -34,10 +34,7 @@ class Annotation(metaclass=abc.ABCMeta):
 
     # pylint: disable=redefined-builtin;
     def __init__(
-        self,
-        shape: ShapeEntity,
-        labels: List[ScoredLabel],
-        id: Optional[ID] = None,
+        self, shape: ShapeEntity, labels: List[ScoredLabel], id: Optional[ID] = None
     ):
         self.__id = ID(ObjectId()) if id is None else id
         self.__shape = shape

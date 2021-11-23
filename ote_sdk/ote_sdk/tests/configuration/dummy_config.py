@@ -84,10 +84,7 @@ class DatasetManagerConfig(ConfigurableParameters):
             __ui_rules = UIRules(
                 rules=[
                     Rule(
-                        parameter=[
-                            "nested_parameter_group",
-                            "show_subgroup_one",
-                        ],
+                        parameter=["nested_parameter_group", "show_subgroup_one"],
                         operator=Operator.EQUAL_TO,
                         value=False,
                     )
@@ -182,9 +179,7 @@ class DatasetManagerConfig(ConfigurableParameters):
 
     # Add a selectable and float selectable parameter
     dummy_float_selectable = float_selectable(
-        options=[1.0, 2.0, 3.0, 4.0],
-        default_value=2.0,
-        header="Test float selectable",
+        options=[1.0, 2.0, 3.0, 4.0], default_value=2.0, header="Test float selectable"
     )
 
     dummy_selectable = selectable(

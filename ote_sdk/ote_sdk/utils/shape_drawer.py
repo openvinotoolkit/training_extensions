@@ -138,9 +138,7 @@ class Helpers:
 
     @staticmethod
     def generate_text_for_label(
-        label: Union[LabelEntity, ScoredLabel],
-        show_labels: bool,
-        show_confidence: bool,
+        label: Union[LabelEntity, ScoredLabel], show_labels: bool, show_confidence: bool
     ) -> str:
         """
         Return a string representing a given label and its associated probability if label is a ScoredLabel.
@@ -192,11 +190,9 @@ class Helpers:
             thickness = int(text_scale / 2)
             color = label.color.bgr_tuple
 
-            (
-                item_command,
-                item_width,
-                item_height,
-            ) = self.generate_draw_command_for_text(text, text_scale, thickness, color)
+            item_command, item_width, item_height = self.generate_draw_command_for_text(
+                text, text_scale, thickness, color
+            )
 
             draw_commands.append(item_command)
 
@@ -211,11 +207,7 @@ class Helpers:
         return draw_command, content_width, content_height
 
     def generate_draw_command_for_text(
-        self,
-        text: str,
-        text_scale: float,
-        thickness: int,
-        color: Tuple[int, int, int],
+        self, text: str, text_scale: float, thickness: int, color: Tuple[int, int, int]
     ) -> Tuple[Callable[[np.ndarray], np.ndarray], int, int]:
         """
         Generate a function which can be called to draw the given text onto an image
@@ -235,10 +227,7 @@ class Helpers:
         margin = self.content_margin
 
         label_size = cv2.getTextSize(
-            text,
-            cv2.FONT_HERSHEY_SIMPLEX,
-            fontScale=text_scale,
-            thickness=thickness,
+            text, cv2.FONT_HERSHEY_SIMPLEX, fontScale=text_scale, thickness=thickness
         )
 
         baseline = label_size[1]
@@ -401,9 +390,7 @@ class ShapeDrawer(DrawerEntity[AnnotationSceneEntity]):
                             and len(annotation.get_labels()) > 0
                         ):
                             image = drawer.draw(
-                                image,
-                                annotation.shape,
-                                labels=annotation.get_labels(),
+                                image, annotation.shape, labels=annotation.get_labels()
                             )
 
             if self.is_one_label:
@@ -426,10 +413,7 @@ class ShapeDrawer(DrawerEntity[AnnotationSceneEntity]):
             self.is_one_label = is_one_label
 
         def draw(
-            self,
-            image: np.ndarray,
-            entity: Annotation,
-            labels: List[ScoredLabel],
+            self, image: np.ndarray, entity: Annotation, labels: List[ScoredLabel]
         ) -> np.ndarray:
             """
             Draw the labels of a shape in the image top left corner
@@ -441,9 +425,7 @@ class ShapeDrawer(DrawerEntity[AnnotationSceneEntity]):
             return self.draw_labels(image, entity.get_labels())
 
         def draw_labels(
-            self,
-            image: np.ndarray,
-            labels: Sequence[Union[LabelEntity, ScoredLabel]],
+            self, image: np.ndarray, labels: Sequence[Union[LabelEntity, ScoredLabel]]
         ) -> np.ndarray:
             """
             Draw the labels in the image top left corner
@@ -499,10 +481,7 @@ class ShapeDrawer(DrawerEntity[AnnotationSceneEntity]):
             self.show_confidence = show_confidence
 
         def draw(
-            self,
-            image: np.ndarray,
-            entity: Rectangle,
-            labels: List[ScoredLabel],
+            self, image: np.ndarray, entity: Rectangle, labels: List[ScoredLabel]
         ) -> np.ndarray:
             base_color = labels[0].color.bgr_tuple
 
@@ -513,11 +492,7 @@ class ShapeDrawer(DrawerEntity[AnnotationSceneEntity]):
                 image, x1, y1, x2, y2, base_color, self.alpha_shape
             )
             image = cv2.rectangle(
-                img=image,
-                pt1=(x1, y1),
-                pt2=(x2, y2),
-                color=[0, 0, 0],
-                thickness=2,
+                img=image, pt1=(x1, y1), pt2=(x2, y2), color=[0, 0, 0], thickness=2
             )
 
             (

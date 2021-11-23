@@ -21,8 +21,7 @@ import os
 from setuptools import find_packages, setup
 
 with open(
-    os.path.join(os.path.dirname(__file__), "requirements.txt"),
-    encoding="UTF-8",
+    os.path.join(os.path.dirname(__file__), "requirements.txt"), encoding="UTF-8"
 ) as read_file:
     requirements = [requirement.strip() for requirement in read_file]
 

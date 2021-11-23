@@ -107,9 +107,7 @@ def main():
     task = task_class(task_environment=environment)
 
     exported_model = ModelEntity(
-        None,
-        environment.get_model_configuration(),
-        model_status=ModelStatus.NOT_READY,
+        None, environment.get_model_configuration(), model_status=ModelStatus.NOT_READY
     )
 
     task.export(ExportType.OPENVINO, exported_model)

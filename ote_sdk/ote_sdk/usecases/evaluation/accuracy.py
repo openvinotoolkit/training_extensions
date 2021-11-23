@@ -103,8 +103,7 @@ class Accuracy(IPerformanceProvider):
         )
         confusion_matrix_dashboard_metrics.append(
             MatrixMetricsGroup(
-                metrics=normalized_matrices,
-                visualization_info=confusion_matrix_info,
+                metrics=normalized_matrices, visualization_info=confusion_matrix_info
             )
         )
         #  Compute precision and recall MetricGroups and append them to the dashboard metrics
@@ -117,8 +116,7 @@ class Accuracy(IPerformanceProvider):
             )
 
         return Performance(
-            score=self.accuracy,
-            dashboard_metrics=confusion_matrix_dashboard_metrics,
+            score=self.accuracy, dashboard_metrics=confusion_matrix_dashboard_metrics
         )
 
     @staticmethod

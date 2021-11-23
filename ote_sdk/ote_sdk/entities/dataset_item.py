@@ -307,9 +307,7 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
         self.annotation_scene.append_annotations(validated_annotations)
 
     def get_roi_labels(
-        self,
-        labels: Optional[List[LabelEntity]] = None,
-        include_empty: bool = False,
+        self, labels: Optional[List[LabelEntity]] = None, include_empty: bool = False
     ) -> List[LabelEntity]:
         """
         Return the subset of the input labels which exist in the dataset item (wrt. ROI).
@@ -325,9 +323,7 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
         return sorted(list(filtered_labels), key=lambda x: x.name)
 
     def get_shapes_labels(
-        self,
-        labels: Optional[List[LabelEntity]] = None,
-        include_empty: bool = False,
+        self, labels: Optional[List[LabelEntity]] = None, include_empty: bool = False
     ) -> List[LabelEntity]:
         """
         Get the labels of the shapes present in this dataset item. if a label list is supplied, only labels present

@@ -60,10 +60,7 @@ def mask_from_dataset_item(
 
 
 def mask_from_annotation(
-    annotations: List[Annotation],
-    labels: List[LabelEntity],
-    width: int,
-    height: int,
+    annotations: List[Annotation], labels: List[LabelEntity], width: int, height: int
 ) -> np.ndarray:
     """
     Generate a segmentation mask of a numpy image, and a list of shapes.
@@ -103,11 +100,7 @@ def mask_from_annotation(
             contour.append([int(point.x * width), int(point.y * height)])
 
         mask = cv2.drawContours(
-            mask,
-            np.asarray([contour]),
-            0,
-            (class_idx, class_idx, class_idx),
-            -1,
+            mask, np.asarray([contour]), 0, (class_idx, class_idx, class_idx), -1
         )
 
     mask = np.expand_dims(mask, axis=2)

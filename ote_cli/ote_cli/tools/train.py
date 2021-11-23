@@ -113,10 +113,7 @@ def main():
             "ann_file": args.train_ann_files,
             "data_root": args.train_data_roots,
         },
-        val_subset={
-            "ann_file": args.val_ann_files,
-            "data_root": args.val_data_roots,
-        },
+        val_subset={"ann_file": args.val_ann_files, "data_root": args.val_data_roots},
     )
 
     environment = TaskEnvironment(

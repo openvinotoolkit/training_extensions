@@ -177,17 +177,13 @@ class BaseOpenVINOInferencer(BaseInferencer, abc.ABC):
 
         init_from_buffer = isinstance(model_file, bytes)
         self.net = self.ie.read_network(
-            model=model_file,
-            weights=weights_file,
-            init_from_buffer=init_from_buffer,
+            model=model_file, weights=weights_file, init_from_buffer=init_from_buffer
         )
         self.input_keys = list(self.net.input_info.keys())
         self.output_keys = list(self.net.outputs.keys())
 
     def load_model(
-        self,
-        model_file: Union[str, bytes],
-        weights_file: Union[str, bytes, None],
+        self, model_file: Union[str, bytes], weights_file: Union[str, bytes, None]
     ):
         """
         Loads an OpenVINO or ONNX model, overwrite this function if you need to reshape
@@ -202,9 +198,7 @@ class BaseOpenVINOInferencer(BaseInferencer, abc.ABC):
             self.read_model(model_file, weights_file)
 
         self.model = self.ie.load_network(
-            network=self.net,
-            device_name=self.device,
-            num_requests=self.num_requests,
+            network=self.net, device_name=self.device, num_requests=self.num_requests
         )
 
 

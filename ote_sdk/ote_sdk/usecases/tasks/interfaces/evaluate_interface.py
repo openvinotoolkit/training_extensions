@@ -28,9 +28,7 @@ class IEvaluationTask(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def evaluate(
-        self,
-        output_resultset: ResultSetEntity,
-        evaluation_metric: Optional[str] = None,
+        self, output_resultset: ResultSetEntity, evaluation_metric: Optional[str] = None
     ):
         """
         Compute performance metrics for a given set of results.

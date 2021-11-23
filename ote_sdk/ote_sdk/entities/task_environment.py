@@ -99,9 +99,7 @@ class TaskEnvironment:
         base_config = instance_of(header=self.__hyper_parameters.header)
 
         ote_config_helper.substitute_values(
-            base_config,
-            value_input=self.__hyper_parameters,
-            allow_missing_values=True,
+            base_config, value_input=self.__hyper_parameters, allow_missing_values=True
         )
 
         return base_config

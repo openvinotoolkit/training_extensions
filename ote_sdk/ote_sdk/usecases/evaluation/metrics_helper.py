@@ -48,10 +48,7 @@ class MetricsHelper:
         :return: FMeasure object
         """
         return FMeasure(
-            resultset,
-            vary_confidence_threshold,
-            vary_nms_threshold,
-            cross_class_nms,
+            resultset, vary_confidence_threshold, vary_nms_threshold, cross_class_nms
         )
 
     @staticmethod

@@ -37,17 +37,7 @@ class MediaExtensions(NamedTuple):
 
 
 MEDIA_EXTENSIONS = MediaExtensions(
-    image=(
-        ".jpg",
-        ".jpeg",
-        ".png",
-        ".ppm",
-        ".bmp",
-        ".pgm",
-        ".tif",
-        ".tiff",
-        ".webp",
-    ),
+    image=(".jpg", ".jpeg", ".png", ".ppm", ".bmp", ".pgm", ".tif", ".tiff", ".webp"),
     video=(".avi", ".mp4"),
 )
 

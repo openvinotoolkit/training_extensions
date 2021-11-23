@@ -38,8 +38,7 @@ class Registry:
                 raise RuntimeError("The templates_dir is not set.")
 
             template_filenames = glob.glob(
-                os.path.join(templates_dir, "**", "template.yaml"),
-                recursive=True,
+                os.path.join(templates_dir, "**", "template.yaml"), recursive=True
             )
             template_filenames = [os.path.abspath(p) for p in template_filenames]
 

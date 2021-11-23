@@ -255,8 +255,10 @@ class LabelTree(MultiDiGraph):
             siblings = []
         else:
             siblings = [
-                u for u, v in self._graph.in_edges(parent) if u != label
-            ]  # pylint: disable=no-member
+                u
+                for u, v in self._graph.in_edges(parent)  # pylint: disable=no-member
+                if u != label
+            ]
         return siblings
 
     def get_ancestors(self, label: LabelEntity) -> List[LabelEntity]:
@@ -354,9 +356,7 @@ class LabelSchemaEntity:
         ]
 
     def add_group(
-        self,
-        label_group: LabelGroup,
-        exclusive_with: Optional[List[LabelGroup]] = None,
+        self, label_group: LabelGroup, exclusive_with: Optional[List[LabelGroup]] = None
     ):
         """
         Adding a group to label schema. This also maintains the exclusivity edges.
@@ -437,9 +437,7 @@ class LabelSchemaEntity:
         ]
 
     def __add_exclusivity_edges(
-        self,
-        new_labels: Sequence[LabelEntity],
-        existing_labels: Sequence[LabelEntity],
+        self, new_labels: Sequence[LabelEntity], existing_labels: Sequence[LabelEntity]
     ):
         """
         Adding exclusivity edges:

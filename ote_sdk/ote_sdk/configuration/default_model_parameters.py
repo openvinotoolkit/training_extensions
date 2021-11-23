@@ -43,8 +43,7 @@ class DefaultModelParameters(ConfigurableParameters):
 
     header: str = attrib(default="Default model hyper parameters")
     description: str = attrib(
-        default="Default model hyper parameter section description",
-        kw_only=True,
+        default="Default model hyper parameter section description", kw_only=True
     )
 
     @attrs

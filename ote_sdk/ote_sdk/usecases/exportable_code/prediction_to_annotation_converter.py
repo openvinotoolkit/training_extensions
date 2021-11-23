@@ -113,10 +113,7 @@ class DetectionToAnnotationConverter(IPredictionToAnnotationConverter):
             annotations.append(
                 Annotation(
                     Rectangle(
-                        prediction[2],
-                        prediction[3],
-                        prediction[4],
-                        prediction[5],
+                        prediction[2], prediction[3], prediction[4], prediction[5]
                     ),
                     labels=[scored_label],
                 )

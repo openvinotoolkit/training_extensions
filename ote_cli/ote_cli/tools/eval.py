@@ -94,10 +94,7 @@ def main():
     dataset_class = get_dataset_class(template.task_type)
 
     dataset = dataset_class(
-        test_subset={
-            "ann_file": args.test_ann_files,
-            "data_root": args.test_data_roots,
-        }
+        test_subset={"ann_file": args.test_ann_files, "data_root": args.test_data_roots}
     )
 
     environment = TaskEnvironment(

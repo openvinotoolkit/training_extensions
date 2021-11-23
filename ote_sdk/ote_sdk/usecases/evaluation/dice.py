@@ -129,8 +129,7 @@ class DiceAverage(IPerformanceProvider):
         hard_predictions = []
         hard_references = []
         for prediction_item, reference_item in zip(
-            list(resultset.prediction_dataset),
-            list(resultset.ground_truth_dataset),
+            list(resultset.prediction_dataset), list(resultset.ground_truth_dataset)
         ):
             hard_predictions.append(mask_from_dataset_item(prediction_item, labels))
             hard_references.append(mask_from_dataset_item(reference_item, labels))
