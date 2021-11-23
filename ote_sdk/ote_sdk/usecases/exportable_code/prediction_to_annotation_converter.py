@@ -13,7 +13,7 @@
 # in the License.
 
 import abc
-from typing import Any, List
+from typing import Any, Dict, List, Union
 
 import numpy as np
 
@@ -22,10 +22,12 @@ from ote_sdk.entities.annotation import (
     AnnotationSceneEntity,
     AnnotationSceneKind,
 )
+from openvino.model_zoo.model_api.models import utils
 from ote_sdk.entities.id import ID
-from ote_sdk.entities.label import LabelEntity
+from ote_sdk.entities.label import Domain, LabelEntity
 from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.entities.shapes.rectangle import Rectangle
+from ote_sdk.utils.segmentation_utils import create_annotation_from_segmentation_map
 from ote_sdk.utils.time_utils import now
 
 
@@ -120,3 +122,75 @@ class DetectionToAnnotationConverter(IPredictionToAnnotationConverter):
             )
 
         return annotations
+
+
+def create_converter(type: Domain, labels: List[Union[str, LabelEntity]]):
+    if type == Domain.DETECTION:
+        return DetectionBoxToAnnotationConverter(labels)
+    elif type == Domain.SEGMENTATION:
+        return SegmentationToAnnotationConverter(labels)
+    else:
+        raise ValueError(type)
+
+
+def get_label(labels_map: List[Union[str, LabelEntity]], id: int, label_domain: Domain) -> LabelEntity:
+    if labels_map is None:
+        return LabelEntity(id, label_domain)
+    if isinstance(labels_map[id], str):
+        return LabelEntity(labels_map[id], label_domain)
+
+    return labels_map[id]
+
+
+class DetectionBoxToAnnotationConverter(IPredictionToAnnotationConverter):
+    """
+    Converts DetectionBox Predictions ModelAPI to Annotations
+    """
+
+    def __init__(self, labels: List[Union[str, LabelEntity]]):
+        self.labels_map = labels
+
+    def convert_to_annotation(self, detections: List[utils.Detection], metadata: Dict[str, Any]) -> AnnotationSceneEntity:
+        annotations = []
+        image_size = metadata['original_shape'][1::-1]
+        for box in detections:
+            scored_label = ScoredLabel(get_label(self.labels_map, int(box.id), Domain.DETECTION), box.score)
+            coords = np.array(box.get_coords()) / np.tile(image_size, 2)
+            annotations.append(
+                Annotation(
+                    Rectangle(
+                        coords[0], coords[1], coords[2], coords[3]
+                    ),
+                    labels=[scored_label],
+                )
+            )
+
+        annotation_scene = AnnotationSceneEntity(
+            kind=AnnotationSceneKind.PREDICTION,
+            annotations=annotations,
+        )
+        return annotation_scene
+
+
+class SegmentationToAnnotationConverter(IPredictionToAnnotationConverter):
+    """
+    Converts Segmentation Predictions ModelAPI to Annotations
+    """
+
+    def __init__(self, labels: List[Union[str, LabelEntity]]):
+        if labels is None:
+            raise ValueError("Labels for segmentation model is None")
+        self.label_map = {i + 1: get_label(labels, i, Domain.SEGMENTATION) for i in range(len(labels))}
+
+    def convert_to_annotation(self, hard_predictions: np.ndarray, metadata: Dict[str, Any]) -> AnnotationSceneEntity:
+        soft_predictions = metadata.get('soft_predictions', np.ones(hard_predictions.shape))
+        annotations = create_annotation_from_segmentation_map(
+            hard_prediction=hard_predictions,
+            soft_prediction=soft_predictions,
+            label_map=self.label_map
+        )
+
+        return AnnotationSceneEntity(
+            kind=AnnotationSceneKind.PREDICTION,
+            annotations=annotations
+        )
