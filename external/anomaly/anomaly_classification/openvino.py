@@ -125,8 +125,6 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
         output_model: ModelEntity,
         optimization_parameters: Optional[OptimizationParameters],
     ):
-        # pylint: disable=too-many-locals
-
         if optimization_type is not OptimizationType.POT:
             raise ValueError("POT is the only supported optimization type for OpenVINO models")
 
@@ -135,10 +133,9 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
         with tempfile.TemporaryDirectory() as tempdir:
             xml_path = os.path.join(tempdir, "model.xml")
             bin_path = os.path.join(tempdir, "model.bin")
-            with open(xml_path, "wb") as xml_file:
-                xml_file.write(self.task_environment.model.get_data("openvino.xml"))
-            with open(bin_path, "wb") as bin_file:
-                bin_file.write(self.task_environment.model.get_data("openvino.bin"))
+
+            self.__save_weights(xml_path, self.task_environment.model.get_data("openvino.xml"))
+            self.__save_weights(bin_path, self.task_environment.model.get_data("openvino.bin"))
 
             model_config = {"model_name": "openvino_model", "model": xml_path, "weights": bin_path}
             model = load_model(model_config)
@@ -168,10 +165,8 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
 
         with tempfile.TemporaryDirectory() as tempdir:
             save_model(compressed_model, tempdir, model_name="model")
-            with open(os.path.join(tempdir, "model.xml"), "rb") as xml_file:
-                output_model.set_data("openvino.xml", xml_file.read())
-            with open(os.path.join(tempdir, "model.bin"), "rb") as bin_file:
-                output_model.set_data("openvino.bin", bin_file.read())
+            self.__load_weights(path=os.path.join(tempdir, "model.xml"), output_model=output_model, key="openvino.xml")
+            self.__load_weights(path=os.path.join(tempdir, "model.bin"), output_model=output_model, key="openvino.bin")
         output_model.model_status = ModelStatus.SUCCESS
 
         self.task_environment.model = output_model
@@ -191,3 +186,27 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
                 self.task_environment.model.get_data("openvino.bin"),
             ),
         )
+
+    @staticmethod
+    def __save_weights(path: str, data: bytes) -> None:
+        """Write data to file
+
+        Args:
+            path (str): Path of output file
+            data (bytes): Data to write
+        """
+        with open(path, "wb") as file:
+            file.write(data)
+
+    @staticmethod
+    def __load_weights(path: str, output_model: ModelEntity, key: str) -> None:
+        """
+        Load weights into output model
+
+        Args:
+            path (str): Path to weights
+            output_model (ModelEntity): Model to which the weights are assigned
+            key (str): Key of the output model into which the weights are assigned
+        """
+        with open(path, "rb") as file:
+            output_model.set_data(key, file.read())
