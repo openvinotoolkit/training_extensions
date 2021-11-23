@@ -125,6 +125,8 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
         output_model: ModelEntity,
         optimization_parameters: Optional[OptimizationParameters],
     ):
+        # pylint: disable=too-many-locals
+
         if optimization_type is not OptimizationType.POT:
             raise ValueError("POT is the only supported optimization type for OpenVINO models")
 
@@ -133,12 +135,13 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
         with tempfile.TemporaryDirectory() as tempdir:
             xml_path = os.path.join(tempdir, "model.xml")
             bin_path = os.path.join(tempdir, "model.bin")
-            with open(xml_path, "wb") as weight_file:
-                weight_file.write(self.task_environment.model.get_data("openvino.xml"))
-            with open(bin_path, "wb") as weight_file:
-                weight_file.write(self.task_environment.model.get_data("openvino.bin"))
+            with open(xml_path, "wb") as xml_file:
+                xml_file.write(self.task_environment.model.get_data("openvino.xml"))
+            with open(bin_path, "wb") as bin_file:
+                bin_file.write(self.task_environment.model.get_data("openvino.bin"))
 
-            model = load_model(ADDict({"model_name": "openvino_model", "model": xml_path, "weights": bin_path}))
+            model_config = {"model_name": "openvino_model", "model": xml_path, "weights": bin_path}
+            model = load_model(model_config)
 
             if get_nodes_by_type(model, ["FakeQuantize"]):
                 logger.warning("Model is already optimized by POT")
@@ -165,10 +168,10 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
 
         with tempfile.TemporaryDirectory() as tempdir:
             save_model(compressed_model, tempdir, model_name="model")
-            with open(os.path.join(tempdir, "model.xml"), "rb") as weight_file:
-                output_model.set_data("openvino.xml", weight_file.read())
-            with open(os.path.join(tempdir, "model.bin"), "rb") as weight_file:
-                output_model.set_data("openvino.bin", weight_file.read())
+            with open(os.path.join(tempdir, "model.xml"), "rb") as xml_file:
+                output_model.set_data("openvino.xml", xml_file.read())
+            with open(os.path.join(tempdir, "model.bin"), "rb") as bin_file:
+                output_model.set_data("openvino.bin", bin_file.read())
         output_model.model_status = ModelStatus.SUCCESS
 
         self.task_environment.model = output_model
