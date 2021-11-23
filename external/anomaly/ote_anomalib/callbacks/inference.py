@@ -22,14 +22,14 @@ import numpy as np
 import pytorch_lightning as pl
 from anomalib.core.model.anomaly_module import AnomalyModule
 from anomalib.utils.post_process import anomaly_map_to_color_map
-from pytorch_lightning.callbacks import Callback
-
+from ote_anomalib.data import LabelNames
 from ote_sdk.entities.annotation import Annotation
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.label import LabelEntity
 from ote_sdk.entities.result_media import ResultMediaEntity
 from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.entities.shapes.rectangle import Rectangle
+from pytorch_lightning.callbacks import Callback
 
 
 class InferenceCallback(Callback):
@@ -39,8 +39,8 @@ class InferenceCallback(Callback):
 
     def __init__(self, ote_dataset: DatasetEntity, labels: List[LabelEntity]):
         self.ote_dataset = ote_dataset
-        self.normal_label = [label for label in labels if label.name == "normal"][0]
-        self.anomalous_label = [label for label in labels if label.name == "anomalous"][0]
+        self.normal_label = [label for label in labels if label.name == LabelNames.normal][0]
+        self.anomalous_label = [label for label in labels if label.name == LabelNames.anomalous][0]
 
     def on_predict_epoch_end(self, _trainer: pl.Trainer, _pl_module: AnomalyModule, outputs: List[Any]):
         """Called when the predict epoch ends."""

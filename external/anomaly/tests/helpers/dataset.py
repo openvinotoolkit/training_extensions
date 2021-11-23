@@ -20,9 +20,7 @@ from pathlib import Path
 from typing import List, Union
 
 from anomalib.datasets.anomaly_dataset import make_dataset
-from pandas.core.frame import DataFrame
-from tqdm import tqdm
-
+from ote_anomalib.data import LabelNames
 from ote_sdk.entities.annotation import (
     Annotation,
     AnnotationSceneEntity,
@@ -35,6 +33,8 @@ from ote_sdk.entities.label import Domain, LabelEntity
 from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.entities.shapes.rectangle import Rectangle
 from ote_sdk.entities.subset import Subset
+from pandas.core.frame import DataFrame
+from tqdm import tqdm
 
 
 class OTEAnomalyDatasetGenerator:
@@ -69,8 +69,8 @@ class OTEAnomalyDatasetGenerator:
         self.seed = seed
         self.create_validation_set = create_validation_set
 
-        self.normal_label = LabelEntity(name="normal", domain=Domain.ANOMALY_CLASSIFICATION)
-        self.abnormal_label = LabelEntity(name="anomalous", domain=Domain.ANOMALY_CLASSIFICATION)
+        self.normal_label = LabelEntity(name=LabelNames.normal, domain=Domain.ANOMALY_CLASSIFICATION)
+        self.abnormal_label = LabelEntity(name=LabelNames.anomalous, domain=Domain.ANOMALY_CLASSIFICATION)
 
     def get_samples(self) -> DataFrame:
         """
