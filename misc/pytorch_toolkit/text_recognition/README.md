@@ -95,7 +95,7 @@ Several dataset formats are supported:
    ```
 2. Im2latex format.
    This dataset is used to train formula recognition models.
-   Dataset format is similar to [im2latex-100k](https://zenodo.org/record/56198#.X2NDQ2gzaUl). Main structure of the dataset is following:
+   Dataset format is similar to [im2latex-100k](http://lstm.seas.harvard.edu/latex/data/). Main structure of the dataset is following:
    * `formulas.norm.lst` - file with one formula per line.
    * `imaged_processed` - folder containing input images.
    * `split_file` - this file contains `image_name` (tab symbol) `formula_idx` per line connecting corresponding index of the formula in the file with formulas and particular image with `image_name`. Example:
@@ -115,7 +115,7 @@ Several dataset formats are supported:
     > `formulas.norm.lst` - file with preprocessed formulas. If you want to use your own dataset, formulas should be preprocessed. For details, refer to [this script](https://github.com/harvardnlp/im2markup/blob/master/scripts/preprocessing/preprocess_formulas.py).
     > `validate_filter.lst` and `train_filter.lst` - corresponding splits of the data.
 3. ICDAR13 recognition dataset.
-   See details [here](http://dagdata.cvc.uab.es/icdar2013competition/?ch=2&com=downloads)
+   See details [here](https://rrc.cvc.uab.es/?ch=2)
 
 4. CocoLike dataset.
    СocoLike annotation is supported. See [here](https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/datasets/open_images_v5_text) for details.
@@ -170,7 +170,7 @@ Here you can find which models are currently supported. For accuracy metrics and
 | polynomials-handwritten-0001 | Formula Recognition                 | None           | ResNeXt-50 st 3  | 1d attention             | [link](https://github.com/openvinotoolkit/open_model_zoo/tree/master/models/intel/formula-recognition-polynomials-handwritten-0001) | [link](https://download.01.org/opencv/openvino_training_extensions/models/formula_recognition/polynomials_handwritten_0166.pth)         | [link](configs/polynomials_handwritten_config.yml) |
 | text-recognition-0014        | Alphanumeric Scene Text Recognition | None           | ResNeXt-50 st 2  | CTC LSTM Encoder-Decoder | [link](https://github.com/openvinotoolkit/open_model_zoo/tree/master/models/intel/text-recognition-0014)                            | [link](https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/text_recognition/text_recognition_0014.pth) | [link](configs/config_0014.yml)                    |
 | text-recognition-0015        | Alphanumeric Scene Text Recognition | None           | ResNeXt-101      | 2d attention             | [link](https://github.com/openvinotoolkit/open_model_zoo/tree/master/models/intel/text-recognition-0015)                            | [link](https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/text_recognition/text_recognition_0015.pth) | [link](configs/config_0015.yml)                    |
-| text-recognition-0016 ([YATR](https://arxiv.org/abs/2107.13938)) | Alphanumeric Scene Text Recognition | TPS            | ResNeXt-101 st 3 | 2d attention             | tbd                                                                                                                                 | [link](https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/text_recognition/text_recognition_0016.pth) | [link](configs/config_0016.yml)                    |
+| text-recognition-0016 ([YATR](https://arxiv.org/abs/2107.13938)) | Alphanumeric Scene Text Recognition | TPS            | ResNeXt-101 st 3 | 2d attention             | [link](https://github.com/openvinotoolkit/open_model_zoo/tree/develop/models/intel/text-recognition-0016)                                                                                                                                 | [link](https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/text_recognition/text_recognition_0016.pth) | [link](configs/config_0016.yml)                    |
 
 > Note: st* for ResNeXt models stands for stage. This means that only first several stages of the ResNeXt like backbone are used.
 ### PyTorch
