@@ -1,0 +1,3 @@
+openvino
+openmodelzoo-modelapi @ git+https://github.com/openvinotoolkit/open_model_zoo/@master#egg=openmodelzoo-modelapi&subdirectory=demos/common/python
+ote-sdk @ git+https://github.com/openvinotoolkit/training_extensions/@develop#egg=ote-sdk&subdirectory=ote_sdk
