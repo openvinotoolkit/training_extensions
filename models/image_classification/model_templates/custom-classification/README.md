@@ -48,6 +48,7 @@ MobilenetV3:
 * Augmix pipeline for augmentations
 * [Sharpness aware minimization optimizer](https://www.semanticscholar.org/paper/Sharpness-Aware-Minimization-for-Efficiently-For%C3%AAt-Kleiner/bc52ab18399aaaf6b88c22ebc6e4a3caa99a2323)
 * [No bias decay method](https://www.semanticscholar.org/paper/Bag-of-Tricks-for-Image-Classification-with-Neural-He-Zhang/29309743870c825f9645a4803af727402462e513)
+* Exponentially Moving Average (EMA) of the weights
 
 EfficientNet_b0:
 * [Additive Margin softmax] loss (https://www.semanticscholar.org/paper/Additive-Margin-Softmax-for-Face-Verification-Wang-Cheng/9fc17fa5708584fa848164461f82a69e97f6ed69)
@@ -56,6 +57,7 @@ EfficientNet_b0:
 * [Augmix](https://www.semanticscholar.org/paper/AugMix%3A-A-Simple-Data-Processing-Method-to-Improve-Hendrycks-Mu/f3a93e20a12532b5493825b921a0f0132736f4ec) pipeline for augmentations
 * [Sharpness aware minimization optimizer](https://www.semanticscholar.org/paper/Sharpness-Aware-Minimization-for-Efficiently-For%C3%AAt-Kleiner/bc52ab18399aaaf6b88c22ebc6e4a3caa99a2323)
 * [No bias decay method](https://www.semanticscholar.org/paper/Bag-of-Tricks-for-Image-Classification-with-Neural-He-Zhang/29309743870c825f9645a4803af727402462e513)
+* Exponentially Moving Average (EMA) of the weights
 
 All of the models were initially trained on [ImageNet](http://image-net.org/challenges/LSVRC/2012/), but can be trained from scratch or fine tuned to classify arbitrary images.
 

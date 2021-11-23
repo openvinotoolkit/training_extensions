@@ -12,7 +12,7 @@ lr_finder:
 
 model:
   name: 'mobilenetv3_small'
-  classification: True
+  type: 'classification'
   pretrained: True
   save_chkpt: True
   feature_dim: 1024
@@ -39,9 +39,13 @@ data:
     random_flip:
       enable: True
       p: 0.5
+    random_rotate:
+      enable: True
+      p: 0.35
+      angle: (-10,10)
     augmix:
       enable: True
-      cfg_str: "augmix-m5-w3"
+      cfg_str: "augmix-m4-w2"
 
 loss:
   name: 'softmax'
@@ -71,6 +75,9 @@ train:
   deterministic: True
   patience: 5
   gamma: 0.1
+  ema:
+    enable: True
+    ema_decay: 0.999
 
 sam:
   enable: True

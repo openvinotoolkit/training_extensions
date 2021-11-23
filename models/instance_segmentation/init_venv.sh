@@ -38,6 +38,8 @@ fi
 
 . ${venv_dir}/bin/activate
 
+# upgrade pip to the latest version
+pip install -U pip
 
 if [ -z ${CUDA_VERSION} ] && [ -e "$CUDA_HOME/version.txt" ]; then
   # Get CUDA version from version.txt file.
@@ -85,6 +87,10 @@ pip install -e ../../external/mmdetection/ -c constraints.txt
 MMDETECTION_DIR=`realpath ../../external/mmdetection/`
 echo "export MMDETECTION_DIR=${MMDETECTION_DIR}" >> ${venv_dir}/bin/activate
 echo "export CUDA_HOME=${CUDA_HOME}" >> ${venv_dir}/bin/activate
+
+# check PyPI conflicts and print installed python packages
+pip check
+pip freeze
 
 deactivate
 
