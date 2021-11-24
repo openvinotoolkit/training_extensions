@@ -37,15 +37,24 @@ from ote_sdk.tests.constants.requirements import Requirements
 class TestAnnotation:
 
     rectangle = Rectangle(x1=0.5, x2=1.0, y1=0.0, y2=0.5)
-    labels=[]
+    labels = []
     annotation = Annotation(shape=rectangle, labels=labels)
 
-    car = LabelEntity(id=123456789, name="car", domain=Domain.DETECTION, color=Color(red=16, green=15, blue=56, alpha=255), is_empty=True)
-    person = LabelEntity(id=987654321, name="person", domain=Domain.DETECTION, color=Color(red=11, green=18, blue=38, alpha=200), is_empty=False)
+    car = LabelEntity(
+        id=123456789,
+        name="car",
+        domain=Domain.DETECTION,
+        color=Color(red=16, green=15, blue=56, alpha=255),
+        is_empty=True)
+    person = LabelEntity(
+        id=987654321,
+        name="person",
+        domain=Domain.DETECTION,
+        color=Color(red=11, green=18, blue=38, alpha=200),
+        is_empty=False)
     car_label = ScoredLabel(car)
     person_label = ScoredLabel(person)
     labels2 = [car_label, person_label]
-
 
     @pytest.mark.priority_medium
     @pytest.mark.component
@@ -69,7 +78,7 @@ class TestAnnotation:
         annotation = self.annotation
 
         assert type(annotation.id) == ID
-        assert annotation.id != None
+        assert annotation.id is None
         assert str(annotation.shape) == "Rectangle(x=0.5, y=0.0, width=0.5, height=0.5)"
         assert annotation.get_labels() == []
 
@@ -158,8 +167,10 @@ class TestAnnotation:
         assert "[ScoredLabel(987654321, name=person, probability=0.0, domain=DETECTION," in str(annotation.get_labels())
         assert "color=Color(red=11, green=18, blue=38, alpha=200), hotkey=)]" in str(annotation.get_labels())
 
-        assert "[ScoredLabel(123456789, name=car, probability=0.0, domain=DETECTION," in str(annotation.get_labels(include_empty=True))
-        assert "color=Color(red=16, green=15, blue=56, alpha=255), hotkey=ctrl+0)," in str(annotation.get_labels(include_empty=True))
+        assert "[ScoredLabel(123456789, name=car" in str(annotation.get_labels(include_empty=True))
+        assert ", probability=0.0, domain=DETECTION," in str(annotation.get_labels(include_empty=True))
+        assert "color=Color(red=16, green=15," in str(annotation.get_labels(include_empty=True))
+        assert "blue=56, alpha=255), hotkey=ctrl+0)," in str(annotation.get_labels(include_empty=True))
 
     @pytest.mark.priority_medium
     @pytest.mark.component
@@ -209,7 +220,7 @@ class TestAnnotation:
         annotation = self.annotation
 
         annotation.append_label(label=self.car_label)
-        assert annotation.get_labels() == [] # car_label is empty
+        assert annotation.get_labels() == []  # car_label is empty
 
         annotation.append_label(label=self.person_label)
         assert "name=person" in str(annotation.get_labels())
@@ -242,7 +253,8 @@ class TestAnnotation:
 
         annotation.set_labels(labels=self.labels2)
         assert "name=person" in str(annotation.get_labels())
-        assert "name=car" not in str(annotation.get_labels()) # car_label is empty
+        assert "name=car" not in str(annotation.get_labels())  # car_label is empty
+
 
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestAnnotationSceneKind:
@@ -275,6 +287,7 @@ class TestAnnotationSceneKind:
         assert str(annotation_scene_kind(3)) == "EVALUATION"
         assert str(annotation_scene_kind(4)) == "INTERMEDIATE"
         assert str(annotation_scene_kind(5)) == "TASK_PREDICTION"
+
 
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestAnnotationSceneEntity:
@@ -426,10 +439,9 @@ class TestAnnotationSceneEntity:
         annotations = [annotation]
         annotation_scene_entity2 = AnnotationSceneEntity(annotations=annotations, kind=AnnotationSceneKind.ANNOTATION)
 
-
-        assert annotation_scene_entity.contains_any(labels=labels) == False
-        assert annotation_scene_entity2.contains_any(labels=labels2) == True
-        assert annotation_scene_entity2.contains_any(labels=[tree_label]) == False
+        assert annotation_scene_entity.contains_any(labels=labels) is False
+        assert annotation_scene_entity2.contains_any(labels=labels2) is True
+        assert annotation_scene_entity2.contains_any(labels=[tree_label]) is False
 
     @pytest.mark.priority_medium
     @pytest.mark.component
@@ -541,6 +553,7 @@ class TestAnnotationSceneEntity:
 
         assert annotation_scene_entity.get_label_ids() == {ID(), 123456789}
 
+
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestNullAnnotationSceneEntity:
 
@@ -571,4 +584,3 @@ class TestNullAnnotationSceneEntity:
         assert type(null_annotation.creation_date) == datetime.datetime
         assert null_annotation.annotations == []
         assert repr(null_annotation) == "NullAnnotationSceneEntity()"
-
