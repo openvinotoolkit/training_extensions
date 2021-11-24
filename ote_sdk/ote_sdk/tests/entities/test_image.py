@@ -140,6 +140,10 @@ class TestImage:
             for it in arr:
                 assert it in data1
 
+        for arr in fp_instance.roi_numpy(rect_annotation):
+            for it in arr:
+                assert it in data1
+        
         assert data_instance.height == fp_instance.height == test_height1
         assert data_instance.width == fp_instance.width == test_width1
 
