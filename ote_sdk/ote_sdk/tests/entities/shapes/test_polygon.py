@@ -13,7 +13,7 @@
 # and limitations under the License.
 
 import pytest
-from operator import attrgetter, eq
+from operator import attrgetter
 
 from ote_sdk.entities.shapes.polygon import Point, Polygon
 from ote_sdk.entities.shapes.rectangle import Rectangle
@@ -58,7 +58,7 @@ class TestPoint:
         """
 
         point1 = self.point()
-        assert repr(point1) == f"Point(0.5, 0.4)"
+        assert repr(point1) == "Point(0.5, 0.4)"
 
         point2 = self.point()
         point3 = self.other_point()
@@ -196,8 +196,8 @@ class TestPolygon:
         min_y = min(self.points(), key=attrgetter("y")).y
         max_y = max(self.points(), key=attrgetter("y")).y
 
-
-        assert polygon.__repr__() == f"Polygon(len(points)={points_len}, min_x={min_x}, max_x={max_x}, min_y={min_y}, max_y={max_y})"
+        assert f"Polygon(len(points)={points_len}, min_x={min_x}" in repr(polygon)
+        assert f", max_x={max_x}, min_y={min_y}, max_y={max_y})" in repr(polygon)
 
         other_polygon = self.polygon()
         thirs_polygon = self.other_polygon()

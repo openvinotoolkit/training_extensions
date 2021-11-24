@@ -116,7 +116,6 @@ class TestEllipse:
         assert width_gt_height_ellipse.minor_axis == 0.09999999999999999
         assert width_gt_height_ellipse.major_axis == 0.15000000000000002
 
-
     @pytest.mark.priority_medium
     @pytest.mark.component
     @pytest.mark.reqids(Requirements.REQ_1)
@@ -259,7 +258,8 @@ class TestEllipse:
         assert coordinates_ellipse_line[2] == (0.6249999999999999, 0.033493649053890406)
 
         width_gt_height_ellipse = Ellipse(**self.width_gt_height_ellipse_params())
-        coordinates_ellipse_line = width_gt_height_ellipse.get_evenly_distributed_ellipse_coordinates(number_of_coordinates)
+        coordinates_ellipse_line = width_gt_height_ellipse.get_evenly_distributed_ellipse_coordinates(
+            number_of_coordinates)
         assert width_gt_height_ellipse.height < width_gt_height_ellipse.width
         assert len(coordinates_ellipse_line) == 3
         assert coordinates_ellipse_line[0] == (0.65, 0.3)

@@ -68,6 +68,7 @@ class TestModelPrecision:
         model_precision = ModelPrecision
         assert len(model_precision) == 4
 
+
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestModelStatus:
     @pytest.mark.priority_medium
@@ -109,6 +110,7 @@ class TestModelFormat:
         model_format = ModelFormat
         assert len(model_format) == 3
 
+
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestModelOptimizationType:
     @pytest.mark.priority_medium
@@ -129,6 +131,7 @@ class TestModelOptimizationType:
         model_optimization_type = ModelOptimizationType
         assert len(model_optimization_type) == 4
 
+
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestOptimizationMethod:
     @pytest.mark.priority_medium
@@ -148,6 +151,7 @@ class TestOptimizationMethod:
 
         optimization_method = OptimizationMethod
         assert len(optimization_method) == 2
+
 
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestModelConfiguration:
@@ -196,7 +200,6 @@ class TestModelEntity:
         label_schema = LabelSchemaEntity()
         return ModelConfiguration(configurable_parameters=parameters, label_schema=label_schema)
 
-
     @pytest.mark.priority_medium
     @pytest.mark.component
     @pytest.mark.reqids(Requirements.REQ_1)
@@ -227,7 +230,7 @@ class TestModelEntity:
         assert model_entity.performance == NullPerformance()
 
         for default_val_none in ["previous_trained_revision", "previous_revision", "target_device_type"]:
-            assert getattr(model_entity, default_val_none) == None
+            assert getattr(model_entity, default_val_none) is None
 
         for default_val_0_0 in ["training_duration", "model_size_reduction"]:
             assert getattr(model_entity, default_val_0_0) == 0.0
@@ -241,7 +244,7 @@ class TestModelEntity:
         for default_val_zero in ["latency", "fps_throughput"]:
             assert getattr(model_entity, default_val_zero) == 0
 
-        assert model_entity.is_optimized() == False
+        assert model_entity.is_optimized() is False
 
     @pytest.mark.priority_medium
     @pytest.mark.component
@@ -271,7 +274,11 @@ class TestModelEntity:
         hyper_parameters = model_template.hyper_parameters.data
         params = ote_config_helper.create(hyper_parameters)
         labels_schema = LabelSchemaEntity.from_labels(labels_list)
-        environment = TaskEnvironment(model=None, hyper_parameters=params, label_schema=labels_schema, model_template=model_template)
+        environment = TaskEnvironment(
+            model=None,
+            hyper_parameters=params,
+            label_schema=labels_schema,
+            model_template=model_template)
 
         item = self.generate_random_image()
         dataset = DatasetEntity(items=[item])
@@ -308,7 +315,7 @@ class TestModelEntity:
             setattr(model_entity, key, value)
             assert getattr(model_entity, key) == value
 
-        assert model_entity.is_optimized() == True
+        assert model_entity.is_optimized() is True
 
     @pytest.mark.priority_medium
     @pytest.mark.component
@@ -344,23 +351,24 @@ class TestModelEntity:
             "2": ModelAdapter(data_source=data_source_2)
             }
 
-        model_entity = ModelEntity(train_dataset=self.dataset(),
+        model_entity = ModelEntity(
+            train_dataset=self.dataset(),
             configuration=self.configuration(),
             model_adapters=model_adapters)
 
         assert model_entity.weight_paths == {}
 
         # Adapter with key 0 not from file
-        assert model_entity.model_adapters["0"].from_file_storage == False
+        assert model_entity.model_adapters["0"].from_file_storage is False
 
         model_entity.set_data("0", temp_file)
 
         for adapter in model_entity.model_adapters:
             if adapter == "0":
                 # Adapter with key 0 from file
-                assert model_entity.model_adapters[adapter].from_file_storage == True
+                assert model_entity.model_adapters[adapter].from_file_storage is True
             else:
-                assert model_entity.model_adapters[adapter].from_file_storage == False
+                assert model_entity.model_adapters[adapter].from_file_storage is False
 
         assert model_entity.get_data("1") == data_source_1
 
@@ -401,6 +409,6 @@ class TestModelEntity:
         other_model_entity = ModelEntity(train_dataset=dataset, configuration=self.configuration())
         model_entity = ModelEntity(train_dataset=dataset, configuration=self.configuration())
         third_model_entity = ModelEntity(train_dataset=self.dataset(), configuration=self.other_configuration())
-        assert model_entity.__eq__("") == False
+        assert model_entity.__eq__("") is False
         assert model_entity == other_model_entity
         assert model_entity != third_model_entity
