@@ -34,8 +34,8 @@ def generate_random_anomaly_image(
     image_width: int,
     image_height: int,
     shapes: List[str] = ["triangle", "rectangle"],
-    max_shapes: Optional[int] = 5,
-    generate_mask: Optional[bool] = False,
+    max_shapes: int = 5,
+    generate_mask: bool = False,
 ) -> Dict[str, np.ndarray]:
     """Generate a random image with the corresponding shape entities.
 
@@ -44,7 +44,7 @@ def generate_random_anomaly_image(
         image_height (int): Height of the image
         shapes (List[str]): List of shapes to draw in the image. Make sure these are different from `anomalous_shapes`
         max_shapes (int): Maximum shapes of a kind in the image. Defaults to 5.
-        max_size (Optional[int], optional): Maximum size of the test shapes. Defaults to 10.
+        max_size (int): Maximum size of the test shapes. Defaults to 10.
         generate_mask (bool): Toggle between train/test split. Train images are restricted to first quadrant.
                     Also generates the mask for the image. Defaults to False.
 
