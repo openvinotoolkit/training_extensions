@@ -68,7 +68,7 @@ class ModelStatus(IntEnum):
     """Indicates the status of the last training result"""
 
     NOT_READY = auto()  # Model is not ready to be trained
-    WEIGHTS_INITIALIZED = auto()  # Model is untrained but weights are initialized
+    TRAINED_NO_STATS = auto()  # Model is trained but not evaluated yet
     SUCCESS = auto()  # Model trained successfully and improved
     FAILED = (
         auto()
