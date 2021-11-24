@@ -98,7 +98,7 @@ def draw_masks(frame, predictions):
 
 def put_labels(frame, predictions):
     """
-    Coverts predictions to text labels and puts them to the top left corner of a frame.
+    Converts predictions to text labels and puts them to the top left corner of a frame.
     """
 
     frame = frame.copy()
