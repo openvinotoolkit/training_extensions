@@ -134,6 +134,9 @@ class OTEAnomalyDataModule(LightningDataModule):
             self.predict_ote_dataset = self.dataset
 
     def summary(self):
+        """
+        Print size of the dataset, number of anomalous images and number of normal images.
+        """
         for subset in [Subset.TRAINING, Subset.VALIDATION, Subset.TESTING]:
             dataset = self.dataset.get_subset(subset)
             num_items = len(dataset)

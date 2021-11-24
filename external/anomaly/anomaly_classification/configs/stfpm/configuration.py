@@ -19,7 +19,6 @@ Configurable parameters for STFPM anomaly classification task
 from anomaly_classification.configs.configuration import BaseAnomalyClassificationConfig
 from anomaly_classification.configs.configuration_enums import EarlyStoppingMetrics
 from attr import attrs
-
 from ote_sdk.configuration.elements import (
     ParameterGroup,
     add_parameter_group,
@@ -39,11 +38,19 @@ class STFPMConfig(BaseAnomalyClassificationConfig):
 
     @attrs
     class ModelParameters(ParameterGroup):
+        """
+        Parameter Group for training model
+        """
+
         header = string_attribute("Model Parameters")
         description = header
 
         @attrs
         class EarlyStoppingParameters(ParameterGroup):
+            """
+            Early stopping parameters
+            """
+
             header = string_attribute("Early Stopping Parameters")
             description = header
 
