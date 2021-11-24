@@ -62,7 +62,7 @@ class TestTaskEnvironment:
     def test_task_environment(self):
         """
         <b>Description:</b>
-        Check that TaskEnvironment can correctly return the value
+        Check the TaskEnvironment can correctly return the value
 
         <b>Input data:</b>
         Dummy data
@@ -344,7 +344,7 @@ class TestTaskEnvironment:
     def test_set_hyper_parameters(self):
         """
         <b>Description:</b>
-        Check set_hyper_parameters()
+        Check set_hyper_parameters() method
 
         <b>Input data:</b>
         Dummmy data

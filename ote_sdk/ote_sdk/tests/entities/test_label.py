@@ -31,7 +31,7 @@ class TestDomain:
     def test_domain(self):
         """
         <b>Description:</b>
-        Check that Domain can correctly return the value
+        Check the Domain can correctly return the value
 
         <b>Expected results:</b>
         Test passes if the results match
@@ -72,7 +72,7 @@ class TestLabelEntity:
     def test_label_entity(self):
         """
         <b>Description:</b>
-        Check that LabelEntity can correctly return the value
+        Check the LabelEntity can correctly return the value
 
         <b>Input data:</b>
         Dummy data
@@ -132,7 +132,7 @@ class TestLabelEntity:
     def test_empty_label_entity(self):
         """
         <b>Description:</b>
-        Check that LabelEntity can correctly return the value for empty label
+        Check the LabelEntity can correctly return the value for empty label
 
         <b>Input data:</b>
         Dummy data
@@ -155,7 +155,7 @@ class TestLabelEntity:
     def test_label_comparison(self):
         """
         <b>Description:</b>
-        Check that LabelEntity __lt__, __gt__ methods with changed id
+        Check the LabelEntity __lt__, __gt__ methods with changed id
 
         <b>Input data:</b>
         Dummy data

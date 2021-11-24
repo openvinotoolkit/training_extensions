@@ -30,7 +30,7 @@ class TestScoredLabel:
     def test_scored_label(self):
         """
         <b>Description:</b>
-        Check that ScoredLabel can correctly return the value
+        Check the ScoredLabel can correctly return the value
 
         <b>Input data:</b>
         LabelEntity

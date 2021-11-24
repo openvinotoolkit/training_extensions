@@ -31,7 +31,7 @@ class TestResultset:
     def test_resultset_purpose(self):
         """
         <b>Description:</b>
-        Check that ResultsetPurpose can correctly return the value
+        Check the ResultsetPurpose can correctly return the value
 
         <b>Input data:</b>
         Denotes, stages
@@ -57,7 +57,7 @@ class TestResultset:
     def test_resultset_entity(self):
         """
         <b>Description:</b>
-        Check that ResultSetEntity can correctly return the value
+        Check the ResultSetEntity can correctly return the value
 
         <b>Input data:</b>
         Mock data

@@ -72,7 +72,7 @@ class TestColorEntity:
     def test_color_entity(self):
         """
         <b>Description:</b>
-        Check that ColorEntity raises some methods
+        Check that ColorEntity raises some exceptions
 
         <b>Expected results:</b>
         Test passes if the NotImplementedError is raised
