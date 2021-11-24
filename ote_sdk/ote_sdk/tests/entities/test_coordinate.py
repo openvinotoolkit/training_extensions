@@ -34,24 +34,23 @@ class TestCoordinate:
         Three coordinate instances
 
         <b>Expected results:</b>
-        1. It raises TypeError in case attempt of initiation with wrong parameters numbers
-        2. Fields of instances initiated with correct values
+        1. It raises TypeError in case of attempt of instantiation  with wrong number of parameters
+        2. Fields of instances initialized  with correct values
         3. repr method returns correct strings then used against each instance
         4. hash method works as expected
         5. as_tuple method works as expected
-        6. as__int_tuple method works as expected
+        6. as_int_tuple method works as expected
         7. '==' method works is expected
 
         <b>Steps</b>
-        1. Attempt to initiate class instance with wrong parameters numbers
+        1. Attempt to instantiate class instance with wrong parameters numbers
         2. Initiate three class instances:
             two of them with similar set of init values, third one with different one.
         3. Check repr method
         4. Check hash method
         5. Check as_tuple() method
-        6. Check as__int_tuple() method
+        6. Check as_int_tuple() method
         7. Check __eq__ method
-
         """
         with pytest.raises(TypeError):
             Coordinate()
@@ -88,4 +87,3 @@ class TestCoordinate:
         assert coord_c.as_int_tuple() == (1, 1)
 
         assert coord_a == coord_b != coord_c
-
