@@ -31,6 +31,7 @@ color_hex = f"{red_hex}{green_hex}{blue_hex}"
 
 color = Color.from_hex_str(color_hex)
 
+
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestColor:
 
@@ -62,6 +63,7 @@ class TestColor:
         color.blue = 32
         color.alpha = 0
         assert color.hex_str == "#44362000"
+
 
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestColorEntity:

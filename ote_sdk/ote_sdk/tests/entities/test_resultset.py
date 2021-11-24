@@ -13,7 +13,6 @@
 # and limitations under the License.
 
 import pytest
-import datetime
 
 from ote_sdk.entities.resultset import ResultSetEntity, ResultsetPurpose
 from ote_sdk.entities.metrics import NullPerformance
@@ -21,6 +20,7 @@ from ote_sdk.entities.id import ID
 from ote_sdk.utils.time_utils import now
 from ote_sdk.tests.constants.ote_sdk_components import OteSdkComponent
 from ote_sdk.tests.constants.requirements import Requirements
+
 
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestResultset:
@@ -99,10 +99,10 @@ class TestResultset:
         assert result_set.creation_date == now()
         assert result_set.id == ID()
 
-        assert result_set.has_score_metric() == False
+        assert result_set.has_score_metric() is False
         result_set.performance = "test_performance"
         assert result_set.performance != NullPerformance()
-        assert result_set.has_score_metric() == True
+        assert result_set.has_score_metric() is True
 
         result_set.creation_date = now().replace(microsecond=0)
         assert result_set.creation_date == now().replace(microsecond=0)

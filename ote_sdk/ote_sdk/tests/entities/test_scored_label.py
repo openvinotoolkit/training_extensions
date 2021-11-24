@@ -21,6 +21,7 @@ from ote_sdk.entities.color import Color
 from ote_sdk.tests.constants.ote_sdk_components import OteSdkComponent
 from ote_sdk.tests.constants.requirements import Requirements
 
+
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestScoredLabel:
 
@@ -60,4 +61,5 @@ class TestScoredLabel:
         assert car_label.probability == probability
 
         car.color = Color(red=16, green=15, blue=56, alpha=255)
-        assert repr(car_label) == "ScoredLabel(123456789, name=car, probability=0.4, domain=DETECTION, color=Color(red=16, green=15, blue=56, alpha=255), hotkey=ctrl+0)"
+        assert "ScoredLabel(123456789, name=car, probability=0.4, domain=DETECTION, color=" in repr(car_label)
+        assert "Color(red=16, green=15, blue=56, alpha=255), hotkey=ctrl+0)" in repr(car_label)

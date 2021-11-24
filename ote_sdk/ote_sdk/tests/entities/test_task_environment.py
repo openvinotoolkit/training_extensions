@@ -27,11 +27,13 @@ from ote_sdk.tests.test_helpers import ConfigExample
 from ote_sdk.tests.constants.ote_sdk_components import OteSdkComponent
 from ote_sdk.tests.constants.requirements import Requirements
 
+
 def __get_path_to_file(filename: str):
     """
     Return the path to the file named 'filename', which lives in the tests/entities directory
     """
     return str(Path(__file__).parent / Path(filename))
+
 
 def dummy_config():
     """
@@ -39,7 +41,8 @@ def dummy_config():
     """
     cur_config = __get_path_to_file("./dummy_config.yaml")
     with open(cur_config, "r") as stream:
-            return yaml.safe_load(stream)
+        return yaml.safe_load(stream)
+
 
 def environment():
     """
@@ -51,8 +54,13 @@ def environment():
     hyper_parameters = model_template.hyper_parameters.data
     params = ote_config_helper.create(hyper_parameters)
     labels_schema = LabelSchemaEntity.from_labels(labels_list)
-    environment = TaskEnvironment(model=None, hyper_parameters=params, label_schema=labels_schema, model_template=model_template)
+    environment = TaskEnvironment(
+        model=None,
+        hyper_parameters=params,
+        label_schema=labels_schema,
+        model_template=model_template)
     return environment
+
 
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestTaskEnvironment:
@@ -78,7 +86,11 @@ class TestTaskEnvironment:
         env = environment()
         __dummy_config = dummy_config()
 
-        assert env == TaskEnvironment(model=None, model_template=env.model_template, hyper_parameters=env.get_hyper_parameters(), label_schema=env.label_schema)
+        assert env == TaskEnvironment(
+            model=None,
+            model_template=env.model_template,
+            hyper_parameters=env.get_hyper_parameters(),
+            label_schema=env.label_schema)
         assert isinstance(env, TaskEnvironment)
         assert env != "Fail params"
         assert env.get_labels() == []
@@ -98,7 +110,7 @@ class TestTaskEnvironment:
         assert "name=from_label_list" in repr(env)
         assert "group_type=LabelGroupType.EXCLUSIVE" in repr(env)
         assert "labels=[]" in repr(env)
-        assert "hyper_params=CONFIGURABLE_PARAMETERS(header='Configuration for an object detection task -- TEST ONLY'" in repr(env)
+        assert "CONFIGURABLE_PARAMETERS(header='Configuration for an object detection task -- TEST ONLY'" in repr(env)
         assert "description='Configuration for an object detection task -- TEST ONLY'" in repr(env)
         assert "visible_in_ui=True" in repr(env)
         assert "id=ID()" in repr(env)
@@ -125,13 +137,13 @@ class TestTaskEnvironment:
         config_example = env.get_hyper_parameters(ConfigExample)
 
         env_learning_parameters_num_workers = \
-            env.get_hyper_parameters().learning_parameters.num_workers # "default_value"
+            env.get_hyper_parameters().learning_parameters.num_workers  # "default_value"
         config_example_learning_parameters_num_workers = \
             config_example.learning_parameters._default.factory.num_workers.metadata["default_value"]
 
         # From dummy_config.yaml because it is missing in dummy_template.yaml "parameter_overrides"
         assert env_learning_parameters_num_workers == 0
-        assert config_example_learning_parameters_num_workers == 4 # From ConfigExample
+        assert config_example_learning_parameters_num_workers == 4  # From ConfigExample
 
     @pytest.mark.priority_medium
     @pytest.mark.component
@@ -155,12 +167,12 @@ class TestTaskEnvironment:
         config_example = env.get_hyper_parameters(ConfigExample)
 
         env_learning_parameters_batch_size = \
-            env.get_hyper_parameters().learning_parameters.batch_size # "default_value"
+            env.get_hyper_parameters().learning_parameters.batch_size  # "default_value"
         config_example_learning_parameters_batch_size = \
             config_example.learning_parameters._default.factory.batch_size.metadata["default_value"]
 
-        assert env_learning_parameters_batch_size == 64 # From dummy_template.yaml "parameter_overrides"
-        assert config_example_learning_parameters_batch_size == 5 # From ConfigExample
+        assert env_learning_parameters_batch_size == 64  # From dummy_template.yaml "parameter_overrides"
+        assert config_example_learning_parameters_batch_size == 5  # From ConfigExample
 
     @pytest.mark.priority_medium
     @pytest.mark.component
@@ -184,12 +196,12 @@ class TestTaskEnvironment:
         config_example = env.get_hyper_parameters(ConfigExample)
 
         env_learning_parameters_num_iters = \
-            env.get_hyper_parameters().learning_parameters.num_iters # "default_value"
+            env.get_hyper_parameters().learning_parameters.num_iters  # "default_value"
         config_example_learning_parameters_num_iters = \
             config_example.learning_parameters._default.factory.num_iters.metadata["default_value"]
 
-        assert env_learning_parameters_num_iters == 13000 # From dummy_template.yaml "parameter_overrides"
-        assert config_example_learning_parameters_num_iters == 1 # From ConfigExample
+        assert env_learning_parameters_num_iters == 13000  # From dummy_template.yaml "parameter_overrides"
+        assert config_example_learning_parameters_num_iters == 1  # From ConfigExample
 
     @pytest.mark.priority_medium
     @pytest.mark.component
@@ -213,12 +225,12 @@ class TestTaskEnvironment:
         config_example = env.get_hyper_parameters(ConfigExample)
 
         env_learning_parameters_learning_rate = \
-            env.get_hyper_parameters().learning_parameters.learning_rate # "default_value"
+            env.get_hyper_parameters().learning_parameters.learning_rate  # "default_value"
         config_example_learning_parameters_learning_rate = \
             config_example.learning_parameters._default.factory.learning_rate.metadata["default_value"]
 
-        assert env_learning_parameters_learning_rate == 0.05 # From dummy_template.yaml "parameter_overrides"
-        assert config_example_learning_parameters_learning_rate == 0.01 # From ConfigExample
+        assert env_learning_parameters_learning_rate == 0.05  # From dummy_template.yaml "parameter_overrides"
+        assert config_example_learning_parameters_learning_rate == 0.01  # From ConfigExample
 
     @pytest.mark.priority_medium
     @pytest.mark.component
@@ -243,7 +255,7 @@ class TestTaskEnvironment:
         config_example = env.get_hyper_parameters(ConfigExample)
 
         env_learning_parameters_num_checkpoints = \
-            env.get_hyper_parameters().learning_parameters.num_checkpoints # "default_value"
+            env.get_hyper_parameters().learning_parameters.num_checkpoints  # "default_value"
 
         # From dummy_config.yaml because it is missing in dummy_template.yaml "parameter_overrides"
         assert env_learning_parameters_num_checkpoints == 5
@@ -300,13 +312,13 @@ class TestTaskEnvironment:
         config_example = env.get_hyper_parameters(ConfigExample)
 
         env_postprocessing_confidence_threshold = \
-            env.get_hyper_parameters().postprocessing.confidence_threshold # "default_value"
+            env.get_hyper_parameters().postprocessing.confidence_threshold  # "default_value"
         config_example_postprocessing_confidence_threshold = \
             config_example.postprocessing._default.factory.confidence_threshold.metadata["default_value"]
 
         # From dummy_config.yaml because it is missing in dummy_template.yaml "parameter_overrides"
         assert env_postprocessing_confidence_threshold == 0.35
-        assert config_example_postprocessing_confidence_threshold == 0.25 # From ConfigExample
+        assert config_example_postprocessing_confidence_threshold == 0.25  # From ConfigExample
 
     @pytest.mark.priority_medium
     @pytest.mark.component
@@ -330,13 +342,13 @@ class TestTaskEnvironment:
         config_example = env.get_hyper_parameters(ConfigExample)
 
         env_postprocessing_result_based_confidence_threshold = \
-            env.get_hyper_parameters().postprocessing.result_based_confidence_threshold # "default_value"
+            env.get_hyper_parameters().postprocessing.result_based_confidence_threshold  # "default_value"
         config_example_postprocessing_result_based_confidence_threshold = \
             config_example.postprocessing._default.factory.result_based_confidence_threshold.metadata["default_value"]
 
         # From dummy_config.yaml because it is missing in dummy_template.yaml "parameter_overrides"
-        assert env_postprocessing_result_based_confidence_threshold == True
-        assert config_example_postprocessing_result_based_confidence_threshold == True # From ConfigExample
+        assert env_postprocessing_result_based_confidence_threshold is True
+        assert config_example_postprocessing_result_based_confidence_threshold is True  # From ConfigExample
 
     @pytest.mark.priority_medium
     @pytest.mark.component
@@ -358,11 +370,15 @@ class TestTaskEnvironment:
         env = environment()
 
         header = "Test header"
-        description="Test description"
+        description = "Test description"
         visible_in_ui = False
         id = "123456789"
 
-        hyper_parameters = ConfigurableParameters(header=header, description=description, visible_in_ui=visible_in_ui, id=id)
+        hyper_parameters = ConfigurableParameters(
+            header=header,
+            description=description,
+            visible_in_ui=visible_in_ui,
+            id=id)
         env.set_hyper_parameters(hyper_parameters=hyper_parameters)
         assert env.get_hyper_parameters().header == header
         assert env.get_hyper_parameters().description == description

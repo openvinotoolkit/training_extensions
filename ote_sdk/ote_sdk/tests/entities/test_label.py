@@ -22,6 +22,7 @@ from ote_sdk.entities.color import Color
 from ote_sdk.tests.constants.ote_sdk_components import OteSdkComponent
 from ote_sdk.tests.constants.requirements import Requirements
 
+
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestDomain:
 
@@ -38,6 +39,7 @@ class TestDomain:
         """
         domain = Domain
         assert len(domain) == 6
+
 
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestLabelEntity:
@@ -62,9 +64,9 @@ class TestLabelEntity:
         "id": 987654321,
     }
 
-    car = LabelEntity(**label_car_params) #type: ignore
+    car = LabelEntity(**label_car_params)  # type: ignore
     empty = LabelEntity(name="empty", domain=Domain.SEGMENTATION, is_empty=True)
-    person = LabelEntity(**other_label_car_params) #type: ignore
+    person = LabelEntity(**other_label_car_params)  # type: ignore
 
     @pytest.mark.priority_medium
     @pytest.mark.component
@@ -123,8 +125,8 @@ class TestLabelEntity:
             assert i in self.car.__repr__()
 
         assert hash(self.car) == hash(str(self.car))
-        assert self.car.__lt__(Domain) == False
-        assert self.car.__gt__(Domain) == False
+        assert self.car.__lt__(Domain) is False
+        assert self.car.__gt__(Domain) is False
 
     @pytest.mark.priority_medium
     @pytest.mark.component

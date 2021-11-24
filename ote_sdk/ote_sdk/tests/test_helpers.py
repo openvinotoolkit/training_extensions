@@ -345,6 +345,7 @@ def _write_random_video(width: int, height: int, number_of_frames: int, filename
 
     videowriter.release()
 
+
 class ConfigExample(ConfigurableParameters):
     header = string_attribute("Test configuration for an object detection task")
     description = header
@@ -418,7 +419,7 @@ class ConfigExample(ConfigurableParameters):
             min_value=0,
             max_value=1,
             header="Test Confidence threshold",
-            description="This threshold only takes effect if the threshold is not set based on the result. -- Only test",
+            description="This threshold only takes effect if the threshold is not set based on the result.--Only test",
             affects_outcome_of=ModelLifecycle.INFERENCE
         )
     learning_parameters = add_parameter_group(__LearningParameters)
