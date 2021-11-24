@@ -72,10 +72,10 @@ class TestColorEntity:
     def test_color_entity(self):
         """
         <b>Description:</b>
-        Check that ColorEntity rizes some methods
+        Check that ColorEntity raises some methods
 
         <b>Expected results:</b>
-        Test passes if the rise NotImplementedError
+        Test passes if the NotImplementedError is raised
         """
 
         color_entity = ColorEntity

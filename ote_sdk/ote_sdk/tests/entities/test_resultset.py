@@ -66,7 +66,7 @@ class TestResultset:
         Test passes if incoming data is processed correctly
 
         <b>Steps</b>
-        1. Create moke data
+        1. Create dummy data
         2. Check the processing of default values
         3. Check the processing of changed values
         """
@@ -120,7 +120,7 @@ class TestResultset:
             f"performance={result_set.performance}",
             f"creation_date={result_set.creation_date}",
             f"id={result_set.id}"
-
         ]
+
         for i in test_result_set_repr:
             assert i in repr(result_set)

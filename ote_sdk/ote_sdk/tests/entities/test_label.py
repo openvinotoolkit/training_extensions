@@ -117,7 +117,6 @@ class TestLabelEntity:
             f"hotkey={self.car.hotkey}",
             f"domain={self.car.domain}",
             f"color={self.car.color}"
-
         ]
 
         for i in test_label_entity_repr:
@@ -156,7 +155,7 @@ class TestLabelEntity:
     def test_label_comparison(self):
         """
         <b>Description:</b>
-        Check that LabelEntity comparison
+        Check that LabelEntity __lt__, __gt__ methods with changed id
 
         <b>Input data:</b>
         Dummy data
@@ -166,7 +165,7 @@ class TestLabelEntity:
 
         <b>Steps</b>
         1. Use already created dummy data
-        2. Check the processing of shanged id
+        2. Check the processing of changed id
         """
 
         self.empty.id = 999999999

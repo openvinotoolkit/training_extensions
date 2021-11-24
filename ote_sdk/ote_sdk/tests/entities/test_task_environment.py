@@ -71,7 +71,7 @@ class TestTaskEnvironment:
         Test passes if incoming data is processed correctly
 
         <b>Steps</b>
-        1. Using an already created dammy environment.
+        1. Using an already created dummy environment.
         2. Checking class fields
         """
 
@@ -118,7 +118,7 @@ class TestTaskEnvironment:
         Test passes if incoming data is processed correctly
 
         <b>Steps</b>
-        1. Cheking num_workers default_value from ConfigExample and dummy_config.yaml
+        1. Checking num_workers default_value from ConfigExample and dummy_config.yaml
         """
 
         env = environment()
