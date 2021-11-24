@@ -464,7 +464,7 @@ class TestRectangle:
         3. Check crop_numpy_array method for Rectangle with parameters more than 1
         """
         image_height = image_width = 128
-        numpy_image_array = np.zeros(shape=(image_height, image_width, 3), dtype=float)
+        numpy_image_array = np.random.uniform(low=0.0, high=255.0, size=(image_height, image_width, 3))
         scenarios = [{"input_params": {"x1": -0.2, "x2": -0.1, "y1": -0.3, "y2": -0.2},
                       "cropped_expected": {"x1": 0, "y1": 0, "x2": 0, "y2": 0}},
                      {"input_params": {"x1": 0.2, "x2": 0.3, "y1": 0.4, "y2": 0.8},

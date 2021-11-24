@@ -270,11 +270,11 @@ class TestShape:
         for full_element in [self.fully_covering_rectangle(), self.fully_covering_ellipse(),
                              self.fully_covering_polygon()]:
             for inscribed in inscribed_shapes_list:
-                assert full_element.intersect_percentage(inscribed) == 1.0
+                assert round(full_element.intersect_percentage(inscribed), 2) == 1.0
         # Check when Shapes intersect partially
         second_rectangle = Rectangle(x1=0.3, y1=0.4, x2=0.7, y2=0.6)
         assert self.rectangle().intersect_percentage(second_rectangle) == 0.75
-        assert self.ellipse().intersect_percentage(self.rectangle()) == 0.44111148161629304
+        assert round(self.ellipse().intersect_percentage(self.rectangle()), 2) == 0.44
         assert self.polygon().intersect_percentage(self.rectangle()) == 0.45
         # Check when Shapes intersect by one side
         for upper_shape in self.upper_side_intersect_shapes():
