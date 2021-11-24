@@ -56,10 +56,10 @@ class TestModelPrecision:
     def test_model_precision(self):
         """
         <b>Description:</b>
-        Check that ModelPrecision correctly return the precision name
+        Check that ModelPrecision correctly returns the precision name
 
         <b>Expected results:</b>
-        Test passes if ModelPrecision correctly return the precision name
+        Test passes if ModelPrecision correctly returns the precision name
 
         <b>Steps</b>
         1. Check precisions in the ModelPrecision
@@ -76,10 +76,10 @@ class TestModelStatus:
     def test_model_status(self):
         """
         <b>Description:</b>
-        Check that ModelStatus correctly return the status name
+        Check that ModelStatus correctly returns the status name
 
         <b>Expected results:</b>
-        Test passes if ModelStatus correctly return the status name
+        Test passes if ModelStatus correctly returns the status name
 
         <b>Steps</b>
         1. Check statuses in the ModelStatus
@@ -97,10 +97,10 @@ class TestModelFormat:
     def test_model_format(self):
         """
         <b>Description:</b>
-        Check that ModelFormat correctly return the format name
+        Check that ModelFormat correctly returns the format name
 
         <b>Expected results:</b>
-        Test passes if ModelFormat correctly return the format name
+        Test passes if ModelFormat correctly returns the format name
 
         <b>Steps</b>
         1. Check formats in the ModelFormat
@@ -117,10 +117,10 @@ class TestModelOptimizationType:
     def test_model_optimization_type(self):
         """
         <b>Description:</b>
-        Check that ModelOptimizationType correctly return the optimization type name
+        Check that ModelOptimizationType correctly returns the optimization type name
 
         <b>Expected results:</b>
-        Test passes if ModelOptimizationType correctly return the optimization type name
+        Test passes if ModelOptimizationType correctly returns the optimization type name
 
         <b>Steps</b>
         1. Check optimization types in the ModelOptimizationType
@@ -137,10 +137,10 @@ class TestOptimizationMethod:
     def test_optimization_method(self):
         """
         <b>Description:</b>
-        Check that OptimizationMethod correctly return the optimization method name
+        Check that OptimizationMethod correctly returns the optimization method name
 
         <b>Expected results:</b>
-        Test passes if OptimizationMethod correctly return the optimization method name
+        Test passes if OptimizationMethod correctly returns the optimization method name
 
         <b>Steps</b>
         1. Check optimization methods in the OptimizationMethod
@@ -157,13 +157,13 @@ class TestModelConfiguration:
     def test_model_configuration(self):
         """
         <b>Description:</b>
-        Check that ModelConfiguration correctly return the configuration
+        Check that ModelConfiguration correctly returns the configuration
 
         <b>Input data:</b>
         ConfigurableParameters, LabelSchemaEntity
 
         <b>Expected results:</b>
-        Test passes if ModelConfiguration correctly return the configuration
+        Test passes if ModelConfiguration correctly returns the configuration
 
         <b>Steps</b>
         1. Check configuration params in the ModelConfiguration
@@ -203,10 +203,10 @@ class TestModelEntity:
     def test_model_entity_default_values(self):
         """
         <b>Description:</b>
-        Check that ModelEntity correctly return the default values
+        Check that ModelEntity correctly returns the default values
 
         <b>Expected results:</b>
-        Test passes if ModelEntity correctly return the default values
+        Test passes if ModelEntity correctly returns the default values
 
         <b>Steps</b>
         1. Check default values in the ModelEntity
@@ -249,10 +249,10 @@ class TestModelEntity:
     def test_model_entity_sets_values(self):
         """
         <b>Description:</b>
-        Check that ModelEntity correctly return the set values
+        Check that ModelEntity correctly returns the set values
 
         <b>Expected results:</b>
-        Test passes if ModelEntity correctly return the set values
+        Test passes if ModelEntity correctly returns the set values
 
         <b>Steps</b>
         1. Check set values in the ModelEntity
@@ -316,10 +316,10 @@ class TestModelEntity:
     def test_model_entity_model_adapters(self):
         """
         <b>Description:</b>
-        Check that ModelEntity correctly return the adapters
+        Check that ModelEntity correctly returns the adapters
 
         <b>Expected results:</b>
-        Test passes if ModelEntity correctly return the adapters
+        Test passes if ModelEntity correctly returns the adapters
 
         <b>Steps</b>
         1. Create a ModelEntity with adapters

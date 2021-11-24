@@ -59,7 +59,7 @@ class TestEllipse:
         Coordinates
 
         <b>Expected results:</b>
-        Test passes if Ellipse correctly calculates parameters and return default values
+        Test passes if Ellipse correctly calculates parameters and returns default values
 
         <b>Steps</b>
         1. Check ellipse params

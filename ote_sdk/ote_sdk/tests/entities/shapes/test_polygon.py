@@ -87,10 +87,10 @@ class TestPoint:
         """
 
         point = self.point()
-        roi = Rectangle(x1=0.0, x2=0.5, y1=0.0, y2=0.5)
+        roi = Rectangle(x1=0.3, x2=0.5, y1=0.3, y2=0.5)
         normalized = point.normalize_wrt_roi(roi)
-        assert normalized.x == 0.25
-        assert normalized.y == 0.2
+        assert normalized.x == 0.4
+        assert normalized.y == 0.38
 
     @pytest.mark.priority_medium
     @pytest.mark.component
@@ -113,10 +113,10 @@ class TestPoint:
         """
 
         point = self.point()
-        roi = Rectangle(x1=0.0, x2=0.5, y1=0.0, y2=0.5)
+        roi = Rectangle(x1=0.4, x2=0.5, y1=0.3, y2=0.5)
         normalized = point.denormalize_wrt_roi_shape(roi)
         assert normalized.x == 1.0
-        assert normalized.y == 0.8
+        assert normalized.y == 0.5000000000000001
 
 
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
@@ -152,7 +152,7 @@ class TestPolygon:
         Points
 
         <b>Expected results:</b>
-        Test passes if Polygon correctly calculates parameters and return default values
+        Test passes if Polygon correctly calculates parameters and returns default values
 
         <b>Steps</b>
         1. Check Polygon params
