@@ -109,7 +109,7 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
             pred_label = pred_score >= threshold
             assigned_label = self.anomalous_label if pred_label else self.normal_label
             shape = Annotation(
-                Rectangle(x1=0, y1=0, x2=1, y2=1), labels=[ScoredLabel(assigned_label, probability=pred_score)]
+                Rectangle(x1=0, y1=0, x2=1, y2=1), labels=[ScoredLabel(assigned_label, probability=float(pred_score))]
             )
             dataset_item.append_annotations([shape])
 
