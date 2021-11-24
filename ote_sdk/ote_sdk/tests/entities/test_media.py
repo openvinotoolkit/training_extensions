@@ -59,7 +59,7 @@ class TestIMedia2DEntity:
         Instance of IMedia2DEntity abstract class
 
         <b>Expected results:</b>
-        1. TypeError is rose
+        1. TypeError is raised
         2. Expected method numbers and names
 
 

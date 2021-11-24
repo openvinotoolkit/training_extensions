@@ -34,21 +34,21 @@ class TestIMetadata:
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_imetadata(self):
         """
-            <b>Description:</b>
-            To test IMetadata class
+        <b>Description:</b>
+        To test IMetadata class
 
-            <b>Input data:</b>
-            Initiated instance of IMetadata class
+        <b>Input data:</b>
+        Initiated instance of IMetadata class
 
-            <b>Expected results:</b>
-            1. Initiated instance are instance of the class
-            2. Default value of field has expected value:  "typing.Union[str, NoneType]
-            3. Changed fields value has expected value: "String"
+        <b>Expected results:</b>
+        1. Initiated instance is instance of the class
+        2. Default value of field has expected value:  "typing.Union[str, NoneType]
+        3. Changed fields value has expected value: "String"
 
-            <b>Steps</b>
-            1. Initiate IMetadata class instance
-            2. Check default value of class field
-            3. Change value of the field
+        <b>Steps</b>
+        1. Initiate IMetadata class instance
+        2. Check default value of class field
+        3. Change value of the field
         """
 
         test_instance = IMetadata()
@@ -66,25 +66,25 @@ class TestFloatType:
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_float_type_members(self):
         """
-                <b>Description:</b>
-                To test FloatType enumeration members
+        <b>Description:</b>
+        To test FloatType enumeration members
 
-                <b>Input data:</b>
-                Initiated instance of FloatType enum class
+        <b>Input data:</b>
+        Initiated instance of FloatType enum class
 
-                <b>Expected results:</b>
-                1. Enum members return correct values:
-                    FLOAT = 1
-                    EMBEDDING_VALUE = 2
-                    ACTIVE_SCORE = 3
-                2. In case incorrect member it raises AttributeError exception
-                3. In case incorrect member value it raises ValueError exception
+        <b>Expected results:</b>
+        1. Enum members return correct values:
+            FLOAT = 1
+            EMBEDDING_VALUE = 2
+            ACTIVE_SCORE = 3
+        2. In case incorrect member it raises AttributeError exception
+        3. In case incorrect member value it raises ValueError exception
 
-                <b>Steps</b>
-                0. Initiate enum instance
-                1. Check members
-                2. Check incorrect member
-                3. Check incorrect member value
+        <b>Steps</b>
+        0. Initiate enum instance
+        1. Check members
+        2. Check incorrect member
+        3. Check incorrect member value
         """
 
         test_instance = FloatType
@@ -103,22 +103,22 @@ class TestFloatType:
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_float_type_magic_str(self):
         """
-                <b>Description:</b>
-                To test FloatType __str__ method
+        <b>Description:</b>
+        To test FloatType __str__ method
 
-                <b>Input data:</b>
-                Initiated instance of FloatType enum
+        <b>Input data:</b>
+        Initiated instance of FloatType enum
 
-                <b>Expected results:</b>
-                1. __str__ return correct string for every enum member
-                2. In case incorrect member it raises AttributeError exception
-                3. In case incorrect member value it raises ValueError exception
+        <b>Expected results:</b>
+        1. __str__ returns correct string for every enum member
+        2. In case incorrect member it raises AttributeError exception
+        3. In case incorrect member value it raises ValueError exception
 
-                <b>Steps</b>
-                0. Initiate enum instance
-                1. Check returning value of __str__ method
-                2. Try incorrect field name
-                3. Try incorrect value name
+        <b>Steps</b>
+        0. Initiate enum instance
+        1. Check returning value of __str__ method
+        2. Try incorrect field name
+        3. Try incorrect value name
         """
         test_instance = FloatType
         magic_str_list = [str(i) for i in list(FloatType)]
@@ -187,24 +187,24 @@ class TestFloatMetadata:
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_float_metadata(self):
         """
-            <b>Description:</b>
-            To test FloatMetadata class
+        <b>Description:</b>
+        To test FloatMetadata class
 
-            <b>Input data:</b>
-            Initiated instance of FloatMetadata
+        <b>Input data:</b>
+        Initiated instance of FloatMetadata
 
-            <b>Expected results:</b>
-            1. It raises TypeError in case attempt of initiation with wrong parameters numbers
-            2. Fields of instances initiated with correct values
-            3. repr method returns correct strings then used against each instance
-            4. '==' method works is expected
+        <b>Expected results:</b>
+        1. It raises TypeError in case attempt of initiation with wrong parameters numbers
+        2. Fields of instances initiated with correct values
+        3. repr method returns correct strings then used against each instance
+        4. '==' method works as expected
 
-            <b>Steps</b>
-            1. Attempt to initiate class instance with wrong parameters numbers
-            2. Initiate three class instances:
-                two of them with similar set of init values, third one with different one.
-            3. Check repr method
-            4. Check __eq__ method
+        <b>Steps</b>
+        1. Attempt to initiate class instance with wrong parameters numbers
+        2. Initiate three class instances:
+            two of them with similar set of init values, third one with different one.
+        3. Check repr method
+        4. Check __eq__ method
         """
         with pytest.raises(TypeError):
             FloatMetadata()
