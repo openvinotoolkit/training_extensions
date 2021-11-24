@@ -1,5 +1,5 @@
 """
-Model inference demostration tool.
+Model inference demonstration tool.
 """
 
 # Copyright (C) 2021 Intel Corporation
@@ -18,6 +18,7 @@ Model inference demostration tool.
 
 import argparse
 import time
+from collections import deque
 
 import cv2
 import numpy as np
@@ -67,12 +68,15 @@ def parse_args():
         "-i",
         "--input",
         required=True,
-        help="Source of input data: images folder, image, webcam.",
+        help="Source of input data: images folder, image, webcam and video.",
     )
     parser.add_argument(
         "--load-weights",
         required=True,
         help="Load only weights from previously saved checkpoint",
+    )
+    parser.add_argument(
+        "--labels", nargs="+", required=True, help="A space-separated labels list."
     )
     parser.add_argument(
         "--fit-to-size",
@@ -87,9 +91,6 @@ def parse_args():
     )
     parser.add_argument(
         "--delay", type=int, default=3, help="Frame visualization time in ms."
-    )
-    parser.add_argument(
-        "--labels", nargs="+", required=True, help="A space-separated labels list."
     )
     parser.add_argument(
         "--display-perf",
@@ -127,12 +128,12 @@ def get_predictions(task, frame):
     )
     elapsed_time = time.perf_counter() - start_time
     item = predicted_validation_dataset[0]
-    return item.annotation_scene.annotations, elapsed_time
+    return item.get_annotations(), elapsed_time
 
 
 def main():
     """
-    Main function that is used for model evaluation.
+    Main function that is used for model demonstration.
     """
 
     # Dynamically create an argument parser based on override parameters.
@@ -149,7 +150,7 @@ def main():
     ]
 
     # Get classes for Task, ConfigurableParameters and Dataset.
-    taks_class = get_impl_class(template.entrypoints.base)
+    task_class = get_impl_class(template.entrypoints.base)
     environment = TaskEnvironment(
         model=None,
         hyper_parameters=hyper_parameters,
@@ -166,11 +167,11 @@ def main():
     )
     environment.model = model
 
-    task = taks_class(task_environment=environment)
+    task = task_class(task_environment=environment)
 
     capture = open_images_capture(args.input, args.loop)
 
-    elapsed_times = []
+    elapsed_times = deque(maxlen=10)
     frame_index = 0
     while True:
         frame = capture.read()
@@ -179,15 +180,12 @@ def main():
 
         predictions, elapsed_time = get_predictions(task, frame)
         elapsed_times.append(elapsed_time)
-        if len(elapsed_times) > 10:
-            elapsed_times = elapsed_times[1:]
         elapsed_time = np.mean(elapsed_times)
 
-        frame = draw_predictions(
-            template.task_type, predictions, frame, args.fit_to_size
-        )
-
         if args.delay >= 0:
+            frame = draw_predictions(
+                template.task_type, predictions, frame, args.fit_to_size
+            )
             if args.display_perf:
                 put_text_on_rect_bg(
                     frame,
