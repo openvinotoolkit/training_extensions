@@ -18,7 +18,6 @@ Configurable parameters for Padim anomaly classification task
 
 from anomaly_classification.configs.configuration import BaseAnomalyClassificationConfig
 from attr import attrs
-
 from ote_sdk.configuration.elements import string_attribute
 
 

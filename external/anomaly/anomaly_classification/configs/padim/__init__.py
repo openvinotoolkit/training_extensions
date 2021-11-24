@@ -18,3 +18,5 @@ Anomaly Classification Task
 # and limitations under the License.
 
 from .configuration import PadimConfig
+
+__all__ = ["PadimConfig"]

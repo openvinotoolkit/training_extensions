@@ -31,7 +31,6 @@ from compression.graph.model_utils import compress_model_weights, get_nodes_by_t
 from compression.pipeline.initializer import create_pipeline
 from omegaconf import ListConfig
 from omegaconf.dictconfig import DictConfig
-
 from ote_sdk.entities.annotation import Annotation
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.inference_parameters import InferenceParameters
@@ -133,13 +132,11 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
         with tempfile.TemporaryDirectory() as tempdir:
             xml_path = os.path.join(tempdir, "model.xml")
             bin_path = os.path.join(tempdir, "model.bin")
-            with open(xml_path, "wb") as xml_file:
-                xml_file.write(self.task_environment.model.get_data("openvino.xml"))
-            with open(bin_path, "wb") as bin_file:
-                bin_file.write(self.task_environment.model.get_data("openvino.bin"))
 
-            model_config = ADDict({"model_name": "openvino_model", "model": xml_path, "weights": bin_path})
+            self.__save_weights(xml_path, self.task_environment.model.get_data("openvino.xml"))
+            self.__save_weights(bin_path, self.task_environment.model.get_data("openvino.bin"))
 
+            model_config = {"model_name": "openvino_model", "model": xml_path, "weights": bin_path}
             model = load_model(model_config)
 
             if get_nodes_by_type(model, ["FakeQuantize"]):
@@ -147,37 +144,28 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
                 output_model.model_status = ModelStatus.FAILED
                 return
 
-        engine_config = ADDict({"device": "CPU"})
-
         hparams = self.task_environment.get_hyper_parameters()
-        stat_subset_size = hparams.pot_parameters.stat_subset_size
-        preset = hparams.pot_parameters.preset.name.lower()
 
         algorithms = [
             {
                 "name": "DefaultQuantization",
                 "params": {
                     "target_device": "ANY",
-                    "preset": preset,
-                    "stat_subset_size": min(stat_subset_size, len(data_loader)),
+                    "preset": hparams.pot_parameters.preset.name.lower(),
+                    "stat_subset_size": min(hparams.pot_parameters.stat_subset_size, len(data_loader)),
                 },
             }
         ]
 
-        engine = IEEngine(config=engine_config, data_loader=data_loader, metric=None)
+        engine = IEEngine(config=ADDict({"device": "CPU"}), data_loader=data_loader, metric=None)
 
-        pipeline = create_pipeline(algorithms, engine)
-
-        compressed_model = pipeline.run(model)
-
+        compressed_model = create_pipeline(algorithms, engine).run(model)
         compress_model_weights(compressed_model)
 
         with tempfile.TemporaryDirectory() as tempdir:
             save_model(compressed_model, tempdir, model_name="model")
-            with open(os.path.join(tempdir, "model.xml"), "rb") as xml_file:
-                output_model.set_data("openvino.xml", xml_file.read())
-            with open(os.path.join(tempdir, "model.bin"), "rb") as bin_file:
-                output_model.set_data("openvino.bin", bin_file.read())
+            self.__load_weights(path=os.path.join(tempdir, "model.xml"), output_model=output_model, key="openvino.xml")
+            self.__load_weights(path=os.path.join(tempdir, "model.bin"), output_model=output_model, key="openvino.bin")
         output_model.model_status = ModelStatus.SUCCESS
 
         self.task_environment.model = output_model
@@ -197,3 +185,27 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
                 self.task_environment.model.get_data("openvino.bin"),
             ),
         )
+
+    @staticmethod
+    def __save_weights(path: str, data: bytes) -> None:
+        """Write data to file
+
+        Args:
+            path (str): Path of output file
+            data (bytes): Data to write
+        """
+        with open(path, "wb") as file:
+            file.write(data)
+
+    @staticmethod
+    def __load_weights(path: str, output_model: ModelEntity, key: str) -> None:
+        """
+        Load weights into output model
+
+        Args:
+            path (str): Path to weights
+            output_model (ModelEntity): Model to which the weights are assigned
+            key (str): Key of the output model into which the weights are assigned
+        """
+        with open(path, "rb") as file:
+            output_model.set_data(key, file.read())
