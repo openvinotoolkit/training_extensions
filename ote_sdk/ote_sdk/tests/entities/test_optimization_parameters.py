@@ -29,18 +29,18 @@ class TestOptimizationParameters:
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_optimization_parameters_members(self):
         """
-                <b>Description:</b>
-                To test OptimizationParameters dataclass members
+        <b>Description:</b>
+        To test OptimizationParameters dataclass members
 
-                <b>Input data:</b>
-                Initiated instance of OptimizationParameters class
+        <b>Input data:</b>
+        Initialized instance of OptimizationParameters class
 
-                <b>Expected results:</b>
+        <b>Expected results:</b>
 
-                <b>Steps</b>
-                1. Initiate OptimizationParameters instance
-                2. Check members
-                """
+        <b>Steps</b>
+        1. Initiate OptimizationParameters instance
+        2. Check members
+        """
         opt_params = OptimizationParameters()
 
         assert dataclasses.is_dataclass(opt_params)
@@ -59,18 +59,18 @@ class TestOptimizationParameters:
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_optimization_parameters_update_member(self):
         """
-                <b>Description:</b>
-                To test OptimizationParameters dataclass members update
+        <b>Description:</b>
+        To test OptimizationParameters dataclass members update
 
-                <b>Input data:</b>
-                Initiated instance of OptimizationParameters class
+        <b>Input data:</b>
+        Initialized instance of OptimizationParameters class
 
-                <b>Expected results:</b>
+        <b>Expected results:</b>
 
-                <b>Steps</b>
-                1. Initiate OptimizationParameters instance
-                2. Check members update
-                """
+        <b>Steps</b>
+        1. Initiate OptimizationParameters instance
+        2. Check members update
+        """
         opt_params = OptimizationParameters(False)
         assert opt_params.resume is False
         assert opt_params.update_progress(-2147483648) is opt_params.update_progress(0) \
@@ -82,4 +82,3 @@ class TestOptimizationParameters:
         assert opt_params.update_progress(-2147483648) is opt_params.update_progress(0) \
                is opt_params.update_progress(2147483648) is None
         assert opt_params.save_model() is None
-
