@@ -29,18 +29,18 @@ class TestInferenceParameters:
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_inference_parameters_members(self):
         """
-                <b>Description:</b>
-                To test InferenceParameters dataclass members
+        <b>Description:</b>
+        To test InferenceParameters dataclass members
 
-                <b>Input data:</b>
-                Initiated instance of InferenceParameters class
+        <b>Input data:</b>
+        Initialized instance of InferenceParameters class
 
-                <b>Expected results:</b>
+        <b>Expected results:</b>
 
-                <b>Steps</b>
-                1. Initiate InferenceParameters instance
-                2. Check members
-                """
+        <b>Steps</b>
+        1. Initiate InferenceParameters instance
+        2. Check members
+        """
         infer_params = InferenceParameters()
 
         assert dataclasses.is_dataclass(infer_params)
@@ -57,18 +57,18 @@ class TestInferenceParameters:
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_inference_parameters_update_member(self):
         """
-                <b>Description:</b>
-                To test InferenceParameters dataclass members update
+        <b>Description:</b>
+        To test InferenceParameters dataclass members update
 
-                <b>Input data:</b>
-                Initiated instance of InferenceParameters class
+        <b>Input data:</b>
+        Initiated instance of InferenceParameters class
 
-                <b>Expected results:</b>
+        <b>Expected results:</b>
 
-                <b>Steps</b>
-                1. Initiate InferenceParameters instance
-                2. Check members update
-                """
+        <b>Steps</b>
+        1. Initiate InferenceParameters instance
+        2. Check members update
+        """
         infer_params = InferenceParameters(False)
         assert infer_params.is_evaluation is False
         assert infer_params.update_progress(-2147483648) is infer_params.update_progress(0) \
