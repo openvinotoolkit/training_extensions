@@ -37,7 +37,7 @@ class TestResultset:
         Denotes, stages
 
         <b>Expected results:</b>
-        Test passes if the results matches
+        Test passes if the results match
         """
 
         denotes = ["EVALUATION", "TEST", "PREEVALUATION"]
@@ -84,7 +84,6 @@ class TestResultset:
         result_set = ResultSetEntity(**test_data)
 
         for name, value in test_data.items():
-            name = name[0]
             set_attr_name = f"test_{name}"
             if name in [
                 "model",

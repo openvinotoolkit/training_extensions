@@ -148,7 +148,7 @@ class TestTaskEnvironment:
         Test passes if incoming data is processed correctly
 
         <b>Steps</b>
-        1. Cheking batch_size from ConfigExample and dummy_config.yaml
+        1. Checking batch_size from ConfigExample and dummy_config.yaml
         """
 
         env = environment()
@@ -177,7 +177,7 @@ class TestTaskEnvironment:
         Test passes if incoming data is processed correctly
 
         <b>Steps</b>
-        1. Cheking num_iters from ConfigExample and dummy_config.yaml
+        1. Checking num_iters from ConfigExample and dummy_config.yaml
         """
 
         env = environment()
@@ -206,7 +206,7 @@ class TestTaskEnvironment:
         Test passes if incoming data is processed correctly
 
         <b>Steps</b>
-        1. Cheking learning_rate from ConfigExample and dummy_config.yaml
+        1. Checking learning_rate from ConfigExample and dummy_config.yaml
         """
 
         env = environment()
@@ -236,7 +236,7 @@ class TestTaskEnvironment:
         Test passes if incoming data is processed correctly
 
         <b>Steps</b>
-        1. Cheking num_checkpoints from ConfigExample and dummy_config.yaml
+        1. Checking num_checkpoints from ConfigExample and dummy_config.yaml
         """
 
         env = environment()
@@ -268,7 +268,7 @@ class TestTaskEnvironment:
         Test passes if incoming data is processed correctly
 
         <b>Steps</b>
-        1. Cheking missing_param dummy_config
+        1. Checking missing_param dummy_config
         """
 
         env = environment()
@@ -293,7 +293,7 @@ class TestTaskEnvironment:
         Test passes if incoming data is processed correctly
 
         <b>Steps</b>
-        1. Cheking confidence_threshold from ConfigExample and dummy_config.yaml
+        1. Checking confidence_threshold from ConfigExample and dummy_config.yaml
         """
 
         env = environment()
@@ -323,7 +323,7 @@ class TestTaskEnvironment:
         Test passes if incoming data is processed correctly
 
         <b>Steps</b>
-        1. Cheking result_based_confidence_threshold from ConfigExample and dummy_config.yaml
+        1. Checking result_based_confidence_threshold from ConfigExample and dummy_config.yaml
         """
 
         env = environment()
@@ -353,7 +353,7 @@ class TestTaskEnvironment:
         Test passes if incoming data is processed correctly
 
         <b>Steps</b>
-        1. Cheking parameters after setting
+        1. Checking parameters after setting
         """
         env = environment()
 

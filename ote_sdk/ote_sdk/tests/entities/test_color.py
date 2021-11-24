@@ -43,7 +43,7 @@ class TestColor:
         Check that Color can correctly return the value
 
         <b>Expected results:</b>
-        Test passes if the results matches
+        Test passes if the results match
         """
 
         assert color == Color(red=red, green=green, blue=blue, alpha=alpha)

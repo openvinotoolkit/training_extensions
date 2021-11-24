@@ -34,7 +34,7 @@ class TestDomain:
         Check that Domain can correctly return the value
 
         <b>Expected results:</b>
-        Test passes if the results matches
+        Test passes if the results match
         """
         domain = Domain
         assert len(domain) == 6
