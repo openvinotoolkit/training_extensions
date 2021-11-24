@@ -28,26 +28,26 @@ class TestSubset:
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_subset_members(self):
         """
-                <b>Description:</b>
-                To test Subset enumeration members
+        <b>Description:</b>
+        To test Subset enumeration members
 
-                <b>Input data:</b>
-                Initiated instance of Subset enum
+        <b>Input data:</b>
+        Initialized instance of Subset enum
 
-                <b>Expected results:</b>
-                Enum members return correct values:
+        <b>Expected results:</b>
+        Enum members return correct values:
 
-                NONE = 0
-                TRAINING = 1
-                VALIDATION = 2
-                TESTING = 3
-                UNLABELED = 4
-                PSEUDOLABELED = 5
+        NONE = 0
+        TRAINING = 1
+        VALIDATION = 2
+        TESTING = 3
+        UNLABELED = 4
+        PSEUDOLABELED = 5
 
-                <b>Steps</b>
-                1. Initiate enum instance
-                2. Check members
-                """
+        <b>Steps</b>
+        1. Initiate enum instance
+        2. Check members
+        """
         test_instance = Subset
 
         for i in range(0, 6):
@@ -64,20 +64,20 @@ class TestSubset:
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_subset_magic_str(self):
         """
-                <b>Description:</b>
-                To test Subset __str__ method
+        <b>Description:</b>
+        To test Subset __str__ method
 
-                <b>Input data:</b>
-                Initiated instance of Subset enum
+        <b>Input data:</b>
+        Initialized instance of Subset enum
 
-                <b>Expected results:</b>
-                __str__ return correct string for every enum member
-                In case incorrect member it raises attribute exception
+        <b>Expected results:</b>
+        __str__ return correct string for every enum member
+        In case incorrect member it raises attribute exception
 
-                <b>Steps</b>
-                1. Initiate enum instance
-                2. Check returning value of __str__ method
-                """
+        <b>Steps</b>
+        1. Initiate enum instance
+        2. Check returning value of __str__ method
+        """
         test_instance = Subset
         magic_str_list = [str(i) for i in list(Subset)]
 
@@ -97,19 +97,19 @@ class TestSubset:
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_subset_magic_repr(self):
         """
-                <b>Description:</b>
-                To test Subset __repr__ method
+        <b>Description:</b>
+        To test Subset __repr__ method
 
-                <b>Input data:</b>
-                Initiated instance of Subset enum
+        <b>Input data:</b>
+        Initialized instance of Subset enum
 
-                <b>Expected results:</b>
-                __repr__ method return correct string
+        <b>Expected results:</b>
+        __repr__ method return correct string
 
-                <b>Steps</b>
-                1. Initiate enum instance
-                2. Check returning value of magic methods
-                """
+        <b>Steps</b>
+        1. Initiate enum instance
+        2. Check returning value of magic methods
+        """
         test_instance = Subset
         magic_repr_list = [repr(i) for i in list(Subset)]
 
