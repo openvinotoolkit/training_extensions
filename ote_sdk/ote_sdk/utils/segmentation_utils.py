@@ -165,6 +165,7 @@ def create_annotation_from_segmentation_map(
     height, width = hard_prediction.shape[:2]
     img_class = hard_prediction.swapaxes(0, 1)
 
+    # pylint: disable=too-many-nested-blocks
     annotations: List[Annotation] = []
     for label_index, label in label_map.items():
         # Skip background
