@@ -12,40 +12,38 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from datetime import datetime
-import pytest
-from pathlib import Path
-import tempfile
 import os
+import tempfile
+from datetime import datetime
+from pathlib import Path
 
-from ote_sdk.entities.model import (
-    ModelPrecision,
-    ModelStatus,
-    ModelFormat,
-    ModelOptimizationType,
-    OptimizationMethod,
-    ModelConfiguration,
-    ModelEntity,
-)
-from ote_sdk.configuration import ConfigurableParameters
-from ote_sdk.entities.label_schema import LabelSchemaEntity
-from ote_sdk.entities.id import ID
-from ote_sdk.entities.model_template import TargetDevice
-from ote_sdk.tests.test_helpers import generate_random_single_image
-from ote_sdk.entities.image import Image
+import pytest
+
+from ote_sdk.configuration import ConfigurableParameters, ote_config_helper
 from ote_sdk.entities.annotation import NullAnnotationSceneEntity
 from ote_sdk.entities.dataset_item import DatasetItemEntity
 from ote_sdk.entities.datasets import DatasetEntity
-from ote_sdk.utils.time_utils import now
-from ote_sdk.entities.model_template import parse_model_template
-from ote_sdk.configuration import ote_config_helper
-from ote_sdk.entities.task_environment import TaskEnvironment
-from ote_sdk.entities.label import LabelEntity, Domain
+from ote_sdk.entities.id import ID
+from ote_sdk.entities.image import Image
+from ote_sdk.entities.label import Domain, LabelEntity
+from ote_sdk.entities.label_schema import LabelSchemaEntity
 from ote_sdk.entities.metrics import NullPerformance, Performance, ScoreMetric
-from ote_sdk.usecases.adapters.model_adapter import ModelAdapter
-
+from ote_sdk.entities.model import (
+    ModelConfiguration,
+    ModelEntity,
+    ModelFormat,
+    ModelOptimizationType,
+    ModelPrecision,
+    ModelStatus,
+    OptimizationMethod,
+)
+from ote_sdk.entities.model_template import TargetDevice, parse_model_template
+from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.tests.constants.ote_sdk_components import OteSdkComponent
 from ote_sdk.tests.constants.requirements import Requirements
+from ote_sdk.tests.test_helpers import generate_random_single_image
+from ote_sdk.usecases.adapters.model_adapter import ModelAdapter
+from ote_sdk.utils.time_utils import now
 
 
 @pytest.mark.components(OteSdkComponent.OTE_SDK)

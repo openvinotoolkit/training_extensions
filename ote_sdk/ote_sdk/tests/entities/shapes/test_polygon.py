@@ -12,15 +12,15 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import pytest
 from operator import attrgetter
+
+import pytest
 
 from ote_sdk.entities.shapes.polygon import Point, Polygon
 from ote_sdk.entities.shapes.rectangle import Rectangle
-from ote_sdk.utils.time_utils import now
-
 from ote_sdk.tests.constants.ote_sdk_components import OteSdkComponent
 from ote_sdk.tests.constants.requirements import Requirements
+from ote_sdk.utils.time_utils import now
 
 
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
