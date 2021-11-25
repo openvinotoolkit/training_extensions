@@ -20,7 +20,6 @@ import argparse
 
 from ote_sdk.configuration.helper import create
 from ote_sdk.entities.inference_parameters import InferenceParameters
-from ote_sdk.entities.label_schema import LabelSchemaEntity
 from ote_sdk.entities.model import ModelEntity
 from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.subset import Subset
@@ -31,7 +30,7 @@ from ote_cli.datasets import get_dataset_class
 from ote_cli.registry import find_and_parse_model_template
 from ote_cli.utils.config import override_parameters
 from ote_cli.utils.importing import get_impl_class
-from ote_cli.utils.loading import load_model_weights
+from ote_cli.utils.loading import load_model_weights, read_label_schema
 from ote_cli.utils.parser import (
     add_hyper_parameters_sub_parser,
     gen_params_dict_from_args,
@@ -97,19 +96,17 @@ def main():
         test_subset={"ann_file": args.test_ann_files, "data_root": args.test_data_roots}
     )
 
+    model_bytes = load_model_weights(args.load_weights)
     environment = TaskEnvironment(
         model=None,
         hyper_parameters=hyper_parameters,
-        label_schema=LabelSchemaEntity.from_labels(dataset.get_labels()),
+        label_schema=read_label_schema(model_bytes),
         model_template=template,
     )
 
-    model_adapters = {
-        "weights.pth": ModelAdapter(load_model_weights(args.load_weights))
-    }
     model = ModelEntity(
         configuration=environment.get_model_configuration(),
-        model_adapters=model_adapters,
+        model_adapters={"weights.pth": ModelAdapter(model_bytes)},
         train_dataset=None,
     )
     environment.model = model

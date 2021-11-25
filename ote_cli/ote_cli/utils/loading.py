@@ -16,6 +16,11 @@ Utils for dynamically importing stuff
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+import io
+import pickle
+
+from ote_sdk.serialization.label_mapper import LabelSchemaMapper
+
 
 def load_model_weights(path):
     """
@@ -27,3 +32,13 @@ def load_model_weights(path):
 
     with open(path, "rb") as read_file:
         return read_file.read()
+
+
+def read_label_schema(model_bytes):
+    """
+    Reads serialized representation from binary snapshot and returns deserialized LabelSchema.
+    """
+
+    return LabelSchemaMapper().backward(
+        pickle.load(io.BytesIO(model_bytes))["label_schema"]
+    )
