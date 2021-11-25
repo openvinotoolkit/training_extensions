@@ -312,8 +312,8 @@ class TestShape:
             0.0, 0.0, 1.0, 1.0, modification_date=datetime(year=2021, month=11, day=23)
         )
         assert (
-                Shape.__repr__(test_rectangle)
-                == "Shape with modification date:('2021-11-23 00:00:00')"
+            Shape.__repr__(test_rectangle)
+            == "Shape with modification date:('2021-11-23 00:00:00')"
         )
         assert Shape.__hash__(test_rectangle) == hash(str(test_rectangle))
 
@@ -347,7 +347,7 @@ class TestShape:
                 assert inscribed.intersects(full_element)
         # Check when Shapes intersect in several points
         for shape, other_shape in list(
-                itertools.combinations(inscribed_shapes_list, 2)
+            itertools.combinations(inscribed_shapes_list, 2)
         ):
             assert shape.intersects(other_shape)
             assert other_shape.intersects(shape)
@@ -358,9 +358,9 @@ class TestShape:
         # Check when Shapes not intersect
         for shape in inscribed_shapes_list:
             for not_inscribed_shape in (
-                    self.not_inscribed_rectangle(),
-                    self.not_inscribed_ellipse(),
-                    self.not_inscribed_polygon(),
+                self.not_inscribed_rectangle(),
+                self.not_inscribed_ellipse(),
+                self.not_inscribed_polygon(),
             ):
                 assert not shape.intersects(not_inscribed_shape)
                 assert not not_inscribed_shape.intersects(shape)
@@ -409,9 +409,9 @@ class TestShape:
         # Check shen Shapes not intersect
         for shape in inscribed_shapes_list:
             for not_inscribed_shape in (
-                    self.not_inscribed_rectangle(),
-                    self.not_inscribed_ellipse(),
-                    self.not_inscribed_polygon(),
+                self.not_inscribed_rectangle(),
+                self.not_inscribed_ellipse(),
+                self.not_inscribed_polygon(),
             ):
                 assert shape.intersect_percentage(not_inscribed_shape) == 0.0
         # Checking GeometryException exception raised
@@ -453,8 +453,8 @@ class TestShape:
             self.polygon(),
         ]:
             assert (
-                    false_include_empty_labels_shape.get_labels()
-                    == expected_false_include_empty_labels
+                false_include_empty_labels_shape.get_labels()
+                == expected_false_include_empty_labels
             )
         # Checks for labels specified and include_empty set to True
         expected_include_empty_labels = self.generate_labels_list(include_empty=True)
@@ -464,8 +464,8 @@ class TestShape:
             self.polygon(),
         ]:
             assert (
-                    include_empty_labels_shape.get_labels(include_empty=True)
-                    == expected_include_empty_labels
+                include_empty_labels_shape.get_labels(include_empty=True)
+                == expected_include_empty_labels
             )
 
     @pytest.mark.priority_medium

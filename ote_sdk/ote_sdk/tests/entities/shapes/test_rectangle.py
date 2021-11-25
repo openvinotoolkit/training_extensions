@@ -115,8 +115,8 @@ class TestRectangle:
         )
         assert default_params_rectangle._labels == []
         assert (
-                actual_default_params_rectangle_modification_date
-                == expected_default_params_rectangle_modification_date
+            actual_default_params_rectangle_modification_date
+            == expected_default_params_rectangle_modification_date
         )
         # check for specified values of optional parameters
         specified_params_rectangle = self.vertical_rectangle()
@@ -185,8 +185,8 @@ class TestRectangle:
         """
         rectangle = self.horizontal_rectangle()
         assert (
-                repr(rectangle)
-                == "Rectangle(x=0.1, y=0.0, width=0.30000000000000004, height=0.2)"
+            repr(rectangle)
+            == "Rectangle(x=0.1, y=0.0, width=0.30000000000000004, height=0.2)"
         )
 
     @pytest.mark.priority_medium
@@ -550,10 +550,10 @@ class TestRectangle:
             expected_output = rectangle_parameters.get("cropped_expected")
             actual_cropped_image_array = rectangle.crop_numpy_array(numpy_image_array)
             expected_image_array = numpy_image_array[
-                                   expected_output.get("y1"): expected_output.get("y2"),
-                                   expected_output.get("x1"): expected_output.get("x2"),
-                                   ::,
-                                   ]
+                expected_output.get("y1") : expected_output.get("y2"),
+                expected_output.get("x1") : expected_output.get("x2"),
+                ::,
+            ]
             assert actual_cropped_image_array.shape[2] == 3
             try:
                 assert (expected_image_array == actual_cropped_image_array).all()
