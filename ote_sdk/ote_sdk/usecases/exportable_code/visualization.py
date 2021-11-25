@@ -15,6 +15,7 @@
 from typing import Optional
 
 import cv2
+
 import numpy as np
 
 from ote_sdk.entities.annotation import AnnotationSceneEntity
@@ -45,8 +46,9 @@ class Visualizer:
         self.window_name = "Window" if window_name is None else window_name
         self.shape_drawer = ShapeDrawer(show_count, is_one_label)
 
+        self.delay = delay
         if delay is None:
-            self.delay = 0 if (media_type == "" or media_type == MediaType.image) else 1
+            self.delay = 0 if (media_type is None or media_type == MediaType.image) else 1
 
     def draw(self, image: np.ndarray, annotation: AnnotationSceneEntity) -> np.ndarray:
         """

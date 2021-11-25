@@ -12,17 +12,16 @@
 # with no express or implied warranties, other than those that are expressly stated
 # in the License.
 
-import os
 import sys
-from argparse import ArgumentParser, SUPPRESS, Namespace
+from argparse import ArgumentParser, Namespace, SUPPRESS
 from pathlib import Path
 
 
-from ote_sdk.usecases.exportable_code.streamer import  get_streamer, get_media_type
+from ote_sdk.usecases.exportable_code.streamer import get_media_type, get_streamer
 from ote_sdk.usecases.exportable_code.visualization import Visualizer
-from openvino.model_zoo.model_api import models, pipelines
-from openvino.inference_engine import IECore
+
 from .utils import create_model, create_output_converter
+
 
 def build_argparser():
     parser = ArgumentParser(add_help=False)
@@ -49,6 +48,7 @@ def build_argparser():
                             help='Optional. Number of threads to use for inference on CPU (including HETERO cases).')
 
     return parser
+
 
 def get_infer_parameters(args):
     params = {
@@ -82,6 +82,7 @@ class SyncDemo:
             if self.visualizer.is_quit():
                 break
 
+
 def main():
     args = build_argparser().parse_args()
     # create components for demo
@@ -93,6 +94,7 @@ def main():
     converter = create_output_converter(model.labels)
     demo = SyncDemo(model, visualizer, converter)
     demo.run(args.input)
+
 
 if __name__ == '__main__':
     sys.exit(main() or 0)

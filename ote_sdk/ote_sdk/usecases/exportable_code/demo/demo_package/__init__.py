@@ -12,8 +12,8 @@
 # with no express or implied warranties, other than those that are expressly stated
 # in the License.
 
-from .utils import create_model
 from .sync import SyncDemo
+from .utils import create_model
 
 __all__ = [
     'SyncDemo',
