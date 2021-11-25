@@ -20,7 +20,7 @@ import pytest
 from shapely.geometry.polygon import Polygon
 
 from ote_sdk.entities.label import LabelEntity
-from ote_sdk.entities.scored_label import ScoredLabel, Domain
+from ote_sdk.entities.scored_label import Domain, ScoredLabel
 from ote_sdk.entities.shapes.rectangle import Rectangle
 from ote_sdk.entities.shapes.shape import ShapeType
 from ote_sdk.tests.constants.ote_sdk_components import OteSdkComponent
@@ -30,7 +30,6 @@ from ote_sdk.utils.time_utils import now
 
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestRectangle:
-
     @staticmethod
     def horizontal_rectangle_params():
         return {"x1": 0.1, "y1": 0.0, "x2": 0.4, "y2": 0.2}
@@ -40,10 +39,16 @@ class TestRectangle:
 
     @staticmethod
     def vertical_rectangle_params():
-        return {"x1": 0.1, "y1": 0.1, "x2": 0.3, "y2": 0.4,
-                "labels": ["label_1", "label_2"],
-                "modification_date": datetime(
-                    year=2020, month=1, day=1, hour=9, minute=30, second=15, microsecond=2)}
+        return {
+            "x1": 0.1,
+            "y1": 0.1,
+            "x2": 0.3,
+            "y2": 0.4,
+            "labels": ["label_1", "label_2"],
+            "modification_date": datetime(
+                year=2020, month=1, day=1, hour=9, minute=30, second=15, microsecond=2
+            ),
+        }
 
     def vertical_rectangle(self):
         return Rectangle(**self.vertical_rectangle_params())
@@ -102,16 +107,23 @@ class TestRectangle:
         """
         # check for default values of optional parameters
         default_params_rectangle = self.horizontal_rectangle()
-        expected_default_params_rectangle_modification_date = now().replace(microsecond=0)
-        actual_default_params_rectangle_modification_date = default_params_rectangle.modification_date.replace(
-            microsecond=0)
+        expected_default_params_rectangle_modification_date = now().replace(
+            microsecond=0
+        )
+        actual_default_params_rectangle_modification_date = (
+            default_params_rectangle.modification_date.replace(microsecond=0)
+        )
         assert default_params_rectangle._labels == []
-        assert actual_default_params_rectangle_modification_date == expected_default_params_rectangle_modification_date
+        assert (
+                actual_default_params_rectangle_modification_date
+                == expected_default_params_rectangle_modification_date
+        )
         # check for specified values of optional parameters
         specified_params_rectangle = self.vertical_rectangle()
         assert specified_params_rectangle._labels == ["label_1", "label_2"]
         assert specified_params_rectangle.modification_date == datetime(
-            year=2020, month=1, day=1, hour=9, minute=30, second=15, microsecond=2)
+            year=2020, month=1, day=1, hour=9, minute=30, second=15, microsecond=2
+        )
 
     @pytest.mark.priority_medium
     @pytest.mark.component
@@ -144,9 +156,13 @@ class TestRectangle:
         height_less_than_zero_params = {"x1": 0.1, "y1": 0.4, "x2": 0.3, "y2": 0.1}
         height_params_equal_zero_params = {"x1": 0.1, "y1": 0.4, "x2": 0.3, "y2": 0.4}
         zero_rectangle_params = {"x1": 0.0, "x2": 0.0, "y1": 0.0, "y2": 0.0}
-        for incorrect_coordinates in [width_less_than_zero_params, width_equal_zero_params,
-                                      height_less_than_zero_params, height_params_equal_zero_params,
-                                      zero_rectangle_params]:
+        for incorrect_coordinates in [
+            width_less_than_zero_params,
+            width_equal_zero_params,
+            height_less_than_zero_params,
+            height_params_equal_zero_params,
+            zero_rectangle_params,
+        ]:
             with pytest.raises(ValueError):
                 Rectangle(**incorrect_coordinates)
 
@@ -168,7 +184,10 @@ class TestRectangle:
         1. Check message printed by __repr__ method
         """
         rectangle = self.horizontal_rectangle()
-        assert repr(rectangle) == "Rectangle(x=0.1, y=0.0, width=0.30000000000000004, height=0.2)"
+        assert (
+                repr(rectangle)
+                == "Rectangle(x=0.1, y=0.0, width=0.30000000000000004, height=0.2)"
+        )
 
     @pytest.mark.priority_medium
     @pytest.mark.component
@@ -212,8 +231,14 @@ class TestRectangle:
         # In each of scenario creating a copy of equal Rectangle parameters and replacing to values from prepared
         # dictionary
         unequal_values_dict = {
-            "x1": 0.09, "y1": 0.09, "x2": 0.29, "y2": 0.39,
-            "modification_date": datetime(year=2019, month=2, day=3, hour=7, minute=15, second=10, microsecond=1)}
+            "x1": 0.09,
+            "y1": 0.09,
+            "x2": 0.29,
+            "y2": 0.39,
+            "modification_date": datetime(
+                year=2019, month=2, day=3, hour=7, minute=15, second=10, microsecond=1
+            ),
+        }
         for scenario in parameter_combinations:
             for rectangle_parameters in scenario:
                 unequal_rectangle_params_dict = dict(self.vertical_rectangle_params())
@@ -266,22 +291,53 @@ class TestRectangle:
         7. Check ValueError exception raised if 1<y1<y2 and y2>1: clipped Rectangle height will be equal 0
         """
         positive_scenarios = [
-            {"input_params": {"x1": 0.3, "y1": 0.2, "x2": 0.6, "y2": 0.4, "labels": ["test", "labels"]},
-             "params_expected": {"x1": 0.3, "y1": 0.2, "x2": 0.6, "y2": 0.4}},
-            {"input_params": {"x1": -0.2, "y1": -0.3, "x2": 1.6, "y2": 1.4, "labels": ["test", "labels"]},
-             "params_expected": {"x1": 0.0, "y1": 0.0, "x2": 1.0, "y2": 1.0}},
-            {"input_params": {"x1": 0.0, "y1": 0.0, "x2": 1.0, "y2": 1.0, "labels": ["test", "labels"]},
-             "params_expected": {"x1": 0.0, "y1": 0.0, "x2": 1.0, "y2": 1.0}}]
+            {
+                "input_params": {
+                    "x1": 0.3,
+                    "y1": 0.2,
+                    "x2": 0.6,
+                    "y2": 0.4,
+                    "labels": ["test", "labels"],
+                },
+                "params_expected": {"x1": 0.3, "y1": 0.2, "x2": 0.6, "y2": 0.4},
+            },
+            {
+                "input_params": {
+                    "x1": -0.2,
+                    "y1": -0.3,
+                    "x2": 1.6,
+                    "y2": 1.4,
+                    "labels": ["test", "labels"],
+                },
+                "params_expected": {"x1": 0.0, "y1": 0.0, "x2": 1.0, "y2": 1.0},
+            },
+            {
+                "input_params": {
+                    "x1": 0.0,
+                    "y1": 0.0,
+                    "x2": 1.0,
+                    "y2": 1.0,
+                    "labels": ["test", "labels"],
+                },
+                "params_expected": {"x1": 0.0, "y1": 0.0, "x2": 1.0, "y2": 1.0},
+            },
+        ]
         for scenario in positive_scenarios:
             rectangle_actual = Rectangle(**scenario.get("input_params"))
             rectangle_expected = Rectangle(**scenario.get("params_expected"))
-            rectangle_actual.modification_date = rectangle_actual.modification_date.replace(microsecond=0)
-            rectangle_expected.modification_date = rectangle_expected.modification_date.replace(microsecond=0)
+            rectangle_actual.modification_date = (
+                rectangle_actual.modification_date.replace(microsecond=0)
+            )
+            rectangle_expected.modification_date = (
+                rectangle_expected.modification_date.replace(microsecond=0)
+            )
             assert rectangle_actual.clip_to_visible_region() == rectangle_expected
-        negative_scenarios = [{"x1": -0.4, "y1": 0.2, "x2": -0.2, "y2": 0.4},
-                              {"x1": 1.2, "y1": 0.2, "x2": 1.6, "y2": 0.4},
-                              {"x1": 0.4, "y1": -0.4, "x2": 0.6, "y2": -0.2},
-                              {"x1": 1.2, "y1": 1.2, "x2": 1.6, "y2": 1.4}]
+        negative_scenarios = [
+            {"x1": -0.4, "y1": 0.2, "x2": -0.2, "y2": 0.4},
+            {"x1": 1.2, "y1": 0.2, "x2": 1.6, "y2": 0.4},
+            {"x1": 0.4, "y1": -0.4, "x2": 0.6, "y2": -0.2},
+            {"x1": 1.2, "y1": 1.2, "x2": 1.6, "y2": 1.4},
+        ]
         for scenario in negative_scenarios:
             rectangle_actual = Rectangle(**scenario)
             with pytest.raises(ValueError):
@@ -310,7 +366,9 @@ class TestRectangle:
         roi_shape = Rectangle(x1=0.0, y1=0.0, x2=0.3, y2=0.2)
         normalized = rectangle.normalize_wrt_roi_shape(roi_shape)
         rectangle.modification_date = rectangle.modification_date.replace(microsecond=0)
-        normalized.modification_date = normalized.modification_date.replace(microsecond=0)
+        normalized.modification_date = normalized.modification_date.replace(
+            microsecond=0
+        )
         assert normalized.x1 == 0.03
         assert normalized.y1 == 0.0
         assert normalized.x2 == 0.12
@@ -343,7 +401,9 @@ class TestRectangle:
         roi_shape = Rectangle(x1=0.2, y1=0.3, x2=0.6, y2=0.6)
         denormalized = rectangle.denormalize_wrt_roi_shape(roi_shape)
         rectangle.modification_date = rectangle.modification_date.replace(microsecond=0)
-        denormalized.modification_date = denormalized.modification_date.replace(microsecond=0)
+        denormalized.modification_date = denormalized.modification_date.replace(
+            microsecond=0
+        )
         assert denormalized.x1 == -0.25000000000000006
         assert denormalized.y1 == -1.0
         assert denormalized.x2 == 0.5000000000000001
@@ -395,9 +455,13 @@ class TestRectangle:
         1. Check generate_full_box method for Rectangle instance with no labels specified
         2. Check generate_full_box method for Rectangle instance with labels specified
         """
-        detection_label = ScoredLabel(LabelEntity(name="detection", domain=Domain.DETECTION))
-        for label_actual, label_expected in [(None, []),
-                                             ([detection_label], [detection_label])]:
+        detection_label = ScoredLabel(
+            LabelEntity(name="detection", domain=Domain.DETECTION)
+        )
+        for label_actual, label_expected in [
+            (None, []),
+            ([detection_label], [detection_label]),
+        ]:
             full_box = Rectangle.generate_full_box(label_actual)
             assert full_box.type == ShapeType.RECTANGLE
             assert full_box.x1 == full_box.y1 == 0.0
@@ -464,20 +528,32 @@ class TestRectangle:
         3. Check crop_numpy_array method for Rectangle with parameters more than 1
         """
         image_height = image_width = 128
-        numpy_image_array = np.random.uniform(low=0.0, high=255.0, size=(image_height, image_width, 3))
-        scenarios = [{"input_params": {"x1": -0.2, "x2": -0.1, "y1": -0.3, "y2": -0.2},
-                      "cropped_expected": {"x1": 0, "y1": 0, "x2": 0, "y2": 0}},
-                     {"input_params": {"x1": 0.2, "x2": 0.3, "y1": 0.4, "y2": 0.8},
-                      "cropped_expected": {"x1": 26, "y1": 51, "x2": 38, "y2": 102}},
-                     {"input_params": {"x1": 1.1, "x2": 1.3, "y1": 1.1, "y2": 1.5},
-                      "cropped_expected": {"x1": 141, "y1": 141, "x2": 166, "y2": 192}}]
+        numpy_image_array = np.random.uniform(
+            low=0.0, high=255.0, size=(image_height, image_width, 3)
+        )
+        scenarios = [
+            {
+                "input_params": {"x1": -0.2, "x2": -0.1, "y1": -0.3, "y2": -0.2},
+                "cropped_expected": {"x1": 0, "y1": 0, "x2": 0, "y2": 0},
+            },
+            {
+                "input_params": {"x1": 0.2, "x2": 0.3, "y1": 0.4, "y2": 0.8},
+                "cropped_expected": {"x1": 26, "y1": 51, "x2": 38, "y2": 102},
+            },
+            {
+                "input_params": {"x1": 1.1, "x2": 1.3, "y1": 1.1, "y2": 1.5},
+                "cropped_expected": {"x1": 141, "y1": 141, "x2": 166, "y2": 192},
+            },
+        ]
         for rectangle_parameters in scenarios:
             rectangle = Rectangle(**rectangle_parameters.get("input_params"))
             expected_output = rectangle_parameters.get("cropped_expected")
             actual_cropped_image_array = rectangle.crop_numpy_array(numpy_image_array)
             expected_image_array = numpy_image_array[
-                                   expected_output.get("y1"):expected_output.get("y2"),
-                                   expected_output.get("x1"):expected_output.get("x2"), ::]
+                                   expected_output.get("y1"): expected_output.get("y2"),
+                                   expected_output.get("x1"): expected_output.get("x2"),
+                                   ::,
+                                   ]
             assert actual_cropped_image_array.shape[2] == 3
             try:
                 assert (expected_image_array == actual_cropped_image_array).all()
@@ -502,10 +578,12 @@ class TestRectangle:
         1. Check width method for Rectangle instances
         """
         negative_x1_rectangle = Rectangle(x1=-0.3, y1=0.2, x2=0.7, y2=0.5)
-        for rectangle, expected_width in [(self.horizontal_rectangle(), 0.30000000000000004),
-                                          (self.vertical_rectangle(), 0.19999999999999998),
-                                          (self.square(), 0.19999999999999998),
-                                          (negative_x1_rectangle, 1.0)]:
+        for rectangle, expected_width in [
+            (self.horizontal_rectangle(), 0.30000000000000004),
+            (self.vertical_rectangle(), 0.19999999999999998),
+            (self.square(), 0.19999999999999998),
+            (negative_x1_rectangle, 1.0),
+        ]:
             assert rectangle.width == expected_width
 
     @pytest.mark.priority_medium
@@ -526,10 +604,12 @@ class TestRectangle:
         1. Check height method for Rectangle instances
         """
         negative_y1_rectangle = Rectangle(x1=0.3, y1=-0.4, x2=0.7, y2=0.5)
-        for rectangle, expected_height in [(self.horizontal_rectangle(), 0.2),
-                                           (self.vertical_rectangle(), 0.30000000000000004),
-                                           (self.square(), 0.19999999999999998),
-                                           (negative_y1_rectangle, 0.9)]:
+        for rectangle, expected_height in [
+            (self.horizontal_rectangle(), 0.2),
+            (self.vertical_rectangle(), 0.30000000000000004),
+            (self.square(), 0.19999999999999998),
+            (negative_y1_rectangle, 0.9),
+        ]:
             assert rectangle.height == expected_height
 
     @pytest.mark.priority_medium
@@ -549,9 +629,11 @@ class TestRectangle:
         <b>Steps</b>
         1. Check diagonal method for Rectangle instance
         """
-        for rectangle, expected_diagonal in [(self.horizontal_rectangle(), 0.360555127546399),
-                                             (self.vertical_rectangle(), 0.3605551275463989),
-                                             (self.square(), 0.282842712474619)]:
+        for rectangle, expected_diagonal in [
+            (self.horizontal_rectangle(), 0.360555127546399),
+            (self.vertical_rectangle(), 0.3605551275463989),
+            (self.square(), 0.282842712474619),
+        ]:
             assert rectangle.diagonal == expected_diagonal
 
     @pytest.mark.priority_medium
@@ -571,7 +653,9 @@ class TestRectangle:
         <b>Steps</b>
         1. Check get_area method for Rectangle instance
         """
-        for rectangle, expected_area in [(self.horizontal_rectangle(), 0.06000000000000001),
-                                         (self.vertical_rectangle(), 0.060000000000000005),
-                                         (self.square(), 0.039999999999999994)]:
+        for rectangle, expected_area in [
+            (self.horizontal_rectangle(), 0.06000000000000001),
+            (self.vertical_rectangle(), 0.060000000000000005),
+            (self.square(), 0.039999999999999994),
+        ]:
             assert rectangle.get_area() == expected_area
