@@ -79,7 +79,7 @@ class TestAnnotation:
         annotation = self.annotation
 
         assert type(annotation.id) == ID
-        assert annotation.id is None
+        assert annotation.id is not None
         assert str(annotation.shape) == "Rectangle(x=0.5, y=0.0, width=0.5, height=0.5)"
         assert annotation.get_labels() == []
 
