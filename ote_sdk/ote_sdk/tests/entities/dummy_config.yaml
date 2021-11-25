@@ -40,7 +40,7 @@ learning_parameters:
   learning_rate_warmup_iters:
     affects_outcome_of: TRAINING
     default_value: 100
-    description: ''
+    description: ""
     editable: true
     header: Test learning_rate_warmup_iters header
     max_value: 10000
@@ -57,7 +57,7 @@ learning_parameters:
   num_checkpoints:
     affects_outcome_of: NONE
     default_value: 5
-    description: ''
+    description: ""
     editable: true
     header: Test num_checkpoints header
     max_value: 100

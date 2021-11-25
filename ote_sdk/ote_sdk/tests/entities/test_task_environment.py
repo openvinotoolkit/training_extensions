@@ -351,14 +351,11 @@ class TestTaskEnvironment:
         env = environment()
         config_example = env.get_hyper_parameters(ConfigExample)
 
-        env_postprocessing_confidence_threshold = (
-            env.get_hyper_parameters().postprocessing.confidence_threshold
-        )  # "default_value"
-        config_example_postprocessing_confidence_threshold = (
-            config_example.postprocessing._default.factory.confidence_threshold.metadata[
-                "default_value"
-            ]
-        )
+        env_postprocessing_confidence_threshold = env.get_hyper_parameters().postprocessing.confidence_threshold
+        cep = config_example.postprocessing
+        config_example_postprocessing_confidence_threshold = cep._default.factory.confidence_threshold.metadata[
+            "default_value"
+        ]
 
         # From dummy_config.yaml because it is missing in dummy_template.yaml "parameter_overrides"
         assert env_postprocessing_confidence_threshold == 0.35
@@ -390,11 +387,12 @@ class TestTaskEnvironment:
         env_postprocessing_result_based_confidence_threshold = (
             env.get_hyper_parameters().postprocessing.result_based_confidence_threshold
         )  # "default_value"
-        config_example_postprocessing_result_based_confidence_threshold = (
-            config_example.postprocessing._default.factory.result_based_confidence_threshold.metadata[
-                "default_value"
-            ]
-        )
+        cep = config_example.postprocessing
+        def_factory = cep._default.factory
+        rbct = def_factory.result_based_confidence_threshold
+        config_example_postprocessing_result_based_confidence_threshold = rbct.metadata[
+            "default_value"
+        ]
 
         # From dummy_config.yaml because it is missing in dummy_template.yaml "parameter_overrides"
         assert env_postprocessing_result_based_confidence_threshold is True
