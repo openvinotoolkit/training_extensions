@@ -37,10 +37,7 @@ class ColorMapper:
     This class maps a `Color` entity to a serialized dictionary, and vice versa
     """
 
-    def forward(
-        self,
-        instance: Color
-    ) -> dict:
+    def forward(self, instance: Color) -> dict:
         return {
             "red": instance.red,
             "green": instance.green,
@@ -48,10 +45,7 @@ class ColorMapper:
             "alpha": instance.alpha,
         }
 
-    def backward(
-        self,
-        instance: dict
-    ) -> Color:
+    def backward(self, instance: dict) -> Color:
         return Color(
             instance["red"], instance["green"], instance["blue"], instance["alpha"]
         )
@@ -79,15 +73,12 @@ class LabelMapper:
             "is_empty": instance.is_empty,
         }
 
-    def backward(
-        self,
-        instance: dict
-    ) -> LabelEntity:
+    def backward(self, instance: dict) -> LabelEntity:
         label_id = IDMapper().backward(instance["_id"])
 
         domain = instance.get("domain")
         label_domain = Domain[domain]
-        
+
         label = LabelEntity(
             id=label_id,
             name=instance["name"],
@@ -107,10 +98,7 @@ class LabelGroupMapper:
     This class maps a `LabelGroup` entity to a serialized dictionary, and vice versa
     """
 
-    def forward(
-        self,
-        instance: LabelGroup
-    ) -> dict:
+    def forward(self, instance: LabelGroup) -> dict:
         return {
             "_id": IDMapper().forward(instance.id),
             "name": instance.name,
@@ -118,10 +106,7 @@ class LabelGroupMapper:
             "relation_type": instance.group_type.name,
         }
 
-    def backward(
-        self, instance: dict,
-        all_labels: dict
-    ) -> LabelGroup:
+    def backward(self, instance: dict, all_labels: dict) -> LabelGroup:
         return LabelGroup(
             id=IDMapper().backward(instance["_id"]),
             name=instance["name"],
@@ -138,10 +123,7 @@ class LabelGraphMapper:
     This class maps a `LabelGraph` entity to a serialized dictionary, and vice versa
     """
 
-    def forward(
-        self,
-        instance: Union[LabelGraph, LabelTree]
-    ) -> dict:
+    def forward(self, instance: Union[LabelGraph, LabelTree]) -> dict:
         return {
             "type": instance.type,
             "directed": instance.directed,
@@ -153,8 +135,7 @@ class LabelGraphMapper:
         }
 
     def backward(
-        self, instance: dict,
-        all_labels: dict
+        self, instance: dict, all_labels: dict
     ) -> Union[LabelTree, LabelGraph]:
 
         instance_type = instance["type"]
@@ -193,33 +174,29 @@ class LabelSchemaMapper:
         ]
 
         output_dict = {
-            "label_tree": LabelGraphMapper().forward(
-                instance.label_tree
-            ),
-            "exclusivity_graph": LabelGraphMapper().forward(
-                instance.exclusivity_graph
-            ),
+            "label_tree": LabelGraphMapper().forward(instance.label_tree),
+            "exclusivity_graph": LabelGraphMapper().forward(instance.exclusivity_graph),
             "label_groups": label_groups,
         }
-        
-        output_dict['all_labels'] = {IDMapper().forward(label.id): LabelMapper().forward(label) for label in instance.get_labels(True)}
+
+        output_dict["all_labels"] = {
+            IDMapper().forward(label.id): LabelMapper().forward(label)
+            for label in instance.get_labels(True)
+        }
 
         return output_dict
 
-    def backward(
-        self, instance: dict
-    ) -> LabelSchemaEntity:
-        
-        all_labels = {IDMapper().backward(id): LabelMapper().backward(label) for id, label in instance['all_labels'].items()}
-        
+    def backward(self, instance: dict) -> LabelSchemaEntity:
+
+        all_labels = {
+            IDMapper().backward(id): LabelMapper().backward(label)
+            for id, label in instance["all_labels"].items()
+        }
+
         exclusivity_graph = LabelGraphMapper().backward(
-            instance["exclusivity_graph"],
-            all_labels
+            instance["exclusivity_graph"], all_labels
         )
-        label_tree = LabelGraphMapper().backward(
-            instance["label_tree"],
-            all_labels
-        )
+        label_tree = LabelGraphMapper().backward(instance["label_tree"], all_labels)
         label_groups = [
             LabelGroupMapper().backward(label_group, all_labels)
             for label_group in instance["label_groups"]

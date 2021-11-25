@@ -20,6 +20,7 @@ import datetime
 from typing import Union
 
 from dateutil.tz.tz import tzlocal
+
 from ote_sdk.utils.time_utils import now
 
 
@@ -31,15 +32,11 @@ class DatetimeMapper:
     def __init__(self) -> None:
         self.tzinfo = tzlocal()
 
-    def forward(
-        self,
-        instance: datetime.datetime
-    ):
+    def forward(self, instance: datetime.datetime):
         return instance
 
     def backward(
-        self,
-        instance: Union[None, str, datetime.datetime]
+        self, instance: Union[None, str, datetime.datetime]
     ) -> datetime.datetime:
 
         if isinstance(instance, str):
@@ -59,4 +56,3 @@ class DatetimeMapper:
             return instance.replace(tzinfo=datetime.timezone.utc)
         # Case where instance is None or we received an unexpected type.
         return now()
-

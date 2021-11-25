@@ -20,6 +20,7 @@ import logging
 from typing import Union
 
 from bson import ObjectId
+
 from ote_sdk.entities.id import ID
 
 
@@ -28,10 +29,7 @@ class IDMapper:
     This class maps an `ID` entity to a string, and vice versa
     """
 
-    def forward(
-        self,
-        instance: ID
-    ) -> Union[ObjectId, str]:
+    def forward(self, instance: ID) -> Union[ObjectId, str]:
         instance = ID(instance)
         # if len(instance) in (12, 24):
         #     return ObjectId(str(instance))
@@ -47,8 +45,5 @@ class IDMapper:
             )
         return str(instance)
 
-    def backward(
-        self,
-        instance: str
-    ) -> ID:
+    def backward(self, instance: str) -> ID:
         return ID(str(instance))
