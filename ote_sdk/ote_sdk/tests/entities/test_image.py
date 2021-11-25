@@ -77,10 +77,11 @@ class TestImage:
         """
         test_height = test_width = 128
         test_height1 = test_width1 = 64
-        data0 = np.ndarray(shape=(test_height, test_width, 4), dtype=float, order='C')
-        data1 = np.ndarray(shape=(test_height1, test_width1, 4), dtype=float, order='C')
+        test_depth = 4
+        data0 = np.ndarray(shape=(test_height, test_width, test_depth), dtype=float, order='C')
+        data1 = np.ndarray(shape=(test_height1, test_width1, test_depth), dtype=float, order='C')
         d1_data = np.ndarray(shape=(test_height,), dtype=float, order='C')
-        image = np.zeros((test_height, test_width, 4), dtype=np.uint8)
+        image = np.ndarray(shape=(test_height, test_width, test_depth), dtype=float, order='C')
         image_path = os.path.join(tempfile.gettempdir(), 'test_image.png')
         cv2.imwrite(image_path, image)
 
@@ -96,19 +97,23 @@ class TestImage:
         fp_instance = Image(file_path=image_path)
         assert isinstance(fp_instance, Image)
 
-        assert str(data_instance) == "Image(with data, width=128, height=128)"
-        assert str(fp_instance) == f"Image({image_path}, width=128, height=128)"
+        assert str(data_instance) == f"Image(with data, width={test_width}, height={test_height})"
+        assert str(fp_instance) == f"Image({image_path}, width={test_width}, height={test_height})"
 
-        assert data_instance.numpy.all() == data0.all()
-        assert fp_instance.numpy.all() == image.all()
+        assert np.array_equal(data_instance.numpy, data0)
+        assert not np.array_equal(fp_instance.numpy, image)
+        height, width, depth = fp_instance.numpy.shape
+        assert height == test_height
+        assert width == test_width
+        assert depth != test_depth
 
         data_instance.numpy = fp_instance.numpy = data1
 
-        assert data_instance.numpy.all() == data1.all()
-        assert fp_instance.numpy.all() == data1.all()
+        assert np.array_equal(data_instance.numpy, data1)
+        assert np.array_equal(fp_instance.numpy, data1)
 
-        assert data_instance.roi_numpy().all() == data1.all()
-        assert fp_instance.roi_numpy().all() == data1.all()
+        assert np.array_equal(data_instance.roi_numpy(), data1)
+        assert np.array_equal(fp_instance.roi_numpy(), data1)
 
         rec_shape = Rectangle(x1=0.0, x2=0.5, y1=0.0, y2=0.5)
         ellipsis_shape = Ellipse(x1=0.0, x2=0.5, y1=0.0, y2=0.5)
