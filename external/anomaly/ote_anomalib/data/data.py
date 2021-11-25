@@ -103,9 +103,7 @@ class OTEAnomalyDataModule(LightningDataModule):
         torch.Size([32, 3, 256, 256])
     """
 
-    def __init__(
-        self, config: Union[DictConfig, ListConfig], dataset: DatasetEntity
-    ) -> None:
+    def __init__(self, config: Union[DictConfig, ListConfig], dataset: DatasetEntity) -> None:
         super().__init__()
         self.config = config
         self.dataset = dataset
@@ -147,20 +145,8 @@ class OTEAnomalyDataModule(LightningDataModule):
         for subset in [Subset.TRAINING, Subset.VALIDATION, Subset.TESTING]:
             dataset = self.dataset.get_subset(subset)
             num_items = len(dataset)
-            num_normal = len(
-                [
-                    item
-                    for item in dataset
-                    if item.get_shapes_labels()[0].name == LabelNames.normal
-                ]
-            )
-            num_anomalous = len(
-                [
-                    item
-                    for item in dataset
-                    if item.get_shapes_labels()[0].name == LabelNames.anomalous
-                ]
-            )
+            num_normal = len([item for item in dataset if item.get_shapes_labels()[0].name == LabelNames.normal])
+            num_anomalous = len([item for item in dataset if item.get_shapes_labels()[0].name == LabelNames.anomalous])
             logger.info(
                 f"{subset} subset size: Total: {num_items} images. "
                 f"Normal: {num_normal} images. Anomalous: {num_anomalous} images"
