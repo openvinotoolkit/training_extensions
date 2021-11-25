@@ -24,14 +24,13 @@ from ote_sdk.tests.constants.requirements import Requirements
 
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestEllipse:
-
     def ellipse_params(self):
         ellipse_params = {
             "x1": 0.5,
             "x2": 1.0,
             "y1": 0.0,
             "y2": 0.5,
-            "modification_date": now().replace(microsecond=False)
+            "modification_date": now().replace(microsecond=False),
         }
         return ellipse_params
 
@@ -148,7 +147,7 @@ class TestEllipse:
             "x2": 1.0,
             "y1": 0.0,
             "y2": 0.5,
-            "modification_date": now().replace(microsecond=False)
+            "modification_date": now().replace(microsecond=False),
         }
 
         third_ellipse_params = {
@@ -156,7 +155,7 @@ class TestEllipse:
             "y1": 0.5,
             "x2": 0.4,
             "y2": 0.6,
-            "modification_date": now().replace(microsecond=False)
+            "modification_date": now().replace(microsecond=False),
         }
 
         other_ellipse = Ellipse(**other_ellipse_params)
@@ -251,15 +250,20 @@ class TestEllipse:
 
         ellipse = self.ellipse()
         number_of_coordinates = 3
-        coordinates_ellipse_line = ellipse.get_evenly_distributed_ellipse_coordinates(number_of_coordinates)
+        coordinates_ellipse_line = ellipse.get_evenly_distributed_ellipse_coordinates(
+            number_of_coordinates
+        )
         assert len(coordinates_ellipse_line) == 3
         assert coordinates_ellipse_line[0] == (1.0, 0.25)
         assert coordinates_ellipse_line[1] == (0.625, 0.4665063509461097)
         assert coordinates_ellipse_line[2] == (0.6249999999999999, 0.033493649053890406)
 
         width_gt_height_ellipse = Ellipse(**self.width_gt_height_ellipse_params())
-        coordinates_ellipse_line = width_gt_height_ellipse.get_evenly_distributed_ellipse_coordinates(
-            number_of_coordinates)
+        coordinates_ellipse_line = (
+            width_gt_height_ellipse.get_evenly_distributed_ellipse_coordinates(
+                number_of_coordinates
+            )
+        )
         assert width_gt_height_ellipse.height < width_gt_height_ellipse.width
         assert len(coordinates_ellipse_line) == 3
         assert coordinates_ellipse_line[0] == (0.65, 0.3)

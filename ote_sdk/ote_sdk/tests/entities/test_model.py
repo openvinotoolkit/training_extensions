@@ -25,7 +25,7 @@ from ote_sdk.entities.model import (
     ModelOptimizationType,
     OptimizationMethod,
     ModelConfiguration,
-    ModelEntity
+    ModelEntity,
 )
 from ote_sdk.configuration import ConfigurableParameters
 from ote_sdk.entities.label_schema import LabelSchemaEntity
@@ -174,18 +174,21 @@ class TestModelConfiguration:
         """
         parameters = ConfigurableParameters(header="Test header")
         label_schema = LabelSchemaEntity()
-        model_configuration = ModelConfiguration(configurable_parameters=parameters, label_schema=label_schema)
+        model_configuration = ModelConfiguration(
+            configurable_parameters=parameters, label_schema=label_schema
+        )
         assert model_configuration.configurable_parameters == parameters
         assert model_configuration.label_schema == label_schema
 
 
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestModelEntity:
-
     def generate_random_image(self):
         with generate_random_single_image() as path:
             image = Image(file_path=path)
-            return DatasetItemEntity(media=image, annotation_scene=NullAnnotationSceneEntity())
+            return DatasetItemEntity(
+                media=image, annotation_scene=NullAnnotationSceneEntity()
+            )
 
     def dataset(self):
         return DatasetEntity(items=[self.generate_random_image()])
@@ -193,12 +196,16 @@ class TestModelEntity:
     def configuration(self):
         parameters = ConfigurableParameters(header="Test header")
         label_schema = LabelSchemaEntity()
-        return ModelConfiguration(configurable_parameters=parameters, label_schema=label_schema)
+        return ModelConfiguration(
+            configurable_parameters=parameters, label_schema=label_schema
+        )
 
     def other_configuration(self):
         parameters = ConfigurableParameters(header="Other test header")
         label_schema = LabelSchemaEntity()
-        return ModelConfiguration(configurable_parameters=parameters, label_schema=label_schema)
+        return ModelConfiguration(
+            configurable_parameters=parameters, label_schema=label_schema
+        )
 
     @pytest.mark.priority_medium
     @pytest.mark.component
@@ -215,7 +222,9 @@ class TestModelEntity:
         1. Check default values in the ModelEntity
         """
 
-        model_entity = ModelEntity(train_dataset=self.dataset(), configuration=self.configuration())
+        model_entity = ModelEntity(
+            train_dataset=self.dataset(), configuration=self.configuration()
+        )
 
         assert model_entity.id == ID()
         assert type(model_entity.configuration) == ModelConfiguration
@@ -229,7 +238,11 @@ class TestModelEntity:
         assert model_entity.optimization_type == ModelOptimizationType.NONE
         assert model_entity.performance == NullPerformance()
 
-        for default_val_none in ["previous_trained_revision", "previous_revision", "target_device_type"]:
+        for default_val_none in [
+            "previous_trained_revision",
+            "previous_revision",
+            "target_device_type",
+        ]:
             assert getattr(model_entity, default_val_none) is None
 
         for default_val_0_0 in ["training_duration", "model_size_reduction"]:
@@ -238,7 +251,11 @@ class TestModelEntity:
         for default_val_empty_list in ["tags", "optimization_methods"]:
             assert getattr(model_entity, default_val_empty_list) == []
 
-        for default_val_empty_dict in ["model_adapters", "optimization_objectives", "performance_improvement"]:
+        for default_val_empty_dict in [
+            "model_adapters",
+            "optimization_objectives",
+            "performance_improvement",
+        ]:
             assert getattr(model_entity, default_val_empty_dict) == {}
 
         for default_val_zero in ["latency", "fps_throughput"]:
@@ -278,13 +295,16 @@ class TestModelEntity:
             model=None,
             hyper_parameters=params,
             label_schema=labels_schema,
-            model_template=model_template)
+            model_template=model_template,
+        )
 
         item = self.generate_random_image()
         dataset = DatasetEntity(items=[item])
         score_metric = ScoreMetric(name="Model accuracy", value=0.5)
 
-        model_entity = ModelEntity(train_dataset=self.dataset(), configuration=self.configuration())
+        model_entity = ModelEntity(
+            train_dataset=self.dataset(), configuration=self.configuration()
+        )
 
         set_params = {
             "configuration": environment.get_model_configuration(),
@@ -308,7 +328,7 @@ class TestModelEntity:
             "optimization_type": ModelOptimizationType.MO,
             "optimization_objectives": {"param": "Test param"},
             "performance_improvement": {"speed", 0.5},
-            "model_size_reduction": 1.
+            "model_size_reduction": 1.0,
         }
 
         for key, value in set_params.items():
@@ -348,13 +368,14 @@ class TestModelEntity:
         model_adapters = {
             "0": ModelAdapter(data_source=data_source_0),
             "1": ModelAdapter(data_source=data_source_1),
-            "2": ModelAdapter(data_source=data_source_2)
-            }
+            "2": ModelAdapter(data_source=data_source_2),
+        }
 
         model_entity = ModelEntity(
             train_dataset=self.dataset(),
             configuration=self.configuration(),
-            model_adapters=model_adapters)
+            model_adapters=model_adapters,
+        )
 
         assert model_entity.weight_paths == {}
 
@@ -392,7 +413,7 @@ class TestModelEntity:
 
         # The presence of outdated code in ModelEntity "model_adapter.data_source.binary_url"
         with pytest.raises(AttributeError):
-            assert model_entity.weight_paths == {'0': temp_file}
+            assert model_entity.weight_paths == {"0": temp_file}
 
     @pytest.mark.priority_medium
     @pytest.mark.component
@@ -406,9 +427,15 @@ class TestModelEntity:
         Test passes if ModelEntity equal ModelEntity and not equal another type
         """
         dataset = self.dataset()
-        other_model_entity = ModelEntity(train_dataset=dataset, configuration=self.configuration())
-        model_entity = ModelEntity(train_dataset=dataset, configuration=self.configuration())
-        third_model_entity = ModelEntity(train_dataset=self.dataset(), configuration=self.other_configuration())
+        other_model_entity = ModelEntity(
+            train_dataset=dataset, configuration=self.configuration()
+        )
+        model_entity = ModelEntity(
+            train_dataset=dataset, configuration=self.configuration()
+        )
+        third_model_entity = ModelEntity(
+            train_dataset=self.dataset(), configuration=self.other_configuration()
+        )
         assert model_entity.__eq__("") is False
         assert model_entity == other_model_entity
         assert model_entity != third_model_entity

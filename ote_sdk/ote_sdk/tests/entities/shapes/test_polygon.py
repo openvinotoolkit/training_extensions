@@ -25,7 +25,6 @@ from ote_sdk.tests.constants.requirements import Requirements
 
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestPoint:
-
     def coordinates(self):
         return [0.5, 0.4]
 
@@ -121,7 +120,6 @@ class TestPoint:
 
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestPolygon:
-
     def points(self):
         point1 = Point(0.5, 0.0)
         point2 = Point(0.75, 0.2)
@@ -135,10 +133,14 @@ class TestPolygon:
         return [point1, point2, point3]
 
     def polygon(self):
-        return Polygon(self.points(), modification_date=now().replace(microsecond=False))
+        return Polygon(
+            self.points(), modification_date=now().replace(microsecond=False)
+        )
 
     def other_polygon(self):
-        return Polygon(self.other_points(), modification_date=now().replace(microsecond=False))
+        return Polygon(
+            self.other_points(), modification_date=now().replace(microsecond=False)
+        )
 
     @pytest.mark.priority_medium
     @pytest.mark.component

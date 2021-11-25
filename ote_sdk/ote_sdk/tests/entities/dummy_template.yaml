@@ -3,8 +3,7 @@ task_type: DETECTION
 task_family: VISION
 instantiation: "CLASS"
 summary: Fast and lightweight object detector.
-application:
-  ~
+application: ~
 
 framework: Test framework
 
