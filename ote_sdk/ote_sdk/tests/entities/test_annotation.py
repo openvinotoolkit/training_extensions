@@ -14,6 +14,7 @@
 
 import pytest
 import datetime
+from typing import List
 
 from ote_sdk.entities.annotation import (
     Annotation,
@@ -37,7 +38,7 @@ from ote_sdk.tests.constants.requirements import Requirements
 class TestAnnotation:
 
     rectangle = Rectangle(x1=0.5, x2=1.0, y1=0.0, y2=0.5)
-    labels = []
+    labels = []  # type: List[LabelEntity]
     annotation = Annotation(shape=rectangle, labels=labels)
 
     car = LabelEntity(
@@ -292,7 +293,7 @@ class TestAnnotationSceneKind:
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestAnnotationSceneEntity:
 
-    labels = []
+    labels = []  # type: List[LabelEntity]
     rectangle = Rectangle(x1=0.5, x2=1.0, y1=0.0, y2=0.5)
     annotation = Annotation(shape=rectangle, labels=labels)
 
