@@ -18,7 +18,7 @@ import os
 from pathlib import Path
 from openvino.model_zoo.model_api import models, pipelines
 from openvino.model_zoo.model_api.adapters import create_core, OpenvinoAdapter
-from ote_sdk.entities.label import Domain, LabelEntity
+from ote_sdk.entities.label import Domain
 from ote_sdk.usecases.exportable_code.prediction_to_annotation_converter import create_converter
 
 def get_model_path(path):
@@ -49,7 +49,7 @@ def create_model(infer_parameters, model_path=None, config_file=None):
     parameters = get_parameters(config_file)
     try:
         importlib.import_module('.model', parameters['name_of_model'].lower())
-    except BaseException as e:
+    except BaseException:
         print("Using model wrapper from Open Model Zoo ModelAPI")
     model = models.Model.create_model(parameters['type_of_model'], model_adapter, parameters['model_parameters'])
     model.load()

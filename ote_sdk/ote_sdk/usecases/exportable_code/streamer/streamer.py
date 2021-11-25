@@ -21,8 +21,10 @@ from pathlib import Path
 from typing import Iterable, Iterator, List, NamedTuple, Optional, Tuple, Union
 
 import cv2
-import numpy as np
+
 from natsort import natsorted
+
+import numpy as np
 
 
 class MediaType(Enum):
@@ -42,7 +44,7 @@ MEDIA_EXTENSIONS = MediaExtensions(
 )
 
 
-def _get_media_type(path: Optional[Union[str, Path]]) -> MediaType:
+def get_media_type(path: Optional[Union[str, Path]]) -> MediaType:
     """
     Get Media Type from the input path.
     :param path: Path to file or directory.
@@ -356,7 +358,7 @@ def get_streamer(
             "Both path and camera device is provided. Choose either camera or path to a image/video file."
         )
 
-    media_type = _get_media_type(path)
+    media_type = get_media_type(path)
 
     streamer: BaseStreamer
 
