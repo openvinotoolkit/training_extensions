@@ -14,17 +14,15 @@
 
 import pytest
 
-from ote_sdk.entities.scored_label import ScoredLabel
-from ote_sdk.entities.label import Domain, LabelEntity
 from ote_sdk.entities.color import Color
-
+from ote_sdk.entities.label import Domain, LabelEntity
+from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.tests.constants.ote_sdk_components import OteSdkComponent
 from ote_sdk.tests.constants.requirements import Requirements
 
 
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestScoredLabel:
-
     @pytest.mark.priority_medium
     @pytest.mark.component
     @pytest.mark.reqids(Requirements.REQ_1)
@@ -39,8 +37,12 @@ class TestScoredLabel:
         <b>Expected results:</b>
         Test passes if the results match
         """
-        car = LabelEntity(id=123456789, name="car", domain=Domain.DETECTION, is_empty=True)
-        person = LabelEntity(id=987654321, name="person", domain=Domain.DETECTION, is_empty=True)
+        car = LabelEntity(
+            id=123456789, name="car", domain=Domain.DETECTION, is_empty=True
+        )
+        person = LabelEntity(
+            id=987654321, name="person", domain=Domain.DETECTION, is_empty=True
+        )
         car_label = ScoredLabel(car)
         person_label = ScoredLabel(person)
 
@@ -61,5 +63,10 @@ class TestScoredLabel:
         assert car_label.probability == probability
 
         car.color = Color(red=16, green=15, blue=56, alpha=255)
-        assert "ScoredLabel(123456789, name=car, probability=0.4, domain=DETECTION, color=" in repr(car_label)
-        assert "Color(red=16, green=15, blue=56, alpha=255), hotkey=ctrl+0)" in repr(car_label)
+        assert (
+            "ScoredLabel(123456789, name=car, probability=0.4, domain=DETECTION, color="
+            in repr(car_label)
+        )
+        assert "Color(red=16, green=15, blue=56, alpha=255), hotkey=ctrl+0)" in repr(
+            car_label
+        )

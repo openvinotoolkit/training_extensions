@@ -12,20 +12,19 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import pytest
 import datetime
 
-from ote_sdk.entities.label import Domain, LabelEntity
-from ote_sdk.entities.id import ID
-from ote_sdk.entities.color import Color
+import pytest
 
+from ote_sdk.entities.color import Color
+from ote_sdk.entities.id import ID
+from ote_sdk.entities.label import Domain, LabelEntity
 from ote_sdk.tests.constants.ote_sdk_components import OteSdkComponent
 from ote_sdk.tests.constants.requirements import Requirements
 
 
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestDomain:
-
     @pytest.mark.priority_medium
     @pytest.mark.component
     @pytest.mark.reqids(Requirements.REQ_1)
@@ -92,7 +91,15 @@ class TestLabelEntity:
         assert self.car != Domain
         assert self.car != self.person
 
-        for attr in ["name", "domain", "color", "hotkey", "creation_date", "is_empty", "id"]:
+        for attr in [
+            "name",
+            "domain",
+            "color",
+            "hotkey",
+            "creation_date",
+            "is_empty",
+            "id",
+        ]:
             assert getattr(self.car, attr) == self.label_car_params[attr]
 
         label_car_new_name = "electric car"
@@ -118,7 +125,7 @@ class TestLabelEntity:
             f"name={self.car.name}",
             f"hotkey={self.car.hotkey}",
             f"domain={self.car.domain}",
-            f"color={self.car.color}"
+            f"color={self.car.color}",
         ]
 
         for i in test_label_entity_repr:

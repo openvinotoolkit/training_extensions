@@ -14,18 +14,17 @@
 
 from pathlib import Path
 
-import yaml
 import pytest
+import yaml
 
-from ote_sdk.entities.task_environment import TaskEnvironment
-from ote_sdk.configuration import ote_config_helper, ConfigurableParameters
+from ote_sdk.configuration import ConfigurableParameters, ote_config_helper
 from ote_sdk.entities.id import ID
-from ote_sdk.entities.model_template import parse_model_template
 from ote_sdk.entities.label_schema import LabelSchemaEntity
-from ote_sdk.tests.test_helpers import ConfigExample
-
+from ote_sdk.entities.model_template import parse_model_template
+from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.tests.constants.ote_sdk_components import OteSdkComponent
 from ote_sdk.tests.constants.requirements import Requirements
+from ote_sdk.tests.test_helpers import ConfigExample
 
 
 def __get_path_to_file(filename: str):
@@ -351,11 +350,13 @@ class TestTaskEnvironment:
         env = environment()
         config_example = env.get_hyper_parameters(ConfigExample)
 
-        env_postprocessing_confidence_threshold = env.get_hyper_parameters().postprocessing.confidence_threshold
+        env_postprocessing_confidence_threshold = (
+            env.get_hyper_parameters().postprocessing.confidence_threshold
+        )
         cep = config_example.postprocessing
-        config_example_postprocessing_confidence_threshold = cep._default.factory.confidence_threshold.metadata[
-            "default_value"
-        ]
+        config_example_postprocessing_confidence_threshold = (
+            cep._default.factory.confidence_threshold.metadata["default_value"]
+        )
 
         # From dummy_config.yaml because it is missing in dummy_template.yaml "parameter_overrides"
         assert env_postprocessing_confidence_threshold == 0.35

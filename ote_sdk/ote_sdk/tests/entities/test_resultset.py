@@ -14,17 +14,16 @@
 
 import pytest
 
-from ote_sdk.entities.resultset import ResultSetEntity, ResultsetPurpose
-from ote_sdk.entities.metrics import NullPerformance
 from ote_sdk.entities.id import ID
-from ote_sdk.utils.time_utils import now
+from ote_sdk.entities.metrics import NullPerformance
+from ote_sdk.entities.resultset import ResultSetEntity, ResultsetPurpose
 from ote_sdk.tests.constants.ote_sdk_components import OteSdkComponent
 from ote_sdk.tests.constants.requirements import Requirements
+from ote_sdk.utils.time_utils import now
 
 
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestResultset:
-
     @pytest.mark.priority_medium
     @pytest.mark.component
     @pytest.mark.reqids(Requirements.REQ_1)
@@ -89,7 +88,7 @@ class TestResultset:
                 "model",
                 "ground_truth_dataset",
                 "prediction_dataset",
-                "purpose"
+                "purpose",
             ]:
                 assert getattr(result_set, name) == value
                 setattr(result_set, name, set_attr_name)
@@ -118,7 +117,7 @@ class TestResultset:
             f"purpose={result_set.purpose}",
             f"performance={result_set.performance}",
             f"creation_date={result_set.creation_date}",
-            f"id={result_set.id}"
+            f"id={result_set.id}",
         ]
 
         for i in test_result_set_repr:

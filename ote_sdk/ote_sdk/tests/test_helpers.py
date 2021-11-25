@@ -23,6 +23,16 @@ import cv2
 import numpy as np
 from bson import ObjectId
 
+from ote_sdk.configuration import ConfigurableParameters
+from ote_sdk.configuration.elements import (
+    ParameterGroup,
+    add_parameter_group,
+    configurable_boolean,
+    configurable_float,
+    configurable_integer,
+    string_attribute,
+)
+from ote_sdk.configuration.model_lifecycle import ModelLifecycle
 from ote_sdk.entities.annotation import Annotation
 from ote_sdk.entities.color import Color
 from ote_sdk.entities.id import ID
@@ -32,14 +42,6 @@ from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.entities.shapes.ellipse import Ellipse
 from ote_sdk.entities.shapes.polygon import Point, Polygon
 from ote_sdk.entities.shapes.rectangle import Rectangle
-from ote_sdk.configuration.elements import (ParameterGroup,
-                                            add_parameter_group,
-                                            configurable_boolean,
-                                            configurable_float,
-                                            configurable_integer,
-                                            string_attribute)
-from ote_sdk.configuration import ConfigurableParameters
-from ote_sdk.configuration.model_lifecycle import ModelLifecycle
 
 logger = logging.getLogger(__name__)
 
@@ -373,7 +375,7 @@ class ConfigExample(ConfigurableParameters):
             max_value=100000,
             header="Number of training iterations",
             description="Increasing this value causes the results to be more robust but training time will be longer.",
-            affects_outcome_of=ModelLifecycle.TRAINING
+            affects_outcome_of=ModelLifecycle.TRAINING,
         )
 
         learning_rate = configurable_float(
@@ -382,7 +384,7 @@ class ConfigExample(ConfigurableParameters):
             max_value=1e-01,
             header="Learning rate",
             description="Increasing this value will speed up training convergence but might make it unstable.",
-            affects_outcome_of=ModelLifecycle.TRAINING
+            affects_outcome_of=ModelLifecycle.TRAINING,
         )
 
         learning_rate_warmup_iters = configurable_integer(
@@ -391,7 +393,7 @@ class ConfigExample(ConfigurableParameters):
             max_value=10000,
             header="Number of iterations for learning rate warmup",
             description="Test learning rate warmup",
-            affects_outcome_of=ModelLifecycle.TRAINING
+            affects_outcome_of=ModelLifecycle.TRAINING,
         )
 
         num_workers = configurable_integer(
@@ -400,7 +402,7 @@ class ConfigExample(ConfigurableParameters):
             max_value=10,
             header="num_workers test header",
             description="num_workers test description",
-            affects_outcome_of=ModelLifecycle.NONE
+            affects_outcome_of=ModelLifecycle.NONE,
         )
 
     class __Postprocessing(ParameterGroup):
@@ -411,7 +413,7 @@ class ConfigExample(ConfigurableParameters):
             default_value=True,
             header="Test Result based confidence threshold",
             description="Test confidence threshold is derived from the results",
-            affects_outcome_of=ModelLifecycle.INFERENCE
+            affects_outcome_of=ModelLifecycle.INFERENCE,
         )
 
         confidence_threshold = configurable_float(
@@ -420,7 +422,8 @@ class ConfigExample(ConfigurableParameters):
             max_value=1,
             header="Test Confidence threshold",
             description="This threshold only takes effect if the threshold is not set based on the result.--Only test",
-            affects_outcome_of=ModelLifecycle.INFERENCE
+            affects_outcome_of=ModelLifecycle.INFERENCE,
         )
+
     learning_parameters = add_parameter_group(__LearningParameters)
     postprocessing = add_parameter_group(__Postprocessing)
