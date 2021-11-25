@@ -12,9 +12,10 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import pytest
 import datetime
 from typing import List
+
+import pytest
 
 from ote_sdk.entities.annotation import (
     Annotation,
@@ -22,14 +23,13 @@ from ote_sdk.entities.annotation import (
     AnnotationSceneKind,
     NullAnnotationSceneEntity,
 )
-from ote_sdk.entities.shapes.rectangle import Rectangle
+from ote_sdk.entities.color import Color
+from ote_sdk.entities.id import ID
+from ote_sdk.entities.label import Domain, LabelEntity
+from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.entities.shapes.ellipse import Ellipse
 from ote_sdk.entities.shapes.polygon import Point, Polygon
-from ote_sdk.entities.label import Domain, LabelEntity
-from ote_sdk.entities.color import Color
-from ote_sdk.entities.scored_label import ScoredLabel
-from ote_sdk.entities.id import ID
-
+from ote_sdk.entities.shapes.rectangle import Rectangle
 from ote_sdk.tests.constants.ote_sdk_components import OteSdkComponent
 from ote_sdk.tests.constants.requirements import Requirements
 
