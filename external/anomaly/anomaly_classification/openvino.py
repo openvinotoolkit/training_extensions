@@ -31,6 +31,7 @@ from compression.graph.model_utils import compress_model_weights, get_nodes_by_t
 from compression.pipeline.initializer import create_pipeline
 from omegaconf import ListConfig
 from omegaconf.dictconfig import DictConfig
+from ote_anomalib.data import LabelNames
 from ote_sdk.entities.annotation import Annotation
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.inference_parameters import InferenceParameters
@@ -94,8 +95,8 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
         self.config = config
         self.inferencer = self.load_inferencer()
         labels = task_environment.get_labels()
-        self.normal_label = [label for label in labels if label.name == "normal"][0]
-        self.anomalous_label = [label for label in labels if label.name == "anomalous"][0]
+        self.normal_label = [label for label in labels if label.name == LabelNames.normal][0]
+        self.anomalous_label = [label for label in labels if label.name == LabelNames.anomalous][0]
 
     def infer(self, dataset: DatasetEntity, inference_parameters: InferenceParameters) -> DatasetEntity:
         if self.task_environment.model is None:
@@ -108,7 +109,7 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
             pred_label = pred_score >= threshold
             assigned_label = self.anomalous_label if pred_label else self.normal_label
             shape = Annotation(
-                Rectangle(x1=0, y1=0, x2=1, y2=1), labels=[ScoredLabel(assigned_label, probability=pred_score)]
+                Rectangle(x1=0, y1=0, x2=1, y2=1), labels=[ScoredLabel(assigned_label, probability=float(pred_score))]
             )
             dataset_item.append_annotations([shape])
 

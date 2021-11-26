@@ -20,6 +20,7 @@ from pathlib import Path
 from typing import List, Union
 
 from anomalib.datasets.anomaly_dataset import make_dataset
+from ote_anomalib.data import LabelNames
 from ote_sdk.entities.annotation import (
     Annotation,
     AnnotationSceneEntity,
@@ -68,8 +69,8 @@ class OTEAnomalyDatasetGenerator:
         self.seed = seed
         self.create_validation_set = create_validation_set
 
-        self.normal_label = LabelEntity(name="normal", domain=Domain.ANOMALY_CLASSIFICATION)
-        self.abnormal_label = LabelEntity(name="anomalous", domain=Domain.ANOMALY_CLASSIFICATION)
+        self.normal_label = LabelEntity(name=LabelNames.normal, domain=Domain.ANOMALY_CLASSIFICATION)
+        self.abnormal_label = LabelEntity(name=LabelNames.anomalous, domain=Domain.ANOMALY_CLASSIFICATION)
 
     def get_samples(self) -> DataFrame:
         """

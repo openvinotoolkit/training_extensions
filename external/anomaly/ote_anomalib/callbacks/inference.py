@@ -22,6 +22,7 @@ import numpy as np
 import pytorch_lightning as pl
 from anomalib.core.model.anomaly_module import AnomalyModule
 from anomalib.utils.post_process import anomaly_map_to_color_map
+from ote_anomalib.data import LabelNames
 from ote_sdk.entities.annotation import Annotation
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.label import LabelEntity
@@ -38,8 +39,8 @@ class InferenceCallback(Callback):
 
     def __init__(self, ote_dataset: DatasetEntity, labels: List[LabelEntity]):
         self.ote_dataset = ote_dataset
-        self.normal_label = [label for label in labels if label.name == "normal"][0]
-        self.anomalous_label = [label for label in labels if label.name == "anomalous"][0]
+        self.normal_label = [label for label in labels if label.name == LabelNames.normal][0]
+        self.anomalous_label = [label for label in labels if label.name == LabelNames.anomalous][0]
 
     def on_predict_epoch_end(self, _trainer: pl.Trainer, _pl_module: AnomalyModule, outputs: List[Any]):
         """Called when the predict epoch ends."""
@@ -56,13 +57,16 @@ class InferenceCallback(Callback):
             assigned_label = self.anomalous_label if pred_label else self.normal_label
             shape = Annotation(
                 Rectangle(x1=0, y1=0, x2=1, y2=1),
-                labels=[ScoredLabel(assigned_label, probability=pred_score)],
+                labels=[ScoredLabel(assigned_label, probability=float(pred_score))],
             )
 
             dataset_item.append_annotations([shape])
 
             heatmap = anomaly_map_to_color_map(anomaly_map.squeeze())
             heatmap_media = ResultMediaEntity(
-                name="Anomaly Map", type="anomaly_map", annotation_scene=dataset_item.annotation_scene, numpy=heatmap
+                name="Anomaly Map",
+                type="anomaly_map",
+                annotation_scene=dataset_item.annotation_scene,
+                numpy=heatmap,
             )
             dataset_item.append_metadata_item(heatmap_media)
