@@ -17,9 +17,9 @@ Utils for dynamically importing stuff
 # and limitations under the License.
 
 import io
-import pickle
-
-from ote_sdk.serialization.label_mapper import LabelSchemaMapper
+from ote_sdk.entities.model_template import TaskType
+from ote_sdk.entities.label import Domain, LabelEntity
+from ote_sdk.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
 
 
 def load_model_weights(path):
@@ -38,7 +38,24 @@ def read_label_schema(model_bytes):
     """
     Reads serialized representation from binary snapshot and returns deserialized LabelSchema.
     """
+    
+    import torch
+    return torch.load(io.BytesIO(model_bytes))["label_schema"]
+    
 
-    return LabelSchemaMapper().backward(
-        pickle.load(io.BytesIO(model_bytes))["label_schema"]
-    )
+def generate_label_schema(dataset, task_type):
+    if task_type == TaskType.CLASSIFICATION and dataset.is_multilabel():
+        not_empty_labels = dataset.get_labels()
+        assert len(not_empty_labels) > 1
+        label_schema = LabelSchemaEntity()
+        emptylabel = LabelEntity(name="Empty label", is_empty=True, domain=Domain.CLASSIFICATION)
+        empty_group = LabelGroup(name="empty", labels=[emptylabel], group_type=LabelGroupType.EMPTY_LABEL)
+        single_groups = []
+        for label in not_empty_labels:
+            single_groups.append(LabelGroup(name=label.name, labels=[label], group_type=LabelGroupType.EXCLUSIVE))
+            label_schema.add_group(single_groups[-1])
+        label_schema.add_group(empty_group, exclusive_with=single_groups)
+        return label_schema
+
+    return LabelSchemaEntity.from_labels(dataset.get_labels())
+

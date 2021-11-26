@@ -31,7 +31,7 @@ from ote_cli.datasets import get_dataset_class
 from ote_cli.registry import find_and_parse_model_template
 from ote_cli.utils.config import override_parameters
 from ote_cli.utils.importing import get_impl_class
-from ote_cli.utils.loading import load_model_weights
+from ote_cli.utils.loading import load_model_weights, generate_label_schema
 from ote_cli.utils.parser import (
     add_hyper_parameters_sub_parser,
     gen_params_dict_from_args,
@@ -119,7 +119,7 @@ def main():
     environment = TaskEnvironment(
         model=None,
         hyper_parameters=hyper_parameters,
-        label_schema=LabelSchemaEntity.from_labels(dataset.get_labels()),
+        label_schema=generate_label_schema(dataset, template.task_type),
         model_template=template,
     )
 
