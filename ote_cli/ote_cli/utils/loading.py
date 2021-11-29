@@ -44,12 +44,16 @@ def read_label_schema(model_bytes):
     
 
 def generate_label_schema(dataset, task_type):
+    """
+    Generates label schema depending on task type.
+    """
+
     if task_type == TaskType.CLASSIFICATION and dataset.is_multilabel():
         not_empty_labels = dataset.get_labels()
         assert len(not_empty_labels) > 1
         label_schema = LabelSchemaEntity()
-        emptylabel = LabelEntity(name="Empty label", is_empty=True, domain=Domain.CLASSIFICATION)
-        empty_group = LabelGroup(name="empty", labels=[emptylabel], group_type=LabelGroupType.EMPTY_LABEL)
+        empty_label = LabelEntity(name="Empty label", is_empty=True, domain=Domain.CLASSIFICATION)
+        empty_group = LabelGroup(name="empty", labels=[empty_label], group_type=LabelGroupType.EMPTY_LABEL)
         single_groups = []
         for label in not_empty_labels:
             single_groups.append(LabelGroup(name=label.name, labels=[label], group_type=LabelGroupType.EXCLUSIVE))
