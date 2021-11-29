@@ -42,6 +42,7 @@ from ote_sdk.entities.model_template import (
     task_type_to_label_domain,
 )
 from ote_sdk.tests.constants.ote_sdk_components import OteSdkComponent
+from ote_sdk.tests.constants.requirements import Requirements
 
 
 class CommonMethods:
@@ -106,6 +107,9 @@ class CommonMethods:
 
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestTargetDevice:
+    @pytest.mark.priority_medium
+    @pytest.mark.component
+    @pytest.mark.reqids(Requirements.REQ_1)
     def test_targetdevice(self):
         """
         <b>Description:</b>
@@ -123,6 +127,9 @@ class TestTargetDevice:
 
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestModelOptimizationMethod:
+    @pytest.mark.priority_medium
+    @pytest.mark.component
+    @pytest.mark.reqids(Requirements.REQ_1)
     def test_modeloptymizationmethod(self):
         """
         <b>Description:</b>
@@ -143,6 +150,9 @@ class TestModelOptimizationMethod:
 
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestDatasetRequirements:
+    @pytest.mark.priority_medium
+    @pytest.mark.component
+    @pytest.mark.reqids(Requirements.REQ_1)
     def test_datasetrequirements(self):
         """
         <b>Description:</b>
@@ -162,6 +172,9 @@ class TestDatasetRequirements:
 
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestExportableCodePaths:
+    @pytest.mark.priority_medium
+    @pytest.mark.component
+    @pytest.mark.reqids(Requirements.REQ_1)
     def test_exportablecodepaths(self):
         """
         <b>Description:</b>
@@ -186,6 +199,9 @@ class TestExportableCodePaths:
 
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestTaskFamily:
+    @pytest.mark.priority_medium
+    @pytest.mark.component
+    @pytest.mark.reqids(Requirements.REQ_1)
     def test_taskfamily(self):
         """
         <b>Description:</b>
@@ -208,6 +224,9 @@ class TestTaskFamily:
 
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestTaskType:
+    @pytest.mark.priority_medium
+    @pytest.mark.component
+    @pytest.mark.reqids(Requirements.REQ_1)
     def test_tasktype(self):
         """
         <b>Description:</b>
@@ -245,6 +264,9 @@ class TestTaskType:
         assert str(TaskType.ANOMALY_SEGMENTATION) == "ANOMALY_SEGMENTATION"
         assert str(TaskType.ANOMALY_CLASSIFICATION) == "ANOMALY_CLASSIFICATION"
 
+    @pytest.mark.priority_medium
+    @pytest.mark.component
+    @pytest.mark.reqids(Requirements.REQ_1)
     def test_tasktype_to_label_domain(self):
         """
         <b>Description:</b>
@@ -327,6 +349,9 @@ class TestHyperParameterData:
             elif key == "value":
                 config_content.pop(key)
 
+    @pytest.mark.priority_medium
+    @pytest.mark.component
+    @pytest.mark.reqids(Requirements.REQ_1)
     def test_hyperparameterdata_data(self):
         """
         <b>Description:</b>
@@ -359,6 +384,9 @@ class TestHyperParameterData:
         assert hyper_parameter_data.data == expected_config_data
         remove(model_template_path)
 
+    @pytest.mark.priority_medium
+    @pytest.mark.component
+    @pytest.mark.reqids(Requirements.REQ_1)
     def test_remove_parameter_values_from_data(self):
         """
         <b>Description:</b>
@@ -399,6 +427,9 @@ class TestHyperParameterData:
         assert not search_value_key_in_config(hyper_parameter_data.data)
         remove(model_template_path)
 
+    @pytest.mark.priority_medium
+    @pytest.mark.component
+    @pytest.mark.reqids(Requirements.REQ_1)
     def test_hyperparameterdata_has_overrides(self):
         """
         <b>Description:</b>
@@ -430,6 +461,9 @@ class TestHyperParameterData:
         assert not no_overrides_hyper_parameter_data.has_overrides
         remove(model_template_path)
 
+    @pytest.mark.priority_medium
+    @pytest.mark.component
+    @pytest.mark.reqids(Requirements.REQ_1)
     def test_hyperparameterdata_has_valid_configurable_parameters(self):
         """
         <b>Description:</b>
@@ -473,6 +507,9 @@ class TestHyperParameterData:
         remove(model_template_path)
         remove(incorrect_config_yaml_path)
 
+    @pytest.mark.priority_medium
+    @pytest.mark.component
+    @pytest.mark.reqids(Requirements.REQ_1)
     def test_hyperparameterdata_substitute_parameter_overrides(self):
         """
         <b>Description:</b>
@@ -533,6 +570,9 @@ class TestHyperParameterData:
         with pytest.raises(KeyError):
             hyper_parameter_data.load_parameters(self.model_template_path())
 
+    @pytest.mark.priority_medium
+    @pytest.mark.component
+    @pytest.mark.reqids(Requirements.REQ_1)
     def test_manually_set_data_and_validate(self):
         """
         <b>Description:</b>
@@ -570,6 +610,9 @@ class TestHyperParameterData:
 
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestInstantiationType:
+    @pytest.mark.priority_medium
+    @pytest.mark.component
+    @pytest.mark.reqids(Requirements.REQ_1)
     def test_instantiationtype(self):
         """
         <b>Description:</b>
@@ -613,6 +656,9 @@ class TestDependency:
             "sha256": "q0y3vrh9wcff5lc77epfx08pb6ioredv341u68rp1qvxyl41wzt9tlih94s5273i",
         }
 
+    @pytest.mark.priority_medium
+    @pytest.mark.component
+    @pytest.mark.reqids(Requirements.REQ_1)
     def test_depencdency(self):
         """
         <b>Description:</b>
@@ -664,6 +710,9 @@ class TestDependency:
 
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestEntryPoints:
+    @pytest.mark.priority_medium
+    @pytest.mark.component
+    @pytest.mark.reqids(Requirements.REQ_1)
     def test_entrypoints(self):
         """
         <b>Description:</b>
@@ -781,6 +830,9 @@ class TestModelTemplate:
         optional_parameters["size"] = 1024
         return optional_parameters
 
+    @pytest.mark.priority_medium
+    @pytest.mark.component
+    @pytest.mark.reqids(Requirements.REQ_1)
     def test_model_template_initiation(self):
         """
         <b>Description:</b>
@@ -804,6 +856,9 @@ class TestModelTemplate:
         assert default_model_template != optional_parameters_model
         remove(optional_parameters_model.model_template_path)
 
+    @pytest.mark.priority_medium
+    @pytest.mark.component
+    @pytest.mark.reqids(Requirements.REQ_1)
     def test_model_template_post_initiation(self):
         """
         <b>Description:</b>
@@ -843,6 +898,9 @@ class TestModelTemplate:
         with pytest.raises(ValueError):
             ModelTemplate(**class_not_vision_with_config)
 
+    @pytest.mark.priority_medium
+    @pytest.mark.component
+    @pytest.mark.reqids(Requirements.REQ_1)
     def test_model_template_capabilities(self):
         """
         <b>Description:</b>
@@ -891,6 +949,9 @@ class TestModelTemplate:
         assert not no_score_representations_model.computes_representations()
         remove(score_representations_model.model_template_path)
 
+    @pytest.mark.priority_medium
+    @pytest.mark.component
+    @pytest.mark.reqids(Requirements.REQ_1)
     def test_model_template_is_task_global(self):
         """
         <b>Description:</b>
@@ -925,6 +986,9 @@ class TestModelTemplate:
 
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestNullModelTemplate:
+    @pytest.mark.priority_medium
+    @pytest.mark.component
+    @pytest.mark.reqids(Requirements.REQ_1)
     def test_null_mode_attributes(self):
         """
         <b>Description:</b>
@@ -948,6 +1012,9 @@ class TestNullModelTemplate:
 
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestTaskTypesConstants:
+    @pytest.mark.priority_medium
+    @pytest.mark.component
+    @pytest.mark.reqids(Requirements.REQ_1)
     def test_task_type_constants(self):
         """
         <b>Description:</b>
@@ -973,6 +1040,9 @@ class TestTaskTypesConstants:
 
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestParseModelTemplate:
+    @pytest.mark.priority_medium
+    @pytest.mark.component
+    @pytest.mark.reqids(Requirements.REQ_1)
     def test_parse_model_template_from_omegaconf(self):
         """
         <b>Description:</b>
@@ -1030,6 +1100,9 @@ class TestParseModelTemplate:
             parsed_model_template, expected_parsed_model_parameters
         )
 
+    @pytest.mark.priority_medium
+    @pytest.mark.component
+    @pytest.mark.reqids(Requirements.REQ_1)
     def test_parse_model_template(self):
         """
         <b>Description:</b>
@@ -1076,6 +1149,9 @@ class TestParseModelTemplate:
             parse_model_template(incorrect_model_template_path)
         remove(incorrect_model_template_path)
 
+    @pytest.mark.priority_medium
+    @pytest.mark.component
+    @pytest.mark.reqids(Requirements.REQ_1)
     def test_parse_model_template_from_dict(self):
         """
         <b>Description:</b>
