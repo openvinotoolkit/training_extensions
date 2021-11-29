@@ -1,0 +1,34 @@
+name: Custom Object Detection -- TEST ONLY
+task_type: DETECTION
+task_family: VISION
+instantiation: "CLASS"
+summary: Fast and lightweight object detector.
+application: ~
+
+framework: Test framework
+
+entrypoints:
+  base: base entrypoints
+
+hyper_parameters:
+  base_path: ./dummy_config.yaml
+  parameter_overrides:
+    learning_parameters:
+      batch_size:
+        default_value: 64
+      learning_rate:
+        default_value: 0.05
+      learning_rate_warmup_iters:
+        default_value: 100
+      num_iters:
+        default_value: 13000
+
+max_nodes: 1
+training_targets:
+  - GPU
+  - CPU
+
+inference_targets:
+  - CPU
+  - GPU
+  - VPU
