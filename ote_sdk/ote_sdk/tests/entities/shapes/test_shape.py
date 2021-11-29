@@ -112,15 +112,15 @@ class TestShapeEntity:
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestShape:
     @staticmethod
-    def fully_covering_rectangle():
+    def fully_covering_rectangle() -> Rectangle:
         return Rectangle.generate_full_box()
 
     @staticmethod
-    def fully_covering_ellipse():
+    def fully_covering_ellipse() -> Ellipse:
         return Ellipse(x1=0.0, y1=0.0, x2=1.0, y2=1.0)
 
     @staticmethod
-    def fully_covering_polygon():
+    def fully_covering_polygon() -> Polygon:
         return Polygon(
             [
                 Point(0.0, 0.1),
@@ -133,7 +133,7 @@ class TestShape:
         )
 
     @staticmethod
-    def generate_labels_list(include_empty: bool = True):
+    def generate_labels_list(include_empty: bool = True) -> list:
         classification_label = ScoredLabel(
             LabelEntity(
                 name="classification",
@@ -165,7 +165,7 @@ class TestShape:
         return labels_list
 
     @staticmethod
-    def appendable_label(empty=False):
+    def appendable_label(empty=False) -> ScoredLabel:
         return ScoredLabel(
             LabelEntity(
                 name="appended_label",
@@ -176,17 +176,17 @@ class TestShape:
             )
         )
 
-    def rectangle(self):
+    def rectangle(self) -> Rectangle:
         return Rectangle(
             x1=0.2, y1=0.2, x2=0.6, y2=0.7, labels=self.generate_labels_list()
         )
 
-    def ellipse(self):
+    def ellipse(self) -> Ellipse:
         return Ellipse(
             x1=0.4, y1=0.1, x2=0.9, y2=0.8, labels=self.generate_labels_list()
         )
 
-    def polygon(self):
+    def polygon(self) -> Polygon:
         return Polygon(
             [
                 Point(0.3, 0.4),
@@ -200,15 +200,15 @@ class TestShape:
         )
 
     @staticmethod
-    def not_inscribed_rectangle():
+    def not_inscribed_rectangle() -> Rectangle:
         return Rectangle(x1=0.0, y1=0.0, x2=0.01, y2=0.01)
 
     @staticmethod
-    def not_inscribed_ellipse():
+    def not_inscribed_ellipse() -> Ellipse:
         return Ellipse(x1=0.0, y1=0.0, x2=0.01, y2=0.01)
 
     @staticmethod
-    def not_inscribed_polygon():
+    def not_inscribed_polygon() -> Polygon:
         return Polygon(
             [
                 Point(0.0, 0.0),
@@ -221,7 +221,7 @@ class TestShape:
         )
 
     @staticmethod
-    def base_self_intersect_polygon():
+    def base_self_intersect_polygon() -> Polygon:
         return Polygon(
             [
                 Point(0.3, 0.3),
@@ -234,7 +234,7 @@ class TestShape:
         )
 
     @staticmethod
-    def other_self_intersect_polygon():
+    def other_self_intersect_polygon() -> Polygon:
         return Polygon(
             [
                 Point(0.3, 0.2),
@@ -247,7 +247,7 @@ class TestShape:
         )
 
     @staticmethod
-    def lower_side_intersect_shapes():
+    def lower_side_intersect_shapes() -> list:
         return [
             Rectangle(x1=0.2, y1=0.1, x2=0.5, y2=0.4),
             Polygon(
@@ -263,7 +263,7 @@ class TestShape:
         ]
 
     @staticmethod
-    def upper_side_intersect_shapes():
+    def upper_side_intersect_shapes() -> list:
         return [
             Rectangle(x1=0.2, y1=0.4, x2=0.5, y2=0.7),
             Polygon(

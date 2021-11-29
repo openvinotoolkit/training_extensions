@@ -31,14 +31,14 @@ from ote_sdk.utils.time_utils import now
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestRectangle:
     @staticmethod
-    def horizontal_rectangle_params():
+    def horizontal_rectangle_params() -> dict:
         return {"x1": 0.1, "y1": 0.0, "x2": 0.4, "y2": 0.2}
 
-    def horizontal_rectangle(self):
+    def horizontal_rectangle(self) -> Rectangle:
         return Rectangle(**self.horizontal_rectangle_params())
 
     @staticmethod
-    def vertical_rectangle_params():
+    def vertical_rectangle_params() -> dict:
         return {
             "x1": 0.1,
             "y1": 0.1,
@@ -50,14 +50,14 @@ class TestRectangle:
             ),
         }
 
-    def vertical_rectangle(self):
+    def vertical_rectangle(self) -> Rectangle:
         return Rectangle(**self.vertical_rectangle_params())
 
     @staticmethod
-    def square_params():
+    def square_params() -> dict:
         return {"x1": 0.1, "y1": 0.1, "x2": 0.3, "y2": 0.3}
 
-    def square(self):
+    def square(self) -> Rectangle:
         return Rectangle(**self.square_params())
 
     @pytest.mark.priority_medium
@@ -97,7 +97,7 @@ class TestRectangle:
 
         <b>Expected results:</b>
         Test passes if Rectangle instance has expected labels and modification attributes specified during Rectangle
-        class instance initiation with optional parameters
+        class object initiation with optional parameters
 
         <b>Steps</b>
         1. Compare default label Rectangle instance attribute with expected value
@@ -137,7 +137,7 @@ class TestRectangle:
         Rectangle class initiation parameters
 
         <b>Expected results:</b>
-        Test passes if Rectangle correctly checks coordinates during initiation of Rectangle instance
+        Test passes if Rectangle correctly checks coordinates during initiation of Rectangle object
 
         <b>Steps</b>
         1. Check Rectangle coordinates with correct width and height
@@ -245,7 +245,10 @@ class TestRectangle:
                 for key in rectangle_parameters:
                     unequal_rectangle_params_dict[key] = unequal_values_dict.get(key)
                 unequal_rectangle = Rectangle(**unequal_rectangle_params_dict)
-                assert rectangle != unequal_rectangle
+                assert rectangle != unequal_rectangle, (
+                    "Failed to check that Rectangle instances with different "
+                    f"{rectangle_parameters} are unequal"
+                )
 
     @pytest.mark.priority_medium
     @pytest.mark.component
@@ -355,7 +358,7 @@ class TestRectangle:
         Instance of Rectangle class
 
         <b>Expected results:</b>
-        Test passes if normalize_wrt_roi_shape method return expected instance of Rectangle class
+        Test passes if normalize_wrt_roi_shape method returns expected instance of Rectangle class
 
         <b>Steps</b>
         1. Check values returned by normalized Rectangle instance
@@ -363,16 +366,16 @@ class TestRectangle:
         """
         # Positive scenario
         rectangle = self.horizontal_rectangle()
-        roi_shape = Rectangle(x1=0.0, y1=0.0, x2=0.3, y2=0.2)
+        roi_shape = Rectangle(x1=0.0, y1=0.0, x2=2.1, y2=2.2)
         normalized = rectangle.normalize_wrt_roi_shape(roi_shape)
         rectangle.modification_date = rectangle.modification_date.replace(microsecond=0)
         normalized.modification_date = normalized.modification_date.replace(
             microsecond=0
         )
-        assert normalized.x1 == 0.03
+        assert normalized.x1 == 0.1
         assert normalized.y1 == 0.0
-        assert normalized.x2 == 0.12
-        assert normalized.y2 == 0.04000000000000001
+        assert normalized.x2 == 0.4
+        assert normalized.y2 == 0.2
         assert normalized.modification_date == rectangle.modification_date
         # Negative scenario
         with pytest.raises(ValueError):
@@ -398,16 +401,16 @@ class TestRectangle:
         """
         # Positive scenario
         rectangle = self.horizontal_rectangle()
-        roi_shape = Rectangle(x1=0.2, y1=0.3, x2=0.6, y2=0.6)
+        roi_shape = Rectangle(x1=0.2, y1=0.2, x2=0.4, y2=0.4)
         denormalized = rectangle.denormalize_wrt_roi_shape(roi_shape)
         rectangle.modification_date = rectangle.modification_date.replace(microsecond=0)
         denormalized.modification_date = denormalized.modification_date.replace(
             microsecond=0
         )
-        assert denormalized.x1 == -0.25000000000000006
+        assert denormalized.x1 == -0.5
         assert denormalized.y1 == -1.0
-        assert denormalized.x2 == 0.5000000000000001
-        assert denormalized.y2 == -0.33333333333333326
+        assert denormalized.x2 == 1.0
+        assert denormalized.y2 == 0.0
         assert denormalized.modification_date == rectangle.modification_date
         # Negative scenario
         with pytest.raises(ValueError):
@@ -505,7 +508,10 @@ class TestRectangle:
                 for key in scenario:
                     not_full_box_params[key] = not_full_box_values_dict.get(key)
                 not_full_box_rectangle = Rectangle(**not_full_box_params)
-                assert not Rectangle.is_full_box(not_full_box_rectangle)
+                assert not Rectangle.is_full_box(not_full_box_rectangle), (
+                    f"Expected False returned by is_full_box method for rectangle with parameters "
+                    f"{not_full_box_params}"
+                )
         # Negative scenario for not Rectangle class instance
         assert not Rectangle.is_full_box(str)
 
