@@ -211,7 +211,29 @@ class ClassificationToAnnotationConverter():
         for index, score in predictions:
             labels.append(ScoredLabel(get_label(self.labels_map, index, Domain.CLASSIFICATION), score))
 
+        if labels == [] and metadata.get('empty_label') is not None:
+            labels = [ScoredLabel(metadata['empty_label'], probability=1.)]
         annotations = [Annotation(Rectangle.generate_full_box(), labels=labels)]
+        return AnnotationSceneEntity(
+            kind=AnnotationSceneKind.PREDICTION,
+            annotations=annotations
+        )
+
+
+class AnomalyClassificationToAnnotationConverter():
+    """
+    Converts AnomalyClassification Predictions ModelAPI to Annotations
+    """
+
+    def __init__(self, labels: List[Union[str, LabelEntity]]):
+        self.normal_label, self.anomalous_label = labels
+
+    def convert_to_annotation(self, predictions: np.ndarray, metadata: Dict[str, Any]) -> AnnotationSceneEntity:
+        pred_score = predictions.reshape(-1).max()
+        pred_label = pred_score >= metadata.get('threshold', 0.5)
+        assigned_label = self.anomalous_label if pred_label else self.normal_label
+
+        annotations = [Annotation(Rectangle.generate_full_box(), labels=[ScoredLabel(assigned_label, probability=pred_score)])]
         return AnnotationSceneEntity(
             kind=AnnotationSceneKind.PREDICTION,
             annotations=annotations
