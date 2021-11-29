@@ -147,7 +147,7 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
         model_info = {
             "model": self.model.state_dict(),
             "config": config,
-            "labels": labels,
+            "label_schema": self.task_environment.label_schema,
             "VERSION": 1,
         }
         buffer = io.BytesIO()
