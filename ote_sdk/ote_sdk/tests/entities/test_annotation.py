@@ -122,7 +122,7 @@ class TestAnnotation:
         Check Annotation __repr__, __eq__ methods
 
         <b>Input data:</b>
-        Initiated instance of Annotation
+        Initialized instance of Annotation
 
         <b>Expected results:</b>
         Test passes if Annotation magic methods returns correct values
@@ -158,7 +158,7 @@ class TestAnnotation:
         Check Annotation get_labels method
 
         <b>Input data:</b>
-        Initiated instance of Annotation
+        Initialized instance of Annotation
 
         <b>Expected results:</b>
         Test passes if Annotation get_labels method returns correct values
@@ -200,7 +200,7 @@ class TestAnnotation:
         Check Annotation get_label_ids method
 
         <b>Input data:</b>
-        Initiated instance of Annotation
+        Initialized instance of Annotation
 
         <b>Expected results:</b>
         Test passes if Annotation get_label_ids method returns correct values
@@ -228,7 +228,7 @@ class TestAnnotation:
         Check Annotation append_label method
 
         <b>Input data:</b>
-        Initiated instance of Annotation
+        Initialized instance of Annotation
 
         <b>Expected results:</b>
         Test passes if Annotation append_label method correct appending label
@@ -256,7 +256,7 @@ class TestAnnotation:
         Check Annotation set_labels method
 
         <b>Input data:</b>
-        Initiated instance of Annotation
+        Initialized instance of Annotation
 
         <b>Expected results:</b>
         Test passes if Annotation set_labels method correct setting label
@@ -403,7 +403,7 @@ class TestAnnotationSceneEntity:
         Check Annotation __repr__ method
 
         <b>Input data:</b>
-        Initiated instance of AnnotationSceneEntity
+        Initialized instance of AnnotationSceneEntity
 
         <b>Expected results:</b>
         Test passes if AnnotationSceneEntity magic method returns correct values
@@ -436,7 +436,7 @@ class TestAnnotationSceneEntity:
         Check Annotation contains_any method
 
         <b>Input data:</b>
-        Initiated instance of AnnotationSceneEntity
+        Initialized instance of AnnotationSceneEntity
 
         <b>Expected results:</b>
         Test passes if AnnotationSceneEntity contains_any method returns correct values
@@ -477,7 +477,7 @@ class TestAnnotationSceneEntity:
         Check Annotation append_annotation method
 
         <b>Input data:</b>
-        Initiated instance of AnnotationSceneEntity
+        Initialized instance of AnnotationSceneEntity
 
         <b>Expected results:</b>
         Test passes if AnnotationSceneEntity append_annotation method returns correct values
@@ -508,7 +508,7 @@ class TestAnnotationSceneEntity:
         Check Annotation append_annotations method
 
         <b>Input data:</b>
-        Initiated instance of AnnotationSceneEntity
+        Initialized instance of AnnotationSceneEntity
 
         <b>Expected results:</b>
         Test passes if AnnotationSceneEntity append_annotations method returns correct values
@@ -532,7 +532,7 @@ class TestAnnotationSceneEntity:
         Check Annotation get_labels method
 
         <b>Input data:</b>
-        Initiated instance of AnnotationSceneEntity
+        Initialized instance of AnnotationSceneEntity
 
         <b>Expected results:</b>
         Test passes if AnnotationSceneEntity get_labels method returns correct values
@@ -556,7 +556,7 @@ class TestAnnotationSceneEntity:
         Check Annotation get_label_ids method
 
         <b>Input data:</b>
-        Initiated instance of AnnotationSceneEntity
+        Initialized instance of AnnotationSceneEntity
 
         <b>Expected results:</b>
         Test passes if AnnotationSceneEntity get_label_ids method returns correct values
