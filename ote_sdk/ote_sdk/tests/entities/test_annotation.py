@@ -38,18 +38,18 @@ from ote_sdk.tests.constants.requirements import Requirements
 class TestAnnotation:
 
     rectangle = Rectangle(x1=0.5, x2=1.0, y1=0.0, y2=0.5)
-    labels = []  # type: List[ScoredLabel]
+    labels: List[ScoredLabel] = []
     annotation = Annotation(shape=rectangle, labels=labels)
 
     car = LabelEntity(
-        id=123456789,  # type: ignore
+        id=ID(123456789),
         name="car",
         domain=Domain.DETECTION,
         color=Color(red=16, green=15, blue=56, alpha=255),
         is_empty=True,
     )
     person = LabelEntity(
-        id=987654321,  # type: ignore
+        id=ID(987654321),
         name="person",
         domain=Domain.DETECTION,
         color=Color(red=11, green=18, blue=38, alpha=200),
@@ -213,8 +213,11 @@ class TestAnnotation:
 
         annotation = Annotation(shape=self.rectangle, labels=self.labels2)
 
-        assert annotation.get_label_ids() == {987654321}
-        assert annotation.get_label_ids(include_empty=True) == {987654321, 123456789}
+        assert annotation.get_label_ids() == {ID(987654321)}
+        assert annotation.get_label_ids(include_empty=True) == {
+            ID(987654321),
+            ID(123456789),
+        }
 
     @pytest.mark.priority_medium
     @pytest.mark.component
@@ -310,7 +313,7 @@ class TestAnnotationSceneKind:
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestAnnotationSceneEntity:
 
-    labels = []  # type: List[ScoredLabel]
+    labels: List[ScoredLabel] = []
     rectangle = Rectangle(x1=0.5, x2=1.0, y1=0.0, y2=0.5)
     annotation = Annotation(shape=rectangle, labels=labels)
 
