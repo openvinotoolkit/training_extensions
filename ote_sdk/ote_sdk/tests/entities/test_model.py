@@ -313,7 +313,7 @@ class TestModelEntity:
             "previous_revision": 2,
             "version": 2,
             "tags": ["tree", "person"],
-            "model_status": ModelStatus.WEIGHTS_INITIALIZED,
+            "model_status": ModelStatus.TRAINED_NO_STATS,
             "model_format": ModelFormat.BASE_FRAMEWORK,
             "performance": Performance(score_metric),
             "training_duration": 5.8,
