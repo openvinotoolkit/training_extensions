@@ -30,11 +30,11 @@ from ote_sdk.configuration.enums.config_element_type import ConfigElementType
 from .types import Action, Operator
 from .utils import attr_convert_action, attr_convert_operator
 
-ALLOWED_RULE_VALUE_TYPES = Union[int, str, float, bool]
+ALLOWED_RULE_VALUE_TYPES = Union[int, str, float, bool]  # pylint: disable=invalid-name
 
 
 @attrs(auto_attribs=True)
-class Rule(object):
+class Rule:
     """
     This class represents a `operator` applied to the `value` of the configurable parameter `parameter`. The parameter
     for which the rule should be evaluated is identified by name, or by a list of names representing the attribute path
@@ -65,7 +65,7 @@ class Rule(object):
 
 
 @attrs(auto_attribs=True)
-class UIRules(object):
+class UIRules:
     """
     This class allows the combination of ExposureRules using boolean logic. The class can be set as an attribute of a
     configurable parameter. If the `rules` (combined according to the `operator`) evaluate to True, the corresponding
@@ -84,6 +84,7 @@ class UIRules(object):
     )
 
     def add_rule(self, rule: Union[Rule, UIRules]):
+        """Adds rule."""
         self.rules.append(rule)
 
     def to_dict(self, enum_to_str: bool = True) -> dict:

@@ -32,27 +32,27 @@ inference.
    ```bash
    find external/ -name init_venv.sh
    ```
-   
+
    Approximate output:
    ```
    external/mmdetection/init_venv.sh
    external/mmsegmentation/init_venv.sh
    external/deep-object-reid/init_venv.sh
    ```
-   
+
 4. Let's create, activate Object Detection virtual environment and install `ote_cli`:
    ```
    ./external/mmdetection/init_venv.sh det_venv
    source det_venv/bin/activate
    pip3 install -e ote_cli/
    ```
-   
+
 ### OTE CLI tools
 1. Have a look at model templates available for this virtual environment:
    ```
-   ote_find --root ./external/mmdetection/
+   ote find --root ./external/mmdetection/
    ```
-   
+
    Approximate output:
    ```
    - framework: OTEDetection_v2.9.1
@@ -71,15 +71,15 @@ inference.
    ```
    Let's choose `./external/mmdetection/configs/ote/custom-object-detection/gen3_mobilenetV2_ATSS/template.yaml`
 
-2. Let's have a look at `ote_train` help. These parameters are the same for all model templates.
+2. Let's have a look at `ote train` help. These parameters are the same for all model templates.
    ```
-   ote_train ./external/mmdetection/configs/ote/custom-object-detection/gen3_mobilenetV2_ATSS/template.yaml --help
+   ote train ./external/mmdetection/configs/ote/custom-object-detection/gen3_mobilenetV2_ATSS/template.yaml --help
    ```
-   
+
    Approximate output:
    ```
-   ote_train ./external/mmdetection/configs/ote/custom-object-detection/gen3_mobilenetV2_ATSS/template.yaml --help
-   usage: ote_train [-h] --train-ann-files TRAIN_ANN_FILES --train-data-roots TRAIN_DATA_ROOTS --val-ann-files VAL_ANN_FILES --val-data-roots VAL_DATA_ROOTS [--load-weights    LOAD_WEIGHTS] --save-weights
+   ote train ./external/mmdetection/configs/ote/custom-object-detection/gen3_mobilenetV2_ATSS/template.yaml --help
+   usage: ote train [-h] --train-ann-files TRAIN_ANN_FILES --train-data-roots TRAIN_DATA_ROOTS --val-ann-files VAL_ANN_FILES --val-data-roots VAL_DATA_ROOTS [--load-weights    LOAD_WEIGHTS] --save-weights
                     SAVE_WEIGHTS
                     template {params} ...
 
@@ -103,19 +103,19 @@ inference.
      --save-weights SAVE_WEIGHTS
                            Location to store wiehgts.
    ```
-                        
-3. Let's have a look at `ote_train` hyper parameters help. These parameters are model template specific.
+
+3. Let's have a look at `ote train` hyper parameters help. These parameters are model template specific.
    ```
-   ote_train ./external/mmdetection/configs/ote/custom-object-detection/gen3_mobilenetV2_ATSS/template.yaml params --help
+   ote train ./external/mmdetection/configs/ote/custom-object-detection/gen3_mobilenetV2_ATSS/template.yaml params --help
    ```
-   
+
    Approximate output:
    ```
-   usage: ote_train template params [-h] [--learning_parameters.batch_size BATCH_SIZE] [--learning_parameters.learning_rate LEARNING_RATE]
+   usage: ote train template params [-h] [--learning_parameters.batch_size BATCH_SIZE] [--learning_parameters.learning_rate LEARNING_RATE]
                                    [--learning_parameters.learning_rate_warmup_iters LEARNING_RATE_WARMUP_ITERS] [--learning_parameters.num_iters NUM_ITERS]
                                    [--postprocessing.confidence_threshold CONFIDENCE_THRESHOLD] [--postprocessing.result_based_confidence_threshold RESULT_BASED_CONFIDENCE_THRESHOLD]
                                    [--nncf_optimization.enable_quantization ENABLE_QUANTIZATION] [--nncf_optimization.enable_pruning ENABLE_PRUNING]
-    
+
    optional arguments:
    -h, --help            show this help message and exit
    --learning_parameters.batch_size BATCH_SIZE
@@ -161,15 +161,15 @@ inference.
                          type: BOOLEAN
                          default_value: False
    ```
-4. Let's have a look at `ote_eval` help. These parameters are the same for all model templates.
+4. Let's have a look at `ote eval` help. These parameters are the same for all model templates.
    ```
-   ote_eval ./external/mmdetection/configs/ote/custom-object-detection/gen3_mobilenetV2_ATSS/template.yaml --help
+   ote eval ./external/mmdetection/configs/ote/custom-object-detection/gen3_mobilenetV2_ATSS/template.yaml --help
    ```
-   
+
    Approximate output:
    ```
-   usage: ote_eval [-h] --test-ann-files TEST_ANN_FILES --test-data-roots TEST_DATA_ROOTS --load-weights LOAD_WEIGHTS template {params} ...
-    
+   usage: ote eval [-h] --test-ann-files TEST_ANN_FILES --test-data-roots TEST_DATA_ROOTS --load-weights LOAD_WEIGHTS template {params} ...
+
    positional arguments:
      template
      {params}              sub-command help
@@ -185,14 +185,14 @@ inference.
                            Load only weights from previously saved checkpoint
    ```
 
-5. Let's have a look at `ote_export` help. These parameters are the same for all model templates.
+5. Let's have a look at `ote export` help. These parameters are the same for all model templates.
    ```
-   ote_export ./external/mmdetection/configs/ote/custom-object-detection/gen3_mobilenetV2_ATSS/template.yaml --help
+   ote export ./external/mmdetection/configs/ote/custom-object-detection/gen3_mobilenetV2_ATSS/template.yaml --help
    ```
-   
+
    Approximate output:
    ```
-   usage: ote_export [-h] --load-weights LOAD_WEIGHTS --save-model-to SAVE_MODEL_TO [--ann-files ANN_FILES] [--labels LABELS [LABELS ...]] template
+   usage: ote export [-h] --load-weights LOAD_WEIGHTS --save-model-to SAVE_MODEL_TO [--ann-files ANN_FILES] [--labels LABELS [LABELS ...]] template
 
    positional arguments:
      template
@@ -212,7 +212,7 @@ One can use Jupyter notebooks or OTE CLI tools to start working with models:
 ```
 pip3 install notebook; cd ote_cli/notebooks/; jupyter notebook
 ```
-  
+
 ## Misc
 
 Models that were previously developed can be found [here](misc).

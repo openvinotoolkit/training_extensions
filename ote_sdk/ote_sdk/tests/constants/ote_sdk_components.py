@@ -1,3 +1,7 @@
+"""
+OTE SDK components markers.
+"""
+
 # INTEL CONFIDENTIAL
 #
 # Copyright (C) 2021 Intel Corporation
@@ -12,13 +16,20 @@
 # with no express or implied warranties, other than those that are expressly stated
 # in the License.
 
+
 try:
     from e2e.markers.mark_meta import MarkMeta
 except ImportError:
 
     class MarkMeta:  # type: ignore[no-redef]
-        pass
+        """
+        Empty marker.
+        """
 
 
 class OteSdkComponent(MarkMeta):
+    """
+    OTE SDK Component marker.
+    """
+
     OTE_SDK = "ote_sdk"

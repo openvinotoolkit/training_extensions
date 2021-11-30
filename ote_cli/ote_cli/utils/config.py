@@ -18,15 +18,19 @@ Utils for working with Configurable parameters
 
 
 def override_parameters(overrides, parameters):
+    """
+    Overrides parameters values by overrides.
+    """
+
     allowed_keys = {"default_value", "value"}
-    for k, v in overrides.items():
-        if isinstance(v, dict):
+    for k, val in overrides.items():
+        if isinstance(val, dict):
             if k in parameters.keys():
-                override_parameters(v, parameters[k])
+                override_parameters(val, parameters[k])
             else:
                 raise ValueError(f'The "{k}" is not in original parameters.')
         else:
             if k in allowed_keys:
-                parameters[k] = v
+                parameters[k] = val
             else:
                 raise ValueError(f'The "{k}" is not in allowed_keys: {allowed_keys}')
