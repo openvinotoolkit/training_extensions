@@ -124,13 +124,13 @@ class TestEllipse:
         Check Ellipse __repr__, __eq__, __hash__ methods
 
         <b>Input data:</b>
-        Initiated instance of Ellipse
+        Initialized instance of Ellipse
 
         <b>Expected results:</b>
         Test passes if Ellipse magic methods returns correct values
 
         <b>Steps</b>
-        1. Initiate Ellipse instance
+        1. Initialize Ellipse instance
         2. Check returning value of magic methods
         """
 
@@ -176,14 +176,14 @@ class TestEllipse:
         Check Ellipse normalize_wrt_roi_shape methods
 
         <b>Input data:</b>
-        Initiated instance of Ellipse
-        Initiated instance of Rectangle
+        Initialized instance of Ellipse
+        Initialized instance of Rectangle
 
         <b>Expected results:</b>
         Test passes if Ellipse normalize_wrt_roi_shape returns correct values
 
         <b>Steps</b>
-        1. Initiate Ellipse instance
+        1. Initialize Ellipse instance
         2. Check returning value
         """
 
@@ -207,14 +207,14 @@ class TestEllipse:
         Check Ellipse denormalize_wrt_roi_shape methods
 
         <b>Input data:</b>
-        Initiated instance of Ellipse
-        Initiated instance of Rectangle
+        Initialized instance of Ellipse
+        Initialized instance of Rectangle
 
         <b>Expected results:</b>
         Test passes if Ellipse denormalize_wrt_roi_shape returns correct values
 
         <b>Steps</b>
-        1. Initiate Ellipse instance
+        1. Initialize Ellipse instance
         2. Check returning value
         """
 
@@ -238,13 +238,13 @@ class TestEllipse:
         Check Ellipse get_evenly_distributed_ellipse_coordinates methods
 
         <b>Input data:</b>
-        Initiated instance of Ellipse
+        Initialized instance of Ellipse
 
         <b>Expected results:</b>
         Test passes if Ellipse get_evenly_distributed_ellipse_coordinates returns correct values
 
         <b>Steps</b>
-        1. Initiate Ellipse instance
+        1. Initialize Ellipse instance
         2. Check returning value
         """
 
@@ -279,13 +279,13 @@ class TestEllipse:
         Check Ellipse _as_shapely_polygon methods
 
         <b>Input data:</b>
-        Initiated instance of Ellipse
+        Initialized instance of Ellipse
 
         <b>Expected results:</b>
         Test passes if Ellipse _as_shapely_polygon returns correct values
 
         <b>Steps</b>
-        1. Initiate Ellipse instance
+        1. Initialize Ellipse instance
         2. Check returning value
         """
 
@@ -303,13 +303,13 @@ class TestEllipse:
         Check Ellipse get_area methods
 
         <b>Input data:</b>
-        Initiated instance of Ellipse
+        Initialized instance of Ellipse
 
         <b>Expected results:</b>
         Test passes if Ellipse get_area returns correct values
 
         <b>Steps</b>
-        1. Initiate Ellipse instance
+        1. Initialize Ellipse instance
         2. Check returning value
         """
 

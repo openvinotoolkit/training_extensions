@@ -46,13 +46,13 @@ class TestPoint:
         Check Point __repr__, __eq__ methods
 
         <b>Input data:</b>
-        Initiated instance of Point
+        Initialized instance of Point
 
         <b>Expected results:</b>
         Test passes if Point magic methods returns correct values
 
         <b>Steps</b>
-        1. Initiate Point instance
+        1. Initialize Point instance
         2. Check returning value of magic methods
         """
 
@@ -74,14 +74,14 @@ class TestPoint:
         Check Point normalize_wrt_roi methods
 
         <b>Input data:</b>
-        Initiated instance of Point
-        Initiated instance of Rectangle
+        Initialized instance of Point
+        Initialized instance of Rectangle
 
         <b>Expected results:</b>
         Test passes if Point normalize_wrt_roi returns correct values
 
         <b>Steps</b>
-        1. Initiate Point instance
+        1. Initialize Point instance
         2. Check returning value
         """
 
@@ -100,14 +100,14 @@ class TestPoint:
         Check Point denormalize_wrt_roi_shape methods
 
         <b>Input data:</b>
-        Initiated instance of Point
-        Initiated instance of Rectangle
+        Initialized instance of Point
+        Initialized instance of Rectangle
 
         <b>Expected results:</b>
         Test passes if Point denormalize_wrt_roi_shape returns correct values
 
         <b>Steps</b>
-        1. Initiate Point instance
+        1. Initialize Point instance
         2. Check returning value
         """
 
@@ -181,13 +181,13 @@ class TestPolygon:
         Check Polygon __repr__, __eq__, __hash__ methods
 
         <b>Input data:</b>
-        Initiated instance of Polygon
+        Initialized instance of Polygon
 
         <b>Expected results:</b>
         Test passes if Polygon magic methods returns correct values
 
         <b>Steps</b>
-        1. Initiate Polygon instance
+        1. Initialize Polygon instance
         2. Check returning value of magic methods
         """
 
@@ -218,14 +218,14 @@ class TestPolygon:
         Check Polygon normalize_wrt_roi_shape methods
 
         <b>Input data:</b>
-        Initiated instance of Polygon
-        Initiated instance of Rectangle
+        Initialized instance of Polygon
+        Initialized instance of Rectangle
 
         <b>Expected results:</b>
         Test passes if Polygon normalize_wrt_roi_shape returns correct values
 
         <b>Steps</b>
-        1. Initiate Polygon instance
+        1. Initialize Polygon instance
         2. Check returning value
         """
 
@@ -250,14 +250,14 @@ class TestPolygon:
         Check Polygon denormalize_wrt_roi_shape methods
 
         <b>Input data:</b>
-        Initiated instance of Polygon
-        Initiated instance of Rectangle
+        Initialized instance of Polygon
+        Initialized instance of Rectangle
 
         <b>Expected results:</b>
         Test passes if Polygon denormalize_wrt_roi_shape returns correct values
 
         <b>Steps</b>
-        1. Initiate Polygon instance
+        1. Initialize Polygon instance
         2. Check returning value
         """
 
@@ -282,13 +282,13 @@ class TestPolygon:
         Check Polygon _as_shapely_polygon methods
 
         <b>Input data:</b>
-        Initiated instance of Polygon
+        Initialized instance of Polygon
 
         <b>Expected results:</b>
         Test passes if Polygon _as_shapely_polygon returns correct values
 
         <b>Steps</b>
-        1. Initiate Polygon instance
+        1. Initialize Polygon instance
         2. Check returning value
         """
 
@@ -309,13 +309,13 @@ class TestPolygon:
         Check Polygon get_area method
 
         <b>Input data:</b>
-        Initiated instance of Polygon
+        Initialized instance of Polygon
 
         <b>Expected results:</b>
         Test passes if Polygon get_area returns correct values
 
         <b>Steps</b>
-        1. Initiate Polygon instance
+        1. Initialize Polygon instance
         2. Check returning value
         """
 
