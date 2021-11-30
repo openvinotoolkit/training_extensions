@@ -1,45 +1,87 @@
 default_language_version:
-    python: python3.8
-files: "\
-        ote_sdk"
-repos:
--   repo: https://github.com/PyCQA/isort
-    rev: '5.9.2'
-    hooks:
-    -   id: isort
-        args: ["--settings", ".isort.cfg"]
+  python: python3.8
 
--   repo: https://github.com/psf/black
+repos:
+  - repo: https://github.com/PyCQA/isort
+    rev: "5.9.2"
+    hooks:
+      - id: isort
+        alias: isort_ote_sdk
+        name: "isort (ote_sdk)"
+        args: ["--settings", "ote_sdk/.isort.cfg"]
+        files: '^ote_sdk/.*\.py'
+      - id: isort
+        alias: isort_rest
+        name: "isort (ote_cli|external)"
+        args: ["--settings", ".isort.cfg"]
+        files: '^(ote_cli|external)/.*\.py'
+
+  - repo: https://github.com/psf/black
     rev: 21.7b0
     hooks:
-    -   id: black
-        name: 'black'
-        files: '^ote_sdk/.*\.py'
+      - id: black
+        name: "black (ote_sdk|ote_cli)"
+        args: [--line-length, "88"]
+        files: '^(ote_sdk|ote_cli)/.*\.py'
+      - id: black
+        name: "black (rest)"
+        args: [--line-length, "120"]
+        files: '^external/.*\.py'
 
--   repo: https://github.com/PyCQA/flake8
-    rev: '3.9.2'
+  - repo: https://github.com/PyCQA/flake8
+    rev: "3.9.2"
     hooks:
-    -   id: flake8
-        name: 'flake8'
-        files: '^ote_sdk/.*\.py'
+      - id: flake8
+        name: "flake8"
+        files: '^(ote_sdk|ote_cli|external)/.*\.py'
         args: ["--config", ".flake8", "--max-complexity", "20"]
         exclude: ".*/protobuf"
 
--   repo: https://github.com/pre-commit/mirrors-mypy
-    rev: 'v0.812'
+  # yaml formatting
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v2.3.0
     hooks:
-    -   id: mypy
-        name: 'mypy'
+      - id: prettier
+        types: [yaml]
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: "v0.812"
+    hooks:
+      - id: mypy
+        alias: mypy_ote_sdk
+        name: "mypy (ote_sdk)"
         files: '^ote_sdk/.*\.py'
         args: ["--config-file=ote_sdk/.mypy.ini"]
-        additional_dependencies: [numpy==1.19.5, types-PyYAML, attrs==21.2.*, types-requests, types-Deprecated, types-docutils, types_futures, types-python-dateutil]
+        additional_dependencies:
+          [
+            numpy==1.19.5,
+            types-PyYAML,
+            attrs==21.2.*,
+            types-requests,
+            types-Deprecated,
+            types-docutils,
+            types_futures,
+            types-python-dateutil,
+          ]
+      - id: mypy
+        alias: mypy_ote_cli
+        name: "mypy (ote_cli)"
+        files: '^ote_cli/.*\.py'
+        args: ["--config-file=ote_sdk/.mypy.ini"]
+      - id: mypy
+        alias: mypy_rest
+        name: "mypy (external)"
+        files: '^external/.*\.py'
+        args: ["--config-file=ote_sdk/.mypy.ini"]
 
--   repo: local
+  - repo: local
     hooks:
-    -   id: pylint
-        name: 'pylint'
-        files: '^ote_sdk/.*\.py'
+      - id: pylint
+        name: "pylint"
+        files: '^(ote_sdk|ote_cli|external)/.*\.py'
         entry: pylint
         language: system
         types: [python]
-        args: ["--score=no", "--rcfile=./ote_sdk/.pylintrc"]
+        args: ["--score=no", "--rcfile=.pylintrc"]
+        exclude: "\
+          usecases/exportable_code|tests"

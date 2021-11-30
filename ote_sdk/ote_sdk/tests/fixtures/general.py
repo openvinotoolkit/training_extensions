@@ -1,3 +1,7 @@
+"""
+General fixtures.
+"""
+
 # INTEL CONFIDENTIAL
 #
 # Copyright (C) 2021 Intel Corporation
@@ -19,4 +23,8 @@ from ote_sdk.tests.test_helpers import LabelSchemaExample
 
 @pytest.fixture(scope="session")
 def label_schema_example():
+    """
+    Returns a label schema example.
+    """
+
     return LabelSchemaExample()

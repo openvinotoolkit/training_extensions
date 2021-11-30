@@ -1,3 +1,7 @@
+"""
+Model templates searching tool.
+"""
+
 # Copyright (C) 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,6 +22,10 @@ from ote_cli.registry import Registry
 
 
 def parse_args():
+    """
+    Parses command line arguments.
+    """
+
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--root", help="A root dir where templates should be searched.", default="."
@@ -28,6 +36,10 @@ def parse_args():
 
 
 def main():
+    """
+    Main function for model templates searching.
+    """
+
     args = parse_args()
 
     registry = Registry(args.root)
