@@ -1,3 +1,7 @@
+"""
+Initialization of demo package
+"""
+
 # INTEL CONFIDENTIAL
 #
 # Copyright (C) 2021 Intel Corporation
@@ -15,7 +19,4 @@
 from .sync import SyncDemo
 from .utils import create_model
 
-__all__ = [
-    'SyncDemo',
-    'create_model'
-]
+__all__ = ["SyncDemo", "create_model"]
