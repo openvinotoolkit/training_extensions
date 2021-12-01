@@ -39,10 +39,10 @@ def test_color_serialization():
     blue = randint(0, 255)
     alpha = randint(0, 255)
     color = Color(red, green, blue, alpha)
-    serialized = ColorMapper().forward(color)
+    serialized = ColorMapper.forward(color)
     assert serialized == {"red": red, "green": green, "blue": blue, "alpha": alpha}
 
-    deserialized = ColorMapper().backward(serialized)
+    deserialized = ColorMapper.backward(serialized)
     assert color == deserialized
 
 
@@ -67,7 +67,7 @@ def test_label_entity_serialization():
         is_empty=False,
         id=ID("0000213"),
     )
-    serialized = LabelMapper().forward(label)
+    serialized = LabelMapper.forward(label)
 
     assert serialized == {
         "_id": "0000213",
@@ -79,7 +79,7 @@ def test_label_entity_serialization():
         "is_empty": False,
     }
 
-    deserialized = LabelMapper().backward(serialized)
+    deserialized = LabelMapper.backward(serialized)
     assert label == deserialized
 
 
@@ -106,7 +106,7 @@ def test_flat_label_schema_serialization():
         for i, name in enumerate(names)
     ]
     label_shema = LabelSchemaEntity.from_labels(labels)
-    serialized = LabelSchemaMapper().forward(label_shema)
+    serialized = LabelSchemaMapper.forward(label_shema)
 
     assert serialized == {
         "label_tree": {"type": "tree", "directed": True, "nodes": [], "edges": []},
@@ -128,7 +128,7 @@ def test_flat_label_schema_serialization():
             "0": {
                 "_id": "0",
                 "name": "cat",
-                "color": ColorMapper().forward(colors[0]),
+                "color": ColorMapper.forward(colors[0]),
                 "hotkey": "",
                 "domain": "CLASSIFICATION",
                 "creation_date": cur_date,
@@ -137,7 +137,7 @@ def test_flat_label_schema_serialization():
             "1": {
                 "_id": "1",
                 "name": "dog",
-                "color": ColorMapper().forward(colors[1]),
+                "color": ColorMapper.forward(colors[1]),
                 "hotkey": "",
                 "domain": "CLASSIFICATION",
                 "creation_date": cur_date,
@@ -146,7 +146,7 @@ def test_flat_label_schema_serialization():
             "2": {
                 "_id": "2",
                 "name": "mouse",
-                "color": ColorMapper().forward(colors[2]),
+                "color": ColorMapper.forward(colors[2]),
                 "hotkey": "",
                 "domain": "CLASSIFICATION",
                 "creation_date": cur_date,
@@ -154,3 +154,6 @@ def test_flat_label_schema_serialization():
             },
         },
     }
+
+    deserialized = LabelSchemaMapper.backward(serialized)
+    assert label_shema == deserialized

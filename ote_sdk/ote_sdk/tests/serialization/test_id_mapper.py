@@ -26,7 +26,7 @@ def test_serialized_representiaton():
     """
 
     id = ID("21434231456")
-    serialized_id = IDMapper().forward(id)
+    serialized_id = IDMapper.forward(id)
     assert serialized_id == "21434231456"
 
 
@@ -36,6 +36,6 @@ def test_serialization_deserialization():
     """
 
     id = ID("21434231456")
-    serialized_id = IDMapper().forward(id)
-    deserialized_id = IDMapper().backward(serialized_id)
+    serialized_id = IDMapper.forward(id)
+    deserialized_id = IDMapper.backward(serialized_id)
     assert id == deserialized_id
