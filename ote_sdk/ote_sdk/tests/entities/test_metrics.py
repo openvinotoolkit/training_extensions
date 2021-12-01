@@ -67,7 +67,6 @@ class TestMetrics:
             name="test matrix", matrix_values=matrix_data_with_zero_sum, normalize=True
         )
 
-    # todo: implement tests for the metrics
     @pytest.mark.priority_medium
     @pytest.mark.component
     @pytest.mark.reqids(Requirements.REQ_1)
