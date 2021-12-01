@@ -1,3 +1,6 @@
+"""
+Visualizer for results of prediction
+"""
 # INTEL CONFIDENTIAL
 #
 # Copyright (C) 2021 Intel Corporation
@@ -15,7 +18,6 @@
 from typing import Optional
 
 import cv2
-
 import numpy as np
 
 from ote_sdk.entities.annotation import AnnotationSceneEntity
@@ -48,7 +50,9 @@ class Visualizer:
 
         self.delay = delay
         if delay is None:
-            self.delay = 0 if (media_type is None or media_type == MediaType.image) else 1
+            self.delay = (
+                0 if (media_type is None or media_type == MediaType.image) else 1
+            )
 
     def draw(self, image: np.ndarray, annotation: AnnotationSceneEntity) -> np.ndarray:
         """

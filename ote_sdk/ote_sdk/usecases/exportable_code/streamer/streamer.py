@@ -21,10 +21,8 @@ from pathlib import Path
 from typing import Iterable, Iterator, List, NamedTuple, Optional, Tuple, Union
 
 import cv2
-
-from natsort import natsorted
-
 import numpy as np
+from natsort import natsorted
 
 
 class MediaType(Enum):

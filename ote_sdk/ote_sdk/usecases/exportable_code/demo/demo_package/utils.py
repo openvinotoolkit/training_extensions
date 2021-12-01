@@ -1,3 +1,6 @@
+"""
+Utils for demo
+"""
 # INTEL CONFIDENTIAL
 #
 # Copyright (C) 2021 Intel Corporation
@@ -16,47 +19,76 @@ import importlib
 import json
 import os
 from pathlib import Path
+
 from openvino.model_zoo.model_api import models, pipelines
-from openvino.model_zoo.model_api.adapters import create_core, OpenvinoAdapter
+from openvino.model_zoo.model_api.adapters import OpenvinoAdapter, create_core
+
 from ote_sdk.entities.label import Domain
-from ote_sdk.usecases.exportable_code.prediction_to_annotation_converter import create_converter
+from ote_sdk.usecases.exportable_code.prediction_to_annotation_converter import (
+    create_converter,
+)
+
 
 def get_model_path(path):
+    """
+    Get path to model
+    """
     model_path = path
     if model_path is None:
-        model_path = Path(__file__).parent / 'model.xml'
+        model_path = Path(__file__).parent / "model.xml"
         if not os.path.exists(model_path):
             raise IOError("The path to the model was not found.")
 
     return model_path
 
+
 def get_parameters(path):
+    """
+    Get hyper parameters to creating model
+    """
     parameters_path = path
     if parameters_path is None:
-        parameters_path = Path(__file__).parent / 'config.json'
+        parameters_path = Path(__file__).parent / "config.json"
         if not os.path.exists(parameters_path):
             raise IOError("The path to the config was not found.")
 
-    with open(parameters_path, 'r') as f:
-        parameters = json.load(f)
+    with open(parameters_path, "r") as file:
+        parameters = json.load(file)
 
     return parameters
 
+
 def create_model(infer_parameters, model_path=None, config_file=None):
-    plugin_config = pipelines.get_user_config(infer_parameters.device, infer_parameters.streams, infer_parameters.threads)
-    model_adapter = OpenvinoAdapter(create_core(), get_model_path(model_path), device=infer_parameters.device,
-                                    plugin_config=plugin_config, max_num_requests=infer_parameters.infer_requests)
+    """
+    Create model using ModelAPI fabric
+    """
+    plugin_config = pipelines.get_user_config(
+        infer_parameters.device, infer_parameters.streams, infer_parameters.threads
+    )
+    model_adapter = OpenvinoAdapter(
+        create_core(),
+        get_model_path(model_path),
+        device=infer_parameters.device,
+        plugin_config=plugin_config,
+        max_num_requests=infer_parameters.infer_requests,
+    )
     parameters = get_parameters(config_file)
     try:
-        importlib.import_module('.model', parameters['name_of_model'].lower())
-    except BaseException:
+        importlib.import_module(".model", parameters["name_of_model"].lower())
+    except ImportError:
         print("Using model wrapper from Open Model Zoo ModelAPI")
-    model = models.Model.create_model(parameters['type_of_model'], model_adapter, parameters['model_parameters'])
+    model = models.Model.create_model(
+        parameters["type_of_model"], model_adapter, parameters["model_parameters"]
+    )
     model.load()
 
     return model
 
+
 def create_output_converter(labels, config_file=None):
+    """
+    Create annotation converter according to kind of task
+    """
     parameters = get_parameters(config_file)
-    type = Domain[parameters['converter_type']]
-    return create_converter(type, labels)
+    converter_type = Domain[parameters["converter_type"]]
+    return create_converter(converter_type, labels)
