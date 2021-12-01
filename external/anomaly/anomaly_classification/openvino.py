@@ -27,23 +27,23 @@ import tempfile
 from shutil import copyfile, copytree
 from typing import Optional, Union
 
+import ote_sdk.usecases.exportable_code.demo as demo
 from addict import Dict as ADDict
-
 from anomalib.core.model import model_wrappers
-from anomalib.core.model.inference import OpenVINOInferencer
-
 from compression.api import DataLoader
 from compression.engines.ie_engine import IEEngine
 from compression.graph import load_model, save_model
 from compression.graph.model_utils import compress_model_weights, get_nodes_by_type
 from compression.pipeline.initializer import create_pipeline
-
 from omegaconf import ListConfig
 from omegaconf.dictconfig import DictConfig
-
-import ote_sdk.usecases.exportable_code.demo as demo
+from ote_anomalib.data import LabelNames
+from ote_anomalib.inference import OpenVINOInferencer
 from ote_sdk.entities.datasets import DatasetEntity
-from ote_sdk.entities.inference_parameters import InferenceParameters, default_progress_callback
+from ote_sdk.entities.inference_parameters import (
+    InferenceParameters,
+    default_progress_callback,
+)
 from ote_sdk.entities.model import ModelEntity, ModelStatus
 from ote_sdk.entities.optimization_parameters import OptimizationParameters
 from ote_sdk.entities.resultset import ResultSetEntity
@@ -55,7 +55,6 @@ from ote_sdk.usecases.tasks.interfaces.optimization_interface import (
     IOptimizationTask,
     OptimizationType,
 )
-
 
 logger = logging.getLogger(__name__)
 
@@ -104,8 +103,8 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
         self.model = self.task_environment.model
         self.model_name = task_environment.model_template.name
         labels = task_environment.get_labels()
-        self.normal_label = [label for label in labels if label.name == "normal"][0]
-        self.anomalous_label = [label for label in labels if label.name == "anomalous"][0]
+        self.normal_label = [label for label in labels if label.name == LabelNames.normal][0]
+        self.anomalous_label = [label for label in labels if label.name == LabelNames.anomalous][0]
         self.inferencer = self.load_inferencer()
 
     @property
