@@ -1,16 +1,12 @@
 from .get_config import get_config
 import os
 import zipfile
-import pycurl
+import subprocess
 
 
 def download_and_extract(path, url, expath):
-    with open(path, 'wb') as f:
-        cl = pycurl.Curl()
-        cl.setopt(cl.URL, url)
-        cl.setopt(cl.WRITEDATA, f)
-        cl.perform()
-        cl.close()
+    export_command = f'curl {url} --output {path}'
+    subprocess.run(export_command, shell = True, check = True)
     with zipfile.ZipFile(path, 'r') as zip_ref:
         zip_ref.extractall(expath)
 

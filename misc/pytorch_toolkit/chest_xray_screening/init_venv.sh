@@ -25,7 +25,7 @@ fi
 
 . ${venv_dir}/bin/activate
 
-apt install libcurl4-openssl-dev libssl-dev
+
 cat requirements.txt | xargs -n 1 -L 1 pip3 install
 
 pip install -e .
