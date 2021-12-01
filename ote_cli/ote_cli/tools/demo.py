@@ -25,11 +25,8 @@ import numpy as np
 from ote_sdk.configuration.helper import create
 from ote_sdk.entities.annotation import AnnotationSceneEntity, AnnotationSceneKind
 from ote_sdk.entities.datasets import DatasetEntity, DatasetItemEntity
-from ote_sdk.entities.id import ID
 from ote_sdk.entities.image import Image
 from ote_sdk.entities.inference_parameters import InferenceParameters
-from ote_sdk.entities.label import LabelEntity
-from ote_sdk.entities.label_schema import LabelSchemaEntity
 from ote_sdk.entities.model import ModelEntity
 from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.usecases.adapters.model_adapter import ModelAdapter
@@ -39,7 +36,7 @@ from ote_cli.tools.utils.demo.images_capture import open_images_capture
 from ote_cli.tools.utils.demo.visualization import draw_predictions, put_text_on_rect_bg
 from ote_cli.utils.config import override_parameters
 from ote_cli.utils.importing import get_impl_class
-from ote_cli.utils.loading import load_model_weights
+from ote_cli.utils.loading import load_model_weights, read_label_schema
 from ote_cli.utils.parser import (
     add_hyper_parameters_sub_parser,
     gen_params_dict_from_args,
@@ -74,9 +71,6 @@ def parse_args():
         "--load-weights",
         required=True,
         help="Load only weights from previously saved checkpoint",
-    )
-    parser.add_argument(
-        "--labels", nargs="+", required=True, help="A space-separated labels list."
     )
     parser.add_argument(
         "--fit-to-size",
@@ -145,24 +139,20 @@ def main():
 
     hyper_parameters = create(hyper_parameters)
 
-    labels = [
-        LabelEntity(l, template.task_type, id=ID(i)) for i, l in enumerate(args.labels)
-    ]
+    model_bytes = load_model_weights(args.load_weights)
 
     # Get classes for Task, ConfigurableParameters and Dataset.
     task_class = get_impl_class(template.entrypoints.base)
     environment = TaskEnvironment(
         model=None,
         hyper_parameters=hyper_parameters,
-        label_schema=LabelSchemaEntity.from_labels(labels),
+        label_schema=read_label_schema(model_bytes),
         model_template=template,
     )
 
     model = ModelEntity(
         configuration=environment.get_model_configuration(),
-        model_adapters={
-            "weights.pth": ModelAdapter(load_model_weights(args.load_weights))
-        },
+        model_adapters={"weights.pth": ModelAdapter(model_bytes)},
         train_dataset=None,
     )
     environment.model = model
