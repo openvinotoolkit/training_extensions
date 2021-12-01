@@ -1,5 +1,6 @@
 {
     "image_path": {
+        "0": "test/good/000.png",
         "1": "test/good/001.png",
         "2": "test/good/002.png",
         "3": "test/good/003.png",
@@ -21,6 +22,7 @@
         "19": "test/good/019.png"
     },
     "label": {
+        "0": "good",
         "1": "good",
         "2": "good",
         "3": "good",
