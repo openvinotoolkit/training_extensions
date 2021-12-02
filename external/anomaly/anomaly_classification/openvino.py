@@ -26,6 +26,7 @@ import sys
 import tempfile
 from shutil import copyfile, copytree
 from typing import Optional, Union
+from zipfile import ZipFile
 
 import ote_sdk.usecases.exportable_code.demo as demo
 from addict import Dict as ADDict
@@ -57,7 +58,6 @@ from ote_sdk.usecases.tasks.interfaces.optimization_interface import (
     OptimizationType,
 )
 
-from zipfile import ZipFile
 logger = logging.getLogger(__name__)
 
 
