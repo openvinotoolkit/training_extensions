@@ -46,26 +46,29 @@ class TestLabelEntity:
     label_car_params = {
         "name": "car",
         "domain": Domain.DETECTION,
-        "color": "#ff0000",
+        "color": Color(255, 0, 0),
         "hotkey": "ctrl+1",
-        "creation_date": datetime.datetime.today(),
+        "creation_date": datetime.datetime.today()
+        .replace(microsecond=0)
+        .replace(second=0),
         "is_empty": False,
-        "id": 123456789,
+        "id": ID(123456789),
     }
 
-    other_label_car_params = {
+    label_person_params = {
         "name": "person",
         "domain": Domain.DETECTION,
-        "color": "#ff1111",
+        "color": Color(255, 17, 17),
         "hotkey": "ctrl+2",
-        "creation_date": datetime.datetime.today(),
+        "creation_date": datetime.datetime.today()
+        .replace(microsecond=0)
+        .replace(second=0),
         "is_empty": False,
-        "id": 987654321,
+        "id": ID(987654321),
     }
-
     car = LabelEntity(**label_car_params)
     empty = LabelEntity(name="empty", domain=Domain.SEGMENTATION, is_empty=True)
-    person = LabelEntity(**other_label_car_params)
+    person = LabelEntity(**label_person_params)
 
     @pytest.mark.priority_medium
     @pytest.mark.component
@@ -104,9 +107,9 @@ class TestLabelEntity:
 
         label_car_new_name = "electric car"
         label_car_new_domain = Domain.CLASSIFICATION
-        label_car_new_color = "#00ff00"
+        label_car_new_color = Color(0, 255, 0)
         label_car_new_hotkey = "ctrl+2"
-        label_car_new_id = 987654321
+        label_car_new_id = ID(987654321)
 
         setattr(self.car, "name", label_car_new_name)
         setattr(self.car, "domain", label_car_new_domain)
@@ -177,6 +180,6 @@ class TestLabelEntity:
         2. Check the processing of changed id
         """
 
-        self.empty.id = 999999999
+        self.empty.id = ID(999999999)
         assert self.empty > self.car
         assert self.car < self.empty
