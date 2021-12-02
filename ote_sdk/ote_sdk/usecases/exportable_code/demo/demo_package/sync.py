@@ -50,58 +50,11 @@ def build_argparser():
         "-m",
         "--model",
         help="Required. Path to an .xml file with a trained model.",
-        default=None,
+        required=True,
         type=Path,
-    )
-    args.add_argument(
-        "-d",
-        "--device",
-        default="CPU",
-        type=str,
-        help="Optional. Specify the target device to infer on; CPU, GPU, HDDL or MYRIAD is "
-        "acceptable. The demo will look for a suitable plugin for device specified. "
-        "Default value is CPU.",
-    )
-
-    infer_args = parser.add_argument_group("Inference options")
-    infer_args.add_argument(
-        "-nireq",
-        "--num_infer_requests",
-        help="Optional. Number of infer requests",
-        default=0,
-        type=int,
-    )
-    infer_args.add_argument(
-        "-nstreams",
-        "--num_streams",
-        help="Optional. Number of streams to use for inference on the CPU or/and GPU in throughput "
-        "mode (for HETERO and MULTI device cases use format "
-        "<device1>:<nstreams1>,<device2>:<nstreams2> or just <nstreams>).",
-        default="",
-        type=str,
-    )
-    infer_args.add_argument(
-        "-nthreads",
-        "--num_threads",
-        default=None,
-        type=int,
-        help="Optional. Number of threads to use for inference on CPU (including HETERO cases).",
     )
 
     return parser
-
-
-def get_infer_parameters(args):
-    """
-    Create infer params from arguments
-    """
-    params = {
-        "device": args.device,
-        "streams": args.num_streams,
-        "threads": args.num_threads,
-        "infer_requests": args.num_infer_requests,
-    }
-    return params
 
 
 class SyncDemo:
@@ -148,7 +101,7 @@ def main():
     args = build_argparser().parse_args()
     # create components for demo
 
-    model = create_model(Namespace(**get_infer_parameters(args)), args.model)
+    model = create_model(args.model)
     media_type = get_media_type(args.input)
 
     visualizer = Visualizer(media_type)
