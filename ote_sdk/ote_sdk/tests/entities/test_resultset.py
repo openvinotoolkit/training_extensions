@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from datetime import datetime
+import datetime
 
 import pytest
 
@@ -96,7 +96,7 @@ class TestResultset:
                 assert getattr(result_set, name) == set_attr_name
 
         assert result_set.performance == NullPerformance()
-        assert type(result_set.creation_date) == datetime
+        assert type(result_set.creation_date) == datetime.datetime
         assert result_set.id == ID()
 
         assert result_set.has_score_metric() is False
@@ -104,10 +104,13 @@ class TestResultset:
         assert result_set.performance != NullPerformance()
         assert result_set.has_score_metric() is True
 
-        result_set.creation_date = "2021-11-30 09:07:31+00:00"
-        assert result_set.creation_date == "2021-11-30 09:07:31+00:00"
+        creation_date = (
+            datetime.datetime.today().replace(microsecond=0).replace(second=0),
+        )
+        result_set.creation_date = creation_date
+        assert result_set.creation_date == creation_date
 
-        set_attr_id = "123456789"
+        set_attr_id = ID(123456789)
         result_set.id = set_attr_id
         assert result_set.id == set_attr_id
 
