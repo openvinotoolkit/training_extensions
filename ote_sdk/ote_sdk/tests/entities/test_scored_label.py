@@ -15,6 +15,7 @@
 import pytest
 
 from ote_sdk.entities.color import Color
+from ote_sdk.entities.id import ID
 from ote_sdk.entities.label import Domain, LabelEntity
 from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.tests.constants.ote_sdk_components import OteSdkComponent
@@ -38,10 +39,10 @@ class TestScoredLabel:
         Test passes if the results match
         """
         car = LabelEntity(
-            id=123456789, name="car", domain=Domain.DETECTION, is_empty=True
+            id=ID(123456789), name="car", domain=Domain.DETECTION, is_empty=True
         )
         person = LabelEntity(
-            id=987654321, name="person", domain=Domain.DETECTION, is_empty=True
+            id=ID(987654321), name="person", domain=Domain.DETECTION, is_empty=True
         )
         car_label = ScoredLabel(car)
         person_label = ScoredLabel(person)
