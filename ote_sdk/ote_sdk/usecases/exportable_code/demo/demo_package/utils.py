@@ -58,19 +58,14 @@ def get_parameters(path):
     return parameters
 
 
-def create_model(infer_parameters, model_path=None, config_file=None):
+def create_model(model_path=None, config_file=None):
     """
     Create model using ModelAPI fabric
     """
-    plugin_config = pipelines.get_user_config(
-        infer_parameters.device, infer_parameters.streams, infer_parameters.threads
-    )
+
     model_adapter = OpenvinoAdapter(
         create_core(),
-        get_model_path(model_path),
-        device=infer_parameters.device,
-        plugin_config=plugin_config,
-        max_num_requests=infer_parameters.infer_requests,
+        get_model_path(model_path)
     )
     parameters = get_parameters(config_file)
     try:
