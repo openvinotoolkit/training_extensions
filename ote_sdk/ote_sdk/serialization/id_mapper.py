@@ -1,6 +1,4 @@
-"""
-Initialization of streamer
-"""
+#
 # INTEL CONFIDENTIAL
 #
 # Copyright (C) 2021 Intel Corporation
@@ -14,21 +12,26 @@ Initialization of streamer
 # This software and the related documents are provided as is,
 # with no express or implied warranties, other than those that are expressly stated
 # in the License.
+#
 
-from ote_sdk.usecases.exportable_code.streamer.streamer import (
-    CameraStreamer,
-    ImageStreamer,
-    ThreadedStreamer,
-    VideoStreamer,
-    get_media_type,
-    get_streamer,
-)
+""" This module contains the mapper for ID entities """
 
-__all__ = [
-    "CameraStreamer",
-    "ImageStreamer",
-    "ThreadedStreamer",
-    "VideoStreamer",
-    "get_media_type",
-    "get_streamer",
-]
+from ote_sdk.entities.id import ID
+
+
+class IDMapper:
+    """
+    This class maps an `ID` entity to a string, and vice versa
+    """
+
+    @staticmethod
+    def forward(instance: ID) -> str:
+        """Serializes ID to str."""
+
+        return str(instance)
+
+    @staticmethod
+    def backward(instance: str) -> ID:
+        """Deserializes ID from str."""
+
+        return ID(str(instance))

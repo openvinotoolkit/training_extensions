@@ -1,6 +1,4 @@
-"""
-Initialization of streamer
-"""
+#
 # INTEL CONFIDENTIAL
 #
 # Copyright (C) 2021 Intel Corporation
@@ -14,21 +12,4 @@ Initialization of streamer
 # This software and the related documents are provided as is,
 # with no express or implied warranties, other than those that are expressly stated
 # in the License.
-
-from ote_sdk.usecases.exportable_code.streamer.streamer import (
-    CameraStreamer,
-    ImageStreamer,
-    ThreadedStreamer,
-    VideoStreamer,
-    get_media_type,
-    get_streamer,
-)
-
-__all__ = [
-    "CameraStreamer",
-    "ImageStreamer",
-    "ThreadedStreamer",
-    "VideoStreamer",
-    "get_media_type",
-    "get_streamer",
-]
+#

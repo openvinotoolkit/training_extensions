@@ -1,6 +1,7 @@
 """
-Initialization of streamer
+Initialization of demo package
 """
+
 # INTEL CONFIDENTIAL
 #
 # Copyright (C) 2021 Intel Corporation
@@ -15,20 +16,7 @@ Initialization of streamer
 # with no express or implied warranties, other than those that are expressly stated
 # in the License.
 
-from ote_sdk.usecases.exportable_code.streamer.streamer import (
-    CameraStreamer,
-    ImageStreamer,
-    ThreadedStreamer,
-    VideoStreamer,
-    get_media_type,
-    get_streamer,
-)
+from .sync import SyncDemo
+from .utils import create_model
 
-__all__ = [
-    "CameraStreamer",
-    "ImageStreamer",
-    "ThreadedStreamer",
-    "VideoStreamer",
-    "get_media_type",
-    "get_streamer",
-]
+__all__ = ["SyncDemo", "create_model"]
