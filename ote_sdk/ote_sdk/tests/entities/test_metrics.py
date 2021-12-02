@@ -98,24 +98,27 @@ class TestMetrics:
         assert duration_metric.second == second
         assert duration_metric.type() == "duration"
         print(duration_metric.get_duration_string())
-        # Checking get_duration_string method
+        # Checking get_duration_string method for 0 specified as DurationMetric parameters
         zero_duration_metric = DurationMetric(
             name="Zero Duration Metric", hour=0, minute=0, second=0.0
         )
         assert zero_duration_metric.get_duration_string() == ""
+        # Checking get_duration_string method for 1 specified as DurationMetric parameters
         one_duration_metric = DurationMetric(
             name="One Duration Metric", hour=1, minute=1, second=1.0
         )
         assert (
             one_duration_metric.get_duration_string() == "1 hour 1 minute 1.00 second"
         )
+        # Checking get_duration_string method for value>1 specified as DurationMetric parameters
         more_than_one_duration_metric = DurationMetric(
-            name="More than one duration metric", hour=2, minute=2, second=1.1
+            name="More than one duration metric", hour=2, minute=3, second=1.1
         )
         assert (
             more_than_one_duration_metric.get_duration_string()
-            == "2 hours 2 minutes 1.10 seconds"
+            == "2 hours 3 minutes 1.10 seconds"
         )
+        # Checking get_duration_string method for 0, 1, ">1" values specified as DurationMetric parameters
         mixed_conditions_metric = self.mixed_conditions_duration_metric()
         assert mixed_conditions_metric.get_duration_string() == "1 minute 2.10 seconds"
 
@@ -349,13 +352,17 @@ class TestScoreMetric:
             ScoreMetric(name="Test ScoreMetric", value=float("nan"))
         # Checking __eq__ method
         equal_score_metric = ScoreMetric(name="Test ScoreMetric", value=2.0)
+        # Checking __eq__ method for equal ScoreMetric objects
         assert score_metric == equal_score_metric
+        # Checking __eq__ method for ScoreMetric objects with unequal names
         different_name_score_metric = ScoreMetric(
             name="Other name ScoreMetric", value=2.0
         )
         assert score_metric != different_name_score_metric
+        # Checking __eq__ method for ScoreMetric objects with unequal values
         different_value_score_metric = ScoreMetric(name="Test ScoreMetric", value=3.4)
         assert score_metric != different_value_score_metric
+        # Checking __eq__ method by comparing ScoreMetric object with different type object
         assert score_metric != str
         # Checking __repr__ method
         assert repr(score_metric) == "ScoreMetric(name=`Test ScoreMetric`, score=`2.0`)"
@@ -402,11 +409,11 @@ class TestCurveMetric:
         assert curve_metric.ys == self.ys()
         assert curve_metric.type() == "curve"
         # Checking positive scenario with not specified xs parameter
-        x_not_specified_curvemetric = self.x_not_specified_curve_metric()
-        assert x_not_specified_curvemetric.name == "x not specified CurveMetric"
-        assert x_not_specified_curvemetric.xs == [1, 2, 3, 4, 5]
-        assert x_not_specified_curvemetric.ys == self.ys()
-        assert x_not_specified_curvemetric.type() == "curve"
+        x_not_specified_curve_metric = self.x_not_specified_curve_metric()
+        assert x_not_specified_curve_metric.name == "x not specified CurveMetric"
+        assert x_not_specified_curve_metric.xs == [1, 2, 3, 4, 5]
+        assert x_not_specified_curve_metric.ys == self.ys()
+        assert x_not_specified_curve_metric.type() == "curve"
         # Checking ValueError exception raised when len(ys) != len(xs)
         with pytest.raises(ValueError):
             CurveMetric(
@@ -444,6 +451,7 @@ class TestNullMetric:
         # Checking NullMetric __eq__ method
         equal_null_metric = NullMetric()
         assert null_metric == equal_null_metric
+        # Checking __eq__ method by comparing NullMetric object with different type object
         assert null_metric != TestInfoMetric().info_metric()
 
 
@@ -1073,9 +1081,10 @@ class TestNullPerformance:
         assert null_performance.dashboard_metrics == []
         # Checking NullPerformance __repr__ method
         assert repr(null_performance) == "NullPerformance()"
-        # Checking NullPerformance __eq__ method
+        # Checking __eq__ method for equal NullPerformance objects
         equal_null_performance = NullPerformance()
         assert null_performance == equal_null_performance
+        # Checking NullPerformance __eq__ method by comparing with Performance object
         score_metric = TestScoreMetric().score_metric()
         performance = Performance(score_metric)
         assert null_performance != performance
