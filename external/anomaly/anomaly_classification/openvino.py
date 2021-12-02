@@ -49,6 +49,7 @@ from ote_sdk.entities.optimization_parameters import OptimizationParameters
 from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.usecases.evaluation.metrics_helper import MetricsHelper
+from ote_sdk.usecases.tasks.interfaces.deployment_interface import IDeploymentTask
 from ote_sdk.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from ote_sdk.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from ote_sdk.usecases.tasks.interfaces.optimization_interface import (
@@ -56,6 +57,7 @@ from ote_sdk.usecases.tasks.interfaces.optimization_interface import (
     OptimizationType,
 )
 
+from zipfile import ZipFile
 logger = logging.getLogger(__name__)
 
 
@@ -84,7 +86,7 @@ class OTEOpenVINOAnomalyDataloader(DataLoader):
         return len(self.dataset)
 
 
-class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimizationTask):
+class OpenVINOAnomalyClassificationTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IOptimizationTask):
     """
     OpenVINO inference task
 
@@ -128,7 +130,7 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
         output_resultset.performance = MetricsHelper.compute_f_measure(output_resultset).get_performance()
 
     def deploy(self,
-               output_path: str):
+               output_model: ModelEntity) -> None:
         work_dir = os.path.dirname(demo.__file__)
         model_file = inspect.getfile(type(self.inferencer.model))
         parameters = {}
@@ -141,13 +143,7 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
             copyfile(os.path.join(work_dir, "setup.py"), os.path.join(tempdir, "setup.py"))
             copyfile(os.path.join(work_dir, "requirements.txt"), os.path.join(tempdir, "requirements.txt"))
             copytree(os.path.join(work_dir, "demo_package"), os.path.join(tempdir, name_of_package))
-            xml_path = os.path.join(tempdir, name_of_package, "model.xml")
-            bin_path = os.path.join(tempdir, name_of_package, "model.bin")
             config_path = os.path.join(tempdir, name_of_package, "config.json")
-            with open(xml_path, "wb") as f:
-                f.write(self.model.get_data("openvino.xml"))
-            with open(bin_path, "wb") as f:
-                f.write(self.model.get_data("openvino.bin"))
             with open(config_path, "w") as f:
                 json.dump(parameters, f)
             # generate model.py
@@ -156,7 +152,17 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
                 copyfile(model_file, os.path.join(tempdir, name_of_package, "model.py"))
             # create wheel package
             subprocess.run([sys.executable, os.path.join(tempdir, "setup.py"), 'bdist_wheel',
-                            '--dist-dir', output_path, 'clean', '--all'])
+                            '--dist-dir', tempdir, 'clean', '--all'])
+            wheel_file_name = [f for f in os.listdir(tempdir) if f.endswith('.whl')][0]
+            print(wheel_file_name)
+            with ZipFile(os.path.join(tempdir, "openvino.zip"), 'w') as zip:
+                zip.writestr(os.path.join("model", "model.xml"), self.model.get_data("openvino.xml"))
+                zip.writestr(os.path.join("model", "model.bin"), self.model.get_data("openvino.bin"))
+                zip.write(os.path.join(tempdir, "requirements.txt"), os.path.join("python", "requirements.txt"))
+                zip.write(os.path.join(tempdir, name_of_package, "sync.py"), os.path.join("python", "demo.py"))
+                zip.write(os.path.join(tempdir, wheel_file_name), os.path.join("python", wheel_file_name))
+            self.__load_weights(path=os.path.join(tempdir, "openvino.zip"), output_model=output_model, key="demo_package")
+
 
     def optimize(
         self,

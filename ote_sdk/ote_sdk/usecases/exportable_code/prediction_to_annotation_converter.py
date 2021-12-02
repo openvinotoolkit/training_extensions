@@ -34,7 +34,7 @@ from ote_sdk.utils.time_utils import now
 
 class IPredictionToAnnotationConverter(metaclass=abc.ABCMeta):
     @abc.abstractmethod
-    def convert_to_annotation(self, predictions: Any, metadata: Optional[Dict] = None) -> AnnotationSceneEntity:
+    def convert_to_annotation(self, predictions: Any, metadata: Dict) -> AnnotationSceneEntity:
         """
         Convert raw predictions to AnnotationScene format.
 
@@ -53,7 +53,7 @@ class DetectionToAnnotationConverter(IPredictionToAnnotationConverter):
     def __init__(self, labels: List[LabelEntity]):
         self.label_map = dict(enumerate(labels))
 
-    def convert_to_annotation(self, predictions: np.ndarray) -> AnnotationSceneEntity:
+    def convert_to_annotation(self, predictions: np.ndarray, metadata: Dict = None) -> AnnotationSceneEntity:
         """
         Converts a set of predictions into an AnnotationScene object
 
