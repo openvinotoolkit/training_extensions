@@ -114,9 +114,7 @@ class Color(ColorEntity):
         """
         Returns the color in a Hex representation
         """
-        return "#{:02x}{:02x}{:02x}{:02x}".format(
-            self.red, self.green, self.blue, self.alpha
-        )
+        return f"#{self.red:02x}{self.green:02x}{self.blue:02x}{self.alpha:02x}"
 
     @classmethod
     def from_hex_str(cls, string: str):

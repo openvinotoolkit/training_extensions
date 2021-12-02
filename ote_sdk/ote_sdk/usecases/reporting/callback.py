@@ -1,3 +1,7 @@
+"""
+Callback module.
+"""
+
 # INTEL CONFIDENTIAL
 #
 # Copyright (C) 2021 Intel Corporation
@@ -41,45 +45,47 @@ class Callback:
     """
 
     def set_params(self, params):
+        """Sets callback parameters."""
         # pylint: disable=W0201
         self.params = params
 
     def set_model(self, model):
+        """Sets callback model."""
         # pylint: disable=W0201
         self.model = model
 
     def on_epoch_begin(self, epoch, logs=None):
-        pass
+        """It is called on epoch begin event."""
 
     def on_epoch_end(self, epoch, logs=None):
-        pass
+        """It is called on epoch end event."""
 
     def on_batch_begin(self, batch, logs=None):
-        pass
+        """It is called on batch begin event."""
 
     def on_batch_end(self, batch, logs=None):
-        pass
+        """It is called on batch end event."""
 
     def on_train_begin(self, logs=None):
-        pass
+        """It is called on train begin event."""
 
     def on_train_end(self, logs=None):
-        pass
+        """It is called on train end event."""
 
     def on_train_batch_begin(self, batch, logs):
-        pass
+        """It is called on train batch begin event."""
 
     def on_train_batch_end(self, batch, logs):
-        pass
+        """It is called on train batch end event."""
 
     def on_test_begin(self, logs):
-        pass
+        """It is called on test begin event."""
 
     def on_test_end(self, logs):
-        pass
+        """It is called on test end event."""
 
     def on_test_batch_begin(self, batch, logs):
-        pass
+        """It is called on test batch begin event."""
 
     def on_test_batch_end(self, batch, logs):
-        pass
+        """It is called on test batch end event."""

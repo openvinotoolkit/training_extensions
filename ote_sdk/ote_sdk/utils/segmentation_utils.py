@@ -165,6 +165,7 @@ def create_annotation_from_segmentation_map(
     height, width = hard_prediction.shape[:2]
     img_class = hard_prediction.swapaxes(0, 1)
 
+    # pylint: disable=too-many-nested-blocks
     annotations: List[Annotation] = []
     for label_index, label in label_map.items():
         # Skip background
@@ -203,14 +204,26 @@ def create_annotation_from_segmentation_map(
                     probability = cv2.mean(current_label_soft_prediction, mask)[0]
 
                     if len(list(contour)) > 2:
-                        # Contour is a closed polygon
-                        annotations.append(
-                            Annotation(
-                                Polygon(points=points),
-                                labels=[ScoredLabel(label, probability)],
-                                id=ID(ObjectId()),
+                        # convert the list of points to a closed polygon
+                        polygon = Polygon(points=points)
+
+                        if polygon.get_area() > 0:
+                            # Contour is a closed polygon with area > 0
+                            annotations.append(
+                                Annotation(
+                                    shape=polygon,
+                                    labels=[ScoredLabel(label, probability)],
+                                    id=ID(ObjectId()),
+                                )
                             )
-                        )
+                        else:
+                            # Contour is a closed polygon with area == 0
+                            warnings.warn(
+                                "The geometry of the segmentation map you are converting "
+                                "is not fully supported. Polygons with a area of zero "
+                                "will be removed.",
+                                UserWarning,
+                            )
                     else:
                         # Contour is a single point or a free-standing line
                         # Give a warning if one dimensional elements will be deleted

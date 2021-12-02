@@ -52,9 +52,9 @@ def _search_in_config_dict_inner(
         key_to_search within config_dict
     """
     if prior_keys is None:
-        prior_keys = list()
+        prior_keys = []
     if results is None:
-        results = list()
+        results = []
     if isinstance(config_dict, List):
         dict_to_search_in = dict(zip(range(len(config_dict)), config_dict))
     else:
@@ -109,7 +109,7 @@ def input_to_config_dict(
 
     if isinstance(input_config, str):
         if os.path.exists(input_config):
-            with open(input_config, "r") as file:
+            with open(input_config, "r", encoding="UTF-8") as file:
                 result = yaml.safe_load(file)
         else:
             result = yaml.safe_load(input_config)

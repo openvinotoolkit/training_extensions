@@ -1,3 +1,7 @@
+"""
+Model quality evaluation tool.
+"""
+
 # Copyright (C) 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,26 +18,34 @@
 
 import argparse
 
-from ote_cli.datasets import get_dataset_class
-from ote_cli.registry import find_and_parse_model_template
-from ote_cli.utils.config import override_parameters
-from ote_cli.utils.importing import get_impl_class
-from ote_cli.utils.loading import load_model_weights
-from ote_cli.utils.parser import (
-    add_hyper_parameters_sub_parser,
-    gen_params_dict_from_args,
-)
 from ote_sdk.configuration.helper import create
 from ote_sdk.entities.inference_parameters import InferenceParameters
-from ote_sdk.entities.label_schema import LabelSchemaEntity
 from ote_sdk.entities.model import ModelEntity
 from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.subset import Subset
 from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.usecases.adapters.model_adapter import ModelAdapter
 
+from ote_cli.datasets import get_dataset_class
+from ote_cli.registry import find_and_parse_model_template
+from ote_cli.utils.config import override_parameters
+from ote_cli.utils.importing import get_impl_class
+from ote_cli.utils.loading import (
+    generate_label_schema,
+    load_model_weights,
+    read_label_schema,
+)
+from ote_cli.utils.parser import (
+    add_hyper_parameters_sub_parser,
+    gen_params_dict_from_args,
+)
+
 
 def parse_args():
+    """
+    Parses command line arguments.
+    """
+
     pre_parser = argparse.ArgumentParser(add_help=False)
     pre_parser.add_argument("template")
     parsed, _ = pre_parser.parse_known_args()
@@ -66,7 +78,27 @@ def parse_args():
     return parser.parse_args(), template, hyper_parameters
 
 
+def check_label_schemas(label_schema_a, label_schema_b):
+    """
+    Checks that both passed label schemas have labels with the same names.
+    If it is False that it raises RuntimeError.
+    """
+
+    for model_label, snapshot_label in zip(
+        label_schema_a.get_labels(False), label_schema_b.get_labels(False)
+    ):
+        if model_label.name != snapshot_label.name:
+            raise RuntimeError(
+                "Labels schemas from model and dataset are different: "
+                f"\n{label_schema_a} \n\tvs\n{label_schema_b}"
+            )
+
+
 def main():
+    """
+    Main function that is used for model evaluation.
+    """
+
     # Dynamically create an argument parser based on override parameters.
     args, template, hyper_parameters = parse_args()
     # Get new values from user's input.
@@ -77,33 +109,32 @@ def main():
     hyper_parameters = create(hyper_parameters)
 
     # Get classes for Task, ConfigurableParameters and Dataset.
-    Task = get_impl_class(template.entrypoints.base)
-    Dataset = get_dataset_class(template.task_type)
+    taks_class = get_impl_class(template.entrypoints.base)
+    dataset_class = get_dataset_class(template.task_type)
 
-    dataset = Dataset(
-        test_ann_file=args.test_ann_files, test_data_root=args.test_data_roots
+    dataset = dataset_class(
+        test_subset={"ann_file": args.test_ann_files, "data_root": args.test_data_roots}
     )
 
-    labels_schema = LabelSchemaEntity.from_labels(dataset.get_labels())
+    model_bytes = load_model_weights(args.load_weights)
+    dataset_label_schema = generate_label_schema(dataset, template.task_type)
+    check_label_schemas(read_label_schema(model_bytes), dataset_label_schema)
 
     environment = TaskEnvironment(
         model=None,
         hyper_parameters=hyper_parameters,
-        label_schema=labels_schema,
+        label_schema=dataset_label_schema,
         model_template=template,
     )
 
-    model_bytes = load_model_weights(args.load_weights)
-
-    model_adapters = {"weights.pth": ModelAdapter(model_bytes)}
     model = ModelEntity(
         configuration=environment.get_model_configuration(),
-        model_adapters=model_adapters,
+        model_adapters={"weights.pth": ModelAdapter(model_bytes)},
         train_dataset=None,
     )
     environment.model = model
 
-    task = Task(task_environment=environment)
+    task = taks_class(task_environment=environment)
 
     validation_dataset = dataset.get_subset(Subset.TESTING)
     predicted_validation_dataset = task.infer(

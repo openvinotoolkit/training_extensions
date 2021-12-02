@@ -1,3 +1,7 @@
+"""
+Model training tool.
+"""
+
 # Copyright (C) 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,26 +18,31 @@
 
 import argparse
 
-from ote_cli.datasets import get_dataset_class
-from ote_cli.registry import find_and_parse_model_template
-from ote_cli.utils.config import override_parameters
-from ote_cli.utils.importing import get_impl_class
-from ote_cli.utils.loading import load_model_weights
-from ote_cli.utils.parser import (
-    add_hyper_parameters_sub_parser,
-    gen_params_dict_from_args,
-)
 from ote_sdk.configuration.helper import create
 from ote_sdk.entities.inference_parameters import InferenceParameters
-from ote_sdk.entities.label_schema import LabelSchemaEntity
 from ote_sdk.entities.model import ModelEntity, ModelStatus
 from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.subset import Subset
 from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.usecases.adapters.model_adapter import ModelAdapter
 
+from ote_cli.datasets import get_dataset_class
+from ote_cli.registry import find_and_parse_model_template
+from ote_cli.utils.config import override_parameters
+from ote_cli.utils.importing import get_impl_class
+from ote_cli.utils.loading import generate_label_schema, load_model_weights
+from ote_cli.utils.parser import (
+    add_hyper_parameters_sub_parser,
+    gen_params_dict_from_args,
+)
+
 
 def parse_args():
+    """
+    Parses command line arguments.
+    It dynamically generates help for hyper-parameters which are specific to particular model template.
+    """
+
     pre_parser = argparse.ArgumentParser(add_help=False)
     pre_parser.add_argument("template")
     parsed, _ = pre_parser.parse_known_args()
@@ -80,6 +89,10 @@ def parse_args():
 
 
 def main():
+    """
+    Main function that is used for model training.
+    """
+
     # Dynamically create an argument parser based on override parameters.
     args, template, hyper_parameters = parse_args()
     # Get new values from user's input.
@@ -90,36 +103,36 @@ def main():
     hyper_parameters = create(hyper_parameters)
 
     # Get classes for Task, ConfigurableParameters and Dataset.
-    Task = get_impl_class(template.entrypoints.base)
-    Dataset = get_dataset_class(template.task_type)
+    task_class = get_impl_class(template.entrypoints.base)
+    dataset_class = get_dataset_class(template.task_type)
 
     # Create instances of Task, ConfigurableParameters and Dataset.
-    dataset = Dataset(
-        train_ann_file=args.train_ann_files,
-        train_data_root=args.train_data_roots,
-        val_ann_file=args.val_ann_files,
-        val_data_root=args.val_data_roots,
+    dataset = dataset_class(
+        train_subset={
+            "ann_file": args.train_ann_files,
+            "data_root": args.train_data_roots,
+        },
+        val_subset={"ann_file": args.val_ann_files, "data_root": args.val_data_roots},
     )
-
-    labels_schema = LabelSchemaEntity.from_labels(dataset.get_labels())
 
     environment = TaskEnvironment(
         model=None,
         hyper_parameters=hyper_parameters,
-        label_schema=labels_schema,
+        label_schema=generate_label_schema(dataset, template.task_type),
         model_template=template,
     )
 
     if args.load_weights:
-        model_bytes = load_model_weights(args.load_weights)
         model = ModelEntity(
             train_dataset=dataset,
             configuration=environment.get_model_configuration(),
-            model_adapters={"weights.pth": ModelAdapter(model_bytes)},
+            model_adapters={
+                "weights.pth": ModelAdapter(load_model_weights(args.load_weights))
+            },
         )
         environment.model = model
 
-    task = Task(task_environment=environment)
+    task = task_class(task_environment=environment)
 
     output_model = ModelEntity(
         dataset,
@@ -130,8 +143,8 @@ def main():
     task.train(dataset, output_model)
 
     if output_model.model_status != ModelStatus.NOT_READY:
-        with open(args.save_weights, "wb") as f:
-            f.write(output_model.get_data("weights.pth"))
+        with open(args.save_weights, "wb") as write_file:
+            write_file.write(output_model.get_data("weights.pth"))
 
     validation_dataset = dataset.get_subset(Subset.VALIDATION)
     predicted_validation_dataset = task.infer(

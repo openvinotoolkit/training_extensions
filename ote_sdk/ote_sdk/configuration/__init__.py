@@ -23,11 +23,10 @@ The configuration helper module can be imported as `ote_config_helper` and imple
 
 """
 
-import ote_sdk.configuration.elements.metadata_keys as metadata_keys
-
 # TODO: Remove cfg_helper once https://jira.devtools.intel.com/browse/CVS-67869 is done:
 import ote_sdk.configuration.helper as ote_config_helper
 import ote_sdk.configuration.helper as cfg_helper  # pylint: disable=reimported
+from ote_sdk.configuration.elements import metadata_keys
 from ote_sdk.configuration.elements.configurable_enum import ConfigurableEnum
 from ote_sdk.configuration.enums.model_lifecycle import ModelLifecycle
 from ote_sdk.configuration.ui_rules import Action, NullUIRules, Operator, Rule, UIRules
