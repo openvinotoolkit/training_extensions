@@ -19,6 +19,7 @@ import yaml
 
 from ote_sdk.configuration import ConfigurableParameters, ote_config_helper
 from ote_sdk.entities.id import ID
+from ote_sdk.entities.label import Domain, LabelEntity
 from ote_sdk.entities.label_schema import LabelSchemaEntity
 from ote_sdk.entities.model_template import parse_model_template
 from ote_sdk.entities.task_environment import TaskEnvironment
@@ -47,7 +48,13 @@ def environment():
     """
     Return TaskEnvironment
     """
-    labels_list = []
+    car = LabelEntity(
+        id=ID(123456789), name="car", domain=Domain.DETECTION, is_empty=True
+    )
+    person = LabelEntity(
+        id=ID(987654321), name="person", domain=Domain.DETECTION, is_empty=True
+    )
+    labels_list = [car, person]
     dummy_template = __get_path_to_file("./dummy_template.yaml")
     model_template = parse_model_template(dummy_template)
     hyper_parameters = model_template.hyper_parameters.data
@@ -115,7 +122,14 @@ class TestTaskEnvironment:
         )
         assert "name=from_label_list" in repr(env)
         assert "group_type=LabelGroupType.EXCLUSIVE" in repr(env)
-        assert "labels=[]" in repr(env)
+        assert (
+            "labels=[LabelEntity(123456789, name=car, hotkey=ctrl+0, domain=DETECTION"
+            in repr(env)
+        )
+        assert (
+            "LabelEntity(987654321, name=person, hotkey=ctrl+0, domain=DETECTION"
+            in repr(env)
+        )
         assert (
             "CONFIGURABLE_PARAMETERS(header='Configuration for an object detection task -- TEST ONLY'"
             in repr(env)
@@ -423,7 +437,7 @@ class TestTaskEnvironment:
         header = "Test header"
         description = "Test description"
         visible_in_ui = False
-        id = "123456789"
+        id = ID(123456789)
 
         hyper_parameters = ConfigurableParameters(
             header=header, description=description, visible_in_ui=visible_in_ui, id=id
