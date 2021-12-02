@@ -16,15 +16,14 @@ Sync Demo based on ModelAPI
 # in the License.
 
 import sys
-from argparse import SUPPRESS, ArgumentParser, Namespace
+from argparse import SUPPRESS, ArgumentParser
 from pathlib import Path
 
-from ote_sdk.usecases.exportable_code.demo.demo_package.utils import (
-    create_model,
-    create_output_converter,
-)
 from ote_sdk.usecases.exportable_code.streamer import get_media_type, get_streamer
 from ote_sdk.usecases.exportable_code.visualization import Visualizer
+
+# pylint: disable=relative-beyond-top-level
+from .utils import create_model, create_output_converter
 
 
 def build_argparser():
@@ -76,8 +75,8 @@ class SyncDemo:
         """
         Run demo using input stream (image, video stream, camera)
         """
-        self.streamer = get_streamer(input_stream)
-        for frame in self.streamer:
+        streamer = get_streamer(input_stream)
+        for frame in streamer:
             # getting result include preprocessing, infer, postprocessing for sync infer
             dict_data, input_meta = self.model.preprocess(frame)
             raw_result = self.model.infer_sync(dict_data)

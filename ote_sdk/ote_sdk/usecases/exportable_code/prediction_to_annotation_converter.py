@@ -1,3 +1,7 @@
+"""
+Converters for output of inferencers
+"""
+
 # INTEL CONFIDENTIAL
 #
 # Copyright (C) 2021 Intel Corporation
@@ -13,7 +17,7 @@
 # in the License.
 
 import abc
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Tuple, Union
 
 import numpy as np
 from openvino.model_zoo.model_api.models import utils
@@ -32,9 +36,13 @@ from ote_sdk.utils.time_utils import now
 
 
 class IPredictionToAnnotationConverter(metaclass=abc.ABCMeta):
+    """
+    Interface for converter
+    """
+
     @abc.abstractmethod
     def convert_to_annotation(
-        self, predictions: Any, metadata: Optional[Dict] = None
+        self, predictions: Any, metadata: Dict
     ) -> AnnotationSceneEntity:
         """
         Convert raw predictions to AnnotationScene format.
@@ -54,7 +62,9 @@ class DetectionToAnnotationConverter(IPredictionToAnnotationConverter):
     def __init__(self, labels: List[LabelEntity]):
         self.label_map = dict(enumerate(labels))
 
-    def convert_to_annotation(self, predictions: np.ndarray) -> AnnotationSceneEntity:
+    def convert_to_annotation(
+        self, predictions: np.ndarray, metadata: Dict = None
+    ) -> AnnotationSceneEntity:
         """
         Converts a set of predictions into an AnnotationScene object
 
@@ -127,6 +137,10 @@ class DetectionToAnnotationConverter(IPredictionToAnnotationConverter):
 
 
 def create_converter(converter_type: Domain, labels: List[Union[str, LabelEntity]]):
+    """
+    Simple fabric for converters based on type of tasks
+    """
+
     if converter_type == Domain.DETECTION:
         return DetectionBoxToAnnotationConverter(labels)
     elif converter_type == Domain.SEGMENTATION:
@@ -140,6 +154,9 @@ def create_converter(converter_type: Domain, labels: List[Union[str, LabelEntity
 
 
 def get_label(labels_map: List[Any], index: int, label_domain: Domain) -> LabelEntity:
+    """
+    Get label from list of labels
+    """
     if isinstance(labels_map[index], LabelEntity):
         return labels_map[index]
 
@@ -155,11 +172,11 @@ class DetectionBoxToAnnotationConverter(IPredictionToAnnotationConverter):
         self.labels_map = labels
 
     def convert_to_annotation(
-        self, detections: List[utils.Detection], metadata: Dict[str, Any]
+        self, predictions: List[utils.Detection], metadata: Dict
     ) -> AnnotationSceneEntity:
         annotations = []
         image_size = metadata["original_shape"][1::-1]
-        for box in detections:
+        for box in predictions:
             scored_label = ScoredLabel(
                 get_label(self.labels_map, int(box.id), Domain.DETECTION), box.score
             )
@@ -191,13 +208,11 @@ class SegmentationToAnnotationConverter(IPredictionToAnnotationConverter):
         }
 
     def convert_to_annotation(
-        self, hard_predictions: np.ndarray, metadata: Dict[str, Any]
+        self, predictions: np.ndarray, metadata: Dict[str, Any]
     ) -> AnnotationSceneEntity:
-        soft_predictions = metadata.get(
-            "soft_predictions", np.ones(hard_predictions.shape)
-        )
+        soft_predictions = metadata.get("soft_predictions", np.ones(predictions.shape))
         annotations = create_annotation_from_segmentation_map(
-            hard_prediction=hard_predictions,
+            hard_prediction=predictions,
             soft_prediction=soft_predictions,
             label_map=self.label_map,
         )

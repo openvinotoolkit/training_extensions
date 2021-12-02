@@ -1,6 +1,7 @@
 """
 Visualizer for results of prediction
 """
+
 # INTEL CONFIDENTIAL
 #
 # Copyright (C) 2021 Intel Corporation
@@ -51,7 +52,7 @@ class Visualizer:
         self.delay = delay
         if delay is None:
             self.delay = (
-                0 if (media_type is None or media_type == MediaType.image) else 1
+                0 if (media_type is None or media_type == MediaType.IMAGE) else 1
             )
 
     def draw(self, image: np.ndarray, annotation: AnnotationSceneEntity) -> np.ndarray:
@@ -68,9 +69,15 @@ class Visualizer:
         return self.shape_drawer.draw(image, annotation, labels=[])
 
     def show(self, image: np.ndarray) -> None:
+        """
+        Show result image
+        """
         # TODO: RGB2BGR Conversion is to be made here.
         #   This requires ShapeDrawer.draw to be updated
         cv2.imshow(self.window_name, image)
 
     def is_quit(self) -> bool:
+        """
+        Check user wish to quit
+        """
         return ord("q") == cv2.waitKey(self.delay)
