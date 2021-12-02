@@ -15,7 +15,6 @@
 # in the License.
 
 import abc
-from enum import Enum, auto
 
 from ote_sdk.entities.model import ModelEntity
 

@@ -22,7 +22,7 @@ from setuptools import find_packages, setup
 
 SETUP_DIR = Path(__file__).resolve().parent
 
-with open(SETUP_DIR / "requirements.txt") as f:
+with open(SETUP_DIR / "requirements.txt", "r", encoding="utf8") as f:
     required = f.read().splitlines()
 
 packages = find_packages(str(SETUP_DIR))
@@ -42,7 +42,5 @@ setup(
         packages[0]: ["*.xml", "*.bin", "*.json"],
     },
     install_requires=required,
-    entry_points={
-        "console_scripts": ["{}={}.sync:main".format(packages[0], packages[0])]
-    },
+    entry_points={"console_scripts": [f"{packages[0]}={packages[0]}.sync:main"]},
 )

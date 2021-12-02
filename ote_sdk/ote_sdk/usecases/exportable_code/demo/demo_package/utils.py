@@ -20,7 +20,7 @@ import json
 import os
 from pathlib import Path
 
-from openvino.model_zoo.model_api import models, pipelines
+from openvino.model_zoo.model_api import models
 from openvino.model_zoo.model_api.adapters import OpenvinoAdapter, create_core
 
 from ote_sdk.entities.label import Domain
@@ -52,7 +52,7 @@ def get_parameters(path):
         if not os.path.exists(parameters_path):
             raise IOError("The path to the config was not found.")
 
-    with open(parameters_path, "r") as file:
+    with open(parameters_path, "r", encoding="utf8") as file:
         parameters = json.load(file)
 
     return parameters
@@ -63,10 +63,7 @@ def create_model(model_path=None, config_file=None):
     Create model using ModelAPI fabric
     """
 
-    model_adapter = OpenvinoAdapter(
-        create_core(),
-        get_model_path(model_path)
-    )
+    model_adapter = OpenvinoAdapter(create_core(), get_model_path(model_path))
     parameters = get_parameters(config_file)
     try:
         importlib.import_module(".model", parameters["name_of_model"].lower())
