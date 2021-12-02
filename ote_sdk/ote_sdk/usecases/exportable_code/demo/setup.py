@@ -39,7 +39,7 @@ setup(
     packages=packages,
     package_dir=package_dir,
     package_data={
-        packages[0]: ["*.xml", "*.bin", "*.json"],
+        packages[0]: ["*.json"],
     },
     install_requires=required,
     entry_points={"console_scripts": [f"{packages[0]}={packages[0]}.sync:main"]},
