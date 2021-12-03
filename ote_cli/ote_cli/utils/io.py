@@ -60,9 +60,13 @@ def read_model(model_configuration, path, train_dataset):
             "openvino.xml": ModelAdapter(read_binary(path[:-4] + ".xml")),
             "openvino.bin": ModelAdapter(read_binary(path[:-4] + ".bin")),
         }
-        confidence_threshold_path = os.path.join(os.path.dirname(path), "confidence_threshold")
+        confidence_threshold_path = os.path.join(
+            os.path.dirname(path), "confidence_threshold"
+        )
         if os.path.exists(confidence_threshold_path):
-            model_adapters["confidence_threshold"] = ModelAdapter(read_binary(confidence_threshold_path))
+            model_adapters["confidence_threshold"] = ModelAdapter(
+                read_binary(confidence_threshold_path)
+            )
     else:
         model_adapters = {"weights.pth": ModelAdapter(read_binary(path))}
 
