@@ -16,6 +16,7 @@
 
 """ This module contains the mapper for label related entities """
 
+import json
 from typing import Dict, Union, cast
 
 from ote_sdk.entities.color import Color
@@ -230,3 +231,12 @@ class LabelSchemaMapper:
             label_groups=label_groups,
         )
         return output
+
+
+def label_schema_to_bytes(label_schema: LabelSchemaEntity) -> bytes:
+    """
+    Returns json-serialized LabelSchemaEntity as bytes.
+    """
+
+    serialized_label_schema = LabelSchemaMapper.forward(label_schema)
+    return json.dumps(serialized_label_schema, indent=4).encode()
