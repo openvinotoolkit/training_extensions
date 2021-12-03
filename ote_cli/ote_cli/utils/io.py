@@ -43,7 +43,7 @@ def read_binary(path):
     Loads binary data stored at path.
 
         Args:
-            path: A path where to data from.
+            path: A path where to load data from.
     """
 
     with open(path, "rb") as read_file:
@@ -60,6 +60,9 @@ def read_model(model_configuration, path, train_dataset):
             "openvino.xml": ModelAdapter(read_binary(path[:-4] + ".xml")),
             "openvino.bin": ModelAdapter(read_binary(path[:-4] + ".bin")),
         }
+        confidence_threshold_path = os.path.join(os.path.dirname(path), "confidence_threshold")
+        if os.path.exists(confidence_threshold_path):
+            model_adapters["confidence_threshold"] = ModelAdapter(read_binary(confidence_threshold_path))
     else:
         model_adapters = {"weights.pth": ModelAdapter(read_binary(path))}
 
