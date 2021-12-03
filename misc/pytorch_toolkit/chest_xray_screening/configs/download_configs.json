@@ -1,0 +1,15 @@
+{
+    "densenet":{
+        "url":"http://miriad.digital-health.one/models/densenet.zip",
+        "dest_path":"model_weights/densenet.zip"
+
+    },
+    "densenet_eff":{
+        "url":"http://miriad.digital-health.one/models/densenet_eff.zip",
+        "dest_path":"model_weights/densenet_eff.zip"
+    },
+    "test_data":{
+        "url":"http://miriad.digital-health.one/sample_data/bmi1-2/sample_data.zip",
+        "dest_path":"test_data/sample_data.zip"
+    }
+}
