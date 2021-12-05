@@ -63,20 +63,26 @@ def dataset_definitions_fx(request):
     return data
 
 @pytest.fixture
-def template_paths_fx(request):
+def templates_root_dir_fx():
+    root = osp.dirname(osp.realpath(__file__))
+    return root
+
+@pytest.fixture
+def template_paths_fx(request, templates_root_dir_fx):
     """
     Return mapping model names to template paths, received from globbing the folder configs/ote/
     Note that the function searches files with name `template.yaml`, and for each such file
     the model name is the name of the parent folder of the file.
     """
-    root = osp.dirname(osp.dirname(osp.realpath(__file__))) #TODO: FIXME!!!!!!!!!!
-    glb = glob.glob(f'{root}/configs/ote/**/template.yaml', recursive=True)
+    root = templates_root_dir_fx
+    assert osp.isabs(root), f'Error: templates_root_dir_fx is not an absolute path: {root}'
+    glb = glob.glob(f'{root}/**/template.yaml', recursive=True)
     data = {}
     for p in glb:
         assert osp.isabs(p), f'Error: not absolute path {p}'
         name = osp.basename(osp.dirname(p))
         if name in data:
-            raise RuntimeError(f'Duplication of names in config/ote/ folder: {data[name]} and {p}')
+            raise RuntimeError(f'Duplication of names in {root} folder: {data[name]} and {p}')
         data[name] = p
     data[ROOT_PATH_KEY] = ''
     return data
