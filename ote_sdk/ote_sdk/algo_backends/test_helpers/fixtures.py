@@ -62,20 +62,19 @@ def dataset_definitions_fx(request):
     data[ROOT_PATH_KEY] = osp.dirname(path)
     return data
 
-@pytest.fixture
-def templates_root_dir_fx():
-    root = osp.dirname(osp.realpath(__file__))
-    return root
+@pytest.fixture(scope='session')
+def ote_templates_root_dir_fx():
+    raise NotImplementedError('The fixture ote_templates_root_dir_fx should be overriden in algo backend')
 
-@pytest.fixture
-def template_paths_fx(request, templates_root_dir_fx):
+@pytest.fixture(scope='session')
+def template_paths_fx(request, ote_templates_root_dir_fx):
     """
     Return mapping model names to template paths, received from globbing the folder configs/ote/
     Note that the function searches files with name `template.yaml`, and for each such file
     the model name is the name of the parent folder of the file.
     """
-    root = templates_root_dir_fx
-    assert osp.isabs(root), f'Error: templates_root_dir_fx is not an absolute path: {root}'
+    root = ote_templates_root_dir_fx
+    assert osp.isabs(root), f'Error: ote_templates_root_dir_fx is not an absolute path: {root}'
     glb = glob.glob(f'{root}/**/template.yaml', recursive=True)
     data = {}
     for p in glb:
@@ -222,18 +221,37 @@ def cur_test_expected_metrics_callback_fx(expected_metrics_all_tests_fx, current
     return _get_expected_metrics_callback
 
 
-# pytest magic
-def ote_pytest_generate_tests_insertion(metafunc):
-    if metafunc.cls is None:
-        return False
-    if not issubclass(metafunc.cls, OTETrainingTestInterface):
-        return False
+@pytest.fixture
+def ote_test_scenario_fx():
+    return 'api'
 
-    # It allows to filter by usecase
-    usecase = metafunc.config.getoption('--test-usecase')
+@pytest.fixture
+def ote_test_domain_fx():
+    raise NotImplementedError('The fixture ote_test_domain_fx should be overriden in algo backend')
 
-    argnames, argvalues, ids = metafunc.cls.get_list_of_tests(usecase)
-    metafunc.parametrize(argnames, argvalues, ids=ids, scope='class')
-    return True
-
-
+@pytest.fixture
+def data_collector_fx(request, ote_test_scenario_fx, ote_test_domain_fx) -> DataCollector:
+    setup = deepcopy(request.node.callspec.params)
+    setup['environment_name'] = os.environ.get('TT_ENVIRONMENT_NAME', 'no-env')
+    setup['test_type'] = os.environ.get('TT_TEST_TYPE', 'no-test-type') # TODO: get from e2e test type
+    setup['scenario'] = ote_test_scenario_fx
+    setup['test'] = request.node.name
+    setup['subject'] = ote_test_domain_fx
+    setup['project'] = 'ote'
+    if 'test_parameters' in setup:
+        assert isinstance(setup['test_parameters'], dict)
+        if 'dataset_name' not in setup:
+            setup['dataset_name'] = setup['test_parameters'].get('dataset_name')
+        if 'model_name' not in setup:
+            setup['model_name'] = setup['test_parameters'].get('model_name')
+        if 'test_stage' not in setup:
+            setup['test_stage'] = setup['test_parameters'].get('test_stage')
+        if 'usecase' not in setup:
+            setup['usecase'] = setup['test_parameters'].get('usecase')
+    logger.info(f'creating DataCollector: setup=\n{pformat(setup, width=140)}')
+    data_collector = DataCollector(name='TestOTEIntegration',
+                                   setup=setup)
+    with data_collector:
+        logger.info('data_collector is created')
+        yield data_collector
+    logger.info('data_collector is released')
