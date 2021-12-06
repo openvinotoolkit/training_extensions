@@ -21,10 +21,13 @@ from ote_sdk.entities.metrics import NullPerformance
 from ote_sdk.entities.resultset import ResultSetEntity, ResultsetPurpose
 from ote_sdk.tests.constants.ote_sdk_components import OteSdkComponent
 from ote_sdk.tests.constants.requirements import Requirements
+from ote_sdk.utils.time_utils import now
 
 
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestResultset:
+    creation_date = now()
+
     @pytest.mark.priority_medium
     @pytest.mark.component
     @pytest.mark.reqids(Requirements.REQ_1)
@@ -104,9 +107,7 @@ class TestResultset:
         assert result_set.performance != NullPerformance()
         assert result_set.has_score_metric() is True
 
-        creation_date = (
-            datetime.datetime.today().replace(microsecond=0).replace(second=0),
-        )
+        creation_date = self.creation_date
         result_set.creation_date = creation_date
         assert result_set.creation_date == creation_date
 
