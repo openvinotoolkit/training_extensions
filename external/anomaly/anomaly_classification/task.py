@@ -41,6 +41,7 @@ from ote_sdk.entities.model import ModelEntity, ModelPrecision, ModelStatus
 from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.entities.train_parameters import TrainParameters
+from ote_sdk.serialization.label_mapper import LabelSchemaMapper
 from ote_sdk.usecases.evaluation.metrics_helper import MetricsHelper
 from ote_sdk.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType, IExportTask
@@ -143,11 +144,10 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
         Save the model after training is completed.
         """
         config = self.get_config()
-        labels = {label.name: label.color.rgb_tuple for label in self.labels}
         model_info = {
             "model": self.model.state_dict(),
             "config": config,
-            "labels": labels,
+            "label_schema": LabelSchemaMapper.forward(self.task_environment.label_schema),
             "VERSION": 1,
         }
         buffer = io.BytesIO()
