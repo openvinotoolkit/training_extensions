@@ -121,7 +121,7 @@ class ModelEntity:
         model_format: ModelFormat = ModelFormat.OPENVINO,
         training_duration: float = 0.0,
         model_adapters: Optional[Dict[str, ModelAdapter]] = None,
-        exportable_code: bytes = None,
+        exportable_code: Optional[bytes] = None,
         precision: Optional[List[ModelPrecision]] = None,
         latency: int = 0,
         fps_throughput: int = 0,
@@ -407,13 +407,14 @@ class ModelEntity:
         self.__model_size_reduction = value
 
     @property
-    def exportable_code(self) -> bytes:
+    def exportable_code(self) -> Optional[bytes]:
         """
         Get the exportable_code
         """
         return self.__exportable_code
 
-    def set_deployable_model(self, data: bytes):
+    @exportable_code.setter
+    def exportable_code(self, data: bytes):
         self.__exportable_code = data
 
     def get_data(self, key: str) -> bytes:

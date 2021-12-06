@@ -43,7 +43,8 @@ def build_argparser():
         "-i",
         "--input",
         required=True,
-        help="Required. An input to process. The input must be a single image.",
+        help="Required. An input to process. The input must be a single image, "
+        "a folder of images, video file or camera id.",
     )
     args.add_argument(
         "-m",

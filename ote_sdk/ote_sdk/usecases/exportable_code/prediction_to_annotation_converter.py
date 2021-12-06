@@ -107,7 +107,7 @@ class DetectionToAnnotationConverter(IPredictionToAnnotationConverter):
         :raises ValueError: This error is raised if the shape of prediction is not
                             (n, 7) or (n, 6)
         """
-        annotations = list()
+        annotations = []
         if predictions.shape[1:] < (6,) or predictions.shape[1:] > (7,):
             raise ValueError(
                 f"Shape of prediction is not expected, expected (n, 7) or (n, 6) "
@@ -141,16 +141,19 @@ def create_converter(converter_type: Domain, labels: List[Union[str, LabelEntity
     Simple fabric for converters based on type of tasks
     """
 
+    converter: IPredictionToAnnotationConverter
     if converter_type == Domain.DETECTION:
-        return DetectionBoxToAnnotationConverter(labels)
+        converter = DetectionBoxToAnnotationConverter(labels)
     elif converter_type == Domain.SEGMENTATION:
-        return SegmentationToAnnotationConverter(labels)
+        converter = SegmentationToAnnotationConverter(labels)
     elif converter_type == Domain.CLASSIFICATION:
-        return ClassificationToAnnotationConverter(labels)
+        converter = ClassificationToAnnotationConverter(labels)
     elif converter_type == Domain.ANOMALY_CLASSIFICATION:
-        return AnomalyClassificationToAnnotationConverter(labels)
+        converter = AnomalyClassificationToAnnotationConverter(labels)
     else:
-        raise ValueError(converter_type)
+        raise ValueError(f"Unknown converter type: {converter_type}")
+
+    return converter
 
 
 def get_label(labels_map: List[Any], index: int, label_domain: Domain) -> LabelEntity:

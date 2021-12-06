@@ -5,14 +5,15 @@ Name of package is a name of model which was deployed.
 
 ## Structure of generated package:
 
-openvino.zip
-  * [model](./model)
-    * [model.xml](./model/model.xml)
-    * [model.bin](./model/model.bin)
-  * [python](./python)
-    * [README.md](./python/README.md)
-    * [demo.py](./python/demo.py)
-    * [requirements.txt](./python/requirements.txt)
+openvino.zip:
+
+  * [model](../model)
+    * [model.xml](../model/model.xml)
+    * [model.bin](../model/model.bin)
+  * [python](.)
+    * [README.md](./README.md)
+    * [demo.py](./demo.py)
+    * [requirements.txt](./requirements.txt)
     * <model_name>-0.0-py3-none-any.whl
 
 
