@@ -154,6 +154,7 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
                     "target_device": "ANY",
                     "preset": hparams.pot_parameters.preset.name.lower(),
                     "stat_subset_size": min(hparams.pot_parameters.stat_subset_size, len(data_loader)),
+                    "shuffle_data": True
                 },
             }
         ]
