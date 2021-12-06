@@ -1,3 +1,12 @@
+# Copyright (C) 2018-2021 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
+
+# This file contains functions that may be used in the conftest file of algo
+# backend and in the standard pytest hooks:
+# * pytest_addoption
+# * pytest_generate_tests
+# to add to pytest functionality required for algo backends reallife training tests.
 try:
     import e2e.fixtures
 
@@ -12,12 +21,20 @@ except ImportError:
 
 
 def get_pytest_plugins_from_ote():
+    """
+    The function generates pytest_plugins variable that should be used
+    in an algo backend' conftest.py file.
+    """
     import ote_sdk.algo_backends.test_helpers.fixtures
     pytest_plugins_from_ote_sdk = ['ote_sdk.algo_backends.test_helpers.fixtures']
     pytest_plugins = list(_pytest_plugins_from_e2e) + pytest_plugins_from_ote_sdk
     return pytest_plugins
 
 def ote_pytest_addoption_insertion(parser):
+    """
+    The function should be called in the standard pytest hook pytest_addoption
+    to add the options required for reallife training tests.
+    """
     if _e2e_pytest_addoption:
         _e2e_pytest_addoption(parser)
     parser.addoption('--dataset-definitions', action='store', default=None,
@@ -28,6 +45,10 @@ def ote_pytest_addoption_insertion(parser):
                      help='Optional. If the parameter is set, it points the YAML file with expected test metrics.')
 
 def ote_pytest_generate_tests_insertion(metafunc):
+    """
+    The function should be called in the standard pytest hook pytest_generate_tests
+    in algo backend's conftest.py file to generate parameters of reallife training tests.
+    """
     import logging
     from .training_tests_helper import OTETrainingTestInterface
     logger = logging.getLogger(__name__)
@@ -55,6 +76,10 @@ def ote_pytest_generate_tests_insertion(metafunc):
     return True
 
 def ote_conftest_insertion(*, default_repository_name=''):
+    """
+    The function should be called in an algo backend's conftest.py file
+    to set default repository name in e2e- test system.
+    """
     try:
         import os
         from e2e import config as config_e2e

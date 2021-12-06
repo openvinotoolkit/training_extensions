@@ -1,18 +1,13 @@
-# Copyright (C) 2021 Intel Corporation
+# Copyright (C) 2018-2021 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions
-# and limitations under the License.
 
-# TODO(lbeynens): remove unrequired imports
+# The file contains fixtures that may be used in algo backend's
+# reallife training tests.
+#
+# Note that the fixtures ote_templates_root_dir_fx and ote_test_domain_fx
+# MUST be overriden in algo backend's conftest.py file.
+
 import glob
 import logging
 import os
@@ -31,9 +26,48 @@ from .training_tests_helper import OTETrainingTestInterface
 
 logger = logging.getLogger(__name__)
 
+#########################################################################################
+# Fixtures that should be overriden in algo backends
 
-#TODO(lbeynens): make a func
-ROOT_PATH_KEY = '_root_path'
+@pytest.fixture(scope='session')
+def ote_templates_root_dir_fx():
+    """
+    The fixture returns an absolute path to the folder where (in the subfolders)
+    the reallife training tests will look OTE template files (the files 'template.yaml').
+
+    The fixture MUST be overriden in algo backend's conftest.py file.
+    """
+    raise NotImplementedError('The fixture ote_templates_root_dir_fx should be overriden in algo backend')
+
+@pytest.fixture
+def ote_test_domain_fx():
+    """
+    The fixture returns an string that will be used as the 'subject' field in the
+    e2e test system dashboard.
+    At the moment it is supposed that the fixture should returns something like
+    'custom-object-detection'.
+
+    The fixture MUST be overriden in algo backend's conftest.py file.
+    """
+    raise NotImplementedError('The fixture ote_test_domain_fx should be overriden in algo backend')
+
+@pytest.fixture
+def ote_test_scenario_fx():
+    """
+    The fixture returns an string that will be used as the 'scenario' field in the
+    e2e test system dashboard.
+    At the moment it is supposed that the fixture should returns something like
+    'api' or 'integration' or 'reallife'.
+
+    The fixture may be overriden in algo backend's conftest.py file.
+    """
+    return 'api'
+
+#
+#########################################################################################
+
+def ROOT_PATH_KEY():
+    return '_root_path'
 
 @pytest.fixture
 def dataset_definitions_fx(request):
@@ -59,17 +93,14 @@ def dataset_definitions_fx(request):
         return None
     with open(path) as f:
         data = yaml.safe_load(f)
-    data[ROOT_PATH_KEY] = osp.dirname(path)
+    data[ROOT_PATH_KEY()] = osp.dirname(path)
     return data
-
-@pytest.fixture(scope='session')
-def ote_templates_root_dir_fx():
-    raise NotImplementedError('The fixture ote_templates_root_dir_fx should be overriden in algo backend')
 
 @pytest.fixture(scope='session')
 def template_paths_fx(request, ote_templates_root_dir_fx):
     """
-    Return mapping model names to template paths, received from globbing the folder configs/ote/
+    Return mapping model names to template paths, received from globbing the
+    folder pointed by the fixture ote_templates_root_dir_fx.
     Note that the function searches files with name `template.yaml`, and for each such file
     the model name is the name of the parent folder of the file.
     """
@@ -83,7 +114,7 @@ def template_paths_fx(request, ote_templates_root_dir_fx):
         if name in data:
             raise RuntimeError(f'Duplication of names in {root} folder: {data[name]} and {p}')
         data[name] = p
-    data[ROOT_PATH_KEY] = ''
+    data[ROOT_PATH_KEY()] = ''
     return data
 
 @pytest.fixture
@@ -92,20 +123,22 @@ def expected_metrics_all_tests_fx(request):
     Return expected metrics for reallife tests read from a YAML file passed as the parameter --expected-metrics-file.
     Note that the structure of expected metrics should be a dict that maps tests to the expected metric numbers.
     The keys of the dict are the parameters' part of the test id-s -- see the function
-    TestOTEIntegration._generate_test_id.
+    OTETestHelper._generate_test_id, also see the fixture current_test_parameters_string_fx below.
+
     The value for each key is a structure that stores a requirement on some metric.
     The requirement can be either a target value (probably, with max size of quality drop)
     or the reference to another stage of the same model (also probably with max size of quality drop).
+    See details in the description of the fixture cur_test_expected_metrics_callback_fx below.
     E.g.
     ```
     'ACTION-training_evaluation,model-gen3_mobilenetV2_ATSS,dataset-bbcd,num_iters-KEEP_CONFIG_FIELD_VALUE,batch-KEEP_CONFIG_FIELD_VALUE,usecase-reallife':
         'metrics.accuracy.f-measure':
             'target_value': 0.81
-            'max_drop': 0.005
+            'max_diff': 0.005
     'ACTION-export_evaluation,model-gen3_mobilenetV2_ATSS,dataset-bbcd,num_iters-KEEP_CONFIG_FIELD_VALUE,batch-KEEP_CONFIG_FIELD_VALUE,usecase-reallife':
         'metrics.accuracy.f-measure':
             'base': 'training_evaluation.metrics.accuracy.f-measure'
-            'max_drop': 0.01
+            'max_diff': 0.01
     ```
     """
     path = request.config.getoption('--expected-metrics-file')
@@ -122,7 +155,7 @@ def expected_metrics_all_tests_fx(request):
 @pytest.fixture
 def current_test_parameters_fx(request):
     """
-    This fixture returns the test parameter `test_parameters`.
+    This fixture returns the test parameter `test_parameters` of the current test.
     """
     cur_test_params = deepcopy(request.node.callspec.params)
     assert 'test_parameters' in cur_test_params, \
@@ -222,15 +255,18 @@ def cur_test_expected_metrics_callback_fx(expected_metrics_all_tests_fx, current
 
 
 @pytest.fixture
-def ote_test_scenario_fx():
-    return 'api'
-
-@pytest.fixture
-def ote_test_domain_fx():
-    raise NotImplementedError('The fixture ote_test_domain_fx should be overriden in algo backend')
-
-@pytest.fixture
 def data_collector_fx(request, ote_test_scenario_fx, ote_test_domain_fx) -> DataCollector:
+    """
+    The fixture returns the DataCollector instance that may be used to pass
+    the values (metrics, intermediate results, etc) to the e2e test system dashboard.
+    Please, see the interface of DataCollector class in the function
+    e2e_test_system._create_class_DataCollector
+    (the function creates a stub class with the proper interface if e2e test system is not installed).
+
+    Note that the fixture contains both setup and teardown parts using yield from fixture.
+    Each test uses its own instance of DataCollector class, so each test will create its own row in the
+    dashboard of e2e test system.
+    """
     setup = deepcopy(request.node.callspec.params)
     setup['environment_name'] = os.environ.get('TT_ENVIRONMENT_NAME', 'no-env')
     setup['test_type'] = os.environ.get('TT_TEST_TYPE', 'no-test-type') # TODO: get from e2e test type

@@ -12,16 +12,18 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import os
-import copy
-import socket
-import datetime
+"""
+The functions in the file generate pytest decorators
+for integrating with e2e test system and the class DataCollector
+that allows to push information to the dashboard in e2e test system.
+
+If e2e test system is not installed, the generated pytest decorators do nothing,
+and the DataCollector class is replaced with a stub that does nothing too.
+"""
+
 import functools
 import pytest
 import traceback
-import getpass
-import time
-
 
 
 def _generate_e2e_pytest_decorators():
