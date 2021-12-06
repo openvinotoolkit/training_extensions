@@ -32,6 +32,7 @@ from ote_sdk.entities.shapes.polygon import Point, Polygon
 from ote_sdk.entities.shapes.rectangle import Rectangle
 from ote_sdk.tests.constants.ote_sdk_components import OteSdkComponent
 from ote_sdk.tests.constants.requirements import Requirements
+from ote_sdk.utils.time_utils import now
 
 
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
@@ -313,6 +314,7 @@ class TestAnnotationSceneKind:
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestAnnotationSceneEntity:
 
+    creation_date = now()
     labels: List[ScoredLabel] = []
     rectangle = Rectangle(x1=0.5, x2=1.0, y1=0.0, y2=0.5)
     annotation = Annotation(shape=rectangle, labels=labels)
@@ -381,7 +383,7 @@ class TestAnnotationSceneEntity:
 
         annotation_scene_entity = self.annotation_scene_entity
 
-        creation_date = datetime.datetime.today().replace(microsecond=False)
+        creation_date = self.creation_date
         annotation_scene_entity.id = 123456789
         annotation_scene_entity.kind = AnnotationSceneKind.PREDICTION
         annotation_scene_entity.editor_name = "editor"
