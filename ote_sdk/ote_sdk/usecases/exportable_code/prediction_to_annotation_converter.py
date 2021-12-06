@@ -136,9 +136,11 @@ class DetectionToAnnotationConverter(IPredictionToAnnotationConverter):
         return annotations
 
 
-def create_converter(converter_type: Domain, labels: List[Union[str, LabelEntity]]):
+def create_converter(
+    converter_type: Domain, labels: List[Union[str, LabelEntity]]
+) -> IPredictionToAnnotationConverter:
     """
-    Simple fabric for converters based on type of tasks
+    Simple factory for converters based on type of tasks
     """
 
     converter: IPredictionToAnnotationConverter
@@ -234,7 +236,7 @@ class ClassificationToAnnotationConverter(IPredictionToAnnotationConverter):
         self.labels_map = labels
 
     def convert_to_annotation(
-        self, predictions: List[Tuple], metadata: Dict[str, Any]
+        self, predictions: List[Tuple[int, float]], metadata: Dict[str, Any]
     ) -> AnnotationSceneEntity:
         labels = []
         for index, score in predictions:

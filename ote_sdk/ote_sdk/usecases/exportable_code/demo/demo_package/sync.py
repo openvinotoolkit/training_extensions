@@ -96,7 +96,7 @@ class SyncDemo:
 
 def main():
     """
-    Main function that is used for run demo.
+    Main function that is used to run demo.
     """
     args = build_argparser().parse_args()
     # create components for demo
