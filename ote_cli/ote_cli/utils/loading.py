@@ -21,6 +21,7 @@ import io
 from ote_sdk.entities.label import Domain, LabelEntity
 from ote_sdk.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
 from ote_sdk.entities.model_template import TaskType
+from ote_sdk.serialization.label_mapper import LabelSchemaMapper
 
 
 def load_model_weights(path):
@@ -42,7 +43,9 @@ def read_label_schema(model_bytes):
 
     import torch
 
-    return torch.load(io.BytesIO(model_bytes))["label_schema"]
+    return LabelSchemaMapper().backward(
+        torch.load(io.BytesIO(model_bytes))["label_schema"]
+    )
 
 
 def generate_label_schema(dataset, task_type):
