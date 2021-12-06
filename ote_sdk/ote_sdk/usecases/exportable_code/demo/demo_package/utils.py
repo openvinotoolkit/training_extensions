@@ -60,13 +60,13 @@ def get_parameters(path):
 
 def create_model(model_path=None, config_file=None):
     """
-    Create model using ModelAPI fabric
+    Create model using ModelAPI factory
     """
 
     model_adapter = OpenvinoAdapter(create_core(), get_model_path(model_path))
     parameters = get_parameters(config_file)
     try:
-        importlib.import_module(".model", parameters["name_of_model"].lower())
+        importlib.import_module(".model", "demo_package")
     except ImportError:
         print("Using model wrapper from Open Model Zoo ModelAPI")
     model = models.Model.create_model(

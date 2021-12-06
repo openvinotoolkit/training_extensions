@@ -17,6 +17,6 @@ Initialization of demo package
 # in the License.
 
 from .sync import SyncDemo
-from .utils import create_model
+from .utils import create_model, create_output_converter
 
-__all__ = ["SyncDemo", "create_model"]
+__all__ = ["SyncDemo", "create_model", "create_output_converter"]
