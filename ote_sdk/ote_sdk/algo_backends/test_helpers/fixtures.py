@@ -111,7 +111,7 @@ def dataset_definitions_fx(request):
             f" -- ALL THE TESTS THAT REQUIRE THIS PARAMETER ARE SKIPPED"
         )
         return None
-    with open(path) as f:
+    with open(path, encoding="utf-8") as f:
         data = yaml.safe_load(f)
     data[ROOT_PATH_KEY()] = osp.dirname(path)
     return data
@@ -145,7 +145,7 @@ def template_paths_fx(ote_templates_root_dir_fx):
 
 @pytest.fixture
 def expected_metrics_all_tests_fx(request):
-    # pylint: disable=C0301
+    # pylint: disable=line-too-long
     """
     Return expected metrics for reallife tests read from a YAML file passed as the parameter --expected-metrics-file.
     Note that the structure of expected metrics should be a dict that maps tests to the expected metric numbers.
@@ -176,7 +176,7 @@ def expected_metrics_all_tests_fx(request):
             " -- ALL THE COMPARISON WITH TARGET METRICS IN TESTS WILL BE FAILED"
         )
         return None
-    with open(path) as f:
+    with open(path, encoding="utf-8") as f:
         expected_metrics_all_tests = yaml.safe_load(f)
     assert isinstance(
         expected_metrics_all_tests, dict
