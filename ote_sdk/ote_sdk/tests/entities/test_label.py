@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import datetime
-
 import pytest
 
 from ote_sdk.entities.color import Color
@@ -21,6 +19,7 @@ from ote_sdk.entities.id import ID
 from ote_sdk.entities.label import Domain, LabelEntity
 from ote_sdk.tests.constants.ote_sdk_components import OteSdkComponent
 from ote_sdk.tests.constants.requirements import Requirements
+from ote_sdk.utils.time_utils import now
 
 
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
@@ -43,14 +42,14 @@ class TestDomain:
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestLabelEntity:
 
+    creation_date = now()
+
     label_car_params = {
         "name": "car",
         "domain": Domain.DETECTION,
         "color": Color(255, 0, 0),
         "hotkey": "ctrl+1",
-        "creation_date": datetime.datetime.today()
-        .replace(microsecond=0)
-        .replace(second=0),
+        "creation_date": creation_date,
         "is_empty": False,
         "id": ID(123456789),
     }
@@ -60,9 +59,7 @@ class TestLabelEntity:
         "domain": Domain.DETECTION,
         "color": Color(255, 17, 17),
         "hotkey": "ctrl+2",
-        "creation_date": datetime.datetime.today()
-        .replace(microsecond=0)
-        .replace(second=0),
+        "creation_date": creation_date,
         "is_empty": False,
         "id": ID(987654321),
     }
