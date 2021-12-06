@@ -86,10 +86,7 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
         config (Union[DictConfig, ListConfig]): configuration file
     """
 
-    def __init__(
-        self,
-        task_environment: TaskEnvironment,
-    ) -> None:
+    def __init__(self, task_environment: TaskEnvironment) -> None:
         self.task_environment = task_environment
         self.config = self.get_config()
         self.inferencer = self.load_inferencer()
