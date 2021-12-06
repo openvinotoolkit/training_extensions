@@ -2,11 +2,15 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-# The file contains fixtures that may be used in algo backend's
-# reallife training tests.
-#
-# Note that the fixtures ote_templates_root_dir_fx and ote_test_domain_fx
-# MUST be overriden in algo backend's conftest.py file.
+"""
+The file contains fixtures that may be used in algo backend's
+reallife training tests.
+
+Note that the fixtures ote_templates_root_dir_fx and ote_test_domain_fx
+MUST be overriden in algo backend's conftest.py file.
+"""
+
+# pylint: disable=redefined-outer-name
 
 import glob
 import logging
@@ -21,15 +25,14 @@ import yaml
 
 from .e2e_test_system import DataCollector
 from .training_tests_common import REALLIFE_USECASE_CONSTANT
-from .training_tests_helper import OTETrainingTestInterface
-
 
 logger = logging.getLogger(__name__)
 
 #########################################################################################
 # Fixtures that should be overriden in algo backends
 
-@pytest.fixture(scope='session')
+
+@pytest.fixture(scope="session")
 def ote_templates_root_dir_fx():
     """
     The fixture returns an absolute path to the folder where (in the subfolders)
@@ -37,7 +40,10 @@ def ote_templates_root_dir_fx():
 
     The fixture MUST be overriden in algo backend's conftest.py file.
     """
-    raise NotImplementedError('The fixture ote_templates_root_dir_fx should be overriden in algo backend')
+    raise NotImplementedError(
+        "The fixture ote_templates_root_dir_fx should be overriden in algo backend"
+    )
+
 
 @pytest.fixture
 def ote_test_domain_fx():
@@ -49,7 +55,10 @@ def ote_test_domain_fx():
 
     The fixture MUST be overriden in algo backend's conftest.py file.
     """
-    raise NotImplementedError('The fixture ote_test_domain_fx should be overriden in algo backend')
+    raise NotImplementedError(
+        "The fixture ote_test_domain_fx should be overriden in algo backend"
+    )
+
 
 @pytest.fixture
 def ote_test_scenario_fx():
@@ -61,13 +70,22 @@ def ote_test_scenario_fx():
 
     The fixture may be overriden in algo backend's conftest.py file.
     """
-    return 'api'
+    return "api"
+
 
 #
 #########################################################################################
 
+# pylint: disable=invalid-name
+
+
 def ROOT_PATH_KEY():
-    return '_root_path'
+    """
+    Constant for storying in dict-s with paths the root path
+    that will be used for resolving relative paths.
+    """
+    return "_root_path"
+
 
 @pytest.fixture
 def dataset_definitions_fx(request):
@@ -85,19 +103,22 @@ def dataset_definitions_fx(request):
         }
     }
     """
-    path = request.config.getoption('--dataset-definitions')
+    path = request.config.getoption("--dataset-definitions")
     if path is None:
-        logger.warning(f'The command line parameter "--dataset-definitions" is not set'
-                       f'whereas it is required for the test {request.node.originalname or request.node.name}'
-                       f' -- ALL THE TESTS THAT REQUIRE THIS PARAMETER ARE SKIPPED')
+        logger.warning(
+            f"The command line parameter '--dataset-definitions' is not set"
+            f"whereas it is required for the test {request.node.originalname or request.node.name}"
+            f" -- ALL THE TESTS THAT REQUIRE THIS PARAMETER ARE SKIPPED"
+        )
         return None
     with open(path) as f:
         data = yaml.safe_load(f)
     data[ROOT_PATH_KEY()] = osp.dirname(path)
     return data
 
-@pytest.fixture(scope='session')
-def template_paths_fx(request, ote_templates_root_dir_fx):
+
+@pytest.fixture(scope="session")
+def template_paths_fx(ote_templates_root_dir_fx):
     """
     Return mapping model names to template paths, received from globbing the
     folder pointed by the fixture ote_templates_root_dir_fx.
@@ -105,20 +126,26 @@ def template_paths_fx(request, ote_templates_root_dir_fx):
     the model name is the name of the parent folder of the file.
     """
     root = ote_templates_root_dir_fx
-    assert osp.isabs(root), f'Error: ote_templates_root_dir_fx is not an absolute path: {root}'
-    glb = glob.glob(f'{root}/**/template.yaml', recursive=True)
+    assert osp.isabs(
+        root
+    ), f"Error: ote_templates_root_dir_fx is not an absolute path: {root}"
+    glb = glob.glob(f"{root}/**/template.yaml", recursive=True)
     data = {}
     for p in glb:
-        assert osp.isabs(p), f'Error: not absolute path {p}'
+        assert osp.isabs(p), f"Error: not absolute path {p}"
         name = osp.basename(osp.dirname(p))
         if name in data:
-            raise RuntimeError(f'Duplication of names in {root} folder: {data[name]} and {p}')
+            raise RuntimeError(
+                f"Duplication of names in {root} folder: {data[name]} and {p}"
+            )
         data[name] = p
-    data[ROOT_PATH_KEY()] = ''
+    data[ROOT_PATH_KEY()] = ""
     return data
+
 
 @pytest.fixture
 def expected_metrics_all_tests_fx(request):
+    # pylint: disable=C0301
     """
     Return expected metrics for reallife tests read from a YAML file passed as the parameter --expected-metrics-file.
     Note that the structure of expected metrics should be a dict that maps tests to the expected metric numbers.
@@ -141,16 +168,21 @@ def expected_metrics_all_tests_fx(request):
             'max_diff': 0.01
     ```
     """
-    path = request.config.getoption('--expected-metrics-file')
+    path = request.config.getoption("--expected-metrics-file")
     if path is None:
-        logger.warning(f'The command line parameter "--expected-metrics-file" is not set'
-                       f'whereas it is required to compare with target metrics'
-                       f' -- ALL THE COMPARISON WITH TARGET METRICS IN TESTS WILL BE FAILED')
+        logger.warning(
+            "The command line parameter '--expected-metrics-file' is not set"
+            "whereas it is required to compare with target metrics"
+            " -- ALL THE COMPARISON WITH TARGET METRICS IN TESTS WILL BE FAILED"
+        )
         return None
     with open(path) as f:
         expected_metrics_all_tests = yaml.safe_load(f)
-    assert isinstance(expected_metrics_all_tests, dict), f'Wrong metrics file {path}: {expected_metrics_all_tests}'
+    assert isinstance(
+        expected_metrics_all_tests, dict
+    ), f"Wrong metrics file {path}: {expected_metrics_all_tests}"
     return expected_metrics_all_tests
+
 
 @pytest.fixture
 def current_test_parameters_fx(request):
@@ -158,9 +190,12 @@ def current_test_parameters_fx(request):
     This fixture returns the test parameter `test_parameters` of the current test.
     """
     cur_test_params = deepcopy(request.node.callspec.params)
-    assert 'test_parameters' in cur_test_params, \
-            f'The test {request.node.name} should be parametrized by parameter "test_parameters"'
-    return cur_test_params['test_parameters']
+    assert "test_parameters" in cur_test_params, (
+        f"The test {request.node.name} should be parametrized "
+        f"by parameter 'test_parameters'"
+    )
+    return cur_test_params["test_parameters"]
+
 
 @pytest.fixture
 def current_test_parameters_string_fx(request):
@@ -169,15 +204,19 @@ def current_test_parameters_string_fx(request):
     (i.e. the part of id that corresponds to the test parameters)
     """
     node_name = request.node.name
-    assert '[' in node_name, f'Wrong format of node name {node_name}'
-    assert node_name.endswith(']'), f'Wrong format of node name {node_name}'
-    index = node_name.find('[')
-    return node_name[index+1:-1]
+    assert "[" in node_name, f"Wrong format of node name {node_name}"
+    assert node_name.endswith("]"), f"Wrong format of node name {node_name}"
+    index = node_name.find("[")
+    return node_name[index + 1 : -1]
 
-#TODO(lbeynens): replace 'callback' with 'factory'
+
+# TODO(lbeynens): replace 'callback' with 'factory'
 @pytest.fixture
-def cur_test_expected_metrics_callback_fx(expected_metrics_all_tests_fx, current_test_parameters_string_fx,
-                                          current_test_parameters_fx) -> Optional[Callable[[],Dict]]:
+def cur_test_expected_metrics_callback_fx(
+    expected_metrics_all_tests_fx,
+    current_test_parameters_string_fx,
+    current_test_parameters_fx,
+) -> Optional[Callable[[], Dict]]:
     """
     This fixture returns
     * either a callback -- a function without parameters that returns
@@ -232,7 +271,7 @@ def cur_test_expected_metrics_callback_fx(expected_metrics_all_tests_fx, current
          E.g. if `max_diff_if_greater_threshold` is absent, the range will be
          [target_value - max_diff_if_less_threshold, +infinity]
     """
-    if REALLIFE_USECASE_CONSTANT() != current_test_parameters_fx['usecase']:
+    if REALLIFE_USECASE_CONSTANT() != current_test_parameters_fx["usecase"]:
         return None
 
     # make a copy to avoid later changes in the structs
@@ -241,21 +280,30 @@ def cur_test_expected_metrics_callback_fx(expected_metrics_all_tests_fx, current
 
     def _get_expected_metrics_callback():
         if expected_metrics_all_tests is None:
-            raise ValueError(f'The dict with expected metrics cannot be read, although it is required '
-                             f'for validation in the test "{current_test_parameters_string}"')
+            raise ValueError(
+                f"The dict with expected metrics cannot be read, although it is required "
+                f"for validation in the test '{current_test_parameters_string}'"
+            )
         if current_test_parameters_string not in expected_metrics_all_tests:
-            raise ValueError(f'The parameters id string {current_test_parameters_string} is not inside '
-                             f'the dict with expected metrics -- cannot make validation, so test is failed')
+            raise ValueError(
+                f"The parameters id string {current_test_parameters_string} is not inside "
+                f"the dict with expected metrics -- cannot make validation, so test is failed"
+            )
         expected_metrics = expected_metrics_all_tests[current_test_parameters_string]
         if not isinstance(expected_metrics, dict):
-            raise ValueError(f'The expected metric for parameters id string {current_test_parameters_string} '
-                             f'should be a dict, whereas it is: {pformat(expected_metrics)}')
+            raise ValueError(
+                f"The expected metric for parameters id string {current_test_parameters_string} "
+                f"should be a dict, whereas it is: {pformat(expected_metrics)}"
+            )
         return expected_metrics
+
     return _get_expected_metrics_callback
 
 
 @pytest.fixture
-def data_collector_fx(request, ote_test_scenario_fx, ote_test_domain_fx) -> DataCollector:
+def data_collector_fx(
+    request, ote_test_scenario_fx, ote_test_domain_fx
+) -> DataCollector:
     """
     The fixture returns the DataCollector instance that may be used to pass
     the values (metrics, intermediate results, etc) to the e2e test system dashboard.
@@ -268,26 +316,27 @@ def data_collector_fx(request, ote_test_scenario_fx, ote_test_domain_fx) -> Data
     dashboard of e2e test system.
     """
     setup = deepcopy(request.node.callspec.params)
-    setup['environment_name'] = os.environ.get('TT_ENVIRONMENT_NAME', 'no-env')
-    setup['test_type'] = os.environ.get('TT_TEST_TYPE', 'no-test-type') # TODO: get from e2e test type
-    setup['scenario'] = ote_test_scenario_fx
-    setup['test'] = request.node.name
-    setup['subject'] = ote_test_domain_fx
-    setup['project'] = 'ote'
-    if 'test_parameters' in setup:
-        assert isinstance(setup['test_parameters'], dict)
-        if 'dataset_name' not in setup:
-            setup['dataset_name'] = setup['test_parameters'].get('dataset_name')
-        if 'model_name' not in setup:
-            setup['model_name'] = setup['test_parameters'].get('model_name')
-        if 'test_stage' not in setup:
-            setup['test_stage'] = setup['test_parameters'].get('test_stage')
-        if 'usecase' not in setup:
-            setup['usecase'] = setup['test_parameters'].get('usecase')
-    logger.info(f'creating DataCollector: setup=\n{pformat(setup, width=140)}')
-    data_collector = DataCollector(name='TestOTEIntegration',
-                                   setup=setup)
+    setup["environment_name"] = os.environ.get("TT_ENVIRONMENT_NAME", "no-env")
+    setup["test_type"] = os.environ.get(
+        "TT_TEST_TYPE", "no-test-type"
+    )  # TODO: get from e2e test type
+    setup["scenario"] = ote_test_scenario_fx
+    setup["test"] = request.node.name
+    setup["subject"] = ote_test_domain_fx
+    setup["project"] = "ote"
+    if "test_parameters" in setup:
+        assert isinstance(setup["test_parameters"], dict)
+        if "dataset_name" not in setup:
+            setup["dataset_name"] = setup["test_parameters"].get("dataset_name")
+        if "model_name" not in setup:
+            setup["model_name"] = setup["test_parameters"].get("model_name")
+        if "test_stage" not in setup:
+            setup["test_stage"] = setup["test_parameters"].get("test_stage")
+        if "usecase" not in setup:
+            setup["usecase"] = setup["test_parameters"].get("usecase")
+    logger.info(f"creating DataCollector: setup=\n{pformat(setup, width=140)}")
+    data_collector = DataCollector(name="TestOTEIntegration", setup=setup)
     with data_collector:
-        logger.info('data_collector is created')
+        logger.info("data_collector is created")
         yield data_collector
-    logger.info('data_collector is released')
+    logger.info("data_collector is released")
