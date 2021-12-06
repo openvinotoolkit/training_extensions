@@ -89,14 +89,25 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
     def __init__(
         self,
         task_environment: TaskEnvironment,
-        config: Union[DictConfig, ListConfig],
     ) -> None:
         self.task_environment = task_environment
-        self.config = config
+        self.config = self.get_config()
         self.inferencer = self.load_inferencer()
         labels = task_environment.get_labels()
         self.normal_label = [label for label in labels if label.name == LabelNames.normal][0]
         self.anomalous_label = [label for label in labels if label.name == LabelNames.anomalous][0]
+
+    def get_config(self) -> Union[DictConfig, ListConfig]:
+        """
+        Get Anomalib Config from task environment
+
+        Returns:
+            Union[DictConfig, ListConfig]: Anomalib config
+        """
+        task_name = self.task_environment.model_template.name
+        ote_config = self.task_environment.get_hyper_parameters()
+        config = get_anomalib_config(task_name=task_name, ote_config=ote_config)
+        return config
 
     def infer(self, dataset: DatasetEntity, inference_parameters: InferenceParameters) -> DatasetEntity:
         if self.task_environment.model is None:
