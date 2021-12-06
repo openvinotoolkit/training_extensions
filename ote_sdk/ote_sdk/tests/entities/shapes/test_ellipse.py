@@ -24,13 +24,15 @@ from ote_sdk.utils.time_utils import now
 
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestEllipse:
+    modification_date = now()
+
     def ellipse_params(self):
         ellipse_params = {
             "x1": 0.5,
             "x2": 1.0,
             "y1": 0.0,
             "y2": 0.5,
-            "modification_date": now().replace(microsecond=False),
+            "modification_date": self.modification_date,
         }
         return ellipse_params
 
@@ -67,7 +69,7 @@ class TestEllipse:
         """
 
         ellipse = self.ellipse()
-        modification_date = now().replace(microsecond=False)
+        modification_date = self.modification_date
 
         assert ellipse.width == 0.5
         assert ellipse.height == 0.5
@@ -147,7 +149,7 @@ class TestEllipse:
             "x2": 1.0,
             "y1": 0.0,
             "y2": 0.5,
-            "modification_date": now().replace(microsecond=False),
+            "modification_date": self.modification_date,
         }
 
         third_ellipse_params = {
@@ -155,7 +157,7 @@ class TestEllipse:
             "y1": 0.5,
             "x2": 0.4,
             "y2": 0.6,
-            "modification_date": now().replace(microsecond=False),
+            "modification_date": self.modification_date,
         }
 
         other_ellipse = Ellipse(**other_ellipse_params)

@@ -181,6 +181,8 @@ class TestModelConfiguration:
 
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestModelEntity:
+    creation_date = now()
+
     def generate_random_image(self):
         with generate_random_single_image() as path:
             image = Image(file_path=path)
@@ -307,8 +309,8 @@ class TestModelEntity:
         set_params = {
             "configuration": environment.get_model_configuration(),
             "train_dataset": dataset,
-            "id": 1234567890,
-            "creation_date": now().replace(microsecond=0),
+            "id": ID(1234567890),
+            "creation_date": self.creation_date,
             "previous_trained_revision": 5,
             "previous_revision": 2,
             "version": 2,

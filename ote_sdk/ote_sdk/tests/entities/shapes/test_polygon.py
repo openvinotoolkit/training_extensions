@@ -120,6 +120,8 @@ class TestPoint:
 
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestPolygon:
+    modification_date = now()
+
     def points(self):
         point1 = Point(0.5, 0.0)
         point2 = Point(0.75, 0.2)
@@ -133,14 +135,10 @@ class TestPolygon:
         return [point1, point2, point3]
 
     def polygon(self):
-        return Polygon(
-            self.points(), modification_date=now().replace(microsecond=False)
-        )
+        return Polygon(self.points(), modification_date=self.modification_date)
 
     def other_polygon(self):
-        return Polygon(
-            self.other_points(), modification_date=now().replace(microsecond=False)
-        )
+        return Polygon(self.other_points(), modification_date=self.modification_date)
 
     @pytest.mark.priority_medium
     @pytest.mark.component
@@ -163,7 +161,7 @@ class TestPolygon:
         """
 
         polygon = self.polygon()
-        modification_date = now().replace(microsecond=False)
+        modification_date = self.modification_date
         assert len(polygon.points) == 3
         assert polygon.modification_date == modification_date
         assert polygon.points == self.points()
