@@ -58,7 +58,7 @@ def get_parameters(path):
     return parameters
 
 
-def create_model(model_path=None, config_file=None):
+def create_model(model_path, config_file=None):
     """
     Create model using ModelAPI factory
     """
