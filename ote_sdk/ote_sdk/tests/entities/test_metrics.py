@@ -292,15 +292,9 @@ class TestDateMetric:
         2. Check name, date and type attributes of DateMetric object with specified date parameter
         """
         # Check for DateMetric with not specified date parameter
-        date_expected = datetime.datetime.now(datetime.timezone.utc).replace(
-            microsecond=False
-        )
         date_not_specified_metric = self.date_metric_no_date_specified()
-        date_not_specified_metric.date = date_not_specified_metric.date.replace(
-            microsecond=False
-        )
         assert date_not_specified_metric.name == "DateMetric with not specified date"
-        assert date_not_specified_metric.date == date_expected
+        assert isinstance(date_not_specified_metric.date, datetime.datetime)
         assert date_not_specified_metric.type() == "date"
         # Check for DateMetric with specified date parameter
         date_specified_metric_name = "DateMetric with specified date"
