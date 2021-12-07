@@ -109,9 +109,9 @@ class TestAnnotation:
         annotation = self.annotation
         ellipse = Ellipse(x1=0.5, y1=0.1, x2=0.8, y2=0.3)
         annotation.shape = ellipse
-        annotation.id = 123456789
+        annotation.id = ID(123456789)
 
-        assert annotation.id == 123456789
+        assert annotation.id == ID(123456789)
         assert annotation.shape == Ellipse(x1=0.5, y1=0.1, x2=0.8, y2=0.3)
 
     @pytest.mark.priority_medium
@@ -384,13 +384,13 @@ class TestAnnotationSceneEntity:
         annotation_scene_entity = self.annotation_scene_entity
 
         creation_date = self.creation_date
-        annotation_scene_entity.id = 123456789
+        annotation_scene_entity.id = ID(123456789)
         annotation_scene_entity.kind = AnnotationSceneKind.PREDICTION
         annotation_scene_entity.editor_name = "editor"
         annotation_scene_entity.creation_date = creation_date
         annotation_scene_entity.annotations = self.annotation
 
-        assert annotation_scene_entity.id == 123456789
+        assert annotation_scene_entity.id == ID(123456789)
         assert annotation_scene_entity.kind == AnnotationSceneKind.PREDICTION
         assert annotation_scene_entity.editor_name == "editor"
         assert annotation_scene_entity.creation_date == creation_date
@@ -572,13 +572,13 @@ class TestAnnotationSceneEntity:
 
         assert annotation_scene_entity.get_label_ids() == {ID()}
 
-        bus = LabelEntity(id=123456789, name="bus", domain=Domain.DETECTION)
+        bus = LabelEntity(id=ID(123456789), name="bus", domain=Domain.DETECTION)
         bus_label = ScoredLabel(bus)
         labels = [bus_label]
         annotation = Annotation(shape=self.rectangle, labels=labels)
         annotation_scene_entity.append_annotation(annotation)
 
-        assert annotation_scene_entity.get_label_ids() == {ID(), 123456789}
+        assert annotation_scene_entity.get_label_ids() == {ID(), ID(123456789)}
 
 
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
