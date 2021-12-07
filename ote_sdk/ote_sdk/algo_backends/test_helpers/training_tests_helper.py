@@ -7,6 +7,7 @@ import logging
 from abc import ABC, abstractmethod
 from collections import OrderedDict
 from copy import deepcopy
+from pprint import pformat
 from typing import Any, Dict, List, Optional, Type
 
 from .training_test_case import (
@@ -154,7 +155,7 @@ class DefaultOTETestCreationParametersInterface(OTETestCreationParametersInterfa
 
     def default_test_parameters(self) -> Dict[str, Any]:
         DEFAULT_TEST_PARAMETERS = {
-            "num_iters": 1,
+            "num_training_iters": 1,
             "batch_size": 2,
         }
         return deepcopy(DEFAULT_TEST_PARAMETERS)
@@ -249,10 +250,16 @@ class OTETestHelper:
                 test_parameters[key] = default_val
 
     def _generate_test_id(self, test_parameters):
-        id_parts = (
-            f"{short_par_name}-{test_parameters[par_name]}"
-            for par_name, short_par_name in self.short_test_parameters_names_for_generating_id.items()
-        )
+        param_name_to_short_name = self.short_test_parameters_names_for_generating_id
+        id_parts = []
+        for par_name, short_par_name in param_name_to_short_name.items():
+            if par_name not in test_parameters:
+                raise ValueError(
+                    f"Test parameters do not contain key '{par_name}', "
+                    f"test_parameters={pformat(test_parameters)}"
+                )
+            id_parts.append(f"{short_par_name}-{test_parameters[par_name]}")
+
         return ",".join(id_parts)
 
     def get_list_of_tests(self, usecase: Optional[str] = None):
