@@ -20,6 +20,7 @@ from random import randint
 from ote_sdk.entities.id import ID
 from ote_sdk.entities.label import Color, Domain, LabelEntity
 from ote_sdk.entities.label_schema import LabelSchemaEntity
+from ote_sdk.serialization.datetime_mapper import DatetimeMapper
 from ote_sdk.serialization.label_mapper import (
     ColorMapper,
     LabelMapper,
@@ -75,7 +76,7 @@ def test_label_entity_serialization():
         "color": {"red": red, "green": green, "blue": blue, "alpha": alpha},
         "hotkey": "ctrl+1",
         "domain": "DETECTION",
-        "creation_date": cur_date,
+        "creation_date": DatetimeMapper.forward(cur_date),
         "is_empty": False,
     }
 
@@ -131,7 +132,7 @@ def test_flat_label_schema_serialization():
                 "color": ColorMapper.forward(colors[0]),
                 "hotkey": "",
                 "domain": "CLASSIFICATION",
-                "creation_date": cur_date,
+                "creation_date": DatetimeMapper.forward(cur_date),
                 "is_empty": False,
             },
             "1": {
@@ -140,7 +141,7 @@ def test_flat_label_schema_serialization():
                 "color": ColorMapper.forward(colors[1]),
                 "hotkey": "",
                 "domain": "CLASSIFICATION",
-                "creation_date": cur_date,
+                "creation_date": DatetimeMapper.forward(cur_date),
                 "is_empty": False,
             },
             "2": {
@@ -149,7 +150,7 @@ def test_flat_label_schema_serialization():
                 "color": ColorMapper.forward(colors[2]),
                 "hotkey": "",
                 "domain": "CLASSIFICATION",
-                "creation_date": cur_date,
+                "creation_date": DatetimeMapper.forward(cur_date),
                 "is_empty": False,
             },
         },
