@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2021 Intel Corporation
+# Copyright (C) 2021 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 
@@ -48,9 +48,9 @@ def ote_templates_root_dir_fx():
 @pytest.fixture
 def ote_test_domain_fx():
     """
-    The fixture returns an string that will be used as the 'subject' field in the
+    The fixture returns a string that will be used as the 'subject' field in the
     e2e test system dashboard.
-    At the moment it is supposed that the fixture should returns something like
+    At the moment it is supposed that the fixture should return something like
     'custom-object-detection'.
 
     The fixture MUST be overriden in algo backend's conftest.py file.
@@ -63,9 +63,9 @@ def ote_test_domain_fx():
 @pytest.fixture
 def ote_test_scenario_fx():
     """
-    The fixture returns an string that will be used as the 'scenario' field in the
+    The fixture returns a string that will be used as the 'scenario' field in the
     e2e test system dashboard.
-    At the moment it is supposed that the fixture should returns something like
+    At the moment it is supposed that the fixture should return something like
     'api' or 'integration' or 'reallife'.
 
     The fixture may be overriden in algo backend's conftest.py file.
@@ -81,7 +81,7 @@ def ote_test_scenario_fx():
 
 def ROOT_PATH_KEY():
     """
-    Constant for storying in dict-s with paths the root path
+    Constant for storing in dict-s with paths the root path
     that will be used for resolving relative paths.
     """
     return "_root_path"
@@ -91,7 +91,17 @@ def ROOT_PATH_KEY():
 def dataset_definitions_fx(request):
     """
     Return dataset definitions read from a YAML file passed as the parameter --dataset-definitions.
+
     Note that the dataset definitions should store the following structure:
+    {
+        <dataset_name1>: { ...<some elements describing dataset1>... },
+        <dataset_name2>: { ...<some elements describing dataset2>... },
+        ...
+    }
+    The elements describing datasets could have arbitrary structure, the
+    structure is defined by the functions parsing dataset in the algo backends.
+
+    An example for mmdetection algo backend:
     {
         <dataset_name>: {
             'annotations_train': <annotation_file_path1>
@@ -102,6 +112,10 @@ def dataset_definitions_fx(request):
             'images_test_dir':  <images_folder_path3>
         }
     }
+
+    Also one more key with value ROOT_PATH_KEY() is added -- it is the path to
+    the folder where the dataset definitions file is placed, this path will be
+    used to resolve relative paths in the dataset structures.
     """
     path = request.config.getoption("--dataset-definitions")
     if path is None:

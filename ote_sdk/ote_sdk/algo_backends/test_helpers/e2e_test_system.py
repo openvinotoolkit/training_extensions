@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2021 Intel Corporation
+# Copyright (C) 2021 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 
@@ -6,7 +6,7 @@
 """
 The functions in the file generate pytest decorators
 for integrating with e2e test system and the class DataCollector
-that allows to push information to the dashboard in e2e test system.
+that allows pushing information to the dashboard of e2e test system.
 
 If e2e test system is not installed, the generated pytest decorators do nothing,
 and the DataCollector class is replaced with a stub that does nothing too.

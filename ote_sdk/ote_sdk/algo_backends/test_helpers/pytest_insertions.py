@@ -1,12 +1,15 @@
-# Copyright (C) 2018-2021 Intel Corporation
+# Copyright (C) 2021 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 
-# This file contains functions that may be used in the conftest file of algo
-# backend and in the standard pytest hooks:
-# * pytest_addoption
-# * pytest_generate_tests
-# to add to pytest functionality required for algo backends reallife training tests.
+"""
+This file contains functions that may be used in the conftest file of algo
+backend and in the standard pytest hooks:
+* pytest_addoption
+* pytest_generate_tests
+to add to pytest functionality required for algo backends reallife training tests.
+"""
+
 try:
     import e2e.fixtures
     from e2e import config  # noqa
