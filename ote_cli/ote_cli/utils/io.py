@@ -16,36 +16,78 @@ Utils for dynamically importing stuff
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import io
+import json
+import os
 
 from ote_sdk.entities.label import Domain, LabelEntity
 from ote_sdk.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
+from ote_sdk.entities.model import ModelEntity
 from ote_sdk.entities.model_template import TaskType
 from ote_sdk.serialization.label_mapper import LabelSchemaMapper
+from ote_sdk.usecases.adapters.model_adapter import ModelAdapter
 
 
-def load_model_weights(path):
+def save_model_data(model, folder):
     """
-    Loads binary weights of a model.
+    Saves model data to folder. Folder is created if it does not exist.
+    """
+
+    os.makedirs(folder, exist_ok=True)
+    for filename, model_adapter in model.model_adapters.items():
+        with open(os.path.join(folder, filename), "wb") as write_file:
+            write_file.write(model_adapter.data)
+
+
+def read_binary(path):
+    """
+    Loads binary data stored at path.
 
         Args:
-            path: A path where to load model from.
+            path: A path where to load data from.
     """
 
     with open(path, "rb") as read_file:
         return read_file.read()
 
 
-def read_label_schema(model_bytes):
+def read_model(model_configuration, path, train_dataset):
     """
-    Reads serialized representation from binary snapshot and returns deserialized LabelSchema.
+    Creates ModelEntity based on model_configuration and data stored at path.
     """
 
-    import torch
+    if path.endswith(".bin") or path.endswith(".xml"):
+        model_adapters = {
+            "openvino.xml": ModelAdapter(read_binary(path[:-4] + ".xml")),
+            "openvino.bin": ModelAdapter(read_binary(path[:-4] + ".bin")),
+        }
+        confidence_threshold_path = os.path.join(
+            os.path.dirname(path), "confidence_threshold"
+        )
+        if os.path.exists(confidence_threshold_path):
+            model_adapters["confidence_threshold"] = ModelAdapter(
+                read_binary(confidence_threshold_path)
+            )
+    else:
+        model_adapters = {"weights.pth": ModelAdapter(read_binary(path))}
 
-    return LabelSchemaMapper().backward(
-        torch.load(io.BytesIO(model_bytes))["label_schema"]
+    model = ModelEntity(
+        configuration=model_configuration,
+        model_adapters=model_adapters,
+        train_dataset=train_dataset,
     )
+
+    return model
+
+
+def read_label_schema(path):
+    """
+    Reads json file and returns deserialized LabelSchema.
+    """
+
+    with open(path, encoding="UTF-8") as read_file:
+        serialized_label_schema = json.load(read_file)
+
+    return LabelSchemaMapper().backward(serialized_label_schema)
 
 
 def generate_label_schema(dataset, task_type):
