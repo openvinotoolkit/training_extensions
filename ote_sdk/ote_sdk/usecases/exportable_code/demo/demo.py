@@ -19,7 +19,7 @@ import sys
 from argparse import SUPPRESS, ArgumentParser
 from pathlib import Path
 
-# pylint: disable=no-name-in-module
+# pylint: disable=no-name-in-module, import-error
 from demo_package import SyncDemo, create_model, create_output_converter
 
 from ote_sdk.usecases.exportable_code.streamer import get_media_type

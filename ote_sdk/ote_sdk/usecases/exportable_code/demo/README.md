@@ -62,8 +62,9 @@ python -c "from demo_package import create_model"
      -i <path_to_video>/inputVideo.mp4 \
      -m <path_to_model>/model.xml
    ```
-
-   Also you can define own json config that specify some model parameters. To create this config please see `config.json` in demo_package wheel.
+   > **NOTE**: Default configuration contains info about pre- and postprocessing to model inference and is guaranteed to be correct.
+   > Also you can define own json config that specify needed parameters, but any change should be made with caution.
+   > To create this config please see `config.json` in demo_package wheel.
 
 2. You can create your own demo application, using `demo_package`. The main function of package is `create_model`:
    ```python
@@ -81,8 +82,7 @@ python -c "from demo_package import create_model"
    ```python
    import cv2
    from demo_package import create_model
-   path_to_model = ""
-   path_to_image = ""
+
    # read input
    frame = cv2.imread(path_to_image)
    # create model
