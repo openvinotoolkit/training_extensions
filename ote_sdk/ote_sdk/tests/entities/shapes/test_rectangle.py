@@ -19,6 +19,8 @@ import numpy as np
 import pytest
 from shapely.geometry.polygon import Polygon
 
+from ote_sdk.entities.color import Color
+from ote_sdk.entities.id import ID
 from ote_sdk.entities.label import LabelEntity
 from ote_sdk.entities.scored_label import Domain, ScoredLabel
 from ote_sdk.entities.shapes.rectangle import Rectangle
@@ -31,20 +33,39 @@ from ote_sdk.utils.time_utils import now
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestRectangle:
     @staticmethod
+    def rectangle_labels() -> list:
+        rectangle_label = LabelEntity(
+            name="Rectangle label",
+            domain=Domain.DETECTION,
+            color=Color(red=100, green=50, blue=200),
+            id=ID("rectangle_label_1"),
+        )
+        other_rectangle_label = LabelEntity(
+            name="Other rectangle label",
+            domain=Domain.SEGMENTATION,
+            color=Color(red=200, green=80, blue=100),
+            id=ID("rectangle_label_2"),
+        )
+        return [
+            ScoredLabel(label=rectangle_label),
+            ScoredLabel(label=other_rectangle_label),
+        ]
+
+    @staticmethod
     def horizontal_rectangle_params() -> dict:
         return {"x1": 0.1, "y1": 0.0, "x2": 0.4, "y2": 0.2}
 
     def horizontal_rectangle(self) -> Rectangle:
+        self.now = now()
         return Rectangle(**self.horizontal_rectangle_params())
 
-    @staticmethod
-    def vertical_rectangle_params() -> dict:
+    def vertical_rectangle_params(self) -> dict:
         return {
             "x1": 0.1,
             "y1": 0.1,
             "x2": 0.3,
             "y2": 0.4,
-            "labels": ["label_1", "label_2"],
+            "labels": self.rectangle_labels(),
             "modification_date": datetime(
                 year=2020, month=1, day=1, hour=9, minute=30, second=15, microsecond=2
             ),
@@ -58,6 +79,7 @@ class TestRectangle:
         return {"x1": 0.1, "y1": 0.1, "x2": 0.3, "y2": 0.3}
 
     def square(self) -> Rectangle:
+        self.now = now()
         return Rectangle(**self.square_params())
 
     @pytest.mark.priority_medium
@@ -105,22 +127,13 @@ class TestRectangle:
         3. Compare specified label Rectangle instance attribute with expected value
         4. Compare specified modification_date Rectangle instance attribute with expected value
         """
-        # check for default values of optional parameters
+        # Checking default values of optional parameters
         default_params_rectangle = self.horizontal_rectangle()
-        expected_default_params_rectangle_modification_date = now().replace(
-            microsecond=0
-        )
-        actual_default_params_rectangle_modification_date = (
-            default_params_rectangle.modification_date.replace(microsecond=0)
-        )
         assert default_params_rectangle._labels == []
-        assert (
-            actual_default_params_rectangle_modification_date
-            == expected_default_params_rectangle_modification_date
-        )
+        assert default_params_rectangle.modification_date == self.now
         # check for specified values of optional parameters
         specified_params_rectangle = self.vertical_rectangle()
-        assert specified_params_rectangle._labels == ["label_1", "label_2"]
+        assert specified_params_rectangle._labels == self.rectangle_labels()
         assert specified_params_rectangle.modification_date == datetime(
             year=2020, month=1, day=1, hour=9, minute=30, second=15, microsecond=2
         )
@@ -219,8 +232,12 @@ class TestRectangle:
         assert rectangle != self.horizontal_rectangle()
         # Check for different types branch
         assert rectangle != str
-        # Check for unequal labels parameters
-        equal_rectangle._labels = ["new", "labels", "for", "test"]
+        # Check for unequal labels parameters. Expected that different labels are not affecting equality
+        unequal_label = LabelEntity(
+            name="Unequal label", domain=Domain.SEGMENTATION, id=ID("unequal_label_1")
+        )
+        unequal_scored_label = ScoredLabel(label=unequal_label)
+        equal_rectangle._labels.append(unequal_scored_label)
         assert rectangle == equal_rectangle
         # Check for instances with unequal parameters combinations
         # Generating all possible scenarios of parameter values submission
@@ -300,7 +317,7 @@ class TestRectangle:
                     "y1": 0.2,
                     "x2": 0.6,
                     "y2": 0.4,
-                    "labels": ["test", "labels"],
+                    "labels": self.rectangle_labels(),
                 },
                 "params_expected": {"x1": 0.3, "y1": 0.2, "x2": 0.6, "y2": 0.4},
             },
@@ -310,7 +327,7 @@ class TestRectangle:
                     "y1": -0.3,
                     "x2": 1.6,
                     "y2": 1.4,
-                    "labels": ["test", "labels"],
+                    "labels": self.rectangle_labels(),
                 },
                 "params_expected": {"x1": 0.0, "y1": 0.0, "x2": 1.0, "y2": 1.0},
             },
@@ -320,20 +337,17 @@ class TestRectangle:
                     "y1": 0.0,
                     "x2": 1.0,
                     "y2": 1.0,
-                    "labels": ["test", "labels"],
+                    "labels": self.rectangle_labels(),
                 },
                 "params_expected": {"x1": 0.0, "y1": 0.0, "x2": 1.0, "y2": 1.0},
             },
         ]
         for scenario in positive_scenarios:
+            now_date_time = now()
             rectangle_actual = Rectangle(**scenario.get("input_params"))
             rectangle_expected = Rectangle(**scenario.get("params_expected"))
-            rectangle_actual.modification_date = (
-                rectangle_actual.modification_date.replace(microsecond=0)
-            )
-            rectangle_expected.modification_date = (
-                rectangle_expected.modification_date.replace(microsecond=0)
-            )
+            rectangle_actual.modification_date = now_date_time
+            rectangle_expected.modification_date = now_date_time
             assert rectangle_actual.clip_to_visible_region() == rectangle_expected
         negative_scenarios = [
             {"x1": -0.4, "y1": 0.2, "x2": -0.2, "y2": 0.4},
@@ -368,10 +382,6 @@ class TestRectangle:
         rectangle = self.horizontal_rectangle()
         roi_shape = Rectangle(x1=0.0, y1=0.0, x2=2.1, y2=2.2)
         normalized = rectangle.normalize_wrt_roi_shape(roi_shape)
-        rectangle.modification_date = rectangle.modification_date.replace(microsecond=0)
-        normalized.modification_date = normalized.modification_date.replace(
-            microsecond=0
-        )
         assert normalized.x1 == 0.1
         assert normalized.y1 == 0.0
         assert normalized.x2 == 0.4
@@ -403,10 +413,6 @@ class TestRectangle:
         rectangle = self.horizontal_rectangle()
         roi_shape = Rectangle(x1=0.2, y1=0.2, x2=0.4, y2=0.4)
         denormalized = rectangle.denormalize_wrt_roi_shape(roi_shape)
-        rectangle.modification_date = rectangle.modification_date.replace(microsecond=0)
-        denormalized.modification_date = denormalized.modification_date.replace(
-            microsecond=0
-        )
         assert denormalized.x1 == -0.5
         assert denormalized.y1 == -1.0
         assert denormalized.x2 == 1.0
