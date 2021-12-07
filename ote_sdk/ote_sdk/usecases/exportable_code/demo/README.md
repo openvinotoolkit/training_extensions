@@ -75,7 +75,7 @@ python -c "from demo_package import create_model"
     :param config_file: Path to .json config. If not define, use config from demo_package
     """
    ```
-   Function return model wrapper from ModelAPI. To get more information please see [ModelAPI](https://github.com/openvinotoolkit/open_model_zoo/tree/master/demos/common/python/openvino/model_zoo/model_api).
+   Function returns model wrapper from ModelAPI. To get more information please see [ModelAPI](https://github.com/openvinotoolkit/open_model_zoo/tree/master/demos/common/python/openvino/model_zoo/model_api).
 
    Some example how to use `demo_package`:
    ```python
@@ -85,8 +85,9 @@ python -c "from demo_package import create_model"
    path_to_image = ""
    # read input
    frame = cv2.imread(path_to_image)
-   # inference
+   # create model
    model = create_model(path_to_model)
+   # inference
    objects = model(frame)
    # show results using some visualizer
    output = visualizer.draw(frame, objects)
