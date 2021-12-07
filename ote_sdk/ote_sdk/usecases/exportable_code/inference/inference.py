@@ -25,6 +25,8 @@ from pathlib import Path
 from typing import Any, Iterator, List, Optional, Tuple, Union
 
 import numpy as np
+
+# pylint: disable=no-name-in-module
 from openvino.inference_engine import ExecutableNetwork, IECore, InferRequest
 from openvino.inference_engine.constants import OK, RESULT_NOT_READY
 
