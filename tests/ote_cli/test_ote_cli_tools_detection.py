@@ -69,8 +69,6 @@ def test_ote_export(template):
     command_line = ['ote',
                     'export',
                     template.model_template_id,
-                    '--labels',
-                    'none',
                     '--load-weights',
                     f'{template_work_dir}/trained_{template.model_template_id}.pth',
                     f'--save-model-to',
@@ -90,6 +88,21 @@ def test_ote_eval(template):
                     f'{os.path.join(ote_dir, args["--test-data-roots"])}',
                     '--load-weights',
                     f'{template_work_dir}/trained_{template.model_template_id}.pth']
+    assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
+
+
+@pytest.mark.parametrize("template", templates, ids=templates_ids)
+def test_ote_demo(template):
+    work_dir, template_work_dir, _ = get_some_vars(template, root)
+    command_line = ['ote',
+                    'demo',
+                    template.model_template_id,
+                    '--load-weights',
+                    f'{template_work_dir}/trained_{template.model_template_id}.pth',
+                    '--input',
+                    f'{os.path.join(ote_dir, args["--test-data-roots"])}',
+                    '--delay',
+                    '-1']
     assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
 
 

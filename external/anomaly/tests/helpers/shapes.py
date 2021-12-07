@@ -16,7 +16,7 @@ Helper to generate random shapes
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from typing import List, Tuple
+from typing import Callable, List, Tuple, Union
 
 import numpy as np
 from skimage.draw import polygon
@@ -213,7 +213,9 @@ def random_shapes(
     Returns:
         np.ndarray: Image containing the shape
     """
-    shape_fn: Tuple[List[int], List[int]]
+    shape_fn: Union[
+        Callable[[List[int], int], Tuple[List[int], List[int]]], Callable[[List[int]], Tuple[List[int], List[int]]]
+    ]
     if shape == "rectangle":
         shape_fn = rectangle
     elif shape == "triangle":

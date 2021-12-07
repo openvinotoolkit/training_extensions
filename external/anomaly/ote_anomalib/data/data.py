@@ -17,16 +17,29 @@ Anomaly Dataset Utils
 # and limitations under the License.
 
 import logging
+from dataclasses import dataclass
 from typing import Dict, List, Optional, Union
 
 from anomalib.datasets.transforms import PreProcessor
 from omegaconf import DictConfig, ListConfig
+from ote_sdk.entities.datasets import DatasetEntity
+from ote_sdk.entities.subset import Subset
 from pytorch_lightning.core.datamodule import LightningDataModule
 from torch import Tensor
 from torch.utils.data import DataLoader, Dataset
 
-from ote_sdk.entities.datasets import DatasetEntity
-from ote_sdk.entities.subset import Subset
+logger = logging.getLogger(__name__)
+
+
+@dataclass
+class LabelNames:
+    """
+    Anomaly Class Label Names to match the naming
+    convention in the UI
+    """
+
+    normal = "Normal"
+    anomalous = "Anomalous"
 
 
 class OTEAnomalyDataset(Dataset):
@@ -62,7 +75,7 @@ class OTEAnomalyDataset(Dataset):
         item = self.dataset[index]
         image = self.pre_processor(image=item.numpy)["image"]
         try:
-            label = 0 if item.get_shapes_labels()[0].name == "normal" else 1
+            label = 0 if item.get_shapes_labels()[0].name == LabelNames.normal else 1
         except IndexError:
             return {"index": index, "image": image}
         return {"index": index, "image": image, "label": label}
@@ -126,17 +139,22 @@ class OTEAnomalyDataModule(LightningDataModule):
             self.predict_ote_dataset = self.dataset
 
     def summary(self):
+        """
+        Print size of the dataset, number of anomalous images and number of normal images.
+        """
         for subset in [Subset.TRAINING, Subset.VALIDATION, Subset.TESTING]:
             dataset = self.dataset.get_subset(subset)
             num_items = len(dataset)
-            num_normal = len([item for item in dataset if item.get_shapes_labels()[0].name == "normal"])
-            num_anomalous = len([item for item in dataset if item.get_shapes_labels()[0].name == "anomalous"])
-            logging.info(
+            num_normal = len([item for item in dataset if item.get_shapes_labels()[0].name == LabelNames.normal])
+            num_anomalous = len([item for item in dataset if item.get_shapes_labels()[0].name == LabelNames.anomalous])
+            logger.info(
                 f"{subset} subset size: Total: {num_items} images. "
                 f"Normal: {num_normal} images. Anomalous: {num_anomalous} images"
             )
 
-    def train_dataloader(self) -> Union[DataLoader, List[DataLoader], Dict[str, DataLoader]]:
+    def train_dataloader(
+        self,
+    ) -> Union[DataLoader, List[DataLoader], Dict[str, DataLoader]]:
         """
         Train Dataloader
         """
