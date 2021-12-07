@@ -121,10 +121,7 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
             pred_score = anomaly_map.reshape(-1).max()
             pred_label = pred_score >= threshold
             assigned_label = self.anomalous_label if pred_label else self.normal_label
-            shape = Annotation(
-                Rectangle(x1=0, y1=0, x2=1, y2=1),
-                labels=[ScoredLabel(assigned_label, probability=float(pred_score))],
-            )
+            shape = Annotation(Rectangle(x1=0, y1=0, x2=1, y2=1), labels=[ScoredLabel(assigned_label, probability=float(pred_score))])
             dataset_item.append_annotations([shape])
 
         return dataset
@@ -151,11 +148,7 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
             self.__save_weights(xml_path, self.task_environment.model.get_data("openvino.xml"))
             self.__save_weights(bin_path, self.task_environment.model.get_data("openvino.bin"))
 
-            model_config = {
-                "model_name": "openvino_model",
-                "model": xml_path,
-                "weights": bin_path,
-            }
+            model_config = {"model_name": "openvino_model", "model": xml_path, "weights": bin_path}
             model = load_model(model_config)
 
             if get_nodes_by_type(model, ["FakeQuantize"]):
@@ -183,16 +176,8 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
 
         with tempfile.TemporaryDirectory() as tempdir:
             save_model(compressed_model, tempdir, model_name="model")
-            self.__load_weights(
-                path=os.path.join(tempdir, "model.xml"),
-                output_model=output_model,
-                key="openvino.xml",
-            )
-            self.__load_weights(
-                path=os.path.join(tempdir, "model.bin"),
-                output_model=output_model,
-                key="openvino.bin",
-            )
+            self.__load_weights(path=os.path.join(tempdir, "model.xml"), output_model=output_model, key="openvino.xml")
+            self.__load_weights(path=os.path.join(tempdir, "model.bin"), output_model=output_model, key="openvino.bin")
         output_model.model_status = ModelStatus.SUCCESS
 
         self.task_environment.model = output_model
