@@ -32,6 +32,8 @@ from ote_sdk.utils.time_utils import now
 
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestRectangle:
+    modification_date = now()
+
     @staticmethod
     def rectangle_labels() -> list:
         rectangle_label = LabelEntity(
@@ -56,7 +58,6 @@ class TestRectangle:
         return {"x1": 0.1, "y1": 0.0, "x2": 0.4, "y2": 0.2}
 
     def horizontal_rectangle(self) -> Rectangle:
-        self.now = now()
         return Rectangle(**self.horizontal_rectangle_params())
 
     def vertical_rectangle_params(self) -> dict:
@@ -79,7 +80,6 @@ class TestRectangle:
         return {"x1": 0.1, "y1": 0.1, "x2": 0.3, "y2": 0.3}
 
     def square(self) -> Rectangle:
-        self.now = now()
         return Rectangle(**self.square_params())
 
     @pytest.mark.priority_medium
@@ -123,14 +123,14 @@ class TestRectangle:
 
         <b>Steps</b>
         1. Compare default label Rectangle instance attribute with expected value
-        2. Compare default modification_date Rectangle instance attribute with expected value
+        2. Check type of default modification_date Rectangle instance attribute
         3. Compare specified label Rectangle instance attribute with expected value
         4. Compare specified modification_date Rectangle instance attribute with expected value
         """
         # Checking default values of optional parameters
         default_params_rectangle = self.horizontal_rectangle()
         assert default_params_rectangle._labels == []
-        assert default_params_rectangle.modification_date == self.now
+        assert isinstance(default_params_rectangle.modification_date, datetime)
         # check for specified values of optional parameters
         specified_params_rectangle = self.vertical_rectangle()
         assert specified_params_rectangle._labels == self.rectangle_labels()
@@ -343,11 +343,10 @@ class TestRectangle:
             },
         ]
         for scenario in positive_scenarios:
-            now_date_time = now()
             rectangle_actual = Rectangle(**scenario.get("input_params"))
             rectangle_expected = Rectangle(**scenario.get("params_expected"))
-            rectangle_actual.modification_date = now_date_time
-            rectangle_expected.modification_date = now_date_time
+            rectangle_actual.modification_date = self.modification_date
+            rectangle_expected.modification_date = self.modification_date
             assert rectangle_actual.clip_to_visible_region() == rectangle_expected
         negative_scenarios = [
             {"x1": -0.4, "y1": 0.2, "x2": -0.2, "y2": 0.4},
