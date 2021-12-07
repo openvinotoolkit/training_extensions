@@ -38,5 +38,19 @@
         "16": "hexagon",
         "17": "hexagon",
         "18": "hexagon"
+    },
+    "mask_path":{
+        "7": "ground_truth/star/004_mask.png",
+        "8": "ground_truth/star/005_mask.png",
+        "9": "ground_truth/star/006_mask.png",
+        "10": "ground_truth/star/007_mask.png",
+        "11": "ground_truth/star/008_mask.png",
+        "12": "ground_truth/star/009_mask.png",
+        "13": "ground_truth/hexagon/004_mask.png",
+        "14": "ground_truth/hexagon/005_mask.png",
+        "15": "ground_truth/hexagon/006_mask.png",
+        "16": "ground_truth/hexagon/007_mask.png",
+        "17": "ground_truth/hexagon/008_mask.png",
+        "18": "ground_truth/hexagon/009_mask.png"
     }
 }

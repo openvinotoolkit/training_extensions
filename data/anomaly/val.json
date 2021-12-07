@@ -26,5 +26,15 @@
         "10": "hexagon",
         "11": "hexagon",
         "12": "hexagon"
+    },
+    "mask_path": {
+        "5": "ground_truth/star/000_mask.png",
+        "6": "ground_truth/star/001_mask.png",
+        "7": "ground_truth/star/002_mask.png",
+        "8": "ground_truth/star/003_mask.png",
+        "9": "ground_truth/hexagon/000_mask.png",
+        "10": "ground_truth/hexagon/001_mask.png",
+        "11": "ground_truth/hexagon/002_mask.png",
+        "12": "ground_truth/hexagon/003_mask.png"
     }
 }
