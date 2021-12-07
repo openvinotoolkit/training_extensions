@@ -63,9 +63,9 @@ class TestLabelEntity:
         "is_empty": False,
         "id": ID(987654321),
     }
-    car = LabelEntity(**label_car_params)
+    car = LabelEntity(**label_car_params)  # type: ignore
     empty = LabelEntity(name="empty", domain=Domain.SEGMENTATION, is_empty=True)
-    person = LabelEntity(**label_person_params)
+    person = LabelEntity(**label_person_params)  # type: ignore
 
     @pytest.mark.priority_medium
     @pytest.mark.component
