@@ -42,6 +42,7 @@ def ote_pytest_addoption_insertion(parser):
     """
     if _e2e_pytest_addoption:
         _e2e_pytest_addoption(parser)
+
     parser.addoption(
         "--dataset-definitions",
         action="store",
@@ -59,6 +60,14 @@ def ote_pytest_addoption_insertion(parser):
         action="store",
         default=None,
         help="Optional. If the parameter is set, it points the YAML file with expected test metrics.",
+    )
+
+    # TODO(lbeynens): remove it after update CI
+    parser.addoption(
+        "--template-paths",
+        action="store",
+        default=None,
+        help="Obsolete parameter. Should be removed when CI is changed.",
     )
 
 
