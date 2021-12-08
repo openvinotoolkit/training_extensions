@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+import json
 import os
 from subprocess import run
 
@@ -53,14 +54,16 @@ def test_ote_train(template):
                     f'{os.path.join(ote_dir, args["--val-ann-file"])}',
                     '--val-data-roots',
                     f'{os.path.join(ote_dir, args["--val-data-roots"])}',
-                    '--save-weights',
-                    f'{template_work_dir}/trained_{template.model_template_id}.pth',
+                    '--save-model-to',
+                    f'{template_work_dir}/trained_{template.model_template_id}',
                     'params',
                     '--learning_parameters.num_iters',
                     '2',
                     '--learning_parameters.batch_size',
                     '2']
     assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
+    assert os.path.exists(f'{template_work_dir}/trained_{template.model_template_id}/weights.pth')
+    assert os.path.exists(f'{template_work_dir}/trained_{template.model_template_id}/label_schema.json')
 
 
 @pytest.mark.parametrize("template", templates, ids=templates_ids)
@@ -70,10 +73,13 @@ def test_ote_export(template):
                     'export',
                     template.model_template_id,
                     '--load-weights',
-                    f'{template_work_dir}/trained_{template.model_template_id}.pth',
+                    f'{template_work_dir}/trained_{template.model_template_id}/weights.pth',
                     f'--save-model-to',
                     f'{template_work_dir}/exported_{template.model_template_id}']
     assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
+    assert os.path.exists(f'{template_work_dir}/exported_{template.model_template_id}/openvino.xml')
+    assert os.path.exists(f'{template_work_dir}/exported_{template.model_template_id}/openvino.bin')
+    assert os.path.exists(f'{template_work_dir}/exported_{template.model_template_id}/label_schema.json')
 
 
 @pytest.mark.parametrize("template", templates, ids=templates_ids)
@@ -87,10 +93,37 @@ def test_ote_eval(template):
                     '--test-data-roots',
                     f'{os.path.join(ote_dir, args["--test-data-roots"])}',
                     '--load-weights',
-                    f'{template_work_dir}/trained_{template.model_template_id}.pth']
+                    f'{template_work_dir}/trained_{template.model_template_id}/weights.pth',
+                    '--save-performance',
+                    f'{template_work_dir}/trained_{template.model_template_id}/performance.json']
     assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
+    assert os.path.exists(f'{template_work_dir}/trained_{template.model_template_id}/performance.json')
     
-    
+@pytest.mark.parametrize("template", templates, ids=templates_ids)
+def test_ote_eval_openvino(template):
+    work_dir, template_work_dir, _ = get_some_vars(template, root)
+    command_line = ['ote',
+                    'eval',
+                    template.model_template_id,
+                    '--test-ann-file',
+                    f'{os.path.join(ote_dir, args["--test-ann-files"])}',
+                    '--test-data-roots',
+                    f'{os.path.join(ote_dir, args["--test-data-roots"])}',
+                    '--load-weights',
+                    f'{template_work_dir}/exported_{template.model_template_id}/openvino.xml',
+                    '--save-performance',
+                    f'{template_work_dir}/exported_{template.model_template_id}/performance.json']
+    assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
+    assert os.path.exists(f'{template_work_dir}/exported_{template.model_template_id}/performance.json')
+    with open(f'{template_work_dir}/trained_{template.model_template_id}/performance.json') as read_file:
+        trained_performance = json.load(read_file)
+    with open(f'{template_work_dir}/exported_{template.model_template_id}/performance.json') as read_file:
+        exported_performance = json.load(read_file)
+        
+    for k in trained_performance.keys():
+        assert abs(trained_performance[k] - exported_performance[k]) / trained_performance[k] <= 0.01, f"{trained_performance[k]=}, {exported_performance[k]=}"
+        
+
 @pytest.mark.parametrize("template", templates, ids=templates_ids)
 def test_ote_demo(template):
     work_dir, template_work_dir, _ = get_some_vars(template, root)
@@ -98,7 +131,22 @@ def test_ote_demo(template):
                     'demo',
                     template.model_template_id,
                     '--load-weights',
-                    f'{template_work_dir}/trained_{template.model_template_id}.pth',
+                    f'{template_work_dir}/trained_{template.model_template_id}/weights.pth',
+                    '--input',
+                    f'{os.path.join(ote_dir, args["--test-data-roots"])}',
+                    '--delay',
+                    '-1']
+    assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
+    
+
+@pytest.mark.parametrize("template", templates, ids=templates_ids)
+def test_ote_demo_openvino(template):
+    work_dir, template_work_dir, _ = get_some_vars(template, root)
+    command_line = ['ote',
+                    'demo',
+                    template.model_template_id,
+                    '--load-weights',
+                    f'{template_work_dir}/exported_{template.model_template_id}/openvino.xml',
                     '--input',
                     f'{os.path.join(ote_dir, args["--test-data-roots"])}',
                     '--delay',
