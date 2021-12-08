@@ -31,6 +31,7 @@ from compression.graph.model_utils import compress_model_weights, get_nodes_by_t
 from compression.pipeline.initializer import create_pipeline
 from omegaconf import ListConfig
 from omegaconf.dictconfig import DictConfig
+from ote_anomalib.config import get_anomalib_config
 from ote_anomalib.data import LabelNames
 from ote_sdk.entities.annotation import Annotation
 from ote_sdk.entities.datasets import DatasetEntity
@@ -62,7 +63,12 @@ class OTEOpenVINOAnomalyDataloader(DataLoader):
         inferencer (OpenVINOInferencer): OpenVINO Inferencer
     """
 
-    def __init__(self, config: Union[DictConfig, ListConfig], dataset: DatasetEntity, inferencer: OpenVINOInferencer):
+    def __init__(
+        self,
+        config: Union[DictConfig, ListConfig],
+        dataset: DatasetEntity,
+        inferencer: OpenVINOInferencer,
+    ):
         super().__init__(config=config)
         self.dataset = dataset
         self.inferencer = inferencer
@@ -84,20 +90,27 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
 
     Args:
         task_environment (TaskEnvironment): task environment of the trained anomaly model
-        config (Union[DictConfig, ListConfig]): configuration file
     """
 
-    def __init__(
-        self,
-        task_environment: TaskEnvironment,
-        config: Union[DictConfig, ListConfig],
-    ) -> None:
+    def __init__(self, task_environment: TaskEnvironment) -> None:
         self.task_environment = task_environment
-        self.config = config
+        self.config = self.get_config()
         self.inferencer = self.load_inferencer()
         labels = task_environment.get_labels()
         self.normal_label = [label for label in labels if label.name == LabelNames.normal][0]
         self.anomalous_label = [label for label in labels if label.name == LabelNames.anomalous][0]
+
+    def get_config(self) -> Union[DictConfig, ListConfig]:
+        """
+        Get Anomalib Config from task environment
+
+        Returns:
+            Union[DictConfig, ListConfig]: Anomalib config
+        """
+        task_name = self.task_environment.model_template.name
+        ote_config = self.task_environment.get_hyper_parameters()
+        config = get_anomalib_config(task_name=task_name, ote_config=ote_config)
+        return config
 
     def infer(self, dataset: DatasetEntity, inference_parameters: InferenceParameters) -> DatasetEntity:
         if self.task_environment.model is None:
@@ -110,7 +123,8 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
             pred_label = pred_score >= threshold
             assigned_label = self.anomalous_label if pred_label else self.normal_label
             shape = Annotation(
-                Rectangle(x1=0, y1=0, x2=1, y2=1), labels=[ScoredLabel(assigned_label, probability=float(pred_score))]
+                Rectangle(x1=0, y1=0, x2=1, y2=1),
+                labels=[ScoredLabel(assigned_label, probability=float(pred_score))],
             )
             dataset_item.append_annotations([shape])
 
@@ -138,7 +152,11 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
             self.__save_weights(xml_path, self.task_environment.model.get_data("openvino.xml"))
             self.__save_weights(bin_path, self.task_environment.model.get_data("openvino.bin"))
 
-            model_config = {"model_name": "openvino_model", "model": xml_path, "weights": bin_path}
+            model_config = {
+                "model_name": "openvino_model",
+                "model": xml_path,
+                "weights": bin_path,
+            }
             model = load_model(model_config)
 
             if get_nodes_by_type(model, ["FakeQuantize"]):
