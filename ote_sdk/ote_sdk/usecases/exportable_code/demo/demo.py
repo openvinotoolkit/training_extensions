@@ -74,7 +74,7 @@ def main():
     media_type = get_media_type(args.input)
 
     visualizer = Visualizer(media_type)
-    converter = create_output_converter(model.labels)
+    converter = create_output_converter(model.labels, args.config)
     demo = SyncDemo(model, visualizer, converter)
     demo.run(args.input)
 
