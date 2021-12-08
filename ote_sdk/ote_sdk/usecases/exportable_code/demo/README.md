@@ -19,7 +19,7 @@ Demo package contains simple demo to get and visualize result of model inference
 
 ## Setup Demo Package
 
-1. Install Python (version 3.8 or higher).
+1. Install Python (version 3.8 or higher), [setuptools](https://pypi.org/project/setuptools/), [wheel](https://pypi.org/project/wheel/).
 
 2. Install the package in the clean environment:
 ```
