@@ -5,14 +5,14 @@ Name of package is a name of model which was deployed.
 
 ## Structure of generated package:
 
-* [model](../model)
-  * [model.xml](../model/model.xml)
-  * [model.bin](../model/model.bin)
-* [python](.)
+* model
+  * model.xml
+  * model.bin
+* python
   * [README.md](./README.md)
   * [demo.py](./demo.py)
   * [requirements.txt](./requirements.txt)
-  * [demo_package-0.0-py3-none-any.whl](./demo_package-0.0-py3-none-any.whl)
+  * demo_package-0.0-py3-none-any.whl
 
 
 ## Prerequisites
@@ -68,7 +68,7 @@ python -c "from demo_package import create_model"
 
 2. You can create your own demo application, using `demo_package`. The main function of package is `create_model`:
    ```python
-   def create_model(model_path, config_file=None):
+   def create_model(model_path: Path, config_file: Path = None) -> Model:
     """
     Create model using ModelAPI factory
 
