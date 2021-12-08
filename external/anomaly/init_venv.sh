@@ -26,11 +26,6 @@ if [[ $PYTHON_VERSION != "3.8" && $PYTHON_VERSION != "3.9" ]]; then
   exit 1
 fi
 
-if [[ -z $SC_SDK_REPO ]]; then
-  echo "The environment variable SC_SDK_REPO is not set -- it is required for creating virtual environment"
-  exit 1
-fi
-
 if [[ -z $ANOMALIB_REPO ]]; then
   echo "The environment variable ANOMALIB_REPO is not set -- it is required for creating virtual environment"
   exit 1
