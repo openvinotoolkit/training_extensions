@@ -63,7 +63,7 @@ class DetectionToAnnotationConverter(IPredictionToAnnotationConverter):
         self.label_map = dict(enumerate(labels))
 
     def convert_to_annotation(
-        self, predictions: np.ndarray, metadata: Dict = None
+        self, predictions: np.ndarray, metadata: Optional[Dict] = None
     ) -> AnnotationSceneEntity:
         """
         Converts a set of predictions into an AnnotationScene object
@@ -162,10 +162,11 @@ def get_label(labels_map: List[Any], index: int, label_domain: Domain) -> LabelE
     """
     Get label from list of labels
     """
-    if isinstance(labels_map[index], LabelEntity):
-        return labels_map[index]
+    label = labels_map[index]
+    if isinstance(label, LabelEntity):
+        return label
 
-    return LabelEntity(str(labels_map[index]), label_domain)
+    return LabelEntity(str(label), label_domain)
 
 
 class DetectionBoxToAnnotationConverter(IPredictionToAnnotationConverter):
@@ -177,7 +178,7 @@ class DetectionBoxToAnnotationConverter(IPredictionToAnnotationConverter):
         self.labels_map = labels
 
     def convert_to_annotation(
-        self, predictions: List[utils.Detection], metadata: Dict
+        self, predictions: List[utils.Detection], metadata: Dict[str, Any]
     ) -> AnnotationSceneEntity:
         annotations = []
         image_size = metadata["original_shape"][1::-1]

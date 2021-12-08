@@ -49,8 +49,8 @@ def get_parameters(path: Optional[Path]) -> dict:
     parameters_path = path
     if parameters_path is None:
         parameters_path = Path(__file__).parent / "config.json"
-        if not parameters_path.exists():
-            raise IOError("The path to the config was not found.")
+    if not parameters_path.exists():
+        raise IOError("The path to the config was not found.")
 
     with open(parameters_path, "r", encoding="utf8") as file:
         parameters = json.load(file)
@@ -58,7 +58,7 @@ def get_parameters(path: Optional[Path]) -> dict:
     return parameters
 
 
-def create_model(model_path: Path, config_file: Path = None) -> Model:
+def create_model(model_path: Path, config_file: Optional[Path] = None) -> Model:
     """
     Create model using ModelAPI factory
     """
