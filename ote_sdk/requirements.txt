@@ -2,10 +2,10 @@ numpy>=1.16.4
 scikit-learn==0.24.*
 Shapely==1.7.*
 networkx==2.5.1
-opencv-python==4.5.3.*
+opencv-python==4.5.*
 pymongo>=3.9
 omegaconf==2.1.*
 natsort>=6.0.0
 attrs==21.2.*
-openmodelzoo-modelapi @ git+https://github.com/openvinotoolkit/open_model_zoo/@master#egg=openmodelzoo-modelapi&subdirectory=demos/common/python
-openvino==2021.4
+openmodelzoo-modelapi @ git+https://github.com/openvinotoolkit/open_model_zoo/@releases/2021/SCMVP#egg=openmodelzoo-modelapi&subdirectory=demos/common/python
+openvino==2021.4.2
