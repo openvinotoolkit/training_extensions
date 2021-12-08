@@ -7,4 +7,4 @@ echo ""
 echo ""
 
 export PYTHONPATH=${PYTHONPATH}:`pwd`
-pytest tests/ote_cli/ -v
+pytest tests/ote_cli/ -v --durations=0
