@@ -460,6 +460,9 @@ class TestLabelGroup:
         assert isinstance(no_id_label_group.minimum_label_id, ID)
         assert no_id_label_group.minimum_label_id == "0"
 
+    @pytest.mark.priority_medium
+    @pytest.mark.component
+    @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_group_remove_label(self):
         """
         <b>Description:</b>
@@ -488,6 +491,9 @@ class TestLabelGroup:
         assert label_group.minimum_label_id == "0_1"
         assert label_group.is_single_label()
 
+    @pytest.mark.priority_medium
+    @pytest.mark.component
+    @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_group_magic_methods(self):
         """
         <b>Description:</b>
