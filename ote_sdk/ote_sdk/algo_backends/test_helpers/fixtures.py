@@ -148,7 +148,7 @@ def template_paths_fx(ote_templates_root_dir_fx):
     assert osp.isabs(
         root
     ), f"Error: ote_templates_root_dir_fx is not an absolute path: {root}"
-    glb = glob.glob(f"{root}/**/template.yaml", recursive=True)
+    glb = glob.glob(f"{root}/**/template*.yaml", recursive=True)
     data = {}
     for cur_path in glb:
         assert osp.isabs(cur_path), f"Error: not absolute path {cur_path}"
