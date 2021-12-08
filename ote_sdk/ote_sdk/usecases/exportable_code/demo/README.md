@@ -1,18 +1,17 @@
 # Exportable code - demo package
 
 Demo package contains simple demo to get and visualize result of model inference.
-Name of package is a name of model which was deployed.
 
 ## Structure of generated package:
 
 * model
-  * model.xml
-  * model.bin
+  - `model.xml`
+  - `model.bin`
 * python
-  * [README.md](./README.md)
-  * [demo.py](./demo.py)
-  * [requirements.txt](./requirements.txt)
-  * demo_package-0.0-py3-none-any.whl
+  - `README.md`
+  - `demo.py`
+  - `requirements.txt`
+  - `demo_package-0.0-py3-none-any.whl`
 
 
 ## Prerequisites
@@ -63,7 +62,7 @@ python -c "from demo_package import create_model"
      -m <path_to_model>/model.xml
    ```
    > **NOTE**: Default configuration contains info about pre- and postprocessing to model inference and is guaranteed to be correct.
-   > Also you can define own json config that specify needed parameters, but any change should be made with caution.
+   > Also you can define own json config that specifies needed parameters, but any change should be made with caution.
    > To create this config please see `config.json` in demo_package wheel.
 
 2. You can create your own demo application, using `demo_package`. The main function of package is `create_model`:
@@ -73,7 +72,7 @@ python -c "from demo_package import create_model"
     Create model using ModelAPI factory
 
     :param model_path: Path to .xml model
-    :param config_file: Path to .json config. If not define, use config from demo_package
+    :param config_file: Path to .json config. If it is not defined, use config from demo_package
     """
    ```
    Function returns model wrapper from ModelAPI. To get more information please see [ModelAPI](https://github.com/openvinotoolkit/open_model_zoo/tree/master/demos/common/python/openvino/model_zoo/model_api).
