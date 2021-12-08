@@ -17,7 +17,7 @@ Converters for output of inferencers
 # in the License.
 
 import abc
-from typing import Any, Dict, List, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 from openvino.model_zoo.model_api.models import utils
