@@ -76,10 +76,8 @@ def ote_test_scenario_fx():
 #
 #########################################################################################
 
-# pylint: disable=invalid-name
 
-
-def ROOT_PATH_KEY():
+def ROOT_PATH_KEY():  # pylint: disable=invalid-name
     """
     Constant for storing in dict-s with paths the root path
     that will be used for resolving relative paths.
@@ -131,6 +129,13 @@ def dataset_definitions_fx(request):
     return data
 
 
+def _get_template_name_from_template_file(template_path):
+    with open(template_path, encoding="utf-8") as f:
+        template_data = yaml.safe_load(f)
+        assert "model_template_id" in template_data, f"Wrong template {template_path}"
+        return template_data["model_template_id"]
+
+
 @pytest.fixture(scope="session")
 def template_paths_fx(ote_templates_root_dir_fx):
     """
@@ -145,14 +150,14 @@ def template_paths_fx(ote_templates_root_dir_fx):
     ), f"Error: ote_templates_root_dir_fx is not an absolute path: {root}"
     glb = glob.glob(f"{root}/**/template.yaml", recursive=True)
     data = {}
-    for p in glb:
-        assert osp.isabs(p), f"Error: not absolute path {p}"
-        name = osp.basename(osp.dirname(p))
+    for cur_path in glb:
+        assert osp.isabs(cur_path), f"Error: not absolute path {cur_path}"
+        name = _get_template_name_from_template_file(cur_path)
         if name in data:
             raise RuntimeError(
-                f"Duplication of names in {root} folder: {data[name]} and {p}"
+                f"Duplication of names in {root} folder: {data[name]} and {cur_path}"
             )
-        data[name] = p
+        data[name] = cur_path
     data[ROOT_PATH_KEY()] = ""
     return data
 

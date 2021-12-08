@@ -6,6 +6,8 @@ from typing import Union
 
 from ote_sdk.entities.metrics import Performance, ScoreMetric
 
+# pylint: disable=invalid-name
+
 
 def DEFAULT_FIELD_VALUE_FOR_USING_IN_TEST():
     """
@@ -30,6 +32,9 @@ def REALLIFE_USECASE_CONSTANT():
     This is a constant for pointing usecase for reallife training tests
     """
     return "reallife"
+
+
+# pylint: enable=invalid-name
 
 
 def performance_to_score_name_value(perf: Union[Performance, None]):
