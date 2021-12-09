@@ -1,6 +1,5 @@
-"""
-Initialization of streamer
-"""
+"""This module contains the interface class for tasks that can deploy their models. """
+
 # INTEL CONFIDENTIAL
 #
 # Copyright (C) 2021 Intel Corporation
@@ -15,20 +14,21 @@ Initialization of streamer
 # with no express or implied warranties, other than those that are expressly stated
 # in the License.
 
-from ote_sdk.usecases.exportable_code.streamer.streamer import (
-    CameraStreamer,
-    ImageStreamer,
-    ThreadedStreamer,
-    VideoStreamer,
-    get_media_type,
-    get_streamer,
-)
+import abc
 
-__all__ = [
-    "CameraStreamer",
-    "ImageStreamer",
-    "ThreadedStreamer",
-    "VideoStreamer",
-    "get_media_type",
-    "get_streamer",
-]
+from ote_sdk.entities.model import ModelEntity
+
+
+class IDeploymentTask(metaclass=abc.ABCMeta):
+    """
+    A base interface class for tasks which can deploy their models
+    """
+
+    @abc.abstractmethod
+    def deploy(self, output_model: ModelEntity) -> None:
+        """
+        This method defines the interface for deploy.
+
+        :param output_model: Output model
+        """
+        raise NotImplementedError
