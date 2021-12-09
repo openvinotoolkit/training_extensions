@@ -7,3 +7,4 @@ pymongo>=3.9
 omegaconf==2.1.*
 natsort>=6.0.0
 attrs==21.2.*
+openvino==2021.4.2
