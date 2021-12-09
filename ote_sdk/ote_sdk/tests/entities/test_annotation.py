@@ -112,7 +112,7 @@ class TestAnnotation:
         annotation.id = ID(123456789)
 
         assert annotation.id == ID(123456789)
-        assert annotation.shape == Ellipse(x1=0.5, y1=0.1, x2=0.8, y2=0.3)
+        assert annotation.shape == ellipse
 
     @pytest.mark.priority_medium
     @pytest.mark.component
