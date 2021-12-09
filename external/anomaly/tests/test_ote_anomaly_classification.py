@@ -100,6 +100,14 @@ class TestAnomalyClassification:
         # Performance should be higher than a threshold.
         assert base_results.performance.score.value > 0.6
 
+        base_probability_scores = [
+            base_results.prediction_dataset[i].annotation_scene.annotations[0].get_labels()[0].probability
+            for i in range(len(base_results.prediction_dataset))
+        ]
+        openvino_proobability_scores = [
+            openvino_results.prediction_dataset[i].annotation_scene.annotations[0].get_labels()[0].probability
+            for i in range(len(openvino_results.prediction_dataset))
+        ]
+
         # Performance should be almost the same
-        assert np.allclose(base_results.performance.score.value, openvino_results.performance.score.value)
-        assert np.allclose(openvino_results.performance.score.value, optimized_openvino_results.performance.score.value)
+        assert np.allclose(base_probability_scores, openvino_proobability_scores, rtol=0.01)

@@ -22,6 +22,9 @@ import struct
 import tempfile
 from typing import Optional, Union
 
+import cv2
+import numpy as np
+
 from addict import Dict as ADDict
 from anomalib.core.model.inference import OpenVINOInferencer
 from compression.api import DataLoader
@@ -116,11 +119,11 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
         if self.task_environment.model is None:
             raise Exception("task_environment.model is None. Cannot access threshold to calculate labels.")
         # This always assumes that threshold is available in the task environment's model
-        threshold = struct.unpack("f", (self.task_environment.model.get_data("threshold")))
         for dataset_item in dataset:
-            anomaly_map = self.inferencer.predict(dataset_item.numpy, superimpose=False)
-            pred_score = anomaly_map.reshape(-1).max()
-            pred_label = pred_score >= threshold
+            meta_data = self.get_meta_data()
+            anomaly_map, pred_score = self.inferencer.predict(dataset_item.numpy, superimpose=False, meta_data=meta_data)
+
+            pred_label = pred_score >= 0.5
             assigned_label = self.anomalous_label if pred_label else self.normal_label
             shape = Annotation(
                 Rectangle(x1=0, y1=0, x2=1, y2=1),
@@ -129,6 +132,25 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
             dataset_item.append_annotations([shape])
 
         return dataset
+
+    def get_meta_data(self):
+        threshold = struct.unpack("f", (self.task_environment.model.get_data("threshold")))
+        image_mean = np.frombuffer(self.task_environment.model.get_data("image_mean"), dtype=np.float32)
+        image_std = np.frombuffer(self.task_environment.model.get_data("image_std"), dtype=np.float32)
+        pixel_mean = np.frombuffer(self.task_environment.model.get_data("pixel_mean"), dtype=np.float32).reshape(
+            self.config.model.input_size
+        )
+        pixel_std = np.frombuffer(self.task_environment.model.get_data("pixel_std"), dtype=np.float32).reshape(
+            self.config.model.input_size
+        )
+        meta_data = dict(
+            threshold=threshold,
+            image_mean=image_mean,
+            image_std=image_std,
+            pixel_mean=pixel_mean,
+            pixel_std=pixel_std
+        )
+        return meta_data
 
     def evaluate(self, output_resultset: ResultSetEntity, evaluation_metric: Optional[str] = None):
         output_resultset.performance = MetricsHelper.compute_f_measure(output_resultset).get_performance()
