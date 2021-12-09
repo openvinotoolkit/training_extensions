@@ -7,4 +7,5 @@ pymongo>=3.9
 omegaconf==2.1.*
 natsort>=6.0.0
 attrs==21.2.*
-openmodelzoo-modelapi @ git+https://github.com/openvinotoolkit/open_model_zoo/@master#egg=openmodelzoo-modelapi&subdirectory=demos/common/python
+openmodelzoo-modelapi @ git+https://github.com/openvinotoolkit/open_model_zoo/@releases/2021/SCMVP#egg=openmodelzoo-modelapi&subdirectory=demos/common/python
+openvino==2021.4.2

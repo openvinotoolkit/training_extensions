@@ -16,6 +16,7 @@
 
 """ This module contains the mapper for label related entities """
 
+import json
 from typing import Dict, Union, cast
 
 from ote_sdk.entities.color import Color
@@ -29,6 +30,7 @@ from ote_sdk.entities.label_schema import (
     LabelTree,
 )
 
+from .datetime_mapper import DatetimeMapper
 from .id_mapper import IDMapper
 
 
@@ -74,7 +76,7 @@ class LabelMapper:
             "color": ColorMapper().forward(instance.color),
             "hotkey": instance.hotkey,
             "domain": str(instance.domain),
-            "creation_date": instance.creation_date,
+            "creation_date": DatetimeMapper.forward(instance.creation_date),
             "is_empty": instance.is_empty,
         }
 
@@ -93,7 +95,7 @@ class LabelMapper:
             color=ColorMapper().backward(instance["color"]),
             hotkey=instance.get("hotkey", ""),
             domain=label_domain,
-            creation_date=instance.get("creation_date", None),
+            creation_date=DatetimeMapper.backward(instance["creation_date"]),
             is_empty=instance.get("is_empty", False),
         )
         return label
@@ -229,3 +231,12 @@ class LabelSchemaMapper:
             label_groups=label_groups,
         )
         return output
+
+
+def label_schema_to_bytes(label_schema: LabelSchemaEntity) -> bytes:
+    """
+    Returns json-serialized LabelSchemaEntity as bytes.
+    """
+
+    serialized_label_schema = LabelSchemaMapper.forward(label_schema)
+    return json.dumps(serialized_label_schema, indent=4).encode()

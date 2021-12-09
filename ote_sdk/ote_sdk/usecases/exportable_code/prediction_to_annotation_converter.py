@@ -17,11 +17,9 @@ Converters for output of inferencers
 # in the License.
 
 import abc
-from typing import Any, Dict, List, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
-from openvino.model_zoo.model_api.models import utils
-
 from openvino.model_zoo.model_api.models import utils
 
 from ote_sdk.entities.annotation import (
@@ -65,7 +63,7 @@ class DetectionToAnnotationConverter(IPredictionToAnnotationConverter):
         self.label_map = dict(enumerate(labels))
 
     def convert_to_annotation(
-        self, predictions: np.ndarray, metadata: Dict = None
+        self, predictions: np.ndarray, metadata: Optional[Dict] = None
     ) -> AnnotationSceneEntity:
         """
         Converts a set of predictions into an AnnotationScene object
@@ -109,7 +107,7 @@ class DetectionToAnnotationConverter(IPredictionToAnnotationConverter):
         :raises ValueError: This error is raised if the shape of prediction is not
                             (n, 7) or (n, 6)
         """
-        annotations = list()
+        annotations = []
         if predictions.shape[1:] < (6,) or predictions.shape[1:] > (7,):
             raise ValueError(
                 f"Shape of prediction is not expected, expected (n, 7) or (n, 6) "
@@ -138,31 +136,37 @@ class DetectionToAnnotationConverter(IPredictionToAnnotationConverter):
         return annotations
 
 
-def create_converter(converter_type: Domain, labels: List[Union[str, LabelEntity]]):
+def create_converter(
+    converter_type: Domain, labels: List[Union[str, LabelEntity]]
+) -> IPredictionToAnnotationConverter:
     """
-    Simple fabric for converters based on type of tasks
+    Simple factory for converters based on type of tasks
     """
 
+    converter: IPredictionToAnnotationConverter
     if converter_type == Domain.DETECTION:
-        return DetectionBoxToAnnotationConverter(labels)
+        converter = DetectionBoxToAnnotationConverter(labels)
     elif converter_type == Domain.SEGMENTATION:
-        return SegmentationToAnnotationConverter(labels)
+        converter = SegmentationToAnnotationConverter(labels)
     elif converter_type == Domain.CLASSIFICATION:
-        return ClassificationToAnnotationConverter(labels)
+        converter = ClassificationToAnnotationConverter(labels)
     elif converter_type == Domain.ANOMALY_CLASSIFICATION:
-        return AnomalyClassificationToAnnotationConverter(labels)
+        converter = AnomalyClassificationToAnnotationConverter(labels)
     else:
-        raise ValueError(converter_type)
+        raise ValueError(f"Unknown converter type: {converter_type}")
+
+    return converter
 
 
 def get_label(labels_map: List[Any], index: int, label_domain: Domain) -> LabelEntity:
     """
     Get label from list of labels
     """
-    if isinstance(labels_map[index], LabelEntity):
-        return labels_map[index]
+    label = labels_map[index]
+    if isinstance(label, LabelEntity):
+        return label
 
-    return LabelEntity(str(labels_map[index]), label_domain)
+    return LabelEntity(str(label), label_domain)
 
 
 class DetectionBoxToAnnotationConverter(IPredictionToAnnotationConverter):
@@ -174,7 +178,7 @@ class DetectionBoxToAnnotationConverter(IPredictionToAnnotationConverter):
         self.labels_map = labels
 
     def convert_to_annotation(
-        self, predictions: List[utils.Detection], metadata: Dict
+        self, predictions: List[utils.Detection], metadata: Dict[str, Any]
     ) -> AnnotationSceneEntity:
         annotations = []
         image_size = metadata["original_shape"][1::-1]
@@ -233,7 +237,7 @@ class ClassificationToAnnotationConverter(IPredictionToAnnotationConverter):
         self.labels_map = labels
 
     def convert_to_annotation(
-        self, predictions: List[Tuple], metadata: Dict[str, Any]
+        self, predictions: List[Tuple[int, float]], metadata: Dict[str, Any]
     ) -> AnnotationSceneEntity:
         labels = []
         for index, score in predictions:
@@ -245,7 +249,6 @@ class ClassificationToAnnotationConverter(IPredictionToAnnotationConverter):
 
         if not labels and metadata.get("empty_label") is not None:
             labels = [ScoredLabel(metadata["empty_label"], probability=1.0)]
-        print(labels)
         annotations = [Annotation(Rectangle.generate_full_box(), labels=labels)]
         return AnnotationSceneEntity(
             kind=AnnotationSceneKind.PREDICTION, annotations=annotations

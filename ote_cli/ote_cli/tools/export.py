@@ -27,7 +27,7 @@ from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType
 
 from ote_cli.registry import find_and_parse_model_template
 from ote_cli.utils.importing import get_impl_class
-from ote_cli.utils.loading import load_model_weights, read_label_schema
+from ote_cli.utils.io import read_binary, read_label_schema, save_model_data
 
 
 def parse_args():
@@ -68,16 +68,16 @@ def main():
     hyper_parameters = create(template.hyper_parameters.data)
     assert hyper_parameters
 
-    model_bytes = load_model_weights(args.load_weights)
-
     environment = TaskEnvironment(
         model=None,
         hyper_parameters=hyper_parameters,
-        label_schema=read_label_schema(model_bytes),
+        label_schema=read_label_schema(
+            os.path.join(os.path.dirname(args.load_weights), "label_schema.json")
+        ),
         model_template=template,
     )
 
-    model_adapters = {"weights.pth": ModelAdapter(model_bytes)}
+    model_adapters = {"weights.pth": ModelAdapter(read_binary(args.load_weights))}
     model = ModelEntity(
         configuration=environment.get_model_configuration(),
         model_adapters=model_adapters,
@@ -94,11 +94,4 @@ def main():
     task.export(ExportType.OPENVINO, exported_model)
 
     os.makedirs(args.save_model_to, exist_ok=True)
-
-    with open(os.path.join(args.save_model_to, "model.bin"), "wb") as write_file:
-        write_file.write(exported_model.get_data("openvino.bin"))
-
-    with open(
-        os.path.join(args.save_model_to, "model.xml"), "w", encoding="UTF-8"
-    ) as write_file:
-        write_file.write(exported_model.get_data("openvino.xml").decode())
+    save_model_data(exported_model, args.save_model_to)

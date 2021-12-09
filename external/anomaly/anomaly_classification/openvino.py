@@ -28,7 +28,6 @@ from shutil import copyfile, copytree
 from typing import Optional, Union
 from zipfile import ZipFile
 
-import ote_sdk.usecases.exportable_code.demo as demo
 from addict import Dict as ADDict
 from anomalib.core.model import model_wrappers
 from compression.api import DataLoader
@@ -50,6 +49,7 @@ from ote_sdk.entities.optimization_parameters import OptimizationParameters
 from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.usecases.evaluation.metrics_helper import MetricsHelper
+from ote_sdk.usecases.exportable_code import demo
 from ote_sdk.usecases.tasks.interfaces.deployment_interface import IDeploymentTask
 from ote_sdk.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from ote_sdk.usecases.tasks.interfaces.inference_interface import IInferenceTask
@@ -111,10 +111,13 @@ class OpenVINOAnomalyClassificationTask(IDeploymentTask, IInferenceTask, IEvalua
 
     @property
     def hparams(self):
+        """
+        Get hyperparams
+        """
         return self.task_environment.get_hyper_parameters()
 
     def infer(self, dataset: DatasetEntity, inference_parameters: InferenceParameters) -> DatasetEntity:
-        logger.info('Start OpenVINO inference')
+        logger.info("Start OpenVINO inference")
         update_progress_callback = default_progress_callback
         if inference_parameters is not None:
             update_progress_callback = inference_parameters.update_progress
@@ -129,40 +132,53 @@ class OpenVINOAnomalyClassificationTask(IDeploymentTask, IInferenceTask, IEvalua
     def evaluate(self, output_resultset: ResultSetEntity, evaluation_metric: Optional[str] = None):
         output_resultset.performance = MetricsHelper.compute_f_measure(output_resultset).get_performance()
 
-    def deploy(self,
-               output_model: ModelEntity) -> None:
+    def deploy(self, output_model: ModelEntity) -> None:
+        logger.info("Deploying the model")
+
         work_dir = os.path.dirname(demo.__file__)
         model_file = inspect.getfile(type(self.inferencer.model))
         parameters = {}
-        parameters['name_of_model'] = self.model_name
-        parameters['type_of_model'] = self.hparams.inference_parameters.class_name.value
-        parameters['converter_type'] = 'ANOMALY_CLASSIFICATION'
-        parameters['model_parameters'] = self.inferencer.configuration
-        name_of_package = parameters['name_of_model'].lower()
+        parameters["type_of_model"] = self.hparams.inference_parameters.class_name.value
+        parameters["converter_type"] = "ANOMALY_CLASSIFICATION"
+        parameters["model_parameters"] = self.inferencer.configuration
+        name_of_package = "demo_package"
         with tempfile.TemporaryDirectory() as tempdir:
             copyfile(os.path.join(work_dir, "setup.py"), os.path.join(tempdir, "setup.py"))
             copyfile(os.path.join(work_dir, "requirements.txt"), os.path.join(tempdir, "requirements.txt"))
-            copytree(os.path.join(work_dir, "demo_package"), os.path.join(tempdir, name_of_package))
+            copytree(os.path.join(work_dir, name_of_package), os.path.join(tempdir, name_of_package))
             config_path = os.path.join(tempdir, name_of_package, "config.json")
-            with open(config_path, "w") as f:
-                json.dump(parameters, f)
+            with open(config_path, "w", encoding="utf-8") as file:
+                json.dump(parameters, file)
             # generate model.py
-            if (inspect.getmodule(self.inferencer.model) in
-               [module[1] for module in inspect.getmembers(model_wrappers, inspect.ismodule)]):
+            if inspect.getmodule(self.inferencer.model) in [
+                module[1] for module in inspect.getmembers(model_wrappers, inspect.ismodule)
+            ]:
                 copyfile(model_file, os.path.join(tempdir, name_of_package, "model.py"))
             # create wheel package
-            subprocess.run([sys.executable, os.path.join(tempdir, "setup.py"), 'bdist_wheel',
-                            '--dist-dir', tempdir, 'clean', '--all'])
-            wheel_file_name = [f for f in os.listdir(tempdir) if f.endswith('.whl')][0]
-            print(wheel_file_name)
-            with ZipFile(os.path.join(tempdir, "openvino.zip"), 'w') as zip:
-                zip.writestr(os.path.join("model", "model.xml"), self.model.get_data("openvino.xml"))
-                zip.writestr(os.path.join("model", "model.bin"), self.model.get_data("openvino.bin"))
-                zip.write(os.path.join(tempdir, "requirements.txt"), os.path.join("python", "requirements.txt"))
-                zip.write(os.path.join(tempdir, name_of_package, "sync.py"), os.path.join("python", "demo.py"))
-                zip.write(os.path.join(tempdir, wheel_file_name), os.path.join("python", wheel_file_name))
-            self.__load_weights(path=os.path.join(tempdir, "openvino.zip"), output_model=output_model, key="demo_package")
+            subprocess.run(
+                [
+                    sys.executable,
+                    os.path.join(tempdir, "setup.py"),
+                    "bdist_wheel",
+                    "--dist-dir",
+                    tempdir,
+                    "clean",
+                    "--all",
+                ],
+                check=True,
+            )
+            wheel_file_name = [f for f in os.listdir(tempdir) if f.endswith(".whl")][0]
 
+            with ZipFile(os.path.join(tempdir, "openvino.zip"), "w") as arch:
+                arch.writestr(os.path.join("model", "model.xml"), self.model.get_data("openvino.xml"))
+                arch.writestr(os.path.join("model", "model.bin"), self.model.get_data("openvino.bin"))
+                arch.write(os.path.join(tempdir, "requirements.txt"), os.path.join("python", "requirements.txt"))
+                arch.write(os.path.join(work_dir, "README.md"), os.path.join("python", "README.md"))
+                arch.write(os.path.join(work_dir, "demo.py"), os.path.join("python", "demo.py"))
+                arch.write(os.path.join(tempdir, wheel_file_name), os.path.join("python", wheel_file_name))
+            with open(os.path.join(tempdir, "openvino.zip"), "rb") as output_arch:
+                output_model.exportable_code = output_arch.read()
+        logger.info("Deploying completed")
 
     def optimize(
         self,

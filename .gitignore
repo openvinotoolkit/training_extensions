@@ -9,6 +9,7 @@ env
 .env
 
 data/*
+.coverage
 
 *egg-info
 

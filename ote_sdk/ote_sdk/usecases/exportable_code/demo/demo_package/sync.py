@@ -15,45 +15,7 @@ Sync Demo based on ModelAPI
 # with no express or implied warranties, other than those that are expressly stated
 # in the License.
 
-import sys
-from argparse import SUPPRESS, ArgumentParser
-from pathlib import Path
-
-from ote_sdk.usecases.exportable_code.streamer import get_media_type, get_streamer
-from ote_sdk.usecases.exportable_code.visualization import Visualizer
-
-# pylint: disable=relative-beyond-top-level
-from .utils import create_model, create_output_converter
-
-
-def build_argparser():
-    """
-    Parses command line arguments.
-    """
-    parser = ArgumentParser(add_help=False)
-    args = parser.add_argument_group("Options")
-    args.add_argument(
-        "-h",
-        "--help",
-        action="help",
-        default=SUPPRESS,
-        help="Show this help message and exit.",
-    )
-    args.add_argument(
-        "-i",
-        "--input",
-        required=True,
-        help="Required. An input to process. The input must be a single image.",
-    )
-    args.add_argument(
-        "-m",
-        "--model",
-        help="Required. Path to an .xml file with a trained model.",
-        required=True,
-        type=Path,
-    )
-
-    return parser
+from ote_sdk.usecases.exportable_code.streamer import get_streamer
 
 
 class SyncDemo:
@@ -91,23 +53,3 @@ class SyncDemo:
 
             if self.visualizer.is_quit():
                 break
-
-
-def main():
-    """
-    Main function that is used for run demo.
-    """
-    args = build_argparser().parse_args()
-    # create components for demo
-
-    model = create_model(args.model)
-    media_type = get_media_type(args.input)
-
-    visualizer = Visualizer(media_type)
-    converter = create_output_converter(model.labels)
-    demo = SyncDemo(model, visualizer, converter)
-    demo.run(args.input)
-
-
-if __name__ == "__main__":
-    sys.exit(main() or 0)
