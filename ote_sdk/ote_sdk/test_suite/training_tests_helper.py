@@ -209,7 +209,6 @@ class OTETestHelper:
         self.short_test_parameters_names_for_generating_id = (
             test_creation_parameters.short_test_parameters_names_for_generating_id()
         )
-        # TODO(beynens): rename to test_parameters_defining_test_case
         self.test_parameters_defining_test_case_behavior = (
             test_creation_parameters.test_parameters_defining_test_case_behavior()
         )
@@ -246,7 +245,7 @@ class OTETestHelper:
     def _fill_test_parameters_default_values(self, test_parameters):
         for key, default_val in self.default_test_parameters.items():
             val = test_parameters.get(key)
-            if val is None or val == DEFAULT_FIELD_VALUE_FOR_USING_IN_TEST():
+            if val is None or val == DEFAULT_FIELD_VALUE_FOR_USING_IN_TEST:
                 test_parameters[key] = default_val
 
     def _generate_test_id(self, test_parameters):
@@ -303,12 +302,12 @@ class OTETestHelper:
 
             model_dataset_pairs = list(itertools.product(model_names, dataset_names))
 
-            for m, d in model_dataset_pairs:
+            for cur_model_name, cur_dataset_name in model_dataset_pairs:
                 for test_stage in self._get_list_of_test_stages():
                     test_parameters = deepcopy(el)
                     test_parameters["test_stage"] = test_stage
-                    test_parameters["model_name"] = m
-                    test_parameters["dataset_name"] = d
+                    test_parameters["model_name"] = cur_model_name
+                    test_parameters["dataset_name"] = cur_dataset_name
                     self._fill_test_parameters_default_values(test_parameters)
                     argvalues.append((test_parameters,))
                     ids.append(self._generate_test_id(test_parameters))

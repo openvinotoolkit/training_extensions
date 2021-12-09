@@ -23,8 +23,10 @@ from typing import Callable, Dict, Optional
 import pytest
 import yaml
 
+from ote_sdk.entities.model_template import parse_model_template
+
 from .e2e_test_system import DataCollector
-from .training_tests_common import REALLIFE_USECASE_CONSTANT
+from .training_tests_common import REALLIFE_USECASE_CONSTANT, ROOT_PATH_KEY
 
 logger = logging.getLogger(__name__)
 
@@ -77,14 +79,6 @@ def ote_test_scenario_fx():
 #########################################################################################
 
 
-def ROOT_PATH_KEY():  # pylint: disable=invalid-name
-    """
-    Constant for storing in dict-s with paths the root path
-    that will be used for resolving relative paths.
-    """
-    return "_root_path"
-
-
 @pytest.fixture
 def dataset_definitions_fx(request):
     """
@@ -111,7 +105,7 @@ def dataset_definitions_fx(request):
         }
     }
 
-    Also one more key with value ROOT_PATH_KEY() is added -- it is the path to
+    Also one more key with value ROOT_PATH_KEY is added -- it is the path to
     the folder where the dataset definitions file is placed, this path will be
     used to resolve relative paths in the dataset structures.
     """
@@ -125,15 +119,8 @@ def dataset_definitions_fx(request):
         return None
     with open(path, encoding="utf-8") as f:
         data = yaml.safe_load(f)
-    data[ROOT_PATH_KEY()] = osp.dirname(path)
+    data[ROOT_PATH_KEY] = osp.dirname(path)
     return data
-
-
-def _get_template_name_from_template_file(template_path):
-    with open(template_path, encoding="utf-8") as f:
-        template_data = yaml.safe_load(f)
-        assert "model_template_id" in template_data, f"Wrong template {template_path}"
-        return template_data["model_template_id"]
 
 
 @pytest.fixture(scope="session")
@@ -148,17 +135,18 @@ def template_paths_fx(ote_templates_root_dir_fx):
     assert osp.isabs(
         root
     ), f"Error: ote_templates_root_dir_fx is not an absolute path: {root}"
-    glb = glob.glob(f"{root}/**/template*.yaml", recursive=True)
+    template_glob = glob.glob(f"{root}/**/template*.yaml", recursive=True)
     data = {}
-    for cur_path in glb:
+    for cur_path in template_glob:
         assert osp.isabs(cur_path), f"Error: not absolute path {cur_path}"
-        name = _get_template_name_from_template_file(cur_path)
+        name = parse_model_template(cur_path).model_template_id
         if name in data:
             raise RuntimeError(
                 f"Duplication of names in {root} folder: {data[name]} and {cur_path}"
             )
+        assert name != ROOT_PATH_KEY, f"Wrong model name {name}"
         data[name] = cur_path
-    data[ROOT_PATH_KEY()] = ""
+    data[ROOT_PATH_KEY] = ""
     return data
 
 
@@ -290,7 +278,7 @@ def cur_test_expected_metrics_callback_fx(
          E.g. if `max_diff_if_greater_threshold` is absent, the range will be
          [target_value - max_diff_if_less_threshold, +infinity]
     """
-    if REALLIFE_USECASE_CONSTANT() != current_test_parameters_fx["usecase"]:
+    if REALLIFE_USECASE_CONSTANT != current_test_parameters_fx["usecase"]:
         return None
 
     # make a copy to avoid later changes in the structs

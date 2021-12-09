@@ -250,7 +250,7 @@ class Validator:
             # most probably, it is not a reallife test
             logger.info(
                 f"Validation: skipped, since there should not be expected metrics for this test, "
-                f'most probably the test is not run in "{REALLIFE_USECASE_CONSTANT()}" usecase'
+                f'most probably the test is not run in "{REALLIFE_USECASE_CONSTANT}" usecase'
             )
             return
 

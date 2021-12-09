@@ -62,8 +62,7 @@ class BaseOTETestAction(ABC):
             f"{type(self).__name__}("
             f"name={self.name}, "
             f"with_validation={self.with_validation}, "
-            f"depends_stages_names={self.depends_stages_names}"
-            f")"
+            f"depends_stages_names={self.depends_stages_names})"
         )
 
     def _check_result_prev_stages(self, results_prev_stages, list_required_stages):
@@ -127,7 +126,7 @@ class OTETestTrainingAction(BaseOTETestAction):
         params = ote_sdk_configuration_helper_create(
             self.model_template.hyper_parameters.data
         )
-        if self.num_training_iters != KEEP_CONFIG_FIELD_VALUE():
+        if self.num_training_iters != KEEP_CONFIG_FIELD_VALUE:
             params.learning_parameters.num_iters = int(self.num_training_iters)
             logger.debug(
                 f"Set params.learning_parameters.num_iters="
@@ -139,7 +138,7 @@ class OTETestTrainingAction(BaseOTETestAction):
                 f"{params.learning_parameters.num_iters}"
             )
 
-        if self.batch_size != KEEP_CONFIG_FIELD_VALUE():
+        if self.batch_size != KEEP_CONFIG_FIELD_VALUE:
             params.learning_parameters.batch_size = int(self.batch_size)
             logger.debug(
                 f"Set params.learning_parameters.batch_size="
