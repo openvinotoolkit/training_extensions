@@ -368,7 +368,7 @@ class TestShape:
         # Checking GeometryException exception raised
         with pytest.raises(GeometryException):
             with warnings.catch_warnings():
-                warnings.filterwarnings('ignore', 'Polygon coordinates')
+                warnings.filterwarnings("ignore", "Polygon coordinates")
                 self.base_self_intersect_polygon().intersects(
                     self.other_self_intersect_polygon()
                 )
@@ -420,7 +420,7 @@ class TestShape:
         # Checking GeometryException exception raised
         with pytest.raises(GeometryException):
             with warnings.catch_warnings():
-                warnings.filterwarnings('ignore', 'Polygon coordinates')
+                warnings.filterwarnings("ignore", "Polygon coordinates")
                 self.base_self_intersect_polygon().intersect_percentage(
                     self.other_self_intersect_polygon()
                 )
@@ -608,7 +608,7 @@ class TestShape:
         9. Check validate_coordinates method for Shapes with x<1.0, y>1.0
         """
         with warnings.catch_warnings():
-            warnings.filterwarnings('ignore', r'.* coordinates')
+            warnings.filterwarnings("ignore", r".* coordinates")
             for shape in [self.rectangle(), self.ellipse(), self.polygon()]:
                 assert shape._validate_coordinates(x=0.0, y=0.0)
                 assert shape._validate_coordinates(x=1.0, y=1.0)

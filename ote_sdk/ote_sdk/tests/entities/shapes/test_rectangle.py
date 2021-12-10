@@ -164,7 +164,7 @@ class TestRectangle:
         self.vertical_rectangle()
         self.square()
         with warnings.catch_warnings():
-            warnings.filterwarnings('ignore', 'Rectangle coordinates')
+            warnings.filterwarnings("ignore", "Rectangle coordinates")
             Rectangle(x1=0.2, y1=0.1, x2=1.4, y2=1.5)
         Rectangle(x1=0.2, y1=0.1, x2=0.4, y2=0.5)
         # checks for incorrect coordinates
@@ -348,7 +348,7 @@ class TestRectangle:
         ]
         for scenario in positive_scenarios:
             with warnings.catch_warnings():
-                warnings.filterwarnings('ignore', 'Rectangle coordinates')
+                warnings.filterwarnings("ignore", "Rectangle coordinates")
                 rectangle_actual = Rectangle(**scenario.get("input_params"))
             rectangle_expected = Rectangle(**scenario.get("params_expected"))
             rectangle_actual.modification_date = self.modification_date
@@ -362,7 +362,7 @@ class TestRectangle:
         ]
         for scenario in negative_scenarios:
             with warnings.catch_warnings():
-                warnings.filterwarnings('ignore', 'Rectangle coordinates')
+                warnings.filterwarnings("ignore", "Rectangle coordinates")
                 rectangle_actual = Rectangle(**scenario)
             with pytest.raises(ValueError):
                 rectangle_actual.clip_to_visible_region()
@@ -388,7 +388,7 @@ class TestRectangle:
         # Positive scenario
         rectangle = self.horizontal_rectangle()
         with warnings.catch_warnings():
-            warnings.filterwarnings('ignore', 'Rectangle coordinates')
+            warnings.filterwarnings("ignore", "Rectangle coordinates")
             roi_shape = Rectangle(x1=0.0, y1=0.0, x2=2.1, y2=2.2)
         normalized = rectangle.normalize_wrt_roi_shape(roi_shape)
         assert normalized.x1 == 0.1
@@ -422,7 +422,7 @@ class TestRectangle:
         rectangle = self.horizontal_rectangle()
         roi_shape = Rectangle(x1=0.2, y1=0.2, x2=0.4, y2=0.4)
         with warnings.catch_warnings():
-            warnings.filterwarnings('ignore', 'Rectangle coordinates')
+            warnings.filterwarnings("ignore", "Rectangle coordinates")
             denormalized = rectangle.denormalize_wrt_roi_shape(roi_shape)
         assert denormalized.x1 == -0.5
         assert denormalized.y1 == -1.0
@@ -570,7 +570,7 @@ class TestRectangle:
         ]
         for rectangle_parameters in scenarios:
             with warnings.catch_warnings():
-                warnings.filterwarnings('ignore', 'Rectangle coordinates')
+                warnings.filterwarnings("ignore", "Rectangle coordinates")
                 rectangle = Rectangle(**rectangle_parameters.get("input_params"))
             expected_output = rectangle_parameters.get("cropped_expected")
             actual_cropped_image_array = rectangle.crop_numpy_array(numpy_image_array)
@@ -603,7 +603,7 @@ class TestRectangle:
         1. Check width method for Rectangle instances
         """
         with warnings.catch_warnings():
-            warnings.filterwarnings('ignore', 'Rectangle coordinates')
+            warnings.filterwarnings("ignore", "Rectangle coordinates")
             negative_x1_rectangle = Rectangle(x1=-0.3, y1=0.2, x2=0.7, y2=0.5)
         for rectangle, expected_width in [
             (self.horizontal_rectangle(), 0.30000000000000004),
@@ -631,7 +631,7 @@ class TestRectangle:
         1. Check height method for Rectangle instances
         """
         with warnings.catch_warnings():
-            warnings.filterwarnings('ignore', 'Rectangle coordinates')
+            warnings.filterwarnings("ignore", "Rectangle coordinates")
             negative_y1_rectangle = Rectangle(x1=0.3, y1=-0.4, x2=0.7, y2=0.5)
         for rectangle, expected_height in [
             (self.horizontal_rectangle(), 0.2),
