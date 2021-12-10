@@ -12,6 +12,8 @@
 # with no express or implied warranties, other than those that are expressly stated
 # in the License.
 
+import warnings
+
 import numpy as np
 import pytest
 
@@ -83,10 +85,17 @@ class TestMetrics:
             required_normalised_matrix_data, matrix_metric.matrix_values
         )
 
-        matrix_data_with_zero_sum = np.array([[0, 0, 0], [0, 1, 1], [1, 0, 0]])
-        matrix_metric_with_zero_sum = MatrixMetric(
-            name="test matrix", matrix_values=matrix_data_with_zero_sum, normalize=True
-        )
+        with warnings.catch_warnings():
+            # there is a matrix with zero sum in row, so we expect 0/0 division.
+            warnings.filterwarnings(
+                "ignore", "invalid value encountered in true_divide"
+            )
+            matrix_data_with_zero_sum = np.array([[0, 0, 0], [0, 1, 1], [1, 0, 0]])
+            matrix_metric_with_zero_sum = MatrixMetric(
+                name="test matrix",
+                matrix_values=matrix_data_with_zero_sum,
+                normalize=True,
+            )
 
         required_normalised_matrix_data_with_zero_sum = np.array(
             [[0, 0, 0], [0, 0.5, 0.5], [1, 0, 0]]
