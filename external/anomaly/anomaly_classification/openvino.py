@@ -22,9 +22,7 @@ import struct
 import tempfile
 from typing import Optional, Union
 
-import cv2
 import numpy as np
-
 from addict import Dict as ADDict
 from anomalib.core.model.inference import OpenVINOInferencer
 from compression.api import DataLoader
@@ -34,6 +32,7 @@ from compression.graph.model_utils import compress_model_weights, get_nodes_by_t
 from compression.pipeline.initializer import create_pipeline
 from omegaconf import ListConfig
 from omegaconf.dictconfig import DictConfig
+
 from ote_anomalib.config import get_anomalib_config
 from ote_anomalib.data import LabelNames
 from ote_sdk.entities.annotation import Annotation
