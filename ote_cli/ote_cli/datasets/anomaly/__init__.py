@@ -1,4 +1,4 @@
-"""DataLoader for anomaly tasks"
+"""DataLoader for anomaly tasks"""
 
 # Copyright (C) 2021 Intel Corporation
 #
