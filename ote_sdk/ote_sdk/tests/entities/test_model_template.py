@@ -870,7 +870,7 @@ class TestModelTemplate:
         2. Check ValueError exception when initialized ModelTemplate has CLASS instantiation and no entry points
         3. Check ValueError exception when initialized ModelTemplate has VISION task family and has no specified path to
         config file
-        4. Check ValueError exception when initialized ModelTemplate with task family not equal to VISION and but has
+        4. Check ValueError exception when initialized ModelTemplate with task family in not equal to VISION and but has
         specified path to config file
         """
         model_template_parameters = self.default_model_parameters()
