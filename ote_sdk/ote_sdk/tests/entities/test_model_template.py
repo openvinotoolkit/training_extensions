@@ -115,7 +115,7 @@ class TestTargetDevice:
         <b>Description:</b>
         Check TargetDevice IntEnum class elements
         <b>Expected results:</b>
-        Test passes if TargetDevice IntEnum class length equal expected value and its elements have expected
+        Test passes if TargetDevice IntEnum class length is equal to expected value and its elements have expected
         sequence number
         """
         assert len(TargetDevice) == 4
@@ -133,9 +133,9 @@ class TestModelOptimizationMethod:
     def test_modeloptymizationmethod(self):
         """
         <b>Description:</b>
-        Check TestModelOptimizationMethod Enum class elements
+        Check ModelOptimizationMethod Enum class elements
         <b>Expected results:</b>
-        Test passes if TestModelOptimizationMethod Enum class length, methods and attributes return expected values
+        Test passes if ModelOptimizationMethod Enum class length, methods and attributes return expected values
         <b>Steps</b>
         1. Check ModelOptimizationMethod length
         2. Check ModelOptimizationMethod elements value attribute
@@ -156,9 +156,9 @@ class TestDatasetRequirements:
     def test_datasetrequirements(self):
         """
         <b>Description:</b>
-        Check TestDatasetRequirements dataclass
+        Check DatasetRequirements dataclass
         <b>Expected results:</b>
-        Test passes if classes attribute of TestDatasetRequirements dataclass returns expected values
+        Test passes if classes attribute of DatasetRequirements dataclass returns expected values
         """
         classes_list = ["class_1", "class_2"]
         test_dataset_requirements = DatasetRequirements(classes_list)
@@ -859,18 +859,18 @@ class TestModelTemplate:
     @pytest.mark.priority_medium
     @pytest.mark.component
     @pytest.mark.reqids(Requirements.REQ_1)
-    def test_model_template_post_initiation(self):
+    def test_model_template_post_initialization(self):
         """
         <b>Description:</b>
         Check __post_init__ method of ModelTemplate dataclass
         <b>Expected results:</b>
         Test passes if __post_init__ method of ModelTemplate object raises ValueError exception for parameters violation
         <b>Steps</b>
-        1. Check ValueError exception when initiated ModelTemplate has gRPC instantiation and "" gRPC address
-        2. Check ValueError exception when initiated ModelTemplate has CLASS instantiation and no entrypoints
-        3. Check ValueError exception when initiated ModelTemplate has VISION task family and has no specified path to
+        1. Check ValueError exception when initialized ModelTemplate has gRPC instantiation and "" gRPC address
+        2. Check ValueError exception when initialized ModelTemplate has CLASS instantiation and no entry points
+        3. Check ValueError exception when initialized ModelTemplate has VISION task family and has no specified path to
         config file
-        4. Check ValueError exception when initiated ModelTemplate with task family not equal to VISION and but has
+        4. Check ValueError exception when initialized ModelTemplate with task family not equal to VISION and but has
         specified path to config file
         """
         model_template_parameters = self.default_model_parameters()
