@@ -350,7 +350,7 @@ class TestLabelGroupType:
         Check LabelGroupType Enum class elements
 
         <b>Expected results:</b>
-        Test passes if LabelGroupType Enum class length equal expected value and its elements have expected
+        Test passes if LabelGroupType Enum class length is equal expected value and its elements have expected
         sequence numbers
         """
         assert len(LabelGroupType) == 2
@@ -410,10 +410,10 @@ class TestLabelGroup:
     @pytest.mark.priority_medium
     @pytest.mark.component
     @pytest.mark.reqids(Requirements.REQ_1)
-    def test_label_group_initiation(self):
+    def test_label_group_initialization(self):
         """
         <b>Description:</b>
-        Check LabelGroup class object initiation
+        Check LabelGroup class object initialization
 
         <b>Input data:</b>
         LabelGroup object with specified name, labels, group type and ID parameters
@@ -613,10 +613,10 @@ class TestLabelGraph:
     @pytest.mark.priority_medium
     @pytest.mark.component
     @pytest.mark.reqids(Requirements.REQ_1)
-    def test_label_graph_initiation(self):
+    def test_label_graph_initialization(self):
         """
         <b>Description:</b>
-        Check LabelGraph class object initiation
+        Check LabelGraph class object initialization
 
         <b>Input data:</b>
         LabelGraph objects with specified "directed" parameter and added edges
@@ -923,10 +923,10 @@ class TestLabelTree:
     @pytest.mark.priority_medium
     @pytest.mark.component
     @pytest.mark.reqids(Requirements.REQ_1)
-    def test_label_tree_initiation(self):
+    def test_label_tree_initialization(self):
         """
         <b>Description:</b>
-        Check LabelTree class object initiation
+        Check LabelTree class object initialization
 
         <b>Input data:</b>
         LabelTree object, edges and nodes to add
@@ -986,7 +986,7 @@ class TestLabelTree:
         LabelTree object with specified directed parameters and added edges
 
         <b>Expected results:</b>
-        Test passes if "edges" attribute of LabelTree equal expected value after using add_edge and add_edges methods
+        Test passes if "edges" attribute of LabelTree is equal expected value after using add_edge and add_edges methods
         """
         label_tree = self.label_tree_no_children()
         # Adding edges, one of which already in LabelTree
@@ -1073,7 +1073,7 @@ class TestLabelTree:
         LabelTree object with specified directed parameter and added edges
 
         <b>Expected results:</b>
-        Test passes if "nodes" attribute of LabelTree equal expected value after using add_node method
+        Test passes if "nodes" attribute of LabelTree is equal expected value after using add_node method
         """
         label_tree = self.label_tree_no_children()
         # Adding new node
@@ -1147,7 +1147,7 @@ class TestLabelTree:
         LabelTree object with specified directed parameter and added edges
 
         <b>Expected results:</b>
-        Test passes if "__topological_order_cache" attribute of LabelTree equal "None" after clear_topological_cache
+        Test passes if "__topological_order_cache" attribute of LabelTree is equal "None" after clear_topological_cache
         """
         # Check for empty LabelTree
         label_tree = LabelTree()
@@ -1382,7 +1382,7 @@ class TestLabelTree:
         LabelTree object with specified directed parameter, added edges and children
 
         <b>Expected results:</b>
-        Test passes if LabelTree object returned by subgraph method equal expected
+        Test passes if LabelTree object returned by subgraph method is equal expected
         """
         label_tree = self.label_tree()
         non_included_label = LabelEntity("not included", domain=Domain.CLASSIFICATION)
@@ -1433,7 +1433,7 @@ class TestLabelTree:
         LabelTree objects with specified directed parameter, added edges and children
 
         <b>Expected results:</b>
-        Test passes if value returned by __eq__ method equal expected
+        Test passes if value returned by __eq__ method is equal expected
 
         <b>Steps</b>
         1. Check value returned by __eq__ method for equal LabelTree objects
@@ -1533,10 +1533,10 @@ class TestLabelSchemaEntity:
     @pytest.mark.priority_medium
     @pytest.mark.component
     @pytest.mark.reqids(Requirements.REQ_1)
-    def test_label_schema_entity_default_parameters_initiation(self):
+    def test_label_schema_entity_default_parameters_initialization(self):
         """
         <b>Description:</b>
-        Check LabelSchemaEntity object initiation
+        Check LabelSchemaEntity object initialization
 
         <b>Input data:</b>
         LabelSchemaEntity object with not specified exclusivity_graph, label_tree and label_groups parameters
@@ -1562,7 +1562,7 @@ class TestLabelSchemaEntity:
         LabelSchemaEntity object with specified exclusivity_graph, label_tree and label_groups parameters
 
         <b>Expected results:</b>
-        Test passes if list returned by get_labels method equal expected
+        Test passes if list returned by get_labels method is equal expected
 
         <b>Steps</b>
         1. Check list returned by get_labels method with include_empty parameter set to True
@@ -1599,7 +1599,7 @@ class TestLabelSchemaEntity:
         LabelSchemaEntity object with specified exclusivity_graph, label_tree and label_groups parameters
 
         <b>Expected results:</b>
-        Test passes if list returned by get_groups method equal expected
+        Test passes if list returned by get_groups method is equal expected
 
         <b>Steps</b>
         1. Check list returned by get_groups method with include_empty parameter set to True
@@ -1634,7 +1634,7 @@ class TestLabelSchemaEntity:
         LabelSchemaEntity object with specified exclusivity_graph, label_tree and label_groups parameters
 
         <b>Expected results:</b>
-        Test passes if value returned by "get_exclusive_groups" method equal expected
+        Test passes if value returned by "get_exclusive_groups" method is equal expected
 
         <b>Steps</b>
         1. Check value returned by "get_exclusive_groups" method after adding group with new labels
@@ -1796,7 +1796,7 @@ class TestLabelSchemaEntity:
         LabelSchemaEntity object with specified exclusivity_graph, label_tree and label_groups parameters
 
         <b>Expected results:</b>
-        Test passes if values returned by get_label_ids method equal expected
+        Test passes if values returned by get_label_ids method is equal expected
 
         <b>Steps</b>
         Check value returned by get_label_ids method for LabelSchemaEntity object
@@ -1828,7 +1828,7 @@ class TestLabelSchemaEntity:
         LabelSchemaEntity object with specified exclusivity_graph, label_tree and label_groups parameters
 
         <b>Expected results:</b>
-        Test passes if value returned by get_label_group_by_name method equal expected
+        Test passes if value returned by get_label_group_by_name method is equal expected
 
         <b>Steps</b>
         1. Check get_label_group_by_name method for searching exclusivity group
@@ -1865,7 +1865,7 @@ class TestLabelSchemaEntity:
         LabelSchemaEntity object with specified exclusivity_graph, label_tree and label_groups parameters
 
         <b>Expected results:</b>
-        Test passes if value returned by get_exclusive_groups method equal expected
+        Test passes if value returned by get_exclusive_groups method is equal expected
 
         <b>Steps</b>
         1. Check get_exclusive_groups method for searching exclusivity group
@@ -1912,7 +1912,7 @@ class TestLabelSchemaEntity:
 
         <b>Expected results:</b>
         Test passes if labels attribute returned by group which specified in add_labels_to_group_by_group_name method
-        equal expected
+        is equal expected
 
         <b>Steps</b>
         1. Check add_labels_to_group_by_group_name method to add labels to exclusive group
@@ -2001,7 +2001,7 @@ class TestLabelSchemaEntity:
         LabelSchemaEntity object with specified exclusivity_graph, label_tree and label_groups parameters
 
         <b>Expected results:</b>
-        Test passes if value returned by get_group_containing_label method equal expected
+        Test passes if value returned by get_group_containing_label method is equal expected
 
         <b>Steps</b>
         1. Check get_group_containing_label method for label included in exclusivity group
@@ -2048,7 +2048,7 @@ class TestLabelSchemaEntity:
         LabelSchemaEntity object with specified exclusivity_graph, label_tree and label_groups parameters
 
         <b>Expected results:</b>
-        Test passes if LabelEntity object returned by __get_label method equal expected
+        Test passes if LabelEntity object returned by __get_label method is equal expected
 
         <b>Steps</b>
         1. Check __get_label method for searching ScoredLabel object
@@ -2093,7 +2093,7 @@ class TestLabelSchemaEntity:
         LabelSchemaEntity object with specified exclusivity_graph, label_tree and label_groups parameters
 
         <b>Expected results:</b>
-        Test passes if value returned by __repr__ method equal expected
+        Test passes if value returned by __repr__ method is equal expected
         """
         label_schema_entity = self.label_schema_entity()
         label_groups = self.exclusivity_groups() + self.empty_labels_groups()
@@ -2114,7 +2114,7 @@ class TestLabelSchemaEntity:
         LabelSchemaEntity objects with specified exclusivity_graph, label_tree and label_groups parameters
 
         <b>Expected results:</b>
-        Test passes if value returned by __eq__ method equal expected
+        Test passes if value returned by __eq__ method is equal expected
 
         <b>Steps</b>
         1. Check __eq__ method for equal LabelSchemaEntity objects
@@ -2160,7 +2160,7 @@ class TestLabelSchemaEntity:
         LabelSchemaEntity objects with specified exclusivity_graph, label_tree and label_groups parameters
 
         <b>Expected results:</b>
-        Test passes if LabelSchemaEntity object returned by from_labels method equal expected
+        Test passes if LabelSchemaEntity object returned by from_labels method is equal expected
         """
         expected_labels = [
             labels.label_0,
