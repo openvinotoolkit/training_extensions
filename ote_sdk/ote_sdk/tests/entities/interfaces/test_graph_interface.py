@@ -31,7 +31,7 @@ class TestIGraph:
     def test_i_graph(self):
         """
         <b>Description:</b>
-        Check IGraph class object initiation
+        Check IGraph class object initialization
 
         <b>Input data:</b>
         IGraph object

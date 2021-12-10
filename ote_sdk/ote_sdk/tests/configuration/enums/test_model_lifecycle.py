@@ -30,7 +30,7 @@ class TestModelLifecycle:
         Check ModelLifecycle Enum class elements
 
         <b>Expected results:</b>
-        Test passes if ModelLifecycle Enum class length equal expected value and its elements have expected
+        Test passes if ModelLifecycle Enum class length is equal to expected value and its elements have expected
         sequence numbers and values returned by __str__ method
         """
         assert len(ModelLifecycle) == 5

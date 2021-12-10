@@ -27,7 +27,7 @@ class TestID:
     def test_id(self):
         """
         <b>Description:</b>
-        Check ID class object initiation
+        Check ID class object initialization
 
         <b>Input data:</b>
         ID object with specified representation parameter

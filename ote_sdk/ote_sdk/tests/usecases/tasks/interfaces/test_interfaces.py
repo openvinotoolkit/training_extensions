@@ -51,7 +51,7 @@ class TestIEvaluationTask:
     def test_evaluate_interface(self):
         """
         <b>Description:</b>
-        Check IEvaluationTask class object initiation
+        Check IEvaluationTask class object initialization
 
         <b>Input data:</b>
         IEvaluationTask object
@@ -87,7 +87,7 @@ class TestIInferenceTask:
     def test_i_inference_task(self):
         """
         <b>Description:</b>
-        Check IInferenceTask class object initiation
+        Check IInferenceTask class object initialization
 
         <b>Input data:</b>
         IInferenceTask object
@@ -115,7 +115,7 @@ class TestIRawInference:
     def test_i_raw_inference(self):
         """
         <b>Description:</b>
-        Check TestIRawInference class object initiation
+        Check TestIRawInference class object initialization
 
         <b>Input data:</b>
         TestIRawInference object
@@ -138,7 +138,7 @@ class TestOptimizationType:
         Check OptimizationType Enum class elements
 
         <b>Expected results:</b>
-        Test passes if OptimizationType Enum class length equal expected value and its elements have expected
+        Test passes if OptimizationType Enum class length is equal to expected value and its elements have expected
         sequence numbers
         """
         assert len(OptimizationType) == 2
@@ -158,7 +158,7 @@ class TestIOptimizationTask:
     def test_optimization_interface(self):
         """
         <b>Description:</b>
-        Check IOptimizationTask class object initiation
+        Check IOptimizationTask class object initialization
 
         <b>Input data:</b>
         IOptimizationTask object
@@ -194,7 +194,7 @@ class TestITrainingTask:
     def test_training_interface(self):
         """
         <b>Description:</b>
-        Check ITrainingTask class object initiation
+        Check ITrainingTask class object initialization
 
         <b>Input data:</b>
         ITrainingTask object
@@ -235,7 +235,7 @@ class TestIUnload:
     def test_unload_interface(self):
         """
         <b>Description:</b>
-        Check IUnload class object initiation
+        Check IUnload class object initialization
 
         <b>Input data:</b>
         IUnload object
@@ -258,7 +258,7 @@ class TestExportType:
         Check ExportType Enum class elements
 
         <b>Expected results:</b>
-        Test passes if ExportType Enum class length equal expected value and its elements have expected
+        Test passes if ExportType Enum class length is equal to expected value and its elements have expected
         sequence numbers
         """
         assert len(ExportType) == 1
@@ -277,7 +277,7 @@ class TestIExportTask:
     def test_export_interface(self):
         """
         <b>Description:</b>
-        Check IExportTask class object initiation
+        Check IExportTask class object initialization
 
         <b>Input data:</b>
         IExportTask object
