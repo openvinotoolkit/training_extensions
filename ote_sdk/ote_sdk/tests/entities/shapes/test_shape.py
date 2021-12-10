@@ -13,6 +13,7 @@
 # and limitations under the License.
 
 import itertools
+import warnings
 from datetime import datetime
 
 import pytest
@@ -366,9 +367,11 @@ class TestShape:
                 assert not not_inscribed_shape.intersects(shape)
         # Checking GeometryException exception raised
         with pytest.raises(GeometryException):
-            self.base_self_intersect_polygon().intersects(
-                self.other_self_intersect_polygon()
-            )
+            with warnings.catch_warnings():
+                warnings.filterwarnings('ignore', 'Polygon coordinates')
+                self.base_self_intersect_polygon().intersects(
+                    self.other_self_intersect_polygon()
+                )
 
     @pytest.mark.priority_medium
     @pytest.mark.component
@@ -416,9 +419,11 @@ class TestShape:
                 assert shape.intersect_percentage(not_inscribed_shape) == 0.0
         # Checking GeometryException exception raised
         with pytest.raises(GeometryException):
-            self.base_self_intersect_polygon().intersect_percentage(
-                self.other_self_intersect_polygon()
-            )
+            with warnings.catch_warnings():
+                warnings.filterwarnings('ignore', 'Polygon coordinates')
+                self.base_self_intersect_polygon().intersect_percentage(
+                    self.other_self_intersect_polygon()
+                )
 
     @pytest.mark.priority_medium
     @pytest.mark.component
@@ -602,15 +607,17 @@ class TestShape:
         8. Check validate_coordinates method for Shapes with x>1.0, y<0.0
         9. Check validate_coordinates method for Shapes with x<1.0, y>1.0
         """
-        for shape in [self.rectangle(), self.ellipse(), self.polygon()]:
-            assert shape._validate_coordinates(x=0.0, y=0.0)
-            assert shape._validate_coordinates(x=1.0, y=1.0)
-            assert shape._validate_coordinates(x=0.2, y=0.3)
-            assert not shape._validate_coordinates(x=-0.1, y=0.0)
-            assert not shape._validate_coordinates(x=1.1, y=1.0)
-            assert not shape._validate_coordinates(x=0.2, y=-0.3)
-            assert not shape._validate_coordinates(x=0.2, y=1.3)
-            assert not shape._validate_coordinates(x=-0.1, y=-0.2)
-            assert not shape._validate_coordinates(x=1.1, y=1.2)
-            assert not shape._validate_coordinates(x=1.2, y=-0.3)
-            assert not shape._validate_coordinates(x=-1.2, y=1.3)
+        with warnings.catch_warnings():
+            warnings.filterwarnings('ignore', r'.* coordinates')
+            for shape in [self.rectangle(), self.ellipse(), self.polygon()]:
+                assert shape._validate_coordinates(x=0.0, y=0.0)
+                assert shape._validate_coordinates(x=1.0, y=1.0)
+                assert shape._validate_coordinates(x=0.2, y=0.3)
+                assert not shape._validate_coordinates(x=-0.1, y=0.0)
+                assert not shape._validate_coordinates(x=1.1, y=1.0)
+                assert not shape._validate_coordinates(x=0.2, y=-0.3)
+                assert not shape._validate_coordinates(x=0.2, y=1.3)
+                assert not shape._validate_coordinates(x=-0.1, y=-0.2)
+                assert not shape._validate_coordinates(x=1.1, y=1.2)
+                assert not shape._validate_coordinates(x=1.2, y=-0.3)
+                assert not shape._validate_coordinates(x=-1.2, y=1.3)
