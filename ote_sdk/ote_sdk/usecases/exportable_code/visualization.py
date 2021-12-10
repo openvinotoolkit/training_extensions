@@ -19,7 +19,6 @@ Visualizer for results of prediction
 from typing import Optional
 
 import cv2
-
 import numpy as np
 
 from ote_sdk.entities.annotation import AnnotationSceneEntity
