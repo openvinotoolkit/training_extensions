@@ -41,6 +41,7 @@ from ote_sdk.entities.model import ModelEntity, ModelPrecision, ModelStatus
 from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.entities.train_parameters import TrainParameters
+from ote_sdk.serialization.label_mapper import label_schema_to_bytes
 from ote_sdk.usecases.evaluation.metrics_helper import MetricsHelper
 from ote_sdk.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType, IExportTask
@@ -143,16 +144,15 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
         Save the model after training is completed.
         """
         config = self.get_config()
-        labels = {label.name: label.color.rgb_tuple for label in self.labels}
         model_info = {
             "model": self.model.state_dict(),
             "config": config,
-            "labels": labels,
             "VERSION": 1,
         }
         buffer = io.BytesIO()
         torch.save(model_info, buffer)
         output_model.set_data("weights.pth", buffer.getvalue())
+        output_model.set_data("label_schema.json", label_schema_to_bytes(self.task_environment.label_schema))
         # store computed threshold
         output_model.set_data("threshold", bytes(struct.pack("f", self.model.threshold.item())))
 
@@ -227,6 +227,7 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
             output_model.set_data("openvino.bin", file.read())
         with open(xml_file, "rb") as file:
             output_model.set_data("openvino.xml", file.read())
+        output_model.set_data("label_schema.json", label_schema_to_bytes(self.task_environment.label_schema))
 
     @staticmethod
     def _is_docker() -> bool:

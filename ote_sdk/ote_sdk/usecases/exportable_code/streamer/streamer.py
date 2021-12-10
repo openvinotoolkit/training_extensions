@@ -1,3 +1,7 @@
+"""
+Streamer for reading input
+"""
+
 # INTEL CONFIDENTIAL
 #
 # Copyright (C) 2021 Intel Corporation
@@ -26,23 +30,31 @@ from natsort import natsorted
 
 
 class MediaType(Enum):
-    image = 1
-    video = 2
-    camera = 3
+    """
+    This Enum represents the types of input
+    """
+
+    IMAGE = 1
+    VIDEO = 2
+    CAMERA = 3
 
 
 class MediaExtensions(NamedTuple):
-    image: Tuple[str, ...]
-    video: Tuple[str, ...]
+    """
+    This NamedTuple represents the extensions for input
+    """
+
+    IMAGE: Tuple[str, ...]
+    VIDEO: Tuple[str, ...]
 
 
 MEDIA_EXTENSIONS = MediaExtensions(
-    image=(".jpg", ".jpeg", ".png", ".ppm", ".bmp", ".pgm", ".tif", ".tiff", ".webp"),
-    video=(".avi", ".mp4"),
+    IMAGE=(".jpg", ".jpeg", ".png", ".ppm", ".bmp", ".pgm", ".tif", ".tiff", ".webp"),
+    VIDEO=(".avi", ".mp4"),
 )
 
 
-def _get_media_type(path: Optional[Union[str, Path]]) -> MediaType:
+def get_media_type(path: Optional[Union[str, Path]]) -> MediaType:
     """
     Get Media Type from the input path.
     :param path: Path to file or directory.
@@ -54,17 +66,17 @@ def _get_media_type(path: Optional[Union[str, Path]]) -> MediaType:
     media_type: MediaType
 
     if path is None:
-        media_type = MediaType.camera
+        media_type = MediaType.CAMERA
 
     elif path.is_dir():
-        if _get_filenames(path, MediaType.image):
-            media_type = MediaType.image
+        if _get_filenames(path, MediaType.IMAGE):
+            media_type = MediaType.IMAGE
 
     elif path.is_file():
-        if _is_file_with_supported_extensions(path, _get_extensions(MediaType.image)):
-            media_type = MediaType.image
-        elif _is_file_with_supported_extensions(path, _get_extensions(MediaType.video)):
-            media_type = MediaType.video
+        if _is_file_with_supported_extensions(path, _get_extensions(MediaType.IMAGE)):
+            media_type = MediaType.IMAGE
+        elif _is_file_with_supported_extensions(path, _get_extensions(MediaType.VIDEO)):
+            media_type = MediaType.VIDEO
         else:
             raise ValueError("File extension not supported.")
     else:
@@ -81,9 +93,9 @@ def _get_extensions(media_type: MediaType) -> Tuple[str, ...]:
 
     :example:
 
-        >>> _get_extensions(media_type=MediaType.image)
+        >>> _get_extensions(media_type=MediaType.IMAGE)
         ('.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.tif', '.tiff', '.webp')
-        >>> _get_extensions(media_type=MediaType.video)
+        >>> _get_extensions(media_type=MediaType.VIDEO)
         ('.avi', '.mp4')
 
     """
@@ -100,17 +112,17 @@ def _is_file_with_supported_extensions(path: Path, extensions: Tuple[str, ...]) 
 
         >>> from pathlib import Path
         >>> path = Path("./demo.mp4")
-        >>> extensions = _get_extensions(media_type=MediaType.video)
+        >>> extensions = _get_extensions(media_type=MediaType.VIDEO)
         >>> _is_file_with_supported_extensions(path, extensions)
         True
 
         >>> path = Path("demo.jpg")
-        >>> extensions = _get_extensions(media_type=MediaType.image)
+        >>> extensions = _get_extensions(media_type=MediaType.IMAGE)
         >>> _is_file_with_supported_extensions(path, extensions)
         True
 
         >>> path = Path("demo.mp3")
-        >>> extensions = _get_extensions(media_type=MediaType.image)
+        >>> extensions = _get_extensions(media_type=MediaType.IMAGE)
         >>> _is_file_with_supported_extensions(path, extensions)
         False
 
@@ -126,14 +138,14 @@ def _get_filenames(path: Union[str, Path], media_type: MediaType) -> List[str]:
 
     :example:
         >>> path = "../images"
-        >>> _get_filenames(path, media_type=MediaType.image)
+        >>> _get_filenames(path, media_type=MediaType.IMAGE)
         ['images/4.jpeg', 'images/1.jpeg', 'images/5.jpeg', 'images/3.jpeg', 'images/2.jpeg']
 
     """
     extensions = _get_extensions(media_type)
     filenames: List[str] = []
 
-    if media_type == MediaType.camera:
+    if media_type == MediaType.CAMERA:
         raise ValueError(
             "Cannot get filenames for camera. Only image and video files are supported."
         )
@@ -274,8 +286,8 @@ class VideoStreamer(BaseStreamer):
     """
 
     def __init__(self, path: str) -> None:
-        self.media_type = MediaType.video
-        self.filenames = _get_filenames(path, media_type=MediaType.video)
+        self.media_type = MediaType.VIDEO
+        self.filenames = _get_filenames(path, media_type=MediaType.VIDEO)
 
     def get_stream(self, stream_input: str) -> cv2.VideoCapture:
         return cv2.VideoCapture(stream_input)
@@ -301,7 +313,7 @@ class CameraStreamer(BaseStreamer):
     """
 
     def __init__(self, camera_device: Optional[int] = None):
-        self.media_type = MediaType.camera
+        self.media_type = MediaType.CAMERA
         self.camera_device = 0 if camera_device is None else camera_device
 
     def get_stream(self, stream_input: int):
@@ -326,8 +338,8 @@ class ImageStreamer(BaseStreamer):
     """
 
     def __init__(self, path: str) -> None:
-        self.media_type = MediaType.image
-        self.filenames = _get_filenames(path=path, media_type=MediaType.image)
+        self.media_type = MediaType.IMAGE
+        self.filenames = _get_filenames(path=path, media_type=MediaType.IMAGE)
 
     @staticmethod
     def get_stream(stream_input: str) -> Iterable[np.ndarray]:
@@ -356,17 +368,17 @@ def get_streamer(
             "Both path and camera device is provided. Choose either camera or path to a image/video file."
         )
 
-    media_type = _get_media_type(path)
+    media_type = get_media_type(path)
 
     streamer: BaseStreamer
 
-    if path is not None and media_type == MediaType.image:
+    if path is not None and media_type == MediaType.IMAGE:
         streamer = ImageStreamer(path)
 
-    elif path is not None and media_type == MediaType.video:
+    elif path is not None and media_type == MediaType.VIDEO:
         streamer = VideoStreamer(path)
 
-    elif media_type == MediaType.camera:
+    elif media_type == MediaType.CAMERA:
         if camera_device is None:
             camera_device = 0
         streamer = CameraStreamer(camera_device)

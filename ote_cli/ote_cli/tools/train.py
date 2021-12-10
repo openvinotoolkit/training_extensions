@@ -20,7 +20,6 @@ import argparse
 
 from ote_sdk.configuration.helper import create
 from ote_sdk.entities.inference_parameters import InferenceParameters
-from ote_sdk.entities.label_schema import LabelSchemaEntity
 from ote_sdk.entities.model import ModelEntity, ModelStatus
 from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.subset import Subset
@@ -31,7 +30,7 @@ from ote_cli.datasets import get_dataset_class
 from ote_cli.registry import find_and_parse_model_template
 from ote_cli.utils.config import override_parameters
 from ote_cli.utils.importing import get_impl_class
-from ote_cli.utils.loading import load_model_weights
+from ote_cli.utils.io import generate_label_schema, read_binary, save_model_data
 from ote_cli.utils.parser import (
     add_hyper_parameters_sub_parser,
     gen_params_dict_from_args,
@@ -81,7 +80,9 @@ def parse_args():
         help="Load only weights from previously saved checkpoint",
     )
     parser.add_argument(
-        "--save-weights", required=True, help="Location to store wiehgts."
+        "--save-model-to",
+        required="True",
+        help="Location where trained model will be stored.",
     )
 
     add_hyper_parameters_sub_parser(parser, hyper_parameters)
@@ -119,19 +120,18 @@ def main():
     environment = TaskEnvironment(
         model=None,
         hyper_parameters=hyper_parameters,
-        label_schema=LabelSchemaEntity.from_labels(dataset.get_labels()),
+        label_schema=generate_label_schema(dataset, template.task_type),
         model_template=template,
     )
 
     if args.load_weights:
-        model = ModelEntity(
+        environment.model = ModelEntity(
             train_dataset=dataset,
             configuration=environment.get_model_configuration(),
             model_adapters={
-                "weights.pth": ModelAdapter(load_model_weights(args.load_weights))
+                "weights.pth": ModelAdapter(read_binary(args.load_weights))
             },
         )
-        environment.model = model
 
     task = task_class(task_environment=environment)
 
@@ -144,8 +144,7 @@ def main():
     task.train(dataset, output_model)
 
     if output_model.model_status != ModelStatus.NOT_READY:
-        with open(args.save_weights, "wb") as write_file:
-            write_file.write(output_model.get_data("weights.pth"))
+        save_model_data(output_model, args.save_model_to)
 
     validation_dataset = dataset.get_subset(Subset.VALIDATION)
     predicted_validation_dataset = task.infer(

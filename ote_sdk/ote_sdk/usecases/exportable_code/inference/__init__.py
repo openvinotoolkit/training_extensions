@@ -1,3 +1,7 @@
+"""
+Initialization of inference interfaces
+"""
+
 # INTEL CONFIDENTIAL
 #
 # Copyright (C) 2021 Intel Corporation

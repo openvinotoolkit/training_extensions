@@ -20,18 +20,14 @@ import argparse
 import os
 
 from ote_sdk.configuration.helper import create
-from ote_sdk.entities.id import ID
-from ote_sdk.entities.label import LabelEntity
-from ote_sdk.entities.label_schema import LabelSchemaEntity
 from ote_sdk.entities.model import ModelEntity, ModelStatus
 from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.usecases.adapters.model_adapter import ModelAdapter
 from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType
 
-from ote_cli.datasets import get_dataset_class
 from ote_cli.registry import find_and_parse_model_template
 from ote_cli.utils.importing import get_impl_class
-from ote_cli.utils.loading import load_model_weights
+from ote_cli.utils.io import read_binary, read_label_schema, save_model_data
 
 
 def parse_args():
@@ -51,8 +47,6 @@ def parse_args():
         required="True",
         help="Location where exported model will be stored.",
     )
-    parser.add_argument("--ann-files")
-    parser.add_argument("--labels", nargs="+")
 
     return parser.parse_args()
 
@@ -70,20 +64,6 @@ def main():
     # Get class for Task.
     task_class = get_impl_class(template.entrypoints.base)
 
-    assert args.labels is not None or args.ann_files is not None
-
-    if args.labels:
-        labels = [
-            LabelEntity(l, template.task_type, id=ID(i))
-            for i, l in enumerate(args.labels)
-        ]
-    else:
-        dataset_class = get_dataset_class(template.task_type)
-        dataset = dataset_class({"ann_file": args.ann_files})
-        labels = dataset.get_labels()
-
-    labels_schema = LabelSchemaEntity.from_labels(labels)
-
     # Get hyper parameters schema.
     hyper_parameters = create(template.hyper_parameters.data)
     assert hyper_parameters
@@ -91,12 +71,13 @@ def main():
     environment = TaskEnvironment(
         model=None,
         hyper_parameters=hyper_parameters,
-        label_schema=labels_schema,
+        label_schema=read_label_schema(
+            os.path.join(os.path.dirname(args.load_weights), "label_schema.json")
+        ),
         model_template=template,
     )
 
-    model_bytes = load_model_weights(args.load_weights)
-    model_adapters = {"weights.pth": ModelAdapter(model_bytes)}
+    model_adapters = {"weights.pth": ModelAdapter(read_binary(args.load_weights))}
     model = ModelEntity(
         configuration=environment.get_model_configuration(),
         model_adapters=model_adapters,
@@ -113,11 +94,4 @@ def main():
     task.export(ExportType.OPENVINO, exported_model)
 
     os.makedirs(args.save_model_to, exist_ok=True)
-
-    with open(os.path.join(args.save_model_to, "model.bin"), "wb") as write_file:
-        write_file.write(exported_model.get_data("openvino.bin"))
-
-    with open(
-        os.path.join(args.save_model_to, "model.xml"), "w", encoding="UTF-8"
-    ) as write_file:
-        write_file.write(exported_model.get_data("openvino.xml").decode())
+    save_model_data(exported_model, args.save_model_to)
