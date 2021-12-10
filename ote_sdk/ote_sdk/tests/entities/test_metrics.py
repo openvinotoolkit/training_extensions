@@ -141,10 +141,10 @@ class TestMetrics:
         1. Create Matrices
         2. Check normalized matrices against pre-computed matrices
         3. Check positive scenario when row_labels and column_labels parameters specified during MatrixMetric object
-        initiation
-        4. Check ValueError exception raised when row_labels parameter length not equal to number of rows of
+        initialization
+        4. Check ValueError exception raised when row_labels parameter length is not equal to number of rows of
         MatrixMetric object
-        5. Check ValueError exception raised when column_labels parameter length not equal to number of columns of
+        5. Check ValueError exception raised when column_labels parameter length is not equal to number of columns of
         MatrixMetric object
         """
         matrix_metric = self.normalized_matrix_metric()
@@ -402,8 +402,8 @@ class TestCurveMetric:
 
         <b>Steps</b>
         1. Check name, ys, xs and type attributes of CurveMetric object
-        2. Check name, ys, xs and type attributes of CurveMetric object with not specified xs initiation parameter
-        3. Check ValueError exception raised when length of ys CurveMetric object initiation parameter not equal length
+        2. Check name, ys, xs and type attributes of CurveMetric object with not specified xs initialization parameter
+        3. Check ValueError exception raised when length of ys CurveMetric object initialization parameter is not equal to length
         of xs parameter
         4. Check __repr__ method for CurveMetric object
         """
@@ -670,7 +670,7 @@ class TestBarChartInfo:
         palette and visualisation_type parameters
         2. Check name, palette and type attributes and __repr__ method values for BarChartInfo object with not
         specified palette and visualisation_type parameters
-        3. Check ValueError exception raised when visualization_type BarChartInfo object initiation parameter not equal
+        3. Check ValueError exception raised when visualization_type BarChartInfo object initialization parameter is not equal
         to BAR or RADIAL_BAR
         """
         # Scenario for specified parameters
