@@ -18,6 +18,7 @@
 # pylint: disable=wrong-import-order
 
 import datetime
+import warnings
 from operator import attrgetter
 from typing import List, Optional
 
@@ -118,8 +119,15 @@ class Polygon(Shape):
         self.min_y = min(points, key=attrgetter("y")).y
         self.max_y = max(points, key=attrgetter("y")).y
 
+        is_valid = True
         for (x, y) in [(self.min_x, self.min_y), (self.max_x, self.max_y)]:
-            self._validate_coordinates(x, y)
+            is_valid = is_valid and self._validate_coordinates(x, y)
+        if not is_valid:
+            points_str = "; ".join(str(p) for p in self.points)
+            warnings.warn(
+                f"Invalid {type(self).__name__} : {points_str}",
+                UserWarning,
+            )
 
     def __repr__(self):
         return (
