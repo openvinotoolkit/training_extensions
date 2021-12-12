@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+import importlib
 import logging
 from abc import ABC, abstractmethod
 from collections import OrderedDict
@@ -9,8 +10,6 @@ from copy import deepcopy
 from typing import List, Optional, Type
 
 import pytest
-from mmdet.apis.ote.apis.detection.ote_utils import get_task_class
-from mmdet.integration.nncf.utils import is_nncf_enabled
 
 from ote_sdk.configuration.helper import create as ote_sdk_configuration_helper_create
 from ote_sdk.entities.inference_parameters import InferenceParameters
@@ -310,6 +309,16 @@ def create_openvino_task(model_template, environment):
     return openvino_task
 
 
+def get_task_class(path):
+    module_name, class_name = path.rsplit('.', 1)
+    module = importlib.import_module(module_name)
+    return getattr(module, class_name)
+
+
+def is_nncf_enabled():
+    return importlib.util.find_spec('nncf') is not None
+
+
 class OTETestExportEvaluationAction(BaseOTETestAction):
     _name = "export_evaluation"
     _with_validation = True
@@ -390,8 +399,10 @@ class OTETestPotAction(BaseOTETestAction):
         assert (
             self.optimized_model_pot.model_format == ModelFormat.OPENVINO
         ), "Wrong model format after pot"
+        #TO DO: Model.OptimizationType is "int enum" class, and OptimizationType is "enum",
+        #  that why wee need to use here same classes. Submitted issue CVS-74657
         assert (
-            self.optimized_model_pot.optimization_type == ModelOptimizationType.POT
+            self.optimized_model_pot.optimization_type == OptimizationType.POT
         ), "Wrong optimization type"
         logger.info("POT optimization is finished")
 
@@ -480,7 +491,7 @@ class OTETestNNCFAction(BaseOTETestAction):
 
         logger.info("Run NNCF optimization")
         self.nncf_task.optimize(
-            OptimizationType.NNCF, dataset, self.nncf_model, OptimizationParameters()
+        OptimizationType.NNCF, dataset, self.nncf_model, None
         )
         assert (
             self.nncf_model.model_status == ModelStatus.SUCCESS
