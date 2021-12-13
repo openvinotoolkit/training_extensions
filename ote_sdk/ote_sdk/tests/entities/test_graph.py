@@ -82,7 +82,7 @@ class TestGraph:
     @pytest.mark.component
     @pytest.mark.reqids(Requirements.REQ_1)
     @pytest.mark.filterwarnings("ignore::PendingDeprecationWarning")
-    def test_graph_initiation(self):
+    def test_graph_initialization(self):
         """
         <b>Description:</b>
         Check Graph class object initialization
