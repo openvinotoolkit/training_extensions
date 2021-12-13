@@ -66,9 +66,10 @@
    Let's choose `./external/mmdetection/configs/ote/custom-object-detection/gen3_mobilenetV2_ATSS/template.yaml`
 
 ### ote train - run training of a particular model template
-   This tool trains a model on a dataset and saves results as folowing artifacts:
-      * weights.pth - a model snapshot
-      * label_schema.json - label schema used in training, created from dataset.
+   This tool trains a model on a dataset and saves results as folowing artifacts:  
+   * weights.pth - a model snapshot  
+   * label_schema.json - a label schema used in training, created from a dataset
+
    These artifacts can be used by other `ote` commands: `ote export`, `ote eval`, `ote demo`.
    Let's have a look at `ote train` help. These parameters are the same for all model templates.
    ```
