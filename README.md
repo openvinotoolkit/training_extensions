@@ -29,7 +29,7 @@ and release your contribution under these terms.
 
 ## Misc
 
-Models that were previously developed can be found [here](https://github.com/openvinotoolkit/training_extensions/tree/misc).
+Models that were previously developed can be found on the [misc](https://github.com/openvinotoolkit/training_extensions/tree/misc) branch.
 
 ## Contributing
 
@@ -37,7 +37,7 @@ Please read the [Contributing guide](CONTRIBUTING.md) before starting work on a 
 
 ## Known limitations
 
-Currently, training, exporting, evaluation scripts for TensorFlow\*-based models and the most of PyTorch\*-based models from [Misc](#misc) section are exploratory and are not validated.
+Currently, training, exporting, evaluation scripts for TensorFlow\*-based models and the most of PyTorch\*-based models from the [misc](#misc) branch are exploratory and are not validated.
 
 ---
 \* Other names and brands may be claimed as the property of others.
