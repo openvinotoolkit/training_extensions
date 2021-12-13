@@ -65,7 +65,11 @@
    ```
    Let's choose `./external/mmdetection/configs/ote/custom-object-detection/gen3_mobilenetV2_ATSS/template.yaml`
 
-### ote train - run training of particular model template
+### ote train - run training of a particular model template
+   This tool trains a model on a dataset and saves results as folowing artifacts:
+      * weights.pth - a model snapshot
+      * label_schema.json - label schema used in training, created from dataset.
+   These artifacts can be used by other `ote` commands: `ote export`, `ote eval`, `ote demo`.
    Let's have a look at `ote train` help. These parameters are the same for all model templates.
    ```
    ote train ./external/mmdetection/configs/ote/custom-object-detection/gen3_mobilenetV2_ATSS/template.yaml --help
@@ -170,7 +174,7 @@
                            min_value: 0.0
    ```
 
-### ote eval - run evaluation of trained model on particular dataset
+### ote eval - run evaluation of a trained model on particular dataset
    Let's have a look at `ote eval` help. These parameters are the same for all model templates.
    ```
    ote eval ./external/mmdetection/configs/ote/custom-object-detection/gen3_mobilenetV2_ATSS/template.yaml --help
@@ -201,7 +205,7 @@
                            stored.
    ```
 
-### ote export - export trained model to OpenVINO format in order to efficiently run it on Intel hardware
+### ote export - export a trained model to the OpenVINO format in order to efficiently run it on Intel hardware
    Let's have a look at `ote export` help. These parameters are the same for all model templates.
    ```
    ote export ./external/mmdetection/configs/ote/custom-object-detection/gen3_mobilenetV2_ATSS/template.yaml --help
