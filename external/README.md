@@ -25,7 +25,6 @@ Custom_Object_Detection_Gen3_ATSS | ATSS | 20.6 | 9.1 | mmdetection/configs/ote/
 Custom_Object_Detection_Gen3_VFNet | VFNet | 457.4 | 126.0 | mmdetection/configs/ote/custom-object-detection/gen3_resnet50_VFNet/template.yaml
 
 ## Semantic Segmentaion
-SEGMENTATION
 ID | Name | GFlops | Size | Path
 ------- | ------- | ------- | ------- | -------
 Custom_Semantic_Segmentation_Lite-HRNet-18_OCR | Lite-HRNet-18 OCR | 3.45 | 4.5 | mmsegmentation/configs/ote/custom-sematic-segmentation/ocr-lite-hrnet-18/template.yaml
