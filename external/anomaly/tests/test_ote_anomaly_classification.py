@@ -30,7 +30,8 @@ logger = logging.getLogger(__name__)
 
 
 @pytest.mark.parametrize(
-    ["task_path", "template_path"], [("anomaly_classification", "padim"), ("anomaly_classification", "stfpm")]
+    ["task_path", "template_path"],
+    [("anomaly_classification", "padim"), ("anomaly_classification", "stfpm")],
 )
 class TestAnomalyClassification:
     """
@@ -57,7 +58,13 @@ class TestAnomalyClassification:
         assert anomalib_config.dataset.train_batch_size == train_batch_size
 
     @TestDataset(num_train=200, num_test=50, dataset_path="./datasets/MVTec", use_mvtec=False)
-    def test_cancel_training(self, task_path, template_path, dataset_path="./datasets/MVTec", category="bottle"):
+    def test_cancel_training(
+        self,
+        task_path,
+        template_path,
+        dataset_path="./datasets/MVTec",
+        category="bottle",
+    ):
         """
         Training should stop when `cancel_training` is called
         """
@@ -74,9 +81,18 @@ class TestAnomalyClassification:
         # stopping process has to happen in less than 10 seconds
         assert time.time() - start_time < 10
 
-    @TestDataset(num_train=200, num_test=10, dataset_path="./datasets/MVTec", use_mvtec=False)
+    @TestDataset(
+        num_train=200,
+        num_test=10,
+        dataset_path="/home/sakcay/projects/anomalib/datasets/MVTec",
+        use_mvtec=True,
+    )
     def test_ote_train_export_and_optimize(
-        self, task_path, template_path, dataset_path="./datasets/MVTec", category="bottle"
+        self,
+        task_path,
+        template_path,
+        dataset_path="/home/sakcay/projects/anomalib/datasets/MVTec",
+        category="bottle",
     ):
         """
         E2E Train-Export Should Yield Similar Inference Results
@@ -101,5 +117,11 @@ class TestAnomalyClassification:
         assert base_results.performance.score.value > 0.6
 
         # Performance should be almost the same
-        assert np.allclose(base_results.performance.score.value, openvino_results.performance.score.value)
-        assert np.allclose(openvino_results.performance.score.value, optimized_openvino_results.performance.score.value)
+        assert np.allclose(
+            base_results.performance.score.value,
+            openvino_results.performance.score.value,
+        )
+        assert np.allclose(
+            openvino_results.performance.score.value,
+            optimized_openvino_results.performance.score.value,
+        )

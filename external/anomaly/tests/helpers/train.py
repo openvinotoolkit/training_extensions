@@ -95,11 +95,17 @@ class OTEAnomalyTrainer:
         """
         hyper_parameters = create(input_config=self.model_template.hyper_parameters.data)
 
-        labels = [self.dataset_generator.normal_label, self.dataset_generator.abnormal_label]
+        labels = [
+            self.dataset_generator.normal_label,
+            self.dataset_generator.abnormal_label,
+        ]
         label_schema = LabelSchemaEntity.from_labels(labels)
 
         task_environment = TaskEnvironment(
-            model_template=self.model_template, model=None, hyper_parameters=hyper_parameters, label_schema=label_schema
+            model_template=self.model_template,
+            model=None,
+            hyper_parameters=hyper_parameters,
+            label_schema=label_schema,
         )
 
         return task_environment
@@ -133,7 +139,9 @@ class OTEAnomalyTrainer:
         if not self.was_training_run_before:
             try:
                 self.base_task.train(
-                    dataset=self.dataset, output_model=self.output_model, train_parameters=TrainParameters()
+                    dataset=self.dataset,
+                    output_model=self.output_model,
+                    train_parameters=TrainParameters(),
                 )
 
             except Exception as exception:
@@ -147,7 +155,11 @@ class OTEAnomalyTrainer:
         if performance is None:
             raise ValueError("Model does not have a saved performance.")
 
-        logger.debug("Training performance: %s, %3.2f", performance.score.name, performance.score.value)
+        logger.debug(
+            "Training performance: %s, %3.2f",
+            performance.score.name,
+            performance.score.value,
+        )
 
     def validate(
         self,
@@ -171,7 +183,8 @@ class OTEAnomalyTrainer:
         inference_parameters = InferenceParameters(is_evaluation=True)
 
         predicted_inference_dataset = task.infer(
-            dataset=inference_dataset.with_empty_annotations(), inference_parameters=inference_parameters
+            dataset=inference_dataset.with_empty_annotations(),
+            inference_parameters=inference_parameters,
         )
 
         result_set = ResultSetEntity(
@@ -220,6 +233,4 @@ class OTEAnomalyTrainer:
         self.base_task.export(ExportType.OPENVINO, self.output_model)
         # assign the converted OpenVINO model to the current task environment model
         self.task_environment.model = self.output_model
-        self.openvino_task = OpenVINOAnomalyClassificationTask(
-            config=self.base_task.config, task_environment=self.task_environment
-        )
+        self.openvino_task = OpenVINOAnomalyClassificationTask(task_environment=self.task_environment)
