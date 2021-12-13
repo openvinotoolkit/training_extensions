@@ -39,7 +39,7 @@ def test_help_stdouputs_of_tools():
                     if help_message in full_text:
                         found = True
                         break
-            assert found, f"\n{output.stdout.decode()}"
+            assert found, f"\nHelp message:\n{output.stdout.decode()}\n was not found in \n{full_text}"
 
 
 def test_algorithms_table():
