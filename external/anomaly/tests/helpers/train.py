@@ -44,6 +44,7 @@ from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.entities.train_parameters import TrainParameters
 from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType
 from ote_sdk.usecases.tasks.interfaces.optimization_interface import OptimizationType
+
 from tests.helpers.dataset import OTEAnomalyDatasetGenerator
 
 logger = logging.getLogger(__name__)
@@ -220,6 +221,4 @@ class OTEAnomalyTrainer:
         self.base_task.export(ExportType.OPENVINO, self.output_model)
         # assign the converted OpenVINO model to the current task environment model
         self.task_environment.model = self.output_model
-        self.openvino_task = OpenVINOAnomalyClassificationTask(
-            config=self.base_task.config, task_environment=self.task_environment
-        )
+        self.openvino_task = OpenVINOAnomalyClassificationTask(task_environment=self.task_environment)
