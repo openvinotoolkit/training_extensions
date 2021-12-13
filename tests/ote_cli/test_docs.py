@@ -28,13 +28,15 @@ def test_help_stdoutputs_of_tools():
             if "ote" in line and "--help" in line:
                 commands.append(line.strip().split(' '))
 
+        MAX_INDENT = 10
+
         for command in commands:
             output = run(command, capture_output=True)
             help_message = output.stdout.decode()
             found = True
             if help_message not in full_text:
                 found = False
-                for _ in range(10):
+                for _ in range(MAX_INDENT):
                     help_message = "\n".join([" " + line for line in help_message.split("\n")])
                     if help_message in full_text:
                         found = True
