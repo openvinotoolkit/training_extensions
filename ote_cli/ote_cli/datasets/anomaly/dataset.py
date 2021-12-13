@@ -35,19 +35,16 @@ class AnomalyClassificationDataset(DatasetEntity):
     """Dataloader for Anomaly Classification Task.
 
     Example:
-        >>> train_subset = {"ann_file": "data/anomaly/train.json",
-                             "data_root": "data/anomaly/shapes"}
-        >>> val_subset = {"ann_file": "data/anomaly/val.json",
-                            "data_root": "data/anomaly/shapes"}
+        >>> train_subset = {
+                "ann_file": "data/anomaly/train.json",
+                "data_root": "data/anomaly/shapes",
+            }
+        >>> val_subset = {"ann_file": "data/anomaly/val.json", "data_root": "data/anomaly/shapes"}
         >>> training_dataset = AnomalyClassificationDataset(
-                                train_subset=train_subset,
-                                val_subset=val_subset
-                                )
-        >>> test_subset = {"ann_file": "data/anomaly/test.json",
-                            "data_root": "data/anomaly/shapes"}
-        >>> testing_dataset = AnomalyClassificationDataset(
-                                    test_subset=test_subset
-                                    )
+                train_subset=train_subset, val_subset=val_subset
+            )
+        >>> test_subset = {"ann_file": "data/anomaly/test.json", "data_root": "data/anomaly/shapes"}
+        >>> testing_dataset = AnomalyClassificationDataset(test_subset=test_subset)
 
     Args:
         train_subset (Optional[Dict[str, str]], optional): Path to annotation
