@@ -65,27 +65,18 @@ class TestGraph:
         return directed_graph
 
     @staticmethod
-    def compare_list_elements(actual_list: list, expected_list: list) -> None:
-        """Function to compare lists without checking elements sequence"""
-        assert len(actual_list) == len(expected_list)
-        for actual_element in actual_list:
-            assert actual_element in expected_list
-
-    @staticmethod
     def check_graph_non_list_attributes(expected_attributes_dicts: list) -> None:
         for expected_attribute_dict in expected_attributes_dicts:
             assert expected_attribute_dict.get(
                 "attribute"
             ) == expected_attribute_dict.get("expected_value")
 
-    def check_graph_list_attributes(self, expected_attributes_dicts: list) -> None:
-        for expected_attribute_dict in expected_attributes_dicts:
+    @staticmethod
+    def check_graph_list_attributes(actual_expected_attributes_dict: list) -> None:
+        for expected_attribute_dict in actual_expected_attributes_dict:
             attribute = expected_attribute_dict.get("attribute")
             assert isinstance(attribute, expected_attribute_dict.get("expected_type"))
-            self.compare_list_elements(
-                actual_list=list(attribute),
-                expected_list=expected_attribute_dict.get("expected_value"),
-            )
+            assert list(attribute) == expected_attribute_dict.get("expected_value")
 
     @pytest.mark.priority_medium
     @pytest.mark.component
@@ -326,72 +317,56 @@ class TestGraph:
         ]
         # Adding equal edge to non-directed graph
         non_directed_graph.add_edge(node1=2, node2=3, edge_value=3)
-        self.compare_list_elements(
-            list(non_directed_graph.edges), non_directed_graph_edges
-        )
+        assert list(non_directed_graph.edges) == non_directed_graph_edges
         # Adding equal reversed edge to non-directed graph
         non_directed_graph.add_edge(node1=3, node2=2, edge_value=3)
-        self.compare_list_elements(
-            list(non_directed_graph.edges), non_directed_graph_edges
-        )
+        assert list(non_directed_graph.edges) == non_directed_graph_edges
         # Adding unequal edge with existing nodes to non-directed graph
         non_directed_graph.add_edge(node1=1, node2=3, edge_value=1)
         # Adding unequal edge with new node to non-directed graph
         non_directed_graph.add_edge(node1=4, node2=5, edge_value=2)
-        self.compare_list_elements(
-            list(non_directed_graph.edges),
-            [
-                (1, 2, {"value": 2}),
-                (1, 3, {"value": 1}),
-                (2, 3, {"value": 3}),
-                (3, 4, {"value": 4}),
-                (4, 5, {"value": 2}),
-            ],
-        )
+        assert list(non_directed_graph.edges) == [
+            (1, 2, {"value": 2}),
+            (1, 3, {"value": 1}),
+            (2, 3, {"value": 3}),
+            (3, 4, {"value": 4}),
+            (4, 5, {"value": 2}),
+        ]
         # Scenario for directed graph
         directed_graph = self.directed_graph()
-        directed_graph.add_edge(node1="C", node2="D", edge_value=3)
         # Adding equal edge to directed graph
-        self.compare_list_elements(
-            list(directed_graph.edges),
-            [
-                ("A", "B", 0, {"value": 1}),
-                ("A", "D", 0, {"value": 4}),
-                ("B", "C", 0, {"value": 2}),
-                ("C", "D", 0, {"value": 3}),
-                ("C", "D", 1, {"value": 3}),
-                ("D", "A", 0, {"value": 5}),
-            ],
-        )
+        directed_graph.add_edge(node1="C", node2="D", edge_value=3)
+        assert list(directed_graph.edges) == [
+            ("A", "B", 0, {"value": 1}),
+            ("A", "D", 0, {"value": 4}),
+            ("B", "C", 0, {"value": 2}),
+            ("C", "D", 0, {"value": 3}),
+            ("C", "D", 1, {"value": 3}),
+            ("D", "A", 0, {"value": 5}),
+        ]
         # Adding equal reversed edge to directed graph
         directed_graph.add_edge(node1="B", node2="A", edge_value=2)
-        self.compare_list_elements(
-            list(directed_graph.edges),
-            [
-                ("A", "B", 0, {"value": 1}),
-                ("A", "D", 0, {"value": 4}),
-                ("B", "C", 0, {"value": 2}),
-                ("B", "A", 0, {"value": 2}),
-                ("C", "D", 0, {"value": 3}),
-                ("C", "D", 1, {"value": 3}),
-                ("D", "A", 0, {"value": 5}),
-            ],
-        )
+        assert list(directed_graph.edges) == [
+            ("A", "B", 0, {"value": 1}),
+            ("A", "D", 0, {"value": 4}),
+            ("B", "C", 0, {"value": 2}),
+            ("B", "A", 0, {"value": 2}),
+            ("C", "D", 0, {"value": 3}),
+            ("C", "D", 1, {"value": 3}),
+            ("D", "A", 0, {"value": 5}),
+        ]
         # Adding unequal edge with new nodes to non-directed graph
         directed_graph.add_edge(node1="E", node2="F")
-        self.compare_list_elements(
-            list(directed_graph.edges),
-            [
-                ("A", "B", 0, {"value": 1}),
-                ("A", "D", 0, {"value": 4}),
-                ("B", "C", 0, {"value": 2}),
-                ("B", "A", 0, {"value": 2}),
-                ("C", "D", 0, {"value": 3}),
-                ("C", "D", 1, {"value": 3}),
-                ("D", "A", 0, {"value": 5}),
-                ("E", "F", 0, {"value": None}),
-            ],
-        )
+        assert list(directed_graph.edges) == [
+            ("A", "B", 0, {"value": 1}),
+            ("A", "D", 0, {"value": 4}),
+            ("B", "C", 0, {"value": 2}),
+            ("B", "A", 0, {"value": 2}),
+            ("C", "D", 0, {"value": 3}),
+            ("C", "D", 1, {"value": 3}),
+            ("D", "A", 0, {"value": 5}),
+            ("E", "F", 0, {"value": None}),
+        ]
 
     @pytest.mark.priority_medium
     @pytest.mark.component
@@ -641,37 +616,32 @@ class TestGraph:
                 non_directed_graph.remove_edges(node_1, node_2)
         # Checking "edges" property of non-directed graph after adding edge which were removed in previous scenario
         non_directed_graph.add_edge(node1=1, node2=2, edge_value=2)
-        self.compare_list_elements(
-            list(non_directed_graph.edges), [(1, 2, {"value": 2}), (3, 4, {"value": 4})]
-        )
+        assert list(non_directed_graph.edges) == [
+            (1, 2, {"value": 2}),
+            (3, 4, {"value": 4}),
+        ]
         # Scenario for directed graph
         directed_graph = self.directed_graph()
         # Removing two existing edges from directed graph, edge "D"-"A" - multi directional
         directed_graph.remove_edges("A", "B")
         directed_graph.remove_edges("D", "A")
-        self.compare_list_elements(
-            list(directed_graph.edges),
-            [
-                ("A", "D", 0, {"value": 4}),
-                ("B", "C", 0, {"value": 2}),
-                ("C", "D", 0, {"value": 3}),
-            ],
-        )
+        assert list(directed_graph.edges) == [
+            ("A", "D", 0, {"value": 4}),
+            ("B", "C", 0, {"value": 2}),
+            ("C", "D", 0, {"value": 3}),
+        ]
         # Checking that NetworkXError exception raised when trying to remove non existing edges from directed graph
         for node_1, node_2 in (["A", "B"], ["A", "C"], ["E", "F"]):
             with pytest.raises(NetworkXError):
                 non_directed_graph.remove_edges(node_1, node_2)
         # Checking "edges" property of directed graph after adding edge which were removed in previous scenario
         directed_graph.add_edge(node1="D", node2="A", edge_value=5)
-        self.compare_list_elements(
-            list(directed_graph.edges),
-            [
-                ("A", "D", 0, {"value": 4}),
-                ("B", "C", 0, {"value": 2}),
-                ("C", "D", 0, {"value": 3}),
-                ("D", "A", 0, {"value": 5}),
-            ],
-        )
+        assert list(directed_graph.edges) == [
+            ("A", "D", 0, {"value": 4}),
+            ("B", "C", 0, {"value": 2}),
+            ("C", "D", 0, {"value": 3}),
+            ("D", "A", 0, {"value": 5}),
+        ]
 
     @pytest.mark.priority_medium
     @pytest.mark.component
@@ -699,9 +669,19 @@ class TestGraph:
         # Removing node that connected to one node of non-directed graph
         non_directed_graph.remove_node(1)
         assert non_directed_graph.num_nodes() == 3
-        self.compare_list_elements(list(non_directed_graph.nodes), [2, 3, 4])
-        self.compare_list_elements(
-            list(non_directed_graph.edges), [(2, 3, {"value": 3}), (3, 4, {"value": 4})]
+        self.check_graph_list_attributes(
+            [
+                {
+                    "attribute": non_directed_graph.edges,
+                    "expected_type": EdgeDataView,
+                    "expected_value": [(2, 3, {"value": 3}), (3, 4, {"value": 4})],
+                },
+                {
+                    "attribute": non_directed_graph.nodes,
+                    "expected_type": NodeView,
+                    "expected_value": [2, 3, 4],
+                },
+            ]
         )
         # Checking that NetworkXError exception raised when removing node non existing nodes from non-directed graph
         for node in [1, 5]:
@@ -710,17 +690,41 @@ class TestGraph:
         # Removing node that connected to two nodes of non-directed graph
         non_directed_graph.remove_node(3)
         assert non_directed_graph.num_nodes() == 2
-        self.compare_list_elements(list(non_directed_graph.nodes), [2, 4])
-        assert list(non_directed_graph.edges) == []
+        self.check_graph_list_attributes(
+            [
+                {
+                    "attribute": non_directed_graph.edges,
+                    "expected_type": EdgeDataView,
+                    "expected_value": [],
+                },
+                {
+                    "attribute": non_directed_graph.nodes,
+                    "expected_type": NodeView,
+                    "expected_value": [2, 4],
+                },
+            ]
+        )
         # Scenario for directed graph
         directed_graph = self.directed_graph()
         # Removing node that connected to two nodes of non-directed graph and has multi-direction edge
         directed_graph.remove_node("A")
         assert directed_graph.num_nodes() == 3
-        self.compare_list_elements(list(directed_graph.nodes), ["B", "C", "D"])
-        self.compare_list_elements(
-            list(directed_graph.edges),
-            [("B", "C", 0, {"value": 2}), ("C", "D", 0, {"value": 3})],
+        self.check_graph_list_attributes(
+            [
+                {
+                    "attribute": directed_graph.edges,
+                    "expected_type": OutMultiEdgeDataView,
+                    "expected_value": [
+                        ("B", "C", 0, {"value": 2}),
+                        ("C", "D", 0, {"value": 3}),
+                    ],
+                },
+                {
+                    "attribute": directed_graph.nodes,
+                    "expected_type": NodeView,
+                    "expected_value": ["B", "C", "D"],
+                },
+            ]
         )
         # Checking that NetworkXError exception raised when removing node non existing nodes from directed graph
         for node in ["A", "E"]:
@@ -729,8 +733,20 @@ class TestGraph:
         # Removing node that connected to two nodes of directed graph, it causes removal of all edges
         directed_graph.remove_node("C")
         assert non_directed_graph.num_nodes() == 2
-        self.compare_list_elements(list(directed_graph.nodes), ["B", "D"])
-        assert list(directed_graph.edges) == []
+        self.check_graph_list_attributes(
+            [
+                {
+                    "attribute": directed_graph.edges,
+                    "expected_type": OutMultiEdgeDataView,
+                    "expected_value": [],
+                },
+                {
+                    "attribute": directed_graph.nodes,
+                    "expected_type": NodeView,
+                    "expected_value": ["B", "D"],
+                },
+            ]
+        )
 
     @pytest.mark.priority_medium
     @pytest.mark.component
