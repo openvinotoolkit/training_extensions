@@ -403,7 +403,8 @@ class TestCurveMetric:
         <b>Steps</b>
         1. Check name, ys, xs and type attributes of CurveMetric object
         2. Check name, ys, xs and type attributes of CurveMetric object with not specified xs initialization parameter
-        3. Check ValueError exception raised when length of ys CurveMetric object initialization parameter is not equal to length
+        3. Check ValueError exception raised when length of ys CurveMetric object initialization parameter is not equal
+        to length
         of xs parameter
         4. Check __repr__ method for CurveMetric object
         """
@@ -670,8 +671,8 @@ class TestBarChartInfo:
         palette and visualisation_type parameters
         2. Check name, palette and type attributes and __repr__ method values for BarChartInfo object with not
         specified palette and visualisation_type parameters
-        3. Check ValueError exception raised when visualization_type BarChartInfo object initialization parameter is not equal
-        to BAR or RADIAL_BAR
+        3. Check ValueError exception raised when visualization_type BarChartInfo object initialization parameter is
+        not equal to BAR or RADIAL_BAR
         """
         # Scenario for specified parameters
         bar_chart_info_name = "Test BarChartInfo"
@@ -800,10 +801,15 @@ class TestMatrixMetricsGroup:
         3. Check ValueError raised when MatrixMetricsGroup object has visualization_info parameter equal to None
         """
         # Positive scenario for MatrixMetricsGroup object with specified parameters
-        matrix_metrics = [
-            TestMetrics().normalized_matrix_metric(),
-            TestMetrics().normalized_matrix_zero_sum(),
-        ]
+        with warnings.catch_warnings():
+            # there is a matrix with zero sum in row, so we expect 0/0 division.
+            warnings.filterwarnings(
+                "ignore", "invalid value encountered in true_divide"
+            )
+            matrix_metrics = [
+                TestMetrics().normalized_matrix_metric(),
+                TestMetrics().normalized_matrix_zero_sum(),
+            ]
         matrix_chart_info = TestMatrixChartInfo.default_values_matrix_chart_info()
         matrix_metrics_group = MatrixMetricsGroup(
             metrics=matrix_metrics, visualization_info=matrix_chart_info
@@ -992,10 +998,15 @@ class TestPerformance:
         assert default_parameters_performance.dashboard_metrics == []
         # Positive scenario for Performance object with specified dashboard_metrics  parameter
         # Preparing dashboard metrics list
-        matrix_metrics = [
-            TestMetrics().normalized_matrix_metric(),
-            TestMetrics().normalized_matrix_zero_sum(),
-        ]
+        with warnings.catch_warnings():
+            # there is a matrix with zero sum in row, so we expect 0/0 division.
+            warnings.filterwarnings(
+                "ignore", "invalid value encountered in true_divide"
+            )
+            matrix_metrics = [
+                TestMetrics().normalized_matrix_metric(),
+                TestMetrics().normalized_matrix_zero_sum(),
+            ]
         matrix_chart_info = TestMatrixChartInfo.default_values_matrix_chart_info()
         matrix_metrics_group = MatrixMetricsGroup(
             metrics=matrix_metrics, visualization_info=matrix_chart_info

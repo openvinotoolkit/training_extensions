@@ -81,6 +81,7 @@ class TestGraph:
     @pytest.mark.priority_medium
     @pytest.mark.component
     @pytest.mark.reqids(Requirements.REQ_1)
+    @pytest.mark.filterwarnings("ignore::PendingDeprecationWarning")
     def test_graph_initiation(self):
         """
         <b>Description:</b>
@@ -544,6 +545,7 @@ class TestGraph:
     @pytest.mark.priority_medium
     @pytest.mark.component
     @pytest.mark.reqids(Requirements.REQ_1)
+    @pytest.mark.filterwarnings("ignore::PendingDeprecationWarning")
     def test_graph_num_labels(self):
         """
         <b>Description:</b>
@@ -938,6 +940,7 @@ class TestMultiDiGraph:
     @pytest.mark.priority_medium
     @pytest.mark.component
     @pytest.mark.reqids(Requirements.REQ_1)
+    @pytest.mark.filterwarnings("ignore::PendingDeprecationWarning")
     def test_multi_di_graph(self):
         """
         <b>Description:</b>
@@ -951,14 +954,14 @@ class TestMultiDiGraph:
         "num_nodes" method return expected values
         """
         multi_di_graph = self.multi_di_graph()
-        TestGraph().check_graph_non_list_attributes(
+        TestGraph.check_graph_non_list_attributes(
             [
                 {"attribute": multi_di_graph.directed, "expected_value": True},
                 {"attribute": multi_di_graph.num_labels, "expected_value": 4},
                 {"attribute": multi_di_graph.num_nodes(), "expected_value": 4},
             ]
         )
-        TestGraph().check_graph_list_attributes(
+        TestGraph.check_graph_list_attributes(
             [
                 {
                     "attribute": multi_di_graph.nodes,
