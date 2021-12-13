@@ -34,7 +34,7 @@ If you want to add training code of your model to this repository, make sure:
    1. [ITrainingTask interface](https://github.com/openvinotoolkit/training_extensions/blob/develop/ote_sdk/ote_sdk/usecases/tasks/interfaces/training_interface.py) - your model must be trainable on some datasets.
    1. [IInferenceTask interface](https://github.com/openvinotoolkit/training_extensions/blob/develop/ote_sdk/ote_sdk/usecases/tasks/interfaces/inference_interface.py) - your model must be inferable on some datasets.
    1. [IEvaluationTask interface](https://github.com/openvinotoolkit/training_extensions/blob/develop/ote_sdk/ote_sdk/usecases/tasks/interfaces/evaluate_interface.py) - it must be possible to evaluate some quality metric of you model.
-   1. [IExportTask interface](https://github.com/openvinotoolkit/training_extensions/blob/develop/ote_sdk/ote_sdk/usecases/tasks/interfaces/export_interface.py) - your model must be exportable to OpenVINO format.
+   1. [IExportTask interface](https://github.com/openvinotoolkit/training_extensions/blob/develop/ote_sdk/ote_sdk/usecases/tasks/interfaces/export_interface.py) - your model must be exportable to the OpenVINO format.
 4. You provide a model `template.yaml` file, that describes your model and its configurable parameters. See an example [here](external/anomaly/anomaly_classification/configs/padim/template.yaml).
 5. You create a PR to the `develop` branch.
 6. You provide `requirements.txt` file and a bash `init_venv.sh` script for creating virtual environment.
