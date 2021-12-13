@@ -31,10 +31,10 @@ If you want to add training code of your model to this repository, make sure:
 1. Your model code is licensed under permissive license (Apache-2.0, MIT, BSD, etc).
 2. Source framework of the model is PyTorch\*.
 3. You provide the code containing implementation of [OTE SDK Task interfaces](https://github.com/openvinotoolkit/training_extensions/tree/develop/ote_sdk/ote_sdk/usecases/tasks/interfaces):
-   1. [ITrainingTask interface](https://github.com/openvinotoolkit/training_extensions/blob/develop/ote_sdk/ote_sdk/usecases/tasks/interfaces/training_interface.py) - your model must be trainable on some datasets.
-   1. [IInferenceTask interface](https://github.com/openvinotoolkit/training_extensions/blob/develop/ote_sdk/ote_sdk/usecases/tasks/interfaces/inference_interface.py) - your model must be inferable on some datasets.
-   1. [IEvaluationTask interface](https://github.com/openvinotoolkit/training_extensions/blob/develop/ote_sdk/ote_sdk/usecases/tasks/interfaces/evaluate_interface.py) - it must be possible to evaluate some quality metric of you model.
-   1. [IExportTask interface](https://github.com/openvinotoolkit/training_extensions/blob/develop/ote_sdk/ote_sdk/usecases/tasks/interfaces/export_interface.py) - your model must be exportable to the OpenVINO format.
+   1. [ITrainingTask](https://github.com/openvinotoolkit/training_extensions/blob/develop/ote_sdk/ote_sdk/usecases/tasks/interfaces/training_interface.py) - your model must be trainable on some datasets.
+   1. [IInferenceTask](https://github.com/openvinotoolkit/training_extensions/blob/develop/ote_sdk/ote_sdk/usecases/tasks/interfaces/inference_interface.py) - your model must be inferable on some datasets.
+   1. [IEvaluationTask](https://github.com/openvinotoolkit/training_extensions/blob/develop/ote_sdk/ote_sdk/usecases/tasks/interfaces/evaluate_interface.py) - it must be possible to evaluate some quality metric of you model.
+   1. [IExportTask](https://github.com/openvinotoolkit/training_extensions/blob/develop/ote_sdk/ote_sdk/usecases/tasks/interfaces/export_interface.py) - your model must be exportable to the OpenVINO format.
 4. You provide a model `template.yaml` file, that describes your model and its configurable parameters. See an example [here](external/anomaly/anomaly_classification/configs/padim/template.yaml).
 5. You create a PR to the `develop` branch.
 6. You provide `requirements.txt` file and a bash `init_venv.sh` script for creating virtual environment.
