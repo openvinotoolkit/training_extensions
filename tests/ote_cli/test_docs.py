@@ -70,4 +70,4 @@ def test_algorithms_table():
         generated_table = algorithms_generate_table(templates)
         print("\n", task_type)
         print(generated_table)
-        assert generated_table in full_text, f"\n{task_type}\n{generated_table}"
+        assert generated_table in full_text, f"\n{generated_table} not in \n{full_text}\n for the task {task_type}\n"
