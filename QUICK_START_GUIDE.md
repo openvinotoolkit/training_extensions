@@ -3,7 +3,6 @@
 ## Prerequisites
 * Ubuntu 18.04 / 20.04
 * Python 3.8+
-* [OpenVINO™](https://software.intel.com/en-us/openvino-toolkit) - for exporting and running models
 * [CUDA Toolkit 11.1](https://developer.nvidia.com/cuda-11.1.1-download-archive) - for training on GPU
 
 ## Setup OpenVINO™ Training Extensions
