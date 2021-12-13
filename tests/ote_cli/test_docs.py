@@ -19,7 +19,7 @@ from subprocess import run
 from ote_cli.registry import Registry
 
 
-def test_help_stdouputs_of_tools():
+def test_help_stdoutputs_of_tools():
     with open("QUICK_START_GUIDE.md", encoding="UTF-8") as read_file:
         commands = []
         full_text = ''
