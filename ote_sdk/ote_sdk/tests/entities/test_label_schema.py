@@ -556,27 +556,18 @@ class TestLabelGroup:
 
 class CommonGraphMethods:
     @staticmethod
-    def compare_list_elements(actual_list: list, expected_list: list) -> None:
-        """Function to compare lists without checking elements sequence"""
-        assert len(actual_list) == len(expected_list)
-        for actual_element in actual_list:
-            assert actual_element in expected_list
-
-    @staticmethod
     def check_graph_non_list_attributes(expected_attributes_dicts: list) -> None:
         for expected_attribute_dict in expected_attributes_dicts:
             assert expected_attribute_dict.get(
                 "attribute"
             ) == expected_attribute_dict.get("expected_value")
 
-    def check_graph_list_attributes(self, expected_attributes_dicts: list) -> None:
-        for expected_attribute_dict in expected_attributes_dicts:
+    @staticmethod
+    def check_graph_list_attributes(actual_expected_attributes_dicts: list) -> None:
+        for expected_attribute_dict in actual_expected_attributes_dicts:
             attribute = expected_attribute_dict.get("attribute")
             assert isinstance(attribute, expected_attribute_dict.get("expected_type"))
-            self.compare_list_elements(
-                actual_list=list(attribute),
-                expected_list=expected_attribute_dict.get("expected_value"),
-            )
+            assert list(attribute) == expected_attribute_dict.get("expected_value")
 
 
 class Edges:
@@ -1208,8 +1199,8 @@ class TestLabelTree:
                     "attribute": label_tree.nodes,
                     "expected_type": NodeView,
                     "expected_value": [
-                        labels.label_0,
                         labels.label_0_1,
+                        labels.label_0,
                         labels.label_0_2,
                         labels.label_0_1_3,
                         labels.label_0_2_4,
