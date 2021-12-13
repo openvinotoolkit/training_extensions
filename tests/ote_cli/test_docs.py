@@ -46,7 +46,7 @@ def test_algorithms_table():
     def algorithms_generate_table(templates):
         attributes = ["model_template_id", "name", "gigaflops", "size"]
         header = attributes + ["Path"]
-        attributes_in_md = {"name": "Name", "model_template_id": "ID", "gigaflops": "GFlops", "size": "Size", "Path": "Path"}
+        attributes_in_md = {"name": "Name", "model_template_id": "ID", "gigaflops": "Complexity (GFlops)", "size": "Model size (MB)", "Path": "Path"}
         
         table = [" | ".join([attributes_in_md[x] for x in header])] + [" | ".join(["-------" for _ in header])]
         
