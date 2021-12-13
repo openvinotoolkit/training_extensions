@@ -14,7 +14,7 @@ You can suggest the feature by creating a new issue with `enhancement` label, bu
 
 ## Creating bug reports
 
-If you observe any errors or incorrect work of any parts of this repository, you can create a bug report. First, check if bug report about this problem was not created before [here](https://github.com/openvinotoolkit/training_extensions/issues?q=is%3Aissue+label%3Abug). If you don't find a related bug report, submit your own via creating new issue with `bug` label.
+If you observe any errors or incorrect work of any parts of this repository, you can create a bug report ([template is here](.github/ISSUE_TEMPLATE/bug_report.md)). First, check if bug report about this problem was not created before [here](https://github.com/openvinotoolkit/training_extensions/issues?q=is%3Aissue+label%3Abug). If you don't find a related bug report, submit your own via creating new issue with `bug` label.
 When creating a new bug report, make sure:
 1. You are on the last version of `develop` branch.
 2. You provide enough information (Python version, OS version, libraries and other environment info) for others to easily reproduce this bug\issue.
