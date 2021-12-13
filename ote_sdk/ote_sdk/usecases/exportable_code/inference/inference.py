@@ -51,7 +51,7 @@ class IInferencer(metaclass=abc.ABCMeta):
     """
 
     @abc.abstractmethod
-    def pre_process(self, image: np.ndarray) -> Tuple[Any, Any]:
+    def pre_process(self, image: np.ndarray) -> Union[Any, Tuple[Any, Any]]:
         """
         This method should pre-process the input image, and return the processed output
         and if required a Tuple with metadata that is required for post_process to work.
@@ -74,7 +74,9 @@ class IInferencer(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def post_process(self, prediction: Any, metadata: Any) -> AnnotationSceneEntity:
+    def post_process(
+        self, prediction: Any, metadata: Any
+    ) -> Union[np.ndarray, AnnotationSceneEntity]:
         """
         This method should include the post-processing methods that are applied to the
         raw predictions from the self.forward() stage.

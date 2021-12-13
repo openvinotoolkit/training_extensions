@@ -48,29 +48,6 @@ dataset:
 description: Configuration for Padim
 header: Configuration for Padim
 id: ""
-inference_parameters:
-  description: Parameters for inference
-  header: Parameters for inference
-  class_name:
-    affects_outcome_of: INFERENCE
-    default_value: anomaly_classification
-    description: Model classes with defined pre- and postprocessing
-    editable: false
-    enum_name: Models
-    header: Model class for inference
-    options:
-      ANOMALY_CLASSIFICATION: anomaly_classification
-    type: SELECTABLE
-    ui_rules:
-      action: DISABLE_EDITING
-      operator: AND
-      rules: []
-      type: UI_RULES
-    value: ssd
-    visible_in_ui: True
-    warning: null
-  type: PARAMETER_GROUP
-  visible_in_ui: true
 pot_parameters:
   description: POT Parameters
   header: POT Parameters

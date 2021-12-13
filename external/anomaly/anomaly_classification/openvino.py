@@ -29,7 +29,7 @@ from typing import Optional, Union
 from zipfile import ZipFile
 
 from addict import Dict as ADDict
-from anomalib.core.model import model_wrappers
+from anomalib.core.model.inference import OpenVINOInferencer
 from compression.api import DataLoader
 from compression.engines.ie_engine import IEEngine
 from compression.graph import load_model, save_model
@@ -38,7 +38,7 @@ from compression.pipeline.initializer import create_pipeline
 from omegaconf import ListConfig
 from omegaconf.dictconfig import DictConfig
 from ote_anomalib.data import LabelNames
-from ote_anomalib.inference import OpenVINOInferencer
+from ote_anomalib.inference import model_wrappers
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.inference_parameters import (
     InferenceParameters,
@@ -126,7 +126,7 @@ class OpenVINOAnomalyClassificationTask(IDeploymentTask, IInferenceTask, IEvalua
             predicted_scene = self.inferencer.predict(dataset_item.numpy, superimpose=False)
             dataset_item.append_annotations(predicted_scene.annotations)
             update_progress_callback(int(i / dataset_size * 100))
-
+        logger.info("OpenVINO inference completed")
         return dataset
 
     def evaluate(self, output_resultset: ResultSetEntity, evaluation_metric: Optional[str] = None):
@@ -138,7 +138,7 @@ class OpenVINOAnomalyClassificationTask(IDeploymentTask, IInferenceTask, IEvalua
         work_dir = os.path.dirname(demo.__file__)
         model_file = inspect.getfile(type(self.inferencer.model))
         parameters = {}
-        parameters["type_of_model"] = self.hparams.inference_parameters.class_name.value
+        parameters["type_of_model"] = "anomaly_classification"
         parameters["converter_type"] = "ANOMALY_CLASSIFICATION"
         parameters["model_parameters"] = self.inferencer.configuration
         name_of_package = "demo_package"
@@ -245,7 +245,6 @@ class OpenVINOAnomalyClassificationTask(IDeploymentTask, IInferenceTask, IEvalua
         threshold = struct.unpack("f", (self.task_environment.model.get_data("threshold")))
         return OpenVINOInferencer(
             config=self.config,
-            hparams=self.task_environment.get_hyper_parameters(),
             threshold=threshold[0],
             labels=[self.normal_label, self.anomalous_label],
             path=(

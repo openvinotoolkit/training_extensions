@@ -16,7 +16,10 @@ AnomalyClassification model wrapper
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+from typing import Any, Dict
+
 import cv2
+import numpy as np
 from openvino.model_zoo.model_api.models import SegmentationModel
 from openvino.model_zoo.model_api.models.types import NumericalValue
 
@@ -28,28 +31,23 @@ class AnomalyClassification(SegmentationModel):
 
     __model__ = "anomaly_classification"
 
-    def __init__(self, model_adapter, configuration=None, preload=False):
-        super().__init__(model_adapter, configuration, preload)
-
     @classmethod
     def parameters(cls):
         parameters = super().parameters()
         parameters["resize_type"].update_default_value("crop")
         parameters.update(
             {
-                "threshold": NumericalValue(
-                    default_value=0.2, description="Threshold value to locate anomaly"
-                ),
+                "threshold": NumericalValue(default_value=0.2, description="Threshold value to locate anomaly"),
             }
         )
 
         return parameters
 
-    def postprocess(self, outputs, meta):
+    def postprocess(self, outputs: Dict[str, np.ndarray], meta: Dict[str, Any]) -> np.ndarray:
         outputs = outputs[self.output_blob_name].squeeze()
         input_image_height = meta["original_shape"][0]
         input_image_width = meta["original_shape"][1]
-        meta["threshold"] = self.threshold
+        meta["threshold"] = self.threshold  # pylint: disable=no-member
 
         result = cv2.resize(outputs, (input_image_width, input_image_height))
         return result

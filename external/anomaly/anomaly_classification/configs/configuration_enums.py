@@ -44,11 +44,3 @@ class ModelName(ConfigurableEnum):
 
     STFPM = "stfpm"
     PADIM = "padim"
-
-
-class Inference(ConfigurableEnum):
-    """
-    This Enum represents the types of pre- and postprocessing for models
-    """
-
-    ANOMALY_CLASSIFICATION = "anomaly_classification"

@@ -18,10 +18,7 @@ Configurable parameters for anomaly classification task
 
 from sys import maxsize
 
-from anomaly_classification.configs.configuration_enums import (
-    Inference,
-    POTQuantizationPreset,
-)
+from anomaly_classification.configs.configuration_enums import POTQuantizationPreset
 from attr import attrs
 from ote_sdk.configuration import ConfigurableParameters
 from ote_sdk.configuration.elements import (
@@ -76,17 +73,6 @@ class BaseAnomalyClassificationConfig(ConfigurableParameters):
         )
 
     @attrs
-    class __InferenceParameters(ParameterGroup):
-        header = string_attribute("Parameters for inference")
-        description = header
-
-        class_name = selectable(default_value=Inference.ANOMALY_CLASSIFICATION,
-                                header="Model class for inference",
-                                description="Model classes with defined pre- and postprocessing",
-                                editable=False,
-                                visible_in_ui=True)
-
-    @attrs
     class POTParameters(ParameterGroup):
         """
         Training parameters for post-training optimization
@@ -110,5 +96,4 @@ class BaseAnomalyClassificationConfig(ConfigurableParameters):
         )
 
     dataset = add_parameter_group(DatasetParameters)
-    inference_parameters = add_parameter_group(__InferenceParameters)
     pot_parameters = add_parameter_group(POTParameters)

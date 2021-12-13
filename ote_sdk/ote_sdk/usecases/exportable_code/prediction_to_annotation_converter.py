@@ -249,8 +249,8 @@ class ClassificationToAnnotationConverter(IPredictionToAnnotationConverter):
 
         if not labels and metadata.get("empty_label") is not None:
             labels = [ScoredLabel(metadata["empty_label"], probability=1.0)]
-        annotations = [Annotation(Rectangle.generate_full_box(), labels=labels)]
 
+        annotations = [Annotation(Rectangle.generate_full_box(), labels=labels)]
         return AnnotationSceneEntity(
             kind=AnnotationSceneKind.PREDICTION, annotations=annotations
         )
