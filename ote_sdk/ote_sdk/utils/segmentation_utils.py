@@ -181,6 +181,9 @@ def create_annotation_from_segmentation_map(
         obj_group = img_class == label_index
         label_index_map = (obj_group.T.astype(int) * 255).astype(np.uint8)
 
+        kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+        label_index_map = cv2.morphologyEx(label_index_map, cv2.MORPH_OPEN, kernel)
+
         # Contour retrieval mode CCOMP (Connected components) creates a two-level
         # hierarchy of contours
         contours, hierarchies = cv2.findContours(
