@@ -13,7 +13,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions
 # and limitations under the License.
-import os
 from subprocess import run
 from pathlib import Path
 import pytest
@@ -30,7 +29,7 @@ args = {
 }
 
 root: Path = Path("/tmp/ote_cli/")
-ote_dir = os.getcwd()
+ote_dir = Path.cwd()
 
 templates = Registry('external').filter(task_type='ANOMALY_CLASSIFICATION').templates
 templates_ids = [template.model_template_id for template in templates]
@@ -39,16 +38,16 @@ templates_ids = [template.model_template_id for template in templates]
 @pytest.mark.parametrize("template", templates, ids=templates_ids)
 def test_ote_train(template):
     work_dir, template_work_dir, algo_backend_dir = get_some_vars(template, root)
-    os.makedirs(template_work_dir, exist_ok=True)
+    Path(template_work_dir).mkdir(parents=True, exist_ok=True)
     create_venv(algo_backend_dir, work_dir, template_work_dir)
     command_line = [
         "ote",
         "train",
         template.model_template_id,
-        f"--train-ann-files={os.path.join(ote_dir, args['--train-ann-file'])}",
-        f"--train-data-roots={os.path.join(ote_dir, args['--train-data-roots'])}",
-        f"--val-ann-files={os.path.join(ote_dir, args['--val-ann-file'])}",
-        f"--val-data-roots={os.path.join(ote_dir, args['--val-data-roots'])}",
+        f"--train-ann-files={Path(ote_dir)/ args['--train-ann-file']}",
+        f"--train-data-roots={Path(ote_dir)/ args['--train-data-roots']}",
+        f"--val-ann-files={Path(ote_dir)/ args['--val-ann-file']}",
+        f"--val-data-roots={Path(ote_dir)/ args['--val-data-roots']}",
         f"--save-model-to={template_work_dir}/trained.pth"
     ]
     assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
