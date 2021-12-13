@@ -25,7 +25,7 @@
    find external/ -name init_venv.sh
    ```
 
-   Approximate output:
+   Sample output:
    ```
    external/mmdetection/init_venv.sh
    external/mmsegmentation/init_venv.sh
@@ -47,7 +47,7 @@
    ote find --root ./external/mmdetection/
    ```
 
-   Approximate output:
+   Sample output:
    ```
    - framework: OTEDetection_v2.9.1
      name: Custom_Object_Detection_Gen3_VFNet
@@ -71,7 +71,7 @@
    ote train ./external/mmdetection/configs/ote/custom-object-detection/gen3_mobilenetV2_ATSS/template.yaml --help
    ```
 
-   Approximate output:
+   Sample output:
    ```
    usage: ote train [-h] --train-ann-files TRAIN_ANN_FILES --train-data-roots
                     TRAIN_DATA_ROOTS --val-ann-files VAL_ANN_FILES
@@ -105,7 +105,7 @@
    ote train ./external/mmdetection/configs/ote/custom-object-detection/gen3_mobilenetV2_ATSS/template.yaml params --help
    ```
 
-   Approximate output:
+   Sample output:
    ```
    usage: ote train template params [-h]
                                     [--learning_parameters.batch_size BATCH_SIZE]
@@ -176,7 +176,7 @@
    ote eval ./external/mmdetection/configs/ote/custom-object-detection/gen3_mobilenetV2_ATSS/template.yaml --help
    ```
 
-   Approximate output:
+   Sample output:
    ```
    usage: ote eval [-h] --test-ann-files TEST_ANN_FILES --test-data-roots
                    TEST_DATA_ROOTS --load-weights LOAD_WEIGHTS
@@ -207,7 +207,7 @@
    ote export ./external/mmdetection/configs/ote/custom-object-detection/gen3_mobilenetV2_ATSS/template.yaml --help
    ```
 
-   Approximate output:
+   Sample output:
    ```
    usage: ote export [-h] --load-weights LOAD_WEIGHTS --save-model-to
                      SAVE_MODEL_TO
@@ -229,7 +229,7 @@
    ote demo ./external/mmdetection/configs/ote/custom-object-detection/gen3_mobilenetV2_ATSS/template.yaml --help
    ```
 
-   Approximate output:
+   Sample output:
    ```
    usage: ote demo [-h] -i INPUT --load-weights LOAD_WEIGHTS
                    [--fit-to-size FIT_TO_SIZE FIT_TO_SIZE] [--loop]
