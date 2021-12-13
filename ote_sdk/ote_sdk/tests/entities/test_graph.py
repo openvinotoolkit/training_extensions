@@ -84,7 +84,7 @@ class TestGraph:
     def test_graph_initiation(self):
         """
         <b>Description:</b>
-        Check Graph class object initiation
+        Check Graph class object initialization
 
         <b>Input data:</b>
         Graph objects with specified "directed" and "edges" parameters
@@ -94,8 +94,8 @@ class TestGraph:
         method return expected values
 
         <b>Steps</b>
-        1. Check initiation of non-directed Graph object
-        2. Check initiation of directed Graph object
+        1. Check initialization of non-directed Graph object
+        2. Check initialization of directed Graph object
         """
         # Checking not directed Graph values
         non_directed_graph = self.non_directed_graph()
@@ -941,7 +941,7 @@ class TestMultiDiGraph:
     def test_multi_di_graph(self):
         """
         <b>Description:</b>
-        Check MultiDiGraph class object initiation
+        Check MultiDiGraph class object initialization
 
         <b>Input data:</b>
         MultiDiGraph object with specified "edges" parameter
