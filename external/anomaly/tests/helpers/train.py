@@ -230,3 +230,4 @@ class OTEAnomalyTrainer:
             ) from error
 
         self.openvino_task.deploy(self.output_model)
+
