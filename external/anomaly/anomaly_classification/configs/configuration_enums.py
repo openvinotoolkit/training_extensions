@@ -33,8 +33,8 @@ class EarlyStoppingMetrics(ConfigurableEnum):
     This enum represents the different metrics that can be used for early stopping
     """
 
-    IMAGE_ROC_AUC = "image_roc_auc"
-    IMAGE_F1 = "image-f1-score"
+    IMAGE_ROC_AUC = "image_AUROC"
+    IMAGE_F1 = "image_OptimalF1"
 
 
 class ModelName(ConfigurableEnum):
