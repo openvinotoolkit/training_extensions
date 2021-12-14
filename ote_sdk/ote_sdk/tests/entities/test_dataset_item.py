@@ -43,8 +43,7 @@ from ote_sdk.tests.constants.ote_sdk_components import OteSdkComponent
 from ote_sdk.tests.constants.requirements import Requirements
 
 
-@pytest.mark.components(OteSdkComponent.OTE_SDK)
-class TestDatasetItemEntity:
+class DatasetItemParameters:
     @staticmethod
     def generate_random_image() -> Image:
         image = Image(data=np.random.uniform(low=0.0, high=255.0, size=(10, 16, 3)))
@@ -155,8 +154,13 @@ class TestDatasetItemEntity:
             subset=Subset.TESTING,
         )
 
+
+@pytest.mark.components(OteSdkComponent.OTE_SDK)
+class TestDatasetItemEntity:
     @staticmethod
-    def compare_annotations(actual_annotations, expected_annotations) -> None:
+    def compare_denormalized_annotations(
+        actual_annotations, expected_annotations
+    ) -> None:
         assert len(actual_annotations) == len(expected_annotations)
         for index in range(len(expected_annotations)):
             actual_annotation = actual_annotations[index]
@@ -238,19 +242,18 @@ class TestDatasetItemEntity:
         Check DatasetItemEntity class object initialization
 
         <b>Input data:</b>
-        DatasetItemEntity class object with specified "media", "annotation_scene", "roi", "metadata" and "subset"
+        DatasetItemEntity class objects with specified "media", "annotation_scene", "roi", "metadata" and "subset"
         parameters
 
         <b>Expected results:</b>
-        Test passes if attributes of DatasetItemEntity class object are equal expected
+        Test passes if attributes of DatasetItemEntity class object are equal to expected
 
         <b>Steps</b>
         1. Check attributes of DatasetItemEntity object initialized with default optional parameters
         2. Check attributes of DatasetItemEntity object initialized with specified optional parameters
         """
-
-        media = self.generate_random_image()
-        annotations_scene = self.annotations_entity()
+        media = DatasetItemParameters.generate_random_image()
+        annotations_scene = DatasetItemParameters().annotations_entity()
         # Checking attributes of DatasetItemEntity object initialized with default optional parameters
         default_values_dataset_item = DatasetItemEntity(media, annotations_scene)
         assert default_values_dataset_item.media == media
@@ -258,8 +261,8 @@ class TestDatasetItemEntity:
         assert not default_values_dataset_item.metadata
         assert default_values_dataset_item.subset == Subset.NONE
         # Checking attributes of DatasetItemEntity object initialized with specified optional parameters
-        roi = self.roi()
-        metadata = self.metadata()
+        roi = DatasetItemParameters().roi()
+        metadata = DatasetItemParameters.metadata()
         subset = Subset.TESTING
         specified_values_dataset_item = DatasetItemEntity(
             media, annotations_scene, roi, metadata, subset
@@ -279,20 +282,18 @@ class TestDatasetItemEntity:
         Check DatasetItemEntity class __repr__ method
 
         <b>Input data:</b>
-        DatasetItemEntity class object with specified "media", "annotation_scene", "roi", "metadata" and "subset"
+        DatasetItemEntity class objects with specified "media", "annotation_scene", "roi", "metadata" and "subset"
         parameters
 
         <b>Expected results:</b>
         Test passes if value returned by __repr__ method is equal to expected
 
         <b>Steps</b>
-        1. Check value returned by __repr__ method for  DatasetItemEntity object initialized with default optional
-        parameters
-        2. Check value returned by __repr__ method for  DatasetItemEntity object initialized with specified optional
-        parameters
+        1. Check value returned by __repr__ method for  DatasetItemEntity object with default optional parameters
+        2. Check value returned by __repr__ method for  DatasetItemEntity object with specified optional parameters
         """
-        media = self.generate_random_image()
-        annotation_scene = self.annotations_entity()
+        media = DatasetItemParameters.generate_random_image()
+        annotation_scene = DatasetItemParameters().annotations_entity()
         # Checking __repr__ method for DatasetItemEntity object initialized with default optional parameters
         default_values_dataset_item = DatasetItemEntity(media, annotation_scene)
         generated_roi = default_values_dataset_item.roi
@@ -302,8 +303,8 @@ class TestDatasetItemEntity:
             f"subset=NONE)"
         )
         # Checking __repr__ method for DatasetItemEntity object initialized with specified optional parameters
-        roi = self.roi()
-        metadata = self.metadata()
+        roi = DatasetItemParameters().roi()
+        metadata = DatasetItemParameters.metadata()
         subset = Subset.TESTING
         specified_values_dataset_item = DatasetItemEntity(
             media, annotation_scene, roi, metadata, subset
@@ -334,13 +335,13 @@ class TestDatasetItemEntity:
         3. Check value returned by "roi" property for DatasetItemEntity with not specified "roi" parameter but one
         of annotation objects in annotation_scene is equal to full Rectangle
         """
-        media = self.generate_random_image()
-        annotations = self.annotations()
-        annotation_scene = self.annotations_entity()
-        roi = self.roi()
-        metadata = self.metadata()
+        media = DatasetItemParameters.generate_random_image()
+        annotations = DatasetItemParameters().annotations()
+        annotation_scene = DatasetItemParameters().annotations_entity()
+        roi = DatasetItemParameters().roi()
+        metadata = DatasetItemParameters.metadata()
         # Checking "roi" property for DatasetItemEntity with specified "roi" parameter
-        specified_roi_dataset_item = self.dataset_item()
+        specified_roi_dataset_item = DatasetItemParameters().dataset_item()
         assert specified_roi_dataset_item.roi == roi
         # Checking that "roi" property is equal to full_box for DatasetItemEntity with not specified "roi" parameter
         non_specified_roi_dataset_item = DatasetItemEntity(
@@ -377,7 +378,7 @@ class TestDatasetItemEntity:
         parameters
 
         <b>Expected results:</b>
-        Test passes if array returned by "roi_numpy" property is equal to expected
+        Test passes if array returned by "roi_numpy" method is equal to expected
 
         <b>Steps</b>
         1. Check array returned by roi_numpy method with not specified "roi" parameter for DatasetItemEntity with
@@ -388,11 +389,11 @@ class TestDatasetItemEntity:
         5. Check array returned by roi_numpy method with non-specified "roi" parameter for DatasetItemEntity with "roi"
         attribute
         """
-        media = self.generate_random_image()
-        annotation_scene = self.annotations_entity()
+        media = DatasetItemParameters.generate_random_image()
+        annotation_scene = DatasetItemParameters().annotations_entity()
         roi_label = LabelEntity("ROI label", Domain.DETECTION, id=ID("roi_label"))
         dataset_item = DatasetItemEntity(media, annotation_scene)
-        # Checking array returned by roi_numpy method with non-specified "roi" parameter for DatasetItemEntity
+        # Checking array returned by "roi_numpy" method with non-specified "roi" parameter for DatasetItemEntity
         # "roi" attribute is "None"
         try:
             assert (dataset_item.roi_numpy() == media.numpy).all()
@@ -400,7 +401,7 @@ class TestDatasetItemEntity:
             raise AssertionError(
                 "Unexpected value returned by roi_numpy method for DatasetItem with non-specified roi"
             )
-        # Checking array returned by roi_numpy method with specified Rectangle-shape "roi" parameter
+        # Checking array returned by "roi_numpy" method with specified Rectangle-shape "roi" parameter
         rectangle_roi = Annotation(
             Rectangle(x1=0.2, y1=0.1, x2=0.8, y2=0.9), [ScoredLabel(roi_label)]
         )
@@ -412,7 +413,7 @@ class TestDatasetItemEntity:
             raise AssertionError(
                 "Unexpected value returned by roi_numpy method for DatasetItem with Rectangle roi"
             )
-        # Checking array returned by roi_numpy method with specified Ellipse-shape "roi" parameter
+        # Checking array returned by "roi_numpy" method with specified Ellipse-shape "roi" parameter
         ellipse_roi = Annotation(
             Ellipse(x1=0.1, y1=0.0, x2=0.9, y2=0.8), [ScoredLabel(roi_label)]
         )
@@ -422,7 +423,7 @@ class TestDatasetItemEntity:
             raise AssertionError(
                 "Unexpected value returned by roi_numpy method for DatasetItem with Ellipse roi"
             )
-        # Checking array returned by roi_numpy method with specified Polygon-shape "roi" parameter
+        # Checking array returned by "roi_numpy" method with specified Polygon-shape "roi" parameter
         polygon_roi = Annotation(
             shape=Polygon(
                 [
@@ -441,10 +442,10 @@ class TestDatasetItemEntity:
             raise AssertionError(
                 "Unexpected value returned by roi_numpy method for DatasetItem with Polygon roi"
             )
-        # Checking array returned by roi_numpy method with not specified roi parameter for DatasetItemEntity with "roi"
-        # attribute
+        # Checking array returned by "roi_numpy" method with not specified "roi" parameter for DatasetItemEntity with
+        # "roi" attribute
         roi_specified_dataset_item = DatasetItemEntity(
-            media, annotation_scene, self.roi()
+            media, annotation_scene, DatasetItemParameters().roi()
         )
         roi_specified_dataset_item.roi_numpy()
         try:
@@ -472,21 +473,21 @@ class TestDatasetItemEntity:
         Test passes if array returned by "numpy" property is equal to array returned by "roi_numpy" method
 
         <b>Steps</b>
-        1. Check array returned by "numpy" method for DatasetItemEntity with "roi" attribute is "None"
-        2. Check array returned by "numpy" method for DatasetItemEntity with specified "roi" attribute
+        1. Check array returned by "numpy" property for DatasetItemEntity with "roi" attribute is "None"
+        2. Check array returned by "numpy" property for DatasetItemEntity with specified "roi" attribute
         """
-        # Checking array returned by numpy method for DatasetItemEntity with "roi" attribute is "None"
-        none_roi_dataset_item = self.default_values_dataset_item()
+        # Checking array returned by numpy property for DatasetItemEntity with "roi" attribute is "None"
+        none_roi_dataset_item = DatasetItemParameters().default_values_dataset_item()
         try:
             assert (
                 none_roi_dataset_item.numpy == none_roi_dataset_item.roi_numpy()
             ).all()
         except AttributeError:
             raise AssertionError(
-                "Unexpected value returned by numpy method for DatasetItem with non-specified roi"
+                "Unexpected value returned by numpy property for DatasetItem with non-specified roi"
             )
-        # Checking array returned by numpy method for DatasetItemEntity with specified "roi" attribute
-        roi_specified_dataset_item = self.dataset_item()
+        # Checking array returned by numpy property for DatasetItemEntity with specified "roi" attribute
+        roi_specified_dataset_item = DatasetItemParameters().dataset_item()
         try:
             assert (
                 roi_specified_dataset_item.numpy
@@ -494,7 +495,7 @@ class TestDatasetItemEntity:
             ).all()
         except AttributeError:
             raise AssertionError(
-                "Unexpected value returned by numpy method for DatasetItem with specified roi"
+                "Unexpected value returned by numpy property for DatasetItem with specified roi"
             )
 
     @pytest.mark.priority_medium
@@ -516,11 +517,11 @@ class TestDatasetItemEntity:
         1. Check value returned by "width" property for DatasetItemEntity with "roi" attribute is "None"
         2. Check value returned by "width" property for DatasetItemEntity with specified "roi" attribute
         """
-        # Checking array returned by "width" property for DatasetItemEntity with "roi" attribute is "None"
-        none_roi_dataset_item = self.default_values_dataset_item()
+        # Checking value returned by "width" property for DatasetItemEntity with "roi" attribute is "None"
+        none_roi_dataset_item = DatasetItemParameters().default_values_dataset_item()
         assert none_roi_dataset_item.width == 16
-        # Checking array returned by "width" property for DatasetItemEntity with specified "roi" attribute
-        roi_specified_dataset_item = self.dataset_item()
+        # Checking value returned by "width" property for DatasetItemEntity with specified "roi" attribute
+        roi_specified_dataset_item = DatasetItemParameters().dataset_item()
         assert roi_specified_dataset_item.width == 12
 
     @pytest.mark.priority_medium
@@ -542,11 +543,11 @@ class TestDatasetItemEntity:
         1. Check value returned by "height" property for DatasetItemEntity with "roi" attribute is "None"
         2. Check value returned by "height" property for DatasetItemEntity with specified "roi" attribute
         """
-        # Checking array returned by "width" property for DatasetItemEntity with None "roi" attribute
-        none_roi_dataset_item = self.default_values_dataset_item()
+        # Checking value returned by "width" property for DatasetItemEntity with None "roi" attribute
+        none_roi_dataset_item = DatasetItemParameters().default_values_dataset_item()
         assert none_roi_dataset_item.height == 10
-        # Checking array returned by "width" property for DatasetItemEntity with specified "roi" attribute
-        roi_specified_dataset_item = self.dataset_item()
+        # Checking value returned by "width" property for DatasetItemEntity with specified "roi" attribute
+        roi_specified_dataset_item = DatasetItemParameters().dataset_item()
         assert roi_specified_dataset_item.height == 8
 
     @pytest.mark.priority_medium
@@ -575,7 +576,9 @@ class TestDatasetItemEntity:
         """
         # Checking list returned by "get_annotations" method with "include_empty" parameter is "False" and "labels"
         # parameter is "None" for full-box ROI DatasetItemEntity
-        full_box_roi_dataset_item = self.default_values_dataset_item()
+        full_box_roi_dataset_item = (
+            DatasetItemParameters().default_values_dataset_item()
+        )
         full_box_annotations = list(
             full_box_roi_dataset_item.annotation_scene.annotations
         )
@@ -585,7 +588,7 @@ class TestDatasetItemEntity:
             == full_box_annotations
         )
         # Checking list returned by "get_annotations" method for not full-box ROI DatasetItemEntity
-        non_full_box_roi_dataset_item = self.dataset_item()
+        non_full_box_roi_dataset_item = DatasetItemParameters().dataset_item()
         non_full_box_annotations = list(
             non_full_box_roi_dataset_item.annotation_scene.annotations
         )
@@ -602,7 +605,7 @@ class TestDatasetItemEntity:
         # Check for "labels" is "None"
         # Check for non-specified ios_threshold parameter
         annotations_actual = non_full_box_roi_dataset_item.get_annotations()
-        self.compare_annotations(annotations_actual, expected_annotations)
+        self.compare_denormalized_annotations(annotations_actual, expected_annotations)
         # Check for specified ios_threshold parameter
         assert non_full_box_roi_dataset_item.get_annotations(ios_threshold=1.1) == []
         # Checking list returned by "get_annotations" method with "include_empty" parameter is "False" for
@@ -611,9 +614,9 @@ class TestDatasetItemEntity:
             list(full_box_roi_dataset_item.annotation_scene.annotations)[0]
         ]
         annotations_actual = full_box_roi_dataset_item.get_annotations(
-            labels=[self.labels()[0]]
+            labels=[DatasetItemParameters.labels()[0]]
         )
-        self.compare_annotations(annotations_actual, expected_annotations)
+        self.compare_denormalized_annotations(annotations_actual, expected_annotations)
         # Checking list returned by "get_annotations" method with "include_empty" parameter set to "True" for
         # full-box ROI DatasetItemEntity
         expected_annotations = list(
@@ -622,7 +625,7 @@ class TestDatasetItemEntity:
         annotations_actual = full_box_roi_dataset_item.get_annotations(
             include_empty=True
         )
-        self.compare_annotations(annotations_actual, expected_annotations)
+        self.compare_denormalized_annotations(annotations_actual, expected_annotations)
 
     @pytest.mark.priority_medium
     @pytest.mark.component
@@ -644,7 +647,7 @@ class TestDatasetItemEntity:
         2. Check annotations list returned after "append_annotations" method with incorrect shape annotation
         """
         # Checking annotations list returned after "append_annotations" method with specified non-included annotations
-        dataset_item = self.default_values_dataset_item()
+        dataset_item = DatasetItemParameters().default_values_dataset_item()
         full_box_annotations = list(dataset_item.annotation_scene.annotations)
         annotations_to_add = self.annotations_to_add()
         dataset_item.append_annotations(annotations_to_add)
@@ -653,7 +656,7 @@ class TestDatasetItemEntity:
             == full_box_annotations + annotations_to_add
         )
         # Checking annotations list returned after "append_annotations" method with incorrect shape annotation
-        dataset_item = self.default_values_dataset_item()
+        dataset_item = DatasetItemParameters().default_values_dataset_item()
         incorrect_shape_label = LabelEntity(
             name="Label for incorrect shape",
             domain=Domain.CLASSIFICATION,
@@ -696,8 +699,8 @@ class TestDatasetItemEntity:
         1. Check annotations list returned by "get_roi_labels" for non-specified "labels" parameter
         2. Check annotations list returned by "get_roi_labels" for specified "labels" parameter
         """
-        dataset_item = self.dataset_item()
-        roi_labels = self.roi_labels()
+        dataset_item = DatasetItemParameters().dataset_item()
+        roi_labels = DatasetItemParameters.roi_labels()
         # Checking annotations list returned by "get_roi_labels" method with non-specified labels parameter
         # Scenario for "include_empty" is "False"
         assert dataset_item.get_roi_labels() == [roi_labels[0]]
@@ -723,25 +726,26 @@ class TestDatasetItemEntity:
         parameters
 
         <b>Expected results:</b>
-        Test passes if annotations list returned by "get_roi_labels" method is equal to expected
+        Test passes if labels list returned by "get_shapes_labels" method is equal to expected
 
         <b>Steps</b>
-        1. Check annotations list returned by get_shapes_labels for non-specified "labels" parameter
-        2. Check annotations list returned by get_shapes_labels for specified "labels" parameter
+        1. Check labels list returned by "get_shapes_labels" for non-specified "labels" parameter
+        2. Check labels list returned by "get_shapes_labels" for specified "labels" parameter
         """
-        dataset_item = self.default_values_dataset_item()
-        labels = self.labels()
+        dataset_item = DatasetItemParameters().default_values_dataset_item()
+        labels = DatasetItemParameters.labels()
         detection_label = labels[0]
         segmentation_label = labels[1]
-        # Checking annotations list returned by "get_shapes_labels" method with non-specified "labels" parameter
+        # Checking labels list returned by "get_shapes_labels" method with non-specified "labels" parameter
         # Scenario for "include_empty" is "False"
         assert dataset_item.get_shapes_labels() == [detection_label]
         # Scenario for "include_empty" is "True"
         shapes_labels_actual = dataset_item.get_shapes_labels(include_empty=True)
         assert len(shapes_labels_actual) == 2
+        assert isinstance(shapes_labels_actual, list)
         assert detection_label in shapes_labels_actual
         assert segmentation_label in shapes_labels_actual
-        # Checking annotations list returned by "get_shapes_labels" method with specified "labels" parameter
+        # Checking labels list returned by "get_shapes_labels" method with specified "labels" parameter
         # Scenario for "include_empty" is "False"
         non_included_label = LabelEntity("Non-included label", Domain.CLASSIFICATION)
         list_labels = [segmentation_label, non_included_label]
@@ -762,7 +766,7 @@ class TestDatasetItemEntity:
         parameters
 
         <b>Expected results:</b>
-        Test passes if annotations list returned returned after using "append_labels" method is equal to expected
+        Test passes if annotations list returned after using "append_labels" method is equal to expected
 
         <b>Steps</b>
         1. Check annotations list after "append_labels" method for DatasetItemEntity object with ROI-annotation
@@ -770,18 +774,18 @@ class TestDatasetItemEntity:
         2. Check annotations list after "append_labels" method for DatasetItemEntity object with non-specified
         ROI-annotation in annotation_scene.annotations
         """
-        annotation_labels = self.labels()
+        annotation_labels = DatasetItemParameters.labels()
         labels_to_add = self.labels_to_add()
         scored_labels_to_add = [
             ScoredLabel(labels_to_add[0]),
             ScoredLabel(labels_to_add[1]),
         ]
-        media = self.generate_random_image()
-        roi_labels = self.roi_labels()
-        roi_scored_labels = self.roi_scored_labels()
-        roi = self.roi()
-        equal_roi = self.roi()
-        annotations = self.annotations()
+        media = DatasetItemParameters.generate_random_image()
+        roi_labels = DatasetItemParameters.roi_labels()
+        roi_scored_labels = DatasetItemParameters().roi_scored_labels()
+        roi = DatasetItemParameters().roi()
+        equal_roi = DatasetItemParameters().roi()
+        annotations = DatasetItemParameters().annotations()
         annotations_with_roi = annotations + [equal_roi]
         annotations_scene = AnnotationSceneEntity(
             annotations_with_roi, AnnotationSceneKind.ANNOTATION
@@ -804,7 +808,7 @@ class TestDatasetItemEntity:
         self.check_roi_equal_annotation(roi_label_dataset_item, expected_labels, True)
         # Scenario for checking "append_labels" method for DatasetItemEntity object with non-specified ROI-annotation in
         # annotation_scene.annotations object
-        non_roi_dataset_item = self.dataset_item()
+        non_roi_dataset_item = DatasetItemParameters().dataset_item()
         non_roi_dataset_item.append_labels(scored_labels_to_add)
         # Check for "include_empty" is "False"
         expected_labels = [annotation_labels[0], roi_labels[0], labels_to_add[0]]
@@ -817,7 +821,7 @@ class TestDatasetItemEntity:
         expected_labels = roi_scored_labels + scored_labels_to_add
         self.check_roi_equal_annotation(non_roi_dataset_item, expected_labels, True)
         # Scenario for "labels" parameter is equal to []
-        dataset_item = self.dataset_item()
+        dataset_item = DatasetItemParameters().dataset_item()
         dataset_item.append_labels([])
         assert dataset_item.annotation_scene.get_labels() == [annotation_labels[0]]
         assert (
@@ -847,10 +851,10 @@ class TestDatasetItemEntity:
         3. Check value returned by __eq__ method for DatasetItemEntity objects with unequal "metadata" parameters
         4. Check value returned by __eq__ method for DatasetItemEntity object compared to different type object
         """
-        media = self.generate_random_image()
-        annotation_scene = self.annotations_entity()
-        roi = self.roi()
-        metadata = self.metadata()
+        media = DatasetItemParameters.generate_random_image()
+        annotation_scene = DatasetItemParameters().annotations_entity()
+        roi = DatasetItemParameters().roi()
+        metadata = DatasetItemParameters.metadata()
         dataset_parameters = {
             "media": media,
             "annotation_scene": annotation_scene,
@@ -863,10 +867,10 @@ class TestDatasetItemEntity:
         equal_dataset_item = DatasetItemEntity(**dataset_parameters)
         assert dataset_item == equal_dataset_item
         # Checking inequality of DatasetItemEntity objects with unequal initialization parameters
-        unequal_annotation_scene = self.annotations_entity()
+        unequal_annotation_scene = DatasetItemParameters().annotations_entity()
         unequal_annotation_scene.annotations.pop(0)
         unequal_values = [
-            ("media", self.generate_random_image()),
+            ("media", DatasetItemParameters.generate_random_image()),
             ("annotation_scene", unequal_annotation_scene),
             ("roi", None),
             ("subset", Subset.VALIDATION),
@@ -903,7 +907,7 @@ class TestDatasetItemEntity:
         <b>Expected results:</b>
         Test passes if DatasetItemEntity object created by __deepcopy__ method is equal to expected
         """
-        dataset_item = self.dataset_item()
+        dataset_item = DatasetItemParameters().dataset_item()
         copy_dataset = deepcopy(dataset_item)
         assert (
             dataset_item._DatasetItemEntity__roi_lock
@@ -950,7 +954,7 @@ class TestDatasetItemEntity:
         1. Check "metadata" attribute after "append_metadata_item" method with non-specified "model" parameter
         2. Check "metadata" attribute after "append_metadata_item" method with specified "model" parameter
         """
-        dataset_item = self.dataset_item()
+        dataset_item = DatasetItemParameters().dataset_item()
         expected_metadata = list(dataset_item.metadata)
         # Checking metadata attribute returned after "append_metadata_item" method with non-specified "model" parameter
         data_to_append = TensorEntity(
@@ -993,12 +997,12 @@ class TestDatasetItemEntity:
         "model" attribute
         3. Check value returned by "get_metadata_by_name_and_model" method for searching non-existing metadata object
         """
-        dataset_item = self.dataset_item()
+        dataset_item = DatasetItemParameters().dataset_item()
         metadata_item_with_model = self.metadata_item_with_model()
         dataset_model = metadata_item_with_model.model
         dataset_item.append_metadata_item(metadata_item_with_model.data, dataset_model)
         dataset_metadata = list(dataset_item.metadata)
-        # Checking "get_metadata_by_name_and_model" method for "model" parameter is None
+        # Checking "get_metadata_by_name_and_model" method for "model" parameter is "None"
         assert dataset_item.get_metadata_by_name_and_model("test_metadata", None) == [
             dataset_metadata[0]
         ]
@@ -1024,7 +1028,7 @@ class TestDatasetItemEntity:
     def test_dataset_item_setters(self):
         """
         <b>Description:</b>
-        Check DatasetItemEntity class setters
+        Check DatasetItemEntity class "roi", "subset" and "annotation_scene" setters
 
         <b>Input data:</b>
         DatasetItemEntity class object with specified "media", "annotation_scene", "roi", "metadata" and "subset"
@@ -1038,7 +1042,7 @@ class TestDatasetItemEntity:
         2. Check value returned by "subset" property after using @subset.setter
         3. Check value returned by "annotation_scene" property after using @subset.annotation_scene
         """
-        dataset_item = self.dataset_item()
+        dataset_item = DatasetItemParameters().dataset_item()
         # Checking value returned by "roi" property after using @roi.setter
         new_roi_label = ScoredLabel(LabelEntity("new ROI label", Domain.DETECTION))
         new_dataset_roi = Annotation(
@@ -1050,7 +1054,7 @@ class TestDatasetItemEntity:
         new_subset = Subset.TRAINING
         dataset_item.subset = new_subset
         assert dataset_item.subset == new_subset
-        # Checking value returned by annotation_scene property after using @subset.annotation_scene
+        # Checking value returned by annotation_scene property after using @annotation_scene.setter
         new_annotation_label = ScoredLabel(
             LabelEntity("new annotation label", Domain.CLASSIFICATION)
         )
