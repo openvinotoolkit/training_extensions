@@ -34,11 +34,11 @@ class TestTrainParameters:
         Check TrainParameters class object attributes
 
         <b>Expected results:</b>
-        Test passes if attributes of TrainParameters class object are equal expected
+        Test passes if attributes of TrainParameters class object are equal to expected
 
         <b>Steps</b>
-        1. Check attributes of TrainParameters object initiated with default parameters
-        2. Check attributes of TrainParameters object initiated with "resume", "update_progress" and "save_model"
+        1. Check attributes of TrainParameters object initialized with default parameters
+        2. Check attributes of TrainParameters object initialized with "resume", "update_progress" and "save_model"
         parameters
         """
         # Checking attributes of TrainParameters object initiated with default parameters
@@ -48,7 +48,7 @@ class TestTrainParameters:
         assert (
             default_values_train_parameters.update_progress == default_progress_callback
         )
-        # Expected that save_model equal to function for default parameters TrainParameters object
+        # Expected that save_model is equal to function for default parameters TrainParameters object
         assert default_values_train_parameters.save_model == default_save_model_callback
         # Checking attributes of TrainParameters object initiated with specified
         progress_callback = default_progress_callback(99.9, 99.9)

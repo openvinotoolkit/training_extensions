@@ -46,7 +46,7 @@ class TestLabelSchema:
         Check that childs and parents of Labels can be found correctly
 
         <b>Input data:</b>
-        A simple Label Tree
+        A simple LabelTree
 
         <b>Expected results:</b>
         Test passes if the correct parent and child labels can be found
@@ -137,10 +137,10 @@ class TestLabelSchema:
         Exclusive group: bee
 
         <b>Expected results:</b>
-        Test passes if the LabelSchema and hierarchy are correctly represented
+        Test passes if the LabelSchemaEntity and hierarchy are correctly represented
 
         <b>Steps</b>
-        1. Create LabelSchema with hierarchy
+        1. Create LabelSchemaEntity with hierarchy
         2. Check that some relations are not exclusive
         3. Check that requesting scores of related labels does resolve correctly
         """
@@ -218,7 +218,7 @@ class TestLabelSchema:
         and the correct labels can be retrieved
 
         <b>Steps</b>
-        1. Create LabelSchema with "Vegetation" exclusive group
+        1. Create LabelSchemaEntity with "Vegetation" exclusive group
         2. Add "no_plant" to exclusive group and check that "flowering" is exclusive to "no_plant"
         3. Add "vegetative" to exclusive group and check that "vegetative" is exclusive to "no_plant"
         4. Add "flowering" to exclusive group and check that "no_plant" and "vegetative" are exclusive to "flowering"
@@ -292,16 +292,16 @@ class TestLabelSchema:
     def test_labelschema_equality(self, label_schema_example):
         """
         <b>Description:</b>
-        Check that LabelSchema equality works correctly
+        Check that LabelSchemaEntity equality works correctly
 
         <b>Input data:</b>
-        LabelSchema instances
+        LabelSchemaEntity  instances
 
         <b>Expected results:</b>
         == and != operations work correctly for various inputs
 
         <b>Steps</b>
-        1. Test LabelSchema equality
+        1. Test LabelSchemaEntity equality
         """
         label_schema = LabelSchemaEntity()
 
@@ -350,7 +350,7 @@ class TestLabelGroupType:
         Check LabelGroupType Enum class elements
 
         <b>Expected results:</b>
-        Test passes if LabelGroupType Enum class length is equal expected value and its elements have expected
+        Test passes if LabelGroupType Enum class length is equal to expected value and its elements have expected
         sequence numbers
         """
         assert len(LabelGroupType) == 2
@@ -473,7 +473,7 @@ class TestLabelGroup:
 
         <b>Expected results:</b>
         Test passes if after using remove_label method values of "labels" property, "minimum_label_id" and
-        "is_single_label" methods are equal expected
+        "is_single_label" methods are equal to expected
         """
         label_group = LabelGroup(
             name="Test Label Group", labels=[labels.label_0, labels.label_0_1]
@@ -613,7 +613,7 @@ class TestLabelGraph:
         LabelGraph objects with specified "directed" parameter and added edges
 
         <b>Expected results:</b>
-        Test passes if LabelGraph object "directed" attribute and "num_labels" and "type" properties are equal expected
+        Test passes if LabelGraph object "directed" attribute and "num_labels" and "type" properties are equal to expected
 
         <b>Steps</b>
         1. Check "directed" attribute and "num_labels" and "type" properties of non-directed LabelGraph object
