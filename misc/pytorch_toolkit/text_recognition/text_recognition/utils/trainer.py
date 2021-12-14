@@ -41,6 +41,7 @@ from functools import partial
 from pprint import pformat, pprint
 from warnings import warn
 
+import editdistance
 import fasttext
 import numpy as np
 import torch
@@ -64,7 +65,8 @@ def seed_worker(worker_seed=None):
     torch.manual_seed(seed)
     np.random.seed(seed)
 
-def calculate_loss(logits, targets, target_lengths, should_cut_by_min=False, ctc_loss=None):
+def calculate_loss(logits, targets, target_lengths, should_cut_by_min=False, ctc_loss=None,
+                   acc_type='character_recognition_accuracy', vocab=None, step=0, print_freq=1e6):
     """args:
         logits: probability distribution return by model
                 [B, MAX_LEN, voc_size]
@@ -102,11 +104,26 @@ def calculate_loss(logits, targets, target_lengths, should_cut_by_min=False, ctc
 
         predictions = ctc_greedy_search(logits.detach(), ctc_loss.blank)
         accuracy = 0
+        err = 0
+        nchars = 0
         for i in range(b_size):
             gt = targets[i][:target_lengths[i]].cpu()
             if len(predictions[i]) == len(gt) and torch.all(predictions[i].eq(gt)):
                 accuracy += 1
+            gt_str = vocab.construct_phrase(gt, ignore_end_token=True, whitespace=False)
+            pre_str = vocab.construct_phrase(predictions[i], ignore_end_token=True, max_len=1 + len(gt_str), whitespace=False)
+            if step % print_freq == 0:
+                print('TRU:', gt_str)
+                print('PRE:', pre_str)
+            err += editdistance.eval(pre_str, gt_str)
+            nchars += len(gt_str)
+
         accuracy /= b_size
+
+        if acc_type == 'label_level_recognition_accuracy':
+            cer = err * 1.0 / nchars # character error rate
+            accuracy = 1 - cer
+
     return loss, accuracy
 
 
@@ -141,6 +158,9 @@ class Trainer:
         self.save_freq = config.get('save_freq', 2000)
         self.val_freq = config.get('val_freq', 5000)
         self.logs_path = os.path.join(self.work_dir, config.get('log_path', 'logs'))
+        self.whitespace = config.get('whitespace', True)
+        self.acc_type = config.get('acc_type', 'character_recognition_accuracy')
+
         if self.rank == 0:
             self.writer = SummaryWriter(self.logs_path)
             self.writer.add_text('General info', pformat(config))
@@ -165,6 +185,7 @@ class Trainer:
                 self.model = torch.nn.parallel.DistributedDataParallel(
                     self.model, device_ids=[self.rank], output_device=self.rank)
         self.optimizer = getattr(optim, config.get('optimizer', 'Adam'))(self.model.parameters(), self.learing_rate)
+        print(self.optimizer)
         self.lr_scheduler = getattr(optim.lr_scheduler, self.config.get('scheduler', 'ReduceLROnPlateau'))(
             self.optimizer, **self.config.get('scheduler_params', {}))
         self.time = get_timestamp()
@@ -204,7 +225,8 @@ class Trainer:
                 sampler=train_sampler,
                 collate_fn=partial(collate_fn, self.vocab.sign2id,
                                    batch_transform=batch_transform_train,
-                                   use_ctc=(self.loss_type == 'CTC')),
+                                   use_ctc=(self.loss_type == 'CTC'),
+                                   whitespace=self.whitespace),
                 num_workers=self.config.get('num_workers', 4),
                 batch_size=self.config.get('batch_size', 4),
                 pin_memory=True)
@@ -216,7 +238,8 @@ class Trainer:
                 batch_sampler=train_sampler,
                 collate_fn=partial(collate_fn, self.vocab.sign2id,
                                    batch_transform=batch_transform_train,
-                                   use_ctc=(self.loss_type == 'CTC')),
+                                   use_ctc=(self.loss_type == 'CTC'),
+                                   whitespace=self.whitespace),
                 num_workers=self.config.get('num_workers', 4),
                 pin_memory=True)
         pprint('Creating val transforms list: {}'.format(self.val_transforms_list), indent=4, width=120)
@@ -225,7 +248,8 @@ class Trainer:
             DataLoader(
                 ds,
                 collate_fn=partial(collate_fn, self.vocab.sign2id,
-                                   batch_transform=batch_transform_val, use_ctc=(self.loss_type == 'CTC')),
+                                   batch_transform=batch_transform_val, use_ctc=(self.loss_type == 'CTC'),
+                                   whitespace=self.whitespace),
                 batch_size=self.config.get('val_batch_size', 1),
                 num_workers=self.config.get('num_workers', 4)
             )
@@ -309,7 +333,8 @@ class Trainer:
             logits, _ = self.model(imgs, training_gt)
         cut = self.loss_type != 'CTC'
         loss, accuracy = calculate_loss(logits, loss_computation_gt, target_lengths, should_cut_by_min=cut,
-                                        ctc_loss=self.loss)
+                                        ctc_loss=self.loss, acc_type=self.acc_type, vocab=self.vocab,
+                                        step=self.global_step, print_freq=self.print_freq)
         self.step += 1
         self.global_step += 1
         if semantic_loss:
@@ -324,6 +349,8 @@ class Trainer:
         val_avg_loss = 0.0
         val_avg_accuracy = 0.0
         print('Validation started')
+        errs = 0
+        nchars = 0
         with torch.no_grad():
             filename = VAL_FILE_NAME_TEMPLATE.format(self.val_results_path, self.epoch, self.step, self.time)
             with open(filename, 'w') as output_file:
@@ -340,22 +367,34 @@ class Trainer:
                             pred = ctc_greedy_search(pred, blank_token=self.loss.blank)
                         for j, phrase in enumerate(pred):
                             gold_phrase_str = self.vocab.construct_phrase(
-                                loss_computation_gt[j], ignore_end_token=self.config.get('use_ctc'))
+                                loss_computation_gt[j], ignore_end_token=self.config.get('use_ctc'),
+                                whitespace=self.whitespace)
                             pred_phrase_str = self.vocab.construct_phrase(phrase,
-                                                                          max_len=1 + len(gold_phrase_str.split()),
-                                                                          ignore_end_token=self.config.get('use_ctc')
-                                                                          )
-                            gold_phrase_str = gold_phrase_str.lower()
-                            pred_phrase_str = pred_phrase_str.lower()
+                                                                          max_len=1 + len(gold_phrase_str.split() if self.whitespace else gold_phrase_str),
+                                                                          ignore_end_token=self.config.get('use_ctc'),
+                                                                          whitespace=self.whitespace)
+                            for param in self.config.get('datasets')['validate']:
+                                case_sensitive = param.get('case_sensitive', False)
+                            if not case_sensitive:
+                                gold_phrase_str = gold_phrase_str.lower()
+                                pred_phrase_str = pred_phrase_str.lower()
+
+                            errs += editdistance.eval(gold_phrase_str, pred_phrase_str)
+                            nchars += len(gold_phrase_str)
                             output_file.write(img_name[j] + '\t' + pred_phrase_str + '\t' + gold_phrase_str + '\n')
                             val_acc += int(pred_phrase_str == gold_phrase_str)
                         cut = self.loss_type != 'CTC'
                         loss, _ = calculate_loss(logits, loss_computation_gt, target_lengths,
-                                                 should_cut_by_min=cut, ctc_loss=self.loss)
+                                                 should_cut_by_min=cut, ctc_loss=self.loss, acc_type=self.acc_type,
+                                                 vocab=self.vocab, step=self.global_step, print_freq=self.print_freq)
                         loss = loss.detach()
                         val_loss += loss
                     val_loss = val_loss / len(loader.dataset)
                     val_acc = val_acc / len(loader.dataset)
+
+                    if self.acc_type == 'label_level_recognition_accuracy':
+                        val_acc = 1.0 - errs * 1.0 / nchars
+
                     dataset_name = os.path.split(loader.dataset.data_path)[-1]
                     print('Epoch {}, dataset {} loss: {:.4f}'.format(
                         self.epoch, dataset_name, val_loss

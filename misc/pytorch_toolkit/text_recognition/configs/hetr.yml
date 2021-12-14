@@ -1,0 +1,71 @@
+backbone_config:
+  type: cnn
+  output_channels: 80
+head:
+  type: LSTMEncoderDecoder
+  #encoder_input_size: 960
+  encoder_input_size: 80
+  #reduction: flatten
+  reduction: weighted
+  cnn_encoder_height: 12
+  dropout_p: 0.5
+val_transforms_list:
+  - name: TransformGrayscale
+  - name: TransformResizeNormalizePad
+    target_height: 96
+device: cuda
+num_workers: 4
+use_ctc: true
+vocab_path: vocabs/vocab_gnhk.json
+train:
+  batch_size: 4
+  learning_rate: 0.0003
+  clip_grad: 2.0
+  epochs: 300
+  loss_type: CTC
+  CTCLossZeroInf: true
+  save_freq: 10000
+  val_freq: 10000
+  print_freq: 250
+  optimizer: RMSprop
+  save_dir: model_checkpoints
+  whitespace: false # whether to insert spaces between characters
+  acc_type: label_level_recognition_accuracy
+  datasets:
+    train:
+      - type: LMDBDataset
+        case_sensitive: true
+        data_path: gnhk/gnhk_lmdb_train_val_result
+        grayscale: true
+        insert_whitespace: false
+    validate:
+      - type: LMDBDataset
+        case_sensitive: true
+        data_path: gnhk/gnhk_lmdb_test_result
+        grayscale: true
+        insert_whitespace: false
+  train_transforms_list:
+    - name: TransformGrayscale
+    - name: TransformDataAugmentation
+    - name: TransformResizeNormalizePad
+      target_height: 96
+eval:
+  dataset:
+    type: LMDBDataset
+    case_sensitive: true
+    data_path: gnhk/gnhk_lmdb_test_result
+    grayscale: true
+    insert_whitespace: false
+demo:
+  transforms_list: []
+export:
+  model_input_names: "imgs"
+  model_output_names: "logits"
+  res_model_name: model_hetr.onnx
+  export_ir: true
+  verbose_export: true
+  input_shape:
+    - 1
+    - 1
+    - 96
+    - 2000

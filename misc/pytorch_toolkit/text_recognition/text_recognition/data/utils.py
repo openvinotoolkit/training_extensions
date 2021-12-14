@@ -22,6 +22,7 @@ import torch
 from torchvision.transforms import Compose, ToTensor, RandomApply, RandomChoice, ColorJitter, Grayscale, ToPILImage
 
 from .vocab import END_TOKEN, PAD_TOKEN, START_TOKEN, UNK_TOKEN
+import albumentations as A
 
 COLOR_WHITE = (255, 255, 255)
 
@@ -62,6 +63,64 @@ class TransformResizePad(BaseTransform):
             asert_msg = f'image_raw shape {image_raw.shape[0:2]}, tgt_shape: {self.target_shape[0:2]}'
             assert tuple(image_raw.shape[0:2]) == tuple(self.target_shape[0:2]), asert_msg
             res.append(image_raw)
+        return res
+
+class TransformDataAugmentation(BaseTransform):
+    def __init__(self):
+        super().__init__()
+        self.transform = A.Compose([
+            A.RandomScale(scale_limit=0.2, p=0.5),
+            A.Affine(shear=(-0.5,0.5), fit_output=True, p=0.5, cval=255),
+            A.Affine(rotate=(-5,5), fit_output=True, p=0.5, cval=255),
+            A.Affine(translate_px=(-10, 10), p=0.5, cval=255),
+            A.ElasticTransform(alpha=35, sigma=5, alpha_affine=0, p=0.5),
+            A.Perspective(scale=0.05, fit_output=True, pad_val=255, p=0.5),
+            A.RandomBrightnessContrast(p=0.5),
+            A.GaussNoise(p=0.5)
+        ])
+
+    def __call__(self, imgs):
+        imgs = to_list(imgs)
+        res = []
+        for img in imgs:
+            img = self.transform(image=img)['image']
+            res.append(img)
+        return res
+
+class TransformResizeNormalizePad(BaseTransform):
+    def __init__(self, target_height):
+        super().__init__()
+        self.target_height = target_height
+        self.toTensor = ToTensor()
+    def __call__(self, imgs):
+        imgs = to_list(imgs)
+
+        # resize to fixed height
+        resized_imgs = []
+        for image_raw in imgs:
+            img_h, img_w = image_raw.shape[0:2]
+            scale = self.target_height / img_h
+            target_width = int(scale * img_w)
+            image_raw = cv.resize(image_raw, (target_width, self.target_height), interpolation=cv.INTER_AREA)
+            resized_imgs.append(image_raw)
+
+        # get max img_w
+        max_img_w = max(img.shape[1] for img in resized_imgs)
+
+        # normalize and pad
+        res = []
+        self.max_size = (1, self.target_height, max_img_w)
+        for img in resized_imgs:
+            img = self.toTensor(img)
+            img.sub_(0.5).div_(0.5)
+            c, h, w = img.size()
+            Pad_img = torch.FloatTensor(*self.max_size).fill_(0)
+            Pad_img[:, :, :w] = img  # right pad
+            if self.max_size[2] != w:  # add border Pad
+                Pad_img[:, :, w:] = \
+                    img[:, :, w - 1].unsqueeze(2).expand(c, h, self.max_size[2] - w)
+            Pad_img = Pad_img.permute(1, 2, 0)
+            res.append(Pad_img.numpy())
         return res
 
 
@@ -423,6 +482,8 @@ TRANSFORMS = {
     'TransformRandomBolding': TransformRandomBolding,
     'TransformColorJitter': TransformColorJitter,
     'TransformGrayscale': TransformGrayscale,
+    'TransformResizeNormalizePad': TransformResizeNormalizePad,
+    'TransformDataAugmentation': TransformDataAugmentation,
 }
 
 
@@ -438,7 +499,7 @@ def get_num_lines_in_file(path):
     return total
 
 
-def collate_fn(sign2id, batch, *, batch_transform=None, use_ctc=False):
+def collate_fn(sign2id, batch, *, batch_transform=None, use_ctc=False, whitespace=True):
     # sort by the length of text
     # the purpose of the sort is to put the longest text on the first place
     # to get correct size of the tensor in the texts2tensor function
@@ -456,7 +517,7 @@ def collate_fn(sign2id, batch, *, batch_transform=None, use_ctc=False):
     imgs = [item['img'] for item in batch]
     texts = [item['text'] for item in batch]
     img_names = [item['img_name'] for item in batch]
-    texts_tensor, lens = texts2tensor(texts, sign2id)
+    texts_tensor, lens = texts2tensor(texts, sign2id, whitespace)
 
     imgs = torch.stack(imgs, dim=0)
 
@@ -487,11 +548,15 @@ def create_list_of_transforms(transforms_list, ovino_ir=False):
     return Compose(transforms)
 
 
-def texts2tensor(texts, sign2id):
+def texts2tensor(texts, sign2id, whitespace=True):
     """convert text to tensor"""
-    texts = [text.split() for text in texts]
+    if whitespace: # there are extra spaces inserted between characters
+        texts = [text.split() for text in texts]
+        max_len = len(texts[0])
+    else:
+        texts = [list(text) for text in texts]
+        max_len = max([len(text) for text in texts])
     batch_size = len(texts)
-    max_len = len(texts[0])
     lens = []
     tensors = torch.ones(batch_size, max_len, dtype=torch.long) * PAD_TOKEN
     for i, phrase in enumerate(texts):
