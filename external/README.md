@@ -12,9 +12,7 @@ ote_anomaly_classification_stfpm | STFPM | 5.6 | 21.1 | anomaly/anomaly_classifi
 ## Image Classification
 ID | Name | Complexity (GFlops) | Model size (MB) | Path
 ------- | ------- | ------- | ------- | -------
-MobileNet-V3-small | MobileNet-V3-small | 0.12 | 1.56 | deep-object-reid/configs/ote_custom_classification/mobilenet_v3_small/template.yaml
 MobileNet-V3-large-0.75x | MobileNet-V3-large-0.75x | 0.32 | 2.76 | deep-object-reid/configs/ote_custom_classification/mobilenet_v3_large_075/template.yaml
-Custom_Image_Classification_MobileNet-V3-large-1x | MobileNet-V3-large-1x | 0.44 | 4.29 | deep-object-reid/configs/ote_custom_classification/mobilenet_v3_large_1/template.yaml
 Custom_Image_Classification_EfficinetNet-B0 | EfficientNet-B0 | 0.81 | 4.09 | deep-object-reid/configs/ote_custom_classification/efficientnet_b0/template.yaml
 
 ## Object Detection
