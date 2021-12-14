@@ -73,7 +73,7 @@ class Rectangle(Shape):
             is_valid = is_valid and self._validate_coordinates(x, y)
         if not is_valid:
             warnings.warn(
-                f"Invalid {type(self).__name__} : x1={x1}, y1={y1}, x2={x2}, y2={y2}",
+                f"{type(self).__name__} coordinates are invalid : x1={x1}, y1={y1}, x2={x2}, y2={y2}",
                 UserWarning,
             )
 

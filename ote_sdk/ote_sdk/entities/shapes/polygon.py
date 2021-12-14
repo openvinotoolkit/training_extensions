@@ -125,7 +125,7 @@ class Polygon(Shape):
         if not is_valid:
             points_str = "; ".join(str(p) for p in self.points)
             warnings.warn(
-                f"Invalid {type(self).__name__} : {points_str}",
+                f"{type(self).__name__} coordinates are invalid : {points_str}",
                 UserWarning,
             )
 
