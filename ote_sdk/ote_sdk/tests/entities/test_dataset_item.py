@@ -179,12 +179,14 @@ class TestDatasetItemEntity:
             name="Label which will be added",
             domain=Domain.DETECTION,
             color=Color(red=60, green=120, blue=70),
+            creation_date=datetime.datetime(year=2021, month=12, day=12),
             id=ID("label_to_add_1"),
         )
         other_label_to_add = LabelEntity(
             name="Other label to add",
             domain=Domain.SEGMENTATION,
             color=Color(red=80, green=70, blue=100),
+            creation_date=datetime.datetime(year=2021, month=12, day=11),
             is_empty=True,
             id=ID("label_to_add_2"),
         )
