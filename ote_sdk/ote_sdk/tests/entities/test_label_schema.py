@@ -74,7 +74,6 @@ class TestLabelSchema:
 
         threat_children = label_tree.get_children(threat)
         assert rifle in threat_children
-        assert rifle in threat_children
 
     @pytest.mark.priority_medium
     @pytest.mark.component
@@ -613,7 +612,8 @@ class TestLabelGraph:
         LabelGraph objects with specified "directed" parameter and added edges
 
         <b>Expected results:</b>
-        Test passes if LabelGraph object "directed" attribute and "num_labels" and "type" properties are equal to expected
+        Test passes if LabelGraph object "directed" attribute and "num_labels" and "type" properties are equal to
+        expected
 
         <b>Steps</b>
         1. Check "directed" attribute and "num_labels" and "type" properties of non-directed LabelGraph object
