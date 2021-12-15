@@ -78,10 +78,10 @@ class TestImage:
         test_height = test_width = 128
         test_height1 = test_width1 = 64
         test_depth = 4
-        data0 = np.ndarray(shape=(test_height, test_width, test_depth), dtype=float, order='C')
-        data1 = np.ndarray(shape=(test_height1, test_width1, test_depth), dtype=float, order='C')
-        d1_data = np.ndarray(shape=(test_height,), dtype=float, order='C')
-        image = np.ndarray(shape=(test_height, test_width, test_depth), dtype=float, order='C')
+        data0 = np.zeros(shape=(test_height, test_width, test_depth), dtype=float, order='C')
+        data1 = np.zeros(shape=(test_height1, test_width1, test_depth), dtype=float, order='C')
+        d1_data = np.zeros(shape=(test_height,), dtype=float, order='C')
+        image = np.zeros(shape=(test_height, test_width, test_depth), dtype=float, order='C')
         image_path = os.path.join(tempfile.gettempdir(), 'test_image.png')
         cv2.imwrite(image_path, image)
 
@@ -107,7 +107,8 @@ class TestImage:
         assert width == test_width
         assert depth != test_depth
 
-        data_instance.numpy = fp_instance.numpy = data1
+        data_instance.numpy = data1
+        fp_instance.numpy = data1
 
         assert np.array_equal(data_instance.numpy, data1)
         assert np.array_equal(fp_instance.numpy, data1)
