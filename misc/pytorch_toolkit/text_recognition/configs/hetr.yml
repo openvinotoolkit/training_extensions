@@ -61,6 +61,8 @@ demo:
 export:
   model_input_names: "imgs"
   model_output_names: "logits"
+  scale_values: [127.5]
+  mean_values: [127.5]
   res_model_name: model_hetr.onnx
   export_ir: true
   verbose_export: true
