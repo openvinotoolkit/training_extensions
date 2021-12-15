@@ -137,8 +137,7 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
         self.trainer = Trainer(**config.trainer, logger=False, callbacks=callbacks)
         self.trainer.fit(model=self.model, datamodule=datamodule)
 
-        if not self.trainer.should_stop:
-            self.save_model(output_model)
+        self.save_model(output_model)
 
     def save_model(self, output_model: ModelEntity):
         """
