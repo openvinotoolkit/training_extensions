@@ -202,7 +202,7 @@ class SegmentationToAnnotationConverter(IPredictionToAnnotationConverter):
 
     def __init__(self, label_schema: LabelSchemaEntity):
         labels = label_schema.get_labels(include_empty=False)
-        self.label_map = {i + 1: label for i, label in enumerate(labels)}
+        self.label_map = dict(enumerate(labels, 1))
 
     def convert_to_annotation(
         self, predictions: np.ndarray, metadata: Dict[str, Any]
