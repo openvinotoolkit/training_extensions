@@ -287,8 +287,13 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
         """
         Adds a list of shapes to the annotation
         """
+        roi_as_box = ShapeFactory.shape_as_rectangle(self.roi.shape)
+
         validated_annotations = [
-            annotation
+            Annotation(
+                shape=annotation.shape.normalize_wrt_roi_shape(roi_as_box),
+                labels=annotation.get_labels(),
+            )
             for annotation in annotations
             if ShapeFactory().shape_produces_valid_crop(
                 shape=annotation.shape,
@@ -296,6 +301,7 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
                 media_height=self.media.height,
             )
         ]
+
         n_invalid_shapes = len(annotations) - len(validated_annotations)
         if n_invalid_shapes > 0:
             logger.info(
@@ -304,6 +310,7 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
                 "such as segmentation).",
                 n_invalid_shapes,
             )
+
         self.annotation_scene.append_annotations(validated_annotations)
 
     def get_roi_labels(
