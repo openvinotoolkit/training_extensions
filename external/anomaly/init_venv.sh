@@ -127,14 +127,9 @@ pip install -e . || exit 1
 
 # Install requirements.
 pip install -r ./requirements/requirements.txt -c ${CONSTRAINTS_FILE} || exit 1
-
 pip install -e . -c ${CONSTRAINTS_FILE} || exit 1
-ANOMALIB_OTE_DIR=`realpath .`
-echo "export ANOMALIB_OTE_DIR=${ANOMALIB_OTE_DIR}" >> ${venv_dir}/bin/activate
-
 # Install OpenVINO requirements
 pip install -r ./requirements/requirements_openvino_mo.txt -c ${CONSTRAINTS_FILE} || exit 1
-
 pip install -e $OTE_SDK_PATH -c ${CONSTRAINTS_FILE} || exit 1
 
 deactivate
