@@ -180,3 +180,36 @@ def convert_string_to_id(id_string: Optional[Union[str, ID]]) -> ID:
     else:
         output_id = id_string
     return output_id
+
+
+def attr_strict_int_validator(
+        instance: ParameterGroup, attribute: Attribute, value: int
+) -> None:  # pylint: disable=unused-argument
+    """
+    Validates that the value set for an attribute is an integer.
+
+    :param instance: ParameterGroup to which the attribute belongs
+    :param attribute: Attribute for which to validate the value
+    :param value: Value to validate
+    :raises TypeError: if the value passed to the validator is not an integer
+    """
+    is_strict_int = isinstance(value, int) and not isinstance(value, bool)
+    if not is_strict_int:
+        raise TypeError(
+            f"Invalid argument type for {attribute.name}: {value} is not of type 'int'"
+        )
+
+
+def attr_strict_float_converter(value: float) -> float:
+    """
+    Converts a value to float.
+
+    :param value: value to convert
+    :raises TypeError: if value cannot be converted to float
+    :return: Value as float
+    """
+    if isinstance(value, bool):
+        raise TypeError(
+            f"Passing boolean values is not supported for numeric parameters."
+        )
+    return float(value)

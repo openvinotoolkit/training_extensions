@@ -45,6 +45,8 @@ from .utils import (
     construct_attr_enum_selectable_onsetattr,
     construct_attr_selectable_validator,
     construct_attr_value_validator,
+    attr_strict_int_validator,
+    attr_strict_float_converter,
 )
 
 # pylint:disable=too-many-arguments
@@ -134,7 +136,7 @@ def configurable_integer(
         default=default_value,
         type=int,
         validator=[
-            attr.validators.instance_of(int),
+            attr_strict_int_validator,
             construct_attr_value_validator(min_value, max_value),
         ],
         metadata=metadata,
@@ -195,7 +197,7 @@ def configurable_float(
         default=default_value,
         type=float,
         validator=construct_attr_value_validator(min_value, max_value),
-        converter=float,
+        converter=attr_strict_float_converter,
         metadata=metadata,
     )
 
@@ -304,7 +306,7 @@ def float_selectable(
         default=default_value,
         type=float,
         validator=construct_attr_selectable_validator(options),
-        converter=float,
+        converter=attr_strict_float_converter,
         metadata=metadata,
     )
 
