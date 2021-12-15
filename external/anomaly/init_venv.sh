@@ -123,7 +123,7 @@ fi
 # Install Anomalib
 git clone https://github.com/openvinotoolkit/anomalib.git || exit 1
 cd anomalib || exit 1
-pip install -e . || exit 1
+pip install . || exit 1
 
 # Install requirements.
 pip install -r ./requirements/requirements.txt -c ${CONSTRAINTS_FILE} || exit 1
