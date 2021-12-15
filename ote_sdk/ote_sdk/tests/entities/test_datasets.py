@@ -58,12 +58,20 @@ class TestDatasetPurpose:
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestDatasetEntity:
     @staticmethod
+    def generate_random_image():
+        return DatasetItemParameters.generate_random_image()
+
+    @staticmethod
     def labels() -> List[LabelEntity]:
         return DatasetItemParameters.labels()
 
     @staticmethod
     def annotations_entity() -> AnnotationSceneEntity:
         return DatasetItemParameters().annotations_entity()
+
+    @staticmethod
+    def metadata():
+        return DatasetItemParameters.metadata()
 
     @staticmethod
     def default_values_dataset_item() -> DatasetItemEntity:
@@ -74,9 +82,12 @@ class TestDatasetEntity:
         return DatasetItemParameters().dataset_item()
 
     def dataset(self) -> DatasetEntity:
-        other_dataset_item = self.dataset_item()
-        other_dataset_item.roi = None
-        other_dataset_item.subset = Subset.VALIDATION
+        other_dataset_item = DatasetItemEntity(
+            media=self.generate_random_image(),
+            annotation_scene=self.annotations_entity(),
+            metadata=self.metadata(),
+            subset=Subset.VALIDATION,
+        )
         items = [
             self.default_values_dataset_item(),
             self.dataset_item(),
