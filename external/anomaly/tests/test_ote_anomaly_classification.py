@@ -81,18 +81,9 @@ class TestAnomalyClassification:
         # stopping process has to happen in less than 10 seconds
         assert time.time() - start_time < 10
 
-    @TestDataset(
-        num_train=200,
-        num_test=10,
-        dataset_path="/home/sakcay/projects/anomalib/datasets/MVTec",
-        use_mvtec=True,
-    )
+    @TestDataset(num_train=200, num_test=10, dataset_path="./datasets/MVTec", use_mvtec=False)
     def test_ote_train_export_and_optimize(
-        self,
-        task_path,
-        template_path,
-        dataset_path="/home/sakcay/projects/anomalib/datasets/MVTec",
-        category="bottle",
+        self, task_path, template_path, dataset_path="./datasets/MVTec", category="bottle"
     ):
         """
         E2E Train-Export Should Yield Similar Inference Results
