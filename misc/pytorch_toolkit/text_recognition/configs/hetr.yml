@@ -16,6 +16,7 @@ val_transforms_list:
 device: cuda
 num_workers: 4
 use_ctc: true
+#model_path: work_dir/model_checkpoints/accuracy_test_best_model_2021-12-15_12-51-21.pth
 vocab_path: vocabs/vocab_gnhk.json
 train:
   batch_size: 4
@@ -59,8 +60,8 @@ eval:
 demo:
   transforms_list: []
 export:
-  model_input_names: "imgs"
-  model_output_names: "logits"
+  model_input_names: "actual_input"
+  model_output_names: "output"
   scale_values: [127.5]
   mean_values: [127.5]
   res_model_name: model_hetr.onnx

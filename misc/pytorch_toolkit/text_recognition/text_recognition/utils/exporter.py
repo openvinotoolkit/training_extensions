@@ -93,6 +93,7 @@ class Exporter:
     def export_complete_model_ir(self):
         input_model = os.path.join(os.path.split(self.model_path)[0], self.config.get('res_model_name'))
         input_shape = self.config.get('input_shape')
+        input_names = self.config.get('model_input_names')
         output_names = self.config.get('model_output_names')
         output_dir = os.path.split(self.model_path)[0]
         num_channels = input_shape[1]
@@ -105,8 +106,8 @@ class Exporter:
         --output "{output_names}" \
         --log_level={LOG_LEVEL} \
         --output_dir {output_dir} \
-        --mean_values imgs{mean_values} \
-        --scale_values 'imgs{scale_values}'"""
+        --mean_values '{input_names}{mean_values}' \
+        --scale_values '{input_names}{scale_values}'"""
         if self.config.get('verbose_export'):
             print(export_command)
         subprocess.run(export_command, shell=True, check=True)
