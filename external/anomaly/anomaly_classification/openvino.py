@@ -16,12 +16,20 @@ OpenVINO Anomaly Task
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+
+import inspect
+import json
 import logging
 import os
 import struct
+import subprocess
+import sys
 import tempfile
-from typing import Optional, Union
+from shutil import copyfile, copytree
+from typing import Any, Dict, Optional, Union, cast
+from zipfile import ZipFile
 
+import numpy as np
 from addict import Dict as ADDict
 from anomalib.core.model.inference import OpenVINOInferencer
 from compression.api import DataLoader
@@ -33,17 +41,23 @@ from omegaconf import ListConfig
 from omegaconf.dictconfig import DictConfig
 from ote_anomalib.config import get_anomalib_config
 from ote_anomalib.data import LabelNames
-from ote_sdk.entities.annotation import Annotation
+from ote_anomalib.exportable_code import AnomalyClassification
 from ote_sdk.entities.datasets import DatasetEntity
-from ote_sdk.entities.inference_parameters import InferenceParameters
+from ote_sdk.entities.inference_parameters import (
+    InferenceParameters,
+    default_progress_callback,
+)
 from ote_sdk.entities.model import ModelEntity, ModelStatus
 from ote_sdk.entities.optimization_parameters import OptimizationParameters
 from ote_sdk.entities.resultset import ResultSetEntity
-from ote_sdk.entities.scored_label import ScoredLabel
-from ote_sdk.entities.shapes.rectangle import Rectangle
 from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.serialization.label_mapper import label_schema_to_bytes
 from ote_sdk.usecases.evaluation.metrics_helper import MetricsHelper
+from ote_sdk.usecases.exportable_code import demo
+from ote_sdk.usecases.exportable_code.prediction_to_annotation_converter import (
+    AnomalyClassificationToAnnotationConverter,
+)
+from ote_sdk.usecases.tasks.interfaces.deployment_interface import IDeploymentTask
 from ote_sdk.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from ote_sdk.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from ote_sdk.usecases.tasks.interfaces.optimization_interface import (
@@ -84,7 +98,7 @@ class OTEOpenVINOAnomalyDataloader(DataLoader):
         return len(self.dataset)
 
 
-class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimizationTask):
+class OpenVINOAnomalyClassificationTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IOptimizationTask):
     """
     OpenVINO inference task
 
@@ -99,6 +113,9 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
         labels = task_environment.get_labels()
         self.normal_label = [label for label in labels if label.name == LabelNames.normal][0]
         self.anomalous_label = [label for label in labels if label.name == LabelNames.anomalous][0]
+        self.annotation_converter = AnomalyClassificationToAnnotationConverter(
+            [self.normal_label, self.anomalous_label]
+        )
 
     def get_config(self) -> Union[DictConfig, ListConfig]:
         """
@@ -115,18 +132,23 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
     def infer(self, dataset: DatasetEntity, inference_parameters: InferenceParameters) -> DatasetEntity:
         if self.task_environment.model is None:
             raise Exception("task_environment.model is None. Cannot access threshold to calculate labels.")
+
+        logger.info("Start OpenVINO inference")
+        update_progress_callback = default_progress_callback
+        if inference_parameters is not None:
+            update_progress_callback = inference_parameters.update_progress
+
         # This always assumes that threshold is available in the task environment's model
-        threshold = struct.unpack("f", (self.task_environment.model.get_data("threshold")))
-        for dataset_item in dataset:
+        # cast is used to placate mypy
+        threshold: float = cast(float, struct.unpack("f", (self.task_environment.model.get_data("threshold")))[0])
+        metadata = {"threshold": threshold}
+        for idx, dataset_item in enumerate(dataset):
             anomaly_map = self.inferencer.predict(dataset_item.numpy, superimpose=False)
-            pred_score = anomaly_map.reshape(-1).max()
-            pred_label = pred_score >= threshold
-            assigned_label = self.anomalous_label if pred_label else self.normal_label
-            shape = Annotation(
-                Rectangle(x1=0, y1=0, x2=1, y2=1),
-                labels=[ScoredLabel(assigned_label, probability=float(pred_score))],
+            annotations_scene = self.annotation_converter.convert_to_annotation(
+                predictions=anomaly_map, metadata=metadata
             )
-            dataset_item.append_annotations([shape])
+            dataset_item.append_annotations(annotations_scene.annotations)
+            update_progress_callback(int((idx + 1) / len(dataset) * 100))
 
         return dataset
 
@@ -200,6 +222,8 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
         Returns:
             OpenVINOInferencer object
         """
+        if self.task_environment.model is None:
+            raise Exception("task_environment.model is None. Cannot load weights.")
         return OpenVINOInferencer(
             config=self.config,
             path=(
@@ -231,3 +255,78 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
         """
         with open(path, "rb") as file:
             output_model.set_data(key, file.read())
+
+    def _get_openvino_configuration(self) -> Dict[str, Any]:
+        """Return configuration required by the exported model."""
+        # This always assumes that threshold is available in the task environment's model
+        # cast is used to placate mypy
+        configuration = {
+            "threshold": cast(float, struct.unpack("f", (self.task_environment.model.get_data("threshold")))[0]),
+            "labels": [self.normal_label.name, self.anomalous_label.name],
+        }
+        if "transforms" not in self.config.keys():
+            configuration["mean_values"] = list(np.array([0.485, 0.456, 0.406]) * 255)
+            # TODO not sure why this is scale in original PR
+            # https://github.com/openvinotoolkit/anomalib/blob/ak/model_api/anomalib/core/model/inference.py#L229
+            configuration["scale_values"] = list(np.array([0.229, 0.224, 0.225]) * 255)
+        else:
+            configuration["mean_values"] = self.config.transforms.mean
+            configuration["scale_values"] = self.config.transforms.std
+        return configuration
+
+    def deploy(self, output_model: ModelEntity) -> None:
+        """Exports the weights from ``output_model`` along with exportable code.
+
+        Args:
+            output_model (ModelEntity): Model with ``openvino.xml`` and ``.bin`` keys
+
+        Raises:
+            Exception: If ``task_environment.model`` is None
+        """
+        logger.info("Deploying Model")
+
+        if self.task_environment.model is None:
+            raise Exception("task_environment.model is None. Cannot load weights.")
+
+        work_dir = os.path.dirname(demo.__file__)
+        parameters: Dict[str, Any] = {}
+        parameters["type_of_model"] = "anomaly_classification"
+        parameters["converter_type"] = "ANOMALY_CLASSIFICATION"
+        parameters["model_parameters"] = self._get_openvino_configuration()
+        name_of_package = "demo_package"
+
+        with tempfile.TemporaryDirectory() as tempdir:
+            copyfile(os.path.join(work_dir, "setup.py"), os.path.join(tempdir, "setup.py"))
+            copyfile(os.path.join(work_dir, "requirements.txt"), os.path.join(tempdir, "requirements.txt"))
+            copytree(os.path.join(work_dir, name_of_package), os.path.join(tempdir, name_of_package))
+            config_path = os.path.join(tempdir, name_of_package, "config.json")
+            with open(config_path, "w", encoding="utf-8") as file:
+                json.dump(parameters, file)
+
+            copyfile(inspect.getfile(AnomalyClassification), os.path.join(tempdir, name_of_package, "model.py"))
+
+            # create wheel package
+            subprocess.run(
+                [
+                    sys.executable,
+                    os.path.join(tempdir, "setup.py"),
+                    "bdist_wheel",
+                    "--dist-dir",
+                    tempdir,
+                    "clean",
+                    "--all",
+                ],
+                check=True,
+            )
+            wheel_file_name = [f for f in os.listdir(tempdir) if f.endswith(".whl")][0]
+
+            with ZipFile(os.path.join(tempdir, "openvino.zip"), "w") as arch:
+                arch.writestr(os.path.join("model", "model.xml"), self.task_environment.model.get_data("openvino.xml"))
+                arch.writestr(os.path.join("model", "model.bin"), self.task_environment.model.get_data("openvino.bin"))
+                arch.write(os.path.join(tempdir, "requirements.txt"), os.path.join("python", "requirements.txt"))
+                arch.write(os.path.join(work_dir, "README.md"), os.path.join("python", "README.md"))
+                arch.write(os.path.join(work_dir, "demo.py"), os.path.join("python", "demo.py"))
+                arch.write(os.path.join(tempdir, wheel_file_name), os.path.join("python", wheel_file_name))
+            with open(os.path.join(tempdir, "openvino.zip"), "rb") as output_arch:
+                output_model.exportable_code = output_arch.read()
+        logger.info("Deploying completed")

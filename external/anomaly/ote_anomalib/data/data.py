@@ -20,7 +20,7 @@ import logging
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Union
 
-from anomalib.datasets.transforms import PreProcessor
+from anomalib.data.transforms import PreProcessor
 from omegaconf import DictConfig, ListConfig
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.subset import Subset
@@ -66,7 +66,9 @@ class OTEAnomalyDataset(Dataset):
     def __init__(self, config: Union[DictConfig, ListConfig], dataset: DatasetEntity):
         self.config = config
         self.dataset = dataset
-        self.pre_processor = PreProcessor(config=self.config.transform)
+        transform_config = self.config.transform if "transform" in self.config.keys() else None
+        image_size = tuple(self.config.dataset.image_size)
+        self.pre_processor = PreProcessor(config=transform_config, image_size=image_size)
 
     def __len__(self) -> int:
         return len(self.dataset)
@@ -107,8 +109,6 @@ class OTEAnomalyDataModule(LightningDataModule):
         super().__init__()
         self.config = config
         self.dataset = dataset
-        self.pre_processor = PreProcessor(config=self.config.transform)
-
         self.train_ote_dataset: DatasetEntity
         self.val_ote_dataset: DatasetEntity
         self.test_ote_dataset: DatasetEntity

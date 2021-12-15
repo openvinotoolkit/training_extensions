@@ -156,7 +156,7 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
         # store computed threshold
         output_model.set_data("threshold", bytes(struct.pack("f", self.model.threshold.item())))
 
-        f1_score = self.model.results.performance["image_f1_score"]
+        f1_score = self.model.image_metrics.OptimalF1.compute().item()
         output_model.performance = Performance(score=ScoreMetric(name="F1 Score", value=f1_score))
         output_model.precision = [ModelPrecision.FP32]
         output_model.model_status = ModelStatus.SUCCESS
