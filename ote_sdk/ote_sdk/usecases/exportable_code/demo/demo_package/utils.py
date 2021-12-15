@@ -37,8 +37,8 @@ def get_model_path(path: Optional[Path]) -> Path:
     model_path = path
     if model_path is None:
         model_path = Path(__file__).parent / "model.xml"
-        if not model_path.exists():
-            raise IOError("The path to the model was not found.")
+    if not model_path.exists():
+        raise IOError("The path to the model was not found.")
 
     return model_path
 
@@ -70,8 +70,8 @@ def create_model(model_path: Path, config_file: Optional[Path] = None) -> Model:
         importlib.import_module(".model", "demo_package")
     except ImportError:
         print("Using model wrapper from Open Model Zoo ModelAPI")
-    if isinstance(parameters["model_parameters"]["labels"], dict):
-        parameters["model_parameters"]["labels"] = []
+    # labels for modelAPI wrappers can be empty, because unused in pre- and postprocessing
+    parameters["model_parameters"]["labels"] = []
     model = Model.create_model(
         parameters["type_of_model"],
         model_adapter,
@@ -88,7 +88,5 @@ def create_output_converter(config_file: Path = None):
     """
     parameters = get_parameters(config_file)
     converter_type = Domain[parameters["converter_type"]]
-    labels = parameters["model_parameters"]["labels"]
-    if isinstance(parameters["model_parameters"]["labels"], dict):
-        labels = LabelSchemaMapper.backward(parameters["model_parameters"]["labels"])
+    labels = LabelSchemaMapper.backward(parameters["model_parameters"]["labels"])
     return create_converter(converter_type, labels)
