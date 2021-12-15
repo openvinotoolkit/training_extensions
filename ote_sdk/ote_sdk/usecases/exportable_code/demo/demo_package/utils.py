@@ -18,12 +18,13 @@ Utils for demo
 import importlib
 import json
 from pathlib import Path
-from typing import List, Optional, Union
+from typing import Optional
 
 from openvino.model_zoo.model_api.adapters import OpenvinoAdapter, create_core
 from openvino.model_zoo.model_api.models import Model
 
-from ote_sdk.entities.label import Domain, LabelEntity
+from ote_sdk.entities.label import Domain
+from ote_sdk.serialization.label_mapper import LabelSchemaMapper
 from ote_sdk.usecases.exportable_code.prediction_to_annotation_converter import (
     create_converter,
 )
@@ -69,6 +70,8 @@ def create_model(model_path: Path, config_file: Optional[Path] = None) -> Model:
         importlib.import_module(".model", "demo_package")
     except ImportError:
         print("Using model wrapper from Open Model Zoo ModelAPI")
+    if isinstance(parameters["model_parameters"]["labels"], dict):
+        parameters["model_parameters"]["labels"] = []
     model = Model.create_model(
         parameters["type_of_model"],
         model_adapter,
@@ -79,12 +82,13 @@ def create_model(model_path: Path, config_file: Optional[Path] = None) -> Model:
     return model
 
 
-def create_output_converter(
-    labels: List[Union[str, LabelEntity]], config_file: Path = None
-):
+def create_output_converter(config_file: Path = None):
     """
     Create annotation converter according to kind of task
     """
     parameters = get_parameters(config_file)
     converter_type = Domain[parameters["converter_type"]]
+    labels = parameters["model_parameters"]["labels"]
+    if isinstance(parameters["model_parameters"]["labels"], dict):
+        labels = LabelSchemaMapper.backward(parameters["model_parameters"]["labels"])
     return create_converter(converter_type, labels)
