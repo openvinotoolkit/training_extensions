@@ -16,12 +16,10 @@ Test Anomaly Classification Task
 # See the License for the specific language governing permissions
 # and limitations under the License.
 import logging
-from threading import Thread
 
 import numpy as np
 import pytest
 from ote_anomalib.config import get_anomalib_config
-from ote_sdk.entities.model import ModelStatus
 from tests.helpers.config import get_config_and_task_name
 from tests.helpers.dummy_dataset import TestDataset
 from tests.helpers.train import OTEAnomalyTrainer
@@ -56,30 +54,6 @@ class TestAnomalyClassification:
         anomalib_config = get_anomalib_config(task_name, ote_config)
         # check if default parameter was overwritten
         assert anomalib_config.dataset.train_batch_size == train_batch_size
-
-    @TestDataset(num_train=200, num_test=50, dataset_path="./datasets/MVTec", use_mvtec=False)
-    def test_cancel_training(
-        self,
-        task_path,
-        template_path,
-        dataset_path="./datasets/MVTec",
-        category="bottle",
-    ):
-        """
-        Training should stop when `cancel_training` is called
-        """
-        self._trainer = OTEAnomalyTrainer(
-            model_template_path=f"{task_path}/configs/{template_path}/template.yaml",
-            dataset_path=dataset_path,
-            category=category,
-        )
-        thread = Thread(target=self._trainer.train)
-        thread.start()
-        self._trainer.cancel_training()
-        thread.join()
-
-        # If the training is cancelled model status cannot be success.
-        assert self._trainer.output_model.model_status != ModelStatus.SUCCESS
 
     @TestDataset(num_train=200, num_test=10, dataset_path="./datasets/MVTec", use_mvtec=False)
     def test_ote_train_export_and_optimize(
