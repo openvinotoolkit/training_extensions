@@ -29,14 +29,8 @@ from anomaly_classification import (
 from ote_sdk.configuration.helper import create
 from ote_sdk.entities.inference_parameters import InferenceParameters
 from ote_sdk.entities.label_schema import LabelSchemaEntity
-from ote_sdk.entities.model import (
-    ModelEntity,
-    ModelOptimizationType,
-    ModelPrecision,
-    ModelStatus,
-    OptimizationMethod,
-)
-from ote_sdk.entities.model_template import TargetDevice, parse_model_template
+from ote_sdk.entities.model import ModelEntity, ModelStatus
+from ote_sdk.entities.model_template import parse_model_template
 from ote_sdk.entities.optimization_parameters import OptimizationParameters
 from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.subset import Subset
@@ -197,22 +191,10 @@ class OTEAnomalyTrainer:
             if isinstance(task, AnomalyClassificationTask):
                 raise ValueError("Base task cannot perform optimization")
 
-            optimized_model = ModelEntity(
-                inference_dataset,
-                self.task_environment.get_model_configuration(),
-                optimization_type=ModelOptimizationType.POT,
-                optimization_methods=[OptimizationMethod.QUANTIZATION],
-                optimization_objectives={},
-                precision=[ModelPrecision.INT8],
-                target_device=TargetDevice.CPU,
-                performance_improvement={},
-                model_size_reduction=1.0,
-                model_status=ModelStatus.NOT_READY,
-            )
             self.openvino_task.optimize(
                 optimization_type=OptimizationType.POT,
                 dataset=inference_dataset,
-                output_model=optimized_model,
+                output_model=self.task_environment.model,
                 optimization_parameters=OptimizationParameters(),
             )
 
