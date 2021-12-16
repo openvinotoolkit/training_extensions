@@ -200,6 +200,46 @@ def attr_strict_int_validator(
         )
 
 
+def _validate_and_convert_float(value: float) -> Optional[float]:
+    """
+    Validate that a value is a float, or a number that can be converted to a float.
+    If the value is valid, this method will return the value as float. Otherwise, this
+    method returns None
+
+    :param value: Value to validate and convert
+    :return: Value as float if value is valid, None otherwise
+    """
+    valid = True
+    if not (isinstance(value, float) or isinstance(value, int)):
+        valid = False
+    if isinstance(value, bool):
+        valid = False
+    if valid:
+        return float(value)
+    return None
+
+
+def attr_strict_float_on_setattr(
+        instance: ParameterGroup, attribute: Attribute, value: float
+) -> float:
+    """
+    Validate that the value set for an attribute is a float, or a number that can be
+    converted to a float
+
+    :param instance: ParameterGroup to which the attribute belongs
+    :param attribute: Attribute for which to validate the value
+    :param value: Value to validate
+    :raises TypeError: if the value passed to the validator is not a float or number
+    """
+    float_value = _validate_and_convert_float(value)
+    if float_value is None:
+        raise TypeError(
+            f"Invalid argument type for {attribute.name}: {value} is not of type "
+            f"'float'"
+        )
+    return float_value
+
+
 def attr_strict_float_converter(value: float) -> float:
     """
     Converts a value to float.
@@ -208,8 +248,10 @@ def attr_strict_float_converter(value: float) -> float:
     :raises TypeError: if value cannot be converted to float
     :return: Value as float
     """
-    if isinstance(value, bool):
+    float_value = _validate_and_convert_float(value)
+    if float_value is None:
         raise TypeError(
-            f"Passing boolean values is not supported for numeric parameters."
+            f"Invalid value passed for parameter. Value {value} of type {type(value)} "
+            f"is not a float."
         )
-    return float(value)
+    return float_value

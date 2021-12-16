@@ -47,6 +47,7 @@ from .utils import (
     construct_attr_value_validator,
     attr_strict_int_validator,
     attr_strict_float_converter,
+    attr_strict_float_on_setattr
 )
 
 # pylint:disable=too-many-arguments
@@ -198,6 +199,7 @@ def configurable_float(
         type=float,
         validator=construct_attr_value_validator(min_value, max_value),
         converter=attr_strict_float_converter,
+        on_setattr=attr_strict_float_on_setattr,
         metadata=metadata,
     )
 
@@ -307,6 +309,7 @@ def float_selectable(
         type=float,
         validator=construct_attr_selectable_validator(options),
         converter=attr_strict_float_converter,
+        on_setattr=attr_strict_float_on_setattr,
         metadata=metadata,
     )
 
