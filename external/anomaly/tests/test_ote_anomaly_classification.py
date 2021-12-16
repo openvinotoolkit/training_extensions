@@ -71,7 +71,7 @@ class TestAnomalyClassification:
         base_results = self._trainer.validate(task=self._trainer.base_task)
 
         # Performance should be higher than a threshold.
-        assert base_results.performance.score.value > 0.6
+        assert base_results.performance.score.value > 0.5
 
         # # TODO https://jira.devtools.intel.com/browse/IAAALD-210
         # # Convert the model to OpenVINO
