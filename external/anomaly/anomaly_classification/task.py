@@ -29,7 +29,7 @@ from typing import Optional, Union
 
 import torch
 from anomalib.core.model import AnomalyModule
-from anomalib.core.callbacks import StandardizationCallback
+from anomalib.core.callbacks import NormalizationCallback
 from anomalib.models import get_model
 from omegaconf import DictConfig, ListConfig
 from ote_anomalib.callbacks import InferenceCallback, ProgressCallback
@@ -84,6 +84,7 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
         """
         hyper_parameters = self.task_environment.get_hyper_parameters()
         config = get_anomalib_config(task_name=self.model_name, ote_config=hyper_parameters)
+        config.dataset.task = "classification"
         config.project.path = self.project_path
         return config
 
@@ -132,7 +133,7 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
         """
         config = self.get_config()
         datamodule = OTEAnomalyDataModule(config=config, dataset=dataset)
-        callbacks = [ProgressCallback(parameters=train_parameters), StandardizationCallback()]
+        callbacks = [ProgressCallback(parameters=train_parameters), NormalizationCallback()]
 
         self.trainer = Trainer(**config.trainer, logger=False, callbacks=callbacks)
         self.trainer.fit(model=self.model, datamodule=datamodule)
@@ -154,13 +155,13 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
         output_model.set_data("weights.pth", buffer.getvalue())
         output_model.set_data("label_schema.json", label_schema_to_bytes(self.task_environment.label_schema))
         # store computed threshold
-        output_model.set_data("threshold", bytes(struct.pack("f", self.model.threshold.item())))
+        output_model.set_data("threshold", bytes(struct.pack("f", self.model.image_threshold.item())))
         output_model.set_data("pixel_threshold", bytes(struct.pack("f", self.model.pixel_threshold.item())))
         # store training set statistics
-        output_model.set_data("image_mean", self.model.image_mean.numpy().tobytes())
-        output_model.set_data("image_std", self.model.image_std.numpy().tobytes())
-        output_model.set_data("pixel_mean", self.model.pixel_mean.numpy().tobytes())
-        output_model.set_data("pixel_std", self.model.pixel_std.numpy().tobytes())
+        output_model.set_data("image_mean", self.model.image_mean.cpu().numpy().tobytes())
+        output_model.set_data("image_std", self.model.image_std.cpu().numpy().tobytes())
+        output_model.set_data("pixel_mean", self.model.pixel_mean.cpu().numpy().tobytes())
+        output_model.set_data("pixel_std", self.model.pixel_std.cpu().numpy().tobytes())
 
         f1_score = self.model.image_metrics.OptimalF1.compute().item()
         output_model.performance = Performance(score=ScoreMetric(name="F1 Score", value=f1_score))
@@ -189,7 +190,7 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
         # Callbacks.
         progress = ProgressCallback(parameters=inference_parameters)
         inference = InferenceCallback(dataset, self.labels)
-        standardize = StandardizationCallback()
+        standardize = NormalizationCallback()
         callbacks = [progress, standardize, inference]
 
         self.trainer = Trainer(**config.trainer, logger=False, callbacks=callbacks)
