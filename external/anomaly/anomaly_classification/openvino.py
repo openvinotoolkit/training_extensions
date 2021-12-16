@@ -98,7 +98,7 @@ class OTEOpenVINOAnomalyDataloader(DataLoader):
         return len(self.dataset)
 
 
-class OpenVINOAnomalyClassificationTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IOptimizationTask):
+class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeploymentTask):
     """
     OpenVINO inference task
 
@@ -266,8 +266,6 @@ class OpenVINOAnomalyClassificationTask(IDeploymentTask, IInferenceTask, IEvalua
         }
         if "transforms" not in self.config.keys():
             configuration["mean_values"] = list(np.array([0.485, 0.456, 0.406]) * 255)
-            # TODO not sure why this is scale in original PR
-            # https://github.com/openvinotoolkit/anomalib/blob/ak/model_api/anomalib/core/model/inference.py#L229
             configuration["scale_values"] = list(np.array([0.229, 0.224, 0.225]) * 255)
         else:
             configuration["mean_values"] = self.config.transforms.mean

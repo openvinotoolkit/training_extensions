@@ -29,6 +29,7 @@ class AnomalyClassification(SegmentationModel):
 
     @classmethod
     def parameters(cls):
+        """Dictionary containing model parameters."""
         parameters = super().parameters()
         parameters["resize_type"].update_default_value("crop")
         parameters.update(
@@ -40,6 +41,15 @@ class AnomalyClassification(SegmentationModel):
         return parameters
 
     def postprocess(self, outputs: Dict[str, np.ndarray], meta: Dict[str, Any]) -> np.ndarray:
+        """Resize the outputs of the model to original image size.
+
+        Args:
+            outputs (Dict[str, np.ndarray]): Raw outputs of the model after ``infer_sync`` is called.
+            meta (Dict[str, Any]): Metadata which contains values such as threshold, original image size.
+
+        Returns:
+            np.ndarray: Resulting image resized to original input image size
+        """
         outputs = outputs[self.output_blob_name].squeeze()
         input_image_height = meta["original_shape"][0]
         input_image_width = meta["original_shape"][1]
