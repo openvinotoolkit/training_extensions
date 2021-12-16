@@ -3,9 +3,7 @@ backbone_config:
   output_channels: 80
 head:
   type: LSTMEncoderDecoder
-  #encoder_input_size: 960
   encoder_input_size: 80
-  #reduction: flatten
   reduction: weighted
   cnn_encoder_height: 12
   dropout_p: 0.5
@@ -36,13 +34,13 @@ train:
     train:
       - type: LMDBDataset
         case_sensitive: true
-        data_path: gnhk/gnhk_lmdb_train_val_result
+        data_path: ../../../data/handwritten_text_recognition/gnhk-sample
         grayscale: true
         insert_whitespace: false
     validate:
       - type: LMDBDataset
         case_sensitive: true
-        data_path: gnhk/gnhk_lmdb_test_result
+        data_path: ../../../data/handwritten_text_recognition/gnhk-sample
         grayscale: true
         insert_whitespace: false
   train_transforms_list:
@@ -54,9 +52,11 @@ eval:
   dataset:
     type: LMDBDataset
     case_sensitive: true
-    data_path: gnhk/gnhk_lmdb_test_result
+    data_path: ../../../data/handwritten_text_recognition/gnhk-sample
     grayscale: true
     insert_whitespace: false
+  acc_type: label_level_recognition_accuracy
+  whitespace: false
 demo:
   transforms_list: []
 export:
@@ -64,7 +64,7 @@ export:
   model_output_names: "output"
   scale_values: [127.5]
   mean_values: [127.5]
-  res_model_name: model_hetr.onnx
+  res_model_name: handwritten-english-recognition-0001.onnx
   export_ir: true
   verbose_export: true
   input_shape:

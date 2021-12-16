@@ -74,6 +74,12 @@ class TestAlphanumeric0016Evaluation(
             expected_outputs='tests/expected_outputs/alphanumeric/icdar13_greater3_0016.json')):
     'Test case for alphanumeric text recognition config'
 
+class TestHandwrittenEnglish0001Evaluation(
+        create_evaluation_test_case(
+            'configs/hetr.yml',
+            expected_outputs='tests/expected_outputs/handwritten_recognition/hetr.json')):
+    'Test case for handwritten text recognition config'
+
 
 if __name__ == '__main__':
     unittest.main()
