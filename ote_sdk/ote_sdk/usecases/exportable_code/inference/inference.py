@@ -1,3 +1,7 @@
+"""
+Interface for inferencer
+"""
+
 # INTEL CONFIDENTIAL
 #
 # Copyright (C) 2021 Intel Corporation
@@ -21,6 +25,8 @@ from pathlib import Path
 from typing import Any, Iterator, List, Optional, Tuple, Union
 
 import numpy as np
+
+# pylint: disable=no-name-in-module
 from openvino.inference_engine import ExecutableNetwork, IECore, InferRequest
 from openvino.inference_engine.constants import OK, RESULT_NOT_READY
 
@@ -106,6 +112,23 @@ class BaseInferencer(IInferencer, abc.ABC):
 
 
 class BaseOpenVINOInferencer(BaseInferencer, abc.ABC):
+    """
+    Base class for OpenVINO inference. can handle the basic flow of reading and
+    loading a model. If the network needs to be reshaped, override the load_model
+    function.
+    One would need to implement the following methods to use this as OpenVINO
+    Inferencer
+        + `pre_process`
+        + `forward`
+        + `post_process`
+    :param weight_path: Path to the weight file
+    :param device: Device to use for inference. Check available devices with
+                   IECore().available_devices.
+    :param num_requests: Number of simultaneous requests that can be issued to the
+                         model, has no effect on synchronous execution.
+    :raises ValueError: Raised if the device is not available.
+    """
+
     def __init__(
         self,
         model_file: Union[str, bytes],
@@ -113,30 +136,11 @@ class BaseOpenVINOInferencer(BaseInferencer, abc.ABC):
         device: str = "CPU",
         num_requests: int = 1,
     ):
-        """
-        Base class for OpenVINO inference. can handle the basic flow of reading and
-        loading a model. If the network needs to be reshaped, override the load_model
-        function.
-
-        One would need to implement the following methods to use this as OpenVINO
-        Inferencer
-            + `pre_process`
-            + `forward`
-            + `post_process`
-
-        :param weight_path: Path to the weight file
-        :param device: Device to use for inference. Check available devices with
-                       IECore().available_devices.
-        :param num_requests: Number of simultaneous requests that can be issued to the
-                             model, has no effect on synchronous execution.
-
-        :raises ValueError: Raised if the device is not available.
-        """
-        self.ie = IECore()
-        if device not in self.ie.available_devices:
+        self.ie_core = IECore()
+        if device not in self.ie_core.available_devices:
             raise ValueError(
                 f"Device '{device}' is not available for inference. Available devices "
-                f"are: {self.ie.available_devices}"
+                f"are: {self.ie_core.available_devices}"
             )
 
         self.device: str = device
@@ -176,7 +180,7 @@ class BaseOpenVINOInferencer(BaseInferencer, abc.ABC):
                 raise ValueError(f"Unsupported file extension: {path.suffix}")
 
         init_from_buffer = isinstance(model_file, bytes)
-        self.net = self.ie.read_network(
+        self.net = self.ie_core.read_network(
             model=model_file, weights=weights_file, init_from_buffer=init_from_buffer
         )
         self.input_keys = list(self.net.input_info.keys())
@@ -197,7 +201,7 @@ class BaseOpenVINOInferencer(BaseInferencer, abc.ABC):
         if self.net is None:
             self.read_model(model_file, weights_file)
 
-        self.model = self.ie.load_network(
+        self.model = self.ie_core.load_network(
             network=self.net, device_name=self.device, num_requests=self.num_requests
         )
 
@@ -362,5 +366,7 @@ def _async_callback(
             # thrown
             pass
 
-    except RuntimeError as e:
-        logger.warning("RunTimeError in AsyncOpenVINOTask: _async_callback: %s", str(e))
+    except RuntimeError as error:
+        logger.warning(
+            "RunTimeError in AsyncOpenVINOTask: _async_callback: %s", str(error)
+        )

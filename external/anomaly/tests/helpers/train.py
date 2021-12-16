@@ -29,14 +29,8 @@ from anomaly_classification import (
 from ote_sdk.configuration.helper import create
 from ote_sdk.entities.inference_parameters import InferenceParameters
 from ote_sdk.entities.label_schema import LabelSchemaEntity
-from ote_sdk.entities.model import (
-    ModelEntity,
-    ModelOptimizationType,
-    ModelPrecision,
-    ModelStatus,
-    OptimizationMethod,
-)
-from ote_sdk.entities.model_template import TargetDevice, parse_model_template
+from ote_sdk.entities.model import ModelEntity, ModelStatus
+from ote_sdk.entities.model_template import parse_model_template
 from ote_sdk.entities.optimization_parameters import OptimizationParameters
 from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.subset import Subset
@@ -95,11 +89,17 @@ class OTEAnomalyTrainer:
         """
         hyper_parameters = create(input_config=self.model_template.hyper_parameters.data)
 
-        labels = [self.dataset_generator.normal_label, self.dataset_generator.abnormal_label]
+        labels = [
+            self.dataset_generator.normal_label,
+            self.dataset_generator.abnormal_label,
+        ]
         label_schema = LabelSchemaEntity.from_labels(labels)
 
         task_environment = TaskEnvironment(
-            model_template=self.model_template, model=None, hyper_parameters=hyper_parameters, label_schema=label_schema
+            model_template=self.model_template,
+            model=None,
+            hyper_parameters=hyper_parameters,
+            label_schema=label_schema,
         )
 
         return task_environment
@@ -133,7 +133,9 @@ class OTEAnomalyTrainer:
         if not self.was_training_run_before:
             try:
                 self.base_task.train(
-                    dataset=self.dataset, output_model=self.output_model, train_parameters=TrainParameters()
+                    dataset=self.dataset,
+                    output_model=self.output_model,
+                    train_parameters=TrainParameters(),
                 )
 
             except Exception as exception:
@@ -147,7 +149,11 @@ class OTEAnomalyTrainer:
         if performance is None:
             raise ValueError("Model does not have a saved performance.")
 
-        logger.debug("Training performance: %s, %3.2f", performance.score.name, performance.score.value)
+        logger.debug(
+            "Training performance: %s, %3.2f",
+            performance.score.name,
+            performance.score.value,
+        )
 
     def validate(
         self,
@@ -171,7 +177,8 @@ class OTEAnomalyTrainer:
         inference_parameters = InferenceParameters(is_evaluation=True)
 
         predicted_inference_dataset = task.infer(
-            dataset=inference_dataset.with_empty_annotations(), inference_parameters=inference_parameters
+            dataset=inference_dataset.with_empty_annotations(),
+            inference_parameters=inference_parameters,
         )
 
         result_set = ResultSetEntity(
@@ -184,22 +191,10 @@ class OTEAnomalyTrainer:
             if isinstance(task, AnomalyClassificationTask):
                 raise ValueError("Base task cannot perform optimization")
 
-            optimized_model = ModelEntity(
-                inference_dataset,
-                self.task_environment.get_model_configuration(),
-                optimization_type=ModelOptimizationType.POT,
-                optimization_methods=[OptimizationMethod.QUANTIZATION],
-                optimization_objectives={},
-                precision=[ModelPrecision.INT8],
-                target_device=TargetDevice.CPU,
-                performance_improvement={},
-                model_size_reduction=1.0,
-                model_status=ModelStatus.NOT_READY,
-            )
             self.openvino_task.optimize(
                 optimization_type=OptimizationType.POT,
                 dataset=inference_dataset,
-                output_model=optimized_model,
+                output_model=self.task_environment.model,
                 optimization_parameters=OptimizationParameters(),
             )
 

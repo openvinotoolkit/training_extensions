@@ -19,7 +19,7 @@ Dataset Helpers for OTE Training
 from pathlib import Path
 from typing import List, Union
 
-from anomalib.datasets.anomaly_dataset import make_dataset
+from anomalib.data.mvtec import make_mvtec_dataset
 from ote_anomalib.data import LabelNames
 from ote_sdk.entities.annotation import (
     Annotation,
@@ -83,7 +83,12 @@ class OTEAnomalyDatasetGenerator:
             DataFrame: Final list of samples comprising all the required
                 information to create the OTE Dataset.
         """
-        samples = make_dataset(self.path, self.split_ratio, self.seed, self.create_validation_set)
+        samples = make_mvtec_dataset(
+            path=self.path,
+            split_ratio=self.split_ratio,
+            seed=self.seed,
+            create_validation_set=self.create_validation_set,
+        )
 
         # Set the OTE SDK Splits
         samples = samples.rename(columns={"split": "subset"})

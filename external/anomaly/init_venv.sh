@@ -31,11 +31,6 @@ if [[ -z $SC_SDK_REPO ]]; then
   exit 1
 fi
 
-if [[ -z $ANOMALIB_REPO ]]; then
-  echo "The environment variable ANOMALIB_REPO is not set -- it is required for creating virtual environment"
-  exit 1
-fi
-
 if [[ -z $OTE_SDK_PATH ]]; then
   echo "The environment variable OTE_SDK_PATH is not set -- it is required for creating virtual environment"
   exit 1
@@ -126,21 +121,19 @@ else
 fi
 
 # Install Anomalib
-pip install -e $ANOMALIB_REPO || exit 1
+git clone https://github.com/openvinotoolkit/anomalib.git || exit 1
+cd anomalib || exit 1
 
 # Install requirements.
-pip install -r $ANOMALIB_REPO/requirements/requirements.txt -c ${CONSTRAINTS_FILE} || exit 1
-
-pip install -e . -c ${CONSTRAINTS_FILE} || exit 1
-ANOMALIB_OTE_DIR=`realpath .`
-echo "export ANOMALIB_OTE_DIR=${ANOMALIB_OTE_DIR}" >> ${venv_dir}/bin/activate
-
+pip install -r ./requirements/requirements.txt -c ${CONSTRAINTS_FILE} || exit 1
+pip install  . -c ${CONSTRAINTS_FILE} || exit 1
 # Install OpenVINO requirements
-pip install -r $ANOMALIB_REPO/requirements/requirements_openvino_mo.txt -c ${CONSTRAINTS_FILE} || exit 1
-
+pip install -r ./requirements/requirements_openvino_mo.txt -c ${CONSTRAINTS_FILE} || exit 1
 pip install -e $OTE_SDK_PATH -c ${CONSTRAINTS_FILE} || exit 1
 
 deactivate
+cd ..
+rm -rf anomalib
 
 echo "Activate a virtual environment to start working:"
 echo "$ . ${venv_dir}/bin/activate"
