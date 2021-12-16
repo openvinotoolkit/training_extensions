@@ -70,17 +70,21 @@ class TestAnomalyClassification:
         self._trainer.train()
         base_results = self._trainer.validate(task=self._trainer.base_task)
 
-        # Convert the model to OpenVINO
-        self._trainer.export()
-        openvino_results = self._trainer.validate(task=self._trainer.openvino_task)
-
-        # Optimize the OpenVINO Model via POT
-        optimized_openvino_results = self._trainer.validate(task=self._trainer.openvino_task, optimize=True)
-
         # Performance should be higher than a threshold.
         assert base_results.performance.score.value > 0.6
 
+        # # TODO https://jira.devtools.intel.com/browse/IAAALD-210
+        # # Convert the model to OpenVINO
+        # self._trainer.export()
+        # openvino_results = self._trainer.validate(task=self._trainer.openvino_task)
+
+        # # Optimize the OpenVINO Model via POT
+        # optimized_openvino_results = self._trainer.validate(task=self._trainer.openvino_task, optimize=True)
+
         # Performance should be almost the same
-        # TODO https://jira.devtools.intel.com/browse/IAAALD-210
-        # assert np.allclose(base_results.performance.score.value, openvino_results.performance.score.value)
-        # assert np.allclose(openvino_results.performance.score.value, optimized_openvino_results.performance.score.value)
+        # assert np.allclose(
+        #     base_results.performance.score.value, openvino_results.performance.score.value
+        # )
+        # assert np.allclose(
+        #     openvino_results.performance.score.value, optimized_openvino_results.performance.score.value
+        # )
