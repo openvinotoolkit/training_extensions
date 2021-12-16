@@ -68,3 +68,10 @@ class ModelAdapter(metaclass=abc.ABCMeta):
         if isinstance(self.data_source, bytes):
             return False
         return True
+
+
+class ExportableCodeAdapter(ModelAdapter):
+    """
+    The ExportableCodeAdapter is an adapter is intended to lazily fetch raw the raw exportable code data from a
+    given data source.
+    """
