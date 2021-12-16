@@ -184,9 +184,10 @@ class DetectionBoxToAnnotationConverter(IPredictionToAnnotationConverter):
         image_size = metadata["original_shape"][1::-1]
         for box in predictions:
             scored_label = ScoredLabel(
-                get_label(self.labels_map, int(box.id), Domain.DETECTION), box.score
+                get_label(self.labels_map, int(box.id), Domain.DETECTION),
+                float(box.score),
             )
-            coords = np.array(box.get_coords()) / np.tile(image_size, 2)
+            coords = np.array(box.get_coords(), dtype=float) / np.tile(image_size, 2)
             annotations.append(
                 Annotation(
                     Rectangle(coords[0], coords[1], coords[2], coords[3]),
@@ -243,7 +244,8 @@ class ClassificationToAnnotationConverter(IPredictionToAnnotationConverter):
         for index, score in predictions:
             labels.append(
                 ScoredLabel(
-                    get_label(self.labels_map, index, Domain.CLASSIFICATION), score
+                    get_label(self.labels_map, index, Domain.CLASSIFICATION),
+                    float(score),
                 )
             )
 
@@ -275,7 +277,7 @@ class AnomalyClassificationToAnnotationConverter(IPredictionToAnnotationConverte
         annotations = [
             Annotation(
                 Rectangle.generate_full_box(),
-                labels=[ScoredLabel(assigned_label, probability=pred_score)],
+                labels=[ScoredLabel(assigned_label, probability=float(pred_score))],
             )
         ]
         return AnnotationSceneEntity(
