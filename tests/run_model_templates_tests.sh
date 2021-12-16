@@ -18,4 +18,3 @@ bash ./init_venv.sh /tmp/ote-anomaly
 . /tmp/ote-anomaly/bin/activate
 pip install pytest 
 pytest tests/ -v || exit 1
-cd -
