@@ -417,7 +417,7 @@ class ModelEntity:
         """
         if self.__exportable_code_adapter is not None:
             return self.__exportable_code_adapter.data
-        raise AttributeError("No exportable code has been set for this model")
+        return None
 
     @exportable_code.setter
     def exportable_code(self, data: Union[bytes, IDataSource]):
@@ -427,13 +427,11 @@ class ModelEntity:
         self.__exportable_code_adapter = ExportableCodeAdapter(data_source=data)
 
     @property
-    def exportable_code_adapter(self) -> ExportableCodeAdapter:
+    def exportable_code_adapter(self) -> Optional[ExportableCodeAdapter]:
         """
         Returns the exportable code adapter
         """
-        if self.__exportable_code_adapter is not None:
-            return self.__exportable_code_adapter
-        raise AttributeError("No exportable code has been set for this model")
+        return self.__exportable_code_adapter
 
     def get_data(self, key: str) -> bytes:
         """

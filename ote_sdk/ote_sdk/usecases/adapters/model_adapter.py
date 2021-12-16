@@ -72,6 +72,6 @@ class ModelAdapter(metaclass=abc.ABCMeta):
 
 class ExportableCodeAdapter(ModelAdapter):
     """
-    The ExportableCodeAdapter is an adapter is intended to lazily fetch raw the raw exportable code data from a
+    The ExportableCodeAdapter is an adapter intended to lazily fetch raw exportable code data from a
     given data source.
     """
