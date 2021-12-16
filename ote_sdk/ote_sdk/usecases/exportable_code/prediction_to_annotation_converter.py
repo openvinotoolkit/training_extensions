@@ -266,8 +266,10 @@ class AnomalyClassificationToAnnotationConverter(IPredictionToAnnotationConverte
 
     def __init__(self, label_schema: LabelSchemaEntity):
         labels = label_schema.get_labels(include_empty=False)
-        self.normal_label = labels[0]
-        self.anomalous_label = labels[1]
+        self.normal_label = [label for label in labels if label.name == "Normal"][0]
+        self.anomalous_label = [label for label in labels if label.name == "Anomalous"][
+            0
+        ]
 
     def convert_to_annotation(
         self, predictions: np.ndarray, metadata: Dict[str, Any]
