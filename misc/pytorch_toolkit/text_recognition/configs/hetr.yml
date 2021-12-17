@@ -46,7 +46,44 @@ train:
         insert_whitespace: false
   train_transforms_list:
     - name: TransformGrayscale
-    - name: TransformDataAugmentation
+    - name: TransformAlbumentations
+      transforms_list:
+          - type: RandomScale
+            scale_limit: 0.2
+            p: 0.5
+          - type: Affine
+            shear:
+              - -0.5
+              - 0.5
+            fit_output: true
+            p: 0.5
+            cval: 255
+          - type: Affine
+            rotate:
+              - -5
+              - 5
+            fit_output: true
+            cval: 255
+          - type: Affine
+            translate_px:
+              - -10
+              - 10
+            p: 0.5
+            cval: 255
+          - type: ElasticTransform
+            alpha: 35
+            sigma: 5
+            alpha_affine: 0
+            p: 0.5
+          - type: Perspective
+            scale: 0.05
+            fit_output: true
+            pad_val: 255
+            p: 0.5
+          - type: RandomBrightnessContrast
+            p: 0.5
+          - type: GaussNoise
+            p: 0.5
     - name: TransformResizeNormalizePad
       target_height: 96
 eval:

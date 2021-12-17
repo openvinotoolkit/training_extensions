@@ -65,27 +65,22 @@ class TransformResizePad(BaseTransform):
             res.append(image_raw)
         return res
 
-class TransformDataAugmentation(BaseTransform):
-    def __init__(self):
+class TransformAlbumentations(BaseTransform):
+    def __init__(self, transforms_list):
         super().__init__()
-        self.transform = A.Compose([
-            A.RandomScale(scale_limit=0.2, p=0.5),
-            A.Affine(shear=(-0.5,0.5), fit_output=True, p=0.5, cval=255),
-            A.Affine(rotate=(-5,5), fit_output=True, p=0.5, cval=255),
-            A.Affine(translate_px=(-10, 10), p=0.5, cval=255),
-            A.ElasticTransform(alpha=35, sigma=5, alpha_affine=0, p=0.5),
-            A.Perspective(scale=0.05, fit_output=True, pad_val=255, p=0.5),
-            A.RandomBrightnessContrast(p=0.5),
-            A.GaussNoise(p=0.5)
-        ])
+        self.transforms_list = []
+        for transform in transforms_list:
+            self.transforms_list.append(getattr(A, transform.pop('type'))(**transform))
+        self.transforms_list = A.Compose(self.transforms_list)
 
     def __call__(self, imgs):
         imgs = to_list(imgs)
         res = []
         for img in imgs:
-            img = self.transform(image=img)['image']
+            img = self.transforms_list(image=img)['image']
             res.append(img)
         return res
+
 
 class TransformResizeNormalizePad(BaseTransform):
     def __init__(self, target_height):
@@ -483,7 +478,7 @@ TRANSFORMS = {
     'TransformColorJitter': TransformColorJitter,
     'TransformGrayscale': TransformGrayscale,
     'TransformResizeNormalizePad': TransformResizeNormalizePad,
-    'TransformDataAugmentation': TransformDataAugmentation,
+    'TransformAlbumentations': TransformAlbumentations,
 }
 
 
