@@ -7,9 +7,10 @@ This code is based on this [repo](https://github.com/luopeixiang/im2latex/).
 Models code is designed to enable ONNX\* export and inference on CPU\GPU via OpenVINO™.
 
 ## Supported Tasks
-Two tasks are supported:
+Three tasks are supported:
 1. LaTeX formula recognition.
 2. Alphanumeric scene text recognition.
+3. Handwritten text line recognition.
 
 ## Model Architecture
 
@@ -19,6 +20,7 @@ We follow similar to [deep-text-recognition-benchmark](https://github.com/clovaa
    1. ResNet-like backbone
    2. Custom ResNet-like backbone (configurable number of channels and spatial dimension in every stage)
     > [Convolutional Block Attention Module](https://arxiv.org/abs/1807.06521) is implemented for the resnet-like backbone, but currently it is not used by any of the models.
+   3. HETR backbone (from [ICDAR17 paper](https://ieeexplore.ieee.org/document/8269951))
 3. Text Recognition Head
    1. CTC lstm encoder-decoder head.
    2. 1d attention based head from [im2markup](https://arxiv.org/pdf/1609.04938.pdf)
