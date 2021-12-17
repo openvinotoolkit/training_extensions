@@ -155,15 +155,15 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
         output_model.set_data("weights.pth", buffer.getvalue())
         output_model.set_data("label_schema.json", label_schema_to_bytes(self.task_environment.label_schema))
         # store computed threshold
-        output_model.set_data("threshold", bytes(struct.pack("f", self.model.image_threshold.item())))
-        output_model.set_data("pixel_threshold", bytes(struct.pack("f", self.model.pixel_threshold.item())))
+        output_model.set_data("threshold", bytes(struct.pack("f", self.model.image_threshold.value.item())))
+        output_model.set_data("pixel_threshold", bytes(struct.pack("f", self.model.pixel_threshold.value.item())))
         # store training set statistics
-        output_model.set_data("image_mean", self.model.image_mean.cpu().numpy().tobytes())
-        output_model.set_data("image_std", self.model.image_std.cpu().numpy().tobytes())
-        output_model.set_data("pixel_mean", self.model.pixel_mean.cpu().numpy().tobytes())
-        output_model.set_data("pixel_std", self.model.pixel_std.cpu().numpy().tobytes())
+        output_model.set_data("image_mean", self.model.training_stats.image_mean.cpu().numpy().tobytes())
+        output_model.set_data("image_std", self.model.training_stats.image_std.cpu().numpy().tobytes())
+        output_model.set_data("pixel_mean", self.model.training_stats.pixel_mean.cpu().numpy().tobytes())
+        output_model.set_data("pixel_std", self.model.training_stats.pixel_std.cpu().numpy().tobytes())
 
-        f1_score = self.model.image_metrics.OptimalF1.compute().item()
+        f1_score = self.model.image_metrics.F1.compute().item()
         output_model.performance = Performance(score=ScoreMetric(name="F1 Score", value=f1_score))
         output_model.precision = [ModelPrecision.FP32]
 
