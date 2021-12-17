@@ -20,15 +20,14 @@ import argparse
 import os
 
 from ote_sdk.configuration.helper import create
-from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.entities.model import ModelEntity
+from ote_sdk.entities.task_environment import TaskEnvironment
 
 from ote_cli.registry import find_and_parse_model_template
 from ote_cli.utils.config import override_parameters
 from ote_cli.utils.importing import get_impl_class
 from ote_cli.utils.io import read_label_schema, read_model
 from ote_cli.utils.parser import gen_params_dict_from_args
-from ote_cli.utils.io import read_label_schema, save_model_data
 
 
 def parse_args():
@@ -75,9 +74,11 @@ def main():
     hyper_parameters = create(hyper_parameters)
 
     # Get classes for Task, ConfigurableParameters and Dataset.
-    if not args.load_weights.endswith(".bin") and not args.load_weights.endswith(".xml"):
+    if not args.load_weights.endswith(".bin") and not args.load_weights.endswith(
+        ".xml"
+    ):
         raise RuntimeError("Only OpenVINO-exported models are supported.")
-    
+
     task_class = get_impl_class(template.entrypoints.openvino)
 
     environment = TaskEnvironment(
@@ -88,14 +89,14 @@ def main():
         ),
         model_template=template,
     )
-    environment.model = read_model(environment.get_model_configuration(), args.load_weights, None)
-    
-    task = task_class(task_environment=environment)
-    
-    deployed_model = ModelEntity(
-        None, environment.get_model_configuration()
+    environment.model = read_model(
+        environment.get_model_configuration(), args.load_weights, None
     )
-    
+
+    task = task_class(task_environment=environment)
+
+    deployed_model = ModelEntity(None, environment.get_model_configuration())
+
     os.makedirs(args.save_model_to, exist_ok=True)
     task.deploy(deployed_model)
     with open(os.path.join(args.save_model_to, "openvino.zip"), "wb") as write_file:
