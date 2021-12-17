@@ -362,8 +362,10 @@ class Evaluator:
         if not isinstance(dataset_params, list):
             dataset_params = [dataset_params]
         self.val_loader = []
-        batch_transform = create_list_of_transforms(self.config.get(
-            'val_transforms_list'), ovino_ir=self.runner.openvino_transform())
+        val_transforms_list = self.config.get('val_transforms_list')
+        # need different transforms when mean_values and scale_values are set when exporting
+        val_transforms_list = self.config.get('openvino_transforms_list', val_transforms_list)
+        batch_transform = create_list_of_transforms(val_transforms_list, ovino_ir=self.runner.openvino_transform())
         for params in dataset_params:
             dataset_type = params.pop('type')
             val_dataset = str_to_class[dataset_type](**params)

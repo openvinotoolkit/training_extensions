@@ -14,7 +14,8 @@ val_transforms_list:
 device: cuda
 num_workers: 4
 use_ctc: true
-#model_path: work_dir/model_checkpoints/accuracy_test_best_model_2021-12-15_12-51-21.pth
+model_path: work_dir/model_checkpoints/accuracy_test_best_model_2021-12-15_12-51-21.pth
+model_url: http://localhost:8000/accuracy_test_best_model_2021-12-15_12-51-21.pth
 vocab_path: vocabs/vocab_gnhk.json
 train:
   batch_size: 4
@@ -59,7 +60,11 @@ eval:
   whitespace: false
 demo:
   transforms_list: []
+openvino_transforms_list:
+  - name: TransformGrayscale
 export:
+  whitespace: false
+  acc_type: label_level_recognition_accuracy
   model_input_names: "actual_input"
   model_output_names: "output"
   scale_values: [127.5]

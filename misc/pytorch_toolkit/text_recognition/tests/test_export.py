@@ -185,5 +185,12 @@ class TestAlphanumeric0016Export(
     'Test case for alphanumeric text recognition config'
 
 
+class TestHandwrittenEnglish0001Export(
+        create_export_test_case_for_monolithic(
+            'configs/hetr.yml',
+            expected_outputs='tests/expected_outputs/handwritten_recognition/hetr.json')):
+    'Test case for handwritten text recognition config'
+
+
 if __name__ == '__main__':
     unittest.main()
