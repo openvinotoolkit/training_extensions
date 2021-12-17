@@ -83,7 +83,6 @@ class LSTMEncoderDecoder(torch.nn.Module):
 
         rnn_out, state = self.rnn_encoder(encoded_features)
         rnn_out, state = self.rnn_decoder(rnn_out, state)
-
         logits = self.fc(rnn_out).permute(1, 0, 2)
         targets = torch.max(logits, dim=2)[1]
         return logits, targets
