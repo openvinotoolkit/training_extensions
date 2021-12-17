@@ -373,8 +373,7 @@ class Trainer:
                                                                           max_len=1 + len(gold_phrase_str.split() if self.whitespace else gold_phrase_str),
                                                                           ignore_end_token=self.config.get('use_ctc'),
                                                                           whitespace=self.whitespace)
-                            for param in self.config.get('datasets')['validate']:
-                                case_sensitive = param.get('case_sensitive', False)
+                            case_sensitive = getattr(loader.dataset, 'case_sensitive', False)
                             if not case_sensitive:
                                 gold_phrase_str = gold_phrase_str.lower()
                                 pred_phrase_str = pred_phrase_str.lower()
