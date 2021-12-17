@@ -60,8 +60,6 @@ eval:
   whitespace: false
 demo:
   transforms_list: []
-openvino_transforms_list:
-  - name: TransformGrayscale
 export:
   whitespace: false
   acc_type: label_level_recognition_accuracy
@@ -77,3 +75,6 @@ export:
     - 1
     - 96
     - 2000
+  openvino_transforms_list:
+    - name: TransformGrayscale
+
