@@ -52,4 +52,21 @@ def extract_export_vars(path):
 def collect_env_vars(work_dir):
     vars = extract_export_vars(f'{work_dir}/venv/bin/activate')
     vars.update({'PATH':f'{work_dir}/venv/bin/:' + os.environ['PATH']})
+    vars.update({'HTTP_PROXY': os.environ['HTTP_PROXY']})
+    vars.update({'HTTPS_PROXY': os.environ['HTTPS_PROXY']})
+    vars.update({'NO_PROXY': os.environ['NO_PROXY']})
     return vars
+
+
+def patch_demo_py(src_path, dst_path):
+    with open(src_path) as read_file:
+        content = [line for line in read_file]
+        replaced = False
+        for i, line in enumerate(content):
+            if 'visualizer = Visualizer(media_type)' in line:
+                content[i] = line.rstrip() + '; visualizer.show = show\n'
+                replaced = True
+        assert replaced
+        content = ['def show(self):\n', '    pass\n\n'] + content
+        with open(dst_path, 'w') as write_file:
+            write_file.write(''.join(content))
