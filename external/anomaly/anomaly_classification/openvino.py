@@ -164,7 +164,7 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
             optimization_parameters (Optional[OptimizationParameters]): Optimization parameters.
 
         Raises:
-            ValueError: [description]
+            ValueError: When the optimization type is not POT, which is the only support type at the moment.
         """
         if optimization_type is not OptimizationType.POT:
             raise ValueError("POT is the only supported optimization type for OpenVINO models")
