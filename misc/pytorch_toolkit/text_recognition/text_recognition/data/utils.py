@@ -65,6 +65,7 @@ class TransformResizePad(BaseTransform):
             res.append(image_raw)
         return res
 
+
 class TransformAlbumentations(BaseTransform):
     def __init__(self, transforms_list):
         super().__init__()
