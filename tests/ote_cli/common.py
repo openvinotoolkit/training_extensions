@@ -52,9 +52,12 @@ def extract_export_vars(path):
 def collect_env_vars(work_dir):
     vars = extract_export_vars(f'{work_dir}/venv/bin/activate')
     vars.update({'PATH':f'{work_dir}/venv/bin/:' + os.environ['PATH']})
-    vars.update({'HTTP_PROXY': os.environ['HTTP_PROXY']})
-    vars.update({'HTTPS_PROXY': os.environ['HTTPS_PROXY']})
-    vars.update({'NO_PROXY': os.environ['NO_PROXY']})
+    if 'HTTP_PROXY' in os.environ:
+        vars.update({'HTTP_PROXY': os.environ['HTTP_PROXY']})
+    if 'HTTPS_PROXY' in os.environ:
+        vars.update({'HTTPS_PROXY': os.environ['HTTPS_PROXY']})
+    if 'NO_PROXY' in os.environ:
+        vars.update({'NO_PROXY': os.environ['NO_PROXY']})
     return vars
 
 
