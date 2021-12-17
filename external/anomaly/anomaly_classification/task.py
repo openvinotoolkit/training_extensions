@@ -29,7 +29,7 @@ from typing import Optional, Union
 
 import torch
 from anomalib.core.model import AnomalyModule
-from anomalib.core.callbacks import NormalizationCallback
+from anomalib.core.callbacks import OutputNormalizationCallback
 from anomalib.models import get_model
 from omegaconf import DictConfig, ListConfig
 from ote_anomalib.callbacks import InferenceCallback, ProgressCallback
@@ -133,7 +133,7 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
         """
         config = self.get_config()
         datamodule = OTEAnomalyDataModule(config=config, dataset=dataset)
-        callbacks = [ProgressCallback(parameters=train_parameters), NormalizationCallback()]
+        callbacks = [ProgressCallback(parameters=train_parameters), OutputNormalizationCallback()]
 
         self.trainer = Trainer(**config.trainer, logger=False, callbacks=callbacks)
         self.trainer.fit(model=self.model, datamodule=datamodule)
@@ -158,10 +158,10 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
         output_model.set_data("threshold", bytes(struct.pack("f", self.model.image_threshold.value.item())))
         output_model.set_data("pixel_threshold", bytes(struct.pack("f", self.model.pixel_threshold.value.item())))
         # store training set statistics
-        output_model.set_data("image_mean", self.model.training_stats.image_mean.cpu().numpy().tobytes())
-        output_model.set_data("image_std", self.model.training_stats.image_std.cpu().numpy().tobytes())
-        output_model.set_data("pixel_mean", self.model.training_stats.pixel_mean.cpu().numpy().tobytes())
-        output_model.set_data("pixel_std", self.model.training_stats.pixel_std.cpu().numpy().tobytes())
+        output_model.set_data("image_mean", self.model.training_distribution.image_mean.cpu().numpy().tobytes())
+        output_model.set_data("image_std", self.model.training_distribution.image_std.cpu().numpy().tobytes())
+        output_model.set_data("pixel_mean", self.model.training_distribution.pixel_mean.cpu().numpy().tobytes())
+        output_model.set_data("pixel_std", self.model.training_distribution.pixel_std.cpu().numpy().tobytes())
 
         f1_score = self.model.image_metrics.F1.compute().item()
         output_model.performance = Performance(score=ScoreMetric(name="F1 Score", value=f1_score))
@@ -190,7 +190,7 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
         # Callbacks.
         progress = ProgressCallback(parameters=inference_parameters)
         inference = InferenceCallback(dataset, self.labels)
-        standardize = NormalizationCallback()
+        standardize = OutputNormalizationCallback()
         callbacks = [progress, standardize, inference]
 
         self.trainer = Trainer(**config.trainer, logger=False, callbacks=callbacks)
