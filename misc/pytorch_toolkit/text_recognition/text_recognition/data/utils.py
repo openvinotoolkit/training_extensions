@@ -99,10 +99,10 @@ class TransformResizeNormalizePad(BaseTransform):
             image_raw = cv.resize(image_raw, (target_width, self.target_height), interpolation=cv.INTER_AREA)
             resized_imgs.append(image_raw)
 
-        # get max img_w
+        # get max img width in a batch
         max_img_w = max(img.shape[1] for img in resized_imgs)
 
-        # normalize and pad
+        # normalize to [-1.0, 1.0] and pad
         res = []
         self.max_size = (1, self.target_height, max_img_w)
         for img in resized_imgs:
