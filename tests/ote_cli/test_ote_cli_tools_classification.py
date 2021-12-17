@@ -38,6 +38,8 @@ ote_dir = os.getcwd()
 templates = Registry('external').filter(task_type='CLASSIFICATION').templates
 templates_ids = [template.model_template_id for template in templates]
 
+templates = [templates[0]]
+templates_ids = [templates_ids[0]]
 
 @pytest.mark.parametrize("template", templates, ids=templates_ids)
 def test_ote_train(template):
