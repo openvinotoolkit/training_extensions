@@ -127,7 +127,7 @@ pip install -e $ANOMALIB_REPO || exit 1
 pip install -r $ANOMALIB_REPO/requirements/requirements.txt -c ${CONSTRAINTS_FILE} || exit 1
 
 pip install -e . -c ${CONSTRAINTS_FILE} || exit 1
-ANOMALIB_OTE_DIR=`realpath .`
+ANOMALIB_OTE_DIR=$(realpath .)
 echo "export ANOMALIB_OTE_DIR=${ANOMALIB_OTE_DIR}" >> ${venv_dir}/bin/activate
 
 # Install OpenVINO requirements
