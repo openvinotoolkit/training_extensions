@@ -397,34 +397,21 @@ class TestDatasetItemEntity:
         dataset_item = DatasetItemEntity(media, annotation_scene)
         # Checking array returned by "roi_numpy" method with non-specified "roi" parameter for DatasetItemEntity
         # "roi" attribute is "None"
-        try:
-            assert (dataset_item.roi_numpy() == media.numpy).all()
-        except AttributeError:
-            raise AssertionError(
-                "Unexpected value returned by roi_numpy method for DatasetItem with non-specified roi"
-            )
+        assert np.array_equal(dataset_item.roi_numpy(), media.numpy)
         # Checking array returned by "roi_numpy" method with specified Rectangle-shape "roi" parameter
         rectangle_roi = Annotation(
             Rectangle(x1=0.2, y1=0.1, x2=0.8, y2=0.9), [ScoredLabel(roi_label)]
         )
-        try:
-            assert (
-                dataset_item.roi_numpy(rectangle_roi) == media.numpy[1:9, 3:13]
-            ).all()
-        except AttributeError:
-            raise AssertionError(
-                "Unexpected value returned by roi_numpy method for DatasetItem with Rectangle roi"
-            )
+        assert np.array_equal(
+            dataset_item.roi_numpy(rectangle_roi), media.numpy[1:9, 3:13]
+        )
         # Checking array returned by "roi_numpy" method with specified Ellipse-shape "roi" parameter
         ellipse_roi = Annotation(
             Ellipse(x1=0.1, y1=0.0, x2=0.9, y2=0.8), [ScoredLabel(roi_label)]
         )
-        try:
-            assert (dataset_item.roi_numpy(ellipse_roi) == media.numpy[0:8, 2:14]).all()
-        except AttributeError:
-            raise AssertionError(
-                "Unexpected value returned by roi_numpy method for DatasetItem with Ellipse roi"
-            )
+        assert np.array_equal(
+            dataset_item.roi_numpy(ellipse_roi), media.numpy[0:8, 2:14]
+        )
         # Checking array returned by "roi_numpy" method with specified Polygon-shape "roi" parameter
         polygon_roi = Annotation(
             shape=Polygon(
@@ -438,26 +425,18 @@ class TestDatasetItemEntity:
             ),
             labels=[],
         )
-        try:
-            assert (dataset_item.roi_numpy(polygon_roi) == media.numpy[4:8, 5:13]).all()
-        except AttributeError:
-            raise AssertionError(
-                "Unexpected value returned by roi_numpy method for DatasetItem with Polygon roi"
-            )
+        assert np.array_equal(
+            dataset_item.roi_numpy(polygon_roi), media.numpy[4:8, 5:13]
+        )
         # Checking array returned by "roi_numpy" method with not specified "roi" parameter for DatasetItemEntity with
         # "roi" attribute
         roi_specified_dataset_item = DatasetItemEntity(
             media, annotation_scene, DatasetItemParameters().roi()
         )
         roi_specified_dataset_item.roi_numpy()
-        try:
-            assert (
-                roi_specified_dataset_item.roi_numpy() == media.numpy[1:9, 2:14]
-            ).all()
-        except AttributeError:
-            raise AssertionError(
-                "Unexpected value returned by roi_numpy method for DatasetItem with non-specified roi"
-            )
+        assert np.array_equal(
+            roi_specified_dataset_item.roi_numpy(), media.numpy[1:9, 2:14]
+        )
 
     @pytest.mark.priority_medium
     @pytest.mark.component
@@ -480,25 +459,14 @@ class TestDatasetItemEntity:
         """
         # Checking array returned by numpy property for DatasetItemEntity with "roi" attribute is "None"
         none_roi_dataset_item = DatasetItemParameters().default_values_dataset_item()
-        try:
-            assert (
-                none_roi_dataset_item.numpy == none_roi_dataset_item.roi_numpy()
-            ).all()
-        except AttributeError:
-            raise AssertionError(
-                "Unexpected value returned by numpy property for DatasetItem with non-specified roi"
-            )
+        assert np.array_equal(
+            none_roi_dataset_item.numpy, none_roi_dataset_item.roi_numpy()
+        )
         # Checking array returned by numpy property for DatasetItemEntity with specified "roi" attribute
         roi_specified_dataset_item = DatasetItemParameters().dataset_item()
-        try:
-            assert (
-                roi_specified_dataset_item.numpy
-                == roi_specified_dataset_item.roi_numpy()
-            ).all()
-        except AttributeError:
-            raise AssertionError(
-                "Unexpected value returned by numpy property for DatasetItem with specified roi"
-            )
+        assert np.array_equal(
+            roi_specified_dataset_item.numpy, roi_specified_dataset_item.roi_numpy()
+        )
 
     @pytest.mark.priority_medium
     @pytest.mark.component
@@ -915,7 +883,7 @@ class TestDatasetItemEntity:
             dataset_item._DatasetItemEntity__roi_lock
             != copy_dataset._DatasetItemEntity__roi_lock
         )
-        assert (dataset_item.media.numpy == copy_dataset.media.numpy).all()
+        assert np.array_equal(dataset_item.media.numpy, copy_dataset.media.numpy)
         assert (
             dataset_item.annotation_scene.annotations
             == copy_dataset.annotation_scene.annotations
