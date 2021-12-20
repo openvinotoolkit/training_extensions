@@ -24,39 +24,27 @@ from ote_sdk.entities.model import ModelEntity
 from ote_sdk.entities.task_environment import TaskEnvironment
 
 from ote_cli.registry import find_and_parse_model_template
-from ote_cli.utils.config import override_parameters
 from ote_cli.utils.importing import get_impl_class
 from ote_cli.utils.io import read_label_schema, read_model
-from ote_cli.utils.parser import gen_params_dict_from_args
 
 
 def parse_args():
     """
     Parses command line arguments.
     """
-
-    pre_parser = argparse.ArgumentParser(add_help=False)
-    pre_parser.add_argument("template")
-    parsed, _ = pre_parser.parse_known_args()
-    # Load template.yaml file.
-    template = find_and_parse_model_template(parsed.template)
-    # Get hyper parameters schema.
-    hyper_parameters = template.hyper_parameters.data
-    assert hyper_parameters
-
     parser = argparse.ArgumentParser()
     parser.add_argument("template")
     parser.add_argument(
         "--load-weights",
         required=True,
-        help="Load only weights from previously saved checkpoint",
+        help="Load only weights from previously saved checkpoint.",
     )
     parser.add_argument(
         "--save-model-to",
-        help="Path to zip file where ",
+        help="Location where openvino.zip will be stored.",
     )
 
-    return parser.parse_args(), template, hyper_parameters
+    return parser.parse_args()
 
 
 def main():
@@ -64,14 +52,15 @@ def main():
     Main function that is used for model evaluation.
     """
 
-    # Dynamically create an argument parser based on override parameters.
-    args, template, hyper_parameters = parse_args()
-    # Get new values from user's input.
-    updated_hyper_parameters = gen_params_dict_from_args(args)
-    # Override overridden parameters by user's values.
-    override_parameters(updated_hyper_parameters, hyper_parameters)
+    # Parses input arguments.
+    args = parse_args()
 
-    hyper_parameters = create(hyper_parameters)
+    # Reads model template file.
+    template = find_and_parse_model_template(args.template)
+
+    # Get hyper parameters schema.
+    hyper_parameters = template.hyper_parameters.data
+    assert hyper_parameters
 
     # Get classes for Task, ConfigurableParameters and Dataset.
     if not args.load_weights.endswith(".bin") and not args.load_weights.endswith(
@@ -83,7 +72,7 @@ def main():
 
     environment = TaskEnvironment(
         model=None,
-        hyper_parameters=hyper_parameters,
+        hyper_parameters=create(hyper_parameters),
         label_schema=read_label_schema(
             os.path.join(os.path.dirname(args.load_weights), "label_schema.json")
         ),
