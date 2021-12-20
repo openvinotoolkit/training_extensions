@@ -266,6 +266,29 @@
                            pre-processing and post-processing.
    ```
 
+### ote deploy - create openvino.zip with self-contained python package, demo application and exported model
+   Let's have a look at `ote deploy` help. These parameters are the same for all model templates.
+   ```
+   ote deploy ./external/mmdetection/configs/ote/custom-object-detection/gen3_mobilenetV2_ATSS/template.yaml --help
+   ```
+
+   Sample output:
+   ```
+   usage: ote deploy [-h] --load-weights LOAD_WEIGHTS
+                     [--save-model-to SAVE_MODEL_TO]
+                     template
+   
+   positional arguments:
+     template
+   
+   optional arguments:
+     -h, --help            show this help message and exit
+     --load-weights LOAD_WEIGHTS
+                           Load only weights from previously saved checkpoint.
+     --save-model-to SAVE_MODEL_TO
+                           Location where openvino.zip will be stored.
+   ```
+
 ## OTE Jupyter Nootebooks
 One can use Jupyter notebooks or OTE CLI tools to start working with models:
 ```
