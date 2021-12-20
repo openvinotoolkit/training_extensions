@@ -46,7 +46,7 @@ from ote_sdk.tests.constants.requirements import Requirements
 class DatasetItemParameters:
     @staticmethod
     def generate_random_image() -> Image:
-        image = Image(data=np.random.uniform(low=0.0, high=255.0, size=(10, 16, 3)))
+        image = Image(data=np.random.randint(low=0, high=255, size=(10, 16, 3)))
         return image
 
     @staticmethod
@@ -137,7 +137,10 @@ class DatasetItemParameters:
 
     def annotations_entity(self) -> AnnotationSceneEntity:
         return AnnotationSceneEntity(
-            annotations=self.annotations(), kind=AnnotationSceneKind.ANNOTATION
+            annotations=self.annotations(),
+            kind=AnnotationSceneKind.ANNOTATION,
+            creation_date=datetime.datetime(year=2021, month=12, day=19),
+            id=ID("annotation_entity_1"),
         )
 
     def default_values_dataset_item(self) -> DatasetItemEntity:
@@ -202,7 +205,7 @@ class TestDatasetItemEntity:
         other_annotation_to_add = Annotation(
             shape=Rectangle(x1=0.2, y1=0.3, x2=0.8, y2=0.9),
             labels=[ScoredLabel(label=labels_to_add[1])],
-            id=ID("added_annotation_1"),
+            id=ID("added_annotation_2"),
         )
         return [annotation_to_add, other_annotation_to_add]
 
@@ -210,7 +213,7 @@ class TestDatasetItemEntity:
     def metadata_item_with_model() -> MetadataItemEntity:
         data = TensorEntity(
             name="appended_metadata_with_model",
-            numpy=np.random.uniform(low=0.0, high=255.0, size=(10, 15, 3)),
+            numpy=np.random.randint(low=0, high=255, size=(10, 15, 3)),
         )
         configuration = ModelConfiguration(
             configurable_parameters=ConfigurableParameters(header="Test Header"),
@@ -400,14 +403,18 @@ class TestDatasetItemEntity:
         assert np.array_equal(dataset_item.roi_numpy(), media.numpy)
         # Checking array returned by "roi_numpy" method with specified Rectangle-shape "roi" parameter
         rectangle_roi = Annotation(
-            Rectangle(x1=0.2, y1=0.1, x2=0.8, y2=0.9), [ScoredLabel(roi_label)]
+            Rectangle(x1=0.2, y1=0.1, x2=0.8, y2=0.9),
+            [ScoredLabel(roi_label)],
+            ID("rectangle_roi"),
         )
         assert np.array_equal(
             dataset_item.roi_numpy(rectangle_roi), media.numpy[1:9, 3:13]
         )
         # Checking array returned by "roi_numpy" method with specified Ellipse-shape "roi" parameter
         ellipse_roi = Annotation(
-            Ellipse(x1=0.1, y1=0.0, x2=0.9, y2=0.8), [ScoredLabel(roi_label)]
+            Ellipse(x1=0.1, y1=0.0, x2=0.9, y2=0.8),
+            [ScoredLabel(roi_label)],
+            ID("ellipse_roi"),
         )
         assert np.array_equal(
             dataset_item.roi_numpy(ellipse_roi), media.numpy[0:8, 2:14]
@@ -424,6 +431,7 @@ class TestDatasetItemEntity:
                 ]
             ),
             labels=[],
+            id=ID("polygon_roi"),
         )
         assert np.array_equal(
             dataset_item.roi_numpy(polygon_roi), media.numpy[4:8, 5:13]
