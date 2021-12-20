@@ -19,7 +19,7 @@ from ote_sdk.entities.tensor import TensorEntity
 from ote_sdk.tests.constants.ote_sdk_components import OteSdkComponent
 from ote_sdk.tests.constants.requirements import Requirements
 
-RANDOM_NUMPY = np.random.uniform(low=0.0, high=255.0, size=(16, 32, 3))
+RANDOM_NUMPY = np.random.randint(low=0, high=255, size=(16, 32, 3))
 
 
 @pytest.mark.components(OteSdkComponent.OTE_SDK)

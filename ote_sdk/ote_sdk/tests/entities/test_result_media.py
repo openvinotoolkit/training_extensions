@@ -31,7 +31,7 @@ from ote_sdk.entities.shapes.rectangle import Rectangle
 from ote_sdk.tests.constants.ote_sdk_components import OteSdkComponent
 from ote_sdk.tests.constants.requirements import Requirements
 
-RANDOM_IMAGE = np.random.uniform(low=0.0, high=255.0, size=(32, 64, 3))
+RANDOM_IMAGE = np.random.randint(low=0, high=255, size=(32, 64, 3))
 
 
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
