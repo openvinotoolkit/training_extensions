@@ -29,7 +29,7 @@ from typing import Optional, Union
 
 import torch
 from anomalib.core.model import AnomalyModule
-from anomalib.core.callbacks import OutputNormalizationCallback
+from anomalib.core.callbacks import AnomalyScoreNormalizationCallback
 from anomalib.models import get_model
 from omegaconf import DictConfig, ListConfig
 from ote_anomalib.callbacks import InferenceCallback, ProgressCallback
@@ -133,7 +133,7 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
         """
         config = self.get_config()
         datamodule = OTEAnomalyDataModule(config=config, dataset=dataset)
-        callbacks = [ProgressCallback(parameters=train_parameters), OutputNormalizationCallback()]
+        callbacks = [ProgressCallback(parameters=train_parameters), AnomalyScoreNormalizationCallback()]
 
         self.trainer = Trainer(**config.trainer, logger=False, callbacks=callbacks)
         self.trainer.fit(model=self.model, datamodule=datamodule)
@@ -190,7 +190,7 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
         # Callbacks.
         progress = ProgressCallback(parameters=inference_parameters)
         inference = InferenceCallback(dataset, self.labels)
-        standardize = OutputNormalizationCallback()
+        standardize = AnomalyScoreNormalizationCallback()
         callbacks = [progress, standardize, inference]
 
         self.trainer = Trainer(**config.trainer, logger=False, callbacks=callbacks)
