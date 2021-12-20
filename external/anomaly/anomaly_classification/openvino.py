@@ -47,7 +47,7 @@ from ote_sdk.entities.inference_parameters import (
     InferenceParameters,
     default_progress_callback,
 )
-from ote_sdk.entities.model import ModelEntity, ModelStatus
+from ote_sdk.entities.model import ModelEntity
 from ote_sdk.entities.optimization_parameters import OptimizationParameters
 from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.task_environment import TaskEnvironment
@@ -130,6 +130,15 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
         return config
 
     def infer(self, dataset: DatasetEntity, inference_parameters: InferenceParameters) -> DatasetEntity:
+        """Perform Inference.
+
+        Args:
+            dataset (DatasetEntity): Inference dataset
+            inference_parameters (InferenceParameters): Inference parameters.
+
+        Returns:
+            DatasetEntity: Output dataset storing inference predictions.
+        """
         if self.task_environment.model is None:
             raise Exception("task_environment.model is None. Cannot access threshold to calculate labels.")
 
@@ -153,6 +162,12 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
         return dataset
 
     def evaluate(self, output_resultset: ResultSetEntity, evaluation_metric: Optional[str] = None):
+        """Evaluate the performance of the model.
+
+        Args:
+            output_resultset (ResultSetEntity): Result set storing ground truth and predicted dataset.
+            evaluation_metric (Optional[str], optional): Evaluation metric. Defaults to None.
+        """
         output_resultset.performance = MetricsHelper.compute_f_measure(output_resultset).get_performance()
 
     def optimize(
@@ -162,6 +177,17 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
         output_model: ModelEntity,
         optimization_parameters: Optional[OptimizationParameters],
     ):
+        """Optimize the model.
+
+        Args:
+            optimization_type (OptimizationType): Type of optimization [POT or NNCF]
+            dataset (DatasetEntity): Input Dataset.
+            output_model (ModelEntity): Output model.
+            optimization_parameters (Optional[OptimizationParameters]): Optimization parameters.
+
+        Raises:
+            ValueError: When the optimization type is not POT, which is the only support type at the moment.
+        """
         if optimization_type is not OptimizationType.POT:
             raise ValueError("POT is the only supported optimization type for OpenVINO models")
 
@@ -183,7 +209,6 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
 
             if get_nodes_by_type(model, ["FakeQuantize"]):
                 logger.warning("Model is already optimized by POT")
-                output_model.model_status = ModelStatus.FAILED
                 return
 
         hparams = self.task_environment.get_hyper_parameters()
@@ -210,7 +235,7 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
             self.__load_weights(path=os.path.join(tempdir, "model.bin"), output_model=output_model, key="openvino.bin")
 
         output_model.set_data("label_schema.json", label_schema_to_bytes(self.task_environment.label_schema))
-        output_model.model_status = ModelStatus.SUCCESS
+        output_model.set_data("threshold", self.task_environment.model.get_data("threshold"))
 
         self.task_environment.model = output_model
         self.inferencer = self.load_inferencer()

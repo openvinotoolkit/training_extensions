@@ -21,3 +21,11 @@ data/*
 
 *.tar.gz
 *.zip
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# python version
+.python-version

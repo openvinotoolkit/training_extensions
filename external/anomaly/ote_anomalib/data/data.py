@@ -66,9 +66,12 @@ class OTEAnomalyDataset(Dataset):
     def __init__(self, config: Union[DictConfig, ListConfig], dataset: DatasetEntity):
         self.config = config
         self.dataset = dataset
-        transform_config = self.config.transform if "transform" in self.config.keys() else None
-        image_size = tuple(self.config.dataset.image_size)
-        self.pre_processor = PreProcessor(config=transform_config, image_size=image_size)
+
+        self.pre_processor = PreProcessor(
+            config=config.transform if "transform" in config.keys() else None,
+            image_size=tuple(config.dataset.image_size),
+            to_tensor=True,
+        )
 
     def __len__(self) -> int:
         return len(self.dataset)
@@ -99,7 +102,7 @@ class OTEAnomalyDataModule(LightningDataModule):
 
         >>> dataset_generator = OTEAnomalyDatasetGenerator()
         >>> dataset = dataset_generator.generate()
-        >>> data_module = AnomalyDataModule(config=config, dataset=dataset)
+        >>> data_module = OTEAnomalyDataModule(config=config, dataset=dataset)
         >>> i, data = next(enumerate(data_module.train_dataloader()))
         >>> data["image"].shape
         torch.Size([32, 3, 256, 256])
@@ -109,6 +112,7 @@ class OTEAnomalyDataModule(LightningDataModule):
         super().__init__()
         self.config = config
         self.dataset = dataset
+
         self.train_ote_dataset: DatasetEntity
         self.val_ote_dataset: DatasetEntity
         self.test_ote_dataset: DatasetEntity

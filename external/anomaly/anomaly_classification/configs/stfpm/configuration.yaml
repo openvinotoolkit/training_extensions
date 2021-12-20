@@ -69,7 +69,7 @@ model:
         operator: AND
         rules: []
         type: UI_RULES
-      value: image_roc_auc
+      value: image_AUROC
       visible_in_ui: true
       warning: null
     type: PARAMETER_GROUP

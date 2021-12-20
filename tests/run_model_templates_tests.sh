@@ -7,4 +7,14 @@ echo ""
 echo ""
 
 export PYTHONPATH=${PYTHONPATH}:`pwd`
-pytest tests/ote_cli/ -v --durations=0
+pytest tests/ote_cli/ -v --durations=0 || exit 1
+deactivate
+echo ""
+echo ""
+
+cd external/anomaly
+rm -rf /tmp/ote-anomaly
+bash ./init_venv.sh /tmp/ote-anomaly
+. /tmp/ote-anomaly/bin/activate
+pip install pytest 
+pytest tests/ -v || exit 1
