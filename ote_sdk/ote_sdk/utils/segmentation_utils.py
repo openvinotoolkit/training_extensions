@@ -17,7 +17,8 @@ This module implements segmentation related utilities
 # in the License.
 
 import warnings
-from typing import List
+from copy import copy
+from typing import List, Optional, Sequence, Tuple, cast
 
 import cv2
 import numpy as np
@@ -142,6 +143,51 @@ def create_hard_prediction_from_soft_prediction(
     return hard_prediction
 
 
+Contour = List[Tuple[float, float]]
+
+
+def get_subcontours(contour: Contour) -> List[Contour]:
+    """
+    Splits contour into subcontours that do not have self intersections.
+    """
+
+    ContourInternal = List[Optional[Tuple[float, float]]]
+
+    def find_loops(points: ContourInternal) -> List[Sequence[int]]:
+        """
+        For each consecutive pair of equivalent rows in the input matrix
+        returns their indices.
+        """
+        _, inverse, count = np.unique(
+            points, axis=0, return_inverse=True, return_counts=True
+        )
+        duplicates = np.where(count > 1)[0]
+        indices = []
+        for x in duplicates:
+            y = np.nonzero(inverse == x)[0]
+            for i, _ in enumerate(y[:-1]):
+                indices.append(y[i : i + 2])
+        return indices
+
+    base_contour = cast(ContourInternal, copy(contour))
+
+    # Make sure that contour is closed.
+    if not np.array_equal(base_contour[0], base_contour[-1]):
+        base_contour.append(base_contour[0])
+
+    subcontours: List[Contour] = []
+    loops = sorted(find_loops(base_contour), key=lambda x: x[0], reverse=True)
+    for loop in loops:
+        i, j = loop
+        subcontour = base_contour[i:j]
+        subcontour = list(x for x in subcontour if x is not None)
+        subcontours.append(cast(Contour, subcontour))
+        base_contour[i:j] = [None] * (j - i)
+
+    subcontours = [i for i in subcontours if len(i) > 2]
+    return subcontours
+
+
 @timeit
 def create_annotation_from_segmentation_map(
     hard_prediction: np.ndarray, soft_prediction: np.ndarray, label_map: dict
@@ -184,27 +230,34 @@ def create_annotation_from_segmentation_map(
         # Contour retrieval mode CCOMP (Connected components) creates a two-level
         # hierarchy of contours
         contours, hierarchies = cv2.findContours(
-            label_index_map, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE
+            label_index_map, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_NONE
         )
 
         if hierarchies is not None:
             for contour, hierarchy in zip(contours, hierarchies[0]):
                 if hierarchy[3] == -1:
                     # In this case a contour does not represent a hole
-                    points = [
-                        Point(x=point[0][0] / width, y=point[0][1] / height)
-                        for point in contour
-                    ]
+                    contour = list((point[0][0], point[0][1]) for point in contour)
 
-                    # compute probability of the shape
-                    mask = np.zeros(hard_prediction.shape, dtype=np.uint8)
-                    cv2.drawContours(
-                        mask, contour, contourIdx=-1, color=1, thickness=-1
-                    )
-                    probability = cv2.mean(current_label_soft_prediction, mask)[0]
+                    # Split contour into subcontours that do not have self intersections.
+                    subcontours = get_subcontours(contour)
 
-                    if len(list(contour)) > 2:
+                    for subcontour in subcontours:
+                        # compute probability of the shape
+                        mask = np.zeros(hard_prediction.shape, dtype=np.uint8)
+                        cv2.drawContours(
+                            mask,
+                            np.asarray([[[x, y]] for x, y in subcontour]),
+                            contourIdx=-1,
+                            color=1,
+                            thickness=-1,
+                        )
+                        probability = cv2.mean(current_label_soft_prediction, mask)[0]
+
                         # convert the list of points to a closed polygon
+                        points = [
+                            Point(x=x / width, y=y / height) for x, y in subcontour
+                        ]
                         polygon = Polygon(points=points)
 
                         if polygon.get_area() > 0:
@@ -224,17 +277,6 @@ def create_annotation_from_segmentation_map(
                                 "will be removed.",
                                 UserWarning,
                             )
-                    else:
-                        # Contour is a single point or a free-standing line
-                        # Give a warning if one dimensional elements will be deleted
-                        # from the annotation
-                        warnings.warn(
-                            "The geometry of the segmentation map you are converting "
-                            "is not fully supported. Points or lines with a linewidth "
-                            "of 1 pixel will be removed.",
-                            UserWarning,
-                        )
-
                 else:
                     # If contour hierarchy[3] != -1 then contour has a parent and
                     # therefore is a hole
