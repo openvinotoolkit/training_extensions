@@ -35,7 +35,7 @@ setup(
     name="OTE SDK",
     version="1.0",
     packages=find_packages(include=["ote_sdk", "ote_sdk.*"]),
-    package_data={"ote_sdk": ["py.typed"]},
+    package_data={"ote_sdk": ["py.typed", "usecases/exportable_code/demo/*"]},
     url="",
     license="Copyright (c) Intel - All Rights Reserved. "
     "Unauthorized copying of any part of the software via any medium is strictly prohibited. "
