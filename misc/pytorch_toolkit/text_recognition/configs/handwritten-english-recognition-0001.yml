@@ -1,5 +1,5 @@
 backbone_config:
-  type: cnn
+  type: hetr
   output_channels: 80
 head:
   type: LSTMEncoderDecoder
