@@ -40,18 +40,17 @@ from compression.pipeline.initializer import create_pipeline
 from omegaconf import ListConfig
 from omegaconf.dictconfig import DictConfig
 from ote_anomalib.config import get_anomalib_config
-from ote_anomalib.data import LabelNames
 from ote_anomalib.exportable_code import AnomalyClassification
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.inference_parameters import (
     InferenceParameters,
     default_progress_callback,
 )
-from ote_sdk.entities.model import ModelEntity
+from ote_sdk.entities.model import ModelEntity, ModelStatus
 from ote_sdk.entities.optimization_parameters import OptimizationParameters
 from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.task_environment import TaskEnvironment
-from ote_sdk.serialization.label_mapper import label_schema_to_bytes
+from ote_sdk.serialization.label_mapper import LabelSchemaMapper, label_schema_to_bytes
 from ote_sdk.usecases.evaluation.metrics_helper import MetricsHelper
 from ote_sdk.usecases.exportable_code import demo
 from ote_sdk.usecases.exportable_code.prediction_to_annotation_converter import (
@@ -110,12 +109,7 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
         self.task_environment = task_environment
         self.config = self.get_config()
         self.inferencer = self.load_inferencer()
-        labels = task_environment.get_labels()
-        self.normal_label = [label for label in labels if label.name == LabelNames.normal][0]
-        self.anomalous_label = [label for label in labels if label.name == LabelNames.anomalous][0]
-        self.annotation_converter = AnomalyClassificationToAnnotationConverter(
-            [self.normal_label, self.anomalous_label]
-        )
+        self.annotation_converter = AnomalyClassificationToAnnotationConverter(self.task_environment.label_schema)
 
     def get_config(self) -> Union[DictConfig, ListConfig]:
         """
@@ -236,6 +230,7 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
 
         output_model.set_data("label_schema.json", label_schema_to_bytes(self.task_environment.label_schema))
         output_model.set_data("threshold", self.task_environment.model.get_data("threshold"))
+        output_model.model_status = ModelStatus.SUCCESS
 
         self.task_environment.model = output_model
         self.inferencer = self.load_inferencer()
@@ -287,7 +282,7 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
         # cast is used to placate mypy
         configuration = {
             "threshold": cast(float, struct.unpack("f", (self.task_environment.model.get_data("threshold")))[0]),
-            "labels": [self.normal_label.name, self.anomalous_label.name],
+            "labels": LabelSchemaMapper.forward(self.task_environment.label_schema),
         }
         if "transforms" not in self.config.keys():
             configuration["mean_values"] = list(np.array([0.485, 0.456, 0.406]) * 255)

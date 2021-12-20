@@ -20,6 +20,7 @@ import argparse
 import sys
 
 from .demo import main as ote_demo
+from .deploy import main as ote_deploy
 from .eval import main as ote_eval
 from .export import main as ote_export
 from .find import main as ote_find
@@ -27,6 +28,7 @@ from .train import main as ote_train
 
 __all__ = [
     "ote_demo",
+    "ote_deploy",
     "ote_eval",
     "ote_export",
     "ote_find",
@@ -49,6 +51,7 @@ def main():
     """
     This function is a single entry point for all OTE CLI related operations:
       - demo
+      - deploy
       - eval
       - export
       - find

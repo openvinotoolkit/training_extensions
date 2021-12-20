@@ -20,7 +20,7 @@ import pytest
 
 from ote_cli.registry import Registry
 
-from tests.ote_cli.common import collect_env_vars, get_some_vars, create_venv
+from tests.ote_cli.common import collect_env_vars, get_some_vars, create_venv, patch_demo_py
 
 
 args = {
@@ -99,6 +99,7 @@ def test_ote_eval(template):
     assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
     assert os.path.exists(f'{template_work_dir}/trained_{template.model_template_id}/performance.json')
     
+
 @pytest.mark.parametrize("template", templates, ids=templates_ids)
 def test_ote_eval_openvino(template):
     work_dir, template_work_dir, _ = get_some_vars(template, root)
@@ -153,6 +154,36 @@ def test_ote_demo_openvino(template):
                     '-1']
     assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
 
+
+@pytest.mark.parametrize("template", templates, ids=templates_ids)
+def test_ote_deploy_openvino(template):
+    work_dir, template_work_dir, _ = get_some_vars(template, root)
+    deployment_dir = f'{template_work_dir}/deployed_{template.model_template_id}'
+    command_line = ['ote',
+                    'deploy',
+                    template.model_template_id,
+                    '--load-weights',
+                    f'{template_work_dir}/exported_{template.model_template_id}/openvino.xml',
+                    f'--save-model-to',
+                    deployment_dir]
+    assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
+    assert run(['unzip', 'openvino.zip'],
+               cwd=deployment_dir).returncode == 0
+    assert run(['python3', '-m', 'venv', 'venv'],
+               cwd=os.path.join(deployment_dir, 'python')).returncode == 0
+    assert run(['python3', '-m', 'pip', 'install', 'wheel'],
+               cwd=os.path.join(deployment_dir, 'python'),
+               env=collect_env_vars(os.path.join(deployment_dir, 'python'))).returncode == 0
+    assert run(['python3', '-m', 'pip', 'install', 'demo_package-0.0-py3-none-any.whl'],
+               cwd=os.path.join(deployment_dir, 'python'),
+               env=collect_env_vars(os.path.join(deployment_dir, 'python'))).returncode == 0
+    patch_demo_py(os.path.join(deployment_dir, 'python', 'demo.py'),
+                  os.path.join(deployment_dir, 'python', 'demo_patched.py'))
+
+    assert run(['python3', 'demo_patched.py', '-m', '../model/model.xml', '-i', f'{os.path.join(ote_dir, args["--test-data-roots"])}'],
+               cwd=os.path.join(deployment_dir, 'python'),
+               env=collect_env_vars(os.path.join(deployment_dir, 'python'))).returncode == 0
+    
 
 def test_notebook():
     work_dir = os.path.join(root, 'DETECTION')

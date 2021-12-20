@@ -227,6 +227,7 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
         with open(xml_file, "rb") as file:
             output_model.set_data("openvino.xml", file.read())
         output_model.set_data("label_schema.json", label_schema_to_bytes(self.task_environment.label_schema))
+        output_model.set_data("threshold", bytes(struct.pack("f", self.model.threshold.item())))
 
     @staticmethod
     def _is_docker() -> bool:
