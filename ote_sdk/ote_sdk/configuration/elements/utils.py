@@ -183,9 +183,9 @@ def convert_string_to_id(id_string: Optional[Union[str, ID]]) -> ID:
 
 
 def attr_strict_int_validator(
-        instance: ParameterGroup,  # pylint: disable=unused-argument
-        attribute: Attribute,
-        value: int
+    instance: ParameterGroup,  # pylint: disable=unused-argument
+    attribute: Attribute,
+    value: int,
 ) -> None:
     """
     Validates that the value set for an attribute is an integer.
@@ -222,9 +222,9 @@ def _validate_and_convert_float(value: float) -> Optional[float]:
 
 
 def attr_strict_float_on_setattr(
-        instance: ParameterGroup,  # pylint: disable=unused-argument
-        attribute: Attribute,
-        value: float
+    instance: ParameterGroup,  # pylint: disable=unused-argument
+    attribute: Attribute,
+    value: float,
 ) -> float:
     """
     Validate that the value set for an attribute is a float, or a number that can be

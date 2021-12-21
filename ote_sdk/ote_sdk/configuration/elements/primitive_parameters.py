@@ -41,13 +41,13 @@ from .metadata_keys import (
     WARNING,
 )
 from .utils import (
+    attr_strict_float_converter,
+    attr_strict_float_on_setattr,
+    attr_strict_int_validator,
     construct_attr_enum_selectable_converter,
     construct_attr_enum_selectable_onsetattr,
     construct_attr_selectable_validator,
     construct_attr_value_validator,
-    attr_strict_int_validator,
-    attr_strict_float_converter,
-    attr_strict_float_on_setattr
 )
 
 # pylint:disable=too-many-arguments
