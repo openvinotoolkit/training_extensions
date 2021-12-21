@@ -31,10 +31,10 @@ class AnomalyClassification(SegmentationModel):
     def parameters(cls):
         """Dictionary containing model parameters."""
         parameters = super().parameters()
-        parameters["resize_type"].update_default_value("crop")
+        parameters["resize_type"].update_default_value("standard")
         parameters.update(
             {
-                "threshold": NumericalValue(default_value=0.2, description="Threshold value to locate anomaly"),
+                "threshold": NumericalValue(default_value=20, description="Threshold value to locate anomaly"),
             }
         )
 

@@ -319,7 +319,7 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
             copytree(os.path.join(work_dir, name_of_package), os.path.join(tempdir, name_of_package))
             config_path = os.path.join(tempdir, name_of_package, "config.json")
             with open(config_path, "w", encoding="utf-8") as file:
-                json.dump(parameters, file)
+                json.dump(parameters, file, ensure_ascii=False, indent=4)
 
             copyfile(inspect.getfile(AnomalyClassification), os.path.join(tempdir, name_of_package, "model.py"))
 
