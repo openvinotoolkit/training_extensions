@@ -36,7 +36,9 @@ from ote_sdk.tests.constants.ote_sdk_components import OteSdkComponent
 from ote_sdk.tests.constants.requirements import Requirements
 from ote_sdk.utils.shape_drawer import DrawerEntity, Helpers, ShapeDrawer
 
-RANDOM_IMAGE = np.random.randint(low=0, high=255, size=(1024, 1280, 3))
+RANDOM_IMAGE = (np.random.randint(low=0, high=255, size=(1024, 1280, 3))).astype(
+    "uint8"
+)
 
 
 class CommonMethods:
