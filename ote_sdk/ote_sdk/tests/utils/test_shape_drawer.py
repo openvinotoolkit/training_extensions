@@ -123,11 +123,15 @@ class TestHelpers:
         processed_image = raw_image.copy()
         helpers.draw_transparent_rectangle(
             img=processed_image,
-            x1=helpers.cursor_pos.x,
-            y1=helpers.cursor_pos.y,
-            x2=helpers.cursor_pos.x + expected_width,
-            y2=helpers.cursor_pos.y + expected_height,
-            color=initial_text_color,
+            x1=int(helpers.cursor_pos.x),
+            y1=int(helpers.cursor_pos.y),
+            x2=int(helpers.cursor_pos.x + expected_width),
+            y2=int(helpers.cursor_pos.y + expected_height),
+            color=(
+                int(initial_text_color[0]),
+                int(initial_text_color[1]),
+                int(initial_text_color[2]),
+            ),
             alpha=helpers.alpha_labels,
         )
         processed_image = cv2.putText(
