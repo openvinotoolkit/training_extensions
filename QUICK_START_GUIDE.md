@@ -170,7 +170,7 @@
      --nncf_optimization.maximal_accuracy_degradation MAXIMAL_ACCURACY_DEGRADATION
                            header: Maximum accuracy degradation
                            type: FLOAT
-                           default_value: 0.01
+                           default_value: 1.0
                            max_value: 100.0
                            min_value: 0.0
    ```
