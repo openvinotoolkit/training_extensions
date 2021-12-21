@@ -61,6 +61,7 @@ python -c "from demo_package import create_model"
      -i <path_to_video>/inputVideo.mp4 \
      -m <path_to_model>/model.xml
    ```
+   You can press `Q` to stop inference during demo running.
    > **NOTE**: Default configuration contains info about pre- and postprocessing to model inference and is guaranteed to be correct.
    > Also you can define own json config that specifies needed parameters, but any change should be made with caution.
    > To create this config please see `config.json` in demo_package wheel.
