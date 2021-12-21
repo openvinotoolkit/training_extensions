@@ -647,28 +647,21 @@ class TestDatasetItemEntity:
             == full_box_annotations + normalized_annotations
         )
         # Checking annotations list returned after "append_annotations" method with incorrect shape annotation
-        dataset_item = DatasetItemParameters().default_values_dataset_item()
         incorrect_shape_label = LabelEntity(
             name="Label for incorrect shape",
             domain=Domain.CLASSIFICATION,
             color=Color(red=80, green=70, blue=155),
             id=ID("incorrect_shape_label"),
         )
-        incorrect_shape_scored_label = ScoredLabel(incorrect_shape_label)
         incorrect_polygon = Polygon(
             [Point(x=0.01, y=0.1), Point(x=0.35, y=0.1), Point(x=0.35, y=0.1)]
         )
         incorrect_shape_annotation = Annotation(
             shape=incorrect_polygon,
-            labels=[incorrect_shape_scored_label],
+            labels=[ScoredLabel(incorrect_shape_label)],
             id=ID("incorrect_shape_annotation"),
         )
-        dataset_item.append_annotations(
-            annotations_to_add + [incorrect_shape_annotation]
-        )
-        # Random id is generated for normalized annotations
-        normalized_annotations[0].id = dataset_item.annotation_scene.annotations[2].id
-        normalized_annotations[1].id = dataset_item.annotation_scene.annotations[3].id
+        dataset_item.append_annotations([incorrect_shape_annotation])
         assert (
             dataset_item.annotation_scene.annotations
             == full_box_annotations + normalized_annotations
