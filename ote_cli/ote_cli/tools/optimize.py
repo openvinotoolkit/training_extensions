@@ -13,6 +13,7 @@
 # and limitations under the License.
 
 import argparse
+import os
 import sys
 
 from ote_sdk.configuration.helper import create
@@ -21,7 +22,6 @@ from ote_sdk.entities.model import ModelEntity, ModelStatus
 from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.subset import Subset
 from ote_sdk.entities.task_environment import TaskEnvironment
-from ote_sdk.usecases.adapters.model_adapter import ModelAdapter
 from ote_sdk.entities.optimization_parameters import OptimizationParameters
 from ote_sdk.usecases.tasks.interfaces.optimization_interface import OptimizationType
 
@@ -29,12 +29,16 @@ from ote_cli.datasets import get_dataset_class
 from ote_cli.registry import find_and_parse_model_template
 from ote_cli.utils.config import override_parameters
 from ote_cli.utils.importing import get_impl_class
-from ote_cli.utils.io import generate_label_schema, read_binary, save_model_data
+from ote_cli.utils.io import (
+    generate_label_schema,
+    read_binary,
+    read_model,
+    save_model_data
+)
 from ote_cli.utils.parser import (
     add_hyper_parameters_sub_parser,
     gen_params_dict_from_args,
 )
-
 
 
 def parse_args():
@@ -76,19 +80,18 @@ def parse_args():
     )
     parser.add_argument(
         "--load-weights",
-        required=False,
-        help="Load only weights from previously saved checkpoint",
+        required=True,
+        help="Load weights of trained model",
     )
     parser.add_argument(
         "--save-model-to",
-        required="True",
+        required=True,
         help="Location where trained model will be stored.",
     )
 
     add_hyper_parameters_sub_parser(parser, hyper_parameters)
 
     return parser.parse_args(), template, hyper_parameters
-
 
 
 def main():
@@ -99,9 +102,12 @@ def main():
     # Dynamically create an argument parser based on override parameters.
     args, template, hyper_parameters = parse_args()
 
+    is_pot = False
+    if args.load_weights.endswith(".bin") or args.load_weights.endswith(".xml"):
+        is_pot = True
+
     if template.entrypoints.nncf is None:
-        print("Optimization by NNCF is not available for this template")
-        sys.exit(1)
+        raise RuntimeError(f"Optimization by NNCF is not available for template {args.template}")
 
     # Get new values from user's input.
     updated_hyper_parameters = gen_params_dict_from_args(args)
@@ -111,7 +117,9 @@ def main():
     hyper_parameters = create(hyper_parameters)
 
     # Get classes for Task, ConfigurableParameters and Dataset.
-    task_class = get_impl_class(template.entrypoints.nncf)
+    task_class = get_impl_class(
+        template.entrypoints.openvino if is_pot else template.entrypoints.nncf
+    )
     dataset_class = get_dataset_class(template.task_type)
 
     # Create instances of Task, ConfigurableParameters and Dataset.
@@ -130,14 +138,7 @@ def main():
         model_template=template,
     )
 
-    if args.load_weights:
-        environment.model = ModelEntity(
-            train_dataset=dataset,
-            configuration=environment.get_model_configuration(),
-            model_adapters={
-                "weights.pth": ModelAdapter(read_binary(args.load_weights))
-            },
-        )
+    environment.model = read_model(environment.get_model_configuration(), args.load_weights, None)
 
     task = task_class(task_environment=environment)
 
@@ -148,7 +149,7 @@ def main():
     )
 
     task.optimize(
-        OptimizationType.NNCF,
+        OptimizationType.POT if is_pot else OptimizationType.NNCF,
         dataset,
         output_model,
         OptimizationParameters()
