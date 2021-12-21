@@ -16,6 +16,7 @@ OpenVINO Anomaly Task
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+import json
 import logging
 import os
 import struct
@@ -99,6 +100,8 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
         labels = task_environment.get_labels()
         self.normal_label = [label for label in labels if label.name == LabelNames.normal][0]
         self.anomalous_label = [label for label in labels if label.name == LabelNames.anomalous][0]
+        template_file_path = task_environment.model_template.model_template_path
+        self._base_dir = os.path.abspath(os.path.dirname(template_file_path))
 
     def get_config(self) -> Union[DictConfig, ListConfig]:
         """
@@ -166,16 +169,25 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
 
         hparams = self.task_environment.get_hyper_parameters()
 
-        algorithms = [
-            {
-                "name": "DefaultQuantization",
-                "params": {
-                    "target_device": "ANY",
-                    "preset": hparams.pot_parameters.preset.name.lower(),
-                    "stat_subset_size": min(hparams.pot_parameters.stat_subset_size, len(data_loader)),
-                },
-            }
-        ]
+        optimization_config_path = os.path.join(self._base_dir, 'pot_optimization_config.json')
+        if os.path.exists(optimization_config_path):
+            with open(optimization_config_path) as f_src:
+                algorithms = ADDict(json.load(f_src))['algorithms']
+        else:
+            algorithms = [
+                ADDict({
+                    'name': 'DefaultQuantization',
+                    'params': {
+                        'target_device': 'ANY',
+                        "shuffle_data": True
+                    }
+                })
+            ]
+        for algo in algorithms:
+            algo.params.stat_subset_size = hparams.pot_parameters.stat_subset_size
+            algo.params.shuffle_data = True
+            if 'Quantization' in algo['name']:
+                algo.params.preset = hparams.pot_parameters.preset.name.lower()
 
         engine = IEEngine(config=ADDict({"device": "CPU"}), data_loader=data_loader, metric=None)
 
