@@ -17,7 +17,7 @@ Converters for output of inferencers
 # in the License.
 
 import abc
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 from openvino.model_zoo.model_api.models import utils
@@ -29,8 +29,14 @@ from ote_sdk.entities.annotation import (
 )
 from ote_sdk.entities.id import ID
 from ote_sdk.entities.label import Domain, LabelEntity
+from ote_sdk.entities.label_schema import LabelSchemaEntity
 from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.entities.shapes.rectangle import Rectangle
+from ote_sdk.utils.labels_utils import (
+    get_ancestors_by_prediction,
+    get_empty_label,
+    get_leaf_labels,
+)
 from ote_sdk.utils.segmentation_utils import create_annotation_from_segmentation_map
 from ote_sdk.utils.time_utils import now
 
@@ -137,7 +143,8 @@ class DetectionToAnnotationConverter(IPredictionToAnnotationConverter):
 
 
 def create_converter(
-    converter_type: Domain, labels: List[Union[str, LabelEntity]]
+    converter_type: Domain,
+    labels: LabelSchemaEntity,
 ) -> IPredictionToAnnotationConverter:
     """
     Simple factory for converters based on type of tasks
@@ -158,24 +165,13 @@ def create_converter(
     return converter
 
 
-def get_label(labels_map: List[Any], index: int, label_domain: Domain) -> LabelEntity:
-    """
-    Get label from list of labels
-    """
-    label = labels_map[index]
-    if isinstance(label, LabelEntity):
-        return label
-
-    return LabelEntity(str(label), label_domain)
-
-
 class DetectionBoxToAnnotationConverter(IPredictionToAnnotationConverter):
     """
     Converts DetectionBox Predictions ModelAPI to Annotations
     """
 
-    def __init__(self, labels: List[Union[str, LabelEntity]]):
-        self.labels_map = labels
+    def __init__(self, labels: LabelSchemaEntity):
+        self.labels = labels.get_labels(include_empty=False)
 
     def convert_to_annotation(
         self, predictions: List[utils.Detection], metadata: Dict[str, Any]
@@ -183,10 +179,8 @@ class DetectionBoxToAnnotationConverter(IPredictionToAnnotationConverter):
         annotations = []
         image_size = metadata["original_shape"][1::-1]
         for box in predictions:
-            scored_label = ScoredLabel(
-                get_label(self.labels_map, int(box.id), Domain.DETECTION), box.score
-            )
-            coords = np.array(box.get_coords()) / np.tile(image_size, 2)
+            scored_label = ScoredLabel(self.labels[int(box.id)], float(box.score))
+            coords = np.array(box.get_coords(), dtype=float) / np.tile(image_size, 2)
             annotations.append(
                 Annotation(
                     Rectangle(coords[0], coords[1], coords[2], coords[3]),
@@ -206,12 +200,9 @@ class SegmentationToAnnotationConverter(IPredictionToAnnotationConverter):
     Converts Segmentation Predictions ModelAPI to Annotations
     """
 
-    def __init__(self, labels: List[Union[str, LabelEntity]]):
-        if labels is None:
-            raise ValueError("Labels for segmentation model is None")
-        self.label_map = {
-            i + 1: get_label(labels, i, Domain.SEGMENTATION) for i in range(len(labels))
-        }
+    def __init__(self, label_schema: LabelSchemaEntity):
+        labels = label_schema.get_labels(include_empty=False)
+        self.label_map = dict(enumerate(labels, 1))
 
     def convert_to_annotation(
         self, predictions: np.ndarray, metadata: Dict[str, Any]
@@ -233,22 +224,34 @@ class ClassificationToAnnotationConverter(IPredictionToAnnotationConverter):
     Converts Classification Predictions ModelAPI to Annotations
     """
 
-    def __init__(self, labels: List[Union[str, LabelEntity]]):
-        self.labels_map = labels
+    def __init__(self, label_schema: LabelSchemaEntity):
+        if len(label_schema.get_labels(False)) == 1:
+            self.labels = label_schema.get_labels(include_empty=True)
+        else:
+            self.labels = label_schema.get_labels(include_empty=False)
+        self.empty_label = get_empty_label(label_schema)
+        multilabel = len(label_schema.get_groups(False)) > 1 and len(
+            label_schema.get_groups(False)
+        ) == len(label_schema.get_labels(include_empty=False))
+
+        self.hierarchical = False
+        if not multilabel and len(label_schema.get_groups(False)) > 1:
+            self.labels = get_leaf_labels(label_schema)
+            self.hierarchical = True
+
+        self.label_schema = label_schema
 
     def convert_to_annotation(
-        self, predictions: List[Tuple[int, float]], metadata: Dict[str, Any]
+        self, predictions: List[Tuple[int, float]], metadata: Optional[Dict] = None
     ) -> AnnotationSceneEntity:
         labels = []
         for index, score in predictions:
-            labels.append(
-                ScoredLabel(
-                    get_label(self.labels_map, index, Domain.CLASSIFICATION), score
-                )
-            )
+            labels.append(ScoredLabel(self.labels[index], float(score)))
 
-        if not labels and metadata.get("empty_label") is not None:
-            labels = [ScoredLabel(metadata["empty_label"], probability=1.0)]
+        if not labels and self.empty_label:
+            labels = [ScoredLabel(self.empty_label, probability=1.0)]
+        elif self.hierarchical:
+            labels.extend(get_ancestors_by_prediction(self.label_schema, labels[0]))
 
         annotations = [Annotation(Rectangle.generate_full_box(), labels=labels)]
         return AnnotationSceneEntity(
@@ -261,9 +264,12 @@ class AnomalyClassificationToAnnotationConverter(IPredictionToAnnotationConverte
     Converts AnomalyClassification Predictions ModelAPI to Annotations
     """
 
-    def __init__(self, labels: List[Union[str, LabelEntity]]):
-        self.normal_label = get_label(labels, 0, Domain.ANOMALY_CLASSIFICATION)
-        self.anomalous_label = get_label(labels, 1, Domain.ANOMALY_CLASSIFICATION)
+    def __init__(self, label_schema: LabelSchemaEntity):
+        labels = label_schema.get_labels(include_empty=False)
+        self.normal_label = [label for label in labels if label.name == "Normal"][0]
+        self.anomalous_label = [label for label in labels if label.name == "Anomalous"][
+            0
+        ]
 
     def convert_to_annotation(
         self, predictions: np.ndarray, metadata: Dict[str, Any]
@@ -275,7 +281,7 @@ class AnomalyClassificationToAnnotationConverter(IPredictionToAnnotationConverte
         annotations = [
             Annotation(
                 Rectangle.generate_full_box(),
-                labels=[ScoredLabel(assigned_label, probability=pred_score)],
+                labels=[ScoredLabel(assigned_label, probability=float(pred_score))],
             )
         ]
         return AnnotationSceneEntity(

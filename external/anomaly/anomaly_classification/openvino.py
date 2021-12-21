@@ -235,6 +235,7 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
 
         output_model.set_data("label_schema.json", label_schema_to_bytes(self.task_environment.label_schema))
         output_model.set_data("threshold", self.task_environment.model.get_data("threshold"))
+        output_model.model_status = ModelStatus.SUCCESS
 
         self.task_environment.model = output_model
         self.inferencer = self.load_inferencer()
