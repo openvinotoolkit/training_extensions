@@ -28,6 +28,7 @@ from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType
 from ote_cli.registry import find_and_parse_model_template
 from ote_cli.utils.importing import get_impl_class
 from ote_cli.utils.io import read_binary, read_label_schema, save_model_data
+from ote_cli.utils.nncf import is_checkpoint_nncf
 
 
 def parse_args():
@@ -62,7 +63,8 @@ def main():
     template = find_and_parse_model_template(args.template)
 
     # Get class for Task.
-    task_class = get_impl_class(template.entrypoints.base)
+    is_nncf = is_checkpoint_nncf(args.load_weights)
+    task_class = get_impl_class(template.entrypoints.nncf if is_nncf else template.entrypoints.base)
 
     # Get hyper parameters schema.
     hyper_parameters = create(template.hyper_parameters.data)
