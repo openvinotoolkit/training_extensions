@@ -1,2 +1,2 @@
-anomalib==v0.2.1
+anomalib==v0.2.2
 openmodelzoo-modelapi @ git+https://github.com/openvinotoolkit/open_model_zoo/@releases/2021/SCMVP#egg=openmodelzoo-modelapi&subdirectory=demos/common/python
