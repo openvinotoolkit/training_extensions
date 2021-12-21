@@ -41,6 +41,9 @@ from .metadata_keys import (
     WARNING,
 )
 from .utils import (
+    attr_strict_float_converter,
+    attr_strict_float_on_setattr,
+    attr_strict_int_validator,
     construct_attr_enum_selectable_converter,
     construct_attr_enum_selectable_onsetattr,
     construct_attr_selectable_validator,
@@ -134,7 +137,7 @@ def configurable_integer(
         default=default_value,
         type=int,
         validator=[
-            attr.validators.instance_of(int),
+            attr_strict_int_validator,
             construct_attr_value_validator(min_value, max_value),
         ],
         metadata=metadata,
@@ -195,7 +198,8 @@ def configurable_float(
         default=default_value,
         type=float,
         validator=construct_attr_value_validator(min_value, max_value),
-        converter=float,
+        converter=attr_strict_float_converter,
+        on_setattr=attr_strict_float_on_setattr,
         metadata=metadata,
     )
 
@@ -304,7 +308,8 @@ def float_selectable(
         default=default_value,
         type=float,
         validator=construct_attr_selectable_validator(options),
-        converter=float,
+        converter=attr_strict_float_converter,
+        on_setattr=attr_strict_float_on_setattr,
         metadata=metadata,
     )
 
