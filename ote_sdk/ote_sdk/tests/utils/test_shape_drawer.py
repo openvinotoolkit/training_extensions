@@ -177,16 +177,16 @@ class TestHelpers:
                 label_text_height + label_baseline + 2 * helpers.content_padding
             )
             expected_image = self.generate_expected_image_with_text(
-                raw_image=expected_image,
-                text=label_text,
-                initial_text_color=label_color,
-                processed_text_color=(255, 255, 255),  # white color
-                helpers=helpers,
-                expected_width=label_width,
-                expected_height=label_height,
-                expected_baseline=label_baseline,
-                text_scale=expected_text_scale,
-                thickness=expected_thickness,
+                expected_image,
+                label_text,
+                label_color,
+                (255, 255, 255),  # white color
+                helpers,
+                label_width,
+                label_height,
+                label_baseline,
+                expected_text_scale,
+                expected_thickness,
             )
             label_content_width = label_width + helpers.content_margin
             helpers.cursor_pos.x += label_content_width
@@ -894,11 +894,11 @@ class TestTopLeftDrawer:
                 else False
             )
             expected_image = TestHelpers().generate_image_for_labels(
-                expected_image=expected_image,
-                labels=labels,
-                show_labels=expected_shape_drawer.top_left_drawer.show_labels,
-                show_confidence=show_confidence,
-                helpers=expected_shape_drawer.top_left_drawer,
+                expected_image,
+                labels,
+                expected_shape_drawer.top_left_drawer.show_labels,
+                show_confidence,
+                expected_shape_drawer.top_left_drawer,
             )[0]
             expected_shape_drawer.top_left_drawer.newline()
             actual_image = shape_drawer.top_left_drawer.draw_labels(image, labels)
