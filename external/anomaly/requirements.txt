@@ -1,1 +1,1 @@
-anomalib==0.2.3
+anomalib==0.2.4
