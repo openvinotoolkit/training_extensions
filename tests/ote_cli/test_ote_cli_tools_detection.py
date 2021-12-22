@@ -108,7 +108,7 @@ def test_ote_hpo(template):
 @pytest.mark.parametrize("template", templates, ids=templates_ids)
 def test_nncf_optimize(template):
     if template.entrypoints.nncf is None:
-        pytest.skip("Unavailable NNCF optimization")
+        pytest.skip("nncf entrypoint is none")
 
     work_dir, template_work_dir, algo_backend_dir = get_some_vars(template, root)
     command_line = ['ote',
@@ -135,7 +135,7 @@ def test_nncf_optimize(template):
 @pytest.mark.parametrize("template", templates, ids=templates_ids)
 def test_nncf_export(template):
     if template.entrypoints.nncf is None:
-        pytest.skip("Unavailable NNCF optimization")
+        pytest.skip("nncf entrypoint is none")
 
     work_dir, template_work_dir, _ = get_some_vars(template, root)
     command_line = ['ote',
@@ -153,6 +153,9 @@ def test_nncf_export(template):
 
 @pytest.mark.parametrize("template", templates, ids=templates_ids)
 def test_nncf_eval(template):
+    if template.entrypoints.nncf is None:
+        pytest.skip("nncf entrypoint is none")
+
     work_dir, template_work_dir, _ = get_some_vars(template, root)
     command_line = ['ote',
                     'eval',

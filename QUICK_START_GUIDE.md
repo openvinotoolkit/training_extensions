@@ -50,17 +50,17 @@
    Sample output:
    ```
    - id: Custom_Object_Detection_Gen3_VFNet
-      name: VFNet
-      path: ./external/mmdetection/configs/ote/custom-object-detection/gen3_resnet50_VFNet/template.yaml
-      task_type: DETECTION
+     name: VFNet
+     path: ./external/mmdetection/configs/ote/custom-object-detection/gen3_resnet50_VFNet/template.yaml
+     task_type: DETECTION
    - id: Custom_Object_Detection_Gen3_ATSS
-      name: ATSS
-      path: ./external/mmdetection/configs/ote/custom-object-detection/gen3_mobilenetV2_ATSS/template.yaml
-      task_type: DETECTION
+     name: ATSS
+     path: ./external/mmdetection/configs/ote/custom-object-detection/gen3_mobilenetV2_ATSS/template.yaml
+     task_type: DETECTION
    - id: Custom_Object_Detection_Gen3_SSD
-      name: SSD
-      path: ./external/mmdetection/configs/ote/custom-object-detection/gen3_mobilenetV2_SSD/template.yaml
-      task_type: DETECTION
+     name: SSD
+     path: ./external/mmdetection/configs/ote/custom-object-detection/gen3_mobilenetV2_SSD/template.yaml
+     task_type: DETECTION
    - ...
    ```
    Let's choose `./external/mmdetection/configs/ote/custom-object-detection/gen3_mobilenetV2_ATSS/template.yaml`
