@@ -38,7 +38,6 @@ from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.entities.train_parameters import TrainParameters
 from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType
 from ote_sdk.usecases.tasks.interfaces.optimization_interface import OptimizationType
-
 from tests.helpers.dataset import OTEAnomalyDatasetGenerator
 
 logger = logging.getLogger(__name__)
