@@ -216,3 +216,16 @@ class OTEAnomalyTrainer:
         # assign the converted OpenVINO model to the current task environment model
         self.task_environment.model = self.output_model
         self.openvino_task = OpenVINOAnomalyClassificationTask(task_environment=self.task_environment)
+
+    def deploy(self):
+        """
+        Generate Exportable code for model
+        """
+        try:
+            self.output_model.get_data("openvino.bin")
+        except KeyError as error:
+            raise KeyError(
+                "Could not get `openvino.bin` from model. Make sure that the model is exported to OpenVINO first"
+            ) from error
+
+        self.openvino_task.deploy(self.output_model)

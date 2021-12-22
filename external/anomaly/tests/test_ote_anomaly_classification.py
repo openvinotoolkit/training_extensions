@@ -16,6 +16,8 @@ Test Anomaly Classification Task
 # See the License for the specific language governing permissions
 # and limitations under the License.
 import logging
+import os
+import tempfile
 
 import numpy as np
 import pytest
@@ -71,8 +73,6 @@ class TestAnomalyClassification:
         )
         self._trainer.train()
         base_results = self._trainer.validate(task=self._trainer.base_task)
-
-        # Performance should be higher than a threshold.
         assert base_results.performance.score.value > 0.5
 
         # Convert the model to OpenVINO
@@ -91,5 +91,33 @@ class TestAnomalyClassification:
             for i in range(len(openvino_results.prediction_dataset))
         ]
 
-        # Performance should be almost the same
         assert np.allclose(base_probability_scores, openvino_probability_scores, rtol=0.05)
+
+    @TestDataset(num_train=200, num_test=10, dataset_path="./datasets/MVTec", use_mvtec=False)
+    def test_ote_deploy(self, task_path, template_path, dataset_path="./datasets/MVTec", category="bottle"):
+        """
+        E2E Test generation of exportable code.
+        """
+        self._trainer = OTEAnomalyTrainer(
+            model_template_path=f"{task_path}/configs/{template_path}/template.yaml",
+            dataset_path=dataset_path,
+            category=category,
+        )
+
+        # Train is called as we need threshold
+        self._trainer.train()
+
+        # Convert the model to OpenVINO
+        self._trainer.export()
+
+        # generate exportable code
+        self._trainer.deploy()
+
+        # write zip file from the model weights
+        with tempfile.TemporaryDirectory() as tempdir:
+            zipfile = os.path.join(tempdir, "openvino.zip")
+            with open(zipfile, "wb") as output_arch:
+                output_arch.write(self._trainer.output_model.exportable_code)
+
+            # check if size of zip is greater than 0 bytes
+            assert os.path.getsize(zipfile) > 0

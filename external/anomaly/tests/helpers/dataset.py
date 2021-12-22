@@ -69,8 +69,12 @@ class OTEAnomalyDatasetGenerator:
         self.seed = seed
         self.create_validation_set = create_validation_set
 
-        self.normal_label = LabelEntity(name=LabelNames.normal, domain=Domain.ANOMALY_CLASSIFICATION)
-        self.abnormal_label = LabelEntity(name=LabelNames.anomalous, domain=Domain.ANOMALY_CLASSIFICATION)
+        self.normal_label = LabelEntity(
+            name=LabelNames.normal, domain=Domain.ANOMALY_CLASSIFICATION, id=LabelNames.normal
+        )
+        self.abnormal_label = LabelEntity(
+            name=LabelNames.anomalous, domain=Domain.ANOMALY_CLASSIFICATION, id=LabelNames.anomalous
+        )
 
     def get_samples(self) -> DataFrame:
         """
