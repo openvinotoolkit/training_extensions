@@ -21,7 +21,6 @@ import tempfile
 
 import numpy as np
 import pytest
-
 from ote_anomalib.config import get_anomalib_config
 from tests.helpers.config import get_config_and_task_name
 from tests.helpers.dummy_dataset import TestDataset
@@ -78,9 +77,6 @@ class TestAnomalyClassification:
         # Convert the model to OpenVINO
         self._trainer.export()
         openvino_results = self._trainer.validate(task=self._trainer.openvino_task)
-
-        # Optimize the OpenVINO Model via POT
-        optimized_openvino_results = self._trainer.validate(task=self._trainer.openvino_task, optimize=True)
 
         base_probability_scores = [
             base_results.prediction_dataset[i].annotation_scene.annotations[0].get_labels()[0].probability

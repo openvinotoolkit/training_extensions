@@ -39,7 +39,6 @@ from compression.graph.model_utils import compress_model_weights, get_nodes_by_t
 from compression.pipeline.initializer import create_pipeline
 from omegaconf import ListConfig
 from omegaconf.dictconfig import DictConfig
-
 from ote_anomalib.config import get_anomalib_config
 from ote_anomalib.exportable_code import AnomalyClassification
 from ote_sdk.entities.datasets import DatasetEntity
@@ -145,9 +144,7 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
         # This always assumes that threshold is available in the task environment's model
         meta_data = self.get_meta_data()
         for idx, dataset_item in enumerate(dataset):
-            anomaly_map, pred_score = self.inferencer.predict(
-                dataset_item.numpy, superimpose=False, meta_data=meta_data
-            )
+            _, pred_score = self.inferencer.predict(dataset_item.numpy, superimpose=False, meta_data=meta_data)
             annotations_scene = self.annotation_converter.convert_to_annotation(pred_score, meta_data)
             dataset_item.append_annotations(annotations_scene.annotations)
             update_progress_callback(int((idx + 1) / len(dataset) * 100))
@@ -155,6 +152,8 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
         return dataset
 
     def get_meta_data(self):
+        """Get Meta Data."""
+
         threshold = struct.unpack("f", (self.task_environment.model.get_data("threshold")))
         image_mean = np.frombuffer(self.task_environment.model.get_data("image_mean"), dtype=np.float32)
         image_std = np.frombuffer(self.task_environment.model.get_data("image_std"), dtype=np.float32)

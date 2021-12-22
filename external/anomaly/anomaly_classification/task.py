@@ -28,8 +28,8 @@ from glob import glob
 from typing import Optional, Union
 
 import torch
-from anomalib.core.model import AnomalyModule
 from anomalib.core.callbacks import AnomalyScoreNormalizationCallback
+from anomalib.core.model import AnomalyModule
 from anomalib.models import get_model
 from omegaconf import DictConfig, ListConfig
 from ote_anomalib.callbacks import InferenceCallback, ProgressCallback
