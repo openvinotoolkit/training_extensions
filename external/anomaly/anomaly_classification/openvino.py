@@ -145,7 +145,9 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
         # This always assumes that threshold is available in the task environment's model
         meta_data = self.get_meta_data()
         for idx, dataset_item in enumerate(dataset):
-            anomaly_map, pred_score = self.inferencer.predict(dataset_item.numpy, superimpose=False, meta_data=meta_data)
+            anomaly_map, pred_score = self.inferencer.predict(
+                dataset_item.numpy, superimpose=False, meta_data=meta_data
+            )
             annotations_scene = self.annotation_converter.convert_to_annotation(pred_score, meta_data)
             dataset_item.append_annotations(annotations_scene.annotations)
             update_progress_callback(int((idx + 1) / len(dataset) * 100))
@@ -163,11 +165,7 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
             self.config.model.input_size
         )
         meta_data = dict(
-            threshold=threshold,
-            image_mean=image_mean,
-            image_std=image_std,
-            pixel_mean=pixel_mean,
-            pixel_std=pixel_std
+            threshold=threshold, image_mean=image_mean, image_std=image_std, pixel_mean=pixel_mean, pixel_std=pixel_std
         )
         return meta_data
 
