@@ -25,7 +25,7 @@ import subprocess
 import sys
 import tempfile
 from shutil import copyfile, copytree
-from typing import Any, cast, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union, cast
 from zipfile import ZipFile
 
 import numpy as np
@@ -38,37 +38,36 @@ from compression.graph.model_utils import compress_model_weights, get_nodes_by_t
 from compression.pipeline.initializer import create_pipeline
 from omegaconf import ListConfig
 from omegaconf.dictconfig import DictConfig
-
 from ote_anomalib.config import get_anomalib_config
 from ote_anomalib.exportable_code import AnomalyClassification
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.inference_parameters import (
+    InferenceParameters,
     default_progress_callback,
-    InferenceParameters
 )
 from ote_sdk.entities.model import (
     ModelEntity,
-    ModelStatus,
     ModelFormat,
     ModelOptimizationType,
     ModelPrecision,
-    OptimizationMethod
+    ModelStatus,
+    OptimizationMethod,
 )
 from ote_sdk.entities.optimization_parameters import OptimizationParameters
 from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.task_environment import TaskEnvironment
-from ote_sdk.serialization.label_mapper import label_schema_to_bytes, LabelSchemaMapper
+from ote_sdk.serialization.label_mapper import LabelSchemaMapper, label_schema_to_bytes
 from ote_sdk.usecases.evaluation.metrics_helper import MetricsHelper
 from ote_sdk.usecases.exportable_code import demo
 from ote_sdk.usecases.exportable_code.prediction_to_annotation_converter import (
-    AnomalyClassificationToAnnotationConverter
+    AnomalyClassificationToAnnotationConverter,
 )
 from ote_sdk.usecases.tasks.interfaces.deployment_interface import IDeploymentTask
 from ote_sdk.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from ote_sdk.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from ote_sdk.usecases.tasks.interfaces.optimization_interface import (
     IOptimizationTask,
-    OptimizationType
+    OptimizationType,
 )
 
 logger = logging.getLogger(__name__)
@@ -174,29 +173,23 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
         output_resultset.performance = MetricsHelper.compute_f_measure(output_resultset).get_performance()
 
     def _get_optimization_algorithms_configs(self) -> List[ADDict]:
-        """ Returns list of optimization algorithms configurations """
+        """Returns list of optimization algorithms configurations"""
 
         hparams = self.task_environment.get_hyper_parameters()
 
-        optimization_config_path = os.path.join(self._base_dir, 'pot_optimization_config.json')
+        optimization_config_path = os.path.join(self._base_dir, "pot_optimization_config.json")
         if os.path.exists(optimization_config_path):
             # pylint: disable=unspecified-encoding
             with open(optimization_config_path) as f_src:
-                algorithms = ADDict(json.load(f_src))['algorithms']
+                algorithms = ADDict(json.load(f_src))["algorithms"]
         else:
             algorithms = [
-                ADDict({
-                    'name': 'DefaultQuantization',
-                    'params': {
-                        'target_device': 'ANY',
-                        "shuffle_data": True
-                    }
-                })
+                ADDict({"name": "DefaultQuantization", "params": {"target_device": "ANY", "shuffle_data": True}})
             ]
         for algo in algorithms:
             algo.params.stat_subset_size = hparams.pot_parameters.stat_subset_size
             algo.params.shuffle_data = True
-            if 'Quantization' in algo['name']:
+            if "Quantization" in algo["name"]:
                 algo.params.preset = hparams.pot_parameters.preset.name.lower()
 
         return algorithms
@@ -243,10 +236,7 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
                 return
 
         engine = IEEngine(config=ADDict({"device": "CPU"}), data_loader=data_loader, metric=None)
-        pipeline = create_pipeline(
-            algo_config=self._get_optimization_algorithms_configs(),
-            engine=engine
-        )
+        pipeline = create_pipeline(algo_config=self._get_optimization_algorithms_configs(), engine=engine)
         compressed_model = pipeline.run(model)
         compress_model_weights(compressed_model)
 

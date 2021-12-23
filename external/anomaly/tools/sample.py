@@ -35,7 +35,7 @@ from ote_sdk.entities.model import (
     ModelStatus,
     OptimizationMethod,
 )
-from ote_sdk.entities.model_template import parse_model_template, TargetDevice
+from ote_sdk.entities.model_template import TargetDevice, parse_model_template
 from ote_sdk.entities.optimization_parameters import OptimizationParameters
 from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.subset import Subset
@@ -79,9 +79,7 @@ def main(args):
     print(model_template)
 
     category_data_dir = os.path.join(args.data_dir, args.category)
-    dataset_generator = OTEAnomalyDatasetGenerator(
-        category_data_dir, seed=777, create_validation_set=True
-    )
+    dataset_generator = OTEAnomalyDatasetGenerator(category_data_dir, seed=777, create_validation_set=True)
     dataset = dataset_generator.generate()
 
     print(f"Train dataset: {len(dataset.get_subset(Subset.TRAINING))} items")
@@ -136,9 +134,7 @@ def main(args):
     inference_parameters = InferenceParameters(is_evaluation=True)
 
     hyper_parameters = task_environment.get_hyper_parameters()
-    openvino_task.task_environment.set_hyper_parameters(
-        hyper_parameters=hyper_parameters
-    )
+    openvino_task.task_environment.set_hyper_parameters(hyper_parameters=hyper_parameters)
 
     predicted_fp32_dataset = openvino_task.infer(
         dataset=inference_dataset.with_empty_annotations(),
@@ -237,11 +233,7 @@ if __name__ == "__main__":
         main(args)
         sys.exit(0)
 
-    categories = [
-        name
-        for name in os.listdir(args.data_dir)
-        if os.path.isdir(os.path.join(args.data_dir, name))
-    ]
+    categories = [name for name in os.listdir(args.data_dir) if os.path.isdir(os.path.join(args.data_dir, name))]
     num_categories = len(categories)
     for i, category in enumerate(sorted(categories)):
         args.category = category
