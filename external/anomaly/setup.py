@@ -36,7 +36,7 @@ def get_requirements() -> List[str]:
 
 setup(
     name="anomaly_classification",
-    version="ote_alpha",
+    version="ote-alpha",
     packages=find_packages(
         include=["anomaly_classification", "anomaly_classification.*", "ote_anomalib", "ote_anomalib.*"]
     ),
