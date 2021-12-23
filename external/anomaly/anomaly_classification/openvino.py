@@ -25,7 +25,7 @@ import subprocess
 import sys
 import tempfile
 from shutil import copyfile, copytree
-from typing import Any, Dict, Optional, Union, cast
+from typing import Any, Dict, List, Optional, Union, cast
 from zipfile import ZipFile
 
 import numpy as np
@@ -172,6 +172,34 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
         """
         output_resultset.performance = MetricsHelper.compute_f_measure(output_resultset).get_performance()
 
+    def _get_optimization_algorithms_configs(self) -> List[ADDict]:
+        """ Returns list of optimization algorithms configurations """
+
+        hparams = self.task_environment.get_hyper_parameters()
+
+        optimization_config_path = os.path.join(self._base_dir, 'pot_optimization_config.json')
+        if os.path.exists(optimization_config_path):
+            # pylint: disable=unspecified-encoding
+            with open(optimization_config_path) as f_src:
+                algorithms = ADDict(json.load(f_src))['algorithms']
+        else:
+            algorithms = [
+                ADDict({
+                    'name': 'DefaultQuantization',
+                    'params': {
+                        'target_device': 'ANY',
+                        "shuffle_data": True
+                    }
+                })
+            ]
+        for algo in algorithms:
+            algo.params.stat_subset_size = hparams.pot_parameters.stat_subset_size
+            algo.params.shuffle_data = True
+            if 'Quantization' in algo['name']:
+                algo.params.preset = hparams.pot_parameters.preset.name.lower()
+
+        return algorithms
+
     def optimize(
         self,
         optimization_type: OptimizationType,
@@ -213,31 +241,12 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
                 logger.warning("Model is already optimized by POT")
                 return
 
-        hparams = self.task_environment.get_hyper_parameters()
-
-        optimization_config_path = os.path.join(self._base_dir, 'pot_optimization_config.json')
-        if os.path.exists(optimization_config_path):
-            with open(optimization_config_path) as f_src:
-                algorithms = ADDict(json.load(f_src))['algorithms']
-        else:
-            algorithms = [
-                ADDict({
-                    'name': 'DefaultQuantization',
-                    'params': {
-                        'target_device': 'ANY',
-                        "shuffle_data": True
-                    }
-                })
-            ]
-        for algo in algorithms:
-            algo.params.stat_subset_size = hparams.pot_parameters.stat_subset_size
-            algo.params.shuffle_data = True
-            if 'Quantization' in algo['name']:
-                algo.params.preset = hparams.pot_parameters.preset.name.lower()
-
         engine = IEEngine(config=ADDict({"device": "CPU"}), data_loader=data_loader, metric=None)
-
-        compressed_model = create_pipeline(algorithms, engine).run(model)
+        pipeline = create_pipeline(
+            algo_config=self._get_optimization_algorithms_configs(),
+            engine=engine
+        )
+        compressed_model = pipeline.run(model)
         compress_model_weights(compressed_model)
 
         with tempfile.TemporaryDirectory() as tempdir:
