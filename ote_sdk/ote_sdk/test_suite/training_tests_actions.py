@@ -19,7 +19,7 @@ from ote_sdk.entities.model import (
     ModelOptimizationType,
     ModelStatus,
 )
-from ote_sdk.ote_sdk.utils.importing import get_impl_class
+from ote_sdk.utils.importing import get_impl_class
 from ote_sdk.entities.model_template import parse_model_template
 from ote_sdk.entities.optimization_parameters import OptimizationParameters
 from ote_sdk.entities.resultset import ResultSetEntity
