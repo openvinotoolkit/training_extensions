@@ -26,6 +26,7 @@ from anomaly_classification import (
     AnomalyClassificationTask,
     OpenVINOAnomalyClassificationTask,
 )
+from ote_anomalib.data.helpers import OTEAnomalyDatasetGenerator
 from ote_sdk.configuration.helper import create
 from ote_sdk.entities.inference_parameters import InferenceParameters
 from ote_sdk.entities.label_schema import LabelSchemaEntity
@@ -38,7 +39,6 @@ from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.entities.train_parameters import TrainParameters
 from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType
 from ote_sdk.usecases.tasks.interfaces.optimization_interface import OptimizationType
-from ote_anomalib.data.helpers import OTEAnomalyDatasetGenerator
 
 logger = logging.getLogger(__name__)
 

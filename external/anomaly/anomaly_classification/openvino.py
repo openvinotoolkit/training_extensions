@@ -25,7 +25,7 @@ import subprocess
 import sys
 import tempfile
 from shutil import copyfile, copytree
-from typing import Any, Dict, List, Optional, Union, cast
+from typing import Any, cast, Dict, List, Optional, Union
 from zipfile import ZipFile
 
 import numpy as np
@@ -38,12 +38,13 @@ from compression.graph.model_utils import compress_model_weights, get_nodes_by_t
 from compression.pipeline.initializer import create_pipeline
 from omegaconf import ListConfig
 from omegaconf.dictconfig import DictConfig
+
 from ote_anomalib.config import get_anomalib_config
 from ote_anomalib.exportable_code import AnomalyClassification
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.inference_parameters import (
-    InferenceParameters,
     default_progress_callback,
+    InferenceParameters
 )
 from ote_sdk.entities.model import (
     ModelEntity,
@@ -56,18 +57,18 @@ from ote_sdk.entities.model import (
 from ote_sdk.entities.optimization_parameters import OptimizationParameters
 from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.task_environment import TaskEnvironment
-from ote_sdk.serialization.label_mapper import LabelSchemaMapper, label_schema_to_bytes
+from ote_sdk.serialization.label_mapper import label_schema_to_bytes, LabelSchemaMapper
 from ote_sdk.usecases.evaluation.metrics_helper import MetricsHelper
 from ote_sdk.usecases.exportable_code import demo
 from ote_sdk.usecases.exportable_code.prediction_to_annotation_converter import (
-    AnomalyClassificationToAnnotationConverter,
+    AnomalyClassificationToAnnotationConverter
 )
 from ote_sdk.usecases.tasks.interfaces.deployment_interface import IDeploymentTask
 from ote_sdk.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from ote_sdk.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from ote_sdk.usecases.tasks.interfaces.optimization_interface import (
     IOptimizationTask,
-    OptimizationType,
+    OptimizationType
 )
 
 logger = logging.getLogger(__name__)
