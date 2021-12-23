@@ -28,11 +28,3 @@ def get_impl_class(impl_path):
     task_impl_class = getattr(task_impl_module, task_impl_class_name)
 
     return task_impl_class
-
-def get_task_class(path):
-    module_name, class_name = path.rsplit('.', 1)
-    module = importlib.import_module(module_name)
-    return getattr(module, class_name)
-
-def is_nncf_enabled():
-    return importlib.util.find_spec('nncf') is not None

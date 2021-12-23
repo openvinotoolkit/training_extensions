@@ -19,10 +19,7 @@ from ote_sdk.entities.model import (
     ModelOptimizationType,
     ModelStatus,
 )
-from ote_sdk.ote_sdk.utils.importing import (
-    get_task_class,
-    is_nncf_enabled,
-)
+from ote_sdk.ote_sdk.utils.importing import get_impl_class
 from ote_sdk.entities.model_template import parse_model_template
 from ote_sdk.entities.optimization_parameters import OptimizationParameters
 from ote_sdk.entities.resultset import ResultSetEntity
@@ -103,7 +100,7 @@ class OTETestTrainingAction(BaseOTETestAction):
         )
         logger.info("Create base Task")
         task_impl_path = model_template.entrypoints.base
-        task_cls = get_task_class(task_impl_path)
+        task_cls = get_impl_class(task_impl_path)
         task = task_cls(task_environment=environment)
         return environment, task
 
@@ -188,6 +185,8 @@ class OTETestTrainingAction(BaseOTETestAction):
         }
         return results
 
+def is_nncf_enabled():
+    return importlib.util.find_spec('nncf') is not None
 
 def run_evaluation(dataset, task, model):
     logger.debug("Evaluation: Get predictions on the dataset")
@@ -308,7 +307,7 @@ class OTETestExportAction(BaseOTETestAction):
 def create_openvino_task(model_template, environment):
     logger.debug("Create OpenVINO Task")
     openvino_task_impl_path = model_template.entrypoints.openvino
-    openvino_task_cls = get_task_class(openvino_task_impl_path)
+    openvino_task_cls = get_impl_class(openvino_task_impl_path)
     openvino_task = openvino_task_cls(environment)
     return openvino_task
 
@@ -478,7 +477,7 @@ class OTETestNNCFAction(BaseOTETestAction):
 
         self.environment_for_nncf.model = self.nncf_model
 
-        nncf_task_cls = get_task_class(nncf_task_class_impl_path)
+        nncf_task_cls = get_impl_class(nncf_task_class_impl_path)
         self.nncf_task = nncf_task_cls(task_environment=self.environment_for_nncf)
 
         logger.info("Run NNCF optimization")
