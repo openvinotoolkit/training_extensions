@@ -19,6 +19,10 @@ from ote_sdk.entities.model import (
     ModelOptimizationType,
     ModelStatus,
 )
+from ote_sdk.ote_sdk.utils.importing import (
+    get_task_class,
+    is_nncf_enabled,
+)
 from ote_sdk.entities.model_template import parse_model_template
 from ote_sdk.entities.optimization_parameters import OptimizationParameters
 from ote_sdk.entities.resultset import ResultSetEntity
@@ -309,16 +313,6 @@ def create_openvino_task(model_template, environment):
     return openvino_task
 
 
-def get_task_class(path):
-    module_name, class_name = path.rsplit('.', 1)
-    module = importlib.import_module(module_name)
-    return getattr(module, class_name)
-
-
-def is_nncf_enabled():
-    return importlib.util.find_spec('nncf') is not None
-
-
 class OTETestExportEvaluationAction(BaseOTETestAction):
     _name = "export_evaluation"
     _with_validation = True
@@ -399,10 +393,8 @@ class OTETestPotAction(BaseOTETestAction):
         assert (
             self.optimized_model_pot.model_format == ModelFormat.OPENVINO
         ), "Wrong model format after pot"
-        #TO DO: Model.OptimizationType is "int enum" class, and OptimizationType is "enum",
-        #  that why wee need to use here same classes. Submitted issue CVS-74657
         assert (
-            self.optimized_model_pot.optimization_type == OptimizationType.POT
+            self.optimized_model_pot.optimization_type == ModelOptimizationType.POT
         ), "Wrong optimization type"
         logger.info("POT optimization is finished")
 
@@ -491,7 +483,7 @@ class OTETestNNCFAction(BaseOTETestAction):
 
         logger.info("Run NNCF optimization")
         self.nncf_task.optimize(
-        OptimizationType.NNCF, dataset, self.nncf_model, None
+            OptimizationType.NNCF, dataset, self.nncf_model, None
         )
         assert (
             self.nncf_model.model_status == ModelStatus.SUCCESS
