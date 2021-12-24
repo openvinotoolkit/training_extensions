@@ -18,12 +18,6 @@ entrypoints:
 # Hyper Parameters
 hyper_parameters:
   base_path: ./configuration.yaml
-  parameter_overrides:
-    pot_parameters:
-      preset:
-        default_value: Performance
-      stat_subset_size:
-        default_value: 300
 
 # Training resources.
 max_nodes: 1
