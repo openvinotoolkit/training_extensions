@@ -180,7 +180,7 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
         optimization_config_path = os.path.join(self._base_dir, "pot_optimization_config.json")
         if os.path.exists(optimization_config_path):
             # pylint: disable=unspecified-encoding
-            with open(optimization_config_path) as f_src:
+            with open(optimization_config_path, encoding="UTF-8") as f_src:
                 algorithms = ADDict(json.load(f_src))["algorithms"]
         else:
             algorithms = [
