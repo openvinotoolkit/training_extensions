@@ -34,7 +34,7 @@ class AnomalyClassification(SegmentationModel):
         parameters["resize_type"].update_default_value("standard")
         parameters.update(
             {
-                "threshold": NumericalValue(default_value=20, description="Threshold value to locate anomaly"),
+                "image_threshold": NumericalValue(default_value=0.5, description="Threshold value to locate anomaly"),
             }
         )
 
@@ -53,7 +53,7 @@ class AnomalyClassification(SegmentationModel):
         outputs = outputs[self.output_blob_name].squeeze()
         input_image_height = meta["original_shape"][0]
         input_image_width = meta["original_shape"][1]
-        meta["threshold"] = self.threshold  # pylint: disable=no-member
+        meta["image_threshold"] = self.image_threshold  # pylint: disable=no-member
 
         result = cv2.resize(outputs, (input_image_width, input_image_height))
         return result

@@ -154,14 +154,7 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
         torch.save(model_info, buffer)
         output_model.set_data("weights.pth", buffer.getvalue())
         output_model.set_data("label_schema.json", label_schema_to_bytes(self.task_environment.label_schema))
-        # store computed threshold
-        output_model.set_data("threshold", bytes(struct.pack("f", self.model.image_threshold.value.item())))
-        output_model.set_data("pixel_threshold", bytes(struct.pack("f", self.model.pixel_threshold.value.item())))
-        # store training set statistics
-        output_model.set_data("image_mean", self.model.training_distribution.image_mean.cpu().numpy().tobytes())
-        output_model.set_data("image_std", self.model.training_distribution.image_std.cpu().numpy().tobytes())
-        output_model.set_data("pixel_mean", self.model.training_distribution.pixel_mean.cpu().numpy().tobytes())
-        output_model.set_data("pixel_std", self.model.training_distribution.pixel_std.cpu().numpy().tobytes())
+        self._set_metadata(output_model)
 
         f1_score = self.model.image_metrics.F1.compute().item()
         output_model.performance = Performance(score=ScoreMetric(name="F1 Score", value=f1_score))
@@ -235,7 +228,14 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
         with open(xml_file, "rb") as file:
             output_model.set_data("openvino.xml", file.read())
         output_model.set_data("label_schema.json", label_schema_to_bytes(self.task_environment.label_schema))
-        output_model.set_data("threshold", bytes(struct.pack("f", self.model.image_threshold.value.item())))
+        self._set_metadata(output_model)
+
+    def _set_metadata(self, output_model: ModelEntity):
+        output_model.set_data("image_threshold", self.model.image_threshold.value.cpu().numpy().tobytes())
+        output_model.set_data("image_mean", self.model.training_distribution.image_mean.cpu().numpy().tobytes())
+        output_model.set_data("image_std", self.model.training_distribution.image_std.cpu().numpy().tobytes())
+        output_model.set_data("pixel_mean", self.model.training_distribution.pixel_mean.cpu().numpy().tobytes())
+        output_model.set_data("pixel_std", self.model.training_distribution.pixel_std.cpu().numpy().tobytes())
 
     @staticmethod
     def _is_docker() -> bool:
