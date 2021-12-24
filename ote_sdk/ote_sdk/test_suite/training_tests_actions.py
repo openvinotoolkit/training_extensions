@@ -19,7 +19,6 @@ from ote_sdk.entities.model import (
     ModelOptimizationType,
     ModelStatus,
 )
-from ote_sdk.utils.importing import get_impl_class
 from ote_sdk.entities.model_template import parse_model_template
 from ote_sdk.entities.optimization_parameters import OptimizationParameters
 from ote_sdk.entities.resultset import ResultSetEntity
@@ -27,6 +26,7 @@ from ote_sdk.entities.subset import Subset
 from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType
 from ote_sdk.usecases.tasks.interfaces.optimization_interface import OptimizationType
+from ote_sdk.utils.importing import get_impl_class
 
 from .e2e_test_system import DataCollector
 from .training_tests_common import (
@@ -185,8 +185,10 @@ class OTETestTrainingAction(BaseOTETestAction):
         }
         return results
 
+
 def is_nncf_enabled():
-    return importlib.util.find_spec('nncf') is not None
+    return importlib.util.find_spec("nncf") is not None
+
 
 def run_evaluation(dataset, task, model):
     logger.debug("Evaluation: Get predictions on the dataset")
@@ -481,9 +483,7 @@ class OTETestNNCFAction(BaseOTETestAction):
         self.nncf_task = nncf_task_cls(task_environment=self.environment_for_nncf)
 
         logger.info("Run NNCF optimization")
-        self.nncf_task.optimize(
-            OptimizationType.NNCF, dataset, self.nncf_model, None
-        )
+        self.nncf_task.optimize(OptimizationType.NNCF, dataset, self.nncf_model, None)
         assert (
             self.nncf_model.model_status == ModelStatus.SUCCESS
         ), "NNCF optimization was not successful"
