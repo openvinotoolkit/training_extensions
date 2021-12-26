@@ -18,7 +18,6 @@ Install anomalib wrapper for OTE
 
 from typing import List
 
-import anomalib
 from setuptools import find_packages, setup
 
 
@@ -37,7 +36,7 @@ def get_requirements() -> List[str]:
 
 setup(
     name="anomaly_classification",
-    version=anomalib.__version__,
+    version="ote-alpha",
     packages=find_packages(
         include=["anomaly_classification", "anomaly_classification.*", "ote_anomalib", "ote_anomalib.*"]
     ),
