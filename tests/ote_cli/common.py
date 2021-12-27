@@ -13,7 +13,7 @@
 # and limitations under the License.
 
 import os
-from subprocess import run
+from subprocess import run  # nosec
 
 def get_template_rel_dir(template):
     return os.path.dirname(os.path.relpath(template.model_template_path))
