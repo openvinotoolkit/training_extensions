@@ -144,8 +144,7 @@ def main():
 
     task.train(dataset, output_model, train_parameters=TrainParameters())
 
-    if output_model.model_status != ModelStatus.NOT_READY:
-        save_model_data(output_model, args.save_model_to)
+    save_model_data(output_model, args.save_model_to)
 
     validation_dataset = dataset.get_subset(Subset.VALIDATION)
     predicted_validation_dataset = task.infer(

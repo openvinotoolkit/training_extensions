@@ -16,7 +16,6 @@ OpenVINO Anomaly Task
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-
 import inspect
 import json
 import logging
@@ -26,7 +25,7 @@ import subprocess
 import sys
 import tempfile
 from shutil import copyfile, copytree
-from typing import Any, Dict, Optional, Union, cast
+from typing import Any, Dict, List, Optional, Union, cast
 from zipfile import ZipFile
 
 import numpy as np
@@ -46,7 +45,14 @@ from ote_sdk.entities.inference_parameters import (
     InferenceParameters,
     default_progress_callback,
 )
-from ote_sdk.entities.model import ModelEntity, ModelStatus
+from ote_sdk.entities.model import (
+    ModelEntity,
+    ModelFormat,
+    ModelOptimizationType,
+    ModelPrecision,
+    ModelStatus,
+    OptimizationMethod,
+)
 from ote_sdk.entities.optimization_parameters import OptimizationParameters
 from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.task_environment import TaskEnvironment
@@ -110,6 +116,8 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
         self.config = self.get_config()
         self.inferencer = self.load_inferencer()
         self.annotation_converter = AnomalyClassificationToAnnotationConverter(self.task_environment.label_schema)
+        template_file_path = task_environment.model_template.model_template_path
+        self._base_dir = os.path.abspath(os.path.dirname(template_file_path))
 
     def get_config(self) -> Union[DictConfig, ListConfig]:
         """
@@ -182,6 +190,27 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
         """
         output_resultset.performance = MetricsHelper.compute_f_measure(output_resultset).get_performance()
 
+    def _get_optimization_algorithms_configs(self) -> List[ADDict]:
+        """Returns list of optimization algorithms configurations"""
+
+        hparams = self.task_environment.get_hyper_parameters()
+
+        optimization_config_path = os.path.join(self._base_dir, "pot_optimization_config.json")
+        if os.path.exists(optimization_config_path):
+            with open(optimization_config_path, encoding="UTF-8") as f_src:
+                algorithms = ADDict(json.load(f_src))["algorithms"]
+        else:
+            algorithms = [
+                ADDict({"name": "DefaultQuantization", "params": {"target_device": "ANY", "shuffle_data": True}})
+            ]
+        for algo in algorithms:
+            algo.params.stat_subset_size = hparams.pot_parameters.stat_subset_size
+            algo.params.shuffle_data = True
+            if "Quantization" in algo["name"]:
+                algo.params.preset = hparams.pot_parameters.preset.name.lower()
+
+        return algorithms
+
     def optimize(
         self,
         optimization_type: OptimizationType,
@@ -223,22 +252,9 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
                 logger.warning("Model is already optimized by POT")
                 return
 
-        hparams = self.task_environment.get_hyper_parameters()
-
-        algorithms = [
-            {
-                "name": "DefaultQuantization",
-                "params": {
-                    "target_device": "ANY",
-                    "preset": hparams.pot_parameters.preset.name.lower(),
-                    "stat_subset_size": min(hparams.pot_parameters.stat_subset_size, len(data_loader)),
-                },
-            }
-        ]
-
         engine = IEEngine(config=ADDict({"device": "CPU"}), data_loader=data_loader, metric=None)
-
-        compressed_model = create_pipeline(algorithms, engine).run(model)
+        pipeline = create_pipeline(algo_config=self._get_optimization_algorithms_configs(), engine=engine)
+        compressed_model = pipeline.run(model)
         compress_model_weights(compressed_model)
 
         with tempfile.TemporaryDirectory() as tempdir:
@@ -253,6 +269,10 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
         output_model.set_data("pixel_mean", self.task_environment.model.get_data("pixel_mean"))
         output_model.set_data("pixel_std", self.task_environment.model.get_data("pixel_std"))
         output_model.model_status = ModelStatus.SUCCESS
+        output_model.model_format = ModelFormat.OPENVINO
+        output_model.optimization_type = ModelOptimizationType.POT
+        output_model.optimization_methods = [OptimizationMethod.QUANTIZATION]
+        output_model.precision = [ModelPrecision.INT8]
 
         self.task_environment.model = output_model
         self.inferencer = self.load_inferencer()
