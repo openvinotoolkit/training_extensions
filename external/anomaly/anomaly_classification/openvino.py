@@ -21,7 +21,7 @@ import json
 import logging
 import os
 import struct
-import subprocess
+import subprocess  # nosec
 import sys
 import tempfile
 from shutil import copyfile, copytree
