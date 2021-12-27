@@ -13,7 +13,7 @@
 # in the License.
 
 
-import pickle
+import pickle  # nosec
 
 import pytest
 from bson import ObjectId
