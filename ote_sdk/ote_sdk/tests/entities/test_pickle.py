@@ -46,7 +46,7 @@ class TestPickle:
         """
         original_id = ID(ObjectId())
         pickled_id = pickle.dumps(original_id)
-        unpickled_id = pickle.loads(pickled_id)
+        unpickled_id = pickle.loads(pickled_id)  # nosec
         assert id(original_id) != id(
             pickled_id
         ), "Expected two different memory instanced"
