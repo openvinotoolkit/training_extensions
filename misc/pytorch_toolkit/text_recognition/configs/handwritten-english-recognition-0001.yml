@@ -14,8 +14,8 @@ val_transforms_list:
 device: cuda
 num_workers: 4
 use_ctc: true
-model_path: work_dir/model_checkpoints/accuracy_test_best_model_2021-12-15_12-51-21.pth #TODO
-model_url: http://localhost:8000/accuracy_test_best_model_2021-12-15_12-51-21.pth # TODO
+model_path: model_checkpoints/handwritten_english_recognition_0001.pth
+model_url: https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/text_recognition/handwritten_english_recognition_0001.pth
 vocab_path: vocabs/vocab_gnhk.json
 train:
   batch_size: 4
