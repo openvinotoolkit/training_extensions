@@ -103,6 +103,9 @@
                            Load only weights from previously saved checkpoint
      --save-model-to SAVE_MODEL_TO
                            Location where trained model will be stored.
+     --enable-hpo          Execute hyper parameters optimization (HPO) before training.
+     --hpo-time-ratio HPO_TIME_RATIO
+                           Expected ratio of total time to run HPO to time taken for full fine-tuning.
    ```
 
    Let's have a look at `ote train` hyper parameters help. These parameters are model template specific.

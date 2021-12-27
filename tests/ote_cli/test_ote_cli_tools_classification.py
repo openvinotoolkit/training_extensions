@@ -15,6 +15,7 @@
 import json
 import os
 from subprocess import run
+import shutil
 
 import pytest
 
@@ -183,3 +184,37 @@ def test_ote_deploy_openvino(template):
     assert run(['python3', 'demo_patched.py', '-m', '../model/model.xml', '-i', f'{os.path.join(ote_dir, args["--test-data-roots"], "0")}'],
                cwd=os.path.join(deployment_dir, 'python'),
                env=collect_env_vars(os.path.join(deployment_dir, 'python'))).returncode == 0
+
+@pytest.mark.parametrize("template", templates, ids=templates_ids)
+def test_ote_hpo(template):
+    work_dir, template_work_dir, algo_backend_dir = get_some_vars(template, root)
+    if os.path.exists(f"{template_work_dir}/hpo"):
+        shutil.rmtree(f"{template_work_dir}/hpo")
+    create_venv(algo_backend_dir, work_dir, template_work_dir)
+    command_line = ['ote',
+                    'train',
+                    template.model_template_id,
+                    '--train-ann-file',
+                    f'{os.path.join(ote_dir, args["--train-ann-file"])}',
+                    '--train-data-roots',
+                    f'{os.path.join(ote_dir, args["--train-data-roots"])}',
+                    '--val-ann-file',
+                    f'{os.path.join(ote_dir, args["--val-ann-file"])}',
+                    '--val-data-roots',
+                    f'{os.path.join(ote_dir, args["--val-data-roots"])}',
+                    '--save-model-to',
+                    f'{template_work_dir}/hpo_trained_{template.model_template_id}',
+                    '--enable-hpo',
+                    '--hpo-time-ratio',
+                    '1',
+                    'params',
+                    '--learning_parameters.max_num_epochs',
+                    '2',
+                    '--learning_parameters.batch_size',
+                    '2']
+    assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
+    assert os.path.exists(f"{template_work_dir}/hpo/hpopt_status.json")
+    with open(f"{template_work_dir}/hpo/hpopt_status.json", "r") as f:
+        assert json.load(f).get('best_config_id', None) is not None
+    assert os.path.exists(f'{template_work_dir}/hpo_trained_{template.model_template_id}/weights.pth')
+    assert os.path.exists(f'{template_work_dir}/hpo_trained_{template.model_template_id}/label_schema.json')

@@ -4,3 +4,4 @@ numpy
 nbmake
 pytest
 pytest-ordering
+hpopt@git+https://github.com/openvinotoolkit/hyper_parameter_optimization@07b94fe
