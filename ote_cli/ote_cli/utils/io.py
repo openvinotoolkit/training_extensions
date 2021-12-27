@@ -62,7 +62,7 @@ def read_model(model_configuration, path, train_dataset):
             "openvino.bin": ModelAdapter(read_binary(path[:-4] + ".bin")),
         }
 
-        for confidence_threshold in ["confidence_threshold", "threshold"]:
+        for confidence_threshold in ["confidence_threshold", "image_threshold"]:
             confidence_threshold_path = os.path.join(
                 os.path.dirname(path), confidence_threshold
             )
