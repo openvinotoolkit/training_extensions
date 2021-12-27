@@ -565,13 +565,13 @@ class TestFMeasureCalculator:
         boxes_per_image = f_measure_calculator.prediction_boxes_per_image
         # Checking value returned by "__filter_confidence" for "confidence_threshold" equal to 0.0
         assert (
-            f_measure_calculator._FMeasureCalculator__filter_confidence(
+            f_measure_calculator._FMeasureCalculator__filter_confidence(  # type: ignore[attr-defined]
                 boxes_per_image, 0.0
             )
             == boxes_per_image
         )
         # Checking value returned by "__filter_confidence" for "confidence_threshold" equal to filter some boxes
-        assert f_measure_calculator._FMeasureCalculator__filter_confidence(
+        assert f_measure_calculator._FMeasureCalculator__filter_confidence(  # type: ignore[attr-defined]
             boxes_per_image, 0.92
         ) == [
             [(0.5, 0.05, 0.8, 0.85, "class_1", 0.93)],
@@ -580,7 +580,7 @@ class TestFMeasureCalculator:
                 (0.45, 0.05, 0.95, 0.5, "class_3", 0.94),
             ],
         ]
-        assert f_measure_calculator._FMeasureCalculator__filter_confidence(
+        assert f_measure_calculator._FMeasureCalculator__filter_confidence(  # type: ignore[attr-defined]
             boxes_per_image, 0.93
         ) == [
             [],
@@ -590,9 +590,12 @@ class TestFMeasureCalculator:
             ],
         ]
         # Checking value returned by "__filter_confidence" for "confidence_threshold" equal to 1.0
-        assert f_measure_calculator._FMeasureCalculator__filter_confidence(
+        assert f_measure_calculator._FMeasureCalculator__filter_confidence(  # type: ignore[attr-defined]
             boxes_per_image, 1.0
-        ) == [[], []]
+        ) == [
+            [],
+            [],
+        ]
 
     @pytest.mark.priority_medium
     @pytest.mark.component
@@ -616,7 +619,7 @@ class TestFMeasureCalculator:
         f_measure_calculator = self.f_measure_calculator()
         boxes_per_image = f_measure_calculator.prediction_boxes_per_image
         # Checking list returned by "__filter_class" to get class represented in one image
-        assert f_measure_calculator._FMeasureCalculator__filter_class(
+        assert f_measure_calculator._FMeasureCalculator__filter_class(  # type: ignore[attr-defined]
             boxes_per_image, "class_2"
         ) == [
             [
@@ -626,7 +629,7 @@ class TestFMeasureCalculator:
             [],
         ]
         # Checking list returned by "__filter_class" to get class represented in several images
-        assert f_measure_calculator._FMeasureCalculator__filter_class(
+        assert f_measure_calculator._FMeasureCalculator__filter_class(  # type: ignore[attr-defined]
             boxes_per_image, "class_1"
         ) == [
             [
@@ -639,9 +642,12 @@ class TestFMeasureCalculator:
             ],
         ]
         # Checking list returned by "__filter_class" to get class that is not represented in any of images
-        assert f_measure_calculator._FMeasureCalculator__filter_class(
+        assert f_measure_calculator._FMeasureCalculator__filter_class(  # type: ignore[attr-defined]
             boxes_per_image, "class_6"
-        ) == [[], []]
+        ) == [
+            [],
+            [],
+        ]
 
     @pytest.mark.priority_medium
     @pytest.mark.component
@@ -667,13 +673,13 @@ class TestFMeasureCalculator:
         critical_nms = [[0.5, 0.55, 0.65, 0.6], [0.6, 0.55, 0.5, 0.65]]
         # Checking list returned by "__filter_nms" for "nms_threshold" that not filters any boxes
         assert (
-            f_measure_calculator._FMeasureCalculator__filter_nms(
+            f_measure_calculator._FMeasureCalculator__filter_nms(  # type: ignore[attr-defined]
                 boxes_per_image, critical_nms, 1.0
             )
             == boxes_per_image
         )
         # Checking list returned by "__filter_nms" for "nms_threshold" that filters some boxes
-        assert f_measure_calculator._FMeasureCalculator__filter_nms(
+        assert f_measure_calculator._FMeasureCalculator__filter_nms(  # type: ignore[attr-defined]
             boxes_per_image, critical_nms, 0.6
         ) == [
             [
@@ -686,9 +692,12 @@ class TestFMeasureCalculator:
             ],
         ]
         # Checking list returned by "__filter_nms" for "nms_threshold" that filters all boxes
-        assert f_measure_calculator._FMeasureCalculator__filter_nms(
+        assert f_measure_calculator._FMeasureCalculator__filter_nms(  # type: ignore[attr-defined]
             boxes_per_image, critical_nms, 0.1
-        ) == [[], []]
+        ) == [
+            [],
+            [],
+        ]
 
     @pytest.mark.priority_medium
     @pytest.mark.component
@@ -724,11 +733,14 @@ class TestFMeasureCalculator:
             ],
         ]
         # Checking list returned by "__get_critical_nms" when "cross_class_nms" is "False"
-        assert f_measure_calculator._FMeasureCalculator__get_critical_nms(
+        assert f_measure_calculator._FMeasureCalculator__get_critical_nms(  # type: ignore[attr-defined]
             boxes_per_image, False
-        ) == [[0.0, 0.28571428571428575, 0.0, 0.0], [0.3333333333333333, 0.0, 0.0, 0.0]]
+        ) == [
+            [0.0, 0.28571428571428575, 0.0, 0.0],
+            [0.3333333333333333, 0.0, 0.0, 0.0],
+        ]
         # Checking list returned by "__get_critical_nms" when "cross_class_nms" is "True"
-        assert f_measure_calculator._FMeasureCalculator__get_critical_nms(
+        assert f_measure_calculator._FMeasureCalculator__get_critical_nms(  # type: ignore[attr-defined]
             boxes_per_image, True
         ) == [
             [0.0, 0.28571428571428575, 0.4, 0.0],
@@ -909,23 +921,19 @@ class TestFMeasureCalculator:
             expected_best_f_measure: float,
             expected_best_threshold: float,
         ):
-            expected_results_per_nms = _AggregatedResults(["class_1", "class_2"])
-            expected_critical_nms_per_image = (
-                calculator._FMeasureCalculator__get_critical_nms(
-                    calculator.prediction_boxes_per_image, cross_class_nms
-                )
+            exp_results_per_nms = _AggregatedResults(["class_1", "class_2"])
+            exp_critical_nms_per_image = calculator._FMeasureCalculator__get_critical_nms(  # type: ignore[attr-defined]
+                calculator.prediction_boxes_per_image, cross_class_nms
             )
             for nms_threshold in np.arange(*calculator.nms_range):
-                predicted_boxes_per_image_per_nms = (
-                    calculator._FMeasureCalculator__filter_nms(
-                        calculator.prediction_boxes_per_image,
-                        expected_critical_nms_per_image,
-                        nms_threshold,
-                    )
+                predict_boxes_per_image_nms = calculator._FMeasureCalculator__filter_nms(  # type: ignore[attr-defined]
+                    calculator.prediction_boxes_per_image,
+                    exp_critical_nms_per_image,
+                    nms_threshold,
                 )
                 boxes_pair_for_nms = _FMeasureCalculator(
                     calculator.ground_truth_boxes_per_image,
-                    predicted_boxes_per_image_per_nms,
+                    predict_boxes_per_image_nms,
                 )
                 result_point = boxes_pair_for_nms.evaluate_classes(
                     classes=["class_1", "class_2"],
@@ -933,33 +941,27 @@ class TestFMeasureCalculator:
                     confidence_threshold=calculator.default_confidence_threshold,
                 )
                 all_classes_f_measure = result_point["All Classes"].f_measure
-                expected_results_per_nms.all_classes_f_measure_curve.append(
+                exp_results_per_nms.all_classes_f_measure_curve.append(
                     all_classes_f_measure
                 )
 
                 for class_name in ["class_1", "class_2"]:
-                    expected_results_per_nms.f_measure_curve[class_name].append(
+                    exp_results_per_nms.f_measure_curve[class_name].append(
                         result_point[class_name].f_measure
                     )
-                    expected_results_per_nms.precision_curve[class_name].append(
+                    exp_results_per_nms.precision_curve[class_name].append(
                         result_point[class_name].precision
                     )
-                    expected_results_per_nms.recall_curve[class_name].append(
+                    exp_results_per_nms.recall_curve[class_name].append(
                         result_point[class_name].recall
                     )
             assert (
                 actual_results.all_classes_f_measure_curve
-                == expected_results_per_nms.all_classes_f_measure_curve
+                == exp_results_per_nms.all_classes_f_measure_curve
             )
-            assert (
-                actual_results.f_measure_curve
-                == expected_results_per_nms.f_measure_curve
-            )
-            assert (
-                actual_results.precision_curve
-                == expected_results_per_nms.precision_curve
-            )
-            assert actual_results.recall_curve == expected_results_per_nms.recall_curve
+            assert actual_results.f_measure_curve == exp_results_per_nms.f_measure_curve
+            assert actual_results.precision_curve == exp_results_per_nms.precision_curve
+            assert actual_results.recall_curve == exp_results_per_nms.recall_curve
             assert actual_results.best_f_measure == expected_best_f_measure
             assert actual_results.best_threshold == expected_best_threshold
 
@@ -1633,8 +1635,8 @@ class TestFMeasure:
         )
         classes = [label.name for label in label_schema_labels]
         boxes_pair = _FMeasureCalculator(
-            f_measure._FMeasure__get_boxes_from_dataset_as_list(ground_dataset, labels),
-            f_measure._FMeasure__get_boxes_from_dataset_as_list(
+            f_measure._FMeasure__get_boxes_from_dataset_as_list(ground_dataset, labels),  # type: ignore[attr-defined]
+            f_measure._FMeasure__get_boxes_from_dataset_as_list(  # type: ignore[attr-defined]
                 prediction_dataset, labels
             ),
         )
