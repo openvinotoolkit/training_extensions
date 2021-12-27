@@ -87,7 +87,7 @@ class TestFMeasureFunctions:
         4. Check box returned by "intersection_box" function when one of boxes completely covers other
         """
         base_box = [2, 2, 5, 6]
-        # Checking box returned by "intersection_box" function for boxes that intersect in two points
+        # Checking box returned by "intersection_box" for boxes that intersect in two points
         assert intersection_box(box1=base_box, box2=[4, 4, 7, 8]) == [4, 5, 6, 4]
         # Checking box returned by "intersection_box" for boxes that intersect in one point
         assert intersection_box(box1=base_box, box2=[1, 1, 2, 2]) == [2, 2, 2, 2]
@@ -111,11 +111,11 @@ class TestFMeasureFunctions:
         Test passes if value returned by "bounding_box_intersection_over_union" function is equal to expected
 
         <b>Steps</b>
-        1. Check value returned by "bounding_box_intersection_over_union" when "x_right" coordinate of intersection box
-        more than "x_left"
-        2. Check value returned by "bounding_box_intersection_over_union" when "y_bottom" coordinate of intersection box
-        more than "y_top"
-        3. Check value returned by "bounding_box_intersection_over_union" when boxes intersect in two points
+        1. Check value returned by "bounding_box_intersection_over_union" function when "x_right" coordinate of
+        intersection box more than "x_left"
+        2. Check value returned by "bounding_box_intersection_over_union" function when "y_bottom" coordinate of
+        intersection box more than "y_top"
+        3. Check value returned by "bounding_box_intersection_over_union" function when boxes intersect in two points
         """
         # Checking value returned by "bounding_box_intersection_over_union" when "x_right" coordinate of
         # intersection box more than "x_left"
@@ -181,11 +181,10 @@ class TestFMeasureFunctions:
         iou_matrix = np.array(
             [[0.0, 0.25, 0.0, 0.09], [0.0, 0.0, 0.0, 0.0], [0.0, 0.1, 0.0, 0.08]]
         )
-        # Checking value returned by "get_n_false_negatives" function when max element in a row is less than
-        # "iou_threshold" parameter
+        # Checking value returned by "get_n_false_negatives" when max element in a row is less than "iou_threshold"
         assert get_n_false_negatives(iou_matrix, 0.11) == 2
-        # Checking value returned by "get_n_false_negatives" function when several elements in a column are more than
-        # "iou_threshold" parameter
+        # Checking value returned by "get_n_false_negatives" when several elements in a column are more than
+        # "iou_threshold"
         assert get_n_false_negatives(iou_matrix, 0.09) == 2
 
 
@@ -354,7 +353,7 @@ class TestAggregatedResults:
             aggregate_results=_AggregatedResults(["class_1"]),
             expected_classes_curve={"class_1": []},
         )
-        # Check attributes of "_AggregatedResults" object initialized with "classes" equal to empty list
+        # Checking attributes of "_AggregatedResults" object initialized with "classes" equal to empty list
         check_aggregate_results_attributes(
             aggregate_results=_AggregatedResults([]), expected_classes_curve={}
         )
@@ -706,8 +705,8 @@ class TestFMeasureCalculator:
         Test passes if list returned by "__get_critical_nms" method is equal to expected
 
         <b>Steps</b>
-        1. Check list returned by "__get_critical_nms" method for "cross_class_nms" parameter is "False"
-        2. Check list returned by "__get_critical_nms" method for "cross_class_nms" parameter is "True"
+        1. Check list returned by "__get_critical_nms" method when "cross_class_nms" parameter is "False"
+        2. Check list returned by "__get_critical_nms" method when "cross_class_nms" parameter is "True"
         """
         f_measure_calculator = self.f_measure_calculator()
         boxes_per_image = [  # images
@@ -724,11 +723,11 @@ class TestFMeasureCalculator:
                 (0.7, 0.1, 1.0, 0.6, "class_4", 0.94),
             ],
         ]
-        # Checking list returned by "__get_critical_nms" for "cross_class_nms" is "False"
+        # Checking list returned by "__get_critical_nms" when "cross_class_nms" is "False"
         assert f_measure_calculator._FMeasureCalculator__get_critical_nms(
             boxes_per_image, False
         ) == [[0.0, 0.28571428571428575, 0.0, 0.0], [0.3333333333333333, 0.0, 0.0, 0.0]]
-        # Checking list returned by "__get_critical_nms" for "cross_class_nms" is "True"
+        # Checking list returned by "__get_critical_nms" when "cross_class_nms" is "True"
         assert f_measure_calculator._FMeasureCalculator__get_critical_nms(
             boxes_per_image, True
         ) == [
