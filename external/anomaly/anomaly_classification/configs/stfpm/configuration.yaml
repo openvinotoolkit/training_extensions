@@ -55,21 +55,21 @@ model:
     header: Early Stopping Parameters
     metric:
       affects_outcome_of: NONE
-      default_value: image_roc_auc
+      default_value: image_AUROC
       description: The metric used to determine if the model should stop training
       editable: true
       enum_name: EarlyStoppingMetrics
       header: Early Stopping Metric
       options:
-        IMAGE_F1: image-f1-score
-        IMAGE_ROC_AUC: image_roc_auc
+        IMAGE_F1: image_OptimalF1
+        IMAGE_ROC_AUC: image_AUROC
       type: SELECTABLE
       ui_rules:
         action: DISABLE_EDITING
         operator: AND
         rules: []
         type: UI_RULES
-      value: image_roc_auc
+      value: image_AUROC
       visible_in_ui: true
       warning: null
     type: PARAMETER_GROUP

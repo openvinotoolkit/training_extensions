@@ -1257,27 +1257,35 @@ class TestLabelTree:
         label_tree = self.label_tree()
         # Checking value returned by get_labels_in_topological_order method for tree with multiple branches
         labels_topological_order = label_tree.get_labels_in_topological_order()
-        assert labels_topological_order == [
-            labels.label_0,
-            labels.label_0_1,
-            labels.label_0_1_3,
-            labels.label_0_2,
-            labels.label_0_2_4,
-            labels.label_0_2_5,
-        ]
+
+        def previous_vertexes(vert_id):
+            vertexes = vert_id.split("_")
+            return vertexes[:-1], vertexes[-1]
+
+        returned_vertexes = set()
+        for label in labels_topological_order:
+            previous, curent = previous_vertexes(label.id)
+            for vertex in previous:
+                assert vertex in returned_vertexes
+            returned_vertexes.add(curent)
+        assert {"0", "1", "2", "3", "4", "5"} == returned_vertexes
+
         assert (
             label_tree._LabelTree__topological_order_cache == labels_topological_order
         )
         # Removing node with children and checking value returned by get_labels_in_topological_order method
         label_tree.remove_node(labels.label_0_1)
         labels_topological_order = label_tree.get_labels_in_topological_order()
-        assert labels_topological_order == [
-            labels.label_0_1_3,
-            labels.label_0,
-            labels.label_0_2,
-            labels.label_0_2_4,
-            labels.label_0_2_5,
-        ]
+        returned_vertexes = set()
+        for label in labels_topological_order:
+            previous, curent = previous_vertexes(label.id)
+            for vertex in previous:
+                if (
+                    curent != "3"
+                ):  # the '1' has been removed, so that '3' is separated from the rest graph.
+                    assert vertex in returned_vertexes
+            returned_vertexes.add(curent)
+        assert {"0", "2", "3", "4", "5"} == returned_vertexes
         assert (
             label_tree._LabelTree__topological_order_cache == labels_topological_order
         )

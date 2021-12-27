@@ -24,6 +24,7 @@ from ote_sdk.entities.model import ModelEntity, ModelStatus
 from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.subset import Subset
 from ote_sdk.entities.task_environment import TaskEnvironment
+from ote_sdk.entities.train_parameters import TrainParameters
 from ote_sdk.usecases.adapters.model_adapter import ModelAdapter
 
 from ote_cli.datasets import get_dataset_class
@@ -141,10 +142,9 @@ def main():
         model_status=ModelStatus.NOT_READY,
     )
 
-    task.train(dataset, output_model)
+    task.train(dataset, output_model, train_parameters=TrainParameters())
 
-    if output_model.model_status != ModelStatus.NOT_READY:
-        save_model_data(output_model, args.save_model_to)
+    save_model_data(output_model, args.save_model_to)
 
     validation_dataset = dataset.get_subset(Subset.VALIDATION)
     predicted_validation_dataset = task.infer(

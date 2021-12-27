@@ -16,7 +16,7 @@ DEFAULT_FIELD_VALUE_FOR_USING_IN_TEST = "DEFAULT_FIELD_VALUE_FOR_USING_IN_TEST"
 # This string constant will be used as a special constant for a config field value to point
 # that the field should NOT be changed in tests -- its value should be taken
 # from the template file or the config file of the model.
-KEEP_CONFIG_FIELD_VALUE = "KEEP_CONFIG_FIELD_VALUE"
+KEEP_CONFIG_FIELD_VALUE = "CONFIG"
 
 
 # This is a constant for pointing usecase for reallife training tests
