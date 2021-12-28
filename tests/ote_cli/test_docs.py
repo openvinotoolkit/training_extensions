@@ -14,7 +14,7 @@
 
 import os
 from collections import defaultdict
-from subprocess import run
+from subprocess import run  # nosec
 
 from ote_cli.registry import Registry
 

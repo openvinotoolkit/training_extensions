@@ -21,7 +21,7 @@ import io
 import logging
 import os
 import shutil
-import subprocess
+import subprocess  # nosec
 import tempfile
 from glob import glob
 from typing import Optional, Union
