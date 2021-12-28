@@ -30,6 +30,7 @@ from ote_sdk.usecases.adapters.model_adapter import ModelAdapter
 from ote_cli.datasets import get_dataset_class
 from ote_cli.registry import find_and_parse_model_template
 from ote_cli.utils.config import override_parameters
+from ote_cli.utils.hpo import run_hpo
 from ote_cli.utils.importing import get_impl_class
 from ote_cli.utils.io import generate_label_schema, read_binary, save_model_data
 from ote_cli.utils.parser import (
@@ -85,6 +86,17 @@ def parse_args():
         required="True",
         help="Location where trained model will be stored.",
     )
+    parser.add_argument(
+        "--enable-hpo",
+        action="store_true",
+        help="Execute hyper parameters optimization (HPO) before training.",
+    )
+    parser.add_argument(
+        "--hpo-time-ratio",
+        default=4,
+        type=float,
+        help="Expected ratio of total time to run HPO to time taken for full fine-tuning.",
+    )
 
     add_hyper_parameters_sub_parser(parser, hyper_parameters)
 
@@ -133,6 +145,9 @@ def main():
                 "weights.pth": ModelAdapter(read_binary(args.load_weights))
             },
         )
+
+    if args.enable_hpo:
+        run_hpo(args, environment, dataset, template.task_type)
 
     task = task_class(task_environment=environment)
 
