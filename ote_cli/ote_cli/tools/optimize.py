@@ -1,3 +1,7 @@
+"""
+Model optimization tool.
+"""
+
 # Copyright (C) 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,28 +17,21 @@
 # and limitations under the License.
 
 import argparse
-import os
-import sys
 
 from ote_sdk.configuration.helper import create
 from ote_sdk.entities.inference_parameters import InferenceParameters
 from ote_sdk.entities.model import ModelEntity, ModelStatus
+from ote_sdk.entities.optimization_parameters import OptimizationParameters
 from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.subset import Subset
 from ote_sdk.entities.task_environment import TaskEnvironment
-from ote_sdk.entities.optimization_parameters import OptimizationParameters
 from ote_sdk.usecases.tasks.interfaces.optimization_interface import OptimizationType
 
 from ote_cli.datasets import get_dataset_class
 from ote_cli.registry import find_and_parse_model_template
 from ote_cli.utils.config import override_parameters
 from ote_cli.utils.importing import get_impl_class
-from ote_cli.utils.io import (
-    generate_label_schema,
-    read_binary,
-    read_model,
-    save_model_data
-)
+from ote_cli.utils.io import generate_label_schema, read_model, save_model_data
 from ote_cli.utils.parser import (
     add_hyper_parameters_sub_parser,
     gen_params_dict_from_args,
@@ -107,7 +104,9 @@ def main():
         is_pot = True
 
     if template.entrypoints.nncf is None:
-        raise RuntimeError(f"Optimization by NNCF is not available for template {args.template}")
+        raise RuntimeError(
+            f"Optimization by NNCF is not available for template {args.template}"
+        )
 
     # Get new values from user's input.
     updated_hyper_parameters = gen_params_dict_from_args(args)
@@ -138,7 +137,9 @@ def main():
         model_template=template,
     )
 
-    environment.model = read_model(environment.get_model_configuration(), args.load_weights, None)
+    environment.model = read_model(
+        environment.get_model_configuration(), args.load_weights, None
+    )
 
     task = task_class(task_environment=environment)
 
@@ -152,7 +153,7 @@ def main():
         OptimizationType.POT if is_pot else OptimizationType.NNCF,
         dataset,
         output_model,
-        OptimizationParameters()
+        OptimizationParameters(),
     )
 
     if output_model.model_status != ModelStatus.NOT_READY:

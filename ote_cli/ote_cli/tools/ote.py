@@ -24,8 +24,8 @@ from .deploy import main as ote_deploy
 from .eval import main as ote_eval
 from .export import main as ote_export
 from .find import main as ote_find
-from .train import main as ote_train
 from .optimize import main as ote_optimize
+from .train import main as ote_train
 
 __all__ = [
     "ote_demo",
