@@ -20,12 +20,11 @@ import inspect
 import json
 import logging
 import os
-import struct
 import subprocess
 import sys
 import tempfile
 from shutil import copyfile, copytree
-from typing import Any, Dict, List, Optional, Union, cast
+from typing import Any, Dict, List, Optional, Union
 from zipfile import ZipFile
 
 import numpy as np
