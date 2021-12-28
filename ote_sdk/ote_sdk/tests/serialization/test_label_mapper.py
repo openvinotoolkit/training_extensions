@@ -112,7 +112,12 @@ class TestLabelSchemaEntityMapper:
         cur_date = now()
         names = ["cat", "dog", "mouse"]
         colors = [
-            Color(randint(0, 255), randint(0, 255), randint(0, 255), randint(0, 255))  # nosec  # noqa
+            Color(
+                randint(0, 255),  # nosec
+                randint(0, 255),  # nosec
+                randint(0, 255),  # nosec
+                randint(0, 255),  # nosec
+            )  # nosec  # noqa
             for _ in range(3)
         ]
         labels = [
