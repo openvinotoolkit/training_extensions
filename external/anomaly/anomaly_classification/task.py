@@ -21,7 +21,6 @@ import io
 import logging
 import os
 import shutil
-import struct
 import subprocess
 import tempfile
 from glob import glob
