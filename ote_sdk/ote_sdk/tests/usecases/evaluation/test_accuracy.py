@@ -349,6 +349,9 @@ class TestAccuracyFunctions:
             ],
         )
 
+    @pytest.mark.priority_medium
+    @pytest.mark.component
+    @pytest.mark.reqids(Requirements.REQ_1)
     def test_recall_metrics_group(self):
         """
         <b>Description:</b>
@@ -413,6 +416,9 @@ class TestAccuracyFunctions:
             ],
         )
 
+    @pytest.mark.priority_medium
+    @pytest.mark.component
+    @pytest.mark.reqids(Requirements.REQ_1)
     def test_compute_unnormalized_confusion_matrices_from_resultset(self):
         """
         <b>Description:</b>
@@ -545,6 +551,9 @@ class TestAccuracy:
         actual_unnormalized_matrices = accuracy._unnormalized_matrices
         check_confusion_matrices(actual_unnormalized_matrices)
 
+    @pytest.mark.priority_medium
+    @pytest.mark.component
+    @pytest.mark.reqids(Requirements.REQ_1)
     def test_accuracy_get_performance(self):
         """
         <b>Description:</b>
@@ -629,6 +638,9 @@ class TestAccuracy:
             ],
         )
 
+    @pytest.mark.priority_medium
+    @pytest.mark.component
+    @pytest.mark.reqids(Requirements.REQ_1)
     def test_accuracy_compute_accuracy(self):
         """
         <b>Description:</b>
