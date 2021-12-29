@@ -59,23 +59,29 @@ class OteAnomalyTask:
 
     def __init__(self, dataset_path: str, seed: int, model_template_path: str) -> None:
         """Initialize OteAnomalyTask.
+
         Args:
             dataset_path (str): Path to the MVTec dataset.
             seed (int): Seed to split the dataset into train/val/test splits.
             model_template_path (str): Path to model template.
+
         Example:
             >>> import os
             >>> os.getcwd()
             '~/ote/external/anomaly'
+
             If MVTec dataset is placed under the above directory, then we could run,
+
             >>> model_template_path = "./anomaly_classification/configs/padim/template.yaml"
             >>> dataset_path = "./datasets/MVTec"
             >>> seed = 0
             >>> task = OteAnomalyTask(
             ...     dataset_path=dataset_path, seed=seed, model_template_path=model_template_path
             ... )
+
             >>> task.train()
             Performance(score: 1.0, dashboard: (1 metric groups))
+
             >>> task.export()
             Performance(score: 0.9756097560975608, dashboard: (1 metric groups))
         """
@@ -108,13 +114,17 @@ class OteAnomalyTask:
 
     def create_task(self, task: str) -> Any:
         """Create base torch or openvino task.
+
         Args:
             task (str): task type. Either base or openvino.
+
         Returns:
             Any: Base Torch or OpenVINO Task Class.
+
         Example:
             >>> self.create_task(task="base")
             <anomaly_classification.torch_task.AnomalyClassificationTask>
+
         """
         if self.model_template.entrypoints is not None:
             task_path = getattr(self.model_template.entrypoints, task)
@@ -147,11 +157,14 @@ class OteAnomalyTask:
 
     def infer(self, task: IInferenceTask, output_model: ModelEntity) -> ResultSetEntity:
         """Get the predictions using the base Torch or OpenVINO tasks and models.
+
         Args:
             task (IInferenceTask): Task to infer. Either torch or openvino.
             output_model (ModelEntity): Output model on which the weights are saved.
+
         Returns:
             ResultSetEntity: Results set containing the true and pred datasets.
+
         """
         ground_truth_validation_dataset = self.dataset.get_subset(Subset.VALIDATION)
         prediction_validation_dataset = task.infer(
@@ -168,9 +181,11 @@ class OteAnomalyTask:
     @staticmethod
     def evaluate(task: IEvaluationTask, result_set: ResultSetEntity) -> None:
         """Evaluate the performance of the model.
+
         Args:
             task (IEvaluationTask): Task to evaluate the performance. Either torch or openvino.
             result_set (ResultSetEntity): Results set containing the true and pred datasets.
+
         """
         task.evaluate(result_set)
         logger.info(str(result_set.performance))
@@ -236,8 +251,10 @@ class OteAnomalyTask:
 
 def parse_args() -> Namespace:
     """Parse CLI arguments.
+
     Returns:
         (Namespace): CLI arguments.
+
     """
     parser = argparse.ArgumentParser(
         description="Sample showcasing how to run Anomaly Classification Task using OTE SDK"
