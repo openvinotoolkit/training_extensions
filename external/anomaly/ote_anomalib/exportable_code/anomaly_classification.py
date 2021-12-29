@@ -35,10 +35,10 @@ class AnomalyClassification(SegmentationModel):
         parameters["resize_type"].update_default_value("standard")
         parameters.update(
             {
-                "image_threshold": NumericalValue(default_value=0.5, description="Threshold value to locate anomaly"),
+                "image_threshold": NumericalValue(description="Threshold value to locate anomaly"),
                 "pixel_threshold": NumericalValue(description="Pixel Threshold value to locate anomaly"),
                 "pixel_mean": ListValue(description="Pixel mean used to normalize"),
-                "pixel_std": ListValue(description="Pixel standard deviation value to locate anomaly"),
+                "pixel_std": ListValue(description="Pixel standard deviation value used to normalize"),
                 "image_mean": NumericalValue(description="Image mean value used to normalize"),
                 "image_std": NumericalValue(description="Image standard deviation used to normalize"),
             }
