@@ -17,24 +17,20 @@ Model quality evaluation tool.
 # and limitations under the License.
 
 import argparse
+import json
+import os
 
 from ote_sdk.configuration.helper import create
 from ote_sdk.entities.inference_parameters import InferenceParameters
-from ote_sdk.entities.model import ModelEntity
 from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.subset import Subset
 from ote_sdk.entities.task_environment import TaskEnvironment
-from ote_sdk.usecases.adapters.model_adapter import ModelAdapter
 
 from ote_cli.datasets import get_dataset_class
 from ote_cli.registry import find_and_parse_model_template
 from ote_cli.utils.config import override_parameters
 from ote_cli.utils.importing import get_impl_class
-from ote_cli.utils.loading import (
-    generate_label_schema,
-    load_model_weights,
-    read_label_schema,
-)
+from ote_cli.utils.io import generate_label_schema, read_label_schema, read_model
 from ote_cli.utils.parser import (
     add_hyper_parameters_sub_parser,
     gen_params_dict_from_args,
@@ -71,6 +67,10 @@ def parse_args():
         "--load-weights",
         required=True,
         help="Load only weights from previously saved checkpoint",
+    )
+    parser.add_argument(
+        "--save-performance",
+        help="Path to a json file where computed performance will be stored.",
     )
 
     add_hyper_parameters_sub_parser(parser, hyper_parameters, modes=("INFERENCE",))
@@ -109,16 +109,24 @@ def main():
     hyper_parameters = create(hyper_parameters)
 
     # Get classes for Task, ConfigurableParameters and Dataset.
-    taks_class = get_impl_class(template.entrypoints.base)
+    if args.load_weights.endswith(".bin") or args.load_weights.endswith(".xml"):
+        task_class = get_impl_class(template.entrypoints.openvino)
+    else:
+        task_class = get_impl_class(template.entrypoints.base)
+
     dataset_class = get_dataset_class(template.task_type)
 
     dataset = dataset_class(
         test_subset={"ann_file": args.test_ann_files, "data_root": args.test_data_roots}
     )
 
-    model_bytes = load_model_weights(args.load_weights)
     dataset_label_schema = generate_label_schema(dataset, template.task_type)
-    check_label_schemas(read_label_schema(model_bytes), dataset_label_schema)
+    check_label_schemas(
+        read_label_schema(
+            os.path.join(os.path.dirname(args.load_weights), "label_schema.json")
+        ),
+        dataset_label_schema,
+    )
 
     environment = TaskEnvironment(
         model=None,
@@ -127,14 +135,10 @@ def main():
         model_template=template,
     )
 
-    model = ModelEntity(
-        configuration=environment.get_model_configuration(),
-        model_adapters={"weights.pth": ModelAdapter(model_bytes)},
-        train_dataset=None,
-    )
+    model = read_model(environment.get_model_configuration(), args.load_weights, None)
     environment.model = model
 
-    task = taks_class(task_environment=environment)
+    task = task_class(task_environment=environment)
 
     validation_dataset = dataset.get_subset(Subset.TESTING)
     predicted_validation_dataset = task.infer(
@@ -150,3 +154,10 @@ def main():
     task.evaluate(resultset)
     assert resultset.performance is not None
     print(resultset.performance)
+
+    if args.save_performance:
+        with open(args.save_performance, "w", encoding="UTF-8") as write_file:
+            json.dump(
+                {resultset.performance.score.name: resultset.performance.score.value},
+                write_file,
+            )

@@ -26,11 +26,6 @@ if [[ $PYTHON_VERSION != "3.8" && $PYTHON_VERSION != "3.9" ]]; then
   exit 1
 fi
 
-if [[ -z $ANOMALIB_REPO ]]; then
-  echo "The environment variable ANOMALIB_REPO is not set -- it is required for creating virtual environment"
-  exit 1
-fi
-
 if [[ -z $OTE_SDK_PATH ]]; then
   echo "The environment variable OTE_SDK_PATH is not set -- it is required for creating virtual environment"
   exit 1
@@ -98,42 +93,26 @@ fi
 
 CONSTRAINTS_FILE=$(tempfile)
 cat constraints.txt >> ${CONSTRAINTS_FILE}
+export PIP_CONSTRAINT=${CONSTRAINTS_FILE}
 
 pip install --upgrade pip || exit 1
-pip install wheel -c ${CONSTRAINTS_FILE} || exit 1
-pip install --upgrade setuptools -c ${CONSTRAINTS_FILE} || exit 1
+pip install wheel || exit 1
+pip install --upgrade setuptools || exit 1
 
 if [[ -z $CUDA_VERSION_CODE ]]; then
-  pip install torch==${TORCH_VERSION}+cpu torchvision==${TORCHVISION_VERSION}+cpu -f https://download.pytorch.org/whl/torch_stable.html \
-          -c ${CONSTRAINTS_FILE} || exit 1
+  pip install torch==${TORCH_VERSION}+cpu torchvision==${TORCHVISION_VERSION}+cpu -f https://download.pytorch.org/whl/torch_stable.html || exit 1
   echo torch==${TORCH_VERSION}+cpu >> ${CONSTRAINTS_FILE}
   echo torchvision==${TORCHVISION_VERSION}+cpu >> ${CONSTRAINTS_FILE}
-elif [[ $CUDA_VERSION_CODE == "102" ]]; then
-  pip install torch==${TORCH_VERSION}+cu${CUDA_VERSION_CODE} torchvision==${TORCHVISION_VERSION}+cu${CUDA_VERSION_CODE} -f https://download.pytorch.org/whl/lts/1.8/torch_lts.html \
-          -c ${CONSTRAINTS_FILE} || exit 1
-  echo torch==${TORCH_VERSION} >> ${CONSTRAINTS_FILE}
-  echo torchvision==${TORCHVISION_VERSION} >> ${CONSTRAINTS_FILE}
 else
-  pip install torch==${TORCH_VERSION}+cu${CUDA_VERSION_CODE} torchvision==${TORCHVISION_VERSION}+cu${CUDA_VERSION_CODE} -f https://download.pytorch.org/whl/lts/1.8/torch_lts.html \
-          -c ${CONSTRAINTS_FILE} || exit 1
+  pip install torch==${TORCH_VERSION}+cu${CUDA_VERSION_CODE} torchvision==${TORCHVISION_VERSION}+cu${CUDA_VERSION_CODE} -f https://download.pytorch.org/whl/lts/1.8/torch_lts.html || exit 1
   echo torch==${TORCH_VERSION}+cu${CUDA_VERSION_CODE} >> ${CONSTRAINTS_FILE}
   echo torchvision==${TORCHVISION_VERSION}+cu${CUDA_VERSION_CODE} >> ${CONSTRAINTS_FILE}
 fi
 
-# Install Anomalib
-pip install -e $ANOMALIB_REPO || exit 1
+pip install -r requirements.txt
+pip install -e .
 
-# Install requirements.
-pip install -r $ANOMALIB_REPO/requirements/requirements.txt -c ${CONSTRAINTS_FILE} || exit 1
-
-pip install -e . -c ${CONSTRAINTS_FILE} || exit 1
-ANOMALIB_OTE_DIR=$(realpath .)
-echo "export ANOMALIB_OTE_DIR=${ANOMALIB_OTE_DIR}" >> ${venv_dir}/bin/activate
-
-# Install OpenVINO requirements
-pip install -r $ANOMALIB_REPO/requirements/requirements_openvino_mo.txt -c ${CONSTRAINTS_FILE} || exit 1
-
-pip install -e $OTE_SDK_PATH -c ${CONSTRAINTS_FILE} || exit 1
+pip install -e $OTE_SDK_PATH  || exit 1
 
 deactivate
 

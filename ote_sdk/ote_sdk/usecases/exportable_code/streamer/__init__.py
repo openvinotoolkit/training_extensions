@@ -1,3 +1,6 @@
+"""
+Initialization of streamer
+"""
 # INTEL CONFIDENTIAL
 #
 # Copyright (C) 2021 Intel Corporation
@@ -17,6 +20,7 @@ from ote_sdk.usecases.exportable_code.streamer.streamer import (
     ImageStreamer,
     ThreadedStreamer,
     VideoStreamer,
+    get_media_type,
     get_streamer,
 )
 
@@ -25,5 +29,6 @@ __all__ = [
     "ImageStreamer",
     "ThreadedStreamer",
     "VideoStreamer",
+    "get_media_type",
     "get_streamer",
 ]

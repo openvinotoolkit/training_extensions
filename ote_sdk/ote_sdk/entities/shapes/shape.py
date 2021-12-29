@@ -186,6 +186,8 @@ class Shape(ShapeEntity):
         try:
             return polygon_roi.intersection(polygon_shape).area / polygon_shape.area
         except (PredicateError, TopologicalError) as exception:
+            print("shapely", polygon_roi)
+            print("shapely", polygon_shape)
             raise GeometryException(
                 f"The intersection between the shapes {self} and {other} could not be computed: "
                 f"{exception}."

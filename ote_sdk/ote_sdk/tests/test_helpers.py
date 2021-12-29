@@ -1,16 +1,16 @@
-# INTEL CONFIDENTIAL
-#
 # Copyright (C) 2021 Intel Corporation
 #
-# This software and the related documents are Intel copyrighted materials, and
-# your use of them is governed by the express license under which they were provided to
-# you ("License"). Unless the License provides otherwise, you may not use, modify, copy,
-# publish, distribute, disclose or transmit this software or the related documents
-# without Intel's prior written permission.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This software and the related documents are provided as is,
-# with no express or implied warranties, other than those that are expressly stated
-# in the License.
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions
+# and limitations under the License.
 
 import contextlib
 import logging
@@ -23,6 +23,16 @@ import cv2
 import numpy as np
 from bson import ObjectId
 
+from ote_sdk.configuration import ConfigurableParameters
+from ote_sdk.configuration.elements import (
+    ParameterGroup,
+    add_parameter_group,
+    configurable_boolean,
+    configurable_float,
+    configurable_integer,
+    string_attribute,
+)
+from ote_sdk.configuration.model_lifecycle import ModelLifecycle
 from ote_sdk.entities.annotation import Annotation
 from ote_sdk.entities.color import Color
 from ote_sdk.entities.id import ID
@@ -172,9 +182,9 @@ def generate_random_annotated_image(
                 shape=image1.shape,
             )
             image1[rr, cc] = (
-                random.randint(0, 200),
-                random.randint(0, 200),
-                random.randint(0, 200),
+                random.randint(0, 200),  # nosec
+                random.randint(0, 200),  # nosec
+                random.randint(0, 200),  # nosec
             )
         if sc_label_name == "circle":
             sc_label_name = "ellipse"
@@ -336,3 +346,84 @@ def _write_random_video(width: int, height: int, number_of_frames: int, filename
         videowriter.write(img)
 
     videowriter.release()
+
+
+class ConfigExample(ConfigurableParameters):
+    header = string_attribute("Test configuration for an object detection task")
+    description = header
+
+    class __LearningParameters(ParameterGroup):
+        header = string_attribute("Test Learning Parameters")
+        description = header
+
+        batch_size = configurable_integer(
+            default_value=5,
+            min_value=1,
+            max_value=512,
+            header="Test batch size",
+            description="The number of training samples seen in each iteration of training. Increasing this value "
+            "improves training time and may make the training more stable. A larger batch size has higher "
+            "memory requirements.",
+            warning="Increasing this value may cause the system to use more memory than available, "
+            "potentially causing out of memory errors, please update with caution.",
+            affects_outcome_of=ModelLifecycle.TRAINING,
+        )
+
+        num_iters = configurable_integer(
+            default_value=1,
+            min_value=1,
+            max_value=100000,
+            header="Number of training iterations",
+            description="Increasing this value causes the results to be more robust but training time will be longer.",
+            affects_outcome_of=ModelLifecycle.TRAINING,
+        )
+
+        learning_rate = configurable_float(
+            default_value=0.01,
+            min_value=1e-07,
+            max_value=1e-01,
+            header="Learning rate",
+            description="Increasing this value will speed up training convergence but might make it unstable.",
+            affects_outcome_of=ModelLifecycle.TRAINING,
+        )
+
+        learning_rate_warmup_iters = configurable_integer(
+            default_value=100,
+            min_value=1,
+            max_value=10000,
+            header="Number of iterations for learning rate warmup",
+            description="Test learning rate warmup",
+            affects_outcome_of=ModelLifecycle.TRAINING,
+        )
+
+        num_workers = configurable_integer(
+            default_value=4,
+            min_value=2,
+            max_value=10,
+            header="num_workers test header",
+            description="num_workers test description",
+            affects_outcome_of=ModelLifecycle.NONE,
+        )
+
+    class __Postprocessing(ParameterGroup):
+        header = string_attribute("Test Postprocessing")
+        description = header
+
+        result_based_confidence_threshold = configurable_boolean(
+            default_value=True,
+            header="Test Result based confidence threshold",
+            description="Test confidence threshold is derived from the results",
+            affects_outcome_of=ModelLifecycle.INFERENCE,
+        )
+
+        confidence_threshold = configurable_float(
+            default_value=0.25,
+            min_value=0,
+            max_value=1,
+            header="Test Confidence threshold",
+            description="This threshold only takes effect if the threshold is not set based on the result.--Only test",
+            affects_outcome_of=ModelLifecycle.INFERENCE,
+        )
+
+    learning_parameters = add_parameter_group(__LearningParameters)
+    postprocessing = add_parameter_group(__Postprocessing)

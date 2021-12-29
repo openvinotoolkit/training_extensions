@@ -24,7 +24,11 @@ from ote_sdk.entities.label_schema import LabelSchemaEntity
 from ote_sdk.entities.metrics import NullPerformance, Performance
 from ote_sdk.entities.model_template import TargetDevice
 from ote_sdk.entities.url import URL
-from ote_sdk.usecases.adapters.model_adapter import IDataSource, ModelAdapter
+from ote_sdk.usecases.adapters.model_adapter import (
+    ExportableCodeAdapter,
+    IDataSource,
+    ModelAdapter,
+)
 from ote_sdk.utils.time_utils import now
 
 if TYPE_CHECKING:
@@ -121,6 +125,7 @@ class ModelEntity:
         model_format: ModelFormat = ModelFormat.OPENVINO,
         training_duration: float = 0.0,
         model_adapters: Optional[Dict[str, ModelAdapter]] = None,
+        exportable_code_adapter: Optional[ExportableCodeAdapter] = None,
         precision: Optional[List[ModelPrecision]] = None,
         latency: int = 0,
         fps_throughput: int = 0,
@@ -166,6 +171,7 @@ class ModelEntity:
         self.__training_duration = training_duration
         self.__configuration = configuration
         self.__model_adapters = model_adapters
+        self.__exportable_code_adapter = exportable_code_adapter
         self.model_adapters_to_delete: List[ModelAdapter] = []
         self.__precision = precision
         self.__latency = latency
@@ -403,6 +409,29 @@ class ModelEntity:
     @model_size_reduction.setter
     def model_size_reduction(self, value: float):
         self.__model_size_reduction = value
+
+    @property
+    def exportable_code(self) -> Optional[bytes]:
+        """
+        Get the exportable_code from the exportable code adapter
+        """
+        if self.__exportable_code_adapter is not None:
+            return self.__exportable_code_adapter.data
+        return None
+
+    @exportable_code.setter
+    def exportable_code(self, data: Union[bytes, IDataSource]):
+        """
+        Set the exportable code using the exportable code adapter
+        """
+        self.__exportable_code_adapter = ExportableCodeAdapter(data_source=data)
+
+    @property
+    def exportable_code_adapter(self) -> Optional[ExportableCodeAdapter]:
+        """
+        Returns the exportable code adapter
+        """
+        return self.__exportable_code_adapter
 
     def get_data(self, key: str) -> bytes:
         """

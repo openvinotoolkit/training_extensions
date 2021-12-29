@@ -16,18 +16,33 @@ Install anomalib wrapper for OTE
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import anomalib
+from typing import List
+
 from setuptools import find_packages, setup
+
+
+def get_requirements() -> List[str]:
+    """Read requirements.txt and return the requirements.
+
+    Returns:
+        List[str]: List of requirements.
+    """
+    requirements = []
+    with open("requirements.txt", "r", encoding="utf8") as file:
+        for line in file.readlines():
+            requirements.append(line.strip())
+    return requirements
+
 
 setup(
     name="anomaly_classification",
-    version=anomalib.__version__,
+    version="ote-alpha",
     packages=find_packages(
         include=["anomaly_classification", "anomaly_classification.*", "ote_anomalib", "ote_anomalib.*"]
     ),
     url="",
     license="license='Apache License 2.0'",
-    install_requires="anomalib",
+    install_requires=get_requirements(),
     author="Intel",
     description="anomaly classification - "
     "OpenVINO Training Extension for Anomaly Classification using anomalib library",

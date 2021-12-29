@@ -17,6 +17,7 @@ Model inference demonstration tool.
 # and limitations under the License.
 
 import argparse
+import os
 import time
 from collections import deque
 
@@ -27,16 +28,14 @@ from ote_sdk.entities.annotation import AnnotationSceneEntity, AnnotationSceneKi
 from ote_sdk.entities.datasets import DatasetEntity, DatasetItemEntity
 from ote_sdk.entities.image import Image
 from ote_sdk.entities.inference_parameters import InferenceParameters
-from ote_sdk.entities.model import ModelEntity
 from ote_sdk.entities.task_environment import TaskEnvironment
-from ote_sdk.usecases.adapters.model_adapter import ModelAdapter
 
 from ote_cli.registry import find_and_parse_model_template
 from ote_cli.tools.utils.demo.images_capture import open_images_capture
 from ote_cli.tools.utils.demo.visualization import draw_predictions, put_text_on_rect_bg
 from ote_cli.utils.config import override_parameters
 from ote_cli.utils.importing import get_impl_class
-from ote_cli.utils.loading import load_model_weights, read_label_schema
+from ote_cli.utils.io import read_label_schema, read_model
 from ote_cli.utils.parser import (
     add_hyper_parameters_sub_parser,
     gen_params_dict_from_args,
@@ -139,23 +138,24 @@ def main():
 
     hyper_parameters = create(hyper_parameters)
 
-    model_bytes = load_model_weights(args.load_weights)
-
     # Get classes for Task, ConfigurableParameters and Dataset.
-    task_class = get_impl_class(template.entrypoints.base)
+    if args.load_weights.endswith(".bin") or args.load_weights.endswith(".xml"):
+        task_class = get_impl_class(template.entrypoints.openvino)
+    else:
+        task_class = get_impl_class(template.entrypoints.base)
+
     environment = TaskEnvironment(
         model=None,
         hyper_parameters=hyper_parameters,
-        label_schema=read_label_schema(model_bytes),
+        label_schema=read_label_schema(
+            os.path.join(os.path.dirname(args.load_weights), "label_schema.json")
+        ),
         model_template=template,
     )
 
-    model = ModelEntity(
-        configuration=environment.get_model_configuration(),
-        model_adapters={"weights.pth": ModelAdapter(model_bytes)},
-        train_dataset=None,
+    environment.model = read_model(
+        environment.get_model_configuration(), args.load_weights, None
     )
-    environment.model = model
 
     task = task_class(task_environment=environment)
 
@@ -172,17 +172,18 @@ def main():
         elapsed_times.append(elapsed_time)
         elapsed_time = np.mean(elapsed_times)
 
-        if args.delay >= 0:
-            frame = draw_predictions(
-                template.task_type, predictions, frame, args.fit_to_size
+        frame = draw_predictions(
+            template.task_type, predictions, frame, args.fit_to_size
+        )
+        if args.display_perf:
+            put_text_on_rect_bg(
+                frame,
+                f"time: {elapsed_time:.4f} sec.",
+                (0, frame.shape[0] - 30),
+                color=(255, 255, 255),
             )
-            if args.display_perf:
-                put_text_on_rect_bg(
-                    frame,
-                    f"time: {elapsed_time:.4f} sec.",
-                    (0, frame.shape[0] - 30),
-                    color=(255, 255, 255),
-                )
+
+        if args.delay >= 0:
             cv2.imshow("frame", frame)
             if cv2.waitKey(args.delay) == ESC_BUTTON:
                 break

@@ -13,7 +13,7 @@
 # and limitations under the License.
 
 import os
-from subprocess import run
+from subprocess import run  # nosec
 
 def get_template_rel_dir(template):
     return os.path.dirname(os.path.relpath(template.model_template_path))
@@ -52,4 +52,24 @@ def extract_export_vars(path):
 def collect_env_vars(work_dir):
     vars = extract_export_vars(f'{work_dir}/venv/bin/activate')
     vars.update({'PATH':f'{work_dir}/venv/bin/:' + os.environ['PATH']})
+    if 'HTTP_PROXY' in os.environ:
+        vars.update({'HTTP_PROXY': os.environ['HTTP_PROXY']})
+    if 'HTTPS_PROXY' in os.environ:
+        vars.update({'HTTPS_PROXY': os.environ['HTTPS_PROXY']})
+    if 'NO_PROXY' in os.environ:
+        vars.update({'NO_PROXY': os.environ['NO_PROXY']})
     return vars
+
+
+def patch_demo_py(src_path, dst_path):
+    with open(src_path) as read_file:
+        content = [line for line in read_file]
+        replaced = False
+        for i, line in enumerate(content):
+            if 'visualizer = Visualizer(media_type)' in line:
+                content[i] = line.rstrip() + '; visualizer.show = show\n'
+                replaced = True
+        assert replaced
+        content = ['def show(self):\n', '    pass\n\n'] + content
+        with open(dst_path, 'w') as write_file:
+            write_file.write(''.join(content))
