@@ -62,6 +62,9 @@ class AnomalyClassification(SegmentationModel):
         meta["min"] = self.min  # pylint: disable=no-member
         meta["max"] = self.max  # pylint: disable=no-member
 
+        anomaly_map = ((anomaly_map - meta["pixel_threshold"]) / (meta["max"] - meta["min"])) + 0.5
+        pred_score = ((pred_score - meta["image_threshold"]) / (meta["max"] - meta["min"])) + 0.5
+
         input_image_height = meta["original_shape"][0]
         input_image_width = meta["original_shape"][1]
         result = cv2.resize(anomaly_map, (input_image_width, input_image_height))
