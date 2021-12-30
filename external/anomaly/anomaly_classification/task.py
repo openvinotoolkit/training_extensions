@@ -16,6 +16,7 @@
 
 import ctypes
 import io
+import logging
 import os
 import shutil
 import struct
@@ -31,7 +32,6 @@ from omegaconf import DictConfig, ListConfig
 from ote_anomalib.callbacks import InferenceCallback, ProgressCallback
 from ote_anomalib.config import get_anomalib_config
 from ote_anomalib.data import OTEAnomalyDataModule
-from ote_anomalib.logging import get_logger
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.inference_parameters import InferenceParameters
 from ote_sdk.entities.metrics import Performance, ScoreMetric
@@ -48,7 +48,9 @@ from ote_sdk.usecases.tasks.interfaces.training_interface import ITrainingTask
 from ote_sdk.usecases.tasks.interfaces.unload_interface import IUnload
 from pytorch_lightning import Trainer
 
-logger = get_logger(name=__name__)
+logger = logging.getLogger("pytorch_lightning")
+formatter = logging.Formatter("[%(levelname)s]: %(name)s: %(message)s")
+logger.handlers[0].setFormatter(formatter)
 
 
 class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, IExportTask, IUnload):
@@ -148,6 +150,7 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
         Args:
             output_model (ModelEntity): Output model onto which the weights are saved.
         """
+        logger.info("Saving the model weights.")
         config = self.get_config()
         model_info = {
             "model": self.model.state_dict(),
@@ -188,7 +191,7 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
         Returns:
             DatasetEntity: Output dataset with predictions.
         """
-        logger.info("Inferring on the validation set")
+        logger.info("Performing inference on the validation set using the base torch model.")
         config = self.get_config()
         datamodule = OTEAnomalyDataModule(config=config, dataset=dataset)
 
@@ -209,9 +212,18 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
             evaluation_metric (Optional[str], optional): Evaluation metric. Defaults to None. Instead,
                 f-measure is used by default.
         """
-        f_measure_metrics = MetricsHelper.compute_f_measure(output_resultset)
-        output_resultset.performance = f_measure_metrics.get_performance()
-        logger.info("F-measure after evaluation: %d", f_measure_metrics.f_measure.value)
+        metric = MetricsHelper.compute_f_measure(output_resultset)
+        output_resultset.performance = metric.get_performance()
+
+        # NOTE: This is for debugging purpose.
+        for i, _ in enumerate(output_resultset.ground_truth_dataset):
+            logger.info(
+                "True vs Pred: %s %s - %3.2f",
+                output_resultset.ground_truth_dataset[i].annotation_scene.annotations[0].get_labels()[0].name,
+                output_resultset.prediction_dataset[i].annotation_scene.annotations[0].get_labels()[0].name,
+                output_resultset.prediction_dataset[i].annotation_scene.annotations[0].get_labels()[0].probability,
+            )
+        logger.info("%s performance of the base torch model: %3.2f", metric.f_measure.name, metric.f_measure.value)
 
     def export(self, export_type: ExportType, output_model: ModelEntity) -> None:
         """Export model to OpenVINO IR.
@@ -226,6 +238,7 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
         assert export_type == ExportType.OPENVINO
 
         # pylint: disable=no-member; need to refactor this
+        logging.info("Exporting the OpenVINO model.")
         height, width = self.config.model.input_size
         onnx_path = os.path.join(self.config.project.path, "onnx_model.onnx")
         torch.onnx.export(

@@ -70,7 +70,7 @@ from ote_sdk.usecases.tasks.interfaces.optimization_interface import (
     OptimizationType,
 )
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("pytorch_lightning")
 
 
 class OTEOpenVINOAnomalyDataloader(DataLoader):
@@ -112,6 +112,7 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
     """
 
     def __init__(self, task_environment: TaskEnvironment) -> None:
+        logging.info("Initializing the OpenVINO task.")
         self.task_environment = task_environment
         self.config = self.get_config()
         self.inferencer = self.load_inferencer()
@@ -144,7 +145,7 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
         if self.task_environment.model is None:
             raise Exception("task_environment.model is None. Cannot access threshold to calculate labels.")
 
-        logger.info("Start OpenVINO inference")
+        logger.info("Start OpenVINO inference.")
         update_progress_callback = default_progress_callback
         if inference_parameters is not None:
             update_progress_callback = inference_parameters.update_progress
@@ -170,7 +171,18 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
             output_resultset (ResultSetEntity): Result set storing ground truth and predicted dataset.
             evaluation_metric (Optional[str], optional): Evaluation metric. Defaults to None.
         """
-        output_resultset.performance = MetricsHelper.compute_f_measure(output_resultset).get_performance()
+        metric = MetricsHelper.compute_f_measure(output_resultset)
+        output_resultset.performance = metric.get_performance()
+
+        # NOTE: This is for debugging purpose.
+        for i, _ in enumerate(output_resultset.ground_truth_dataset):
+            logger.info(
+                "True vs Pred: %s %s - %3.2f",
+                output_resultset.ground_truth_dataset[i].annotation_scene.annotations[0].get_labels()[0].name,
+                output_resultset.prediction_dataset[i].annotation_scene.annotations[0].get_labels()[0].name,
+                output_resultset.prediction_dataset[i].annotation_scene.annotations[0].get_labels()[0].probability,
+            )
+        logger.info("%s performance of the OpenVINO model: %3.2f", metric.f_measure.name, metric.f_measure.value)
 
     def _get_optimization_algorithms_configs(self) -> List[ADDict]:
         """Returns list of optimization algorithms configurations"""
@@ -214,6 +226,7 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
         if optimization_type is not OptimizationType.POT:
             raise ValueError("POT is the only supported optimization type for OpenVINO models")
 
+        logger.info("Starting POT optimization.")
         data_loader = OTEOpenVINOAnomalyDataloader(config=self.config, dataset=dataset, inferencer=self.inferencer)
 
         with tempfile.TemporaryDirectory() as tempdir:
@@ -367,4 +380,4 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
                 arch.write(os.path.join(tempdir, wheel_file_name), os.path.join("python", wheel_file_name))
             with open(os.path.join(tempdir, "openvino.zip"), "rb") as output_arch:
                 output_model.exportable_code = output_arch.read()
-        logger.info("Deploying completed")
+        logger.info("Deployment completed.")
