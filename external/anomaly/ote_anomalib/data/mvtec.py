@@ -33,7 +33,6 @@ from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.entities.shapes.rectangle import Rectangle
 from ote_sdk.entities.subset import Subset
 from pandas.core.frame import DataFrame
-from tqdm import tqdm
 
 
 class OteMvtecDataset:
@@ -111,7 +110,7 @@ class OteMvtecDataset:
         """
         samples = self.get_samples()
         dataset_items: List[DatasetItemEntity] = []
-        for _, sample in tqdm(samples.iterrows()):
+        for _, sample in samples.iterrows():
             # Create image
             image = Image(file_path=sample.image_path)
 
