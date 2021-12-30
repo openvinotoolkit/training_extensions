@@ -34,7 +34,10 @@ class AnomalyClassification(SegmentationModel):
         parameters["resize_type"].update_default_value("standard")
         parameters.update(
             {
-                "threshold": NumericalValue(default_value=20, description="Threshold value to locate anomaly"),
+                "image_threshold": NumericalValue(description="Threshold value to locate anomaly"),
+                "pixel_threshold": NumericalValue(description="Threshold value to locate anomaly"),
+                "min": NumericalValue(description="Threshold value to locate anomaly"),
+                "max": NumericalValue(description="Threshold value to locate anomaly"),
             }
         )
 
@@ -51,9 +54,15 @@ class AnomalyClassification(SegmentationModel):
             np.ndarray: Resulting image resized to original input image size
         """
         outputs = outputs[self.output_blob_name].squeeze()
+        anomaly_map = outputs[self.output_blob_name].squeeze()
+        pred_score = anomaly_map.reshape(-1).max()
+
+        meta["image_threshold"] = self.image_threshold  # pylint: disable=no-member
+        meta["pixel_threshold"] = self.pixel_threshold  # pylint: disable=no-member
+        meta["min"] = self.min  # pylint: disable=no-member
+        meta["max"] = self.max  # pylint: disable=no-member
+
         input_image_height = meta["original_shape"][0]
         input_image_width = meta["original_shape"][1]
-        meta["threshold"] = self.threshold  # pylint: disable=no-member
-
-        result = cv2.resize(outputs, (input_image_width, input_image_height))
+        result = cv2.resize(anomaly_map, (input_image_width, input_image_height))
         return result

@@ -49,6 +49,7 @@ from ote_sdk.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from ote_sdk.usecases.tasks.interfaces.training_interface import ITrainingTask
 from ote_sdk.usecases.tasks.interfaces.unload_interface import IUnload
 from pytorch_lightning import Trainer
+from anomalib.core.callbacks import MinMaxNormalizationCallback
 
 logger = logging.getLogger(__name__)
 
@@ -132,7 +133,7 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
         """
         config = self.get_config()
         datamodule = OTEAnomalyDataModule(config=config, dataset=dataset)
-        callbacks = [ProgressCallback(parameters=train_parameters)]
+        callbacks = [ProgressCallback(parameters=train_parameters), MinMaxNormalizationCallback()]
 
         self.trainer = Trainer(**config.trainer, logger=False, callbacks=callbacks)
         self.trainer.fit(model=self.model, datamodule=datamodule)
@@ -153,10 +154,9 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
         torch.save(model_info, buffer)
         output_model.set_data("weights.pth", buffer.getvalue())
         output_model.set_data("label_schema.json", label_schema_to_bytes(self.task_environment.label_schema))
-        # store computed threshold
-        output_model.set_data("threshold", bytes(struct.pack("f", self.model.threshold.item())))
+        self._set_metadata(output_model)
 
-        f1_score = self.model.image_metrics.OptimalF1.compute().item()
+        f1_score = self.model.image_metrics.F1.compute().item()
         output_model.performance = Performance(score=ScoreMetric(name="F1 Score", value=f1_score))
         output_model.precision = [ModelPrecision.FP32]
 
@@ -183,7 +183,8 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
         # Callbacks.
         progress = ProgressCallback(parameters=inference_parameters)
         inference = InferenceCallback(dataset, self.labels)
-        callbacks = [progress, inference]
+        normalize = MinMaxNormalizationCallback()
+        callbacks = [progress, normalize, inference]
 
         self.trainer = Trainer(**config.trainer, logger=False, callbacks=callbacks)
         self.trainer.predict(model=self.model, datamodule=datamodule)
@@ -227,7 +228,12 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
         with open(xml_file, "rb") as file:
             output_model.set_data("openvino.xml", file.read())
         output_model.set_data("label_schema.json", label_schema_to_bytes(self.task_environment.label_schema))
-        output_model.set_data("threshold", bytes(struct.pack("f", self.model.threshold.item())))
+        self._set_metadata(output_model)
+
+    def _set_metadata(self, output_model: ModelEntity):
+        output_model.set_data("image_threshold", self.model.image_threshold.value.cpu().numpy().tobytes())
+        output_model.set_data("min", self.model.min_max.min.cpu().numpy().tobytes())
+        output_model.set_data("max", self.model.min_max.max.cpu().numpy().tobytes())
 
     @staticmethod
     def _is_docker() -> bool:

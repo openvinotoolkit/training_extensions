@@ -150,18 +150,28 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
             update_progress_callback = inference_parameters.update_progress
 
         # This always assumes that threshold is available in the task environment's model
-        # cast is used to placate mypy
-        threshold: float = cast(float, struct.unpack("f", (self.task_environment.model.get_data("threshold")))[0])
-        metadata = {"threshold": threshold}
+        meta_data = self.get_meta_data()
         for idx, dataset_item in enumerate(dataset):
-            anomaly_map = self.inferencer.predict(dataset_item.numpy, superimpose=False)
-            annotations_scene = self.annotation_converter.convert_to_annotation(
-                predictions=anomaly_map, metadata=metadata
-            )
+            _, pred_score = self.inferencer.predict(dataset_item.numpy, superimpose=False, meta_data=meta_data)
+            annotations_scene = self.annotation_converter.convert_to_annotation(pred_score, meta_data)
             dataset_item.append_annotations(annotations_scene.annotations)
             update_progress_callback(int((idx + 1) / len(dataset) * 100))
 
         return dataset
+
+    def get_meta_data(self):
+        """Get Meta Data."""
+
+        image_threshold = np.frombuffer(self.task_environment.model.get_data("image_threshold"), dtype=np.float32)
+        min = np.frombuffer(self.task_environment.model.get_data("min"), dtype=np.float32)
+        max = np.frombuffer(self.task_environment.model.get_data("max"), dtype=np.float32)
+        meta_data = dict(
+            image_threshold=image_threshold,
+            pixel_threshold=image_threshold,  # re-use image threshold for pixel normalization
+            min=min,
+            max=max
+        )
+        return meta_data
 
     def evaluate(self, output_resultset: ResultSetEntity, evaluation_metric: Optional[str] = None):
         """Evaluate the performance of the model.
@@ -245,7 +255,9 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
             self.__load_weights(path=os.path.join(tempdir, "model.bin"), output_model=output_model, key="openvino.bin")
 
         output_model.set_data("label_schema.json", label_schema_to_bytes(self.task_environment.label_schema))
-        output_model.set_data("threshold", self.task_environment.model.get_data("threshold"))
+        output_model.set_data("image_threshold", self.task_environment.model.get_data("image_threshold"))
+        output_model.set_data("min", self.task_environment.model.get_data("min"))
+        output_model.set_data("max", self.task_environment.model.get_data("max"))
         output_model.model_status = ModelStatus.SUCCESS
         output_model.model_format = ModelFormat.OPENVINO
         output_model.optimization_type = ModelOptimizationType.POT
@@ -301,7 +313,9 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
         # This always assumes that threshold is available in the task environment's model
         # cast is used to placate mypy
         configuration = {
-            "threshold": cast(float, struct.unpack("f", (self.task_environment.model.get_data("threshold")))[0]),
+            "image_threshold": np.frombuffer(
+                self.task_environment.model.get_data("image_threshold"), dtype=np.float32
+            ).item(),
             "labels": LabelSchemaMapper.forward(self.task_environment.label_schema),
         }
         if "transforms" not in self.config.keys():

@@ -19,11 +19,13 @@ import logging
 import os
 import tempfile
 
+import numpy as np
 import pytest
-from ote_anomalib.config import get_anomalib_config
 from tests.helpers.config import get_config_and_task_name
 from tests.helpers.dummy_dataset import TestDataset
 from tests.helpers.train import OTEAnomalyTrainer
+
+from ote_anomalib.config import get_anomalib_config
 
 logger = logging.getLogger(__name__)
 
@@ -75,17 +77,18 @@ class TestAnomalyClassification:
 
         # Convert the model to OpenVINO
         self._trainer.export()
-        # openvino_results = self._trainer.validate(task=self._trainer.openvino_task)
+        openvino_results = self._trainer.validate(task=self._trainer.openvino_task)
 
-        # Optimize the OpenVINO Model via POT
-        # optimized_openvino_results = self._trainer.validate(task=self._trainer.openvino_task, optimize=True)
+        base_probability_scores = [
+            base_results.prediction_dataset[i].annotation_scene.annotations[0].get_labels()[0].probability
+            for i in range(len(base_results.prediction_dataset))
+        ]
+        openvino_probability_scores = [
+            openvino_results.prediction_dataset[i].annotation_scene.annotations[0].get_labels()[0].probability
+            for i in range(len(openvino_results.prediction_dataset))
+        ]
 
-        # TODO https://jira.devtools.intel.com/browse/IAAALD-210
-        # assert np.allclose(base_results.performance.score.value, openvino_results.performance.score.value)
-        # assert np.allclose(openvino_results.performance.score.value,
-        #                       optimized_openvino_results.performance.score.value)
-
-        # Performance should be almost the same
+        assert np.allclose(base_probability_scores, openvino_probability_scores, rtol=0.05)
 
     @TestDataset(num_train=200, num_test=10, dataset_path="./datasets/MVTec", use_mvtec=False)
     def test_ote_deploy(self, task_path, template_path, dataset_path="./datasets/MVTec", category="bottle"):
