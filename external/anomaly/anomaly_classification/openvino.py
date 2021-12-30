@@ -321,12 +321,17 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
         """Return configuration required by the exported model."""
         # This always assumes that threshold is available in the task environment's model
         # cast is used to placate mypy
-        configuration = {
-            "image_threshold": np.frombuffer(
-                self.task_environment.model.get_data("image_threshold"), dtype=np.float32
-            ).item(),
-            "labels": LabelSchemaMapper.forward(self.task_environment.label_schema),
-        }
+        configuration = self.get_meta_data()
+        # Convert numpy array to list as numpy array is not JSON serializable.
+        for key, val in configuration.items():
+            if isinstance(val, np.ndarray):
+                if val.size > 1:
+                    configuration[key] = val.tolist()
+                else:
+                    configuration[key] = val.item()
+
+        configuration["labels"] = LabelSchemaMapper.forward(self.task_environment.label_schema)
+
         if "transforms" not in self.config.keys():
             configuration["mean_values"] = list(np.array([0.485, 0.456, 0.406]) * 255)
             configuration["scale_values"] = list(np.array([0.229, 0.224, 0.225]) * 255)
