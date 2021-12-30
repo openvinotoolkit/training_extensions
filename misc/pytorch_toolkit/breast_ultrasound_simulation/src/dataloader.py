@@ -1,13 +1,10 @@
-import cv2
-from PIL import Image
-import numpy as np
 import os
-from torchvision import transforms
+from PIL import Image
 from torch.utils import data
-import torch
+from torchvision import transforms
 
 
-class IVUS_Dataset(data.Dataset):
+class Kaggle_BUS_Dataset(data.Dataset):
     def __init__(
             self,
             file_names,
@@ -83,80 +80,3 @@ class BUS_dataset(data.Dataset):
         if self.test:
             X = self.ten_trans(X)
         return X, y, file_name
-
-
-class IVUS3D_Dataset(data.Dataset):
-    def __init__(self, folder_names, Stage0_DIR, Images_DIR):
-        # Initiliaztion
-        self.folder_names = folder_names
-        self.Images_DIR = Images_DIR
-        self.Stage0_DIR = Stage0_DIR
-        self.ten_trans = transforms.ToTensor()
-
-    def __len__(self):
-        # Return total number of samples in data set
-        return len(self.folder_names)
-
-    def __getitem__(self, index):
-
-        folder_name = self.folder_names[index]
-        file_names = os.listdir(os.path.join(self.Images_DIR, folder_name))
-        file_names = np.sort(np.array(file_names))
-        X_l = []
-        y_l = []
-
-        # Concatenating images to form a volume,
-        # out of 5 pullbacks given in IVUS, using only middle 3.
-        # To create a volume of size 128x128x128
-        c1 = 1
-        c2 = 0
-        for file_name in file_names:
-            if c1 == 5:
-                c1 = 1
-                continue
-
-            if 1 < c1 < 5:
-                # stage 0 is input,x
-                X = cv2.imread(
-                    os.path.join(
-                        self.Stage0_DIR,
-                        folder_name,
-                        file_name),
-                    0)
-                # X = cv2.resize(X, (192,192))
-                X_l.append(X)
-                # images are the output, y
-                y = cv2.imread(
-                    os.path.join(
-                        self.Images_DIR,
-                        folder_name,
-                        file_name),
-                    0)
-                # y = cv2.resize(y, (192,192))
-                y_l.append(y)
-
-                c2 = c2 + 1
-
-            c1 = c1 + 1
-            if c2 == 128:
-                break
-
-        X = np.stack(X_l, axis=0)
-        y = np.stack(y_l, axis=0)
-
-        X = X.transpose(1, 2, 0)
-        y = y.transpose(1, 2, 0)
-        # print(X.shape, y.shape)
-
-        X = cv2.resize(X, (128, 128))
-        y = cv2.resize(y, (128, 128))
-        # print(X.shape, y.shape)
-
-        X = X.transpose(2, 0, 1)
-        y = y.transpose(2, 0, 1)
-        # print(X.shape, y.shape)
-
-        X = torch.from_numpy(X[np.newaxis, :, :, :] / 256).type(torch.float32)
-        y = torch.from_numpy(y[np.newaxis, :, :, :] / 256).type(torch.float32)
-
-        return X, y

@@ -26,9 +26,7 @@ class SpectralConv2d(nn.Module):
 
     def forward(self, x):
         # do y x first follwed by the other spectal decompsed filters!
-
         op = self.ydim(x)
-        # print(op.shape, x.shape)
         op = self.xdim(op)
         op = self.bias(op)
 
@@ -402,7 +400,7 @@ class DiscriminatorModel(nn.Module):
             nn.LeakyReLU(inplace=True)
         )
         self.fc = nn.Sequential(
-            nn.Linear(in_features=2 * 8 * 8, out_features=1),
+            nn.Linear(in_features=162, out_features=1),
             nn.Sigmoid()
         )
 

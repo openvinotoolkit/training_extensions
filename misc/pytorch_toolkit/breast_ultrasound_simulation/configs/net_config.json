@@ -1,0 +1,43 @@
+{
+    "train":{
+        "lr": 0.0002,
+        "epochs": 5,
+        "batch_size": 64,
+        "model_name": "model_1",
+        "model_weight": "model.pt",
+        "log_step": 5,
+        "tensor_board": 0,
+        "vis_step": 2,
+        "beta_recovery": 1,
+        "beta_adv": 0.02,
+        "restore": 1,
+        "num_workers": 8
+    },
+
+    "test":{
+        "batch_size": 1,
+        "num_workers": 1
+    },
+
+    "data":{
+        "stage0_data": "downloads/data/stage0",
+        "realUS_data": "downloads/data/real_images"
+    },
+    "general":{
+        "test_flag": 1,
+        "exp_name": "exp_1"
+    },
+
+    "infer":{
+        "exp_name": "exp_1",
+        "model_name": "model_1",
+        "dilation_factor": 0.0,
+        "infer_data": "BUS",
+        "onnx_checkpoint": "downloads/checkpoints/model.onnx"
+    },
+    "export":{
+        "model_path": "downloads/checkpoints/model.pt",
+        "onnx_model_name": "downloads/checkpoints/model.onnx",
+        "ir_model_name": "downloads/checkpoints/model.xml"
+    }
+}

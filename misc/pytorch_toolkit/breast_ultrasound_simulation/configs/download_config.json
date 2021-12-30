@@ -1,0 +1,9 @@
+{
+    "model_download_url":"http://miriad.digital-health.one/models/bmi6/model.zip",
+    "model_save_path":"downloads/checkpoints/model.zip",
+    "real_data_download_url": "http://miriad.digital-health.one/sample_data/bmi6/real_images.zip",
+    "real_data_save_path":"downloads/data/real_images.zip",
+    "stage0_data_download_url": "http://miriad.digital-health.one/sample_data/bmi6/stage0.zip",
+    "stage0_data_save_path":"downloads/data/stage0.zip"
+
+}

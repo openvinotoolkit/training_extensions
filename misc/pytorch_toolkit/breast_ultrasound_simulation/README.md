@@ -6,11 +6,11 @@ Given a  CNN trained on a  2D ultrasound dataset acquired using a transducer of 
 
 ## Proposed Approach
 
-<p align="center"><img src="./media/graphic.png" alt="drawing" width="500"/></p>
+<p align="center"><img src="./media/graphic.jpg" alt="drawing" width="500"/></p>
 
 ## Results
 
-<p align="center"><img src="./media/results.png" alt="drawing" width="500"/></p>
+<p align="center"><img src="./media/cart.jpg" alt="drawing" width="500"/></p>
 
 ## Setup
 ### Prerequisites
@@ -25,7 +25,7 @@ Given a  CNN trained on a  2D ultrasound dataset acquired using a transducer of 
 sh init_env.sh
 ```
 ## Datasets
-The network is trained on [Breast Ultrasound Images](https://scholar.cu.edu.eg/?q=afahmy/pages/dataset) dataset[1]. Data augmentation is applied as explain in [2,3,4] and images are processed by [stage 0](https://in.mathworks.com/matlabcentral/fileexchange/34199-pseudo-b-mode-ultrasound-image-simulator). We have directly provided the processed dataset for 2D simulation [here](https://drive.google.com/file/d/1eVFiiko74j7VOwIEedHop17vcKzhM_fj/view?usp=sharing). Place the processed data as shown below.
+The network is trained on [Breast Ultrasound Images](https://scholar.cu.edu.eg/?q=afahmy/pages/dataset) dataset[1]. Data augmentation is applied as explain in [2,3,4] and images are processed by [stage 0](https://in.mathworks.com/matlabcentral/fileexchange/34199-pseudo-b-mode-ultrasound-image-simulator). We have directly provided the processed dataset for 2D simulation [here](http://miriad.digital-health.one/extra_data/data_bmi6.zip). Place the processed data as shown below.
 ```
 +-- data
 |   +-- stage0
@@ -42,12 +42,10 @@ The network is trained on [Breast Ultrasound Images](https://scholar.cu.edu.eg/?
 
 ## **Model**
 
-Download `.pth`checkpoint for alexnet with the following [link]().
+Download `.pth` checkpoint for alexnet with the following [link](http://miriad.digital-health.one/models/bmi6/model.zip).
 
-Inference models will be made available in the [open_model_zoo](https://github.com/openvinotoolkit/open_model_zoo/tree/master/models/public).
+Inference models will be made available in the [open_model_zoo](https://github.com/openvinotoolkit/open_model_zoo/tree/master/models/public) as well.
 
-## **Demo**
-An example for using the ONNX models for inference can be found [here]().
 
 ## Training
 ```
@@ -65,7 +63,7 @@ python infer.py --name <EXP_NAME> --model_name <NAME OF MODEL TO RESTORE> --infe
 ```
 The results will be stored in ```infer_results```. In order to simulate images corresponding to different frequency set ```dilation_factor```  between 0 and 1.
 
-A demo code has also been provided which does not require any data to be downloaded. The expected output is shown below.
+A demo code has also been provided [here](http://miriad.digital-health.one/demo/bmi6/model.zip) which does not require any data to be downloaded. The expected output is shown below.
 
 ```
 python demo.py --dilation_factor 0
@@ -101,7 +99,19 @@ python metric.py --dir ../infer_results/dil_0
 
 ## Acknowledgement
 
-This work is undertaken as part of Intel India Grand Challenge 2016 Project MIRIAD, , sponsored by Intel Technology India Pvt. Ltd., Bangalore, India.
+This work is undertaken as part of Intel India Grand Challenge 2016 Project MIRIAD: Many Incarnations of Screening of Radiology for High Throughput Disease Screening via Multiple Instance Reinforcement Learning with Adversarial Deep Neural Networks, sponsored by Intel Technology India Pvt. Ltd., Bangalore, India.
+
+
+**Principal Investigators**
+
+<a href="https://www.linkedin.com/in/debdoot/">Dr Debdoot Sheet</a>,<a href="http://www.iitkgp.ac.in/department/EE/faculty/ee-nirmalya"> Dr Nirmalya Ghosh (Co-PI) </a></br>
+Department of Electrical Engineering,</br>
+Indian Institute of Technology Kharagpur</br>
+email: debdoot@ee.iitkgp.ac.in, nirmalya@ee.iitkgp.ac.in
+
+<a href="https://www.linkedin.com/in/ramanathan-sethuraman-27a12aba/">Dr Ramanathan Sethuraman</a>,</br>
+Intel Technology India Pvt. Ltd.</br>
+email: ramanathan.sethuraman@intel.com
 
 **Contributor**
 
@@ -123,17 +133,6 @@ Centre of Excellence in Artificial Intelligence,</br>
 Indian Institute of Technology Kharagpur</br>
 email: rajkrishanghosh@gmail.com 
 
-**Principal Investigators**
-
-<a href="https://www.linkedin.com/in/debdoot/">Dr Debdoot Sheet</a>
-</br>
-Department of Electrical Engineering,</br>
-Indian Institute of Technology Kharagpur</br>
-email: debdoot@ee.iitkgp.ac.in
-
-<a href="https://www.linkedin.com/in/ramanathan-sethuraman-27a12aba/">Dr Ramanathan Sethuraman</a>,</br>
-Intel Technology India Pvt. Ltd.</br>
-email: ramanathan.sethuraman@intel.com
 
 ## Publications
  1. Al-Dhabyani, Walid, Mohammed Gomaa, Hussien Khaled, and Aly Fahmy. "Dataset of breast ultrasound images." Data in brief 28 (2020): 104863. [[link](https://www.sciencedirect.com/science/article/pii/S2352340919312181)]

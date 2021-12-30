@@ -8,8 +8,6 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--dir', required=True, help='path to directory')
 args = parser.parse_args()
 
-
-
 def filter_custom(req_shape, low_freq, high_freq):
     filtered_mask = np.zeros((req_shape, req_shape))
     c = np.array([req_shape/2, req_shape/2])
