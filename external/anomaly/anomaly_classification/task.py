@@ -1,6 +1,4 @@
-"""
-Anomaly Classification Task
-"""
+"""Anomaly Classification Task."""
 
 # Copyright (C) 2021 Intel Corporation
 #
@@ -18,7 +16,6 @@ Anomaly Classification Task
 
 import ctypes
 import io
-import logging
 import os
 import shutil
 import struct
@@ -34,6 +31,7 @@ from omegaconf import DictConfig, ListConfig
 from ote_anomalib.callbacks import InferenceCallback, ProgressCallback
 from ote_anomalib.config import get_anomalib_config
 from ote_anomalib.data import OTEAnomalyDataModule
+from ote_anomalib.logging import get_logger
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.inference_parameters import InferenceParameters
 from ote_sdk.entities.metrics import Performance, ScoreMetric
@@ -50,18 +48,19 @@ from ote_sdk.usecases.tasks.interfaces.training_interface import ITrainingTask
 from ote_sdk.usecases.tasks.interfaces.unload_interface import IUnload
 from pytorch_lightning import Trainer
 
-logger = logging.getLogger(__name__)
+logger = get_logger(name=__name__)
 
 
 class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, IExportTask, IUnload):
-    """
-    Base Anomaly Task for Training and Inference
+    """Base Anomaly Classification Task."""
 
-    Args:
-        task_environment (TaskEnvironment): OTE Task environment.
-    """
+    def __init__(self, task_environment: TaskEnvironment) -> None:
+        """Train, Infer, Export, Optimize and Deploy an Anomaly Classification Task.
 
-    def __init__(self, task_environment: TaskEnvironment):
+        Args:
+            task_environment (TaskEnvironment): OTE Task environment.
+        """
+        logger.info("Initializing the task environment.")
         self.task_environment = task_environment
         self.model_name = task_environment.model_template.name
         self.labels = task_environment.get_labels()
@@ -75,11 +74,10 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
         self.trainer: Trainer
 
     def get_config(self) -> Union[DictConfig, ListConfig]:
-        """
-        Get Anomalib Config from task environment
+        """Get Anomalib Config from task environment.
 
         Returns:
-            Union[DictConfig, ListConfig]: Anomalib config
+            Union[DictConfig, ListConfig]: Anomalib config.
         """
         hyper_parameters = self.task_environment.get_hyper_parameters()
         config = get_anomalib_config(task_name=self.model_name, ote_config=hyper_parameters)
@@ -88,8 +86,8 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
         return config
 
     def load_model(self, ote_model: Optional[ModelEntity]) -> AnomalyModule:
-        """
-        Create and Load Anomalib Module from OTE Model.
+        """Create and Load Anomalib Module from OTE Model.
+
         This method checks if the task environment has a saved OTE Model,
         and creates one. If the OTE model already exists, it returns the
         the model with the saved weights.
@@ -126,10 +124,15 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
         dataset: DatasetEntity,
         output_model: ModelEntity,
         train_parameters: TrainParameters,
-    ):
+    ) -> None:
+        """Train the anomaly classification model.
+
+        Args:
+            dataset (DatasetEntity): Input dataset.
+            output_model (ModelEntity): Output model to save the model weights.
+            train_parameters (TrainParameters): Training parameters
         """
-        Train the anomaly task
-        """
+        logger.info("Training the model.")
         config = self.get_config()
         datamodule = OTEAnomalyDataModule(config=config, dataset=dataset)
         callbacks = [ProgressCallback(parameters=train_parameters)]
@@ -139,9 +142,11 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
 
         self.save_model(output_model)
 
-    def save_model(self, output_model: ModelEntity):
-        """
-        Save the model after training is completed.
+    def save_model(self, output_model: ModelEntity) -> None:
+        """Save the model after training is completed.
+
+        Args:
+            output_model (ModelEntity): Output model onto which the weights are saved.
         """
         config = self.get_config()
         model_info = {
@@ -160,10 +165,10 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
         output_model.performance = Performance(score=ScoreMetric(name="F1 Score", value=f1_score))
         output_model.precision = [ModelPrecision.FP32]
 
-    def cancel_training(self):
-        """
-        Cancel the training `after_batch_end`. This terminates the training; however validation is
-        still performed.
+    def cancel_training(self) -> None:
+        """Cancel the training `after_batch_end`.
+
+        This terminates the training; however validation is still performed.
         """
         logger.info("Cancel training requested.")
         self.trainer.should_stop = True
@@ -174,9 +179,16 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
             pass
 
     def infer(self, dataset: DatasetEntity, inference_parameters: InferenceParameters) -> DatasetEntity:
+        """Perform inference on a dataset.
+
+        Args:
+            dataset (DatasetEntity): Dataset to infer.
+            inference_parameters (InferenceParameters): Inference parameters.
+
+        Returns:
+            DatasetEntity: Output dataset with predictions.
         """
-        Perform inference on a dataset.
-        """
+        logger.info("Inferring on the validation set")
         config = self.get_config()
         datamodule = OTEAnomalyDataModule(config=config, dataset=dataset)
 
@@ -189,16 +201,20 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
         self.trainer.predict(model=self.model, datamodule=datamodule)
         return dataset
 
-    def evaluate(self, output_resultset: ResultSetEntity, evaluation_metric: Optional[str] = None):
-        """
-        Evaluate the performance on a result set.
+    def evaluate(self, output_resultset: ResultSetEntity, evaluation_metric: Optional[str] = None) -> None:
+        """Evaluate the performance on a result set.
+
+        Args:
+            output_resultset (ResultSetEntity): Result Set from which the performance is evaluated.
+            evaluation_metric (Optional[str], optional): Evaluation metric. Defaults to None. Instead,
+                f-measure is used by default.
         """
         f_measure_metrics = MetricsHelper.compute_f_measure(output_resultset)
         output_resultset.performance = f_measure_metrics.get_performance()
         logger.info("F-measure after evaluation: %d", f_measure_metrics.f_measure.value)
 
-    def export(self, export_type: ExportType, output_model: ModelEntity):
-        """Export model to OpenVINO IR
+    def export(self, export_type: ExportType, output_model: ModelEntity) -> None:
+        """Export model to OpenVINO IR.
 
         Args:
             export_type (ExportType): Export type should be ExportType.OPENVINO
@@ -231,8 +247,7 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
 
     @staticmethod
     def _is_docker() -> bool:
-        """
-        Checks whether the task runs in docker container
+        """Check whether the task runs in docker container.
 
         Returns:
             bool: True if task runs in docker, False otherwise.
@@ -246,9 +261,7 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
         return is_in_docker
 
     def unload(self) -> None:
-        """
-        Unload the task
-        """
+        """Unload the task."""
         if os.path.exists(self.config.project.path):
             shutil.rmtree(self.config.project.path, ignore_errors=False)
 
