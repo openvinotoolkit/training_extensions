@@ -32,6 +32,7 @@ from omegaconf import DictConfig, ListConfig
 from ote_anomalib.callbacks import InferenceCallback, ProgressCallback
 from ote_anomalib.config import get_anomalib_config
 from ote_anomalib.data import OTEAnomalyDataModule
+from ote_anomalib.logging import get_logger
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.inference_parameters import InferenceParameters
 from ote_sdk.entities.metrics import Performance, ScoreMetric
@@ -48,9 +49,7 @@ from ote_sdk.usecases.tasks.interfaces.training_interface import ITrainingTask
 from ote_sdk.usecases.tasks.interfaces.unload_interface import IUnload
 from pytorch_lightning import Trainer
 
-logger = logging.getLogger("pytorch_lightning")
-formatter = logging.Formatter("[%(levelname)s]: %(name)s: %(message)s")
-logger.handlers[0].setFormatter(formatter)
+logger = get_logger(__name__)
 
 
 class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, IExportTask, IUnload):

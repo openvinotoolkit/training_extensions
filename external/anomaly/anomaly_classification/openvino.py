@@ -40,6 +40,7 @@ from omegaconf import ListConfig
 from omegaconf.dictconfig import DictConfig
 from ote_anomalib.config import get_anomalib_config
 from ote_anomalib.exportable_code import AnomalyClassification
+from ote_anomalib.logging import get_logger
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.inference_parameters import (
     InferenceParameters,
@@ -70,7 +71,7 @@ from ote_sdk.usecases.tasks.interfaces.optimization_interface import (
     OptimizationType,
 )
 
-logger = logging.getLogger("pytorch_lightning")
+logger = get_logger(__name__)
 
 
 class OTEOpenVINOAnomalyDataloader(DataLoader):
