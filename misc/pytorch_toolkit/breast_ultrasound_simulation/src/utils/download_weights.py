@@ -28,8 +28,8 @@ def download_data():
     real_data_path = config['real_data_save_path']
     stage0_data_url = config['stage0_data_download_url']
     stage0_data_path = config['stage0_data_save_path']
-    download_and_extract(path=real_data_path, url=real_data_url, expath='downloads/data/real_images/')
-    download_and_extract(path=stage0_data_path, url=stage0_data_url, expath='downloads/data/stage0/')
+    download_and_extract(path=real_data_path, url=real_data_url, expath='downloads/data/')
+    download_and_extract(path=stage0_data_path, url=stage0_data_url, expath='downloads/data/')
 
 
 def main():
@@ -37,5 +37,4 @@ def main():
     download_data()
 
 if __name__ == '__main__':
-
     main()

@@ -16,7 +16,7 @@ if __name__ == '__main__':
 
     params = {'batch_size': train_config['batch_size'],
               'shuffle': True,
-              'num_workers': train_config['num_workers'], 
+              'num_workers': train_config['num_workers'],
               'drop_last': True}
 
     params_test = {'batch_size': test_config['batch_size'],

@@ -17,7 +17,7 @@ class Kaggle_BUS_Dataset(data.Dataset):
         self.Stage0_DIR = Stage0_DIR
         self.Images_DIR = Images_DIR
         self.ten_trans = transforms.Compose(
-            [transforms.Resize((128, 128)), transforms.ToTensor()])
+            [transforms.ToTensor()])
         self.resize = resize
         self.test = test
 
@@ -35,8 +35,8 @@ class Kaggle_BUS_Dataset(data.Dataset):
 
         # images are the output, y
         y = Image.open(os.path.join(self.Images_DIR, file_name))
-        if self.resize:
-            y = y.resize((128, 128))
+        # if self.resize:
+        #     y = y.resize((128, 128))
 
         y = self.ten_trans(y)
 

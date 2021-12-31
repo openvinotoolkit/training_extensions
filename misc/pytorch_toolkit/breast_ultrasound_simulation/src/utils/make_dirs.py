@@ -10,5 +10,3 @@ def make_dirs():
     os.mkdir('temp_data')
     os.mkdir('temp_data/infer_results/')
     os.mkdir('temp_data/checkpoints/')
-    # os.mkdir('temp_data/infer_results/model_1')
-

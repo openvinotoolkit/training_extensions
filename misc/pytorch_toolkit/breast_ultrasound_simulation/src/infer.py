@@ -19,7 +19,7 @@ params_test = {'batch_size': 1,
 STAGE0_DIR = data_config["stage0_data"]
 IMAGES_DIR = data_config["realUS_data"]
 
-if(infer_config["infer_data"] == 'BUS'):
+if infer_config["infer_data"] == 'BUS':
     print("Preparing dataset for inferecing on 2D BUS dataset")
 
     all_files = os.listdir(STAGE0_DIR)
@@ -31,6 +31,6 @@ testing_gen = data.DataLoader(testing_set, **params_test)
 
 print("Loaded Dataset")
 
-if(infer_config["infer_data"] == 'BUS'):
+if infer_config["infer_data"] == 'BUS':
     solver_ins = solver_inter2d(infer_config, test_data=testing_gen, test_flag=gen_config['test_flag'], restore=1)
     solver_ins.test()

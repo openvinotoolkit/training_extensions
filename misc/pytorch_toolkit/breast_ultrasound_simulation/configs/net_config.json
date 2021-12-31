@@ -2,7 +2,7 @@
     "train":{
         "lr": 0.0002,
         "epochs": 5,
-        "batch_size": 64,
+        "batch_size": 2,
         "model_name": "model_1",
         "model_weight": "model.pt",
         "log_step": 5,
