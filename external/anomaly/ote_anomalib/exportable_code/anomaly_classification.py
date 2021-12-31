@@ -79,6 +79,8 @@ class AnomalyClassification(SegmentationModel):
             pred_score = (pred_score - meta["image_mean"]) / meta["image_std"]
             pred_score = norm.cdf(pred_score - meta["image_threshold"])
 
+        meta["pred_score"] = pred_score
+
         input_image_height = meta["original_shape"][0]
         input_image_width = meta["original_shape"][1]
 

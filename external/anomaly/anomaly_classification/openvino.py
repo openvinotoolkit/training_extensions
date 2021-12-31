@@ -30,6 +30,7 @@ from zipfile import ZipFile
 import numpy as np
 from addict import Dict as ADDict
 from anomalib.core.model.inference import OpenVINOInferencer
+from anomalib.utils.post_process import anomaly_map_to_color_map
 from compression.api import DataLoader
 from compression.engines.ie_engine import IEEngine
 from compression.graph import load_model, save_model
@@ -53,6 +54,7 @@ from ote_sdk.entities.model import (
     OptimizationMethod,
 )
 from ote_sdk.entities.optimization_parameters import OptimizationParameters
+from ote_sdk.entities.result_media import ResultMediaEntity
 from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.serialization.label_mapper import LabelSchemaMapper, label_schema_to_bytes
@@ -151,9 +153,20 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
         # This always assumes that threshold is available in the task environment's model
         meta_data = self.get_meta_data()
         for idx, dataset_item in enumerate(dataset):
-            _, pred_score = self.inferencer.predict(dataset_item.numpy, superimpose=False, meta_data=meta_data)
-            annotations_scene = self.annotation_converter.convert_to_annotation(pred_score, meta_data)
+            anomaly_map, pred_score = self.inferencer.predict(
+                dataset_item.numpy, superimpose=False, meta_data=meta_data
+            )
+            meta_data["pred_score"] = pred_score
+            annotations_scene = self.annotation_converter.convert_to_annotation(anomaly_map, meta_data)
             dataset_item.append_annotations(annotations_scene.annotations)
+            anomaly_map = anomaly_map_to_color_map(anomaly_map, normalize=False)
+            heatmap_media = ResultMediaEntity(
+                name="Anomaly Map",
+                type="anomaly_map",
+                annotation_scene=dataset_item.annotation_scene,
+                numpy=anomaly_map,
+            )
+            dataset_item.append_metadata_item(heatmap_media)
             update_progress_callback(int((idx + 1) / len(dataset) * 100))
 
         return dataset
