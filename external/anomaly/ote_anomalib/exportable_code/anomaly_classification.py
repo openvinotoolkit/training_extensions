@@ -43,7 +43,7 @@ class AnomalyClassification(SegmentationModel):
 
         return parameters
 
-    def postprocess(self, outputs: Dict[str, np.ndarray], meta: Dict[str, Any]) -> np.ndarray:
+    def postprocess(self, outputs: Dict[str, np.ndarray], meta: Dict[str, Any]) -> float:
         """Resize the outputs of the model to original image size.
 
         Args:
@@ -51,11 +51,10 @@ class AnomalyClassification(SegmentationModel):
             meta (Dict[str, Any]): Metadata which contains values such as threshold, original image size.
 
         Returns:
-            np.ndarray: Resulting image resized to original input image size
+            float: Normalized anomaly score
         """
-        outputs = outputs[self.output_blob_name].squeeze()
-        anomaly_map = outputs[self.output_blob_name].squeeze()
-        pred_score = anomaly_map.reshape(-1).max()
+        anomaly_map: np.ndarray = outputs[self.output_blob_name].squeeze()
+        pred_score: float = anomaly_map.reshape(-1).max()
 
         meta["image_threshold"] = self.image_threshold  # pylint: disable=no-member
         meta["pixel_threshold"] = self.pixel_threshold  # pylint: disable=no-member
@@ -72,4 +71,7 @@ class AnomalyClassification(SegmentationModel):
         input_image_height = meta["original_shape"][0]
         input_image_width = meta["original_shape"][1]
         result = cv2.resize(anomaly_map, (input_image_width, input_image_height))
-        return result
+
+        meta["anomaly_map"] = result
+
+        return pred_score
