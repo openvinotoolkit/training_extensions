@@ -64,6 +64,10 @@ class AnomalyClassification(SegmentationModel):
 
         anomaly_map = ((anomaly_map - meta["pixel_threshold"]) / (meta["max"] - meta["min"])) + 0.5
         pred_score = ((pred_score - meta["image_threshold"]) / (meta["max"] - meta["min"])) + 0.5
+        anomaly_map = np.minimum(anomaly_map, 1)
+        anomaly_map = np.maximum(anomaly_map, 0)
+        pred_score = np.minimum(pred_score, 1)
+        pred_score = np.maximum(pred_score, 0)
 
         input_image_height = meta["original_shape"][0]
         input_image_width = meta["original_shape"][1]
