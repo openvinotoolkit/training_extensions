@@ -20,6 +20,7 @@ import cv2
 import numpy as np
 from openvino.model_zoo.model_api.models import SegmentationModel
 from openvino.model_zoo.model_api.models.types import NumericalValue
+from anomalib.utils.normalization.min_max import normalize
 
 
 class AnomalyClassification(SegmentationModel):
@@ -54,19 +55,15 @@ class AnomalyClassification(SegmentationModel):
             float: Normalized anomaly score
         """
         anomaly_map: np.ndarray = outputs[self.output_blob_name].squeeze()
-        pred_score: float = anomaly_map.reshape(-1).max()
+        pred_score = anomaly_map.reshape(-1).max()
 
         meta["image_threshold"] = self.image_threshold  # pylint: disable=no-member
         meta["pixel_threshold"] = self.pixel_threshold  # pylint: disable=no-member
         meta["min"] = self.min  # pylint: disable=no-member
         meta["max"] = self.max  # pylint: disable=no-member
 
-        anomaly_map = ((anomaly_map - meta["pixel_threshold"]) / (meta["max"] - meta["min"])) + 0.5
-        pred_score = ((pred_score - meta["image_threshold"]) / (meta["max"] - meta["min"])) + 0.5
-        anomaly_map = np.minimum(anomaly_map, 1)
-        anomaly_map = np.maximum(anomaly_map, 0)
-        pred_score = np.minimum(pred_score, 1)
-        pred_score = np.maximum(pred_score, 0)
+        anomaly_map = normalize(anomaly_map, meta["pixel_threshold"], meta["min"], meta["max"])
+        pred_score = normalize(pred_score, meta["image_threshold"], meta["min"], meta["max"])
 
         input_image_height = meta["original_shape"][0]
         input_image_width = meta["original_shape"][1]
@@ -74,4 +71,4 @@ class AnomalyClassification(SegmentationModel):
 
         meta["anomaly_map"] = result
 
-        return pred_score
+        return float(pred_score)
