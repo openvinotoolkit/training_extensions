@@ -20,17 +20,17 @@ import inspect
 import json
 import logging
 import os
-import struct
 import subprocess  # nosec
 import sys
 import tempfile
 from shutil import copyfile, copytree
-from typing import Any, Dict, List, Optional, Union, cast
+from typing import Any, Dict, List, Optional, Union
 from zipfile import ZipFile
 
 import numpy as np
 from addict import Dict as ADDict
 from anomalib.core.model.inference import OpenVINOInferencer
+from anomalib.utils.post_process import anomaly_map_to_color_map
 from compression.api import DataLoader
 from compression.engines.ie_engine import IEEngine
 from compression.graph import load_model, save_model
@@ -54,6 +54,7 @@ from ote_sdk.entities.model import (
     OptimizationMethod,
 )
 from ote_sdk.entities.optimization_parameters import OptimizationParameters
+from ote_sdk.entities.result_media import ResultMediaEntity
 from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.serialization.label_mapper import LabelSchemaMapper, label_schema_to_bytes
@@ -152,9 +153,19 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
         # This always assumes that threshold is available in the task environment's model
         meta_data = self.get_meta_data()
         for idx, dataset_item in enumerate(dataset):
-            _, pred_score = self.inferencer.predict(dataset_item.numpy, superimpose=False, meta_data=meta_data)
+            anomaly_map, pred_score = self.inferencer.predict(
+                dataset_item.numpy, superimpose=False, meta_data=meta_data
+            )
             annotations_scene = self.annotation_converter.convert_to_annotation(pred_score, meta_data)
             dataset_item.append_annotations(annotations_scene.annotations)
+            anomaly_map = anomaly_map_to_color_map(anomaly_map, normalize=False)
+            heatmap_media = ResultMediaEntity(
+                name="Anomaly Map",
+                type="anomaly_map",
+                annotation_scene=dataset_item.annotation_scene,
+                numpy=anomaly_map,
+            )
+            dataset_item.append_metadata_item(heatmap_media)
             update_progress_callback(int((idx + 1) / len(dataset) * 100))
 
         return dataset
@@ -163,13 +174,13 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
         """Get Meta Data."""
 
         image_threshold = np.frombuffer(self.task_environment.model.get_data("image_threshold"), dtype=np.float32)
-        min = np.frombuffer(self.task_environment.model.get_data("min"), dtype=np.float32)
-        max = np.frombuffer(self.task_environment.model.get_data("max"), dtype=np.float32)
+        min_value = np.frombuffer(self.task_environment.model.get_data("min"), dtype=np.float32)
+        max_value = np.frombuffer(self.task_environment.model.get_data("max"), dtype=np.float32)
         meta_data = dict(
             image_threshold=image_threshold,
             pixel_threshold=image_threshold,  # re-use image threshold for pixel normalization
-            min=min,
-            max=max
+            min=min_value,
+            max=max_value,
         )
         return meta_data
 
@@ -316,6 +327,11 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
             "image_threshold": np.frombuffer(
                 self.task_environment.model.get_data("image_threshold"), dtype=np.float32
             ).item(),
+            "pixel_threshold": np.frombuffer(
+                self.task_environment.model.get_data("image_threshold"), dtype=np.float32
+            ).item(),
+            "min": np.frombuffer(self.task_environment.model.get_data("min"), dtype=np.float32).item(),
+            "max": np.frombuffer(self.task_environment.model.get_data("image_threshold"), dtype=np.float32).item(),
             "labels": LabelSchemaMapper.forward(self.task_environment.label_schema),
         }
         if "transforms" not in self.config.keys():
