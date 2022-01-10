@@ -398,7 +398,7 @@ class TestSegmentationUtils:
         ):
             assert isinstance(annotation.shape, Polygon)
             assert annotation.shape.points == expected_points
-            annotation_labels = annotation._Annotation__labels
+            annotation_labels = annotation._Annotation__labels  # type: ignore[attr-defined]
             assert len(annotation_labels) == 1
             assert annotation_labels[0].label == expected_label
             assert round(annotation_labels[0].probability, 5) == expected_probability
