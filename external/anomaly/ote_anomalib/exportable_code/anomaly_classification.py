@@ -18,9 +18,9 @@ from typing import Any, Dict
 
 import cv2
 import numpy as np
+from anomalib.utils.normalization.min_max import normalize
 from openvino.model_zoo.model_api.models import SegmentationModel
 from openvino.model_zoo.model_api.models.types import NumericalValue
-from anomalib.utils.normalization.min_max import normalize
 
 
 class AnomalyClassification(SegmentationModel):

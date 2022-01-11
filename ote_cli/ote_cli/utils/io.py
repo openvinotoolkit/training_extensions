@@ -61,12 +61,7 @@ def read_model(model_configuration, path, train_dataset):
             "openvino.xml": ModelAdapter(read_binary(path[:-4] + ".xml")),
             "openvino.bin": ModelAdapter(read_binary(path[:-4] + ".bin")),
         }
-        for key in [
-            "confidence_threshold",
-            "image_threshold",
-            "min",
-            "max"
-        ]:
+        for key in ["confidence_threshold", "image_threshold", "min", "max"]:
             full_path = os.path.join(os.path.dirname(path), key)
             if os.path.exists(full_path):
                 model_adapters[key] = ModelAdapter(read_binary(full_path))

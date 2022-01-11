@@ -21,13 +21,13 @@ import io
 import logging
 import os
 import shutil
-import struct
 import subprocess  # nosec
 import tempfile
 from glob import glob
 from typing import Optional, Union
 
 import torch
+from anomalib.core.callbacks import MinMaxNormalizationCallback
 from anomalib.core.model import AnomalyModule
 from anomalib.models import get_model
 from omegaconf import DictConfig, ListConfig
@@ -49,7 +49,6 @@ from ote_sdk.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from ote_sdk.usecases.tasks.interfaces.training_interface import ITrainingTask
 from ote_sdk.usecases.tasks.interfaces.unload_interface import IUnload
 from pytorch_lightning import Trainer
-from anomalib.core.callbacks import MinMaxNormalizationCallback
 
 logger = logging.getLogger(__name__)
 
