@@ -86,4 +86,4 @@ class AnomalyClassification(SegmentationModel):
 
         meta["anomaly_map"] = result
 
-        return float(pred_score)
+        return np.array(pred_score)

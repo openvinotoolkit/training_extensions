@@ -333,6 +333,7 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
             "min": np.frombuffer(self.task_environment.model.get_data("min"), dtype=np.float32).item(),
             "max": np.frombuffer(self.task_environment.model.get_data("image_threshold"), dtype=np.float32).item(),
             "labels": LabelSchemaMapper.forward(self.task_environment.label_schema),
+            "threshold": 0.5,
         }
         if "transforms" not in self.config.keys():
             configuration["mean_values"] = list(np.array([0.485, 0.456, 0.406]) * 255)
