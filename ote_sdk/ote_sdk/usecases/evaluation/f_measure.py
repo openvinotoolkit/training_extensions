@@ -770,6 +770,8 @@ class FMeasure(IPerformanceProvider):
                     metrics=[self.f_measure_per_confidence],
                     visualization_info=LineChartInfo(
                         name="F-measure per confidence",
+                        x_axis_label="Confidence threshold",
+                        y_axis_label="F-measure",
                     ),
                 )
             )
@@ -789,7 +791,9 @@ class FMeasure(IPerformanceProvider):
                 LineMetricsGroup(
                     metrics=[self.f_measure_per_nms],
                     visualization_info=LineChartInfo(
-                        name="F-measure per nms",
+                        name="F-measure per NMS",
+                        x_axis_label="NMS threshold",
+                        y_axis_label="F-measure",
                     ),
                 )
             )
