@@ -2,7 +2,7 @@ import torch.nn as nn
 
 class HETRBackbone(nn.Module):
     def __init__(self, input_channels=1, output_channels=80):
-        super(HETRBackbone, self).__init__()
+        super().__init__()
         num_filters = [16, 32, 48, 64, output_channels]
         self.conv0 = nn.Conv2d(input_channels, num_filters[0], 3, 1, 1)
         self.conv1 = nn.Conv2d(num_filters[0], num_filters[1], 3, 1, 1)
@@ -49,4 +49,3 @@ class HETRBackbone(nn.Module):
         x = self.relu(x)
 
         return x
-

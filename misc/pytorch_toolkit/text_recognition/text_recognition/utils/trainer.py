@@ -111,7 +111,8 @@ def calculate_loss(logits, targets, target_lengths, should_cut_by_min=False, ctc
             if len(predictions[i]) == len(gt) and torch.all(predictions[i].eq(gt)):
                 accuracy += 1
             gt_str = vocab.construct_phrase(gt, ignore_end_token=True, whitespace=False)
-            pre_str = vocab.construct_phrase(predictions[i], ignore_end_token=True, max_len=1 + len(gt_str), whitespace=False)
+            pre_str = vocab.construct_phrase(predictions[i], ignore_end_token=True,
+                                             max_len=1 + len(gt_str), whitespace=False)
             if step % print_freq == 0:
                 print('TRU:', gt_str)
                 print('PRE:', pre_str)
@@ -369,8 +370,9 @@ class Trainer:
                             gold_phrase_str = self.vocab.construct_phrase(
                                 loss_computation_gt[j], ignore_end_token=self.config.get('use_ctc'),
                                 whitespace=self.whitespace)
+                            phrase_max_len = 1 + len(gold_phrase_str.split() if self.whitespace else gold_phrase_str)
                             pred_phrase_str = self.vocab.construct_phrase(phrase,
-                                                                          max_len=1 + len(gold_phrase_str.split() if self.whitespace else gold_phrase_str),
+                                                                          max_len=phrase_max_len,
                                                                           ignore_end_token=self.config.get('use_ctc'),
                                                                           whitespace=self.whitespace)
                             case_sensitive = getattr(loader.dataset, 'case_sensitive', False)

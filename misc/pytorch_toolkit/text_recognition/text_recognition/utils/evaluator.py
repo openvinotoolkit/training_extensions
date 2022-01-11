@@ -409,7 +409,8 @@ class Evaluator:
                 with torch.no_grad():
                     targets = self.runner.run_model(imgs)
                     for i, target in enumerate(targets):
-                        gold_phrase_str, pred_phrase_str = self._extract_predictions(loss_computation_gt[i], target, self.whitespace)
+                        gold_phrase_str, pred_phrase_str = self._extract_predictions(loss_computation_gt[i],
+                                                                                     target, self.whitespace)
                         if not self.render:
                             # alphanumeric task
                             case_sensitive = getattr(loader.dataset, 'case_sensitive', False)

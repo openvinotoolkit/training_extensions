@@ -101,8 +101,8 @@ class Vocab:
 
         if whitespace:
             return ' '.join(phrase_converted)
-        else:
-            return ''.join(phrase_converted)
+
+        return ''.join(phrase_converted)
 
 
 def write_vocab(data_dir, as_json=True, annotation_file='formulas.norm.lst'):
