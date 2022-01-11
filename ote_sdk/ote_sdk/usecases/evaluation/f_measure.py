@@ -791,7 +791,7 @@ class FMeasure(IPerformanceProvider):
                 LineMetricsGroup(
                     metrics=[self.f_measure_per_nms],
                     visualization_info=LineChartInfo(
-                        name="F-measure per NMS",
+                        name="F-measure per nms",
                         x_axis_label="NMS threshold",
                         y_axis_label="F-measure",
                     ),
