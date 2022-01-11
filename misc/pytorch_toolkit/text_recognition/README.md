@@ -20,7 +20,7 @@ We follow similar to [deep-text-recognition-benchmark](https://github.com/clovaa
    1. ResNet-like backbone
    2. Custom ResNet-like backbone (configurable number of channels and spatial dimension in every stage)
     > [Convolutional Block Attention Module](https://arxiv.org/abs/1807.06521) is implemented for the resnet-like backbone, but currently it is not used by any of the models.
-   3. HETR backbone (from [ICDAR17 paper](https://ieeexplore.ieee.org/document/8269951))
+   3. HETR backbone (from paper: Puigcerver, Joan. "Are multidimensional recurrent layers really necessary for handwritten text recognition?." 2017 14th IAPR International Conference on Document Analysis and Recognition (ICDAR). Vol. 1. IEEE, 2017.)
 3. Text Recognition Head
    1. CTC lstm encoder-decoder head.
    2. 1d attention based head from [im2markup](https://arxiv.org/pdf/1609.04938.pdf)
@@ -193,7 +193,7 @@ That is why we cannot just compare text predictions one-by-one, we have to rende
 
 ## Demo
 
-In order to see how trained model works using OpenVINO™ please refer to [Formula recognition Python\* Demo](https://github.com/opencv/open_model_zoo/tree/develop/demos/formula_recognition_demo/) and [Text detection C++\* demo](https://github.com/openvinotoolkit/open_model_zoo/tree/master/demos/text_detection_demo). Before running the demo you have to export trained model to IR. Please, see below how to do that.
+In order to see how trained model works using OpenVINO™ please refer to [Formula recognition Python\* Demo](https://github.com/opencv/open_model_zoo/tree/master/demos/formula_recognition_demo/) and [Text detection C++\* demo](https://github.com/openvinotoolkit/open_model_zoo/tree/master/demos/text_detection_demo). Before running the demo you have to export trained model to IR. Please, see below how to do that.
 
 If you want to see how trained PyTorch model is working, you can run `tools/demo.py` script with correct `config` file. Fill in the `input_images` variable with the paths to desired images. For every image in this list, model will predict the text and print it into the terminal.
 
