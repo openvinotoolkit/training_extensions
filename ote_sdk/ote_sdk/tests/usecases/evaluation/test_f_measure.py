@@ -1563,7 +1563,7 @@ class TestFMeasure:
 
     def prediction_dataset(self):
         return DatasetEntity(
-            [self.image_2_prediction_boxes(), self.image_2_prediction_boxes()]
+            [self.image_1_prediction_boxes(), self.image_2_prediction_boxes()]
         )
 
     @pytest.mark.priority_medium
@@ -1595,7 +1595,7 @@ class TestFMeasure:
             assert f_measure_actual.box_score_index == 5
             assert isinstance(f_measure_actual.f_measure, ScoreMetric)
             assert f_measure_actual.f_measure.name == "f-measure"
-            assert f_measure_actual.f_measure.value == 0.15384615384615372
+            assert f_measure_actual.f_measure.value == pytest.approx(0.2857142857142856)
 
         ground_dataset = self.ground_truth_dataset()
         prediction_dataset = self.prediction_dataset()
@@ -1609,7 +1609,7 @@ class TestFMeasure:
         f_measure = FMeasure(result_set)
         check_f_measure_common_attributes(f_measure_actual=f_measure)
         assert f_measure.f_measure_per_label == {
-            labels[0]: ScoreMetric(name="class_1", value=0.3999999999999999),
+            labels[0]: ScoreMetric(name="class_1", value=0.6666666666666665),
             labels[2]: ScoreMetric(name="class_3", value=0.0),
             labels[1]: ScoreMetric(name="class_2", value=0.0),
         }
@@ -1626,9 +1626,9 @@ class TestFMeasure:
         )
         check_f_measure_common_attributes(f_measure_actual=f_measure)
         assert f_measure.f_measure_per_label == {
-            labels[2]: ScoreMetric(name="class_3", value=0.4999999999999999),
-            labels[0]: ScoreMetric(name="class_1", value=0.3999999999999999),
-            labels[1]: ScoreMetric(name="class_2", value=0.0),
+            labels[0]: ScoreMetric(name="class_1", value=0.7999999999999999),
+            labels[1]: ScoreMetric(name="class_2", value=0.6666666666666665),
+            labels[2]: ScoreMetric(name="class_3", value=0.6666666666666665),
         }
         label_schema_labels = result_set.model.configuration.label_schema.get_labels(
             include_empty=False
@@ -1714,7 +1714,7 @@ class TestFMeasure:
             assert isinstance(performance, Performance)
             assert isinstance(performance.score, ScoreMetric)
             assert performance.score.name == "f-measure"
-            assert performance.score.value == expected_score
+            assert performance.score.value == pytest.approx(expected_score)
             # Checking dashboard metrics
             for expected_metric in expected_metrics:
                 metric_index = expected_metrics.index(expected_metric)
@@ -1792,7 +1792,7 @@ class TestFMeasure:
         actual_performance = f_measure.get_performance()
         check_performance(
             performance=actual_performance,
-            expected_score=0.15384615384615372,
+            expected_score=0.2857142857142856,
             expected_metrics=expected_dashboard_metrics,
         )
         # Checking attributes of "FMeasure" class object initialized with specified values of optional parameters
@@ -1839,6 +1839,6 @@ class TestFMeasure:
         actual_performance = f_measure.get_performance()
         check_performance(
             performance=actual_performance,
-            expected_score=0.15384615384615372,
+            expected_score=0.2857142857142856,
             expected_metrics=expected_dashboard_metrics,
         )
