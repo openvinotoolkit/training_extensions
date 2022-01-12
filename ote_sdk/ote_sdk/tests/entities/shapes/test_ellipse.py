@@ -40,7 +40,7 @@ class TestEllipse:
         return Ellipse(**self.ellipse_params())
 
     @staticmethod
-    def width_gt_height_ellipse_params(self):
+    def width_gt_height_ellipse_params():
         width_gt_height_ellipse_params = {
             "x1": 0.5,
             "x2": 0.8,
