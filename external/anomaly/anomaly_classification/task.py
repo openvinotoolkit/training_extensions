@@ -16,7 +16,6 @@
 
 import ctypes
 import io
-import logging
 import os
 import shutil
 import struct
@@ -62,6 +61,17 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
             task_environment (TaskEnvironment): OTE Task environment.
         """
         print("Initializing the task environment.")
+        logger.info("Initializing the task environment.")
+
+        print(subprocess.call("nvidia-smi"))
+        logger.info(subprocess.call("nvidia-smi"))
+
+        print(f"Torch Version {torch.__version__}")
+        logger.info("Torch Version '%s'", torch.__version__)
+
+        print(f"Torch Cuda Version {torch.version.cuda}")
+        logger.info("Torch Cuda Version '%s'", torch.version.cuda)
+
         self.task_environment = task_environment
         self.model_name = task_environment.model_template.name
         self.labels = task_environment.get_labels()
@@ -107,6 +117,10 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
                 "No trained model in project yet. Created new model with '%s'",
                 self.model_name,
             )
+            logger.info(
+                "No trained model in project yet. Created new model with '%s'",
+                self.model_name,
+            )
         else:
             buffer = io.BytesIO(ote_model.get_data("weights.pth"))
             model_data = torch.load(buffer, map_location=torch.device("cpu"))
@@ -114,6 +128,7 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
             try:
                 model.load_state_dict(model_data["model"])
                 print("Loaded model weights from Task Environment")
+                logger.info("Loaded model weights from Task Environment")
 
             except BaseException as exception:
                 raise ValueError("Could not load the saved model. The model file structure is invalid.") from exception
@@ -134,7 +149,12 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
             train_parameters (TrainParameters): Training parameters
         """
         print("Training the model.")
+        logger.info("Training the model.")
+
         config = self.get_config()
+        print(f"Training Configs: \n{config}")
+        logger.info("Training Configs '%s'", config)
+
         datamodule = OTEAnomalyDataModule(config=config, dataset=dataset)
         callbacks = [ProgressCallback(parameters=train_parameters)]
 
@@ -143,6 +163,9 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
 
         self.save_model(output_model)
 
+        print("Training completed.")
+        logger.info("Training completed.")
+
     def save_model(self, output_model: ModelEntity) -> None:
         """Save the model after training is completed.
 
@@ -150,6 +173,7 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
             output_model (ModelEntity): Output model onto which the weights are saved.
         """
         print("Saving the model weights.")
+        logger.info("Saving the model weights.")
         config = self.get_config()
         model_info = {
             "model": self.model.state_dict(),
@@ -167,12 +191,16 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
         output_model.performance = Performance(score=ScoreMetric(name="F1 Score", value=f1_score))
         output_model.precision = [ModelPrecision.FP32]
 
+        print(f"Saving Config: \n{config}")
+        logger.info("Saving Configs '%s'", config)
+
     def cancel_training(self) -> None:
         """Cancel the training `after_batch_end`.
 
         This terminates the training; however validation is still performed.
         """
         print("Cancel training requested.")
+        logger.info("Cancel training requested.")
         self.trainer.should_stop = True
 
         # The runner periodically checks `.stop_training` file to ensure if cancellation is requested.
@@ -191,8 +219,12 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
             DatasetEntity: Output dataset with predictions.
         """
         print("Performing inference on the validation set using the base torch model.")
+        logger.info("Performing inference on the validation set using the base torch model.")
         config = self.get_config()
         datamodule = OTEAnomalyDataModule(config=config, dataset=dataset)
+
+        print(f"Inference Config: \n{config}")
+        logger.info("Inference Configs '%s'", config)
 
         # Callbacks.
         progress = ProgressCallback(parameters=inference_parameters)
@@ -222,7 +254,14 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
                 output_resultset.prediction_dataset[i].annotation_scene.annotations[0].get_labels()[0].name,
                 output_resultset.prediction_dataset[i].annotation_scene.annotations[0].get_labels()[0].probability,
             )
+            logger.info(
+                "True vs Pred: %s %s - %3.2f",
+                output_resultset.ground_truth_dataset[i].annotation_scene.annotations[0].get_labels()[0].name,
+                output_resultset.prediction_dataset[i].annotation_scene.annotations[0].get_labels()[0].name,
+                output_resultset.prediction_dataset[i].annotation_scene.annotations[0].get_labels()[0].probability,
+            )
         print("%s performance of the base torch model: %3.2f", metric.f_measure.name, metric.f_measure.value)
+        logger.info("%s performance of the base torch model: %3.2f", metric.f_measure.name, metric.f_measure.value)
 
     def export(self, export_type: ExportType, output_model: ModelEntity) -> None:
         """Export model to OpenVINO IR.
@@ -237,7 +276,8 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
         assert export_type == ExportType.OPENVINO
 
         # pylint: disable=no-member; need to refactor this
-        logging.info("Exporting the OpenVINO model.")
+        print("Exporting the OpenVINO model.")
+        logger.info("Exporting the OpenVINO model.")
         height, width = self.config.model.input_size
         onnx_path = os.path.join(self.config.project.path, "onnx_model.onnx")
         torch.onnx.export(

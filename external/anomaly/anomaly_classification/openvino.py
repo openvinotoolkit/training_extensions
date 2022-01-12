@@ -18,7 +18,6 @@ OpenVINO Anomaly Task
 
 import inspect
 import json
-import logging
 import os
 import struct
 import subprocess  # nosec
@@ -113,7 +112,7 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
     """
 
     def __init__(self, task_environment: TaskEnvironment) -> None:
-        logging.info("Initializing the OpenVINO task.")
+        logger.info("Initializing the OpenVINO task.")
         self.task_environment = task_environment
         self.config = self.get_config()
         self.inferencer = self.load_inferencer()
@@ -147,6 +146,7 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
             raise Exception("task_environment.model is None. Cannot access threshold to calculate labels.")
 
         print("Start OpenVINO inference.")
+        logger.info("Start OpenVINO inference.")
         update_progress_callback = default_progress_callback
         if inference_parameters is not None:
             update_progress_callback = inference_parameters.update_progress
@@ -183,7 +183,14 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
                 output_resultset.prediction_dataset[i].annotation_scene.annotations[0].get_labels()[0].name,
                 output_resultset.prediction_dataset[i].annotation_scene.annotations[0].get_labels()[0].probability,
             )
+            logger.info(
+                "True vs Pred: %s %s - %3.2f",
+                output_resultset.ground_truth_dataset[i].annotation_scene.annotations[0].get_labels()[0].name,
+                output_resultset.prediction_dataset[i].annotation_scene.annotations[0].get_labels()[0].name,
+                output_resultset.prediction_dataset[i].annotation_scene.annotations[0].get_labels()[0].probability,
+            )
         print("%s performance of the OpenVINO model: %3.2f", metric.f_measure.name, metric.f_measure.value)
+        logger.info("%s performance of the OpenVINO model: %3.2f", metric.f_measure.name, metric.f_measure.value)
 
     def _get_optimization_algorithms_configs(self) -> List[ADDict]:
         """Returns list of optimization algorithms configurations"""
@@ -228,6 +235,7 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
             raise ValueError("POT is the only supported optimization type for OpenVINO models")
 
         print("Starting POT optimization.")
+        logger.info("Starting POT optimization.")
         data_loader = OTEOpenVINOAnomalyDataloader(config=self.config, dataset=dataset, inferencer=self.inferencer)
 
         with tempfile.TemporaryDirectory() as tempdir:
@@ -336,6 +344,7 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
             Exception: If ``task_environment.model`` is None
         """
         print("Deploying Model")
+        logger.info("Deploying Model")
 
         if self.task_environment.model is None:
             raise Exception("task_environment.model is None. Cannot load weights.")
@@ -382,3 +391,4 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
             with open(os.path.join(tempdir, "openvino.zip"), "rb") as output_arch:
                 output_model.exportable_code = output_arch.read()
         print("Deployment completed.")
+        logger.info("Deployment completed.")
