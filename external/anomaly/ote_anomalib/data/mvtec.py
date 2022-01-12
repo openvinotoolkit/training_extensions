@@ -1,6 +1,4 @@
-"""
-Dataset Helpers for OTE Training
-"""
+"""OTE MVTec Dataset facilitate OTE Anomaly Training."""
 
 # Copyright (C) 2021 Intel Corporation
 #
@@ -28,18 +26,17 @@ from ote_sdk.entities.annotation import (
 )
 from ote_sdk.entities.dataset_item import DatasetItemEntity
 from ote_sdk.entities.datasets import DatasetEntity
+from ote_sdk.entities.id import ID
 from ote_sdk.entities.image import Image
 from ote_sdk.entities.label import Domain, LabelEntity
 from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.entities.shapes.rectangle import Rectangle
 from ote_sdk.entities.subset import Subset
 from pandas.core.frame import DataFrame
-from tqdm import tqdm
 
 
-class OTEAnomalyDatasetGenerator:
-    """
-    Generate OTE Dataset from the anomaly detection datasets that follows the MVTec format.
+class OteMvtecDataset:
+    """Generate OTE MVTec Dataset from the anomaly detection datasets that follows the MVTec format.
     Args:
         path (Union[str, Path], optional): Path to the MVTec dataset category.
             Defaults to "./datasets/MVTec/bottle".
@@ -49,9 +46,8 @@ class OTEAnomalyDatasetGenerator:
         seed (int, optional): Random seed to ensure reproducibility when splitting. Defaults to 0.
         create_validation_set (bool, optional): Create validation set from the test set by splitting
             it to half. Default to True.
-
     Examples:
-        >>> dataset_generator = OTEAnomalyDatasetGenerator()
+        >>> dataset_generator = OteMvtecDataset()
         >>> dataset = dataset_generator.generate()
         >>> dataset[0].media.numpy.shape
         (900, 900, 3)
@@ -59,7 +55,7 @@ class OTEAnomalyDatasetGenerator:
 
     def __init__(
         self,
-        path: Union[str, Path] = "./datasets/MVTec",
+        path: Union[str, Path],
         split_ratio: float = 0.5,
         seed: int = 0,
         create_validation_set: bool = True,
@@ -70,19 +66,18 @@ class OTEAnomalyDatasetGenerator:
         self.create_validation_set = create_validation_set
 
         self.normal_label = LabelEntity(
-            name=LabelNames.normal, domain=Domain.ANOMALY_CLASSIFICATION, id=LabelNames.normal
+            name=LabelNames.normal, domain=Domain.ANOMALY_CLASSIFICATION, id=ID(LabelNames.normal)
         )
         self.abnormal_label = LabelEntity(
-            name=LabelNames.anomalous, domain=Domain.ANOMALY_CLASSIFICATION, id=LabelNames.anomalous
+            name=LabelNames.anomalous, domain=Domain.ANOMALY_CLASSIFICATION, id=ID(LabelNames.anomalous)
         )
 
     def get_samples(self) -> DataFrame:
-        """
+        """Get MVTec samples.
         Get MVTec samples in a pandas DataFrame. Update the certain columns
         to match the OTE naming terminology. For example, column `split` is
         renamed to `subset`. Labels are also renamed by creating their
         corresponding OTE LabelEntities
-
         Returns:
             DataFrame: Final list of samples comprising all the required
                 information to create the OTE Dataset.
@@ -109,15 +104,13 @@ class OTEAnomalyDatasetGenerator:
         return samples
 
     def generate(self) -> DatasetEntity:
-        """
-        Generate OTE Anomaly Dataset
-
+        """Generate OTE Anomaly Dataset.
         Returns:
             DatasetEntity: Output OTE Anomaly Dataset from an MVTec
         """
         samples = self.get_samples()
         dataset_items: List[DatasetItemEntity] = []
-        for _, sample in tqdm(samples.iterrows()):
+        for _, sample in samples.iterrows():
             # Create image
             image = Image(file_path=sample.image_path)
 
