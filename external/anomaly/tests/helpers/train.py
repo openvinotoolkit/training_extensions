@@ -29,7 +29,7 @@ from anomaly_classification import (
 from ote_sdk.configuration.helper import create
 from ote_sdk.entities.inference_parameters import InferenceParameters
 from ote_sdk.entities.label_schema import LabelSchemaEntity
-from ote_sdk.entities.model import ModelEntity, ModelStatus
+from ote_sdk.entities.model import ModelEntity
 from ote_sdk.entities.model_template import parse_model_template
 from ote_sdk.entities.optimization_parameters import OptimizationParameters
 from ote_sdk.entities.resultset import ResultSetEntity
@@ -72,7 +72,6 @@ class OTEAnomalyTrainer:
         self.output_model = ModelEntity(
             train_dataset=self.dataset,
             configuration=self.task_environment.get_model_configuration(),
-            model_status=ModelStatus.NOT_READY,
         )
 
         self.was_training_run_before: bool = False
