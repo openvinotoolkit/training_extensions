@@ -1566,6 +1566,11 @@ class TestFMeasure:
             [self.image_1_prediction_boxes(), self.image_2_prediction_boxes()]
         )
 
+    def incorrect_prediction_dataset(self):
+        return DatasetEntity(
+            [self.image_2_prediction_boxes(), self.image_2_prediction_boxes()]
+        )
+
     @pytest.mark.priority_medium
     @pytest.mark.component
     @pytest.mark.reqids(Requirements.REQ_1)
@@ -1769,6 +1774,49 @@ class TestFMeasure:
                         == VisualizationType.TEXT
                     )
 
+        def generate_expected_default_dashboard_metrics(actual_f_measure: FMeasure):
+            return [
+                BarMetricsGroup(
+                    metrics=list(actual_f_measure.f_measure_per_label.values()),
+                    visualization_info=BarChartInfo(
+                        name="F-measure per label",
+                        palette=ColorPalette.LABEL,
+                        visualization_type=VisualizationType.RADIAL_BAR,
+                    ),
+                )
+            ]
+
+        def generate_expected_optional_dashboard_metrics(actual_f_measure: FMeasure):
+            return [
+                generate_expected_default_dashboard_metrics(actual_f_measure),
+                LineMetricsGroup(
+                    metrics=[actual_f_measure.f_measure_per_confidence],
+                    visualization_info=LineChartInfo(
+                        name="F-measure per confidence",
+                        x_axis_label="Confidence threshold",
+                        y_axis_label="F-measure",
+                    ),
+                ),
+                TextMetricsGroup(
+                    metrics=[actual_f_measure.best_confidence_threshold],
+                    visualization_info=TextChartInfo(
+                        name="Optimal confidence threshold"
+                    ),
+                ),
+                LineMetricsGroup(
+                    metrics=[actual_f_measure.f_measure_per_nms],
+                    visualization_info=LineChartInfo(
+                        name="F-measure per nms",
+                        x_axis_label="NMS threshold",
+                        y_axis_label="F-measure",
+                    ),
+                ),
+                TextMetricsGroup(
+                    metrics=[actual_f_measure.best_nms_threshold],
+                    visualization_info=TextChartInfo(name="Optimal nms threshold"),
+                ),
+            ]
+
         ground_dataset = self.ground_truth_dataset()
         prediction_dataset = self.prediction_dataset()
         result_set = ResultSetEntity(
@@ -1779,20 +1827,30 @@ class TestFMeasure:
         # Checking "Performance" object returned by "get_performance" for "FMeasure" object initialized with default
         # optional parameters
         f_measure = FMeasure(result_set)
-        expected_dashboard_metrics = [
-            BarMetricsGroup(
-                metrics=list(f_measure.f_measure_per_label.values()),
-                visualization_info=BarChartInfo(
-                    name="F-measure per label",
-                    palette=ColorPalette.LABEL,
-                    visualization_type=VisualizationType.RADIAL_BAR,
-                ),
-            )
-        ]
+        expected_dashboard_metrics = generate_expected_default_dashboard_metrics(
+            f_measure
+        )
         actual_performance = f_measure.get_performance()
         check_performance(
             performance=actual_performance,
             expected_score=0.2857142857142856,
+            expected_metrics=expected_dashboard_metrics,
+        )
+        # Check for incorrect prediction dataset
+        incorrect_prediction_dataset = self.incorrect_prediction_dataset()
+        incorrect_result_set = ResultSetEntity(
+            model=self.model(),
+            ground_truth_dataset=ground_dataset,
+            prediction_dataset=incorrect_prediction_dataset,
+        )
+        f_measure = FMeasure(incorrect_result_set)
+        expected_dashboard_metrics = generate_expected_default_dashboard_metrics(
+            f_measure
+        )
+        actual_performance = f_measure.get_performance()
+        check_performance(
+            performance=actual_performance,
+            expected_score=0.15384615384615372,
             expected_metrics=expected_dashboard_metrics,
         )
         # Checking attributes of "FMeasure" class object initialized with specified values of optional parameters
@@ -1802,43 +1860,28 @@ class TestFMeasure:
             vary_nms_threshold=True,
             cross_class_nms=True,
         )
-        expected_dashboard_metrics = [
-            BarMetricsGroup(
-                metrics=list(f_measure.f_measure_per_label.values()),
-                visualization_info=BarChartInfo(
-                    name="F-measure per label",
-                    palette=ColorPalette.LABEL,
-                    visualization_type=VisualizationType.RADIAL_BAR,
-                ),
-            ),
-            LineMetricsGroup(
-                metrics=[f_measure.f_measure_per_confidence],
-                visualization_info=LineChartInfo(
-                    name="F-measure per confidence",
-                    x_axis_label="Confidence threshold",
-                    y_axis_label="F-measure",
-                ),
-            ),
-            TextMetricsGroup(
-                metrics=[f_measure.best_confidence_threshold],
-                visualization_info=TextChartInfo(name="Optimal confidence threshold"),
-            ),
-            LineMetricsGroup(
-                metrics=[f_measure.f_measure_per_nms],
-                visualization_info=LineChartInfo(
-                    name="F-measure per nms",
-                    x_axis_label="NMS threshold",
-                    y_axis_label="F-measure",
-                ),
-            ),
-            TextMetricsGroup(
-                metrics=[f_measure.best_nms_threshold],
-                visualization_info=TextChartInfo(name="Optimal nms threshold"),
-            ),
-        ]
+        expected_dashboard_metrics = generate_expected_optional_dashboard_metrics(
+            f_measure
+        )
         actual_performance = f_measure.get_performance()
         check_performance(
             performance=actual_performance,
             expected_score=0.2857142857142856,
+            expected_metrics=expected_dashboard_metrics,
+        )
+        # Check for incorrect prediction dataset
+        f_measure = FMeasure(
+            resultset=incorrect_result_set,
+            vary_confidence_threshold=True,
+            vary_nms_threshold=True,
+            cross_class_nms=True,
+        )
+        expected_dashboard_metrics = generate_expected_optional_dashboard_metrics(
+            f_measure
+        )
+        actual_performance = f_measure.get_performance()
+        check_performance(
+            performance=actual_performance,
+            expected_score=0.15384615384615372,
             expected_metrics=expected_dashboard_metrics,
         )
