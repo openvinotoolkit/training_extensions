@@ -33,14 +33,8 @@ from ote_anomalib.logging import get_logger
 from ote_sdk.configuration.helper import create as create_hyper_parameters
 from ote_sdk.entities.inference_parameters import InferenceParameters
 from ote_sdk.entities.label_schema import LabelSchemaEntity
-from ote_sdk.entities.model import (
-    ModelEntity,
-    ModelOptimizationType,
-    ModelPrecision,
-    ModelStatus,
-    OptimizationMethod,
-)
-from ote_sdk.entities.model_template import TargetDevice, parse_model_template
+from ote_sdk.entities.model import ModelEntity
+from ote_sdk.entities.model_template import parse_model_template
 from ote_sdk.entities.optimization_parameters import OptimizationParameters
 from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.subset import Subset
@@ -141,7 +135,6 @@ class OteAnomalyTask:
         output_model = ModelEntity(
             train_dataset=self.dataset,
             configuration=self.task_environment.get_model_configuration(),
-            model_status=ModelStatus.NOT_READY,
         )
         self.torch_task.train(
             dataset=self.dataset,
@@ -196,7 +189,6 @@ class OteAnomalyTask:
         exported_model = ModelEntity(
             train_dataset=self.dataset,
             configuration=self.task_environment.get_model_configuration(),
-            model_status=ModelStatus.NOT_READY,
         )
         self.torch_task.export(ExportType.OPENVINO, exported_model)
         self.task_environment.model = exported_model
@@ -218,14 +210,6 @@ class OteAnomalyTask:
         optimized_model = ModelEntity(
             self.dataset,
             configuration=self.task_environment.get_model_configuration(),
-            optimization_type=ModelOptimizationType.POT,
-            optimization_methods=[OptimizationMethod.QUANTIZATION],
-            optimization_objectives={},
-            precision=[ModelPrecision.INT8],
-            target_device=TargetDevice.CPU,
-            performance_improvement={},
-            model_size_reduction=1.0,
-            model_status=ModelStatus.NOT_READY,
         )
 
         self.openvino_task.optimize(
