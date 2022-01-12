@@ -48,13 +48,6 @@ class ProgressCallback(ProgressBar):
         self.max_epochs = trainer.max_epochs
         self._reset_progress()
 
-    def on_validation_start(self, trainer, pl_module):
-        """
-        Reset progress bar when validation starts.
-        """
-        super().on_validation_start(trainer, pl_module)
-        self._reset_progress()
-
     def on_predict_start(self, trainer, pl_module):
         """
         Reset progress bar when prediction starts.
@@ -76,13 +69,6 @@ class ProgressCallback(ProgressBar):
         super().on_train_batch_end(trainer, pl_module, outputs, batch, batch_idx, dataloader_idx)
         self.current_epoch = trainer.current_epoch
         self._update_progress(stage="train")
-
-    def on_validation_batch_end(self, trainer, pl_module, outputs, batch, batch_idx, dataloader_idx):
-        """
-        Adds validation completion percentage to the progress bar
-        """
-        super().on_validation_batch_end(trainer, pl_module, outputs, batch, batch_idx, dataloader_idx)
-        self._update_progress(stage="val")
 
     def on_predict_batch_end(self, trainer, pl_module, outputs, batch, batch_idx, dataloader_idx):
         """
@@ -117,16 +103,13 @@ class ProgressCallback(ProgressBar):
                 / (self.total_train_batches * self.max_epochs)
             ) * 100
 
-        elif stage == "val":
-            self._progress = (self.val_batch_idx / (self.total_val_batches + 1e-10)) * 100
-
         elif stage == "predict":
             self._progress = (self.predict_batch_idx / (self.total_predict_batches + 1e-10)) * 100
 
         elif stage == "test":
             self._progress = (self.test_batch_idx / (self.total_test_batches + 1e-10)) * 100
         else:
-            raise ValueError(f"Unknown stage {stage}. Available: train, val, predict and test")
+            raise ValueError(f"Unknown stage {stage}. Available: train, predict and test")
 
         return self._progress
 
