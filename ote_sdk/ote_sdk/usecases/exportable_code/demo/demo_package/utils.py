@@ -59,17 +59,25 @@ def get_parameters(path: Optional[Path]) -> dict:
     return parameters
 
 
-def create_model(model_path: Path, config_file: Optional[Path] = None) -> Model:
+def create_model(
+    model_file: Path, config_file: Path, path_to_wrapper: Optional[Path] = None
+) -> Model:
     """
     Create model using ModelAPI factory
     """
 
-    model_adapter = OpenvinoAdapter(create_core(), get_model_path(model_path))
+    model_adapter = OpenvinoAdapter(create_core(), get_model_path(model_file))
     parameters = get_parameters(config_file)
-    try:
-        importlib.import_module(".model", "demo_package")
-    except ImportError:
+    if path_to_wrapper:
+        if not path_to_wrapper.exists():
+            raise IOError("The path to the model.py was not found.")
+
+        spec = importlib.util.spec_from_file_location("model", path_to_wrapper)  # type: ignore
+        model = importlib.util.module_from_spec(spec)  # type: ignore
+        spec.loader.exec_module(model)
+    else:
         print("Using model wrapper from Open Model Zoo ModelAPI")
+
     # labels for modelAPI wrappers can be empty, because unused in pre- and postprocessing
     parameters["model_parameters"]["labels"] = []
     model = Model.create_model(

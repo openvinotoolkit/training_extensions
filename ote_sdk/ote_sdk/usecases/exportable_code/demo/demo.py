@@ -20,8 +20,11 @@ from argparse import SUPPRESS, ArgumentParser
 from pathlib import Path
 
 # pylint: disable=no-name-in-module, import-error
-from demo_package import SyncDemo, create_model, create_output_converter
-
+from ote_sdk.usecases.exportable_code.demo.demo_package import (
+    SyncDemo,
+    create_model,
+    create_output_converter,
+)
 from ote_sdk.usecases.exportable_code.streamer import get_media_type
 from ote_sdk.usecases.exportable_code.visualization import Visualizer
 
@@ -56,7 +59,8 @@ def build_argparser():
     args.add_argument(
         "-c",
         "--config",
-        help="Optional. Path to an .json file with parameters for model.",
+        help="Required. Path to an .json file with parameters for model.",
+        required=True,
         type=Path,
     )
 
@@ -70,7 +74,9 @@ def main():
     args = build_argparser().parse_args()
     # create components for demo
 
-    model = create_model(args.model, args.config)
+    model_file = Path(__file__).parent.resolve() / "model.py"
+    model_file = model_file if model_file.exists() else None
+    model = create_model(args.model, args.config, model_file)
     media_type = get_media_type(args.input)
 
     visualizer = Visualizer(media_type)

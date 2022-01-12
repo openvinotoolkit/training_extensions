@@ -21,10 +21,7 @@ import json
 import logging
 import os
 import struct
-import subprocess  # nosec
-import sys
 import tempfile
-from shutil import copyfile, copytree
 from typing import Any, Dict, List, Optional, Union, cast
 from zipfile import ZipFile
 
@@ -331,40 +328,20 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
         parameters["type_of_model"] = "anomaly_classification"
         parameters["converter_type"] = "ANOMALY_CLASSIFICATION"
         parameters["model_parameters"] = self._get_openvino_configuration()
-        name_of_package = "demo_package"
-
         with tempfile.TemporaryDirectory() as tempdir:
-            copyfile(os.path.join(work_dir, "setup.py"), os.path.join(tempdir, "setup.py"))
-            copyfile(os.path.join(work_dir, "requirements.txt"), os.path.join(tempdir, "requirements.txt"))
-            copytree(os.path.join(work_dir, name_of_package), os.path.join(tempdir, name_of_package))
-            config_path = os.path.join(tempdir, name_of_package, "config.json")
-            with open(config_path, "w", encoding="utf-8") as file:
-                json.dump(parameters, file, ensure_ascii=False, indent=4)
-
-            copyfile(inspect.getfile(AnomalyClassification), os.path.join(tempdir, name_of_package, "model.py"))
-
-            # create wheel package
-            subprocess.run(
-                [
-                    sys.executable,
-                    os.path.join(tempdir, "setup.py"),
-                    "bdist_wheel",
-                    "--dist-dir",
-                    tempdir,
-                    "clean",
-                    "--all",
-                ],
-                check=True,
-            )
-            wheel_file_name = [f for f in os.listdir(tempdir) if f.endswith(".whl")][0]
-
             with ZipFile(os.path.join(tempdir, "openvino.zip"), "w") as arch:
+                # model files
                 arch.writestr(os.path.join("model", "model.xml"), self.task_environment.model.get_data("openvino.xml"))
                 arch.writestr(os.path.join("model", "model.bin"), self.task_environment.model.get_data("openvino.bin"))
-                arch.write(os.path.join(tempdir, "requirements.txt"), os.path.join("python", "requirements.txt"))
+                arch.writestr(
+                    os.path.join("model", "config.json"), json.dumps(parameters, ensure_ascii=False, indent=4)
+                )
+
+                # python files
+                arch.write(inspect.getfile(AnomalyClassification), os.path.join("python", "model.py"))
+                arch.write(os.path.join(work_dir, "requirements.txt"), os.path.join("python", "requirements.txt"))
                 arch.write(os.path.join(work_dir, "README.md"), os.path.join("python", "README.md"))
                 arch.write(os.path.join(work_dir, "demo.py"), os.path.join("python", "demo.py"))
-                arch.write(os.path.join(tempdir, wheel_file_name), os.path.join("python", wheel_file_name))
-            with open(os.path.join(tempdir, "openvino.zip"), "rb") as output_arch:
-                output_model.exportable_code = output_arch.read()
+            with open(os.path.join(tempdir, "openvino.zip"), "rb") as file:
+                output_model.exportable_code = file.read()
         logger.info("Deploying completed")
