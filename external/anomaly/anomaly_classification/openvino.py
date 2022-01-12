@@ -146,7 +146,7 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
         if self.task_environment.model is None:
             raise Exception("task_environment.model is None. Cannot access threshold to calculate labels.")
 
-        logger.info("Start OpenVINO inference.")
+        print("Start OpenVINO inference.")
         update_progress_callback = default_progress_callback
         if inference_parameters is not None:
             update_progress_callback = inference_parameters.update_progress
@@ -165,7 +165,7 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
 
         return dataset
 
-    def evaluate(self, output_resultset: ResultSetEntity, evaluation_metric: Optional[str] = None):
+    def evaluate(self, output_resultset: ResultSetEntity, _evaluation_metric: Optional[str] = None):
         """Evaluate the performance of the model.
 
         Args:
@@ -177,13 +177,13 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
 
         # NOTE: This is for debugging purpose.
         for i, _ in enumerate(output_resultset.ground_truth_dataset):
-            logger.info(
+            print(
                 "True vs Pred: %s %s - %3.2f",
                 output_resultset.ground_truth_dataset[i].annotation_scene.annotations[0].get_labels()[0].name,
                 output_resultset.prediction_dataset[i].annotation_scene.annotations[0].get_labels()[0].name,
                 output_resultset.prediction_dataset[i].annotation_scene.annotations[0].get_labels()[0].probability,
             )
-        logger.info("%s performance of the OpenVINO model: %3.2f", metric.f_measure.name, metric.f_measure.value)
+        print("%s performance of the OpenVINO model: %3.2f", metric.f_measure.name, metric.f_measure.value)
 
     def _get_optimization_algorithms_configs(self) -> List[ADDict]:
         """Returns list of optimization algorithms configurations"""
@@ -211,7 +211,7 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
         optimization_type: OptimizationType,
         dataset: DatasetEntity,
         output_model: ModelEntity,
-        optimization_parameters: Optional[OptimizationParameters],
+        _optimization_parameters: Optional[OptimizationParameters],
     ):
         """Optimize the model.
 
@@ -219,7 +219,7 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
             optimization_type (OptimizationType): Type of optimization [POT or NNCF]
             dataset (DatasetEntity): Input Dataset.
             output_model (ModelEntity): Output model.
-            optimization_parameters (Optional[OptimizationParameters]): Optimization parameters.
+            _optimization_parameters (Optional[OptimizationParameters]): Optimization parameters.
 
         Raises:
             ValueError: When the optimization type is not POT, which is the only support type at the moment.
@@ -227,7 +227,7 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
         if optimization_type is not OptimizationType.POT:
             raise ValueError("POT is the only supported optimization type for OpenVINO models")
 
-        logger.info("Starting POT optimization.")
+        print("Starting POT optimization.")
         data_loader = OTEOpenVINOAnomalyDataloader(config=self.config, dataset=dataset, inferencer=self.inferencer)
 
         with tempfile.TemporaryDirectory() as tempdir:
@@ -335,7 +335,7 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
         Raises:
             Exception: If ``task_environment.model`` is None
         """
-        logger.info("Deploying Model")
+        print("Deploying Model")
 
         if self.task_environment.model is None:
             raise Exception("task_environment.model is None. Cannot load weights.")
@@ -381,4 +381,4 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
                 arch.write(os.path.join(tempdir, wheel_file_name), os.path.join("python", wheel_file_name))
             with open(os.path.join(tempdir, "openvino.zip"), "rb") as output_arch:
                 output_model.exportable_code = output_arch.read()
-        logger.info("Deployment completed.")
+        print("Deployment completed.")

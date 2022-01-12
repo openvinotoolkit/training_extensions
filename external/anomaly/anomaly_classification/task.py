@@ -61,7 +61,7 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
         Args:
             task_environment (TaskEnvironment): OTE Task environment.
         """
-        logger.info("Initializing the task environment.")
+        print("Initializing the task environment.")
         self.task_environment = task_environment
         self.model_name = task_environment.model_template.name
         self.labels = task_environment.get_labels()
@@ -103,7 +103,7 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
         """
         model = get_model(config=self.config)
         if ote_model is None:
-            logger.info(
+            print(
                 "No trained model in project yet. Created new model with '%s'",
                 self.model_name,
             )
@@ -113,7 +113,7 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
 
             try:
                 model.load_state_dict(model_data["model"])
-                logger.info("Loaded model weights from Task Environment")
+                print("Loaded model weights from Task Environment")
 
             except BaseException as exception:
                 raise ValueError("Could not load the saved model. The model file structure is invalid.") from exception
@@ -133,7 +133,7 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
             output_model (ModelEntity): Output model to save the model weights.
             train_parameters (TrainParameters): Training parameters
         """
-        logger.info("Training the model.")
+        print("Training the model.")
         config = self.get_config()
         datamodule = OTEAnomalyDataModule(config=config, dataset=dataset)
         callbacks = [ProgressCallback(parameters=train_parameters)]
@@ -149,7 +149,7 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
         Args:
             output_model (ModelEntity): Output model onto which the weights are saved.
         """
-        logger.info("Saving the model weights.")
+        print("Saving the model weights.")
         config = self.get_config()
         model_info = {
             "model": self.model.state_dict(),
@@ -172,7 +172,7 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
 
         This terminates the training; however validation is still performed.
         """
-        logger.info("Cancel training requested.")
+        print("Cancel training requested.")
         self.trainer.should_stop = True
 
         # The runner periodically checks `.stop_training` file to ensure if cancellation is requested.
@@ -190,7 +190,7 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
         Returns:
             DatasetEntity: Output dataset with predictions.
         """
-        logger.info("Performing inference on the validation set using the base torch model.")
+        print("Performing inference on the validation set using the base torch model.")
         config = self.get_config()
         datamodule = OTEAnomalyDataModule(config=config, dataset=dataset)
 
@@ -216,13 +216,13 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
 
         # NOTE: This is for debugging purpose.
         for i, _ in enumerate(output_resultset.ground_truth_dataset):
-            logger.info(
+            print(
                 "True vs Pred: %s %s - %3.2f",
                 output_resultset.ground_truth_dataset[i].annotation_scene.annotations[0].get_labels()[0].name,
                 output_resultset.prediction_dataset[i].annotation_scene.annotations[0].get_labels()[0].name,
                 output_resultset.prediction_dataset[i].annotation_scene.annotations[0].get_labels()[0].probability,
             )
-        logger.info("%s performance of the base torch model: %3.2f", metric.f_measure.name, metric.f_measure.value)
+        print("%s performance of the base torch model: %3.2f", metric.f_measure.name, metric.f_measure.value)
 
     def export(self, export_type: ExportType, output_model: ModelEntity) -> None:
         """Export model to OpenVINO IR.

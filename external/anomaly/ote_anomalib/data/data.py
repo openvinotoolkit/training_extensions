@@ -151,7 +151,7 @@ class OTEAnomalyDataModule(LightningDataModule):
             num_items = len(dataset)
             num_normal = len([item for item in dataset if item.get_shapes_labels()[0].name == LabelNames.normal])
             num_anomalous = len([item for item in dataset if item.get_shapes_labels()[0].name == LabelNames.anomalous])
-            logger.info(
+            print(
                 f"{subset} subset size: Total: {num_items} images. "
                 f"Normal: {num_normal} images. Anomalous: {num_anomalous} images"
             )
