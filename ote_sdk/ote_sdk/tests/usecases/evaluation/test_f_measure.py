@@ -1746,8 +1746,14 @@ class TestFMeasure:
                         actual_metric_group.visualization_info.palette
                         == ColorPalette.DEFAULT
                     )
-                    assert actual_metric_group.visualization_info.x_axis_label == ""
-                    assert actual_metric_group.visualization_info.y_axis_label == ""
+                    assert (
+                        actual_metric_group.visualization_info.x_axis_label
+                        == expected_metric.visualization_info.x_axis_label
+                    )
+                    assert (
+                        actual_metric_group.visualization_info.y_axis_label
+                        == expected_metric.visualization_info.y_axis_label
+                    )
                 if isinstance(expected_metric, TextMetricsGroup):
                     assert actual_metric_group.metrics == expected_metric.metrics
                     assert (
@@ -1807,7 +1813,11 @@ class TestFMeasure:
             ),
             LineMetricsGroup(
                 metrics=[f_measure.f_measure_per_confidence],
-                visualization_info=LineChartInfo(name="F-measure per confidence"),
+                visualization_info=LineChartInfo(
+                    name="F-measure per confidence",
+                    x_axis_label="Confidence threshold",
+                    y_axis_label="F-measure",
+                ),
             ),
             TextMetricsGroup(
                 metrics=[f_measure.best_confidence_threshold],
@@ -1815,7 +1825,11 @@ class TestFMeasure:
             ),
             LineMetricsGroup(
                 metrics=[f_measure.f_measure_per_nms],
-                visualization_info=LineChartInfo(name="F-measure per nms"),
+                visualization_info=LineChartInfo(
+                    name="F-measure per nms",
+                    x_axis_label="NMS threshold",
+                    y_axis_label="F-measure",
+                ),
             ),
             TextMetricsGroup(
                 metrics=[f_measure.best_nms_threshold],
