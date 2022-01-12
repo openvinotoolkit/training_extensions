@@ -39,6 +39,7 @@ class TestEllipse:
     def ellipse(self):
         return Ellipse(**self.ellipse_params())
 
+    @staticmethod
     def width_gt_height_ellipse_params(self):
         width_gt_height_ellipse_params = {
             "x1": 0.5,
@@ -100,22 +101,22 @@ class TestEllipse:
         width_lt_height_ellipse = Ellipse(**width_lt_height_ellipse_params)
         assert width_lt_height_ellipse.height > width_lt_height_ellipse.width
         assert width_lt_height_ellipse.major_axis == width_lt_height_ellipse.height / 2
-        assert round(width_lt_height_ellipse.width, 16) == 0.1
-        assert round(width_lt_height_ellipse.height, 16) == 0.1
-        assert round(width_lt_height_ellipse.x_center, 16) == 0.45
-        assert round(width_lt_height_ellipse.y_center, 16) == 0.35
-        assert round(width_lt_height_ellipse.minor_axis, 16) == 0.05
-        assert round(width_lt_height_ellipse.major_axis, 16) == 0.05
+        assert width_lt_height_ellipse.width == pytest.approx(0.09999999999999998)
+        assert width_lt_height_ellipse.height == pytest.approx(0.10000000000000003)
+        assert width_lt_height_ellipse.x_center == pytest.approx(0.45)
+        assert width_lt_height_ellipse.y_center == pytest.approx(0.35)
+        assert width_lt_height_ellipse.minor_axis == pytest.approx(0.04999999999999999)
+        assert width_lt_height_ellipse.major_axis == pytest.approx(0.05000000000000002)
 
         width_gt_height_ellipse = Ellipse(**self.width_gt_height_ellipse_params())
         assert width_gt_height_ellipse.height < width_gt_height_ellipse.width
         assert width_gt_height_ellipse.minor_axis == width_gt_height_ellipse.height / 2
-        assert round(width_gt_height_ellipse.width, 16) == 0.3
-        assert round(width_gt_height_ellipse.height, 16) == 0.2
-        assert round(width_gt_height_ellipse.x_center, 16) == 0.65
-        assert round(width_gt_height_ellipse.y_center, 16) == 0.2
-        assert round(width_gt_height_ellipse.minor_axis, 16) == 0.1
-        assert round(width_gt_height_ellipse.major_axis, 16) == 0.15
+        assert width_gt_height_ellipse.width == pytest.approx(0.30000000000000004)
+        assert width_gt_height_ellipse.height == pytest.approx(0.19999999999999998)
+        assert width_gt_height_ellipse.x_center == pytest.approx(0.65)
+        assert width_gt_height_ellipse.y_center == pytest.approx(0.2)
+        assert width_gt_height_ellipse.minor_axis == pytest.approx(0.09999999999999999)
+        assert width_gt_height_ellipse.major_axis == pytest.approx(0.15000000000000002)
 
     @pytest.mark.priority_medium
     @pytest.mark.component
@@ -249,28 +250,16 @@ class TestEllipse:
         1. Initialize Ellipse instance
         2. Check returning value
         """
-
-        def round_tuple_values(raw_elements: tuple):
-            """Function to round tuple values to 16 digits"""
-            rounded_elements = []
-            for raw_element in raw_elements:
-                rounded_elements.append(round(raw_element, 16))
-            return tuple(rounded_elements)
-
         ellipse = self.ellipse()
         number_of_coordinates = 3
         coordinates_ellipse_line = ellipse.get_evenly_distributed_ellipse_coordinates(
             number_of_coordinates
         )
         assert len(coordinates_ellipse_line) == 3
-        assert round_tuple_values(coordinates_ellipse_line[0]) == (1.0, 0.25)
-        assert round_tuple_values(coordinates_ellipse_line[1]) == (
-            0.625,
-            0.4665063509461097,
-        )
-        assert round_tuple_values(coordinates_ellipse_line[2]) == (
-            0.6249999999999999,
-            0.0334936490538904,
+        assert coordinates_ellipse_line[0] == pytest.approx((1.0, 0.25))
+        assert coordinates_ellipse_line[1] == pytest.approx((0.625, 0.4665063509461097))
+        assert coordinates_ellipse_line[2] == pytest.approx(
+            (0.6249999999999999, 0.033493649053890406)
         )
 
         width_gt_height_ellipse = Ellipse(**self.width_gt_height_ellipse_params())
@@ -281,15 +270,12 @@ class TestEllipse:
         )
         assert width_gt_height_ellipse.height < width_gt_height_ellipse.width
         assert len(coordinates_ellipse_line) == 3
-        assert coordinates_ellipse_line[0] == (0.65, 0.3)
-        assert round_tuple_values(coordinates_ellipse_line[0]) == (0.65, 0.3)
-        assert round_tuple_values(coordinates_ellipse_line[1]) == (
-            0.7666223198362645,
-            0.1371094972158116,
+        assert coordinates_ellipse_line[0] == pytest.approx((0.65, 0.3))
+        assert coordinates_ellipse_line[1] == pytest.approx(
+            (0.7666223198362645, 0.1371094972158116)
         )
-        assert round_tuple_values(coordinates_ellipse_line[2]) == (
-            0.5333776801637811,
-            0.137109497215774,
+        assert coordinates_ellipse_line[2] == pytest.approx(
+            (0.5333776801637811, 0.13710949721577403)
         )
 
     @pytest.mark.priority_medium
@@ -314,7 +300,7 @@ class TestEllipse:
         ellipse = self.ellipse()
         shapely_polygon = ellipse._as_shapely_polygon()
         assert shapely_polygon.__class__ == Polygon
-        assert round(shapely_polygon.area, 16) == 0.1958331774442254
+        assert shapely_polygon.area == pytest.approx(0.1958331774442254)
 
     @pytest.mark.priority_medium
     @pytest.mark.component
@@ -337,4 +323,4 @@ class TestEllipse:
 
         ellipse = self.ellipse()
         area = ellipse.get_area()
-        assert round(area, 16) == 0.1963495408493621
+        assert area == pytest.approx(0.19634954084936207)
