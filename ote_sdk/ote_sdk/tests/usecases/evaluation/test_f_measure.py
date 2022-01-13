@@ -1715,17 +1715,17 @@ class TestFMeasure:
         specified optional parameters
         """
 
-        def check_performance(performance, expected_score, expected_metrics):
+        def check_performance(performance, expected_score, expected_metric_groups):
             assert isinstance(performance, Performance)
             assert isinstance(performance.score, ScoreMetric)
             assert performance.score.name == "f-measure"
             assert performance.score.value == pytest.approx(expected_score)
             # Checking dashboard metrics
-            for expected_metric in expected_metrics:
-                metric_index = expected_metrics.index(expected_metric)
-                actual_metric_group = performance.dashboard_metrics[metric_index]
-                if isinstance(expected_metric, BarMetricsGroup):
-                    assert actual_metric_group.metrics == expected_metric.metrics
+            for expected_metric_group in expected_metric_groups:
+                metric_group_index = expected_metric_groups.index(expected_metric_group)
+                actual_metric_group = performance.dashboard_metrics[metric_group_index]
+                if isinstance(expected_metric_group, BarMetricsGroup):
+                    assert actual_metric_group.metrics == expected_metric_group.metrics
                     assert isinstance(
                         actual_metric_group.visualization_info, BarChartInfo
                     )
@@ -1741,11 +1741,16 @@ class TestFMeasure:
                         actual_metric_group.visualization_info.type
                         == VisualizationType.RADIAL_BAR
                     )
-                if isinstance(expected_metric, LineMetricsGroup):
-                    assert actual_metric_group.metrics == expected_metric.metrics
+                if isinstance(expected_metric_group, LineMetricsGroup):
+                    assert len(actual_metric_group.metrics) == 1
+                    expected_metric = expected_metric_group.metrics[0]
+                    actual_metric = actual_metric_group.metrics[0]
+                    assert actual_metric.name == expected_metric.name
+                    assert actual_metric.ys == expected_metric.ys
+                    assert actual_metric.xs == expected_metric.xs
                     assert (
                         actual_metric_group.visualization_info.name
-                        == expected_metric.visualization_info.name
+                        == expected_metric_group.visualization_info.name
                     )
                     assert (
                         actual_metric_group.visualization_info.palette
@@ -1753,17 +1758,17 @@ class TestFMeasure:
                     )
                     assert (
                         actual_metric_group.visualization_info.x_axis_label
-                        == expected_metric.visualization_info.x_axis_label
+                        == expected_metric_group.visualization_info.x_axis_label
                     )
                     assert (
                         actual_metric_group.visualization_info.y_axis_label
-                        == expected_metric.visualization_info.y_axis_label
+                        == expected_metric_group.visualization_info.y_axis_label
                     )
-                if isinstance(expected_metric, TextMetricsGroup):
-                    assert actual_metric_group.metrics == expected_metric.metrics
+                if isinstance(expected_metric_group, TextMetricsGroup):
+                    assert actual_metric_group.metrics == expected_metric_group.metrics
                     assert (
                         actual_metric_group.visualization_info.name
-                        == expected_metric.visualization_info.name
+                        == expected_metric_group.visualization_info.name
                     )
                     assert (
                         actual_metric_group.visualization_info.palette
@@ -1774,7 +1779,9 @@ class TestFMeasure:
                         == VisualizationType.TEXT
                     )
 
-        def generate_expected_default_dashboard_metrics(actual_f_measure: FMeasure):
+        def generate_expected_default_dashboard_metric_groups(
+            actual_f_measure: FMeasure,
+        ):
             return [
                 BarMetricsGroup(
                     metrics=list(actual_f_measure.f_measure_per_label.values()),
@@ -1786,11 +1793,31 @@ class TestFMeasure:
                 )
             ]
 
-        def generate_expected_optional_dashboard_metrics(actual_f_measure: FMeasure):
+        def generate_expected_optional_dashboard_metric_groups(
+            actual_f_measure: FMeasure,
+        ):
+            per_confidence = CurveMetric(
+                name=actual_f_measure.f_measure_per_confidence.name,
+                ys=actual_f_measure.f_measure_per_confidence.ys,
+                xs=actual_f_measure.f_measure_per_confidence.xs,
+            )
+            optimal_confidence = ScoreMetric(
+                name=actual_f_measure.best_confidence_threshold.name,
+                value=actual_f_measure.best_confidence_threshold.value,
+            )
+            per_nms = CurveMetric(
+                name=actual_f_measure.f_measure_per_nms.name,
+                ys=actual_f_measure.f_measure_per_nms.ys,
+                xs=actual_f_measure.f_measure_per_nms.xs,
+            )
+            optimal_nms = ScoreMetric(
+                name=actual_f_measure.best_nms_threshold.name,
+                value=actual_f_measure.best_nms_threshold.value,
+            )
             return [
-                generate_expected_default_dashboard_metrics(actual_f_measure),
+                generate_expected_default_dashboard_metric_groups(actual_f_measure)[0],
                 LineMetricsGroup(
-                    metrics=[actual_f_measure.f_measure_per_confidence],
+                    metrics=[per_confidence],
                     visualization_info=LineChartInfo(
                         name="F-measure per confidence",
                         x_axis_label="Confidence threshold",
@@ -1798,13 +1825,13 @@ class TestFMeasure:
                     ),
                 ),
                 TextMetricsGroup(
-                    metrics=[actual_f_measure.best_confidence_threshold],
+                    metrics=[optimal_confidence],
                     visualization_info=TextChartInfo(
                         name="Optimal confidence threshold"
                     ),
                 ),
                 LineMetricsGroup(
-                    metrics=[actual_f_measure.f_measure_per_nms],
+                    metrics=[per_nms],
                     visualization_info=LineChartInfo(
                         name="F-measure per nms",
                         x_axis_label="NMS threshold",
@@ -1812,7 +1839,7 @@ class TestFMeasure:
                     ),
                 ),
                 TextMetricsGroup(
-                    metrics=[actual_f_measure.best_nms_threshold],
+                    metrics=[optimal_nms],
                     visualization_info=TextChartInfo(name="Optimal nms threshold"),
                 ),
             ]
@@ -1827,14 +1854,14 @@ class TestFMeasure:
         # Checking "Performance" object returned by "get_performance" for "FMeasure" object initialized with default
         # optional parameters
         f_measure = FMeasure(result_set)
-        expected_dashboard_metrics = generate_expected_default_dashboard_metrics(
-            f_measure
+        expected_dashboard_metric_groups = (
+            generate_expected_default_dashboard_metric_groups(f_measure)
         )
         actual_performance = f_measure.get_performance()
         check_performance(
             performance=actual_performance,
             expected_score=0.2857142857142856,
-            expected_metrics=expected_dashboard_metrics,
+            expected_metric_groups=expected_dashboard_metric_groups,
         )
         # Check for incorrect prediction dataset
         incorrect_prediction_dataset = self.incorrect_prediction_dataset()
@@ -1844,14 +1871,14 @@ class TestFMeasure:
             prediction_dataset=incorrect_prediction_dataset,
         )
         f_measure = FMeasure(incorrect_result_set)
-        expected_dashboard_metrics = generate_expected_default_dashboard_metrics(
-            f_measure
+        expected_dashboard_metric_groups = (
+            generate_expected_default_dashboard_metric_groups(f_measure)
         )
         actual_performance = f_measure.get_performance()
         check_performance(
             performance=actual_performance,
             expected_score=0.15384615384615372,
-            expected_metrics=expected_dashboard_metrics,
+            expected_metric_groups=expected_dashboard_metric_groups,
         )
         # Checking attributes of "FMeasure" class object initialized with specified values of optional parameters
         f_measure = FMeasure(
@@ -1860,14 +1887,14 @@ class TestFMeasure:
             vary_nms_threshold=True,
             cross_class_nms=True,
         )
-        expected_dashboard_metrics = generate_expected_optional_dashboard_metrics(
-            f_measure
+        expected_dashboard_metric_groups = (
+            generate_expected_optional_dashboard_metric_groups(f_measure)
         )
         actual_performance = f_measure.get_performance()
         check_performance(
             performance=actual_performance,
             expected_score=0.2857142857142856,
-            expected_metrics=expected_dashboard_metrics,
+            expected_metric_groups=expected_dashboard_metric_groups,
         )
         # Check for incorrect prediction dataset
         f_measure = FMeasure(
@@ -1876,12 +1903,12 @@ class TestFMeasure:
             vary_nms_threshold=True,
             cross_class_nms=True,
         )
-        expected_dashboard_metrics = generate_expected_optional_dashboard_metrics(
-            f_measure
+        expected_dashboard_metric_groups = (
+            generate_expected_optional_dashboard_metric_groups(f_measure)
         )
         actual_performance = f_measure.get_performance()
         check_performance(
             performance=actual_performance,
             expected_score=0.15384615384615372,
-            expected_metrics=expected_dashboard_metrics,
+            expected_metric_groups=expected_dashboard_metric_groups,
         )
