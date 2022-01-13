@@ -22,6 +22,3 @@ def pytest_addoption(parser):
     parser.addoption('--expected-metrics-file', action='store', default=None,
                      help='Optional. If the parameter is set, it points the YAML file with expected test metrics.')
 
-    # TODO: remove this after updating CI scripts -- this parameter is not required any more
-    parser.addoption('--template-paths', action='store', default=None,
-                     help='Path to the template_paths.yml file for tests that require templates.')
