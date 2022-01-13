@@ -73,5 +73,5 @@ class InferenceCallback(Callback):
                 numpy=heatmap,
             )
             dataset_item.append_metadata_item(heatmap_media)
-            print(f"Assigned Label {assigned_label}, {pred_score}")
-            logger.info("Assigned Label '%s', '%f'", assigned_label, pred_score)
+            print(f"Assigned Label {assigned_label.name}, {pred_score}")
+            logger.info("Assigned Label '%s', '%f'", assigned_label.name, pred_score)
