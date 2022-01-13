@@ -1,0 +1,31 @@
+# Description.
+model_template_id: GAN_Based_TTS_Acoustic_Model
+name: GANTTS
+task_type: TEXT_TO_SPEECH
+task_family: VISION
+instantiation: "CLASS"
+summary: Text-To-Speech task
+
+# Algo backend.
+framework: OTETTS v0.1.0
+
+# Should be revisited?
+application: ~
+
+# Task implementation.
+entrypoints:
+  base: torchtts.integration.task_train.OTETextToSpeechTask
+  openvino: torchtts.integration.openvino_task.OpenVINOTTSTask
+
+# Task and hyperparameters.
+hyper_parameters:
+  base_path: "configuration.yaml"
+  parameter_overrides:
+    learning_parameters:
+      learning_rate:
+        default_value: 1.0e-4
+
+# Training resources.
+max_nodes: 1
+training_targets:
+  - GPU

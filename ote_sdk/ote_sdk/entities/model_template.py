@@ -70,6 +70,7 @@ class TaskFamily(Enum):
     VISION = auto()
     FLOW_CONTROL = auto()
     DATASET = auto()
+    NLP = auto()
 
     def __str__(self) -> str:
         return str(self.name)
