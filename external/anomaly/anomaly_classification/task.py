@@ -175,8 +175,6 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
         output_model.performance = Performance(score=ScoreMetric(name="F1 Score", value=f1_score))
         output_model.precision = [ModelPrecision.FP32]
 
-        logger.info("Saving Configs '%s'", config)
-
     def cancel_training(self) -> None:
         """Cancel the training `after_batch_end`.
 

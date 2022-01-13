@@ -164,7 +164,7 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
 
         return dataset
 
-    def evaluate(self, output_resultset: ResultSetEntity, _evaluation_metric: Optional[str] = None):
+    def evaluate(self, output_resultset: ResultSetEntity, evaluation_metric: Optional[str] = None):
         """Evaluate the performance of the model.
 
         Args:
@@ -210,7 +210,7 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
         optimization_type: OptimizationType,
         dataset: DatasetEntity,
         output_model: ModelEntity,
-        _optimization_parameters: Optional[OptimizationParameters],
+        optimization_parameters: Optional[OptimizationParameters],
     ):
         """Optimize the model.
 
@@ -218,7 +218,7 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
             optimization_type (OptimizationType): Type of optimization [POT or NNCF]
             dataset (DatasetEntity): Input Dataset.
             output_model (ModelEntity): Output model.
-            _optimization_parameters (Optional[OptimizationParameters]): Optimization parameters.
+            optimization_parameters (Optional[OptimizationParameters]): Optimization parameters.
 
         Raises:
             ValueError: When the optimization type is not POT, which is the only support type at the moment.

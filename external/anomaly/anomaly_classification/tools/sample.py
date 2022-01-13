@@ -232,7 +232,7 @@ class OteAnomalyTask:
             optimization_type=OptimizationType.POT,
             dataset=self.dataset.get_subset(Subset.TRAINING),
             output_model=optimized_model,
-            _optimization_parameters=OptimizationParameters(),
+            optimization_parameters=OptimizationParameters(),
         )
 
         logger.info("Inferring the optimised model on the validation set.")
