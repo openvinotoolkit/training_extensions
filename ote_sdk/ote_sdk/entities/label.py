@@ -100,8 +100,6 @@ class LabelEntity:
         id = ID() if id is None else id
         color = Color.random() if color is None else color
         creation_date = now() if creation_date is None else creation_date
-        if not hotkey and is_empty:
-            hotkey = "ctrl+0"
 
         self._name = name
         self._color = color

@@ -154,7 +154,7 @@ class TestLabelEntity:
         2. Check the processing of default values
         """
 
-        assert self.empty.hotkey == "ctrl+0"
+        assert self.empty.hotkey == ""
         assert self.empty.id == ID()
         assert type(self.empty.color) == Color
 
