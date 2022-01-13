@@ -13,6 +13,7 @@
 # and limitations under the License.
 
 import datetime
+from typing import cast
 
 import numpy as np
 import pytest
@@ -1742,12 +1743,7 @@ class TestFMeasure:
                         == VisualizationType.RADIAL_BAR
                     )
                 if isinstance(expected_metric_group, LineMetricsGroup):
-                    assert len(actual_metric_group.metrics) == 1
-                    expected_metric = expected_metric_group.metrics[0]
-                    actual_metric = actual_metric_group.metrics[0]
-                    assert actual_metric.name == expected_metric.name
-                    assert actual_metric.ys == expected_metric.ys
-                    assert actual_metric.xs == expected_metric.xs
+                    assert actual_metric_group.metrics == expected_metric_group.metrics
                     assert (
                         actual_metric_group.visualization_info.name
                         == expected_metric_group.visualization_info.name
@@ -1796,28 +1792,12 @@ class TestFMeasure:
         def generate_expected_optional_dashboard_metric_groups(
             actual_f_measure: FMeasure,
         ):
-            per_confidence = CurveMetric(
-                name=actual_f_measure.f_measure_per_confidence.name,  # type: ignore[union-attr]
-                ys=actual_f_measure.f_measure_per_confidence.ys,  # type: ignore[union-attr]
-                xs=actual_f_measure.f_measure_per_confidence.xs,  # type: ignore[union-attr]
-            )
-            optimal_confidence = ScoreMetric(
-                name=actual_f_measure.best_confidence_threshold.name,  # type: ignore[union-attr]
-                value=actual_f_measure.best_confidence_threshold.value,  # type: ignore[union-attr]
-            )
-            per_nms = CurveMetric(
-                name=actual_f_measure.f_measure_per_nms.name,  # type: ignore[union-attr]
-                ys=actual_f_measure.f_measure_per_nms.ys,  # type: ignore[union-attr]
-                xs=actual_f_measure.f_measure_per_nms.xs,  # type: ignore[union-attr]
-            )
-            optimal_nms = ScoreMetric(
-                name=actual_f_measure.best_nms_threshold.name,  # type: ignore[union-attr]
-                value=actual_f_measure.best_nms_threshold.value,  # type: ignore[union-attr]
-            )
             return [
                 generate_expected_default_dashboard_metric_groups(actual_f_measure)[0],
                 LineMetricsGroup(
-                    metrics=[per_confidence],
+                    metrics=[
+                        cast(CurveMetric, actual_f_measure.f_measure_per_confidence)
+                    ],
                     visualization_info=LineChartInfo(
                         name="F-measure per confidence",
                         x_axis_label="Confidence threshold",
@@ -1825,13 +1805,15 @@ class TestFMeasure:
                     ),
                 ),
                 TextMetricsGroup(
-                    metrics=[optimal_confidence],
+                    metrics=[
+                        cast(ScoreMetric, actual_f_measure.best_confidence_threshold)
+                    ],
                     visualization_info=TextChartInfo(
                         name="Optimal confidence threshold"
                     ),
                 ),
                 LineMetricsGroup(
-                    metrics=[per_nms],
+                    metrics=[cast(CurveMetric, actual_f_measure.f_measure_per_nms)],
                     visualization_info=LineChartInfo(
                         name="F-measure per nms",
                         x_axis_label="NMS threshold",
@@ -1839,7 +1821,7 @@ class TestFMeasure:
                     ),
                 ),
                 TextMetricsGroup(
-                    metrics=[optimal_nms],
+                    metrics=[cast(ScoreMetric, actual_f_measure.best_nms_threshold)],
                     visualization_info=TextChartInfo(name="Optimal nms threshold"),
                 ),
             ]
