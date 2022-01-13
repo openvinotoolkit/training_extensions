@@ -77,13 +77,12 @@ class ShapeEntity(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def intersect_percentage(self, other: "ShapeEntity") -> float:
+    def contains_center(self, other: "ShapeEntity") -> bool:
         """
-        Returns the percentage of 'roi' shape that contains in 'other' shape in terms of area:
-        ('roi' ∩ 'other')/'other'
+        Checks whether the center of the 'other' shape is located in the shape.
 
         :param other: Shape to compare with
-        :return:
+        :return: Boolean that indicates whether the center of the other shape is located in the shape
         """
         raise NotImplementedError
 
@@ -180,18 +179,16 @@ class Shape(ShapeEntity):
             ) from exception
 
     # pylint: disable=protected-access
-    def intersect_percentage(self, other: "ShapeEntity") -> float:
+    def contains_center(self, other: "ShapeEntity") -> bool:
+        """
+        Checks whether the center of the 'other' shape is located in the shape.
+
+        :param other: Shape to compare with
+        :return: Boolean that indicates whether the center of the other shape is located in the shape
+        """
         polygon_roi = self._as_shapely_polygon()
         polygon_shape = other._as_shapely_polygon()
-        try:
-            return polygon_roi.intersection(polygon_shape).area / polygon_shape.area
-        except (PredicateError, TopologicalError) as exception:
-            print("shapely", polygon_roi)
-            print("shapely", polygon_shape)
-            raise GeometryException(
-                f"The intersection between the shapes {self} and {other} could not be computed: "
-                f"{exception}."
-            ) from exception
+        return polygon_roi.contains(polygon_shape.centroid)
 
     def get_labels(self, include_empty: bool = False) -> List[ScoredLabel]:
         return [

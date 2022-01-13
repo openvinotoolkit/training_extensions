@@ -257,8 +257,7 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
             for annotation in self.annotation_scene.annotations:
                 if (
                     not is_full_box
-                    and self.roi.shape.intersect_percentage(annotation.shape)
-                    <= ios_threshold
+                    and not self.roi.shape.contains_center(annotation.shape)
                 ):
                     continue
 
