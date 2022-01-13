@@ -20,7 +20,7 @@ import argparse
 
 from ote_sdk.configuration.helper import create
 from ote_sdk.entities.inference_parameters import InferenceParameters
-from ote_sdk.entities.model import ModelEntity, ModelStatus
+from ote_sdk.entities.model import ModelEntity
 from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.subset import Subset
 from ote_sdk.entities.task_environment import TaskEnvironment
@@ -151,11 +151,7 @@ def main():
 
     task = task_class(task_environment=environment)
 
-    output_model = ModelEntity(
-        dataset,
-        environment.get_model_configuration(),
-        model_status=ModelStatus.NOT_READY,
-    )
+    output_model = ModelEntity(dataset, environment.get_model_configuration())
 
     task.train(dataset, output_model, train_parameters=TrainParameters())
 

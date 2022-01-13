@@ -51,7 +51,6 @@ from ote_sdk.entities.model import (
     ModelFormat,
     ModelOptimizationType,
     ModelPrecision,
-    ModelStatus,
     OptimizationMethod,
 )
 from ote_sdk.entities.optimization_parameters import OptimizationParameters
@@ -245,8 +244,7 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
             model = load_model(model_config)
 
             if get_nodes_by_type(model, ["FakeQuantize"]):
-                logger.warning("Model is already optimized by POT")
-                return
+                raise RuntimeError("Model is already optimized by POT")
 
         engine = IEEngine(config=ADDict({"device": "CPU"}), data_loader=data_loader, metric=None)
         pipeline = create_pipeline(algo_config=self._get_optimization_algorithms_configs(), engine=engine)
@@ -260,7 +258,6 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
 
         output_model.set_data("label_schema.json", label_schema_to_bytes(self.task_environment.label_schema))
         output_model.set_data("threshold", self.task_environment.model.get_data("threshold"))
-        output_model.model_status = ModelStatus.SUCCESS
         output_model.model_format = ModelFormat.OPENVINO
         output_model.optimization_type = ModelOptimizationType.POT
         output_model.optimization_methods = [OptimizationMethod.QUANTIZATION]
