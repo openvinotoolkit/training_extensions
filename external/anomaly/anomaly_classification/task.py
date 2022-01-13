@@ -60,16 +60,9 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
         Args:
             task_environment (TaskEnvironment): OTE Task environment.
         """
-        print("Initializing the task environment.")
         logger.info("Initializing the task environment.")
-
-        print(subprocess.call("nvidia-smi"))
         logger.info(subprocess.call("nvidia-smi"))
-
-        print(f"Torch Version {torch.__version__}")
         logger.info("Torch Version '%s'", torch.__version__)
-
-        print(f"Torch Cuda Version {torch.version.cuda}")
         logger.info("Torch Cuda Version '%s'", torch.version.cuda)
 
         self.task_environment = task_environment
@@ -113,10 +106,6 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
         """
         model = get_model(config=self.config)
         if ote_model is None:
-            print(
-                "No trained model in project yet. Created new model with '%s'",
-                self.model_name,
-            )
             logger.info(
                 "No trained model in project yet. Created new model with '%s'",
                 self.model_name,
@@ -127,7 +116,6 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
 
             try:
                 model.load_state_dict(model_data["model"])
-                print("Loaded model weights from Task Environment")
                 logger.info("Loaded model weights from Task Environment")
 
             except BaseException as exception:
@@ -148,11 +136,9 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
             output_model (ModelEntity): Output model to save the model weights.
             train_parameters (TrainParameters): Training parameters
         """
-        print("Training the model.")
         logger.info("Training the model.")
 
         config = self.get_config()
-        print(f"Training Configs: \n{config}")
         logger.info("Training Configs '%s'", config)
 
         datamodule = OTEAnomalyDataModule(config=config, dataset=dataset)
@@ -163,7 +149,6 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
 
         self.save_model(output_model)
 
-        print("Training completed.")
         logger.info("Training completed.")
 
     def save_model(self, output_model: ModelEntity) -> None:
@@ -172,7 +157,6 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
         Args:
             output_model (ModelEntity): Output model onto which the weights are saved.
         """
-        print("Saving the model weights.")
         logger.info("Saving the model weights.")
         config = self.get_config()
         model_info = {
@@ -191,7 +175,6 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
         output_model.performance = Performance(score=ScoreMetric(name="F1 Score", value=f1_score))
         output_model.precision = [ModelPrecision.FP32]
 
-        print(f"Saving Config: \n{config}")
         logger.info("Saving Configs '%s'", config)
 
     def cancel_training(self) -> None:
@@ -199,7 +182,6 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
 
         This terminates the training; however validation is still performed.
         """
-        print("Cancel training requested.")
         logger.info("Cancel training requested.")
         self.trainer.should_stop = True
 
@@ -218,12 +200,10 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
         Returns:
             DatasetEntity: Output dataset with predictions.
         """
-        print("Performing inference on the validation set using the base torch model.")
         logger.info("Performing inference on the validation set using the base torch model.")
         config = self.get_config()
         datamodule = OTEAnomalyDataModule(config=config, dataset=dataset)
 
-        print(f"Inference Config: \n{config}")
         logger.info("Inference Configs '%s'", config)
 
         # Callbacks.
@@ -248,19 +228,12 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
 
         # NOTE: This is for debugging purpose.
         for i, _ in enumerate(output_resultset.ground_truth_dataset):
-            print(
-                "True vs Pred: %s %s - %3.2f",
-                output_resultset.ground_truth_dataset[i].annotation_scene.annotations[0].get_labels()[0].name,
-                output_resultset.prediction_dataset[i].annotation_scene.annotations[0].get_labels()[0].name,
-                output_resultset.prediction_dataset[i].annotation_scene.annotations[0].get_labels()[0].probability,
-            )
             logger.info(
                 "True vs Pred: %s %s - %3.2f",
                 output_resultset.ground_truth_dataset[i].annotation_scene.annotations[0].get_labels()[0].name,
                 output_resultset.prediction_dataset[i].annotation_scene.annotations[0].get_labels()[0].name,
                 output_resultset.prediction_dataset[i].annotation_scene.annotations[0].get_labels()[0].probability,
             )
-        print("%s performance of the base torch model: %3.2f", metric.f_measure.name, metric.f_measure.value)
         logger.info("%s performance of the base torch model: %3.2f", metric.f_measure.name, metric.f_measure.value)
 
     def export(self, export_type: ExportType, output_model: ModelEntity) -> None:
@@ -276,7 +249,6 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
         assert export_type == ExportType.OPENVINO
 
         # pylint: disable=no-member; need to refactor this
-        print("Exporting the OpenVINO model.")
         logger.info("Exporting the OpenVINO model.")
         height, width = self.config.model.input_size
         onnx_path = os.path.join(self.config.project.path, "onnx_model.onnx")
