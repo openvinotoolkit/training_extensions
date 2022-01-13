@@ -188,7 +188,7 @@ class TestAnnotation:
         assert "color=Color(red=16, green=15," in str(
             annotation.get_labels(include_empty=True)
         )
-        assert "blue=56, alpha=255), hotkey=ctrl+0)," in str(
+        assert "blue=56, alpha=255), hotkey=)," in str(
             annotation.get_labels(include_empty=True)
         )
 

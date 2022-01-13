@@ -19,7 +19,7 @@ from typing import Optional
 import torch
 import yaml
 from ote_sdk.configuration.helper import create
-from ote_sdk.entities.model import ModelEntity, ModelStatus
+from ote_sdk.entities.model import ModelEntity
 from ote_sdk.entities.model_template import TaskType
 from ote_sdk.entities.subset import Subset
 from ote_sdk.entities.task_environment import TaskEnvironment
@@ -155,7 +155,6 @@ def run_hpo_trainer(
     output_model = ModelEntity(
         dataset,
         train_env.get_model_configuration(),
-        model_status=ModelStatus.NOT_READY,
     )
 
     # make callback to report score to hpopt every epoch

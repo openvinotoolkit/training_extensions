@@ -65,7 +65,7 @@ class InferenceCallback(Callback):
 
             dataset_item.append_annotations([shape])
 
-            heatmap = anomaly_map_to_color_map(anomaly_map.squeeze())
+            heatmap = anomaly_map_to_color_map(anomaly_map.squeeze(), normalize=False)
             heatmap_media = ResultMediaEntity(
                 name="Anomaly Map",
                 type="anomaly_map",

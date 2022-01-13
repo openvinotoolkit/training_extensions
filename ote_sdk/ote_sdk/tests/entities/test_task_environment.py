@@ -49,10 +49,10 @@ def environment():
     Return TaskEnvironment
     """
     car = LabelEntity(
-        id=ID(123456789), name="car", domain=Domain.DETECTION, is_empty=True
+        id=ID(123456789), name="car", domain=Domain.DETECTION, is_empty=False
     )
     person = LabelEntity(
-        id=ID(987654321), name="person", domain=Domain.DETECTION, is_empty=True
+        id=ID(987654321), name="person", domain=Domain.DETECTION, is_empty=False
     )
     labels_list = [car, person]
     dummy_template = __get_path_to_file("./dummy_template.yaml")
@@ -101,7 +101,7 @@ class TestTaskEnvironment:
         )
         assert isinstance(env, TaskEnvironment)
         assert env != "Fail params"
-        assert env.get_labels() == []
+        assert len(env.get_labels()) == 2
 
         for i in ["header", "description", "visible_in_ui"]:
             assert (
@@ -123,12 +123,11 @@ class TestTaskEnvironment:
         assert "name=from_label_list" in repr(env)
         assert "group_type=LabelGroupType.EXCLUSIVE" in repr(env)
         assert (
-            "labels=[LabelEntity(123456789, name=car, hotkey=ctrl+0, domain=DETECTION"
+            "labels=[LabelEntity(123456789, name=car, hotkey=, domain=DETECTION"
             in repr(env)
         )
-        assert (
-            "LabelEntity(987654321, name=person, hotkey=ctrl+0, domain=DETECTION"
-            in repr(env)
+        assert "LabelEntity(987654321, name=person, hotkey=, domain=DETECTION" in repr(
+            env
         )
         assert (
             "CONFIGURABLE_PARAMETERS(header='Configuration for an object detection task -- TEST ONLY'"
