@@ -1797,22 +1797,22 @@ class TestFMeasure:
             actual_f_measure: FMeasure,
         ):
             per_confidence = CurveMetric(
-                name=actual_f_measure.f_measure_per_confidence.name,
-                ys=actual_f_measure.f_measure_per_confidence.ys,
-                xs=actual_f_measure.f_measure_per_confidence.xs,
+                name=actual_f_measure.f_measure_per_confidence.name,  # type: ignore[union-attr]
+                ys=actual_f_measure.f_measure_per_confidence.ys,  # type: ignore[union-attr]
+                xs=actual_f_measure.f_measure_per_confidence.xs,  # type: ignore[union-attr]
             )
             optimal_confidence = ScoreMetric(
-                name=actual_f_measure.best_confidence_threshold.name,
-                value=actual_f_measure.best_confidence_threshold.value,
+                name=actual_f_measure.best_confidence_threshold.name,  # type: ignore[union-attr]
+                value=actual_f_measure.best_confidence_threshold.value,  # type: ignore[union-attr]
             )
             per_nms = CurveMetric(
-                name=actual_f_measure.f_measure_per_nms.name,
-                ys=actual_f_measure.f_measure_per_nms.ys,
-                xs=actual_f_measure.f_measure_per_nms.xs,
+                name=actual_f_measure.f_measure_per_nms.name,  # type: ignore[union-attr]
+                ys=actual_f_measure.f_measure_per_nms.ys,  # type: ignore[union-attr]
+                xs=actual_f_measure.f_measure_per_nms.xs,  # type: ignore[union-attr]
             )
             optimal_nms = ScoreMetric(
-                name=actual_f_measure.best_nms_threshold.name,
-                value=actual_f_measure.best_nms_threshold.value,
+                name=actual_f_measure.best_nms_threshold.name,  # type: ignore[union-attr]
+                value=actual_f_measure.best_nms_threshold.value,  # type: ignore[union-attr]
             )
             return [
                 generate_expected_default_dashboard_metric_groups(actual_f_measure)[0],
