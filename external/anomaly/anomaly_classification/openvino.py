@@ -17,6 +17,7 @@ OpenVINO Anomaly Task
 # and limitations under the License.
 
 import inspect
+import io
 import json
 import logging
 import os
@@ -342,20 +343,16 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
         parameters["type_of_model"] = "anomaly_classification"
         parameters["converter_type"] = "ANOMALY_CLASSIFICATION"
         parameters["model_parameters"] = self._get_openvino_configuration()
-        with tempfile.TemporaryDirectory() as tempdir:
-            with ZipFile(os.path.join(tempdir, "openvino.zip"), "w") as arch:
-                # model files
-                arch.writestr(os.path.join("model", "model.xml"), self.task_environment.model.get_data("openvino.xml"))
-                arch.writestr(os.path.join("model", "model.bin"), self.task_environment.model.get_data("openvino.bin"))
-                arch.writestr(
-                    os.path.join("model", "config.json"), json.dumps(parameters, ensure_ascii=False, indent=4)
-                )
-
-                # python files
-                arch.write(inspect.getfile(AnomalyClassification), os.path.join("python", "model.py"))
-                arch.write(os.path.join(work_dir, "requirements.txt"), os.path.join("python", "requirements.txt"))
-                arch.write(os.path.join(work_dir, "README.md"), os.path.join("python", "README.md"))
-                arch.write(os.path.join(work_dir, "demo.py"), os.path.join("python", "demo.py"))
-            with open(os.path.join(tempdir, "openvino.zip"), "rb") as output_arch:
-                output_model.exportable_code = output_arch.read()
+        zip_buffer = io.BytesIO()
+        with ZipFile(zip_buffer, "w") as arch:
+            # model files
+            arch.writestr(os.path.join("model", "model.xml"), self.task_environment.model.get_data("openvino.xml"))
+            arch.writestr(os.path.join("model", "model.bin"), self.task_environment.model.get_data("openvino.bin"))
+            arch.writestr(os.path.join("model", "config.json"), json.dumps(parameters, ensure_ascii=False, indent=4))
+            # python files
+            arch.write(inspect.getfile(AnomalyClassification), os.path.join("python", "model.py"))
+            arch.write(os.path.join(work_dir, "requirements.txt"), os.path.join("python", "requirements.txt"))
+            arch.write(os.path.join(work_dir, "README.md"), os.path.join("python", "README.md"))
+            arch.write(os.path.join(work_dir, "demo.py"), os.path.join("python", "demo.py"))
+        output_model.exportable_code = zip_buffer.getvalue()
         logger.info("Deployment completed.")

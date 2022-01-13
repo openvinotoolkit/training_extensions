@@ -171,6 +171,9 @@ def test_ote_deploy_openvino(template):
                cwd=deployment_dir).returncode == 0
     assert run(['python3', '-m', 'venv', 'venv'],
                cwd=os.path.join(deployment_dir, 'python')).returncode == 0
+    assert run(['python3', '-m', 'pip', 'install', 'wheel'],
+               cwd=os.path.join(deployment_dir, 'python'),
+               env=collect_env_vars(os.path.join(deployment_dir, 'python'))).returncode == 0
     assert run(['python3', '-m', 'pip', 'install', '-r', 'requirements.txt'],
                cwd=os.path.join(deployment_dir, 'python'),
                env=collect_env_vars(os.path.join(deployment_dir, 'python'))).returncode == 0

@@ -11,10 +11,10 @@ Demo package contains simple demo to get and visualize result of model inference
 * python
   - `README.md`
   - `demo.py`
-  - `model.py (Optional)`
+  - `model.py` (Optional)
   - `requirements.txt`
 
-> **NOTE**: zip archieve will contain `model.py` when [ModelAPI](https://github.com/openvinotoolkit/open_model_zoo/tree/master/demos/common/python/openvino/model_zoo/model_api) haven't appropriate model wrapper for using model
+> **NOTE**: zip archive will contain `model.py` when [ModelAPI](https://github.com/openvinotoolkit/open_model_zoo/tree/master/demos/common/python/openvino/model_zoo/model_api) has no appropriate standard model wrapper for the model
 
 ## Prerequisites
 * Python 3.8+
@@ -23,7 +23,7 @@ Demo package contains simple demo to get and visualize result of model inference
 
 1. Install Python (version 3.8 or higher).
 
-2. Install needed requirements in the clean environment:
+2. Install needed requirements in the clean environment (please make sure that the environment contains [setuptools](https://pypi.org/project/setuptools/), [wheel](https://pypi.org/project/wheel/)):
 ```
 python -m pip install -r requirements.txt
 ```
