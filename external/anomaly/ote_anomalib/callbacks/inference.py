@@ -45,7 +45,7 @@ class InferenceCallback(Callback):
         self.normal_label = [label for label in labels if label.name == LabelNames.normal][0]
         self.anomalous_label = [label for label in labels if label.name == LabelNames.anomalous][0]
 
-    def on_predict_epoch_end(self, _trainer: pl.Trainer, _pl_module: AnomalyModule, outputs: List[Any]):
+    def on_predict_epoch_end(self, _trainer: pl.Trainer, pl_module: AnomalyModule, outputs: List[Any]):
         """Called when the predict epoch ends."""
         outputs = outputs[0]
         pred_scores = np.hstack([output["pred_scores"].cpu() for output in outputs])
@@ -73,4 +73,11 @@ class InferenceCallback(Callback):
                 numpy=heatmap,
             )
             dataset_item.append_metadata_item(heatmap_media)
-            logger.info("Assigned Label '%s', '%f'", assigned_label.name, pred_score)
+            logger.info(
+                "Min:'%f', Max: '%f', Threshold: '%f', Assigned Label '%s', '%f'",
+                pl_module.min_max.min,
+                pl_module.min_max.max,
+                pl_module.image_threshold,
+                assigned_label.name,
+                pred_score,
+            )
