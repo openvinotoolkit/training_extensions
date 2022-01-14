@@ -74,10 +74,10 @@ class InferenceCallback(Callback):
             )
             dataset_item.append_metadata_item(heatmap_media)
             logger.info(
-                "Min:'%f', Max: '%f', Threshold: '%f', Assigned Label '%s', '%f'",
-                pl_module.min_max.min,
-                pl_module.min_max.max,
-                pl_module.image_threshold,
+                "\n\tMin: %.3f, Max: %.3f, Threshold: %.3f, Assigned Label '%s', %.3f",
+                pl_module.min_max.min.item(),
+                pl_module.min_max.max.item(),
+                pl_module.image_threshold.value.item(),
                 assigned_label.name,
                 pred_score,
             )
