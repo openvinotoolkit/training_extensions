@@ -179,7 +179,7 @@ class TestDetectionToAnnotationConverter:
 
 
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
-class TestIPredictionToAnnotationConverter:
+class TestIPredictionToAnnotation:
     @pytest.mark.priority_medium
     @pytest.mark.component
     @pytest.mark.reqids(Requirements.REQ_1)
@@ -190,7 +190,7 @@ class TestIPredictionToAnnotationConverter:
         ),
         set(),
     )
-    def test_i_prediction_to_annotation_converter_convert_to_annotation(self):
+    def test_i_prediction_to_annotation(self):
         """
         <b>Description:</b>
         Check "IPredictionToAnnotationConverter" class "convert_to_annotation" method
@@ -329,7 +329,7 @@ def check_annotation_scene(
 
 
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
-class TestDetectionBoxToAnnotationConverter:
+class TestDetectionBoxToAnnotation:
     color = Color(red=180, green=230, blue=30)
     creation_date = now()
     labels = [
@@ -352,7 +352,7 @@ class TestDetectionBoxToAnnotationConverter:
     @pytest.mark.priority_medium
     @pytest.mark.component
     @pytest.mark.reqids(Requirements.REQ_1)
-    def test_detection_box_to_annotation_converter_initialization(self):
+    def test_detection_box_to_annotation_init(self):
         """
         <b>Description:</b>
         Check "DetectionBoxToAnnotationConverter" class object initialization
@@ -406,7 +406,7 @@ class TestDetectionBoxToAnnotationConverter:
     @pytest.mark.priority_medium
     @pytest.mark.component
     @pytest.mark.reqids(Requirements.REQ_1)
-    def test_detection_box_to_annotation_converter_convert_to_annotation(self):
+    def test_detection_box_to_annotation_convert(self):
         """
         <b>Description:</b>
         Check "DetectionBoxToAnnotationConverter" class "convert_to_annotation" method
@@ -478,7 +478,7 @@ class TestDetectionBoxToAnnotationConverter:
 
 
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
-class TestSegmentationToAnnotationConverter:
+class TestSegmentationToAnnotation:
     color = Color(red=180, green=230, blue=30)
     creation_date = now()
     labels = [
@@ -501,7 +501,7 @@ class TestSegmentationToAnnotationConverter:
     @pytest.mark.priority_medium
     @pytest.mark.component
     @pytest.mark.reqids(Requirements.REQ_1)
-    def test_segmentation_to_annotation_converter_initialization(self):
+    def test_segmentation_to_annotation_init(self):
         """
         <b>Description:</b>
         Check "SegmentationToAnnotationConverter" class object initialization
@@ -562,7 +562,7 @@ class TestSegmentationToAnnotationConverter:
     @pytest.mark.priority_medium
     @pytest.mark.component
     @pytest.mark.reqids(Requirements.REQ_1)
-    def test_segmentation_to_annotation_converter_convert_to_annotation(self):
+    def test_segmentation_to_annotation_convert(self):
         """
         <b>Description:</b>
         Check "SegmentationToAnnotationConverter" class "convert_to_annotation" method
@@ -673,11 +673,11 @@ class TestSegmentationToAnnotationConverter:
         )
 
     @pytest.mark.components(OteSdkComponent.OTE_SDK)
-    class TestClassificationToAnnotationConverter:
+    class TestClassificationToAnnotation:
         @pytest.mark.priority_medium
         @pytest.mark.component
         @pytest.mark.reqids(Requirements.REQ_1)
-        def test_classification_to_annotation_converter_initialization(self):
+        def test_classification_to_annotation_init(self):
             """
             <b>Description:</b>
             Check "ClassificationToAnnotationConverter" class object initialization
@@ -787,7 +787,7 @@ class TestSegmentationToAnnotationConverter:
         @pytest.mark.priority_medium
         @pytest.mark.component
         @pytest.mark.reqids(Requirements.REQ_1)
-        def test_classification_to_annotation_converter_convert_to_annotation(self):
+        def test_classification_to_annotation_convert(self):
             """
             <b>Description:</b>
             Check "ClassificationToAnnotationConverter" class "convert_to_annotation" method
@@ -907,11 +907,11 @@ class TestSegmentationToAnnotationConverter:
             )
 
     @pytest.mark.components(OteSdkComponent.OTE_SDK)
-    class TestAnomalyClassificationToAnnotationConverter:
+    class TestAnomalyClassificationToAnnotation:
         @pytest.mark.priority_medium
         @pytest.mark.component
         @pytest.mark.reqids(Requirements.REQ_1)
-        def test_anomaly_classification_to_annotation_converter_initialization(
+        def test_anomaly_classification_to_annotation_init(
             self,
         ):
             """
@@ -990,7 +990,7 @@ class TestSegmentationToAnnotationConverter:
     @pytest.mark.priority_medium
     @pytest.mark.component
     @pytest.mark.reqids(Requirements.REQ_1)
-    def test_anomaly_classification_to_annotation_converter_convert_to_annotation(
+    def test_anomaly_classification_to_annotation_convert(
         self,
     ):
         """
