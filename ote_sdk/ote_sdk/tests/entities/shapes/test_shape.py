@@ -392,12 +392,16 @@ class TestShape:
         shapes_inside = [self.polygon(), self.ellipse(), self.rectangle()]
 
         rectangle_part = self.rectangle()
-        shapes_outside = [self.not_inscribed_polygon(), self.not_inscribed_ellipse(), self.not_inscribed_rectangle()]
+        shapes_outside = [
+            self.not_inscribed_polygon(),
+            self.not_inscribed_ellipse(),
+            self.not_inscribed_rectangle(),
+        ]
 
         for shape_inside in shapes_inside:
             assert rectangle_full.contains_center(shape_inside)
         for shape_outside in shapes_outside:
-            assert rectangle_part.contains_center(shape_outside)
+            assert not rectangle_part.contains_center(shape_outside)
 
     @pytest.mark.priority_medium
     @pytest.mark.component
