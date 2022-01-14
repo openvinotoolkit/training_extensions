@@ -20,7 +20,7 @@ import argparse
 import os
 
 from ote_sdk.configuration.helper import create
-from ote_sdk.entities.model import ModelEntity, ModelStatus
+from ote_sdk.entities.model import ModelEntity
 from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.usecases.adapters.model_adapter import ModelAdapter
 from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType
@@ -87,11 +87,13 @@ def main():
 
     task = task_class(task_environment=environment)
 
-    exported_model = ModelEntity(
-        None, environment.get_model_configuration(), model_status=ModelStatus.NOT_READY
-    )
+    exported_model = ModelEntity(None, environment.get_model_configuration())
 
     task.export(ExportType.OPENVINO, exported_model)
 
     os.makedirs(args.save_model_to, exist_ok=True)
     save_model_data(exported_model, args.save_model_to)
+
+
+if __name__ == "__main__":
+    main()
