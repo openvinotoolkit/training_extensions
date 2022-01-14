@@ -180,3 +180,82 @@ def convert_string_to_id(id_string: Optional[Union[str, ID]]) -> ID:
     else:
         output_id = id_string
     return output_id
+
+
+def attr_strict_int_validator(
+    instance: ParameterGroup,  # pylint: disable=unused-argument
+    attribute: Attribute,
+    value: int,
+) -> None:
+    """
+    Validates that the value set for an attribute is an integer.
+
+    :param instance: ParameterGroup to which the attribute belongs
+    :param attribute: Attribute for which to validate the value
+    :param value: Value to validate
+    :raises TypeError: if the value passed to the validator is not an integer
+    """
+    is_strict_int = isinstance(value, int) and not isinstance(value, bool)
+    if not is_strict_int:
+        raise TypeError(
+            f"Invalid argument type for {attribute.name}: {value} is not of type 'int'"
+        )
+
+
+def _validate_and_convert_float(value: float) -> Optional[float]:
+    """
+    Validate that a value is a float, or a number that can be converted to a float.
+    If the value is valid, this method will return the value as float. Otherwise, this
+    method returns None
+
+    :param value: Value to validate and convert
+    :return: Value as float if value is valid, None otherwise
+    """
+    valid = True
+    if not isinstance(value, (float, int)):
+        valid = False
+    if isinstance(value, bool):
+        valid = False
+    if valid:
+        return float(value)
+    return None
+
+
+def attr_strict_float_on_setattr(
+    instance: ParameterGroup,  # pylint: disable=unused-argument
+    attribute: Attribute,
+    value: float,
+) -> float:
+    """
+    Validate that the value set for an attribute is a float, or a number that can be
+    converted to a float
+
+    :param instance: ParameterGroup to which the attribute belongs
+    :param attribute: Attribute for which to validate the value
+    :param value: Value to validate
+    :raises TypeError: if the value passed to the validator is not a float or number
+    """
+    float_value = _validate_and_convert_float(value)
+    if float_value is None:
+        raise TypeError(
+            f"Invalid argument type for {attribute.name}: {value} is not of type "
+            f"'float'"
+        )
+    return float_value
+
+
+def attr_strict_float_converter(value: float) -> float:
+    """
+    Converts a value to float.
+
+    :param value: value to convert
+    :raises TypeError: if value cannot be converted to float
+    :return: Value as float
+    """
+    float_value = _validate_and_convert_float(value)
+    if float_value is None:
+        raise TypeError(
+            f"Invalid value passed for parameter. Value {value} of type {type(value)} "
+            f"is not a float."
+        )
+    return float_value

@@ -44,10 +44,10 @@ class TestColorMapper:
         Then it compares deserialized Color with original one.
         """
 
-        red = randint(0, 255)
-        green = randint(0, 255)
-        blue = randint(0, 255)
-        alpha = randint(0, 255)
+        red = randint(0, 255)  # nosec
+        green = randint(0, 255)  # nosec
+        blue = randint(0, 255)  # nosec
+        alpha = randint(0, 255)  # nosec
         color = Color(red, green, blue, alpha)
         serialized = ColorMapper.forward(color)
         assert serialized == {"red": red, "green": green, "blue": blue, "alpha": alpha}
@@ -68,10 +68,10 @@ class TestLabelEntityMapper:
         """
 
         cur_date = now()
-        red = randint(0, 255)
-        green = randint(0, 255)
-        blue = randint(0, 255)
-        alpha = randint(0, 255)
+        red = randint(0, 255)  # nosec
+        green = randint(0, 255)  # nosec
+        blue = randint(0, 255)  # nosec
+        alpha = randint(0, 255)  # nosec
 
         label = LabelEntity(
             name="my_label",
@@ -112,7 +112,12 @@ class TestLabelSchemaEntityMapper:
         cur_date = now()
         names = ["cat", "dog", "mouse"]
         colors = [
-            Color(randint(0, 255), randint(0, 255), randint(0, 255), randint(0, 255))
+            Color(
+                randint(0, 255),  # nosec
+                randint(0, 255),  # nosec
+                randint(0, 255),  # nosec
+                randint(0, 255),  # nosec
+            )  # nosec  # noqa
             for _ in range(3)
         ]
         labels = [

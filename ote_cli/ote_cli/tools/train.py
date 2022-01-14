@@ -20,15 +20,17 @@ import argparse
 
 from ote_sdk.configuration.helper import create
 from ote_sdk.entities.inference_parameters import InferenceParameters
-from ote_sdk.entities.model import ModelEntity, ModelStatus
+from ote_sdk.entities.model import ModelEntity
 from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.subset import Subset
 from ote_sdk.entities.task_environment import TaskEnvironment
+from ote_sdk.entities.train_parameters import TrainParameters
 from ote_sdk.usecases.adapters.model_adapter import ModelAdapter
 
 from ote_cli.datasets import get_dataset_class
 from ote_cli.registry import find_and_parse_model_template
 from ote_cli.utils.config import override_parameters
+from ote_cli.utils.hpo import run_hpo
 from ote_cli.utils.importing import get_impl_class
 from ote_cli.utils.io import generate_label_schema, read_binary, save_model_data
 from ote_cli.utils.parser import (
@@ -84,6 +86,17 @@ def parse_args():
         required="True",
         help="Location where trained model will be stored.",
     )
+    parser.add_argument(
+        "--enable-hpo",
+        action="store_true",
+        help="Execute hyper parameters optimization (HPO) before training.",
+    )
+    parser.add_argument(
+        "--hpo-time-ratio",
+        default=4,
+        type=float,
+        help="Expected ratio of total time to run HPO to time taken for full fine-tuning.",
+    )
 
     add_hyper_parameters_sub_parser(parser, hyper_parameters)
 
@@ -133,18 +146,16 @@ def main():
             },
         )
 
+    if args.enable_hpo:
+        run_hpo(args, environment, dataset, template.task_type)
+
     task = task_class(task_environment=environment)
 
-    output_model = ModelEntity(
-        dataset,
-        environment.get_model_configuration(),
-        model_status=ModelStatus.NOT_READY,
-    )
+    output_model = ModelEntity(dataset, environment.get_model_configuration())
 
-    task.train(dataset, output_model)
+    task.train(dataset, output_model, train_parameters=TrainParameters())
 
-    if output_model.model_status != ModelStatus.NOT_READY:
-        save_model_data(output_model, args.save_model_to)
+    save_model_data(output_model, args.save_model_to)
 
     validation_dataset = dataset.get_subset(Subset.VALIDATION)
     predicted_validation_dataset = task.infer(
@@ -160,3 +171,7 @@ def main():
     task.evaluate(resultset)
     assert resultset.performance is not None
     print(resultset.performance)
+
+
+if __name__ == "__main__":
+    main()

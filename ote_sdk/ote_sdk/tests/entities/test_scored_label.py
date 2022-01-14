@@ -39,10 +39,10 @@ class TestScoredLabel:
         Test passes if the results match
         """
         car = LabelEntity(
-            id=ID(123456789), name="car", domain=Domain.DETECTION, is_empty=True
+            id=ID(123456789), name="car", domain=Domain.DETECTION, is_empty=False
         )
         person = LabelEntity(
-            id=ID(987654321), name="person", domain=Domain.DETECTION, is_empty=True
+            id=ID(987654321), name="person", domain=Domain.DETECTION, is_empty=False
         )
         car_label = ScoredLabel(car)
         person_label = ScoredLabel(person)
@@ -68,6 +68,6 @@ class TestScoredLabel:
             "ScoredLabel(123456789, name=car, probability=0.4, domain=DETECTION, color="
             in repr(car_label)
         )
-        assert "Color(red=16, green=15, blue=56, alpha=255), hotkey=ctrl+0)" in repr(
+        assert "Color(red=16, green=15, blue=56, alpha=255), hotkey=)" in repr(
             car_label
         )

@@ -145,7 +145,7 @@ def draw_predictions(task_type, predictions, frame, fit_to_size):
         frame = cv2.resize(frame, None, fx=ratio, fy=ratio)
     if task_type == TaskType.DETECTION:
         frame = draw_bounding_boxes(frame, predictions)
-    elif task_type == TaskType.CLASSIFICATION:
+    elif task_type in {TaskType.CLASSIFICATION, TaskType.ANOMALY_CLASSIFICATION}:
         frame = put_labels(frame, predictions)
     elif task_type == TaskType.SEGMENTATION:
         frame = draw_masks(frame, predictions)

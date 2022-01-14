@@ -26,17 +26,12 @@ from anomaly_classification import (
     AnomalyClassificationTask,
     OpenVINOAnomalyClassificationTask,
 )
+from ote_anomalib.data.mvtec import OteMvtecDataset
 from ote_sdk.configuration.helper import create
 from ote_sdk.entities.inference_parameters import InferenceParameters
 from ote_sdk.entities.label_schema import LabelSchemaEntity
-from ote_sdk.entities.model import (
-    ModelEntity,
-    ModelOptimizationType,
-    ModelPrecision,
-    ModelStatus,
-    OptimizationMethod,
-)
-from ote_sdk.entities.model_template import TargetDevice, parse_model_template
+from ote_sdk.entities.model import ModelEntity
+from ote_sdk.entities.model_template import parse_model_template
 from ote_sdk.entities.optimization_parameters import OptimizationParameters
 from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.subset import Subset
@@ -44,7 +39,6 @@ from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.entities.train_parameters import TrainParameters
 from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType
 from ote_sdk.usecases.tasks.interfaces.optimization_interface import OptimizationType
-from tests.helpers.dataset import OTEAnomalyDatasetGenerator
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +60,7 @@ class OTEAnomalyTrainer:
         category: str = "bottle",
     ):
         dataset_path = os.path.join(dataset_path, category)
-        self.dataset_generator = OTEAnomalyDatasetGenerator(path=dataset_path)
+        self.dataset_generator = OteMvtecDataset(path=dataset_path)
         self.dataset = self.dataset_generator.generate()
 
         self.model_template_path = model_template_path
@@ -78,7 +72,6 @@ class OTEAnomalyTrainer:
         self.output_model = ModelEntity(
             train_dataset=self.dataset,
             configuration=self.task_environment.get_model_configuration(),
-            model_status=ModelStatus.NOT_READY,
         )
 
         self.was_training_run_before: bool = False
@@ -95,11 +88,17 @@ class OTEAnomalyTrainer:
         """
         hyper_parameters = create(input_config=self.model_template.hyper_parameters.data)
 
-        labels = [self.dataset_generator.normal_label, self.dataset_generator.abnormal_label]
+        labels = [
+            self.dataset_generator.normal_label,
+            self.dataset_generator.abnormal_label,
+        ]
         label_schema = LabelSchemaEntity.from_labels(labels)
 
         task_environment = TaskEnvironment(
-            model_template=self.model_template, model=None, hyper_parameters=hyper_parameters, label_schema=label_schema
+            model_template=self.model_template,
+            model=None,
+            hyper_parameters=hyper_parameters,
+            label_schema=label_schema,
         )
 
         return task_environment
@@ -133,7 +132,9 @@ class OTEAnomalyTrainer:
         if not self.was_training_run_before:
             try:
                 self.base_task.train(
-                    dataset=self.dataset, output_model=self.output_model, train_parameters=TrainParameters()
+                    dataset=self.dataset,
+                    output_model=self.output_model,
+                    train_parameters=TrainParameters(),
                 )
 
             except Exception as exception:
@@ -147,7 +148,11 @@ class OTEAnomalyTrainer:
         if performance is None:
             raise ValueError("Model does not have a saved performance.")
 
-        logger.debug("Training performance: %s, %3.2f", performance.score.name, performance.score.value)
+        logger.debug(
+            "Training performance: %s, %3.2f",
+            performance.score.name,
+            performance.score.value,
+        )
 
     def validate(
         self,
@@ -171,7 +176,8 @@ class OTEAnomalyTrainer:
         inference_parameters = InferenceParameters(is_evaluation=True)
 
         predicted_inference_dataset = task.infer(
-            dataset=inference_dataset.with_empty_annotations(), inference_parameters=inference_parameters
+            dataset=inference_dataset.with_empty_annotations(),
+            inference_parameters=inference_parameters,
         )
 
         result_set = ResultSetEntity(
@@ -184,22 +190,10 @@ class OTEAnomalyTrainer:
             if isinstance(task, AnomalyClassificationTask):
                 raise ValueError("Base task cannot perform optimization")
 
-            optimized_model = ModelEntity(
-                inference_dataset,
-                self.task_environment.get_model_configuration(),
-                optimization_type=ModelOptimizationType.POT,
-                optimization_methods=[OptimizationMethod.QUANTIZATION],
-                optimization_objectives={},
-                precision=[ModelPrecision.INT8],
-                target_device=TargetDevice.CPU,
-                performance_improvement={},
-                model_size_reduction=1.0,
-                model_status=ModelStatus.NOT_READY,
-            )
             self.openvino_task.optimize(
                 optimization_type=OptimizationType.POT,
                 dataset=inference_dataset,
-                output_model=optimized_model,
+                output_model=self.task_environment.model,
                 optimization_parameters=OptimizationParameters(),
             )
 
@@ -220,6 +214,17 @@ class OTEAnomalyTrainer:
         self.base_task.export(ExportType.OPENVINO, self.output_model)
         # assign the converted OpenVINO model to the current task environment model
         self.task_environment.model = self.output_model
-        self.openvino_task = OpenVINOAnomalyClassificationTask(
-            config=self.base_task.config, task_environment=self.task_environment
-        )
+        self.openvino_task = OpenVINOAnomalyClassificationTask(task_environment=self.task_environment)
+
+    def deploy(self):
+        """
+        Generate Exportable code for model
+        """
+        try:
+            self.output_model.get_data("openvino.bin")
+        except KeyError as error:
+            raise KeyError(
+                "Could not get `openvino.bin` from model. Make sure that the model is exported to OpenVINO first"
+            ) from error
+
+        self.openvino_task.deploy(self.output_model)

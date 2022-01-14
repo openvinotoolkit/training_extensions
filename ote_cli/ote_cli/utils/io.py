@@ -19,6 +19,7 @@ Utils for dynamically importing stuff
 import json
 import os
 
+from ote_sdk.entities.id import ID
 from ote_sdk.entities.label import Domain, LabelEntity
 from ote_sdk.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
 from ote_sdk.entities.model import ModelEntity
@@ -60,13 +61,10 @@ def read_model(model_configuration, path, train_dataset):
             "openvino.xml": ModelAdapter(read_binary(path[:-4] + ".xml")),
             "openvino.bin": ModelAdapter(read_binary(path[:-4] + ".bin")),
         }
-        confidence_threshold_path = os.path.join(
-            os.path.dirname(path), "confidence_threshold"
-        )
-        if os.path.exists(confidence_threshold_path):
-            model_adapters["confidence_threshold"] = ModelAdapter(
-                read_binary(confidence_threshold_path)
-            )
+        for key in ["confidence_threshold", "image_threshold", "min", "max"]:
+            full_path = os.path.join(os.path.dirname(path), key)
+            if os.path.exists(full_path):
+                model_adapters[key] = ModelAdapter(read_binary(full_path))
     else:
         model_adapters = {"weights.pth": ModelAdapter(read_binary(path))}
 
@@ -115,5 +113,17 @@ def generate_label_schema(dataset, task_type):
             label_schema.add_group(single_groups[-1])
         label_schema.add_group(empty_group, exclusive_with=single_groups)
         return label_schema
+
+    if task_type == TaskType.ANOMALY_CLASSIFICATION:
+        return LabelSchemaEntity.from_labels(
+            [
+                LabelEntity(
+                    name="Normal", domain=Domain.ANOMALY_CLASSIFICATION, id=ID(0)
+                ),
+                LabelEntity(
+                    name="Anomalous", domain=Domain.ANOMALY_CLASSIFICATION, id=ID(1)
+                ),
+            ]
+        )
 
     return LabelSchemaEntity.from_labels(dataset.get_labels())

@@ -103,6 +103,9 @@
                            Load only weights from previously saved checkpoint
      --save-model-to SAVE_MODEL_TO
                            Location where trained model will be stored.
+     --enable-hpo          Execute hyper parameters optimization (HPO) before training.
+     --hpo-time-ratio HPO_TIME_RATIO
+                           Expected ratio of total time to run HPO to time taken for full fine-tuning.
    ```
 
    Let's have a look at `ote train` hyper parameters help. These parameters are model template specific.
@@ -170,7 +173,7 @@
      --nncf_optimization.maximal_accuracy_degradation MAXIMAL_ACCURACY_DEGRADATION
                            header: Maximum accuracy degradation
                            type: FLOAT
-                           default_value: 0.01
+                           default_value: 1.0
                            max_value: 100.0
                            min_value: 0.0
    ```
@@ -264,6 +267,29 @@
                            displayed frame. These metrics take into account not
                            only model inference time, but also frame reading,
                            pre-processing and post-processing.
+   ```
+
+### ote deploy - create openvino.zip with self-contained python package, demo application and exported model
+   Let's have a look at `ote deploy` help. These parameters are the same for all model templates.
+   ```
+   ote deploy ./external/mmdetection/configs/ote/custom-object-detection/gen3_mobilenetV2_ATSS/template.yaml --help
+   ```
+
+   Sample output:
+   ```
+   usage: ote deploy [-h] --load-weights LOAD_WEIGHTS
+                     [--save-model-to SAVE_MODEL_TO]
+                     template
+   
+   positional arguments:
+     template
+   
+   optional arguments:
+     -h, --help            show this help message and exit
+     --load-weights LOAD_WEIGHTS
+                           Load only weights from previously saved checkpoint.
+     --save-model-to SAVE_MODEL_TO
+                           Location where openvino.zip will be stored.
    ```
 
 ## OTE Jupyter Nootebooks

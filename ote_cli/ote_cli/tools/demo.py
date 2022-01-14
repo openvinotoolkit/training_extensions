@@ -172,19 +172,24 @@ def main():
         elapsed_times.append(elapsed_time)
         elapsed_time = np.mean(elapsed_times)
 
-        if args.delay >= 0:
-            frame = draw_predictions(
-                template.task_type, predictions, frame, args.fit_to_size
+        frame = draw_predictions(
+            template.task_type, predictions, frame, args.fit_to_size
+        )
+        if args.display_perf:
+            put_text_on_rect_bg(
+                frame,
+                f"time: {elapsed_time:.4f} sec.",
+                (0, frame.shape[0] - 30),
+                color=(255, 255, 255),
             )
-            if args.display_perf:
-                put_text_on_rect_bg(
-                    frame,
-                    f"time: {elapsed_time:.4f} sec.",
-                    (0, frame.shape[0] - 30),
-                    color=(255, 255, 255),
-                )
+
+        if args.delay >= 0:
             cv2.imshow("frame", frame)
             if cv2.waitKey(args.delay) == ESC_BUTTON:
                 break
         else:
             print(f"{frame_index=}, {elapsed_time=}, {len(predictions)=}")
+
+
+if __name__ == "__main__":
+    main()

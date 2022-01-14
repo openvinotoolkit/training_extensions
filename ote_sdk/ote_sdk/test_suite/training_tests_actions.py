@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+import importlib
 import logging
 from abc import ABC, abstractmethod
 from collections import OrderedDict
@@ -9,17 +10,10 @@ from copy import deepcopy
 from typing import List, Optional, Type
 
 import pytest
-from mmdet.apis.ote.apis.detection.ote_utils import get_task_class
-from mmdet.integration.nncf.utils import is_nncf_enabled
 
 from ote_sdk.configuration.helper import create as ote_sdk_configuration_helper_create
 from ote_sdk.entities.inference_parameters import InferenceParameters
-from ote_sdk.entities.model import (
-    ModelEntity,
-    ModelFormat,
-    ModelOptimizationType,
-    ModelStatus,
-)
+from ote_sdk.entities.model import ModelEntity, ModelFormat, ModelOptimizationType
 from ote_sdk.entities.model_template import parse_model_template
 from ote_sdk.entities.optimization_parameters import OptimizationParameters
 from ote_sdk.entities.resultset import ResultSetEntity
@@ -27,6 +21,7 @@ from ote_sdk.entities.subset import Subset
 from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType
 from ote_sdk.usecases.tasks.interfaces.optimization_interface import OptimizationType
+from ote_sdk.utils.importing import get_impl_class
 
 from .e2e_test_system import DataCollector
 from .training_tests_common import (
@@ -100,7 +95,7 @@ class OTETestTrainingAction(BaseOTETestAction):
         )
         logger.info("Create base Task")
         task_impl_path = model_template.entrypoints.base
-        task_cls = get_task_class(task_impl_path)
+        task_cls = get_impl_class(task_impl_path)
         task = task_cls(task_environment=environment)
         return environment, task
 
@@ -159,15 +154,14 @@ class OTETestTrainingAction(BaseOTETestAction):
         self.output_model = ModelEntity(
             self.dataset,
             self.environment.get_model_configuration(),
-            model_status=ModelStatus.NOT_READY,
         )
 
         self.copy_hyperparams = deepcopy(self.task._hyperparams)
 
-        self.task.train(self.dataset, self.output_model)
-        assert (
-            self.output_model.model_status == ModelStatus.SUCCESS
-        ), "Training was failed"
+        try:
+            self.task.train(self.dataset, self.output_model)
+        except Exception as ex:
+            raise RuntimeError("Training failed") from ex
 
         score_name, score_value = self._get_training_performance_as_score_name_value()
         logger.info(f"performance={self.output_model.performance}")
@@ -184,6 +178,10 @@ class OTETestTrainingAction(BaseOTETestAction):
             "output_model": self.output_model,
         }
         return results
+
+
+def is_nncf_enabled():
+    return importlib.util.find_spec("nncf") is not None
 
 
 def run_evaluation(dataset, task, model):
@@ -250,14 +248,14 @@ def run_export(environment, dataset, task, action_name, expected_optimization_ty
     exported_model = ModelEntity(
         dataset,
         environment_for_export.get_model_configuration(),
-        model_status=ModelStatus.NOT_READY,
     )
     logger.debug("Run export")
-    task.export(ExportType.OPENVINO, exported_model)
 
-    assert (
-        exported_model.model_status == ModelStatus.SUCCESS
-    ), f"In action '{action_name}': Export to OpenVINO was not successful"
+    try:
+        task.export(ExportType.OPENVINO, exported_model)
+    except Exception as ex:
+        raise RuntimeError("Export to OpenVINO failed") from ex
+
     assert (
         exported_model.model_format == ModelFormat.OPENVINO
     ), f"In action '{action_name}': Wrong model format after export"
@@ -305,7 +303,7 @@ class OTETestExportAction(BaseOTETestAction):
 def create_openvino_task(model_template, environment):
     logger.debug("Create OpenVINO Task")
     openvino_task_impl_path = model_template.entrypoints.openvino
-    openvino_task_cls = get_task_class(openvino_task_impl_path)
+    openvino_task_cls = get_impl_class(openvino_task_impl_path)
     openvino_task = openvino_task_cls(environment)
     return openvino_task
 
@@ -375,18 +373,19 @@ class OTETestPotAction(BaseOTETestAction):
         self.optimized_model_pot = ModelEntity(
             dataset,
             self.environment_for_pot.get_model_configuration(),
-            model_status=ModelStatus.NOT_READY,
         )
         logger.info("Run POT optimization")
-        self.openvino_task_pot.optimize(
-            OptimizationType.POT,
-            dataset.get_subset(self.pot_subset),
-            self.optimized_model_pot,
-            OptimizationParameters(),
-        )
-        assert (
-            self.optimized_model_pot.model_status == ModelStatus.SUCCESS
-        ), "POT optimization was not successful"
+
+        try:
+            self.openvino_task_pot.optimize(
+                OptimizationType.POT,
+                dataset.get_subset(self.pot_subset),
+                self.optimized_model_pot,
+                OptimizationParameters(),
+            )
+        except Exception as ex:
+            raise RuntimeError("POT optimization failed") from ex
+
         assert (
             self.optimized_model_pot.model_format == ModelFormat.OPENVINO
         ), "Wrong model format after pot"
@@ -469,22 +468,22 @@ class OTETestNNCFAction(BaseOTETestAction):
         self.nncf_model = ModelEntity(
             dataset,
             self.environment_for_nncf.get_model_configuration(),
-            model_status=ModelStatus.NOT_READY,
         )
         self.nncf_model.set_data("weights.pth", trained_model.get_data("weights.pth"))
 
         self.environment_for_nncf.model = self.nncf_model
 
-        nncf_task_cls = get_task_class(nncf_task_class_impl_path)
+        nncf_task_cls = get_impl_class(nncf_task_class_impl_path)
         self.nncf_task = nncf_task_cls(task_environment=self.environment_for_nncf)
 
         logger.info("Run NNCF optimization")
-        self.nncf_task.optimize(
-            OptimizationType.NNCF, dataset, self.nncf_model, OptimizationParameters()
-        )
-        assert (
-            self.nncf_model.model_status == ModelStatus.SUCCESS
-        ), "NNCF optimization was not successful"
+        try:
+            self.nncf_task.optimize(
+                OptimizationType.NNCF, dataset, self.nncf_model, None
+            )
+        except Exception as ex:
+            raise RuntimeError("NNCF optimization failed") from ex
+
         assert (
             self.nncf_model.optimization_type == ModelOptimizationType.NNCF
         ), "Wrong optimization type"

@@ -39,5 +39,9 @@ def get_dataset_class(task_type):
         from .semantic_segmentation.dataset import SemanticSegmentationDataset
 
         return SemanticSegmentationDataset
+    if task_type == TaskType.ANOMALY_CLASSIFICATION:
+        from .anomaly.dataset import AnomalyClassificationDataset
+
+        return AnomalyClassificationDataset
 
     raise ValueError(f"Invalid task type: {task_type}")
