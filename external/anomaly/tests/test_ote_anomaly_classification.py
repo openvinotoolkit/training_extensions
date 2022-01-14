@@ -26,6 +26,7 @@ from helpers.config import get_config_and_task_name
 from helpers.dummy_dataset import TestDataset
 from helpers.train import OTEAnomalyTrainer
 
+from e2e_test_system import e2e_pytest_api
 logger = logging.getLogger(__name__)
 
 
@@ -40,6 +41,7 @@ class TestAnomalyClassification:
 
     _trainer: OTEAnomalyTrainer
 
+    @e2e_pytest_api
     @staticmethod
     def test_ote_config(task_path, template_path):
         """
@@ -57,6 +59,7 @@ class TestAnomalyClassification:
         # check if default parameter was overwritten
         assert anomalib_config.dataset.train_batch_size == train_batch_size
 
+    @e2e_pytest_api
     @TestDataset(num_train=200, num_test=10, dataset_path="./datasets/MVTec", use_mvtec=False)
     def test_ote_train_export_and_optimize(
         self, task_path, template_path, dataset_path="./datasets/MVTec", category="bottle"
@@ -89,6 +92,7 @@ class TestAnomalyClassification:
 
         assert np.allclose(base_probability_scores, openvino_probability_scores, rtol=0.05)
 
+    @e2e_pytest_api
     @TestDataset(num_train=200, num_test=10, dataset_path="./datasets/MVTec", use_mvtec=False)
     def test_ote_deploy(self, task_path, template_path, dataset_path="./datasets/MVTec", category="bottle"):
         """
