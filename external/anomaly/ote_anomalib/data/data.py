@@ -16,19 +16,19 @@ Anomaly Dataset Utils
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import logging
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Union
 
 from anomalib.data.transforms import PreProcessor
 from omegaconf import DictConfig, ListConfig
+from ote_anomalib.logging import get_logger
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.subset import Subset
 from pytorch_lightning.core.datamodule import LightningDataModule
 from torch import Tensor
 from torch.utils.data import DataLoader, Dataset
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 @dataclass
@@ -152,8 +152,11 @@ class OTEAnomalyDataModule(LightningDataModule):
             num_normal = len([item for item in dataset if item.get_shapes_labels()[0].name == LabelNames.normal])
             num_anomalous = len([item for item in dataset if item.get_shapes_labels()[0].name == LabelNames.anomalous])
             logger.info(
-                f"{subset} subset size: Total: {num_items} images. "
-                f"Normal: {num_normal} images. Anomalous: {num_anomalous} images"
+                "'%s' subset size: Total '%d' images. " "Normal: '%d', images. Anomalous: '%d' images",
+                subset,
+                num_items,
+                num_normal,
+                num_anomalous,
             )
 
     def train_dataloader(

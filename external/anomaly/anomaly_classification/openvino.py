@@ -18,7 +18,6 @@ OpenVINO Anomaly Task
 
 import inspect
 import json
-import logging
 import os
 import subprocess  # nosec
 import sys
@@ -113,7 +112,7 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
     """
 
     def __init__(self, task_environment: TaskEnvironment) -> None:
-        logging.info("Initializing the OpenVINO task.")
+        logger.info("Initializing the OpenVINO task.")
         self.task_environment = task_environment
         self.config = self.get_config()
         self.inferencer = self.load_inferencer()
