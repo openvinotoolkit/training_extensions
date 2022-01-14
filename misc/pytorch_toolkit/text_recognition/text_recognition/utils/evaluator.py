@@ -16,6 +16,7 @@
 
 import json
 import os.path
+import editdistance
 from copy import deepcopy
 from enum import Enum
 from functools import partial
@@ -350,6 +351,8 @@ class Evaluator:
         self.runner = create_runner(self.config, runner_type)
         self.vocab = read_vocab(self.config.get('vocab_path'))
         self.render = self.config.get('render')
+        self.acc_type = self.config.get('acc_type', 'character_recognition_accuracy')
+        self.whitespace = self.config.get('whitespace', True)
         self.load_dataset()
         self.runner.load_model()
         self.read_expected_outputs()
@@ -359,8 +362,11 @@ class Evaluator:
         if not isinstance(dataset_params, list):
             dataset_params = [dataset_params]
         self.val_loader = []
-        batch_transform = create_list_of_transforms(self.config.get(
-            'val_transforms_list'), ovino_ir=self.runner.openvino_transform())
+        val_transforms_list = self.config.get('val_transforms_list')
+        # need different transforms when non-default mean_values and scale_values are set when exporting to IR
+        if self.config.get('openvino_transforms_list', False) and isinstance(self.runner, OpenVINORunner):
+            val_transforms_list = self.config.get('openvino_transforms_list')
+        batch_transform = create_list_of_transforms(val_transforms_list, ovino_ir=self.runner.openvino_transform())
         for params in dataset_params:
             dataset_type = params.pop('type')
             val_dataset = str_to_class[dataset_type](**params)
@@ -370,7 +376,8 @@ class Evaluator:
                     val_dataset,
                     collate_fn=partial(collate_fn, self.vocab.sign2id,
                                        batch_transform=batch_transform,
-                                       use_ctc=(self.config.get('use_ctc'))),
+                                       use_ctc=(self.config.get('use_ctc')),
+                                       whitespace=self.whitespace),
                     num_workers=os.cpu_count(),
                     batch_size=self.config.get('val_batch_size', 1) if isinstance(self.runner, PyTorchRunner) else 1
                 )
@@ -381,11 +388,12 @@ class Evaluator:
             with open(self.config.get('expected_outputs')) as outputs_file:
                 self.expected_outputs = json.load(outputs_file)
 
-    def _extract_predictions(self, gt, prediction):
+    def _extract_predictions(self, gt, prediction, whitespace=True):
         gt_string = self.vocab.construct_phrase(
-            gt, ignore_end_token=self.config.get('use_ctc'))
+            gt, ignore_end_token=self.config.get('use_ctc'), whitespace=whitespace)
         predicted_string = postprocess_prediction(self.vocab.construct_phrase(
-            prediction, ignore_end_token=self.config.get('use_ctc')))
+            prediction, ignore_end_token=self.config.get('use_ctc'),
+            whitespace=whitespace))
         return gt_string, predicted_string
 
     def validate(self):
@@ -395,19 +403,28 @@ class Evaluator:
         predictions = []
         for loader in self.val_loader:
             val_acc = 0
+            errs = 0
+            nchars = 0
             for img_name, _, imgs, _, loss_computation_gt in tqdm(loader):
                 with torch.no_grad():
                     targets = self.runner.run_model(imgs)
                     for i, target in enumerate(targets):
-                        gold_phrase_str, pred_phrase_str = self._extract_predictions(loss_computation_gt[i], target)
+                        gold_phrase_str, pred_phrase_str = self._extract_predictions(loss_computation_gt[i],
+                                                                                     target, self.whitespace)
                         if not self.render:
                             # alphanumeric task
-                            gold_phrase_str = gold_phrase_str.lower()
-                            pred_phrase_str = pred_phrase_str.lower()
+                            case_sensitive = getattr(loader.dataset, 'case_sensitive', False)
+                            if not case_sensitive:
+                                gold_phrase_str = gold_phrase_str.lower()
+                                pred_phrase_str = pred_phrase_str.lower()
                         val_acc += int(pred_phrase_str == gold_phrase_str)
+                        nchars += len(gold_phrase_str)
+                        errs += editdistance.eval(pred_phrase_str, gold_phrase_str)
                         annotations.append((gold_phrase_str, img_name[i]))
                         predictions.append((pred_phrase_str, img_name[i]))
             val_acc /= len(loader.dataset)
+            if self.acc_type == 'label_level_recognition_accuracy':
+                val_acc = 1.0 - errs * 1.0 / nchars
 
             dataset_name = os.path.split(loader.dataset.data_path)[-1]
             print('dataset {} accuracy: {:.4f}'.format(dataset_name, val_acc))

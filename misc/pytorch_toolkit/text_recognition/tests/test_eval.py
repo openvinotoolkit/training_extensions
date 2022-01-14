@@ -75,5 +75,12 @@ class TestAlphanumeric0016Evaluation(
     'Test case for alphanumeric text recognition config'
 
 
+class TestHandwrittenEnglish0001Evaluation(
+        create_evaluation_test_case(
+            'configs/handwritten-english-recognition-0001.yml',
+            expected_outputs='tests/expected_outputs/handwritten_recognition/hetr.json')):
+    'Test case for handwritten text recognition config'
+
+
 if __name__ == '__main__':
     unittest.main()
