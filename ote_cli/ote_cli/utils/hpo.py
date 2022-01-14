@@ -538,7 +538,7 @@ class HpoDataset:
         indices = torch.randperm(
             len(dataset), generator=torch.Generator().manual_seed(42)
         )
-        indices = indices.tolist()
+        indices = indices.tolist()  # type: ignore
         indices = indices[: int(len(dataset) * self.subset_ratio)]
 
         return HpoDataset(dataset, config=None, indices=indices)

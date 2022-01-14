@@ -93,3 +93,7 @@ def main():
 
     os.makedirs(args.save_model_to, exist_ok=True)
     save_model_data(exported_model, args.save_model_to)
+
+
+if __name__ == "__main__":
+    main()
