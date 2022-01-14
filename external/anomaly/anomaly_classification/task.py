@@ -16,7 +16,6 @@
 
 import ctypes
 import io
-import logging
 import os
 import shutil
 import subprocess  # nosec
@@ -62,6 +61,10 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
             task_environment (TaskEnvironment): OTE Task environment.
         """
         logger.info("Initializing the task environment.")
+        logger.info(subprocess.call("nvidia-smi"))
+        logger.info("Torch Version '%s'", torch.__version__)
+        logger.info("Torch Cuda Version '%s'", torch.version.cuda)
+
         self.task_environment = task_environment
         self.model_name = task_environment.model_template.name
         self.labels = task_environment.get_labels()
@@ -134,7 +137,10 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
             train_parameters (TrainParameters): Training parameters
         """
         logger.info("Training the model.")
+
         config = self.get_config()
+        logger.info("Training Configs '%s'", config)
+
         datamodule = OTEAnomalyDataModule(config=config, dataset=dataset)
         callbacks = [ProgressCallback(parameters=train_parameters), MinMaxNormalizationCallback()]
 
@@ -142,6 +148,8 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
         self.trainer.fit(model=self.model, datamodule=datamodule)
 
         self.save_model(output_model)
+
+        logger.info("Training completed.")
 
     def save_model(self, output_model: ModelEntity) -> None:
         """Save the model after training is completed.
@@ -193,6 +201,8 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
         config = self.get_config()
         datamodule = OTEAnomalyDataModule(config=config, dataset=dataset)
 
+        logger.info("Inference Configs '%s'", config)
+
         # Callbacks.
         progress = ProgressCallback(parameters=inference_parameters)
         inference = InferenceCallback(dataset, self.labels)
@@ -237,7 +247,7 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
         assert export_type == ExportType.OPENVINO
 
         # pylint: disable=no-member; need to refactor this
-        logging.info("Exporting the OpenVINO model.")
+        logger.info("Exporting the OpenVINO model.")
         height, width = self.config.model.input_size
         onnx_path = os.path.join(self.config.project.path, "onnx_model.onnx")
         torch.onnx.export(
