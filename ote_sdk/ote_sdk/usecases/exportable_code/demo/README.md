@@ -16,15 +16,23 @@ Demo package contains simple demo to get and visualize result of model inference
 
 ## Prerequisites
 * Python 3.8+
+* Git
 
 ## Setup Demo Package
 
-1. Install Python (version 3.8 or higher), [setuptools](https://pypi.org/project/setuptools/), [wheel](https://pypi.org/project/wheel/).
+1. Install Python (version 3.8 or higher).
 
 2. Install the package in the clean environment:
-```
-python -m pip install demo_package-0.0-py3-none-any.whl
-```
+
+   Please make sure that the environment contains [wheel](https://pypi.org/project/wheel/) and if not, please call the following command:
+
+   ```
+   python -m pip install wheel
+   ```
+   To install the demo package, call the following command:
+   ```
+   python -m pip install demo_package-0.0-py3-none-any.whl
+   ```
 
 
 When the package is installed, you can import it as follows:
@@ -93,3 +101,12 @@ python -c "from demo_package import create_model"
    output = visualizer.draw(frame, objects)
    cv2.imshow(output)
    ```
+
+## Troubleshooting
+
+1. To use pip with proxy call the following command:
+   ```
+   python -m pip install --proxy http://<usr_name>:<password>@<proxyserver_name>:<port#> <pkg_name>
+   ```
+
+2. If you use Anaconda environment, you should consider that OpenVINO has limited [Conda support](https://docs.openvino.ai/2021.4/openvino_docs_install_guides_installing_openvino_conda.html) for Python 3.6 and 3.7 versions only. But the demo package requires python 3.8+. So please use other tools to create the environment (like `venv` or `virtualenv`) and use `pip` as a package manager.
