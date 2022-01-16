@@ -2,14 +2,18 @@
 Utils for HPO with hpopt
 """
 
+# Copyright (C) 2021-2022 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
+
 import builtins
 import collections
 import importlib
 import multiprocessing
 import os
-import pickle
+import pickle  # nosec
 import shutil
-import subprocess
+import subprocess  # nosec
 import sys
 import time
 from os import path as osp
