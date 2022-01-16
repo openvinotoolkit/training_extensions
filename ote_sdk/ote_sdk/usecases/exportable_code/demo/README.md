@@ -20,27 +20,37 @@ Demo package contains simple demo to get and visualize result of model inference
 
 ## Setup Demo Package
 
-1. Install [prerequisites](#prerequisites) section. You may also need to [install pip](https://pip.pypa.io/en/stable/installation/). For example, on Ubuntu execute the following command to get pip installed:
+1. Install [prerequisites](#prerequisites). You may also need to [install pip](https://pip.pypa.io/en/stable/installation/). For example, on Ubuntu execute the following command to get pip installed:
    ```
    sudo apt install python3-pip
    ```
 
 2. Create clean virtual environment:
+
+   One of the possible ways for creating a virtual environment is to use `virtualenv`:
    ```
    python -m pip install virtualenv
    python -m virtualenv <directory_for_environment>
    ```
 
    Before starting to work inside virtual environment, it should be activated:
+
+   On Linux and macOS:
    ```
    source <directory_for_environment>/bin/activate
    ```
 
-   Please make sure that the environment contains [wheel](https://pypi.org/project/wheel/) and if not, please call the following command:
+   On Windows:
+   ```
+   .\<directory_for_environment>\Scripts\activate
+   ```
+
+   Please make sure that the environment contains [wheel](https://pypi.org/project/wheel/) by calling the following command:
 
    ```
    python -m pip install wheel
    ```
+   > **NOTE**: On Linux and macOS, you may need to type `python3` instead of `python`.
 
 3. Install the package in the environment:
    ```
@@ -52,8 +62,6 @@ When the package is installed, you can import it as follows:
 ```
 python -c "from demo_package import create_model"
 ```
-
-> **NOTE**: On Linux and macOS, you may need to type `python3` instead of `python`.
 
 ## Usecases
 
