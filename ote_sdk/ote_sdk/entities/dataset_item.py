@@ -1,18 +1,8 @@
 """This module implements the dataset item entity"""
 
-# INTEL CONFIDENTIAL
+# Copyright (C) 2021-2022 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 #
-# Copyright (C) 2021 Intel Corporation
-#
-# This software and the related documents are Intel copyrighted materials, and
-# your use of them is governed by the express license under which they were provided to
-# you ("License"). Unless the License provides otherwise, you may not use, modify, copy,
-# publish, distribute, disclose or transmit this software or the related documents
-# without Intel's prior written permission.
-#
-# This software and the related documents are provided as is,
-# with no express or implied warranties, other than those that are expressly stated
-# in the License.
 
 import abc
 import copy
@@ -233,20 +223,20 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
         self,
         labels: Optional[List[LabelEntity]] = None,
         include_empty: bool = False,
-        ios_threshold: float = 0.0,
     ) -> List[Annotation]:
         """
-        Returns a list of annotations that exist in the dataset item (wrt. ROI)
+        Returns a list of annotations that exist in the dataset item (wrt. ROI). This is done by checking that the
+        center of the annotation is located in the ROI.
 
         :param labels: Subset of input labels to filter with; if ``None``, all the shapes within the ROI are returned
         :param include_empty: if True, returns both empty and non-empty labels
-        :param ios_threshold: Only return shapes where Area(self.roi ∩ shape)/ Area(shape) > ios_threshold.
         :return: The intersection of the input label set and those present within the ROI
         """
         is_full_box = Rectangle.is_full_box(self.roi.shape)
         annotations = []
         if is_full_box and labels is None and not include_empty:
             # Fast path for the case where we do not need to change the shapes
+            # todo: this line is incorrect. CVS-75919
             annotations = self.annotation_scene.annotations
         else:
             # Todo: improve speed. This is O(n) for n shapes.
@@ -255,10 +245,8 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
             labels_set = {label.name for label in labels} if labels is not None else {}
 
             for annotation in self.annotation_scene.annotations:
-                if (
-                    not is_full_box
-                    and self.roi.shape.intersect_percentage(annotation.shape)
-                    <= ios_threshold
+                if not is_full_box and not self.roi.shape.contains_center(
+                    annotation.shape
                 ):
                     continue
 
