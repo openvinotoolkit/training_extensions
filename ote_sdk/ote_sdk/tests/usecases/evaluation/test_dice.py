@@ -214,12 +214,10 @@ class TestDice:
         return model
 
     @staticmethod
-    def check_score_metric_rounded(
-        score_metric: ScoreMetric, expected_name: str, expected_value: float
-    ):
+    def check_score_metric_rounded(score_metric, expected_name, expected_value):
         assert isinstance(score_metric, ScoreMetric)
         assert score_metric.name == expected_name
-        assert round(score_metric.value, 5) == expected_value
+        assert round(score_metric.value, 5) == pytest.approx(expected_value)
 
     @pytest.mark.priority_medium
     @pytest.mark.component
