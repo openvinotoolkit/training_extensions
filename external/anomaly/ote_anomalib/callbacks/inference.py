@@ -36,9 +36,7 @@ logger = get_logger(__name__)
 
 
 class InferenceCallback(Callback):
-    """
-    Callback that updates the OTE dataset during inference.
-    """
+    """Callback that updates the OTE dataset during inference."""
 
     def __init__(self, ote_dataset: DatasetEntity, labels: List[LabelEntity]):
         self.ote_dataset = ote_dataset
@@ -46,7 +44,7 @@ class InferenceCallback(Callback):
         self.anomalous_label = [label for label in labels if label.name == LabelNames.anomalous][0]
 
     def on_predict_epoch_end(self, _trainer: pl.Trainer, pl_module: AnomalyModule, outputs: List[Any]):
-        """Called when the predict epoch ends."""
+        """Call when the predict epoch ends."""
         outputs = outputs[0]
         pred_scores = np.hstack([output["pred_scores"].cpu() for output in outputs])
         pred_labels = np.hstack([output["pred_labels"].cpu() for output in outputs])
@@ -56,11 +54,11 @@ class InferenceCallback(Callback):
         for dataset_item, pred_score, pred_label, anomaly_map in zip(
             self.ote_dataset, pred_scores, pred_labels, anomaly_maps
         ):
-
-            assigned_label = self.anomalous_label if pred_label else self.normal_label
+            label = self.anomalous_label if pred_label else self.normal_label
+            probability = (1 - pred_score) if pred_score < 0.5 else pred_score
             shape = Annotation(
                 Rectangle(x1=0, y1=0, x2=1, y2=1),
-                labels=[ScoredLabel(assigned_label, probability=float(pred_score))],
+                labels=[ScoredLabel(label=label, probability=float(probability))],
             )
 
             dataset_item.append_annotations([shape])
@@ -78,6 +76,6 @@ class InferenceCallback(Callback):
                 pl_module.min_max.min.item(),
                 pl_module.min_max.max.item(),
                 pl_module.image_threshold.value.item(),
-                assigned_label.name,
+                label.name,
                 pred_score,
             )
