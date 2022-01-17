@@ -25,7 +25,6 @@ class AnomalyClassification(SegmentationModel):
         parameters.update(
             {
                 "image_threshold": NumericalValue(description="Threshold value to locate anomaly"),
-                "pixel_threshold": NumericalValue(description="Threshold value to locate anomaly"),
                 "min": NumericalValue(description="Threshold value to locate anomaly"),
                 "max": NumericalValue(description="Threshold value to locate anomaly"),
                 "threshold": NumericalValue(description="Threshold used to classify anomaly"),
@@ -64,12 +63,11 @@ class AnomalyClassification(SegmentationModel):
         pred_score = anomaly_map.reshape(-1).max()
 
         meta["image_threshold"] = self.image_threshold  # pylint: disable=no-member
-        meta["pixel_threshold"] = self.pixel_threshold  # pylint: disable=no-member
         meta["min"] = self.min  # pylint: disable=no-member
         meta["max"] = self.max  # pylint: disable=no-member
         meta["threshold"] = self.threshold  # pylint: disable=no-member
 
-        anomaly_map = self._normalize(anomaly_map, meta["pixel_threshold"], meta["min"], meta["max"])
+        anomaly_map = self._normalize(anomaly_map, meta["image_threshold"], meta["min"], meta["max"])
         pred_score = self._normalize(pred_score, meta["image_threshold"], meta["min"], meta["max"])
 
         input_image_height = meta["original_shape"][0]

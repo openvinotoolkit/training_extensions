@@ -280,7 +280,6 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
         output_model.set_data("image_threshold", self.task_environment.model.get_data("image_threshold"))
         output_model.set_data("min", self.task_environment.model.get_data("min"))
         output_model.set_data("max", self.task_environment.model.get_data("max"))
-
         output_model.model_format = ModelFormat.OPENVINO
         output_model.optimization_type = ModelOptimizationType.POT
         output_model.optimization_methods = [OptimizationMethod.QUANTIZATION]
@@ -338,11 +337,8 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
             "image_threshold": np.frombuffer(
                 self.task_environment.model.get_data("image_threshold"), dtype=np.float32
             ).item(),
-            "pixel_threshold": np.frombuffer(
-                self.task_environment.model.get_data("image_threshold"), dtype=np.float32
-            ).item(),
             "min": np.frombuffer(self.task_environment.model.get_data("min"), dtype=np.float32).item(),
-            "max": np.frombuffer(self.task_environment.model.get_data("image_threshold"), dtype=np.float32).item(),
+            "max": np.frombuffer(self.task_environment.model.get_data("max"), dtype=np.float32).item(),
             "labels": LabelSchemaMapper.forward(self.task_environment.label_schema),
             "threshold": 0.5,
         }
