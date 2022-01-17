@@ -35,7 +35,7 @@ class TestCoordinate:
 
         <b>Expected results:</b>
         1. It raises TypeError in case of attempt of instantiation with wrong number of parameters
-        2. Fields of instances initialized  with correct values
+        2. Fields of instances initialized with correct values
         3. repr method returns correct strings then used against each instance
         4. hash method works as expected
         5. as_tuple method works as expected
