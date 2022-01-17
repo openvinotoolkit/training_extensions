@@ -405,6 +405,7 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
                 arch.writestr(os.path.join("model", "model.bin"), self.task_environment.model.get_data("openvino.bin"))
                 arch.write(os.path.join(tempdir, "requirements.txt"), os.path.join("python", "requirements.txt"))
                 arch.write(os.path.join(work_dir, "README.md"), os.path.join("python", "README.md"))
+                arch.write(os.path.join(work_dir, "LICENSE"), os.path.join("python", "LICENSE"))
                 arch.write(os.path.join(work_dir, "demo.py"), os.path.join("python", "demo.py"))
                 arch.write(os.path.join(tempdir, wheel_file_name), os.path.join("python", wheel_file_name))
             with open(os.path.join(tempdir, "openvino.zip"), "rb") as output_arch:
