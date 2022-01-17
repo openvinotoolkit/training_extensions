@@ -189,3 +189,7 @@ def main():
                 break
         else:
             print(f"{frame_index=}, {elapsed_time=}, {len(predictions)=}")
+
+
+if __name__ == "__main__":
+    main()

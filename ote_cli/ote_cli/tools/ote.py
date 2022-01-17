@@ -62,3 +62,7 @@ def main():
     sys.argv[0] = f"ote {name}"
     del sys.argv[1]
     globals()[f"ote_{name}"]()
+
+
+if __name__ == "__main__":
+    main()
