@@ -22,9 +22,9 @@ import tempfile
 import numpy as np
 import pytest
 from ote_anomalib.config import get_anomalib_config
-from helpers.config import get_config_and_task_name
-from helpers.dummy_dataset import TestDataset
-from helpers.train import OTEAnomalyTrainer
+from tests.helpers.config import get_config_and_task_name
+from tests.helpers.dummy_dataset import TestDataset
+from tests.helpers.train import OTEAnomalyTrainer
 
 logger = logging.getLogger(__name__)
 
