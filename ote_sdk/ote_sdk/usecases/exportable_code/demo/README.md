@@ -9,6 +9,7 @@ Demo package contains simple demo to get and visualize result of model inference
   - `model.bin`
 * python
   - `README.md`
+  - `LICENSE`
   - `demo.py`
   - `requirements.txt`
   - `demo_package-0.0-py3-none-any.whl`
