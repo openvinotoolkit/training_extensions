@@ -204,10 +204,10 @@ class TestDice:
         return model
 
     @staticmethod
-    def check_score_metric_rounded(score_metric, expected_name, expected_value):
+    def check_score_metric(score_metric, expected_name, expected_value):
         assert isinstance(score_metric, ScoreMetric)
         assert score_metric.name == expected_name
-        assert round(score_metric.value, 5) == pytest.approx(expected_value)
+        assert score_metric.value == pytest.approx(expected_value)
 
     @pytest.mark.priority_medium
     @pytest.mark.component
@@ -239,32 +239,32 @@ class TestDice:
         ):
             assert dice_actual.average == expected_average_type
             # Checking "overall_dice" attribute
-            self.check_score_metric_rounded(
+            self.check_score_metric(
                 score_metric=dice_actual.overall_dice,
                 expected_name="Dice Average",
                 expected_value=expected_overall_dice,
             )
             # Checking "dice_per_label" attribute
             assert len(dice_actual.dice_per_label) == 4
-            self.check_score_metric_rounded(
+            self.check_score_metric(
                 score_metric=dice_actual.dice_per_label.get(self.car_label),
                 expected_name="car",
                 expected_value=1.0,
             )
-            self.check_score_metric_rounded(
+            self.check_score_metric(
                 score_metric=dice_actual.dice_per_label.get(self.human_label),
                 expected_name="human",
-                expected_value=0.78261,
+                expected_value=0.782608695652174,
             )
-            self.check_score_metric_rounded(
+            self.check_score_metric(
                 score_metric=dice_actual.dice_per_label.get(self.dog_label),
                 expected_name="dog",
-                expected_value=0,
+                expected_value=0.0,
             )
-            self.check_score_metric_rounded(
+            self.check_score_metric(
                 score_metric=dice_actual.dice_per_label.get(self.cat_label),
                 expected_name="cat",
-                expected_value=0,
+                expected_value=0.0,
             )
 
         model = self.model()
@@ -296,14 +296,14 @@ class TestDice:
         check_dice_attributes(
             dice_actual=dice,
             expected_average_type=MetricAverageMethod.MACRO,
-            expected_overall_dice=0.44565,
+            expected_overall_dice=0.44565217391304346,
         )
         # Checking attributes of "DiceAverage" initialized with specified "average"
         dice = DiceAverage(resultset=result_set, average=MetricAverageMethod.MICRO)
         check_dice_attributes(
             dice_actual=dice,
             expected_average_type=MetricAverageMethod.MICRO,
-            expected_overall_dice=0.77467,
+            expected_overall_dice=0.7746741154562383,
         )
         # Checking "ValueError" exception raised when initializing "DiceAverage" with empty list prediction result_set
         result_set = ResultSetEntity(
@@ -388,10 +388,10 @@ class TestDice:
         performance = dice.get_performance()
         assert isinstance(performance, Performance)
         # Checking "score" attribute
-        self.check_score_metric_rounded(
+        self.check_score_metric(
             score_metric=performance.score,
             expected_name="Dice Average",
-            expected_value=0.44565,
+            expected_value=0.44565217391304346,
         )
         # Checking "dashboard_metrics" attribute
         assert len(performance.dashboard_metrics) == 1
@@ -399,25 +399,25 @@ class TestDice:
         assert isinstance(dashboard_metric, BarMetricsGroup)
         # Checking "metrics" attribute
         assert len(dashboard_metric.metrics) == 4
-        self.check_score_metric_rounded(
+        self.check_score_metric(
             score_metric=dashboard_metric.metrics[0],
             expected_name="car",
-            expected_value=1,
+            expected_value=1.0,
         )
-        self.check_score_metric_rounded(
+        self.check_score_metric(
             score_metric=dashboard_metric.metrics[1],
             expected_name="cat",
-            expected_value=0,
+            expected_value=0.0,
         )
-        self.check_score_metric_rounded(
+        self.check_score_metric(
             score_metric=dashboard_metric.metrics[2],
             expected_name="dog",
-            expected_value=0,
+            expected_value=0.0,
         )
-        self.check_score_metric_rounded(
+        self.check_score_metric(
             score_metric=dashboard_metric.metrics[3],
             expected_name="human",
-            expected_value=0.78261,
+            expected_value=0.782608695652174,
         )
         # Checking "visualization_info" attribute
         assert isinstance(dashboard_metric.visualization_info, BarChartInfo)
@@ -444,7 +444,7 @@ class TestDice:
         performance = dice.get_performance()
         assert isinstance(performance, Performance)
         # Checking "score" attribute
-        self.check_score_metric_rounded(
+        self.check_score_metric(
             score_metric=performance.score,
             expected_name="Dice Average",
             expected_value=0.0,
@@ -481,29 +481,29 @@ class TestDice:
 
         def check_dice(dice_actual: tuple, expected_overall_dice: float):
             assert len(dice_actual) == 2
-            self.check_score_metric_rounded(
+            self.check_score_metric(
                 score_metric=dice_actual[0],
                 expected_name="Dice Average",
                 expected_value=expected_overall_dice,
             )
             dice_per_label = dice_actual[1]
             assert len(dice_per_label) == 4
-            self.check_score_metric_rounded(
+            self.check_score_metric(
                 score_metric=dice_per_label.get(self.car_label),
                 expected_name="car",
                 expected_value=2.0,
             )
-            self.check_score_metric_rounded(
+            self.check_score_metric(
                 score_metric=dice_per_label.get(self.human_label),
                 expected_name="human",
                 expected_value=1.6,
             )
-            self.check_score_metric_rounded(
+            self.check_score_metric(
                 score_metric=dice_per_label.get(self.dog_label),
                 expected_name="dog",
                 expected_value=0.5,
             )
-            self.check_score_metric_rounded(
+            self.check_score_metric(
                 score_metric=dice_per_label.get(self.cat_label),
                 expected_name="cat",
                 expected_value=0.0,
