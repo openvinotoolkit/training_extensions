@@ -40,7 +40,7 @@ class TestCoordinate:
         4. hash method works as expected
         5. as_tuple method works as expected
         6. as_int_tuple method works as expected
-        7. '==' method works is expected
+        7. '==' method works as expected
 
         <b>Steps</b>
         1. Attempt to create Coordinate with wrong parameters numbers
