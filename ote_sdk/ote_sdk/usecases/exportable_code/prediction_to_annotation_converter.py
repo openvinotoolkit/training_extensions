@@ -276,12 +276,14 @@ class AnomalyClassificationToAnnotationConverter(IPredictionToAnnotationConverte
     ) -> AnnotationSceneEntity:
         pred_score = predictions.reshape(-1).max()
         pred_label = pred_score >= metadata.get("threshold", 0.5)
-        assigned_label = self.anomalous_label if pred_label else self.normal_label
+
+        label = self.anomalous_label if pred_label else self.normal_label
+        probability = (1 - pred_score) if pred_score < 0.5 else pred_score
 
         annotations = [
             Annotation(
                 Rectangle.generate_full_box(),
-                labels=[ScoredLabel(assigned_label, probability=float(pred_score))],
+                labels=[ScoredLabel(label=label, probability=float(probability))],
             )
         ]
         return AnnotationSceneEntity(
