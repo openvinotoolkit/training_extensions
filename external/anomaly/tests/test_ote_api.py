@@ -13,8 +13,8 @@
 # and limitations under the License.
 
 
-from e2e_test_system import e2e_pytest_api
+from .e2e_test_system import e2e_pytest_api
 
 @e2e_pytest_api
-def sample_test():
+def test_sample():
     assert True
