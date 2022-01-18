@@ -70,7 +70,13 @@ def read_model(model_configuration, path, train_dataset):
         "max",
     )
 
-    if path.endswith(".bin") or path.endswith(".xml"):
+    if os.path.isdir(path):
+        file_names = os.listdir(path)
+        model_adapters = {}
+        for name in file_names:
+            if name.endswith(".xml") or name.endswith(".bin"):
+                model_adapters[name] = ModelAdapter(os.path.join(path, name))
+    elif path.endswith(".bin") or path.endswith(".xml"):
         # Openvino IR.
         model_adapters = {
             "openvino.xml": ModelAdapter(read_binary(path[:-4] + ".xml")),
@@ -131,6 +137,8 @@ def read_label_schema(path):
     """
     Reads serialized LabelSchema and returns deserialized LabelSchema.
     """
+    if not os.path.exists(path):
+        return None
 
     if any(path.endswith(extension) for extension in (".xml", ".bin", ".pth")):
         with open(
@@ -171,5 +179,8 @@ def generate_label_schema(dataset, task_type):
             label_schema.add_group(single_groups[-1])
         label_schema.add_group(empty_group)
         return label_schema
+
+    if task_type == TaskType.TEXT_TO_SPEECH:
+        return None
 
     return LabelSchemaEntity.from_labels(dataset.get_labels())

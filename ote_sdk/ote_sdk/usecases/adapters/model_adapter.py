@@ -26,7 +26,7 @@ class ModelAdapter(metaclass=abc.ABCMeta):
     given data source.
     """
 
-    def __init__(self, data_source: Union[IDataSource, bytes]):
+    def __init__(self, data_source: Union[IDataSource, bytes, str]):
         self.__data_source = data_source
 
     @property
@@ -44,6 +44,8 @@ class ModelAdapter(metaclass=abc.ABCMeta):
         if isinstance(self.__data_source, IDataSource):
             return self.__data_source.data
         if isinstance(self.__data_source, bytes):
+            return self.__data_source
+        if isinstance(self.__data_source, str):
             return self.__data_source
         raise ValueError(
             "This model adapter is not properly initialized with a source of data"

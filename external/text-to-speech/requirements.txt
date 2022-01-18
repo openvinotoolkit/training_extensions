@@ -1,0 +1,9 @@
+numpy==1.18.0
+Cython
+wheel
+pytorch-lightning==1.5.0
+inflect
+tqdm
+editdistance
+librosa==0.8.1
+addict

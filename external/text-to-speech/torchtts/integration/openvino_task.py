@@ -16,36 +16,27 @@ import logging
 import os
 import tempfile
 
-from addict import Dict as ADDict
-from typing import Any, Dict, Tuple, List, Optional, Union
+import inspect
+import json
 
+from shutil import copyfile, copytree
+from zipfile import ZipFile
+from typing import Any, Dict, Tuple, Optional, Union
 import numpy as np
 
-from ote_sdk.entities.annotation import Annotation, AnnotationSceneKind
+import ote_sdk.usecases.exportable_code.demo as demo
 from ote_sdk.entities.inference_parameters import InferenceParameters, default_progress_callback
-from ote_sdk.entities.optimization_parameters import OptimizationParameters
-from ote_sdk.entities.shapes.rectangle import Rectangle
 from ote_sdk.usecases.evaluation.metrics_helper import MetricsHelper
-from ote_sdk.entities.label_schema import LabelSchemaEntity
 from ote_sdk.usecases.exportable_code.inference import BaseOpenVINOInferencer
-from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from ote_sdk.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.entities.model import (
-    ModelStatus,
     ModelEntity,
-    ModelFormat,
-    OptimizationMethod,
-    ModelPrecision,
 )
 
 from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.annotation import AnnotationSceneEntity
-from ote_sdk.usecases.tasks.interfaces.optimization_interface import (
-    IOptimizationTask,
-    OptimizationType,
-)
 from ote_sdk.entities.datasets import DatasetEntity
 
 from torchtts.integration.parameters import OTETextToSpeechTaskParameters
@@ -68,8 +59,6 @@ def get_output(net, outputs, name):
 class OpenVINOTTSInferencer(BaseOpenVINOInferencer):
     def __init__(
         self,
-        hparams: OTETextToSpeechTaskParameters,
-        label_schema: LabelSchemaEntity,
         model_file: Union[str, bytes],
         weight_file: Union[str, bytes, None] = None,
         device: str = "CPU",
@@ -88,7 +77,7 @@ class OpenVINOTTSInferencer(BaseOpenVINOInferencer):
     def load_model(
         self, model_file: Union[str, bytes], weights_file: Union[str, bytes, None]
     ):
-        self.net = self.ie.read_network(model_file, weights_file)
+        self.net = self.ie_core.read_network(model_file, weights_file)
 
         scales = 9
         t_shapes = [int(128 * 1.5 ** i) for i in range(scales)]
@@ -100,21 +89,23 @@ class OpenVINOTTSInferencer(BaseOpenVINOInferencer):
                           for k, v in orig_shapes.items()}
             self.net.reshape(new_shapes)
             exec_net.append(
-                self.ie.load_network(network=self.net, device_name=self.device, num_requests=self.num_requests))
+                self.ie_core.load_network(network=self.net, device_name=self.device, num_requests=self.num_requests))
             self.net.reshape(orig_shapes)
 
         self.model = exec_net
         self.t_shapes = t_shapes
 
+    def post_process(self, prediction: Any, metadata: Any) -> AnnotationSceneEntity:
+        return prediction
+
 
 class OpenVINOTTSEncoderInferencer(OpenVINOTTSInferencer):
     def __init__(
         self,
-        ie,
         model_file: Union[str, bytes],
         weight_file: Union[str, bytes, None] = None,
     ):
-        super().__init__(ie)
+        super().__init__(model_file, weight_file)
 
         self.load_model(model_file, weight_file)
 
@@ -155,11 +146,10 @@ class OpenVINOTTSEncoderInferencer(OpenVINOTTSInferencer):
 class OpenVINOTTSDecoderInferencer(OpenVINOTTSInferencer):
     def __init__(
         self,
-        ie,
         model_file: Union[str, bytes],
         weight_file: Union[str, bytes, None] = None,
     ):
-        super().__init__(ie)
+        super().__init__(model_file, weight_file)
 
         self.load_model(model_file, weight_file)
 
@@ -201,36 +191,17 @@ class OpenVINOTTSDecoderInferencer(OpenVINOTTSInferencer):
         return None
 
 
-class OTEOpenVinoDataLoader(DataLoader):
-    def __init__(self, dataset: DatasetEntity, inferencer: BaseOpenVINOInferencer):
-        super().__init__(config=None)
-        self.dataset = dataset
-        self.inferencer = inferencer
-
-    def __getitem__(self, index):
-        image = self.dataset[index].numpy
-        annotation = self.dataset[index].annotation_scene
-        inputs, metadata = self.inferencer.pre_process(image)
-
-        return (index, annotation), inputs, metadata
-
-    def __len__(self):
-        return len(self.dataset)
-
-
-class OpenVINOTTSTask(IInferenceTask, IEvaluationTask, IOptimizationTask):
+class OpenVINOTTSTask(IInferenceTask, IEvaluationTask):
     def __init__(self, task_environment: TaskEnvironment):
         self.task_environment = task_environment
         self.hparams = self.task_environment.get_hyper_parameters(OTETextToSpeechTaskParameters)
         self.model = self.task_environment.model
-        self.encoder, self.decoder = self.load_inferencer()
+        self.encoder, self.decoder = self.load_inferencers()
 
-    def load_inferencers(self) -> tuple[OpenVINOTTSInferencer]:
-        encoder = OpenVINOTTSEncoderInferencer(self.hparams,
-                                     self.model.get_data("encoder.xml"),
+    def load_inferencers(self) -> Tuple[OpenVINOTTSInferencer]:
+        encoder = OpenVINOTTSEncoderInferencer(self.model.get_data("encoder.xml"),
                                      self.model.get_data("encoder.bin"))
-        decoder = OpenVINOTTSDecoderInferencer(self.hparams,
-                                    self.model.get_data("decoder.xml"),
+        decoder = OpenVINOTTSDecoderInferencer(self.model.get_data("decoder.xml"),
                                     self.model.get_data("decoder.bin"))
         return encoder, decoder
 
@@ -385,15 +356,6 @@ class OpenVINOTTSTask(IInferenceTask, IEvaluationTask, IOptimizationTask):
 
     def infer(self, dataset: DatasetEntity,
               inference_parameters: Optional[InferenceParameters] = None) -> DatasetEntity:
-        update_progress_callback = default_progress_callback
-        if inference_parameters is not None:
-            update_progress_callback = inference_parameters.update_progress
-        dataset_size = len(dataset)
-        for i, dataset_item in enumerate(dataset, 1):
-
-            dataset_item.append_annotations(predicted_scene.annotations)
-            dataset_item.append_labels(dataset_item.annotation_scene.annotations[0].get_labels())
-            update_progress_callback(int(i / dataset_size * 100))
         return dataset
 
     def evaluate(self,
@@ -403,3 +365,60 @@ class OpenVINOTTSTask(IInferenceTask, IEvaluationTask, IOptimizationTask):
             logger.warning(f'Requested to use {evaluation_metric} metric,'
                             'but parameter is ignored. Use accuracy instead.')
         output_result_set.performance = MetricsHelper.compute_accuracy(output_result_set).get_performance()
+
+    def deploy(self, output_model: ModelEntity) -> None:
+        """Exports the weights from ``output_model`` along with exportable code.
+
+        Args:
+            output_model (ModelEntity): Model with ``openvino.xml`` and ``.bin`` keys
+
+        Raises:
+            Exception: If ``task_environment.model`` is None
+        """
+        logger.info("Deploying Model")
+
+        if self.task_environment.model is None:
+            raise Exception("task_environment.model is None. Cannot load weights.")
+
+        work_dir = os.path.dirname(demo.__file__)
+        parameters: Dict[str, Any] = {}
+        parameters["type_of_model"] = "text_to_speech"
+        parameters["converter_type"] = "TEXT_TO_SPEECH"
+        parameters["model_parameters"] = {}
+        name_of_package = "demo_package"
+
+        with tempfile.TemporaryDirectory() as tempdir:
+            copyfile(os.path.join(work_dir, "setup.py"), os.path.join(tempdir, "setup.py"))
+            copyfile(os.path.join(work_dir, "requirements.txt"), os.path.join(tempdir, "requirements.txt"))
+            copytree(os.path.join(work_dir, name_of_package), os.path.join(tempdir, name_of_package))
+            config_path = os.path.join(tempdir, name_of_package, "config.json")
+            with open(config_path, "w", encoding="utf-8") as file:
+                json.dump(parameters, file, ensure_ascii=False, indent=4)
+
+            copyfile(inspect.getfile(AnomalyClassification), os.path.join(tempdir, name_of_package, "model.py"))
+
+            # create wheel package
+            subprocess.run(
+                [
+                    sys.executable,
+                    os.path.join(tempdir, "setup.py"),
+                    "bdist_wheel",
+                    "--dist-dir",
+                    tempdir,
+                    "clean",
+                    "--all",
+                ],
+                check=True,
+            )
+            wheel_file_name = [f for f in os.listdir(tempdir) if f.endswith(".whl")][0]
+
+            with ZipFile(os.path.join(tempdir, "openvino.zip"), "w") as arch:
+                arch.writestr(os.path.join("model", "model.xml"), self.task_environment.model.get_data("openvino.xml"))
+                arch.writestr(os.path.join("model", "model.bin"), self.task_environment.model.get_data("openvino.bin"))
+                arch.write(os.path.join(tempdir, "requirements.txt"), os.path.join("python", "requirements.txt"))
+                arch.write(os.path.join(work_dir, "README.md"), os.path.join("python", "README.md"))
+                arch.write(os.path.join(work_dir, "demo.py"), os.path.join("python", "demo.py"))
+                arch.write(os.path.join(tempdir, wheel_file_name), os.path.join("python", wheel_file_name))
+            with open(os.path.join(tempdir, "openvino.zip"), "rb") as output_arch:
+                output_model.exportable_code = output_arch.read()
+        logger.info("Deploying completed")

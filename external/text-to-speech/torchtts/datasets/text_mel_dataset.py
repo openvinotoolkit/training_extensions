@@ -15,8 +15,11 @@ from scipy.io.wavfile import read
 
 
 def get_tts_datasets(cfg, max_mel_len=1000):
+    if hasattr(cfg, "test_ann_file") and cfg.test_ann_file is not None:
+        return TTSDatasetWithSTFT(Path(cfg.test_data_root), cfg.test_ann_file, cfg)
     if hasattr(cfg, "train_ann_file"):
-        train_dataset = TTSDatasetWithSTFT(Path(cfg.train_data_root), cfg.train_ann_file, cfg, max_mel_len, add_noise=True)
+        train_dataset = TTSDatasetWithSTFT(Path(cfg.train_data_root), cfg.train_ann_file, cfg, max_mel_len,
+                                           add_noise=True)
         val_dataset = TTSDatasetWithSTFT(Path(cfg.val_data_root), cfg.val_ann_file, cfg, max_mel_len)
     else:
         path = Path(cfg.training_path)
@@ -100,8 +103,8 @@ class TTSDatasetWithSTFT(Dataset):
     def get_mel_lengths(self):
         res = []
         for item_id in self.metadata:
-            mel = np.load(self.path/'mel'/f'{item_id}.npy')
-            res.append(mel.shape[-1])
+            sampling_rate, data = read(self.path/'wavs'/f'{item_id}.wav')
+            res.append(data.shape[-1] / self.cfg.hop_length)
         return res
 
 

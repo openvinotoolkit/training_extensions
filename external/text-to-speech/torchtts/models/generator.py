@@ -283,7 +283,7 @@ class GANTacotron(nn.Module):
                           output_names=["x_m", "x_res", "log_dur", "x_mask"])
 
         # 2) Convert decoder
-        x_res, log_dur, x_mask = self.encoder(seq, seq_len)
+        x_m, x_res, log_dur, x_mask = self.encoder(seq, seq_len)
 
         z_res, z_mask, w_ceil = self.preprocessing_torch(x_res, log_dur, x_mask)
 

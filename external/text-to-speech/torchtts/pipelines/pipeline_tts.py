@@ -122,12 +122,31 @@ class PipelineTTS(pl.LightningModule):
 
     def predict(self, dataloader: DataLoader):
         res = {}
-        self.generator.test()
+        self.generator.eval()
+
+        mel_diff = 0
+        len_diff = 0
+        denum = 0
+
         for batch in dataloader:
             x, x_len, m, mel_len = batch
+            denum += 1
             with torch.no_grad():
                 m_, mel_mask, (att, log_dur, log_dur_, loss_mel_proj, _) = self.generator(x, x_len, m, mel_len)
+                mel_diff += torch.mean(torch.abs(m_ - m) * mel_mask) / (torch.max(m) - torch.min(m))
+                dur = torch.exp(log_dur)
+                dur_ = torch.exp(log_dur_)
+                len_diff += torch.mean(torch.abs(dur - dur_))
+
         self.generator.train()
+        if denum == 0:
+            denum = 1
+
+        return {'mel_diff': mel_diff/denum, 'len_diff': len_diff/denum}
+
+    def compute_metrics(self, data):
+        return data
+
     def train_dataloader(self):
         return DataLoader(
             self.trainset,

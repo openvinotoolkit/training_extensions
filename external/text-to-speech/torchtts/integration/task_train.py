@@ -103,7 +103,7 @@ class OTETextToSpeechTask(ITrainingTask, IInferenceTask, IEvaluationTask, IExpor
         torch.save(modelinfo, buffer)
         output_model.set_data("weights.ckpt", buffer.getvalue())
 
-    def infer(self, dataset: torch.utils.data.Dataset,
+    def infer(self, data_info,
               inference_parameters: Optional[InferenceParameters] = None) -> DatasetEntity:
         """
         Perform inference on the given dataset.
@@ -114,12 +114,32 @@ class OTETextToSpeechTask(ITrainingTask, IInferenceTask, IEvaluationTask, IExpor
         :return: Dataset that also includes the classification results
         """
 
+        cfg_data = Dict({
+            "test_ann_file": data_info.test_ann_file,
+            "test_data_root": data_info.test_data_root,
+            "training_path": "../../datasets/data_ljspeech_melgan",
+            "cmudict_path": find_file(os.getcwd(), "cmu_dictionary"),
+            "text_cleaners": ["english_cleaners"],
+            "max_wav_value": 32768.0,
+            "sampling_rate": 22050,
+            "filter_length": 1024,
+            "hop_length": 256,
+            "win_length": 1024,
+            "n_mel_channels": 80,
+            "mel_fmin": 0.0,
+            "mel_fmax": 8000.0,
+            "add_noise": True,
+            "add_blank": True
+        })
+
+        dataset = get_tts_datasets(cfg_data)
+
         # prepare loader
         dataloader = build_dataloader(
             dataset,
-            batch_size = self._cfg.pipeline.batch_size,
-            num_workers = 4,
-            shuffle = False
+            batch_size=1,
+            num_workers=4,
+            shuffle=False
         )
 
         outputs = self._pipeline.predict(dataloader)
@@ -263,7 +283,7 @@ class OTETextToSpeechTask(ITrainingTask, IInferenceTask, IEvaluationTask, IExpor
                     export_ir(name, optimized_model_dir=optimized_model_dir,
                               data_type=optimized_model_precision.name)
 
-                xml_files = [f for f in os.listdir(optimized_model_dir) if f.endswith('.xml')]
+                xml_files = [os.path.join(optimized_model_dir, f) for f in os.listdir(optimized_model_dir) if f.endswith('.xml')]
                 failed = True
                 for xml_file in xml_files:
                     bin_file = xml_file.replace('.xml', '.bin')

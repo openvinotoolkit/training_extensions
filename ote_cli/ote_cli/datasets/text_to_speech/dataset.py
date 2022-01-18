@@ -31,4 +31,10 @@ class EmptyTTSDataset():
         self.val_ann_file = val_subset.get("ann_file", None) if val_subset else None
         self.val_data_root = val_subset.get("data_root", None) if val_subset else None
         self.test_ann_file = test_subset.get("ann_file", None) if test_subset else None
-        self.test_root_file = test_subset.get("data_root", None) if test_subset else None
+        self.test_data_root = test_subset.get("data_root", None) if test_subset else None
+
+    def get_subset(self, *args):
+        return self
+
+    def with_empty_annotations(self):
+        return self
