@@ -23,10 +23,11 @@ def get_git_commit_hash() -> str:
     )
 
 
-def set_proper_git_commit_hash(path):
+def set_proper_git_commit_hash(path: str) -> None:
     """
     Replaces OTE_COMMIT by OTE git commit hash in a file.
     """
+
     with open(path, encoding="UTF-8") as read_file:
         content = "".join(read_file)
     to_replace = "OTE_COMMIT"

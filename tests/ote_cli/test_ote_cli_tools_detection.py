@@ -21,7 +21,7 @@ import pytest
 
 from ote_cli.registry import Registry
 
-from tests.ote_cli.common import collect_env_vars, get_some_vars, create_venv, patch_demo_py
+from tests.ote_cli.common import collect_env_vars, get_some_vars, create_venv, patch_demo_py, remove_ote_sdk_from_requirements, check_ote_sdk_commit_hash_in_requirements
 
 
 args = {
@@ -175,9 +175,24 @@ def test_ote_deploy_openvino(template):
     assert run(['python3', '-m', 'pip', 'install', 'wheel'],
                cwd=os.path.join(deployment_dir, 'python'),
                env=collect_env_vars(os.path.join(deployment_dir, 'python'))).returncode == 0
-    assert run(['python3', '-m', 'pip', 'install', 'demo_package-0.0-py3-none-any.whl'],
+    
+    assert check_ote_sdk_commit_hash_in_requirements(os.path.join(deployment_dir, 'python', 'requirements.txt'))
+    
+    # Remove ote_sdk from requirements.txt, since merge commit (that is created on CI) is not pushed to github and that's why cannot be cloned.
+    # Install ote_sdk from local folder instead.
+    # Install the demo_package with --no-deps since, requirements.txt has been embedded to the demo_package during creation.
+    remove_ote_sdk_from_requirements(os.path.join(deployment_dir, 'python', 'requirements.txt'))
+    assert run(['python3', '-m', 'pip', 'install', '-e', os.path.join(os.path.dirname(__file__), '..', '..', 'ote_sdk')],
                cwd=os.path.join(deployment_dir, 'python'),
                env=collect_env_vars(os.path.join(deployment_dir, 'python'))).returncode == 0
+    assert run(['python3', '-m', 'pip', 'install', '-r', os.path.join(deployment_dir, 'python', 'requirements.txt')],
+               cwd=os.path.join(deployment_dir, 'python'),
+               env=collect_env_vars(os.path.join(deployment_dir, 'python'))).returncode == 0
+    assert run(['python3', '-m', 'pip', 'install', 'demo_package-0.0-py3-none-any.whl', '--no-deps'],
+               cwd=os.path.join(deployment_dir, 'python'),
+               env=collect_env_vars(os.path.join(deployment_dir, 'python'))).returncode == 0
+    
+    # Patch demo since we are not able to run cv2.imshow on CI.
     patch_demo_py(os.path.join(deployment_dir, 'python', 'demo.py'),
                   os.path.join(deployment_dir, 'python', 'demo_patched.py'))
 

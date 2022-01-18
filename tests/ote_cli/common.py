@@ -13,7 +13,9 @@
 # and limitations under the License.
 
 import os
-from subprocess import run  # nosec
+from subprocess import run, check_output  # nosec
+
+from ote_sdk.usecases.exportable_code.utils import get_git_commit_hash
 
 def get_template_rel_dir(template):
     return os.path.dirname(os.path.relpath(template.model_template_path))
@@ -73,3 +75,25 @@ def patch_demo_py(src_path, dst_path):
         content = ['def show(self):\n', '    pass\n\n'] + content
         with open(dst_path, 'w') as write_file:
             write_file.write(''.join(content))
+
+
+def remove_ote_sdk_from_requirements(path):
+    with open(path, encoding='UTF-8') as read_file:
+        content = ''.join([line for line in read_file if 'ote_sdk' not in line])
+    
+    with open(path, 'w', encoding='UTF-8') as write_file:
+        write_file.write(content)
+
+
+def check_ote_sdk_commit_hash_in_requirements(path):
+    with open(path, encoding='UTF-8') as read_file:
+        content = [line for line in read_file if 'ote_sdk' in line]
+    if len(content) != 1:
+        raise RuntimeError(f"Invalid ote_sdk requirements (0 or more than 1 times mentioned): {path}")
+    
+    git_commit_hash = get_git_commit_hash()
+    if git_commit_hash in content[0]:
+        return True
+
+    return False
+
