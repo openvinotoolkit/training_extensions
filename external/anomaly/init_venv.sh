@@ -109,18 +109,8 @@ else
   echo torchvision==${TORCHVISION_VERSION}+cu${CUDA_VERSION_CODE} >> ${CONSTRAINTS_FILE}
 fi
 
-# Install Anomalib
-pip install -e $ANOMALIB_REPO || exit 1
-
-# Install requirements.
-pip install -r $ANOMALIB_REPO/requirements/requirements.txt -c ${CONSTRAINTS_FILE} || exit 1
-
-pip install -e . -c ${CONSTRAINTS_FILE} || exit 1
-ANOMALIB_OTE_DIR=$(realpath .)
-echo "export ANOMALIB_OTE_DIR=${ANOMALIB_OTE_DIR}" >> ${venv_dir}/bin/activate
-
-# Install OpenVINO requirements
-pip install -r $ANOMALIB_REPO/requirements/requirements_openvino_mo.txt -c ${CONSTRAINTS_FILE} || exit 1
+pip install -r requirements.txt
+pip install -e .
 
 pip install -e $OTE_SDK_PATH  || exit 1
 

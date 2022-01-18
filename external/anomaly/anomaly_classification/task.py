@@ -35,7 +35,7 @@ from ote_anomalib.logging import get_logger
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.inference_parameters import InferenceParameters
 from ote_sdk.entities.metrics import Performance, ScoreMetric
-from ote_sdk.entities.model import ModelEntity, ModelPrecision
+from ote_sdk.entities.model import ModelEntity, ModelPrecision, ModelOptimizationType
 from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.entities.train_parameters import TrainParameters
@@ -236,6 +236,7 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
         logger.info("%s : %3.2f", accuracy.score.name, accuracy.score.value)
 
     def export(self, export_type: ExportType, output_model: ModelEntity) -> None:
+        output_model.optimization_type = ModelOptimizationType.MO
         """Export model to OpenVINO IR.
 
         Args:
