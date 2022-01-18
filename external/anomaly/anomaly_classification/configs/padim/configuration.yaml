@@ -4,8 +4,7 @@ dataset:
   num_workers:
     affects_outcome_of: NONE
     default_value: 8
-    description:
-      Increasing this value might improve training speed however it might
+    description: Increasing this value might improve training speed however it might
       cause out of memory errors. If the number of workers is set to zero, data loading
       will happen in the main training thread.
     editable: true
@@ -18,14 +17,12 @@ dataset:
       operator: AND
       rules: []
       type: UI_RULES
-    value: 8
     visible_in_ui: true
     warning: null
   train_batch_size:
     affects_outcome_of: TRAINING
     default_value: 32
-    description:
-      The number of training samples seen in each iteration of training.
+    description: The number of training samples seen in each iteration of training.
       Increasing this value improves training time and may make the training more
       stable. A larger batch size has higher memory requirements.
     editable: true
@@ -38,16 +35,13 @@ dataset:
       operator: AND
       rules: []
       type: UI_RULES
-    value: 32
     visible_in_ui: true
-    warning:
-      Increasing this value may cause the system to use more memory than available,
+    warning: Increasing this value may cause the system to use more memory than available,
       potentially causing out of memory errors, please update with caution.
   type: PARAMETER_GROUP
   visible_in_ui: true
 description: Configuration for Padim
 header: Configuration for Padim
-id: ""
 pot_parameters:
   description: POT Parameters
   header: POT Parameters
@@ -67,7 +61,6 @@ pot_parameters:
       operator: AND
       rules: []
       type: UI_RULES
-    value: Performance
     visible_in_ui: true
     warning: null
   stat_subset_size:
@@ -84,7 +77,6 @@ pot_parameters:
       operator: AND
       rules: []
       type: UI_RULES
-    value: 300
     visible_in_ui: true
     warning: null
   type: PARAMETER_GROUP
