@@ -16,16 +16,15 @@ Configurable parameters for STFPM anomaly classification task
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from attr import attrs
-
 from anomaly_classification.configs.configuration import BaseAnomalyClassificationConfig
 from anomaly_classification.configs.configuration_enums import EarlyStoppingMetrics
+from attr import attrs
 from ote_sdk.configuration.elements import (
     ParameterGroup,
     add_parameter_group,
+    configurable_integer,
     selectable,
     string_attribute,
-    configurable_integer,
 )
 from ote_sdk.configuration.model_lifecycle import ModelLifecycle
 
@@ -69,10 +68,10 @@ class STFPMConfig(BaseAnomalyClassificationConfig):
                 max_value=100,
                 header="Early Stopping Patience",
                 description="Number of epochs to wait for an improvement in the monitored metric. If the metric has "
-                            "not improved for this many epochs, the training will stop and the best model will be "
-                            "returned.",
+                "not improved for this many epochs, the training will stop and the best model will be "
+                "returned.",
                 warning="Setting this value too low might lead to underfitting. Setting the value too high will "
-                        "increase the training time and might lead to overfitting.",
+                "increase the training time and might lead to overfitting.",
                 affects_outcome_of=ModelLifecycle.TRAINING,
             )
 
