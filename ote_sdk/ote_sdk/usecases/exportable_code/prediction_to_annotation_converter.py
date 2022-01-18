@@ -2,19 +2,9 @@
 Converters for output of inferencers
 """
 
-# INTEL CONFIDENTIAL
+# Copyright (C) 2021-2022 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 #
-# Copyright (C) 2021 Intel Corporation
-#
-# This software and the related documents are Intel copyrighted materials, and
-# your use of them is governed by the express license under which they were provided to
-# you ("License"). Unless the License provides otherwise, you may not use, modify, copy,
-# publish, distribute, disclose or transmit this software or the related documents
-# without Intel's prior written permission.
-#
-# This software and the related documents are provided as is,
-# with no express or implied warranties, other than those that are expressly stated
-# in the License.
 
 import abc
 from typing import Any, Dict, List, Optional, Tuple
@@ -276,12 +266,14 @@ class AnomalyClassificationToAnnotationConverter(IPredictionToAnnotationConverte
     ) -> AnnotationSceneEntity:
         pred_score = predictions.reshape(-1).max()
         pred_label = pred_score >= metadata.get("threshold", 0.5)
-        assigned_label = self.anomalous_label if pred_label else self.normal_label
+
+        label = self.anomalous_label if pred_label else self.normal_label
+        probability = (1 - pred_score) if pred_score < 0.5 else pred_score
 
         annotations = [
             Annotation(
                 Rectangle.generate_full_box(),
-                labels=[ScoredLabel(assigned_label, probability=float(pred_score))],
+                labels=[ScoredLabel(label=label, probability=float(probability))],
             )
         ]
         return AnnotationSceneEntity(

@@ -23,6 +23,7 @@ import pytorch_lightning as pl
 from anomalib.core.model.anomaly_module import AnomalyModule
 from anomalib.utils.post_process import anomaly_map_to_color_map
 from ote_anomalib.data import LabelNames
+from ote_anomalib.logging import get_logger
 from ote_sdk.entities.annotation import Annotation
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.label import LabelEntity
@@ -31,19 +32,19 @@ from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.entities.shapes.rectangle import Rectangle
 from pytorch_lightning.callbacks import Callback
 
+logger = get_logger(__name__)
+
 
 class InferenceCallback(Callback):
-    """
-    Callback that updates the OTE dataset during inference.
-    """
+    """Callback that updates the OTE dataset during inference."""
 
     def __init__(self, ote_dataset: DatasetEntity, labels: List[LabelEntity]):
         self.ote_dataset = ote_dataset
         self.normal_label = [label for label in labels if label.name == LabelNames.normal][0]
         self.anomalous_label = [label for label in labels if label.name == LabelNames.anomalous][0]
 
-    def on_predict_epoch_end(self, _trainer: pl.Trainer, _pl_module: AnomalyModule, outputs: List[Any]):
-        """Called when the predict epoch ends."""
+    def on_predict_epoch_end(self, _trainer: pl.Trainer, pl_module: AnomalyModule, outputs: List[Any]):
+        """Call when the predict epoch ends."""
         outputs = outputs[0]
         pred_scores = np.hstack([output["pred_scores"].cpu() for output in outputs])
         pred_labels = np.hstack([output["pred_labels"].cpu() for output in outputs])
@@ -53,11 +54,11 @@ class InferenceCallback(Callback):
         for dataset_item, pred_score, pred_label, anomaly_map in zip(
             self.ote_dataset, pred_scores, pred_labels, anomaly_maps
         ):
-
-            assigned_label = self.anomalous_label if pred_label else self.normal_label
+            label = self.anomalous_label if pred_label else self.normal_label
+            probability = (1 - pred_score) if pred_score < 0.5 else pred_score
             shape = Annotation(
                 Rectangle(x1=0, y1=0, x2=1, y2=1),
-                labels=[ScoredLabel(assigned_label, probability=float(pred_score))],
+                labels=[ScoredLabel(label=label, probability=float(probability))],
             )
 
             dataset_item.append_annotations([shape])
@@ -70,3 +71,11 @@ class InferenceCallback(Callback):
                 numpy=heatmap,
             )
             dataset_item.append_metadata_item(heatmap_media)
+            logger.info(
+                "\n\tMin: %.3f, Max: %.3f, Threshold: %.3f, Assigned Label '%s', %.3f",
+                pl_module.min_max.min.item(),
+                pl_module.min_max.max.item(),
+                pl_module.image_threshold.value.item(),
+                label.name,
+                pred_score,
+            )

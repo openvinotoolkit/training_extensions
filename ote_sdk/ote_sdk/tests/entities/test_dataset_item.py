@@ -1,16 +1,6 @@
-# INTEL CONFIDENTIAL
+# Copyright (C) 2021-2022 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 #
-# Copyright (C) 2021 Intel Corporation
-#
-# This software and the related documents are Intel copyrighted materials, and
-# your use of them is governed by the express license under which they were provided to
-# you ("License"). Unless the License provides otherwise, you may not use, modify, copy,
-# publish, distribute, disclose or transmit this software or the related documents
-# without Intel's prior written permission.
-#
-# This software and the related documents are provided as is,
-# with no express or implied warranties, other than those that are expressly stated
-# in the License.
 import datetime
 from copy import deepcopy
 from typing import List
@@ -544,66 +534,47 @@ class TestDatasetItemEntity:
         Test passes if list returned by "get_annotations" method is equal to expected
 
         <b>Steps</b>
-        1. Check list returned by "get_annotations" method with "include_empty" parameter is "False" and "labels"
-        parameter is "None" for full-box ROI DatasetItemEntity
-        2. Check list returned by "get_annotations" method for not full-box ROI DatasetItemEntity
-        3. Check list returned by "get_annotations" method with specified "labels" parameter for full-box ROI
-        DatasetItemEntity
-        4. Check list returned by "get_annotations" method with "include_empty" parameter is "True" for full-box ROI
-        DatasetItemEntity
+        1. Check that get_annotations returns all annotations in the dataset item if the ROI is a full box
+        2. Check that after adding the parameter "labels", only the annotations with that label are returned
+        3. Check that for a ROI that includes only one of the annotations, only that annotation is returned
+        todo: CVS-75919 fix a bug in get_annotations method and add tests that cover it
         """
-        # Checking list returned by "get_annotations" method with "include_empty" parameter is "False" and "labels"
-        # parameter is "None" for full-box ROI DatasetItemEntity
+        # Check that get_annotations returns all items if the ROI is a full box.
         full_box_roi_dataset_item = (
             DatasetItemParameters().default_values_dataset_item()
         )
         full_box_annotations = list(
             full_box_roi_dataset_item.annotation_scene.annotations
         )
-        assert full_box_roi_dataset_item.get_annotations() == full_box_annotations
-        assert (
-            full_box_roi_dataset_item.get_annotations(ios_threshold=0.7)
-            == full_box_annotations
-        )
-        # Checking list returned by "get_annotations" method for not full-box ROI DatasetItemEntity
-        non_full_box_roi_dataset_item = DatasetItemParameters().dataset_item()
-        non_full_box_annotations = list(
-            non_full_box_roi_dataset_item.annotation_scene.annotations
-        )
-        expected_annotations = []
-        # Creating denormalized annotations
-        for annotation in non_full_box_annotations:
-            labels = annotation.get_labels(include_empty=False)
-            denormalized_shape = annotation.shape.denormalize_wrt_roi_shape(
-                non_full_box_roi_dataset_item.roi.shape
-            )
-            expected_annotations.append(
-                Annotation(shape=denormalized_shape, labels=labels)
-            )
-        # Check for "labels" is "None"
-        # Check for non-specified ios_threshold parameter
-        annotations_actual = non_full_box_roi_dataset_item.get_annotations()
-        self.compare_denormalized_annotations(annotations_actual, expected_annotations)
-        # Check for specified ios_threshold parameter
-        assert non_full_box_roi_dataset_item.get_annotations(ios_threshold=1.1) == []
-        # Checking list returned by "get_annotations" method with "include_empty" parameter is "False" for
-        # full-box ROI DatasetItemEntity with specified "labels" parameter
-        expected_annotations = [
-            list(full_box_roi_dataset_item.annotation_scene.annotations)[0]
-        ]
-        annotations_actual = full_box_roi_dataset_item.get_annotations(
-            labels=[DatasetItemParameters.labels()[0]]
-        )
-        self.compare_denormalized_annotations(annotations_actual, expected_annotations)
-        # Checking list returned by "get_annotations" method with "include_empty" parameter set to "True" for
-        # full-box ROI DatasetItemEntity
-        expected_annotations = list(
-            full_box_roi_dataset_item.annotation_scene.annotations
-        )
-        annotations_actual = full_box_roi_dataset_item.get_annotations(
+        result_annotations = full_box_roi_dataset_item.get_annotations(
             include_empty=True
         )
-        self.compare_denormalized_annotations(annotations_actual, expected_annotations)
+        expected_annotations = full_box_annotations
+        self.compare_denormalized_annotations(result_annotations, expected_annotations)
+
+        # Check that get_annotations returns only the items with the right label if the "labels" param is used
+        first_annotation = full_box_roi_dataset_item.annotation_scene.annotations[0]
+        first_annotation_label = first_annotation.get_labels()[0].label
+        result_annotations = full_box_roi_dataset_item.get_annotations(
+            labels=[first_annotation_label], include_empty=True
+        )
+        expected_annotations = [first_annotation]
+        self.compare_denormalized_annotations(result_annotations, expected_annotations)
+
+        # Check that get_annotations only returns the annotations whose center falls within the ROI
+        partial_box_dataset_item = deepcopy(full_box_roi_dataset_item)
+        partial_box_dataset_item.roi = Annotation(
+            shape=Rectangle(x1=0.0, y1=0.0, x2=0.4, y2=0.5), labels=[]
+        )
+        expected_annotation = first_annotation
+        expected_annotation.shape = expected_annotation.shape.denormalize_wrt_roi_shape(
+            roi_shape=partial_box_dataset_item.roi.shape
+        )
+        result_annotations = partial_box_dataset_item.get_annotations(
+            include_empty=True
+        )
+        expected_annotations = [expected_annotation]
+        self.compare_denormalized_annotations(result_annotations, expected_annotations)
 
     @pytest.mark.priority_medium
     @pytest.mark.component

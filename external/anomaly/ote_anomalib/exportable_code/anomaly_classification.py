@@ -1,18 +1,8 @@
 """Wrapper for Open Model Zoo for Anomaly tasks."""
 
-# INTEL CONFIDENTIAL
+# Copyright (C) 2021-2022 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 #
-# Copyright (C) 2021 Intel Corporation
-#
-# This software and the related documents are Intel copyrighted materials, and
-# your use of them is governed by the express license under which they were provided to
-# you ("License"). Unless the License provides otherwise, you may not use, modify, copy,
-# publish, distribute, disclose or transmit this software or the related documents
-# without Intel's prior written permission.
-#
-# This software and the related documents are provided as is,
-# with no express or implied warranties, other than those that are expressly stated
-# in the License.
 
 from typing import Any, Dict, Union
 
@@ -35,7 +25,6 @@ class AnomalyClassification(SegmentationModel):
         parameters.update(
             {
                 "image_threshold": NumericalValue(description="Threshold value to locate anomaly"),
-                "pixel_threshold": NumericalValue(description="Threshold value to locate anomaly"),
                 "min": NumericalValue(description="Threshold value to locate anomaly"),
                 "max": NumericalValue(description="Threshold value to locate anomaly"),
                 "threshold": NumericalValue(description="Threshold used to classify anomaly"),
@@ -74,12 +63,11 @@ class AnomalyClassification(SegmentationModel):
         pred_score = anomaly_map.reshape(-1).max()
 
         meta["image_threshold"] = self.image_threshold  # pylint: disable=no-member
-        meta["pixel_threshold"] = self.pixel_threshold  # pylint: disable=no-member
         meta["min"] = self.min  # pylint: disable=no-member
         meta["max"] = self.max  # pylint: disable=no-member
         meta["threshold"] = self.threshold  # pylint: disable=no-member
 
-        anomaly_map = self._normalize(anomaly_map, meta["pixel_threshold"], meta["min"], meta["max"])
+        anomaly_map = self._normalize(anomaly_map, meta["image_threshold"], meta["min"], meta["max"])
         pred_score = self._normalize(pred_score, meta["image_threshold"], meta["min"], meta["max"])
 
         input_image_height = meta["original_shape"][0]
