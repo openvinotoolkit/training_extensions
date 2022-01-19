@@ -182,7 +182,7 @@ def ote_eval_testing(template, root, ote_dir, args):
     assert os.path.exists(f'{template_work_dir}/trained_{template.model_template_id}/performance.json')
 
 
-def ote_eval_openvino_testing(template, root, ote_dir, args):
+def ote_eval_openvino_testing(template, root, ote_dir, args, threshold):
     work_dir, template_work_dir, _ = get_some_vars(template, root)
     command_line = ['ote',
                     'eval',
@@ -203,7 +203,7 @@ def ote_eval_openvino_testing(template, root, ote_dir, args):
         exported_performance = json.load(read_file)
 
     for k in trained_performance.keys():
-        assert abs(trained_performance[k] - exported_performance[k]) / trained_performance[k] <= 0.00, f"{trained_performance[k]=}, {exported_performance[k]=}"
+        assert abs(trained_performance[k] - exported_performance[k]) / trained_performance[k] <= threshold, f"{trained_performance[k]=}, {exported_performance[k]=}"
 
 
 def ote_demo_testing(template, root, ote_dir, args):

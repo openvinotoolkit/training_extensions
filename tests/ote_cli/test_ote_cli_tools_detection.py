@@ -82,7 +82,7 @@ def test_ote_eval(template):
 
 @pytest.mark.parametrize("template", templates, ids=templates_ids)
 def test_ote_eval_openvino(template):
-    ote_eval_openvino_testing(template, root, ote_dir, args)
+    ote_eval_openvino_testing(template, root, ote_dir, args, threshold=0.01)
 
 
 @pytest.mark.parametrize("template", templates, ids=templates_ids)
