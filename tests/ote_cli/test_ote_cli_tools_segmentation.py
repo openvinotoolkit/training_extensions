@@ -1,3 +1,5 @@
+"""Tests for semantic segmentation with OTE CLI"""
+
 # Copyright (C) 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,6 +31,7 @@ from tests.ote_cli.common import (
     ote_train_testing,
     ote_export_testing,
 )
+
 
 args = {
     '--train-ann-file': 'data/segmentation/custom/annotations/training',
@@ -81,14 +84,14 @@ def test_ote_eval_openvino(template):
 
 @pytest.mark.parametrize("template", templates, ids=templates_ids)
 def test_ote_demo(template):
-    ote_demo_testing(template, root, args)
+    ote_demo_testing(template, root, ote_dir, args)
 
 
 @pytest.mark.parametrize("template", templates, ids=templates_ids)
 def test_ote_demo_openvino(template):
-    ote_demo_openvino_testing(template, root, args)
+    ote_demo_openvino_testing(template, root, ote_dir, args)
 
 
 @pytest.mark.parametrize("template", templates, ids=templates_ids)
 def test_ote_deploy_openvino(template):
-    ote_deploy_openvino_testing(template, root, args)
+    ote_deploy_openvino_testing(template, root, ote_dir, args)
