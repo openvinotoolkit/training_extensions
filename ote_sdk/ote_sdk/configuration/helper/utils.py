@@ -142,7 +142,16 @@ def deserialize_enum_value(value: Union[str, Enum], enum_type: Type[Enum]):
     if isinstance(value, enum_type):
         instance = value
     elif isinstance(value, str):
-        instance = enum_type[value.upper()]
+        try:
+            instance = enum_type[value.upper()]
+        except KeyError:
+            try:
+                instance = enum_type(value)  # type: ignore
+            except ValueError:
+                raise ValueError(
+                    f"Value `{value}` cannot be converted to an instance of "
+                    f"`{enum_type}`"
+                )
     else:
         raise ValueError(
             f"Invalid input data type, {type(value)} cannot be converted to an instance "

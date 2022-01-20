@@ -7,8 +7,8 @@
 This module contains the definition of a ParameterGroup, which is the main class responsible for grouping configurable
 parameters together.
 """
-
-from typing import List, Type, TypeVar
+from enum import Enum
+from typing import List, Type, TypeVar, Union, Dict, Any
 
 import attr
 
@@ -49,6 +49,8 @@ class ParameterGroup:
         """
         groups: List[str] = []
         parameters: List[str] = []
+        self.__metadata_overrides: Dict[str, Any] = {}  # pylint:disable=attribute-defined-outside-init
+
         for attribute_or_method_name in dir(self):
             # Go over all attributes and methods of the class instance
             attribute_or_method = getattr(self, attribute_or_method_name)
@@ -75,15 +77,57 @@ class ParameterGroup:
     def get_metadata(self, parameter_name: str) -> dict:
         """
         Retrieve the metadata for a particular parameter from the group.
+
         :param parameter_name: name of the parameter for which to get the metadata
-        :return: dictionary containing the metadata for the requested parameter. Returns an empty dict if no metadata
-            was found for the parameter, or if the parameter was not found in the group.
+        :return: dictionary containing the metadata for the requested parameter.
+            Returns an empty dict if no metadata was found for the parameter, or if
+            the parameter was not found in the group.
         """
         parameter = getattr(attr.fields(type(self)), parameter_name, None)
         if parameter is not None:
             parameter_metadata = getattr(parameter, "metadata", {})
-            return dict(parameter_metadata)
+            metadata_dict = dict(parameter_metadata)
+            parameter_overrides = self.__metadata_overrides.get(
+                parameter_name, None
+            )
+            if parameter_overrides is not None:
+                for metadata_key, value_override in parameter_overrides.items():
+                    metadata_dict.update({metadata_key: value_override})
+            return metadata_dict
         return {}
+
+    def set_metadata_value(
+            self,
+            parameter_name: str,
+            metadata_key: str,
+            value: Union[int, float, str, bool, Enum]
+    ) -> bool:
+        """
+        Sets the value of a specific metadata item `metadata_key` for the parameter
+        named `parameter_name`.
+
+        :param parameter_name: name of the parameter for which to get the metadata item
+        :param metadata_key: name of the metadata value to set
+        :param value: New value to assign to the metadata item accessed by
+            `metadata_key`. The type of `value` has to exactly match the type of the
+            current value of the metadata item
+        :return: True if the metadata item was successfully updated, False otherwise
+        """
+        parameter = getattr(attr.fields(type(self)), parameter_name, None)
+        if parameter is None:
+            return False
+        parameter_metadata = dict(getattr(parameter, "metadata", {}))
+        metadata_value = parameter_metadata.get(metadata_key, None)
+        if metadata_value is None:
+            return False
+        if type(metadata_value) != type(value):
+            return False
+        existing_overrides = self.__metadata_overrides.get(parameter_name, None)
+        if existing_overrides is None:
+            self.__metadata_overrides[parameter_name] = {metadata_key: value}
+        else:
+            existing_overrides.update({metadata_key: value})
+        return True
 
     def __eq__(self, other):
         """
