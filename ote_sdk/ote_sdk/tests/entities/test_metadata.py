@@ -42,7 +42,7 @@ class TestIMetadata:
 
         <b>Expected results:</b>
         1. Initiated instance is instance of the class
-        2. Default value of field has expected value:  "typing.Union[str, NoneType]
+        2. Default value of field has expected value:  "typing.Union[str, NoneType]"
         3. Changed fields value has expected value: "String"
 
         <b>Steps</b>

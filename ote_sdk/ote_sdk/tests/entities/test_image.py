@@ -43,7 +43,7 @@ class TestImage:
         <b>Input data:</b>
         Instances of Image sourced with data or file path to forged image or both
         Rectangle and Ellipse classes instances
-        Instances of Annotation made against rectangle and
+        Instances of Annotation made against rectangle and Ellipsis
 
         <b>Expected results:</b>
         1. Value error is raised
@@ -78,10 +78,10 @@ class TestImage:
         test_height = test_width = 128
         test_height1 = test_width1 = 64
         test_depth = 4
-        data0 = np.zeros(shape=(test_height, test_width, test_depth), dtype=float, order='C')
-        data1 = np.zeros(shape=(test_height1, test_width1, test_depth), dtype=float, order='C')
-        d1_data = np.zeros(shape=(test_height,), dtype=float, order='C')
-        image = np.zeros(shape=(test_height, test_width, test_depth), dtype=float, order='C')
+        data0 = np.random.random_sample((test_height, test_width, test_depth))
+        data1 = np.random.random_sample((test_height1, test_width1, test_depth))
+        d1_data = np.random.random_sample((test_height1,))
+        image = np.random.random_sample((test_height, test_width, test_depth))
         image_path = os.path.join(tempfile.gettempdir(), 'test_image.png')
         cv2.imwrite(image_path, image)
 
@@ -137,14 +137,6 @@ class TestImage:
             for it in arr:
                 assert it in data1
 
-        for arr in fp_instance.roi_numpy(rect_annotation):
-            for it in arr:
-                assert it in data1
-
-        for arr in fp_instance.roi_numpy(rect_annotation):
-            for it in arr:
-                assert it in data1
-        
         assert data_instance.height == fp_instance.height == test_height1
         assert data_instance.width == fp_instance.width == test_width1
 
