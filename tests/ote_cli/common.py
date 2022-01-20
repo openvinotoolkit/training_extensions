@@ -276,3 +276,115 @@ def ote_deploy_openvino_testing(template, root, ote_dir, args):
     assert run(['python3', 'demo_patched.py', '-m', '../model/model.xml', '-i', os.path.join(ote_dir, args['--input'])],
                cwd=os.path.join(deployment_dir, 'python'),
                env=collect_env_vars(os.path.join(deployment_dir, 'python'))).returncode == 0
+
+
+def pot_optimize_testing(template, root, ote_dir, args):
+    work_dir, template_work_dir, algo_backend_dir = get_some_vars(template, root)
+    command_line = ['ote',
+                    'optimize',
+                    template.model_template_id,
+                    '--train-ann-file',
+                    f'{os.path.join(ote_dir, args["--train-ann-file"])}',
+                    '--train-data-roots',
+                    f'{os.path.join(ote_dir, args["--train-data-roots"])}',
+                    '--val-ann-file',
+                    f'{os.path.join(ote_dir, args["--val-ann-file"])}',
+                    '--val-data-roots',
+                    f'{os.path.join(ote_dir, args["--val-data-roots"])}',
+                    '--load-weights',
+                    f'{template_work_dir}/exported_{template.model_template_id}/openvino.xml',
+                    '--save-model-to',
+                    f'{template_work_dir}/pot_{template.model_template_id}',
+                    ]
+    assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
+    assert os.path.exists(f'{template_work_dir}/pot_{template.model_template_id}/openvino.xml')
+    assert os.path.exists(f'{template_work_dir}/pot_{template.model_template_id}/openvino.bin')
+    assert os.path.exists(f'{template_work_dir}/pot_{template.model_template_id}/label_schema.json')
+
+
+def pot_eval_testing(template, root, ote_dir, args):
+    work_dir, template_work_dir, _ = get_some_vars(template, root)
+    command_line = ['ote',
+                    'eval',
+                    template.model_template_id,
+                    '--test-ann-file',
+                    f'{os.path.join(ote_dir, args["--test-ann-files"])}',
+                    '--test-data-roots',
+                    f'{os.path.join(ote_dir, args["--test-data-roots"])}',
+                    '--load-weights',
+                    f'{template_work_dir}/pot_{template.model_template_id}/openvino.xml',
+                    '--save-performance',
+                    f'{template_work_dir}/pot_{template.model_template_id}/performance.json']
+    assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
+    assert os.path.exists(f'{template_work_dir}/pot_{template.model_template_id}/performance.json')
+    with open(f'{template_work_dir}/exported_{template.model_template_id}/performance.json') as read_file:
+        trained_performance = json.load(read_file)
+    with open(f'{template_work_dir}/pot_{template.model_template_id}/performance.json') as read_file:
+        exported_performance = json.load(read_file)
+
+    for k in trained_performance.keys():
+        assert (trained_performance[k] - exported_performance[k]) / trained_performance[
+            k] <= 0.1, f"{trained_performance[k]=}, {exported_performance[k]=}"
+
+
+def nncf_optimize_testing(template, root, ote_dir, args):
+    work_dir, template_work_dir, algo_backend_dir = get_some_vars(template, root)
+    command_line = ['ote',
+                    'optimize',
+                    template.model_template_id,
+                    '--train-ann-file',
+                    f'{os.path.join(ote_dir, args["--train-ann-file"])}',
+                    '--train-data-roots',
+                    f'{os.path.join(ote_dir, args["--train-data-roots"])}',
+                    '--val-ann-file',
+                    f'{os.path.join(ote_dir, args["--val-ann-file"])}',
+                    '--val-data-roots',
+                    f'{os.path.join(ote_dir, args["--val-data-roots"])}',
+                    '--load-weights',
+                    f'{template_work_dir}/trained_{template.model_template_id}/weights.pth',
+                    '--save-model-to',
+                    f'{template_work_dir}/nncf_{template.model_template_id}',
+                    ]
+    assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
+    assert os.path.exists(f'{template_work_dir}/nncf_{template.model_template_id}/weights.pth')
+    assert os.path.exists(f'{template_work_dir}/nncf_{template.model_template_id}/label_schema.json')
+
+
+def nncf_export_testing(template, root):
+    work_dir, template_work_dir, _ = get_some_vars(template, root)
+    command_line = ['ote',
+                    'export',
+                    template.model_template_id,
+                    '--load-weights',
+                    f'{template_work_dir}/nncf_{template.model_template_id}/weights.pth',
+                    f'--save-model-to',
+                    f'{template_work_dir}/exported_nncf_{template.model_template_id}']
+    assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
+    assert os.path.exists(f'{template_work_dir}/exported_nncf_{template.model_template_id}/openvino.xml')
+    assert os.path.exists(f'{template_work_dir}/exported_nncf_{template.model_template_id}/openvino.bin')
+    assert os.path.exists(f'{template_work_dir}/exported_nncf_{template.model_template_id}/label_schema.json')
+
+
+def nncf_eval_testing(template, root, ote_dir, args):
+    work_dir, template_work_dir, _ = get_some_vars(template, root)
+    command_line = ['ote',
+                    'eval',
+                    template.model_template_id,
+                    '--test-ann-file',
+                    f'{os.path.join(ote_dir, args["--test-ann-files"])}',
+                    '--test-data-roots',
+                    f'{os.path.join(ote_dir, args["--test-data-roots"])}',
+                    '--load-weights',
+                    f'{template_work_dir}/exported_nncf_{template.model_template_id}/openvino.xml',
+                    '--save-performance',
+                    f'{template_work_dir}/exported_nncf_{template.model_template_id}/performance.json']
+    assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
+    assert os.path.exists(f'{template_work_dir}/exported_nncf_{template.model_template_id}/performance.json')
+    with open(f'{template_work_dir}/exported_{template.model_template_id}/performance.json') as read_file:
+        trained_performance = json.load(read_file)
+    with open(f'{template_work_dir}/exported_nncf_{template.model_template_id}/performance.json') as read_file:
+        exported_performance = json.load(read_file)
+
+    for k in trained_performance.keys():
+        assert (trained_performance[k] - exported_performance[k]) / trained_performance[
+            k] <= 0.1, f"{trained_performance[k]=}, {exported_performance[k]=}"

@@ -30,6 +30,11 @@ from tests.ote_cli.common import (
     ote_eval_testing,
     ote_train_testing,
     ote_export_testing,
+    pot_optimize_testing,
+    pot_eval_testing,
+    nncf_optimize_testing,
+    nncf_export_testing,
+    nncf_eval_testing,
 )
 
 
@@ -89,3 +94,37 @@ def test_ote_demo_openvino(template):
 @pytest.mark.parametrize("template", templates, ids=templates_ids)
 def test_ote_deploy_openvino(template):
     ote_deploy_openvino_testing(template, root, ote_dir, args)
+
+
+@pytest.mark.parametrize("template", templates, ids=templates_ids)
+def test_nncf_optimize(template):
+    if template.entrypoints.nncf is None:
+        pytest.skip("nncf entrypoint is none")
+
+    nncf_optimize_testing(template, root, ote_dir, args)
+
+
+@pytest.mark.parametrize("template", templates, ids=templates_ids)
+def test_nncf_export(template):
+    if template.entrypoints.nncf is None:
+        pytest.skip("nncf entrypoint is none")
+
+    nncf_export_testing(template, root)
+
+
+@pytest.mark.parametrize("template", templates, ids=templates_ids)
+def test_nncf_eval(template):
+    if template.entrypoints.nncf is None:
+        pytest.skip("nncf entrypoint is none")
+
+    nncf_eval_testing(template, root, ote_dir, args)
+
+
+@pytest.mark.parametrize("template", templates, ids=templates_ids)
+def test_pot_optimize(template):
+    pot_optimize_testing(template, root, ote_dir, args)
+
+
+@pytest.mark.parametrize("template", templates, ids=templates_ids)
+def test_pot_eval(template):
+    pot_eval_testing(template, root, ote_dir, args)
