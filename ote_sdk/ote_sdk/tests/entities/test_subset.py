@@ -75,11 +75,7 @@ class TestSubset:
         In case incorrect member it raises attribute exception
 
         <b>Steps</b>
-<<<<<<< HEAD
         1. Create enum instance
-=======
-        1. Initiate enum instance
->>>>>>> acc788325eabbffc45c67600b7218506799a8fb7
         2. Check returning value of __str__ method
         """
         test_instance = Subset
@@ -111,11 +107,7 @@ class TestSubset:
         __repr__ method return correct string
 
         <b>Steps</b>
-<<<<<<< HEAD
         1. Create enum instance
-=======
-        1. Initiate enum instance
->>>>>>> acc788325eabbffc45c67600b7218506799a8fb7
         2. Check returning value of magic methods
         """
         test_instance = Subset
