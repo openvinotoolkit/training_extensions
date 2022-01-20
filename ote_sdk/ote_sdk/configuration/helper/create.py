@@ -26,7 +26,7 @@ from ote_sdk.configuration.enums.config_element_type import (
     ConfigElementType,
     ElementCategory,
 )
-from ote_sdk.configuration.enums.model_lifecycle import ModelLifecycle
+from ote_sdk.configuration.enums import ModelLifecycle, AutoHPOState
 from ote_sdk.configuration.enums.utils import get_enum_names
 from ote_sdk.configuration.ui_rules.rules import NullUIRules, Rule, UIRules
 
@@ -179,6 +179,12 @@ def gather_parameter_arguments_and_values_from_dict(
             parameter_affects = deserialize_enum_value(
                 parameter_affects, ModelLifecycle
             )
+            parameter_hpo_state = parameter_dict.pop(
+                metadata_keys.AUTO_HPO_STATE, AutoHPOState.NOT_POSSIBLE
+            )
+            parameter_hpo_state = deserialize_enum_value(
+                parameter_hpo_state, AutoHPOState
+            )
             parameter_ui_rules_dict = parameter_dict.pop(metadata_keys.UI_RULES, None)
             parameter_constructor = PrimitiveElementMapping[parameter_type].value
             parameter_ui_rules = construct_ui_rules_from_dict(parameter_ui_rules_dict)
@@ -187,6 +193,7 @@ def gather_parameter_arguments_and_values_from_dict(
                     **parameter_dict,
                     ui_rules=parameter_ui_rules,
                     affects_outcome_of=parameter_affects,
+                    auto_hpo_state=parameter_hpo_state
                 )
             }
             make_arguments.update(parameter_make_arguments)
