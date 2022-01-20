@@ -104,7 +104,7 @@ class TestSubset:
         Initialized instance of Subset enum
 
         <b>Expected results:</b>
-        __repr__ method return correct string
+        __repr__ method returns correct string
 
         <b>Steps</b>
         1. Create enum instance
