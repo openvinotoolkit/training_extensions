@@ -6,21 +6,13 @@ Utils for exportable code.
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import os
-import subprocess
-
 
 def get_git_commit_hash() -> str:
     """
     Retuns current git commit hash of OTE.
     """
-
-    work_dir = os.path.dirname(os.path.abspath(__file__))
-    return (
-        subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=work_dir)
-        .decode("ascii")
-        .strip()
-    )
+    # TODO(ikrylov): fix it
+    return "develop"
 
 
 def set_proper_git_commit_hash(path: str) -> None:
