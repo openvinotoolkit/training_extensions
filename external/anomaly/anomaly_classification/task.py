@@ -60,6 +60,7 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
         Args:
             task_environment (TaskEnvironment): OTE Task environment.
         """
+        torch.backends.cudnn.enabled = False
         logger.info("Initializing the task environment.")
         logger.info(subprocess.call("nvidia-smi"))
         logger.info("Torch Version '%s'", torch.__version__)
