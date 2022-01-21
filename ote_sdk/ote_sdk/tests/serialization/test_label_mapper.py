@@ -124,7 +124,7 @@ class TestLabelSchemaEntityMapper:
                 name=name,
                 domain=Domain.CLASSIFICATION,
                 creation_date=cur_date,
-                id=ID(str(i)),
+                id=ID(i),
                 color=colors[i],
             )
             for i, name in enumerate(names)
