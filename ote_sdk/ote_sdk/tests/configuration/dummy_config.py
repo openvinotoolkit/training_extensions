@@ -25,6 +25,7 @@ from ote_sdk.configuration.elements import (
     selectable,
     string_attribute,
 )
+from ote_sdk.configuration.enums import AutoHPOState
 from ote_sdk.configuration.ui_rules import Action
 
 
@@ -148,6 +149,7 @@ class DatasetManagerConfig(ConfigurableParameters):
             header="Training set proportion",
             ui_rules=__ui_rules,
             affects_outcome_of=ModelLifecycle.TRAINING,
+            auto_hpo_state=AutoHPOState.POSSIBLE
         )
 
         validation_proportion = configurable_float(
@@ -170,7 +172,10 @@ class DatasetManagerConfig(ConfigurableParameters):
 
     # Add a selectable and float selectable parameter
     dummy_float_selectable = float_selectable(
-        options=[1.0, 2.0, 3.0, 4.0], default_value=2.0, header="Test float selectable"
+        options=[1.0, 2.0, 3.0, 4.0],
+        default_value=2.0,
+        header="Test float selectable",
+        auto_hpo_state=AutoHPOState.POSSIBLE
     )
 
     dummy_selectable = selectable(

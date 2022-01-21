@@ -251,6 +251,7 @@ def create_parameter_group(
         if value is not None:
             setattr(parameter_group, parameter, value)
 
+    parameter_group.update_auto_hpo_states()
     return parameter_group
 
 

@@ -33,7 +33,8 @@ from .metadata_keys import (
     UI_RULES,
     VISIBLE_IN_UI,
     WARNING,
-    AUTO_HPO_STATE
+    AUTO_HPO_STATE,
+    AUTO_HPO_VALUE
 )
 from .utils import (
     attr_strict_float_converter,
@@ -61,6 +62,7 @@ def set_common_metadata(
     visible_in_ui: bool,
     parameter_type: ConfigElementType,
     auto_hpo_state: AutoHPOState,
+    auto_hpo_value: Union[int, float, str, bool, ConfigurableEnum],
 ) -> dict:
     """
     Function to construct the dictionary of metadata that is common for all parameter types
@@ -75,7 +77,8 @@ def set_common_metadata(
         AFFECTS_OUTCOME_OF: affects_outcome_of,
         UI_RULES: ui_rules,
         TYPE: parameter_type,
-        AUTO_HPO_STATE: auto_hpo_state
+        AUTO_HPO_STATE: auto_hpo_state,
+        AUTO_HPO_VALUE: auto_hpo_value
     }
     return metadata
 
@@ -91,7 +94,8 @@ def configurable_integer(
     visible_in_ui: bool = True,
     affects_outcome_of: ModelLifecycle = ModelLifecycle.NONE,
     ui_rules: UIRules = NullUIRules(),
-    auto_hpo_state: AutoHPOState = AutoHPOState.NOT_POSSIBLE
+    auto_hpo_state: AutoHPOState = AutoHPOState.NOT_POSSIBLE,
+    auto_hpo_value: Optional[int] = None
 ) -> int:
     """
     Constructs a configurable integer attribute, with the appropriate metadata.
@@ -116,6 +120,8 @@ def configurable_integer(
         class for more details. Defaults to NullUIRules.
     :param auto_hpo_state: This flag reflects whether the parameter can be (or has
         been) optimized through automatic hyper parameter tuning (auto-HPO)
+    :param auto_hpo_value: If auto-HPO has been executed for this parameter, this field
+        will hold the optimized value for the configurable integer
 
     :return: attrs Attribute of type `int`, with its metadata set according to the inputs
     """
@@ -129,7 +135,8 @@ def configurable_integer(
         ui_rules=ui_rules,
         affects_outcome_of=affects_outcome_of,
         parameter_type=ConfigElementType.INTEGER,
-        auto_hpo_state=auto_hpo_state
+        auto_hpo_state=auto_hpo_state,
+        auto_hpo_value=auto_hpo_value
     )
 
     metadata.update({MIN_VALUE: min_value, MAX_VALUE: max_value})
@@ -156,7 +163,8 @@ def configurable_float(
     visible_in_ui: bool = True,
     affects_outcome_of: ModelLifecycle = ModelLifecycle.NONE,
     ui_rules: UIRules = NullUIRules(),
-    auto_hpo_state: AutoHPOState = AutoHPOState.NOT_POSSIBLE
+    auto_hpo_state: AutoHPOState = AutoHPOState.NOT_POSSIBLE,
+    auto_hpo_value: Optional[float] = None
 ) -> float:
     """
     Constructs a configurable float attribute, with the appropriate metadata.
@@ -181,6 +189,8 @@ def configurable_float(
         class for more details. Defaults to NullUIRules.
     :param auto_hpo_state: This flag reflects whether the parameter can be (or has
         been) optimized through automatic hyper parameter tuning (auto-HPO)
+    :param auto_hpo_value: If auto-HPO has been executed for this parameter, this field
+        will hold the optimized value for the configurable float
 
     :return: attrs Attribute of type `float`, with its metadata set according to the inputs
     """
@@ -194,7 +204,8 @@ def configurable_float(
         ui_rules=ui_rules,
         affects_outcome_of=affects_outcome_of,
         parameter_type=ConfigElementType.FLOAT,
-        auto_hpo_state=auto_hpo_state
+        auto_hpo_state=auto_hpo_state,
+        auto_hpo_value=auto_hpo_value
     )
 
     metadata.update({MIN_VALUE: min_value, MAX_VALUE: max_value})
@@ -218,7 +229,8 @@ def configurable_boolean(
     visible_in_ui: bool = True,
     affects_outcome_of: ModelLifecycle = ModelLifecycle.NONE,
     ui_rules: UIRules = NullUIRules(),
-    auto_hpo_state: AutoHPOState = AutoHPOState.NOT_POSSIBLE
+    auto_hpo_state: AutoHPOState = AutoHPOState.NOT_POSSIBLE,
+    auto_hpo_value: Optional[bool] = None
 ) -> bool:
     """
     Constructs a configurable boolean attribute, with the appropriate metadata.
@@ -241,8 +253,11 @@ def configurable_boolean(
         class for more details. Defaults to NullUIRules.
     :param auto_hpo_state: This flag reflects whether the parameter can be (or has
         been) optimized through automatic hyper parameter tuning (auto-HPO)
+    :param auto_hpo_value: If auto-HPO has been executed for this parameter, this field
+        will hold the optimized value for the configurable boolean
 
-    :return: attrs Attribute of type `bool`, with its metadata set according to the inputs
+    :return: attrs Attribute of type `bool`, with its metadata set according to the
+        inputs
     """
     metadata = set_common_metadata(
         default_value=default_value,
@@ -254,7 +269,8 @@ def configurable_boolean(
         ui_rules=ui_rules,
         affects_outcome_of=affects_outcome_of,
         parameter_type=ConfigElementType.BOOLEAN,
-        auto_hpo_state=auto_hpo_state
+        auto_hpo_state=auto_hpo_state,
+        auto_hpo_value=auto_hpo_value
     )
 
     return attr.ib(
@@ -275,7 +291,8 @@ def float_selectable(
     visible_in_ui: bool = True,
     affects_outcome_of: ModelLifecycle = ModelLifecycle.NONE,
     ui_rules: UIRules = NullUIRules(),
-    auto_hpo_state: AutoHPOState = AutoHPOState.NOT_POSSIBLE
+    auto_hpo_state: AutoHPOState = AutoHPOState.NOT_POSSIBLE,
+    auto_hpo_value: Optional[float] = None
 ) -> float:
     """
     Constructs a configurable float selectable attribute, with the appropriate metadata.
@@ -299,6 +316,8 @@ def float_selectable(
         class for more details. Defaults to NullUIRules.
     :param auto_hpo_state: This flag reflects whether the parameter can be (or has
         been) optimized through automatic hyper parameter tuning (auto-HPO)
+    :param auto_hpo_value: If auto-HPO has been executed for this parameter, this field
+        will hold the optimized value for the float selectable
 
     :return: attrs Attribute of type `float`, with its metadata set according to the inputs
     """
@@ -312,7 +331,8 @@ def float_selectable(
         ui_rules=ui_rules,
         affects_outcome_of=affects_outcome_of,
         parameter_type=ConfigElementType.FLOAT_SELECTABLE,
-        auto_hpo_state=auto_hpo_state
+        auto_hpo_state=auto_hpo_state,
+        auto_hpo_value=auto_hpo_value
     )
 
     metadata.update({OPTIONS: options})
@@ -336,7 +356,8 @@ def selectable(
     visible_in_ui: bool = True,
     affects_outcome_of: ModelLifecycle = ModelLifecycle.NONE,
     ui_rules: UIRules = NullUIRules(),
-    auto_hpo_state: AutoHPOState = AutoHPOState.NOT_POSSIBLE
+    auto_hpo_state: AutoHPOState = AutoHPOState.NOT_POSSIBLE,
+    auto_hpo_value: Optional[str] = None
 ) -> TConfigurableEnum:
     """
     Constructs a selectable attribute from a pre-defined Enum, with the appropriate metadata. The list of options for
@@ -360,9 +381,11 @@ def selectable(
         class for more details. Defaults to NullUIRules.
     :param auto_hpo_state: This flag reflects whether the parameter can be (or has
         been) optimized through automatic hyper parameter tuning (auto-HPO)
+    :param auto_hpo_value: If auto-HPO has been executed for this parameter, this field
+        will hold the optimized value for the string selectable
 
-    :return: attrs Attribute, with its type matching the type of `default_value`, and its metadata set according to
-        the inputs
+    :return: attrs Attribute, with its type matching the type of `default_value`, and
+        its metadata set according to the inputs
     """
     metadata = set_common_metadata(
         default_value=default_value,
@@ -374,7 +397,8 @@ def selectable(
         ui_rules=ui_rules,
         affects_outcome_of=affects_outcome_of,
         parameter_type=ConfigElementType.SELECTABLE,
-        auto_hpo_state=auto_hpo_state
+        auto_hpo_state=auto_hpo_state,
+        auto_hpo_value=auto_hpo_value
     )
 
     metadata.update(default_value.get_class_info())

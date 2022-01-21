@@ -151,3 +151,68 @@ class TestConfigurableParameters:
         )
         assert config.get_metadata(test_parameter_name)[metadata_key] == new_value
         assert config_copy.get_metadata(test_parameter_name)[metadata_key] == old_value
+
+    @pytest.mark.priority_medium
+    @pytest.mark.component
+    @pytest.mark.reqids(Requirements.REQ_1)
+    def test_update_auto_hpo_state(self):
+        """
+        <b>Description:</b>
+        Check that updating the auto_hpo_state for all parameters within a
+        "ConfigurableParameters" class parameter works as expected
+
+        <b>Input data:</b>
+        Dummy configuration -- DatasetManagerConfig
+
+        <b>Expected results:</b>
+        Test passes if:
+            1. The `auto_hpo_state` metadata field is updated to `optimized` upon
+                calling config.update_auto_hpo_states() if the value for a
+                configurable parameter matches that of its `auto_hpo_value`
+                metadata field
+            2. The `auto_hpo_state` is updated to `overridden` upon calling
+                config.update_hpo_state() if the value for a configurable parameter
+                does not match that of its `auto_hpo_value` metadata field
+        """
+        # Arrange
+        config = DatasetManagerConfig(
+            description="Configurable parameters for the DatasetManager -- TEST ONLY",
+            header="Dataset Manager configuration -- TEST ONLY",
+        )
+        test_parameter_1 = "dummy_float_selectable"
+        test_parameter_2 = "train_proportion"
+        auto_hpo_result_float = 4.0
+        auto_hpo_result_train_prop = 0.9
+
+        config.dummy_float_selectable = auto_hpo_result_float
+        success_1 = config.set_metadata_value(
+            parameter_name=test_parameter_1,
+            metadata_key=metadata_keys.AUTO_HPO_VALUE,
+            value=auto_hpo_result_float
+        )
+        config.subset_parameters.train_proportion = auto_hpo_result_train_prop
+        success_2 = config.subset_parameters.set_metadata_value(
+            parameter_name=test_parameter_2,
+            metadata_key=metadata_keys.AUTO_HPO_VALUE,
+            value=auto_hpo_result_train_prop
+        )
+
+        # Act
+        config.update_auto_hpo_states()
+        auto_hpo_state_1 = config.get_metadata(test_parameter_1)[metadata_keys.AUTO_HPO_STATE]
+        auto_hpo_state_2 = config.subset_parameters.get_metadata(test_parameter_2)[metadata_keys.AUTO_HPO_STATE]
+
+        # Simulate override
+        config.dummy_float_selectable = auto_hpo_result_float - 0.001
+        config.subset_parameters.train_proportion = auto_hpo_result_train_prop - 0.001
+
+        config.update_auto_hpo_states()
+        auto_hpo_state_override_1 = config.get_metadata(test_parameter_1)[metadata_keys.AUTO_HPO_STATE]
+        auto_hpo_state_override_2 = config.subset_parameters.get_metadata(test_parameter_2)[metadata_keys.AUTO_HPO_STATE]
+
+        # Assert
+        assert all([success_1, success_2])
+        assert auto_hpo_state_1 == AutoHPOState.OPTIMIZED
+        assert auto_hpo_state_2 == AutoHPOState.OPTIMIZED
+        assert auto_hpo_state_override_1 == AutoHPOState.OVERRIDDEN
+        assert auto_hpo_state_override_2 == AutoHPOState.OVERRIDDEN

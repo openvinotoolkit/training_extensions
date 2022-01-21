@@ -12,6 +12,8 @@ from typing import List, Type, TypeVar, Union, Dict, Any
 
 import attr
 
+from ote_sdk.configuration.elements import metadata_keys
+from ote_sdk.configuration.enums import AutoHPOState
 from ote_sdk.configuration.enums.config_element_type import (
     ConfigElementType,
     ElementCategory,
@@ -117,10 +119,10 @@ class ParameterGroup:
         if parameter is None:
             return False
         parameter_metadata = dict(getattr(parameter, "metadata", {}))
-        metadata_value = parameter_metadata.get(metadata_key, None)
-        if metadata_value is None:
+        if metadata_key not in metadata_keys.all_keys():
             return False
-        if type(metadata_value) != type(value):
+        metadata_value = parameter_metadata[metadata_key]
+        if metadata_value is not None and type(metadata_value) != type(value):
             return False
         existing_overrides = self.__metadata_overrides.get(parameter_name, None)
         if existing_overrides is None:
@@ -128,6 +130,32 @@ class ParameterGroup:
         else:
             existing_overrides.update({metadata_key: value})
         return True
+
+    def update_auto_hpo_states(self):
+        """
+        Updates the `auto_hpo_state` metadata field for all parameters in the parameter
+        group, based on the values of the parameters and the values of their
+        `auto_hpo_value` metadata fields.
+        """
+        for parameter_name in self.parameters:
+            metadata = self.get_metadata(parameter_name)
+            if metadata[metadata_keys.AUTO_HPO_STATE] == AutoHPOState.NOT_POSSIBLE:
+                continue
+            auto_hpo_value = metadata[metadata_keys.AUTO_HPO_VALUE]
+            if auto_hpo_value is None:
+                continue
+            if auto_hpo_value != getattr(self, parameter_name):
+                auto_hpo_state = AutoHPOState.OVERRIDDEN
+            else:
+                auto_hpo_state = AutoHPOState.OPTIMIZED
+            self.set_metadata_value(
+                    parameter_name=parameter_name,
+                    metadata_key=metadata_keys.AUTO_HPO_STATE,
+                    value=auto_hpo_state
+                )
+        for group_name in self.groups:
+            group = getattr(self, group_name)
+            group.update_auto_hpo_states()
 
     def __eq__(self, other):
         """
