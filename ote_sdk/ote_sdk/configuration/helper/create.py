@@ -11,6 +11,7 @@ used to create a OTE configuration object from a dictionary or yaml representati
 from __future__ import annotations
 
 import copy
+from enum import Enum
 from typing import Dict, List, TypeVar, Union
 
 import attr
@@ -39,6 +40,11 @@ from .utils import deserialize_enum_value, input_to_config_dict
 
 ParameterGroupTypeVar = TypeVar("ParameterGroupTypeVar", bound=ParameterGroup)
 ExposureTypeVar = TypeVar("ExposureTypeVar", UIRules, Rule)
+
+METADATA_ENUMS = {
+    metadata_keys.AFFECTS_OUTCOME_OF: ModelLifecycle,
+    metadata_keys.AUTO_HPO_STATE: AutoHPOState
+}
 
 
 def construct_attrib_from_dict(dict_object: Union[dict, DictConfig]) -> ExposureTypeVar:
@@ -173,18 +179,19 @@ def gather_parameter_arguments_and_values_from_dict(
                     f"parameter or parameter group named '{key}'"
                 )
             parameter_value = parameter_dict.pop("value", None)
-            parameter_affects = parameter_dict.pop(
-                metadata_keys.AFFECTS_OUTCOME_OF, ModelLifecycle.NONE
-            )
-            parameter_affects = deserialize_enum_value(
-                parameter_affects, ModelLifecycle
-            )
-            parameter_hpo_state = parameter_dict.pop(
-                metadata_keys.AUTO_HPO_STATE, AutoHPOState.NOT_POSSIBLE
-            )
-            parameter_hpo_state = deserialize_enum_value(
-                parameter_hpo_state, AutoHPOState
-            )
+
+            metadata_enums: Dict[str, Enum] = {}
+            for metadata_key, enum_type in METADATA_ENUMS.items():
+                enum_value = parameter_dict.pop(metadata_key, None)
+                if enum_value is not None:
+                    metadata_enums.update(
+                        {
+                            metadata_key: deserialize_enum_value(
+                                enum_value, enum_type=enum_type
+                            )
+                        }
+                    )
+
             parameter_ui_rules_dict = parameter_dict.pop(metadata_keys.UI_RULES, None)
             parameter_constructor = PrimitiveElementMapping[parameter_type].value
             parameter_ui_rules = construct_ui_rules_from_dict(parameter_ui_rules_dict)
@@ -192,8 +199,7 @@ def gather_parameter_arguments_and_values_from_dict(
                 key: parameter_constructor(
                     **parameter_dict,
                     ui_rules=parameter_ui_rules,
-                    affects_outcome_of=parameter_affects,
-                    auto_hpo_state=parameter_hpo_state
+                    **metadata_enums
                 )
             }
             make_arguments.update(parameter_make_arguments)
