@@ -103,7 +103,7 @@ def main():
     if args.load_weights.endswith(".bin") or args.load_weights.endswith(".xml"):
         is_pot = True
 
-    if template.entrypoints.nncf is None:
+    if not is_pot and template.entrypoints.nncf is None:
         raise RuntimeError(
             f"Optimization by NNCF is not available for template {args.template}"
         )
@@ -156,8 +156,7 @@ def main():
         OptimizationParameters(),
     )
 
-    if output_model.model_status != ModelStatus.NOT_READY:
-        save_model_data(output_model, args.save_model_to)
+    save_model_data(output_model, args.save_model_to)
 
     validation_dataset = dataset.get_subset(Subset.VALIDATION)
     predicted_validation_dataset = task.infer(
