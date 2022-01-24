@@ -34,7 +34,6 @@ from ote_sdk.entities.model import (
     ModelFormat,
     ModelOptimizationType,
     ModelPrecision,
-    ModelStatus,
     OptimizationMethod,
 )
 from ote_sdk.entities.model_template import TargetDevice, parse_model_template
@@ -65,27 +64,6 @@ class TestModelPrecision:
 
         model_precision = ModelPrecision
         assert len(model_precision) == 4
-
-
-@pytest.mark.components(OteSdkComponent.OTE_SDK)
-class TestModelStatus:
-    @pytest.mark.priority_medium
-    @pytest.mark.component
-    @pytest.mark.reqids(Requirements.REQ_1)
-    def test_model_status(self):
-        """
-        <b>Description:</b>
-        Check that ModelStatus correctly returns the status name
-
-        <b>Expected results:</b>
-        Test passes if ModelStatus correctly returns the status name
-
-        <b>Steps</b>
-        1. Check statuses in the ModelStatus
-        """
-
-        model_status = ModelStatus
-        assert len(model_status) == 5
 
 
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
@@ -231,7 +209,6 @@ class TestModelEntity:
         assert type(model_entity.creation_date) == datetime
         assert type(model_entity.train_dataset) == DatasetEntity
         assert model_entity.version == 1
-        assert model_entity.model_status == ModelStatus.SUCCESS
         assert model_entity.model_format == ModelFormat.OPENVINO
         assert model_entity.precision == [ModelPrecision.FP32]
         assert model_entity.target_device == TargetDevice.CPU
@@ -315,7 +292,6 @@ class TestModelEntity:
             "previous_revision": 2,
             "version": 2,
             "tags": ["tree", "person"],
-            "model_status": ModelStatus.TRAINED_NO_STATS,
             "model_format": ModelFormat.BASE_FRAMEWORK,
             "performance": Performance(score_metric),
             "training_duration": 5.8,
