@@ -93,6 +93,10 @@ def draw_masks(frame, predictions):
     # Blend original image with the one, where instances are colored.
     # As a result instances masks become transparent.
     cv2.addWeighted(frame, 0.5, segments_image, 0.5, 0, dst=frame)
+
+    put_text_on_rect_bg(
+        frame, f"Objects count: {len(predictions)}", (0, 0), color=color
+    )
     return frame
 
 
@@ -128,6 +132,9 @@ def draw_bounding_boxes(frame, predictions):
         color = tuple(getattr(label.color, x) for x in ("blue", "green", "red"))
         cv2.rectangle(frame, (x1, y1), (x2, y2), color, thickness=2)
         put_text_on_rect_bg(frame, label.name, (x1, y1), color=color)
+    put_text_on_rect_bg(
+        frame, f"Objects count: {len(predictions)}", (0, 0), color=color
+    )
     return frame
 
 
@@ -147,7 +154,7 @@ def draw_predictions(task_type, predictions, frame, fit_to_size):
         frame = draw_bounding_boxes(frame, predictions)
     elif task_type in {TaskType.CLASSIFICATION, TaskType.ANOMALY_CLASSIFICATION}:
         frame = put_labels(frame, predictions)
-    elif task_type == TaskType.SEGMENTATION:
+    elif task_type in {TaskType.SEGMENTATION, TaskType.COUNTING}:
         frame = draw_masks(frame, predictions)
     else:
         raise ValueError(f"Unknown task type: {task_type}")
