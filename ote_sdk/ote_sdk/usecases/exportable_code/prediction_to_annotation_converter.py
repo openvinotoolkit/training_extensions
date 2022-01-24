@@ -9,6 +9,7 @@ Converters for output of inferencers
 import abc
 from typing import Any, Dict, List, Optional, Tuple
 
+import cv2
 import numpy as np
 from openvino.model_zoo.model_api.models import utils
 
@@ -21,6 +22,7 @@ from ote_sdk.entities.id import ID
 from ote_sdk.entities.label import Domain, LabelEntity
 from ote_sdk.entities.label_schema import LabelSchemaEntity
 from ote_sdk.entities.scored_label import ScoredLabel
+from ote_sdk.entities.shapes.polygon import Point, Polygon
 from ote_sdk.entities.shapes.rectangle import Rectangle
 from ote_sdk.utils.labels_utils import (
     get_ancestors_by_prediction,
@@ -279,3 +281,46 @@ class AnomalyClassificationToAnnotationConverter(IPredictionToAnnotationConverte
         return AnnotationSceneEntity(
             kind=AnnotationSceneKind.PREDICTION, annotations=annotations
         )
+
+
+class MaskToAnnotationConverter(IPredictionToAnnotationConverter):
+    """
+    Converts DetectionBox Predictions ModelAPI to Annotations
+    """
+
+    def __init__(self, labels: LabelSchemaEntity):
+        self.labels = labels.get_labels(include_empty=False)
+
+    def convert_to_annotation(
+        self, predictions: tuple, metadata: Dict[str, Any]
+    ) -> AnnotationSceneEntity:
+        annotations = []
+        height, width = metadata["original_shape"][:2]
+        scores, classes, boxes, masks = predictions
+        assert len(scores) == len(classes) == len(boxes) == len(masks)
+        for score, class_idx, box, mask in zip(scores, classes, boxes, masks):
+            mask = mask.astype(np.uint8)
+            contours, hierarchies = cv2.findContours(
+              mask, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
+            if hierarchies is None:
+                continue
+            for contour, hierarchy in zip(contours, hierarchies[0]):
+                if hierarchy[3] != -1:
+                    continue
+                contour = list(contour)
+                if len(contour) <= 2:
+                    continue
+                scored_label = ScoredLabel(self.labels[int(class_idx)-1], float(score))
+                points = [
+                    Point(
+                      x=point[0][0] / width,
+                      y=point[0][1] / height) for point in contour]
+                annotations.append(
+                  Annotation(
+                    Polygon(points=points),
+                    labels=[scored_label]))
+        annotation_scene = AnnotationSceneEntity(
+            kind=AnnotationSceneKind.PREDICTION,
+            annotations=annotations,
+        )
+        return annotation_scene
