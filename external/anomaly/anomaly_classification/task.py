@@ -62,10 +62,6 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
         """
         torch.backends.cudnn.enabled = True
         logger.info("Initializing the task environment.")
-        logger.info(subprocess.call("nvidia-smi"))
-        logger.info("Torch Version '%s'", torch.__version__)
-        logger.info("Torch Cuda Version '%s'", torch.version.cuda)
-
         self.task_environment = task_environment
         self.model_name = task_environment.model_template.name
         self.labels = task_environment.get_labels()
