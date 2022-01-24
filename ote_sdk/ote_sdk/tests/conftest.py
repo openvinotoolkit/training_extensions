@@ -15,10 +15,10 @@
 
 import pytest
 
+from e2e.conftest_utils import *
 from ote_sdk.test_suite.pytest_insertions import *
-from ote_sdk.tests.fixtures.general import (  # noqa #pylint: disable=unused-import
-    label_schema_example,
-)
+from ote_sdk.tests.fixtures.general import label_schema_example
+
 
 pytest_plugins = get_pytest_plugins_from_ote()
 
