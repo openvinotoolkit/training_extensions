@@ -130,9 +130,8 @@ def draw_bounding_boxes(frame, predictions):
         color = tuple(getattr(label.color, x) for x in ("blue", "green", "red"))
         cv2.rectangle(frame, (x1, y1), (x2, y2), color, thickness=2)
         put_text_on_rect_bg(frame, label.name, (x1, y1), color=color)
-    put_text_on_rect_bg(
-        frame, f"Objects count: {len(predictions)}", (0, 0), color=color
-    )
+
+    put_text_on_rect_bg(frame, f"Objects count: {len(predictions)}", (0, 0))
     return frame
 
 
