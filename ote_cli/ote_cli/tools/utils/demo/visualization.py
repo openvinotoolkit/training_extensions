@@ -94,9 +94,7 @@ def draw_masks(frame, predictions):
     # As a result instances masks become transparent.
     cv2.addWeighted(frame, 0.5, segments_image, 0.5, 0, dst=frame)
 
-    put_text_on_rect_bg(
-        frame, f"Objects count: {len(predictions)}", (0, 0), color=color
-    )
+    put_text_on_rect_bg(frame, f"Objects count: {len(predictions)}", (0, 0))
     return frame
 
 
