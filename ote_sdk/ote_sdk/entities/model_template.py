@@ -90,7 +90,6 @@ class TaskType(Enum):
     ACTIVELEARNING = auto()
     ANOMALY_SEGMENTATION = auto()
     ANOMALY_CLASSIFICATION = auto()
-    ROTATED_DETECTION = auto()
 
     def __str__(self) -> str:
         return str(self.name)
@@ -111,7 +110,6 @@ def task_type_to_label_domain(task_type: TaskType) -> Domain:
         TaskType.ANOMALY_CLASSIFICATION: Domain.ANOMALY_CLASSIFICATION,
         TaskType.ANOMALY_DETECTION: Domain.ANOMALY_DETECTION,
         TaskType.ANOMALY_SEGMENTATION: Domain.ANOMALY_SEGMENTATION,
-        TaskType.ROTATED_DETECTION: Domain.ROTATED_DETECTION,
     }
 
     try:
