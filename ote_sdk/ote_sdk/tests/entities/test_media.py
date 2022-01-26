@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import pytest
 import abc
 
-from ote_sdk.entities.media import IMediaEntity, IMedia2DEntity
+import pytest
+
+from ote_sdk.entities.media import IMedia2DEntity, IMediaEntity
 from ote_sdk.tests.constants.ote_sdk_components import OteSdkComponent
 from ote_sdk.tests.constants.requirements import Requirements
 
@@ -74,7 +75,7 @@ class TestIMedia2DEntity:
         assert type(IMedia2DEntity) is abc.ABCMeta
         abc_methods = IMedia2DEntity.__abstractmethods__
         assert len(abc_methods) == 4
-        assert 'width' in abc_methods
-        assert 'roi_numpy' in abc_methods
-        assert 'numpy' in abc_methods
-        assert 'height' in abc_methods
+        assert "width" in abc_methods
+        assert "roi_numpy" in abc_methods
+        assert "numpy" in abc_methods
+        assert "height" in abc_methods

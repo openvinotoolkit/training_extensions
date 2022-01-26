@@ -15,19 +15,19 @@
 # and limitations under the License.
 
 
-import pytest
-import numpy as np
-import cv2
-import tempfile
 import os
+import tempfile
 
+import cv2
+import numpy as np
+import pytest
 
+from ote_sdk.entities.annotation import Annotation
 from ote_sdk.entities.image import Image
+from ote_sdk.entities.shapes.ellipse import Ellipse
+from ote_sdk.entities.shapes.rectangle import Rectangle
 from ote_sdk.tests.constants.ote_sdk_components import OteSdkComponent
 from ote_sdk.tests.constants.requirements import Requirements
-from ote_sdk.entities.annotation import Annotation
-from ote_sdk.entities.shapes.rectangle import Rectangle
-from ote_sdk.entities.shapes.ellipse import Ellipse
 
 
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
@@ -82,7 +82,7 @@ class TestImage:
         data1 = np.random.random_sample((test_height1, test_width1, test_depth))
         d1_data = np.random.random_sample((test_height1,))
         image = np.random.random_sample((test_height, test_width, test_depth))
-        image_path = os.path.join(tempfile.gettempdir(), 'test_image.png')
+        image_path = os.path.join(tempfile.gettempdir(), "test_image.png")
         cv2.imwrite(image_path, image)
 
         with pytest.raises(ValueError):
@@ -97,8 +97,14 @@ class TestImage:
         fp_instance = Image(file_path=image_path)
         assert isinstance(fp_instance, Image)
 
-        assert str(data_instance) == f"Image(with data, width={test_width}, height={test_height})"
-        assert str(fp_instance) == f"Image({image_path}, width={test_width}, height={test_height})"
+        assert (
+            str(data_instance)
+            == f"Image(with data, width={test_width}, height={test_height})"
+        )
+        assert (
+            str(fp_instance)
+            == f"Image({image_path}, width={test_width}, height={test_height})"
+        )
 
         assert np.array_equal(data_instance.numpy, data0)
         assert not np.array_equal(fp_instance.numpy, image)

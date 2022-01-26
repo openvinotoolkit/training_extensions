@@ -59,7 +59,7 @@ class TestCoordinate:
             Coordinate(1)
 
         coord_a = Coordinate(x=0, y=0)
-        coord_b = Coordinate(x=0., y=.0)
+        coord_b = Coordinate(x=0.0, y=0.0)
         coord_c = Coordinate(x=1, y=1)
 
         assert isinstance(coord_a, Coordinate)

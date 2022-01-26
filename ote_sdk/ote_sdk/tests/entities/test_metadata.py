@@ -15,13 +15,16 @@
 # and limitations under the License.
 
 
-import pytest
 import re
 
-from ote_sdk.entities.metadata import FloatType
-from ote_sdk.entities.metadata import MetadataItemEntity
-from ote_sdk.entities.metadata import FloatMetadata
-from ote_sdk.entities.metadata import IMetadata
+import pytest
+
+from ote_sdk.entities.metadata import (
+    FloatMetadata,
+    FloatType,
+    IMetadata,
+    MetadataItemEntity,
+)
 from ote_sdk.entities.model import ModelEntity
 from ote_sdk.tests.constants.ote_sdk_components import OteSdkComponent
 from ote_sdk.tests.constants.requirements import Requirements
@@ -169,14 +172,18 @@ class TestMetadataItemEntity:
         test_data0 = test_data1 = i_metadata.name
         i_metadata.name = "i_metadata"
         test_data2 = i_metadata.name
-        test_model0 = test_model1 = ModelEntity(train_dataset="default_dataset", configuration="default_config")
+        test_model0 = test_model1 = ModelEntity(
+            train_dataset="default_dataset", configuration="default_config"
+        )
         test_instance0 = MetadataItemEntity(test_data0, test_model0)
         test_instance1 = MetadataItemEntity(test_data1, test_model1)
         test_instance2 = MetadataItemEntity(test_data2, test_model1)
         assert test_instance0 == test_instance1 != test_instance2
         __repr = repr(test_instance0)
-        repr_pattern = r'MetadataItemEntity\(model=\<ote_sdk.entities.model.ModelEntity object at' \
-                       r' 0x[a-fA-F0-9]{10,32}\>\, data\=default_i_metadata\)'
+        repr_pattern = (
+            r"MetadataItemEntity\(model=\<ote_sdk.entities.model.ModelEntity object at"
+            r" 0x[a-fA-F0-9]{10,32}\>\, data\=default_i_metadata\)"
+        )
         assert re.match(repr_pattern, __repr)
 
 
@@ -195,7 +202,7 @@ class TestFloatMetadata:
 
         <b>Expected results:</b>
         1. It raises TypeError in case attempt of initiation with wrong parameters numbers
-        2. Fields of instances initiated with correct values
+        2. Fields of instances are with correct values
         3. repr method returns correct strings then used against each instance
         4. '==' method works as expected
 
@@ -218,7 +225,7 @@ class TestFloatMetadata:
         assert repr(test_inst0.float_type) == "<FloatType.FLOAT: 1>"
         assert repr(test_inst0) == "FloatMetadata(Instance0, 42, FLOAT)"
 
-        test_inst1 = FloatMetadata(name="Instance1", value=42.)
+        test_inst1 = FloatMetadata(name="Instance1", value=42.0)
         assert test_inst1.name == "Instance1"
         assert test_inst1.value == 42.0
         assert repr(test_inst1.float_type) == "<FloatType.FLOAT: 1>"
