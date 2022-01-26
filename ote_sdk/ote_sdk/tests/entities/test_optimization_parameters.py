@@ -14,8 +14,9 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import pytest
 import dataclasses
+
+import pytest
 
 from ote_sdk.entities.optimization_parameters import OptimizationParameters
 from ote_sdk.tests.constants.ote_sdk_components import OteSdkComponent
@@ -45,9 +46,9 @@ class TestOptimizationParameters:
 
         assert dataclasses.is_dataclass(opt_params)
         assert len(dataclasses.fields(opt_params)) == 3
-        assert dataclasses.fields(opt_params)[0].name == 'resume'
-        assert dataclasses.fields(opt_params)[1].name == 'update_progress'
-        assert dataclasses.fields(opt_params)[2].name == 'save_model'
+        assert dataclasses.fields(opt_params)[0].name == "resume"
+        assert dataclasses.fields(opt_params)[1].name == "update_progress"
+        assert dataclasses.fields(opt_params)[2].name == "save_model"
         assert type(opt_params.resume) is bool
         assert callable(opt_params.update_progress)
         assert callable(opt_params.save_model)
@@ -73,12 +74,20 @@ class TestOptimizationParameters:
         """
         opt_params = OptimizationParameters(False)
         assert opt_params.resume is False
-        assert opt_params.update_progress(-2147483648) is opt_params.update_progress(0) \
-               is opt_params.update_progress(2147483648) is None
+        assert (
+            opt_params.update_progress(-2147483648)
+            is opt_params.update_progress(0)
+            is opt_params.update_progress(2147483648)
+            is None
+        )
         assert opt_params.save_model() is None
 
         opt_params = OptimizationParameters(True)
         assert opt_params.resume is True
-        assert opt_params.update_progress(-2147483648) is opt_params.update_progress(0) \
-               is opt_params.update_progress(2147483648) is None
+        assert (
+            opt_params.update_progress(-2147483648)
+            is opt_params.update_progress(0)
+            is opt_params.update_progress(2147483648)
+            is None
+        )
         assert opt_params.save_model() is None

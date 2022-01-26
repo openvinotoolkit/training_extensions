@@ -16,9 +16,9 @@
 
 import pytest
 
+from ote_sdk.entities.subset import Subset
 from ote_sdk.tests.constants.ote_sdk_components import OteSdkComponent
 from ote_sdk.tests.constants.requirements import Requirements
-from ote_sdk.entities.subset import Subset
 
 
 @pytest.mark.components(OteSdkComponent.OTE_SDK)

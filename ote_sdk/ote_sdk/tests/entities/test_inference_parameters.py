@@ -14,8 +14,9 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import pytest
 import dataclasses
+
+import pytest
 
 from ote_sdk.entities.inference_parameters import InferenceParameters
 from ote_sdk.tests.constants.ote_sdk_components import OteSdkComponent
@@ -45,8 +46,8 @@ class TestInferenceParameters:
 
         assert dataclasses.is_dataclass(infer_params)
         assert len(dataclasses.fields(infer_params)) == 2
-        assert dataclasses.fields(infer_params)[0].name == 'is_evaluation'
-        assert dataclasses.fields(infer_params)[1].name == 'update_progress'
+        assert dataclasses.fields(infer_params)[0].name == "is_evaluation"
+        assert dataclasses.fields(infer_params)[1].name == "update_progress"
         assert type(infer_params.is_evaluation) is bool
         assert callable(infer_params.update_progress)
         with pytest.raises(AttributeError):
@@ -61,20 +62,24 @@ class TestInferenceParameters:
         To test InferenceParameters dataclass members update
 
         <b>Input data:</b>
-        Initiated instance of InferenceParameters class
+        Initialized instance of InferenceParameters class
 
         <b>Expected results:</b>
 
         <b>Steps</b>
-        1. Initiate InferenceParameters instance
+        1. Create InferenceParameters
         2. Check members update
         """
         infer_params = InferenceParameters(False)
         assert infer_params.is_evaluation is False
-        assert infer_params.update_progress(-2147483648) is infer_params.update_progress(0) \
-               and infer_params.update_progress(2147483648) is None
+        assert (
+            infer_params.update_progress(-2147483648) is infer_params.update_progress(0)
+            and infer_params.update_progress(2147483648) is None
+        )
 
         infer_params = InferenceParameters(True)
         assert infer_params.is_evaluation is True
-        assert infer_params.update_progress(-2147483648) is infer_params.update_progress(0) \
-               and infer_params.update_progress(2147483648) is None
+        assert (
+            infer_params.update_progress(-2147483648) is infer_params.update_progress(0)
+            and infer_params.update_progress(2147483648) is None
+        )
