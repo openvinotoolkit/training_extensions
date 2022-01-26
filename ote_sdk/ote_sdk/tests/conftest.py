@@ -13,12 +13,7 @@
 # and limitations under the License.
 
 
-from ote_sdk.test_suite.pytest_insertions import (
-    get_pytest_plugins_from_ote,
-    ote_conftest_insertion,
-    ote_pytest_addoption_insertion,
-    ote_pytest_generate_tests_insertion,
-)
+from ote_sdk.test_suite.pytest_insertions import *  # noqa #pylint: disable=unused-import
 from ote_sdk.tests.fixtures.general import (  # noqa #pylint: disable=unused-import
     label_schema_example,
 )
