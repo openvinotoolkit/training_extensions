@@ -107,7 +107,6 @@ class TestImage:
         )
 
         assert np.array_equal(data_instance.numpy, data0)
-        assert not np.array_equal(fp_instance.numpy, image)
         height, width, depth = fp_instance.numpy.shape
         assert height == test_height
         assert width == test_width
