@@ -41,10 +41,10 @@ class TestIMetadata:
         To test IMetadata class
 
         <b>Input data:</b>
-        Initiated instance of IMetadata class
+        Initialized instance of IMetadata class
 
         <b>Expected results:</b>
-        1. Initiated instance is instance of the class
+        1. Initialized instance is instance of the class
         2. Default value of field has expected value:  "typing.Union[str, NoneType]"
         3. Changed fields value has expected value: "String"
 
@@ -73,7 +73,7 @@ class TestFloatType:
         To test FloatType enumeration members
 
         <b>Input data:</b>
-        Initiated instance of FloatType enum class
+        Initialized instance of FloatType enum class
 
         <b>Expected results:</b>
         1. Enum members return correct values:
@@ -110,7 +110,7 @@ class TestFloatType:
         To test FloatType __str__ method
 
         <b>Input data:</b>
-        Initiated instance of FloatType enum
+        Initialized instance of FloatType enum
 
         <b>Expected results:</b>
         1. __str__ returns correct string for every enum member
@@ -147,10 +147,10 @@ class TestMetadataItemEntity:
         To test MetadataItemEntity class
 
         <b>Input data:</b>
-        Initiated instances of IMetadata, ModelEntity and MetadataItemEntity classes
+        Initialized instances of IMetadata, ModelEntity and MetadataItemEntity classes
 
         <b>Expected results:</b>
-        1. Initiated instances
+        1. Initialized instances
         2. Default values of fields are None
         3. repr method returns expected value "NullMetadata(None, None)" after initiation for both instances
         4. Instance test_instance1 fields values changed and have expected values:
@@ -198,7 +198,7 @@ class TestFloatMetadata:
         To test FloatMetadata class
 
         <b>Input data:</b>
-        Initiated instance of FloatMetadata
+        Initialized instance of FloatMetadata
 
         <b>Expected results:</b>
         1. It raises TypeError in case attempt of initiation with wrong parameters numbers
