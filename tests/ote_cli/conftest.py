@@ -12,20 +12,23 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import os
 
-import pytest
+from ote_sdk.test_suite.pytest_insertions import (
+    get_pytest_plugins_from_ote,
+    ote_conftest_insertion,
+    ote_pytest_addoption_insertion,
+    ote_pytest_generate_tests_insertion,
+)
 
-from ote_sdk.entities.model_template import parse_model_template
+pytest_plugins = get_pytest_plugins_from_ote()
 
-from ote_cli.registry import Registry
+ote_conftest_insertion(default_repository_name="ote/training_extensions/")
 
-templates = Registry('external').templates
-paths = [os.path.relpath(template.model_template_path) for template in templates]
-ids = [os.path.relpath(template.model_template_id) for template in templates]
 
-@pytest.mark.components
-@pytest.mark.parametrize("path", paths, ids=ids)
-def test_template(path):
-    template = parse_model_template(path)
-    assert template.hyper_parameters.data
+# pytest magic
+def pytest_generate_tests(metafunc):
+    ote_pytest_generate_tests_insertion(metafunc)
+
+
+def pytest_addoption(parser):
+    ote_pytest_addoption_insertion(parser)

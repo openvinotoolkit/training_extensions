@@ -12,13 +12,14 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+import pytest
 import os
 from collections import defaultdict
 from subprocess import run  # nosec
 
 from ote_cli.registry import Registry
 
-
+@pytest.mark.components
 def test_help_stdoutputs_of_tools():
     with open("QUICK_START_GUIDE.md", encoding="UTF-8") as read_file:
         commands = []
@@ -43,7 +44,7 @@ def test_help_stdoutputs_of_tools():
                         break
             assert found, f"\nHelp message:\n{output.stdout.decode()}\n was not found in \n{full_text}"
 
-
+@pytest.mark.components
 def test_algorithms_table():
     def algorithms_generate_table(templates):
         attributes = ["model_template_id", "name", "gigaflops", "size"]
