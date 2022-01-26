@@ -13,21 +13,25 @@
 # and limitations under the License.
 
 
-import pytest
-
-from e2e.conftest_utils import *
-from ote_sdk.test_suite.pytest_insertions import *
-from ote_sdk.tests.fixtures.general import label_schema_example
-
+from ote_sdk.test_suite.pytest_insertions import (
+    get_pytest_plugins_from_ote,
+    ote_conftest_insertion,
+    ote_pytest_addoption_insertion,
+    ote_pytest_generate_tests_insertion,
+)
+from ote_sdk.tests.fixtures.general import (  # noqa #pylint: disable=unused-import
+    label_schema_example,
+)
 
 pytest_plugins = get_pytest_plugins_from_ote()
 
-ote_conftest_insertion(default_repository_name='ote/training_extensions/')
+ote_conftest_insertion(default_repository_name="ote/training_extensions/")
 
 
 # pytest magic
 def pytest_generate_tests(metafunc):
     ote_pytest_generate_tests_insertion(metafunc)
+
 
 def pytest_addoption(parser):
     ote_pytest_addoption_insertion(parser)
