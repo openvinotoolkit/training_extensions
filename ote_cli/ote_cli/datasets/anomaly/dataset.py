@@ -24,6 +24,7 @@ from ote_sdk.entities.annotation import (
 )
 from ote_sdk.entities.dataset_item import DatasetItemEntity
 from ote_sdk.entities.datasets import DatasetEntity
+from ote_sdk.entities.id import ID
 from ote_sdk.entities.image import Image
 from ote_sdk.entities.label import Domain, LabelEntity
 from ote_sdk.entities.scored_label import ScoredLabel
@@ -64,10 +65,10 @@ class AnomalyClassificationDataset(DatasetEntity):
 
         items: List[DatasetItemEntity] = []
         self.normal_label = LabelEntity(
-            name="Normal", domain=Domain.ANOMALY_CLASSIFICATION
+            id=ID(0), name="Normal", domain=Domain.ANOMALY_CLASSIFICATION
         )
         self.abnormal_label = LabelEntity(
-            name="Anomalous", domain=Domain.ANOMALY_CLASSIFICATION
+            id=ID(1), name="Anomalous", domain=Domain.ANOMALY_CLASSIFICATION
         )
 
         if train_subset is not None:
@@ -128,11 +129,11 @@ class AnomalyClassificationDataset(DatasetEntity):
             # convert path to str as PosixPath is not supported by Image
             image = Image(file_path=str(data_root_dir / sample.image_path))
             # Create annotation
-            shape = Rectangle(x1=0, y1=0, x2=1, y2=1)
+            shape = Rectangle.generate_full_box()
             label: LabelEntity = (
                 self.normal_label if sample.label == "good" else self.abnormal_label
             )
-            labels = [ScoredLabel(label)]
+            labels = [ScoredLabel(label, probability=1.0)]
             annotations = [Annotation(shape=shape, labels=labels)]
             annotation_scene = AnnotationSceneEntity(
                 annotations=annotations, kind=AnnotationSceneKind.ANNOTATION
