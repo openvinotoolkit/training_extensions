@@ -141,7 +141,6 @@ class ModelEntity:
                 (previous_revision, "previous_revision", ModelEntity),
                 (version, "version", int),
                 (tags, "tags", list),
-                (model_status, " model_status", ModelStatus),
                 (model_format, "model_format", ModelFormat),
                 (training_duration, "training_duration", (int, float)),
                 (model_adapters, "model_adapters", dict),

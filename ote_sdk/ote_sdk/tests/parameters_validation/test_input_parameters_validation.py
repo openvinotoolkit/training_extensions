@@ -389,8 +389,6 @@ class TestParamsValidation:
             ("tags", unexpected_str),
             # Unexpected integer is specified as nested "tag"
             ("tags", ["tag_1", unexpected_int]),
-            # Unexpected string is specified as "model_status" parameter
-            ("model_status", unexpected_str),
             # Unexpected string is specified as "model_format" parameter
             ("model_format", unexpected_str),
             # Unexpected string is specified as "training_duration" parameter
