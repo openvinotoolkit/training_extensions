@@ -21,8 +21,11 @@ import os
 import tempfile
 from io import BytesIO
 from pathlib import Path
+from typing import Optional
 from zipfile import ZipFile
 
+from ote_sdk.entities.datasets import DatasetEntity
+from ote_sdk.entities.inference_parameters import InferenceParameters
 from ote_sdk.entities.label import Domain, LabelEntity
 from ote_sdk.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
 from ote_sdk.entities.model import ModelEntity
@@ -187,5 +190,21 @@ def create_task_from_deployment(openvino_task_class, deployed_code_zip_path):
                     create_model(model_path, config_path),
                     create_output_converter(config_path),
                 )
+
+        def infer(
+            self,
+            dataset: DatasetEntity,
+            inference_parameters: Optional[InferenceParameters] = None,
+        ) -> DatasetEntity:
+            """Inference method."""
+
+            if inference_parameters is not None:
+                update_progress_callback = inference_parameters.update_progress
+            dataset_size = len(dataset)
+            for i, dataset_item in enumerate(dataset, 1):
+                predicted_scene = self.inferencer.predict(dataset_item.numpy)
+                dataset_item.append_annotations(predicted_scene.annotations)
+                update_progress_callback(int(i / dataset_size * 100))
+            return dataset
 
     return Task
