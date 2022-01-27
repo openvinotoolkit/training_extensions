@@ -24,12 +24,10 @@ from anomalib.core.model.anomaly_module import AnomalyModule
 from anomalib.utils.post_process import anomaly_map_to_color_map
 from ote_anomalib.data import LabelNames
 from ote_anomalib.logging import get_logger
-from ote_sdk.entities.annotation import Annotation
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.label import LabelEntity
 from ote_sdk.entities.result_media import ResultMediaEntity
 from ote_sdk.entities.scored_label import ScoredLabel
-from ote_sdk.entities.shapes.rectangle import Rectangle
 from pytorch_lightning.callbacks import Callback
 
 logger = get_logger(__name__)
@@ -56,12 +54,7 @@ class InferenceCallback(Callback):
         ):
             label = self.anomalous_label if pred_label else self.normal_label
             probability = (1 - pred_score) if pred_score < 0.5 else pred_score
-            shape = Annotation(
-                Rectangle(x1=0, y1=0, x2=1, y2=1),
-                labels=[ScoredLabel(label=label, probability=float(probability))],
-            )
-
-            dataset_item.append_annotations([shape])
+            dataset_item.append_labels([ScoredLabel(label=label, probability=float(probability))])
 
             heatmap = anomaly_map_to_color_map(anomaly_map.squeeze(), normalize=False)
             heatmap_media = ResultMediaEntity(

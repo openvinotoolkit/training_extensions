@@ -65,18 +65,6 @@ class ModelConfiguration:
         self.label_schema = label_schema
 
 
-class ModelStatus(IntEnum):
-    """Indicates the status of the last training result"""
-
-    NOT_READY = auto()  # Model is not ready to be trained
-    TRAINED_NO_STATS = auto()  # Model is trained but not evaluated yet
-    SUCCESS = auto()  # Model trained successfully and improved
-    FAILED = (
-        auto()
-    )  # Model failed during training, e.g. an error occurred or user cancelled training
-    NOT_IMPROVED = auto()  # Model trained successfully but didn't improve
-
-
 class ModelFormat(IntEnum):
     """Indicate the format of the model"""
 
@@ -118,7 +106,6 @@ class ModelEntity:
         previous_revision: Optional["ModelEntity"] = None,
         version: int = 1,
         tags: Optional[List[str]] = None,
-        model_status: ModelStatus = ModelStatus.SUCCESS,
         model_format: ModelFormat = ModelFormat.OPENVINO,
         training_duration: float = 0.0,
         model_adapters: Optional[Dict[str, ModelAdapter]] = None,
@@ -220,7 +207,6 @@ class ModelEntity:
         self.__previous_revision = previous_revision
         self.__version = version
         self.__tags = tags
-        self.__model_status = model_status
         self.__model_format = model_format
         self.__performance = performance
         self.__training_duration = training_duration
@@ -315,15 +301,6 @@ class ModelEntity:
     @tags.setter
     def tags(self, value: List[str]):
         self.__tags = value
-
-    @property
-    def model_status(self) -> ModelStatus:
-        """Shows the status of the latest training"""
-        return self.__model_status
-
-    @model_status.setter
-    def model_status(self, value: ModelStatus):
-        self.__model_status = value
 
     @property
     def model_format(self) -> ModelFormat:
