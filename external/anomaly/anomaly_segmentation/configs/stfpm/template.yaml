@@ -1,18 +1,18 @@
 # Description.
-model_template_id: ote_anomaly_classification_stfpm
+model_template_id: ote_anomaly_segmentation_stfpm
 name: STFPM
-task_type: ANOMALY_CLASSIFICATION
+task_type: ANOMALY_SEGMENTATION
 task_family: VISION
 instantiation: "CLASS"
 summary: STFPM with ResNet-18 backbone
 application: ~
 
 # Algo backend.
-framework: OTEAnomalyClassification v0.1.0
+framework: OTEAnomalySegmentation v0.1.0
 
 # Task implementations.
 entrypoints:
-  base: ote_anomalib.AnomalyClassificationTask
+  base: ote_anomalib.AnomalyTask
   openvino: ote_anomalib.OpenVINOAnomalyClassificationTask
 
 # Hyper Parameters

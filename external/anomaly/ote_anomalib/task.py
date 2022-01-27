@@ -51,7 +51,7 @@ from pytorch_lightning import Trainer
 logger = get_logger(__name__)
 
 
-class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, IExportTask, IUnload):
+class AnomalyTask(ITrainingTask, IInferenceTask, IEvaluationTask, IExportTask, IUnload):
     """Base Anomaly Classification Task."""
 
     def __init__(self, task_environment: TaskEnvironment) -> None:

@@ -1,18 +1,18 @@
 # Description.
-model_template_id: ote_anomaly_classification_padim
+model_template_id: ote_anomaly_segmentation_padim
 name: PADIM
-task_type: ANOMALY_CLASSIFICATION
+task_type: ANOMALY_SEGMENTATION
 task_family: VISION
 instantiation: "CLASS"
 summary: PADIM with ResNet-18 backbone
 application: ~
 
 # Algo backend.
-framework: OTEAnomalyClassification v0.1.0
+framework: OTEAnomalySegmentation v0.1.0
 
 # Task implementations.
 entrypoints:
-  base: ote_anomalib.AnomalyClassificationTask
+  base: ote_anomalib.AnomalyTask
   openvino: ote_anomalib.OpenVINOAnomalyClassificationTask
 
 # Hyper Parameters
