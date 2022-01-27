@@ -317,14 +317,6 @@ def pot_eval_testing(template, root, ote_dir, args):
                     f'{template_work_dir}/pot_{template.model_template_id}/performance.json']
     assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
     assert os.path.exists(f'{template_work_dir}/pot_{template.model_template_id}/performance.json')
-    with open(f'{template_work_dir}/exported_{template.model_template_id}/performance.json') as read_file:
-        trained_performance = json.load(read_file)
-    with open(f'{template_work_dir}/pot_{template.model_template_id}/performance.json') as read_file:
-        exported_performance = json.load(read_file)
-
-    for k in trained_performance.keys():
-        assert (trained_performance[k] - exported_performance[k]) / trained_performance[
-            k] <= 0.1, f"{trained_performance[k]=}, {exported_performance[k]=}"
 
 
 def nncf_optimize_testing(template, root, ote_dir, args):
@@ -383,11 +375,3 @@ def nncf_eval_testing(template, root, ote_dir, args):
                     f'{template_work_dir}/exported_nncf_{template.model_template_id}/performance.json']
     assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
     assert os.path.exists(f'{template_work_dir}/exported_nncf_{template.model_template_id}/performance.json')
-    with open(f'{template_work_dir}/exported_{template.model_template_id}/performance.json') as read_file:
-        trained_performance = json.load(read_file)
-    with open(f'{template_work_dir}/exported_nncf_{template.model_template_id}/performance.json') as read_file:
-        exported_performance = json.load(read_file)
-
-    for k in trained_performance.keys():
-        assert (trained_performance[k] - exported_performance[k]) / trained_performance[
-            k] <= 0.1, f"{trained_performance[k]=}, {exported_performance[k]=}"

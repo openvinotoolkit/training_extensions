@@ -119,6 +119,7 @@ def test_nncf_export(template):
 
 
 @pytest.mark.parametrize("template", templates, ids=templates_ids)
+@pytest.mark.skip(reason="Issue with model loading 76853")
 def test_nncf_eval(template):
     if template.entrypoints.nncf is None:
         pytest.skip("nncf entrypoint is none")
