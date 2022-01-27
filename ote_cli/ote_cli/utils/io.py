@@ -18,6 +18,10 @@ Utils for dynamically importing stuff
 
 import json
 import os
+import tempfile
+from io import BytesIO
+from pathlib import Path
+from zipfile import ZipFile
 
 from ote_sdk.entities.label import Domain, LabelEntity
 from ote_sdk.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
@@ -25,6 +29,10 @@ from ote_sdk.entities.model import ModelEntity
 from ote_sdk.entities.model_template import TaskType
 from ote_sdk.serialization.label_mapper import LabelSchemaMapper
 from ote_sdk.usecases.adapters.model_adapter import ModelAdapter
+from ote_sdk.usecases.exportable_code.demo.demo_package import (
+    create_model,
+    create_output_converter,
+)
 
 
 def save_model_data(model, folder):
@@ -78,12 +86,28 @@ def read_model(model_configuration, path, train_dataset):
 
 def read_label_schema(path):
     """
-    Reads json file and returns deserialized LabelSchema.
+    Reads serialized LabelSchema and returns deserialized LabelSchema.
     """
 
-    with open(path, encoding="UTF-8") as read_file:
-        serialized_label_schema = json.load(read_file)
-
+    if any(path.endswith(extension) for extension in (".xml", ".bin", ".pth")):
+        with open(
+            os.path.join(os.path.dirname(path), "label_schema.json"), encoding="UTF-8"
+        ) as read_file:
+            serialized_label_schema = json.load(read_file)
+    elif path.endswith(".zip"):
+        with ZipFile(path) as read_zip_file:
+            zfiledata = BytesIO(
+                read_zip_file.read(
+                    os.path.join("python", "demo_package-0.0-py3-none-any.whl")
+                )
+            )
+            with ZipFile(zfiledata) as read_whl_file:
+                with read_whl_file.open(
+                    os.path.join("demo_package", "config.json")
+                ) as read_file:
+                    serialized_label_schema = json.load(read_file)["model_parameters"][
+                        "labels"
+                    ]
     return LabelSchemaMapper().backward(serialized_label_schema)
 
 
@@ -114,3 +138,54 @@ def generate_label_schema(dataset, task_type):
         return label_schema
 
     return LabelSchemaEntity.from_labels(dataset.get_labels())
+
+
+def create_task_from_deployment(openvino_task_class, deployed_code_zip_path):
+    """
+    Creates a child class of passed 'openvino_task_class', instance of which is initialized by deployment (zip archive).
+    """
+
+    class Task(openvino_task_class):
+        """A child class of 'openvino_task_class', instance of which is initialized by deployment (zip archive)."""
+
+        class Inferencer:
+            """ModelAPI-based OpenVINO inferencer."""
+
+            def __init__(self, model, converter) -> None:
+                self.model = model
+                self.converter = converter
+
+            def predict(self, frame):
+                """Returns predictions made on a given frame."""
+
+                dict_data, input_meta = self.model.preprocess(frame)
+                raw_result = self.model.infer_sync(dict_data)
+                predictions = self.model.postprocess(raw_result, input_meta)
+                annotation_scene = self.converter.convert_to_annotation(
+                    predictions, input_meta
+                )
+                return annotation_scene
+
+        def __init__(self, task_environment) -> None:
+            self.task_environment = task_environment
+            with tempfile.TemporaryDirectory() as temp_dir:
+                with ZipFile(deployed_code_zip_path) as myzip:
+                    myzip.extractall(temp_dir)
+                with ZipFile(
+                    os.path.join(
+                        temp_dir, "python", "demo_package-0.0-py3-none-any.whl"
+                    )
+                ) as myzip:
+                    myzip.extractall(temp_dir)
+
+                model_path = Path(os.path.join(temp_dir, "model", "model.xml"))
+                config_path = Path(
+                    os.path.join(temp_dir, "demo_package", "config.json")
+                )
+
+                self.inferencer = self.Inferencer(
+                    create_model(model_path, config_path),
+                    create_output_converter(config_path),
+                )
+
+    return Task

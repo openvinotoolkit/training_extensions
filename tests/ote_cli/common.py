@@ -276,3 +276,41 @@ def ote_deploy_openvino_testing(template, root, ote_dir, args):
     assert run(['python3', 'demo_patched.py', '-m', '../model/model.xml', '-i', os.path.join(ote_dir, args['--input'])],
                cwd=os.path.join(deployment_dir, 'python'),
                env=collect_env_vars(os.path.join(deployment_dir, 'python'))).returncode == 0
+
+
+def ote_eval_deployment_testing(template, root, ote_dir, args, threshold):
+    work_dir, template_work_dir, _ = get_some_vars(template, root)
+    command_line = ['ote',
+                    'eval',
+                    template.model_template_id,
+                    '--test-ann-file',
+                    f'{os.path.join(ote_dir, args["--test-ann-files"])}',
+                    '--test-data-roots',
+                    f'{os.path.join(ote_dir, args["--test-data-roots"])}',
+                    '--load-weights',
+                    f'{template_work_dir}/deployed_{template.model_template_id}/openvino.zip',
+                    '--save-performance',
+                    f'{template_work_dir}/deployed_{template.model_template_id}/performance.json']
+    assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
+    assert os.path.exists(f'{template_work_dir}/deployed_{template.model_template_id}/performance.json')
+    with open(f'{template_work_dir}/exported_{template.model_template_id}/performance.json') as read_file:
+        exported_performance = json.load(read_file)
+    with open(f'{template_work_dir}/deployed_{template.model_template_id}/performance.json') as read_file:
+        deployed_performance = json.load(read_file)
+
+    for k in exported_performance.keys():
+        assert abs(exported_performance[k] - deployed_performance[k]) / exported_performance[k] <= threshold, f"{exported_performance[k]=}, {deployed_performance[k]=}"
+
+
+def ote_demo_deployment_testing(template, root, ote_dir, args):
+    work_dir, template_work_dir, _ = get_some_vars(template, root)
+    command_line = ['ote',
+                    'demo',
+                    template.model_template_id,
+                    '--load-weights',
+                    f'{template_work_dir}/deployed_{template.model_template_id}/openvino.zip',
+                    '--input',
+                    os.path.join(ote_dir, args['--input']),
+                    '--delay',
+                    '-1']
+    assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0

@@ -73,9 +73,7 @@ def main():
     environment = TaskEnvironment(
         model=None,
         hyper_parameters=create(hyper_parameters),
-        label_schema=read_label_schema(
-            os.path.join(os.path.dirname(args.load_weights), "label_schema.json")
-        ),
+        label_schema=read_label_schema(args.load_weights),
         model_template=template,
     )
     environment.model = read_model(

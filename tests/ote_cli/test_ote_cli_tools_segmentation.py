@@ -23,9 +23,11 @@ from ote_cli.registry import Registry
 from tests.ote_cli.common import (
     create_venv,
     get_some_vars,
+    ote_demo_deployment_testing,
     ote_demo_testing,
     ote_demo_openvino_testing,
     ote_deploy_openvino_testing,
+    ote_eval_deployment_testing,
     ote_eval_openvino_testing,
     ote_eval_testing,
     ote_train_testing,
@@ -95,3 +97,13 @@ def test_ote_demo_openvino(template):
 @pytest.mark.parametrize("template", templates, ids=templates_ids)
 def test_ote_deploy_openvino(template):
     ote_deploy_openvino_testing(template, root, ote_dir, args)
+
+
+@pytest.mark.parametrize("template", templates, ids=templates_ids)
+def test_ote_eval_deployment(template):
+    ote_eval_deployment_testing(template, root, ote_dir, args, threshold=0.00)
+
+
+@pytest.mark.parametrize("template", templates, ids=templates_ids)
+def test_ote_demo_deployment(template):
+    ote_demo_deployment_testing(template, root, ote_dir, args)

@@ -18,10 +18,10 @@ Model quality evaluation tool.
 
 import argparse
 import json
-import os
 
 from ote_sdk.configuration.helper import create
 from ote_sdk.entities.inference_parameters import InferenceParameters
+from ote_sdk.entities.model import ModelEntity
 from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.subset import Subset
 from ote_sdk.entities.task_environment import TaskEnvironment
@@ -30,7 +30,12 @@ from ote_cli.datasets import get_dataset_class
 from ote_cli.registry import find_and_parse_model_template
 from ote_cli.utils.config import override_parameters
 from ote_cli.utils.importing import get_impl_class
-from ote_cli.utils.io import generate_label_schema, read_label_schema, read_model
+from ote_cli.utils.io import (
+    create_task_from_deployment,
+    generate_label_schema,
+    read_label_schema,
+    read_model,
+)
 from ote_cli.utils.parser import (
     add_hyper_parameters_sub_parser,
     gen_params_dict_from_args,
@@ -111,8 +116,12 @@ def main():
     # Get classes for Task, ConfigurableParameters and Dataset.
     if args.load_weights.endswith(".bin") or args.load_weights.endswith(".xml"):
         task_class = get_impl_class(template.entrypoints.openvino)
-    else:
+    elif args.load_weights.endswith(".pth"):
         task_class = get_impl_class(template.entrypoints.base)
+    elif args.load_weights.endswith(".zip"):
+        task_class = create_task_from_deployment(
+            get_impl_class(template.entrypoints.openvino), args.load_weights
+        )
 
     dataset_class = get_dataset_class(template.task_type)
 
@@ -121,12 +130,7 @@ def main():
     )
 
     dataset_label_schema = generate_label_schema(dataset, template.task_type)
-    check_label_schemas(
-        read_label_schema(
-            os.path.join(os.path.dirname(args.load_weights), "label_schema.json")
-        ),
-        dataset_label_schema,
-    )
+    check_label_schemas(read_label_schema(args.load_weights), dataset_label_schema)
 
     environment = TaskEnvironment(
         model=None,
@@ -135,8 +139,13 @@ def main():
         model_template=template,
     )
 
-    model = read_model(environment.get_model_configuration(), args.load_weights, None)
-    environment.model = model
+    if any(args.load_weights.endswith(x) for x in (".bin", ".xml", ".pth")):
+        model = read_model(
+            environment.get_model_configuration(), args.load_weights, None
+        )
+        environment.model = model
+    else:
+        model = ModelEntity(None, environment.get_model_configuration())
 
     task = task_class(task_environment=environment)
 
