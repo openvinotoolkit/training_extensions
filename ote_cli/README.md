@@ -6,7 +6,7 @@
 ### OTE Commands
 * `ote find` - search for model templates.
 * `ote train` - run training of a particular model template.
-* `ote optimze` - run optimization of trained model.
+* `ote optimize` - run optimization of trained model.
 * `ote eval` - run evaluation of trained model on a particular dataset.
 * `ote export` - export trained model to the OpenVINO format in order to efficiently run it on Intel hardware.
 * `ote demo` - run model inference on images, videos, webcam in order to see how it works on user's data.

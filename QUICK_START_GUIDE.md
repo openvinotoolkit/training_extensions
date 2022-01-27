@@ -178,8 +178,8 @@
                            min_value: 0.0
    ```
 
-### ote ote_optimize - run optimization of a particular model template
-   This tool optimize a trained model by NNCF or POT depending on a model format:
+### ote optimize - run optimization of a particular model template
+   This tool optimizes a trained model using NNCF or POT depending on a model format:
 
    - NNCF optimization used for trained snapshots in framework specific format
    - POT optimization used for exported model in IR format
@@ -192,7 +192,7 @@
    ```
    usage: ote optimize [-h] --train-ann-files TRAIN_ANN_FILES --train-data-roots TRAIN_DATA_ROOTS --val-ann-files
                     VAL_ANN_FILES --val-data-roots VAL_DATA_ROOTS --load-weights LOAD_WEIGHTS --save-model-to
-                    SAVE_MODEL_TO
+                    SAVE_MODEL_TO [--aux-weights AUX_WEIGHTS]
                     template {params} ...
 
    positional arguments:
@@ -214,6 +214,8 @@
                            Load weights of trained model
      --save-model-to SAVE_MODEL_TO
                            Location where trained model will be stored.
+     --aux-weights AUX_WEIGHTS
+                           Load weights of trained auxiliary model
    ```
 
 
