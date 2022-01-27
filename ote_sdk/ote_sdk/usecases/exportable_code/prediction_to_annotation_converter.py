@@ -151,6 +151,8 @@ def create_converter(
         converter = ClassificationToAnnotationConverter(labels)
     elif converter_type == Domain.ANOMALY_CLASSIFICATION:
         converter = AnomalyClassificationToAnnotationConverter(labels)
+    elif converter_type == Domain.COUNTING:
+        converter = MaskToAnnotationConverter(labels)
     else:
         raise ValueError(f"Unknown converter type: {converter_type}")
 

@@ -24,6 +24,7 @@ class Domain(Enum):
     ANOMALY_CLASSIFICATION = 3
     ANOMALY_DETECTION = 4
     ANOMALY_SEGMENTATION = 5
+    COUNTING = 6
 
     def __str__(self):
         return str(self.name)
