@@ -148,14 +148,11 @@ def main():
 
     if args.aux_weights:
         with open(args.aux_weights, "rb") as f:
-            environment.model.set_data('aux_model_1.pth', f.read())
+            environment.model.set_data("aux_model_1.pth", f.read())
 
     task = task_class(task_environment=environment)
 
-    output_model = ModelEntity(
-        dataset,
-        environment.get_model_configuration()
-    )
+    output_model = ModelEntity(dataset, environment.get_model_configuration())
 
     task.optimize(
         OptimizationType.POT if is_pot else OptimizationType.NNCF,

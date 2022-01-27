@@ -6,7 +6,10 @@
 from dataclasses import dataclass
 from typing import Callable
 
-from ote_sdk.entities.train_parameters import default_progress_callback, UpdateProgressCallback
+from ote_sdk.entities.train_parameters import (
+    UpdateProgressCallback,
+    default_progress_callback,
+)
 
 
 def default_save_model_callback():
