@@ -37,6 +37,7 @@ class TestDomain:
         """
         domain = Domain
         assert len(domain) == 6
+        assert len(domain) == 7
 
 
 @pytest.mark.components(OteSdkComponent.OTE_SDK)

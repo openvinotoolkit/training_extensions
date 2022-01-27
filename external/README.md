@@ -22,6 +22,11 @@ Custom_Object_Detection_Gen3_SSD | SSD | 9.4 | 7.6 | mmdetection/configs/ote/cus
 Custom_Object_Detection_Gen3_ATSS | ATSS | 20.6 | 9.1 | mmdetection/configs/ote/custom-object-detection/gen3_mobilenetV2_ATSS/template.yaml
 Custom_Object_Detection_Gen3_VFNet | VFNet | 457.4 | 126.0 | mmdetection/configs/ote/custom-object-detection/gen3_resnet50_VFNet/template.yaml
 
+## Object Counting
+ID | Name | Complexity (GFlops) | Model size (MB) | Path
+------- | ------- | ------- | ------- | -------
+Custom_Counting_Instance_Segmentation-MaskRCNN-ResNet50 | MaskRCNN-ResNet50 | 533.8 | 177.9 | mmdetection/configs/ote/custom-counting-instance-seg/resnet50_maskrcnn/template.yaml
+
 ## Semantic Segmentaion
 ID | Name | Complexity (GFlops) | Model size (MB) | Path
 ------- | ------- | ------- | ------- | -------
