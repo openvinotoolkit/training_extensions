@@ -85,6 +85,11 @@ def parse_args():
         required=True,
         help="Location where trained model will be stored.",
     )
+    parser.add_argument(
+        "--aux-weights",
+        required=False,
+        help="Load weights of trained auxiliary model",
+    )
 
     add_hyper_parameters_sub_parser(parser, hyper_parameters)
 
@@ -141,6 +146,10 @@ def main():
         environment.get_model_configuration(), args.load_weights, None
     )
 
+    if args.aux_weights:
+        with open(args.aux_weights, "rb") as f:
+            environment.model.set_data('aux_model_1.pth', f.read())
+
     task = task_class(task_environment=environment)
 
     output_model = ModelEntity(
@@ -171,3 +180,7 @@ def main():
     task.evaluate(resultset)
     assert resultset.performance is not None
     print(resultset.performance)
+
+
+if __name__ == "__main__":
+    main()
