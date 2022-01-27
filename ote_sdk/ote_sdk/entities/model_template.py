@@ -13,6 +13,7 @@ from omegaconf import DictConfig, ListConfig, OmegaConf
 
 from ote_sdk.configuration.elements import metadata_keys
 from ote_sdk.entities.label import Domain
+from ote_sdk.utils.argument_checks import check_file_path
 
 
 class TargetDevice(IntEnum):
@@ -475,6 +476,13 @@ def parse_model_template(model_template_path: str) -> ModelTemplate:
 
     :param model_template_path: Path to the model template template.yaml file
     """
+    # Input parameter validation
+    check_file_path(
+        file_path=model_template_path,
+        parameter_name="model_template_path",
+        expected_extensions=["yaml"],
+    )
+
     config = OmegaConf.load(model_template_path)
     if not isinstance(config, DictConfig):
         raise ValueError(

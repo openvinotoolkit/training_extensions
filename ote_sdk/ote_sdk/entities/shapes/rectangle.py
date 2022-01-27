@@ -16,6 +16,10 @@ from shapely.geometry import Polygon as shapely_polygon
 
 from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.entities.shapes.shape import Shape, ShapeEntity, ShapeType
+from ote_sdk.utils.argument_checks import (
+    check_nested_elements_type,
+    check_required_and_optional_parameters_type,
+)
 from ote_sdk.utils.time_utils import now
 
 # pylint: disable=invalid-name
@@ -50,6 +54,25 @@ class Rectangle(Shape):
         labels: Optional[List[ScoredLabel]] = None,
         modification_date: Optional[datetime.datetime] = None,
     ):
+        # Initialization parameters validation
+        check_required_and_optional_parameters_type(
+            required_parameters=[
+                (x1, "x1", (float, int)),
+                (y1, "y1", (float, int)),
+                (x2, "x2", (float, int)),
+                (y2, "y2", (float, int)),
+            ],
+            optional_parameters=[
+                (labels, "labels", list),
+                (modification_date, "modification_date", datetime.datetime),
+            ],
+        )
+        # Nested labels validation
+        if labels and len(labels) > 0:
+            check_nested_elements_type(
+                iterable=labels, parameter_name="label", expected_type=ScoredLabel
+            )
+
         labels = [] if labels is None else labels
         modification_date = now() if modification_date is None else modification_date
         super().__init__(

@@ -13,6 +13,7 @@ import numpy as np
 from ote_sdk.entities.annotation import Annotation
 from ote_sdk.entities.media import IMedia2DEntity
 from ote_sdk.entities.shapes.rectangle import Rectangle
+from ote_sdk.utils.argument_checks import check_file_path, check_parameter_type
 
 
 class Image(IMedia2DEntity):
@@ -36,6 +37,17 @@ class Image(IMedia2DEntity):
             raise ValueError(
                 "Either path to image file or image data should be provided."
             )
+        if data is not None:
+            check_parameter_type(
+                parameter=data, parameter_name="data", expected_type=np.ndarray
+            )
+        if file_path is not None:
+            check_file_path(
+                file_path=file_path,
+                parameter_name="file_path",
+                expected_extensions=["jpg", "png"],
+            )
+
         self.__data: Optional[np.ndarray] = data
         self.__file_path: Optional[str] = file_path
         self.__height: Optional[int] = None

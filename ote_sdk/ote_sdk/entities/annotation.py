@@ -14,6 +14,10 @@ from ote_sdk.entities.id import ID
 from ote_sdk.entities.label import LabelEntity
 from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.entities.shapes.shape import ShapeEntity
+from ote_sdk.utils.argument_checks import (
+    check_nested_elements_type,
+    check_required_and_optional_parameters_type,
+)
 from ote_sdk.utils.time_utils import now
 
 
@@ -26,6 +30,20 @@ class Annotation(metaclass=abc.ABCMeta):
     def __init__(
         self, shape: ShapeEntity, labels: List[ScoredLabel], id: Optional[ID] = None
     ):
+        # Initialization parameters validation
+        check_required_and_optional_parameters_type(
+            required_parameters=[
+                (shape, "shape", ShapeEntity),
+                (labels, "labels", list),
+            ],
+            optional_parameters=[(id, "id", ID)],
+        )
+        # Nested labels validation
+        if len(labels) > 0:
+            check_nested_elements_type(
+                iterable=labels, parameter_name="label", expected_type=ScoredLabel
+            )
+
         self.__id = ID(ObjectId()) if id is None else id
         self.__shape = shape
         self.__labels = labels
@@ -159,6 +177,26 @@ class AnnotationSceneEntity(metaclass=abc.ABCMeta):
         creation_date: Optional[datetime.datetime] = None,
         id: Optional[ID] = None,
     ):
+        # Initialization parameters validation
+        check_required_and_optional_parameters_type(
+            required_parameters=[
+                (annotations, "annotations", list),
+                (kind, "kind", AnnotationSceneKind),
+            ],
+            optional_parameters=[
+                (editor, "editor", str),
+                (creation_date, "creation_date", datetime.datetime),
+                (id, "id", ID),
+            ],
+        )
+        # Nested annotations validation
+        if annotations:
+            check_nested_elements_type(
+                iterable=annotations,
+                parameter_name="annotation",
+                expected_type=Annotation,
+            )
+
         self.__annotations = annotations
         self.__kind = kind
         self.__editor = editor

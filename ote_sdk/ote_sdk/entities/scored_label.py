@@ -9,6 +9,7 @@ import datetime
 from ote_sdk.entities.color import Color
 from ote_sdk.entities.id import ID
 from ote_sdk.entities.label import Domain, LabelEntity
+from ote_sdk.utils.argument_checks import check_required_parameters_type
 
 
 class ScoredLabel:
@@ -20,6 +21,11 @@ class ScoredLabel:
     """
 
     def __init__(self, label: LabelEntity, probability: float = 0.0):
+        # Initialization parameters validation
+        check_required_parameters_type(
+            [(label, "label", LabelEntity), (probability, "probability", (float, int))]
+        )
+
         self.label = label
         self.probability = probability
 

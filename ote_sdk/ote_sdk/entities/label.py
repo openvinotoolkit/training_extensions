@@ -10,6 +10,7 @@ from typing import Optional
 
 from ote_sdk.entities.color import Color
 from ote_sdk.entities.id import ID
+from ote_sdk.utils.argument_checks import check_required_and_optional_parameters_type
 from ote_sdk.utils.time_utils import now
 
 
@@ -87,6 +88,18 @@ class LabelEntity:
         is_empty: bool = False,
         id: Optional[ID] = None,
     ):
+        # Initialization parameters validation
+        check_required_and_optional_parameters_type(
+            required_parameters=[(name, "name", str), (domain, "domain", Domain)],
+            optional_parameters=[
+                (color, "color", Color),
+                (hotkey, "hotkey", str),
+                (creation_date, "creation_date", datetime.datetime),
+                (is_empty, "is_empty", bool),
+                (id, "id", ID),
+            ],
+        )
+
         id = ID() if id is None else id
         color = Color.random() if color is None else color
         creation_date = now() if creation_date is None else creation_date

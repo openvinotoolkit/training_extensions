@@ -548,8 +548,6 @@ class TestDatasetEntity:
         <b>Steps</b>
         1. Check "items" attribute of DatasetEntity object after adding new DatasetEntity object
         2. Check "items" attribute of DatasetEntity object after adding existing DatasetEntity object
-        3. Check that ValueError exception is raised when appending DatasetEntity with "media" attribute is equal to
-        "None"
         """
         dataset = self.dataset()
         expected_items = list(dataset._items)
@@ -562,10 +560,6 @@ class TestDatasetEntity:
         dataset.append(item_to_add)
         expected_items.append(item_to_add)
         assert dataset._items == expected_items
-        # Checking that ValueError exception is raised when appending DatasetEntity with "media" is "None" attribute
-        no_media_item = DatasetItemEntity(None, self.annotations_entity())
-        with pytest.raises(ValueError):
-            dataset.append(no_media_item)
 
     @pytest.mark.priority_medium
     @pytest.mark.component

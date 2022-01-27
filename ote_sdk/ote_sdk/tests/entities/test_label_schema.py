@@ -2146,11 +2146,16 @@ class TestLabelSchemaEntity:
         Check LabelSchemaEntity class from_labels method
 
         <b>Input data:</b>
-        LabelSchemaEntity objects with specified exclusivity_graph, label_tree and label_groups parameters
+        LabelSchemaEntity class, "labels" list
 
         <b>Expected results:</b>
         Test passes if LabelSchemaEntity object returned by from_labels method is equal expected
+
+        1. Check that LabelSchemaEntity object returned by from_labels is equal to expected
+        2. Check that ValueError exception is raised when unexpected type object is specified as "label_groups"
+        initialization parameter of LabelSchemaEntity object
         """
+        # Checking that LabelSchemaEntity returned by "from_labels" is equal to expected
         expected_labels = [
             labels.label_0,
             labels.label_0_1,
@@ -2165,3 +2170,9 @@ class TestLabelSchemaEntity:
         assert len(labels_schema_entity_groups) == 1
         assert labels_schema_entity_groups[0].name == "from_label_list"
         assert labels_schema_entity_groups[0].labels == expected_labels
+        # Checking that ValueError exception is raised by "from_labels" when incorrect type object is specified as
+        # "labels"
+        unexpected_type_value = 1
+        for value in [unexpected_type_value, (labels.label_0, unexpected_type_value)]:
+            with pytest.raises(ValueError):
+                LabelSchemaEntity.from_labels(labels=value)

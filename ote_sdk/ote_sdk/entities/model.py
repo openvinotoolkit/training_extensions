@@ -19,6 +19,13 @@ from ote_sdk.usecases.adapters.model_adapter import (
     IDataSource,
     ModelAdapter,
 )
+from ote_sdk.utils.argument_checks import (
+    check_optional_parameters_type,
+    check_parameter_str_class_name,
+    check_parameter_type,
+    check_several_dictionaries_keys_values_type,
+    check_several_lists_elements_type,
+)
 from ote_sdk.utils.time_utils import now
 
 if TYPE_CHECKING:
@@ -128,6 +135,64 @@ class ModelEntity:
         model_size_reduction: float = 0.0,
         _id: Optional[ID] = None,
     ):
+        # Initialization parameters validation
+        check_parameter_str_class_name(
+            parameter=train_dataset,
+            parameter_name="train_dataset",
+            expected_class_name="DatasetEntity",
+        )
+        check_parameter_type(
+            parameter=configuration,
+            parameter_name="configuration",
+            expected_type=ModelConfiguration,
+        )
+        check_optional_parameters_type(
+            [
+                (creation_date, "creation_date", datetime.datetime),
+                (performance, "performance", Performance),
+                (previous_trained_revision, "previous_trained_revision", ModelEntity),
+                (previous_revision, "previous_revision", ModelEntity),
+                (version, "version", int),
+                (tags, "tags", list),
+                (model_status, " model_status", ModelStatus),
+                (model_format, "model_format", ModelFormat),
+                (training_duration, "training_duration", (int, float)),
+                (model_adapters, "model_adapters", dict),
+                (
+                    exportable_code_adapter,
+                    "exportable_code_adapter",
+                    ExportableCodeAdapter,
+                ),
+                (precision, "precision", list),
+                (latency, "latency", int),
+                (fps_throughput, "fps_throughput", int),
+                (target_device, "target_device", TargetDevice),
+                (target_device_type, "target_device_type", str),
+                (optimization_type, "optimization_type", ModelOptimizationType),
+                (optimization_methods, "optimization_methods", list),
+                (optimization_objectives, "optimization_objectives", dict),
+                (performance_improvement, "performance_improvement", dict),
+                (model_size_reduction, "model_size_reduction", (int, float)),
+                (_id, "_id", ID),
+            ]
+        )
+        # Nested list elements validation
+        check_several_lists_elements_type(
+            [
+                (tags, "tag", str),
+                (precision, "precision", ModelPrecision),
+                (optimization_methods, "optimization method", OptimizationMethod),
+            ]
+        )
+        # Dictionary keys and values validation
+        check_several_dictionaries_keys_values_type(
+            [
+                (model_adapters, "model_adapter", str, ModelAdapter),
+                (optimization_objectives, "optimization_objective", str, str),
+                (performance_improvement, "performance_improvement", str, (int, float)),
+            ]
+        )
+
         _id = ID() if _id is None else _id
         performance = NullPerformance() if performance is None else performance
         creation_date = now() if creation_date is None else creation_date

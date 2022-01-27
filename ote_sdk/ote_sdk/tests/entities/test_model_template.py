@@ -1116,6 +1116,8 @@ class TestParseModelTemplate:
         parse_model_template function for template file with specified model_template_id parameter
         3. Check ValueError exception raised if path to list-type template file is specified as input parameter in
         parse_model_template function
+        4. Check that ValueError exception raised if unexpected type object is specified as "model_template_path"
+        parameter
         """
         # Check for template file with not specified model_template_id
         model_template_path = TestHyperParameterData().model_template_path()
@@ -1148,6 +1150,21 @@ class TestParseModelTemplate:
         with pytest.raises(ValueError):
             parse_model_template(incorrect_model_template_path)
         remove(incorrect_model_template_path)
+        # Checking that ValueError exception raised if unexpected type object is specified as "model_template_path"
+        for incorrect_parameter in [
+            # Unexpected integer is specified as "model_template_path" parameter
+            1,
+            # Empty string is specified as "model_template_path" parameter
+            "",
+            # Path to non-yaml file is specified as "model_template_path" parameter
+            TestHyperParameterData.get_path_to_file(r"./incorrect_model_template.jpg"),
+            # Path to non-existing file is specified as "model_template_path" parameter
+            TestHyperParameterData.get_path_to_file(r"./non_existing_file.yaml"),
+            # Path with null character is specified as "file_path" parameter
+            TestHyperParameterData.get_path_to_file(r"./null\0char.yaml"),
+        ]:
+            with pytest.raises(ValueError):
+                parse_model_template(incorrect_parameter)
 
     @pytest.mark.priority_medium
     @pytest.mark.component
