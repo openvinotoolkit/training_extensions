@@ -12,17 +12,11 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-
-from ote_sdk.test_suite.pytest_insertions import * # noqa #pylint: disable=unused-import
+from ote_sdk.test_suite.pytest_insertions import *  # noqa #pylint: disable=unused-import
 
 pytest_plugins = get_pytest_plugins_from_ote()
 
 ote_conftest_insertion(default_repository_name="ote/training_extensions/")
-
-
-# pytest magic
-def pytest_generate_tests(metafunc):
-    ote_pytest_generate_tests_insertion(metafunc)
 
 
 def pytest_addoption(parser):

@@ -13,10 +13,12 @@
 # and limitations under the License.
 
 import os
-
 import pytest
 
 from ote_sdk.entities.model_template import parse_model_template
+
+from constants.ote_cli_components import OteCliComponent
+from constants.requirements import Requirements
 
 from ote_cli.registry import Registry
 
@@ -24,8 +26,12 @@ templates = Registry('external').templates
 paths = [os.path.relpath(template.model_template_path) for template in templates]
 ids = [os.path.relpath(template.model_template_id) for template in templates]
 
-@pytest.mark.components
-@pytest.mark.parametrize("path", paths, ids=ids)
-def test_template(path):
-    template = parse_model_template(path)
-    assert template.hyper_parameters.data
+@pytest.mark.components(OteCliComponent.OTE_CLI)
+class TestTemplates:
+    @pytest.mark.priority_medium
+    @pytest.mark.component
+    @pytest.mark.reqids(Requirements.REQ_1)
+    @pytest.mark.parametrize("path", paths, ids=ids)
+    def test_template(path):
+        template = parse_model_template(path)
+        assert template.hyper_parameters.data

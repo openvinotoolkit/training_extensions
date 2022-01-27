@@ -19,58 +19,67 @@ from subprocess import run  # nosec
 
 from ote_cli.registry import Registry
 
-@pytest.mark.components
-def test_help_stdoutputs_of_tools():
-    with open("QUICK_START_GUIDE.md", encoding="UTF-8") as read_file:
-        commands = []
-        full_text = ''
-        for line in read_file:
-            full_text += line
-            if "ote" in line and "--help" in line:
-                commands.append(line.strip().split(' '))
+from constants.ote_cli_components import OteCliComponent
+from constants.requirements import Requirements
 
-        MAX_INDENT = 10
+@pytest.mark.components(OteCliComponent.OTE_CLI)
+class TestDocs:
+    @pytest.mark.priority_medium
+    @pytest.mark.component
+    @pytest.mark.reqids(Requirements.REQ_1)
+    def test_help_stdoutputs_of_tools(self):
+        with open("QUICK_START_GUIDE.md", encoding="UTF-8") as read_file:
+            commands = []
+            full_text = ''
+            for line in read_file:
+                full_text += line
+                if "ote" in line and "--help" in line:
+                    commands.append(line.strip().split(' '))
 
-        for command in commands:
-            output = run(command, capture_output=True)
-            help_message = output.stdout.decode()
-            found = True
-            if help_message not in full_text:
-                found = False
-                for _ in range(MAX_INDENT):
-                    help_message = "\n".join([" " + line for line in help_message.split("\n")])
-                    if help_message in full_text:
-                        found = True
-                        break
-            assert found, f"\nHelp message:\n{output.stdout.decode()}\n was not found in \n{full_text}"
+            MAX_INDENT = 10
 
-@pytest.mark.components
-def test_algorithms_table():
-    def algorithms_generate_table(templates):
-        attributes = ["model_template_id", "name", "gigaflops", "size"]
-        header = attributes + ["Path"]
-        attributes_in_md = {"name": "Name", "model_template_id": "ID", "gigaflops": "Complexity (GFlops)", "size": "Model size (MB)", "Path": "Path"}
+            for command in commands:
+                output = run(command, capture_output=True)
+                help_message = output.stdout.decode()
+                found = True
+                if help_message not in full_text:
+                    found = False
+                    for _ in range(MAX_INDENT):
+                        help_message = "\n".join([" " + line for line in help_message.split("\n")])
+                        if help_message in full_text:
+                            found = True
+                            break
+                assert found, f"\nHelp message:\n{output.stdout.decode()}\n was not found in \n{full_text}"
+
+    @pytest.mark.priority_medium
+    @pytest.mark.component
+    @pytest.mark.reqids(Requirements.REQ_1)
+    def test_algorithms_table(self):
+        def algorithms_generate_table(templates):
+            attributes = ["model_template_id", "name", "gigaflops", "size"]
+            header = attributes + ["Path"]
+            attributes_in_md = {"name": "Name", "model_template_id": "ID", "gigaflops": "Complexity (GFlops)", "size": "Model size (MB)", "Path": "Path"}
+            
+            table = [" | ".join([attributes_in_md[x] for x in header])] + [" | ".join(["-------" for _ in header])]
+            
+            for template in sorted(templates, key=lambda x: float(x.gigaflops)):
+                record = [str(getattr(template, attr)) for attr in attributes ]
+                record.append(os.path.relpath(template.model_template_path, './external'))
+                record = " | ".join(record)
+                table += [record]
+            return "\n".join(table)
         
-        table = [" | ".join([attributes_in_md[x] for x in header])] + [" | ".join(["-------" for _ in header])]
+        with open("external/README.md", encoding="UTF-8") as read_file:
+            full_text = ''
+            for line in read_file:
+                full_text += line
         
-        for template in sorted(templates, key=lambda x: float(x.gigaflops)):
-            record = [str(getattr(template, attr)) for attr in attributes ]
-            record.append(os.path.relpath(template.model_template_path, './external'))
-            record = " | ".join(record)
-            table += [record]
-        return "\n".join(table)
-    
-    with open("external/README.md", encoding="UTF-8") as read_file:
-        full_text = ''
-        for line in read_file:
-            full_text += line
-    
-    registry = Registry(".")
-    templates_per_task_type = defaultdict(list)
-    for template in sorted(registry.templates, key=lambda x:str(x.task_type)):
-        templates_per_task_type[template.task_type].append(template)
-    for task_type, templates in templates_per_task_type.items():
-        generated_table = algorithms_generate_table(templates)
-        print("\n", task_type)
-        print(generated_table)
-        assert generated_table in full_text, f"\n{generated_table} not in \n{full_text}\n for the task {task_type}\n"
+        registry = Registry(".")
+        templates_per_task_type = defaultdict(list)
+        for template in sorted(registry.templates, key=lambda x:str(x.task_type)):
+            templates_per_task_type[template.task_type].append(template)
+        for task_type, templates in templates_per_task_type.items():
+            generated_table = algorithms_generate_table(templates)
+            print("\n", task_type)
+            print(generated_table)
+            assert generated_table in full_text, f"\n{generated_table} not in \n{full_text}\n for the task {task_type}\n"

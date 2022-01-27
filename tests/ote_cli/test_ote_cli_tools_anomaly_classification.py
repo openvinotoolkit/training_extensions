@@ -15,11 +15,12 @@
 # and limitations under the License.
 
 import os
-
 import pytest
 
-from ote_cli.registry import Registry
+from constants.ote_cli_components import OteCliComponent
+from constants.requirements import Requirements
 
+from ote_cli.registry import Registry
 from tests.ote_cli.common import (
     create_venv,
     get_some_vars,
@@ -50,50 +51,67 @@ ote_dir = os.getcwd()
 templates = Registry('external').filter(task_type='ANOMALY_CLASSIFICATION').templates
 templates_ids = [template.model_template_id for template in templates]
 
-
-@pytest.mark.components
-def test_create_venv():
-    work_dir, template_work_dir, algo_backend_dir = get_some_vars(templates[0], root)
-    create_venv(algo_backend_dir, work_dir, template_work_dir)
-
-
-@pytest.mark.components
-@pytest.mark.parametrize("template", templates, ids=templates_ids)
-def test_ote_train(template):
-    ote_train_testing(template, root, ote_dir, args)
+@pytest.mark.components(OteCliComponent.OTE_CLI)
+class TestToolsAnomalyClassification:
+    @pytest.mark.priority_medium
+    @pytest.mark.component
+    @pytest.mark.reqids(Requirements.REQ_1)
+    def test_create_venv():
+        work_dir, template_work_dir, algo_backend_dir = get_some_vars(templates[0], root)
+        create_venv(algo_backend_dir, work_dir, template_work_dir)
 
 
-@pytest.mark.components
-@pytest.mark.parametrize("template", templates, ids=templates_ids)
-def test_ote_export(template):
-     ote_export_testing(template, root)
+    @pytest.mark.priority_medium
+    @pytest.mark.component
+    @pytest.mark.reqids(Requirements.REQ_1)
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_ote_train(template):
+        ote_train_testing(template, root, ote_dir, args)
 
 
-@pytest.mark.components
-@pytest.mark.parametrize("template", templates, ids=templates_ids)
-def test_ote_eval(template):
-    ote_eval_testing(template, root, ote_dir, args)
+    @pytest.mark.priority_medium
+    @pytest.mark.component
+    @pytest.mark.reqids(Requirements.REQ_1)
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_ote_export(template):
+        ote_export_testing(template, root)
 
 
-@pytest.mark.components
-@pytest.mark.parametrize("template", templates, ids=templates_ids)
-def test_ote_eval_openvino(template):
-    ote_eval_openvino_testing(template, root, ote_dir, args, threshold=0.0)
+    @pytest.mark.priority_medium
+    @pytest.mark.component
+    @pytest.mark.reqids(Requirements.REQ_1)
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_ote_eval(template):
+        ote_eval_testing(template, root, ote_dir, args)
 
 
-@pytest.mark.components
-@pytest.mark.parametrize("template", templates, ids=templates_ids)
-def test_ote_demo(template):
-    ote_demo_testing(template, root, ote_dir, args)
+    @pytest.mark.priority_medium
+    @pytest.mark.component
+    @pytest.mark.reqids(Requirements.REQ_1)
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_ote_eval_openvino(template):
+        ote_eval_openvino_testing(template, root, ote_dir, args, threshold=0.0)
 
 
-@pytest.mark.components
-@pytest.mark.parametrize("template", templates, ids=templates_ids)
-def test_ote_demo_openvino(template):
-    ote_demo_openvino_testing(template, root, ote_dir, args)
+    @pytest.mark.priority_medium
+    @pytest.mark.component
+    @pytest.mark.reqids(Requirements.REQ_1)
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_ote_demo(template):
+        ote_demo_testing(template, root, ote_dir, args)
 
 
-@pytest.mark.components
-@pytest.mark.parametrize("template", templates, ids=templates_ids)
-def test_ote_deploy_openvino(template):
-    ote_deploy_openvino_testing(template, root, ote_dir, args)
+    @pytest.mark.priority_medium
+    @pytest.mark.component
+    @pytest.mark.reqids(Requirements.REQ_1)
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_ote_demo_openvino(template):
+        ote_demo_openvino_testing(template, root, ote_dir, args)
+
+
+    @pytest.mark.priority_medium
+    @pytest.mark.component
+    @pytest.mark.reqids(Requirements.REQ_1)
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_ote_deploy_openvino(template):
+        ote_deploy_openvino_testing(template, root, ote_dir, args)
