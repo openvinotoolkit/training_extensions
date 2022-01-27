@@ -113,7 +113,7 @@ class TestToolsSegmentation:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_ote_demo_deployment(self, template):
+    def test_ote_demo_deployment(template):
         ote_demo_deployment_testing(template, root, ote_dir, args)
 
     @e2e_pytest_component

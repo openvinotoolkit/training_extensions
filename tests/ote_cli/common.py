@@ -313,6 +313,7 @@ def ote_demo_deployment_testing(template, root, ote_dir, args):
                     os.path.join(ote_dir, args['--input']),
                     '--delay',
                     '-1']
+
     assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
 
 
