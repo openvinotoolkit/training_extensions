@@ -479,7 +479,7 @@ def parse_model_template(model_template_path: str) -> ModelTemplate:
     # Input parameter validation
     check_file_path(
         file_path=model_template_path,
-        parameter_name="model_template_path",
+        file_path_name="model_template_path",
         expected_extensions=["yaml"],
     )
 

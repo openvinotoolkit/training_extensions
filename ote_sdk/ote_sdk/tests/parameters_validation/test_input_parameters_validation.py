@@ -43,11 +43,11 @@ from ote_sdk.tests.constants.requirements import Requirements
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestParamsValidation:
     @staticmethod
-    def random_image():
+    def random_image() -> Image:
         return Image(data=np.random.randint(low=0, high=255, size=(10, 16, 3)))
 
     @staticmethod
-    def scored_labels():
+    def scored_labels() -> list:
         detection_label = LabelEntity(name="detection label", domain=Domain.DETECTION)
         segmentation_label = LabelEntity(
             name="segmentation label", domain=Domain.SEGMENTATION
@@ -58,19 +58,19 @@ class TestParamsValidation:
         ]
 
     @staticmethod
-    def annotations():
+    def annotations() -> list:
         full_box_rectangle = Rectangle.generate_full_box()
         annotation = Annotation(shape=full_box_rectangle, labels=[])
         other_annotation = Annotation(shape=full_box_rectangle, labels=[])
         return [annotation, other_annotation]
 
-    def annotation_scene(self):
+    def annotation_scene(self) -> AnnotationSceneEntity:
         return AnnotationSceneEntity(
             annotations=self.annotations(), kind=AnnotationSceneKind.ANNOTATION
         )
 
     @staticmethod
-    def metadata():
+    def metadata() -> list:
         numpy = np.random.uniform(low=0.0, high=255.0, size=(10, 15, 3))
         metadata_item = TensorEntity(name="test_metadata", numpy=numpy)
         other_metadata_item = TensorEntity(name="other_metadata", numpy=numpy)
@@ -79,7 +79,7 @@ class TestParamsValidation:
             MetadataItemEntity(data=other_metadata_item),
         ]
 
-    def dataset_items(self):
+    def dataset_items(self) -> list:
         random_image = self.random_image()
         annotation_scene = self.annotation_scene()
         default_values_dataset_item = DatasetItemEntity(random_image, annotation_scene)
@@ -113,7 +113,7 @@ class TestParamsValidation:
     @staticmethod
     def check_value_error_exception_raised(
         correct_parameters: dict, unexpected_values: list, class_or_function
-    ):
+    ) -> None:
         for key, value in unexpected_values:
             incorrect_parameters_dict = dict(correct_parameters)
             incorrect_parameters_dict[key] = value
@@ -224,7 +224,7 @@ class TestParamsValidation:
             ("roi", unexpected_type_value),
             # Unexpected integer is specified as "metadata" parameter
             ("metadata", unexpected_type_value),
-            # Unexpected integer is specified as nested "metadata item"
+            # Unexpected integer is specified as nested "metadata" item
             ("metadata", self.metadata() + [unexpected_type_value]),  # type: ignore
             # Unexpected integer is specified as "subset" parameter
             ("subset", unexpected_type_value),

@@ -155,24 +155,24 @@ def check_that_file_exists(file_path: str, file_path_name: str):
         )
 
 
-def check_file_path(file_path: str, parameter_name: str, expected_extensions: list):
+def check_file_path(file_path: str, file_path_name: str, expected_extensions: list):
     """
     Function raises ValueError exception if non-string object is specified as file path, if file has unexpected
     extension or if file not exists
     """
     check_parameter_type(
-        parameter=file_path, parameter_name=parameter_name, expected_type=str
+        parameter=file_path, parameter_name=file_path_name, expected_type=str
     )
-    check_that_string_not_empty(string=file_path, parameter_name=parameter_name)
+    check_that_string_not_empty(string=file_path, parameter_name=file_path_name)
     check_file_extension(
         file_path=file_path,
-        file_path_name=parameter_name,
+        file_path_name=file_path_name,
         expected_extensions=expected_extensions,
     )
     check_that_null_character_absents_in_path(
-        file_path=file_path, file_path_name=parameter_name
+        file_path=file_path, file_path_name=file_path_name
     )
-    check_that_file_exists(file_path=file_path, file_path_name=parameter_name)
+    check_that_file_exists(file_path=file_path, file_path_name=file_path_name)
 
 
 def check_input_config_parameter(input_config):

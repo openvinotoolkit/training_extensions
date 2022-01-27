@@ -44,7 +44,7 @@ class Image(IMedia2DEntity):
         if file_path is not None:
             check_file_path(
                 file_path=file_path,
-                parameter_name="file_path",
+                file_path_name="file_path",
                 expected_extensions=["jpg", "png"],
             )
 
