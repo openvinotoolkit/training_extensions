@@ -32,9 +32,9 @@ from ote_sdk.entities.model import ModelEntity
 from ote_sdk.entities.model_template import TaskType
 from ote_sdk.serialization.label_mapper import LabelSchemaMapper
 from ote_sdk.usecases.adapters.model_adapter import ModelAdapter
-from ote_sdk.usecases.exportable_code.demo.demo_package import (
-    create_model,
-    create_output_converter,
+from ote_sdk.usecases.exportable_code.demo.demo_package import create_model
+from ote_sdk.usecases.exportable_code.prediction_to_annotation_converter import (
+    create_converter,
 )
 
 
@@ -186,9 +186,15 @@ def create_task_from_deployment(openvino_task_class, deployed_code_zip_path):
                     os.path.join(temp_dir, "demo_package", "config.json")
                 )
 
+                with open(config_path, encoding="UTF-8") as read_file:
+                    parameters = json.load(read_file)
+                converter_type = Domain[parameters["converter_type"]]
+
                 self.inferencer = self.Inferencer(
                     create_model(model_path, config_path),
-                    create_output_converter(config_path),
+                    create_converter(
+                        converter_type, self.task_environment.label_schema
+                    ),
                 )
 
         def infer(
@@ -197,13 +203,20 @@ def create_task_from_deployment(openvino_task_class, deployed_code_zip_path):
             inference_parameters: Optional[InferenceParameters] = None,
         ) -> DatasetEntity:
             """Inference method."""
-
             if inference_parameters is not None:
                 update_progress_callback = inference_parameters.update_progress
             dataset_size = len(dataset)
             for i, dataset_item in enumerate(dataset, 1):
                 predicted_scene = self.inferencer.predict(dataset_item.numpy)
                 dataset_item.append_annotations(predicted_scene.annotations)
+                if (
+                    self.task_environment.model_template.task_type
+                    == TaskType.CLASSIFICATION
+                ):
+                    dataset_item.append_labels(
+                        predicted_scene.annotations[0].get_labels()
+                    )
+
                 update_progress_callback(int(i / dataset_size * 100))
             return dataset
 
