@@ -151,8 +151,6 @@ def create_converter(
         converter = ClassificationToAnnotationConverter(labels)
     elif converter_type == Domain.ANOMALY_CLASSIFICATION:
         converter = AnomalyClassificationToAnnotationConverter(labels)
-    elif converter_type == Domain.COUNTING:
-        converter = MaskToAnnotationConverter(labels)
     else:
         raise ValueError(f"Unknown converter type: {converter_type}")
 
@@ -297,13 +295,11 @@ class MaskToAnnotationConverter(IPredictionToAnnotationConverter):
         self, predictions: tuple, metadata: Dict[str, Any]
     ) -> AnnotationSceneEntity:
         annotations = []
-        height, width = metadata["original_shape"][:2]
-        scores, classes, boxes, masks = predictions
-        assert len(scores) == len(classes) == len(boxes) == len(masks)
-        for score, class_idx, box, mask in zip(scores, classes, boxes, masks):
+        for score, class_idx, _, mask in zip(*predictions):
             mask = mask.astype(np.uint8)
             contours, hierarchies = cv2.findContours(
-              mask, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
+                mask, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE
+            )
             if hierarchies is None:
                 continue
             for contour, hierarchy in zip(contours, hierarchies[0]):
@@ -312,15 +308,21 @@ class MaskToAnnotationConverter(IPredictionToAnnotationConverter):
                 contour = list(contour)
                 if len(contour) <= 2:
                     continue
-                scored_label = ScoredLabel(self.labels[int(class_idx)-1], float(score))
                 points = [
                     Point(
-                      x=point[0][0] / width,
-                      y=point[0][1] / height) for point in contour]
+                        x=point[0][0] / metadata["original_shape"][1],
+                        y=point[0][1] / metadata["original_shape"][0],
+                    )
+                    for point in contour
+                ]
                 annotations.append(
-                  Annotation(
-                    Polygon(points=points),
-                    labels=[scored_label]))
+                    Annotation(
+                        Polygon(points=points),
+                        labels=[
+                            ScoredLabel(self.labels[int(class_idx) - 1], float(score))
+                        ],
+                    )
+                )
         annotation_scene = AnnotationSceneEntity(
             kind=AnnotationSceneKind.PREDICTION,
             annotations=annotations,
