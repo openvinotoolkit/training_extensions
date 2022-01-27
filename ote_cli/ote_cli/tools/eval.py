@@ -122,6 +122,8 @@ def main():
         task_class = create_task_from_deployment(
             get_impl_class(template.entrypoints.openvino), args.load_weights
         )
+    else:
+        raise ValueError(f"Unsupported file: {args.load_weights}")
 
     dataset_class = get_dataset_class(template.task_type)
 
