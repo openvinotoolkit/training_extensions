@@ -1,5 +1,5 @@
 """
-Initialization of Anomaly Classification Tasks
+Configurable parameters for Padim anomaly classification task
 """
 
 # Copyright (C) 2021 Intel Corporation
@@ -16,7 +16,16 @@ Initialization of Anomaly Classification Tasks
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .openvino import OpenVINOAnomalyClassificationTask
-from ote_anomalib.task import AnomalyClassificationTask
+from anomaly_classification.configs.configuration import BaseAnomalyClassificationConfig
+from attr import attrs
+from ote_sdk.configuration.elements import string_attribute
 
-__all__ = ["AnomalyClassificationTask", "OpenVINOAnomalyClassificationTask"]
+
+@attrs
+class PadimConfig(BaseAnomalyClassificationConfig):
+    """
+    Configurable parameters for PADIM anomaly classification task.
+    """
+
+    header = string_attribute("Configuration for Padim")
+    description = header

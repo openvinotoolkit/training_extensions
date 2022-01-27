@@ -1,5 +1,6 @@
 """
-Initialization of Anomaly Classification Tasks
+Initialization of Configurable Parameters for STFPM
+Anomaly Classification Task
 """
 
 # Copyright (C) 2021 Intel Corporation
@@ -16,7 +17,6 @@ Initialization of Anomaly Classification Tasks
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .openvino import OpenVINOAnomalyClassificationTask
-from ote_anomalib.task import AnomalyClassificationTask
+from .configuration import STFPMConfig
 
-__all__ = ["AnomalyClassificationTask", "OpenVINOAnomalyClassificationTask"]
+__all__ = ["STFPMConfig"]

@@ -1,0 +1,18 @@
+{
+    "algorithms": [
+        {
+            "name": "DefaultQuantization",
+            "params": {
+                "preset": "performance",
+                "target_device": "ANY",
+                "range_estimator": {
+                    "preset": "quantile"
+                },
+                "ignored": {
+                    "scope": ["Sqrt_105/pow_", "Mul_97"]
+                },
+                "shuffle_data": true
+            }
+        }
+    ]
+}

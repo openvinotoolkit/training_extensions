@@ -28,7 +28,7 @@ from anomalib.core.callbacks import MinMaxNormalizationCallback
 from anomalib.core.model import AnomalyModule
 from anomalib.models import get_model
 from omegaconf import DictConfig, ListConfig
-from ote_anomalib.callbacks import InferenceCallback, ProgressCallback
+from ote_anomalib.callbacks import AnomalyClassificationInferenceCallback, ProgressCallback
 from ote_anomalib.config import get_anomalib_config
 from ote_anomalib.data import OTEAnomalyDataModule
 from ote_anomalib.logging import get_logger
@@ -82,7 +82,7 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
         """
         hyper_parameters = self.task_environment.get_hyper_parameters()
         config = get_anomalib_config(task_name=self.model_name, ote_config=hyper_parameters)
-        config.dataset.task = "classification"
+        # config.dataset.task = "classification"
         config.project.path = self.project_path
         return config
 
@@ -202,7 +202,7 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
 
         # Callbacks.
         progress = ProgressCallback(parameters=inference_parameters)
-        inference = InferenceCallback(dataset, self.labels)
+        inference = AnomalyClassificationInferenceCallback(dataset, self.labels)
         normalize = MinMaxNormalizationCallback()
         callbacks = [progress, normalize, inference]
 

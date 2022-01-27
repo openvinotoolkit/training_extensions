@@ -1,5 +1,5 @@
 """
-Initialization of Anomaly Classification Tasks
+Initialization of Configurable Parameters
 """
 
 # Copyright (C) 2021 Intel Corporation
@@ -15,8 +15,3 @@ Initialization of Anomaly Classification Tasks
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions
 # and limitations under the License.
-
-from .openvino import OpenVINOAnomalyClassificationTask
-from ote_anomalib.task import AnomalyClassificationTask
-
-__all__ = ["AnomalyClassificationTask", "OpenVINOAnomalyClassificationTask"]
