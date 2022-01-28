@@ -25,7 +25,7 @@ Custom_Object_Detection_Gen3_VFNet | VFNet | 457.4 | 126.0 | mmdetection/configs
 ## Object Counting
 ID | Name | Complexity (GFlops) | Model size (MB) | Path
 ------- | ------- | ------- | ------- | -------
-Custom_Counting_Instance_Segmentation-MaskRCNN-ResNet50 | MaskRCNN-ResNet50 | 533.8 | 177.9 | mmdetection/configs/ote/custom-counting-instance-seg/resnet50_maskrcnn/template.yaml
+Custom_Counting_Instance_Segmentation_MaskRCNN_ResNet50 | MaskRCNN-ResNet50 | 533.8 | 177.9 | mmdetection/configs/ote/custom-counting-instance-seg/resnet50_maskrcnn/template.yaml
 
 ## Semantic Segmentaion
 ID | Name | Complexity (GFlops) | Model size (MB) | Path
