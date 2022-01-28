@@ -103,7 +103,7 @@ class TestToolsSegmentation:
     @pytest.mark.component
     @pytest.mark.reqids(Requirements.REQ_1)
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_ote_demo(template):
+    def test_ote_demo(self, template):
         ote_demo_testing(template, root, ote_dir, args)
 
 
@@ -111,7 +111,7 @@ class TestToolsSegmentation:
     @pytest.mark.component
     @pytest.mark.reqids(Requirements.REQ_1)
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_ote_demo_openvino(template):
+    def test_ote_demo_openvino(self, template):
         ote_demo_openvino_testing(template, root, ote_dir, args)
 
 
@@ -119,5 +119,5 @@ class TestToolsSegmentation:
     @pytest.mark.component
     @pytest.mark.reqids(Requirements.REQ_1)
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_ote_deploy_openvino(template):
+    def test_ote_deploy_openvino(self, template):
         ote_deploy_openvino_testing(template, root, ote_dir, args)
