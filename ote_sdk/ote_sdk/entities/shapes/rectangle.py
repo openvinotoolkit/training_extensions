@@ -57,10 +57,10 @@ class Rectangle(Shape):
         # Initialization parameters validation
         check_required_and_optional_parameters_type(
             required_parameters=[
-                (x1, "x1", (float, int, np.float32)),
-                (y1, "y1", (float, int, np.float32)),
-                (x2, "x2", (float, int, np.float32)),
-                (y2, "y2", (float, int, np.float32)),
+                (x1, "x1", (float, int)),
+                (y1, "y1", (float, int)),
+                (x2, "x2", (float, int)),
+                (y2, "y2", (float, int)),
             ],
             optional_parameters=[
                 (labels, "labels", list),

@@ -5,7 +5,6 @@
 """This module define the label entity."""
 
 import datetime
-import warnings
 from enum import Enum
 from typing import Optional
 
@@ -97,13 +96,9 @@ class LabelEntity:
                 (hotkey, "hotkey", str),
                 (creation_date, "creation_date", datetime.datetime),
                 (is_empty, "is_empty", bool),
-                (id, "id", (ID, int)),
+                (id, "id", ID),
             ],
         )
-        if isinstance(id, int):
-            warnings.warn(
-                "ID-type object is expected as 'id' LabelEntity initialization parameter"
-            )
 
         id = ID() if id is None else id
         color = Color.random() if color is None else color
