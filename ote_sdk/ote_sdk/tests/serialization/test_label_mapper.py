@@ -4,18 +4,28 @@
 #
 
 
+import json
 from random import randint
 
 import pytest
 
 from ote_sdk.entities.id import ID
 from ote_sdk.entities.label import Color, Domain, LabelEntity
-from ote_sdk.entities.label_schema import LabelSchemaEntity
+from ote_sdk.entities.label_schema import (
+    LabelGraph,
+    LabelGroup,
+    LabelGroupType,
+    LabelSchemaEntity,
+    LabelTree,
+)
 from ote_sdk.serialization.datetime_mapper import DatetimeMapper
 from ote_sdk.serialization.label_mapper import (
     ColorMapper,
+    LabelGraphMapper,
+    LabelGroupMapper,
     LabelMapper,
     LabelSchemaMapper,
+    label_schema_to_bytes,
 )
 from ote_sdk.tests.constants.ote_sdk_components import OteSdkComponent
 from ote_sdk.tests.constants.requirements import Requirements
@@ -119,8 +129,8 @@ class TestLabelSchemaEntityMapper:
             )
             for i, name in enumerate(names)
         ]
-        label_shema = LabelSchemaEntity.from_labels(labels)
-        serialized = LabelSchemaMapper.forward(label_shema)
+        label_schema = LabelSchemaEntity.from_labels(labels)
+        serialized = LabelSchemaMapper.forward(label_schema)
 
         assert serialized == {
             "label_tree": {"type": "tree", "directed": True, "nodes": [], "edges": []},
@@ -132,7 +142,7 @@ class TestLabelSchemaEntityMapper:
             },
             "label_groups": [
                 {
-                    "_id": label_shema.get_groups()[0].id,
+                    "_id": label_schema.get_groups()[0].id,
                     "name": "from_label_list",
                     "label_ids": ["0", "1", "2"],
                     "relation_type": "EXCLUSIVE",
@@ -170,4 +180,209 @@ class TestLabelSchemaEntityMapper:
         }
 
         deserialized = LabelSchemaMapper.backward(serialized)
-        assert label_shema == deserialized
+        assert label_schema == deserialized
+
+        # Checking value returned by "label_schema_to_bytes" function
+        expected_label_schema_to_bytes = json.dumps(serialized, indent=4).encode()
+        actual_label_schema_to_bytes = label_schema_to_bytes(label_schema)
+        assert actual_label_schema_to_bytes == expected_label_schema_to_bytes
+
+
+@pytest.mark.components(OteSdkComponent.OTE_SDK)
+class TestLabelGroupMapper:
+    @pytest.mark.priority_medium
+    @pytest.mark.component
+    @pytest.mark.reqids(Requirements.REQ_1)
+    def test_label_group_serialization(self):
+        """
+        This test serializes flat LabelGroup and checks serialized representation.
+        Then it compares deserialized LabelGroup with original one.
+        """
+
+        names = ["cat", "dog", "mouse"]
+        labels = [
+            LabelEntity(
+                name=name,
+                domain=Domain.CLASSIFICATION,
+                id=ID(str(i)),
+            )
+            for i, name in enumerate(names)
+        ]
+        label_group = LabelGroup(
+            name="Test LabelGroup", labels=labels, group_type=LabelGroupType.EMPTY_LABEL
+        )
+        serialized = LabelGroupMapper.forward(label_group)
+        assert serialized == {
+            "_id": label_group.id,
+            "name": "Test LabelGroup",
+            "label_ids": ["0", "1", "2"],
+            "relation_type": "EMPTY_LABEL",
+        }
+        all_labels = {ID(str(i)): labels[i] for i in range(3)}
+
+        deserialized = LabelGroupMapper.backward(
+            instance=serialized, all_labels=all_labels
+        )
+        assert deserialized == label_group
+
+
+@pytest.mark.components(OteSdkComponent.OTE_SDK)
+class TestLabelGraphMapper:
+    label_0 = LabelEntity(name="label_0", domain=Domain.SEGMENTATION, id=ID("0"))
+    label_0_1 = LabelEntity(name="label_0_1", domain=Domain.SEGMENTATION, id=ID("0_1"))
+    label_0_2 = LabelEntity(name="label_0_2", domain=Domain.SEGMENTATION, id=ID("0_2"))
+    label_0_1_1 = LabelEntity(
+        name="label_0_1_1", domain=Domain.SEGMENTATION, id=ID("0_1_1")
+    )
+    label_0_1_2 = LabelEntity(
+        name="label_0_1_2", domain=Domain.SEGMENTATION, id=ID("0_1_2")
+    )
+    label_0_2_1 = LabelEntity(
+        name="label_0_2_1", domain=Domain.SEGMENTATION, id=ID("0_2_1")
+    )
+
+    @pytest.mark.priority_medium
+    @pytest.mark.component
+    @pytest.mark.reqids(Requirements.REQ_1)
+    def test_label_graph_forward(self):
+        """
+        <b>Description:</b>
+        Check "LabelGraphMapper" class "forward" method
+
+        <b>Input data:</b>
+        "LabelGraph" and "LabelTree" objects
+
+        <b>Expected results:</b>
+        Test passes if dictionary returned by "forward" method is equal to expected
+
+        <b>Steps</b>
+        1. Check dictionary returned by "forward" method for "LabelGraph" object
+        2. Check dictionary returned by "forward" method for "LabelTree" object
+        """
+        # Checking dictionary returned by "forward" for "LabelGraph"
+        label_graph = LabelGraph(directed=False)
+        label_graph.add_edges(
+            [
+                (self.label_0, self.label_0_1),
+                (self.label_0, self.label_0_2),
+                (self.label_0_1, self.label_0_1_1),
+                (self.label_0_1, self.label_0_1_2),
+                (self.label_0_1_1, self.label_0_1_2),
+            ]
+        )
+        forward = LabelGraphMapper.forward(label_graph)
+        assert forward == {
+            "type": "graph",
+            "directed": False,
+            "nodes": ["0", "0_1", "0_2", "0_1_1", "0_1_2"],
+            "edges": [
+                ("0", "0_1"),
+                ("0", "0_2"),
+                ("0_1", "0_1_1"),
+                ("0_1", "0_1_2"),
+                ("0_1_1", "0_1_2"),
+            ],
+        }
+        # Checking dictionary returned by "forward" for "LabelTree"
+        label_tree = LabelTree()
+        for parent, child in [
+            (self.label_0, self.label_0_1),
+            (self.label_0, self.label_0_2),
+            (self.label_0_1, self.label_0_1_1),
+            (self.label_0_1, self.label_0_1_2),
+            (self.label_0_2, self.label_0_2_1),
+        ]:
+            label_tree.add_child(parent, child)
+        forward = LabelGraphMapper.forward(label_tree)
+        assert forward == {
+            "type": "tree",
+            "directed": True,
+            "nodes": ["0_1", "0", "0_2", "0_1_1", "0_1_2", "0_2_1"],
+            "edges": [
+                ("0_1", "0"),
+                ("0_2", "0"),
+                ("0_1_1", "0_1"),
+                ("0_1_2", "0_1"),
+                ("0_2_1", "0_2"),
+            ],
+        }
+
+    @pytest.mark.priority_medium
+    @pytest.mark.component
+    @pytest.mark.reqids(Requirements.REQ_1)
+    def test_label_graph_backward(self):
+        """
+        <b>Description:</b>
+        Check "LabelGraphMapper" class "backward" method
+
+        <b>Input data:</b>
+        Dictionary object to deserialize, labels list
+
+        <b>Expected results:</b>
+        Test passes if "LabelGraph" or "LabelTree" object returned by "backward" method is equal to expected
+
+        <b>Steps</b>
+        1. Check dictionary returned by "backward" method for "LabelGraph" object
+        2. Check dictionary returned by "backward" method for "LabelTree" object
+        3. Check that "ValueError" exception is raised when unsupported type is specified as "type" key in dictionary
+        object of "instance" parameter for "backward" method
+        """
+        # Checking dictionary returned by "backward" for "LabelGraph"
+        forward = {
+            "type": "graph",
+            "directed": False,
+            "nodes": ["0", "0_1", "0_2", "0_1_1"],
+            "edges": [("0", "0_1"), ("0", "0_2"), ("0_1", "0_1_1"), ("0_1_1", "0_2")],
+        }
+        labels = {
+            ID("0"): self.label_0,
+            ID("0_1"): self.label_0_1,
+            ID("0_2"): self.label_0_2,
+            ID("0_1_1"): self.label_0_1_1,
+        }
+        expected_backward = LabelGraph(directed=False)
+        expected_backward.add_edges(
+            [
+                (self.label_0, self.label_0_1),
+                (self.label_0, self.label_0_2),
+                (self.label_0_1, self.label_0_1_1),
+                (self.label_0_1_1, self.label_0_2),
+            ]
+        )
+        actual_backward = LabelGraphMapper.backward(instance=forward, all_labels=labels)
+        assert actual_backward == expected_backward
+        # Checking dictionary returned by "backward" for "LabelTree"
+        forward = {
+            "type": "tree",
+            "directed": True,
+            "nodes": ["0_1", "0", "0_2", "0_1_1", "0_2_1"],
+            "edges": [("0_1", "0"), ("0_2", "0"), ("0_1_1", "0_1"), ("0_2_1", "0_2")],
+        }
+        labels = {
+            ID("0"): self.label_0,
+            ID("0_1"): self.label_0_1,
+            ID("0_2"): self.label_0_2,
+            ID("0_1_1"): self.label_0_1_1,
+            ID("0_1_2"): self.label_0_1_2,
+            ID("0_2_1"): self.label_0_2_1,
+        }
+        expected_backward = LabelTree()
+        for parent, child in [
+            (self.label_0, self.label_0_1),
+            (self.label_0, self.label_0_2),
+            (self.label_0_1, self.label_0_1_1),
+            (self.label_0_2, self.label_0_2_1),
+        ]:
+            expected_backward.add_child(parent, child)
+        actual_backward = LabelGraphMapper.backward(instance=forward, all_labels=labels)
+        assert actual_backward == expected_backward
+        # Checking "ValueError" exception raised when unsupported type specified as "type" in dictionary "instance" for
+        # "backward"
+        forward = {
+            "type": "rectangle",
+            "directed": True,
+            "nodes": ["0_1", "0", "0_2", "0_1_1", "0_2_1"],
+            "edges": [("0_1", "0"), ("0_2", "0"), ("0_1_1", "0_1"), ("0_2_1", "0_2")],
+        }
+        with pytest.raises(ValueError):
+            LabelGraphMapper.backward(instance=forward, all_labels=labels)
