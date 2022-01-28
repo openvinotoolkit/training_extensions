@@ -32,6 +32,6 @@ class TestTemplates:
     @pytest.mark.component
     @pytest.mark.reqids(Requirements.REQ_1)
     @pytest.mark.parametrize("path", paths, ids=ids)
-    def test_template(path):
+    def test_template(self, path):
         template = parse_model_template(path)
         assert template.hyper_parameters.data

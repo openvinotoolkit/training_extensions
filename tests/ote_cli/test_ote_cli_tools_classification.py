@@ -63,7 +63,7 @@ class TestToolsClassification:
     @pytest.mark.priority_medium
     @pytest.mark.component
     @pytest.mark.reqids(Requirements.REQ_1)
-    def test_create_venv():
+    def test_create_venv(self):
         work_dir, template_work_dir, algo_backend_dir = get_some_vars(templates[0], root)
         create_venv(algo_backend_dir, work_dir, template_work_dir)
 
@@ -72,7 +72,7 @@ class TestToolsClassification:
     @pytest.mark.component
     @pytest.mark.reqids(Requirements.REQ_1)
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_ote_train(template):
+    def test_ote_train(self, template):
         ote_train_testing(template, root, ote_dir, args)
 
 
@@ -80,7 +80,7 @@ class TestToolsClassification:
     @pytest.mark.component
     @pytest.mark.reqids(Requirements.REQ_1)
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_ote_export(template):
+    def test_ote_export(self, template):
         ote_export_testing(template, root)
 
 
@@ -88,7 +88,7 @@ class TestToolsClassification:
     @pytest.mark.component
     @pytest.mark.reqids(Requirements.REQ_1)
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_ote_eval(template):
+    def test_ote_eval(self, template):
         ote_eval_testing(template, root, ote_dir, args)
 
 
@@ -96,7 +96,7 @@ class TestToolsClassification:
     @pytest.mark.component
     @pytest.mark.reqids(Requirements.REQ_1)
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_ote_eval_openvino(template):
+    def test_ote_eval_openvino(self, template):
         ote_eval_openvino_testing(template, root, ote_dir, args, threshold=0.0)
 
 
@@ -104,7 +104,7 @@ class TestToolsClassification:
     @pytest.mark.component
     @pytest.mark.reqids(Requirements.REQ_1)
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_ote_demo(template):
+    def test_ote_demo(self, template):
         ote_demo_testing(template, root, ote_dir, args)
 
 
@@ -112,7 +112,7 @@ class TestToolsClassification:
     @pytest.mark.component
     @pytest.mark.reqids(Requirements.REQ_1)
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_ote_demo_openvino(template):
+    def test_ote_demo_openvino(self, template):
         ote_demo_openvino_testing(template, root, ote_dir, args)
 
 
@@ -120,7 +120,7 @@ class TestToolsClassification:
     @pytest.mark.component
     @pytest.mark.reqids(Requirements.REQ_1)
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_ote_deploy_openvino(template):
+    def test_ote_deploy_openvino(self, template):
         ote_deploy_openvino_testing(template, root, ote_dir, args)
 
 
@@ -128,5 +128,5 @@ class TestToolsClassification:
     @pytest.mark.component
     @pytest.mark.reqids(Requirements.REQ_1)
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_ote_hpo(template):
+    def test_ote_hpo(self, template):
         ote_hpo_testing(template, root, ote_dir, args)
