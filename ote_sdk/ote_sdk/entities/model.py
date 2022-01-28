@@ -126,7 +126,11 @@ class ModelEntity:
         check_parameter_str_class_name(
             parameter=train_dataset,
             parameter_name="train_dataset",
-            expected_class_name="DatasetEntity",
+            expected_class_names=[
+                "DatasetEntity",
+                "HpoDataset",
+                "ObjectDetectionDataset",
+            ],
         )
         check_parameter_type(
             parameter=configuration,

@@ -73,12 +73,12 @@ def check_several_lists_elements_type(parameter_name_expected_type: list):
             )
 
 
-def check_parameter_str_class_name(parameter, parameter_name, expected_class_name):
+def check_parameter_str_class_name(parameter, parameter_name, expected_class_names):
     """Function raises ValueError exception if string class name is not equal to expected"""
     parameter_class_name = type(parameter).__name__
-    if parameter_class_name != expected_class_name:
+    if (parameter_class_name in expected_class_names) is None:
         raise ValueError(
-            f"Unexpected type of '{parameter_name}' parameter, expected: {expected_class_name}, actual: "
+            f"Unexpected type of '{parameter_name}' parameter, expected: {expected_class_names}, actual: "
             f"{parameter_class_name}"
         )
 

@@ -297,8 +297,8 @@ class TestParamsValidation:
             ("creation_date", unexpected_type_value),
             # Unexpected integer is specified as "is_empty" parameter
             ("is_empty", unexpected_type_value),
-            # Unexpected integer is specified as "id" parameter
-            ("id", unexpected_type_value),
+            # Unexpected string is specified as "id" parameter
+            ("id", "unexpected str"),
         ]
         self.check_value_error_exception_raised(
             correct_parameters=correct_values_dict,
