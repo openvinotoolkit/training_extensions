@@ -22,7 +22,7 @@ from constants.ote_cli_components import OteCliComponent
 from constants.requirements import Requirements
 
 from ote_cli.registry import Registry
-from tests.ote_cli.common import (
+from common import (
     collect_env_vars,
     create_venv,
     get_some_vars,
