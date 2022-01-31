@@ -59,12 +59,13 @@ class OTEAnomalyTrainer:
         dataset_path: str = "./datasets/MVTec",
         category: str = "bottle",
     ):
-        dataset_path = os.path.join(dataset_path, category)
-        self.dataset_generator = OteMvtecDataset(path=dataset_path)
-        self.dataset = self.dataset_generator.generate()
-
         self.model_template_path = model_template_path
         self.model_template = parse_model_template(model_template_path)
+
+        dataset_path = os.path.join(dataset_path, category)
+        self.dataset_generator = OteMvtecDataset(path=dataset_path, task_type=self.model_template.task_type)
+        self.dataset = self.dataset_generator.generate()
+
         self.task_environment = self.create_task_environment()
         self.base_task = self.create_task()
         self.openvino_task: OpenVINOAnomalyClassificationTask

@@ -37,6 +37,7 @@ from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.entities.shapes.polygon import Point, Polygon
 from ote_sdk.entities.shapes.rectangle import Rectangle
 from ote_sdk.entities.subset import Subset
+from ote_sdk.entities.model_template import TaskType
 
 
 class OteMvtecDataset:
@@ -63,7 +64,7 @@ class OteMvtecDataset:
         split_ratio: float = 0.5,
         seed: int = 0,
         create_validation_set: bool = True,
-        task_type: str = "segmentation",
+        task_type: TaskType = TaskType.ANOMALY_CLASSIFICATION,
     ):
         self.path = path if isinstance(path, Path) else Path(path)
         self.split_ratio = split_ratio
@@ -121,12 +122,12 @@ class OteMvtecDataset:
             image = Image(file_path=sample.image_path)
 
             # Create annotation
-            if self.task_type == "classification" or sample.label == self.normal_label:
+            if self.task_type == TaskType.ANOMALY_CLASSIFICATION or sample.label == self.normal_label:
                 shape = Rectangle(x1=0, y1=0, x2=1, y2=1)
                 labels = [ScoredLabel(sample.label)]
                 annotations = [Annotation(shape=shape, labels=labels)]
                 annotation_scene = AnnotationSceneEntity(annotations=annotations, kind=AnnotationSceneKind.ANNOTATION)
-            elif self.task_type == "segmentation" and sample.label == self.abnormal_label:
+            elif self.task_type == TaskType.ANOMALY_SEGMENTATION and sample.label == self.abnormal_label:
                 mask = cv2.imread(sample.mask_path, cv2.IMREAD_GRAYSCALE)
                 annotations = self.annotations_from_mask(mask)
                 annotation_scene = AnnotationSceneEntity(annotations=annotations, kind=AnnotationSceneKind.ANNOTATION)

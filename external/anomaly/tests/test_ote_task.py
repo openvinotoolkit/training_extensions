@@ -31,7 +31,12 @@ logger = logging.getLogger(__name__)
 
 @pytest.mark.parametrize(
     ["task_path", "template_path"],
-    [("anomaly_classification", "padim"), ("anomaly_classification", "stfpm")],
+    [
+     ("anomaly_classification", "padim"),
+     ("anomaly_classification", "stfpm"),
+     ("anomaly_segmentation", "padim"),
+     ("anomaly_segmentation", "stfpm")
+    ],
 )
 class TestAnomalyClassification:
     """
