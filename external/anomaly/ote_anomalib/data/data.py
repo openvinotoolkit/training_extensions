@@ -19,14 +19,18 @@ Anomaly Dataset Utils
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Union
 
+import numpy as np
 from anomalib.data.transforms import PreProcessor
 from omegaconf import DictConfig, ListConfig
-from ote_anomalib.logging import get_logger
-from ote_sdk.entities.datasets import DatasetEntity
-from ote_sdk.entities.subset import Subset
 from pytorch_lightning.core.datamodule import LightningDataModule
 from torch import Tensor
 from torch.utils.data import DataLoader, Dataset
+
+from ote_anomalib.logging import get_logger
+from ote_sdk.entities.datasets import DatasetEntity
+from ote_sdk.entities.shapes.polygon import Polygon
+from ote_sdk.entities.subset import Subset
+from ote_sdk.utils.segmentation_utils import mask_from_dataset_item
 
 logger = get_logger(__name__)
 
@@ -77,13 +81,23 @@ class OTEAnomalyDataset(Dataset):
         return len(self.dataset)
 
     def __getitem__(self, index: int) -> Dict[str, Union[int, Tensor]]:
-        item = self.dataset[index]
-        image = self.pre_processor(image=item.numpy)["image"]
-        try:
-            label = 0 if item.get_shapes_labels()[0].name == LabelNames.normal else 1
-        except IndexError:
-            return {"index": index, "image": image}
-        return {"index": index, "image": image, "label": label}
+        dataset_item = self.dataset[index]
+        item = {"index": index}
+        if self.config.dataset.task == "classification":
+            item["image"] = self.pre_processor(image=dataset_item.numpy)["image"]
+        elif self.config.dataset.task == "segmentation":
+            if any([isinstance(annotation.shape, Polygon) for annotation in dataset_item.get_annotations()]):
+                mask = mask_from_dataset_item(dataset_item, dataset_item.get_shapes_labels()).squeeze()
+            else:
+                mask = np.zeros(dataset_item.numpy.shape[:2])
+            pre_processed = self.pre_processor(image=dataset_item.numpy, mask=mask)
+            item["image"] = pre_processed["image"]
+            item["mask"] = pre_processed["mask"]
+        else:
+            raise ValueError(f"Unsupported task type: {self.config.dataset.task}")
+        if len(dataset_item.get_shapes_labels()) > 0:
+            item["label"] = 0 if dataset_item.get_shapes_labels()[0].name == LabelNames.normal else 1
+        return item
 
 
 class OTEAnomalyDataModule(LightningDataModule):
