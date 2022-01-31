@@ -19,7 +19,6 @@ Utils for dynamically importing stuff
 import json
 import os
 
-from ote_sdk.entities.id import ID
 from ote_sdk.entities.label import Domain, LabelEntity
 from ote_sdk.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
 from ote_sdk.entities.model import ModelEntity
@@ -113,17 +112,5 @@ def generate_label_schema(dataset, task_type):
             label_schema.add_group(single_groups[-1])
         label_schema.add_group(empty_group, exclusive_with=single_groups)
         return label_schema
-
-    if task_type == TaskType.ANOMALY_CLASSIFICATION:
-        return LabelSchemaEntity.from_labels(
-            [
-                LabelEntity(
-                    name="Normal", domain=Domain.ANOMALY_CLASSIFICATION, id=ID(0)
-                ),
-                LabelEntity(
-                    name="Anomalous", domain=Domain.ANOMALY_CLASSIFICATION, id=ID(1)
-                ),
-            ]
-        )
 
     return LabelSchemaEntity.from_labels(dataset.get_labels())
