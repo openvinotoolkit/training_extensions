@@ -18,11 +18,11 @@ from pathlib import Path
 from typing import List, Union
 
 import cv2
-import numpy as np
 from anomalib.data.mvtec import make_mvtec_dataset
 from pandas.core.frame import DataFrame
 
 from ote_anomalib.data import LabelNames
+from ote_anomalib.data.utils import annotations_from_mask
 from ote_sdk.entities.annotation import (
     Annotation,
     AnnotationSceneEntity,
@@ -33,11 +33,10 @@ from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.id import ID
 from ote_sdk.entities.image import Image
 from ote_sdk.entities.label import Domain, LabelEntity
+from ote_sdk.entities.model_template import TaskType
 from ote_sdk.entities.scored_label import ScoredLabel
-from ote_sdk.entities.shapes.polygon import Point, Polygon
 from ote_sdk.entities.shapes.rectangle import Rectangle
 from ote_sdk.entities.subset import Subset
-from ote_sdk.entities.model_template import TaskType
 
 
 class OteMvtecDataset:
@@ -129,7 +128,7 @@ class OteMvtecDataset:
                 annotation_scene = AnnotationSceneEntity(annotations=annotations, kind=AnnotationSceneKind.ANNOTATION)
             elif self.task_type == TaskType.ANOMALY_SEGMENTATION and sample.label == self.abnormal_label:
                 mask = cv2.imread(sample.mask_path, cv2.IMREAD_GRAYSCALE)
-                annotations = self.annotations_from_mask(mask)
+                annotations = annotations_from_mask(mask, self.abnormal_label)
                 annotation_scene = AnnotationSceneEntity(annotations=annotations, kind=AnnotationSceneKind.ANNOTATION)
             else:
                 raise ValueError(f"Unknown task type: {self.task_type}")
@@ -142,23 +141,3 @@ class OteMvtecDataset:
 
         dataset = DatasetEntity(items=dataset_items)
         return dataset
-
-    def annotations_from_mask(self, mask: np.ndarray):
-        height, width = mask.shape[:2]
-        contours, _ = cv2.findContours(mask, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_NONE)
-        annotations = []
-
-        for contour in contours:
-            points = list((point[0][0] / width, point[0][1] / height) for point in contour)
-            points = [Point(x=x, y=y) for x, y in points]
-
-            polygon = Polygon(points=points)
-            annotations.append(
-                Annotation(
-                    shape=polygon,
-                    labels=[ScoredLabel(self.abnormal_label, 1.0)],
-                    # id=ID(ObjectId()),
-                )
-            )
-
-        return annotations

@@ -29,6 +29,7 @@ from ote_sdk.entities.label import LabelEntity
 from ote_sdk.entities.result_media import ResultMediaEntity
 from ote_sdk.entities.scored_label import ScoredLabel
 from pytorch_lightning.callbacks import Callback
+from ote_anomalib.data.utils import annotations_from_mask
 
 logger = get_logger(__name__)
 
@@ -56,14 +57,17 @@ class AnomalyClassificationInferenceCallback(Callback):
         pred_scores = np.hstack([output["pred_scores"].cpu() for output in outputs])
         pred_labels = np.hstack([output["pred_labels"].cpu() for output in outputs])
         anomaly_maps = np.vstack([output["anomaly_maps"].cpu() for output in outputs])
+        pred_masks = np.hstack([output["pred_masks"].cpu() for output in outputs])
 
         # Loop over dataset again to assign predictions
-        for dataset_item, pred_score, pred_label, anomaly_map in zip(
-            self.ote_dataset, pred_scores, pred_labels, anomaly_maps
+        for dataset_item, pred_score, pred_label, anomaly_map, pred_mask in zip(
+            self.ote_dataset, pred_scores, pred_labels, anomaly_maps, pred_masks
         ):
             label = self.anomalous_label if pred_label else self.normal_label
             probability = (1 - pred_score) if pred_score < 0.5 else pred_score
             dataset_item.append_labels([ScoredLabel(label=label, probability=float(probability))])
+            mask = pred_mask.squeeze().astype(np.uint8)
+            dataset_item.append_annotations(annotations_from_mask(mask, self.anomalous_label))
 
             heatmap = anomaly_map_to_color_map(anomaly_map.squeeze(), normalize=False)
             heatmap_media = ResultMediaEntity(
