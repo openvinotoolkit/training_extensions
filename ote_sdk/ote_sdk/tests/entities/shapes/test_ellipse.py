@@ -50,7 +50,7 @@ class TestEllipse:
         return width_gt_height_ellipse_params
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_ellipse(self):
         """
@@ -119,7 +119,7 @@ class TestEllipse:
         assert width_gt_height_ellipse.major_axis == pytest.approx(0.15000000000000002)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_ellipse_magic_methods(self):
         """
@@ -171,7 +171,7 @@ class TestEllipse:
         assert hash(ellipse) == hash(str(ellipse))
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_ellipse_normalize_wrt_roi_shape(self):
         """
@@ -202,7 +202,7 @@ class TestEllipse:
             ellipse.normalize_wrt_roi_shape("123")
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_ellipse_denormalize_wrt_roi_shape(self):
         """
@@ -233,7 +233,7 @@ class TestEllipse:
             ellipse.denormalize_wrt_roi_shape("123")
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_ellipse_get_evenly_distributed_ellipse_coordinates(self):
         """
@@ -279,7 +279,7 @@ class TestEllipse:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_ellipse__as_shapely_polygon(self):
         """
@@ -303,7 +303,7 @@ class TestEllipse:
         assert shapely_polygon.area == pytest.approx(0.1958331774442254)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_ellipse_get_area(self):
         """

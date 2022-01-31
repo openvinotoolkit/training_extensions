@@ -229,7 +229,7 @@ class TestDatasetItemEntity:
         assert roi_annotation_in_scene
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_dataset_item_initialization(self):
         """
@@ -269,7 +269,7 @@ class TestDatasetItemEntity:
         assert specified_values_dataset_item.subset == subset
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_dataset_item_repr(self):
         """
@@ -310,7 +310,7 @@ class TestDatasetItemEntity:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_dataset_item_roi(self):
         """
@@ -361,7 +361,7 @@ class TestDatasetItemEntity:
         assert full_box_label_dataset_item.roi is full_box_annotation
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_dataset_item_roi_numpy(self):
         """
@@ -437,7 +437,7 @@ class TestDatasetItemEntity:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_dataset_item_numpy(self):
         """
@@ -467,7 +467,7 @@ class TestDatasetItemEntity:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_dataset_item_width(self):
         """
@@ -493,7 +493,7 @@ class TestDatasetItemEntity:
         assert roi_specified_dataset_item.width == 12
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_dataset_item_height(self):
         """
@@ -519,7 +519,7 @@ class TestDatasetItemEntity:
         assert roi_specified_dataset_item.height == 8
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_dataset_item_get_annotations(self):
         """
@@ -577,7 +577,7 @@ class TestDatasetItemEntity:
         self.compare_denormalized_annotations(result_annotations, expected_annotations)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_dataset_item_append_annotations(self):
         """
@@ -639,7 +639,7 @@ class TestDatasetItemEntity:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_dataset_item_get_roi_labels(self):
         """
@@ -672,7 +672,7 @@ class TestDatasetItemEntity:
         assert dataset_item.get_roi_labels([empty_roi_label], True) == [empty_roi_label]
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_dataset_item_get_shapes_labels(self):
         """
@@ -712,7 +712,7 @@ class TestDatasetItemEntity:
         assert dataset_item.get_shapes_labels(list_labels, True) == [segmentation_label]
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_dataset_item_append_labels(self):
         """
@@ -788,7 +788,7 @@ class TestDatasetItemEntity:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_dataset_item_eq(self):
         """
@@ -851,7 +851,7 @@ class TestDatasetItemEntity:
         assert not dataset_item == str
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_dataset_item_deepcopy(self):
         """
@@ -894,7 +894,7 @@ class TestDatasetItemEntity:
         assert dataset_item.subset == copy_dataset.subset
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_dataset_item_append_metadata_item(self):
         """
@@ -934,7 +934,7 @@ class TestDatasetItemEntity:
         assert list(dataset_item.metadata) == expected_metadata
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_dataset_item_get_metadata_by_name_and_model(self):
         """
@@ -981,7 +981,7 @@ class TestDatasetItemEntity:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_dataset_item_setters(self):
         """

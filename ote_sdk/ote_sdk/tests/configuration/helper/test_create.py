@@ -166,7 +166,7 @@ class TestCreateFunctions:
         assert parameter.type == ConfigElementType.CONFIGURABLE_PARAMETERS
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_construct_attrib_from_dict(self):
         """
@@ -260,7 +260,7 @@ class TestCreateFunctions:
             construct_attrib_from_dict(dict_object=params)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_construct_ui_rules_from_dict(self):
         """
@@ -367,7 +367,7 @@ class TestCreateFunctions:
             construct_ui_rules_from_dict(params)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_create_default_configurable_enum_from_dict(self):
         """
@@ -437,7 +437,7 @@ class TestCreateFunctions:
             )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_gather_parameter_arguments_and_values_from_dict(self):
         """
@@ -521,7 +521,7 @@ class TestCreateFunctions:
             )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_contains_parameter_groups(self):
         """
@@ -564,7 +564,7 @@ class TestCreateFunctions:
             ]
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_create_nested_parameter_group(self):
         """
@@ -588,7 +588,7 @@ class TestCreateFunctions:
             )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_from_dict_attr(self):
         """
@@ -610,7 +610,7 @@ class TestCreateFunctions:
             )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_create(self):
         """

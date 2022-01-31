@@ -25,7 +25,7 @@ from ote_sdk.tests.constants.requirements import Requirements
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestScoredLabel:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_scored_label(self):
         """

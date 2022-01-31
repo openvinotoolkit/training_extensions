@@ -32,7 +32,7 @@ from ote_sdk.usecases.tasks.interfaces.unload_interface import IUnload
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestIEvaluationTask:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     @patch(
         "ote_sdk.usecases.tasks.interfaces.evaluate_interface.IEvaluationTask.__abstractmethods__",
@@ -68,7 +68,7 @@ class TestIEvaluationTask:
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestIInferenceTask:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     @patch(
         "ote_sdk.usecases.tasks.interfaces.inference_interface.IInferenceTask.__abstractmethods__",
@@ -96,7 +96,7 @@ class TestIInferenceTask:
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestIRawInference:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     @patch(
         "ote_sdk.usecases.tasks.interfaces.inference_interface.IRawInference.__abstractmethods__",
@@ -120,7 +120,7 @@ class TestIRawInference:
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestOptimizationType:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_optimization_type(self):
         """
@@ -139,7 +139,7 @@ class TestOptimizationType:
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestIOptimizationTask:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     @patch(
         "ote_sdk.usecases.tasks.interfaces.optimization_interface.IOptimizationTask.__abstractmethods__",
@@ -175,7 +175,7 @@ class TestIOptimizationTask:
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestITrainingTask:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     @patch(
         "ote_sdk.usecases.tasks.interfaces.training_interface.ITrainingTask.__abstractmethods__",
@@ -216,7 +216,7 @@ class TestITrainingTask:
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestIUnload:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     @patch(
         "ote_sdk.usecases.tasks.interfaces.unload_interface.IUnload.__abstractmethods__",
@@ -240,7 +240,7 @@ class TestIUnload:
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestExportType:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_export_type(self):
         """
@@ -258,7 +258,7 @@ class TestExportType:
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestIExportTask:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     @patch(
         "ote_sdk.usecases.tasks.interfaces.export_interface.IExportTask.__abstractmethods__",

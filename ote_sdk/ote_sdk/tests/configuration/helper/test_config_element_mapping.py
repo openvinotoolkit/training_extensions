@@ -40,7 +40,7 @@ class TestPrimitiveElementMapping:
         assert primitive_element.value.keywords == expected_partial_element.keywords
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_primitive_element_mapping(self):
         """
@@ -89,7 +89,7 @@ def check_mapping_element(mapping_element, expected_name, expected_value):
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestGroupElementMapping:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_group_element_mapping(self):
         """
@@ -116,7 +116,7 @@ class TestGroupElementMapping:
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestRuleElementMapping:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_group_element_mapping(self):
         """

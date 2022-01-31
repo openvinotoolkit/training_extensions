@@ -28,7 +28,7 @@ from ote_sdk.tests.constants.requirements import Requirements
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestLabelSchema:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_tree(self, label_schema_example):
         """
@@ -66,7 +66,7 @@ class TestLabelSchema:
         assert rifle in threat_children
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_exclusive(self, label_schema_example):
         """
@@ -112,7 +112,7 @@ class TestLabelSchema:
         assert 4 == label_schema.exclusivity_graph.num_labels
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_complex(self, label_schema_example):
         """
@@ -150,7 +150,7 @@ class TestLabelSchema:
         assert not label_schema.are_exclusive(bee, queen)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_add_label_to_group(self, label_schema_example):
         """
@@ -191,7 +191,7 @@ class TestLabelSchema:
         assert 2 == len(bee_state.labels)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_exclusivity_with_group_addition(self, label_schema_example):
         """
@@ -276,7 +276,7 @@ class TestLabelSchema:
         assert label_schema_example.vegetative in exclusive_to_flowering
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_labelschema_equality(self, label_schema_example):
         """
@@ -331,7 +331,7 @@ class TestLabelSchema:
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestLabelGroupType:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_group_type(self):
         """
@@ -397,7 +397,7 @@ labels = Labels()
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestLabelGroup:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_group_initialization(self):
         """
@@ -450,7 +450,7 @@ class TestLabelGroup:
         assert no_id_label_group.minimum_label_id == "0"
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_group_remove_label(self):
         """
@@ -481,7 +481,7 @@ class TestLabelGroup:
         assert label_group.is_single_label()
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_group_magic_methods(self):
         """
@@ -591,7 +591,7 @@ class TestLabelGraph:
         return directed_graph
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_graph_initialization(self):
         """
@@ -694,7 +694,7 @@ class TestLabelGraph:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_graph_subgraph(self):
         """
@@ -770,7 +770,7 @@ class TestLabelGraph:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_graph_eq(self):
         """
@@ -902,7 +902,7 @@ class TestLabelTree:
             assert label_tree.get_ancestors(label) == expected
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_tree_initialization(self):
         """
@@ -956,7 +956,7 @@ class TestLabelTree:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_tree_add_edge(self):
         """
@@ -1043,7 +1043,7 @@ class TestLabelTree:
         assert not label_tree._LabelTree__topological_order_cache
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_tree_add_node(self):
         """
@@ -1117,7 +1117,7 @@ class TestLabelTree:
         assert not label_tree._LabelTree__topological_order_cache
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_tree_clear_topological_cache(self):
         """
@@ -1142,7 +1142,7 @@ class TestLabelTree:
         assert not label_tree._LabelTree__topological_order_cache
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_tree_relations(self):
         """
@@ -1227,7 +1227,7 @@ class TestLabelTree:
         self.check_get_ancestors_method(label_tree)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_tree_get_labels_in_topological_order(self):
         """
@@ -1281,7 +1281,7 @@ class TestLabelTree:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_tree_remove_node(self):
         """
@@ -1360,7 +1360,7 @@ class TestLabelTree:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_tree_subgraph(self):
         """
@@ -1411,7 +1411,7 @@ class TestLabelTree:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_tree_eq(self):
         """
@@ -1520,7 +1520,7 @@ class TestLabelSchemaEntity:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_schema_entity_default_parameters_initialization(self):
         """
@@ -1540,7 +1540,7 @@ class TestLabelSchemaEntity:
         assert empty_label_schema_entity._groups == []
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_schema_entity_get_labels(self):
         """
@@ -1577,7 +1577,7 @@ class TestLabelSchemaEntity:
         ]
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_schema_entity_get_groups(self):
         """
@@ -1612,7 +1612,7 @@ class TestLabelSchemaEntity:
         ]
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_schema_entity_add_group(self):
         """
@@ -1715,7 +1715,7 @@ class TestLabelSchemaEntity:
                 )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_schema_add_child(self):
         """
@@ -1774,7 +1774,7 @@ class TestLabelSchemaEntity:
         ]
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_schema_entity_get_label_ids(self):
         """
@@ -1806,7 +1806,7 @@ class TestLabelSchemaEntity:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_schema_get_label_group_by_name(self):
         """
@@ -1843,7 +1843,7 @@ class TestLabelSchemaEntity:
         assert not label_schema_entity.get_label_group_by_name("Non-existing group")
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_schema_get_exclusive_groups(self):
         """
@@ -1889,7 +1889,7 @@ class TestLabelSchemaEntity:
         assert label_schema_entity.get_exclusive_groups() == exclusivity_groups
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_schema_add_labels_to_group_by_group_name(self):
         """
@@ -1951,7 +1951,7 @@ class TestLabelSchemaEntity:
             )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_schema_relations(self):
         """
@@ -1979,7 +1979,7 @@ class TestLabelSchemaEntity:
         TestLabelTree.check_get_ancestors_method(label_schema_entity)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_schema_get_group_containing_label(self):
         """
@@ -2026,7 +2026,7 @@ class TestLabelSchemaEntity:
         assert not label_schema_entity.get_group_containing_label(labels.label_0_1_3)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_schema_get_label(self):
         """
@@ -2071,7 +2071,7 @@ class TestLabelSchemaEntity:
             label_schema_entity._LabelSchemaEntity__get_label(str)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_schema_repr(self):
         """
@@ -2092,7 +2092,7 @@ class TestLabelSchemaEntity:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_schema_eq(self):
         """
@@ -2138,7 +2138,7 @@ class TestLabelSchemaEntity:
         assert label_schema_entity != str
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_schema_from_labels(self):
         """
