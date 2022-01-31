@@ -123,11 +123,12 @@ class ModelEntity:
         _id: Optional[ID] = None,
     ):
         # Initialization parameters validation
-        check_parameter_str_class_name(
-            parameter=train_dataset,
-            parameter_name="train_dataset",
-            expected_class_names=["DatasetEntity"],
-        )
+        if TYPE_CHECKING:
+            check_parameter_str_class_name(
+                parameter=train_dataset,
+                parameter_name="train_dataset",
+                expected_class_names=["DatasetEntity", "HpoDataset", "ObjectDetectionDataset"],
+            )
         check_parameter_type(
             parameter=configuration,
             parameter_name="configuration",
