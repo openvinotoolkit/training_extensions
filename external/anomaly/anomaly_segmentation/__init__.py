@@ -1,5 +1,5 @@
 """
-Initialization of Anomaly Classification Tasks
+Initialization of Anomaly Segmentation Tasks
 """
 
 # Copyright (C) 2021 Intel Corporation
@@ -16,7 +16,6 @@ Initialization of Anomaly Classification Tasks
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .openvino import OpenVINOAnomalyClassificationTask
-from .task import AnomalyClassificationTask
+from .task import AnomalySegmentationTask
 
-__all__ = ["AnomalyClassificationTask", "OpenVINOAnomalyClassificationTask"]
+__all__ = ["AnomalySegmentationTask"]

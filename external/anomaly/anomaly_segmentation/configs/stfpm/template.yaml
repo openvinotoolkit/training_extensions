@@ -12,8 +12,8 @@ framework: OTEAnomalySegmentation v0.1.0
 
 # Task implementations.
 entrypoints:
-  base: ote_anomalib.AnomalyTask
-  openvino: ote_anomalib.OpenVINOAnomalyClassificationTask
+  base: anomaly_segmentation.AnomalySegmentationTask
+  openvino: anomaly_segmentation.OpenVINOAnomalyClassificationTask
 
 # Hyper Parameters
 hyper_parameters:
