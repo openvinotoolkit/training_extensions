@@ -6,10 +6,11 @@
 from dataclasses import dataclass
 from typing import Callable
 
-from ote_sdk.entities.train_parameters import (
-    UpdateProgressCallback,
-    default_progress_callback,
-)
+
+def default_progress_callback(_: int):
+    """
+    This is the default progress callback for OptimizationParameters.
+    """
 
 
 def default_save_model_callback():
@@ -33,5 +34,5 @@ class OptimizationParameters:
     """
 
     resume: bool = False
-    update_progress: UpdateProgressCallback = default_progress_callback
+    update_progress: Callable[[int], None] = default_progress_callback
     save_model: Callable[[], None] = default_save_model_callback
