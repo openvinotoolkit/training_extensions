@@ -26,7 +26,7 @@ from ote_sdk.tests.constants.requirements import Requirements
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestOptimizationParameters:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_optimization_parameters_members(self):
         """
@@ -56,7 +56,7 @@ class TestOptimizationParameters:
             str(opt_params.WRONG)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_optimization_parameters_update_member(self):
         """

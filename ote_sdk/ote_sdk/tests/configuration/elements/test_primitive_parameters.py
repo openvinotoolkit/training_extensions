@@ -29,7 +29,7 @@ class TestPrimitiveParameters:
     ui_rules = UIRules(rules=[Rule(parameter="rule parameter", value=1)])
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_set_common_metadata(self):
         """
@@ -82,7 +82,7 @@ class TestPrimitiveParameters:
             }
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_configurable_integer(self):
         """
@@ -182,7 +182,7 @@ class TestPrimitiveParameters:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_configurable_float(self):
         """
@@ -274,7 +274,7 @@ class TestPrimitiveParameters:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_configurable_boolean(self):
         """
@@ -359,7 +359,7 @@ class TestPrimitiveParameters:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_float_selectable(self):
         """
@@ -446,7 +446,7 @@ class TestPrimitiveParameters:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_selectable(self):
         """
@@ -536,7 +536,7 @@ class TestPrimitiveParameters:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_string_attribute(self):
         """
@@ -558,7 +558,7 @@ class TestPrimitiveParameters:
         assert not actual_string._validator  # type: ignore
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_boolean_attribute(self):
         """

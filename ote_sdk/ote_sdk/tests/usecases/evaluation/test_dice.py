@@ -210,7 +210,7 @@ class TestDice:
         assert score_metric.value == pytest.approx(expected_value)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_dice_initialization(self):
         """
@@ -327,7 +327,7 @@ class TestDice:
             DiceAverage(resultset=result_set)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_dice_get_performance(self):
         """
@@ -453,7 +453,7 @@ class TestDice:
         assert performance.dashboard_metrics == []
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_dice_compute_dice_using_intersection_and_cardinality(self):
         """

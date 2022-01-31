@@ -29,7 +29,7 @@ class TestResultset:
     creation_date = now()
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_resultset_purpose(self):
         """
@@ -55,7 +55,7 @@ class TestResultset:
             assert str(resultset_purpose) == stages[i.value]
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_resultset_entity(self):
         """

@@ -24,7 +24,7 @@ from ote_sdk.tests.constants.requirements import Requirements
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestUtilsFunctions:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_utils_search_in_config_dict_inner(self):
         """
@@ -154,7 +154,7 @@ class TestUtilsFunctions:
         assert results == expected_results
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_utils_search_in_config_dict(self):
         """
@@ -183,7 +183,7 @@ class TestUtilsFunctions:
         assert search_in_config_dict(config_dict, "key_1") == []  # type: ignore
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_utils_input_to_config_dict(self):
         """
@@ -312,7 +312,7 @@ class TestUtilsFunctions:
                 input_to_config_dict(input_config=none_type_input_config)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_utils_deserialize_enum_value(self):
         """
@@ -355,7 +355,7 @@ class TestUtilsFunctions:
             deserialize_enum_value(value=1, enum_type=ValidationEnum)  # type: ignore
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_utils_ids_to_strings(self):
         """

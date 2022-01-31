@@ -12,7 +12,7 @@ from ote_sdk.tests.constants.requirements import Requirements
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestURL:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_annotation_repo(self):
         """
@@ -42,7 +42,7 @@ class TestURL:
         assert test_url2.path == "/images/file_%20_whatever.jpg"
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_url_initialization(self):
         """
@@ -131,7 +131,7 @@ class TestURL:
                 URL(incorrect_netloc)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_url_str(self):
         """
@@ -168,7 +168,7 @@ class TestURL:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_url_repr(self):
         """
@@ -189,7 +189,7 @@ class TestURL:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_url_hash(self):
         """
@@ -206,7 +206,7 @@ class TestURL:
         assert hash(url) == hash(str(url))
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_url_length(self):
         """
@@ -223,7 +223,7 @@ class TestURL:
         assert len(URL("binaryrepo:/i?mages/file_%20_whatever.jpg?some_text.png")) == 55
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_url_eq(self):
         """
