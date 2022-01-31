@@ -208,10 +208,7 @@ def create_task_from_deployment(openvino_task_class, deployed_code_zip_path):
             dataset_size = len(dataset)
             for i, dataset_item in enumerate(dataset, 1):
                 predicted_scene = self.inferencer.predict(dataset_item.numpy)
-                if (
-                    self.task_environment.model_template.task_type
-                    == TaskType.CLASSIFICATION
-                ):
+                if str(self.task_environment.model_template.task_type).endswith("CLASSIFICATION"):
                     dataset_item.append_labels(
                         predicted_scene.annotations[0].get_labels()
                     )
