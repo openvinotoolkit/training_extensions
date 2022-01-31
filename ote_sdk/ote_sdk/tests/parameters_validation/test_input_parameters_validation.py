@@ -38,6 +38,7 @@ from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.entities.tensor import TensorEntity
 from ote_sdk.tests.constants.ote_sdk_components import OteSdkComponent
 from ote_sdk.tests.constants.requirements import Requirements
+from typing import TYPE_CHECKING
 
 
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
@@ -371,8 +372,6 @@ class TestParamsValidation:
             "configuration": configuration,
         }
         unexpected_values = [
-            # Unexpected string is specified as "train_dataset" parameter
-            ("train_dataset", unexpected_str),
             # Unexpected string is specified as "configuration" parameter
             ("configuration", unexpected_str),
             # Unexpected string is specified as "creation_date" parameter
@@ -451,6 +450,9 @@ class TestParamsValidation:
             # Unexpected string is specified as "_id" parameter
             ("_id", unexpected_int),
         ]
+        if TYPE_CHECKING:
+            # Unexpected string is specified as "train_dataset" parameter
+            unexpected_values.append(("train_dataset", unexpected_str))
         self.check_value_error_exception_raised(
             correct_parameters=correct_values_dict,
             unexpected_values=unexpected_values,
