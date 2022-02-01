@@ -18,24 +18,17 @@ Utils for dynamically importing stuff
 
 import json
 import os
+import struct
 import tempfile
 from io import BytesIO
-from pathlib import Path
-from typing import Optional
 from zipfile import ZipFile
 
-from ote_sdk.entities.datasets import DatasetEntity
-from ote_sdk.entities.inference_parameters import InferenceParameters
 from ote_sdk.entities.label import Domain, LabelEntity
 from ote_sdk.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
 from ote_sdk.entities.model import ModelEntity
 from ote_sdk.entities.model_template import TaskType
 from ote_sdk.serialization.label_mapper import LabelSchemaMapper
 from ote_sdk.usecases.adapters.model_adapter import ModelAdapter
-from ote_sdk.usecases.exportable_code.demo.demo_package import create_model
-from ote_sdk.usecases.exportable_code.prediction_to_annotation_converter import (
-    create_converter,
-)
 
 
 def save_model_data(model, folder):
@@ -66,17 +59,49 @@ def read_model(model_configuration, path, train_dataset):
     Creates ModelEntity based on model_configuration and data stored at path.
     """
 
+    model_adapter_keys = ("confidence_threshold", "image_threshold", "min", "max")
+
     if path.endswith(".bin") or path.endswith(".xml"):
+        # Openvino IR.
         model_adapters = {
             "openvino.xml": ModelAdapter(read_binary(path[:-4] + ".xml")),
             "openvino.bin": ModelAdapter(read_binary(path[:-4] + ".bin")),
         }
-        for key in ["confidence_threshold", "image_threshold", "min", "max"]:
+        for key in model_adapter_keys:
             full_path = os.path.join(os.path.dirname(path), key)
             if os.path.exists(full_path):
                 model_adapters[key] = ModelAdapter(read_binary(full_path))
-    else:
+    elif path.endswith(".pth"):
+        # PyTorch
         model_adapters = {"weights.pth": ModelAdapter(read_binary(path))}
+    elif path.endswith(".zip"):
+        # Deployed code.
+        with tempfile.TemporaryDirectory() as temp_dir:
+            with ZipFile(path) as myzip:
+                myzip.extractall(temp_dir)
+            with ZipFile(
+                os.path.join(temp_dir, "python", "demo_package-0.0-py3-none-any.whl")
+            ) as myzip:
+                myzip.extractall(temp_dir)
+            model_path = os.path.join(temp_dir, "model", "model.xml")
+            weights_path = os.path.join(temp_dir, "model", "model.bin")
+
+            model_adapters = {
+                "openvino.xml": ModelAdapter(read_binary(model_path)),
+                "openvino.bin": ModelAdapter(read_binary(weights_path)),
+            }
+
+            config_path = os.path.join(temp_dir, "demo_package", "config.json")
+            with open(config_path) as f:
+                model_parameters = json.load(f)["model_parameters"]
+
+            for key in model_adapter_keys:
+                if key in model_parameters:
+                    model_adapters[key] = ModelAdapter(
+                        struct.pack("f", model_parameters[key])
+                    )
+    else:
+        raise ValueError(f"Unknown file type: {path}")
 
     model = ModelEntity(
         configuration=model_configuration,
@@ -141,82 +166,3 @@ def generate_label_schema(dataset, task_type):
         return label_schema
 
     return LabelSchemaEntity.from_labels(dataset.get_labels())
-
-
-def create_task_from_deployment(openvino_task_class, deployed_code_zip_path):
-    """
-    Creates a child class of passed 'openvino_task_class', instance of which is initialized by deployment (zip archive).
-    """
-
-    class Task(openvino_task_class):
-        """A child class of 'openvino_task_class', instance of which is initialized by deployment (zip archive)."""
-
-        class Inferencer:
-            """ModelAPI-based OpenVINO inferencer."""
-
-            def __init__(self, model, converter) -> None:
-                self.model = model
-                self.converter = converter
-
-            def predict(self, frame):
-                """Returns predictions made on a given frame."""
-
-                dict_data, input_meta = self.model.preprocess(frame)
-                raw_result = self.model.infer_sync(dict_data)
-                predictions = self.model.postprocess(raw_result, input_meta)
-                annotation_scene = self.converter.convert_to_annotation(
-                    predictions, input_meta
-                )
-                return annotation_scene
-
-        def __init__(self, task_environment) -> None:
-            self.task_environment = task_environment
-            with tempfile.TemporaryDirectory() as temp_dir:
-                with ZipFile(deployed_code_zip_path) as myzip:
-                    myzip.extractall(temp_dir)
-                with ZipFile(
-                    os.path.join(
-                        temp_dir, "python", "demo_package-0.0-py3-none-any.whl"
-                    )
-                ) as myzip:
-                    myzip.extractall(temp_dir)
-
-                model_path = Path(os.path.join(temp_dir, "model", "model.xml"))
-                config_path = Path(
-                    os.path.join(temp_dir, "demo_package", "config.json")
-                )
-
-                with open(config_path, encoding="UTF-8") as read_file:
-                    parameters = json.load(read_file)
-                converter_type = Domain[parameters["converter_type"]]
-
-                self.inferencer = self.Inferencer(
-                    create_model(model_path, config_path),
-                    create_converter(
-                        converter_type, self.task_environment.label_schema
-                    ),
-                )
-
-        def infer(
-            self,
-            dataset: DatasetEntity,
-            inference_parameters: Optional[InferenceParameters] = None,
-        ) -> DatasetEntity:
-            """Inference method."""
-            if inference_parameters is not None:
-                update_progress_callback = inference_parameters.update_progress
-            dataset_size = len(dataset)
-            for i, dataset_item in enumerate(dataset, 1):
-                predicted_scene = self.inferencer.predict(dataset_item.numpy)
-                if str(self.task_environment.model_template.task_type).endswith(
-                    "CLASSIFICATION"
-                ):
-                    dataset_item.append_labels(
-                        predicted_scene.annotations[0].get_labels()
-                    )
-                else:
-                    dataset_item.append_annotations(predicted_scene.annotations)
-                update_progress_callback(int(i / dataset_size * 100))
-            return dataset
-
-    return Task

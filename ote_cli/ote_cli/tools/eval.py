@@ -21,7 +21,6 @@ import json
 
 from ote_sdk.configuration.helper import create
 from ote_sdk.entities.inference_parameters import InferenceParameters
-from ote_sdk.entities.model import ModelEntity
 from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.subset import Subset
 from ote_sdk.entities.task_environment import TaskEnvironment
@@ -30,12 +29,7 @@ from ote_cli.datasets import get_dataset_class
 from ote_cli.registry import find_and_parse_model_template
 from ote_cli.utils.config import override_parameters
 from ote_cli.utils.importing import get_impl_class
-from ote_cli.utils.io import (
-    create_task_from_deployment,
-    generate_label_schema,
-    read_label_schema,
-    read_model,
-)
+from ote_cli.utils.io import generate_label_schema, read_label_schema, read_model
 from ote_cli.utils.parser import (
     add_hyper_parameters_sub_parser,
     gen_params_dict_from_args,
@@ -114,14 +108,10 @@ def main():
     hyper_parameters = create(hyper_parameters)
 
     # Get classes for Task, ConfigurableParameters and Dataset.
-    if args.load_weights.endswith(".bin") or args.load_weights.endswith(".xml"):
+    if any(args.load_weights.endswith(x) for x in (".bin", ".xml", ".zip")):
         task_class = get_impl_class(template.entrypoints.openvino)
     elif args.load_weights.endswith(".pth"):
         task_class = get_impl_class(template.entrypoints.base)
-    elif args.load_weights.endswith(".zip"):
-        task_class = create_task_from_deployment(
-            get_impl_class(template.entrypoints.openvino), args.load_weights
-        )
     else:
         raise ValueError(f"Unsupported file: {args.load_weights}")
 
@@ -141,13 +131,9 @@ def main():
         model_template=template,
     )
 
-    if any(args.load_weights.endswith(x) for x in (".bin", ".xml", ".pth")):
-        model = read_model(
-            environment.get_model_configuration(), args.load_weights, None
-        )
-        environment.model = model
-    else:
-        model = ModelEntity(None, environment.get_model_configuration())
+    environment.model = read_model(
+        environment.get_model_configuration(), args.load_weights, None
+    )
 
     task = task_class(task_environment=environment)
 
@@ -158,7 +144,7 @@ def main():
     )
 
     resultset = ResultSetEntity(
-        model=model,
+        model=environment.model,
         ground_truth_dataset=validation_dataset,
         prediction_dataset=predicted_validation_dataset,
     )

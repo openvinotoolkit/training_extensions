@@ -34,7 +34,7 @@ from ote_cli.tools.utils.demo.images_capture import open_images_capture
 from ote_cli.tools.utils.demo.visualization import draw_predictions, put_text_on_rect_bg
 from ote_cli.utils.config import override_parameters
 from ote_cli.utils.importing import get_impl_class
-from ote_cli.utils.io import create_task_from_deployment, read_label_schema, read_model
+from ote_cli.utils.io import read_label_schema, read_model
 from ote_cli.utils.parser import (
     add_hyper_parameters_sub_parser,
     gen_params_dict_from_args,
@@ -138,14 +138,10 @@ def main():
     hyper_parameters = create(hyper_parameters)
 
     # Get classes for Task, ConfigurableParameters and Dataset.
-    if args.load_weights.endswith(".bin") or args.load_weights.endswith(".xml"):
+    if any(args.load_weights.endswith(x) for x in (".bin", ".xml", ".zip")):
         task_class = get_impl_class(template.entrypoints.openvino)
     elif args.load_weights.endswith(".pth"):
         task_class = get_impl_class(template.entrypoints.base)
-    elif args.load_weights.endswith(".zip"):
-        task_class = create_task_from_deployment(
-            get_impl_class(template.entrypoints.openvino), args.load_weights
-        )
     else:
         raise ValueError(f"Unsupported file: {args.load_weights}")
 
@@ -156,10 +152,9 @@ def main():
         model_template=template,
     )
 
-    if any(args.load_weights.endswith(x) for x in (".bin", ".xml", ".pth")):
-        environment.model = read_model(
-            environment.get_model_configuration(), args.load_weights, None
-        )
+    environment.model = read_model(
+        environment.get_model_configuration(), args.load_weights, None
+    )
 
     task = task_class(task_environment=environment)
 
