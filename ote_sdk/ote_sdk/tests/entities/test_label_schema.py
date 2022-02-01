@@ -114,37 +114,60 @@ class TestLabelSchema:
     def test_complex(self, label_schema_example):
         """
         <b>Description:</b>
-        Tests a mix of hierarchy and exclusivity
+        Tests that exclusivity is computed correctly in a schema with complex hierarchy
 
         <b>Input data:</b>
-        Exclusive group: flowering,vegetative,no_plant
-        Exclusive group: flower_partial_visible,flower_fully_visible (children of flowering)
-        Exclusive group: few_leaves (child of vegetative)
-        Exclusive group: bee
+        Exclusive groups: plant, animal
+        Exclusive groups: tree, bush (children of plant), mammal, insect (children of animal)
 
         <b>Expected results:</b>
         Test passes if the LabelSchemaEntity and hierarchy are correctly represented
 
         <b>Steps</b>
         1. Create LabelSchemaEntity with hierarchy
-        2. Check that some relations are not exclusive
-        3. Check that requesting scores of related labels does resolve correctly
+        2. Check that labels are not exclusive with their parent
+        3. Check that labels are exclusive with:
+         - labels in the same group
+         - children of labels in the same group
+         - labels in the same group as their parent
+         - children of labels in the same group as their parent
+
         """
         label_schema = LabelSchemaEntity()
-        label_schema_example.add_hierarchy(label_schema)
 
-        bee = label_schema_example.new_label_by_name(
-            "bee"
-        )  # indicates presence/absence of bee
-        label_schema.add_group(LabelGroup("bee_state", [bee], LabelGroupType.EXCLUSIVE))
+        plant = label_schema_example.new_label_by_name(
+            "plant"
+        )
+        animal = label_schema_example.new_label_by_name(
+            "animal"
+        )
+        label_schema.add_group(LabelGroup("organism_type", [plant, animal], LabelGroupType.EXCLUSIVE))
 
-        pollen_visible = label_schema_example.new_label_by_name("pollen_visible")
-        queen = label_schema_example.new_label_by_name("queen")
-        label_schema.add_child(bee, pollen_visible)
-        label_schema.add_child(bee, queen)
+        tree = label_schema_example.new_label_by_name(
+            "tree"
+        )
+        bush = label_schema_example.new_label_by_name(
+            "bush"
+        )
+        label_schema.add_group(LabelGroup("plant_type", [tree, bush], LabelGroupType.EXCLUSIVE))
+        label_schema.add_child(parent=plant, child=tree)
+        label_schema.add_child(parent=plant, child=bush)
 
-        assert not label_schema.are_exclusive(pollen_visible, queen)
-        assert not label_schema.are_exclusive(bee, queen)
+        insect = label_schema_example.new_label_by_name(
+            "insect"
+        )
+        mammal = label_schema_example.new_label_by_name(
+            "mammal"
+        )
+        label_schema.add_group(LabelGroup("animal_type", [insect, mammal], LabelGroupType.EXCLUSIVE))
+        label_schema.add_child(parent=animal, child=insect)
+        label_schema.add_child(parent=animal, child=mammal)
+
+        assert not label_schema.are_exclusive(plant, tree)
+        assert label_schema.are_exclusive(tree, bush)
+        assert label_schema.are_exclusive(plant, insect)
+        assert label_schema.are_exclusive(tree, animal)
+        assert label_schema.are_exclusive(tree, insect)
 
     @pytest.mark.priority_medium
     @pytest.mark.component

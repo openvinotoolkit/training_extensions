@@ -489,7 +489,7 @@ class LabelSchemaEntity:
         - All labels in the same group
         - All children of labels in the same group
         - All labels in the same group as any of the label's ancestors
-        - All children of labels in the same group as any of the label's ancestors ancestors
+        - All children of labels in the same group as any of the label's ancestors
 
         :param label: The label to get exclusive labels for
         :return: List of labels exclusive to the label.
@@ -507,7 +507,7 @@ class LabelSchemaEntity:
 
         # Do the same for the parent of the label
         if self.get_parent(label) is not None:
-            output += self.__get_exclusivity_recursion(self.get_parent(label))
+            output += self.__get_exclusivity_recursion(self.get_parent(label), add_children=True)
         return output
 
     @staticmethod
