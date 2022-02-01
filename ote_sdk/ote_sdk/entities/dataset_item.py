@@ -21,6 +21,10 @@ from ote_sdk.entities.model import ModelEntity
 from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.entities.shapes.rectangle import Rectangle
 from ote_sdk.entities.subset import Subset
+from ote_sdk.utils.argument_checks import (
+    check_nested_elements_type,
+    check_required_and_optional_parameters_type,
+)
 from ote_sdk.utils.shape_factory import ShapeFactory
 
 logger = logging.getLogger(__name__)
@@ -89,6 +93,26 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
         metadata: Optional[Sequence[MetadataItemEntity]] = None,
         subset: Subset = Subset.NONE,
     ):
+        # Initialization parameters validation
+        check_required_and_optional_parameters_type(
+            required_parameters=[
+                (media, "media", IMedia2DEntity),
+                (annotation_scene, "annotation_scene", AnnotationSceneEntity),
+                (subset, "subset", Subset),
+            ],
+            optional_parameters=[
+                (roi, "roi", Annotation),
+                (metadata, "metadata", Sequence),
+            ],
+        )
+        # Nested metadata items validation
+        if metadata:
+            check_nested_elements_type(
+                iterable=metadata,
+                parameter_name="metadata item",
+                expected_type=MetadataItemEntity,
+            )
+
         self.__media: IMedia2DEntity = media
         self.__annotation_scene: AnnotationSceneEntity = annotation_scene
         self.__subset: Subset = subset

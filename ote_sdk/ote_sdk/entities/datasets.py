@@ -19,6 +19,10 @@ from ote_sdk.entities.dataset_item import DatasetItemEntity
 from ote_sdk.entities.id import ID
 from ote_sdk.entities.label import LabelEntity
 from ote_sdk.entities.subset import Subset
+from ote_sdk.utils.argument_checks import (
+    check_nested_elements_type,
+    check_optional_parameters_type,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -127,6 +131,17 @@ class DatasetEntity:
         items: Optional[List[DatasetItemEntity]] = None,
         purpose: DatasetPurpose = DatasetPurpose.INFERENCE,
     ):
+        # Initialization parameters validation
+        check_optional_parameters_type(
+            [(items, "items", list), (purpose, "purpose", DatasetPurpose)]
+        )
+        # Nested dataset items validation
+        if items:
+            check_nested_elements_type(
+                iterable=items,
+                parameter_name="dataset item",
+                expected_type=DatasetItemEntity,
+            )
         self._items = [] if items is None else items
         self._purpose = purpose
 
