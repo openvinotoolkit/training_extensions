@@ -479,17 +479,26 @@ class LabelSchemaEntity:
 
     def get_labels_exclusive_to(self, label: LabelEntity) -> List[LabelEntity]:
         """Returns a list of labels that are exclusive to the passed label."""
-        return self.__get_exclusivity_recursion(label=label)
+        if label.is_empty:
+            exclusive_labels = self.__get_exclusivity_for_empty_label(label=label)
+        else:
+            exclusive_labels = self.__get_exclusivity_recursion(label=label)
+        return exclusive_labels
 
-    def __get_exclusivity_recursion(self, label: LabelEntity) -> List[LabelEntity]:
+    def __get_exclusivity_recursion(
+        self, label: LabelEntity, add_empty: bool = True
+    ) -> List[LabelEntity]:
         """
-        Recursively computes all labels exclusive to a label. A label is exclusive with:
+        Recursively computes all labels exclusive to a non-empty label. A label is exclusive with:
         - All labels in the same group
         - All children of labels in the same group
         - All labels in the same group as any of the label's ancestors
         - All children of labels in the same group as any of the label's ancestors
+        - All empty labels that are not descendants of the label
 
         :param label: The label to get exclusive labels for
+        :param add_empty: If set to True, adds all empty labels that are not descendants of the label. This is only
+        needed for the first recursion iteration.
         :return: List of labels exclusive to the label.
         """
         output = []
@@ -505,8 +514,35 @@ class LabelSchemaEntity:
         # Do the same for the parent of the label
         parent = self.get_parent(label)
         if parent is not None:
-            output += self.__get_exclusivity_recursion(parent)
+            output += self.__get_exclusivity_recursion(parent, add_empty=False)
+
+        # Add all empty labels that are not descendants of the label
+        if add_empty:
+            descendants = self.get_descendants(label)
+            exclusive_empty_labels = [
+                label_iter
+                for label_iter in self.get_labels(include_empty=True)
+                if label_iter.is_empty and label_iter not in descendants
+            ]
+            output = list(set(output + exclusive_empty_labels))
         return output
+
+    def __get_exclusivity_for_empty_label(
+        self, label: LabelEntity
+    ) -> List[LabelEntity]:
+        """
+        Get the labels exclusive to an empty label. For an empty label, all labels are exclusive to it except it's
+        ancestors.
+
+        :param label: empty Label to get exclusive labels for
+        :return: List of Labels exclusive to the Label
+        """
+        ancestors = self.get_ancestors(label)
+        return [
+            label
+            for label in self.get_labels(include_empty=True)
+            if label not in ancestors
+        ]
 
     @staticmethod
     def __get_label(label) -> LabelEntity:
