@@ -479,11 +479,9 @@ class LabelSchemaEntity:
 
     def get_labels_exclusive_to(self, label: LabelEntity) -> List[LabelEntity]:
         """Returns a list of labels that are exclusive to the passed label."""
-        return self.__get_exclusivity_recursion(label, True)
+        return self.__get_exclusivity_recursion(label=label)
 
-    def __get_exclusivity_recursion(
-        self, label, add_children: bool = False
-    ) -> List[LabelEntity]:
+    def __get_exclusivity_recursion(self, label: LabelEntity) -> List[LabelEntity]:
         """
         Recursively computes all labels exclusive to a label. A label is exclusive with:
         - All labels in the same group
@@ -501,13 +499,13 @@ class LabelSchemaEntity:
         output += siblings
 
         # Add all children of labels in the same group
-        if add_children:
-            for sibling in siblings:
-                output += self.get_children(sibling)
+        for sibling in siblings:
+            output += self.get_children(sibling)
 
         # Do the same for the parent of the label
-        if self.get_parent(label) is not None:
-            output += self.__get_exclusivity_recursion(self.get_parent(label), add_children=True)
+        parent = self.get_parent(label)
+        if parent is not None:
+            output += self.__get_exclusivity_recursion(parent)
         return output
 
     @staticmethod
