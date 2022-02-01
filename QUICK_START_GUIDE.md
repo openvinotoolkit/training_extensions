@@ -14,13 +14,17 @@
     git checkout -b develop origin/develop
     git submodule update --init --recursive
     ```
+2. Export OTE_SDK_PATH environment variable:
+   ```
+   export OTE_SDK_PATH=`pwd`/ote_sdk
+   ```
 
-2. Install prerequisites by running the following:
-    ```
-    sudo apt-get install python3-pip python3-venv
-    ```
+3. Install prerequisites by running the following:
+   ```
+   sudo apt-get install python3-pip python3-venv
+   ```
 
-3. Search for available scripts that create python virtual environments for different task types:
+4. Search for available scripts that create python virtual environments for different task types:
    ```bash
    find external/ -name init_venv.sh
    ```
@@ -32,7 +36,7 @@
    external/deep-object-reid/init_venv.sh
    ```
 
-4. Let's create, activate Object Detection virtual environment and install `ote_cli`:
+5. Let's create, activate Object Detection virtual environment and install `ote_cli`:
    ```
    ./external/mmdetection/init_venv.sh det_venv
    source det_venv/bin/activate
