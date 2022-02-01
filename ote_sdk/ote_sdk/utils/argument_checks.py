@@ -36,7 +36,7 @@ def check_optional_parameters_type(parameter_name_expected_type: list):
     and expected type
     """
     for parameter, name, expected_type in parameter_name_expected_type:
-        if parameter:
+        if parameter is not None:
             check_parameter_type(
                 parameter=parameter, parameter_name=name, expected_type=expected_type
             )
@@ -67,20 +67,10 @@ def check_several_lists_elements_type(parameter_name_expected_type: list):
     exception message and expected type
     """
     for parameter, name, expected_type in parameter_name_expected_type:
-        if parameter:
+        if parameter is not None:
             check_nested_elements_type(
                 iterable=parameter, parameter_name=name, expected_type=expected_type
             )
-
-
-def check_parameter_str_class_name(parameter, parameter_name, expected_class_names):
-    """Function raises ValueError exception if string class name is not equal to expected"""
-    parameter_class_name = type(parameter).__name__
-    if (parameter_class_name in expected_class_names) is False:
-        raise ValueError(
-            f"Unexpected type of '{parameter_name}' parameter, expected: {expected_class_names}, actual: "
-            f"{parameter_class_name}"
-        )
 
 
 def check_dictionary_keys_values_type(
@@ -115,7 +105,7 @@ def check_several_dictionaries_keys_values_type(parameter_name_expected_type: li
         expected_key_class,
         expected_value_class,
     ) in parameter_name_expected_type:
-        if parameter:
+        if parameter is not None:
             check_dictionary_keys_values_type(
                 parameter=parameter,
                 parameter_name=name,
@@ -141,10 +131,10 @@ def check_file_extension(
         )
 
 
-def check_that_null_character_absents_in_path(file_path: str, file_path_name: str):
-    """Function raises ValueError exception if null character: '\0' is specified in path to file"""
-    if "\\0" in file_path:
-        raise ValueError(f"\\0 is specified in {file_path_name}: {file_path}")
+def check_that_null_character_absents_in_string(parameter: str, parameter_name: str):
+    """Function raises ValueError exception if null character: '\0' is specified in string"""
+    if "\0" in parameter:
+        raise ValueError(f"\0 is specified in {parameter_name}: {parameter}")
 
 
 def check_that_file_exists(file_path: str, file_path_name: str):
@@ -169,8 +159,8 @@ def check_file_path(file_path: str, file_path_name: str, expected_extensions: li
         file_path_name=file_path_name,
         expected_extensions=expected_extensions,
     )
-    check_that_null_character_absents_in_path(
-        file_path=file_path, file_path_name=file_path_name
+    check_that_null_character_absents_in_string(
+        parameter=file_path, parameter_name=file_path_name
     )
     check_that_file_exists(file_path=file_path, file_path_name=file_path_name)
 
@@ -187,14 +177,14 @@ def check_input_config_parameter(input_config):
     )
     if isinstance(input_config, str):
         check_that_string_not_empty(string=input_config, parameter_name=parameter_name)
+        check_that_null_character_absents_in_string(
+            parameter=input_config, parameter_name=parameter_name
+        )
         if isinstance(safe_load(input_config), str):
             check_file_extension(
                 file_path=input_config,
                 file_path_name=parameter_name,
                 expected_extensions=["yaml"],
-            )
-            check_that_null_character_absents_in_path(
-                file_path=input_config, file_path_name=parameter_name
             )
             check_that_file_exists(
                 file_path=input_config, file_path_name=parameter_name
@@ -203,4 +193,16 @@ def check_input_config_parameter(input_config):
         if input_config == {}:
             raise ValueError(
                 "Empty dictionary is specified as 'input_config' parameter"
+            )
+
+
+def check_is_parameter_like_dataset(parameter, parameter_name):
+    """Function raises ValueError exception if parameter does not have __len__, __getitem__ and get_subset attributes of
+    DataSet-type object"""
+    for expected_attribute in ("__len__", "__getitem__", "get_subset"):
+        if not hasattr(parameter, expected_attribute):
+            parameter_type = type(parameter)
+            raise ValueError(
+                f"parameter {parameter_name} has type {parameter_type} which does not have expected "
+                f"'{expected_attribute}' dataset attribute"
             )

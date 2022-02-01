@@ -38,7 +38,6 @@ from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.entities.tensor import TensorEntity
 from ote_sdk.tests.constants.ote_sdk_components import OteSdkComponent
 from ote_sdk.tests.constants.requirements import Requirements
-from typing import TYPE_CHECKING
 
 
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
@@ -372,6 +371,8 @@ class TestParamsValidation:
             "configuration": configuration,
         }
         unexpected_values = [
+            # Unexpected string is specified as "train_dataset" parameter
+            ("train_dataset", unexpected_str),
             # Unexpected string is specified as "configuration" parameter
             ("configuration", unexpected_str),
             # Unexpected string is specified as "creation_date" parameter
@@ -450,9 +451,6 @@ class TestParamsValidation:
             # Unexpected string is specified as "_id" parameter
             ("_id", unexpected_int),
         ]
-        if TYPE_CHECKING:
-            # Unexpected string is specified as "train_dataset" parameter
-            unexpected_values.append(("train_dataset", unexpected_str))
         self.check_value_error_exception_raised(
             correct_parameters=correct_values_dict,
             unexpected_values=unexpected_values,
@@ -649,11 +647,11 @@ class TestParamsValidation:
             # Empty dictionary is specified as "input_config" parameter
             {},
             # Path to non-existing file is specified as "input_config" parameter
-            str(Path(__file__).parent / Path(r"./non_existing.yaml")),
+            str(Path(__file__).parent / Path("./non_existing.yaml")),
             # Path to non-yaml file is specified as "input_config" parameter
-            str(Path(__file__).parent / Path(r"./unexpected_type.jpg")),
+            str(Path(__file__).parent / Path("./unexpected_type.jpg")),
             # Path with null character is specified as "input_config" parameter
-            str(Path(__file__).parent / Path(r"./null\0char.yaml")),
+            str(Path(__file__).parent / Path("./null\0char.yaml")),
         ]:
             with pytest.raises(ValueError):
                 create(incorrect_parameter)
@@ -688,7 +686,7 @@ class TestParamsValidation:
             # Path to non-existing file is specified as "file_path" parameter
             ("file_path", str(Path(__file__).parent / Path("./non_existing.jpg"))),
             # Path with null character is specified as "file_path" parameter
-            ("file_path", str(Path(__file__).parent / Path(r"./null\0char.jpg"))),
+            ("file_path", str(Path(__file__).parent / Path("./null\0char.jpg"))),
         ]:
             with pytest.raises(ValueError):
                 Image(**{key: value})

@@ -20,8 +20,8 @@ from ote_sdk.usecases.adapters.model_adapter import (
     ModelAdapter,
 )
 from ote_sdk.utils.argument_checks import (
+    check_is_parameter_like_dataset,
     check_optional_parameters_type,
-    check_parameter_str_class_name,
     check_parameter_type,
     check_several_dictionaries_keys_values_type,
     check_several_lists_elements_type,
@@ -123,12 +123,9 @@ class ModelEntity:
         _id: Optional[ID] = None,
     ):
         # Initialization parameters validation
-        if TYPE_CHECKING:
-            check_parameter_str_class_name(
-                parameter=train_dataset,
-                parameter_name="train_dataset",
-                expected_class_names=["DatasetEntity", "HpoDataset", "ObjectDetectionDataset"],
-            )
+        check_is_parameter_like_dataset(
+            parameter=train_dataset, parameter_name="train_dataset"
+        )
         check_parameter_type(
             parameter=configuration,
             parameter_name="configuration",
