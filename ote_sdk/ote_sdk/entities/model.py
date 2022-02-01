@@ -23,8 +23,8 @@ from ote_sdk.utils.argument_checks import (
     check_is_parameter_like_dataset,
     check_optional_parameters_type,
     check_parameter_type,
-    check_several_dictionaries_keys_values_type,
-    check_several_lists_elements_type,
+    check_several_optional_dictionaries_keys_values_type,
+    check_several_optional_lists_elements_type,
 )
 from ote_sdk.utils.time_utils import now
 
@@ -161,7 +161,7 @@ class ModelEntity:
             ]
         )
         # Nested list elements validation
-        check_several_lists_elements_type(
+        check_several_optional_lists_elements_type(
             [
                 (tags, "tag", str),
                 (precision, "precision", ModelPrecision),
@@ -169,7 +169,7 @@ class ModelEntity:
             ]
         )
         # Dictionary keys and values validation
-        check_several_dictionaries_keys_values_type(
+        check_several_optional_dictionaries_keys_values_type(
             [
                 (model_adapters, "model_adapter", str, ModelAdapter),
                 (optimization_objectives, "optimization_objective", str, str),

@@ -68,7 +68,7 @@ class Rectangle(Shape):
             ],
         )
         # Nested labels validation
-        if labels and len(labels) > 0:
+        if labels:
             check_nested_elements_type(
                 iterable=labels, parameter_name="label", expected_type=ScoredLabel
             )

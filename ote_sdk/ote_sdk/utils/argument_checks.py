@@ -60,7 +60,7 @@ def check_nested_elements_type(iterable, parameter_name, expected_type):
         )
 
 
-def check_several_lists_elements_type(parameter_name_expected_type: list):
+def check_several_optional_lists_elements_type(parameter_name_expected_type: list):
     """
     Function checks if parameters lists exist and raises ValueError exception if lists elements have unexpected type
     :param parameter_name_expected_type: list with tuples that contain parameter with nested elements, name for
@@ -92,7 +92,9 @@ def check_dictionary_keys_values_type(
             )
 
 
-def check_several_dictionaries_keys_values_type(parameter_name_expected_type: list):
+def check_several_optional_dictionaries_keys_values_type(
+    parameter_name_expected_type: list,
+):
     """
     Function checks if parameters dictionaries exist and raises ValueError exception if their key or value have
     unexpected type

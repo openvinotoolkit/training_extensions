@@ -39,7 +39,7 @@ class Annotation(metaclass=abc.ABCMeta):
             optional_parameters=[(id, "id", ID)],
         )
         # Nested labels validation
-        if len(labels) > 0:
+        if labels:
             check_nested_elements_type(
                 iterable=labels, parameter_name="label", expected_type=ScoredLabel
             )
