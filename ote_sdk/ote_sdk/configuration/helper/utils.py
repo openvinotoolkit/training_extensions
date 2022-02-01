@@ -147,11 +147,11 @@ def deserialize_enum_value(value: Union[str, Enum], enum_type: Type[Enum]):
         except KeyError:
             try:
                 instance = enum_type(value)  # type: ignore
-            except ValueError:
-                raise ValueError(
+            except ValueError as error:
+                raise KeyError(
                     f"Value `{value}` cannot be converted to an instance of "
                     f"`{enum_type}`"
-                )
+                ) from error
     else:
         raise ValueError(
             f"Invalid input data type, {type(value)} cannot be converted to an instance "
