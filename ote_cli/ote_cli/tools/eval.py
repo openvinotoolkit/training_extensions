@@ -31,6 +31,7 @@ from ote_cli.registry import find_and_parse_model_template
 from ote_cli.utils.config import override_parameters
 from ote_cli.utils.importing import get_impl_class
 from ote_cli.utils.io import generate_label_schema, read_label_schema, read_model
+from ote_cli.utils.nncf import is_checkpoint_nncf
 from ote_cli.utils.parser import (
     add_hyper_parameters_sub_parser,
     gen_params_dict_from_args,
@@ -112,7 +113,10 @@ def main():
     if args.load_weights.endswith(".bin") or args.load_weights.endswith(".xml"):
         task_class = get_impl_class(template.entrypoints.openvino)
     else:
-        task_class = get_impl_class(template.entrypoints.base)
+        is_nncf = is_checkpoint_nncf(args.load_weights)
+        task_class = get_impl_class(
+            template.entrypoints.nncf if is_nncf else template.entrypoints.base
+        )
 
     dataset_class = get_dataset_class(template.task_type)
 

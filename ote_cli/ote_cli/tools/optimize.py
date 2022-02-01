@@ -21,7 +21,6 @@ import argparse
 from ote_sdk.configuration.helper import create
 from ote_sdk.entities.inference_parameters import InferenceParameters
 from ote_sdk.entities.model import ModelEntity
-from ote_sdk.entities.optimization_parameters import OptimizationParameters
 from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.subset import Subset
 from ote_sdk.entities.task_environment import TaskEnvironment
@@ -85,11 +84,6 @@ def parse_args():
         required=True,
         help="Location where trained model will be stored.",
     )
-    parser.add_argument(
-        "--aux-weights",
-        required=False,
-        help="Load weights of trained auxiliary model",
-    )
 
     add_hyper_parameters_sub_parser(parser, hyper_parameters)
 
@@ -146,10 +140,6 @@ def main():
         environment.get_model_configuration(), args.load_weights, None
     )
 
-    if args.aux_weights:
-        with open(args.aux_weights, "rb") as f:
-            environment.model.set_data("aux_model_1.pth", f.read())
-
     task = task_class(task_environment=environment)
 
     output_model = ModelEntity(dataset, environment.get_model_configuration())
@@ -158,7 +148,7 @@ def main():
         OptimizationType.POT if is_pot else OptimizationType.NNCF,
         dataset,
         output_model,
-        OptimizationParameters(),
+        None
     )
 
     save_model_data(output_model, args.save_model_to)

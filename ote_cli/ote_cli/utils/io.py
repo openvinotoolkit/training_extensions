@@ -18,6 +18,7 @@ Utils for dynamically importing stuff
 
 import json
 import os
+import re
 
 from ote_sdk.entities.label import Domain, LabelEntity
 from ote_sdk.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
@@ -66,6 +67,11 @@ def read_model(model_configuration, path, train_dataset):
                 model_adapters[key] = ModelAdapter(read_binary(full_path))
     else:
         model_adapters = {"weights.pth": ModelAdapter(read_binary(path))}
+        for filename in os.listdir(os.path.dirname(path)):
+            match = re.match(r"aux_model_[0-9]+\.pth", filename)
+            if match:
+                aux_model_path = os.path.join(os.path.dirname(path), filename)
+                model_adapters[filename] = ModelAdapter(read_binary(aux_model_path))
 
     model = ModelEntity(
         configuration=model_configuration,
