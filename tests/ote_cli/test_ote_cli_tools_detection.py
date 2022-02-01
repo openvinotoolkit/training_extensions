@@ -38,6 +38,7 @@ from tests.ote_cli.common import (
     nncf_optimize_testing,
     nncf_export_testing,
     nncf_eval_testing,
+    nncf_eval_openvino_testing,
 )
 
 
@@ -132,6 +133,14 @@ def test_nncf_eval(template):
         pytest.skip("nncf entrypoint is none")
 
     nncf_eval_testing(template, root, ote_dir, args)
+
+
+@pytest.mark.parametrize("template", templates, ids=templates_ids)
+def test_nncf_eval_openvino(template):
+    if template.entrypoints.nncf is None:
+        pytest.skip("nncf entrypoint is none")
+
+    nncf_eval_openvino_testing(template, root, ote_dir, args)
 
 
 @pytest.mark.parametrize("template", templates, ids=templates_ids)
