@@ -45,7 +45,7 @@ def put_text_on_rect_bg(frame, message, position, color=(255, 255, 0)):
     return text_size
 
 
-def draw_masks(frame, predictions):
+def draw_masks(frame, predictions, put_object_count=False):
     """
     Converts predictions to masks and draw them on frame.
     """
@@ -94,7 +94,8 @@ def draw_masks(frame, predictions):
     # As a result instances masks become transparent.
     cv2.addWeighted(frame, 0.5, segments_image, 0.5, 0, dst=frame)
 
-    put_text_on_rect_bg(frame, f"Objects count: {len(predictions)}", (0, 0))
+    if put_object_count:
+        put_text_on_rect_bg(frame, f"Obj. count: {len(predictions)}", (0, 0))
     return frame
 
 
@@ -113,7 +114,7 @@ def put_labels(frame, predictions):
     return frame
 
 
-def draw_bounding_boxes(frame, predictions):
+def draw_bounding_boxes(frame, predictions, put_object_count):
     """
     Converts predictions to bounding boxes and draws them on a frame.
     """
@@ -131,7 +132,8 @@ def draw_bounding_boxes(frame, predictions):
         cv2.rectangle(frame, (x1, y1), (x2, y2), color, thickness=2)
         put_text_on_rect_bg(frame, label.name, (x1, y1), color=color)
 
-    put_text_on_rect_bg(frame, f"Objects count: {len(predictions)}", (0, 0))
+    if put_object_count:
+        put_text_on_rect_bg(frame, f"Obj. count: {len(predictions)}", (0, 0))
     return frame
 
 
@@ -148,11 +150,13 @@ def draw_predictions(task_type, predictions, frame, fit_to_size):
         ratio = min(ratio_x, ratio_y)
         frame = cv2.resize(frame, None, fx=ratio, fy=ratio)
     if task_type == TaskType.DETECTION:
-        frame = draw_bounding_boxes(frame, predictions)
+        frame = draw_bounding_boxes(frame, predictions, put_object_count=True)
     elif task_type in {TaskType.CLASSIFICATION, TaskType.ANOMALY_CLASSIFICATION}:
         frame = put_labels(frame, predictions)
-    elif task_type in {TaskType.SEGMENTATION, TaskType.COUNTING}:
-        frame = draw_masks(frame, predictions)
+    elif task_type == TaskType.INSTANCE_SEGMENTATION:
+        frame = draw_masks(frame, predictions, put_object_count=True)
+    elif task_type == TaskType.SEGMENTATION:
+        frame = draw_masks(frame, predictions, put_object_count=False)
     else:
         raise ValueError(f"Unknown task type: {task_type}")
     return frame

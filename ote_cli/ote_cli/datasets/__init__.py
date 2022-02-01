@@ -24,7 +24,7 @@ def get_dataset_class(task_type):
     Returns a dataset class by task type.
 
     Args:
-        task_type: A task type such as ANOMALY_CLASSIFICATION, CLASSIFICATION, COUNTING, DETECTION,
+        task_type: A task type such as ANOMALY_CLASSIFICATION, CLASSIFICATION, INSTANCE_SEGMENTATION, DETECTION,
         CLASSIFICATION, ROTATED_DETECTION, SEGMENTATION.
     """
 
@@ -36,7 +36,7 @@ def get_dataset_class(task_type):
         from .image_classification.dataset import ImageClassificationDataset
 
         return ImageClassificationDataset
-    if task_type == TaskType.COUNTING:
+    if task_type == TaskType.INSTANCE_SEGMENTATION:
         from .instance_segmentation.dataset import InstanceSegmentationDataset
 
         return InstanceSegmentationDataset
