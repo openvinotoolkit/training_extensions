@@ -135,31 +135,25 @@ class TestLabelSchema:
         """
         label_schema = LabelSchemaEntity()
 
-        plant = label_schema_example.new_label_by_name(
-            "plant"
+        plant = label_schema_example.new_label_by_name("plant")
+        animal = label_schema_example.new_label_by_name("animal")
+        label_schema.add_group(
+            LabelGroup("organism_type", [plant, animal], LabelGroupType.EXCLUSIVE)
         )
-        animal = label_schema_example.new_label_by_name(
-            "animal"
-        )
-        label_schema.add_group(LabelGroup("organism_type", [plant, animal], LabelGroupType.EXCLUSIVE))
 
-        tree = label_schema_example.new_label_by_name(
-            "tree"
+        tree = label_schema_example.new_label_by_name("tree")
+        bush = label_schema_example.new_label_by_name("bush")
+        label_schema.add_group(
+            LabelGroup("plant_type", [tree, bush], LabelGroupType.EXCLUSIVE)
         )
-        bush = label_schema_example.new_label_by_name(
-            "bush"
-        )
-        label_schema.add_group(LabelGroup("plant_type", [tree, bush], LabelGroupType.EXCLUSIVE))
         label_schema.add_child(parent=plant, child=tree)
         label_schema.add_child(parent=plant, child=bush)
 
-        insect = label_schema_example.new_label_by_name(
-            "insect"
+        insect = label_schema_example.new_label_by_name("insect")
+        mammal = label_schema_example.new_label_by_name("mammal")
+        label_schema.add_group(
+            LabelGroup("animal_type", [insect, mammal], LabelGroupType.EXCLUSIVE)
         )
-        mammal = label_schema_example.new_label_by_name(
-            "mammal"
-        )
-        label_schema.add_group(LabelGroup("animal_type", [insect, mammal], LabelGroupType.EXCLUSIVE))
         label_schema.add_child(parent=animal, child=insect)
         label_schema.add_child(parent=animal, child=mammal)
 
