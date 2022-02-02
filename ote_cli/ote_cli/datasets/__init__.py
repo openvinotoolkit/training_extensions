@@ -36,7 +36,7 @@ def get_dataset_class(task_type):
         from .image_classification.dataset import ImageClassificationDataset
 
         return ImageClassificationDataset
-    if task_type == TaskType.INSTANCE_SEGMENTATION:
+    if task_type in {TaskType.INSTANCE_SEGMENTATION, TaskType.ROTATED_DETECTION}:
         from .instance_segmentation.dataset import InstanceSegmentationDataset
 
         return InstanceSegmentationDataset

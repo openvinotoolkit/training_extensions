@@ -153,7 +153,7 @@ def draw_predictions(task_type, predictions, frame, fit_to_size):
         frame = draw_bounding_boxes(frame, predictions, put_object_count=True)
     elif task_type in {TaskType.CLASSIFICATION, TaskType.ANOMALY_CLASSIFICATION}:
         frame = put_labels(frame, predictions)
-    elif task_type == TaskType.INSTANCE_SEGMENTATION:
+    elif task_type in {TaskType.INSTANCE_SEGMENTATION, TaskType.ROTATED_DETECTION}:
         frame = draw_masks(frame, predictions, put_object_count=True)
     elif task_type == TaskType.SEGMENTATION:
         frame = draw_masks(frame, predictions, put_object_count=False)
