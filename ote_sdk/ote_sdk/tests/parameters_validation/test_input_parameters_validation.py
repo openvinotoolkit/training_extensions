@@ -38,6 +38,9 @@ from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.entities.tensor import TensorEntity
 from ote_sdk.tests.constants.ote_sdk_components import OteSdkComponent
 from ote_sdk.tests.constants.requirements import Requirements
+from ote_sdk.tests.parameters_validation.validation_helper import (
+    check_value_error_exception_raised,
+)
 
 
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
@@ -110,16 +113,6 @@ class TestParamsValidation:
         )
         return [exclusivity_0_1_and_0_2, exclusivity_2_4_and_2_5]
 
-    @staticmethod
-    def check_value_error_exception_raised(
-        correct_parameters: dict, unexpected_values: list, class_or_function
-    ) -> None:
-        for key, value in unexpected_values:
-            incorrect_parameters_dict = dict(correct_parameters)
-            incorrect_parameters_dict[key] = value
-            with pytest.raises(ValueError):
-                class_or_function(**incorrect_parameters_dict)
-
     @pytest.mark.priority_medium
     @pytest.mark.component
     @pytest.mark.reqids(Requirements.REQ_1)
@@ -148,7 +141,7 @@ class TestParamsValidation:
             # Unexpected string is specified as "id" parameter
             ("id", unexpected_type_value),
         ]
-        self.check_value_error_exception_raised(
+        check_value_error_exception_raised(
             correct_parameters=correct_values_dict,
             unexpected_values=unexpected_values,
             class_or_function=Annotation,
@@ -189,7 +182,7 @@ class TestParamsValidation:
             # Unexpected string is specified as "id" parameter
             ("id", unexpected_type_value),
         ]
-        self.check_value_error_exception_raised(
+        check_value_error_exception_raised(
             correct_parameters=correct_values_dict,
             unexpected_values=unexpected_values,
             class_or_function=AnnotationSceneEntity,
@@ -229,7 +222,7 @@ class TestParamsValidation:
             # Unexpected integer is specified as "subset" parameter
             ("subset", unexpected_type_value),
         ]
-        self.check_value_error_exception_raised(
+        check_value_error_exception_raised(
             correct_parameters=correct_values_dict,
             unexpected_values=unexpected_values,
             class_or_function=DatasetItemEntity,
@@ -261,7 +254,7 @@ class TestParamsValidation:
             # Unexpected dictionary is specified as "purpose" parameter
             ("purpose", unexpected_type_value),
         ]
-        self.check_value_error_exception_raised(
+        check_value_error_exception_raised(
             correct_parameters=correct_values_dict,
             unexpected_values=unexpected_values,
             class_or_function=DatasetEntity,
@@ -300,7 +293,7 @@ class TestParamsValidation:
             # Unexpected string is specified as "id" parameter
             ("id", "unexpected str"),
         ]
-        self.check_value_error_exception_raised(
+        check_value_error_exception_raised(
             correct_parameters=correct_values_dict,
             unexpected_values=unexpected_values,
             class_or_function=LabelEntity,
@@ -336,7 +329,7 @@ class TestParamsValidation:
             # Unexpected string is specified as nested "label_group"
             ("label_groups", self.exclusivity_groups() + [unexpected_type_value]),
         ]
-        self.check_value_error_exception_raised(
+        check_value_error_exception_raised(
             correct_parameters=correct_values_dict,
             unexpected_values=unexpected_values,
             class_or_function=LabelSchemaEntity,
@@ -451,52 +444,10 @@ class TestParamsValidation:
             # Unexpected string is specified as "_id" parameter
             ("_id", unexpected_int),
         ]
-        self.check_value_error_exception_raised(
+        check_value_error_exception_raised(
             correct_parameters=correct_values_dict,
             unexpected_values=unexpected_values,
             class_or_function=ModelEntity,
-        )
-
-    @pytest.mark.priority_medium
-    @pytest.mark.component
-    @pytest.mark.reqids(Requirements.REQ_1)
-    def test_rectangle_initialization_parameters_validation(self):
-        """
-        <b>Description:</b>
-        Check Rectangle object initialization parameters validation
-
-        <b>Input data:</b>
-        Rectangle object initialization parameters
-
-        <b>Expected results:</b>
-        Test passes if ValueError exception is raised when unexpected type object is specified as Rectangle
-        initialization parameter
-        """
-        rectangle_label = ScoredLabel(
-            label=LabelEntity(name="Rectangle label", domain=Domain.DETECTION)
-        )
-        unexpected_type_value = "unexpected str"
-        correct_values_dict = {"x1": 0.1, "y1": 0.1, "x2": 0.8, "y2": 0.6}
-        unexpected_values = [
-            # Unexpected string is specified as "x1" parameter
-            ("x1", unexpected_type_value),
-            # Unexpected string is specified as "y1" parameter
-            ("y1", unexpected_type_value),
-            # Unexpected string is specified as "x2" parameter
-            ("x2", unexpected_type_value),
-            # Unexpected string is specified as "y2" parameter
-            ("y2", unexpected_type_value),
-            # Unexpected string is specified as "labels" parameter
-            ("labels", unexpected_type_value),  # str-type "labels"
-            # Unexpected string is specified as nested "label"
-            ("labels", [rectangle_label, unexpected_type_value]),
-            # Unexpected string is specified as "modification_date" parameter
-            ("modification_date", unexpected_type_value),
-        ]
-        self.check_value_error_exception_raised(
-            correct_parameters=correct_values_dict,
-            unexpected_values=unexpected_values,
-            class_or_function=Rectangle,
         )
 
     @pytest.mark.priority_medium
@@ -545,7 +496,7 @@ class TestParamsValidation:
             # Unexpected integer is specified as "id" parameter
             ("id", unexpected_type_value),
         ]
-        self.check_value_error_exception_raised(
+        check_value_error_exception_raised(
             correct_parameters=correct_values_dict,
             unexpected_values=unexpected_values,
             class_or_function=ResultSetEntity,
@@ -575,7 +526,7 @@ class TestParamsValidation:
             # Unexpected string is specified as "probability" parameter
             ("probability", unexpected_type_value),
         ]
-        self.check_value_error_exception_raised(
+        check_value_error_exception_raised(
             correct_parameters=correct_values_dict,
             unexpected_values=unexpected_values,
             class_or_function=ScoredLabel,
@@ -618,7 +569,7 @@ class TestParamsValidation:
             # Unexpected string is specified as "label_schema" parameter
             ("label_schema", unexpected_type_value),
         ]
-        self.check_value_error_exception_raised(
+        check_value_error_exception_raised(
             correct_parameters=correct_values_dict,
             unexpected_values=unexpected_values,
             class_or_function=TaskEnvironment,
