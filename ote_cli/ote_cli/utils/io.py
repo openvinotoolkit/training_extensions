@@ -32,10 +32,6 @@ from ote_sdk.entities.model import ModelEntity, ModelOptimizationType
 from ote_sdk.entities.model_template import TaskType
 from ote_sdk.serialization.label_mapper import LabelSchemaMapper
 from ote_sdk.usecases.adapters.model_adapter import ModelAdapter
-from ote_sdk.usecases.exportable_code.demo.demo_package import create_model
-from ote_sdk.usecases.exportable_code.prediction_to_annotation_converter import (
-    create_converter,
-)
 
 from ote_cli.utils.nncf import is_checkpoint_nncf
 
