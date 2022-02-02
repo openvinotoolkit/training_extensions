@@ -22,10 +22,12 @@ import re
 
 from ote_sdk.entities.label import Domain, LabelEntity
 from ote_sdk.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
-from ote_sdk.entities.model import ModelEntity
+from ote_sdk.entities.model import ModelEntity, ModelOptimizationType
 from ote_sdk.entities.model_template import TaskType
 from ote_sdk.serialization.label_mapper import LabelSchemaMapper
 from ote_sdk.usecases.adapters.model_adapter import ModelAdapter
+
+from ote_cli.utils.nncf import is_checkpoint_nncf
 
 
 def save_model_data(model, folder):
@@ -55,7 +57,7 @@ def read_model(model_configuration, path, train_dataset):
     """
     Creates ModelEntity based on model_configuration and data stored at path.
     """
-
+    optimization_type = ModelOptimizationType.NONE
     if path.endswith(".bin") or path.endswith(".xml"):
         model_adapters = {
             "openvino.xml": ModelAdapter(read_binary(path[:-4] + ".xml")),
@@ -67,6 +69,10 @@ def read_model(model_configuration, path, train_dataset):
                 model_adapters[key] = ModelAdapter(read_binary(full_path))
     else:
         model_adapters = {"weights.pth": ModelAdapter(read_binary(path))}
+
+        if is_checkpoint_nncf(path):
+            optimization_type = ModelOptimizationType.NNCF
+
         for filename in os.listdir(os.path.dirname(path)):
             match = re.match(r"aux_model_[0-9]+\.pth", filename)
             if match:
@@ -77,6 +83,7 @@ def read_model(model_configuration, path, train_dataset):
         configuration=model_configuration,
         model_adapters=model_adapters,
         train_dataset=train_dataset,
+        optimization_type=optimization_type,
     )
 
     return model

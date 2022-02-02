@@ -112,11 +112,10 @@ def main():
     # Get classes for Task, ConfigurableParameters and Dataset.
     if args.load_weights.endswith(".bin") or args.load_weights.endswith(".xml"):
         task_class = get_impl_class(template.entrypoints.openvino)
+    elif is_checkpoint_nncf(args.load_weights):
+        task_class = get_impl_class(template.entrypoints.nncf)
     else:
-        is_nncf = is_checkpoint_nncf(args.load_weights)
-        task_class = get_impl_class(
-            template.entrypoints.nncf if is_nncf else template.entrypoints.base
-        )
+        task_class = get_impl_class(template.entrypoints.base)
 
     dataset_class = get_dataset_class(template.task_type)
 

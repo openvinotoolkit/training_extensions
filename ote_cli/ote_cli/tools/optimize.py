@@ -17,6 +17,7 @@ Model optimization tool.
 # and limitations under the License.
 
 import argparse
+import json
 
 from ote_sdk.configuration.helper import create
 from ote_sdk.entities.inference_parameters import InferenceParameters
@@ -84,6 +85,10 @@ def parse_args():
         required=True,
         help="Location where trained model will be stored.",
     )
+    parser.add_argument(
+        "--save-performance",
+        help="Path to a json file where computed performance will be stored.",
+    )
 
     add_hyper_parameters_sub_parser(parser, hyper_parameters)
 
@@ -148,7 +153,7 @@ def main():
         OptimizationType.POT if is_pot else OptimizationType.NNCF,
         dataset,
         output_model,
-        None
+        None,
     )
 
     save_model_data(output_model, args.save_model_to)
@@ -167,6 +172,13 @@ def main():
     task.evaluate(resultset)
     assert resultset.performance is not None
     print(resultset.performance)
+
+    if args.save_performance:
+        with open(args.save_performance, "w", encoding="UTF-8") as write_file:
+            json.dump(
+                {resultset.performance.score.name: resultset.performance.score.value},
+                write_file,
+            )
 
 
 if __name__ == "__main__":

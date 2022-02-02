@@ -20,7 +20,7 @@ import argparse
 import os
 
 from ote_sdk.configuration.helper import create
-from ote_sdk.entities.model import ModelEntity
+from ote_sdk.entities.model import ModelEntity, ModelOptimizationType
 from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.usecases.adapters.model_adapter import ModelAdapter
 from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType
@@ -86,6 +86,9 @@ def main():
         configuration=environment.get_model_configuration(),
         model_adapters=model_adapters,
         train_dataset=None,
+        optimization_type=ModelOptimizationType.NNCF
+        if is_nncf
+        else ModelOptimizationType.NONE,
     )
     environment.model = model
 

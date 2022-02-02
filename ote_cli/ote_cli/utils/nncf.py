@@ -25,4 +25,8 @@ def is_checkpoint_nncf(path):
     checkpoint was the result of trainning of NNCF-compressed model.
     """
     state = torch.load(path, map_location="cpu")
-    return bool(state.get("meta", {}).get("nncf_enable_compression", False))
+    is_nncf = (
+        bool(state.get("meta", {}).get("nncf_enable_compression"))
+        or "nncf_metainfo" in state
+    )
+    return is_nncf
