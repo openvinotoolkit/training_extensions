@@ -107,7 +107,7 @@ def task_type_to_label_domain(task_type: TaskType) -> Domain:
         TaskType.CLASSIFICATION: Domain.CLASSIFICATION,
         TaskType.DETECTION: Domain.DETECTION,
         TaskType.SEGMENTATION: Domain.SEGMENTATION,
-        TaskType.INSTANCE_SEGMENTATION: Domain.DETECTION,
+        TaskType.INSTANCE_SEGMENTATION: Domain.INSTANCE_SEGMENTATION,
         TaskType.ANOMALY_CLASSIFICATION: Domain.ANOMALY_CLASSIFICATION,
         TaskType.ANOMALY_DETECTION: Domain.ANOMALY_DETECTION,
         TaskType.ANOMALY_SEGMENTATION: Domain.ANOMALY_SEGMENTATION,
