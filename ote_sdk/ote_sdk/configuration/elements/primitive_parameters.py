@@ -12,11 +12,7 @@ from typing import List, Optional, TypeVar, Union
 
 import attr
 
-from ote_sdk.configuration.enums import (
-    ConfigElementType,
-    ModelLifecycle,
-    AutoHPOState
-)
+from ote_sdk.configuration.enums import ConfigElementType, ModelLifecycle, AutoHPOState
 from ote_sdk.configuration.ui_rules import NullUIRules, UIRules
 
 from .configurable_enum import ConfigurableEnum
@@ -34,7 +30,7 @@ from .metadata_keys import (
     VISIBLE_IN_UI,
     WARNING,
     AUTO_HPO_STATE,
-    AUTO_HPO_VALUE
+    AUTO_HPO_VALUE,
 )
 from .utils import (
     attr_strict_float_converter,
@@ -78,7 +74,7 @@ def set_common_metadata(
         UI_RULES: ui_rules,
         TYPE: parameter_type,
         AUTO_HPO_STATE: auto_hpo_state,
-        AUTO_HPO_VALUE: auto_hpo_value
+        AUTO_HPO_VALUE: auto_hpo_value,
     }
     return metadata
 
@@ -95,7 +91,7 @@ def configurable_integer(
     affects_outcome_of: ModelLifecycle = ModelLifecycle.NONE,
     ui_rules: UIRules = NullUIRules(),
     auto_hpo_state: AutoHPOState = AutoHPOState.NOT_POSSIBLE,
-    auto_hpo_value: Optional[int] = None
+    auto_hpo_value: Optional[int] = None,
 ) -> int:
     """
     Constructs a configurable integer attribute, with the appropriate metadata.
@@ -136,7 +132,7 @@ def configurable_integer(
         affects_outcome_of=affects_outcome_of,
         parameter_type=ConfigElementType.INTEGER,
         auto_hpo_state=auto_hpo_state,
-        auto_hpo_value=auto_hpo_value
+        auto_hpo_value=auto_hpo_value,
     )
 
     metadata.update({MIN_VALUE: min_value, MAX_VALUE: max_value})
@@ -164,7 +160,7 @@ def configurable_float(
     affects_outcome_of: ModelLifecycle = ModelLifecycle.NONE,
     ui_rules: UIRules = NullUIRules(),
     auto_hpo_state: AutoHPOState = AutoHPOState.NOT_POSSIBLE,
-    auto_hpo_value: Optional[float] = None
+    auto_hpo_value: Optional[float] = None,
 ) -> float:
     """
     Constructs a configurable float attribute, with the appropriate metadata.
@@ -205,7 +201,7 @@ def configurable_float(
         affects_outcome_of=affects_outcome_of,
         parameter_type=ConfigElementType.FLOAT,
         auto_hpo_state=auto_hpo_state,
-        auto_hpo_value=auto_hpo_value
+        auto_hpo_value=auto_hpo_value,
     )
 
     metadata.update({MIN_VALUE: min_value, MAX_VALUE: max_value})
@@ -230,7 +226,7 @@ def configurable_boolean(
     affects_outcome_of: ModelLifecycle = ModelLifecycle.NONE,
     ui_rules: UIRules = NullUIRules(),
     auto_hpo_state: AutoHPOState = AutoHPOState.NOT_POSSIBLE,
-    auto_hpo_value: Optional[bool] = None
+    auto_hpo_value: Optional[bool] = None,
 ) -> bool:
     """
     Constructs a configurable boolean attribute, with the appropriate metadata.
@@ -270,7 +266,7 @@ def configurable_boolean(
         affects_outcome_of=affects_outcome_of,
         parameter_type=ConfigElementType.BOOLEAN,
         auto_hpo_state=auto_hpo_state,
-        auto_hpo_value=auto_hpo_value
+        auto_hpo_value=auto_hpo_value,
     )
 
     return attr.ib(
@@ -292,7 +288,7 @@ def float_selectable(
     affects_outcome_of: ModelLifecycle = ModelLifecycle.NONE,
     ui_rules: UIRules = NullUIRules(),
     auto_hpo_state: AutoHPOState = AutoHPOState.NOT_POSSIBLE,
-    auto_hpo_value: Optional[float] = None
+    auto_hpo_value: Optional[float] = None,
 ) -> float:
     """
     Constructs a configurable float selectable attribute, with the appropriate metadata.
@@ -332,7 +328,7 @@ def float_selectable(
         affects_outcome_of=affects_outcome_of,
         parameter_type=ConfigElementType.FLOAT_SELECTABLE,
         auto_hpo_state=auto_hpo_state,
-        auto_hpo_value=auto_hpo_value
+        auto_hpo_value=auto_hpo_value,
     )
 
     metadata.update({OPTIONS: options})
@@ -357,7 +353,7 @@ def selectable(
     affects_outcome_of: ModelLifecycle = ModelLifecycle.NONE,
     ui_rules: UIRules = NullUIRules(),
     auto_hpo_state: AutoHPOState = AutoHPOState.NOT_POSSIBLE,
-    auto_hpo_value: Optional[str] = None
+    auto_hpo_value: Optional[str] = None,
 ) -> TConfigurableEnum:
     """
     Constructs a selectable attribute from a pre-defined Enum, with the appropriate metadata. The list of options for
@@ -398,7 +394,7 @@ def selectable(
         affects_outcome_of=affects_outcome_of,
         parameter_type=ConfigElementType.SELECTABLE,
         auto_hpo_state=auto_hpo_state,
-        auto_hpo_value=auto_hpo_value
+        auto_hpo_value=auto_hpo_value,
     )
 
     metadata.update(default_value.get_class_info())

@@ -46,7 +46,7 @@ def allows_model_template_override(keyword: str) -> bool:
         ENUM_NAME,
         UI_RULES,
         AFFECTS_OUTCOME_OF,
-        AUTO_HPO_STATE
+        AUTO_HPO_STATE,
     ]
     return keyword in overrideable_keys
 

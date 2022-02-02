@@ -51,7 +51,9 @@ class ParameterGroup:
         """
         groups: List[str] = []
         parameters: List[str] = []
-        self.__metadata_overrides: Dict[str, Any] = {}  # pylint: disable=attribute-defined-outside-init
+        self.__metadata_overrides: Dict[  # pylint:disable=attribute-defined-outside-init
+            str, Any
+        ] = {}
 
         for attribute_or_method_name in dir(self):
             # Go over all attributes and methods of the class instance
@@ -89,9 +91,7 @@ class ParameterGroup:
         if parameter is not None:
             parameter_metadata = getattr(parameter, "metadata", {})
             metadata_dict = dict(parameter_metadata)
-            parameter_overrides = self.__metadata_overrides.get(
-                parameter_name, None
-            )
+            parameter_overrides = self.__metadata_overrides.get(parameter_name, None)
             if parameter_overrides is not None:
                 for metadata_key, value_override in parameter_overrides.items():
                     metadata_dict.update({metadata_key: value_override})
@@ -99,10 +99,10 @@ class ParameterGroup:
         return {}
 
     def set_metadata_value(
-            self,
-            parameter_name: str,
-            metadata_key: str,
-            value: Union[int, float, str, bool, Enum]
+        self,
+        parameter_name: str,
+        metadata_key: str,
+        value: Union[int, float, str, bool, Enum],
     ) -> bool:
         """
         Sets the value of a specific metadata item `metadata_key` for the parameter
@@ -122,7 +122,9 @@ class ParameterGroup:
         if metadata_key not in metadata_keys.all_keys():
             return False
         metadata_value = parameter_metadata[metadata_key]
-        if metadata_value is not None and type(metadata_value) is not type(value):  # pylint: disable=unidiomatic-typecheck
+        if metadata_value is not None and type(metadata_value) is not type(
+            value
+        ):  # pylint: disable=unidiomatic-typecheck
             return False
         existing_overrides = self.__metadata_overrides.get(parameter_name, None)
         if existing_overrides is None:
@@ -149,10 +151,10 @@ class ParameterGroup:
             else:
                 auto_hpo_state = AutoHPOState.OPTIMIZED
             self.set_metadata_value(
-                    parameter_name=parameter_name,
-                    metadata_key=metadata_keys.AUTO_HPO_STATE,
-                    value=auto_hpo_state
-                )
+                parameter_name=parameter_name,
+                metadata_key=metadata_keys.AUTO_HPO_STATE,
+                value=auto_hpo_state,
+            )
         for group_name in self.groups:
             group = getattr(self, group_name)
             group.update_auto_hpo_states()

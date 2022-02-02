@@ -24,10 +24,10 @@ class AutoHPOState(Enum):
                     auto-HPO, but it's value has been manually overridden
     """
 
-    NOT_POSSIBLE = 'not_possible'
-    POSSIBLE = 'possible'
-    OPTIMIZED = 'optimized'
-    OVERRIDDEN = 'overridden'
+    NOT_POSSIBLE = "not_possible"
+    POSSIBLE = "possible"
+    OPTIMIZED = "optimized"
+    OVERRIDDEN = "overridden"
 
     def __str__(self):
         """

@@ -43,7 +43,7 @@ ExposureTypeVar = TypeVar("ExposureTypeVar", UIRules, Rule)
 
 METADATA_ENUMS = {
     metadata_keys.AFFECTS_OUTCOME_OF: ModelLifecycle,
-    metadata_keys.AUTO_HPO_STATE: AutoHPOState
+    metadata_keys.AUTO_HPO_STATE: AutoHPOState,
 }
 
 
@@ -198,9 +198,7 @@ def gather_parameter_arguments_and_values_from_dict(
             parameter_ui_rules = construct_ui_rules_from_dict(parameter_ui_rules_dict)
             parameter_make_arguments = {
                 key: parameter_constructor(
-                    **parameter_dict,
-                    ui_rules=parameter_ui_rules,
-                    **metadata_enums
+                    **parameter_dict, ui_rules=parameter_ui_rules, **metadata_enums
                 )
             }
             make_arguments.update(parameter_make_arguments)
