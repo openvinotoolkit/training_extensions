@@ -7,6 +7,8 @@ import datetime
 from enum import IntEnum, auto
 from typing import TYPE_CHECKING, Dict, List, Optional, Union
 
+from bson import ObjectId
+
 from ote_sdk.configuration import ConfigurableParameters
 from ote_sdk.entities.id import ID
 from ote_sdk.entities.label import LabelEntity
@@ -157,7 +159,7 @@ class ModelEntity:
                 (optimization_objectives, "optimization_objectives", dict),
                 (performance_improvement, "performance_improvement", dict),
                 (model_size_reduction, "model_size_reduction", (int, float)),
-                (_id, "_id", ID),
+                (_id, "_id", (ID, ObjectId)),
             ]
         )
         # Nested list elements validation
