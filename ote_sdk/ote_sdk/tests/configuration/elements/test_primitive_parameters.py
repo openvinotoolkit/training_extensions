@@ -72,7 +72,7 @@ class TestPrimitiveParameters:
                 visible_in_ui=visible_in_ui,
                 parameter_type=parameter_type,
                 auto_hpo_state=auto_hpo_state,
-                auto_hpo_value=default_value
+                auto_hpo_value=default_value,
             ) == {
                 "default_value": default_value,
                 "description": description,
@@ -84,7 +84,7 @@ class TestPrimitiveParameters:
                 "ui_rules": ui_rules,
                 "type": parameter_type,
                 "auto_hpo_state": auto_hpo_state,
-                "auto_hpo_value": default_value
+                "auto_hpo_value": default_value,
             }
 
     @pytest.mark.priority_medium
@@ -120,7 +120,7 @@ class TestPrimitiveParameters:
             expected_affects_outcome_of: ModelLifecycle = ModelLifecycle.NONE,
             expected_ui_rules: UIRules = NullUIRules(),
             expected_auto_hpo_state: AutoHPOState = AutoHPOState.NOT_POSSIBLE,
-            expected_auto_hpo_value: int = None
+            expected_auto_hpo_value: int = None,
         ):
             expected_metadata = {
                 "default_value": 100,
@@ -135,7 +135,7 @@ class TestPrimitiveParameters:
                 "min_value": expected_min_value,
                 "max_value": expected_max_value,
                 "auto_hpo_state": expected_auto_hpo_state,
-                "auto_hpo_value": expected_auto_hpo_value
+                "auto_hpo_value": expected_auto_hpo_value,
             }
             assert isinstance(integer_instance, _make._CountingAttr)
             assert integer_instance._default == 100
@@ -181,7 +181,7 @@ class TestPrimitiveParameters:
             affects_outcome_of=affects_outcome_of,
             ui_rules=ui_rules,
             auto_hpo_value=auto_hpo_value,
-            auto_hpo_state=auto_hpo_state
+            auto_hpo_state=auto_hpo_state,
         )
         check_configurable_integer(
             integer_instance=actual_integer,  # type: ignore
@@ -194,7 +194,7 @@ class TestPrimitiveParameters:
             expected_affects_outcome_of=affects_outcome_of,
             expected_ui_rules=ui_rules,
             expected_auto_hpo_state=auto_hpo_state,
-            expected_auto_hpo_value=auto_hpo_value
+            expected_auto_hpo_value=auto_hpo_value,
         )
 
     @pytest.mark.priority_medium
@@ -231,7 +231,7 @@ class TestPrimitiveParameters:
             expected_affects_outcome_of: ModelLifecycle = ModelLifecycle.NONE,
             expected_ui_rules: UIRules = NullUIRules(),
             expected_auto_hpo_state: AutoHPOState = AutoHPOState.NOT_POSSIBLE,
-            expected_auto_hpo_value: float = None
+            expected_auto_hpo_value: float = None,
         ):
             expected_metadata = {
                 "default_value": 100.1,
@@ -246,7 +246,7 @@ class TestPrimitiveParameters:
                 "min_value": expected_min_value,
                 "max_value": expected_max_value,
                 "auto_hpo_state": expected_auto_hpo_state,
-                "auto_hpo_value": expected_auto_hpo_value
+                "auto_hpo_value": expected_auto_hpo_value,
             }
             assert isinstance(float_instance, _make._CountingAttr)
             assert float_instance._default == 100.1
@@ -283,7 +283,7 @@ class TestPrimitiveParameters:
             affects_outcome_of=affects_outcome_of,
             ui_rules=ui_rules,
             auto_hpo_value=auto_hpo_value,
-            auto_hpo_state=auto_hpo_state
+            auto_hpo_state=auto_hpo_state,
         )
         check_configurable_float(
             float_instance=actual_float,  # type: ignore
@@ -296,7 +296,7 @@ class TestPrimitiveParameters:
             expected_affects_outcome_of=affects_outcome_of,
             expected_ui_rules=ui_rules,
             expected_auto_hpo_state=auto_hpo_state,
-            expected_auto_hpo_value=auto_hpo_value
+            expected_auto_hpo_value=auto_hpo_value,
         )
 
     @pytest.mark.priority_medium
@@ -330,7 +330,7 @@ class TestPrimitiveParameters:
             expected_affects_outcome_of: ModelLifecycle = ModelLifecycle.NONE,
             expected_ui_rules: UIRules = NullUIRules(),
             expected_auto_hpo_state: AutoHPOState = AutoHPOState.NOT_POSSIBLE,
-            expected_auto_hpo_value: bool = None
+            expected_auto_hpo_value: bool = None,
         ):
             expected_metadata = {
                 "default_value": True,
@@ -343,7 +343,7 @@ class TestPrimitiveParameters:
                 "ui_rules": expected_ui_rules,
                 "type": ConfigElementType.BOOLEAN,
                 "auto_hpo_state": expected_auto_hpo_state,
-                "auto_hpo_value": expected_auto_hpo_value
+                "auto_hpo_value": expected_auto_hpo_value,
             }
             assert isinstance(boolean_instance, _make._CountingAttr)
             assert boolean_instance._default
@@ -381,7 +381,7 @@ class TestPrimitiveParameters:
             affects_outcome_of=affects_outcome_of,
             ui_rules=ui_rules,
             auto_hpo_value=auto_hpo_value,
-            auto_hpo_state=auto_hpo_state
+            auto_hpo_state=auto_hpo_state,
         )
         check_configurable_boolean(
             boolean_instance=actual_boolean,  # type: ignore
@@ -392,7 +392,7 @@ class TestPrimitiveParameters:
             expected_affects_outcome_of=affects_outcome_of,
             expected_ui_rules=ui_rules,
             expected_auto_hpo_value=auto_hpo_value,
-            expected_auto_hpo_state=auto_hpo_state
+            expected_auto_hpo_state=auto_hpo_state,
         )
 
     @pytest.mark.priority_medium
@@ -425,7 +425,7 @@ class TestPrimitiveParameters:
             expected_affects_outcome_of: ModelLifecycle = ModelLifecycle.NONE,
             expected_ui_rules: UIRules = NullUIRules(),
             expected_auto_hpo_state: AutoHPOState = AutoHPOState.NOT_POSSIBLE,
-            expected_auto_hpo_value: float = None
+            expected_auto_hpo_value: float = None,
         ):
             expected_metadata = {
                 "default_value": 0.1,
@@ -439,7 +439,7 @@ class TestPrimitiveParameters:
                 "type": ConfigElementType.FLOAT_SELECTABLE,
                 "options": [0.2, 1.4, 2.8],
                 "auto_hpo_state": expected_auto_hpo_state,
-                "auto_hpo_value": expected_auto_hpo_value
+                "auto_hpo_value": expected_auto_hpo_value,
             }
             assert isinstance(float_selectable_instance, _make._CountingAttr)
             assert float_selectable_instance._default
@@ -479,7 +479,7 @@ class TestPrimitiveParameters:
             affects_outcome_of=affects_outcome_of,
             ui_rules=ui_rules,
             auto_hpo_value=auto_hpo_value,
-            auto_hpo_state=auto_hpo_state
+            auto_hpo_state=auto_hpo_state,
         )
         check_float_selectable(
             float_selectable_instance=actual_float_selectable,  # type: ignore
@@ -490,7 +490,7 @@ class TestPrimitiveParameters:
             expected_affects_outcome_of=affects_outcome_of,
             expected_ui_rules=ui_rules,
             expected_auto_hpo_value=auto_hpo_value,
-            expected_auto_hpo_state=auto_hpo_state
+            expected_auto_hpo_state=auto_hpo_state,
         )
 
     @pytest.mark.priority_medium
@@ -522,7 +522,7 @@ class TestPrimitiveParameters:
             expected_affects_outcome_of: ModelLifecycle = ModelLifecycle.NONE,
             expected_ui_rules: UIRules = NullUIRules(),
             expected_auto_hpo_state: AutoHPOState = AutoHPOState.NOT_POSSIBLE,
-            expected_auto_hpo_value: SomeEnumSelectable = None
+            expected_auto_hpo_value: SomeEnumSelectable = None,
         ):
             expected_metadata = {
                 "default_value": SomeEnumSelectable.OPTION_C,
@@ -542,7 +542,7 @@ class TestPrimitiveParameters:
                     "OPTION_C": "option_c",
                 },
                 "auto_hpo_state": expected_auto_hpo_state,
-                "auto_hpo_value": expected_auto_hpo_value
+                "auto_hpo_value": expected_auto_hpo_value,
             }
             assert isinstance(selectable_instance, _make._CountingAttr)
             assert selectable_instance._default == SomeEnumSelectable.OPTION_C
@@ -579,7 +579,7 @@ class TestPrimitiveParameters:
             affects_outcome_of=affects_outcome_of,
             ui_rules=ui_rules,
             auto_hpo_value=auto_hpo_value,
-            auto_hpo_state=auto_hpo_state
+            auto_hpo_state=auto_hpo_state,
         )
         check_selectable(
             selectable_instance=actual_selectable,  # type: ignore
@@ -590,7 +590,7 @@ class TestPrimitiveParameters:
             expected_affects_outcome_of=affects_outcome_of,
             expected_ui_rules=ui_rules,
             expected_auto_hpo_state=auto_hpo_state,
-            expected_auto_hpo_value=auto_hpo_value
+            expected_auto_hpo_value=auto_hpo_value,
         )
 
     @pytest.mark.priority_medium

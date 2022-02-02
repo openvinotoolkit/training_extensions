@@ -100,14 +100,14 @@ class TestConfigurationHelper:
             description="Configurable parameters for the DatasetManager -- TEST ONLY",
             header="Dataset Manager configuration -- TEST ONLY",
         )
-        test_parameter_name = 'dummy_float_selectable'
+        test_parameter_name = "dummy_float_selectable"
         metadata_key = metadata_keys.AUTO_HPO_STATE
         old_state = config.get_metadata(test_parameter_name)[metadata_key]
         new_state = AutoHPOState.OPTIMIZED
         set_success = config.set_metadata_value(
             parameter_name=test_parameter_name,
             metadata_key=metadata_key,
-            value=new_state
+            value=new_state,
         )
 
         # Act
@@ -123,12 +123,18 @@ class TestConfigurationHelper:
         assert old_state != new_state
         assert set_success
         # Check that metadata changes are properly converted
-        assert reconstructed_config.get_metadata(
-            parameter_name=test_parameter_name
-        )[metadata_key] == new_state
-        assert reconstructed_config_from_yaml.get_metadata(
-            parameter_name=test_parameter_name
-        )[metadata_key] == new_state
+        assert (
+            reconstructed_config.get_metadata(parameter_name=test_parameter_name)[
+                metadata_key
+            ]
+            == new_state
+        )
+        assert (
+            reconstructed_config_from_yaml.get_metadata(
+                parameter_name=test_parameter_name
+            )[metadata_key]
+            == new_state
+        )
         # Compare the config dictionaries
         assert cfg == ote_config_helper.convert(reconstructed_config, dict)
         assert cfg == ote_config_helper.convert(reconstructed_config_from_yaml, dict)

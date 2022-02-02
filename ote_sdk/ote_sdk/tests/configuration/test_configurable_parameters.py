@@ -106,37 +106,35 @@ class TestConfigurableParameters:
         )
         test_parameter_name = "dummy_float_selectable"
         metadata_key = metadata_keys.AUTO_HPO_STATE
-        old_value = config.get_metadata(
-            test_parameter_name
-        )[metadata_key]
+        old_value = config.get_metadata(test_parameter_name)[metadata_key]
         new_value = AutoHPOState.OPTIMIZED
 
         # Act
         success = config.set_metadata_value(
             parameter_name=test_parameter_name,
             metadata_key=metadata_key,
-            value=new_value
+            value=new_value,
         )
         no_success_invalid_param = config.set_metadata_value(
-            parameter_name=test_parameter_name+'_invalid',
+            parameter_name=test_parameter_name + "_invalid",
             metadata_key=metadata_key,
-            value=new_value
+            value=new_value,
         )
         no_success_invalid_key = config.set_metadata_value(
             parameter_name=test_parameter_name,
-            metadata_key=metadata_key+'_invalid',
-            value=new_value
+            metadata_key=metadata_key + "_invalid",
+            value=new_value,
         )
         no_success_invalid_value_type = config.set_metadata_value(
             parameter_name=test_parameter_name,
             metadata_key=metadata_key,
-            value=str(new_value)
+            value=str(new_value),
         )
         config_copy = copy.deepcopy(config)
         success_revert = config_copy.set_metadata_value(
             parameter_name=test_parameter_name,
             metadata_key=metadata_key,
-            value=old_value
+            value=old_value,
         )
 
         # Assert
@@ -146,7 +144,7 @@ class TestConfigurableParameters:
             [
                 no_success_invalid_key,
                 no_success_invalid_param,
-                no_success_invalid_value_type
+                no_success_invalid_value_type,
             ]
         )
         assert config.get_metadata(test_parameter_name)[metadata_key] == new_value
@@ -188,27 +186,35 @@ class TestConfigurableParameters:
         success_1 = config.set_metadata_value(
             parameter_name=test_parameter_1,
             metadata_key=metadata_keys.AUTO_HPO_VALUE,
-            value=auto_hpo_result_float
+            value=auto_hpo_result_float,
         )
         config.subset_parameters.train_proportion = auto_hpo_result_train_prop
         success_2 = config.subset_parameters.set_metadata_value(
             parameter_name=test_parameter_2,
             metadata_key=metadata_keys.AUTO_HPO_VALUE,
-            value=auto_hpo_result_train_prop
+            value=auto_hpo_result_train_prop,
         )
 
         # Act
         config.update_auto_hpo_states()
-        auto_hpo_state_1 = config.get_metadata(test_parameter_1)[metadata_keys.AUTO_HPO_STATE]
-        auto_hpo_state_2 = config.subset_parameters.get_metadata(test_parameter_2)[metadata_keys.AUTO_HPO_STATE]
+        auto_hpo_state_1 = config.get_metadata(test_parameter_1)[
+            metadata_keys.AUTO_HPO_STATE
+        ]
+        auto_hpo_state_2 = config.subset_parameters.get_metadata(test_parameter_2)[
+            metadata_keys.AUTO_HPO_STATE
+        ]
 
         # Simulate override
         config.dummy_float_selectable = auto_hpo_result_float - 0.001
         config.subset_parameters.train_proportion = auto_hpo_result_train_prop - 0.001
 
         config.update_auto_hpo_states()
-        auto_hpo_state_override_1 = config.get_metadata(test_parameter_1)[metadata_keys.AUTO_HPO_STATE]
-        auto_hpo_state_override_2 = config.subset_parameters.get_metadata(test_parameter_2)[metadata_keys.AUTO_HPO_STATE]
+        auto_hpo_state_override_1 = config.get_metadata(test_parameter_1)[
+            metadata_keys.AUTO_HPO_STATE
+        ]
+        auto_hpo_state_override_2 = config.subset_parameters.get_metadata(
+            test_parameter_2
+        )[metadata_keys.AUTO_HPO_STATE]
 
         # Assert
         assert all([success_1, success_2])

@@ -149,7 +149,7 @@ class DatasetManagerConfig(ConfigurableParameters):
             header="Training set proportion",
             ui_rules=__ui_rules,
             affects_outcome_of=ModelLifecycle.TRAINING,
-            auto_hpo_state=AutoHPOState.POSSIBLE
+            auto_hpo_state=AutoHPOState.POSSIBLE,
         )
 
         validation_proportion = configurable_float(
@@ -175,7 +175,7 @@ class DatasetManagerConfig(ConfigurableParameters):
         options=[1.0, 2.0, 3.0, 4.0],
         default_value=2.0,
         header="Test float selectable",
-        auto_hpo_state=AutoHPOState.POSSIBLE
+        auto_hpo_state=AutoHPOState.POSSIBLE,
     )
 
     dummy_selectable = selectable(
