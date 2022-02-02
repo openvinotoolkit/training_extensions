@@ -16,6 +16,11 @@ from shapely.geometry import Polygon as shapely_polygon
 
 from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.entities.shapes.shape import Shape, ShapeEntity, ShapeType
+from ote_sdk.utils.argument_checks import (
+    check_nested_elements_type,
+    check_parameter_type,
+    check_required_and_optional_parameters_type,
+)
 from ote_sdk.utils.time_utils import now
 
 # pylint: disable=invalid-name
@@ -50,6 +55,25 @@ class Rectangle(Shape):
         labels: Optional[List[ScoredLabel]] = None,
         modification_date: Optional[datetime.datetime] = None,
     ):
+        # Initialization parameters validation
+        check_required_and_optional_parameters_type(
+            required_parameters=[
+                (x1, "x1", (float, int, np.floating)),
+                (y1, "y1", (float, int, np.floating)),
+                (x2, "x2", (float, int, np.floating)),
+                (y2, "y2", (float, int, np.floating)),
+            ],
+            optional_parameters=[
+                (labels, "labels", list),
+                (modification_date, "modification_date", datetime.datetime),
+            ],
+        )
+        # Nested labels validation
+        if labels:
+            check_nested_elements_type(
+                iterable=labels, parameter_name="label", expected_type=ScoredLabel
+            )
+
         labels = [] if labels is None else labels
         modification_date = now() if modification_date is None else modification_date
         super().__init__(
@@ -233,6 +257,11 @@ class Rectangle(Shape):
         :param rectangle: rectangle to evaluate
         :return: true if it fully encapsulate normalized coordinate space.
         """
+        # Input parameter validation
+        check_parameter_type(
+            parameter=rectangle, parameter_name="rectangle", expected_type=ShapeEntity
+        )
+
         if (
             isinstance(rectangle, Rectangle)
             and rectangle.x1 == 0
@@ -251,7 +280,10 @@ class Rectangle(Shape):
         :param data: Image to crop
         :return: Cropped image
         """
-
+        # Input parameter validation
+        check_parameter_type(
+            parameter=data, parameter_name="data", expected_type=np.ndarray
+        )
         # We clip negative values to zero since Numpy uses negative values
         # to represent indexing from the right side of the array.
         # However, on the other hand, it is safe to have indices larger than the size

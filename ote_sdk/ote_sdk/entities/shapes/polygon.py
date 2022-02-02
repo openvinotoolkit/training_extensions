@@ -12,11 +12,18 @@ import warnings
 from operator import attrgetter
 from typing import List, Optional
 
+from numpy import floating
 from shapely.geometry import Polygon as shapely_polygon
 
 from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.entities.shapes.rectangle import Rectangle
 from ote_sdk.entities.shapes.shape import Shape, ShapeType
+from ote_sdk.utils.argument_checks import (
+    check_nested_elements_type,
+    check_parameter_type,
+    check_required_and_optional_parameters_type,
+    check_required_parameters_type,
+)
 from ote_sdk.utils.time_utils import now
 
 
@@ -27,6 +34,10 @@ class Point:
     __slots__ = ["x", "y"]
 
     def __init__(self, x: float, y: float):
+        # Initialization parameters validation
+        check_required_parameters_type(
+            [(x, "x", (float, int, floating)), (y, "y", (float, int, floating))]
+        )
         self.x = x
         self.y = y
 
@@ -49,6 +60,11 @@ class Point:
 
         :param roi_shape:
         """
+        # Input parameter validation
+        check_parameter_type(
+            parameter=roi_shape, parameter_name="roi_shape", expected_type=Rectangle
+        )
+
         roi_shape = roi_shape.clip_to_visible_region()
         width = roi_shape.width
         height = roi_shape.height
@@ -65,6 +81,11 @@ class Point:
 
         :param roi_shape:
         """
+        # Input parameter validation
+        check_parameter_type(
+            parameter=roi_shape, parameter_name="roi_shape", expected_type=Rectangle
+        )
+
         roi_shape = roi_shape.clip_to_visible_region()
 
         return Point(
@@ -91,7 +112,20 @@ class Polygon(Shape):
         labels: Optional[List[ScoredLabel]] = None,
         modification_date: Optional[datetime.datetime] = None,
     ):
-        labels = [] if labels is None else labels
+        # Initialization parameters validation
+        check_required_and_optional_parameters_type(
+            required_parameters=[(points, "points", list)],
+            optional_parameters=[
+                (labels, "labels", list),
+                (modification_date, "modification_date", datetime.datetime),
+            ],
+        )
+        if labels is None:
+            labels = []
+        # Nested labels validation
+        elif labels:
+            check_nested_elements_type(labels, "label", ScoredLabel)
+
         modification_date = now() if modification_date is None else modification_date
         super().__init__(
             type=ShapeType.POLYGON,
@@ -101,6 +135,10 @@ class Polygon(Shape):
 
         if len(points) == 0:
             raise ValueError("Cannot create polygon with no points")
+        # Nested points validation
+        check_nested_elements_type(
+            iterable=points, parameter_name="point", expected_type=Point
+        )
 
         self.points = points
 

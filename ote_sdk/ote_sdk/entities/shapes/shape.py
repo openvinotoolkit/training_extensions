@@ -5,14 +5,21 @@
 #
 
 import abc
+import datetime
 import warnings
 from enum import IntEnum, auto
 from typing import TYPE_CHECKING, List
 
+from numpy import floating
 from shapely.errors import PredicateError, TopologicalError
 from shapely.geometry import Polygon as shapely_polygon
 
 from ote_sdk.entities.scored_label import ScoredLabel
+from ote_sdk.utils.argument_checks import (
+    check_nested_elements_type,
+    check_parameter_type,
+    check_required_parameters_type,
+)
 
 if TYPE_CHECKING:
     from ote_sdk.entities.shapes.rectangle import Rectangle
@@ -147,6 +154,20 @@ class Shape(ShapeEntity):
 
     # pylint: disable=redefined-builtin, too-many-arguments; Requires refactor
     def __init__(self, type: ShapeType, labels: List[ScoredLabel], modification_date):
+        # Initialization parameters validation
+        check_required_parameters_type(
+            [
+                (type, "type", ShapeType),
+                (labels, "labels", list),
+                (modification_date, "modification_date", datetime.datetime),
+            ]
+        )
+        # Nested labels validation
+        if labels:
+            check_nested_elements_type(
+                iterable=labels, parameter_name="label", expected_type=ScoredLabel
+            )
+
         super().__init__(type=type, labels=labels)
         self.modification_date = modification_date
 
@@ -158,6 +179,13 @@ class Shape(ShapeEntity):
 
     # pylint: disable=protected-access
     def intersects(self, other: "Shape") -> bool:
+        # Input parameter validation
+        check_parameter_type(
+            parameter=other,
+            parameter_name="other",
+            expected_type=tuple(Shape.__subclasses__()),
+        )
+
         polygon_roi = self._as_shapely_polygon()
         polygon_shape = other._as_shapely_polygon()
         try:
@@ -176,19 +204,44 @@ class Shape(ShapeEntity):
         :param other: Shape to compare with
         :return: Boolean that indicates whether the center of the other shape is located in the shape
         """
+        # Input parameter validation
+        check_parameter_type(
+            parameter=other,
+            parameter_name="other",
+            expected_type=tuple(Shape.__subclasses__()),
+        )
+
         polygon_roi = self._as_shapely_polygon()
         polygon_shape = other._as_shapely_polygon()
         return polygon_roi.contains(polygon_shape.centroid)
 
     def get_labels(self, include_empty: bool = False) -> List[ScoredLabel]:
+        # Input parameter validation
+        check_parameter_type(
+            parameter=include_empty, parameter_name="include_empty", expected_type=bool
+        )
         return [
             label for label in self._labels if include_empty or (not label.is_empty)
         ]
 
     def append_label(self, label: ScoredLabel):
+        # Input parameter validation
+        check_parameter_type(
+            parameter=label, parameter_name="label", expected_type=ScoredLabel
+        )
+
         self._labels.append(label)
 
     def set_labels(self, labels: List[ScoredLabel]):
+        # Input parameter validation
+        check_parameter_type(
+            parameter=labels, parameter_name="labels", expected_type=list
+        )
+        # Nested labels validation
+        if labels:
+            check_nested_elements_type(
+                iterable=labels, parameter_name="label", expected_type=ScoredLabel
+            )
         self._labels = labels
 
     def _validate_coordinates(self, x: float, y: float) -> bool:
@@ -201,6 +254,11 @@ class Shape(ShapeEntity):
 
         :return: ``True`` if coordinates are within expected range, ``False`` otherwise
         """
+        # Input parameter validation
+        check_required_parameters_type(
+            [(x, "x", (float, int, floating)), (y, "y", (float, int, floating))]
+        )
+
         if not ((0.0 <= x <= 1.0) and (0.0 <= y <= 1.0)):
             warnings.warn(
                 f"{type(self).__name__} coordinates (x={x}, y={y}) are out of bounds, a normalized "

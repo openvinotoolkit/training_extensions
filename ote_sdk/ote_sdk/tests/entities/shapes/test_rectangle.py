@@ -24,6 +24,7 @@ from ote_sdk.entities.color import Color
 from ote_sdk.entities.id import ID
 from ote_sdk.entities.label import LabelEntity
 from ote_sdk.entities.scored_label import Domain, ScoredLabel
+from ote_sdk.entities.shapes.ellipse import Ellipse
 from ote_sdk.entities.shapes.rectangle import Rectangle
 from ote_sdk.entities.shapes.shape import ShapeType
 from ote_sdk.tests.constants.ote_sdk_components import OteSdkComponent
@@ -530,7 +531,7 @@ class TestRectangle:
                     f"{not_full_box_params}"
                 )
         # Negative scenario for not Rectangle class instance
-        assert not Rectangle.is_full_box(str)
+        assert not Rectangle.is_full_box(Ellipse(x1=0.0, y1=0.0, x2=1.0, y2=1.0))
 
     @pytest.mark.priority_medium
     @pytest.mark.component
