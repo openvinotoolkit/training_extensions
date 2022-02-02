@@ -18,8 +18,7 @@ import os
 import pytest
 from subprocess import run
 
-from constants.ote_cli_components import OteCliComponent
-from constants.requirements import Requirements
+from ote_sdk.test_suite.e2e_test_system import e2e_pytest_component
 
 from ote_cli.registry import Registry
 from common import (
@@ -62,99 +61,74 @@ ote_dir = os.getcwd()
 templates = Registry('external').filter(task_type='DETECTION').templates
 templates_ids = [template.model_template_id for template in templates]
 
-@pytest.mark.components(OteCliComponent.OTE_CLI)
 class TestToolsDetection:
-    @pytest.mark.priority_medium
-    @pytest.mark.component
-    @pytest.mark.reqids(Requirements.REQ_1)
+    @e2e_pytest_component
     def test_create_venv(self):
         work_dir, template_work_dir, algo_backend_dir = get_some_vars(templates[0], root)
         create_venv(algo_backend_dir, work_dir, template_work_dir)
 
 
-    @pytest.mark.priority_medium
-    @pytest.mark.component
-    @pytest.mark.reqids(Requirements.REQ_1)
+    @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_ote_train(self, template):
         ote_train_testing(template, root, ote_dir, args)
 
 
-    @pytest.mark.priority_medium
-    @pytest.mark.component
-    @pytest.mark.reqids(Requirements.REQ_1)
+    @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_ote_export(self, template):
         ote_export_testing(template, root)
 
 
-    @pytest.mark.priority_medium
-    @pytest.mark.component
-    @pytest.mark.reqids(Requirements.REQ_1)
+    @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_ote_eval(self, template):
         ote_eval_testing(template, root, ote_dir, args)
 
 
-    @pytest.mark.priority_medium
-    @pytest.mark.component
-    @pytest.mark.reqids(Requirements.REQ_1)
+    @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_ote_eval_openvino(self, template):
         ote_eval_openvino_testing(template, root, ote_dir, args, threshold=0.01)
 
 
-    @pytest.mark.priority_medium
-    @pytest.mark.component
-    @pytest.mark.reqids(Requirements.REQ_1)
+    @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_ote_demo(self, template):
         ote_demo_testing(template, root, ote_dir, args)
 
 
-    @pytest.mark.priority_medium
-    @pytest.mark.component
-    @pytest.mark.reqids(Requirements.REQ_1)
+    @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_ote_demo_openvino(self, template):
         ote_demo_openvino_testing(template, root, ote_dir, args)
 
 
-    @pytest.mark.priority_medium
-    @pytest.mark.component
-    @pytest.mark.reqids(Requirements.REQ_1)
+    @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_ote_deploy_openvino(self, template):
         ote_deploy_openvino_testing(template, root, ote_dir, args)
 
 
-    @pytest.mark.priority_medium
-    @pytest.mark.component
-    @pytest.mark.reqids(Requirements.REQ_1)
+    @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_ote_eval_deployment(template):
         ote_eval_deployment_testing(template, root, ote_dir, args, threshold=0.00)
 
 
-    @pytest.mark.priority_medium
-    @pytest.mark.component
-    @pytest.mark.reqids(Requirements.REQ_1)
+    @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_ote_demo_deployment(template):
         ote_demo_deployment_testing(template, root, ote_dir, args)
 
   
-    @pytest.mark.priority_medium
-    @pytest.mark.component
-    @pytest.mark.reqids(Requirements.REQ_1)
+    @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_ote_hpo(self, template):
         ote_hpo_testing(template, root, ote_dir, args)
 
 
-    @pytest.mark.priority_medium
-    @pytest.mark.component
-    @pytest.mark.reqids(Requirements.REQ_1)
+    @e2e_pytest_component
     def test_notebook(self):
         work_dir = os.path.join(root, 'DETECTION')
         assert run(['pytest', '--nbmake', 'ote_cli/notebooks/train.ipynb', '-v'], env=collect_env_vars(work_dir)).returncode == 0

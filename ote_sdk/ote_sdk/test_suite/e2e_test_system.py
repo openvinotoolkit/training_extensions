@@ -29,7 +29,13 @@ def _generate_e2e_pytest_decorators():
         def _e2e_pytest_performance(func):
             return func
 
-        return _e2e_pytest_api, _e2e_pytest_performance
+        def _e2e_pytest_component(func):
+            return func
+
+        def _e2e_pytest_unit(func):
+            return func
+
+        return _e2e_pytest_api, _e2e_pytest_performance, _e2e_pytest_component, _e2e_pytest_unit
 
     class Requirements:
         # Dummy requirement
@@ -60,7 +66,29 @@ def _generate_e2e_pytest_decorators():
 
         return wrapper
 
-    return _e2e_pytest_api, _e2e_pytest_performance
+    def _e2e_pytest_component(func):
+        @pytest.mark.components(OTEComponent.OTE)
+        @pytest.mark.priority_medium
+        @pytest.mark.reqids(Requirements.REQ_DUMMY)
+        @pytest.mark.component
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            return func(*args, **kwargs)
+
+        return wrapper
+
+    def _e2e_pytest_unit(func):
+        @pytest.mark.components(OTEComponent.OTE)
+        @pytest.mark.priority_medium
+        @pytest.mark.reqids(Requirements.REQ_DUMMY)
+        @pytest.mark.unit
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            return func(*args, **kwargs)
+
+        return wrapper
+
+    return _e2e_pytest_api, _e2e_pytest_performance, _e2e_pytest_component, _e2e_pytest_unit
 
 
 def _create_class_DataCollector():
@@ -104,5 +132,5 @@ def _create_class_DataCollector():
         return _dummy_DataCollector
 
 
-e2e_pytest_api, e2e_pytest_performance = _generate_e2e_pytest_decorators()
+e2e_pytest_api, e2e_pytest_performance, e2e_pytest_component, e2e_pytest_unit = _generate_e2e_pytest_decorators()
 DataCollector = _create_class_DataCollector()

@@ -19,14 +19,10 @@ from subprocess import run  # nosec
 
 from ote_cli.registry import Registry
 
-from constants.ote_cli_components import OteCliComponent
-from constants.requirements import Requirements
+from ote_sdk.test_suite.e2e_test_system import e2e_pytest_component
 
-@pytest.mark.components(OteCliComponent.OTE_CLI)
 class TestDocs:
-    @pytest.mark.priority_medium
-    @pytest.mark.component
-    @pytest.mark.reqids(Requirements.REQ_1)
+    @e2e_pytest_component
     def test_help_stdoutputs_of_tools(self):
         with open("QUICK_START_GUIDE.md", encoding="UTF-8") as read_file:
             commands = []
@@ -51,9 +47,7 @@ class TestDocs:
                             break
                 assert found, f"\nHelp message:\n{output.stdout.decode()}\n was not found in \n{full_text}"
 
-    @pytest.mark.priority_medium
-    @pytest.mark.component
-    @pytest.mark.reqids(Requirements.REQ_1)
+    @e2e_pytest_component
     def test_algorithms_table(self):
         def algorithms_generate_table(templates):
             attributes = ["model_template_id", "name", "gigaflops", "size"]
