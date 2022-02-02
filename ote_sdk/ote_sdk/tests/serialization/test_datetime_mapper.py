@@ -3,6 +3,8 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+from datetime import datetime
+
 import pytest
 
 from ote_sdk.serialization.datetime_mapper import DatetimeMapper
@@ -27,3 +29,6 @@ class TestDatetimeMapper:
 
         deserialized_time = DatetimeMapper.backward(serialized_time)
         assert original_time == deserialized_time
+
+        deserialized_time = DatetimeMapper.backward(None)
+        assert isinstance(deserialized_time, datetime)

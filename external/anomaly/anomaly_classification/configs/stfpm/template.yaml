@@ -4,7 +4,7 @@ name: STFPM
 task_type: ANOMALY_CLASSIFICATION
 task_family: VISION
 instantiation: "CLASS"
-summary: STFPM with ResNet-18 backbone
+summary: Use this model when the position of the objects in the image frame might differ between images.
 application: ~
 
 # Algo backend.
