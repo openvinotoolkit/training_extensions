@@ -288,7 +288,7 @@ class TestTaskType:
         assert task_type_to_label_domain(TaskType.SEGMENTATION) == Domain.SEGMENTATION
         assert (
             task_type_to_label_domain(TaskType.INSTANCE_SEGMENTATION)
-            == Domain.DETECTION
+            == Domain.INSTANCE_SEGMENTATION
         )
         assert (
             task_type_to_label_domain(TaskType.ANOMALY_CLASSIFICATION)
