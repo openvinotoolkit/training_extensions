@@ -9,7 +9,7 @@ from omegaconf import OmegaConf
 
 from ote_sdk.configuration import ote_config_helper
 from ote_sdk.configuration.elements import metadata_keys
-from ote_sdk.configuration.enums import ModelLifecycle, AutoHPOState
+from ote_sdk.configuration.enums import AutoHPOState, ModelLifecycle
 from ote_sdk.tests.configuration.dummy_config import (
     DatasetManagerConfig,
     SomeEnumSelectable,

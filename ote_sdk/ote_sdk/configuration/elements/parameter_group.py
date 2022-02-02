@@ -8,7 +8,7 @@ This module contains the definition of a ParameterGroup, which is the main class
 parameters together.
 """
 from enum import Enum
-from typing import List, Type, TypeVar, Union, Dict, Any
+from typing import Any, Dict, List, Type, TypeVar, Union
 
 import attr
 

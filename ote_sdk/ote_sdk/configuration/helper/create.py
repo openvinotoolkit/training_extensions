@@ -23,11 +23,11 @@ from ote_sdk.configuration.elements import (
     ParameterGroup,
     metadata_keys,
 )
+from ote_sdk.configuration.enums import AutoHPOState, ModelLifecycle
 from ote_sdk.configuration.enums.config_element_type import (
     ConfigElementType,
     ElementCategory,
 )
-from ote_sdk.configuration.enums import ModelLifecycle, AutoHPOState
 from ote_sdk.configuration.enums.utils import get_enum_names
 from ote_sdk.configuration.ui_rules.rules import NullUIRules, Rule, UIRules
 

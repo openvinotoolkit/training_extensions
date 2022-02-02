@@ -12,12 +12,14 @@ from typing import List, Optional, TypeVar, Union
 
 import attr
 
-from ote_sdk.configuration.enums import ConfigElementType, ModelLifecycle, AutoHPOState
+from ote_sdk.configuration.enums import AutoHPOState, ConfigElementType, ModelLifecycle
 from ote_sdk.configuration.ui_rules import NullUIRules, UIRules
 
 from .configurable_enum import ConfigurableEnum
 from .metadata_keys import (
     AFFECTS_OUTCOME_OF,
+    AUTO_HPO_STATE,
+    AUTO_HPO_VALUE,
     DEFAULT_VALUE,
     DESCRIPTION,
     EDITABLE,
@@ -29,8 +31,6 @@ from .metadata_keys import (
     UI_RULES,
     VISIBLE_IN_UI,
     WARNING,
-    AUTO_HPO_STATE,
-    AUTO_HPO_VALUE,
 )
 from .utils import (
     attr_strict_float_converter,
