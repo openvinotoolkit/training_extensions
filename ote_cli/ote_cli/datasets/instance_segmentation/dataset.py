@@ -18,6 +18,7 @@ Module contains ObjectDetectionDataset
 
 from mmdet.apis.ote.extension.datasets.data_utils import load_dataset_items_coco_format
 from ote_sdk.entities.datasets import DatasetEntity
+from ote_sdk.entities.label import Domain
 from ote_sdk.entities.subset import Subset
 
 
@@ -39,6 +40,7 @@ class InstanceSegmentationDataset(DatasetEntity):
                 load_dataset_items_coco_format(
                     ann_file_path=train_subset["ann_file"],
                     data_root_dir=train_subset["data_root"],
+                    domain=Domain.INSTANCE_SEGMENTATION,
                     subset=Subset.TRAINING,
                     labels_list=labels_list,
                     with_mask=True,
@@ -50,6 +52,7 @@ class InstanceSegmentationDataset(DatasetEntity):
                 load_dataset_items_coco_format(
                     ann_file_path=val_subset["ann_file"],
                     data_root_dir=val_subset["data_root"],
+                    domain=Domain.INSTANCE_SEGMENTATION,
                     subset=Subset.VALIDATION,
                     labels_list=labels_list,
                     with_mask=True,
@@ -61,6 +64,7 @@ class InstanceSegmentationDataset(DatasetEntity):
                 load_dataset_items_coco_format(
                     ann_file_path=test_subset["ann_file"],
                     data_root_dir=test_subset["data_root"],
+                    domain=Domain.INSTANCE_SEGMENTATION,
                     subset=Subset.TESTING,
                     labels_list=labels_list,
                     with_mask=True,

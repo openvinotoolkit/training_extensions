@@ -36,10 +36,14 @@ def get_dataset_class(task_type):
         from .image_classification.dataset import ImageClassificationDataset
 
         return ImageClassificationDataset
-    if task_type in {TaskType.INSTANCE_SEGMENTATION, TaskType.ROTATED_DETECTION}:
+    if task_type == TaskType.INSTANCE_SEGMENTATION:
         from .instance_segmentation.dataset import InstanceSegmentationDataset
 
         return InstanceSegmentationDataset
+    if task_type == TaskType.ROTATED_DETECTION:
+        from .rotated_detection.dataset import RotatedDetectionDataset
+
+        return RotatedDetectionDataset
     if task_type == TaskType.DETECTION:
         from .object_detection.dataset import ObjectDetectionDataset
 

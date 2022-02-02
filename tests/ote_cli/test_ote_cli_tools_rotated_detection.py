@@ -59,9 +59,9 @@ templates = Registry('external').filter(task_type='ROTATED_DETECTION').templates
 templates_ids = [template.model_template_id for template in templates]
 
 
-# def test_create_venv():
-#     work_dir, template_work_dir, algo_backend_dir = get_some_vars(templates[0], root)
-#     create_venv(algo_backend_dir, work_dir, template_work_dir)
+def test_create_venv():
+    work_dir, template_work_dir, algo_backend_dir = get_some_vars(templates[0], root)
+    create_venv(algo_backend_dir, work_dir, template_work_dir)
 
 
 @pytest.mark.parametrize("template", templates, ids=templates_ids)

@@ -22,8 +22,8 @@ from ote_sdk.entities.label import Domain
 from ote_sdk.entities.subset import Subset
 
 
-class ObjectDetectionDataset(DatasetEntity):
-    """Class for working with file-system based Object Detection dataset."""
+class RotatedDetectionDataset(DatasetEntity):
+    """Class for working with file-system based Instance Segmentation dataset."""
 
     def __init__(
         self,
@@ -40,9 +40,10 @@ class ObjectDetectionDataset(DatasetEntity):
                 load_dataset_items_coco_format(
                     ann_file_path=train_subset["ann_file"],
                     data_root_dir=train_subset["data_root"],
-                    domain=Domain.DETECTION,
+                    domain=Domain.ROTATED_DETECTION,
                     subset=Subset.TRAINING,
                     labels_list=labels_list,
+                    with_mask=True,
                 )
             )
 
@@ -51,9 +52,10 @@ class ObjectDetectionDataset(DatasetEntity):
                 load_dataset_items_coco_format(
                     ann_file_path=val_subset["ann_file"],
                     data_root_dir=val_subset["data_root"],
-                    domain=Domain.DETECTION,
+                    domain=Domain.ROTATED_DETECTION,
                     subset=Subset.VALIDATION,
                     labels_list=labels_list,
+                    with_mask=True,
                 )
             )
 
@@ -62,9 +64,10 @@ class ObjectDetectionDataset(DatasetEntity):
                 load_dataset_items_coco_format(
                     ann_file_path=test_subset["ann_file"],
                     data_root_dir=test_subset["data_root"],
-                    domain=Domain.DETECTION,
+                    domain=Domain.ROTATED_DETECTION,
                     subset=Subset.TESTING,
                     labels_list=labels_list,
+                    with_mask=True,
                 )
             )
 
