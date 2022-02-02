@@ -63,7 +63,9 @@ class LabelSchemaExample:
         self.vegetative = self.new_label_by_name("vegetative")
 
     def new_label_by_name(self, name: str, is_empty: bool = False) -> LabelEntity:
-        label = LabelEntity(name=name, color=Color.random(), domain=self.label_domain, is_empty=is_empty)
+        label = LabelEntity(
+            name=name, color=Color.random(), domain=self.label_domain, is_empty=is_empty
+        )
         label.id = generate_unique_id()
         return label
 
