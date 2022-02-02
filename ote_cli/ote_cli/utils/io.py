@@ -82,11 +82,11 @@ def read_model(model_configuration, path, train_dataset):
         if is_checkpoint_nncf(path):
             optimization_type = ModelOptimizationType.NNCF
 
-        for filename in os.listdir(os.path.dirname(path)):
-            match = re.match(r"aux_model_[0-9]+\.pth", filename)
-            if match:
-                aux_model_path = os.path.join(os.path.dirname(path), filename)
-                model_adapters[filename] = ModelAdapter(read_binary(aux_model_path))
+        # Weights of auxiliary models
+        for key in os.listdir(os.path.dirname(path)):
+            if re.match(r"aux_model_[0-9]+\.pth", key):
+                full_path = os.path.join(os.path.dirname(path), key)
+                model_adapters[key] = ModelAdapter(read_binary(full_path))
 
     elif path.endswith(".zip"):
         # Deployed code.
@@ -97,12 +97,11 @@ def read_model(model_configuration, path, train_dataset):
                 os.path.join(temp_dir, "python", "demo_package-0.0-py3-none-any.whl")
             ) as myzip:
                 myzip.extractall(temp_dir)
-            model_path = os.path.join(temp_dir, "model", "model.xml")
-            weights_path = os.path.join(temp_dir, "model", "model.bin")
 
+            model_path = os.path.join(temp_dir, "model", "model")
             model_adapters = {
-                "openvino.xml": ModelAdapter(read_binary(model_path)),
-                "openvino.bin": ModelAdapter(read_binary(weights_path)),
+                "openvino.xml": ModelAdapter(read_binary(model_path + ".xml")),
+                "openvino.bin": ModelAdapter(read_binary(model_path + ".bin")),
             }
 
             config_path = os.path.join(temp_dir, "demo_package", "config.json")
