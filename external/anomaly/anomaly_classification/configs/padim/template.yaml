@@ -4,7 +4,7 @@ name: PADIM
 task_type: ANOMALY_CLASSIFICATION
 task_family: VISION
 instantiation: "CLASS"
-summary: PADIM with ResNet-18 backbone
+summary: This model is faster and in many cases more accurate, but it requires a fixed position of the objects within the image.
 application: ~
 
 # Algo backend.

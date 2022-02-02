@@ -24,9 +24,11 @@ from ote_cli.registry import Registry
 from common import (
     create_venv,
     get_some_vars,
+    ote_demo_deployment_testing,
     ote_demo_testing,
     ote_demo_openvino_testing,
     ote_deploy_openvino_testing,
+    ote_eval_deployment_testing,
     ote_eval_openvino_testing,
     ote_eval_testing,
     ote_hpo_testing,
@@ -123,6 +125,19 @@ class TestToolsClassification:
     def test_ote_deploy_openvino(self, template):
         ote_deploy_openvino_testing(template, root, ote_dir, args)
 
+    @pytest.mark.priority_medium
+    @pytest.mark.component
+    @pytest.mark.reqids(Requirements.REQ_1)
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_ote_eval_deployment(template):
+        ote_eval_deployment_testing(template, root, ote_dir, args, threshold=0.00)
+
+    @pytest.mark.priority_medium
+    @pytest.mark.component
+    @pytest.mark.reqids(Requirements.REQ_1)
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_ote_demo_deployment(template):
+        ote_demo_deployment_testing(template, root, ote_dir, args)
 
     @pytest.mark.priority_medium
     @pytest.mark.component

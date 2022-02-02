@@ -17,7 +17,6 @@ Model inference demonstration tool.
 # and limitations under the License.
 
 import argparse
-import os
 import time
 from collections import deque
 
@@ -139,17 +138,17 @@ def main():
     hyper_parameters = create(hyper_parameters)
 
     # Get classes for Task, ConfigurableParameters and Dataset.
-    if args.load_weights.endswith(".bin") or args.load_weights.endswith(".xml"):
+    if any(args.load_weights.endswith(x) for x in (".bin", ".xml", ".zip")):
         task_class = get_impl_class(template.entrypoints.openvino)
-    else:
+    elif args.load_weights.endswith(".pth"):
         task_class = get_impl_class(template.entrypoints.base)
+    else:
+        raise ValueError(f"Unsupported file: {args.load_weights}")
 
     environment = TaskEnvironment(
         model=None,
         hyper_parameters=hyper_parameters,
-        label_schema=read_label_schema(
-            os.path.join(os.path.dirname(args.load_weights), "label_schema.json")
-        ),
+        label_schema=read_label_schema(args.load_weights),
         model_template=template,
     )
 

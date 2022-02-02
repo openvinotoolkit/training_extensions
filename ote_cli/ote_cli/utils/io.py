@@ -18,8 +18,11 @@ Utils for dynamically importing stuff
 
 import json
 import os
+import struct
+import tempfile
+from io import BytesIO
+from zipfile import ZipFile
 
-from ote_sdk.entities.id import ID
 from ote_sdk.entities.label import Domain, LabelEntity
 from ote_sdk.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
 from ote_sdk.entities.model import ModelEntity
@@ -56,17 +59,49 @@ def read_model(model_configuration, path, train_dataset):
     Creates ModelEntity based on model_configuration and data stored at path.
     """
 
+    model_adapter_keys = ("confidence_threshold", "image_threshold", "min", "max")
+
     if path.endswith(".bin") or path.endswith(".xml"):
+        # Openvino IR.
         model_adapters = {
             "openvino.xml": ModelAdapter(read_binary(path[:-4] + ".xml")),
             "openvino.bin": ModelAdapter(read_binary(path[:-4] + ".bin")),
         }
-        for key in ["confidence_threshold", "image_threshold", "min", "max"]:
+        for key in model_adapter_keys:
             full_path = os.path.join(os.path.dirname(path), key)
             if os.path.exists(full_path):
                 model_adapters[key] = ModelAdapter(read_binary(full_path))
-    else:
+    elif path.endswith(".pth"):
+        # PyTorch
         model_adapters = {"weights.pth": ModelAdapter(read_binary(path))}
+    elif path.endswith(".zip"):
+        # Deployed code.
+        with tempfile.TemporaryDirectory() as temp_dir:
+            with ZipFile(path) as myzip:
+                myzip.extractall(temp_dir)
+            with ZipFile(
+                os.path.join(temp_dir, "python", "demo_package-0.0-py3-none-any.whl")
+            ) as myzip:
+                myzip.extractall(temp_dir)
+            model_path = os.path.join(temp_dir, "model", "model.xml")
+            weights_path = os.path.join(temp_dir, "model", "model.bin")
+
+            model_adapters = {
+                "openvino.xml": ModelAdapter(read_binary(model_path)),
+                "openvino.bin": ModelAdapter(read_binary(weights_path)),
+            }
+
+            config_path = os.path.join(temp_dir, "demo_package", "config.json")
+            with open(config_path) as f:
+                model_parameters = json.load(f)["model_parameters"]
+
+            for key in model_adapter_keys:
+                if key in model_parameters:
+                    model_adapters[key] = ModelAdapter(
+                        struct.pack("f", model_parameters[key])
+                    )
+    else:
+        raise ValueError(f"Unknown file type: {path}")
 
     model = ModelEntity(
         configuration=model_configuration,
@@ -79,12 +114,28 @@ def read_model(model_configuration, path, train_dataset):
 
 def read_label_schema(path):
     """
-    Reads json file and returns deserialized LabelSchema.
+    Reads serialized LabelSchema and returns deserialized LabelSchema.
     """
 
-    with open(path, encoding="UTF-8") as read_file:
-        serialized_label_schema = json.load(read_file)
-
+    if any(path.endswith(extension) for extension in (".xml", ".bin", ".pth")):
+        with open(
+            os.path.join(os.path.dirname(path), "label_schema.json"), encoding="UTF-8"
+        ) as read_file:
+            serialized_label_schema = json.load(read_file)
+    elif path.endswith(".zip"):
+        with ZipFile(path) as read_zip_file:
+            zfiledata = BytesIO(
+                read_zip_file.read(
+                    os.path.join("python", "demo_package-0.0-py3-none-any.whl")
+                )
+            )
+            with ZipFile(zfiledata) as read_whl_file:
+                with read_whl_file.open(
+                    os.path.join("demo_package", "config.json")
+                ) as read_file:
+                    serialized_label_schema = json.load(read_file)["model_parameters"][
+                        "labels"
+                    ]
     return LabelSchemaMapper().backward(serialized_label_schema)
 
 
@@ -113,17 +164,5 @@ def generate_label_schema(dataset, task_type):
             label_schema.add_group(single_groups[-1])
         label_schema.add_group(empty_group, exclusive_with=single_groups)
         return label_schema
-
-    if task_type == TaskType.ANOMALY_CLASSIFICATION:
-        return LabelSchemaEntity.from_labels(
-            [
-                LabelEntity(
-                    name="Normal", domain=Domain.ANOMALY_CLASSIFICATION, id=ID(0)
-                ),
-                LabelEntity(
-                    name="Anomalous", domain=Domain.ANOMALY_CLASSIFICATION, id=ID(1)
-                ),
-            ]
-        )
 
     return LabelSchemaEntity.from_labels(dataset.get_labels())
