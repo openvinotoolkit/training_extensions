@@ -119,9 +119,10 @@ class TestLabelSchema:
         <b>Input data:</b>
         Exclusive groups: plant, animal
         Exclusive groups: tree, bush (children of plant), mammal, insect (children of animal)
+        Empty label
 
         <b>Expected results:</b>
-        Test passes if the LabelSchemaEntity and hierarchy are correctly represented
+        Test passes if the are_exclusive method properly computes the exclusivity between labels with various relations
 
         <b>Steps</b>
         1. Create LabelSchemaEntity with hierarchy
@@ -131,6 +132,10 @@ class TestLabelSchema:
          - children of labels in the same group
          - labels in the same group as their parent
          - children of labels in the same group as their parent
+        4. Add an empty label and check that it's exclusive with all other labels
+        5. Make the empty label the child of a different label, and check that the empty label is not exclusive with
+        its parent.
+        6. Check that LabelSchema.are_exclusive is symmetric for all cases
 
         """
         label_schema = LabelSchemaEntity()
@@ -162,6 +167,21 @@ class TestLabelSchema:
         assert label_schema.are_exclusive(plant, insect)
         assert label_schema.are_exclusive(tree, animal)
         assert label_schema.are_exclusive(tree, insect)
+
+        # Check that the empty label is exclusive with all labels
+        empty_label = label_schema_example.new_label_by_name("empty_label", is_empty=True)
+        label_schema.add_group(LabelGroup("empty_label", [empty_label], LabelGroupType.EMPTY_LABEL))
+        for label_iter in label_schema.get_labels(include_empty=False):
+            assert label_schema.are_exclusive(empty_label, label_iter)
+
+        # Check that the empty label is not exclusive with its parent
+        label_schema.add_child(parent=tree, child=empty_label)
+        assert not label_schema.are_exclusive(tree, empty_label)
+
+        # Check that label_schema.are_exclusive is symmetric for all cases
+        for label_1 in label_schema.get_labels(include_empty=True):
+            for label_2 in label_schema.get_labels(include_empty=True):
+                assert label_schema.are_exclusive(label_1, label_2) == label_schema.are_exclusive(label_2, label_1)
 
     @pytest.mark.priority_medium
     @pytest.mark.component
