@@ -51,7 +51,7 @@ class ParameterGroup:
         """
         groups: List[str] = []
         parameters: List[str] = []
-        self.__metadata_overrides: Dict[str, Any] = {}  # pylint:disable=attribute-defined-outside-init
+        self.__metadata_overrides: Dict[str, Any] = {}  # pylint: disable=attribute-defined-outside-init
 
         for attribute_or_method_name in dir(self):
             # Go over all attributes and methods of the class instance
@@ -122,7 +122,7 @@ class ParameterGroup:
         if metadata_key not in metadata_keys.all_keys():
             return False
         metadata_value = parameter_metadata[metadata_key]
-        if metadata_value is not None and type(metadata_value) != type(value):
+        if metadata_value is not None and type(metadata_value) is not type(value):  # pylint: disable=unidiomatic-typecheck
             return False
         existing_overrides = self.__metadata_overrides.get(parameter_name, None)
         if existing_overrides is None:

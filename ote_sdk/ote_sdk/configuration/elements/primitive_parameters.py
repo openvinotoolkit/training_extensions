@@ -62,7 +62,7 @@ def set_common_metadata(
     visible_in_ui: bool,
     parameter_type: ConfigElementType,
     auto_hpo_state: AutoHPOState,
-    auto_hpo_value: Union[int, float, str, bool, ConfigurableEnum],
+    auto_hpo_value: Optional[Union[int, float, str, bool, ConfigurableEnum]],
 ) -> dict:
     """
     Function to construct the dictionary of metadata that is common for all parameter types
