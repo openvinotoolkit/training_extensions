@@ -151,6 +151,7 @@ class TestLabelSchema:
         label_schema.add_group(
             LabelGroup("plant_type", [tree, bush], LabelGroupType.EXCLUSIVE)
         )
+
         label_schema.add_child(parent=plant, child=tree)
         label_schema.add_child(parent=plant, child=bush)
 
@@ -169,8 +170,12 @@ class TestLabelSchema:
         assert label_schema.are_exclusive(tree, insect)
 
         # Check that the empty label is exclusive with all labels
-        empty_label = label_schema_example.new_label_by_name("empty_label", is_empty=True)
-        label_schema.add_group(LabelGroup("empty_label", [empty_label], LabelGroupType.EMPTY_LABEL))
+        empty_label = label_schema_example.new_label_by_name(
+            "empty_label", is_empty=True
+        )
+        label_schema.add_group(
+            LabelGroup("empty_label", [empty_label], LabelGroupType.EMPTY_LABEL)
+        )
         for label_iter in label_schema.get_labels(include_empty=False):
             assert label_schema.are_exclusive(empty_label, label_iter)
 
@@ -181,7 +186,9 @@ class TestLabelSchema:
         # Check that label_schema.are_exclusive is symmetric for all cases
         for label_1 in label_schema.get_labels(include_empty=True):
             for label_2 in label_schema.get_labels(include_empty=True):
-                assert label_schema.are_exclusive(label_1, label_2) == label_schema.are_exclusive(label_2, label_1)
+                assert label_schema.are_exclusive(
+                    label_1, label_2
+                ) == label_schema.are_exclusive(label_2, label_1)
 
     @pytest.mark.priority_medium
     @pytest.mark.component
