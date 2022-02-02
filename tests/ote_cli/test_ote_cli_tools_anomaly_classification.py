@@ -52,7 +52,6 @@ ote_dir = os.getcwd()
 templates = Registry('external').filter(task_type='ANOMALY_CLASSIFICATION').templates
 templates_ids = [template.model_template_id for template in templates]
 
-@pytest.mark.components(OteCliComponent.OTE_CLI)
 class TestToolsAnomalyClassification:
     @e2e_pytest_component
     def test_create_venv(self):
