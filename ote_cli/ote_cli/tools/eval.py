@@ -18,7 +18,6 @@ Model quality evaluation tool.
 
 import argparse
 import json
-import os
 
 from ote_sdk.configuration.helper import create
 from ote_sdk.entities.inference_parameters import InferenceParameters
@@ -109,10 +108,12 @@ def main():
     hyper_parameters = create(hyper_parameters)
 
     # Get classes for Task, ConfigurableParameters and Dataset.
-    if args.load_weights.endswith(".bin") or args.load_weights.endswith(".xml"):
+    if any(args.load_weights.endswith(x) for x in (".bin", ".xml", ".zip")):
         task_class = get_impl_class(template.entrypoints.openvino)
-    else:
+    elif args.load_weights.endswith(".pth"):
         task_class = get_impl_class(template.entrypoints.base)
+    else:
+        raise ValueError(f"Unsupported file: {args.load_weights}")
 
     dataset_class = get_dataset_class(template.task_type)
 
@@ -121,12 +122,7 @@ def main():
     )
 
     dataset_label_schema = generate_label_schema(dataset, template.task_type)
-    check_label_schemas(
-        read_label_schema(
-            os.path.join(os.path.dirname(args.load_weights), "label_schema.json")
-        ),
-        dataset_label_schema,
-    )
+    check_label_schemas(read_label_schema(args.load_weights), dataset_label_schema)
 
     environment = TaskEnvironment(
         model=None,
@@ -135,8 +131,9 @@ def main():
         model_template=template,
     )
 
-    model = read_model(environment.get_model_configuration(), args.load_weights, None)
-    environment.model = model
+    environment.model = read_model(
+        environment.get_model_configuration(), args.load_weights, None
+    )
 
     task = task_class(task_environment=environment)
 
@@ -147,7 +144,7 @@ def main():
     )
 
     resultset = ResultSetEntity(
-        model=model,
+        model=environment.model,
         ground_truth_dataset=validation_dataset,
         prediction_dataset=predicted_validation_dataset,
     )
