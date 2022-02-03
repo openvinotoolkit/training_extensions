@@ -1,3 +1,7 @@
+# Copyright (C) 2021-2022 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
+
 import pytest
 
 from ote_sdk.entities.label import Domain, LabelEntity
