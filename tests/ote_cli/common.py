@@ -377,6 +377,7 @@ def nncf_optimize_testing(template, root, ote_dir, args):
                     '--save-performance',
                     f'{template_work_dir}/nncf_{template.model_template_id}/train_performance.json',
                     ]
+    command_line.extend(args['train_params'])
     assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
     assert os.path.exists(f'{template_work_dir}/nncf_{template.model_template_id}/weights.pth')
     assert os.path.exists(f'{template_work_dir}/nncf_{template.model_template_id}/label_schema.json')
