@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import logging
 from abc import ABC, abstractmethod
 from collections import OrderedDict
 from pprint import pformat
@@ -11,10 +10,11 @@ from typing import Any, Callable, Dict, Optional
 import pytest
 
 from .e2e_test_system import DataCollector
+from .logging import get_logger
 from .training_tests_actions import BaseOTETestAction
 from .training_tests_common import REALLIFE_USECASE_CONSTANT
 
-logger = logging.getLogger(__name__)
+logger = get_logger()
 
 
 def get_value_from_dict_by_dot_separated_address(struct, address):

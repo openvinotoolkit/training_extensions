@@ -3,7 +3,6 @@
 #
 
 import importlib
-import logging
 from abc import ABC, abstractmethod
 from collections import OrderedDict
 from copy import deepcopy
@@ -24,12 +23,13 @@ from ote_sdk.usecases.tasks.interfaces.optimization_interface import Optimizatio
 from ote_sdk.utils.importing import get_impl_class
 
 from .e2e_test_system import DataCollector
+from .logging import get_logger
 from .training_tests_common import (
     KEEP_CONFIG_FIELD_VALUE,
     performance_to_score_name_value,
 )
 
-logger = logging.getLogger(__name__)
+logger = get_logger()
 
 
 class BaseOTETestAction(ABC):

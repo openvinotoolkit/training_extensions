@@ -13,7 +13,6 @@ MUST be overriden in algo backend's conftest.py file.
 # pylint: disable=redefined-outer-name
 
 import glob
-import logging
 import os
 import os.path as osp
 from copy import deepcopy
@@ -26,9 +25,10 @@ import yaml
 from ote_sdk.entities.model_template import parse_model_template
 
 from .e2e_test_system import DataCollector
+from .logging import get_logger, set_log_level
 from .training_tests_common import REALLIFE_USECASE_CONSTANT, ROOT_PATH_KEY
 
-logger = logging.getLogger(__name__)
+logger = get_logger()
 
 #########################################################################################
 # Fixtures that should be overriden in algo backends
@@ -191,8 +191,22 @@ def expected_metrics_all_tests_fx(request):
     return expected_metrics_all_tests
 
 
+@pytest.fixture(scope="session", autouse=True)
+def force_logging_session_fx(request):
+    level = request.config.getoption("--force-log-level")
+    if level is not None:
+        set_log_level(level)
+
+
 @pytest.fixture
-def current_test_parameters_fx(request):
+def force_logging_fx(request):
+    level = request.config.getoption("--force-log-level")
+    if level is not None:
+        set_log_level(level)
+
+
+@pytest.fixture
+def current_test_parameters_fx(request, force_logging_fx):
     """
     This fixture returns the test parameter `test_parameters` of the current test.
     """
@@ -205,7 +219,7 @@ def current_test_parameters_fx(request):
 
 
 @pytest.fixture
-def current_test_parameters_string_fx(request):
+def current_test_parameters_string_fx(request, force_logging_fx):
     """
     This fixture returns the part of the test id between square brackets
     (i.e. the part of id that corresponds to the test parameters)
