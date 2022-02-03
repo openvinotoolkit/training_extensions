@@ -18,6 +18,8 @@ import os
 
 import pytest
 
+from ote_sdk.test_suite.e2e_test_system import e2e_pytest_component
+
 from ote_cli.registry import Registry
 
 from tests.ote_cli.common import (
@@ -59,51 +61,53 @@ templates = Registry('external').filter(task_type='INSTANCE_SEGMENTATION').templ
 templates_ids = [template.model_template_id for template in templates]
 
 
-def test_create_venv():
-    work_dir, template_work_dir, algo_backend_dir = get_some_vars(templates[0], root)
-    create_venv(algo_backend_dir, work_dir, template_work_dir)
+class TestToolsInstanceSegmentation:
+    @e2e_pytest_component
+    def test_create_venv(self):
+        work_dir, template_work_dir, algo_backend_dir = get_some_vars(templates[0], root)
+        create_venv(algo_backend_dir, work_dir, template_work_dir)
 
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_ote_train(self, template):
+        ote_train_testing(template, root, ote_dir, args)
 
-@pytest.mark.parametrize("template", templates, ids=templates_ids)
-def test_ote_train(template):
-    ote_train_testing(template, root, ote_dir, args)
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_ote_export(self, template):
+        ote_export_testing(template, root)
 
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_ote_eval(self, template):
+        ote_eval_testing(template, root, ote_dir, args)
 
-@pytest.mark.parametrize("template", templates, ids=templates_ids)
-def test_ote_export(template):
-     ote_export_testing(template, root)
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_ote_eval_openvino(self, template):
+        ote_eval_openvino_testing(template, root, ote_dir, args, threshold=0.01)
 
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_ote_demo(self, template):
+        ote_demo_testing(template, root, ote_dir, args)
 
-@pytest.mark.parametrize("template", templates, ids=templates_ids)
-def test_ote_eval(template):
-    ote_eval_testing(template, root, ote_dir, args)
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_ote_demo_openvino(self, template):
+        ote_demo_openvino_testing(template, root, ote_dir, args)
 
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_ote_deploy_openvino(self, template):
+        ote_deploy_openvino_testing(template, root, ote_dir, args)
 
-@pytest.mark.parametrize("template", templates, ids=templates_ids)
-def test_ote_eval_openvino(template):
-    ote_eval_openvino_testing(template, root, ote_dir, args, threshold=0.01)
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_ote_eval_deployment(self, template):
+        ote_eval_deployment_testing(template, root, ote_dir, args, threshold=0.00)
 
-
-@pytest.mark.parametrize("template", templates, ids=templates_ids)
-def test_ote_demo(template):
-    ote_demo_testing(template, root, ote_dir, args)
-
-
-@pytest.mark.parametrize("template", templates, ids=templates_ids)
-def test_ote_demo_openvino(template):
-    ote_demo_openvino_testing(template, root, ote_dir, args)
-
-
-@pytest.mark.parametrize("template", templates, ids=templates_ids)
-def test_ote_deploy_openvino(template):
-    ote_deploy_openvino_testing(template, root, ote_dir, args)
-
-
-@pytest.mark.parametrize("template", templates, ids=templates_ids)
-def test_ote_eval_deployment(template):
-    ote_eval_deployment_testing(template, root, ote_dir, args, threshold=0.00)
-
-
-@pytest.mark.parametrize("template", templates, ids=templates_ids)
-def test_ote_demo_deployment(template):
-    ote_demo_deployment_testing(template, root, ote_dir, args)
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_ote_demo_deployment(self, template):
+        ote_demo_deployment_testing(template, root, ote_dir, args)

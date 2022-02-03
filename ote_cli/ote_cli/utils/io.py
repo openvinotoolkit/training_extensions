@@ -24,8 +24,6 @@ import tempfile
 from io import BytesIO
 from zipfile import ZipFile
 
-from ote_sdk.entities.datasets import DatasetEntity
-from ote_sdk.entities.inference_parameters import InferenceParameters
 from ote_sdk.entities.label import Domain, LabelEntity
 from ote_sdk.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
 from ote_sdk.entities.model import ModelEntity, ModelOptimizationType
@@ -182,82 +180,3 @@ def generate_label_schema(dataset, task_type):
         return label_schema
 
     return LabelSchemaEntity.from_labels(dataset.get_labels())
-
-
-def create_task_from_deployment(openvino_task_class, deployed_code_zip_path):
-    """
-    Creates a child class of passed 'openvino_task_class', instance of which is initialized by deployment (zip archive).
-    """
-
-    class Task(openvino_task_class):
-        """A child class of 'openvino_task_class', instance of which is initialized by deployment (zip archive)."""
-
-        class Inferencer:
-            """ModelAPI-based OpenVINO inferencer."""
-
-            def __init__(self, model, converter) -> None:
-                self.model = model
-                self.converter = converter
-
-            def predict(self, frame):
-                """Returns predictions made on a given frame."""
-
-                dict_data, input_meta = self.model.preprocess(frame)
-                raw_result = self.model.infer_sync(dict_data)
-                predictions = self.model.postprocess(raw_result, input_meta)
-                annotation_scene = self.converter.convert_to_annotation(
-                    predictions, input_meta
-                )
-                return annotation_scene
-
-        def __init__(self, task_environment) -> None:
-            self.task_environment = task_environment
-            with tempfile.TemporaryDirectory() as temp_dir:
-                with ZipFile(deployed_code_zip_path) as myzip:
-                    myzip.extractall(temp_dir)
-                with ZipFile(
-                    os.path.join(
-                        temp_dir, "python", "demo_package-0.0-py3-none-any.whl"
-                    )
-                ) as myzip:
-                    myzip.extractall(temp_dir)
-
-                model_path = Path(os.path.join(temp_dir, "model", "model.xml"))
-                config_path = Path(
-                    os.path.join(temp_dir, "demo_package", "config.json")
-                )
-
-                with open(config_path, encoding="UTF-8") as read_file:
-                    parameters = json.load(read_file)
-                converter_type = Domain[parameters["converter_type"]]
-
-                self.inferencer = self.Inferencer(
-                    create_model(model_path, config_path),
-                    create_converter(
-                        converter_type, self.task_environment.label_schema
-                    ),
-                )
-
-        def infer(
-            self,
-            dataset: DatasetEntity,
-            inference_parameters: Optional[InferenceParameters] = None,
-        ) -> DatasetEntity:
-            """Inference method."""
-            if inference_parameters is not None:
-                update_progress_callback = inference_parameters.update_progress
-            dataset_size = len(dataset)
-            for i, dataset_item in enumerate(dataset, 1):
-                predicted_scene = self.inferencer.predict(dataset_item.numpy)
-                if str(self.task_environment.model_template.task_type).endswith(
-                    "CLASSIFICATION"
-                ):
-                    dataset_item.append_labels(
-                        predicted_scene.annotations[0].get_labels()
-                    )
-                else:
-                    dataset_item.append_annotations(predicted_scene.annotations)
-                update_progress_callback(int(i / dataset_size * 100))
-            return dataset
-
-    return Task
