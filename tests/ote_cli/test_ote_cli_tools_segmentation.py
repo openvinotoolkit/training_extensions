@@ -15,12 +15,12 @@
 # and limitations under the License.
 
 import os
-
 import pytest
 
-from ote_cli.registry import Registry
+from ote_sdk.test_suite.e2e_test_system import e2e_pytest_component
 
-from tests.ote_cli.common import (
+from ote_cli.registry import Registry
+from common import (
     create_venv,
     get_some_vars,
     ote_demo_deployment_testing,
@@ -65,95 +65,97 @@ templates = Registry('external').filter(task_type='SEGMENTATION').templates
 templates_ids = [template.model_template_id for template in templates]
 
 
-def test_create_venv():
-    work_dir, template_work_dir, algo_backend_dir = get_some_vars(templates[0], root)
-    create_venv(algo_backend_dir, work_dir, template_work_dir)
+class TestToolsSegmentation:
+    @e2e_pytest_component
+    def test_create_venv(self):
+        work_dir, template_work_dir, algo_backend_dir = get_some_vars(templates[0], root)
+        create_venv(algo_backend_dir, work_dir, template_work_dir)
 
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_ote_train(self, template):
+        ote_train_testing(template, root, ote_dir, args)
 
-@pytest.mark.parametrize("template", templates, ids=templates_ids)
-def test_ote_train(template):
-    ote_train_testing(template, root, ote_dir, args)
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_ote_export(self, template):
+        ote_export_testing(template, root)
 
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_ote_eval(self, template):
+        ote_eval_testing(template, root, ote_dir, args)
 
-@pytest.mark.parametrize("template", templates, ids=templates_ids)
-def test_ote_export(template):
-     ote_export_testing(template, root)
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_ote_eval_openvino(self, template):
+        ote_eval_openvino_testing(template, root, ote_dir, args, threshold=0.01)
 
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_ote_demo(self, template):
+        ote_demo_testing(template, root, ote_dir, args)
 
-@pytest.mark.parametrize("template", templates, ids=templates_ids)
-def test_ote_eval(template):
-    ote_eval_testing(template, root, ote_dir, args)
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_ote_demo_openvino(self, template):
+        ote_demo_openvino_testing(template, root, ote_dir, args)
 
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_ote_deploy_openvino(self, template):
+        ote_deploy_openvino_testing(template, root, ote_dir, args)
 
-@pytest.mark.parametrize("template", templates, ids=templates_ids)
-def test_ote_eval_openvino(template):
-    ote_eval_openvino_testing(template, root, ote_dir, args, threshold=0.01)
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_ote_eval_deployment(self, template):
+        ote_eval_deployment_testing(template, root, ote_dir, args, threshold=0.00)
 
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_ote_demo_deployment(self, template):
+        ote_demo_deployment_testing(template, root, ote_dir, args)
 
-@pytest.mark.parametrize("template", templates, ids=templates_ids)
-def test_ote_demo(template):
-    ote_demo_testing(template, root, ote_dir, args)
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_nncf_optimize(self, template):
+        if template.entrypoints.nncf is None:
+            pytest.skip("nncf entrypoint is none")
 
+        nncf_optimize_testing(template, root, ote_dir, args)
 
-@pytest.mark.parametrize("template", templates, ids=templates_ids)
-def test_ote_demo_openvino(template):
-    ote_demo_openvino_testing(template, root, ote_dir, args)
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_nncf_export(self, template):
+        if template.entrypoints.nncf is None:
+            pytest.skip("nncf entrypoint is none")
 
+        nncf_export_testing(template, root)
 
-@pytest.mark.parametrize("template", templates, ids=templates_ids)
-def test_ote_deploy_openvino(template):
-    ote_deploy_openvino_testing(template, root, ote_dir, args)
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.skip(reason="Issue with model loading 76853")
+    def test_nncf_eval(self, template):
+        if template.entrypoints.nncf is None:
+            pytest.skip("nncf entrypoint is none")
 
+        nncf_eval_testing(template, root, ote_dir, args)
 
-@pytest.mark.parametrize("template", templates, ids=templates_ids)
-def test_ote_eval_deployment(template):
-    ote_eval_deployment_testing(template, root, ote_dir, args, threshold=0.00)
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.skip(reason="Issue with model loading 76853")
+    def test_nncf_eval_openvino(self, template):
+        if template.entrypoints.nncf is None:
+            pytest.skip("nncf entrypoint is none")
 
+        nncf_eval_openvino_testing(template, root, ote_dir, args)
 
-@pytest.mark.parametrize("template", templates, ids=templates_ids)
-def test_ote_demo_deployment(template):
-    ote_demo_deployment_testing(template, root, ote_dir, args)
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_pot_optimize(self, template):
+        pot_optimize_testing(template, root, ote_dir, args)
 
-
-@pytest.mark.parametrize("template", templates, ids=templates_ids)
-def test_nncf_optimize(template):
-    if template.entrypoints.nncf is None:
-        pytest.skip("nncf entrypoint is none")
-
-    nncf_optimize_testing(template, root, ote_dir, args)
-
-
-@pytest.mark.parametrize("template", templates, ids=templates_ids)
-def test_nncf_export(template):
-    if template.entrypoints.nncf is None:
-        pytest.skip("nncf entrypoint is none")
-
-    nncf_export_testing(template, root)
-
-
-@pytest.mark.parametrize("template", templates, ids=templates_ids)
-@pytest.mark.skip(reason="Issue with model loading 76853")
-def test_nncf_eval(template):
-    if template.entrypoints.nncf is None:
-        pytest.skip("nncf entrypoint is none")
-
-    nncf_eval_testing(template, root, ote_dir, args)
-
-
-@pytest.mark.parametrize("template", templates, ids=templates_ids)
-@pytest.mark.skip(reason="Issue with model loading 76853")
-def test_nncf_eval_openvino(template):
-    if template.entrypoints.nncf is None:
-        pytest.skip("nncf entrypoint is none")
-
-    nncf_eval_openvino_testing(template, root, ote_dir, args)
-
-
-@pytest.mark.parametrize("template", templates, ids=templates_ids)
-def test_pot_optimize(template):
-    pot_optimize_testing(template, root, ote_dir, args)
-
-
-@pytest.mark.parametrize("template", templates, ids=templates_ids)
-def test_pot_eval(template):
-    pot_eval_testing(template, root, ote_dir, args)
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_pot_eval(self, template):
+        pot_eval_testing(template, root, ote_dir, args)
