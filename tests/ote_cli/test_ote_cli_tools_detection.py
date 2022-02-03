@@ -81,7 +81,7 @@ class TestToolsDetection:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_ote_export(self,template):
+    def test_ote_export(self, template):
         ote_export_testing(template, root)
 
     @e2e_pytest_component
