@@ -1,18 +1,8 @@
 """This file defines the ModelConfiguration, ModelEntity and Model classes"""
 
-# INTEL CONFIDENTIAL
+# Copyright (C) 2021-2022 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 #
-# Copyright (C) 2021 Intel Corporation
-#
-# This software and the related documents are Intel copyrighted materials, and
-# your use of them is governed by the express license under which they were provided to
-# you ("License"). Unless the License provides otherwise, you may not use, modify, copy,
-# publish, distribute, disclose or transmit this software or the related documents
-# without Intel's prior written permission.
-#
-# This software and the related documents are provided as is,
-# with no express or implied warranties, other than those that are expressly stated
-# in the License.
 import copy
 import os
 from dataclasses import dataclass, field
@@ -96,7 +86,7 @@ class TaskType(Enum):
     ANOMALY_DETECTION = auto()
     CROP = auto()
     TILE = auto()
-    COUNTING = auto()
+    INSTANCE_SEGMENTATION = auto()
     ACTIVELEARNING = auto()
     ANOMALY_SEGMENTATION = auto()
     ANOMALY_CLASSIFICATION = auto()
@@ -116,7 +106,7 @@ def task_type_to_label_domain(task_type: TaskType) -> Domain:
         TaskType.CLASSIFICATION: Domain.CLASSIFICATION,
         TaskType.DETECTION: Domain.DETECTION,
         TaskType.SEGMENTATION: Domain.SEGMENTATION,
-        TaskType.COUNTING: Domain.DETECTION,
+        TaskType.INSTANCE_SEGMENTATION: Domain.DETECTION,
         TaskType.ANOMALY_CLASSIFICATION: Domain.ANOMALY_CLASSIFICATION,
         TaskType.ANOMALY_DETECTION: Domain.ANOMALY_DETECTION,
         TaskType.ANOMALY_SEGMENTATION: Domain.ANOMALY_SEGMENTATION,
@@ -461,7 +451,7 @@ TRAINABLE_TASK_TYPES: Sequence[TaskType] = (
     TaskType.CLASSIFICATION,
     TaskType.DETECTION,
     TaskType.SEGMENTATION,
-    TaskType.COUNTING,
+    TaskType.INSTANCE_SEGMENTATION,
     TaskType.ANOMALY_DETECTION,
     TaskType.ANOMALY_CLASSIFICATION,
     TaskType.ANOMALY_SEGMENTATION,

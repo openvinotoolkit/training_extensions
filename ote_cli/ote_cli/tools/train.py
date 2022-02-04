@@ -171,3 +171,7 @@ def main():
     task.evaluate(resultset)
     assert resultset.performance is not None
     print(resultset.performance)
+
+
+if __name__ == "__main__":
+    main()

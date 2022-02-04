@@ -1,21 +1,15 @@
-"""
-Fixtures.
-"""
+# Copyright (C) 2021-2022 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 
-# INTEL CONFIDENTIAL
-#
-# Copyright (C) 2021 Intel Corporation
-#
-# This software and the related documents are Intel copyrighted materials, and
-# your use of them is governed by the express license under which they were provided to
-# you ("License"). Unless the License provides otherwise, you may not use, modify, copy,
-# publish, distribute, disclose or transmit this software or the related documents
-# without Intel's prior written permission.
-#
-# This software and the related documents are provided as is,
-# with no express or implied warranties, other than those that are expressly stated
-# in the License.
-
+from ote_sdk.test_suite.pytest_insertions import *  # noqa #pylint: disable=unused-import
 from ote_sdk.tests.fixtures.general import (  # noqa #pylint: disable=unused-import
     label_schema_example,
 )
+
+pytest_plugins = get_pytest_plugins_from_ote()  # noqa: F405
+
+ote_conftest_insertion(default_repository_name="ote/training_extensions/")  # noqa: F405
+
+
+def pytest_addoption(parser):
+    ote_pytest_addoption_insertion(parser)  # noqa: F405

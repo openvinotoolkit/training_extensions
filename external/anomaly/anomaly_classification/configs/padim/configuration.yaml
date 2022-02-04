@@ -18,7 +18,6 @@ dataset:
       operator: AND
       rules: []
       type: UI_RULES
-    value: 8
     visible_in_ui: true
     warning: null
   train_batch_size:
@@ -38,7 +37,6 @@ dataset:
       operator: AND
       rules: []
       type: UI_RULES
-    value: 32
     visible_in_ui: true
     warning:
       Increasing this value may cause the system to use more memory than available,
@@ -47,7 +45,6 @@ dataset:
   visible_in_ui: true
 description: Configuration for Padim
 header: Configuration for Padim
-id: ""
 pot_parameters:
   description: POT Parameters
   header: POT Parameters
@@ -67,7 +64,6 @@ pot_parameters:
       operator: AND
       rules: []
       type: UI_RULES
-    value: Performance
     visible_in_ui: true
     warning: null
   stat_subset_size:
@@ -84,7 +80,6 @@ pot_parameters:
       operator: AND
       rules: []
       type: UI_RULES
-    value: 300
     visible_in_ui: true
     warning: null
   type: PARAMETER_GROUP

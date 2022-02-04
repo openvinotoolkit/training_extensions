@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## \[v0.1.1\]
+### Fixed
+* Some minor issues
+
 ## \[v0.1.0\]
 ### Added
 * OTE SDK, defines an interface which can be used by OTE CLI to access OTE Algorithms.

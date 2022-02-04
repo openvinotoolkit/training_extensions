@@ -18,7 +18,6 @@ Model quality evaluation tool.
 
 import argparse
 import json
-import os
 
 from ote_sdk.configuration.helper import create
 from ote_sdk.entities.inference_parameters import InferenceParameters
@@ -31,6 +30,7 @@ from ote_cli.registry import find_and_parse_model_template
 from ote_cli.utils.config import override_parameters
 from ote_cli.utils.importing import get_impl_class
 from ote_cli.utils.io import generate_label_schema, read_label_schema, read_model
+from ote_cli.utils.nncf import is_checkpoint_nncf
 from ote_cli.utils.parser import (
     add_hyper_parameters_sub_parser,
     gen_params_dict_from_args,
@@ -109,10 +109,15 @@ def main():
     hyper_parameters = create(hyper_parameters)
 
     # Get classes for Task, ConfigurableParameters and Dataset.
-    if args.load_weights.endswith(".bin") or args.load_weights.endswith(".xml"):
+    if any(args.load_weights.endswith(x) for x in (".bin", ".xml", ".zip")):
         task_class = get_impl_class(template.entrypoints.openvino)
+    elif args.load_weights.endswith(".pth"):
+        if is_checkpoint_nncf(args.load_weights):
+            task_class = get_impl_class(template.entrypoints.nncf)
+        else:
+            task_class = get_impl_class(template.entrypoints.base)
     else:
-        task_class = get_impl_class(template.entrypoints.base)
+        raise ValueError(f"Unsupported file: {args.load_weights}")
 
     dataset_class = get_dataset_class(template.task_type)
 
@@ -121,12 +126,7 @@ def main():
     )
 
     dataset_label_schema = generate_label_schema(dataset, template.task_type)
-    check_label_schemas(
-        read_label_schema(
-            os.path.join(os.path.dirname(args.load_weights), "label_schema.json")
-        ),
-        dataset_label_schema,
-    )
+    check_label_schemas(read_label_schema(args.load_weights), dataset_label_schema)
 
     environment = TaskEnvironment(
         model=None,
@@ -135,8 +135,9 @@ def main():
         model_template=template,
     )
 
-    model = read_model(environment.get_model_configuration(), args.load_weights, None)
-    environment.model = model
+    environment.model = read_model(
+        environment.get_model_configuration(), args.load_weights, None
+    )
 
     task = task_class(task_environment=environment)
 
@@ -147,7 +148,7 @@ def main():
     )
 
     resultset = ResultSetEntity(
-        model=model,
+        model=environment.model,
         ground_truth_dataset=validation_dataset,
         prediction_dataset=predicted_validation_dataset,
     )
@@ -161,3 +162,7 @@ def main():
                 {resultset.performance.score.name: resultset.performance.score.value},
                 write_file,
             )
+
+
+if __name__ == "__main__":
+    main()

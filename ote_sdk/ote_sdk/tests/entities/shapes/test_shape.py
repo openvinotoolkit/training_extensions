@@ -83,7 +83,7 @@ class TestShapeEntity:
             with pytest.raises(NotImplementedError):
                 ShapeEntity.intersects(shape, shape)
             with pytest.raises(NotImplementedError):
-                ShapeEntity.intersect_percentage(shape, shape)
+                ShapeEntity.contains_center(shape, shape)
             with pytest.raises(NotImplementedError):
                 ShapeEntity.get_labels(shape)
             with pytest.raises(NotImplementedError):
@@ -376,54 +376,32 @@ class TestShape:
     @pytest.mark.priority_medium
     @pytest.mark.component
     @pytest.mark.reqids(Requirements.REQ_1)
-    def test_shape_intersect_percentage(self):
+    def test_shape_contains_center(self):
         """
         <b>Description:</b>
-        Check Shape intersect_percentage method for Rectangle, Ellipse and Polygon objects
+        Check Shape contains_center method for Rectangle, Ellipse and Polygon objects
 
         <b>Expected results:</b>
-        Test passes if intersect_percentage method returns expected values
+        Test passes if contains_center method returns expected values
 
         <b>Steps</b>
-        1. Check intersect_percentage method when Shapes intersect completely
-        2. Check intersect_percentage method when Shapes intersect partially
-        3. Check intersect_percentage method when Shapes intersect by one side
-        4. Check intersect_percentage method when Shapes not intersect
-        5. Check GeometryException exception raised with incorrect parameters for intersect_percentage method
+        1. Check contains_center method when a Polygon, Rectangle and Ellipse fall within a Rectangle
+        2. Check contains_center method when a Polygon, Rectangle and Ellipse fall outside a Rectangle
         """
-        inscribed_shapes_list = [self.rectangle(), self.ellipse(), self.polygon()]
-        # Check when Shapes intersect completely
-        for full_element in [
-            self.fully_covering_rectangle(),
-            self.fully_covering_ellipse(),
-            self.fully_covering_polygon(),
-        ]:
-            for inscribed in inscribed_shapes_list:
-                assert round(full_element.intersect_percentage(inscribed), 2) == 1.0
-        # Check when Shapes intersect partially
-        second_rectangle = Rectangle(x1=0.3, y1=0.4, x2=0.7, y2=0.6)
-        assert self.rectangle().intersect_percentage(second_rectangle) == 0.75
-        assert round(self.ellipse().intersect_percentage(self.rectangle()), 2) == 0.44
-        assert self.polygon().intersect_percentage(self.rectangle()) == 0.45
-        # Check when Shapes intersect by one side
-        for upper_shape in self.upper_side_intersect_shapes():
-            for lower_shape in self.lower_side_intersect_shapes():
-                assert lower_shape.intersect_percentage(upper_shape) == 0.0
-        # Check shen Shapes not intersect
-        for shape in inscribed_shapes_list:
-            for not_inscribed_shape in (
-                self.not_inscribed_rectangle(),
-                self.not_inscribed_ellipse(),
-                self.not_inscribed_polygon(),
-            ):
-                assert shape.intersect_percentage(not_inscribed_shape) == 0.0
-        # Checking GeometryException exception raised
-        with pytest.raises(GeometryException):
-            with warnings.catch_warnings():
-                warnings.filterwarnings("ignore", "Polygon coordinates")
-                self.base_self_intersect_polygon().intersect_percentage(
-                    self.other_self_intersect_polygon()
-                )
+        rectangle_full = self.fully_covering_rectangle()
+        shapes_inside = [self.polygon(), self.ellipse(), self.rectangle()]
+
+        rectangle_part = self.rectangle()
+        shapes_outside = [
+            self.not_inscribed_polygon(),
+            self.not_inscribed_ellipse(),
+            self.not_inscribed_rectangle(),
+        ]
+
+        for shape_inside in shapes_inside:
+            assert rectangle_full.contains_center(shape_inside)
+        for shape_outside in shapes_outside:
+            assert not rectangle_part.contains_center(shape_outside)
 
     @pytest.mark.priority_medium
     @pytest.mark.component
