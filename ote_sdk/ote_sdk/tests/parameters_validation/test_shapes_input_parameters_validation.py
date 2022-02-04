@@ -22,6 +22,12 @@ from ote_sdk.utils.time_utils import now
 
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestRectangleInputParamsValidation:
+    @staticmethod
+    def rectangle_label():
+        return ScoredLabel(
+            label=LabelEntity(name="Rectangle label", domain=Domain.DETECTION)
+        )
+
     @pytest.mark.priority_medium
     @pytest.mark.component
     @pytest.mark.reqids(Requirements.REQ_1)
@@ -37,9 +43,7 @@ class TestRectangleInputParamsValidation:
         Test passes if ValueError exception is raised when unexpected type object is specified as Rectangle
         initialization parameter
         """
-        rectangle_label = ScoredLabel(
-            label=LabelEntity(name="Rectangle label", domain=Domain.DETECTION)
-        )
+        rectangle_label = self.rectangle_label()
         unexpected_type_value = "unexpected str"
         correct_values_dict = {"x1": 0.1, "y1": 0.1, "x2": 0.8, "y2": 0.6}
         unexpected_values = [
@@ -100,6 +104,30 @@ class TestRectangleInputParamsValidation:
         rectangle = Rectangle(x1=0.1, y1=0.2, y2=0.3, x2=0.9)
         with pytest.raises(ValueError):
             rectangle.crop_numpy_array(data="unexpected str")  # type: ignore
+
+    @pytest.mark.priority_medium
+    @pytest.mark.component
+    @pytest.mark.reqids(Requirements.REQ_1)
+    def test_rectangle_generate_full_box_input_parameters_validation(self):
+        """
+        <b>Description:</b>
+        Check Rectangle "generate_full_box" method input parameters validation
+
+        <b>Input data:</b>
+        Rectangle object, "labels" non-list object
+
+        <b>Expected results:</b>
+        Test passes if ValueError exception is raised when unexpected type object is specified as "labels" parameter
+        for "is_full_box" method
+        """
+        rectangle_label = self.rectangle_label()
+        unexpected_type_value = "unexpected str"
+        for unexpected_parameter in [
+            unexpected_type_value,
+            [rectangle_label, unexpected_type_value],
+        ]:
+            with pytest.raises(ValueError):
+                Rectangle.generate_full_box(labels=unexpected_parameter)  # type: ignore
 
 
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
@@ -357,7 +385,7 @@ class TestShapeInputParamsValidation:
         """
         rectangle = self.rectangle()
         with pytest.raises(ValueError):
-            rectangle.intersects(other="unexpected string object")  # type: ignore
+            rectangle.intersects(other="unexpected string")  # type: ignore
 
     @pytest.mark.priority_medium
     @pytest.mark.component
@@ -376,7 +404,7 @@ class TestShapeInputParamsValidation:
         """
         rectangle = self.rectangle()
         with pytest.raises(ValueError):
-            rectangle.contains_center(other="unexpected string object")  # type: ignore
+            rectangle.contains_center(other="unexpected string")  # type: ignore
 
     @pytest.mark.priority_medium
     @pytest.mark.component
@@ -395,7 +423,7 @@ class TestShapeInputParamsValidation:
         """
         rectangle = self.rectangle()
         with pytest.raises(ValueError):
-            rectangle.get_labels(include_empty="unexpected string object")  # type: ignore
+            rectangle.get_labels(include_empty="unexpected string")  # type: ignore
 
     @pytest.mark.priority_medium
     @pytest.mark.component
@@ -414,7 +442,7 @@ class TestShapeInputParamsValidation:
         """
         rectangle = self.rectangle()
         with pytest.raises(ValueError):
-            rectangle.append_label(label="unexpected string object")  # type: ignore
+            rectangle.append_label(label="unexpected string")  # type: ignore
 
     @pytest.mark.priority_medium
     @pytest.mark.component
@@ -433,7 +461,7 @@ class TestShapeInputParamsValidation:
         """
         shape_label = self.shape_label()
         rectangle = self.rectangle()
-        unexpected_type_value = "unexpected str"
+        unexpected_type_value = "unexpected string"
         for unexpected_value in (
             unexpected_type_value,
             [shape_label, unexpected_type_value],
@@ -458,7 +486,7 @@ class TestShapeInputParamsValidation:
         """
         rectangle = self.rectangle()
         correct_values_dict = {"x": 0.1, "y": 0.2}
-        unexpected_type_value = "unexpected str"
+        unexpected_type_value = "unexpected string"
         for key in correct_values_dict:
             incorrect_values_dict = dict(correct_values_dict)
             incorrect_values_dict[key] = unexpected_type_value

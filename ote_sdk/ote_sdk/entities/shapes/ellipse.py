@@ -18,9 +18,8 @@ from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.entities.shapes.rectangle import Rectangle
 from ote_sdk.entities.shapes.shape import Shape, ShapeType
 from ote_sdk.utils.argument_checks import (
-    check_nested_elements_type,
-    check_parameter_type,
     check_required_and_optional_parameters_type,
+    raise_value_error_if_parameter_has_unexpected_type,
 )
 from ote_sdk.utils.time_utils import now
 
@@ -61,15 +60,10 @@ class Ellipse(Shape):
                 (y2, "y2", (float, int, np.floating)),
             ],
             optional_parameters=[
-                (labels, "labels", list),
+                (labels, "labels", List[ScoredLabel]),
                 (modification_date, "modification_date", datetime.datetime),
             ],
         )
-        # Nested labels validation
-        if labels:
-            check_nested_elements_type(
-                iterable=labels, parameter_name="label", expected_type=ScoredLabel
-            )
 
         labels = [] if labels is None else labels
         modification_date = now() if modification_date is None else modification_date
@@ -267,7 +261,7 @@ class Ellipse(Shape):
         :return: list of tuple's with coordinates along the ellipse line
         """
         # Input parameter validation
-        check_parameter_type(
+        raise_value_error_if_parameter_has_unexpected_type(
             parameter=number_of_coordinates,
             parameter_name="number_of_coordinates",
             expected_type=int,

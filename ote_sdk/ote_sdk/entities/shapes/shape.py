@@ -16,9 +16,9 @@ from shapely.geometry import Polygon as shapely_polygon
 
 from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.utils.argument_checks import (
-    check_nested_elements_type,
     check_parameter_type,
     check_required_parameters_type,
+    raise_value_error_if_parameter_has_unexpected_type,
 )
 
 if TYPE_CHECKING:
@@ -158,15 +158,10 @@ class Shape(ShapeEntity):
         check_required_parameters_type(
             [
                 (type, "type", ShapeType),
-                (labels, "labels", list),
+                (labels, "labels", List[ScoredLabel]),
                 (modification_date, "modification_date", datetime.datetime),
             ]
         )
-        # Nested labels validation
-        if labels:
-            check_nested_elements_type(
-                iterable=labels, parameter_name="label", expected_type=ScoredLabel
-            )
 
         super().__init__(type=type, labels=labels)
         self.modification_date = modification_date
@@ -180,7 +175,7 @@ class Shape(ShapeEntity):
     # pylint: disable=protected-access
     def intersects(self, other: "Shape") -> bool:
         # Input parameter validation
-        check_parameter_type(
+        raise_value_error_if_parameter_has_unexpected_type(
             parameter=other,
             parameter_name="other",
             expected_type=tuple(Shape.__subclasses__()),
@@ -205,7 +200,7 @@ class Shape(ShapeEntity):
         :return: Boolean that indicates whether the center of the other shape is located in the shape
         """
         # Input parameter validation
-        check_parameter_type(
+        raise_value_error_if_parameter_has_unexpected_type(
             parameter=other,
             parameter_name="other",
             expected_type=tuple(Shape.__subclasses__()),
@@ -217,16 +212,17 @@ class Shape(ShapeEntity):
 
     def get_labels(self, include_empty: bool = False) -> List[ScoredLabel]:
         # Input parameter validation
-        check_parameter_type(
+        raise_value_error_if_parameter_has_unexpected_type(
             parameter=include_empty, parameter_name="include_empty", expected_type=bool
         )
+
         return [
             label for label in self._labels if include_empty or (not label.is_empty)
         ]
 
     def append_label(self, label: ScoredLabel):
         # Input parameter validation
-        check_parameter_type(
+        raise_value_error_if_parameter_has_unexpected_type(
             parameter=label, parameter_name="label", expected_type=ScoredLabel
         )
 
@@ -235,13 +231,9 @@ class Shape(ShapeEntity):
     def set_labels(self, labels: List[ScoredLabel]):
         # Input parameter validation
         check_parameter_type(
-            parameter=labels, parameter_name="labels", expected_type=list
+            parameter=labels, parameter_name="labels", expected_type=List[ScoredLabel]
         )
-        # Nested labels validation
-        if labels:
-            check_nested_elements_type(
-                iterable=labels, parameter_name="label", expected_type=ScoredLabel
-            )
+
         self._labels = labels
 
     def _validate_coordinates(self, x: float, y: float) -> bool:

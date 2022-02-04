@@ -19,10 +19,9 @@ from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.entities.shapes.rectangle import Rectangle
 from ote_sdk.entities.shapes.shape import Shape, ShapeType
 from ote_sdk.utils.argument_checks import (
-    check_nested_elements_type,
-    check_parameter_type,
     check_required_and_optional_parameters_type,
     check_required_parameters_type,
+    raise_value_error_if_parameter_has_unexpected_type,
 )
 from ote_sdk.utils.time_utils import now
 
@@ -61,7 +60,7 @@ class Point:
         :param roi_shape:
         """
         # Input parameter validation
-        check_parameter_type(
+        raise_value_error_if_parameter_has_unexpected_type(
             parameter=roi_shape, parameter_name="roi_shape", expected_type=Rectangle
         )
 
@@ -82,7 +81,7 @@ class Point:
         :param roi_shape:
         """
         # Input parameter validation
-        check_parameter_type(
+        raise_value_error_if_parameter_has_unexpected_type(
             parameter=roi_shape, parameter_name="roi_shape", expected_type=Rectangle
         )
 
@@ -114,17 +113,14 @@ class Polygon(Shape):
     ):
         # Initialization parameters validation
         check_required_and_optional_parameters_type(
-            required_parameters=[(points, "points", list)],
+            required_parameters=[(points, "points", List[Point])],
             optional_parameters=[
-                (labels, "labels", list),
+                (labels, "labels", List[ScoredLabel]),
                 (modification_date, "modification_date", datetime.datetime),
             ],
         )
         if labels is None:
             labels = []
-        # Nested labels validation
-        elif labels:
-            check_nested_elements_type(labels, "label", ScoredLabel)
 
         modification_date = now() if modification_date is None else modification_date
         super().__init__(
@@ -135,10 +131,6 @@ class Polygon(Shape):
 
         if len(points) == 0:
             raise ValueError("Cannot create polygon with no points")
-        # Nested points validation
-        check_nested_elements_type(
-            iterable=points, parameter_name="point", expected_type=Point
-        )
 
         self.points = points
 

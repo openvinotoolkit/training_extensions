@@ -17,9 +17,9 @@ from shapely.geometry import Polygon as shapely_polygon
 from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.entities.shapes.shape import Shape, ShapeEntity, ShapeType
 from ote_sdk.utils.argument_checks import (
-    check_nested_elements_type,
     check_parameter_type,
     check_required_and_optional_parameters_type,
+    raise_value_error_if_parameter_has_unexpected_type,
 )
 from ote_sdk.utils.time_utils import now
 
@@ -64,15 +64,10 @@ class Rectangle(Shape):
                 (y2, "y2", (float, int, np.floating)),
             ],
             optional_parameters=[
-                (labels, "labels", list),
+                (labels, "labels", List[ScoredLabel]),
                 (modification_date, "modification_date", datetime.datetime),
             ],
         )
-        # Nested labels validation
-        if labels:
-            check_nested_elements_type(
-                iterable=labels, parameter_name="label", expected_type=ScoredLabel
-            )
 
         labels = [] if labels is None else labels
         modification_date = now() if modification_date is None else modification_date
@@ -236,6 +231,13 @@ class Rectangle(Shape):
         """
         if labels is None:
             labels = []
+        else:
+            check_parameter_type(
+                parameter=labels,
+                parameter_name="labels",
+                expected_type=List[ScoredLabel],
+            )
+
         return cls(x1=0.0, y1=0.0, x2=1.0, y2=1.0, labels=labels)
 
     @staticmethod
@@ -258,7 +260,7 @@ class Rectangle(Shape):
         :return: true if it fully encapsulate normalized coordinate space.
         """
         # Input parameter validation
-        check_parameter_type(
+        raise_value_error_if_parameter_has_unexpected_type(
             parameter=rectangle, parameter_name="rectangle", expected_type=ShapeEntity
         )
 
@@ -281,7 +283,7 @@ class Rectangle(Shape):
         :return: Cropped image
         """
         # Input parameter validation
-        check_parameter_type(
+        raise_value_error_if_parameter_has_unexpected_type(
             parameter=data, parameter_name="data", expected_type=np.ndarray
         )
         # We clip negative values to zero since Numpy uses negative values
