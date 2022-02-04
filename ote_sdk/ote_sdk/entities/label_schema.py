@@ -432,7 +432,6 @@ class LabelSchemaEntity:
     def are_exclusive(self, label1: LabelEntity, label2: LabelEntity) -> bool:
         """
         Returns whether `label` and `label2` are mutually exclusive.
-        or if
         """
         return label2 in self.get_labels_exclusive_to(label1)
 
@@ -516,7 +515,8 @@ class LabelSchemaEntity:
         if parent is not None:
             output += self.__get_exclusivity_recursion(parent, add_empty=False)
 
-        # Add all empty labels that are not descendants of the label
+        # Add all empty labels that are not descendants of the label. We don't need to check the ancestors for being
+        # empty, because empty label's don't have descendants.
         if add_empty:
             descendants = self.get_descendants(label)
             exclusive_empty_labels = [
