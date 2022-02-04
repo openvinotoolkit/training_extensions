@@ -121,11 +121,6 @@ class TestToolsDetection:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_ote_eval_deployment(self, template):
-        ote_eval_deployment_testing(template, root, ote_dir, args, threshold=0.00)
-
-    @e2e_pytest_component
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_ote_hpo(template):
         ote_hpo_testing(template, root, ote_dir, args)
 
