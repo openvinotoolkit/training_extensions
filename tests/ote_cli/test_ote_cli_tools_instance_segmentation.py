@@ -1,4 +1,4 @@
-"""Tests for object detection with OTE CLI"""
+"""Tests for instance segmentation with OTE CLI"""
 
 # Copyright (C) 2021 Intel Corporation
 #
@@ -22,7 +22,7 @@ from ote_sdk.test_suite.e2e_test_system import e2e_pytest_component
 
 from ote_cli.registry import Registry
 
-from tests.ote_cli.common import (
+from common import (
     create_venv,
     get_some_vars,
     ote_demo_deployment_testing,
@@ -48,7 +48,7 @@ args = {
     'train_params': [
         'params',
         '--learning_parameters.num_iters',
-        '2',
+        '3',
         '--learning_parameters.batch_size',
         '2'
     ]
