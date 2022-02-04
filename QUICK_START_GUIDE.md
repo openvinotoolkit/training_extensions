@@ -35,7 +35,6 @@
    external/mmsegmentation/init_venv.sh
    external/deep-object-reid/init_venv.sh
    ```
-
    Each line in the output gives an `init_venv.sh` script that creates a virtual environment
    for the corresponding task type.
 
@@ -44,7 +43,6 @@
    ```bash
    TASK_ALGO_DIR=./external/mmdetection/
    ```
-
    Note that we will not use the variable `TASK_ALGO_DIR` inside our scripts, we set it just to
    simplify this guide.
 
@@ -56,8 +54,7 @@
    source ./cur_task_venv/bin/activate
    pip3 install -e ote_cli/ -c $TASK_ALGO_DIR/constraints.txt
    ```
-
-   Also note that `python3.8` is pointed as the second parameter of the script
+   Note that `python3.8` is pointed as the second parameter of the script
    `init_venv.sh` -- it is the version of python that should be used. You can
    use any `python3.8+` version here if it is installed on your system.
 
