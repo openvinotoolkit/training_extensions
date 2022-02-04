@@ -226,6 +226,8 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
 
         # NOTE: This is for debugging purpose.
         for i, _ in enumerate(output_resultset.ground_truth_dataset):
+            if i >= len(output_resultset.prediction_dataset):
+                break
             logger.info(
                 "True vs Pred: %s %s - %3.2f",
                 output_resultset.ground_truth_dataset[i].annotation_scene.annotations[0].get_labels()[0].name,
