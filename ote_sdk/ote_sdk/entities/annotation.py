@@ -14,10 +14,7 @@ from ote_sdk.entities.id import ID
 from ote_sdk.entities.label import LabelEntity
 from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.entities.shapes.shape import ShapeEntity
-from ote_sdk.utils.argument_checks import (
-    check_nested_elements_type,
-    check_required_and_optional_parameters_type,
-)
+from ote_sdk.utils.argument_checks import check_required_and_optional_parameters_type
 from ote_sdk.utils.time_utils import now
 
 
@@ -34,15 +31,10 @@ class Annotation(metaclass=abc.ABCMeta):
         check_required_and_optional_parameters_type(
             required_parameters=[
                 (shape, "shape", ShapeEntity),
-                (labels, "labels", list),
+                (labels, "labels", List[ScoredLabel]),
             ],
             optional_parameters=[(id, "id", ID)],
         )
-        # Nested labels validation
-        if labels:
-            check_nested_elements_type(
-                iterable=labels, parameter_name="label", expected_type=ScoredLabel
-            )
 
         self.__id = ID(ObjectId()) if id is None else id
         self.__shape = shape
@@ -180,7 +172,7 @@ class AnnotationSceneEntity(metaclass=abc.ABCMeta):
         # Initialization parameters validation
         check_required_and_optional_parameters_type(
             required_parameters=[
-                (annotations, "annotations", list),
+                (annotations, "annotations", List[Annotation]),
                 (kind, "kind", AnnotationSceneKind),
             ],
             optional_parameters=[
@@ -189,13 +181,6 @@ class AnnotationSceneEntity(metaclass=abc.ABCMeta):
                 (id, "id", ID),
             ],
         )
-        # Nested annotations validation
-        if annotations:
-            check_nested_elements_type(
-                iterable=annotations,
-                parameter_name="annotation",
-                expected_type=Annotation,
-            )
 
         self.__annotations = annotations
         self.__kind = kind

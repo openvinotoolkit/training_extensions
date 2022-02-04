@@ -8,6 +8,7 @@ from enum import IntEnum, auto
 from typing import TYPE_CHECKING, Dict, List, Optional, Union
 
 from bson import ObjectId
+from numpy import floating
 
 from ote_sdk.configuration import ConfigurableParameters
 from ote_sdk.entities.id import ID
@@ -23,10 +24,7 @@ from ote_sdk.usecases.adapters.model_adapter import (
 )
 from ote_sdk.utils.argument_checks import (
     check_is_parameter_like_dataset,
-    check_optional_parameters_type,
-    check_parameter_type,
-    check_several_optional_dictionaries_keys_values_type,
-    check_several_optional_lists_elements_type,
+    check_required_and_optional_parameters_type,
 )
 from ote_sdk.utils.time_utils import now
 
@@ -128,55 +126,39 @@ class ModelEntity:
         check_is_parameter_like_dataset(
             parameter=train_dataset, parameter_name="train_dataset"
         )
-        check_parameter_type(
-            parameter=configuration,
-            parameter_name="configuration",
-            expected_type=ModelConfiguration,
-        )
-        check_optional_parameters_type(
-            [
+        check_required_and_optional_parameters_type(
+            required_parameters=[(configuration, "configuration", ModelConfiguration)],
+            optional_parameters=[
                 (creation_date, "creation_date", datetime.datetime),
                 (performance, "performance", Performance),
                 (previous_trained_revision, "previous_trained_revision", ModelEntity),
                 (previous_revision, "previous_revision", ModelEntity),
                 (version, "version", int),
-                (tags, "tags", list),
+                (tags, "tags", List[str]),
                 (model_format, "model_format", ModelFormat),
-                (training_duration, "training_duration", (int, float)),
-                (model_adapters, "model_adapters", dict),
+                (training_duration, "training_duration", (int, float, floating)),
+                (model_adapters, "model_adapters", Dict[str, ModelAdapter]),
                 (
                     exportable_code_adapter,
                     "exportable_code_adapter",
                     ExportableCodeAdapter,
                 ),
-                (precision, "precision", list),
+                (precision, "precision", List[ModelPrecision]),
                 (latency, "latency", int),
                 (fps_throughput, "fps_throughput", int),
                 (target_device, "target_device", TargetDevice),
                 (target_device_type, "target_device_type", str),
                 (optimization_type, "optimization_type", ModelOptimizationType),
-                (optimization_methods, "optimization_methods", list),
-                (optimization_objectives, "optimization_objectives", dict),
-                (performance_improvement, "performance_improvement", dict),
-                (model_size_reduction, "model_size_reduction", (int, float)),
+                (
+                    optimization_methods,
+                    "optimization_methods",
+                    List[OptimizationMethod],
+                ),
+                (optimization_objectives, "optimization_objectives", Dict[str, str]),
+                (performance_improvement, "performance_improvement", Dict[str, float]),
+                (model_size_reduction, "model_size_reduction", (int, float, floating)),
                 (_id, "_id", (ID, ObjectId)),
-            ]
-        )
-        # Nested list elements validation
-        check_several_optional_lists_elements_type(
-            [
-                (tags, "tag", str),
-                (precision, "precision", ModelPrecision),
-                (optimization_methods, "optimization method", OptimizationMethod),
-            ]
-        )
-        # Dictionary keys and values validation
-        check_several_optional_dictionaries_keys_values_type(
-            [
-                (model_adapters, "model_adapter", str, ModelAdapter),
-                (optimization_objectives, "optimization_objective", str, str),
-                (performance_improvement, "performance_improvement", str, (int, float)),
-            ]
+            ],
         )
 
         _id = ID() if _id is None else _id

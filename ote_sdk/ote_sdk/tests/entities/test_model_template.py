@@ -1160,11 +1160,11 @@ class TestParseModelTemplate:
             # Empty string is specified as "model_template_path" parameter
             "",
             # Path to non-yaml file is specified as "model_template_path" parameter
-            TestHyperParameterData.get_path_to_file(r"./incorrect_model_template.jpg"),
+            TestHyperParameterData.get_path_to_file("./incorrect_model_template.jpg"),
             # Path to non-existing file is specified as "model_template_path" parameter
-            TestHyperParameterData.get_path_to_file(r"./non_existing_file.yaml"),
+            TestHyperParameterData.get_path_to_file("./non_existing_file.yaml"),
             # Path with null character is specified as "file_path" parameter
-            TestHyperParameterData.get_path_to_file(r"./null\0char.yaml"),
+            TestHyperParameterData.get_path_to_file("./null\0char.yaml"),
         ]:
             with pytest.raises(ValueError):
                 parse_model_template(incorrect_parameter)
