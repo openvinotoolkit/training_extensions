@@ -18,6 +18,7 @@ Utils for dynamically importing stuff
 
 import json
 import os
+import re
 import struct
 import tempfile
 from io import BytesIO
@@ -25,10 +26,12 @@ from zipfile import ZipFile
 
 from ote_sdk.entities.label import Domain, LabelEntity
 from ote_sdk.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
-from ote_sdk.entities.model import ModelEntity
+from ote_sdk.entities.model import ModelEntity, ModelOptimizationType
 from ote_sdk.entities.model_template import TaskType
 from ote_sdk.serialization.label_mapper import LabelSchemaMapper
 from ote_sdk.usecases.adapters.model_adapter import ModelAdapter
+
+from ote_cli.utils.nncf import is_checkpoint_nncf
 
 
 def save_model_data(model, folder):
@@ -58,6 +61,7 @@ def read_model(model_configuration, path, train_dataset):
     """
     Creates ModelEntity based on model_configuration and data stored at path.
     """
+    optimization_type = ModelOptimizationType.NONE
 
     model_adapter_keys = ("confidence_threshold", "image_threshold", "min", "max")
 
@@ -74,6 +78,16 @@ def read_model(model_configuration, path, train_dataset):
     elif path.endswith(".pth"):
         # PyTorch
         model_adapters = {"weights.pth": ModelAdapter(read_binary(path))}
+
+        if is_checkpoint_nncf(path):
+            optimization_type = ModelOptimizationType.NNCF
+
+        # Weights of auxiliary models
+        for key in os.listdir(os.path.dirname(path)):
+            if re.match(r"aux_model_[0-9]+\.pth", key):
+                full_path = os.path.join(os.path.dirname(path), key)
+                model_adapters[key] = ModelAdapter(read_binary(full_path))
+
     elif path.endswith(".zip"):
         # Deployed code.
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -83,12 +97,11 @@ def read_model(model_configuration, path, train_dataset):
                 os.path.join(temp_dir, "python", "demo_package-0.0-py3-none-any.whl")
             ) as myzip:
                 myzip.extractall(temp_dir)
-            model_path = os.path.join(temp_dir, "model", "model.xml")
-            weights_path = os.path.join(temp_dir, "model", "model.bin")
 
+            model_path = os.path.join(temp_dir, "model", "model")
             model_adapters = {
-                "openvino.xml": ModelAdapter(read_binary(model_path)),
-                "openvino.bin": ModelAdapter(read_binary(weights_path)),
+                "openvino.xml": ModelAdapter(read_binary(model_path + ".xml")),
+                "openvino.bin": ModelAdapter(read_binary(model_path + ".bin")),
             }
 
             config_path = os.path.join(temp_dir, "demo_package", "config.json")
@@ -107,6 +120,7 @@ def read_model(model_configuration, path, train_dataset):
         configuration=model_configuration,
         model_adapters=model_adapters,
         train_dataset=train_dataset,
+        optimization_type=optimization_type,
     )
 
     return model

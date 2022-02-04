@@ -53,17 +53,17 @@
 
    Sample output:
    ```
-   - framework: OTEDetection_v2.9.1
-     name: Custom_Object_Detection_Gen3_VFNet
+   - id: Custom_Object_Detection_Gen3_VFNet
+     name: VFNet
      path: ./external/mmdetection/configs/ote/custom-object-detection/gen3_resnet50_VFNet/template.yaml
      task_type: DETECTION
-   - framework: OTEDetection_v2.9.1
-     name: Custom_Object_Detection_Gen3_SSD
-     path: ./external/mmdetection/configs/ote/custom-object-detection/gen3_mobilenetV2_SSD/template.yaml
-     task_type: DETECTION
-   - framework: OTEDetection_v2.9.1
-     name: Custom_Object_Detection_Gen3_ATSS
+   - id: Custom_Object_Detection_Gen3_ATSS
+     name: ATSS
      path: ./external/mmdetection/configs/ote/custom-object-detection/gen3_mobilenetV2_ATSS/template.yaml
+     task_type: DETECTION
+   - id: Custom_Object_Detection_Gen3_SSD
+     name: SSD
+     path: ./external/mmdetection/configs/ote/custom-object-detection/gen3_mobilenetV2_SSD/template.yaml
      task_type: DETECTION
    - ...
    ```
@@ -181,6 +181,47 @@
                            max_value: 100.0
                            min_value: 0.0
    ```
+
+### ote optimize - run optimization of a particular model template
+   This tool optimizes a trained model using NNCF or POT depending on a model format:
+
+   - NNCF optimization used for trained snapshots in framework specific format
+   - POT optimization used for exported model in IR format
+
+   ```
+   ote optimize ./external/mmdetection/configs/ote/custom-object-detection/gen3_mobilenetV2_ATSS/template.yaml --help
+   ```
+
+   Sample output:
+   ```
+   usage: ote optimize [-h] --train-ann-files TRAIN_ANN_FILES --train-data-roots TRAIN_DATA_ROOTS --val-ann-files
+                    VAL_ANN_FILES --val-data-roots VAL_DATA_ROOTS --load-weights LOAD_WEIGHTS --save-model-to
+                    SAVE_MODEL_TO [--aux-weights AUX_WEIGHTS]
+                    template {params} ...
+
+   positional arguments:
+     template
+     {params}              sub-command help
+       params              Hyper parameters defined in template file.
+
+   optional arguments:
+     -h, --help            show this help message and exit
+     --train-ann-files TRAIN_ANN_FILES
+                           Comma-separated paths to training annotation files.
+     --train-data-roots TRAIN_DATA_ROOTS
+                           Comma-separated paths to training data folders.
+     --val-ann-files VAL_ANN_FILES
+                           Comma-separated paths to validation annotation files.
+     --val-data-roots VAL_DATA_ROOTS
+                           Comma-separated paths to validation data folders.
+     --load-weights LOAD_WEIGHTS
+                           Load weights of trained model
+     --save-model-to SAVE_MODEL_TO
+                           Location where trained model will be stored.
+     --aux-weights AUX_WEIGHTS
+                           Load weights of trained auxiliary model
+   ```
+
 
 ### ote eval - run evaluation of a trained model on particular dataset
    Let's have a look at `ote eval` help. These parameters are the same for all model templates.
