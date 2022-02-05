@@ -67,6 +67,13 @@ def ote_pytest_addoption_insertion(parser):
         default=None,
         help="Optional. If the parameter is set, the logger in each test is forced to this level.",
     )
+    parser.addoption(
+        "--force-log-level-recursive",
+        action="store",
+        default=None,
+        help="Optional. If the parameter is set, the logger in each test and its parents "
+        "are forced to this level.",
+    )
 
     # TODO(lbeynens): remove it after update CI
     parser.addoption(
