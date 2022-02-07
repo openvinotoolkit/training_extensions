@@ -1,0 +1,32 @@
+{
+    "train":{
+        "epochs":4,
+        "batch_size":4,
+        "num_workers":10,
+        "lr":1e-4,
+        "model_save_path":"model_weights/",
+        "gpu":"True",
+        "val_data_path":"test_data/prepared/segmenter_test.npy",
+        "tr_data_path":"test_data/prepared/segmenter_train.npy",
+        "device":"cuda"
+
+    },
+    "inference":{
+        "batch_size":1,
+        "num_workers":10,
+        "gpu":"True",
+        "val_data_path":"test_data/prepared/segmenter_test.npy",
+        "checkpoint":"model_weights/checkpoint_stage1.pth",
+        "onnx_checkpoint":"model_weights/checkpoint_stage1.onnx"
+    },
+    "export":{
+        "onnx_model":"model_weights/checkpoint_stage1.onnx",
+        "input_shape":"[1,1,640,320]",
+        "checkpoint": "model_weights/checkpoint_stage1.pth"
+    },
+    "data_prep":{
+        "data_path":"test_data/rbis_ddsm_sample/",
+        "save_path":"test_data/prepared/"
+    }
+
+}

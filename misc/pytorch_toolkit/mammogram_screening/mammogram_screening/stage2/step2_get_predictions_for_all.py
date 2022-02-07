@@ -1,14 +1,10 @@
 import numpy as np
 import os
 import torch
-import sys
-from dataloader import CustomDataset
-pth=os.getcwd()
-sys.path.append('../../stage1_mass_segmentation/')
-from network.models import UNet
-os.chdir(pth)
 from torch.utils.data import DataLoader
-import argparse
+from ..train_utils.dataloader import Stage2aDataset
+from ..train_utils.models import UNet
+from ..train_utils.get_config import get_config
 from tqdm import tqdm as tq
 
 def predict_mass_seg(val_loader, model, nm):
@@ -38,15 +34,12 @@ def predict_mass_seg(val_loader, model, nm):
 
 if __name__ == '__main__':
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--seg_model', type=str, default='', required=True, help='path to seg model')
-    parser.add_argument('--data_path', type=str, default='', required=True, help='directory at which data is stored')
-    parser.add_argument('--out_path', type=str, default='', required=True, help='directory at which output data is to be stored')
-    args = parser.parse_args()
-    
-    data_path = args.data_path
-    out_path = args.out_path
-    mass_seg_wt_path = args.seg_model
+    configs = get_config(action='pred_all', stage='stage2')
+    data_path = configs['data_path']
+    out_path = configs['out_path']
+    if not os.path.isdir(out_path):
+        os.mkdir(out_path)
+    mass_seg_wt_path = configs['seg_model']
     model = UNet(num_filters=32)
 
     saved_model = torch.load(mass_seg_wt_path, map_location='cuda')
@@ -54,7 +47,7 @@ if __name__ == '__main__':
 
     # Prepare val dataset
     x_train = np.load(os.path.join(data_path,'segmenter_test.npy'), allow_pickle=True)
-    val_data = CustomDataset(x_train, transform=None)
+    val_data = Stage2aDataset(x_train, transform=None)
     val_loader = DataLoader(val_data, batch_size=1, shuffle=False, num_workers=1)
 
     # Inference of the mass segmentation network on the validation set, save in a npy file
@@ -64,7 +57,7 @@ if __name__ == '__main__':
 
     # Prepare Train set
     x_train = np.load(os.path.join(data_path,'segmenter_train.npy'), allow_pickle=True)
-    train_data = CustomDataset(x_train, transform=None)
+    train_data = Stage2aDataset(x_train, transform=None)
     train_loader = DataLoader(train_data, batch_size=1, shuffle=False, num_workers=1)
 
     # Inference on the Train set

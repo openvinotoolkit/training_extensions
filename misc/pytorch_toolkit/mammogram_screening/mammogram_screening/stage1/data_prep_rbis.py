@@ -1,10 +1,11 @@
 import cv2
 import numpy as np
 import os
-import argparse
 from tqdm import tqdm as tq
+from ..train_utils.get_config import get_config
+from ..train_utils.downloader import download_data
 
-def list_apppend(list1,split_list=[], id=True):
+def list_apppend(list1, split_list=[], id=True):
     list2 = []
     for i,fname in enumerate(list1):
         p_id = fname.split('_')[1]
@@ -22,16 +23,14 @@ def data_partition(img_dir):
     train_split, test_split = [],[]
     image_list = os.listdir(img_dir)
     id_list = list_apppend(image_list, id=True)
-
-    print(f'Total no. of unique patients: {len(id_list)}')
-
-    train_threshold = 0.6*len(id_list)
-    test_threshold = 0.2*len(id_list)
+    print(f"Total no. of unique patients: {len(id_list)}")
+    train_threshold = 0.5*len(id_list) # Thresholds should be changed as required
+    test_threshold = 0.5*len(id_list)
 
     for i,f_id in enumerate(id_list):
         if 0 < i < train_threshold:
             train_id_list.append(f_id)
-        elif train_threshold < i < train_threshold+test_threshold:
+        elif train_threshold < i <= train_threshold+test_threshold+1:
             test_id_list.append(f_id)
         else:
             train_id_list.append(f_id)
@@ -78,30 +77,33 @@ def prepare_data_array(img_dir, mass_dir, split):
 
     return data_arr
 
-def prepare_data_npy(img_dir, mass_dir, train_split, test_split):
+def prepare_data_npy(data_path, save_path, train_split, test_split):
+
+    img_dir = os.path.join(data_path,'images')
+    mass_dir = os.path.join(data_path,'annotations/mass_mask')
     train_data = prepare_data_array(img_dir, mass_dir, split=train_split)
     print('Train: ', len(train_data))
-    np.save('data_splits/segmenter_train.npy', train_data)
+    np.save(os.path.join(save_path,'segmenter_train.npy'), train_data)
     del train_data
 
     test_data = prepare_data_array(img_dir, mass_dir, split=test_split)
     print('Test: ', len(test_data))
-    np.save('data_splits/segmenter_test.npy', test_data)
+    np.save(os.path.join(save_path,'segmenter_test.npy'), test_data)
     del test_data
 
-
 if __name__ == '__main__':
-    
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--data_pth', type=str, required=True, help='Directory containing the arranged Dataset Directory')
-    args = parser.parse_args()
-    data_pth=args.data_pth
 
-    img_dir = os.path.join(data_pth,'img')
-    mass_dir = os.path.join(data_pth,'new_annotations/mass_mask')
-
+    config = get_config(action='data_prep', stage= 'stage1')
+    data_path = config['data_path']
+    save_path = config['save_path']
+    if not os.path.exists(data_path):
+        download_data()
+    if not os.path.exists(save_path):
+        os.makedirs(save_path)
+    img_dir = os.path.join(data_path,'images')
     data_split = data_partition(img_dir)
-    np.save('data_splits/train_split.npy',data_split[0])
-    np.save('data_splits/test_split.npy',data_split[1])
-
-    prepare_data_npy(img_dir, mass_dir, data_split[0], data_split[1])
+    train_split = os.path.join(save_path,'train_split.npy')
+    test_split = os.path.join(save_path,'test_split.npy')
+    np.save(train_split, data_split[0])
+    np.save(test_split, data_split[1])
+    prepare_data_npy(data_path, save_path, data_split[0], data_split[1])
