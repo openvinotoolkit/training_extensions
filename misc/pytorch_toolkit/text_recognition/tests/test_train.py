@@ -68,5 +68,9 @@ class TestAlphanumericTrain0016(create_train_test('configs/config_0016.yml')):
     'Test case for alphanumeric config'
 
 
+class TestHandwrittenEnglishTrain0001(create_train_test('configs/handwritten-english-recognition-0001.yml')):
+    'Test case for handwritten text recognition config'
+
+
 if __name__ == '__main__':
     unittest.main()

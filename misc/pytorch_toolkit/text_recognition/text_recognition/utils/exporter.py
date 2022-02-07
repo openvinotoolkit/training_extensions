@@ -93,8 +93,12 @@ class Exporter:
     def export_complete_model_ir(self):
         input_model = os.path.join(os.path.split(self.model_path)[0], self.config.get('res_model_name'))
         input_shape = self.config.get('input_shape')
+        input_names = self.config.get('model_input_names')
         output_names = self.config.get('model_output_names')
         output_dir = os.path.split(self.model_path)[0]
+        num_channels = input_shape[1]
+        scale_values = self.config.get('scale_values', '[255]' if num_channels == 1 else '[255,255,255]')
+        mean_values = self.config.get('mean_values', '[0]' if num_channels == 1 else '[0,0,0]')
         export_command = f"""mo \
         --framework onnx \
         --input_model {input_model} \
@@ -102,7 +106,8 @@ class Exporter:
         --output "{output_names}" \
         --log_level={LOG_LEVEL} \
         --output_dir {output_dir} \
-        --scale_values 'imgs[255]'"""
+        --mean_values '{input_names}{mean_values}' \
+        --scale_values '{input_names}{scale_values}'"""
         if self.config.get('verbose_export'):
             print(export_command)
         subprocess.run(export_command, shell=True, check=True)

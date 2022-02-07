@@ -7,9 +7,10 @@ This code is based on this [repo](https://github.com/luopeixiang/im2latex/).
 Models code is designed to enable ONNX\* export and inference on CPU\GPU via OpenVINO™.
 
 ## Supported Tasks
-Two tasks are supported:
+Three tasks are supported:
 1. LaTeX formula recognition.
 2. Alphanumeric scene text recognition.
+3. Handwritten text line recognition.
 
 ## Model Architecture
 
@@ -19,6 +20,7 @@ We follow similar to [deep-text-recognition-benchmark](https://github.com/clovaa
    1. ResNet-like backbone
    2. Custom ResNet-like backbone (configurable number of channels and spatial dimension in every stage)
     > [Convolutional Block Attention Module](https://arxiv.org/abs/1807.06521) is implemented for the resnet-like backbone, but currently it is not used by any of the models.
+   3. HETR backbone (from paper: Puigcerver, Joan. "Are multidimensional recurrent layers really necessary for handwritten text recognition?." 2017 14th IAPR International Conference on Document Analysis and Recognition (ICDAR). Vol. 1. IEEE, 2017.)
 3. Text Recognition Head
    1. CTC lstm encoder-decoder head.
    2. 1d attention based head from [im2markup](https://arxiv.org/pdf/1609.04938.pdf)
@@ -170,7 +172,8 @@ Here you can find which models are currently supported. For accuracy metrics and
 | polynomials-handwritten-0001 | Formula Recognition                 | None           | ResNeXt-50 st 3  | 1d attention             | [link](https://github.com/openvinotoolkit/open_model_zoo/tree/master/models/intel/formula-recognition-polynomials-handwritten-0001) | [link](https://download.01.org/opencv/openvino_training_extensions/models/formula_recognition/polynomials_handwritten_0166.pth)         | [link](configs/polynomials_handwritten_config.yml) |
 | text-recognition-0014        | Alphanumeric Scene Text Recognition | None           | ResNeXt-50 st 2  | CTC LSTM Encoder-Decoder | [link](https://github.com/openvinotoolkit/open_model_zoo/tree/master/models/intel/text-recognition-0014)                            | [link](https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/text_recognition/text_recognition_0014.pth) | [link](configs/config_0014.yml)                    |
 | text-recognition-0015        | Alphanumeric Scene Text Recognition | None           | ResNeXt-101      | 2d attention             | [link](https://github.com/openvinotoolkit/open_model_zoo/tree/master/models/intel/text-recognition-0015)                            | [link](https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/text_recognition/text_recognition_0015.pth) | [link](configs/config_0015.yml)                    |
-| text-recognition-0016 ([YATR](https://arxiv.org/abs/2107.13938)) | Alphanumeric Scene Text Recognition | TPS            | ResNeXt-101 st 3 | 2d attention             | [link](https://github.com/openvinotoolkit/open_model_zoo/tree/develop/models/intel/text-recognition-0016)                                                                                                                                 | [link](https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/text_recognition/text_recognition_0016.pth) | [link](configs/config_0016.yml)                    |
+| text-recognition-0016 ([YATR](https://arxiv.org/abs/2107.13938)) | Alphanumeric Scene Text Recognition | TPS            | ResNeXt-101 st 3 | 2d attention             | [link](https://github.com/openvinotoolkit/open_model_zoo/tree/master/models/intel/text-recognition-0016)                                                                                                                                 | [link](https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/text_recognition/text_recognition_0016.pth) | [link](configs/config_0016.yml)                    |
+| handwritten-english-recognition-0001     | Handwritten English Text Recognition        | None           | CNN             | CTC LSTM Encoder-Decoder | [link](https://github.com/openvinotoolkit/open_model_zoo/tree/master/models/intel/handwritten-english-recognition-0001)             | [link](https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/text_recognition/handwritten_english_recognition_0001.pth) | [link](configs/handwritten-english-recognition-0001.yml)               |
 
 > Note: st* for ResNeXt models stands for stage. This means that only first several stages of the ResNeXt like backbone are used.
 ### PyTorch
@@ -190,7 +193,7 @@ That is why we cannot just compare text predictions one-by-one, we have to rende
 
 ## Demo
 
-In order to see how trained model works using OpenVINO™ please refer to [Formula recognition Python\* Demo](https://github.com/opencv/open_model_zoo/tree/develop/demos/formula_recognition_demo/) and [Text detection C++\* demo](https://github.com/openvinotoolkit/open_model_zoo/tree/master/demos/text_detection_demo). Before running the demo you have to export trained model to IR. Please, see below how to do that.
+In order to see how trained model works using OpenVINO™ please refer to [Formula recognition Python\* Demo](https://github.com/opencv/open_model_zoo/tree/master/demos/formula_recognition_demo/) and [Text detection C++\* demo](https://github.com/openvinotoolkit/open_model_zoo/tree/master/demos/text_detection_demo). Before running the demo you have to export trained model to IR. Please, see below how to do that.
 
 If you want to see how trained PyTorch model is working, you can run `tools/demo.py` script with correct `config` file. Fill in the `input_images` variable with the paths to desired images. For every image in this list, model will predict the text and print it into the terminal.
 

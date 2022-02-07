@@ -13,3 +13,5 @@ positional-encodings
 lmdb
 fasttext
 openvino-dev[onnx]==2021.4
+albumentations
+editdistance

@@ -190,12 +190,13 @@ class ICDAR2013RECDataset(BaseDataset):
 
 
 class LMDBDataset(BaseDataset):
-    def __init__(self, data_path, fixed_img_shape=None, case_sensitive=False, grayscale=False):
+    def __init__(self, data_path, fixed_img_shape=None, case_sensitive=False, grayscale=False, insert_whitespace=True):
         super().__init__()
         self.data_path = data_path
         self.fixed_img_shape = fixed_img_shape
         self.case_sensitive = case_sensitive
         self.grayscale = grayscale
+        self.insert_whitespace = insert_whitespace
         self.database = lmdb.open(bytes(self.data_path, encoding='utf-8'), readonly=True, lock=False)
         self.pairs = self._load()
         self.txn = self.database.begin(write=False)
@@ -208,7 +209,8 @@ class LMDBDataset(BaseDataset):
                 text = txn.get(f'label-{index:09d}'.encode()).decode('utf-8')
                 if not self.case_sensitive:
                     text = text.lower()
-                text = ' '.join(text)
+                if self.insert_whitespace:
+                    text = ' '.join(text)
                 el = {'img_name': f'image-{index:09d}',
                       'text': text,
                       }

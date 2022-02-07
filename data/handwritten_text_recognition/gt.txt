@@ -1,0 +1,10 @@
+1.jpg	Open Visual Inference and Neural network Optimization
+2.jpg	OpenVINO
+3.jpg	Intel Core i5-12600K
+4.jpg	Alder Lake
+5.jpg	convolutional neural network
+6.jpg	Moore's law
+7.jpg	Intel
+8.jpg	July 18, 1968, Mountain View, CA
+9.jpg	$779,000
+10.jpg	NASDAQ: INTC
