@@ -238,7 +238,7 @@ class TestTaskType:
         2. Check TaskType elements value attribute
         3. Check TaskType str method
         """
-        assert len(TaskType) == 12
+        assert len(TaskType) == 13
         assert TaskType.NULL.value == 1
         assert TaskType.DATASET.value == 2
         assert TaskType.CLASSIFICATION.value == 3
@@ -251,6 +251,7 @@ class TestTaskType:
         assert TaskType.ACTIVELEARNING.value == 10
         assert TaskType.ANOMALY_SEGMENTATION.value == 11
         assert TaskType.ANOMALY_CLASSIFICATION.value == 12
+        assert TaskType.ROTATED_DETECTION.value == 13
         assert str(TaskType.NULL) == "NULL"
         assert str(TaskType.DATASET) == "DATASET"
         assert str(TaskType.CLASSIFICATION) == "CLASSIFICATION"
@@ -263,6 +264,7 @@ class TestTaskType:
         assert str(TaskType.ACTIVELEARNING) == "ACTIVELEARNING"
         assert str(TaskType.ANOMALY_SEGMENTATION) == "ANOMALY_SEGMENTATION"
         assert str(TaskType.ANOMALY_CLASSIFICATION) == "ANOMALY_CLASSIFICATION"
+        assert str(TaskType.ROTATED_DETECTION) == "ROTATED_DETECTION"
 
     @pytest.mark.priority_medium
     @pytest.mark.component
@@ -286,7 +288,7 @@ class TestTaskType:
         assert task_type_to_label_domain(TaskType.SEGMENTATION) == Domain.SEGMENTATION
         assert (
             task_type_to_label_domain(TaskType.INSTANCE_SEGMENTATION)
-            == Domain.DETECTION
+            == Domain.INSTANCE_SEGMENTATION
         )
         assert (
             task_type_to_label_domain(TaskType.ANOMALY_CLASSIFICATION)
