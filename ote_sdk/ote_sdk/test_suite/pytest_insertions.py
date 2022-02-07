@@ -61,6 +61,19 @@ def ote_pytest_addoption_insertion(parser):
         default=None,
         help="Optional. If the parameter is set, it points the YAML file with expected test metrics.",
     )
+    parser.addoption(
+        "--force-log-level",
+        action="store",
+        default=None,
+        help="Optional. If the parameter is set, the logger in each test is forced to this level.",
+    )
+    parser.addoption(
+        "--force-log-level-recursive",
+        action="store",
+        default=None,
+        help="Optional. If the parameter is set, the logger in each test and its parents "
+        "are forced to this level.",
+    )
 
     # TODO(lbeynens): remove it after update CI
     parser.addoption(
@@ -76,11 +89,10 @@ def ote_pytest_generate_tests_insertion(metafunc):
     The function should be called in the standard pytest hook pytest_generate_tests
     in algo backend's conftest.py file to generate parameters of reallife training tests.
     """
-    import logging
-
+    from .logging import get_logger
     from .training_tests_helper import OTETrainingTestInterface
 
-    logger = logging.getLogger(__name__)
+    logger = get_logger()
     if metafunc.cls is None:
         return False
     if not issubclass(metafunc.cls, OTETrainingTestInterface):

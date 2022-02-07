@@ -13,7 +13,6 @@ MUST be overriden in algo backend's conftest.py file.
 # pylint: disable=redefined-outer-name
 
 import glob
-import logging
 import os
 import os.path as osp
 from copy import deepcopy
@@ -26,9 +25,10 @@ import yaml
 from ote_sdk.entities.model_template import parse_model_template
 
 from .e2e_test_system import DataCollector
+from .logging import get_logger, set_log_level
 from .training_tests_common import REALLIFE_USECASE_CONSTANT, ROOT_PATH_KEY
 
-logger = logging.getLogger(__name__)
+logger = get_logger()
 
 #########################################################################################
 # Fixtures that should be overriden in algo backends
@@ -191,8 +191,45 @@ def expected_metrics_all_tests_fx(request):
     return expected_metrics_all_tests
 
 
+@pytest.fixture(scope="session", autouse=True)
+def force_logging_session_fx(request):
+    """
+    This fixture force setting log level for test suite.
+    It may be required in the case when one of the packages
+    sets global log level to logging.ERROR.
+    This fixture has session scope.
+    """
+    level = request.config.getoption("--force-log-level")
+    recursive_level = request.config.getoption("--force-log-level-recursive")
+    if recursive_level is not None:
+        set_log_level(recursive_level, recursive=True)
+    if level is not None:
+        set_log_level(level)
+
+
 @pytest.fixture
-def current_test_parameters_fx(request):
+def force_logging_fx(request):
+    """
+    This fixture force setting log level for test suite.
+    It may be required in the case when one of the packages
+    sets global log level to logging.ERROR.
+    Note that using --force-log-level-recursive option
+    it is possible to set log level for all parents of the test
+    suite logger.
+    This fixture has function scope -- it may be required if some
+    of packages changes log level of some loggers during work of test.
+    """
+    level = request.config.getoption("--force-log-level")
+    recursive_level = request.config.getoption("--force-log-level-recursive")
+    if recursive_level is not None:
+        set_log_level(recursive_level, recursive=True)
+    if level is not None:
+        set_log_level(level)
+
+
+@pytest.fixture
+def current_test_parameters_fx(request, force_logging_fx):
+    # pylint: disable=unused-argument
     """
     This fixture returns the test parameter `test_parameters` of the current test.
     """
@@ -205,7 +242,8 @@ def current_test_parameters_fx(request):
 
 
 @pytest.fixture
-def current_test_parameters_string_fx(request):
+def current_test_parameters_string_fx(request, force_logging_fx):
+    # pylint: disable=unused-argument
     """
     This fixture returns the part of the test id between square brackets
     (i.e. the part of id that corresponds to the test parameters)
