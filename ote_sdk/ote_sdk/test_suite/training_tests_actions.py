@@ -467,6 +467,10 @@ def check_nncf_model_graph(reference_dir, nncf_task):
     graph = nncf_task._model.get_graph()
     nx_graph = graph.get_graph_for_structure_analysis()
 
+    P = nx.drawing.nx_pydot.to_pydot(nx_graph)
+    logger.info("DOT____")
+    logger.info(P.to_string())
+
     for _, node in nx_graph.nodes(data=True):
         if 'scope' in node:
             node.pop('scope')
