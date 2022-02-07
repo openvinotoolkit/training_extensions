@@ -48,7 +48,7 @@ args = {
     'train_params': [
         'params',
         '--learning_parameters.num_iters',
-        '3',
+        '5',
         '--learning_parameters.batch_size',
         '2'
     ]
@@ -105,7 +105,7 @@ class TestToolsRotatedDetection:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_ote_eval_deployment(self, template):
-        ote_eval_deployment_testing(template, root, ote_dir, args, threshold=0.00)
+        ote_eval_deployment_testing(template, root, ote_dir, args, threshold=0.01)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
