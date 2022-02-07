@@ -7,11 +7,13 @@
 This module contains the definition of a ParameterGroup, which is the main class responsible for grouping configurable
 parameters together.
 """
-
-from typing import List, Type, TypeVar
+from enum import Enum
+from typing import Any, Dict, List, Type, TypeVar, Union
 
 import attr
 
+from ote_sdk.configuration.elements import metadata_keys
+from ote_sdk.configuration.enums import AutoHPOState
 from ote_sdk.configuration.enums.config_element_type import (
     ConfigElementType,
     ElementCategory,
@@ -49,6 +51,10 @@ class ParameterGroup:
         """
         groups: List[str] = []
         parameters: List[str] = []
+        self.__metadata_overrides: Dict[  # pylint:disable=attribute-defined-outside-init
+            str, Any
+        ] = {}
+
         for attribute_or_method_name in dir(self):
             # Go over all attributes and methods of the class instance
             attribute_or_method = getattr(self, attribute_or_method_name)
@@ -75,15 +81,83 @@ class ParameterGroup:
     def get_metadata(self, parameter_name: str) -> dict:
         """
         Retrieve the metadata for a particular parameter from the group.
+
         :param parameter_name: name of the parameter for which to get the metadata
-        :return: dictionary containing the metadata for the requested parameter. Returns an empty dict if no metadata
-            was found for the parameter, or if the parameter was not found in the group.
+        :return: dictionary containing the metadata for the requested parameter.
+            Returns an empty dict if no metadata was found for the parameter, or if
+            the parameter was not found in the group.
         """
         parameter = getattr(attr.fields(type(self)), parameter_name, None)
         if parameter is not None:
             parameter_metadata = getattr(parameter, "metadata", {})
-            return dict(parameter_metadata)
+            metadata_dict = dict(parameter_metadata)
+            parameter_overrides = self.__metadata_overrides.get(parameter_name, None)
+            if parameter_overrides is not None:
+                for metadata_key, value_override in parameter_overrides.items():
+                    metadata_dict.update({metadata_key: value_override})
+            return metadata_dict
         return {}
+
+    def set_metadata_value(
+        self,
+        parameter_name: str,
+        metadata_key: str,
+        value: Union[int, float, str, bool, Enum],
+    ) -> bool:
+        """
+        Sets the value of a specific metadata item `metadata_key` for the parameter
+        named `parameter_name`.
+
+        :param parameter_name: name of the parameter for which to get the metadata item
+        :param metadata_key: name of the metadata value to set
+        :param value: New value to assign to the metadata item accessed by
+            `metadata_key`. The type of `value` has to exactly match the type of the
+            current value of the metadata item
+        :return: True if the metadata item was successfully updated, False otherwise
+        """
+        parameter = getattr(attr.fields(type(self)), parameter_name, None)
+        if parameter is None:
+            return False
+        parameter_metadata = dict(getattr(parameter, "metadata", {}))
+        if metadata_key not in metadata_keys.all_keys():
+            return False
+        metadata_value = parameter_metadata[metadata_key]
+        if metadata_value is not None and type(metadata_value) is not type(
+            value
+        ):  # pylint: disable=unidiomatic-typecheck
+            return False
+        existing_overrides = self.__metadata_overrides.get(parameter_name, None)
+        if existing_overrides is None:
+            self.__metadata_overrides[parameter_name] = {metadata_key: value}
+        else:
+            existing_overrides.update({metadata_key: value})
+        return True
+
+    def update_auto_hpo_states(self):
+        """
+        Updates the `auto_hpo_state` metadata field for all parameters in the parameter
+        group, based on the values of the parameters and the values of their
+        `auto_hpo_value` metadata fields.
+        """
+        for parameter_name in self.parameters:
+            metadata = self.get_metadata(parameter_name)
+            if metadata[metadata_keys.AUTO_HPO_STATE] == AutoHPOState.NOT_POSSIBLE:
+                continue
+            auto_hpo_value = metadata[metadata_keys.AUTO_HPO_VALUE]
+            if auto_hpo_value is None:
+                continue
+            if auto_hpo_value != getattr(self, parameter_name):
+                auto_hpo_state = AutoHPOState.OVERRIDDEN
+            else:
+                auto_hpo_state = AutoHPOState.OPTIMIZED
+            self.set_metadata_value(
+                parameter_name=parameter_name,
+                metadata_key=metadata_keys.AUTO_HPO_STATE,
+                value=auto_hpo_state,
+            )
+        for group_name in self.groups:
+            group = getattr(self, group_name)
+            group.update_auto_hpo_states()
 
     def __eq__(self, other):
         """
