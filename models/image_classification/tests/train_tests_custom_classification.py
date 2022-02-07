@@ -50,11 +50,3 @@ class CustomClassificationTestCaseSmall(
 ):
     """ Train/eval test case for mobilenet v3 small model. """
 
-
-class CustomClassificationTestCaseEfficientnet(
-        create_image_classification_test_case(
-            model_name='efficientnet-b0',
-            **kwargs,
-        )
-):
-    """ Train/eval test case for efficientnet model. """
