@@ -78,8 +78,13 @@ class OTETestTrainingAction(BaseOTETestAction):
     _name = "training"
 
     def __init__(
-        self, dataset, labels_schema, template_path, num_training_iters, batch_size,
-        reference_dir
+        self,
+        dataset,
+        labels_schema,
+        template_path,
+        num_training_iters,
+        batch_size,
+        reference_dir,
     ):
         self.dataset = dataset
         self.labels_schema = labels_schema
@@ -450,16 +455,17 @@ class OTETestPotEvaluationAction(BaseOTETestAction):
         return results
 
 
-#TODO: think about move to special file
+# TODO: think about move to special file
 def check_nncf_model_graph(reference_dir, nncf_task):
     import networkx as nx
+
     # pylint:disable=protected-access
     if reference_dir is None:
-        logger.warning(f"reference_dir is None")
+        logger.warning("reference_dir is None")
         return True
-    path_to_dot = os.path.join(reference_dir, 'nncf', f"{nncf_task._nncf_preset}.dot")
+    path_to_dot = os.path.join(reference_dir, "nncf", f"{nncf_task._nncf_preset}.dot")
     if not os.path.exists(path_to_dot):
-        logger.warning(f"Reference file not exists: {path_to_dot}")
+        logger.warning(f"Reference file does not exist: {path_to_dot}")
         return True
     logger.info(f"Reference graph: {path_to_dot}")
     load_graph = nx.drawing.nx_pydot.read_dot(path_to_dot)
@@ -467,19 +473,15 @@ def check_nncf_model_graph(reference_dir, nncf_task):
     graph = nncf_task._model.get_graph()
     nx_graph = graph.get_graph_for_structure_analysis()
 
-    P = nx.drawing.nx_pydot.to_pydot(nx_graph)
-    logger.info("DOT____")
-    logger.info(P.to_string())
-
     for _, node in nx_graph.nodes(data=True):
-        if 'scope' in node:
-            node.pop('scope')
+        if "scope" in node:
+            node.pop("scope")
 
     for k, attrs in nx_graph.nodes.items():
         attrs = {k: str(v) for k, v in attrs.items()}
         load_attrs = {k: str(v).strip('"') for k, v in load_graph.nodes[k].items()}
-        if 'scope' in load_attrs:
-            load_attrs.pop('scope')
+        if "scope" in load_attrs:
+            load_attrs.pop("scope")
         if attrs != load_attrs:
             logger.info("ATTR: {} : {} != {}".format(k, attrs, load_attrs))
             return False
@@ -494,10 +496,14 @@ class OTETestNNCFAction(BaseOTETestAction):
     _name = "nncf"
     _depends_stages_names = ["training"]
 
-
     def _run_ote_nncf(
-        self, data_collector, model_template, dataset, trained_model, environment,
-        reference_dir
+        self,
+        data_collector,
+        model_template,
+        dataset,
+        trained_model,
+        environment,
+        reference_dir,
     ):
         logger.debug("Get predictions on the validation set for exported model")
         self.environment_for_nncf = deepcopy(environment)
@@ -536,8 +542,8 @@ class OTETestNNCFAction(BaseOTETestAction):
         assert (
             self.nncf_model.model_format == ModelFormat.BASE_FRAMEWORK
         ), "Wrong model format"
-        assert (
-            check_nncf_model_graph(reference_dir, self.nncf_task)
+        assert check_nncf_model_graph(
+            reference_dir, self.nncf_task
         ), "Compressed model differs from the reference"
 
         logger.info("NNCF optimization is finished")
