@@ -5,11 +5,11 @@ from tqdm import tqdm as tq
 from ..train_utils.get_config import get_config
 from ..train_utils.downloader import download_data
 
-def list_apppend(list1, split_list=[], id=True):
+def list_apppend(list1, split_list, idx=True):
     list2 = []
-    for i,fname in enumerate(list1):
+    for fname in list1:
         p_id = fname.split('_')[1]
-        if id:
+        if idx:
             if p_id not in list2:
                 list2.append(p_id)
         else:
@@ -22,7 +22,7 @@ def data_partition(img_dir):
     test_id_list = []
     train_split, test_split = [],[]
     image_list = os.listdir(img_dir)
-    id_list = list_apppend(image_list, id=True)
+    id_list = list_apppend(image_list,split_list=[], idx=True)
     print(f"Total no. of unique patients: {len(id_list)}")
     train_threshold = 0.5*len(id_list) # Thresholds should be changed as required
     test_threshold = 0.5*len(id_list)
@@ -38,8 +38,8 @@ def data_partition(img_dir):
     print(f'Total no. of unique patients in Train set: {len(train_id_list)}')
     print(f'Total no. of unique patients in Test set: {len(test_id_list)}')
 
-    train_split = list_apppend(image_list, split_list=train_id_list, id=False)
-    test_split = list_apppend(image_list, split_list=test_id_list, id=False)
+    train_split = list_apppend(image_list, split_list=train_id_list, idx=False)
+    test_split = list_apppend(image_list, split_list=test_id_list, idx=False)
 
     return train_split, test_split
 
@@ -52,8 +52,12 @@ def prepare_data_array(img_dir, mass_dir, split):
         mask_ben_path = os.path.join(mass_dir,'mass_ben_mask', case)
         mask_mlgn_path = os.path.join(mass_dir,'mass_mlgn_mask', case)
         img = cv2.resize(cv2.imread(img_path, cv2.IMREAD_GRAYSCALE), (320, 640), interpolation=cv2.INTER_CUBIC)
-        mask_ben = cv2.resize(cv2.imread(mask_ben_path, cv2.IMREAD_GRAYSCALE), (320, 640), interpolation=cv2.INTER_CUBIC)
-        mask_mlgn = cv2.resize(cv2.imread(mask_mlgn_path, cv2.IMREAD_GRAYSCALE), (320, 640), interpolation=cv2.INTER_CUBIC)
+        mask_ben = cv2.resize(
+                            cv2.imread(
+                                mask_ben_path, cv2.IMREAD_GRAYSCALE), (320, 640), interpolation=cv2.INTER_CUBIC)
+        mask_mlgn = cv2.resize(
+                            cv2.imread(
+                                mask_mlgn_path, cv2.IMREAD_GRAYSCALE), (320, 640), interpolation=cv2.INTER_CUBIC)
 
         if np.sum(mask_ben) > 0:
             b_flag = True

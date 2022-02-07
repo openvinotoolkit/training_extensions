@@ -68,22 +68,22 @@ class Stage2bDataset(Dataset):
         bag = self.data[idx]['patches']
         cls = self.data[idx]['cls']
         is_random = self.data[idx]['random']
-        input = []
+        inputx = []
         for roi in bag:
             for img in roi:
                 if self.transform:
                     img, _ = self.transform(img)
                 else:
                     pass
-                input.append(img)
+                inputx.append(img)
 
-        input = np.array(input).astype(np.float32)
-        input = input/255.0
+        inputx = np.array(inputx).astype(np.float32)
+        inputx = inputx/255.0
 
         if is_random:
-                indices = np.arange(input.shape[0])
-                np.random.shuffle(indices)
-                input = input[indices]
-                input = input[:5]
+            indices = np.arange(inputx.shape[0])
+            np.random.shuffle(indices)
+            inputx = inputx[indices]
+            inputx = inputx[:5]
 
-        return {'bag': input, 'cls': cls, 'len': len(bag)}
+        return {'bag': inputx, 'cls': cls, 'len': len(bag)}

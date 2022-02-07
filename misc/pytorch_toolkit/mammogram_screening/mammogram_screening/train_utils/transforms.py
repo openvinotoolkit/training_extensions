@@ -146,7 +146,7 @@ class Shift:
             dx = round(random.uniform(-limit, limit))
             dy = round(random.uniform(-limit, limit))
 
-            height, width, channel = img.shape
+            height, width, _ = img.shape
             y1 = limit+1+dy
             y2 = y1 + height
             x1 = limit+1+dx
@@ -169,8 +169,8 @@ class ShiftScale:
     def __call__(self, img, mask=None):
         limit = self.limit
         if random.random() < self.prob:
-            height, width, channel = img.shape
-            assert(width == height)
+            height, width, _ = img.shape
+            assert width == height
             size0 = width
             size1 = width + 2*limit
             size = round(random.uniform(size0, size1))
@@ -249,7 +249,7 @@ class CenterCrop:
         self.width = width
 
     def __call__(self, img, mask=None):
-        h, w, c = img.shape
+        h, w, _ = img.shape
         dy = (h - self.height) // 2
         dx = (w - self.width) // 2
 
@@ -271,7 +271,7 @@ class Distort1:
     ## https://stackoverflow.com/questions/10364201/image-transformation-in-opencv
     ## https://stackoverflow.com/questions/2477774/correcting-fisheye-distortion-programmatically
     ## http://www.coldvision.io/2017/03/02/advanced-lane-finding-using-opencv/
-    ## barrel\pincushion distortion
+    ## barrel incushion distortion
     """
     def __init__(self, distort_limit=0.35, shift_limit=0.25, prob=0.5):
         self.distort_limit = distort_limit
@@ -280,7 +280,7 @@ class Distort1:
 
     def __call__(self, img, mask=None):
         if random.random() < self.prob:
-            height, width, channel = img.shape
+            height, width, _ = img.shape
 
             if 0:
                 img = img.copy()

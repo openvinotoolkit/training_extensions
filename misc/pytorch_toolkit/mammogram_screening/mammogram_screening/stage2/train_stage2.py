@@ -1,13 +1,13 @@
 import torch
 import numpy as np
-import torch.nn as nn
+from torch import nn
 from torch import optim
 from torch.optim.lr_scheduler import MultiStepLR
 from torch.utils.data import DataLoader
 from ..train_utils.dataloader import Stage2bDataset
 from ..train_utils.train_function import train_stage2,train_pos_neg_split
 from ..train_utils.val_function import val_stage2
-from ..train_utils.get_config import get_config 
+from ..train_utils.get_config import get_config
 from ..train_utils.models import Model2 as Model
 
 
@@ -53,14 +53,21 @@ if __name__ == '__main__':
     val_acc_save = []
     for epoch in range(epochs):
 
-        train_loss, train_acc, train_auc= train_stage2(model, train_loader, criterion, optimizer, epoch, epochs, device, verbose=True)
-        val_loss, val_acc, val_auc= val_stage2(model, val_loader, criterion, epoch, epochs, device, verbose=True)
+        train_loss, train_acc, train_auc= train_stage2(
+                                                    model, train_loader,
+                                                    criterion, optimizer,
+                                                    epoch, epochs, device,
+                                                    verbose=True)
+        val_loss, val_acc, val_auc= val_stage2(model, val_loader,
+                                            criterion, epoch,
+                                            epochs, device,
+                                            verbose=True)
 
-        print('Epoch [%d/ %d]'%(epoch+1, epochs))
-        print('Train Loss: ', train_loss)
-        print('Val Loss: ', val_loss)
-        print('Train Acc: %.4f %f'%(train_acc, train_auc))
-        print('Val Acc: %.4f %f'%(val_acc, val_auc))
+        print(f'Epoch {epoch+1, epochs}')
+        print(f'Train Loss: {train_loss}')
+        print(f'Val Loss: {val_loss}')
+        print(f'Train Acc: {train_acc}{train_auc}')
+        print(f'Val Acc: {val_acc}{val_auc}')
 
         auc_save['train'].append(train_auc)
         auc_save['val'].append(val_auc)

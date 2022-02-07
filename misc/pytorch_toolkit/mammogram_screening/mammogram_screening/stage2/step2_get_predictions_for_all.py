@@ -26,7 +26,12 @@ def predict_mass_seg(val_loader, model, nm):
             mask = mask.data.cpu().numpy()[0][0]*255
             mask = mask.astype(np.uint8)
 
-            data_dict = {'img': img, 'mask_pred': mask_pred, 'mask_pred_norm': mask_pred_norm, 'mask': mask, 'cls': cls, 'file_name': file_name}
+            data_dict = {'img': img,
+                        'mask_pred': mask_pred,
+                        'mask_pred_norm': mask_pred_norm,
+                        'mask': mask,
+                        'cls': cls,
+                        'file_name': file_name}
             save_list.append(data_dict)
 
     np.save(nm, save_list)

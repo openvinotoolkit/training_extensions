@@ -48,8 +48,7 @@ class Exporter:
                         dynamic_axes={'input' : {0 : 'batch_size'}, 'output' : {0 : 'batch_size'}},
                         verbose = False)
 
-if __name__ == '__main__':
-    
+def export_models():
     config = get_config(action='export', stage='stage1')
     exporter = Exporter(config=config, stage='stage1')
     exporter.export_model_onnx(stage='stage1')
@@ -59,3 +58,8 @@ if __name__ == '__main__':
     exporter = Exporter(config=config, stage='stage2')
     exporter.export_model_onnx(stage='stage2')
     exporter.export_model_ir(stage='stage2')
+
+
+if __name__ == '__main__':
+
+    export_models()

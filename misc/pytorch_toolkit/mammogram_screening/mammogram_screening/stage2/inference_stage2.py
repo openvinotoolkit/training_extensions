@@ -1,4 +1,3 @@
-from cProfile import run
 import torch
 from torch.utils.data import DataLoader
 from sklearn.metrics import roc_auc_score
@@ -20,11 +19,11 @@ class InferenceStage2():
         self.checkpoint = checkpoint
         self.device = device
 
-    def load_model(self, type='pytorch'):
-        if type == 'onnx':
+    def load_model(self, run_type='pytorch'):
+        if run_type == 'onnx':
             model = onnxruntime.InferenceSession(self.checkpoint)
-        elif type == 'pytorch':
-            model = Model() 
+        elif run_type == 'pytorch':
+            model = Model()
             checkpoint = torch.load(self.checkpoint, map_location=torch.device(self.device))
             model.load_state_dict(checkpoint['state_dict'])
             model.to(self.device)
@@ -82,8 +81,7 @@ class InferenceStage2():
         np.save(out_nm, results)
         return test_acc/n, auc
 
-if __name__ == '__main__':
-    
+def run_infer_stage2():
     config = get_config(action='inference', stage='stage2')
     num_workers = config['num_workers']
     gpu = config['gpu']
@@ -98,13 +96,20 @@ if __name__ == '__main__':
     tst_loader = DataLoader(tst_data, batch_size=1, shuffle=False, num_workers=num_workers)
 
     inference = InferenceStage2(test_loader=tst_loader, checkpoint=checkpoint, device=device)
-    model = inference.load_model(type='pytorch')
+    model = inference.load_model(run_type='pytorch')
     test_acc, auc = inference.inference(model, run_type='pytorch', out_nm=out_pred_np)
+    print(test_acc, auc)
 
     inference = InferenceStage2(test_loader=tst_loader, checkpoint=config['onnx_checkpoint'], device=device)
-    model = inference.load_model(type='onnx')
+    model = inference.load_model(run_type='onnx')
     test_acc, auc = inference.inference(model, run_type='onnx', out_nm=out_pred_np)
+    print(test_acc, auc)
 
     inference = InferenceStage2(test_loader=tst_loader, checkpoint=config['onnx_checkpoint'], device='cpu')
-    model = inference.load_model(type='ir')
+    model = inference.load_model(run_type='ir')
     test_acc, auc = inference.inference(model, run_type='ir', out_nm=out_pred_np)
+    print(test_acc, auc)
+
+if __name__ == '__main__':
+
+    run_infer_stage2()

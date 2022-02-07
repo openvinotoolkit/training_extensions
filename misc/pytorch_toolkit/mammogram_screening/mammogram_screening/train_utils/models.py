@@ -1,13 +1,13 @@
 import torch
-import torch.nn as nn
+from torch import nn
 import torch.nn.functional as F
-from   torchvision import models
 
-# Encoder Part of U-Net architecture 
+
+# Encoder Part of U-Net architecture
 
 class EncoderBlock(nn.Module):
     def __init__(self, in_channels, n_filters):
-        super(EncoderBlock, self).__init__()
+        super().__init__()
 
         self.maxpool = nn.MaxPool2d(kernel_size=2)
         self.conv1 = nn.Conv2d(in_channels, n_filters, kernel_size=3, padding=1)
@@ -29,9 +29,9 @@ class EncoderBlock(nn.Module):
 # Decoder part of U-Net architecture
 class DecoderBlock(nn.Module):
     def __init__(self, in_channels, n_filters, transpose=True):
-        super(DecoderBlock, self).__init__()
+        super().__init__()
 
-        if transpose == True:
+        if transpose:
             self.up = nn.ConvTranspose2d(in_channels, in_channels, kernel_size=2, stride=2)
         else:
             self.up = nn.Upsample(scale_factor=2)
@@ -60,11 +60,11 @@ class DecoderBlock(nn.Module):
 
         return x
 
-# Input Block: First Conv Layer Block applied to the input image 
+# Input Block: First Conv Layer Block applied to the input image
 
 class InBlock(nn.Module):
     def __init__(self, in_channels=1, n_filters=16):
-        super(InBlock, self).__init__()
+        super().__init__()
 
         self.conv1 = nn.Conv2d(in_channels, n_filters, kernel_size=3, stride=1, padding=1)
         self.bn1 = nn.BatchNorm2d(n_filters)
@@ -91,14 +91,14 @@ class InBlock(nn.Module):
 
 
 class Flatten(nn.Module):
-    def forward(self, input):
-        return input.view(input.size(0), -1)
+    def forward(self, inputx):
+        return inputx.view(input.size(0), -1)
 
 # Construct the U-Net Architecture using the Input, Encoder and Decoder part of the network defined above
 
 class UNet(nn.Module):
     def __init__(self, in_channels=1, out_channels=1, num_filters=16):
-        super(UNet, self).__init__()
+        super().__init__()
 
         flt = num_filters
         self.layer1 = InBlock(in_channels, flt) # 640x320
@@ -107,7 +107,6 @@ class UNet(nn.Module):
         self.layer4 = EncoderBlock(flt*2*2, flt*2*2*2) # 80x40
         self.layer5 = EncoderBlock(flt*2*2*2, flt*2*2*2*2) # 40x20
         self.layer6 = EncoderBlock(flt*2*2*2*2, flt*2*2*2*2*2) # 20x10
-        
         self.layer7 = DecoderBlock(flt*2*2*2*2*2, flt*2*2*2*2)
         self.layer8 = DecoderBlock(flt*2*2*2*2, flt*2*2*2)
         self.layer9 = DecoderBlock(flt*2*2*2,flt*2*2)
@@ -134,92 +133,63 @@ class UNet(nn.Module):
 
         return x
 
-
-class Flatten(nn.Module):
-	def forward(self, input):
-		return input.view(input.size(0), -1)
-
-
-
 class Model2(nn.Module):
-	def __init__(self):
-		super(Model2, self).__init__()
+    def __init__(self):
+        super().__init__()
 
-		self.net = nn.Sequential(
-								nn.Conv2d(1, 64, kernel_size=3, stride=1, padding=1),
-								nn.BatchNorm2d(64),
-								nn.ReLU(),
-								nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1),
-								nn.BatchNorm2d(64),
-								nn.ReLU(),
-								nn.MaxPool2d(kernel_size=2), # 32
+        self.net = nn.Sequential(
+                                nn.Conv2d(1, 64, kernel_size=3, stride=1, padding=1),
+                                nn.BatchNorm2d(64),
+                                nn.ReLU(),
+                                nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1),
+                                nn.BatchNorm2d(64),
+                                nn.ReLU(),
+                                nn.MaxPool2d(kernel_size=2), # 32
 
-								nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=1),
-								nn.BatchNorm2d(128),
-								nn.ReLU(),
-								nn.Conv2d(128, 128, kernel_size=3, stride=1, padding=1),
-								nn.BatchNorm2d(128),
-								nn.ReLU(),
-								nn.MaxPool2d(kernel_size=2), # 16
+                                nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=1),
+                                nn.BatchNorm2d(128),
+                                nn.ReLU(),
+                                nn.Conv2d(128, 128, kernel_size=3, stride=1, padding=1),
+                                nn.BatchNorm2d(128),
+                                nn.ReLU(),
+                                nn.MaxPool2d(kernel_size=2), # 16
 
-								nn.Conv2d(128, 256, kernel_size=3, stride=1, padding=1),
-								nn.BatchNorm2d(256),
-								nn.ReLU(),
-								nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1),
-								nn.BatchNorm2d(256),
-								nn.ReLU(),
-								nn.MaxPool2d(kernel_size=2), # 8
+                                nn.Conv2d(128, 256, kernel_size=3, stride=1, padding=1),
+                                nn.BatchNorm2d(256),
+                                nn.ReLU(),
+                                nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1),
+                                nn.BatchNorm2d(256),
+                                nn.ReLU(),
+                                nn.MaxPool2d(kernel_size=2), # 8
 
-								nn.Conv2d(256, 512, kernel_size=3, stride=1, padding=1),
-								nn.BatchNorm2d(512),
-								nn.ReLU(),
-								nn.Conv2d(512, 512, kernel_size=3, stride=1, padding=1),
-								nn.BatchNorm2d(512),
-								nn.ReLU(),
-								nn.MaxPool2d(kernel_size=2), # 4
+                                nn.Conv2d(256, 512, kernel_size=3, stride=1, padding=1),
+                                nn.BatchNorm2d(512),
+                                nn.ReLU(),
+                                nn.Conv2d(512, 512, kernel_size=3, stride=1, padding=1),
+                                nn.BatchNorm2d(512),
+                                nn.ReLU(),
+                                nn.MaxPool2d(kernel_size=2), # 4
 
-		)
-
-
-		self.classifier = nn.Sequential(
-										nn.Linear(512, 1),
-										
-		)
-
-		self.feature_extractor_part2 = nn.Sequential(
-            								nn.Linear(512*4*4, 512),
-            								nn.ReLU(),
-        								) 
-
-		self.attention = nn.Sequential(
-									nn.Linear(512, 128),
-									nn.Tanh(),
-									nn.Linear(128, 1)
-		)
-
-	def forward(self, x): 
-
-		x = self.net(x).view(x.size(0), -1) 
-
-		H = self.feature_extractor_part2(x) 
-
-		A = self.attention(H) 
-		A = torch.transpose(A, 1, 0)
-		A = F.softmax(A, dim=1) 
-
-		M = torch.matmul(A, H) 
-
-		Y = self.classifier(M) 
+        )
 
 
-		return Y
-if __name__ == '__main__':
+        self.classifier = nn.Sequential(nn.Linear(512, 1),)
 
-    from torch.autograd import Variable
-    from torchvision import models
+        self.feature_extractor_part2 = nn.Sequential(nn.Linear(512*4*4, 512), nn.ReLU(),)
+        self.attention = nn.Sequential(
+                                    nn.Linear(512, 128),
+                                    nn.Tanh(),
+                                    nn.Linear(128, 1)
+        )
 
-    X = Variable(torch.rand(4, 1, 640, 320))
+    def forward(self, x):
 
-    model = UNet(1, 1)
-    print(model)
-    model(X)
+        x = self.net(x).view(x.size(0), -1)
+        H = self.feature_extractor_part2(x)
+        A = self.attention(H)
+        A = torch.transpose(A, 1, 0)
+        A = F.softmax(A, dim=1)
+        M = torch.matmul(A, H)
+        Y = self.classifier(M)
+
+        return Y

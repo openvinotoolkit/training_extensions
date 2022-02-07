@@ -3,12 +3,11 @@ import os
 import numpy as np
 from torch.utils.data import DataLoader
 from torch import optim
-# from torch.optim.lr_scheduler import MultiStepLR
-import torch.nn as nn
+from torch import nn
 from mammogram_screening.train_utils.models import UNet, Model2
 from mammogram_screening.train_utils.dataloader import Stage1Dataset,Stage2bDataset
 from mammogram_screening.train_utils.train_function import train_stage1,train_stage2,train_pos_neg_split
-from mammogram_screening.train_utils.downloader import download_data#, prepare_data
+from mammogram_screening.train_utils.downloader import download_data
 from mammogram_screening.train_utils.get_config import get_config
 from mammogram_screening.train_utils.transforms import augment_color
 from mammogram_screening.stage2.step2_get_predictions_for_all import get_pred_all
@@ -37,9 +36,19 @@ def create_train_test_for_stage1():
         def test_trainer(self):
             model = UNet(num_filters=32)
             model.to(self.config['device'])
-            optimizer = optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=self.config['lr'], momentum=0.9, weight_decay=0.0005)
+            optimizer = optim.SGD(filter(
+                                        lambda p: p.requires_grad,
+                                        model.parameters()),
+                                        lr=self.config['lr'],
+                                        momentum=0.9,
+                                        weight_decay=0.0005)
             for epoch in range(self.config['epochs']):
-                train_loss_bce, train_loss_dice, train_dice = train_stage1(model, self.train_loader, optimizer, epoch, self.config['epochs'], self.config['device'], verbose=True)
+                train_loss_bce, train_loss_dice, train_dice = train_stage1(model,
+                                                                        self.train_loader,
+                                                                        optimizer, epoch,
+                                                                        self.config['epochs'],
+                                                                        self.config['device'],
+                                                                        verbose=True)
                 self.train_bce_list.append(train_loss_bce)
                 self.train_dice_loss_list.append(train_loss_dice)
                 self.train_dice_list.append(train_dice)
@@ -71,16 +80,31 @@ def create_train_test_for_stage2():
             x_train_pos = x_train_pos * ratio
             x_train = x_train_pos + x_train_neg
             train_data = Stage2bDataset(x_train, transform=None)
-            cls.train_loader = DataLoader(train_data, batch_size=1, shuffle=True, num_workers=config['num_workers'])
+            cls.train_loader = DataLoader(train_data,
+                                            batch_size=1,
+                                            shuffle=True,
+                                            num_workers=config['num_workers'])
 
         def test_trainer(self):
             model = Model2()
             model.to(self.config['device'])
-            optimizer = optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=self.config['lr'], momentum=0.9, weight_decay=0.0005)
+            optimizer = optim.SGD(filter(
+                                    lambda p: p.requires_grad,
+                                    model.parameters()),
+                                    lr=self.config['lr'],
+                                    momentum=0.9,
+                                    weight_decay=0.0005)
             criterion = nn.BCELoss()
             train_loss_list, train_acc_list, train_auc_list = [], [], []
             for epoch in range(self.config['epochs']):
-                train_loss, train_acc, train_auc= train_stage2(model, self.train_loader, criterion, optimizer, epoch, self.config['epochs'], self.config['device'], verbose=True)
+                train_loss, train_acc, train_auc= train_stage2(model,
+                                                                self.train_loader,
+                                                                criterion,
+                                                                optimizer,
+                                                                epoch,
+                                                                self.config['epochs'],
+                                                                self.config['device'],
+                                                                verbose=True)
                 train_loss_list.append(train_loss)
                 train_acc_list.append(train_acc)
                 train_auc_list.append(train_auc)

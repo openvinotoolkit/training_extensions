@@ -19,12 +19,12 @@ class InferenceStage1():
         self.dataloader = dataloader_test
         self.checkpoint = checkpoint
         self.device = device
-    
-    def load_model(self, type='pytorch'):
-        if type == 'onnx':
+
+    def load_model(self, run_type='pytorch'):
+        if run_type == 'onnx':
             model = onnxruntime.InferenceSession(self.checkpoint)
-        elif type == 'pytorch':
-            model = UNet(num_filters=32) 
+        elif run_type == 'pytorch':
+            model = UNet(num_filters=32)
             checkpoint = torch.load(self.checkpoint, map_location=torch.device(self.device))
             model.load_state_dict(checkpoint['state_dict'])
             model.to(self.device)
@@ -41,7 +41,7 @@ class InferenceStage1():
         dc_lst = []
         to_tensor = transforms.ToTensor()
         with torch.no_grad():
-            for i, data in enumerate(self.dataloader):
+            for data in self.dataloader:
                 img = Variable(data['image'].float().to(self.device))
                 mask = Variable(data['mask'].float().to(self.device))
                 if runtype == 'pytorch':
@@ -75,7 +75,7 @@ if __name__ == '__main__':
     batch_sz = config['batch_size']
     num_workers = config['num_workers']
     gpu = config['gpu']
-    device = 'cuda' if gpu else 'cpu'
+    devicex = 'cuda' if gpu else 'cpu'
     val_data_pth = config['val_data_path']
     model_path = config['checkpoint']
     onnx_model_path = config['onnx_checkpoint']
@@ -85,9 +85,9 @@ if __name__ == '__main__':
     tst_data = Stage1Dataset(x_tst, transform=None)
     tst_loader = DataLoader(tst_data, batch_size=batch_sz, shuffle=False, num_workers=num_workers)
 
-    inference = InferenceStage1(dataloader_test=tst_loader, checkpoint=model_path, device=device)
-    model = inference.load_model(type='pytorch')
-    mean_dice = inference.inference(model, runtype='pytorch')
+    inference = InferenceStage1(dataloader_test=tst_loader, checkpoint=model_path, device=devicex)
+    model_x = inference.load_model(run_type='pytorch')
+    mean_dice = inference.inference(model_x, runtype='pytorch')
 
     print(f'Mean Dice:{mean_dice}')
 

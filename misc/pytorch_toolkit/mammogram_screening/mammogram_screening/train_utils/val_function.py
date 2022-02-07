@@ -1,5 +1,5 @@
 from torch.autograd import Variable
-from .loss_functions import bceLoss, diceLoss, diceCoeff, ceLoss
+from .loss_functions import bceLoss, diceLoss, diceCoeff
 import torch
 import os
 import numpy as np
@@ -12,7 +12,7 @@ def val_stage1(model, test_loader, epoch, epochs, device, verbose=True, save_qua
     val_loss_bce, val_loss_dice = 0.0, 0.0
     val_dice = 0.0
 
-    if save_qual==True:
+    if save_qual:
         pth=os.path.join(save_pth, str(epoch))
         os.makedirs(pth, exist_ok=True)
 
@@ -32,8 +32,7 @@ def val_stage1(model, test_loader, epoch, epochs, device, verbose=True, save_qua
             val_dice += dice_coeff.item() * img.size(0)
 
             n += img.size(0)
-            
-            if save_qual==True:
+            if save_qual:
                 img = img.data.cpu().numpy()[0][0]*255
                 img = img.astype(np.uint8)
                 mask_pred = mask_pred.data.cpu().numpy()[0][0]*255
@@ -52,8 +51,10 @@ def val_stage1(model, test_loader, epoch, epochs, device, verbose=True, save_qua
                 arr[:, 2*SHAPE[1]:2*SHAPE[1]+2] = 250
                 cv2.imwrite(os.path.join(pth,str(i)+'.png'), arr)
 
-            if verbose == True:
-                print(f'Val [{(epoch+1)/epochs}]:[{(i+1)/len(test_loader)}]|Loss: {val_loss_bce/n}|Dice: {val_loss_dice/n}')
+            if verbose:
+                print(f'''Val [{(epoch+1)/epochs}]:[{(i+1)/len(test_loader)}]
+                        |Loss: {val_loss_bce/n}
+                        |Dice: {val_loss_dice/n}''')
 
     return val_loss_bce/n, val_loss_dice/n, val_dice/n
 
@@ -83,7 +84,7 @@ def val_stage2(model, test_loader, criterion, epoch, epochs, device, verbose=Tru
         test_acc += torch.sum(y_pred == y.data).item()
 
         n += 1
-        if verbose == True:
+        if verbose:
             print(f'Test [{(epoch+1)/epochs}]:[{(i+1)/len(test_loader)}]|Loss: {test_loss/n}|Acc: {test_acc/n}')
 
     arr_true = np.array(arr_true).flatten()

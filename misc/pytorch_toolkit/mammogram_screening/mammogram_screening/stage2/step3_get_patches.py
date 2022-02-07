@@ -38,7 +38,10 @@ def extract_bags(predictions):
 
         img = cv2.copyMakeBorder(img, pad_top, pad_bottom, pad_left, pad_right, cv2.BORDER_CONSTANT, value=0)
         mask = cv2.copyMakeBorder(mask, pad_top, pad_bottom, pad_left, pad_right, cv2.BORDER_CONSTANT, value=0)
-        mask_pred = cv2.copyMakeBorder(mask_pred, pad_top, pad_bottom, pad_left, pad_right, cv2.BORDER_CONSTANT, value=0)
+        mask_pred = cv2.copyMakeBorder(mask_pred, pad_top,
+                                        pad_bottom, pad_left,
+                                        pad_right, cv2.BORDER_CONSTANT,
+                                        value=0)
         mask_pred_thres = mask_pred.copy()
 
         thres = 10
@@ -69,7 +72,11 @@ def extract_bags(predictions):
                 x3,y3,w3,h3 = x, y+h-SIZE_PATCH, SIZE_PATCH, SIZE_PATCH
                 x4,y4,w4,h4 = x+w-SIZE_PATCH, y+h-SIZE_PATCH, SIZE_PATCH, SIZE_PATCH
                 x5,y5,w5,h5 = x+(w//2)-(SIZE_PATCH//2), y+(h//2)-(SIZE_PATCH//2), SIZE_PATCH, SIZE_PATCH
-                patches.append([img[y1:y1+h1, x1:x1+w1], img[y2:y2+h2, x2:x2+w2], img[y3:y3+h3, x3:x3+w3], img[y4:y4+h4, x4:x4+w4], img[y5:y5+h5, x5:x5+w5]])
+                patches.append([img[y1:y1+h1, x1:x1+w1],
+                            img[y2:y2+h2, x2:x2+w2],
+                            img[y3:y3+h3, x3:x3+w3],
+                            img[y4:y4+h4, x4:x4+w4],
+                            img[y5:y5+h5, x5:x5+w5]])
 
         if len(patches) >= 1:
             d = {'patches': patches, 'cls': cls, 'file_name': file_name, 'random': False, 'has_mass': True}
@@ -82,15 +89,17 @@ def extract_bags(predictions):
                 for k in range(50):
                     (x,y,w,h) = random_patch(img)
                     patches.append([img[y:y+h, x:x+w]])
-                d = {'patches': patches, 'cls': cls, 'file_name': file_name, 'random': True, 'has_mass': False}
+                d = {'patches': patches,
+                    'cls': cls, 'file_name': file_name,
+                    'random': True, 'has_mass': False}
                 bags.append(d)
             else:
                 for k in range(50):
                     (x,y,w,h) = random_patch(img)
                     patches.append([img[y:y+h, x:x+w]])
                 d = {'patches': patches, 'cls': cls, 'file_name': file_name, 'random': True, 'has_mass': True}
-                bags.append(d)      
-    return(bags)
+                bags.append(d)
+    return bags
 
 def get_bags():
 

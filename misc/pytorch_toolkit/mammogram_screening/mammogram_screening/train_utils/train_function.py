@@ -7,7 +7,7 @@ import numpy as np
 def train_pos_neg_split(x_train):
     x_train_pos = []
     x_train_neg = []
-    for i, d_elem in enumerate(x_train):
+    for d_elem in x_train:
         if d_elem['cls'] == 1:
             x_train_pos.append(d_elem)
         else:
@@ -41,8 +41,11 @@ def train_stage1(model, train_loader, optimizer, epoch, epochs, device, verbose=
 
         n += img.size(0)
 
-        if verbose == True:
-            print(f'Train [{(epoch+1)/epochs}]:[{(i+1)/len(train_loader)}]|Loss: {train_loss_bce/n}|Acc: {train_loss_dice/n}')
+        if verbose:
+            print(f'''Train
+                    [{(epoch+1)/epochs}]:[{(i+1)/len(train_loader)}]
+                    |Loss: {train_loss_bce/n}
+                    |Acc: {train_loss_dice/n}''')
 
     return train_loss_bce/n, train_loss_dice/n, train_dice/n
 
@@ -75,7 +78,7 @@ def train_stage2(model, train_loader, criterion, optimizer, epoch, epochs, devic
         train_acc += torch.sum(y_pred == y.data).item()
         n += 1
 
-        if verbose == True:
+        if verbose:
             print(f'Train [{(epoch+1)/epochs}]:[{(i+1)/len(train_loader)}]|Loss: {train_loss/n}|Acc: {train_acc/n}')
 
     arr_true = np.array(arr_true).flatten()

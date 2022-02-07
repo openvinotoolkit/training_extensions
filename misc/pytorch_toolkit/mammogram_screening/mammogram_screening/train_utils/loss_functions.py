@@ -1,5 +1,5 @@
 import torch
-import torch.nn as nn
+from torch import nn
 
 
 def bceLoss(mask_pred, mask, pos_weight=28):

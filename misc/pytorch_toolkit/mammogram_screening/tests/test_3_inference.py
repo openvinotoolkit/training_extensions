@@ -31,19 +31,22 @@ def create_inference_test_for_stage1():
 
         def test_pytorch_inference(self):
             inference = InferenceStage1(dataloader_test=self.tst_loader, checkpoint=self.model_path, device=self.device)
-            model = inference.load_model(type='pytorch')
+            model = inference.load_model(run_type='pytorch')
             mean_dice = inference.inference(model, runtype='pytorch')
             self.assertGreaterEqual(mean_dice, 0)
-        
+
         def test_onnx_inference(self):
-            inference = InferenceStage1(dataloader_test=self.tst_loader, checkpoint=self.onnx_model_path, device=self.device)
-            model = inference.load_model(type='onnx')
+            inference = InferenceStage1(
+                                    dataloader_test=self.tst_loader,
+                                    checkpoint=self.onnx_model_path,
+                                    device=self.device)
+            model = inference.load_model(run_type='onnx')
             mean_dice = inference.inference(model, runtype='onnx')
             self.assertGreaterEqual(mean_dice, -1)
 
         def test_ir_inference(self):
             inference = InferenceStage1(dataloader_test=self.tst_loader, checkpoint=self.onnx_model_path, device='cpu')
-            model = inference.load_model(type='cpu')
+            model = inference.load_model(run_type='cpu')
             mean_dice = inference.inference(model, runtype='cpu')
             self.assertGreaterEqual(mean_dice, -1)
     return InferenceTest
@@ -64,27 +67,40 @@ def create_inference_test_for_stage2():
 
             x_tst = np.load(test_bags_path, allow_pickle=True)
             tst_data = Stage2bDataset(x_tst, transform=None)
-            cls.tst_loader = DataLoader(tst_data, batch_size=1, shuffle=False, num_workers=num_workers)
+            cls.tst_loader = DataLoader(
+                                    tst_data,
+                                    batch_size=1,
+                                    shuffle=False,
+                                    num_workers=num_workers)
 
         def test_pytorch_inference(self):
-            inference = InferenceStage2(test_loader=self.tst_loader, checkpoint=self.config['checkpoint'], device=self.device)
-            model = inference.load_model(type='pytorch')
+            inference = InferenceStage2(
+                                    test_loader=self.tst_loader,
+                                    checkpoint=self.config['checkpoint'],
+                                    device=self.device)
+            model = inference.load_model(run_type='pytorch')
             test_acc, auc = inference.inference(model, run_type='pytorch', out_nm=self.config['out_pred_np'])
 
             self.assertGreaterEqual(test_acc, 0)
             self.assertGreaterEqual(auc, 0)
-        
+
         def test_onnx_inference(self):
-            inference = InferenceStage2(test_loader=self.tst_loader, checkpoint=self.config['onnx_checkpoint'], device=self.device)
-            model = inference.load_model(type='onnx')
-            test_acc, auc = inference.inference(model, run_type='onnx', out_nm=self.config['out_pred_np'])
+            inference = InferenceStage2(test_loader=self.tst_loader,
+                                        checkpoint=self.config['onnx_checkpoint'],
+                                        device=self.device)
+            model = inference.load_model(run_type='onnx')
+            test_acc, auc = inference.inference(model,
+                                            run_type='onnx',
+                                            out_nm=self.config['out_pred_np'])
 
             self.assertGreaterEqual(test_acc, -1)
             self.assertGreaterEqual(auc, 0)
 
         def test_ir_inference(self):
-            inference = InferenceStage2(test_loader=self.tst_loader, checkpoint=self.config['onnx_checkpoint'], device='cpu')
-            model = inference.load_model(type='ir')
+            inference = InferenceStage2(test_loader=self.tst_loader,
+                                        checkpoint=self.config['onnx_checkpoint'],
+                                        device='cpu')
+            model = inference.load_model(run_type='ir')
             test_acc, auc = inference.inference(model, run_type='ir', out_nm=self.config['out_pred_np'])
             self.assertGreaterEqual(test_acc, -1)
             self.assertGreaterEqual(auc, 0)
