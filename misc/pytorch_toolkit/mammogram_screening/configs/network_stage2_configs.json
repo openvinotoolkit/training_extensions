@@ -24,7 +24,8 @@
     "export":{
         "onnx_model":"model_weights/checkpoint_stage2.onnx",
         "input_shape":"[5,1,64,64]",
-        "checkpoint": "model_weights/checkpoint_stage2.pth"
+        "checkpoint": "model_weights/checkpoint_stage2.pth",
+        "model_name":"checkpoint_stage2"
     },
     "inference":{
         "num_workers":10,

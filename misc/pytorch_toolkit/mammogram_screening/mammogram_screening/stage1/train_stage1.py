@@ -77,5 +77,5 @@ if __name__ == '__main__':
                     "optimizer": optimizer.state_dict(),
                     "epochs": epochs,
                     }, 
-                os.path.join(model_path, 'checkpoint_stage1.pth')
+                os.path.join(model_path, 'checkpoint_stage1_sample.pth')
                 )

@@ -91,8 +91,7 @@ def prepare_data_npy(data_path, save_path, train_split, test_split):
     np.save(os.path.join(save_path,'segmenter_test.npy'), test_data)
     del test_data
 
-if __name__ == '__main__':
-
+def data_prep():
     config = get_config(action='data_prep', stage= 'stage1')
     data_path = config['data_path']
     save_path = config['save_path']
@@ -107,3 +106,6 @@ if __name__ == '__main__':
     np.save(train_split, data_split[0])
     np.save(test_split, data_split[1])
     prepare_data_npy(data_path, save_path, data_split[0], data_split[1])
+
+if __name__ == '__main__':
+    data_prep()

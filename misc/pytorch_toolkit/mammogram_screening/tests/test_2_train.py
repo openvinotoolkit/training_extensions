@@ -8,10 +8,12 @@ import torch.nn as nn
 from mammogram_screening.train_utils.models import UNet, Model2
 from mammogram_screening.train_utils.dataloader import Stage1Dataset,Stage2bDataset
 from mammogram_screening.train_utils.train_function import train_stage1,train_stage2,train_pos_neg_split
-from mammogram_screening.train_utils.val_function import val_stage1,val_stage2
-from mammogram_screening.train_utils.downloader import download_checkpoint,download_data
+from mammogram_screening.train_utils.downloader import download_data#, prepare_data
 from mammogram_screening.train_utils.get_config import get_config
 from mammogram_screening.train_utils.transforms import augment_color
+from mammogram_screening.stage2.step2_get_predictions_for_all import get_pred_all
+from mammogram_screening.stage2.step3_get_patches import get_bags
+from mammogram_screening.stage1.data_prep_rbis import data_prep
 
 def create_train_test_for_stage1():
     class TrainerTest(unittest.TestCase):
@@ -19,6 +21,7 @@ def create_train_test_for_stage1():
         def setUpClass(cls):
             config = get_config(action='train', stage='stage1')
             cls.config = config
+            data_prep()
             if os.path.exists(config['tr_data_path']):
                 tr_data_path = config['tr_data_path']
             else:
@@ -52,6 +55,8 @@ def create_train_test_for_stage2():
         def setUpClass(cls):
             config = get_config(action='train', stage='stage2')
             cls.config = config
+            get_pred_all()
+            get_bags()
             if os.path.exists(config['train_bags_path']):
                 train_bags_path = config['train_bags_path']
             else:
@@ -80,9 +85,9 @@ def create_train_test_for_stage2():
                 train_acc_list.append(train_acc)
                 train_auc_list.append(train_auc)
 
-            self.assertLessEqual(train_loss_list[2], train_loss_list[0])
+            self.assertLessEqual(train_loss_list[4], train_loss_list[0])
             self.assertGreaterEqual(train_acc_list[4], train_acc_list[0])
-            self.assertGreaterEqual(train_auc_list[2], train_auc_list[0])
+            self.assertGreaterEqual(train_auc_list[4], train_auc_list[0])
     return TrainerTest
 
 

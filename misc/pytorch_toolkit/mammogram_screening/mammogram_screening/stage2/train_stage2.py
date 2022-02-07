@@ -67,4 +67,4 @@ if __name__ == '__main__':
 
         np.save('auc_plot.npy', auc_save)
         if epoch % 10 == 0:
-            torch.save({'state_dict': model.state_dict()}, model_save_path+'checkpoint_stage2.pth')
+            torch.save({'state_dict': model.state_dict()}, model_save_path+'checkpoint_stage2_sample.pth')

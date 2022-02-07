@@ -1,12 +1,12 @@
 {
     "stage1":{
-        "url":"http://miriad.digital-health.one/models/bmi5/stage1.zip",
-        "dest_path":"model_weights/stage1.zip"
+        "url":"http://miriad.digital-health.one/models/bmi5/checkpoint_stage1.zip",
+        "dest_path":"model_weights/checkpoint_stage1.zip"
 
     },
     "stage2":{
-        "url":"http://miriad.digital-health.one/models/bmi5/stage1.zip",
-        "dest_path":"model_weights/stage2.zip"
+        "url":"http://miriad.digital-health.one/models/bmi5/checkpoint_stage2.zip",
+        "dest_path":"model_weights/checkpoint_stage2.zip"
     },
     "test_data":{
         "url":"http://miriad.digital-health.one/sample_data/bmi5/rbis_ddsm_sample.zip",

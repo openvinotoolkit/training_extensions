@@ -22,7 +22,8 @@
     "export":{
         "onnx_model":"model_weights/checkpoint_stage1.onnx",
         "input_shape":"[1,1,640,320]",
-        "checkpoint": "model_weights/checkpoint_stage1.pth"
+        "checkpoint": "model_weights/checkpoint_stage1.pth",
+        "model_name": "checkpoint_stage1"
     },
     "data_prep":{
         "data_path":"test_data/rbis_ddsm_sample/",

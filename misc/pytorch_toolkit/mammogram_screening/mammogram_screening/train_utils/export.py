@@ -31,8 +31,7 @@ class Exporter:
         --framework onnx \
         --input_model {input_model} \
         --input_shape "{input_shape}" \
-        --output_dir {output_dir} \
-        --log_level DEBUG"""
+        --output_dir {output_dir}"""
 
         subprocess.run(export_command, shell = True, check = True)
 

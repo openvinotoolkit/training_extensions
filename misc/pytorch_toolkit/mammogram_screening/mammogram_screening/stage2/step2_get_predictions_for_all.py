@@ -32,8 +32,7 @@ def predict_mass_seg(val_loader, model, nm):
     np.save(nm, save_list)
     model.train()
 
-if __name__ == '__main__':
-
+def get_pred_all():
     configs = get_config(action='pred_all', stage='stage2')
     data_path = configs['data_path']
     out_path = configs['out_path']
@@ -64,3 +63,7 @@ if __name__ == '__main__':
     print('Starting Training Set Inference .....')
     predict_mass_seg(train_loader, model, out_path+'train_all_pred.npy')
     del x_train, train_data, train_loader
+
+if __name__ == '__main__':
+
+    get_pred_all()

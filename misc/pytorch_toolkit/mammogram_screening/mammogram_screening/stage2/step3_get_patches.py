@@ -92,7 +92,7 @@ def extract_bags(predictions):
                 bags.append(d)      
     return(bags)
 
-if __name__ == '__main__':
+def get_bags():
 
     config = get_config(action='get_patch', stage='stage2')
     save_folder = config['save_folder']
@@ -114,3 +114,6 @@ if __name__ == '__main__':
     bags=extract_bags(predictions)
     val_save_path = config['val_save_path']
     np.save(val_save_path, bags)
+
+if __name__ == '__main__':
+    get_bags()

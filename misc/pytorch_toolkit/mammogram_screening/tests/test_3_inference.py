@@ -1,8 +1,10 @@
 import unittest
 import numpy as np
 from torch.utils.data import DataLoader
+import os
 from mammogram_screening.train_utils.dataloader import Stage1Dataset,Stage2bDataset
 from mammogram_screening.train_utils.get_config import get_config
+from mammogram_screening.train_utils.downloader import download_data#, prepare_data
 from mammogram_screening.stage1.inference_mass_localization import InferenceStage1
 from mammogram_screening.stage2.inference_stage2 import InferenceStage2
 
@@ -19,7 +21,10 @@ def create_inference_test_for_stage1():
             cls.model_path = config['checkpoint']
             cls.onnx_model_path = config['onnx_checkpoint']
 
-            #Prepare the Test Dataloader
+            if os.path.exists(val_data_pth):
+                download_data()
+                # prepare_data()
+
             x_tst = np.load(val_data_pth, allow_pickle=True)
             tst_data = Stage1Dataset(x_tst, transform=None)
             cls.tst_loader = DataLoader(tst_data, batch_size=batch_sz, shuffle=False, num_workers=num_workers)
@@ -53,10 +58,10 @@ def create_inference_test_for_stage2():
             num_workers = cls.config['num_workers']
             cls.device = 'cuda'
             test_bags_path = cls.config['test_bags_path']
-            # cls.model_path = cls.config['checkpoint']
-            # cls.onnx_model_path = cls.config['onnx_checkpoint']
+            if not os.path.exists(test_bags_path):
+                download_data()
+                # prepare_data()
 
-            #Prepare the Test Dataloader
             x_tst = np.load(test_bags_path, allow_pickle=True)
             tst_data = Stage2bDataset(x_tst, transform=None)
             cls.tst_loader = DataLoader(tst_data, batch_size=1, shuffle=False, num_workers=num_workers)
@@ -84,9 +89,6 @@ def create_inference_test_for_stage2():
             self.assertGreaterEqual(test_acc, -1)
             self.assertGreaterEqual(auc, 0)
     return InferenceTest
-
-
-
 
 class TestInferenceStage1(create_inference_test_for_stage1()):
     'Test case for Stage1'
