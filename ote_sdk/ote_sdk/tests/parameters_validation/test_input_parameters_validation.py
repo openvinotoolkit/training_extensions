@@ -20,7 +20,6 @@ from ote_sdk.entities.id import ID
 from ote_sdk.entities.image import Image
 from ote_sdk.entities.label import Domain, LabelEntity
 from ote_sdk.entities.label_schema import (
-    LabelGraph,
     LabelGroup,
     LabelSchemaEntity,
     LabelTree,
@@ -323,13 +322,10 @@ class TestParamsValidation:
         initialization parameter
         """
         correct_values_dict = {
-            "exclusivity_graph": LabelGraph(directed=True),
             "label_tree": LabelTree(),
         }
         unexpected_type_value = "unexpected str"
         unexpected_values = [
-            # Unexpected string is specified as "exclusivity_graph" parameter
-            ("exclusivity_graph", unexpected_type_value),
             # Unexpected string is specified as "label_tree" parameter
             ("label_tree", unexpected_type_value),
             # Unexpected string is specified as "label_groups" parameter
