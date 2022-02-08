@@ -12,16 +12,15 @@ import warnings
 from operator import attrgetter
 from typing import List, Optional
 
-from numpy import floating
 from shapely.geometry import Polygon as shapely_polygon
 
 from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.entities.shapes.rectangle import Rectangle
 from ote_sdk.entities.shapes.shape import Shape, ShapeType
 from ote_sdk.utils.argument_checks import (
-    check_required_and_optional_parameters_type,
-    check_required_parameters_type,
-    raise_value_error_if_parameter_has_unexpected_type,
+    OptionalParamTypeCheck,
+    RequiredParamTypeCheck,
+    check_input_param_type,
 )
 from ote_sdk.utils.time_utils import now
 
@@ -33,9 +32,8 @@ class Point:
     __slots__ = ["x", "y"]
 
     def __init__(self, x: float, y: float):
-        # Initialization parameters validation
-        check_required_parameters_type(
-            [(x, "x", (float, int, floating)), (y, "y", (float, int, floating))]
+        check_input_param_type(
+            RequiredParamTypeCheck(x, "x", float), RequiredParamTypeCheck(y, "y", float)
         )
         self.x = x
         self.y = y
@@ -59,11 +57,7 @@ class Point:
 
         :param roi_shape:
         """
-        # Input parameter validation
-        raise_value_error_if_parameter_has_unexpected_type(
-            parameter=roi_shape, parameter_name="roi_shape", expected_type=Rectangle
-        )
-
+        RequiredParamTypeCheck(roi_shape, "roi_shape", Rectangle).check()
         roi_shape = roi_shape.clip_to_visible_region()
         width = roi_shape.width
         height = roi_shape.height
@@ -80,11 +74,7 @@ class Point:
 
         :param roi_shape:
         """
-        # Input parameter validation
-        raise_value_error_if_parameter_has_unexpected_type(
-            parameter=roi_shape, parameter_name="roi_shape", expected_type=Rectangle
-        )
-
+        RequiredParamTypeCheck(roi_shape, "roi_shape", Rectangle).check()
         roi_shape = roi_shape.clip_to_visible_region()
 
         return Point(
@@ -111,13 +101,12 @@ class Polygon(Shape):
         labels: Optional[List[ScoredLabel]] = None,
         modification_date: Optional[datetime.datetime] = None,
     ):
-        # Initialization parameters validation
-        check_required_and_optional_parameters_type(
-            required_parameters=[(points, "points", List[Point])],
-            optional_parameters=[
-                (labels, "labels", List[ScoredLabel]),
-                (modification_date, "modification_date", datetime.datetime),
-            ],
+        check_input_param_type(
+            RequiredParamTypeCheck(points, "points", List[Point]),
+            OptionalParamTypeCheck(labels, "labels", List[ScoredLabel]),
+            OptionalParamTypeCheck(
+                modification_date, "modification_date", datetime.datetime
+            ),
         )
         if labels is None:
             labels = []

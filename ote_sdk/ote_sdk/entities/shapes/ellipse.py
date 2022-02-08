@@ -18,8 +18,9 @@ from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.entities.shapes.rectangle import Rectangle
 from ote_sdk.entities.shapes.shape import Shape, ShapeType
 from ote_sdk.utils.argument_checks import (
-    check_required_and_optional_parameters_type,
-    raise_value_error_if_parameter_has_unexpected_type,
+    OptionalParamTypeCheck,
+    RequiredParamTypeCheck,
+    check_input_param_type,
 )
 from ote_sdk.utils.time_utils import now
 
@@ -51,18 +52,15 @@ class Ellipse(Shape):
         labels: Optional[List[ScoredLabel]] = None,
         modification_date: Optional[datetime.datetime] = None,
     ):
-        # Initialization parameters validation
-        check_required_and_optional_parameters_type(
-            required_parameters=[
-                (x1, "x1", (float, int, np.floating)),
-                (y1, "y1", (float, int, np.floating)),
-                (x2, "x2", (float, int, np.floating)),
-                (y2, "y2", (float, int, np.floating)),
-            ],
-            optional_parameters=[
-                (labels, "labels", List[ScoredLabel]),
-                (modification_date, "modification_date", datetime.datetime),
-            ],
+        check_input_param_type(
+            RequiredParamTypeCheck(x1, "x1", float),
+            RequiredParamTypeCheck(y1, "y1", float),
+            RequiredParamTypeCheck(x2, "x2", float),
+            RequiredParamTypeCheck(y2, "y2", float),
+            OptionalParamTypeCheck(labels, "labels", List[ScoredLabel]),
+            OptionalParamTypeCheck(
+                modification_date, "modification_date", datetime.datetime
+            ),
         )
 
         labels = [] if labels is None else labels
@@ -260,13 +258,9 @@ class Ellipse(Shape):
         :param number_of_coordinates: number of evenly distributed points to generate along the ellipsis line
         :return: list of tuple's with coordinates along the ellipse line
         """
-        # Input parameter validation
-        raise_value_error_if_parameter_has_unexpected_type(
-            parameter=number_of_coordinates,
-            parameter_name="number_of_coordinates",
-            expected_type=int,
-        )
-
+        RequiredParamTypeCheck(
+            number_of_coordinates, "number_of_coordinates", int
+        ).check()
         angles = 2 * np.pi * np.arange(number_of_coordinates) / number_of_coordinates
         e = (1.0 - self.minor_axis ** 2.0 / self.major_axis ** 2.0) ** 0.5
         total_size = special.ellipeinc(2.0 * np.pi, e)

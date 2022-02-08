@@ -17,9 +17,9 @@ from shapely.geometry import Polygon as shapely_polygon
 from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.entities.shapes.shape import Shape, ShapeEntity, ShapeType
 from ote_sdk.utils.argument_checks import (
-    check_parameter_type,
-    check_required_and_optional_parameters_type,
-    raise_value_error_if_parameter_has_unexpected_type,
+    OptionalParamTypeCheck,
+    RequiredParamTypeCheck,
+    check_input_param_type,
 )
 from ote_sdk.utils.time_utils import now
 
@@ -55,18 +55,15 @@ class Rectangle(Shape):
         labels: Optional[List[ScoredLabel]] = None,
         modification_date: Optional[datetime.datetime] = None,
     ):
-        # Initialization parameters validation
-        check_required_and_optional_parameters_type(
-            required_parameters=[
-                (x1, "x1", (float, int, np.floating)),
-                (y1, "y1", (float, int, np.floating)),
-                (x2, "x2", (float, int, np.floating)),
-                (y2, "y2", (float, int, np.floating)),
-            ],
-            optional_parameters=[
-                (labels, "labels", List[ScoredLabel]),
-                (modification_date, "modification_date", datetime.datetime),
-            ],
+        check_input_param_type(
+            RequiredParamTypeCheck(x1, "x1", float),
+            RequiredParamTypeCheck(y1, "y1", float),
+            RequiredParamTypeCheck(x2, "x2", float),
+            RequiredParamTypeCheck(y2, "y2", float),
+            OptionalParamTypeCheck(labels, "labels", List[ScoredLabel]),
+            OptionalParamTypeCheck(
+                modification_date, "modification_date", datetime.datetime
+            ),
         )
 
         labels = [] if labels is None else labels
@@ -232,11 +229,7 @@ class Rectangle(Shape):
         if labels is None:
             labels = []
         else:
-            check_parameter_type(
-                parameter=labels,
-                parameter_name="labels",
-                expected_type=List[ScoredLabel],
-            )
+            RequiredParamTypeCheck(labels, "labels", List[ScoredLabel]).check()
 
         return cls(x1=0.0, y1=0.0, x2=1.0, y2=1.0, labels=labels)
 
@@ -259,11 +252,7 @@ class Rectangle(Shape):
         :param rectangle: rectangle to evaluate
         :return: true if it fully encapsulate normalized coordinate space.
         """
-        # Input parameter validation
-        raise_value_error_if_parameter_has_unexpected_type(
-            parameter=rectangle, parameter_name="rectangle", expected_type=ShapeEntity
-        )
-
+        RequiredParamTypeCheck(rectangle, "rectangle", ShapeEntity).check()
         if (
             isinstance(rectangle, Rectangle)
             and rectangle.x1 == 0
@@ -282,10 +271,7 @@ class Rectangle(Shape):
         :param data: Image to crop
         :return: Cropped image
         """
-        # Input parameter validation
-        raise_value_error_if_parameter_has_unexpected_type(
-            parameter=data, parameter_name="data", expected_type=np.ndarray
-        )
+        RequiredParamTypeCheck(data, "data", np.ndarray).check()
         # We clip negative values to zero since Numpy uses negative values
         # to represent indexing from the right side of the array.
         # However, on the other hand, it is safe to have indices larger than the size
