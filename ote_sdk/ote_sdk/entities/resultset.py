@@ -14,7 +14,11 @@ from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.id import ID
 from ote_sdk.entities.metrics import NullPerformance, Performance
 from ote_sdk.entities.model import ModelEntity
-from ote_sdk.utils.argument_checks import check_required_and_optional_parameters_type
+from ote_sdk.utils.argument_checks import (
+    OptionalParamTypeCheck,
+    RequiredParamTypeCheck,
+    check_input_param_type,
+)
 from ote_sdk.utils.time_utils import now
 
 
@@ -78,19 +82,22 @@ class ResultSetEntity(metaclass=abc.ABCMeta):
         creation_date: Optional[datetime.datetime] = None,
         id: Optional[ID] = None,
     ):
-        # Initialization parameters validation
-        check_required_and_optional_parameters_type(
-            required_parameters=[
-                (model, "model", ModelEntity),
-                (ground_truth_dataset, "ground_truth_dataset", DatasetEntity),
-                (prediction_dataset, "prediction_dataset", DatasetEntity),
-                (purpose, "purpose", ResultsetPurpose),
-            ],
-            optional_parameters=[
-                (performance, "performance", Performance),
-                (creation_date, "creation_date", datetime.datetime),
-                (id, "id", ID),
-            ],
+        check_input_param_type(
+            [
+                RequiredParamTypeCheck(model, "model", ModelEntity),
+                RequiredParamTypeCheck(
+                    ground_truth_dataset, "ground_truth_dataset", DatasetEntity
+                ),
+                RequiredParamTypeCheck(
+                    prediction_dataset, "prediction_dataset", DatasetEntity
+                ),
+                RequiredParamTypeCheck(purpose, "purpose", ResultsetPurpose),
+                OptionalParamTypeCheck(performance, "performance", Performance),
+                OptionalParamTypeCheck(
+                    creation_date, "creation_date", datetime.datetime
+                ),
+                OptionalParamTypeCheck(id, "id", ID),
+            ]
         )
 
         id = ID() if id is None else id

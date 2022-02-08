@@ -29,7 +29,7 @@ from ote_sdk.configuration.enums.config_element_type import (
 from ote_sdk.configuration.enums.model_lifecycle import ModelLifecycle
 from ote_sdk.configuration.enums.utils import get_enum_names
 from ote_sdk.configuration.ui_rules.rules import NullUIRules, Rule, UIRules
-from ote_sdk.utils.argument_checks import check_input_config_parameter
+from ote_sdk.utils.argument_checks import InputConfigCheck
 
 from .config_element_mapping import (
     GroupElementMapping,
@@ -362,8 +362,7 @@ def create(input_config: Union[str, DictConfig, dict]) -> ConfigurableParameters
     :param input_config: yaml string, dictionary, DictConfig or filepath describing a configuration.
     :return: ConfigurableParameters object
     """
-    # Input parameter validation
-    check_input_config_parameter(input_config=input_config)
+    InputConfigCheck(input_config).check()
     # Parse input, validate config type and convert to dict if needed
     config_dict = input_to_config_dict(copy.deepcopy(input_config))
     # Create config from the resulting dictionary

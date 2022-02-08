@@ -14,7 +14,11 @@ from ote_sdk.entities.id import ID
 from ote_sdk.entities.label import LabelEntity
 from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.entities.shapes.shape import ShapeEntity
-from ote_sdk.utils.argument_checks import check_required_and_optional_parameters_type
+from ote_sdk.utils.argument_checks import (
+    OptionalParamTypeCheck,
+    RequiredParamTypeCheck,
+    check_input_param_type,
+)
 from ote_sdk.utils.time_utils import now
 
 
@@ -27,13 +31,12 @@ class Annotation(metaclass=abc.ABCMeta):
     def __init__(
         self, shape: ShapeEntity, labels: List[ScoredLabel], id: Optional[ID] = None
     ):
-        # Initialization parameters validation
-        check_required_and_optional_parameters_type(
-            required_parameters=[
-                (shape, "shape", ShapeEntity),
-                (labels, "labels", List[ScoredLabel]),
-            ],
-            optional_parameters=[(id, "id", ID)],
+        check_input_param_type(
+            [
+                RequiredParamTypeCheck(shape, "shape", ShapeEntity),
+                RequiredParamTypeCheck(labels, "labels", List[ScoredLabel]),
+                OptionalParamTypeCheck(id, "id", ID),
+            ]
         )
 
         self.__id = ID(ObjectId()) if id is None else id
@@ -169,17 +172,16 @@ class AnnotationSceneEntity(metaclass=abc.ABCMeta):
         creation_date: Optional[datetime.datetime] = None,
         id: Optional[ID] = None,
     ):
-        # Initialization parameters validation
-        check_required_and_optional_parameters_type(
-            required_parameters=[
-                (annotations, "annotations", List[Annotation]),
-                (kind, "kind", AnnotationSceneKind),
-            ],
-            optional_parameters=[
-                (editor, "editor", str),
-                (creation_date, "creation_date", datetime.datetime),
-                (id, "id", ID),
-            ],
+        check_input_param_type(
+            [
+                RequiredParamTypeCheck(annotations, "annotations", List[Annotation]),
+                RequiredParamTypeCheck(kind, "kind", AnnotationSceneKind),
+                OptionalParamTypeCheck(editor, "editor", str),
+                OptionalParamTypeCheck(
+                    creation_date, "creation_date", datetime.datetime
+                ),
+                OptionalParamTypeCheck(id, "id", ID),
+            ]
         )
 
         self.__annotations = annotations

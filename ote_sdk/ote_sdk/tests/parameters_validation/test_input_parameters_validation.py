@@ -117,6 +117,10 @@ class TestParamsValidation:
         )
         return [exclusivity_0_1_and_0_2, exclusivity_2_4_and_2_5]
 
+    @staticmethod
+    def generate_file_path(file_name):
+        return str(Path(__file__).parent / Path(f"./{file_name}"))
+
     @pytest.mark.priority_medium
     @pytest.mark.component
     @pytest.mark.reqids(Requirements.REQ_1)
@@ -602,11 +606,13 @@ class TestParamsValidation:
             # Empty dictionary is specified as "input_config" parameter
             {},
             # Path to non-existing file is specified as "input_config" parameter
-            str(Path(__file__).parent / Path("./non_existing.yaml")),
+            self.generate_file_path("non_existing.yaml"),
             # Path to non-yaml file is specified as "input_config" parameter
-            str(Path(__file__).parent / Path("./unexpected_type.jpg")),
+            self.generate_file_path("unexpected_type.jpg"),
             # Path with null character is specified as "input_config" parameter
-            str(Path(__file__).parent / Path("./null\0char.yaml")),
+            self.generate_file_path("null\0char.yaml"),
+            # Path with non-printable character is specified as "input_config" parameter
+            self.generate_file_path("\non-printable.yaml"),
         ]:
             with pytest.raises(ValueError):
                 create(incorrect_parameter)
@@ -634,14 +640,13 @@ class TestParamsValidation:
             # Empty string is specified as "file_path" parameter
             ("file_path", ""),
             # Path to file with unexpected extension is specified as "file_path" parameter
-            (
-                "file_path",
-                str(Path(__file__).parent / Path("./unexpected_extension.yaml")),
-            ),
+            ("file_path", self.generate_file_path("unexpected_extension.yaml")),
             # Path to non-existing file is specified as "file_path" parameter
-            ("file_path", str(Path(__file__).parent / Path("./non_existing.jpg"))),
+            ("file_path", self.generate_file_path("non_existing.jpg")),
             # Path with null character is specified as "file_path" parameter
-            ("file_path", str(Path(__file__).parent / Path("./null\0char.jpg"))),
+            ("file_path", self.generate_file_path("null\0char.jpg")),
+            # Path with non-printable character is specified as "file_path" parameter
+            ("file_path", self.generate_file_path("\non_printable_char.jpg")),
         ]:
             with pytest.raises(ValueError):
                 Image(**{key: value})

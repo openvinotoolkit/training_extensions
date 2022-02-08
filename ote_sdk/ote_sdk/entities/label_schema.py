@@ -15,8 +15,9 @@ from ote_sdk.entities.id import ID
 from ote_sdk.entities.label import LabelEntity
 from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.utils.argument_checks import (
-    check_optional_parameters_type,
-    check_parameter_type,
+    OptionalParamTypeCheck,
+    RequiredParamTypeCheck,
+    check_input_param_type,
 )
 
 
@@ -304,12 +305,13 @@ class LabelSchemaEntity:
         label_tree: LabelTree = None,
         label_groups: List[LabelGroup] = None,
     ):
-        # Initialization parameters validation
-        check_optional_parameters_type(
+        check_input_param_type(
             [
-                (exclusivity_graph, "exclusivity_graph", LabelGraph),
-                (label_tree, "label_tree", LabelTree),
-                (label_groups, "label_groups", List[LabelGroup]),
+                OptionalParamTypeCheck(
+                    exclusivity_graph, "exclusivity_graph", LabelGraph
+                ),
+                OptionalParamTypeCheck(label_tree, "label_tree", LabelTree),
+                OptionalParamTypeCheck(label_groups, "label_groups", List[LabelGroup]),
             ]
         )
 
@@ -595,12 +597,6 @@ class LabelSchemaEntity:
         :param labels: list of labels
         :return: LabelSchemaEntity from the given labels
         """
-        # Input parameter validation
-        check_parameter_type(
-            parameter=labels,
-            parameter_name="labels",
-            expected_type=Sequence[LabelEntity],
-        )
-
+        RequiredParamTypeCheck(labels, "labels", Sequence[LabelEntity]).check()
         label_group = LabelGroup(name="from_label_list", labels=labels)
         return LabelSchemaEntity(label_groups=[label_group])

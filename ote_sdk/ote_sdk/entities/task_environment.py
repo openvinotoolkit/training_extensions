@@ -11,7 +11,11 @@ from ote_sdk.entities.label import LabelEntity
 from ote_sdk.entities.label_schema import LabelSchemaEntity
 from ote_sdk.entities.model import ModelConfiguration, ModelEntity
 from ote_sdk.entities.model_template import ModelTemplate
-from ote_sdk.utils.argument_checks import check_required_and_optional_parameters_type
+from ote_sdk.utils.argument_checks import (
+    OptionalParamTypeCheck,
+    RequiredParamTypeCheck,
+    check_input_param_type,
+)
 
 TypeVariable = TypeVar("TypeVariable", bound=ConfigurableParameters)
 
@@ -35,14 +39,15 @@ class TaskEnvironment:
         hyper_parameters: ConfigurableParameters,
         label_schema: LabelSchemaEntity,
     ):
-        # Initialization parameters validation
-        check_required_and_optional_parameters_type(
-            required_parameters=[
-                (model_template, "model_template", ModelTemplate),
-                (hyper_parameters, "hyper_parameters", ConfigurableParameters),
-                (label_schema, "label_schema", LabelSchemaEntity),
-            ],
-            optional_parameters=[(model, "model", ModelEntity)],
+        check_input_param_type(
+            [
+                RequiredParamTypeCheck(model_template, "model_template", ModelTemplate),
+                OptionalParamTypeCheck(model, "model", ModelEntity),
+                RequiredParamTypeCheck(
+                    hyper_parameters, "hyper_parameters", ConfigurableParameters
+                ),
+                RequiredParamTypeCheck(label_schema, "label_schema", LabelSchemaEntity),
+            ]
         )
 
         self.model_template = model_template

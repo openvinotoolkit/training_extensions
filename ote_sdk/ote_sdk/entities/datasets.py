@@ -19,7 +19,11 @@ from ote_sdk.entities.dataset_item import DatasetItemEntity
 from ote_sdk.entities.id import ID
 from ote_sdk.entities.label import LabelEntity
 from ote_sdk.entities.subset import Subset
-from ote_sdk.utils.argument_checks import check_optional_parameters_type
+from ote_sdk.utils.argument_checks import (
+    OptionalParamTypeCheck,
+    RequiredParamTypeCheck,
+    check_input_param_type,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -128,11 +132,10 @@ class DatasetEntity:
         items: Optional[List[DatasetItemEntity]] = None,
         purpose: DatasetPurpose = DatasetPurpose.INFERENCE,
     ):
-        # Initialization parameters validation
-        check_optional_parameters_type(
+        check_input_param_type(
             [
-                (items, "items", List[DatasetItemEntity]),
-                (purpose, "purpose", DatasetPurpose),
+                OptionalParamTypeCheck(items, "items", List[DatasetItemEntity]),
+                RequiredParamTypeCheck(purpose, "purpose", DatasetPurpose),
             ]
         )
 
