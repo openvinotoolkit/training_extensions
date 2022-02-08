@@ -134,12 +134,6 @@ class TestLabelSchemaEntityMapper:
 
         assert serialized == {
             "label_tree": {"type": "tree", "directed": True, "nodes": [], "edges": []},
-            "exclusivity_graph": {
-                "type": "graph",
-                "directed": False,
-                "nodes": [],
-                "edges": [],
-            },
             "label_groups": [
                 {
                     "_id": label_schema.get_groups()[0].id,

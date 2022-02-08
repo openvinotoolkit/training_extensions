@@ -11,6 +11,7 @@ used to create a OTE configuration object from a dictionary or yaml representati
 from __future__ import annotations
 
 import copy
+from enum import Enum
 from typing import Dict, List, TypeVar, Union
 
 import attr
@@ -22,11 +23,11 @@ from ote_sdk.configuration.elements import (
     ParameterGroup,
     metadata_keys,
 )
+from ote_sdk.configuration.enums import AutoHPOState, ModelLifecycle
 from ote_sdk.configuration.enums.config_element_type import (
     ConfigElementType,
     ElementCategory,
 )
-from ote_sdk.configuration.enums.model_lifecycle import ModelLifecycle
 from ote_sdk.configuration.enums.utils import get_enum_names
 from ote_sdk.configuration.ui_rules.rules import NullUIRules, Rule, UIRules
 from ote_sdk.utils.argument_checks import InputConfigCheck
@@ -40,6 +41,11 @@ from .utils import deserialize_enum_value, input_to_config_dict
 
 ParameterGroupTypeVar = TypeVar("ParameterGroupTypeVar", bound=ParameterGroup)
 ExposureTypeVar = TypeVar("ExposureTypeVar", UIRules, Rule)
+
+METADATA_ENUMS = {
+    metadata_keys.AFFECTS_OUTCOME_OF: ModelLifecycle,
+    metadata_keys.AUTO_HPO_STATE: AutoHPOState,
+}
 
 
 def construct_attrib_from_dict(dict_object: Union[dict, DictConfig]) -> ExposureTypeVar:
@@ -155,6 +161,7 @@ def gather_parameter_arguments_and_values_from_dict(
         the constructor arguments
     :return: dictionary containing the make_arguments, call_arguments and values parsed from the config_dict_section
     """
+    # pylint: disable=too-many-locals
     make_arguments = {}
     call_arguments: dict = {}
     all_parameter_values = {}
@@ -174,20 +181,25 @@ def gather_parameter_arguments_and_values_from_dict(
                     f"parameter or parameter group named '{key}'"
                 )
             parameter_value = parameter_dict.pop("value", None)
-            parameter_affects = parameter_dict.pop(
-                metadata_keys.AFFECTS_OUTCOME_OF, ModelLifecycle.NONE
-            )
-            parameter_affects = deserialize_enum_value(
-                parameter_affects, ModelLifecycle
-            )
+
+            metadata_enums: Dict[str, Enum] = {}
+            for metadata_key, enum_type in METADATA_ENUMS.items():
+                enum_value = parameter_dict.pop(metadata_key, None)
+                if enum_value is not None:
+                    metadata_enums.update(
+                        {
+                            metadata_key: deserialize_enum_value(
+                                enum_value, enum_type=enum_type
+                            )
+                        }
+                    )
+
             parameter_ui_rules_dict = parameter_dict.pop(metadata_keys.UI_RULES, None)
             parameter_constructor = PrimitiveElementMapping[parameter_type].value
             parameter_ui_rules = construct_ui_rules_from_dict(parameter_ui_rules_dict)
             parameter_make_arguments = {
                 key: parameter_constructor(
-                    **parameter_dict,
-                    ui_rules=parameter_ui_rules,
-                    affects_outcome_of=parameter_affects,
+                    **parameter_dict, ui_rules=parameter_ui_rules, **metadata_enums
                 )
             }
             make_arguments.update(parameter_make_arguments)
@@ -239,6 +251,7 @@ def create_parameter_group(
         if value is not None:
             setattr(parameter_group, parameter, value)
 
+    parameter_group.update_auto_hpo_states()
     return parameter_group
 
 

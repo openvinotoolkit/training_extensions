@@ -107,7 +107,7 @@ def get_predictions(task, frame):
     )
 
     item = DatasetItemEntity(
-        media=Image(frame),
+        media=Image(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)),
         annotation_scene=empty_annotation,
     )
 

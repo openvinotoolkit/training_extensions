@@ -24,6 +24,7 @@ from .deploy import main as ote_deploy
 from .eval import main as ote_eval
 from .export import main as ote_export
 from .find import main as ote_find
+from .optimize import main as ote_optimize
 from .train import main as ote_train
 
 __all__ = [
@@ -33,6 +34,7 @@ __all__ = [
     "ote_export",
     "ote_find",
     "ote_train",
+    "ote_optimize",
 ]
 
 
@@ -56,6 +58,7 @@ def main():
       - export
       - find
       - train
+      - optimize
     """
 
     name = parse_args().operation

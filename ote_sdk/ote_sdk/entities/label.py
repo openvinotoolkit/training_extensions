@@ -30,6 +30,7 @@ class Domain(Enum):
     ANOMALY_DETECTION = 4
     ANOMALY_SEGMENTATION = 5
     INSTANCE_SEGMENTATION = 6
+    ROTATED_DETECTION = 7
 
     def __str__(self):
         return str(self.name)

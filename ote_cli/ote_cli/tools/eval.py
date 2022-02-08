@@ -30,6 +30,7 @@ from ote_cli.registry import find_and_parse_model_template
 from ote_cli.utils.config import override_parameters
 from ote_cli.utils.importing import get_impl_class
 from ote_cli.utils.io import generate_label_schema, read_label_schema, read_model
+from ote_cli.utils.nncf import is_checkpoint_nncf
 from ote_cli.utils.parser import (
     add_hyper_parameters_sub_parser,
     gen_params_dict_from_args,
@@ -111,7 +112,10 @@ def main():
     if any(args.load_weights.endswith(x) for x in (".bin", ".xml", ".zip")):
         task_class = get_impl_class(template.entrypoints.openvino)
     elif args.load_weights.endswith(".pth"):
-        task_class = get_impl_class(template.entrypoints.base)
+        if is_checkpoint_nncf(args.load_weights):
+            task_class = get_impl_class(template.entrypoints.nncf)
+        else:
+            task_class = get_impl_class(template.entrypoints.base)
     else:
         raise ValueError(f"Unsupported file: {args.load_weights}")
 
