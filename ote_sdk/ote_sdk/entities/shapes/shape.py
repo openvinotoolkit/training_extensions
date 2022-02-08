@@ -168,7 +168,7 @@ class Shape(ShapeEntity):
 
     # pylint: disable=protected-access
     def intersects(self, other: "Shape") -> bool:
-        RequiredParamTypeCheck(other, "other", tuple(Shape.__subclasses__())).check()
+        RequiredParamTypeCheck(other, "other", Shape).check()
         polygon_roi = self._as_shapely_polygon()
         polygon_shape = other._as_shapely_polygon()
         try:
@@ -187,7 +187,7 @@ class Shape(ShapeEntity):
         :param other: Shape to compare with
         :return: Boolean that indicates whether the center of the other shape is located in the shape
         """
-        RequiredParamTypeCheck(other, "other", tuple(Shape.__subclasses__())).check()
+        RequiredParamTypeCheck(other, "other", ShapeEntity).check()
         polygon_roi = self._as_shapely_polygon()
         polygon_shape = other._as_shapely_polygon()
         return polygon_roi.contains(polygon_shape.centroid)
