@@ -1,4 +1,4 @@
-# Deep Neural Network for Chest X-Ray Screening
+# A Two-Stage Multiple Instance Learning Framework for the Detection of Breast Cancer in Mammograms
 
 <div id="abs">
 
@@ -105,3 +105,7 @@ Advanced Technology Development Center,</br>
 Indian Institute of Technology Kharagpur</br>
 email: rakshith.sathish@kgpian.iitkgp.ac.in</br>
 Github username: Rakshith2597
+
+## **References**
+
+C. K. Sarath, A. Chakravarty, N. Ghosh, T. Sarkar, R. Sethuraman and D. Sheet, "A Two-Stage Multiple Instance Learning Framework for the Detection of Breast Cancer in Mammograms," 2020 42nd Annual International Conference of the IEEE Engineering in Medicine & Biology Society (EMBC), 2020, pp. 1128-1131, doi: 10.1109/EMBC44109.2020.9176427.
