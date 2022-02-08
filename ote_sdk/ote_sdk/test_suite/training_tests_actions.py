@@ -3,6 +3,7 @@
 #
 
 import importlib
+import os
 from abc import ABC, abstractmethod
 from collections import OrderedDict
 from copy import deepcopy
@@ -77,13 +78,20 @@ class OTETestTrainingAction(BaseOTETestAction):
     _name = "training"
 
     def __init__(
-        self, dataset, labels_schema, template_path, num_training_iters, batch_size
+        self,
+        dataset,
+        labels_schema,
+        template_path,
+        num_training_iters,
+        batch_size,
+        reference_dir,
     ):
         self.dataset = dataset
         self.labels_schema = labels_schema
         self.template_path = template_path
         self.num_training_iters = num_training_iters
         self.batch_size = batch_size
+        self.reference_dir = reference_dir
 
     @staticmethod
     def _create_environment_and_task(params, labels_schema, model_template):
@@ -176,6 +184,7 @@ class OTETestTrainingAction(BaseOTETestAction):
             "dataset": self.dataset,
             "environment": self.environment,
             "output_model": self.output_model,
+            "reference_dir": self.reference_dir,
         }
         return results
 
@@ -446,12 +455,55 @@ class OTETestPotEvaluationAction(BaseOTETestAction):
         return results
 
 
+# TODO: think about move to special file
+def check_nncf_model_graph(reference_dir, nncf_task):
+    import networkx as nx
+
+    # pylint:disable=protected-access
+    if reference_dir is None:
+        logger.warning("reference_dir is None")
+        return True
+    path_to_dot = os.path.join(reference_dir, "nncf", f"{nncf_task._nncf_preset}.dot")
+    if not os.path.exists(path_to_dot):
+        logger.warning(f"Reference file does not exist: {path_to_dot}")
+        return True
+    logger.info(f"Reference graph: {path_to_dot}")
+    load_graph = nx.drawing.nx_pydot.read_dot(path_to_dot)
+
+    graph = nncf_task._model.get_graph()
+    nx_graph = graph.get_graph_for_structure_analysis()
+
+    for _, node in nx_graph.nodes(data=True):
+        if "scope" in node:
+            node.pop("scope")
+
+    for k, attrs in nx_graph.nodes.items():
+        attrs = {k: str(v) for k, v in attrs.items()}
+        load_attrs = {k: str(v).strip('"') for k, v in load_graph.nodes[k].items()}
+        if "scope" in load_attrs:
+            load_attrs.pop("scope")
+        if attrs != load_attrs:
+            logger.info("ATTR: {} : {} != {}".format(k, attrs, load_attrs))
+            return False
+
+    return (
+        load_graph.nodes.keys() == nx_graph.nodes.keys()
+        and nx.DiGraph(load_graph).edges == nx_graph.edges
+    )
+
+
 class OTETestNNCFAction(BaseOTETestAction):
     _name = "nncf"
     _depends_stages_names = ["training"]
 
     def _run_ote_nncf(
-        self, data_collector, model_template, dataset, trained_model, environment
+        self,
+        data_collector,
+        model_template,
+        dataset,
+        trained_model,
+        environment,
+        reference_dir,
     ):
         logger.debug("Get predictions on the validation set for exported model")
         self.environment_for_nncf = deepcopy(environment)
@@ -490,6 +542,10 @@ class OTETestNNCFAction(BaseOTETestAction):
         assert (
             self.nncf_model.model_format == ModelFormat.BASE_FRAMEWORK
         ), "Wrong model format"
+        assert check_nncf_model_graph(
+            reference_dir, self.nncf_task
+        ), "Compressed model differs from the reference"
+
         logger.info("NNCF optimization is finished")
 
     def __call__(self, data_collector: DataCollector, results_prev_stages: OrderedDict):
@@ -500,6 +556,7 @@ class OTETestNNCFAction(BaseOTETestAction):
             "dataset": results_prev_stages["training"]["dataset"],
             "trained_model": results_prev_stages["training"]["output_model"],
             "environment": results_prev_stages["training"]["environment"],
+            "reference_dir": results_prev_stages["training"]["reference_dir"],
         }
 
         self._run_ote_nncf(data_collector, **kwargs)

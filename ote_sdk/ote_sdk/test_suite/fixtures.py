@@ -48,6 +48,33 @@ def ote_templates_root_dir_fx():
 
 
 @pytest.fixture
+def ote_reference_root_dir_fx():
+    """
+    The fixture returns an absolute path to the folder where reference files
+    for OTE models are stored.
+    """
+    raise NotImplementedError(
+        "The fixture ote_reference_root_dir_fx should be overriden in algo backend"
+    )
+
+
+@pytest.fixture
+def ote_current_reference_dir_fx(ote_reference_root_dir_fx, current_test_parameters_fx):
+    """
+    The fixture returns an absolute path to the folder where reference files
+    for the current model are stored.
+    """
+    if ote_reference_root_dir_fx is None:
+        return None
+    path = os.path.join(
+        ote_reference_root_dir_fx, current_test_parameters_fx["model_name"]
+    )
+    if not os.path.isdir(path):
+        return None
+    return path
+
+
+@pytest.fixture
 def ote_test_domain_fx():
     """
     The fixture returns a string that will be used as the 'subject' field in the
