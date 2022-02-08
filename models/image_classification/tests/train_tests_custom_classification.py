@@ -49,4 +49,3 @@ class CustomClassificationTestCaseSmall(
         )
 ):
     """ Train/eval test case for mobilenet v3 small model. """
-
