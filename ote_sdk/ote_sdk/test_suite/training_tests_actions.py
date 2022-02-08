@@ -2,8 +2,8 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import os
 import importlib
+import os
 from abc import ABC, abstractmethod
 from collections import OrderedDict
 from copy import deepcopy

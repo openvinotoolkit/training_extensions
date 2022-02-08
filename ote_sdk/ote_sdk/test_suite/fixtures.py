@@ -46,6 +46,7 @@ def ote_templates_root_dir_fx():
         "The fixture ote_templates_root_dir_fx should be overriden in algo backend"
     )
 
+
 @pytest.fixture
 def ote_reference_root_dir_fx():
     """
@@ -56,6 +57,7 @@ def ote_reference_root_dir_fx():
         "The fixture ote_reference_root_dir_fx should be overriden in algo backend"
     )
 
+
 @pytest.fixture
 def ote_current_reference_dir_fx(ote_reference_root_dir_fx, current_test_parameters_fx):
     """
@@ -64,7 +66,9 @@ def ote_current_reference_dir_fx(ote_reference_root_dir_fx, current_test_paramet
     """
     if ote_reference_root_dir_fx is None:
         return None
-    path = os.path.join(ote_reference_root_dir_fx, current_test_parameters_fx["model_name"])
+    path = os.path.join(
+        ote_reference_root_dir_fx, current_test_parameters_fx["model_name"]
+    )
     if not os.path.isdir(path):
         return None
     return path
