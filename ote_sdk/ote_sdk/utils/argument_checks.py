@@ -10,9 +10,9 @@ import typing
 from abc import ABC, abstractmethod
 from os.path import exists
 
+import yaml
 from numpy import floating
 from omegaconf import DictConfig
-from yaml import safe_load
 
 
 def raise_value_error_if_parameter_has_unexpected_type(
@@ -100,13 +100,6 @@ def check_parameter_type(parameter, parameter_name, expected_type):
         )
 
 
-def check_input_param_type(checks: list):
-    """Function to apply methods on checks according to their type"""
-    for param_check in checks:
-        if isinstance(param_check, BaseInputArgumentChecker):
-            param_check.check()
-
-
 class BaseInputArgumentChecker(ABC):
     """Abstract class to check input arguments"""
 
@@ -114,6 +107,14 @@ class BaseInputArgumentChecker(ABC):
     def check(self):
         """Abstract method to check input arguments"""
         raise NotImplementedError("The check is not implemented")
+
+
+def check_input_param_type(*checks: BaseInputArgumentChecker):
+    """Function to apply methods on checks according to their type"""
+    for param_check in checks:
+        if not isinstance(param_check, BaseInputArgumentChecker):
+            raise TypeError(f"Wrong parameter of check_input_param: {param_check}")
+        param_check.check()
 
 
 class RequiredParamTypeCheck(BaseInputArgumentChecker):
@@ -177,11 +178,17 @@ def check_that_parameter_is_not_empty(parameter, parameter_name):
         raise ValueError(f"parameter {parameter_name} is empty")
 
 
-def check_that_all_characters_printable(parameter, parameter_name):
+def check_that_all_characters_printable(parameter, parameter_name, allow_crlf=False):
     """Function raises ValueError if one of string-parameter characters is not printable"""
-    if not all(c.isprintable() for c in parameter):
+    if not allow_crlf:
+        all_characters_printable = all(c.isprintable() for c in parameter)
+    else:
+        all_characters_printable = all(
+            (c.isprintable() or c == "\n" or c == "\r") for c in parameter
+        )
+    if not all_characters_printable:
         raise ValueError(
-            f"parameter {parameter_name} has not printable symbol: {parameter}"
+            fr"parameter {parameter_name} has not printable symbols: {parameter}"
         )
 
 
@@ -206,7 +213,15 @@ class InputConfigCheck(BaseInputArgumentChecker):
             check_that_null_character_absents_in_string(
                 parameter=self.parameter, parameter_name=parameter_name
             )
-            if isinstance(safe_load(self.parameter), str):
+            # yaml-format string is specified
+            if isinstance(yaml.safe_load(self.parameter), dict):
+                check_that_all_characters_printable(
+                    parameter=self.parameter,
+                    parameter_name=parameter_name,
+                    allow_crlf=True,
+                )
+            # Path to file is specified
+            else:
                 check_file_extension(
                     file_path=self.parameter,
                     file_path_name=parameter_name,

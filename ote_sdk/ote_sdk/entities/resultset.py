@@ -83,21 +83,17 @@ class ResultSetEntity(metaclass=abc.ABCMeta):
         id: Optional[ID] = None,
     ):
         check_input_param_type(
-            [
-                RequiredParamTypeCheck(model, "model", ModelEntity),
-                RequiredParamTypeCheck(
-                    ground_truth_dataset, "ground_truth_dataset", DatasetEntity
-                ),
-                RequiredParamTypeCheck(
-                    prediction_dataset, "prediction_dataset", DatasetEntity
-                ),
-                RequiredParamTypeCheck(purpose, "purpose", ResultsetPurpose),
-                OptionalParamTypeCheck(performance, "performance", Performance),
-                OptionalParamTypeCheck(
-                    creation_date, "creation_date", datetime.datetime
-                ),
-                OptionalParamTypeCheck(id, "id", ID),
-            ]
+            RequiredParamTypeCheck(model, "model", ModelEntity),
+            RequiredParamTypeCheck(
+                ground_truth_dataset, "ground_truth_dataset", DatasetEntity
+            ),
+            RequiredParamTypeCheck(
+                prediction_dataset, "prediction_dataset", DatasetEntity
+            ),
+            RequiredParamTypeCheck(purpose, "purpose", ResultsetPurpose),
+            OptionalParamTypeCheck(performance, "performance", Performance),
+            OptionalParamTypeCheck(creation_date, "creation_date", datetime.datetime),
+            OptionalParamTypeCheck(id, "id", ID),
         )
 
         id = ID() if id is None else id

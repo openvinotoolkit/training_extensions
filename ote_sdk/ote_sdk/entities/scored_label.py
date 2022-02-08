@@ -26,10 +26,8 @@ class ScoredLabel:
 
     def __init__(self, label: LabelEntity, probability: float = 0.0):
         check_input_param_type(
-            [
-                RequiredParamTypeCheck(label, "label", LabelEntity),
-                OptionalParamTypeCheck(probability, "probability", float),
-            ]
+            RequiredParamTypeCheck(label, "label", LabelEntity),
+            OptionalParamTypeCheck(probability, "probability", float),
         )
 
         self.label = label

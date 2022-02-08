@@ -56,16 +56,14 @@ class Rectangle(Shape):
         modification_date: Optional[datetime.datetime] = None,
     ):
         check_input_param_type(
-            [
-                RequiredParamTypeCheck(x1, "x1", float),
-                RequiredParamTypeCheck(y1, "y1", float),
-                RequiredParamTypeCheck(x2, "x2", float),
-                RequiredParamTypeCheck(y2, "y2", float),
-                OptionalParamTypeCheck(labels, "labels", List[ScoredLabel]),
-                OptionalParamTypeCheck(
-                    modification_date, "modification_date", datetime.datetime
-                ),
-            ]
+            RequiredParamTypeCheck(x1, "x1", float),
+            RequiredParamTypeCheck(y1, "y1", float),
+            RequiredParamTypeCheck(x2, "x2", float),
+            RequiredParamTypeCheck(y2, "y2", float),
+            OptionalParamTypeCheck(labels, "labels", List[ScoredLabel]),
+            OptionalParamTypeCheck(
+                modification_date, "modification_date", datetime.datetime
+            ),
         )
 
         labels = [] if labels is None else labels

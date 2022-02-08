@@ -40,14 +40,12 @@ class TaskEnvironment:
         label_schema: LabelSchemaEntity,
     ):
         check_input_param_type(
-            [
-                RequiredParamTypeCheck(model_template, "model_template", ModelTemplate),
-                OptionalParamTypeCheck(model, "model", ModelEntity),
-                RequiredParamTypeCheck(
-                    hyper_parameters, "hyper_parameters", ConfigurableParameters
-                ),
-                RequiredParamTypeCheck(label_schema, "label_schema", LabelSchemaEntity),
-            ]
+            RequiredParamTypeCheck(model_template, "model_template", ModelTemplate),
+            OptionalParamTypeCheck(model, "model", ModelEntity),
+            RequiredParamTypeCheck(
+                hyper_parameters, "hyper_parameters", ConfigurableParameters
+            ),
+            RequiredParamTypeCheck(label_schema, "label_schema", LabelSchemaEntity),
         )
 
         self.model_template = model_template

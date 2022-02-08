@@ -95,17 +95,13 @@ class LabelEntity:
         id: Optional[ID] = None,
     ):
         check_input_param_type(
-            [
-                RequiredParamTypeCheck(name, "name", str),
-                RequiredParamTypeCheck(domain, "domain", Domain),
-                OptionalParamTypeCheck(color, "color", Color),
-                OptionalParamTypeCheck(hotkey, "hotkey", str),
-                OptionalParamTypeCheck(
-                    creation_date, "creation_date", datetime.datetime
-                ),
-                OptionalParamTypeCheck(is_empty, "is_empty", bool),
-                OptionalParamTypeCheck(id, "id", ID),
-            ]
+            RequiredParamTypeCheck(name, "name", str),
+            RequiredParamTypeCheck(domain, "domain", Domain),
+            OptionalParamTypeCheck(color, "color", Color),
+            OptionalParamTypeCheck(hotkey, "hotkey", str),
+            OptionalParamTypeCheck(creation_date, "creation_date", datetime.datetime),
+            OptionalParamTypeCheck(is_empty, "is_empty", bool),
+            OptionalParamTypeCheck(id, "id", ID),
         )
 
         id = ID() if id is None else id

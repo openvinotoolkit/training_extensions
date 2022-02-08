@@ -32,11 +32,9 @@ class Annotation(metaclass=abc.ABCMeta):
         self, shape: ShapeEntity, labels: List[ScoredLabel], id: Optional[ID] = None
     ):
         check_input_param_type(
-            [
-                RequiredParamTypeCheck(shape, "shape", ShapeEntity),
-                RequiredParamTypeCheck(labels, "labels", List[ScoredLabel]),
-                OptionalParamTypeCheck(id, "id", ID),
-            ]
+            RequiredParamTypeCheck(shape, "shape", ShapeEntity),
+            RequiredParamTypeCheck(labels, "labels", List[ScoredLabel]),
+            OptionalParamTypeCheck(id, "id", ID),
         )
 
         self.__id = ID(ObjectId()) if id is None else id
@@ -173,15 +171,11 @@ class AnnotationSceneEntity(metaclass=abc.ABCMeta):
         id: Optional[ID] = None,
     ):
         check_input_param_type(
-            [
-                RequiredParamTypeCheck(annotations, "annotations", List[Annotation]),
-                RequiredParamTypeCheck(kind, "kind", AnnotationSceneKind),
-                OptionalParamTypeCheck(editor, "editor", str),
-                OptionalParamTypeCheck(
-                    creation_date, "creation_date", datetime.datetime
-                ),
-                OptionalParamTypeCheck(id, "id", ID),
-            ]
+            RequiredParamTypeCheck(annotations, "annotations", List[Annotation]),
+            RequiredParamTypeCheck(kind, "kind", AnnotationSceneKind),
+            OptionalParamTypeCheck(editor, "editor", str),
+            OptionalParamTypeCheck(creation_date, "creation_date", datetime.datetime),
+            OptionalParamTypeCheck(id, "id", ID),
         )
 
         self.__annotations = annotations

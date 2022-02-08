@@ -19,11 +19,7 @@ from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.id import ID
 from ote_sdk.entities.image import Image
 from ote_sdk.entities.label import Domain, LabelEntity
-from ote_sdk.entities.label_schema import (
-    LabelGroup,
-    LabelSchemaEntity,
-    LabelTree,
-)
+from ote_sdk.entities.label_schema import LabelGroup, LabelSchemaEntity, LabelTree
 from ote_sdk.entities.metadata import MetadataItemEntity
 from ote_sdk.entities.model import (
     ModelAdapter,
@@ -605,10 +601,12 @@ class TestParamsValidation:
             self.generate_file_path("non_existing.yaml"),
             # Path to non-yaml file is specified as "input_config" parameter
             self.generate_file_path("unexpected_type.jpg"),
-            # Path with null character is specified as "input_config" parameter
+            # Path Null character is specified in "input_config" parameter
+            "null_char: '\0key'",
             self.generate_file_path("null\0char.yaml"),
             # Path with non-printable character is specified as "input_config" parameter
-            self.generate_file_path("\non-printable.yaml"),
+            self.generate_file_path("null\nchar.yaml"),
+            "non_printable: '\tkey'",
         ]:
             with pytest.raises(ValueError):
                 create(incorrect_parameter)

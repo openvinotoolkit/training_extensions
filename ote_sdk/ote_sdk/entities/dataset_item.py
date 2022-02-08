@@ -95,17 +95,13 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
         subset: Subset = Subset.NONE,
     ):
         check_input_param_type(
-            [
-                RequiredParamTypeCheck(media, "media", IMedia2DEntity),
-                RequiredParamTypeCheck(
-                    annotation_scene, "annotation_scene", AnnotationSceneEntity
-                ),
-                OptionalParamTypeCheck(roi, "roi", Annotation),
-                OptionalParamTypeCheck(
-                    metadata, "metadata", Sequence[MetadataItemEntity]
-                ),
-                RequiredParamTypeCheck(subset, "subset", Subset),
-            ]
+            RequiredParamTypeCheck(media, "media", IMedia2DEntity),
+            RequiredParamTypeCheck(
+                annotation_scene, "annotation_scene", AnnotationSceneEntity
+            ),
+            OptionalParamTypeCheck(roi, "roi", Annotation),
+            OptionalParamTypeCheck(metadata, "metadata", Sequence[MetadataItemEntity]),
+            RequiredParamTypeCheck(subset, "subset", Subset),
         )
 
         self.__media: IMedia2DEntity = media

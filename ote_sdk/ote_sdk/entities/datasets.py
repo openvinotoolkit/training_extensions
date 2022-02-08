@@ -133,10 +133,8 @@ class DatasetEntity:
         purpose: DatasetPurpose = DatasetPurpose.INFERENCE,
     ):
         check_input_param_type(
-            [
-                OptionalParamTypeCheck(items, "items", List[DatasetItemEntity]),
-                RequiredParamTypeCheck(purpose, "purpose", DatasetPurpose),
-            ]
+            OptionalParamTypeCheck(items, "items", List[DatasetItemEntity]),
+            RequiredParamTypeCheck(purpose, "purpose", DatasetPurpose),
         )
 
         self._items = [] if items is None else items

@@ -301,10 +301,8 @@ class LabelSchemaEntity:
         label_groups: List[LabelGroup] = None,
     ):
         check_input_param_type(
-            [
-                OptionalParamTypeCheck(label_tree, "label_tree", LabelTree),
-                OptionalParamTypeCheck(label_groups, "label_groups", List[LabelGroup]),
-            ]
+            OptionalParamTypeCheck(label_tree, "label_tree", LabelTree),
+            OptionalParamTypeCheck(label_groups, "label_groups", List[LabelGroup]),
         )
         if label_tree is None:
             label_tree = LabelTree()

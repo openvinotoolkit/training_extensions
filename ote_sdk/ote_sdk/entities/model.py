@@ -124,57 +124,45 @@ class ModelEntity:
         _id: Optional[ID] = None,
     ):
         check_input_param_type(
-            [
-                DatasetParamTypeCheck(train_dataset, "train_dataset"),
-                RequiredParamTypeCheck(
-                    configuration, "configuration", ModelConfiguration
-                ),
-                OptionalParamTypeCheck(
-                    creation_date, "creation_date", datetime.datetime
-                ),
-                OptionalParamTypeCheck(performance, "performance", Performance),
-                OptionalParamTypeCheck(
-                    previous_trained_revision, "previous_trained_revision", ModelEntity
-                ),
-                OptionalParamTypeCheck(
-                    previous_revision, "previous_revision", ModelEntity
-                ),
-                RequiredParamTypeCheck(version, "version", int),
-                OptionalParamTypeCheck(tags, "tags", List[str]),
-                RequiredParamTypeCheck(model_format, "model_format", ModelFormat),
-                RequiredParamTypeCheck(training_duration, "training_duration", float),
-                OptionalParamTypeCheck(
-                    model_adapters, "model_adapters", Dict[str, ModelAdapter]
-                ),
-                OptionalParamTypeCheck(
-                    exportable_code_adapter,
-                    "exportable_code_adapter",
-                    ExportableCodeAdapter,
-                ),
-                OptionalParamTypeCheck(precision, "precision", List[ModelPrecision]),
-                RequiredParamTypeCheck(latency, "latency", int),
-                RequiredParamTypeCheck(fps_throughput, "fps_throughput", int),
-                RequiredParamTypeCheck(target_device, "target_device", TargetDevice),
-                OptionalParamTypeCheck(target_device_type, "target_device_type", str),
-                RequiredParamTypeCheck(
-                    optimization_type, "optimization_type", ModelOptimizationType
-                ),
-                OptionalParamTypeCheck(
-                    optimization_methods,
-                    "optimization_methods",
-                    List[OptimizationMethod],
-                ),
-                OptionalParamTypeCheck(
-                    optimization_objectives, "optimization_objectives", Dict[str, str]
-                ),
-                OptionalParamTypeCheck(
-                    performance_improvement, "performance_improvement", Dict[str, float]
-                ),
-                RequiredParamTypeCheck(
-                    model_size_reduction, "model_size_reduction", float
-                ),
-                OptionalParamTypeCheck(_id, "_id", (ID, ObjectId)),
-            ]
+            DatasetParamTypeCheck(train_dataset, "train_dataset"),
+            RequiredParamTypeCheck(configuration, "configuration", ModelConfiguration),
+            OptionalParamTypeCheck(creation_date, "creation_date", datetime.datetime),
+            OptionalParamTypeCheck(performance, "performance", Performance),
+            OptionalParamTypeCheck(
+                previous_trained_revision, "previous_trained_revision", ModelEntity
+            ),
+            OptionalParamTypeCheck(previous_revision, "previous_revision", ModelEntity),
+            RequiredParamTypeCheck(version, "version", int),
+            OptionalParamTypeCheck(tags, "tags", List[str]),
+            RequiredParamTypeCheck(model_format, "model_format", ModelFormat),
+            RequiredParamTypeCheck(training_duration, "training_duration", float),
+            OptionalParamTypeCheck(
+                model_adapters, "model_adapters", Dict[str, ModelAdapter]
+            ),
+            OptionalParamTypeCheck(
+                exportable_code_adapter,
+                "exportable_code_adapter",
+                ExportableCodeAdapter,
+            ),
+            OptionalParamTypeCheck(precision, "precision", List[ModelPrecision]),
+            RequiredParamTypeCheck(latency, "latency", int),
+            RequiredParamTypeCheck(fps_throughput, "fps_throughput", int),
+            RequiredParamTypeCheck(target_device, "target_device", TargetDevice),
+            OptionalParamTypeCheck(target_device_type, "target_device_type", str),
+            RequiredParamTypeCheck(
+                optimization_type, "optimization_type", ModelOptimizationType
+            ),
+            OptionalParamTypeCheck(
+                optimization_methods, "optimization_methods", List[OptimizationMethod]
+            ),
+            OptionalParamTypeCheck(
+                optimization_objectives, "optimization_objectives", Dict[str, str]
+            ),
+            OptionalParamTypeCheck(
+                performance_improvement, "performance_improvement", Dict[str, float]
+            ),
+            RequiredParamTypeCheck(model_size_reduction, "model_size_reduction", float),
+            OptionalParamTypeCheck(_id, "_id", (ID, ObjectId)),
         )
 
         _id = ID() if _id is None else _id
