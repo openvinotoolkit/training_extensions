@@ -21,6 +21,7 @@ from ote_sdk.entities.label import LabelEntity
 from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.entities.shapes.polygon import Point, Polygon
 from ote_sdk.utils.shape_factory import ShapeFactory
+from ote_sdk.utils.time_utils import timeit
 
 
 def mask_from_dataset_item(
@@ -177,6 +178,7 @@ def get_subcontours(contour: Contour) -> List[Contour]:
     return subcontours
 
 
+@timeit
 def create_annotation_from_segmentation_map(
     hard_prediction: np.ndarray, soft_prediction: np.ndarray, label_map: dict
 ) -> List[Annotation]:
