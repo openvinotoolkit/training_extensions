@@ -238,7 +238,7 @@ class TestTaskType:
         2. Check TaskType elements value attribute
         3. Check TaskType str method
         """
-        assert len(TaskType) == 12
+        assert len(TaskType) == 13
         assert TaskType.NULL.value == 1
         assert TaskType.DATASET.value == 2
         assert TaskType.CLASSIFICATION.value == 3
@@ -247,10 +247,11 @@ class TestTaskType:
         assert TaskType.ANOMALY_DETECTION.value == 6
         assert TaskType.CROP.value == 7
         assert TaskType.TILE.value == 8
-        assert TaskType.COUNTING.value == 9
+        assert TaskType.INSTANCE_SEGMENTATION.value == 9
         assert TaskType.ACTIVELEARNING.value == 10
         assert TaskType.ANOMALY_SEGMENTATION.value == 11
         assert TaskType.ANOMALY_CLASSIFICATION.value == 12
+        assert TaskType.ROTATED_DETECTION.value == 13
         assert str(TaskType.NULL) == "NULL"
         assert str(TaskType.DATASET) == "DATASET"
         assert str(TaskType.CLASSIFICATION) == "CLASSIFICATION"
@@ -259,10 +260,11 @@ class TestTaskType:
         assert str(TaskType.ANOMALY_DETECTION) == "ANOMALY_DETECTION"
         assert str(TaskType.CROP) == "CROP"
         assert str(TaskType.TILE) == "TILE"
-        assert str(TaskType.COUNTING) == "COUNTING"
+        assert str(TaskType.INSTANCE_SEGMENTATION) == "INSTANCE_SEGMENTATION"
         assert str(TaskType.ACTIVELEARNING) == "ACTIVELEARNING"
         assert str(TaskType.ANOMALY_SEGMENTATION) == "ANOMALY_SEGMENTATION"
         assert str(TaskType.ANOMALY_CLASSIFICATION) == "ANOMALY_CLASSIFICATION"
+        assert str(TaskType.ROTATED_DETECTION) == "ROTATED_DETECTION"
 
     @pytest.mark.priority_medium
     @pytest.mark.component
@@ -284,7 +286,10 @@ class TestTaskType:
         )
         assert task_type_to_label_domain(TaskType.DETECTION) == Domain.DETECTION
         assert task_type_to_label_domain(TaskType.SEGMENTATION) == Domain.SEGMENTATION
-        assert task_type_to_label_domain(TaskType.COUNTING) == Domain.DETECTION
+        assert (
+            task_type_to_label_domain(TaskType.INSTANCE_SEGMENTATION)
+            == Domain.INSTANCE_SEGMENTATION
+        )
         assert (
             task_type_to_label_domain(TaskType.ANOMALY_CLASSIFICATION)
             == Domain.ANOMALY_CLASSIFICATION
@@ -1031,7 +1036,7 @@ class TestTaskTypesConstants:
             TaskType.CLASSIFICATION,
             TaskType.DETECTION,
             TaskType.SEGMENTATION,
-            TaskType.COUNTING,
+            TaskType.INSTANCE_SEGMENTATION,
             TaskType.ANOMALY_DETECTION,
             TaskType.ANOMALY_CLASSIFICATION,
             TaskType.ANOMALY_SEGMENTATION,

@@ -158,7 +158,7 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
                 dataset_item.numpy, superimpose=False, meta_data=meta_data
             )
             annotations_scene = self.annotation_converter.convert_to_annotation(pred_score, meta_data)
-            dataset_item.append_annotations(annotations_scene.annotations)
+            dataset_item.append_labels(annotations_scene.annotations[0].get_labels())
             anomaly_map = anomaly_map_to_color_map(anomaly_map, normalize=False)
             heatmap_media = ResultMediaEntity(
                 name="Anomaly Map",
