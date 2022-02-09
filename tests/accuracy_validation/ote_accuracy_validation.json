@@ -1,4 +1,4 @@
-{	
+{
 	"object_detection": {
 		"face-detection": {
 			"face-detection-0200": {
@@ -176,14 +176,6 @@
 			"text-spotting-0003": {
 				"test_id": "TextSpotting0003ExportTestCase.test_export_on_gpu",
 				"target": 86.6
-			}
-		}
-	},
-	"image_classification": {
-		"imagenet-classification": {
-			"mobilenet-v2-w1-imagenet": {
-				"test_id": "CustomClassificationExportTestCase.test_export_on_gpu",
-				"target": 82.84
 			}
 		}
 	}
