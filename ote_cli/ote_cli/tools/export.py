@@ -20,7 +20,7 @@ import argparse
 import os
 
 from ote_sdk.configuration.helper import create
-from ote_sdk.entities.model import ModelEntity
+from ote_sdk.entities.model import ModelEntity, ModelOptimizationType
 from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.usecases.adapters.model_adapter import ModelAdapter
 from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType
@@ -28,6 +28,7 @@ from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType
 from ote_cli.registry import find_and_parse_model_template
 from ote_cli.utils.importing import get_impl_class
 from ote_cli.utils.io import read_binary, read_label_schema, save_model_data
+from ote_cli.utils.nncf import is_checkpoint_nncf
 
 
 def parse_args():
@@ -62,7 +63,10 @@ def main():
     template = find_and_parse_model_template(args.template)
 
     # Get class for Task.
-    task_class = get_impl_class(template.entrypoints.base)
+    is_nncf = is_checkpoint_nncf(args.load_weights)
+    task_class = get_impl_class(
+        template.entrypoints.nncf if is_nncf else template.entrypoints.base
+    )
 
     # Get hyper parameters schema.
     hyper_parameters = create(template.hyper_parameters.data)
@@ -71,9 +75,7 @@ def main():
     environment = TaskEnvironment(
         model=None,
         hyper_parameters=hyper_parameters,
-        label_schema=read_label_schema(
-            os.path.join(os.path.dirname(args.load_weights), "label_schema.json")
-        ),
+        label_schema=read_label_schema(args.load_weights),
         model_template=template,
     )
 
@@ -82,6 +84,9 @@ def main():
         configuration=environment.get_model_configuration(),
         model_adapters=model_adapters,
         train_dataset=None,
+        optimization_type=ModelOptimizationType.NNCF
+        if is_nncf
+        else ModelOptimizationType.NONE,
     )
     environment.model = model
 

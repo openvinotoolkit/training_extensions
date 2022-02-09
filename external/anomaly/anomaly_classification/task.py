@@ -60,11 +60,8 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
         Args:
             task_environment (TaskEnvironment): OTE Task environment.
         """
+        torch.backends.cudnn.enabled = True
         logger.info("Initializing the task environment.")
-        logger.info(subprocess.call("nvidia-smi"))
-        logger.info("Torch Version '%s'", torch.__version__)
-        logger.info("Torch Cuda Version '%s'", torch.version.cuda)
-
         self.task_environment = task_environment
         self.model_name = task_environment.model_template.name
         self.labels = task_environment.get_labels()
@@ -224,6 +221,9 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
         metric = MetricsHelper.compute_f_measure(output_resultset)
         output_resultset.performance = metric.get_performance()
 
+        accuracy = MetricsHelper.compute_accuracy(output_resultset).get_performance()
+        output_resultset.performance.dashboard_metrics.extend(accuracy.dashboard_metrics)
+
         # NOTE: This is for debugging purpose.
         for i, _ in enumerate(output_resultset.ground_truth_dataset):
             logger.info(
@@ -233,6 +233,7 @@ class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, 
                 output_resultset.prediction_dataset[i].annotation_scene.annotations[0].get_labels()[0].probability,
             )
         logger.info("%s performance of the base torch model: %3.2f", metric.f_measure.name, metric.f_measure.value)
+        logger.info("%s : %3.2f", accuracy.score.name, accuracy.score.value)
 
     def export(self, export_type: ExportType, output_model: ModelEntity) -> None:
         """Export model to OpenVINO IR.

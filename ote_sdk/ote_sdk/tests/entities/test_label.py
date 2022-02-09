@@ -36,7 +36,7 @@ class TestDomain:
         Test passes if the results match
         """
         domain = Domain
-        assert len(domain) == 6
+        assert len(domain) == 8
 
 
 @pytest.mark.components(OteSdkComponent.OTE_SDK)

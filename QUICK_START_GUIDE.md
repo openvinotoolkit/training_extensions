@@ -14,13 +14,17 @@
     git checkout -b develop origin/develop
     git submodule update --init --recursive
     ```
+2. Export `OTE_SDK_PATH` environment variable to use it inside our scripts:
+   ```
+   export OTE_SDK_PATH=`pwd`/ote_sdk
+   ```
 
-2. Install prerequisites by running the following:
-    ```
-    sudo apt-get install python3-pip python3-venv
-    ```
+3. Install prerequisites by running the following:
+   ```
+   sudo apt-get install python3-pip python3-venv
+   ```
 
-3. Search for available scripts that create python virtual environments for different task types:
+4. Search for available scripts that create python virtual environments for different task types:
    ```bash
    find external/ -name init_venv.sh
    ```
@@ -31,44 +35,67 @@
    external/mmsegmentation/init_venv.sh
    external/deep-object-reid/init_venv.sh
    ```
+   Each line in the output gives an `init_venv.sh` script that creates a virtual environment
+   for the corresponding task type.
 
-4. Let's create, activate Object Detection virtual environment and install `ote_cli`:
+5. Let's choose a task type.
+   Let it be `external/mmdetection` for Object Detection task.
+   ```bash
+   TASK_ALGO_DIR=./external/mmdetection/
    ```
-   ./external/mmdetection/init_venv.sh det_venv
-   source det_venv/bin/activate
-   pip3 install -e ote_cli/
+   Note that we will not use the variable `TASK_ALGO_DIR` inside our scripts, we set it just to
+   simplify this guide.
+
+6. Let's create, activate virtual environment for the chosen task, and install `ote_cli`.
+   Note that the virtual environment folder may be created in any place in your system,
+   but we will create it in the folder `./cur_task_venv` for convenience.
+   ```bash
+   bash $TASK_ALGO_DIR/init_venv.sh ./cur_task_venv python3.8
+   source ./cur_task_venv/bin/activate
+   pip3 install -e ote_cli/ -c $TASK_ALGO_DIR/constraints.txt
    ```
+   Note that `python3.8` is pointed as the second parameter of the script
+   `init_venv.sh` -- it is the version of python that should be used. You can
+   use any `python3.8+` version here if it is installed on your system.
+
+   Also note that during installation of `ote_cli` the constraint file
+   from the chosen task folder is used to avoid breaking constraints
+   for the OTE task.
+
+7. As soon as `ote_cli` is installed in the virtual environment, you can use
+   `ote` command line interface described below to run
+   train/eval/export/other action for templates related to the chosen task type.
 
 ## OTE CLI commands
 
 ### ote find - search for model templates
    Have a look at model templates available for this virtual environment:
    ```
-   ote find --root ./external/mmdetection/
+   ote find --root $TASK_ALGO_DIR
    ```
 
-   Sample output:
+   Sample output (for mmdetection task chosen above):
    ```
-   - framework: OTEDetection_v2.9.1
-     name: Custom_Object_Detection_Gen3_VFNet
+   - id: Custom_Object_Detection_Gen3_VFNet
+     name: VFNet
      path: ./external/mmdetection/configs/ote/custom-object-detection/gen3_resnet50_VFNet/template.yaml
      task_type: DETECTION
-   - framework: OTEDetection_v2.9.1
-     name: Custom_Object_Detection_Gen3_SSD
-     path: ./external/mmdetection/configs/ote/custom-object-detection/gen3_mobilenetV2_SSD/template.yaml
-     task_type: DETECTION
-   - framework: OTEDetection_v2.9.1
-     name: Custom_Object_Detection_Gen3_ATSS
+   - id: Custom_Object_Detection_Gen3_ATSS
+     name: ATSS
      path: ./external/mmdetection/configs/ote/custom-object-detection/gen3_mobilenetV2_ATSS/template.yaml
+     task_type: DETECTION
+   - id: Custom_Object_Detection_Gen3_SSD
+     name: SSD
+     path: ./external/mmdetection/configs/ote/custom-object-detection/gen3_mobilenetV2_SSD/template.yaml
      task_type: DETECTION
    - ...
    ```
    Let's choose `./external/mmdetection/configs/ote/custom-object-detection/gen3_mobilenetV2_ATSS/template.yaml`
 
 ### ote train - run training of a particular model template
-   This tool trains a model on a dataset and saves results as folowing artifacts:  
-   * weights.pth - a model snapshot  
-   * label_schema.json - a label schema used in training, created from a dataset
+   This tool trains a model on a dataset and saves results as following artifacts:
+   * `weights.pth` - a model snapshot
+   * `label_schema.json` - a label schema used in training, created from a dataset
 
    These artifacts can be used by other `ote` commands: `ote export`, `ote eval`, `ote demo`.
    Let's have a look at `ote train` help. These parameters are the same for all model templates.
@@ -177,6 +204,47 @@
                            max_value: 100.0
                            min_value: 0.0
    ```
+
+### ote optimize - run optimization of a particular model template
+   This tool optimizes a trained model using NNCF or POT depending on a model format:
+
+   - NNCF optimization used for trained snapshots in framework specific format
+   - POT optimization used for exported model in IR format
+
+   ```
+   ote optimize ./external/mmdetection/configs/ote/custom-object-detection/gen3_mobilenetV2_ATSS/template.yaml --help
+   ```
+
+   Sample output:
+   ```
+   usage: ote optimize [-h] --train-ann-files TRAIN_ANN_FILES --train-data-roots TRAIN_DATA_ROOTS --val-ann-files
+                    VAL_ANN_FILES --val-data-roots VAL_DATA_ROOTS --load-weights LOAD_WEIGHTS --save-model-to
+                    SAVE_MODEL_TO [--aux-weights AUX_WEIGHTS]
+                    template {params} ...
+
+   positional arguments:
+     template
+     {params}              sub-command help
+       params              Hyper parameters defined in template file.
+
+   optional arguments:
+     -h, --help            show this help message and exit
+     --train-ann-files TRAIN_ANN_FILES
+                           Comma-separated paths to training annotation files.
+     --train-data-roots TRAIN_DATA_ROOTS
+                           Comma-separated paths to training data folders.
+     --val-ann-files VAL_ANN_FILES
+                           Comma-separated paths to validation annotation files.
+     --val-data-roots VAL_DATA_ROOTS
+                           Comma-separated paths to validation data folders.
+     --load-weights LOAD_WEIGHTS
+                           Load weights of trained model
+     --save-model-to SAVE_MODEL_TO
+                           Location where trained model will be stored.
+     --aux-weights AUX_WEIGHTS
+                           Load weights of trained auxiliary model
+   ```
+
 
 ### ote eval - run evaluation of a trained model on particular dataset
    Let's have a look at `ote eval` help. These parameters are the same for all model templates.

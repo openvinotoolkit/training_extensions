@@ -5,3 +5,4 @@ nbmake
 pytest
 pytest-ordering
 hpopt@git+https://github.com/openvinotoolkit/hyper_parameter_optimization@v0.1.0
+nncf==2.1.0
