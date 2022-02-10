@@ -17,7 +17,7 @@ Configurable parameters for STFPM anomaly classification task
 # and limitations under the License.
 
 from anomaly_classification.configs.configuration import BaseAnomalyClassificationConfig
-from anomaly_classification.configs.configuration_enums import EarlyStoppingMetrics
+from ote_anomalib.config.configuration_enums import EarlyStoppingMetrics
 from attr import attrs
 from ote_sdk.configuration.elements import (
     ParameterGroup,
