@@ -545,18 +545,19 @@ def check_nncf_model_graph(model, path_to_dot):
 class OTETestNNCFGraphAction(BaseOTETestAction):
     _name = "nncf_graph"
 
-    def __init__(self, dataset, labels_schema, template_path, reference_dir):
+    def __init__(
+        self,
+        dataset,
+        labels_schema,
+        template_path,
+        reference_dir,
+        fn_get_compressed_model,
+    ):
         self.dataset = dataset
         self.labels_schema = labels_schema
         self.template_path = template_path
         self.reference_dir = reference_dir
-
-    @abstractmethod
-    def _get_compressed_model(self, task):
-        """
-        Return compressed model without optimization steps
-        """
-        raise NotImplementedError("The method is not implemented")
+        self.fn_get_compressed_model = fn_get_compressed_model
 
     def _run_ote_nncf_graph(self, data_collector):
         # pylint:disable=protected-access
@@ -607,7 +608,7 @@ class OTETestNNCFGraphAction(BaseOTETestAction):
         if not os.path.exists(path_to_ref_dot):
             pytest.skip("Reference file does not exist: {}".format(path_to_ref_dot))
 
-        compressed_model = self._get_compressed_model(nncf_task)
+        compressed_model = self.fn_get_compressed_model(nncf_task)
 
         assert check_nncf_model_graph(
             compressed_model, path_to_ref_dot
@@ -751,4 +752,5 @@ def get_default_test_action_classes() -> List[Type[BaseOTETestAction]]:
         OTETestNNCFEvaluationAction,
         OTETestNNCFExportAction,
         OTETestNNCFExportEvaluationAction,
+        OTETestNNCFGraphAction,
     ]
