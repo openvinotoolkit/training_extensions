@@ -71,11 +71,16 @@ class OteMvtecDataset:
         self.create_validation_set = create_validation_set
         self.task_type = task_type
 
+        if self.task_type == TaskType.ANOMALY_CLASSIFICATION:
+            self.label_domain = Domain.ANOMALY_SEGMENTATION
+        elif self.task_type == TaskType.ANOMALY_SEGMENTATION:
+            self.label_domain = Domain.ANOMALY_SEGMENTATION
+
         self.normal_label = LabelEntity(
-            name=LabelNames.normal, domain=Domain.ANOMALY_CLASSIFICATION, id=ID(LabelNames.normal)
+            name=LabelNames.normal, domain=self.label_domain, id=ID(LabelNames.normal)
         )
         self.abnormal_label = LabelEntity(
-            name=LabelNames.anomalous, domain=Domain.ANOMALY_CLASSIFICATION, id=ID(LabelNames.anomalous)
+            name=LabelNames.anomalous, domain=self.label_domain, id=ID(LabelNames.anomalous)
         )
 
     def get_samples(self) -> DataFrame:
