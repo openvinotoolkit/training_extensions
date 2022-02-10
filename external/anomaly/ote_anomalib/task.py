@@ -28,6 +28,8 @@ from anomalib.core.callbacks import MinMaxNormalizationCallback
 from anomalib.core.model import AnomalyModule
 from anomalib.models import get_model
 from omegaconf import DictConfig, ListConfig
+from pytorch_lightning import Trainer
+
 from ote_anomalib.callbacks import AnomalyClassificationInferenceCallback, ProgressCallback
 from ote_anomalib.config import get_anomalib_config
 from ote_anomalib.data import OTEAnomalyDataModule
@@ -36,18 +38,18 @@ from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.inference_parameters import InferenceParameters
 from ote_sdk.entities.metrics import Performance, ScoreMetric
 from ote_sdk.entities.model import ModelEntity, ModelPrecision
+from ote_sdk.entities.model_template import TaskType
 from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.entities.train_parameters import TrainParameters
 from ote_sdk.serialization.label_mapper import label_schema_to_bytes
+from ote_sdk.usecases.evaluation.averaging import MetricAverageMethod
 from ote_sdk.usecases.evaluation.metrics_helper import MetricsHelper
 from ote_sdk.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType, IExportTask
 from ote_sdk.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from ote_sdk.usecases.tasks.interfaces.training_interface import ITrainingTask
 from ote_sdk.usecases.tasks.interfaces.unload_interface import IUnload
-from ote_sdk.entities.model_template import TaskType
-from pytorch_lightning import Trainer
 
 logger = get_logger(__name__)
 
@@ -228,24 +230,16 @@ class BaseAnomalyTask(ITrainingTask, IInferenceTask, IEvaluationTask, IExportTas
             evaluation_metric (Optional[str], optional): Evaluation metric. Defaults to None. Instead,
                 f-measure is used by default.
         """
-        from ote_sdk.usecases.evaluation.averaging import MetricAverageMethod
-        metric = MetricsHelper.compute_dice_averaged_over_pixels(output_resultset, MetricAverageMethod.MICRO)
+        if self.task_type == TaskType.ANOMALY_CLASSIFICATION:
+            metric = MetricsHelper.compute_f_measure(output_resultset)
+        elif self.task_type == TaskType.ANOMALY_SEGMENTATION:
+            metric = MetricsHelper.compute_dice_averaged_over_pixels(output_resultset, MetricAverageMethod.MICRO)
+        else:
+            raise ValueError(f"Unknown task type: {self.task_type}")
         output_resultset.performance = metric.get_performance()
 
         accuracy = MetricsHelper.compute_accuracy(output_resultset).get_performance()
         output_resultset.performance.dashboard_metrics.extend(accuracy.dashboard_metrics)
-
-        # NOTE: This is for debugging purpose.
-        for i, _ in enumerate(output_resultset.ground_truth_dataset):
-            logger.info(
-                "True vs Pred: %s %s - %3.2f",
-                output_resultset.ground_truth_dataset[i].annotation_scene.annotations[0].get_labels()[0].name,
-                output_resultset.prediction_dataset[i].annotation_scene.annotations[0].get_labels()[0].name,
-                output_resultset.prediction_dataset[i].annotation_scene.annotations[0].get_labels()[0].probability,
-            )
-        # logger.info("%s performance of the base torch model: %3.2f", metric.f_measure.name, metric.f_measure.value)
-        logger.info("%s performance of the base torch model: %3.2f", metric.overall_dice.name, metric.overall_dice.value)
-        logger.info("%s : %3.2f", accuracy.score.name, accuracy.score.value)
 
     def export(self, export_type: ExportType, output_model: ModelEntity) -> None:
         """Export model to OpenVINO IR.
