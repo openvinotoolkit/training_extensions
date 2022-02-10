@@ -59,7 +59,7 @@ class AnomalyClassificationInferenceCallback(Callback):
         pred_scores = np.hstack([output["pred_scores"].cpu() for output in outputs])
         pred_labels = np.hstack([output["pred_labels"].cpu() for output in outputs])
         anomaly_maps = np.vstack([output["anomaly_maps"].cpu() for output in outputs])
-        pred_masks = np.hstack([output["pred_masks"].cpu() for output in outputs])
+        pred_masks = np.vstack([output["pred_masks"].cpu() for output in outputs])
 
         # Loop over dataset again to assign predictions
         for dataset_item, pred_score, pred_label, anomaly_map, pred_mask in zip(
