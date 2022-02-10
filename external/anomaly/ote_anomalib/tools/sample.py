@@ -24,10 +24,7 @@ import shutil
 from argparse import Namespace
 from typing import Any, cast
 
-from anomaly_classification import (
-    AnomalyClassificationTask,
-    OpenVINOAnomalyClassificationTask,
-)
+from ote_anomalib import BaseAnomalyTask, OpenVINOAnomalyTask
 from ote_anomalib.data.mvtec import OteMvtecDataset
 from ote_anomalib.logging import get_logger
 from ote_sdk.configuration.helper import create as create_hyper_parameters
@@ -79,19 +76,21 @@ class OteAnomalyTask:
             >>> task.export()
             Performance(score: 0.9756097560975608, dashboard: (1 metric groups))
         """
-        logger.info("Loading MVTec dataset.")
-        self.dataset = OteMvtecDataset(path=dataset_path, seed=seed).generate()
 
         logger.info("Loading the model template.")
         self.model_template = parse_model_template(model_template_path)
+
+        logger.info("Loading MVTec dataset.")
+        self.task_type = self.model_template.task_type
+        self.dataset = OteMvtecDataset(path=dataset_path, seed=seed, task_type=self.task_type).generate()
 
         logger.info("Creating the task-environment.")
         self.task_environment = self.create_task_environment()
 
         logger.info("Creating the base Torch and OpenVINO tasks.")
         self.torch_task = self.create_task(task="base")
-        self.torch_task = cast(AnomalyClassificationTask, self.torch_task)
-        self.openvino_task: OpenVINOAnomalyClassificationTask
+        self.torch_task = cast(BaseAnomalyTask, self.torch_task)
+        self.openvino_task: OpenVINOAnomalyTask
 
     def create_task_environment(self) -> TaskEnvironment:
         """Create task environment."""
@@ -196,7 +195,7 @@ class OteAnomalyTask:
         logger.info("Creating the OpenVINO Task.")
 
         self.openvino_task = self.create_task(task="openvino")
-        self.openvino_task = cast(OpenVINOAnomalyClassificationTask, self.openvino_task)
+        self.openvino_task = cast(OpenVINOAnomalyTask, self.openvino_task)
 
         logger.info("Inferring the exported model on the validation set.")
         result_set = self.infer(task=self.openvino_task, output_model=exported_model)
