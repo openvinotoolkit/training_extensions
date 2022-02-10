@@ -140,7 +140,7 @@ class TestConfigurationHelper:
         assert cfg == ote_config_helper.convert(reconstructed_config_from_yaml, dict)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_creation_from_yaml(self):
         """

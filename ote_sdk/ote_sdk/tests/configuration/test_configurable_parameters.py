@@ -76,7 +76,7 @@ class TestConfigurableParameters:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_set_metadata(self):
         """
@@ -151,7 +151,7 @@ class TestConfigurableParameters:
         assert config_copy.get_metadata(test_parameter_name)[metadata_key] == old_value
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_update_auto_hpo_state(self):
         """
