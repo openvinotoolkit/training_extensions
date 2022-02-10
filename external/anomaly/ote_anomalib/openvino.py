@@ -37,6 +37,7 @@ from compression.graph.model_utils import compress_model_weights, get_nodes_by_t
 from compression.pipeline.initializer import create_pipeline
 from omegaconf import ListConfig
 from omegaconf.dictconfig import DictConfig
+
 from ote_anomalib.config import get_anomalib_config
 from ote_anomalib.exportable_code import AnomalyClassification
 from ote_anomalib.logging import get_logger
@@ -52,15 +53,18 @@ from ote_sdk.entities.model import (
     ModelPrecision,
     OptimizationMethod,
 )
+from ote_sdk.entities.model_template import TaskType
 from ote_sdk.entities.optimization_parameters import OptimizationParameters
 from ote_sdk.entities.result_media import ResultMediaEntity
 from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.serialization.label_mapper import LabelSchemaMapper, label_schema_to_bytes
+from ote_sdk.usecases.evaluation.averaging import MetricAverageMethod
 from ote_sdk.usecases.evaluation.metrics_helper import MetricsHelper
 from ote_sdk.usecases.exportable_code import demo
 from ote_sdk.usecases.exportable_code.prediction_to_annotation_converter import (
     AnomalyClassificationToAnnotationConverter,
+    AnomalySegmentationToAnnotationConverter,
 )
 from ote_sdk.usecases.exportable_code.utils import set_proper_git_commit_hash
 from ote_sdk.usecases.tasks.interfaces.deployment_interface import IDeploymentTask
@@ -104,7 +108,7 @@ class OTEOpenVINOAnomalyDataloader(DataLoader):
         return len(self.dataset)
 
 
-class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeploymentTask):
+class OpenVINOAnomalyTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeploymentTask):
     """
     OpenVINO inference task
 
@@ -115,9 +119,15 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
     def __init__(self, task_environment: TaskEnvironment) -> None:
         logger.info("Initializing the OpenVINO task.")
         self.task_environment = task_environment
+        self.task_type = self.task_environment.model_template.task_type
         self.config = self.get_config()
         self.inferencer = self.load_inferencer()
-        self.annotation_converter = AnomalyClassificationToAnnotationConverter(self.task_environment.label_schema)
+        if self.task_type == TaskType.ANOMALY_CLASSIFICATION:
+            self.annotation_converter = AnomalyClassificationToAnnotationConverter(self.task_environment.label_schema)
+        elif self.task_type == TaskType.ANOMALY_SEGMENTATION:
+            self.annotation_converter = AnomalySegmentationToAnnotationConverter(self.task_environment.label_schema)
+        else:
+            raise ValueError(f"Unknown task type: {self.task_type}")
         template_file_path = task_environment.model_template.model_template_path
         self._base_dir = os.path.abspath(os.path.dirname(template_file_path))
 
@@ -157,7 +167,14 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
             anomaly_map, pred_score = self.inferencer.predict(
                 dataset_item.numpy, superimpose=False, meta_data=meta_data
             )
-            annotations_scene = self.annotation_converter.convert_to_annotation(pred_score, meta_data)
+            if self.task_type == TaskType.ANOMALY_CLASSIFICATION:
+                annotations_scene = self.annotation_converter.convert_to_annotation(pred_score, meta_data)
+            elif self.task_type == TaskType.ANOMALY_SEGMENTATION:
+                annotations_scene = self.annotation_converter.convert_to_annotation(anomaly_map, meta_data)
+            else:
+                raise ValueError(f"Unknown task type: {self.task_type}")
+
+            logger.info(f"{dataset_item.media._Image__file_path}: {len(annotations_scene.annotations)}")
             dataset_item.append_annotations(annotations_scene.annotations)
             anomaly_map = anomaly_map_to_color_map(anomaly_map, normalize=False)
             heatmap_media = ResultMediaEntity(
@@ -192,18 +209,13 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
             output_resultset (ResultSetEntity): Result set storing ground truth and predicted dataset.
             evaluation_metric (Optional[str], optional): Evaluation metric. Defaults to None.
         """
-        metric = MetricsHelper.compute_f_measure(output_resultset)
+        if self.task_type == TaskType.ANOMALY_CLASSIFICATION:
+            metric = MetricsHelper.compute_f_measure(output_resultset)
+        elif self.task_type == TaskType.ANOMALY_SEGMENTATION:
+            metric = MetricsHelper.compute_dice_averaged_over_pixels(output_resultset, MetricAverageMethod.MICRO)
+        else:
+            raise ValueError(f"Unknown task type: {self.task_type}")
         output_resultset.performance = metric.get_performance()
-
-        # NOTE: This is for debugging purpose.
-        for i, _ in enumerate(output_resultset.ground_truth_dataset):
-            logger.info(
-                "True vs Pred: %s %s - %3.2f",
-                output_resultset.ground_truth_dataset[i].annotation_scene.annotations[0].get_labels()[0].name,
-                output_resultset.prediction_dataset[i].annotation_scene.annotations[0].get_labels()[0].name,
-                output_resultset.prediction_dataset[i].annotation_scene.annotations[0].get_labels()[0].probability,
-            )
-        logger.info("%s performance of the OpenVINO model: %3.2f", metric.f_measure.name, metric.f_measure.value)
 
     def _get_optimization_algorithms_configs(self) -> List[ADDict]:
         """Returns list of optimization algorithms configurations"""
