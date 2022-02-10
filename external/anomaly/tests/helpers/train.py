@@ -22,10 +22,7 @@ import os
 import time
 from typing import Union
 
-from anomaly_classification import (
-    AnomalyClassificationTask,
-    OpenVINOAnomalyClassificationTask,
-)
+from ote_anomalib import BaseAnomalyTask, OpenVINOAnomalyTask
 from ote_anomalib.data.mvtec import OteMvtecDataset
 from ote_sdk.configuration.helper import create
 from ote_sdk.entities.inference_parameters import InferenceParameters
@@ -68,7 +65,7 @@ class OTEAnomalyTrainer:
 
         self.task_environment = self.create_task_environment()
         self.base_task = self.create_task()
-        self.openvino_task: OpenVINOAnomalyClassificationTask
+        self.openvino_task: OpenVINOAnomalyTask
 
         self.output_model = ModelEntity(
             train_dataset=self.dataset,
@@ -104,7 +101,7 @@ class OTEAnomalyTrainer:
 
         return task_environment
 
-    def create_task(self) -> AnomalyClassificationTask:
+    def create_task(self) -> BaseAnomalyTask:
         """
         Create Anomaly Training Task
 
@@ -157,7 +154,7 @@ class OTEAnomalyTrainer:
 
     def validate(
         self,
-        task: Union[AnomalyClassificationTask, OpenVINOAnomalyClassificationTask],
+        task: Union[BaseAnomalyTask, OpenVINOAnomalyTask],
         subset=Subset.TESTING,
         optimize: bool = False,
     ) -> ResultSetEntity:
@@ -188,7 +185,7 @@ class OTEAnomalyTrainer:
         )
 
         if optimize:
-            if isinstance(task, AnomalyClassificationTask):
+            if isinstance(task, BaseAnomalyTask):
                 raise ValueError("Base task cannot perform optimization")
 
             self.openvino_task.optimize(
@@ -215,7 +212,7 @@ class OTEAnomalyTrainer:
         self.base_task.export(ExportType.OPENVINO, self.output_model)
         # assign the converted OpenVINO model to the current task environment model
         self.task_environment.model = self.output_model
-        self.openvino_task = OpenVINOAnomalyClassificationTask(task_environment=self.task_environment)
+        self.openvino_task = OpenVINOAnomalyTask(task_environment=self.task_environment)
 
     def deploy(self):
         """

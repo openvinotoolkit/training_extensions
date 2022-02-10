@@ -30,6 +30,7 @@ from ote_sdk.entities.result_media import ResultMediaEntity
 from ote_sdk.entities.scored_label import ScoredLabel
 from pytorch_lightning.callbacks import Callback
 from ote_anomalib.data.utils import annotations_from_mask
+from ote_sdk.entities.model_template import TaskType
 
 logger = get_logger(__name__)
 
@@ -46,10 +47,11 @@ def get_inference_callback(task_type: str, ote_dataset: DatasetEntity, labels: L
 class AnomalyClassificationInferenceCallback(Callback):
     """Callback that updates the OTE dataset during inference."""
 
-    def __init__(self, ote_dataset: DatasetEntity, labels: List[LabelEntity]):
+    def __init__(self, ote_dataset: DatasetEntity, labels: List[LabelEntity], task_type: TaskType):
         self.ote_dataset = ote_dataset
         self.normal_label = [label for label in labels if label.name == LabelNames.normal][0]
         self.anomalous_label = [label for label in labels if label.name == LabelNames.anomalous][0]
+        self.task_type = task_type
 
     def on_predict_epoch_end(self, _trainer: pl.Trainer, pl_module: AnomalyModule, outputs: List[Any]):
         """Call when the predict epoch ends."""
@@ -64,10 +66,14 @@ class AnomalyClassificationInferenceCallback(Callback):
             self.ote_dataset, pred_scores, pred_labels, anomaly_maps, pred_masks
         ):
             label = self.anomalous_label if pred_label else self.normal_label
-            probability = (1 - pred_score) if pred_score < 0.5 else pred_score
-            dataset_item.append_labels([ScoredLabel(label=label, probability=float(probability))])
-            mask = pred_mask.squeeze().astype(np.uint8)
-            dataset_item.append_annotations(annotations_from_mask(mask, self.anomalous_label))
+            if self.task_type == TaskType.ANOMALY_CLASSIFICATION:
+                probability = (1 - pred_score) if pred_score < 0.5 else pred_score
+                dataset_item.append_labels([ScoredLabel(label=label, probability=float(probability))])
+            elif self.task_type == TaskType.ANOMALY_SEGMENTATION:
+                mask = pred_mask.squeeze().astype(np.uint8)
+                dataset_item.append_annotations(annotations_from_mask(mask, self.normal_label, self.anomalous_label))
+            else:
+                raise ValueError(f"Unknown task type: {self.task_type}")
 
             heatmap = anomaly_map_to_color_map(anomaly_map.squeeze(), normalize=False)
             heatmap_media = ResultMediaEntity(

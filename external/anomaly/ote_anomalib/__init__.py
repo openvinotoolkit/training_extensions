@@ -17,5 +17,6 @@ Initialization of OTE Anomalib
 # and limitations under the License.
 
 from .task import BaseAnomalyTask
+from .openvino import OpenVINOAnomalyTask
 
-__all__ = ["BaseAnomalyTask"]
+__all__ = ["BaseAnomalyTask", "OpenVINOAnomalyTask"]

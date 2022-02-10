@@ -8,12 +8,12 @@ summary: This model is faster and in many cases more accurate, but it requires a
 application: ~
 
 # Algo backend.
-framework: OTEAnomalySegmentation v0.1.0
+framework: OTEAnomalyClassification v0.1.0  # this will be updated after the name has been changed on the platform side
 
 # Task implementations.
 entrypoints:
-  base: anomaly_segmentation.AnomalySegmentationTask
-  openvino: anomaly_segmentation.OpenVINOAnomalyClassificationTask
+  base: ote_anomalib.BaseAnomalyTask
+  openvino: ote_anomalib.OpenVINOAnomalyTask
 
 # Hyper Parameters
 hyper_parameters:

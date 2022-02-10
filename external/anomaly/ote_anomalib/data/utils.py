@@ -22,9 +22,11 @@ from ote_sdk.entities.annotation import (
 )
 from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.entities.shapes.polygon import Point, Polygon
+from ote_sdk.entities.shapes.rectangle import Rectangle
 
 
-def annotations_from_mask(mask: np.ndarray, anomalous_label):
+def annotations_from_mask(mask: np.ndarray, normal_label, anomalous_label):
+    # TODO: add anomaly_map argument to extract confidence scores
     height, width = mask.shape[:2]
     contours, _ = cv2.findContours(mask, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_NONE)
     annotations = []
@@ -40,5 +42,13 @@ def annotations_from_mask(mask: np.ndarray, anomalous_label):
                 labels=[ScoredLabel(anomalous_label, 1.0)],
             )
         )
+    if len(annotations) == 0:
+        # TODO: add confidence to this label
+        annotations = [
+            Annotation(
+                Rectangle.generate_full_box(),
+                labels=[ScoredLabel(label=normal_label, probability=1.0)],
+            )
+        ]
 
     return annotations

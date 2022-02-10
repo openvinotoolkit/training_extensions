@@ -31,6 +31,7 @@ from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.shapes.polygon import Polygon
 from ote_sdk.entities.subset import Subset
 from ote_sdk.utils.segmentation_utils import mask_from_dataset_item
+from ote_sdk.entities.model_template import TaskType
 
 logger = get_logger(__name__)
 
@@ -67,9 +68,10 @@ class OTEAnomalyDataset(Dataset):
         torch.Size([3, 256, 256])
     """
 
-    def __init__(self, config: Union[DictConfig, ListConfig], dataset: DatasetEntity):
+    def __init__(self, config: Union[DictConfig, ListConfig], dataset: DatasetEntity, task_type: TaskType):
         self.config = config
         self.dataset = dataset
+        self.task_type = task_type
 
         self.pre_processor = PreProcessor(
             config=config.transform if "transform" in config.keys() else None,
@@ -83,9 +85,9 @@ class OTEAnomalyDataset(Dataset):
     def __getitem__(self, index: int) -> Dict[str, Union[int, Tensor]]:
         dataset_item = self.dataset[index]
         item = {"index": index}
-        if self.config.dataset.task == "classification":
+        if self.task_type == TaskType.ANOMALY_CLASSIFICATION:
             item["image"] = self.pre_processor(image=dataset_item.numpy)["image"]
-        elif self.config.dataset.task == "segmentation":
+        elif self.task_type == TaskType.ANOMALY_SEGMENTATION:
             if any([isinstance(annotation.shape, Polygon) for annotation in dataset_item.get_annotations()]):
                 mask = mask_from_dataset_item(dataset_item, dataset_item.get_shapes_labels()).squeeze()
             else:
@@ -122,10 +124,11 @@ class OTEAnomalyDataModule(LightningDataModule):
         torch.Size([32, 3, 256, 256])
     """
 
-    def __init__(self, config: Union[DictConfig, ListConfig], dataset: DatasetEntity) -> None:
+    def __init__(self, config: Union[DictConfig, ListConfig], dataset: DatasetEntity, task_type: TaskType) -> None:
         super().__init__()
         self.config = config
         self.dataset = dataset
+        self.task_type = task_type
 
         self.train_ote_dataset: DatasetEntity
         self.val_ote_dataset: DatasetEntity
@@ -180,7 +183,7 @@ class OTEAnomalyDataModule(LightningDataModule):
         Train Dataloader
         """
 
-        dataset = OTEAnomalyDataset(self.config, self.train_ote_dataset)
+        dataset = OTEAnomalyDataset(self.config, self.train_ote_dataset, self.task_type)
         return DataLoader(
             dataset,
             shuffle=False,
@@ -193,7 +196,7 @@ class OTEAnomalyDataModule(LightningDataModule):
         Validation Dataloader
         """
 
-        dataset = OTEAnomalyDataset(self.config, self.val_ote_dataset)
+        dataset = OTEAnomalyDataset(self.config, self.val_ote_dataset, self.task_type)
         return DataLoader(
             dataset,
             shuffle=False,
@@ -205,7 +208,7 @@ class OTEAnomalyDataModule(LightningDataModule):
         """
         Test Dataloader
         """
-        dataset = OTEAnomalyDataset(self.config, self.test_ote_dataset)
+        dataset = OTEAnomalyDataset(self.config, self.test_ote_dataset, self.task_type)
         return DataLoader(
             dataset,
             shuffle=False,
@@ -217,7 +220,7 @@ class OTEAnomalyDataModule(LightningDataModule):
         """
         Predict Dataloader
         """
-        dataset = OTEAnomalyDataset(self.config, self.predict_ote_dataset)
+        dataset = OTEAnomalyDataset(self.config, self.predict_ote_dataset, self.task_type)
         return DataLoader(
             dataset,
             shuffle=False,

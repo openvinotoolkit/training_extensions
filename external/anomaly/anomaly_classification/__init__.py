@@ -17,6 +17,6 @@ Initialization of Anomaly Classification Tasks
 # and limitations under the License.
 
 from .openvino import OpenVINOAnomalyClassificationTask
-from .task import AnomalyClassificationTask
+# from .task import AnomalyClassificationTask
 
-__all__ = ["AnomalyClassificationTask", "OpenVINOAnomalyClassificationTask"]
+__all__ = ["OpenVINOAnomalyClassificationTask"]

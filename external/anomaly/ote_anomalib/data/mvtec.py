@@ -128,7 +128,7 @@ class OteMvtecDataset:
                 annotation_scene = AnnotationSceneEntity(annotations=annotations, kind=AnnotationSceneKind.ANNOTATION)
             elif self.task_type == TaskType.ANOMALY_SEGMENTATION and sample.label == self.abnormal_label:
                 mask = cv2.imread(sample.mask_path, cv2.IMREAD_GRAYSCALE)
-                annotations = annotations_from_mask(mask, self.abnormal_label)
+                annotations = annotations_from_mask(mask, self.normal_label, self.abnormal_label)
                 annotation_scene = AnnotationSceneEntity(annotations=annotations, kind=AnnotationSceneKind.ANNOTATION)
             else:
                 raise ValueError(f"Unknown task type: {self.task_type}")
