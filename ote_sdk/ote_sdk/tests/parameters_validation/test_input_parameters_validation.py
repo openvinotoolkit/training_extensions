@@ -602,11 +602,9 @@ class TestParamsValidation:
             # Path to non-yaml file is specified as "input_config" parameter
             self.generate_file_path("unexpected_type.jpg"),
             # Path Null character is specified in "input_config" parameter
-            "null_char: '\0key'",
             self.generate_file_path("null\0char.yaml"),
             # Path with non-printable character is specified as "input_config" parameter
             self.generate_file_path("null\nchar.yaml"),
-            "non_printable: '\tkey'",
         ]:
             with pytest.raises(ValueError):
                 create(incorrect_parameter)
