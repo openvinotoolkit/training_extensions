@@ -3,13 +3,13 @@
 #
 
 import itertools
-import logging
 from abc import ABC, abstractmethod
 from collections import OrderedDict
 from copy import deepcopy
 from pprint import pformat
 from typing import Any, Dict, List, Optional, Type
 
+from .logging import get_logger
 from .training_test_case import (
     OTETestCaseInterface,
     generate_ote_integration_test_case_class,
@@ -17,7 +17,7 @@ from .training_test_case import (
 from .training_tests_actions import get_default_test_action_classes
 from .training_tests_common import DEFAULT_FIELD_VALUE_FOR_USING_IN_TEST
 
-logger = logging.getLogger(__name__)
+logger = get_logger()
 
 
 class OTETrainingTestInterface(ABC):
