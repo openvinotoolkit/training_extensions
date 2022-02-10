@@ -32,10 +32,10 @@ logger = logging.getLogger(__name__)
 @pytest.mark.parametrize(
     ["task_path", "template_path"],
     [
-     # ("anomaly_classification", "padim"),
-     # ("anomaly_classification", "stfpm"),
+     ("anomaly_classification", "padim"),
+     ("anomaly_classification", "stfpm"),
      ("anomaly_segmentation", "padim"),
-     # ("anomaly_segmentation", "stfpm")
+     ("anomaly_segmentation", "stfpm")
     ],
 )
 class TestAnomalyClassification:
@@ -84,16 +84,7 @@ class TestAnomalyClassification:
         self._trainer.export()
         openvino_results = self._trainer.validate(task=self._trainer.openvino_task)
 
-        base_probability_scores = [
-            base_results.prediction_dataset[i].annotation_scene.annotations[0].get_labels()[0].probability
-            for i in range(len(base_results.prediction_dataset))
-        ]
-        openvino_probability_scores = [
-            openvino_results.prediction_dataset[i].annotation_scene.annotations[0].get_labels()[0].probability
-            for i in range(len(openvino_results.prediction_dataset))
-        ]
-
-        assert np.allclose(base_probability_scores, openvino_probability_scores, rtol=0.05)
+        assert np.allclose(base_results.performance.score.value, openvino_results.performance.score.value, atol=0.1)
 
     @TestDataset(num_train=200, num_test=10, dataset_path="./datasets/MVTec", use_mvtec=False)
     def test_ote_deploy(self, task_path, template_path, dataset_path="./datasets/MVTec", category="bottle"):
