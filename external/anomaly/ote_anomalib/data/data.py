@@ -91,12 +91,13 @@ class OTEAnomalyDataset(Dataset):
             if any([isinstance(annotation.shape, Polygon) for annotation in dataset_item.get_annotations()]):
                 mask = mask_from_dataset_item(dataset_item, dataset_item.get_shapes_labels()).squeeze()
             else:
-                mask = np.zeros(dataset_item.numpy.shape[:2])
+                mask = np.zeros(dataset_item.numpy.shape[:2]).astype(np.int)
             pre_processed = self.pre_processor(image=dataset_item.numpy, mask=mask)
             item["image"] = pre_processed["image"]
             item["mask"] = pre_processed["mask"]
         else:
             raise ValueError(f"Unsupported task type: {self.config.dataset.task}")
+
         if len(dataset_item.get_shapes_labels()) > 0:
             item["label"] = 0 if dataset_item.get_shapes_labels()[0].name == LabelNames.normal else 1
         return item
