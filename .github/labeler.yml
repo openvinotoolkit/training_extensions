@@ -9,3 +9,5 @@ SDK:
   - 'ote_sdk/*'
 tests:
   - 'tests/*'
+tasks:
+  - 'external/*'
