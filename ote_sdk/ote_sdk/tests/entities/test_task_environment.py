@@ -72,7 +72,7 @@ def environment():
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestTaskEnvironment:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_task_environment(self):
         """
@@ -141,7 +141,7 @@ class TestTaskEnvironment:
         assert "id=ID()" in repr(env)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_compare_learning_parameters_num_workers(self):
         """
@@ -175,7 +175,7 @@ class TestTaskEnvironment:
         assert config_example_learning_parameters_num_workers == 4  # From ConfigExample
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_compare_learning_parameters_batch_size(self):
         """
@@ -210,7 +210,7 @@ class TestTaskEnvironment:
         assert config_example_learning_parameters_batch_size == 5  # From ConfigExample
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_compare_learning_parameters_num_iters(self):
         """
@@ -245,7 +245,7 @@ class TestTaskEnvironment:
         assert config_example_learning_parameters_num_iters == 1  # From ConfigExample
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_compare_learning_parameters_learning_rate(self):
         """
@@ -282,7 +282,7 @@ class TestTaskEnvironment:
         )  # From ConfigExample
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_compare_learning_parameters_num_checkpoints(self):
         """
@@ -318,7 +318,7 @@ class TestTaskEnvironment:
             ]
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_dummy_config_missing_param(self):
         """
@@ -343,7 +343,7 @@ class TestTaskEnvironment:
             env.get_hyper_parameters().learning_parameters.missing_param
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_compare_postprocessing_confidence_threshold(self):
         """
@@ -378,7 +378,7 @@ class TestTaskEnvironment:
         )  # From ConfigExample
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_compare_postprocessing_result_based_confidence_threshold(self):
         """
@@ -415,7 +415,7 @@ class TestTaskEnvironment:
         )  # From ConfigExample
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_set_hyper_parameters(self):
         """

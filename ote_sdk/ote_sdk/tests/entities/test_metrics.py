@@ -59,7 +59,7 @@ class TestMetrics:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_duration_metrics(self):
         """
@@ -114,7 +114,7 @@ class TestMetrics:
         assert mixed_conditions_metric.get_duration_string() == "1 minute 2.10 seconds"
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_matrix_metric(self):
         """
@@ -220,7 +220,7 @@ class TestCountMetric:
         return CountMetric(name="Test CountMetric", value=10)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_count_metric(self):
         """
@@ -249,7 +249,7 @@ class TestInfoMetric:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_info_metric(self):
         """
@@ -275,7 +275,7 @@ class TestDateMetric:
         return DateMetric(name="DateMetric with not specified date")
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_date_metric(self):
         """
@@ -317,7 +317,7 @@ class TestScoreMetric:
         return ScoreMetric(name="Test ScoreMetric", value=2.0)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_score_metric(self):
         """
@@ -377,7 +377,7 @@ class TestCurveMetric:
         return CurveMetric(name="x not specified CurveMetric", ys=self.ys())
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_curve_metric(self):
         """
@@ -425,7 +425,7 @@ class TestCurveMetric:
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestNullMetric:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_null_metric(self):
         """
@@ -454,7 +454,7 @@ class TestNullMetric:
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestVisualizationType:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_visualization_type(self):
         """
@@ -476,7 +476,7 @@ class TestVisualizationType:
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestColorPalette:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_color_palette(self):
         """
@@ -495,7 +495,7 @@ class TestColorPalette:
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestVisualizationInfo:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_visualization_info(self):
         """
@@ -552,7 +552,7 @@ class TestTextChartInfo:
         return TextChartInfo("Test TextChartInfo")
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_text_chart_info(self):
         """
@@ -580,7 +580,7 @@ class TestLineChartInfo:
         return LineChartInfo("Test default parameters LineChartInfo")
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_line_chart_info(self):
         """
@@ -643,7 +643,7 @@ class TestBarChartInfo:
         return BarChartInfo(name="BarChartInfo with default parameters")
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_bar_chart_info(self):
         """
@@ -709,7 +709,7 @@ class TestMatrixChartInfo:
         return MatrixChartInfo("Test MatrixCharInfo with default parameters")
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_matrix_chart_info(self):
         """
@@ -772,7 +772,7 @@ class TestMatrixChartInfo:
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestMatrixMetricsGroup:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_matrix_metrics_group(self):
         """
@@ -820,7 +820,7 @@ class TestMatrixMetricsGroup:
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestLineMetricsGroup:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_line_metrics_group(self):
         """
@@ -863,7 +863,7 @@ class TestLineMetricsGroup:
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestBarMetricsGroup:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_bar_metrics_group(self):
         """
@@ -906,7 +906,7 @@ class TestBarMetricsGroup:
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestTextMetricsGroup:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_text_metrics_group(self):
         """
@@ -957,7 +957,7 @@ class TestTextMetricsGroup:
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestPerformance:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_performance(self):
         """
@@ -1062,7 +1062,7 @@ class TestPerformance:
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestNullPerformance:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_null_performance(self):
         """

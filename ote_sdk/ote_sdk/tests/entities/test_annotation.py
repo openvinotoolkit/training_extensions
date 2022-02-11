@@ -61,7 +61,7 @@ class TestAnnotation:
     labels2 = [car_label, person_label]
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_annotation_default_property(self):
         """
@@ -87,7 +87,7 @@ class TestAnnotation:
         assert annotation.get_labels() == []
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_annotation_setters(self):
         """
@@ -115,7 +115,7 @@ class TestAnnotation:
         assert annotation.shape == ellipse
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_annotation_magic_methods(self):
         """
@@ -151,7 +151,7 @@ class TestAnnotation:
         assert annotation != str
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_annotation_get_labels(self):
         """
@@ -193,7 +193,7 @@ class TestAnnotation:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_annotation_get_label_ids(self):
         """
@@ -221,7 +221,7 @@ class TestAnnotation:
         }
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_annotation_append_label(self):
         """
@@ -249,7 +249,7 @@ class TestAnnotation:
         assert "name=person" in str(annotation.get_labels())
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_annotation_set_labels(self):
         """
@@ -282,7 +282,7 @@ class TestAnnotation:
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestAnnotationSceneKind:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_annotation_scene_kind(self):
         """
@@ -333,7 +333,7 @@ class TestAnnotationSceneEntity:
     )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_annotation_scene_entity_default_value(self):
         """
@@ -362,7 +362,7 @@ class TestAnnotationSceneEntity:
         assert annotation_scene_entity.shapes == [self.rectangle, self.polygon]
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_annotation_scene_entity_setters(self):
         """
@@ -397,7 +397,7 @@ class TestAnnotationSceneEntity:
         assert annotation_scene_entity.annotations == self.annotation
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_annotation_scene_entity_magic_methods(self):
         """
@@ -430,7 +430,7 @@ class TestAnnotationSceneEntity:
             assert i in repr(annotation_scene_entity)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_annotation_scene_entity_contains_any(self):
         """
@@ -471,7 +471,7 @@ class TestAnnotationSceneEntity:
         assert annotation_scene_entity2.contains_any(labels=[tree_label]) is False
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_annotation_scene_entity_append_annotation(self):
         """
@@ -502,7 +502,7 @@ class TestAnnotationSceneEntity:
         assert len(annotation_scene_entity.annotations) == 3
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_annotation_scene_entity_append_annotations(self):
         """
@@ -526,7 +526,7 @@ class TestAnnotationSceneEntity:
         assert len(annotation_scene_entity.annotations) == 6
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_annotation_scene_entity_get_labels(self):
         """
@@ -550,7 +550,7 @@ class TestAnnotationSceneEntity:
         assert "name=tree" in str(annotation_scene_entity.get_labels())
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_annotation_scene_entity_get_label_ids(self):
         """
@@ -584,7 +584,7 @@ class TestAnnotationSceneEntity:
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestNullAnnotationSceneEntity:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_null_annotation_scene_entity(self):
         """

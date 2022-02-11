@@ -274,7 +274,7 @@ class CommonActions:
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestAccuracyFunctions:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_precision_metrics_group(self):
         """
@@ -340,7 +340,7 @@ class TestAccuracyFunctions:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_recall_metrics_group(self):
         """
@@ -407,7 +407,7 @@ class TestAccuracyFunctions:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_compute_unnormalized_confusion_matrices_from_resultset(self):
         """
@@ -484,7 +484,7 @@ class TestAccuracyFunctions:
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestAccuracy:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_accuracy_initialization(self):
         """
@@ -542,7 +542,7 @@ class TestAccuracy:
         check_confusion_matrices(actual_unnormalized_matrices)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_accuracy_get_performance(self):
         """
@@ -629,7 +629,7 @@ class TestAccuracy:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_accuracy_compute_accuracy(self):
         """

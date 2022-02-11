@@ -24,7 +24,7 @@ from ote_sdk.tests.constants.requirements import Requirements
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestIMediaEntity:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_i_media_entity(self):
         """
@@ -49,7 +49,7 @@ class TestIMediaEntity:
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestIMedia2DEntity:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_i_media_2d_entity(self):
         """

@@ -69,7 +69,7 @@ class TestGraph:
             assert list(attribute) == expected_attribute_dict.get("expected_value")
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     @pytest.mark.filterwarnings("ignore::PendingDeprecationWarning")
     def test_graph_initialization(self):
@@ -146,7 +146,7 @@ class TestGraph:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_graph_get_graph(self):
         """
@@ -223,7 +223,7 @@ class TestGraph:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_graph_set_graph(self):
         """
@@ -278,7 +278,7 @@ class TestGraph:
         assert directed_graph.get_graph() == non_directed_graph
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_graph_add_edge(self):
         """
@@ -360,7 +360,7 @@ class TestGraph:
         ]
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_graph_has_edge_between(self):
         """
@@ -405,7 +405,7 @@ class TestGraph:
             assert not directed_graph.has_edge_between(node_1, node_2)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_graph_neighbors(self):
         """
@@ -439,7 +439,7 @@ class TestGraph:
         assert directed_graph.neighbors(1) == []
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_graph_find_out_edges(self):
         """
@@ -473,7 +473,7 @@ class TestGraph:
             directed_graph.find_out_edges(1)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_graph_find_in_edges(self):
         """
@@ -507,7 +507,7 @@ class TestGraph:
             directed_graph.find_in_edges(1)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_graph_find_cliques(self):
         """
@@ -537,7 +537,7 @@ class TestGraph:
                 raise NetworkXNotImplemented
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     @pytest.mark.filterwarnings("ignore::PendingDeprecationWarning")
     def test_graph_num_labels(self):
@@ -583,7 +583,7 @@ class TestGraph:
         assert directed_graph.num_labels == 4
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_graph_remove_edges(self):
         """
@@ -640,7 +640,7 @@ class TestGraph:
         ]
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_graph_remove_node(self):
         """
@@ -745,7 +745,7 @@ class TestGraph:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_graph_num_nodes(self):
         """
@@ -802,7 +802,7 @@ class TestGraph:
         assert directed_graph.num_nodes() == 7
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_graph_eq(self):
         """
@@ -873,7 +873,7 @@ class TestGraph:
         assert directed_graph != str
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_graph_descendants(self):
         """
@@ -932,7 +932,7 @@ class TestMultiDiGraph:
         return multi_di_graph
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     @pytest.mark.filterwarnings("ignore::PendingDeprecationWarning")
     def test_multi_di_graph(self):
@@ -975,7 +975,7 @@ class TestMultiDiGraph:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_multi_di_graph_topological_sort(self):
         """
