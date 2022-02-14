@@ -55,8 +55,6 @@ them for prediction.
 * [Instance Segmentation](models/instance_segmentation)
   - [COCO instance segmentation](models/instance_segmentation/model_templates/coco-instance-segmentation)
   - [Custom instance segmentation](models/instance_segmentation/model_templates/custom-instance-segmentation)
-* [Image classification](models/image_classification)
-  - [Custom image classification](models/image_classification/model_templates/custom-classification)
 * [Object Detection](models/object_detection)
   - [Custom Object Detection](models/object_detection/model_templates/custom-object-detection)
   - [Face Detection](models/object_detection/model_templates/face-detection)

@@ -1,5 +1,0 @@
-models/
-IR/
-checkpoint/
-venv/
-*.onnx
