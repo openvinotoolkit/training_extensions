@@ -648,6 +648,7 @@ class HpoUnpickler(pickle.Unpickler):
 def main():
     """Run run_hpo_trainer with a pickle file"""
     hp_config = None
+    sys.path[0] = "" # to prevent importing nncf from this directory
 
     try:
         with open(sys.argv[1], "rb") as pfile:
