@@ -28,7 +28,7 @@ class TestConfigurationHelper:
         return str(Path(__file__).parent / Path(filename))
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_config_reconstruction(self):
         """
@@ -69,7 +69,7 @@ class TestConfigurationHelper:
         assert cfg == ote_config_helper.convert(reconstructed_config_from_yaml, dict)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_config_reconstruction_with_metadata_change(self):
         """
@@ -140,7 +140,7 @@ class TestConfigurationHelper:
         assert cfg == ote_config_helper.convert(reconstructed_config_from_yaml, dict)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_creation_from_yaml(self):
         """
@@ -190,7 +190,7 @@ class TestConfigurationHelper:
         assert cfg_dict == cfg_from_yaml_dict
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_broken_config(self):
         """
@@ -230,7 +230,7 @@ class TestConfigurationHelper:
         assert config.learning_parameters.epochs == 10
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_validation(self):
         """
@@ -284,7 +284,7 @@ class TestConfigurationHelper:
         assert ote_config_helper.validate(config)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_substitute_values(self):
         """
@@ -340,7 +340,7 @@ class TestConfigurationHelper:
         assert config.number_of_samples_for_auto_train == 500
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_substitute_values_for_lifecycle(self):
         """
@@ -404,7 +404,7 @@ class TestConfigurationHelper:
         assert config.dummy_float_selectable == 2
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_substitute_values_for_lifecycle_list(self):
         """
@@ -470,7 +470,7 @@ class TestConfigurationHelper:
         assert config.dummy_float_selectable == 4
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_values_only_conversion(self):
         """

@@ -36,7 +36,7 @@ from ote_sdk.tests.constants.requirements import Requirements
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestIMetadata:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_imetadata(self):
         """
@@ -68,7 +68,7 @@ class TestIMetadata:
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestFloatType:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_float_type_members(self):
         """
@@ -105,7 +105,7 @@ class TestFloatType:
             test_instance(6)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_float_type_magic_str(self):
         """
@@ -142,7 +142,7 @@ class TestFloatType:
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestMetadataItemEntity:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_metadata_item_entity(self):
         """
@@ -197,7 +197,7 @@ class TestMetadataItemEntity:
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestFloatMetadata:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_float_metadata(self):
         """
