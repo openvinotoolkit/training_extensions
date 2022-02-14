@@ -50,7 +50,8 @@ def check_hpopt_available():
 def run_hpo(args, environment, dataset, task_type):
     """Update the environment with better hyper-parameters found by HPO"""
     if check_hpopt_available():
-        if task_type not in {TaskType.CLASSIFICATION, TaskType.DETECTION}:
+        if task_type not in {TaskType.CLASSIFICATION, TaskType.DETECTION,
+                             TaskType.SEGMENTATION}:
             print(
                 "Currently supported task types are classification and detection."
                 f"{task_type} is not supported yet."
@@ -135,8 +136,25 @@ def run_hpo_trainer(
     # set epoch
     if task_type == TaskType.CLASSIFICATION:
         (hyper_parameters.learning_parameters.max_num_epochs) = hp_config["iterations"]
-    elif task_type in (TaskType.DETECTION, TaskType.SEGMENTATION):
+    elif task_type == TaskType.DETECTION:
         hyper_parameters.learning_parameters.num_iters = hp_config["iterations"]
+    elif task_type == TaskType.SEGMENTATION:
+        eph_comp = [
+            hyper_parameters.learning_parameters.learning_rate_fixed_iters,
+            hyper_parameters.learning_parameters.learning_rate_warmup_iters,
+            hyper_parameters.learning_parameters.num_iters
+        ]
+
+        total_eph = sum(eph_comp)
+        eph_comp = list(map(lambda x: x * hp_config["iterations"] / total_eph, eph_comp))
+        s_ord = sorted([i for i in range(len(eph_comp))], key=lambda k: eph_comp[k], reverse=True)
+
+        for i in range(hp_config["iterations"] - sum(map(lambda x: int(x), eph_comp))):
+            eph_comp[s_ord[i]] += 1
+
+        hyper_parameters.learning_parameters.learning_rate_fixed_iters = int(eph_comp[0])
+        hyper_parameters.learning_parameters.learning_rate_warmup_iters = int(eph_comp[1])
+        hyper_parameters.learning_parameters.num_iters = int(eph_comp[2])
 
     # set hyper-parameters and print them
     HpoManager.set_hyperparameter(hyper_parameters, hp_config["params"])
