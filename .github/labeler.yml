@@ -4,10 +4,10 @@ dependencies:
   - '**/*requirements*.*'
   - '**/setup.py'
 CLI:
-  - 'ote_cli/*'
+  - 'ote_cli/**/*'
 SDK:
-  - 'ote_sdk/*'
+  - 'ote_sdk/**/*'
 tests:
-  - 'tests/*'
+  - 'tests/**/*'
 tasks:
-  - 'external/*'
+  - 'external/**/*'
