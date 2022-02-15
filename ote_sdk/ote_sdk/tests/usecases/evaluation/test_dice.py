@@ -49,28 +49,28 @@ class TestDice:
         domain=Domain.DETECTION,
         color=color,
         creation_date=creation_date,
-        id=ID("car_label"),
+        id_=ID("car_label"),
     )
     human_label = LabelEntity(
         name="human",
         domain=Domain.DETECTION,
         color=color,
         creation_date=creation_date,
-        id=ID("human_label"),
+        id_=ID("human_label"),
     )
     dog_label = LabelEntity(
         name="dog",
         domain=Domain.DETECTION,
         color=color,
         creation_date=creation_date,
-        id=ID("dog_label"),
+        id_=ID("dog_label"),
     )
     cat_label = LabelEntity(
         name="cat",
         domain=Domain.DETECTION,
         color=color,
         creation_date=creation_date,
-        id=ID("cat_label"),
+        id_=ID("cat_label"),
     )
     configurable_params = ConfigurableParameters(
         header="Test model configurable params"

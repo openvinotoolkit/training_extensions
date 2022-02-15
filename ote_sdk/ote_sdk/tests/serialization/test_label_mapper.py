@@ -79,12 +79,12 @@ class TestLabelEntityMapper:
             hotkey="ctrl+1",
             creation_date=cur_date,
             is_empty=False,
-            id=ID("0000213"),
+            id_=ID("0000213"),
         )
         serialized = LabelMapper.forward(label)
 
         assert serialized == {
-            "_id": "0000213",
+            "__id_": "0000213",
             "name": "my_label",
             "color": {"red": red, "green": green, "blue": blue, "alpha": alpha},
             "hotkey": "ctrl+1",
@@ -124,7 +124,7 @@ class TestLabelSchemaEntityMapper:
                 name=name,
                 domain=Domain.CLASSIFICATION,
                 creation_date=cur_date,
-                id=ID(i),
+                id_=ID(i),
                 color=colors[i],
             )
             for i, name in enumerate(names)
@@ -136,7 +136,7 @@ class TestLabelSchemaEntityMapper:
             "label_tree": {"type": "tree", "directed": True, "nodes": [], "edges": []},
             "label_groups": [
                 {
-                    "_id": label_schema.get_groups()[0].id,
+                    "__id_": label_schema.get_groups()[0].id_,
                     "name": "from_label_list",
                     "label_ids": ["0", "1", "2"],
                     "relation_type": "EXCLUSIVE",
@@ -144,7 +144,7 @@ class TestLabelSchemaEntityMapper:
             ],
             "all_labels": {
                 "0": {
-                    "_id": "0",
+                    "__id_": "0",
                     "name": "cat",
                     "color": ColorMapper.forward(colors[0]),
                     "hotkey": "",
@@ -153,7 +153,7 @@ class TestLabelSchemaEntityMapper:
                     "is_empty": False,
                 },
                 "1": {
-                    "_id": "1",
+                    "__id_": "1",
                     "name": "dog",
                     "color": ColorMapper.forward(colors[1]),
                     "hotkey": "",
@@ -162,7 +162,7 @@ class TestLabelSchemaEntityMapper:
                     "is_empty": False,
                 },
                 "2": {
-                    "_id": "2",
+                    "__id_": "2",
                     "name": "mouse",
                     "color": ColorMapper.forward(colors[2]),
                     "hotkey": "",
@@ -198,7 +198,7 @@ class TestLabelGroupMapper:
             LabelEntity(
                 name=name,
                 domain=Domain.CLASSIFICATION,
-                id=ID(str(i)),
+                id_=ID(str(i)),
             )
             for i, name in enumerate(names)
         ]
@@ -207,7 +207,7 @@ class TestLabelGroupMapper:
         )
         serialized = LabelGroupMapper.forward(label_group)
         assert serialized == {
-            "_id": label_group.id,
+            "__id_": label_group.id_,
             "name": "Test LabelGroup",
             "label_ids": ["0", "1", "2"],
             "relation_type": "EMPTY_LABEL",
@@ -222,17 +222,17 @@ class TestLabelGroupMapper:
 
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestLabelGraphMapper:
-    label_0 = LabelEntity(name="label_0", domain=Domain.SEGMENTATION, id=ID("0"))
-    label_0_1 = LabelEntity(name="label_0_1", domain=Domain.SEGMENTATION, id=ID("0_1"))
-    label_0_2 = LabelEntity(name="label_0_2", domain=Domain.SEGMENTATION, id=ID("0_2"))
+    label_0 = LabelEntity(name="label_0", domain=Domain.SEGMENTATION, id_=ID("0"))
+    label_0_1 = LabelEntity(name="label_0_1", domain=Domain.SEGMENTATION, id_=ID("0_1"))
+    label_0_2 = LabelEntity(name="label_0_2", domain=Domain.SEGMENTATION, id_=ID("0_2"))
     label_0_1_1 = LabelEntity(
-        name="label_0_1_1", domain=Domain.SEGMENTATION, id=ID("0_1_1")
+        name="label_0_1_1", domain=Domain.SEGMENTATION, id_=ID("0_1_1")
     )
     label_0_1_2 = LabelEntity(
-        name="label_0_1_2", domain=Domain.SEGMENTATION, id=ID("0_1_2")
+        name="label_0_1_2", domain=Domain.SEGMENTATION, id_=ID("0_1_2")
     )
     label_0_2_1 = LabelEntity(
-        name="label_0_2_1", domain=Domain.SEGMENTATION, id=ID("0_2_1")
+        name="label_0_2_1", domain=Domain.SEGMENTATION, id_=ID("0_2_1")
     )
 
     @pytest.mark.priority_medium

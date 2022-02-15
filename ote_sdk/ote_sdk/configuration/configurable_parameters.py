@@ -17,16 +17,16 @@ from .enums.config_element_type import ConfigElementType
 class ConfigurableParameters(ParameterGroup):
     """
     Base class representing a generic set of configurable parameters. A
-    ConfigurableParameters instance is essentially a parameter group with an id
+    ConfigurableParameters instance is essentially a parameter group with an id_
     attached to it, so that it can be uniquely identified in the repositories.
 
-    :var id: ID that uniquely identifies the ConfigurableParameters
+    :var id_: ID that uniquely identifies the ConfigurableParameters
     :var header: User friendly name for the ConfigurableParameters, that will be
         displayed in the UI
 
     """
 
-    id: ID = attrib(default=ID(), kw_only=True, converter=convert_string_to_id)
+    id_: ID = attrib(default=ID(), kw_only=True, converter=convert_string_to_id)
     type: ConfigElementType = attrib(
         default=ConfigElementType.CONFIGURABLE_PARAMETERS,
         repr=False,

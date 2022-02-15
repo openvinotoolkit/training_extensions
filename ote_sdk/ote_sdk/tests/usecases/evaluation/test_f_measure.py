@@ -1224,7 +1224,7 @@ class TestFMeasure:
         )
 
         model_label_group = LabelGroup(
-            name="model_labels", labels=self.model_labels(), id=ID("model_label")
+            name="model_labels", labels=self.model_labels(), id_=ID("model_label")
         )
 
         model_configuration = ModelConfiguration(
@@ -1246,7 +1246,7 @@ class TestFMeasure:
                         domain=Domain.DETECTION,
                         color=self.color,
                         creation_date=self.creation_date,
-                        id=ID("image_roi"),
+                        id_=ID("image_roi"),
                     )
                 )
             ],
@@ -1262,7 +1262,7 @@ class TestFMeasure:
                         domain=Domain.DETECTION,
                         color=self.color,
                         creation_date=self.creation_date,
-                        id=ID("class_1_image_1"),
+                        id_=ID("class_1_image_1"),
                     ),
                     probability=0.95,
                 )
@@ -1278,7 +1278,7 @@ class TestFMeasure:
                         domain=Domain.DETECTION,
                         color=self.color,
                         creation_date=self.creation_date,
-                        id=ID("class_2_image_1"),
+                        id_=ID("class_2_image_1"),
                     ),
                     probability=0.93,
                 )
@@ -1294,7 +1294,7 @@ class TestFMeasure:
                         domain=Domain.DETECTION,
                         color=self.color,
                         creation_date=self.creation_date,
-                        id=ID("class_2_image_1"),
+                        id_=ID("class_2_image_1"),
                     ),
                     probability=0.91,
                 )
@@ -1323,7 +1323,7 @@ class TestFMeasure:
                         domain=Domain.DETECTION,
                         color=self.color,
                         creation_date=self.creation_date,
-                        id=ID("class_1_image_2"),
+                        id_=ID("class_1_image_2"),
                     ),
                     probability=0.9,
                 )
@@ -1339,7 +1339,7 @@ class TestFMeasure:
                         domain=Domain.DETECTION,
                         color=self.color,
                         creation_date=self.creation_date,
-                        id=ID("class_1_image_2"),
+                        id_=ID("class_1_image_2"),
                     ),
                     probability=0.88,
                 )
@@ -1355,7 +1355,7 @@ class TestFMeasure:
                         domain=Domain.DETECTION,
                         color=self.color,
                         creation_date=self.creation_date,
-                        id=ID("class_3_image_2"),
+                        id_=ID("class_3_image_2"),
                     ),
                     probability=0.94,
                 )
@@ -1371,7 +1371,7 @@ class TestFMeasure:
                         domain=Domain.DETECTION,
                         color=self.color,
                         creation_date=self.creation_date,
-                        id=ID("class_3_image_2"),
+                        id_=ID("class_3_image_2"),
                     ),
                     probability=0.92,
                 )
@@ -1405,7 +1405,7 @@ class TestFMeasure:
                         domain=Domain.DETECTION,
                         color=self.color,
                         creation_date=self.creation_date,
-                        id=ID("class_1_image_1"),
+                        id_=ID("class_1_image_1"),
                     ),
                     probability=0.92,
                 )
@@ -1421,7 +1421,7 @@ class TestFMeasure:
                         domain=Domain.DETECTION,
                         color=self.color,
                         creation_date=self.creation_date,
-                        id=ID("class_1_image_1"),
+                        id_=ID("class_1_image_1"),
                     ),
                     probability=0.93,
                 )
@@ -1437,7 +1437,7 @@ class TestFMeasure:
                         domain=Domain.DETECTION,
                         color=self.color,
                         creation_date=self.creation_date,
-                        id=ID("class_2_image_1"),
+                        id_=ID("class_2_image_1"),
                     ),
                     probability=0.92,
                 )
@@ -1453,7 +1453,7 @@ class TestFMeasure:
                         domain=Domain.DETECTION,
                         color=self.color,
                         creation_date=self.creation_date,
-                        id=ID("class_2_image_1"),
+                        id_=ID("class_2_image_1"),
                     ),
                     probability=0.91,
                 )
@@ -1487,7 +1487,7 @@ class TestFMeasure:
                         domain=Domain.DETECTION,
                         color=self.color,
                         creation_date=self.creation_date,
-                        id=ID("class_1_image_2"),
+                        id_=ID("class_1_image_2"),
                     ),
                     probability=0.89,
                 )
@@ -1503,7 +1503,7 @@ class TestFMeasure:
                         domain=Domain.DETECTION,
                         color=self.color,
                         creation_date=self.creation_date,
-                        id=ID("class_1_image_2"),
+                        id_=ID("class_1_image_2"),
                     ),
                     probability=0.85,
                 )
@@ -1519,7 +1519,7 @@ class TestFMeasure:
                         domain=Domain.DETECTION,
                         color=self.color,
                         creation_date=self.creation_date,
-                        id=ID("class_3_image_2"),
+                        id_=ID("class_3_image_2"),
                     ),
                     probability=0.95,
                 )
@@ -1535,7 +1535,7 @@ class TestFMeasure:
                         domain=Domain.DETECTION,
                         color=self.color,
                         creation_date=self.creation_date,
-                        id=ID("class_3_image_2"),
+                        id_=ID("class_3_image_2"),
                     ),
                     probability=0.94,
                 )

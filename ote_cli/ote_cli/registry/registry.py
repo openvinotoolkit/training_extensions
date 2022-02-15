@@ -95,7 +95,7 @@ class Registry:
         templates_infos = [
             {
                 "name": t.name,
-                "id": t.model_template_id,
+                "id_": t.model_template_id,
                 "path": t.model_template_path,
                 "task_type": str(t.task_type),
             }

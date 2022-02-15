@@ -65,10 +65,10 @@ class AnomalyClassificationDataset(DatasetEntity):
 
         items: List[DatasetItemEntity] = []
         self.normal_label = LabelEntity(
-            id=ID(0), name="Normal", domain=Domain.ANOMALY_CLASSIFICATION
+            id_=ID(0), name="Normal", domain=Domain.ANOMALY_CLASSIFICATION
         )
         self.abnormal_label = LabelEntity(
-            id=ID(1), name="Anomalous", domain=Domain.ANOMALY_CLASSIFICATION
+            id_=ID(1), name="Anomalous", domain=Domain.ANOMALY_CLASSIFICATION
         )
 
         if train_subset is not None:

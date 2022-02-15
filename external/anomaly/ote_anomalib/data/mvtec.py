@@ -66,10 +66,10 @@ class OteMvtecDataset:
         self.create_validation_set = create_validation_set
 
         self.normal_label = LabelEntity(
-            name=LabelNames.normal, domain=Domain.ANOMALY_CLASSIFICATION, id=ID(LabelNames.normal)
+            name=LabelNames.normal, domain=Domain.ANOMALY_CLASSIFICATION, id_=ID(LabelNames.normal)
         )
         self.abnormal_label = LabelEntity(
-            name=LabelNames.anomalous, domain=Domain.ANOMALY_CLASSIFICATION, id=ID(LabelNames.anomalous)
+            name=LabelNames.anomalous, domain=Domain.ANOMALY_CLASSIFICATION, id_=ID(LabelNames.anomalous)
         )
 
     def get_samples(self) -> DataFrame:

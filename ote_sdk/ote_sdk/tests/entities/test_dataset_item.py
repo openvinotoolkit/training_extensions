@@ -47,7 +47,7 @@ class DatasetItemParameters:
             domain=Domain.DETECTION,
             color=Color(red=100, green=200, blue=150),
             creation_date=creation_date,
-            id=ID("detection_label"),
+            id_=ID("detection_label"),
         )
         segmentation_label = LabelEntity(
             name="Label for Segmentation",
@@ -55,7 +55,7 @@ class DatasetItemParameters:
             color=Color(red=50, green=80, blue=200),
             creation_date=creation_date,
             is_empty=True,
-            id=ID("segmentation_label"),
+            id_=ID("segmentation_label"),
         )
         return [detection_label, segmentation_label]
 
@@ -66,12 +66,12 @@ class DatasetItemParameters:
         detection_annotation = Annotation(
             shape=rectangle,
             labels=[ScoredLabel(label=labels[0])],
-            id=ID("detection_annotation_1"),
+            id_=ID("detection_annotation_1"),
         )
         segmentation_annotation = Annotation(
             shape=other_rectangle,
             labels=[ScoredLabel(label=labels[1])],
-            id=ID("segmentation_annotation_1"),
+            id_=ID("segmentation_annotation_1"),
         )
         return [detection_annotation, segmentation_annotation]
 
@@ -83,7 +83,7 @@ class DatasetItemParameters:
             domain=Domain.DETECTION,
             color=Color(red=40, green=180, blue=80),
             creation_date=creation_date,
-            id=ID("roi_label_1"),
+            id_=ID("roi_label_1"),
         )
         other_roi_label = LabelEntity(
             name="Second ROI label",
@@ -91,7 +91,7 @@ class DatasetItemParameters:
             color=Color(red=80, green=90, blue=70),
             creation_date=creation_date,
             is_empty=True,
-            id=ID("roi_label_2"),
+            id_=ID("roi_label_2"),
         )
         return [roi_label, other_roi_label]
 
@@ -109,7 +109,7 @@ class DatasetItemParameters:
                 modification_date=datetime.datetime(year=2021, month=12, day=9),
             ),
             labels=self.roi_scored_labels(),
-            id=ID("roi_annotation"),
+            id_=ID("roi_annotation"),
         )
         return roi
 
@@ -130,7 +130,7 @@ class DatasetItemParameters:
             annotations=self.annotations(),
             kind=AnnotationSceneKind.ANNOTATION,
             creation_date=datetime.datetime(year=2021, month=12, day=19),
-            id=ID("annotation_entity_1"),
+            id_=ID("annotation_entity_1"),
         )
 
     def default_values_dataset_item(self) -> DatasetItemEntity:
@@ -158,9 +158,9 @@ class TestDatasetItemEntity:
         for index in range(len(expected_annotations)):
             actual_annotation = actual_annotations[index]
             expected_annotation = expected_annotations[index]
-            # Redefining id and modification_date required because of new Annotation objects created after shape
+            # Redefining id_ and modification_date required because of new Annotation objects created after shape
             # denormalize
-            actual_annotation.id = expected_annotation.id
+            actual_annotation.id_ = expected_annotation.id_
             actual_annotation.shape.modification_date = (
                 expected_annotation.shape.modification_date
             )
@@ -173,7 +173,7 @@ class TestDatasetItemEntity:
             domain=Domain.DETECTION,
             color=Color(red=60, green=120, blue=70),
             creation_date=datetime.datetime(year=2021, month=12, day=12),
-            id=ID("label_to_add_1"),
+            id_=ID("label_to_add_1"),
         )
         other_label_to_add = LabelEntity(
             name="Other label to add",
@@ -181,7 +181,7 @@ class TestDatasetItemEntity:
             color=Color(red=80, green=70, blue=100),
             creation_date=datetime.datetime(year=2021, month=12, day=11),
             is_empty=True,
-            id=ID("label_to_add_2"),
+            id_=ID("label_to_add_2"),
         )
         return [label_to_add, other_label_to_add]
 
@@ -190,12 +190,12 @@ class TestDatasetItemEntity:
         annotation_to_add = Annotation(
             shape=Rectangle(x1=0.1, y1=0.1, x2=0.7, y2=0.8),
             labels=[ScoredLabel(label=labels_to_add[0])],
-            id=ID("added_annotation_1"),
+            id_=ID("added_annotation_1"),
         )
         other_annotation_to_add = Annotation(
             shape=Rectangle(x1=0.2, y1=0.3, x2=0.8, y2=0.9),
             labels=[ScoredLabel(label=labels_to_add[1])],
-            id=ID("added_annotation_2"),
+            id_=ID("added_annotation_2"),
         )
         return [annotation_to_add, other_annotation_to_add]
 
@@ -348,7 +348,7 @@ class TestDatasetItemEntity:
         # Checking that "roi" property will be equal to full_box for DatasetItemEntity with not specified "roi" but one
         # of Annotation objects in annotation_scene is equal to full Rectangle
         full_box_label = LabelEntity(
-            "Full-box label", Domain.DETECTION, id=ID("full_box_label")
+            "Full-box label", Domain.DETECTION, id_=ID("full_box_label")
         )
         full_box_annotation = Annotation(
             Rectangle.generate_full_box(), [ScoredLabel(full_box_label)]
@@ -386,7 +386,7 @@ class TestDatasetItemEntity:
         """
         media = DatasetItemParameters.generate_random_image()
         annotation_scene = DatasetItemParameters().annotations_entity()
-        roi_label = LabelEntity("ROI label", Domain.DETECTION, id=ID("roi_label"))
+        roi_label = LabelEntity("ROI label", Domain.DETECTION, id_=ID("roi_label"))
         dataset_item = DatasetItemEntity(media, annotation_scene)
         # Checking array returned by "roi_numpy" method with non-specified "roi" parameter for DatasetItemEntity
         # "roi" attribute is "None"
@@ -421,7 +421,7 @@ class TestDatasetItemEntity:
                 ]
             ),
             labels=[],
-            id=ID("polygon_roi"),
+            id_=ID("polygon_roi"),
         )
         assert np.array_equal(
             dataset_item.roi_numpy(polygon_roi), media.numpy[4:8, 5:13]
@@ -610,9 +610,9 @@ class TestDatasetItemEntity:
                 )
             )
         dataset_item.append_annotations(annotations_to_add)
-        # Random id is generated for normalized annotations
-        normalized_annotations[0].id = dataset_item.annotation_scene.annotations[2].id
-        normalized_annotations[1].id = dataset_item.annotation_scene.annotations[3].id
+        # Random id_ is generated for normalized annotations
+        normalized_annotations[0].id_ = dataset_item.annotation_scene.annotations[2].id_
+        normalized_annotations[1].id_ = dataset_item.annotation_scene.annotations[3].id_
         assert (
             dataset_item.annotation_scene.annotations
             == full_box_annotations + normalized_annotations
@@ -622,7 +622,7 @@ class TestDatasetItemEntity:
             name="Label for incorrect shape",
             domain=Domain.CLASSIFICATION,
             color=Color(red=80, green=70, blue=155),
-            id=ID("incorrect_shape_label"),
+            id_=ID("incorrect_shape_label"),
         )
         incorrect_polygon = Polygon(
             [Point(x=0.01, y=0.1), Point(x=0.35, y=0.1), Point(x=0.35, y=0.1)]
@@ -630,7 +630,7 @@ class TestDatasetItemEntity:
         incorrect_shape_annotation = Annotation(
             shape=incorrect_polygon,
             labels=[ScoredLabel(incorrect_shape_label)],
-            id=ID("incorrect_shape_annotation"),
+            id_=ID("incorrect_shape_annotation"),
         )
         dataset_item.append_annotations([incorrect_shape_annotation])
         assert (
@@ -884,7 +884,7 @@ class TestDatasetItemEntity:
             dataset_item.annotation_scene.editor_name
             == copy_dataset.annotation_scene.editor_name
         )
-        assert dataset_item.annotation_scene.id == copy_dataset.annotation_scene.id
+        assert dataset_item.annotation_scene.id_ == copy_dataset.annotation_scene.id_
         assert dataset_item.annotation_scene.kind == copy_dataset.annotation_scene.kind
         assert (
             dataset_item.annotation_scene.shapes == copy_dataset.annotation_scene.shapes

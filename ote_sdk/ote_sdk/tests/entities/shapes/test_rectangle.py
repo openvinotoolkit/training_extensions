@@ -41,13 +41,13 @@ class TestRectangle:
             name="Rectangle label",
             domain=Domain.DETECTION,
             color=Color(red=100, green=50, blue=200),
-            id=ID("rectangle_label_1"),
+            id_=ID("rectangle_label_1"),
         )
         other_rectangle_label = LabelEntity(
             name="Other rectangle label",
             domain=Domain.SEGMENTATION,
             color=Color(red=200, green=80, blue=100),
-            id=ID("rectangle_label_2"),
+            id_=ID("rectangle_label_2"),
         )
         return [
             ScoredLabel(label=rectangle_label),
@@ -238,7 +238,7 @@ class TestRectangle:
         assert rectangle != str
         # Check for unequal labels parameters. Expected that different labels are not affecting equality
         unequal_label = LabelEntity(
-            name="Unequal label", domain=Domain.SEGMENTATION, id=ID("unequal_label_1")
+            name="Unequal label", domain=Domain.SEGMENTATION, id_=ID("unequal_label_1")
         )
         unequal_scored_label = ScoredLabel(label=unequal_label)
         equal_rectangle._labels.append(unequal_scored_label)

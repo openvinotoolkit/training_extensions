@@ -393,37 +393,37 @@ class Labels:
         self.label_0 = LabelEntity(
             name="Label 0",
             domain=Domain.CLASSIFICATION,
-            id=ID("0"),
+            id_=ID("0"),
             color=Color(25, 200, 166),
         )
         self.label_0_1 = LabelEntity(
             name="Label 0_1",
             domain=Domain.DETECTION,
-            id=ID("0_1"),
+            id_=ID("0_1"),
             color=Color(40, 100, 17),
         )
         self.label_0_2 = LabelEntity(
             name="Label 0_2",
             domain=Domain.SEGMENTATION,
-            id=ID("0_2"),
+            id_=ID("0_2"),
             color=Color(30, 80, 40),
         )
         self.label_0_1_3 = LabelEntity(
             name="Label_0_1_3",
             domain=Domain.SEGMENTATION,
-            id=ID("0_1_3"),
+            id_=ID("0_1_3"),
             color=Color(40, 100, 17),
         )
         self.label_0_2_4 = LabelEntity(
             name="Label_0_2_4",
             domain=Domain.SEGMENTATION,
-            id=ID("0_2_4"),
+            id_=ID("0_2_4"),
             color=Color(30, 80, 40),
         )
         self.label_0_2_5 = LabelEntity(
             name="Label_0_2_5",
             domain=Domain.SEGMENTATION,
-            id=ID("0_2_5"),
+            id_=ID("0_2_5"),
             color=Color(30, 80, 40),
         )
         self.no_id_label = LabelEntity(name="No ID Label", domain=Domain.SEGMENTATION)
@@ -449,19 +449,20 @@ class TestLabelGroup:
         LabelGroup object with specified name, labels, group type and ID parameters
 
         <b>Expected results:</b>
-        Test passes if LabelGroup object id, labels, name and group_type attributes return expected values
+        Test passes if LabelGroup object id_, labels, name and group_type attributes return expected values
 
         <b>Steps</b>
-        1. Check id, labels, name and group_type attributes of LabelGroup object with not specified group_type parameter
-        2. Check id, labels, name and group_type attributes of LabelGroup object with not specified id parameter
+        1. Check id_, labels, name and group_type attributes of LabelGroup object with not specified group_type
+        parameter
+        2. Check id_, labels, name and group_type attributes of LabelGroup object with not specified id_ parameter
         """
-        # Checking attributes of LabelGroup object with specified id and not specified group_type parameters
+        # Checking attributes of LabelGroup object with specified id_ and not specified group_type parameters
         no_group_type_label_group = LabelGroup(
             name="Type non-specified specified label group",
             labels=[labels.label_0_1, labels.no_id_label, labels.label_0],
-            id=ID("1"),
+            id_=ID("1"),
         )
-        assert no_group_type_label_group.id == "1"
+        assert no_group_type_label_group.id_ == "1"
         # Expected ascending sorting of labels
         assert no_group_type_label_group.labels == [
             labels.no_id_label,
@@ -474,15 +475,15 @@ class TestLabelGroup:
         assert no_group_type_label_group.group_type == LabelGroupType.EXCLUSIVE
         assert isinstance(no_group_type_label_group.minimum_label_id, ID)
         assert no_group_type_label_group.minimum_label_id == ""
-        # Checking attributes of LabelGroup object with specified group_type and not specified id parameters
+        # Checking attributes of LabelGroup object with specified group_type and not specified id_ parameters
         no_id_label_group = LabelGroup(
             name="ID non-specified Label Group",
             labels=[labels.label_0_1, labels.label_0],
             group_type=LabelGroupType.EMPTY_LABEL,
         )
-        # Expected randomly generated ID object with 24 characters as "id" attribute
-        assert isinstance(no_id_label_group.id, ID)
-        assert len(no_id_label_group.id) == 24
+        # Expected randomly generated ID object with 24 characters as "id_" attribute
+        assert isinstance(no_id_label_group.id_, ID)
+        assert len(no_id_label_group.id_) == 24
         # Expected ascending sorting of labels
         assert no_id_label_group.labels == [labels.label_0, labels.label_0_1]
         assert no_id_label_group.name == "ID non-specified Label Group"
@@ -542,44 +543,44 @@ class TestLabelGroup:
         group_labels = [labels.label_0, labels.label_0_1]
         name = "Test Label Group"
         group_id = ID("1")
-        label_group = LabelGroup(name=name, labels=group_labels, id=group_id)
-        equal_label_group = LabelGroup(name=name, labels=group_labels, id=group_id)
+        label_group = LabelGroup(name=name, labels=group_labels, id_=group_id)
+        equal_label_group = LabelGroup(name=name, labels=group_labels, id_=group_id)
         no_id_specified_label_group = LabelGroup(name=name, labels=group_labels)
         # Checking __eq__ method for equal LabelGroup objects
         assert label_group == equal_label_group
         # Checking equality of LabelGroups with different "name" attributes
         assert label_group == LabelGroup(
-            name="Different name LabelGroup", labels=group_labels, id=group_id
+            name="Different name LabelGroup", labels=group_labels, id_=group_id
         )
-        # Checking inequality of LabelGroups with different "id" attributes
+        # Checking inequality of LabelGroups with different "id_" attributes
         assert not label_group == no_id_specified_label_group
         # Checking inequality of LabelGroups with different "labels" attributes
         assert not label_group == LabelGroup(
-            name=name, labels=[labels.label_0], id=group_id
+            name=name, labels=[labels.label_0], id_=group_id
         )
         # Checking inequality of LabelGroups with different "group_type" attributes
         assert not label_group == LabelGroup(
             name=name,
             labels=group_labels,
-            id=group_id,
+            id_=group_id,
             group_type=LabelGroupType.EMPTY_LABEL,
         )
         # Checking inequality of LabelGroups with different object of different type
         assert not label_group == str
-        # Checking __repr__ method for LabelGroup object with specified id
+        # Checking __repr__ method for LabelGroup object with specified id_
         assert repr(label_group) == (
-            "LabelGroup(id=1, name=Test Label Group, group_type=LabelGroupType.EXCLUSIVE, "
+            "LabelGroup(id_=1, name=Test Label Group, group_type=LabelGroupType.EXCLUSIVE, "
             f"labels={group_labels})"
         )
-        # Checking __repr__ method for LabelGroup object with [] labels and not specified id
+        # Checking __repr__ method for LabelGroup object with [] labels and not specified id_
         no_labels_no_id_label_group = LabelGroup(
-            name="Null labels, random id group",
+            name="Null labels, random id_ group",
             labels=[],
             group_type=LabelGroupType.EMPTY_LABEL,
         )
-        generated_id = no_labels_no_id_label_group.id
+        generated_id = no_labels_no_id_label_group.id_
         assert repr(no_labels_no_id_label_group) == (
-            f"LabelGroup(id={generated_id}, name=Null labels, random id group,"
+            f"LabelGroup(id_={generated_id}, name=Null labels, random id_ group,"
             f" group_type=LabelGroupType.EMPTY_LABEL, labels=[])"
         )
 
@@ -1295,7 +1296,7 @@ class TestLabelTree:
 
         returned_vertexes = set()
         for label in labels_topological_order:
-            previous, curent = previous_vertexes(label.id)
+            previous, curent = previous_vertexes(label.id_)
             for vertex in previous:
                 assert vertex in returned_vertexes
             returned_vertexes.add(curent)
@@ -1309,7 +1310,7 @@ class TestLabelTree:
         labels_topological_order = label_tree.get_labels_in_topological_order()
         returned_vertexes = set()
         for label in labels_topological_order:
-            previous, curent = previous_vertexes(label.id)
+            previous, curent = previous_vertexes(label.id_)
             for vertex in previous:
                 if (
                     curent != "3"
@@ -1496,12 +1497,12 @@ class TestLabelSchemaEntity:
         group_1 = LabelGroup(
             name="Exclusive group 1",
             labels=[labels.label_0_1, labels.label_0_2],
-            id=ID("Exclusive group 1"),
+            id_=ID("Exclusive group 1"),
         )
         group_2 = LabelGroup(
             name="Exclusive group 2",
             labels=[labels.label_0_2_4, labels.label_0_2_5],
-            id=ID("Exclusive group 2"),
+            id_=ID("Exclusive group 2"),
         )
         return [group_1, group_2]
 
@@ -1512,14 +1513,14 @@ class TestLabelSchemaEntity:
             domain=Domain.SEGMENTATION,
             color=Color(255, 255, 255),
             is_empty=True,
-            id=ID("empty_label_1"),
+            id_=ID("empty_label_1"),
         )
         empty_non_exclusive_label = LabelEntity(
             name="Empty non-exclusive label",
             domain=Domain.DETECTION,
             color=Color(255, 255, 255),
             is_empty=True,
-            id=ID("empty_non_excl_label_1"),
+            id_=ID("empty_non_excl_label_1"),
         )
         return [empty_label, empty_non_exclusive_label]
 
@@ -1528,13 +1529,13 @@ class TestLabelSchemaEntity:
         empty_group_1 = LabelGroup(
             name="Exclusive group with empty label",
             labels=[empty_labels[0]],
-            id=ID("Exclusive group with empty label"),
+            id_=ID("Exclusive group with empty label"),
         )
         empty_group_2 = LabelGroup(
             name="Empty label group with empty label",
             labels=[empty_labels[1]],
             group_type=LabelGroupType.EMPTY_LABEL,
-            id=ID("Empty label group with empty label"),
+            id_=ID("Empty label group with empty label"),
         )
         return [empty_group_1, empty_group_2]
 
@@ -1663,15 +1664,15 @@ class TestLabelSchemaEntity:
         label_schema_entity = self.label_schema_entity()
         # Scenario for adding exclusive group with new labels
         new_exclusive_label = LabelEntity(
-            name="New label", domain=Domain.DETECTION, id=ID("new_ex_1")
+            name="New label", domain=Domain.DETECTION, id_=ID("new_ex_1")
         )
         other_new_exclusive_label = LabelEntity(
-            name="Other new label", domain=Domain.DETECTION, id=ID("new_ex_2")
+            name="Other new label", domain=Domain.DETECTION, id_=ID("new_ex_2")
         )
         new_exclusive_group = LabelGroup(
             name="New exclusive labels group",
             labels=[new_exclusive_label, other_new_exclusive_label],
-            id=ID("new_ex_group"),
+            id_=ID("new_ex_group"),
         )
         label_schema_entity.add_group(new_exclusive_group)
         assert label_schema_entity.get_exclusive_groups() == (
@@ -1682,7 +1683,7 @@ class TestLabelSchemaEntity:
         new_exclusive_group = LabelGroup(
             name="Exclusive group with one label",
             labels=[new_exclusive_label],
-            id=ID("single_excl_group"),
+            id_=ID("single_excl_group"),
         )
         label_schema_entity.add_group(new_exclusive_group)
         assert label_schema_entity.get_exclusive_groups() == (
@@ -1693,7 +1694,7 @@ class TestLabelSchemaEntity:
         new_exclusive_group = LabelGroup(
             name="Exclusive group to link with existing",
             labels=[labels.label_0_1, new_exclusive_label],
-            id=ID("new_ex_group"),
+            id_=ID("new_ex_group"),
         )
         label_schema_entity.add_group(new_exclusive_group)
         assert label_schema_entity.get_exclusive_groups() == (
@@ -1705,7 +1706,7 @@ class TestLabelSchemaEntity:
             name="Non exclusive label group",
             labels=[new_exclusive_label],
             group_type=LabelGroupType.EMPTY_LABEL,
-            id=ID("non_exclusive_group"),
+            id_=ID("non_exclusive_group"),
         )
         label_schema_entity.add_group(new_exclusive_group)
         assert label_schema_entity.get_exclusive_groups() == exclusive_groups
@@ -1849,10 +1850,12 @@ class TestLabelSchemaEntity:
             name="New label",
             domain=Domain.DETECTION,
             color=Color(100, 16, 25),
-            id=ID("new_ex_1"),
+            id_=ID("new_ex_1"),
         )
         new_labels_group = LabelGroup(
-            name="New exclusive labels group", labels=[new_label], id=ID("new_ex_group")
+            name="New exclusive labels group",
+            labels=[new_label],
+            id_=ID("new_ex_group"),
         )
         label_schema_entity.add_group(new_labels_group)
         exclusive_groups.append(new_labels_group)
@@ -1862,7 +1865,7 @@ class TestLabelSchemaEntity:
             name="New non-exclusive labels group",
             labels=[new_label],
             group_type=LabelGroupType.EMPTY_LABEL,
-            id=ID("new_ex_group"),
+            id_=ID("new_ex_group"),
         )
         label_schema_entity.add_group(empty_label_group)
         assert label_schema_entity.get_exclusive_groups() == exclusive_groups
@@ -1894,13 +1897,13 @@ class TestLabelSchemaEntity:
             name="New label",
             domain=Domain.DETECTION,
             color=Color(100, 16, 25),
-            id=ID("new_ex_1"),
+            id_=ID("new_ex_1"),
         )
         new_empty_label = LabelEntity(
             name="New empty label",
             domain=Domain.DETECTION,
             color=Color(81, 100, 10),
-            id=ID("new_ex_2"),
+            id_=ID("new_ex_2"),
         )
         exclusive_group_name = "Exclusive group 1"
         label_schema_entity.add_labels_to_group_by_group_name(
@@ -1914,7 +1917,7 @@ class TestLabelSchemaEntity:
             name="New non-exclusive empty_label",
             domain=Domain.SEGMENTATION,
             is_empty=True,
-            id=ID("empty_label_1"),
+            id_=ID("empty_label_1"),
         )
         empty_label_group_name = "Empty label group with empty label"
         label_schema_entity.add_labels_to_group_by_group_name(
@@ -2029,7 +2032,7 @@ class TestLabelSchemaEntity:
             name="Scored label",
             domain=Domain.DETECTION,
             color=Color(red=100, green=50, blue=200),
-            id=ID("scored_label_1"),
+            id_=ID("scored_label_1"),
         )
         scored_label = ScoredLabel(label=label_to_set_scored)
         scored_labels_group = LabelGroup(

@@ -81,7 +81,7 @@ class TestResultset:
             "purpose": None,
             "performance": None,
             "creation_date": None,
-            "id": None,
+            "id_": None,
         }
 
         result_set = ResultSetEntity(**test_data)
@@ -100,7 +100,7 @@ class TestResultset:
 
         assert result_set.performance == NullPerformance()
         assert type(result_set.creation_date) == datetime.datetime
-        assert result_set.id == ID()
+        assert result_set.id_ == ID()
 
         assert result_set.has_score_metric() is False
         result_set.performance = "test_performance"
@@ -112,8 +112,8 @@ class TestResultset:
         assert result_set.creation_date == creation_date
 
         set_attr_id = ID(123456789)
-        result_set.id = set_attr_id
-        assert result_set.id == set_attr_id
+        result_set.id_ = set_attr_id
+        assert result_set.id_ == set_attr_id
 
         test_result_set_repr = [
             f"model={result_set.model}",
@@ -122,7 +122,7 @@ class TestResultset:
             f"purpose={result_set.purpose}",
             f"performance={result_set.performance}",
             f"creation_date={result_set.creation_date}",
-            f"id={result_set.id}",
+            f"id_={result_set.id_}",
         ]
 
         for i in test_result_set_repr:

@@ -40,7 +40,7 @@ class CommonMethods:
             domain=Domain.DETECTION,
             color=Color(red=100, green=200, blue=150),
             creation_date=creation_date,
-            id=ID("detection_label"),
+            id_=ID("detection_label"),
         )
         segmentation_label = LabelEntity(
             name="Label for Segmentation",
@@ -48,7 +48,7 @@ class CommonMethods:
             color=Color(red=50, green=80, blue=200),
             creation_date=creation_date,
             is_empty=True,
-            id=ID("segmentation_label"),
+            id_=ID("segmentation_label"),
         )
         return [detection_label, segmentation_label]
 
@@ -60,7 +60,7 @@ class CommonMethods:
             domain=Domain.CLASSIFICATION,
             color=Color(red=200, green=170, blue=90),
             creation_date=creation_date,
-            id=ID("classification_label"),
+            id_=ID("classification_label"),
         )
         anomaly_detection_label = LabelEntity(
             name="Label for Anomaly Detection",
@@ -68,7 +68,7 @@ class CommonMethods:
             color=Color(red=100, green=200, blue=190),
             creation_date=creation_date,
             is_empty=True,
-            id=ID("anomaly_detection_label"),
+            id_=ID("anomaly_detection_label"),
         )
         return [ScoredLabel(classification_label), ScoredLabel(anomaly_detection_label)]
 
@@ -581,14 +581,14 @@ class ShapeDrawerParams:
             domain=Domain.DETECTION,
             color=Color(100, 200, 60),
             creation_date=datetime.datetime(year=2021, month=12, day=16),
-            id=ID("full_rectangle_label_1"),
+            id_=ID("full_rectangle_label_1"),
         )
         other_rectangle_label = LabelEntity(
             name="other Full-Rectangle Annotation Label",
             domain=Domain.SEGMENTATION,
             color=Color(80, 160, 200),
             creation_date=datetime.datetime(year=2021, month=12, day=15),
-            id=ID("full_rectangle_label_2"),
+            id_=ID("full_rectangle_label_2"),
         )
         return [rectangle_label, other_rectangle_label]
 
@@ -600,7 +600,7 @@ class ShapeDrawerParams:
         return Annotation(
             shape=Rectangle(x1=0, y1=0, x2=1, y2=1),
             labels=self.full_rectangle_scored_labels(),
-            id=ID("full_rectangle_annotation"),
+            id_=ID("full_rectangle_annotation"),
         )
 
     @staticmethod
@@ -610,14 +610,14 @@ class ShapeDrawerParams:
             domain=Domain.DETECTION,
             color=Color(100, 200, 60),
             creation_date=datetime.datetime(year=2021, month=12, day=16),
-            id=ID("rectangle_label_1"),
+            id_=ID("rectangle_label_1"),
         )
         other_rectangle_label = LabelEntity(
             name="other Rectangle Annotation Label",
             domain=Domain.SEGMENTATION,
             color=Color(80, 160, 200),
             creation_date=datetime.datetime(year=2021, month=12, day=15),
-            id=ID("rectangle_label_2"),
+            id_=ID("rectangle_label_2"),
         )
         return [rectangle_label, other_rectangle_label]
 
@@ -629,7 +629,7 @@ class ShapeDrawerParams:
         return Annotation(
             shape=Rectangle(x1=0.1, y1=0.4, x2=0.4, y2=0.9),
             labels=self.rectangle_scored_labels(),
-            id=ID("rectangle_annotation"),
+            id_=ID("rectangle_annotation"),
         )
 
     @staticmethod
@@ -639,14 +639,14 @@ class ShapeDrawerParams:
             domain=Domain.DETECTION,
             color=Color(200, 200, 100),
             creation_date=datetime.datetime(year=2021, month=12, day=16),
-            id=ID("polygon_label_1"),
+            id_=ID("polygon_label_1"),
         )
         other_polygon_label = LabelEntity(
             name="other Polygon Annotation Label",
             domain=Domain.SEGMENTATION,
             color=Color(100, 100, 150),
             creation_date=datetime.datetime(year=2021, month=12, day=15),
-            id=ID("polygon_label_2"),
+            id_=ID("polygon_label_2"),
         )
         return [polygon_label, other_polygon_label]
 
@@ -666,7 +666,7 @@ class ShapeDrawerParams:
                 ]
             ),
             labels=self.polygon_scored_labels(),
-            id=ID("polygon_annotation"),
+            id_=ID("polygon_annotation"),
         )
 
     @staticmethod
@@ -676,14 +676,14 @@ class ShapeDrawerParams:
             domain=Domain.DETECTION,
             color=Color(100, 100, 200),
             creation_date=datetime.datetime(year=2021, month=12, day=16),
-            id=ID("ellipse_label_1"),
+            id_=ID("ellipse_label_1"),
         )
         other_ellipse_label = LabelEntity(
             name="other Ellipse Annotation Label",
             domain=Domain.SEGMENTATION,
             color=Color(200, 80, 150),
             creation_date=datetime.datetime(year=2021, month=12, day=15),
-            id=ID("ellipse_label_2"),
+            id_=ID("ellipse_label_2"),
         )
         return [ellipse_label, other_ellipse_label]
 
@@ -695,7 +695,7 @@ class ShapeDrawerParams:
         return Annotation(
             shape=Ellipse(x1=0.5, y1=0.0, x2=1.0, y2=0.5),
             labels=self.ellipse_scored_labels(),
-            id=ID("ellipse_annotation"),
+            id_=ID("ellipse_annotation"),
         )
 
     def annotation_scene(self) -> AnnotationSceneEntity:
@@ -708,7 +708,7 @@ class ShapeDrawerParams:
             ],
             kind=AnnotationSceneKind.ANNOTATION,
             creation_date=datetime.datetime(year=2021, month=12, day=16),
-            id=ID("annotation_scene"),
+            id_=ID("annotation_scene"),
         )
 
 

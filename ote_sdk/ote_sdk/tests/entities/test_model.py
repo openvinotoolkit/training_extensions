@@ -204,7 +204,7 @@ class TestModelEntity:
             train_dataset=self.dataset(), configuration=self.configuration()
         )
 
-        assert model_entity.id == ID()
+        assert model_entity.id_ == ID()
         assert type(model_entity.configuration) == ModelConfiguration
         assert type(model_entity.creation_date) == datetime
         assert type(model_entity.train_dataset) == DatasetEntity
@@ -286,7 +286,7 @@ class TestModelEntity:
         set_params = {
             "configuration": environment.get_model_configuration(),
             "train_dataset": dataset,
-            "id": ID(1234567890),
+            "id_": ID(1234567890),
             "creation_date": self.creation_date,
             "previous_trained_revision": 5,
             "previous_revision": 2,

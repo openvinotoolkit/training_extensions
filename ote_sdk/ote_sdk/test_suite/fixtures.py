@@ -183,7 +183,7 @@ def expected_metrics_all_tests_fx(request):
     """
     Return expected metrics for reallife tests read from a YAML file passed as the parameter --expected-metrics-file.
     Note that the structure of expected metrics should be a dict that maps tests to the expected metric numbers.
-    The keys of the dict are the parameters' part of the test id-s -- see the function
+    The keys of the dict are the parameters' part of the test id_-s -- see the function
     OTETestHelper._generate_test_id, also see the fixture current_test_parameters_string_fx below.
 
     The value for each key is a structure that stores a requirement on some metric.
@@ -272,8 +272,8 @@ def current_test_parameters_fx(request, force_logging_fx):
 def current_test_parameters_string_fx(request, force_logging_fx):
     # pylint: disable=unused-argument
     """
-    This fixture returns the part of the test id between square brackets
-    (i.e. the part of id that corresponds to the test parameters)
+    This fixture returns the part of the test id_ between square brackets
+    (i.e. the part of id_ that corresponds to the test parameters)
     """
     node_name = request.node.name
     assert "[" in node_name, f"Wrong format of node name {node_name}"
@@ -358,13 +358,13 @@ def cur_test_expected_metrics_callback_fx(
             )
         if current_test_parameters_string not in expected_metrics_all_tests:
             raise ValueError(
-                f"The parameters id string {current_test_parameters_string} is not inside "
+                f"The parameters id_ string {current_test_parameters_string} is not inside "
                 f"the dict with expected metrics -- cannot make validation, so test is failed"
             )
         expected_metrics = expected_metrics_all_tests[current_test_parameters_string]
         if not isinstance(expected_metrics, dict):
             raise ValueError(
-                f"The expected metric for parameters id string {current_test_parameters_string} "
+                f"The expected metric for parameters id_ string {current_test_parameters_string} "
                 f"should be a dict, whereas it is: {pformat(expected_metrics)}"
             )
         return expected_metrics

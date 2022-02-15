@@ -111,7 +111,7 @@ def convert(
     :param enum_to_str: Boolean specifying whether to convert enums within the config
                         to their string representation. For conversion to yaml, enums
                         are automatically converted and this option is disregarded.
-    :param id_to_str: True to convert the id of the configurable parameters to a string
+    :param id_to_str: True to convert the id_ of the configurable parameters to a string
         representation, False to leave it as an ID object
     :param values_only: True to keep only the parameter values, and remove all meta
         data from the target output
@@ -127,8 +127,8 @@ def convert(
     )
 
     if id_to_str or target == str or target == DictConfig:
-        config_id = config_dict.get("id", None)
-        config_dict["id"] = str(config_id) if config_id is not None else None
+        config_id = config_dict.get("id_", None)
+        config_dict["id_"] = str(config_id) if config_id is not None else None
 
     if target == str:
         result = yaml.dump(config_dict)

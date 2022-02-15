@@ -62,7 +62,7 @@ class ResultSetEntity(metaclass=abc.ABCMeta):
     :param performance: the performance of the model on the ground truth dataset
     :param creation_date: the date time which the resultset is created. Set to None to set this to
     datetime.now(datetime.timezone.utc)
-    :param id: the id of the resultset. Set to ID() so that a new unique ID will be assigned upon saving.
+    :param id_: the id_ of the resultset. Set to ID() so that a new unique ID will be assigned upon saving.
         If the argument is None, it will be set to ID()
     """
 
@@ -75,12 +75,12 @@ class ResultSetEntity(metaclass=abc.ABCMeta):
         purpose: ResultsetPurpose = ResultsetPurpose.EVALUATION,
         performance: Optional[Performance] = None,
         creation_date: Optional[datetime.datetime] = None,
-        id: Optional[ID] = None,
+        id_: Optional[ID] = None,
     ):
-        id = ID() if id is None else id
+        id_ = ID() if id_ is None else id_
         performance = NullPerformance() if performance is None else performance
         creation_date = now() if creation_date is None else creation_date
-        self.__id = id
+        self.__id_ = id_
         self.__model = model
         self.__prediction_dataset = prediction_dataset
         self.__ground_truth_dataset = ground_truth_dataset
@@ -89,13 +89,13 @@ class ResultSetEntity(metaclass=abc.ABCMeta):
         self.__creation_date = creation_date
 
     @property
-    def id(self) -> ID:
-        """Returns the id of the ResultSet"""
-        return self.__id
+    def id_(self) -> ID:
+        """Returns the id_ of the ResultSet"""
+        return self.__id_
 
-    @id.setter
-    def id(self, value: ID) -> None:
-        self.__id = value
+    @id_.setter
+    def id_(self, value: ID) -> None:
+        self.__id_ = value
 
     @property
     def model(self) -> ModelEntity:
@@ -170,5 +170,5 @@ class ResultSetEntity(metaclass=abc.ABCMeta):
             f"purpose={self.purpose}, "
             f"performance={self.performance}, "
             f"creation_date={self.creation_date}, "
-            f"id={self.id})"
+            f"id_={self.id_})"
         )

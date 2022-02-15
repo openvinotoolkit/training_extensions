@@ -33,18 +33,18 @@ class TestResultMediaEntity:
             domain=Domain.DETECTION,
             color=Color(100, 200, 60),
             creation_date=datetime.datetime(year=2021, month=12, day=16),
-            id=ID("rectangle_label_1"),
+            id_=ID("rectangle_label_1"),
         )
         rectangle_annotation = Annotation(
             shape=Rectangle(x1=0.1, y1=0.4, x2=0.4, y2=0.9),
             labels=[ScoredLabel(rectangle_label)],
-            id=ID("rectangle_annotation"),
+            id_=ID("rectangle_annotation"),
         )
         annotation_scene = AnnotationSceneEntity(
             annotations=[rectangle_annotation],
             kind=AnnotationSceneKind.ANNOTATION,
             creation_date=datetime.datetime(year=2021, month=12, day=16),
-            id=ID("annotation_scene"),
+            id_=ID("annotation_scene"),
         )
         return {
             "name": "ResultMedia name",
@@ -60,19 +60,19 @@ class TestResultMediaEntity:
             Domain.DETECTION,
             Color(10, 200, 40),
             creation_date=datetime.datetime(year=2021, month=12, day=18),
-            id=ID("roi_label_1"),
+            id_=ID("roi_label_1"),
         )
         roi = Annotation(
             shape=Rectangle(x1=0.3, y1=0.2, x2=0.7, y2=0.6),
             labels=[ScoredLabel(roi_label)],
-            id=ID("roi_annotation"),
+            id_=ID("roi_annotation"),
         )
         result_media_label = LabelEntity(
             "ResultMedia label",
             Domain.CLASSIFICATION,
             Color(200, 60, 100),
             creation_date=datetime.datetime(year=2021, month=12, day=20),
-            id=ID("result_media_1"),
+            id_=ID("result_media_1"),
         )
         optional_result_media_parameters["roi"] = roi
         optional_result_media_parameters["label"] = result_media_label

@@ -38,7 +38,7 @@ class LabelGroup:
 
     The labels have to be from one task.
 
-    :param id: ID of the LabelGroup. If no ID is provided, a new ObjectId() will be
+    :param id_: ID of the LabelGroup. If no ID is provided, a new ObjectId() will be
                assigned
     :param name: Descriptive name of the label group
     :param labels: Labels that form the group
@@ -51,11 +51,11 @@ class LabelGroup:
         name: str,
         labels: Sequence[LabelEntity],
         group_type: LabelGroupType = LabelGroupType.EXCLUSIVE,
-        id: ID = None,
+        id_: ID = None,
     ):
-        self.id = ID(ObjectId()) if id is None else id
+        self.id_ = ID(ObjectId()) if id_ is None else id_
 
-        self.labels = sorted(labels, key=lambda x: x.id)
+        self.labels = sorted(labels, key=lambda x: x.id_)
         self.name = name
         self.group_type = group_type
 
@@ -65,7 +65,7 @@ class LabelGroup:
         Returns the minimum (oldest) label ID, which is the first label in self.labels
         since this list is sorted
         """
-        return self.labels[0].id
+        return self.labels[0].id_
 
     def remove_label(self, label: LabelEntity) -> None:
         """
@@ -87,14 +87,14 @@ class LabelGroup:
     def __eq__(self, other: object):
         if not isinstance(other, LabelGroup):
             return False
-        return self.id == other.id and (
+        return self.id_ == other.id_ and (
             set(self.labels) == set(other.labels)
             and self.group_type == other.group_type
         )
 
     def __repr__(self) -> str:
         return (
-            f"LabelGroup(id={self.id}, name={self.name}, group_type={self.group_type},"
+            f"LabelGroup(id_={self.id_}, name={self.name}, group_type={self.group_type},"
             f" labels={self.labels})"
         )
 
@@ -316,7 +316,7 @@ class LabelSchemaEntity:
             for label in group.labels
             if include_empty or not label.is_empty
         }
-        return sorted(list(labels), key=lambda x: x.id)
+        return sorted(list(labels), key=lambda x: x.id_)
 
     def get_groups(self, include_empty: bool = False) -> List[LabelGroup]:
         """
@@ -368,10 +368,10 @@ class LabelSchemaEntity:
     def get_label_ids(self, include_empty) -> List[ID]:
         """
         Returns a list of label ids that are in the LabelSchema
-        :param include_empty: Include empty label id or not
+        :param include_empty: Include empty label id_ or not
         """
         label_ids = {
-            label.id
+            label.id_
             for group in self._groups
             for label in group.labels
             if include_empty or not label.is_empty

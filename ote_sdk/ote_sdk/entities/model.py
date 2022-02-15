@@ -113,9 +113,9 @@ class ModelEntity:
         optimization_objectives: Dict[str, str] = None,
         performance_improvement: Dict[str, float] = None,
         model_size_reduction: float = 0.0,
-        _id: Optional[ID] = None,
+        id_: Optional[ID] = None,
     ):
-        _id = ID() if _id is None else _id
+        id_ = ID() if id_ is None else id_
         performance = NullPerformance() if performance is None else performance
         creation_date = now() if creation_date is None else creation_date
 
@@ -135,7 +135,7 @@ class ModelEntity:
         if model_adapters is None:
             model_adapters = {}
 
-        self.__id = _id
+        self.__id_ = id_
         self.__creation_date = creation_date
         self.__train_dataset = train_dataset
         self.__previous_trained_revision = previous_trained_revision
@@ -161,13 +161,13 @@ class ModelEntity:
         self.__model_size_reduction = model_size_reduction
 
     @property
-    def id(self) -> ID:
-        """Gets or sets the id of a Model"""
-        return self.__id
+    def id_(self) -> ID:
+        """Gets or sets the id_ of a Model"""
+        return self.__id_
 
-    @id.setter
-    def id(self, value: ID):
-        self.__id = value
+    @id_.setter
+    def id_(self, value: ID):
+        self.__id_ = value
 
     @property
     def configuration(self) -> ModelConfiguration:
@@ -458,7 +458,7 @@ class ModelEntity:
     def __eq__(self, other):
         if isinstance(other, ModelEntity):
             return (
-                self.id == other.id
+                self.id_ == other.id_
                 and self.train_dataset == other.train_dataset
                 and self.performance == other.performance
             )

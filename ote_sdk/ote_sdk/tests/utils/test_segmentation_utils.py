@@ -38,19 +38,19 @@ class TestSegmentationUtils:
         return LabelEntity(
             name="Rectangle label",
             domain=Domain.SEGMENTATION,
-            id=ID("1_rectangle_label"),
+            id_=ID("1_rectangle_label"),
         )
 
     @staticmethod
     def ellipse_label():
         return LabelEntity(
-            name="Ellipse label", domain=Domain.SEGMENTATION, id=ID("3_ellipse_label")
+            name="Ellipse label", domain=Domain.SEGMENTATION, id_=ID("3_ellipse_label")
         )
 
     @staticmethod
     def polygon_label():
         return LabelEntity(
-            name="Polygon label", domain=Domain.SEGMENTATION, id=ID("6_polygon_label")
+            name="Polygon label", domain=Domain.SEGMENTATION, id_=ID("6_polygon_label")
         )
 
     @pytest.mark.priority_medium
@@ -74,24 +74,24 @@ class TestSegmentationUtils:
             name="Empty Rectangle label",
             domain=Domain.SEGMENTATION,
             is_empty=True,
-            id=ID("2_empty_rectangle_label"),
+            id_=ID("2_empty_rectangle_label"),
         )
         empty_ellipse_label = LabelEntity(
             name="Empty Ellipse label",
             domain=Domain.SEGMENTATION,
             is_empty=True,
-            id=ID("5_empty_ellipse_label"),
+            id_=ID("5_empty_ellipse_label"),
         )
         empty_polygon_label = LabelEntity(
             name="Empty Polygon label",
             domain=Domain.SEGMENTATION,
             is_empty=True,
-            id=ID("7_empty_polygon_label"),
+            id_=ID("7_empty_polygon_label"),
         )
         non_annotation_label = LabelEntity(
             name="Non-annotation label",
             domain=Domain.SEGMENTATION,
-            id=ID("4_empty_annotation_label"),
+            id_=ID("4_empty_annotation_label"),
         )
         rectangle_annotation = Annotation(
             shape=Rectangle(x1=0.5, y1=0.7, x2=0.9, y2=0.9),

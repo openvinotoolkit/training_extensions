@@ -24,9 +24,9 @@ class Annotation(metaclass=abc.ABCMeta):
 
     # pylint: disable=redefined-builtin;
     def __init__(
-        self, shape: ShapeEntity, labels: List[ScoredLabel], id: Optional[ID] = None
+        self, shape: ShapeEntity, labels: List[ScoredLabel], id_: Optional[ID] = None
     ):
-        self.__id = ID(ObjectId()) if id is None else id
+        self.__id_ = ID(ObjectId()) if id_ is None else id_
         self.__shape = shape
         self.__labels = labels
 
@@ -35,19 +35,19 @@ class Annotation(metaclass=abc.ABCMeta):
             f"{self.__class__.__name__}("
             f"shape={self.shape}, "
             f"labels={self.get_labels(True)}, "
-            f"id={self.id})"
+            f"id_={self.id_})"
         )
 
     @property
-    def id(self):
+    def id_(self):
         """
-        Returns the id for the annotation
+        Returns the id_ for the annotation
         """
-        return self.__id
+        return self.__id_
 
-    @id.setter
-    def id(self, value):
-        self.__id = value
+    @id_.setter
+    def id_(self, value):
+        self.__id_ = value
 
     @property
     def shape(self):
@@ -76,10 +76,12 @@ class Annotation(metaclass=abc.ABCMeta):
         Get a set of ID's of labels that are assigned to this annotation
 
         :param include_empty: set to True to include empty label (if exists) in the output.
-        :return: Set of label id's in annotation
+        :return: Set of label id_'s in annotation
         """
         return {
-            label.id for label in self.__labels if include_empty or (not label.is_empty)
+            label.id_
+            for label in self.__labels
+            if include_empty or (not label.is_empty)
         }
 
     def append_label(self, label: ScoredLabel):
@@ -101,7 +103,7 @@ class Annotation(metaclass=abc.ABCMeta):
     def __eq__(self, other):
         if isinstance(other, Annotation):
             return (
-                self.id == other.id
+                self.id_ == other.id_
                 and self.get_labels(True) == other.get_labels(True)
                 and self.shape == other.shape
             )
@@ -147,7 +149,7 @@ class AnnotationSceneEntity(metaclass=abc.ABCMeta):
     :param kind: Kind of annotation scene `AnnotationSceneKind`. E.g. `AnnotationSceneKind.ANNOTATION`.
     :param editor: The user that made this annotation scene object
     :param creation_date: Creation date of annotation scene entity.
-    :param id: ID of AnnotationSceneEntity.
+    :param id_: ID of AnnotationSceneEntity.
     """
 
     # pylint: disable=too-many-arguments, redefined-builtin
@@ -157,13 +159,13 @@ class AnnotationSceneEntity(metaclass=abc.ABCMeta):
         kind: AnnotationSceneKind,
         editor: str = "",
         creation_date: Optional[datetime.datetime] = None,
-        id: Optional[ID] = None,
+        id_: Optional[ID] = None,
     ):
         self.__annotations = annotations
         self.__kind = kind
         self.__editor = editor
         self.__creation_date = now() if creation_date is None else creation_date
-        self.__id = ID() if id is None else id
+        self.__id_ = ID() if id_ is None else id_
 
     def __repr__(self):
         return (
@@ -172,19 +174,19 @@ class AnnotationSceneEntity(metaclass=abc.ABCMeta):
             f"kind={self.kind}, "
             f"editor={self.editor_name}, "
             f"creation_date={self.creation_date}, "
-            f"id={self.id})"
+            f"id_={self.id_})"
         )
 
     @property
-    def id(self):
+    def id_(self):
         """
         Returns the ID of the AnnotationSceneEntity.
         """
-        return self.__id
+        return self.__id_
 
-    @id.setter
-    def id(self, value):
-        self.__id = value
+    @id_.setter
+    def id_(self, value):
+        self.__id_ = value
 
     @property
     def kind(self):
@@ -279,7 +281,7 @@ class AnnotationSceneEntity(metaclass=abc.ABCMeta):
         labels: Dict[str, LabelEntity] = {}
         for annotation in self.annotations:
             for label in annotation.get_labels(include_empty):
-                id_ = label.id
+                id_ = label.id_
                 if id_ not in labels:
                     labels[id_] = label.get_label()
         return list(labels.values())
@@ -304,7 +306,7 @@ class NullAnnotationSceneEntity(AnnotationSceneEntity):
 
     def __init__(self) -> None:
         super().__init__(
-            id=ID(),
+            id_=ID(),
             kind=AnnotationSceneKind.NONE,
             editor="",
             creation_date=datetime.datetime.now(),

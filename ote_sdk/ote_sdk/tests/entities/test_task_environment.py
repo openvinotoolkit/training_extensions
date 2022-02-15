@@ -49,10 +49,10 @@ def environment():
     Return TaskEnvironment
     """
     car = LabelEntity(
-        id=ID(123456789), name="car", domain=Domain.DETECTION, is_empty=False
+        id_=ID(123456789), name="car", domain=Domain.DETECTION, is_empty=False
     )
     person = LabelEntity(
-        id=ID(987654321), name="person", domain=Domain.DETECTION, is_empty=False
+        id_=ID(987654321), name="person", domain=Domain.DETECTION, is_empty=False
     )
     labels_list = [car, person]
     dummy_template = __get_path_to_file("./dummy_template.yaml")
@@ -109,15 +109,15 @@ class TestTaskEnvironment:
                 == __dummy_config[i]
             )
 
-        assert env.get_model_configuration().configurable_parameters.id == ID()
+        assert env.get_model_configuration().configurable_parameters.id_ == ID()
 
         for param in __dummy_config:
             getattr(env.get_hyper_parameters(), param) == __dummy_config[param]
 
-        assert env.get_hyper_parameters().id == ID()
+        assert env.get_hyper_parameters().id_ == ID()
 
         assert "model=None" in repr(env)
-        assert "label_schema=LabelSchemaEntity(label_groups=[LabelGroup(id=" in repr(
+        assert "label_schema=LabelSchemaEntity(label_groups=[LabelGroup(id_=" in repr(
             env
         )
         assert "name=from_label_list" in repr(env)
@@ -138,7 +138,7 @@ class TestTaskEnvironment:
             in repr(env)
         )
         assert "visible_in_ui=True" in repr(env)
-        assert "id=ID()" in repr(env)
+        assert "id_=ID()" in repr(env)
 
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -436,16 +436,16 @@ class TestTaskEnvironment:
         header = "Test header"
         description = "Test description"
         visible_in_ui = False
-        id = ID(123456789)
+        id_ = ID(123456789)
 
         hyper_parameters = ConfigurableParameters(
-            header=header, description=description, visible_in_ui=visible_in_ui, id=id
+            header=header, description=description, visible_in_ui=visible_in_ui, id_=id_
         )
         env.set_hyper_parameters(hyper_parameters=hyper_parameters)
         assert env.get_hyper_parameters().header == header
         assert env.get_hyper_parameters().description == description
         assert env.get_hyper_parameters().visible_in_ui == visible_in_ui
-        assert env.get_hyper_parameters().id == id
+        assert env.get_hyper_parameters().id_ == id_
 
         assert env.get_model_configuration().configurable_parameters.header == header
         assert (
@@ -456,7 +456,7 @@ class TestTaskEnvironment:
             env.get_model_configuration().configurable_parameters.visible_in_ui
             == visible_in_ui
         )
-        assert env.get_model_configuration().configurable_parameters.id == id
+        assert env.get_model_configuration().configurable_parameters.id_ == id_
 
         with pytest.raises(ValueError):
             # ValueError: Unable to set hyper parameters, invalid input: 123

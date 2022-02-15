@@ -39,15 +39,15 @@ class TestScoredLabel:
         Test passes if the results match
         """
         car = LabelEntity(
-            id=ID(123456789), name="car", domain=Domain.DETECTION, is_empty=False
+            id_=ID(123456789), name="car", domain=Domain.DETECTION, is_empty=False
         )
         person = LabelEntity(
-            id=ID(987654321), name="person", domain=Domain.DETECTION, is_empty=False
+            id_=ID(987654321), name="person", domain=Domain.DETECTION, is_empty=False
         )
         car_label = ScoredLabel(car)
         person_label = ScoredLabel(person)
 
-        for attr in ["id", "name", "color", "hotkey", "creation_date", "is_empty"]:
+        for attr in ["id_", "name", "color", "hotkey", "creation_date", "is_empty"]:
             assert getattr(car_label, attr) == getattr(car, attr)
 
         assert car_label.get_label() == car
