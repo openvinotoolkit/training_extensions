@@ -16,7 +16,7 @@ from ote_sdk.usecases.adapters.model_adapter import (
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestIDataSource:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_i_data_source_data(self):
         """
@@ -45,7 +45,7 @@ class TestDataSource(IDataSource):
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestModelAdapter:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_model_adapter_initialization(self):
         """
@@ -84,7 +84,7 @@ class TestModelAdapter:
             model_adapter.data()
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_model_adapter_data_source_setter(self):
         """
@@ -134,7 +134,7 @@ class TestModelAdapter:
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestExportableCodeAdapter:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_exportable_code_adapter_initialization(self):
         """

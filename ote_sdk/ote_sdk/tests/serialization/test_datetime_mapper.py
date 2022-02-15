@@ -16,7 +16,7 @@ from ote_sdk.utils.time_utils import now
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestDatetimeMapper:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_serialization_deserialization(self):
         """

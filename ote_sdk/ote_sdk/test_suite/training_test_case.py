@@ -2,17 +2,17 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import logging
 from abc import abstractmethod
 from collections import Counter, OrderedDict
 from copy import deepcopy
 from typing import Callable, Dict, List, Optional, Type
 
 from .e2e_test_system import DataCollector
+from .logging import get_logger
 from .training_tests_actions import BaseOTETestAction
 from .training_tests_stage import OTETestStage, OTETestStagesStorageInterface, Validator
 
-logger = logging.getLogger(__name__)
+logger = get_logger()
 
 
 def _get_duplications(arr):

@@ -184,18 +184,14 @@ class LabelSchemaMapper:
             for group in instance.get_groups(include_empty=True)
         ]
 
-        output_dict = {
+        return {
             "label_tree": LabelGraphMapper().forward(instance.label_tree),
-            "exclusivity_graph": LabelGraphMapper().forward(instance.exclusivity_graph),
             "label_groups": label_groups,
+            "all_labels": {
+                IDMapper().forward(label.id): LabelMapper().forward(label)
+                for label in instance.get_labels(True)
+            },
         }
-
-        output_dict["all_labels"] = {
-            IDMapper().forward(label.id): LabelMapper().forward(label)
-            for label in instance.get_labels(True)
-        }
-
-        return output_dict
 
     @staticmethod
     def backward(instance: dict) -> LabelSchemaEntity:
@@ -206,16 +202,12 @@ class LabelSchemaMapper:
             for id, label in instance["all_labels"].items()
         }
 
-        exclusivity_graph = LabelGraphMapper().backward(
-            instance["exclusivity_graph"], all_labels
-        )
         label_tree = LabelGraphMapper().backward(instance["label_tree"], all_labels)
         label_groups = [
             LabelGroupMapper().backward(label_group, all_labels)
             for label_group in instance["label_groups"]
         ]
         output = LabelSchemaEntity(
-            exclusivity_graph=cast(LabelGraph, exclusivity_graph),
             label_tree=cast(LabelTree, label_tree),
             label_groups=label_groups,
         )

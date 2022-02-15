@@ -4,7 +4,6 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import itertools
 from enum import Enum
 from typing import List, Optional, Sequence
 
@@ -283,11 +282,8 @@ class LabelSchemaEntity:
     This class currently keeps track of the following relationships:
 
     - parent/child label relationship
-    - label exclusivity relationship (e.g. multiclass vs multilabel)
+    - label group relationships
 
-    :param exclusivity_graph: the edges in this graph connect nodes (Labels) that are
-        mutually exclusive by logical inference, for example children of mutually
-        exclusive labels are also exclusive and have a connecting edge in this graph
     :param label_tree: a hierarchy of labels represented as a tree
     :param label_groups: list of groups of labels that form logical groups. E.g. a group
         of mutually exclusive labels.
@@ -296,16 +292,9 @@ class LabelSchemaEntity:
     # pylint: disable=too-many-public-methods, too-many-arguments
     def __init__(
         self,
-        exclusivity_graph: LabelGraph = None,
         label_tree: LabelTree = None,
         label_groups: List[LabelGroup] = None,
     ):
-        if exclusivity_graph is None:
-            exclusivity_graph = LabelGraph(
-                False
-            )  # exclusivity is transitive, hence undirected
-        self.exclusivity_graph = exclusivity_graph
-
         if label_tree is None:
             label_tree = LabelTree()
         self.label_tree = label_tree
@@ -345,32 +334,19 @@ class LabelSchemaEntity:
             if group.group_type != LabelGroupType.EMPTY_LABEL
         ]
 
-    def add_group(
-        self, label_group: LabelGroup, exclusive_with: Optional[List[LabelGroup]] = None
-    ):
+    def add_group(self, label_group: LabelGroup):
         """
-        Adding a group to label schema. This also maintains the exclusivity edges.
+        Adding a group to label schema.
 
         :param label_group: label group to add
-        :param exclusive_with: list of groups exclusive with the group to add
         :return:
         """
-        labels = label_group.labels
         if label_group.name in [group.name for group in self._groups]:
             raise LabelGroupExistsException(
                 f"group with '{label_group.name}' exists, "
                 f"use add_to_group_by_group_name instead"
             )
-        if label_group.group_type is LabelGroupType.EXCLUSIVE:
-            for label in labels:
-                self.exclusivity_graph.add_node(label)
-            if len(labels) > 1:
-                self.exclusivity_graph.add_edges(
-                    list(itertools.combinations(labels, 2))
-                )
         self.__append_group(label_group)
-        if exclusive_with is not None:
-            self.__add_inter_group_exclusivity(label_group, exclusive_with)
 
     def add_child(self, parent: LabelEntity, child: LabelEntity):
         """
@@ -379,8 +355,6 @@ class LabelSchemaEntity:
         parent = self.__get_label(parent)
         child = self.__get_label(child)
         self.label_tree.add_child(parent, child)
-        for node in self.exclusivity_graph.neighbors(parent):
-            self.exclusivity_graph.add_edge(node, child)
 
     def get_parent(self, label: LabelEntity) -> Optional[LabelEntity]:
         """
@@ -426,30 +400,6 @@ class LabelSchemaEntity:
             if group.group_type == LabelGroupType.EXCLUSIVE
         ]
 
-    def __add_exclusivity_edges(
-        self, new_labels: Sequence[LabelEntity], existing_labels: Sequence[LabelEntity]
-    ):
-        """
-        Adding exclusivity edges:
-        - among new labels
-        - between new labels and existing labels
-
-        :param new_labels:
-        :param existing_labels:
-
-        :return:
-        """
-        edges = []
-
-        if len(new_labels) > 1:
-            # create edges among new_labels
-            edges.extend(list(itertools.combinations(new_labels, 2)))
-        # create edges with existing labels
-        if len(existing_labels) > 0:
-            edges.extend(list(itertools.product(new_labels, existing_labels)))
-
-        self.exclusivity_graph.add_edges(edges)
-
     def add_labels_to_group_by_group_name(
         self, group_name: str, labels: Sequence[LabelEntity]
     ):
@@ -463,34 +413,12 @@ class LabelSchemaEntity:
             exist
         """
         group = self.get_label_group_by_name(group_name)
-
         if group is not None:
-            if group.group_type is LabelGroupType.EXCLUSIVE:
-                self.__add_exclusivity_edges(
-                    new_labels=labels, existing_labels=group.labels
-                )
-
             group.labels.extend(labels)
         else:
             raise LabelGroupDoesNotExistException(
                 f"group with name '{group_name}' does not exist, cannot add"
             )
-
-    def __add_inter_group_exclusivity(
-        self, label_group: LabelGroup, exclusive_with: List[LabelGroup]
-    ):
-        """
-        Appends exclusivity information from the input group to the existing groups of
-        the same task.
-
-        :param label_group: the labels inside this group will be the target of
-            exclusivity connections.
-        :param exclusive_with: Label groups exclusive with label_group
-        """
-        for exclusive_group in exclusive_with:
-            for group_label in label_group.labels:
-                for other_label in exclusive_group.labels:
-                    self.exclusivity_graph.add_edge(group_label, other_label)
 
     def __append_group(self, label_group: LabelGroup):
         """
@@ -503,16 +431,25 @@ class LabelSchemaEntity:
 
     def are_exclusive(self, label1: LabelEntity, label2: LabelEntity) -> bool:
         """
-        Returns whether `label` and `label2` are mutually exclusive
+        Returns whether `label` and `label2` are mutually exclusive.
         """
-        label1 = self.__get_label(label1)
-        label2 = self.__get_label(label2)
-        return self.exclusivity_graph.has_edge_between(label1, label2)
+        return label2 in self.get_labels_exclusive_to(label1)
 
     def get_children(self, parent: LabelEntity) -> List[LabelEntity]:
         """Return a list of the children of the passed parent Label"""
         parent = self.__get_label(parent)
         return self.label_tree.get_children(parent)
+
+    def get_siblings_in_group(self, label: LabelEntity) -> List[LabelEntity]:
+        """Return a list of the 'siblings', which are all labels within the same group as a label"""
+        containing_group = self.get_group_containing_label(label)
+        if containing_group is None:
+            return []
+        return [
+            label_iter
+            for label_iter in containing_group.labels
+            if not label_iter == label
+        ]
 
     def get_descendants(self, parent: LabelEntity) -> List[LabelEntity]:
         """Returns descendants (children and children of children, etc.) of `parent`"""
@@ -540,9 +477,72 @@ class LabelSchemaEntity:
         return None
 
     def get_labels_exclusive_to(self, label: LabelEntity) -> List[LabelEntity]:
-        """Returns a list of labels that are exclusive to the passed label"""
-        self.__get_label(label)
-        return list(self.exclusivity_graph.neighbors(label))
+        """Returns a list of labels that are exclusive to the passed label."""
+        if label.is_empty:
+            exclusive_labels = self.__get_exclusivity_for_empty_label(label=label)
+        else:
+            exclusive_labels = self.__get_exclusivity_recursion(label=label)
+        return exclusive_labels
+
+    def __get_exclusivity_recursion(
+        self, label: LabelEntity, add_empty: bool = True
+    ) -> List[LabelEntity]:
+        """
+        Recursively computes all labels exclusive to a non-empty label. A label is exclusive with:
+        - All labels in the same group
+        - All children of labels in the same group
+        - All labels in the same group as any of the label's ancestors
+        - All children of labels in the same group as any of the label's ancestors
+        - All empty labels that are not descendants of the label
+
+        :param label: The label to get exclusive labels for
+        :param add_empty: If set to True, adds all empty labels that are not descendants of the label. This is only
+        needed for the first recursion iteration.
+        :return: List of labels exclusive to the label.
+        """
+        output = []
+
+        # Add all labels in the same group
+        siblings = self.get_siblings_in_group(label)
+        output += siblings
+
+        # Add all children of labels in the same group
+        for sibling in siblings:
+            output += self.get_children(sibling)
+
+        # Do the same for the parent of the label
+        parent = self.get_parent(label)
+        if parent is not None:
+            output += self.__get_exclusivity_recursion(parent, add_empty=False)
+
+        # Add all empty labels that are not descendants of the label. We don't need to check the ancestors for being
+        # empty, because empty label's don't have descendants.
+        if add_empty:
+            descendants = self.get_descendants(label)
+            exclusive_empty_labels = [
+                label_iter
+                for label_iter in self.get_labels(include_empty=True)
+                if label_iter.is_empty and label_iter not in descendants
+            ]
+            output = list(set(output + exclusive_empty_labels))
+        return output
+
+    def __get_exclusivity_for_empty_label(
+        self, label: LabelEntity
+    ) -> List[LabelEntity]:
+        """
+        Get the labels exclusive to an empty label. For an empty label, all labels are exclusive to it except it's
+        ancestors.
+
+        :param label: empty Label to get exclusive labels for
+        :return: List of Labels exclusive to the Label
+        """
+        ancestors = self.get_ancestors(label)
+        return [
+            label
+            for label in self.get_labels(include_empty=True)
+            if label not in ancestors
+        ]
 
     @staticmethod
     def __get_label(label) -> LabelEntity:
@@ -566,12 +566,9 @@ class LabelSchemaEntity:
 
     def __eq__(self, other) -> bool:
         if isinstance(other, LabelSchemaEntity):
-            return (
-                self.exclusivity_graph == other.exclusivity_graph
-                and self.label_tree == other.label_tree
-                and self.get_groups(include_empty=True)
-                == other.get_groups(include_empty=True)
-            )
+            return self.label_tree == other.label_tree and self.get_groups(
+                include_empty=True
+            ) == other.get_groups(include_empty=True)
         return False
 
     @classmethod

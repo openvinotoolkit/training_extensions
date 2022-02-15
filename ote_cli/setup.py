@@ -38,6 +38,7 @@ setup(
             "ote_export=ote_cli.tools.export:main",
             "ote_find=ote_cli.tools.find:main",
             "ote_train=ote_cli.tools.train:main",
+            "ote_optimize=ote_cli.tools.optimize:main",
         ]
     },
 )

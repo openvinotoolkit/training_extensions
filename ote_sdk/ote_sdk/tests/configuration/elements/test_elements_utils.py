@@ -35,7 +35,7 @@ class TestUtilsFunctions:
     attribute = fields(ConfigurableParameters)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_utils_attr_enum_to_str_serializer(self):
         """
@@ -82,7 +82,7 @@ class TestUtilsFunctions:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_convert_enum_selectable_value(self):
         """
@@ -128,7 +128,7 @@ class TestUtilsFunctions:
             )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_construct_attr_enum_selectable_converter(self):
         """
@@ -149,7 +149,7 @@ class TestUtilsFunctions:
         assert converter("test_2_test") == SomeEnumSelectable.TEST_2
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_construct_attr_enum_selectable_onsetattr(self):
         """
@@ -183,7 +183,7 @@ class TestUtilsFunctions:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_construct_attr_value_validator(self):
         """
@@ -217,7 +217,7 @@ class TestUtilsFunctions:
                 )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_construct_attr_selectable_validator(self):
         """
@@ -254,7 +254,7 @@ class TestUtilsFunctions:
                 )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_convert_string_to_id(self):
         """
@@ -283,7 +283,7 @@ class TestUtilsFunctions:
         assert convert_string_to_id(4) == 4  # type: ignore
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_attr_strict_int_validator(self):
         """
@@ -320,7 +320,7 @@ class TestUtilsFunctions:
             )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_validate_and_convert_float(self):
         """
@@ -352,7 +352,7 @@ class TestUtilsFunctions:
         assert not _validate_and_convert_float(value="some string")  # type: ignore
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_attr_strict_float_on_setattr(self):
         """
@@ -398,7 +398,7 @@ class TestUtilsFunctions:
             )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_attr_strict_float_converter(self):
         """

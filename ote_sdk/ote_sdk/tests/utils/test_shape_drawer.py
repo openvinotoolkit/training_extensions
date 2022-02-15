@@ -76,7 +76,7 @@ class CommonMethods:
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestDrawerEntity:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_drawer_entity(self):
         """
@@ -192,7 +192,7 @@ class TestHelpers:
         return expected_image, expected_width, expected_height
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_helpers_initialization(self):
         """
@@ -221,7 +221,7 @@ class TestHelpers:
         assert helpers.line_height == 0
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_helpers_draw_transparent_rectangle(self):
         """
@@ -289,7 +289,7 @@ class TestHelpers:
         assert np.array_equal(image, expected_image)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_helpers_generate_text_scale(self):
         """
@@ -326,7 +326,7 @@ class TestHelpers:
         assert helpers.generate_text_scale(image) == 2
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_helpers_generate_text_for_label(self):
         """
@@ -370,7 +370,7 @@ class TestHelpers:
         assert helpers.generate_text_for_label(scored_labels[1], False, False) == ""
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_helpers_generate_draw_command_for_text(self):
         """
@@ -426,7 +426,7 @@ class TestHelpers:
             assert helpers.line_height == expected_height
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_helpers_generate_draw_command_for_label(self):
         """
@@ -471,7 +471,7 @@ class TestHelpers:
                 assert helpers.cursor_pos.y == expected_helpers.cursor_pos.y
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_helpers_draw_flagpole(self):
         """
@@ -518,7 +518,7 @@ class TestHelpers:
         assert np.array_equal(actual_image, expected_image)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_helpers_newline(self):
         """
@@ -542,7 +542,7 @@ class TestHelpers:
         assert helpers.cursor_pos.y == 4
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_helpers_set_cursor_pos(self):
         """
@@ -715,7 +715,7 @@ class ShapeDrawerParams:
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestShapeDrawer:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_shape_drawer_initialization(self):
         """
@@ -754,7 +754,7 @@ class TestShapeDrawer:
             assert shape_drawer.top_left_drawer.is_one_label == is_one_label
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_shape_drawer_draw(self):
         """
@@ -824,7 +824,7 @@ class TestShapeDrawer:
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestTopLeftDrawer:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_top_left_drawer_initialization(self):
         """
@@ -852,7 +852,7 @@ class TestTopLeftDrawer:
             assert shape_drawer.top_left_drawer.is_one_label == is_one_label
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_top_left_drawer_draw_labels(self):
         """
@@ -905,7 +905,7 @@ class TestTopLeftDrawer:
             )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_top_left_drawer_draw(self):
         """
@@ -933,7 +933,7 @@ class TestTopLeftDrawer:
         assert np.array_equal(actual_image, expected_image)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_top_left_drawer_draw_annotation_count(self):
         """
@@ -1005,7 +1005,7 @@ class TestRectangleDrawer:
         return image_copy
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_rectangle_drawer_initialization(self):
         """
@@ -1028,7 +1028,7 @@ class TestRectangleDrawer:
             assert shape_drawer.shape_drawers[0].show_confidence
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_rectangle_drawer_draw(self):
         """
@@ -1153,7 +1153,7 @@ class TestEllipseDrawer:
         return image_copy
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_ellipse_drawer_initialization(self):
         """
@@ -1176,7 +1176,7 @@ class TestEllipseDrawer:
             assert shape_drawer.shape_drawers[2].show_confidence
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_ellipse_drawer_draw(self):
         """
@@ -1293,7 +1293,7 @@ class TestPolygonDrawer:
         return image_copy
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_polygon_drawer_initialization(self):
         """
@@ -1316,7 +1316,7 @@ class TestPolygonDrawer:
             assert shape_drawer.shape_drawers[1].show_confidence
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_polygon_drawer_draw(self):
         """

@@ -38,7 +38,7 @@ class TestPoint:
         return Point(*self.other_coordinates())
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_point_magic_methods(self):
         """
@@ -66,7 +66,7 @@ class TestPoint:
         assert point1 != str
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_point_normalize_wrt_roi(self):
         """
@@ -92,7 +92,7 @@ class TestPoint:
         assert normalized.y == 0.38
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_point_denormalize_wrt_roi_shape(self):
         """
@@ -141,7 +141,7 @@ class TestPolygon:
         return Polygon(self.other_points(), modification_date=self.modification_date)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_polygon(self):
         """
@@ -171,7 +171,7 @@ class TestPolygon:
             Polygon(empty_points_list)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_polygon_magic_methods(self):
         """
@@ -208,7 +208,7 @@ class TestPolygon:
         assert hash(polygon) == hash(str(polygon))
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_polygon_normalize_wrt_roi_shape(self):
         """
@@ -240,7 +240,7 @@ class TestPolygon:
             polygon.normalize_wrt_roi_shape("123")
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_polygon_denormalize_wrt_roi_shape(self):
         """
@@ -272,7 +272,7 @@ class TestPolygon:
             polygon.denormalize_wrt_roi_shape("123")
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_polygon__as_shapely_polygon(self):
         """
@@ -299,7 +299,7 @@ class TestPolygon:
         assert shapely_polygon != shapely_polygon2
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_polygon_get_area(self):
         """

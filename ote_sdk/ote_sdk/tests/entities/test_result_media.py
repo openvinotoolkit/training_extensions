@@ -97,7 +97,7 @@ class TestResultMediaEntity:
         assert result_media.label == expected_values.get("label")
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_result_media_initialization(self):
         """
@@ -125,7 +125,7 @@ class TestResultMediaEntity:
         self.check_result_media_attributes(result_media, initialization_params)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_result_media_repr(self):
         """
@@ -167,7 +167,7 @@ class TestResultMediaEntity:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_result_media_shape(self):
         """
@@ -197,7 +197,7 @@ class TestResultMediaEntity:
         assert result_media.height == 16
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_result_media_eq(self):
         """

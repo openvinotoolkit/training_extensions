@@ -18,7 +18,7 @@ from ote_sdk.utils.shape_factory import ShapeFactory
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestShapeFactory:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_rectangle_shape_conversion(self):
         """
@@ -58,7 +58,7 @@ class TestShapeFactory:
         assert rectangle == rectangle2
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_ellipse_shape_conversion(self):
         """
@@ -101,7 +101,7 @@ class TestShapeFactory:
         ) == ellipse_coords
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_polygon_shape_conversion(self):
         """
@@ -144,7 +144,7 @@ class TestShapeFactory:
         ) == polygon_coords
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_produces_valid_crop(self):
         """
