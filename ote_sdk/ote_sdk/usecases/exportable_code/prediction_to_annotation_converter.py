@@ -263,9 +263,8 @@ class AnomalyClassificationToAnnotationConverter(IPredictionToAnnotationConverte
         ]
 
     def convert_to_annotation(
-        self, predictions: np.ndarray, metadata: Dict[str, Any]
+        self, pred_score: np.ndarray, metadata: Dict[str, Any]
     ) -> AnnotationSceneEntity:
-        pred_score = predictions.reshape(-1).max()
         pred_label = pred_score >= metadata.get("threshold", 0.5)
 
         label = self.anomalous_label if pred_label else self.normal_label

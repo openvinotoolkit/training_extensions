@@ -20,7 +20,7 @@ from dataclasses import dataclass
 from typing import Dict, List, Optional, Union
 
 import numpy as np
-from anomalib.data.transforms import PreProcessor
+from anomalib.pre_processing import PreProcessor
 from omegaconf import DictConfig, ListConfig
 from pytorch_lightning.core.datamodule import LightningDataModule
 from torch import Tensor

@@ -24,8 +24,8 @@ from glob import glob
 from typing import Optional, Union
 
 import torch
-from anomalib.core.callbacks import MinMaxNormalizationCallback
-from anomalib.core.model import AnomalyModule
+from anomalib.utils.callbacks import MinMaxNormalizationCallback
+from anomalib.models import AnomalyModule
 from anomalib.models import get_model
 from omegaconf import DictConfig, ListConfig
 from pytorch_lightning import Trainer

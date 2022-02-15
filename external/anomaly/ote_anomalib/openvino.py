@@ -28,8 +28,8 @@ from zipfile import ZipFile
 
 import numpy as np
 from addict import Dict as ADDict
-from anomalib.core.model.inference import OpenVINOInferencer
-from anomalib.utils.post_process import anomaly_map_to_color_map
+from anomalib.deploy import OpenVINOInferencer
+from anomalib.post_processing import anomaly_map_to_color_map
 from compression.api import DataLoader
 from compression.engines.ie_engine import IEEngine
 from compression.graph import load_model, save_model

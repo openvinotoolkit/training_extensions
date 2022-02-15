@@ -66,7 +66,7 @@ class ProgressCallback(ProgressBar):
         """
         Adds training completion percentage to the progress bar
         """
-        super().on_train_batch_end(trainer, pl_module, outputs, batch, batch_idx, dataloader_idx)
+        super().on_train_batch_end(trainer, pl_module, outputs, batch, batch_idx)
         self.current_epoch = trainer.current_epoch
         self._update_progress(stage="train")
 
