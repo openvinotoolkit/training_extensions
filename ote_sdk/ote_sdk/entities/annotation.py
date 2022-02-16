@@ -41,7 +41,7 @@ class Annotation(metaclass=abc.ABCMeta):
     @property
     def id_(self):
         """
-        Returns the id_ for the annotation
+        Returns the id for the annotation
         """
         return self.__id_
 
@@ -76,7 +76,7 @@ class Annotation(metaclass=abc.ABCMeta):
         Get a set of ID's of labels that are assigned to this annotation
 
         :param include_empty: set to True to include empty label (if exists) in the output.
-        :return: Set of label id_'s in annotation
+        :return: Set of label id's in annotation
         """
         return {
             label.id_

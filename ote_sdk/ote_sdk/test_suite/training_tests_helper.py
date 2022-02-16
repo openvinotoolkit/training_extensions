@@ -86,10 +86,10 @@ class OTETestCreationParametersInterface(ABC):
     @abstractmethod
     def short_test_parameters_names_for_generating_id(self) -> OrderedDict:
         """
-        The method returns an OrderedDict that is used for generating string id_-s of tests
+        The method returns an OrderedDict that is used for generating string id-s of tests
         by test parameters, received from test bunches dicts:
         * keys of the OrderedDict should be the string keys of test bunches dict-s that should be
-          used for generating id_-s
+          used for generating id-s
         * values of the OrderedDict should be the strings that will be used as names of test parameters
 
         See the function OTETestHelper._generate_test_id below.
@@ -272,7 +272,7 @@ class OTETestHelper:
                        at the moment it is a one-element tuple with the dict `test_parameters`
                        that stores the parameters of the test
         * ids -- list of strings with ids corresponding the parameters of the tests
-                 each id_ is a string generated from the corresponding test_parameters
+                 each id is a string generated from the corresponding test_parameters
                  value -- see the functions _generate_test_id
 
         The lists argvalues and ids will have the same length.

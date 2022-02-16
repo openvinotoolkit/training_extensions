@@ -17,7 +17,7 @@ from .enums.config_element_type import ConfigElementType
 class ConfigurableParameters(ParameterGroup):
     """
     Base class representing a generic set of configurable parameters. A
-    ConfigurableParameters instance is essentially a parameter group with an id_
+    ConfigurableParameters instance is essentially a parameter group with an id
     attached to it, so that it can be uniquely identified in the repositories.
 
     :var id_: ID that uniquely identifies the ConfigurableParameters

@@ -90,7 +90,7 @@ class ResultSetEntity(metaclass=abc.ABCMeta):
 
     @property
     def id_(self) -> ID:
-        """Returns the id_ of the ResultSet"""
+        """Returns the id of the ResultSet"""
         return self.__id_
 
     @id_.setter
