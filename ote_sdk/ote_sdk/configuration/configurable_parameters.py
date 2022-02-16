@@ -20,7 +20,7 @@ class ConfigurableParameters(ParameterGroup):
     ConfigurableParameters instance is essentially a parameter group with an id
     attached to it, so that it can be uniquely identified in the repositories.
 
-    :var id_: ID that uniquely identifies the ConfigurableParameters
+    :var id: ID that uniquely identifies the ConfigurableParameters
     :var header: User friendly name for the ConfigurableParameters, that will be
         displayed in the UI
 

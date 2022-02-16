@@ -79,7 +79,7 @@ class LabelMapper:
         label_domain = Domain[domain]
 
         label = LabelEntity(
-            id_=label_id,
+            id=label_id,
             name=instance["name"],
             color=ColorMapper().backward(instance["color"]),
             hotkey=instance.get("hotkey", ""),
@@ -111,7 +111,7 @@ class LabelGroupMapper:
         """Deserializes from dict."""
 
         return LabelGroup(
-            id_=IDMapper().backward(instance["__id_"]),
+            id=IDMapper().backward(instance["__id_"]),
             name=instance["name"],
             group_type=LabelGroupType[instance["relation_type"]],
             labels=[

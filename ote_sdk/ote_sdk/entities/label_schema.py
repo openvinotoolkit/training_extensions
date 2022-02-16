@@ -38,7 +38,7 @@ class LabelGroup:
 
     The labels have to be from one task.
 
-    :param id_: ID of the LabelGroup. If no ID is provided, a new ObjectId() will be
+    :param id: ID of the LabelGroup. If no ID is provided, a new ObjectId() will be
                assigned
     :param name: Descriptive name of the label group
     :param labels: Labels that form the group
@@ -51,9 +51,9 @@ class LabelGroup:
         name: str,
         labels: Sequence[LabelEntity],
         group_type: LabelGroupType = LabelGroupType.EXCLUSIVE,
-        id_: ID = None,
+        id: ID = None,
     ):
-        self.id_ = ID(ObjectId()) if id_ is None else id_
+        self.id_ = ID(ObjectId()) if id is None else id
 
         self.labels = sorted(labels, key=lambda x: x.id_)
         self.name = name
@@ -94,7 +94,7 @@ class LabelGroup:
 
     def __repr__(self) -> str:
         return (
-            f"LabelGroup(id_={self.id_}, name={self.name}, group_type={self.group_type},"
+            f"LabelGroup(id={self.id_}, name={self.name}, group_type={self.group_type},"
             f" labels={self.labels})"
         )
 
@@ -368,7 +368,7 @@ class LabelSchemaEntity:
     def get_label_ids(self, include_empty) -> List[ID]:
         """
         Returns a list of label ids that are in the LabelSchema
-        :param include_empty: Include empty label id_ or not
+        :param include_empty: Include empty label id or not
         """
         label_ids = {
             label.id_

@@ -24,9 +24,9 @@ class Annotation(metaclass=abc.ABCMeta):
 
     # pylint: disable=redefined-builtin;
     def __init__(
-        self, shape: ShapeEntity, labels: List[ScoredLabel], id_: Optional[ID] = None
+        self, shape: ShapeEntity, labels: List[ScoredLabel], id: Optional[ID] = None
     ):
-        self.__id_ = ID(ObjectId()) if id_ is None else id_
+        self.__id_ = ID(ObjectId()) if id is None else id
         self.__shape = shape
         self.__labels = labels
 
@@ -35,7 +35,7 @@ class Annotation(metaclass=abc.ABCMeta):
             f"{self.__class__.__name__}("
             f"shape={self.shape}, "
             f"labels={self.get_labels(True)}, "
-            f"id_={self.id_})"
+            f"id={self.id_})"
         )
 
     @property
@@ -149,7 +149,7 @@ class AnnotationSceneEntity(metaclass=abc.ABCMeta):
     :param kind: Kind of annotation scene `AnnotationSceneKind`. E.g. `AnnotationSceneKind.ANNOTATION`.
     :param editor: The user that made this annotation scene object
     :param creation_date: Creation date of annotation scene entity.
-    :param id_: ID of AnnotationSceneEntity.
+    :param id: ID of AnnotationSceneEntity.
     """
 
     # pylint: disable=too-many-arguments, redefined-builtin
@@ -159,13 +159,13 @@ class AnnotationSceneEntity(metaclass=abc.ABCMeta):
         kind: AnnotationSceneKind,
         editor: str = "",
         creation_date: Optional[datetime.datetime] = None,
-        id_: Optional[ID] = None,
+        id: Optional[ID] = None,
     ):
         self.__annotations = annotations
         self.__kind = kind
         self.__editor = editor
         self.__creation_date = now() if creation_date is None else creation_date
-        self.__id_ = ID() if id_ is None else id_
+        self.__id_ = ID() if id is None else id
 
     def __repr__(self):
         return (
@@ -174,7 +174,7 @@ class AnnotationSceneEntity(metaclass=abc.ABCMeta):
             f"kind={self.kind}, "
             f"editor={self.editor_name}, "
             f"creation_date={self.creation_date}, "
-            f"id_={self.id_})"
+            f"id={self.id_})"
         )
 
     @property
@@ -306,7 +306,7 @@ class NullAnnotationSceneEntity(AnnotationSceneEntity):
 
     def __init__(self) -> None:
         super().__init__(
-            id_=ID(),
+            id=ID(),
             kind=AnnotationSceneKind.NONE,
             editor="",
             creation_date=datetime.datetime.now(),

@@ -39,14 +39,14 @@ class TestVisualizer:
             domain=Domain.DETECTION,
             color=annotation_color,
             creation_date=creation_date,
-            id_=ID("detection_1"),
+            id=ID("detection_1"),
         )
         segmentation_label = LabelEntity(
             name="segmentation label",
             domain=Domain.SEGMENTATION,
             color=annotation_color,
             creation_date=creation_date,
-            id_=ID("segmentation_1"),
+            id=ID("segmentation_1"),
         )
         annotation = Annotation(
             shape=Rectangle(x1=0.1, y1=0.1, x2=0.4, y2=0.5),
@@ -61,14 +61,14 @@ class TestVisualizer:
             domain=Domain.CLASSIFICATION,
             color=other_annotation_color,
             creation_date=creation_date,
-            id_=ID("classification_1"),
+            id=ID("classification_1"),
         )
         anomaly_segmentation_label = LabelEntity(
             name="anomaly_segmentation label",
             domain=Domain.ANOMALY_SEGMENTATION,
             color=other_annotation_color,
             creation_date=creation_date,
-            id_=ID("anomaly_segmentation_1"),
+            id=ID("anomaly_segmentation_1"),
         )
         other_annotation = Annotation(
             shape=Ellipse(x1=0.6, y1=0.4, x2=0.7, y2=0.9),

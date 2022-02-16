@@ -286,7 +286,7 @@ class TestModelEntity:
         set_params = {
             "configuration": environment.get_model_configuration(),
             "train_dataset": dataset,
-            "id_": ID(1234567890),
+            "id": ID(1234567890),
             "creation_date": self.creation_date,
             "previous_trained_revision": 5,
             "previous_revision": 2,

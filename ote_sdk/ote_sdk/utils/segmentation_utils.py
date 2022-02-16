@@ -256,7 +256,7 @@ def create_annotation_from_segmentation_map(
                                 Annotation(
                                     shape=polygon,
                                     labels=[ScoredLabel(label, probability)],
-                                    id_=ID(ObjectId()),
+                                    id=ID(ObjectId()),
                                 )
                             )
                         else:

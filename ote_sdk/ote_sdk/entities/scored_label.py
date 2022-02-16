@@ -33,7 +33,7 @@ class ScoredLabel:
     @property
     def id_(self) -> ID:
         """
-        Returns the label id_.
+        Returns the label id.
         """
         return self.label.id_
 

@@ -56,7 +56,7 @@ class CommonActions:
             domain=Domain.DETECTION,
             color=self.color,
             creation_date=self.creation_date,
-            id_=ID("car_label"),
+            id=ID("car_label"),
         )
 
     def human(self) -> LabelEntity:
@@ -65,7 +65,7 @@ class CommonActions:
             domain=Domain.DETECTION,
             color=self.color,
             creation_date=self.creation_date,
-            id_=ID("human_label"),
+            id=ID("human_label"),
         )
 
     def dog(self) -> LabelEntity:
@@ -74,7 +74,7 @@ class CommonActions:
             domain=Domain.DETECTION,
             color=self.color,
             creation_date=self.creation_date,
-            id_=ID("dog_label"),
+            id=ID("dog_label"),
         )
 
     def human_1_dataset_item(self) -> DatasetItemEntity:

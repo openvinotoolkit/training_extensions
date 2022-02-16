@@ -62,7 +62,7 @@ class ResultSetEntity(metaclass=abc.ABCMeta):
     :param performance: the performance of the model on the ground truth dataset
     :param creation_date: the date time which the resultset is created. Set to None to set this to
     datetime.now(datetime.timezone.utc)
-    :param id_: the id_ of the resultset. Set to ID() so that a new unique ID will be assigned upon saving.
+    :param id: the id of the resultset. Set to ID() so that a new unique ID will be assigned upon saving.
         If the argument is None, it will be set to ID()
     """
 
@@ -75,12 +75,12 @@ class ResultSetEntity(metaclass=abc.ABCMeta):
         purpose: ResultsetPurpose = ResultsetPurpose.EVALUATION,
         performance: Optional[Performance] = None,
         creation_date: Optional[datetime.datetime] = None,
-        id_: Optional[ID] = None,
+        id: Optional[ID] = None,
     ):
-        id_ = ID() if id_ is None else id_
+        id = ID() if id is None else id
         performance = NullPerformance() if performance is None else performance
         creation_date = now() if creation_date is None else creation_date
-        self.__id_ = id_
+        self.__id_ = id
         self.__model = model
         self.__prediction_dataset = prediction_dataset
         self.__ground_truth_dataset = ground_truth_dataset
@@ -170,5 +170,5 @@ class ResultSetEntity(metaclass=abc.ABCMeta):
             f"purpose={self.purpose}, "
             f"performance={self.performance}, "
             f"creation_date={self.creation_date}, "
-            f"id_={self.id_})"
+            f"id={self.id_})"
         )

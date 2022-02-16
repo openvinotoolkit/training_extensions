@@ -79,7 +79,7 @@ class TestLabelEntityMapper:
             hotkey="ctrl+1",
             creation_date=cur_date,
             is_empty=False,
-            id_=ID("0000213"),
+            id=ID("0000213"),
         )
         serialized = LabelMapper.forward(label)
 
@@ -124,7 +124,7 @@ class TestLabelSchemaEntityMapper:
                 name=name,
                 domain=Domain.CLASSIFICATION,
                 creation_date=cur_date,
-                id_=ID(i),
+                id=ID(i),
                 color=colors[i],
             )
             for i, name in enumerate(names)
@@ -198,7 +198,7 @@ class TestLabelGroupMapper:
             LabelEntity(
                 name=name,
                 domain=Domain.CLASSIFICATION,
-                id_=ID(str(i)),
+                id=ID(str(i)),
             )
             for i, name in enumerate(names)
         ]
@@ -222,17 +222,17 @@ class TestLabelGroupMapper:
 
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestLabelGraphMapper:
-    label_0 = LabelEntity(name="label_0", domain=Domain.SEGMENTATION, id_=ID("0"))
-    label_0_1 = LabelEntity(name="label_0_1", domain=Domain.SEGMENTATION, id_=ID("0_1"))
-    label_0_2 = LabelEntity(name="label_0_2", domain=Domain.SEGMENTATION, id_=ID("0_2"))
+    label_0 = LabelEntity(name="label_0", domain=Domain.SEGMENTATION, id=ID("0"))
+    label_0_1 = LabelEntity(name="label_0_1", domain=Domain.SEGMENTATION, id=ID("0_1"))
+    label_0_2 = LabelEntity(name="label_0_2", domain=Domain.SEGMENTATION, id=ID("0_2"))
     label_0_1_1 = LabelEntity(
-        name="label_0_1_1", domain=Domain.SEGMENTATION, id_=ID("0_1_1")
+        name="label_0_1_1", domain=Domain.SEGMENTATION, id=ID("0_1_1")
     )
     label_0_1_2 = LabelEntity(
-        name="label_0_1_2", domain=Domain.SEGMENTATION, id_=ID("0_1_2")
+        name="label_0_1_2", domain=Domain.SEGMENTATION, id=ID("0_1_2")
     )
     label_0_2_1 = LabelEntity(
-        name="label_0_2_1", domain=Domain.SEGMENTATION, id_=ID("0_2_1")
+        name="label_0_2_1", domain=Domain.SEGMENTATION, id=ID("0_2_1")
     )
 
     @pytest.mark.priority_medium

@@ -84,7 +84,7 @@ class DetectionToAnnotationConverter(IPredictionToAnnotationConverter):
         annotations = self.__convert_to_annotations(predictions)
         # media_identifier = ImageIdentifier(image_id=ID())
         annotation_scene = AnnotationSceneEntity(
-            id_=ID(),
+            id=ID(),
             kind=AnnotationSceneKind.PREDICTION,
             editor="ote",
             creation_date=now(),

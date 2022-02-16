@@ -43,14 +43,14 @@ class TestAnnotation:
     annotation = Annotation(shape=rectangle, labels=labels)
 
     car = LabelEntity(
-        id_=ID(123456789),
+        id=ID(123456789),
         name="car",
         domain=Domain.DETECTION,
         color=Color(red=16, green=15, blue=56, alpha=255),
         is_empty=True,
     )
     person = LabelEntity(
-        id_=ID(987654321),
+        id=ID(987654321),
         name="person",
         domain=Domain.DETECTION,
         color=Color(red=11, green=18, blue=38, alpha=200),
@@ -144,7 +144,7 @@ class TestAnnotation:
 
         assert (
             repr(annotation)
-            == "Annotation(shape=Ellipse(x1=0.5, y1=0.1, x2=0.8, y2=0.3), labels=[], id_=123456789)"
+            == "Annotation(shape=Ellipse(x1=0.5, y1=0.1, x2=0.8, y2=0.3), labels=[], id=123456789)"
         )
         assert annotation == other_annotation
         assert annotation != third_annotation
@@ -423,7 +423,7 @@ class TestAnnotationSceneEntity:
             f"kind={annotation_scene_entity.kind}, "
             f"editor={annotation_scene_entity.editor_name}, "
             f"creation_date={annotation_scene_entity.creation_date}, "
-            f"id_={annotation_scene_entity.id_})"
+            f"id={annotation_scene_entity.id_})"
         ]
 
         for i in annotation_scene_entity_repr:
@@ -572,7 +572,7 @@ class TestAnnotationSceneEntity:
 
         assert annotation_scene_entity.get_label_ids() == {ID()}
 
-        bus = LabelEntity(id_=ID(123456789), name="bus", domain=Domain.DETECTION)
+        bus = LabelEntity(id=ID(123456789), name="bus", domain=Domain.DETECTION)
         bus_label = ScoredLabel(bus)
         labels = [bus_label]
         annotation = Annotation(shape=self.rectangle, labels=labels)

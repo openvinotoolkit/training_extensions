@@ -81,7 +81,7 @@ class TestResultset:
             "purpose": None,
             "performance": None,
             "creation_date": None,
-            "id_": None,
+            "id": None,
         }
 
         result_set = ResultSetEntity(**test_data)
@@ -122,7 +122,7 @@ class TestResultset:
             f"purpose={result_set.purpose}",
             f"performance={result_set.performance}",
             f"creation_date={result_set.creation_date}",
-            f"id_={result_set.id_}",
+            f"id={result_set.id_}",
         ]
 
         for i in test_result_set_repr:

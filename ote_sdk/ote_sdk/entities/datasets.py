@@ -95,7 +95,7 @@ class DatasetEntity:
     DatasetItemEntity(
         media=Image(image.jpg, width=640, height=480),
         annotation_scene=NullAnnotationSceneEntity(),
-        roi=Annotation(shape=Rectangle(x=0.0, y=0.0, width=1.0, height=1.0), labels=[], id_=6149e454893b7ebbe3a8faf6),
+        roi=Annotation(shape=Rectangle(x=0.0, y=0.0, width=1.0, height=1.0), labels=[], id=6149e454893b7ebbe3a8faf6),
         subset=NONE
     )
 

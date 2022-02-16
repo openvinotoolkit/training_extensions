@@ -49,10 +49,10 @@ def environment():
     Return TaskEnvironment
     """
     car = LabelEntity(
-        id_=ID(123456789), name="car", domain=Domain.DETECTION, is_empty=False
+        id=ID(123456789), name="car", domain=Domain.DETECTION, is_empty=False
     )
     person = LabelEntity(
-        id_=ID(987654321), name="person", domain=Domain.DETECTION, is_empty=False
+        id=ID(987654321), name="person", domain=Domain.DETECTION, is_empty=False
     )
     labels_list = [car, person]
     dummy_template = __get_path_to_file("./dummy_template.yaml")
@@ -117,7 +117,7 @@ class TestTaskEnvironment:
         assert env.get_hyper_parameters().id_ == ID()
 
         assert "model=None" in repr(env)
-        assert "label_schema=LabelSchemaEntity(label_groups=[LabelGroup(id_=" in repr(
+        assert "label_schema=LabelSchemaEntity(label_groups=[LabelGroup(id=" in repr(
             env
         )
         assert "name=from_label_list" in repr(env)
@@ -138,7 +138,7 @@ class TestTaskEnvironment:
             in repr(env)
         )
         assert "visible_in_ui=True" in repr(env)
-        assert "id_=ID()" in repr(env)
+        assert "id=ID()" in repr(env)
 
     @pytest.mark.priority_medium
     @pytest.mark.unit

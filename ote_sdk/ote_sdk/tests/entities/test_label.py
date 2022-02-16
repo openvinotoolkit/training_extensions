@@ -51,7 +51,7 @@ class TestLabelEntity:
         "hotkey": "ctrl+1",
         "creation_date": creation_date,
         "is_empty": False,
-        "id_": ID(123456789),
+        "id": ID(123456789),
     }
 
     label_person_params = {
@@ -61,7 +61,7 @@ class TestLabelEntity:
         "hotkey": "ctrl+2",
         "creation_date": creation_date,
         "is_empty": False,
-        "id_": ID(987654321),
+        "id": ID(987654321),
     }
     car = LabelEntity(**label_car_params)  # type: ignore
     empty = LabelEntity(name="empty", domain=Domain.SEGMENTATION, is_empty=True)
@@ -98,7 +98,7 @@ class TestLabelEntity:
             "hotkey",
             "creation_date",
             "is_empty",
-            "id_",
+            "id",
         ]:
             assert getattr(self.car, attr) == self.label_car_params[attr]
 
@@ -112,7 +112,7 @@ class TestLabelEntity:
         setattr(self.car, "domain", label_car_new_domain)
         setattr(self.car, "color", label_car_new_color)
         setattr(self.car, "hotkey", label_car_new_hotkey)
-        setattr(self.car, "id_", label_car_new_id)
+        setattr(self.car, "id", label_car_new_id)
 
         assert self.car.name == label_car_new_name
         assert self.car.domain == label_car_new_domain
@@ -164,7 +164,7 @@ class TestLabelEntity:
     def test_label_comparison(self):
         """
         <b>Description:</b>
-        Check the LabelEntity __lt__, __gt__ methods with changed id_
+        Check the LabelEntity __lt__, __gt__ methods with changed id
 
         <b>Input data:</b>
         Dummy data
@@ -174,7 +174,7 @@ class TestLabelEntity:
 
         <b>Steps</b>
         1. Use already created dummy data
-        2. Check the processing of changed id_
+        2. Check the processing of changed id
         """
 
         self.empty.id_ = ID(999999999)

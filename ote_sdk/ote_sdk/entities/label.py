@@ -74,7 +74,7 @@ class LabelEntity:
     :param hotkey: key or combination of keys to select this label in the UI
     :param creation_date: the date time of the label creation
     :param is_empty: set to True if the label is an empty label.
-    :param id_: the ID of the label. Set to ID() so that a new unique ID
+    :param id: the ID of the label. Set to ID() so that a new unique ID
         will be assigned upon saving. If the argument is None, it will be set to ID()
     """
 
@@ -87,9 +87,9 @@ class LabelEntity:
         hotkey: str = "",
         creation_date: Optional[datetime.datetime] = None,
         is_empty: bool = False,
-        id_: Optional[ID] = None,
+        id: Optional[ID] = None,
     ):
-        id_ = ID() if id_ is None else id_
+        id = ID() if id is None else id
         color = Color.random() if color is None else color
         creation_date = now() if creation_date is None else creation_date
 
@@ -99,7 +99,7 @@ class LabelEntity:
         self._domain = domain
         self._is_empty = is_empty
         self._creation_date = creation_date
-        self.__id_ = id_
+        self.__id_ = id
 
     @property
     def name(self):
@@ -162,7 +162,7 @@ class LabelEntity:
     @property
     def id_(self) -> ID:
         """
-        Returns the label id_.
+        Returns the label id.
         """
         return self.__id_
 
