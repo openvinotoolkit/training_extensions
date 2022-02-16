@@ -29,7 +29,7 @@ class TestRectangleInputParamsValidation:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_rectangle_initialization_parameters_validation(self):
         """
@@ -69,7 +69,7 @@ class TestRectangleInputParamsValidation:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_rectangle_is_full_box_input_parameters_validation(self):
         """
@@ -87,7 +87,7 @@ class TestRectangleInputParamsValidation:
             Rectangle.is_full_box(rectangle="unexpected_str")  # type: ignore
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_rectangle_crop_numpy_array_input_parameters_validation(self):
         """
@@ -106,7 +106,7 @@ class TestRectangleInputParamsValidation:
             rectangle.crop_numpy_array(data="unexpected str")  # type: ignore
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_rectangle_generate_full_box_input_parameters_validation(self):
         """
@@ -133,7 +133,7 @@ class TestRectangleInputParamsValidation:
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestEllipseInputParamsValidation:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_ellipse_initialization_parameters_validation(self):
         """
@@ -175,7 +175,7 @@ class TestEllipseInputParamsValidation:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_ellipse_get_evenly_distributed_ellipse_coordinates_input_parameters_validation(
         self,
@@ -207,7 +207,7 @@ class TestPointInputParamsValidation:
         return Ellipse(x1=0.0, y1=0.0, x2=0.8, y2=0.9)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_point_initialization_parameters_validation(self):
         """
@@ -236,7 +236,7 @@ class TestPointInputParamsValidation:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_point_normalize_wrt_roi_input_parameters_validation(self):
         """
@@ -255,7 +255,7 @@ class TestPointInputParamsValidation:
             point.normalize_wrt_roi(roi_shape=self.ellipse())  # type: ignore
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_point_denormalize_wrt_roi_shape_input_parameters_validation(self):
         """
@@ -277,7 +277,7 @@ class TestPointInputParamsValidation:
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestPolygonInputParamsValidation:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_polygon_initialization_parameters_validation(self):
         """
@@ -330,7 +330,7 @@ class TestShapeInputParamsValidation:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     @patch("ote_sdk.entities.shapes.shape.Shape.__abstractmethods__", set())
     def test_shape_initialization_parameters_validation(self):
@@ -369,7 +369,7 @@ class TestShapeInputParamsValidation:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_shape_intersects_input_parameters_validation(self):
         """
@@ -388,7 +388,7 @@ class TestShapeInputParamsValidation:
             rectangle.intersects(other="unexpected string")  # type: ignore
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_shape_contains_center_input_parameters_validation(self):
         """
@@ -407,7 +407,7 @@ class TestShapeInputParamsValidation:
             rectangle.contains_center(other="unexpected string")  # type: ignore
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_shape_get_labels_input_parameters_validation(self):
         """
@@ -426,7 +426,7 @@ class TestShapeInputParamsValidation:
             rectangle.get_labels(include_empty="unexpected string")  # type: ignore
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_shape_append_label_input_parameters_validation(self):
         """
@@ -445,7 +445,7 @@ class TestShapeInputParamsValidation:
             rectangle.append_label(label="unexpected string")  # type: ignore
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_shape_set_labels_input_parameters_validation(self):
         """
@@ -470,7 +470,7 @@ class TestShapeInputParamsValidation:
                 rectangle.set_labels(labels=unexpected_value)  # type: ignore
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_shape_validate_coordinates_input_parameters_validation(self):
         """
