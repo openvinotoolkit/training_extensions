@@ -584,7 +584,7 @@ class HpoUnpickler(pickle.Unpickler):
             "LabelSchemaEntity",
             "LabelGraph",
         },
-        "ote_sdk.entities.id_": {
+        "ote_sdk.entities.id": {
             "ID",
         },
         "ote_sdk.entities.label": {
