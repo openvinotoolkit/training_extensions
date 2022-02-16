@@ -170,6 +170,16 @@ class ModelEntity:
         self.__id_ = value
 
     @property
+    def id(self) -> ID:
+        """DEPRECATED"""
+        return self.__id_
+
+    @id.setter
+    def id(self, value: ID):
+        """DEPRECATED"""
+        self.__id_ = value
+
+    @property
     def configuration(self) -> ModelConfiguration:
         """Gets or sets the configuration of the Model"""
         return self.__configuration

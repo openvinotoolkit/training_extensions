@@ -50,6 +50,16 @@ class Annotation(metaclass=abc.ABCMeta):
         self.__id_ = value
 
     @property
+    def id(self):
+        """DEPRECATED"""
+        return self.__id_
+
+    @id.setter
+    def id(self, value):
+        """DEPRECATED"""
+        self.__id_ = value
+
+    @property
     def shape(self):
         """
         Returns the shape that is in the annotation

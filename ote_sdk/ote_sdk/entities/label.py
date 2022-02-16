@@ -170,6 +170,16 @@ class LabelEntity:
     def id_(self, value: ID):
         self.__id_ = value
 
+    @property
+    def id(self) -> ID:
+        """DEPRECATED"""
+        return self.__id_
+
+    @id.setter
+    def id(self, value: ID):
+        """DEPRECATED"""
+        self.__id_ = value
+
     def __repr__(self):
         return (
             f"LabelEntity({self.id_}, name={self.name}, hotkey={self.hotkey}, "

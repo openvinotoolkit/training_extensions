@@ -20,13 +20,17 @@ class ConfigurableParameters(ParameterGroup):
     ConfigurableParameters instance is essentially a parameter group with an id
     attached to it, so that it can be uniquely identified in the repositories.
 
-    :var id: ID that uniquely identifies the ConfigurableParameters
+    :var id_: ID that uniquely identifies the ConfigurableParameters
+    :var id: DEPRECATED
     :var header: User friendly name for the ConfigurableParameters, that will be
         displayed in the UI
 
     """
 
     id_: ID = attrib(default=ID(), kw_only=True, converter=convert_string_to_id)
+    id: ID = attrib(
+        default=ID(), kw_only=True, converter=convert_string_to_id
+    )  # DEPRECATED
     type: ConfigElementType = attrib(
         default=ConfigElementType.CONFIGURABLE_PARAMETERS,
         repr=False,

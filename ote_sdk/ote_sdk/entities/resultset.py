@@ -98,6 +98,15 @@ class ResultSetEntity(metaclass=abc.ABCMeta):
         self.__id_ = value
 
     @property
+    def id(self) -> ID:
+        """Gets or sets the id of a Model"""
+        return self.__id_
+
+    @id.setter
+    def id(self, value: ID):
+        self.__id_ = value
+
+    @property
     def model(self) -> ModelEntity:
         """Returns the model that is used for the ResultSet"""
         return self.__model

@@ -60,6 +60,16 @@ class LabelGroup:
         self.group_type = group_type
 
     @property
+    def id(self) -> ID:
+        """DEPRECATED"""
+        return self.id_
+
+    @id.setter
+    def id(self, value: ID):
+        """DEPRECATED"""
+        self.id_ = value
+
+    @property
     def minimum_label_id(self) -> ID:
         """
         Returns the minimum (oldest) label ID, which is the first label in self.labels

@@ -38,6 +38,11 @@ class ScoredLabel:
         return self.label.id_
 
     @property
+    def id(self) -> ID:
+        """Gets or sets the id of a Model"""
+        return self.id_
+
+    @property
     def color(self) -> Color:
         """
         Color of the label.

@@ -60,7 +60,7 @@ class LabelMapper:
         """Serializes to dict."""
 
         return {
-            "__id_": IDMapper().forward(instance.id_),
+            "_id": IDMapper().forward(instance.id_),
             "name": instance.name,
             "color": ColorMapper().forward(instance.color),
             "hotkey": instance.hotkey,
@@ -73,7 +73,7 @@ class LabelMapper:
     def backward(instance: dict) -> LabelEntity:
         """Deserializes from dict."""
 
-        label_id = IDMapper().backward(instance["__id_"])
+        label_id = IDMapper().backward(instance["_id"])
 
         domain = str(instance.get("domain"))
         label_domain = Domain[domain]
@@ -100,7 +100,7 @@ class LabelGroupMapper:
         """Serializes to dict."""
 
         return {
-            "__id_": IDMapper().forward(instance.id_),
+            "_id": IDMapper().forward(instance.id_),
             "name": instance.name,
             "label_ids": [IDMapper().forward(label.id_) for label in instance.labels],
             "relation_type": instance.group_type.name,
@@ -111,7 +111,7 @@ class LabelGroupMapper:
         """Deserializes from dict."""
 
         return LabelGroup(
-            id=IDMapper().backward(instance["__id_"]),
+            id=IDMapper().backward(instance["_id"]),
             name=instance["name"],
             group_type=LabelGroupType[instance["relation_type"]],
             labels=[

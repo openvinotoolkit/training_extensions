@@ -84,7 +84,7 @@ class TestLabelEntityMapper:
         serialized = LabelMapper.forward(label)
 
         assert serialized == {
-            "__id_": "0000213",
+            "_id": "0000213",
             "name": "my_label",
             "color": {"red": red, "green": green, "blue": blue, "alpha": alpha},
             "hotkey": "ctrl+1",
@@ -136,7 +136,7 @@ class TestLabelSchemaEntityMapper:
             "label_tree": {"type": "tree", "directed": True, "nodes": [], "edges": []},
             "label_groups": [
                 {
-                    "__id_": label_schema.get_groups()[0].id_,
+                    "_id": label_schema.get_groups()[0].id_,
                     "name": "from_label_list",
                     "label_ids": ["0", "1", "2"],
                     "relation_type": "EXCLUSIVE",
@@ -144,7 +144,7 @@ class TestLabelSchemaEntityMapper:
             ],
             "all_labels": {
                 "0": {
-                    "__id_": "0",
+                    "_id": "0",
                     "name": "cat",
                     "color": ColorMapper.forward(colors[0]),
                     "hotkey": "",
@@ -153,7 +153,7 @@ class TestLabelSchemaEntityMapper:
                     "is_empty": False,
                 },
                 "1": {
-                    "__id_": "1",
+                    "_id": "1",
                     "name": "dog",
                     "color": ColorMapper.forward(colors[1]),
                     "hotkey": "",
@@ -162,7 +162,7 @@ class TestLabelSchemaEntityMapper:
                     "is_empty": False,
                 },
                 "2": {
-                    "__id_": "2",
+                    "_id": "2",
                     "name": "mouse",
                     "color": ColorMapper.forward(colors[2]),
                     "hotkey": "",
@@ -207,7 +207,7 @@ class TestLabelGroupMapper:
         )
         serialized = LabelGroupMapper.forward(label_group)
         assert serialized == {
-            "__id_": label_group.id_,
+            "_id": label_group.id_,
             "name": "Test LabelGroup",
             "label_ids": ["0", "1", "2"],
             "relation_type": "EMPTY_LABEL",
