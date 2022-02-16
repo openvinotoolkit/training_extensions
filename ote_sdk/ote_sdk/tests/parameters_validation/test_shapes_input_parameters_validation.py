@@ -17,7 +17,7 @@ from ote_sdk.tests.parameters_validation.validation_helper import (
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestRectangleInputParamsValidation:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_rectangle_initialization_parameters_validation(self):
         """

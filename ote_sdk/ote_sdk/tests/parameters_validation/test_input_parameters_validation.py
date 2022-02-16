@@ -117,7 +117,7 @@ class TestParamsValidation:
         return str(Path(__file__).parent / Path(f"./{file_name}"))
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_annotation_initialization_parameters_validation(self):
         """
@@ -151,7 +151,7 @@ class TestParamsValidation:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_annotation_scene_entity_initialization_parameters_validation(self):
         """
@@ -192,7 +192,7 @@ class TestParamsValidation:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_dataset_item_initialization_parameters_validation(self):
         """
@@ -232,7 +232,7 @@ class TestParamsValidation:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_dataset_entity_initialization_parameters_validation(self):
         """
@@ -264,7 +264,7 @@ class TestParamsValidation:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_initialization_parameters_validation(self):
         """
@@ -303,7 +303,7 @@ class TestParamsValidation:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_schema_initialization_parameters_validation(self):
         """
@@ -336,7 +336,7 @@ class TestParamsValidation:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_model_entity_initialization_parameters_validation(self):
         """
@@ -451,7 +451,7 @@ class TestParamsValidation:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_result_set_initialization_parameters_validation(self):
         """
@@ -503,7 +503,7 @@ class TestParamsValidation:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_scored_label_initialization_parameters_validation(self):
         """
@@ -533,7 +533,7 @@ class TestParamsValidation:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_task_environment_initialization_parameters_validation(self):
         """
@@ -576,7 +576,7 @@ class TestParamsValidation:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_create_input_parameters_validation(self):
         """
@@ -610,7 +610,7 @@ class TestParamsValidation:
                 create(incorrect_parameter)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_image_initialization_parameters_validation(self):
         """
