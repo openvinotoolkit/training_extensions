@@ -29,7 +29,7 @@ from ote_sdk.entities.label import LabelEntity
 from ote_sdk.entities.result_media import ResultMediaEntity
 from ote_sdk.entities.scored_label import ScoredLabel
 from pytorch_lightning.callbacks import Callback
-from ote_anomalib.data.utils import annotations_from_mask
+from ote_sdk.utils.segmentation_utils import create_annotation_from_segmentation_map
 from ote_sdk.entities.model_template import TaskType
 
 logger = get_logger(__name__)
@@ -43,6 +43,7 @@ class AnomalyInferenceCallback(Callback):
         self.normal_label = [label for label in labels if label.name == LabelNames.normal][0]
         self.anomalous_label = [label for label in labels if label.name == LabelNames.anomalous][0]
         self.task_type = task_type
+        self.label_map = {0: self.normal_label, 1: self.anomalous_label}
 
     def on_predict_epoch_end(self, _trainer: pl.Trainer, pl_module: AnomalyModule, outputs: List[Any]):
         """Call when the predict epoch ends."""
@@ -62,7 +63,8 @@ class AnomalyInferenceCallback(Callback):
                 dataset_item.append_labels([ScoredLabel(label=label, probability=float(probability))])
             elif self.task_type == TaskType.ANOMALY_SEGMENTATION:
                 mask = pred_mask.squeeze().astype(np.uint8)
-                dataset_item.append_annotations(annotations_from_mask(mask, self.normal_label, self.anomalous_label))
+                annotations = create_annotation_from_segmentation_map(mask, anomaly_map.squeeze(), self.label_map)
+                dataset_item.append_annotations(annotations)
             else:
                 raise ValueError(f"Unknown task type: {self.task_type}")
 

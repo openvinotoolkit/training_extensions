@@ -12,7 +12,7 @@ from typing import Any, Dict, List, Optional, Tuple
 import numpy as np
 from openvino.model_zoo.model_api.models import utils
 
-from ote_anomalib.data.utils import annotations_from_mask
+# from ote_anomalib.data.utils import annotations_from_mask
 from ote_sdk.entities.annotation import (
     Annotation,
     AnnotationSceneEntity,
@@ -292,17 +292,23 @@ class AnomalySegmentationToAnnotationConverter(IPredictionToAnnotationConverter)
         self.anomalous_label = [label for label in labels if label.name == "Anomalous"][
             0
         ]
+        self.label_map = {0: self.normal_label, 1: self.anomalous_label}
 
     def convert_to_annotation(
         self, predictions: np.ndarray, metadata: Dict[str, Any]
     ) -> AnnotationSceneEntity:
-        pred_score = predictions.reshape(-1).max()
-        # pred_label = pred_score >= metadata.get("threshold", 0.5)
 
         pred_mask = predictions >= 0.5
         mask = pred_mask.squeeze().astype(np.uint8)
-        annotations = annotations_from_mask(mask, self.normal_label, self.anomalous_label)
-
+        annotations = create_annotation_from_segmentation_map(mask, predictions, self.label_map)
+        if len(annotations) == 0:
+            # TODO: add confidence to this label
+            annotations = [
+                Annotation(
+                    Rectangle.generate_full_box(),
+                    labels=[ScoredLabel(label=self.normal_label, probability=1.0)],
+                )
+            ]
         return AnnotationSceneEntity(
             kind=AnnotationSceneKind.PREDICTION, annotations=annotations
         )

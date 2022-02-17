@@ -18,11 +18,11 @@ from pathlib import Path
 from typing import List, Union
 
 import cv2
+import numpy as np
 from anomalib.data.mvtec import make_mvtec_dataset
 from pandas.core.frame import DataFrame
 
 from ote_anomalib.data import LabelNames
-from ote_anomalib.data.utils import annotations_from_mask
 from ote_sdk.entities.annotation import (
     Annotation,
     AnnotationSceneEntity,
@@ -37,6 +37,7 @@ from ote_sdk.entities.model_template import TaskType
 from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.entities.shapes.rectangle import Rectangle
 from ote_sdk.entities.subset import Subset
+from ote_sdk.utils.segmentation_utils import create_annotation_from_segmentation_map
 
 
 class OteMvtecDataset:
@@ -82,6 +83,7 @@ class OteMvtecDataset:
         self.abnormal_label = LabelEntity(
             name=LabelNames.anomalous, domain=self.label_domain, id=ID(LabelNames.anomalous)
         )
+        self.label_map = {0: self.normal_label, 1: self.abnormal_label}
 
     def get_samples(self) -> DataFrame:
         """Get MVTec samples.
@@ -132,8 +134,8 @@ class OteMvtecDataset:
                 annotations = [Annotation(shape=shape, labels=labels)]
                 annotation_scene = AnnotationSceneEntity(annotations=annotations, kind=AnnotationSceneKind.ANNOTATION)
             elif self.task_type == TaskType.ANOMALY_SEGMENTATION and sample.label == self.abnormal_label:
-                mask = cv2.imread(sample.mask_path, cv2.IMREAD_GRAYSCALE)
-                annotations = annotations_from_mask(mask, self.normal_label, self.abnormal_label)
+                mask = (cv2.imread(sample.mask_path, cv2.IMREAD_GRAYSCALE) / 255).astype(np.uint8)
+                annotations = create_annotation_from_segmentation_map(mask, np.ones_like(mask), self.label_map)
                 annotation_scene = AnnotationSceneEntity(annotations=annotations, kind=AnnotationSceneKind.ANNOTATION)
             else:
                 raise ValueError(f"Unknown task type: {self.task_type}")
