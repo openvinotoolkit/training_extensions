@@ -31,6 +31,7 @@ class ConfigurableParameters(ParameterGroup):
     id: ID = attrib(
         default=ID(), kw_only=True, converter=convert_string_to_id
     )  # DEPRECATED
+
     type: ConfigElementType = attrib(
         default=ConfigElementType.CONFIGURABLE_PARAMETERS,
         repr=False,
