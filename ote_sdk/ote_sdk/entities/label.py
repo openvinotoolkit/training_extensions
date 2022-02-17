@@ -78,7 +78,7 @@ class LabelEntity:
         will be assigned upon saving. If the argument is None, it will be set to ID()
     """
 
-    # pylint: disable=redefined-builtin, too-many-arguments; Requires refactor
+    # pylint: disable=redefined-builtin, too-many-instance-attributes, too-many-arguments; Requires refactor
     def __init__(
         self,
         name: str,
