@@ -30,8 +30,8 @@ from anomalib.models import get_model
 from omegaconf import DictConfig, ListConfig
 from pytorch_lightning import Trainer
 
-from ote_anomalib.callbacks import AnomalyClassificationInferenceCallback, ProgressCallback
-from ote_anomalib.config import get_anomalib_config
+from ote_anomalib.callbacks import AnomalyInferenceCallback, ProgressCallback
+from ote_anomalib.configs import get_anomalib_config
 from ote_anomalib.data import OTEAnomalyDataModule
 from ote_anomalib.logging import get_logger
 from ote_sdk.entities.datasets import DatasetEntity
@@ -214,7 +214,7 @@ class BaseAnomalyTask(ITrainingTask, IInferenceTask, IEvaluationTask, IExportTas
 
         # Callbacks.
         progress = ProgressCallback(parameters=inference_parameters)
-        inference = AnomalyClassificationInferenceCallback(dataset, self.labels, self.task_type)
+        inference = AnomalyInferenceCallback(dataset, self.labels, self.task_type)
         normalize = MinMaxNormalizationCallback()
         callbacks = [progress, normalize, inference]
 

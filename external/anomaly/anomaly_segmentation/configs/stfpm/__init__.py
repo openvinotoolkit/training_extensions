@@ -17,6 +17,6 @@ Anomaly Classification Task
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .configuration import STFPMConfig
+from .configuration import STFPMAnomalySegmentationConfig
 
-__all__ = ["STFPMConfig"]
+__all__ = ["STFPMAnomalySegmentationConfig"]

@@ -21,7 +21,7 @@ import tempfile
 
 import numpy as np
 import pytest
-from ote_anomalib.config import get_anomalib_config
+from ote_anomalib.configs import get_anomalib_config
 from tests.helpers.config import get_config_and_task_name
 from tests.helpers.dummy_dataset import TestDataset
 from tests.helpers.train import OTEAnomalyTrainer

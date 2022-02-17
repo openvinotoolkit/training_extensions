@@ -8,12 +8,12 @@ summary: Use this model when the position of the objects in the image frame migh
 application: ~
 
 # Algo backend.
-framework: OTEAnomalyClassification v0.1.0  # this will be updated after the name has been changed on the platform side
+framework: OTEAnomalyClassification v0.1.0  # TODO: update after the name has been changed on the platform side
 
 # Task implementations.
 entrypoints:
   base: ote_anomalib.BaseAnomalyTask
-  openvino: anomaly_segmentation.OpenVINOAnomalyClassificationTask
+  openvino: anomaly_segmentation.OpenVINOAnomalyTask
 
 # Hyper Parameters
 hyper_parameters:

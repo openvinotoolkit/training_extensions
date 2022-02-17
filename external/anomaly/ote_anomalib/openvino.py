@@ -38,7 +38,7 @@ from compression.pipeline.initializer import create_pipeline
 from omegaconf import ListConfig
 from omegaconf.dictconfig import DictConfig
 
-from ote_anomalib.config import get_anomalib_config
+from ote_anomalib.configs import get_anomalib_config
 from ote_anomalib.exportable_code import AnomalyClassification
 from ote_anomalib.logging import get_logger
 from ote_sdk.entities.datasets import DatasetEntity

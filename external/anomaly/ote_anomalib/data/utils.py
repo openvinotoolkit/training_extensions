@@ -14,18 +14,23 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+from typing import List
+
 import cv2
 import numpy as np
 
 from ote_sdk.entities.annotation import (
     Annotation,
 )
+from ote_sdk.entities.label import LabelEntity
 from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.entities.shapes.polygon import Point, Polygon
 from ote_sdk.entities.shapes.rectangle import Rectangle
 
 
-def annotations_from_mask(mask: np.ndarray, normal_label, anomalous_label):
+def annotations_from_mask(
+    mask: np.ndarray, normal_label: LabelEntity, anomalous_label: LabelEntity
+) -> List[Annotation]:
     # TODO: add anomaly_map argument to extract confidence scores
     height, width = mask.shape[:2]
     contours, _ = cv2.findContours(mask, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_NONE)

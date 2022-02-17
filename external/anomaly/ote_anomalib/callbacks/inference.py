@@ -35,16 +35,7 @@ from ote_sdk.entities.model_template import TaskType
 logger = get_logger(__name__)
 
 
-def get_inference_callback(task_type: str, ote_dataset: DatasetEntity, labels: List[LabelEntity]):
-    if task_type == "classification":
-        return AnomalyClassificationInferenceCallback(ote_dataset, labels)
-    elif task_type == "segmentation":
-        return AnomalySegmentationInferenceCallback(ote_dataset, labels)
-    else:
-        raise ValueError(f"Task type not recognized: {task_type}")
-
-
-class AnomalyClassificationInferenceCallback(Callback):
+class AnomalyInferenceCallback(Callback):
     """Callback that updates the OTE dataset during inference."""
 
     def __init__(self, ote_dataset: DatasetEntity, labels: List[LabelEntity], task_type: TaskType):
@@ -91,9 +82,3 @@ class AnomalyClassificationInferenceCallback(Callback):
                 label.name,
                 pred_score,
             )
-
-
-class AnomalySegmentationInferenceCallback(Callback):
-
-    def __init__(self, ote_dataset: DatasetEntity, labels: List[LabelEntity]):
-        raise NotImplementedError
