@@ -76,6 +76,8 @@ class LabelEntity:
     :param is_empty: set to True if the label is an empty label.
     :param id: the ID of the label. Set to ID() so that a new unique ID
         will be assigned upon saving. If the argument is None, it will be set to ID()
+    :param is_anomalous: boolean that indicates whether the label is the Anomalous label. Always set to False for non-
+        anomaly projects.
     """
 
     # pylint: disable=redefined-builtin, too-many-instance-attributes, too-many-arguments; Requires refactor
