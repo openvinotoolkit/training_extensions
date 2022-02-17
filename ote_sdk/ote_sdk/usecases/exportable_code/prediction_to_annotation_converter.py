@@ -175,7 +175,7 @@ class DetectionBoxToAnnotationConverter(IPredictionToAnnotationConverter):
         annotations = []
         image_size = metadata["original_shape"][1::-1]
         for box in predictions:
-            scored_label = ScoredLabel(self.labels[int(box.id_)], float(box.score))
+            scored_label = ScoredLabel(self.labels[int(box.id)], float(box.score))
             coords = np.array(box.get_coords(), dtype=float) / np.tile(image_size, 2)
             annotations.append(
                 Annotation(
