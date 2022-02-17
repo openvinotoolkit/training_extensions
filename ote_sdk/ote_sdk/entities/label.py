@@ -88,6 +88,7 @@ class LabelEntity:
         creation_date: Optional[datetime.datetime] = None,
         is_empty: bool = False,
         id: Optional[ID] = None,
+        is_anomalous: bool = False,
     ):
         id = ID() if id is None else id
         color = Color.random() if color is None else color
@@ -100,6 +101,7 @@ class LabelEntity:
         self._is_empty = is_empty
         self._creation_date = creation_date
         self._id = id
+        self.is_anomalous = is_anomalous
 
     @property
     def name(self):
@@ -184,6 +186,7 @@ class LabelEntity:
                 and self.color == other.color
                 and self.hotkey == other.hotkey
                 and self.domain == other.domain
+                and self.is_anomalous == other.is_anomalous
             )
         return False
 
