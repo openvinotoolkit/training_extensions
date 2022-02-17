@@ -199,6 +199,16 @@ class AnnotationSceneEntity(metaclass=abc.ABCMeta):
         self.__id_ = value
 
     @property
+    def id(self):
+        """DEPRECATED"""
+        return self.__id_
+
+    @id.setter
+    def id(self, value):
+        """DEPRECATED"""
+        self.__id_ = value
+
+    @property
     def kind(self):
         """
         Returns the AnnotationSceneKind of the AnnotationSceneEntity.
