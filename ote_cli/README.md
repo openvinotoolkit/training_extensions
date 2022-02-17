@@ -11,8 +11,8 @@
 * `ote demo` - run model inference on images, videos, webcam in order to see how it works on user's data.
 * `ote deploy` - create openvino.zip with self-contained python package, demo application and exported model.
 
-### Jupyter nootebooks
-* [Face detection nootebook](notebooks/train.ipynb) - demonstrates how to train, evaluate and export face detection model.
+### Jupyter notebooks
+* [Face detection notebook](notebooks/train.ipynb) - demonstrates how to train, evaluate and export face detection model.
 
 ## Quick Start Guide
 In order to see more details please click [here](../QUICK_START_GUIDE.md).
