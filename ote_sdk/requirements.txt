@@ -1,6 +1,6 @@
 numpy>=1.16.4
 scikit-learn==0.24.*
-Shapely==1.7.*
+Shapely==1.8.*
 networkx~=2.5
 opencv-python==4.5.3.*
 pymongo>=3.9
