@@ -44,25 +44,25 @@ the algo backends) the callstack of the test looks as follows:
 
 * Pytest framework
 
-* Instance of a test class
-  Typically this class is defined in `test_ote_training.py` in the algo backend.
-  This class contains some fixtures implementation and uses test helper (see the next item).
+* Instance of a test class.  
+  Typically this class is defined in `test_ote_training.py` in the algo backend.  
+  This class contains some fixtures implementation and uses test helper (see the next item).  
   The name of the class is started from `Test`, so pytest uses it as a usual test class.
   The instance is responsible on the connection between test suite and pytest parameters and
   fixtures.
 
-* Instance of training test helper class `OTETestHelper` from `test_suite/training_tests_helper.py`.
-  The instance of the class should be a static field of the test class stated above.
+* Instance of training test helper class `OTETestHelper` from `test_suite/training_tests_helper.py`.  
+  The instance of the class should be a static field of the test class stated above.  
   The instance controls all execution of tests.
   Also the instance keeps in its cache an instance of a test case class between runs of different
   tests (see the next item).
 
-* Instance of a test case class.
+* Instance of a test case class.  
   This instance connects all the test stages between each other and keeps in its fields results of
-  all test stages between tests.
+  all test stages between tests.  
   (Since the instance of this class is kept in the cache of training test helper's instance between
   runs of tests, results of one test may be re-used by other tests.)
-  Note that each test executes only one test stage.
+  Note that each test executes only one test stage.  
   And note that the class of the test case is generated "on the fly" by the function
   `generate_ote_integration_test_case_class` from the file `test_suite/training_test_case.py`;
   the function
@@ -70,11 +70,11 @@ the algo backends) the callstack of the test looks as follows:
     algo backend
   * and returns the class type that will be used by the instance of the test helper.
 
-* Instance of the test stage class `OTETestStage` from `test_suite/training_tests_stage.py`.
-  The class wraps a test action class (see the next item) to run it only once.
+* Instance of the test stage class `OTETestStage` from `test_suite/training_tests_stage.py`.  
+  The class wraps a test action class (see the next item) to run it only once.  
   Also it makes validation of the results of the wrapped test action if this is required.
 
-* Instance of a test action class
+* Instance of a test action class.  
   The class makes the real actions that should be done for a test using calls of OTE SDK interfaces.
 
 The next sections will describe the corresponding classes from the bottom to the top.
@@ -212,17 +212,17 @@ To implement your own test action you should do as follows:
   required
 4. Set in the class the field `_depends_stages_names` to the list of `str` values of the names of
   test actions which results will be used in this test
-5. Implement a protected method of the class which makes the real work by calling OTE SDK operations
+5. Implement a protected method of the class which makes the real work by calling OTE SDK operations  
   NB: the method should receive the parameter `data_collector: DataCollector` and use it to
-  store some results of the action to the CI database
+  store some results of the action to the CI database  
   (see how the class `DataCollector` is used in several actions in
   `test_suite/training_tests_actions.py`)
-6. Implement the method `__call__` of the class with the declaration
+6. Implement the method `__call__` of the class with the declaration  
   `def __call__(self, data_collector: DataCollector, results_prev_stages: OrderedDict):`
   See as the reference the method `__call__` of the class `OTETestTrainingEvaluationAction`
   from the file `test_suite/training_tests_actions.py`.
   The method should work as follows:
-  * call `self._check_result_prev_stages(results_prev_stages, self.depends_stages_names)`
+  * call `self._check_result_prev_stages(results_prev_stages, self.depends_stages_names)`  
     (NB: this is a required step, it will allow to catch important errors if you connect several
     test actions with each other in a wrong way)
   * get from the field `results_prev_stages` results of previous stages that should be used
@@ -243,7 +243,7 @@ It's constructor has declaration
 def __init__(self, action: BaseOTETestAction, stages_storage: OTETestStagesStorageInterface):
 ```
 
-* The `action` parameter here is the instance of action that is wrapped.
+* The `action` parameter here is the instance of action that is wrapped.  
   It is kept inside the `OTETestStage` instance.
 * The `stages_storage` here is an instance of a class that allows to get a stage by name, this will
   be a test case class that connects all the test stages between each other and keeps in its fields
@@ -251,11 +251,11 @@ def __init__(self, action: BaseOTETestAction, stages_storage: OTETestStagesStora
   (all the test case classes are derived from OTETestStagesStorageInterface)
 
 The `stages_storage` instance is also kept inside `OTETestStage`, it will be used to get for each
-stage its dependencies.
+stage its dependencies.  
 The class `OTETestStage` has method `get_depends_stages` that works as follows:
 1. get for the wrapped action the list of names from its field `_depends_stages_names` using the
    property `depends_stages_names`
-2. for each of the name get the stage using the method `self.stages_storage.get_stage(name)`
+2. for each of the name get the stage using the method `self.stages_storage.get_stage(name)`  
    -- this will be a stage (instance of `OTETestStage`) that wraps the action with the corresponding
    name.
 3. Return the list of `OTETestStage` instances received in the previous item.
@@ -284,7 +284,7 @@ The parameters are as follows:
 * `test_results_storage` -- it is an OrderedDict where the results of the tests are kept between
   tests, see description of the parameter `results_prev_stages` in the section
   "III.1 General description of test actions classes."
-* `validator` -- optional parameter, if `Validator` instance is passed, then validation may be done
+* `validator` -- optional parameter, if `Validator` instance is passed, then validation may be done  
   (see the next section "IV.3 Validation of action results"), otherwise validation is skipped.
 
 
@@ -293,7 +293,7 @@ The method works as follows:
 1. runs the dependency chain of this stage using recursive call of `run_once` as follows:
    * Get all the dependencies using the method `OTETestStage.get_depends_stages` described in the
      previous section -- it will be the list of other `OTETestStage` instances.
-   * For each of the received `OTETestStage` call the method `run_once` -- it is the recursion step
+   * For each of the received `OTETestStage` call the method `run_once` -- it is the recursion step  
      Attention: in the recursion step the method `run_once` is called with parameter
      `validator=None` to avoid validation during recursion step -- see details in the next section
      "IV.3 Validation of action results"
@@ -369,13 +369,13 @@ It is required since
 * so, we do NOT do it, so we run dependency chain with `validator=None`
 
 Also note that there is possible (but rare) case when a stage is called from dependency chain, and
-only after that it is run from a test for which this action is the main action.
+only after that it is run from a test for which this action is the main action.  
 For this case (as we stated above in the previous section when we described how the method
 `run_once` works) we may call validation (if it is required) even if the stage was already run
 earlier and was successful.
 
 As we stated above the `validator is not None` is the necessary condition to run validation, but it
-is not sufficient.
+is not sufficient.  
 The list of sufficient conditions to run real validation in `run_once` is as follows:
 * The parameter `validator` of `run_once` method  satisfies `validator is not None`
   (i.e. the validation is run not from the dependency chain).
@@ -399,7 +399,7 @@ a FACTORY that returns the structure.
 It is required since
 a. constructing the structure requires complicated operations and reading of YAML files,
 b. if validation should be done for the current test, and the expected metrics for the tests are
-   absent, the test MUST fail
+   absent, the test MUST fail  
    (it is important to avoid situations when developers forget adds info on expected metrics and due
    to it tests are not failed)
 c. but if validation for the current test is not required the test should not try to get the
