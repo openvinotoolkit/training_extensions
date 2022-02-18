@@ -1,6 +1,6 @@
 # OTE SDK test suite architecture
 
-## General description
+## I. General description
 
 The folder `ote_sdk/ote_sdk/test_suite/` contains `ote_sdk.test_suite` library that
 simplifies creation of training tests for OTE algo backend.
@@ -33,7 +33,7 @@ special cache to be re-used by the next stages.
 
 We suppose that each test executes one test stage (also called test action)
 
-## General architecture overview
+## II. General architecture overview
 
 Here and below we will write paths to test suite library files relatively with the folder
 `ote_sdk/ote_sdk` of OTE git repository, so path to this file is referred as
@@ -80,7 +80,7 @@ the algo backends) the callstack of the test looks as follows:
 The next sections will describe the corresponding classes from the bottom to the top.
 
 
-## Test actions.
+## III. Test actions.
 
 ### General description of test actions classes.
 
@@ -231,7 +231,7 @@ To implement your own test action you should do as follows:
   * the results of the method convert to a dict and return the dict from the method `__call__`
     to store them as the result of the action
 
-## Test stage class
+## IV. Test stage class
 
 ### General description of test stage class
 
@@ -396,23 +396,34 @@ As you can see it receives only one parameter, and this parameter is NOT a struc
 describes the requirements for the expected metrics for the action, but the parameter is
 a FACTORY that returns the structure.
 
-It is required since constructing the structure requires complicated operations and reading of YAML
-files, so to avoid loading of expected metrics structures for all possible tests collected for
-an algo backend a factory is used -- the factory for an action's validator is called if and only if
+It is required since
+a. constructing the structure requires complicated operations and reading of YAML files,
+b. if validation should be done for the current test, and the expected metrics for the tests are
+   absent, the test MUST fail
+   (it is important to avoid situations when developers forget adds info on expected metrics and due
+   to it tests are not failed)
+c. but if validation for the current test is not required the test should not try to get the
+   expected metrics
+
+So to avoid checking of expected metrics structures for the tests without validation, an algo
+backend a factory is used -- the factory for an action's validator is called if and only if
 the action should be validated.
 
 The factory is implemented in the test suite as a pytest fixture -- see the fixture
 `cur_test_expected_metrics_callback_fx` in the file `test_suite/fixtures.py`.
 
 The fixture works as follows:
+* receives from other fixtures contents of the YAML file that is pointed to pytest as the pytest
+  parameter `--expected-metrics-file`
 * checks if the current test is "reallife" training or not,
 * if it is not reallife then validation is not required -- in this case
   * the fixture returns None,
   * the Validator class receives None as the constructor's parameter instead of a factory,
   * Validator understands it as "skip validation"
-* if this is reallife training test, the factory
-  * reads YAML file that is pointed to pytest as the pytest parameter `--expected-metrics-file`
-  * extracts from it the expected metrics for the current test
+* if this is reallife training test, the fixture returns a factory function
+
+The returned factory function extracts from all expected metrics the expected metrics for the
+current test (and if the metrics are absent -- fail the current test).
 
 
 
