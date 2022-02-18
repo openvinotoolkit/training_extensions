@@ -82,7 +82,7 @@ The next sections will describe the corresponding classes from the bottom to the
 
 ## III. Test actions.
 
-### General description of test actions classes.
+### III.1 General description of test actions classes.
 
 The test action classes in test suite make the real work.
 
@@ -166,7 +166,7 @@ training in its method `__call__` can use
         }
 ```
 
-### When implementation of own test action class is required.
+### III.2 When implementation of own test action class is required.
 
 Please, note that `test_suite/training_tests_actions.py` contains reference code of actions for
 mmdetection algo backend. This is done due to historical reasons and due to fact that mmdetection is
@@ -199,7 +199,7 @@ Also there is a case when a new test action class should be additionally impleme
 `test_suite/training_tests_actions.py` -- when we found out that addition test action should be used
 for all algo backends.
 
-### How to implement own test action class.
+### III.3 How to implement own test action class.
 
 Please, note that this section covers the topic how to implement a new test action class, but does
 not cover the topic how to make the test action class to be used by tests -- it is covered below in
@@ -233,7 +233,7 @@ To implement your own test action you should do as follows:
 
 ## IV. Test stage class
 
-### General description of test stage class
+### IV.1 General description of test stage class
 
 The class `OTETestStage` from `test_suite/training_tests_stage.py` works as a wrapper for a test
 action. For each instance of a test action an instance of the class `OTETestStage` is created.
@@ -267,7 +267,7 @@ As stated above, the main purposes of the class `OTETestStage` are:
 
 See the next sections about that.
 
-### Running a test action through its test stage
+### IV.2 Running a test action through its test stage
 
 The class `OTETestStage` has a method `run_once` that has the following declaration
 ```python
@@ -280,12 +280,12 @@ The class `OTETestStage` has a method `run_once` that has the following declarat
 ```
 The parameters are as follows:
 * `data_collector` -- interface to connect to CI database, see description of the methods `__call__`
-  of the actions in the section "General description of test actions classes."
+  of the actions in the section "III.1 General description of test actions classes."
 * `test_results_storage` -- it is an OrderedDict where the results of the tests are kept between
   tests, see description of the parameter `results_prev_stages` in the section
-  "General description of test actions classes."
+  "III.1 General description of test actions classes."
 * `validator` -- optional parameter, if `Validator` instance is passed, then validation may be done
-  (see the next section "Validation of action results"), otherwise validation is skipped.
+  (see the next section "IV.3 Validation of action results"), otherwise validation is skipped.
 
 
 
@@ -296,7 +296,7 @@ The method works as follows:
    * For each of the received `OTETestStage` call the method `run_once` -- it is the recursion step
      Attention: in the recursion step the method `run_once` is called with parameter
      `validator=None` to avoid validation during recursion step -- see details in the next section
-     "Validation of action results"
+     "IV.3 Validation of action results"
 2. runs the action of the stage only once:
    * If it was not run earlier -- run the action
      * if the action executed successfully
@@ -324,7 +324,7 @@ test also will call `run_once` for all the stages in the dependency chains, but 
 will NOT re-run actions for the tests.
 
 
-### Validation of action results
+### IV.3 Validation of action results
 
 As stated above, one of the purposes of `OTETestStage` is validation of results of the wrapped
 action.
