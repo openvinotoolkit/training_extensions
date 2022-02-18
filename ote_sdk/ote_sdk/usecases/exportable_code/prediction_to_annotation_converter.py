@@ -285,6 +285,7 @@ class AnomalyClassificationToAnnotationConverter(IPredictionToAnnotationConverte
             kind=AnnotationSceneKind.PREDICTION, annotations=annotations
         )
 
+
 class AnomalySegmentationToAnnotationConverter(IPredictionToAnnotationConverter):
     """
     Converts AnomalyClassification Predictions ModelAPI to Annotations

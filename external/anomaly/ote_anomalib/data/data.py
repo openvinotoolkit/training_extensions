@@ -99,7 +99,7 @@ class OTEAnomalyDataset(Dataset):
             raise ValueError(f"Unsupported task type: {self.config.dataset.task}")
 
         if len(dataset_item.get_shapes_labels()) > 0:
-            item["label"] = 0 if dataset_item.get_shapes_labels()[0].name == LabelNames.normal else 1
+            item["label"] = 1 if dataset_item.get_shapes_labels()[0].is_anomalous else 0
         return item
 
 

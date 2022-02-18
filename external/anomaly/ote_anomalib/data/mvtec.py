@@ -81,7 +81,7 @@ class OteMvtecDataset:
             name=LabelNames.normal, domain=self.label_domain, id=ID(LabelNames.normal)
         )
         self.abnormal_label = LabelEntity(
-            name=LabelNames.anomalous, domain=self.label_domain, id=ID(LabelNames.anomalous)
+            name=LabelNames.anomalous, domain=self.label_domain, id=ID(LabelNames.anomalous), is_anomalous=True
         )
         self.label_map = {0: self.normal_label, 1: self.abnormal_label}
 
