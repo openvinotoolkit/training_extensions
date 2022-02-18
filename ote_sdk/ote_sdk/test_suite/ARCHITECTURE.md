@@ -1,6 +1,6 @@
-h1. OTE SDK test suite architecture
+# OTE SDK test suite architecture
 
-h2. General description
+## General description
 
 The folder `ote_sdk/ote_sdk/test_suite/` contains `ote_sdk.test_suite` library that
 simplifies creation of training tests for OTE algo backend.
@@ -33,7 +33,7 @@ special cache to be re-used by the next stages.
 
 We suppose that each test executes one test stage (also called test action)
 
-h2. General architecture overview
+## General architecture overview
 
 Here and below we will write paths to test suite library files relatively with the folder
 `ote_sdk/ote_sdk` of OTE git repository, so path to this file is referred as
@@ -80,9 +80,9 @@ the algo backends) the callstack of the test looks as follows:
 The next sections will describe the corresponding classes from the bottom to the top.
 
 
-h2. Test actions.
+## Test actions.
 
-h3. General description of test actions classes.
+### General description of test actions classes.
 
 The test action classes in test suite make the real work.
 
@@ -166,7 +166,7 @@ training in its method `__call__` can use
         }
 ```
 
-h3. When implementation of own test action class is required.
+### When implementation of own test action class is required.
 
 Please, note that `test_suite/training_tests_actions.py` contains reference code of actions for
 mmdetection algo backend. This is done due to historical reasons and due to fact that mmdetection is
@@ -199,7 +199,7 @@ Also there is a case when a new test action class should be additionally impleme
 `test_suite/training_tests_actions.py` -- when we found out that addition test action should be used
 for all algo backends.
 
-h3. How to implement own test action class.
+### How to implement own test action class.
 
 Please, note that this section covers the topic how to implement a new test action class, but does
 not cover the topic how to make the test action class to be used by tests -- it is covered below in
@@ -231,9 +231,9 @@ To implement your own test action you should do as follows:
   * the results of the method convert to a dict and return the dict from the method `__call__`
     to store them as the result of the action
 
-h2. Test stage class
+## Test stage class
 
-h3. General description of test stage class
+### General description of test stage class
 
 The class `OTETestStage` from `test_suite/training_tests_stage.py` works as a wrapper for a test
 action. For each instance of a test action an instance of the class `OTETestStage` is created.
@@ -267,7 +267,7 @@ As stated above, the main purposes of the class `OTETestStage` are:
 
 See the next sections about that.
 
-h3. Running a test action through its test stage
+### Running a test action through its test stage
 
 The class `OTETestStage` has a method `run_once` that has the following declaration
 ```python
@@ -324,7 +324,7 @@ test also will call `run_once` for all the stages in the dependency chains, but 
 will NOT re-run actions for the tests.
 
 
-h3. Validation of action results
+### Validation of action results
 
 As stated above, one of the purposes of `OTETestStage` is validation of results of the wrapped
 action.
