@@ -13,7 +13,7 @@ framework: OTEAnomalyClassification v0.1.0
 # Task implementations.
 entrypoints:
   base: ote_anomalib.BaseAnomalyTask
-  openvino: anomaly_classification.OpenVINOAnomalyClassificationTask
+  openvino: ote_anomalib.OpenVINOAnomalyTask
 
 # Hyper Parameters
 hyper_parameters:
