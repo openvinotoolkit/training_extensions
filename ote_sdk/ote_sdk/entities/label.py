@@ -81,9 +81,11 @@ class LabelEntity:
     :param is_empty: set to True if the label is an empty label.
     :param id: the ID of the label. Set to ID() so that a new unique ID
         will be assigned upon saving. If the argument is None, it will be set to ID()
+    :param is_anomalous: boolean that indicates whether the label is the Anomalous label. Always set to False for non-
+        anomaly projects.
     """
 
-    # pylint: disable=redefined-builtin, too-many-arguments; Requires refactor
+    # pylint: disable=redefined-builtin, too-many-instance-attributes, too-many-arguments; Requires refactor
     def __init__(
         self,
         name: str,
@@ -93,6 +95,7 @@ class LabelEntity:
         creation_date: Optional[datetime.datetime] = None,
         is_empty: bool = False,
         id: Optional[ID] = None,
+        is_anomalous: bool = False,
     ):
         check_input_param_type(
             RequiredParamTypeCheck(name, "name", str),
@@ -115,6 +118,7 @@ class LabelEntity:
         self._is_empty = is_empty
         self._creation_date = creation_date
         self._id = id
+        self.is_anomalous = is_anomalous
 
     @property
     def name(self):
@@ -199,6 +203,7 @@ class LabelEntity:
                 and self.color == other.color
                 and self.hotkey == other.hotkey
                 and self.domain == other.domain
+                and self.is_anomalous == other.is_anomalous
             )
         return False
 
