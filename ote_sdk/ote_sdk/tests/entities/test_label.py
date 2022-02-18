@@ -25,7 +25,7 @@ from ote_sdk.utils.time_utils import now
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestDomain:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_domain(self):
         """
@@ -36,7 +36,7 @@ class TestDomain:
         Test passes if the results match
         """
         domain = Domain
-        assert len(domain) == 6
+        assert len(domain) == 8
 
 
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
@@ -68,7 +68,7 @@ class TestLabelEntity:
     person = LabelEntity(**label_person_params)  # type: ignore
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_entity(self):
         """
@@ -136,7 +136,7 @@ class TestLabelEntity:
         assert self.car.__gt__(Domain) is False
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_empty_label_entity(self):
         """
@@ -159,7 +159,7 @@ class TestLabelEntity:
         assert type(self.empty.color) == Color
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_comparison(self):
         """

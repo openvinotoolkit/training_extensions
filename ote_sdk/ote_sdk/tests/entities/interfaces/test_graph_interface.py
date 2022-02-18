@@ -13,7 +13,7 @@ from ote_sdk.tests.constants.requirements import Requirements
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestIGraph:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     @patch(
         "ote_sdk.entities.interfaces.graph_interface.IGraph.__abstractmethods__", set()

@@ -34,7 +34,7 @@ class TestTimeMonitorCallback:
         assert callback.start_step_time > expected_step_time_before
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_time_monitor_callback_initialization(self):
         """
@@ -129,7 +129,7 @@ class TestTimeMonitorCallback:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_time_monitor_callback_on_train_batch_begin(self):
         """
@@ -166,7 +166,7 @@ class TestTimeMonitorCallback:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_time_monitor_callback_on_train_batch_end(self):
         """
@@ -210,7 +210,7 @@ class TestTimeMonitorCallback:
         assert round(time_monitor_callback.average_step, 4) == 8.0
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_time_monitor_callback_is_stalling(self):
         """
@@ -249,7 +249,7 @@ class TestTimeMonitorCallback:
         assert not time_monitor_callback.is_stalling()
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_time_monitor_callback_on_test_batch_begin(self):
         """
@@ -281,7 +281,7 @@ class TestTimeMonitorCallback:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_time_monitor_callback_on_test_batch_end(self):
         """
@@ -321,7 +321,7 @@ class TestTimeMonitorCallback:
         assert round(time_monitor_callback.average_step, 4) == 10.0
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_time_monitor_callback_on_train_begin(self):
         """
@@ -350,7 +350,7 @@ class TestTimeMonitorCallback:
         assert time_monitor_callback.is_training
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_time_monitor_callback_on_train_end(self):
         """
@@ -392,7 +392,7 @@ class TestTimeMonitorCallback:
         check_attributes_after_on_train_end(time_monitor_callback)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_time_monitor_callback_on_epoch_begin(self):
         """
@@ -418,7 +418,7 @@ class TestTimeMonitorCallback:
         assert time_monitor_callback.start_epoch_time > start_epoch_time
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_time_monitor_callback_on_epoch_end(self):
         """
@@ -458,7 +458,7 @@ class TestTimeMonitorCallback:
         assert round(time_monitor_callback.average_epoch, 4) == 3.0
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_time_monitor_callback_get_progress(self):
         """

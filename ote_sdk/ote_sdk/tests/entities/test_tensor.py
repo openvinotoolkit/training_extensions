@@ -22,7 +22,7 @@ class TestTensorEntity:
         return TensorEntity(**self.tensor_params())
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_tensor_initialization(self):
         """
@@ -41,7 +41,7 @@ class TestTensorEntity:
         assert np.array_equal(tensor.numpy, tensor_params.get("numpy"))
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_tensor_shape(self):
         """
@@ -68,7 +68,7 @@ class TestTensorEntity:
         assert tensor.shape == (8, 16, 3)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_tensor_eq(self):
         """
@@ -108,7 +108,7 @@ class TestTensorEntity:
         assert tensor != str
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_tensor_str(self):
         """
@@ -125,7 +125,7 @@ class TestTensorEntity:
         assert str(tensor) == "TensorEntity(name=Test Tensor, shape=(16, 32, 3))"
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_tensor_repr(self):
         """

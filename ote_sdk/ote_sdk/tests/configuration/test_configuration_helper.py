@@ -8,7 +8,8 @@ import pytest
 from omegaconf import OmegaConf
 
 from ote_sdk.configuration import ote_config_helper
-from ote_sdk.configuration.enums import ModelLifecycle
+from ote_sdk.configuration.elements import metadata_keys
+from ote_sdk.configuration.enums import AutoHPOState, ModelLifecycle
 from ote_sdk.tests.configuration.dummy_config import (
     DatasetManagerConfig,
     SomeEnumSelectable,
@@ -27,7 +28,7 @@ class TestConfigurationHelper:
         return str(Path(__file__).parent / Path(filename))
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_config_reconstruction(self):
         """
@@ -68,7 +69,78 @@ class TestConfigurationHelper:
         assert cfg == ote_config_helper.convert(reconstructed_config_from_yaml, dict)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
+    @pytest.mark.reqids(Requirements.REQ_1)
+    def test_config_reconstruction_with_metadata_change(self):
+        """
+        <b>Description:</b>
+        This test verifies that metadata changes are capture upon converting a
+        configuration to a dictionary and yaml string, and back again. The test passes
+        if the reconstructed configuration is equal to the initial one, with
+        non-default metadata values set.
+
+        <b>Input data:</b>
+        Dummy configuration -- DatasetManagerConfig
+
+        <b>Expected results:</b>
+        Test passes if metadata changes are reflected in the reconstructed
+        configuration, such that it is equal to the original one
+
+        <b>Steps</b>
+        1. Create configuration
+        2. Set metadata for a parameter to a non-default value
+        3. Convert to dictionary and yaml string representation
+        4. Reconstruct configuration from dict
+        5. Reconstruct configuration from yaml string
+        6. Verify that contents of reconstructed configs are equal to original config
+        """
+        # Arrange
+        # Initialize the config object
+        config = DatasetManagerConfig(
+            description="Configurable parameters for the DatasetManager -- TEST ONLY",
+            header="Dataset Manager configuration -- TEST ONLY",
+        )
+        test_parameter_name = "dummy_float_selectable"
+        metadata_key = metadata_keys.AUTO_HPO_STATE
+        old_state = config.get_metadata(test_parameter_name)[metadata_key]
+        new_state = AutoHPOState.OPTIMIZED
+        set_success = config.set_metadata_value(
+            parameter_name=test_parameter_name,
+            metadata_key=metadata_key,
+            value=new_state,
+        )
+
+        # Act
+        # Convert config to dictionary and to yaml string
+        cfg = ote_config_helper.convert(config, dict)
+        cfg_yaml = ote_config_helper.convert(config, str)
+
+        # Reconstruct the config from dictionary and from yaml string
+        reconstructed_config = ote_config_helper.create(cfg)
+        reconstructed_config_from_yaml = ote_config_helper.create(cfg_yaml)
+
+        # Assert
+        assert old_state != new_state
+        assert set_success
+        # Check that metadata changes are properly converted
+        assert (
+            reconstructed_config.get_metadata(parameter_name=test_parameter_name)[
+                metadata_key
+            ]
+            == new_state
+        )
+        assert (
+            reconstructed_config_from_yaml.get_metadata(
+                parameter_name=test_parameter_name
+            )[metadata_key]
+            == new_state
+        )
+        # Compare the config dictionaries
+        assert cfg == ote_config_helper.convert(reconstructed_config, dict)
+        assert cfg == ote_config_helper.convert(reconstructed_config_from_yaml, dict)
+
+    @pytest.mark.priority_medium
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_creation_from_yaml(self):
         """
@@ -118,7 +190,7 @@ class TestConfigurationHelper:
         assert cfg_dict == cfg_from_yaml_dict
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_broken_config(self):
         """
@@ -158,7 +230,7 @@ class TestConfigurationHelper:
         assert config.learning_parameters.epochs == 10
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_validation(self):
         """
@@ -212,7 +284,7 @@ class TestConfigurationHelper:
         assert ote_config_helper.validate(config)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_substitute_values(self):
         """
@@ -268,7 +340,7 @@ class TestConfigurationHelper:
         assert config.number_of_samples_for_auto_train == 500
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_substitute_values_for_lifecycle(self):
         """
@@ -332,7 +404,7 @@ class TestConfigurationHelper:
         assert config.dummy_float_selectable == 2
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_substitute_values_for_lifecycle_list(self):
         """
@@ -398,7 +470,7 @@ class TestConfigurationHelper:
         assert config.dummy_float_selectable == 4
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_values_only_conversion(self):
         """

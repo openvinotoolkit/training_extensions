@@ -84,7 +84,7 @@ class TestRectangle:
         return Rectangle(**self.square_params())
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_rectangle_required_parameters(self):
         """
@@ -108,7 +108,7 @@ class TestRectangle:
         assert rectangle.type == ShapeType.RECTANGLE
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_rectangle_optional_parameters(self):
         """
@@ -140,7 +140,7 @@ class TestRectangle:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_rectangle_coordinates_validation(self):
         """
@@ -184,7 +184,7 @@ class TestRectangle:
                 Rectangle(**incorrect_coordinates)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_rectangle_repr(self):
         """
@@ -207,7 +207,7 @@ class TestRectangle:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_rectangle_eq(self):
         """
@@ -272,7 +272,7 @@ class TestRectangle:
                 )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_rectangle_hash(self):
         """
@@ -292,7 +292,7 @@ class TestRectangle:
         assert hash(rectangle) == hash(str(rectangle))
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_rectangle_clip_to_visible_region(self):
         """
@@ -368,7 +368,7 @@ class TestRectangle:
                 rectangle_actual.clip_to_visible_region()
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_rectangle_normalize_wrt_roi_shape(self):
         """
@@ -401,7 +401,7 @@ class TestRectangle:
             rectangle.normalize_wrt_roi_shape(str)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_rectangle_denormalize_wrt_roi_shape(self):
         """
@@ -434,7 +434,7 @@ class TestRectangle:
             rectangle.denormalize_wrt_roi_shape(str)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_rectangle_as_shapely_polygon(self):
         """
@@ -457,7 +457,7 @@ class TestRectangle:
         assert shapely_polygon.area == 0.06000000000000001
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_rectangle_generate_full_box(self):
         """
@@ -489,7 +489,7 @@ class TestRectangle:
             assert full_box._labels == label_expected
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_rectangle_is_full_box(self):
         """
@@ -533,7 +533,7 @@ class TestRectangle:
         assert not Rectangle.is_full_box(str)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_rectangle_crop_numpy_array(self):
         """
@@ -586,7 +586,7 @@ class TestRectangle:
                 raise AssertionError("Unequal expected and cropped image arrays")
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_rectangle_width(self):
         """
@@ -614,7 +614,7 @@ class TestRectangle:
             assert rectangle.width == expected_width
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_rectangle_height(self):
         """
@@ -642,7 +642,7 @@ class TestRectangle:
             assert rectangle.height == expected_height
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_rectangle_diagonal(self):
         """
@@ -666,7 +666,7 @@ class TestRectangle:
             assert rectangle.diagonal == expected_diagonal
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_rectangle_get_area(self):
         """

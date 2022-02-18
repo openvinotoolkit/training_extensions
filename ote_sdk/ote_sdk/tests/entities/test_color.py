@@ -34,7 +34,7 @@ color = Color.from_hex_str(color_hex)
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestColor:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_color(self):
         """
@@ -69,7 +69,7 @@ class TestColor:
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestColorEntity:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_color_entity(self):
         """

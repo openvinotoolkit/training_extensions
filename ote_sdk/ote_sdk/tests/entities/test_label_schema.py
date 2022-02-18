@@ -28,7 +28,7 @@ from ote_sdk.tests.constants.requirements import Requirements
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestLabelSchema:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_tree(self, label_schema_example):
         """
@@ -66,12 +66,12 @@ class TestLabelSchema:
         assert rifle in threat_children
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_exclusive(self, label_schema_example):
         """
         <b>Description:</b>
-        Tests exclusivity
+        Tests that the are_exclusive method properly computes the labels that are exclusive with each other
 
         <b>Input data:</b>
         Exclusive group: flowering,vegetative,no_plant
@@ -96,7 +96,6 @@ class TestLabelSchema:
             LabelGroup(
                 "plant_state",
                 [flowering, no_plant, vegetative],
-                LabelGroupType.EXCLUSIVE,
             )
         )
 
@@ -109,48 +108,90 @@ class TestLabelSchema:
 
         assert not label_schema.are_exclusive(flowering, bee)
 
-        assert 4 == label_schema.exclusivity_graph.num_labels
-
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_complex(self, label_schema_example):
         """
         <b>Description:</b>
-        Tests a mix of hierarchy and exclusivity
+        Tests that exclusivity is computed correctly in a schema with complex hierarchy
 
         <b>Input data:</b>
-        Exclusive group: flowering,vegetative,no_plant
-        Exclusive group: flower_partial_visible,flower_fully_visible (children of flowering)
-        Exclusive group: few_leaves (child of vegetative)
-        Exclusive group: bee
+        Exclusive groups: plant, animal
+        Exclusive groups: tree, bush (children of plant), mammal, insect (children of animal)
+        Empty label
 
         <b>Expected results:</b>
-        Test passes if the LabelSchemaEntity and hierarchy are correctly represented
+        Test passes if the are_exclusive method properly computes the exclusivity between labels with various relations
 
         <b>Steps</b>
         1. Create LabelSchemaEntity with hierarchy
-        2. Check that some relations are not exclusive
-        3. Check that requesting scores of related labels does resolve correctly
+        2. Check that labels are not exclusive with their parent
+        3. Check that labels are exclusive with:
+         - labels in the same group
+         - children of labels in the same group
+         - labels in the same group as their parent
+         - children of labels in the same group as their parent
+        4. Add an empty label and check that it's exclusive with all other labels
+        5. Make the empty label the child of a different label, and check that the empty label is not exclusive with
+        its parent.
+        6. Check that LabelSchema.are_exclusive is symmetric for all cases
+
         """
         label_schema = LabelSchemaEntity()
-        label_schema_example.add_hierarchy(label_schema)
 
-        bee = label_schema_example.new_label_by_name(
-            "bee"
-        )  # indicates presence/absence of bee
-        label_schema.add_group(LabelGroup("bee_state", [bee], LabelGroupType.EXCLUSIVE))
+        plant = label_schema_example.new_label_by_name("plant")
+        animal = label_schema_example.new_label_by_name("animal")
+        label_schema.add_group(
+            LabelGroup("organism_type", [plant, animal], LabelGroupType.EXCLUSIVE)
+        )
 
-        pollen_visible = label_schema_example.new_label_by_name("pollen_visible")
-        queen = label_schema_example.new_label_by_name("queen")
-        label_schema.add_child(bee, pollen_visible)
-        label_schema.add_child(bee, queen)
+        tree = label_schema_example.new_label_by_name("tree")
+        bush = label_schema_example.new_label_by_name("bush")
+        label_schema.add_group(
+            LabelGroup("plant_type", [tree, bush], LabelGroupType.EXCLUSIVE)
+        )
 
-        assert not label_schema.are_exclusive(pollen_visible, queen)
-        assert not label_schema.are_exclusive(bee, queen)
+        label_schema.add_child(parent=plant, child=tree)
+        label_schema.add_child(parent=plant, child=bush)
+
+        insect = label_schema_example.new_label_by_name("insect")
+        mammal = label_schema_example.new_label_by_name("mammal")
+        label_schema.add_group(
+            LabelGroup("animal_type", [insect, mammal], LabelGroupType.EXCLUSIVE)
+        )
+        label_schema.add_child(parent=animal, child=insect)
+        label_schema.add_child(parent=animal, child=mammal)
+
+        assert not label_schema.are_exclusive(plant, tree)
+        assert label_schema.are_exclusive(tree, bush)
+        assert label_schema.are_exclusive(plant, insect)
+        assert label_schema.are_exclusive(tree, animal)
+        assert label_schema.are_exclusive(tree, insect)
+
+        # Check that the empty label is exclusive with all labels
+        empty_label = label_schema_example.new_label_by_name(
+            "empty_label", is_empty=True
+        )
+        label_schema.add_group(
+            LabelGroup("empty_label", [empty_label], LabelGroupType.EMPTY_LABEL)
+        )
+        for label_iter in label_schema.get_labels(include_empty=False):
+            assert label_schema.are_exclusive(empty_label, label_iter)
+
+        # Check that the empty label is not exclusive with its parent
+        label_schema.add_child(parent=tree, child=empty_label)
+        assert not label_schema.are_exclusive(tree, empty_label)
+
+        # Check that label_schema.are_exclusive is symmetric for all cases
+        for label_1 in label_schema.get_labels(include_empty=True):
+            for label_2 in label_schema.get_labels(include_empty=True):
+                assert label_schema.are_exclusive(
+                    label_1, label_2
+                ) == label_schema.are_exclusive(label_2, label_1)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_add_label_to_group(self, label_schema_example):
         """
@@ -191,7 +232,7 @@ class TestLabelSchema:
         assert 2 == len(bee_state.labels)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_exclusivity_with_group_addition(self, label_schema_example):
         """
@@ -276,7 +317,7 @@ class TestLabelSchema:
         assert label_schema_example.vegetative in exclusive_to_flowering
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_labelschema_equality(self, label_schema_example):
         """
@@ -331,7 +372,7 @@ class TestLabelSchema:
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestLabelGroupType:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_group_type(self):
         """
@@ -397,7 +438,7 @@ labels = Labels()
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestLabelGroup:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_group_initialization(self):
         """
@@ -450,7 +491,7 @@ class TestLabelGroup:
         assert no_id_label_group.minimum_label_id == "0"
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_group_remove_label(self):
         """
@@ -481,7 +522,7 @@ class TestLabelGroup:
         assert label_group.is_single_label()
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_group_magic_methods(self):
         """
@@ -591,7 +632,7 @@ class TestLabelGraph:
         return directed_graph
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_graph_initialization(self):
         """
@@ -694,7 +735,7 @@ class TestLabelGraph:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_graph_subgraph(self):
         """
@@ -770,7 +811,7 @@ class TestLabelGraph:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_graph_eq(self):
         """
@@ -902,7 +943,7 @@ class TestLabelTree:
             assert label_tree.get_ancestors(label) == expected
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_tree_initialization(self):
         """
@@ -956,7 +997,7 @@ class TestLabelTree:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_tree_add_edge(self):
         """
@@ -1043,7 +1084,7 @@ class TestLabelTree:
         assert not label_tree._LabelTree__topological_order_cache
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_tree_add_node(self):
         """
@@ -1117,7 +1158,7 @@ class TestLabelTree:
         assert not label_tree._LabelTree__topological_order_cache
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_tree_clear_topological_cache(self):
         """
@@ -1142,7 +1183,7 @@ class TestLabelTree:
         assert not label_tree._LabelTree__topological_order_cache
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_tree_relations(self):
         """
@@ -1227,7 +1268,7 @@ class TestLabelTree:
         self.check_get_ancestors_method(label_tree)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_tree_get_labels_in_topological_order(self):
         """
@@ -1281,7 +1322,7 @@ class TestLabelTree:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_tree_remove_node(self):
         """
@@ -1360,7 +1401,7 @@ class TestLabelTree:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_tree_subgraph(self):
         """
@@ -1411,7 +1452,7 @@ class TestLabelTree:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_tree_eq(self):
         """
@@ -1451,33 +1492,18 @@ class TestLabelTree:
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestLabelSchemaEntity:
     @staticmethod
-    def exclusivity_graph() -> LabelGraph:
-        exclusivity_graph = LabelGraph(directed=False)
-        for node in [
-            labels.label_0_1,
-            labels.label_0,
-            labels.label_0_2,
-            labels.label_0_1_3,
-            labels.label_0_2_4,
-            labels.label_0_2_5,
-        ]:
-            exclusivity_graph.add_node(node)
-        exclusivity_graph.add_edges([edges.edge_0_1_to_0_2, edges.edge_0_2_4_to_0_2_5])
-        return exclusivity_graph
-
-    @staticmethod
-    def exclusivity_groups() -> list:
-        exclusivity_0_1_and_0_2 = LabelGroup(
-            name="Exclusivity edges 0_1 and 0_2",
+    def label_groups() -> list:
+        group_1 = LabelGroup(
+            name="Exclusive group 1",
             labels=[labels.label_0_1, labels.label_0_2],
-            id=ID("ex_01_02"),
+            id=ID("Exclusive group 1"),
         )
-        exclusivity_2_4_and_2_5 = LabelGroup(
-            name="Exclusivity edges 0_2_4 and 0_2_5",
+        group_2 = LabelGroup(
+            name="Exclusive group 2",
             labels=[labels.label_0_2_4, labels.label_0_2_5],
-            id=ID("ex_024_025"),
+            id=ID("Exclusive group 2"),
         )
-        return [exclusivity_0_1_and_0_2, exclusivity_2_4_and_2_5]
+        return [group_1, group_2]
 
     @staticmethod
     def empty_labels() -> list:
@@ -1499,28 +1525,27 @@ class TestLabelSchemaEntity:
 
     def empty_labels_groups(self) -> list:
         empty_labels = self.empty_labels()
-        exclusive_empty_group = LabelGroup(
-            name="Group with empty label",
+        empty_group_1 = LabelGroup(
+            name="Exclusive group with empty label",
             labels=[empty_labels[0]],
-            id=ID("empty_label_group"),
+            id=ID("Exclusive group with empty label"),
         )
-        empty_non_exclusive_group = LabelGroup(
-            name="Non-exclusive empty label group",
+        empty_group_2 = LabelGroup(
+            name="Empty label group with empty label",
             labels=[empty_labels[1]],
             group_type=LabelGroupType.EMPTY_LABEL,
-            id=ID("empty_non_excl_label_group"),
+            id=ID("Empty label group with empty label"),
         )
-        return [exclusive_empty_group, empty_non_exclusive_group]
+        return [empty_group_1, empty_group_2]
 
     def label_schema_entity(self) -> LabelSchemaEntity:
         return LabelSchemaEntity(
-            exclusivity_graph=self.exclusivity_graph(),
             label_tree=TestLabelTree.label_tree(),
-            label_groups=self.exclusivity_groups() + self.empty_labels_groups(),
+            label_groups=self.label_groups() + self.empty_labels_groups(),
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_schema_entity_default_parameters_initialization(self):
         """
@@ -1528,19 +1553,18 @@ class TestLabelSchemaEntity:
         Check LabelSchemaEntity object initialization
 
         <b>Input data:</b>
-        LabelSchemaEntity object with not specified exclusivity_graph, label_tree and label_groups parameters
+        LabelSchemaEntity object with not specified label_tree and label_groups parameters
 
         <b>Expected results:</b>
-        Test passes if attributes for LabelSchemaEntity with not specified "exclusivity_graph", "label_tree" and
+        Test passes if attributes for LabelSchemaEntity with not specified "label_tree" and
         "label_groups" parameters are equal expected
         """
         empty_label_schema_entity = LabelSchemaEntity()
-        assert empty_label_schema_entity.exclusivity_graph == LabelGraph(directed=False)
         assert empty_label_schema_entity.label_tree == LabelTree()
         assert empty_label_schema_entity._groups == []
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_schema_entity_get_labels(self):
         """
@@ -1548,7 +1572,7 @@ class TestLabelSchemaEntity:
         Check LabelSchemaEntity class get_labels method
 
         <b>Input data:</b>
-        LabelSchemaEntity object with specified exclusivity_graph, label_tree and label_groups parameters
+        LabelSchemaEntity object with specified label_tree and label_groups parameters
 
         <b>Expected results:</b>
         Test passes if list returned by get_labels method is equal expected
@@ -1577,7 +1601,7 @@ class TestLabelSchemaEntity:
         ]
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_schema_entity_get_groups(self):
         """
@@ -1585,7 +1609,7 @@ class TestLabelSchemaEntity:
         Check LabelSchemaEntity class get_groups method
 
         <b>Input data:</b>
-        LabelSchemaEntity object with specified exclusivity_graph, label_tree and label_groups parameters
+        LabelSchemaEntity object with specified label_tree and label_groups parameters
 
         <b>Expected results:</b>
         Test passes if list returned by get_groups method is equal expected
@@ -1594,25 +1618,25 @@ class TestLabelSchemaEntity:
         1. Check list returned by get_groups method with include_empty parameter set to True
         2. Check list returned by get_groups method with include_empty parameter set to False
         """
-        exclusivity_groups = self.exclusivity_groups()
+        label_groups = self.label_groups()
         empty_label_groups = self.empty_labels_groups()
         label_schema_entity = self.label_schema_entity()
         # Checking list returned by get_groups method with include_empty parameter set to True
         assert label_schema_entity.get_groups(include_empty=True) == [
-            exclusivity_groups[0],
-            exclusivity_groups[1],
+            label_groups[0],
+            label_groups[1],
             empty_label_groups[0],
             empty_label_groups[1],
         ]
         # Checking list returned by get_groups method with include_empty parameter set to False
         assert label_schema_entity.get_groups(include_empty=False) == [
-            exclusivity_groups[0],
-            exclusivity_groups[1],
+            label_groups[0],
+            label_groups[1],
             empty_label_groups[0],
         ]
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_schema_entity_add_group(self):
         """
@@ -1620,7 +1644,7 @@ class TestLabelSchemaEntity:
         Check LabelSchemaEntity class add_group method
 
         <b>Input data:</b>
-        LabelSchemaEntity object with specified exclusivity_graph, label_tree and label_groups parameters
+        LabelSchemaEntity object with label_tree and label_groups parameters
 
         <b>Expected results:</b>
         Test passes if value returned by "get_exclusive_groups" method is equal expected
@@ -1635,87 +1659,69 @@ class TestLabelSchemaEntity:
         6. Check LabelGroupExistsException raised when adding LabelGroup with already existing name
         """
         empty_label_groups = self.empty_labels_groups()
-        exclusivity_groups = self.exclusivity_groups() + [empty_label_groups[0]]
+        exclusive_groups = self.label_groups() + [empty_label_groups[0]]
         label_schema_entity = self.label_schema_entity()
-        # Scenario for adding exclusivity group with new labels
+        # Scenario for adding exclusive group with new labels
         new_exclusive_label = LabelEntity(
             name="New label", domain=Domain.DETECTION, id=ID("new_ex_1")
         )
         other_new_exclusive_label = LabelEntity(
             name="Other new label", domain=Domain.DETECTION, id=ID("new_ex_2")
         )
-        new_labels_exclusivity_group = LabelGroup(
+        new_exclusive_group = LabelGroup(
             name="New exclusive labels group",
             labels=[new_exclusive_label, other_new_exclusive_label],
             id=ID("new_ex_group"),
         )
-        label_schema_entity.add_group(new_labels_exclusivity_group)
+        label_schema_entity.add_group(new_exclusive_group)
         assert label_schema_entity.get_exclusive_groups() == (
-            exclusivity_groups + [new_labels_exclusivity_group]
+            exclusive_groups + [new_exclusive_group]
         )
-        # Scenario for adding exclusivity group with single label
+        # Scenario for adding exclusive group with single label
         label_schema_entity = self.label_schema_entity()
-        new_labels_exclusivity_group = LabelGroup(
+        new_exclusive_group = LabelGroup(
             name="Exclusive group with one label",
             labels=[new_exclusive_label],
             id=ID("single_excl_group"),
         )
-        label_schema_entity.add_group(new_labels_exclusivity_group)
+        label_schema_entity.add_group(new_exclusive_group)
         assert label_schema_entity.get_exclusive_groups() == (
-            exclusivity_groups + [new_labels_exclusivity_group]
+            exclusive_groups + [new_exclusive_group]
         )
-        # Scenario for adding exclusivity group with one already existing label
+        # Scenario for adding exclusive group with one already existing label
         label_schema_entity = self.label_schema_entity()
-        new_labels_exclusivity_group = LabelGroup(
+        new_exclusive_group = LabelGroup(
             name="Exclusive group to link with existing",
             labels=[labels.label_0_1, new_exclusive_label],
             id=ID("new_ex_group"),
         )
-        label_schema_entity.add_group(new_labels_exclusivity_group)
+        label_schema_entity.add_group(new_exclusive_group)
         assert label_schema_entity.get_exclusive_groups() == (
-            exclusivity_groups + [new_labels_exclusivity_group]
+            exclusive_groups + [new_exclusive_group]
         )
-        # Scenario for adding group which exclusive to other
-        label_schema_entity = self.label_schema_entity()
-        new_labels_exclusivity_group = LabelGroup(
-            name="Label group exclusive to other",
-            labels=[new_exclusive_label, other_new_exclusive_label],
-            id=ID("exclusive_to_other_group"),
-        )
-        label_schema_entity.add_group(
-            new_labels_exclusivity_group,
-            exclusive_with=[new_labels_exclusivity_group, exclusivity_groups[1]],
-        )
-        assert label_schema_entity.get_exclusive_groups() == (
-            exclusivity_groups + [new_labels_exclusivity_group]
-        )
-        # Checking that labels are exclusive to each other
-        for label in new_labels_exclusivity_group.labels:
-            for exclusive_with_label in exclusivity_groups[1].labels:
-                assert label_schema_entity.are_exclusive(label, exclusive_with_label)
         # Scenario for adding non-exclusive group
         label_schema_entity = self.label_schema_entity()
-        new_labels_exclusivity_group = LabelGroup(
+        new_exclusive_group = LabelGroup(
             name="Non exclusive label group",
             labels=[new_exclusive_label],
             group_type=LabelGroupType.EMPTY_LABEL,
             id=ID("non_exclusive_group"),
         )
-        label_schema_entity.add_group(new_labels_exclusivity_group)
-        assert label_schema_entity.get_exclusive_groups() == exclusivity_groups
+        label_schema_entity.add_group(new_exclusive_group)
+        assert label_schema_entity.get_exclusive_groups() == exclusive_groups
         # Raise LabelGroupExistsException when adding LabelGroup with same name
         for group_type in [LabelGroupType.EXCLUSIVE, LabelGroupType.EMPTY_LABEL]:
             with pytest.raises(LabelGroupExistsException):
                 label_schema_entity.add_group(
                     LabelGroup(
-                        name="Exclusivity edges 0_1 and 0_2",
+                        name="Exclusive group 1",
                         labels=[],
                         group_type=group_type,
                     )
                 )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_schema_add_child(self):
         """
@@ -1723,58 +1729,31 @@ class TestLabelSchemaEntity:
         Check LabelSchemaEntity class add_child method
 
         <b>Input data:</b>
-        LabelSchemaEntity object with specified exclusivity_graph, label_tree and label_groups parameters
+        LabelSchemaEntity object with specified label_tree and label_groups parameters
 
         <b>Expected results:</b>
-        Test passes if list returned by edges attribute of exclusivity graph and list returned by get_children method
-        after using add_child method are equal expected
+        Test passes if list returned by get_children method after using add_child method are equal to expected
 
         <b>Steps</b>
-        1. Check exclusivity graph edges and get_children list after using add_child method
-        2. Check exclusivity graph edges and get_children list after using add_child method for previous pair for
-        second time
+        1. Check get_children list after using add_child method
+        2. Check get_children list after using add_child method for previous pair for a second time
         """
         label_schema_entity = self.label_schema_entity()
-        # Checking exclusivity graph edges after using add_child method
         label_schema_entity.add_child(
             parent=labels.label_0_2_4, child=labels.label_0_2_5
-        )
-        expected_edges = [
-            (labels.label_0_1, labels.label_0_2, {}),
-            (labels.label_0_2_4, labels.label_0_2_5, {}),
-            (labels.label_0_2_5, labels.label_0_2_5, {"value": None}),
-        ]
-        CommonGraphMethods().check_graph_list_attributes(
-            [
-                {
-                    "attribute": label_schema_entity.exclusivity_graph.edges,
-                    "expected_type": EdgeDataView,
-                    "expected_value": expected_edges,
-                }
-            ]
         )
         assert label_schema_entity.get_children(labels.label_0_2_4) == [
             labels.label_0_2_5
         ]
-        # Checking exclusivity graph edges after using add_child method for previous pair for second time
         label_schema_entity.add_child(
             parent=labels.label_0_2_4, child=labels.label_0_2_5
-        )
-        CommonGraphMethods().check_graph_list_attributes(
-            [
-                {
-                    "attribute": label_schema_entity.exclusivity_graph.edges,
-                    "expected_type": EdgeDataView,
-                    "expected_value": expected_edges,
-                }
-            ]
         )
         assert label_schema_entity.get_children(labels.label_0_2_4) == [
             labels.label_0_2_5
         ]
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_schema_entity_get_label_ids(self):
         """
@@ -1782,7 +1761,7 @@ class TestLabelSchemaEntity:
         Check LabelSchemaEntity class get_label_ids method
 
         <b>Input data:</b>
-        LabelSchemaEntity object with specified exclusivity_graph, label_tree and label_groups parameters
+        LabelSchemaEntity object with specified label_tree and label_groups parameters
 
         <b>Expected results:</b>
         Test passes if values returned by get_label_ids method is equal expected
@@ -1806,7 +1785,7 @@ class TestLabelSchemaEntity:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_schema_get_label_group_by_name(self):
         """
@@ -1814,28 +1793,28 @@ class TestLabelSchemaEntity:
         Check LabelSchemaEntity class get_label_group_by_name method
 
         <b>Input data:</b>
-        LabelSchemaEntity object with specified exclusivity_graph, label_tree and label_groups parameters
+        LabelSchemaEntity object with specified label_tree and label_groups parameters
 
         <b>Expected results:</b>
         Test passes if value returned by get_label_group_by_name method is equal expected
 
         <b>Steps</b>
-        1. Check get_label_group_by_name method for searching exclusivity group
-        2. Check get_label_group_by_name method for searching non-exclusivity group
+        1. Check get_label_group_by_name method for searching exclusive group
+        2. Check get_label_group_by_name method for searching empty label group
         2. Check get_label_group_by_name method for searching non_existing group
         """
         label_schema_entity = self.label_schema_entity()
-        exclusivity_groups = self.exclusivity_groups()
+        label_groups = self.label_groups()
         empty_non_excl_group = self.empty_labels_groups()[1]
-        # Checking get_label_group_by_name method for searching exclusivity group for not specified empty labels
+        # Checking get_label_group_by_name method for searching exclusive group for not specified empty labels
         assert (
-            label_schema_entity.get_label_group_by_name("Exclusivity edges 0_1 and 0_2")
-            == exclusivity_groups[0]
+            label_schema_entity.get_label_group_by_name("Exclusive group 1")
+            == label_groups[0]
         )
-        # Checking get_label_group_by_name method for searching non_exclusivity group with empty labels
+        # Checking get_label_group_by_name method for searching empty label group with empty label
         assert (
             label_schema_entity.get_label_group_by_name(
-                "Non-exclusive empty label group"
+                "Empty label group with empty label"
             )
             == empty_non_excl_group
         )
@@ -1843,7 +1822,7 @@ class TestLabelSchemaEntity:
         assert not label_schema_entity.get_label_group_by_name("Non-existing group")
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_schema_get_exclusive_groups(self):
         """
@@ -1851,21 +1830,21 @@ class TestLabelSchemaEntity:
         Check LabelSchemaEntity class get_exclusive_groups method
 
         <b>Input data:</b>
-        LabelSchemaEntity object with specified exclusivity_graph, label_tree and label_groups parameters
+        LabelSchemaEntity object with specified label_tree and label_groups parameters
 
         <b>Expected results:</b>
         Test passes if value returned by get_exclusive_groups method is equal expected
 
         <b>Steps</b>
-        1. Check get_exclusive_groups method for searching exclusivity group
-        2. Check get_exclusive_groups method after adding exclusivity group
-        3. Check get_exclusive_groups method after adding non-exclusivity group
+        1. Check get_exclusive_groups method
+        2. Check get_exclusive_groups method after adding exclusive group
+        3. Check get_exclusive_groups method after adding empty label group
         """
         label_schema_entity = self.label_schema_entity()
-        exclusivity_groups = self.exclusivity_groups() + [self.empty_labels_groups()[0]]
-        # Checking get_exclusive_groups method for searching exclusivity groups
-        assert label_schema_entity.get_exclusive_groups() == exclusivity_groups
-        # Checking get_exclusive_groups method after adding new exclusivity group
+        exclusive_groups = self.label_groups() + [self.empty_labels_groups()[0]]
+        # Checking get_exclusive_groups method for searching exclusive groups
+        assert label_schema_entity.get_exclusive_groups() == exclusive_groups
+        # Checking get_exclusive_groups method after adding new exclusive group
         new_label = LabelEntity(
             name="New label",
             domain=Domain.DETECTION,
@@ -1876,20 +1855,20 @@ class TestLabelSchemaEntity:
             name="New exclusive labels group", labels=[new_label], id=ID("new_ex_group")
         )
         label_schema_entity.add_group(new_labels_group)
-        exclusivity_groups.append(new_labels_group)
-        assert label_schema_entity.get_exclusive_groups() == exclusivity_groups
-        # Checking get_exclusive_groups method after adding non-exclusivity group
-        non_exclusive_group = LabelGroup(
+        exclusive_groups.append(new_labels_group)
+        assert label_schema_entity.get_exclusive_groups() == exclusive_groups
+        # Checking get_exclusive_groups method after adding empty label group
+        empty_label_group = LabelGroup(
             name="New non-exclusive labels group",
             labels=[new_label],
             group_type=LabelGroupType.EMPTY_LABEL,
             id=ID("new_ex_group"),
         )
-        label_schema_entity.add_group(non_exclusive_group)
-        assert label_schema_entity.get_exclusive_groups() == exclusivity_groups
+        label_schema_entity.add_group(empty_label_group)
+        assert label_schema_entity.get_exclusive_groups() == exclusive_groups
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_schema_add_labels_to_group_by_group_name(self):
         """
@@ -1897,7 +1876,7 @@ class TestLabelSchemaEntity:
         Check LabelSchemaEntity class add_labels_to_group_by_group_name method
 
         <b>Input data:</b>
-        LabelSchemaEntity object with specified exclusivity_graph, label_tree and label_groups parameters
+        LabelSchemaEntity object with specified label_tree and label_groups parameters
 
         <b>Expected results:</b>
         Test passes if labels attribute returned by group which specified in add_labels_to_group_by_group_name method
@@ -1905,7 +1884,7 @@ class TestLabelSchemaEntity:
 
         <b>Steps</b>
         1. Check add_labels_to_group_by_group_name method to add labels to exclusive group
-        2. Check add_labels_to_group_by_group_name method to add labels to non-exclusive group
+        2. Check add_labels_to_group_by_group_name method to add labels to empty label group
         3. Check LabelGroupDoesNotExistException raised when adding labels to non-existing group
         """
         label_schema_entity = self.label_schema_entity()
@@ -1923,27 +1902,27 @@ class TestLabelSchemaEntity:
             color=Color(81, 100, 10),
             id=ID("new_ex_2"),
         )
-        exclusivity_group_name = "Exclusivity edges 0_1 and 0_2"
+        exclusive_group_name = "Exclusive group 1"
         label_schema_entity.add_labels_to_group_by_group_name(
-            group_name=exclusivity_group_name, labels=[new_label, new_empty_label]
+            group_name=exclusive_group_name, labels=[new_label, new_empty_label]
         )
         assert label_schema_entity.get_label_group_by_name(
-            exclusivity_group_name
+            exclusive_group_name
         ).labels == [labels.label_0_1, labels.label_0_2, new_label, new_empty_label]
         # Checking add_labels_to_group_by_group_name method to add labels to non-exclusive group
-        new_non_exclusive_label = LabelEntity(
+        new_empty_label = LabelEntity(
             name="New non-exclusive empty_label",
             domain=Domain.SEGMENTATION,
             is_empty=True,
             id=ID("empty_label_1"),
         )
-        non_exclusivity_group_name = "Non-exclusive empty label group"
+        empty_label_group_name = "Empty label group with empty label"
         label_schema_entity.add_labels_to_group_by_group_name(
-            group_name=non_exclusivity_group_name, labels=[new_non_exclusive_label]
+            group_name=empty_label_group_name, labels=[new_empty_label]
         )
         assert label_schema_entity.get_label_group_by_name(
-            non_exclusivity_group_name
-        ).labels == [non_exclusive_label, new_non_exclusive_label]
+            empty_label_group_name
+        ).labels == [non_exclusive_label, new_empty_label]
         # Checking that LabelGroupDoesNotExistException raised when adding labels to non-existing group
         with pytest.raises(LabelGroupDoesNotExistException):
             label_schema_entity.add_labels_to_group_by_group_name(
@@ -1951,7 +1930,7 @@ class TestLabelSchemaEntity:
             )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_schema_relations(self):
         """
@@ -1959,7 +1938,7 @@ class TestLabelSchemaEntity:
         Check LabelSchemaEntity relations methods
 
         <b>Input data:</b>
-        LabelSchemaEntity object with specified exclusivity_graph, label_tree and label_groups parameters
+        LabelSchemaEntity object with specified label_tree and label_groups parameters
 
         <b>Expected results:</b>
         Test passes if "get_children", "get_descendants" and "get_ancestors" methods
@@ -1979,7 +1958,7 @@ class TestLabelSchemaEntity:
         TestLabelTree.check_get_ancestors_method(label_schema_entity)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_schema_get_group_containing_label(self):
         """
@@ -1987,36 +1966,36 @@ class TestLabelSchemaEntity:
         Check LabelSchemaEntity class get_group_containing_label method
 
         <b>Input data:</b>
-        LabelSchemaEntity object with specified exclusivity_graph, label_tree and label_groups parameters
+        LabelSchemaEntity object with specified label_tree and label_groups parameters
 
         <b>Expected results:</b>
         Test passes if value returned by get_group_containing_label method is equal expected
 
         <b>Steps</b>
-        1. Check get_group_containing_label method for label included in exclusivity group
-        2. Check get_group_containing_label method for label included in non-exclusivity group
+        1. Check get_group_containing_label method for label included in exclusive group
+        2. Check get_group_containing_label method for label included in empty label
         3. Check get_group_containing_label method for label not included in any group
         """
         label_schema_entity = self.label_schema_entity()
-        exclusivity_groups = self.exclusivity_groups()
-        # Checking get_group_containing_label method for label included in exclusivity group
+        label_groups = self.label_groups()
+        # Checking get_group_containing_label method for label included in exclusive group
         assert (
             label_schema_entity.get_group_containing_label(labels.label_0_1)
-            == exclusivity_groups[0]
+            == label_groups[0]
         )
         assert (
             label_schema_entity.get_group_containing_label(labels.label_0_2)
-            == exclusivity_groups[0]
+            == label_groups[0]
         )
         assert (
             label_schema_entity.get_group_containing_label(labels.label_0_2_4)
-            == exclusivity_groups[1]
+            == label_groups[1]
         )
         assert (
             label_schema_entity.get_group_containing_label(labels.label_0_2_5)
-            == exclusivity_groups[1]
+            == label_groups[1]
         )
-        # Checking get_group_containing_label method for label included in non-exclusivity group
+        # Checking get_group_containing_label method for label included in non-exclusive group
         assert (
             label_schema_entity.get_group_containing_label(self.empty_labels()[1])
             == self.empty_labels_groups()[1]
@@ -2026,7 +2005,7 @@ class TestLabelSchemaEntity:
         assert not label_schema_entity.get_group_containing_label(labels.label_0_1_3)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_schema_get_label(self):
         """
@@ -2034,7 +2013,7 @@ class TestLabelSchemaEntity:
         Check LabelSchemaEntity class __get_label method
 
         <b>Input data:</b>
-        LabelSchemaEntity object with specified exclusivity_graph, label_tree and label_groups parameters
+        LabelSchemaEntity object with specified label_tree and label_groups parameters
 
         <b>Expected results:</b>
         Test passes if LabelEntity object returned by __get_label method is equal expected
@@ -2071,7 +2050,7 @@ class TestLabelSchemaEntity:
             label_schema_entity._LabelSchemaEntity__get_label(str)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_schema_repr(self):
         """
@@ -2079,20 +2058,20 @@ class TestLabelSchemaEntity:
         Check LabelSchemaEntity class __repr__ method
 
         <b>Input data:</b>
-        LabelSchemaEntity object with specified exclusivity_graph, label_tree and label_groups parameters
+        LabelSchemaEntity object with specified label_tree and label_groups parameters
 
         <b>Expected results:</b>
         Test passes if value returned by __repr__ method is equal expected
         """
         label_schema_entity = self.label_schema_entity()
-        label_groups = self.exclusivity_groups() + self.empty_labels_groups()
+        label_groups = self.label_groups() + self.empty_labels_groups()
         assert (
             repr(label_schema_entity)
             == f"LabelSchemaEntity(label_groups={label_groups})"
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_schema_eq(self):
         """
@@ -2100,28 +2079,21 @@ class TestLabelSchemaEntity:
         Check LabelSchemaEntity class __eq__ method
 
         <b>Input data:</b>
-        LabelSchemaEntity objects with specified exclusivity_graph, label_tree and label_groups parameters
+        LabelSchemaEntity objects with specified label_tree and label_groups parameters
 
         <b>Expected results:</b>
         Test passes if value returned by __eq__ method is equal expected
 
         <b>Steps</b>
         1. Check __eq__ method for equal LabelSchemaEntity objects
-        2. Check __eq__ method for LabelSchemaEntity objects with unequal exclusivity_graphs
-        3. Check __eq__ method for LabelSchemaEntity objects with unequal label_tree
-        4. Check __eq__ method for LabelSchemaEntity objects with unequal LabelGroups
-        5. Check __eq__ method for comparing LabelSchemaEntity object object of other type
+        2. Check __eq__ method for LabelSchemaEntity objects with unequal label_tree
+        3. Check __eq__ method for LabelSchemaEntity objects with unequal LabelGroups
+        4. Check __eq__ method for comparing LabelSchemaEntity object object of other type
         """
         # Checking __eq__ method for equal LabelSchemaEntity objects
         label_schema_entity = self.label_schema_entity()
         equal_label_schema_entity = self.label_schema_entity()
         assert label_schema_entity == equal_label_schema_entity
-        # Checking __eq__ method for equal LabelSchemaEntity objects with unequal exclusivity_graphs
-        unequal_graph_label_schema_entity = self.label_schema_entity()
-        unequal_graph_label_schema_entity.exclusivity_graph.add_edge(
-            labels.label_0_1_3, labels.label_0_2_4
-        )
-        assert label_schema_entity != unequal_graph_label_schema_entity
         # Checking __eq__ method for equal LabelSchemaEntity objects with unequal label_tree
         unequal_tree_label_schema_entity = self.label_schema_entity()
         unequal_tree_label_schema_entity.label_tree.add_edge(
@@ -2131,14 +2103,14 @@ class TestLabelSchemaEntity:
         # Checking __eq__ method for equal LabelSchemaEntity objects with unequal LabelGroups
         unequal_groups_label_schema_entity = self.label_schema_entity()
         unequal_groups_label_schema_entity.add_labels_to_group_by_group_name(
-            "Exclusivity edges 0_1 and 0_2", [labels.label_0]
+            "Exclusive group 1", [labels.label_0]
         )
         assert label_schema_entity != unequal_groups_label_schema_entity
         # Checking __eq__ method for comparing LabelSchemaEntity object object of other type
         assert label_schema_entity != str
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_schema_from_labels(self):
         """
@@ -2146,7 +2118,7 @@ class TestLabelSchemaEntity:
         Check LabelSchemaEntity class from_labels method
 
         <b>Input data:</b>
-        LabelSchemaEntity objects with specified exclusivity_graph, label_tree and label_groups parameters
+        LabelSchemaEntity objects with specified label_tree and label_groups parameters
 
         <b>Expected results:</b>
         Test passes if LabelSchemaEntity object returned by from_labels method is equal expected
@@ -2160,7 +2132,6 @@ class TestLabelSchemaEntity:
         label_schema_entity = LabelSchemaEntity.from_labels(expected_labels)
         labels_schema_entity_groups = label_schema_entity._groups
         assert isinstance(label_schema_entity, LabelSchemaEntity)
-        assert label_schema_entity.exclusivity_graph == LabelGraph(directed=False)
         assert label_schema_entity.label_tree == LabelTree()
         assert len(labels_schema_entity_groups) == 1
         assert labels_schema_entity_groups[0].name == "from_label_list"

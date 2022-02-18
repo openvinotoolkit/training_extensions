@@ -48,7 +48,7 @@ from ote_sdk.utils.time_utils import now
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestModelPrecision:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_model_precision(self):
         """
@@ -69,7 +69,7 @@ class TestModelPrecision:
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestModelFormat:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_model_format(self):
         """
@@ -90,7 +90,7 @@ class TestModelFormat:
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestModelOptimizationType:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_model_optimization_type(self):
         """
@@ -111,7 +111,7 @@ class TestModelOptimizationType:
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestOptimizationMethod:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_optimization_method(self):
         """
@@ -132,7 +132,7 @@ class TestOptimizationMethod:
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestModelConfiguration:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_model_configuration(self):
         """
@@ -186,7 +186,7 @@ class TestModelEntity:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_model_entity_default_values(self):
         """
@@ -241,7 +241,7 @@ class TestModelEntity:
         assert model_entity.is_optimized() is False
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_model_entity_sets_values(self):
         """
@@ -314,7 +314,7 @@ class TestModelEntity:
         assert model_entity.is_optimized() is True
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_model_entity_model_adapters(self):
         """
@@ -392,7 +392,7 @@ class TestModelEntity:
             assert model_entity.weight_paths == {"0": temp_file}
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_model_entity__eq__(self):
         """

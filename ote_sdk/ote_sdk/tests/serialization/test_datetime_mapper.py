@@ -3,6 +3,8 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+from datetime import datetime
+
 import pytest
 
 from ote_sdk.serialization.datetime_mapper import DatetimeMapper
@@ -14,7 +16,7 @@ from ote_sdk.utils.time_utils import now
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestDatetimeMapper:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_serialization_deserialization(self):
         """
@@ -27,3 +29,6 @@ class TestDatetimeMapper:
 
         deserialized_time = DatetimeMapper.backward(serialized_time)
         assert original_time == deserialized_time
+
+        deserialized_time = DatetimeMapper.backward(None)
+        assert isinstance(deserialized_time, datetime)
