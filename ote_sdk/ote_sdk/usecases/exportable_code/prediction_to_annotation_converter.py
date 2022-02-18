@@ -12,7 +12,6 @@ from typing import Any, Dict, List, Optional, Tuple
 import numpy as np
 from openvino.model_zoo.model_api.models import utils
 
-# from ote_anomalib.data.utils import annotations_from_mask
 from ote_sdk.entities.annotation import (
     Annotation,
     AnnotationSceneEntity,
