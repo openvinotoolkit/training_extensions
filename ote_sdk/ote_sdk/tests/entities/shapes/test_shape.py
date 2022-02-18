@@ -47,10 +47,11 @@ class TestShapeType:
         <b>Expected results:</b>
         Test passes if ShapeType enum class length equal expected value
         """
-        assert len(ShapeType) == 3
+        assert len(ShapeType) == 4
         assert ShapeType.ELLIPSE.value == 1
         assert ShapeType.RECTANGLE.value == 2
         assert ShapeType.POLYGON.value == 3
+        assert ShapeType.ROTATED_RECTANGLE.value == 4
 
 
 @pytest.mark.components(OteSdkComponent.OTE_SDK)

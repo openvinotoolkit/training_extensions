@@ -8,6 +8,7 @@
 # pylint: disable=wrong-import-order
 
 import datetime
+import re
 import warnings
 from operator import attrgetter
 from typing import List, Optional
@@ -94,7 +95,10 @@ class Polygon(Shape):
         labels = [] if labels is None else labels
         modification_date = now() if modification_date is None else modification_date
         super().__init__(
-            type=ShapeType.POLYGON,
+            type=getattr(
+                ShapeType,
+                re.sub(r"(?<!^)(?=[A-Z])", "_", self.__class__.__name__).upper(),
+            ),
             labels=labels,
             modification_date=modification_date,
         )

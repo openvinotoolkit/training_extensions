@@ -18,6 +18,7 @@ import pytest
 
 from ote_sdk.entities.shapes.polygon import Point, Polygon
 from ote_sdk.entities.shapes.rectangle import Rectangle
+from ote_sdk.entities.shapes.shape import ShapeType
 from ote_sdk.tests.constants.ote_sdk_components import OteSdkComponent
 from ote_sdk.tests.constants.requirements import Requirements
 from ote_sdk.utils.time_utils import now
@@ -165,6 +166,8 @@ class TestPolygon:
         assert len(polygon.points) == 3
         assert polygon.modification_date == modification_date
         assert polygon.points == self.points()
+
+        assert polygon.type == ShapeType.POLYGON
 
         empty_points_list = []
         with pytest.raises(ValueError):
