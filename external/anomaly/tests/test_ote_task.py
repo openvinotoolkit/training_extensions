@@ -21,10 +21,11 @@ import tempfile
 
 import numpy as np
 import pytest
-from ote_anomalib.configs import get_anomalib_config
 from tests.helpers.config import get_config_and_task_name
 from tests.helpers.dummy_dataset import TestDataset
-from tests.helpers.train import OTEAnomalyTrainer
+
+from ote_anomalib.configs import get_anomalib_config
+from ote_anomalib.tools.sample import OteAnomalyTask
 
 logger = logging.getLogger(__name__)
 
@@ -43,7 +44,8 @@ class TestAnomalyClassification:
     Anomaly Classification Task Tests.
     """
 
-    _trainer: OTEAnomalyTrainer
+    # _trainer: OTEAnomalyTrainer
+    _trainer: OteAnomalyTask
 
     @staticmethod
     def test_ote_config(task_path, template_path):
@@ -70,19 +72,24 @@ class TestAnomalyClassification:
         E2E Train-Export Should Yield Similar Inference Results
         """
         # Train the model
-        self._trainer = OTEAnomalyTrainer(
-            model_template_path=f"{task_path}/configs/{template_path}/template.yaml",
+        dataset_path = os.path.join(dataset_path, category)
+        self._trainer = OteAnomalyTask(
             dataset_path=dataset_path,
-            category=category,
+            model_template_path=f"{task_path}/configs/{template_path}/template.yaml",
+            seed=0,
         )
-        self._trainer.train()
-        base_results = self._trainer.validate(task=self._trainer.base_task)
+        output_model = self._trainer.train()
+
+        base_results = self._trainer.infer(task=self._trainer.torch_task, output_model=output_model)
+        self._trainer.evaluate(task=self._trainer.torch_task, result_set=base_results)
+
         if task_path == "anomaly_classification":  # skip this check for anomaly segmentation until we switch metrics
             assert base_results.performance.score.value > 0.5
 
         # Convert the model to OpenVINO
         self._trainer.export()
-        openvino_results = self._trainer.validate(task=self._trainer.openvino_task)
+        openvino_results = self._trainer.infer(task=self._trainer.openvino_task, output_model=output_model)
+        self._trainer.evaluate(task=self._trainer.openvino_task, result_set=openvino_results)
 
         assert np.allclose(base_results.performance.score.value, openvino_results.performance.score.value, atol=0.1)
 
@@ -91,26 +98,34 @@ class TestAnomalyClassification:
         """
         E2E Test generation of exportable code.
         """
-        self._trainer = OTEAnomalyTrainer(
+        dataset_path = os.path.join(dataset_path, category)
+        self._trainer = OteAnomalyTask(
             model_template_path=f"{task_path}/configs/{template_path}/template.yaml",
             dataset_path=dataset_path,
-            category=category,
+            seed=0,
         )
 
         # Train is called as we need threshold
         self._trainer.train()
 
         # Convert the model to OpenVINO
-        self._trainer.export()
+        output_model = self._trainer.export()
 
         # generate exportable code
-        self._trainer.deploy()
+        try:
+            output_model.get_data("openvino.bin")
+        except KeyError as error:
+            raise KeyError(
+                "Could not get `openvino.bin` from model. Make sure that the model is exported to OpenVINO first"
+            ) from error
+
+        self._trainer.openvino_task.deploy(output_model)
 
         # write zip file from the model weights
         with tempfile.TemporaryDirectory() as tempdir:
             zipfile = os.path.join(tempdir, "openvino.zip")
             with open(zipfile, "wb") as output_arch:
-                output_arch.write(self._trainer.output_model.exportable_code)
+                output_arch.write(output_model.exportable_code)
 
             # check if size of zip is greater than 0 bytes
             assert os.path.getsize(zipfile) > 0

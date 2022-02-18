@@ -128,7 +128,7 @@ class OteAnomalyTask:
         module = importlib.import_module(module_name)
         return getattr(module, class_name)(task_environment=self.task_environment)
 
-    def train(self) -> None:
+    def train(self) -> ModelEntity:
         """Train the base Torch model."""
         logger.info("Training the model.")
         output_model = ModelEntity(
@@ -146,6 +146,7 @@ class OteAnomalyTask:
 
         logger.info("Evaluating the base torch model on the validation set.")
         self.evaluate(self.torch_task, result_set)
+        return output_model
 
     def infer(self, task: IInferenceTask, output_model: ModelEntity) -> ResultSetEntity:
         """Get the predictions using the base Torch or OpenVINO tasks and models.
@@ -182,7 +183,7 @@ class OteAnomalyTask:
         task.evaluate(result_set)
         logger.info(str(result_set.performance))
 
-    def export(self) -> None:
+    def export(self) -> ModelEntity:
         """Export the model via openvino."""
         logger.info("Exporting the model.")
         exported_model = ModelEntity(
@@ -202,6 +203,7 @@ class OteAnomalyTask:
 
         logger.info("Evaluating the exported model on the validation set.")
         self.evaluate(task=self.openvino_task, result_set=result_set)
+        return exported_model
 
     def optimize(self) -> None:
         """Optimize the model via POT."""
