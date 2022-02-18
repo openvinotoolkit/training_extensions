@@ -12,14 +12,12 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from operator import attrgetter
-from ote_sdk.entities.shapes.shape import ShapeType
-
 import pytest
 
-from ote_sdk.entities.shapes.polygon import Point, Polygon
+from ote_sdk.entities.shapes.polygon import Point
 from ote_sdk.entities.shapes.rectangle import Rectangle
 from ote_sdk.entities.shapes.rotated_rectangle import RotatedRectangle
+from ote_sdk.entities.shapes.shape import ShapeType
 from ote_sdk.tests.constants.ote_sdk_components import OteSdkComponent
 from ote_sdk.tests.constants.requirements import Requirements
 from ote_sdk.utils.time_utils import now
@@ -47,7 +45,9 @@ class TestRotatedRectangle:
         return RotatedRectangle(self.points(), modification_date=self.modification_date)
 
     def other_rotated_rectangle(self):
-        return RotatedRectangle(self.other_points(), modification_date=self.modification_date)
+        return RotatedRectangle(
+            self.other_points(), modification_date=self.modification_date
+        )
 
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -106,7 +106,10 @@ class TestRotatedRectangle:
 
         rotated_rectangle = self.rotated_rectangle()
 
-        assert "RotatedRectangle(points=[Point(0.5, 0.25), Point(0.75, 0.5), Point(0.5, 0.75), Point(0.25, 0.5)])" == repr(rotated_rectangle)
+        assert (
+            "RotatedRectangle(points=[Point(0.5, 0.25), Point(0.75, 0.5), Point(0.5, 0.75), Point(0.25, 0.5)])"
+            == repr(rotated_rectangle)
+        )
 
         other_rotated_rectangle = self.rotated_rectangle()
         third_rotated_rectangle = self.other_rotated_rectangle()
@@ -139,7 +142,13 @@ class TestRotatedRectangle:
         rotated_rectangle = self.rotated_rectangle()
         roi = Rectangle(x1=0.0, x2=0.5, y1=0.0, y2=0.5)
         normalized = rotated_rectangle.normalize_wrt_roi_shape(roi)
-        assert repr(normalized) == "RotatedRectangle(points=[Point(0.25, 0.125), Point(0.375, 0.25), Point(0.25, 0.375), Point(0.125, 0.25)])"
+
+        assert normalized.points == [
+            Point(0.25, 0.125),
+            Point(0.375, 0.25),
+            Point(0.25, 0.375),
+            Point(0.125, 0.25),
+        ]
 
         with pytest.raises(ValueError):
             rotated_rectangle.normalize_wrt_roi_shape("123")
@@ -164,7 +173,14 @@ class TestRotatedRectangle:
         2. Check returning value
         """
 
-        rotated_rectangle = RotatedRectangle(points=[Point(0.25, 0.125), Point(0.375, 0.25), Point(0.25, 0.375), Point(0.125, 0.25)])
+        rotated_rectangle = RotatedRectangle(
+            points=[
+                Point(0.25, 0.125),
+                Point(0.375, 0.25),
+                Point(0.25, 0.375),
+                Point(0.125, 0.25),
+            ]
+        )
         roi = Rectangle(x1=0.0, x2=0.5, y1=0.0, y2=0.5)
         denormalized = rotated_rectangle.denormalize_wrt_roi_shape(roi)
         assert denormalized.points == self.points()
