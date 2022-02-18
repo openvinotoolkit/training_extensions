@@ -203,7 +203,7 @@ for all algo backends.
 
 Please, note that this section covers the topic how to implement a new test action class, but does
 not cover the topic how to make the test action class to be used by tests -- it is covered below in
-the section TODO <========================================================================================
+the section TODO[should be written].
 
 To implement your own test action you should do as follows:
 1. Create a class derived from `OTETestTrainingAction`
