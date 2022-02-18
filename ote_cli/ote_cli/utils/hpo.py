@@ -50,8 +50,11 @@ def check_hpopt_available():
 def run_hpo(args, environment, dataset, task_type):
     """Update the environment with better hyper-parameters found by HPO"""
     if check_hpopt_available():
-        if task_type not in {TaskType.CLASSIFICATION, TaskType.DETECTION,
-                             TaskType.SEGMENTATION}:
+        if task_type not in {
+            TaskType.CLASSIFICATION,
+            TaskType.DETECTION,
+            TaskType.SEGMENTATION,
+        }:
             print(
                 "Currently supported task types are classification and detection."
                 f"{task_type} is not supported yet."
@@ -142,18 +145,26 @@ def run_hpo_trainer(
         eph_comp = [
             hyper_parameters.learning_parameters.learning_rate_fixed_iters,
             hyper_parameters.learning_parameters.learning_rate_warmup_iters,
-            hyper_parameters.learning_parameters.num_iters
+            hyper_parameters.learning_parameters.num_iters,
         ]
 
-        total_eph = sum(eph_comp)
-        eph_comp = list(map(lambda x: x * hp_config["iterations"] / total_eph, eph_comp))
-        s_ord = sorted([i for i in range(len(eph_comp))], key=lambda k: eph_comp[k], reverse=True)
+        eph_comp = list(
+            map(lambda x: x * hp_config["iterations"] / sum(eph_comp), eph_comp)
+        )
 
-        for i in range(hp_config["iterations"] - sum(map(lambda x: int(x), eph_comp))):
-            eph_comp[s_ord[i]] += 1
+        for val in sorted(
+            list(range(len(eph_comp))),
+            key=lambda k: eph_comp[k] - int(eph_comp[k]),
+            reverse=True,
+        )[: hp_config["iterations"] - sum(map(int, eph_comp))]:
+            eph_comp[val] += 1
 
-        hyper_parameters.learning_parameters.learning_rate_fixed_iters = int(eph_comp[0])
-        hyper_parameters.learning_parameters.learning_rate_warmup_iters = int(eph_comp[1])
+        hyper_parameters.learning_parameters.learning_rate_fixed_iters = int(
+            eph_comp[0]
+        )
+        hyper_parameters.learning_parameters.learning_rate_warmup_iters = int(
+            eph_comp[1]
+        )
         hyper_parameters.learning_parameters.num_iters = int(eph_comp[2])
 
     # set hyper-parameters and print them
@@ -648,7 +659,7 @@ class HpoUnpickler(pickle.Unpickler):
 def main():
     """Run run_hpo_trainer with a pickle file"""
     hp_config = None
-    sys.path[0] = "" # to prevent importing nncf from this directory
+    sys.path[0] = ""  # to prevent importing nncf from this directory
 
     try:
         with open(sys.argv[1], "rb") as pfile:
