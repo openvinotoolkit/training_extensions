@@ -132,7 +132,7 @@ class TestToolsAnomalyClassification:
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
 
-        nncf_eval_testing(template, root, ote_dir, args, threshold=0.1)
+        nncf_eval_testing(template, root, ote_dir, args, threshold=0.001)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
