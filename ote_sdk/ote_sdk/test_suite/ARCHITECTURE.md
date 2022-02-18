@@ -48,22 +48,31 @@ the algo backends) the callstack of the test looks as follows:
   Typically this class is defined in `test_ote_training.py` in the algo backend.
   This class contains some fixtures implementation and uses test helper (see the next item).
   The name of the class is started from `Test`, so pytest uses it as a usual test class.
+  The instance is responsible on the connection between test suite and pytest parameters and
+  fixtures.
 
 * Instance of training test helper class `OTETestHelper` from `test_suite/training_tests_helper.py`.
   The instance of the class should be a static field of the test class stated above.
-  The class controls all execution of tests.
-  Also the class keeps in its cache an instance of test case class between runs of different tests
-  (see the next item).
+  The instance controls all execution of tests.
+  Also the instance keeps in its cache an instance of a test case class between runs of different
+  tests (see the next item).
 
 * Instance of a test case class.
-  This class keeps in its fields results of all test stages between tests.
+  This instance connects all the test stages between each other and keeps in its fields results of
+  all test stages between tests.
+  (Since the instance of this class is kept in the cache of training test helper's instance between
+  runs of tests, results of one test may be re-used by other tests.)
   Note that each test executes only one test stage.
-  (Since the instance of this class is kept in cache of training test helper's instance between runs
-  of tests, the results of one test may be re-used by other tests.)
+  And note that the class of the test case is generated "on the fly" by the function
+  `generate_ote_integration_test_case_class` from the file `test_suite/training_test_case.py`;
+  the function
+  * receives as the input the list of action classes that should be used in tests for the
+    algo backend
+  * and returns the class type that will be used by the instance of the test helper.
 
 * Instance of the test stage class `OTETestStage` from `test_suite/training_tests_stage.py`.
-  The class wraps a test action class (see the next item).
-  Also it makes validation of the results of the wrapped test action if it is required.
+  The class wraps a test action class (see the next item) to run it only once.
+  Also it makes validation of the results of the wrapped test action if this is required.
 
 * Instance of a test action class
   The class makes the real actions that should be done for a test using calls of OTE SDK interfaces.
@@ -224,6 +233,8 @@ To implement your own test action you should do as follows:
 
 h2. Test stage class
 
+h3. General description of test stage class
+
 The class `OTETestStage` from `test_suite/training_tests_stage.py` works as a wrapper for a test
 action. For each instance of a test action an instance of the class `OTETestStage` is created.
 
@@ -231,6 +242,178 @@ It's constructor has declaration
 ```python
 def __init__(self, action: BaseOTETestAction, stages_storage: OTETestStagesStorageInterface):
 ```
+
+* The `action` parameter here is the instance of action that is wrapped.
+  It is kept inside the `OTETestStage` instance.
+* The `stages_storage` here is an instance of a class that allows to get a stage by name, this will
+  be a test case class that connects all the test stages between each other and keeps in its fields
+  results of all test stages between tests
+  (all the test case classes are derived from OTETestStagesStorageInterface)
+
+The `stages_storage` instance is also kept inside `OTETestStage`, it will be used to get for each
+stage its dependencies.
+The class `OTETestStage` has method `get_depends_stages` that works as follows:
+1. get for the wrapped action the list of names from its field `_depends_stages_names` using the
+   property `depends_stages_names`
+2. for each of the name get the stage using the method `self.stages_storage.get_stage(name)`
+   -- this will be a stage (instance of `OTETestStage`) that wraps the action with the corresponding
+   name.
+3. Return the list of `OTETestStage` instances received in the previous item.
+
+As stated above, the main purposes of the class `OTETestStage` are:
+* wrap a test action class (see the next item) to run it only once, together with all its
+  dependencies
+* make validation of the results of the wrapped test action if this is required.
+
+See the next sections about that.
+
+h3. Running a test action through its test stage
+
+The class `OTETestStage` has a method `run_once` that has the following declaration
+```python
+    def run_once(
+        self,
+        data_collector: DataCollector,
+        test_results_storage: OrderedDict,
+        validator: Optional[Validator],
+    ):
+```
+The parameters are as follows:
+* `data_collector` -- interface to connect to CI database, see description of the methods `__call__`
+  of the actions in the section "General description of test actions classes."
+* `test_results_storage` -- it is an OrderedDict where the results of the tests are kept between
+  tests, see description of the parameter `results_prev_stages` in the section
+  "General description of test actions classes."
+* `validator` -- optional parameter, if `Validator` instance is passed, then validation may be done
+  (see the next section "Validation of action results"), otherwise validation is skipped.
+
+
+
+The method works as follows:
+1. runs the dependency chain of this stage using recursive call of `run_once` as follows:
+   * Get all the dependencies using the method `OTETestStage.get_depends_stages` described in the
+     previous section -- it will be the list of other `OTETestStage` instances.
+   * For each of the received `OTETestStage` call the method `run_once` -- it is the recursion step
+     Attention: in the recursion step the method `run_once` is called with parameter
+     `validator=None` to avoid validation during recursion step -- see details in the next section
+     "Validation of action results"
+2. runs the action of the stage only once:
+   * If it was not run earlier -- run the action
+     * if the action executed successfully
+       * store result of the action into `test_result_storage` parameter
+       * run validation if required
+       * return
+     * if the action executed with exception
+       * store the exception in a special field
+       * re-raise the exception
+   * If it was already run earlier, check if there is stored exception
+     * if there is no stored exception -- it means that the actions was successful
+       and its result is already stored in the `test_result_storage` parameter
+       * run validation if required
+         (see details in the next section)
+       * return
+     * if there is a stored exception -- it means that the actions was NOT successful
+       * re-raise the exception
+
+As you can see if an exception is raised during some action, all the actions that depends on this
+one will re-raise the same exception.
+
+Also as you can see if we run a test for only one action, the `run_once` call of the stage will run
+actions in all the dependent stages and use their results, but when we run many tests each of the
+test also will call `run_once` for all the stages in the dependency chains, but the `run_once` calls
+will NOT re-run actions for the tests.
+
+
+h3. Validation of action results
+
+As stated above, one of the purposes of `OTETestStage` is validation of results of the wrapped
+action.
+
+As you can see from the previous section the validation is done inside `run_once` method,
+and the necessary (but not sufficient) condition of running validation is that `validator` parameter
+of this method is not None.
+
+The class `Validator` is also implemented in `test_suite/training_tests_stage.py` file.
+It has only one public method `validate` that has the declaration
+```python
+    def validate(self, current_result: Dict, test_results_storage: Dict):
+```
+The parameters are:
+* `current_result` -- the result of the current action
+* `test_results_storage` -- an OrderedDict that stores results from the other actions that were run.
+
+The method returns nothing, but may raise exceptions to fail the test.
+
+The `Validator` compares the results of the current action with expected metrics and with results of
+the previous actions. Note that results of previous actions are important, since possible validation
+criteria may be
+* "the quality metric of the current action is not worse than the result of _that_ action with
+  possible quality drop 1%"
+* "the quality metric of the current action is the same as the result of _that_ action with
+  possible quality difference 1%"
+-- these criteria are highly useful for "evaluation after export" action (quality should be almost
+the same as for "evaluation after training" action) and for "evaluation after NNCF compression"
+action (quality should be not worse than for "evaluation after training" action with small possible
+quality drop).
+
+As we stated above in the previous section, when the method `run_once` runs the recursion to run
+actions for the dependency chain of the current action, the method `run_once` in recursion step is
+called with the parameter `validator=None`.
+
+It is required since
+* `Validator` does not return values but just raises exception to fail the test if the required
+  validation conditions are not met
+* so, if we ran dependency actions with non-empty `Validator`, then the action test would be failed
+  if some validation conditions for the dependent stages are failed -- this is not what we want to
+  receive, since we run the dependency actions just to receive results of these actions
+* so, we do NOT do it, so we run dependency chain with `validator=None`
+
+Also note that there is possible (but rare) case when a stage is called from dependency chain, and
+only after that it is run from a test for which this action is the main action.
+For this case (as we stated above in the previous section when we described how the method
+`run_once` works) we may call validation (if it is required) even if the stage was already run
+earlier and was successful.
+
+As we stated above the `validator is not None` is the necessary condition to run validation, but it
+is not sufficient.
+The list of sufficient conditions to run real validation in `run_once` is as follows:
+* The parameter `validator` of `run_once` method  satisfies `validator is not None`
+  (i.e. the validation is run not from the dependency chain).
+* For the action the field `_with_validation == True`.
+  If `_with_validation == False` it means that validation for this action is impossible -- e.g.
+  "export" action cannot be validated since it does not return quality metrics, but the action
+  "evaluation after export" is validated.
+* The current test has the parameter `usecase == "reallife"`
+  If a test is not a "reallife" test it means that a real training is not made for the test,
+  so we cannot expect real quality, so validation is not done.
+
+To investigate in details the conditions see the declaration of constructor of the `Validator`
+class:
+```python
+    def __init__(self, cur_test_expected_metrics_callback: Optional[Callable[[], Dict]]):
+```
+As you can see it receives only one parameter, and this parameter is NOT a structure that
+describes the requirements for the expected metrics for the action, but the parameter is
+a FACTORY that returns the structure.
+
+It is required since constructing the structure requires complicated operations and reading of YAML
+files, so to avoid loading of expected metrics structures for all possible tests collected for
+an algo backend a factory is used -- the factory for an action's validator is called if and only if
+the action should be validated.
+
+The factory is implemented in the test suite as a pytest fixture -- see the fixture
+`cur_test_expected_metrics_callback_fx` in the file `test_suite/fixtures.py`.
+
+The fixture works as follows:
+* checks if the current test is "reallife" training or not,
+* if it is not reallife then validation is not required -- in this case
+  * the fixture returns None,
+  * the Validator class receives None as the constructor's parameter instead of a factory,
+  * Validator understands it as "skip validation"
+* if this is reallife training test, the factory
+  * reads YAML file that is pointed to pytest as the pytest parameter `--expected-metrics-file`
+  * extracts from it the expected metrics for the current test
+
 
 
 
