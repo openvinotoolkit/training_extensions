@@ -2,9 +2,8 @@ python3 -m venv venv || exit 1
 . venv/bin/activate || exit 1
 pip install --upgrade pip || exit 1
 
-# ls -la `pip cache dir`/
-# rm -rf `pip cache dir`/
-# ls -la `pip cache dir`/
+pip cache purge
+ls -la `pip cache dir`/
 
 pip install -e ote_cli || exit 1
 pip install -e $OTE_SDK_PATH || exit 1
