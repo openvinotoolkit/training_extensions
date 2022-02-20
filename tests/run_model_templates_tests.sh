@@ -11,7 +11,7 @@ echo ""
 echo ""
 
 export PYTHONPATH=${PYTHONPATH}:`pwd`
-pytest tests/ote_cli/ -v --durations=0 || exit 1
+pytest tests/ote_cli/ -v -s --durations=0 || exit 1
 deactivate
 echo ""
 echo ""
