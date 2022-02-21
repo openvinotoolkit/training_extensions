@@ -21,3 +21,18 @@ ote_conftest_insertion(default_repository_name="ote/training_extensions/")
 
 def pytest_addoption(parser):
     ote_pytest_addoption_insertion(parser)
+
+
+def pytest_addoption(parser):
+    parser.addoption("--algo_be",
+                     action="store",
+                     type=str,
+                     help="--algo_be [ANOMALY_CLASSIFICATION | CLASSIFICATION | DETECTION | SEGMENTATION]")
+
+
+def pytest_generate_tests(metafunc):
+    # This is called for every test. Only get/set command line arguments
+    # if the argument is specified in the list of test "fixturenames".
+    option_value = metafunc.config.option.algo_be
+    if 'algo_be' in metafunc.fixturenames and option_value is not None:
+        metafunc.parametrize("algo_be", [option_value])
