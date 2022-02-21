@@ -132,6 +132,13 @@ def main():
     task_class = get_impl_class(template.entrypoints.base)
     dataset_class = get_dataset_class(template.task_type)
 
+    # Validate required paths that is sourced in args
+    validate_path(args.train_ann_files)
+    validate_path(args.train_data_roots)
+    validate_path(args.val_ann_files)
+    validate_path(args.val_data_roots)
+    validate_path(args.save_model_to)
+
     # Create instances of Task, ConfigurableParameters and Dataset.
     dataset = dataset_class(
         train_subset={
@@ -157,6 +164,9 @@ def main():
                 "weights.pth": ModelAdapter(read_binary(args.load_weights))
             },
         )
+
+    if args.hpo_time_ratio and not args.enable_hpo:
+        raise Exception('Parameter --hpo-time-ratio must be used with --enable-hpo key')
 
     if args.enable_hpo:
         if args.hpo_time_ratio < 0:
