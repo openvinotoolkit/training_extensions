@@ -124,7 +124,6 @@ class ModelEntity:
         _id: Optional[ID] = None,
     ):
         check_input_param_type(
-            DatasetParamTypeCheck(train_dataset, "train_dataset"),
             RequiredParamTypeCheck(configuration, "configuration", ModelConfiguration),
             OptionalParamTypeCheck(creation_date, "creation_date", datetime.datetime),
             OptionalParamTypeCheck(performance, "performance", Performance),
@@ -164,6 +163,8 @@ class ModelEntity:
             RequiredParamTypeCheck(model_size_reduction, "model_size_reduction", float),
             OptionalParamTypeCheck(_id, "_id", (ID, ObjectId)),
         )
+        if train_dataset:
+            DatasetParamTypeCheck(train_dataset, "train_dataset").check()
 
         _id = ID() if _id is None else _id
         performance = NullPerformance() if performance is None else performance
