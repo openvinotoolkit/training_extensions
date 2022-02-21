@@ -216,3 +216,9 @@ class Polygon(Shape):
         :return: area of the shape
         """
         return self._as_shapely_polygon().area
+
+    def to_rectangle(self) -> Rectangle:
+        """
+        Returns the bounding box containing the shape, as an instance of the Rectangle
+        """
+        return Rectangle(self.min_x, self.min_y, self.max_x, self.max_y)

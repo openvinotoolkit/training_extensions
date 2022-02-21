@@ -277,3 +277,9 @@ class Ellipse(Shape):
         :return: area of the shape
         """
         return math.pi * self.minor_axis * self.major_axis
+
+    def to_rectangle(self) -> Rectangle:
+        """
+        Returns the bounding box containing the shape, as an instance of the Rectangle
+        """
+        return Rectangle(self.x1, self.y1, self.x2, self.y2)

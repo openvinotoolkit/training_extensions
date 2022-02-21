@@ -90,7 +90,7 @@ class Rectangle(Shape):
                 and self.y1 == other.y1
                 and self.x2 == other.x2
                 and self.y2 == other.y2
-                and self.modification_date == other.modification_date
+                # and self.modification_date == other.modification_date
             )
         return False
 
@@ -327,3 +327,9 @@ class Rectangle(Shape):
         :return: area of the shape
         """
         return (self.x2 - self.x1) * (self.y2 - self.y1)
+
+    def to_rectangle(self) -> "Rectangle":
+        """
+        Returns the bounding box containing the shape, as an instance of the Rectangle
+        """
+        return self
