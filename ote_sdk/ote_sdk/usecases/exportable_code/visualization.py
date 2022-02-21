@@ -12,7 +12,6 @@ import cv2
 import numpy as np
 
 from ote_sdk.entities.annotation import AnnotationSceneEntity
-from ote_sdk.usecases.exportable_code.streamer.streamer import MediaType
 from ote_sdk.utils.shape_drawer import ShapeDrawer
 
 
@@ -30,7 +29,6 @@ class Visualizer:
 
     def __init__(
         self,
-        media_type: Optional[MediaType] = None,
         window_name: Optional[str] = None,
         show_count: bool = False,
         is_one_label: bool = False,
@@ -41,9 +39,7 @@ class Visualizer:
 
         self.delay = delay
         if delay is None:
-            self.delay = (
-                0 if (media_type is None or media_type == MediaType.IMAGE) else 1
-            )
+            self.delay = 1
 
     def draw(self, image: np.ndarray, annotation: AnnotationSceneEntity) -> np.ndarray:
         """
