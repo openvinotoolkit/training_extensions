@@ -166,13 +166,6 @@ class RotatedRectangle(Shape):
 
         NOTE: This method should not be relied on for exact area computation. The area is approximate, because shapes
         are continuous, but pixels are discrete.
-
-        :example:
-
-            >>> Polygon(points=[Point(x=0.0, y=0.5), Point(x=0.5, y=0.5), Point(x=0.75, y=0.75)]).get_area()
-            0.0625
-
-        :return: area of the shape
         """
         return self._as_shapely_polygon().area
 
