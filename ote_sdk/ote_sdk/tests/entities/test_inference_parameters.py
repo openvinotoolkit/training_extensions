@@ -26,7 +26,7 @@ from ote_sdk.tests.constants.requirements import Requirements
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestInferenceParameters:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_inference_parameters_members(self):
         """
@@ -54,7 +54,7 @@ class TestInferenceParameters:
             str(infer_params.WRONG)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_inference_parameters_update_member(self):
         """

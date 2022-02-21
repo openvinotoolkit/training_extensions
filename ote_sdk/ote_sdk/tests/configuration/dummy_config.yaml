@@ -96,6 +96,7 @@ subset_parameters:
           value: false
       action: SHOW
       type: UI_RULES
+    auto_hpo_state: possible
   validation_proportion:
     type: FLOAT
     min_value: 0.0
@@ -119,6 +120,7 @@ dummy_float_selectable:
     - 3.0
     - 4.0
   type: FLOAT_SELECTABLE
+  auto_hpo_state: possible
 dummy_selectable:
   default_value: bogus
   header: Test

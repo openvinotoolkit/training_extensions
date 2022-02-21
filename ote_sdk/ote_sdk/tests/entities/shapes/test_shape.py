@@ -37,7 +37,7 @@ from ote_sdk.tests.constants.requirements import Requirements
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestShapeType:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_shapetype(self):
         """
@@ -56,7 +56,7 @@ class TestShapeType:
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestShapeEntity:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_shape_entity_not_implemented_methods(self):
         """
@@ -280,7 +280,7 @@ class TestShape:
         ]
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_shape_get_area_method(self):
         """
@@ -295,7 +295,7 @@ class TestShape:
                 Shape.get_area(shape)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_shape_magic_methods(self):
         """
@@ -319,7 +319,7 @@ class TestShape:
         assert Shape.__hash__(test_rectangle) == hash(str(test_rectangle))
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_shape_intersects(self):
         """
@@ -374,7 +374,7 @@ class TestShape:
                 )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_shape_contains_center(self):
         """
@@ -404,7 +404,7 @@ class TestShape:
             assert not rectangle_part.contains_center(shape_outside)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_shape_get_labels(self):
         """
@@ -452,7 +452,7 @@ class TestShape:
             )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_shape_append_label(self):
         """
@@ -504,7 +504,7 @@ class TestShape:
             assert shape.get_labels(include_empty=True) == expected_include_empty_labels
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_shape_set_labels(self):
         """
@@ -564,7 +564,7 @@ class TestShape:
             assert shape.get_labels(include_empty=True) == []
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_validate_coordinates(self):
         """

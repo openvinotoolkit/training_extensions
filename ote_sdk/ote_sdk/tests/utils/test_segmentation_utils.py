@@ -54,7 +54,7 @@ class TestSegmentationUtils:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_mask_from_annotation(self):
         """
@@ -151,7 +151,7 @@ class TestSegmentationUtils:
         assert np.array_equal(mask, expected_mask)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_mask_from_dataset_item(self):
         """
@@ -205,7 +205,7 @@ class TestSegmentationUtils:
         assert np.array_equal(mask, expected_mask)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_create_hard_prediction_from_soft_prediction(self):
         """
@@ -296,7 +296,7 @@ class TestSegmentationUtils:
             create_hard_prediction_from_soft_prediction(soft_prediction, 0.5)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_get_subcontours(self):
         """
@@ -357,7 +357,7 @@ class TestSegmentationUtils:
         assert get_subcontours(contour) == []
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_create_annotation_from_segmentation_map(self):
         """

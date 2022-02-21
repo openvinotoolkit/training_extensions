@@ -68,7 +68,7 @@ from ote_sdk.usecases.evaluation.f_measure import (
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestFMeasureFunctions:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_intersection_box(self):
         """
@@ -98,7 +98,7 @@ class TestFMeasureFunctions:
         assert intersection_box(box1=base_box, box2=[0, 0, 10, 10]) == [2, 5, 6, 2]
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_bounding_box_intersection_over_union(self):
         """
@@ -137,7 +137,7 @@ class TestFMeasureFunctions:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_get_iou_matrix(self):
         """
@@ -160,7 +160,7 @@ class TestFMeasureFunctions:
         assert np.array_equal(get_iou_matrix(boxes_1, boxes_2), expected_matrix)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_get_n_false_negatives(self):
         """
@@ -192,7 +192,7 @@ class TestFMeasureFunctions:
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestMetrics:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_metrics_initialization(self):
         """
@@ -218,7 +218,7 @@ class TestMetrics:
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestResultCounters:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_result_counters_initialization(self):
         """
@@ -243,7 +243,7 @@ class TestResultCounters:
         assert result_counters.n_predicted == n_predicted
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_result_counters_calculate_f_measure(self):
         """
@@ -312,7 +312,7 @@ class TestResultCounters:
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestAggregatedResults:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_aggregate_results_initialization(self):
         """
@@ -363,7 +363,7 @@ class TestAggregatedResults:
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestOverallResults:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_result_counters_initialization(self):
         """
@@ -437,7 +437,7 @@ class TestFMeasureCalculator:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_f_measure_calculator_initialization(self):
         """
@@ -470,7 +470,7 @@ class TestFMeasureCalculator:
         assert f_measure_calculator.default_confidence_threshold == 0.35
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_f_measure_calculator_get_counters(self):
         """
@@ -544,7 +544,7 @@ class TestFMeasureCalculator:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_f_measure_calculator_filter_confidence(self):
         """
@@ -599,7 +599,7 @@ class TestFMeasureCalculator:
         ]
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_f_measure_calculator_filter_class(self):
         """
@@ -651,7 +651,7 @@ class TestFMeasureCalculator:
         ]
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_f_measure_calculator_filter_nms(self):
         """
@@ -701,7 +701,7 @@ class TestFMeasureCalculator:
         ]
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_f_measure_calculator_critical_nms(self):
         """
@@ -749,7 +749,7 @@ class TestFMeasureCalculator:
         ]
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_f_measure_calculator_get_f_measure_for_class(self):
         """
@@ -836,7 +836,7 @@ class TestFMeasureCalculator:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_f_measure_calculator_evaluate_classes(self):
         """
@@ -893,7 +893,7 @@ class TestFMeasureCalculator:
         compare_metrics(evaluate_classes.get("All Classes"), expected_class_1)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_f_measure_calculator_get_results_per_nms(self):
         """
@@ -998,7 +998,7 @@ class TestFMeasureCalculator:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_f_measure_calculator_get_results_per_confidence(self):
         """
@@ -1082,7 +1082,7 @@ class TestFMeasureCalculator:
         assert actual_results_per_confidence.best_threshold == 0.1
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_f_measure_calculator_evaluate_detections(self):
         """
@@ -1573,7 +1573,7 @@ class TestFMeasure:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_f_measure_initialization(self):
         """
@@ -1695,7 +1695,7 @@ class TestFMeasure:
             FMeasure(result_set)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_f_measure_get_performance(self):
         """

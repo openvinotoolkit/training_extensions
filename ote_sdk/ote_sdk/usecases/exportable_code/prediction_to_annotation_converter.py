@@ -153,6 +153,8 @@ def create_converter(
         converter = AnomalyClassificationToAnnotationConverter(labels)
     elif converter_type == Domain.INSTANCE_SEGMENTATION:
         converter = MaskToAnnotationConverter(labels)
+    elif converter_type == Domain.ROTATED_DETECTION:
+        converter = RotatedRectToAnnotationConverter(labels)
     else:
         raise ValueError(f"Unknown converter type: {converter_type}")
 
@@ -316,6 +318,53 @@ class MaskToAnnotationConverter(IPredictionToAnnotationConverter):
                         y=point[0][1] / metadata["original_shape"][0],
                     )
                     for point in contour
+                ]
+                annotations.append(
+                    Annotation(
+                        Polygon(points=points),
+                        labels=[
+                            ScoredLabel(self.labels[int(class_idx) - 1], float(score))
+                        ],
+                    )
+                )
+        annotation_scene = AnnotationSceneEntity(
+            kind=AnnotationSceneKind.PREDICTION,
+            annotations=annotations,
+        )
+        return annotation_scene
+
+
+class RotatedRectToAnnotationConverter(IPredictionToAnnotationConverter):
+    """
+    Converts Rotated Rect (mask) Predictions ModelAPI to Annotations
+    """
+
+    def __init__(self, labels: LabelSchemaEntity):
+        self.labels = labels.get_labels(include_empty=False)
+
+    def convert_to_annotation(
+        self, predictions: tuple, metadata: Dict[str, Any]
+    ) -> AnnotationSceneEntity:
+        annotations = []
+        for score, class_idx, _, mask in zip(*predictions):
+            mask = mask.astype(np.uint8)
+            contours, hierarchies = cv2.findContours(
+                mask, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE
+            )
+            if hierarchies is None:
+                continue
+            for contour, hierarchy in zip(contours, hierarchies[0]):
+                if hierarchy[3] != -1:
+                    continue
+                if len(contour) <= 2:
+                    continue
+                box_points = cv2.boxPoints(cv2.minAreaRect(contour))
+                points = [
+                    Point(
+                        x=point[0] / metadata["original_shape"][1],
+                        y=point[1] / metadata["original_shape"][0],
+                    )
+                    for point in box_points
                 ]
                 annotations.append(
                     Annotation(

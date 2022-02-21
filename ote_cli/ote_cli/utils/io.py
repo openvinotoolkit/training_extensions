@@ -176,7 +176,7 @@ def generate_label_schema(dataset, task_type):
                 )
             )
             label_schema.add_group(single_groups[-1])
-        label_schema.add_group(empty_group, exclusive_with=single_groups)
+        label_schema.add_group(empty_group)
         return label_schema
 
     return LabelSchemaEntity.from_labels(dataset.get_labels())

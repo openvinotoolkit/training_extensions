@@ -17,7 +17,7 @@ from ote_sdk.usecases.reporting.callback import Callback
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestCallback:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_callback_attributes(self):
         """
@@ -54,7 +54,7 @@ class TestCallback:
         assert callback.model == model
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_callback_abstract_methods(self):
         """

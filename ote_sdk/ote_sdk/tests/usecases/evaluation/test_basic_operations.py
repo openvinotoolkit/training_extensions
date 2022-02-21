@@ -32,7 +32,7 @@ from ote_sdk.usecases.evaluation.basic_operations import (
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestBasicOperationsFunctions:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_get_intersections_and_cardinalities(self):
         """
@@ -88,7 +88,7 @@ class TestBasicOperationsFunctions:
         assert cardinalities.get(None) == 51
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_intersection_box(self):
         """
@@ -126,7 +126,7 @@ class TestBasicOperationsFunctions:
         assert not intersection_box(box_1, box_2)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_intersection_over_union(self):
         """
@@ -164,7 +164,7 @@ class TestBasicOperationsFunctions:
         assert intersection_over_union(box_1, box_2) == 0.0
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_precision_per_class(self):
         """
@@ -191,7 +191,7 @@ class TestBasicOperationsFunctions:
         assert np.array_equal(precision_per_class(matrix), np.array([0.25, 0.3]))
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_recall_per_class(self):
         """
@@ -208,7 +208,7 @@ class TestBasicOperationsFunctions:
         assert np.array_equal(recall_per_class(matrix), np.array([0.75, 0.625, 0.6]))
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_divide_arrays_with_possible_zeros(self):
         """

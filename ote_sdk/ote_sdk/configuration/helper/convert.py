@@ -43,16 +43,19 @@ def parameter_group_to_dict(
     values_only: bool = False,
 ) -> dict:
     """
-    Converts an instance of a `ParameterGroup` configuration element to its dictionary representation.
+    Converts an instance of a `ParameterGroup` configuration element to its dictionary
+    representation.
 
     :param parameter_group: ParameterGroup to convert to dictionary representation
     :param enum_to_str: Set to True to convert any Enum fields in the configuration to
         their string representation.
     :param values_only: True to keep only the parameter values, and remove all meta
         data from the output dictionary
-    :return: Nested dictionary with keys and values corresponding to the configuration defined in the instance of
-             `ParameterGroup` for which the `to_dict` method was called.
+    :return: Nested dictionary with keys and values corresponding to the configuration
+        defined in the instance of `ParameterGroup` for which the `to_dict` method was
+        called.
     """
+    parameter_group.update_auto_hpo_states()
     attribute_names = [attribute.name for attribute in parameter_group.__attrs_attrs__]  # type: ignore
     # The __attrs_attrs__ attribute is added through the attrs package, mypy doesn't recognize it so we can ignore the
     # type error

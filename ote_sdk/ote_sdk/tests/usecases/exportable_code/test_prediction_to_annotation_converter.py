@@ -36,7 +36,7 @@ from ote_sdk.utils.time_utils import now
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestDetectionToAnnotationConverter:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_detection_to_annotation_convert(self):
         """
@@ -88,7 +88,7 @@ class TestDetectionToAnnotationConverter:
         assert 0 == len(annotation_scene.shapes)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_detection_to_annotation_convert_openvino_shape(self):
         """
@@ -137,7 +137,7 @@ class TestDetectionToAnnotationConverter:
             assert test_boxes[i][6] == annotation.shape.y2
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_detection_to_annotation_convert_invalid_input(self):
         """
@@ -172,7 +172,7 @@ class TestDetectionToAnnotationConverter:
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestIPredictionToAnnotation:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     @patch(
         (
@@ -203,7 +203,7 @@ class TestIPredictionToAnnotation:
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestCreateConverter:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_create_converter(self):
         """
@@ -341,7 +341,7 @@ class TestDetectionBoxToAnnotation:
     ]
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_detection_box_to_annotation_init(self):
         """
@@ -395,7 +395,7 @@ class TestDetectionBoxToAnnotation:
         assert converter.labels == non_empty_labels
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_detection_box_to_annotation_convert(self):
         """
@@ -490,7 +490,7 @@ class TestSegmentationToAnnotation:
     ]
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_segmentation_to_annotation_init(self):
         """
@@ -551,7 +551,7 @@ class TestSegmentationToAnnotation:
         assert converter.label_map == expected_non_empty_labels_map
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_segmentation_to_annotation_convert(self):
         """
@@ -666,7 +666,7 @@ class TestSegmentationToAnnotation:
     @pytest.mark.components(OteSdkComponent.OTE_SDK)
     class TestClassificationToAnnotation:
         @pytest.mark.priority_medium
-        @pytest.mark.component
+        @pytest.mark.unit
         @pytest.mark.reqids(Requirements.REQ_1)
         def test_classification_to_annotation_init(self):
             """
@@ -776,7 +776,7 @@ class TestSegmentationToAnnotation:
             assert converter.hierarchical
 
         @pytest.mark.priority_medium
-        @pytest.mark.component
+        @pytest.mark.unit
         @pytest.mark.reqids(Requirements.REQ_1)
         def test_classification_to_annotation_convert(self):
             """
@@ -900,7 +900,7 @@ class TestSegmentationToAnnotation:
     @pytest.mark.components(OteSdkComponent.OTE_SDK)
     class TestAnomalyClassificationToAnnotation:
         @pytest.mark.priority_medium
-        @pytest.mark.component
+        @pytest.mark.unit
         @pytest.mark.reqids(Requirements.REQ_1)
         def test_anomaly_classification_to_annotation_init(
             self,
@@ -979,7 +979,7 @@ class TestSegmentationToAnnotation:
             assert converter.anomalous_label == non_empty_labels[2]
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_anomaly_classification_to_annotation_convert(
         self,

@@ -35,7 +35,7 @@ from ote_sdk.utils.time_utils import now
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestColorMapper:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_color_serialization(self):
         """
@@ -58,7 +58,7 @@ class TestColorMapper:
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestLabelEntityMapper:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_entity_serialization(self):
         """
@@ -100,7 +100,7 @@ class TestLabelEntityMapper:
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestLabelSchemaEntityMapper:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_flat_label_schema_serialization(self):
         """
@@ -134,12 +134,6 @@ class TestLabelSchemaEntityMapper:
 
         assert serialized == {
             "label_tree": {"type": "tree", "directed": True, "nodes": [], "edges": []},
-            "exclusivity_graph": {
-                "type": "graph",
-                "directed": False,
-                "nodes": [],
-                "edges": [],
-            },
             "label_groups": [
                 {
                     "_id": label_schema.get_groups()[0].id,
@@ -191,7 +185,7 @@ class TestLabelSchemaEntityMapper:
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestLabelGroupMapper:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_group_serialization(self):
         """
@@ -242,7 +236,7 @@ class TestLabelGraphMapper:
     )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_graph_forward(self):
         """
@@ -308,7 +302,7 @@ class TestLabelGraphMapper:
         }
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_label_graph_backward(self):
         """

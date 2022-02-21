@@ -19,7 +19,7 @@ from ote_sdk.tests.entities.test_dataset_item import DatasetItemParameters
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestDatasetPurpose:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_dataset_purpose(self):
         """
@@ -86,7 +86,7 @@ class TestDatasetEntity:
         return DatasetEntity(items, DatasetPurpose.TEMPORARY_DATASET)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_dataset_entity_initialization(self):
         """
@@ -119,7 +119,7 @@ class TestDatasetEntity:
         assert optional_parameters_dataset.purpose == purpose
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_dataset_entity_purpose_setter(self):
         """
@@ -150,7 +150,7 @@ class TestDatasetEntity:
         assert optional_parameters_dataset.purpose == expected_purpose
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_dataset_entity_fetch(self):
         """
@@ -187,7 +187,7 @@ class TestDatasetEntity:
             dataset._fetch(str)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_dataset_entity_repr(self):
         """
@@ -219,7 +219,7 @@ class TestDatasetEntity:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_dataset_entity_str(self):
         """
@@ -250,7 +250,7 @@ class TestDatasetEntity:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_dataset_entity_len(self):
         """
@@ -275,7 +275,7 @@ class TestDatasetEntity:
         assert len(optional_parameters_dataset) == 3
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_dataset_entity_eq(self):
         """
@@ -323,7 +323,7 @@ class TestDatasetEntity:
         assert dataset != str
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_dataset_entity_add(self):
         """
@@ -368,7 +368,7 @@ class TestDatasetEntity:
             dataset.__add__(str)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_dataset_entity_getitem(self):
         """
@@ -398,7 +398,7 @@ class TestDatasetEntity:
         ]
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_dataset_entity_iter(self):
         """
@@ -423,7 +423,7 @@ class TestDatasetEntity:
             next(dataset_iterator)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_dataset_with_empty_annotations(self):
         """
@@ -472,7 +472,7 @@ class TestDatasetEntity:
         check_empty_annotations_dataset(empty_annotations_dataset, dataset, kind)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_dataset_entity_get_subset(self):
         """
@@ -507,7 +507,7 @@ class TestDatasetEntity:
         assert empty_items_dataset._items == []
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_dataset_entity_remove(self):
         """
@@ -532,7 +532,7 @@ class TestDatasetEntity:
             dataset.remove(non_included_dataset_item)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_dataset_entity_append(self):
         """
@@ -568,7 +568,7 @@ class TestDatasetEntity:
             dataset.append(no_media_item)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_dataset_sort_items(self):
         """
@@ -588,7 +588,7 @@ class TestDatasetEntity:
         assert dataset.purpose == DatasetPurpose.TEMPORARY_DATASET
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_dataset_entity_remove_at_indices(self):
         """
@@ -614,7 +614,7 @@ class TestDatasetEntity:
             dataset.remove_at_indices([20])
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_dataset_entity_get_labels(self):
         """
