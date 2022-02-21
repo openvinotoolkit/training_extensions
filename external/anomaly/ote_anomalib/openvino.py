@@ -38,7 +38,11 @@ from compression.pipeline.initializer import create_pipeline
 from omegaconf import ListConfig
 from omegaconf.dictconfig import DictConfig
 from ote_anomalib.configs import get_anomalib_config
-from ote_anomalib.exportable_code import AnomalyClassification, AnomalySegmentation
+from ote_anomalib.exportable_code import (
+    AnomalyBase,
+    AnomalyClassification,
+    AnomalySegmentation,
+)
 from ote_anomalib.logging import get_logger
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.inference_parameters import (
@@ -401,6 +405,7 @@ class OpenVINOAnomalyTask(IInferenceTask, IEvaluationTask, IOptimizationTask, ID
                 json.dump(parameters, file, ensure_ascii=False, indent=4)
 
             copyfile(inspect.getfile(selected_class), os.path.join(tempdir, name_of_package, "model.py"))
+            copyfile(inspect.getfile(AnomalyBase), os.path.join(tempdir, name_of_package, "base.py"))
 
             # create wheel package
             subprocess.run(
