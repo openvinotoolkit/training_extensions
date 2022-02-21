@@ -1,4 +1,4 @@
-"""Wrapper for Open Model Zoo for Anomaly Classification tasks."""
+"""Wrapper for Open Model Zoo for Anomaly Segmentation tasks."""
 
 # Copyright (C) 2021-2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
@@ -12,10 +12,10 @@ from openvino.model_zoo.model_api.models import SegmentationModel
 from openvino.model_zoo.model_api.models.types import NumericalValue
 
 
-class AnomalyClassification(SegmentationModel):
-    """Wrapper for anomaly classification task."""
+class AnomalySegmentation(SegmentationModel):
+    """Wrapper for anomaly segmentation task."""
 
-    __model__ = "anomaly_classification"
+    __model__ = "anomaly_segmentation"
 
     @classmethod
     def parameters(cls):
@@ -49,7 +49,7 @@ class AnomalyClassification(SegmentationModel):
             raise ValueError(f"Targets must be either Tensor or Numpy array. Received {type(targets)}")
         return normalized
 
-    def postprocess(self, outputs: Dict[str, np.ndarray], meta: Dict[str, Any]) -> float:
+    def postprocess(self, outputs: Dict[str, np.ndarray], meta: Dict[str, Any]) -> np.ndarray:
         """Resize the outputs of the model to original image size.
 
         Args:
@@ -57,10 +57,9 @@ class AnomalyClassification(SegmentationModel):
             meta (Dict[str, Any]): Metadata which contains values such as threshold, original image size.
 
         Returns:
-            float: Normalized anomaly score
+            np.ndarray: Segmentation Mask
         """
         anomaly_map: np.ndarray = outputs[self.output_blob_name].squeeze()
-        pred_score = anomaly_map.reshape(-1).max()
 
         meta["image_threshold"] = self.image_threshold  # pylint: disable=no-member
         meta["min"] = self.min  # pylint: disable=no-member
@@ -68,12 +67,9 @@ class AnomalyClassification(SegmentationModel):
         meta["threshold"] = self.threshold  # pylint: disable=no-member
 
         anomaly_map = self._normalize(anomaly_map, meta["image_threshold"], meta["min"], meta["max"])
-        pred_score = self._normalize(pred_score, meta["image_threshold"], meta["min"], meta["max"])
 
         input_image_height = meta["original_shape"][0]
         input_image_width = meta["original_shape"][1]
         result = cv2.resize(anomaly_map, (input_image_width, input_image_height))
 
-        meta["anomaly_map"] = result
-
-        return np.array(pred_score)
+        return result

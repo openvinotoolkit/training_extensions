@@ -20,14 +20,13 @@ from typing import List, Union
 import cv2
 import numpy as np
 from anomalib.data.mvtec import make_mvtec_dataset
-from pandas.core.frame import DataFrame
-
 from ote_anomalib.data import LabelNames
 from ote_sdk.entities.annotation import (
     Annotation,
     AnnotationSceneEntity,
     AnnotationSceneKind,
 )
+from ote_sdk.entities.color import Color
 from ote_sdk.entities.dataset_item import DatasetItemEntity
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.id import ID
@@ -38,6 +37,7 @@ from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.entities.shapes.rectangle import Rectangle
 from ote_sdk.entities.subset import Subset
 from ote_sdk.utils.segmentation_utils import create_annotation_from_segmentation_map
+from pandas.core.frame import DataFrame
 
 
 class OteMvtecDataset:
@@ -58,6 +58,7 @@ class OteMvtecDataset:
         (900, 900, 3)
     """
 
+    # pylint: disable=too-many-instance-attributes
     def __init__(
         self,
         path: Union[str, Path],
@@ -78,10 +79,14 @@ class OteMvtecDataset:
             self.label_domain = Domain.ANOMALY_SEGMENTATION
 
         self.normal_label = LabelEntity(
-            name=LabelNames.normal, domain=self.label_domain, id=ID(LabelNames.normal)
+            name=LabelNames.normal, domain=self.label_domain, id=ID(LabelNames.normal), color=Color(0, 255, 0)
         )
         self.abnormal_label = LabelEntity(
-            name=LabelNames.anomalous, domain=self.label_domain, id=ID(LabelNames.anomalous), is_anomalous=True
+            name=LabelNames.anomalous,
+            domain=self.label_domain,
+            id=ID(LabelNames.anomalous),
+            is_anomalous=True,
+            color=Color(255, 0, 0),
         )
         self.label_map = {0: self.normal_label, 1: self.abnormal_label}
 

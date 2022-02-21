@@ -37,9 +37,8 @@ from compression.graph.model_utils import compress_model_weights, get_nodes_by_t
 from compression.pipeline.initializer import create_pipeline
 from omegaconf import ListConfig
 from omegaconf.dictconfig import DictConfig
-
 from ote_anomalib.configs import get_anomalib_config
-from ote_anomalib.exportable_code import AnomalyClassification
+from ote_anomalib.exportable_code import AnomalyClassification, AnomalySegmentation
 from ote_anomalib.logging import get_logger
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.inference_parameters import (
@@ -174,6 +173,7 @@ class OpenVINOAnomalyTask(IInferenceTask, IEvaluationTask, IOptimizationTask, ID
             else:
                 raise ValueError(f"Unknown task type: {self.task_type}")
 
+            # pylint: disable=protected-access
             logger.info(f"{dataset_item.media._Image__file_path}: {len(annotations_scene.annotations)}")
             dataset_item.append_annotations(annotations_scene.annotations)
 
@@ -380,8 +380,14 @@ class OpenVINOAnomalyTask(IInferenceTask, IEvaluationTask, IOptimizationTask, ID
 
         work_dir = os.path.dirname(demo.__file__)
         parameters: Dict[str, Any] = {}
-        parameters["type_of_model"] = "anomaly_classification"
-        parameters["converter_type"] = "ANOMALY_CLASSIFICATION"
+        task_type = (
+            "anomaly_classification" if self.task_type == TaskType.ANOMALY_CLASSIFICATION else "anomaly_segmentation"
+        )
+        selected_class = (
+            AnomalyClassification if self.task_type == TaskType.ANOMALY_CLASSIFICATION else AnomalySegmentation
+        )
+        parameters["type_of_model"] = task_type
+        parameters["converter_type"] = task_type.upper()
         parameters["model_parameters"] = self._get_openvino_configuration()
         name_of_package = "demo_package"
 
@@ -394,7 +400,7 @@ class OpenVINOAnomalyTask(IInferenceTask, IEvaluationTask, IOptimizationTask, ID
             with open(config_path, "w", encoding="utf-8") as file:
                 json.dump(parameters, file, ensure_ascii=False, indent=4)
 
-            copyfile(inspect.getfile(AnomalyClassification), os.path.join(tempdir, name_of_package, "model.py"))
+            copyfile(inspect.getfile(selected_class), os.path.join(tempdir, name_of_package, "model.py"))
 
             # create wheel package
             subprocess.run(

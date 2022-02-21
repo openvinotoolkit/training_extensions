@@ -151,6 +151,8 @@ def create_converter(
         converter = ClassificationToAnnotationConverter(labels)
     elif converter_type == Domain.ANOMALY_CLASSIFICATION:
         converter = AnomalyClassificationToAnnotationConverter(labels)
+    elif converter_type == Domain.ANOMALY_SEGMENTATION:
+        converter = AnomalySegmentationToAnnotationConverter(labels)
     elif converter_type == Domain.INSTANCE_SEGMENTATION:
         converter = MaskToAnnotationConverter(labels)
     elif converter_type == Domain.ROTATED_DETECTION:
@@ -267,6 +269,7 @@ class AnomalyClassificationToAnnotationConverter(IPredictionToAnnotationConverte
             0
         ]
 
+    # pylint: disable=arguments-renamed
     def convert_to_annotation(
         self, pred_score: np.ndarray, metadata: Dict[str, Any]
     ) -> AnnotationSceneEntity:
@@ -305,7 +308,9 @@ class AnomalySegmentationToAnnotationConverter(IPredictionToAnnotationConverter)
 
         pred_mask = predictions >= 0.5
         mask = pred_mask.squeeze().astype(np.uint8)
-        annotations = create_annotation_from_segmentation_map(mask, predictions, self.label_map)
+        annotations = create_annotation_from_segmentation_map(
+            mask, predictions, self.label_map
+        )
         if len(annotations) == 0:
             # TODO: add confidence to this label
             annotations = [
