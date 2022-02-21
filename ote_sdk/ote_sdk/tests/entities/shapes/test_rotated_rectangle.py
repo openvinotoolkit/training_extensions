@@ -187,3 +187,56 @@ class TestRotatedRectangle:
 
         with pytest.raises(ValueError):
             rotated_rectangle.denormalize_wrt_roi_shape("123")
+
+    @pytest.mark.priority_medium
+    @pytest.mark.unit
+    @pytest.mark.reqids(Requirements.REQ_1)
+    def test_rotated_rectangle__as_shapely_polygon(self):
+        """
+        <b>Description:</b>
+        Check RotatedRectangle _as_shapely_polygon methods
+
+        <b>Input data:</b>
+        Initialized instance of RotatedRectangle
+
+        <b>Expected results:</b>
+        Test passes if RotatedRectangle _as_shapely_polygon returns correct values
+
+        <b>Steps</b>
+        1. Initialize RotatedRectangle instance
+        2. Check returning value
+        """
+
+        rotated_rectangle = self.rotated_rectangle()
+        rotated_rectangle2 = self.other_rotated_rectangle()
+        shapely_polygon = rotated_rectangle._as_shapely_polygon()
+        shapely_polygon2 = rotated_rectangle2._as_shapely_polygon()
+        assert shapely_polygon.area == pytest.approx(0.125)
+        assert (
+            str(shapely_polygon)
+            == "POLYGON ((0.5 0.25, 0.75 0.5, 0.5 0.75, 0.25 0.5, 0.5 0.25))"
+        )
+        assert shapely_polygon != shapely_polygon2
+
+    @pytest.mark.priority_medium
+    @pytest.mark.unit
+    @pytest.mark.reqids(Requirements.REQ_1)
+    def test_rotated_rectangle_get_area(self):
+        """
+        <b>Description:</b>
+        Check RotatedRectangle get_area method
+
+        <b>Input data:</b>
+        Instances of RotatedRectangle class
+
+        <b>Expected results:</b>
+        Test passes if get_area method returns expected value of RotatedRectangle area
+
+        <b>Steps</b>
+        1. Check get_area method for RotatedRectangle instance
+        """
+        for rectangle, expected_area in [
+            (self.rotated_rectangle(), 0.125),
+            (self.other_rotated_rectangle(), 0.25),
+        ]:
+            assert rectangle.get_area() == pytest.approx(expected_area)

@@ -4,14 +4,20 @@
 #
 
 import datetime
+import warnings
+from operator import attrgetter
 from typing import List, Optional
 
+from shapely.geometry import Polygon as shapely_polygon
+
 from ote_sdk.entities.scored_label import ScoredLabel
-from ote_sdk.entities.shapes.polygon import Point, Polygon
+from ote_sdk.entities.shapes.polygon import Point
 from ote_sdk.entities.shapes.rectangle import Rectangle
+from ote_sdk.entities.shapes.shape import Shape, ShapeType
+from ote_sdk.utils.time_utils import now
 
 
-class RotatedRectangle(Polygon):
+class RotatedRectangle(Shape):
     """
     RotatedRectangle represents a rectangular shape.
 
@@ -28,11 +34,34 @@ class RotatedRectangle(Polygon):
         labels: Optional[List[ScoredLabel]] = None,
         modification_date: Optional[datetime.datetime] = None,
     ):
-        super().__init__(points, labels, modification_date)
+        labels = [] if labels is None else labels
+        modification_date = now() if modification_date is None else modification_date
+        super().__init__(
+            type=ShapeType.ROTATED_RECTANGLE,
+            labels=labels,
+            modification_date=modification_date,
+        )
 
         if len(points) != 4:
             raise ValueError(
                 f"Invalid number of points have been passed. Expected: 4, actual: {len(points)}."
+            )
+
+        self.points = points
+
+        self.min_x = min(points, key=attrgetter("x")).x
+        self.max_x = max(points, key=attrgetter("x")).x
+        self.min_y = min(points, key=attrgetter("y")).y
+        self.max_y = max(points, key=attrgetter("y")).y
+
+        is_valid = True
+        for (x, y) in [(self.min_x, self.min_y), (self.max_x, self.max_y)]:
+            is_valid = is_valid and self._validate_coordinates(x, y)
+        if not is_valid:
+            points_str = "; ".join(str(p) for p in self.points)
+            warnings.warn(
+                f"{type(self).__name__} coordinates are invalid : {points_str}",
+                UserWarning,
             )
 
     def __repr__(self):
@@ -43,6 +72,17 @@ class RotatedRectangle(Polygon):
             f"{self.points[2]}, "
             f"{self.points[3]}])"
         )
+
+    def __eq__(self, other):
+        if isinstance(other, RotatedRectangle):
+            return (
+                self.points == other.points
+                and self.modification_date == other.modification_date
+            )
+        return False
+
+    def __hash__(self):
+        return hash(str(self))
 
     def normalize_wrt_roi_shape(self, roi_shape: Rectangle) -> "RotatedRectangle":
         """
@@ -68,12 +108,13 @@ class RotatedRectangle(Polygon):
         :return: New RotatedRectangle in the image coordinate system
         """
 
-        polygon = super().normalize_wrt_roi_shape(roi_shape)
-        return RotatedRectangle(
-            polygon.points,
-            polygon.get_labels(include_empty=True),
-            polygon.modification_date,
-        )
+        if not isinstance(roi_shape, Rectangle):
+            raise ValueError("roi_shape has to be a Rectangle.")
+
+        roi_shape = roi_shape.clip_to_visible_region()
+
+        points = [p.normalize_wrt_roi(roi_shape) for p in self.points]
+        return RotatedRectangle(points=points)
 
     def denormalize_wrt_roi_shape(self, roi_shape: Rectangle) -> "RotatedRectangle":
         """
@@ -102,9 +143,34 @@ class RotatedRectangle(Polygon):
         :return: New RotatedRectangle in the ROI coordinate system
         """
 
-        polygon = super().denormalize_wrt_roi_shape(roi_shape)
-        return RotatedRectangle(
-            polygon.points,
-            polygon.get_labels(include_empty=True),
-            polygon.modification_date,
-        )
+        if not isinstance(roi_shape, Rectangle):
+            raise ValueError("roi_shape has to be a Rectangle.")
+
+        roi_shape = roi_shape.clip_to_visible_region()
+
+        points = [p.denormalize_wrt_roi_shape(roi_shape) for p in self.points]
+        return RotatedRectangle(points=points)
+
+    def _as_shapely_polygon(self) -> shapely_polygon:
+        """
+        Returns the RotatedRectangle object as a shapely polygon
+        which is used for calculating intersection between shapes.
+        """
+        return shapely_polygon([(point.x, point.y) for point in self.points])
+
+    def get_area(self) -> float:
+        """
+        Returns the approximate area of the shape. Area is a value between 0 and 1,
+        computed by converting the RotatedRectangle to a shapely polygon and reading the `.area` property.
+
+        NOTE: This method should not be relied on for exact area computation. The area is approximate, because shapes
+        are continuous, but pixels are discrete.
+
+        :example:
+
+            >>> Polygon(points=[Point(x=0.0, y=0.5), Point(x=0.5, y=0.5), Point(x=0.75, y=0.75)]).get_area()
+            0.0625
+
+        :return: area of the shape
+        """
+        return self._as_shapely_polygon().area
