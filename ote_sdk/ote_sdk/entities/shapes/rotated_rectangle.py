@@ -22,7 +22,9 @@ class RotatedRectangle(Shape):
     """
     RotatedRectangle represents a rectangular shape.
 
-    RotatedRectangle is used to localize rotated objects.
+    RotatedRectangle is used to localize rotated objects by four points.
+    These points are ordered clockwise in a top-left, top-right, bottom-right,
+    and bottom-left arrangement relatively to object orientation.
 
     :param points: list of Point's forming the rotated rectangle
     :param labels: list of the ScoredLabel's for the rotated rectangle
