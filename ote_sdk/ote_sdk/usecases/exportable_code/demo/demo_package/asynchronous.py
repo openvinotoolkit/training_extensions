@@ -26,11 +26,11 @@ class AsyncInferencer:
         self.converter = converters[0]
         self.async_pipeline = AsyncPipeline(self.model)
 
-    def run(self, input_stream):
+    def run(self, input_stream, loop):
         """
         Async inference for input stream (image, video stream, camera)
         """
-        streamer = get_streamer(input_stream)
+        streamer = get_streamer(input_stream, loop)
         next_frame_id = 0
         next_frame_id_to_show = 0
         stop = False
