@@ -39,6 +39,7 @@ from ote_cli.utils.parser import (
     add_hyper_parameters_sub_parser,
     gen_params_dict_from_args,
 )
+from ote_cli.utils.validate_path import validate_path
 
 ESC_BUTTON = 27
 
@@ -136,6 +137,19 @@ def main():
     override_parameters(updated_hyper_parameters, hyper_parameters)
 
     hyper_parameters = create(hyper_parameters)
+
+    # Validate required paths that is sourced in args
+    validate_path(args.input)
+    validate_path(args.load_weights)
+
+    if args.fit_to_size:
+        h, w = args.fit_to_size
+        if h <= 0 or w <= 0:
+            raise ValueError('Both values of --fit_to_size parameter must be > 0')
+
+    if args.delay:
+        if args.delay < 0:
+            raise ValueError('Value of --delay parameter must not be negative')
 
     # Get classes for Task, ConfigurableParameters and Dataset.
     if any(args.load_weights.endswith(x) for x in (".bin", ".xml", ".zip")):
