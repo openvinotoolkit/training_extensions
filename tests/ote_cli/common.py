@@ -401,7 +401,7 @@ def nncf_export_testing(template, root):
     assert compressed_bin_size < original_bin_size, f"{compressed_bin_size=}, {original_bin_size=}"
 
 
-def nncf_eval_testing(template, root, ote_dir, args, threshold=0.001):
+def nncf_eval_testing(template, root, ote_dir, args, threshold):
     work_dir, template_work_dir, _ = get_some_vars(template, root)
     command_line = ['ote',
                     'eval',
