@@ -11,11 +11,12 @@ from pathlib import Path
 
 # pylint: disable=no-name-in-module, import-error
 from ote_sdk.usecases.exportable_code.demo.demo_package import (
-    SyncDemo,
+    AsyncInferencer,
+    ChainInferencer,
+    SyncInferencer,
     create_model,
     create_output_converter,
 )
-from ote_sdk.usecases.exportable_code.streamer import get_media_type
 from ote_sdk.usecases.exportable_code.visualization import Visualizer
 
 
@@ -41,20 +42,51 @@ def build_argparser():
     )
     args.add_argument(
         "-m",
-        "--model",
-        help="Required. Path to an .xml file with a trained model.",
+        "--models",
+        help="Required. Path to an .xml files with a trained models.",
+        nargs="+",
         required=True,
         type=Path,
     )
     args.add_argument(
-        "-c",
-        "--config",
-        help="Required. Path to an .json file with parameters for model.",
-        required=True,
-        type=Path,
+        "-it",
+        "--inference_type",
+        help="Optional. Type of inference. For task-chain you should type 'chain'.",
+        choices=["sync", "async", "chain"],
+        default="sync",
+        type=str,
+    )
+    args.add_argument(
+        "-l",
+        "--loop",
+        help="Optional. Enable reading the input in a loop.",
+        default=False,
+        action="store_true",
     )
 
     return parser
+
+
+INFERENCER = {
+    "sync": SyncInferencer,
+    "async": AsyncInferencer,
+    "chain": ChainInferencer,
+}
+
+
+def get_inferencer_class(type_inference, models):
+    """
+    Return class for inference of models
+    """
+    if type_inference == "chain" and len(models) == 1:
+        raise RuntimeError(
+            "For single model please use 'sync' or 'async' type of inference"
+        )
+    if len(models) > 1 and type_inference != "chain":
+        raise RuntimeError(
+            "For task-chain scenario please use 'chain' type of inference"
+        )
+    return INFERENCER[type_inference]
 
 
 def main():
@@ -62,17 +94,24 @@ def main():
     Main function that is used to run demo.
     """
     args = build_argparser().parse_args()
-    # create components for demo
+    # create models and converters for outputs
+    models = []
+    converters = []
+    for model_path in args.models:
+        config_file = model_path.parent.resolve() / "config.json"
+        model_file = model_path.parent.parent.resolve() / "python" / "model.py"
+        model_file = model_file if model_file.exists() else None
+        models.append(create_model(model_path, config_file, model_file))
+        converters.append(create_output_converter(config_file))
 
-    model_file = Path(__file__).parent.resolve() / "model.py"
-    model_file = model_file if model_file.exists() else None
-    model = create_model(args.model, args.config, model_file)
-    media_type = get_media_type(args.input)
+    # create visualizer
+    visualizer = Visualizer(window_name="Result")
 
-    visualizer = Visualizer(media_type)
-    converter = create_output_converter(args.config)
-    demo = SyncDemo(model, visualizer, converter)
-    demo.run(args.input)
+    # create inferencer and run
+    demo = get_inferencer_class(args.inference_type, models)(
+        models, converters, visualizer
+    )
+    demo.run(args.input, args.loop)
 
 
 if __name__ == "__main__":

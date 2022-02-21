@@ -12,6 +12,7 @@ from typing import Optional
 
 from openvino.model_zoo.model_api.adapters import OpenvinoAdapter, create_core
 from openvino.model_zoo.model_api.models import Model
+from openvino.model_zoo.model_api.pipelines import get_user_config
 
 from ote_sdk.entities.label import Domain
 from ote_sdk.serialization.label_mapper import LabelSchemaMapper
@@ -55,8 +56,10 @@ def create_model(
     """
     Create model using ModelAPI factory
     """
-
-    model_adapter = OpenvinoAdapter(create_core(), get_model_path(model_file))
+    plugin_config = get_user_config("CPU", "", None)
+    model_adapter = OpenvinoAdapter(
+        create_core(), get_model_path(model_file), plugin_config=plugin_config
+    )
     parameters = get_parameters(config_file)
     if path_to_wrapper:
         if not path_to_wrapper.exists():

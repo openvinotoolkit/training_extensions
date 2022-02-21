@@ -8,7 +8,7 @@ Sync Demo based on ModelAPI
 from ote_sdk.usecases.exportable_code.streamer import get_streamer
 
 
-class SyncDemo:
+class SyncInferencer:
     """
     Synd demo for model inference
 
@@ -18,23 +18,21 @@ class SyncDemo:
         converter: convert model ourtput to annotation scene
     """
 
-    def __init__(self, model, visualizer, converter) -> None:
-        self.model = model
+    def __init__(self, models, converters, visualizer) -> None:
+        self.model = models[0]
         self.visualizer = visualizer
-        self.converter = converter
+        self.converter = converters[0]
 
-    def run(self, input_stream):
+    def run(self, input_stream, loop):
         """
         Run demo using input stream (image, video stream, camera)
         """
-        streamer = get_streamer(input_stream)
+        streamer = get_streamer(input_stream, loop)
         for frame in streamer:
             # getting result include preprocessing, infer, postprocessing for sync infer
-            dict_data, input_meta = self.model.preprocess(frame)
-            raw_result = self.model.infer_sync(dict_data)
-            predictions = self.model.postprocess(raw_result, input_meta)
+            predictions, frame_meta = self.model(frame)
             annotation_scene = self.converter.convert_to_annotation(
-                predictions, input_meta
+                predictions, frame_meta
             )
 
             # any user's visualizer
