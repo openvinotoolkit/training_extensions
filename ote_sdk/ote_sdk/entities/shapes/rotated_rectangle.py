@@ -4,6 +4,7 @@
 #
 
 import datetime
+import math
 import warnings
 from operator import attrgetter
 from typing import List, Optional
@@ -174,3 +175,18 @@ class RotatedRectangle(Shape):
         :return: area of the shape
         """
         return self._as_shapely_polygon().area
+
+    def get_orientation(self) -> "Point":
+        """
+        Returns a unit vector that defines orientation of RotatedRectangle.
+        If RotatedRectangle is defined by four points: p0, p1, p2, p3, then
+        its direction matches the direction of (p1 - p2) vector.
+        """
+
+        vect = self.points[1].x - self.points[2].x, self.points[1].y - self.points[2].y
+        norm = math.sqrt(vect[0] * vect[0] + vect[1] * vect[1])
+        if norm == 0:
+            raise RuntimeError(
+                f"Invalid {self}, it is impossible to define orientation."
+            )
+        return Point(vect[0] / norm, vect[1] / norm)

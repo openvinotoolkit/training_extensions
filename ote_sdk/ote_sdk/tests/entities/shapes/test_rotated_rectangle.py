@@ -34,6 +34,18 @@ class TestRotatedRectangle:
         point4 = Point(0.25, 0.5)
         return [point1, point2, point3, point4]
 
+    def rotated_1_points(self):
+        point1, point2, point3, point4 = self.points()
+        return [point2, point3, point4, point1]
+
+    def rotated_2_points(self):
+        point1, point2, point3, point4 = self.points()
+        return [point3, point4, point1, point2]
+
+    def rotated_3_points(self):
+        point1, point2, point3, point4 = self.points()
+        return [point4, point1, point2, point3]
+
     def other_points(self):
         point1 = Point(0.75, 0.25)
         point2 = Point(1.0, 0.5)
@@ -43,6 +55,21 @@ class TestRotatedRectangle:
 
     def rotated_rectangle(self):
         return RotatedRectangle(self.points(), modification_date=self.modification_date)
+
+    def rotated_1_rectangle(self):
+        return RotatedRectangle(
+            self.rotated_1_points(), modification_date=self.modification_date
+        )
+
+    def rotated_2_rectangle(self):
+        return RotatedRectangle(
+            self.rotated_2_points(), modification_date=self.modification_date
+        )
+
+    def rotated_3_rectangle(self):
+        return RotatedRectangle(
+            self.rotated_3_points(), modification_date=self.modification_date
+        )
 
     def other_rotated_rectangle(self):
         return RotatedRectangle(
@@ -240,3 +267,38 @@ class TestRotatedRectangle:
             (self.other_rotated_rectangle(), 0.25),
         ]:
             assert rectangle.get_area() == pytest.approx(expected_area)
+
+    @pytest.mark.priority_medium
+    @pytest.mark.unit
+    @pytest.mark.reqids(Requirements.REQ_1)
+    def test_rotated_rectangle_get_orientation(self):
+        """
+        <b>Description:</b>
+        Check RotatedRectangle get_orientation method
+
+        <b>Input data:</b>
+        Instances of RotatedRectangle class
+
+        <b>Expected results:</b>
+        Test passes if get_orientation method returns expected value of RotatedRectangle orientation
+
+        <b>Steps</b>
+        1. Check get_orientation method for RotatedRectangle instance
+        """
+        for rectangle, expected_orientation in [
+            (self.rotated_rectangle(), Point(0.7071067811865475, -0.7071067811865475)),
+            (self.rotated_1_rectangle(), Point(0.7071067811865475, 0.7071067811865475)),
+            (
+                self.rotated_2_rectangle(),
+                Point(-0.7071067811865475, 0.7071067811865475),
+            ),
+            (
+                self.rotated_3_rectangle(),
+                Point(-0.7071067811865475, -0.7071067811865475),
+            ),
+            (
+                self.other_rotated_rectangle(),
+                Point(0.7071067811865475, -0.7071067811865475),
+            ),
+        ]:
+            assert rectangle.get_orientation() == expected_orientation
