@@ -39,8 +39,8 @@ class ScoredLabel:
 
     @property
     def id(self) -> ID:
-        """Gets or sets the id of a Model"""
-        return self.id_
+        """DEPRECATED"""
+        return self.label.id
 
     @property
     def color(self) -> Color:

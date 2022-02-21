@@ -99,11 +99,12 @@ class ResultSetEntity(metaclass=abc.ABCMeta):
 
     @property
     def id(self) -> ID:
-        """Gets or sets the id of a Model"""
+        """DEPRECATED"""
         return self.__id_
 
     @id.setter
     def id(self, value: ID):
+        """DEPRECATED"""
         self.__id_ = value
 
     @property
