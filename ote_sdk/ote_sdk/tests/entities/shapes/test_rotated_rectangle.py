@@ -302,3 +302,61 @@ class TestRotatedRectangle:
             ),
         ]:
             assert rectangle.get_orientation() == expected_orientation
+
+    @pytest.mark.priority_medium
+    @pytest.mark.unit
+    @pytest.mark.reqids(Requirements.REQ_1)
+    def test_rotated_rectangle_sides_check(self):
+        """
+        <b>Description:</b>
+        Check RotatedRectangle initialization by invalid sides
+
+        <b>Input data:</b>
+        Instances of RotatedRectangle class
+
+        <b>Expected results:</b>
+        Test passes if ValueError is raised during initialization with points forming invalid sides.
+
+        <b>Steps</b>
+        1. Check whether ValueError is raised during initialization with points forming invalid sides.
+        """
+
+        points = self.points()
+
+        # unequal opposite sides
+        points[0].x += 0.000001
+        with pytest.raises(ValueError):
+            RotatedRectangle(points)
+
+        # sides equal to 0
+        points[0] = points[1]
+        points[3] = points[2]
+        with pytest.raises(ValueError):
+            RotatedRectangle(points)
+
+    @pytest.mark.priority_medium
+    @pytest.mark.unit
+    @pytest.mark.reqids(Requirements.REQ_1)
+    def test_rotated_rectangle_too_small_area(self):
+        """
+        <b>Description:</b>
+        Check RotatedRectangle initialization with too small area.
+
+        <b>Input data:</b>
+        Instances of RotatedRectangle class.
+
+        <b>Expected results:</b>
+        Test passes if ValueError is raised during RotatedRectangle initialization with too small area.
+
+        <b>Steps</b>
+        1. Check whether ValueError is raised during RotatedRectangle initialization with too small area.
+        """
+
+        points = self.points()
+
+        points[0].x = points[2].x
+        points[0].y = points[2].y
+        points[0].x -= 1e-7
+
+        with pytest.raises(ValueError):
+            RotatedRectangle(points).get_area()

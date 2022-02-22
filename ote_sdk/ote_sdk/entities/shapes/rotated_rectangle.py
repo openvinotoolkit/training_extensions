@@ -52,6 +52,9 @@ class RotatedRectangle(Shape):
 
         self.points = points
 
+        self.__check_sides()
+        self.__check_area()
+
         self.min_x = min(points, key=attrgetter("x")).x
         self.max_x = max(points, key=attrgetter("x")).x
         self.min_y = min(points, key=attrgetter("y")).y
@@ -66,6 +69,30 @@ class RotatedRectangle(Shape):
                 f"{type(self).__name__} coordinates are invalid : {points_str}",
                 UserWarning,
             )
+
+    def __check_sides(self):
+        points_num = len(self.points)
+        vectors = [
+            (
+                self.points[(i + 1) % points_num].x - self.points[i].x,
+                self.points[(i + 1) % points_num].y - self.points[i].y,
+            )
+            for i in range(points_num)
+        ]
+        norms = [math.sqrt(v[0] * v[0] + v[1] * v[1]) for v in vectors]
+        abs_tol = 1e-7
+        if not (
+            math.isclose(norms[0], norms[2], abs_tol=abs_tol)
+            and math.isclose(norms[1], norms[3], abs_tol=abs_tol)
+        ):
+            raise ValueError(f"Sides of {self} are not equal.")
+        print(norms)
+        if not all(norm > 0 for norm in norms):
+            raise ValueError(f"At least one side of {self} is equal to 0.")
+
+    def __check_area(self):
+        if self.get_area() < 1e-14:
+            raise ValueError(f"Invalid {self}, area is about 0.")
 
     def __repr__(self):
         return (
@@ -91,6 +118,8 @@ class RotatedRectangle(Shape):
         """
         Transforms from the `roi` coordinate system to the normalized coordinate system.
         This function is the inverse of ``denormalize_wrt_roi_shape``.
+
+        NOTE: The inverse is approximate due to possible floating point rounding errors and ill-conditioned inputs.
 
         :example: Assume we have RotatedRectangle `p1` which lives in the middle of a 2D space.
             The 2D space where `p1` lives in is an `roi` living in the top-left quarter of the normalized coordinate
@@ -122,7 +151,9 @@ class RotatedRectangle(Shape):
     def denormalize_wrt_roi_shape(self, roi_shape: Rectangle) -> "RotatedRectangle":
         """
         Transforming shape from the normalized coordinate system to the `roi` coordinate system.
-        This function is the inverse of ``normalize_wrt_roi_shape``
+        This function is the inverse of ``normalize_wrt_roi_shape``.
+
+        NOTE: The inverse is approximate due to possible floating point rounding errors and ill-conditioned inputs.
 
         :example: Assume we have RotatedRectangle `p1` which lives in the middle of the normalized coordinate space.
             The `roi` is a rectangle `roi` living in the top-left quarter of the normalized coordinate
