@@ -86,7 +86,6 @@ class RotatedRectangle(Shape):
             and math.isclose(norms[1], norms[3], abs_tol=abs_tol)
         ):
             raise ValueError(f"Sides of {self} are not equal.")
-        print(norms)
         if not all(norm > 0 for norm in norms):
             raise ValueError(f"At least one side of {self} is equal to 0.")
 
