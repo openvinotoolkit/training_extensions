@@ -5,12 +5,12 @@
 #
 
 import copy
-from enum import Enum
 import logging
+from enum import Enum
 from typing import Dict, List, Optional, Sequence
 
-from bson import ObjectId
 import numpy as np
+from bson import ObjectId
 
 from ote_sdk.entities.graph import Graph, MultiDiGraph
 from ote_sdk.entities.id import ID
