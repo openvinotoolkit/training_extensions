@@ -31,7 +31,7 @@ skip a test if any of the dependencies did fail or has been skipped.
 To avoid repeating of the common steps between stages the results of stages should be kept in a
 special cache to be re-used by the next stages.
 
-We suppose that each test executes one test stage (also called test action)
+We suppose that each test executes one test stage (also called test action).
 
 ## II. General architecture overview
 
@@ -324,7 +324,7 @@ test also will call `run_once` for all the stages in the dependency chains, but 
 will NOT re-run actions for the tests.
 
 
-### IV.3 Validation of action results
+### IV.3 Validation of action results -- how it works
 
 As stated above, one of the purposes of `OTETestStage` is validation of results of the wrapped
 action.
@@ -346,7 +346,7 @@ The method returns nothing, but may raise exceptions to fail the test.
 
 The `Validator` compares the results of the current action with expected metrics and with results of
 the previous actions. Note that results of previous actions are important, since possible validation
-criteria may be
+criteria also may be
 * "the quality metric of the current action is not worse than the result of _that_ action with
   possible quality drop 1%"
 * "the quality metric of the current action is the same as the result of _that_ action with
@@ -372,20 +372,24 @@ Also note that there is possible (but rare) case when a stage is called from dep
 only after that it is run from a test for which this action is the main action.  
 For this case (as we stated above in the previous section when we described how the method
 `run_once` works) we may call validation (if it is required) even if the stage was already run
-earlier and was successful.
+earlier and was successful.  
+Why this case is rare? because we ask users to mention dependencies in the field
+`_depends_stages_names` in the order of their execution (see description of the field), so typically
+the stages are run in the right order.
 
 As we stated above the `validator is not None` is the necessary condition to run validation, but it
 is not sufficient.  
 The list of sufficient conditions to run real validation in `run_once` is as follows:
 * The parameter `validator` of `run_once` method  satisfies `validator is not None`
   (i.e. the validation is run not from the dependency chain).
-* For the action the field `_with_validation == True`.
+* For the action the field `_with_validation == True`.  
   If `_with_validation == False` it means that validation for this action is impossible -- e.g.
   "export" action cannot be validated since it does not return quality metrics, but the action
   "evaluation after export" is validated.
-* The current test has the parameter `usecase == "reallife"`
+* The current test has the parameter `usecase == "reallife"`.  
   If a test is not a "reallife" test it means that a real training is not made for the test,
-  so we cannot expect real quality, so validation is not done.
+  so we cannot expect real quality, so validation is not done.  
+  See description of test parameters below in the section TODO.
 
 To investigate in details the conditions see the declaration of constructor of the `Validator`
 class:
@@ -397,12 +401,12 @@ describes the requirements for the expected metrics for the action, but the para
 a FACTORY that returns the structure.
 
 It is required since
-a. constructing the structure requires complicated operations and reading of YAML files,
-b. if validation should be done for the current test, and the expected metrics for the tests are
+1. constructing the structure requires complicated operations and reading of YAML files,
+2. if validation should be done for the current test, and the expected metrics for the tests are
    absent, the test MUST fail  
-   (it is important to avoid situations when developers forget adds info on expected metrics and due
-   to it tests are not failed)
-c. but if validation for the current test is not required the test should not try to get the
+   (it is important to avoid situations when developers forget to add info on expected metrics and
+   due to it tests are not failed)
+3. but if validation for the current test is not required the test should not try to get the
    expected metrics
 
 So to avoid checking of expected metrics structures for the tests without validation, an algo
@@ -415,7 +419,8 @@ The factory is implemented in the test suite as a pytest fixture -- see the fixt
 The fixture works as follows:
 * receives from other fixtures contents of the YAML file that is pointed to pytest as the pytest
   parameter `--expected-metrics-file`
-* checks if the current test is "reallife" training or not,
+* checks if the current test is "reallife" training or not (if the "usecase" parameter of the test
+  is set to the value "reallife"),
 * if it is not reallife then validation is not required -- in this case
   * the fixture returns None,
   * the Validator class receives None as the constructor's parameter instead of a factory,
@@ -426,6 +431,31 @@ The returned factory function extracts from all expected metrics the expected me
 current test (and if the metrics are absent -- fail the current test).
 
 
+
+### IV.4 Validation of action results -- how expected metrics are set
+
+As stated in the previous section, a file with expected metrics for validation is passed to pytest
+as an additional parameter `--expected-metrics-file`.
+It should be a YAML file.  
+Such YAML files are stored in each algo backend in the following path
+`tests/expected_metrics/metrics_test_ote_training.yml`
+(the path relative w.r.t. the algo backend root)  
+Examples:
+* `external/mmdetection/tests/expected_metrics/metrics_test_ote_training.yml`
+* `external/deep-object-reid/tests/expected_metrics/metrics_test_ote_training.yml`
+* `external/mmsegmentation/tests/expected_metrics/metrics_test_ote_training.yml`
+
+The expected metric YAML file should store a dict that maps tests to the expected metric
+requirements.
+
+The keys of the dict are strings -- the parameters' part of the test id-s. This string uniquely
+identifies the test, since it contains the required action, and also the description of a model, a
+dataset used for training, and training parameters.  
+(See the description of the function `OTETestHelper._generate_test_id` below in the section TODO.)
+
+Examples of such keys are:
+* `ACTION-training_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-bbcd,num_iters-CONFIG,batch-CONFIG,usecase-reallife`
+* `ACTION-nncf_export_evaluation,model-Custom_Image_Classification_EfficinetNet-B0,dataset-lg_chem,num_epochs-CONFIG,batch-CONFIG,usecase-reallife`
 
 
 
