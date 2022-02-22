@@ -2136,3 +2136,51 @@ class TestLabelSchemaEntity:
         assert len(labels_schema_entity_groups) == 1
         assert labels_schema_entity_groups[0].name == "from_label_list"
         assert labels_schema_entity_groups[0].labels == expected_labels
+
+    @pytest.mark.priority_medium
+    @pytest.mark.unit
+    @pytest.mark.reqids(Requirements.REQ_1)
+    def test_label_schema_resolve_labels_probabilistic(self):
+        """
+        <b>Description:</b>
+        Check LabelSchemaEntity class resolve_labels_probabilistic method
+
+        <b>Input data:</b>
+        LabelSchemaEntity objects with specified label_tree and label_groups parameters
+
+        <b>Expected results:</b>
+        Test passes if LabelSchemaEntity object returned by resolve_labels_probabilistic
+        method is equal expected
+        """
+        label_schema = LabelSchemaEntity()
+        labels_1 = [LabelEntity(name=f"Label {i}", domain=Domain.CLASSIFICATION, id=ID(f"{i}"),
+                        color=Color(i, 200, 166)) for i in range(2)]
+        labels_2 = [LabelEntity(name=f"Label {i}", domain=Domain.CLASSIFICATION, id=ID(f"{i}"),
+                        color=Color(i, 200, 166)) for i in range(2,4)]
+        labels_3 = [LabelEntity(name=f"Label {i}", domain=Domain.CLASSIFICATION, id=ID(f"{i}"),
+                        color=Color(i, 200, 166)) for i in range(4,5)]
+        group_1 = LabelGroup(name="labels1", labels=labels_1, group_type=LabelGroupType.EXCLUSIVE)
+        label_schema.add_group(group_1)
+        group_2 = LabelGroup(name="labels2", labels=labels_2, group_type=LabelGroupType.EXCLUSIVE)
+        label_schema.add_group(group_2)
+
+        label_schema.add_group(
+            LabelGroup(
+                "child_labels_2", labels_3, LabelGroupType.EXCLUSIVE
+            )
+        )
+        label_schema.add_child(labels_2[0], labels_3[0])
+
+        assert 1 == len(label_schema.get_descendants(labels_2[0]))
+
+        # supress non-maximum labels
+        predicted_labels = [ScoredLabel(labels_1[0], 0.1), ScoredLabel(labels_1[1], 0.5),
+                            ScoredLabel(labels_2[0], 0.2), ScoredLabel(labels_2[1], 0.5)]
+        resloved_labels = label_schema.resolve_labels_probabilistic(predicted_labels)
+        assert [ScoredLabel(labels_1[1], 0.5), ScoredLabel(labels_2[1], 0.5)] == resloved_labels
+
+        # supress children of non-maximum labels
+        predicted_labels = [ScoredLabel(labels_2[0], 0.1), ScoredLabel(labels_2[1], 0.5),
+                            ScoredLabel(labels_3[0], 0.4)]
+        resloved_labels = label_schema.resolve_labels_probabilistic(predicted_labels)
+        assert [ScoredLabel(labels_2[1], 0.5)] == resloved_labels
