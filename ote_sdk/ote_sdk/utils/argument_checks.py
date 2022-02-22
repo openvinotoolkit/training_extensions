@@ -347,3 +347,25 @@ class OptionalDirectoryPathCheck(BaseInputArgumentChecker):
         """Method raises ValueError exception if file path parameter is not equal to expected"""
         if self.parameter is not None:
             DirectoryPathCheck(self.parameter, self.parameter_name).check()
+
+
+class ClassNameCheck(BaseInputArgumentChecker):
+    """Class to check class name of input parameters"""
+
+    def __init__(self, parameter, parameter_name, expected_type):
+        self.parameter = parameter
+        self.parameter_name = parameter_name
+        self.expected_type = expected_type
+
+    def check(self):
+        """Method raises ValueError exception if required parameter has unexpected type"""
+        if self.parameter is not None:
+            if isinstance(self.parameter, type):
+                parameter_type = self.parameter.__name__
+            else:
+                parameter_type = type(self.parameter).__name__.split(".")[-1]
+            if parameter_type != self.expected_type:
+                raise ValueError(
+                    f"Unexpected type of '{self.parameter_name}' parameter, expected: "
+                    f"{self.expected_type}, actual: {parameter_type}"
+                )
