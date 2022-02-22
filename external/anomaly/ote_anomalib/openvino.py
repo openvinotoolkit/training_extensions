@@ -30,6 +30,8 @@ import numpy as np
 from addict import Dict as ADDict
 from anomalib.deploy import OpenVINOInferencer
 from anomalib.post_processing import anomaly_map_to_color_map
+from anomaly_classification.exportable_code import AnomalyClassification
+from anomaly_segmentation.exportable_code import AnomalySegmentation
 from compression.api import DataLoader
 from compression.engines.ie_engine import IEEngine
 from compression.graph import load_model, save_model
@@ -38,11 +40,7 @@ from compression.pipeline.initializer import create_pipeline
 from omegaconf import ListConfig
 from omegaconf.dictconfig import DictConfig
 from ote_anomalib.configs import get_anomalib_config
-from ote_anomalib.exportable_code import (
-    AnomalyBase,
-    AnomalyClassification,
-    AnomalySegmentation,
-)
+from ote_anomalib.exportable_code import AnomalyBase
 from ote_anomalib.logging import get_logger
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.inference_parameters import (
@@ -356,6 +354,9 @@ class OpenVINOAnomalyTask(IInferenceTask, IEvaluationTask, IOptimizationTask, ID
         configuration = {
             "image_threshold": np.frombuffer(
                 self.task_environment.model.get_data("image_threshold"), dtype=np.float32
+            ).item(),
+            "pixel_threshold": np.frombuffer(
+                self.task_environment.model.get_data("pixel_threshold"), dtype=np.float32
             ).item(),
             "min": np.frombuffer(self.task_environment.model.get_data("min"), dtype=np.float32).item(),
             "max": np.frombuffer(self.task_environment.model.get_data("max"), dtype=np.float32).item(),

@@ -23,7 +23,8 @@ class AnomalyBase(SegmentationModel):
         parameters["resize_type"].update_default_value("standard")
         parameters.update(
             {
-                "image_threshold": NumericalValue(description="Threshold value to locate anomaly"),
+                "image_threshold": NumericalValue(description="Image-level Threshold value to locate anomaly"),
+                "pixel_threshold": NumericalValue(description="Pixel-level Threshold value to locate anomaly"),
                 "min": NumericalValue(description="Threshold value to locate anomaly"),
                 "max": NumericalValue(description="Threshold value to locate anomaly"),
                 "threshold": NumericalValue(description="Threshold used to classify anomaly"),

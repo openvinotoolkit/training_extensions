@@ -1,7 +1,9 @@
 """Exportable code for Anomaly tasks."""
 
-from .anomaly_classification import AnomalyClassification
-from .anomaly_segmentation import AnomalySegmentation
+# Copyright (C) 2021-2022 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
+
 from .base import AnomalyBase
 
-__all__ = ["AnomalyClassification", "AnomalySegmentation", "AnomalyBase"]
+__all__ = ["AnomalyBase"]
