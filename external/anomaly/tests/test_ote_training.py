@@ -40,13 +40,15 @@ from ote_sdk.test_suite.training_test_case import (OTETestCaseInterface,
 from ote_sdk.test_suite.e2e_test_system import DataCollector, e2e_pytest_performance
 from ote_sdk.test_suite.training_tests_common import (make_path_be_abs,
                                                       make_paths_be_abs,
+                                                      performance_to_score_name_value,
                                                       KEEP_CONFIG_FIELD_VALUE,
                                                       REALLIFE_USECASE_CONSTANT,
                                                       ROOT_PATH_KEY)
 from ote_sdk.test_suite.training_tests_helper import (OTETestHelper,
                                                       DefaultOTETestCreationParametersInterface,
                                                       OTETrainingTestInterface)
-from ote_sdk.test_suite.training_tests_actions import (OTETestTrainingAction,
+from ote_sdk.test_suite.training_tests_actions import (create_environment_and_task,
+                                                       OTETestTrainingAction,
                                                        BaseOTETestAction,
                                                        OTETestTrainingEvaluationAction,
                                                        OTETestExportAction,
@@ -54,10 +56,9 @@ from ote_sdk.test_suite.training_tests_actions import (OTETestTrainingAction,
                                                        OTETestPotAction,
                                                        OTETestPotEvaluationAction,
                                                        OTETestNNCFAction,
-                                                       OTETestNNCFEvaluationAction,
+                                                       OTETestNNCFEvaluationAction,                                                       
                                                        OTETestNNCFExportAction,
                                                        OTETestNNCFExportEvaluationAction)
-
 
 logger = get_logger(__name__)
 
@@ -88,14 +89,18 @@ def _get_dataset_params_from_dataset_definitions(dataset_definitions, dataset_na
     return params
 
 
-def _create_anomaly_classification_dataset_and_labels_schema(dataset_params):
+def _create_anomaly_classification_dataset_and_labels_schema(dataset_params, dataset_name):
     logger.debug(f'Path to dataset: {dataset_params.dataset_path}')
     category_list = [f.path for f in os.scandir(dataset_params.dataset_path) if f.is_dir()]
     items = []
-    for category in category_list:
-        if "vivo" not in category:
-            logger.debug(f'Creating dataset for {category}')
-            items.extend(OteMvtecDataset(path=category, seed=0).generate())
+    if "short" in dataset_name:
+        logger.debug(f'Creating short dataset {dataset_name}')
+        items.extend(OteMvtecDataset(path=dataset_params.dataset_path, seed=0).generate())
+    else:
+        for category in category_list:
+            if "vivo" not in category:
+                logger.debug(f'Creating dataset for {category}')
+                items.extend(OteMvtecDataset(path=category, seed=0).generate())
     dataset = DatasetEntity(items=items)
     labels = dataset.get_labels()
     labels_schema = LabelSchemaEntity.from_labels(labels)
@@ -130,7 +135,7 @@ class AnomalyDetectionTrainingTestParameters(DefaultOTETestCreationParametersInt
                        'ote_anomaly_classification_padim',
                        'ote_anomaly_classification_stfpm',
                     ],
-                    dataset_name='mvtec',
+                    dataset_name='mvtec_short',
                     usecase='precommit',
                 ),
                 dict(
@@ -139,6 +144,7 @@ class AnomalyDetectionTrainingTestParameters(DefaultOTETestCreationParametersInt
                        'ote_anomaly_classification_stfpm',
                     ],
                     dataset_name='mvtec',
+                    patience=KEEP_CONFIG_FIELD_VALUE,
                     batch_size=KEEP_CONFIG_FIELD_VALUE,
                     usecase=REALLIFE_USECASE_CONSTANT,
                 ),
@@ -152,6 +158,7 @@ class AnomalyDetectionTrainingTestParameters(DefaultOTETestCreationParametersInt
                 ("test_stage", "ACTION"),
                 ("model_name", "model"),
                 ("dataset_name", "dataset"),
+                ("patience", "patience"),
                 ("batch_size", "batch"),
                 ("usecase", "usecase"),
             ]
@@ -162,12 +169,14 @@ class AnomalyDetectionTrainingTestParameters(DefaultOTETestCreationParametersInt
         DEFAULT_TEST_PARAMETERS_DEFINING_IMPL_BEHAVIOR = [
             "model_name",
             "dataset_name",
+            "patience",
             "batch_size",
         ]
         return deepcopy(DEFAULT_TEST_PARAMETERS_DEFINING_IMPL_BEHAVIOR)
 
     def default_test_parameters(self) -> Dict[str, Any]:
         DEFAULT_TEST_PARAMETERS = {
+            "patience": 1,
             "batch_size": 2,
         }
         return deepcopy(DEFAULT_TEST_PARAMETERS)
@@ -179,12 +188,19 @@ class AnomalyDetectionTestTrainingAction(OTETestTrainingAction):
     _name = "training"
 
     def __init__(
-        self, dataset, labels_schema, template_path, batch_size
+        self, dataset, labels_schema, template_path, patience, batch_size
     ):
         self.dataset = dataset
         self.labels_schema = labels_schema
         self.template_path = template_path
+        self.num_training_iters = patience
         self.batch_size = batch_size
+
+    def _get_training_performance_as_score_name_value(self):
+        training_performance = getattr(self.output_model, "performance", None)
+        if training_performance is None:
+            raise RuntimeError("Cannot get training performance")
+        return performance_to_score_name_value(training_performance)
 
     def _run_ote_training(self, data_collector):
         logger.debug(f"self.template_path = {self.template_path}")
@@ -202,27 +218,53 @@ class AnomalyDetectionTestTrainingAction(OTETestTrainingAction):
         params = ote_sdk_configuration_helper_create(
             self.model_template.hyper_parameters.data
         )
+        if hasattr(params, 'model'):
+            if self.num_training_iters != KEEP_CONFIG_FIELD_VALUE:
+                params.model.early_stopping.patience = int(self.num_training_iters)
+                logger.debug(
+                    f"Set params.model.early_stopping.patience="
+                    f"{params.model.early_stopping.patience}"
+                )
+            else:
+                logger.debug(
+                    f"Keep params.model.early_stopping.patience="
+                    f"{params.model.early_stopping.patience}"
+                )
+        if self.batch_size != KEEP_CONFIG_FIELD_VALUE:
+            params.dataset.train_batch_size = int(self.batch_size)
+            logger.debug(
+                f"Set params.dataset.train_batch_size="
+                f"{params.dataset.train_batch_size}"
+            )
+        else:
+            logger.debug(
+                f"Keep params.dataset.train_batch_size="
+                f"{params.dataset.train_batch_size}"
+            )
 
         logger.debug("Setup environment")
-        self.environment, self.task = self._create_environment_and_task(
+        self.environment, self.task = create_environment_and_task(
             params, self.labels_schema, self.model_template
         )
 
         logger.debug("Train model")
         self.output_model = ModelEntity(
             self.dataset,
-            self.environment.get_model_configuration()
+            self.environment.get_model_configuration(),
         )
 
         self.copy_hyperparams = deepcopy(self.task.task_environment.get_hyper_parameters())
 
-        self.task.train(self.dataset, self.output_model, TrainParameters)
+        try:
+            self.task.train(self.dataset, self.output_model, TrainParameters)
+        except Exception as ex:
+            raise RuntimeError("Training failed") from ex
 
         score_name, score_value = self._get_training_performance_as_score_name_value()
         logger.info(f"performance={self.output_model.performance}")
         data_collector.log_final_metric("metric_name", self.name + "/" + score_name)
         data_collector.log_final_metric("metric_value", score_value)
-    
+
     def __call__(self, data_collector: DataCollector, results_prev_stages: OrderedDict):
         self._run_ote_training(data_collector)
         results = {
@@ -263,6 +305,7 @@ class TestOTEReallifeAnomalyDetection(OTETrainingTestInterface):
                 pytest.skip('The parameter "--dataset-definitions" is not set')
             model_name = test_parameters['model_name']
             dataset_name = test_parameters['dataset_name']
+            patience = test_parameters['patience']
             batch_size = test_parameters['batch_size']
             dataset_params = _get_dataset_params_from_dataset_definitions(dataset_definitions, dataset_name)
 
@@ -271,12 +314,13 @@ class TestOTEReallifeAnomalyDetection(OTETrainingTestInterface):
                                  f'template_paths.keys={list(template_paths.keys())}')
             template_path = make_path_be_abs(template_paths[model_name], template_paths[ROOT_PATH_KEY])
             logger.debug('training params factory: Before creating dataset and labels_schema')
-            dataset, labels_schema = _create_anomaly_classification_dataset_and_labels_schema(dataset_params)
+            dataset, labels_schema = _create_anomaly_classification_dataset_and_labels_schema(dataset_params, dataset_name)
             logger.debug('training params factory: After creating dataset and labels_schema')
             return {
                 'dataset': dataset,
                 'labels_schema': labels_schema,
                 'template_path': template_path,
+                'patience': patience,
                 'batch_size': batch_size,
             }
         params_factories_for_test_actions = {
@@ -335,5 +379,7 @@ class TestOTEReallifeAnomalyDetection(OTETrainingTestInterface):
              test_parameters,
              test_case_fx, data_collector_fx,
              cur_test_expected_metrics_callback_fx):
+        if "nncf" in test_parameters["test_stage"]:
+            pytest.xfail("NNCF not yet supported for Anomaly Classification")
         test_case_fx.run_stage(test_parameters['test_stage'], data_collector_fx,
                                cur_test_expected_metrics_callback_fx)
