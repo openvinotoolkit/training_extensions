@@ -293,6 +293,7 @@ class OpenVINOAnomalyTask(IInferenceTask, IEvaluationTask, IOptimizationTask, ID
 
         output_model.set_data("label_schema.json", label_schema_to_bytes(self.task_environment.label_schema))
         output_model.set_data("image_threshold", self.task_environment.model.get_data("image_threshold"))
+        output_model.set_data("pixel_threshold", self.task_environment.model.get_data("pixel_threshold"))
         output_model.set_data("min", self.task_environment.model.get_data("min"))
         output_model.set_data("max", self.task_environment.model.get_data("max"))
         output_model.model_format = ModelFormat.OPENVINO
