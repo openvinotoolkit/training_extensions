@@ -193,11 +193,12 @@ class OpenVINOAnomalyTask(IInferenceTask, IEvaluationTask, IOptimizationTask, ID
         """Get Meta Data."""
 
         image_threshold = np.frombuffer(self.task_environment.model.get_data("image_threshold"), dtype=np.float32)
+        pixel_threshold = np.frombuffer(self.task_environment.model.get_data("pixel_threshold"), dtype=np.float32)
         min_value = np.frombuffer(self.task_environment.model.get_data("min"), dtype=np.float32)
         max_value = np.frombuffer(self.task_environment.model.get_data("max"), dtype=np.float32)
         meta_data = dict(
             image_threshold=image_threshold,
-            pixel_threshold=image_threshold,  # re-use image threshold for pixel normalization
+            pixel_threshold=pixel_threshold,
             min=min_value,
             max=max_value,
         )
