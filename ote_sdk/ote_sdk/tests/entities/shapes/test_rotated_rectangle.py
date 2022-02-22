@@ -324,7 +324,7 @@ class TestRotatedRectangle:
         points = self.points()
 
         # unequal opposite sides
-        points[0].x += 0.000001
+        points[0].x += 1e-6
         with pytest.raises(ValueError):
             RotatedRectangle(points)
 
