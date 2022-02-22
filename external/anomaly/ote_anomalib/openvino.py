@@ -30,15 +30,16 @@ import numpy as np
 from addict import Dict as ADDict
 from anomalib.deploy import OpenVINOInferencer
 from anomalib.post_processing import anomaly_map_to_color_map
+from anomaly_classification.exportable_code import AnomalyClassification
+from anomaly_segmentation.exportable_code import AnomalySegmentation
 from compression.api import DataLoader
 from compression.engines.ie_engine import IEEngine
 from compression.graph import load_model, save_model
 from compression.graph.model_utils import compress_model_weights, get_nodes_by_type
 from compression.pipeline.initializer import create_pipeline
 from omegaconf import OmegaConf
-
 from ote_anomalib.configs import get_anomalib_config
-from ote_anomalib.exportable_code import AnomalyClassification
+from ote_anomalib.exportable_code import AnomalyBase
 from ote_anomalib.logging import get_logger
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.inference_parameters import (
@@ -173,6 +174,7 @@ class OpenVINOAnomalyTask(IInferenceTask, IEvaluationTask, IOptimizationTask, ID
             else:
                 raise ValueError(f"Unknown task type: {self.task_type}")
 
+            # pylint: disable=protected-access
             logger.info(f"{dataset_item.media._Image__file_path}: {len(annotations_scene.annotations)}")
             dataset_item.append_annotations(annotations_scene.annotations)
 
@@ -352,6 +354,9 @@ class OpenVINOAnomalyTask(IInferenceTask, IEvaluationTask, IOptimizationTask, ID
             "image_threshold": np.frombuffer(
                 self.task_environment.model.get_data("image_threshold"), dtype=np.float32
             ).item(),
+            "pixel_threshold": np.frombuffer(
+                self.task_environment.model.get_data("pixel_threshold"), dtype=np.float32
+            ).item(),
             "min": np.frombuffer(self.task_environment.model.get_data("min"), dtype=np.float32).item(),
             "max": np.frombuffer(self.task_environment.model.get_data("max"), dtype=np.float32).item(),
             "labels": LabelSchemaMapper.forward(self.task_environment.label_schema),
@@ -381,8 +386,14 @@ class OpenVINOAnomalyTask(IInferenceTask, IEvaluationTask, IOptimizationTask, ID
 
         work_dir = os.path.dirname(demo.__file__)
         parameters: Dict[str, Any] = {}
-        parameters["type_of_model"] = "anomaly_classification"
-        parameters["converter_type"] = "ANOMALY_CLASSIFICATION"
+        task_type = (
+            "anomaly_classification" if self.task_type == TaskType.ANOMALY_CLASSIFICATION else "anomaly_segmentation"
+        )
+        selected_class = (
+            AnomalyClassification if self.task_type == TaskType.ANOMALY_CLASSIFICATION else AnomalySegmentation
+        )
+        parameters["type_of_model"] = task_type
+        parameters["converter_type"] = task_type.upper()
         parameters["model_parameters"] = self._get_openvino_configuration()
         name_of_package = "demo_package"
 
@@ -395,7 +406,8 @@ class OpenVINOAnomalyTask(IInferenceTask, IEvaluationTask, IOptimizationTask, ID
             with open(config_path, "w", encoding="utf-8") as file:
                 json.dump(parameters, file, ensure_ascii=False, indent=4)
 
-            copyfile(inspect.getfile(AnomalyClassification), os.path.join(tempdir, name_of_package, "model.py"))
+            copyfile(inspect.getfile(selected_class), os.path.join(tempdir, name_of_package, "model.py"))
+            copyfile(inspect.getfile(AnomalyBase), os.path.join(tempdir, name_of_package, "base.py"))
 
             # create wheel package
             subprocess.run(
