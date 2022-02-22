@@ -28,7 +28,7 @@ from ote_sdk.tests.constants.requirements import Requirements
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestMetadataKeys:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_metadata_keys_constants(self):
         """
@@ -56,7 +56,7 @@ class TestMetadataKeys:
         assert ENUM_NAME == "enum_name"
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_allows_model_template_override(self):
         """
@@ -94,7 +94,7 @@ class TestMetadataKeys:
             assert not allows_model_template_override(keyword)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_allows_dictionary_values(self):
         """

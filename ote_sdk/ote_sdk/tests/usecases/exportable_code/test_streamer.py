@@ -33,7 +33,7 @@ class TestStreamer:
             assert element.shape == (360, 480, 3)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_image_streamer_with_single_image(self):
         """
@@ -55,7 +55,7 @@ class TestStreamer:
             self.assert_streamer_element(streamer)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_image_streamer_with_folder(self):
         """
@@ -77,7 +77,7 @@ class TestStreamer:
             self.assert_streamer_element(streamer)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_video_streamer_with_single_video(self):
         """
@@ -99,7 +99,7 @@ class TestStreamer:
             self.assert_streamer_element(streamer)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_video_streamer_with_folder(self):
         """
@@ -123,7 +123,7 @@ class TestStreamer:
                 assert frame.shape[-1] == 3
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_image_file_fails_on_video_streamer(self):
         """
@@ -144,7 +144,7 @@ class TestStreamer:
                 VideoStreamer(path)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_invalid_inputs_to_get_streamer(self):
         """
@@ -192,7 +192,7 @@ class TestStreamer:
         assert "does not exist" in str(the_exception), str(the_exception)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_valid_inputs_to_get_streamer(self):
         """
@@ -233,7 +233,7 @@ class TestStreamer:
         assert isinstance(streamer, ThreadedStreamer)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_video_file_fails_on_image_streamer(self):
         """
@@ -254,7 +254,7 @@ class TestStreamer:
                 ImageStreamer(path)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_camera_streamer(self):
         """
@@ -281,7 +281,7 @@ class TestStreamer:
                 break
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_threaded_streamer(self):
         """
@@ -312,7 +312,7 @@ class TestStreamer:
             assert frame_count == 3
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_threaded_streamer_timeout(self):
         """
@@ -345,7 +345,7 @@ class TestStreamer:
             assert frame_count == 5
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_get_streamer_parses_path(self):
         """

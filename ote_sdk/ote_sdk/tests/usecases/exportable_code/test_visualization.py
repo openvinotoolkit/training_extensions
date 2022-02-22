@@ -84,7 +84,7 @@ class TestVisualizer:
         return annotation_scene
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_visualizer_initialization(self):
         """
@@ -165,7 +165,7 @@ class TestVisualizer:
         )
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_visualizer_draw(self):
         """

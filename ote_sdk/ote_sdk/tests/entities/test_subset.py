@@ -24,7 +24,7 @@ from ote_sdk.tests.constants.requirements import Requirements
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestSubset:
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_subset_members(self):
         """
@@ -60,7 +60,7 @@ class TestSubset:
             test_instance(6)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_subset_magic_str(self):
         """
@@ -93,7 +93,7 @@ class TestSubset:
         assert len(set(magic_str_list)) == len(magic_str_list)
 
     @pytest.mark.priority_medium
-    @pytest.mark.component
+    @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_subset_magic_repr(self):
         """
