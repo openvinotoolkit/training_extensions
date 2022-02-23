@@ -127,12 +127,8 @@ def convert(
     )
 
     if id_to_str or target == str or target == DictConfig:
-        config_id = config_dict.get("id", None)  # DEPRECATED
-        config_dict["id"] = (
-            str(config_id) if config_id is not None else None
-        )  # DEPRECATED
-        config_id_ = config_dict.get("id_", None)
-        config_dict["id_"] = str(config_id_) if config_id_ is not None else None
+        config_id = config_dict.get("id", None)
+        config_dict["id"] = str(config_id) if config_id is not None else None
 
     if target == str:
         result = yaml.dump(config_dict)

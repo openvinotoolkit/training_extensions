@@ -46,7 +46,7 @@ class TestConfigurableParameters:
                 == ConfigElementType.CONFIGURABLE_PARAMETERS
             )
             assert configurable_parameters.groups == []
-            assert configurable_parameters.id_ == expected_id
+            assert configurable_parameters.id == expected_id
             assert configurable_parameters.visible_in_ui == expected_visible_in_ui
 
         header = "Test Header"
@@ -66,7 +66,7 @@ class TestConfigurableParameters:
             configurable_parameters=ConfigurableParameters(
                 header=header,
                 description=description,
-                id_=config_id,
+                id=config_id,
                 visible_in_ui=visible_in_ui,
             ),
             expected_header=header,

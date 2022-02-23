@@ -109,12 +109,12 @@ class TestTaskEnvironment:
                 == __dummy_config[i]
             )
 
-        assert env.get_model_configuration().configurable_parameters.id_ == ID()
+        assert env.get_model_configuration().configurable_parameters.id == ID()
 
         for param in __dummy_config:
             getattr(env.get_hyper_parameters(), param) == __dummy_config[param]
 
-        assert env.get_hyper_parameters().id_ == ID()
+        assert env.get_hyper_parameters().id == ID()
 
         assert "model=None" in repr(env)
         assert "label_schema=LabelSchemaEntity(label_groups=[LabelGroup(id=" in repr(
@@ -439,13 +439,13 @@ class TestTaskEnvironment:
         id_ = ID(123456789)
 
         hyper_parameters = ConfigurableParameters(
-            header=header, description=description, visible_in_ui=visible_in_ui, id_=id_
+            header=header, description=description, visible_in_ui=visible_in_ui, id=id_
         )
         env.set_hyper_parameters(hyper_parameters=hyper_parameters)
         assert env.get_hyper_parameters().header == header
         assert env.get_hyper_parameters().description == description
         assert env.get_hyper_parameters().visible_in_ui == visible_in_ui
-        assert env.get_hyper_parameters().id_ == id_
+        assert env.get_hyper_parameters().id == id_
 
         assert env.get_model_configuration().configurable_parameters.header == header
         assert (
@@ -456,7 +456,7 @@ class TestTaskEnvironment:
             env.get_model_configuration().configurable_parameters.visible_in_ui
             == visible_in_ui
         )
-        assert env.get_model_configuration().configurable_parameters.id_ == id_
+        assert env.get_model_configuration().configurable_parameters.id == id_
 
         with pytest.raises(ValueError):
             # ValueError: Unable to set hyper parameters, invalid input: 123
