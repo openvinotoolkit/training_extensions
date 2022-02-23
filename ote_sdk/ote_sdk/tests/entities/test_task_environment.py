@@ -436,16 +436,16 @@ class TestTaskEnvironment:
         header = "Test header"
         description = "Test description"
         visible_in_ui = False
-        id_ = ID(123456789)
+        id = ID(123456789)
 
         hyper_parameters = ConfigurableParameters(
-            header=header, description=description, visible_in_ui=visible_in_ui, id=id_
+            header=header, description=description, visible_in_ui=visible_in_ui, id=id
         )
         env.set_hyper_parameters(hyper_parameters=hyper_parameters)
         assert env.get_hyper_parameters().header == header
         assert env.get_hyper_parameters().description == description
         assert env.get_hyper_parameters().visible_in_ui == visible_in_ui
-        assert env.get_hyper_parameters().id == id_
+        assert env.get_hyper_parameters().id == id
 
         assert env.get_model_configuration().configurable_parameters.header == header
         assert (
@@ -456,7 +456,7 @@ class TestTaskEnvironment:
             env.get_model_configuration().configurable_parameters.visible_in_ui
             == visible_in_ui
         )
-        assert env.get_model_configuration().configurable_parameters.id == id_
+        assert env.get_model_configuration().configurable_parameters.id == id
 
         with pytest.raises(ValueError):
             # ValueError: Unable to set hyper parameters, invalid input: 123
