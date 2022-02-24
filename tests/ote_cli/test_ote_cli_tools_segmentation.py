@@ -32,6 +32,7 @@ from common import (
     ote_eval_deployment_testing,
     ote_eval_openvino_testing,
     ote_eval_testing,
+    ote_hpo_testing,
     ote_train_testing,
     ote_export_testing,
     pot_optimize_testing,
@@ -120,6 +121,11 @@ class TestToolsSegmentation:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_ote_hpo(self, template):
+        ote_hpo_testing(template, root, ote_dir, args)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_optimize(self, template):
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
@@ -141,7 +147,7 @@ class TestToolsSegmentation:
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
 
-        nncf_eval_testing(template, root, ote_dir, args, threshold=0.1)
+        nncf_eval_testing(template, root, ote_dir, args, threshold=0.001)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
