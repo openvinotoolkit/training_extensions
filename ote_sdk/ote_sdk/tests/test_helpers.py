@@ -66,7 +66,7 @@ class LabelSchemaExample:
         label = LabelEntity(
             name=name, color=Color.random(), domain=self.label_domain, is_empty=is_empty
         )
-        label.id = generate_unique_id()
+        label.id_ = generate_unique_id()
         return label
 
     def add_hierarchy(

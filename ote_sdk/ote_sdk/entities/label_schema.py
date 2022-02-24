@@ -53,11 +53,21 @@ class LabelGroup:
         group_type: LabelGroupType = LabelGroupType.EXCLUSIVE,
         id: ID = None,
     ):
-        self.id = ID(ObjectId()) if id is None else id
+        self.id_ = ID(ObjectId()) if id is None else id
 
-        self.labels = sorted(labels, key=lambda x: x.id)
+        self.labels = sorted(labels, key=lambda x: x.id_)
         self.name = name
         self.group_type = group_type
+
+    @property
+    def id(self) -> ID:
+        """DEPRECATED"""
+        return self.id_
+
+    @id.setter
+    def id(self, value: ID):
+        """DEPRECATED"""
+        self.id_ = value
 
     @property
     def minimum_label_id(self) -> ID:
@@ -65,7 +75,7 @@ class LabelGroup:
         Returns the minimum (oldest) label ID, which is the first label in self.labels
         since this list is sorted
         """
-        return self.labels[0].id
+        return self.labels[0].id_
 
     def remove_label(self, label: LabelEntity) -> None:
         """
@@ -87,14 +97,14 @@ class LabelGroup:
     def __eq__(self, other: object):
         if not isinstance(other, LabelGroup):
             return False
-        return self.id == other.id and (
+        return self.id_ == other.id_ and (
             set(self.labels) == set(other.labels)
             and self.group_type == other.group_type
         )
 
     def __repr__(self) -> str:
         return (
-            f"LabelGroup(id={self.id}, name={self.name}, group_type={self.group_type},"
+            f"LabelGroup(id={self.id_}, name={self.name}, group_type={self.group_type},"
             f" labels={self.labels})"
         )
 
@@ -316,7 +326,7 @@ class LabelSchemaEntity:
             for label in group.labels
             if include_empty or not label.is_empty
         }
-        return sorted(list(labels), key=lambda x: x.id)
+        return sorted(list(labels), key=lambda x: x.id_)
 
     def get_groups(self, include_empty: bool = False) -> List[LabelGroup]:
         """
@@ -371,7 +381,7 @@ class LabelSchemaEntity:
         :param include_empty: Include empty label id or not
         """
         label_ids = {
-            label.id
+            label.id_
             for group in self._groups
             for label in group.labels
             if include_empty or not label.is_empty
