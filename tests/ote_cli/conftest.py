@@ -22,8 +22,6 @@ ote_conftest_insertion(default_repository_name="ote/training_extensions/")
 def pytest_addoption(parser):
     ote_pytest_addoption_insertion(parser)
 
-
-def pytest_addoption(parser):
     parser.addoption("--algo_be",
                      action="store",
                      type=str,
