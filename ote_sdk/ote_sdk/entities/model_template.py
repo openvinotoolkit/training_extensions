@@ -94,18 +94,7 @@ class TaskType(Enum):
 
     def __str__(self) -> str:
         return str(self.name)
-    
-LOCAL_TASKS = [
-    TaskType.SEGMENTATION,
-    TaskType.DETECTION,
-    TaskType.ANOMALY_DETECTION,
-    TaskType.ANOMALY_SEGMENTATION,
-    TaskType.INSTANCE_SEGMENTATION,
-    TaskType.ROTATED_DETECTION,
-]
-GLOBAL_TASKS = [TaskType.CLASSIFICATION, TaskType.ANOMALY_CLASSIFICATION]
 
-VISION_TASKS = GLOBAL_TASKS + LOCAL_TASKS
 
 def task_type_to_label_domain(task_type: TaskType) -> Domain:
     """
@@ -459,17 +448,33 @@ ANOMALY_TASK_TYPES: Sequence[TaskType] = (
     TaskType.ANOMALY_SEGMENTATION,
 )
 
+# Tasks which support local labels    
+LOCAL_TASKS: Sequence[TaskType] = (
+    TaskType.DETECTION,
+    TaskType.SEGMENTATION,
+    TaskType.ANOMALY_DETECTION,
+    TaskType.ANOMALY_SEGMENTATION,
+    TaskType.INSTANCE_SEGMENTATION,
+    TaskType.ROTATED_DETECTION,
+)
+  
+# Tasks which support global labels
+GLOBAL_TASKS: Sequence[TaskType] = (
+    TaskType.CLASSIFICATION,
+    TaskType.ANOMALY_CLASSIFICATION
+)
+
 
 TRAINABLE_TASK_TYPES: Sequence[TaskType] = (
     TaskType.CLASSIFICATION,
     TaskType.DETECTION,
     TaskType.SEGMENTATION,
     TaskType.INSTANCE_SEGMENTATION,
+    TaskType.ROTATED_DETECTION,
     TaskType.ANOMALY_DETECTION,
     TaskType.ANOMALY_CLASSIFICATION,
     TaskType.ANOMALY_SEGMENTATION,
 )
-
 
 def _parse_model_template_from_omegaconf(
     config: Union[DictConfig, ListConfig]
