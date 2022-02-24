@@ -136,7 +136,7 @@ class TestLabelSchemaEntityMapper:
             "label_tree": {"type": "tree", "directed": True, "nodes": [], "edges": []},
             "label_groups": [
                 {
-                    "_id": label_schema.get_groups()[0].id,
+                    "_id": label_schema.get_groups()[0].id_,
                     "name": "from_label_list",
                     "label_ids": ["0", "1", "2"],
                     "relation_type": "EXCLUSIVE",
@@ -207,7 +207,7 @@ class TestLabelGroupMapper:
         )
         serialized = LabelGroupMapper.forward(label_group)
         assert serialized == {
-            "_id": label_group.id,
+            "_id": label_group.id_,
             "name": "Test LabelGroup",
             "label_ids": ["0", "1", "2"],
             "relation_type": "EMPTY_LABEL",
