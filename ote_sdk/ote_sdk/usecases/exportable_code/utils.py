@@ -15,7 +15,7 @@ def get_git_commit_hash() -> str:
     return "develop"
 
 
-def set_proper_git_commit_hash(path: str) -> None:
+def set_proper_git_commit_hash(path: str) -> str:
     """
     Replaces OTE_COMMIT by OTE git commit hash in a file.
     """
@@ -26,5 +26,4 @@ def set_proper_git_commit_hash(path: str) -> None:
     if to_replace not in content:
         raise RuntimeError(f"There is no {to_replace} in {path}")
     content = content.replace(to_replace, get_git_commit_hash())
-    with open(path, "w", encoding="UTF-8") as write_file:
-        write_file.write(content)
+    return content

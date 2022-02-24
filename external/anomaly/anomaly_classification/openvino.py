@@ -376,9 +376,9 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
             arch.writestr(os.path.join("model", "config.json"), json.dumps(parameters, ensure_ascii=False, indent=4))
             # python files
             arch.write(inspect.getfile(AnomalyClassification), os.path.join("python", "model.py"))
-            arch.write(
-                set_proper_git_commit_hash(os.path.join(work_dir, "requirements.txt")),
+            arch.writestr(
                 os.path.join("python", "requirements.txt"),
+                set_proper_git_commit_hash(os.path.join(work_dir, "requirements.txt")),
             )
             arch.write(os.path.join(work_dir, "README.md"), os.path.join("python", "README.md"))
             arch.write(os.path.join(work_dir, "demo.py"), os.path.join("python", "demo.py"))
