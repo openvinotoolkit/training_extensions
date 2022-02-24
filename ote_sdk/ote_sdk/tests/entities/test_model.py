@@ -204,7 +204,7 @@ class TestModelEntity:
             train_dataset=self.dataset(), configuration=self.configuration()
         )
 
-        assert model_entity.id == ID()
+        assert model_entity.id_ == ID()
         assert type(model_entity.configuration) == ModelConfiguration
         assert type(model_entity.creation_date) == datetime
         assert type(model_entity.train_dataset) == DatasetEntity
