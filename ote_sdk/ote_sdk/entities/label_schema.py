@@ -653,14 +653,10 @@ class LabelSchemaEntity:
             label_to_probability, selected_labels
         )
 
-        hard_classification = self.__resolve_exclusive_labels(
-            label_to_probability
-        )
+        hard_classification = self.__resolve_exclusive_labels(label_to_probability)
 
         # suppress the output of children of parent nodes that are not the most likely label within their group
-        resolved = self.__suppress_descendant_output(
-            hard_classification
-        )
+        resolved = self.__suppress_descendant_output(hard_classification)
 
         result = []
         for label, probability in resolved.items():
