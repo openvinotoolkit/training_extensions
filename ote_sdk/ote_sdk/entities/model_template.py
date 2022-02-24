@@ -94,7 +94,18 @@ class TaskType(Enum):
 
     def __str__(self) -> str:
         return str(self.name)
+    
+LOCAL_TASKS = [
+    TaskType.SEGMENTATION,
+    TaskType.DETECTION,
+    TaskType.ANOMALY_DETECTION,
+    TaskType.ANOMALY_SEGMENTATION,
+    TaskType.INSTANCE_SEGMENTATION,
+    TaskType.ROTATED_DETECTION,
+]
+GLOBAL_TASKS = [TaskType.CLASSIFICATION, TaskType.ANOMALY_CLASSIFICATION]
 
+VISION_TASKS = GLOBAL_TASKS + LOCAL_TASKS
 
 def task_type_to_label_domain(task_type: TaskType) -> Domain:
     """
