@@ -60,7 +60,7 @@ class LabelMapper:
         """Serializes to dict."""
 
         return {
-            "_id": IDMapper().forward(instance.id),
+            "_id": IDMapper().forward(instance.id_),
             "name": instance.name,
             "color": ColorMapper().forward(instance.color),
             "hotkey": instance.hotkey,
@@ -100,9 +100,9 @@ class LabelGroupMapper:
         """Serializes to dict."""
 
         return {
-            "_id": IDMapper().forward(instance.id),
+            "_id": IDMapper().forward(instance.id_),
             "name": instance.name,
-            "label_ids": [IDMapper().forward(label.id) for label in instance.labels],
+            "label_ids": [IDMapper().forward(label.id_) for label in instance.labels],
             "relation_type": instance.group_type.name,
         }
 
@@ -133,9 +133,9 @@ class LabelGraphMapper:
         return {
             "type": instance.type,
             "directed": instance.directed,
-            "nodes": [IDMapper().forward(label.id) for label in instance.nodes],
+            "nodes": [IDMapper().forward(label.id_) for label in instance.nodes],
             "edges": [
-                (IDMapper().forward(edge[0].id), IDMapper().forward(edge[1].id))
+                (IDMapper().forward(edge[0].id_), IDMapper().forward(edge[1].id_))
                 for edge in instance.edges
             ],
         }
@@ -188,7 +188,7 @@ class LabelSchemaMapper:
             "label_tree": LabelGraphMapper().forward(instance.label_tree),
             "label_groups": label_groups,
             "all_labels": {
-                IDMapper().forward(label.id): LabelMapper().forward(label)
+                IDMapper().forward(label.id_): LabelMapper().forward(label)
                 for label in instance.get_labels(True)
             },
         }
