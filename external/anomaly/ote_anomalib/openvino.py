@@ -30,8 +30,6 @@ import numpy as np
 from addict import Dict as ADDict
 from anomalib.deploy import OpenVINOInferencer
 from anomalib.post_processing import anomaly_map_to_color_map
-from anomaly_classification.exportable_code import AnomalyClassification
-from anomaly_segmentation.exportable_code import AnomalySegmentation
 from compression.api import DataLoader
 from compression.engines.ie_engine import IEEngine
 from compression.graph import load_model, save_model
@@ -39,7 +37,11 @@ from compression.graph.model_utils import compress_model_weights, get_nodes_by_t
 from compression.pipeline.initializer import create_pipeline
 from omegaconf import OmegaConf
 from ote_anomalib.configs import get_anomalib_config
-from ote_anomalib.exportable_code import AnomalyBase
+from ote_anomalib.exportable_code import (
+    AnomalyBase,
+    AnomalyClassification,
+    AnomalySegmentation,
+)
 from ote_anomalib.logging import get_logger
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.inference_parameters import (
