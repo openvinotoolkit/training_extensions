@@ -26,11 +26,11 @@ from ote_anomalib.data import LabelNames
 from ote_anomalib.logging import get_logger
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.label import LabelEntity
+from ote_sdk.entities.model_template import TaskType
 from ote_sdk.entities.result_media import ResultMediaEntity
 from ote_sdk.entities.scored_label import ScoredLabel
-from pytorch_lightning.callbacks import Callback
 from ote_sdk.utils.segmentation_utils import create_annotation_from_segmentation_map
-from ote_sdk.entities.model_template import TaskType
+from pytorch_lightning.callbacks import Callback
 
 logger = get_logger(__name__)
 
@@ -63,19 +63,20 @@ class AnomalyInferenceCallback(Callback):
                 dataset_item.append_labels([ScoredLabel(label=label, probability=float(probability))])
             elif self.task_type == TaskType.ANOMALY_SEGMENTATION:
                 mask = pred_mask.squeeze().astype(np.uint8)
-                annotations = create_annotation_from_segmentation_map(mask, anomaly_map.squeeze(), self.label_map)
-                dataset_item.append_annotations(annotations)
+                dataset_item.append_annotations(
+                    create_annotation_from_segmentation_map(mask, anomaly_map.squeeze(), self.label_map)
+                )
             else:
                 raise ValueError(f"Unknown task type: {self.task_type}")
 
-            heatmap = anomaly_map_to_color_map(anomaly_map.squeeze(), normalize=False)
-            heatmap_media = ResultMediaEntity(
-                name="Anomaly Map",
-                type="anomaly_map",
-                annotation_scene=dataset_item.annotation_scene,
-                numpy=heatmap,
+            dataset_item.append_metadata_item(
+                ResultMediaEntity(
+                    name="Anomaly Map",
+                    type="anomaly_map",
+                    annotation_scene=dataset_item.annotation_scene,
+                    numpy=anomaly_map_to_color_map(anomaly_map.squeeze(), normalize=False),
+                )
             )
-            dataset_item.append_metadata_item(heatmap_media)
             logger.info(
                 "\n\tMin: %.3f, Max: %.3f, Threshold: %.3f, Assigned Label '%s', %.3f",
                 pl_module.min_max.min.item(),

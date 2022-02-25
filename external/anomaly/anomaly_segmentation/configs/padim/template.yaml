@@ -8,7 +8,7 @@ summary: This model is faster and in many cases more accurate, but it requires a
 application: ~
 
 # Algo backend.
-framework: OTEAnomalyClassification v0.1.0  # TODO: update after the name has been changed on the platform side
+framework: OTEAnomalyClassification v0.1.0 # TODO: update after the name has been changed on the platform side
 
 # Task implementations.
 entrypoints:

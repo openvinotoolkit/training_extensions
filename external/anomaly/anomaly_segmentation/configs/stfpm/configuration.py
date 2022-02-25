@@ -16,9 +16,9 @@ Configurable parameters for STFPM anomaly classification task
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+from attr import attrs
 from ote_anomalib.configs.configuration import BaseAnomalyConfig
 from ote_anomalib.configs.configuration_enums import EarlyStoppingMetrics
-from attr import attrs
 from ote_sdk.configuration.elements import (
     ParameterGroup,
     add_parameter_group,

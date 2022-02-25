@@ -16,8 +16,8 @@ Configurable parameters for Padim anomaly classification task
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from ote_anomalib.configs.configuration import BaseAnomalyConfig
 from attr import attrs
+from ote_anomalib.configs.configuration import BaseAnomalyConfig
 from ote_sdk.configuration.elements import string_attribute
 
 

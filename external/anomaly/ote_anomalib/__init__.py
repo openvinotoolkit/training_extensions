@@ -16,7 +16,7 @@ Initialization of OTE Anomalib
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .task import BaseAnomalyTask
 from .openvino import OpenVINOAnomalyTask
+from .task import BaseAnomalyTask
 
 __all__ = ["BaseAnomalyTask", "OpenVINOAnomalyTask"]
