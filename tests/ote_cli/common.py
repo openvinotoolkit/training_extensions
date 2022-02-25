@@ -19,6 +19,20 @@ from subprocess import run  # nosec
 
 from ote_sdk.usecases.exportable_code.utils import get_git_commit_hash
 
+args = {
+    '--train-ann-file': 'data/airport/annotation_example_train.json',
+    '--train-data-roots': 'data/airport/train',
+    '--val-ann-file': 'data/airport/annotation_example_train.json',
+    '--val-data-roots': 'data/airport/train',
+    '--test-ann-files': 'data/airport/annotation_example_train.json',
+    '--test-data-roots': 'data/airport/train',
+}
+
+wrong_paths = {
+               'empty': '',
+               # 'null_symbol': '\x00' It is catch on subprocess level
+               }
+
 def get_template_rel_dir(template):
     return os.path.dirname(os.path.relpath(template.model_template_path))
 
