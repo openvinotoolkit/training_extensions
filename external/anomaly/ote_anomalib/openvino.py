@@ -348,14 +348,12 @@ class OpenVINOAnomalyTask(IInferenceTask, IEvaluationTask, IOptimizationTask, ID
 
     def _get_openvino_configuration(self) -> Dict[str, Any]:
         """Return configuration required by the exported model."""
-        # This always assumes that threshold is available in the task environment's model
-        # cast is used to placate mypy
+        if self.task_environment.model is None:
+            raise Exception("task_environment.model is None. Cannot get configuration.")
+
         configuration = {
             "image_threshold": np.frombuffer(
                 self.task_environment.model.get_data("image_threshold"), dtype=np.float32
-            ).item(),
-            "pixel_threshold": np.frombuffer(
-                self.task_environment.model.get_data("pixel_threshold"), dtype=np.float32
             ).item(),
             "min": np.frombuffer(self.task_environment.model.get_data("min"), dtype=np.float32).item(),
             "max": np.frombuffer(self.task_environment.model.get_data("max"), dtype=np.float32).item(),
@@ -368,6 +366,16 @@ class OpenVINOAnomalyTask(IInferenceTask, IEvaluationTask, IOptimizationTask, ID
         else:
             configuration["mean_values"] = self.config.transforms.mean
             configuration["scale_values"] = self.config.transforms.std
+
+        if "pixel_threshold" in self.task_environment.model.model_adapters.keys():
+            configuration["pixel_threshold"] = np.frombuffer(
+                self.task_environment.model.get_data("pixel_threshold"), dtype=np.float32
+            ).item()
+        else:
+            configuration["pixel_threshold"] = np.frombuffer(
+                self.task_environment.model.get_data("image_threshold"), dtype=np.float32
+            ).item()
+
         return configuration
 
     def deploy(self, output_model: ModelEntity) -> None:
