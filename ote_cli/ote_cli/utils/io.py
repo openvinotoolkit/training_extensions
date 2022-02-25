@@ -63,7 +63,13 @@ def read_model(model_configuration, path, train_dataset):
     """
     optimization_type = ModelOptimizationType.NONE
 
-    model_adapter_keys = ("confidence_threshold", "image_threshold", "min", "max")
+    model_adapter_keys = (
+        "confidence_threshold",
+        "image_threshold",
+        "pixel_threshold",
+        "min",
+        "max",
+    )
 
     if path.endswith(".bin") or path.endswith(".xml"):
         # Openvino IR.
@@ -105,7 +111,7 @@ def read_model(model_configuration, path, train_dataset):
             }
 
             config_path = os.path.join(temp_dir, "demo_package", "config.json")
-            with open(config_path) as f:
+            with open(config_path, encoding="utf8") as f:
                 model_parameters = json.load(f)["model_parameters"]
 
             for key in model_adapter_keys:
