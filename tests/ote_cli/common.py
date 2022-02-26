@@ -49,8 +49,10 @@ args = {
 
 wrong_paths = {
                'empty': '',
+               'not_printable': '\x11',
                # 'null_symbol': '\x00' It is catch on subprocess level
                }
+
 
 def get_template_rel_dir(template):
     return os.path.dirname(os.path.relpath(template.model_template_path))
