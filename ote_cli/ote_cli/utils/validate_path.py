@@ -20,19 +20,13 @@ def is_path_valid(test_string: str) -> bool:
     try:
         if not isinstance(test_string, str) or not test_string:
             return False
-        _, test_string = os.path.splitdrive(test_string)
+        if not all([s.isprintable() for s in test_string]):
+            return False
 
-        root = os.path.sep
-        assert os.path.isdir(root)
-
-        root = root.rstrip(os.path.sep) + os.path.sep
-        for pathname_part in test_string.split(os.path.sep):
-            try:
-                os.lstat(root + pathname_part)
-            except OSError as exc:
-                if exc.errno in {errno.ENAMETOOLONG, errno.ERANGE}:
-                    return False
-            except ValueError:
+        try:
+            os.lstat(test_string)
+        except OSError as exc:
+            if exc.errno in {errno.ENAMETOOLONG, errno.ERANGE}:
                 return False
     except TypeError:
         return False
