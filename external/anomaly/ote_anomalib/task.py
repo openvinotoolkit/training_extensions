@@ -24,12 +24,9 @@ from glob import glob
 from typing import Optional, Union
 
 import torch
+from anomalib.models import AnomalyModule, get_model
 from anomalib.utils.callbacks import MinMaxNormalizationCallback
-from anomalib.models import AnomalyModule
-from anomalib.models import get_model
 from omegaconf import DictConfig, ListConfig
-from pytorch_lightning import Trainer
-
 from ote_anomalib.callbacks import AnomalyInferenceCallback, ProgressCallback
 from ote_anomalib.configs import get_anomalib_config
 from ote_anomalib.data import OTEAnomalyDataModule
@@ -50,6 +47,7 @@ from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType, IExpo
 from ote_sdk.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from ote_sdk.usecases.tasks.interfaces.training_interface import ITrainingTask
 from ote_sdk.usecases.tasks.interfaces.unload_interface import IUnload
+from pytorch_lightning import Trainer
 
 logger = get_logger(__name__)
 
@@ -57,6 +55,7 @@ logger = get_logger(__name__)
 class BaseAnomalyTask(ITrainingTask, IInferenceTask, IEvaluationTask, IExportTask, IUnload):
     """Base Anomaly Task."""
 
+    # pylint: disable=too-many-instance-attributes
     def __init__(self, task_environment: TaskEnvironment) -> None:
         """Train, Infer, Export, Optimize and Deploy an Anomaly Classification Task.
 

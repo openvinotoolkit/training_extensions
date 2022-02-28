@@ -21,11 +21,11 @@ import tempfile
 
 import numpy as np
 import pytest
-from tests.helpers.config import get_config_and_task_name
-from tests.helpers.dummy_dataset import TestDataset
-
 from ote_anomalib.configs import get_anomalib_config
 from ote_anomalib.tools.sample import OteAnomalyTask
+
+from tests.helpers.config import get_config_and_task_name
+from tests.helpers.dummy_dataset import TestDataset
 
 logger = logging.getLogger(__name__)
 
@@ -33,10 +33,10 @@ logger = logging.getLogger(__name__)
 @pytest.mark.parametrize(
     ["task_path", "template_path"],
     [
-     ("anomaly_classification", "padim"),
-     ("anomaly_classification", "stfpm"),
-     ("anomaly_segmentation", "padim"),
-     ("anomaly_segmentation", "stfpm")
+        ("anomaly_classification", "padim"),
+        ("anomaly_classification", "stfpm"),
+        ("anomaly_segmentation", "padim"),
+        ("anomaly_segmentation", "stfpm"),
     ],
 )
 class TestAnomalyClassification:

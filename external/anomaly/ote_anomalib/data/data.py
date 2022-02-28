@@ -22,16 +22,15 @@ from typing import Dict, List, Optional, Union
 import numpy as np
 from anomalib.pre_processing import PreProcessor
 from omegaconf import DictConfig, ListConfig
-from pytorch_lightning.core.datamodule import LightningDataModule
-from torch import Tensor
-from torch.utils.data import DataLoader, Dataset
-
 from ote_anomalib.logging import get_logger
 from ote_sdk.entities.datasets import DatasetEntity
+from ote_sdk.entities.model_template import TaskType
 from ote_sdk.entities.shapes.polygon import Polygon
 from ote_sdk.entities.subset import Subset
 from ote_sdk.utils.segmentation_utils import mask_from_dataset_item
-from ote_sdk.entities.model_template import TaskType
+from pytorch_lightning.core.datamodule import LightningDataModule
+from torch import Tensor
+from torch.utils.data import DataLoader, Dataset
 
 logger = get_logger(__name__)
 
@@ -88,7 +87,7 @@ class OTEAnomalyDataset(Dataset):
         if self.task_type == TaskType.ANOMALY_CLASSIFICATION:
             item["image"] = self.pre_processor(image=dataset_item.numpy)["image"]
         elif self.task_type == TaskType.ANOMALY_SEGMENTATION:
-            if any([isinstance(annotation.shape, Polygon) for annotation in dataset_item.get_annotations()]):
+            if any((isinstance(annotation.shape, Polygon) for annotation in dataset_item.get_annotations())):
                 mask = mask_from_dataset_item(dataset_item, dataset_item.get_shapes_labels()).squeeze()
             else:
                 mask = np.zeros(dataset_item.numpy.shape[:2]).astype(np.int)

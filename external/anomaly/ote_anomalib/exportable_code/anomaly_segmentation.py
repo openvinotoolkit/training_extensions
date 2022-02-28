@@ -8,7 +8,8 @@ from typing import Any, Dict
 
 import cv2
 import numpy as np
-from ote_anomalib.exportable_code.base import AnomalyBase
+
+from .base import AnomalyBase
 
 
 class AnomalySegmentation(AnomalyBase):
