@@ -258,6 +258,14 @@ def ote_demo_openvino_testing(template, root, ote_dir, args):
     assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
 
 
+def ote_deploy_common(template, root, cmd_args):
+    work_dir, template_work_dir, _ = get_some_vars(template, root)
+    command_line = ['ote',
+                    'demo',
+                    *cmd_args]
+    return run(command_line, env=collect_env_vars(work_dir), capture_output=True)
+
+
 def ote_deploy_openvino_testing(template, root, ote_dir, args):
     work_dir, template_work_dir, _ = get_some_vars(template, root)
     deployment_dir = f'{template_work_dir}/deployed_{template.model_template_id}'
