@@ -12,53 +12,79 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import os
 from subprocess import run
 from copy import deepcopy
 
+import os
 import pytest
 
+from ote_sdk.test_suite.e2e_test_system import e2e_pytest_component
 from ote_cli.registry import Registry
-from common import wrong_paths
+
+from common import (
+    create_venv,
+    get_some_vars,
+    ote_demo_deployment_testing,
+    ote_demo_testing,
+    ote_demo_openvino_testing,
+    ote_deploy_openvino_testing,
+    ote_eval_deployment_testing,
+    ote_eval_openvino_testing,
+    ote_eval_testing,
+    ote_train_testing,
+    ote_export_testing,
+    pot_optimize_testing,
+    pot_eval_testing,
+    nncf_optimize_testing,
+    nncf_export_testing,
+    nncf_eval_testing,
+    nncf_eval_openvino_testing,
+    wrong_paths,
+    ote_deploy_common
+)
 
 
+root = '/tmp/ote_cli/'
 ote_dir = os.getcwd()
 
-
-@pytest.fixture()
-def templates(algo_be):
-    return Registry('external').filter(task_type=algo_be).templates
+templates = Registry('external').templates
+templates_ids = [template.model_template_id for template in templates]
 
 
-def test_ote_deploy_no_weights(templates):
-    expected_error = "ote deploy: error: the following arguments are required: --load-weights"
-    for template in templates:
-        deployment_dir = f'./deployed_{template.model_template_id}'
-        command_line = ['ote',
-                        'deploy',
-                        template.model_template_id,
+class OTECliDeployParams:
+    @e2e_pytest_component
+    def test_create_venv(self):
+        work_dir, template_work_dir, algo_backend_dir = get_some_vars(templates[0], root)
+        create_venv(algo_backend_dir, work_dir, template_work_dir)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_ote_deploy_no_template(self, template):
+        error_string = "ote demo: error: the following arguments are required: template"
+        ret = ote_deploy_common(template, [])
+        assert error_string in str(ret.stderr)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_ote_deploy_no_weights(self, template):
+        error_string = "ote deploy: error: the following arguments are required: --load-weights"
+        command_args = [template.model_template_id,
                         f'--save-model-to',
-                        deployment_dir]
-        assert expected_error in str(run(command_line, capture_output=True).stderr)
+                        f'./deployed_{template.model_template_id}']
+        ret = ote_deploy_common(template, command_args)
+        assert error_string in str(ret.stderr)
 
-
-def test_ote_deploy_wrong_paths(templates):
-    for template in templates:
-        command_line = ['ote',
-                        'deploy',
-                        template.model_template_id,
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_ote_deploy_wrong_paths(self, template):
+        error_string = "Path is not valid"
+        command_args = [template.model_template_id,
                         '--load-weights',
-                        'WRONG/PATH.bin',
+                        f'./exported_{template.model_template_id}/openvino.xml',
                         '--save-model-to',
-                        '']
+                        f'./deployed_{template.model_template_id}']
         for case in wrong_paths.values():
-            temp = deepcopy(command_line)
+            temp = deepcopy(command_args)
             temp[4] = case
-            assert "Path is not valid" in str(run(temp, capture_output=True).stderr)
-
-
-def test_ote_deploy_no_template():
-    error_string = "ote deploy: error: the following arguments are required: template, --load-weights"
-    command_line = ['ote',
-                    'deploy']
-    assert error_string in str(run(command_line, capture_output=True).stderr)
+            ret = ote_deploy_common(template, temp)
+            assert error_string in str(ret.stderr)

@@ -17,18 +17,3 @@ from ote_sdk.test_suite.pytest_insertions import *  # noqa #pylint: disable=unus
 pytest_plugins = get_pytest_plugins_from_ote()
 
 ote_conftest_insertion(default_repository_name="ote/training_extensions/")
-
-
-def pytest_addoption(parser):
-    ote_pytest_addoption_insertion(parser)
-
-    parser.addoption("--algo_be",
-                     action="store",
-                     type=str,
-                     help="--algo_be [ANOMALY_CLASSIFICATION | CLASSIFICATION | DETECTION | SEGMENTATION]")
-
-
-def pytest_generate_tests(metafunc):
-    option_value = metafunc.config.option.algo_be
-    if 'algo_be' in metafunc.fixturenames and option_value is not None:
-        metafunc.parametrize("algo_be", [option_value])
