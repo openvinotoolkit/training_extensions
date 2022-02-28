@@ -81,8 +81,8 @@ class TestAnnotation:
 
         annotation = self.annotation
 
-        assert type(annotation.id) == ID
-        assert annotation.id is not None
+        assert type(annotation.id_) == ID
+        assert annotation.id_ is not None
         assert str(annotation.shape) == "Rectangle(x=0.5, y=0.0, width=0.5, height=0.5)"
         assert annotation.get_labels() == []
 
@@ -109,9 +109,9 @@ class TestAnnotation:
         annotation = self.annotation
         ellipse = Ellipse(x1=0.5, y1=0.1, x2=0.8, y2=0.3)
         annotation.shape = ellipse
-        annotation.id = ID(123456789)
+        annotation.id_ = ID(123456789)
 
-        assert annotation.id == ID(123456789)
+        assert annotation.id_ == ID(123456789)
         assert annotation.shape == ellipse
 
     @pytest.mark.priority_medium
@@ -353,7 +353,7 @@ class TestAnnotationSceneEntity:
 
         annotation_scene_entity = self.annotation_scene_entity
 
-        assert annotation_scene_entity.id == ID()
+        assert annotation_scene_entity.id_ == ID()
         assert annotation_scene_entity.kind == AnnotationSceneKind.ANNOTATION
         assert annotation_scene_entity.editor_name == ""
         assert type(annotation_scene_entity.creation_date) == datetime.datetime
@@ -384,13 +384,13 @@ class TestAnnotationSceneEntity:
         annotation_scene_entity = self.annotation_scene_entity
 
         creation_date = self.creation_date
-        annotation_scene_entity.id = ID(123456789)
+        annotation_scene_entity.id_ = ID(123456789)
         annotation_scene_entity.kind = AnnotationSceneKind.PREDICTION
         annotation_scene_entity.editor_name = "editor"
         annotation_scene_entity.creation_date = creation_date
         annotation_scene_entity.annotations = self.annotation
 
-        assert annotation_scene_entity.id == ID(123456789)
+        assert annotation_scene_entity.id_ == ID(123456789)
         assert annotation_scene_entity.kind == AnnotationSceneKind.PREDICTION
         assert annotation_scene_entity.editor_name == "editor"
         assert annotation_scene_entity.creation_date == creation_date
@@ -423,7 +423,7 @@ class TestAnnotationSceneEntity:
             f"kind={annotation_scene_entity.kind}, "
             f"editor={annotation_scene_entity.editor_name}, "
             f"creation_date={annotation_scene_entity.creation_date}, "
-            f"id={annotation_scene_entity.id})"
+            f"id={annotation_scene_entity.id_})"
         ]
 
         for i in annotation_scene_entity_repr:
@@ -604,7 +604,7 @@ class TestNullAnnotationSceneEntity:
 
         null_annotation = NullAnnotationSceneEntity()
 
-        assert null_annotation.id == ID()
+        assert null_annotation.id_ == ID()
         assert null_annotation.kind == AnnotationSceneKind.NONE
         assert null_annotation.editor_name == ""
         assert type(null_annotation.creation_date) == datetime.datetime

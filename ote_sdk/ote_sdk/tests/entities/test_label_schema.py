@@ -452,7 +452,8 @@ class TestLabelGroup:
         Test passes if LabelGroup object id, labels, name and group_type attributes return expected values
 
         <b>Steps</b>
-        1. Check id, labels, name and group_type attributes of LabelGroup object with not specified group_type parameter
+        1. Check id, labels, name and group_type attributes of LabelGroup object with not specified group_type
+        parameter
         2. Check id, labels, name and group_type attributes of LabelGroup object with not specified id parameter
         """
         # Checking attributes of LabelGroup object with specified id and not specified group_type parameters
@@ -461,7 +462,7 @@ class TestLabelGroup:
             labels=[labels.label_0_1, labels.no_id_label, labels.label_0],
             id=ID("1"),
         )
-        assert no_group_type_label_group.id == "1"
+        assert no_group_type_label_group.id_ == "1"
         # Expected ascending sorting of labels
         assert no_group_type_label_group.labels == [
             labels.no_id_label,
@@ -481,8 +482,8 @@ class TestLabelGroup:
             group_type=LabelGroupType.EMPTY_LABEL,
         )
         # Expected randomly generated ID object with 24 characters as "id" attribute
-        assert isinstance(no_id_label_group.id, ID)
-        assert len(no_id_label_group.id) == 24
+        assert isinstance(no_id_label_group.id_, ID)
+        assert len(no_id_label_group.id_) == 24
         # Expected ascending sorting of labels
         assert no_id_label_group.labels == [labels.label_0, labels.label_0_1]
         assert no_id_label_group.name == "ID non-specified Label Group"
@@ -577,7 +578,7 @@ class TestLabelGroup:
             labels=[],
             group_type=LabelGroupType.EMPTY_LABEL,
         )
-        generated_id = no_labels_no_id_label_group.id
+        generated_id = no_labels_no_id_label_group.id_
         assert repr(no_labels_no_id_label_group) == (
             f"LabelGroup(id={generated_id}, name=Null labels, random id group,"
             f" group_type=LabelGroupType.EMPTY_LABEL, labels=[])"
@@ -1295,7 +1296,7 @@ class TestLabelTree:
 
         returned_vertexes = set()
         for label in labels_topological_order:
-            previous, curent = previous_vertexes(label.id)
+            previous, curent = previous_vertexes(label.id_)
             for vertex in previous:
                 assert vertex in returned_vertexes
             returned_vertexes.add(curent)
@@ -1309,7 +1310,7 @@ class TestLabelTree:
         labels_topological_order = label_tree.get_labels_in_topological_order()
         returned_vertexes = set()
         for label in labels_topological_order:
-            previous, curent = previous_vertexes(label.id)
+            previous, curent = previous_vertexes(label.id_)
             for vertex in previous:
                 if (
                     curent != "3"
@@ -1852,7 +1853,9 @@ class TestLabelSchemaEntity:
             id=ID("new_ex_1"),
         )
         new_labels_group = LabelGroup(
-            name="New exclusive labels group", labels=[new_label], id=ID("new_ex_group")
+            name="New exclusive labels group",
+            labels=[new_label],
+            id=ID("new_ex_group"),
         )
         label_schema_entity.add_group(new_labels_group)
         exclusive_groups.append(new_labels_group)

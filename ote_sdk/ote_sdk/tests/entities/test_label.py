@@ -118,10 +118,10 @@ class TestLabelEntity:
         assert self.car.domain == label_car_new_domain
         assert self.car.color == label_car_new_color
         assert self.car.hotkey == label_car_new_hotkey
-        assert self.car.id == label_car_new_id
+        assert self.car.id_ == label_car_new_id
 
         test_label_entity_repr = [
-            f"{self.car.id}",
+            f"{self.car.id_}",
             f"name={self.car.name}",
             f"hotkey={self.car.hotkey}",
             f"domain={self.car.domain}",
@@ -155,7 +155,7 @@ class TestLabelEntity:
         """
 
         assert self.empty.hotkey == ""
-        assert self.empty.id == ID()
+        assert self.empty.id_ == ID()
         assert type(self.empty.color) == Color
 
     @pytest.mark.priority_medium
@@ -177,6 +177,6 @@ class TestLabelEntity:
         2. Check the processing of changed id
         """
 
-        self.empty.id = ID(999999999)
+        self.empty.id_ = ID(999999999)
         assert self.empty > self.car
         assert self.car < self.empty
