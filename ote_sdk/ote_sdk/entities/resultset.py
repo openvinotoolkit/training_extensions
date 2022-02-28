@@ -99,7 +99,7 @@ class ResultSetEntity(metaclass=abc.ABCMeta):
         id = ID() if id is None else id
         performance = NullPerformance() if performance is None else performance
         creation_date = now() if creation_date is None else creation_date
-        self.__id = id
+        self.__id_ = id
         self.__model = model
         self.__prediction_dataset = prediction_dataset
         self.__ground_truth_dataset = ground_truth_dataset
@@ -108,13 +108,23 @@ class ResultSetEntity(metaclass=abc.ABCMeta):
         self.__creation_date = creation_date
 
     @property
-    def id(self) -> ID:
+    def id_(self) -> ID:
         """Returns the id of the ResultSet"""
-        return self.__id
+        return self.__id_
+
+    @id_.setter
+    def id_(self, value: ID) -> None:
+        self.__id_ = value
+
+    @property
+    def id(self) -> ID:
+        """DEPRECATED"""
+        return self.__id_
 
     @id.setter
-    def id(self, value: ID) -> None:
-        self.__id = value
+    def id(self, value: ID):
+        """DEPRECATED"""
+        self.__id_ = value
 
     @property
     def model(self) -> ModelEntity:
@@ -189,5 +199,5 @@ class ResultSetEntity(metaclass=abc.ABCMeta):
             f"purpose={self.purpose}, "
             f"performance={self.performance}, "
             f"creation_date={self.creation_date}, "
-            f"id={self.id})"
+            f"id={self.id_})"
         )

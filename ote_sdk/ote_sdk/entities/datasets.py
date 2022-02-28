@@ -287,7 +287,7 @@ class DatasetEntity:
 
                 # reset ROI
                 roi = copy.copy(dataset_item.roi)
-                roi.id = ID(ObjectId())
+                roi.id_ = ID(ObjectId())
                 roi.set_labels([])
 
                 new_dataset_item = DatasetItemEntity(
