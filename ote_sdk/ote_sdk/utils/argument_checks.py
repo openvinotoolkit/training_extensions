@@ -298,9 +298,10 @@ class DatasetParamTypeCheck(BaseInputArgumentChecker):
 class DirectoryPathCheck(BaseInputArgumentChecker):
     """Class to check directory_path-like parameters"""
 
-    def __init__(self, parameter, parameter_name):
+    def __init__(self, parameter, parameter_name, check_exists=False):
         self.parameter = parameter
         self.parameter_name = parameter_name
+        self.check_exists = check_exists
 
     def check(self):
         """Method raises ValueError exception if file path parameter is not equal to expected"""
@@ -318,54 +319,21 @@ class DirectoryPathCheck(BaseInputArgumentChecker):
         check_that_all_characters_printable(
             parameter=self.parameter, parameter_name=self.parameter_name
         )
-
-
-class OptionalFilePathCheck(BaseInputArgumentChecker):
-    """Class to check optional file_path-like parameters"""
-
-    def __init__(self, parameter, parameter_name, expected_file_extension):
-        self.parameter = parameter
-        self.parameter_name = parameter_name
-        self.expected_file_extensions = expected_file_extension
-
-    def check(self):
-        """Method raises ValueError exception if file path parameter is not equal to expected"""
-        if self.parameter is not None:
-            FilePathCheck(
-                self.parameter, self.parameter_name, self.expected_file_extensions
-            ).check()
+        if self.check_exists:
+            check_that_file_exists(self.parameter, self.parameter_name)
 
 
 class OptionalDirectoryPathCheck(BaseInputArgumentChecker):
     """Class to check optional directory_path-like parameters"""
 
-    def __init__(self, parameter, parameter_name):
+    def __init__(self, parameter, parameter_name, check_exists=False):
         self.parameter = parameter
         self.parameter_name = parameter_name
+        self.check_exists = check_exists
 
     def check(self):
         """Method raises ValueError exception if file path parameter is not equal to expected"""
         if self.parameter is not None:
-            DirectoryPathCheck(self.parameter, self.parameter_name).check()
-
-
-class ClassNameCheck(BaseInputArgumentChecker):
-    """Class to check class name of input parameters"""
-
-    def __init__(self, parameter, parameter_name, expected_type):
-        self.parameter = parameter
-        self.parameter_name = parameter_name
-        self.expected_type = expected_type
-
-    def check(self):
-        """Method raises ValueError exception if required parameter has unexpected type"""
-        if self.parameter is not None:
-            if isinstance(self.parameter, type):
-                parameter_type = self.parameter.__name__
-            else:
-                parameter_type = type(self.parameter).__name__.split(".")[-1]
-            if parameter_type != self.expected_type:
-                raise ValueError(
-                    f"Unexpected type of '{self.parameter_name}' parameter, expected: "
-                    f"{self.expected_type}, actual: {parameter_type}"
-                )
+            DirectoryPathCheck(
+                self.parameter, self.parameter_name, self.check_exists
+            ).check()
