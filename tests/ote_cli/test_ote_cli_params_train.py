@@ -12,30 +12,63 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from copy import deepcopy
-import os
 from subprocess import run
-import shutil
+from copy import deepcopy
 
+import os
 import pytest
 
+from ote_sdk.test_suite.e2e_test_system import e2e_pytest_component
 from ote_cli.registry import Registry
-from common import args, wrong_paths
 
+from common import (
+    create_venv,
+    get_some_vars,
+    ote_demo_deployment_testing,
+    ote_demo_testing,
+    ote_demo_openvino_testing,
+    ote_deploy_openvino_testing,
+    ote_eval_deployment_testing,
+    ote_eval_openvino_testing,
+    ote_eval_testing,
+    ote_train_testing,
+    ote_export_testing,
+    pot_optimize_testing,
+    pot_eval_testing,
+    nncf_optimize_testing,
+    nncf_export_testing,
+    nncf_eval_testing,
+    nncf_eval_openvino_testing,
+    args,
+    wrong_paths,
+    ote_train_common
+)
+
+root = '/tmp/ote_cli/'
 ote_dir = os.getcwd()
 
-
-@pytest.fixture()
-def templates(algo_be):
-    return Registry('external').filter(task_type=algo_be).templates
+templates = Registry('external').templates
+templates_ids = [template.model_template_id for template in templates]
 
 
-def test_ote_train_no_train_ann_file(templates):
-    error_string = "ote train: error: the following arguments are required: --train-ann-files"
-    for template in templates:
-        command_line = ['ote',
-                        'train',
-                        template.model_template_id,
+class OTECliTrainParams:
+    @e2e_pytest_component
+    def test_create_venv(self):
+        work_dir, template_work_dir, algo_backend_dir = get_some_vars(templates[0], root)
+        create_venv(algo_backend_dir, work_dir, template_work_dir)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_ote_deploy_no_template(self, template):
+        error_string = "ote train: error: the following arguments are required: template"
+        ret = ote_train_common(template, [])
+        assert error_string in str(ret.stderr)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_ote_train_no_train_ann_file(self, template):
+        error_string = "ote train: error: the following arguments are required: --train-ann-files"
+        command_line = [template.model_template_id,
                         '--train-data-roots',
                         f'{os.path.join(ote_dir, args["--train-data-roots"])}',
                         '--val-ann-file',
@@ -44,15 +77,14 @@ def test_ote_train_no_train_ann_file(templates):
                         f'{os.path.join(ote_dir, args["--val-data-roots"])}',
                         '--save-model-to',
                         f'./trained_{template.model_template_id}']
-        assert error_string in str(run(command_line, capture_output=True).stderr)
+        ret = ote_train_common(template, command_line)
+        assert error_string in str(ret.stderr)
 
-
-def test_ote_train_no_train_data_roots(templates):
-    error_string = "ote train: error: the following arguments are required: --train-data-roots"
-    for template in templates:
-        command_line = ['ote',
-                        'train',
-                        template.model_template_id,
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_ote_train_no_train_data_roots(self, template):
+        error_string = "ote train: error: the following arguments are required: --train-data-roots"
+        command_line = [template.model_template_id,
                         '--train-ann-file',
                         f'{os.path.join(ote_dir, args["--train-ann-file"])}',
                         '--val-ann-file',
@@ -61,15 +93,14 @@ def test_ote_train_no_train_data_roots(templates):
                         f'{os.path.join(ote_dir, args["--val-data-roots"])}',
                         '--save-model-to',
                         f'./trained_{template.model_template_id}']
-        assert error_string in str(run(command_line, capture_output=True).stderr)
+        ret = ote_train_common(template, command_line)
+        assert error_string in str(ret.stderr)
 
-
-def test_ote_train_no_val_ann_file(templates):
-    error_string = "ote train: error: the following arguments are required: --val-ann-files"
-    for template in templates:
-        command_line = ['ote',
-                        'train',
-                        template.model_template_id,
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_ote_train_no_val_ann_file(self, template):
+        error_string = "ote train: error: the following arguments are required: --val-ann-files"
+        command_line = [template.model_template_id,
                         '--train-ann-file',
                         f'{os.path.join(ote_dir, args["--train-ann-file"])}',
                         '--train-data-roots',
@@ -78,15 +109,14 @@ def test_ote_train_no_val_ann_file(templates):
                         f'{os.path.join(ote_dir, args["--val-data-roots"])}',
                         '--save-model-to',
                         f'./trained_{template.model_template_id}']
-        assert error_string in str(run(command_line, capture_output=True).stderr)
+        ret = ote_train_common(template, command_line)
+        assert error_string in str(ret.stderr)
 
-
-def test_ote_train_no_val_data_roots(templates):
-    error_string = "ote train: error: the following arguments are required: --val-data-roots"
-    for template in templates:
-        command_line = ['ote',
-                        'train',
-                        template.model_template_id,
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_ote_train_no_val_data_roots(self, template):
+        error_string = "ote train: error: the following arguments are required: --val-data-roots"
+        command_line = [template.model_template_id,
                         '--train-ann-file',
                         f'{os.path.join(ote_dir, args["--train-ann-file"])}',
                         '--train-data-roots',
@@ -95,15 +125,14 @@ def test_ote_train_no_val_data_roots(templates):
                         f'{os.path.join(ote_dir, args["--val-ann-file"])}',
                         '--save-model-to',
                         f'./trained_{template.model_template_id}']
-        assert error_string in str(run(command_line, capture_output=True).stderr)
+        ret = ote_train_common(template, command_line)
+        assert error_string in str(ret.stderr)
 
-
-def test_ote_train_no_save_model_to(templates):
-    error_string = "ote train: error: the following arguments are required: --save-model-to"
-    for template in templates:
-        command_line = ['ote',
-                        'train',
-                        template.model_template_id,
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_ote_train_no_save_model_to(self, template):
+        error_string = "ote train: error: the following arguments are required: --save-model-to"
+        command_line = [template.model_template_id,
                         '--train-ann-file',
                         f'{os.path.join(ote_dir, args["--train-ann-file"])}',
                         '--train-data-roots',
@@ -112,14 +141,14 @@ def test_ote_train_no_save_model_to(templates):
                         f'{os.path.join(ote_dir, args["--val-ann-file"])}',
                         '--val-data-roots',
                         f'{os.path.join(ote_dir, args["--val-data-roots"])}']
-        assert error_string in str(run(command_line, capture_output=True).stderr)
-
-
-def test_ote_train_wrong_required_paths(templates):
-    for template in templates:
-        command_line = ['ote',
-                        'train',
-                        template.model_template_id,
+        ret = ote_train_common(template, command_line)
+        assert error_string in str(ret.stderr)
+    
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_ote_train_wrong_required_paths(self, template):
+        error_string = "Path is not valid"
+        command_line = [template.model_template_id,
                         '--train-ann-file',
                         f'{os.path.join(ote_dir, args["--train-ann-file"])}',
                         '--train-data-roots',
@@ -134,15 +163,14 @@ def test_ote_train_wrong_required_paths(templates):
             for case in wrong_paths.values():
                 temp = deepcopy(command_line)
                 temp[i] = case
-                assert "Path is not valid" in str(run(temp, capture_output=True).stderr)
+                ret = ote_train_common(template, temp)
+                assert error_string in str(ret.stderr)
 
-
-def test_ote_train_hpo_not_enabled(templates):
-    expected_error = "Parameter --hpo-time-ratio must be used with --enable-hpo key"
-    for template in templates:
-        command_line = ['ote',
-                        'train',
-                        template.model_template_id,
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_ote_train_hpo_not_enabled(self, template):
+        error_string = "Parameter --hpo-time-ratio must be used with --enable-hpo key"
+        command_line = [template.model_template_id,
                         '--train-ann-file',
                         f'{os.path.join(ote_dir, args["--train-ann-file"])}',
                         '--train-data-roots',
@@ -154,14 +182,14 @@ def test_ote_train_hpo_not_enabled(templates):
                         '--save-model-to',
                         f'./trained_{template.model_template_id}',
                         '--hpo-time-ratio', '4']
-        assert expected_error in str(run(command_line, capture_output=True).stderr)
+        ret = ote_train_common(template, command_line)
+        assert error_string in str(ret.stderr)
 
-
-def test_ote_train_wrong_hpo_value(templates):
-    for template in templates:
-        command_line = ['ote',
-                        'train',
-                        template.model_template_id,
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_ote_train_wrong_hpo_value(self, template):
+        error_string = "ote train: error: argument --hpo-time-ratio: invalid float value: 'STRING_VALUE'"
+        command_line = [template.model_template_id,
                         '--train-ann-file',
                         f'{os.path.join(ote_dir, args["--train-ann-file"])}',
                         '--train-data-roots',
@@ -175,16 +203,26 @@ def test_ote_train_wrong_hpo_value(templates):
                         '--enable-hpo',
                         '--hpo-time-ratio',
                         'STRING_VALUE']
-        expected_error_line = "ote train: error: argument --hpo-time-ratio: invalid float value: 'STRING_VALUE'"
-        assert expected_error_line in str(run(command_line, capture_output=True).stderr)
-        temp = deepcopy(command_line)
-        temp[-1] = "-1"
-        expected_error_line = "Parameter --hpo-time-ratio must not be negative"
-        assert expected_error_line in str(run(temp, capture_output=True).stderr)
+        ret = ote_train_common(template, command_line)
+        assert error_string in str(ret.stderr)
 
-
-def test_ote_train_no_template():
-    error_string = "ote train: error: the following arguments are required: template"
-    command_line = ['ote',
-                    'train']
-    assert error_string in str(run(command_line, capture_output=True).stderr)
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_ote_train_wrong_hpo_value(self, template):
+        error_string = "Parameter --hpo-time-ratio must not be negative"
+        command_line = [template.model_template_id,
+                        '--train-ann-file',
+                        f'{os.path.join(ote_dir, args["--train-ann-file"])}',
+                        '--train-data-roots',
+                        f'{os.path.join(ote_dir, args["--train-data-roots"])}',
+                        '--val-ann-file',
+                        f'{os.path.join(ote_dir, args["--val-ann-file"])}',
+                        '--val-data-roots',
+                        f'{os.path.join(ote_dir, args["--val-data-roots"])}',
+                        '--save-model-to',
+                        f'./trained_{template.model_template_id}',
+                        '--enable-hpo',
+                        '--hpo-time-ratio',
+                        '-1']
+        ret = ote_train_common(template, command_line)
+        assert error_string in str(ret.stderr)

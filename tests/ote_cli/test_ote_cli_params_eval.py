@@ -12,75 +12,105 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from copy import deepcopy
-import os
 from subprocess import run
+from copy import deepcopy
 
-
+import os
 import pytest
 
+from ote_sdk.test_suite.e2e_test_system import e2e_pytest_component
 from ote_cli.registry import Registry
-from common import args, wrong_paths
 
+from common import (
+    create_venv,
+    get_some_vars,
+    ote_demo_deployment_testing,
+    ote_demo_testing,
+    ote_demo_openvino_testing,
+    ote_deploy_openvino_testing,
+    ote_eval_deployment_testing,
+    ote_eval_openvino_testing,
+    ote_eval_testing,
+    ote_train_testing,
+    ote_export_testing,
+    pot_optimize_testing,
+    pot_eval_testing,
+    nncf_optimize_testing,
+    nncf_export_testing,
+    nncf_eval_testing,
+    nncf_eval_openvino_testing,
+    args,
+    wrong_paths,
+    ote_eval_common
+)
 
+root = '/tmp/ote_cli/'
 ote_dir = os.getcwd()
 
-
-@pytest.fixture()
-def templates(algo_be):
-    return Registry('external').filter(task_type=algo_be).templates
+templates = Registry('external').templates
+templates_ids = [template.model_template_id for template in templates]
 
 
-def test_ote_eval_no_test_files(templates):
-    error_string = "ote eval: error: the following arguments are required: --test-ann-files"
-    for template in templates:
-        command_line = ['ote',
-                        'eval',
-                        template.model_template_id,
+class OTECliEvalParams:
+    @e2e_pytest_component
+    def test_create_venv(self):
+        work_dir, template_work_dir, algo_backend_dir = get_some_vars(templates[0], root)
+        create_venv(algo_backend_dir, work_dir, template_work_dir)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_ote_deploy_no_template(self, template):
+        error_string = "the following arguments are required: template"
+        ret = ote_eval_common(template, [])
+        assert error_string in str(ret.stderr)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_ote_eval_no_test_files(self, template):
+        error_string = "ote eval: error: the following arguments are required: --test-ann-files"
+        command_args = [template.model_template_id,
                         '--test-data-roots',
                         f'{os.path.join(ote_dir, args["--test-data-roots"])}',
                         '--load-weights',
                         './trained_default_template/weights.pth',
                         '--save-performance',
                         './trained_default_template/performance.json']
-        assert error_string in str(run(command_line, capture_output=True).stderr)
+        ret = ote_eval_common(template, command_args)
+        assert error_string in str(ret.stderr)
 
-
-def test_ote_eval_no_test_roots(templates):
-    error_string = "ote eval: error: the following arguments are required: --test-data-roots"
-    for template in templates:
-        command_line = ['ote',
-                        'eval',
-                        template.model_template_id,
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_ote_eval_no_test_roots(self, template):
+        error_string = "ote eval: error: the following arguments are required: --test-data-roots"
+        command_args = [template.model_template_id,
                         '--test-ann-file',
                         f'{os.path.join(ote_dir, args["--test-ann-files"])}',
                         '--load-weights',
                         './trained_default_template/weights.pth',
                         '--save-performance',
                         './trained_default_template/performance.json']
-        assert error_string in str(run(command_line, capture_output=True).stderr)
+        ret = ote_eval_common(template, command_args)
+        assert error_string in str(ret.stderr)
 
-
-def test_ote_eval_no_weights(templates):
-    error_string = "ote eval: error: the following arguments are required: --load-weights"
-    for template in templates:
-        command_line = ['ote',
-                        'eval',
-                        template.model_template_id,
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_ote_eval_no_weights(self, template):
+        error_string = "ote eval: error: the following arguments are required: --load-weights"
+        command_args = [template.model_template_id,
                         '--test-ann-file',
                         f'{os.path.join(ote_dir, args["--test-ann-files"])}',
                         '--test-data-roots',
                         f'{os.path.join(ote_dir, args["--test-data-roots"])}',
                         '--save-performance',
                         './trained_default_template/performance.json']
-        assert error_string in str(run(command_line, capture_output=True).stderr)
+        ret = ote_eval_common(template, command_args)
+        assert error_string in str(ret.stderr)
 
-
-def test_ote_eval_wrong_paths_in_options(templates):
-    for template in templates:
-        command_line = ['ote',
-                        'eval',
-                        template.model_template_id,
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_ote_eval_wrong_paths_in_options(self, template):
+        error_string = "Path is not valid"
+        command_args = [template.model_template_id,
                         '--test-ann-file',
                         f'{os.path.join(ote_dir, args["--test-ann-files"])}',
                         '--test-data-roots',
@@ -91,13 +121,7 @@ def test_ote_eval_wrong_paths_in_options(templates):
                         './trained_default_template/performance.json']
         for i in [4, 6, 8]:
             for case in wrong_paths.values():
-                temp = deepcopy(command_line)
+                temp = deepcopy(command_args)
                 temp[i] = case
-                assert "Path is not valid" in str(run(temp, capture_output=True).stderr)
-
-
-def test_ote_eval_no_template():
-    error_string = "ote eval: error: the following arguments are required: template"
-    command_line = ['ote',
-                    'eval']
-    assert error_string in str(run(command_line, capture_output=True).stderr)
+                ret = ote_eval_common(template, command_args)
+                assert error_string in str(ret.stderr)
