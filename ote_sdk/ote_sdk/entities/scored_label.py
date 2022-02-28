@@ -31,10 +31,15 @@ class ScoredLabel:
         return self.label.name
 
     @property
-    def id(self) -> ID:
+    def id_(self) -> ID:
         """
         Returns the label id.
         """
+        return self.label.id_
+
+    @property
+    def id(self) -> ID:
+        """DEPRECATED"""
         return self.label.id
 
     @property
@@ -80,14 +85,14 @@ class ScoredLabel:
 
     def __repr__(self):
         return (
-            f"ScoredLabel({self.id}, name={self.name}, probability={self.probability}, "
+            f"ScoredLabel({self.id_}, name={self.name}, probability={self.probability}, "
             f"domain={self.domain}, color={self.color}, hotkey={self.hotkey})"
         )
 
     def __eq__(self, other):
         if isinstance(other, ScoredLabel):
             return (
-                self.id == other.id
+                self.id_ == other.id_
                 and self.name == other.name
                 and self.color == other.color
                 and self.hotkey == other.hotkey

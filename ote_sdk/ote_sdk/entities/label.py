@@ -76,9 +76,11 @@ class LabelEntity:
     :param is_empty: set to True if the label is an empty label.
     :param id: the ID of the label. Set to ID() so that a new unique ID
         will be assigned upon saving. If the argument is None, it will be set to ID()
+    :param is_anomalous: boolean that indicates whether the label is the Anomalous label. Always set to False for non-
+        anomaly projects.
     """
 
-    # pylint: disable=redefined-builtin, too-many-arguments; Requires refactor
+    # pylint: disable=redefined-builtin, too-many-instance-attributes, too-many-arguments; Requires refactor
     def __init__(
         self,
         name: str,
@@ -88,6 +90,7 @@ class LabelEntity:
         creation_date: Optional[datetime.datetime] = None,
         is_empty: bool = False,
         id: Optional[ID] = None,
+        is_anomalous: bool = False,
     ):
         id = ID() if id is None else id
         color = Color.random() if color is None else color
@@ -99,7 +102,8 @@ class LabelEntity:
         self._domain = domain
         self._is_empty = is_empty
         self._creation_date = creation_date
-        self._id = id
+        self.__id_ = id
+        self.is_anomalous = is_anomalous
 
     @property
     def name(self):
@@ -160,41 +164,52 @@ class LabelEntity:
         return self._creation_date
 
     @property
-    def id(self) -> ID:
+    def id_(self) -> ID:
         """
         Returns the label id.
         """
-        return self._id
+        return self.__id_
+
+    @id_.setter
+    def id_(self, value: ID):
+        self.__id_ = value
+
+    @property
+    def id(self) -> ID:
+        """DEPRECATED"""
+        return self.__id_
 
     @id.setter
     def id(self, value: ID):
-        self._id = value
+        """DEPRECATED"""
+        self.__id_ = value
 
     def __repr__(self):
         return (
-            f"LabelEntity({self.id}, name={self.name}, hotkey={self.hotkey}, "
+            f"LabelEntity({self.id_}, name={self.name}, hotkey={self.hotkey}, "
             f"domain={self.domain}, color={self.color})"
         )
 
     def __eq__(self, other):
         if isinstance(other, LabelEntity):
             return (
-                self.id == other.id
+                self.id_ == other.id_
                 and self.name == other.name
                 and self.color == other.color
                 and self.hotkey == other.hotkey
                 and self.domain == other.domain
+                and self.is_anomalous == other.is_anomalous
             )
         return False
 
     def __lt__(self, other):
         if isinstance(other, LabelEntity):
-            return self.id < other.id
+            return self.id_ < other.id_
         return False
 
     def __gt__(self, other):
         if isinstance(other, LabelEntity):
-            return self.id > other.id
+            return self.id_ > other.id_
         return False
 
     def __hash__(self):
