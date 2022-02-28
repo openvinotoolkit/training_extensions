@@ -4,15 +4,20 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+import copy
+import logging
 from enum import Enum
-from typing import List, Optional, Sequence
+from typing import Dict, List, Optional, Sequence
 
+import numpy as np
 from bson import ObjectId
 
 from ote_sdk.entities.graph import Graph, MultiDiGraph
 from ote_sdk.entities.id import ID
 from ote_sdk.entities.label import LabelEntity
 from ote_sdk.entities.scored_label import ScoredLabel
+
+logger = logging.getLogger(__name__)
 
 
 class LabelGroupExistsException(ValueError):
@@ -591,3 +596,190 @@ class LabelSchemaEntity:
         """
         label_group = LabelGroup(name="from_label_list", labels=labels)
         return LabelSchemaEntity(label_groups=[label_group])
+
+    def resolve_labels_probabilistic(
+        self,
+        scored_labels: List[ScoredLabel],
+        selected_labels: List[LabelEntity] = None,
+    ) -> List[ScoredLabel]:
+        """
+        Resolves hierarchical labels and exclusivity
+        based on a list of ScoredLabels (labels with probability).
+
+        The following two steps are taken:
+
+        - selects the most likely label from an exclusive (multiclass) group
+        - removes children of "not-most-likely" (non-max) parents in an exclusive group (top-down approach)
+
+        The method is intended to post-process the output of probabilistic systems such as predictions coming from
+        machine learning methods to resolve ambiguities and logical impossibilities. When processing (non-probabilistic)
+        user input please use `complete_labels` instead.
+
+        :param label_schema: `LabelSchemaEntity` object
+        :param scored_labels: a list of ScoredLabels (labels with probability)
+        :param selected_labels: if not None, will only consider labels within `selected_labels` for resolving.
+                                Any other labels which have relations with selected_labels (e.g. parent),
+                                but are outside `selected_labels` are set to a default probability of 1.0
+        """
+        input_domains = set(lbl.domain for lbl in scored_labels)
+        label_to_probability = {
+            scored_label.get_label(): scored_label.probability
+            for scored_label in scored_labels
+        }
+        resolved_labels = self.__resolve_labels_probabilistic(
+            label_to_probability, selected_labels
+        )
+        output_domains = set(lbl.domain for lbl in resolved_labels)
+        if input_domains != output_domains:
+            logger.error(
+                "Something went wrong in 'resolve_labels_probabilistic', "
+                "some tasks (domains) lost all their labels; "
+                "label_schema: %s  input_labels: %s  output_labels: %s",
+                self,
+                scored_labels,
+                resolved_labels,
+            )
+        return resolved_labels
+
+    def __resolve_labels_probabilistic(
+        self,
+        label_to_probability: Dict[LabelEntity, float],
+        selected_labels: Optional[Sequence[LabelEntity]],
+    ) -> List[ScoredLabel]:
+        """
+        Resolves hierarchical labels and exclusivity
+        based on a probabilistic label output (map from `Label` to float)
+
+        - selects the most likely (max) label from an exclusive group
+        - removes children of non-max parents in an exclusive group
+
+        See `resolve_labels_probabilistic` for parameter descriptions
+
+        """
+        # add (potentially) missing ancestors labels for children with probability 0
+        # this is needed so that suppression of children of non-max exclusive labels works when the exclusive
+        # group has only one member
+        label_to_probability = self.__add_missing_ancestors(
+            label_to_probability, selected_labels
+        )
+
+        hard_classification = self.__resolve_exclusive_labels(label_to_probability)
+
+        # suppress the output of children of parent nodes that are not the most likely label within their group
+        resolved = self.__suppress_descendant_output(hard_classification)
+
+        result = []
+        for label, probability in resolved.items():
+            if probability > 0:  # only return labels with non-zero probability
+                result.append(
+                    ScoredLabel(
+                        label,
+                        probability=(
+                            probability
+                            * label_to_probability.get(label, 1.0)
+                            # retain the original probability in the output
+                        ),
+                    )
+                )
+        return result
+
+    def __suppress_descendant_output(
+        self, hard_classification: Dict[LabelEntity, float]
+    ) -> Dict[LabelEntity, float]:
+        """
+        Suppresses outputs in `label_to_probability` (sets probability to 0.0) for descendants of parents that have
+        0 probability in `hard_classification`
+        """
+
+        # Input: Conditional probability of each label given its parent label
+        # Output: Marginal probability of each label
+
+        # We recursively compute the marginal probability of each node by multiplying the conditional probability
+        # with the marginal probability of its parent. That is:
+        # P(B) = P(B|A) * P(A)
+        # The recursion is done a topologically sorted list of labels to ensure that the marginal probability
+        # of the parent label has been computed before trying to compute the child's probability.
+
+        label_tree = self.label_tree
+        all_labels = label_tree.get_labels_in_topological_order()
+
+        for child in all_labels:
+            if child in hard_classification:
+                # Get the immediate parents (should be at most one element; zero for root labels)
+                parents = label_tree.neighbors(child)
+
+                if len(parents) > 0:
+                    parent = parents[0]
+                    if parent in hard_classification:
+                        hard_classification[child] *= hard_classification[parent]
+
+        return hard_classification
+
+    def __resolve_exclusive_labels(
+        self, label_to_probability: Dict[LabelEntity, float]
+    ) -> Dict[LabelEntity, float]:
+        """
+        For labels in `label_to_probability` sets labels that are most likely (maximum probability) in their exclusive
+        group to 1.0 and other (non-max) labels to probability 0.
+        """
+        hard_classification: Dict[LabelEntity, float] = {}
+        top_level_labels_in_label_schema = [
+            label_
+            for label_ in self.label_tree.get_labels_in_topological_order()
+            if self.get_parent(label_) is None
+        ]
+
+        for label, probability in label_to_probability.items():
+            if label not in hard_classification:
+                label_parent = self.get_parent(label)
+                if label_parent is None:
+                    # The label itself is a top-level label
+                    exclusive_neighbours = [
+                        label_
+                        for label_ in top_level_labels_in_label_schema
+                        if label_ != label
+                    ]
+                else:
+                    exclusive_neighbours = [
+                        label_
+                        for label_ in self.get_children(label_parent)
+                        if label_ != label
+                    ]
+
+                probabilities = [probability]
+                neighbours_ = [label]
+                for neighbor in exclusive_neighbours:
+                    neighbours_.append(neighbor)
+                    probabilities.append(label_to_probability.get(neighbor, 0))
+                if len(probabilities) > 1:
+                    max_index = np.argmax(probabilities)
+                    for idx, neighbor in enumerate(neighbours_):
+                        hard_classification[neighbor] = float(max_index == idx)
+                else:
+                    # single node group, interpret as multilabel node
+                    hard_classification[label] = float(
+                        label_to_probability[label] > 0.0
+                    )
+        return hard_classification
+
+    def __add_missing_ancestors(
+        self,
+        label_to_probability: Dict[LabelEntity, float],
+        selected_labels: Optional[Sequence[LabelEntity]],
+    ) -> Dict[LabelEntity, float]:
+        """
+        Adds missing ancestors (of the same task) to the `label_to_probability` map.
+        Missing ancestors get probability `probability`
+        """
+        updated_label_to_probability = copy.deepcopy(label_to_probability)
+        for label in label_to_probability:
+            for ancestor in self.get_ancestors(label):
+                if ancestor not in updated_label_to_probability:
+                    updated_label_to_probability[ancestor] = (
+                        0.0  # by default missing ancestors get probability 0.0
+                        if selected_labels is None
+                        else (ancestor not in selected_labels) * 1.0
+                        # ... unless label selection is used, in that case
+                        # the ancestor will get probability 1.0 if it is missing
+                    )
+        return updated_label_to_probability
