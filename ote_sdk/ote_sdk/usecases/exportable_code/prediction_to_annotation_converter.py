@@ -269,7 +269,6 @@ class AnomalyClassificationToAnnotationConverter(IPredictionToAnnotationConverte
             0
         ]
 
-    # pylint: disable=arguments-renamed
     def convert_to_annotation(
         self, predictions: np.ndarray, metadata: Dict[str, Any]
     ) -> AnnotationSceneEntity:
