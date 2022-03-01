@@ -59,7 +59,7 @@ class OTECliExportParams:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_ote_deploy_no_template(self, template):
+    def test_ote_export_no_template(self, template):
         error_string = "ote export: error: the following arguments are required:" \
                        " template, --load-weights, --save-model-to"
         ret = ote_export_common(template, [])
