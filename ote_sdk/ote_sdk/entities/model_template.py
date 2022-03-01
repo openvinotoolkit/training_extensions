@@ -448,6 +448,7 @@ ANOMALY_TASK_TYPES: Sequence[TaskType] = (
     TaskType.ANOMALY_SEGMENTATION,
 )
 
+
 # Tasks which support local labels    
 LOCAL_TASKS: Sequence[TaskType] = (
     TaskType.DETECTION,
@@ -457,7 +458,8 @@ LOCAL_TASKS: Sequence[TaskType] = (
     TaskType.INSTANCE_SEGMENTATION,
     TaskType.ROTATED_DETECTION,
 )
-  
+
+
 # Tasks which support global labels
 GLOBAL_TASKS: Sequence[TaskType] = (
     TaskType.CLASSIFICATION,
