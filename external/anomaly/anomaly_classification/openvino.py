@@ -21,7 +21,7 @@ import io
 import json
 import os
 import tempfile
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 from zipfile import ZipFile
 
 import numpy as np
@@ -33,8 +33,7 @@ from compression.engines.ie_engine import IEEngine
 from compression.graph import load_model, save_model
 from compression.graph.model_utils import compress_model_weights, get_nodes_by_type
 from compression.pipeline.initializer import create_pipeline
-from omegaconf import ListConfig
-from omegaconf.dictconfig import DictConfig
+from omegaconf import OmegaConf
 from ote_anomalib.config import get_anomalib_config
 from ote_anomalib.exportable_code import AnomalyClassification
 from ote_anomalib.logging import get_logger
@@ -83,7 +82,7 @@ class OTEOpenVINOAnomalyDataloader(DataLoader):
 
     def __init__(
         self,
-        config: Union[DictConfig, ListConfig],
+        config: ADDict,
         dataset: DatasetEntity,
         inferencer: OpenVINOInferencer,
     ):
@@ -119,17 +118,17 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
         template_file_path = task_environment.model_template.model_template_path
         self._base_dir = os.path.abspath(os.path.dirname(template_file_path))
 
-    def get_config(self) -> Union[DictConfig, ListConfig]:
+    def get_config(self) -> ADDict:
         """
         Get Anomalib Config from task environment
 
         Returns:
-            Union[DictConfig, ListConfig]: Anomalib config
+            ADDict: Anomalib config
         """
         task_name = self.task_environment.model_template.name
         ote_config = self.task_environment.get_hyper_parameters()
         config = get_anomalib_config(task_name=task_name, ote_config=ote_config)
-        return config
+        return ADDict(OmegaConf.to_container(config))
 
     def infer(self, dataset: DatasetEntity, inference_parameters: InferenceParameters) -> DatasetEntity:
         """Perform Inference.
