@@ -143,13 +143,9 @@ def main():
     validate_path(args.load_weights)
 
     if args.fit_to_size:
-        h, w = args.fit_to_size
-        if h <= 0 or w <= 0:
+        height, width = args.fit_to_size
+        if height <= 0 or width <= 0:
             raise ValueError('Both values of --fit_to_size parameter must be > 0')
-
-    if args.delay:
-        if args.delay < 0:
-            raise ValueError('Value of --delay parameter must not be negative')
 
     # Get classes for Task, ConfigurableParameters and Dataset.
     if any(args.load_weights.endswith(x) for x in (".bin", ".xml", ".zip")):
@@ -200,6 +196,8 @@ def main():
             cv2.imshow("frame", frame)
             if cv2.waitKey(args.delay) == ESC_BUTTON:
                 break
+        elif args.delay < 0:
+            raise ValueError('Value of --delay parameter must not be negative')
         else:
             print(f"{frame_index=}, {elapsed_time=}, {len(predictions)=}")
 
