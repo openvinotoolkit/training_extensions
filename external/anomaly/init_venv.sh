@@ -100,7 +100,7 @@ pip install wheel || exit 1
 pip install --upgrade setuptools || exit 1
 
 if [[ -z $CUDA_VERSION_CODE ]]; then
-  pip install torch==${TORCH_VERSION}+cpu torchvision==${TORCHVISION_VERSION}+cpu -f https://download.pytorch.org/whl/torch_stable.html || exit 1
+  pip install torch==${TORCH_VERSION}+cpu torchvision==${TORCHVISION_VERSION}+cpu -f https://download.pytorch.org/whl/torch_stable.html --no-cache || exit 1
   echo torch==${TORCH_VERSION}+cpu >> ${CONSTRAINTS_FILE}
   echo torchvision==${TORCHVISION_VERSION}+cpu >> ${CONSTRAINTS_FILE}
 else
