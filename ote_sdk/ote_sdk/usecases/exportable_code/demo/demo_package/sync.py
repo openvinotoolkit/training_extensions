@@ -36,7 +36,7 @@ class SyncInferencer:
             )
 
             # any user's visualizer
-            output = self.visualizer.draw(frame, annotation_scene)
+            output = self.visualizer.draw(frame, annotation_scene, frame_meta)
             self.visualizer.show(output)
 
             if self.visualizer.is_quit():

@@ -20,7 +20,7 @@ from ote_sdk.usecases.exportable_code.prediction_to_annotation_converter import 
     IPredictionToAnnotationConverter,
 )
 from ote_sdk.usecases.exportable_code.streamer import get_streamer
-from ote_sdk.usecases.exportable_code.visualization import Visualizer
+from ote_sdk.usecases.exportable_code.visualizers import Visualizer
 
 
 class ChainInferencer:

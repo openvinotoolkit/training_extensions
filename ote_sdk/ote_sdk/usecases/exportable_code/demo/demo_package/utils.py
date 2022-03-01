@@ -19,6 +19,7 @@ from ote_sdk.serialization.label_mapper import LabelSchemaMapper
 from ote_sdk.usecases.exportable_code.prediction_to_annotation_converter import (
     create_converter,
 )
+from ote_sdk.usecases.exportable_code.visualizers import AnomalyVisualizer, Visualizer
 
 
 def get_model_path(path: Optional[Path]) -> Path:
@@ -91,3 +92,18 @@ def create_output_converter(config_file: Path = None):
     converter_type = Domain[parameters["converter_type"]]
     labels = LabelSchemaMapper.backward(parameters["model_parameters"]["labels"])
     return create_converter(converter_type, labels)
+
+
+def create_visualizer(config_file: Path, inference_type: str):
+    """
+    Create visualizer according to kind of task
+    """
+    parameters = get_parameters(config_file)
+    task_type = parameters["converter_type"]
+
+    if inference_type != "chain" and (
+        task_type in ("ANOMALY_CLASSIFICATION", "ANOMALY_SEGMENTATION")
+    ):
+        return AnomalyVisualizer(window_name="Result")
+
+    return Visualizer(window_name="Result")

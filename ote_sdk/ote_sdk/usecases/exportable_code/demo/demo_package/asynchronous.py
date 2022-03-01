@@ -62,5 +62,5 @@ class AsyncInferencer:
         annotation_scene = self.converter.convert_to_annotation(predictions, frame_meta)
         current_frame = frame_meta["frame"]
         # any user's visualizer
-        output = self.visualizer.draw(current_frame, annotation_scene)
+        output = self.visualizer.draw(current_frame, annotation_scene, frame_meta)
         return output

@@ -9,7 +9,7 @@ Initialization of demo package
 from .asynchronous import AsyncInferencer
 from .sync import SyncInferencer
 from .sync_pipeline import ChainInferencer
-from .utils import create_model, create_output_converter
+from .utils import create_model, create_output_converter, create_visualizer
 
 __all__ = [
     "SyncInferencer",
@@ -17,4 +17,5 @@ __all__ = [
     "ChainInferencer",
     "create_model",
     "create_output_converter",
+    "create_visualizer",
 ]

@@ -16,8 +16,8 @@ from ote_sdk.usecases.exportable_code.demo.demo_package import (
     SyncInferencer,
     create_model,
     create_output_converter,
+    create_visualizer,
 )
-from ote_sdk.usecases.exportable_code.visualization import Visualizer
 
 
 def build_argparser():
@@ -97,15 +97,17 @@ def main():
     # create models and converters for outputs
     models = []
     converters = []
+    last_config = ""
     for model_path in args.models:
         config_file = model_path.parent.resolve() / "config.json"
+        last_config = config_file
         model_file = model_path.parent.parent.resolve() / "python" / "model.py"
         model_file = model_file if model_file.exists() else None
         models.append(create_model(model_path, config_file, model_file))
         converters.append(create_output_converter(config_file))
 
     # create visualizer
-    visualizer = Visualizer(window_name="Result")
+    visualizer = create_visualizer(last_config, args.inference_type)
 
     # create inferencer and run
     demo = get_inferencer_class(args.inference_type, models)(
