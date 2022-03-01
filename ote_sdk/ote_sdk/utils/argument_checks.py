@@ -8,7 +8,6 @@ Utils for checking functions and methods arguments
 
 import typing
 from abc import ABC, abstractmethod
-from datetime import datetime
 from os.path import exists
 
 import yaml
@@ -20,10 +19,6 @@ def raise_value_error_if_parameter_has_unexpected_type(
     parameter, parameter_name, expected_type
 ):
     """Function raises ValueError exception if parameter has unexpected type"""
-    time_now = datetime.now()
-    print(
-        f"!_! started checking {parameter_name} with expected type {expected_type} value:{parameter} at {time_now}"
-    )
     if expected_type == float:
         expected_type = (int, float, floating)
     if not isinstance(parameter, expected_type):
@@ -31,8 +26,6 @@ def raise_value_error_if_parameter_has_unexpected_type(
         raise ValueError(
             f"Unexpected type of '{parameter_name}' parameter, expected: {expected_type}, actual: {parameter_type}"
         )
-    time_now = datetime.now()
-    print(f"!_! finished checking {parameter_name} with expected type {expected_type}")
 
 
 def check_nested_elements_type(iterable, parameter_name, expected_type):
