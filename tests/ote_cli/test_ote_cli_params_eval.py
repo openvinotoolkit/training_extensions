@@ -59,7 +59,7 @@ class OTECliEvalParams:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_ote_deploy_no_template(self, template):
+    def test_ote_eval_no_template(self, template):
         error_string = "the following arguments are required: template"
         ret = ote_eval_common(template, [])
         assert error_string in str(ret.stderr)
