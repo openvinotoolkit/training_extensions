@@ -59,7 +59,7 @@ class OTECliTrainParams:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_ote_deploy_no_template(self, template):
+    def test_ote_train_no_template(self, template):
         error_string = "ote train: error: the following arguments are required: template"
         ret = ote_train_common(template, [])
         assert error_string in str(ret.stderr)
