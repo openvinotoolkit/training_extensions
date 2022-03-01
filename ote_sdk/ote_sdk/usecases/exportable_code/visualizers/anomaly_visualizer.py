@@ -52,8 +52,8 @@ class AnomalyVisualizer(Visualizer):
 
     # pylint:disable=signature-differs
     def draw(  # type: ignore[override]
-        self, image: np.ndarray, annotation: AnnotationSceneEntity, meta: dict  # type: ignore[override]
-    ) -> np.ndarray:  # type: ignore[override]
+        self, image: np.ndarray, annotation: AnnotationSceneEntity, meta: dict
+    ) -> np.ndarray:
         """
         Draw annotations on the image
         :param image: Input image
