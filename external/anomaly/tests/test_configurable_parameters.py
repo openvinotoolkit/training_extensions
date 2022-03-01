@@ -24,7 +24,6 @@ from anomaly_classification.configs.padim import PadimAnomalyClassificationConfi
 from anomaly_classification.configs.stfpm import STFPMAnomalyClassificationConfig
 from ote_anomalib.configs import get_anomalib_config
 from ote_sdk.configuration.helper import convert, create
-
 from tests.helpers.config import get_config_and_task_name
 
 logger = logging.getLogger(__name__)
