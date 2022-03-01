@@ -80,9 +80,9 @@ the algo backends) the callstack of the test looks as follows:
 The next sections will describe the corresponding classes from the bottom to the top.
 
 
-## III. Test actions.
+## III. Test actions
 
-### III.1 General description of test actions classes.
+### III.1 General description of test actions classes
 
 The test action classes in test suite make the real work.
 
@@ -166,7 +166,7 @@ training in its method `__call__` can use
         }
 ```
 
-### III.2 When implementation of own test action class is required.
+### III.2 When implementation of own test action class is required
 
 Please, note that `test_suite/training_tests_actions.py` contains reference code of actions for
 mmdetection algo backend. This is done due to historical reasons and due to fact that mmdetection is
@@ -199,7 +199,7 @@ Also there is a case when a new test action class should be additionally impleme
 `test_suite/training_tests_actions.py` -- when we found out that addition test action should be used
 for all algo backends.
 
-### III.3 How to implement own test action class.
+### III.3 How to implement own test action class
 
 Please, note that this section covers the topic how to implement a new test action class, but does
 not cover the topic how to make the test action class to be used by tests -- it is covered below in
@@ -252,6 +252,16 @@ def __init__(self, action: BaseOTETestAction, stages_storage: OTETestStagesStora
 
 The `stages_storage` instance is also kept inside `OTETestStage`, it will be used to get for each
 stage its dependencies.  
+Note that the abstract interface class `OTETestStagesStorageInterface` has the only abstract method
+`get_stage` with declaration
+```python
+def get_stage(self, name: str) -> "OTETestStage":
+```
+-- it returns test stage class by its name.
+
+Note that test stage has the property `name` that returns the name of its action
+(i.e. the name of a stage equals to the name of the wrapped action).
+
 The class `OTETestStage` has method `get_depends_stages` that works as follows:
 1. get for the wrapped action the list of names from its field `_depends_stages_names` using the
    property `depends_stages_names`
@@ -451,11 +461,151 @@ requirements.
 The keys of the dict are strings -- the parameters' part of the test id-s. This string uniquely
 identifies the test, since it contains the required action, and also the description of a model, a
 dataset used for training, and training parameters.  
-(See the description of the function `OTETestHelper._generate_test_id` below in the section TODO.)
+(See the description of the function `OTETestHelper._generate_test_id` below in the section TODO.)  
+Although the id-s are unique, they have a drawback -- they are quite long, since they contain all
+the info to identify the test.
 
 Examples of such keys are:
 * `ACTION-training_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-bbcd,num_iters-CONFIG,batch-CONFIG,usecase-reallife`
 * `ACTION-nncf_export_evaluation,model-Custom_Image_Classification_EfficinetNet-B0,dataset-lg_chem,num_epochs-CONFIG,batch-CONFIG,usecase-reallife`
+
+## V. Test Case class
+
+### V.1 General description
+
+As stated above, test case class instance connects the test stages between each other and keeps
+in its fields results of the kept test stages between tests.  
+
+Since the instance of this class is kept in the cache of training test helper's instance between
+runs of tests, results of one test may be re-used by other tests.
+
+One of the most important question is when a test may re-use results of another test.  
+We can consider this from the following point of view.  
+We suppose that the test suite indeed do not make several independent tests, but make a set of
+actions with several "test cases".
+Since the test suite works with OTE, each "test case" is considered as a situation that could be
+happened during some process of work with OTE, and the process may include different actions.
+
+Since OTE is focused on training a neural network and making some operations on the trained model,
+we defined the test case by the parameters that define training process
+(at least they defines it as much as it is possible for such stochastic process).
+
+Usually the parameters defining the training process are:
+1. a model - typically it is a name of OTE template to be used
+2. a dataset - typically it is a dataset name that should be used
+   (we use known pre-defined names for the datasets on our CI)
+3. other training parameters:
+   * `batch_size`
+   * `num_training_epochs`
+
+We suppose that for each algo backend there is a known set of parameters that define training
+process, and we suppose that if two tests have the same these parameters, then they are belong to
+the same test case.  
+We call these parameters "the parameters defining the test case".
+
+But from pytest point of view there are just a lot of tests with some parameters.
+
+The general approach that is used to allow re-using results of test stages between test is the
+following:
+* The tests are grouped such that the tests from one group have the same parameters from the list
+  of "parameters that define the test case" -- it means that the tests are grouped by the
+  "test cases"
+* After that the tests are reordered such that
+  * the test from one group are executed sequentially one-by-one, without tests from other group
+    between tests in one group
+  * the test from one group are executed sequentially in the order defined for the test actions
+    beforehand;
+* An instance of the test case class is created once for each of the group of tests stated above
+  -- so, the instance of test case class is created for each "test case" described above.  
+  As stated above, the instance of test case class is kept inside cache in OTE Test Helper class, it allows to re-use
+
+### V.2 Base interface of a test case class, creation of a test case class
+
+The class of the test case is generated "on the fly" by the function
+`generate_ote_integration_test_case_class` from the file `test_suite/training_test_case.py`;
+the function has the declaration
+```python
+def generate_ote_integration_test_case_class(
+    test_actions_classes: List[Type[BaseOTETestAction]],
+) -> Type:
+```
+The function `generate_ote_integration_test_case_class` works as follows:
+* receives as the input the list of action classes that should be used in the test case
+  -- the test case will be a storage for the test stages wrapping the actions and will connect the
+  test stages with each other
+* and returns the class type that will be used by the instance of the test helper.
+
+The variable with the type of test case received from the function is stored in the test helper
+instance -- it is stored in a special class "test creation parameters", see about it below in the
+section TODO.
+
+The class of the test case for a test is always inherited from the abstract interface class
+`OTETestCaseInterface`.
+It is derived from the abstract interface class `OTETestStagesStorageInterface`, so it has the
+abstract method `get_stage` that for a string `name` returns test stage instance with this name.
+
+The interface class `OTETestCaseInterface` has two own methods:
+* abstract classmethod `get_list_of_test_stages` without parameters that returns the list of names
+  of test stages for this test case
+* abstract method `run_stage` that runs a stage with pointed name, the method has declaration
+```python
+    @abstractmethod
+    def run_stage(self, stage_name: str, data_collector: DataCollector,
+                  cur_test_expected_metrics_callback: Optional[Callable[[], Dict]]):
+```
+
+When the test case method `run_stage` is called, it receives as the parameters
+* `stage_name` -- the name of the test stage to be called
+* `data_collector` -- the `DataCollector` instance that is used when the method `run_once` of the
+  test stage is called
+* `cur_test_expected_metrics_callback` -- a factory function that returns the expected metrics for
+  the current test, the factory function is used to create the `Validator` instance that will make
+  validation for the current test.
+
+The method `run_stage` of a created test case class always does the following:
+1. checks that `stage_name` is a known name of a test stage for this test case
+2. creates a `Validator` instance for the given `cur_test_expected_metrics_callback`
+3. finds the test stage instance for the given `stage_name` and run for it `run_once` method as
+   described above in the section "IV.2 Running a test action through its test stage" with the
+   parameters `data_collector` and validator
+
+If we return back to the `OTETestCaseInterface`, we can see that the test case class derived from it
+should implement the classmethod `get_list_of_test_stages` without parameters that returns the list
+of names of test stages for this test case.
+
+Note that this method `get_list_of_test_stages` is a classmethod, since it is used when pytest
+collects information on tests, before the first instance of the test case class is created.
+
+> NB: We decided to make the test case class as a class that is generated by a function instead of a
+> "normal" class, since we would like to encapsulate everything related to the test case in one
+> entity -- due to it the method`get_list_of_test_stages` is not a method of a separate entity, but
+> a classmethod of the test case class.  
+> This could be changed in the future.
+
+Also note that the function `generate_ote_integration_test_case_class` does not makes anything
+really complicated for creation of a test case class: all test case classes are the same except the
+parameter `test_actions_classes` with the list of action classes that is used to create test stage
+wrapper for each of the test action from the list.
+
+### V.3 The constructor of a test case class
+
+Each test case class created by the function `generate_ote_integration_test_case_class` has
+the following constructor:
+```python
+def __init__(self, params_factories_for_test_actions: Dict[str, Callable[[], Dict]]):
+```
+
+As you can see the only parameter of this constructor is `params_factories_for_test_actions` that is
+a dict:
+* each key of the dict is a name of test actions
+* each value of the dict is a factory function that does not receive any parameter and returns the
+  structure of kwargs for the corresponding action
+
+Note that most of the test actions do not receive parameters at all -- they receive the result of
+previous actions, makes its own action, may make validation, etc.
+
+
+
 
 
 
