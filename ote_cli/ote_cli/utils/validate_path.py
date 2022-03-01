@@ -1,3 +1,6 @@
+"""
+The util for validation paths that sourced to parameters
+"""
 # Copyright (C) 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,10 +20,14 @@ import errno
 
 
 def is_path_valid(test_string: str) -> bool:
+    """
+    Validate a string path for correctness
+
+    """
     try:
         if not isinstance(test_string, str) or not test_string:
             return False
-        if not all([s.isprintable() for s in test_string]):
+        if not all(s.isprintable() for s in test_string):
             return False
 
         try:
@@ -35,11 +42,17 @@ def is_path_valid(test_string: str) -> bool:
 
 
 def validate_single_path(path: str) -> None:
+    """
+    Wrapper for single path
+    """
     if not is_path_valid(path):
         raise Exception(f"Path is not valid: {path}")
 
 
 def validate_path(test_string: str) -> None:
+    """
+    Wrapper for multiple paths
+    """
     if ',' in str(test_string):
         paths = test_string.split(',')
         for path in paths:

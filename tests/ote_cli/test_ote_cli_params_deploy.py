@@ -51,7 +51,7 @@ templates = Registry('external').templates
 templates_ids = [template.model_template_id for template in templates]
 
 
-class OTECliDeployParams:
+class TestOTECliDeployParams:
     @e2e_pytest_component
     def test_create_venv(self):
         work_dir, template_work_dir, algo_backend_dir = get_some_vars(templates[0], root)
