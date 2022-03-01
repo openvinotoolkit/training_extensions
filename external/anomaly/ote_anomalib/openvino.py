@@ -177,7 +177,6 @@ class OpenVINOAnomalyTask(IInferenceTask, IEvaluationTask, IOptimizationTask, ID
                 raise ValueError(f"Unknown task type: {self.task_type}")
 
             # pylint: disable=protected-access
-            logger.info(f"{dataset_item.media._Image__file_path}: {len(annotations_scene.annotations)}")
             dataset_item.append_annotations(annotations_scene.annotations)
 
             anomaly_map = anomaly_map_to_color_map(anomaly_map, normalize=False)
