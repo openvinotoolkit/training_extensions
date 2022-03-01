@@ -17,3 +17,7 @@ from ote_sdk.test_suite.pytest_insertions import *  # noqa #pylint: disable=unus
 pytest_plugins = get_pytest_plugins_from_ote()
 
 ote_conftest_insertion(default_repository_name="ote/training_extensions/")
+
+
+def pytest_addoption(parser):
+    ote_pytest_addoption_insertion(parser)
