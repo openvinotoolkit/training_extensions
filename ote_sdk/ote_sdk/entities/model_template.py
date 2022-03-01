@@ -476,7 +476,7 @@ TRAINABLE_TASK_TYPES: Sequence[TaskType] = (
     TaskType.ANOMALY_SEGMENTATION,
 )
 
-    
+
 def _parse_model_template_from_omegaconf(
     config: Union[DictConfig, ListConfig]
 ) -> ModelTemplate:
