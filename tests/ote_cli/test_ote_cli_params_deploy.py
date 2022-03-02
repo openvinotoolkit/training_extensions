@@ -61,7 +61,7 @@ class TestOTECliDeployParams:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_ote_deploy_no_template(self, template):
         error_string = "ote demo: error: the following arguments are required: template"
-        ret = ote_deploy_common(template, [])
+        ret = ote_deploy_common(template, root, [])
         assert error_string in str(ret.stderr)
 
     @e2e_pytest_component
@@ -71,7 +71,7 @@ class TestOTECliDeployParams:
         command_args = [template.model_template_id,
                         f'--save-model-to',
                         f'./deployed_{template.model_template_id}']
-        ret = ote_deploy_common(template, command_args)
+        ret = ote_deploy_common(template, root, command_args)
         assert error_string in str(ret.stderr)
 
     @e2e_pytest_component
@@ -86,5 +86,5 @@ class TestOTECliDeployParams:
         for case in wrong_paths.values():
             temp = deepcopy(command_args)
             temp[4] = case
-            ret = ote_deploy_common(template, temp)
+            ret = ote_deploy_common(template, root, temp)
             assert error_string in str(ret.stderr)
