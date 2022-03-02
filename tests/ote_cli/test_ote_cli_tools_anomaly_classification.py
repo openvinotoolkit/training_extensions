@@ -42,11 +42,11 @@ from common import (
 
 
 args = {
-    '--train-ann-file': 'data/anomaly/classification/train.json',
+    '--train-ann-file': 'data/anomaly/train.json',
     '--train-data-roots': 'data/anomaly/shapes',
-    '--val-ann-file': 'data/anomaly/classification/val.json',
+    '--val-ann-file': 'data/anomaly/val.json',
     '--val-data-roots': 'data/anomaly/shapes',
-    '--test-ann-files': 'data/anomaly/classification/test.json',
+    '--test-ann-files': 'data/anomaly/test.json',
     '--test-data-roots': 'data/anomaly/shapes',
     '--input': 'data/anomaly/shapes/test/hexagon',
     'train_params': [],

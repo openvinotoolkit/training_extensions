@@ -24,23 +24,22 @@ from glob import glob
 from typing import Optional, Union
 
 import torch
-from anomalib.models import AnomalyModule, get_model
-from anomalib.utils.callbacks import MinMaxNormalizationCallback
+from anomalib.core.callbacks import MinMaxNormalizationCallback
+from anomalib.core.model import AnomalyModule
+from anomalib.models import get_model
 from omegaconf import DictConfig, ListConfig
-from ote_anomalib.callbacks import AnomalyInferenceCallback, ProgressCallback
-from ote_anomalib.configs import get_anomalib_config
+from ote_anomalib.callbacks import InferenceCallback, ProgressCallback
+from ote_anomalib.config import get_anomalib_config
 from ote_anomalib.data import OTEAnomalyDataModule
 from ote_anomalib.logging import get_logger
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.inference_parameters import InferenceParameters
 from ote_sdk.entities.metrics import Performance, ScoreMetric
 from ote_sdk.entities.model import ModelEntity, ModelPrecision
-from ote_sdk.entities.model_template import TaskType
 from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.entities.train_parameters import TrainParameters
 from ote_sdk.serialization.label_mapper import label_schema_to_bytes
-from ote_sdk.usecases.evaluation.averaging import MetricAverageMethod
 from ote_sdk.usecases.evaluation.metrics_helper import MetricsHelper
 from ote_sdk.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType, IExportTask
@@ -52,10 +51,9 @@ from pytorch_lightning import Trainer
 logger = get_logger(__name__)
 
 
-class BaseAnomalyTask(ITrainingTask, IInferenceTask, IEvaluationTask, IExportTask, IUnload):
-    """Base Anomaly Task."""
+class AnomalyClassificationTask(ITrainingTask, IInferenceTask, IEvaluationTask, IExportTask, IUnload):
+    """Base Anomaly Classification Task."""
 
-    # pylint: disable=too-many-instance-attributes
     def __init__(self, task_environment: TaskEnvironment) -> None:
         """Train, Infer, Export, Optimize and Deploy an Anomaly Classification Task.
 
@@ -65,7 +63,6 @@ class BaseAnomalyTask(ITrainingTask, IInferenceTask, IEvaluationTask, IExportTas
         torch.backends.cudnn.enabled = True
         logger.info("Initializing the task environment.")
         self.task_environment = task_environment
-        self.task_type = task_environment.model_template.task_type
         self.model_name = task_environment.model_template.name
         self.labels = task_environment.get_labels()
 
@@ -85,16 +82,8 @@ class BaseAnomalyTask(ITrainingTask, IInferenceTask, IEvaluationTask, IExportTas
         """
         hyper_parameters = self.task_environment.get_hyper_parameters()
         config = get_anomalib_config(task_name=self.model_name, ote_config=hyper_parameters)
+        config.dataset.task = "classification"
         config.project.path = self.project_path
-
-        # set task type
-        if self.task_type == TaskType.ANOMALY_CLASSIFICATION:
-            config.dataset.task = "classification"
-        elif self.task_type == TaskType.ANOMALY_SEGMENTATION:
-            config.dataset.task = "segmentation"
-        else:
-            raise ValueError(f"Unknown task type: {self.task_type}")
-
         return config
 
     def load_model(self, ote_model: Optional[ModelEntity]) -> AnomalyModule:
@@ -149,7 +138,7 @@ class BaseAnomalyTask(ITrainingTask, IInferenceTask, IEvaluationTask, IExportTas
         config = self.get_config()
         logger.info("Training Configs '%s'", config)
 
-        datamodule = OTEAnomalyDataModule(config=config, dataset=dataset, task_type=self.task_type)
+        datamodule = OTEAnomalyDataModule(config=config, dataset=dataset)
         callbacks = [ProgressCallback(parameters=train_parameters), MinMaxNormalizationCallback()]
 
         self.trainer = Trainer(**config.trainer, logger=False, callbacks=callbacks)
@@ -207,13 +196,13 @@ class BaseAnomalyTask(ITrainingTask, IInferenceTask, IEvaluationTask, IExportTas
         """
         logger.info("Performing inference on the validation set using the base torch model.")
         config = self.get_config()
-        datamodule = OTEAnomalyDataModule(config=config, dataset=dataset, task_type=self.task_type)
+        datamodule = OTEAnomalyDataModule(config=config, dataset=dataset)
 
         logger.info("Inference Configs '%s'", config)
 
         # Callbacks.
         progress = ProgressCallback(parameters=inference_parameters)
-        inference = AnomalyInferenceCallback(dataset, self.labels, self.task_type)
+        inference = InferenceCallback(dataset, self.labels)
         normalize = MinMaxNormalizationCallback()
         callbacks = [progress, normalize, inference]
 
@@ -229,16 +218,22 @@ class BaseAnomalyTask(ITrainingTask, IInferenceTask, IEvaluationTask, IExportTas
             evaluation_metric (Optional[str], optional): Evaluation metric. Defaults to None. Instead,
                 f-measure is used by default.
         """
-        if self.task_type == TaskType.ANOMALY_CLASSIFICATION:
-            metric = MetricsHelper.compute_f_measure(output_resultset)
-        elif self.task_type == TaskType.ANOMALY_SEGMENTATION:
-            metric = MetricsHelper.compute_dice_averaged_over_pixels(output_resultset, MetricAverageMethod.MICRO)
-        else:
-            raise ValueError(f"Unknown task type: {self.task_type}")
+        metric = MetricsHelper.compute_f_measure(output_resultset)
         output_resultset.performance = metric.get_performance()
 
         accuracy = MetricsHelper.compute_accuracy(output_resultset).get_performance()
         output_resultset.performance.dashboard_metrics.extend(accuracy.dashboard_metrics)
+
+        # NOTE: This is for debugging purpose.
+        for i, _ in enumerate(output_resultset.ground_truth_dataset):
+            logger.info(
+                "True vs Pred: %s %s - %3.2f",
+                output_resultset.ground_truth_dataset[i].annotation_scene.annotations[0].get_labels()[0].name,
+                output_resultset.prediction_dataset[i].annotation_scene.annotations[0].get_labels()[0].name,
+                output_resultset.prediction_dataset[i].annotation_scene.annotations[0].get_labels()[0].probability,
+            )
+        logger.info("%s performance of the base torch model: %3.2f", metric.f_measure.name, metric.f_measure.value)
+        logger.info("%s : %3.2f", accuracy.score.name, accuracy.score.value)
 
     def export(self, export_type: ExportType, output_model: ModelEntity) -> None:
         """Export model to OpenVINO IR.
@@ -275,7 +270,6 @@ class BaseAnomalyTask(ITrainingTask, IInferenceTask, IEvaluationTask, IExportTas
 
     def _set_metadata(self, output_model: ModelEntity):
         output_model.set_data("image_threshold", self.model.image_threshold.value.cpu().numpy().tobytes())
-        output_model.set_data("pixel_threshold", self.model.pixel_threshold.value.cpu().numpy().tobytes())
         output_model.set_data("min", self.model.min_max.min.cpu().numpy().tobytes())
         output_model.set_data("max", self.model.min_max.max.cpu().numpy().tobytes())
 

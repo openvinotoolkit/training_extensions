@@ -16,7 +16,7 @@ Callbacks for OTE inference
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .inference import AnomalyInferenceCallback
+from .inference import InferenceCallback
 from .progress import ProgressCallback
 
-__all__ = ["AnomalyInferenceCallback", "ProgressCallback"]
+__all__ = ["InferenceCallback", "ProgressCallback"]
