@@ -155,7 +155,7 @@ def draw_predictions(task_type, predictions, frame, fit_to_size):
         frame = put_labels(frame, predictions)
     elif task_type in {TaskType.INSTANCE_SEGMENTATION, TaskType.ROTATED_DETECTION}:
         frame = draw_masks(frame, predictions, put_object_count=True)
-    elif task_type in {TaskType.SEGMENTATION, TaskType.ANOMALY_SEGMENTATION}:
+    elif task_type == TaskType.SEGMENTATION:
         frame = draw_masks(frame, predictions, put_object_count=False)
     else:
         raise ValueError(f"Unknown task type: {task_type}")

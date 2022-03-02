@@ -24,7 +24,10 @@ import shutil
 from argparse import Namespace
 from typing import Any, cast
 
-from ote_anomalib import BaseAnomalyTask, OpenVINOAnomalyTask
+from anomaly_classification import (
+    AnomalyClassificationTask,
+    OpenVINOAnomalyClassificationTask,
+)
 from ote_anomalib.data.mvtec import OteMvtecDataset
 from ote_anomalib.logging import get_logger
 from ote_sdk.configuration.helper import create as create_hyper_parameters
@@ -76,21 +79,19 @@ class OteAnomalyTask:
             >>> task.export()
             Performance(score: 0.9756097560975608, dashboard: (1 metric groups))
         """
+        logger.info("Loading MVTec dataset.")
+        self.dataset = OteMvtecDataset(path=dataset_path, seed=seed).generate()
 
         logger.info("Loading the model template.")
         self.model_template = parse_model_template(model_template_path)
-
-        logger.info("Loading MVTec dataset.")
-        self.task_type = self.model_template.task_type
-        self.dataset = OteMvtecDataset(path=dataset_path, seed=seed, task_type=self.task_type).generate()
 
         logger.info("Creating the task-environment.")
         self.task_environment = self.create_task_environment()
 
         logger.info("Creating the base Torch and OpenVINO tasks.")
         self.torch_task = self.create_task(task="base")
-        self.torch_task = cast(BaseAnomalyTask, self.torch_task)
-        self.openvino_task: OpenVINOAnomalyTask
+        self.torch_task = cast(AnomalyClassificationTask, self.torch_task)
+        self.openvino_task: OpenVINOAnomalyClassificationTask
 
     def create_task_environment(self) -> TaskEnvironment:
         """Create task environment."""
@@ -128,7 +129,7 @@ class OteAnomalyTask:
         module = importlib.import_module(module_name)
         return getattr(module, class_name)(task_environment=self.task_environment)
 
-    def train(self) -> ModelEntity:
+    def train(self) -> None:
         """Train the base Torch model."""
         logger.info("Training the model.")
         output_model = ModelEntity(
@@ -146,7 +147,6 @@ class OteAnomalyTask:
 
         logger.info("Evaluating the base torch model on the validation set.")
         self.evaluate(self.torch_task, result_set)
-        return output_model
 
     def infer(self, task: IInferenceTask, output_model: ModelEntity) -> ResultSetEntity:
         """Get the predictions using the base Torch or OpenVINO tasks and models.
@@ -183,7 +183,7 @@ class OteAnomalyTask:
         task.evaluate(result_set)
         logger.info(str(result_set.performance))
 
-    def export(self) -> ModelEntity:
+    def export(self) -> None:
         """Export the model via openvino."""
         logger.info("Exporting the model.")
         exported_model = ModelEntity(
@@ -196,14 +196,13 @@ class OteAnomalyTask:
         logger.info("Creating the OpenVINO Task.")
 
         self.openvino_task = self.create_task(task="openvino")
-        self.openvino_task = cast(OpenVINOAnomalyTask, self.openvino_task)
+        self.openvino_task = cast(OpenVINOAnomalyClassificationTask, self.openvino_task)
 
         logger.info("Inferring the exported model on the validation set.")
         result_set = self.infer(task=self.openvino_task, output_model=exported_model)
 
         logger.info("Evaluating the exported model on the validation set.")
         self.evaluate(task=self.openvino_task, result_set=result_set)
-        return exported_model
 
     def optimize(self) -> None:
         """Optimize the model via POT."""

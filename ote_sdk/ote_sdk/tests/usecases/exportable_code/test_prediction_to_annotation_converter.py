@@ -1019,7 +1019,7 @@ class TestSegmentationToAnnotation:
         converter = AnomalyClassificationToAnnotationConverter(
             label_schema=label_schema
         )
-        predictions = np.array([24.0])
+        predictions = np.array([(0, 9, 5), (4, 8, 24)])
         # Checking attributes of "AnnotationSceneEntity" returned by "convert_to_annotation" for "metadata" with
         # specified "threshold" key
         metadata = {
