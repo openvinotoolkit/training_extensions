@@ -143,7 +143,7 @@ contains all the results of the previous stages:
 The `__call__` method MUST return as the result a dict that will be stored as the result of the
 action (an empty dict is acceptable).
 
-*Example:*
+**Example:**
 The class `OTETestTrainingAction` in the file `test_suite/training_tests_actions.py`
 implements the training action for mmdetection, it has `_name = "training"` and its method
 `__call__` returns as the result a dict
@@ -357,10 +357,11 @@ The method returns nothing, but may raise exceptions to fail the test.
 The `Validator` compares the results of the current action with expected metrics and with results of
 the previous actions. Note that results of previous actions are important, since possible validation
 criteria also may be
-* "the quality metric of the current action is not worse than the result of _that_ action with
+* "the quality metric of the current action is not worse than the result of *that* action with
   possible quality drop 1%"
-* "the quality metric of the current action is the same as the result of _that_ action with
+* "the quality metric of the current action is the same as the result of *that* action with
   possible quality difference 1%"
+
 -- these criteria are highly useful for "evaluation after export" action (quality should be almost
 the same as for "evaluation after training" action) and for "evaluation after NNCF compression"
 action (quality should be not worse than for "evaluation after training" action with small possible
@@ -469,6 +470,8 @@ Examples of such keys are:
 * `ACTION-training_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-bbcd,num_iters-CONFIG,batch-CONFIG,usecase-reallife`
 * `ACTION-nncf_export_evaluation,model-Custom_Image_Classification_EfficinetNet-B0,dataset-lg_chem,num_epochs-CONFIG,batch-CONFIG,usecase-reallife`
 
+*TODO: insert example from expected metrics files*
+
 ## V. Test Case class
 
 ### V.1 General description of test case class
@@ -517,7 +520,9 @@ following:
     beforehand;
 * An instance of the test case class is created once for each of the group of tests stated above
   -- so, the instance of test case class is created for each "test case" described above.  
-  As stated above, the instance of test case class is kept inside cache in OTE Test Helper class, it allows to re-use
+
+As stated above, the instance of test case class is kept inside cache in OTE Test Helper class, it
+allows to use the results of the previous tests of the same test case in the current test.
 
 ### V.2 Base interface of a test case class, creation of a test case class
 
@@ -665,7 +670,7 @@ Generally pytest works as follows:
    combination.
    During the execution pytest may print the full name of the "test with parameters"
 
-*How pytest gets information on parameters*
+**How pytest gets information on parameters**
 
 In pytest the information on test parameters for each test function/method consists of the following
 3 elements:  
@@ -701,7 +706,7 @@ function/method the three elements stated above.
 See a bit more details how this pytest magic works in the description of the function
 `ote_pytest_generate_tests_insertion` below in the section TODO.
 
-*How pytest runs a test with a combination of parameters*
+**How pytest runs a test with a combination of parameters**
 
 When pytest runs a test function/method that has some parameters, pytest works as follows:  
 (NB: it is a short and may be approximate description! do not use it as a pytest documentation)
@@ -720,7 +725,7 @@ When pytest runs a test function/method that has some parameters, pytest works a
 
 ### VI.3 How pytest parametrization mechanisms relates to the test suite and `OTETestHelper`
 
-*(IMPORTANT)* The description how pytest works with test functions/methods parametrization in the
+**(IMPORTANT)** The description how pytest works with test functions/methods parametrization in the
 previous section relates to all pytest-based code.
 But we would like to describe some important points related to `OTETestHelper` and the test suite as
 a whole:
@@ -733,7 +738,7 @@ a whole:
   Note that the triplet `argnames, argvalues, ids` received from `get_list_of_tests` is used as is
   without any changes.
 * `OTETestHelper` always defines `argnames = ("test_parameters",)`, so formally the only test method
-  uses *only one* test parameter to parametrise tests, but values of the parameter are dict-s that
+  uses **only one** test parameter to parametrise tests, but values of the parameter are dict-s that
   contain info on real test parameters
 
 ### VI.4 Constructor of the class `OTETestHelper`
@@ -745,7 +750,7 @@ def __init__(self, test_creation_parameters: OTETestCreationParametersInterface)
 
 As you can see it receives as the only parameter the class that is derived from
 `OTETestCreationParametersInterface`.
-We will refer to it as a _test parameters class_.
+We will refer to it as a *test parameters class*.
 
 We suppose that such test parameter class derived from `OTETestCreationParametersInterface` contains
 most of information required to connect the test suite with a concrete algo backend.  
@@ -789,7 +794,7 @@ The method should return a list of dicts, each of the dicts defines one test cas
 how test cases are defined in the section "V.1 General description of test case class".  
 All keys of the dicts are strings.
 
-*(IMPORTANT)*
+**(IMPORTANT)**
 Note that in a typical situation a dict from the test bunches list is passed to the only test method
 as the value `test_parameters` -- see "IMPORTANT" notice in the previous section
 "VI.3 How pytest parametrization mechanisms relates to the test suite and `OTETestHelper`"
@@ -800,8 +805,8 @@ Mandatory keys of the dicts are:
   in the template.yaml file of the model
 * `"dataset_name"` -- the value is a string that is the name of the dataset, note that we use known
   pre-defined names for the datasets on our CI
-* `"usecase"` -- the value is a string, if it is equal to `"reallife"` then validation will be run
-  for the tests
+* `"usecase"` -- the value is a string, if it is equal to `REALLIFE_USECASE_CONSTANT="reallife"`
+  then validation will be run for the tests
 
 Also typical non-mandatory keys of the dicts are
 * `"num_training_iters"` or `"num_training_epochs"` or `"patience"` -- integer the parameter
@@ -819,9 +824,47 @@ Note that the following additional tricks are used:
    by some default value pointed by the method `default_test_parameters` (see it below)
 
 Note that also most of training actions (e.g. `OTETestTrainingAction`) use one more additional
-trick: if a `batch_size` key or `num_training_iters` key in a test bunch dict contain a string
-"CONFIG" instead of an integer value, the action reads the values of such parameters from the
-template file of the model and do not change them.
+trick: if values either for `batch_size` key or for `num_training_iters` key in a test bunch dict
+contain a string constant `KEEP_CONFIG_FIELD_VALUE="CONFIG"` instead of an integer value, the action
+reads the values of such parameters from the template file of the model or internal config of the
+model and do not change them.  
+It is important when we want to keep some training parameters "as is" and do not want to point our
+own values for them.
+
+Example of a test bunch
+```
+[
+    dict(
+        model_name=[
+           'gen3_mobilenetV2_SSD',
+           'gen3_mobilenetV2_ATSS',
+           'gen3_resnet50_VFNet',
+        ],
+        dataset_name='dataset1_tiled_shortened_500_A',
+        usecase='precommit',
+    ),
+    ...
+    dict(
+        model_name=[
+           'Custom_Object_Detection_Gen3_ATSS',
+           'Custom_Object_Detection_Gen3_SSD',
+        ],
+        dataset_name=[
+    	'bbcd',
+    	'weed-coco',
+    	'pcd',
+    	'aerial',
+    	'dice',
+    	'fish',
+    	'vitens',
+    	'diopsis',
+        ],
+        num_training_iters=KEEP_CONFIG_FIELD_VALUE,
+        batch_size=KEEP_CONFIG_FIELD_VALUE,
+        usecase=REALLIFE_USECASE_CONSTANT,
+    )
+]
+```
 
 ```python
 @abstractmethod
