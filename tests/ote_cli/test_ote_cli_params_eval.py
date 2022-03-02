@@ -61,7 +61,7 @@ class TestOTECliEvalParams:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_ote_eval_no_template(self, template):
         error_string = "the following arguments are required: template"
-        ret = ote_eval_common(template, [])
+        ret = ote_eval_common(template, root, [])
         assert error_string in str(ret.stderr)
 
     @e2e_pytest_component
@@ -75,7 +75,7 @@ class TestOTECliEvalParams:
                         './trained_default_template/weights.pth',
                         '--save-performance',
                         './trained_default_template/performance.json']
-        ret = ote_eval_common(template, command_args)
+        ret = ote_eval_common(template, root, command_args)
         assert error_string in str(ret.stderr)
 
     @e2e_pytest_component
@@ -89,7 +89,7 @@ class TestOTECliEvalParams:
                         './trained_default_template/weights.pth',
                         '--save-performance',
                         './trained_default_template/performance.json']
-        ret = ote_eval_common(template, command_args)
+        ret = ote_eval_common(template, root, command_args)
         assert error_string in str(ret.stderr)
 
     @e2e_pytest_component
@@ -103,7 +103,7 @@ class TestOTECliEvalParams:
                         f'{os.path.join(ote_dir, args["--test-data-roots"])}',
                         '--save-performance',
                         './trained_default_template/performance.json']
-        ret = ote_eval_common(template, command_args)
+        ret = ote_eval_common(template, root, command_args)
         assert error_string in str(ret.stderr)
 
     @e2e_pytest_component
@@ -123,5 +123,5 @@ class TestOTECliEvalParams:
             for case in wrong_paths.values():
                 temp = deepcopy(command_args)
                 temp[i] = case
-                ret = ote_eval_common(template, command_args)
+                ret = ote_eval_common(template, root, command_args)
                 assert error_string in str(ret.stderr)

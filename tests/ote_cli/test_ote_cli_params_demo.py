@@ -61,7 +61,7 @@ class TestOTECliDemoParams:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_ote_demo_no_template(self, template):
         error_string = "ote demo: error: the following arguments are required: template"
-        ret = ote_demo_common(template, [])
+        ret = ote_demo_common(template, root, [])
         assert error_string in str(ret.stderr)
 
     @e2e_pytest_component
@@ -71,7 +71,7 @@ class TestOTECliDemoParams:
         command_args = [template.model_template_id,
                         '--input',
                         f'{os.path.join(ote_dir, "data/airport/train")}']
-        ret = ote_demo_common(template, command_args)
+        ret = ote_demo_common(template, root, command_args)
         assert error_string in str(ret.stderr)
 
     @e2e_pytest_component
@@ -81,7 +81,7 @@ class TestOTECliDemoParams:
         command_args = [template.model_template_id,
                         '--load-weights',
                         './trained_default_template/weights.pth']
-        ret = ote_demo_common(template, command_args)
+        ret = ote_demo_common(template, root, command_args)
         assert error_string in str(ret.stderr)
 
     @e2e_pytest_component
@@ -95,7 +95,7 @@ class TestOTECliDemoParams:
         for case in wrong_paths.values():
             temp = deepcopy(command_args)
             temp[2] = case
-            ret = ote_demo_common(template, temp)
+            ret = ote_demo_common(template, root, temp)
             assert "Path is not valid" in str(ret.stderr)
 
     @e2e_pytest_component
@@ -106,7 +106,7 @@ class TestOTECliDemoParams:
                         '--load-weights',
                         './trained_default_template/weights.pth',
                         '--input']
-        ret = ote_demo_common(template, command_args)
+        ret = ote_demo_common(template, root, command_args)
         assert error_string in str(ret.stderr)
 
     @e2e_pytest_component
@@ -119,7 +119,7 @@ class TestOTECliDemoParams:
                         '--input',
                         f'{os.path.join(ote_dir, "data/airport/train")}',
                         '--fit-to-size']
-        ret = ote_demo_common(template, command_args)
+        ret = ote_demo_common(template, root, command_args)
         assert error_string in str(ret.stderr)
 
     @e2e_pytest_component
@@ -132,7 +132,7 @@ class TestOTECliDemoParams:
                         '--input',
                         f'{os.path.join(ote_dir, "data/airport/train")}',
                         '--fit-to-size', '0.0', '0.0']
-        ret = ote_demo_common(template, command_args)
+        ret = ote_demo_common(template, root, command_args)
         assert error_string in str(ret.stderr)
 
     @e2e_pytest_component
@@ -145,5 +145,5 @@ class TestOTECliDemoParams:
                         '--input',
                         f'{os.path.join(ote_dir, "data/airport/train")}',
                         '--fit-to-size', '1', '-1']
-        ret = ote_demo_common(template, command_args)
+        ret = ote_demo_common(template, root, command_args)
         assert error_string in str(ret.stderr)
