@@ -62,7 +62,7 @@ class TestOTECliExportParams:
     def test_ote_export_no_template(self, template):
         error_string = "ote export: error: the following arguments are required:" \
                        " template, --load-weights, --save-model-to"
-        ret = ote_export_common(template, [])
+        ret = ote_export_common(template, root, [])
         assert error_string in str(ret.stderr)
 
     @e2e_pytest_component
@@ -72,7 +72,7 @@ class TestOTECliExportParams:
         command_line = [template.model_template_id,
                         f'--save-model-to',
                         f'./exported_{template.model_template_id}']
-        ret = ote_export_common(template, command_line)
+        ret = ote_export_common(template, root, command_line)
         assert error_string in str(ret.stderr)
 
     @e2e_pytest_component
@@ -82,7 +82,7 @@ class TestOTECliExportParams:
         command_line = [template.model_template_id,
                         '--load-weights',
                         './trained_default_template/weights.pth']
-        ret = ote_export_common(template, command_line)
+        ret = ote_export_common(template, root, command_line)
         assert error_string in str(ret.stderr)
 
     @e2e_pytest_component
@@ -98,5 +98,5 @@ class TestOTECliExportParams:
             for case in wrong_paths.values():
                 temp = deepcopy(command_line)
                 temp[i] = case
-                ret = ote_export_common(template, command_line)
+                ret = ote_export_common(template, root, command_line)
                 assert error_string in str(ret.stderr)

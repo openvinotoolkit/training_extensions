@@ -61,7 +61,7 @@ class TestOTECliTrainParams:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_ote_train_no_template(self, template):
         error_string = "ote train: error: the following arguments are required: template"
-        ret = ote_train_common(template, [])
+        ret = ote_train_common(template, root, [])
         assert error_string in str(ret.stderr)
 
     @e2e_pytest_component
@@ -77,7 +77,7 @@ class TestOTECliTrainParams:
                         f'{os.path.join(ote_dir, args["--val-data-roots"])}',
                         '--save-model-to',
                         f'./trained_{template.model_template_id}']
-        ret = ote_train_common(template, command_line)
+        ret = ote_train_common(template, root, command_line)
         assert error_string in str(ret.stderr)
 
     @e2e_pytest_component
@@ -93,7 +93,7 @@ class TestOTECliTrainParams:
                         f'{os.path.join(ote_dir, args["--val-data-roots"])}',
                         '--save-model-to',
                         f'./trained_{template.model_template_id}']
-        ret = ote_train_common(template, command_line)
+        ret = ote_train_common(template, root, command_line)
         assert error_string in str(ret.stderr)
 
     @e2e_pytest_component
@@ -109,7 +109,7 @@ class TestOTECliTrainParams:
                         f'{os.path.join(ote_dir, args["--val-data-roots"])}',
                         '--save-model-to',
                         f'./trained_{template.model_template_id}']
-        ret = ote_train_common(template, command_line)
+        ret = ote_train_common(template, root, command_line)
         assert error_string in str(ret.stderr)
 
     @e2e_pytest_component
@@ -125,7 +125,7 @@ class TestOTECliTrainParams:
                         f'{os.path.join(ote_dir, args["--val-ann-file"])}',
                         '--save-model-to',
                         f'./trained_{template.model_template_id}']
-        ret = ote_train_common(template, command_line)
+        ret = ote_train_common(template, root, command_line)
         assert error_string in str(ret.stderr)
 
     @e2e_pytest_component
@@ -141,7 +141,7 @@ class TestOTECliTrainParams:
                         f'{os.path.join(ote_dir, args["--val-ann-file"])}',
                         '--val-data-roots',
                         f'{os.path.join(ote_dir, args["--val-data-roots"])}']
-        ret = ote_train_common(template, command_line)
+        ret = ote_train_common(template, root, command_line)
         assert error_string in str(ret.stderr)
     
     @e2e_pytest_component
@@ -163,7 +163,7 @@ class TestOTECliTrainParams:
             for case in wrong_paths.values():
                 temp = deepcopy(command_line)
                 temp[i] = case
-                ret = ote_train_common(template, temp)
+                ret = ote_train_common(template, root, temp)
                 assert error_string in str(ret.stderr)
 
     @e2e_pytest_component
@@ -182,7 +182,7 @@ class TestOTECliTrainParams:
                         '--save-model-to',
                         f'./trained_{template.model_template_id}',
                         '--hpo-time-ratio', '4']
-        ret = ote_train_common(template, command_line)
+        ret = ote_train_common(template, root, command_line)
         assert error_string in str(ret.stderr)
 
     @e2e_pytest_component
@@ -203,7 +203,7 @@ class TestOTECliTrainParams:
                         '--enable-hpo',
                         '--hpo-time-ratio',
                         'STRING_VALUE']
-        ret = ote_train_common(template, command_line)
+        ret = ote_train_common(template, root, command_line)
         assert error_string in str(ret.stderr)
 
     @e2e_pytest_component
@@ -224,5 +224,5 @@ class TestOTECliTrainParams:
                         '--enable-hpo',
                         '--hpo-time-ratio',
                         '-1']
-        ret = ote_train_common(template, command_line)
+        ret = ote_train_common(template, root, command_line)
         assert error_string in str(ret.stderr)

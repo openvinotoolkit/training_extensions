@@ -61,7 +61,7 @@ class TestOTECliFindParams:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_ote_cli_find(self, template):
-        ret = ote_find_common(template, [])
+        ret = ote_find_common(template, root, [])
         assert ret.returncode == 0
 
     @e2e_pytest_component
@@ -73,7 +73,7 @@ class TestOTECliFindParams:
                        }
         for path in valid_paths.values():
             cmd = ['--root', path]
-            ret = ote_find_common(template, cmd)
+            ret = ote_find_common(template, root, cmd)
             assert ret.returncode == 0
 
     @e2e_pytest_component
@@ -82,7 +82,7 @@ class TestOTECliFindParams:
         task_types = ["ANOMALY_CLASSIFICATION", "CLASSIFICATION", "DETECTION", "SEGMENTATION"]
         for task_type in task_types:
             cmd = ['--task_type', task_type]
-            ret = ote_find_common(template, cmd)
+            ret = ote_find_common(template, root, cmd)
             assert ret.returncode == 0
 
     @e2e_pytest_component
@@ -90,12 +90,12 @@ class TestOTECliFindParams:
     def test_ote_cli_find_root_wrong_path(self, template):
         for path in wrong_paths.values():
             cmd = ['--root', path]
-            ret = ote_find_common(template, cmd)
+            ret = ote_find_common(template, root, cmd)
             assert ret.returncode != 0
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_ote_cli_find_task_type_not_set(self, template):
         cmd = ['--task_id', '']
-        ret = ote_find_common(template, cmd)
+        ret = ote_find_common(template, root, cmd)
         assert ret.returncode != 0
