@@ -471,7 +471,7 @@ Examples of such keys are:
 
 ## V. Test Case class
 
-### V.1 General description
+### V.1 General description of test case class
 
 As stated above, test case class instance connects the test stages between each other and keeps
 in its fields results of the kept test stages between tests.  
@@ -539,6 +539,10 @@ The variable with the type of test case received from the function is stored in 
 instance -- it is stored in a special class "test creation parameters", see about it below in the
 section TODO.
 
+Note that the result of this function is a `class`, not an `instance` of a class.  
+Also note that the function receives list of action `classes`, not `instances` -- the instances of
+test action classes are created when the instance of the test case class is created.
+
 The class of the test case for a test is always inherited from the abstract interface class
 `OTETestCaseInterface`.
 It is derived from the abstract interface class `OTETestStagesStorageInterface`, so it has the
@@ -589,20 +593,271 @@ wrapper for each of the test action from the list.
 
 ### V.3 The constructor of a test case class
 
+As stated above, the function `generate_ote_integration_test_case_class` receives as a parameter
+list of action `classes`, not `instances` -- the instances of test action classes are created when
+the instance of the test case class is created.  
+That is during construction of test case class its constructor creates instances of all the actions.
+
 Each test case class created by the function `generate_ote_integration_test_case_class` has
 the following constructor:
 ```python
 def __init__(self, params_factories_for_test_actions: Dict[str, Callable[[], Dict]]):
 ```
 
-As you can see the only parameter of this constructor is `params_factories_for_test_actions` that is
+The only parameter of this constructor is `params_factories_for_test_actions` that is
 a dict:
-* each key of the dict is a name of test actions
-* each value of the dict is a factory function that does not receive any parameter and returns the
-  structure of kwargs for the corresponding action
+* each key of the dict is a name of a test action
+* each value of the dict is a factory function without parameters that returns the
+  structure with kwargs for the constructor of the corresponding action
 
 Note that most of the test actions do not receive parameters at all -- they receive the result of
 previous actions, makes its own action, may make validation, etc.
+
+For this case if the dict `params_factories_for_test_actions` does not contain as a key the name of
+an action, then the constructor of the corresponding action will be called without parameters.
+
+The constructor works as follows:
+* For each action that was passed to the function `generate_ote_integration_test_case_class` that
+  created this test case class
+  * take name of the action
+  * take `cur_params_factory = params_factories_for_test_actions.get(name)`
+    * if the result is None, `cur_params = {}`
+    * otherwise, `cur_params = cur_params_factory()`
+  * call constructor of the current action as  
+    `cur_action = action_cls(**cur_params)`
+  * wraps the current action with the class `OTETestStage` as follows:  
+    `cur_stage = OTETestStage(action=cur_action, stages_storage=self)`
+  * store the current stage instance as  
+    `self._stages[cur_name] = cur_stage`
+
+## VI. Test Helper class
+
+### VI.1 General description
+
+Training test helper class `OTETestHelper` is implemented `test_suite/training_tests_helper.py`.  
+An instance of the class controls all execution of tests and keeps in its cache an instance of a
+test case class between runs of different tests.
+
+The most important method of the class are
+* `get_list_of_tests` -- allows pytest trick generating test parameters for the test class.
+  When pytest collects the info on all tests, the method returns structures that allows to make
+  "pytest magic" to group and reorder the tests (see details below).
+* `get_test_case` -- gets an instance of the test case class for the current test parameters, allows
+  re-using the instance between several tests.
+
+Note that the both of the methods work with test parameters that are used by pytest.
+
+### VI.2 How pytest works with test parameters
+
+Since `OTETestHelper` makes all the operations related to pytest parametrization mechanisms, we need
+to describe here how pytest works with test parameters.
+
+Generally pytest works as follows:
+1. Pytest collects test info, for each test function or test method it gets information on
+   parameters of the test and possible combination of parameters that may be executed.
+2. Then pytest makes filtering -- it selects/deselects tests based on the pytest parameters
+   (e.g. `-k`) and the names of the tests  
+   -- each test with some combination of parameters has a full name of "test with parameters" that
+   uniquely identifies the test with the parameters
+2. Then pytest executes the selected tests one by one.
+   When pytest executes a test function or a test method it gets a concrete combinations of
+   parameter values for the parameters of the test and executes the test function/method with this
+   combination.
+   During the execution pytest may print the full name of the "test with parameters"
+
+*How pytest gets information on parameters*
+
+In pytest the information on test parameters for each test function/method consists of the following
+3 elements:  
+(NB: it is a short and may be approximate description! do not use it as a pytest documentation)
+1. `argnames` -- a tuple of names of parameters of the test, typically this is a short tuple of
+   strings
+   * its length is the number of parameters of the test,
+   * it contains string names of the parameters
+2. `argvalues` -- a list of parameters of the test, this is a long list,
+   * its length is the number of different combination of parameter values for the test,
+   * each element of the list should be a tuple,
+   * the length of each of the tuples is the same as the length of `argnames` above,
+   * the tuple stores a concrete combination of values of the parameters
+3. `ids` -- a list of string identifiers,
+   * the list has the same length as the list `argvalues`
+   * each value is a string
+   * the string is used as an ID of the concrete combination of parameters  
+     particularly, this parameters ID is used when pytest generates the full name of the
+     "test with parameters"  
+     (as stated above it is required for printing the full name or when some filtering is made in
+     pytest on full test names)  
+     -- note that usually this full name in pytest looks as
+     `test_name + "[" + parameters_ID + "]"`
+
+Usually pytest collects this information inside itself, but our test suite uses special interface
+that allows to change it: if pytest finds the function `pytest_generate_tests` with declaration
+```python
+def pytest_generate_tests(metafunc):
+```
+then special "pytest magic" is allowed. This 'pytest magic" allows sets for a concrete test
+function/method the three elements stated above.
+
+See a bit more details how this pytest magic works in the description of the function
+`ote_pytest_generate_tests_insertion` below in the section TODO.
+
+*How pytest runs a test with a combination of parameters*
+
+When pytest runs a test function/method that has some parameters, pytest works as follows:  
+(NB: it is a short and may be approximate description! do not use it as a pytest documentation)
+1. gets the triplet `argnames, argvalues, ids` for this test function/method
+2. check that the test function/method has all the parameters with names from the tuple `argnames`
+2. makes filtering (selecting/deselecting) of concrete parameter values combinations as on pairs of
+   `zip(argvalues, ids)` based on `ids` string identifiers and different pytest command line
+   arguments (see pytest option `-k`)
+3. for each selected combination of parameter values -- a pair `(arvalue_el, id)` from
+   `zip(argvalues, ids)` -- do the following:
+   * check that `argvalue_el` is a tuple with the length equal to `argnames`
+   * create kwargs dict for the test function/method
+   * sets in the kwargs dict for each key from `argnames` the corresponding value from
+     `argvalue_el` probably in the following manner:  
+     `for i in range(len(argnames)): kwargs[argnames[i]] = argvalue_el[i]`
+
+### VI.3 How pytest parametrization mechanisms relates to the test suite and `OTETestHelper`
+
+*(IMPORTANT)* The description how pytest works with test functions/methods parametrization in the
+previous section relates to all pytest-based code.
+But we would like to describe some important points related to `OTETestHelper` and the test suite as
+a whole:
+
+* typically for one OTE task type for all training tests there is only one test class with only only
+  one test method that has a lot of combination of test parameters values
+* the method `get_list_of_tests` of `OTETestHelper` returns this triplet
+  `argnames, argvalues, ids` that is used later in `pytest_generate_tests`-related pytest magic to
+  parametrize this test method  
+  Note that the triplet `argnames, argvalues, ids` received from `get_list_of_tests` is used as is
+  without any changes.
+* `OTETestHelper` always defines `argnames = ("test_parameters",)`, so formally the only test method
+  uses *only one* test parameter to parametrise tests, but values of the parameter are dict-s that
+  contain info on real test parameters
+
+### VI.4 Constructor of the class `OTETestHelper`
+
+The constructor of the class `OTETestHelper` has the following declaration
+```python
+def __init__(self, test_creation_parameters: OTETestCreationParametersInterface):
+```
+
+As you can see it receives as the only parameter the class that is derived from
+`OTETestCreationParametersInterface`.
+We will refer to it as a _test parameters class_.
+
+We suppose that such test parameter class derived from `OTETestCreationParametersInterface` contains
+most of information required to connect the test suite with a concrete algo backend.  
+All the methods of the interface class are abstract methods without parameters that return
+structures making this connection.
+
+Example of such implementation is the class `DefaultOTETestCreationParametersInterface` that
+contains implementation of almost all the test parameter class methods for mmdetection algo backend
+(mmdetection is chosen due to historical reasons).  
+Nevertheless, although these methods are implemented for mmdetection, most of them may
+be used without modification (or with only slight modification) for other algo backends.
+
+The constructor of the class `OTETestHelper` indeed makes the following:
+* calls the methods of the received parameter class instance and stores the info received as
+  the result of the calls in the `OTETestHelper` instance fields
+* check that the info stored in `OTETestHelper` instance fields has a proper structure
+* initialize a cache to store a test case class
+
+Let's consider all the methods of the abstract test parameters interface class one by one.
+
+```python
+@abstractmethod
+def test_case_class(self) -> Type[OTETestCaseInterface]:
+```
+ -- The method returns a class that will be used as a Test Case class for training tests.
+Note that it should return a class itself (not an instance of the class).
+Typically OTE Test Case class should be generated by the function
+`training_test_case.generate_ote_integration_test_case_class`.
+See details above in the section "V. Test Case class"
+
+```python
+@abstractmethod
+def test_bunches(self) -> List[Dict[str, Any]]:
+```
+-- The method returns a test bunches structure, it defines the combinations of test parameters for
+which the test suite training test should be run.
+
+This is the most important method since it defines the scope of the tests.
+
+The method should return a list of dicts, each of the dicts defines one test case -- see description
+how test cases are defined in the section "V.1 General description of test case class".  
+All keys of the dicts are strings.
+
+*(IMPORTANT)*
+Note that in a typical situation a dict from the test bunches list is passed to the only test method
+as the value `test_parameters` -- see "IMPORTANT" notice in the previous section
+"VI.3 How pytest parametrization mechanisms relates to the test suite and `OTETestHelper`"
+
+
+Mandatory keys of the dicts are:
+* `"model_name"` -- the value is a string that is the name of a model to work with as it is defined
+  in the template.yaml file of the model
+* `"dataset_name"` -- the value is a string that is the name of the dataset, note that we use known
+  pre-defined names for the datasets on our CI
+* `"usecase"` -- the value is a string, if it is equal to `"reallife"` then validation will be run
+  for the tests
+
+Also typical non-mandatory keys of the dicts are
+* `"num_training_iters"` or `"num_training_epochs"` or `"patience"` -- integer the parameter
+  restricting the training time
+* `"batch_size"` -- integer parameter, affects training speed and quality
+
+
+Note that the following additional tricks are used:
+1. For mandatory fields `"model_name"` and `"dataset_name"` the value may be not only a string, but
+   a list of strings -- in this case a Cartesian product of all possible pairs `(model, dataset)` is
+   used.  
+   This is because this method is called `test_bunches` -- since each element of the returned list
+   may define a "bunch" of tests
+2. If a non-mandatory key in a test bunch dict equals to a string "DEFAULT", then it may be replaced
+   by some default value pointed by the method `default_test_parameters` (see it below)
+
+Note that also most of training actions (e.g. `OTETestTrainingAction`) use one more additional
+trick: if a `batch_size` key or `num_training_iters` key in a test bunch dict contain a string
+"CONFIG" instead of an integer value, the action reads the values of such parameters from the
+template file of the model and do not change them.
+
+```python
+@abstractmethod
+def default_test_parameters(self) -> Dict[str, Any]:
+```
+-- The method returns a dict that points for test parameters the default values.
+
+If some dict in test bunches does not have a field that is pointed
+in the dict returned by `default_test_parameters`, the value for the field is set by the default
+value.
+
+### VI.4 How the method `OTETestHelper.get_list_of_tests` works
+
+The method `get_list_of_tests` of the class `OTETestHelper` works as follows:
+* 
+
+
+
+
+-------------------------------------------------------------
+
+Usually pytest collects this information inside itself, but our test suite uses special interface
+that allows to change it: if pytest finds the function `pytest_generate_tests` with declaration
+```python
+def pytest_generate_tests(metafunc):
+```
+then special pytest magic is allowed
+: this function is called for each pytest function/method and
+gives the following possibility through its parameter `metafunc`:
+* `metafunc.cls` -- the type of the current test class of the test method (None for test functions)
+* `metafunc.config.getoption("--some-option-name")` -- allows to get value of an additional pytest
+  option declared in `pytest_addoption`
+* 
+
+
+
 
 
 
