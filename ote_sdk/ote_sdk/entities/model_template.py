@@ -10,7 +10,6 @@ from enum import Enum, IntEnum, auto
 from typing import Dict, List, Optional, Sequence, Union, cast
 
 from omegaconf import DictConfig, ListConfig, OmegaConf
-
 from ote_sdk.configuration.elements import metadata_keys
 from ote_sdk.entities.label import Domain
 
@@ -449,7 +448,7 @@ ANOMALY_TASK_TYPES: Sequence[TaskType] = (
 )
 
 
-# Tasks which support local labels    
+# Tasks which support local labels
 LOCAL_TASKS: Sequence[TaskType] = (
     TaskType.DETECTION,
     TaskType.SEGMENTATION,
@@ -463,7 +462,7 @@ LOCAL_TASKS: Sequence[TaskType] = (
 # Tasks which support global labels
 GLOBAL_TASKS: Sequence[TaskType] = (
     TaskType.CLASSIFICATION,
-    TaskType.ANOMALY_CLASSIFICATION
+    TaskType.ANOMALY_CLASSIFICATION,
 )
 
 
