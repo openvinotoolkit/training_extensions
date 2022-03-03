@@ -1219,21 +1219,23 @@ The test case class should be implemented as follows:
     the info extracted from the fixtures
   * and the result of the fixture is the dict `params_factories_for_test_actions`
     that maps the name of each action that requires parameters to one of the factories  
-  **Example**: if the algo backend has two actions that require parameters in the constructors, and
-  the first of the action has the name "training" and its constructor has parameters  
-  `def __init__(self, dataset, labels_schema, template_path, num_training_iters, batch_size):`  
-  then the fixture  `params_factories_for_test_actions_fx` should return a dict
-  `params_factories_for_test_actions` such that   
-  `params_factories_for_test_actions["training"]` is a function closure that returns a dict
-  ```python
-            return {
-                'dataset': dataset,
-                'labels_schema': labels_schema,
-                'template_path': template_path,
-                'num_training_iters': num_training_iters,
-                'batch_size': batch_size,
-            }
-  ```
+
+    **Example**: if the algo backend has two actions that require parameters in the constructors, and
+    the first of the action has the name "training" and its constructor has parameters  
+    `def __init__(self, dataset, labels_schema, template_path, num_training_iters, batch_size):`  
+    then the fixture  `params_factories_for_test_actions_fx` should return a dict
+    `params_factories_for_test_actions` such that   
+    `params_factories_for_test_actions["training"]` is a function closure that returns a dict
+    ```python
+              return {
+                  'dataset': dataset,
+                  'labels_schema': labels_schema,
+                  'template_path': template_path,
+                  'num_training_iters': num_training_iters,
+                  'batch_size': batch_size,
+              }
+    ```
+* 
 
 -------------------------------------------------------------
 
