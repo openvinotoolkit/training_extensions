@@ -293,3 +293,19 @@ class DatasetParamTypeCheck(BaseInputArgumentChecker):
         check_is_parameter_like_dataset(
             parameter=self.parameter, parameter_name=self.parameter_name
         )
+
+
+class OptionalFilePathCheck(BaseInputArgumentChecker):
+    """Class to check optional file_path-like parameters"""
+
+    def __init__(self, parameter, parameter_name, expected_file_extension):
+        self.parameter = parameter
+        self.parameter_name = parameter_name
+        self.expected_file_extensions = expected_file_extension
+
+    def check(self):
+        """Method raises ValueError exception if file path parameter is not equal to expected"""
+        if self.parameter is not None:
+            FilePathCheck(
+                self.parameter, self.parameter_name, self.expected_file_extensions
+            ).check()
