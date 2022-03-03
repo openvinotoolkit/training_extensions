@@ -1218,7 +1218,7 @@ The test case class should be implemented as follows:
   * create factories generating parameters for the test actions as function closures using
     the info extracted from the fixtures
   * and the result of the fixture is the dict `params_factories_for_test_actions`
-    that maps the name of each action that requires parameters to one of the factories
+    that maps the name of each action that requires parameters to one of the factories  
   **Example**: if the algo backend has two actions that require parameters in the constructors, and
   the first of the action has the name "training" and its constructor has parameters  
   `def __init__(self, dataset, labels_schema, template_path, num_training_iters, batch_size):`  
