@@ -261,7 +261,7 @@ class TestDatasetItemEntity:
         roi = DatasetItemParameters().roi()
         metadata = DatasetItemParameters.metadata()
         subset = Subset.TESTING
-        ignored_labels = DatasetItemParameters().labels()
+        ignored_labels = set(DatasetItemParameters().labels())
         specified_values_dataset_item = DatasetItemEntity(
             media, annotations_scene, roi, metadata, subset, ignored_labels
         )
