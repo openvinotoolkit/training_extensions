@@ -105,7 +105,7 @@ def read_model(model_configuration, path, train_dataset):
             }
 
             config_path = os.path.join(temp_dir, "demo_package", "config.json")
-            with open(config_path) as f:
+            with open(config_path, encoding="UTF-8") as f:
                 model_parameters = json.load(f)["model_parameters"]
 
             for key in model_adapter_keys:

@@ -160,7 +160,7 @@ class TestDatasetItemEntity:
             expected_annotation = expected_annotations[index]
             # Redefining id and modification_date required because of new Annotation objects created after shape
             # denormalize
-            actual_annotation.id = expected_annotation.id
+            actual_annotation.id_ = expected_annotation.id_
             actual_annotation.shape.modification_date = (
                 expected_annotation.shape.modification_date
             )
@@ -611,8 +611,8 @@ class TestDatasetItemEntity:
             )
         dataset_item.append_annotations(annotations_to_add)
         # Random id is generated for normalized annotations
-        normalized_annotations[0].id = dataset_item.annotation_scene.annotations[2].id
-        normalized_annotations[1].id = dataset_item.annotation_scene.annotations[3].id
+        normalized_annotations[0].id_ = dataset_item.annotation_scene.annotations[2].id_
+        normalized_annotations[1].id_ = dataset_item.annotation_scene.annotations[3].id_
         assert (
             dataset_item.annotation_scene.annotations
             == full_box_annotations + normalized_annotations
@@ -884,7 +884,7 @@ class TestDatasetItemEntity:
             dataset_item.annotation_scene.editor_name
             == copy_dataset.annotation_scene.editor_name
         )
-        assert dataset_item.annotation_scene.id == copy_dataset.annotation_scene.id
+        assert dataset_item.annotation_scene.id_ == copy_dataset.annotation_scene.id_
         assert dataset_item.annotation_scene.kind == copy_dataset.annotation_scene.kind
         assert (
             dataset_item.annotation_scene.shapes == copy_dataset.annotation_scene.shapes

@@ -154,7 +154,7 @@ class TestModelConfiguration:
             configurable_parameters=parameters, label_schema=label_schema
         )
         assert model_configuration.configurable_parameters == parameters
-        assert model_configuration.label_schema == label_schema
+        assert model_configuration.get_label_schema() == label_schema
 
 
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
@@ -204,7 +204,7 @@ class TestModelEntity:
             train_dataset=self.dataset(), configuration=self.configuration()
         )
 
-        assert model_entity.id == ID()
+        assert model_entity.id_ == ID()
         assert type(model_entity.configuration) == ModelConfiguration
         assert type(model_entity.creation_date) == datetime
         assert type(model_entity.train_dataset) == DatasetEntity
