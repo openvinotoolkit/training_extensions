@@ -1,3 +1,5 @@
+"""Tests for input parameters with OTE CLI"""
+
 # Copyright (C) 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -39,9 +41,8 @@ from common import (
     nncf_export_testing,
     nncf_eval_testing,
     nncf_eval_openvino_testing,
-    args,
     wrong_paths,
-    ote_export_common
+    ote_find_common
 )
 
 root = '/tmp/ote_cli/'
@@ -51,7 +52,7 @@ templates = Registry('external').filter(task_type='DETECTION').templates
 templates_ids = [template.model_template_id for template in templates]
 
 
-class TestOTECliExportParams:
+class TestFindCommonDetection:
     @e2e_pytest_component
     def test_create_venv(self):
         work_dir, template_work_dir, algo_backend_dir = get_some_vars(templates[0], root)
@@ -59,44 +60,42 @@ class TestOTECliExportParams:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_ote_export_no_template(self, template):
-        error_string = "ote export: error: the following arguments are required:" \
-                       " template, --load-weights, --save-model-to"
-        ret = ote_export_common(template, root, [])
-        assert error_string in str(ret.stderr)
+    def test_ote_cli_find(self, template):
+        ret = ote_find_common(template, root, [])
+        assert ret.returncode == 0
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_ote_export_no_weights(self, template):
-        error_string = "ote export: error: the following arguments are required: --load-weights"
-        command_line = [template.model_template_id,
-                        f'--save-model-to',
-                        f'./exported_{template.model_template_id}']
-        ret = ote_export_common(template, root, command_line)
-        assert error_string in str(ret.stderr)
+    def test_ote_cli_find_root(self, template):
+        valid_paths = {'same_folder': '.',
+                       'upper_folder': '..',
+                       'external': 'external'
+                       }
+        for path in valid_paths.values():
+            cmd = ['--root', path]
+            ret = ote_find_common(template, root, cmd)
+            assert ret.returncode == 0
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_ote_export_no_save_to(self, template):
-        error_string = "ote export: error: the following arguments are required: --save-model-to"
-        command_line = [template.model_template_id,
-                        '--load-weights',
-                        './trained_default_template/weights.pth']
-        ret = ote_export_common(template, root, command_line)
-        assert error_string in str(ret.stderr)
+    def test_ote_cli_task_type(self, template):
+        task_types = ["ANOMALY_CLASSIFICATION", "CLASSIFICATION", "DETECTION", "SEGMENTATION"]
+        for task_type in task_types:
+            cmd = ['--task_type', task_type]
+            ret = ote_find_common(template, root, cmd)
+            assert ret.returncode == 0
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_ote_export_wrong_paths(self, template):
-        error_string = "Path is not valid"
-        command_line = [template.model_template_id,
-                        '--load-weights',
-                        './trained_default_template/weights.pth',
-                        f'--save-model-to',
-                        f'./exported_{template.model_template_id}']
-        for i in [4, 6]:
-            for case in wrong_paths.values():
-                temp = deepcopy(command_line)
-                temp[i] = case
-                ret = ote_export_common(template, root, command_line)
-                assert error_string in str(ret.stderr)
+    def test_ote_cli_find_root_wrong_path(self, template):
+        for path in wrong_paths.values():
+            cmd = ['--root', path]
+            ret = ote_find_common(template, root, cmd)
+            assert ret.returncode != 0
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_ote_cli_find_task_type_not_set(self, template):
+        cmd = ['--task_id', '']
+        ret = ote_find_common(template, root, cmd)
+        assert ret.returncode != 0
