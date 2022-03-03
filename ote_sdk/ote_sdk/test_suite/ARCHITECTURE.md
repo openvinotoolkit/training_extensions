@@ -461,8 +461,12 @@ requirements.
 
 The keys of the dict are strings -- the parameters' part of the test id-s. This string uniquely
 identifies the test, since it contains the required action, and also the description of a model, a
-dataset used for training, and training parameters.  
-(See the description of the function `OTETestHelper._generate_test_id` below in the section TODO.)  
+dataset used for training, and training parameters.
+
+See the detailed description how the method `OTETestHelper._generate_test_id` works in the
+subsection "VI.5.5 `short_test_parameters_names_for_generating_id`" of the section
+"VI.5 Methods of the test parameters interface class `OTETestCreationParametersInterface`"
+
 Although the id-s are unique, they have a drawback -- they are quite long, since they contain all
 the info to identify the test.
 
@@ -655,8 +659,8 @@ For this case if the dict `params_factories_for_test_actions` does not contain a
 an action, then the constructor of the corresponding action will be called without parameters.
 
 The constructor works as follows:
-* For each action that was passed to the function `generate_ote_integration_test_case_class` that
-  created this test case class
+* For each action that was passed to the function `generate_ote_integration_test_case_class` during
+  creation of this test case class
   * take name of the action
   * take `cur_params_factory = params_factories_for_test_actions.get(name)`
     * if the result is None, `cur_params = {}`
@@ -667,6 +671,24 @@ The constructor works as follows:
     `cur_stage = OTETestStage(action=cur_action, stages_storage=self)`
   * store the current stage instance as  
     `self._stages[cur_name] = cur_stage`
+
+As you can see for each factory in the dict `params_factories_for_test_actions` the factory is
+called lazily -- it means, it is called when and only when the corresponding action should be
+created.
+
+Also as you can see the dict `params_factories_for_test_actions` with the factories is passed to the
+constructor as the parameter -- so, the factories may be different for each test to pass to the test
+case the values corresponding to the current test.  
+>>>>>>>>>>TODO<<<<<<<<<<<<<<<<
+Indeed this is the truth, since the dict `params_factories_for_test_actions` is created as follows:  
+* as stated above typically in each algo backend there is only one test class for training tests,
+* this class typically has a pytest fixture `params_factories_for_test_actions_fx` that
+  * uses other fixtures to extract info on the current test parameters and some parameters of the
+    environment (e.g. the root path where datasets is placed, etc)
+  * creates factories generating parameters for the test actions as function closures using
+    the info extracted from the fixtures
+  * and the result of the fixture is the dict `params_factories_for_test_actions` as stated above
+    that for each action that required parameters has one of the factories
 
 ## VI. Test Helper class
 
@@ -687,10 +709,13 @@ Note that the both of the methods work with test parameters that are used by pyt
 
 ### VI.2 How pytest works with test parameters
 
+#### VI.2.1 Short description how pytest works
+
 Since `OTETestHelper` makes all the operations related to pytest parametrization mechanisms, we need
 to describe here how pytest works with test parameters.
 
-Generally pytest works as follows:
+Generally pytest works as follows:  
+(NB: it is a short and may be approximate description! do not use it as a pytest documentation)
 1. Pytest collects test info, for each test function or test method it gets information on
    parameters of the test and possible combination of parameters that may be executed.
 2. Then pytest makes filtering -- it selects/deselects tests based on the pytest parameters
@@ -703,7 +728,7 @@ Generally pytest works as follows:
    combination.
    During the execution pytest may print the full name of the "test with parameters"
 
-**How pytest gets information on parameters**
+#### VI.2.2 How pytest gets information on parameters
 
 In pytest the information on test parameters for each test function/method consists of the following
 3 elements:  
@@ -739,7 +764,7 @@ function/method the three elements stated above.
 See a bit more details how this pytest magic works in the description of the function
 `ote_pytest_generate_tests_insertion` below in the section TODO.
 
-**How pytest runs a test with a combination of parameters**
+#### VI.2.3 How pytest runs a test with a combination of parameters
 
 When pytest runs a test function/method that has some parameters, pytest works as follows:  
 (NB: it is a short and may be approximate description! do not use it as a pytest documentation)
@@ -804,9 +829,14 @@ The constructor of the class `OTETestHelper` indeed makes the following:
 * initialize a cache to store a test case class
 
 
-### VI.5 Methods of the test case parameters class `OTETestCreationParametersInterface`
+### VI.5 Methods of the test parameters interface class `OTETestCreationParametersInterface`
 
-Let's consider all the methods of the abstract test parameters interface class one by one.
+Let's consider all the methods of the abstract test parameters interface class one by one:
+* `test_case_class`
+* `test_bunches`
+* `default_test_parameters`
+* `test_parameters_defining_test_case_behavior`
+* `short_test_parameters_names_for_generating_id`
 
 #### VI.5.1 `test_case_class`
 
@@ -964,7 +994,7 @@ def test_parameters_defining_test_case_behavior(self) -> List[str]:
 The method returns a list of strings -- names of the test parameters
 (i.e. keys of test bunches dicts) that define test case behavior.
 
-See the explanation on test cases and parameters defining test case in the section
+See the detailed explanation on test cases and parameters defining test case in the section
 "V.1 General description of test case class".
 
 When several test cases are handled, if the next test has these parameters
@@ -993,7 +1023,6 @@ following one:
         id_parts = []
         for par_name, short_par_name in self.short_test_parameters_names_for_generating_id.items():
             id_parts.append(f"{short_par_name}-{test_parameters[par_name]}")
-
         return ",".join(id_parts)
 ```
 (here `self.short_test_parameters_names_for_generating_id` is the OrderedDict stored in the
@@ -1021,13 +1050,190 @@ OrderedDict(
 )
 ```
 
-### VI.4 How the method `OTETestHelper.get_list_of_tests` works
+### VI.6 How the method `OTETestHelper.get_list_of_tests` works
+
+As stated above, the method `get_list_of_tests` returns the triplet
+`argnames, argvalues, ids` that is used later in `pytest_generate_tests`-related pytest magic to
+parametrize this test method, and the triplet `argnames, argvalues, ids` received from
+`get_list_of_tests` is used as is without any changes.
 
 The method `get_list_of_tests` of the class `OTETestHelper` works as follows:
-* 
+* set `argnames = ("test_parameters",)` -- as we stated above test suite training tests always use
+  one parameter for pytest test, but the values of the parameter will be a dict
+* get `test_bunches` list stored earlier to a field from test parameters class in constructor  
+  See the detailed description in the section "VI.5.2 `test_bunches`"
+* get the class `test_case_class` stored earlier to a field from test parameters class in
+  constructor  
+  See the detailed description in the section "VI.5.1 `test_case_class`"
+* initialize  
+  `argvalues = []`  
+  `ids = []`
+* for each test bunch in the list:
+  * take the mandatory fields `model_name` and `dataset_name` from the test bunch dict
+  * create the list of pairs `(model_name, dataset_name)` to be handled:
+    * if either the field `model_name` or `dataset_name` is a list, generate cartesian product of
+      all possible pairs using `itertools.product`
+    * otherwise just take one pair `(model_name, dataset_name)`
+  * for each pair `(model_name, dataset_name)`
+    * for each test action name received from `test_case_class.get_list_of_test_stages()`
+      * make deepcopy of the test bunch dict
+      * set the key `"test_stage"` in the copied dict to the current test action name
+      * set the keys `model_name` and `dataset_name` in the copied dict to the current model name
+        and dataset name
+      * make filling of the default values in the copied test bunch dict  
+        -- see the detailed description how it is done above in the subsection
+        "VI.5.3 `default_test_parameters`" of the section
+        "VI.5 Methods of the test parameters interface class `OTETestCreationParametersInterface`"
+      * generate the string id that corresponds to this combination of parameters using the method
+        `OTETestHelper._generate_test_id`  
+        -- see the detailed description how this method works in the subsection
+        "VI.5.5 `short_test_parameters_names_for_generating_id`" of the section
+        "VI.5 Methods of the test parameters interface class `OTETestCreationParametersInterface`"
+      * append to `argvalues` the current copied-and-modified dict
+      * append to `ids` the generated string id
+* when exit from all the cycles, return the triplet `argnames, argvalues, ids`
+
+What is the result of this function?
+
+As we stated above in the section "V.1 General description of test case class" to work properly the
+test suite tests should be organized as follows:
+
+> * The tests are grouped such that the tests from one group have the same parameters from the list
+>   of "parameters that define the test case" -- it means that the tests are grouped by the
+>   "test cases"
+> * After that the tests are reordered such that
+>   * the test from one group are executed sequentially one-by-one, without tests from other group
+>     between tests in one group
+>   * the test from one group are executed sequentially in the order defined for the test actions
+>     beforehand;
+
+Since for an algo backend we typically have only one test class for the training tests, only one
+test method in the class, and the method is parametrized by the triplet `argnames, argvalues, ids`
+received from the function `get_list_of_tests`, described above, we can say that these conditions
+are fulfilled.
+
+### VI.7 How the method `OTETestHelper.get_test_case` works
+
+As stated above `get_test_case` -- gets an instance of the test case class for the current test
+parameters, allows re-using the instance between several tests.
+
+It has the following declaration:
+```python
+def get_test_case(self, test_parameters, params_factories_for_test_actions):
+```
+It has the following parameters:
+* `test_parameters` -- the parameters of the current test, indeed it is one of elements of the list
+  `argvalues` from the triplet `argnames, argvalues, ids` received from the method
+  `get_list_of_tests` -- see the previous section how it is generated
+* `params_factories_for_test_actions` -- this is a dict mapping action names to factories,
+  generating parameters to construct the actions, it is the same as the input parameter for the test
+  case class, see detailed description in the section
+  "V.3 The constructor of a test case class"  
+  Note that this parameter is passed to the constructor of a test case class without any changes.
+
+Also as stated above in the section "V.1 General description of test case class" to make test suite
+tests work properly the following should be fulfilled:
+
+> * An instance of the test case class is created once for each of the group of tests stated above
+>   -- so, the instance of test case class is created for each "test case" described above.  
+
+Also as we stated at the bottom of the previous section, the parameters of the only test method of
+the training tests are reordered in such a way that the tests from one test case are executed
+sequentially, without tests from another test case between them.
+
+And, as also was stated in the section "V.1 General description of test case class" 
+
+> We suppose that for each algo backend there is a known set of parameters that define training
+> process, and we suppose that if two tests have the same these parameters, then they are belong to
+> the same test case.  
+> We call these parameters "the parameters defining the test case".
+
+These parameters defining test case are received by test helper instance from the method
+`test_parameters_defining_test_case_behavior` of the test parameters class.
+
+So to keep one test case class instance the method `get_test_case` of the test helper class
+`OTETestHelper` works as follows:
+* get the class `test_case_class` stored earlier to a field from test parameters class in
+  constructor  
+  See the detailed description in the section "VI.5.1 `test_case_class`"
+* get the list of string `important_params = self.test_parameters_defining_test_case_behavior`  
+  -- get the list of names of parameters defining test case, it was  stored earlier to a field from
+  the test parameters class  
+  See the detailed description in the section "VI.5.4 `test_parameters_defining_test_case_behavior`"
+* if we already created and stored in the cache some instance of the test case class,
+  * check the parameters that were used during its creation:  
+    if for all parameters from the list `important_params` the values of
+    the parameters were the same
+    * if it is True -- it is the same test case, so the function just returns the stored instance of
+      the test case class
+* Otherwise -- that is, if either the cache does not contain created instance of test case class, or
+  some parameters from the list `important_params` were changed -- tests for another test case are
+  started.  
+  In this case the function creates a new instance of the class `test_case_class` passing to its
+  constructor the parameter `params_factories_for_test_actions`
 
 
+## VII. Test class in algo backend
 
+The direct connection between training tests in an algo backend and the test suite is made by
+* Algo backend implementation of some fixtures required for test suite
+  -- see about that in the next section TODO
+* Test parameter class that will provide parameters to connect the algo backend with the test suite  
+* A test case class in the file `tests/test_ote_training.py` in the algo backend
+
+Note again that before the test class there should be implemented a test parameters class that will
+provide parameters to connect the algo backend with with test suite.
+It should be a class derived from the test parameters interface class
+`OTETestCreationParametersInterface`.  
+See details above in the sections "VI.4 Constructor of the class `OTETestHelper`" and
+"VI.5 Methods of the test parameters interface class `OTETestCreationParametersInterface`"
+
+As an example you can see
+
+The test case class should be implemented as follows:
+* The test class should be derived from the interface class `OTETrainingTestInterface`.  
+  This is required to distinguish the test classes implemented for the test suite: when pytest magic
+  related to the function `pytest_generate_tests` works, it checks if the current test class is a
+  subclass of this interface `OTETrainingTestInterface` and makes parametrization only in this case.  
+  (See details on this pytest magic above in the section
+  "VI.2.2 How pytest gets information on parameters" and below in the section TODO)
+
+  The interface class has only one abstract classmethod `get_list_of_tests` -- see on its
+  implementation below.
+* The test class should have a static field `helper` defined as follows:
+  ```python
+  helper = OTETestHelper(<test parameters class>())
+  ```
+* The test class should have the following implementation of the method `get_list_of_tests`
+  ```python
+  @classmethod
+  def get_list_of_tests(cls, usecase: Optional[str] = None):
+      return cls.helper.get_list_of_tests(usecase)
+  ```
+* The test class should implement as its method the fixture `params_factories_for_test_actions_fx`
+  that will give the parameters for actions for the current test.  
+  It should work as follows:
+  * use other fixtures to extract info on the current test parameters and some parameters of the
+    environment (e.g. the root path where datasets is placed, etc)
+  * create factories generating parameters for the test actions as function closures using
+    the info extracted from the fixtures
+  * and the result of the fixture is the dict `params_factories_for_test_actions`
+    that maps the name of each action that requires parameters to one of the factories
+  **Example**: if the algo backend has two actions that require parameters in the constructors, and
+  the first of the action has the name "training" and its constructor has parameters  
+  `def __init__(self, dataset, labels_schema, template_path, num_training_iters, batch_size):`  
+  then the fixture  `params_factories_for_test_actions_fx` should return a dict
+  `params_factories_for_test_actions` such that   
+  `params_factories_for_test_actions["training"]` is a function closure that returns a dict
+  ```python
+            return {
+                'dataset': dataset,
+                'labels_schema': labels_schema,
+                'template_path': template_path,
+                'num_training_iters': num_training_iters,
+                'batch_size': batch_size,
+            }
+  ```
 
 -------------------------------------------------------------
 
