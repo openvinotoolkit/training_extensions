@@ -679,16 +679,6 @@ created.
 Also as you can see the dict `params_factories_for_test_actions` with the factories is passed to the
 constructor as the parameter -- so, the factories may be different for each test to pass to the test
 case the values corresponding to the current test.  
->>>>>>>>>>TODO<<<<<<<<<<<<<<<<
-Indeed this is the truth, since the dict `params_factories_for_test_actions` is created as follows:  
-* as stated above typically in each algo backend there is only one test class for training tests,
-* this class typically has a pytest fixture `params_factories_for_test_actions_fx` that
-  * uses other fixtures to extract info on the current test parameters and some parameters of the
-    environment (e.g. the root path where datasets is placed, etc)
-  * creates factories generating parameters for the test actions as function closures using
-    the info extracted from the fixtures
-  * and the result of the fixture is the dict `params_factories_for_test_actions` as stated above
-    that for each action that required parameters has one of the factories
 
 ## VI. Test Helper class
 
@@ -1173,11 +1163,13 @@ So to keep one test case class instance the method `get_test_case` of the test h
   constructor the parameter `params_factories_for_test_actions`
 
 
-## VII. Test class in algo backend
+## VII. Connecting algo backend with test suite. Test class in algo backend
 
-The direct connection between training tests in an algo backend and the test suite is made by
+The direct connection between the training test in an algo backend and the test suite is made by
 * Algo backend implementation of some fixtures required for test suite
   -- see about that in the next section TODO
+* Insertions that is made in the special algo backend file `tests/conftest.py` that is loaded by
+  pytest before starting its work -- all the pytest magic is inserted into it.
 * Test parameter class that will provide parameters to connect the algo backend with the test suite  
 * A test case class in the file `tests/test_ote_training.py` in the algo backend
 
@@ -1186,9 +1178,22 @@ provide parameters to connect the algo backend with with test suite.
 It should be a class derived from the test parameters interface class
 `OTETestCreationParametersInterface`.  
 See details above in the sections "VI.4 Constructor of the class `OTETestHelper`" and
-"VI.5 Methods of the test parameters interface class `OTETestCreationParametersInterface`"
+"VI.5 Methods of the test parameters interface class `OTETestCreationParametersInterface`"  
+As an example of the test parameters class see
+* the class `ObjectDetectionTrainingTestParameters` in the file
+  `external/mmdetection/tests/test_ote_training.py`
+* the class `ClassificationTrainingTestParameters` in the file
+  `external/deep-object-reid/tests/test_ote_training.py`  
+  -- the latter is more interesting, since deep-object-reid algo backend is different w.r.t. the
+  mmdetection algo backend, and we implemented the default test case parameter class
+  `DefaultOTETestCreationParametersInterface` mostly for mmdetection.
 
-As an example you can see
+Note that test class class itself contains mostly a boilerplate code that connects test suite with
+pytest.  
+(We made out the best to decrease the number of the boilerplate code, but nevertheless it is
+required.)
+
+Also note that the test class uses a lot of fixtures implemented in test suite.
 
 The test case class should be implemented as follows:
 * The test class should be derived from the interface class `OTETrainingTestInterface`.  
@@ -1235,45 +1240,130 @@ The test case class should be implemented as follows:
                   'batch_size': batch_size,
               }
     ```
-* 
+* The test class should implement as its method the fixture `test_case_fx` that will return the test
+  case from the current implementation using the test helper cache: if it is required the
+  instance of the test case class is created, otherwise the cached version of the instance is used  
+  (See detailed description above in the section
+  "VI.7 How the method `OTETestHelper.get_test_case` works")  
+  This fixture should have the following implementation
+  ```python
+  @pytest.fixture
+  def test_case_fx(self, current_test_parameters_fx, params_factories_for_test_actions_fx):
+      test_case = type(self).helper.get_test_case(current_test_parameters_fx,
+                                                  params_factories_for_test_actions_fx)
+      return test_case
+  ```
+* The test class should implement as its method the fixture `data_collector_fx` that will return the
+  test the `DataCollector` instance  
+  NB: probably this fixture should be moved to the common fixtures  
+  See examples in `external/mmdetection/tests/test_ote_training.py`
 
--------------------------------------------------------------
+* The test class should implement as its method the only test method with the name `test` and the
+  following implementation:
+  ```python
+    @e2e_pytest_performance
+    def test(self,
+             test_parameters,
+             test_case_fx, data_collector_fx,
+             cur_test_expected_metrics_callback_fx):
+        test_case_fx.run_stage(test_parameters['test_stage'], data_collector_fx,
+                               cur_test_expected_metrics_callback_fx)
+  ```
 
-Usually pytest collects this information inside itself, but our test suite uses special interface
-that allows to change it: if pytest finds the function `pytest_generate_tests` with declaration
+## VIII. Connecting algo backend with test suite. Pytest magic and fixtures.
+
+## VIII.1. Connecting algo backend with test suite. Pytest magic.
+
+As stated above in the previous section the direct connection between the training test in an algo
+backend and the test suite is made, particularly, by
+> * Algo backend implementation of some fixtures required for test suite
+>   -- see about that in the next section TODO
+> * Insertions that is made in the special algo backend file `tests/conftest.py` that is loaded by
+>   pytest before starting its work -- all the pytest magic is inserted into it.
+
+The algo backend file `tests/conftest.py` is very important, since it is loaded by pytest before
+many other operations, particularly, before collecting the tests.
+
+The file `tests/conftest.py` for algo backend should implement the following two functions
+* `pytest_generate_tests` -- as we stated above in the section
+  "VI.2.2 How pytest gets information on parameters" it allows to override parametrization of a test
+  function/method  
+  This function is called for each pytest function/method and gives the possibility to parametrize the test
+  through its parameter `metafunc`
+* `pytest_addoption` -- the function allows to add more command line arguments to pytest,
+  the values passed to the command line arguments may be read later using the pytest fixture
+  `request`.  
+  The function is called once before parsing of pytest command line parameters.
+
+In test suite the file `ote_sdk/ote_sdk/test_suite/pytest_insertions.py` contains implementations of
+the special functions `ote_pytest_generate_tests_insertion` and `ote_pytest_addoption_insertion`
+that makes all what is required for the test suite.
+
+As the result the minimal implementation of the functions `pytest_generate_tests` and
+`pytest_addoption` contain the following boilerplate code only
 ```python
+# pytest magic
 def pytest_generate_tests(metafunc):
+    ote_pytest_generate_tests_insertion(metafunc)
+
+def pytest_addoption(parser):
+    ote_pytest_addoption_insertion(parser)
 ```
-then special pytest magic is allowed
-: this function is called for each pytest function/method and
-gives the following possibility through its parameter `metafunc`:
-* `metafunc.cls` -- the type of the current test class of the test method (None for test functions)
-* `metafunc.config.getoption("--some-option-name")` -- allows to get value of an additional pytest
-  option declared in `pytest_addoption`
-* 
 
+(Why we say that it is "a minimal implementation"? because the algo backend could make its own
+operations in these two functions pytest, the test suite implementation of the insertions allow to
+use them together with other code.)
 
+As we can see from the implementation `ote_pytest_generate_tests_insertion`, its main operations are
+as follows:  
+(note that this function is called for each test function/method)
+* the function get the current test class using `metafunc.cls`
+* if the class is None (for test functions) or is not a subclass of `OTETrainingTestInterface`, then
+  return
+* otherwise make
+  ```python
+    argnames, argvalues, ids = metafunc.cls.get_list_of_tests(usecase)
+  ```
+* parametrize the current test method by the call
+  ```python
+    metafunc.parametrize(argnames, argvalues, ids=ids, scope="class")
+  ```
+  Note that the scope "class" is used, it is required.
 
+## VIII.2. Connecting algo backend with test suite. Pytest fixtures and others.
 
+To connect an algo backend with the test suite the following fixtures should be implemented
+in the file `tests/conftest.py` of the algo backend.
 
+* the fixture `ote_test_domain_fx` -- it should return the string name of the
+  current algo backend domain
+* the fixture `ote_test_scenario_fx` -- it should return the string on the
+  current test scenario, usually we use the following implementation
+  ```python
+        @pytest.fixture
+        def ote_test_scenario_fx(current_test_parameters_fx):
+            assert isinstance(current_test_parameters_fx, dict)
+            if current_test_parameters_fx.get('usecase') == REALLIFE_USECASE_CONSTANT:
+                return 'performance'
+            else:
+                return 'integration'
+  ```
+* the fixture `ote_templates_root_dir_fx` -- it should return the absolute
+  path of the folder where OTE SDK model templates are stored for this algo backend, usually it uses
+  something like `osp.dirname(osp.dirname(osp.realpath(__file__)))` to get the absolute path to the
+  root of the algo backend and then using knowledge of algo backend structures point to the template
+  path
+* the fixture `ote_reference_root_dir_fx` -- it should return the absolute
+  path of the folder where the reference values for some test operations are stored (at the moment
+  such folder store the reference files for NNCF compressed graphs for the model templates).
 
+Also the following operations should be done
+```python
+pytest_plugins = get_pytest_plugins_from_ote()
+ote_conftest_insertion(default_repository_name='ote/training_extensions/external/mmdetection')
+```
 
+The first line points to pytest additional modules from which the fixtures should be loaded -- these
+may be e2e package modules and test suite fixture module.
 
-
-
-
-
-
-
-
------------------------------------------------
-
-  Note that the running of pytest tests for test suite is parametrized by some python magic
-  that is implemented in the function `ote_pytest_generate_tests_insertion` in the file
-  `test_suite/pytest_insertions.py`
-
-
-* Instance of a test class
-  Typically this class is defined in `test_ote_training.py` in the algo backend.
-  This class contains some fixtures implementation.
-  This class should be derived from the interface `OTETrainingTestInterface`.
+The second line makes some operations on variables in e2e test library that is used in our CI.
