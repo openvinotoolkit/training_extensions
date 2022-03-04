@@ -105,7 +105,7 @@ def remove_ote_sdk_from_requirements(path):
 def ote_train_common(template, root, cmd_args):
     work_dir, __, _ = get_some_vars(template, root)
     command_line = ['ote',
-                    'export',
+                    'train',
                     *cmd_args]
     return run(command_line, env=collect_env_vars(work_dir), capture_output=True)
 
@@ -186,7 +186,7 @@ def ote_export_testing(template, root):
 def ote_eval_common(template, root, cmd_args):
     work_dir, __, _ = get_some_vars(template, root)
     command_line = ['ote',
-                    'demo',
+                    'eval',
                     *cmd_args]
     return run(command_line, env=collect_env_vars(work_dir), capture_output=True)
 
@@ -271,7 +271,7 @@ def ote_demo_openvino_testing(template, root, ote_dir, args):
 def ote_deploy_common(template, root, cmd_args):
     work_dir, __, _ = get_some_vars(template, root)
     command_line = ['ote',
-                    'demo',
+                    'deploy',
                     *cmd_args]
     return run(command_line, env=collect_env_vars(work_dir), capture_output=True)
 
