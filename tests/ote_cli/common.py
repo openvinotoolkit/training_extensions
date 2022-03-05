@@ -17,8 +17,6 @@ import json
 import os
 from subprocess import run  # nosec
 
-from ote_sdk.usecases.exportable_code.utils import get_git_commit_hash
-
 def get_template_rel_dir(template):
     return os.path.dirname(os.path.relpath(template.model_template_path))
 
@@ -85,19 +83,6 @@ def remove_ote_sdk_from_requirements(path):
 
     with open(path, 'w', encoding='UTF-8') as write_file:
         write_file.write(content)
-
-
-def check_ote_sdk_commit_hash_in_requirements(path):
-    with open(path, encoding='UTF-8') as read_file:
-        content = [line for line in read_file if 'ote_sdk' in line]
-    if len(content) != 1:
-        raise RuntimeError(f"Invalid ote_sdk requirements (0 or more than 1 times mentioned): {path}")
-
-    git_commit_hash = get_git_commit_hash()
-    if git_commit_hash in content[0]:
-        return True
-
-    return False
 
 
 def ote_train_testing(template, root, ote_dir, args):
@@ -252,8 +237,6 @@ def ote_deploy_openvino_testing(template, root, ote_dir, args):
     assert run(['python3', '-m', 'pip', 'install', 'wheel'],
                cwd=os.path.join(deployment_dir, 'python'),
                env=collect_env_vars(os.path.join(deployment_dir, 'python'))).returncode == 0
-
-    assert check_ote_sdk_commit_hash_in_requirements(os.path.join(deployment_dir, 'python', 'requirements.txt'))
 
     # Remove ote_sdk from requirements.txt, since merge commit (that is created on CI) is not pushed to github and that's why cannot be cloned.
     # Install ote_sdk from local folder instead.
