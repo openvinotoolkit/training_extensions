@@ -52,30 +52,30 @@ ote_dir = os.getcwd()
 
 params_values = []
 params_ids = []
-for back_end in ("DETECTION", "CLASSIFICATION", "ANOMALY_CLASSIFICATION", "SEGMENTATION"):
-    cur_templates = Registry("external").filter(task_type=back_end).templates
+for back_end_ in ("DETECTION", "CLASSIFICATION", "ANOMALY_CLASSIFICATION", "SEGMENTATION"):
+    cur_templates = Registry("external").filter(task_type=back_end_).templates
     cur_templates_ids = [template.model_template_id for template in cur_templates]
-    params_values += [(back_end, t) for t in cur_templates]
-    params_ids += [back_end + "," + cur_id for cur_id in cur_templates_ids]
+    params_values += [(back_end_, t) for t in cur_templates]
+    params_ids += [back_end_ + "," + cur_id for cur_id in cur_templates_ids]
 
 
 class TestFindCommon:
     @pytest.fixture()
     @e2e_pytest_component
-    @pytest.mark.parametrize("domain, template", params_values)
+    @pytest.mark.parametrize("back_end, template", params_values)
     def create_venv_fx(self, template):
         work_dir, template_work_dir, algo_backend_dir = get_some_vars(template, root)
         create_venv(algo_backend_dir, work_dir, template_work_dir)
 
     @e2e_pytest_component
-    @pytest.mark.parametrize("domain, template", params_values, ids=params_ids)
-    def test_ote_cli_find(self, domain, template, create_venv_fx):
+    @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
+    def test_ote_cli_find(self, back_end, template, create_venv_fx):
         ret = ote_common(template, root, "find", [])
         assert ret["exit_code"] == 0, "Exit code must be equal 0"
 
     @e2e_pytest_component
-    @pytest.mark.parametrize("domain, template", params_values, ids=params_ids)
-    def test_ote_cli_find_root(self, domain, template, create_venv_fx):
+    @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
+    def test_ote_cli_find_root(self, back_end, template, create_venv_fx):
         valid_paths = {"same_folder": ".",
                        "upper_folder": "..",
                        }
@@ -85,25 +85,24 @@ class TestFindCommon:
             assert ret["exit_code"] == 0, "Exit code must be equal 0"
 
     @e2e_pytest_component
-    @pytest.mark.parametrize("domain, template", params_values, ids=params_ids)
-    def test_ote_cli_task_type(self, domain, template, create_venv_fx):
-        task_types = ["ANOMALY_CLASSIFICATION", "CLASSIFICATION", "DETECTION", "SEGMENTATION"]
-        for task_type in task_types:
-            cmd = ["--task_type", task_type]
-            ret = ote_common(template, root, "find", cmd)
-            assert ret["exit_code"] == 0, "Exit code must be equal 0"
+    @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
+    def test_ote_cli_task_type(self, back_end, template, create_venv_fx):
+
+        cmd = ["--task_type", back_end]
+        ret = ote_common(template, root, "find", cmd)
+        assert ret["exit_code"] == 0, "Exit code must be equal 0"
 
     @e2e_pytest_component
-    @pytest.mark.parametrize("domain, template", params_values, ids=params_ids)
-    def test_ote_cli_find_root_wrong_path(self, domain, template, create_venv_fx):
+    @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
+    def test_ote_cli_find_root_wrong_path(self, back_end, template, create_venv_fx):
         for path in wrong_paths.values():
             cmd = ["--root", path]
             ret = ote_common(template, root, "find", cmd)
             assert ret["exit_code"] != 0, "Exit code must not be equal 0"
 
     @e2e_pytest_component
-    @pytest.mark.parametrize("domain, template", params_values, ids=params_ids)
-    def test_ote_cli_find_task_type_not_set(self, domain, template, create_venv_fx):
+    @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
+    def test_ote_cli_find_task_type_not_set(self, back_end, template, create_venv_fx):
         cmd = ["--task_id", ""]
         ret = ote_common(template, root, "find", cmd)
         assert ret["exit_code"] != 0, "Exit code must not be equal 0"

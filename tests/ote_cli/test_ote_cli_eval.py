@@ -51,32 +51,32 @@ ote_dir = os.getcwd()
 
 params_values = []
 params_ids = []
-for back_end in ('DETECTION', 'CLASSIFICATION', 'ANOMALY_CLASSIFICATION', 'SEGMENTATION'):
-    cur_templates = Registry('external').filter(task_type=back_end).templates
+for back_end_ in ('DETECTION', 'CLASSIFICATION', 'ANOMALY_CLASSIFICATION', 'SEGMENTATION'):
+    cur_templates = Registry('external').filter(task_type=back_end_).templates
     cur_templates_ids = [template.model_template_id for template in cur_templates]
-    params_values += [(back_end, t) for t in cur_templates]
-    params_ids += [back_end + ',' + cur_id for cur_id in cur_templates_ids]
+    params_values += [(back_end_, t) for t in cur_templates]
+    params_ids += [back_end_ + ',' + cur_id for cur_id in cur_templates_ids]
 
 
 class TestEvalCommon:
     @pytest.fixture()
     @e2e_pytest_component
-    @pytest.mark.parametrize("domain, template", params_values)
+    @pytest.mark.parametrize("back_end, template", params_values)
     def create_venv_fx(self, template):
         work_dir, template_work_dir, algo_backend_dir = get_some_vars(template, root)
         create_venv(algo_backend_dir, work_dir, template_work_dir)
 
     @e2e_pytest_component
-    @pytest.mark.parametrize("domain, template", params_values, ids=params_ids)
-    def test_ote_eval_no_template(self, domain, template, create_venv_fx):
+    @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
+    def test_ote_eval_no_template(self, back_end, template, create_venv_fx):
         error_string = "the following arguments are required: template"
         ret = ote_common(template, root, 'eval', [])
         assert ret['exit_code'] != 0, "Exit code must not be equal 0"
         assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
 
     @e2e_pytest_component
-    @pytest.mark.parametrize("domain, template", params_values, ids=params_ids)
-    def test_ote_eval_no_test_files(self, domain, template, create_venv_fx):
+    @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
+    def test_ote_eval_no_test_files(self, back_end, template, create_venv_fx):
         error_string = "ote eval: error: the following arguments are required: --test-ann-files"
         command_args = [template.model_template_id,
                         '--test-data-roots',
@@ -90,8 +90,8 @@ class TestEvalCommon:
         assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
 
     @e2e_pytest_component
-    @pytest.mark.parametrize("domain, template", params_values, ids=params_ids)
-    def test_ote_eval_no_test_roots(self, domain, template, create_venv_fx):
+    @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
+    def test_ote_eval_no_test_roots(self, back_end, template, create_venv_fx):
         error_string = "ote eval: error: the following arguments are required: --test-data-roots"
         command_args = [template.model_template_id,
                         '--test-ann-file',
@@ -105,8 +105,8 @@ class TestEvalCommon:
         assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
 
     @e2e_pytest_component
-    @pytest.mark.parametrize("domain, template", params_values, ids=params_ids)
-    def test_ote_eval_no_weights(self, domain, template, create_venv_fx):
+    @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
+    def test_ote_eval_no_weights(self, back_end, template, create_venv_fx):
         error_string = "ote eval: error: the following arguments are required: --load-weights"
         command_args = [template.model_template_id,
                         '--test-ann-file',
@@ -120,8 +120,8 @@ class TestEvalCommon:
         assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
 
     @e2e_pytest_component
-    @pytest.mark.parametrize("domain, template", params_values, ids=params_ids)
-    def test_ote_eval_wrong_paths_in_options(self, domain, template, create_venv_fx):
+    @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
+    def test_ote_eval_wrong_paths_in_options(self, back_end, template, create_venv_fx):
         error_string = "Path is not valid"
         command_args = [template.model_template_id,
                         '--test-ann-file',
