@@ -14,8 +14,6 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from subprocess import run
-from copy import deepcopy
 
 import os
 import pytest
@@ -26,21 +24,7 @@ from ote_cli.registry import Registry
 from common import (
     create_venv,
     get_some_vars,
-    ote_demo_deployment_testing,
-    ote_demo_testing,
-    ote_demo_openvino_testing,
-    ote_deploy_openvino_testing,
-    ote_eval_deployment_testing,
-    ote_eval_openvino_testing,
-    ote_eval_testing,
-    ote_train_testing,
-    ote_export_testing,
-    pot_optimize_testing,
-    pot_eval_testing,
-    nncf_optimize_testing,
-    nncf_export_testing,
-    nncf_eval_testing,
-    nncf_eval_openvino_testing,
+    args,
     wrong_paths,
     ote_common
 )
@@ -75,19 +59,21 @@ class TestFindCommon:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
-    def test_ote_cli_find_root(self, back_end, template, create_venv_fx):
-        valid_paths = {"same_folder": ".",
-                       "upper_folder": "..",
-                       }
-        for path in valid_paths.values():
-            cmd = ["--root", path]
-            ret = ote_common(template, root, "find", cmd)
-            assert ret["exit_code"] == 0, "Exit code must be equal 0"
+    def test_ote_cli_find_root_same_folder(self, back_end, template, create_venv_fx):
+        cmd = ["--root", "."]
+        ret = ote_common(template, root, "find", cmd)
+        assert ret["exit_code"] == 0, "Exit code must be equal 0"
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
+    def test_ote_cli_find_root_upper_folder(self, back_end, template, create_venv_fx):
+        cmd = ["--root", ".."]
+        ret = ote_common(template, root, "find", cmd)
+        assert ret["exit_code"] == 0, "Exit code must be equal 0"
 
     @e2e_pytest_component
     @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
     def test_ote_cli_task_type(self, back_end, template, create_venv_fx):
-
         cmd = ["--task_type", back_end]
         ret = ote_common(template, root, "find", cmd)
         assert ret["exit_code"] == 0, "Exit code must be equal 0"
@@ -103,6 +89,6 @@ class TestFindCommon:
     @e2e_pytest_component
     @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
     def test_ote_cli_find_task_type_not_set(self, back_end, template, create_venv_fx):
-        cmd = ["--task_id", ""]
+        cmd = ["--task_id"]
         ret = ote_common(template, root, "find", cmd)
         assert ret["exit_code"] != 0, "Exit code must not be equal 0"
