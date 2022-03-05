@@ -242,6 +242,9 @@ def ote_deploy_openvino_testing(template, root, ote_dir, args):
     # Install ote_sdk from local folder instead.
     # Install the demo_package with --no-deps since, requirements.txt has been embedded to the demo_package during creation.
     remove_ote_sdk_from_requirements(os.path.join(deployment_dir, 'python', 'requirements.txt'))
+    assert run(['python3', '-m', 'pip', 'install', 'pip', '--upgrade'],
+               cwd=os.path.join(deployment_dir, 'python'),
+               env=collect_env_vars(os.path.join(deployment_dir, 'python'))).returncode == 0
     assert run(['python3', '-m', 'pip', 'install', '-e', os.path.join(os.path.dirname(__file__), '..', '..', 'ote_sdk')],
                cwd=os.path.join(deployment_dir, 'python'),
                env=collect_env_vars(os.path.join(deployment_dir, 'python'))).returncode == 0
