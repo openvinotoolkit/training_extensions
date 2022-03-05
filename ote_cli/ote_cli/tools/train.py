@@ -155,7 +155,7 @@ def main():
         )
 
     if args.hpo_time_ratio and not args.enable_hpo:
-        raise Exception('Parameter --hpo-time-ratio must be used with --enable-hpo key')
+        raise Exception("Parameter --hpo-time-ratio must be used with --enable-hpo key")
 
     if args.enable_hpo:
         if args.hpo_time_ratio < 0:
