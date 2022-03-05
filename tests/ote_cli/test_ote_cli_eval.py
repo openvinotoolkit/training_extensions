@@ -28,14 +28,21 @@ from common import (
     ote_common
 )
 
+
 root = '/tmp/ote_cli/'
-ote_dir = os.getcwd()
+ote_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+external_path = os.path.join(ote_dir, "external")
 
 
 params_values = []
 params_ids = []
-for back_end_ in ('DETECTION', 'CLASSIFICATION', 'ANOMALY_CLASSIFICATION', 'SEGMENTATION'):
-    cur_templates = Registry('external').filter(task_type=back_end_).templates
+for back_end_ in ('DETECTION',
+                  'CLASSIFICATION',
+                  'ANOMALY_CLASSIFICATION',
+                  'SEGMENTATION',
+                  'ROTATED_DETECTION',
+                  'INSTANCE_SEGMENTATION'):
+    cur_templates = Registry(external_path).filter(task_type=back_end_).templates
     cur_templates_ids = [template.model_template_id for template in cur_templates]
     params_values += [(back_end_, t) for t in cur_templates]
     params_ids += [back_end_ + ',' + cur_id for cur_id in cur_templates_ids]
@@ -53,7 +60,8 @@ class TestEvalCommon:
     @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
     def test_ote_eval_no_template(self, back_end, template, create_venv_fx):
         error_string = "the following arguments are required: template"
-        ret = ote_common(template, root, 'eval', [])
+        command_args = []
+        ret = ote_common(template, root, 'eval', command_args)
         assert ret['exit_code'] != 0, "Exit code must not be equal 0"
         assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
 

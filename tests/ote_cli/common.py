@@ -135,20 +135,14 @@ def ote_common(template, root, tool, cmd_args):
     return output
 
 
-def ote_train_common(template, root, cmd_args):
+def ote_common(template, root, tool, cmd_args):
     work_dir, __, _ = get_some_vars(template, root)
     command_line = ['ote',
-                    'train',
+                    tool,
                     *cmd_args]
-    return run(command_line, env=collect_env_vars(work_dir), capture_output=True)
-
-
-def ote_find_common(template, root, cmd_args):
-    work_dir, __, _ = get_some_vars(template, root)
-    command_line = ['ote',
-                    'find',
-                    *cmd_args]
-    return run(command_line, env=collect_env_vars(work_dir), capture_output=True)
+    ret = run(command_line, env=collect_env_vars(work_dir), capture_output=True)
+    output = {'exit_code': int(ret.returncode), 'stdout': str(ret.stdout), 'stderr': str(ret.stderr)}
+    return output
 
 
 def ote_train_testing(template, root, ote_dir, args):
@@ -216,14 +210,6 @@ def ote_export_testing(template, root):
     assert os.path.exists(f'{template_work_dir}/exported_{template.model_template_id}/label_schema.json')
 
 
-def ote_eval_common(template, root, cmd_args):
-    work_dir, __, _ = get_some_vars(template, root)
-    command_line = ['ote',
-                    'eval',
-                    *cmd_args]
-    return run(command_line, env=collect_env_vars(work_dir), capture_output=True)
-
-
 def ote_eval_testing(template, root, ote_dir, args):
     work_dir, template_work_dir, _ = get_some_vars(template, root)
     command_line = ['ote',
@@ -279,14 +265,6 @@ def ote_demo_testing(template, root, ote_dir, args):
     assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
 
 
-def ote_demo_common(template, root, cmd_args):
-    work_dir, __, _ = get_some_vars(template, root)
-    command_line = ['ote',
-                    'demo',
-                    *cmd_args]
-    return run(command_line, env=collect_env_vars(work_dir), capture_output=True)
-
-
 def ote_demo_openvino_testing(template, root, ote_dir, args):
     work_dir, template_work_dir, _ = get_some_vars(template, root)
     command_line = ['ote',
@@ -299,14 +277,6 @@ def ote_demo_openvino_testing(template, root, ote_dir, args):
                     '--delay',
                     '1']
     assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
-
-
-def ote_deploy_common(template, root, cmd_args):
-    work_dir, __, _ = get_some_vars(template, root)
-    command_line = ['ote',
-                    'deploy',
-                    *cmd_args]
-    return run(command_line, env=collect_env_vars(work_dir), capture_output=True)
 
 
 def ote_deploy_openvino_testing(template, root, ote_dir, args):
@@ -457,14 +427,6 @@ def nncf_optimize_testing(template, root, ote_dir, args):
     assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
     assert os.path.exists(f'{template_work_dir}/nncf_{template.model_template_id}/weights.pth')
     assert os.path.exists(f'{template_work_dir}/nncf_{template.model_template_id}/label_schema.json')
-
-
-def ote_export_common(template, root, cmd_args):
-    work_dir, __, _ = get_some_vars(template, root)
-    command_line = ['ote',
-                    'export',
-                    *cmd_args]
-    return run(command_line, env=collect_env_vars(work_dir), capture_output=True)
 
 
 def nncf_export_testing(template, root):
