@@ -13,8 +13,6 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from subprocess import run
-from copy import deepcopy
 
 import os
 import pytest
@@ -25,21 +23,6 @@ from ote_cli.registry import Registry
 from common import (
     create_venv,
     get_some_vars,
-    ote_demo_deployment_testing,
-    ote_demo_testing,
-    ote_demo_openvino_testing,
-    ote_deploy_openvino_testing,
-    ote_eval_deployment_testing,
-    ote_eval_openvino_testing,
-    ote_eval_testing,
-    ote_train_testing,
-    ote_export_testing,
-    pot_optimize_testing,
-    pot_eval_testing,
-    nncf_optimize_testing,
-    nncf_export_testing,
-    nncf_eval_testing,
-    nncf_eval_openvino_testing,
     args,
     wrong_paths,
     ote_common
