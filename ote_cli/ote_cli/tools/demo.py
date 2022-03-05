@@ -145,7 +145,7 @@ def main():
     if args.fit_to_size:
         height, width = args.fit_to_size
         if height <= 0 or width <= 0:
-            raise ValueError('Both values of --fit_to_size parameter must be > 0')
+            raise ValueError("Both values of --fit_to_size parameter must be > 0")
 
     # Get classes for Task, ConfigurableParameters and Dataset.
     if any(args.load_weights.endswith(x) for x in (".bin", ".xml", ".zip")):
