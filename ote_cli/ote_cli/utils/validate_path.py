@@ -53,8 +53,8 @@ def validate_path(test_string: str) -> None:
     """
     Wrapper for multiple paths
     """
-    if ',' in str(test_string):
-        paths = test_string.split(',')
+    if "," in str(test_string):
+        paths = test_string.split(",")
         for path in paths:
             validate_single_path(path)
     else:
