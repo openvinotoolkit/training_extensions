@@ -13,8 +13,6 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from subprocess import run
-from copy import deepcopy
 
 import os
 import pytest
@@ -25,21 +23,6 @@ from ote_cli.registry import Registry
 from common import (
     create_venv,
     get_some_vars,
-    ote_demo_deployment_testing,
-    ote_demo_testing,
-    ote_demo_openvino_testing,
-    ote_deploy_openvino_testing,
-    ote_eval_deployment_testing,
-    ote_eval_openvino_testing,
-    ote_eval_testing,
-    ote_train_testing,
-    ote_export_testing,
-    pot_optimize_testing,
-    pot_eval_testing,
-    nncf_optimize_testing,
-    nncf_export_testing,
-    nncf_eval_testing,
-    nncf_eval_openvino_testing,
     args,
     wrong_paths,
     ote_common
@@ -121,21 +104,54 @@ class TestEvalCommon:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
-    def test_ote_eval_wrong_paths_in_options(self, back_end, template, create_venv_fx):
+    def test_ote_eval_wrong_paths_test_ann_file(self, back_end, template, create_venv_fx):
         error_string = "Path is not valid"
-        command_args = [template.model_template_id,
-                        '--test-ann-file',
-                        f'{os.path.join(ote_dir, args["--test-ann-files"])}',
-                        '--test-data-roots',
-                        f'{os.path.join(ote_dir, args["--test-data-roots"])}',
-                        '--load-weights',
-                        f'./trained_{template.model_template_id}/weights.pth',
-                        '--save-performance',
-                        f'./trained_{template.model_template_id}/performance.json']
-        for i in [4, 6, 8]:
-            for case in wrong_paths.values():
-                temp = deepcopy(command_args)
-                temp[i] = case
-                ret = ote_common(template, root, 'eval', command_args)
-                assert ret['exit_code'] != 0, "Exit code must not be equal 0"
-                assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
+        for case in wrong_paths.values():
+            command_args = [template.model_template_id,
+                            '--test-ann-file',
+                            case,
+                            '--test-data-roots',
+                            f'{os.path.join(ote_dir, args["--test-data-roots"])}',
+                            '--load-weights',
+                            f'./trained_{template.model_template_id}/weights.pth',
+                            '--save-performance',
+                            f'./trained_{template.model_template_id}/performance.json']
+            ret = ote_common(template, root, 'eval', command_args)
+            assert ret['exit_code'] != 0, "Exit code must not be equal 0"
+            assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
+    def test_ote_eval_wrong_paths_test_data_roots(self, back_end, template, create_venv_fx):
+        error_string = "Path is not valid"
+        for case in wrong_paths.values():
+            command_args = [template.model_template_id,
+                            '--test-ann-file',
+                            f'{os.path.join(ote_dir, args["--test-ann-files"])}',
+                            '--test-data-roots',
+                            case,
+                            '--load-weights',
+                            f'./trained_{template.model_template_id}/weights.pth',
+                            '--save-performance',
+                            f'./trained_{template.model_template_id}/performance.json']
+            ret = ote_common(template, root, 'eval', command_args)
+            assert ret['exit_code'] != 0, "Exit code must not be equal 0"
+            assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
+    def test_ote_eval_wrong_paths_load_weights(self, back_end, template, create_venv_fx):
+        error_string = "Path is not valid"
+        for case in wrong_paths.values():
+            command_args = [template.model_template_id,
+                            '--test-ann-file',
+                            f'{os.path.join(ote_dir, args["--test-ann-files"])}',
+                            '--test-data-roots',
+                            f'{os.path.join(ote_dir, args["--test-data-roots"])}',
+                            '--load-weights',
+                            case,
+                            '--save-performance',
+                            f'./trained_{template.model_template_id}/performance.json']
+            ret = ote_common(template, root, 'eval', command_args)
+            assert ret['exit_code'] != 0, "Exit code must not be equal 0"
+            assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"

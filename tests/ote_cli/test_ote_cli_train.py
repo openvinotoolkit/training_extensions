@@ -13,9 +13,6 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from subprocess import run
-from copy import deepcopy
-
 import os
 import pytest
 
@@ -25,21 +22,6 @@ from ote_cli.registry import Registry
 from common import (
     create_venv,
     get_some_vars,
-    ote_demo_deployment_testing,
-    ote_demo_testing,
-    ote_demo_openvino_testing,
-    ote_deploy_openvino_testing,
-    ote_eval_deployment_testing,
-    ote_eval_openvino_testing,
-    ote_eval_testing,
-    ote_train_testing,
-    ote_export_testing,
-    pot_optimize_testing,
-    pot_eval_testing,
-    nncf_optimize_testing,
-    nncf_export_testing,
-    nncf_eval_testing,
-    nncf_eval_openvino_testing,
     args,
     wrong_paths,
     ote_common
@@ -228,18 +210,18 @@ class TestTrainCommon:
     @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
     def test_ote_train_wrong_path_train_ann_file(self, back_end, template, create_venv_fx):
         error_string = "Path is not valid"
-        command_line = [template.model_template_id, '--train-ann-file']
         for case in wrong_paths.values():
-            cmd_line_tail = [case,
-                             '--train-data-roots',
-                             f'{os.path.join(ote_dir, args["--train-data-roots"])}',
-                             '--val-ann-file',
-                             f'{os.path.join(ote_dir, args["--val-ann-file"])}',
-                             '--val-data-roots',
-                             f'{os.path.join(ote_dir, args["--val-data-roots"])}',
-                             '--save-model-to',
-                             f'./trained_{template.model_template_id}']
-            command_line += cmd_line_tail
+            command_line = [template.model_template_id,
+                            '--train-ann-file',
+                            case,
+                            '--train-data-roots',
+                            f'{os.path.join(ote_dir, args["--train-data-roots"])}',
+                            '--val-ann-file',
+                            f'{os.path.join(ote_dir, args["--val-ann-file"])}',
+                            '--val-data-roots',
+                            f'{os.path.join(ote_dir, args["--val-data-roots"])}',
+                            '--save-model-to',
+                            f'./trained_{template.model_template_id}']
             ret = ote_common(template, root, command_line)
             assert ret['exit_code'] != 0, "Exit code must not be equal 0"
             assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
@@ -248,19 +230,18 @@ class TestTrainCommon:
     @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
     def test_ote_train_wrong_paths_train_data_roots(self, back_end, template, create_venv_fx):
         error_string = "Path is not valid"
-        command_line = [template.model_template_id,
-                        '--train-ann-file',
-                        f'{os.path.join(ote_dir, args["--train-ann-file"])}',
-                        '--train-data-roots']
         for case in wrong_paths.values():
-            cmd_line_tail = [case,
-                             '--val-ann-file',
-                             f'{os.path.join(ote_dir, args["--val-ann-file"])}',
-                             '--val-data-roots',
-                             f'{os.path.join(ote_dir, args["--val-data-roots"])}',
-                             '--save-model-to',
-                             f'./trained_{template.model_template_id}']
-            command_line += cmd_line_tail
+            command_line = [template.model_template_id,
+                            '--train-ann-file',
+                            f'{os.path.join(ote_dir, args["--train-ann-file"])}',
+                            '--train-data-roots',
+                            case,
+                            '--val-ann-file',
+                            f'{os.path.join(ote_dir, args["--val-ann-file"])}',
+                            '--val-data-roots',
+                            f'{os.path.join(ote_dir, args["--val-data-roots"])}',
+                            '--save-model-to',
+                            f'./trained_{template.model_template_id}']
             ret = ote_common(template, root, command_line)
             assert ret['exit_code'] != 0, "Exit code must not be equal 0"
             assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
@@ -269,19 +250,18 @@ class TestTrainCommon:
     @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
     def test_ote_train_wrong_paths_val_ann_file(self, back_end, template, create_venv_fx):
         error_string = "Path is not valid"
-        command_line = [template.model_template_id,
-                        '--train-ann-file',
-                        f'{os.path.join(ote_dir, args["--train-ann-file"])}',
-                        '--train-data-roots',
-                        f'{os.path.join(ote_dir, args["--train-data-roots"])}',
-                        '--val-ann-file']
         for case in wrong_paths.values():
-            cmd_line_tail = [case,
-                             '--val-data-roots',
-                             f'{os.path.join(ote_dir, args["--val-data-roots"])}',
-                             '--save-model-to',
-                             f'./trained_{template.model_template_id}']
-            command_line += cmd_line_tail
+            command_line = [template.model_template_id,
+                            '--train-ann-file',
+                            f'{os.path.join(ote_dir, args["--train-ann-file"])}',
+                            '--train-data-roots',
+                            f'{os.path.join(ote_dir, args["--train-data-roots"])}',
+                            '--val-ann-file',
+                            case,
+                            '--val-data-roots',
+                            f'{os.path.join(ote_dir, args["--val-data-roots"])}',
+                            '--save-model-to',
+                            f'./trained_{template.model_template_id}']
             ret = ote_common(template, root, command_line)
             assert ret['exit_code'] != 0, "Exit code must not be equal 0"
             assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
@@ -290,19 +270,18 @@ class TestTrainCommon:
     @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
     def test_ote_train_wrong_paths_val_data_roots(self, back_end, template, create_venv_fx):
         error_string = "Path is not valid"
-        command_line = [template.model_template_id,
-                        '--train-ann-file',
-                        f'{os.path.join(ote_dir, args["--train-ann-file"])}',
-                        '--train-data-roots',
-                        f'{os.path.join(ote_dir, args["--train-data-roots"])}',
-                        '--val-ann-file',
-                        f'{os.path.join(ote_dir, args["--val-ann-file"])}',
-                        '--val-data-roots']
         for case in wrong_paths.values():
-            cmd_line_tail = [case,
-                             '--save-model-to',
-                             f'./trained_{template.model_template_id}']
-            command_line += cmd_line_tail
+            command_line = [template.model_template_id,
+                            '--train-ann-file',
+                            f'{os.path.join(ote_dir, args["--train-ann-file"])}',
+                            '--train-data-roots',
+                            f'{os.path.join(ote_dir, args["--train-data-roots"])}',
+                            '--val-ann-file',
+                            f'{os.path.join(ote_dir, args["--val-ann-file"])}',
+                            '--val-data-roots',
+                            case,
+                            '--save-model-to',
+                            f'./trained_{template.model_template_id}']
             ret = ote_common(template, root, command_line)
             assert ret['exit_code'] != 0, "Exit code must not be equal 0"
             assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
