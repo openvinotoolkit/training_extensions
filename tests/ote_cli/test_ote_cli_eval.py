@@ -1,3 +1,4 @@
+"""Tests for input parameters with OTE CLI eval tool"""
 # Copyright (C) 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -41,60 +42,71 @@ from common import (
     nncf_eval_openvino_testing,
     args,
     wrong_paths,
-    ote_eval_common
+    ote_common
 )
 
 root = '/tmp/ote_cli/'
 ote_dir = os.getcwd()
 
-templates = Registry('external').filter(task_type='SEGMENTATION').templates
-templates_ids = [template.model_template_id for template in templates]
+
+params_values = []
+params_ids = []
+for back_end in ('DETECTION', 'CLASSIFICATION', 'ANOMALY_CLASSIFICATION', 'SEGMENTATION'):
+    cur_templates = Registry('external').filter(task_type=back_end).templates
+    cur_templates_ids = [template.model_template_id for template in cur_templates]
+    params_values += [(back_end, t) for t in cur_templates]
+    params_ids += [back_end + ',' + cur_id for cur_id in cur_templates_ids]
 
 
-class TestEvalCommonSegmentation:
+class TestEvalCommon:
+    @pytest.fixture()
     @e2e_pytest_component
-    def test_create_venv(self):
-        work_dir, template_work_dir, algo_backend_dir = get_some_vars(templates[0], root)
+    @pytest.mark.parametrize("domain, template", params_values)
+    def create_venv_fx(self, template):
+        work_dir, template_work_dir, algo_backend_dir = get_some_vars(template, root)
         create_venv(algo_backend_dir, work_dir, template_work_dir)
 
     @e2e_pytest_component
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_ote_eval_no_template(self, template):
+    @pytest.mark.parametrize("domain, template", params_values, ids=params_ids)
+    def test_ote_eval_no_template(self, domain, template, create_venv_fx):
         error_string = "the following arguments are required: template"
-        ret = ote_eval_common(template, root, [])
-        assert error_string in str(ret.stderr)
+        ret = ote_common(template, root, 'eval', [])
+        assert ret['exit_code'] != 0, "Exit code must not be equal 0"
+        assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
 
     @e2e_pytest_component
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_ote_eval_no_test_files(self, template):
+    @pytest.mark.parametrize("domain, template", params_values, ids=params_ids)
+    def test_ote_eval_no_test_files(self, domain, template, create_venv_fx):
         error_string = "ote eval: error: the following arguments are required: --test-ann-files"
         command_args = [template.model_template_id,
                         '--test-data-roots',
                         f'{os.path.join(ote_dir, args["--test-data-roots"])}',
                         '--load-weights',
-                        './trained_default_template/weights.pth',
+                        f'./trained_{template.model_template_id}/weights.pth',
                         '--save-performance',
-                        './trained_default_template/performance.json']
-        ret = ote_eval_common(template, root, command_args)
-        assert error_string in str(ret.stderr)
+                        f'./trained_{template.model_template_id}/performance.json']
+        ret = ote_common(template, root, 'eval', command_args)
+        assert ret['exit_code'] != 0, "Exit code must not be equal 0"
+        assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
 
     @e2e_pytest_component
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_ote_eval_no_test_roots(self, template):
+    @pytest.mark.parametrize("domain, template", params_values, ids=params_ids)
+    def test_ote_eval_no_test_roots(self, domain, template, create_venv_fx):
         error_string = "ote eval: error: the following arguments are required: --test-data-roots"
         command_args = [template.model_template_id,
                         '--test-ann-file',
                         f'{os.path.join(ote_dir, args["--test-ann-files"])}',
                         '--load-weights',
-                        './trained_default_template/weights.pth',
+                        f'./trained_{template.model_template_id}/weights.pth',
                         '--save-performance',
-                        './trained_default_template/performance.json']
-        ret = ote_eval_common(template, root, command_args)
-        assert error_string in str(ret.stderr)
+                        f'./trained_{template.model_template_id}/performance.json']
+        ret = ote_common(template, root, 'eval', command_args)
+        assert ret['exit_code'] != 0, "Exit code must not be equal 0"
+        assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
 
     @e2e_pytest_component
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_ote_eval_no_weights(self, template):
+    @pytest.mark.parametrize("domain, template", params_values, ids=params_ids)
+    def test_ote_eval_no_weights(self, domain, template, create_venv_fx):
         error_string = "ote eval: error: the following arguments are required: --load-weights"
         command_args = [template.model_template_id,
                         '--test-ann-file',
@@ -102,13 +114,14 @@ class TestEvalCommonSegmentation:
                         '--test-data-roots',
                         f'{os.path.join(ote_dir, args["--test-data-roots"])}',
                         '--save-performance',
-                        './trained_default_template/performance.json']
-        ret = ote_eval_common(template, root, command_args)
-        assert error_string in str(ret.stderr)
+                        f'./trained_{template.model_template_id}/performance.json']
+        ret = ote_common(template, root, 'eval', command_args)
+        assert ret['exit_code'] != 0, "Exit code must not be equal 0"
+        assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
 
     @e2e_pytest_component
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_ote_eval_wrong_paths_in_options(self, template):
+    @pytest.mark.parametrize("domain, template", params_values, ids=params_ids)
+    def test_ote_eval_wrong_paths_in_options(self, domain, template, create_venv_fx):
         error_string = "Path is not valid"
         command_args = [template.model_template_id,
                         '--test-ann-file',
@@ -116,12 +129,13 @@ class TestEvalCommonSegmentation:
                         '--test-data-roots',
                         f'{os.path.join(ote_dir, args["--test-data-roots"])}',
                         '--load-weights',
-                        './trained_default_template/weights.pth',
+                        f'./trained_{template.model_template_id}/weights.pth',
                         '--save-performance',
-                        './trained_default_template/performance.json']
+                        f'./trained_{template.model_template_id}/performance.json']
         for i in [4, 6, 8]:
             for case in wrong_paths.values():
                 temp = deepcopy(command_args)
                 temp[i] = case
-                ret = ote_eval_common(template, root, command_args)
-                assert error_string in str(ret.stderr)
+                ret = ote_common(template, root, 'eval', command_args)
+                assert ret['exit_code'] != 0, "Exit code must not be equal 0"
+                assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
