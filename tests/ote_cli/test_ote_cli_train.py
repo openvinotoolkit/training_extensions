@@ -222,7 +222,7 @@ class TestTrainCommon:
                             f'{os.path.join(ote_dir, args["--val-data-roots"])}',
                             '--save-model-to',
                             f'./trained_{template.model_template_id}']
-            ret = ote_common(template, root, command_line)
+            ret = ote_common(template, root, 'train', command_line)
             assert ret['exit_code'] != 0, "Exit code must not be equal 0"
             assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
 
@@ -242,7 +242,7 @@ class TestTrainCommon:
                             f'{os.path.join(ote_dir, args["--val-data-roots"])}',
                             '--save-model-to',
                             f'./trained_{template.model_template_id}']
-            ret = ote_common(template, root, command_line)
+            ret = ote_common(template, root, 'train', command_line)
             assert ret['exit_code'] != 0, "Exit code must not be equal 0"
             assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
 
@@ -262,7 +262,7 @@ class TestTrainCommon:
                             f'{os.path.join(ote_dir, args["--val-data-roots"])}',
                             '--save-model-to',
                             f'./trained_{template.model_template_id}']
-            ret = ote_common(template, root, command_line)
+            ret = ote_common(template, root, 'train', command_line)
             assert ret['exit_code'] != 0, "Exit code must not be equal 0"
             assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
 
@@ -282,7 +282,7 @@ class TestTrainCommon:
                             case,
                             '--save-model-to',
                             f'./trained_{template.model_template_id}']
-            ret = ote_common(template, root, command_line)
+            ret = ote_common(template, root, 'train', command_line)
             assert ret['exit_code'] != 0, "Exit code must not be equal 0"
             assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
 
@@ -302,6 +302,6 @@ class TestTrainCommon:
                             f'{os.path.join(ote_dir, args["--val-data-roots"])}',
                             '--save-model-to',
                             case]
-            ret = ote_common(template, root, command_line)
+            ret = ote_common(template, root, 'train', command_line)
             assert ret['exit_code'] != 0, "Exit code must not be equal 0"
             assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
