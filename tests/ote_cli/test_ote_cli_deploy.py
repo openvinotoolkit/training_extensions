@@ -53,7 +53,7 @@ class TestDeployCommon:
     @e2e_pytest_component
     @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
     def test_ote_deploy_no_template(self, back_end, template, create_venv_fx):
-        error_string = "ote demo: error: the following arguments are required: template"
+        error_string = "ote deploy: error: the following arguments are required: template"
         ret = ote_common(template, root, "deploy", [])
         assert ret['exit_code'] != 0, "Exit code must not be equal 0"
         assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
