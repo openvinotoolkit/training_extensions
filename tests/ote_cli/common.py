@@ -35,7 +35,7 @@ wrong_paths = {
                # 'null_symbol': '\x00' It is catch on subprocess level
                }
 
-logger = logging.getLogger()
+logger = logging.get_logger()
 
 
 def get_template_rel_dir(template):
