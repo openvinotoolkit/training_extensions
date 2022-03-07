@@ -38,7 +38,7 @@ def predict_mass_seg(val_loader, model, nm):
     model.train()
 
 def get_pred_all():
-    configs = get_config(action='pred_all', stage='stage2')
+    configs = get_config(action='pred_all',config_path='configs/', stage='stage2')
     data_path = configs['data_path']
     out_path = configs['out_path']
     if not os.path.isdir(out_path):

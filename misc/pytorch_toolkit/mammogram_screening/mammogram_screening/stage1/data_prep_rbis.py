@@ -96,7 +96,7 @@ def prepare_data_npy(data_path, save_path, train_split, test_split):
     del test_data
 
 def data_prep():
-    config = get_config(action='data_prep', stage= 'stage1')
+    config = get_config(action='data_prep',config_path='configs/', stage= 'stage1')
     data_path = config['data_path']
     save_path = config['save_path']
     if not os.path.exists(data_path):

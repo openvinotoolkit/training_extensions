@@ -8,10 +8,9 @@ def create_export_test_for_stage1():
     class ExportTest(unittest.TestCase):
         @classmethod
         def setUpClass(cls):
-            cls.config = get_config(action = 'export', stage='stage1')
+            cls.config = get_config(action = 'export', config_path='configs/', stage='stage1')
             if not os.path.exists(cls.config['checkpoint']):
                 download_checkpoint()
-            cls.model_path = cls.config['checkpoint']
 
         def test_export_onnx(self):
             self.exporter = Exporter(self.config, stage='stage1')
@@ -38,10 +37,9 @@ def create_export_test_for_stage2():
     class ExportTest(unittest.TestCase):
         @classmethod
         def setUpClass(cls):
-            cls.config = get_config(action = 'export', stage='stage2')
+            cls.config = get_config(action = 'export', config_path='configs/', stage='stage2')
             if not os.path.exists(cls.config['checkpoint']):
                 download_checkpoint()
-            cls.model_path = cls.config['checkpoint']
 
         def test_export_onnx(self):
             self.exporter = Exporter(self.config, stage='stage2')

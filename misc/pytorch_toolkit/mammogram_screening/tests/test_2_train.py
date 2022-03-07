@@ -18,7 +18,7 @@ def create_train_test_for_stage1():
     class TrainerTest(unittest.TestCase):
         @classmethod
         def setUpClass(cls):
-            config = get_config(action='train', stage='stage1')
+            config = get_config(action='train', config_path='configs/', stage='stage1')
             cls.config = config
             data_prep()
             if os.path.exists(config['tr_data_path']):
@@ -62,7 +62,7 @@ def create_train_test_for_stage2():
     class TrainerTest(unittest.TestCase):
         @classmethod
         def setUpClass(cls):
-            config = get_config(action='train', stage='stage2')
+            config = get_config(action='train', config_path='configs/', stage='stage2')
             cls.config = config
             get_pred_all()
             get_bags()

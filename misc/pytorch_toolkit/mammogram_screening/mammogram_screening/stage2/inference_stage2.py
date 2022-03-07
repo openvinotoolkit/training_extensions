@@ -9,6 +9,7 @@ import os
 from ..train_utils.dataloader import Stage2bDataset
 from ..train_utils.models import Model2 as Model
 from ..train_utils.get_config import get_config
+import argparse
 
 def to_numpy(tensor):
     return tensor.detach().cpu().numpy() if tensor.requires_grad else tensor.cpu().numpy()
@@ -51,15 +52,14 @@ class InferenceStage2():
                 out = model(X)
                 out = torch.sigmoid(out)
             elif run_type == "onnx":
-                # print(X.shape)
                 model = onnxruntime.InferenceSession(self.checkpoint)
                 ort_inputs = {model.get_inputs()[0].name: to_numpy(X)}
                 out = model.run(None, ort_inputs)
                 out = np.array(out)
-                out = to_tensor(out).to(self.device)#.squeeze(1).transpose(dim0=1, dim1=0)
+                out = to_tensor(out).to(self.device)
             else:
                 out = model.infer(inputs={'input': X})['output']
-                out = to_tensor(out)#.squeeze(1)
+                out = to_tensor(out)
 
             y_pred = out.data > 0.5
             y_pred = y_pred.float()
@@ -82,33 +82,38 @@ class InferenceStage2():
         return test_acc/n, auc
 
 def run_infer_stage2():
-    config = get_config(action='inference', stage='stage2')
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--path', required=True, help='absolute path to config files', type=str)
+    parser.add_argument('--runtype', required=True, help="Specify runtype ['pytorch','onnx','cpu']", type=str)
+    args = parser.parse_args()
+
+    config = get_config(action='inference', config_path=args.path, stage='stage2')
     num_workers = config['num_workers']
-    gpu = config['gpu']
-    checkpoint = config['checkpoint']
+
+    if args.runtype == 'pytorch':
+        checkpoint = config['checkpoint'] 
+    else:
+        checkpoint = config['onnx_checkpoint']
+
+    if args.runtype == 'ir':
+        device = 'cpu'
+    else:
+        gpu = config['gpu']
+        device = 'cuda' if gpu else 'cpu'
+
     test_bags_path = config['test_bags_path']
     out_pred_np = config['out_pred_np']
 
-    device = 'cuda' if gpu else 'cpu'
+
     x_tst = np.load(test_bags_path, allow_pickle=True)
 
     tst_data = Stage2bDataset(x_tst, transform=None)
     tst_loader = DataLoader(tst_data, batch_size=1, shuffle=False, num_workers=num_workers)
 
     inference = InferenceStage2(test_loader=tst_loader, checkpoint=checkpoint, device=device)
-    model = inference.load_model(run_type='pytorch')
-    test_acc, auc = inference.inference(model, run_type='pytorch', out_nm=out_pred_np)
-    print(test_acc, auc)
-
-    inference = InferenceStage2(test_loader=tst_loader, checkpoint=config['onnx_checkpoint'], device=device)
-    model = inference.load_model(run_type='onnx')
-    test_acc, auc = inference.inference(model, run_type='onnx', out_nm=out_pred_np)
-    print(test_acc, auc)
-
-    inference = InferenceStage2(test_loader=tst_loader, checkpoint=config['onnx_checkpoint'], device='cpu')
-    model = inference.load_model(run_type='ir')
-    test_acc, auc = inference.inference(model, run_type='ir', out_nm=out_pred_np)
-    print(test_acc, auc)
+    model = inference.load_model(run_type=args.runtype)
+    test_acc, auc = inference.inference(model, run_type=args.runtype, out_nm=out_pred_np)
+    print(f'Accuracy: {test_acc} | AUC:{auc}')
 
 if __name__ == '__main__':
 

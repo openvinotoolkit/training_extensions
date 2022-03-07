@@ -11,7 +11,7 @@ def download_and_extract(path, url, expath):
         zip_ref.extractall(expath)
 
 def download_checkpoint():
-    config = get_config(action = 'download')
+    config = get_config(action = 'download',config_path='configs/')
     if not os.path.exists('model_weights'):
         os.makedirs('model_weights')
     stage1_url = config['stage1']['url']
@@ -22,7 +22,7 @@ def download_checkpoint():
     download_and_extract(path=stage2_path, url=stage2_url, expath='model_weights/')
 
 def download_data():
-    config = get_config(action = 'download')
+    config = get_config(action = 'download',config_path='configs/')
     if not os.path.exists('test_data'):
         os.makedirs('test_data')
         os.makedirs(os.path.join('test_data','prepared'))

@@ -103,7 +103,7 @@ def extract_bags(predictions):
 
 def get_bags():
 
-    config = get_config(action='get_patch', stage='stage2')
+    config = get_config(action='get_patch', config_path='configs/', stage='stage2')
     save_folder = config['save_folder']
     if not os.path.isdir(save_folder):
         os.mkdir(save_folder)

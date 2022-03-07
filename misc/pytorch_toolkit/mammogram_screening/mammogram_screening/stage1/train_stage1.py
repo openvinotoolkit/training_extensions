@@ -11,11 +11,9 @@ from ..train_utils.train_function import train_stage1
 from ..train_utils.val_function import val_stage1
 from ..train_utils.get_config import get_config
 from tqdm import tqdm as tq
+import argparse
 
-
-if __name__ == '__main__':
-
-    config = get_config(action='train')
+def setup_parameters(config):
     epochs = config['epochs']
     batch_sz = config['batch_size']
     num_workers = config['num_workers']
@@ -48,10 +46,12 @@ if __name__ == '__main__':
                             weight_decay=0.0005)
     scheduler = MultiStepLR(optimizer, milestones=[50, 200, 250], gamma=0.1)
 
+    return epochs, model, train_loader, optimizer, device, val_loader, scheduler, model_path
+
+def train_model(epochs, model, train_loader, optimizer, device, val_loader, scheduler, model_path):
+
     train_plot = {'bce_loss': [], 'dice_loss': [], 'dice_coeff': []}
     val_plot = {'bce_loss': [], 'dice_loss': [], 'dice_coeff': []}
-
-    best_loss = float('inf')
     for epoch in tq(range(epochs)):
         train_loss_bce, train_loss_dice, train_dice = train_stage1(
                                                                 model, train_loader,
@@ -91,3 +91,14 @@ if __name__ == '__main__':
                         },
                     os.path.join(model_path, 'checkpoint_stage1_sample.pth')
                     )
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--path', required=True, help='absolute path to config files', type=str)
+    parser.add_argument('--runtype', required=True, help="Specify runtype ['pytorch','onnx','cpu']", type=str)
+    args = parser.parse_args()
+
+    config = get_config(action='train',config_path=args.path)
+    epochs, model, train_loader, optimizer, device, val_loader, scheduler, model_path = setup_parameters(config)
+    train_model(epochs, model, train_loader, optimizer, device, val_loader, scheduler, model_path)

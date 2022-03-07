@@ -4,7 +4,7 @@ from torch.utils.data import DataLoader
 import os
 from mammogram_screening.train_utils.dataloader import Stage1Dataset,Stage2bDataset
 from mammogram_screening.train_utils.get_config import get_config
-from mammogram_screening.train_utils.downloader import download_data#, prepare_data
+from mammogram_screening.train_utils.downloader import download_data
 from mammogram_screening.stage1.inference_mass_localization import InferenceStage1
 from mammogram_screening.stage2.inference_stage2 import InferenceStage2
 
@@ -13,7 +13,7 @@ def create_inference_test_for_stage1():
     class InferenceTest(unittest.TestCase):
         @classmethod
         def setUpClass(cls):
-            config = get_config(action='inference', stage='stage1')
+            config = get_config(action='inference', config_path='configs/', stage='stage1')
             batch_sz = config['batch_size']
             num_workers = config['num_workers']
             cls.device = 'cuda'
@@ -57,13 +57,12 @@ def create_inference_test_for_stage2():
     class InferenceTest(unittest.TestCase):
         @classmethod
         def setUpClass(cls):
-            cls.config = get_config(action='inference', stage='stage2')
+            cls.config = get_config(action='inference',config_path='configs/', stage='stage2')
             num_workers = cls.config['num_workers']
             cls.device = 'cuda'
             test_bags_path = cls.config['test_bags_path']
             if not os.path.exists(test_bags_path):
                 download_data()
-                # prepare_data()
 
             x_tst = np.load(test_bags_path, allow_pickle=True)
             tst_data = Stage2bDataset(x_tst, transform=None)

@@ -8,9 +8,8 @@ def bceLoss(mask_pred, mask, pos_weight=28):
 
     return torch.mean(bce)
 
-criterion = nn.CrossEntropyLoss()
-
 def ceLoss(pred, target):
+    criterion = nn.CrossEntropyLoss()
     return criterion(pred, target)
 
 def diceCoeff(mask_pred, mask, reduce=False):
