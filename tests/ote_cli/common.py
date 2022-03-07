@@ -17,6 +17,8 @@ import json
 import os
 from subprocess import run  # nosec
 
+from ote_sdk.test_suite import logging
+
 
 args = {
     '--train-ann-file': 'data/airport/annotation_example_train.json',
@@ -32,6 +34,8 @@ wrong_paths = {
                'not_printable': '\x11',
                # 'null_symbol': '\x00' It is catch on subprocess level
                }
+
+logger = logging.getLogger()
 
 
 def get_template_rel_dir(template):
@@ -107,8 +111,11 @@ def ote_common(template, root, tool, cmd_args):
     command_line = ['ote',
                     tool,
                     *cmd_args]
+    debug_command_line = ' '.join(str(it) for it in command_line)
     ret = run(command_line, env=collect_env_vars(work_dir), capture_output=True)
     output = {'exit_code': int(ret.returncode), 'stdout': str(ret.stdout), 'stderr': str(ret.stderr)}
+    logger.debug(f"Command line: {debug_command_line}\n")
+    logger.debug(f"Returns stdout: {output}\n {' '*7}stderr: {output}\n {' '*7}exit_code: {output}\n")
     return output
 
 
