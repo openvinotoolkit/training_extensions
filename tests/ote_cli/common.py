@@ -16,8 +16,7 @@ import shutil
 import json
 import os
 from subprocess import run  # nosec
-
-from ote_sdk.test_suite import logging
+import logging
 
 
 args_paths = {
@@ -36,6 +35,7 @@ wrong_paths = {
                }
 
 logger = logging.getLogger(__name__)
+
 
 def get_template_rel_dir(template):
     return os.path.dirname(os.path.relpath(template.model_template_path))
