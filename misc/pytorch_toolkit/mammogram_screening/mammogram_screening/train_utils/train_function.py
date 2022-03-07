@@ -4,6 +4,9 @@ import torch
 from sklearn.metrics import roc_auc_score
 import numpy as np
 
+BCE_WEIGHT = 0.2
+DICE_WEIGHT = 0.8
+
 def train_pos_neg_split(x_train):
     x_train_pos = []
     x_train_neg = []
@@ -30,7 +33,7 @@ def train_stage1(model, train_loader, optimizer, epoch, epochs, device, verbose=
         loss_bce = bceLoss(mask_pred, mask)
         loss_dice = diceLoss(mask_pred, mask)
         dice_coeff = diceCoeff(mask_pred, mask, reduce=True)
-        loss = 0.2*loss_bce + 0.8*loss_dice
+        loss = BCE_WEIGHT*loss_bce + DICE_WEIGHT*loss_dice
         loss.backward()
 
         optimizer.step()

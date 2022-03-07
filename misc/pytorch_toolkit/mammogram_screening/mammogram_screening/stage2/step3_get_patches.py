@@ -13,12 +13,33 @@ def random_point(img):
     return (x, y, w, h)
 
 def random_patch(img):
-    while True:
+    count = 0
+    while count<200:
         # Continue extracting random patches until a patch from the foregorund region is selected.
         # background has all zero pixel intensities
         (x, y, w, h) = random_point(img)
+        count += 1
         if np.count_nonzero(img[y:y+h, x:x+w]) > 64*64 - 10:
             return (x, y, w, h)
+
+
+def get_patches(ctrs,max_area,SIZE_PATCH,img):
+    patches = []
+    for cnt in ctrs:
+        if cv2.contourArea(cnt) > 0.05*max_area and cv2.contourArea(cnt) > 200:
+            xr,yr,wr,hr = cv2.boundingRect(cnt)
+            x,y,w,h = xr,yr,wr,hr
+            x1,y1,w1,h1 = x,y,SIZE_PATCH, SIZE_PATCH
+            x2,y2,w2,h2 = x+w-SIZE_PATCH, y, SIZE_PATCH, SIZE_PATCH
+            x3,y3,w3,h3 = x, y+h-SIZE_PATCH, SIZE_PATCH, SIZE_PATCH
+            x4,y4,w4,h4 = x+w-SIZE_PATCH, y+h-SIZE_PATCH, SIZE_PATCH, SIZE_PATCH
+            x5,y5,w5,h5 = x+(w//2)-(SIZE_PATCH//2), y+(h//2)-(SIZE_PATCH//2), SIZE_PATCH, SIZE_PATCH
+            patches.append([img[y1:y1+h1, x1:x1+w1],
+                        img[y2:y2+h2, x2:x2+w2],
+                        img[y3:y3+h3, x3:x3+w3],
+                        img[y4:y4+h4, x4:x4+w4],
+                        img[y5:y5+h5, x5:x5+w5]])
+    return patches
 
 def extract_bags(predictions):
     pad_top = 224
@@ -61,22 +82,7 @@ def extract_bags(predictions):
         for cnt in ctrs:
             max_area = max(cv2.contourArea(cnt), max_area)
 
-        patches = []
-
-        for cnt in ctrs:
-            if cv2.contourArea(cnt) > 0.05*max_area and cv2.contourArea(cnt) > 200:
-                xr,yr,wr,hr = cv2.boundingRect(cnt)
-                x,y,w,h = xr,yr,wr,hr
-                x1,y1,w1,h1 = x,y,SIZE_PATCH, SIZE_PATCH
-                x2,y2,w2,h2 = x+w-SIZE_PATCH, y, SIZE_PATCH, SIZE_PATCH
-                x3,y3,w3,h3 = x, y+h-SIZE_PATCH, SIZE_PATCH, SIZE_PATCH
-                x4,y4,w4,h4 = x+w-SIZE_PATCH, y+h-SIZE_PATCH, SIZE_PATCH, SIZE_PATCH
-                x5,y5,w5,h5 = x+(w//2)-(SIZE_PATCH//2), y+(h//2)-(SIZE_PATCH//2), SIZE_PATCH, SIZE_PATCH
-                patches.append([img[y1:y1+h1, x1:x1+w1],
-                            img[y2:y2+h2, x2:x2+w2],
-                            img[y3:y3+h3, x3:x3+w3],
-                            img[y4:y4+h4, x4:x4+w4],
-                            img[y5:y5+h5, x5:x5+w5]])
+        patches = get_patches(ctrs,max_area,SIZE_PATCH,img)
 
         if len(patches) >= 1:
             d = {'patches': patches, 'cls': cls, 'file_name': file_name, 'random': False, 'has_mass': True}
