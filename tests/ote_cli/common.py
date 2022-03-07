@@ -35,24 +35,7 @@ wrong_paths = {
                # 'null_symbol': '\x00' It is caught on subprocess level
                }
 
-logger = logging.get_logger()
-
-
-args = {
-    '--train-ann-file': 'data/airport/annotation_example_train.json',
-    '--train-data-roots': 'data/airport/train',
-    '--val-ann-file': 'data/airport/annotation_example_train.json',
-    '--val-data-roots': 'data/airport/train',
-    '--test-ann-files': 'data/airport/annotation_example_train.json',
-    '--test-data-roots': 'data/airport/train',
-}
-
-wrong_paths = {
-               'empty': '',
-               'not_printable': '\x11',
-               # 'null_symbol': '\x00' It is catch on subprocess level
-               }
-
+logger = logging.getLogger(__name__)
 
 def get_template_rel_dir(template):
     return os.path.dirname(os.path.relpath(template.model_template_path))
@@ -127,21 +110,12 @@ def ote_common(template, root, tool, cmd_args):
     command_line = ['ote',
                     tool,
                     *cmd_args]
-    debug_command_line = ' '.join(str(it) for it in command_line)
     ret = run(command_line, env=collect_env_vars(work_dir), capture_output=True)
     output = {'exit_code': int(ret.returncode), 'stdout': str(ret.stdout), 'stderr': str(ret.stderr)}
-    logger.debug(f"Command line: {debug_command_line}\n")
-    logger.debug(f"Returns stdout: {output}\n {' '*7}stderr: {output}\n {' '*7}exit_code: {output}\n")
-    return output
-
-
-def ote_common(template, root, tool, cmd_args):
-    work_dir, __, _ = get_some_vars(template, root)
-    command_line = ['ote',
-                    tool,
-                    *cmd_args]
-    ret = run(command_line, env=collect_env_vars(work_dir), capture_output=True)
-    output = {'exit_code': int(ret.returncode), 'stdout': str(ret.stdout), 'stderr': str(ret.stderr)}
+    logger.debug(f"Command arguments: {' '.join(str(it) for it in command_line)}")
+    logger.debug(f"Stdout: {output['stdout']}\n")
+    logger.debug(f"Stderr: {output['stderr']}\n")
+    logger.debug(f"Exit_code: {output['exit_code']}\n")
     return output
 
 
