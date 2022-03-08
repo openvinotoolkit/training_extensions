@@ -77,10 +77,6 @@ def main():
     hyper_parameters = create(template.hyper_parameters.data)
     assert hyper_parameters
 
-    # Validate required paths that is sourced in args
-    validate_path(args.load_weights)
-    validate_path(args.save_model_to)
-
     environment = TaskEnvironment(
         model=None,
         hyper_parameters=hyper_parameters,
