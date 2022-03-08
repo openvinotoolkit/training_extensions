@@ -120,6 +120,8 @@ def main():
 
     if args.hpo_time_ratio and not args.enable_hpo:
         raise Exception("Parameter --hpo-time-ratio must be used with --enable-hpo key")
+    if args.hpo_time_ratio < 0:
+        raise ValueError("Parameter --hpo-time-ratio must not be negative")
 
     # Get new values from user's input.
     updated_hyper_parameters = gen_params_dict_from_args(args)
@@ -159,8 +161,6 @@ def main():
         )
 
     if args.enable_hpo:
-        if args.hpo_time_ratio < 0:
-            raise ValueError("Parameter --hpo-time-ratio must not be negative")
         run_hpo(args, environment, dataset, template.task_type)
 
     task = task_class(task_environment=environment)

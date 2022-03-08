@@ -36,7 +36,6 @@ wrong_paths = {
 
 logger = logging.getLogger(__name__)
 
-
 def get_template_rel_dir(template):
     return os.path.dirname(os.path.relpath(template.model_template_path))
 
