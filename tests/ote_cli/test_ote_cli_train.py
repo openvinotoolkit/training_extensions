@@ -22,7 +22,7 @@ from ote_cli.registry import Registry
 from common import (
     create_venv,
     get_some_vars,
-    args,
+    args_paths,
     wrong_paths,
     ote_common
 )
@@ -63,11 +63,11 @@ class TestTrainCommon:
         error_string = "ote train: error: the following arguments are required: --train-ann-files"
         command_line = [template.model_template_id,
                         '--train-data-roots',
-                        f'{os.path.join(ote_dir, args["--train-data-roots"])}',
+                        f'{os.path.join(ote_dir, args_paths["--train-data-roots"])}',
                         '--val-ann-file',
-                        f'{os.path.join(ote_dir, args["--val-ann-file"])}',
+                        f'{os.path.join(ote_dir, args_paths["--val-ann-file"])}',
                         '--val-data-roots',
-                        f'{os.path.join(ote_dir, args["--val-data-roots"])}',
+                        f'{os.path.join(ote_dir, args_paths["--val-data-roots"])}',
                         '--save-model-to',
                         f'./trained_{template.model_template_id}']
         ret = ote_common(template, root, 'train', command_line)
@@ -80,11 +80,11 @@ class TestTrainCommon:
         error_string = "ote train: error: the following arguments are required: --train-data-roots"
         command_line = [template.model_template_id,
                         '--train-ann-file',
-                        f'{os.path.join(ote_dir, args["--train-ann-file"])}',
+                        f'{os.path.join(ote_dir, args_paths["--train-ann-file"])}',
                         '--val-ann-file',
-                        f'{os.path.join(ote_dir, args["--val-ann-file"])}',
+                        f'{os.path.join(ote_dir, args_paths["--val-ann-file"])}',
                         '--val-data-roots',
-                        f'{os.path.join(ote_dir, args["--val-data-roots"])}',
+                        f'{os.path.join(ote_dir, args_paths["--val-data-roots"])}',
                         '--save-model-to',
                         f'./trained_{template.model_template_id}']
         ret = ote_common(template, root, 'train', command_line)
@@ -97,11 +97,11 @@ class TestTrainCommon:
         error_string = "ote train: error: the following arguments are required: --val-ann-files"
         command_line = [template.model_template_id,
                         '--train-ann-file',
-                        f'{os.path.join(ote_dir, args["--train-ann-file"])}',
+                        f'{os.path.join(ote_dir, args_paths["--train-ann-file"])}',
                         '--train-data-roots',
-                        f'{os.path.join(ote_dir, args["--train-data-roots"])}',
+                        f'{os.path.join(ote_dir, args_paths["--train-data-roots"])}',
                         '--val-data-roots',
-                        f'{os.path.join(ote_dir, args["--val-data-roots"])}',
+                        f'{os.path.join(ote_dir, args_paths["--val-data-roots"])}',
                         '--save-model-to',
                         f'./trained_{template.model_template_id}']
         ret = ote_common(template, root, 'train', command_line)
@@ -114,11 +114,11 @@ class TestTrainCommon:
         error_string = "ote train: error: the following arguments are required: --val-data-roots"
         command_line = [template.model_template_id,
                         '--train-ann-file',
-                        f'{os.path.join(ote_dir, args["--train-ann-file"])}',
+                        f'{os.path.join(ote_dir, args_paths["--train-ann-file"])}',
                         '--train-data-roots',
-                        f'{os.path.join(ote_dir, args["--train-data-roots"])}',
+                        f'{os.path.join(ote_dir, args_paths["--train-data-roots"])}',
                         '--val-ann-file',
-                        f'{os.path.join(ote_dir, args["--val-ann-file"])}',
+                        f'{os.path.join(ote_dir, args_paths["--val-ann-file"])}',
                         '--save-model-to',
                         f'./trained_{template.model_template_id}']
         ret = ote_common(template, root, 'train', command_line)
@@ -131,13 +131,13 @@ class TestTrainCommon:
         error_string = "ote train: error: the following arguments are required: --save-model-to"
         command_line = [template.model_template_id,
                         '--train-ann-file',
-                        f'{os.path.join(ote_dir, args["--train-ann-file"])}',
+                        f'{os.path.join(ote_dir, args_paths["--train-ann-file"])}',
                         '--train-data-roots',
-                        f'{os.path.join(ote_dir, args["--train-data-roots"])}',
+                        f'{os.path.join(ote_dir, args_paths["--train-data-roots"])}',
                         '--val-ann-file',
-                        f'{os.path.join(ote_dir, args["--val-ann-file"])}',
+                        f'{os.path.join(ote_dir, args_paths["--val-ann-file"])}',
                         '--val-data-roots',
-                        f'{os.path.join(ote_dir, args["--val-data-roots"])}']
+                        f'{os.path.join(ote_dir, args_paths["--val-data-roots"])}']
         ret = ote_common(template, root, 'train', command_line)
         assert ret['exit_code'] != 0, "Exit code must not be equal 0"
         assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
@@ -148,13 +148,13 @@ class TestTrainCommon:
         error_string = "Parameter --hpo-time-ratio must be used with --enable-hpo key"
         command_line = [template.model_template_id,
                         '--train-ann-file',
-                        f'{os.path.join(ote_dir, args["--train-ann-file"])}',
+                        f'{os.path.join(ote_dir, args_paths["--train-ann-file"])}',
                         '--train-data-roots',
-                        f'{os.path.join(ote_dir, args["--train-data-roots"])}',
+                        f'{os.path.join(ote_dir, args_paths["--train-data-roots"])}',
                         '--val-ann-file',
-                        f'{os.path.join(ote_dir, args["--val-ann-file"])}',
+                        f'{os.path.join(ote_dir, args_paths["--val-ann-file"])}',
                         '--val-data-roots',
-                        f'{os.path.join(ote_dir, args["--val-data-roots"])}',
+                        f'{os.path.join(ote_dir, args_paths["--val-data-roots"])}',
                         '--save-model-to',
                         f'./trained_{template.model_template_id}',
                         '--hpo-time-ratio', '4']
@@ -168,13 +168,13 @@ class TestTrainCommon:
         error_string = "ote train: error: argument --hpo-time-ratio: invalid float value: 'STRING_VALUE'"
         command_line = [template.model_template_id,
                         '--train-ann-file',
-                        f'{os.path.join(ote_dir, args["--train-ann-file"])}',
+                        f'{os.path.join(ote_dir, args_paths["--train-ann-file"])}',
                         '--train-data-roots',
-                        f'{os.path.join(ote_dir, args["--train-data-roots"])}',
+                        f'{os.path.join(ote_dir, args_paths["--train-data-roots"])}',
                         '--val-ann-file',
-                        f'{os.path.join(ote_dir, args["--val-ann-file"])}',
+                        f'{os.path.join(ote_dir, args_paths["--val-ann-file"])}',
                         '--val-data-roots',
-                        f'{os.path.join(ote_dir, args["--val-data-roots"])}',
+                        f'{os.path.join(ote_dir, args_paths["--val-data-roots"])}',
                         '--save-model-to',
                         f'./trained_{template.model_template_id}',
                         '--enable-hpo',
@@ -190,13 +190,13 @@ class TestTrainCommon:
         error_string = "Parameter --hpo-time-ratio must not be negative"
         command_line = [template.model_template_id,
                         '--train-ann-file',
-                        f'{os.path.join(ote_dir, args["--train-ann-file"])}',
+                        f'{os.path.join(ote_dir, args_paths["--train-ann-file"])}',
                         '--train-data-roots',
-                        f'{os.path.join(ote_dir, args["--train-data-roots"])}',
+                        f'{os.path.join(ote_dir, args_paths["--train-data-roots"])}',
                         '--val-ann-file',
-                        f'{os.path.join(ote_dir, args["--val-ann-file"])}',
+                        f'{os.path.join(ote_dir, args_paths["--val-ann-file"])}',
                         '--val-data-roots',
-                        f'{os.path.join(ote_dir, args["--val-data-roots"])}',
+                        f'{os.path.join(ote_dir, args_paths["--val-data-roots"])}',
                         '--save-model-to',
                         f'./trained_{template.model_template_id}',
                         '--enable-hpo',
@@ -215,11 +215,11 @@ class TestTrainCommon:
                             '--train-ann-file',
                             case,
                             '--train-data-roots',
-                            f'{os.path.join(ote_dir, args["--train-data-roots"])}',
+                            f'{os.path.join(ote_dir, args_paths["--train-data-roots"])}',
                             '--val-ann-file',
-                            f'{os.path.join(ote_dir, args["--val-ann-file"])}',
+                            f'{os.path.join(ote_dir, args_paths["--val-ann-file"])}',
                             '--val-data-roots',
-                            f'{os.path.join(ote_dir, args["--val-data-roots"])}',
+                            f'{os.path.join(ote_dir, args_paths["--val-data-roots"])}',
                             '--save-model-to',
                             f'./trained_{template.model_template_id}']
             ret = ote_common(template, root, 'train', command_line)
@@ -233,13 +233,13 @@ class TestTrainCommon:
         for case in wrong_paths.values():
             command_line = [template.model_template_id,
                             '--train-ann-file',
-                            f'{os.path.join(ote_dir, args["--train-ann-file"])}',
+                            f'{os.path.join(ote_dir, args_paths["--train-ann-file"])}',
                             '--train-data-roots',
                             case,
                             '--val-ann-file',
-                            f'{os.path.join(ote_dir, args["--val-ann-file"])}',
+                            f'{os.path.join(ote_dir, args_paths["--val-ann-file"])}',
                             '--val-data-roots',
-                            f'{os.path.join(ote_dir, args["--val-data-roots"])}',
+                            f'{os.path.join(ote_dir, args_paths["--val-data-roots"])}',
                             '--save-model-to',
                             f'./trained_{template.model_template_id}']
             ret = ote_common(template, root, 'train', command_line)
@@ -253,13 +253,13 @@ class TestTrainCommon:
         for case in wrong_paths.values():
             command_line = [template.model_template_id,
                             '--train-ann-file',
-                            f'{os.path.join(ote_dir, args["--train-ann-file"])}',
+                            f'{os.path.join(ote_dir, args_paths["--train-ann-file"])}',
                             '--train-data-roots',
-                            f'{os.path.join(ote_dir, args["--train-data-roots"])}',
+                            f'{os.path.join(ote_dir, args_paths["--train-data-roots"])}',
                             '--val-ann-file',
                             case,
                             '--val-data-roots',
-                            f'{os.path.join(ote_dir, args["--val-data-roots"])}',
+                            f'{os.path.join(ote_dir, args_paths["--val-data-roots"])}',
                             '--save-model-to',
                             f'./trained_{template.model_template_id}']
             ret = ote_common(template, root, 'train', command_line)
@@ -273,11 +273,11 @@ class TestTrainCommon:
         for case in wrong_paths.values():
             command_line = [template.model_template_id,
                             '--train-ann-file',
-                            f'{os.path.join(ote_dir, args["--train-ann-file"])}',
+                            f'{os.path.join(ote_dir, args_paths["--train-ann-file"])}',
                             '--train-data-roots',
-                            f'{os.path.join(ote_dir, args["--train-data-roots"])}',
+                            f'{os.path.join(ote_dir, args_paths["--train-data-roots"])}',
                             '--val-ann-file',
-                            f'{os.path.join(ote_dir, args["--val-ann-file"])}',
+                            f'{os.path.join(ote_dir, args_paths["--val-ann-file"])}',
                             '--val-data-roots',
                             case,
                             '--save-model-to',
@@ -293,13 +293,13 @@ class TestTrainCommon:
         for case in wrong_paths.values():
             command_line = [template.model_template_id,
                             '--train-ann-file',
-                            f'{os.path.join(ote_dir, args["--train-ann-file"])}',
+                            f'{os.path.join(ote_dir, args_paths["--train-ann-file"])}',
                             '--train-data-roots',
-                            f'{os.path.join(ote_dir, args["--train-data-roots"])}',
+                            f'{os.path.join(ote_dir, args_paths["--train-data-roots"])}',
                             '--val-ann-file',
-                            f'{os.path.join(ote_dir, args["--val-ann-file"])}',
+                            f'{os.path.join(ote_dir, args_paths["--val-ann-file"])}',
                             '--val-data-roots',
-                            f'{os.path.join(ote_dir, args["--val-data-roots"])}',
+                            f'{os.path.join(ote_dir, args_paths["--val-data-roots"])}',
                             '--save-model-to',
                             case]
             ret = ote_common(template, root, 'train', command_line)

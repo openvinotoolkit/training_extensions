@@ -20,7 +20,7 @@ from subprocess import run  # nosec
 from ote_sdk.test_suite import logging
 
 
-args = {
+args_paths = {
     '--train-ann-file': 'data/airport/annotation_example_train.json',
     '--train-data-roots': 'data/airport/train',
     '--val-ann-file': 'data/airport/annotation_example_train.json',
@@ -32,7 +32,7 @@ args = {
 wrong_paths = {
                'empty': '',
                'not_printable': '\x11',
-               # 'null_symbol': '\x00' It is catch on subprocess level
+               # 'null_symbol': '\x00' It is caught on subprocess level
                }
 
 logger = logging.get_logger()
@@ -235,7 +235,7 @@ def ote_demo_testing(template, root, ote_dir, args):
                     '--input',
                     os.path.join(ote_dir, args['--input']),
                     '--delay',
-                    '-1']
+                    '1']
     assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
 
 
@@ -249,7 +249,7 @@ def ote_demo_openvino_testing(template, root, ote_dir, args):
                     '--input',
                     os.path.join(ote_dir, args['--input']),
                     '--delay',
-                    '-1']
+                    '1']
     assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
 
 
@@ -332,7 +332,7 @@ def ote_demo_deployment_testing(template, root, ote_dir, args):
                     '--input',
                     os.path.join(ote_dir, args['--input']),
                     '--delay',
-                    '-1']
+                    '1']
     assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
 
 
@@ -442,8 +442,9 @@ def nncf_eval_testing(template, root, ote_dir, args, threshold):
         evaluated_performance = json.load(read_file)
 
     for k in trained_performance.keys():
-        assert abs(trained_performance[k] - evaluated_performance[k]) / trained_performance[k] <= threshold, \
-            f"{trained_performance[k]=}, {evaluated_performance[k]=}"
+        if trained_performance[k] != 0:
+            assert abs(trained_performance[k] - evaluated_performance[k]) / trained_performance[k] <= threshold, \
+                f"{trained_performance[k]=}, {evaluated_performance[k]=}"
 
 
 def nncf_eval_openvino_testing(template, root, ote_dir, args):
