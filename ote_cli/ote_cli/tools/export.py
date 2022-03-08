@@ -60,6 +60,10 @@ def main():
 
     args = parse_args()
 
+    # Validate required paths that are sourced in args
+    validate_path(args.load_weights)
+    validate_path(args.save_model_to)
+
     # Load template.yaml file.
     template = find_and_parse_model_template(args.template)
 
@@ -72,10 +76,6 @@ def main():
     # Get hyper parameters schema.
     hyper_parameters = create(template.hyper_parameters.data)
     assert hyper_parameters
-
-    # Validate required paths that is sourced in args
-    validate_path(args.load_weights)
-    validate_path(args.save_model_to)
 
     environment = TaskEnvironment(
         model=None,
