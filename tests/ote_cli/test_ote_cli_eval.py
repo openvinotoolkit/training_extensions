@@ -23,11 +23,7 @@ from ote_cli.registry import Registry
 from common import (
     create_venv,
     get_some_vars,
-<<<<<<< HEAD
     args_paths,
-=======
-    args,
->>>>>>> 975fa243 (fixing)
     wrong_paths,
     ote_common
 )
@@ -123,11 +119,7 @@ class TestEvalCommon:
                             '--test-ann-file',
                             case,
                             '--test-data-roots',
-<<<<<<< HEAD
                             f'{os.path.join(ote_dir, args_paths["--test-data-roots"])}',
-=======
-                            f'{os.path.join(ote_dir, args["--test-data-roots"])}',
->>>>>>> 975fa243 (fixing)
                             '--load-weights',
                             f'./trained_{template.model_template_id}/weights.pth',
                             '--save-performance',
@@ -143,11 +135,7 @@ class TestEvalCommon:
         for case in wrong_paths.values():
             command_args = [template.model_template_id,
                             '--test-ann-file',
-<<<<<<< HEAD
                             f'{os.path.join(ote_dir, args_paths["--test-ann-files"])}',
-=======
-                            f'{os.path.join(ote_dir, args["--test-ann-files"])}',
->>>>>>> 975fa243 (fixing)
                             '--test-data-roots',
                             case,
                             '--load-weights',
@@ -165,15 +153,9 @@ class TestEvalCommon:
         for case in wrong_paths.values():
             command_args = [template.model_template_id,
                             '--test-ann-file',
-<<<<<<< HEAD
                             f'{os.path.join(ote_dir, args_paths["--test-ann-files"])}',
                             '--test-data-roots',
                             f'{os.path.join(ote_dir, args_paths["--test-data-roots"])}',
-=======
-                            f'{os.path.join(ote_dir, args["--test-ann-files"])}',
-                            '--test-data-roots',
-                            f'{os.path.join(ote_dir, args["--test-data-roots"])}',
->>>>>>> 975fa243 (fixing)
                             '--load-weights',
                             case,
                             '--save-performance',
