@@ -128,7 +128,8 @@ def ote_common(template, root, tool, cmd_args):
     ret = run(command_line, env=collect_env_vars(work_dir), capture_output=True)
     output = {'exit_code': int(ret.returncode), 'stdout': str(ret.stdout), 'stderr': str(ret.stderr)}
     logger.debug(f"Command line: {debug_command_line}\n")
-    logger.debug(f"Returns stdout: {output}\n {' '*7}stderr: {output}\n {' '*7}exit_code: {output}\n")
+    logger.debug(f"Returns stdout: {output['stdout']}\n "
+                 f"{' '*7}stderr: {output['stderr']}\n {' '*7}exit_code: {output['exit_code']}\n")
     return output
 
 

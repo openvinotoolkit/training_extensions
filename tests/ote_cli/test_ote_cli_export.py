@@ -84,9 +84,12 @@ class TestExportCommon:
     @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
     def test_ote_export_wrong_path_load_weights(self, back_end, template, create_venv_fx):
         error_string = "Path is not valid"
-        cmd_line = [template.model_template_id, '--load-weights']
         for case in wrong_paths.values():
-            cmd_line += [case, f'--save-model-to', f'./exported_{template.model_template_id}']
+            cmd_line = [template.model_template_id,
+                        '--load-weights',
+                        case,
+                        f'--save-model-to',
+                        f'./exported_{template.model_template_id}']
             ret = ote_common(template, root, 'export', cmd_line)
             assert ret['exit_code'] != 0, "Exit code must not be equal 0"
             assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"

@@ -164,7 +164,7 @@ class TestTrainCommon:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
-    def test_ote_train_wrong_hpo_value(self, back_end, template, create_venv_fx):
+    def test_ote_train_string_hpo_value(self, back_end, template, create_venv_fx):
         error_string = "ote train: error: argument --hpo-time-ratio: invalid float value: 'STRING_VALUE'"
         command_line = [template.model_template_id,
                         '--train-ann-file',
@@ -186,7 +186,7 @@ class TestTrainCommon:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
-    def test_ote_train_wrong_hpo_value(self, back_end, template, create_venv_fx):
+    def test_ote_train_negative_hpo_value(self, back_end, template, create_venv_fx):
         error_string = "Parameter --hpo-time-ratio must not be negative"
         command_line = [template.model_template_id,
                         '--train-ann-file',

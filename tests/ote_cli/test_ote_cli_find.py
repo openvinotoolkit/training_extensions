@@ -17,6 +17,7 @@
 
 import os
 import pytest
+import logging
 
 from ote_sdk.test_suite.e2e_test_system import e2e_pytest_component
 from ote_cli.registry import Registry
@@ -28,6 +29,7 @@ from common import (
     ote_common
 )
 
+logger = logging.getLogger(__name__)
 
 root = "/tmp/ote_cli/"
 ote_dir = os.getcwd()
@@ -65,8 +67,8 @@ class TestFindCommon:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
-    def test_ote_cli_find_root_upper_folder(self, back_end, template, create_venv_fx):
-        cmd = ["--root", "../"]
+    def test_ote_cli_find_root(self, back_end, template, create_venv_fx):
+        cmd = ["--root", template.model_template_path]
         ret = ote_common(template, root, "find", cmd)
         assert ret["exit_code"] == 0, "Exit code must be equal 0"
 
