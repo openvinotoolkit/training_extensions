@@ -16,6 +16,7 @@
 
 import os
 import pytest
+import logging
 
 from ote_sdk.test_suite.e2e_test_system import e2e_pytest_component
 from ote_cli.registry import Registry
@@ -27,6 +28,7 @@ from common import (
     ote_common
 )
 
+logger = logging.getLogger(__name__)
 
 root = '/tmp/ote_cli/'
 ote_dir = os.getcwd()
@@ -53,7 +55,12 @@ class TestDeployCommon:
     @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
     def test_ote_deploy_no_template(self, back_end, template, create_venv_fx):
         error_string = "ote deploy: error: the following arguments are required: template"
-        ret = ote_common(template, root, "deploy", [])
+        command_args = []
+        ret = ote_common(template, root, "deploy", command_args)
+        logger.debug(f"Command arguments: ote deploy {' '.join(str(it) for it in command_args)}")
+        logger.debug(f"Stdout: {ret['stdout']}\n")
+        logger.debug(f"Stderr: {ret['stderr']}\n")
+        logger.debug(f"Exit_code: {ret['exit_code']}\n")
         assert ret['exit_code'] != 0, "Exit code must not be equal 0"
         assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
 
@@ -65,6 +72,10 @@ class TestDeployCommon:
                         f'--save-model-to',
                         f'./deployed_{template.model_template_id}']
         ret = ote_common(template, root, "deploy", command_args)
+        logger.debug(f"Command arguments: ote deploy {' '.join(str(it) for it in command_args)}")
+        logger.debug(f"Stdout: {ret['stdout']}\n")
+        logger.debug(f"Stderr: {ret['stderr']}\n")
+        logger.debug(f"Exit_code: {ret['exit_code']}\n")
         assert ret['exit_code'] != 0, "Exit code must not be equal 0"
         assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
 
@@ -79,5 +90,9 @@ class TestDeployCommon:
                             '--save-model-to',
                             f'./deployed_{template.model_template_id}']
             ret = ote_common(template, root, "deploy", command_args)
+            logger.debug(f"Command arguments: ote deploy {' '.join(str(it) for it in command_args)}")
+            logger.debug(f"Stdout: {ret['stdout']}\n")
+            logger.debug(f"Stderr: {ret['stderr']}\n")
+            logger.debug(f"Exit_code: {ret['exit_code']}\n")
             assert ret['exit_code'] != 0, "Exit code must not be equal 0"
             assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"

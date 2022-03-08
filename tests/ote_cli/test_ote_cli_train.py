@@ -15,6 +15,7 @@
 
 import os
 import pytest
+import logging
 
 from ote_sdk.test_suite.e2e_test_system import e2e_pytest_component
 from ote_cli.registry import Registry
@@ -27,6 +28,7 @@ from common import (
     ote_common
 )
 
+logger = logging.getLogger(__name__)
 
 root = '/tmp/ote_cli/'
 ote_dir = os.getcwd()
@@ -53,7 +55,12 @@ class TestTrainCommon:
     @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
     def test_ote_train_no_template(self, back_end, template, create_venv_fx):
         error_string = "ote train: error: the following arguments are required: template"
-        ret = ote_common(template, root, 'train', [])
+        command_line = []
+        ret = ote_common(template, root, 'train', command_line)
+        logger.debug(f"Command arguments: ote train {' '.join(str(it) for it in command_line)}")
+        logger.debug(f"Stdout: {ret['stdout']}\n")
+        logger.debug(f"Stderr: {ret['stderr']}\n")
+        logger.debug(f"Exit_code: {ret['exit_code']}\n")
         assert ret['exit_code'] != 0, "Exit code must not be equal 0"
         assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
 
@@ -71,6 +78,10 @@ class TestTrainCommon:
                         '--save-model-to',
                         f'./trained_{template.model_template_id}']
         ret = ote_common(template, root, 'train', command_line)
+        logger.debug(f"Command arguments: ote train {' '.join(str(it) for it in command_line)}")
+        logger.debug(f"Stdout: {ret['stdout']}\n")
+        logger.debug(f"Stderr: {ret['stderr']}\n")
+        logger.debug(f"Exit_code: {ret['exit_code']}\n")
         assert ret['exit_code'] != 0, "Exit code must not be equal 0"
         assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
 
@@ -88,6 +99,10 @@ class TestTrainCommon:
                         '--save-model-to',
                         f'./trained_{template.model_template_id}']
         ret = ote_common(template, root, 'train', command_line)
+        logger.debug(f"Command arguments: ote train {' '.join(str(it) for it in command_line)}")
+        logger.debug(f"Stdout: {ret['stdout']}\n")
+        logger.debug(f"Stderr: {ret['stderr']}\n")
+        logger.debug(f"Exit_code: {ret['exit_code']}\n")
         assert ret['exit_code'] != 0, "Exit code must not be equal 0"
         assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
 
@@ -105,6 +120,10 @@ class TestTrainCommon:
                         '--save-model-to',
                         f'./trained_{template.model_template_id}']
         ret = ote_common(template, root, 'train', command_line)
+        logger.debug(f"Command arguments: ote train {' '.join(str(it) for it in command_line)}")
+        logger.debug(f"Stdout: {ret['stdout']}\n")
+        logger.debug(f"Stderr: {ret['stderr']}\n")
+        logger.debug(f"Exit_code: {ret['exit_code']}\n")
         assert ret['exit_code'] != 0, "Exit code must not be equal 0"
         assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
 
@@ -122,6 +141,10 @@ class TestTrainCommon:
                         '--save-model-to',
                         f'./trained_{template.model_template_id}']
         ret = ote_common(template, root, 'train', command_line)
+        logger.debug(f"Command arguments: ote train {' '.join(str(it) for it in command_line)}")
+        logger.debug(f"Stdout: {ret['stdout']}\n")
+        logger.debug(f"Stderr: {ret['stderr']}\n")
+        logger.debug(f"Exit_code: {ret['exit_code']}\n")
         assert ret['exit_code'] != 0, "Exit code must not be equal 0"
         assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
 
@@ -139,6 +162,10 @@ class TestTrainCommon:
                         '--val-data-roots',
                         f'{os.path.join(ote_dir, args_paths["--val-data-roots"])}']
         ret = ote_common(template, root, 'train', command_line)
+        logger.debug(f"Command arguments: ote train {' '.join(str(it) for it in command_line)}")
+        logger.debug(f"Stdout: {ret['stdout']}\n")
+        logger.debug(f"Stderr: {ret['stderr']}\n")
+        logger.debug(f"Exit_code: {ret['exit_code']}\n")
         assert ret['exit_code'] != 0, "Exit code must not be equal 0"
         assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
 
@@ -159,6 +186,10 @@ class TestTrainCommon:
                         f'./trained_{template.model_template_id}',
                         '--hpo-time-ratio', '4']
         ret = ote_common(template, root, 'train', command_line)
+        logger.debug(f"Command arguments: ote train {' '.join(str(it) for it in command_line)}")
+        logger.debug(f"Stdout: {ret['stdout']}\n")
+        logger.debug(f"Stderr: {ret['stderr']}\n")
+        logger.debug(f"Exit_code: {ret['exit_code']}\n")
         assert ret['exit_code'] != 0, "Exit code must not be equal 0"
         assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
 
@@ -181,6 +212,10 @@ class TestTrainCommon:
                         '--hpo-time-ratio',
                         'STRING_VALUE']
         ret = ote_common(template, root, 'train', command_line)
+        logger.debug(f"Command arguments: ote train {' '.join(str(it) for it in command_line)}")
+        logger.debug(f"Stdout: {ret['stdout']}\n")
+        logger.debug(f"Stderr: {ret['stderr']}\n")
+        logger.debug(f"Exit_code: {ret['exit_code']}\n")
         assert ret['exit_code'] != 0, "Exit code must not be equal 0"
         assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
 
@@ -203,6 +238,10 @@ class TestTrainCommon:
                         '--hpo-time-ratio',
                         '-1']
         ret = ote_common(template, root, 'train', command_line)
+        logger.debug(f"Command arguments: ote train {' '.join(str(it) for it in command_line)}")
+        logger.debug(f"Stdout: {ret['stdout']}\n")
+        logger.debug(f"Stderr: {ret['stderr']}\n")
+        logger.debug(f"Exit_code: {ret['exit_code']}\n")
         assert ret['exit_code'] != 0, "Exit code must not be equal 0"
         assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
 
@@ -223,6 +262,10 @@ class TestTrainCommon:
                             '--save-model-to',
                             f'./trained_{template.model_template_id}']
             ret = ote_common(template, root, 'train', command_line)
+            logger.debug(f"Command arguments: ote train {' '.join(str(it) for it in command_line)}")
+            logger.debug(f"Stdout: {ret['stdout']}\n")
+            logger.debug(f"Stderr: {ret['stderr']}\n")
+            logger.debug(f"Exit_code: {ret['exit_code']}\n")
             assert ret['exit_code'] != 0, "Exit code must not be equal 0"
             assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
 
@@ -243,6 +286,10 @@ class TestTrainCommon:
                             '--save-model-to',
                             f'./trained_{template.model_template_id}']
             ret = ote_common(template, root, 'train', command_line)
+            logger.debug(f"Command arguments: ote train {' '.join(str(it) for it in command_line)}")
+            logger.debug(f"Stdout: {ret['stdout']}\n")
+            logger.debug(f"Stderr: {ret['stderr']}\n")
+            logger.debug(f"Exit_code: {ret['exit_code']}\n")
             assert ret['exit_code'] != 0, "Exit code must not be equal 0"
             assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
 
@@ -263,6 +310,10 @@ class TestTrainCommon:
                             '--save-model-to',
                             f'./trained_{template.model_template_id}']
             ret = ote_common(template, root, 'train', command_line)
+            logger.debug(f"Command arguments: ote train {' '.join(str(it) for it in command_line)}")
+            logger.debug(f"Stdout: {ret['stdout']}\n")
+            logger.debug(f"Stderr: {ret['stderr']}\n")
+            logger.debug(f"Exit_code: {ret['exit_code']}\n")
             assert ret['exit_code'] != 0, "Exit code must not be equal 0"
             assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
 
@@ -283,6 +334,10 @@ class TestTrainCommon:
                             '--save-model-to',
                             f'./trained_{template.model_template_id}']
             ret = ote_common(template, root, 'train', command_line)
+            logger.debug(f"Command arguments: ote train {' '.join(str(it) for it in command_line)}")
+            logger.debug(f"Stdout: {ret['stdout']}\n")
+            logger.debug(f"Stderr: {ret['stderr']}\n")
+            logger.debug(f"Exit_code: {ret['exit_code']}\n")
             assert ret['exit_code'] != 0, "Exit code must not be equal 0"
             assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
 
@@ -303,5 +358,9 @@ class TestTrainCommon:
                             '--save-model-to',
                             case]
             ret = ote_common(template, root, 'train', command_line)
+            logger.debug(f"Command arguments: ote train {' '.join(str(it) for it in command_line)}")
+            logger.debug(f"Stdout: {ret['stdout']}\n")
+            logger.debug(f"Stderr: {ret['stderr']}\n")
+            logger.debug(f"Exit_code: {ret['exit_code']}\n")
             assert ret['exit_code'] != 0, "Exit code must not be equal 0"
             assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"

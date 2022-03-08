@@ -55,41 +55,66 @@ class TestFindCommon:
     @e2e_pytest_component
     @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
     def test_ote_cli_find(self, back_end, template, create_venv_fx):
-        ret = ote_common(template, root, "find", [])
+        command_args = []
+        ret = ote_common(template, root, "find", command_args)
+        logger.debug(f"Command arguments: ote find {' '.join(str(it) for it in command_args)}")
+        logger.debug(f"Stdout: {ret['stdout']}\n")
+        logger.debug(f"Stderr: {ret['stderr']}\n")
+        logger.debug(f"Exit_code: {ret['exit_code']}\n")
         assert ret["exit_code"] == 0, "Exit code must be equal 0"
 
     @e2e_pytest_component
     @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
     def test_ote_cli_find_root_same_folder(self, back_end, template, create_venv_fx):
-        cmd = ["--root", "."]
-        ret = ote_common(template, root, "find", cmd)
+        command_args = ["--root", "."]
+        ret = ote_common(template, root, "find", command_args)
+        logger.debug(f"Command arguments: ote find {' '.join(str(it) for it in command_args)}")
+        logger.debug(f"Stdout: {ret['stdout']}\n")
+        logger.debug(f"Stderr: {ret['stderr']}\n")
+        logger.debug(f"Exit_code: {ret['exit_code']}\n")
         assert ret["exit_code"] == 0, "Exit code must be equal 0"
 
     @e2e_pytest_component
     @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
     def test_ote_cli_find_root(self, back_end, template, create_venv_fx):
-        cmd = ["--root", template.model_template_path]
-        ret = ote_common(template, root, "find", cmd)
+        command_args = ["--root", template.model_template_path]
+        ret = ote_common(template, root, "find", command_args)
+        logger.debug(f"Command arguments: ote find {' '.join(str(it) for it in command_args)}")
+        logger.debug(f"Stdout: {ret['stdout']}\n")
+        logger.debug(f"Stderr: {ret['stderr']}\n")
+        logger.debug(f"Exit_code: {ret['exit_code']}\n")
         assert ret["exit_code"] == 0, "Exit code must be equal 0"
 
     @e2e_pytest_component
     @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
     def test_ote_cli_task_type(self, back_end, template, create_venv_fx):
-        cmd = ["--task_type", back_end]
-        ret = ote_common(template, root, "find", cmd)
+        command_args = ["--task_type", back_end]
+        ret = ote_common(template, root, "find", command_args)
+        logger.debug(f"Command arguments: ote find {' '.join(str(it) for it in command_args)}")
+        logger.debug(f"Stdout: {ret['stdout']}\n")
+        logger.debug(f"Stderr: {ret['stderr']}\n")
+        logger.debug(f"Exit_code: {ret['exit_code']}\n")
         assert ret["exit_code"] == 0, "Exit code must be equal 0"
 
     @e2e_pytest_component
     @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
     def test_ote_cli_find_root_wrong_path(self, back_end, template, create_venv_fx):
         for path in wrong_paths.values():
-            cmd = ["--root", path]
-            ret = ote_common(template, root, "find", cmd)
+            command_args = ["--root", path]
+            ret = ote_common(template, root, "find", command_args)
+            logger.debug(f"Command arguments: ote find {' '.join(str(it) for it in command_args)}")
+            logger.debug(f"Stdout: {ret['stdout']}\n")
+            logger.debug(f"Stderr: {ret['stderr']}\n")
+            logger.debug(f"Exit_code: {ret['exit_code']}\n")
             assert ret["exit_code"] != 0, "Exit code must not be equal 0"
 
     @e2e_pytest_component
     @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
     def test_ote_cli_find_task_type_not_set(self, back_end, template, create_venv_fx):
-        cmd = ["--task_id"]
-        ret = ote_common(template, root, "find", cmd)
+        command_args = ["--task_id"]
+        ret = ote_common(template, root, "find", command_args)
+        logger.debug(f"Command arguments: ote find {' '.join(str(it) for it in command_args)}")
+        logger.debug(f"Stdout: {ret['stdout']}\n")
+        logger.debug(f"Stderr: {ret['stderr']}\n")
+        logger.debug(f"Exit_code: {ret['exit_code']}\n")
         assert ret["exit_code"] != 0, "Exit code must not be equal 0"

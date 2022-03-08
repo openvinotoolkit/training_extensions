@@ -16,6 +16,7 @@
 
 import os
 import pytest
+import logging
 
 from ote_sdk.test_suite.e2e_test_system import e2e_pytest_component
 from ote_cli.registry import Registry
@@ -27,6 +28,7 @@ from common import (
     ote_common
 )
 
+logger = logging.getLogger(__name__)
 
 root = '/tmp/ote_cli/'
 ote_dir = os.getcwd()
@@ -54,7 +56,12 @@ class TestExportCommon:
     def test_ote_export_no_template(self, back_end, template, create_venv_fx):
         error_string = "ote export: error: the following arguments are required:" \
                        " template, --load-weights, --save-model-to"
-        ret = ote_common(template, root, 'export', [])
+        command_line = []
+        ret = ote_common(template, root, 'export', command_line)
+        logger.debug(f"Command arguments: ote export {' '.join(str(it) for it in command_line)}")
+        logger.debug(f"Stdout: {ret['stdout']}\n")
+        logger.debug(f"Stderr: {ret['stderr']}\n")
+        logger.debug(f"Exit_code: {ret['exit_code']}\n")
         assert ret['exit_code'] != 0, "Exit code must not be equal 0"
         assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
 
@@ -66,6 +73,10 @@ class TestExportCommon:
                         f'--save-model-to',
                         f'./exported_{template.model_template_id}']
         ret = ote_common(template, root, 'export', command_line)
+        logger.debug(f"Command arguments: ote export {' '.join(str(it) for it in command_line)}")
+        logger.debug(f"Stdout: {ret['stdout']}\n")
+        logger.debug(f"Stderr: {ret['stderr']}\n")
+        logger.debug(f"Exit_code: {ret['exit_code']}\n")
         assert ret['exit_code'] != 0, "Exit code must not be equal 0"
         assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
 
@@ -77,6 +88,10 @@ class TestExportCommon:
                         '--load-weights',
                         f'./trained_{template.model_template_id}/weights.pth']
         ret = ote_common(template, root, 'export', command_line)
+        logger.debug(f"Command arguments: ote export {' '.join(str(it) for it in command_line)}")
+        logger.debug(f"Stdout: {ret['stdout']}\n")
+        logger.debug(f"Stderr: {ret['stderr']}\n")
+        logger.debug(f"Exit_code: {ret['exit_code']}\n")
         assert ret['exit_code'] != 0, "Exit code must not be equal 0"
         assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
 
@@ -85,12 +100,16 @@ class TestExportCommon:
     def test_ote_export_wrong_path_load_weights(self, back_end, template, create_venv_fx):
         error_string = "Path is not valid"
         for case in wrong_paths.values():
-            cmd_line = [template.model_template_id,
-                        '--load-weights',
-                        case,
-                        f'--save-model-to',
-                        f'./exported_{template.model_template_id}']
-            ret = ote_common(template, root, 'export', cmd_line)
+            command_line = [template.model_template_id,
+                            '--load-weights',
+                            case,
+                            f'--save-model-to',
+                            f'./exported_{template.model_template_id}']
+            ret = ote_common(template, root, 'export', command_line)
+            logger.debug(f"Command arguments: ote export {' '.join(str(it) for it in command_line)}")
+            logger.debug(f"Stdout: {ret['stdout']}\n")
+            logger.debug(f"Stderr: {ret['stderr']}\n")
+            logger.debug(f"Exit_code: {ret['exit_code']}\n")
             assert ret['exit_code'] != 0, "Exit code must not be equal 0"
             assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
 
@@ -99,11 +118,15 @@ class TestExportCommon:
     def test_ote_export_wrong_path_save_model_to(self, back_end, template, create_venv_fx):
         error_string = "Path is not valid"
         for case in wrong_paths.values():
-            cmd_line = [template.model_template_id,
-                        '--load-weights',
-                        f'./trained_{template.model_template_id}/weights.pth',
-                        f'--save-model-to',
-                        case]
-            ret = ote_common(template, root, 'export', cmd_line)
+            command_line = [template.model_template_id,
+                            '--load-weights',
+                            f'./trained_{template.model_template_id}/weights.pth',
+                            f'--save-model-to',
+                            case]
+            ret = ote_common(template, root, 'export', command_line)
+            logger.debug(f"Command arguments: ote export {' '.join(str(it) for it in command_line)}")
+            logger.debug(f"Stdout: {ret['stdout']}\n")
+            logger.debug(f"Stderr: {ret['stderr']}\n")
+            logger.debug(f"Exit_code: {ret['exit_code']}\n")
             assert ret['exit_code'] != 0, "Exit code must not be equal 0"
             assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"

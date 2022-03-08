@@ -16,6 +16,7 @@
 
 import os
 import pytest
+import logging
 
 from ote_sdk.test_suite.e2e_test_system import e2e_pytest_component
 from ote_cli.registry import Registry
@@ -27,6 +28,8 @@ from common import (
     wrong_paths,
     ote_common
 )
+
+logger = logging.getLogger(__name__)
 
 root = '/tmp/ote_cli/'
 ote_dir = os.getcwd()
@@ -53,7 +56,12 @@ class TestEvalCommon:
     @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
     def test_ote_eval_no_template(self, back_end, template, create_venv_fx):
         error_string = "the following arguments are required: template"
-        ret = ote_common(template, root, 'eval', [])
+        command_args = []
+        ret = ote_common(template, root, 'eval', command_args)
+        logger.debug(f"Command arguments: ote eval {' '.join(str(it) for it in command_args)}")
+        logger.debug(f"Stdout: {ret['stdout']}\n")
+        logger.debug(f"Stderr: {ret['stderr']}\n")
+        logger.debug(f"Exit_code: {ret['exit_code']}\n")
         assert ret['exit_code'] != 0, "Exit code must not be equal 0"
         assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
 
@@ -69,6 +77,10 @@ class TestEvalCommon:
                         '--save-performance',
                         f'./trained_{template.model_template_id}/performance.json']
         ret = ote_common(template, root, 'eval', command_args)
+        logger.debug(f"Command arguments: ote eval {' '.join(str(it) for it in command_args)}")
+        logger.debug(f"Stdout: {ret['stdout']}\n")
+        logger.debug(f"Stderr: {ret['stderr']}\n")
+        logger.debug(f"Exit_code: {ret['exit_code']}\n")
         assert ret['exit_code'] != 0, "Exit code must not be equal 0"
         assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
 
@@ -84,6 +96,10 @@ class TestEvalCommon:
                         '--save-performance',
                         f'./trained_{template.model_template_id}/performance.json']
         ret = ote_common(template, root, 'eval', command_args)
+        logger.debug(f"Command arguments: ote eval {' '.join(str(it) for it in command_args)}")
+        logger.debug(f"Stdout: {ret['stdout']}\n")
+        logger.debug(f"Stderr: {ret['stderr']}\n")
+        logger.debug(f"Exit_code: {ret['exit_code']}\n")
         assert ret['exit_code'] != 0, "Exit code must not be equal 0"
         assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
 
@@ -99,6 +115,10 @@ class TestEvalCommon:
                         '--save-performance',
                         f'./trained_{template.model_template_id}/performance.json']
         ret = ote_common(template, root, 'eval', command_args)
+        logger.debug(f"Command arguments: ote eval {' '.join(str(it) for it in command_args)}")
+        logger.debug(f"Stdout: {ret['stdout']}\n")
+        logger.debug(f"Stderr: {ret['stderr']}\n")
+        logger.debug(f"Exit_code: {ret['exit_code']}\n")
         assert ret['exit_code'] != 0, "Exit code must not be equal 0"
         assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
 
@@ -117,6 +137,10 @@ class TestEvalCommon:
                             '--save-performance',
                             f'./trained_{template.model_template_id}/performance.json']
             ret = ote_common(template, root, 'eval', command_args)
+            logger.debug(f"Command arguments: ote eval {' '.join(str(it) for it in command_args)}")
+            logger.debug(f"Stdout: {ret['stdout']}\n")
+            logger.debug(f"Stderr: {ret['stderr']}\n")
+            logger.debug(f"Exit_code: {ret['exit_code']}\n")
             assert ret['exit_code'] != 0, "Exit code must not be equal 0"
             assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
 
@@ -135,6 +159,10 @@ class TestEvalCommon:
                             '--save-performance',
                             f'./trained_{template.model_template_id}/performance.json']
             ret = ote_common(template, root, 'eval', command_args)
+            logger.debug(f"Command arguments: ote eval {' '.join(str(it) for it in command_args)}")
+            logger.debug(f"Stdout: {ret['stdout']}\n")
+            logger.debug(f"Stderr: {ret['stderr']}\n")
+            logger.debug(f"Exit_code: {ret['exit_code']}\n")
             assert ret['exit_code'] != 0, "Exit code must not be equal 0"
             assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
 
@@ -153,5 +181,9 @@ class TestEvalCommon:
                             '--save-performance',
                             f'./trained_{template.model_template_id}/performance.json']
             ret = ote_common(template, root, 'eval', command_args)
+            logger.debug(f"Command arguments: ote eval {' '.join(str(it) for it in command_args)}")
+            logger.debug(f"Stdout: {ret['stdout']}\n")
+            logger.debug(f"Stderr: {ret['stderr']}\n")
+            logger.debug(f"Exit_code: {ret['exit_code']}\n")
             assert ret['exit_code'] != 0, "Exit code must not be equal 0"
             assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
