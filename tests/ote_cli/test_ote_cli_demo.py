@@ -24,7 +24,6 @@ from ote_cli.registry import Registry
 from common import (
     create_venv,
     get_some_vars,
-    args,
     wrong_paths,
     ote_common
 )

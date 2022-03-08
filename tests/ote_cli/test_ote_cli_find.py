@@ -24,7 +24,6 @@ from ote_cli.registry import Registry
 from common import (
     create_venv,
     get_some_vars,
-    args,
     wrong_paths,
     ote_common
 )
@@ -67,7 +66,7 @@ class TestFindCommon:
     @e2e_pytest_component
     @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
     def test_ote_cli_find_root_upper_folder(self, back_end, template, create_venv_fx):
-        cmd = ["--root", ".."]
+        cmd = ["--root", "../"]
         ret = ote_common(template, root, "find", cmd)
         assert ret["exit_code"] == 0, "Exit code must be equal 0"
 
