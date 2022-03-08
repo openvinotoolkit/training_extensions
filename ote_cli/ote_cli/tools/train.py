@@ -110,6 +110,17 @@ def main():
 
     # Dynamically create an argument parser based on override parameters.
     args, template, hyper_parameters = parse_args()
+
+    # Validate required paths that are sourced in args
+    validate_path(args.train_ann_files)
+    validate_path(args.train_data_roots)
+    validate_path(args.val_ann_files)
+    validate_path(args.val_data_roots)
+    validate_path(args.save_model_to)
+
+    if args.hpo_time_ratio and not args.enable_hpo:
+        raise Exception("Parameter --hpo-time-ratio must be used with --enable-hpo key")
+
     # Get new values from user's input.
     updated_hyper_parameters = gen_params_dict_from_args(args)
     # Override overridden parameters by user's values.
@@ -120,13 +131,6 @@ def main():
     # Get classes for Task, ConfigurableParameters and Dataset.
     task_class = get_impl_class(template.entrypoints.base)
     dataset_class = get_dataset_class(template.task_type)
-
-    # Validate required paths that is sourced in args
-    validate_path(args.train_ann_files)
-    validate_path(args.train_data_roots)
-    validate_path(args.val_ann_files)
-    validate_path(args.val_data_roots)
-    validate_path(args.save_model_to)
 
     # Create instances of Task, ConfigurableParameters and Dataset.
     dataset = dataset_class(
@@ -153,9 +157,6 @@ def main():
                 "weights.pth": ModelAdapter(read_binary(args.load_weights))
             },
         )
-
-    if args.hpo_time_ratio and not args.enable_hpo:
-        raise Exception("Parameter --hpo-time-ratio must be used with --enable-hpo key")
 
     if args.enable_hpo:
         if args.hpo_time_ratio < 0:
