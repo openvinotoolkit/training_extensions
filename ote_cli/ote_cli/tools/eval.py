@@ -102,17 +102,18 @@ def main():
 
     # Dynamically create an argument parser based on override parameters.
     args, template, hyper_parameters = parse_args()
+
+    # Validate required paths that are sourced in args
+    validate_path(args.test_ann_files)
+    validate_path(args.test_data_roots)
+    validate_path(args.load_weights)
+
     # Get new values from user's input.
     updated_hyper_parameters = gen_params_dict_from_args(args)
     # Override overridden parameters by user's values.
     override_parameters(updated_hyper_parameters, hyper_parameters)
 
     hyper_parameters = create(hyper_parameters)
-
-    # Validate required paths that is sourced in args
-    validate_path(args.test_ann_files)
-    validate_path(args.test_data_roots)
-    validate_path(args.load_weights)
 
     if args.save_performance:
         validate_path(args.save_performance)

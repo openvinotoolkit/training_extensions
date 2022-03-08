@@ -56,7 +56,7 @@ def main():
     # Parses input arguments.
     args = parse_args()
 
-    # Validate required paths that is sourced in args
+    # Validate required paths that are sourced in args
     validate_path(args.load_weights)
 
     if args.save_model_to:

@@ -19,6 +19,7 @@ Model templates searching tool.
 import argparse
 
 from ote_cli.registry import Registry
+from ote_cli.utils.validate_path import validate_path
 
 
 def parse_args():
@@ -41,6 +42,9 @@ def main():
     """
 
     args = parse_args()
+
+    # Validate path that is sourced in arg
+    validate_path(args.root)
 
     registry = Registry(args.root)
     if args.task_type:
