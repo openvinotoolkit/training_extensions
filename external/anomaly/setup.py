@@ -35,15 +35,21 @@ def get_requirements() -> List[str]:
 
 
 setup(
-    name="anomaly_classification",
+    name="anomaly tasks",
     version="ote-alpha",
     packages=find_packages(
-        include=["anomaly_classification", "anomaly_classification.*", "ote_anomalib", "ote_anomalib.*"]
+        include=[
+            "ote_anomalib",
+            "ote_anomalib.*",
+            "anomaly_classification",
+            "anomaly_classification.*",
+            "anomaly_segmentation",
+            "anomaly_segmentation.*",
+        ]
     ),
     url="",
     license="license='Apache License 2.0'",
     install_requires=get_requirements(),
     author="Intel",
-    description="anomaly classification - "
-    "OpenVINO Training Extension for Anomaly Classification using anomalib library",
+    description="anomaly tasks" "OpenVINO Training Extension for Anomaly Classification using anomalib library",
 )
