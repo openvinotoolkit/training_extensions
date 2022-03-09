@@ -1,3 +1,6 @@
+# Copyright (c) 2020 Jaehyeon Kim
+# SPDX-License-Identifier: MIT
+#
 cimport numpy as np
 cimport cython
 from cython.parallel import prange

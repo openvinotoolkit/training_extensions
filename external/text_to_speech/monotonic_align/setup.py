@@ -1,3 +1,6 @@
+# Copyright (c) 2020 Jaehyeon Kim
+# SPDX-License-Identifier: MIT
+#
 from distutils.core import setup
 from Cython.Build import cythonize
 import numpy

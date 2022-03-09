@@ -1,0 +1,6 @@
+File cmu_dictionary is taken from Glow-TTS at
+  https://github.com/jaywalnut310/glow-tts/blob/13e997689d643410f5d9f1f9a73877ae85e19bc2/data/cmu_dictionary
+
+Glow-TTS https://github.com/jaywalnut310/glow-tts copyright notice and license:
+  Copyright (c) 2020 Jaehyeon Kim
+  SPDX-License-Identifier: MIT

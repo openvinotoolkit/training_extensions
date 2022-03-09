@@ -1,3 +1,6 @@
+# Copyright (C) 2022 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
 import math
 
 import torch.nn as nn
@@ -403,6 +406,3 @@ class DurationPredictor(nn.Module):
         nn.utils.remove_weight_norm(self.conv_2)
         nn.utils.remove_weight_norm(self.conv_3)
         nn.utils.remove_weight_norm(self.proj)
-
-
-

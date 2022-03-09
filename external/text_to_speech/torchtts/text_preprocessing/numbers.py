@@ -1,5 +1,9 @@
-""" from https://github.com/keithito/tacotron """
-
+# File from Glow-TTS https://github.com/jaywalnut310/glow-tts:
+# Copyright (c) 2020 Jaehyeon Kim
+# SPDX-License-Identifier: MIT
+#
+# from https://github.com/keithito/tacotron
+#
 import inflect
 import re
 

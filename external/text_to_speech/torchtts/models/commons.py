@@ -1,3 +1,6 @@
+# Copyright (C) 2022 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
 import math
 import numpy as np
 import torch
@@ -188,4 +191,3 @@ def unsqueeze(x, x_mask=None, n_sqz=2):
     else:
         x_mask = torch.ones(b, 1, t * n_sqz).to(device=x.device, dtype=x.dtype)
     return x_unsqz * x_mask, x_mask
-

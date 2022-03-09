@@ -1,3 +1,10 @@
+# Copyright (C) 2022 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
+# Based on Glow-TTS https://github.com/jaywalnut310/glow-tts
+# Copyright (c) 2020 Jaehyeon Kim
+# SPDX-License-Identifier: MIT
+#
 import math
 import torch
 from torch import nn

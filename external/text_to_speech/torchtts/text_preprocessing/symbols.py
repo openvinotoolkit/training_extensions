@@ -1,5 +1,9 @@
-""" from https://github.com/keithito/tacotron """
-
+# From Glow-TTS https://github.com/jaywalnut310/glow-tts (with minor modifications):
+# Copyright (c) 2020 Jaehyeon Kim
+# SPDX-License-Identifier: MIT
+#
+# from https://github.com/keithito/tacotron
+#
 '''
 Defines the set of symbols used in text input to the model.
 

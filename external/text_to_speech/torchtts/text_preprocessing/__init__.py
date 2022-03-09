@@ -1,4 +1,12 @@
-""" from https://github.com/keithito/tacotron """
+# Copyright (C) 2022 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
+# Based on Glow-TTS https://github.com/jaywalnut310/glow-tts (with modifications):
+# Copyright (c) 2020 Jaehyeon Kim
+# SPDX-License-Identifier: MIT
+#
+# from https://github.com/keithito/tacotron
+#
 import re
 from . import cleaners
 from .symbols import symbols

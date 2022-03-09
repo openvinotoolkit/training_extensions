@@ -1,3 +1,6 @@
+# Copyright (C) 2022 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
 import torch
 from torch import nn
 from librosa.filters import mel as librosa_mel_fn
@@ -47,4 +50,3 @@ class TacotronSTFT(nn.Module):
         mel_output = torch.matmul(self.mel_basis, magnitudes)
         mel_output = self.spectral_normalize(mel_output)
         return mel_output
-
