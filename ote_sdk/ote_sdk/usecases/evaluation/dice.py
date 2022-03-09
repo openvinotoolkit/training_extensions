@@ -113,7 +113,9 @@ class DiceAverage(IPerformanceProvider):
             + resultset.ground_truth_dataset.get_labels()
         )
         model_labels = set(
-            resultset.model.configuration.label_schema.get_labels(include_empty=False)
+            resultset.model.configuration.get_label_schema().get_labels(
+                include_empty=False
+            )
         )
         labels = sorted(resultset_labels.intersection(model_labels))
         hard_predictions = []

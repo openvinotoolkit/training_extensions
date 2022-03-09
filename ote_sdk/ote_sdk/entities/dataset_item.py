@@ -9,7 +9,7 @@ import copy
 import itertools
 import logging
 from threading import Lock
-from typing import List, Optional, Sequence
+from typing import List, Optional, Sequence, Set, Tuple, Union
 
 import numpy as np
 
@@ -36,13 +36,14 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
     DatasetItemEntity represents an item in the DatasetEntity. It holds a media item, annotation and an ROI.
     The ROI determines the region of interest for the dataset item, and is described by a shape entity.
 
-    Dataset items hold five fundamental properties:
+    The fundamental properties of a dataset item are:
 
     - A 2d media entity (e.g. Image)
     - A 2d annotation entity for the full resolution media entity
     - An ROI, describing the region of interest.
     - The subset it belongs to
     - Metadata for the media entity (e.g. saliency map or active score)
+    - A list of labels to ignore
 
     .. rubric:: Getting data from dataset item
 
@@ -83,6 +84,9 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
     :param roi: Region Of Interest
     :param metadata: Metadata attached to dataset item
     :param subset: `Subset` for item. E.g. `Subset.VALIDATION`
+    :param ignored_labels: Collection of labels that should be ignored in this dataset item.
+        For instance, in a training scenario, this parameter is used to ignore certain labels within the
+        existing annotations because their status becomes uncertain following a label schema change.
     """
 
     # pylint: disable=too-many-arguments
@@ -93,6 +97,9 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
         roi: Optional[Annotation] = None,
         metadata: Optional[Sequence[MetadataItemEntity]] = None,
         subset: Subset = Subset.NONE,
+        ignored_labels: Optional[
+            Union[List[LabelEntity], Tuple[LabelEntity, ...], Set[LabelEntity]]
+        ] = None,
     ):
         check_input_param_type(
             RequiredParamTypeCheck(media, "media", IMedia2DEntity),
@@ -122,10 +129,27 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
         if metadata is not None:
             self.__metadata = list(metadata)
 
+        self.__ignored_labels: Set[LabelEntity] = (
+            set() if ignored_labels is None else set(ignored_labels)
+        )
+
     @property
     def metadata(self) -> Sequence[MetadataItemEntity]:
         """Provides access to metadata."""
         return self.__metadata
+
+    @property
+    def ignored_labels(self) -> Set[LabelEntity]:
+        """
+        Get the IDs of the labels to ignore in this dataset item
+        """
+        return self.__ignored_labels
+
+    @ignored_labels.setter
+    def ignored_labels(
+        self, value: Union[List[LabelEntity], Tuple[LabelEntity, ...], Set[LabelEntity]]
+    ):
+        self.__ignored_labels = set(value)
 
     def __repr__(self):
         return (
@@ -387,6 +411,7 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
                 and self.annotation_scene == other.annotation_scene
                 and self.roi == other.roi
                 and self.subset == other.subset
+                and self.ignored_labels == other.ignored_labels
             )
         return False
 

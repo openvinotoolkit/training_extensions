@@ -11,7 +11,6 @@ from bson import ObjectId
 
 from ote_sdk.configuration import ConfigurableParameters
 from ote_sdk.entities.id import ID
-from ote_sdk.entities.label import LabelEntity
 from ote_sdk.entities.label_schema import LabelSchemaEntity
 from ote_sdk.entities.metrics import NullPerformance, Performance
 from ote_sdk.entities.model_template import TargetDevice
@@ -54,8 +53,6 @@ class ModelConfiguration:
     """
 
     configurable_parameters: ConfigurableParameters
-    labels: List[LabelEntity]
-    label_schema: LabelSchemaEntity
 
     def __init__(
         self,
@@ -63,7 +60,11 @@ class ModelConfiguration:
         label_schema: LabelSchemaEntity,
     ):
         self.configurable_parameters = configurable_parameters
-        self.label_schema = label_schema
+        self.__label_schema = label_schema
+
+    def get_label_schema(self) -> LabelSchemaEntity:
+        """Get the LabelSchema"""
+        return self.__label_schema
 
 
 class ModelFormat(IntEnum):
