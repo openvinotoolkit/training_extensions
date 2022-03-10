@@ -17,6 +17,8 @@
 from pathlib import Path
 from typing import List, Union
 
+import cv2
+import numpy as np
 from anomalib.data.mvtec import make_mvtec_dataset
 from ote_anomalib.data import LabelNames
 from ote_sdk.entities.annotation import (
@@ -24,14 +26,17 @@ from ote_sdk.entities.annotation import (
     AnnotationSceneEntity,
     AnnotationSceneKind,
 )
+from ote_sdk.entities.color import Color
 from ote_sdk.entities.dataset_item import DatasetItemEntity
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.id import ID
 from ote_sdk.entities.image import Image
 from ote_sdk.entities.label import Domain, LabelEntity
+from ote_sdk.entities.model_template import TaskType
 from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.entities.shapes.rectangle import Rectangle
 from ote_sdk.entities.subset import Subset
+from ote_sdk.utils.segmentation_utils import create_annotation_from_segmentation_map
 from pandas.core.frame import DataFrame
 
 
@@ -53,24 +58,37 @@ class OteMvtecDataset:
         (900, 900, 3)
     """
 
+    # pylint: disable=too-many-instance-attributes
     def __init__(
         self,
         path: Union[str, Path],
         split_ratio: float = 0.5,
         seed: int = 0,
         create_validation_set: bool = True,
+        task_type: TaskType = TaskType.ANOMALY_CLASSIFICATION,
     ):
         self.path = path if isinstance(path, Path) else Path(path)
         self.split_ratio = split_ratio
         self.seed = seed
         self.create_validation_set = create_validation_set
+        self.task_type = task_type
+
+        if self.task_type == TaskType.ANOMALY_CLASSIFICATION:
+            self.label_domain = Domain.ANOMALY_SEGMENTATION
+        elif self.task_type == TaskType.ANOMALY_SEGMENTATION:
+            self.label_domain = Domain.ANOMALY_SEGMENTATION
 
         self.normal_label = LabelEntity(
-            name=LabelNames.normal, domain=Domain.ANOMALY_CLASSIFICATION, id=ID(LabelNames.normal)
+            name=LabelNames.normal, domain=self.label_domain, id=ID(LabelNames.normal), color=Color(0, 255, 0)
         )
         self.abnormal_label = LabelEntity(
-            name=LabelNames.anomalous, domain=Domain.ANOMALY_CLASSIFICATION, id=ID(LabelNames.anomalous)
+            name=LabelNames.anomalous,
+            domain=self.label_domain,
+            id=ID(LabelNames.anomalous),
+            is_anomalous=True,
+            color=Color(255, 0, 0),
         )
+        self.label_map = {0: self.normal_label, 1: self.abnormal_label}
 
     def get_samples(self) -> DataFrame:
         """Get MVTec samples.
@@ -115,10 +133,17 @@ class OteMvtecDataset:
             image = Image(file_path=sample.image_path)
 
             # Create annotation
-            shape = Rectangle(x1=0, y1=0, x2=1, y2=1)
-            labels = [ScoredLabel(sample.label)]
-            annotations = [Annotation(shape=shape, labels=labels)]
-            annotation_scene = AnnotationSceneEntity(annotations=annotations, kind=AnnotationSceneKind.ANNOTATION)
+            if self.task_type == TaskType.ANOMALY_CLASSIFICATION or sample.label == self.normal_label:
+                shape = Rectangle(x1=0, y1=0, x2=1, y2=1)
+                labels = [ScoredLabel(sample.label)]
+                annotations = [Annotation(shape=shape, labels=labels)]
+                annotation_scene = AnnotationSceneEntity(annotations=annotations, kind=AnnotationSceneKind.ANNOTATION)
+            elif self.task_type == TaskType.ANOMALY_SEGMENTATION and sample.label == self.abnormal_label:
+                mask = (cv2.imread(sample.mask_path, cv2.IMREAD_GRAYSCALE) / 255).astype(np.uint8)
+                annotations = create_annotation_from_segmentation_map(mask, np.ones_like(mask), self.label_map)
+                annotation_scene = AnnotationSceneEntity(annotations=annotations, kind=AnnotationSceneKind.ANNOTATION)
+            else:
+                raise ValueError(f"Unknown task type: {self.task_type}")
 
             # Create dataset item
             dataset_item = DatasetItemEntity(media=image, annotation_scene=annotation_scene, subset=sample.subset)

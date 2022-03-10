@@ -30,7 +30,7 @@ from ote_sdk.configuration.model_lifecycle import ModelLifecycle
 
 
 @attrs
-class STFPMAnomalyClassificationConfig(BaseAnomalyConfig):
+class STFPMAnomalySegmentationConfig(BaseAnomalyConfig):
     """
     Configurable parameters for STFPM anomaly classification task.
     """
