@@ -1,4 +1,4 @@
-"""Tests for anomaly classification with OTE CLI"""
+"""Tests for anomaly segmentation with OTE CLI"""
 
 # Copyright (C) 2021 Intel Corporation
 #
@@ -42,11 +42,11 @@ from common import (
 
 
 args = {
-    '--train-ann-file': 'data/anomaly/classification/train.json',
+    '--train-ann-file': 'data/anomaly/segmentation/train.json',
     '--train-data-roots': 'data/anomaly/shapes',
-    '--val-ann-file': 'data/anomaly/classification/val.json',
+    '--val-ann-file': 'data/anomaly/segmentation/val.json',
     '--val-data-roots': 'data/anomaly/shapes',
-    '--test-ann-files': 'data/anomaly/classification/test.json',
+    '--test-ann-files': 'data/anomaly/segmentation/test.json',
     '--test-data-roots': 'data/anomaly/shapes',
     '--input': 'data/anomaly/shapes/test/hexagon',
     'train_params': [],
@@ -55,11 +55,11 @@ args = {
 root = '/tmp/ote_cli/'
 ote_dir = os.getcwd()
 
-templates = Registry('external').filter(task_type='ANOMALY_CLASSIFICATION').templates
+templates = Registry('external').filter(task_type='ANOMALY_SEGMENTATION').templates
 templates_ids = [template.model_template_id for template in templates]
 
 
-class TestToolsAnomalyClassification:
+class TestToolsAnomalySegmentation:
     @e2e_pytest_component
     def test_create_venv(self):
         work_dir, template_work_dir, algo_backend_dir = get_some_vars(templates[0], root)
@@ -83,7 +83,7 @@ class TestToolsAnomalyClassification:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_ote_eval_openvino(self, template):
-        ote_eval_openvino_testing(template, root, ote_dir, args, threshold=0.0)
+        ote_eval_openvino_testing(template, root, ote_dir, args, threshold=0.01)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
@@ -103,7 +103,7 @@ class TestToolsAnomalyClassification:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_ote_eval_deployment(self, template):
-        ote_eval_deployment_testing(template, root, ote_dir, args, threshold=0.0)
+        ote_eval_deployment_testing(template, root, ote_dir, args, threshold=0.01)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
