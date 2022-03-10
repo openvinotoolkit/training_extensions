@@ -62,52 +62,53 @@ templates_ids = [template.model_template_id for template in templates]
 
 
 class TestToolsRotatedDetection:
+    @pytest.fixture()
     @e2e_pytest_component
-    def test_create_venv(self):
+    def create_venv_fx(self):
         work_dir, template_work_dir, algo_backend_dir = get_some_vars(templates[0], root)
         create_venv(algo_backend_dir, work_dir, template_work_dir)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_ote_train(self, template):
+    def test_ote_train(self, template, create_venv_fx):
         ote_train_testing(template, root, ote_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_ote_export(self, template):
+    def test_ote_export(self, template, create_venv_fx):
         ote_export_testing(template, root)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_ote_eval(self, template):
+    def test_ote_eval(self, template, create_venv_fx):
         ote_eval_testing(template, root, ote_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_ote_eval_openvino(self, template):
+    def test_ote_eval_openvino(self, template, create_venv_fx):
         ote_eval_openvino_testing(template, root, ote_dir, args, threshold=0.1)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_ote_demo(self, template):
+    def test_ote_demo(self, template, create_venv_fx):
         ote_demo_testing(template, root, ote_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_ote_demo_openvino(self, template):
+    def test_ote_demo_openvino(self, template, create_venv_fx):
         ote_demo_openvino_testing(template, root, ote_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_ote_deploy_openvino(self, template):
+    def test_ote_deploy_openvino(self, template, create_venv_fx):
         ote_deploy_openvino_testing(template, root, ote_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_ote_eval_deployment(self, template):
+    def test_ote_eval_deployment(self, template, create_venv_fx):
         ote_eval_deployment_testing(template, root, ote_dir, args, threshold=0.0)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_ote_demo_deployment(self, template):
+    def test_ote_demo_deployment(self, template, create_venv_fx):
         ote_demo_deployment_testing(template, root, ote_dir, args)
