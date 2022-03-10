@@ -11,10 +11,10 @@ from pathlib import Path
 
 # pylint: disable=no-name-in-module, import-error
 from ote_sdk.usecases.exportable_code.demo.demo_package import (
-    AsyncInferencer,
-    ChainInferencer,
-    SyncInferencer,
-    create_model,
+    AsyncExecutor,
+    ChainExecutor,
+    ModelEntity,
+    SyncExecutor,
     create_output_converter,
     create_visualizer,
 )
@@ -43,7 +43,7 @@ def build_argparser():
     args.add_argument(
         "-m",
         "--models",
-        help="Required. Path to an .xml files with a trained models.",
+        help="Required. Path to directory with trained model and configuration file",
         nargs="+",
         required=True,
         type=Path,
@@ -67,10 +67,10 @@ def build_argparser():
     return parser
 
 
-INFERENCER = {
-    "sync": SyncInferencer,
-    "async": AsyncInferencer,
-    "chain": ChainInferencer,
+EXECUTORS = {
+    "sync": SyncExecutor,
+    "async": AsyncExecutor,
+    "chain": ChainExecutor,
 }
 
 
@@ -82,11 +82,9 @@ def get_inferencer_class(type_inference, models):
         raise RuntimeError(
             "For single model please use 'sync' or 'async' type of inference"
         )
-    if len(models) > 1 and type_inference != "chain":
-        raise RuntimeError(
-            "For task-chain scenario please use 'chain' type of inference"
-        )
-    return INFERENCER[type_inference]
+    if len(models) > 1:
+        type_inference = "chain"
+    return EXECUTORS[type_inference]
 
 
 def main():
@@ -97,22 +95,21 @@ def main():
     # create models and converters for outputs
     models = []
     converters = []
-    last_config = ""
-    for model_path in args.models:
-        config_file = model_path.parent.resolve() / "config.json"
-        last_config = config_file
-        model_file = model_path.parent.parent.resolve() / "python" / "model.py"
-        model_file = model_file if model_file.exists() else None
-        models.append(create_model(model_path, config_file, model_file))
-        converters.append(create_output_converter(config_file))
+    for model_dir in args.models:
+        model = ModelEntity(model_dir)
+        models.append(model)
+        converters.append(create_output_converter(model.task_type, model.labels))
+
+    inferencer = get_inferencer_class(args.inference_type, models)
 
     # create visualizer
-    visualizer = create_visualizer(last_config, args.inference_type)
+    visualizer = create_visualizer(models[-1].task_type)
+
+    if len(models) == 1:
+        models = models[0]
 
     # create inferencer and run
-    demo = get_inferencer_class(args.inference_type, models)(
-        models, converters, visualizer
-    )
+    demo = inferencer(models, visualizer)
     demo.run(args.input, args.loop)
 
 

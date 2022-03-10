@@ -45,6 +45,37 @@ class IVisualizer(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
 
+class HandlerVisualizer:
+    """
+    Handler for visualizers
+
+    Args:
+        visualizer: visualize inference results
+    """
+
+    def __init__(self, visualizer: IVisualizer) -> None:
+        self.visualizer = visualizer
+
+    def __enter__(self):
+        cv2.namedWindow(
+            self.visualizer.window_name,
+            cv2.WINDOW_NORMAL | cv2.WINDOW_KEEPRATIO | cv2.WINDOW_GUI_EXPANDED,
+        )
+        if self.visualizer.trackbar_name:
+            cv2.createTrackbar(
+                self.visualizer.trackbar_name,
+                self.visualizer.window_name,
+                0,
+                100,
+                lambda x: x,
+            )
+
+        return self.visualizer
+
+    def __exit__(self, *exc):
+        cv2.destroyAllWindows()
+
+
 class Visualizer(IVisualizer):
     """
     Visualize the predicted output by drawing the annotations on the input image.
@@ -87,8 +118,7 @@ class Visualizer(IVisualizer):
         :param annotation: Annotations to be drawn on the input image
         :return: Output image with annotations.
         """
-        # TODO: Conversion is to be made in `show` not here.
-        #   This requires ShapeDrawer.draw to be updated
+
         image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
 
         return self.shape_drawer.draw(image, annotation, labels=[])

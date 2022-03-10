@@ -1,5 +1,5 @@
 """
-Sync Pipeline based on ModelAPI
+Sync pipeline executor based on ModelAPI
 """
 # Copyright (C) 2021-2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
@@ -8,7 +8,6 @@ Sync Pipeline based on ModelAPI
 from typing import List
 
 import numpy as np
-from openvino.model_zoo.model_api.models import Model
 
 from ote_sdk.entities.annotation import (
     Annotation,
@@ -16,16 +15,17 @@ from ote_sdk.entities.annotation import (
     AnnotationSceneKind,
 )
 from ote_sdk.entities.shapes.rectangle import Rectangle
+from ote_sdk.usecases.exportable_code.demo.demo_package.model_entity import ModelEntity
 from ote_sdk.usecases.exportable_code.prediction_to_annotation_converter import (
     IPredictionToAnnotationConverter,
 )
 from ote_sdk.usecases.exportable_code.streamer import get_streamer
-from ote_sdk.usecases.exportable_code.visualizers import Visualizer
+from ote_sdk.usecases.exportable_code.visualizers import HandlerVisualizer, Visualizer
 
 
-class ChainInferencer:
+class ChainExecutor:
     """
-    Sync pipeline for task-chain inference
+    Sync executor for task-chain inference
 
     Args:
         models: List of models for inference in correct order
@@ -35,7 +35,7 @@ class ChainInferencer:
 
     def __init__(
         self,
-        models: List[Model],
+        models: List[ModelEntity],
         converters: List[IPredictionToAnnotationConverter],
         visualizer: Visualizer,
     ) -> None:
@@ -53,7 +53,7 @@ class ChainInferencer:
         for index, model in enumerate(self.models):
             new_objects = []
             for item, parent_annotation in current_objects:
-                predictions, frame_meta = model(item)
+                predictions, frame_meta = model.core_model(item)
                 annotation_scene = self.converters[index].convert_to_annotation(
                     predictions, frame_meta
                 )
@@ -81,17 +81,18 @@ class ChainInferencer:
         )
         return new_item, item_annotation
 
-    def run(self, input_stream, loop):
+    def run(self, input_stream, loop=False):
         """
         Run demo using input stream (image, video stream, camera)
         """
         streamer = get_streamer(input_stream, loop)
-        for frame in streamer:
-            # getting result for single image
-            annotation_scene = self.single_run(frame)
+        with HandlerVisualizer(self.visualizer) as visualizer:
+            for frame in streamer:
+                # getting result for single image
+                annotation_scene = self.single_run(frame)
 
-            # any user's visualizer
-            output = self.visualizer.draw(frame, annotation_scene)
-            self.visualizer.show(output)
-            if self.visualizer.is_quit():
-                break
+                # any user's visualizer
+                output = visualizer.draw(frame, annotation_scene)
+                visualizer.show(output)
+                if visualizer.is_quit():
+                    break

@@ -5,7 +5,12 @@ Initialization of visualizers
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from .anomaly_visualizer import AnomalyVisualizer
-from .visualizer import Visualizer
+from ote_sdk.usecases.exportable_code.visualizers.anomaly_visualizer import (
+    AnomalyVisualizer,
+)
+from ote_sdk.usecases.exportable_code.visualizers.visualizer import (
+    HandlerVisualizer,
+    Visualizer,
+)
 
-__all__ = ["Visualizer", "AnomalyVisualizer"]
+__all__ = ["HandlerVisualizer", "Visualizer", "AnomalyVisualizer"]

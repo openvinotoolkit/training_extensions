@@ -6,16 +6,15 @@ Initialization of demo package
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from .asynchronous import AsyncInferencer
-from .sync import SyncInferencer
-from .sync_pipeline import ChainInferencer
-from .utils import create_model, create_output_converter, create_visualizer
+from .executors import AsyncExecutor, ChainExecutor, SyncExecutor
+from .model_entity import ModelEntity
+from .utils import create_output_converter, create_visualizer
 
 __all__ = [
-    "SyncInferencer",
-    "AsyncInferencer",
-    "ChainInferencer",
-    "create_model",
+    "SyncExecutor",
+    "AsyncExecutor",
+    "ChainExecutor",
     "create_output_converter",
     "create_visualizer",
+    "ModelEntity",
 ]
