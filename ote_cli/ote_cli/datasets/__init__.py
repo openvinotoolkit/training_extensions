@@ -37,6 +37,10 @@ def get_dataset_class(task_type):
         from .anomaly.dataset import AnomalySegmentationDataset
 
         return AnomalySegmentationDataset
+    if task_type == TaskType.ANOMALY_DETECTION:
+        from .anomaly.dataset import AnomalyDetectionDataset
+
+        return AnomalyDetectionDataset
     if task_type == TaskType.CLASSIFICATION:
         from .image_classification.dataset import ImageClassificationDataset
 

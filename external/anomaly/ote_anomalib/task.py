@@ -92,6 +92,8 @@ class BaseAnomalyTask(ITrainingTask, IInferenceTask, IEvaluationTask, IExportTas
             config.dataset.task = "classification"
         elif self.task_type == TaskType.ANOMALY_SEGMENTATION:
             config.dataset.task = "segmentation"
+        elif self.task_type == TaskType.ANOMALY_DETECTION:
+            config.dataset.task = "segmentation"
         else:
             raise ValueError(f"Unknown task type: {self.task_type}")
 
@@ -221,12 +223,12 @@ class BaseAnomalyTask(ITrainingTask, IInferenceTask, IEvaluationTask, IExportTas
         self.trainer.predict(model=self.model, datamodule=datamodule)
         return dataset
 
-    def evaluate(self, output_resultset: ResultSetEntity, evaluation_metric: Optional[str] = None) -> None:
+    def evaluate(self, output_resultset: ResultSetEntity, _evaluation_metric: Optional[str] = None) -> None:
         """Evaluate the performance on a result set.
 
         Args:
             output_resultset (ResultSetEntity): Result Set from which the performance is evaluated.
-            evaluation_metric (Optional[str], optional): Evaluation metric. Defaults to None. Instead,
+            _evaluation_metric (Optional[str], optional): Evaluation metric. Defaults to None. Instead,
                 f-measure is used by default.
         """
         if self.task_type == TaskType.ANOMALY_CLASSIFICATION:

@@ -95,7 +95,7 @@ class OTEAnomalyDataset(Dataset):
             item["image"] = pre_processed["image"]
             item["mask"] = pre_processed["mask"]
         else:
-            raise ValueError(f"Unsupported task type: {self.config.dataset.task}")
+            raise ValueError(f"Unsupported task type: {self.task_type}")
 
         if len(dataset_item.get_shapes_labels()) > 0:
             item["label"] = 1 if dataset_item.get_shapes_labels()[0].is_anomalous else 0
