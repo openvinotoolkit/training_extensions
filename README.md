@@ -1,4 +1,4 @@
-# OpenVINO™ Training Extensions {#ote_documentation}
+# OpenVINO™ Training Extensions
 [![python](https://img.shields.io/badge/python-3.8%2B-green)]()
 [![black](https://img.shields.io/badge/code%20style-black-000000.svg)]()
 [![mypy](https://img.shields.io/badge/%20type_checker-mypy-%231674b1?style=flat)]()
