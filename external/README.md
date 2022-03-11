@@ -42,3 +42,5 @@ Custom_Rotated_Detection_via_Instance_Segmentation_MaskRCNN_ResNet50 | MaskRCNN-
 ID | Name | Complexity (GFlops) | Model size (MB) | Path
 ------- | ------- | ------- | ------- | -------
 Custom_Semantic_Segmentation_Lite-HRNet-18_OCR | Lite-HRNet-18 OCR | 3.45 | 4.5 | mmsegmentation/configs/ote/custom-sematic-segmentation/ocr-lite-hrnet-18/template.yaml
+Custom_Semantic_Segmentation_Lite-HRNet-18-mod2_OCR | Lite-HRNet-18-mod2 OCR | 3.63 | 4.8 | mmsegmentation/configs/ote/custom-sematic-segmentation/ocr-lite-hrnet-18-mod2/template.yaml
+Custom_Semantic_Segmentation_Lite-HRNet-x-mod3_OCR | Lite-HRNet-x-mod3 OCR | 13.97 | 6.4 | mmsegmentation/configs/ote/custom-sematic-segmentation/ocr-lite-hrnet-x-mod3/template.yaml
