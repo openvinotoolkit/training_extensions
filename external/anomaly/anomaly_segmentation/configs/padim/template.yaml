@@ -1,14 +1,14 @@
 # Description.
-model_template_id: ote_anomaly_classification_padim
+model_template_id: ote_anomaly_segmentation_padim
 name: PADIM
-task_type: ANOMALY_CLASSIFICATION
+task_type: ANOMALY_SEGMENTATION
 task_family: VISION
 instantiation: "CLASS"
 summary: This model is faster and in many cases more accurate, but it requires a fixed position of the objects within the image.
 application: ~
 
 # Algo backend.
-framework: OTEAnomalyClassification v0.1.0
+framework: OTEAnomalyClassification v0.1.0 # TODO: update after the name has been changed on the platform side
 
 # Task implementations.
 entrypoints:
