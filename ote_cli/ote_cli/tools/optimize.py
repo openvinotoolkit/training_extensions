@@ -36,6 +36,7 @@ from ote_cli.utils.parser import (
     add_hyper_parameters_sub_parser,
     gen_params_dict_from_args,
 )
+from ote_cli.utils.validate_path import validate_path
 
 
 def parse_args():
@@ -102,6 +103,15 @@ def main():
 
     # Dynamically create an argument parser based on override parameters.
     args, template, hyper_parameters = parse_args()
+
+    # Validate required paths that are sourced in args
+    validate_path(args.train_ann_files)
+    validate_path(args.train_data_roots)
+    validate_path(args.val_ann_files)
+    validate_path(args.val_data_roots)
+    validate_path(args.save_model_to)
+    if args.save_performance:
+        validate_path(args.save_performance)
 
     is_pot = False
     if args.load_weights.endswith(".bin") or args.load_weights.endswith(".xml"):
