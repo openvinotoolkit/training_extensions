@@ -16,11 +16,7 @@ from ote_sdk.entities.graph import Graph, MultiDiGraph
 from ote_sdk.entities.id import ID
 from ote_sdk.entities.label import LabelEntity
 from ote_sdk.entities.scored_label import ScoredLabel
-from ote_sdk.utils.argument_checks import (
-    OptionalParamTypeCheck,
-    RequiredParamTypeCheck,
-    check_input_param_type,
-)
+from ote_sdk.utils.argument_checks import InputParamTypeCheck, check_input_param_type
 
 logger = logging.getLogger(__name__)
 
@@ -316,8 +312,10 @@ class LabelSchemaEntity:
         label_groups: List[LabelGroup] = None,
     ):
         check_input_param_type(
-            OptionalParamTypeCheck(label_tree, "label_tree", LabelTree),
-            OptionalParamTypeCheck(label_groups, "label_groups", List[LabelGroup]),
+            InputParamTypeCheck(label_tree, "label_tree", LabelTree, "optional"),
+            InputParamTypeCheck(
+                label_groups, "label_groups", List[LabelGroup], "optional"
+            ),
         )
         if label_tree is None:
             label_tree = LabelTree()
@@ -603,7 +601,7 @@ class LabelSchemaEntity:
         :param labels: list of labels
         :return: LabelSchemaEntity from the given labels
         """
-        RequiredParamTypeCheck(labels, "labels", Sequence[LabelEntity]).check()
+        InputParamTypeCheck(labels, "labels", Sequence[LabelEntity]).check()
         label_group = LabelGroup(name="from_label_list", labels=labels)
         return LabelSchemaEntity(label_groups=[label_group])
 

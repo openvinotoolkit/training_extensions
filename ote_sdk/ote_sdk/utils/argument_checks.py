@@ -58,6 +58,8 @@ def check_dictionary_keys_values_type(
 def check_parameter_type(parameter, parameter_name, expected_type):
     """Function extracts nested expected types and raises ValueError exception if parameter has unexpected type"""
     # pylint: disable=W0212
+    if expected_type == typing.Any:
+        return
     if not isinstance(expected_type, typing._GenericAlias):  # type: ignore
         raise_value_error_if_parameter_has_unexpected_type(
             parameter=parameter,
@@ -65,9 +67,19 @@ def check_parameter_type(parameter, parameter_name, expected_type):
             expected_type=expected_type,
         )
         return
-    if expected_type == typing.Any:
-        return
     origin_class = expected_type.__dict__.get("__origin__")
+    if origin_class == typing.Union:
+        expected_iterables = []
+        expected_nested = []
+        for expected_iterable in expected_type.__dict__.get("__args__"):
+            expected_iterables.append(expected_iterable.__dict__.get("__origin__"))
+            for nested in expected_iterable.__dict__.get("__args__"):
+                if nested not in expected_nested:
+                    expected_nested.append(nested)
+        origin_class = tuple(expected_iterables)
+        args = tuple(expected_nested)
+    else:
+        args = expected_type.__dict__.get("__args__")
     # Checking origin class
     raise_value_error_if_parameter_has_unexpected_type(
         parameter=parameter,
@@ -75,18 +87,7 @@ def check_parameter_type(parameter, parameter_name, expected_type):
         expected_type=origin_class,
     )
     # Checking nested elements
-    args = expected_type.__dict__.get("__args__")
-    if issubclass(origin_class, typing.Sequence) and args:
-        if len(args) != 1:
-            raise TypeError(
-                "length of nested expected types for Sequence should be equal to 1"
-            )
-        check_nested_elements_type(
-            iterable=parameter,
-            parameter_name=parameter_name,
-            expected_type=args,
-        )
-    elif origin_class == dict and args:
+    if origin_class == dict and args:
         if len(args) != 2:
             raise TypeError(
                 "length of nested expected types for dictionary should be equal to 2"
@@ -97,6 +98,16 @@ def check_parameter_type(parameter, parameter_name, expected_type):
             parameter_name=parameter_name,
             expected_key_class=key,
             expected_value_class=value,
+        )
+    else:
+        if len(args) != 1:
+            raise TypeError(
+                "length of nested expected types for Sequence should be equal to 1"
+            )
+        check_nested_elements_type(
+            iterable=parameter,
+            parameter_name=parameter_name,
+            expected_type=args,
         )
 
 
@@ -117,34 +128,24 @@ def check_input_param_type(*checks: BaseInputArgumentChecker):
         param_check.check()
 
 
-class RequiredParamTypeCheck(BaseInputArgumentChecker):
-    """Class to check required input parameters"""
+class InputParamTypeCheck(BaseInputArgumentChecker):
+    """Class to check input parameters"""
 
-    def __init__(self, parameter, parameter_name, expected_type):
+    def __init__(self, parameter, parameter_name, expected_type, is_optional=False):
         self.parameter = parameter
         self.parameter_name = parameter_name
         self.expected_type = expected_type
+        self.is_optional = is_optional
 
     def check(self):
         """Method raises ValueError exception if required parameter has unexpected type"""
+        if self.parameter is None and self.is_optional:
+            return
         check_parameter_type(
             parameter=self.parameter,
             parameter_name=self.parameter_name,
             expected_type=self.expected_type,
         )
-
-
-class OptionalParamTypeCheck(RequiredParamTypeCheck):
-    """Class to check optional input parameters"""
-
-    def check(self):
-        """Method checks if optional parameter exists and raises ValueError exception if it has unexpected type"""
-        if self.parameter is not None:
-            check_parameter_type(
-                parameter=self.parameter,
-                parameter_name=self.parameter_name,
-                expected_type=self.expected_type,
-            )
 
 
 def check_file_extension(

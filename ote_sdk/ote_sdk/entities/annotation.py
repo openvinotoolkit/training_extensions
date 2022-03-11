@@ -14,11 +14,7 @@ from ote_sdk.entities.id import ID
 from ote_sdk.entities.label import LabelEntity
 from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.entities.shapes.shape import ShapeEntity
-from ote_sdk.utils.argument_checks import (
-    OptionalParamTypeCheck,
-    RequiredParamTypeCheck,
-    check_input_param_type,
-)
+from ote_sdk.utils.argument_checks import InputParamTypeCheck, check_input_param_type
 from ote_sdk.utils.time_utils import now
 
 
@@ -31,15 +27,13 @@ class Annotation(metaclass=abc.ABCMeta):
     def __init__(
         self, shape: ShapeEntity, labels: List[ScoredLabel], id: Optional[ID] = None
     ):
-
-        self.__id_ = ID(ObjectId()) if id is None else id
         check_input_param_type(
-            RequiredParamTypeCheck(shape, "shape", ShapeEntity),
-            RequiredParamTypeCheck(labels, "labels", List[ScoredLabel]),
-            OptionalParamTypeCheck(id, "id", ID),
+            InputParamTypeCheck(shape, "shape", ShapeEntity),
+            InputParamTypeCheck(labels, "labels", List[ScoredLabel]),
+            InputParamTypeCheck(id, "id", ID, "optional"),
         )
 
-        self.__id = ID(ObjectId()) if id is None else id
+        self.__id_ = ID(ObjectId()) if id is None else id
         self.__shape = shape
         self.__labels = labels
 
@@ -185,11 +179,13 @@ class AnnotationSceneEntity(metaclass=abc.ABCMeta):
         id: Optional[ID] = None,
     ):
         check_input_param_type(
-            RequiredParamTypeCheck(annotations, "annotations", List[Annotation]),
-            RequiredParamTypeCheck(kind, "kind", AnnotationSceneKind),
-            OptionalParamTypeCheck(editor, "editor", str),
-            OptionalParamTypeCheck(creation_date, "creation_date", datetime.datetime),
-            OptionalParamTypeCheck(id, "id", ID),
+            InputParamTypeCheck(annotations, "annotations", List[Annotation]),
+            InputParamTypeCheck(kind, "kind", AnnotationSceneKind),
+            InputParamTypeCheck(editor, "editor", str, "optional"),
+            InputParamTypeCheck(
+                creation_date, "creation_date", datetime.datetime, "optional"
+            ),
+            InputParamTypeCheck(id, "id", ID, "optional"),
         )
 
         self.__annotations = annotations

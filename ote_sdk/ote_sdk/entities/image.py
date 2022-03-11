@@ -14,8 +14,8 @@ from ote_sdk.entities.annotation import Annotation
 from ote_sdk.entities.media import IMedia2DEntity
 from ote_sdk.entities.shapes.rectangle import Rectangle
 from ote_sdk.utils.argument_checks import (
+    InputParamTypeCheck,
     OptionalFilePathCheck,
-    OptionalParamTypeCheck,
     check_input_param_type,
 )
 
@@ -38,7 +38,7 @@ class Image(IMedia2DEntity):
         file_path: Optional[str] = None,
     ):
         check_input_param_type(
-            OptionalParamTypeCheck(data, "data", np.ndarray),
+            InputParamTypeCheck(data, "data", np.ndarray, "optional"),
             OptionalFilePathCheck(file_path, "file_path", ["jpg", "png"]),
         )
         if (data is None) == (file_path is None):

@@ -9,11 +9,7 @@ import datetime
 from ote_sdk.entities.color import Color
 from ote_sdk.entities.id import ID
 from ote_sdk.entities.label import Domain, LabelEntity
-from ote_sdk.utils.argument_checks import (
-    OptionalParamTypeCheck,
-    RequiredParamTypeCheck,
-    check_input_param_type,
-)
+from ote_sdk.utils.argument_checks import InputParamTypeCheck, check_input_param_type
 
 
 class ScoredLabel:
@@ -26,8 +22,8 @@ class ScoredLabel:
 
     def __init__(self, label: LabelEntity, probability: float = 0.0):
         check_input_param_type(
-            RequiredParamTypeCheck(label, "label", LabelEntity),
-            OptionalParamTypeCheck(probability, "probability", float),
+            InputParamTypeCheck(label, "label", LabelEntity),
+            InputParamTypeCheck(probability, "probability", float, "optional"),
         )
 
         self.label = label

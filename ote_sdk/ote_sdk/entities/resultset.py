@@ -15,8 +15,8 @@ from ote_sdk.entities.id import ID
 from ote_sdk.entities.metrics import NullPerformance, Performance
 from ote_sdk.entities.model import ModelEntity
 from ote_sdk.utils.argument_checks import (
-    OptionalParamTypeCheck,
-    RequiredParamTypeCheck,
+    DatasetParamTypeCheck,
+    InputParamTypeCheck,
     check_input_param_type,
 )
 from ote_sdk.utils.time_utils import now
@@ -83,17 +83,15 @@ class ResultSetEntity(metaclass=abc.ABCMeta):
         id: Optional[ID] = None,
     ):
         check_input_param_type(
-            RequiredParamTypeCheck(model, "model", ModelEntity),
-            RequiredParamTypeCheck(
-                ground_truth_dataset, "ground_truth_dataset", DatasetEntity
+            InputParamTypeCheck(model, "model", ModelEntity),
+            DatasetParamTypeCheck(ground_truth_dataset, "ground_truth_dataset"),
+            DatasetParamTypeCheck(prediction_dataset, "prediction_dataset"),
+            InputParamTypeCheck(purpose, "purpose", ResultsetPurpose),
+            InputParamTypeCheck(performance, "performance", Performance, "optional"),
+            InputParamTypeCheck(
+                creation_date, "creation_date", datetime.datetime, "optional"
             ),
-            RequiredParamTypeCheck(
-                prediction_dataset, "prediction_dataset", DatasetEntity
-            ),
-            RequiredParamTypeCheck(purpose, "purpose", ResultsetPurpose),
-            OptionalParamTypeCheck(performance, "performance", Performance),
-            OptionalParamTypeCheck(creation_date, "creation_date", datetime.datetime),
-            OptionalParamTypeCheck(id, "id", ID),
+            InputParamTypeCheck(id, "id", ID, "optional"),
         )
 
         id = ID() if id is None else id

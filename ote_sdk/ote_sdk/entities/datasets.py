@@ -19,11 +19,7 @@ from ote_sdk.entities.dataset_item import DatasetItemEntity
 from ote_sdk.entities.id import ID
 from ote_sdk.entities.label import LabelEntity
 from ote_sdk.entities.subset import Subset
-from ote_sdk.utils.argument_checks import (
-    OptionalParamTypeCheck,
-    RequiredParamTypeCheck,
-    check_input_param_type,
-)
+from ote_sdk.utils.argument_checks import InputParamTypeCheck, check_input_param_type
 
 logger = logging.getLogger(__name__)
 
@@ -133,8 +129,8 @@ class DatasetEntity:
         purpose: DatasetPurpose = DatasetPurpose.INFERENCE,
     ):
         check_input_param_type(
-            OptionalParamTypeCheck(items, "items", List[DatasetItemEntity]),
-            RequiredParamTypeCheck(purpose, "purpose", DatasetPurpose),
+            InputParamTypeCheck(items, "items", List[DatasetItemEntity], "optional"),
+            InputParamTypeCheck(purpose, "purpose", DatasetPurpose),
         )
 
         self._items = [] if items is None else items

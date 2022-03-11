@@ -10,11 +10,7 @@ from typing import Optional
 
 from ote_sdk.entities.color import Color
 from ote_sdk.entities.id import ID
-from ote_sdk.utils.argument_checks import (
-    OptionalParamTypeCheck,
-    RequiredParamTypeCheck,
-    check_input_param_type,
-)
+from ote_sdk.utils.argument_checks import InputParamTypeCheck, check_input_param_type
 from ote_sdk.utils.time_utils import now
 
 
@@ -98,13 +94,15 @@ class LabelEntity:
         is_anomalous: bool = False,
     ):
         check_input_param_type(
-            RequiredParamTypeCheck(name, "name", str),
-            RequiredParamTypeCheck(domain, "domain", Domain),
-            OptionalParamTypeCheck(color, "color", Color),
-            OptionalParamTypeCheck(hotkey, "hotkey", str),
-            OptionalParamTypeCheck(creation_date, "creation_date", datetime.datetime),
-            OptionalParamTypeCheck(is_empty, "is_empty", bool),
-            OptionalParamTypeCheck(id, "id", ID),
+            InputParamTypeCheck(name, "name", str),
+            InputParamTypeCheck(domain, "domain", Domain),
+            InputParamTypeCheck(color, "color", Color, "optional"),
+            InputParamTypeCheck(hotkey, "hotkey", str, "optional"),
+            InputParamTypeCheck(
+                creation_date, "creation_date", datetime.datetime, "optional"
+            ),
+            InputParamTypeCheck(is_empty, "is_empty", bool, "optional"),
+            InputParamTypeCheck(id, "id", ID, "optional"),
         )
 
         id = ID() if id is None else id

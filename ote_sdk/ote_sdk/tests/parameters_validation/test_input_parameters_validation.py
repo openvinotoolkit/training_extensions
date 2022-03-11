@@ -224,6 +224,10 @@ class TestParamsValidation:
             ("metadata", self.metadata() + [unexpected_type_value]),  # type: ignore
             # Unexpected integer is specified as "subset" parameter
             ("subset", unexpected_type_value),
+            # Unexpected integer is specified as "metadata" parameter
+            ("ignored_labels", unexpected_type_value),
+            # Unexpected integer is specified as nested "metadata" item
+            ("ignored_labels", [unexpected_type_value]),  # type: ignore
         ]
         check_value_error_exception_raised(
             correct_parameters=correct_values_dict,

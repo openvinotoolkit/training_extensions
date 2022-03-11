@@ -16,11 +16,7 @@ from shapely.geometry import Polygon as shapely_polygon
 
 from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.entities.shapes.shape import Shape, ShapeEntity, ShapeType
-from ote_sdk.utils.argument_checks import (
-    OptionalParamTypeCheck,
-    RequiredParamTypeCheck,
-    check_input_param_type,
-)
+from ote_sdk.utils.argument_checks import InputParamTypeCheck, check_input_param_type
 from ote_sdk.utils.time_utils import now
 
 # pylint: disable=invalid-name
@@ -56,13 +52,13 @@ class Rectangle(Shape):
         modification_date: Optional[datetime.datetime] = None,
     ):
         check_input_param_type(
-            RequiredParamTypeCheck(x1, "x1", float),
-            RequiredParamTypeCheck(y1, "y1", float),
-            RequiredParamTypeCheck(x2, "x2", float),
-            RequiredParamTypeCheck(y2, "y2", float),
-            OptionalParamTypeCheck(labels, "labels", List[ScoredLabel]),
-            OptionalParamTypeCheck(
-                modification_date, "modification_date", datetime.datetime
+            InputParamTypeCheck(x1, "x1", float),
+            InputParamTypeCheck(y1, "y1", float),
+            InputParamTypeCheck(x2, "x2", float),
+            InputParamTypeCheck(y2, "y2", float),
+            InputParamTypeCheck(labels, "labels", List[ScoredLabel], "optional"),
+            InputParamTypeCheck(
+                modification_date, "modification_date", datetime.datetime, "optional"
             ),
         )
 

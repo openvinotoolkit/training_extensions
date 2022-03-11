@@ -21,11 +21,7 @@ from ote_sdk.entities.model import ModelEntity
 from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.entities.shapes.rectangle import Rectangle
 from ote_sdk.entities.subset import Subset
-from ote_sdk.utils.argument_checks import (
-    OptionalParamTypeCheck,
-    RequiredParamTypeCheck,
-    check_input_param_type,
-)
+from ote_sdk.utils.argument_checks import InputParamTypeCheck, check_input_param_type
 from ote_sdk.utils.shape_factory import ShapeFactory
 
 logger = logging.getLogger(__name__)
@@ -102,13 +98,21 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
         ] = None,
     ):
         check_input_param_type(
-            RequiredParamTypeCheck(media, "media", IMedia2DEntity),
-            RequiredParamTypeCheck(
+            InputParamTypeCheck(media, "media", IMedia2DEntity),
+            InputParamTypeCheck(
                 annotation_scene, "annotation_scene", AnnotationSceneEntity
             ),
-            OptionalParamTypeCheck(roi, "roi", Annotation),
-            OptionalParamTypeCheck(metadata, "metadata", Sequence[MetadataItemEntity]),
-            RequiredParamTypeCheck(subset, "subset", Subset),
+            InputParamTypeCheck(roi, "roi", Annotation, "optional"),
+            InputParamTypeCheck(
+                metadata, "metadata", Sequence[MetadataItemEntity], "optional"
+            ),
+            InputParamTypeCheck(subset, "subset", Subset),
+            InputParamTypeCheck(
+                ignored_labels,
+                "ignored_labels",
+                Union[List[LabelEntity], Tuple[LabelEntity], Set[LabelEntity]],
+                "optional",
+            ),
         )
 
         self.__media: IMedia2DEntity = media

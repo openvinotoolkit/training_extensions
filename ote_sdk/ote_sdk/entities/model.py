@@ -22,8 +22,7 @@ from ote_sdk.usecases.adapters.model_adapter import (
 )
 from ote_sdk.utils.argument_checks import (
     DatasetParamTypeCheck,
-    OptionalParamTypeCheck,
-    RequiredParamTypeCheck,
+    InputParamTypeCheck,
     check_input_param_type,
 )
 from ote_sdk.utils.time_utils import now
@@ -125,44 +124,65 @@ class ModelEntity:
         _id: Optional[ID] = None,
     ):
         check_input_param_type(
-            RequiredParamTypeCheck(configuration, "configuration", ModelConfiguration),
-            OptionalParamTypeCheck(creation_date, "creation_date", datetime.datetime),
-            OptionalParamTypeCheck(performance, "performance", Performance),
-            OptionalParamTypeCheck(
-                previous_trained_revision, "previous_trained_revision", ModelEntity
+            InputParamTypeCheck(configuration, "configuration", ModelConfiguration),
+            InputParamTypeCheck(
+                creation_date, "creation_date", datetime.datetime, "optional"
             ),
-            OptionalParamTypeCheck(previous_revision, "previous_revision", ModelEntity),
-            RequiredParamTypeCheck(version, "version", int),
-            OptionalParamTypeCheck(tags, "tags", List[str]),
-            RequiredParamTypeCheck(model_format, "model_format", ModelFormat),
-            RequiredParamTypeCheck(training_duration, "training_duration", float),
-            OptionalParamTypeCheck(
-                model_adapters, "model_adapters", Dict[str, ModelAdapter]
+            InputParamTypeCheck(performance, "performance", Performance, "optional"),
+            InputParamTypeCheck(
+                previous_trained_revision,
+                "previous_trained_revision",
+                ModelEntity,
+                "optional",
             ),
-            OptionalParamTypeCheck(
+            InputParamTypeCheck(
+                previous_revision, "previous_revision", ModelEntity, "optional"
+            ),
+            InputParamTypeCheck(version, "version", int),
+            InputParamTypeCheck(tags, "tags", List[str], "optional"),
+            InputParamTypeCheck(model_format, "model_format", ModelFormat),
+            InputParamTypeCheck(training_duration, "training_duration", float),
+            InputParamTypeCheck(
+                model_adapters, "model_adapters", Dict[str, ModelAdapter], "optional"
+            ),
+            InputParamTypeCheck(
                 exportable_code_adapter,
                 "exportable_code_adapter",
                 ExportableCodeAdapter,
+                "optional",
             ),
-            OptionalParamTypeCheck(precision, "precision", List[ModelPrecision]),
-            RequiredParamTypeCheck(latency, "latency", int),
-            RequiredParamTypeCheck(fps_throughput, "fps_throughput", int),
-            RequiredParamTypeCheck(target_device, "target_device", TargetDevice),
-            OptionalParamTypeCheck(target_device_type, "target_device_type", str),
-            RequiredParamTypeCheck(
+            InputParamTypeCheck(
+                precision, "precision", List[ModelPrecision], "optional"
+            ),
+            InputParamTypeCheck(latency, "latency", int),
+            InputParamTypeCheck(fps_throughput, "fps_throughput", int),
+            InputParamTypeCheck(target_device, "target_device", TargetDevice),
+            InputParamTypeCheck(
+                target_device_type, "target_device_type", str, "optional"
+            ),
+            InputParamTypeCheck(
                 optimization_type, "optimization_type", ModelOptimizationType
             ),
-            OptionalParamTypeCheck(
-                optimization_methods, "optimization_methods", List[OptimizationMethod]
+            InputParamTypeCheck(
+                optimization_methods,
+                "optimization_methods",
+                List[OptimizationMethod],
+                "optional",
             ),
-            OptionalParamTypeCheck(
-                optimization_objectives, "optimization_objectives", Dict[str, str]
+            InputParamTypeCheck(
+                optimization_objectives,
+                "optimization_objectives",
+                Dict[str, str],
+                "optional",
             ),
-            OptionalParamTypeCheck(
-                performance_improvement, "performance_improvement", Dict[str, float]
+            InputParamTypeCheck(
+                performance_improvement,
+                "performance_improvement",
+                Dict[str, float],
+                "optional",
             ),
-            RequiredParamTypeCheck(model_size_reduction, "model_size_reduction", float),
-            OptionalParamTypeCheck(_id, "_id", (ID, ObjectId)),
+            InputParamTypeCheck(model_size_reduction, "model_size_reduction", float),
+            InputParamTypeCheck(_id, "_id", (ID, ObjectId), "optional"),
         )
         if train_dataset:
             DatasetParamTypeCheck(train_dataset, "train_dataset").check()
