@@ -381,7 +381,7 @@ class TestOptimizeCommon:
                             '--load-weights',
                             f'./exported_{template.model_template_id}/openvino.xml',
                             '--save-model-to',
-                            f'./trained_{template.model_template_id}'
+                            f'./trained_{template.model_template_id}',
                             '--save-performance',
                             case]
             ret = ote_common(template, root, 'optimize', command_line)
