@@ -81,7 +81,7 @@ class TestOptimizeCommon:
                         '--val-data-roots',
                         f'{os.path.join(ote_dir, args_paths["--val-data-roots"])}',
                         '--load-weights',
-                        f'./exported_{template.model_template_id}/openvino.xml'
+                        f'./exported_{template.model_template_id}/openvino.xml',
                         '--save-model-to',
                         f'./trained_{template.model_template_id}']
         ret = ote_common(template, root, 'optimize', command_line)
@@ -104,7 +104,7 @@ class TestOptimizeCommon:
                         '--val-data-roots',
                         f'{os.path.join(ote_dir, args_paths["--val-data-roots"])}',
                         '--load-weights',
-                        f'./exported_{template.model_template_id}/openvino.xml'
+                        f'./exported_{template.model_template_id}/openvino.xml',
                         '--save-model-to',
                         f'./trained_{template.model_template_id}']
         ret = ote_common(template, root, 'optimize', command_line)
@@ -127,7 +127,7 @@ class TestOptimizeCommon:
                         '--val-data-roots',
                         f'{os.path.join(ote_dir, args_paths["--val-data-roots"])}',
                         '--load-weights',
-                        f'./exported_{template.model_template_id}/openvino.xml'
+                        f'./exported_{template.model_template_id}/openvino.xml',
                         '--save-model-to',
                         f'./trained_{template.model_template_id}']
         ret = ote_common(template, root, 'optimize', command_line)
@@ -150,7 +150,7 @@ class TestOptimizeCommon:
                         '--val-ann-file',
                         f'{os.path.join(ote_dir, args_paths["--val-ann-file"])}',
                         '--load-weights',
-                        f'./exported_{template.model_template_id}/openvino.xml'
+                        f'./exported_{template.model_template_id}/openvino.xml',
                         '--save-model-to',
                         f'./trained_{template.model_template_id}']
         ret = ote_common(template, root, 'optimize', command_line)
