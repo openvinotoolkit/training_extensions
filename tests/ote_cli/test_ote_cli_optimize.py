@@ -366,7 +366,7 @@ class TestOptimizeCommon:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
-    def test_ote_optimize_wrong_load_weights(self, back_end, template, create_venv_fx):
+    def test_ote_optimize_wrong_save_performance(self, back_end, template, create_venv_fx):
         error_string = "Path is not valid"
         for case in wrong_paths.values():
             command_line = [template.model_template_id,
@@ -390,4 +390,3 @@ class TestOptimizeCommon:
             logger.debug(f"Stderr: {ret['stderr']}\n")
             logger.debug(f"Exit_code: {ret['exit_code']}\n")
             assert ret['exit_code'] != 0, "Exit code must not be equal 0"
-            assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
