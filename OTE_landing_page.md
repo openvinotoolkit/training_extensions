@@ -16,7 +16,7 @@ inference. It allows to export and convert the models to the needed format. OTE 
 
 2. OTE train the model, using training interface, and evaluate the model quality on your dataset, using evaluation and inference interfaces.
 
-Note: prepare a saparate dataset or split the dataset you have for more accurate quality evaluation.
+Note: prepare a separate dataset or split the dataset you have for more accurate quality evaluation.
 
 3. Having successful evaluation results received, you have an opportunity to deploy your model or continue optimizing it, using NNCF and POT. For more information about these frameworks, go to [Optimization Guide](https://docs.openvino.ai/nightly/openvino_docs_model_optimization_guide.html).
 
