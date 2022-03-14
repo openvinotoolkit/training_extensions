@@ -49,7 +49,7 @@ def get_arpabet(word, dictionary):
   else:
     return word
 
-def text_to_sequence(text, cleaner_names, dictionary=None):
+def text_to_sequence(text, cleaner_names=["english"], dictionary=None):
   '''Converts a string of text to a sequence of IDs corresponding to the symbols in the text.
 
     The text can optionally have ARPAbet sequences enclosed in curly braces embedded

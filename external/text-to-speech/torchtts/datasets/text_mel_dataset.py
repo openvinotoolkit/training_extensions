@@ -9,7 +9,7 @@ from torch.utils.data.sampler import Sampler
 from torch.utils.data import Dataset
 import torch.distributed as dist
 
-from .text import text_to_sequence, intersperse, cmudict, random_fill, pad_spaces
+from torchtts.text_preprocessing import text_to_sequence, intersperse, cmudict, random_fill
 from .tacotronstft import TacotronSTFT
 from scipy.io.wavfile import read
 

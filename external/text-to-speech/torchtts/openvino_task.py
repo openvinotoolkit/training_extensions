@@ -24,6 +24,8 @@ from zipfile import ZipFile
 from typing import Any, Dict, Tuple, Optional, Union
 import numpy as np
 
+from openvino.runtime import Core
+
 import ote_sdk.usecases.exportable_code.demo as demo
 from ote_sdk.entities.inference_parameters import InferenceParameters, default_progress_callback
 from ote_sdk.usecases.evaluation.metrics_helper import MetricsHelper
@@ -40,7 +42,8 @@ from ote_sdk.entities.annotation import AnnotationSceneEntity
 from ote_sdk.entities.datasets import DatasetEntity
 
 from torchtts.integration.parameters import OTETextToSpeechTaskParameters
-from torchtts.datasets import text_to_sequence, intersperse, pad_spaces
+from text_preprocessing import text_to_sequence, intersperse, pad_spaces
+from demo import Encoder, Decoder
 
 logger = logging.getLogger(__name__)
 
@@ -56,153 +59,17 @@ def get_output(net, outputs, name):
     return outputs[key]
 
 
-class OpenVINOTTSInferencer(BaseOpenVINOInferencer):
-    def __init__(
-        self,
-        model_file: Union[str, bytes],
-        weight_file: Union[str, bytes, None] = None,
-        device: str = "CPU",
-        num_requests: int = 1,
-    ):
-        """
-        Inferencer implementation for OTEDetection using OpenVINO backend.
-        :param model: Path to model to load, `.xml`, `.bin` or `.onnx` file.
-        :param hparams: Hyper parameters that the model should use.
-        :param num_requests: Maximum number of requests that the inferencer can make.
-            Good value is the number of available cores. Defaults to 1.
-        :param device: Device to run inference on, such as CPU, GPU or MYRIAD. Defaults to "CPU".
-        """
-        super().__init__(model_file, weight_file, device, num_requests)
-
-    def load_model(
-        self, model_file: Union[str, bytes], weights_file: Union[str, bytes, None]
-    ):
-        self.net = self.ie_core.read_network(model_file, weights_file)
-
-        scales = 9
-        t_shapes = [int(128 * 1.5 ** i) for i in range(scales)]
-
-        orig_shapes = {k: self.net.input_info[k].input_data.shape for k in self.net.input_info.keys()}
-        exec_net = []
-        for s in range(scales):
-            new_shapes = {k: tuple(list(v[:-1]) + [t_shapes[s]]) if len(v) > 1 else v
-                          for k, v in orig_shapes.items()}
-            self.net.reshape(new_shapes)
-            exec_net.append(
-                self.ie_core.load_network(network=self.net, device_name=self.device, num_requests=self.num_requests))
-            self.net.reshape(orig_shapes)
-
-        self.model = exec_net
-        self.t_shapes = t_shapes
-
-    def post_process(self, prediction: Any, metadata: Any) -> AnnotationSceneEntity:
-        return prediction
-
-
-class OpenVINOTTSEncoderInferencer(OpenVINOTTSInferencer):
-    def __init__(
-        self,
-        model_file: Union[str, bytes],
-        weight_file: Union[str, bytes, None] = None,
-    ):
-        super().__init__(model_file, weight_file)
-
-        self.load_model(model_file, weight_file)
-
-        self.input_data_name = "seq"
-        self.input_mask_name = "seq_len"
-
-    def pre_process(self, text: np.ndarray) -> Tuple[Dict[str, np.ndarray], Dict[str, Any]]:
-        x = text_to_sequence(text, self.cfg.text_cleaners, self.cmudict)
-        if getattr(self.cfg, "add_blank", False):
-            x = intersperse(x)
-
-        for t_shape in self.t_shapes:
-            if t_shape >= x.shape[-1]:
-                seq = pad_spaces(x, t_shape)
-                break
-
-        seq = np.array(x)[None, :]
-        seq_len = np.array([seq.shape[1]])
-
-        dict_inputs = {self.input_data_name: seq, self.input_mask_name: seq_len}
-        return dict_inputs
-
-    def pre_process(self, seq: np.ndarray, seq_len: np.ndarray) -> Tuple[Dict[str, np.ndarray], Dict[str, Any]]:
-        for t_shape in self.t_shapes:
-            if t_shape >= seq.shape[-1]:
-                seq = pad_spaces(seq, t_shape)
-                break
-        dict_inputs = {self.input_data_name: seq, self.input_mask_name: seq_len}
-        return dict_inputs
-
-    def forward(self, data: Dict[str, np.ndarray]) -> Dict[str, np.ndarray]:
-        for i in range(len(self.t_shapes)):
-            if data[self.input_data_name].shape[-1] == self.t_shapes[i]:
-                return self.model[i].infer(data)
-        return None
-
-
-class OpenVINOTTSDecoderInferencer(OpenVINOTTSInferencer):
-    def __init__(
-        self,
-        model_file: Union[str, bytes],
-        weight_file: Union[str, bytes, None] = None,
-    ):
-        super().__init__(model_file, weight_file)
-
-        self.load_model(model_file, weight_file)
-
-        self.input_data_name = "z"
-        self.input_mask_name = "z_mask"
-
-    @staticmethod
-    def pad_last_dim(x, sz, constant_value=-1.0):
-        pad_width = [(0, 0) for _ in range(len(x.shape) - 1)]
-        pad_width.append((0, sz - x.shape[-1]))
-        return np.pad(x, pad_width=pad_width, mode='constant', constant_values=constant_value)
-
-    def pre_process(self, data: Dict[str, np.ndarray]) -> Tuple[Dict[str, np.ndarray], Dict[str, Any]]:
-        z = data[self.input_data_name]
-        z_mask = data[self.input_mask_name]
-        for t_shape in self.t_shapes:
-            if t_shape >= z.shape[-1]:
-                z = self.pad_last_dim(z, t_shape)
-                z_mask = self.pad_last_dim(z_mask, t_shape, 0)
-                break
-
-        dict_inputs = {self.input_data_name: z, self.input_mask_name: z_mask}
-        return dict_inputs
-
-    def pre_process(self, z: np.ndarray, z_mask: np.ndarray) -> Tuple[Dict[str, np.ndarray], Dict[str, Any]]:
-        for t_shape in self.t_shapes:
-            if t_shape >= z.shape[-1]:
-                z = self.pad_last_dim(z, t_shape)
-                z_mask = self.pad_last_dim(z_mask, t_shape, 0)
-                break
-
-        dict_inputs = {self.input_data_name: z, self.input_mask_name: z_mask}
-        return dict_inputs
-
-    def forward(self, data: Dict[str, np.ndarray]) -> Dict[str, np.ndarray]:
-        for i in range(len(self.t_shapes)):
-            if data[self.input_data_name].shape[-1] == self.t_shapes[i]:
-                return self.model[i].infer(data)
-        return None
-
-
 class OpenVINOTTSTask(IInferenceTask, IEvaluationTask):
     def __init__(self, task_environment: TaskEnvironment):
         self.task_environment = task_environment
         self.hparams = self.task_environment.get_hyper_parameters(OTETextToSpeechTaskParameters)
         self.model = self.task_environment.model
+        self.ie = Core()
         self.encoder, self.decoder = self.load_inferencers()
 
-    def load_inferencers(self) -> Tuple[OpenVINOTTSInferencer]:
-        encoder = OpenVINOTTSEncoderInferencer(self.model.get_data("encoder.xml"),
-                                     self.model.get_data("encoder.bin"))
-        decoder = OpenVINOTTSDecoderInferencer(self.model.get_data("decoder.xml"),
-                                    self.model.get_data("decoder.bin"))
+    def load_inferencers(self) -> Tuple[Any]:
+        encoder = Encoder(self.model.get_data("encoder.xml"), self.ie)
+        decoder = Decoder(self.model.get_data("decoder.xml"), self.ie)
         return encoder, decoder
 
     @staticmethod
@@ -356,6 +223,43 @@ class OpenVINOTTSTask(IInferenceTask, IEvaluationTask):
 
     def infer(self, dataset: DatasetEntity,
               inference_parameters: Optional[InferenceParameters] = None) -> DatasetEntity:
+
+        """Perform Inference.
+
+        Args:
+            dataset (DatasetEntity): Inference dataset
+            inference_parameters (InferenceParameters): Inference parameters.
+
+        Returns:
+            DatasetEntity: Output dataset storing inference predictions.
+        """
+        if self.task_environment.model is None:
+            raise Exception("task_environment.model is None. Cannot access threshold to calculate labels.")
+
+        logger.info("Start OpenVINO inference.")
+        update_progress_callback = default_progress_callback
+        if inference_parameters is not None:
+            update_progress_callback = inference_parameters.update_progress
+
+        # This always assumes that threshold is available in the task environment's model
+        meta_data = self.get_meta_data()
+        for idx, dataset_item in enumerate(dataset):
+            anomaly_map, pred_score = self.inferencer.predict(
+                dataset_item.numpy, superimpose=False, meta_data=meta_data
+            )
+            annotations_scene = self.annotation_converter.convert_to_annotation(pred_score, meta_data)
+            dataset_item.append_labels(annotations_scene.annotations[0].get_labels())
+            anomaly_map = anomaly_map_to_color_map(anomaly_map, normalize=False)
+            heatmap_media = ResultMediaEntity(
+                name="Anomaly Map",
+                type="anomaly_map",
+                annotation_scene=dataset_item.annotation_scene,
+                numpy=anomaly_map,
+            )
+            dataset_item.append_metadata_item(heatmap_media)
+            update_progress_callback(int((idx + 1) / len(dataset) * 100))
+
+        return dataset
         return dataset
 
     def evaluate(self,
