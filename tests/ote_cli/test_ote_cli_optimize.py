@@ -15,7 +15,6 @@
 
 import os
 import pytest
-import logging
 
 from ote_sdk.test_suite.e2e_test_system import e2e_pytest_component
 from ote_cli.registry import Registry
@@ -28,12 +27,11 @@ from common import (
     ote_common
 )
 
-logger = logging.getLogger(__name__)
 
 root = '/tmp/ote_cli/'
 ote_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 external_path = os.path.join(ote_dir, "external")
-# TODO check double quotes
+
 
 params_values = []
 params_ids = []
@@ -63,10 +61,6 @@ class TestOptimizeCommon:
         error_string = "the following arguments are required: template"
         command_line = []
         ret = ote_common(template, root, 'optimize', command_line)
-        logger.debug(f"Command arguments: ote optimize {' '.join(str(it) for it in command_line)}")
-        logger.debug(f"Stdout: {ret['stdout']}\n")
-        logger.debug(f"Stderr: {ret['stderr']}\n")
-        logger.debug(f"Exit_code: {ret['exit_code']}\n")
         assert ret['exit_code'] != 0, "Exit code must not be equal 0"
         assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
 
@@ -86,10 +80,6 @@ class TestOptimizeCommon:
                         '--save-model-to',
                         f'./trained_{template.model_template_id}']
         ret = ote_common(template, root, 'optimize', command_line)
-        logger.debug(f"Command arguments: ote optimize {' '.join(str(it) for it in command_line)}")
-        logger.debug(f"Stdout: {ret['stdout']}\n")
-        logger.debug(f"Stderr: {ret['stderr']}\n")
-        logger.debug(f"Exit_code: {ret['exit_code']}\n")
         assert ret['exit_code'] != 0, "Exit code must not be equal 0"
         assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
 
@@ -109,10 +99,6 @@ class TestOptimizeCommon:
                         '--save-model-to',
                         f'./trained_{template.model_template_id}']
         ret = ote_common(template, root, 'optimize', command_line)
-        logger.debug(f"Command arguments: ote optimize {' '.join(str(it) for it in command_line)}")
-        logger.debug(f"Stdout: {ret['stdout']}\n")
-        logger.debug(f"Stderr: {ret['stderr']}\n")
-        logger.debug(f"Exit_code: {ret['exit_code']}\n")
         assert ret['exit_code'] != 0, "Exit code must not be equal 0"
         assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
 
@@ -132,10 +118,6 @@ class TestOptimizeCommon:
                         '--save-model-to',
                         f'./trained_{template.model_template_id}']
         ret = ote_common(template, root, 'optimize', command_line)
-        logger.debug(f"Command arguments: ote optimize {' '.join(str(it) for it in command_line)}")
-        logger.debug(f"Stdout: {ret['stdout']}\n")
-        logger.debug(f"Stderr: {ret['stderr']}\n")
-        logger.debug(f"Exit_code: {ret['exit_code']}\n")
         assert ret['exit_code'] != 0, "Exit code must not be equal 0"
         assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
 
@@ -155,10 +137,6 @@ class TestOptimizeCommon:
                         '--save-model-to',
                         f'./trained_{template.model_template_id}']
         ret = ote_common(template, root, 'optimize', command_line)
-        logger.debug(f"Command arguments: ote optimize {' '.join(str(it) for it in command_line)}")
-        logger.debug(f"Stdout: {ret['stdout']}\n")
-        logger.debug(f"Stderr: {ret['stderr']}\n")
-        logger.debug(f"Exit_code: {ret['exit_code']}\n")
         assert ret['exit_code'] != 0, "Exit code must not be equal 0"
         assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
 
@@ -179,10 +157,6 @@ class TestOptimizeCommon:
                         f'./exported_{template.model_template_id}/openvino.xml'
                         ]
         ret = ote_common(template, root, 'optimize', command_line)
-        logger.debug(f"Command arguments: ote optimize {' '.join(str(it) for it in command_line)}")
-        logger.debug(f"Stdout: {ret['stdout']}\n")
-        logger.debug(f"Stderr: {ret['stderr']}\n")
-        logger.debug(f"Exit_code: {ret['exit_code']}\n")
         assert ret['exit_code'] != 0, "Exit code must not be equal 0"
         assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
 
@@ -202,10 +176,6 @@ class TestOptimizeCommon:
                         '--save-model-to',
                         f'./trained_{template.model_template_id}']
         ret = ote_common(template, root, 'optimize', command_line)
-        logger.debug(f"Command arguments: ote optimize {' '.join(str(it) for it in command_line)}")
-        logger.debug(f"Stdout: {ret['stdout']}\n")
-        logger.debug(f"Stderr: {ret['stderr']}\n")
-        logger.debug(f"Exit_code: {ret['exit_code']}\n")
         assert ret['exit_code'] != 0, "Exit code must not be equal 0"
         assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
 
@@ -228,10 +198,6 @@ class TestOptimizeCommon:
                             '--save-model-to',
                             f'./trained_{template.model_template_id}']
             ret = ote_common(template, root, 'optimize', command_line)
-            logger.debug(f"Command arguments: ote optimize {' '.join(str(it) for it in command_line)}")
-            logger.debug(f"Stdout: {ret['stdout']}\n")
-            logger.debug(f"Stderr: {ret['stderr']}\n")
-            logger.debug(f"Exit_code: {ret['exit_code']}\n")
             assert ret['exit_code'] != 0, "Exit code must not be equal 0"
             assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
 
@@ -254,10 +220,6 @@ class TestOptimizeCommon:
                             '--save-model-to',
                             f'./trained_{template.model_template_id}']
             ret = ote_common(template, root, 'optimize', command_line)
-            logger.debug(f"Command arguments: ote optimize {' '.join(str(it) for it in command_line)}")
-            logger.debug(f"Stdout: {ret['stdout']}\n")
-            logger.debug(f"Stderr: {ret['stderr']}\n")
-            logger.debug(f"Exit_code: {ret['exit_code']}\n")
             assert ret['exit_code'] != 0, "Exit code must not be equal 0"
             assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
 
@@ -280,10 +242,6 @@ class TestOptimizeCommon:
                             '--save-model-to',
                             f'./trained_{template.model_template_id}']
             ret = ote_common(template, root, 'optimize', command_line)
-            logger.debug(f"Command arguments: ote optimize {' '.join(str(it) for it in command_line)}")
-            logger.debug(f"Stdout: {ret['stdout']}\n")
-            logger.debug(f"Stderr: {ret['stderr']}\n")
-            logger.debug(f"Exit_code: {ret['exit_code']}\n")
             assert ret['exit_code'] != 0, "Exit code must not be equal 0"
             assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
 
@@ -306,10 +264,6 @@ class TestOptimizeCommon:
                             '--save-model-to',
                             f'./trained_{template.model_template_id}']
             ret = ote_common(template, root, 'optimize', command_line)
-            logger.debug(f"Command arguments: ote optimize {' '.join(str(it) for it in command_line)}")
-            logger.debug(f"Stdout: {ret['stdout']}\n")
-            logger.debug(f"Stderr: {ret['stderr']}\n")
-            logger.debug(f"Exit_code: {ret['exit_code']}\n")
             assert ret['exit_code'] != 0, "Exit code must not be equal 0"
             assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
 
@@ -332,10 +286,6 @@ class TestOptimizeCommon:
                             '--save-model-to',
                             case]
             ret = ote_common(template, root, 'optimize', command_line)
-            logger.debug(f"Command arguments: ote optimize {' '.join(str(it) for it in command_line)}")
-            logger.debug(f"Stdout: {ret['stdout']}\n")
-            logger.debug(f"Stderr: {ret['stderr']}\n")
-            logger.debug(f"Exit_code: {ret['exit_code']}\n")
             assert ret['exit_code'] != 0, "Exit code must not be equal 0"
             assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
 
@@ -358,17 +308,12 @@ class TestOptimizeCommon:
                             '--save-model-to',
                             f'./trained_{template.model_template_id}']
             ret = ote_common(template, root, 'optimize', command_line)
-            logger.debug(f"Command arguments: ote optimize {' '.join(str(it) for it in command_line)}")
-            logger.debug(f"Stdout: {ret['stdout']}\n")
-            logger.debug(f"Stderr: {ret['stderr']}\n")
-            logger.debug(f"Exit_code: {ret['exit_code']}\n")
             assert ret['exit_code'] != 0, "Exit code must not be equal 0"
             assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
 
     @e2e_pytest_component
     @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
     def test_ote_optimize_wrong_save_performance(self, back_end, template, create_venv_fx):
-        error_string = "Path is not valid"
         for case in wrong_paths.values():
             command_line = [template.model_template_id,
                             '--train-ann-file',
@@ -386,8 +331,4 @@ class TestOptimizeCommon:
                             '--save-performance',
                             case]
             ret = ote_common(template, root, 'optimize', command_line)
-            logger.debug(f"Command arguments: ote optimize {' '.join(str(it) for it in command_line)}")
-            logger.debug(f"Stdout: {ret['stdout']}\n")
-            logger.debug(f"Stderr: {ret['stderr']}\n")
-            logger.debug(f"Exit_code: {ret['exit_code']}\n")
             assert ret['exit_code'] != 0, "Exit code must not be equal 0"

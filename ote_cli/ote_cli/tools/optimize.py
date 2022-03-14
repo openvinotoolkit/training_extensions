@@ -110,6 +110,7 @@ def main():
     validate_path(args.val_ann_files)
     validate_path(args.val_data_roots)
     validate_path(args.save_model_to)
+    validate_path(args.load_weights)
     if args.save_performance:
         validate_path(args.save_performance)
 

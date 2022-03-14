@@ -16,6 +16,7 @@ import shutil
 import json
 import os
 from subprocess import run  # nosec
+import logging
 
 from ote_sdk.usecases.exportable_code.utils import get_git_commit_hash
 
@@ -34,6 +35,7 @@ wrong_paths = {
                # 'null_symbol': '\x00' It is caught on subprocess level
                }
 
+logger = logging.getLogger(__name__)
 
 def get_template_rel_dir(template):
     return os.path.dirname(os.path.relpath(template.model_template_path))
@@ -123,6 +125,10 @@ def ote_common(template, root, tool, cmd_args):
                     *cmd_args]
     ret = run(command_line, env=collect_env_vars(work_dir), capture_output=True)
     output = {'exit_code': int(ret.returncode), 'stdout': str(ret.stdout), 'stderr': str(ret.stderr)}
+    logger.debug(f"Command arguments: {' '.join(str(it) for it in command_line)}")
+    logger.debug(f"Stdout: {output['stdout']}\n")
+    logger.debug(f"Stderr: {output['stderr']}\n")
+    logger.debug(f"Exit_code: {output['exit_code']}\n")
     return output
 
 
