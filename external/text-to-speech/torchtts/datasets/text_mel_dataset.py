@@ -14,6 +14,18 @@ from .tacotronstft import TacotronSTFT
 from scipy.io.wavfile import read
 
 
+def parse_ljspeech_dataset(csv_path, data_root):
+    dataset = []
+    with open(csv_path, 'r', encoding="utf8", errors="ignore") as f:
+        for line in f:
+            datas = line.strip().split('|')
+            audio_path = f'{data_root}/wavs/{datas[0]}.wav'
+            text = datas[-1]
+            dataset.append({"audio_path": audio_path,
+                            "text": text})
+    return dataset
+
+
 def get_tts_datasets(cfg, max_mel_len=1000):
     if hasattr(cfg, "test_ann_file") and cfg.test_ann_file is not None:
         return TTSDatasetWithSTFT(Path(cfg.test_data_root), cfg.test_ann_file, cfg)
