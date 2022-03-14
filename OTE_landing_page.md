@@ -7,7 +7,7 @@
 OpenVINO™ Training Extensions (OTE) provide a suite of advanced algorithms to train
 Deep Learning models and convert them using the [OpenVINO™
 toolkit](https://software.intel.com/en-us/openvino-toolkit) for optimized
-inference. It allows to export and convert the models to the needed format. OTE independently create and train the model. It is open-sources and available on [GitHub](https://github.com/openvinotoolkit/training_extensions).
+inference. It allows to export and convert the models to the needed format. OTE independently create and train the model. It is open-sourced and available on [GitHub](https://github.com/openvinotoolkit/training_extensions).
 
 ## Detailed Workflow
 ![](training_extensions_framework.png)
