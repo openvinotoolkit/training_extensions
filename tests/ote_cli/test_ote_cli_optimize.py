@@ -31,8 +31,9 @@ from common import (
 logger = logging.getLogger(__name__)
 
 root = '/tmp/ote_cli/'
-ote_dir = os.getcwd()
-
+ote_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+external_path = os.path.join(ote_dir, "external")
+# TODO check double quotes
 
 params_values = []
 params_ids = []
@@ -42,7 +43,7 @@ for back_end_ in ('DETECTION',
                   'SEGMENTATION',
                   'ROTATED_DETECTION',
                   'INSTANCE_SEGMENTATION'):
-    cur_templates = Registry('external').filter(task_type=back_end_).templates
+    cur_templates = Registry(external_path).filter(task_type=back_end_).templates
     cur_templates_ids = [template.model_template_id for template in cur_templates]
     params_values += [(back_end_, t) for t in cur_templates]
     params_ids += [back_end_ + ',' + cur_id for cur_id in cur_templates_ids]
