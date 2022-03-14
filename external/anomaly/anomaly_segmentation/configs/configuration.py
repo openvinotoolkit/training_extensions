@@ -24,6 +24,7 @@ from ote_sdk.configuration import ConfigurableParameters
 from ote_sdk.configuration.elements import (
     ParameterGroup,
     add_parameter_group,
+    configurable_boolean,
     configurable_integer,
     selectable,
     string_attribute,
@@ -95,5 +96,25 @@ class BaseAnomalyClassificationConfig(ConfigurableParameters):
             max_value=maxsize,
         )
 
+    @attrs
+    class NNCFOptimization(ParameterGroup):
+        header = string_attribute("Optimization by NNCF")
+        description = header
+
+        enable_quantization = configurable_boolean(
+            default_value=True,
+            header="Enable quantization algorithm",
+            description="Enable quantization algorithm",
+            affects_outcome_of=ModelLifecycle.TRAINING,
+        )
+
+        enable_pruning = configurable_boolean(
+            default_value=False,
+            header="Enable filter pruning algorithm",
+            description="Enable filter pruning algorithm",
+            affects_outcome_of=ModelLifecycle.TRAINING,
+        )
+
     dataset = add_parameter_group(DatasetParameters)
     pot_parameters = add_parameter_group(POTParameters)
+    nncf_optimization = add_parameter_group(NNCFOptimization)
