@@ -18,8 +18,8 @@ Configurable parameters for anomaly classification task
 
 from sys import maxsize
 
-from anomaly_classification.configs.configuration_enums import POTQuantizationPreset
 from attr import attrs
+from ote_anomalib.configs.configuration_enums import POTQuantizationPreset
 from ote_sdk.configuration import ConfigurableParameters
 from ote_sdk.configuration.elements import (
     ParameterGroup,
@@ -32,7 +32,7 @@ from ote_sdk.configuration.model_lifecycle import ModelLifecycle
 
 
 @attrs
-class BaseAnomalyClassificationConfig(ConfigurableParameters):
+class BaseAnomalyConfig(ConfigurableParameters):
     """
     Base OTE configurable parameters for anomaly classification task.
     """

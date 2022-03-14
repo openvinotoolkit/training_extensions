@@ -1,6 +1,5 @@
 """
-Initialization of Configurable Parameters for STFPM
-Anomaly Classification Task
+Initialization of Anomaly Segmentation Tasks
 """
 
 # Copyright (C) 2021 Intel Corporation
@@ -16,7 +15,3 @@ Anomaly Classification Task
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions
 # and limitations under the License.
-
-from .configuration import STFPMAnomalyClassificationConfig
-
-__all__ = ["STFPMAnomalyClassificationConfig"]

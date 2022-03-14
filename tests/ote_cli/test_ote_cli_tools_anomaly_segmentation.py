@@ -1,4 +1,4 @@
-"""Tests for anomaly classification with OTE CLI"""
+"""Tests for anomaly segmentation with OTE CLI"""
 
 # Copyright (C) 2021 Intel Corporation
 #
@@ -42,11 +42,11 @@ from common import (
 
 
 args = {
-    '--train-ann-file': 'data/anomaly/classification/train.json',
+    '--train-ann-file': 'data/anomaly/segmentation/train.json',
     '--train-data-roots': 'data/anomaly/shapes',
-    '--val-ann-file': 'data/anomaly/classification/val.json',
+    '--val-ann-file': 'data/anomaly/segmentation/val.json',
     '--val-data-roots': 'data/anomaly/shapes',
-    '--test-ann-files': 'data/anomaly/classification/test.json',
+    '--test-ann-files': 'data/anomaly/segmentation/test.json',
     '--test-data-roots': 'data/anomaly/shapes',
     '--input': 'data/anomaly/shapes/test/hexagon',
     'train_params': [],
@@ -55,65 +55,64 @@ args = {
 root = '/tmp/ote_cli/'
 ote_dir = os.getcwd()
 
-templates = Registry('external').filter(task_type='ANOMALY_CLASSIFICATION').templates
+templates = Registry('external').filter(task_type='ANOMALY_SEGMENTATION').templates
 templates_ids = [template.model_template_id for template in templates]
 
 
-class TestToolsAnomalyClassification:
-    @pytest.fixture()
+class TestToolsAnomalySegmentation:
     @e2e_pytest_component
-    def create_venv_fx(self):
+    def test_create_venv(self):
         work_dir, template_work_dir, algo_backend_dir = get_some_vars(templates[0], root)
         create_venv(algo_backend_dir, work_dir, template_work_dir)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_ote_train(self, template, create_venv_fx):
+    def test_ote_train(self, template):
         ote_train_testing(template, root, ote_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_ote_export(self, template, create_venv_fx):
+    def test_ote_export(self, template):
         ote_export_testing(template, root)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_ote_eval(self, template, create_venv_fx):
+    def test_ote_eval(self, template):
         ote_eval_testing(template, root, ote_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_ote_eval_openvino(self, template, create_venv_fx):
-        ote_eval_openvino_testing(template, root, ote_dir, args, threshold=0.0)
+    def test_ote_eval_openvino(self, template):
+        ote_eval_openvino_testing(template, root, ote_dir, args, threshold=0.01)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_ote_demo(self, template, create_venv_fx):
+    def test_ote_demo(self, template):
         ote_demo_testing(template, root, ote_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_ote_demo_openvino(self, template, create_venv_fx):
+    def test_ote_demo_openvino(self, template):
         ote_demo_openvino_testing(template, root, ote_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_ote_deploy_openvino(self, template, create_venv_fx):
+    def test_ote_deploy_openvino(self, template):
         ote_deploy_openvino_testing(template, root, ote_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_ote_eval_deployment(self, template, create_venv_fx):
-        ote_eval_deployment_testing(template, root, ote_dir, args, threshold=0.0)
+    def test_ote_eval_deployment(self, template):
+        ote_eval_deployment_testing(template, root, ote_dir, args, threshold=0.01)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_ote_demo_deployment(self, template, create_venv_fx):
+    def test_ote_demo_deployment(self, template):
         ote_demo_deployment_testing(template, root, ote_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_nncf_optimize(self, template, create_venv_fx):
+    def test_nncf_optimize(self, template):
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
 
@@ -121,7 +120,7 @@ class TestToolsAnomalyClassification:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_nncf_export(self, template, create_venv_fx):
+    def test_nncf_export(self, template):
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
 
@@ -129,7 +128,7 @@ class TestToolsAnomalyClassification:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_nncf_eval(self, template, create_venv_fx):
+    def test_nncf_eval(self, template):
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
 
@@ -137,7 +136,7 @@ class TestToolsAnomalyClassification:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_nncf_eval_openvino(self, template, create_venv_fx):
+    def test_nncf_eval_openvino(self, template):
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
 
@@ -145,10 +144,10 @@ class TestToolsAnomalyClassification:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_pot_optimize(self, template, create_venv_fx):
+    def test_pot_optimize(self, template):
         pot_optimize_testing(template, root, ote_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_pot_eval(self, template, create_venv_fx):
+    def test_pot_eval(self, template):
         pot_eval_testing(template, root, ote_dir, args)

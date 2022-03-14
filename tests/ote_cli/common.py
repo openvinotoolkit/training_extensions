@@ -279,12 +279,13 @@ def ote_deploy_openvino_testing(template, root, ote_dir, args):
                cwd=os.path.join(deployment_dir, 'python'),
                env=collect_env_vars(os.path.join(deployment_dir, 'python'))).returncode == 0
 
-    assert check_ote_sdk_commit_hash_in_requirements(os.path.join(deployment_dir, 'python', 'requirements.txt'))
-
     # Remove ote_sdk from requirements.txt, since merge commit (that is created on CI) is not pushed to github and that's why cannot be cloned.
     # Install ote_sdk from local folder instead.
     # Install the demo_package with --no-deps since, requirements.txt has been embedded to the demo_package during creation.
     remove_ote_sdk_from_requirements(os.path.join(deployment_dir, 'python', 'requirements.txt'))
+    assert run(['python3', '-m', 'pip', 'install', 'pip', '--upgrade'],
+               cwd=os.path.join(deployment_dir, 'python'),
+               env=collect_env_vars(os.path.join(deployment_dir, 'python'))).returncode == 0
     assert run(['python3', '-m', 'pip', 'install', '-e', os.path.join(os.path.dirname(__file__), '..', '..', 'ote_sdk')],
                cwd=os.path.join(deployment_dir, 'python'),
                env=collect_env_vars(os.path.join(deployment_dir, 'python'))).returncode == 0
