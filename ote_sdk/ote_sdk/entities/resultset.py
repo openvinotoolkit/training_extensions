@@ -16,8 +16,7 @@ from ote_sdk.entities.metrics import NullPerformance, Performance
 from ote_sdk.entities.model import ModelEntity
 from ote_sdk.utils.argument_checks import (
     DatasetParamTypeCheck,
-    InputParamTypeCheck,
-    check_input_param_type,
+    check_input_parameters_type,
 )
 from ote_sdk.utils.time_utils import now
 
@@ -72,6 +71,12 @@ class ResultSetEntity(metaclass=abc.ABCMeta):
     """
 
     # pylint: disable=redefined-builtin, too-many-arguments; Requires refactor
+    @check_input_parameters_type(
+        {
+            "ground_truth_dataset": DatasetParamTypeCheck,
+            "prediction_dataset": DatasetParamTypeCheck,
+        }
+    )
     def __init__(
         self,
         model: ModelEntity,
@@ -82,18 +87,6 @@ class ResultSetEntity(metaclass=abc.ABCMeta):
         creation_date: Optional[datetime.datetime] = None,
         id: Optional[ID] = None,
     ):
-        check_input_param_type(
-            InputParamTypeCheck(model, "model", ModelEntity),
-            DatasetParamTypeCheck(ground_truth_dataset, "ground_truth_dataset"),
-            DatasetParamTypeCheck(prediction_dataset, "prediction_dataset"),
-            InputParamTypeCheck(purpose, "purpose", ResultsetPurpose),
-            InputParamTypeCheck(performance, "performance", Performance, "optional"),
-            InputParamTypeCheck(
-                creation_date, "creation_date", datetime.datetime, "optional"
-            ),
-            InputParamTypeCheck(id, "id", ID, "optional"),
-        )
-
         id = ID() if id is None else id
         performance = NullPerformance() if performance is None else performance
         creation_date = now() if creation_date is None else creation_date

@@ -16,7 +16,7 @@ from shapely.geometry import Polygon as shapely_polygon
 
 from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.entities.shapes.shape import Shape, ShapeEntity, ShapeType
-from ote_sdk.utils.argument_checks import InputParamTypeCheck, check_input_param_type
+from ote_sdk.utils.argument_checks import check_input_parameters_type
 from ote_sdk.utils.time_utils import now
 
 # pylint: disable=invalid-name
@@ -42,6 +42,7 @@ class Rectangle(Shape):
     """
 
     # pylint: disable=too-many-arguments; Requires refactor
+    @check_input_parameters_type()
     def __init__(
         self,
         x1: float,
@@ -51,17 +52,6 @@ class Rectangle(Shape):
         labels: Optional[List[ScoredLabel]] = None,
         modification_date: Optional[datetime.datetime] = None,
     ):
-        check_input_param_type(
-            InputParamTypeCheck(x1, "x1", float),
-            InputParamTypeCheck(y1, "y1", float),
-            InputParamTypeCheck(x2, "x2", float),
-            InputParamTypeCheck(y2, "y2", float),
-            InputParamTypeCheck(labels, "labels", List[ScoredLabel], "optional"),
-            InputParamTypeCheck(
-                modification_date, "modification_date", datetime.datetime, "optional"
-            ),
-        )
-
         labels = [] if labels is None else labels
         modification_date = now() if modification_date is None else modification_date
         super().__init__(

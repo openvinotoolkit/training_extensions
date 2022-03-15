@@ -10,7 +10,7 @@ from typing import Optional
 
 from ote_sdk.entities.color import Color
 from ote_sdk.entities.id import ID
-from ote_sdk.utils.argument_checks import InputParamTypeCheck, check_input_param_type
+from ote_sdk.utils.argument_checks import check_input_parameters_type
 from ote_sdk.utils.time_utils import now
 
 
@@ -82,6 +82,7 @@ class LabelEntity:
     """
 
     # pylint: disable=redefined-builtin, too-many-instance-attributes, too-many-arguments; Requires refactor
+    @check_input_parameters_type()
     def __init__(
         self,
         name: str,
@@ -93,18 +94,6 @@ class LabelEntity:
         id: Optional[ID] = None,
         is_anomalous: bool = False,
     ):
-        check_input_param_type(
-            InputParamTypeCheck(name, "name", str),
-            InputParamTypeCheck(domain, "domain", Domain),
-            InputParamTypeCheck(color, "color", Color, "optional"),
-            InputParamTypeCheck(hotkey, "hotkey", str, "optional"),
-            InputParamTypeCheck(
-                creation_date, "creation_date", datetime.datetime, "optional"
-            ),
-            InputParamTypeCheck(is_empty, "is_empty", bool, "optional"),
-            InputParamTypeCheck(id, "id", ID, "optional"),
-        )
-
         id = ID() if id is None else id
         color = Color.random() if color is None else color
         creation_date = now() if creation_date is None else creation_date

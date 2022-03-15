@@ -9,7 +9,7 @@ import datetime
 from ote_sdk.entities.color import Color
 from ote_sdk.entities.id import ID
 from ote_sdk.entities.label import Domain, LabelEntity
-from ote_sdk.utils.argument_checks import InputParamTypeCheck, check_input_param_type
+from ote_sdk.utils.argument_checks import check_input_parameters_type
 
 
 class ScoredLabel:
@@ -20,12 +20,8 @@ class ScoredLabel:
     :param probability: a float denoting the probability of the shape belonging to the label.
     """
 
+    @check_input_parameters_type()
     def __init__(self, label: LabelEntity, probability: float = 0.0):
-        check_input_param_type(
-            InputParamTypeCheck(label, "label", LabelEntity),
-            InputParamTypeCheck(probability, "probability", float, "optional"),
-        )
-
         self.label = label
         self.probability = probability
 

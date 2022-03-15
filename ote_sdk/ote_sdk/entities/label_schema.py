@@ -16,7 +16,7 @@ from ote_sdk.entities.graph import Graph, MultiDiGraph
 from ote_sdk.entities.id import ID
 from ote_sdk.entities.label import LabelEntity
 from ote_sdk.entities.scored_label import ScoredLabel
-from ote_sdk.utils.argument_checks import InputParamTypeCheck, check_input_param_type
+from ote_sdk.utils.argument_checks import check_input_parameters_type
 
 logger = logging.getLogger(__name__)
 
@@ -306,17 +306,12 @@ class LabelSchemaEntity:
     """
 
     # pylint: disable=too-many-public-methods, too-many-arguments
+    @check_input_parameters_type()
     def __init__(
         self,
-        label_tree: LabelTree = None,
-        label_groups: List[LabelGroup] = None,
+        label_tree: Optional[LabelTree] = None,
+        label_groups: Optional[List[LabelGroup]] = None,
     ):
-        check_input_param_type(
-            InputParamTypeCheck(label_tree, "label_tree", LabelTree, "optional"),
-            InputParamTypeCheck(
-                label_groups, "label_groups", List[LabelGroup], "optional"
-            ),
-        )
         if label_tree is None:
             label_tree = LabelTree()
         self.label_tree = label_tree
@@ -594,6 +589,7 @@ class LabelSchemaEntity:
         return False
 
     @classmethod
+    @check_input_parameters_type()
     def from_labels(cls, labels: Sequence[LabelEntity]):
         """
         Create LabelSchemaEntity from a list of exclusive labels
@@ -601,7 +597,6 @@ class LabelSchemaEntity:
         :param labels: list of labels
         :return: LabelSchemaEntity from the given labels
         """
-        InputParamTypeCheck(labels, "labels", Sequence[LabelEntity]).check()
         label_group = LabelGroup(name="from_label_list", labels=labels)
         return LabelSchemaEntity(label_groups=[label_group])
 

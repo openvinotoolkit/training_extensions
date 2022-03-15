@@ -14,7 +14,7 @@ from ote_sdk.entities.id import ID
 from ote_sdk.entities.label import LabelEntity
 from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.entities.shapes.shape import ShapeEntity
-from ote_sdk.utils.argument_checks import InputParamTypeCheck, check_input_param_type
+from ote_sdk.utils.argument_checks import check_input_parameters_type
 from ote_sdk.utils.time_utils import now
 
 
@@ -24,15 +24,10 @@ class Annotation(metaclass=abc.ABCMeta):
     """
 
     # pylint: disable=redefined-builtin;
+    @check_input_parameters_type()
     def __init__(
         self, shape: ShapeEntity, labels: List[ScoredLabel], id: Optional[ID] = None
     ):
-        check_input_param_type(
-            InputParamTypeCheck(shape, "shape", ShapeEntity),
-            InputParamTypeCheck(labels, "labels", List[ScoredLabel]),
-            InputParamTypeCheck(id, "id", ID, "optional"),
-        )
-
         self.__id_ = ID(ObjectId()) if id is None else id
         self.__shape = shape
         self.__labels = labels
@@ -170,6 +165,7 @@ class AnnotationSceneEntity(metaclass=abc.ABCMeta):
     """
 
     # pylint: disable=too-many-arguments, redefined-builtin
+    @check_input_parameters_type()
     def __init__(
         self,
         annotations: List[Annotation],
@@ -178,16 +174,6 @@ class AnnotationSceneEntity(metaclass=abc.ABCMeta):
         creation_date: Optional[datetime.datetime] = None,
         id: Optional[ID] = None,
     ):
-        check_input_param_type(
-            InputParamTypeCheck(annotations, "annotations", List[Annotation]),
-            InputParamTypeCheck(kind, "kind", AnnotationSceneKind),
-            InputParamTypeCheck(editor, "editor", str, "optional"),
-            InputParamTypeCheck(
-                creation_date, "creation_date", datetime.datetime, "optional"
-            ),
-            InputParamTypeCheck(id, "id", ID, "optional"),
-        )
-
         self.__annotations = annotations
         self.__kind = kind
         self.__editor = editor

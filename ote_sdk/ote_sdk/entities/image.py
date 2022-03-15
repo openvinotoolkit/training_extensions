@@ -14,9 +14,8 @@ from ote_sdk.entities.annotation import Annotation
 from ote_sdk.entities.media import IMedia2DEntity
 from ote_sdk.entities.shapes.rectangle import Rectangle
 from ote_sdk.utils.argument_checks import (
-    InputParamTypeCheck,
-    OptionalFilePathCheck,
-    check_input_param_type,
+    OptionalImageFilePathCheck,
+    check_input_parameters_type,
 )
 
 
@@ -32,15 +31,12 @@ class Image(IMedia2DEntity):
     """
 
     # pylint: disable=too-many-arguments, redefined-builtin
+    @check_input_parameters_type({"file_path": OptionalImageFilePathCheck})
     def __init__(
         self,
         data: Optional[np.ndarray] = None,
         file_path: Optional[str] = None,
     ):
-        check_input_param_type(
-            InputParamTypeCheck(data, "data", np.ndarray, "optional"),
-            OptionalFilePathCheck(file_path, "file_path", ["jpg", "png"]),
-        )
         if (data is None) == (file_path is None):
             raise ValueError(
                 "Either path to image file or image data should be provided."
