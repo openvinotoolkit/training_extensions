@@ -105,14 +105,12 @@ class BaseAnomalyClassificationConfig(ConfigurableParameters):
             default_value=True,
             header="Enable quantization algorithm",
             description="Enable quantization algorithm",
-            affects_outcome_of=ModelLifecycle.TRAINING,
         )
 
         enable_pruning = configurable_boolean(
             default_value=False,
             header="Enable filter pruning algorithm",
             description="Enable filter pruning algorithm",
-            affects_outcome_of=ModelLifecycle.TRAINING,
         )
 
     dataset = add_parameter_group(DatasetParameters)
