@@ -47,7 +47,7 @@ def load_wav_to_torch(full_path):
 
 
 class TTSDatasetWithSTFT(Dataset):
-    def __init__(self, path: Path, csv_path: Path, cfg, max_mel_len=800, add_noise=False):
+    def __init__(self, path: Path=None, csv_path: Path=None, dataset_items=None, cfg=None, add_noise=False):
         self.path = path
         self.metadata = []
         self.text_dict = {}
@@ -55,16 +55,14 @@ class TTSDatasetWithSTFT(Dataset):
         self.add_noise = add_noise
         self.max_wav_value = cfg.max_wav_value
 
-        if not os.path.exists(csv_path):
-            return
-
-        with open(csv_path, 'r', encoding="utf8", errors="ignore") as f:
-            for line in f:
-                datas = line.strip().split('|')
-                key = datas[0]
-                value = datas[-1]
-                self.metadata.append(key)
-                self.text_dict[key] = value
+        if dataset_items is not None:
+            self.metadata = []
+            for item in dataset_items:
+                audio_path = item.anotations.labels
+                text = str(item.media.numpy)
+                self.metadata.append({"audio_path": audio_path, "text": text})
+        else:
+            self.metadata = parse_ljspeech_dataset(csv_path, path)
 
         print('Read {} records for TTS dataset. Add noise {}'.format(len(self.metadata), self.add_noise))
         self.cfg = cfg
@@ -79,21 +77,21 @@ class TTSDatasetWithSTFT(Dataset):
             mel_fmax=cfg.mel_fmax)
 
     def __getitem__(self, index):
-        item_id = self.metadata[index]
-        x = text_to_sequence(self.text_dict[item_id], self.cfg.text_cleaners, self.cmudict)
+        item = self.metadata[index]
+        x = text_to_sequence(item["text"], self.cfg.text_cleaners, self.cmudict)
         if self.add_noise:
             x = random_fill(x, p=0.05)
         if getattr(self.cfg, "add_blank", False):
             x = intersperse(x)
 
-        filename = str(self.path/'wavs'/f'{item_id}.wav')
+        filename = str(item["audio_path"])
         mel = self.get_mel(filename)
 
         mel = (mel + 6) / 6.0
         mel_len = mel.shape[-1]
 
         x = torch.IntTensor(x)
-        return x, mel, item_id, mel_len
+        return x, mel, mel_len
 
     def get_mel(self, filename):
         audio, sampling_rate = load_wav_to_torch(filename)
@@ -114,8 +112,8 @@ class TTSDatasetWithSTFT(Dataset):
 
     def get_mel_lengths(self):
         res = []
-        for item_id in self.metadata:
-            sampling_rate, data = read(self.path/'wavs'/f'{item_id}.wav')
+        for item in self.metadata:
+            sampling_rate, data = read(item["audio_path"])
             res.append(data.shape[-1] / self.cfg.hop_length)
         return res
 

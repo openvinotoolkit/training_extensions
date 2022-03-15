@@ -20,6 +20,7 @@ from ote_sdk.entities.annotation import (
     AnnotationSceneEntity,
     AnnotationSceneKind,
 )
+
 from ote_sdk.entities.dataset_item import DatasetItemEntity
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.label import Domain, LabelEntity
@@ -93,69 +94,47 @@ class Text(IMediaEntity):
 
 
 class OTETextToSpeechDataset(DatasetEntity):
-    """Dataloader for Speech To Text Task.
-
-    Example:
-        >>> train_subset = ["data/train/audio_0001/", "data/train/audio_0002/"]
-        >>> val_subset = ["data/val/audio_0001/", "data/val/audio_0002/"]
-        >>> training_dataset = SpeechToTextDataset(
-                train_subset=train_subset, val_subset=val_subset
-            )
-        >>> test_subset = ["data/test/audio_0001/", "data/test/audio_0002/"]
-        >>> testing_dataset = SpeechToTextDataset(test_subset=test_subset)
+    """Dataloader for LJSpeech To Text Task.
 
     Args:
-        train_subset (Optional[Dict[str, str]], optional): Path to annotation
-            and dataset used for training. Defaults to None.
-        val_subset (Optional[Dict[str, str]], optional): Path to annotation
-            and dataset used for validation. Defaults to None.
-        test_subset (Optional[Dict[str, str]], optional): Path to annotation
-            and dataset used for testing. Defaults to None.
+        csv_path (str): csv file in ljspeech format.
+        data_path (str): path to media files.
     """
 
     def __init__(
         self,
-        train_subset: Optional[List[str]] = None,
-        val_subset: Optional[List[str]] = None,
-        test_subset: Optional[List[str]] = None,
+        csv_path: str = None,
+        data_path: str = None,
     ):
 
         items: List[DatasetItemEntity] = []
 
-        if train_subset is not None:
-            items.extend(
-                self.get_dataset_items(
-                    data_path=train_subset,
-                    subset=Subset.TRAINING,
-                )
-            )
+        subset = Subset.TRAINING
+        if "_val" in csv_path:
+            subset = Subset.VALIDATION
+        elif "_test" in csv_path:
+            subset = Subset.TESTING
 
-        if val_subset is not None:
-            items.extend(
-                self.get_dataset_items(
-                    data_path=val_subset,
-                    subset=Subset.VALIDATION,
-                )
+        items.extend(
+            self.get_dataset_items(
+                csv_path=csv_path,
+                data_path=data_path,
+                subset=subset
             )
-
-        if test_subset is not None:
-            items.extend(
-                self.get_dataset_items(
-                    data_path=train_subset,
-                    subset=Subset.TESTING,
-                )
-            )
+        )
 
         super().__init__(items=items)
 
+    @staticmethod
     def get_dataset_items(
-        self, csv_path: str, data_path: str, subset: Subset
+        csv_path: str, data_path: str, subset: Subset
     ) -> List[DatasetItemEntity]:
-        """Loads dataset based on the list or folders.
+        """Loads dataset based on the csv file.
 
         Args:
-            csv_path (List[str]): List of folders of datasets in librispeech format.
-            subset (Subset): Subset of the dataset.
+            csv_path (str): csv file in ljspeech format.
+            data_path (str): path to media files.
+            subset (Subset): Subset of the dataset (train, val, test).
 
         Returns:
             List[DatasetItemEntity]: List containing subset dataset.
