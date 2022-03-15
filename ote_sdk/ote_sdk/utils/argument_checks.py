@@ -62,11 +62,10 @@ def check_dictionary_keys_values_type(
         )
 
 
-# pylint: disable=too-many-branches
 def check_parameter_type(parameter, parameter_name, expected_type):
     """Function extracts nested expected types and raises ValueError exception if parameter has unexpected type"""
     # pylint: disable=W0212
-    if expected_type in [typing.Any, inspect._empty]:  # type: ignore
+    if expected_type in [typing.Any, inspect._empty, None]:  # type: ignore
         return
     if not isinstance(expected_type, typing._GenericAlias):  # type: ignore
         raise_value_error_if_parameter_has_unexpected_type(
@@ -111,13 +110,6 @@ def check_parameter_type(parameter, parameter_name, expected_type):
         none_type = type(None)
         if none_type in expected_args:
             if type(parameter) in [none_type, type(inspect._empty)]:  # type: ignore
-                return
-            if len(expected_args) == 2:
-                check_parameter_type(
-                    parameter=parameter,
-                    parameter_name=parameter_name,
-                    expected_type=expected_args[0],
-                )
                 return
             expected_args = list(expected_args)
             expected_args.remove(none_type)
