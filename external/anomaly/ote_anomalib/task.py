@@ -221,12 +221,12 @@ class BaseAnomalyTask(ITrainingTask, IInferenceTask, IEvaluationTask, IExportTas
         self.trainer.predict(model=self.model, datamodule=datamodule)
         return dataset
 
-    def evaluate(self, output_resultset: ResultSetEntity, _evaluation_metric: Optional[str] = None) -> None:
+    def evaluate(self, output_resultset: ResultSetEntity, evaluation_metric: Optional[str] = None) -> None:
         """Evaluate the performance on a result set.
 
         Args:
             output_resultset (ResultSetEntity): Result Set from which the performance is evaluated.
-            _evaluation_metric (Optional[str], optional): Evaluation metric. Defaults to None. Instead,
+            evaluation_metric (Optional[str], optional): Evaluation metric. Defaults to None. Instead,
                 metric is chosen depending on the task type.
         """
         if self.task_type == TaskType.ANOMALY_CLASSIFICATION:
