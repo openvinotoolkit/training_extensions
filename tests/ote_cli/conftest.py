@@ -14,7 +14,7 @@
 
 from ote_sdk.test_suite.pytest_insertions import *  # noqa #pylint: disable=unused-import
 
-collect_ignore_glob = ['tests_ote_cli_tools*.py']     # TODO DELETE THE LINE BEFORE MERGE TO DEVELOP!!!
+collect_ignore_glob = ['tests_ote_cli_tools*.py']     # TODO (fkutsepx) DELETE THE LINE BEFORE MERGE TO DEVELOP!!!
 
 pytest_plugins = get_pytest_plugins_from_ote()
 
