@@ -65,23 +65,29 @@ class TTSDatasetWithSTFT(Dataset):
             self.metadata = parse_ljspeech_dataset(csv_path, path)
 
         print('Read {} records for TTS dataset. Add noise {}'.format(len(self.metadata), self.add_noise))
-        self.cfg = cfg
 
         self.cmudict = None
-        if not(getattr(cfg, "cmudict_path", None)) is dict:
-            self.cmudict = cmudict.CMUDict(cfg.cmudict_path)
+        if cfg is None:
+            self.add_blank = True
+            self.cmudict = cmudict.CMUDict()
+            self.stft = TacotronSTFT()
+        else:
+            self.add_blank = getattr(self.cfg, "add_blank", False)
 
-        self.stft = TacotronSTFT(
-            filter_length=cfg.filter_length, hop_length=cfg.hop_length, win_length=cfg.win_length,
-            n_mel_channels=cfg.n_mel_channels, sampling_rate=cfg.sampling_rate, mel_fmin=cfg.mel_fmin,
-            mel_fmax=cfg.mel_fmax)
+            if not(getattr(cfg, "cmudict_path", None)) is dict:
+                self.cmudict = cmudict.CMUDict(cfg.cmudict_path)
+
+            self.stft = TacotronSTFT(
+                filter_length=cfg.filter_length, hop_length=cfg.hop_length, win_length=cfg.win_length,
+                n_mel_channels=cfg.n_mel_channels, sampling_rate=cfg.sampling_rate, mel_fmin=cfg.mel_fmin,
+                mel_fmax=cfg.mel_fmax)
 
     def __getitem__(self, index):
         item = self.metadata[index]
         x = text_to_sequence(item["text"], self.cfg.text_cleaners, self.cmudict)
         if self.add_noise:
             x = random_fill(x, p=0.05)
-        if getattr(self.cfg, "add_blank", False):
+        if self.add_blank:
             x = intersperse(x)
 
         filename = str(item["audio_path"])
@@ -114,7 +120,7 @@ class TTSDatasetWithSTFT(Dataset):
         res = []
         for item in self.metadata:
             sampling_rate, data = read(item["audio_path"])
-            res.append(data.shape[-1] / self.cfg.hop_length)
+            res.append(data.shape[-1] / self.stft.hop_length)
         return res
 
 
