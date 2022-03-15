@@ -88,11 +88,11 @@ class BaseAnomalyTask(ITrainingTask, IInferenceTask, IEvaluationTask, IExportTas
         config.project.path = self.project_path
 
         # set task type
+        # NOTE: Setting the task type is no longer needed and will be deprecated in the
+        # future releases of anomalib.
         if self.task_type == TaskType.ANOMALY_CLASSIFICATION:
             config.dataset.task = "classification"
-        elif self.task_type == TaskType.ANOMALY_SEGMENTATION:
-            config.dataset.task = "segmentation"
-        elif self.task_type == TaskType.ANOMALY_DETECTION:
+        elif self.task_type in (TaskType.ANOMALY_DETECTION, TaskType.ANOMALY_SEGMENTATION):
             config.dataset.task = "segmentation"
         else:
             raise ValueError(f"Unknown task type: {self.task_type}")

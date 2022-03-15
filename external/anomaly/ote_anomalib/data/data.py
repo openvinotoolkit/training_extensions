@@ -83,6 +83,7 @@ class OTEAnomalyDataset(Dataset):
 
     def __getitem__(self, index: int) -> Dict[str, Union[int, Tensor]]:
         dataset_item = self.dataset[index]
+        item: Dict[str, Union[int, Tensor]] = {}
         item = {"index": index}
         if self.task_type == TaskType.ANOMALY_CLASSIFICATION:
             item["image"] = self.pre_processor(image=dataset_item.numpy)["image"]
