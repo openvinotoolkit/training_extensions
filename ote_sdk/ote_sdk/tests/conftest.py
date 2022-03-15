@@ -6,7 +6,7 @@ from ote_sdk.tests.fixtures.general import (  # noqa #pylint: disable=unused-imp
     label_schema_example,
 )
 
-collect_ignore_glob = ['tests/*']     # TODO DELETE THE LINE BEFORE MERGE TO DEVELOP!!!
+collect_ignore_glob = ['tests/*']     # TODO (fkutsepx) DELETE THE LINE BEFORE MERGE TO DEVELOP!!!
 
 pytest_plugins = get_pytest_plugins_from_ote()  # noqa: F405
 
