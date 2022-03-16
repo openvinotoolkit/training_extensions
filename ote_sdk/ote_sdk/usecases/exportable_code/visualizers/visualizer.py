@@ -61,7 +61,7 @@ class HandlerVisualizer:
             self.visualizer.window_name,
             cv2.WINDOW_NORMAL | cv2.WINDOW_KEEPRATIO | cv2.WINDOW_GUI_EXPANDED,
         )
-        if self.visualizer.trackbar_name:
+        if hasattr(self.visualizer, "trackbar_name"):
             cv2.createTrackbar(
                 self.visualizer.trackbar_name,
                 self.visualizer.window_name,

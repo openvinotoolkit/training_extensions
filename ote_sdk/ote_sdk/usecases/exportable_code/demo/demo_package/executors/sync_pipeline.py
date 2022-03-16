@@ -15,7 +15,9 @@ from ote_sdk.entities.annotation import (
     AnnotationSceneKind,
 )
 from ote_sdk.entities.shapes.rectangle import Rectangle
-from ote_sdk.usecases.exportable_code.demo.demo_package.model_entity import ModelEntity
+from ote_sdk.usecases.exportable_code.demo.demo_package.model_container import (
+    ModelContainer,
+)
 from ote_sdk.usecases.exportable_code.prediction_to_annotation_converter import (
     IPredictionToAnnotationConverter,
 )
@@ -35,7 +37,7 @@ class ChainExecutor:
 
     def __init__(
         self,
-        models: List[ModelEntity],
+        models: List[ModelContainer],
         converters: List[IPredictionToAnnotationConverter],
         visualizer: Visualizer,
     ) -> None:

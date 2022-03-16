@@ -13,7 +13,7 @@ from pathlib import Path
 from ote_sdk.usecases.exportable_code.demo.demo_package import (
     AsyncExecutor,
     ChainExecutor,
-    ModelEntity,
+    ModelContainer,
     SyncExecutor,
     create_output_converter,
     create_visualizer,
@@ -96,7 +96,7 @@ def main():
     models = []
     converters = []
     for model_dir in args.models:
-        model = ModelEntity(model_dir)
+        model = ModelContainer(model_dir)
         models.append(model)
         converters.append(create_output_converter(model.task_type, model.labels))
 

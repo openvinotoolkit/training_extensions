@@ -7,7 +7,7 @@ Initialization of demo package
 #
 
 from .executors import AsyncExecutor, ChainExecutor, SyncExecutor
-from .model_entity import ModelEntity
+from .model_container import ModelContainer
 from .utils import create_output_converter, create_visualizer
 
 __all__ = [
@@ -16,5 +16,5 @@ __all__ = [
     "ChainExecutor",
     "create_output_converter",
     "create_visualizer",
-    "ModelEntity",
+    "ModelContainer",
 ]

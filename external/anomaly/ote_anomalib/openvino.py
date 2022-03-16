@@ -16,7 +16,6 @@ OpenVINO Anomaly Task
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import inspect
 import io
 import json
 import os
@@ -25,6 +24,7 @@ from typing import Any, Dict, List, Optional
 from zipfile import ZipFile
 
 import numpy as np
+import ote_anomalib.exportable_code
 from addict import Dict as ADDict
 from anomalib.deploy import OpenVINOInferencer
 from anomalib.post_processing import anomaly_map_to_color_map
@@ -35,11 +35,6 @@ from compression.graph.model_utils import compress_model_weights, get_nodes_by_t
 from compression.pipeline.initializer import create_pipeline
 from omegaconf import OmegaConf
 from ote_anomalib.configs import get_anomalib_config
-from ote_anomalib.exportable_code import (
-    AnomalyBase,
-    AnomalyClassification,
-    AnomalySegmentation,
-)
 from ote_anomalib.logging import get_logger
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.inference_parameters import (
@@ -66,7 +61,6 @@ from ote_sdk.usecases.exportable_code.prediction_to_annotation_converter import 
     AnomalyClassificationToAnnotationConverter,
     AnomalySegmentationToAnnotationConverter,
 )
-from ote_sdk.usecases.exportable_code.utils import set_proper_git_commit_hash
 from ote_sdk.usecases.tasks.interfaces.deployment_interface import IDeploymentTask
 from ote_sdk.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from ote_sdk.usecases.tasks.interfaces.inference_interface import IInferenceTask
@@ -396,9 +390,6 @@ class OpenVINOAnomalyTask(IInferenceTask, IEvaluationTask, IOptimizationTask, ID
         task_type = (
             "anomaly_classification" if self.task_type == TaskType.ANOMALY_CLASSIFICATION else "anomaly_segmentation"
         )
-        selected_class = (
-            AnomalyClassification if self.task_type == TaskType.ANOMALY_CLASSIFICATION else AnomalySegmentation
-        )
         parameters["type_of_model"] = task_type
         parameters["converter_type"] = task_type.upper()
         parameters["model_parameters"] = self._get_openvino_configuration()
@@ -408,14 +399,16 @@ class OpenVINOAnomalyTask(IInferenceTask, IEvaluationTask, IOptimizationTask, ID
             arch.writestr(os.path.join("model", "model.xml"), self.task_environment.model.get_data("openvino.xml"))
             arch.writestr(os.path.join("model", "model.bin"), self.task_environment.model.get_data("openvino.bin"))
             arch.writestr(os.path.join("model", "config.json"), json.dumps(parameters, ensure_ascii=False, indent=4))
-            # python files
-            arch.write(inspect.getfile(selected_class), os.path.join("python", "model.py"))
-            arch.write(inspect.getfile(AnomalyBase), os.path.join("python", "base.py"))
-
-            arch.writestr(
-                os.path.join("python", "requirements.txt"),
-                set_proper_git_commit_hash(os.path.join(work_dir, "requirements.txt")),
-            )
+            # model_wrappers files
+            for root, _, files in os.walk(os.path.dirname(ote_anomalib.exportable_code.__file__)):
+                for file in files:
+                    file_path = os.path.join(root, file)
+                    arch.write(
+                        file_path, os.path.join("python", "model_wrappers", file_path.split("model_wrappers/")[1])
+                    )
+            # other python files
+            arch.write(os.path.join(work_dir, "requirements.txt"), os.path.join("python", "requirements.txt"))
+            arch.write(os.path.join(work_dir, "LICENSE"), os.path.join("python", "LICENSE"))
             arch.write(os.path.join(work_dir, "README.md"), os.path.join("python", "README.md"))
             arch.write(os.path.join(work_dir, "demo.py"), os.path.join("python", "demo.py"))
         output_model.exportable_code = zip_buffer.getvalue()

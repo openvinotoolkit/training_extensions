@@ -10,14 +10,13 @@ from pathlib import Path
 
 from openvino.model_zoo.model_api.adapters import OpenvinoAdapter, create_core
 from openvino.model_zoo.model_api.models import Model
-from openvino.model_zoo.model_api.pipelines import get_user_config
 
 from ote_sdk.serialization.label_mapper import LabelSchemaMapper
 
 from .utils import get_model_path, get_parameters
 
 
-class ModelEntity:
+class ModelContainer:
     """
     Class for storing the model wrapper based on Model API and needed parameters of model
 
@@ -36,14 +35,11 @@ class ModelEntity:
         self.model_parameters = self.parameters["model_parameters"]
         self.model_parameters["labels"] = []
 
-        plugin_config = get_user_config("CPU", "", None)
         model_adapter = OpenvinoAdapter(
-            create_core(),
-            get_model_path(model_dir / "model.xml"),
-            plugin_config=plugin_config,
+            create_core(), get_model_path(model_dir / "model.xml")
         )
 
-        self._initialize_wrapper(model_dir.parent.resolve() / "python" / "model.py")
+        self._initialize_wrapper(model_dir.parent.resolve())
         self.core_model = Model.create_model(
             self.parameters["type_of_model"],
             model_adapter,
@@ -52,13 +48,14 @@ class ModelEntity:
         )
 
     @staticmethod
-    def _initialize_wrapper(path_to_wrapper: Path):
-        if path_to_wrapper:
-            if not path_to_wrapper.exists():
-                raise IOError("The path to the model.py was not found.")
+    def _initialize_wrapper(wrapper_dir: Path):
+        if wrapper_dir:
+            if not wrapper_dir.exists():
+                raise IOError("The path to wrappers was not found.")
 
-            spec = importlib.util.spec_from_file_location("model", path_to_wrapper)  # type: ignore
-            model = importlib.util.module_from_spec(spec)  # type: ignore
-            spec.loader.exec_module(model)
+            importlib.import_module("model_wrappers")
         else:
             print("Using model wrapper from Open Model Zoo ModelAPI")
+
+    def __call__(self, input_data):
+        return self.core_model(input_data)

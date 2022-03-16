@@ -9,19 +9,21 @@ Demo package contains simple demo to get and visualize result of model inference
   - `model.bin`
   - `config.json`
 * python
+  - model_wrappers (Optional)
+    - `__init__.py`
+    - model_wrappers needed for run demo
   - `README.md`
   - `LICENSE`
   - `demo.py`
-  - `model.py` (Optional)
   - `requirements.txt`
 
-> **NOTE**: zip archive will contain `model.py` when [ModelAPI](https://github.com/openvinotoolkit/open_model_zoo/tree/master/demos/common/python/openvino/model_zoo/model_api) has no appropriate standard model wrapper for the model
+> **NOTE**: zip archive will contain model_wrappers when [ModelAPI](https://github.com/openvinotoolkit/open_model_zoo/tree/master/demos/common/python/openvino/model_zoo/model_api) has no appropriate standard model wrapper for the model
 
 ## Prerequisites
 * [Python 3.8](https://www.python.org/downloads/)
 * [Git](https://git-scm.com/)
 
-## Setup Demo Package
+## Install requirements to run demo
 
 1. Install [prerequisites](#prerequisites). You may also need to [install pip](https://pip.pypa.io/en/stable/installation/). For example, on Ubuntu execute the following command to get pip installed:
    ```
@@ -55,77 +57,88 @@ Demo package contains simple demo to get and visualize result of model inference
    ```
    > **NOTE**: On Linux and macOS, you may need to type `python3` instead of `python`.
 
-3. Install the package in the environment:
+3. Install requirements in the environment:
    ```
-   python -m pip install demo_package-0.0-py3-none-any.whl
+   python -m pip install -r requirements.txt
    ```
 
-
-When the package is installed, you can import it as follows:
-```
-python -c "from demo_package import create_model"
-```
+4. Add `model_wrappers` package to PYTHONPATH:
+   ```
+   export PYTHONPATH=$PYTHONPATH:/path/to/model_wrappers
+   ```
 
 ## Usecases
 
 1. Running the `demo.py` application with the `-h` option yields the following usage message:
    ```
-   usage: demo.py [-h] -i INPUT -m MODEL -c CONFIG
+   usage: demo.py [-h] -i INPUT -m MODELS [MODELS ...] [-it {sync,async,chain}]
+                  [-l]
 
    Options:
      -h, --help            Show this help message and exit.
      -i INPUT, --input INPUT
                            Required. An input to process. The input must be a
-                           single image, a folder of images, video file or
-                           camera id.
-     -m MODEL, --model MODEL
-                           Required. Path to an .xml file with a trained model.
-     -c CONFIG, --config CONFIG
-                           Required. Path to an .json file with parameters for
-                           model.
-
+                           single image, a folder of images, video file or camera
+                           id.
+     -m MODELS [MODELS ...], --models MODELS [MODELS ...]
+                           Required. Path to directory with trained model and
+                           configuration file
+     -it {sync,async,chain}, --inference_type {sync,async,chain}
+                           Optional. Type of inference. For task-chain you should
+                           type 'chain'.
+     -l, --loop            Optional. Enable reading the input in a loop.
 
    ```
 
-   As a model, you can use `model.xml` from generated zip. So can use the following command to do inference with a pre-trained model:
+   As a model, you can use path to model directory from generated zip. So you can use the following command to do inference with a pre-trained model:
    ```
    python3 demo.py \
      -i <path_to_video>/inputVideo.mp4 \
-     -m <path_to_model>/model.xml \
-     -c <path_to_model>/config.json
+     -m <path_to_model_directory> \
    ```
    You can press `Q` to stop inference during demo running.
+   > **NOTE**: If you provide a single image as an input, the demo processes and renders it quickly, then exits. To continuously
+   > visualize inference results on the screen, apply the `loop` option, which enforces processing a single image in a loop.
+
    > **NOTE**: Default configuration contains info about pre- and postprocessing to model inference and is guaranteed to be correct.
-   > Also you can define own json config that specifies needed parameters, but any change should be made with caution.
-   > To create this config please see `config.json` in model files from generated zip.
+   > Also you can change `config.json` that specifies needed parameters, but any change should be made with caution.
 
-2. You can create your own demo application, using `demo_package`. The main function of package is `create_model`:
+2. You can create your own demo application, using `demo_package`. The main class of package is `ModelEntity`.
    ```python
-   def create_model(model_file: Path, config_file: Path, path_to_wrapper: Optional[Path] = None) -> Model:
-    """
-    Create model using ModelAPI factory
-
-    :param model_path: Path to .xml model
-    :param config_file: Path to .json config.
-    :param path_to_wrapper: Path to model wrapper
-    """
+   class ModelContainer:
+       """
+       Class for storing the model wrapper based on Model API and needed parameters of model
+       Args:
+           model_dir: path to model directory
+       """
+       def __init__(self, model_dir: Path) -> None
    ```
-   Function returns model wrapper from ModelAPI. To get more information please see [ModelAPI](https://github.com/openvinotoolkit/open_model_zoo/tree/master/demos/common/python/openvino/model_zoo/model_api). If you want to use your own model wrapper you should provide path to wrapper as argument of `create_model` function.
+   Class based on model wrapper from ModelAPI. To get more information please see [ModelAPI](https://github.com/openvinotoolkit/open_model_zoo/tree/master/demos/common/python/openvino/model_zoo/model_api). If you want to use your own model wrapper you should create wrapper in `model_wrappers` directory (if there is no this directory create it) and change `type_of_model` field in `config.json` according to wrapper.
 
    Some example how to use `demo_package`:
    ```python
    import cv2
-   from ote_sdk.usecases.exportable_code.demo.demo_package import create_model
+   from ote_sdk.usecases.exportable_code.demo.demo_package import (
+       AsyncExecutor,
+       ChainExecutor,
+       SyncExecutor,
+       create_output_converter,
+       create_visualizer,
+       ModelContainer
+   )
 
-   # read input
-   frame = cv2.imread(path_to_image)
-   # create model
-   model = create_model(path_to_model, path_to_config)
-   # inference
-   objects = model(frame)
-   # show results using some visualizer
-   output = visualizer.draw(frame, objects)
-   cv2.imshow(output)
+   # specify input stream (path to images or folders)
+   input_stream = "/path/to/input"
+   # create model entity
+   model = ModelContainer(model_dir)
+   # create visualizer
+   visualizer = create_visualizer(model.task_type)
+
+   # create inferencer (Sync, Async or Chain)
+   inferencer = SyncExecutor(model, visualizer)
+   # inference and show results
+   inferencer.run(input_stream, loop=True)
+
    ```
 
 ## Troubleshooting

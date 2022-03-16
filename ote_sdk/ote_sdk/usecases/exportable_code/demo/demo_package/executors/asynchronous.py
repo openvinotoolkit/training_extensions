@@ -36,7 +36,7 @@ class AsyncExecutor:
         streamer = get_streamer(input_stream, loop)
         next_frame_id = 0
         next_frame_id_to_show = 0
-        stop = False
+        stop_visualization = False
         with HandlerVisualizer(self.visualizer) as visualizer:
             for frame in streamer:
                 results = self.async_pipeline.get_result(next_frame_id_to_show)
@@ -45,9 +45,9 @@ class AsyncExecutor:
                     next_frame_id_to_show += 1
                     visualizer.show(output)
                     if visualizer.is_quit():
-                        stop = True
+                        stop_visualization = True
                     results = self.async_pipeline.get_result(next_frame_id_to_show)
-                if stop:
+                if stop_visualization:
                     break
                 self.async_pipeline.submit_data(frame, next_frame_id, {"frame": frame})
                 next_frame_id += 1
