@@ -121,28 +121,18 @@ class PipelineTTS(pl.LightningModule):
         return self.validation_epoch_end(outputs)
 
     def predict(self, dataloader: DataLoader):
-        res = {}
+        res = []
         self.generator.eval()
-
-        mel_diff = 0
-        len_diff = 0
-        denum = 0
 
         for batch in dataloader:
             x, x_len, m, mel_len = batch
-            denum += 1
             with torch.no_grad():
                 m_, mel_mask, (att, log_dur, log_dur_, loss_mel_proj, _) = self.generator(x, x_len, m, mel_len)
-                mel_diff += torch.mean(torch.abs(m_ - m) * mel_mask) / (torch.max(m) - torch.min(m))
-                dur = torch.exp(log_dur)
-                dur_ = torch.exp(log_dur_)
-                len_diff += torch.mean(torch.abs(dur - dur_))
+                res.append({"gt": m.squeeze().cpu().numpy(), "predict": m_.squeeze().detach().cpu().numpy()})
 
         self.generator.train()
-        if denum == 0:
-            denum = 1
 
-        return {'mel_diff': mel_diff/denum, 'len_diff': len_diff/denum}
+        return res
 
     def compute_metrics(self, data):
         return data

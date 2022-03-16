@@ -41,7 +41,7 @@ import pytorch_lightning as pl
 import pytorch_lightning.loggers as pl_loggers
 
 from torchtts.utils import export_ir, find_file
-from torchtts.datasets import get_tts_datasets
+from torchtts.datasets import TTSDatasetWithSTFT
 
 
 logger = logging.getLogger(__name__)
@@ -103,8 +103,7 @@ class OTETextToSpeechTask(ITrainingTask, IInferenceTask, IEvaluationTask, IExpor
         torch.save(modelinfo, buffer)
         output_model.set_data("weights.ckpt", buffer.getvalue())
 
-    def infer(self, data_info,
-              inference_parameters: Optional[InferenceParameters] = None) -> DatasetEntity:
+    def infer(self, dataset: DatasetEntity, inference_parameters: InferenceParameters) -> DatasetEntity:
         """
         Perform inference on the given dataset.
 
@@ -114,35 +113,20 @@ class OTETextToSpeechTask(ITrainingTask, IInferenceTask, IEvaluationTask, IExpor
         :return: Dataset that also includes the classification results
         """
 
-        cfg_data = Dict({
-            "test_ann_file": data_info.test_ann_file,
-            "test_data_root": data_info.test_data_root,
-            "training_path": "../../datasets/data_ljspeech_melgan",
-            "cmudict_path": find_file(os.getcwd(), "cmu_dictionary"),
-            "text_cleaners": ["english_cleaners"],
-            "max_wav_value": 32768.0,
-            "sampling_rate": 22050,
-            "filter_length": 1024,
-            "hop_length": 256,
-            "win_length": 1024,
-            "n_mel_channels": 80,
-            "mel_fmin": 0.0,
-            "mel_fmax": 8000.0,
-            "add_noise": True,
-            "add_blank": True
-        })
-
-        dataset = get_tts_datasets(cfg_data)
+        valset = TTSDatasetWithSTFT(dataset)
 
         # prepare loader
         dataloader = build_dataloader(
-            dataset,
+            valset,
             batch_size=1,
             num_workers=4,
             shuffle=False
         )
 
         outputs = self._pipeline.predict(dataloader)
+
+        for dataset_item, prediction in zip(dataset, outputs):
+            dataset_item.annotation_scene.append_annotations([prediction])
 
         return outputs
 
@@ -200,31 +184,14 @@ class OTETextToSpeechTask(ITrainingTask, IInferenceTask, IEvaluationTask, IExpor
 
         self.save_model(output_model)
 
-    def train(self, data_info,
-              output_model: ModelEntity = None, train_parameters: Optional[TrainParameters] = None):
+    def train(self,
+        dataset: DatasetEntity,
+        output_model: ModelEntity,
+        train_parameters: TrainParameters,
+        )-> None:
         """ Trains a model on a dataset """
 
-        cfg_data = Dict({
-            "train_ann_file": data_info.train_ann_file,
-            "train_data_root": data_info.train_data_root,
-            "val_ann_file": data_info.val_ann_file,
-            "val_data_root": data_info.val_data_root,
-            "training_path": "../../datasets/data_ljspeech_melgan",
-            "cmudict_path": find_file(os.getcwd(), "cmu_dictionary"),
-            "text_cleaners": ["english_cleaners"],
-            "max_wav_value": 32768.0,
-            "sampling_rate": 22050,
-            "filter_length": 1024,
-            "hop_length": 256,
-            "win_length": 1024,
-            "n_mel_channels": 80,
-            "mel_fmin": 0.0,
-            "mel_fmax": 8000.0,
-            "add_noise": True,
-            "add_blank": True
-        })
-
-        trainset, valset = get_tts_datasets(cfg_data)
+        trainset = TTSDatasetWithSTFT(dataset)
 
         checkpoint_callback = pl.callbacks.ModelCheckpoint(
             dirpath=self._scratch_space,
@@ -248,10 +215,11 @@ class OTETextToSpeechTask(ITrainingTask, IInferenceTask, IEvaluationTask, IExpor
             precision=self._cfg.trainer.precision,
             gradient_clip_algorithm="value",
             callbacks=[checkpoint_callback, self.stop_callback],
-            replace_sampler_ddp=False
+            replace_sampler_ddp=False,
+            val_percent_check=0,  # disable validation
         )
 
-        self._pipeline.init_datasets(trainset, valset)
+        self._pipeline.init_datasets(trainset, None)
 
         trainer.fit(self._pipeline)
 
@@ -263,7 +231,8 @@ class OTETextToSpeechTask(ITrainingTask, IInferenceTask, IEvaluationTask, IExpor
 
         self.save_model(output_model)
 
-    def evaluate(self, output_resultset: ResultSetEntity, evaluation_metric: Optional[str] = None):
+    def evaluate(self, output_resultset: ResultSetEntity,
+                 evaluation_metric: Optional[str] = None):
         metrics = self._pipeline.compute_metrics(output_resultset)
         logger.info(f"Computes performance of {metrics}")
 

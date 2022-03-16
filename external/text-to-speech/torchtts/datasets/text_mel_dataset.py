@@ -84,7 +84,7 @@ class TTSDatasetWithSTFT(Dataset):
 
     def __getitem__(self, index):
         item = self.metadata[index]
-        x = text_to_sequence(item["text"], self.cfg.text_cleaners, self.cmudict)
+        x = text_to_sequence(item["text"], dictionary=self.cmudict)
         if self.add_noise:
             x = random_fill(x, p=0.05)
         if self.add_blank:
