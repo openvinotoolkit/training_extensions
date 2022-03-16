@@ -2,7 +2,7 @@
 	path = external/mmdetection
 	url = ../../openvinotoolkit/mmdetection
 [submodule "external/deep-object-reid"]
-	path = external/deep-object-reid
+	path = external/deep-object-reid/submodule
 	url = ../../openvinotoolkit/deep-object-reid
 [submodule "external/mmsegmentation"]
 	path = external/mmsegmentation
