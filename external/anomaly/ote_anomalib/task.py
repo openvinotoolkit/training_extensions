@@ -32,7 +32,7 @@ from ote_anomalib.configs import get_anomalib_config
 from ote_anomalib.data import OTEAnomalyDataModule
 from ote_anomalib.data.utils import (
     contains_anomalous_images,
-    split_local_global_annotations,
+    split_local_global_resultset,
 )
 from ote_anomalib.logging import get_logger
 from ote_sdk.entities.datasets import DatasetEntity
@@ -236,8 +236,8 @@ class BaseAnomalyTask(ITrainingTask, IInferenceTask, IEvaluationTask, IExportTas
         if self.task_type == TaskType.ANOMALY_CLASSIFICATION:
             metric = MetricsHelper.compute_f_measure(output_resultset)
         elif self.task_type == TaskType.ANOMALY_SEGMENTATION:
-            global_resultset, local_resultset = split_local_global_annotations(output_resultset)
-            if contains_anomalous_images(local_resultset):
+            global_resultset, local_resultset = split_local_global_resultset(output_resultset)
+            if contains_anomalous_images(local_resultset.ground_truth_dataset):
                 metric = MetricsHelper.compute_dice_averaged_over_pixels(local_resultset, MetricAverageMethod.MICRO)
             else:
                 metric = MetricsHelper.compute_f_measure(global_resultset)

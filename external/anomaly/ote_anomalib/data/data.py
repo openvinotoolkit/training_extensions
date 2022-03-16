@@ -22,13 +22,14 @@ from typing import Dict, List, Optional, Union
 import numpy as np
 from anomalib.pre_processing import PreProcessor
 from omegaconf import DictConfig, ListConfig
+from ote_anomalib.data.utils import (
+    contains_anomalous_images,
+    split_local_global_dataset,
+)
 from ote_anomalib.logging import get_logger
-from ote_sdk.entities.annotation import AnnotationSceneEntity, AnnotationSceneKind
-from ote_sdk.entities.dataset_item import DatasetItemEntity
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.model_template import TaskType
 from ote_sdk.entities.shapes.polygon import Polygon
-from ote_sdk.entities.shapes.rectangle import Rectangle
 from ote_sdk.entities.subset import Subset
 from ote_sdk.utils.segmentation_utils import mask_from_dataset_item
 from pytorch_lightning.core.datamodule import LightningDataModule
@@ -152,18 +153,12 @@ class OTEAnomalyDataModule(LightningDataModule):
         if stage == "fit" or stage is None:
             self.train_ote_dataset = self.dataset.get_subset(Subset.TRAINING)
             self.val_ote_dataset = self.dataset.get_subset(Subset.VALIDATION)
-            if self.task_type == TaskType.ANOMALY_SEGMENTATION:
-                self.val_ote_dataset = self.filter_full_annotations(self.val_ote_dataset)
 
         if stage == "validate":
             self.val_ote_dataset = self.dataset.get_subset(Subset.VALIDATION)
-            if self.task_type == TaskType.ANOMALY_SEGMENTATION:
-                self.val_ote_dataset = self.filter_full_annotations(self.val_ote_dataset)
 
         if stage == "test" or stage is None:
             self.test_ote_dataset = self.dataset.get_subset(Subset.TESTING)
-            if self.task_type == TaskType.ANOMALY_SEGMENTATION:
-                self.test_ote_dataset = self.filter_full_annotations(self.test_ote_dataset)
 
         if stage == "predict":
             self.predict_ote_dataset = self.dataset
@@ -191,7 +186,6 @@ class OTEAnomalyDataModule(LightningDataModule):
         """
         Train Dataloader
         """
-
         dataset = OTEAnomalyDataset(self.config, self.train_ote_dataset, self.task_type)
         return DataLoader(
             dataset,
@@ -204,7 +198,11 @@ class OTEAnomalyDataModule(LightningDataModule):
         """
         Validation Dataloader
         """
-        dataset = OTEAnomalyDataset(self.config, self.val_ote_dataset, self.task_type)
+        global_dataset, local_dataset = split_local_global_dataset(self.val_ote_dataset)
+        if contains_anomalous_images(local_dataset):
+            dataset = OTEAnomalyDataset(self.config, local_dataset, TaskType.ANOMALY_SEGMENTATION)
+        else:
+            dataset = OTEAnomalyDataset(self.config, global_dataset, TaskType.ANOMALY_CLASSIFICATION)
         return DataLoader(
             dataset,
             shuffle=False,
@@ -235,28 +233,3 @@ class OTEAnomalyDataModule(LightningDataModule):
             batch_size=self.config.dataset.test_batch_size,
             num_workers=self.config.dataset.num_workers,
         )
-
-    @staticmethod
-    def filter_full_annotations(dataset) -> DatasetEntity:
-        """
-        Filter out the fully annotated images in the dataset.
-        """
-        fully_annotated = []
-        for dataset_item in dataset:
-            annotations = dataset_item.get_annotations()
-            local_annotations = [
-                annotation for annotation in annotations if not Rectangle.is_full_box(annotation.shape)
-            ]
-            if not any(label.is_anomalous for label in dataset_item.get_shapes_labels()):
-                fully_annotated.append(dataset_item)
-            if len(local_annotations) > 0:
-                fully_annotated.append(
-                    DatasetItemEntity(
-                        media=dataset_item.media,
-                        annotation_scene=AnnotationSceneEntity(local_annotations, kind=AnnotationSceneKind.ANNOTATION),
-                        metadata=dataset_item.metadata,
-                        subset=dataset_item.subset,
-                        ignored_labels=dataset_item.ignored_labels,
-                    )
-                )
-        return DatasetEntity(fully_annotated, purpose=dataset.purpose)

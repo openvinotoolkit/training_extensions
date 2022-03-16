@@ -37,6 +37,10 @@ from compression.graph.model_utils import compress_model_weights, get_nodes_by_t
 from compression.pipeline.initializer import create_pipeline
 from omegaconf import OmegaConf
 from ote_anomalib.configs import get_anomalib_config
+from ote_anomalib.data.utils import (
+    contains_anomalous_images,
+    split_local_global_resultset,
+)
 from ote_anomalib.exportable_code import (
     AnomalyBase,
     AnomalyClassification,
@@ -215,7 +219,11 @@ class OpenVINOAnomalyTask(IInferenceTask, IEvaluationTask, IOptimizationTask, ID
         if self.task_type == TaskType.ANOMALY_CLASSIFICATION:
             metric = MetricsHelper.compute_f_measure(output_resultset)
         elif self.task_type == TaskType.ANOMALY_SEGMENTATION:
-            metric = MetricsHelper.compute_dice_averaged_over_pixels(output_resultset, MetricAverageMethod.MICRO)
+            global_resultset, local_resultset = split_local_global_resultset(output_resultset)
+            if contains_anomalous_images(local_resultset.ground_truth_dataset):
+                metric = MetricsHelper.compute_dice_averaged_over_pixels(local_resultset, MetricAverageMethod.MICRO)
+            else:
+                metric = MetricsHelper.compute_f_measure(global_resultset)
         else:
             raise ValueError(f"Unknown task type: {self.task_type}")
         output_resultset.performance = metric.get_performance()
