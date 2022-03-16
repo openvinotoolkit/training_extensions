@@ -649,7 +649,7 @@ class FMeasure(IPerformanceProvider):
         ground_truth_dataset.sort_items()
         prediction_dataset.sort_items()
 
-        labels = resultset.model.configuration.label_schema.get_labels(
+        labels = resultset.model.configuration.get_label_schema().get_labels(
             include_empty=False
         )
         classes = [label.name for label in labels]
