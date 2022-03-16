@@ -21,9 +21,6 @@ def get_requirements(filename):
 
 requirements, links = get_requirements('requirements.txt')
 
-print(requirements)
-print(links)
-
 setup(
     name='torchreid_tasks',
     packages=find_packages(),
