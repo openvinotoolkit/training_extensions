@@ -429,7 +429,7 @@ class ModelTemplate:
     def supports_auto_hpo(self) -> bool:
         """
         Returns `True` if the algorithm supports automatic hyper parameter
-        optimization, False otherwise
+        optimization, `False` otherwise
         """
         if not self.hyper_parameters.has_valid_configurable_parameters:
             return False
