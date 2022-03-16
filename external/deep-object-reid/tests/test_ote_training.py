@@ -27,11 +27,10 @@ from ote_sdk.entities.model_template import parse_model_template
 from ote_sdk.entities.model import ModelEntity, ModelFormat, ModelOptimizationType
 from ote_sdk.configuration.helper import create as ote_sdk_configuration_helper_create
 from ote_sdk.usecases.tasks.interfaces.optimization_interface import OptimizationType
-from ote_sdk.usecases.adapters.model_adapter import ModelAdapter
 from ote_sdk.utils.importing import get_impl_class
 
 
-from torchreid.integration.sc.utils import (ClassificationDatasetAdapter,
+from torchreid_tasks.utils import (ClassificationDatasetAdapter,
                                             generate_label_schema)
 
 from ote_sdk.test_suite.training_test_case import (OTETestCaseInterface,

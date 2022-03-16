@@ -38,9 +38,9 @@ from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.entities.train_parameters import TrainParameters
 from ote_sdk.configuration.helper import convert, create
 
-from torchreid.integration.sc.parameters import OTEClassificationParameters
-from torchreid.integration.sc.train_task import OTEClassificationTrainingTask
-from torchreid.integration.sc.utils import generate_label_schema
+from torchreid_tasks.parameters import OTEClassificationParameters
+from torchreid_tasks.train_task import OTEClassificationTrainingTask
+from torchreid_tasks.utils import generate_label_schema
 
 
 DEFAULT_TEMPLATE_DIR = osp.join('configs', 'ote_custom_classification', 'efficientnet_b0')
