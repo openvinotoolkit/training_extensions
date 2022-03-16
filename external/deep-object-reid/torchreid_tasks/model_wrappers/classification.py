@@ -84,7 +84,15 @@ class OteClassification(Classification):
         features = preprocess_features_for_actmap(outputs['features'])
         actmap = get_actmap(features[0], (metadata['original_shape'][1], metadata['original_shape'][0]))
         repr_vector = outputs['vector']
-        return actmap, repr_vector
+
+        logits = outputs[self.out_layer_name].squeeze()
+        if self.multilabel:
+            probs = sigmoid_numpy(logits)
+        probs = softmax_numpy(logits)
+
+        act_score = float(np.max(probs) - np.min(probs))
+
+        return actmap, repr_vector, act_score
 
 
 

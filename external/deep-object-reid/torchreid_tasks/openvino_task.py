@@ -31,6 +31,7 @@ from ote_sdk.entities.annotation import AnnotationSceneEntity
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.inference_parameters import InferenceParameters, default_progress_callback
 from ote_sdk.entities.label_schema import LabelSchemaEntity
+from ote_sdk.entities.metadata import FloatMetadata, FloatType
 from ote_sdk.entities.model import (
     ModelEntity,
     ModelFormat,
@@ -115,13 +116,13 @@ class OpenVINOClassificationInferencer(BaseInferencer):
 
         return self.converter.convert_to_annotation(prediction, metadata)
 
-    def predict(self, image: np.ndarray) -> AnnotationSceneEntity:
+    def predict(self, image: np.ndarray) -> Tuple[AnnotationSceneEntity, np.ndarray, np.ndarray]:
         image, metadata = self.pre_process(image)
         raw_predictions = self.forward(image)
         predictions = self.post_process(raw_predictions, metadata)
-        features, repr_vectors = self.model.postprocess_aux_outputs(raw_predictions, metadata)
+        features, repr_vectors, act_score = self.model.postprocess_aux_outputs(raw_predictions, metadata)
 
-        return predictions, features, repr_vectors
+        return predictions, features, repr_vectors, act_score
 
     def forward(self, inputs: Dict[str, np.ndarray]) -> Dict[str, np.ndarray]:
         return self.model.infer_sync(inputs)
@@ -167,8 +168,11 @@ class OpenVINOClassificationTask(IDeploymentTask, IInferenceTask, IEvaluationTas
             dump_features = not inference_parameters.is_evaluation
         dataset_size = len(dataset)
         for i, dataset_item in enumerate(dataset, 1):
-            predicted_scene, actmap, repr_vector = self.inferencer.predict(dataset_item.numpy)
+            predicted_scene, actmap, repr_vector, act_score = self.inferencer.predict(dataset_item.numpy)
             dataset_item.append_labels(predicted_scene.annotations[0].get_labels())
+            active_score_media = FloatMetadata(name="active_score", value=act_score,
+                                               float_type=FloatType.ACTIVE_SCORE)
+            dataset_item.append_metadata_item(active_score_media, model=self.model)
             feature_vec_media = TensorEntity(name="representation_vector", numpy=repr_vector.reshape(-1))
             dataset_item.append_metadata_item(feature_vec_media, model=self.model)
             if dump_features:
