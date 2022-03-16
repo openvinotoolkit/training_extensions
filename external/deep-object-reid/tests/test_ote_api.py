@@ -53,7 +53,7 @@ def test_reading_efficientnet_b0():
 
 @e2e_pytest_api
 def test_reading_mobilenet_v3_large_075():
-    parse_model_template(osp.join('configs', 'ote_custom_classification', 'mobilenet_v3_large_075', 'template.yaml'))
+    parse_model_template(osp.join('configs', 'ote_custom_classification', 'mobilenet_v3_large_075', 'template_experimental.yaml'))
 
 
 @e2e_pytest_api
@@ -61,7 +61,7 @@ def test_configuration_yaml():
     configuration = OTEClassificationParameters()
     configuration_yaml_str = convert(configuration, str)
     configuration_yaml_converted = create(configuration_yaml_str)
-    configuration_yaml_loaded = create(osp.join('torchreid', 'integration', 'sc', 'configuration.yaml'))
+    configuration_yaml_loaded = create(osp.join('torchreid_tasks', 'configuration.yaml'))
     assert configuration_yaml_converted == configuration_yaml_loaded
 
 
