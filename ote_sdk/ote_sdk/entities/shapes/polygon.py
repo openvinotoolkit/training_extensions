@@ -17,11 +17,7 @@ from shapely.geometry import Polygon as shapely_polygon
 from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.entities.shapes.rectangle import Rectangle
 from ote_sdk.entities.shapes.shape import Shape, ShapeType
-from ote_sdk.utils.argument_checks import (
-    OptionalParamTypeCheck,
-    RequiredParamTypeCheck,
-    check_input_param_type,
-)
+from ote_sdk.utils.argument_checks import check_input_parameters_type
 from ote_sdk.utils.time_utils import now
 
 
@@ -31,10 +27,8 @@ class Point:
 
     __slots__ = ["x", "y"]
 
+    @check_input_parameters_type()
     def __init__(self, x: float, y: float):
-        check_input_param_type(
-            RequiredParamTypeCheck(x, "x", float), RequiredParamTypeCheck(y, "y", float)
-        )
         self.x = x
         self.y = y
 
@@ -46,6 +40,7 @@ class Point:
             return self.x == other.x and self.y == other.y
         return False
 
+    @check_input_parameters_type()
     def normalize_wrt_roi(self, roi_shape: Rectangle) -> "Point":
         """
         The inverse of denormalize_wrt_roi_shape.
@@ -57,7 +52,6 @@ class Point:
 
         :param roi_shape:
         """
-        RequiredParamTypeCheck(roi_shape, "roi_shape", Rectangle).check()
         roi_shape = roi_shape.clip_to_visible_region()
         width = roi_shape.width
         height = roi_shape.height
@@ -65,6 +59,7 @@ class Point:
         y1 = roi_shape.y1
         return Point(x=self.x * width + x1, y=self.y * height + y1)
 
+    @check_input_parameters_type()
     def denormalize_wrt_roi_shape(self, roi_shape: Rectangle):
         """
         The inverse of normalize_wrt_roi_shape.
@@ -74,7 +69,6 @@ class Point:
 
         :param roi_shape:
         """
-        RequiredParamTypeCheck(roi_shape, "roi_shape", Rectangle).check()
         roi_shape = roi_shape.clip_to_visible_region()
 
         return Point(
@@ -95,19 +89,13 @@ class Polygon(Shape):
     """
 
     # pylint: disable=too-many-arguments; Requires refactor
+    @check_input_parameters_type()
     def __init__(
         self,
         points: List[Point],
         labels: Optional[List[ScoredLabel]] = None,
         modification_date: Optional[datetime.datetime] = None,
     ):
-        check_input_param_type(
-            RequiredParamTypeCheck(points, "points", List[Point]),
-            OptionalParamTypeCheck(labels, "labels", List[ScoredLabel]),
-            OptionalParamTypeCheck(
-                modification_date, "modification_date", datetime.datetime
-            ),
-        )
         if labels is None:
             labels = []
 

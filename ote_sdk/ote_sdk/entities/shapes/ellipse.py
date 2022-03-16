@@ -17,11 +17,7 @@ from shapely.geometry import Polygon as shapely_polygon
 from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.entities.shapes.rectangle import Rectangle
 from ote_sdk.entities.shapes.shape import Shape, ShapeType
-from ote_sdk.utils.argument_checks import (
-    OptionalParamTypeCheck,
-    RequiredParamTypeCheck,
-    check_input_param_type,
-)
+from ote_sdk.utils.argument_checks import check_input_parameters_type
 from ote_sdk.utils.time_utils import now
 
 # pylint: disable=invalid-name
@@ -43,6 +39,7 @@ class Ellipse(Shape):
     """
 
     # pylint: disable=too-many-arguments; Requires refactor
+    @check_input_parameters_type()
     def __init__(
         self,
         x1: float,
@@ -52,16 +49,6 @@ class Ellipse(Shape):
         labels: Optional[List[ScoredLabel]] = None,
         modification_date: Optional[datetime.datetime] = None,
     ):
-        check_input_param_type(
-            RequiredParamTypeCheck(x1, "x1", float),
-            RequiredParamTypeCheck(y1, "y1", float),
-            RequiredParamTypeCheck(x2, "x2", float),
-            RequiredParamTypeCheck(y2, "y2", float),
-            OptionalParamTypeCheck(labels, "labels", List[ScoredLabel]),
-            OptionalParamTypeCheck(
-                modification_date, "modification_date", datetime.datetime
-            ),
-        )
 
         labels = [] if labels is None else labels
         modification_date = now() if modification_date is None else modification_date
@@ -248,6 +235,7 @@ class Ellipse(Shape):
         return Ellipse(x1=x1, y1=y1, x2=x2, y2=y2)
 
     # pylint: disable=no-member; PyLint cannot find scipy.special.ellipeinc()
+    @check_input_parameters_type()
     def get_evenly_distributed_ellipse_coordinates(
         self, number_of_coordinates: int = 50
     ) -> List[Tuple[float, float]]:
@@ -258,9 +246,6 @@ class Ellipse(Shape):
         :param number_of_coordinates: number of evenly distributed points to generate along the ellipsis line
         :return: list of tuple's with coordinates along the ellipse line
         """
-        RequiredParamTypeCheck(
-            number_of_coordinates, "number_of_coordinates", int
-        ).check()
         angles = 2 * np.pi * np.arange(number_of_coordinates) / number_of_coordinates
         e = (1.0 - self.minor_axis ** 2.0 / self.major_axis ** 2.0) ** 0.5
         total_size = special.ellipeinc(2.0 * np.pi, e)
