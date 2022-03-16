@@ -1,8 +1,9 @@
 # OpenVINO™ Training Extensions {#ote_documentation}
-[![python](https://img.shields.io/badge/python-3.8%2B-green)]()
-[![black](https://img.shields.io/badge/code%20style-black-000000.svg)]()
-[![mypy](https://img.shields.io/badge/%20type_checker-mypy-%231674b1?style=flat)]()
-[![openvino](https://img.shields.io/badge/openvino-2021.4-purple)]()
+
+![python](https://img.shields.io/badge/python-3.8%2B-green)
+![black](https://img.shields.io/badge/code%20style-black-000000.svg)
+![mypy](https://img.shields.io/badge/%20type_checker-mypy-%231674b1?style=flat)
+![openvino](https://img.shields.io/badge/openvino-2021.4-purple)
 
 OpenVINO™ Training Extensions (OTE) provide a suite of advanced algorithms to train
 Deep Learning models and convert them using the [OpenVINO™
@@ -32,7 +33,7 @@ If the results are unsatisfactory, add datasets and perform the same steps, star
 * Ubuntu 18.04 / 20.04
 * Python 3.8+
 * [CUDA Toolkit 11.1](https://developer.nvidia.com/cuda-11.1.1-download-archive) - for training on GPU
-In order to get started with OpenVINO™ Training Extensions click [here](QUICK_START_GUIDE.md).
+In order to get started with OpenVINO™ Training Extensions click [here](https://github.com/openvinotoolkit/training_extensions/tree/master/QUICK_START_GUIDE.md).
 
 ## Installation
 
