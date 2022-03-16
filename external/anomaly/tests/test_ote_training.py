@@ -99,9 +99,8 @@ def _create_anomaly_classification_dataset_and_labels_schema(dataset_params, dat
         items.extend(OteMvtecDataset(path=dataset_params.dataset_path, seed=0).generate())
     else:
         for category in category_list:
-            if "vivo" not in category:
-                logger.debug(f'Creating dataset for {category}')
-                items.extend(OteMvtecDataset(path=category, seed=0).generate())
+            logger.debug(f'Creating dataset for {category}')
+            items.extend(OteMvtecDataset(path=category, seed=0).generate())
     dataset = DatasetEntity(items=items)
     labels = dataset.get_labels()
     labels_schema = LabelSchemaEntity.from_labels(labels)

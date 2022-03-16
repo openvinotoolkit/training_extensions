@@ -9,7 +9,6 @@ from typing import TYPE_CHECKING, Dict, List, Optional, Union
 
 from ote_sdk.configuration import ConfigurableParameters
 from ote_sdk.entities.id import ID
-from ote_sdk.entities.label import LabelEntity
 from ote_sdk.entities.label_schema import LabelSchemaEntity
 from ote_sdk.entities.metrics import NullPerformance, Performance
 from ote_sdk.entities.model_template import TargetDevice
@@ -46,8 +45,6 @@ class ModelConfiguration:
     """
 
     configurable_parameters: ConfigurableParameters
-    labels: List[LabelEntity]
-    label_schema: LabelSchemaEntity
 
     def __init__(
         self,
@@ -55,7 +52,11 @@ class ModelConfiguration:
         label_schema: LabelSchemaEntity,
     ):
         self.configurable_parameters = configurable_parameters
-        self.label_schema = label_schema
+        self.__label_schema = label_schema
+
+    def get_label_schema(self) -> LabelSchemaEntity:
+        """Get the LabelSchema"""
+        return self.__label_schema
 
 
 class ModelFormat(IntEnum):
@@ -135,7 +136,7 @@ class ModelEntity:
         if model_adapters is None:
             model_adapters = {}
 
-        self.__id = _id
+        self.__id_ = _id
         self.__creation_date = creation_date
         self.__train_dataset = train_dataset
         self.__previous_trained_revision = previous_trained_revision
@@ -161,13 +162,23 @@ class ModelEntity:
         self.__model_size_reduction = model_size_reduction
 
     @property
-    def id(self) -> ID:
+    def id_(self) -> ID:
         """Gets or sets the id of a Model"""
-        return self.__id
+        return self.__id_
+
+    @id_.setter
+    def id_(self, value: ID):
+        self.__id_ = value
+
+    @property
+    def id(self) -> ID:
+        """DEPRECATED"""
+        return self.__id_
 
     @id.setter
     def id(self, value: ID):
-        self.__id = value
+        """DEPRECATED"""
+        self.__id_ = value
 
     @property
     def configuration(self) -> ModelConfiguration:
@@ -458,7 +469,7 @@ class ModelEntity:
     def __eq__(self, other):
         if isinstance(other, ModelEntity):
             return (
-                self.id == other.id
+                self.id_ == other.id_
                 and self.train_dataset == other.train_dataset
                 and self.performance == other.performance
             )
