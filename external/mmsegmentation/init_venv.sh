@@ -103,7 +103,7 @@ else
   export TORCHVISION_VERSION=${TORCHVISION_VERSION}+cu${CUDA_VERSION_CODE}
 fi
 
-pip install torch==${TORCH_VERSION} torchvision==${TORCHVISION_VERSION} -f https://download.pytorch.org/whl/lts/1.8/torch_lts.html #--no-cache || exit 1
+pip install torch==${TORCH_VERSION} torchvision==${TORCHVISION_VERSION} -f https://download.pytorch.org/whl/lts/1.8/torch_lts.html --no-cache || exit 1
 echo torch==${TORCH_VERSION} >> ${CONSTRAINTS_FILE}
 echo torchvision==${TORCHVISION_VERSION} >> ${CONSTRAINTS_FILE}
 
