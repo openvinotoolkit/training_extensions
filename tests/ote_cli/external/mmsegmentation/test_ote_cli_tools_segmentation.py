@@ -65,7 +65,6 @@ root = '/tmp/ote_cli/'
 ote_dir = os.getcwd()
 
 templates = Registry('external').filter(task_type='SEGMENTATION').templates
-templates = [templates[0]]
 templates_ids = [template.model_template_id for template in templates]
 
 
