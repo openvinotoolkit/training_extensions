@@ -702,3 +702,45 @@ class NullPerformance(Performance):
 
     def __eq__(self, other):
         return isinstance(other, NullPerformance)
+
+
+class MultiScorePerformance(Performance):
+    """
+    Performance class for tasks that report multiple performance metrics.
+    The content of this class is as follows:
+
+    :param score: the main performance score. This will be the point of comparison between two performances.
+    :param additional_scores: collection of scores to be returned to the user. This is particularly useful for
+        anomaly segmentation/detection, where we want to highlight both local and global anomaly detection
+        performance.
+    :param dashboard_metrics: (optional) additional statistics, containing charts, curves, and other additional info.
+    """
+
+    def __init__(
+        self,
+        score: ScoreMetric,
+        additional_scores: List[ScoreMetric],
+        dashboard_metrics: Optional[List[MetricsGroup]] = None,
+    ):
+        super().__init__(score, dashboard_metrics)
+        for additional_score in additional_scores:
+            if not isinstance(additional_score, ScoreMetric):
+                raise ValueError(
+                    f"Expected score to be of type `ScoreMetric`, got type `{type(score)}` instead."
+                )
+        self.additional_scores: List[ScoreMetric] = additional_scores
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, MultiScorePerformance):
+            return False
+        return (
+            self.score == other.score
+            and self.additional_scores == other.additional_scores
+        )
+
+    def __repr__(self):
+        return (
+            f"MultiScorePerformance(score: {self.score.value}, "
+            f"additional_scores: {self.additional_scores}, "
+            f"dashboard: ({len(self.dashboard_metrics)} metric groups))"
+        )
