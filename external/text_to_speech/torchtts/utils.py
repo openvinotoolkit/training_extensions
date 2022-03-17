@@ -83,8 +83,7 @@ def export_ir(onnx_model_path, input_shape=None,
 
     command_line = f'{mo_cmd} --input_model="{onnx_model_path}" ' \
                     f'--output_dir="{optimized_model_dir}" ' \
-                    f'--data_type {data_type} ' \
-                    '--reverse_input_channels'
+                    f'--data_type {data_type} '
     if input_shape:
         command_line += f' --input_shape "{input_shape}" '
 

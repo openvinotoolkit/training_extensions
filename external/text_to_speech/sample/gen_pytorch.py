@@ -10,9 +10,9 @@ from collections import OrderedDict
 
 from torchtts.models import GANTacotron
 from torchtts.utils import load_cfg
-from torchtts.datasets import text_to_sequence, intersperse
-from torchtts.datasets.text.symbols import symbols
-from torchtts.datasets.text import cmudict
+from torchtts.text_preprocessing import text_to_sequence, intersperse
+from torchtts.text_preprocessing.symbols import symbols
+from torchtts.text_preprocessing import cmudict
 
 
 def denormalize_amp(S):

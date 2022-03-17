@@ -23,7 +23,7 @@ from ote_sdk.entities.model import ModelPrecision
 from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType, IExportTask
 from ote_sdk.entities.model import ModelEntity, ModelStatus, ModelFormat, ModelOptimizationType
 from ote_sdk.entities.resultset import ResultSetEntity
-
+from ote_sdk.entities.subset import Subset
 from ote_sdk.entities.datasets import DatasetEntity
 
 from torchtts.integration.utils import get_default_config
@@ -105,7 +105,7 @@ class OTETextToSpeechTask(ITrainingTask, IInferenceTask, IEvaluationTask, IExpor
         :return: Dataset that also includes the classification results
         """
 
-        valset = TTSDatasetWithSTFT(dataset)
+        valset = TTSDatasetWithSTFT(dataset_items=dataset)
 
         # prepare loader
         dataloader = build_dataloader(
@@ -183,7 +183,8 @@ class OTETextToSpeechTask(ITrainingTask, IInferenceTask, IEvaluationTask, IExpor
         )-> None:
         """ Trains a model on a dataset """
 
-        trainset = TTSDatasetWithSTFT(dataset)
+        trainset = TTSDatasetWithSTFT(dataset_items=dataset, items_type=Subset.TRAINING)
+        valset = TTSDatasetWithSTFT(dataset_items=dataset, items_type=Subset.VALIDATION)
 
         checkpoint_callback = pl.callbacks.ModelCheckpoint(
             dirpath=self._scratch_space,
@@ -208,10 +209,9 @@ class OTETextToSpeechTask(ITrainingTask, IInferenceTask, IEvaluationTask, IExpor
             gradient_clip_algorithm="value",
             callbacks=[checkpoint_callback, self.stop_callback],
             replace_sampler_ddp=False,
-            val_percent_check=0,  # disable validation
         )
 
-        self._pipeline.init_datasets(trainset, None)
+        self._pipeline.init_datasets(trainset, valset)
 
         trainer.fit(self._pipeline)
 
@@ -228,12 +228,14 @@ class OTETextToSpeechTask(ITrainingTask, IInferenceTask, IEvaluationTask, IExpor
         l1_loss = 0.0
 
         for val in zip(output_resultset.prediction_dataset):
-            pred = val.annotation_scene.annotaions[0]["predict"]
-            gt = val.annotation_scene.annotaions[0]["gt"]
+            pred = val[0]["predict"]
+            gt = val[0]["gt"]
             l1_loss += np.mean(np.abs(pred - gt))
 
         if len(output_resultset.prediction_dataset):
             l1_loss = l1_loss / len(output_resultset.prediction_dataset)
+
+        output_resultset.performance = l1_loss
 
         logger.info(f"Difference between generated and predicted mel-spectrogram: {l1_loss}")
 

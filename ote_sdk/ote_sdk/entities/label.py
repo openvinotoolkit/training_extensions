@@ -27,6 +27,7 @@ class Domain(Enum):
     ANOMALY_SEGMENTATION = auto()
     INSTANCE_SEGMENTATION = auto()
     ROTATED_DETECTION = auto()
+    TEXT_TO_SPEECH = auto()
 
     def __str__(self):
         return str(self.name)

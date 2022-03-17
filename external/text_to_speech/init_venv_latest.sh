@@ -103,7 +103,10 @@ echo torchvision==${TORCHVISION_VERSION} >> ${CONSTRAINTS_FILE}
 cat requirements.txt | xargs -n 1 -L 1 pip install -c ${CONSTRAINTS_FILE} || exit 1
 cat openvino-requirements.txt | xargs -n 1 -L 1 pip install -c ${CONSTRAINTS_FILE} || exit 1
 
-cd monotonic_align; python setup.py build_ext --inplace; cd .. || exit 1
+cd monotonic_align;
+python3 setup.py build_ext --inplace || exit 1
+python3 setup.py install || exit 1
+cd ..
 
 pip install -e . || exit 1
 

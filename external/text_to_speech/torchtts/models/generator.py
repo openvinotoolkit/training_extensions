@@ -8,7 +8,7 @@ import torch.nn.functional as F
 import numpy as np
 
 from torchtts.models.attention import AttentionEncoder
-from torchtts.datasets.text import text_to_sequence, symbols
+from torchtts.text_preprocessing import text_to_sequence, symbols
 from torchtts.models import commons
 from torchtts.models.model import DurationPredictor, ResSequence, LayerNorm
 from torchtts.models.model import ResStack2Stage, Residual2d, HighwayNetworkConv, ResSequenceDilated

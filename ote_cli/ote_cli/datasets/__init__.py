@@ -62,8 +62,8 @@ def get_dataset_class(task_type):
 
         return SemanticSegmentationDataset
     if task_type == TaskType.TEXT_TO_SPEECH:
-        from .text_to_speech.dataset import EmptyTTSDataset
+        from .text_to_speech.dataset import OTETextToSpeechDataset
 
-        return EmptyTTSDataset
+        return OTETextToSpeechDataset
 
     raise ValueError(f"Invalid task type: {task_type}")

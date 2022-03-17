@@ -47,18 +47,22 @@ def load_wav_to_torch(full_path):
 
 
 class TTSDatasetWithSTFT(Dataset):
-    def __init__(self, path: Path=None, csv_path: Path=None, dataset_items=None, cfg=None, add_noise=False):
+    def __init__(self, path: Path=None, csv_path: Path=None,
+                 dataset_items=None, cfg=None,
+                 add_noise=False, items_type=None):
         self.path = path
         self.metadata = []
         self.text_dict = {}
 
         self.add_noise = add_noise
-        self.max_wav_value = cfg.max_wav_value
 
         if dataset_items is not None:
             self.metadata = []
             for item in dataset_items:
-                audio_path = item.anotations.labels
+                if items_type is not None and item.subset != items_type:
+                    continue
+
+                audio_path = item.media.metadata
                 text = str(item.media.numpy)
                 self.metadata.append({"audio_path": audio_path, "text": text})
         else:
@@ -71,12 +75,12 @@ class TTSDatasetWithSTFT(Dataset):
             self.add_blank = True
             self.cmudict = cmudict.CMUDict()
             self.stft = TacotronSTFT()
+            self.max_wav_value = 32768.0
         else:
             self.add_blank = getattr(self.cfg, "add_blank", False)
-
             if not(getattr(cfg, "cmudict_path", None)) is dict:
                 self.cmudict = cmudict.CMUDict(cfg.cmudict_path)
-
+            self.max_wav_value = cfg.max_wav_value
             self.stft = TacotronSTFT(
                 filter_length=cfg.filter_length, hop_length=cfg.hop_length, win_length=cfg.win_length,
                 n_mel_channels=cfg.n_mel_channels, sampling_rate=cfg.sampling_rate, mel_fmin=cfg.mel_fmin,
@@ -94,10 +98,9 @@ class TTSDatasetWithSTFT(Dataset):
         mel = self.get_mel(filename)
 
         mel = (mel + 6) / 6.0
-        mel_len = mel.shape[-1]
 
         x = torch.IntTensor(x)
-        return x, mel, mel_len
+        return x, mel
 
     def get_mel(self, filename):
         audio, sampling_rate = load_wav_to_torch(filename)
@@ -139,13 +142,11 @@ def collate_tts(batch):
     chars = [pad1d(x[0], max_x_len) for x in batch]
     chars = np.stack(chars)
 
-    spec_lens = [x[1].shape[-1] for x in batch]
-    max_spec_len = max(spec_lens) + 1
+    mel_lens = [x[1].shape[-1] for x in batch]
+    max_spec_len = max(mel_lens) + 1
 
     mel = [pad2d(x[1], max_spec_len) for x in batch]
     mel = np.stack(mel)
-
-    mel_lens = [x[3] for x in batch]
 
     chars = torch.tensor(chars).long()
     mel = torch.tensor(mel)

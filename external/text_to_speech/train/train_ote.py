@@ -16,7 +16,7 @@ from ote_cli.datasets import get_dataset_class
 from ote_cli.registry import Registry
 from ote_cli.utils.importing import get_impl_class
 
-from torchtts.integration.task_train import OTETextToSpeechTask
+from torchtts.task import OTETextToSpeechTask
 
 
 templates_dir = "../torchtts/integration/"

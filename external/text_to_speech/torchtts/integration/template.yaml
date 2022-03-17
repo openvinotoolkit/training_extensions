@@ -14,7 +14,7 @@ application: ~
 
 # Task implementation.
 entrypoints:
-  base: torchtts.integration.task_train.OTETextToSpeechTask
+  base: torchtts.task.OTETextToSpeechTask
   openvino: torchtts.integration.openvino_task.OpenVINOTTSTask
 
 # Task and hyperparameters.
