@@ -85,7 +85,9 @@ class OTEAnomalyDataset(Dataset):
         dataset_item = self.dataset[index]
         item: Dict[str, Union[int, Tensor]] = {}
         item = {"index": index}
-        if self.task_type == TaskType.ANOMALY_CLASSIFICATION:
+        if self.task_type in (TaskType.ANOMALY_CLASSIFICATION, TaskType.ANOMALY_DETECTION):
+            # Detection currently relies on image labels only, meaning it'll use image
+            #   threshold to find the predicted bounding boxes.
             item["image"] = self.pre_processor(image=dataset_item.numpy)["image"]
         elif self.task_type == TaskType.ANOMALY_SEGMENTATION:
             if any((isinstance(annotation.shape, Polygon) for annotation in dataset_item.get_annotations())):

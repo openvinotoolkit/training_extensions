@@ -24,6 +24,7 @@ from anomalib.models import AnomalyModule
 from anomalib.post_processing import anomaly_map_to_color_map
 from ote_anomalib.data import LabelNames
 from ote_anomalib.logging import get_logger
+from ote_anomalib.utils import create_detection_annotation_from_anomaly_heatmap
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.label import LabelEntity
 from ote_sdk.entities.model_template import TaskType
@@ -61,6 +62,14 @@ class AnomalyInferenceCallback(Callback):
             if self.task_type == TaskType.ANOMALY_CLASSIFICATION:
                 probability = (1 - pred_score) if pred_score < 0.5 else pred_score
                 dataset_item.append_labels([ScoredLabel(label=label, probability=float(probability))])
+            elif self.task_type == TaskType.ANOMALY_DETECTION:
+                dataset_item.append_annotations(
+                    annotations=create_detection_annotation_from_anomaly_heatmap(
+                        hard_prediction=pred_mask,
+                        soft_prediction=anomaly_map,
+                        label_map=self.label_map,
+                    )
+                )
             elif self.task_type == TaskType.ANOMALY_SEGMENTATION:
                 mask = pred_mask.squeeze().astype(np.uint8)
                 dataset_item.append_annotations(
