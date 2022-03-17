@@ -230,6 +230,30 @@ def check_is_parameter_like_dataset(parameter, parameter_name):
             )
 
 
+def check_file_path(parameter, parameter_name, expected_file_extensions):
+    """Function to check file path string objects"""
+    raise_value_error_if_parameter_has_unexpected_type(
+        parameter=parameter,
+        parameter_name=parameter_name,
+        expected_type=str,
+    )
+    check_that_parameter_is_not_empty(
+        parameter=parameter, parameter_name=parameter_name
+    )
+    check_file_extension(
+        file_path=parameter,
+        file_path_name=parameter_name,
+        expected_extensions=expected_file_extensions,
+    )
+    check_that_null_character_absents_in_string(
+        parameter=parameter, parameter_name=parameter_name
+    )
+    check_that_all_characters_printable(
+        parameter=parameter, parameter_name=parameter_name
+    )
+    check_that_file_exists(file_path=parameter, file_path_name=parameter_name)
+
+
 class BaseInputArgumentChecker(ABC):
     """Abstract class to check input arguments"""
 
@@ -280,30 +304,6 @@ class InputConfigCheck(BaseInputArgumentChecker):
                 check_that_file_exists(
                     file_path=self.parameter, file_path_name=self.parameter_name
                 )
-
-
-def check_file_path(parameter, parameter_name, expected_file_extensions):
-    """Function to check file path string objects"""
-    raise_value_error_if_parameter_has_unexpected_type(
-        parameter=parameter,
-        parameter_name=parameter_name,
-        expected_type=str,
-    )
-    check_that_parameter_is_not_empty(
-        parameter=parameter, parameter_name=parameter_name
-    )
-    check_file_extension(
-        file_path=parameter,
-        file_path_name=parameter_name,
-        expected_extensions=expected_file_extensions,
-    )
-    check_that_null_character_absents_in_string(
-        parameter=parameter, parameter_name=parameter_name
-    )
-    check_that_all_characters_printable(
-        parameter=parameter, parameter_name=parameter_name
-    )
-    check_that_file_exists(file_path=parameter, file_path_name=parameter_name)
 
 
 class FilePathCheck(BaseInputArgumentChecker):
@@ -386,20 +386,22 @@ class OptionalModelParamTypeCheck(BaseInputArgumentChecker):
 
 
 class OptionalImageFilePathCheck(OptionalFilePathCheck):
-    """Class to check optional image_file_path-like parameters"""
+    """Class to check optional image file path parameters"""
 
-    # pylint: disable=super-init-not-called
     def __init__(self, parameter, parameter_name):
-        self.parameter = parameter
-        self.parameter_name = parameter_name
-        self.expected_file_extensions = ["jpg", "png"]
+        super().__init__(
+            parameter=parameter,
+            parameter_name=parameter_name,
+            expected_file_extension=["jpg", "png"],
+        )
 
 
 class YamlFilePathCheck(FilePathCheck):
-    """Class to check optional yaml_file_path-like parameters"""
+    """Class to check optional yaml file path parameters"""
 
-    # pylint: disable=super-init-not-called
     def __init__(self, parameter, parameter_name):
-        self.parameter = parameter
-        self.parameter_name = parameter_name
-        self.expected_file_extensions = ["yaml"]
+        super().__init__(
+            parameter=parameter,
+            parameter_name=parameter_name,
+            expected_file_extension=["yaml"],
+        )
