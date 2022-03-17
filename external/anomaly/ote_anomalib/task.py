@@ -231,7 +231,7 @@ class BaseAnomalyTask(ITrainingTask, IInferenceTask, IEvaluationTask, IExportTas
             evaluation_metric (Optional[str], optional): Evaluation metric. Defaults to None. Instead,
                 metric is chosen depending on the task type.
         """
-        if self.task_type == TaskType.ANOMALY_CLASSIFICATION:
+        if self.task_type in (TaskType.ANOMALY_CLASSIFICATION, TaskType.ANOMALY_DETECTION):
             metric = MetricsHelper.compute_f_measure(output_resultset)
         elif self.task_type == TaskType.ANOMALY_SEGMENTATION:
             metric = MetricsHelper.compute_dice_averaged_over_pixels(output_resultset, MetricAverageMethod.MICRO)
