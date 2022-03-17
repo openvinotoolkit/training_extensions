@@ -43,7 +43,7 @@ from ote_sdk.tests.test_helpers import generate_random_annotated_image
 from segmentation_tasks.apis.segmentation import OTESegmentationTrainingTask
 
 
-DEFAULT_TEMPLATE_DIR = osp.join('configs', 'ote', 'custom-sematic-segmentation', 'ocr-lite-hrnet-18')
+DEFAULT_TEMPLATE_DIR = osp.join('configs', 'custom-sematic-segmentation', 'ocr-lite-hrnet-18')
 
 
 class API(unittest.TestCase):
@@ -54,7 +54,8 @@ class API(unittest.TestCase):
     @staticmethod
     def generate_label_schema(label_names):
         label_domain = "segmentation"
-        colors = [Color(*np.random.randint(0, 256, 3)) for _ in range(len(label_names))]
+        rgb = [int(i) for i in np.random.randint(0, 256, 3)]
+        colors = [Color(*rgb) for _ in range(len(label_names))]
         not_empty_labels = [LabelEntity(name=name, color=colors[i], domain=label_domain, id=i) for i, name in
                             enumerate(label_names)]
         empty_label = LabelEntity(name=f"Empty label", color=Color(42, 43, 46),
@@ -64,7 +65,7 @@ class API(unittest.TestCase):
         exclusive_group = LabelGroup(name="labels", labels=not_empty_labels, group_type=LabelGroupType.EXCLUSIVE)
         empty_group = LabelGroup(name="empty", labels=[empty_label], group_type=LabelGroupType.EMPTY_LABEL)
         label_schema.add_group(exclusive_group)
-        label_schema.add_group(empty_group, exclusive_with=[exclusive_group])
+        label_schema.add_group(empty_group)
         return label_schema
 
     def init_environment(self, params, model_template, number_of_images=10):
@@ -145,7 +146,7 @@ class API(unittest.TestCase):
         hyper_parameters, model_template = self.setup_configurable_parameters(DEFAULT_TEMPLATE_DIR, num_iters=5)
         segmentation_environment, dataset = self.init_environment(hyper_parameters, model_template, 12)
 
-        task = OTESegmentationTask(task_environment=segmentation_environment)
+        task = OTESegmentationTrainingTask(task_environment=segmentation_environment)
         self.addCleanup(task._delete_scratch_space)
 
         print('Task initialized, model training starts.')
@@ -171,7 +172,7 @@ class API(unittest.TestCase):
         hyper_parameters, model_template = self.setup_configurable_parameters(DEFAULT_TEMPLATE_DIR, num_iters=10)
         segmentation_environment, dataset = self.init_environment(hyper_parameters, model_template, 12)
 
-        task = OTESegmentationTask(task_environment=segmentation_environment)
+        task = OTESegmentationTrainingTask(task_environment=segmentation_environment)
         self.addCleanup(task._delete_scratch_space)
 
         print('Task initialized, model inference starts.')
