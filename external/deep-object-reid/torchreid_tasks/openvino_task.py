@@ -22,7 +22,7 @@ from typing import Any, Dict, Optional, Tuple, Union
 from addict import Dict as ADDict
 
 import numpy as np
-
+import torchreid_tasks.model_wrappers as model_wrappers
 from ote_sdk.usecases.exportable_code import demo
 from ote_sdk.entities.annotation import AnnotationSceneEntity
 from ote_sdk.entities.datasets import DatasetEntity
@@ -68,8 +68,6 @@ except ImportError:
 from torchreid_tasks.parameters import OTEClassificationParameters
 
 from zipfile import ZipFile
-
-import torchreid_tasks.model_wrappers
 
 logger = logging.getLogger(__name__)
 
