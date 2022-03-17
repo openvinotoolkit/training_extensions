@@ -15,6 +15,7 @@ repos:
         name: "isort (ote_cli|external)"
         args: ["--settings", ".isort.cfg"]
         files: '^(ote_cli|external/anomaly)/.*\.py'
+        exclude: "tests/"
 
   - repo: https://github.com/psf/black
     rev: 21.7b0
