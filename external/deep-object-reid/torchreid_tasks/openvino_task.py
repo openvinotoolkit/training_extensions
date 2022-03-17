@@ -65,11 +65,12 @@ try:
 except ImportError:
     import warnings
     warnings.warn("ModelAPI was not found.")
-from torchreid.integration.sc.parameters import OTEClassificationParameters
+from torchreid_tasks.parameters import OTEClassificationParameters
 
 from zipfile import ZipFile
 
-from . import model_wrappers
+import torchreid_tasks.model_wrappers
+
 logger = logging.getLogger(__name__)
 
 
