@@ -422,7 +422,10 @@ class ModelTemplate:
         """
         Returns ``True`` if the task is global task i.e. if task produces global labels
         """
-        return self.task_type in [TaskType.CLASSIFICATION]
+        return self.task_type in (
+            TaskType.CLASSIFICATION,
+            TaskType.ANOMALY_CLASSIFICATION,
+        )
 
 
 class NullModelTemplate(ModelTemplate):
