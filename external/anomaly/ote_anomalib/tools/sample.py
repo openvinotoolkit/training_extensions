@@ -311,38 +311,25 @@ def parse_args() -> Namespace:
     return parser.parse_args()
 
 
-def main(category) -> None:
+def main() -> None:
     """Run `sample.py` with given CLI arguments."""
     args = parse_args()
-    path = os.path.join(args.dataset_path, category)
+    path = os.path.join(args.dataset_path, args.category)
 
     task = OteAnomalyTask(dataset_path=path, seed=args.seed, model_template_path=args.model_template_path)
 
     task.train()
     task.export()
 
-    task.optimize()
+    if args.optimization == "pot":
+        task.optimize()
 
-    task.optimize_nncf()
-    task.export_nncf()
+    if args.optimization == "nncf":
+        task.optimize_nncf()
+        task.export_nncf()
 
     task.clean_up()
 
-    with open(f"/home/adokucha/padim/{category}.txt", "w") as file1:
-        for k, v in task.results.items():
-            # Writing data to a file
-            print(f"{k}: {v}")
-            file1.write(f"{k}: {v}\n")
-
 
 if __name__ == "__main__":
-    # main()
-
-    data_dir = "/mnt/hdd2/datasets/MVTec/"
-    categories = [name for name in os.listdir(data_dir) if os.path.isdir(os.path.join(data_dir, name))]
-    num_categories = len(categories)
-    for i, category in enumerate(sorted(categories)):
-        # args.category = category
-        print("--------------")
-        print(f"category[{i+1}/{num_categories}]: {category}")
-        main(category)
+    main()

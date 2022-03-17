@@ -22,11 +22,14 @@ from glob import glob
 from typing import Optional
 
 import torch
-from anomalib.integration.nncf.callbacks import NNCFCallback
-from anomalib.integration.nncf.compression import is_state_nncf, wrap_nncf_model
-from anomalib.integration.nncf.utils import compose_nncf_config
 from anomalib.models import AnomalyModule, get_model
 from anomalib.utils.callbacks import MinMaxNormalizationCallback
+from anomalib.utils.callbacks.nncf.callback import NNCFCallback
+from anomalib.utils.callbacks.nncf.utils import (
+    compose_nncf_config,
+    is_state_nncf,
+    wrap_nncf_model,
+)
 from ote_anomalib import AnomalyInferenceTask
 from ote_anomalib.callbacks import ProgressCallback
 from ote_anomalib.data import OTEAnomalyDataModule
@@ -73,7 +76,10 @@ class AnomalyNNCFTask(AnomalyInferenceTask, IOptimizationTask):
         pruning = self.hyper_parameters.nncf_optimization.enable_pruning
         if quantization and pruning:
             self.nncf_preset = "nncf_quantization_pruning"
-            self.optimization_methods = [OptimizationMethod.QUANTIZATION, OptimizationMethod.FILTER_PRUNING]
+            self.optimization_methods = [
+                OptimizationMethod.QUANTIZATION,
+                OptimizationMethod.FILTER_PRUNING,
+            ]
             self.precision = [ModelPrecision.INT8]
             return
         if quantization and not pruning:
@@ -129,7 +135,9 @@ class AnomalyNNCFTask(AnomalyInferenceTask, IOptimizationTask):
                 model_data["model"] = new_model
 
                 self.compression_ctrl, model.model = wrap_nncf_model(
-                    model.model, self.optimization_config["nncf_config"], init_state_dict=model_data
+                    model.model,
+                    self.optimization_config["nncf_config"],
+                    init_state_dict=model_data,
                 )
             else:
                 try:
@@ -205,7 +213,10 @@ class AnomalyNNCFTask(AnomalyInferenceTask, IOptimizationTask):
         buffer = io.BytesIO()
         torch.save(model_info, buffer)
         output_model.set_data("weights.pth", buffer.getvalue())
-        output_model.set_data("label_schema.json", label_schema_to_bytes(self.task_environment.label_schema))
+        output_model.set_data(
+            "label_schema.json",
+            label_schema_to_bytes(self.task_environment.label_schema),
+        )
         self._set_metadata(output_model)
 
         f1_score = self.model.image_metrics.F1.compute().item()
@@ -245,5 +256,8 @@ class AnomalyNNCFTask(AnomalyInferenceTask, IOptimizationTask):
         output_model.precision = self.precision
         output_model.optimization_methods = self.optimization_methods
 
-        output_model.set_data("label_schema.json", label_schema_to_bytes(self.task_environment.label_schema))
+        output_model.set_data(
+            "label_schema.json",
+            label_schema_to_bytes(self.task_environment.label_schema),
+        )
         self._set_metadata(output_model)
