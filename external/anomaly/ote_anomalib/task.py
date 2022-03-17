@@ -227,7 +227,7 @@ class BaseAnomalyTask(ITrainingTask, IInferenceTask, IEvaluationTask, IExportTas
         Args:
             output_resultset (ResultSetEntity): Result Set from which the performance is evaluated.
             evaluation_metric (Optional[str], optional): Evaluation metric. Defaults to None. Instead,
-                f-measure is used by default.
+                metric is chosen depending on the task type.
         """
         if self.task_type == TaskType.ANOMALY_CLASSIFICATION:
             metric = MetricsHelper.compute_f_measure(output_resultset)
@@ -237,8 +237,9 @@ class BaseAnomalyTask(ITrainingTask, IInferenceTask, IEvaluationTask, IExportTas
             raise ValueError(f"Unknown task type: {self.task_type}")
         output_resultset.performance = metric.get_performance()
 
-        accuracy = MetricsHelper.compute_accuracy(output_resultset).get_performance()
-        output_resultset.performance.dashboard_metrics.extend(accuracy.dashboard_metrics)
+        if self.task_type == TaskType.ANOMALY_CLASSIFICATION:
+            accuracy = MetricsHelper.compute_accuracy(output_resultset).get_performance()
+            output_resultset.performance.dashboard_metrics.extend(accuracy.dashboard_metrics)
 
     def export(self, export_type: ExportType, output_model: ModelEntity) -> None:
         """Export model to OpenVINO IR.
