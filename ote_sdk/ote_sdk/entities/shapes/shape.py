@@ -158,7 +158,6 @@ class Shape(ShapeEntity):
         labels: List[ScoredLabel],
         modification_date: datetime.datetime,
     ):
-
         super().__init__(type=type, labels=labels)
         self.modification_date = modification_date
 

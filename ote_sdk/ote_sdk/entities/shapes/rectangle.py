@@ -215,7 +215,6 @@ class Rectangle(Shape):
         """
         if labels is None:
             labels = []
-
         return cls(x1=0.0, y1=0.0, x2=1.0, y2=1.0, labels=labels)
 
     @staticmethod
@@ -257,6 +256,7 @@ class Rectangle(Shape):
         :param data: Image to crop
         :return: Cropped image
         """
+
         # We clip negative values to zero since Numpy uses negative values
         # to represent indexing from the right side of the array.
         # However, on the other hand, it is safe to have indices larger than the size

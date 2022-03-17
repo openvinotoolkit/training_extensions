@@ -84,7 +84,7 @@ class TestRectangleInputParamsValidation:
         for "is_full_box" method
         """
         with pytest.raises(ValueError):
-            Rectangle.is_full_box(rectangle="unexpected_str")  # type: ignore
+            Rectangle.is_full_box("unexpected_str")  # type: ignore
 
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -103,7 +103,7 @@ class TestRectangleInputParamsValidation:
         """
         rectangle = Rectangle(x1=0.1, y1=0.2, y2=0.3, x2=0.9)
         with pytest.raises(ValueError):
-            rectangle.crop_numpy_array(data="unexpected str")  # type: ignore
+            rectangle.crop_numpy_array("unexpected str")  # type: ignore
 
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -127,7 +127,7 @@ class TestRectangleInputParamsValidation:
             [rectangle_label, unexpected_type_value],
         ]:
             with pytest.raises(ValueError):
-                Rectangle.generate_full_box(labels=unexpected_parameter)  # type: ignore
+                Rectangle.generate_full_box(unexpected_parameter)  # type: ignore
 
 
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
@@ -193,7 +193,7 @@ class TestEllipseInputParamsValidation:
         """
         ellipse = Ellipse(x1=0.1, y1=0.2, x2=0.7, y2=0.9)
         with pytest.raises(ValueError):
-            ellipse.get_evenly_distributed_ellipse_coordinates(number_of_coordinates=0.8)  # type: ignore
+            ellipse.get_evenly_distributed_ellipse_coordinates(0.8)  # type: ignore
 
 
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
@@ -252,7 +252,7 @@ class TestPointInputParamsValidation:
         """
         point = self.point()
         with pytest.raises(ValueError):
-            point.normalize_wrt_roi(roi_shape=self.ellipse())  # type: ignore
+            point.normalize_wrt_roi(self.ellipse())  # type: ignore
 
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -271,7 +271,7 @@ class TestPointInputParamsValidation:
         """
         point = self.point()
         with pytest.raises(ValueError):
-            point.denormalize_wrt_roi_shape(roi_shape=self.ellipse())  # type: ignore
+            point.denormalize_wrt_roi_shape(self.ellipse())  # type: ignore
 
 
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
@@ -385,7 +385,7 @@ class TestShapeInputParamsValidation:
         """
         rectangle = self.rectangle()
         with pytest.raises(ValueError):
-            rectangle.intersects(other="unexpected string")  # type: ignore
+            rectangle.intersects("unexpected string")  # type: ignore
 
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -404,7 +404,7 @@ class TestShapeInputParamsValidation:
         """
         rectangle = self.rectangle()
         with pytest.raises(ValueError):
-            rectangle.contains_center(other="unexpected string")  # type: ignore
+            rectangle.contains_center("unexpected string")  # type: ignore
 
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -423,7 +423,7 @@ class TestShapeInputParamsValidation:
         """
         rectangle = self.rectangle()
         with pytest.raises(ValueError):
-            rectangle.get_labels(include_empty="unexpected string")  # type: ignore
+            rectangle.get_labels("unexpected string")  # type: ignore
 
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -442,7 +442,7 @@ class TestShapeInputParamsValidation:
         """
         rectangle = self.rectangle()
         with pytest.raises(ValueError):
-            rectangle.append_label(label="unexpected string")  # type: ignore
+            rectangle.append_label("unexpected string")  # type: ignore
 
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -467,7 +467,7 @@ class TestShapeInputParamsValidation:
             [shape_label, unexpected_type_value],
         ):
             with pytest.raises(ValueError):
-                rectangle.set_labels(labels=unexpected_value)  # type: ignore
+                rectangle.set_labels(unexpected_value)  # type: ignore
 
     @pytest.mark.priority_medium
     @pytest.mark.unit

@@ -49,7 +49,6 @@ class Ellipse(Shape):
         labels: Optional[List[ScoredLabel]] = None,
         modification_date: Optional[datetime.datetime] = None,
     ):
-
         labels = [] if labels is None else labels
         modification_date = now() if modification_date is None else modification_date
         super().__init__(

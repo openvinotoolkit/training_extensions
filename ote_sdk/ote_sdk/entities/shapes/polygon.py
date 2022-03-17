@@ -96,9 +96,7 @@ class Polygon(Shape):
         labels: Optional[List[ScoredLabel]] = None,
         modification_date: Optional[datetime.datetime] = None,
     ):
-        if labels is None:
-            labels = []
-
+        labels = [] if labels is None else labels
         modification_date = now() if modification_date is None else modification_date
         super().__init__(
             type=ShapeType.POLYGON,
