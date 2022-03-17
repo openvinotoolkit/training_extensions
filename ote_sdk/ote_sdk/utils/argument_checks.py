@@ -26,9 +26,14 @@ def raise_value_error_if_parameter_has_unexpected_type(
         expected_type = (int, float, floating)
     if not isinstance(parameter, expected_type):
         parameter_type = type(parameter)
+        try:
+            parameter_str = repr(parameter)
+        # pylint: disable=broad-except
+        except Exception:
+            parameter_str = "<unable to get parameter repr>"
         raise ValueError(
             f"Unexpected type of '{parameter_name}' parameter, expected: {expected_type}, actual: {parameter_type}, "
-            f"actual value: {parameter}"
+            f"actual value: {parameter_str}"
         )
 
 
@@ -65,7 +70,7 @@ def check_dictionary_keys_values_type(
 def check_parameter_type(parameter, parameter_name, expected_type):
     """Function extracts nested expected types and raises ValueError exception if parameter has unexpected type"""
     # pylint: disable=W0212
-    if expected_type in [typing.Any, inspect._empty, None]:  # type: ignore
+    if expected_type in [typing.Any, inspect._empty]:  # type: ignore
         return
     if not isinstance(expected_type, typing._GenericAlias):  # type: ignore
         raise_value_error_if_parameter_has_unexpected_type(
@@ -106,14 +111,6 @@ def check_parameter_type(parameter, parameter_name, expected_type):
         )
     if origin_class == typing.Union:
         expected_args = expected_type_dict.get("__args__")
-        # Optional parameter check
-        none_type = type(None)
-        if none_type in expected_args:
-            if type(parameter) in [none_type, type(inspect._empty)]:  # type: ignore
-                return
-            expected_args = list(expected_args)
-            expected_args.remove(none_type)
-            expected_args = tuple(expected_args)
         # Union type with nested elements check
         checks_counter = 0
         errors_counter = 0
@@ -141,10 +138,11 @@ def check_input_parameters_type(checks_types: dict = None):
         def validate(*args, **kwargs):
             # Forming expected types dictionary
             signature = inspect.signature(function)
-            expected_types_map = dict(signature.parameters)
-            expected_types_map.pop("self", None)
+            expected_types_map = signature.parameters
+            if len(expected_types_map) < len(args):
+                raise TypeError("Too many positional arguments")
             # Forming input parameters dictionary
-            input_parameters_values_map = dict(zip(function.__code__.co_varnames, args))
+            input_parameters_values_map = dict(zip(signature.parameters.keys(), args))
             for key, value in kwargs.items():
                 if key in input_parameters_values_map:
                     raise TypeError(
@@ -154,14 +152,15 @@ def check_input_parameters_type(checks_types: dict = None):
             # Checking input parameters type
             for parameter in expected_types_map:
                 input_parameter_actual = input_parameters_values_map.get(parameter)
+                if input_parameter_actual is None:
+                    default_value = expected_types_map.get(parameter).default
+                    # pylint: disable=protected-access
+                    if default_value != inspect._empty:  # type: ignore
+                        input_parameter_actual = default_value
                 custom_check = checks_types.get(parameter)
                 if custom_check:
                     custom_check(input_parameter_actual, parameter).check()
                 else:
-                    if input_parameter_actual is None:
-                        input_parameter_actual = expected_types_map.get(
-                            parameter
-                        ).default
                     check_parameter_type(
                         parameter=input_parameter_actual,
                         parameter_name=parameter,
@@ -188,7 +187,7 @@ def check_file_extension(
 def check_that_null_character_absents_in_string(parameter: str, parameter_name: str):
     """Function raises ValueError exception if null character: '\0' is specified in path to file"""
     if "\0" in parameter:
-        raise ValueError(f"\\0 is specified in {parameter_name}: {parameter}")
+        raise ValueError(f"null char \\0 is specified in {parameter_name}: {parameter}")
 
 
 def check_that_file_exists(file_path: str, file_path_name: str):
@@ -283,6 +282,30 @@ class InputConfigCheck(BaseInputArgumentChecker):
                 )
 
 
+def check_file_path(parameter, parameter_name, expected_file_extensions):
+    """Function to check file path string objects"""
+    raise_value_error_if_parameter_has_unexpected_type(
+        parameter=parameter,
+        parameter_name=parameter_name,
+        expected_type=str,
+    )
+    check_that_parameter_is_not_empty(
+        parameter=parameter, parameter_name=parameter_name
+    )
+    check_file_extension(
+        file_path=parameter,
+        file_path_name=parameter_name,
+        expected_extensions=expected_file_extensions,
+    )
+    check_that_null_character_absents_in_string(
+        parameter=parameter, parameter_name=parameter_name
+    )
+    check_that_all_characters_printable(
+        parameter=parameter, parameter_name=parameter_name
+    )
+    check_that_file_exists(file_path=parameter, file_path_name=parameter_name)
+
+
 class FilePathCheck(BaseInputArgumentChecker):
     """Class to check file_path-like parameters"""
 
@@ -293,32 +316,29 @@ class FilePathCheck(BaseInputArgumentChecker):
 
     def check(self):
         """Method raises ValueError exception if file path parameter is not equal to expected"""
-        raise_value_error_if_parameter_has_unexpected_type(
-            parameter=self.parameter,
-            parameter_name=self.parameter_name,
-            expected_type=str,
+        check_file_path(
+            self.parameter, self.parameter_name, self.expected_file_extensions
         )
-        check_that_parameter_is_not_empty(
-            parameter=self.parameter, parameter_name=self.parameter_name
-        )
-        check_file_extension(
-            file_path=self.parameter,
-            file_path_name=self.parameter_name,
-            expected_extensions=self.expected_file_extensions,
-        )
-        check_that_null_character_absents_in_string(
-            parameter=self.parameter, parameter_name=self.parameter_name
-        )
-        check_that_all_characters_printable(
-            parameter=self.parameter, parameter_name=self.parameter_name
-        )
-        check_that_file_exists(
-            file_path=self.parameter, file_path_name=self.parameter_name
-        )
+
+
+class OptionalFilePathCheck(BaseInputArgumentChecker):
+    """Class to check optional file_path-like parameters"""
+
+    def __init__(self, parameter, parameter_name, expected_file_extension):
+        self.parameter = parameter
+        self.parameter_name = parameter_name
+        self.expected_file_extensions = expected_file_extension
+
+    def check(self):
+        """Method raises ValueError exception if file path parameter is not equal to expected"""
+        if self.parameter is not None:
+            check_file_path(
+                self.parameter, self.parameter_name, self.expected_file_extensions
+            )
 
 
 class DatasetParamTypeCheck(BaseInputArgumentChecker):
-    """Class to check DataSet-like parameters"""
+    """Class to check DatasetEntity-type parameters"""
 
     def __init__(self, parameter, parameter_name):
         self.parameter = parameter
@@ -331,12 +351,8 @@ class DatasetParamTypeCheck(BaseInputArgumentChecker):
         )
 
 
-class OptionalDatasetParamTypeCheck(BaseInputArgumentChecker):
-    """Class to check DataSet-like parameters"""
-
-    def __init__(self, parameter, parameter_name):
-        self.parameter = parameter
-        self.parameter_name = parameter_name
+class OptionalDatasetParamTypeCheck(DatasetParamTypeCheck):
+    """Class to check DatasetEntity-type parameters"""
 
     def check(self):
         """Method raises ValueError exception if parameter is not equal to DataSet"""
@@ -347,7 +363,7 @@ class OptionalDatasetParamTypeCheck(BaseInputArgumentChecker):
 
 
 class OptionalModelParamTypeCheck(BaseInputArgumentChecker):
-    """Class to check DataSet-like parameters"""
+    """Class to check ModelEntity-type parameters"""
 
     def __init__(self, parameter, parameter_name):
         self.parameter = parameter
@@ -369,14 +385,21 @@ class OptionalModelParamTypeCheck(BaseInputArgumentChecker):
                     )
 
 
-class OptionalImageFilePathCheck(BaseInputArgumentChecker):
-    """Class to check optional file_path-like parameters"""
+class OptionalImageFilePathCheck(OptionalFilePathCheck):
+    """Class to check optional image_file_path-like parameters"""
 
+    # pylint: disable=super-init-not-called
     def __init__(self, parameter, parameter_name):
         self.parameter = parameter
         self.parameter_name = parameter_name
+        self.expected_file_extensions = ["jpg", "png"]
 
-    def check(self):
-        """Method raises ValueError exception if file path parameter is not equal to expected"""
-        if self.parameter is not None:
-            FilePathCheck(self.parameter, self.parameter_name, ["jpg", "png"]).check()
+
+class YamlFilePathCheck(FilePathCheck):
+    """Class to check optional yaml_file_path-like parameters"""
+
+    # pylint: disable=super-init-not-called
+    def __init__(self, parameter, parameter_name):
+        self.parameter = parameter
+        self.parameter_name = parameter_name
+        self.expected_file_extensions = ["yaml"]

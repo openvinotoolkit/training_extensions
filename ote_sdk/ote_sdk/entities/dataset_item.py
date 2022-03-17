@@ -98,7 +98,6 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
             Union[List[LabelEntity], Tuple[LabelEntity], Set[LabelEntity]]
         ] = None,
     ):
-
         self.__media: IMedia2DEntity = media
         self.__annotation_scene: AnnotationSceneEntity = annotation_scene
         self.__subset: Subset = subset

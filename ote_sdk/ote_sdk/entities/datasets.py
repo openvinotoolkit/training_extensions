@@ -129,7 +129,6 @@ class DatasetEntity:
         items: Optional[List[DatasetItemEntity]] = None,
         purpose: DatasetPurpose = DatasetPurpose.INFERENCE,
     ):
-
         self._items = [] if items is None else items
         self._purpose = purpose
 
