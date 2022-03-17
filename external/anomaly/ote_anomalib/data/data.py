@@ -199,9 +199,13 @@ class OTEAnomalyDataModule(LightningDataModule):
         Validation Dataloader
         """
         global_dataset, local_dataset = split_local_global_dataset(self.val_ote_dataset)
+        logger.info(f"Global annotations: {len(global_dataset)}")
+        logger.info(f"Local annotations: {len(local_dataset)}")
         if contains_anomalous_images(local_dataset):
+            logger.info("Dataset contains polygon annotations. Passing masks to anomalib.")
             dataset = OTEAnomalyDataset(self.config, local_dataset, TaskType.ANOMALY_SEGMENTATION)
         else:
+            logger.info("Dataset does not contain polygon annotations. Not passing masks to anomalib.")
             dataset = OTEAnomalyDataset(self.config, global_dataset, TaskType.ANOMALY_CLASSIFICATION)
         return DataLoader(
             dataset,
