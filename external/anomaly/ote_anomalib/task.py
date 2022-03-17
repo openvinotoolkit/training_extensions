@@ -91,13 +91,7 @@ class BaseAnomalyTask(ITrainingTask, IInferenceTask, IEvaluationTask, IExportTas
         config = get_anomalib_config(task_name=self.model_name, ote_config=hyper_parameters)
         config.project.path = self.project_path
 
-        # set task type
-        if self.task_type == TaskType.ANOMALY_CLASSIFICATION:
-            config.dataset.task = "classification"
-        elif self.task_type == TaskType.ANOMALY_SEGMENTATION:
-            config.dataset.task = "segmentation"
-        else:
-            raise ValueError(f"Unknown task type: {self.task_type}")
+        config.dataset.task = "classification"
 
         return config
 
