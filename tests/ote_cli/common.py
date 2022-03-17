@@ -60,6 +60,8 @@ def collect_env_vars(work_dir):
         vars.update({'HTTPS_PROXY': os.environ['HTTPS_PROXY']})
     if 'NO_PROXY' in os.environ:
         vars.update({'NO_PROXY': os.environ['NO_PROXY']})
+    if 'OTE_SDK_PATH' in os.environ:
+        vars.update({'OTE_SDK_PATH': os.environ['OTE_SDK_PATH']})
     return vars
 
 
