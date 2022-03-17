@@ -168,5 +168,5 @@ class TestToolsDetection:
 
     @e2e_pytest_component
     def test_notebook(self):
-        work_dir = os.path.join(root, 'DETECTION')
+        work_dir = os.path.join(root, 'mmdetection')
         assert run(['pytest', '--nbmake', 'ote_cli/notebooks/train.ipynb', '-v'], env=collect_env_vars(work_dir)).returncode == 0

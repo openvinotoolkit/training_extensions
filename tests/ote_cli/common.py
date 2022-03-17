@@ -23,12 +23,10 @@ def get_template_rel_dir(template):
 
 def get_some_vars(template, root):
     template_dir = get_template_rel_dir(template)
-    task_type = template.task_type
-    work_dir = os.path.join(root, str(task_type))
+    algo_backend_dir = '/'.join(template_dir.split('/')[:2])
+    work_dir = os.path.join(root, os.path.basename(algo_backend_dir))
     template_work_dir = os.path.join(work_dir, template_dir)
     os.makedirs(template_work_dir, exist_ok=True)
-    algo_backend_dir = '/'.join(template_dir.split('/')[:2])
-
     return work_dir, template_work_dir, algo_backend_dir
 
 
