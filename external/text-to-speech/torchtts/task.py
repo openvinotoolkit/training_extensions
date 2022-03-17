@@ -3,42 +3,34 @@ import logging
 import os
 import math
 from typing import List, Optional
-from copy import deepcopy
+
 import tempfile
 import shutil
 
 import torch
-from addict import Dict
+import numpy as np
 
 from ote_sdk.entities.inference_parameters import InferenceParameters
-from ote_sdk.entities.metrics import (LineMetricsGroup, CurveMetric, LineChartInfo,
-                                      Performance, ScoreMetric, MetricsGroup)
 from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.entities.train_parameters import TrainParameters, default_progress_callback
 from ote_sdk.usecases.tasks.interfaces.training_interface import ITrainingTask
 from ote_sdk.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from ote_sdk.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from ote_sdk.usecases.tasks.interfaces.unload_interface import IUnload
-from ote_sdk.usecases.evaluation.metrics_helper import MetricsHelper
 from ote_sdk.configuration import cfg_helper
 from ote_sdk.configuration.helper.utils import ids_to_strings
 from ote_sdk.entities.model import ModelPrecision
 from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType, IExportTask
 from ote_sdk.entities.model import ModelEntity, ModelStatus, ModelFormat, ModelOptimizationType
-from ote_sdk.entities.metadata import FloatMetadata, FloatType
 from ote_sdk.entities.resultset import ResultSetEntity
-from ote_sdk.entities.scored_label import ScoredLabel
-from ote_sdk.entities.tensor import TensorEntity
-from ote_sdk.entities.result_media import ResultMediaEntity
+
 from ote_sdk.entities.datasets import DatasetEntity
-from ote_sdk.entities.subset import Subset
-# default config
+
 from torchtts.integration.utils import get_default_config
 from torchtts.integration.parameters import OTETextToSpeechTaskParameters
 from torchtts.pipelines.pipeline_tts import PipelineTTS
 from torchtts.utils import StopCallback, build_dataloader
 import pytorch_lightning as pl
-import pytorch_lightning.loggers as pl_loggers
 
 from torchtts.utils import export_ir, find_file
 from torchtts.datasets import TTSDatasetWithSTFT
@@ -233,8 +225,17 @@ class OTETextToSpeechTask(ITrainingTask, IInferenceTask, IEvaluationTask, IExpor
 
     def evaluate(self, output_resultset: ResultSetEntity,
                  evaluation_metric: Optional[str] = None):
-        metrics = self._pipeline.compute_metrics(output_resultset)
-        logger.info(f"Computes performance of {metrics}")
+        l1_loss = 0.0
+
+        for val in zip(output_resultset.prediction_dataset):
+            pred = val.annotation_scene.annotaions[0]["predict"]
+            gt = val.annotation_scene.annotaions[0]["gt"]
+            l1_loss += np.mean(np.abs(pred - gt))
+
+        if len(output_resultset.prediction_dataset):
+            l1_loss = l1_loss / len(output_resultset.prediction_dataset)
+
+        logger.info(f"Difference between generated and predicted mel-spectrogram: {l1_loss}")
 
     def export(self, export_type: ExportType, output_model: ModelEntity):
         assert export_type == ExportType.OPENVINO
