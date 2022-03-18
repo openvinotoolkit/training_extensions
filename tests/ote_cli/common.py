@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import shutil
 import json
 import os
+import shutil
 from subprocess import run  # nosec
+
 
 def get_template_rel_dir(template):
     return os.path.dirname(os.path.relpath(template.model_template_path))
@@ -190,7 +191,11 @@ def ote_eval_openvino_testing(template, root, ote_dir, args, threshold):
         exported_performance = json.load(read_file)
 
     for k in trained_performance.keys():
-        assert abs(trained_performance[k] - exported_performance[k]) / trained_performance[k] <= threshold, f"{trained_performance[k]=}, {exported_performance[k]=}"
+        assert (
+            abs(trained_performance[k] - exported_performance[k])
+            / (trained_performance[k] + 1e-10)
+            <= threshold
+        ), f"{trained_performance[k]=}, {exported_performance[k]=}"
 
 
 def ote_demo_testing(template, root, ote_dir, args):
