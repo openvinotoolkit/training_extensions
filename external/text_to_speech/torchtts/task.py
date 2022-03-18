@@ -226,8 +226,8 @@ class OTETextToSpeechTask(ITrainingTask, IInferenceTask, IEvaluationTask, IExpor
         l1_loss = 0.0
 
         for val in zip(output_resultset.prediction_dataset):
-            pred = val[0]["predict"]
-            gt = val[0]["gt"]
+            pred = val[0].annotation_scene.annotations[0]["predict"]
+            gt = val[0].annotation_scene.annotations[0]["gt"]
             l1_loss += np.mean(np.abs(pred - gt))
 
         if len(output_resultset.prediction_dataset):
