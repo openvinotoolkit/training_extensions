@@ -1,4 +1,4 @@
-"""Tests for anomaly segmentation with OTE CLI"""
+"""Tests for anomaly detection with OTE CLI."""
 
 # Copyright (C) 2021 Intel Corporation
 #
@@ -15,31 +15,30 @@
 # and limitations under the License.
 
 import os
+
 import pytest
-
-from ote_sdk.test_suite.e2e_test_system import e2e_pytest_component
-
-from ote_cli.registry import Registry
 from common import (
     create_venv,
     get_some_vars,
+    nncf_eval_openvino_testing,
+    nncf_eval_testing,
+    nncf_export_testing,
+    nncf_optimize_testing,
     ote_demo_deployment_testing,
-    ote_demo_testing,
     ote_demo_openvino_testing,
+    ote_demo_testing,
     ote_deploy_openvino_testing,
     ote_eval_deployment_testing,
     ote_eval_openvino_testing,
     ote_eval_testing,
-    ote_train_testing,
     ote_export_testing,
-    pot_optimize_testing,
+    ote_train_testing,
     pot_eval_testing,
-    nncf_optimize_testing,
-    nncf_export_testing,
-    nncf_eval_testing,
-    nncf_eval_openvino_testing,
+    pot_optimize_testing,
 )
+from ote_sdk.test_suite.e2e_test_system import e2e_pytest_component
 
+from ote_cli.registry import Registry
 
 args = {
     '--train-ann-file': 'data/anomaly/detection/train.json',
@@ -59,7 +58,7 @@ templates = Registry('external').filter(task_type='ANOMALY_DETECTION').templates
 templates_ids = [template.model_template_id for template in templates]
 
 
-class TestToolsAnomalySegmentation:
+class TestToolsAnomalyDetection:
     @e2e_pytest_component
     def test_create_venv(self):
         work_dir, template_work_dir, algo_backend_dir = get_some_vars(templates[0], root)
