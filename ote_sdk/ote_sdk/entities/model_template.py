@@ -200,8 +200,8 @@ class TaskType(Enum):
         is_local=True,
     )
 
-    def __str__(self) -> str:
-        return str(self.name)
+    def __repr__(self) -> str:
+        return self.name
 
 
 def task_type_to_label_domain(task_type: TaskType) -> Domain:
