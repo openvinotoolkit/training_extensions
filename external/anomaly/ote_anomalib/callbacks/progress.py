@@ -62,11 +62,11 @@ class ProgressCallback(ProgressBar):
         super().on_test_start(trainer, pl_module)
         self._reset_progress()
 
-    def on_train_batch_end(self, trainer, pl_module, outputs, batch, batch_idx, dataloader_idx):
+    def on_train_batch_end(self, trainer, pl_module, outputs, batch, batch_idx):
         """
         Adds training completion percentage to the progress bar
         """
-        super().on_train_batch_end(trainer, pl_module, outputs, batch, batch_idx, dataloader_idx)
+        super().on_train_batch_end(trainer, pl_module, outputs, batch, batch_idx)
         self.current_epoch = trainer.current_epoch
         self._update_progress(stage="train")
 
