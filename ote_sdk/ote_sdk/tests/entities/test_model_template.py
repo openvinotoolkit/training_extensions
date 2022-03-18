@@ -1035,7 +1035,6 @@ class TestTaskTypesConstants:
         assert TRAINABLE_TASK_TYPES == (
             TaskType.CLASSIFICATION,
             TaskType.DETECTION,
-            TaskType.ROTATED_DETECTION,
             TaskType.SEGMENTATION,
             TaskType.INSTANCE_SEGMENTATION,
             TaskType.ANOMALY_DETECTION,

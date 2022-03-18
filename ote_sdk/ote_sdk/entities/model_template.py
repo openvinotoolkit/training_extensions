@@ -479,7 +479,6 @@ ANOMALY_TASK_TYPES: Sequence[TaskType] = (
 TRAINABLE_TASK_TYPES: Sequence[TaskType] = (
     TaskType.CLASSIFICATION,
     TaskType.DETECTION,
-    TaskType.ROTATED_DETECTION,
     TaskType.SEGMENTATION,
     TaskType.INSTANCE_SEGMENTATION,
     TaskType.ANOMALY_DETECTION,
