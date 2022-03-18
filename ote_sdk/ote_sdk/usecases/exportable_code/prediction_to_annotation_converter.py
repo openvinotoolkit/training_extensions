@@ -152,6 +152,8 @@ def create_converter(
         converter = ClassificationToAnnotationConverter(labels)
     elif converter_type == Domain.ANOMALY_CLASSIFICATION:
         converter = AnomalyClassificationToAnnotationConverter(labels)
+    elif converter_type == Domain.ANOMALY_DETECTION:
+        converter = AnomalyDetectionToAnnotationConverter(labels)
     elif converter_type == Domain.ANOMALY_SEGMENTATION:
         converter = AnomalySegmentationToAnnotationConverter(labels)
     elif converter_type == Domain.INSTANCE_SEGMENTATION:
