@@ -46,7 +46,7 @@ def create_detection_annotation_from_anomaly_heatmap(
     if soft_prediction.ndim == 3 and soft_prediction.shape[0] == 1:
         soft_prediction = soft_prediction.squeeze()
 
-    height, width = hard_prediction.shape[:2]
+    image_h, image_w = hard_prediction.shape[:2]
 
     annotations: List[Annotation] = []
     for label_index, label in label_map.items():
@@ -66,7 +66,7 @@ def create_detection_annotation_from_anomaly_heatmap(
 
             # Last column of the coordinates is the area of the connected component.
             # It could therefore be ignored.
-            x1, y1, x2, y2, _ = coordinate
+            comp_x, comp_y, comp_w, comp_h, _ = coordinate
 
             # Compute the probability of each connected-component
             component_hard_prediction = (connected_components == i).astype(np.uint8)
@@ -81,6 +81,8 @@ def create_detection_annotation_from_anomaly_heatmap(
             # TODO: Add NMS here.
 
             # Create the annotation based on the box shape and the probability.
-            shape = Rectangle(x1=x1 / width, y1=y1 / height, x2=x2 / width, y2=y2 / height)
+            shape = Rectangle(
+                x1=comp_x / image_w, y1=comp_y / image_h, x2=(comp_x + comp_w) / image_w, y2=(comp_y + comp_h) / image_h
+            )
             annotations.append(Annotation(shape=shape, labels=[ScoredLabel(label, probability)]))
     return annotations
