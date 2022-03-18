@@ -22,15 +22,15 @@ from typing import Dict, List, Optional, Union
 import numpy as np
 from anomalib.pre_processing import PreProcessor
 from omegaconf import DictConfig, ListConfig
-from ote_anomalib.data.utils import (
-    contains_anomalous_images,
-    split_local_global_dataset,
-)
 from ote_anomalib.logging import get_logger
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.model_template import TaskType
 from ote_sdk.entities.shapes.polygon import Polygon
 from ote_sdk.entities.subset import Subset
+from ote_sdk.utils.dataset_utils import (
+    contains_anomalous_images,
+    split_local_global_dataset,
+)
 from ote_sdk.utils.segmentation_utils import mask_from_dataset_item
 from pytorch_lightning.core.datamodule import LightningDataModule
 from torch import Tensor

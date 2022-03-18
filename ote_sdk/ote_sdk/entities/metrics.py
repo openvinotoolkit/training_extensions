@@ -718,17 +718,24 @@ class MultiScorePerformance(Performance):
 
     def __init__(
         self,
-        score: ScoreMetric,
-        additional_scores: List[ScoreMetric],
+        score: Optional[ScoreMetric] = None,
+        additional_scores: Optional[List[ScoreMetric]] = None,
         dashboard_metrics: Optional[List[MetricsGroup]] = None,
     ):
+        if score is None:
+            if additional_scores is None:
+                raise ValueError("At least 1 score must be provided")
+            score = additional_scores.pop(
+                0
+            )  # use first additional score if no main score is provided
         super().__init__(score, dashboard_metrics)
-        for additional_score in additional_scores:
-            if not isinstance(additional_score, ScoreMetric):
-                raise ValueError(
-                    f"Expected score to be of type `ScoreMetric`, got type `{type(score)}` instead."
-                )
-        self.additional_scores: List[ScoreMetric] = additional_scores
+        if additional_scores is not None:
+            for additional_score in additional_scores:
+                if not isinstance(additional_score, ScoreMetric):
+                    raise ValueError(
+                        f"Expected score to be of type `ScoreMetric`, got type `{type(score)}` instead."
+                    )
+        self.additional_scores: Optional[List[ScoreMetric]] = additional_scores
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, MultiScorePerformance):

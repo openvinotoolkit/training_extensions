@@ -30,10 +30,6 @@ from omegaconf import DictConfig, ListConfig
 from ote_anomalib.callbacks import AnomalyInferenceCallback, ProgressCallback
 from ote_anomalib.configs import get_anomalib_config
 from ote_anomalib.data import OTEAnomalyDataModule
-from ote_anomalib.data.utils import (
-    contains_anomalous_images,
-    split_local_global_resultset,
-)
 from ote_anomalib.logging import get_logger
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.inference_parameters import InferenceParameters
@@ -51,6 +47,10 @@ from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType, IExpo
 from ote_sdk.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from ote_sdk.usecases.tasks.interfaces.training_interface import ITrainingTask
 from ote_sdk.usecases.tasks.interfaces.unload_interface import IUnload
+from ote_sdk.utils.dataset_utils import (
+    contains_anomalous_images,
+    split_local_global_resultset,
+)
 from pytorch_lightning import Trainer
 
 logger = get_logger(__name__)

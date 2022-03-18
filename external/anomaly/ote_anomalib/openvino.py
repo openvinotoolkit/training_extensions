@@ -37,10 +37,6 @@ from compression.graph.model_utils import compress_model_weights, get_nodes_by_t
 from compression.pipeline.initializer import create_pipeline
 from omegaconf import OmegaConf
 from ote_anomalib.configs import get_anomalib_config
-from ote_anomalib.data.utils import (
-    contains_anomalous_images,
-    split_local_global_resultset,
-)
 from ote_anomalib.exportable_code import (
     AnomalyBase,
     AnomalyClassification,
@@ -78,6 +74,10 @@ from ote_sdk.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from ote_sdk.usecases.tasks.interfaces.optimization_interface import (
     IOptimizationTask,
     OptimizationType,
+)
+from ote_sdk.utils.dataset_utils import (
+    contains_anomalous_images,
+    split_local_global_resultset,
 )
 
 logger = get_logger(__name__)
