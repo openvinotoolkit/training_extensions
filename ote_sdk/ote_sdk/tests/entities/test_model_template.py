@@ -978,7 +978,7 @@ class TestModelTemplate:
         non_global_task_parameters = dict(default_parameters)
         non_global_tasks_list = []
         for task_type in TaskType:
-            if task_type != TaskType.CLASSIFICATION:
+            if not task_type.is_global:
                 non_global_tasks_list.append(task_type)
         for non_global_task in non_global_tasks_list:
             non_global_task_parameters["task_type"] = non_global_task
@@ -1035,6 +1035,7 @@ class TestTaskTypesConstants:
         assert TRAINABLE_TASK_TYPES == (
             TaskType.CLASSIFICATION,
             TaskType.DETECTION,
+            TaskType.ROTATED_DETECTION,
             TaskType.SEGMENTATION,
             TaskType.INSTANCE_SEGMENTATION,
             TaskType.ANOMALY_DETECTION,

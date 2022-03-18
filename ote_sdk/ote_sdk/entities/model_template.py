@@ -75,22 +75,49 @@ class TaskFamily(Enum):
 
 class TaskType(Enum):
     """
-    The type of algorithm within the task family.
+    The type of algorithm within the task family. Also contains relevant information
+    about the task type like label domain, if it is trainable, if it is an anomaly task
+    or if it supports global labels.
     """
 
-    NULL = auto()
-    DATASET = auto()
-    CLASSIFICATION = auto()
-    SEGMENTATION = auto()
-    DETECTION = auto()
-    ANOMALY_DETECTION = auto()
-    CROP = auto()
-    TILE = auto()
-    INSTANCE_SEGMENTATION = auto()
-    ACTIVELEARNING = auto()
-    ANOMALY_SEGMENTATION = auto()
-    ANOMALY_CLASSIFICATION = auto()
-    ROTATED_DETECTION = auto()
+    def __new__(cls, *args, **kwds):
+        obj = object.__new__(cls)
+        obj._value_ = args[0]
+        return obj
+
+    def __init__(
+        self,
+        value: int,
+        domain: Domain,
+        is_trainable: bool,
+        is_anomaly: bool,
+        is_global: bool,
+    ):
+        """
+        :param value: Unique integer for .value property of Enum (auto() does not work)
+        :param domain: Label domain of the task type
+        :param is_trainable: Boolean indicating if the task type can be trained
+        :param is_anomaly: Boolean indicating if the task is an anomaly task
+        :param is_global: Boolean indicating if the task support global labels
+        """
+        self.domain = domain
+        self.is_trainable = is_trainable
+        self.is_anomaly = is_anomaly
+        self.is_global = is_global
+
+    NULL = 1, Domain.NULL, False, False, False
+    DATASET = 2, Domain.NULL, False, False, False
+    CLASSIFICATION = 3, Domain.CLASSIFICATION, True, False, True
+    SEGMENTATION = 4, Domain.SEGMENTATION, True, False, False
+    DETECTION = 5, Domain.DETECTION, True, False, False
+    ANOMALY_DETECTION = 6, Domain.ANOMALY_DETECTION, True, True, False
+    CROP = 7, Domain.NULL, False, False, False
+    TILE = 8, Domain.NULL, False, False, False
+    INSTANCE_SEGMENTATION = 9, Domain.INSTANCE_SEGMENTATION, True, False, False
+    ACTIVELEARNING = 10, Domain.NULL, False, False, False
+    ANOMALY_SEGMENTATION = 11, Domain.ANOMALY_SEGMENTATION, True, True, False
+    ANOMALY_CLASSIFICATION = 12, Domain.ANOMALY_CLASSIFICATION, True, True, True
+    ROTATED_DETECTION = 13, Domain.ROTATED_DETECTION, True, False, False
 
     def __str__(self) -> str:
         return str(self.name)
@@ -422,7 +449,7 @@ class ModelTemplate:
         """
         Returns ``True`` if the task is global task i.e. if task produces global labels
         """
-        return self.task_type in [TaskType.CLASSIFICATION]
+        return self.task_type.is_global
 
 
 class NullModelTemplate(ModelTemplate):
@@ -452,6 +479,7 @@ ANOMALY_TASK_TYPES: Sequence[TaskType] = (
 TRAINABLE_TASK_TYPES: Sequence[TaskType] = (
     TaskType.CLASSIFICATION,
     TaskType.DETECTION,
+    TaskType.ROTATED_DETECTION,
     TaskType.SEGMENTATION,
     TaskType.INSTANCE_SEGMENTATION,
     TaskType.ANOMALY_DETECTION,
