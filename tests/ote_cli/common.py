@@ -419,8 +419,11 @@ def nncf_eval_testing(template, root, ote_dir, args, threshold):
         evaluated_performance = json.load(read_file)
 
     for k in trained_performance.keys():
-        assert abs(trained_performance[k] - evaluated_performance[k]) / trained_performance[k] <= threshold, \
-            f"{trained_performance[k]=}, {evaluated_performance[k]=}"
+        assert (
+            abs(trained_performance[k] - evaluated_performance[k])
+            / trained_performance[k]
+            <= threshold
+        ), f"{trained_performance[k]=}, {evaluated_performance[k]=}"
 
 
 def nncf_eval_openvino_testing(template, root, ote_dir, args):
