@@ -56,10 +56,8 @@ class OTETextToSpeechTask(ITrainingTask, IInferenceTask, IEvaluationTask, IExpor
         self._cfg.trainer.batch_size = self._hyperparams.learning_parameters.batch_size
 
         self._pipeline = PipelineTTS(self._cfg)
-        print(self._cfg)
-        print(self._pipeline)
+        self.load_model(ote_model=task_environment.model)
 
-        # self._device = torch.device("cuda:0") if torch.cuda.device_count() else torch.device("cpu")
         self._gpus = 1 if torch.cuda.device_count() else 0
         if 'CUDA_VISIBLE_DEVICES' in os.environ:
             print(os.environ['CUDA_VISIBLE_DEVICES'], torch.cuda.device_count())
@@ -120,7 +118,7 @@ class OTETextToSpeechTask(ITrainingTask, IInferenceTask, IEvaluationTask, IExpor
         for dataset_item, prediction in zip(dataset, outputs):
             dataset_item.annotation_scene.append_annotations([prediction])
 
-        return outputs
+        return dataset
 
     def train_like_in_torch(self, trainset: torch.utils.data.Dataset, valset: torch.utils.data.Dataset,
               output_model: ModelEntity = None, train_parameters: Optional[TrainParameters] = None):
@@ -297,6 +295,30 @@ class OTETextToSpeechTask(ITrainingTask, IInferenceTask, IEvaluationTask, IExpor
         """
         if os.path.exists(self._scratch_space):
             shutil.rmtree(self._scratch_space, ignore_errors=False)
+
+    def load_model(self, ote_model: Optional[ModelEntity]):
+        """
+        Args:
+            ote_model (Optional[ModelEntity]): OTE Model from the
+                task environment.
+        """
+
+        buffer = io.BytesIO(ote_model.get_data("weights.pth"))
+        model_data = torch.load(buffer, map_location=torch.device("cpu"))
+
+        if "model" in model_data:
+            model_data = model_data["model"]
+
+        if "state_dict" in model_data:
+            model_data = model_data["state_dict"]
+
+        self._pipeline.generator.load_state_dict(model_data)
+
+        # try:
+        #     self._pipeline.generator.load_state_dict(model_data["model"])
+        #     logger.info("Loaded model weights from Task Environment")
+        # except BaseException as exception:
+        #     raise ValueError("Could not load the saved model. The model file structure is invalid.") from exception
 
     def unload(self):
         """

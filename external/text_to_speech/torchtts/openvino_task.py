@@ -24,7 +24,11 @@ from zipfile import ZipFile
 from typing import Any, Dict, Tuple, Optional, Union
 import numpy as np
 
+import openvino
+print(openvino.__file__)
 from openvino.runtime import Core
+
+
 
 import ote_sdk.usecases.exportable_code.demo as demo
 from ote_sdk.entities.inference_parameters import InferenceParameters, default_progress_callback
@@ -42,8 +46,8 @@ from ote_sdk.entities.annotation import AnnotationSceneEntity
 from ote_sdk.entities.datasets import DatasetEntity
 
 from torchtts.integration.parameters import OTETextToSpeechTaskParameters
-from text_preprocessing import text_to_sequence, intersperse, pad_spaces
-from demo import Encoder, Decoder
+from torchtts.demo import Encoder, Decoder
+from torchtts.datasets import TTSDatasetWithSTFT
 
 logger = logging.getLogger(__name__)
 
@@ -194,11 +198,12 @@ class OpenVINOTTSTask(IInferenceTask, IEvaluationTask):
         res_attn = []
 
         for bs in range(x.shape[0]):
-            encoder_in = self.encoder.pre_process(x[[bs], :], x_len[[bs]])
-            encoder_out = self.encoder.forward(encoder_in)
+            encoder_in = self.encoder.preprocess(x[[bs], :], x_len[[bs]])
+            self.encoder.infer(encoder_in)
 
-            x_m, x_res, logw, x_mask = encoder_out["x_m"], encoder_out["x_logs"], \
-                                       encoder_out["logw"], encoder_out["x_mask"]
+            x_mask = self.encoder.request.get_tensor("x_mask").data[:]
+            x_res = self.encoder.request.get_tensor("x_res").data[:]
+            x_m = self.encoder.request.get_tensor("x_m").data[:]
 
             mel_max_length = mel.shape[2]
             z_mask = self.sequence_mask(mel_len[[bs]], mel_max_length).astype(x_m.dtype)
@@ -211,8 +216,10 @@ class OpenVINOTTSTask(IInferenceTask, IEvaluationTask):
 
             z_m = np.matmul(attn.transpose((0, 2, 1)), x_res.transpose((0, 2, 1))).transpose((0, 2, 1))
 
-            decoder_in = self.decoder.pre_process(z_m, z_mask)
-            mel_out = self.decoder.forward(decoder_in)['mel']
+            decoder_in = self.decoder.preprocess(z_m, z_mask)
+            self.decoder.infer(decoder_in)
+
+            mel_out = self.decoder.request.get_tensor("mel").data[:]
 
             res_mel.append(mel_out)
             res_attn.append(attn)
@@ -221,54 +228,49 @@ class OpenVINOTTSTask(IInferenceTask, IEvaluationTask):
 
         return mel, attn
 
-    def infer(self, dataset: DatasetEntity,
-              inference_parameters: Optional[InferenceParameters] = None) -> DatasetEntity:
-
-        """Perform Inference.
-
-        Args:
-            dataset (DatasetEntity): Inference dataset
-            inference_parameters (InferenceParameters): Inference parameters.
-
-        Returns:
-            DatasetEntity: Output dataset storing inference predictions.
+    def infer(self, dataset: DatasetEntity, inference_parameters: InferenceParameters) -> DatasetEntity:
         """
-        if self.task_environment.model is None:
-            raise Exception("task_environment.model is None. Cannot access threshold to calculate labels.")
+        Perform inference on the given dataset.
 
-        logger.info("Start OpenVINO inference.")
-        update_progress_callback = default_progress_callback
-        if inference_parameters is not None:
-            update_progress_callback = inference_parameters.update_progress
+        :param dataset: Dataset entity to analyse
+        :param inference_parameters: Additional parameters for inference.
+            For example, when results are generated for evaluation purposes, Saliency maps can be turned off.
+        :return: Dataset that also includes the classification results
+        """
 
-        # This always assumes that threshold is available in the task environment's model
-        meta_data = self.get_meta_data()
-        for idx, dataset_item in enumerate(dataset):
-            anomaly_map, pred_score = self.inferencer.predict(
-                dataset_item.numpy, superimpose=False, meta_data=meta_data
-            )
-            annotations_scene = self.annotation_converter.convert_to_annotation(pred_score, meta_data)
-            dataset_item.append_labels(annotations_scene.annotations[0].get_labels())
-            anomaly_map = anomaly_map_to_color_map(anomaly_map, normalize=False)
-            heatmap_media = ResultMediaEntity(
-                name="Anomaly Map",
-                type="anomaly_map",
-                annotation_scene=dataset_item.annotation_scene,
-                numpy=anomaly_map,
-            )
-            dataset_item.append_metadata_item(heatmap_media)
-            update_progress_callback(int((idx + 1) / len(dataset) * 100))
+        valset = TTSDatasetWithSTFT(dataset_items=dataset)
+        outputs = []
+        for data in valset:
+            text, mel = data
+            text_len = np.array([text.shape[-1]])
+            mel_len = np.array([mel.shape[-1]])
 
-        return dataset
+            text = np.expand_dims(text, 0)
+            mel = np.expand_dims(mel, 0)
+            mel_, _ = self.infer_like_train((text, text_len, mel, mel_len))
+            outputs.append({"gt": mel, "predict": mel_})
+
+        for dataset_item, prediction in zip(dataset, outputs):
+            dataset_item.annotation_scene.append_annotations([prediction])
+
         return dataset
 
     def evaluate(self,
-                 output_result_set: ResultSetEntity,
+                 output_resultset: ResultSetEntity,
                  evaluation_metric: Optional[str] = None):
-        if evaluation_metric is not None:
-            logger.warning(f'Requested to use {evaluation_metric} metric,'
-                            'but parameter is ignored. Use accuracy instead.')
-        output_result_set.performance = MetricsHelper.compute_accuracy(output_result_set).get_performance()
+        l1_loss = 0.0
+
+        for val in zip(output_resultset.prediction_dataset):
+            pred = val[0].annotation_scene.annotations[0]["predict"]
+            gt = val[0].annotation_scene.annotations[0]["gt"]
+            l1_loss += np.mean(np.abs(pred - gt))
+
+        if len(output_resultset.prediction_dataset):
+            l1_loss = l1_loss / len(output_resultset.prediction_dataset)
+
+        output_resultset.performance = l1_loss
+
+        logger.info(f"Difference between generated and predicted mel-spectrogram: {l1_loss}")
 
     def deploy(self, output_model: ModelEntity) -> None:
         """Exports the weights from ``output_model`` along with exportable code.

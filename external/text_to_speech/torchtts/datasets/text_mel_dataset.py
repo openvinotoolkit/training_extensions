@@ -61,7 +61,6 @@ class TTSDatasetWithSTFT(Dataset):
             for item in dataset_items:
                 if items_type is not None and item.subset != items_type:
                     continue
-
                 audio_path = item.media.metadata
                 text = str(item.media.numpy)
                 self.metadata.append({"audio_path": audio_path, "text": text})

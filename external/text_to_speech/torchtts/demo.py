@@ -20,7 +20,7 @@ import os.path as osp
 import numpy as np
 from openvino.runtime import PartialShape
 
-from text_preprocessing import text_to_sequence, cmudict, intersperse
+from .text_preprocessing import text_to_sequence, cmudict, intersperse
 
 
 def check_input_name(model, input_tensor_name):
@@ -58,9 +58,11 @@ class Encoder(IEModel):
         self.enc_input_data_name = "seq"
         self.enc_input_mask_name = "seq_len"
 
-    def preprocess(self, seq):
-        seq = np.array(seq)[None, :]
-        seq_len = np.array([seq.shape[1]])
+    def preprocess(self, seq, seq_len=None):
+        if len(seq.shape) == 1:
+            seq = np.array(seq)[None, :]
+        if seq_len is None:
+            seq_len = np.array([seq.shape[1]])
 
         model_shape = self.encoder.input(self.enc_input_data_name).shape[1]
         if model_shape != seq.shape[1]:
@@ -78,7 +80,7 @@ class Decoder(IEModel):
     def __init__(self, model_decoder, ie, device='CPU'):
         super().__init__(ie, device)
         self.decoder = self.load_network(model_decoder)
-        self.request = self.create_infer_request(self.encoder, model_decoder)
+        self.request = self.create_infer_request(self.decoder, model_decoder)
 
         self.dec_input_data_name = "z"
         self.dec_input_mask_name = "z_mask"
