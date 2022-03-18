@@ -1,13 +1,15 @@
 """
-ModelEntity
+ModelContainer
 """
-# Copyright (C) 2021-2022 Intel Corporation
+# Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 
 import importlib
 from pathlib import Path
+from typing import Any, Tuple
 
+import numpy as np
 from openvino.model_zoo.model_api.adapters import OpenvinoAdapter, create_core
 from openvino.model_zoo.model_api.models import Model
 
@@ -26,10 +28,10 @@ class ModelContainer:
 
     def __init__(self, model_dir: Path) -> None:
         self.parameters = get_parameters(model_dir / "config.json")
-        self.labels = LabelSchemaMapper.backward(
+        self._labels = LabelSchemaMapper.backward(
             self.parameters["model_parameters"]["labels"]
         )
-        self.task_type = self.parameters["converter_type"]
+        self._task_type = self.parameters["converter_type"]
 
         # labels for modelAPI wrappers can be empty, because unused in pre- and postprocessing
         self.model_parameters = self.parameters["model_parameters"]
@@ -39,7 +41,7 @@ class ModelContainer:
             create_core(), get_model_path(model_dir / "model.xml")
         )
 
-        self._initialize_wrapper(model_dir.parent.resolve())
+        self._initialize_wrapper()
         self.core_model = Model.create_model(
             self.parameters["type_of_model"],
             model_adapter,
@@ -47,15 +49,26 @@ class ModelContainer:
             preload=True,
         )
 
-    @staticmethod
-    def _initialize_wrapper(wrapper_dir: Path):
-        if wrapper_dir:
-            if not wrapper_dir.exists():
-                raise IOError("The path to wrappers was not found.")
+    @property
+    def task_type(self):
+        """
+        Task type property
+        """
+        return self._task_type
 
+    @property
+    def labels(self):
+        """
+        Labels property
+        """
+        return self._labels
+
+    @staticmethod
+    def _initialize_wrapper():
+        try:
             importlib.import_module("model_wrappers")
-        else:
+        except ModuleNotFoundError:
             print("Using model wrapper from Open Model Zoo ModelAPI")
 
-    def __call__(self, input_data):
+    def __call__(self, input_data: np.ndarray) -> Tuple[Any, dict]:
         return self.core_model(input_data)

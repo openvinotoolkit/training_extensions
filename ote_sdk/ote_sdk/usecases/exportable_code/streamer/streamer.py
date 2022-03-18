@@ -12,7 +12,7 @@ import os
 import queue
 import sys
 from enum import Enum
-from typing import Dict, Iterator, Optional
+from typing import Dict, Iterator, Optional, Union
 
 import cv2
 import numpy as np
@@ -287,7 +287,7 @@ class DirStreamer(BaseStreamer):
 
 
 def get_streamer(
-    input_path: str = "",
+    input_path: Union[int, str],
     loop: bool = False,
     threaded: bool = False,
 ) -> BaseStreamer:

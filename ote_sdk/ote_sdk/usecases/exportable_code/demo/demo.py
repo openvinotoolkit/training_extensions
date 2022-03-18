@@ -15,7 +15,6 @@ from ote_sdk.usecases.exportable_code.demo.demo_package import (
     ChainExecutor,
     ModelContainer,
     SyncExecutor,
-    create_output_converter,
     create_visualizer,
 )
 
@@ -92,13 +91,11 @@ def main():
     Main function that is used to run demo.
     """
     args = build_argparser().parse_args()
-    # create models and converters for outputs
+    # create models
     models = []
-    converters = []
     for model_dir in args.models:
         model = ModelContainer(model_dir)
         models.append(model)
-        converters.append(create_output_converter(model.task_type, model.labels))
 
     inferencer = get_inferencer_class(args.inference_type, models)
 

@@ -5,7 +5,7 @@ Sync pipeline executor based on ModelAPI
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from typing import List
+from typing import List, Union
 
 import numpy as np
 
@@ -18,8 +18,8 @@ from ote_sdk.entities.shapes.rectangle import Rectangle
 from ote_sdk.usecases.exportable_code.demo.demo_package.model_container import (
     ModelContainer,
 )
-from ote_sdk.usecases.exportable_code.prediction_to_annotation_converter import (
-    IPredictionToAnnotationConverter,
+from ote_sdk.usecases.exportable_code.demo.demo_package.utils import (
+    create_output_converter,
 )
 from ote_sdk.usecases.exportable_code.streamer import get_streamer
 from ote_sdk.usecases.exportable_code.visualizers import HandlerVisualizer, Visualizer
@@ -38,15 +38,18 @@ class ChainExecutor:
     def __init__(
         self,
         models: List[ModelContainer],
-        converters: List[IPredictionToAnnotationConverter],
         visualizer: Visualizer,
     ) -> None:
         self.models = models
         self.visualizer = visualizer
-        self.converters = converters
+        self.converters = []
+        for model in self.models:
+            self.converters.append(
+                create_output_converter(model.task_type, model.labels)
+            )
 
     # pylint: disable=too-many-locals
-    def single_run(self, input_image) -> AnnotationSceneEntity:
+    def single_run(self, input_image: np.ndarray) -> AnnotationSceneEntity:
         """
         Inference for single image
         """
@@ -73,7 +76,9 @@ class ChainExecutor:
         return result_scene
 
     @staticmethod
-    def crop(item: np.ndarray, parent_annotation, item_annotation):
+    def crop(
+        item: np.ndarray, parent_annotation: Annotation, item_annotation: Annotation
+    ):
         """
         Glue for models
         """
@@ -83,7 +88,7 @@ class ChainExecutor:
         )
         return new_item, item_annotation
 
-    def run(self, input_stream, loop=False):
+    def run(self, input_stream: Union[int, str], loop=False):
         """
         Run demo using input stream (image, video stream, camera)
         """

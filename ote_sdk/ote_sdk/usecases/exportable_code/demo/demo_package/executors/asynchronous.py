@@ -5,13 +5,18 @@ Async executor based on ModelAPI
 # SPDX-License-Identifier: Apache-2.0
 #
 
+from typing import Any, Tuple, Union
+
 from openvino.model_zoo.model_api.pipelines import AsyncPipeline
 
+from ote_sdk.usecases.exportable_code.demo.demo_package.model_container import (
+    ModelContainer,
+)
 from ote_sdk.usecases.exportable_code.demo.demo_package.utils import (
     create_output_converter,
 )
 from ote_sdk.usecases.exportable_code.streamer import get_streamer
-from ote_sdk.usecases.exportable_code.visualizers import HandlerVisualizer
+from ote_sdk.usecases.exportable_code.visualizers import HandlerVisualizer, Visualizer
 
 
 class AsyncExecutor:
@@ -23,13 +28,13 @@ class AsyncExecutor:
         visualizer: for visualize inference results
     """
 
-    def __init__(self, model, visualizer) -> None:
+    def __init__(self, model: ModelContainer, visualizer: Visualizer) -> None:
         self.model = model.core_model
         self.visualizer = visualizer
         self.converter = create_output_converter(model.task_type, model.labels)
         self.async_pipeline = AsyncPipeline(self.model)
 
-    def run(self, input_stream, loop=False):
+    def run(self, input_stream: Union[int, str], loop=False):
         """
         Async inference for input stream (image, video stream, camera)
         """
@@ -58,7 +63,7 @@ class AsyncExecutor:
                 output = self.render_result(results)
                 visualizer.show(output)
 
-    def render_result(self, results):
+    def render_result(self, results: Tuple[Any, dict]):
         """
         Render for results of inference
         """
