@@ -4,10 +4,10 @@ name: SSD
 task_type: DETECTION
 task_family: VISION
 instantiation: "CLASS"
-summary: Model with fast inference speed and training time. Works better on simple datasets with large and
+summary:
+  Model with fast inference speed and training time. Works better on simple datasets with large and
   distinguishable objects.
-application:
-  ~
+application: ~
 
 # Algo backend.
 framework: OTEDetection v2.9.1

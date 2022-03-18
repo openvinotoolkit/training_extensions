@@ -4,7 +4,7 @@ early_stop: None
 hp_space:
   learning_parameters.learning_rate:
     param_type: quniform
-    range: 
+    range:
       - 0.001
       - 0.1
       - 0.001

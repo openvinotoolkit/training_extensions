@@ -50,6 +50,5 @@ training_targets:
 # Stats.
 gigaflops: 1.04
 size: 0.81
-
 # Obsolete
 # gpu_nums: 1

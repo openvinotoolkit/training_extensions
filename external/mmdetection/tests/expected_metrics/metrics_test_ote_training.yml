@@ -1,355 +1,351 @@
-'ACTION-training_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-bbcd,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'target_value': 0.81
-                'max_diff_if_less_threshold': 0.005
-                'max_diff_if_greater_threshold': 0.06
-'ACTION-export_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-bbcd,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'base': 'training_evaluation.metrics.accuracy.f-measure'
-                'max_diff': 0.01
-'ACTION-pot_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-bbcd,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'base': 'export_evaluation.metrics.accuracy.f-measure'
-                'max_diff': 0.01
-'ACTION-nncf_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-bbcd,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'base': 'training_evaluation.metrics.accuracy.f-measure'
-                'max_diff_if_less_threshold': 0.01
-'ACTION-nncf_export_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-bbcd,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'base': 'nncf_evaluation.metrics.accuracy.f-measure'
-                'max_diff': 0.01
+? "ACTION-training_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-bbcd,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "target_value": 0.81
+    "max_diff_if_less_threshold": 0.005
+    "max_diff_if_greater_threshold": 0.06
+? "ACTION-export_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-bbcd,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "training_evaluation.metrics.accuracy.f-measure"
+    "max_diff": 0.01
+? "ACTION-pot_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-bbcd,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "export_evaluation.metrics.accuracy.f-measure"
+    "max_diff": 0.01
+? "ACTION-nncf_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-bbcd,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "training_evaluation.metrics.accuracy.f-measure"
+    "max_diff_if_less_threshold": 0.01
+? "ACTION-nncf_export_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-bbcd,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "nncf_evaluation.metrics.accuracy.f-measure"
+    "max_diff": 0.01
 
-'ACTION-training_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-bbcd,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'target_value': 0.78
-                'max_diff_if_less_threshold': 0.005
-                'max_diff_if_greater_threshold': 0.03
-'ACTION-export_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-bbcd,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'base': 'training_evaluation.metrics.accuracy.f-measure'
-                'max_diff': 0.01
-'ACTION-pot_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-bbcd,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'base': 'training_evaluation.metrics.accuracy.f-measure'
-                'max_diff': 0.01
-'ACTION-nncf_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-bbcd,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'base': 'training_evaluation.metrics.accuracy.f-measure'
-                'max_diff_if_less_threshold': 0.01
-'ACTION-nncf_export_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-bbcd,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'base': 'training_evaluation.metrics.accuracy.f-measure'
-                'max_diff': 0.017
+? "ACTION-training_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-bbcd,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "target_value": 0.78
+    "max_diff_if_less_threshold": 0.005
+    "max_diff_if_greater_threshold": 0.03
+? "ACTION-export_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-bbcd,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "training_evaluation.metrics.accuracy.f-measure"
+    "max_diff": 0.01
+? "ACTION-pot_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-bbcd,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "training_evaluation.metrics.accuracy.f-measure"
+    "max_diff": 0.01
+? "ACTION-nncf_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-bbcd,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "training_evaluation.metrics.accuracy.f-measure"
+    "max_diff_if_less_threshold": 0.01
+? "ACTION-nncf_export_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-bbcd,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "training_evaluation.metrics.accuracy.f-measure"
+    "max_diff": 0.017
 
-'ACTION-training_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-weed-coco,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'target_value': 0.82
-                'max_diff_if_less_threshold': 0.005
-                'max_diff_if_greater_threshold': 0.03
-'ACTION-export_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-weed-coco,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'base': 'training_evaluation.metrics.accuracy.f-measure'
-                'max_diff': 0.01
-'ACTION-pot_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-weed-coco,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'base': 'training_evaluation.metrics.accuracy.f-measure'
-                'max_diff': 0.01
-'ACTION-nncf_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-weed-coco,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'base': 'training_evaluation.metrics.accuracy.f-measure'
-                'max_diff_if_less_threshold': 0.01
-'ACTION-nncf_export_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-weed-coco,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'base': 'training_evaluation.metrics.accuracy.f-measure'
-                'max_diff': 0.01
+? "ACTION-training_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-weed-coco,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "target_value": 0.82
+    "max_diff_if_less_threshold": 0.005
+    "max_diff_if_greater_threshold": 0.03
+? "ACTION-export_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-weed-coco,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "training_evaluation.metrics.accuracy.f-measure"
+    "max_diff": 0.01
+? "ACTION-pot_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-weed-coco,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "training_evaluation.metrics.accuracy.f-measure"
+    "max_diff": 0.01
+? "ACTION-nncf_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-weed-coco,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "training_evaluation.metrics.accuracy.f-measure"
+    "max_diff_if_less_threshold": 0.01
+? "ACTION-nncf_export_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-weed-coco,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "training_evaluation.metrics.accuracy.f-measure"
+    "max_diff": 0.01
 
-'ACTION-training_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-weed-coco,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'target_value': 0.69
-                'max_diff_if_less_threshold': 0.005
-                'max_diff_if_greater_threshold': 0.03
-'ACTION-export_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-weed-coco,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'base': 'training_evaluation.metrics.accuracy.f-measure'
-                'max_diff': 0.01
-'ACTION-pot_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-weed-coco,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'base': 'training_evaluation.metrics.accuracy.f-measure'
-                'max_diff': 0.01
-'ACTION-nncf_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-weed-coco,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'base': 'training_evaluation.metrics.accuracy.f-measure'
-                'max_diff_if_less_threshold': 0.01
-'ACTION-nncf_export_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-weed-coco,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'base': 'training_evaluation.metrics.accuracy.f-measure'
-                'max_diff': 0.01
+? "ACTION-training_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-weed-coco,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "target_value": 0.69
+    "max_diff_if_less_threshold": 0.005
+    "max_diff_if_greater_threshold": 0.03
+? "ACTION-export_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-weed-coco,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "training_evaluation.metrics.accuracy.f-measure"
+    "max_diff": 0.01
+? "ACTION-pot_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-weed-coco,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "training_evaluation.metrics.accuracy.f-measure"
+    "max_diff": 0.01
+? "ACTION-nncf_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-weed-coco,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "training_evaluation.metrics.accuracy.f-measure"
+    "max_diff_if_less_threshold": 0.01
+? "ACTION-nncf_export_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-weed-coco,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "training_evaluation.metrics.accuracy.f-measure"
+    "max_diff": 0.01
 
-'ACTION-training_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-pcd,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'target_value': 0.944
-                'max_diff_if_less_threshold': 0.03
-                'max_diff_if_greater_threshold': 0.03
-'ACTION-export_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-pcd,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'base': 'training_evaluation.metrics.accuracy.f-measure'
-                'max_diff': 0.03
-'ACTION-pot_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-pcd,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'base': 'training_evaluation.metrics.accuracy.f-measure'
-                'max_diff': 0.03
-'ACTION-nncf_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-pcd,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'base': 'training_evaluation.metrics.accuracy.f-measure'
-                'max_diff_if_less_threshold': 0.03
-'ACTION-nncf_export_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-pcd,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'base': 'nncf_evaluation.metrics.accuracy.f-measure'
-                'max_diff': 0.03
+? "ACTION-training_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-pcd,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "target_value": 0.944
+    "max_diff_if_less_threshold": 0.03
+    "max_diff_if_greater_threshold": 0.03
+? "ACTION-export_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-pcd,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "training_evaluation.metrics.accuracy.f-measure"
+    "max_diff": 0.03
+? "ACTION-pot_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-pcd,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "training_evaluation.metrics.accuracy.f-measure"
+    "max_diff": 0.03
+? "ACTION-nncf_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-pcd,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "training_evaluation.metrics.accuracy.f-measure"
+    "max_diff_if_less_threshold": 0.03
+? "ACTION-nncf_export_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-pcd,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "nncf_evaluation.metrics.accuracy.f-measure"
+    "max_diff": 0.03
 
-'ACTION-training_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-pcd,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'target_value': 0.924
-                'max_diff_if_less_threshold': 0.03
-                'max_diff_if_greater_threshold': 0.03
-'ACTION-export_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-pcd,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'base': 'training_evaluation.metrics.accuracy.f-measure'
-                'max_diff': 0.03
-'ACTION-pot_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-pcd,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'base': 'training_evaluation.metrics.accuracy.f-measure'
-                'max_diff': 0.03
-'ACTION-nncf_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-pcd,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'base': 'training_evaluation.metrics.accuracy.f-measure'
-                'max_diff_if_less_threshold': 0.03
-'ACTION-nncf_export_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-pcd,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'base': 'nncf_evaluation.metrics.accuracy.f-measure'
-                'max_diff': 0.03
+? "ACTION-training_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-pcd,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "target_value": 0.924
+    "max_diff_if_less_threshold": 0.03
+    "max_diff_if_greater_threshold": 0.03
+? "ACTION-export_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-pcd,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "training_evaluation.metrics.accuracy.f-measure"
+    "max_diff": 0.03
+? "ACTION-pot_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-pcd,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "training_evaluation.metrics.accuracy.f-measure"
+    "max_diff": 0.03
+? "ACTION-nncf_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-pcd,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "training_evaluation.metrics.accuracy.f-measure"
+    "max_diff_if_less_threshold": 0.03
+? "ACTION-nncf_export_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-pcd,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "nncf_evaluation.metrics.accuracy.f-measure"
+    "max_diff": 0.03
 
-'ACTION-training_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-aerial,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'target_value': 0.561
-                'max_diff_if_less_threshold': 0.03
-                'max_diff_if_greater_threshold': 0.03
-'ACTION-export_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-aerial,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'base': 'training_evaluation.metrics.accuracy.f-measure'
-                'max_diff': 0.03
-'ACTION-pot_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-aerial,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'base': 'export_evaluation.metrics.accuracy.f-measure'
-                'max_diff': 0.03
-'ACTION-nncf_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-aerial,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'base': 'training_evaluation.metrics.accuracy.f-measure'
-                'max_diff_if_less_threshold': 0.03
-'ACTION-nncf_export_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-aerial,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'base': 'nncf_evaluation.metrics.accuracy.f-measure'
-                'max_diff': 0.03
+? "ACTION-training_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-aerial,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "target_value": 0.561
+    "max_diff_if_less_threshold": 0.03
+    "max_diff_if_greater_threshold": 0.03
+? "ACTION-export_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-aerial,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "training_evaluation.metrics.accuracy.f-measure"
+    "max_diff": 0.03
+? "ACTION-pot_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-aerial,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "export_evaluation.metrics.accuracy.f-measure"
+    "max_diff": 0.03
+? "ACTION-nncf_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-aerial,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "training_evaluation.metrics.accuracy.f-measure"
+    "max_diff_if_less_threshold": 0.03
+? "ACTION-nncf_export_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-aerial,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "nncf_evaluation.metrics.accuracy.f-measure"
+    "max_diff": 0.03
 
-'ACTION-training_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-aerial,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'target_value': 0.661
-                'max_diff_if_less_threshold': 0.06
-                'max_diff_if_greater_threshold': 0.06
-'ACTION-export_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-aerial,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'base': 'training_evaluation.metrics.accuracy.f-measure'
-                'max_diff': 0.06
-'ACTION-pot_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-aerial,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'base': 'export_evaluation.metrics.accuracy.f-measure'
-                'max_diff': 0.06
-'ACTION-nncf_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-aerial,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'base': 'training_evaluation.metrics.accuracy.f-measure'
-                'max_diff_if_less_threshold': 0.06
-'ACTION-nncf_export_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-aerial,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'base': 'nncf_evaluation.metrics.accuracy.f-measure'
-                'max_diff': 0.06
+? "ACTION-training_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-aerial,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "target_value": 0.661
+    "max_diff_if_less_threshold": 0.06
+    "max_diff_if_greater_threshold": 0.06
+? "ACTION-export_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-aerial,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "training_evaluation.metrics.accuracy.f-measure"
+    "max_diff": 0.06
+? "ACTION-pot_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-aerial,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "export_evaluation.metrics.accuracy.f-measure"
+    "max_diff": 0.06
+? "ACTION-nncf_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-aerial,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "training_evaluation.metrics.accuracy.f-measure"
+    "max_diff_if_less_threshold": 0.06
+? "ACTION-nncf_export_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-aerial,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "nncf_evaluation.metrics.accuracy.f-measure"
+    "max_diff": 0.06
 
+? "ACTION-training_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-dice,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "target_value": 0.779
+    "max_diff_if_less_threshold": 0.11
+    "max_diff_if_greater_threshold": 0.11
+? "ACTION-export_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-dice,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "training_evaluation.metrics.accuracy.f-measure"
+    "max_diff": 0.11
+? "ACTION-pot_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-dice,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "export_evaluation.metrics.accuracy.f-measure"
+    "max_diff": 0.11
+? "ACTION-nncf_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-dice,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "training_evaluation.metrics.accuracy.f-measure"
+    "max_diff_if_less_threshold": 0.11
+? "ACTION-nncf_export_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-dice,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "nncf_evaluation.metrics.accuracy.f-measure"
+    "max_diff": 0.11
 
-'ACTION-training_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-dice,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'target_value': 0.779
-                'max_diff_if_less_threshold': 0.11
-                'max_diff_if_greater_threshold': 0.11
-'ACTION-export_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-dice,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'base': 'training_evaluation.metrics.accuracy.f-measure'
-                'max_diff': 0.11
-'ACTION-pot_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-dice,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'base': 'export_evaluation.metrics.accuracy.f-measure'
-                'max_diff': 0.11
-'ACTION-nncf_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-dice,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'base': 'training_evaluation.metrics.accuracy.f-measure'
-                'max_diff_if_less_threshold': 0.11
-'ACTION-nncf_export_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-dice,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'base': 'nncf_evaluation.metrics.accuracy.f-measure'
-                'max_diff': 0.11
+? "ACTION-training_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-dice,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "target_value": 0.925
+    "max_diff_if_less_threshold": 0.05
+    "max_diff_if_greater_threshold": 0.05
+? "ACTION-export_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-dice,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "training_evaluation.metrics.accuracy.f-measure"
+    "max_diff": 0.05
+? "ACTION-pot_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-dice,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "export_evaluation.metrics.accuracy.f-measure"
+    "max_diff": 0.05
+? "ACTION-nncf_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-dice,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "training_evaluation.metrics.accuracy.f-measure"
+    "max_diff_if_less_threshold": 0.05
+? "ACTION-nncf_export_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-dice,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "nncf_evaluation.metrics.accuracy.f-measure"
+    "max_diff": 0.05
 
-'ACTION-training_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-dice,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'target_value': 0.925
-                'max_diff_if_less_threshold': 0.05
-                'max_diff_if_greater_threshold': 0.05
-'ACTION-export_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-dice,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'base': 'training_evaluation.metrics.accuracy.f-measure'
-                'max_diff': 0.05
-'ACTION-pot_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-dice,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'base': 'export_evaluation.metrics.accuracy.f-measure'
-                'max_diff': 0.05
-'ACTION-nncf_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-dice,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'base': 'training_evaluation.metrics.accuracy.f-measure'
-                'max_diff_if_less_threshold': 0.05
-'ACTION-nncf_export_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-dice,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'base': 'nncf_evaluation.metrics.accuracy.f-measure'
-                'max_diff': 0.05
+? "ACTION-training_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-fish,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "target_value": 0.884
+    "max_diff_if_less_threshold": 0.03
+    "max_diff_if_greater_threshold": 0.03
+? "ACTION-export_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-fish,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "training_evaluation.metrics.accuracy.f-measure"
+    "max_diff": 0.03
+? "ACTION-pot_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-fish,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "training_evaluation.metrics.accuracy.f-measure"
+    "max_diff": 0.03
+? "ACTION-nncf_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-fish,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "training_evaluation.metrics.accuracy.f-measure"
+    "max_diff_if_less_threshold": 0.03
+? "ACTION-nncf_export_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-fish,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "nncf_evaluation.metrics.accuracy.f-measure"
+    "max_diff": 0.03
 
+? "ACTION-training_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-fish,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "target_value": 0.884
+    "max_diff_if_less_threshold": 0.03
+    "max_diff_if_greater_threshold": 0.03
+? "ACTION-export_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-fish,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "training_evaluation.metrics.accuracy.f-measure"
+    "max_diff": 0.03
+? "ACTION-pot_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-fish,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "training_evaluation.metrics.accuracy.f-measure"
+    "max_diff": 0.03
+? "ACTION-nncf_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-fish,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "training_evaluation.metrics.accuracy.f-measure"
+    "max_diff_if_less_threshold": 0.03
+? "ACTION-nncf_export_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-fish,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "nncf_evaluation.metrics.accuracy.f-measure"
+    "max_diff": 0.03
 
-'ACTION-training_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-fish,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'target_value': 0.884
-                'max_diff_if_less_threshold': 0.03
-                'max_diff_if_greater_threshold': 0.03
-'ACTION-export_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-fish,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'base': 'training_evaluation.metrics.accuracy.f-measure'
-                'max_diff': 0.03
-'ACTION-pot_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-fish,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'base': 'training_evaluation.metrics.accuracy.f-measure'
-                'max_diff': 0.03
-'ACTION-nncf_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-fish,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'base': 'training_evaluation.metrics.accuracy.f-measure'
-                'max_diff_if_less_threshold': 0.03
-'ACTION-nncf_export_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-fish,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'base': 'nncf_evaluation.metrics.accuracy.f-measure'
-                'max_diff': 0.03
+? "ACTION-training_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-vitens,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "target_value": 0.851
+    "max_diff_if_less_threshold": 0.03
+    "max_diff_if_greater_threshold": 0.03
+? "ACTION-export_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-vitens,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "training_evaluation.metrics.accuracy.f-measure"
+    "max_diff": 0.03
+? "ACTION-pot_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-vitens,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "training_evaluation.metrics.accuracy.f-measure"
+    "max_diff": 0.03
+? "ACTION-nncf_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-vitens,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "training_evaluation.metrics.accuracy.f-measure"
+    "max_diff_if_less_threshold": 0.03
+? "ACTION-nncf_export_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-vitens,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "nncf_evaluation.metrics.accuracy.f-measure"
+    "max_diff": 0.03
 
-'ACTION-training_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-fish,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'target_value': 0.884
-                'max_diff_if_less_threshold': 0.03
-                'max_diff_if_greater_threshold': 0.03
-'ACTION-export_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-fish,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'base': 'training_evaluation.metrics.accuracy.f-measure'
-                'max_diff': 0.03
-'ACTION-pot_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-fish,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'base': 'training_evaluation.metrics.accuracy.f-measure'
-                'max_diff': 0.03
-'ACTION-nncf_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-fish,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'base': 'training_evaluation.metrics.accuracy.f-measure'
-                'max_diff_if_less_threshold': 0.03
-'ACTION-nncf_export_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-fish,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'base': 'nncf_evaluation.metrics.accuracy.f-measure'
-                'max_diff': 0.03
+? "ACTION-training_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-vitens,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "target_value": 0.798
+    "max_diff_if_less_threshold": 0.03
+    "max_diff_if_greater_threshold": 0.03
+? "ACTION-export_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-vitens,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "training_evaluation.metrics.accuracy.f-measure"
+    "max_diff": 0.03
+? "ACTION-pot_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-vitens,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "training_evaluation.metrics.accuracy.f-measure"
+    "max_diff": 0.03
+? "ACTION-nncf_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-vitens,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "training_evaluation.metrics.accuracy.f-measure"
+    "max_diff_if_less_threshold": 0.03
+? "ACTION-nncf_export_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-vitens,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "nncf_evaluation.metrics.accuracy.f-measure"
+    "max_diff": 0.03
 
+? "ACTION-training_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-diopsis,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "target_value": 0.835
+    "max_diff_if_less_threshold": 0.06
+    "max_diff_if_greater_threshold": 0.06
+? "ACTION-export_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-diopsis,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "training_evaluation.metrics.accuracy.f-measure"
+    "max_diff": 0.06
+? "ACTION-pot_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-diopsis,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "training_evaluation.metrics.accuracy.f-measure"
+    "max_diff": 0.06
+? "ACTION-nncf_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-diopsis,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "training_evaluation.metrics.accuracy.f-measure"
+    "max_diff_if_less_threshold": 0.06
+? "ACTION-nncf_export_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-diopsis,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "nncf_evaluation.metrics.accuracy.f-measure"
+    "max_diff": 0.06
 
-'ACTION-training_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-vitens,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'target_value': 0.851
-                'max_diff_if_less_threshold': 0.03
-                'max_diff_if_greater_threshold': 0.03
-'ACTION-export_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-vitens,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'base': 'training_evaluation.metrics.accuracy.f-measure'
-                'max_diff': 0.03
-'ACTION-pot_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-vitens,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'base': 'training_evaluation.metrics.accuracy.f-measure'
-                'max_diff': 0.03
-'ACTION-nncf_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-vitens,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'base': 'training_evaluation.metrics.accuracy.f-measure'
-                'max_diff_if_less_threshold': 0.03
-'ACTION-nncf_export_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-vitens,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'base': 'nncf_evaluation.metrics.accuracy.f-measure'
-                'max_diff': 0.03
-
-'ACTION-training_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-vitens,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'target_value': 0.798
-                'max_diff_if_less_threshold': 0.03
-                'max_diff_if_greater_threshold': 0.03
-'ACTION-export_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-vitens,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'base': 'training_evaluation.metrics.accuracy.f-measure'
-                'max_diff': 0.03
-'ACTION-pot_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-vitens,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'base': 'training_evaluation.metrics.accuracy.f-measure'
-                'max_diff': 0.03
-'ACTION-nncf_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-vitens,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'base': 'training_evaluation.metrics.accuracy.f-measure'
-                'max_diff_if_less_threshold': 0.03
-'ACTION-nncf_export_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-vitens,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'base': 'nncf_evaluation.metrics.accuracy.f-measure'
-                'max_diff': 0.03
-
-
-'ACTION-training_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-diopsis,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'target_value': 0.835
-                'max_diff_if_less_threshold': 0.06
-                'max_diff_if_greater_threshold': 0.06
-'ACTION-export_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-diopsis,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'base': 'training_evaluation.metrics.accuracy.f-measure'
-                'max_diff': 0.06
-'ACTION-pot_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-diopsis,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'base': 'training_evaluation.metrics.accuracy.f-measure'
-                'max_diff': 0.06
-'ACTION-nncf_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-diopsis,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'base': 'training_evaluation.metrics.accuracy.f-measure'
-                'max_diff_if_less_threshold': 0.06
-'ACTION-nncf_export_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-diopsis,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'base': 'nncf_evaluation.metrics.accuracy.f-measure'
-                'max_diff': 0.06
-
-'ACTION-training_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-diopsis,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'target_value': 0.822
-                'max_diff_if_less_threshold': 0.06
-                'max_diff_if_greater_threshold': 0.06
-'ACTION-export_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-diopsis,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'base': 'training_evaluation.metrics.accuracy.f-measure'
-                'max_diff': 0.06
-'ACTION-pot_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-diopsis,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'base': 'training_evaluation.metrics.accuracy.f-measure'
-                'max_diff': 0.06
-'ACTION-nncf_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-diopsis,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'base': 'training_evaluation.metrics.accuracy.f-measure'
-                'max_diff_if_less_threshold': 0.06
-'ACTION-nncf_export_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-diopsis,num_iters-CONFIG,batch-CONFIG,usecase-reallife':
-        'metrics.accuracy.f-measure':
-                'base': 'nncf_evaluation.metrics.accuracy.f-measure'
-                'max_diff': 0.06
+? "ACTION-training_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-diopsis,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "target_value": 0.822
+    "max_diff_if_less_threshold": 0.06
+    "max_diff_if_greater_threshold": 0.06
+? "ACTION-export_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-diopsis,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "training_evaluation.metrics.accuracy.f-measure"
+    "max_diff": 0.06
+? "ACTION-pot_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-diopsis,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "training_evaluation.metrics.accuracy.f-measure"
+    "max_diff": 0.06
+? "ACTION-nncf_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-diopsis,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "training_evaluation.metrics.accuracy.f-measure"
+    "max_diff_if_less_threshold": 0.06
+? "ACTION-nncf_export_evaluation,model-Custom_Object_Detection_Gen3_SSD,dataset-diopsis,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "nncf_evaluation.metrics.accuracy.f-measure"
+    "max_diff": 0.06

@@ -4,10 +4,10 @@ name: ATSS
 task_type: DETECTION
 task_family: VISION
 instantiation: "CLASS"
-summary: Model with medium inference speed and comparable to SSD training time. Works well enough regardless of dataset 
+summary:
+  Model with medium inference speed and comparable to SSD training time. Works well enough regardless of dataset
   size and difficulty.
-application:
-  ~
+application: ~
 
 # Algo backend.
 framework: OTEDetection v2.9.1

@@ -4,11 +4,11 @@ name: YOLOX
 task_type: DETECTION
 task_family: VISION
 instantiation: "CLASS"
-summary: Model with fastest inference speed, more than 2x compared to SSD, and comparable, slightly slower, training time.
+summary:
+  Model with fastest inference speed, more than 2x compared to SSD, and comparable, slightly slower, training time.
   Works best on datasets with large objects, can struggle with small objects.
 
-application:
-  ~
+application: ~
 
 # Algo backend.
 framework: OTEDetection v2.9.1

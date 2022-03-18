@@ -4,10 +4,10 @@ name: VFNet
 task_type: DETECTION
 task_family: VISION
 instantiation: "CLASS"
-summary: Model achieves the best accuracy but doubles the training time compared to ATSS and has the slowest
+summary:
+  Model achieves the best accuracy but doubles the training time compared to ATSS and has the slowest
   inference speed.
-application:
-  ~
+application: ~
 
 # Algo backend.
 framework: OTEDetection v2.9.1

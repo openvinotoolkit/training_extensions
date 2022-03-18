@@ -4,7 +4,7 @@ name: MaskRCNN-ResNet50
 task_type: INSTANCE_SEGMENTATION
 task_family: VISION
 instantiation: "CLASS"
-summary: Counting algorithm provides counting of objects and object instance masks. This model is based on MaskRCNN-ResNet50 which gives accurate predictions but slower during training and inference. 
+summary: Counting algorithm provides counting of objects and object instance masks. This model is based on MaskRCNN-ResNet50 which gives accurate predictions but slower during training and inference.
 application: ~
 
 # Algo backend.
