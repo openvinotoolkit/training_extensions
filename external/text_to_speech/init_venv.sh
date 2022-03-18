@@ -65,9 +65,8 @@ if [ -e "$CUDA_HOME" ]; then
 fi
 
 # install PyTorch and MMCV.
-export TORCH_VERSION=1.6.0
-export TORCHVISION_VERSION=0.7.0
-export CUDA_VERSION=10.2
+export TORCH_VERSION=1.8.2
+export CUDA_VERSION=11.1
 
 if [[ -z ${CUDA_VERSION} ]]; then
   echo "CUDA was not found, installing dependencies in CPU-only mode. If you want to use CUDA, set CUDA_HOME and CUDA_VERSION beforehand."
@@ -89,21 +88,18 @@ pip install --upgrade pip || exit 1
 
 if [[ -z $CUDA_VERSION_CODE ]]; then
   export TORCH_VERSION=${TORCH_VERSION}+cpu
-  export TORCHVISION_VERSION=${TORCHVISION_VERSION}+cpu
 else
   export TORCH_VERSION=${TORCH_VERSION}
-  export TORCHVISION_VERSION=${TORCHVISION_VERSION}
 fi
 
-pip install torch==${TORCH_VERSION} torchvision==${TORCHVISION_VERSION} -f https://download.pytorch.org/whl/lts/1.8/torch_lts.html || exit 1
+pip install torch==${TORCH_VERSION} -f https://download.pytorch.org/whl/lts/1.8/torch_lts.html || exit 1
 echo torch==${TORCH_VERSION} >> ${CONSTRAINTS_FILE}
-echo torchvision==${TORCHVISION_VERSION} >> ${CONSTRAINTS_FILE}
 
 # Install other requirements.
 cat requirements.txt | xargs -n 1 -L 1 pip install -c ${CONSTRAINTS_FILE} || exit 1
 cat openvino-requirements.txt | xargs -n 1 -L 1 pip install -c ${CONSTRAINTS_FILE} || exit 1
 
-cd monotonic_align; python setup.py build_ext --inplace; cd .. || exit 1
+cd monotonic_align && python setup.py build_ext --inplace && cd .. || exit 1
 
 pip install -e . || exit 1
 
