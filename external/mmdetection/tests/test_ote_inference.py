@@ -29,10 +29,10 @@ from mmdet.datasets import build_dataloader, build_dataset
 from mmdet.parallel import MMDataCPU
 
 MODEL_CONFIGS = [
-    'configs/ote/custom-object-detection/gen3_resnet50_VFNet/model.py',
-    'configs/ote/custom-object-detection/gen3_mobilenetV2_ATSS/model.py',
-    'configs/ote/custom-object-detection/gen3_mobilenetV2_SSD/model.py',
-    'configs/ote/custom-object-detection/cspdarknet_YOLOX/model.py'
+    'configs/custom-object-detection/gen3_resnet50_VFNet/model.py',
+    'configs/custom-object-detection/gen3_mobilenetV2_ATSS/model.py',
+    'configs/custom-object-detection/gen3_mobilenetV2_SSD/model.py',
+    'configs/custom-object-detection/cspdarknet_YOLOX/model.py'
 ]
 
 DEVICES = ['cuda:0', 'cpu']
