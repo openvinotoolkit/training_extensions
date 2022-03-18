@@ -58,13 +58,19 @@ def test(run_algo_tests):
     passed = {}
     success = True
     command = ["pytest", os.path.join("tests", "ote_cli", "misc"), "-v"]
-    res = run(command, env=collect_env_vars(wd), check=True).returncode == 0
+    try:
+        res = run(command, env=collect_env_vars(wd), check=True).returncode == 0
+    except:
+        res = False
     passed["misc"] = res
     success *= res
     for algo_dir in ALGO_DIRS:
         if run_algo_tests[algo_dir]:
-            command = ["pytest", os.path.join("tests", "ote_cli", algo_dir), "-v", "--durations=0"]
-            res = run(command, env=collect_env_vars(wd), check=True).returncode == 0
+            command = ["pytest", os.path.join("tests", "ote_cli", algo_dir), "-v", "--durations=10"]
+            try:
+                res = run(command, env=collect_env_vars(wd), check=True).returncode == 0
+            except:
+                res = False
             passed[algo_dir] = res
             success *= res
 
