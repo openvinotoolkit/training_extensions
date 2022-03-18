@@ -149,7 +149,7 @@ def draw_predictions(task_type, predictions, frame, fit_to_size):
         ratio_y = fit_to_size[1] / height
         ratio = min(ratio_x, ratio_y)
         frame = cv2.resize(frame, None, fx=ratio, fy=ratio)
-    if task_type == TaskType.DETECTION:
+    if task_type in {TaskType.DETECTION, TaskType.ANOMALY_DETECTION}:
         frame = draw_bounding_boxes(frame, predictions, put_object_count=True)
     elif task_type in {TaskType.CLASSIFICATION, TaskType.ANOMALY_CLASSIFICATION}:
         frame = put_labels(frame, predictions)
