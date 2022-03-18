@@ -58,16 +58,13 @@ class AnomalyInferenceCallback(Callback):
             self.ote_dataset, pred_scores, pred_labels, anomaly_maps, pred_masks
         ):
             label = self.anomalous_label if pred_label else self.normal_label
-            if self.task_type == TaskType.ANOMALY_CLASSIFICATION:
-                probability = (1 - pred_score) if pred_score < 0.5 else pred_score
-                dataset_item.append_labels([ScoredLabel(label=label, probability=float(probability))])
-            elif self.task_type == TaskType.ANOMALY_SEGMENTATION:
+            probability = (1 - pred_score) if pred_score < 0.5 else pred_score
+            dataset_item.append_labels([ScoredLabel(label=label, probability=float(probability))])
+            if self.task_type == TaskType.ANOMALY_SEGMENTATION:
                 mask = pred_mask.squeeze().astype(np.uint8)
                 dataset_item.append_annotations(
                     create_annotation_from_segmentation_map(mask, anomaly_map.squeeze(), self.label_map)
                 )
-            else:
-                raise ValueError(f"Unknown task type: {self.task_type}")
 
             dataset_item.append_metadata_item(
                 ResultMediaEntity(

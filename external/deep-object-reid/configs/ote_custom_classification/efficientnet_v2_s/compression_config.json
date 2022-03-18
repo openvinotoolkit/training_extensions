@@ -1,0 +1,59 @@
+{
+    "base": {
+        "nncf_config": {
+            "compression": [],
+            "log_dir": "."
+        }
+    },
+    "nncf_quantization": {
+        "lr_finder": {
+            "enable": false
+        },
+        "train": {
+            "batch_size": 64,
+            "ema": {
+                "enable": false
+            },
+            "mix_precision": false
+        },
+        "test": {
+            "batch_size": 64
+        },
+        "nncf_aux_config_changes": [
+            {
+                "train": {
+                    "batch_size": 64
+                },
+                "test": {
+                    "batch_size": 64
+                }
+            }
+        ],
+        "nncf_config": {
+            "compression": [
+                {
+                    "algorithm": "quantization",
+                    "preset": "mixed",
+                    "initializer": {
+                        "range": {
+                            "num_init_samples": 8192
+                        },
+                        "batchnorm_adaptation": {
+                            "num_bn_adaptation_samples": 8192
+                        }
+                    }
+                }
+            ],
+            "accuracy_aware_training": {
+                "mode": "early_exit",
+                "params": {
+                    "maximal_absolute_accuracy_degradation": 0.01,
+                    "maximal_total_epochs": 100
+                }
+            }
+        }
+    },
+    "order_of_parts": [
+        "nncf_quantization"
+    ]
+}

@@ -1,0 +1,89 @@
+lr_finder:
+  enable: False
+  mode: TPE
+  stop_after: False
+  num_epochs: 7
+  step: 0.001
+  epochs_warmup: 1
+  path_to_savefig: 'lr_finder.jpg'
+  max_lr: 1e-3
+  min_lr: 1e-5
+  n_trials: 15
+
+model:
+  name: 'mobilenetv3_large_075'
+  type: 'multilabel'
+  pretrained: True
+  save_all_chkpts: False
+  dropout_cls:
+    p: 0.1
+
+custom_datasets:
+  roots: ['data/coco/train.json', 'data/coco/val.json']
+  types: ['multilabel_classification', 'multilabel_classification']
+
+data:
+  root: './'
+  height: 224
+  width: 224
+  norm_mean: [0.485, 0.456, 0.406]
+  norm_std: [0.229, 0.224, 0.225]
+  save_dir: 'output/mulitilabel/mobilenetv3_large_75'
+  workers: 6
+  transforms:
+    random_flip:
+      enable: True
+      p: 0.5
+    randaugment:
+      enable: True
+    cutout:
+      enable: True
+      cutout_factor: 0.35
+      p: 0.35
+
+loss:
+  name: 'am_binary'
+  softmax:
+    s: 30.0
+    m: 0.01
+    compute_s: False
+  asl:
+    gamma_pos: 0.
+    gamma_neg: 0.
+  am_binary:
+    amb_t: 2.0
+    amb_k: 0.7
+
+sampler:
+  train_sampler: 'RandomSampler'
+
+train:
+  optim: 'sam'
+  lr: 0.016
+  nbd: True
+  max_epoch: 60
+  weight_decay: 5e-4
+  batch_size: 64
+  lr_scheduler: 'onecycle'
+  early_stopping: True
+  pct_start: 0.1
+  train_patience: 5
+  lr_decay_factor: 1000
+  deterministic: True
+  target_metric: test_acc
+  gamma: 0.1
+  sam:
+    rho: 0.05
+  ema:
+    enable: True
+    ema_decay: 0.9995
+  mix_precision: True
+
+test:
+  batch_size: 128
+  evaluate: False
+  eval_freq: 1
+
+sc_integration:
+  epoch_scale: 3.
+  lr_scale: 3.

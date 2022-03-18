@@ -23,12 +23,10 @@ def get_template_rel_dir(template):
 
 def get_some_vars(template, root):
     template_dir = get_template_rel_dir(template)
-    task_type = template.task_type
-    work_dir = os.path.join(root, str(task_type))
+    algo_backend_dir = '/'.join(template_dir.split('/')[:2])
+    work_dir = os.path.join(root, os.path.basename(algo_backend_dir))
     template_work_dir = os.path.join(work_dir, template_dir)
     os.makedirs(template_work_dir, exist_ok=True)
-    algo_backend_dir = '/'.join(template_dir.split('/')[:2])
-
     return work_dir, template_work_dir, algo_backend_dir
 
 
@@ -60,6 +58,8 @@ def collect_env_vars(work_dir):
         vars.update({'HTTPS_PROXY': os.environ['HTTPS_PROXY']})
     if 'NO_PROXY' in os.environ:
         vars.update({'NO_PROXY': os.environ['NO_PROXY']})
+    if 'OTE_SDK_PATH' in os.environ:
+        vars.update({'OTE_SDK_PATH': os.environ['OTE_SDK_PATH']})
     return vars
 
 
