@@ -7,7 +7,7 @@ import copy
 import os
 from dataclasses import dataclass, field
 from enum import Enum, IntEnum, auto
-from typing import Dict, List, Optional, Sequence, Union, cast
+from typing import Dict, List, NamedTuple, Optional, Sequence, Union, cast
 
 from omegaconf import DictConfig, ListConfig, OmegaConf
 
@@ -73,6 +73,18 @@ class TaskFamily(Enum):
         return str(self.name)
 
 
+class TaskInfo(NamedTuple):
+    """
+    NamedTuple to store information about the task type like label domain, if it is
+    trainable, if it is an anomaly task and if it supports global labels.
+    """
+
+    domain: Domain
+    is_trainable: bool
+    is_anomaly: bool
+    is_global: bool
+
+
 class TaskType(Enum):
     """
     The type of algorithm within the task family. Also contains relevant information
@@ -80,44 +92,75 @@ class TaskType(Enum):
     or if it supports global labels.
     """
 
-    def __new__(cls, *args, **kwds):
-        obj = object.__new__(cls)
-        obj._value_ = args[0]
-        return obj
-
     def __init__(
         self,
         value: int,
-        domain: Domain,
-        is_trainable: bool,
-        is_anomaly: bool,
-        is_global: bool,
+        task_info: TaskInfo,
     ):
         """
         :param value: Unique integer for .value property of Enum (auto() does not work)
-        :param domain: Label domain of the task type
-        :param is_trainable: Boolean indicating if the task type can be trained
-        :param is_anomaly: Boolean indicating if the task is an anomaly task
-        :param is_global: Boolean indicating if the task support global labels
+        :param task_info: NamedTuple containing information about the task's capabilities
         """
-        self.domain = domain
-        self.is_trainable = is_trainable
-        self.is_anomaly = is_anomaly
-        self.is_global = is_global
+        self._value_ = value
+        self.domain = task_info.domain
+        self.is_trainable = task_info.is_trainable
+        self.is_anomaly = task_info.is_anomaly
+        self.is_global = task_info.is_global
 
-    NULL = 1, Domain.NULL, False, False, False
-    DATASET = 2, Domain.NULL, False, False, False
-    CLASSIFICATION = 3, Domain.CLASSIFICATION, True, False, True
-    SEGMENTATION = 4, Domain.SEGMENTATION, True, False, False
-    DETECTION = 5, Domain.DETECTION, True, False, False
-    ANOMALY_DETECTION = 6, Domain.ANOMALY_DETECTION, True, True, False
-    CROP = 7, Domain.NULL, False, False, False
-    TILE = 8, Domain.NULL, False, False, False
-    INSTANCE_SEGMENTATION = 9, Domain.INSTANCE_SEGMENTATION, True, False, False
-    ACTIVELEARNING = 10, Domain.NULL, False, False, False
-    ANOMALY_SEGMENTATION = 11, Domain.ANOMALY_SEGMENTATION, True, True, False
-    ANOMALY_CLASSIFICATION = 12, Domain.ANOMALY_CLASSIFICATION, True, True, True
-    ROTATED_DETECTION = 13, Domain.ROTATED_DETECTION, True, False, False
+    NULL = 1, TaskInfo(
+        domain=Domain.NULL, is_trainable=False, is_anomaly=False, is_global=False
+    )
+    DATASET = 2, TaskInfo(
+        domain=Domain.NULL, is_trainable=False, is_anomaly=False, is_global=False
+    )
+    CLASSIFICATION = 3, TaskInfo(
+        domain=Domain.CLASSIFICATION,
+        is_trainable=True,
+        is_anomaly=False,
+        is_global=True,
+    )
+    SEGMENTATION = 4, TaskInfo(
+        domain=Domain.SEGMENTATION, is_trainable=True, is_anomaly=False, is_global=False
+    )
+    DETECTION = 5, TaskInfo(
+        domain=Domain.DETECTION, is_trainable=True, is_anomaly=False, is_global=False
+    )
+    ANOMALY_DETECTION = 6, TaskInfo(
+        Domain.ANOMALY_DETECTION, True, True, is_global=False
+    )
+    CROP = 7, TaskInfo(
+        domain=Domain.NULL, is_trainable=False, is_anomaly=False, is_global=False
+    )
+    TILE = 8, TaskInfo(
+        domain=Domain.NULL, is_trainable=False, is_anomaly=False, is_global=False
+    )
+    INSTANCE_SEGMENTATION = 9, TaskInfo(
+        domain=Domain.INSTANCE_SEGMENTATION,
+        is_trainable=True,
+        is_anomaly=False,
+        is_global=False,
+    )
+    ACTIVELEARNING = 10, TaskInfo(
+        domain=Domain.NULL, is_trainable=False, is_anomaly=False, is_global=False
+    )
+    ANOMALY_SEGMENTATION = 11, TaskInfo(
+        domain=Domain.ANOMALY_SEGMENTATION,
+        is_trainable=True,
+        is_anomaly=True,
+        is_global=False,
+    )
+    ANOMALY_CLASSIFICATION = 12, TaskInfo(
+        domain=Domain.ANOMALY_CLASSIFICATION,
+        is_trainable=True,
+        is_anomaly=True,
+        is_global=True,
+    )
+    ROTATED_DETECTION = 13, TaskInfo(
+        domain=Domain.ROTATED_DETECTION,
+        is_trainable=True,
+        is_anomaly=False,
+        is_global=False,
+    )
 
     def __str__(self) -> str:
         return str(self.name)
