@@ -292,7 +292,11 @@ def ote_eval_deployment_testing(template, root, ote_dir, args, threshold):
         deployed_performance = json.load(read_file)
 
     for k in exported_performance.keys():
-        assert abs(exported_performance[k] - deployed_performance[k]) / exported_performance[k] <= threshold, f"{exported_performance[k]=}, {deployed_performance[k]=}"
+        assert (
+            abs(exported_performance[k] - deployed_performance[k])
+            / (exported_performance[k] + 1e-10)
+            <= threshold
+        ), f"{exported_performance[k]=}, {deployed_performance[k]=}"
 
 
 def ote_demo_deployment_testing(template, root, ote_dir, args):
