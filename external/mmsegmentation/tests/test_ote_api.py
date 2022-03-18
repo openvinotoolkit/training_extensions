@@ -190,3 +190,7 @@ class API(unittest.TestCase):
         self.assertGreater(len(inference_progress_curve), 0)
         inference_progress_curve = np.asarray(inference_progress_curve)
         self.assertTrue(np.all(inference_progress_curve[1:] >= inference_progress_curve[:-1]))
+        
+    @e2e_pytest_api
+    def test_nncf_optimize_progress_tracking(self):
+        pytest.xfail('NNCF is not supported yet')
