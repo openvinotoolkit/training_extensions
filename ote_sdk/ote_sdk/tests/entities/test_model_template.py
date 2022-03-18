@@ -252,19 +252,19 @@ class TestTaskType:
         assert TaskType.ANOMALY_SEGMENTATION.value == 11
         assert TaskType.ANOMALY_CLASSIFICATION.value == 12
         assert TaskType.ROTATED_DETECTION.value == 13
-        assert str(TaskType.NULL) == "TaskType.NULL"
-        assert str(TaskType.DATASET) == "TaskType.DATASET"
-        assert str(TaskType.CLASSIFICATION) == "TaskType.CLASSIFICATION"
-        assert str(TaskType.SEGMENTATION) == "TaskType.SEGMENTATION"
-        assert str(TaskType.DETECTION) == "TaskType.DETECTION"
-        assert str(TaskType.ANOMALY_DETECTION) == "TaskType.ANOMALY_DETECTION"
-        assert str(TaskType.CROP) == "TaskType.CROP"
-        assert str(TaskType.TILE) == "TaskType.TILE"
-        assert str(TaskType.INSTANCE_SEGMENTATION) == "TaskType.INSTANCE_SEGMENTATION"
-        assert str(TaskType.ACTIVELEARNING) == "TaskType.ACTIVELEARNING"
-        assert str(TaskType.ANOMALY_SEGMENTATION) == "TaskType.ANOMALY_SEGMENTATION"
-        assert str(TaskType.ANOMALY_CLASSIFICATION) == "TaskType.ANOMALY_CLASSIFICATION"
-        assert str(TaskType.ROTATED_DETECTION) == "TaskType.ROTATED_DETECTION"
+        assert str(TaskType.NULL) == "NULL"
+        assert str(TaskType.DATASET) == "DATASET"
+        assert str(TaskType.CLASSIFICATION) == "CLASSIFICATION"
+        assert str(TaskType.SEGMENTATION) == "SEGMENTATION"
+        assert str(TaskType.DETECTION) == "DETECTION"
+        assert str(TaskType.ANOMALY_DETECTION) == "ANOMALY_DETECTION"
+        assert str(TaskType.CROP) == "CROP"
+        assert str(TaskType.TILE) == "TILE"
+        assert str(TaskType.INSTANCE_SEGMENTATION) == "INSTANCE_SEGMENTATION"
+        assert str(TaskType.ACTIVELEARNING) == "ACTIVELEARNING"
+        assert str(TaskType.ANOMALY_SEGMENTATION) == "ANOMALY_SEGMENTATION"
+        assert str(TaskType.ANOMALY_CLASSIFICATION) == "ANOMALY_CLASSIFICATION"
+        assert str(TaskType.ROTATED_DETECTION) == "ROTATED_DETECTION"
 
     @pytest.mark.priority_medium
     @pytest.mark.unit

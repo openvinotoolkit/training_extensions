@@ -200,6 +200,9 @@ class TaskType(Enum):
         is_local=True,
     )
 
+    def __str__(self) -> str:
+        return str(self.name)
+
     def __repr__(self) -> str:
         return self.name
 
