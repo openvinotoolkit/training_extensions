@@ -1,23 +1,13 @@
 """Detection Utils."""
 
-# Copyright (C) 2021 Intel Corporation
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions
-# and limitations under the License.
+# Copyright (C) 2021-2022 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 
 from typing import Dict, List
 
 import cv2
 import numpy as np
+
 from ote_sdk.entities.annotation import Annotation
 from ote_sdk.entities.label import LabelEntity
 from ote_sdk.entities.scored_label import ScoredLabel
@@ -25,19 +15,18 @@ from ote_sdk.entities.shapes.rectangle import Rectangle
 
 
 def create_detection_annotation_from_anomaly_heatmap(
-    hard_prediction: np.ndarray, soft_prediction: np.ndarray, label_map: Dict[int, LabelEntity]
+    hard_prediction: np.ndarray,
+    soft_prediction: np.ndarray,
+    label_map: Dict[int, LabelEntity],
 ) -> List[Annotation]:
     """Create box annotation from the soft predictions.
 
-    Args:
-        hard_prediction (np.ndarray): hard prediction containing the final label index per pixel.
-        soft_prediction (np.ndarray): soft prediction with shape ,
-        label_map (Dict[int, LabelEntity]): dictionary mapping labels to an index.
-            It is assumed that the first item in the dictionary corresponds to the
-            background label and will therefore be ignored.
-
-    Returns:
-        List[Annotation]: List of annotations.
+    :param hard_prediction: hard prediction containing the final label index per pixel.
+    :param soft_prediction: soft prediction with shape
+    :param label_map: dictionary mapping labels to an index.
+        It is assumed that the first item in the dictionary corresponds to the
+        background label and will therefore be ignored.
+    :return: List of annotations.
     """
     # pylint: disable=too-many-locals
     if hard_prediction.ndim == 3 and hard_prediction.shape[0] == 1:
@@ -56,7 +45,9 @@ def create_detection_annotation_from_anomaly_heatmap(
 
         # cv2.connectedComponentsWithStats returns num_labels, labels, coordinates
         # and centroids. This script only needs the coordinates.
-        _, connected_components, coordinates, _ = cv2.connectedComponentsWithStats(hard_prediction)
+        _, connected_components, coordinates, _ = cv2.connectedComponentsWithStats(
+            hard_prediction
+        )
 
         for i, coordinate in enumerate(coordinates):
             # First row of the coordinates is always backround,
@@ -74,15 +65,19 @@ def create_detection_annotation_from_anomaly_heatmap(
                 soft_prediction, soft_prediction, mask=component_hard_prediction
             )
 
-            # TODO: Find the best approach to calculate the probability
-            # probability = cv2.mean(current_label_soft_prediction, component_soft_prediction)[0]
+            # NOTE: Find the best approach to calculate the probability
             probability = component_soft_prediction.reshape(-1).max()
 
-            # TODO: Add NMS here.
+            # NOTE: NMS could be needed here.
 
             # Create the annotation based on the box shape and the probability.
             shape = Rectangle(
-                x1=comp_x / image_w, y1=comp_y / image_h, x2=(comp_x + comp_w) / image_w, y2=(comp_y + comp_h) / image_h
+                x1=comp_x / image_w,
+                y1=comp_y / image_h,
+                x2=(comp_x + comp_w) / image_w,
+                y2=(comp_y + comp_h) / image_h,
             )
-            annotations.append(Annotation(shape=shape, labels=[ScoredLabel(label, probability)]))
+            annotations.append(
+                Annotation(shape=shape, labels=[ScoredLabel(label, probability)])
+            )
     return annotations
