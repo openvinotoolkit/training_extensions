@@ -126,7 +126,10 @@ class TaskType(Enum):
         domain=Domain.DETECTION, is_trainable=True, is_anomaly=False, is_global=False
     )
     ANOMALY_DETECTION = 6, TaskInfo(
-        Domain.ANOMALY_DETECTION, True, True, is_global=False
+        domain=Domain.ANOMALY_DETECTION,
+        is_trainable=True,
+        is_anomaly=True,
+        is_global=False,
     )
     CROP = 7, TaskInfo(
         domain=Domain.NULL, is_trainable=False, is_anomaly=False, is_global=False
