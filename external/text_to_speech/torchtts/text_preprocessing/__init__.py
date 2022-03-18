@@ -6,6 +6,8 @@
 # SPDX-License-Identifier: MIT
 #
 # from https://github.com/keithito/tacotron
+# Copyright (c) 2017 Keith Ito
+# SPDX-License-Identifier: MIT
 #
 import re
 from . import cleaners

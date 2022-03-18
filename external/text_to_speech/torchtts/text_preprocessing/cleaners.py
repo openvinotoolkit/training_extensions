@@ -3,6 +3,8 @@
 # SPDX-License-Identifier: MIT
 #
 # from https://github.com/keithito/tacotron
+# Copyright (c) 2017 Keith Ito
+# SPDX-License-Identifier: MIT
 #
 '''
 Cleaners are transformations that run over the input text at both training and eval time.
