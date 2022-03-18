@@ -133,7 +133,7 @@ class ClassificationTrainingTestParameters(DefaultOTETestCreationParametersInter
                        'Custom_Image_Classification_EfficientNet-V2-S',
                        'Custom_Image_Classification_MobileNet-V3-large-1x',
                     ],
-                    dataset_name='lg_chem_short',
+                    dataset_name=['lg_chem_short','mlc_voc_short'],
                     usecase='precommit',
                 ),
                 dict(
@@ -141,7 +141,7 @@ class ClassificationTrainingTestParameters(DefaultOTETestCreationParametersInter
                        'Custom_Image_Classification_EfficientNet-V2-S',
                        'Custom_Image_Classification_MobileNet-V3-large-1x',
                     ],
-                    dataset_name=['lg_chem','cifar100'],
+                    dataset_name=['lg_chem','cifar100','mlc_voc'],
                     max_num_epochs=KEEP_CONFIG_FIELD_VALUE,
                     batch_size=KEEP_CONFIG_FIELD_VALUE,
                     usecase=REALLIFE_USECASE_CONSTANT,
@@ -173,7 +173,7 @@ class ClassificationTrainingTestParameters(DefaultOTETestCreationParametersInter
 
     def default_test_parameters(self) -> Dict[str, Any]:
         DEFAULT_TEST_PARAMETERS = {
-            "max_num_epochs": 1,
+            "max_num_epochs": 3,
             "batch_size": 2,
         }
         return deepcopy(DEFAULT_TEST_PARAMETERS)
