@@ -1041,6 +1041,7 @@ class TestTaskTypesConstants:
             TaskType.ANOMALY_DETECTION,
             TaskType.ANOMALY_CLASSIFICATION,
             TaskType.ANOMALY_SEGMENTATION,
+            TaskType.ROTATED_DETECTION,
         )
 
 
