@@ -25,20 +25,29 @@ from common import (
     get_some_vars,
     wrong_paths,
 <<<<<<< HEAD
+<<<<<<< HEAD
     ote_common,
     logger
 =======
     ote_common
 >>>>>>> c9e7fcf1 (test ote cli common args)
+=======
+    ote_common,
+    logger
+>>>>>>> 070c0d85 (iteraiton 001)
 )
 
 
 root = '/tmp/ote_cli/'
 <<<<<<< HEAD
+<<<<<<< HEAD
 ote_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 =======
 ote_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 >>>>>>> c9e7fcf1 (test ote cli common args)
+=======
+ote_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+>>>>>>> 070c0d85 (iteraiton 001)
 external_path = os.path.join(ote_dir, "external")
 
 
