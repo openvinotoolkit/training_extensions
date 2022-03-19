@@ -25,12 +25,13 @@ from common import (
     get_some_vars,
     args_paths,
     wrong_paths,
-    ote_common
+    ote_common,
+    logger
 )
 
 
 root = '/tmp/ote_cli/'
-ote_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+ote_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 external_path = os.path.join(ote_dir, "external")
 
 
