@@ -36,7 +36,7 @@ from ote_cli.utils.tests import (
     ote_export_testing,
 )
 
-
+pytestmark = pytest.mark.skipif(True, reason="REMOVE THE LINE BEFORE MERGE TO DEVELOP")
 args = {
     '--train-ann-file': 'data/car_tree_bug/annotations/instances_default.json',
     '--train-data-roots': 'data/car_tree_bug/images',
@@ -61,7 +61,6 @@ templates = Registry('external').filter(task_type='ROTATED_DETECTION').templates
 templates_ids = [template.model_template_id for template in templates]
 
 
-@pytest.mark.skip("REMOVE THE LINE BEFORE MERGE TO DEVELOP")
 class TestToolsRotatedDetection:
     @e2e_pytest_component
     def test_create_venv(self):

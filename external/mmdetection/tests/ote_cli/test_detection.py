@@ -43,7 +43,7 @@ from ote_cli.utils.tests import (
     nncf_eval_openvino_testing,
 )
 
-
+pytestmark = pytest.mark.skipif(True, reason="REMOVE THE LINE BEFORE MERGE TO DEVELOP")
 args = {
     '--train-ann-file': 'data/airport/annotation_example_train.json',
     '--train-data-roots': 'data/airport/train',
@@ -68,7 +68,6 @@ templates = Registry('external').filter(task_type='DETECTION').templates
 templates_ids = [template.model_template_id for template in templates]
 
 
-@pytest.mark.skip("REMOVE THE LINE BEFORE MERGE TO DEVELOP")
 class TestToolsDetection:
     @e2e_pytest_component
     def test_create_venv(self):

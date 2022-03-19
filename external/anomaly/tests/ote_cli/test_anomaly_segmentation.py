@@ -40,7 +40,7 @@ from ote_cli.utils.tests import (
     nncf_eval_openvino_testing,
 )
 
-
+pytestmark = pytest.mark.skipif(True, reason="REMOVE THE LINE BEFORE MERGE TO DEVELOP")
 args = {
     "--train-ann-file": "data/anomaly/segmentation/train.json",
     "--train-data-roots": "data/anomaly/shapes",
@@ -59,7 +59,6 @@ templates = Registry("external").filter(task_type="ANOMALY_SEGMENTATION").templa
 templates_ids = [template.model_template_id for template in templates]
 
 
-@pytest.mark.skip("REMOVE THE LINE BEFORE MERGE TO DEVELOP")
 class TestToolsAnomalySegmentation:
     @e2e_pytest_component
     def test_create_venv(self):
