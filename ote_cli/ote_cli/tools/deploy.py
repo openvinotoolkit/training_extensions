@@ -26,6 +26,7 @@ from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_cli.registry import find_and_parse_model_template
 from ote_cli.utils.importing import get_impl_class
 from ote_cli.utils.io import read_label_schema, read_model
+from ote_cli.utils.validate_path import validate_path
 
 
 def parse_args():
@@ -54,6 +55,12 @@ def main():
 
     # Parses input arguments.
     args = parse_args()
+
+    # Validate required paths that are sourced in args
+    validate_path(args.load_weights)
+
+    if args.save_model_to:
+        validate_path(args.save_model_to)
 
     # Reads model template file.
     template = find_and_parse_model_template(args.template)
