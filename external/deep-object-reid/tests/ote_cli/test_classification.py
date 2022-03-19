@@ -66,7 +66,6 @@ templates = Registry('external').filter(task_type='CLASSIFICATION').templates
 templates_ids = [template.model_template_id for template in templates]
 
 
-@pytest.mark.skip("REMOVE THE LINE BEFORE MERGE TO DEVELOP")
 class TestToolsClassification:
     @e2e_pytest_component
     def test_create_venv(self):
