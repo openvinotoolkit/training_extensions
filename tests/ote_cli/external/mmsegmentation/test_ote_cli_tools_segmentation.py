@@ -43,7 +43,7 @@ from common import (
     nncf_eval_openvino_testing,
 )
 
-
+pytestmark = pytest.mark.skipif(True, reason="REMOVE THE LINE BEFORE MERGE TO DEVELOP")
 args = {
     '--train-ann-file': 'data/segmentation/custom/annotations/training',
     '--train-data-roots': 'data/segmentation/custom/images/training',
@@ -68,7 +68,6 @@ templates = Registry('external').filter(task_type='SEGMENTATION').templates
 templates_ids = [template.model_template_id for template in templates]
 
 
-@pytest.mark.skip("REMOVE THE LINE BEFORE MERGE TO DEVELOP")
 class TestToolsSegmentation:
     @e2e_pytest_component
     def test_create_venv(self):
