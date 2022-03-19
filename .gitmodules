@@ -1,5 +1,5 @@
 [submodule "external/mmdetection"]
-	path = external/mmdetection
+	path = external/mmdetection/submodule
 	url = ../../openvinotoolkit/mmdetection
 [submodule "external/deep-object-reid"]
 	path = external/deep-object-reid/submodule
