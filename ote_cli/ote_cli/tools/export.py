@@ -29,6 +29,7 @@ from ote_cli.registry import find_and_parse_model_template
 from ote_cli.utils.importing import get_impl_class
 from ote_cli.utils.io import read_binary, read_label_schema, save_model_data
 from ote_cli.utils.nncf import is_checkpoint_nncf
+from ote_cli.utils.validate_path import validate_path
 
 
 def parse_args():
@@ -45,7 +46,7 @@ def parse_args():
     )
     parser.add_argument(
         "--save-model-to",
-        required="True",
+        required=True,
         help="Location where exported model will be stored.",
     )
 
@@ -58,6 +59,10 @@ def main():
     """
 
     args = parse_args()
+
+    # Validate required paths that are sourced in args
+    validate_path(args.load_weights)
+    validate_path(args.save_model_to)
 
     # Load template.yaml file.
     template = find_and_parse_model_template(args.template)

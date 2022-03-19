@@ -39,6 +39,7 @@ from ote_cli.utils.parser import (
     add_hyper_parameters_sub_parser,
     gen_params_dict_from_args,
 )
+from ote_cli.utils.validate_path import validate_path
 
 ESC_BUTTON = 27
 
@@ -130,12 +131,22 @@ def main():
 
     # Dynamically create an argument parser based on override parameters.
     args, template, hyper_parameters = parse_args()
+
+    # Validate required paths that are sourced in args
+    validate_path(args.input)
+    validate_path(args.load_weights)
+
     # Get new values from user's input.
     updated_hyper_parameters = gen_params_dict_from_args(args)
     # Override overridden parameters by user's values.
     override_parameters(updated_hyper_parameters, hyper_parameters)
 
     hyper_parameters = create(hyper_parameters)
+
+    if args.fit_to_size:
+        height, width = args.fit_to_size
+        if height <= 0 or width <= 0:
+            raise ValueError("Both values of --fit_to_size parameter must be > 0")
 
     # Get classes for Task, ConfigurableParameters and Dataset.
     if any(args.load_weights.endswith(x) for x in (".bin", ".xml", ".zip")):
@@ -186,6 +197,8 @@ def main():
             cv2.imshow("frame", frame)
             if cv2.waitKey(args.delay) == ESC_BUTTON:
                 break
+        elif args.delay < 0:
+            raise ValueError("Value of --delay parameter must not be negative")
         else:
             print(f"{frame_index=}, {elapsed_time=}, {len(predictions)=}")
 
