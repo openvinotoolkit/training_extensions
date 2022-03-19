@@ -60,6 +60,7 @@ templates = Registry("external").filter(task_type="ANOMALY_CLASSIFICATION").temp
 templates_ids = [template.model_template_id for template in templates]
 
 
+@pytest.mark.skip("REMOVE THE LINE BEFORE MERGE TO DEVELOP")
 class TestToolsAnomalyClassification:
     @e2e_pytest_component
     def test_create_venv(self):

@@ -25,13 +25,21 @@ from common import (
     create_venv,
     get_some_vars,
     wrong_paths,
+<<<<<<< HEAD
     ote_common,
     logger
+=======
+    ote_common
+>>>>>>> c9e7fcf1 (test ote cli common args)
 )
 
 
 root = '/tmp/ote_cli/'
+<<<<<<< HEAD
 ote_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+=======
+ote_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+>>>>>>> c9e7fcf1 (test ote cli common args)
 external_path = os.path.join(ote_dir, "external")
 
 
