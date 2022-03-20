@@ -5,12 +5,13 @@ import logging
 import os
 import tempfile
 
-import inspect
+import subprocess
+import sys
 import json
 
 from shutil import copyfile, copytree
 from zipfile import ZipFile
-from typing import Any, Dict, Tuple, Optional, Union
+from typing import Any, Dict, Tuple, Optional
 import numpy as np
 
 import openvino
@@ -19,10 +20,7 @@ from openvino.runtime import Core
 
 
 
-import ote_sdk.usecases.exportable_code.demo as demo
 from ote_sdk.entities.inference_parameters import InferenceParameters, default_progress_callback
-from ote_sdk.usecases.evaluation.metrics_helper import MetricsHelper
-from ote_sdk.usecases.exportable_code.inference import BaseOpenVINOInferencer
 from ote_sdk.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from ote_sdk.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from ote_sdk.entities.task_environment import TaskEnvironment
@@ -31,7 +29,7 @@ from ote_sdk.entities.model import (
 )
 
 from ote_sdk.entities.resultset import ResultSetEntity
-from ote_sdk.entities.annotation import AnnotationSceneEntity
+from ote_sdk.usecases.exportable_code import demo
 from ote_sdk.entities.datasets import DatasetEntity
 
 from torchtts.integration.parameters import OTETextToSpeechTaskParameters
@@ -265,7 +263,7 @@ class OpenVINOTTSTask(IInferenceTask, IEvaluationTask):
         """Exports the weights from ``output_model`` along with exportable code.
 
         Args:
-            output_model (ModelEntity): Model with ``openvino.xml`` and ``.bin`` keys
+            output_model (ModelEntity): Model with path to dir with decoder and encoder.
 
         Raises:
             Exception: If ``task_environment.model`` is None
@@ -275,22 +273,25 @@ class OpenVINOTTSTask(IInferenceTask, IEvaluationTask):
         if self.task_environment.model is None:
             raise Exception("task_environment.model is None. Cannot load weights.")
 
-        work_dir = os.path.dirname(demo.__file__)
+        setup_dir = os.path.dirname(demo.__file__)
+        cur_dir = os.path.dirname(__file__)
+        work_dir = f'{cur_dir}/../'
+
         parameters: Dict[str, Any] = {}
         parameters["type_of_model"] = "text_to_speech"
         parameters["converter_type"] = "TEXT_TO_SPEECH"
-        parameters["model_parameters"] = {}
         name_of_package = "demo_package"
 
         with tempfile.TemporaryDirectory() as tempdir:
-            copyfile(os.path.join(work_dir, "setup.py"), os.path.join(tempdir, "setup.py"))
-            copyfile(os.path.join(work_dir, "requirements.txt"), os.path.join(tempdir, "requirements.txt"))
-            copytree(os.path.join(work_dir, name_of_package), os.path.join(tempdir, name_of_package))
-            config_path = os.path.join(tempdir, name_of_package, "config.json")
+            copytree(os.path.dirname(self.model.get_data("encoder.xml")), os.path.join(tempdir, "models"))
+            copyfile(os.path.join(setup_dir, "setup.py"), os.path.join(tempdir, "setup.py"))
+            copyfile(os.path.join(work_dir, "openvino-requirements.txt"), os.path.join(tempdir, "requirements.txt"))
+            copytree(os.path.join(cur_dir, "text_preprocessing"), os.path.join(tempdir, "text_preprocessing"))
+            copyfile(os.path.join(cur_dir, "demo.py"), os.path.join(tempdir, "demo.py"))
+            config_path = os.path.join(tempdir, "config.json")
             with open(config_path, "w", encoding="utf-8") as file:
                 json.dump(parameters, file, ensure_ascii=False, indent=4)
 
-            copyfile(inspect.getfile(AnomalyClassification), os.path.join(tempdir, name_of_package, "model.py"))
 
             # create wheel package
             subprocess.run(
@@ -308,12 +309,12 @@ class OpenVINOTTSTask(IInferenceTask, IEvaluationTask):
             wheel_file_name = [f for f in os.listdir(tempdir) if f.endswith(".whl")][0]
 
             with ZipFile(os.path.join(tempdir, "openvino.zip"), "w") as arch:
-                arch.writestr(os.path.join("model", "model.xml"), self.task_environment.model.get_data("openvino.xml"))
-                arch.writestr(os.path.join("model", "model.bin"), self.task_environment.model.get_data("openvino.bin"))
+                arch.write(os.path.join(tempdir, "models"), os.path.join("python", "models"))
                 arch.write(os.path.join(tempdir, "requirements.txt"), os.path.join("python", "requirements.txt"))
-                arch.write(os.path.join(work_dir, "README.md"), os.path.join("python", "README.md"))
-                arch.write(os.path.join(work_dir, "demo.py"), os.path.join("python", "demo.py"))
+                arch.write(os.path.join(setup_dir, "README.md"), os.path.join("python", "README.md"))
+                arch.write(os.path.join(setup_dir, "LICENSE"), os.path.join("python", "LICENSE"))
+                arch.write(os.path.join(tempdir, "demo.py"), os.path.join("python", "demo.py"))
                 arch.write(os.path.join(tempdir, wheel_file_name), os.path.join("python", wheel_file_name))
             with open(os.path.join(tempdir, "openvino.zip"), "rb") as output_arch:
                 output_model.exportable_code = output_arch.read()
-        logger.info("Deploying completed")
+        logger.info("Deployment completed.")

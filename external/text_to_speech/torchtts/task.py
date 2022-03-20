@@ -4,8 +4,7 @@
 import io
 import logging
 import os
-import math
-from typing import List, Optional
+from typing import Optional
 
 import tempfile
 import shutil
@@ -24,7 +23,7 @@ from ote_sdk.configuration import cfg_helper
 from ote_sdk.configuration.helper.utils import ids_to_strings
 from ote_sdk.entities.model import ModelPrecision
 from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType, IExportTask
-from ote_sdk.entities.model import ModelEntity, ModelStatus, ModelFormat, ModelOptimizationType
+from ote_sdk.entities.model import ModelEntity, ModelFormat, ModelOptimizationType
 from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.subset import Subset
 from ote_sdk.entities.datasets import DatasetEntity
@@ -272,9 +271,7 @@ class OTETextToSpeechTask(ITrainingTask, IInferenceTask, IEvaluationTask, IExpor
                     raise NameError('Error in ONNX conversion')
                 output_model.precision = [optimized_model_precision]
                 output_model.optimization_methods = []
-                output_model.model_status = ModelStatus.SUCCESS
             except Exception as ex:
-                output_model.model_status = ModelStatus.FAILED
                 raise RuntimeError('Optimization was unsuccessful.') from ex
             logger.info('Exporting completed.')
 
@@ -306,6 +303,9 @@ class OTETextToSpeechTask(ITrainingTask, IInferenceTask, IEvaluationTask, IExpor
                 task environment.
         """
 
+        if ote_model is None:
+            return
+
         buffer = io.BytesIO(ote_model.get_data("weights.pth"))
         model_data = torch.load(buffer, map_location=torch.device("cpu"))
 
@@ -315,7 +315,7 @@ class OTETextToSpeechTask(ITrainingTask, IInferenceTask, IEvaluationTask, IExpor
         if "state_dict" in model_data:
             model_data = model_data["state_dict"]
 
-        self._pipeline.generator.load_state_dict(model_data)
+        self._pipeline.load_state_dict(model_data, strict=False)
 
         # try:
         #     self._pipeline.generator.load_state_dict(model_data["model"])

@@ -1,13 +1,20 @@
 # Copyright (C) 2020-2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
+
 import logging as log
 import os.path as osp
+from argparse import ArgumentParser, SUPPRESS
+from time import perf_counter
+from matplotlib import pyplot as plt
 
 import numpy as np
-from openvino.runtime import PartialShape
+from openvino.runtime import PartialShape, Core
 
-from .text_preprocessing import text_to_sequence, cmudict, intersperse
+try:
+    from text_preprocessing import text_to_sequence, cmudict, intersperse
+except:
+    from .text_preprocessing import text_to_sequence, cmudict, intersperse
 
 
 def check_input_name(model, input_tensor_name):
@@ -86,13 +93,15 @@ class Decoder(IEModel):
 
 
 class AcousticGANIE:
-    def __init__(self, model_encoder, model_decoder, ie, device='CPU', verbose=False):
+    def __init__(self, model_encoder, model_decoder, ie=None, device='CPU', verbose=False):
         self.verbose = verbose
         self.device = device
+
+        if ie is None:
+            ie = Core()
         self.ie = ie
 
-        self.cmudict = cmudict.CMUDict(osp.join(osp.dirname(osp.realpath(__file__)), 'data/cmu_dictionary'))
-
+        self.cmudict = cmudict.CMUDict(osp.join(osp.dirname(osp.realpath(__file__)), 'text_preprocessing/cmu_dictionary'))
         self.encoder = Encoder(model_encoder, ie, device)
         self.decoder = Decoder(model_decoder, ie, device)
 
@@ -132,7 +141,7 @@ class AcousticGANIE:
     def gen_decoder_in(self, alpha=1.0, offset=0.3):
         x_mask = self.encoder.request.get_tensor("x_mask").data[:]
         x_res = self.encoder.request.get_tensor("x_res").data[:]
-        logw = self.encoder.request.get_tensor("logw").data[:]
+        logw = self.encoder.request.get_tensor("log_dur").data[:]
 
         w = (np.exp(logw) + offset) * x_mask
         w_ceil = np.ceil(w) * alpha
@@ -151,12 +160,49 @@ class AcousticGANIE:
 
     def forward(self, text, alpha=1.0, **kwargs):
         seq = self.seq_to_indexes(text)
+        seq = np.array(seq)
 
         encoder_in = self.encoder.preprocess(seq)
         self.encoder.infer(encoder_in)
-        decoder_in = self.decoder.preprocess(self.gen_decoder_in(alpha))
-        self.decoder_request.infer(decoder_in)
+        decoder_in = self.decoder.preprocess(*self.gen_decoder_in(alpha))
+        self.decoder.request.infer(decoder_in)
 
         res = self.decoder.request.get_tensor("mel").data[:]
         res = res * 6.0 - 6.0
         return res
+
+def main(args):
+    """
+    Main function that is used to run demo.
+    """
+    log.info('OpenVINO Inference Engine')
+
+    model_encoder = osp.join(args.model, 'encoder.xml')
+    model_decoder = osp.join(args.model, 'decoder.xml')
+    model = AcousticGANIE(model_encoder, model_decoder, device=args.device)
+
+    start_time = perf_counter()
+    mel_spectrogram = model.forward(args.input)
+    latency = (perf_counter() - start_time) * 1e3
+    log.info("Metrics report:")
+    log.info("\tLatency: {:.1f} ms".format(latency))
+
+    if len(mel_spectrogram.shape) == 3:
+        mel_spectrogram = mel_spectrogram[0, :, :]
+    fig, (ax1) = plt.subplots(1)
+    ax1.imshow(mel_spectrogram)
+    plt.show()
+
+
+if __name__ == "__main__":
+    parser = ArgumentParser(add_help=False)
+    parser.add_argument('-h', '--help', action='help', default=SUPPRESS, help='Show this help message and exit.')
+    parser.add_argument('-m', '--model', help='Optional. Path to an .xml file with a trained model.', default=None)
+    parser.add_argument('-i', '--input', help="Input text", default="Hello, my name is demo script. "
+                                                                    "I am ready for converting to audio.")
+    parser.add_argument('-d', '--device', default='CPU',
+                        help="Optional. Specify the target device to infer on, for example: "
+                             "CPU, GPU, HDDL, MYRIAD or HETERO. "
+                             "The demo will look for a suitable IE plugin for this device. Default value is CPU.")
+    args = parser.parse_args()
+    main(args)

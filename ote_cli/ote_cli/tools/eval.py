@@ -18,6 +18,7 @@ Model quality evaluation tool.
 
 import argparse
 import json
+import os
 
 from ote_sdk.configuration.helper import create
 from ote_sdk.entities.inference_parameters import InferenceParameters
