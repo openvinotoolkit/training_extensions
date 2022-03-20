@@ -23,8 +23,8 @@ class TestIDMapper:
         This test serializes ID and checks serialized representation.
         """
 
-        id = ID("21434231456")
-        serialized_id = IDMapper.forward(id)
+        id_ = ID("21434231456")
+        serialized_id = IDMapper.forward(id_)
         assert serialized_id == "21434231456"
 
     @pytest.mark.priority_medium
@@ -35,7 +35,7 @@ class TestIDMapper:
         This test serializes ID, deserializes serialized ID and compare with original.
         """
 
-        id = ID("21434231456")
-        serialized_id = IDMapper.forward(id)
+        id_ = ID("21434231456")
+        serialized_id = IDMapper.forward(id_)
         deserialized_id = IDMapper.backward(serialized_id)
-        assert id == deserialized_id
+        assert id_ == deserialized_id

@@ -23,22 +23,25 @@ import subprocess  # nosec
 import sys
 import tempfile
 from shutil import copyfile, copytree
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 from zipfile import ZipFile
 
 import numpy as np
 from addict import Dict as ADDict
-from anomalib.core.model.inference import OpenVINOInferencer
-from anomalib.utils.post_process import anomaly_map_to_color_map
+from anomalib.deploy import OpenVINOInferencer
+from anomalib.post_processing import anomaly_map_to_color_map
 from compression.api import DataLoader
 from compression.engines.ie_engine import IEEngine
 from compression.graph import load_model, save_model
 from compression.graph.model_utils import compress_model_weights, get_nodes_by_type
 from compression.pipeline.initializer import create_pipeline
-from omegaconf import ListConfig
-from omegaconf.dictconfig import DictConfig
-from ote_anomalib.config import get_anomalib_config
-from ote_anomalib.exportable_code import AnomalyClassification
+from omegaconf import OmegaConf
+from ote_anomalib.configs import get_anomalib_config
+from ote_anomalib.exportable_code import (
+    AnomalyBase,
+    AnomalyClassification,
+    AnomalySegmentation,
+)
 from ote_anomalib.logging import get_logger
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.inference_parameters import (
@@ -52,17 +55,19 @@ from ote_sdk.entities.model import (
     ModelPrecision,
     OptimizationMethod,
 )
+from ote_sdk.entities.model_template import TaskType
 from ote_sdk.entities.optimization_parameters import OptimizationParameters
 from ote_sdk.entities.result_media import ResultMediaEntity
 from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.serialization.label_mapper import LabelSchemaMapper, label_schema_to_bytes
+from ote_sdk.usecases.evaluation.averaging import MetricAverageMethod
 from ote_sdk.usecases.evaluation.metrics_helper import MetricsHelper
 from ote_sdk.usecases.exportable_code import demo
 from ote_sdk.usecases.exportable_code.prediction_to_annotation_converter import (
     AnomalyClassificationToAnnotationConverter,
+    AnomalySegmentationToAnnotationConverter,
 )
-from ote_sdk.usecases.exportable_code.utils import set_proper_git_commit_hash
 from ote_sdk.usecases.tasks.interfaces.deployment_interface import IDeploymentTask
 from ote_sdk.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from ote_sdk.usecases.tasks.interfaces.inference_interface import IInferenceTask
@@ -85,7 +90,7 @@ class OTEOpenVINOAnomalyDataloader(DataLoader):
 
     def __init__(
         self,
-        config: Union[DictConfig, ListConfig],
+        config: ADDict,
         dataset: DatasetEntity,
         inferencer: OpenVINOInferencer,
     ):
@@ -104,7 +109,7 @@ class OTEOpenVINOAnomalyDataloader(DataLoader):
         return len(self.dataset)
 
 
-class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeploymentTask):
+class OpenVINOAnomalyTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeploymentTask):
     """
     OpenVINO inference task
 
@@ -115,23 +120,29 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
     def __init__(self, task_environment: TaskEnvironment) -> None:
         logger.info("Initializing the OpenVINO task.")
         self.task_environment = task_environment
+        self.task_type = self.task_environment.model_template.task_type
         self.config = self.get_config()
         self.inferencer = self.load_inferencer()
-        self.annotation_converter = AnomalyClassificationToAnnotationConverter(self.task_environment.label_schema)
+        if self.task_type == TaskType.ANOMALY_CLASSIFICATION:
+            self.annotation_converter = AnomalyClassificationToAnnotationConverter(self.task_environment.label_schema)
+        elif self.task_type == TaskType.ANOMALY_SEGMENTATION:
+            self.annotation_converter = AnomalySegmentationToAnnotationConverter(self.task_environment.label_schema)
+        else:
+            raise ValueError(f"Unknown task type: {self.task_type}")
         template_file_path = task_environment.model_template.model_template_path
         self._base_dir = os.path.abspath(os.path.dirname(template_file_path))
 
-    def get_config(self) -> Union[DictConfig, ListConfig]:
+    def get_config(self) -> ADDict:
         """
         Get Anomalib Config from task environment
 
         Returns:
-            Union[DictConfig, ListConfig]: Anomalib config
+            ADDict: Anomalib config
         """
         task_name = self.task_environment.model_template.name
         ote_config = self.task_environment.get_hyper_parameters()
         config = get_anomalib_config(task_name=task_name, ote_config=ote_config)
-        return config
+        return ADDict(OmegaConf.to_container(config))
 
     def infer(self, dataset: DatasetEntity, inference_parameters: InferenceParameters) -> DatasetEntity:
         """Perform Inference.
@@ -157,8 +168,16 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
             anomaly_map, pred_score = self.inferencer.predict(
                 dataset_item.numpy, superimpose=False, meta_data=meta_data
             )
-            annotations_scene = self.annotation_converter.convert_to_annotation(pred_score, meta_data)
-            dataset_item.append_labels(annotations_scene.annotations[0].get_labels())
+            if self.task_type == TaskType.ANOMALY_CLASSIFICATION:
+                annotations_scene = self.annotation_converter.convert_to_annotation(pred_score, meta_data)
+            elif self.task_type == TaskType.ANOMALY_SEGMENTATION:
+                annotations_scene = self.annotation_converter.convert_to_annotation(anomaly_map, meta_data)
+            else:
+                raise ValueError(f"Unknown task type: {self.task_type}")
+
+            # pylint: disable=protected-access
+            dataset_item.append_annotations(annotations_scene.annotations)
+
             anomaly_map = anomaly_map_to_color_map(anomaly_map, normalize=False)
             heatmap_media = ResultMediaEntity(
                 name="Anomaly Map",
@@ -175,11 +194,12 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
         """Get Meta Data."""
 
         image_threshold = np.frombuffer(self.task_environment.model.get_data("image_threshold"), dtype=np.float32)
+        pixel_threshold = np.frombuffer(self.task_environment.model.get_data("pixel_threshold"), dtype=np.float32)
         min_value = np.frombuffer(self.task_environment.model.get_data("min"), dtype=np.float32)
         max_value = np.frombuffer(self.task_environment.model.get_data("max"), dtype=np.float32)
         meta_data = dict(
             image_threshold=image_threshold,
-            pixel_threshold=image_threshold,  # re-use image threshold for pixel normalization
+            pixel_threshold=pixel_threshold,
             min=min_value,
             max=max_value,
         )
@@ -192,18 +212,13 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
             output_resultset (ResultSetEntity): Result set storing ground truth and predicted dataset.
             evaluation_metric (Optional[str], optional): Evaluation metric. Defaults to None.
         """
-        metric = MetricsHelper.compute_f_measure(output_resultset)
+        if self.task_type == TaskType.ANOMALY_CLASSIFICATION:
+            metric = MetricsHelper.compute_f_measure(output_resultset)
+        elif self.task_type == TaskType.ANOMALY_SEGMENTATION:
+            metric = MetricsHelper.compute_dice_averaged_over_pixels(output_resultset, MetricAverageMethod.MICRO)
+        else:
+            raise ValueError(f"Unknown task type: {self.task_type}")
         output_resultset.performance = metric.get_performance()
-
-        # NOTE: This is for debugging purpose.
-        for i, _ in enumerate(output_resultset.ground_truth_dataset):
-            logger.info(
-                "True vs Pred: %s %s - %3.2f",
-                output_resultset.ground_truth_dataset[i].annotation_scene.annotations[0].get_labels()[0].name,
-                output_resultset.prediction_dataset[i].annotation_scene.annotations[0].get_labels()[0].name,
-                output_resultset.prediction_dataset[i].annotation_scene.annotations[0].get_labels()[0].probability,
-            )
-        logger.info("%s performance of the OpenVINO model: %3.2f", metric.f_measure.name, metric.f_measure.value)
 
     def _get_optimization_algorithms_configs(self) -> List[ADDict]:
         """Returns list of optimization algorithms configurations"""
@@ -279,6 +294,7 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
 
         output_model.set_data("label_schema.json", label_schema_to_bytes(self.task_environment.label_schema))
         output_model.set_data("image_threshold", self.task_environment.model.get_data("image_threshold"))
+        output_model.set_data("pixel_threshold", self.task_environment.model.get_data("pixel_threshold"))
         output_model.set_data("min", self.task_environment.model.get_data("min"))
         output_model.set_data("max", self.task_environment.model.get_data("max"))
         output_model.model_format = ModelFormat.OPENVINO
@@ -332,8 +348,9 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
 
     def _get_openvino_configuration(self) -> Dict[str, Any]:
         """Return configuration required by the exported model."""
-        # This always assumes that threshold is available in the task environment's model
-        # cast is used to placate mypy
+        if self.task_environment.model is None:
+            raise Exception("task_environment.model is None. Cannot get configuration.")
+
         configuration = {
             "image_threshold": np.frombuffer(
                 self.task_environment.model.get_data("image_threshold"), dtype=np.float32
@@ -349,6 +366,16 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
         else:
             configuration["mean_values"] = self.config.transforms.mean
             configuration["scale_values"] = self.config.transforms.std
+
+        if "pixel_threshold" in self.task_environment.model.model_adapters.keys():
+            configuration["pixel_threshold"] = np.frombuffer(
+                self.task_environment.model.get_data("pixel_threshold"), dtype=np.float32
+            ).item()
+        else:
+            configuration["pixel_threshold"] = np.frombuffer(
+                self.task_environment.model.get_data("image_threshold"), dtype=np.float32
+            ).item()
+
         return configuration
 
     def deploy(self, output_model: ModelEntity) -> None:
@@ -367,21 +394,27 @@ class OpenVINOAnomalyClassificationTask(IInferenceTask, IEvaluationTask, IOptimi
 
         work_dir = os.path.dirname(demo.__file__)
         parameters: Dict[str, Any] = {}
-        parameters["type_of_model"] = "anomaly_classification"
-        parameters["converter_type"] = "ANOMALY_CLASSIFICATION"
+        task_type = (
+            "anomaly_classification" if self.task_type == TaskType.ANOMALY_CLASSIFICATION else "anomaly_segmentation"
+        )
+        selected_class = (
+            AnomalyClassification if self.task_type == TaskType.ANOMALY_CLASSIFICATION else AnomalySegmentation
+        )
+        parameters["type_of_model"] = task_type
+        parameters["converter_type"] = task_type.upper()
         parameters["model_parameters"] = self._get_openvino_configuration()
         name_of_package = "demo_package"
 
         with tempfile.TemporaryDirectory() as tempdir:
             copyfile(os.path.join(work_dir, "setup.py"), os.path.join(tempdir, "setup.py"))
             copyfile(os.path.join(work_dir, "requirements.txt"), os.path.join(tempdir, "requirements.txt"))
-            set_proper_git_commit_hash(os.path.join(tempdir, "requirements.txt"))
             copytree(os.path.join(work_dir, name_of_package), os.path.join(tempdir, name_of_package))
             config_path = os.path.join(tempdir, name_of_package, "config.json")
             with open(config_path, "w", encoding="utf-8") as file:
                 json.dump(parameters, file, ensure_ascii=False, indent=4)
 
-            copyfile(inspect.getfile(AnomalyClassification), os.path.join(tempdir, name_of_package, "model.py"))
+            copyfile(inspect.getfile(selected_class), os.path.join(tempdir, name_of_package, "model.py"))
+            copyfile(inspect.getfile(AnomalyBase), os.path.join(tempdir, name_of_package, "base.py"))
 
             # create wheel package
             subprocess.run(

@@ -145,6 +145,7 @@ class DatasetItemParameters:
             roi=self.roi(),
             metadata=self.metadata(),
             subset=Subset.TESTING,
+            ignored_labels={self.labels()[1]},
         )
 
 
@@ -160,7 +161,7 @@ class TestDatasetItemEntity:
             expected_annotation = expected_annotations[index]
             # Redefining id and modification_date required because of new Annotation objects created after shape
             # denormalize
-            actual_annotation.id = expected_annotation.id
+            actual_annotation.id_ = expected_annotation.id_
             actual_annotation.shape.modification_date = (
                 expected_annotation.shape.modification_date
             )
@@ -255,18 +256,21 @@ class TestDatasetItemEntity:
         assert default_values_dataset_item.annotation_scene == annotations_scene
         assert not default_values_dataset_item.metadata
         assert default_values_dataset_item.subset == Subset.NONE
+        assert default_values_dataset_item.ignored_labels == set()
         # Checking attributes of DatasetItemEntity object initialized with specified optional parameters
         roi = DatasetItemParameters().roi()
         metadata = DatasetItemParameters.metadata()
         subset = Subset.TESTING
+        ignored_labels = set(DatasetItemParameters().labels())
         specified_values_dataset_item = DatasetItemEntity(
-            media, annotations_scene, roi, metadata, subset
+            media, annotations_scene, roi, metadata, subset, ignored_labels
         )
         assert specified_values_dataset_item.media == media
         assert specified_values_dataset_item.annotation_scene == annotations_scene
         assert specified_values_dataset_item.roi == roi
         assert specified_values_dataset_item.metadata == metadata
         assert specified_values_dataset_item.subset == subset
+        assert specified_values_dataset_item.ignored_labels == ignored_labels
 
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -611,8 +615,8 @@ class TestDatasetItemEntity:
             )
         dataset_item.append_annotations(annotations_to_add)
         # Random id is generated for normalized annotations
-        normalized_annotations[0].id = dataset_item.annotation_scene.annotations[2].id
-        normalized_annotations[1].id = dataset_item.annotation_scene.annotations[3].id
+        normalized_annotations[0].id_ = dataset_item.annotation_scene.annotations[2].id_
+        normalized_annotations[1].id_ = dataset_item.annotation_scene.annotations[3].id_
         assert (
             dataset_item.annotation_scene.annotations
             == full_box_annotations + normalized_annotations
@@ -796,8 +800,8 @@ class TestDatasetItemEntity:
         Check DatasetItemEntity class __eq__ method
 
         <b>Input data:</b>
-        DatasetItemEntity class objects with specified "media", "annotation_scene", "roi", "metadata" and "subset"
-        parameters
+        DatasetItemEntity class objects with specified "media", "annotation_scene", "roi", "metadata", "subset"
+        and "ignored_labels" parameters
 
         <b>Expected results:</b>
         Test passes if value returned by __eq__ method is equal to expected
@@ -805,7 +809,7 @@ class TestDatasetItemEntity:
         <b>Steps</b>
         1. Check value returned by __eq__ method for equal DatasetItemEntity objects
         2. Check value returned by __eq__ method for DatasetItemEntity objects with unequal "media", "annotation_scene",
-        "roi" or "subset"  parameters
+        "roi", "subset" or "ignored_labels" parameters
         3. Check value returned by __eq__ method for DatasetItemEntity objects with unequal "metadata" parameters
         4. Check value returned by __eq__ method for DatasetItemEntity object compared to different type object
         """
@@ -813,12 +817,14 @@ class TestDatasetItemEntity:
         annotation_scene = DatasetItemParameters().annotations_entity()
         roi = DatasetItemParameters().roi()
         metadata = DatasetItemParameters.metadata()
+        ignored_labels = DatasetItemParameters.labels()[:1]
         dataset_parameters = {
             "media": media,
             "annotation_scene": annotation_scene,
             "roi": roi,
             "metadata": metadata,
             "subset": Subset.TESTING,
+            "ignored_labels": ignored_labels,
         }
         dataset_item = DatasetItemEntity(**dataset_parameters)
         # Checking value returned by __eq__ method for equal DatasetItemEntity objects
@@ -827,11 +833,13 @@ class TestDatasetItemEntity:
         # Checking inequality of DatasetItemEntity objects with unequal initialization parameters
         unequal_annotation_scene = DatasetItemParameters().annotations_entity()
         unequal_annotation_scene.annotations.pop(0)
+        unequal_ignored_labels = DatasetItemParameters.labels()[1:]
         unequal_values = [
             ("media", DatasetItemParameters.generate_random_image()),
             ("annotation_scene", unequal_annotation_scene),
             ("roi", None),
             ("subset", Subset.VALIDATION),
+            ("ignored_labels", unequal_ignored_labels),
         ]
         for key, value in unequal_values:
             unequal_parameters = dict(dataset_parameters)
@@ -884,7 +892,7 @@ class TestDatasetItemEntity:
             dataset_item.annotation_scene.editor_name
             == copy_dataset.annotation_scene.editor_name
         )
-        assert dataset_item.annotation_scene.id == copy_dataset.annotation_scene.id
+        assert dataset_item.annotation_scene.id_ == copy_dataset.annotation_scene.id_
         assert dataset_item.annotation_scene.kind == copy_dataset.annotation_scene.kind
         assert (
             dataset_item.annotation_scene.shapes == copy_dataset.annotation_scene.shapes

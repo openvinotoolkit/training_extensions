@@ -9,11 +9,18 @@ ID | Name | Complexity (GFlops) | Model size (MB) | Path
 ote_anomaly_classification_padim | PADIM | 3.9 | 168.4 | anomaly/anomaly_classification/configs/padim/template.yaml
 ote_anomaly_classification_stfpm | STFPM | 5.6 | 21.1 | anomaly/anomaly_classification/configs/stfpm/template.yaml
 
+## Anomaly Segmentation
+ID | Name | Complexity (GFlops) | Model size (MB) | Path
+------- | ------- | ------- | ------- | -------
+ote_anomaly_segmentation_padim | PADIM | 3.9 | 168.4 | anomaly/anomaly_segmentation/configs/padim/template.yaml
+ote_anomaly_segmentation_stfpm | STFPM | 5.6 | 21.1 | anomaly/anomaly_segmentation/configs/stfpm/template.yaml
+
 ## Image Classification
 ID | Name | Complexity (GFlops) | Model size (MB) | Path
 ------- | ------- | ------- | ------- | -------
-MobileNet-V3-large-0.75x | MobileNet-V3-large-0.75x | 0.32 | 2.76 | deep-object-reid/configs/ote_custom_classification/mobilenet_v3_large_075/template.yaml
+Custom_Image_Classification_MobileNet-V3-large-1x | MobileNet-V3-large-1x | 0.44 | 4.29 | deep-object-reid/configs/ote_custom_classification/mobilenet_v3_large_1/template.yaml
 Custom_Image_Classification_EfficinetNet-B0 | EfficientNet-B0 | 0.81 | 4.09 | deep-object-reid/configs/ote_custom_classification/efficientnet_b0/template.yaml
+Custom_Image_Classification_EfficientNet-V2-S | EfficientNet-V2-S | 5.76 | 20.23 | deep-object-reid/configs/ote_custom_classification/efficientnet_v2_s/template.yaml
 
 ## Object Detection
 ID | Name | Complexity (GFlops) | Model size (MB) | Path
@@ -36,3 +43,5 @@ Custom_Rotated_Detection_via_Instance_Segmentation_MaskRCNN_ResNet50 | MaskRCNN-
 ID | Name | Complexity (GFlops) | Model size (MB) | Path
 ------- | ------- | ------- | ------- | -------
 Custom_Semantic_Segmentation_Lite-HRNet-18_OCR | Lite-HRNet-18 OCR | 3.45 | 4.5 | mmsegmentation/configs/ote/custom-sematic-segmentation/ocr-lite-hrnet-18/template.yaml
+Custom_Semantic_Segmentation_Lite-HRNet-18-mod2_OCR | Lite-HRNet-18-mod2 OCR | 3.63 | 4.8 | mmsegmentation/configs/ote/custom-sematic-segmentation/ocr-lite-hrnet-18-mod2/template.yaml
+Custom_Semantic_Segmentation_Lite-HRNet-x-mod3_OCR | Lite-HRNet-x-mod3 OCR | 13.97 | 6.4 | mmsegmentation/configs/ote/custom-sematic-segmentation/ocr-lite-hrnet-x-mod3/template.yaml

@@ -42,11 +42,11 @@ from common import (
 
 
 args = {
-    '--train-ann-file': 'data/anomaly/train.json',
+    '--train-ann-file': 'data/anomaly/classification/train.json',
     '--train-data-roots': 'data/anomaly/shapes',
-    '--val-ann-file': 'data/anomaly/val.json',
+    '--val-ann-file': 'data/anomaly/classification/val.json',
     '--val-data-roots': 'data/anomaly/shapes',
-    '--test-ann-files': 'data/anomaly/test.json',
+    '--test-ann-files': 'data/anomaly/classification/test.json',
     '--test-data-roots': 'data/anomaly/shapes',
     '--input': 'data/anomaly/shapes/test/hexagon',
     'train_params': [],
@@ -103,7 +103,7 @@ class TestToolsAnomalyClassification:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_ote_eval_deployment(self, template):
-        ote_eval_deployment_testing(template, root, ote_dir, args, threshold=0.00)
+        ote_eval_deployment_testing(template, root, ote_dir, args, threshold=0.0)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
@@ -132,7 +132,7 @@ class TestToolsAnomalyClassification:
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
 
-        nncf_eval_testing(template, root, ote_dir, args)
+        nncf_eval_testing(template, root, ote_dir, args, threshold=0.001)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
