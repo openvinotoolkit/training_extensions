@@ -93,7 +93,7 @@ class TestLoadAnnotationFromOTEDatasetInputParamsValidation:
         Test passes if ValueError exception is raised when unexpected type object is specified as
         input parameter for "__call__" method
         """
-        load_annotation_from_ote_dataset = LoadAnnotationFromOTEDataset()
+        load_annotation_from_ote_dataset = LoadAnnotationFromOTEDataset(min_size=1)
         unexpected_int = 1
         for unexpected_value in [
             # Unexpected integer is specified as "results" parameter
