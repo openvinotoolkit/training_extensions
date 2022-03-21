@@ -169,7 +169,7 @@ class OTETextToSpeechTask(ITrainingTask, IInferenceTask, IEvaluationTask, IExpor
         )-> None:
         """ Trains a model on a dataset """
 
-        trainset = TTSDatasetWithSTFT(dataset_items=dataset, items_type=Subset.TRAINING)
+        trainset = TTSDatasetWithSTFT(dataset_items=dataset, items_type=Subset.TRAINING, add_noise=True)
         valset = TTSDatasetWithSTFT(dataset_items=dataset, items_type=Subset.VALIDATION)
 
         checkpoint_callback = pl.callbacks.ModelCheckpoint(

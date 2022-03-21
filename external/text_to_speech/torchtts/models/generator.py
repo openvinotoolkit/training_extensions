@@ -160,6 +160,8 @@ class GANTacotron(nn.Module):
                                   cfg.decoder.n_mels,
                                   layer_norm)
 
+        self.register_buffer('step', torch.zeros(1, dtype=torch.long))
+
     def forward(self, x, x_length, mel, mel_lengths):
         x_m, x_res, logw, x_mask = self.encoder(x, x_length)
 

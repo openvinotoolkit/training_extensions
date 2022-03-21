@@ -175,6 +175,8 @@ class TrainTTSDatasetSampler(torch.utils.data.Sampler):
         self.num_replicas = 1
         if torch.cuda.is_available():
             self.num_replicas = max(1, torch.cuda.device_count())
+        print(f"Train sampler. Num replicas: {self.num_replicas}. NUmber of samples: {len(self.idx)}."
+              f"\nBin size: {self.bin_size}. Batch size: {self.batch_size}.")
         self.num_samples = int(math.ceil(len(self.idx) * 1.0 / self.num_replicas))
         self.total_size = self.num_samples * self.num_replicas
 
@@ -182,18 +184,21 @@ class TrainTTSDatasetSampler(torch.utils.data.Sampler):
         idx = self.idx.numpy()
         bins = []
 
-        for i in range(len(idx) // self.bin_size):
-            this_bin = idx[i * self.bin_size:(i + 1) * self.bin_size]
-            random.shuffle(this_bin)
-            bins += [this_bin]
+        if len(idx) < self.bin_size:
+            binned_idx = idx
+        else:
+            for i in range(len(idx) // self.bin_size):
+                this_bin = idx[i * self.bin_size:(i + 1) * self.bin_size]
+                random.shuffle(this_bin)
+                bins += [this_bin]
 
-        random.shuffle(bins)
-        binned_idx = np.stack(bins).reshape(-1)
+            random.shuffle(bins)
+            binned_idx = np.stack(bins).reshape(-1)
 
-        if len(binned_idx) < len(idx):
-            last_bin = idx[len(binned_idx):]
-            random.shuffle(last_bin)
-            binned_idx = np.concatenate([binned_idx, last_bin])
+            if len(binned_idx) < len(idx):
+                last_bin = idx[len(binned_idx):]
+                random.shuffle(last_bin)
+                binned_idx = np.concatenate([binned_idx, last_bin])
 
         # Divide data to each GPU
         if self.distributed:
