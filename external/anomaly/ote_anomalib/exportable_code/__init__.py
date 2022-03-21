@@ -5,7 +5,8 @@
 #
 
 from .anomaly_classification import AnomalyClassification
+from .anomaly_detection import AnomalyDetection
 from .anomaly_segmentation import AnomalySegmentation
 from .base import AnomalyBase
 
-__all__ = ["AnomalyBase", "AnomalySegmentation", "AnomalyClassification"]
+__all__ = ["AnomalyBase", "AnomalyClassification", "AnomalyDetection", "AnomalySegmentation"]
