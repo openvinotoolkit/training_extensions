@@ -424,7 +424,10 @@ class ModelTemplate:
         """
         Returns ``True`` if the task is global task i.e. if task produces global labels
         """
-        return self.task_type in [TaskType.CLASSIFICATION]
+        return self.task_type in (
+            TaskType.CLASSIFICATION,
+            TaskType.ANOMALY_CLASSIFICATION,
+        )
 
     def supports_auto_hpo(self) -> bool:
         """
@@ -474,6 +477,7 @@ TRAINABLE_TASK_TYPES: Sequence[TaskType] = (
     TaskType.ANOMALY_DETECTION,
     TaskType.ANOMALY_CLASSIFICATION,
     TaskType.ANOMALY_SEGMENTATION,
+    TaskType.ROTATED_DETECTION,
 )
 
 
