@@ -105,6 +105,13 @@ class OTEClassificationParameters(ConfigurableParameters):
             affects_outcome_of=ModelLifecycle.TRAINING
         )
 
+        pruning_supported = configurable_boolean(
+            default_value=False,
+            header="Whether filter pruning is supported",
+            description="Whether filter pruning is supported",
+            affects_outcome_of=ModelLifecycle.TRAINING
+        )
+
         maximal_accuracy_degradation = configurable_float(
             default_value=1.0,
             min_value=0.0,
