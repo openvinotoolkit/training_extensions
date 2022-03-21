@@ -111,7 +111,7 @@ data = dict(
         times=5,
         dataset=dict(
             type=dataset_type,
-            classes=('person',),
+            labels=('person',),
             ann_file=data_root + 'annotation_person_train.json',
             min_size=20,
             img_prefix=data_root + 'train',
@@ -120,14 +120,14 @@ data = dict(
     ),
     val=dict(
         type=dataset_type,
-        classes=('person',),
+        labels=('person',),
         ann_file=data_root + 'annotation_person_val.json',
         img_prefix=data_root + 'val',
         test_mode=True,
         pipeline=test_pipeline),
     test=dict(
         type=dataset_type,
-        classes=('person',),
+        labels=('person',),
         ann_file=data_root + 'annotation_person_val.json',
         img_prefix=data_root + 'val',
         test_mode=True,
@@ -152,10 +152,11 @@ log_config = dict(
     ])
 # yapf:enable
 # runtime settings
-total_epochs = 20
+runner = dict(type='EpochBasedRunner', max_epochs=20)
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-work_dir = 'outputs/person-detection-0200'
-load_from = None
+work_dir = 'output'
+load_from = 'https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/person-detection-0200-1.pth'
 resume_from = None
+evaluation = dict(interval=1, metric='mAP', save_best='mAP')
 workflow = [('train', 1)]
