@@ -1,8 +1,8 @@
-# Exportable code - demo package
+# Exportable code
 
-Demo package contains simple demo to get and visualize result of model inference.
+Exportable code is a .zip archieve that contains simple demo to get and visualize result of model inference.
 
-## Structure of generated package:
+## Structure of generated zip:
 
 * model
   - `model.xml`
@@ -63,8 +63,15 @@ Demo package contains simple demo to get and visualize result of model inference
    ```
 
 4. Add `model_wrappers` package to PYTHONPATH:
+
+   On Linux and macOS:
    ```
    export PYTHONPATH=$PYTHONPATH:/path/to/model_wrappers
+   ```
+
+   On Windows:
+   ```
+   set PYTHONPATH=$PYTHONPATH:/path/to/model_wrappers
    ```
 
 ## Usecases
@@ -82,7 +89,8 @@ Demo package contains simple demo to get and visualize result of model inference
                            id.
      -m MODELS [MODELS ...], --models MODELS [MODELS ...]
                            Required. Path to directory with trained model and
-                           configuration file
+                           configuration file. For task chain please provide
+                           models-participants in right order
      -it {sync,async,chain}, --inference_type {sync,async,chain}
                            Optional. Type of inference. For task-chain you should
                            type 'chain'.
@@ -103,19 +111,9 @@ Demo package contains simple demo to get and visualize result of model inference
    > **NOTE**: Default configuration contains info about pre- and postprocessing to model inference and is guaranteed to be correct.
    > Also you can change `config.json` that specifies needed parameters, but any change should be made with caution.
 
-2. You can create your own demo application, using `demo_package`. The main class of package is `ModelEntity`.
-   ```python
-   class ModelContainer:
-       """
-       Class for storing the model wrapper based on Model API and needed parameters of model
-       Args:
-           model_dir: path to model directory
-       """
-       def __init__(self, model_dir: Path) -> None
-   ```
-   Class based on model wrapper from ModelAPI. To get more information please see [ModelAPI](https://github.com/openvinotoolkit/open_model_zoo/tree/master/demos/common/python/openvino/model_zoo/model_api). If you want to use your own model wrapper you should create wrapper in `model_wrappers` directory (if there is no this directory create it) and change `type_of_model` field in `config.json` according to wrapper.
+2. You can create your own demo application, using `exportable code` from ote_sdk.
 
-   Some example how to use `demo_package`:
+   Some example how to use `exportable code`:
    ```python
    import cv2
    from ote_sdk.usecases.exportable_code.demo.demo_package import (
@@ -129,7 +127,7 @@ Demo package contains simple demo to get and visualize result of model inference
 
    # specify input stream (path to images or folders)
    input_stream = "/path/to/input"
-   # create model entity
+   # create model container
    model = ModelContainer(model_dir)
    # create visualizer
    visualizer = create_visualizer(model.task_type)
@@ -141,6 +139,8 @@ Demo package contains simple demo to get and visualize result of model inference
 
    ```
 
+   > **NOTE**: Model wrappers contains pre- and postprocessing operations needed to inference. Default name of model wrapper provided in `config.json` as `type_of_model`. The wrappers themselves stored at model wrapper folder or at ModelAPI OMZ. To get more information please see [ModelAPI](https://github.com/openvinotoolkit/open_model_zoo/tree/master/demos/common/python/openvino/model_zoo/model_api). If you want to use your own model wrapper you should create wrapper in `model_wrappers` directory (if there is no this directory create it) and change `type_of_model` field in `config.json` according to wrapper.
+
 ## Troubleshooting
 
 1. If you have access to the Internet through the proxy server only, please use pip with proxy call as demonstrated by command below:
@@ -149,3 +149,8 @@ Demo package contains simple demo to get and visualize result of model inference
    ```
 
 2. If you use Anaconda environment, you should consider that OpenVINO has limited [Conda support](https://docs.openvino.ai/2021.4/openvino_docs_install_guides_installing_openvino_conda.html) for Python 3.6 and 3.7 versions only. But the demo package requires python 3.8. So please use other tools to create the environment (like `venv` or `virtualenv`) and use `pip` as a package manager.
+
+3. If you have problems when you try yo use `pip install` command, please update pip version by following command:
+   ```
+   python -m pip install --upgrade pip
+   ```
