@@ -4,7 +4,8 @@
 import io
 import logging
 import os
-from typing import Optional
+import math
+from typing import List, Optional
 
 import tempfile
 import shutil
@@ -20,6 +21,7 @@ from ote_sdk.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from ote_sdk.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from ote_sdk.usecases.tasks.interfaces.unload_interface import IUnload
 from ote_sdk.configuration import cfg_helper
+from ote_sdk.serialization.label_mapper import label_schema_to_bytes
 from ote_sdk.configuration.helper.utils import ids_to_strings
 from ote_sdk.entities.model import ModelPrecision
 from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType, IExportTask
@@ -50,7 +52,7 @@ class OTETextToSpeechTask(ITrainingTask, IInferenceTask, IEvaluationTask, IExpor
         self._scratch_space = tempfile.mkdtemp(prefix="ote-tts-scratch-")
         logger.info(f"Scratch space created at {self._scratch_space}")
 
-        self._task_environment = task_environment
+        self.task_environment = task_environment
 
         self._cfg = get_default_config()
         self._cfg.trainer.lr = self._hyperparams.learning_parameters.learning_rate
@@ -70,7 +72,7 @@ class OTETextToSpeechTask(ITrainingTask, IInferenceTask, IEvaluationTask, IExpor
 
     @property
     def _hyperparams(self):
-        return self._task_environment.get_hyper_parameters(OTETextToSpeechTaskParameters)
+        return self.task_environment.get_hyper_parameters(OTETextToSpeechTaskParameters)
 
     def cancel_training(self):
         """
@@ -81,19 +83,6 @@ class OTETextToSpeechTask(ITrainingTask, IInferenceTask, IEvaluationTask, IExpor
         """
         logger.info("Cancel training requested.")
         self.stop_callback.stop()
-
-    def save_model(self, output_model: ModelEntity):
-        buffer = io.BytesIO()
-        hyperparams = self._task_environment.get_hyper_parameters(OTETextToSpeechTaskParameters)
-        hyperparams_str = ids_to_strings(cfg_helper.convert(hyperparams, dict, enum_to_str=True))
-        modelinfo = {
-            'model': self._pipeline.state_dict(),
-            'config': hyperparams_str,
-            'vocab': self._pipeline.tokenizer.vocab(),
-            'VERSION': 1
-        }
-        torch.save(modelinfo, buffer)
-        output_model.set_data("weights.ckpt", buffer.getvalue())
 
     def infer(self, dataset: DatasetEntity, inference_parameters: InferenceParameters) -> DatasetEntity:
         """
@@ -168,9 +157,6 @@ class OTETextToSpeechTask(ITrainingTask, IInferenceTask, IEvaluationTask, IExpor
         )
 
         trainer.fit(self._pipeline, trainloader, valloader)
-        if self.stop_callback.check_stop():
-            logger.info('Training cancelled.')
-            return
 
         logger.info("Training finished.")
 
@@ -214,10 +200,6 @@ class OTETextToSpeechTask(ITrainingTask, IInferenceTask, IEvaluationTask, IExpor
         self._pipeline.init_datasets(trainset, valset)
 
         trainer.fit(self._pipeline)
-
-        if self.stop_callback.check_stop():
-            logger.info('Training cancelled.')
-            return
 
         logger.info("Training finished.")
 
@@ -304,6 +286,7 @@ class OTETextToSpeechTask(ITrainingTask, IInferenceTask, IEvaluationTask, IExpor
         """
 
         if ote_model is None:
+            logger.info("Tried to load empty model. Train from scratch")
             return
 
         buffer = io.BytesIO(ote_model.get_data("weights.pth"))
@@ -315,13 +298,27 @@ class OTETextToSpeechTask(ITrainingTask, IInferenceTask, IEvaluationTask, IExpor
         if "state_dict" in model_data:
             model_data = model_data["state_dict"]
 
-        self._pipeline.load_state_dict(model_data, strict=False)
+        self._pipeline.load_state_dict(model_data)#, strict=False)
 
-        # try:
-        #     self._pipeline.generator.load_state_dict(model_data["model"])
-        #     logger.info("Loaded model weights from Task Environment")
-        # except BaseException as exception:
-        #     raise ValueError("Could not load the saved model. The model file structure is invalid.") from exception
+    def save_model(self, output_model: ModelEntity) -> None:
+        """Save the model after training is completed.
+
+        Args:
+            output_model (ModelEntity): Output model onto which the weights are saved.
+        """
+        logger.info("Saving the model weights.")
+        config = self._cfg
+        model_info = {
+            "model": self._pipeline.state_dict(),
+            "config": config,
+            "VERSION": 1,
+        }
+        buffer = io.BytesIO()
+        torch.save(model_info, buffer)
+        output_model.set_data("weights.pth", buffer.getvalue())
+        #output_model.set_data("label_schema.json", label_schema_to_bytes(self.task_environment.label_schema))
+        #self._set_metadata(output_model)
+        output_model.precision = [ModelPrecision.FP32]
 
     def unload(self):
         """
