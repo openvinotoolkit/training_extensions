@@ -725,11 +725,6 @@ class AnomalyLocalizationPerformance(Performance):
             super().__init__(local_score, dashboard_metrics)
 
     @property
-    def score(self):
-        """Return the score metric."""
-        return self._local_score
-
-    @property
     def global_score(self):
         """Return the global score metric."""
         return self._global_score

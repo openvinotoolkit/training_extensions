@@ -61,7 +61,6 @@ from ote_sdk.entities.result_media import ResultMediaEntity
 from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.serialization.label_mapper import LabelSchemaMapper, label_schema_to_bytes
-from ote_sdk.usecases.evaluation.averaging import MetricAverageMethod
 from ote_sdk.usecases.evaluation.metrics_helper import MetricsHelper
 from ote_sdk.usecases.exportable_code import demo
 from ote_sdk.usecases.exportable_code.prediction_to_annotation_converter import (
@@ -74,10 +73,6 @@ from ote_sdk.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from ote_sdk.usecases.tasks.interfaces.optimization_interface import (
     IOptimizationTask,
     OptimizationType,
-)
-from ote_sdk.utils.dataset_utils import (
-    contains_anomalous_images,
-    split_local_global_resultset,
 )
 
 logger = get_logger(__name__)
@@ -219,17 +214,7 @@ class OpenVINOAnomalyTask(IInferenceTask, IEvaluationTask, IOptimizationTask, ID
         if self.task_type == TaskType.ANOMALY_CLASSIFICATION:
             metric = MetricsHelper.compute_f_measure(output_resultset)
         elif self.task_type == TaskType.ANOMALY_SEGMENTATION:
-            global_resultset, local_resultset = split_local_global_resultset(output_resultset)
-            logger.info(f"Global annotations: {len(global_resultset.ground_truth_dataset)}")
-            logger.info(f"Local annotations: {len(local_resultset.ground_truth_dataset)}")
-            logger.info(f"Global predictions: {len(global_resultset.prediction_dataset)}")
-            logger.info(f"Local predictions: {len(local_resultset.prediction_dataset)}")
-            if contains_anomalous_images(local_resultset.ground_truth_dataset):
-                logger.info("Dataset contains polygon annotations. Using pixel-level evaluation metric.")
-                metric = MetricsHelper.compute_dice_averaged_over_pixels(local_resultset, MetricAverageMethod.MICRO)
-            else:
-                logger.info("Dataset does not contain polygon annotations. Using image-level evaluation metric.")
-                metric = MetricsHelper.compute_f_measure(global_resultset)
+            metric = MetricsHelper.compute_anomaly_localization_scores(output_resultset)
         else:
             raise ValueError(f"Unknown task type: {self.task_type}")
         output_resultset.performance = metric.get_performance()
