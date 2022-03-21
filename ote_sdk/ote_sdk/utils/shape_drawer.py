@@ -495,12 +495,9 @@ class ShapeDrawer(DrawerEntity[AnnotationSceneEntity]):
             y_coord = y1 - self.label_offset_box_shape - content_height
             x_coord = x1
 
-            # put label at bottom if it is out of bounds at the top of the shape, and shift label to left if needed
-            if (
-                y_coord < self.top_margin * image.shape[0]
-                and x_coord < image.shape[1] / 2
-            ):
-                y_coord = y2 + self.label_offset_box_shape
+            # put label inside if it is out of bounds at the top of the shape, and shift label to left if needed
+            if y_coord < self.top_margin * image.shape[0]:
+                y_coord = y1 + self.label_offset_box_shape
             if x_coord + content_width > image.shape[1]:
                 x_coord = x2 - content_width
 
@@ -559,7 +556,7 @@ class ShapeDrawer(DrawerEntity[AnnotationSceneEntity]):
                 angle=0,
                 startAngle=0,
                 endAngle=360,
-                color=[0, 0, 0],
+                color=base_color,
                 lineType=cv2.LINE_AA,
             )
 
@@ -582,11 +579,9 @@ class ShapeDrawer(DrawerEntity[AnnotationSceneEntity]):
                 int(x_coord + 1), int(entity.y_center * image.shape[0])
             )
 
-            # put label at bottom if it is out of bounds at the top of the shape, and shift label to left if needed
+            # put label inside if it is out of bounds at the top of the shape, and shift label to left if needed
             if y_coord < self.top_margin * image.shape[0]:
-                y_coord = (
-                    (entity.y1 * image.shape[0]) + (entity.y2 * image.shape[0]) + offset
-                )
+                y_coord = entity.y1 * image.shape[0] + offset
                 flagpole_start_point = Coordinate(x_coord + 1, y_coord)
             else:
                 flagpole_start_point = Coordinate(x_coord + 1, y_coord + content_height)
@@ -641,7 +636,7 @@ class ShapeDrawer(DrawerEntity[AnnotationSceneEntity]):
                 image=result_without_border,
                 contours=[contours],
                 contourIdx=-1,
-                color=[0, 0, 0],
+                color=base_color,
                 thickness=2,
                 lineType=cv2.LINE_AA,
             )
@@ -674,9 +669,9 @@ class ShapeDrawer(DrawerEntity[AnnotationSceneEntity]):
 
             if y_coord < self.top_margin * image.shape[0]:
                 # The polygon is too close to the top of the image.
-                # Draw the labels underneath the polygon instead.
+                # Draw the labels inside the polygon instead.
                 y_coord = (
-                    max([point[1] for point in contours]) + self.label_offset_box_shape
+                    min([point[1] for point in contours]) + self.label_offset_box_shape
                 )
                 flagpole_start_point = Coordinate(x_coord + 1, y_coord)
             else:

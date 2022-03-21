@@ -42,7 +42,8 @@ def build_argparser():
     args.add_argument(
         "-m",
         "--models",
-        help="Required. Path to directory with trained model and configuration file",
+        help="Required. Path to directory with trained model and configuration file. "
+        "For task chain please provide models-participants in right order",
         nargs="+",
         required=True,
         type=Path,
@@ -83,6 +84,7 @@ def get_inferencer_class(type_inference, models):
         )
     if len(models) > 1:
         type_inference = "chain"
+        print("You run task chain pipeline with provided models")
     return EXECUTORS[type_inference]
 
 

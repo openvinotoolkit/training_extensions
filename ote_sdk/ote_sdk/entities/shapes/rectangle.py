@@ -326,9 +326,3 @@ class Rectangle(Shape):
         :return: area of the shape
         """
         return (self.x2 - self.x1) * (self.y2 - self.y1)
-
-    def to_rectangle(self) -> "Rectangle":
-        """
-        Returns the bounding box containing the shape, as an instance of the Rectangle
-        """
-        return self

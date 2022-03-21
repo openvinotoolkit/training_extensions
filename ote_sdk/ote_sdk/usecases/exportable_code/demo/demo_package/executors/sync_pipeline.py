@@ -23,6 +23,7 @@ from ote_sdk.usecases.exportable_code.demo.demo_package.utils import (
 )
 from ote_sdk.usecases.exportable_code.streamer import get_streamer
 from ote_sdk.usecases.exportable_code.visualizers import HandlerVisualizer, Visualizer
+from ote_sdk.utils.shape_factory import ShapeFactory
 
 
 class ChainExecutor:
@@ -80,11 +81,13 @@ class ChainExecutor:
         item: np.ndarray, parent_annotation: Annotation, item_annotation: Annotation
     ):
         """
-        Glue for models
+        Crop operation between chain stages
         """
-        new_item = item_annotation.shape.to_rectangle().crop_numpy_array(item)
+        new_item = ShapeFactory.shape_as_rectangle(
+            item_annotation.shape
+        ).crop_numpy_array(item)
         item_annotation.shape = item_annotation.shape.normalize_wrt_roi_shape(
-            parent_annotation.shape
+            ShapeFactory.shape_as_rectangle(parent_annotation.shape)
         )
         return new_item, item_annotation
 
