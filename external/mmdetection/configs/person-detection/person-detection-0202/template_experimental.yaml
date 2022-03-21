@@ -13,9 +13,9 @@ framework: OTEDetection v2.9.1
 
 # Task implementations.
 entrypoints:
-  base: mmdet.apis.ote.apis.detection.OTEDetectionTrainingTask
-  openvino: mmdet.apis.ote.apis.detection.OpenVINODetectionTask
-  nncf: mmdet.apis.ote.apis.detection.OTEDetectionNNCFTask
+  base: detection_tasks.apis.detection.OTEDetectionTrainingTask
+  openvino: detection_tasks.apis.detection.OpenVINODetectionTask
+  nncf: detection_tasks.apis.detection.OTEDetectionNNCFTask
 
 # Capabilities.
 capabilities:
@@ -50,8 +50,8 @@ training_targets:
   - CPU
 
 # Stats.
-gigaflops: 2.52 #to be checked with model-analyzer
-size: 1.83
+gigaflops: 3.18
+size: 2.1
 
 # Obsolete
 # gpu_nums: 2
