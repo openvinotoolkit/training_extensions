@@ -103,7 +103,7 @@ class MelDecoder(nn.Module):
 
         self.postnet1 = ResStack2Stage(postnet_dims, postnet_dims, postnet_k, use_layer_norm)
 
-        self.proj2d1 = Residual2d(1, 3, 1, 8, batch_norm=False)
+        self.proj2d = Residual2d(1, 3, 1, 8, batch_norm=False)
 
         self.postnet2 = ResSequenceDilated(postnet_dims, postnet_dims, postnet_k)
 
@@ -121,7 +121,7 @@ class MelDecoder(nn.Module):
 
         x_post = x + self.postnet1(x, mel_mask)
 
-        x_post = x_post + self.proj2d1(x_post, mel_mask)
+        x_post = x_post + self.proj2d(x_post, mel_mask)
 
         x_post = x_post + self.postnet2(x_post, mel_mask)
 
