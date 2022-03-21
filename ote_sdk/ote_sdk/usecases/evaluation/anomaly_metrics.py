@@ -7,8 +7,8 @@
 from typing import List, Optional
 
 from ote_sdk.entities.metrics import (
+    AnomalyLocalizationPerformance,
     MetricsGroup,
-    MultiScorePerformance,
     Performance,
     ScoreMetric,
 )
@@ -25,10 +25,10 @@ from ote_sdk.utils.dataset_utils import (
 )
 
 
-class AnomalySegmentationScores(IPerformanceProvider):
+class AnomalyLocalizationScores(IPerformanceProvider):
     """
-    This class provides the MultiScorePerformance object for anomaly segmentation resultsets.
-    The returned performance object contains the local (pixel-level) performance metric as the main score if local
+    This class provides the AnomalyLocalizationPerformance object for anomaly segmentation and anomaly detection tasks.
+    The returned performance object contains the local (pixel/bbox-level) performance metric as the main score if local
     annotations are available. The global (image-level) performance metric is included as additional metric.
 
     :param resultset: ResultSet that scores will be computed for
@@ -53,6 +53,8 @@ class AnomalySegmentationScores(IPerformanceProvider):
             self.dashboard_metrics = local_performance.dashboard_metrics
 
     def get_performance(self) -> Performance:
-        return MultiScorePerformance(
-            self.local_score, [self.global_score], self.dashboard_metrics
+        return AnomalyLocalizationPerformance(
+            global_score=self.global_score,
+            local_score=self.local_score,
+            dashboard_metrics=self.dashboard_metrics,
         )

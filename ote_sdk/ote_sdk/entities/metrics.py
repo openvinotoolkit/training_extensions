@@ -675,10 +675,15 @@ class Performance:
             raise ValueError(
                 f"Expected score to be of type `ScoreMetric`, got type `{type(score)}` instead."
             )
-        self.score: ScoreMetric = score
+        self._score: ScoreMetric = score
         self.dashboard_metrics: List[MetricsGroup] = (
             [] if dashboard_metrics is None else dashboard_metrics
         )
+
+    @property
+    def score(self):
+        """Return the score metric."""
+        return self._score
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Performance):
@@ -704,50 +709,32 @@ class NullPerformance(Performance):
         return isinstance(other, NullPerformance)
 
 
-class MultiScorePerformance(Performance):
+class AnomalyLocalizationPerformance(Performance):
     """
-    Performance class for tasks that report multiple performance metrics.
-    The content of this class is as follows:
-
-    :param score: the main performance score. This will be the point of comparison between two performances.
-    :param additional_scores: collection of scores to be returned to the user. This is particularly useful for
-        anomaly segmentation/detection, where we want to highlight both local and global anomaly detection
-        performance.
-    :param dashboard_metrics: (optional) additional statistics, containing charts, curves, and other additional info.
+    This class is used to report multiple metrics in anomaly tasks that perform anomaly localization.
+    Local score takes priority as the primary score.
     """
 
-    def __init__(
-        self,
-        score: Optional[ScoreMetric] = None,
-        additional_scores: Optional[List[ScoreMetric]] = None,
-        dashboard_metrics: Optional[List[MetricsGroup]] = None,
-    ):
-        if score is None:
-            if additional_scores is None:
-                raise ValueError("At least 1 score must be provided")
-            score = additional_scores.pop(
-                0
-            )  # use first additional score if no main score is provided
-        super().__init__(score, dashboard_metrics)
-        if additional_scores is not None:
-            for additional_score in additional_scores:
-                if not isinstance(additional_score, ScoreMetric):
-                    raise ValueError(
-                        f"Expected score to be of type `ScoreMetric`, got type `{type(score)}` instead."
-                    )
-        self.additional_scores: Optional[List[ScoreMetric]] = additional_scores
+    def __init__(self, global_score, local_score=None, dashboard_metrics=None):
+        self._global_score = global_score
+        self._local_score = local_score
 
-    def __eq__(self, other: object) -> bool:
-        if not isinstance(other, MultiScorePerformance):
-            return False
-        return (
-            self.score == other.score
-            and self.additional_scores == other.additional_scores
-        )
+        if local_score is None:
+            super().__init__(global_score, dashboard_metrics)
+        else:
+            super().__init__(local_score, dashboard_metrics)
 
-    def __repr__(self):
-        return (
-            f"MultiScorePerformance(score: {self.score.value}, "
-            f"additional_scores: {self.additional_scores}, "
-            f"dashboard: ({len(self.dashboard_metrics)} metric groups))"
-        )
+    @property
+    def score(self):
+        """Return the score metric."""
+        return self._local_score
+
+    @property
+    def global_score(self):
+        """Return the global score metric."""
+        return self._global_score
+
+    @property
+    def local_score(self):
+        """Return the local metric."""
+        return self._local_score
