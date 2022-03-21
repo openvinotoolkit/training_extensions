@@ -542,6 +542,22 @@ class API(unittest.TestCase):
             osp.join('configs', 'custom-object-detection', 'cspdarknet_YOLOX'))
 
     @e2e_pytest_api
+    def test_training_person_detection_0200(self):
+        self.end_to_end(osp.join('configs', 'person-detection', 'person-detection-0200'))
+
+    @e2e_pytest_api
+    def test_training_person_detection_0201(self):
+        self.end_to_end(osp.join('configs', 'person-detection', 'person-detection-0201'))
+
+    @e2e_pytest_api
+    def test_training_person_detection_0202(self):
+        self.end_to_end(osp.join('configs', 'person-detection', 'person-detection-0202'))
+
+    @e2e_pytest_api
+    def test_training_person_detection_0203(self):
+        self.end_to_end(osp.join('configs', 'person-detection', 'person-detection-0203'))
+
+    @e2e_pytest_api
     def test_training_person_detection_0301(self):
         self.end_to_end(osp.join('configs', 'person-detection', 'person-detection-0301'))
 
