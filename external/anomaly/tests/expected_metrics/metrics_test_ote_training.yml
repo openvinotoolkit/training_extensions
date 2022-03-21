@@ -1,0 +1,43 @@
+'ACTION-training_evaluation,model-ote_anomaly_segmentation_padim,dataset-mvtec,patience-CONFIG,batch-CONFIG,usecase-reallife':
+        'metrics.accuracy.f-measure':
+                'target_value': 0.73
+                'max_diff_if_less_threshold': 0.01
+                'max_diff_if_greater_threshold': 0.04
+'ACTION-export_evaluation,model-ote_anomaly_segmentation_padim,dataset-mvtec,patience-CONFIG,batch-CONFIG,usecase-reallife':
+        'metrics.accuracy.f-measure':
+                'base': 'training_evaluation.metrics.accuracy.f-measure'
+                'max_diff': 0.01
+'ACTION-pot_evaluation,model-ote_anomaly_segmentation_padim,dataset-mvtec,patience-CONFIG,batch-CONFIG,usecase-reallife':
+        'metrics.accuracy.f-measure':
+                'base': 'export_evaluation.metrics.accuracy.f-measure'
+                'max_diff': 0.03
+'ACTION-nncf_evaluation,model-ote_anomaly_segmentation_padim,dataset-mvtec,patience-CONFIG,batch-CONFIG,usecase-reallife':
+        'metrics.accuracy.f-measure':
+                'base': 'training_evaluation.metrics.accuracy.f-measure'
+                'max_diff_if_less_threshold': 0.01
+'ACTION-nncf_export_evaluation,model-ote_anomaly_segmentation_padim,dataset-mvtec,patience-CONFIG,batch-CONFIG,usecase-reallife':
+        'metrics.accuracy.f-measure':
+                'base': 'nncf_evaluation.metrics.accuracy.f-measure'
+                'max_diff': 0.01
+
+'ACTION-training_evaluation,model-ote_anomaly_segmentation_stfpm,dataset-mvtec,patience-CONFIG,batch-CONFIG,usecase-reallife':
+        'metrics.accuracy.f-measure':
+                'target_value': 0.74
+                'max_diff_if_less_threshold': 0.01
+                'max_diff_if_greater_threshold': 0.04
+'ACTION-export_evaluation,model-ote_anomaly_segmentation_stfpm,dataset-mvtec,patience-CONFIG,batch-CONFIG,usecase-reallife':
+        'metrics.accuracy.f-measure':
+                'base': 'training_evaluation.metrics.accuracy.f-measure'
+                'max_diff': 0.01
+'ACTION-pot_evaluation,model-ote_anomaly_segmentation_stfpm,dataset-mvtec,patience-CONFIG,batch-CONFIG,usecase-reallife':
+        'metrics.accuracy.f-measure':
+                'base': 'export_evaluation.metrics.accuracy.f-measure'
+                'max_diff': 0.03
+'ACTION-nncf_evaluation,model-ote_anomaly_segmentation_stfpm,dataset-mvtec,patience-CONFIG,batch-CONFIG,usecase-reallife':
+        'metrics.accuracy.f-measure':
+                'base': 'training_evaluation.metrics.accuracy.f-measure'
+                'max_diff_if_less_threshold': 0.01
+'ACTION-nncf_export_evaluation,model-ote_anomaly_segmentation_stfpm,dataset-mvtec,patience-CONFIG,batch-CONFIG,usecase-reallife':
+        'metrics.accuracy.f-measure':
+                'base': 'nncf_evaluation.metrics.accuracy.f-measure'
+                'max_diff': 0.01
