@@ -17,6 +17,7 @@ from sys import maxsize
 
 from ote_sdk.configuration.elements import (ParameterGroup,
                                             add_parameter_group,
+                                            boolean_attribute,
                                             configurable_boolean,
                                             configurable_float,
                                             configurable_integer,
@@ -139,6 +140,7 @@ class OTESegmentationConfig(ConfigurableParameters):
     class __POTParameter(ParameterGroup):
         header = string_attribute("POT Parameters")
         description = header
+        visible_in_ui = boolean_attribute(False)
 
         stat_subset_size = configurable_integer(
             header="Number of data samples",
@@ -158,6 +160,7 @@ class OTESegmentationConfig(ConfigurableParameters):
     class __NNCFOptimization(ParameterGroup):
         header = string_attribute("Optimization by NNCF")
         description = header
+        visible_in_ui = boolean_attribute(False)
 
         enable_quantization = configurable_boolean(
             default_value=True,
