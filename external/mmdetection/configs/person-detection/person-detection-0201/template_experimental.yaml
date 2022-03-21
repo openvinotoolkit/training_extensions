@@ -1,0 +1,57 @@
+# Description.
+model_template_id: Person_Detection_0201
+name: person-detection-0201
+task_type: DETECTION
+task_family: VISION
+instantiation: "CLASS"
+summary: Fast Person Detection models (MobileNetV2-SSD).
+application:
+  ~
+
+# Algo backend.
+framework: OTEDetection v2.9.1
+
+# Task implementations.
+entrypoints:
+  base: mmdet.apis.ote.apis.detection.OTEDetectionTrainingTask
+  openvino: mmdet.apis.ote.apis.detection.OpenVINODetectionTask
+  nncf: mmdet.apis.ote.apis.detection.OTEDetectionNNCFTask
+
+# Capabilities.
+capabilities:
+  - compute_representations
+
+# Hyperparameters.
+hyper_parameters:
+  base_path: ../../../../mmdetection/detection_tasks/apis/detection/configuration.yaml
+  parameter_overrides:
+    learning_parameters:
+      batch_size:
+        default_value: 84
+      learning_rate:
+        # LR reduction proportionally to the batch size decrease (because gpu_num=1)
+        default_value: 0.0125
+      learning_rate_warmup_iters:
+        default_value: 1200
+      num_iters:
+        default_value: 20
+    nncf_optimization:
+      enable_quantization:
+        default_value: true
+      enable_pruning:
+        default_value: false
+      maximal_accuracy_degradation:
+        default_value: 0.01
+
+# Training resources.
+max_nodes: 1
+training_targets:
+  - GPU
+  - CPU
+
+# Stats.
+gigaflops: 1.84 #to be checked with model-analyzer
+size: 1.83
+
+# Obsolete
+# gpu_nums: 4
