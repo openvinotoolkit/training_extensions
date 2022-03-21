@@ -293,4 +293,4 @@ nncf_optimization:
     visible_in_ui: false
     warning: null
   type: PARAMETER_GROUP
-  visible_in_ui: true
+  visible_in_ui: false
