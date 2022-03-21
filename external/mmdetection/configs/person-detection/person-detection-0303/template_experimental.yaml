@@ -4,7 +4,7 @@ name: person-detection-0303
 task_type: DETECTION
 task_family: VISION
 instantiation: "CLASS"
-summary: Fast Person Detection model (MobileNetV2-ATSS).
+summary: Fast Person Detection model (MobileNetV2-ATSS) for classic and topdown scenario.
 application:
   ~
 

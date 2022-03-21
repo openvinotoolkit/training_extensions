@@ -4,7 +4,7 @@ name: person-detection-0301
 task_type: DETECTION
 task_family: VISION
 instantiation: "CLASS"
-summary: Accurate person detection model (Resnet50-VFnet).
+summary: Accurate person detection model (Resnet50-VFnet) for classic and topdown scenario.
 application:
   ~
 

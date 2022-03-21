@@ -4,7 +4,7 @@ name: person-detection-0302
 task_type: DETECTION
 task_family: VISION
 instantiation: "CLASS"
-summary: Moderate Person Detection model (Resnet50-ATSS).
+summary: Moderate Person Detection model (Resnet50-ATSS) for classic and topdown scenario.
 application:
   ~
 
