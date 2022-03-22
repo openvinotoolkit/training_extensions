@@ -1636,8 +1636,10 @@ class TestFMeasure:
             labels[1]: ScoreMetric(name="class_2", value=0.6666666666666665),
             labels[2]: ScoreMetric(name="class_3", value=0.6666666666666665),
         }
-        label_schema_labels = result_set.model.configuration.label_schema.get_labels(
-            include_empty=False
+        label_schema_labels = (
+            result_set.model.configuration.get_label_schema().get_labels(
+                include_empty=False
+            )
         )
         classes = [label.name for label in label_schema_labels]
         boxes_pair = _FMeasureCalculator(

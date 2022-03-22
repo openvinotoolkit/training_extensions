@@ -19,19 +19,24 @@ File system based datasets registry.
 from ote_sdk.entities.model_template import TaskType
 
 
+# pylint: disable=too-many-return-statements
 def get_dataset_class(task_type):
     """
     Returns a dataset class by task type.
 
     Args:
-        task_type: A task type such as ANOMALY_CLASSIFICATION, CLASSIFICATION, INSTANCE_SEGMENTATION, DETECTION,
-        CLASSIFICATION, ROTATED_DETECTION, SEGMENTATION.
+        task_type: A task type such as ANOMALY_CLASSIFICATION, ANOMALY_SEGMENTATION, CLASSIFICATION,
+        INSTANCE_SEGMENTATION, DETECTION, CLASSIFICATION, ROTATED_DETECTION, SEGMENTATION.
     """
 
     if task_type == TaskType.ANOMALY_CLASSIFICATION:
         from .anomaly.dataset import AnomalyClassificationDataset
 
         return AnomalyClassificationDataset
+    if task_type == TaskType.ANOMALY_SEGMENTATION:
+        from .anomaly.dataset import AnomalySegmentationDataset
+
+        return AnomalySegmentationDataset
     if task_type == TaskType.CLASSIFICATION:
         from .image_classification.dataset import ImageClassificationDataset
 

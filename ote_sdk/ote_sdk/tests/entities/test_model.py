@@ -154,7 +154,7 @@ class TestModelConfiguration:
             configurable_parameters=parameters, label_schema=label_schema
         )
         assert model_configuration.configurable_parameters == parameters
-        assert model_configuration.label_schema == label_schema
+        assert model_configuration.get_label_schema() == label_schema
 
 
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
