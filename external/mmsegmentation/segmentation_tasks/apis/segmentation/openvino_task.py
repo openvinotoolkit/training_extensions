@@ -275,6 +275,8 @@ class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask,
             if get_nodes_by_type(model, ['FakeQuantize']):
                 raise RuntimeError("Model is already optimized by POT")
 
+        optimization_parameters.update_progress(10)
+
         engine_config = ADDict({
             'device': 'CPU'
         })
@@ -306,6 +308,8 @@ class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask,
 
         compress_model_weights(compressed_model)
 
+        optimization_parameters.update_progress(90)
+
         with tempfile.TemporaryDirectory() as tempdir:
             save_model(compressed_model, tempdir, model_name="model")
             with open(os.path.join(tempdir, "model.xml"), "rb") as f:
@@ -323,3 +327,5 @@ class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask,
 
         self.model = output_model
         self.inferencer = self.load_inferencer()
+
+        optimization_parameters.update_progress(100)
