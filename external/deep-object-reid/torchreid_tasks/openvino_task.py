@@ -87,7 +87,7 @@ class OpenVINOClassificationInferencer(BaseInferencer):
         hparams: OTEClassificationParameters,
         label_schema: LabelSchemaEntity,
         model_file: Union[str, bytes],
-        weight_file: Optional[str, bytes] = None,
+        weight_file: Union[str, bytes, None] = None,
         device: str = "CPU",
         num_requests: int = 1,
     ):
