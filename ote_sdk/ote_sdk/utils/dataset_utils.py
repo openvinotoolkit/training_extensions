@@ -25,7 +25,9 @@ from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.shapes.rectangle import Rectangle
 
 
-def split_local_global_dataset(dataset) -> Tuple[DatasetEntity, DatasetEntity]:
+def split_local_global_dataset(
+    dataset: DatasetEntity,
+) -> Tuple[DatasetEntity, DatasetEntity]:
     """Split a dataset into globally and locally annotated items."""
     globally_annotated = []
     locally_annotated = []
@@ -77,7 +79,9 @@ def split_local_global_dataset(dataset) -> Tuple[DatasetEntity, DatasetEntity]:
     return global_gt_dataset, local_gt_dataset
 
 
-def split_local_global_resultset(resultset) -> Tuple[ResultSetEntity, ResultSetEntity]:
+def split_local_global_resultset(
+    resultset: ResultSetEntity,
+) -> Tuple[ResultSetEntity, ResultSetEntity]:
     """Split resultset based on the type of available annotations."""
     # splits the dataset
     globally_annotated = []
