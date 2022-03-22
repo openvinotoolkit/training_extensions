@@ -23,6 +23,8 @@ from ote_sdk.tests.constants.ote_sdk_components import OteSdkComponent
 from ote_sdk.tests.constants.requirements import Requirements
 from ote_sdk.usecases.exportable_code.prediction_to_annotation_converter import (
     AnomalyClassificationToAnnotationConverter,
+    AnomalyDetectionToAnnotationConverter,
+    AnomalySegmentationToAnnotationConverter,
     ClassificationToAnnotationConverter,
     DetectionBoxToAnnotationConverter,
     DetectionToAnnotationConverter,
@@ -304,11 +306,36 @@ class TestCreateConverter:
         assert isinstance(converter, AnomalyClassificationToAnnotationConverter)
         assert converter.normal_label == labels[0]
         assert converter.anomalous_label == labels[1]
-        # Checking that "ValueError" exception is raised when "ANOMALY_DETECTION" or "ANOMALY_SEGMENTATION" is
-        # specified as "converter_type"
-        with pytest.raises(ValueError):
-            for domain in [Domain.ANOMALY_DETECTION, Domain.ANOMALY_SEGMENTATION]:
-                create_converter(converter_type=domain, labels=label_schema)
+        # Checking that "AnomalyDetectionToAnnotationConverter" returned by "create_converter" function when
+        # "ANOMALY_DETECTION" is specified as "converter_type"
+        labels = [
+            LabelEntity(name="Normal", domain=Domain.ANOMALY_DETECTION, id=ID("1")),
+            LabelEntity(name="Anomalous", domain=Domain.ANOMALY_DETECTION, id=ID("2")),
+        ]
+        label_group = LabelGroup(name="Anomaly detection labels group", labels=labels)
+        label_schema = LabelSchemaEntity(label_groups=[label_group])
+        converter = create_converter(
+            converter_type=Domain.ANOMALY_DETECTION, labels=label_schema
+        )
+        assert isinstance(converter, AnomalyDetectionToAnnotationConverter)
+        assert converter.normal_label == labels[0]
+        assert converter.anomalous_label == labels[1]
+        # Checking that "AnomalySegmentationToAnnotationConverter" returned by "create_converter" function when
+        # "ANOMALY_SEGMENTATION" is specified as "converter_type"
+        labels = [
+            LabelEntity(name="Normal", domain=Domain.ANOMALY_SEGMENTATION, id=ID("1")),
+            LabelEntity(
+                name="Anomalous", domain=Domain.ANOMALY_SEGMENTATION, id=ID("2")
+            ),
+        ]
+        label_group = LabelGroup(name="Anomaly detection labels group", labels=labels)
+        label_schema = LabelSchemaEntity(label_groups=[label_group])
+        converter = create_converter(
+            converter_type=Domain.ANOMALY_SEGMENTATION, labels=label_schema
+        )
+        assert isinstance(converter, AnomalySegmentationToAnnotationConverter)
+        assert converter.normal_label == labels[0]
+        assert converter.anomalous_label == labels[1]
 
 
 def check_annotation_scene(
