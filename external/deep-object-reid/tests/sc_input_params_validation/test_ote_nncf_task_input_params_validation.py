@@ -14,7 +14,7 @@ from ote_sdk.tests.parameters_validation.validation_helper import (
 from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType
 from ote_sdk.usecases.tasks.interfaces.optimization_interface import OptimizationType
 
-from torchreid.integration.sc.nncf_task import OTEClassificationNNCFTask
+from torchreid_tasks.nncf_task import OTEClassificationNNCFTask
 
 
 class MockNNCFTask(OTEClassificationNNCFTask):
@@ -69,7 +69,6 @@ class TestNNCFTaskInputParamsValidation:
             "optimization_type": OptimizationType.NNCF,
             "dataset": DatasetEntity(),
             "output_model": self.model(),
-            "optimization_parameters": None,
         }
         unexpected_str = "unexpected string"
         unexpected_values = [

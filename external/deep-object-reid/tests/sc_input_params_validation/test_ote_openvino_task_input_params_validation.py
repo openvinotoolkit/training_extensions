@@ -15,12 +15,12 @@ from ote_sdk.tests.parameters_validation.validation_helper import (
 )
 from ote_sdk.usecases.tasks.interfaces.optimization_interface import OptimizationType
 
-from torchreid.integration.sc.openvino_task import (
+from torchreid_tasks.openvino_task import (
     OpenVINOClassificationInferencer,
     OTEOpenVinoDataLoader,
     OpenVINOClassificationTask,
 )
-from torchreid.integration.sc.parameters import OTEClassificationParameters
+from torchreid_tasks.parameters import OTEClassificationParameters
 
 
 def model():
@@ -158,7 +158,6 @@ class TestOpenVINODetectionTaskInputParamsValidation:
             "optimization_type": OptimizationType.POT,
             "dataset": DatasetEntity(),
             "output_model": model(),
-            "optimization_parameters": None,
         }
         unexpected_str = "unexpected string"
         unexpected_values = [
@@ -328,6 +327,24 @@ class TestOpenVINOClassificationInferencerInputParamsValidation:
             unexpected_values=unexpected_values,
             class_or_function=inferencer.post_process,
         )
+
+    @e2e_pytest_unit
+    def test_openvino_classification_inferencer_predict_params_validation(self):
+        """
+        <b>Description:</b>
+        Check OpenVINOClassificationInferencer object "predict" method input parameters
+        validation
+
+        <b>Input data:</b>
+        OpenVINOClassificationInferencer object, "image" non-ndarray object
+
+        <b>Expected results:</b>
+        Test passes if ValueError exception is raised when unexpected type object is specified as
+        input parameter for "predict" method
+        """
+        inferencer = MockOpenVinoInferencer()
+        with pytest.raises(ValueError):
+            inferencer.predict(image="unexpected string")  # type: ignore
 
     @e2e_pytest_unit
     def test_openvino_classification_inferencer_forward_params_validation(self):

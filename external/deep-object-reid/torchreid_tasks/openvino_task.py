@@ -55,6 +55,10 @@ from ote_sdk.usecases.tasks.interfaces.optimization_interface import (
     IOptimizationTask,
     OptimizationType,
 )
+from ote_sdk.utils.argument_checks import (
+    DatasetParamTypeCheck,
+    check_input_parameters_type,
+)
 
 from compression.api import DataLoader
 from compression.engines.ie_engine import IEEngine
@@ -77,12 +81,13 @@ logger = logging.getLogger(__name__)
 
 
 class OpenVINOClassificationInferencer(BaseInferencer):
+    @check_input_parameters_type()
     def __init__(
         self,
         hparams: OTEClassificationParameters,
         label_schema: LabelSchemaEntity,
         model_file: Union[str, bytes],
-        weight_file: Union[str, bytes, None] = None,
+        weight_file: Optional[str, bytes] = None,
         device: str = "CPU",
         num_requests: int = 1,
     ):
@@ -107,15 +112,18 @@ class OpenVINOClassificationInferencer(BaseInferencer):
 
         self.converter = ClassificationToAnnotationConverter(self.label_schema)
 
+    @check_input_parameters_type()
     def pre_process(self, image: np.ndarray) -> Tuple[Dict[str, np.ndarray], Dict[str, Any]]:
         return self.model.preprocess(image)
 
+    @check_input_parameters_type()
     def post_process(self, prediction: Dict[str, np.ndarray], metadata: Dict[str, Any]) -> Tuple[AnnotationSceneEntity,
                                                                                             np.ndarray, np.ndarray]:
         prediction = self.model.postprocess(prediction, metadata)
 
         return self.converter.convert_to_annotation(prediction, metadata)
 
+    @check_input_parameters_type()
     def predict(self, image: np.ndarray) -> Tuple[AnnotationSceneEntity, np.ndarray, np.ndarray]:
         image, metadata = self.pre_process(image)
         raw_predictions = self.forward(image)
@@ -124,17 +132,20 @@ class OpenVINOClassificationInferencer(BaseInferencer):
 
         return predictions, features, repr_vectors, act_score
 
+    @check_input_parameters_type()
     def forward(self, inputs: Dict[str, np.ndarray]) -> Dict[str, np.ndarray]:
         return self.model.infer_sync(inputs)
 
 
 class OTEOpenVinoDataLoader(DataLoader):
+    @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def __init__(self, dataset: DatasetEntity, inferencer: BaseInferencer):
         super().__init__(config=None)
         self.dataset = dataset
         self.inferencer = inferencer
 
-    def __getitem__(self, index):
+    @check_input_parameters_type()
+    def __getitem__(self, index: int):
         image = self.dataset[index].numpy
         annotation = self.dataset[index].annotation_scene
         inputs, metadata = self.inferencer.pre_process(image)
@@ -146,6 +157,7 @@ class OTEOpenVinoDataLoader(DataLoader):
 
 
 class OpenVINOClassificationTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IOptimizationTask):
+    @check_input_parameters_type()
     def __init__(self, task_environment: TaskEnvironment):
         self.task_environment = task_environment
         self.hparams = self.task_environment.get_hyper_parameters(OTEClassificationParameters)
@@ -158,6 +170,7 @@ class OpenVINOClassificationTask(IDeploymentTask, IInferenceTask, IEvaluationTas
                                                 self.model.get_data("openvino.xml"),
                                                 self.model.get_data("openvino.bin"))
 
+    @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def infer(self, dataset: DatasetEntity,
               inference_parameters: Optional[InferenceParameters] = None) -> DatasetEntity:
         update_progress_callback = default_progress_callback
@@ -185,6 +198,7 @@ class OpenVINOClassificationTask(IDeploymentTask, IInferenceTask, IEvaluationTas
             update_progress_callback(int(i / dataset_size * 100))
         return dataset
 
+    @check_input_parameters_type()
     def evaluate(self,
                  output_result_set: ResultSetEntity,
                  evaluation_metric: Optional[str] = None):
@@ -193,6 +207,7 @@ class OpenVINOClassificationTask(IDeploymentTask, IInferenceTask, IEvaluationTas
                            'but parameter is ignored. Use accuracy instead.')
         output_result_set.performance = MetricsHelper.compute_accuracy(output_result_set).get_performance()
 
+    @check_input_parameters_type()
     def deploy(self,
                output_model: ModelEntity) -> None:
         logger.info('Deploying the model')
@@ -233,11 +248,12 @@ class OpenVINOClassificationTask(IDeploymentTask, IInferenceTask, IEvaluationTas
                 output_model.exportable_code = file.read()
         logger.info('Deploying completed')
 
+    @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def optimize(self,
                  optimization_type: OptimizationType,
                  dataset: DatasetEntity,
                  output_model: ModelEntity,
-                 optimization_parameters: Optional[OptimizationParameters]):
+                 optimization_parameters: Optional[OptimizationParameters] = None):
 
         if optimization_type is not OptimizationType.POT:
             raise ValueError("POT is the only supported optimization type for OpenVino models")

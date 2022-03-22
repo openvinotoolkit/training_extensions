@@ -7,7 +7,7 @@ from ote_sdk.tests.parameters_validation.validation_helper import (
     check_value_error_exception_raised,
 )
 
-from torchreid.integration.sc.utils import (
+from torchreid_tasks.utils import (
     ClassificationDatasetAdapter,
     active_score_from_probs,
     OTEClassificationDataset,

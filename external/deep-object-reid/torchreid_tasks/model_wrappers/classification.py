@@ -14,7 +14,9 @@
 
 import cv2
 import numpy as np
-from typing import Any, Dict
+from typing import Any, Dict, Union
+from ote_sdk.utils.argument_checks import check_input_parameters_type
+
 
 try:
     from openvino.model_zoo.model_api.models.classification import Classification
@@ -59,6 +61,7 @@ class OteClassification(Classification):
                                 'labels must match ({} != {})'.format(layer_shape[1], len(self.labels)))
         return layer_name
 
+    @check_input_parameters_type()
     def preprocess(self, image: np.ndarray):
         meta = {'original_shape': image.shape}
         resized_image = self.resize(image, (self.w, self.h))
@@ -71,6 +74,7 @@ class OteClassification(Classification):
         dict_inputs = {self.image_blob_name: resized_image}
         return dict_inputs, meta
 
+    @check_input_parameters_type()
     def postprocess(self, outputs: Dict[str, np.ndarray], metadata: Dict[str, Any]):
         logits = outputs[self.out_layer_name].squeeze()
         if self.multilabel:
@@ -80,6 +84,7 @@ class OteClassification(Classification):
 
         return predictions
 
+    @check_input_parameters_type()
     def postprocess_aux_outputs(self, outputs: Dict[str, np.ndarray], metadata: Dict[str, Any]):
         features = preprocess_features_for_actmap(outputs['features'])
         actmap = get_actmap(features[0], (metadata['original_shape'][1], metadata['original_shape'][0]))
@@ -95,8 +100,8 @@ class OteClassification(Classification):
         return actmap, repr_vector, act_score
 
 
-
-def preprocess_features_for_actmap(features):
+@check_input_parameters_type()
+def preprocess_features_for_actmap(features: Union[np.ndarray, int, float, str, tuple, list]):
     features = np.mean(features, axis=1)
     b, h, w = features.shape
     features = features.reshape(b, h * w)
@@ -106,7 +111,9 @@ def preprocess_features_for_actmap(features):
     return features
 
 
-def get_actmap(features, output_res):
+@check_input_parameters_type()
+def get_actmap(features: Union[np.ndarray, int, float, str, tuple, list],
+               output_res: Union[tuple, list]):
     am = cv2.resize(features, output_res)
     am = 255 * (am - np.min(am)) / (np.max(am) - np.min(am) + 1e-12)
     am = np.uint8(np.floor(am))
@@ -114,16 +121,19 @@ def get_actmap(features, output_res):
     return am
 
 
+@check_input_parameters_type()
 def sigmoid_numpy(x: np.ndarray):
     return 1. / (1. + np.exp(-1. * x))
 
 
+@check_input_parameters_type()
 def softmax_numpy(x: np.ndarray):
     x = np.exp(x)
     x /= np.sum(x)
     return x
 
 
+@check_input_parameters_type()
 def get_multiclass_predictions(logits: np.ndarray, activate: bool = True):
 
     index = np.argmax(logits)
@@ -132,6 +142,7 @@ def get_multiclass_predictions(logits: np.ndarray, activate: bool = True):
     return [(index, logits[index])]
 
 
+@check_input_parameters_type()
 def get_multilabel_predictions(logits: np.ndarray, pos_thr: float = 0.5, activate: bool = True):
     if activate:
         logits = sigmoid_numpy(logits)

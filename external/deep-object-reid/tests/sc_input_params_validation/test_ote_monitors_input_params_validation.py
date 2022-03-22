@@ -4,7 +4,7 @@ from ote_sdk.tests.parameters_validation.validation_helper import (
     check_value_error_exception_raised,
 )
 
-from torchreid.integration.sc.monitors import MetricsMonitor, DefaultMetricsMonitor
+from torchreid_tasks.monitors import MetricsMonitor, DefaultMetricsMonitor
 
 
 class TestMetricsMonitorParamsValidation:

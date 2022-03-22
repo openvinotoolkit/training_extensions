@@ -11,7 +11,7 @@ from ote_sdk.tests.parameters_validation.validation_helper import (
 )
 from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType
 
-from torchreid.integration.sc.inference_task import OTEClassificationInferenceTask
+from torchreid_tasks.inference_task import OTEClassificationInferenceTask
 
 
 class MockClassificationInferenceTask(OTEClassificationInferenceTask):

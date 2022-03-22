@@ -12,7 +12,7 @@ from ote_sdk.tests.parameters_validation.validation_helper import (
     check_value_error_exception_raised,
 )
 
-from torchreid.integration.sc.train_task import OTEClassificationTrainingTask
+from torchreid_tasks.train_task import OTEClassificationTrainingTask
 
 
 class MockClassificationTrainingTask(OTEClassificationTrainingTask):
