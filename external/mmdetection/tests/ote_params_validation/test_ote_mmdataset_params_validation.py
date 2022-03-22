@@ -4,7 +4,7 @@
 
 import numpy as np
 import pytest
-from mmdet.apis.ote.extension.datasets.mmdataset import (
+from detection_tasks.extension.datasets.mmdataset import (
     OTEDataset,
     get_annotation_mmdet_format,
 )
@@ -71,6 +71,8 @@ class TestMMDatasetFunctionsInputParamsValidation:
             ("labels", [label, unexpected_int]),
             # Unexpected integer is specified as "domain" parameter
             ("domain", unexpected_int),
+            # Unexpected string is specified as "min_size" parameter
+            ("min_size", "unexpected string"),
         ]
         check_value_error_exception_raised(
             correct_parameters=correct_values_dict,

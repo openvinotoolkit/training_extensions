@@ -213,7 +213,7 @@ class API(unittest.TestCase):
         def progress_callback(progress: float, score: Optional[float] = None):
             training_progress_curve.append(progress)
 
-        train_parameters = TrainParameters
+        train_parameters = TrainParameters()
         train_parameters.update_progress = progress_callback
 
         # Test stopping after some time
@@ -253,7 +253,7 @@ class API(unittest.TestCase):
         def progress_callback(progress: float, score: Optional[float] = None):
             training_progress_curve.append(progress)
 
-        train_parameters = TrainParameters
+        train_parameters = TrainParameters()
         train_parameters.update_progress = progress_callback
         output_model = ModelEntity(
             dataset,
@@ -281,7 +281,7 @@ class API(unittest.TestCase):
             dataset,
             detection_environment.get_model_configuration(),
         )
-        task.train(dataset, original_model, TrainParameters)
+        task.train(dataset, original_model, TrainParameters())
 
         # Create NNCFTask
         detection_environment.model = original_model
@@ -301,7 +301,7 @@ class API(unittest.TestCase):
             assert isinstance(progress, int)
             training_progress_curve.append(progress)
 
-        optimization_parameters = OptimizationParameters
+        optimization_parameters = OptimizationParameters()
         optimization_parameters.update_progress = progress_callback
         nncf_model = ModelEntity(
             dataset,
@@ -329,7 +329,7 @@ class API(unittest.TestCase):
             assert isinstance(progress, int)
             inference_progress_curve.append(progress)
 
-        inference_parameters = InferenceParameters
+        inference_parameters = InferenceParameters()
         inference_parameters.update_progress = progress_callback
 
         task.infer(dataset.with_empty_annotations(), inference_parameters)
@@ -352,7 +352,7 @@ class API(unittest.TestCase):
             dataset,
             detection_environment.get_model_configuration(),
         )
-        train_task.train(dataset, trained_model, TrainParameters)
+        train_task.train(dataset, trained_model, TrainParameters())
         performance_after_train = self.eval(train_task, trained_model, val_dataset)
 
         # Create InferenceTask

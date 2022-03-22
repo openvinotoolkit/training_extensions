@@ -3,12 +3,15 @@
 #
 
 import pytest
-from mmdet.apis.ote.extension.utils.pipelines import (
+from detection_tasks.extension.utils.pipelines import (
     LoadAnnotationFromOTEDataset,
     LoadImageFromOTEDataset,
 )
 
 from ote_sdk.test_suite.e2e_test_system import e2e_pytest_unit
+from ote_sdk.tests.parameters_validation.validation_helper import (
+    check_value_error_exception_raised,
+)
 
 
 class TestLoadImageFromOTEDatasetInputParamsValidation:
@@ -67,18 +70,33 @@ class TestLoadAnnotationFromOTEDatasetInputParamsValidation:
         Test passes if ValueError exception is raised when unexpected type object is specified as
         LoadAnnotationFromOTEDataset object initialization parameter
         """
+        correct_values_dict = {
+            "min_size": 1,
+        }
         unexpected_str = "unexpected string"
-        for parameter in [
-            "with_bbox",
-            "with_label",
-            "with_mask",
-            "with_seg",
-            "poly2mask",
-            "with_text",
-            "domain"
-        ]:
-            with pytest.raises(ValueError):
-                LoadAnnotationFromOTEDataset(**{parameter: unexpected_str})
+        unexpected_values = [
+            # Unexpected string is specified as "min_size" parameter
+            ("min_size", unexpected_str),
+            # Unexpected string is specified as "with_bbox" parameter
+            ("with_bbox", unexpected_str),
+            # Unexpected string is specified as "with_label" parameter
+            ("with_label", unexpected_str),
+            # Unexpected string is specified as "with_mask" parameter
+            ("with_mask", unexpected_str),
+            # Unexpected string is specified as "with_seg" parameter
+            ("with_seg", unexpected_str),
+            # Unexpected string is specified as "poly2mask" parameter
+            ("poly2mask", unexpected_str),
+            # Unexpected string is specified as "with_text" parameter
+            ("with_text", unexpected_str),
+            # Unexpected string is specified as "domain" parameter
+            ("domain", unexpected_str),
+        ]
+        check_value_error_exception_raised(
+            correct_parameters=correct_values_dict,
+            unexpected_values=unexpected_values,
+            class_or_function=LoadAnnotationFromOTEDataset,
+        )
 
     @e2e_pytest_unit
     def test_load_annotation_from_ote_dataset_call_params_validation(self):

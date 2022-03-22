@@ -6,8 +6,8 @@ import numpy as np
 import pytest
 from openvino.model_zoo.model_api.models import Model
 
-from mmdet.apis.ote.apis.detection.configuration import OTEDetectionConfig
-from mmdet.apis.ote.apis.detection.openvino_task import (
+from detection_tasks.apis.detection.configuration import OTEDetectionConfig
+from detection_tasks.apis.detection.openvino_task import (
     BaseInferencerWithConverter,
     OpenVINODetectionInferencer,
     OpenVINODetectionTask,
@@ -101,7 +101,7 @@ class TestBaseInferencerWithConverterInputParamsValidation:
         Check BaseInferencerWithConverter object "pre_process" method input parameters validation
 
         <b>Input data:</b>
-        BaseInferencerWithConverter object, "pre_process" method unexpected-type input parameters
+        BaseInferencerWithConverter object, "image" non-ndarray object
 
         <b>Expected results:</b>
         Test passes if ValueError exception is raised when unexpected type object is specified as
@@ -109,7 +109,7 @@ class TestBaseInferencerWithConverterInputParamsValidation:
         """
         inferencer = MockBaseInferencer()
         with pytest.raises(ValueError):
-            inferencer.pre_process("unexpected string")  # type: ignore
+            inferencer.pre_process(image="unexpected string")  # type: ignore
 
     @e2e_pytest_unit
     def test_base_inferencer_with_converter_post_process_params_validation(self):
@@ -155,7 +155,7 @@ class TestBaseInferencerWithConverterInputParamsValidation:
         Check BaseInferencerWithConverter object "forward" method input parameters validation
 
         <b>Input data:</b>
-        BaseInferencerWithConverter object, "forward" method unexpected-type input parameters
+        BaseInferencerWithConverter object, "inputs" unexpected type object
 
         <b>Expected results:</b>
         Test passes if ValueError exception is raised when unexpected type object is specified as
@@ -190,7 +190,7 @@ class TestOpenVINODetectionInferencerInputParamsValidation:
         OpenVINODetectionInferencer object initialization parameter
         """
         correct_values_dict = {
-            "hparams": OTEDetectionConfig(),
+            "hparams": OTEDetectionConfig("test header"),
             "label_schema": LabelSchemaEntity(),
             "model_file": "model data",
         }
@@ -233,7 +233,7 @@ class TestOpenVINOMaskInferencerInputParamsValidation:
         OpenVINOMaskInferencer object initialization parameter
         """
         correct_values_dict = {
-            "hparams": OTEDetectionConfig(),
+            "hparams": OTEDetectionConfig("test header"),
             "label_schema": LabelSchemaEntity(),
             "model_file": "model data",
         }
@@ -276,7 +276,7 @@ class TestOpenVINORotatedRectInferencerInputParamsValidation:
         OpenVINORotatedRectInferencer object initialization parameter
         """
         correct_values_dict = {
-            "hparams": OTEDetectionConfig(),
+            "hparams": OTEDetectionConfig("test header"),
             "label_schema": LabelSchemaEntity(),
             "model_file": "model data",
         }

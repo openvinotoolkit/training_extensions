@@ -4,7 +4,7 @@
 
 import pytest
 
-from mmdet.apis.ote.apis.detection.train_task import OTEDetectionTrainingTask
+from detection_tasks.apis.detection.train_task import OTEDetectionTrainingTask
 from ote_sdk.configuration.configurable_parameters import ConfigurableParameters
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.label_schema import LabelSchemaEntity

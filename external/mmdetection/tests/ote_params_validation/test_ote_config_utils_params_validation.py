@@ -6,7 +6,7 @@ from collections import defaultdict
 
 import pytest
 from mmcv import Config
-from mmdet.apis.ote.apis.detection.config_utils import (
+from detection_tasks.apis.detection.config_utils import (
     cluster_anchors,
     config_from_string,
     config_to_string,
@@ -22,7 +22,7 @@ from mmdet.apis.ote.apis.detection.config_utils import (
     set_data_classes,
     set_hyperparams,
 )
-from mmdet.apis.ote.apis.detection.configuration import OTEDetectionConfig
+from detection_tasks.apis.detection.configuration import OTEDetectionConfig
 
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.label import Domain, LabelEntity

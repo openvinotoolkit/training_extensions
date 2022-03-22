@@ -33,6 +33,10 @@ from ote_sdk.entities.train_parameters import TrainParameters, default_progress_
 from ote_sdk.serialization.label_mapper import label_schema_to_bytes
 from ote_sdk.usecases.evaluation.metrics_helper import MetricsHelper
 from ote_sdk.usecases.tasks.interfaces.training_interface import ITrainingTask
+from ote_sdk.utils.argument_checks import (
+    DatasetParamTypeCheck,
+    check_input_parameters_type,
+)
 
 from mmdet.apis import train_detector
 from detection_tasks.apis.detection.config_utils import cluster_anchors, prepare_for_training, set_hyperparams
@@ -81,6 +85,7 @@ class OTEDetectionTrainingTask(OTEDetectionInferenceTask, ITrainingTask):
         return output
 
 
+    @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def train(self, dataset: DatasetEntity, output_model: ModelEntity, train_parameters: Optional[TrainParameters] = None):
         """ Trains a model on a dataset """
 
@@ -191,6 +196,7 @@ class OTEDetectionTrainingTask(OTEDetectionInferenceTask, ITrainingTask):
         logger.info('Training the model [done]')
 
 
+    @check_input_parameters_type()
     def save_model(self, output_model: ModelEntity):
         buffer = io.BytesIO()
         hyperparams_str = ids_to_strings(cfg_helper.convert(self._hyperparams, dict, enum_to_str=True))

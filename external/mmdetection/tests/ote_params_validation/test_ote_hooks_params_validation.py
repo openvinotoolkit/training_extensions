@@ -6,7 +6,7 @@ from logging import Logger
 import pytest
 import torch.nn as nn
 from mmcv.runner import EpochBasedRunner
-from mmdet.apis.ote.extension.utils.hooks import (
+from detection_tasks.extension.utils.hooks import (
     CancelTrainingHook,
     EarlyStoppingHook,
     EnsureCorrectBestCheckpointHook,

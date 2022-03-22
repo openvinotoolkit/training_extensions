@@ -3,7 +3,7 @@
 #
 
 import pytest
-from mmdet.apis.ote.apis.detection.ote_utils import (
+from detection_tasks.apis.detection.ote_utils import (
     ColorPalette,
     generate_label_schema,
     get_task_class,
@@ -108,7 +108,7 @@ class TestOTEUtilsFunctionsInputParamsValidation:
         Check "load_template" function input parameters validation
 
         <b>Input data:</b>
-        "load_template" function unexpected-type input parameters
+        "path" unexpected string with yaml file object
 
         <b>Expected results:</b>
         Test passes if ValueError exception is raised when unexpected type object is specified as
@@ -138,7 +138,7 @@ class TestOTEUtilsFunctionsInputParamsValidation:
         Check "get_task_class" function input parameters validation
 
         <b>Input data:</b>
-        "get_task_class" function unexpected-type input parameters
+        "path" non string-type object
 
         <b>Expected results:</b>
         Test passes if ValueError exception is raised when unexpected type object is specified as

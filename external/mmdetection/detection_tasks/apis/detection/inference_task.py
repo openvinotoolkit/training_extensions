@@ -45,6 +45,10 @@ from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType, IExpo
 from ote_sdk.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from ote_sdk.usecases.tasks.interfaces.unload_interface import IUnload
 from ote_sdk.serialization.label_mapper import label_schema_to_bytes
+from ote_sdk.utils.argument_checks import (
+    DatasetParamTypeCheck,
+    check_input_parameters_type,
+)
 
 from mmdet.apis import export_model
 from detection_tasks.apis.detection.config_utils import patch_config, prepare_for_testing, set_hyperparams
@@ -63,6 +67,7 @@ class OTEDetectionInferenceTask(IInferenceTask, IExportTask, IEvaluationTask, IU
 
     _task_environment: TaskEnvironment
 
+    @check_input_parameters_type()
     def __init__(self, task_environment: TaskEnvironment):
         """"
         Task for inference object detection models using OTEDetection.
@@ -227,6 +232,7 @@ class OTEDetectionInferenceTask(IInferenceTask, IExportTask, IEvaluationTask, IU
                 dataset_item.append_metadata_item(active_score, model=self._task_environment.model)
 
 
+    @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def infer(self, dataset: DatasetEntity, inference_parameters: Optional[InferenceParameters] = None) -> DatasetEntity:
         """ Analyzes a dataset using the latest inference model. """
 
@@ -318,7 +324,7 @@ class OTEDetectionInferenceTask(IInferenceTask, IExportTask, IEvaluationTask, IU
         eval_predictions = zip(eval_predictions, feature_vectors)
         return eval_predictions, metric
 
-
+    @check_input_parameters_type()
     def evaluate(self,
                  output_result_set: ResultSetEntity,
                  evaluation_metric: Optional[str] = None):
@@ -363,6 +369,7 @@ class OTEDetectionInferenceTask(IInferenceTask, IExportTask, IEvaluationTask, IU
             logger.warning(f"Done unloading. "
                            f"Torch is still occupying {torch.cuda.memory_allocated()} bytes of GPU memory")
 
+    @check_input_parameters_type()
     def export(self,
                export_type: ExportType,
                output_model: ModelEntity):

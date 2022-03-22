@@ -6,7 +6,7 @@ import tempfile
 
 import mmcv
 import pytest
-from mmdet.apis.ote.extension.datasets.data_utils import (
+from detection_tasks.extension.datasets.data_utils import (
     CocoDataset,
     LoadAnnotations,
     find_label_by_name,

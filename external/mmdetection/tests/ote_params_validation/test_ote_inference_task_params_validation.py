@@ -4,7 +4,7 @@
 
 import pytest
 
-from mmdet.apis.ote.apis.detection.inference_task import OTEDetectionInferenceTask
+from detection_tasks.apis.detection.inference_task import OTEDetectionInferenceTask
 from ote_sdk.configuration.configurable_parameters import ConfigurableParameters
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.inference_parameters import InferenceParameters

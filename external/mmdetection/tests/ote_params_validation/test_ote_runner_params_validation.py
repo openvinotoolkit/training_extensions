@@ -6,7 +6,7 @@ from logging import Logger
 
 import pytest
 import torch.nn as nn
-from mmdet.apis.ote.extension.utils.runner import (
+from detection_tasks.extension.utils.runner import (
     EpochRunnerWithCancel,
     IterBasedRunnerWithCancel,
     IterLoader,
