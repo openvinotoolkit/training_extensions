@@ -715,7 +715,12 @@ class AnomalyLocalizationPerformance(Performance):
     Local score takes priority as the primary score.
     """
 
-    def __init__(self, global_score, local_score=None, dashboard_metrics=None):
+    def __init__(
+        self,
+        global_score: ScoreMetric,
+        local_score: Optional[ScoreMetric] = None,
+        dashboard_metrics: Optional[List[MetricsGroup]] = None,
+    ):
         self._global_score = global_score
         self._local_score = local_score
 
@@ -725,11 +730,11 @@ class AnomalyLocalizationPerformance(Performance):
             super().__init__(local_score, dashboard_metrics)
 
     @property
-    def global_score(self):
+    def global_score(self) -> ScoreMetric:
         """Return the global score metric."""
         return self._global_score
 
     @property
-    def local_score(self):
+    def local_score(self) -> Optional[ScoreMetric]:
         """Return the local metric."""
         return self._local_score
