@@ -21,7 +21,7 @@ import shutil
 import subprocess  # nosec
 import tempfile
 from glob import glob
-from typing import List, Optional, Union
+from typing import Dict, List, Optional, Union
 
 import torch
 from anomalib.models import AnomalyModule, get_model
@@ -33,6 +33,7 @@ from ote_anomalib.data import OTEAnomalyDataModule
 from ote_anomalib.logging import get_logger
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.inference_parameters import InferenceParameters
+from ote_sdk.entities.metrics import Performance, ScoreMetric
 from ote_sdk.entities.model import (
     ModelEntity,
     ModelFormat,
@@ -200,6 +201,20 @@ class AnomalyInferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload
             accuracy = MetricsHelper.compute_accuracy(output_resultset).get_performance()
             output_resultset.performance.dashboard_metrics.extend(accuracy.dashboard_metrics)
 
+    def _export_to_onnx(self, onnx_path: str):
+        """Export model to ONNX
+
+        Args:
+             onnx_path (str): path to save ONNX file
+        """
+        height, width = self.config.model.input_size
+        torch.onnx.export(
+            model=self.model.model,
+            args=torch.zeros((1, 3, height, width)).to(self.model.device),
+            f=onnx_path,
+            opset_version=11,
+        )
+
     def export(self, export_type: ExportType, output_model: ModelEntity) -> None:
         """Export model to OpenVINO IR.
 
@@ -217,14 +232,8 @@ class AnomalyInferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload
 
         # pylint: disable=no-member; need to refactor this
         logger.info("Exporting the OpenVINO model.")
-        height, width = self.config.model.input_size
         onnx_path = os.path.join(self.config.project.path, "onnx_model.onnx")
-        torch.onnx.export(
-            model=self.model.model,
-            args=torch.zeros((1, 3, height, width)).to(self.model.device),
-            f=onnx_path,
-            opset_version=11,
-        )
+        self._export_to_onnx(onnx_path)
         optimize_command = "mo --input_model " + onnx_path + " --output_dir " + self.config.project.path
         subprocess.call(optimize_command, shell=True)
         bin_file = glob(os.path.join(self.config.project.path, "*.bin"))[0]
@@ -239,6 +248,38 @@ class AnomalyInferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload
 
         output_model.set_data("label_schema.json", label_schema_to_bytes(self.task_environment.label_schema))
         self._set_metadata(output_model)
+
+    def _model_info(self) -> Dict:
+        """Return model info to save the model weights.
+
+        Returns:
+           Dict: Model info.
+        """
+
+        return {
+            "model": self.model.state_dict(),
+            "config": self.get_config(),
+            "VERSION": 1,
+        }
+
+    def save_model(self, output_model: ModelEntity) -> None:
+        """Save the model after training is completed.
+
+        Args:
+            output_model (ModelEntity): Output model onto which the weights are saved.
+        """
+        logger.info("Saving the model weights.")
+        model_info = self._model_info()
+        buffer = io.BytesIO()
+        torch.save(model_info, buffer)
+        output_model.set_data("weights.pth", buffer.getvalue())
+        output_model.set_data("label_schema.json", label_schema_to_bytes(self.task_environment.label_schema))
+        self._set_metadata(output_model)
+
+        f1_score = self.model.image_metrics.F1.compute().item()
+        output_model.performance = Performance(score=ScoreMetric(name="F1 Score", value=f1_score))
+        output_model.precision = self.precision
+        output_model.optimization_methods = self.optimization_methods
 
     def _set_metadata(self, output_model: ModelEntity):
         output_model.set_data("image_threshold", self.model.image_threshold.value.cpu().numpy().tobytes())

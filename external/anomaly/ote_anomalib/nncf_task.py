@@ -19,7 +19,7 @@ import json
 import os
 import subprocess  # nosec
 from glob import glob
-from typing import Optional
+from typing import Dict, Optional
 
 import torch
 from anomalib.models import AnomalyModule, get_model
@@ -66,7 +66,7 @@ class AnomalyNNCFTask(AnomalyInferenceTask, IOptimizationTask):
             task_environment (TaskEnvironment): OTE Task environment.
         """
         self.val_dataloader = None
-        self.compression_ctrl = None  # Optional[PTCompressionAlgorithmController]
+        self.compression_ctrl = None
         self.nncf_preset = "nncf_quantization"
         super().__init__(task_environment)
         self.optimization_type = ModelOptimizationType.NNCF
@@ -76,10 +76,7 @@ class AnomalyNNCFTask(AnomalyInferenceTask, IOptimizationTask):
         pruning = self.hyper_parameters.nncf_optimization.enable_pruning
         if quantization and pruning:
             self.nncf_preset = "nncf_quantization_pruning"
-            self.optimization_methods = [
-                OptimizationMethod.QUANTIZATION,
-                OptimizationMethod.FILTER_PRUNING,
-            ]
+            self.optimization_methods = [OptimizationMethod.QUANTIZATION, OptimizationMethod.FILTER_PRUNING]
             self.precision = [ModelPrecision.INT8]
             return
         if quantization and not pruning:
@@ -135,9 +132,7 @@ class AnomalyNNCFTask(AnomalyInferenceTask, IOptimizationTask):
                 model_data["model"] = new_model
 
                 self.compression_ctrl, model.model = wrap_nncf_model(
-                    model.model,
-                    self.optimization_config["nncf_config"],
-                    init_state_dict=model_data,
+                    model.model, self.optimization_config["nncf_config"], init_state_dict=model_data
                 )
             else:
                 try:
@@ -192,6 +187,24 @@ class AnomalyNNCFTask(AnomalyInferenceTask, IOptimizationTask):
 
         logger.info("Training completed.")
 
+    def _model_info(self) -> Dict:
+        """Return model info to save the model weights.
+
+        Returns:
+           Dict: Model info.
+        """
+
+        return {
+            "compression_state": self.compression_ctrl.get_compression_state(),
+            "meta": {
+                "config": self.config,
+                "nncf_enable_compression": True,
+            },
+            "model": self.model.state_dict(),
+            "config": self.get_config(),
+            "VERSION": 1,
+        }
+
     def save_model(self, output_model: ModelEntity) -> None:
         """Save the model after training is completed.
 
@@ -199,65 +212,21 @@ class AnomalyNNCFTask(AnomalyInferenceTask, IOptimizationTask):
             output_model (ModelEntity): Output model onto which the weights are saved.
         """
         logger.info("Saving the model weights.")
-        config = self.get_config()
-        model_info = {
-            "compression_state": self.compression_ctrl.get_compression_state(),
-            "meta": {
-                "config": self.config,
-                "nncf_enable_compression": True,
-            },
-            "model": self.model.state_dict(),
-            "config": config,
-            "VERSION": 1,
-        }
+        model_info = self._model_info()
         buffer = io.BytesIO()
         torch.save(model_info, buffer)
         output_model.set_data("weights.pth", buffer.getvalue())
-        output_model.set_data(
-            "label_schema.json",
-            label_schema_to_bytes(self.task_environment.label_schema),
-        )
+        output_model.set_data("label_schema.json", label_schema_to_bytes(self.task_environment.label_schema))
         self._set_metadata(output_model)
 
         f1_score = self.model.image_metrics.F1.compute().item()
         output_model.performance = Performance(score=ScoreMetric(name="F1 Score", value=f1_score))
         output_model.precision = self.precision
 
-    def export(self, export_type: ExportType, output_model: ModelEntity) -> None:
-        """Export model to OpenVINO IR.
+    def _export_to_onnx(self, onnx_path: str):
+        """Export model to ONNX
 
         Args:
-            export_type (ExportType): Export type should be ExportType.OPENVINO
-            output_model (ModelEntity): The model entity in which to write the OpenVINO IR data
-
-        Raises:
-            Exception: If export_type is not ExportType.OPENVINO
+             onnx_path (str): path to save ONNX file
         """
-        assert export_type == ExportType.OPENVINO
-
-        output_model.model_format = ModelFormat.OPENVINO
-        output_model.optimization_type = self.optimization_type
-
-        # pylint: disable=no-member; need to refactor this
-        logger.info("Exporting the OpenVINO model.")
-        onnx_path = os.path.join(self.config.project.path, "onnx_model.onnx")
-
         self.compression_ctrl.export_model(onnx_path, "onnx_11")
-
-        optimize_command = "mo --input_model " + onnx_path + " --output_dir " + self.config.project.path
-        subprocess.call(optimize_command, shell=True)
-        bin_file = glob(os.path.join(self.config.project.path, "*.bin"))[0]
-        xml_file = glob(os.path.join(self.config.project.path, "*.xml"))[0]
-        with open(bin_file, "rb") as file:
-            output_model.set_data("openvino.bin", file.read())
-        with open(xml_file, "rb") as file:
-            output_model.set_data("openvino.xml", file.read())
-
-        output_model.precision = self.precision
-        output_model.optimization_methods = self.optimization_methods
-
-        output_model.set_data(
-            "label_schema.json",
-            label_schema_to_bytes(self.task_environment.label_schema),
-        )
-        self._set_metadata(output_model)

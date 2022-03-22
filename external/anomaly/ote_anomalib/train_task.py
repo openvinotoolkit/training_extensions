@@ -63,26 +63,3 @@ class AnomalyTrainingTask(AnomalyInferenceTask, ITrainingTask):
         self.save_model(output_model)
 
         logger.info("Training completed.")
-
-    def save_model(self, output_model: ModelEntity) -> None:
-        """Save the model after training is completed.
-
-        Args:
-            output_model (ModelEntity): Output model onto which the weights are saved.
-        """
-        logger.info("Saving the model weights.")
-        config = self.get_config()
-        model_info = {
-            "model": self.model.state_dict(),
-            "config": config,
-            "VERSION": 1,
-        }
-        buffer = io.BytesIO()
-        torch.save(model_info, buffer)
-        output_model.set_data("weights.pth", buffer.getvalue())
-        output_model.set_data("label_schema.json", label_schema_to_bytes(self.task_environment.label_schema))
-        self._set_metadata(output_model)
-
-        f1_score = self.model.image_metrics.F1.compute().item()
-        output_model.performance = Performance(score=ScoreMetric(name="F1 Score", value=f1_score))
-        output_model.precision = [ModelPrecision.FP32]

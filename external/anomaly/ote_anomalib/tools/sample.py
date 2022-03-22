@@ -258,8 +258,6 @@ class OteAnomalyTask:
         self.evaluate(task=self.nncf_task, result_set=result_set)
         self.results["torch_int8"] = result_set.performance.score.value
 
-        return optimized_model
-
     def export_nncf(self) -> ModelEntity:
         """Export NNCF model via openvino."""
         logger.info("Exporting the model.")
