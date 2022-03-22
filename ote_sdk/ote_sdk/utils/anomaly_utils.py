@@ -78,6 +78,6 @@ def create_detection_annotation_from_anomaly_heatmap(
                 y2=(comp_y + comp_h) / image_h,
             )
             annotations.append(
-                Annotation(shape=shape, labels=[ScoredLabel(label, probability)])
+                Annotation(shape=shape, labels=[ScoredLabel(label, float(probability))])
             )
     return annotations
