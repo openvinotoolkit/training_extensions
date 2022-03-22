@@ -166,7 +166,7 @@ class OTEProgressHook(Hook):
         self.time_monitor.on_epoch_begin(runner.epoch)
 
     @check_input_parameters_type()
-    def after_epoch(self, runner):
+    def after_epoch(self, runner: BaseRunner):
         self.time_monitor.on_epoch_end(runner.epoch, runner.log_buffer.output)
 
     @check_input_parameters_type()

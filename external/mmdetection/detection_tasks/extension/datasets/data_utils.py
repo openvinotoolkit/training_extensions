@@ -407,7 +407,7 @@ def get_anchor_boxes(wh_stats: List[tuple], group_as: List[int]):
 
 
 @check_input_parameters_type()
-def format_list_to_str(value_lists):
+def format_list_to_str(value_lists: list):
     """ Decrease floating point digits in logs """
     str_value = ''
     for value_list in value_lists:

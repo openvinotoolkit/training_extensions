@@ -217,7 +217,7 @@ class OTEDataset(CustomDataset):
         results['seg_fields'] = []
 
     @check_input_parameters_type()
-    def get_ann_info(self, idx):
+    def get_ann_info(self, idx: int):
         """
         This method is used for evaluation of predictions. The CustomDataset class implements a method
         CustomDataset.evaluate, which uses the class method get_ann_info to retrieve annotations.
