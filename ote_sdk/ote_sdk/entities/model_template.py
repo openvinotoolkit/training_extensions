@@ -203,7 +203,7 @@ class TaskType(Enum):
     )
 
     def __str__(self) -> str:
-        return str(self.name)
+        return self.name
 
     def __repr__(self) -> str:
         return self.name
@@ -537,7 +537,6 @@ class ModelTemplate:
         """
         return self.task_type.is_global
 
-
     def supports_auto_hpo(self) -> bool:
         """
         Returns `True` if the algorithm supports automatic hyper parameter
@@ -552,7 +551,6 @@ class ModelTemplate:
             if result[0] == AutoHPOState.POSSIBLE:
                 return True
         return False
-
 
 
 class NullModelTemplate(ModelTemplate):
