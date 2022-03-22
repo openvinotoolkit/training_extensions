@@ -12,6 +12,8 @@ from typing import Dict, List, Optional, Sequence, Union, cast
 from omegaconf import DictConfig, ListConfig, OmegaConf
 
 from ote_sdk.configuration.elements import metadata_keys
+from ote_sdk.configuration.enums import AutoHPOState
+from ote_sdk.configuration.helper.utils import search_in_config_dict
 from ote_sdk.entities.label import Domain
 
 
@@ -422,7 +424,25 @@ class ModelTemplate:
         """
         Returns ``True`` if the task is global task i.e. if task produces global labels
         """
-        return self.task_type in [TaskType.CLASSIFICATION]
+        return self.task_type in (
+            TaskType.CLASSIFICATION,
+            TaskType.ANOMALY_CLASSIFICATION,
+        )
+
+    def supports_auto_hpo(self) -> bool:
+        """
+        Returns `True` if the algorithm supports automatic hyper parameter
+        optimization, `False` otherwise
+        """
+        if not self.hyper_parameters.has_valid_configurable_parameters:
+            return False
+        auto_hpo_state_results = search_in_config_dict(
+            self.hyper_parameters.data, key_to_search=metadata_keys.AUTO_HPO_STATE
+        )
+        for result in auto_hpo_state_results:
+            if result[0] == AutoHPOState.POSSIBLE:
+                return True
+        return False
 
 
 class NullModelTemplate(ModelTemplate):
@@ -457,6 +477,7 @@ TRAINABLE_TASK_TYPES: Sequence[TaskType] = (
     TaskType.ANOMALY_DETECTION,
     TaskType.ANOMALY_CLASSIFICATION,
     TaskType.ANOMALY_SEGMENTATION,
+    TaskType.ROTATED_DETECTION,
 )
 
 

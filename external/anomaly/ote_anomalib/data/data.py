@@ -19,11 +19,19 @@ Anomaly Dataset Utils
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Union
 
-from anomalib.data.transforms import PreProcessor
+import numpy as np
+from anomalib.pre_processing import PreProcessor
 from omegaconf import DictConfig, ListConfig
+from ote_anomalib.data.utils import (
+    contains_anomalous_images,
+    split_local_global_dataset,
+)
 from ote_anomalib.logging import get_logger
 from ote_sdk.entities.datasets import DatasetEntity
+from ote_sdk.entities.model_template import TaskType
+from ote_sdk.entities.shapes.polygon import Polygon
 from ote_sdk.entities.subset import Subset
+from ote_sdk.utils.segmentation_utils import mask_from_dataset_item
 from pytorch_lightning.core.datamodule import LightningDataModule
 from torch import Tensor
 from torch.utils.data import DataLoader, Dataset
@@ -63,9 +71,10 @@ class OTEAnomalyDataset(Dataset):
         torch.Size([3, 256, 256])
     """
 
-    def __init__(self, config: Union[DictConfig, ListConfig], dataset: DatasetEntity):
+    def __init__(self, config: Union[DictConfig, ListConfig], dataset: DatasetEntity, task_type: TaskType):
         self.config = config
         self.dataset = dataset
+        self.task_type = task_type
 
         self.pre_processor = PreProcessor(
             config=config.transform if "transform" in config.keys() else None,
@@ -77,13 +86,24 @@ class OTEAnomalyDataset(Dataset):
         return len(self.dataset)
 
     def __getitem__(self, index: int) -> Dict[str, Union[int, Tensor]]:
-        item = self.dataset[index]
-        image = self.pre_processor(image=item.numpy)["image"]
-        try:
-            label = 0 if item.get_shapes_labels()[0].name == LabelNames.normal else 1
-        except IndexError:
-            return {"index": index, "image": image}
-        return {"index": index, "image": image, "label": label}
+        dataset_item = self.dataset[index]
+        item = {"index": index}
+        if self.task_type == TaskType.ANOMALY_CLASSIFICATION:
+            item["image"] = self.pre_processor(image=dataset_item.numpy)["image"]
+        elif self.task_type == TaskType.ANOMALY_SEGMENTATION:
+            if any((isinstance(annotation.shape, Polygon) for annotation in dataset_item.get_annotations())):
+                mask = mask_from_dataset_item(dataset_item, dataset_item.get_shapes_labels()).squeeze()
+            else:
+                mask = np.zeros(dataset_item.numpy.shape[:2]).astype(np.int)
+            pre_processed = self.pre_processor(image=dataset_item.numpy, mask=mask)
+            item["image"] = pre_processed["image"]
+            item["mask"] = pre_processed["mask"]
+        else:
+            raise ValueError(f"Unsupported task type: {self.config.dataset.task}")
+
+        if len(dataset_item.get_shapes_labels()) > 0:
+            item["label"] = 1 if dataset_item.get_shapes_labels()[0].is_anomalous else 0
+        return item
 
 
 class OTEAnomalyDataModule(LightningDataModule):
@@ -108,10 +128,11 @@ class OTEAnomalyDataModule(LightningDataModule):
         torch.Size([32, 3, 256, 256])
     """
 
-    def __init__(self, config: Union[DictConfig, ListConfig], dataset: DatasetEntity) -> None:
+    def __init__(self, config: Union[DictConfig, ListConfig], dataset: DatasetEntity, task_type: TaskType) -> None:
         super().__init__()
         self.config = config
         self.dataset = dataset
+        self.task_type = task_type
 
         self.train_ote_dataset: DatasetEntity
         self.val_ote_dataset: DatasetEntity
@@ -165,8 +186,7 @@ class OTEAnomalyDataModule(LightningDataModule):
         """
         Train Dataloader
         """
-
-        dataset = OTEAnomalyDataset(self.config, self.train_ote_dataset)
+        dataset = OTEAnomalyDataset(self.config, self.train_ote_dataset, self.task_type)
         return DataLoader(
             dataset,
             shuffle=False,
@@ -178,8 +198,15 @@ class OTEAnomalyDataModule(LightningDataModule):
         """
         Validation Dataloader
         """
-
-        dataset = OTEAnomalyDataset(self.config, self.val_ote_dataset)
+        global_dataset, local_dataset = split_local_global_dataset(self.val_ote_dataset)
+        logger.info(f"Global annotations: {len(global_dataset)}")
+        logger.info(f"Local annotations: {len(local_dataset)}")
+        if contains_anomalous_images(local_dataset):
+            logger.info("Dataset contains polygon annotations. Passing masks to anomalib.")
+            dataset = OTEAnomalyDataset(self.config, local_dataset, TaskType.ANOMALY_SEGMENTATION)
+        else:
+            logger.info("Dataset does not contain polygon annotations. Not passing masks to anomalib.")
+            dataset = OTEAnomalyDataset(self.config, global_dataset, TaskType.ANOMALY_CLASSIFICATION)
         return DataLoader(
             dataset,
             shuffle=False,
@@ -191,7 +218,7 @@ class OTEAnomalyDataModule(LightningDataModule):
         """
         Test Dataloader
         """
-        dataset = OTEAnomalyDataset(self.config, self.test_ote_dataset)
+        dataset = OTEAnomalyDataset(self.config, self.test_ote_dataset, self.task_type)
         return DataLoader(
             dataset,
             shuffle=False,
@@ -203,7 +230,7 @@ class OTEAnomalyDataModule(LightningDataModule):
         """
         Predict Dataloader
         """
-        dataset = OTEAnomalyDataset(self.config, self.predict_ote_dataset)
+        dataset = OTEAnomalyDataset(self.config, self.predict_ote_dataset, self.task_type)
         return DataLoader(
             dataset,
             shuffle=False,
