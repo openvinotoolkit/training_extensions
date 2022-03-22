@@ -180,7 +180,4 @@ def generate_label_schema(dataset, task_type):
         label_schema.add_group(empty_group)
         return label_schema
 
-    if task_type == TaskType.TEXT_TO_SPEECH:
-        return None
-
     return LabelSchemaEntity.from_labels(dataset.get_labels())

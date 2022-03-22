@@ -52,7 +52,7 @@ class OTETextToSpeechTask(ITrainingTask, IInferenceTask, IEvaluationTask, IExpor
         self._scratch_space = tempfile.mkdtemp(prefix="ote-tts-scratch-")
         logger.info(f"Scratch space created at {self._scratch_space}")
 
-        self.task_environment = task_environment
+        self._task_environment = task_environment
 
         self._cfg = get_default_config()
         self._cfg.trainer.lr = self._hyperparams.learning_parameters.learning_rate
@@ -72,7 +72,7 @@ class OTETextToSpeechTask(ITrainingTask, IInferenceTask, IEvaluationTask, IExpor
 
     @property
     def _hyperparams(self):
-        return self.task_environment.get_hyper_parameters(OTETextToSpeechTaskParameters)
+        return self._task_environment.get_hyper_parameters(OTETextToSpeechTaskParameters)
 
     def cancel_training(self):
         """
@@ -239,22 +239,32 @@ class OTETextToSpeechTask(ITrainingTask, IInferenceTask, IEvaluationTask, IExpor
 
                 xml_files = [os.path.join(optimized_model_dir, f) for f in os.listdir(optimized_model_dir) if f.endswith('.xml')]
                 failed = True
+                count = 0
                 for xml_file in xml_files:
                     bin_file = xml_file.replace('.xml', '.bin')
                     if not os.path.exists(bin_file):
                         continue
                     failed = False
 
+                    if count == 0:
+                        with open(os.path.join(optimized_model_dir, bin_file), "rb") as f:
+                            output_model.set_data("openvino.bin", f.read())
+                        with open(os.path.join(optimized_model_dir, xml_file), "rb") as f:
+                            output_model.set_data("openvino.xml", f.read())
+                    count += 1
+
                     with open(os.path.join(optimized_model_dir, bin_file), "rb") as f:
                         output_model.set_data(os.path.basename(bin_file), f.read())
                     with open(os.path.join(optimized_model_dir, xml_file), "rb") as f:
                         output_model.set_data(os.path.basename(xml_file), f.read())
+
                 if failed:
                     raise NameError('Error in ONNX conversion')
                 output_model.precision = [optimized_model_precision]
                 output_model.optimization_methods = []
             except Exception as ex:
                 raise RuntimeError('Optimization was unsuccessful.') from ex
+            output_model.set_data("label_schema.json", label_schema_to_bytes(self._task_environment.label_schema))
             logger.info('Exporting completed.')
 
     @staticmethod
@@ -316,8 +326,7 @@ class OTETextToSpeechTask(ITrainingTask, IInferenceTask, IEvaluationTask, IExpor
         buffer = io.BytesIO()
         torch.save(model_info, buffer)
         output_model.set_data("weights.pth", buffer.getvalue())
-        #output_model.set_data("label_schema.json", label_schema_to_bytes(self.task_environment.label_schema))
-        #self._set_metadata(output_model)
+        output_model.set_data("label_schema.json", label_schema_to_bytes(self._task_environment.label_schema))
         output_model.precision = [ModelPrecision.FP32]
 
     def unload(self):
