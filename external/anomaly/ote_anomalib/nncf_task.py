@@ -28,7 +28,6 @@ from anomalib.utils.callbacks.nncf.utils import (
     is_state_nncf,
     wrap_nncf_model,
 )
-from nncf.api.compression import CompressionAlgorithmController
 from ote_anomalib import AnomalyInferenceTask
 from ote_anomalib.callbacks import ProgressCallback
 from ote_anomalib.data import OTEAnomalyDataModule
@@ -46,6 +45,8 @@ from ote_sdk.usecases.tasks.interfaces.optimization_interface import (
     IOptimizationTask,
     OptimizationType,
 )
+from nncf.api.compression import CompressionAlgorithmController
+
 from pytorch_lightning import Trainer
 
 logger = get_logger(__name__)
@@ -109,17 +110,23 @@ class AnomalyNNCFTask(AnomalyInferenceTask, IOptimizationTask):
             common_nncf_config = json.load(nncf_config_file)
 
         self._set_attributes_by_hyperparams()
-        self.optimization_config = compose_nncf_config(common_nncf_config, [self.nncf_preset])
+        self.optimization_config = compose_nncf_config(
+            common_nncf_config, [self.nncf_preset]
+        )
         self.config.merge_with(self.optimization_config)
         model = get_model(config=self.config)
-        if ote_model is not None:
-            raise ValueError("No trained model in project. NNCF require pretrained weights to compress the model")
+        if ote_model is None:
+            raise ValueError(
+                "No trained model in project. NNCF require pretrained weights to compress the model"
+            )
 
         buffer = io.BytesIO(ote_model.get_data("weights.pth"))  # type: ignore
         model_data = torch.load(buffer, map_location=torch.device("cpu"))
 
         if is_state_nncf(model_data):
-            logger.info("Loaded model weights from Task Environment and wrapped by NNCF")
+            logger.info(
+                "Loaded model weights from Task Environment and wrapped by NNCF"
+            )
 
             # Workaround to fix incorrect loading state for wrapped pytorch_lighting model
             new_model = dict()
@@ -138,7 +145,9 @@ class AnomalyNNCFTask(AnomalyInferenceTask, IOptimizationTask):
                 model.load_state_dict(model_data["model"])
                 logger.info("Loaded model weights from Task Environment")
             except BaseException as exception:
-                raise ValueError("Could not load the saved model. The model file structure is invalid.") from exception
+                raise ValueError(
+                    "Could not load the saved model. The model file structure is invalid."
+                ) from exception
 
         return model
 
@@ -162,9 +171,13 @@ class AnomalyNNCFTask(AnomalyInferenceTask, IOptimizationTask):
         if optimization_type is not OptimizationType.NNCF:
             raise RuntimeError("NNCF is the only supported optimization")
 
-        datamodule = OTEAnomalyDataModule(config=self.config, dataset=dataset, task_type=self.task_type)
+        datamodule = OTEAnomalyDataModule(
+            config=self.config, dataset=dataset, task_type=self.task_type
+        )
 
-        nncf_callback = NNCFCallback(nncf_config=self.optimization_config["nncf_config"])
+        nncf_callback = NNCFCallback(
+            nncf_config=self.optimization_config["nncf_config"]
+        )
         callbacks = [
             ProgressCallback(parameters=optimization_parameters),
             MinMaxNormalizationCallback(),
