@@ -95,6 +95,12 @@ class TaskType(Enum):
     or if it supports global or local labels.
     """
 
+    def __new__(cls, *args):
+        obj = object.__new__(cls)
+        obj._value_ = args[0]
+        return obj
+
+    # pylint: disable=unused-argument
     def __init__(
         self,
         value: int,
@@ -104,7 +110,6 @@ class TaskType(Enum):
         :param value: Unique integer for .value property of Enum (auto() does not work)
         :param task_info: NamedTuple containing information about the task's capabilities
         """
-        self._value_ = value
         self.domain = task_info.domain
         self.is_trainable = task_info.is_trainable
         self.is_anomaly = task_info.is_anomaly
